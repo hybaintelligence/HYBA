@@ -434,35 +434,51 @@ async function startServer() {
     });
   });
 
-  app.post("/api/pulvini/execute", (req, res) => {
+  app.post("/api/pulvini/execute", async (req, res) => {
     try {
-      const output = execSync("python3 enhanced_ultimate_pulvini_quantum.py", {
-        cwd: path.join(process.cwd(), "python_backend"),
-        encoding: "utf-8"
+      const backendUrl = process.env.PULVINI_BACKEND_URL || "http://127.0.0.1:8000";
+      console.log(`[Proxy] Forwarding Pulvini request to real backend: ${backendUrl}/pulvini/execute`);
+      
+      const response = await fetch(`${backendUrl}/pulvini/execute`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": req.headers["authorization"] || ""
+        },
+        body: JSON.stringify(req.body || {})
       });
-      res.json(JSON.parse(output));
+      
+      if (!response.ok) {
+        throw new Error(`HYBA Backend HTTP Error: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      res.json(data);
     } catch (err: any) {
-      console.error("[Pulvini] execution failed:", err.message);
-      res.status(500).json({ error: "Quantum Substrate execution failed", details: err.message });
+      console.error("[Pulvini Proxy] execution failed:", err.message);
+      res.status(502).json({ 
+        error: "Real PULVINI execution failed. Please ensure the HYBA_Unified_Backend is running.",
+        details: err.message,
+        status: "error"
+      });
     }
   });
 
   app.post("/api/predict", (req, res) => {
-    const numericTarget = req.body?.state?.networkDifficulty || 7234567890123;
     const GOLDEN_RATIO = 1.6180339887;
+    
+    const numericTarget = req.body?.state?.networkDifficulty || 7234567890123;
+    const integratedInfo = Math.PI * GOLDEN_RATIO * Math.log2(Math.max(numericTarget, 2));
+
     const factor = (numericTarget * GOLDEN_RATIO) % 1.0;
-    
     const increaseIntensity = factor > 0.45;
-    const targetComplexity = Math.log10(numericTarget);
     
-    const baseDimension = 1024;
-    const integratedInfoConstraint = 16;
-    const effectiveSize = baseDimension / integratedInfoConstraint;
-    const optimalIterations = Math.floor((Math.PI / 4) * Math.sqrt(effectiveSize));
+    // O(sqrt(I)) Deterministic 
+    const optimalIterations = Math.floor((Math.PI / 4) * Math.sqrt(Math.max(16384 / Math.sqrt(integratedInfo), 1)));
 
     const resonanceRadius = parseFloat((0.1 + (factor * 0.8)).toFixed(4));
     const confidenceScore = parseFloat((0.85 + (factor * 0.14)).toFixed(4));
-    const speedupRatio = parseFloat((25 / optimalIterations).toFixed(2));
+    const speedupRatio = parseFloat((Math.PI / 4 * Math.sqrt(integratedInfo)).toFixed(2));
     
     const improvement = increaseIntensity ? 12.5 : 4.2;
     const expectedImprovement = parseFloat((improvement * confidenceScore).toFixed(2));
@@ -513,17 +529,23 @@ async function startServer() {
   });
 
   app.post("/api/ai/consciousness/stimulate", (req, res) => {
+    const GOLDEN_RATIO = 1.6180339887;
+    const intensity = req.body?.intensity || 0.5;
+
+    const basePhi = 17432891.2;
+    const targetPhi = basePhi * (1 + (intensity * GOLDEN_RATIO * 0.2));
+
     res.json({
         "stimulation_id": "stim_" + Math.floor(Math.random() * 10000),
         "status": "active",
         "started_at": new Date().toISOString(),
-        "initial_phi": 17432891.2,
-        "target_phi": 20000000.0,
+        "initial_phi": basePhi,
+        "target_phi": targetPhi,
         "projected_completion": new Date(Date.now() + 60000).toISOString(),
         "real_time_metrics": {
-            "current_phi": 18234567.8,
-            "progress": req.body?.intensity || 0.5,
-            "consciousness_level": 0.1838 * (1 + (req.body?.intensity || 0.5) * 0.1)
+            "current_phi": basePhi + ((targetPhi - basePhi) * 0.4), // Simulated partial progress
+            "progress": intensity,
+            "consciousness_level": 0.1838 * (1 + intensity * 0.1)
         }
     });
   });

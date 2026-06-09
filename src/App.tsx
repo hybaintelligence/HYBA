@@ -15,7 +15,11 @@ import {
   UserPlus,
   LogIn,
   LogOut,
-  Database
+  Database,
+  PowerOff,
+  Moon,
+  Sun,
+  Download
 } from "lucide-react";
 
 import { MiningState, OptimizationParams } from "./types";
@@ -24,7 +28,18 @@ import { GroverVisualizer } from "./components/GroverVisualizer";
 import { MathematicsTests } from "./components/MathematicsTests";
 import { PulviniExecutionPanel } from "./components/PulviniExecutionPanel";
 import { PythagorasChat } from "./components/PythagorasChat";
+import { CoherenceScatterPlot } from "./components/CoherenceScatterPlot";
 import { GOLDEN_RATIO, PHI_15 } from "./utils/math";
+
+import { NetworkToast } from "./components/NetworkToast";
+import { Sparkline } from "./components/Sparkline";
+import { useApiRequest } from "./hooks/useApiRequest";
+import { useLatencyMetrics } from "./hooks/useLatencyMetrics";
+
+import { 
+  fetchTelemetryData, requestPrediction, executePulvini,
+  fetchProfileApi, fetchProductsApi, loginApi, registerApi
+} from "./apiClient";
 
 export default function App() {
   // Authentication & Products Catalogs States
@@ -52,12 +67,23 @@ export default function App() {
   });
 
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
+  const {
+    isConnected,
+    latencyMs,
+    latencyHistory,
+    isToastDismissed: isNetworkToastDismissed,
+    setIsToastDismissed: setIsNetworkToastDismissed,
+    recordPing
+  } = useLatencyMetrics();
   const [recentOptimizations, setRecentOptimizations] = useState<Array<{ timestamp: string; recommendation: string; gain: string }>>([]);
 
   // Sliders configured by user
   const [intensitySlider, setIntensitySlider] = useState<number>(85);
   const [subspaceRestriction, setSubspaceRestriction] = useState<number>(16); // I - Structural constraints
   const [targetIndexScanner, setTargetIndexScanner] = useState<number>(17); // Marked element
+
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
+  const [isEmergencyShutdown, setIsEmergencyShutdown] = useState<boolean>(false);
 
   const [calibrationParams, setCalibrationParams] = useState<OptimizationParams>({
     increaseIntensity: true,
@@ -93,13 +119,19 @@ export default function App() {
     threatsBlocked24h: 156
   });
 
+  const { execute: fetchTelemetryExecute } = useApiRequest(fetchTelemetryData, { maxRetries: 3 });
+  const { execute: requestPredictionExecute } = useApiRequest(requestPrediction, { maxRetries: 3 });
+
   // Fetch Live Telemetry and extended variables from Express Server
   const getLiveTelemetry = useCallback(async () => {
     setIsSyncing(true);
     try {
-      // 1. Fetch Primary Health & Telemetry
-      const response = await fetch("/api/health");
-      const data = await response.json();
+      const telemetry = await fetchTelemetryExecute();
+      
+      const { health: data, consciousness: cData, pools: pData, security: sData, latency } = telemetry;
+      
+      recordPing(latency, true);
+
       if (data.status === "healthy") {
         setBackendState({
           blockHeight: data.systemMetrics.blockHeight,
@@ -118,50 +150,30 @@ export default function App() {
         }
       }
 
-      // 2. Fetch IIT/Orch-OR Consciousness Metrics
-      try {
-        const consciousnessRes = await fetch("/api/ai/consciousness");
-        const cData = await consciousnessRes.json();
-        if (cData.status) {
-          setConsciousnessState(cData);
-        }
-      } catch (e) {
-        console.warn("Express consciousness endpoint unavailable.");
+      if (cData.status) {
+        setConsciousnessState(cData);
       }
 
-      // 3. Fetch Stratum Pools Performance
-      try {
-        const poolsRes = await fetch("/api/mining/pools");
-        const pData = await poolsRes.json();
-        if (pData.pools) {
-          setActivePools(pData.pools);
-        }
-      } catch (e) {
-        console.warn("Express pools endpoint unavailable.");
+      if (pData.pools) {
+        setActivePools(pData.pools);
       }
 
-      // 4. Fetch Security & Defensive Shield Stats
-      try {
-        const securityRes = await fetch("/api/security/status");
-        const sData = await securityRes.json();
-        if (sData.status) {
-          setSecurityShield({
-            enabled: sData.defense_systems.phi_shield.enabled,
-            strength: sData.defense_systems.phi_shield.strength,
-            threatLevel: sData.threat_level,
-            threatsBlocked24h: sData.defense_systems.phi_shield.threats_blocked_24h
-          });
-        }
-      } catch (e) {
-        console.warn("Express security status endpoint unavailable.");
+      if (sData.status) {
+        setSecurityShield({
+          enabled: sData.defense_systems.phi_shield.enabled,
+          strength: sData.defense_systems.phi_shield.strength,
+          threatLevel: sData.threat_level,
+          threatsBlocked24h: sData.defense_systems.phi_shield.threats_blocked_24h
+        });
       }
 
     } catch (err) {
       console.warn("Express server health endpoint returned unreachable. App operating in client fallback state. This is normal during static compilation checks.");
+      recordPing(0, false);
     } finally {
       setIsSyncing(false);
     }
-  }, []);
+  }, [fetchTelemetryExecute, recordPing]);
 
   // Post current sliders to backend to evaluate parameter Realignment
   const calibrateRealignment = async () => {
@@ -179,15 +191,7 @@ export default function App() {
         activePool: backendState.activePool
       };
 
-      const response = await fetch("/api/predict", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ state: demoState })
-      });
-
-      const data = await response.json();
+      const data = await requestPredictionExecute({ state: demoState });
       if (data.success) {
         setCalibrationParams({
           ...data.params,
@@ -206,11 +210,7 @@ export default function App() {
   // Fetch Authenticated User Profile
   const fetchProfile = useCallback(async (authToken: string) => {
     try {
-      const res = await fetch("/api/auth/profile", {
-        headers: {
-          "Authorization": `Bearer ${authToken}`
-        }
-      });
+      const res = await fetchProfileApi();
       const data = await res.json();
       if (data.success) {
         setCurrentUser(data.user);
@@ -229,7 +229,7 @@ export default function App() {
   const fetchProducts = useCallback(async () => {
     setIsLoadingProducts(true);
     try {
-      const res = await fetch("/api/products");
+      const res = await fetchProductsApi();
       const data = await res.json();
       if (Array.isArray(data)) {
         setSeededProducts(data);
@@ -251,11 +251,7 @@ export default function App() {
     }
 
     try {
-      const res = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username: usernameInput, password: passwordInput })
-      });
+      const res = await loginApi({ username: usernameInput, password: passwordInput });
       const data = await res.json();
       if (data.success) {
         localStorage.setItem("quantum_token", data.token);
@@ -282,11 +278,7 @@ export default function App() {
     }
 
     try {
-      const res = await fetch("/api/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username: usernameInput, password: passwordInput })
-      });
+      const res = await registerApi({ username: usernameInput, password: passwordInput });
       const data = await res.json();
       if (data.success) {
         setAuthFeedback({ text: "Registered successfully! You can now log in.", error: false });
@@ -323,15 +315,80 @@ export default function App() {
     const interval = setInterval(() => {
       getLiveTelemetry();
     }, 10000);
-    return () => clearInterval(interval);
+
+    return () => {
+      clearInterval(interval);
+    };
   }, [getLiveTelemetry]);
 
-  // Compute how many optimal Grover iterations are needed for the visualization
+  const toggleTheme = () => {
+    setIsDarkMode(!isDarkMode);
+    if (!isDarkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  };
+
+  const handleEmergencyShutdown = () => {
+    setIsEmergencyShutdown(true);
+    // Force sync to baseline (simulated)
+    setBackendState(prev => ({
+      ...prev,
+      currentHashrate: 0,
+      powerConsumption: 15,
+      quantumSpeedupFactor: 1.0,
+      quantumCoherence: 0,
+      activePool: "DISCONNECTED (SAFE MODE)"
+    }));
+    setTimeout(() => {
+        setIsEmergencyShutdown(false);
+    }, 5000);
+  };
+
+  const downloadOptimizationsCSV = () => {
+    if (recentOptimizations.length === 0) return;
+    
+    const headers = ["Timestamp", "Recommendation", "Gain"];
+    const csvContent = [
+      headers.join(","),
+      ...recentOptimizations.map(opt => 
+        `"${opt.timestamp}","${opt.recommendation}","${opt.gain}"`
+      )
+    ].join("\n");
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", "space_realignment_optimizations.csv");
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const optimalGroverSteps = calibrationParams.quantumIterations;
 
   return (
-    <div id="app-root" className="min-h-screen bg-sand text-oxford flex flex-col font-sans selection:bg-clicquot-gold/25 selection:text-oxford">
+    <div id="app-root" className={`min-h-screen ${isDarkMode ? 'bg-[#0B0C10] text-[#C5C6C7]' : 'bg-sand text-oxford'} flex flex-col font-sans selection:bg-clicquot-gold/25 selection:text-oxford transition-colors duration-300`}>
       
+      {isEmergencyShutdown && (
+        <div className="fixed inset-0 z-50 bg-red-900/90 flex flex-col items-center justify-center text-white backdrop-blur-sm">
+          <AlertCircle className="w-24 h-24 text-red-400 mb-6 animate-pulse" />
+          <h2 className="text-4xl font-mono font-bold tracking-widest text-white mb-2">EMERGENCY SHUTDOWN</h2>
+          <p className="font-mono text-xl text-red-200">HALTING MINING PROCESSES</p>
+          <div className="mt-8 font-mono text-sm text-white/70">Synchronizing to safe-mode baseline...</div>
+        </div>
+      )}
+
+      <NetworkToast 
+        isConnected={isConnected} 
+        latencyMs={latencyMs} 
+        isDismissed={isNetworkToastDismissed}
+        onDismiss={() => setIsNetworkToastDismissed(true)} 
+      />
+
       {/* 1. TOP HEADER STATUS BOARD */}
       <header className="border-b-2 border-clicquot-gold bg-oxford sticky top-0 z-40 px-6 py-4 shadow-lg text-white">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -356,12 +413,37 @@ export default function App() {
 
           {/* Real-time sync signals */}
           <div className="flex flex-wrap items-center gap-4">
-            <div className="text-[10px] font-mono text-gray-200 flex items-center gap-2 bg-[#001c3d] border border-[#0A5C91] px-3 py-1.5 rounded-lg">
-              <span className="w-2 h-2 bg-clicquot-orange rounded-full animate-pulse" />
-              <span>CORE METRICS SYNCED (ACTIVE OK)</span>
-              <span className="text-[#0a5c91]">|</span>
-              <span className="text-clicquot-gold font-bold">UTC: {new Date().toISOString().substring(11, 19)}</span>
-            </div>
+            <Sparkline data={latencyHistory} />
+            <button
+              onClick={handleEmergencyShutdown}
+              className="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded text-[10px] font-mono font-bold tracking-wider flex items-center gap-1.5 transition-colors shadow-sm"
+              title="HALT ALL MINING OPERATIONS"
+            >
+              <PowerOff className="w-3.5 h-3.5" />
+              EMERGENCY SHUTDOWN
+            </button>
+            <button
+              onClick={toggleTheme}
+              className="bg-[#001c3d] hover:bg-[#0A5C91] border border-[#0A5C91] text-white p-1.5 rounded transition-colors"
+              title="Toggle Theme"
+            >
+              {isDarkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            </button>
+            {(!isConnected || latencyMs > 500) ? (
+              <div className="text-[10px] font-mono text-red-200 flex items-center gap-2 bg-red-900 border border-red-500 px-3 py-1.5 rounded-lg">
+                <AlertCircle className="w-3 h-3 text-red-400" />
+                <span className="font-bold">{!isConnected ? "CONNECTION LOST" : `HIGH LATENCY (${latencyMs.toFixed(0)}ms)`}</span>
+                <span className="text-red-500">|</span>
+                <span className="text-red-300 font-bold">UTC: {new Date().toISOString().substring(11, 19)}</span>
+              </div>
+            ) : (
+              <div className="text-[10px] font-mono text-gray-200 flex items-center gap-2 bg-[#001c3d] border border-[#0A5C91] px-3 py-1.5 rounded-lg">
+                <span className={`w-2 h-2 ${isSyncing ? 'bg-clicquot-orange animate-pulse' : 'bg-green-500'} rounded-full`} />
+                <span>{`CORE SYNCED (${latencyMs.toFixed(0)}ms)`}</span>
+                <span className="text-[#0a5c91]">|</span>
+                <span className="text-clicquot-gold font-bold">UTC: {new Date().toISOString().substring(11, 19)}</span>
+              </div>
+            )}
             
             <a 
               href="https://solo.ckpool.org"
@@ -388,6 +470,11 @@ export default function App() {
           }}
           onRefresh={getLiveTelemetry}
           isSyncing={isSyncing}
+        />
+
+        <CoherenceScatterPlot 
+          coherence={backendState.quantumCoherence}
+          resonance={backendState.phiResonance}
         />
 
         {/* PRIMARY OPERATOR LAYOUT - Bento grid & AI companion sidebar */}
@@ -917,9 +1004,18 @@ export default function App() {
         {/* 3. RECENT CALIBRATION LOGS STREAM */}
         {recentOptimizations.length > 0 && (
           <section id="panel-logs-stream" className="bg-white border border-[#E2E4E9] rounded-xl p-5 shadow-sm">
-            <h4 className="text-xs font-mono text-[#1A1A1E] font-bold uppercase tracking-wider mb-2">
-              Recent Space Realignment Event Stream
-            </h4>
+            <div className="flex items-center justify-between mb-2">
+              <h4 className="text-xs font-mono text-[#1A1A1E] font-bold uppercase tracking-wider">
+                Recent Space Realignment Event Stream
+              </h4>
+              <button 
+                onClick={downloadOptimizationsCSV}
+                className="flex items-center gap-1.5 bg-[#F4F4F7] hover:bg-[#E2E4E9] text-[#1A1A1E] px-2.5 py-1 rounded border border-[#E2E4E9] transition-colors text-[10px] font-mono font-bold"
+              >
+                <Download className="w-3 h-3" />
+                EXPORT CSV
+              </button>
+            </div>
             <div className="space-y-1.5 font-mono text-[11px] text-[#64748B] max-h-32 overflow-y-auto">
               {recentOptimizations.map((log, idx) => (
                 <div key={idx} className="flex justify-between items-center bg-[#F8FAFC] p-2 rounded border border-[#E2E4E9]">

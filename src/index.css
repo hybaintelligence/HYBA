@@ -1,5 +1,27 @@
 @import "tailwindcss";
 
+@layer base {
+  .dark .bg-white {
+    background-color: #0B0E14 !important;
+    border-color: #1F2937 !important;
+    color: #E5E7EB !important;
+  }
+  .dark .text-oxford, .dark .text-\[\#1A1A1E\] {
+    color: #E5E7EB !important;
+  }
+  .dark .bg-\[\#F8FAFC\], .dark .bg-\[\#FAFBFD\], .dark .bg-sand-light, .dark .bg-\[\#F4F4F7\] {
+    background-color: #111827 !important;
+    border-color: #374151 !important;
+    color: #D1D5DB !important;
+  }
+  .dark .text-\[\#64748B\], .dark .text-[#334155], .dark .text-lux-slate {
+    color: #9CA3AF !important;
+  }
+  .dark .border-sand-dark, .dark .border-\[\#E2E4E9\] {
+    border-color: #1F2937 !important;
+  }
+}
+
 @theme {
   --color-oxford: #002147;
   --color-mckinsey-blue: #003666;

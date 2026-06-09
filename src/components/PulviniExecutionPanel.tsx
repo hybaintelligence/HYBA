@@ -1,18 +1,27 @@
 import React, { useState } from "react";
 import { Activity, Zap, Shield, Database } from "lucide-react";
+import { executePulvini } from "../apiClient";
 
 export const PulviniExecutionPanel = () => {
   const [isExecuting, setIsExecuting] = useState(false);
   const [result, setResult] = useState<any>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const handleExecute = async () => {
     setIsExecuting(true);
+    setError(null);
+    setResult(null);
     try {
-      const response = await fetch("/api/pulvini/execute", { method: "POST" });
-      const data = await response.json();
+      const data = await executePulvini();
+      
+      if (data.status === "error") {
+        throw new Error(data.error || data.details || "Execution failed");
+      }
+      
       setResult(data);
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
+      setError(err.message || "Failed to reach HYBA_Unified_Backend. Is it running?");
     } finally {
       setIsExecuting(false);
     }
@@ -52,6 +61,13 @@ export const PulviniExecutionPanel = () => {
           </>
         )}
       </button>
+
+      {error && (
+        <div className="bg-red-50 text-red-600 border border-red-200 rounded-lg p-4 mb-5 text-xs font-mono">
+          <strong className="block mb-1">HYBA_Unified_Backend Connection Error:</strong>
+          {error}
+        </div>
+      )}
 
       {result && result.status === "success" && (
         <div className="space-y-4">

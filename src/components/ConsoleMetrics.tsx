@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Cpu, Zap, Radio, Globe, RefreshCcw } from "lucide-react";
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { MiningState } from "../types";
 
 interface ConsoleMetricsProps {
@@ -14,6 +15,16 @@ interface ConsoleMetricsProps {
 }
 
 export const ConsoleMetrics: React.FC<ConsoleMetricsProps> = ({ state, onRefresh, isSyncing }) => {
+  const [hashrateHistory, setHashrateHistory] = useState<{ time: string, value: number }[]>([]);
+
+  useEffect(() => {
+    setHashrateHistory(prev => {
+      const now = new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      const newHistory = [...prev, { time: now, value: state.currentHashrate }];
+      return newHistory.slice(-10); // Keep last 10 points
+    });
+  }, [state.currentHashrate]);
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
       {/* CARD 1: QUANTUM SPEEDUP */}
@@ -35,18 +46,35 @@ export const ConsoleMetrics: React.FC<ConsoleMetricsProps> = ({ state, onRefresh
       </div>
 
       {/* CARD 2: HASHRATE EQUIVALENCE */}
-      <div id="metric-hashrate" className="bg-white border-l-4 border-oxford border-y border-r border-[#E2E4E9] rounded-xl p-5 flex flex-col justify-between transition-colors duration-200 shadow-sm">
-        <div className="flex items-center justify-between">
+      <div id="metric-hashrate" className="bg-white border-l-4 border-oxford border-y border-r border-[#E2E4E9] rounded-xl p-5 flex flex-col justify-between transition-colors duration-200 shadow-sm relative overflow-hidden">
+        <div className="flex items-center justify-between z-10 relative">
           <span className="text-xs font-mono text-lux-slate tracking-wider font-semibold uppercase">Hashrate Equivalence</span>
           <Radio className="text-oxford w-4.5 h-4.5" />
         </div>
-        <div className="my-3">
+        <div className="my-3 flex-1 flex flex-col justify-center z-10 relative">
           <div className="text-2xl font-bold font-mono text-oxford tracking-tight">
             {state.currentHashrate.toFixed(2)} <span className="text-lux-slate text-xs font-sans">PH/s</span>
           </div>
-          <p className="text-xs text-lux-slate mt-1">Calculated equivalent sweep velocity under Grover superposition</p>
+          <p className="text-xs text-lux-slate mt-1">Calculated equivalent sweep velocity</p>
         </div>
-        <div className="text-[10px] font-mono text-lux-slate/80 flex justify-between border-t border-sand-dark pt-2 mt-1">
+        
+        {/* Recharts LineGraph Background Overlay */}
+        <div className="absolute bottom-6 left-0 right-0 h-16 opacity-30 z-0">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={hashrateHistory}>
+              <Line 
+                type="monotone" 
+                dataKey="value" 
+                stroke="#0A5C91" 
+                strokeWidth={2} 
+                dot={false}
+                isAnimationActive={true}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+
+        <div className="text-[10px] font-mono text-lux-slate/80 flex justify-between border-t border-sand-dark pt-2 mt-1 z-10 relative">
           <span>HEIGHT: {state.blockHeight}</span>
           <span>DECOHERENCE: 12.4ms</span>
         </div>
