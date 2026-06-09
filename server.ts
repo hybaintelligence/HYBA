@@ -238,8 +238,6 @@ async function startServer() {
 
   // Spawn Python Daemons (Self-healing substrate initialization)
   const pythonPath = path.join(process.cwd(), "python_backend");
-  const apiPath = path.join(pythonPath, "hyba_genesis_api");
-  
     // Ensure Python dependencies are present
     try {
       logger.info("Substrate: Synchronizing Python dependencies...");
@@ -258,7 +256,7 @@ async function startServer() {
     }
 
   spawnDaemon("Pythia", "python3", ["-u", "-m", "pythia_mining.main"], pythonPath);
-  spawnDaemon("FastAPI", "python3", ["-u", "-m", "uvicorn", "main:app", "--port", "3001", "--host", "127.0.0.1"], apiPath);
+  spawnDaemon("FastAPI", "python3", ["-u", "-m", "uvicorn", "hyba_genesis_api.main:app", "--port", "3001", "--host", "127.0.0.1"], pythonPath);
 
   // Substrate Intelligence Monitor (Periodic Health & Prediction)
   setInterval(async () => {

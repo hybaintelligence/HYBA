@@ -3,12 +3,15 @@ Health & Status APIs
 HYBA Genesis Platform Monitoring
 """
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 from typing import Dict, Any
 from datetime import datetime
 import json
 import os
+
+from hyba_genesis_api.core.substrate import get_substrate_state, is_ready
+from hyba_genesis_api.core.telemetry import get_metrics
 
 router = APIRouter(prefix="/api/health", tags=["health"])
 
@@ -30,21 +33,24 @@ async def liveness_probe():
 @router.get("/ready", response_model=Dict[str, Any])
 async def readiness_probe():
     """Readiness probe: returns 200 if substrate is fully initialized, else 503."""
-    state = get_pythia_state()
-    if not state:
-        from fastapi import Response
+    substrate_state = get_substrate_state()
+    if not is_ready():
         return JSONResponse(
             status_code=503,
-            content={"status": "initializing", "message": "Substrate telemetry not yet established."}
+            content={
+                "status": "initializing",
+                "message": "Substrate initialization is incomplete.",
+                "substrate": substrate_state,
+            },
         )
-    return {"status": "ready", "timestamp": datetime.utcnow().isoformat()}
+    return {"status": "ready", "timestamp": datetime.utcnow().isoformat(), "substrate": substrate_state}
 
 @router.get("", response_model=Dict[str, Any])
 async def get_health_status():
     state = get_pythia_state()
     acceptance_rate = state.get("acceptance_rate", 1.0) if state else 1.0
     return {
-        "status": "healthy",
+        "status": "healthy" if is_ready() else "degraded",
         "timestamp": datetime.utcnow().isoformat(),
         "version": "2.0.1",
         "quantumCoherence": 0.9415,
@@ -52,6 +58,8 @@ async def get_health_status():
         "quantumSpeedupFactor": 38.7,
         "actualSpeedupFactor": round(38.7 * acceptance_rate, 2),
         "phiResonance": 0.0594,
+        "telemetry": get_metrics(),
+        "substrate": get_substrate_state(),
         "systemMetrics": {
             "blockHeight": 847249,
             "currentHashrate": round((2071.08 * (0.95 + acceptance_rate * 0.05)), 2),
@@ -67,18 +75,10 @@ async def get_substrate_readiness():
     """
     Detailed readiness check for the self-healing substrate.
     """
-    state = get_pythia_state()
     return {
-        "status": "ready",
+        "status": "ready" if is_ready() else "initializing",
         "timestamp": datetime.utcnow().isoformat(),
-        "substrate": {
-            "pulvini_active": True,
-            "quantum_path_coherent": True,
-            "self_healing_enabled": True,
-            "self_optimising_active": True,
-            "learning_mode": "evidence_gated",
-            "last_calibration": datetime.utcnow().isoformat()
-        },
+        "substrate": get_substrate_state(),
         "governance": {
             "phi_scaled_floor": 0.85,
             "wilson_lower_bound": 0.92,

@@ -1,9 +1,15 @@
 from fastapi import APIRouter
-from typing import Dict, Any
+from pydantic import BaseModel, Field
+from typing import Any
 import json
 import os
 
 router = APIRouter(prefix="/api/mining", tags=["mining"])
+
+
+class PowerScaleRequest(BaseModel):
+    scale: float = Field(default=1.0, ge=0.1, le=10.0)
+
 
 def get_pythia_state():
     state_file = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "pythia_state.json")
@@ -69,19 +75,21 @@ async def get_stats():
         "phi_resonance_avg": 0.0594,
         "vqe_iterations_avg": 87.3,
         "consciousness_correlation": state.get("consciousness_level", 0.1838) if state else 0.1838,
-        "quantum_metrics": state.get("quantum", {})
+        "quantum_metrics": state.get("quantum", {}) if state else {}
       }
     }
 
 @router.post("/power")
-async def set_power_scale(data: Dict[str, Any]):
+async def set_power_scale(data: PowerScaleRequest):
     """Update power scale in governance config file."""
-    scale = data.get("scale", 1.0)
+    scale = data.scale
     config_file = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "mining_config.json")
     
     try:
-        with open(config_file, "w") as f:
+        temp_file = config_file + ".tmp"
+        with open(temp_file, "w") as f:
             json.dump({"power_scale": scale, "timestamp": os.getpid()}, f)
+        os.replace(temp_file, config_file)
         return {"status": "success", "requested_scale": scale}
     except Exception as e:
         return {"status": "error", "message": str(e)}
