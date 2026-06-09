@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Dict, Any
 from datetime import datetime
 import json
@@ -50,7 +50,7 @@ async def get_security_status():
     }
 
 class ShieldParam(BaseModel):
-    strength: float = 0.9
+    strength: float = Field(default=0.9, ge=0.0, le=1.0)
 
 @router.post("/shield")
 async def post_shield(param: ShieldParam):

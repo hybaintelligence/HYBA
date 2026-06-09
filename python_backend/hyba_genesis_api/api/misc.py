@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Dict, Any, Optional
 from datetime import datetime
 import random
@@ -46,15 +46,7 @@ async def start_experiment(config: ExperimentConfig):
       }
     }
 
-import sys
-import os
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
-
-try:
-    from enhanced_ultimate_pulvini_quantum import EnhancedQuantumGates, CONSTANTS
-    import numpy as np
-except ImportError:
-    pass
+import numpy as np
 
 @router.post("/pulvini/execute")
 async def execute_pulvini():
@@ -69,18 +61,14 @@ async def execute_pulvini():
     }
     
     try:
-        # Simulate the 14-qubit state execution (16384 states)
-        gates = EnhancedQuantumGates(CONSTANTS)
         state_size = 2**14
-        
-        # We simulate the process conceptually without actually allocating huge arrays synchronously if possible, or we allocate a smaller demo
-        # Actually doing 16384 is perfectly fine for numpy
         state_vector = np.ones(state_size, dtype=np.complex128) / np.sqrt(state_size)
-        
-        # Apply Diffusion
-        diffused_state = EnhancedQuantumGates.optimized_diffusion_operator(state_vector, CONSTANTS.EULER_GAMMA, CONSTANTS.PI)
-        
-        # Projection 256 -> 158 invariant subspace
+
+        # Apply a deterministic Grover-style diffusion transform around the mean.
+        mean_amplitude = np.mean(state_vector)
+        diffused_state = (2 * mean_amplitude) - state_vector
+
+        # Projection 256 -> 158 invariant subspace.
         hamiltonian_size = 256
         subspace_dim = 158
         betti_number_audit = "verified"
@@ -110,7 +98,7 @@ async def execute_pulvini():
     return response_data
 
 class PredictState(BaseModel):
-    networkDifficulty: Optional[float] = 7234567890123
+    networkDifficulty: Optional[float] = Field(default=7234567890123, gt=0)
 
 class PredictRequest(BaseModel):
     state: PredictState
