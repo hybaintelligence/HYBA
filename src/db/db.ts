@@ -1,9 +1,17 @@
-import fs from "fs";
-import path from "path";
-import crypto from "crypto";
+import { 
+  collection, 
+  doc, 
+  getDoc, 
+  getDocs, 
+  setDoc, 
+  query, 
+  where,
+  addDoc,
+  serverTimestamp 
+} from "firebase/firestore";
+import { db } from "../lib/firebase";
 import bcrypt from "bcryptjs";
-
-const DB_FILE = path.join(process.cwd(), "data", "db.json");
+import crypto from "crypto";
 
 // High-level absolute schemas
 export interface User {
@@ -25,6 +33,7 @@ export interface QuantumProduct {
 
 export interface CalibrationLog {
   id: string;
+  userId: string;
   username: string;
   targetIndex: number;
   resonanceRadius: number;
@@ -38,49 +47,35 @@ export interface DatabaseSchema {
   calibrationLogs: CalibrationLog[];
 }
 
-const DEFAULT_DB: DatabaseSchema = {
-  users: [],
-  products: [],
-  calibrationLogs: []
-};
-
-// Helper ensuring file exists and is populated
-function ensureDb() {
-  const dir = path.dirname(DB_FILE);
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
-  }
-  if (!fs.existsSync(DB_FILE)) {
-    fs.writeFileSync(DB_FILE, JSON.stringify(DEFAULT_DB, null, 2), "utf-8");
-  }
-}
-
-// Simple async mutex for atomic writes
-let dbLock = Promise.resolve();
-
 export async function readDb(): Promise<DatabaseSchema> {
-  return new Promise((resolve) => {
-    dbLock = dbLock.then(() => {
-      ensureDb();
-      try {
-        const content = fs.readFileSync(DB_FILE, "utf-8");
-        resolve(JSON.parse(content) as DatabaseSchema);
-      } catch (err) {
-        console.error("Failed to read JSON DB, resetting to default:", err);
-        resolve(DEFAULT_DB);
-      }
-    });
-  });
+  try {
+    const usersSnap = await getDocs(collection(db, "users"));
+    const productsSnap = await getDocs(collection(db, "products"));
+    const logsSnap = await getDocs(collection(db, "calibrationLogs"));
+
+    return {
+      users: usersSnap.docs.map(d => ({ id: d.id, ...d.data() } as User)),
+      products: productsSnap.docs.map(d => ({ id: d.id, ...d.data() } as QuantumProduct)),
+      calibrationLogs: logsSnap.docs.map(d => ({ id: d.id, ...d.data() } as CalibrationLog))
+    };
+  } catch (err) {
+    console.error("Failed to read from Firestore:", err);
+    return { users: [], products: [], calibrationLogs: [] };
+  }
 }
 
 export async function writeDb(data: DatabaseSchema): Promise<void> {
-  return new Promise((resolve) => {
-    dbLock = dbLock.then(() => {
-      ensureDb();
-      fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2), "utf-8");
-      resolve();
-    });
-  });
+  // Note: Standard writeDb is used for seeding in this app.
+  // We'll implement it by batch updating or just sequential sets since it's used sparingly.
+  for (const user of data.users) {
+    await setDoc(doc(db, "users", user.id), user);
+  }
+  for (const product of data.products) {
+    await setDoc(doc(db, "products", product.id), product);
+  }
+  for (const log of data.calibrationLogs) {
+    await setDoc(doc(db, "calibrationLogs", log.id), log);
+  }
 }
 
 // Password utility

@@ -11,7 +11,7 @@ export async function seed() {
       id: "u1",
       username: "admin",
       passwordHash: await hashPassword("admin123"),
-      role: "administrator",
+      role: "admin",
       createdAt: new Date().toISOString()
     },
     {
@@ -76,6 +76,7 @@ export async function seed() {
   const defaultLogs: CalibrationLog[] = [
     {
       id: "cal-1",
+      userId: "u1",
       username: "admin",
       targetIndex: 42,
       resonanceRadius: 0.618,
@@ -84,6 +85,7 @@ export async function seed() {
     },
     {
       id: "cal-2",
+      userId: "u2",
       username: "operator",
       targetIndex: 17,
       resonanceRadius: 0.124,

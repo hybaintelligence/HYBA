@@ -44,9 +44,19 @@ import {
 import { jsPDF } from "jspdf";
 import "jspdf-autotable";
 
+import { HilbertSpaceVisualizer } from "./components/HilbertSpaceVisualizer";
+import { updatePowerScale } from "./apiClient";
+
 export default function App() {
   // Authentication & Products Catalogs States
-  const [token, setToken] = useState<string | null>(() => localStorage.getItem("quantum_token"));
+  const [token, setToken] = useState<string | null>(() => {
+    try {
+      return localStorage.getItem("quantum_token");
+    } catch (e) {
+      console.warn("localStorage inaccessible, using in-memory token state.");
+      return null;
+    }
+  });
   const [currentUser, setCurrentUser] = useState<{ id: string; username: string; role: string; createdAt: string } | null>(null);
   const [usernameInput, setUsernameInput] = useState<string>("");
   const [passwordInput, setPasswordInput] = useState<string>("");
@@ -67,6 +77,7 @@ export default function App() {
     quantumSpeedupFactor: 38.7,
     actualSpeedupFactor: 37.42,
     phiResonance: 0.0594,
+    powerScale: 1.0,
     version: "2.0.1"
   });
 
@@ -151,6 +162,7 @@ export default function App() {
           quantumSpeedupFactor: data.quantumSpeedupFactor,
           actualSpeedupFactor: data.actualSpeedupFactor,
           phiResonance: data.phiResonance,
+          powerScale: data.systemMetrics.power_scale || 1.0,
           version: data.version
         });
         if (data.status === "degraded") {
@@ -210,7 +222,8 @@ export default function App() {
         networkDifficulty: backendState.networkDifficulty * (intensitySlider / 100),
         currentHashrate: backendState.currentHashrate,
         powerConsumption: backendState.powerConsumption,
-        activePool: backendState.activePool
+        activePool: backendState.activePool,
+        powerScale: backendState.powerScale
       };
 
       const data = await requestPredictionExecute({ state: demoState });
@@ -276,7 +289,9 @@ export default function App() {
       const res = await loginApi({ username: usernameInput, password: passwordInput });
       const data = await res.json();
       if (data.success) {
-        localStorage.setItem("quantum_token", data.token);
+        try {
+          localStorage.setItem("quantum_token", data.token);
+        } catch (e) {}
         setToken(data.token);
         setCurrentUser(data.user);
         setUsernameInput("");
@@ -316,7 +331,9 @@ export default function App() {
 
   // Handle Authentication Logout
   const handleLogout = () => {
-    localStorage.removeItem("quantum_token");
+    try {
+      localStorage.removeItem("quantum_token");
+    } catch (e) {}
     setToken(null);
     setCurrentUser(null);
     setAuthFeedback({ text: "Session ended securely.", error: false });
@@ -346,6 +363,11 @@ export default function App() {
       clearInterval(interval);
     };
   }, [getLiveTelemetry, isPollingActive]);
+
+  useEffect(() => {
+    // Sync dark mode from document class
+    setIsDarkMode(document.documentElement.classList.contains('dark'));
+  }, []);
 
   const toggleTheme = () => {
     setIsDarkMode(!isDarkMode);
@@ -540,6 +562,13 @@ export default function App() {
           resonance={backendState.phiResonance}
         />
 
+        <HilbertSpaceVisualizer 
+          hashrate={backendState.currentHashrate}
+          powerScale={backendState.powerScale}
+          phiResonance={backendState.phiResonance}
+          timeToNextShare={Math.max(0.1, 12 / (backendState.currentHashrate / 50))}
+        />
+
         {/* PRIMARY OPERATOR LAYOUT - Bento grid & AI companion sidebar */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           
@@ -615,6 +644,56 @@ export default function App() {
                   </p>
                 </div>
 
+              </div>
+
+              {/* GOVERNANCE LAYER: POWER SCALING */}
+              <div className="mt-6 bg-[#FAFBFD] border border-[#E2E4E9] rounded-xl p-4 shadow-inner">
+                <div className="flex items-center gap-2 mb-3">
+                   <ShieldCheck className="w-4 h-4 text-clicquot-gold" />
+                   <h4 className="text-[10px] font-mono font-bold uppercase tracking-widest text-oxford">
+                      Governance Layer: Exascale Path Control
+                   </h4>
+                   <span className="ml-auto text-[10px] font-mono text-lux-slate font-bold">
+                      CAP: 20^10 EHS
+                   </span>
+                </div>
+                <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                        <div className="text-[11px] font-mono text-lux-slate">
+                           Target Capacity Scaling (Default 50 EHS)
+                        </div>
+                        <div className="text-sm font-mono font-bold text-oxford">
+                           {backendState.powerScale.toFixed(2)}x
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-4">
+                        <input 
+                           type="range"
+                           min="0.1"
+                           max="10.0"
+                           step="0.1"
+                           value={backendState.powerScale}
+                           onChange={async (e) => {
+                              const newScale = parseFloat(e.target.value);
+                              setBackendState(prev => ({ ...prev, powerScale: newScale }));
+                              try {
+                                 await updatePowerScale(newScale);
+                                 setAuthFeedback({ text: `Governance Signal Broadcast: Power scale updated to ${newScale}x`, error: false });
+                              } catch(err) {
+                                 setAuthFeedback({ text: "Governance Interface Timeout: Failed to broadcast power scale.", error: true });
+                              }
+                           }}
+                           className="flex-1 h-2 bg-[#E2E4E9] rounded-lg appearance-none cursor-pointer accent-clicquot-gold"
+                        />
+                        <div className="bg-white border border-[#E2E4E9] px-2 py-1 rounded text-[10px] font-mono font-bold w-16 text-center shadow-sm">
+                           {(backendState.powerScale * 50).toFixed(0)} EHS
+                        </div>
+                    </div>
+                    <p className="text-[10px] text-lux-slate italic leading-tight">
+                       *Scaling hardware throughput via resonant Φ-cycle frequency modulation. 
+                       Higher scales increase topological heat signatures but maintain O(√I) efficiency.
+                    </p>
+                </div>
               </div>
 
               {/* ACTION: TRIGGER DYNAMIC REALIGNMENT PREDICTION */}

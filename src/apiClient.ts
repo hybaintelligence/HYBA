@@ -156,3 +156,12 @@ export async function fetchProductsApi() {
   }));
   return response;
 }
+
+export async function updatePowerScale(scale: number) {
+  const response = await fetch(`${BACKEND_URL}/mining/power`, authInterceptor({
+    method: "POST",
+    body: JSON.stringify({ scale })
+  }));
+  if (!response.ok) throw new Error("Power scale update failed");
+  return response.json();
+}

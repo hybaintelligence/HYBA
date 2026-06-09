@@ -1,0 +1,57 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile and authentication data",
+      "type": "object",
+      "properties": {
+        "username": { "type": "string", "description": "Unique username" },
+        "passwordHash": { "type": "string", "description": "Bcrypt hashed password" },
+        "role": { "type": "string", "enum": ["admin", "miner", "analyst", "operator"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["username", "passwordHash", "role", "createdAt"]
+    },
+    "QuantumProduct": {
+      "title": "QuantumProduct",
+      "description": "Quantum hardware available in the catalog",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "category": { "type": "string" },
+        "difficultyScale": { "type": "number", "description": "Scaling factor 1-10" },
+        "qubitDimension": { "type": "number", "description": "Number of qubits" }
+      },
+      "required": ["name", "description", "category", "difficultyScale", "qubitDimension"]
+    },
+    "CalibrationLog": {
+      "title": "CalibrationLog",
+      "description": "Log of quantum substrate calibrations",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "username": { "type": "string" },
+        "targetIndex": { "type": "number" },
+        "resonanceRadius": { "type": "number" },
+        "expectedImprovement": { "type": "number" },
+        "timestamp": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "username", "targetIndex", "resonanceRadius", "expectedImprovement", "timestamp"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "Collection of user profiles"
+    },
+    "/products/{productId}": {
+      "schema": "QuantumProduct",
+      "description": "Catalog of hardware products"
+    },
+    "/calibrationLogs/{logId}": {
+      "schema": "CalibrationLog",
+      "description": "History of system calibrations"
+    }
+  }
+}

@@ -4,6 +4,7 @@ HYBA Genesis Platform Monitoring
 """
 
 from fastapi import APIRouter, HTTPException, status
+from fastapi.responses import JSONResponse
 from typing import Dict, Any
 from datetime import datetime
 import json
@@ -20,6 +21,23 @@ def get_pythia_state():
         except:
             pass
     return None
+
+@router.get("/live", response_model=Dict[str, Any])
+async def liveness_probe():
+    """Liveness probe: returns 200 if process is alive."""
+    return {"status": "alive", "timestamp": datetime.utcnow().isoformat()}
+
+@router.get("/ready", response_model=Dict[str, Any])
+async def readiness_probe():
+    """Readiness probe: returns 200 if substrate is fully initialized, else 503."""
+    state = get_pythia_state()
+    if not state:
+        from fastapi import Response
+        return JSONResponse(
+            status_code=503,
+            content={"status": "initializing", "message": "Substrate telemetry not yet established."}
+        )
+    return {"status": "ready", "timestamp": datetime.utcnow().isoformat()}
 
 @router.get("", response_model=Dict[str, Any])
 async def get_health_status():

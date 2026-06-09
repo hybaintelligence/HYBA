@@ -8,6 +8,21 @@ export const swaggerDocument = {
       email: "operator@quantum.hyba"
     }
   },
+  servers: [
+    {
+      url: "{protocol}://{host}",
+      description: "Dynamic Substrate Gateway",
+      variables: {
+        protocol: {
+          default: "https",
+          enum: ["http", "https"]
+        },
+        host: {
+          default: "localhost:3000"
+        }
+      }
+    }
+  ],
   paths: {
     "/api/auth/register": {
       post: {

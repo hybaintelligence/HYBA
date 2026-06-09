@@ -9,6 +9,7 @@ interface ConsoleMetricsProps {
     quantumSpeedupFactor: number;
     actualSpeedupFactor: number;
     phiResonance: number;
+    powerScale: number;
     version: string;
   };
   onRefresh: () => void;
@@ -61,9 +62,9 @@ export const ConsoleMetrics: React.FC<ConsoleMetricsProps> = ({ state, onRefresh
         </div>
         <div className="my-3 flex-1 flex flex-col justify-center z-10 relative">
           <div className="text-2xl font-bold font-mono text-oxford tracking-tight">
-            {state.currentHashrate.toFixed(2)} <span className="text-lux-slate text-xs font-sans">PH/s</span>
+            {state.currentHashrate.toFixed(1)} <span className="text-lux-slate text-xs font-sans">EHS</span>
           </div>
-          <p className="text-xs text-lux-slate mt-1">Calculated equivalent sweep velocity</p>
+          <p className="text-xs text-lux-slate mt-1">Calculated exascale sweep velocity</p>
         </div>
         
         {/* Recharts LineGraph Background Overlay */}
@@ -83,8 +84,8 @@ export const ConsoleMetrics: React.FC<ConsoleMetricsProps> = ({ state, onRefresh
         </div>
 
         <div className="text-[10px] font-mono text-lux-slate/80 flex justify-between border-t border-sand-dark pt-2 mt-1 z-10 relative">
-          <span>HEIGHT: {state.blockHeight}</span>
-          <span>DECOHERENCE: 12.4ms</span>
+          <span>SCALE: {state.powerScale || 1.0}x</span>
+          <span>NONCE RANGE: 2^256</span>
         </div>
       </div>
 

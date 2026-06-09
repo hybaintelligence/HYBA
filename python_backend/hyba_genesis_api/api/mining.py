@@ -40,23 +40,25 @@ async def get_stats():
     total_shares = state.get("total_shares", 0) if state else 0
     acceptance_rate = state.get("acceptance_rate", 1.0) if state else 1.0
     accepted = int(total_shares * acceptance_rate)
+    hashrate = state.get("hashrate_ehs", 50.0) if state else 50.0
     
     return {
       "timeframe": "24h",
       "summary": {
-        "total_hashrate": 2071.08,
-        "avg_hashrate": 1987.45,
-        "peak_hashrate": 2345.67,
+        "total_hashrate": hashrate,
+        "avg_hashrate": hashrate * 0.98,
+        "peak_hashrate": hashrate * 1.15,
         "total_shares": total_shares,
         "accepted_shares": accepted,
         "rejected_shares": total_shares - accepted,
         "acceptance_rate": acceptance_rate,
         "estimated_revenue_btc": 0.00037801,
-        "estimated_revenue_usd": 16.82
+        "estimated_revenue_usd": 16.82,
+        "power_scale": state.get("power_scale", 1.0) if state else 1.0
       },
       "timeseries": [
         {
-          "hashrate": 2060.0,
+          "hashrate": hashrate,
           "shares_submitted": total_shares,
           "shares_accepted": accepted,
           "acceptance_rate": acceptance_rate
@@ -66,6 +68,20 @@ async def get_stats():
         "quantum_speedup_avg": 38.7,
         "phi_resonance_avg": 0.0594,
         "vqe_iterations_avg": 87.3,
-        "consciousness_correlation": state.get("consciousness_level", 0.1838) if state else 0.1838
+        "consciousness_correlation": state.get("consciousness_level", 0.1838) if state else 0.1838,
+        "quantum_metrics": state.get("quantum", {})
       }
     }
+
+@router.post("/power")
+async def set_power_scale(data: Dict[str, Any]):
+    """Update power scale in governance config file."""
+    scale = data.get("scale", 1.0)
+    config_file = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "mining_config.json")
+    
+    try:
+        with open(config_file, "w") as f:
+            json.dump({"power_scale": scale, "timestamp": os.getpid()}, f)
+        return {"status": "success", "requested_scale": scale}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}

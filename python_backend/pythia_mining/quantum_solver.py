@@ -35,10 +35,25 @@ class DodecahedralQuantumSolver:
         self.vqe_iterations = 100
         self.logical_error_rate = 0.0001
         self.syndrome_volume = 12
+        self.power_scale = 1.0  # Governance-controlled scale 1.0 = 50 EHS
         self.logger = logging.getLogger("quantum_solver")
         
         # Build pure mathematical dodecahedral basis states
         self.basis_states = self._generate_dodecahedral_basis_states()
+
+    def set_power_scale(self, scale: float):
+        """Sets the scaling factor for the quantum hashrate."""
+        self.power_scale = max(0.1, scale)
+
+    def calculate_integrated_hashrate(self) -> float:
+        """
+        Calculates hashrate in EHS (Exahashes per second).
+        Base capacity calibrated to 50 EHS at default power_scale.
+        """
+        base_ehs = 50.0
+        # Scaling levels: 10^12 (T), 10^15 (P), 10^18 (E), 10^20 (Z)
+        resonance_factor = 0.9 + (self.phi_resonance * 2.0)
+        return float(base_ehs * self.power_scale * resonance_factor)
 
     def _generate_dodecahedral_basis_states(self) -> np.ndarray:
         """
@@ -168,5 +183,7 @@ class DodecahedralQuantumSolver:
             "phi_resonance": self.phi_resonance,
             "vqe_iterations": self.vqe_iterations,
             "von_neumann_entropy": round(entropy, 4),
-            "dodecahedral_coherence": 0.957
+            "dodecahedral_coherence": 0.957,
+            "hashrate_ehs": round(self.calculate_integrated_hashrate(), 4),
+            "power_scale": self.power_scale
         }

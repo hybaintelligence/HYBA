@@ -47,6 +47,8 @@ class GenesisAI:
         self.repair_count = 0
         self.start_time = time.time()
         self.logger = logging.getLogger("genesis_ai")
+        self.failure_counter = 0
+        self.health_status = "HEALTHY"
         
     async def start(self) -> bool:
         self.logger.info("Initializing PYTHIA Orchestration Layer...")
@@ -101,22 +103,40 @@ class GenesisAI:
                                 {"nonce": resolved_nonce}, 23, "Low difficulty share"
                             )
                 
+                self.failure_counter = 0
+                self.health_status = "HEALTHY"
                 # Brief sleep between iterations to prevent CPU lockups while maintaining throughput
                 await asyncio.sleep(1.0)
             except Exception as e:
-                self.logger.error(f"Error in continuous mining execution loop: {e}")
-                await asyncio.sleep(5.0)
+                self.failure_counter += 1
+                self.logger.error(f"Error in continuous mining execution loop (Failures: {self.failure_counter}): {e}")
+                
+                if self.failure_counter > 5:
+                    self.health_status = "DEGRADED"
+                
+                # Exponential backoff on failure
+                sleep_time = min(60.0, 5.0 * (2 ** (self.failure_counter - 1)))
+                await asyncio.sleep(sleep_time)
 
     async def _pool_rotation_loop(self):
         """Asynchronously triggers deterministic pool switching periodically to mix things up"""
+        rotation_failures = 0
         while self.is_running:
             try:
                 # Swap pools every rotation interval (handled mathematically inside pool_manager)
                 await asyncio.sleep(30.0)  # Check every 30 seconds for pool rotation trigger
                 active_pool = await self.pool_manager.get_best_pool()
                 self.logger.info(f"[GenesisAI] Pool Scheduler Synchronized. Active: {active_pool.pool_name}")
+                rotation_failures = 0
             except Exception as e:
-                self.logger.error(f"Error in pool rotation scheduler: {e}")
+                rotation_failures += 1
+                self.logger.error(f"Error in pool rotation scheduler (Failures: {rotation_failures}): {e}")
+                # Fallback on rotation failure
+                try:
+                    await self.pool_manager.fallback_to_default()
+                except:
+                    pass
+                await asyncio.sleep(10 * rotation_failures)
 
     def get_system_status(self) -> Dict[str, Any]:
         active_pool = self.pool_manager.get_active_pool()
@@ -129,6 +149,13 @@ class GenesisAI:
         tot_accepted = sum(p["performance"]["shares_accepted"] for p in pools_info)
         acceptance = tot_accepted / tot_submitted if tot_submitted > 0 else 0.967
         
+        # CPU Info check psutil presence
+        cpu_load = 0
+        if psutil:
+            cpu_load = psutil.cpu_percent()
+
+        quantum_metrics = self.quantum_solver.get_metrics()
+        
         return {
             "running": self.is_running,
             "active_pool": active_pool.pool_name if active_pool else "None",
@@ -137,7 +164,11 @@ class GenesisAI:
             "consciousness_level": 0.1838,
             "total_shares": tot_submitted if tot_submitted > 0 else 1234,
             "acceptance_rate": round(acceptance, 3),
-            "system_health": "HEALTHY",
+            "system_health": self.health_status,
+            "cpu_load": cpu_load,
             "active_stratum_version": active_pool.stratum_version if active_pool else 1,
-            "pools": pools_info
+            "hashrate_ehs": quantum_metrics["hashrate_ehs"],
+            "power_scale": quantum_metrics["power_scale"],
+            "pools": pools_info,
+            "quantum": quantum_metrics
         }

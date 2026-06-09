@@ -4,8 +4,9 @@ Production-grade main entrypoint (FastAPI)
 """
 
 import logging
+import os
 from datetime import datetime
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
@@ -26,6 +27,7 @@ from core.substrate import (
 
 # Observability
 from core.telemetry import init_logging, init_metrics
+from auth.jwt_handler import get_token_payload
 
 # ─────────────────────────────────────────────────────────────────────────────
 # APP INITIALIZATION
@@ -38,13 +40,26 @@ app = FastAPI(
 )
 
 # CORS configuration
+ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "*").split(",")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
+    allow_origins=ALLOWED_ORIGINS,
+    allow_credentials=True if ALLOWED_ORIGINS != ["*"] else False, # Credentials forbidden with wildcard
     allow_headers=["*"],
     allow_methods=["*"]
 )
+
+# Readiness Gate
+SUBSTRATE_READY = False
+
+@app.middleware("http")
+async def readiness_middleware(request: Request, call_next):
+    if not SUBSTRATE_READY and request.url.path not in ["/health", "/api/health", "/api/health/readiness", "/"]:
+        return JSONResponse(
+            status_code=503,
+            content={"error": "service_unavailable", "message": "HYBA Substrate initializing. Please retry in Φ-cycles."}
+        )
+    return await call_next(request)
 
 # ─────────────────────────────────────────────────────────────────────────────
 # GLOBAL EXCEPTION HANDLERS
@@ -79,11 +94,15 @@ async def startup_event():
         init_pulvini_runtime()
         init_quantum_path()
         init_mining_engine()
+        global SUBSTRATE_READY
+        SUBSTRATE_READY = True
         logging.info("HYBA substrate initialized successfully.")
     except Exception as e:
         logging.critical(f"FATAL: Substrate initialization failed: {e}")
-        # In a real production environment, we might want to exit here
-        # but for this environment we'll log it and let FastAPI try to run.
+        # Fail fast in production
+        if os.getenv("NODE_ENV") == "production":
+            import sys
+            sys.exit(1)
 
 @app.on_event("shutdown")
 async def shutdown_event():
@@ -96,10 +115,10 @@ async def shutdown_event():
 # ─────────────────────────────────────────────────────────────────────────────
 
 app.include_router(health_router)
-app.include_router(ai_router)
-app.include_router(mining_router)
-app.include_router(security_router)
-app.include_router(misc_router)
+app.include_router(ai_router, dependencies=[Depends(get_token_payload)])
+app.include_router(mining_router, dependencies=[Depends(get_token_payload)])
+app.include_router(security_router, dependencies=[Depends(get_token_payload)])
+app.include_router(misc_router, dependencies=[Depends(get_token_payload)])
 
 # ─────────────────────────────────────────────────────────────────────────────
 # ROOT ENDPOINT

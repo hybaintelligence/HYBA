@@ -12,6 +12,7 @@ export interface MiningState {
   currentHashrate: number; // PH/s equivalent or arbitrary relative unit
   powerConsumption: number; // Watts
   activePool: string;
+  powerScale: number;
 }
 
 export interface QuantumDimensionState {

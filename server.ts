@@ -25,6 +25,12 @@ import {
 import { swaggerDocument } from "./src/swaggerSpec";
 import { readDb, writeDb, hashPassword, verifyPassword, generateId, User } from "./src/db/db";
 
+import { fileURLToPath } from "url";
+import { dirname } from "path";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
 // Core Platform Modules (High-Integrity Lifecycle)
 import { 
   logger, 
@@ -37,8 +43,15 @@ import {
   init_quantum_path, 
   init_mining_engine, 
   shutdown_substrate,
-  check_readiness
+  check_readiness,
+  sync_substrate_state,
+  get_substrate_state
 } from "./src/core/substrate";
+
+// Security & Intelligence Agents
+import { securitySwarms } from "./src/core/security_swarm";
+import { phi_shield_middleware } from "./src/core/phi_shield";
+import { predictiveIntel } from "./src/core/predictive_intel";
 
 // Load environment variables
 dotenv.config();
@@ -119,6 +132,10 @@ async function startServer() {
     },
   }));
   app.use(compression());
+
+  // Φ-Shield Anti-Tamper Layer (Anti-Sniff/Anti-Peep protection)
+  app.use(phi_shield_middleware);
+
   // Request Context Middleware (Stripe-Grade Tracing)
   app.use((req, res, next) => {
     const traceId = req.header('x-request-id') || generateId();
@@ -138,52 +155,150 @@ async function startServer() {
     legacyHeaders: false,
   });
 
-  const children: any[] = [];
+  const children: Map<string, { process: any, restartCount: number }> = new Map();
 
   function spawnDaemon(name: string, command: string, args: string[], cwd: string) {
-    logger.info(`[Daemon] Spawning ${name}...`);
+    let userBin = "";
+    let userSite = "";
+    try {
+      const userBase = execSync('python3 -m site --user-base', { encoding: 'utf8' }).trim();
+      userBin = path.join(userBase, 'bin');
+      userSite = execSync('python3 -m site --user-site', { encoding: 'utf8' }).trim();
+    } catch (e) {
+      logger.warn("Substrate: Could not resolve python user-site paths.");
+    }
+
+    logger.info({ name, command, args, cwd, userBin }, `[Daemon] Spawning ${name}...`);
+    
     const daemon = spawn(command, args, {
       cwd,
-      env: { ...process.env, PYTHONPATH: cwd },
+      env: { 
+        ...process.env, 
+        PYTHONPATH: userSite ? `${cwd}:${userSite}` : cwd,
+        PATH: userBin ? `${userBin}:${process.env.PATH}` : process.env.PATH
+      },
     });
 
-    daemon.stdout.on("data", (data) => logger.info(`[${name}] ${data.toString().trim()}`));
-    daemon.stderr.on("data", (data) => logger.warn(`[${name} Error] ${data.toString().trim()}`));
+    const logFile = path.join(process.cwd(), `daemon_${name}.log`);
+    fs.appendFileSync(logFile, `--- SPAWN: ${new Date().toISOString()} ---\n`);
+
+    daemon.stdout.on("data", (data) => {
+      const msg = data.toString();
+      logger.info(`[${name}] ${msg.trim()}`);
+      fs.appendFileSync(logFile, `STDOUT: ${msg}`);
+    });
+    daemon.stderr.on("data", (data) => {
+      const msg = data.toString();
+      logger.warn(`[${name} Error] ${msg.trim()}`);
+      fs.appendFileSync(logFile, `STDERR: ${msg}`);
+    });
     
     daemon.on("close", (code) => {
       logger.info(`[${name}] Exited with code ${code}`);
+      fs.appendFileSync(logFile, `EXIT: ${code}\n`);
+      const info = children.get(name);
+      if (info && info.restartCount < 5) {
+        const delay = Math.pow(2, info.restartCount) * 1000;
+        logger.info(`[${name}] Scheduling restart in ${delay}ms...`);
+        setTimeout(() => {
+          info.restartCount++;
+          info.process = spawnDaemon(name, command, args, cwd);
+        }, delay);
+      } else {
+        logger.fatal(`[${name}] Maximum restart attempts reached or process intentionally closed.`);
+      }
     });
 
-    children.push(daemon);
+    if (!children.has(name)) {
+      children.set(name, { process: daemon, restartCount: 0 });
+    }
     return daemon;
   }
 
   // Proper lifecycle management
-  const gracefulShutdown = () => {
-    logger.info("Graceful shutdown initiated...");
+  const gracefulShutdown = (signal: string) => {
+    logger.info({ signal }, "Graceful shutdown initiated...");
     shutdown_substrate();
-    children.forEach(child => {
-      if (!child.killed) child.kill("SIGTERM");
+    children.forEach((info, name) => {
+      if (info.process && !info.process.killed) {
+        logger.info(`[${name}] Terminating child...`);
+        info.process.kill("SIGTERM");
+      }
     });
-    process.exit(0);
+    
+    // Allow small window for children to flush
+    setTimeout(() => {
+      logger.info("Shutdown sequence finalized.");
+      process.exit(0);
+    }, 1000);
   };
 
-  process.on("SIGTERM", gracefulShutdown);
-  process.on("SIGINT", gracefulShutdown);
+  process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
+  process.on("SIGINT", () => gracefulShutdown("SIGINT"));
 
-  // Spawn Python Daemons (Removed runtime pip install as per review)
-  spawnDaemon("Pythia", "python3", ["-u", "-m", "pythia_mining.main"], path.join(__dirname, "..", "python_backend"));
-  spawnDaemon("FastAPI", "python3", ["-u", "-m", "uvicorn", "hyba_genesis_api.main:app", "--port", "3001", "--host", "127.0.0.1"], path.join(__dirname, "..", "python_backend"));
+  // Spawn Python Daemons (Self-healing substrate initialization)
+  const pythonPath = path.join(process.cwd(), "python_backend");
+  const apiPath = path.join(pythonPath, "hyba_genesis_api");
+  
+    // Ensure Python dependencies are present
+    try {
+      logger.info("Substrate: Synchronizing Python dependencies...");
+      // Try installing without --user first as it's more reliable in some containers
+      const pipCommand = `python3 -m pip install numpy uvicorn fastapi psutil python-multipart pydantic pyjwt aiohttp websockets asyncpg redis prometheus-client python-dateutil structlog python-json-logger`;
+      const stdout = execSync(pipCommand, { encoding: 'utf8' });
+      logger.info({ stdout }, "Substrate: Python dependencies synchronized.");
+    } catch (err: any) {
+      logger.warn({ err: err.message }, "Substrate: Standard pip install failed. Retrying with --user and --break-system-packages...");
+      try {
+        const pipCommand = `python3 -m pip install --user --break-system-packages numpy uvicorn fastapi psutil python-multipart pydantic pyjwt aiohttp websockets asyncpg redis prometheus-client python-dateutil structlog python-json-logger`;
+        const stdout = execSync(pipCommand, { encoding: 'utf8' });
+        logger.info({ stdout }, "Substrate: Python dependencies synchronized with fallback.");
+      } catch (err2: any) {
+        logger.error({ err: err2.message, stderr: err2.stderr?.toString() }, "Substrate: All dependency synchronization attempts failed.");
+      }
+    }
+
+  spawnDaemon("Pythia", "python3", ["-u", "-m", "pythia_mining.main"], pythonPath);
+  spawnDaemon("FastAPI", "python3", ["-u", "-m", "uvicorn", "main:app", "--port", "3001", "--host", "127.0.0.1"], apiPath);
+
+  // Substrate Intelligence Monitor (Periodic Health & Prediction)
+  setInterval(async () => {
+    await securitySwarms.sync_coherence();
+    predictiveIntel.forecast_spectral_anomaly();
+    await sync_substrate_state();
+  }, 10000); // 10s intervals for spectral checks
 
   // Substrate Initialization (High-Integrity Lifecycle)
-  try {
-    await init_pulvini_runtime();
-    await init_quantum_path();
-    await init_mining_engine();
-  } catch (error) {
-    logger.fatal({ error }, "FATAL: Substrate initialization failed. Computation engine unreachable.");
-    process.exit(1);
-  }
+  const initializeSubstrate = async () => {
+    try {
+      // Phase 0: Wait for Python Core to boot (since it's spawned in parallel)
+      logger.info('Substrate: Waiting for Python mathematical core to stabilize (120s window)...');
+      
+      // Increased stabilization wait to allow FastAPI to bind (increased window to 120s)
+      let attempts = 0;
+      while (attempts < 40) {
+        try {
+          await sync_substrate_state();
+          if (check_readiness()) break;
+        } catch (e: any) {
+          logger.debug(`Substrate: Stabilization attempt ${attempts + 1}/40 failed: ${e.message}`);
+        }
+        await new Promise(resolve => setTimeout(resolve, 3000));
+        attempts++;
+      }
+
+      // Explicitly sync state before proceeding
+      await init_pulvini_runtime();
+      await init_quantum_path();
+      await init_mining_engine();
+      logger.info('Substrate: System state confirmed operational.');
+    } catch (error) {
+      logger.error({ error }, "Substrate initialization reached timeout or failed. Continuing in DEGRADED mode.");
+    }
+  };
+
+  // Start initialization in background
+  initializeSubstrate();
 
   // Root Availability Endpoint
   app.get("/", (req, res) => {
@@ -193,7 +308,9 @@ async function startServer() {
       version: "2.0.1",
       timestamp: new Date().toISOString(),
       gate: "Express Secure Bridge",
-      readiness: check_readiness() ? "READY" : "DEGRADED"
+      readiness: check_readiness() ? "READY" : "DEGRADED",
+      substrate: get_substrate_state(),
+      security: securitySwarms.get_swarm_status()
     });
   });
 
@@ -237,7 +354,7 @@ async function startServer() {
       return { ...lastPythonStatus, stale: false };
     }
     try {
-      const stateFilePath = path.join(__dirname, "..", "python_backend", "pythia_state.json");
+      const stateFilePath = path.join(process.cwd(), "python_backend", "pythia_state.json");
       if (fs.existsSync(stateFilePath)) {
         const fileContent = fs.readFileSync(stateFilePath, "utf-8");
         const parsed = JSON.parse(fileContent);
@@ -286,7 +403,7 @@ async function startServer() {
         id: generateId(),
         username,
         passwordHash: await hashPassword(password),
-        role: "operator",
+        role: data.users.length === 0 ? "admin" : "operator", // Seed first user as admin
         createdAt: new Date().toISOString()
       };
 
@@ -373,31 +490,8 @@ async function startServer() {
   });
 
   // ----------------------------------------------------
-  // SPAWN FASTAPI BACKEND SERVER
+  // SPAWN FASTAPI BACKEND SERVER (DEPRECATED - Moved to spawnDaemon for lifecycle parity)
   // ----------------------------------------------------
-  console.log("[Python Bridge] Spawning background FastAPI server on port 3001...");
-  try {
-    const apiDaemon = spawn(
-      "python3",
-      ["-u", "-m", "uvicorn", "hyba_genesis_api.main:app", "--port", "3001", "--host", "127.0.0.1"],
-      {
-        cwd: path.join(process.cwd(), "python_backend"),
-        env: {
-          ...process.env,
-          PYTHONPATH: path.join(process.cwd(), "python_backend"),
-        },
-      }
-    );
-
-    apiDaemon.stdout.on("data", (data) => console.log(`[FastAPI] ${data.toString().trim()}`));
-    apiDaemon.stderr.on("data", (data) => console.error(`[FastAPI Error] ${data.toString().trim()}`));
-    
-    apiDaemon.on("close", (code) => {
-      console.log(`[FastAPI] Exited with code ${code}`);
-    });
-  } catch (err: any) {
-    console.error("[Python Bridge] Failed to spawn FastAPI server:", err.message);
-  }
 
   // ----------------------------------------------------
   // PROXY API ROUTES TO FASTAPI (mocked since python server is not running)
@@ -840,6 +934,7 @@ async function startServer() {
         code: err.code || "internal_server_error",
         message: "An unexpected error occurred within the HYBA substrate logic.",
         request_id: traceContext.trace_id,
+        error_id: errorId,
         timestamp: traceContext.timestamp
       }
     });
