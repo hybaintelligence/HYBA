@@ -9,6 +9,9 @@ from datetime import datetime
 
 from api.health import router as health_router
 from api.ai import router as ai_router
+from api.mining import router as mining_router
+from api.security import router as security_router
+from api.misc import router as misc_router
 
 app = FastAPI(
     title="HYBA Genesis Platform API",
@@ -26,6 +29,9 @@ app.add_middleware(
 
 app.include_router(health_router)
 app.include_router(ai_router)
+app.include_router(mining_router)
+app.include_router(security_router)
+app.include_router(misc_router)
 
 @app.get("/")
 async def root():

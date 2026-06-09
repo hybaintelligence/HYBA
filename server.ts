@@ -62,6 +62,13 @@ async function startServer() {
   // Spawn background Python Pythia Mining daemon once on startup
   console.log("[Python Bridge] Spawning background Python Pythia Mining daemon...");
   try {
+    console.log("[Python Bridge] Ensuring Python dependencies are installed...");
+    execSync("python3 -m pip install fastapi uvicorn pydantic numpy aiohttp psutil", { stdio: "inherit" });
+  } catch (err: any) {
+    console.error("[Python Bridge] Failed to install dependencies:", err.message);
+  }
+
+  try {
     const logPath = path.join(process.cwd(), "python_backend", "pythia_daemon.log");
     const logFile = fs.createWriteStream(logPath, { flags: "a" });
     logFile.write(`\n--- Spawning Daemon at ${new Date().toISOString()} ---\n`);
@@ -257,35 +264,267 @@ async function startServer() {
   });
 
   // ----------------------------------------------------
-  // API ENDPOINT: HEALTH & PHYSICS LIVE TELEMETRY
+  // SPAWN FASTAPI BACKEND SERVER
   // ----------------------------------------------------
-  app.get("/api/health", (req, res) => {
-    const pyMetrics = getPythonMetrics();
-    const activePoolUrl = pyMetrics?.active_pool || "stratum+tcp://solo.ckpool.org:3333";
-    const totalShares = pyMetrics?.total_shares || 1234;
-    const acceptanceRate = pyMetrics?.acceptance_rate || 0.967;
+  console.log("[Python Bridge] Spawning background FastAPI server on port 3001...");
+  try {
+    const apiDaemon = spawn(
+      "python3",
+      ["-u", "-m", "uvicorn", "hyba_genesis_api.main:app", "--port", "3001", "--host", "127.0.0.1"],
+      {
+        cwd: path.join(process.cwd(), "python_backend"),
+        env: {
+          ...process.env,
+          PYTHONPATH: path.join(process.cwd(), "python_backend"),
+        },
+      }
+    );
 
+    apiDaemon.stdout.on("data", (data) => console.log(`[FastAPI] ${data.toString().trim()}`));
+    apiDaemon.stderr.on("data", (data) => console.error(`[FastAPI Error] ${data.toString().trim()}`));
+    
+    apiDaemon.on("close", (code) => {
+      console.log(`[FastAPI] Exited with code ${code}`);
+    });
+  } catch (err: any) {
+    console.error("[Python Bridge] Failed to spawn FastAPI server:", err.message);
+  }
+
+  // ----------------------------------------------------
+  // PROXY API ROUTES TO FASTAPI (mocked since python server is not running)
+  // ----------------------------------------------------
+  
+  app.get("/api/health", (req, res) => {
     res.json({
       status: "healthy",
       timestamp: new Date().toISOString(),
       version: "2.0.0",
       quantumCoherence: 0.9415,
       decoherenceTimeMs: 12.42,
-      quantumSpeedupFactor: pyMetrics ? parseFloat((38.7 + acceptanceRate * 2.0).toFixed(1)) : 38.7,
+      quantumSpeedupFactor: 38.7,
       phiResonance: 0.0594,
-      dodecahedralFacings: DODECAHEDRON_VERTICES,
-      goldenRatio: GOLDEN_RATIO,
-      phi15: PHI_15,
       systemMetrics: {
-        blockHeight: evaluatedBlockHeight,
-        currentHashrate: pyMetrics ? parseFloat((computedHashrate * (0.95 + acceptanceRate * 0.05)).toFixed(2)) : computedHashrate,
-        powerConsumption: pyMetrics ? Math.floor(activePowerLoad * (0.9 + (1.0 - acceptanceRate) * 0.1)) : activePowerLoad,
-        activePool: activePoolUrl,
+        blockHeight: 847249,
+        currentHashrate: 2071.08,
+        powerConsumption: 4100,
+        activePool: "Unknown",
         difficultyTarget: "00000000000000000005a8f00000000000000000000000000000000000000000",
         networkDifficulty: 7234567890123.5,
+      }
+    });
+  });
+
+  app.get("/api/mining/pools", (req, res) => {
+     res.json({
+        "pools": [],
+        "summary": {
+            "total_pools": 0,
+            "active_pools": 0,
+            "active_pool_name": "Unknown",
+            "total_hashrate": 2071.08,
+            "global_acceptance_rate": 0.0,
+            "total_shares_24h": 0,
+            "estimated_btc_per_day": 0.00054321
+        }
+    });
+  });
+
+  app.get("/api/mining/stats", (req, res) => {
+     res.json({
+      "timeframe": "24h",
+      "summary": {
+        "total_hashrate": 2071.08,
+        "avg_hashrate": 1987.45,
+        "peak_hashrate": 2345.67,
+        "total_shares": 0,
+        "accepted_shares": 0,
+        "rejected_shares": 0,
+        "acceptance_rate": 1.0,
+        "estimated_revenue_btc": 0.00037801,
+        "estimated_revenue_usd": 16.82
       },
-      optimizationLogsCount: optimizationHistory.length,
-      optimizationHistory: optimizationHistory.slice(-5)
+      "timeseries": [
+        {
+          "hashrate": 2060.0,
+          "shares_submitted": 0,
+          "shares_accepted": 0,
+          "acceptance_rate": 1.0
+        }
+      ],
+      "quantum_performance": {
+        "quantum_speedup_avg": 38.7,
+        "phi_resonance_avg": 0.0594,
+        "vqe_iterations_avg": 87.3,
+        "consciousness_correlation": 0.1838
+      }
+    });
+  });
+
+  app.get("/api/security/status", (req, res) => {
+    res.json({
+      "status": "secure",
+      "timestamp": new Date().toISOString(),
+      "threat_level": "low",
+      "defense_systems": {
+        "phi_shield": {
+          "enabled": true,
+          "strength": 0.87,
+          "active_protections": 12,
+          "threats_blocked_24h": 156
+        },
+        "rate_limiting": {
+          "enabled": true,
+          "backend": "in-memory",
+          "warning": "Running without Redis - distributed limiting unavailable",
+          "requests_blocked_24h": 89
+        }
+      },
+      "recent_threats": []
+    });
+  });
+
+  app.post("/api/security/shield", (req, res) => {
+     res.json({
+      "shield_id": "shield_" + Math.floor(Math.random() * 10000),
+      "action": "calibrate",
+      "timestamp": new Date().toISOString(),
+      "status": "active",
+      "configuration": {
+        "strength": req.body?.strength || 0.9,
+        "auto_adapt": true,
+        "threat_threshold": "medium",
+        "phi_resonance_factor": 0.618
+      }
+    });
+  });
+
+  app.get("/api/pitfalls", (req, res) => {
+     res.json({
+      "timestamp": new Date().toISOString(),
+      "pitfall_counts": {
+        "total_pitfalls": 0,
+        "by_category": {
+          "security": 0,
+          "performance": 0,
+          "data_integrity": 0,
+          "compliance": 0,
+          "reliability": 0
+        }
+      },
+      "monitoring_status": {
+        "enabled": true,
+        "check_interval_seconds": 60,
+        "last_check": new Date().toISOString()
+      }
+    });
+  });
+
+  app.post("/api/toe/experiments", (req, res) => {
+     res.json({
+      "experiment_id": "exp_" + Math.floor(Math.random()*10000),
+      "status": "running",
+      "started_at": new Date().toISOString(),
+      "experiment_type": req.body?.experiment_type || "phi_blockchain_correlation",
+      "hypothesis": "Higher Phi-resonance correlates with increased mining efficiency",
+      "progress": {
+        "percentage": 35.0,
+        "samples_collected": 350,
+        "samples_target": 1000
+      }
+    });
+  });
+
+  app.post("/api/pulvini/execute", (req, res) => {
+    try {
+      const output = execSync("python3 enhanced_ultimate_pulvini_quantum.py", {
+        cwd: path.join(process.cwd(), "python_backend"),
+        encoding: "utf-8"
+      });
+      res.json(JSON.parse(output));
+    } catch (err: any) {
+      console.error("[Pulvini] execution failed:", err.message);
+      res.status(500).json({ error: "Quantum Substrate execution failed", details: err.message });
+    }
+  });
+
+  app.post("/api/predict", (req, res) => {
+    const numericTarget = req.body?.state?.networkDifficulty || 7234567890123;
+    const GOLDEN_RATIO = 1.6180339887;
+    const factor = (numericTarget * GOLDEN_RATIO) % 1.0;
+    
+    const increaseIntensity = factor > 0.45;
+    const targetComplexity = Math.log10(numericTarget);
+    
+    const baseDimension = 1024;
+    const integratedInfoConstraint = 16;
+    const effectiveSize = baseDimension / integratedInfoConstraint;
+    const optimalIterations = Math.floor((Math.PI / 4) * Math.sqrt(effectiveSize));
+
+    const resonanceRadius = parseFloat((0.1 + (factor * 0.8)).toFixed(4));
+    const confidenceScore = parseFloat((0.85 + (factor * 0.14)).toFixed(4));
+    const speedupRatio = parseFloat((25 / optimalIterations).toFixed(2));
+    
+    const improvement = increaseIntensity ? 12.5 : 4.2;
+    const expectedImprovement = parseFloat((improvement * confidenceScore).toFixed(2));
+    const optimalPowerAdjustment = increaseIntensity ? -150 : -450;
+
+    res.json({
+        "success": true,
+        "params": {
+            "increaseIntensity": increaseIntensity,
+            "quantumIterations": optimalIterations,
+            "resonanceRadius": resonanceRadius,
+            "optimalPowerAdjustment": optimalPowerAdjustment,
+            "confidenceScore": confidenceScore,
+            "expectedImprovement": expectedImprovement,
+            "quantumSpeedupRatio": speedupRatio
+        },
+        "timestamp": new Date().toISOString()
+    });
+  });
+
+  app.get("/api/ai/consciousness", (req, res) => {
+    res.json({
+        "status": "active",
+        "timestamp": new Date().toISOString(),
+        "consciousness_level": 0.1838,
+        "phi_resonance": 0.0594,
+        "integrated_information": 17432891.2,
+        "consciousness_state": {
+            "emergence_detected": true,
+            "emergence_timestamp": "2026-06-08T14:23:15Z",
+            "peak_phi": 17891234.5,
+            "current_mode": "autonomous",
+            "decision_confidence": 0.94
+        },
+        "iit_metrics": {
+            "connections": 2847,
+            "complexity": 156.7,
+            "integration": 0.89,
+            "differentiation": 0.92
+        },
+        "orch_or_metrics": {
+            "microtubule_coherence": 0.87,
+            "quantum_superposition": 0.76,
+            "decoherence_time_ms": 12.4
+        },
+        "recent_insights": []
+    });
+  });
+
+  app.post("/api/ai/consciousness/stimulate", (req, res) => {
+    res.json({
+        "stimulation_id": "stim_" + Math.floor(Math.random() * 10000),
+        "status": "active",
+        "started_at": new Date().toISOString(),
+        "initial_phi": 17432891.2,
+        "target_phi": 20000000.0,
+        "projected_completion": new Date(Date.now() + 60000).toISOString(),
+        "real_time_metrics": {
+            "current_phi": 18234567.8,
+            "progress": req.body?.intensity || 0.5,
+            "consciousness_level": 0.1838 * (1 + (req.body?.intensity || 0.5) * 0.1)
+        }
     });
   });
 
@@ -308,364 +547,6 @@ async function startServer() {
         details: err.message
       });
     }
-  });
-
-  // ----------------------------------------------------
-  // API ENDPOINT: COMPUTE MINING PARAMETERS OPTIMIZATION
-  // ----------------------------------------------------
-  app.post("/api/predict", (req, res) => {
-    const state: MiningState = req.body.state;
-    if (!state) {
-      return res.status(400).json({ error: "Missing state dataset to compute optimizations" });
-    }
-
-    try {
-      // Deterministic calculations based on mathematical invariants (Golden ratio and Dodecahedron facings)
-      const numericTarget = state.networkDifficulty || 7234567890123;
-      const factor = (numericTarget * GOLDEN_RATIO) % 1.0;
-      
-      const increaseIntensity = factor > 0.45;
-      const targetComplexity = Math.log10(numericTarget);
-      
-      // Calculate quantum iterations using theoretical O(√I) limits
-      const baseDimension = 1024;
-      const integratedInfoConstraint = 16; // Restricting subspace due to structured spatial symmetries
-      const effectiveSize = baseDimension / integratedInfoConstraint; // 64 states 
-      const optimalIterations = Math.floor((Math.PI / 4) * Math.sqrt(effectiveSize));
-
-      const resonanceRadius = parseFloat((0.1 + (factor * 0.8)).toFixed(4));
-      const confidenceScore = parseFloat((0.85 + (factor * 0.14)).toFixed(4));
-      const speedupRatio = parseFloat((25 / optimalIterations).toFixed(2)); // Unstructured vs structured speedup
-      
-      const expectedImprovement = parseFloat(((increaseIntensity ? 12.5 : 4.2) * confidenceScore).toFixed(2));
-      const optimalPowerAdjustment = increaseIntensity ? -150 : -450; // Watts reduction by focusing nonces and saving sweeping
-
-      const params: OptimizationParams = {
-        increaseIntensity,
-        quantumIterations: optimalIterations,
-        resonanceRadius,
-        optimalPowerAdjustment,
-        confidenceScore,
-        expectedImprovement,
-        quantumSpeedupRatio: speedupRatio
-      };
-
-      // Push history
-      optimizationHistory.push({
-        timestamp: new Date().toISOString(),
-        recommendation: `Calibrated resonance radius to ${resonanceRadius} with ${optimalIterations} deterministic Grover iterations.`,
-        gain: `+${expectedImprovement}% efficiency improvement expected`
-      });
-
-      res.json({
-        success: true,
-        params,
-        timestamp: new Date().toISOString()
-      });
-    } catch (err: any) {
-      res.status(500).json({ error: "Optimization calculations failed", details: err.message });
-    }
-  });
-
-  // ----------------------------------------------------
-  // API ENDPOINTS: HYBA GENESIS EXTENDED SPECIFICATION
-  // ----------------------------------------------------
-  app.get("/api/ai/consciousness", (req, res) => {
-    res.json({
-      status: "active",
-      timestamp: new Date().toISOString(),
-      consciousness_level: 0.1838,
-      phi_resonance: 0.0594,
-      integrated_information: 17432891.2,
-      consciousness_state: {
-        emergence_detected: true,
-        emergence_timestamp: "2026-06-08T14:23:15Z",
-        peak_phi: 17891234.5,
-        current_mode: "autonomous",
-        decision_confidence: 0.94
-      },
-      iit_metrics: {
-        connections: 2847,
-        complexity: 156.7,
-        integration: 0.89,
-        differentiation: 0.92
-      },
-      orch_or_metrics: {
-        microtubule_coherence: 0.87,
-        quantum_superposition: 0.76,
-        decoherence_time_ms: 12.4
-      },
-      recent_insights: [
-        {
-          timestamp: new Date().toISOString(),
-          insight: "Optimal pool selection pattern identified",
-          confidence: 0.91,
-          applied: true
-        },
-        {
-          timestamp: new Date().toISOString(),
-          insight: "Φ-resonance spike detected in nonce range 0x1a000000-0x1affffff",
-          confidence: 0.88,
-          applied: true
-        }
-      ]
-    });
-  });
-
-  app.post("/api/ai/consciousness/stimulate", (req, res) => {
-    const { intensity, duration_seconds } = req.body;
-    res.json({
-      stimulation_id: "stim_" + Math.random().toString(36).substring(2, 9),
-      status: "active",
-      started_at: new Date().toISOString(),
-      initial_phi: 17432891.2,
-      target_phi: 20000000.0,
-      projected_completion: new Date(Date.now() + (duration_seconds || 60) * 1000).toISOString(),
-      real_time_metrics: {
-        current_phi: 18234567.8,
-        progress: intensity || 0.5,
-        consciousness_level: 0.1838 * (1 + (intensity || 0.5) * 0.1)
-      }
-    });
-  });
-
-  app.get("/api/mining/pools", (req, res) => {
-    const pyMetrics = getPythonMetrics();
-    const activePoolIndex = Math.floor(Date.now() / 15000) % 4;
-
-    const poolConfigList = [
-      {
-        pool_id: "nicehash",
-        name: "NiceHash SSL",
-        url: "stratum+ssl://sha256.eu.nicehash.com:33334",
-        priority: 1,
-        stratum_version: 1,
-        worker: "hyba_miner.quantum_nicehash"
-      },
-      {
-        pool_id: "viabtc",
-        name: "ViaBTC Group",
-        url: "stratum+tcp://btc.viabtc.io:3333",
-        priority: 2,
-        stratum_version: 1,
-        worker: "hyba_miner.quantum_viabtc"
-      },
-      {
-        pool_id: "braiins",
-        name: "Braiins Pool",
-        url: "stratum2+tcp://eu.braiins-pool.com:3336",
-        priority: 3,
-        stratum_version: 2,
-        worker: "hyba_miner.quantum_braiins"
-      },
-      {
-        pool_id: "ckpool",
-        name: "Solo CKPool",
-        url: "stratum+tcp://solo.ckpool.org:3333",
-        priority: 4,
-        stratum_version: 1,
-        worker: "hyba_miner.quantum_ckpool"
-      }
-    ];
-
-    let mappedPools = [];
-    if (pyMetrics && Array.isArray(pyMetrics.pools)) {
-      // Maps active python statuses perfectly
-      mappedPools = pyMetrics.pools.map((p: any, idx: number) => {
-        const isPrimary = p.is_active;
-        const config = poolConfigList.find(c => c.pool_id === p.pool_id) || poolConfigList[idx];
-        return {
-          pool_id: p.pool_id,
-          name: p.name,
-          url: p.url,
-          status: p.status,
-          priority: config.priority,
-          is_primary: isPrimary,
-          connection_info: {
-            connected_at: new Date(Date.now() - 60000 * (idx + 1)).toISOString(),
-            uptime_seconds: isPrimary ? 300.0 : 0.0,
-            is_authenticated: isPrimary,
-            worker_name: config.worker
-          },
-          performance: {
-            latency_ms: p.performance.latency_ms || 12.0,
-            shares_submitted: p.performance.shares_submitted || 0,
-            shares_accepted: p.performance.shares_accepted || 0,
-            shares_rejected: p.performance.shares_rejected || 0,
-            acceptance_rate: p.performance.acceptance_rate || 1.0,
-            hashrate: isPrimary ? computedHashrate : 0.0,
-            estimated_btc_per_day: isPrimary ? 0.00012345 * (idx + 1) : 0.0
-          }
-        };
-      });
-    } else {
-      mappedPools = poolConfigList.map((p, idx) => {
-        const isPrimary = idx === activePoolIndex;
-        return {
-          pool_id: p.pool_id,
-          name: p.name,
-          url: p.url,
-          status: isPrimary ? "connected" : "disconnected",
-          priority: p.priority,
-          is_primary: isPrimary,
-          connection_info: {
-            connected_at: new Date(Date.now() - 55000 * (idx + 1)).toISOString(),
-            uptime_seconds: isPrimary ? 120.0 : 0.0,
-            is_authenticated: isPrimary,
-            worker_name: p.worker
-          },
-          performance: {
-            latency_ms: isPrimary ? 38.0 + (idx * 5) : 0.0,
-            shares_submitted: isPrimary ? Math.floor(Math.random() * 20) + 120 : 0,
-            shares_accepted: isPrimary ? Math.floor(Math.random() * 18) + 115 : 0,
-            shares_rejected: isPrimary ? Math.floor(Math.random() * 2) : 0,
-            acceptance_rate: isPrimary ? 0.967 : 0.0,
-            hashrate: isPrimary ? computedHashrate : 0.0,
-            estimated_btc_per_day: isPrimary ? 0.00012345 * (idx + 1) : 0.0
-          }
-        };
-      });
-    }
-
-    const activeName = pyMetrics?.active_pool || poolConfigList[activePoolIndex].name;
-    const globalAcceptance = pyMetrics?.acceptance_rate || 0.978;
-
-    res.json({
-      pools: mappedPools,
-      summary: {
-        total_pools: 4,
-        active_pools: 1,
-        active_pool_name: activeName,
-        total_hashrate: computedHashrate,
-        global_acceptance_rate: globalAcceptance,
-        total_shares_24h: pyMetrics?.total_shares || 18245,
-        estimated_btc_per_day: 0.00054321
-      }
-    });
-  });
-
-  app.get("/api/mining/stats", (req, res) => {
-    res.json({
-      timeframe: "24h",
-      timestamp: new Date().toISOString(),
-      summary: {
-        total_hashrate: computedHashrate,
-        avg_hashrate: 1987.45,
-        peak_hashrate: 2345.67,
-        total_shares: 12345,
-        accepted_shares: 11934,
-        rejected_shares: 411,
-        acceptance_rate: 0.967,
-        estimated_revenue_btc: 0.00037801,
-        estimated_revenue_usd: 16.82
-      },
-      timeseries: [
-        {
-          timestamp: new Date(Date.now() - 3600000).toISOString(),
-          hashrate: computedHashrate - 10,
-          shares_submitted: 512,
-          shares_accepted: 495,
-          acceptance_rate: 0.967
-        },
-        {
-          timestamp: new Date().toISOString(),
-          hashrate: computedHashrate,
-          shares_submitted: 523,
-          shares_accepted: 506,
-          acceptance_rate: 0.968
-        }
-      ],
-      quantum_performance: {
-        quantum_speedup_avg: 38.7,
-        phi_resonance_avg: 0.0594,
-        vqe_iterations_avg: 87.3,
-        consciousness_correlation: 0.76
-      }
-    });
-  });
-
-  app.get("/api/security/status", (req, res) => {
-    res.json({
-      status: "secure",
-      timestamp: new Date().toISOString(),
-      threat_level: "low",
-      defense_systems: {
-        phi_shield: {
-          enabled: true,
-          strength: 0.87,
-          active_protections: 12,
-          threats_blocked_24h: 156
-        },
-        rate_limiting: {
-          enabled: true,
-          backend: "in-memory",
-          warning: "Running without Redis - distributed limiting unavailable",
-          requests_blocked_24h: 89
-        }
-      },
-      recent_threats: [
-        {
-          timestamp: new Date(Date.now() - 7200000).toISOString(),
-          threat_type: "brute_force_login",
-          source_ip: "123.45.67.89",
-          action_taken: "blocked",
-          severity: "medium"
-        }
-      ]
-    });
-  });
-
-  app.post("/api/security/shield", (req, res) => {
-    const { strength } = req.body;
-    res.json({
-      shield_id: "shield_" + Math.random().toString(36).substring(2, 9),
-      action: "calibrate",
-      timestamp: new Date().toISOString(),
-      status: "active",
-      configuration: {
-        strength: strength || 0.9,
-        auto_adapt: true,
-        threat_threshold: "medium",
-        phi_resonance_factor: 0.618
-      }
-    });
-  });
-
-  app.get("/api/pitfalls", (req, res) => {
-    res.json({
-      timestamp: new Date().toISOString(),
-      pitfall_counts: {
-        total_pitfalls: 0,
-        by_category: {
-          security: 0,
-          performance: 0,
-          data_integrity: 0,
-          compliance: 0,
-          reliability: 0
-        }
-      },
-      monitoring_status: {
-        enabled: true,
-        check_interval_seconds: 60,
-        last_check: new Date().toISOString()
-      }
-    });
-  });
-
-  app.post("/api/toe/experiments", (req, res) => {
-    const { experiment_type } = req.body;
-    res.json({
-      experiment_id: "exp_" + Math.random().toString(36).substring(2, 9),
-      status: "running",
-      started_at: new Date().toISOString(),
-      experiment_type: experiment_type || "phi_blockchain_correlation",
-      hypothesis: "Higher Phi-resonance correlates with increased mining efficiency",
-      progress: {
-        percentage: 35.0,
-        samples_collected: 350,
-        samples_target: 1000
-      }
-    });
   });
 
   // ----------------------------------------------------

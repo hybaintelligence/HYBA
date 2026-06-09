@@ -22,6 +22,7 @@ import { MiningState, OptimizationParams } from "./types";
 import { ConsoleMetrics } from "./components/ConsoleMetrics";
 import { GroverVisualizer } from "./components/GroverVisualizer";
 import { MathematicsTests } from "./components/MathematicsTests";
+import { PulviniExecutionPanel } from "./components/PulviniExecutionPanel";
 import { PythagorasChat } from "./components/PythagorasChat";
 import { GOLDEN_RATIO, PHI_15 } from "./utils/math";
 
@@ -495,6 +496,9 @@ export default function App() {
             <section id="panel-proofs-tests">
               <MathematicsTests />
             </section>
+
+            {/* PANEL: PULVINI MEMORY ENGINE */}
+            <PulviniExecutionPanel />
 
             {/* PANEL: SEEDED QUANTUM HARDWARE CATALOGUE (IDEMPOTENT DATABASE DEMO) */}
             <section id="panel-hardware-catalog" className="bg-white border border-[#E2E4E9] rounded-xl p-5 shadow-sm text-[#1A1A1E]">
