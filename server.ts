@@ -73,11 +73,8 @@ function validateConfig() {
   }
 
   const warnings = [];
-  if (!process.env.GEMINI_API_KEY || process.env.GEMINI_API_KEY === "MY_GEMINI_API_KEY") {
-    warnings.push("GEMINI_API_KEY is missing or using placeholder. AI reasoning will use local fallback.");
-  }
   if (!process.env.PULVINI_BACKEND_URL) {
-    warnings.push("PULVINI_BACKEND_URL missing. Using default: http://127.0.0.1:8000");
+    warnings.push("PULVINI_BACKEND_URL missing. Using default: http://127.0.0.1:3001");
   }
 
   warnings.forEach(w => logger.warn(w));
@@ -93,28 +90,11 @@ if (!JWT_SECRET && process.env.NODE_ENV === "production") {
 }
 const SAFE_JWT_SECRET = JWT_SECRET || "dev-only-insecure-secret-99";
 
-// Lazy initialization of Gemini API client to prevent startup crash if API Key is missing.
-let aiClient: GoogleGenAI | null = null;
-function getAIClient(): GoogleGenAI | null {
-  if (!aiClient) {
-    const key = process.env.GEMINI_API_KEY;
-    if (key && key !== "MY_GEMINI_API_KEY") {
-      try {
-        aiClient = new GoogleGenAI({
-          apiKey: key,
-          httpOptions: {
-            headers: {
-              "User-Agent": "aistudio-build",
-            },
-          },
-        });
-        console.log("Successfully initialized server-side GoogleGenAI client.");
-      } catch (err) {
-        console.error("Failed to initialize GoogleGenAI client:", err);
-      }
-    }
-  }
-  return aiClient;
+// HYBA Internal AI Stack (PCI, AGI, ASI) - No external API keys required
+let hybaAIClient: any = null;
+function getHybaAIClient(): any {
+  // HYBA uses internal AI stack - returns null for now, can be connected to HYBA AI services
+  return hybaAIClient;
 }
 
 async function startServer() {
@@ -161,9 +141,10 @@ async function startServer() {
     let userBin = "";
     let userSite = "";
     try {
-      const userBase = execSync('python3 -m site --user-base', { encoding: 'utf8' }).trim();
-      userBin = path.join(userBase, 'bin');
-      userSite = execSync('python3 -m site --user-site', { encoding: 'utf8' }).trim();
+      const pythonCmd = process.platform === 'win32' ? 'python' : 'python3';
+      const userBase = execSync(`${pythonCmd} -m site --user-base`, { encoding: 'utf8' }).trim();
+      userBin = path.join(userBase, process.platform === 'win32' ? 'Scripts' : 'bin');
+      userSite = execSync(`${pythonCmd} -m site --user-site`, { encoding: 'utf8' }).trim();
     } catch (e) {
       logger.warn("Substrate: Could not resolve python user-site paths.");
     }
@@ -243,14 +224,16 @@ async function startServer() {
     // Ensure Python dependencies are present
     try {
       logger.info("Substrate: Synchronizing Python dependencies...");
+      const pythonCmd = process.platform === 'win32' ? 'python' : 'python3';
       // Try installing without --user first as it's more reliable in some containers
-      const pipCommand = `python3 -m pip install numpy uvicorn fastapi psutil python-multipart pydantic pyjwt aiohttp websockets asyncpg redis prometheus-client python-dateutil structlog python-json-logger`;
+      const pipCommand = `${pythonCmd} -m pip install numpy uvicorn fastapi psutil python-multipart pydantic pyjwt aiohttp websockets asyncpg redis prometheus-client python-dateutil structlog python-json-logger`;
       const stdout = execSync(pipCommand, { encoding: 'utf8' });
       logger.info({ stdout }, "Substrate: Python dependencies synchronized.");
     } catch (err: any) {
       logger.warn({ err: err.message }, "Substrate: Standard pip install failed. Retrying with --user and --break-system-packages...");
       try {
-        const pipCommand = `python3 -m pip install --user --break-system-packages numpy uvicorn fastapi psutil python-multipart pydantic pyjwt aiohttp websockets asyncpg redis prometheus-client python-dateutil structlog python-json-logger`;
+        const pythonCmd = process.platform === 'win32' ? 'python' : 'python3';
+        const pipCommand = `${pythonCmd} -m pip install --user --break-system-packages numpy uvicorn fastapi psutil python-multipart pydantic pyjwt aiohttp websockets asyncpg redis prometheus-client python-dateutil structlog python-json-logger`;
         const stdout = execSync(pipCommand, { encoding: 'utf8' });
         logger.info({ stdout }, "Substrate: Python dependencies synchronized with fallback.");
       } catch (err2: any) {
@@ -258,8 +241,9 @@ async function startServer() {
       }
     }
 
-  spawnDaemon("Pythia", "python3", ["-u", "-m", "pythia_mining.main"], pythonPath);
-  spawnDaemon("FastAPI", "python3", ["-u", "-m", "uvicorn", "main:app", "--port", "3001", "--host", "127.0.0.1"], apiPath);
+  const pythonCmd = process.platform === 'win32' ? 'python' : 'python3';
+  spawnDaemon("Pythia", pythonCmd, ["-u", "-m", "pythia_mining.main"], pythonPath);
+  spawnDaemon("FastAPI", pythonCmd, ["-u", "-m", "uvicorn", "main:app", "--port", "3001", "--host", "127.0.0.1"], apiPath);
 
   // Substrate Intelligence Monitor (Periodic Health & Prediction)
   setInterval(async () => {
@@ -805,10 +789,10 @@ async function startServer() {
     }
 
     try {
-      const ai = getAIClient();
+      const ai = getHybaAIClient();
       if (!ai) {
-        // Safe graceful rule-based fallback if no GEMINI_API_KEY is found (keeps app fully compliant & uncrashing)
-        console.log("No GEMINI_API_KEY found. Proceeding with deterministic local mathematical reasoning engine.");
+        // HYBA uses deterministic local mathematical reasoning engine
+        console.log("HYBA AI: Proceeding with deterministic local mathematical reasoning engine.");
         
         let reply = "";
         const msgLower = message.toLowerCase();
@@ -838,8 +822,8 @@ async function startServer() {
 \n$$\\theta_k = 2\\pi(k \\cdot \\Phi) \\pmod{2\\pi}$$
 \nwe construct wavefunctions that avoid destructive interference. This minimizes phase decoherence and structures eigenvectors to align precisely with the cyclic Merkle tree branch trees.`;
         } else {
-          reply = `### PYTHAGORAS-v2 Live Verification Analysis (Local Math Engine)
-\nGreetings. I am **PYTHAGORAS-v2**, initialized in localized mathematical telemetry fallback mode (no Gemini API key is currently mapped in your AI Studio Secrets panel, which is normal for local testing). 
+          reply = `### PYTHAGORAS-v2 Live Verification Analysis (HYBA Internal AI)
+\nGreetings. I am **PYTHAGORAS-v2**, HYBA's internal quantum-cryptography and mathematical mining AI.
 \nI remain fully capable of explaining the core mathematics of the **Dodecahedral Grover Search Miner**. Ask me any question concerning:
 \n1. **Grover Amplification Quadratic limits**: $\\mathcal{O}(\\sqrt{N})$ or $\\mathcal{O}(\\sqrt{I})$ proofs.
 2. **ASIC logic annihilation mechanics**.
@@ -855,39 +839,12 @@ async function startServer() {
         });
       }
 
-      // If API key is present, perform a premium call using the modern @google/genai SDK
-      console.log("Processing chat request via Gemini API...");
-      const systemInstruction = `You are 'PYTHAGORAS-v2', a quantum-cryptography and mathematical mining AI built to optimize blockchain state projections and annihilate ASIC hardware limits. Format your answers in clean scannable Markdown with clear subtitles, explaining quantum mathematics with maximum precision and elegance. Limit any conversational noise; proceed straight to equations, symmetries, and structural analysis where requested. Bold key terms for emphasis.`;
-      
-      const contents = [...(history || [])];
-      contents.push({ role: "user", parts: [{ text: message }] });
-
-      const response = await ai.models.generateContent({
-        model: "gemini-3.5-flash",
-        contents: contents.map((c: any) => ({
-          role: c.role === "model" ? "model" : "user",
-          parts: [{ text: c.parts?.[0]?.text || c.content || "" }]
-        })),
-        config: {
-          systemInstruction,
-          temperature: 0.2,
-        }
-      });
-
-      const reply = response.text || "No response received from GenAI model.";
-      res.json({
-        reply,
-        model: "gemini-3.5-flash",
-        timestamp: new Date().toISOString(),
-        fallback: false
-      });
-
     } catch (err: any) {
-      console.error("Gemini API error:", err);
-      res.status(500).json({ 
-        error: "AI reasoning failed to complete", 
+      console.error("HYBA AI error:", err);
+      res.status(500).json({
+        error: "AI reasoning failed to complete",
         details: err.message,
-        reply: "My apologies, but my quantum neural circuits encountered an unexpected interference pattern. Please verify your GEMINI_API_KEY in Settings if this maintains." 
+        reply: "My apologies, but my quantum neural circuits encountered an unexpected interference pattern."
       });
     }
   });
