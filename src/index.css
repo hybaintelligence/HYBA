@@ -1,0 +1,12 @@
+@import "tailwindcss";
+
+@theme {
+  --color-oxford: #002147;
+  --color-mckinsey-blue: #003666;
+  --color-mckinsey-light: #0A5C91;
+  --color-clicquot-gold: #DF950B;
+  --color-clicquot-orange: #FC5F10;
+  --color-lux-slate: #5F6975;
+  --color-sand: #F7F5F0;
+  --color-sand-dark: #EADEC9;
+}

@@ -1,0 +1,8 @@
+{
+  "name": "HYBA Quantum Funding Engine",
+  "description": "Full-stack mathematical framework and real-time dashboard of dodecahedral Grover search to optimize quantum blockchain mining for HYBA Group, with O(√I) deterministic complexity.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
