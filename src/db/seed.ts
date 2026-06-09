@@ -1,23 +1,23 @@
 import { readDb, writeDb, hashPassword, User, QuantumProduct, CalibrationLog } from "./db";
 
-export function seed() {
+export async function seed() {
   console.log("Initializing Quantum Database Seeder...");
 
-  const data = readDb();
+  const data = await readDb();
 
   // 1. Seed Accounts (Idempotent: replace or check exists)
   const defaultUsers: User[] = [
     {
       id: "u1",
       username: "admin",
-      passwordHash: hashPassword("admin123"),
+      passwordHash: await hashPassword("admin123"),
       role: "administrator",
       createdAt: new Date().toISOString()
     },
     {
       id: "u2",
       username: "operator",
-      passwordHash: hashPassword("operator123"),
+      passwordHash: await hashPassword("operator123"),
       role: "operator",
       createdAt: new Date().toISOString()
     }
@@ -103,11 +103,14 @@ export function seed() {
     }
   });
 
-  writeDb(data);
+  await writeDb(data);
   console.log("Database Seeding Completed Successfully.");
 }
 
 // Run if called directly
-if (require.main === module || (process.argv[1] && process.argv[1].endsWith("seed.ts"))) {
-  seed();
+if (process.env.NODE_ENV !== "test") {
+  seed().catch(err => {
+    console.error("Seeding failed:", err);
+    process.exit(1);
+  });
 }

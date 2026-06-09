@@ -14,20 +14,71 @@ import { execSync, spawn } from "child_process";
 import fs from "fs";
 
 import { MiningState, OptimizationParams } from "./src/types";
+import helmet from "helmet";
+import compression from "compression";
+import rateLimit from "express-rate-limit";
+import pinoHttp from "pino-http";
+
 import { 
-  GOLDEN_RATIO, 
-  PHI_15,
-  DODECAHEDRON_VERTICES,
-  computeQuantumGrover, 
   runVerificationTests 
 } from "./src/utils/math";
 import { swaggerDocument } from "./src/swaggerSpec";
-import { readDb, writeDb, hashPassword, User, QuantumProduct, CalibrationLog } from "./src/db/db";
+import { readDb, writeDb, hashPassword, verifyPassword, generateId, User } from "./src/db/db";
+
+// Core Platform Modules (High-Integrity Lifecycle)
+import { 
+  logger, 
+  init_logging, 
+  init_metrics,
+  get_trace_context 
+} from "./src/core/telemetry";
+import { 
+  init_pulvini_runtime, 
+  init_quantum_path, 
+  init_mining_engine, 
+  shutdown_substrate,
+  check_readiness
+} from "./src/core/substrate";
 
 // Load environment variables
 dotenv.config();
 
-const JWT_SECRET = process.env.JWT_SECRET || "quantum-asic-annihilator-jwt-secret-99";
+// Global Observability Startup
+init_logging();
+init_metrics();
+
+const httpLogger = pinoHttp({ logger });
+
+// Config validation helper
+function validateConfig() {
+  const required = ["JWT_SECRET"];
+  const missing = required.filter(key => !process.env[key]);
+  
+  if (missing.length > 0 && process.env.NODE_ENV === "production") {
+    logger.error({ missing }, "Missing required environment variables for production");
+    process.exit(1);
+  }
+
+  const warnings = [];
+  if (!process.env.GEMINI_API_KEY || process.env.GEMINI_API_KEY === "MY_GEMINI_API_KEY") {
+    warnings.push("GEMINI_API_KEY is missing or using placeholder. AI reasoning will use local fallback.");
+  }
+  if (!process.env.PULVINI_BACKEND_URL) {
+    warnings.push("PULVINI_BACKEND_URL missing. Using default: http://127.0.0.1:8000");
+  }
+
+  warnings.forEach(w => logger.warn(w));
+}
+
+validateConfig();
+
+// Fail fast on missing secrets in production
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET && process.env.NODE_ENV === "production") {
+  logger.error("FATAL: JWT_SECRET environment variable is missing. Refusing to start in production.");
+  process.exit(1);
+}
+const SAFE_JWT_SECRET = JWT_SECRET || "dev-only-insecure-secret-99";
 
 // Lazy initialization of Gemini API client to prevent startup crash if API Key is missing.
 let aiClient: GoogleGenAI | null = null;
@@ -55,59 +106,101 @@ function getAIClient(): GoogleGenAI | null {
 
 async function startServer() {
   const app = express();
-  const PORT = 3000;
+  const PORT = Number(process.env.PORT) || 3000;
 
-  app.use(express.json());
+  // Basic security and performance middlewares
+  app.use(helmet({
+    contentSecurityPolicy: {
+      directives: {
+        ...helmet.contentSecurityPolicy.getDefaultDirectives(),
+        "script-src": ["'self'", "'unsafe-inline'", "'unsafe-eval'"], // Needed for Vite/HMR
+        "connect-src": ["'self'", "https://*.google.com", "https://*.googleapis.com"],
+      },
+    },
+  }));
+  app.use(compression());
+  // Request Context Middleware (Stripe-Grade Tracing)
+  app.use((req, res, next) => {
+    const traceId = req.header('x-request-id') || generateId();
+    (req as any).traceContext = get_trace_context(traceId);
+    res.setHeader('x-request-id', (req as any).traceContext.trace_id);
+    next();
+  });
 
-  // Spawn background Python Pythia Mining daemon once on startup
-  console.log("[Python Bridge] Spawning background Python Pythia Mining daemon...");
-  try {
-    console.log("[Python Bridge] Ensuring Python dependencies are installed...");
-    execSync("python3 -m pip install fastapi uvicorn pydantic numpy aiohttp psutil", { stdio: "inherit" });
-  } catch (err: any) {
-    console.error("[Python Bridge] Failed to install dependencies:", err.message);
+  app.use(httpLogger);
+  app.use(express.json({ limit: "1mb" }));
+
+  const authRateLimit = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 100,
+    message: { error: "Too many attempts, please try again later." },
+    standardHeaders: true,
+    legacyHeaders: false,
+  });
+
+  const children: any[] = [];
+
+  function spawnDaemon(name: string, command: string, args: string[], cwd: string) {
+    logger.info(`[Daemon] Spawning ${name}...`);
+    const daemon = spawn(command, args, {
+      cwd,
+      env: { ...process.env, PYTHONPATH: cwd },
+    });
+
+    daemon.stdout.on("data", (data) => logger.info(`[${name}] ${data.toString().trim()}`));
+    daemon.stderr.on("data", (data) => logger.warn(`[${name} Error] ${data.toString().trim()}`));
+    
+    daemon.on("close", (code) => {
+      logger.info(`[${name}] Exited with code ${code}`);
+    });
+
+    children.push(daemon);
+    return daemon;
   }
 
+  // Proper lifecycle management
+  const gracefulShutdown = () => {
+    logger.info("Graceful shutdown initiated...");
+    shutdown_substrate();
+    children.forEach(child => {
+      if (!child.killed) child.kill("SIGTERM");
+    });
+    process.exit(0);
+  };
+
+  process.on("SIGTERM", gracefulShutdown);
+  process.on("SIGINT", gracefulShutdown);
+
+  // Spawn Python Daemons (Removed runtime pip install as per review)
+  spawnDaemon("Pythia", "python3", ["-u", "-m", "pythia_mining.main"], path.join(__dirname, "..", "python_backend"));
+  spawnDaemon("FastAPI", "python3", ["-u", "-m", "uvicorn", "hyba_genesis_api.main:app", "--port", "3001", "--host", "127.0.0.1"], path.join(__dirname, "..", "python_backend"));
+
+  // Substrate Initialization (High-Integrity Lifecycle)
   try {
-    const logPath = path.join(process.cwd(), "python_backend", "pythia_daemon.log");
-    const logFile = fs.createWriteStream(logPath, { flags: "a" });
-    logFile.write(`\n--- Spawning Daemon at ${new Date().toISOString()} ---\n`);
-
-    const pythonDaemon = spawn(
-      "python3",
-      ["-u", "-m", "pythia_mining.main"],
-      {
-        cwd: path.join(process.cwd(), "python_backend"),
-        env: {
-          ...process.env,
-          PYTHONPATH: path.join(process.cwd(), "python_backend"),
-        },
-      }
-    );
-
-    pythonDaemon.stdout.on("data", (data) => {
-      const msg = data.toString().trim();
-      console.log(`[Python Daemon] ${msg}`);
-      logFile.write(`[STDOUT] ${msg}\n`);
-    });
-
-    pythonDaemon.stderr.on("data", (data) => {
-      const msg = data.toString().trim();
-      console.error(`[Python Daemon Error] ${msg}`);
-      logFile.write(`[STDERR] ${msg}\n`);
-    });
-
-    pythonDaemon.on("close", (code) => {
-      console.log(`[Python Daemon] Exited with code ${code}`);
-      logFile.write(`[EXIT] Daemon exited with code ${code}\n`);
-      logFile.end();
-    });
-  } catch (err: any) {
-    console.error("[Python Bridge] Failed to spawn background daemon:", err.message);
+    await init_pulvini_runtime();
+    await init_quantum_path();
+    await init_mining_engine();
+  } catch (error) {
+    logger.fatal({ error }, "FATAL: Substrate initialization failed. Computation engine unreachable.");
+    process.exit(1);
   }
 
-  // Swagger Documentation interactive portal
-  app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+  // Root Availability Endpoint
+  app.get("/", (req, res) => {
+    res.json({
+      status: "online",
+      service: "HYBA Genesis Platform API",
+      version: "2.0.1",
+      timestamp: new Date().toISOString(),
+      gate: "Express Secure Bridge",
+      readiness: check_readiness() ? "READY" : "DEGRADED"
+    });
+  });
+
+  // Swagger Documentation - Gated by environment
+  if (process.env.NODE_ENV !== "production") {
+    app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+  }
 
   // Authentication Middleware
   function authenticateToken(req: any, res: any, next: any) {
@@ -115,11 +208,18 @@ async function startServer() {
     const token = authHeader && authHeader.split(" ")[1];
     if (!token) return res.status(401).json({ error: "Access token required" });
 
-    jwt.verify(token, JWT_SECRET, (err: any, user: any) => {
+    jwt.verify(token, SAFE_JWT_SECRET, (err: any, user: any) => {
       if (err) return res.status(403).json({ error: "Access token is invalid or expired" });
       req.user = user;
       next();
     });
+  }
+
+  function adminOnly(req: any, res: any, next: any) {
+    if (req.user?.role !== "admin") {
+      return res.status(403).json({ error: "Administrator privileges required" });
+    }
+    next();
   }
 
   // Memory cache of active live quantum-computing statistics
@@ -134,21 +234,28 @@ async function startServer() {
   function getPythonMetrics(): any {
     const now = Date.now();
     if (lastPythonStatus && (now - lastPythonFetchTime) < 1000) {
-      return lastPythonStatus;
+      return { ...lastPythonStatus, stale: false };
     }
     try {
-      const stateFilePath = path.join(process.cwd(), "python_backend", "pythia_state.json");
+      const stateFilePath = path.join(__dirname, "..", "python_backend", "pythia_state.json");
       if (fs.existsSync(stateFilePath)) {
         const fileContent = fs.readFileSync(stateFilePath, "utf-8");
         const parsed = JSON.parse(fileContent);
         lastPythonStatus = parsed;
         lastPythonFetchTime = now;
-        return parsed;
+        return { ...parsed, stale: false };
       }
     } catch (err: any) {
-      console.warn("[Python Bridge] State file read failed. Details:", err.message);
+      logger.warn({ err }, "State file read failed");
     }
-    return lastPythonStatus;
+    
+    const isStale = (now - lastPythonFetchTime) > 60000;
+    return { 
+      ...lastPythonStatus, 
+      stale: true, 
+      degraded: isStale,
+      lastSeen: new Date(lastPythonFetchTime).toISOString()
+    };
   }
 
   // Periodically update active block dimensions and calculated quantum metrics
@@ -162,29 +269,29 @@ async function startServer() {
   // ----------------------------------------------------
   // API ENDPOINTS: AUTHENTICATION (USER REGISTRATION, LOGIN, PROFILE) & PRODUCTS
   // ----------------------------------------------------
-  app.post("/api/auth/register", (req, res) => {
+  app.post("/api/auth/register", authRateLimit, async (req, res) => {
     const { username, password } = req.body;
     if (!username || !password) {
       return res.status(400).json({ error: "Username and password are required" });
     }
 
     try {
-      const data = readDb();
+      const data = await readDb();
       const exists = data.users.find(u => u.username.toLowerCase() === username.toLowerCase());
       if (exists) {
         return res.status(400).json({ error: "Username is already taken" });
       }
 
       const newUser: User = {
-        id: "u_" + Math.random().toString(36).substring(2, 9),
+        id: generateId(),
         username,
-        passwordHash: hashPassword(password),
+        passwordHash: await hashPassword(password),
         role: "operator",
         createdAt: new Date().toISOString()
       };
 
       data.users.push(newUser);
-      writeDb(data);
+      await writeDb(data);
 
       res.status(201).json({
         success: true,
@@ -196,26 +303,27 @@ async function startServer() {
         }
       });
     } catch (err: any) {
-      res.status(500).json({ error: "Registration failed", details: err.message });
+      logger.error({ err }, "Registration failed");
+      res.status(500).json({ error: "Registration failed" });
     }
   });
 
-  app.post("/api/auth/login", (req, res) => {
+  app.post("/api/auth/login", authRateLimit, async (req, res) => {
     const { username, password } = req.body;
     if (!username || !password) {
       return res.status(400).json({ error: "Username and password are required" });
     }
 
     try {
-      const data = readDb();
+      const data = await readDb();
       const user = data.users.find(u => u.username.toLowerCase() === username.toLowerCase());
-      if (!user || user.passwordHash !== hashPassword(password)) {
+      if (!user || !(await verifyPassword(password, user.passwordHash))) {
         return res.status(401).json({ error: "Invalid username or password" });
       }
 
       const token = jwt.sign(
         { id: user.id, username: user.username, role: user.role },
-        JWT_SECRET,
+        SAFE_JWT_SECRET,
         { expiresIn: "10d" }
       );
 
@@ -228,13 +336,14 @@ async function startServer() {
         }
       });
     } catch (err: any) {
-      res.status(500).json({ error: "Login failed", details: err.message });
+      logger.error({ err }, "Login failed");
+      res.status(500).json({ error: "Login failed" });
     }
   });
 
-  app.get("/api/auth/profile", authenticateToken, (req: any, res) => {
+  app.get("/api/auth/profile", authenticateToken, async (req: any, res) => {
     try {
-      const data = readDb();
+      const data = await readDb();
       const user = data.users.find(u => u.id === req.user.id);
       if (!user) {
         return res.status(404).json({ error: "User profile not found" });
@@ -250,16 +359,16 @@ async function startServer() {
         }
       });
     } catch (err: any) {
-      res.status(500).json({ error: "Resolving profile failed", details: err.message });
+      res.status(500).json({ error: "Resolving profile failed" });
     }
   });
 
-  app.get("/api/products", (req, res) => {
+  app.get("/api/products", async (req, res) => {
     try {
-      const data = readDb();
+      const data = await readDb();
       res.json(data.products || []);
     } catch (err: any) {
-      res.status(500).json({ error: "Resolving products failed", details: err.message });
+      res.status(500).json({ error: "Resolving products failed" });
     }
   });
 
@@ -295,21 +404,37 @@ async function startServer() {
   // ----------------------------------------------------
   
   app.get("/api/health", (req, res) => {
+    const metrics = getPythonMetrics();
+    
+    // Merge real telemetry where available, otherwise use simulated/stale baseline
+    const coherence = metrics.quantum_coherence || 0.9415;
+    const resonance = metrics.phi_resonance || 0.0594;
+    const theoreticalSpeedup = metrics.quantum_speedup || 38.7;
+    const acceptance = metrics.acceptance_rate || 0.967;
+    const actualSpeedup = Number((theoreticalSpeedup * acceptance).toFixed(2));
+    
+    const blockHeight = metrics.block_height || evaluatedBlockHeight;
+    const hashrate = metrics.current_hashrate || computedHashrate;
+    const power = metrics.power_consumption || activePowerLoad;
+
     res.json({
-      status: "healthy",
+      status: metrics.degraded ? "degraded" : "healthy",
       timestamp: new Date().toISOString(),
-      version: "2.0.0",
-      quantumCoherence: 0.9415,
+      version: "2.0.1",
+      quantumCoherence: coherence,
       decoherenceTimeMs: 12.42,
-      quantumSpeedupFactor: 38.7,
-      phiResonance: 0.0594,
+      quantumSpeedupFactor: theoreticalSpeedup,
+      actualSpeedupFactor: actualSpeedup,
+      phiResonance: resonance,
       systemMetrics: {
-        blockHeight: 847249,
-        currentHashrate: 2071.08,
-        powerConsumption: 4100,
-        activePool: "Unknown",
-        difficultyTarget: "00000000000000000005a8f00000000000000000000000000000000000000000",
-        networkDifficulty: 7234567890123.5,
+        blockHeight,
+        currentHashrate: hashrate,
+        powerConsumption: power,
+        activePool: metrics.active_pool || "Unknown",
+        difficultyTarget: metrics.difficulty_target || "00000000000000000005a8f00000000000000000000000000000000000000000",
+        networkDifficulty: metrics.network_difficulty || 7234567890123.5,
+        stale: metrics.stale,
+        lastSeen: metrics.lastSeen || new Date().toISOString()
       }
     });
   });
@@ -434,33 +559,35 @@ async function startServer() {
     });
   });
 
-  app.post("/api/pulvini/execute", async (req, res) => {
+  app.post("/api/pulvini/execute", authenticateToken, async (req, res) => {
+    const ALLOWED_BACKENDS = ["http://127.0.0.1:8000", "http://localhost:8000", "http://127.0.0.1:3001"];
+    const backendUrl = process.env.PULVINI_BACKEND_URL || "http://127.0.0.1:8000";
+    
+    if (!ALLOWED_BACKENDS.includes(backendUrl)) {
+      logger.warn({ backendUrl }, "Untrusted backend URL rejected in Pulvini proxy");
+      return res.status(403).json({ error: "Untrusted backend URL configuration" });
+    }
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
+
     try {
-      const backendUrl = process.env.PULVINI_BACKEND_URL || "http://127.0.0.1:8000";
-      console.log(`[Proxy] Forwarding Pulvini request to real backend: ${backendUrl}/pulvini/execute`);
-      
+      logger.info({ backendUrl }, "Forwarding Pulvini request");
       const response = await fetch(`${backendUrl}/pulvini/execute`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": req.headers["authorization"] || ""
-        },
-        body: JSON.stringify(req.body || {})
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(req.body || {}),
+        signal: controller.signal
       });
       
-      if (!response.ok) {
-        throw new Error(`HYBA Backend HTTP Error: ${response.status}`);
-      }
-      
+      clearTimeout(timeoutId);
+      if (!response.ok) throw new Error(`Backend Status Error: ${response.status}`);
       const data = await response.json();
       res.json(data);
     } catch (err: any) {
-      console.error("[Pulvini Proxy] execution failed:", err.message);
-      res.status(502).json({ 
-        error: "Real PULVINI execution failed. Please ensure the HYBA_Unified_Backend is running.",
-        details: err.message,
-        status: "error"
-      });
+      clearTimeout(timeoutId);
+      logger.error({ err }, "Pulvini Proxy execution failed");
+      res.status(504).json({ error: "Backend execution timed out or failed" });
     }
   });
 
@@ -553,9 +680,12 @@ async function startServer() {
   // ----------------------------------------------------
   // API ENDPOINT: RUN QUANTUM MATHEMATICAL VERIFICATION TESTS
   // ----------------------------------------------------
-  app.get("/api/tests/run", (req, res) => {
+  app.get("/api/tests/run", authenticateToken, adminOnly, (req, res) => {
+    if (process.env.NODE_ENV === "production") {
+      return res.status(403).json({ error: "Verification tests disabled in production environments" });
+    }
     try {
-      console.log("Executing strict backend mathematical quantum verification tests...");
+      logger.info("Executing backend mathematical quantum verification tests...");
       const results = runVerificationTests();
       res.json({
         success: true,
@@ -563,10 +693,10 @@ async function startServer() {
         tests: results
       });
     } catch (err: any) {
+      logger.error({ err }, "Test execution failed");
       res.status(500).json({
         success: false,
-        error: "Verification test execution failed",
-        details: err.message
+        error: "Verification test execution failed"
       });
     }
   });
@@ -686,6 +816,34 @@ async function startServer() {
       res.sendFile(path.join(distPath, "index.html"));
     });
   }
+
+  // Global Exception Handler (Production-Grade Safety)
+  app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+    const traceContext = (req as any).traceContext || get_trace_context();
+    const errorId = traceContext.trace_id.substring(0, 8);
+    
+    logger.error({ 
+      error_id: errorId,
+      trace_context: traceContext,
+      err: {
+        message: err.message,
+        stack: process.env.NODE_ENV === 'production' ? undefined : err.stack,
+        code: err.code || 'INTERNAL_ERROR'
+      },
+      path: req.path,
+      method: req.method
+    }, "Internal Substrate Exception Caught");
+
+    res.status(500).json({
+      error: {
+        type: "api_error",
+        code: err.code || "internal_server_error",
+        message: "An unexpected error occurred within the HYBA substrate logic.",
+        request_id: traceContext.trace_id,
+        timestamp: traceContext.timestamp
+      }
+    });
+  });
 
   app.listen(PORT, "0.0.0.0", () => {
     console.log(`====================================================`);

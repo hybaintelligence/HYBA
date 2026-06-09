@@ -8,12 +8,6 @@ export const swaggerDocument = {
       email: "operator@quantum.hyba"
     }
   },
-  servers: [
-    {
-      url: "http://localhost:3000",
-      description: "Development/Preview Environment"
-    }
-  ],
   paths: {
     "/api/auth/register": {
       post: {
@@ -300,10 +294,10 @@ export const swaggerDocument = {
   components: {
     securitySchemes: {
       BearerAuth: {
-        type: "apiKey",
-        name: "Authorization",
-        in: "header",
-        description: "Provide HTTP Bearer Token in authorization header. Example: 'Bearer eyJhbGci..."
+        type: "http",
+        scheme: "bearer",
+        bearerFormat: "JWT",
+        description: "Provide JSON Web Token (JWT) for session authentication."
       }
     }
   }

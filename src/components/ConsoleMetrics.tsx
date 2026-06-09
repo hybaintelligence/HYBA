@@ -7,6 +7,7 @@ interface ConsoleMetricsProps {
   state: MiningState & {
     quantumCoherence: number;
     quantumSpeedupFactor: number;
+    actualSpeedupFactor: number;
     phiResonance: number;
     version: string;
   };
@@ -34,10 +35,17 @@ export const ConsoleMetrics: React.FC<ConsoleMetricsProps> = ({ state, onRefresh
           <Cpu className="text-oxford w-4.5 h-4.5" />
         </div>
         <div className="my-3">
-          <div className="text-2xl font-bold font-mono text-oxford tracking-tight">
-            {state.quantumSpeedupFactor.toFixed(1)}<span className="text-clicquot-orange text-sm ml-1 font-sans">x</span>
+          <div className="flex items-baseline gap-2">
+            <div className="text-2xl font-bold font-mono text-oxford tracking-tight">
+              {state.actualSpeedupFactor.toFixed(1)}<span className="text-clicquot-orange text-sm ml-1 font-sans">x</span>
+            </div>
+            <div className="text-xs font-mono text-lux-slate line-through opacity-60">
+              {state.quantumSpeedupFactor.toFixed(1)}x
+            </div>
           </div>
-          <p className="text-xs text-lux-slate mt-1">Deterministic O(√I) speedup vs classical ASIC logic sweep</p>
+          <p className="text-xs text-lux-slate mt-1">
+            <span className="font-bold text-oxford">Actual</span> vs Theoretical O(√I) speedup
+          </p>
         </div>
         <div className="text-[10px] font-mono text-lux-slate/80 flex justify-between border-t border-sand-dark pt-2 mt-1">
           <span>COHERENCE: {(state.quantumCoherence * 100).toFixed(2)}%</span>

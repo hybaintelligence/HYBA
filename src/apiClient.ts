@@ -1,9 +1,7 @@
 const metaEnv = (import.meta as any).env || {};
-export const BACKEND_URL = (typeof process !== "undefined" && process.env?.HYBA_BACKEND_URL) || 
-                           metaEnv.VITE_HYBA_BACKEND_URL || 
-                           metaEnv.VITE_PULVINI_BACKEND_URL || 
-                           "http://127.0.0.1:8000/api";
 
+// All API requests should route through the Express secure bridge (Port 3000)
+export const BACKEND_URL = "/api";
 export const EXPRESS_URL = ""; 
 
 /**

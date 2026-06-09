@@ -1,8 +1,9 @@
 import fs from "fs";
 import path from "path";
 import crypto from "crypto";
+import bcrypt from "bcryptjs";
 
-const DB_FILE = path.join(process.cwd(), "src", "db", "db.json");
+const DB_FILE = path.join(process.cwd(), "data", "db.json");
 
 // High-level absolute schemas
 export interface User {
@@ -54,23 +55,44 @@ function ensureDb() {
   }
 }
 
-export function readDb(): DatabaseSchema {
-  ensureDb();
-  try {
-    const content = fs.readFileSync(DB_FILE, "utf-8");
-    return JSON.parse(content) as DatabaseSchema;
-  } catch (err) {
-    console.error("Failed to read JSON DB, resetting to default:", err);
-    return DEFAULT_DB;
-  }
+// Simple async mutex for atomic writes
+let dbLock = Promise.resolve();
+
+export async function readDb(): Promise<DatabaseSchema> {
+  return new Promise((resolve) => {
+    dbLock = dbLock.then(() => {
+      ensureDb();
+      try {
+        const content = fs.readFileSync(DB_FILE, "utf-8");
+        resolve(JSON.parse(content) as DatabaseSchema);
+      } catch (err) {
+        console.error("Failed to read JSON DB, resetting to default:", err);
+        resolve(DEFAULT_DB);
+      }
+    });
+  });
 }
 
-export function writeDb(data: DatabaseSchema) {
-  ensureDb();
-  fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2), "utf-8");
+export async function writeDb(data: DatabaseSchema): Promise<void> {
+  return new Promise((resolve) => {
+    dbLock = dbLock.then(() => {
+      ensureDb();
+      fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2), "utf-8");
+      resolve();
+    });
+  });
 }
 
 // Password utility
-export function hashPassword(password: string): string {
-  return crypto.createHash("sha256").update(password + "salt-quantum-99").digest("hex");
+export async function hashPassword(password: string): Promise<string> {
+  const salt = await bcrypt.genSalt(12);
+  return bcrypt.hash(password, salt);
+}
+
+export async function verifyPassword(password: string, hash: string): Promise<boolean> {
+  return bcrypt.compare(password, hash);
+}
+
+export function generateId(): string {
+  return crypto.randomUUID();
 }
