@@ -2,12 +2,12 @@
   "running": true,
   "active_pool": "NiceHash SSL",
   "active_pool_id": "nicehash",
-  "current_job": "job_1781039867",
+  "current_job": "job_1781039875",
   "consciousness_level": 0.1838,
-  "total_shares": 54,
+  "total_shares": 62,
   "acceptance_rate": 1.0,
   "system_health": "HEALTHY",
-  "cpu_load": 42.4,
+  "cpu_load": 72.0,
   "active_stratum_version": 1,
   "hashrate_ehs": 50.94,
   "power_scale": 1.0,
@@ -21,8 +21,8 @@
       "is_active": true,
       "performance": {
         "latency_ms": 12.0,
-        "shares_submitted": 54,
-        "shares_accepted": 54,
+        "shares_submitted": 62,
+        "shares_accepted": 62,
         "shares_rejected": 0,
         "acceptance_rate": 1.0
       }
