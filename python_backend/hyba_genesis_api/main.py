@@ -133,3 +133,8 @@ async def root():
         "timestamp": datetime.utcnow().isoformat(),
         "architecture": "Self-Healing/Self-Optimising Substrate"
     }
+
+@app.get("/health")
+async def health():
+    """Health endpoint for Express bridge verification - returns 200 OK"""
+    return {"status": "ok"}

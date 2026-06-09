@@ -1,9 +1,9 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // 1. Global allow (TEMP FOR SEEDING)
+    // 1. Global deny - require authentication for all operations
     match /{document=**} {
-      allow read, write: if true;
+      allow read, write: if false;
     }
 
     // --- REUSABLE HELPERS ---
