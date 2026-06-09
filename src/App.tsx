@@ -44,10 +44,20 @@ import {
 import { jsPDF } from "jspdf";
 import "jspdf-autotable";
 
+import { AuthProvider } from "./components/AuthProvider";
 import { HilbertSpaceVisualizer } from "./components/HilbertSpaceVisualizer";
 import { updatePowerScale } from "./apiClient";
 
+
 export default function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
+  );
+}
+
+function AppContent() {
   // Authentication & Products Catalogs States
   const [token, setToken] = useState<string | null>(() => {
     try {
