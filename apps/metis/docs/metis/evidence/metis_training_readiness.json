@@ -1,0 +1,140 @@
+{
+  "metis_training_readiness_version": "1.0.0",
+  "timestamp": "2026-06-09T16:49:12.769692+00:00",
+  "source_files": {
+    "benchmark_report": "apps/metis/docs/metis/evidence/metis_real_data_benchmark.json",
+    "quantum_report": "apps/metis/docs/metis/evidence/metis_quantum_performance_benchmark.json",
+    "metrics_standard_report": "apps/metis/docs/metis/evidence/metis_metrics_standard_report.json"
+  },
+  "evaluation": {
+    "readiness_score": 100.0,
+    "max_score": 100.0,
+    "readiness_percentage": 100.0,
+    "action": "train",
+    "possible_actions": [
+      "run_benchmarks_first",
+      "fix_failures_then_train",
+      "train",
+      "calibrate_substrate",
+      "expand_evidence",
+      "hold_and_monitor",
+      "calibrate_and_expand_evidence"
+    ],
+    "dimension_scores": {
+      "benchmark_completeness": {
+        "score": 30.0,
+        "weight": 30.0,
+        "percentage": 100.0
+      },
+      "quantum_path_metrics": {
+        "score": 30.0,
+        "weight": 30.0,
+        "percentage": 100.0
+      },
+      "metrics_standard_compliance": {
+        "score": 25.0,
+        "weight": 25.0,
+        "percentage": 100.0
+      },
+      "quantum_performance_stability": {
+        "score": 15.0,
+        "weight": 15.0,
+        "percentage": 100.0
+      }
+    },
+    "checks": [
+      {
+        "check": "benchmark_total_runs",
+        "passed": true,
+        "weight": 10.0,
+        "details": "Total benchmark runs: 5"
+      },
+      {
+        "check": "benchmark_entries_valid",
+        "passed": true,
+        "weight": 10.0,
+        "details": "5/5 entries valid"
+      },
+      {
+        "check": "yang_mills_gap_stability",
+        "passed": true,
+        "weight": 10.0,
+        "details": "Yang-Mills mass gap stable across 5 runs"
+      },
+      {
+        "check": "quantum_latency",
+        "passed": true,
+        "weight": 10.0,
+        "details": "Quantum latency: 0.042363 ms (threshold: < 1.0 ms)"
+      },
+      {
+        "check": "finite_output",
+        "passed": true,
+        "weight": 10.0,
+        "details": "All finite output tests passed"
+      },
+      {
+        "check": "kernel_retention",
+        "passed": true,
+        "weight": 10.0,
+        "details": "Kernel retention: 1.0"
+      },
+      {
+        "check": "allowed_claims_defined",
+        "passed": true,
+        "weight": 8.0,
+        "details": "9 allowed claims defined"
+      },
+      {
+        "check": "evidence_gates_defined",
+        "passed": true,
+        "weight": 8.0,
+        "details": "4 evidence gates defined"
+      },
+      {
+        "check": "report_fingerprint",
+        "passed": true,
+        "weight": 5.0,
+        "details": "Fingerprint: 88277100155a1371..."
+      },
+      {
+        "check": "hardware_independent",
+        "passed": true,
+        "weight": 4.0,
+        "details": "Hardware independent computation"
+      },
+      {
+        "check": "quantum_report_integrity",
+        "passed": true,
+        "weight": 5.0,
+        "details": "Quantum report fingerprint verified"
+      },
+      {
+        "check": "no_quantum_advantage_claim",
+        "passed": true,
+        "weight": 5.0,
+        "details": "No quantum advantage claim made (evidence-gated)"
+      },
+      {
+        "check": "all_metrics_observed",
+        "passed": true,
+        "weight": 5.0,
+        "details": "All quantum-path metrics observed"
+      }
+    ],
+    "recommended_actions": [
+      "train"
+    ],
+    "action_descriptions": {
+      "run_benchmarks_first": "No benchmark evidence found. Run benchmarks before training.",
+      "fix_failures_then_train": "Critical failures detected. Fix issues before training.",
+      "train": "All evidence gates passed. Training readiness confirmed.",
+      "calibrate_substrate": "Quantum path metrics unstable. Calibrate substrate before training.",
+      "expand_evidence": "Evidence incomplete. Expand evidence coverage.",
+      "hold_and_monitor": "Near threshold. Hold and monitor before proceeding.",
+      "calibrate_and_expand_evidence": "Multiple issues detected. Calibrate and expand evidence."
+    },
+    "note": "Deterministic training-readiness evaluation. No autonomous retraining decisions without human oversight."
+  },
+  "fingerprint": "30f81d4a9a929fb614f7084d729353e21ee2d14878ebaa7f5528a44282e92043"
+}

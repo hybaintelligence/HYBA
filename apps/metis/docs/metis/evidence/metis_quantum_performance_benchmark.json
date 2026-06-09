@@ -1,0 +1,113 @@
+{
+  "metis_quantum_performance_version": "1.0.0",
+  "timestamp": "2026-06-09T16:36:04.215901+00:00",
+  "substrate": "mathematical_pure",
+  "hardware_independent": true,
+  "quantum_paths": [
+    "yang-mills-pulvini-pythagoras",
+    "dodecahedral-grover",
+    "hilbert-space-spectral"
+  ],
+  "metrics": {
+    "latency": {
+      "samples": 1000,
+      "average_ns": 42363.5,
+      "min_ns": 8500,
+      "max_ns": 3291900,
+      "average_ms": 0.042363,
+      "unit": "nanoseconds",
+      "operation": "dodecahedral_phase_rotation"
+    },
+    "energy": {
+      "phi_resonance_floor": 0.0594,
+      "average_energy": 0.0591120252,
+      "energy_spectrum": [
+        0.0550200289,
+        0.0599193088,
+        0.0630141268,
+        0.0535508019,
+        0.0644119065
+      ],
+      "unit": "phi_resonance_units",
+      "total_harmonics": 20
+    },
+    "finite_output": {
+      "all_tests_passed": true,
+      "tests": [
+        {
+          "test": "yang_mills_spectral_projection",
+          "all_finite": true,
+          "min_value": -0.0593365968,
+          "max_value": 0.0591725598,
+          "deterministic": true,
+          "passed": true
+        },
+        {
+          "test": "grover_amplification_convergence",
+          "final_probability": 0.99658568,
+          "iterations": 6,
+          "finite": true,
+          "deterministic": true,
+          "converged": true,
+          "passed": true
+        },
+        {
+          "test": "pulvini_compression_finiteness",
+          "compression_ratio": 1659.1392,
+          "finite": true,
+          "ratio_unit": "trillion-to-one",
+          "passed": true
+        }
+      ]
+    },
+    "compression": {
+      "compression_scales": [
+        {
+          "qubits": 14,
+          "state_size": 16384,
+          "original_dimension": 256,
+          "projected_dimension": 158,
+          "compression_ratio": 1659.1392,
+          "compression_order_of_magnitude": 3
+        },
+        {
+          "qubits": 20,
+          "state_size": 1048576,
+          "original_dimension": 1024,
+          "projected_dimension": 412,
+          "compression_ratio": 162885.5922,
+          "compression_order_of_magnitude": 5
+        },
+        {
+          "qubits": 30,
+          "state_size": 1073741824,
+          "original_dimension": 4096,
+          "projected_dimension": 1024,
+          "compression_ratio": 268435456.0,
+          "compression_order_of_magnitude": 8
+        }
+      ],
+      "pulvini_reference_ratio": 11250000000000.0,
+      "pulvini_ratio_formatted": "11.25 trillion-to-one",
+      "method": "spectral_hamiltonian_projection",
+      "invariant_preservation": "unitary"
+    },
+    "retained_kernel": {
+      "pre_projection_dimension": 20,
+      "post_projection_dimension": 20,
+      "kernel_retention_ratio": 1.0,
+      "kernel_fidelity": 1.0,
+      "invariant_preservation": "unitary",
+      "topological_anchors": [
+        "phi_resonance",
+        "dodecahedral_symmetry",
+        "yang_mills_gap"
+      ],
+      "method": "spectral_decomposition"
+    }
+  },
+  "no_quantum_advantage_claim": true,
+  "all_metrics_observed": true,
+  "command": "apps/metis/scripts/metis_quantum_performance_benchmark.py --output apps/metis/docs/metis/evidence/metis_quantum_performance_benchmark.json",
+  "fingerprint": "442d1c28801aca5dedcddf8b4b82a60dc4082ed7e003150d91013f55c6c119aa"
+}
