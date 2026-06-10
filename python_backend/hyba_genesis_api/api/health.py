@@ -3,32 +3,41 @@ Health & Status APIs
 HYBA Genesis Platform Monitoring
 """
 
-from fastapi import APIRouter
-from fastapi.responses import JSONResponse
-from typing import Dict, Any
-from datetime import datetime
+from __future__ import annotations
+
 import json
 import os
+from datetime import datetime
+from typing import Any, Dict, Optional
+
+from fastapi import APIRouter
+from fastapi.responses import JSONResponse
 
 from hyba_genesis_api.core.substrate import get_substrate_state, is_ready
 from hyba_genesis_api.core.telemetry import get_metrics
 
 router = APIRouter(prefix="/api/health", tags=["health"])
 
-def get_pythia_state():
-    state_file = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "pythia_state.json")
+
+def get_pythia_state() -> Optional[Dict[str, Any]]:
+    state_file = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+        "pythia_state.json",
+    )
     if os.path.exists(state_file):
         try:
-            with open(state_file, "r") as f:
+            with open(state_file, "r", encoding="utf-8") as f:
                 return json.load(f)
-        except:
-            pass
+        except (OSError, json.JSONDecodeError):
+            return None
     return None
+
 
 @router.get("/live", response_model=Dict[str, Any])
 async def liveness_probe():
     """Liveness probe: returns 200 if process is alive."""
     return {"status": "alive", "timestamp": datetime.utcnow().isoformat()}
+
 
 @router.get("/ready", response_model=Dict[str, Any])
 async def readiness_probe():
@@ -45,43 +54,47 @@ async def readiness_probe():
         )
     return {"status": "ready", "timestamp": datetime.utcnow().isoformat(), "substrate": substrate_state}
 
+
 @router.get("", response_model=Dict[str, Any])
 async def get_health_status():
     state = get_pythia_state()
-    acceptance_rate = state.get("acceptance_rate", 1.0) if state else 1.0
+    quantum = state.get("quantum", {}) if state else {}
     return {
         "status": "healthy" if is_ready() else "degraded",
         "timestamp": datetime.utcnow().isoformat(),
         "version": "2.0.1",
-        "quantumCoherence": 0.9415,
-        "decoherenceTimeMs": 12.42,
-        "quantumSpeedupFactor": 38.7,
-        "actualSpeedupFactor": round(38.7 * acceptance_rate, 2),
-        "phiResonance": 0.0594,
+        "telemetry_source": state.get("telemetry_source") if state else "unavailable",
+        "quantumCoherence": quantum.get("basis_coherence"),
+        "decoherenceTimeMs": None,
+        "quantumSpeedupFactor": None,
+        "actualSpeedupFactor": None,
+        "phiResonance": quantum.get("phi_phase_alignment"),
         "telemetry": get_metrics(),
         "substrate": get_substrate_state(),
         "systemMetrics": {
-            "blockHeight": 847249,
-            "currentHashrate": round((2071.08 * (0.95 + acceptance_rate * 0.05)), 2),
-            "powerConsumption": int(4100 * (0.9 + (1.0 - acceptance_rate) * 0.1)),
-            "activePool": state.get("active_pool", "Unknown") if state else "Unknown",
-            "difficultyTarget": "00000000000000000005a8f00000000000000000000000000000000000000000",
-            "networkDifficulty": 7234567890123.5,
-        }
+            "blockHeight": state.get("block_height") if state else None,
+            "currentHashrate": state.get("hashrate_ehs") if state else None,
+            "powerConsumption": state.get("power_consumption") if state else None,
+            "activePool": state.get("active_pool") if state else None,
+            "difficultyTarget": state.get("difficulty_target") if state else None,
+            "networkDifficulty": state.get("network_difficulty") if state else None,
+            "power_scale": state.get("power_scale") if state else None,
+            "system_health": state.get("system_health") if state else "unavailable",
+        },
     }
+
 
 @router.get("/readiness", response_model=Dict[str, Any])
 async def get_substrate_readiness():
-    """
-    Detailed readiness check for the self-healing substrate.
-    """
+    """Detailed readiness check without fabricated governance thresholds."""
+    state = get_pythia_state()
     return {
         "status": "ready" if is_ready() else "initializing",
         "timestamp": datetime.utcnow().isoformat(),
         "substrate": get_substrate_state(),
-        "governance": {
-            "phi_scaled_floor": 0.85,
-            "wilson_lower_bound": 0.92,
-            "evidence_complete": True
-        }
+        "pythia": {
+            "available": state is not None,
+            "system_health": state.get("system_health") if state else "unavailable",
+            "telemetry_source": state.get("telemetry_source") if state else "unavailable",
+        },
     }
