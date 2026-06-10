@@ -13,6 +13,7 @@ from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, patch
 
+import numpy as np
 from pydantic import ValidationError
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -90,6 +91,60 @@ class MiningPropertyAndIntegrationTests(unittest.TestCase):
             self.assertEqual("configured_estimate", metrics["capacity_source"])
             self.assertGreaterEqual(metrics["hashrate_ehs"], previous_hashrate)
             previous_hashrate = metrics["hashrate_ehs"]
+
+    def test_dodecahedral_basis_has_twenty_normalized_finite_states(self) -> None:
+        solver = DodecahedralQuantumSolver()
+
+        self.assertEqual((DODECAHEDRON_VERTICES, 3), solver.basis_states.shape)
+        row_norms = np.linalg.norm(solver.basis_states, axis=1)
+        self.assertTrue(np.isfinite(solver.basis_states).all())
+        self.assertTrue(np.allclose(row_norms, 1.0, atol=1e-12))
+        self.assertEqual(DODECAHEDRON_VERTICES, len({tuple(np.round(row.real, 12)) for row in solver.basis_states}))
+
+    def test_entropy_property_is_bounded_for_random_complex_amplitudes(self) -> None:
+        solver = DodecahedralQuantumSolver()
+        rng = random.Random(2026)
+
+        for _ in range(100):
+            real = np.array([rng.uniform(-1.0, 1.0) for _ in range(DODECAHEDRON_VERTICES)])
+            imag = np.array([rng.uniform(-1.0, 1.0) for _ in range(DODECAHEDRON_VERTICES)])
+            amplitudes = real + 1j * imag
+            entropy = solver.calculate_integrated_entropy(amplitudes)
+            self.assertGreaterEqual(entropy, 0.0)
+            self.assertLessEqual(entropy, math.log2(DODECAHEDRON_VERTICES) + 1e-12)
+
+    def test_configure_search_records_exact_multi_range_search_space(self) -> None:
+        async def run_case() -> DodecahedralQuantumSolver:
+            solver = DodecahedralQuantumSolver()
+            ranges = [(0, 0), (10, 19), (100, 149)]
+            await solver.configure_search(target=123456789, nonce_ranges=ranges)
+            return solver
+
+        solver = asyncio.run(run_case())
+
+        self.assertEqual([(0, 0), (10, 19), (100, 149)], solver.current_config["nonce_ranges"])
+        self.assertEqual(61, solver.current_config["search_space_size"])
+        for basis_index in range(DODECAHEDRON_VERTICES):
+            nonce = solver._project_index_to_nonce(basis_index)
+            self.assertTrue(nonce == 0 or 10 <= nonce <= 19 or 100 <= nonce <= 149)
+
+    def test_solve_updates_telemetry_and_projects_nonce_inside_range(self) -> None:
+        async def run_case() -> tuple[DodecahedralQuantumSolver, int | None]:
+            solver = DodecahedralQuantumSolver()
+            await solver.configure_search(target=987654321, nonce_ranges=[(40, 80)])
+            nonce = await solver.solve(max_iterations=25, timeout=5.0)
+            return solver, nonce
+
+        solver, nonce = asyncio.run(run_case())
+        metrics = solver.get_metrics()
+
+        self.assertIsInstance(nonce, int)
+        self.assertGreaterEqual(nonce, 40)
+        self.assertLessEqual(nonce, 80)
+        self.assertEqual(nonce, solver.last_solution_nonce)
+        self.assertEqual(nonce, metrics["last_solution_nonce"])
+        self.assertGreater(metrics["last_solve_iterations"], 0)
+        self.assertIsNone(metrics["last_error"])
 
     def test_connect_search_submit_smoke_uses_validation_before_accounting(self) -> None:
         async def run_smoke() -> dict[str, object]:
