@@ -10,7 +10,7 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from hyba_genesis_api.api import ai, health, mining, misc, security
+from hyba_genesis_api.api import ai, auth, health, mining, misc, products, security
 from hyba_genesis_api.core.substrate import (
     get_substrate_state,
     initialize_substrate,
@@ -59,6 +59,8 @@ app.include_router(mining.router)
 app.include_router(security.router)
 app.include_router(misc.router)
 app.include_router(ai.router)
+app.include_router(auth.router)
+app.include_router(products.router)
 
 
 @app.get("/health", response_model=Dict[str, Any], tags=["health"])
