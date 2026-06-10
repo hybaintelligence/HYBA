@@ -10,7 +10,7 @@ COPY package*.json ./
 COPY . .
 RUN npm run build
 
-FROM python:3.11-slim-bookworm AS runtime
+FROM node:22.15.0-bookworm-slim AS runtime
 ENV NODE_ENV=production \
     HYBA_ENV=production \
     PYTHONUNBUFFERED=1 \
@@ -22,12 +22,14 @@ ENV NODE_ENV=production \
 WORKDIR /app
 
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends curl ca-certificates nodejs npm tini \
+    && apt-get install -y --no-install-recommends python3 python3-pip python3-venv curl ca-certificates tini \
     && rm -rf /var/lib/apt/lists/*
 
 COPY python_backend/hyba_genesis_api/requirements.txt /app/python_backend/hyba_genesis_api/requirements.txt
-RUN python -m pip install --upgrade pip \
-    && python -m pip install --no-cache-dir -r /app/python_backend/hyba_genesis_api/requirements.txt
+RUN python3 -m venv /opt/hyba-venv \
+    && /opt/hyba-venv/bin/python -m pip install --upgrade pip \
+    && /opt/hyba-venv/bin/python -m pip install --no-cache-dir -r /app/python_backend/hyba_genesis_api/requirements.txt
+ENV PATH="/opt/hyba-venv/bin:${PATH}"
 
 COPY package*.json ./
 RUN npm ci --omit=dev
@@ -38,7 +40,7 @@ COPY scripts ./scripts
 COPY server.ts ./server.ts
 
 RUN useradd --create-home --shell /usr/sbin/nologin hyba \
-    && chown -R hyba:hyba /app
+    && chown -R hyba:hyba /app /opt/hyba-venv
 USER hyba
 
 EXPOSE 3000 3001
