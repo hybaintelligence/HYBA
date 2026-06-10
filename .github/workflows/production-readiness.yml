@@ -10,9 +10,25 @@ permissions:
   contents: read
 
 jobs:
+  runtime-guardrails:
+    name: Runtime mock/static telemetry guardrails
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Assert runtime paths do not contain fabricated telemetry
+        run: python scripts/check_no_runtime_mocks.py
+
   backend-regression:
     name: Backend regression and mining validation
     runs-on: ubuntu-latest
+    needs: runtime-guardrails
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -33,6 +49,7 @@ jobs:
   frontend-typecheck:
     name: Frontend build/typecheck
     runs-on: ubuntu-latest
+    needs: runtime-guardrails
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -40,7 +57,7 @@ jobs:
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22.15.0'
           cache: npm
 
       - name: Install dependencies
@@ -52,6 +69,7 @@ jobs:
   production-config-smoke:
     name: Production config guardrails
     runs-on: ubuntu-latest
+    needs: runtime-guardrails
     steps:
       - name: Checkout
         uses: actions/checkout@v4
