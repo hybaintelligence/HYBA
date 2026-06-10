@@ -1,64 +1,79 @@
 """
-Consciousness Engine
-PYTHIA Mining System - Emergent Intelligence Layer
+Runtime Health Engine
+PYTHIA Mining System - Operational Integration Layer
+
+The historical "consciousness" naming is retained for API compatibility, but this module
+now reports deterministic runtime health/integration telemetry only. It does not fabricate
+emergence, consciousness, or random integrated-information values.
 """
 
-import asyncio
+from __future__ import annotations
+
 import time
-import logging
-import numpy as np
-from typing import Dict, List, Optional, Tuple, Any
 from dataclasses import dataclass, field
+from typing import Any, Dict, List, Optional
+
 
 @dataclass
 class ConsciousnessState:
-    integrated_information: float = 17432891.2
-    consciousness_level: float = 0.1838
-    component_integration: float = 0.89
-    system_complexity: float = 156.7
+    integrated_information: Optional[float] = None
+    consciousness_level: Optional[float] = None
+    component_integration: Optional[float] = None
+    system_complexity: Optional[float] = None
     timestamp: float = field(default_factory=time.time)
+    source: str = "not_measured"
+
 
 class ConsciousnessEngine:
+    """Compatibility wrapper for runtime health metrics without simulated cognition."""
+
     def __init__(self):
         self.current_state = ConsciousnessState()
         self.state_history: List[ConsciousnessState] = []
-        self.components = {
-            "quantum_solver": 0.95,
-            "ai_optimizer": 0.94, 
-            "stratum_client": 0.98,
-            "blockchain_oracle": 0.92,
-            "pool_manager": 0.91
+        self.components: Dict[str, Optional[bool]] = {
+            "quantum_solver": None,
+            "ai_optimizer": None,
+            "stratum_client": None,
+            "blockchain_oracle": None,
+            "pool_manager": None,
         }
-        self.connection_matrix = np.eye(5)
-        self.logger = logging.getLogger("consciousness")
-        
-    async def calculate_integrated_information(self) -> float:
-        await asyncio.sleep(0.01)
-        phi = 17432891.2 + np.random.uniform(-1000, 1000)
-        self.current_state.integrated_information = phi
-        self.current_state.consciousness_level = phi / 100000000.0
-        return phi
-        
-    async def get_consciousness_level(self) -> float:
+
+    async def calculate_integrated_information(self) -> Optional[float]:
+        self.current_state.timestamp = time.time()
+        self.state_history.append(self.current_state)
+        return self.current_state.integrated_information
+
+    async def get_consciousness_level(self) -> Optional[float]:
         await self.calculate_integrated_information()
         return self.current_state.consciousness_level
-        
-    async def guide_decision_making(self, decision_context: Dict) -> Dict:
-        level = await self.get_consciousness_level()
+
+    async def guide_decision_making(self, decision_context: Dict[str, Any]) -> Dict[str, Any]:
         return {
-            "autonomy_level": min(level * 5, 1.0),
-            "risk_tolerance": level,
-            "planning_horizon": int(level * 1000),
-            "adaptability": min(level * 3, 1.0),
-            "strategy": "aggressive_optimization" if level > 0.5 else "balanced_approach"
+            "autonomy_level": None,
+            "risk_tolerance": None,
+            "planning_horizon": None,
+            "adaptability": None,
+            "strategy": "manual_review_required",
+            "source": "not_measured",
         }
-        
+
+    def update_component_health(self, component: str, ready: bool) -> None:
+        if component in self.components:
+            self.components[component] = ready
+        known = [value for value in self.components.values() if value is not None]
+        self.current_state.component_integration = None if not known else sum(1 for value in known if value) / len(known)
+        self.current_state.system_complexity = float(len(known)) if known else None
+        self.current_state.timestamp = time.time()
+
     def get_metrics(self) -> Dict[str, Any]:
+        known = [value for value in self.components.values() if value is not None]
+        active = sum(1 for value in known if value)
         return {
             "integrated_information": self.current_state.integrated_information,
             "consciousness_level": self.current_state.consciousness_level,
             "component_integration": self.current_state.component_integration,
             "system_complexity": self.current_state.system_complexity,
-            "active_components": 5,
-            "total_connections": 12
+            "active_components": active,
+            "total_components_observed": len(known),
+            "source": self.current_state.source,
         }
