@@ -1,17 +1,17 @@
 {
   "running": true,
-  "uptime_seconds": 71.516,
+  "uptime_seconds": 90.137,
   "active_pool": "ViaBTC Group",
   "active_pool_id": "viabtc",
   "current_job": "e382",
   "jobs_received": 6,
-  "shares_solved": 171,
-  "total_shares": 171,
+  "shares_solved": 219,
+  "total_shares": 219,
   "accepted_shares": 0,
-  "rejected_shares": 171,
+  "rejected_shares": 219,
   "acceptance_rate": 0.0,
   "system_health": "HEALTHY",
-  "cpu_load": 89.7,
+  "cpu_load": 85.0,
   "active_stratum_version": 1,
   "hashrate_ehs": null,
   "power_scale": 1.0,
@@ -33,9 +33,9 @@
       "current_jobs": 6,
       "performance": {
         "latency_ms": 593.0000001098961,
-        "shares_submitted": 171,
+        "shares_submitted": 219,
         "shares_accepted": 0,
-        "shares_rejected": 171,
+        "shares_rejected": 219,
         "acceptance_rate": 0.0
       }
     }
