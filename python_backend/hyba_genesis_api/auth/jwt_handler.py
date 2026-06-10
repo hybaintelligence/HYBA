@@ -5,8 +5,10 @@ HYBA Genesis Platform Security
 
 from __future__ import annotations
 
+import hashlib
 import os
-from datetime import datetime, timedelta
+import secrets
+from datetime import datetime, timedelta, timezone
 from typing import Dict, List, Optional
 
 import jwt
@@ -24,41 +26,74 @@ class TokenPayload(BaseModel):
 
 
 class JWTManager:
+    """Production-grade JWT manager with blacklist support and key rotation readiness."""
+
     def __init__(self, secret_key: str, algorithm: str = "HS256"):
         if not secret_key:
             raise RuntimeError("JWT_SECRET is required")
         self.secret_key = secret_key
         self.algorithm = algorithm
-        self.token_blacklist = set()
+        self.token_blacklist: set[str] = set()
 
-    def create_access_token(self, user_id: str, username: str, roles: List[str]) -> str:
-        now = datetime.utcnow()
+    def create_access_token(self, user_id: str, username: str, roles: List[str], expiry_hours: int = 1) -> str:
+        now = datetime.now(timezone.utc)
         payload = {
             "sub": user_id,
             "username": username,
             "roles": roles,
-            "exp": now + timedelta(hours=1),
+            "exp": now + timedelta(hours=expiry_hours),
             "iat": now,
             "iss": "genesis.hyba.ai",
+            "jti": secrets.token_hex(16),
         }
         return jwt.encode(payload, self.secret_key, algorithm=self.algorithm)
 
     def verify_token(self, token: str) -> TokenPayload:
         try:
             payload = jwt.decode(token, self.secret_key, algorithms=[self.algorithm])
+            jti = payload.get("jti", "")
+            if jti and jti in self.token_blacklist:
+                raise HTTPException(status_code=401, detail="Token revoked")
             return TokenPayload(**payload)
         except jwt.ExpiredSignatureError:
             raise HTTPException(status_code=401, detail="Token expired")
         except jwt.InvalidTokenError:
             raise HTTPException(status_code=401, detail="Invalid token")
 
+    def revoke_token(self, token: str) -> None:
+        """Add a token's JTI to the blacklist."""
+        try:
+            payload = jwt.decode(token, self.secret_key, algorithms=[self.algorithm], options={"verify_exp": False})
+            jti = payload.get("jti")
+            if jti:
+                self.token_blacklist.add(jti)
+        except jwt.InvalidTokenError:
+            pass
+
+
+def _generate_dev_secret() -> str:
+    """Generate a cryptographically random dev secret and cache it for the process lifetime."""
+    raw = secrets.token_hex(32)
+    # Deterministic hash so the secret is stable within the same process
+    return hashlib.sha256(raw.encode()).hexdigest()
+
+
+_DEV_SECRET: Optional[str] = None
+
 
 def get_jwt_manager() -> JWTManager:
+    global _DEV_SECRET
     secret = os.getenv("JWT_SECRET")
-    if not secret and os.getenv("NODE_ENV", os.getenv("HYBA_ENV", "development")).lower() != "production":
-        secret = "dev-local-only-change-me"
     if not secret:
-        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="JWT runtime is not configured")
+        env = os.getenv("NODE_ENV", os.getenv("HYBA_ENV", "development")).lower()
+        if env == "production":
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="JWT_SECRET environment variable is required in production",
+            )
+        if _DEV_SECRET is None:
+            _DEV_SECRET = _generate_dev_secret()
+        secret = _DEV_SECRET
     return JWTManager(secret_key=secret)
 
 

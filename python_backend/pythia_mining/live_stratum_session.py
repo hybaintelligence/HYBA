@@ -84,9 +84,12 @@ class LiveStratumSession:
             raise LiveStratumSessionError("pool rejected authorization")
         return SessionHandshake(self.profile.pool_id, self.extranonce1, self.extranonce2_size, self.authorized)
 
-    async def read_event(self, *, timeout: Optional[float] = None):
-        line = await self.transport.read_line(timeout=timeout)
-        return parse_server_message(line)
+    async def read_event(self, *, timeout: Optional[float] = None, include_responses: bool = False):
+        while True:
+            line = await self.transport.read_line(timeout=timeout)
+            event, payload = parse_server_message(line)
+            if include_responses or event != "response":
+                return event, payload
 
     async def submit_share(self, *, job_id: str, extranonce2: str, ntime: str, nonce: str) -> SubmitResult:
         if not self.authorized:
@@ -96,7 +99,7 @@ class LiveStratumSession:
             build_submit(submit_id, self.profile.username, job_id, extranonce2, ntime, nonce)
         )
         while True:
-            event, payload = await self.read_event()
+            event, payload = await self.read_event(include_responses=True)
             if event != "response":
                 continue
             if payload.get("id") != submit_id:

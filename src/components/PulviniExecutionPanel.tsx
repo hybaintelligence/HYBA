@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import { Activity, Zap, Shield, Database } from "lucide-react";
-import { executePulvini } from "../apiClient";
+import { executePulvini, type PulviniResult } from "../apiClient";
 
 export const PulviniExecutionPanel = () => {
   const [isExecuting, setIsExecuting] = useState(false);
-  const [result, setResult] = useState<any>(null);
+  const [result, setResult] = useState<PulviniResult | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const handleExecute = async () => {
@@ -19,13 +19,16 @@ export const PulviniExecutionPanel = () => {
       }
       
       setResult(data);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      setError(err.message || "Failed to reach HYBA_Unified_Backend. Is it running?");
+      setError(err instanceof Error ? err.message : "Failed to reach HYBA_Unified_Backend. Is it running?");
     } finally {
       setIsExecuting(false);
     }
   };
+
+  const stateVectorOperation = result?.operations?.[0];
+  const projectionOperation = result?.operations?.[1];
 
   return (
     <section className="bg-white border border-[#E2E4E9] rounded-xl p-6 shadow-sm">
@@ -78,15 +81,19 @@ export const PulviniExecutionPanel = () => {
             <div className="grid grid-cols-2 gap-3 text-[10px] font-mono text-[#64748B]">
               <div className="flex flex-col">
                 <span>State Vector Entries</span>
-                <span className="text-black font-bold text-xs">{result.operations[0].state_vector_entries}</span>
+                <span className="text-black font-bold text-xs">{stateVectorOperation?.state_vector_entries ?? "N/A"}</span>
               </div>
               <div className="flex flex-col">
                 <span>Invariants</span>
-                <span className="text-black font-bold text-xs">{result.operations[0].invariants}</span>
+                <span className="text-black font-bold text-xs">{stateVectorOperation?.invariants ?? "N/A"}</span>
               </div>
               <div className="col-span-2 flex flex-col">
                 <span>Diffusion Norm Purity</span>
-                <span className="text-green-700 font-bold text-xs">{result.operations[0].diffusion_norm.toFixed(10)}</span>
+                <span className="text-green-700 font-bold text-xs">
+                  {typeof stateVectorOperation?.diffusion_norm === "number"
+                    ? stateVectorOperation.diffusion_norm.toFixed(10)
+                    : "N/A"}
+                </span>
               </div>
             </div>
           </div>
@@ -98,19 +105,23 @@ export const PulviniExecutionPanel = () => {
             <div className="grid grid-cols-2 gap-3 text-[10px] font-mono text-[#64748B]">
               <div className="flex flex-col">
                 <span>Original Dims</span>
-                <span className="text-black font-bold text-xs">{result.operations[1].original_dimensions}D</span>
+                <span className="text-black font-bold text-xs">
+                  {projectionOperation?.original_dimensions !== undefined ? `${projectionOperation.original_dimensions}D` : "N/A"}
+                </span>
               </div>
               <div className="flex flex-col">
                 <span>Projected Dims</span>
-                <span className="text-black font-bold text-xs">{result.operations[1].projected_dimensions}D</span>
+                <span className="text-black font-bold text-xs">
+                  {projectionOperation?.projected_dimensions !== undefined ? `${projectionOperation.projected_dimensions}D` : "N/A"}
+                </span>
               </div>
               <div className="flex flex-col">
                 <span>Topological Anchoring</span>
-                <span className="text-black font-bold text-xs capitalize">{result.operations[1].topological_anchoring}</span>
+                <span className="text-black font-bold text-xs capitalize">{projectionOperation?.topological_anchoring ?? "N/A"}</span>
               </div>
               <div className="flex flex-col">
                 <span>Purity</span>
-                <span className="text-black font-bold text-xs">{result.operations[1].purity}</span>
+                <span className="text-black font-bold text-xs">{projectionOperation?.purity ?? "N/A"}</span>
               </div>
             </div>
           </div>
@@ -118,11 +129,11 @@ export const PulviniExecutionPanel = () => {
           <div className="flex items-center gap-4 border-t border-[#E2E4E9] pt-4 mt-2">
              <div className="flex-1 bg-black text-white p-3 rounded-lg text-center">
                  <div className="text-[9px] text-gray-400 font-mono uppercase">Metric Compression</div>
-                 <div className="text-xs font-bold font-mono">{result.metric_compression}</div>
+                 <div className="text-xs font-bold font-mono">{result.metric_compression ?? "N/A"}</div>
              </div>
              <div className="flex-1 bg-[#F4F4F7] text-black border border-[#E2E4E9] p-3 rounded-lg text-center">
                  <div className="text-[9px] text-[#64748B] font-mono uppercase">Hamiltonian Generation</div>
-                 <div className="text-xs font-bold font-mono">{result.hamiltonian_generation}</div>
+                 <div className="text-xs font-bold font-mono">{result.hamiltonian_generation ?? "N/A"}</div>
              </div>
           </div>
         </div>

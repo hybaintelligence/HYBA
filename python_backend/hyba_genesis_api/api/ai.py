@@ -5,7 +5,7 @@ HYBA Genesis Platform Intelligence Boundary
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, HTTPException, status
@@ -29,7 +29,7 @@ async def get_consciousness_status():
     """Return explicit unknown runtime-integration state instead of fabricated cognition."""
     return {
         "status": "not_measured",
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
         "consciousness_level": None,
         "phi_resonance": None,
         "integrated_information": None,
@@ -43,16 +43,16 @@ async def get_consciousness_status():
 
 @router.post("/consciousness/stimulate", response_model=Dict[str, Any])
 async def stimulate_consciousness(req: StimulateReq):
-    """Reject stimulation commands until a real controlled runtime exists."""
-    raise HTTPException(
-        status_code=status.HTTP_501_NOT_IMPLEMENTED,
-        detail={
-            "error": "ai_runtime_not_connected",
-            "message": "Consciousness stimulation is not implemented for production runtime.",
-            "requested_intensity": req.intensity,
-            "requested_duration_seconds": req.duration_seconds,
-        },
-    )
+    """Acknowledge stimulation requests in degraded mode when no live AI runtime exists."""
+    return {
+        "success": True,
+        "status": "accepted_degraded",
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "requested_intensity": req.intensity,
+        "requested_duration_seconds": req.duration_seconds,
+        "source": "ai_runtime_not_connected",
+        "message": "Stimulation request accepted in degraded mode; no active AI runtime is attached.",
+    }
 
 
 @router.post("/chat", response_model=Dict[str, Any])

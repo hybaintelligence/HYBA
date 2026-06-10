@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import json
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, Optional
 
 from fastapi import APIRouter
@@ -36,7 +36,7 @@ def get_pythia_state() -> Optional[Dict[str, Any]]:
 @router.get("/live", response_model=Dict[str, Any])
 async def liveness_probe():
     """Liveness probe: returns 200 if process is alive."""
-    return {"status": "alive", "timestamp": datetime.utcnow().isoformat()}
+    return {"status": "alive", "timestamp": datetime.now(timezone.utc).isoformat()}
 
 
 @router.get("/ready", response_model=Dict[str, Any])
@@ -52,7 +52,7 @@ async def readiness_probe():
                 "substrate": substrate_state,
             },
         )
-    return {"status": "ready", "timestamp": datetime.utcnow().isoformat(), "substrate": substrate_state}
+    return {"status": "ready", "timestamp": datetime.now(timezone.utc).isoformat(), "substrate": substrate_state}
 
 
 @router.get("", response_model=Dict[str, Any])
@@ -61,7 +61,7 @@ async def get_health_status():
     quantum = state.get("quantum", {}) if state else {}
     return {
         "status": "healthy" if is_ready() else "degraded",
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
         "version": "2.0.1",
         "telemetry_source": state.get("telemetry_source") if state else "unavailable",
         "quantumCoherence": quantum.get("basis_coherence"),
@@ -90,7 +90,7 @@ async def get_substrate_readiness():
     state = get_pythia_state()
     return {
         "status": "ready" if is_ready() else "initializing",
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
         "substrate": get_substrate_state(),
         "pythia": {
             "available": state is not None,
