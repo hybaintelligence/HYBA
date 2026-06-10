@@ -1,8 +1,6 @@
 {
-  "name": "HYBA Quantum Funding Engine",
-  "description": "Full-stack mathematical framework and real-time dashboard of dodecahedral Grover search to optimize quantum blockchain mining for HYBA Group, with O(√I) deterministic complexity.",
+  "name": "HYBA Fullstack Platform",
+  "description": "HYBA Computational Intelligence as a Service (CIaaS) - The AWS of Intelligence. Full-stack platform with Python FastAPI backend, React frontend, and Express bridge.",
   "requestFramePermissions": [],
-  "majorCapabilities": [
-    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
-  ]
+  "majorCapabilities": []
 }

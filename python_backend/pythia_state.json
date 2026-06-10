@@ -1,0 +1,88 @@
+{
+  "running": true,
+  "active_pool": "Solo CKPool",
+  "active_pool_id": "ckpool",
+  "current_job": "job_1781040524",
+  "consciousness_level": 0.1838,
+  "total_shares": 519,
+  "acceptance_rate": 1.0,
+  "system_health": "HEALTHY",
+  "cpu_load": 98.2,
+  "active_stratum_version": 1,
+  "hashrate_ehs": 50.94,
+  "power_scale": 1.0,
+  "pools": [
+    {
+      "pool_id": "nicehash",
+      "name": "NiceHash SSL",
+      "url": "stratum+ssl://sha256.eu.nicehash.com:33334",
+      "stratum_version": 1,
+      "status": "disconnected",
+      "is_active": false,
+      "performance": {
+        "latency_ms": 12.0,
+        "shares_submitted": 143,
+        "shares_accepted": 143,
+        "shares_rejected": 0,
+        "acceptance_rate": 1.0
+      }
+    },
+    {
+      "pool_id": "viabtc",
+      "name": "ViaBTC Group",
+      "url": "stratum+tcp://btc.viabtc.io:3333",
+      "stratum_version": 1,
+      "status": "disconnected",
+      "is_active": false,
+      "performance": {
+        "latency_ms": 12.0,
+        "shares_submitted": 170,
+        "shares_accepted": 170,
+        "shares_rejected": 0,
+        "acceptance_rate": 1.0
+      }
+    },
+    {
+      "pool_id": "braiins",
+      "name": "Braiins Pool",
+      "url": "stratum2+tcp://eu.braiins-pool.com:3336",
+      "stratum_version": 2,
+      "status": "disconnected",
+      "is_active": false,
+      "performance": {
+        "latency_ms": 12.0,
+        "shares_submitted": 175,
+        "shares_accepted": 175,
+        "shares_rejected": 0,
+        "acceptance_rate": 1.0
+      }
+    },
+    {
+      "pool_id": "ckpool",
+      "name": "Solo CKPool",
+      "url": "stratum+tcp://solo.ckpool.org:3333",
+      "stratum_version": 1,
+      "status": "connected",
+      "is_active": true,
+      "performance": {
+        "latency_ms": 12.0,
+        "shares_submitted": 31,
+        "shares_accepted": 31,
+        "shares_rejected": 0,
+        "acceptance_rate": 1.0
+      }
+    }
+  ],
+  "quantum": {
+    "available": true,
+    "logical_error_rate": 0.0001,
+    "syndrome_volume": 12,
+    "state_quality": 0.985,
+    "phi_resonance": 0.0594,
+    "vqe_iterations": 100,
+    "von_neumann_entropy": 4.3219,
+    "dodecahedral_coherence": 0.957,
+    "hashrate_ehs": 50.94,
+    "power_scale": 1.0
+  }
+}

@@ -255,8 +255,17 @@ async function startServer() {
       }
     }
 
+<<<<<<< Updated upstream
   spawnDaemon("Pythia", "python3", ["-u", "-m", "pythia_mining.main"], pythonPath);
   spawnDaemon("FastAPI", "python3", ["-u", "-m", "uvicorn", "hyba_genesis_api.main:app", "--port", "3001", "--host", "127.0.0.1"], pythonPath);
+=======
+  const pythonCmd = process.platform === 'win32' ? 'python' : 'python3';
+  // Python backend already running independently on port 3001
+  // Commenting out daemon spawning to avoid conflicts
+  // spawnDaemon("Pythia", pythonCmd, ["-u", "-m", "pythia_mining.main"], pythonPath);
+  // spawnDaemon("FastAPI", pythonCmd, ["-u", "-m", "uvicorn", "main:app", "--port", "3001", "--host", "127.0.0.1"], apiPath);
+  logger.info("Substrate: Python backend assumed running independently on port 3001");
+>>>>>>> Stashed changes
 
   // Substrate Intelligence Monitor (Periodic Health & Prediction)
   setInterval(async () => {
@@ -294,8 +303,17 @@ async function startServer() {
     }
   };
 
-  // Start initialization in background
+  // Start initialization in background (don't block server startup)
   initializeSubstrate();
+
+  // Start server immediately without waiting for substrate
+  app.listen(PORT, "0.0.0.0", () => {
+    console.log(`====================================================`);
+    console.log(` HYBA Fullstack Platform Booted Successfully `);
+    console.log(` Hosting Server url : http://localhost:${PORT}        `);
+    console.log(` Python Backend    : http://127.0.0.1:3001           `);
+    console.log(`====================================================`);
+  });
 
   // Root Availability Endpoint
   app.get("/", (req, res) => {
@@ -336,10 +354,10 @@ async function startServer() {
     next();
   }
 
-  // Memory cache of active live quantum-computing statistics
-  let evaluatedBlockHeight = 847249;
-  let computedHashrate = 2071.08; // Quantum execution indicator in PH/s
-  let activePowerLoad = 4120; // Watts
+  // Memory cache of active live quantum-computing statistics (fetched from Python backend)
+  let evaluatedBlockHeight = 0;
+  let computedHashrate = 0; // Quantum execution indicator in PH/s
+  let activePowerLoad = 0; // Watts
   const optimizationHistory: Array<{ timestamp: string; recommendation: string; gain: string }> = [];
 
   let lastPythonStatus: any = null;
@@ -372,12 +390,20 @@ async function startServer() {
     };
   }
 
-  // Periodically update active block dimensions and calculated quantum metrics
-  setInterval(() => {
-    evaluatedBlockHeight += 1;
-    // Walk hashrate and power around baseline with tiny randomized noise based on quantum state transitions
-    computedHashrate = parseFloat((2070 + Math.random() * 5).toFixed(2));
-    activePowerLoad = Math.floor(4100 + Math.random() * 40);
+  // Periodically update active block dimensions and calculated quantum metrics from Python backend
+  setInterval(async () => {
+    try {
+      const response = await fetch('http://127.0.0.1:3001/api/health/readiness');
+      if (response.ok) {
+        const data = await response.json();
+        if (data.block_height) evaluatedBlockHeight = data.block_height;
+        if (data.current_hashrate) computedHashrate = data.current_hashrate;
+        if (data.power_consumption) activePowerLoad = data.power_consumption;
+      }
+    } catch (e) {
+      // Fallback: increment block height if backend unavailable
+      evaluatedBlockHeight += 1;
+    }
   }, 12000);
 
   // ----------------------------------------------------
@@ -513,7 +539,7 @@ async function startServer() {
       timestamp: new Date().toISOString(),
       version: "2.0.1",
       quantumCoherence: coherence,
-      decoherenceTimeMs: 12.42,
+      decoherenceTimeMs: metrics.decoherence_time_ms,
       quantumSpeedupFactor: theoreticalSpeedup,
       actualSpeedupFactor: actualSpeedup,
       phiResonance: resonance,
@@ -522,80 +548,124 @@ async function startServer() {
         currentHashrate: hashrate,
         powerConsumption: power,
         activePool: metrics.active_pool || "Unknown",
-        difficultyTarget: metrics.difficulty_target || "00000000000000000005a8f00000000000000000000000000000000000000000",
-        networkDifficulty: metrics.network_difficulty || 7234567890123.5,
+        difficultyTarget: metrics.difficulty_target,
+        networkDifficulty: metrics.network_difficulty,
         stale: metrics.stale,
         lastSeen: metrics.lastSeen || new Date().toISOString()
       }
     });
   });
 
-  app.get("/api/mining/pools", (req, res) => {
-     res.json({
+  app.get("/api/mining/pools", async (req, res) => {
+    try {
+      const metrics = getPythonMetrics();
+      res.json({
+        "pools": metrics.pools || [],
+        "summary": {
+            "total_pools": metrics.total_pools || 0,
+            "active_pools": metrics.active_pools || 0,
+            "active_pool_name": metrics.active_pool_name || "Unknown",
+            "total_hashrate": metrics.total_hashrate || computedHashrate,
+            "global_acceptance_rate": metrics.global_acceptance_rate || 0.0,
+            "total_shares_24h": metrics.total_shares_24h || 0,
+            "estimated_btc_per_day": metrics.estimated_btc_per_day || 0
+        }
+      });
+    } catch (e) {
+      res.json({
         "pools": [],
         "summary": {
             "total_pools": 0,
             "active_pools": 0,
             "active_pool_name": "Unknown",
-            "total_hashrate": 2071.08,
+            "total_hashrate": computedHashrate,
             "global_acceptance_rate": 0.0,
             "total_shares_24h": 0,
-            "estimated_btc_per_day": 0.00054321
+            "estimated_btc_per_day": 0
         }
-    });
+      });
+    }
   });
 
-  app.get("/api/mining/stats", (req, res) => {
-     res.json({
-      "timeframe": "24h",
-      "summary": {
-        "total_hashrate": 2071.08,
-        "avg_hashrate": 1987.45,
-        "peak_hashrate": 2345.67,
-        "total_shares": 0,
-        "accepted_shares": 0,
-        "rejected_shares": 0,
-        "acceptance_rate": 1.0,
-        "estimated_revenue_btc": 0.00037801,
-        "estimated_revenue_usd": 16.82
-      },
-      "timeseries": [
-        {
-          "hashrate": 2060.0,
+  app.get("/api/mining/stats", async (req, res) => {
+    try {
+      const metrics = getPythonMetrics();
+      res.json({
+        "timeframe": "24h",
+        "summary": {
+          "total_hashrate": metrics.total_hashrate || computedHashrate,
+          "avg_hashrate": metrics.avg_hashrate || computedHashrate,
+          "peak_hashrate": metrics.peak_hashrate || computedHashrate,
+          "total_shares": metrics.total_shares || 0,
+          "accepted_shares": metrics.accepted_shares || 0,
+          "rejected_shares": metrics.rejected_shares || 0,
+          "acceptance_rate": metrics.acceptance_rate || 0.0,
+          "estimated_revenue_btc": metrics.estimated_revenue_btc || 0,
+          "estimated_revenue_usd": metrics.estimated_revenue_usd || 0
+        },
+        "timeseries": metrics.timeseries || [{
+          "hashrate": computedHashrate,
           "shares_submitted": 0,
           "shares_accepted": 0,
-          "acceptance_rate": 1.0
+          "acceptance_rate": 0.0
+        }],
+        "quantum_performance": {
+          "quantum_speedup_avg": metrics.quantum_speedup_avg || 0,
+          "phi_resonance_avg": metrics.phi_resonance_avg || 0,
+          "vqe_iterations_avg": metrics.vqe_iterations_avg || 0,
+          "consciousness_correlation": metrics.consciousness_correlation || 0
         }
-      ],
-      "quantum_performance": {
-        "quantum_speedup_avg": 38.7,
-        "phi_resonance_avg": 0.0594,
-        "vqe_iterations_avg": 87.3,
-        "consciousness_correlation": 0.1838
-      }
-    });
+      });
+    } catch (e) {
+      res.json({
+        "timeframe": "24h",
+        "summary": {
+          "total_hashrate": computedHashrate,
+          "avg_hashrate": computedHashrate,
+          "peak_hashrate": computedHashrate,
+          "total_shares": 0,
+          "accepted_shares": 0,
+          "rejected_shares": 0,
+          "acceptance_rate": 0.0,
+          "estimated_revenue_btc": 0,
+          "estimated_revenue_usd": 0
+        },
+        "timeseries": [{
+          "hashrate": computedHashrate,
+          "shares_submitted": 0,
+          "shares_accepted": 0,
+          "acceptance_rate": 0.0
+        }],
+        "quantum_performance": {
+          "quantum_speedup_avg": 0,
+          "phi_resonance_avg": 0,
+          "vqe_iterations_avg": 0,
+          "consciousness_correlation": 0
+        }
+      });
+    }
   });
 
   app.get("/api/security/status", (req, res) => {
+    const swarmStatus = securitySwarms.get_swarm_status();
     res.json({
-      "status": "secure",
+      "status": swarmStatus.integrity_locked ? "secure" : "degraded",
       "timestamp": new Date().toISOString(),
-      "threat_level": "low",
+      "threat_level": swarmStatus.avg_coherence > 0.7 ? "low" : swarmStatus.avg_coherence > 0.4 ? "medium" : "high",
       "defense_systems": {
         "phi_shield": {
           "enabled": true,
-          "strength": 0.87,
-          "active_protections": 12,
-          "threats_blocked_24h": 156
+          "strength": swarmStatus.avg_coherence,
+          "active_protections": swarmStatus.agents_active,
+          "threats_blocked_24h": swarmStatus.threats_blocked || 0
         },
         "rate_limiting": {
           "enabled": true,
           "backend": "in-memory",
-          "warning": "Running without Redis - distributed limiting unavailable",
-          "requests_blocked_24h": 89
+          "requests_blocked_24h": swarmStatus.requests_blocked || 0
         }
       },
-      "recent_threats": []
+      "recent_threats": swarmStatus.recent_threats || []
     });
   });
 
