@@ -81,6 +81,13 @@ def _live_stratum_enabled() -> bool:
     return _is_production() or _env_bool("HYBA_ENABLE_LIVE_STRATUM", default=False)
 
 
+def _difficulty_to_target(difficulty: float) -> int:
+    if difficulty <= 0:
+        raise ValueError("difficulty must be positive")
+    target_limit = int("00000000ffff" + "0" * 52, 16)
+    return max(1, int(target_limit / difficulty))
+
+
 class StratumClient:
     """
     Substrate-independent Stratum client.
@@ -117,6 +124,9 @@ class StratumClient:
         self.last_failure_at: Optional[float] = None
         self.avg_latency: Optional[float] = None
         self.last_activity = time.time()
+        self.last_pool_event_at: Optional[float] = None
+        self.last_share_submit_at: Optional[float] = None
+        self.last_share_error: Optional[str] = None
         self.logger = logging.getLogger(f"stratum.{pool_name}")
 
     async def connect(self) -> bool:
@@ -220,6 +230,116 @@ class StratumClient:
         else:
             raise ValueError(f"Unsupported Stratum version: {self.stratum_version}")
 
+    async def poll_live_event(self, *, timeout: float = 0.1) -> Optional[MiningJob]:
+        """Poll one live Stratum event and update current difficulty/job state."""
+        if self.live_session is None:
+            return None
+        try:
+            event, payload = await self.live_session.read_event(timeout=timeout)
+        except (asyncio.TimeoutError, StratumTransportError):
+            return None
+
+        self.last_activity = time.time()
+        self.last_pool_event_at = self.last_activity
+
+        if event == "mining.set_difficulty":
+            self.current_difficulty = float(payload.difficulty)
+            self.logger.info("Pool %s difficulty updated to %s", self.pool_name, self.current_difficulty)
+            return None
+
+        if event == "mining.notify":
+            if payload.clean_jobs:
+                self.current_jobs.clear()
+            job = MiningJob(
+                job_id=payload.job_id,
+                prevhash=payload.prevhash,
+                coinbase_parts=(payload.coinbase1, payload.coinbase2),
+                merkle_branch=payload.merkle_branch,
+                version=payload.version,
+                nbits=payload.nbits,
+                ntime=payload.ntime,
+                target=_difficulty_to_target(self.current_difficulty),
+                received_timestamp=time.time(),
+                extranonce1=self.extranonce1,
+                extranonce2_size=self.extranonce2_size,
+                stratum_version=self.stratum_version,
+            )
+            self.current_jobs[job.job_id] = job
+            self.logger.info("Received live mining job %s from %s", job.job_id, self.pool_name)
+            return job
+
+        return None
+
+    async def submit_validated_share(self, job: MiningJob, nonce: int, extranonce2: Optional[str] = None) -> ShareResult:
+        """Validate locally, then submit to the pool before recording accepted/rejected counters."""
+        from pythia_mining.mining_validation import MiningValidationError, validate_share
+
+        extranonce2_value = extranonce2 or ("00" * job.extranonce2_size)
+        try:
+            validation = validate_share(job, nonce, extranonce2_value)
+        except MiningValidationError as exc:
+            self.shares_submitted += 1
+            self.shares_rejected += 1
+            self.last_share_error = str(exc)
+            return ShareResult(False, 400, str(exc), job.job_id, nonce)
+
+        if not validation.valid:
+            self.shares_submitted += 1
+            self.shares_rejected += 1
+            self.last_share_error = validation.reason
+            return ShareResult(
+                accepted=False,
+                error_code=1,
+                error_message=validation.reason,
+                job_id=job.job_id,
+                nonce=nonce,
+                block_hash=validation.block_hash,
+                target=validation.target,
+            )
+
+        if self.live_session is None:
+            return self.validate_and_record_share(job, nonce, extranonce2_value)
+
+        self.shares_submitted += 1
+        self.last_share_submit_at = time.time()
+        nonce_hex = nonce.to_bytes(4, byteorder="little", signed=False).hex()
+        try:
+            submit_result = await self.live_session.submit_share(
+                job_id=job.job_id,
+                extranonce2=extranonce2_value,
+                ntime=job.ntime,
+                nonce=nonce_hex,
+            )
+        except Exception as exc:
+            self.shares_rejected += 1
+            self.last_share_error = str(exc)
+            return ShareResult(
+                accepted=False,
+                error_code=502,
+                error_message=f"pool_submit_failed: {exc}",
+                job_id=job.job_id,
+                nonce=nonce,
+                block_hash=validation.block_hash,
+                target=validation.target,
+            )
+
+        if submit_result.accepted:
+            self.shares_accepted += 1
+            self.last_share_error = None
+        else:
+            self.shares_rejected += 1
+            self.last_share_error = str(submit_result.error)
+
+        return ShareResult(
+            accepted=submit_result.accepted,
+            error_code=None if submit_result.accepted else 2,
+            error_message=None if submit_result.accepted else str(submit_result.error),
+            job_id=job.job_id,
+            nonce=nonce,
+            block_hash=validation.block_hash,
+            target=validation.target,
+        )
+
     async def _close_live_session(self) -> None:
         if self.live_session is not None:
             try:
@@ -244,8 +364,7 @@ class StratumClient:
             raise ValueError("difficulty must be positive")
 
         job_id = f"fixture_job_{int(time.time())}"
-        target_limit = int("00000000ffff" + "0" * 52, 16)
-        adjusted_target = int(target_limit / difficulty)
+        adjusted_target = _difficulty_to_target(difficulty)
 
         self.current_jobs[job_id] = MiningJob(
             job_id=job_id,
@@ -479,6 +598,11 @@ class PoolManager:
                 "connection_state": p.connection_state,
                 "connection_failures": p.connection_failures,
                 "last_failure_at": p.last_failure_at,
+                "last_pool_event_at": p.last_pool_event_at,
+                "last_share_submit_at": p.last_share_submit_at,
+                "last_share_error": p.last_share_error,
+                "current_difficulty": p.current_difficulty,
+                "current_jobs": len(p.current_jobs),
                 "performance": {
                     "latency_ms": p.avg_latency,
                     "shares_submitted": p.shares_submitted,
