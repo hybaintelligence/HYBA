@@ -227,9 +227,9 @@ export function runVerificationTests(): TestResultItem[] {
       
       angleLogs.push(`Vertex ${index + 1}: Actual phase ${phase.toFixed(4)} rad, Golden expectation ${(expectedPhaseFraction).toFixed(4)} rad, delta ${error.toFixed(4)}`);
       
-      // Ensure all phase errors are within bounded geometric error tolerances
+      // Validate: phase error must be within bounded geometric tolerance
       if (error > 0.05 && Math.abs(error - 2*Math.PI) > 0.05) {
-        // We evaluate phase resonance modular properties gently
+        passesPhaseCheck = false;
       }
     });
 
