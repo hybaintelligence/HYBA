@@ -1,0 +1,63 @@
+services:
+  hyba-backend:
+    build: .
+    command: python -m uvicorn hyba_genesis_api.main:app --host 0.0.0.0 --port 3001
+    environment:
+      NODE_ENV: production
+      HYBA_ENV: production
+      PYTHONPATH: /app/python_backend
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
+      HYBA_OPERATOR_CREDENTIALS: ${HYBA_OPERATOR_CREDENTIALS:?HYBA_OPERATOR_CREDENTIALS is required}
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:3001/api/health/readiness"]
+      interval: 10s
+      timeout: 3s
+      retries: 6
+      start_period: 20s
+    restart: unless-stopped
+
+  hyba-runtime:
+    build: .
+    command: python -m pythia_mining.main
+    depends_on:
+      hyba-backend:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      HYBA_ENV: production
+      PYTHONPATH: /app/python_backend
+      HYBA_ENABLE_LIVE_STRATUM: "1"
+      HYBA_POOL_NICEHASH_URL: ${HYBA_POOL_NICEHASH_URL:-}
+      HYBA_POOL_NICEHASH_USERNAME: ${HYBA_POOL_NICEHASH_USERNAME:-}
+      HYBA_POOL_NICEHASH_PASSWORD: ${HYBA_POOL_NICEHASH_PASSWORD:-}
+      HYBA_POOL_NICEHASH_STRATUM_VERSION: ${HYBA_POOL_NICEHASH_STRATUM_VERSION:-1}
+      HYBA_POOL_VIABTC_URL: ${HYBA_POOL_VIABTC_URL:-}
+      HYBA_POOL_VIABTC_USERNAME: ${HYBA_POOL_VIABTC_USERNAME:-}
+      HYBA_POOL_VIABTC_PASSWORD: ${HYBA_POOL_VIABTC_PASSWORD:-}
+      HYBA_POOL_VIABTC_STRATUM_VERSION: ${HYBA_POOL_VIABTC_STRATUM_VERSION:-1}
+      HYBA_POOL_CKPOOL_URL: ${HYBA_POOL_CKPOOL_URL:-}
+      HYBA_POOL_CKPOOL_USERNAME: ${HYBA_POOL_CKPOOL_USERNAME:-}
+      HYBA_POOL_CKPOOL_PASSWORD: ${HYBA_POOL_CKPOOL_PASSWORD:-}
+      HYBA_POOL_CKPOOL_STRATUM_VERSION: ${HYBA_POOL_CKPOOL_STRATUM_VERSION:-1}
+    restart: unless-stopped
+
+  hyba-bridge:
+    build: .
+    command: node dist/server.cjs
+    depends_on:
+      hyba-backend:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      PULVINI_BACKEND_URL: http://hyba-backend:3001
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
+    ports:
+      - "3000:3000"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:3000/bridge/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 6
+      start_period: 20s
+    restart: unless-stopped
