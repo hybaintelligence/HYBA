@@ -21,6 +21,10 @@ except ImportError:
         ClientWebSocketResponse = Any
     aiohttp = AiohttpUnavailable()
 
+from pythia_mining.live_stratum_session import LiveStratumSession, LiveStratumSessionError
+from pythia_mining.pool_profiles import build_profile
+from pythia_mining.stratum_transport import StratumTransportError
+
 
 @dataclass
 class MiningJob:
@@ -72,6 +76,11 @@ def _dev_fixtures_allowed() -> bool:
     return not _is_production() or _env_bool("HYBA_ALLOW_DEV_FIXTURES", default=False)
 
 
+def _live_stratum_enabled() -> bool:
+    """Enable real network I/O only in production or when explicitly requested."""
+    return _is_production() or _env_bool("HYBA_ENABLE_LIVE_STRATUM", default=False)
+
+
 class StratumClient:
     """
     Substrate-independent Stratum client.
@@ -91,6 +100,7 @@ class StratumClient:
         self.stratum_version = stratum_version
 
         self.ws: Optional[aiohttp.ClientWebSocketResponse] = None
+        self.live_session: Optional[LiveStratumSession] = None
         self.is_connected = False
         self.is_authenticated = False
         self.connection_state = "DISCONNECTED"
@@ -125,14 +135,15 @@ class StratumClient:
             parsed.port or (3334 if self.stratum_version == 2 else 3333)
 
             self.connection_state = "ESTABLISHING"
-            self.is_connected = True
-            self.connection_state = "CONNECTED"
-            self.last_activity = time.time()
+            if _live_stratum_enabled():
+                await self._connect_live()
+            else:
+                await self._connect_development_fixture()
 
-            await self._negotiate_handshake()
             self.connection_failures = 0
             self.last_failure_at = None
             self.avg_latency = (time.monotonic() - started) * 1000.0
+            self.last_activity = time.time()
             return True
         except Exception as e:
             self.logger.error("Failed to connect to pool %s: %s", self.pool_name, e)
@@ -141,10 +152,47 @@ class StratumClient:
             self.is_authenticated = False
             self.connection_failures += 1
             self.last_failure_at = time.time()
+            await self._close_live_session()
             return False
 
-    async def _negotiate_handshake(self):
-        """Perform Stratum v1/v2 subscription and authentication handshakes."""
+    async def _connect_live(self) -> None:
+        """Open a real TCP/TLS Stratum session and complete subscribe/authorize."""
+        if self.stratum_version != 1:
+            raise LiveStratumSessionError(
+                "live Stratum v2 transport is not implemented; configure a Stratum v1 pool or keep this pool disabled"
+            )
+
+        profile = build_profile(
+            self.pool_name.lower().replace(" ", "_"),
+            name=self.pool_name,
+            url=self.pool_url,
+            username=self.username,
+            password=self.password,
+            stratum_version=self.stratum_version,
+            tls_required=urlparse(self.pool_url).scheme in {"stratum+ssl", "stratum+tls"},
+        )
+        self.live_session = LiveStratumSession(profile)
+        await self.live_session.connect()
+        self.is_connected = True
+        self.connection_state = "CONNECTED"
+        handshake = await self.live_session.subscribe_and_authorize()
+        self.extranonce1 = handshake.extranonce1
+        self.extranonce2_size = int(handshake.extranonce2_size)
+        self.is_authenticated = handshake.authorized
+        self.connection_state = "AUTHENTICATED"
+
+    async def _connect_development_fixture(self) -> None:
+        """Keep local tests deterministic without pretending production is connected."""
+        self.is_connected = True
+        self.connection_state = "CONNECTED"
+        self.last_activity = time.time()
+        await self._negotiate_fixture_handshake()
+
+    async def _negotiate_fixture_handshake(self):
+        """Perform development-only subscription/authentication fixture setup."""
+        if not _dev_fixtures_allowed():
+            raise ProductionConfigurationError("development Stratum fixtures are disabled in production")
+
         self.request_counter += 1
         rid = self.request_counter
 
@@ -154,26 +202,35 @@ class StratumClient:
                 "method": "mining.subscribe",
                 "params": ["pythia-quantum/2.0.0", None],
             })
-            self.logger.info("[Stratum v1] Negotiating subscription payload: %s", payload_str)
-            self.extranonce1 = os.getenv("HYBA_STRATUM_EXTRANONCE1", "f000bba1" if _dev_fixtures_allowed() else self.extranonce1)
+            self.logger.info("[Stratum v1 fixture] Subscription payload: %s", payload_str)
+            self.extranonce1 = os.getenv("HYBA_STRATUM_EXTRANONCE1", "f000bba1")
             self.extranonce2_size = int(os.getenv("HYBA_STRATUM_EXTRANONCE2_SIZE", "4"))
-            self.logger.info("[Stratum v1] Authorizing miner: %s", self.username)
+            self.logger.info("[Stratum v1 fixture] Authorizing miner: %s", self.username)
             self.is_authenticated = True
             self.connection_state = "AUTHENTICATED"
 
         elif self.stratum_version == 2:
             self.logger.info(
-                "[Stratum v2] Sending binary SetupConnection envelope with flags: "
-                "protocol=mining, min_version=2, max_version=2"
+                "[Stratum v2 fixture] SetupConnection envelope: protocol=mining, min_version=2, max_version=2"
             )
-            self.extranonce1 = os.getenv("HYBA_STRATUM_V2_EXTRANONCE1", "ff02" if _dev_fixtures_allowed() else self.extranonce1)
+            self.extranonce1 = os.getenv("HYBA_STRATUM_V2_EXTRANONCE1", "ff02")
             self.extranonce2_size = int(os.getenv("HYBA_STRATUM_V2_EXTRANONCE2_SIZE", "3"))
             self.is_authenticated = True
             self.connection_state = "AUTHENTICATED_V2"
         else:
             raise ValueError(f"Unsupported Stratum version: {self.stratum_version}")
 
+    async def _close_live_session(self) -> None:
+        if self.live_session is not None:
+            try:
+                await self.live_session.close()
+            except (LiveStratumSessionError, StratumTransportError, OSError):
+                pass
+            finally:
+                self.live_session = None
+
     async def disconnect(self):
+        await self._close_live_session()
         self.is_connected = False
         self.is_authenticated = False
         self.connection_state = "DISCONNECTED"
