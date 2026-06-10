@@ -44,7 +44,21 @@ jobs:
           python -m pip install -r python_backend/hyba_genesis_api/requirements.txt
 
       - name: Run backend unit, integration, adversarial, and property-style tests
-        run: python -m unittest tests.test_backend_workflows
+        run: python -m unittest tests.test_backend_workflows tests.test_live_stratum_session
+
+      - name: Import FastAPI app and assert readiness route exists
+        env:
+          PYTHONPATH: python_backend
+        run: |
+          python - <<'PY'
+          from hyba_genesis_api.main import app
+          routes = {route.path for route in app.routes}
+          required = {'/health', '/api/health/readiness', '/api/auth/login', '/api/products'}
+          missing = sorted(required - routes)
+          if missing:
+              raise SystemExit(f'Missing backend routes: {missing}')
+          print('backend import smoke passed')
+          PY
 
   frontend-typecheck:
     name: Frontend build/typecheck
