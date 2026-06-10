@@ -36,7 +36,6 @@ COPY --from=frontend-build /app/dist ./dist
 COPY python_backend ./python_backend
 COPY scripts ./scripts
 COPY server.ts ./server.ts
-COPY deploy ./deploy
 
 RUN useradd --create-home --shell /usr/sbin/nologin hyba \
     && chown -R hyba:hyba /app
@@ -44,4 +43,4 @@ USER hyba
 
 EXPOSE 3000 3001
 ENTRYPOINT ["tini", "--"]
-CMD ["/app/deploy/entrypoint.sh"]
+CMD ["node", "dist/server.cjs"]
