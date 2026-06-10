@@ -5,9 +5,11 @@ from __future__ import annotations
 import asyncio
 import json
 import math
+import random
 import sys
 import unittest
 from pathlib import Path
+from unittest.mock import AsyncMock
 
 from pydantic import ValidationError
 
@@ -20,8 +22,12 @@ from hyba_genesis_api.api.mining import PowerScaleRequest  # noqa: E402
 from hyba_genesis_api.api.misc import PredictRequest, execute_pulvini  # noqa: E402
 from hyba_genesis_api.api.security import ShieldParam  # noqa: E402
 from hyba_genesis_api.core.substrate import get_substrate_state, initialize_substrate, shutdown_substrate  # noqa: E402
-from pythia_mining.quantum_solver import DODECAHEDRON_VERTICES, DodecahedralQuantumSolver  # noqa: E402
-from pythia_mining.stratum_client import PoolManager  # noqa: E402
+from pythia_mining.quantum_solver import (  # noqa: E402
+    DODECAHEDRON_VERTICES,
+    QuantumSolverConfigurationError,
+    DodecahedralQuantumSolver,
+)
+from pythia_mining.stratum_client import AllPoolsOfflineError, PoolManager  # noqa: E402
 
 EXPECTED_INIT_ORDER = [
     "pulvini_reconstruction_kernel",
@@ -105,6 +111,36 @@ class MiningPropertyAndIntegrationTests(unittest.TestCase):
         self.assertEqual(1, result["shares_submitted"])
         self.assertEqual(1, result["shares_accepted"] + result["shares_rejected"])
 
+    def test_configured_solver_projects_nonce_inside_declared_ranges(self) -> None:
+        async def run_cases() -> None:
+            solver = DodecahedralQuantumSolver()
+            rng = random.Random(1337)
+            for _ in range(100):
+                start = rng.randint(0, 1_000_000)
+                end = start + rng.randint(0, 500)
+                target = rng.randint(1, 2**224)
+                await solver.configure_search(target=target, nonce_ranges=[(start, end)])
+                nonce = await solver.solve(max_iterations=25, timeout=5.0)
+                self.assertIsInstance(nonce, int)
+                self.assertGreaterEqual(nonce, start)
+                self.assertLessEqual(nonce, end)
+
+        asyncio.run(run_cases())
+
+    def test_pool_manager_raises_when_all_pools_fail(self) -> None:
+        async def run_case() -> None:
+            pool_manager = PoolManager()
+            for client in pool_manager.pools.values():
+                client.connect = AsyncMock(return_value=False)  # type: ignore[method-assign]
+                client.is_connected = False
+                client.is_authenticated = False
+                client.connection_state = "ERROR: forced test outage"
+
+            with self.assertRaises(AllPoolsOfflineError):
+                await pool_manager.get_best_pool()
+
+        asyncio.run(run_case())
+
 
 class AdversarialValidationTests(unittest.TestCase):
     def test_power_scale_rejects_negative_and_extreme_values(self) -> None:
@@ -124,6 +160,31 @@ class AdversarialValidationTests(unittest.TestCase):
             with self.assertRaises(ValidationError):
                 PredictRequest(state={"networkDifficulty": difficulty})
         self.assertEqual(7_234_567_890_123, PredictRequest(state={"networkDifficulty": 7_234_567_890_123}).state.networkDifficulty)
+
+    def test_solver_rejects_invalid_targets_and_nonce_ranges(self) -> None:
+        async def run_cases() -> None:
+            solver = DodecahedralQuantumSolver()
+            invalid_cases = [
+                (0, [(0, 10)]),
+                (-1, [(0, 10)]),
+                (1, []),
+                (1, [(-1, 10)]),
+                (1, [(10, 9)]),
+                (1, [(0, 2**32)]),
+            ]
+            for target, ranges in invalid_cases:
+                with self.assertRaises(QuantumSolverConfigurationError):
+                    await solver.configure_search(target=target, nonce_ranges=ranges)
+
+        asyncio.run(run_cases())
+
+    def test_solver_returns_none_for_timeout_without_crashing(self) -> None:
+        async def run_case() -> None:
+            solver = DodecahedralQuantumSolver()
+            await solver.configure_search(target=1, nonce_ranges=[(0, 100)])
+            self.assertIsNone(await solver.solve(max_iterations=25, timeout=1e-12))
+
+        asyncio.run(run_case())
 
 
 if __name__ == "__main__":
