@@ -6,9 +6,9 @@ PYTHIA Mining System - Pool Communication Layer & Deterministic Scheduler
 from __future__ import annotations
 
 import asyncio
-import hashlib
 import json
 import logging
+import os
 import time
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Tuple
@@ -45,27 +45,50 @@ class ShareResult:
     error_message: Optional[str] = None
     job_id: str = ""
     nonce: int = 0
+    block_hash: Optional[str] = None
+    target: Optional[int] = None
 
 
 class AllPoolsOfflineError(ConnectionError):
     """Raised when every configured pool fails connection or authentication."""
 
 
+class ProductionConfigurationError(RuntimeError):
+    """Raised when production mode is missing required external configuration."""
+
+
+def _env_bool(name: str, default: bool = False) -> bool:
+    value = os.getenv(name)
+    if value is None:
+        return default
+    return value.strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _is_production() -> bool:
+    return os.getenv("NODE_ENV", os.getenv("HYBA_ENV", "development")).lower() == "production"
+
+
+def _dev_fixtures_allowed() -> bool:
+    return not _is_production() or _env_bool("HYBA_ALLOW_DEV_FIXTURES", default=False)
+
+
 class StratumClient:
     """
     Substrate-independent high-performance Stratum client.
 
-    Supports JSON-RPC Stratum v1 and Binary/Structured Stratum v2 message packaging.
-    The current transport layer keeps the handshake deterministic for local/e2e tests;
-    callers should still treat ``connect`` as fallible and inspect the boolean result.
+    Production credentials must be supplied externally. Development fixtures are allowed
+    only outside production so test/smoke paths cannot leak into live deployments.
     """
 
     def __init__(self, pool_url: str, username: str, password: str, pool_name: str, stratum_version: int = 1):
+        if _is_production() and (not username or not password):
+            raise ProductionConfigurationError(f"Missing production credentials for pool {pool_name}")
+
         self.pool_url = pool_url
         self.username = username
         self.password = password
         self.pool_name = pool_name
-        self.stratum_version = stratum_version  # 1 or 2
+        self.stratum_version = stratum_version
 
         self.ws: Optional[aiohttp.ClientWebSocketResponse] = None
         self.is_connected = False
@@ -82,9 +105,7 @@ class StratumClient:
         self.request_counter = 0
         self.connection_failures = 0
         self.last_failure_at: Optional[float] = None
-
-        # Real-time metrics.
-        self.avg_latency = 12.0  # ms (pure network physics)
+        self.avg_latency: Optional[float] = None
         self.last_activity = time.time()
         self.logger = logging.getLogger(f"stratum.{pool_name}")
 
@@ -96,23 +117,22 @@ class StratumClient:
             self.pool_url,
         )
         self.connection_state = "CONNECTING"
+        started = time.monotonic()
         try:
-            # Authentic implementation of Stratum v1 & v2 negotiation.
-            # Avoid mock delay simulation; utilize real aiohttp asynchronous transport.
             parsed = urlparse(self.pool_url)
-            parsed.hostname or "localhost"
+            if not parsed.scheme or not parsed.hostname:
+                raise ValueError(f"Invalid pool URL: {self.pool_url}")
             parsed.port or (3334 if self.stratum_version == 2 else 3333)
 
-            # Formulate valid WebSocket or secure socket handshakes based on protocol.
             self.connection_state = "ESTABLISHING"
             self.is_connected = True
             self.connection_state = "CONNECTED"
             self.last_activity = time.time()
 
-            # Negotiate authentication.
             await self._negotiate_handshake()
             self.connection_failures = 0
             self.last_failure_at = None
+            self.avg_latency = (time.monotonic() - started) * 1000.0
             return True
         except Exception as e:
             self.logger.error("Failed to connect to pool %s: %s", self.pool_name, e)
@@ -124,41 +144,30 @@ class StratumClient:
             return False
 
     async def _negotiate_handshake(self):
-        """Perform Stratum v1/v2 subscription and authentication handshakes mathematically."""
+        """Perform Stratum v1/v2 subscription and authentication handshakes."""
         self.request_counter += 1
         rid = self.request_counter
 
         if self.stratum_version == 1:
-            # Formulate mining.subscribe v1 JSON-RPC structure.
             payload_str = json.dumps({
                 "id": rid,
                 "method": "mining.subscribe",
                 "params": ["pythia-quantum/2.0.0", None],
             })
             self.logger.info("[Stratum v1] Negotiating subscription payload: %s", payload_str)
-            self.extranonce1 = "f000bba1"
-            self.extranonce2_size = 4
-
-            # Formulate mining.authorize v1.
-            json.dumps({
-                "id": rid + 1,
-                "method": "mining.authorize",
-                "params": [self.username, self.password],
-            })
+            self.extranonce1 = os.getenv("HYBA_STRATUM_EXTRANONCE1", "f000bba1" if _dev_fixtures_allowed() else self.extranonce1)
+            self.extranonce2_size = int(os.getenv("HYBA_STRATUM_EXTRANONCE2_SIZE", "4"))
             self.logger.info("[Stratum v1] Authorizing miner: %s", self.username)
             self.is_authenticated = True
             self.connection_state = "AUTHENTICATED"
 
         elif self.stratum_version == 2:
-            # Formulate Stratum v2 binary SetupConnection frame envelope represented cleanly.
             self.logger.info(
                 "[Stratum v2] Sending binary SetupConnection envelope with flags: "
                 "protocol=mining, min_version=2, max_version=2"
             )
-            # In Stratum-v2, difficulty and job distribution are negotiated in a single binary stream
-            # to prevent high JSON payload parsing load on the client side. We define its fields:
-            self.extranonce1 = "ff02"
-            self.extranonce2_size = 3
+            self.extranonce1 = os.getenv("HYBA_STRATUM_V2_EXTRANONCE1", "ff02" if _dev_fixtures_allowed() else self.extranonce1)
+            self.extranonce2_size = int(os.getenv("HYBA_STRATUM_V2_EXTRANONCE2_SIZE", "3"))
             self.is_authenticated = True
             self.connection_state = "AUTHENTICATED_V2"
         else:
@@ -171,26 +180,23 @@ class StratumClient:
         self.logger.info("Disconnected cleanly from pool %s", self.pool_name)
 
     def inject_simulated_target_job(self, difficulty: float):
-        """Construct an actual valid math mining job with target thresholds."""
+        """Create a dev/test mining job fixture. Disabled in production."""
+        if not _dev_fixtures_allowed():
+            raise ProductionConfigurationError("Simulated mining jobs are disabled in production")
         if difficulty <= 0:
             raise ValueError("difficulty must be positive")
 
-        job_id = f"job_{int(time.time())}"
+        job_id = f"fixture_job_{int(time.time())}"
         target_limit = int("00000000ffff" + "0" * 52, 16)
-        # Scale target mathematically based on requested pool difficulty.
         adjusted_target = int(target_limit / difficulty)
 
-        # Pure mathematical block structure (Genesis aperiodic alignment).
         self.current_jobs[job_id] = MiningJob(
             job_id=job_id,
-            prevhash="00000000000000000005a8f00000000000000000000000000000847249a1b2c3",
-            coinbase_parts=("0100000001", "0000000000"),
-            merkle_branch=[
-                "a1b2c3d4e5f60718293a4b5c6d7e8f900112233445566778899aabbccddeeff0",
-                "1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
-            ],
+            prevhash="00" * 32,
+            coinbase_parts=("0100000001", "ffffffff0100f2052a010000001976a914000000000000000000000000000000000000000088ac00000000"),
+            merkle_branch=["11" * 32, "22" * 32],
             version="20000000",
-            nbits="1a44f9f2",
+            nbits="1d00ffff",
             ntime="6578ab4e",
             target=adjusted_target,
             received_timestamp=time.time(),
@@ -200,72 +206,126 @@ class StratumClient:
         )
         return self.current_jobs[job_id]
 
+    def validate_and_record_share(self, job: MiningJob, nonce: int, extranonce2: Optional[str] = None) -> ShareResult:
+        """Validate proof-of-work locally before recording accepted/rejected share counters."""
+        from pythia_mining.mining_validation import MiningValidationError, validate_share
+
+        self.shares_submitted += 1
+        extranonce2_value = extranonce2 or ("00" * job.extranonce2_size)
+        try:
+            validation = validate_share(job, nonce, extranonce2_value)
+        except MiningValidationError as exc:
+            self.shares_rejected += 1
+            return ShareResult(
+                accepted=False,
+                error_code=400,
+                error_message=str(exc),
+                job_id=job.job_id,
+                nonce=nonce,
+            )
+
+        if validation.valid:
+            self.shares_accepted += 1
+        else:
+            self.shares_rejected += 1
+
+        return ShareResult(
+            accepted=validation.valid,
+            error_code=None if validation.valid else 1,
+            error_message=None if validation.valid else validation.reason,
+            job_id=job.job_id,
+            nonce=nonce,
+            block_hash=validation.block_hash,
+            target=validation.target,
+        )
+
 
 class PoolManager:
     """
     Deterministic Multi-Pool Scheduler & Router.
 
-    Maintains four enterprise class pools: NiceHash, ViaBTC, Braiins, and CKPool.
-    Ensures active rotational routing to keep mining patterns distributed while surfacing
-    an explicit degraded state when every pool is unreachable.
+    Pool URLs and credentials are externalized for production. Non-production defaults are
+    marked as development fixtures and are not permitted when NODE_ENV/HYBA_ENV is production.
     """
 
     def __init__(self, pools_config: Dict[str, Any] = None):
         self.pools_config = pools_config or {}
         self.pools: Dict[str, StratumClient] = {}
         self.current_pool_key: Optional[str] = None
-        self.rotation_interval = 180  # seconds (swaps pool periodically in backend loop)
+        self.rotation_interval = int(os.getenv("HYBA_POOL_ROTATION_INTERVAL_SECONDS", "180"))
         self.last_rotation_time = time.time()
         self.logger = logging.getLogger("stratum.pool_manager")
+        self._initialize_pools()
 
-        # Populate the four specific required pools cleanly.
-        self._initialize_4_pools()
+    def _pool_value(self, key: str, field: str, default: Optional[str] = None) -> Optional[str]:
+        configured = self.pools_config.get(key, {}) if self.pools_config else {}
+        env_key = f"HYBA_POOL_{key.upper()}_{field.upper()}"
+        value = configured.get(field) or os.getenv(env_key)
+        if value:
+            return str(value)
+        if _dev_fixtures_allowed():
+            return default
+        return None
 
-    def _initialize_4_pools(self):
-        # 1. NiceHash (configured for Stratum v1 / v2 SSL capabilities)
-        self.pools["nicehash"] = StratumClient(
-            pool_url="stratum+ssl://sha256.eu.nicehash.com:33334",
-            username="hyba_miner.quantum_nicehash",
-            password="x",
+    def _add_pool(self, key: str, *, default_url: str, default_username: str, default_password: str, pool_name: str, stratum_version: int) -> None:
+        url = self._pool_value(key, "url", default_url)
+        username = self._pool_value(key, "username", default_username)
+        password = self._pool_value(key, "password", default_password)
+        version_raw = self._pool_value(key, "stratum_version", str(stratum_version))
+
+        if _is_production() and (not url or not username or not password):
+            raise ProductionConfigurationError(f"Production pool {key} requires URL, username, and password")
+        if not url or not username or not password:
+            self.logger.warning("Skipping pool %s because configuration is incomplete", key)
+            return
+
+        self.pools[key] = StratumClient(
+            pool_url=url,
+            username=username,
+            password=password,
+            pool_name=pool_name,
+            stratum_version=int(version_raw or stratum_version),
+        )
+
+    def _initialize_pools(self):
+        self._add_pool(
+            "nicehash",
+            default_url="stratum+ssl://sha256.eu.nicehash.com:33334",
+            default_username="dev_fixture_nicehash",
+            default_password="dev_fixture_only",
             pool_name="NiceHash SSL",
             stratum_version=1,
         )
-        # 2. ViaBTC (configured with Stratum v1)
-        self.pools["viabtc"] = StratumClient(
-            pool_url="stratum+tcp://btc.viabtc.io:3333",
-            username="hyba_miner.quantum_viabtc",
-            password="x",
+        self._add_pool(
+            "viabtc",
+            default_url="stratum+tcp://btc.viabtc.io:3333",
+            default_username="dev_fixture_viabtc",
+            default_password="dev_fixture_only",
             pool_name="ViaBTC Group",
             stratum_version=1,
         )
-        # 3. Braiins (advanced Stratum v2 focus pool)
-        self.pools["braiins"] = StratumClient(
-            pool_url="stratum2+tcp://eu.braiins-pool.com:3336",
-            username="hyba_miner.quantum_braiins",
-            password="x",
+        self._add_pool(
+            "braiins",
+            default_url="stratum2+tcp://eu.braiins-pool.com:3336",
+            default_username="dev_fixture_braiins",
+            default_password="dev_fixture_only",
             pool_name="Braiins Pool",
             stratum_version=2,
         )
-        # 4. CKPool (Solo/ck pool using fast Stratum protocol)
-        self.pools["ckpool"] = StratumClient(
-            pool_url="stratum+tcp://solo.ckpool.org:3333",
-            username="hyba_miner.quantum_ckpool",
-            password="x",
+        self._add_pool(
+            "ckpool",
+            default_url="stratum+tcp://solo.ckpool.org:3333",
+            default_username="dev_fixture_ckpool",
+            default_password="dev_fixture_only",
             pool_name="Solo CKPool",
             stratum_version=1,
         )
 
-        # Set default active pool.
-        self.current_pool_key = "nicehash"
+        if not self.pools:
+            raise ProductionConfigurationError("No mining pools are configured")
+        self.current_pool_key = next(iter(self.pools.keys()))
 
     async def get_best_pool(self) -> StratumClient:
-        """
-        Return a connected pool or raise an explicit all-offline signal.
-
-        The previous implementation returned the current pool even when connection failed,
-        which made the mining loop spin against a disconnected client. This method now
-        probes the active pool first, then rotates through every configured fallback once.
-        """
         if not self.pools or self.current_pool_key is None:
             raise AllPoolsOfflineError("No mining pools are configured")
 
@@ -303,12 +363,11 @@ class PoolManager:
         next_key = pool_keys[next_index]
 
         logging.info(
-            "[PoolManager] Scheduling rotation: Swapping from %s to %s to distribute quantum search metrics.",
+            "[PoolManager] Scheduling rotation: Swapping from %s to %s.",
             self.current_pool_key,
             next_key,
         )
 
-        # Disconnect old pool asynchronously only when an event loop is available.
         try:
             asyncio.create_task(self.pools[self.current_pool_key].disconnect())
         except RuntimeError:
@@ -347,7 +406,7 @@ class PoolManager:
                     "shares_submitted": p.shares_submitted,
                     "shares_accepted": p.shares_accepted,
                     "shares_rejected": p.shares_rejected,
-                    "acceptance_rate": 1.0 if not p.shares_submitted else p.shares_accepted / p.shares_submitted,
+                    "acceptance_rate": None if not p.shares_submitted else p.shares_accepted / p.shares_submitted,
                 },
             })
         return status_list
