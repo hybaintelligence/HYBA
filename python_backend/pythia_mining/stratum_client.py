@@ -24,6 +24,8 @@ except ImportError:
 from pythia_mining.live_stratum_session import LiveStratumSession, LiveStratumSessionError
 from pythia_mining.pool_profiles import build_profile
 from pythia_mining.stratum_transport import StratumTransportError
+from pythia_mining.audit_logger import get_audit_logger, AuditEventType
+from pythia_mining.metrics_store import get_metrics_store, PoolMetrics
 
 
 @dataclass
@@ -40,6 +42,7 @@ class MiningJob:
     extranonce1: str = ""
     extranonce2_size: int = 4
     stratum_version: int = 1  # 1 for Stratum v1, 2 for Stratum v2
+    is_stale: bool = False
 
 
 @dataclass
@@ -118,7 +121,6 @@ class StratumClient:
         self.shares_submitted = 0
         self.shares_accepted = 0
         self.shares_rejected = 0
-        self.pending_shares: Dict[int, Dict] = {}
         self.request_counter = 0
         self.connection_failures = 0
         self.last_failure_at: Optional[float] = None
@@ -127,9 +129,40 @@ class StratumClient:
         self.last_pool_event_at: Optional[float] = None
         self.last_share_submit_at: Optional[float] = None
         self.last_share_error: Optional[str] = None
+        self.stale_job_ids: set = set()
+        self.reconnect_attempts = 0
+        self.max_reconnect_attempts = 10
+        self.reconnect_backoff_base = 1.0
+        self.reconnect_backoff_max = 60.0
+        self.heartbeat_interval = 60.0  # seconds
+        self.idle_timeout = 120.0  # seconds
+        self._heartbeat_task: Optional[asyncio.Task] = None
+        self.share_retry_attempts = 0
+        self.max_share_retry_attempts = 3
+        self.share_retry_backoff_base = 0.5
+        self.share_retry_backoff_max = 5.0
         self.logger = logging.getLogger(f"stratum.{pool_name}")
+        self.audit_logger = get_audit_logger()
+        self.metrics_store = get_metrics_store()
+
+    def _calculate_backoff_delay(self) -> float:
+        """Calculate exponential back-off delay for reconnection attempts."""
+        delay = min(
+            self.reconnect_backoff_base * (2 ** self.reconnect_attempts),
+            self.reconnect_backoff_max
+        )
+        # Add jitter to avoid thundering herd
+        import random
+        jitter = delay * 0.1 * random.random()
+        return delay + jitter
 
     async def connect(self) -> bool:
+        self.audit_logger.log_connection_attempt(
+            pool_name=self.pool_name,
+            pool_url=self.pool_url,
+            stratum_version=self.stratum_version,
+            attempt_number=self.reconnect_attempts + 1,
+        )
         self.logger.info(
             "Connecting via Stratum v%s to pool %s (%s)",
             self.stratum_version,
@@ -142,7 +175,13 @@ class StratumClient:
             parsed = urlparse(self.pool_url)
             if not parsed.scheme or not parsed.hostname:
                 raise ValueError(f"Invalid pool URL: {self.pool_url}")
-            parsed.port or (3334 if self.stratum_version == 2 else 3333)
+            # Assign default port if not specified in URL
+            if parsed.port is None:
+                default_port = 3334 if self.stratum_version == 2 else 3333
+                # Reconstruct URL with default port
+                port_suffix = f":{default_port}"
+                self.pool_url = f"{parsed.scheme}://{parsed.hostname}{port_suffix}{parsed.path or ''}"
+                parsed = urlparse(self.pool_url)
 
             self.connection_state = "ESTABLISHING"
             if _live_stratum_enabled():
@@ -154,16 +193,137 @@ class StratumClient:
             self.last_failure_at = None
             self.avg_latency = (time.monotonic() - started) * 1000.0
             self.last_activity = time.time()
+            self.reconnect_attempts = 0  # Reset on successful connection
+            self.audit_logger.log_connection_success(
+                pool_name=self.pool_name,
+                pool_url=self.pool_url,
+                latency_ms=self.avg_latency,
+                stratum_version=self.stratum_version,
+            )
+            self.metrics_store.record_connection_event(
+                pool_name=self.pool_name,
+                pool_url=self.pool_url,
+                event_type="connection_success",
+                latency_ms=self.avg_latency,
+                attempt_number=self.reconnect_attempts + 1,
+            )
+            # Persist current metrics
+            self._persist_metrics()
+            # Start heartbeat task for connection liveness checks
+            self._heartbeat_task = asyncio.create_task(self._heartbeat_loop())
             return True
         except Exception as e:
+            self.audit_logger.log_connection_failure(
+                pool_name=self.pool_name,
+                pool_url=self.pool_url,
+                error=str(e),
+                attempt_number=self.reconnect_attempts + 1,
+            )
+            self.metrics_store.record_connection_event(
+                pool_name=self.pool_name,
+                pool_url=self.pool_url,
+                event_type="connection_failure",
+                error_message=str(e),
+                attempt_number=self.reconnect_attempts + 1,
+            )
             self.logger.error("Failed to connect to pool %s: %s", self.pool_name, e)
             self.connection_state = f"ERROR: {str(e)}"
             self.is_connected = False
             self.is_authenticated = False
             self.connection_failures += 1
             self.last_failure_at = time.time()
+            self.reconnect_attempts += 1
             await self._close_live_session()
-            return False
+            # Persist current metrics
+            self._persist_metrics()
+            
+            # Implement exponential back-off reconnection logic
+            if self.reconnect_attempts < self.max_reconnect_attempts:
+                delay = self._calculate_backoff_delay()
+                self.audit_logger.log_reconnection_attempt(
+                    pool_name=self.pool_name,
+                    pool_url=self.pool_url,
+                    attempt_number=self.reconnect_attempts + 1,
+                    delay_seconds=delay,
+                )
+                self.logger.info(
+                    "Reconnection attempt %s/%s for pool %s in %.2f seconds",
+                    self.reconnect_attempts + 1,
+                    self.max_reconnect_attempts,
+                    self.pool_name,
+                    delay,
+                )
+                await asyncio.sleep(delay)
+                return await self.connect()
+            else:
+                self.logger.error(
+                    "Max reconnection attempts (%s) reached for pool %s",
+                    self.max_reconnect_attempts,
+                    self.pool_name,
+                )
+                return False
+
+    def _persist_metrics(self) -> None:
+        """Persist current metrics to the metrics store."""
+        acceptance_rate = (
+            self.shares_accepted / self.shares_submitted
+            if self.shares_submitted > 0
+            else 0.0
+        )
+        metrics = PoolMetrics(
+            pool_name=self.pool_name,
+            pool_url=self.pool_url,
+            shares_submitted=self.shares_submitted,
+            shares_accepted=self.shares_accepted,
+            shares_rejected=self.shares_rejected,
+            connection_failures=self.connection_failures,
+            avg_latency_ms=self.avg_latency,
+            last_activity_timestamp=self.last_activity,
+            last_pool_event_timestamp=self.last_pool_event_at,
+            last_share_submit_timestamp=self.last_share_submit_at,
+            current_difficulty=self.current_difficulty,
+            current_jobs_count=len(self.current_jobs),
+            acceptance_rate=acceptance_rate,
+        )
+        self.metrics_store.update_pool_metrics(metrics)
+
+    async def _heartbeat_loop(self) -> None:
+        """Background task to monitor connection liveness and trigger reconnection if needed."""
+        while self.is_connected and self.live_session is not None:
+            try:
+                await asyncio.sleep(self.heartbeat_interval)
+                
+                # Check if connection is idle for too long
+                idle_time = time.time() - self.last_activity
+                if idle_time > self.idle_timeout:
+                    self.logger.warning(
+                        "Connection to pool %s idle for %.2f seconds, checking liveness",
+                        self.pool_name,
+                        idle_time,
+                    )
+                    # Try to read with short timeout to check if socket is still alive
+                    try:
+                        event, payload = await self.live_session.read_event(timeout=5.0)
+                        if event:
+                            self.last_activity = time.time()
+                            self.last_pool_event_at = self.last_activity
+                            self.logger.info("Heartbeat check successful for pool %s", self.pool_name)
+                    except (asyncio.TimeoutError, StratumTransportError, LiveStratumSessionError):
+                        self.audit_logger.log_heartbeat_failure(
+                            pool_name=self.pool_name,
+                            pool_url=self.pool_url,
+                            idle_time_seconds=idle_time,
+                        )
+                        self.logger.error("Connection to pool %s appears dead, triggering reconnection", self.pool_name)
+                        await self.disconnect()
+                        await self.connect()
+                        break
+                
+            except asyncio.CancelledError:
+                break
+            except Exception as e:
+                self.logger.error("Heartbeat loop error for pool %s: %s", self.pool_name, e)
+                break
 
     async def _connect_live(self) -> None:
         """Open a real TCP/TLS Stratum session and complete subscribe/authorize."""
@@ -171,6 +331,12 @@ class StratumClient:
             raise LiveStratumSessionError(
                 "live Stratum v2 transport is not implemented; configure a Stratum v1 pool or keep this pool disabled"
             )
+
+        self.audit_logger.log_handshake_start(
+            pool_name=self.pool_name,
+            pool_url=self.pool_url,
+            username=self.username,
+        )
 
         profile = build_profile(
             self.pool_name.lower().replace(" ", "_"),
@@ -190,6 +356,20 @@ class StratumClient:
         self.extranonce2_size = int(handshake.extranonce2_size)
         self.is_authenticated = handshake.authorized
         self.connection_state = "AUTHENTICATED"
+        
+        if self.is_authenticated:
+            self.audit_logger.log_handshake_success(
+                pool_name=self.pool_name,
+                pool_url=self.pool_url,
+                extranonce1=self.extranonce1,
+                extranonce2_size=self.extranonce2_size,
+            )
+        else:
+            self.audit_logger.log_handshake_failure(
+                pool_name=self.pool_name,
+                pool_url=self.pool_url,
+                error="Authorization rejected by pool",
+            )
 
     async def _connect_development_fixture(self) -> None:
         """Keep local tests deterministic without pretending production is connected."""
@@ -243,12 +423,27 @@ class StratumClient:
         self.last_pool_event_at = self.last_activity
 
         if event == "mining.set_difficulty":
+            old_difficulty = self.current_difficulty
             self.current_difficulty = float(payload.difficulty)
+            self.audit_logger.log_difficulty_change(
+                pool_name=self.pool_name,
+                pool_url=self.pool_url,
+                old_difficulty=old_difficulty,
+                new_difficulty=self.current_difficulty,
+            )
             self.logger.info("Pool %s difficulty updated to %s", self.pool_name, self.current_difficulty)
             return None
 
         if event == "mining.notify":
             if payload.clean_jobs:
+                # Mark all existing jobs as stale before clearing
+                for job_id in self.current_jobs:
+                    self.stale_job_ids.add(job_id)
+                    self.audit_logger.log_job_stale(
+                        pool_name=self.pool_name,
+                        pool_url=self.pool_url,
+                        job_id=job_id,
+                    )
                 self.current_jobs.clear()
             job = MiningJob(
                 job_id=payload.job_id,
@@ -263,10 +458,55 @@ class StratumClient:
                 extranonce1=self.extranonce1,
                 extranonce2_size=self.extranonce2_size,
                 stratum_version=self.stratum_version,
+                is_stale=False,
             )
             self.current_jobs[job.job_id] = job
+            self.audit_logger.log_job_received(
+                pool_name=self.pool_name,
+                pool_url=self.pool_url,
+                job_id=job.job_id,
+                clean_jobs=payload.clean_jobs,
+                difficulty=self.current_difficulty,
+            )
             self.logger.info("Received live mining job %s from %s", job.job_id, self.pool_name)
             return job
+
+        if event == "mining.set_extranonce":
+            old_extranonce1 = self.extranonce1
+            old_extranonce2_size = self.extranonce2_size
+            self.extranonce1 = payload.extranonce1
+            self.extranonce2_size = payload.extranonce2_size
+            self.audit_logger.log_extranonce_change(
+                pool_name=self.pool_name,
+                pool_url=self.pool_url,
+                old_extranonce1=old_extranonce1,
+                new_extranonce1=self.extranonce1,
+                old_extranonce2_size=old_extranonce2_size,
+                new_extranonce2_size=self.extranonce2_size,
+            )
+            self.logger.info(
+                "Pool %s updated extranonce: extranonce1=%s, extranonce2_size=%s",
+                self.pool_name,
+                self.extranonce1,
+                self.extranonce2_size,
+            )
+            return None
+
+        if event == "mining.set_version_mask":
+            self.logger.info(
+                "Pool %s set version mask: %s",
+                self.pool_name,
+                payload.version_mask,
+            )
+            return None
+
+        if event == "unknown":
+            self.logger.warning(
+                "Pool %s sent unsupported message: method=%s",
+                self.pool_name,
+                payload.get("method"),
+            )
+            return None
 
         return None
 
@@ -274,16 +514,57 @@ class StratumClient:
         """Validate locally, then submit to the pool before recording accepted/rejected counters."""
         from pythia_mining.mining_validation import MiningValidationError, validate_share
 
+        # Reject shares for stale jobs
+        if job.job_id in self.stale_job_ids or job.is_stale:
+            self.shares_submitted += 1
+            self.shares_rejected += 1
+            self.last_share_error = "stale_job"
+            self.audit_logger.log_share_rejected(
+                pool_name=self.pool_name,
+                pool_url=self.pool_url,
+                job_id=job.job_id,
+                nonce=nonce,
+                reason="stale_job",
+                error_code=410,
+            )
+            self.logger.warning(
+                "Rejected share for stale job %s from pool %s",
+                job.job_id,
+                self.pool_name,
+            )
+            return ShareResult(
+                accepted=False,
+                error_code=410,
+                error_message="stale_job",
+                job_id=job.job_id,
+                nonce=nonce,
+            )
+
         extranonce2_value = extranonce2 or ("00" * job.extranonce2_size)
         try:
             validation = validate_share(job, nonce, extranonce2_value)
         except MiningValidationError as exc:
+            self.audit_logger.log_share_validation_error(
+                pool_name=self.pool_name,
+                pool_url=self.pool_url,
+                job_id=job.job_id,
+                nonce=nonce,
+                error=str(exc),
+            )
             self.shares_submitted += 1
             self.shares_rejected += 1
             self.last_share_error = str(exc)
             return ShareResult(False, 400, str(exc), job.job_id, nonce)
 
         if not validation.valid:
+            self.audit_logger.log_share_rejected(
+                pool_name=self.pool_name,
+                pool_url=self.pool_url,
+                job_id=job.job_id,
+                nonce=nonce,
+                reason=validation.reason,
+                error_code=1,
+            )
             self.shares_submitted += 1
             self.shares_rejected += 1
             self.last_share_error = validation.reason
@@ -303,32 +584,121 @@ class StratumClient:
         self.shares_submitted += 1
         self.last_share_submit_at = time.time()
         nonce_hex = nonce.to_bytes(4, byteorder="little", signed=False).hex()
-        try:
-            submit_result = await self.live_session.submit_share(
-                job_id=job.job_id,
-                extranonce2=extranonce2_value,
-                ntime=job.ntime,
-                nonce=nonce_hex,
-            )
-        except Exception as exc:
-            self.shares_rejected += 1
-            self.last_share_error = str(exc)
-            return ShareResult(
-                accepted=False,
-                error_code=502,
-                error_message=f"pool_submit_failed: {exc}",
+        
+        self.audit_logger.log_share_submission(
+            pool_name=self.pool_name,
+            pool_url=self.pool_url,
+            job_id=job.job_id,
+            nonce=nonce,
+            extranonce2=extranonce2_value,
+        )
+        
+        # Implement retry logic for share submission failures
+        submit_result = None
+        last_exception = None
+        for attempt in range(self.max_share_retry_attempts):
+            try:
+                submit_result = await self.live_session.submit_share(
+                    job_id=job.job_id,
+                    extranonce2=extranonce2_value,
+                    ntime=job.ntime,
+                    nonce=nonce_hex,
+                )
+                # If successful, break out of retry loop
+                if submit_result.accepted:
+                    break
+                # If rejected by pool, don't retry - it's a legitimate rejection
+                if not submit_result.accepted and submit_result.error:
+                    self.logger.warning(
+                        "Pool %s rejected share (attempt %s/%s): %s",
+                        self.pool_name,
+                        attempt + 1,
+                        self.max_share_retry_attempts,
+                        submit_result.error,
+                    )
+                    break
+            except Exception as exc:
+                last_exception = exc
+                self.logger.warning(
+                    "Share submission failed (attempt %s/%s) for pool %s: %s",
+                    attempt + 1,
+                    self.max_share_retry_attempts,
+                    self.pool_name,
+                    exc,
+                )
+                if attempt < self.max_share_retry_attempts - 1:
+                    # Calculate back-off delay for retry
+                    delay = min(
+                        self.share_retry_backoff_base * (2 ** attempt),
+                        self.share_retry_backoff_max
+                    )
+                    await asyncio.sleep(delay)
+                else:
+                    # All retries exhausted
+                    self.audit_logger.log_share_rejected(
+                        pool_name=self.pool_name,
+                        pool_url=self.pool_url,
+                        job_id=job.job_id,
+                        nonce=nonce,
+                        reason=f"pool_submit_failed: {last_exception}",
+                        error_code=502,
+                    )
+                    self.shares_rejected += 1
+                    self.last_share_error = str(last_exception)
+                    return ShareResult(
+                        accepted=False,
+                        error_code=502,
+                        error_message=f"pool_submit_failed: {last_exception}",
+                        job_id=job.job_id,
+                        nonce=nonce,
+                        block_hash=validation.block_hash,
+                        target=validation.target,
+                    )
+
+        if submit_result.accepted:
+            self.audit_logger.log_share_accepted(
+                pool_name=self.pool_name,
+                pool_url=self.pool_url,
                 job_id=job.job_id,
                 nonce=nonce,
                 block_hash=validation.block_hash,
+            )
+            self.metrics_store.record_share_submission(
+                pool_name=self.pool_name,
+                pool_url=self.pool_url,
+                job_id=job.job_id,
+                nonce=nonce,
+                accepted=True,
+                block_hash=validation.block_hash,
                 target=validation.target,
             )
-
-        if submit_result.accepted:
             self.shares_accepted += 1
             self.last_share_error = None
         else:
+            self.audit_logger.log_share_rejected(
+                pool_name=self.pool_name,
+                pool_url=self.pool_url,
+                job_id=job.job_id,
+                nonce=nonce,
+                reason=str(submit_result.error),
+                error_code=2,
+            )
+            self.metrics_store.record_share_submission(
+                pool_name=self.pool_name,
+                pool_url=self.pool_url,
+                job_id=job.job_id,
+                nonce=nonce,
+                accepted=False,
+                error_code=2,
+                error_message=str(submit_result.error),
+                block_hash=validation.block_hash,
+                target=validation.target,
+            )
             self.shares_rejected += 1
             self.last_share_error = str(submit_result.error)
+        
+        # Persist metrics after share submission
+        self._persist_metrics()
 
         return ShareResult(
             accepted=submit_result.accepted,
@@ -350,10 +720,36 @@ class StratumClient:
                 self.live_session = None
 
     async def disconnect(self):
+        # Cancel heartbeat task if running
+        if self._heartbeat_task is not None:
+            self._heartbeat_task.cancel()
+            try:
+                await self._heartbeat_task
+            except asyncio.CancelledError:
+                pass
+            self._heartbeat_task = None
+        
         await self._close_live_session()
         self.is_connected = False
         self.is_authenticated = False
         self.connection_state = "DISCONNECTED"
+        self.audit_logger.log_event(
+            AuditEvent(
+                event_type=AuditEventType.DISCONNECTION,
+                pool_name=self.pool_name,
+                pool_url=self.pool_url,
+                timestamp=time.time(),
+                event_data={},
+                severity="INFO",
+            )
+        )
+        self.metrics_store.record_connection_event(
+            pool_name=self.pool_name,
+            pool_url=self.pool_url,
+            event_type="disconnection",
+        )
+        # Persist final metrics
+        self._persist_metrics()
         self.logger.info("Disconnected cleanly from pool %s", self.pool_name)
 
     def inject_simulated_target_job(self, difficulty: float):

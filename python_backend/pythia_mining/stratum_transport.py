@@ -50,12 +50,24 @@ class StratumLineTransport:
         return self.writer is not None and not self.writer.is_closing()
 
     async def connect(self) -> None:
-        ssl_context = ssl.create_default_context() if self.endpoint.use_tls else None
+        ssl_context = None
+        if self.endpoint.use_tls:
+            ssl_context = ssl.create_default_context()
+            # Enforce certificate verification to prevent MITM attacks
+            ssl_context.verify_mode = ssl.CERT_REQUIRED
+            ssl_context.check_hostname = True
+            # Use only secure TLS protocols
+            ssl_context.minimum_version = ssl.TLSVersion.TLSv1_2
+            ssl_context.maximum_version = ssl.TLSVersion.TLSv1_3
         try:
             self.reader, self.writer = await asyncio.wait_for(
                 asyncio.open_connection(self.endpoint.host, self.endpoint.port, ssl=ssl_context),
                 timeout=self.connect_timeout,
             )
+        except ssl.SSLCertVerificationError as exc:
+            raise StratumTransportError(
+                f"TLS certificate verification failed for {self.endpoint.host}:{self.endpoint.port}: {exc}"
+            ) from exc
         except Exception as exc:  # pragma: no cover - network dependent
             raise StratumTransportError(f"failed to connect to {self.endpoint.host}:{self.endpoint.port}: {exc}") from exc
 

@@ -46,6 +46,21 @@ class DifficultyMessage:
         return asdict(self)
 
 
+@dataclass(frozen=True)
+class SetExtranonceMessage:
+    extranonce1: str
+    extranonce2_size: int
+    def to_dict(self) -> Dict[str, Any]:
+        return asdict(self)
+
+
+@dataclass(frozen=True)
+class SetVersionMaskMessage:
+    version_mask: str
+    def to_dict(self) -> Dict[str, Any]:
+        return asdict(self)
+
+
 def _require_hex(value: str, field: str, *, even: bool = True) -> str:
     if not isinstance(value, str) or not value:
         raise StratumProtocolError(f"{field} must be a non-empty hex string")
@@ -145,6 +160,23 @@ def parse_set_difficulty(params: Sequence[Any]) -> DifficultyMessage:
     return DifficultyMessage(difficulty=difficulty)
 
 
+def parse_set_extranonce(params: Sequence[Any]) -> SetExtranonceMessage:
+    if len(params) < 2:
+        raise StratumProtocolError("mining.set_extranonce requires extranonce1 and extranonce2_size")
+    extranonce1 = _require_hex(str(params[0]), "extranonce1")
+    extranonce2_size = int(params[1])
+    if extranonce2_size <= 0 or extranonce2_size > 32:
+        raise StratumProtocolError("extranonce2_size is out of safe range")
+    return SetExtranonceMessage(extranonce1=extranonce1, extranonce2_size=extranonce2_size)
+
+
+def parse_set_version_mask(params: Sequence[Any]) -> SetVersionMaskMessage:
+    if not params:
+        raise StratumProtocolError("mining.set_version_mask requires version_mask")
+    version_mask = _require_hex(str(params[0]), "version_mask")
+    return SetVersionMaskMessage(version_mask=version_mask)
+
+
 def parse_server_message(line: str) -> Tuple[str, Any]:
     message = parse_json_line(line)
     method = message.get("method")
@@ -152,8 +184,15 @@ def parse_server_message(line: str) -> Tuple[str, Any]:
         return method, parse_notify_params(message.get("params", []))
     if method == "mining.set_difficulty":
         return method, parse_set_difficulty(message.get("params", []))
+    if method == "mining.set_extranonce":
+        return method, parse_set_extranonce(message.get("params", []))
+    if method == "mining.set_version_mask":
+        return method, parse_set_version_mask(message.get("params", []))
     if "id" in message:
         return "response", message
+    # Log unsupported messages but don't raise - allows future protocol extensions
+    if method:
+        return "unknown", {"method": method, "params": message.get("params", [])}
     raise StratumProtocolError("unsupported Stratum server message")
 
 
@@ -162,6 +201,8 @@ __all__ = [
     "SubscribeResult",
     "NotifyMessage",
     "DifficultyMessage",
+    "SetExtranonceMessage",
+    "SetVersionMaskMessage",
     "build_subscribe",
     "build_authorize",
     "build_submit",
@@ -170,5 +211,7 @@ __all__ = [
     "parse_authorize_result",
     "parse_notify_params",
     "parse_set_difficulty",
+    "parse_set_extranonce",
+    "parse_set_version_mask",
     "parse_server_message",
 ]
