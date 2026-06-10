@@ -17,9 +17,9 @@ from urllib.parse import urlparse
 try:
     import aiohttp
 except ImportError:
-    class MockAiohttp:
+    class AiohttpUnavailable:
         ClientWebSocketResponse = Any
-    aiohttp = MockAiohttp()
+    aiohttp = AiohttpUnavailable()
 
 
 @dataclass
@@ -74,7 +74,7 @@ def _dev_fixtures_allowed() -> bool:
 
 class StratumClient:
     """
-    Substrate-independent high-performance Stratum client.
+    Substrate-independent Stratum client.
 
     Production credentials must be supplied externally. Development fixtures are allowed
     only outside production so test/smoke paths cannot leak into live deployments.
@@ -257,24 +257,45 @@ class PoolManager:
         self.logger = logging.getLogger("stratum.pool_manager")
         self._initialize_pools()
 
-    def _pool_value(self, key: str, field: str, default: Optional[str] = None) -> Optional[str]:
+    def _explicit_pool_value(self, key: str, field: str) -> Optional[str]:
         configured = self.pools_config.get(key, {}) if self.pools_config else {}
-        env_key = f"HYBA_POOL_{key.upper()}_{field.upper()}"
-        value = configured.get(field) or os.getenv(env_key)
-        if value:
-            return str(value)
-        if _dev_fixtures_allowed():
-            return default
-        return None
+        value = configured.get(field) or os.getenv(f"HYBA_POOL_{key.upper()}_{field.upper()}")
+        return str(value) if value else None
+
+    def _dev_pool_value(self, key: str, field: str, default: Optional[str]) -> Optional[str]:
+        explicit = self._explicit_pool_value(key, field)
+        if explicit:
+            return explicit
+        return default if _dev_fixtures_allowed() else None
 
     def _add_pool(self, key: str, *, default_url: str, default_username: str, default_password: str, pool_name: str, stratum_version: int) -> None:
-        url = self._pool_value(key, "url", default_url)
-        username = self._pool_value(key, "username", default_username)
-        password = self._pool_value(key, "password", default_password)
-        version_raw = self._pool_value(key, "stratum_version", str(stratum_version))
+        explicit = {
+            "url": self._explicit_pool_value(key, "url"),
+            "username": self._explicit_pool_value(key, "username"),
+            "password": self._explicit_pool_value(key, "password"),
+            "stratum_version": self._explicit_pool_value(key, "stratum_version"),
+        }
+        has_any_explicit = any(explicit.values())
 
-        if _is_production() and (not url or not username or not password):
-            raise ProductionConfigurationError(f"Production pool {key} requires URL, username, and password")
+        if _is_production():
+            if not has_any_explicit:
+                self.logger.info("Skipping unconfigured production pool %s", key)
+                return
+            missing = [field for field in ("url", "username", "password") if not explicit[field]]
+            if missing:
+                raise ProductionConfigurationError(
+                    f"Production pool {key} is partially configured; missing: {', '.join(missing)}"
+                )
+            url = explicit["url"]
+            username = explicit["username"]
+            password = explicit["password"]
+            version_raw = explicit["stratum_version"] or str(stratum_version)
+        else:
+            url = self._dev_pool_value(key, "url", default_url)
+            username = self._dev_pool_value(key, "username", default_username)
+            password = self._dev_pool_value(key, "password", default_password)
+            version_raw = self._dev_pool_value(key, "stratum_version", str(stratum_version))
+
         if not url or not username or not password:
             self.logger.warning("Skipping pool %s because configuration is incomplete", key)
             return
