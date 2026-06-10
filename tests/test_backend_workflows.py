@@ -10,6 +10,7 @@ import random
 import sys
 import unittest
 from pathlib import Path
+from types import SimpleNamespace
 from unittest.mock import AsyncMock, patch
 
 from pydantic import ValidationError
@@ -33,6 +34,7 @@ from pythia_mining.stratum_client import (  # noqa: E402
     AllPoolsOfflineError,
     PoolManager,
     ProductionConfigurationError,
+    StratumClient,
 )
 
 EXPECTED_INIT_ORDER = [
@@ -123,6 +125,61 @@ class MiningPropertyAndIntegrationTests(unittest.TestCase):
         self.assertEqual(1, result["shares_submitted"])
         self.assertEqual(1, result["shares_accepted"] + result["shares_rejected"])
         self.assertIsNotNone(result["share_result"].block_hash)
+
+    def test_live_stratum_mode_uses_session_handshake_not_fixture_auth(self) -> None:
+        class FakeLiveSession:
+            def __init__(self, profile):
+                self.profile = profile
+                self.closed = False
+
+            async def connect(self):
+                return None
+
+            async def subscribe_and_authorize(self):
+                return SimpleNamespace(extranonce1="abc123", extranonce2_size=8, authorized=True)
+
+            async def close(self):
+                self.closed = True
+
+        async def run_case():
+            client = StratumClient(
+                pool_url="stratum+tcp://example.com:3333",
+                username="worker",
+                password="secret",
+                pool_name="Example Pool",
+                stratum_version=1,
+            )
+            with patch.dict(os.environ, {"HYBA_ENABLE_LIVE_STRATUM": "1"}, clear=False):
+                with patch("pythia_mining.stratum_client.LiveStratumSession", FakeLiveSession):
+                    connected = await client.connect()
+            await client.disconnect()
+            return connected, client
+
+        connected, client = asyncio.run(run_case())
+
+        self.assertTrue(connected)
+        self.assertEqual("abc123", client.extranonce1)
+        self.assertEqual(8, client.extranonce2_size)
+        self.assertEqual("DISCONNECTED", client.connection_state)
+
+    def test_live_stratum_v2_fails_closed_until_transport_exists(self) -> None:
+        async def run_case():
+            client = StratumClient(
+                pool_url="stratum2+tcp://example.com:3336",
+                username="worker",
+                password="secret",
+                pool_name="Example V2 Pool",
+                stratum_version=2,
+            )
+            with patch.dict(os.environ, {"HYBA_ENABLE_LIVE_STRATUM": "1"}, clear=False):
+                connected = await client.connect()
+            return connected, client
+
+        connected, client = asyncio.run(run_case())
+
+        self.assertFalse(connected)
+        self.assertFalse(client.is_authenticated)
+        self.assertIn("live Stratum v2 transport is not implemented", client.connection_state)
 
     def test_configured_solver_projects_nonce_inside_declared_ranges(self) -> None:
         async def run_cases() -> None:
