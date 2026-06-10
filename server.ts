@@ -13,7 +13,6 @@ import helmet from "helmet";
 import path from "node:path";
 import { spawn, type ChildProcessWithoutNullStreams } from "node:child_process";
 import { createServer, type Server } from "node:http";
-import { pathToFileURL } from "node:url";
 import pino from "pino";
 import pinoHttp from "pino-http";
 import { createServer as createViteServer } from "vite";
@@ -207,8 +206,9 @@ async function startServer(): Promise<void> {
 
   if (!isProduction) {
     logger.info("Mounting Vite middleware in local development mode");
+    const viteConfigPath = path.resolve(process.cwd(), "vite.config.ts");
     const vite = await createViteServer({
-      configFile: pathToFileURL(path.join(process.cwd(), "vite.config.ts")).href,
+      configFile: viteConfigPath,
       server: { middlewareMode: true },
       appType: "spa",
     });
