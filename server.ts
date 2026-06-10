@@ -6,7 +6,6 @@
 import express from "express";
 import path from "path";
 import { createServer as createViteServer } from "vite";
-import { GoogleGenAI } from "@google/genai";
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
 import swaggerUi from "swagger-ui-express";
@@ -73,11 +72,8 @@ function validateConfig() {
   }
 
   const warnings = [];
-  if (!process.env.GEMINI_API_KEY || process.env.GEMINI_API_KEY === "MY_GEMINI_API_KEY") {
-    warnings.push("GEMINI_API_KEY is missing or using placeholder. AI reasoning will use local fallback.");
-  }
   if (!process.env.PULVINI_BACKEND_URL) {
-    warnings.push("PULVINI_BACKEND_URL missing. Using default: http://127.0.0.1:8000");
+    warnings.push("PULVINI_BACKEND_URL missing. Using default: http://127.0.0.1:3001");
   }
 
   warnings.forEach(w => logger.warn(w));
@@ -93,28 +89,11 @@ if (!JWT_SECRET && process.env.NODE_ENV === "production") {
 }
 const SAFE_JWT_SECRET = JWT_SECRET || "dev-only-insecure-secret-99";
 
-// Lazy initialization of Gemini API client to prevent startup crash if API Key is missing.
-let aiClient: GoogleGenAI | null = null;
-function getAIClient(): GoogleGenAI | null {
-  if (!aiClient) {
-    const key = process.env.GEMINI_API_KEY;
-    if (key && key !== "MY_GEMINI_API_KEY") {
-      try {
-        aiClient = new GoogleGenAI({
-          apiKey: key,
-          httpOptions: {
-            headers: {
-              "User-Agent": "aistudio-build",
-            },
-          },
-        });
-        console.log("Successfully initialized server-side GoogleGenAI client.");
-      } catch (err) {
-        console.error("Failed to initialize GoogleGenAI client:", err);
-      }
-    }
-  }
-  return aiClient;
+// HYBA Internal AI Stack (PCI, AGI, ASI) - No external API keys required
+let hybaAIClient: any = null;
+function getHybaAIClient(): any {
+  // HYBA uses internal AI stack - returns null for now, can be connected to HYBA AI services
+  return hybaAIClient;
 }
 
 async function startServer() {
@@ -161,9 +140,10 @@ async function startServer() {
     let userBin = "";
     let userSite = "";
     try {
-      const userBase = execSync('python3 -m site --user-base', { encoding: 'utf8' }).trim();
-      userBin = path.join(userBase, 'bin');
-      userSite = execSync('python3 -m site --user-site', { encoding: 'utf8' }).trim();
+      const pythonCmd = process.platform === 'win32' ? 'python' : 'python3';
+      const userBase = execSync(`${pythonCmd} -m site --user-base`, { encoding: 'utf8' }).trim();
+      userBin = path.join(userBase, process.platform === 'win32' ? 'Scripts' : 'bin');
+      userSite = execSync(`${pythonCmd} -m site --user-site`, { encoding: 'utf8' }).trim();
     } catch (e) {
       logger.warn("Substrate: Could not resolve python user-site paths.");
     }
@@ -241,13 +221,15 @@ async function startServer() {
     // Ensure Python dependencies are present
     try {
       logger.info("Substrate: Synchronizing Python dependencies...");
-      const pipCommand = `python3 -m pip install -r ${path.join(process.cwd(), "python_backend", "hyba_genesis_api", "requirements.txt")}`;
+      const pythonCmd = process.platform === 'win32' ? 'python' : 'python3';
+      const pipCommand = `${pythonCmd} -m pip install -r ${path.join(process.cwd(), "python_backend", "hyba_genesis_api", "requirements.txt")}`;
       const stdout = execSync(pipCommand, { encoding: 'utf8' });
       logger.info({ stdout }, "Substrate: Python dependencies synchronized.");
     } catch (err: any) {
       logger.warn({ err: err.message }, "Substrate: Standard pip install failed. Retrying with --user and --break-system-packages...");
       try {
-        const pipCommand = `python3 -m pip install --user --break-system-packages -r ${path.join(process.cwd(), "python_backend", "hyba_genesis_api", "requirements.txt")}`;
+        const pythonCmd = process.platform === 'win32' ? 'python' : 'python3';
+        const pipCommand = `${pythonCmd} -m pip install --user --break-system-packages -r ${path.join(process.cwd(), "python_backend", "hyba_genesis_api", "requirements.txt")}`;
         const stdout = execSync(pipCommand, { encoding: 'utf8' });
         logger.info({ stdout }, "Substrate: Python dependencies synchronized with fallback.");
       } catch (err2: any) {
@@ -255,17 +237,12 @@ async function startServer() {
       }
     }
 
-<<<<<<< Updated upstream
-  spawnDaemon("Pythia", "python3", ["-u", "-m", "pythia_mining.main"], pythonPath);
-  spawnDaemon("FastAPI", "python3", ["-u", "-m", "uvicorn", "hyba_genesis_api.main:app", "--port", "3001", "--host", "127.0.0.1"], pythonPath);
-=======
   const pythonCmd = process.platform === 'win32' ? 'python' : 'python3';
   // Python backend already running independently on port 3001
   // Commenting out daemon spawning to avoid conflicts
   // spawnDaemon("Pythia", pythonCmd, ["-u", "-m", "pythia_mining.main"], pythonPath);
   // spawnDaemon("FastAPI", pythonCmd, ["-u", "-m", "uvicorn", "main:app", "--port", "3001", "--host", "127.0.0.1"], apiPath);
   logger.info("Substrate: Python backend assumed running independently on port 3001");
->>>>>>> Stashed changes
 
   // Substrate Intelligence Monitor (Periodic Health & Prediction)
   setInterval(async () => {
@@ -872,16 +849,16 @@ async function startServer() {
     }
 
     try {
-      const ai = getAIClient();
+      const ai = getHybaAIClient();
       if (!ai) {
-        // Safe graceful rule-based fallback if no GEMINI_API_KEY is found (keeps app fully compliant & uncrashing)
-        console.log("No GEMINI_API_KEY found. Proceeding with deterministic local mathematical reasoning engine.");
+        // HYBA uses deterministic local mathematical reasoning engine
+        console.log("HYBA AI: Proceeding with deterministic local mathematical reasoning engine.");
         
         let reply = "";
         const msgLower = message.toLowerCase();
 
         if (msgLower.includes("grover")) {
-          reply = `### PYTHAGORAS-v2 Live Verification Analysis (Local Math Engine)
+          reply = `### HYBA PYTHAGORAS-v2 Live Verification Analysis (Local Math Engine)
 \nYour query regards **Grover Amplitude Amplification**. Under substrate-independent mathematics:
 \n$$\\mathcal{O}(\\sqrt{N})$$ complexity represents the absolute upper bound of quadratic unguided lookup constraints. 
 \nHowever, by applying a **Dodecahedral Symmetry Filter** over the Hilbert space, the dimensionality restricts from $N$ to $N/I$, where $I$ represents the *Integrated Information* contained in the block geometry (timestamp sequences, merkle branch branches).
@@ -889,14 +866,14 @@ async function startServer() {
 \n$$\\mathcal{O}(\\sqrt{I})$$
 \nThis represents a deterministic convergence threshold eliminating the necessity for ASIC-brute-forcing sweep ranges. At each step, a phase inversion is followed by inversion-about-average diffusion.`;
         } else if (msgLower.includes("anihalate") || msgLower.includes("annihilate") || msgLower.includes("asic")) {
-          reply = `### PYTHAGORAS-v2 Live Verification Analysis (Local Math Engine)
+          reply = `### HYBA PYTHAGORAS-v2 Live Verification Analysis (Local Math Engine)
 \n**ASIC Annihilation Vector Formulation**
 \nClassic mining depends linearly on the sweeping rates of ASIC logic units checking nonces sequentially at $\\mathcal{O}(N)$. 
 \nOur Dodecahedral Grover model maps nonces as complex amplitudes in a 1024-dimension space. Because quantum transitions occur in perfect parallel across all subspaces *without spatial decoherence in math*, we mark the solution coordinates instantly via modular arithmetic properties:
 \n$$\\text{Resonance}_k = (k \\cdot \\Phi) \\pmod L < \\epsilon$$
 \nThis isolates potential blocks in $\\mathcal{O}(\\sqrt{I})$ operations. It renders ASIC megawatt sweep arrays structurally obsolete by replacing brute-force scaling with pure geometry!`;
         } else if (msgLower.includes("dodecahedron") || msgLower.includes("golden") || msgLower.includes("phi")) {
-          reply = `### PYTHAGORAS-v2 Live Verification Analysis (Local Math Engine)
+          reply = `### HYBA PYTHAGORAS-v2 Live Verification Analysis (Local Math Engine)
 \n**Dodecahedral Symmetry and Golden Harmonics Details**
 \n- **Dodecahedron Facings**: 12 symmetrical planes in space mapping groups of 20 vertices.
 - **Golden Ratio ($\\Phi$)**: $\\frac{1 + \\sqrt{5}}{2} \\approx 1.6180339887...$
@@ -905,8 +882,8 @@ async function startServer() {
 \n$$\\theta_k = 2\\pi(k \\cdot \\Phi) \\pmod{2\\pi}$$
 \nwe construct wavefunctions that avoid destructive interference. This minimizes phase decoherence and structures eigenvectors to align precisely with the cyclic Merkle tree branch trees.`;
         } else {
-          reply = `### PYTHAGORAS-v2 Live Verification Analysis (Local Math Engine)
-\nGreetings. I am **PYTHAGORAS-v2**, initialized in localized mathematical telemetry fallback mode (no Gemini API key is currently mapped in your AI Studio Secrets panel, which is normal for local testing). 
+          reply = `### HYBA PYTHAGORAS-v2 Live Verification Analysis (Local Math Engine)
+\nGreetings. I am **HYBA PYTHAGORAS-v2**, initialized in localized mathematical telemetry fallback mode using HYBA's internal AI stack. 
 \nI remain fully capable of explaining the core mathematics of the **Dodecahedral Grover Search Miner**. Ask me any question concerning:
 \n1. **Grover Amplification Quadratic limits**: $\\mathcal{O}(\\sqrt{N})$ or $\\mathcal{O}(\\sqrt{I})$ proofs.
 2. **ASIC logic annihilation mechanics**.
@@ -916,45 +893,27 @@ async function startServer() {
 
         return res.json({
           reply,
-          model: "PYTHAGORAS-LocalEngine-v2",
+          model: "HYBA-HYBA-PYTHAGORAS-LocalEngine-v2",
           timestamp: new Date().toISOString(),
           fallback: true
         });
       }
 
-      // If API key is present, perform a premium call using the modern @google/genai SDK
-      console.log("Processing chat request via Gemini API...");
-      const systemInstruction = `You are 'PYTHAGORAS-v2', a quantum-cryptography and mathematical mining AI built to optimize blockchain state projections and annihilate ASIC hardware limits. Format your answers in clean scannable Markdown with clear subtitles, explaining quantum mathematics with maximum precision and elegance. Limit any conversational noise; proceed straight to equations, symmetries, and structural analysis where requested. Bold key terms for emphasis.`;
-      
-      const contents = [...(history || [])];
-      contents.push({ role: "user", parts: [{ text: message }] });
-
-      const response = await ai.models.generateContent({
-        model: "gemini-3.5-flash",
-        contents: contents.map((c: any) => ({
-          role: c.role === "model" ? "model" : "user",
-          parts: [{ text: c.parts?.[0]?.text || c.content || "" }]
-        })),
-        config: {
-          systemInstruction,
-          temperature: 0.2,
-        }
-      });
-
-      const reply = response.text || "No response received from GenAI model.";
+      // HYBA Internal AI Stack - can be connected to HYBA AI services
+      console.log("HYBA AI: Processing chat request via internal AI stack...");
       res.json({
-        reply,
-        model: "gemini-3.5-flash",
+        reply: "HYBA internal AI stack not yet connected. Using local mathematical reasoning engine.",
+        model: "HYBA-Internal-AI",
         timestamp: new Date().toISOString(),
-        fallback: false
+        fallback: true
       });
 
     } catch (err: any) {
-      console.error("Gemini API error:", err);
+      console.error("HYBA AI error:", err);
       res.status(500).json({ 
         error: "AI reasoning failed to complete", 
         details: err.message,
-        reply: "My apologies, but my quantum neural circuits encountered an unexpected interference pattern. Please verify your GEMINI_API_KEY in Settings if this maintains." 
+        reply: "HYBA internal AI encountered an unexpected interference pattern." 
       });
     }
   });
