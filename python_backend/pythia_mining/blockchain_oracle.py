@@ -1,22 +1,29 @@
 """
 Blockchain Space Oracle
-HYBA / PYTHIA Mining System - Structural Resonance Analysis
+HYBA / PYTHIA Mining System - Structural Analysis Boundary
 """
 
-import asyncio
-from typing import Dict, List, Optional, Any
+from __future__ import annotations
+
 from dataclasses import dataclass
+from typing import Optional
+
 
 @dataclass
 class PhiAnalysisResult:
-    phi_score: float = 0.702
-    resonance_radius: float = 0.61803
-    aligned_blocks_percentage: float = 70.0
+    phi_score: Optional[float] = None
+    resonance_radius: Optional[float] = None
+    aligned_blocks_percentage: Optional[float] = None
+    source: str = "not_connected"
+
 
 class BlockchainOracle:
-    def __init__(self):
-        pass
-        
+    """
+    Placeholder-free blockchain oracle boundary.
+
+    Until a real chain/indexer source is connected, analysis returns explicit unknowns
+    instead of fixed phi/resonance values.
+    """
+
     async def analyze_blockchain_phi_patterns(self) -> PhiAnalysisResult:
-        await asyncio.sleep(0.01)
         return PhiAnalysisResult()
