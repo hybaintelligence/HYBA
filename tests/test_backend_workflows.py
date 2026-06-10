@@ -5,11 +5,12 @@ from __future__ import annotations
 import asyncio
 import json
 import math
+import os
 import random
 import sys
 import unittest
 from pathlib import Path
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, patch
 
 from pydantic import ValidationError
 
@@ -22,12 +23,17 @@ from hyba_genesis_api.api.mining import PowerScaleRequest  # noqa: E402
 from hyba_genesis_api.api.misc import PredictRequest, execute_pulvini  # noqa: E402
 from hyba_genesis_api.api.security import ShieldParam  # noqa: E402
 from hyba_genesis_api.core.substrate import get_substrate_state, initialize_substrate, shutdown_substrate  # noqa: E402
+from pythia_mining.mining_validation import build_block_header, compact_to_target, validate_share  # noqa: E402
 from pythia_mining.quantum_solver import (  # noqa: E402
     DODECAHEDRON_VERTICES,
     QuantumSolverConfigurationError,
     DodecahedralQuantumSolver,
 )
-from pythia_mining.stratum_client import AllPoolsOfflineError, PoolManager  # noqa: E402
+from pythia_mining.stratum_client import (  # noqa: E402
+    AllPoolsOfflineError,
+    PoolManager,
+    ProductionConfigurationError,
+)
 
 EXPECTED_INIT_ORDER = [
     "pulvini_reconstruction_kernel",
@@ -64,18 +70,26 @@ class SubstrateUnitTests(unittest.TestCase):
 
 
 class MiningPropertyAndIntegrationTests(unittest.TestCase):
-    def test_quantum_solver_hashrate_is_monotonic_by_power_scale(self) -> None:
+    def test_quantum_solver_capacity_is_not_reported_without_configuration(self) -> None:
         solver = DodecahedralQuantumSolver()
+        metrics = solver.get_metrics()
+        self.assertTrue(metrics["available"])
+        self.assertIsNone(metrics["hashrate_ehs"])
+        self.assertEqual("not_configured", metrics["capacity_source"])
+        self.assertEqual("derived_runtime_state", metrics["telemetry_source"])
+        self.assertAlmostEqual(math.log2(DODECAHEDRON_VERTICES), metrics["von_neumann_entropy"], places=4)
+
+    def test_quantum_solver_configured_capacity_is_monotonic_by_power_scale(self) -> None:
+        solver = DodecahedralQuantumSolver(configured_capacity_ehs=10.0)
         previous_hashrate = -math.inf
         for scale in [0.1, 0.5, 1.0, 2.5, 10.0]:
             solver.set_power_scale(scale)
             metrics = solver.get_metrics()
-            self.assertTrue(metrics["available"])
+            self.assertEqual("configured_estimate", metrics["capacity_source"])
             self.assertGreaterEqual(metrics["hashrate_ehs"], previous_hashrate)
-            self.assertAlmostEqual(math.log2(DODECAHEDRON_VERTICES), metrics["von_neumann_entropy"], places=4)
             previous_hashrate = metrics["hashrate_ehs"]
 
-    def test_connect_search_submit_smoke_uses_real_pythia_classes(self) -> None:
+    def test_connect_search_submit_smoke_uses_validation_before_accounting(self) -> None:
         async def run_smoke() -> dict[str, object]:
             pool_manager = PoolManager()
             active_pool = await pool_manager.get_best_pool()
@@ -83,23 +97,21 @@ class MiningPropertyAndIntegrationTests(unittest.TestCase):
             solver = DodecahedralQuantumSolver()
             await solver.configure_search(job.target, [(0, 2**32 - 1)])
             nonce = await solver.solve(max_iterations=25, timeout=5.0)
-            active_pool.shares_submitted += 1
-            if nonce is not None and nonce % 67 != 0:
-                active_pool.shares_accepted += 1
-            else:
-                active_pool.shares_rejected += 1
-            result = {
+            assert nonce is not None
+            result = active_pool.validate_and_record_share(job, nonce, "00" * job.extranonce2_size)
+            payload = {
                 "connected": active_pool.is_connected,
                 "authenticated": active_pool.is_authenticated,
                 "connection_state": active_pool.connection_state,
                 "job_id": job.job_id,
                 "nonce": nonce,
+                "share_result": result,
                 "shares_submitted": active_pool.shares_submitted,
                 "shares_accepted": active_pool.shares_accepted,
                 "shares_rejected": active_pool.shares_rejected,
             }
             await pool_manager.disconnect_all()
-            return result
+            return payload
 
         result = asyncio.run(run_smoke())
 
@@ -110,6 +122,7 @@ class MiningPropertyAndIntegrationTests(unittest.TestCase):
         self.assertIsInstance(result["nonce"], int)
         self.assertEqual(1, result["shares_submitted"])
         self.assertEqual(1, result["shares_accepted"] + result["shares_rejected"])
+        self.assertIsNotNone(result["share_result"].block_hash)
 
     def test_configured_solver_projects_nonce_inside_declared_ranges(self) -> None:
         async def run_cases() -> None:
@@ -140,6 +153,15 @@ class MiningPropertyAndIntegrationTests(unittest.TestCase):
                 await pool_manager.get_best_pool()
 
         asyncio.run(run_case())
+
+    def test_validation_primitives_build_80_byte_header_and_target(self) -> None:
+        pool_manager = PoolManager()
+        job = pool_manager.get_active_pool().inject_simulated_target_job(difficulty=1.0)
+        validation = validate_share(job, nonce=0, extranonce2="00" * job.extranonce2_size)
+        header = bytes.fromhex(validation.header_hex)
+        self.assertEqual(80, len(header))
+        self.assertEqual(header, build_block_header(job, validation.merkle_root, 0))
+        self.assertEqual(compact_to_target(job.nbits), validation.target)
 
 
 class AdversarialValidationTests(unittest.TestCase):
@@ -185,6 +207,29 @@ class AdversarialValidationTests(unittest.TestCase):
             self.assertIsNone(await solver.solve(max_iterations=25, timeout=1e-12))
 
         asyncio.run(run_case())
+
+    def test_production_requires_external_pool_configuration_and_blocks_fixtures(self) -> None:
+        clean_env = {
+            key: value
+            for key, value in os.environ.items()
+            if not key.startswith("HYBA_POOL_") and key not in {"NODE_ENV", "HYBA_ENV", "HYBA_ALLOW_DEV_FIXTURES"}
+        }
+        with patch.dict(os.environ, clean_env, clear=True):
+            os.environ["NODE_ENV"] = "production"
+            with self.assertRaises(ProductionConfigurationError):
+                PoolManager()
+
+        production_pool_env = {
+            "NODE_ENV": "production",
+            "HYBA_POOL_NICEHASH_URL": "stratum+ssl://sha256.eu.nicehash.com:33334",
+            "HYBA_POOL_NICEHASH_USERNAME": "prod-user",
+            "HYBA_POOL_NICEHASH_PASSWORD": "prod-secret",
+        }
+        with patch.dict(os.environ, production_pool_env, clear=True):
+            pool_manager = PoolManager()
+            active_pool = pool_manager.get_active_pool()
+            with self.assertRaises(ProductionConfigurationError):
+                active_pool.inject_simulated_target_job(difficulty=1.0)
 
 
 if __name__ == "__main__":
