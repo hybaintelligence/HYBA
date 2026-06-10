@@ -1,0 +1,101 @@
+name: Production Readiness
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  backend-regression:
+    name: Backend regression and mining validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install backend dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r python_backend/hyba_genesis_api/requirements.txt
+
+      - name: Run backend unit, integration, adversarial, and property-style tests
+        run: python -m unittest tests.test_backend_workflows
+
+  frontend-typecheck:
+    name: Frontend build/typecheck
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build frontend/server bundle
+        run: npm run build
+
+  production-config-smoke:
+    name: Production config guardrails
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install backend dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r python_backend/hyba_genesis_api/requirements.txt
+
+      - name: Assert production mode rejects missing pool config
+        env:
+          NODE_ENV: production
+        run: |
+          python - <<'PY'
+          import sys
+          sys.path.insert(0, 'python_backend')
+          from pythia_mining.stratum_client import PoolManager, ProductionConfigurationError
+          try:
+              PoolManager()
+          except ProductionConfigurationError:
+              raise SystemExit(0)
+          raise SystemExit('PoolManager unexpectedly accepted missing production pool config')
+          PY
+
+      - name: Assert production fixtures are blocked with pool config present
+        env:
+          NODE_ENV: production
+          HYBA_POOL_NICEHASH_URL: stratum+ssl://sha256.eu.nicehash.com:33334
+          HYBA_POOL_NICEHASH_USERNAME: ci-user
+          HYBA_POOL_NICEHASH_PASSWORD: ci-secret
+        run: |
+          python - <<'PY'
+          import sys
+          sys.path.insert(0, 'python_backend')
+          from pythia_mining.stratum_client import PoolManager, ProductionConfigurationError
+          pool = PoolManager().get_active_pool()
+          try:
+              pool.inject_simulated_target_job(1.0)
+          except ProductionConfigurationError:
+              raise SystemExit(0)
+          raise SystemExit('Production fixture path was not blocked')
+          PY
