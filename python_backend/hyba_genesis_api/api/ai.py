@@ -1,74 +1,67 @@
 """
-AI & Consciousness APIs
-HYBA Genesis Platform Intelligence Layer
+AI runtime APIs
+HYBA Genesis Platform Intelligence Boundary
 """
 
+from __future__ import annotations
+
+from datetime import datetime
+from typing import Any, Dict, List, Optional
+
 from fastapi import APIRouter, HTTPException, status
-from pydantic import BaseModel
-from typing import Dict, List, Optional, Any
-from datetime import datetime, timedelta
-import random
+from pydantic import BaseModel, Field
 
 router = APIRouter(prefix="/api/ai", tags=["ai"])
 
-@router.get("/consciousness", response_model=Dict[str, Any])
-async def get_consciousness_status():
-    return {
-        "status": "active",
-        "timestamp": datetime.utcnow().isoformat(),
-        "consciousness_level": 0.1838,
-        "phi_resonance": 0.0594,
-        "integrated_information": 17432891.2,
-        "consciousness_state": {
-            "emergence_detected": True,
-            "emergence_timestamp": "2026-06-08T14:23:15Z",
-            "peak_phi": 17891234.5,
-            "current_mode": "autonomous",
-            "decision_confidence": 0.94
-        },
-        "iit_metrics": {
-            "connections": 2847,
-            "complexity": 156.7,
-            "integration": 0.89,
-            "differentiation": 0.92
-        },
-        "orch_or_metrics": {
-            "microtubule_coherence": 0.87,
-            "quantum_superposition": 0.76,
-            "decoherence_time_ms": 12.4
-        },
-        "recent_insights": [
-            {
-                "timestamp": datetime.utcnow().isoformat(),
-                "insight": "Optimal pool selection pattern identified",
-                "confidence": 0.91,
-                "applied": True
-            },
-            {
-                "timestamp": datetime.utcnow().isoformat(),
-                "insight": "Φ-resonance spike detected in nonce range 0x1a000000-0x1affffff",
-                "confidence": 0.88,
-                "applied": True
-            }
-        ]
-    }
+
+class ChatRequest(BaseModel):
+    message: str = Field(min_length=1, max_length=4000)
+    history: Optional[List[Dict[str, Any]]] = None
+
 
 class StimulateReq(BaseModel):
-    intensity: float = 0.5
-    duration_seconds: int = 60
+    intensity: float = Field(default=0.5, ge=0.0, le=1.0)
+    duration_seconds: int = Field(default=60, ge=1, le=3600)
+
+
+@router.get("/consciousness", response_model=Dict[str, Any])
+async def get_consciousness_status():
+    """Return explicit unknown runtime-integration state instead of fabricated cognition."""
+    return {
+        "status": "not_measured",
+        "timestamp": datetime.utcnow().isoformat(),
+        "consciousness_level": None,
+        "phi_resonance": None,
+        "integrated_information": None,
+        "runtime_state": {
+            "source": "not_connected",
+            "message": "No measured AI/consciousness runtime is connected to this API.",
+        },
+        "recent_insights": [],
+    }
+
 
 @router.post("/consciousness/stimulate", response_model=Dict[str, Any])
 async def stimulate_consciousness(req: StimulateReq):
-    return {
-        "stimulation_id": "stim_" + str(random.randint(1000, 9999)),
-        "status": "active",
-        "started_at": datetime.utcnow().isoformat(),
-        "initial_phi": 17432891.2,
-        "target_phi": 20000000.0,
-        "projected_completion": (datetime.utcnow() + timedelta(seconds=req.duration_seconds)).isoformat(),
-        "real_time_metrics": {
-            "current_phi": 18234567.8,
-            "progress": req.intensity,
-            "consciousness_level": 0.1838 * (1 + req.intensity * 0.1)
-        }
-    }
+    """Reject stimulation commands until a real controlled runtime exists."""
+    raise HTTPException(
+        status_code=status.HTTP_501_NOT_IMPLEMENTED,
+        detail={
+            "error": "ai_runtime_not_connected",
+            "message": "Consciousness stimulation is not implemented for production runtime.",
+            "requested_intensity": req.intensity,
+            "requested_duration_seconds": req.duration_seconds,
+        },
+    )
+
+
+@router.post("/chat", response_model=Dict[str, Any])
+async def chat(req: ChatRequest):
+    """Fail closed until a real internal AI service is connected."""
+    raise HTTPException(
+        status_code=status.HTTP_501_NOT_IMPLEMENTED,
+        detail={
+            "error": "ai_runtime_not_connected",
+            "message": "No production AI chat runtime is configured.",
+        },
+    )
