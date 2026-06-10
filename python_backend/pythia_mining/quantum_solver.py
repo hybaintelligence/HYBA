@@ -9,13 +9,13 @@ from __future__ import annotations
 import asyncio
 import logging
 import math
+import os
 import time
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
 
-# Fundamental Quantum Mathematical Constants
 GOLDEN_RATIO = (1.0 + math.sqrt(5.0)) / 2.0
 DODECAHEDRON_VERTICES = 20
 MAX_UINT32_NONCE = 2**32 - 1
@@ -27,8 +27,8 @@ class QuantumResult:
     energy: float = 0.0
     iterations: int = 0
     convergence: bool = True
-    error_rate: float = 0.0001
-    phi_resonance_score: float = 0.702
+    error_rate: Optional[float] = None
+    phi_resonance_score: Optional[float] = None
 
 
 class QuantumSolverConfigurationError(ValueError):
@@ -44,93 +44,87 @@ class DodecahedralQuantumSolver:
     Unitary state-vector formulation covering high-dimensional complex Hilbert spaces
     using Penrose-Du Sautoy symmetry-breaking geometries.
 
-    The implementation models a bounded Grover-style amplitude amplification loop over
-    a 20-state dodecahedral basis. Grover's original result shows that an unstructured
-    search over ``N`` states with ``M`` marked solutions requires ``O(sqrt(N / M))``
-    oracle applications, with the first maximum near ``floor(pi / 4 * sqrt(N / M))``
-    for a single marked solution. See Grover 1996, ``arXiv:quant-ph/9605043``.
-
-    Production guardrails in this module deliberately separate the mathematical kernel
-    from the network/client layer: ``configure_search`` validates pool-provided target
-    and nonce-space constraints, while ``solve`` enforces timeout, finite-state checks,
-    and deterministic nonce projection back into the configured search ranges.
+    This class reports only derived runtime metrics or explicitly configured estimates.
+    It does not publish fixed performance, quality, or valuation numbers as production
+    telemetry.
     """
 
-    def __init__(self):
+    def __init__(self, configured_capacity_ehs: Optional[float] = None):
         self.is_available_flag = True
         self.current_config: Dict[str, Any] = {}
-        self.phi_resonance = 0.0594
-        self.vqe_iterations = 100
-        self.logical_error_rate = 0.0001
-        self.syndrome_volume = 12
-        self.power_scale = 1.0  # Governance-controlled scale 1.0 = 50 EHS
+        self.power_scale = 1.0
         self.logger = logging.getLogger("quantum_solver")
-
-        # Build pure mathematical dodecahedral basis states.
+        self.last_solve_iterations = 0
+        self.last_solve_duration_seconds: Optional[float] = None
+        self.last_solution_nonce: Optional[int] = None
+        self.last_error: Optional[str] = None
+        self.configured_capacity_ehs = self._load_configured_capacity(configured_capacity_ehs)
         self.basis_states = self._generate_dodecahedral_basis_states()
 
-    def set_power_scale(self, scale: float):
-        """Sets the scaling factor for the quantum hashrate."""
-        self.power_scale = max(0.1, scale)
+    @staticmethod
+    def _load_configured_capacity(configured_capacity_ehs: Optional[float]) -> Optional[float]:
+        raw_value: Optional[float | str] = configured_capacity_ehs
+        if raw_value is None:
+            raw_value = os.getenv("HYBA_QUANTUM_CAPACITY_EHS")
+        if raw_value in (None, ""):
+            return None
+        try:
+            parsed = float(raw_value)
+        except (TypeError, ValueError) as exc:
+            raise QuantumSolverConfigurationError("HYBA_QUANTUM_CAPACITY_EHS must be numeric") from exc
+        if not math.isfinite(parsed) or parsed <= 0:
+            raise QuantumSolverConfigurationError("HYBA_QUANTUM_CAPACITY_EHS must be positive")
+        return parsed
 
-    def calculate_integrated_hashrate(self) -> float:
+    def set_power_scale(self, scale: float):
+        """Set the configured power scale for capacity estimates."""
+        if not isinstance(scale, (int, float)) or not math.isfinite(float(scale)) or scale <= 0:
+            raise QuantumSolverConfigurationError("power scale must be a positive finite number")
+        self.power_scale = float(scale)
+
+    def calculate_integrated_hashrate(self) -> Optional[float]:
         """
-        Calculates hashrate in EHS (Exahashes per second).
-        Base capacity calibrated to 50 EHS at default power_scale.
+        Return configured estimated hashrate in EHS, or ``None`` when unavailable.
+
+        Production telemetry must come from observed share/hash accounting or an explicit
+        deployment capacity setting. The solver no longer reports a hardcoded hashrate.
         """
-        base_ehs = 50.0
-        # Scaling levels: 10^12 (T), 10^15 (P), 10^18 (E), 10^20 (Z)
-        resonance_factor = 0.9 + (self.phi_resonance * 2.0)
-        return float(base_ehs * self.power_scale * resonance_factor)
+        if self.configured_capacity_ehs is None:
+            return None
+        return float(self.configured_capacity_ehs * self.power_scale)
 
     def _generate_dodecahedral_basis_states(self) -> np.ndarray:
         """
         Generate the twenty normalized dodecahedral vertex basis states.
 
-        The regular dodecahedron has vertices
-        ``(±1, ±1, ±1)``, ``(0, ±1/Φ, ±Φ)``, ``(±1/Φ, ±Φ, 0)``, and
-        ``(±Φ, 0, ±1/Φ)``, where ``Φ = (1 + sqrt(5)) / 2``. Each real 3D
-        vertex is normalized and then assigned a deterministic golden-ratio phase
-        ``exp(i * 2π * k * Φ)``. The phase modulation is deterministic and
-        reproducible; it acts as a symmetry-preserving spread over the complex
-        Hilbert representation before Grover reflection.
-
-        Returns:
-            A ``(20, 3)`` complex array whose rows are normalized vertex states.
+        The regular dodecahedron has vertices ``(±1, ±1, ±1)``, ``(0, ±1/Φ, ±Φ)``,
+        ``(±1/Φ, ±Φ, 0)``, and ``(±Φ, 0, ±1/Φ)``. Each real 3D vertex is normalized
+        and assigned deterministic phase ``exp(i * 2π * k * Φ)``.
         """
         phi = GOLDEN_RATIO
         inv_phi = 1.0 / phi
 
         vertices = []
-        # Case 1: (±1, ±1, ±1)
         for x in [-1.0, 1.0]:
             for y in [-1.0, 1.0]:
                 for z in [-1.0, 1.0]:
                     vertices.append([x, y, z])
-
-        # Case 2: (0, ±1/Φ, ±Φ)
         for y in [-inv_phi, inv_phi]:
             for z in [-phi, phi]:
                 vertices.append([0.0, y, z])
-
-        # Case 3: (±1/Φ, ±Φ, 0)
         for x in [-inv_phi, inv_phi]:
             for y in [-phi, phi]:
                 vertices.append([x, y, 0.0])
-
-        # Case 4: (±Φ, 0, ±1/Φ)
         for x in [-phi, phi]:
             for z in [-inv_phi, inv_phi]:
                 vertices.append([x, 0.0, z])
 
-        # Map 3D vertices into complex space and normalize each dodecahedral row.
         raw_coords = np.array(vertices, dtype=np.complex128)
         norms = np.linalg.norm(raw_coords, axis=1, keepdims=True)
         if not np.isfinite(norms).all() or np.any(norms <= 0):
             raise QuantumNumericalInstabilityError("Dodecahedral basis contains invalid norms")
         normalized_basis = raw_coords / norms
 
-        # Inject deterministic topological complex phase angles.
         for i in range(DODECAHEDRON_VERTICES):
             theta = 2.0 * np.pi * i * GOLDEN_RATIO % (2.0 * np.pi)
             normalized_basis[i] *= np.exp(1j * theta)
@@ -158,17 +152,6 @@ class DodecahedralQuantumSolver:
         return validated
 
     async def configure_search(self, target: int, nonce_ranges: List[Tuple[int, int]]) -> bool:
-        """
-        Validate and persist pool-derived search constraints.
-
-        Args:
-            target: Positive integer target threshold supplied by a mining job.
-            nonce_ranges: Inclusive ``(start, end)`` nonce intervals to project measured
-                basis states into.
-
-        Raises:
-            QuantumSolverConfigurationError: If target or ranges are malformed.
-        """
         if not isinstance(target, int) or target <= 0:
             raise QuantumSolverConfigurationError("Mining target must be a positive non-zero integer")
 
@@ -183,17 +166,11 @@ class DodecahedralQuantumSolver:
             "search_space_size": search_space_size,
             "configured_at": time.time(),
         }
+        self.last_error = None
         return True
 
     def calculate_integrated_entropy(self, amplitudes: np.ndarray) -> float:
-        """
-        Calculate Shannon/von-Neumann entropy for a pure-state probability vector.
-
-        For amplitudes ``a_i``, measurement probabilities are ``p_i = |a_i|^2`` and
-        the entropy is ``S = -sum_i p_i log2(p_i)`` after normalizing probabilities.
-        This is equivalent to the diagonal entropy of the pure state's measurement
-        distribution, and is bounded by ``log2(N)`` for ``N`` equiprobable states.
-        """
+        """Calculate ``S = -sum_i p_i log2(p_i)`` for normalized measurement probabilities."""
         amplitudes = np.asarray(amplitudes, dtype=np.complex128)
         self._assert_finite_state(amplitudes, "entropy amplitudes")
         probabilities = np.abs(amplitudes) ** 2
@@ -209,20 +186,35 @@ class DodecahedralQuantumSolver:
         if not np.isfinite(state).all():
             raise QuantumNumericalInstabilityError(f"{label} contains NaN or Inf values")
 
+    def _basis_coherence(self) -> float:
+        """Derive coherence from observed row-norm spread instead of using a fixed score."""
+        row_norms = np.linalg.norm(self.basis_states, axis=1)
+        self._assert_finite_state(row_norms, "basis row norms")
+        max_spread = float(np.max(row_norms) - np.min(row_norms))
+        return float(max(0.0, min(1.0, 1.0 - max_spread)))
+
+    def _phi_phase_alignment(self) -> float:
+        """Derive golden-ratio phase alignment from the generated basis phases."""
+        phases = np.angle(self.basis_states[:, 0])
+        if phases.size < 2:
+            return 1.0
+        deltas = np.diff(np.unwrap(phases))
+        expected = 2.0 * math.pi * GOLDEN_RATIO
+        residual = np.mod(deltas - expected + math.pi, 2.0 * math.pi) - math.pi
+        rms = float(np.sqrt(np.mean(residual**2)))
+        return float(max(0.0, min(1.0, 1.0 - (rms / math.pi))))
+
     def _marked_state_index(self) -> int:
-        """Derive a deterministic marked basis index from target and nonce-space shape."""
         if not self.current_config:
-            return DODECAHEDRON_VERTICES // 3
+            raise QuantumSolverConfigurationError("Solver must be configured before solving")
         target = int(self.current_config["target"])
         nonce_ranges = self.current_config["nonce_ranges"]
         range_fingerprint = sum((start * 31 + end * 17) for start, end in nonce_ranges)
         return int((target ^ range_fingerprint) % DODECAHEDRON_VERTICES)
 
     def _project_index_to_nonce(self, basis_index: int) -> int:
-        """Map a measured basis index back into the configured inclusive nonce ranges."""
         if not self.current_config:
-            base_nonce = 445_678_123
-            return int((base_nonce + (basis_index * 1364)) % (MAX_UINT32_NONCE + 1))
+            raise QuantumSolverConfigurationError("Solver must be configured before projecting a nonce")
 
         offset = basis_index % int(self.current_config["search_space_size"])
         for start, end in self.current_config["nonce_ranges"]:
@@ -234,67 +226,61 @@ class DodecahedralQuantumSolver:
 
     async def solve(self, max_iterations: int = 100, timeout: float = 30.0) -> Optional[int]:
         """
-        Run bounded Grover amplitude amplification over the dodecahedral state space.
+        Run bounded Grover amplitude amplification over the configured search space.
 
-        The oracle uses ``O = I - 2|w><w|`` to flip the marked state's phase. The
-        diffusion operator uses ``D = 2|s><s| - I`` to reflect amplitudes about the
-        uniform superposition mean. The combined Grover iterate ``G = D·O`` rotates
-        probability mass toward the marked state by approximately
-        ``2 * arcsin(1 / sqrt(N))`` per step for a single solution.
-
-        Args:
-            max_iterations: Upper bound on Grover iterations even if the theoretical
-                optimum is higher.
-            timeout: Wall-clock budget in seconds. The coroutine returns ``None`` on
-                timeout rather than blocking the mining loop.
-
-        Returns:
-            A deterministic nonce from the configured search space, or ``None`` when
-            the solve is interrupted by timeout or numerical instability.
+        The oracle uses ``O = I - 2|w><w|`` and diffusion uses ``D = 2|s><s| - I``.
         """
         if max_iterations <= 0 or timeout <= 0:
             raise QuantumSolverConfigurationError("max_iterations and timeout must be positive")
+        if not self.current_config:
+            raise QuantumSolverConfigurationError("Solver must be configured before solving")
 
         start_time = time.monotonic()
+        self.last_solve_iterations = 0
+        self.last_solve_duration_seconds = None
         dim = DODECAHEDRON_VERTICES
 
         try:
-            # Step 1: initialize |s>, a uniform superposition over every basis state.
             state_vector = np.ones(dim, dtype=np.complex128) / math.sqrt(dim)
             self._assert_finite_state(state_vector, "initial state vector")
 
-            # Step 2: choose floor(pi/4 * sqrt(N)) iterations, bounded by caller budget.
             theoretical_steps = int(math.floor((math.pi / 4.0) * math.sqrt(dim)))
             optimal_steps = min(max_iterations, theoretical_steps)
             target_index = self._marked_state_index()
 
             for _ in range(optimal_steps):
                 if time.monotonic() - start_time >= timeout:
+                    self.last_error = "timeout"
+                    self.last_solve_duration_seconds = time.monotonic() - start_time
                     self.logger.warning("Grover solve timed out before convergence")
                     return None
 
-                # Oracle: O = I - 2|w><w| flips only the marked solution amplitude.
                 oracle_matrix = np.eye(dim, dtype=np.complex128)
                 oracle_matrix[target_index, target_index] = -1.0
                 state_vector = np.dot(oracle_matrix, state_vector)
 
-                # Diffusion: D = 2|s><s| - I reflects every amplitude about the mean.
                 mean_amplitude = np.mean(state_vector)
                 state_vector = 2.0 * mean_amplitude - state_vector
 
-                # Normalize after finite-precision arithmetic to preserve ||state||₂ = 1.
                 self._assert_finite_state(state_vector, "Grover state vector")
                 norm = float(np.linalg.norm(state_vector))
                 if not math.isfinite(norm) or norm <= 0.0:
                     raise QuantumNumericalInstabilityError("Invalid Grover state norm")
                 state_vector = state_vector / norm
+                self.last_solve_iterations += 1
                 await asyncio.sleep(0)
 
             probabilities = np.abs(state_vector) ** 2
             self._assert_finite_state(probabilities, "measurement probabilities")
             max_idx = int(np.argmax(probabilities))
-            return self._project_index_to_nonce(max_idx)
+            nonce = self._project_index_to_nonce(max_idx)
+            self.last_solution_nonce = nonce
+            self.last_solve_duration_seconds = time.monotonic() - start_time
+            self.last_error = None
+            return nonce
         except (np.linalg.LinAlgError, FloatingPointError, QuantumNumericalInstabilityError) as exc:
+            self.last_error = str(exc)
+            self.last_solve_duration_seconds = time.monotonic() - start_time
             self.logger.error("Numerical instability in Grover solve: %s", exc)
             return None
 
@@ -302,26 +288,30 @@ class DodecahedralQuantumSolver:
         return self.is_available_flag
 
     async def health_check(self) -> bool:
-        return True
+        return self.is_available_flag
 
     async def restart(self) -> bool:
+        self.last_error = None
         return True
 
     def get_metrics(self) -> Dict[str, Any]:
-        # Formulate current operational state vectors metrics.
         state_vector = np.ones(DODECAHEDRON_VERTICES, dtype=np.complex128) / math.sqrt(DODECAHEDRON_VERTICES)
         entropy = self.calculate_integrated_entropy(state_vector)
+        hashrate_ehs = self.calculate_integrated_hashrate()
 
         return {
             "available": self.is_available(),
-            "logical_error_rate": self.logical_error_rate,
-            "syndrome_volume": self.syndrome_volume,
-            "state_quality": 0.985,
-            "phi_resonance": self.phi_resonance,
-            "vqe_iterations": self.vqe_iterations,
-            "von_neumann_entropy": round(entropy, 4),
-            "dodecahedral_coherence": 0.957,
-            "hashrate_ehs": round(self.calculate_integrated_hashrate(), 4),
-            "power_scale": self.power_scale,
             "configured": bool(self.current_config),
+            "telemetry_source": "derived_runtime_state",
+            "capacity_source": "configured_estimate" if hashrate_ehs is not None else "not_configured",
+            "hashrate_ehs": None if hashrate_ehs is None else round(hashrate_ehs, 4),
+            "power_scale": self.power_scale,
+            "basis_states": DODECAHEDRON_VERTICES,
+            "von_neumann_entropy": round(entropy, 4),
+            "dodecahedral_coherence": round(self._basis_coherence(), 6),
+            "phi_phase_alignment": round(self._phi_phase_alignment(), 6),
+            "last_solve_iterations": self.last_solve_iterations,
+            "last_solve_duration_seconds": self.last_solve_duration_seconds,
+            "last_solution_nonce": self.last_solution_nonce,
+            "last_error": self.last_error,
         }
