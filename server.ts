@@ -160,6 +160,10 @@ async function startServer(): Promise<void> {
   if (!(await isBackendReachable())) {
     spawnBackend();
     const ready = await waitForBackend();
+    if (!ready && isProduction) {
+      logger.error({ backendUrl: backendUrl.toString() }, "FATAL: backend readiness is required in production");
+      process.exit(1);
+    }
     if (!ready) {
       logger.warn({ backendUrl: backendUrl.toString() }, "Backend is not ready; bridge will start in DEGRADED mode");
     }
@@ -184,11 +188,12 @@ async function startServer(): Promise<void> {
   });
 
   app.get("/bridge/health", async (_req, res) => {
-    res.json({
-      status: "ok",
+    const backendReachable = await isBackendReachable();
+    res.status(backendReachable ? 200 : 503).json({
+      status: backendReachable ? "ok" : "degraded",
       service: "HYBA Secure Bridge",
       backend: backendUrl.toString(),
-      backendReachable: await isBackendReachable(),
+      backendReachable,
       timestamp: new Date().toISOString(),
     });
   });
