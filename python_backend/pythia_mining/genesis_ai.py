@@ -37,9 +37,9 @@ class GenesisAI:
     """
     Production orchestration layer.
 
-    This daemon no longer fabricates mining jobs, share acceptance, totals, or valuation
-    style metrics. It only reports real pool/client counters and explicit runtime state.
-    Test fixtures remain isolated in unit/e2e tests, not in the running daemon.
+    The daemon consumes real Stratum events, solves only known jobs, validates shares
+    locally, and submits valid shares to a live pool before counting acceptance.
+    Development fixtures remain opt-in and are disabled by default in production.
     """
 
     def __init__(self, config: Dict[str, Any]):
@@ -60,6 +60,8 @@ class GenesisAI:
         self.start_time = time.time()
         self.logger = logging.getLogger("genesis_ai")
         self.failure_counter = 0
+        self.jobs_received = 0
+        self.shares_solved = 0
         self.health_status = "STARTING"
         self.allow_dev_fixture_jobs = (
             os.getenv("NODE_ENV", os.getenv("HYBA_ENV", "development")).lower() != "production"
@@ -73,7 +75,7 @@ class GenesisAI:
         try:
             active_pool = await self.pool_manager.get_best_pool()
             self.logger.info("Initial pool bound: %s", active_pool.pool_name)
-            self.health_status = "HEALTHY"
+            self.health_status = "AWAITING_JOB"
         except AllPoolsOfflineError as exc:
             self.logger.error("No live mining pool available on startup: %s", exc)
             self.health_status = "DEGRADED"
@@ -89,16 +91,16 @@ class GenesisAI:
         self.logger.info("PYTHIA Orchestrator stopped cleanly.")
 
     async def _resolve_current_job(self, active_pool) -> Optional[MiningJob]:
-        """
-        Return a real current job if one exists.
-
-        Development fixtures can be enabled explicitly with HYBA_ALLOW_DEV_FIXTURES=true,
-        but the daemon never creates fixtures by default.
-        """
+        """Return a real current job, polling the live Stratum stream first."""
+        live_job = await active_pool.poll_live_event(timeout=0.1)
+        if live_job is not None:
+            self.jobs_received += 1
+            return live_job
         if active_pool.current_jobs:
             return next(reversed(active_pool.current_jobs.values()))
         if self.allow_dev_fixture_jobs:
             self.logger.warning("Creating dev fixture mining job because HYBA_ALLOW_DEV_FIXTURES=true")
+            self.jobs_received += 1
             return active_pool.inject_simulated_target_job(difficulty=active_pool.current_difficulty)
         return None
 
@@ -110,7 +112,7 @@ class GenesisAI:
                 self.current_job = await self._resolve_current_job(active_pool)
                 if self.current_job is None:
                     self.health_status = "AWAITING_JOB"
-                    await asyncio.sleep(1.0)
+                    await asyncio.sleep(0.5)
                     continue
 
                 await self.ai_optimizer.optimize_nonce_search(self.current_job)
@@ -118,7 +120,8 @@ class GenesisAI:
                 resolved_nonce = await self.quantum_solver.solve()
 
                 if resolved_nonce is not None:
-                    share_result = active_pool.validate_and_record_share(self.current_job, resolved_nonce)
+                    self.shares_solved += 1
+                    share_result = await active_pool.submit_validated_share(self.current_job, resolved_nonce)
                     if share_result.accepted:
                         await self.ai_optimizer.on_share_accepted({
                             "nonce": resolved_nonce,
@@ -129,12 +132,12 @@ class GenesisAI:
                         await self.ai_optimizer.on_share_rejected(
                             {"nonce": resolved_nonce, "job_id": self.current_job.job_id},
                             share_result.error_code or 1,
-                            share_result.error_message or "share rejected by local validation",
+                            share_result.error_message or "share rejected",
                         )
 
                 self.failure_counter = 0
-                self.health_status = "HEALTHY"
-                await asyncio.sleep(1.0)
+                self.health_status = "HEALTHY" if active_pool.current_jobs else "AWAITING_JOB"
+                await asyncio.sleep(0.25)
             except Exception as e:
                 self.failure_counter += 1
                 self.logger.error("Error in mining execution loop (failures=%s): %s", self.failure_counter, e)
@@ -173,9 +176,12 @@ class GenesisAI:
 
         return {
             "running": self.is_running,
+            "uptime_seconds": round(time.time() - self.start_time, 3),
             "active_pool": active_pool.pool_name if active_pool else None,
             "active_pool_id": self.pool_manager.current_pool_key,
             "current_job": self.current_job.job_id if self.current_job else None,
+            "jobs_received": self.jobs_received,
+            "shares_solved": self.shares_solved,
             "total_shares": total_submitted,
             "accepted_shares": total_accepted,
             "rejected_shares": total_rejected,
