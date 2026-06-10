@@ -1,8 +1,7 @@
 """Live Stratum v1 session adapter.
 
 This adapter composes the pure protocol primitives and the async line transport.
-It is intentionally separate from the existing PoolManager so production rollout
-can opt in without destabilising current tests or dashboards.
+It owns live subscribe/authorize, pool event reads, and share submission responses.
 """
 from __future__ import annotations
 
@@ -14,6 +13,7 @@ from pythia_mining.pool_profiles import PoolProfile, validate_profile
 from pythia_mining.stratum_protocol import (
     StratumProtocolError,
     build_authorize,
+    build_submit,
     build_subscribe,
     parse_authorize_result,
     parse_server_message,
@@ -23,7 +23,7 @@ from pythia_mining.stratum_transport import StratumLineTransport, StratumTranspo
 
 
 class LiveStratumSessionError(ConnectionError):
-    """Raised when a live Stratum session cannot subscribe or authorize."""
+    """Raised when a live Stratum session cannot subscribe, authorize, or submit."""
 
 
 @dataclass(frozen=True)
@@ -32,6 +32,17 @@ class SessionHandshake:
     extranonce1: str
     extranonce2_size: int
     authorized: bool
+
+    def to_dict(self) -> Dict[str, Any]:
+        return asdict(self)
+
+
+@dataclass(frozen=True)
+class SubmitResult:
+    accepted: bool
+    error: Optional[Any]
+    response: Dict[str, Any]
+
     def to_dict(self) -> Dict[str, Any]:
         return asdict(self)
 
@@ -73,12 +84,28 @@ class LiveStratumSession:
             raise LiveStratumSessionError("pool rejected authorization")
         return SessionHandshake(self.profile.pool_id, self.extranonce1, self.extranonce2_size, self.authorized)
 
-    async def read_event(self):
-        line = await self.transport.read_line()
+    async def read_event(self, *, timeout: Optional[float] = None):
+        line = await self.transport.read_line(timeout=timeout)
         return parse_server_message(line)
+
+    async def submit_share(self, *, job_id: str, extranonce2: str, ntime: str, nonce: str) -> SubmitResult:
+        if not self.authorized:
+            raise LiveStratumSessionError("cannot submit before authorization")
+        submit_id = self.next_id()
+        await self.transport.send_line(
+            build_submit(submit_id, self.profile.username, job_id, extranonce2, ntime, nonce)
+        )
+        while True:
+            event, payload = await self.read_event()
+            if event != "response":
+                continue
+            if payload.get("id") != submit_id:
+                continue
+            accepted = bool(payload.get("result")) and not payload.get("error")
+            return SubmitResult(accepted=accepted, error=payload.get("error"), response=payload)
 
     async def close(self) -> None:
         await self.transport.close()
 
 
-__all__ = ["LiveStratumSessionError", "SessionHandshake", "LiveStratumSession"]
+__all__ = ["LiveStratumSessionError", "SessionHandshake", "SubmitResult", "LiveStratumSession"]
