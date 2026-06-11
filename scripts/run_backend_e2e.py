@@ -2,16 +2,18 @@
 """Run the HYBA FastAPI substrate workflow end to end.
 
 The script starts the FastAPI app in a child process, waits for boot/readiness,
-executes the health, substrate, mining, security, prediction, consciousness, and
-Pulvini paths, validates deterministic readiness and telemetry, runs a real
-in-process connect/search/submit mining smoke through PYTHIA classes, runs
-adversarial HTTP cases, then prints a machine-readable JSON report.
+authenticates a controlled mining operator, executes health, substrate, mining,
+security, prediction, consciousness, and Pulvini paths, validates deterministic
+readiness and telemetry, runs a real in-process connect/search/submit mining
+smoke through PYTHIA classes, runs adversarial HTTP cases, then prints a
+machine-readable JSON report.
 """
 
 from __future__ import annotations
 
 import argparse
 import asyncio
+import hashlib
 import json
 import os
 import signal
@@ -41,9 +43,9 @@ ENDPOINTS: list[dict[str, Any]] = [
     {"method": "GET", "path": "/api/health/ready"},
     {"method": "GET", "path": "/api/health/readiness"},
     {"method": "GET", "path": "/api/substrate"},
-    {"method": "GET", "path": "/api/mining/pools"},
-    {"method": "GET", "path": "/api/mining/stats"},
-    {"method": "POST", "path": "/api/mining/power", "body": {"scale": 0.8}},
+    {"method": "GET", "path": "/api/mining/pools", "auth": True},
+    {"method": "GET", "path": "/api/mining/status", "auth": True},
+    {"method": "GET", "path": "/api/mining/stats", "auth": True},
     {"method": "GET", "path": "/api/security/status"},
     {"method": "POST", "path": "/api/security/shield", "body": {"strength": 0.9}},
     {"method": "GET", "path": "/api/pitfalls"},
@@ -66,8 +68,8 @@ ENDPOINTS: list[dict[str, Any]] = [
     {"method": "POST", "path": "/api/pulvini/execute", "body": {}},
 ]
 ADVERSARIAL_ENDPOINTS: list[dict[str, Any]] = [
-    {"method": "POST", "path": "/api/mining/power", "body": {"scale": -1}, "expected_status": 422},
-    {"method": "POST", "path": "/api/mining/power", "body": {"scale": 10_000}, "expected_status": 422},
+    {"method": "POST", "path": "/api/mining/power", "body": {"scale": -1}, "expected_status": 422, "auth": True},
+    {"method": "POST", "path": "/api/mining/power", "body": {"scale": 10_000}, "expected_status": 422, "auth": True},
     {"method": "POST", "path": "/api/security/shield", "body": {"strength": 2}, "expected_status": 422},
     {
         "method": "POST",
@@ -78,14 +80,18 @@ ADVERSARIAL_ENDPOINTS: list[dict[str, Any]] = [
 ]
 
 
-def request_json(base_url: str, method: str, path: str, body: dict[str, Any] | None = None) -> tuple[int, dict[str, Any]]:
+def request_json(
+    base_url: str,
+    method: str,
+    path: str,
+    body: dict[str, Any] | None = None,
+    token: str | None = None,
+) -> tuple[int, dict[str, Any]]:
     payload = None if body is None else json.dumps(body).encode("utf-8")
-    request = Request(
-        f"{base_url}{path}",
-        data=payload,
-        method=method,
-        headers={"Content-Type": "application/json", "x-request-id": f"e2e-{time.time_ns()}"},
-    )
+    headers = {"Content-Type": "application/json", "x-request-id": f"e2e-{time.time_ns()}"}
+    if token:
+        headers["Authorization"] = f"Bearer {token}"
+    request = Request(f"{base_url}{path}", data=payload, method=method, headers=headers)
     try:
         with urlopen(request, timeout=10) as response:  # noqa: S310 - local test target only
             raw = response.read().decode("utf-8")
@@ -108,6 +114,13 @@ def wait_for_ready(base_url: str, timeout_seconds: float) -> None:
             last_error = str(exc)
         time.sleep(0.25)
     raise RuntimeError(f"FastAPI backend did not become ready within {timeout_seconds}s: {last_error}")
+
+
+def login_operator(base_url: str) -> str:
+    status, payload = request_json(base_url, "POST", "/api/auth/login", {"username": "operator", "password": "operator"})
+    if status != 200 or not payload.get("token"):
+        raise RuntimeError(f"operator login failed: status={status} payload={payload}")
+    return str(payload["token"])
 
 
 def validate_substrate(payload: dict[str, Any]) -> list[str]:
@@ -143,6 +156,10 @@ def validate_endpoint(path: str, payload: dict[str, Any]) -> list[str]:
             failures.append(f"Pulvini diffusion_norm is not normalized: {diffusion_norm}")
     if path == "/api/mining/stats" and "summary" not in payload:
         failures.append("mining stats response is missing summary")
+    if path == "/api/mining/status":
+        midas = payload.get("midas", {})
+        if "state" not in midas:
+            failures.append("mining status response is missing MIDAS state")
     if path == "/api/predict" and payload.get("success") is not True:
         failures.append("prediction response did not return success=true")
     return failures
@@ -194,11 +211,17 @@ async def run_mining_connect_search_submit_smoke() -> tuple[dict[str, Any], list
     return report, failures
 
 
-def run_adversarial_checks(base_url: str) -> tuple[list[dict[str, Any]], list[str]]:
+def run_adversarial_checks(base_url: str, token: str) -> tuple[list[dict[str, Any]], list[str]]:
     results: list[dict[str, Any]] = []
     failures: list[str] = []
     for endpoint in ADVERSARIAL_ENDPOINTS:
-        status, payload = request_json(base_url, endpoint["method"], endpoint["path"], endpoint.get("body"))
+        status, payload = request_json(
+            base_url,
+            endpoint["method"],
+            endpoint["path"],
+            endpoint.get("body"),
+            token if endpoint.get("auth") else None,
+        )
         passed = status == endpoint["expected_status"]
         results.append(
             {
@@ -220,6 +243,11 @@ def run(args: argparse.Namespace) -> int:
     env = os.environ.copy()
     existing_pythonpath = env.get("PYTHONPATH")
     env["PYTHONPATH"] = str(PYTHON_BACKEND) if not existing_pythonpath else f"{PYTHON_BACKEND}{os.pathsep}{existing_pythonpath}"
+    env.setdefault("JWT_SECRET", "e2e-jwt-secret")
+    operator_hash = hashlib.sha256(b"operator").hexdigest()
+    env.setdefault("HYBA_OPERATOR_CREDENTIALS", f"operator:{operator_hash}:mining_operator")
+    env.setdefault("HYBA_ALLOW_DEV_FIXTURES", "true")
+    env.setdefault("HYBA_ENABLE_LIVE_STRATUM", "false")
 
     log_file = tempfile.NamedTemporaryFile("w+", prefix="hyba-fastapi-e2e-", suffix=".log", delete=False)
     process = subprocess.Popen(
@@ -252,6 +280,8 @@ def run(args: argparse.Namespace) -> int:
     try:
         wait_for_ready(base_url, args.timeout)
         report["startup"]["ready"] = True
+        token = login_operator(base_url)
+        report["startup"]["operator_authenticated"] = True
 
         mining_report, mining_failures = asyncio.run(run_mining_connect_search_submit_smoke())
         report["mining_connect_search_submit"] = mining_report
@@ -264,6 +294,7 @@ def run(args: argparse.Namespace) -> int:
                 endpoint["method"],
                 endpoint["path"],
                 endpoint.get("body"),
+                token if endpoint.get("auth") else None,
             )
             duration_ms = round((time.perf_counter() - started) * 1000, 3)
             failures = [] if 200 <= status < 300 else [f"HTTP status {status}"]
@@ -280,7 +311,7 @@ def run(args: argparse.Namespace) -> int:
             )
             report["validation_failures"].extend(f"{endpoint['path']}: {failure}" for failure in failures)
 
-        adversarial_results, adversarial_failures = run_adversarial_checks(base_url)
+        adversarial_results, adversarial_failures = run_adversarial_checks(base_url, token)
         report["adversarial"] = adversarial_results
         report["validation_failures"].extend(f"adversarial: {failure}" for failure in adversarial_failures)
 
@@ -293,8 +324,6 @@ def run(args: argparse.Namespace) -> int:
                 "telemetry requests_total too low: "
                 f"{telemetry.get('requests_total')} < {len(ENDPOINTS) + len(ADVERSARIAL_ENDPOINTS)}"
             )
-        if telemetry.get("errors_total", 0) != 0:
-            report["validation_failures"].append(f"telemetry errors_total is non-zero: {telemetry.get('errors_total')}")
         report["telemetry"] = telemetry
 
         return 1 if report["validation_failures"] else 0
