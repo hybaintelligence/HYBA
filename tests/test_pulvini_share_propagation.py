@@ -65,6 +65,7 @@ class PulviniSharePropagationTests(unittest.TestCase):
             return controller, result, submitted
 
         controller, result, submitted = asyncio.run(run_case())
+        snapshot = controller.snapshot()
 
         self.assertEqual(1, len(submitted))
         self.assertEqual(("job-2", 123, "00000011"), submitted[0])
@@ -74,8 +75,12 @@ class PulviniSharePropagationTests(unittest.TestCase):
         self.assertEqual("share_accepted", result.cancel_signal.reason)
         self.assertEqual(32, len(result.cancelled_nodes))
         self.assertTrue(controller.is_job_cancelled("job-2"))
-        self.assertEqual(1, controller.snapshot()["seen_shares"])
-        self.assertEqual(1, len(controller.snapshot()["history"]))
+        self.assertEqual(1, snapshot["seen_shares"])
+        self.assertEqual(1, len(snapshot["history"]))
+        self.assertIn("memory_fabric", snapshot)
+        self.assertGreater(snapshot["memory_fabric"]["kernel"]["kernel_norm"], 0.0)
+        self.assertTrue(snapshot["memory_fabric"]["compression"]["reversible"])
+        self.assertGreater(snapshot["memory_fabric"]["compression"]["working_set_compression_ratio"], 1.0)
 
     def test_rejected_share_still_records_cancelled_job_to_stop_stale_work(self) -> None:
         async def run_case():
