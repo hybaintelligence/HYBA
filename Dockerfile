@@ -21,6 +21,7 @@ ENV NODE_ENV=production \
     PORT=3000 \
     PULVINI_BACKEND_URL=http://127.0.0.1:3001 \
     HYBA_SPAWN_BACKEND=false \
+    HYBA_ENABLE_MINING_AUTOCONNECT=false \
     BACKEND_PROXY_TIMEOUT_MS=30000
 
 WORKDIR /app
@@ -41,6 +42,7 @@ RUN npm ci --omit=dev
 COPY --from=frontend-build /app/dist ./dist
 COPY python_backend ./python_backend
 COPY scripts ./scripts
+RUN chmod +x /app/scripts/hyba-runtime-entrypoint.sh
 
 RUN useradd --create-home --shell /usr/sbin/nologin hyba \
     && chown -R hyba:hyba /app /opt/hyba-venv
@@ -49,5 +51,4 @@ USER hyba
 EXPOSE 3000 3001
 HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
   CMD curl -fsS http://127.0.0.1:3000/bridge/health || exit 1
-ENTRYPOINT ["tini", "--"]
-CMD ["sh", "-c", "uvicorn hyba_genesis_api.main:app --host 127.0.0.1 --port 3001 --log-level warning & node dist/server.cjs"]
+ENTRYPOINT ["tini", "--", "/app/scripts/hyba-runtime-entrypoint.sh"]
