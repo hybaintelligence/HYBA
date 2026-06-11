@@ -19,6 +19,7 @@ import numpy as np
 GOLDEN_RATIO = (1.0 + math.sqrt(5.0)) / 2.0
 DODECAHEDRON_VERTICES = 20
 MAX_UINT32_NONCE = 2**32 - 1
+PULVINI_HASHRATE_CAP_EHS = 1.0
 
 
 @dataclass
@@ -46,7 +47,7 @@ class DodecahedralQuantumSolver:
 
     This class reports only derived runtime metrics or explicitly configured estimates.
     It does not publish fixed performance, quality, or valuation numbers as production
-    telemetry.
+    telemetry. All configured estimates are governance-capped at 1 EH/s.
     """
 
     def __init__(self, configured_capacity_ehs: Optional[float] = None):
@@ -74,6 +75,8 @@ class DodecahedralQuantumSolver:
             raise QuantumSolverConfigurationError("HYBA_QUANTUM_CAPACITY_EHS must be numeric") from exc
         if not math.isfinite(parsed) or parsed <= 0:
             raise QuantumSolverConfigurationError("HYBA_QUANTUM_CAPACITY_EHS must be positive")
+        if parsed > PULVINI_HASHRATE_CAP_EHS:
+            raise QuantumSolverConfigurationError("HYBA_QUANTUM_CAPACITY_EHS must be <= 1 EH/s")
         return parsed
 
     def set_power_scale(self, scale: float):
@@ -87,11 +90,12 @@ class DodecahedralQuantumSolver:
         Return configured estimated hashrate in EHS, or ``None`` when unavailable.
 
         Production telemetry must come from observed share/hash accounting or an explicit
-        deployment capacity setting. The solver no longer reports a hardcoded hashrate.
+        deployment capacity setting. The solver no longer reports a hardcoded hashrate;
+        any configured estimate is capped at the PULVINI 1 EH/s governance boundary.
         """
         if self.configured_capacity_ehs is None:
             return None
-        return float(self.configured_capacity_ehs * self.power_scale)
+        return float(min(self.configured_capacity_ehs * self.power_scale, PULVINI_HASHRATE_CAP_EHS))
 
     def _generate_dodecahedral_basis_states(self) -> np.ndarray:
         """
@@ -305,6 +309,7 @@ class DodecahedralQuantumSolver:
             "telemetry_source": "derived_runtime_state",
             "capacity_source": "configured_estimate" if hashrate_ehs is not None else "not_configured",
             "hashrate_ehs": None if hashrate_ehs is None else round(hashrate_ehs, 4),
+            "hashrate_cap_ehs": PULVINI_HASHRATE_CAP_EHS,
             "power_scale": self.power_scale,
             "basis_states": DODECAHEDRON_VERTICES,
             "von_neumann_entropy": round(entropy, 4),
