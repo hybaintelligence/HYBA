@@ -20,9 +20,9 @@ except ImportError:
 from .ai_optimizer import AIOptimizer
 from .blockchain_oracle import BlockchainOracle
 from .consciousness_engine import ConsciousnessEngine
+from .pulvini_compressed_solver import PulviniCompressedQuantumSolver
 from .pulvini_overlay import PulviniOverlayConcentrator
 from .pulvini_propagation import SharePropagationController
-from .quantum_solver import DodecahedralQuantumSolver
 from .stratum_client import AllPoolsOfflineError, MiningJob, PoolManager
 
 
@@ -53,7 +53,7 @@ class GenesisAI:
             worker_name=str(config.get("worker_name") or os.getenv("HYBA_POOL_WORKER_NAME") or "PULVINI.singularity")
         )
         self.propagation = SharePropagationController(self.overlay.manifold)
-        self.quantum_solver = DodecahedralQuantumSolver()
+        self.quantum_solver = PulviniCompressedQuantumSolver()
         self.blockchain_oracle = BlockchainOracle()
         self.consciousness_engine = ConsciousnessEngine()
         self.ai_optimizer = AIOptimizer(
@@ -156,7 +156,7 @@ class GenesisAI:
                 self.overlay.phase_heartbeat(self.heartbeat_tick)
                 self.overlay.manifold.evolve_closed_system(dt=0.05)
                 await self.ai_optimizer.optimize_nonce_search(self.current_job)
-                await self.quantum_solver.configure_search(self.current_job.target, self.overlay.nonce_ranges())
+                await self.quantum_solver.configure_compressed_search(self.current_job.target, self.overlay.nonce_plan)
                 resolved_nonce = await self.quantum_solver.solve()
 
                 if resolved_nonce is not None and not self.propagation.is_job_cancelled(self.current_job.job_id):
@@ -181,6 +181,7 @@ class GenesisAI:
                             "cancelled_nodes": propagation_result.cancelled_nodes,
                             "block_hash": share_result.block_hash,
                             "manifold": self.overlay.manifold.observe().to_dict(),
+                            "compressed_nonce_plan": self.overlay.compressed_nonce_plan(),
                         })
                     else:
                         await self.ai_optimizer.on_share_rejected(
@@ -190,6 +191,7 @@ class GenesisAI:
                                 "node_id": node_id,
                                 "route": propagation_result.route,
                                 "manifold": self.overlay.manifold.observe().to_dict(),
+                                "compressed_nonce_plan": self.overlay.compressed_nonce_plan(),
                             },
                             share_result.error_code or 1,
                             share_result.error_message or "share rejected",
