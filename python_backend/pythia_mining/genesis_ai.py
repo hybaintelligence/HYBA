@@ -20,6 +20,7 @@ except ImportError:
 from .ai_optimizer import AIOptimizer
 from .blockchain_oracle import BlockchainOracle
 from .consciousness_engine import ConsciousnessEngine
+from .pulvini_overlay import PulviniOverlayConcentrator
 from .quantum_solver import DodecahedralQuantumSolver
 from .stratum_client import AllPoolsOfflineError, MiningJob, PoolManager
 
@@ -40,6 +41,10 @@ class GenesisAI:
     The daemon consumes real Stratum events, solves only known jobs, validates shares
     locally, and submits valid shares to a live pool before counting acceptance.
     Development fixtures remain opt-in and are disabled by default in production.
+
+    The upstream pool sees one worker identity. Internally GenesisAI uses the
+    PULVINI concentrator overlay to fan that single pool job into 32 deterministic
+    nonce/extranonce2 lanes and to expose shared knowledge about every node's state.
     """
 
     def __init__(self, config: Dict[str, Any]):
@@ -54,6 +59,9 @@ class GenesisAI:
                 with open(config_path, "r") as f:
                     pools_config = json.load(f).get("pools", {})
         self.pool_manager = PoolManager(pools_config)
+        self.overlay = PulviniOverlayConcentrator(
+            worker_name=str(config.get("worker_name") or os.getenv("HYBA_POOL_WORKER_NAME") or "PULVINI.singularity")
+        )
         self.quantum_solver = DodecahedralQuantumSolver()
         self.blockchain_oracle = BlockchainOracle()
         self.consciousness_engine = ConsciousnessEngine()
@@ -80,9 +88,11 @@ class GenesisAI:
     async def start(self) -> bool:
         self.logger.info("Initializing PYTHIA Orchestration Layer...")
         self.is_running = True
+        self.overlay.mark_connect_requested(request_id="genesis-start")
 
         try:
             active_pool = await self.pool_manager.get_best_pool()
+            self.overlay.mark_pool_bound(active_pool.pool_name, active_pool.pool_url, active_pool.stratum_version)
             self.logger.info("Initial pool bound: %s", active_pool.pool_name)
             self.health_status = "AWAITING_JOB"
         except AllPoolsOfflineError as exc:
@@ -104,13 +114,18 @@ class GenesisAI:
         live_job = await active_pool.poll_live_event(timeout=0.1)
         if live_job is not None:
             self.jobs_received += 1
+            self.overlay.register_pool_job(live_job, pool_name=active_pool.pool_name)
             return live_job
         if active_pool.current_jobs:
-            return next(reversed(active_pool.current_jobs.values()))
+            job = next(reversed(active_pool.current_jobs.values()))
+            self.overlay.register_pool_job(job, pool_name=active_pool.pool_name)
+            return job
         if self.allow_dev_fixture_jobs:
             self.logger.warning("Creating dev fixture mining job because HYBA_ALLOW_DEV_FIXTURES=true")
             self.jobs_received += 1
-            return active_pool.inject_dev_fixture_target_job(difficulty=active_pool.current_difficulty)
+            job = active_pool.inject_dev_fixture_target_job(difficulty=active_pool.current_difficulty)
+            self.overlay.register_pool_job(job, pool_name=active_pool.pool_name)
+            return job
         return None
 
     async def _mining_loop(self):
@@ -118,28 +133,38 @@ class GenesisAI:
         while self.is_running:
             try:
                 active_pool = await self.pool_manager.get_best_pool()
+                if self.overlay.active_pool_name != active_pool.pool_name:
+                    self.overlay.mark_pool_bound(active_pool.pool_name, active_pool.pool_url, active_pool.stratum_version)
                 self.current_job = await self._resolve_current_job(active_pool)
                 if self.current_job is None:
                     self.health_status = "AWAITING_JOB"
                     await asyncio.sleep(0.5)
                     continue
 
+                self.overlay.register_pool_job(self.current_job, pool_name=active_pool.pool_name)
                 await self.ai_optimizer.optimize_nonce_search(self.current_job)
-                await self.quantum_solver.configure_search(self.current_job.target, [(0, 2**32 - 1)])
+                await self.quantum_solver.configure_search(self.current_job.target, self.overlay.nonce_ranges())
                 resolved_nonce = await self.quantum_solver.solve()
 
                 if resolved_nonce is not None:
                     self.shares_solved += 1
-                    share_result = await active_pool.submit_validated_share(self.current_job, resolved_nonce)
+                    assignment = self.overlay.assignment_for_nonce(resolved_nonce)
+                    node_id = assignment.node_id if assignment is not None else 0
+                    extranonce2 = assignment.extranonce2 if assignment is not None else "00" * self.current_job.extranonce2_size
+                    self.overlay.record_share_candidate(node_id, resolved_nonce)
+                    share_result = await active_pool.submit_validated_share(self.current_job, resolved_nonce, extranonce2)
+                    self.overlay.record_share_outcome(node_id, resolved_nonce, share_result)
                     if share_result.accepted:
                         await self.ai_optimizer.on_share_accepted({
                             "nonce": resolved_nonce,
                             "job_id": self.current_job.job_id,
+                            "node_id": node_id,
+                            "extranonce2": extranonce2,
                             "block_hash": share_result.block_hash,
                         })
                     else:
                         await self.ai_optimizer.on_share_rejected(
-                            {"nonce": resolved_nonce, "job_id": self.current_job.job_id},
+                            {"nonce": resolved_nonce, "job_id": self.current_job.job_id, "node_id": node_id},
                             share_result.error_code or 1,
                             share_result.error_message or "share rejected",
                         )
@@ -162,6 +187,8 @@ class GenesisAI:
             try:
                 await asyncio.sleep(30.0)
                 active_pool = await self.pool_manager.get_best_pool()
+                if self.overlay.active_pool_name != active_pool.pool_name:
+                    self.overlay.mark_pool_bound(active_pool.pool_name, active_pool.pool_url, active_pool.stratum_version)
                 self.logger.info("[GenesisAI] Pool scheduler synchronized. Active: %s", active_pool.pool_name)
                 rotation_failures = 0
             except Exception as e:
@@ -173,6 +200,7 @@ class GenesisAI:
     def get_system_status(self) -> Dict[str, Any]:
         active_pool = self.pool_manager.get_active_pool()
         pools_info = self.pool_manager.get_all_pools_status()
+        overlay_snapshot = self.overlay.snapshot()
 
         total_submitted = sum(p["performance"]["shares_submitted"] for p in pools_info)
         total_accepted = sum(p["performance"]["shares_accepted"] for p in pools_info)
@@ -188,6 +216,9 @@ class GenesisAI:
             "uptime_seconds": round(time.time() - self.start_time, 3),
             "active_pool": active_pool.pool_name if active_pool else None,
             "active_pool_id": self.pool_manager.current_pool_key,
+            "pool_visible_worker_identity": overlay_snapshot["worker_name"],
+            "pool_visible_workers": overlay_snapshot["pool_visible_workers"],
+            "internal_pulvini_nodes": overlay_snapshot["internal_nodes"],
             "current_job": self.current_job.job_id if self.current_job else None,
             "jobs_received": self.jobs_received,
             "shares_solved": self.shares_solved,
@@ -201,6 +232,7 @@ class GenesisAI:
             "hashrate_ehs": quantum_metrics.get("hashrate_ehs"),
             "power_scale": quantum_metrics.get("power_scale"),
             "pools": pools_info,
+            "pulvini_overlay": overlay_snapshot,
             "quantum": quantum_metrics,
             "consciousness": consciousness_metrics,
             "telemetry_source": "runtime_state",
