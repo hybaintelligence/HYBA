@@ -36,17 +36,7 @@ class SystemMetrics:
 
 
 class GenesisAI:
-    """
-    Production orchestration layer.
-
-    The daemon consumes real Stratum events, solves only known jobs, validates shares
-    locally, and submits valid shares to a live pool before counting acceptance.
-    Development fixtures remain opt-in and are disabled by default in production.
-
-    The upstream pool sees one worker identity. Internally GenesisAI uses the
-    PULVINI concentrator overlay to fan that single pool job into 32 deterministic
-    nonce/extranonce2 lanes and to expose shared knowledge about every node's state.
-    """
+    """Production orchestration layer using the PULVINI mathematical manifold."""
 
     def __init__(self, config: Dict[str, Any]):
         self.config = config
@@ -62,7 +52,7 @@ class GenesisAI:
         self.overlay = PulviniOverlayConcentrator(
             worker_name=str(config.get("worker_name") or os.getenv("HYBA_POOL_WORKER_NAME") or "PULVINI.singularity")
         )
-        self.propagation = SharePropagationController()
+        self.propagation = SharePropagationController(self.overlay.manifold)
         self.quantum_solver = DodecahedralQuantumSolver()
         self.blockchain_oracle = BlockchainOracle()
         self.consciousness_engine = ConsciousnessEngine()
@@ -80,6 +70,7 @@ class GenesisAI:
         self.failure_counter = 0
         self.jobs_received = 0
         self.shares_solved = 0
+        self.heartbeat_tick = 0
         self.health_status = "STARTING"
         self.allow_dev_fixture_jobs = (
             os.getenv("NODE_ENV", os.getenv("HYBA_ENV", "development")).lower() != "production"
@@ -111,7 +102,6 @@ class GenesisAI:
         self.logger.info("PYTHIA Orchestrator stopped cleanly.")
 
     async def _resolve_current_job(self, active_pool) -> Optional[MiningJob]:
-        """Return a real current job, polling the live Stratum stream first."""
         live_job = await active_pool.poll_live_event(timeout=0.1)
         if live_job is not None:
             self.jobs_received += 1
@@ -130,7 +120,6 @@ class GenesisAI:
         return None
 
     async def _handle_found_share(self, *, active_pool, node_id: int, nonce: int, extranonce2: str):
-        """Route a found share through PULVINI before the upstream pool submit."""
         if self.current_job is None:
             raise RuntimeError("cannot handle share without current job")
         self.overlay.record_share_candidate(node_id, nonce)
@@ -146,7 +135,6 @@ class GenesisAI:
         return propagation_result
 
     async def _mining_loop(self):
-        """Asynchronous mining loop over real pool jobs only."""
         while self.is_running:
             try:
                 active_pool = await self.pool_manager.get_best_pool()
@@ -164,6 +152,9 @@ class GenesisAI:
                     await asyncio.sleep(0.25)
                     continue
 
+                self.heartbeat_tick += 1
+                self.overlay.phase_heartbeat(self.heartbeat_tick)
+                self.overlay.manifold.evolve_closed_system(dt=0.05)
                 await self.ai_optimizer.optimize_nonce_search(self.current_job)
                 await self.quantum_solver.configure_search(self.current_job.target, self.overlay.nonce_ranges())
                 resolved_nonce = await self.quantum_solver.solve()
@@ -189,6 +180,7 @@ class GenesisAI:
                             "route": propagation_result.route,
                             "cancelled_nodes": propagation_result.cancelled_nodes,
                             "block_hash": share_result.block_hash,
+                            "manifold": self.overlay.manifold.observe().to_dict(),
                         })
                     else:
                         await self.ai_optimizer.on_share_rejected(
@@ -197,10 +189,15 @@ class GenesisAI:
                                 "job_id": self.current_job.job_id,
                                 "node_id": node_id,
                                 "route": propagation_result.route,
+                                "manifold": self.overlay.manifold.observe().to_dict(),
                             },
                             share_result.error_code or 1,
                             share_result.error_message or "share rejected",
                         )
+                elif resolved_nonce is None and self.current_job is not None:
+                    first_assignment = next(iter(self.overlay.assignments.values()), None)
+                    if first_assignment is not None:
+                        self.overlay.record_nack(first_assignment.node_id)
 
                 self.failure_counter = 0
                 self.health_status = "HEALTHY" if active_pool.current_jobs else "AWAITING_JOB"
@@ -214,7 +211,6 @@ class GenesisAI:
                 await asyncio.sleep(sleep_time)
 
     async def _pool_rotation_loop(self):
-        """Refresh the active pool without fabricating fallback pool state."""
         rotation_failures = 0
         while self.is_running:
             try:
