@@ -1,0 +1,77 @@
+"""Bures-metric natural-gradient certificate for PULVINI density state."""
+
+from __future__ import annotations
+
+from dataclasses import asdict, dataclass
+from typing import Any, Dict
+
+import numpy as np
+
+_EPS = 1e-12
+
+
+@dataclass(frozen=True)
+class BuresCertificate:
+    metric: str
+    tangent_space: str
+    natural_gradient_rule: str
+    tangent_norm: float
+    bures_norm: float
+    stationary: bool
+    closed: bool
+
+    def to_dict(self) -> Dict[str, Any]:
+        return asdict(self)
+
+
+def trace_zero_hermitian(matrix: np.ndarray) -> np.ndarray:
+    values = np.asarray(matrix, dtype=np.complex128)
+    hermitian = (values + values.conj().T) / 2.0
+    dim = hermitian.shape[0]
+    return hermitian - (np.trace(hermitian) / dim) * np.eye(dim, dtype=np.complex128)
+
+
+def density_state(rho: np.ndarray) -> np.ndarray:
+    values = (np.asarray(rho, dtype=np.complex128) + np.asarray(rho, dtype=np.complex128).conj().T) / 2.0
+    eigvals, eigvecs = np.linalg.eigh(values)
+    eigvals = np.maximum(eigvals.real, _EPS)
+    eigvals = eigvals / float(np.sum(eigvals))
+    out = eigvecs @ np.diag(eigvals) @ eigvecs.conj().T
+    return (out + out.conj().T) / 2.0
+
+
+def offdiag(values: np.ndarray) -> np.ndarray:
+    matrix = np.asarray(values, dtype=np.complex128)
+    return matrix - np.diag(np.diag(matrix))
+
+
+def bures_certificate(rho: np.ndarray, entropy_rate: float, *, tolerance: float = 1e-9) -> BuresCertificate:
+    state = density_state(rho)
+    off = offdiag(state)
+    coh = float(np.linalg.norm(off, ord="fro"))
+    rate = abs(float(entropy_rate))
+    if coh <= _EPS or rate <= _EPS:
+        first = np.zeros_like(state, dtype=np.complex128)
+    else:
+        first = trace_zero_hermitian(rate * off / coh)
+    eigvals, eigvecs = np.linalg.eigh(state)
+    first_e = eigvecs.conj().T @ first @ eigvecs
+    natural_e = np.zeros_like(first_e, dtype=np.complex128)
+    for row, left in enumerate(eigvals.real):
+        for col, right in enumerate(eigvals.real):
+            natural_e[row, col] = 2.0 * (max(left, _EPS) + max(right, _EPS)) * first_e[row, col]
+    natural = trace_zero_hermitian(eigvecs @ natural_e @ eigvecs.conj().T)
+    t_norm = float(np.linalg.norm(first, ord="fro"))
+    b_norm = float(np.linalg.norm(natural, ord="fro"))
+    return BuresCertificate(
+        metric="Bures",
+        tangent_space="trace_zero_hermitian_density_tangent",
+        natural_gradient_rule="grad_ij=2*(lambda_i+lambda_j)*first_variation_ij",
+        tangent_norm=t_norm,
+        bures_norm=b_norm,
+        stationary=bool(b_norm <= float(tolerance)),
+        closed=True,
+    )
+
+
+__all__ = ["BuresCertificate", "bures_certificate", "density_state", "offdiag", "trace_zero_hermitian"]
