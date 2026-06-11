@@ -1,0 +1,127 @@
+#!/usr/bin/env python3
+"""Validate HYBA_FULLSTACK production environment before deployment.
+
+This script intentionally checks format and presence only. It never prints secret
+values, never contacts mining pools, and never enables live mining.
+"""
+
+from __future__ import annotations
+
+import hashlib
+import os
+import re
+import sys
+from urllib.parse import urlparse
+
+HEX_64 = re.compile(r"^[0-9a-fA-F]{64}$")
+POOL_IDS = ("VIABTC", "NICEHASH", "BRAIINS", "CKPOOL")
+
+
+def _is_placeholder(value: str | None) -> bool:
+    if value is None:
+        return True
+    lowered = value.strip().lower()
+    return not lowered or "replace-with" in lowered or lowered in {"changeme", "password", "secret", "todo"}
+
+
+def _require(name: str, errors: list[str]) -> str | None:
+    value = os.getenv(name)
+    if _is_placeholder(value):
+        errors.append(f"{name} is required and must not be a placeholder")
+    return value
+
+
+def _validate_operator_credentials(errors: list[str]) -> None:
+    raw = _require("HYBA_OPERATOR_CREDENTIALS", errors)
+    if not raw:
+        return
+    for item in raw.split(","):
+        if not item.strip():
+            continue
+        parts = item.split(":")
+        if len(parts) != 3:
+            errors.append("HYBA_OPERATOR_CREDENTIALS entries must use username:sha256_password_hash:role")
+            continue
+        username, password_hash, role = parts
+        if not username.strip():
+            errors.append("HYBA_OPERATOR_CREDENTIALS contains an empty username")
+        if not HEX_64.match(password_hash):
+            errors.append("HYBA_OPERATOR_CREDENTIALS password field must be a 64-character SHA-256 hex hash")
+        if role not in {"ceo", "treasury_admin", "mining_operator", "treasury_viewer", "mining:read", "mining:operate"}:
+            errors.append(f"HYBA_OPERATOR_CREDENTIALS role {role!r} is not an approved production role/scope")
+
+
+def _validate_backend_url(errors: list[str]) -> None:
+    url = _require("PULVINI_BACKEND_URL", errors)
+    if not url:
+        return
+    parsed = urlparse(url)
+    if parsed.scheme not in {"http", "https"} or not parsed.hostname:
+        errors.append("PULVINI_BACKEND_URL must be a valid http(s) URL")
+
+
+def _validate_pool_config(errors: list[str]) -> None:
+    configured = []
+    for pool_id in POOL_IDS:
+        url = os.getenv(f"HYBA_POOL_{pool_id}_URL")
+        username = os.getenv(f"HYBA_POOL_{pool_id}_USERNAME")
+        password = os.getenv(f"HYBA_POOL_{pool_id}_PASSWORD")
+        if any([url, username, password]):
+            missing = [name for name, value in [("URL", url), ("USERNAME", username), ("PASSWORD", password)] if _is_placeholder(value)]
+            if missing:
+                errors.append(f"HYBA_POOL_{pool_id}_* is partially configured or contains placeholders: missing/invalid {', '.join(missing)}")
+                continue
+            parsed = urlparse(str(url))
+            if parsed.scheme not in {"stratum+ssl", "stratum+tls", "stratum+tcp", "stratum2+tcp"} or not parsed.hostname:
+                errors.append(f"HYBA_POOL_{pool_id}_URL has invalid Stratum URL format")
+            configured.append(pool_id)
+    if not configured:
+        errors.append("At least one HYBA_POOL_<ID>_URL/USERNAME/PASSWORD set is required before live mining deployment")
+
+
+def _validate_flags(errors: list[str], warnings: list[str]) -> None:
+    for name in ("NODE_ENV", "HYBA_ENV"):
+        value = os.getenv(name, "").lower()
+        if value != "production":
+            errors.append(f"{name}=production is required for production deployment")
+    if os.getenv("HYBA_ALLOW_DEV_FIXTURES", "false").strip().lower() in {"1", "true", "yes", "on"}:
+        errors.append("HYBA_ALLOW_DEV_FIXTURES must be false in production")
+    if os.getenv("HYBA_ENABLE_LIVE_SHARE_SUBMIT", "false").strip().lower() in {"1", "true", "yes", "on"}:
+        warnings.append("HYBA_ENABLE_LIVE_SHARE_SUBMIT is enabled; confirm live pool share-submit approval before rollout")
+    capacity = os.getenv("HYBA_QUANTUM_CAPACITY_EHS")
+    if capacity:
+        try:
+            parsed = float(capacity)
+        except ValueError:
+            errors.append("HYBA_QUANTUM_CAPACITY_EHS must be numeric when set")
+        else:
+            if parsed <= 0:
+                errors.append("HYBA_QUANTUM_CAPACITY_EHS must be positive when set")
+
+
+def main() -> int:
+    errors: list[str] = []
+    warnings: list[str] = []
+    _validate_flags(errors, warnings)
+    jwt_secret = _require("JWT_SECRET", errors)
+    if jwt_secret and len(jwt_secret) < 32:
+        errors.append("JWT_SECRET must be at least 32 characters")
+    _validate_operator_credentials(errors)
+    _validate_backend_url(errors)
+    _validate_pool_config(errors)
+
+    if warnings:
+        print("Production environment warnings:", file=sys.stderr)
+        for warning in warnings:
+            print(f"- {warning}", file=sys.stderr)
+    if errors:
+        print("Production environment validation failed:", file=sys.stderr)
+        for error in errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    print("Production environment validation passed")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
