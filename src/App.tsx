@@ -618,8 +618,8 @@ function Panel({ title, eyebrow, icon, children, isLoading, rows = 4 }: { title:
           <h3 className="text-sm font-black uppercase tracking-[0.12em] text-slate-950">{title}</h3>
         </div>
       </div>
-      <div className="p-5">
-        {isLoading ? <div className="space-y-3">{Array.from({ length: rows }).map((_, i) => <Skeleton key={i} width={i % 2 === 0 ? "100%" : "70%"} height="18px" />)}</div> : children}
+      <div className="p-4">
+        {isLoading ? <div className="space-y-3">{Array.from({ length: rows }).map((_, i) => <div key={i}><Skeleton width={i % 2 === 0 ? "100%" : "70%"} height="18px" /></div>)}</div> : children}
       </div>
     </div>
   );

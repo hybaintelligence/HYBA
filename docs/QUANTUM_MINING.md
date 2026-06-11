@@ -127,7 +127,7 @@ Pool status includes `connection_state`, `connection_failures`, `last_failure_at
 
 ## 6. Development fixtures
 
-`inject_simulated_target_job()` is a development/test fixture only. It is disabled in production by default.
+`inject_dev_fixture_target_job()` is a development/test fixture only. It is disabled in production by default.
 
 Do not enable `HYBA_ALLOW_DEV_FIXTURES=true` in production. That flag exists only for controlled diagnostics and must never be used for live share submission.
 

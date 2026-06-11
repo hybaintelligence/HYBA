@@ -174,7 +174,7 @@ async def run_mining_connect_search_submit_smoke() -> tuple[dict[str, Any], list
     failures: list[str] = []
     pool_manager = PoolManager()
     active_pool = await pool_manager.get_best_pool()
-    job = active_pool.inject_simulated_target_job(difficulty=active_pool.current_difficulty)
+    job = active_pool.inject_dev_fixture_target_job(difficulty=active_pool.current_difficulty)
     solver = DodecahedralQuantumSolver()
     await solver.configure_search(job.target, [(0, 2**32 - 1)])
     nonce = await solver.solve(max_iterations=25, timeout=5.0)

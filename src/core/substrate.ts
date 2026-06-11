@@ -11,14 +11,14 @@ export interface SubstrateState {
   initialized: boolean;
   pulvini_active: boolean;
   quantum_coherent: boolean;
-  resonance_floor: number;
+  resonance_floor: number | null;
 }
 
 let state: SubstrateState = {
   initialized: false,
   pulvini_active: false,
   quantum_coherent: false,
-  resonance_floor: 0
+  resonance_floor: null
 };
 
 /**
@@ -32,7 +32,7 @@ export async function sync_substrate_state(retries = 0): Promise<void> {
       initialized: readiness.status === 'ready',
       pulvini_active: readiness.substrate?.pulvini_active ?? false,
       quantum_coherent: readiness.substrate?.quantum_path_coherent ?? false,
-      resonance_floor: readiness.governance?.phi_scaled_floor ?? 0
+      resonance_floor: readiness.governance?.phi_scaled_floor ?? null
     };
     logger.debug({ ...ctx, substrate: state }, 'Substrate: State synchronized with Python core.');
   } catch (error) {
