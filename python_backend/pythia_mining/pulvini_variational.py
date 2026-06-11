@@ -1,4 +1,10 @@
-"""Variational certificate for the PULVINI manifold threshold functional."""
+"""Variational diagnostics for the PULVINI manifold threshold functional.
+
+This module does not claim that the threshold functional is derived. It reports
+what can be computed from the current density matrix and marks the Penrose-style
+collapse gate as unresolved until a real constrained variational derivation and
+an empirical mining-convergence criterion are supplied.
+"""
 
 from __future__ import annotations
 
@@ -13,13 +19,16 @@ _EPS = 1e-12
 @dataclass(frozen=True)
 class VariationalCertificate:
     functional: str
+    tangent_space: str
     gradient: str
     entropy_gradient_abs: float
     coherence_norm: float
     control_energy: float
-    gradient_norm: float
+    tangent_gradient_norm: float
     stationary: bool
-    stationary_condition: str
+    closed: bool
+    blocker: str
+    required_derivation: str
 
     def to_dict(self) -> Dict[str, Any]:
         return asdict(self)
@@ -30,36 +39,55 @@ def off_diagonal_part(rho: np.ndarray) -> np.ndarray:
     return matrix - np.diag(np.diag(matrix))
 
 
+def trace_zero_hermitian_projection(matrix: np.ndarray) -> np.ndarray:
+    """Project a matrix onto the Hermitian trace-zero tangent space."""
+    projected = (np.asarray(matrix, dtype=np.complex128) + np.asarray(matrix, dtype=np.complex128).conj().T) / 2.0
+    dim = projected.shape[0]
+    projected = projected - (np.trace(projected) / dim) * np.eye(dim, dtype=np.complex128)
+    return projected
+
+
 def variational_certificate(
     rho: np.ndarray,
     entropy_gradient: float,
     *,
     tolerance: float = 1e-9,
 ) -> VariationalCertificate:
-    """Return a first-variation certificate for C(rho).
+    """Return an honest constrained first-variation diagnostic for C(rho).
 
-    C(rho) = |dS/dt| * ||OffDiag(rho)||_F.
-    The first variation with respect to rho is proportional to
-    OffDiag(rho) / ||OffDiag(rho)||_F when the off-diagonal norm is non-zero.
+    C(rho)=|dS/dt|*||OffDiag(rho)||_F is only a candidate functional. The
+    first variation is projected onto the Hermitian trace-zero tangent space of
+    density matrices. This is not a Bures-metric derivation and is therefore not
+    a closed mathematical certificate.
     """
     off_diag = off_diagonal_part(rho)
     coherence = float(np.linalg.norm(off_diag, ord="fro"))
     entropy_abs = abs(float(entropy_gradient))
     if coherence <= _EPS or entropy_abs <= _EPS:
-        gradient_norm = 0.0
+        raw_gradient = np.zeros_like(off_diag, dtype=np.complex128)
     else:
-        gradient = entropy_abs * off_diag / coherence
-        gradient_norm = float(np.linalg.norm(gradient, ord="fro"))
+        raw_gradient = entropy_abs * off_diag / coherence
+    tangent_gradient = trace_zero_hermitian_projection(raw_gradient)
+    tangent_gradient_norm = float(np.linalg.norm(tangent_gradient, ord="fro"))
+    stationary = tangent_gradient_norm <= float(tolerance)
     return VariationalCertificate(
-        functional="C(rho)=|dS/dt|*||OffDiag(rho)||_F",
-        gradient="deltaC=|dS/dt|*OffDiag(rho)/||OffDiag(rho)||_F",
+        functional="candidate C(rho)=|dS/dt|*||OffDiag(rho)||_F",
+        tangent_space="Hermitian trace-zero density-matrix tangent space; Bures metric not yet derived",
+        gradient="projected first variation of C onto trace-zero Hermitian tangent space",
         entropy_gradient_abs=entropy_abs,
         coherence_norm=coherence,
         control_energy=entropy_abs * max(coherence, _EPS),
-        gradient_norm=gradient_norm,
-        stationary=gradient_norm <= float(tolerance),
-        stationary_condition="stationary iff |dS/dt|=0 or OffDiag(rho)=0",
+        tangent_gradient_norm=tangent_gradient_norm,
+        stationary=stationary,
+        closed=False,
+        blocker="candidate functional is diagnostic only; no proof that stationary point equals mining convergence optimum",
+        required_derivation="derive C under a chosen density-matrix metric, preferably Bures, and calibrate stationary point against observed share/search convergence",
     )
 
 
-__all__ = ["VariationalCertificate", "off_diagonal_part", "variational_certificate"]
+__all__ = [
+    "VariationalCertificate",
+    "off_diagonal_part",
+    "trace_zero_hermitian_projection",
+    "variational_certificate",
+]
