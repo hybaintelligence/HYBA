@@ -1,0 +1,1 @@
+VALUE_SPACE = 2 ** 32
