@@ -37,8 +37,6 @@ import pino from "pino";
 import pinoHttp from "pino-http";
 import rateLimit from "express-rate-limit";
 import { createServer as createViteServer, type InlineConfig } from "vite";
-import react from "@vitejs/plugin-react";
-import tailwindcss from "@tailwindcss/vite";
 
 // ── Global Backend URL for post-startup calls ────────────────────────────
 let _backendUrl: URL | null = null;

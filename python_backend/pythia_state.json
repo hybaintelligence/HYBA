@@ -1,6 +1,6 @@
 {
   "running": true,
-  "uptime_seconds": 53236.778,
+  "uptime_seconds": 55381.266,
   "active_pool": "Solo CKPool",
   "active_pool_id": "ckpool",
   "current_job": null,
@@ -11,7 +11,7 @@
   "rejected_shares": 0,
   "acceptance_rate": null,
   "system_health": "AWAITING_JOB",
-  "cpu_load": 87.0,
+  "cpu_load": 72.4,
   "active_stratum_version": 1,
   "hashrate_ehs": null,
   "power_scale": 1.0,
@@ -32,7 +32,7 @@
       "current_difficulty": 1.0,
       "current_jobs": 0,
       "performance": {
-        "latency_ms": 15.00000013038516,
+        "latency_ms": 296.00000008940697,
         "shares_submitted": 0,
         "shares_accepted": 0,
         "shares_rejected": 0,
@@ -55,7 +55,7 @@
       "current_difficulty": 1.0,
       "current_jobs": 0,
       "performance": {
-        "latency_ms": 0.0,
+        "latency_ms": 15.999999828636646,
         "shares_submitted": 0,
         "shares_accepted": 0,
         "shares_rejected": 0,
@@ -78,7 +78,7 @@
       "current_difficulty": 1.0,
       "current_jobs": 0,
       "performance": {
-        "latency_ms": 14.999999897554517,
+        "latency_ms": 0.0,
         "shares_submitted": 0,
         "shares_accepted": 0,
         "shares_rejected": 0,
@@ -101,7 +101,7 @@
       "current_difficulty": 1.0,
       "current_jobs": 0,
       "performance": {
-        "latency_ms": 14.999999897554517,
+        "latency_ms": 0.0,
         "shares_submitted": 0,
         "shares_accepted": 0,
         "shares_rejected": 0,
