@@ -8,12 +8,15 @@ import os
 from datetime import datetime
 from typing import Any, Dict, List
 
+from argon2 import PasswordHasher
+from argon2.exceptions import InvalidHashError, VerificationError, VerifyMismatchError
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
 
 from hyba_genesis_api.auth.jwt_handler import TokenPayload, get_jwt_manager, get_token_payload
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
+_password_hasher = PasswordHasher()
 
 
 class AuthRequest(BaseModel):
@@ -25,26 +28,63 @@ def _is_production() -> bool:
     return os.getenv("NODE_ENV", os.getenv("HYBA_ENV", "development")).lower() == "production"
 
 
+def _credential_entries(raw: str) -> List[str]:
+    """Return credential entries while preserving Argon2 parameter commas."""
+    normalized = raw.strip()
+    if not normalized:
+        return []
+    if ";" in normalized or "\n" in normalized:
+        return [item.strip() for item in normalized.replace("\n", ";").split(";") if item.strip()]
+    if "$argon2" in normalized:
+        return [normalized]
+    return [item.strip() for item in normalized.split(",") if item.strip()]
+
+
 def _allowed_operator_hashes() -> Dict[str, Dict[str, Any]]:
     """Load operator credentials from HYBA_OPERATOR_CREDENTIALS.
 
-    Format: username:sha256_hex:role[,username:sha256_hex:role]
+    Production format: username:$argon2id$...:role[;username:$argon2id$...:role]
+    Legacy SHA-256 hashes are accepted only outside production for local smoke tests.
     """
     raw = os.getenv("HYBA_OPERATOR_CREDENTIALS", "")
     operators: Dict[str, Dict[str, Any]] = {}
-    for item in raw.split(","):
-        if not item.strip():
-            continue
-        parts = item.split(":")
+    for item in _credential_entries(raw):
+        parts = item.split(":", 2)
         if len(parts) != 3:
             continue
         username, password_hash, role = parts
-        operators[username] = {"password_hash": password_hash.lower(), "roles": [role]}
+        username = username.strip()
+        password_hash = password_hash.strip()
+        role = role.strip()
+        if not username or not password_hash or not role:
+            continue
+        operators[username] = {"password_hash": password_hash, "roles": [role]}
     return operators
 
 
 def _password_hash(password: str) -> str:
     return hashlib.sha256(password.encode("utf-8")).hexdigest()
+
+
+def _verify_password(password: str, expected_hash: str) -> bool:
+    if expected_hash.startswith("$argon2id$") or expected_hash.startswith("$argon2i$"):
+        try:
+            return _password_hasher.verify(expected_hash, password)
+        except (VerifyMismatchError, VerificationError, InvalidHashError):
+            return False
+
+    # Compatibility shim for development fixtures only. Production validation and
+    # runtime auth both reject raw SHA-256 operator hashes.
+    if not _is_production():
+        return hmac.compare_digest(_password_hash(password), expected_hash.lower())
+
+    raise HTTPException(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        detail={
+            "error": "operator_credentials_not_production_safe",
+            "message": "HYBA_OPERATOR_CREDENTIALS must use Argon2id hashes in production.",
+        },
+    )
 
 
 def _verify_operator(username: str, password: str) -> List[str]:
@@ -59,8 +99,7 @@ def _verify_operator(username: str, password: str) -> List[str]:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
 
     expected = operator["password_hash"]
-    actual = _password_hash(password)
-    if not hmac.compare_digest(actual, expected):
+    if not _verify_password(password, expected):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
     return operator["roles"]
 
