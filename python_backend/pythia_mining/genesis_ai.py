@@ -72,6 +72,7 @@ class GenesisAI:
         self.shares_solved = 0
         self.heartbeat_tick = 0
         self.health_status = "STARTING"
+        self.latest_phi_optimization: Optional[Dict[str, Any]] = None
         self.allow_dev_fixture_jobs = (
             os.getenv("NODE_ENV", os.getenv("HYBA_ENV", "development")).lower() != "production"
             and os.getenv("HYBA_ALLOW_DEV_FIXTURES", "false").lower() in {"1", "true", "yes", "on"}
@@ -155,7 +156,16 @@ class GenesisAI:
                 self.heartbeat_tick += 1
                 self.overlay.phase_heartbeat(self.heartbeat_tick)
                 self.overlay.manifold.evolve_closed_system(dt=0.05)
-                await self.ai_optimizer.optimize_nonce_search(self.current_job)
+                optimization = await self.ai_optimizer.optimize_nonce_search(self.current_job)
+                self.latest_phi_optimization = {
+                    "strategy_used": optimization.strategy_used,
+                    "confidence": optimization.confidence,
+                    "phi_resonance_score": optimization.phi_resonance_score,
+                    "phi_scaling": optimization.phi_scaling,
+                    "phi_features": optimization.phi_features,
+                    "asic_benchmark": optimization.asic_benchmark,
+                    "search_space_size": optimization.search_space_size,
+                }
                 await self.quantum_solver.configure_compressed_search(self.current_job.target, self.overlay.nonce_plan)
                 resolved_nonce = await self.quantum_solver.solve()
 
@@ -266,6 +276,7 @@ class GenesisAI:
             "pulvini_overlay": overlay_snapshot,
             "share_propagation": self.propagation.snapshot(),
             "quantum": quantum_metrics,
+            "phi_scaling_engine": self.latest_phi_optimization,
             "consciousness": consciousness_metrics,
             "telemetry_source": "runtime_state",
             "fixture_jobs_enabled": self.allow_dev_fixture_jobs,

@@ -34,6 +34,8 @@ class PulviniCompressedQuantumSolver(DodecahedralQuantumSolver):
                 "compressed_working_set_size": int(compressed_plan.working_set_dimension),
                 "retained_kernel_lanes": int(compressed_plan.retained_kernel_lanes),
                 "working_set_compression_ratio": float(compressed_plan.working_set_compression_ratio),
+                "phi_compression_factor": float(compressed_plan.working_set_compression_ratio),
+                "phi_filter_acceptance_ratio": float(compressed_plan.working_set_dimension / max(1, compressed_plan.original_lanes)),
                 "compressed_nonce_plan": compressed_plan.to_dict(),
             }
         )
@@ -159,6 +161,9 @@ class PulviniCompressedQuantumSolver(DodecahedralQuantumSolver):
                 "compressed_working_set_size": self.current_config.get("compressed_working_set_size"),
                 "retained_kernel_lanes": self.current_config.get("retained_kernel_lanes"),
                 "complete_nonce_coverage": self.current_config.get("complete_nonce_coverage"),
+                "working_set_compression_ratio": self.current_config.get("working_set_compression_ratio"),
+                "phi_compression_factor": self.current_config.get("phi_compression_factor"),
+                "phi_filter_acceptance_ratio": self.current_config.get("phi_filter_acceptance_ratio"),
                 "last_solve_trace": list(self.last_solve_trace),
             }
         )

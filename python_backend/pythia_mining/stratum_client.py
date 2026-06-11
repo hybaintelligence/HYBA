@@ -152,7 +152,7 @@ class StratumClient:
         self.stratum_version = stratum_version
 
         self.ws: Optional[aiohttp.ClientWebSocketResponse] = None
-        self.live_session: Optional[LiveStratumSession] = None
+        self.live_session: Optional[Any] = None
         self.is_connected = False
         self.is_authenticated = False
         self.connection_state = "DISCONNECTED"
@@ -302,6 +302,8 @@ class StratumClient:
 
     async def _heartbeat_loop(self) -> None:
         while self.is_connected and self.live_session is not None:
+            if not hasattr(self.live_session, "read_event"):
+                break
             try:
                 await asyncio.sleep(self.heartbeat_interval)
                 idle_time = time.time() - self.last_activity
@@ -396,7 +398,7 @@ class StratumClient:
             raise ValueError(f"Unsupported Stratum version: {self.stratum_version}")
 
     async def poll_live_event(self, *, timeout: float = 0.1) -> Optional[MiningJob]:
-        if self.live_session is None:
+        if self.live_session is None or not hasattr(self.live_session, "read_event"):
             return None
         try:
             event, payload = await self.live_session.read_event(timeout=timeout)
