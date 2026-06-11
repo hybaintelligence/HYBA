@@ -131,9 +131,9 @@ export function runVerificationTests(): TestResultItem[] {
   {
     const startTime = Date.now();
     const size = 512;
-    const rawVector: Complex[] = Array.from({ length: size }, () => ({
-      r: Math.random() * 10 - 5,
-      i: Math.random() * 10 - 5
+    const rawVector: Complex[] = Array.from({ length: size }, (_, index) => ({
+      r: Math.sin(index * GOLDEN_RATIO) * 5,
+      i: Math.cos(index / GOLDEN_RATIO) * 5
     }));
     
     const normalizedVector = normalize(rawVector);

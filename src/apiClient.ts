@@ -234,9 +234,18 @@ const DEFAULT_RETRY_OPTIONS: RetryOptions = {
   retryOn: (status: number) => status >= 500 || status === 429,
 };
 
+function secureUnitInterval(): number {
+  if (typeof crypto !== "undefined" && typeof crypto.getRandomValues === "function") {
+    const values = new Uint32Array(1);
+    crypto.getRandomValues(values);
+    return values[0] / 0xffffffff;
+  }
+  return 0.5;
+}
+
 function calculateDelay(attempt: number, baseDelayMs: number, maxDelayMs: number): number {
   const exponential = Math.min(baseDelayMs * Math.pow(2, attempt), maxDelayMs);
-  const jitter = exponential * (0.75 + Math.random() * 0.5);
+  const jitter = exponential * (0.75 + secureUnitInterval() * 0.5);
   return Math.floor(jitter);
 }
 

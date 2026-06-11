@@ -1,0 +1,7 @@
+name = "hyba-fullstack"
+pages_build_output_dir = "dist"
+compatibility_date = "2026-06-11"
+
+[vars]
+# Set HYBA_BACKEND_URL in Cloudflare Pages dashboard for production.
+# Example: HYBA_BACKEND_URL = "https://api.hyba.example.com"

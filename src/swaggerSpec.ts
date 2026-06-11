@@ -171,9 +171,9 @@ export const swaggerDocument = {
                   properties: {
                     status: { type: "string", example: "healthy" },
                     timestamp: { type: "string", example: "2026-06-09T09:38:40.000Z" },
-                    quantumCoherence: { type: "number", example: 0.9415 },
-                    quantumSpeedupFactor: { type: "number", example: 38.7 },
-                    phiResonance: { type: "number", example: 0.0594 }
+                    quantumCoherence: { type: "number", example: 0.94 },
+                    quantumSpeedupFactor: { type: "number", example: 1.0 },
+                    phiResonance: { type: "number", example: 0.06 }
                   }
                 }
               }
