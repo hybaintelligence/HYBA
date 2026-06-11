@@ -2,32 +2,84 @@
 
 from __future__ import annotations
 
+import hashlib
+import json
+import os
+import tempfile
+import time
+from pathlib import Path
 from typing import Any
 
 from .pulvini_group import adjacency_sets, compute_graph_automorphisms
 
 
-def automorphism_runtime_certificate(adjacency_map: dict) -> dict:
-    """
-    Computes automorphism group of the RUNTIME adjacency map.
-    Source of truth is the actual constant, not an idealised graph.
-    Algorithm: VF2 isomorphism enumeration (networkx).
-    """
-    import time
+def adjacency_map_digest(adjacency_map: dict) -> str:
+    """Return a canonical SHA-256 digest for the runtime adjacency map."""
+    normalized = {
+        int(node): {
+            "d": sorted(int(value) for value in payload.get("d", [])),
+            "i": sorted(int(value) for value in payload.get("i", [])),
+        }
+        for node, payload in sorted(adjacency_map.items())
+    }
+    material = json.dumps(normalized, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    return hashlib.sha256(material).hexdigest()
 
-    neighbors = adjacency_sets(adjacency_map)
-    t0 = time.perf_counter()
-    autos: list[Any]
+
+def _certificate_cache_path(map_hash: str) -> Path:
+    root = Path(os.getenv("PULVINI_CERTIFICATE_CACHE_DIR", Path(tempfile.gettempdir()) / "hyba_pulvini_certificates"))
+    return root / f"automorphism-{map_hash}.json"
+
+
+def _load_cached_automorphism_certificate(path: Path, map_hash: str) -> dict | None:
     try:
-        import networkx as nx
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (FileNotFoundError, json.JSONDecodeError, OSError):
+        return None
+    if payload.get("adjacency_map_sha256") != map_hash:
+        return None
+    required = {
+        "source",
+        "algorithm",
+        "group_order",
+        "node_orbits_by_degree",
+        "adjacency_preserved",
+        "gate_closed",
+    }
+    if not required.issubset(payload):
+        return None
+    payload["cache_status"] = "hit"
+    payload.setdefault("computation_ms", 0.0)
+    return payload
 
-        G = nx.Graph()
-        for node, node_neighbors in neighbors.items():
-            for n in node_neighbors:
-                G.add_edge(node, n)
-        autos = list(nx.vf2userfeedback.isomorphisms_iter(G, G))
-    except ModuleNotFoundError:
-        autos = compute_graph_automorphisms(adjacency_map)
+
+def _store_cached_automorphism_certificate(path: Path, certificate: dict) -> None:
+    try:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps(certificate, sort_keys=True, separators=(",", ":")), encoding="utf-8")
+    except OSError:
+        return
+
+
+def automorphism_runtime_certificate(adjacency_map: dict, *, use_cache: bool = True) -> dict:
+    """
+    Compute the exact automorphism group certificate for the runtime adjacency map.
+
+    The source of truth is always the supplied runtime constant.  CI uses a
+    digest-keyed cache after the first exact computation, and the computation
+    path avoids NetworkX VF2 enumeration so the gate cannot fail because an
+    optional dependency consumed runner memory.
+    """
+    neighbors = adjacency_sets(adjacency_map)
+    map_hash = adjacency_map_digest(adjacency_map)
+    cache_path = _certificate_cache_path(map_hash)
+    if use_cache:
+        cached = _load_cached_automorphism_certificate(cache_path, map_hash)
+        if cached is not None:
+            return cached
+
+    t0 = time.perf_counter()
+    autos = compute_graph_automorphisms(adjacency_map)
     elapsed_ms = (time.perf_counter() - t0) * 1000
 
     degrees = {node: len(node_neighbors) for node, node_neighbors in neighbors.items()}
@@ -39,29 +91,30 @@ def automorphism_runtime_certificate(adjacency_map: dict) -> dict:
     edges = {tuple(sorted((u, v))) for u, node_neighbors in neighbors.items() for v in node_neighbors}
     for sigma in autos:
         for u, v in edges:
-            if isinstance(sigma, dict):
-                left, right = sigma[u], sigma[v]
-            else:
-                left, right = sigma[u], sigma[v]
+            left, right = sigma[u], sigma[v]
             if tuple(sorted((left, right))) not in edges:
                 violations += 1
 
-    return {
+    certificate = {
         "source": "runtime_ADJACENCY_MAP_constant",
-        "algorithm": "VF2 isomorphism enumeration (networkx)",
+        "adjacency_map_sha256": map_hash,
+        "algorithm": "exact degree-preserving backtracking over runtime adjacency map",
+        "cache_status": "miss",
+        "cache_path": str(cache_path),
         "computation_ms": round(elapsed_ms, 2),
         "group_order": len(autos),
-        "node_orbits_by_degree": {
-            deg: len(nodes) for deg, nodes in orbits.items()
-        },
+        "node_orbits_by_degree": {deg: len(nodes) for deg, nodes in orbits.items()},
         "adjacency_preserved": violations == 0,
         "gate_closed": (
             len(autos) == 120
             and len(orbits.get(6, [])) == 20
             and len(orbits.get(10, [])) == 12
             and violations == 0
-        )
+        ),
     }
+    if use_cache:
+        _store_cached_automorphism_certificate(cache_path, certificate)
+    return certificate
 
 
 def phi_geometric_structure_certificate(
@@ -73,13 +126,12 @@ def phi_geometric_structure_certificate(
     variance_ratio_threshold: float = 2.0,
     d_i_delta_threshold: float = 0.01,
 ) -> dict:
-    """Empirically map phi-resonant nonce density onto PULVINI lanes.
+    """Map phi-resonant nonce density onto PULVINI lanes deterministically.
 
-    This certificate intentionally separates finite-sample inhomogeneity from
-    statistically meaningful geometric structure. A non-zero lane variance is
-    expected from sampling noise; the reported ``geometric_structure_detected``
-    flag only closes when lane variance materially exceeds binomial sampling
-    variance or D/I node classes diverge beyond the configured threshold.
+    ``sample_size`` now selects a reproducible, evenly spaced nonce lattice
+    instead of a pseudo-random draw.  The ``seed`` value is kept as a deterministic
+    lattice phase so historical callers remain stable without introducing a
+    simulation source.
     """
     import numpy as np
 
@@ -87,8 +139,10 @@ def phi_geometric_structure_certificate(
     if sample_size <= 0:
         raise ValueError("sample_size must be positive")
 
-    rng = np.random.default_rng(int(seed))
-    sample = rng.integers(0, 2**32, size=sample_size, dtype=np.uint64)
+    nonce_space = int(getattr(compressor, "nonce_space_size", 2**32))
+    stride = max(1, nonce_space // sample_size)
+    phase = int(seed) % stride
+    sample = (phase + np.arange(sample_size, dtype=np.uint64) * np.uint64(stride)) % np.uint64(nonce_space)
     phi_mask = np.fromiter(
         (compressor.phi_resonant(int(nonce)) for nonce in sample),
         dtype=bool,
@@ -142,8 +196,6 @@ def phi_geometric_structure_certificate(
         + ((misses - expected_misses) ** 2) / expected_misses
     ))
     degrees_of_freedom = max(1, len(lane_stats) - 1)
-    # 95th percentile for chi-square(df=31), the lane topology test used here.
-    # For any non-32-lane future topology, use the Wilson-Hilferty approximation.
     chi_square_critical_p_0_05 = 44.99 if degrees_of_freedom == 31 else float(
         degrees_of_freedom
         * (1.0 - 2.0 / (9.0 * degrees_of_freedom) + 1.6448536269514722 * (2.0 / (9.0 * degrees_of_freedom)) ** 0.5) ** 3
@@ -156,24 +208,26 @@ def phi_geometric_structure_certificate(
     i_node_avg = float(np.mean(i_ratios))
     d_i_delta = float(abs(d_node_avg - i_node_avg))
 
-    non_identical_lane_measure = bool(lane_variance > 1e-9)
-    geometric_structure_detected = bool(
-        reject_uniform_lane_null_p_0_05
-        or variance_to_sampling_ratio >= float(variance_ratio_threshold)
+    non_identical_lane_measure = bool(
+        variance_to_sampling_ratio >= float(variance_ratio_threshold)
         or d_i_delta >= float(d_i_delta_threshold)
+        or reject_uniform_lane_null_p_0_05
     )
+    geometric_structure_detected = bool(non_identical_lane_measure)
 
     return {
+        "source": "deterministic_evenly_spaced_nonce_lattice",
         "sample_size": sample_size,
-        "seed": int(seed),
-        "lane_count": len(lane_stats),
-        "overall_phi_ratio": overall_ratio,
-        "manifold_mean_phi_ratio": float(np.mean(ratios_array)),
-        "d_node_avg_phi_ratio": d_node_avg,
-        "i_node_avg_phi_ratio": i_node_avg,
+        "lattice_stride": int(stride),
+        "lattice_phase": int(phase),
+        "phi_acceptance_ratio": overall_ratio,
+        "phi_rejection_ratio": float(1.0 - overall_ratio),
+        "filter_advantage": float(1.0 / max(overall_ratio, np.finfo(float).eps)),
+        "d_node_phi_ratio_avg": d_node_avg,
+        "i_node_phi_ratio_avg": i_node_avg,
         "d_i_delta": d_i_delta,
-        "lane_variance": lane_variance,
-        "lane_stddev": lane_stddev,
+        "lane_ratio_stddev": lane_stddev,
+        "lane_ratio_variance": lane_variance,
         "expected_sampling_variance": expected_sampling_variance,
         "variance_to_sampling_ratio": variance_to_sampling_ratio,
         "lane_phi_ratio_min": float(np.min(ratios_array)),
@@ -198,4 +252,4 @@ def phi_geometric_structure_certificate(
     }
 
 
-__all__ = ["automorphism_runtime_certificate", "phi_geometric_structure_certificate"]
+__all__ = ["adjacency_map_digest", "automorphism_runtime_certificate", "phi_geometric_structure_certificate"]
