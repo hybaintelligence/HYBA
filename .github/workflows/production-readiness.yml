@@ -140,18 +140,26 @@ jobs:
           PY
       - name: Validate production environment contract
         env:
+          PYTHONPATH: python_backend
           NODE_ENV: production
           HYBA_ENV: production
           JWT_SECRET: ci-production-secret-value-at-least-32-chars
-          HYBA_OPERATOR_CREDENTIALS: operator:4d967bd2a5dbaeeb3d3fcc6efbb483b3d728ee3000a6daa724b402dfb9a65f45:mining_operator
           PULVINI_BACKEND_URL: http://127.0.0.1:3001
           HYBA_ALLOW_DEV_FIXTURES: "false"
           HYBA_ENABLE_LIVE_STRATUM: "true"
+          HYBA_ENABLE_MINING_AUTOCONNECT: "false"
           HYBA_ENABLE_LIVE_SHARE_SUBMIT: "false"
           HYBA_POOL_NICEHASH_URL: stratum+ssl://sha256.eu.nicehash.com:33334
           HYBA_POOL_NICEHASH_USERNAME: ci-user
           HYBA_POOL_NICEHASH_PASSWORD: ci-secret
-        run: python scripts/validate_production_env.py
+        run: |
+          python - <<'PY'
+          import os
+          from argon2 import PasswordHasher
+          from scripts import validate_production_env
+          os.environ['HYBA_OPERATOR_CREDENTIALS'] = f"operator:{PasswordHasher().hash('ci-password')}:mining_operator"
+          raise SystemExit(validate_production_env.main())
+          PY
 
   docker-build:
     name: Production Docker image build
