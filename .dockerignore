@@ -1,0 +1,42 @@
+# Dependencies and build output
+node_modules
+dist
+coverage
+.cache
+.vite
+
+# Python caches and local virtualenvs
+__pycache__
+*.py[cod]
+.pytest_cache
+.mypy_cache
+.ruff_cache
+.venv
+venv
+.env
+.env.*
+!.env.example
+
+# Runtime state and secrets
+python_backend/pythia_state.json
+python_backend/mining_config.json
+python_backend/*.tmp
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+
+# Git and editor files
+.git
+.github
+.gitignore
+.DS_Store
+.idea
+.vscode
+
+# Local logs and reports
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

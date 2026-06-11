@@ -9,6 +9,8 @@ import os
 import random
 import sys
 import unittest
+from concurrent.futures import ThreadPoolExecutor
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, patch
@@ -24,6 +26,17 @@ if str(PYTHON_BACKEND) not in sys.path:
 from hyba_genesis_api.api.mining import PowerScaleRequest  # noqa: E402
 from hyba_genesis_api.api.misc import PredictRequest, execute_pulvini  # noqa: E402
 from hyba_genesis_api.api.security import ShieldParam  # noqa: E402
+from hyba_genesis_api.core.midas_controls import (  # noqa: E402
+    BackpressureError,
+    BackpressureGuard,
+    MIDASStateMachine,
+    MiningRequestTracker,
+    MiningState,
+    RateLimitExceededError,
+    RequestStatus,
+    StateTransitionError,
+    TokenBucketRateLimiter,
+)
 from hyba_genesis_api.core.substrate import get_substrate_state, initialize_substrate, shutdown_substrate  # noqa: E402
 from pythia_mining.mining_validation import build_block_header, compact_to_target, validate_share  # noqa: E402
 from pythia_mining.quantum_solver import (  # noqa: E402
@@ -45,6 +58,100 @@ EXPECTED_INIT_ORDER = [
     "pythia_consensus_monitors",
     "mining_engine_optimization_sync",
 ]
+
+
+class MIDASProductionControlTests(unittest.TestCase):
+    def test_midas_accepts_only_canonical_production_path(self) -> None:
+        machine = MIDASStateMachine()
+        request_id = "req-prod-path"
+
+        for state in [MiningState.STARTING, MiningState.RUNNING, MiningState.STOPPING, MiningState.STOPPED]:
+            machine.transition(state, request_id=request_id)
+
+        validation = machine.validate_state_machine()
+        self.assertTrue(validation["valid"])
+        self.assertEqual("stopped", validation["current_state"])
+        self.assertEqual([request_id] * 4, [transition.request_id for transition in machine.get_transition_history()])
+
+    def test_midas_transition_guard_is_atomic_under_concurrent_calls(self) -> None:
+        machine = MIDASStateMachine()
+        machine.transition(MiningState.STARTING, request_id="req-start")
+
+        def attempt(index: int) -> bool:
+            try:
+                machine.transition(MiningState.RUNNING, request_id=f"req-run-{index}")
+                return True
+            except StateTransitionError:
+                return False
+
+        with ThreadPoolExecutor(max_workers=2) as executor:
+            results = list(executor.map(attempt, [1, 2]))
+
+        self.assertEqual(1, results.count(True))
+        self.assertEqual(MiningState.RUNNING, machine.get_state())
+        self.assertEqual(1, machine.validate_state_machine()["metrics"]["invalid_transitions_total"])
+
+    def test_midas_rejects_invalid_transitions_and_missing_request_id(self) -> None:
+        machine = MIDASStateMachine()
+        with self.assertRaisesRegex(StateTransitionError, "request_id"):
+            machine.transition(MiningState.STARTING)
+        with self.assertRaisesRegex(StateTransitionError, "Invalid state transition"):
+            machine.transition(MiningState.RUNNING, request_id="req-invalid")
+        with self.assertRaisesRegex(StateTransitionError, "Forced transition"):
+            machine.force_transition(MiningState.RUNNING, request_id="req-force")
+        self.assertEqual(3, machine.validate_state_machine()["metrics"]["invalid_transitions_total"])
+
+    def test_midas_rate_limit_is_retryable_and_observable(self) -> None:
+        limiter = TokenBucketRateLimiter(rate_per_second=10, burst_capacity=2)
+        self.assertTrue(limiter.allow("req-1"))
+        self.assertTrue(limiter.allow("req-2"))
+        with self.assertRaises(RateLimitExceededError) as exc_info:
+            limiter.allow("req-3")
+        self.assertGreater(exc_info.exception.retry_after_seconds, 0)
+        body = exc_info.exception.to_response_body()
+        self.assertTrue(body["retryable"])
+        self.assertEqual("req-3", body["request_id"])
+        self.assertEqual(1, limiter.metrics()["rejected_total"])
+
+    def test_midas_backpressure_fails_closed_when_capacity_is_exhausted(self) -> None:
+        guard = BackpressureGuard(max_inflight=1, max_queue_depth=10)
+        guard.admit("req-1")
+        with self.assertRaises(BackpressureError) as exc_info:
+            guard.admit("req-2")
+        body = exc_info.exception.to_response_body()
+        self.assertTrue(body["retryable"])
+        self.assertEqual("req-2", body["request_id"])
+        guard.release()
+        guard.admit("req-3")
+        self.assertEqual(1, guard.metrics()["rejected_total"])
+
+    def test_mining_request_tracker_is_atomic_for_duplicate_creates(self) -> None:
+        tracker = MiningRequestTracker()
+
+        def create_duplicate() -> str:
+            return tracker.create_request("start", {"miner": "alpha"}, idempotency_key="idem-race").request_id
+
+        with ThreadPoolExecutor(max_workers=8) as executor:
+            request_ids = list(executor.map(lambda _: create_duplicate(), range(16)))
+
+        self.assertEqual(1, len(set(request_ids)))
+        self.assertEqual(1, len(tracker.requests))
+
+    def test_mining_request_tracker_failed_boundary_is_retryable(self) -> None:
+        tracker = MiningRequestTracker()
+        first = tracker.create_request("start", {"miner": "alpha"}, idempotency_key="idem-boundary")
+        tracker.update_request_status(first.request_id, RequestStatus.FAILED, error="pool unavailable")
+        retry = tracker.create_request("start", {"miner": "alpha"}, idempotency_key="idem-boundary")
+        self.assertNotEqual(first.request_id, retry.request_id)
+
+    def test_mining_request_tracker_cleanup_keeps_maps_consistent(self) -> None:
+        tracker = MiningRequestTracker(request_ttl_seconds=1)
+        request = tracker.create_request("start", {"miner": "alpha"}, idempotency_key="idem-expire")
+        request.created_at = datetime.now(UTC) - timedelta(seconds=5)
+        removed = tracker.cleanup_expired_requests()
+        self.assertEqual(1, removed)
+        self.assertNotIn(request.request_id, tracker.requests)
+        self.assertNotIn("idem-expire", tracker.idempotency_keys)
 
 
 class SubstrateUnitTests(unittest.TestCase):

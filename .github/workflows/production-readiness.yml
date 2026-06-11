@@ -5,6 +5,7 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -16,44 +17,44 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
-
+          python-version: '3.12'
       - name: Assert runtime paths do not contain fabricated telemetry
         run: python scripts/check_no_runtime_mocks.py
 
   backend-regression:
-    name: Backend regression and mining validation
+    name: Backend regression, MIDAS, and mining validation
     runs-on: ubuntu-latest
     needs: runtime-guardrails
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
-
+          python-version: '3.12'
+          cache: pip
       - name: Install backend dependencies
         run: |
           python -m pip install --upgrade pip
           python -m pip install -r python_backend/hyba_genesis_api/requirements.txt
-
-      - name: Run backend unit, integration, adversarial, and property-style tests
-        run: python -m unittest tests.test_backend_workflows tests.test_live_stratum_session
-
+      - name: Run backend unit, integration, adversarial, property-style, and MIDAS tests
+        env:
+          PYTHONPATH: python_backend
+          HYBA_ALLOW_DEV_FIXTURES: "true"
+          HYBA_ENABLE_LIVE_STRATUM: "false"
+        run: python -m unittest discover -s tests -p "test_*.py"
       - name: Import FastAPI app and assert readiness route exists
         env:
           PYTHONPATH: python_backend
+          JWT_SECRET: ci-secret
         run: |
           python - <<'PY'
           from hyba_genesis_api.main import app
           routes = {route.path for route in app.routes}
-          required = {'/health', '/api/health/readiness', '/api/auth/login', '/api/products'}
+          required = {'/health', '/api/health/readiness', '/api/auth/login', '/api/products', '/api/mining/status'}
           missing = sorted(required - routes)
           if missing:
               raise SystemExit(f'Missing backend routes: {missing}')
@@ -61,22 +62,21 @@ jobs:
           PY
 
   frontend-typecheck:
-    name: Frontend build/typecheck
+    name: Frontend typecheck and build
     runs-on: ubuntu-latest
     needs: runtime-guardrails
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
           node-version: '22.15.0'
           cache: npm
-
       - name: Install dependencies
         run: npm ci
-
+      - name: TypeScript check
+        run: npm run lint
       - name: Build frontend/server bundle
         run: npm run build
 
@@ -87,24 +87,22 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
-
+          python-version: '3.12'
+          cache: pip
       - name: Install backend dependencies
         run: |
           python -m pip install --upgrade pip
           python -m pip install -r python_backend/hyba_genesis_api/requirements.txt
-
       - name: Assert production mode rejects missing pool config
         env:
           NODE_ENV: production
+          HYBA_ENV: production
+          PYTHONPATH: python_backend
         run: |
           python - <<'PY'
-          import sys
-          sys.path.insert(0, 'python_backend')
           from pythia_mining.stratum_client import PoolManager, ProductionConfigurationError
           try:
               PoolManager()
@@ -112,17 +110,17 @@ jobs:
               raise SystemExit(0)
           raise SystemExit('PoolManager unexpectedly accepted missing production pool config')
           PY
-
       - name: Assert production fixtures are blocked with pool config present
         env:
           NODE_ENV: production
+          HYBA_ENV: production
+          PYTHONPATH: python_backend
           HYBA_POOL_NICEHASH_URL: stratum+ssl://sha256.eu.nicehash.com:33334
           HYBA_POOL_NICEHASH_USERNAME: ci-user
           HYBA_POOL_NICEHASH_PASSWORD: ci-secret
+          HYBA_ALLOW_DEV_FIXTURES: "false"
         run: |
           python - <<'PY'
-          import sys
-          sys.path.insert(0, 'python_backend')
           from pythia_mining.stratum_client import PoolManager, ProductionConfigurationError
           pool = PoolManager().get_active_pool()
           try:
@@ -131,3 +129,13 @@ jobs:
               raise SystemExit(0)
           raise SystemExit('Production fixture path was not blocked')
           PY
+
+  docker-build:
+    name: Production Docker image build
+    runs-on: ubuntu-latest
+    needs: [backend-regression, frontend-typecheck, production-config-smoke]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Build production image
+        run: docker build -t hyba-fullstack:ci .
