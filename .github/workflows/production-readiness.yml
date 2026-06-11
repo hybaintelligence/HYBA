@@ -54,7 +54,16 @@ jobs:
           python - <<'PY'
           from hyba_genesis_api.main import app
           routes = {route.path for route in app.routes}
-          required = {'/health', '/api/health/readiness', '/api/auth/login', '/api/products', '/api/mining/status'}
+          required = {
+              '/health',
+              '/api/health/readiness',
+              '/api/auth/login',
+              '/api/products',
+              '/api/mining/status',
+              '/api/mining/ops/metrics',
+              '/api/mining/ops/audit',
+              '/api/mining/ops/profitability',
+          }
           missing = sorted(required - routes)
           if missing:
               raise SystemExit(f'Missing backend routes: {missing}')
@@ -129,6 +138,20 @@ jobs:
               raise SystemExit(0)
           raise SystemExit('Production fixture path was not blocked')
           PY
+      - name: Validate production environment contract
+        env:
+          NODE_ENV: production
+          HYBA_ENV: production
+          JWT_SECRET: ci-production-secret-value-at-least-32-chars
+          HYBA_OPERATOR_CREDENTIALS: operator:4d967bd2a5dbaeeb3d3fcc6efbb483b3d728ee3000a6daa724b402dfb9a65f45:mining_operator
+          PULVINI_BACKEND_URL: http://127.0.0.1:3001
+          HYBA_ALLOW_DEV_FIXTURES: "false"
+          HYBA_ENABLE_LIVE_STRATUM: "true"
+          HYBA_ENABLE_LIVE_SHARE_SUBMIT: "false"
+          HYBA_POOL_NICEHASH_URL: stratum+ssl://sha256.eu.nicehash.com:33334
+          HYBA_POOL_NICEHASH_USERNAME: ci-user
+          HYBA_POOL_NICEHASH_PASSWORD: ci-secret
+        run: python scripts/validate_production_env.py
 
   docker-build:
     name: Production Docker image build
