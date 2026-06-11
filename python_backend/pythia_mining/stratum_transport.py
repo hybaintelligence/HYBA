@@ -30,8 +30,8 @@ def parse_endpoint(url: str, *, default_port: int = 3333) -> TransportEndpoint:
     if not parsed.hostname:
         raise StratumTransportError("pool URL must include hostname")
     scheme = parsed.scheme
-    use_tls = scheme in {"stratum+ssl", "stratum+tls", "stratum2+ssl"}
-    if scheme not in {"stratum+tcp", "stratum+ssl", "stratum+tls", "stratum2+tcp", "stratum2+ssl"}:
+    use_tls = scheme in {"stratum+ssl", "stratum+tls", "stratum2+ssl", "stratum2+tls"}
+    if scheme not in {"stratum+tcp", "stratum+ssl", "stratum+tls", "stratum2+tcp", "stratum2+ssl", "stratum2+tls"}:
         raise StratumTransportError(f"unsupported Stratum scheme: {scheme}")
     return TransportEndpoint(scheme=scheme, host=parsed.hostname, port=int(parsed.port or default_port), use_tls=use_tls)
 
@@ -71,15 +71,32 @@ class StratumLineTransport:
         except Exception as exc:  # pragma: no cover - network dependent
             raise StratumTransportError(f"failed to connect to {self.endpoint.host}:{self.endpoint.port}: {exc}") from exc
 
-    async def send_line(self, line: str) -> None:
+    async def send_bytes(self, payload: bytes) -> None:
         if self.writer is None or self.writer.is_closing():
             raise StratumTransportError("transport is not connected")
-        payload = line if line.endswith("\n") else line + "\n"
-        self.writer.write(payload.encode("utf-8"))
+        self.writer.write(bytes(payload))
         try:
             await self.writer.drain()
         except Exception as exc:  # pragma: no cover - network dependent
-            raise StratumTransportError(f"failed to send Stratum line: {exc}") from exc
+            raise StratumTransportError(f"failed to send Stratum bytes: {exc}") from exc
+
+    async def send_line(self, line: str) -> None:
+        payload = line if line.endswith("\n") else line + "\n"
+        await self.send_bytes(payload.encode("utf-8"))
+
+    async def read_exactly(self, size: int, *, timeout: Optional[float] = None) -> bytes:
+        if self.reader is None:
+            raise StratumTransportError("transport is not connected")
+        if int(size) <= 0:
+            raise StratumTransportError("read size must be positive")
+        try:
+            return await asyncio.wait_for(self.reader.readexactly(int(size)), timeout=self.read_timeout if timeout is None else timeout)
+        except asyncio.IncompleteReadError as exc:
+            raise StratumTransportError("pool closed Stratum connection") from exc
+        except asyncio.TimeoutError as exc:
+            raise StratumTransportError("timed out waiting for Stratum bytes") from exc
+        except Exception as exc:  # pragma: no cover - network dependent
+            raise StratumTransportError(f"failed to read Stratum bytes: {exc}") from exc
 
     async def read_line(self, *, timeout: Optional[float] = None) -> str:
         if self.reader is None:
