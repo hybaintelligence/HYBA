@@ -10,6 +10,7 @@ from dataclasses import asdict, dataclass, field
 from typing import Any, Awaitable, Callable, Dict, List, Optional, Set, Tuple
 
 from .pulvini_manifold import PulviniManifold
+from .pulvini_memory_fabric import PulviniMemoryFabric
 from .pulvini_overlay import ADJACENCY_MAP, NUM_NODES, get_geometric_neighbors
 
 PROXY_GATEWAY = 31
@@ -133,8 +134,9 @@ class CancelFlood:
 class SharePropagationController:
     """Share-found sequence: route -> submit once -> Hebbian update -> cancel."""
 
-    def __init__(self, manifold: Optional[PulviniManifold] = None) -> None:
+    def __init__(self, manifold: Optional[PulviniManifold] = None, memory_fabric: Optional[PulviniMemoryFabric] = None) -> None:
         self.manifold = manifold or PulviniManifold(ADJACENCY_MAP)
+        self.memory_fabric = memory_fabric or PulviniMemoryFabric(num_nodes=NUM_NODES)
         self.router = ShareRouter(self.manifold)
         self.cancel_flood = CancelFlood(self.manifold)
         self.seen_shares: Set[str] = set()
@@ -165,7 +167,9 @@ class SharePropagationController:
         route = self.router.route_to_proxy(signal)
         share_result = await submitter(job, nonce, extranonce2)
         accepted = bool(getattr(share_result, "accepted", False))
-        self.manifold.hebbian_fire(route, signal_type="SHARE_FOUND" if accepted else "SHARE_REJECTED", reward=1.0 if accepted else -0.1)
+        reward = 1.0 if accepted else -0.1
+        self.manifold.hebbian_fire(route, signal_type="SHARE_FOUND" if accepted else "SHARE_REJECTED", reward=reward)
+        self.memory_fabric.record_path(route, reward=reward)
         reason = "share_accepted" if accepted else "share_rejected"
         cancel = CancelSignal(job_id=str(job.job_id), reason=reason, source_share_id=signal.share_id)
         cancelled_nodes, _max_hop = self.cancel_flood.flood(cancel)
@@ -193,6 +197,7 @@ class SharePropagationController:
             "cancelled_jobs": {job_id: signal.to_dict() for job_id, signal in self.cancelled_jobs.items()},
             "history": list(self.history),
             "manifold": self.manifold.snapshot(),
+            "memory_fabric": self.memory_fabric.compressed_kernel_snapshot().to_dict(),
         }
 
 
