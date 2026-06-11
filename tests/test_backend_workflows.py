@@ -324,17 +324,17 @@ class MiningPropertyAndIntegrationTests(unittest.TestCase):
         self.assertEqual(8, client.extranonce2_size)
         self.assertEqual("DISCONNECTED", client.connection_state)
 
-    def test_live_stratum_v2_setup_handshake_authenticates_with_binary_transport(self) -> None:
-        class FakeLiveV2Session:
+    def test_live_stratum_v2_setup_connection_uses_binary_handshake(self) -> None:
+        class FakeV2Session:
             def __init__(self, profile):
                 self.profile = profile
                 self.closed = False
 
             async def connect(self):
-                self.connected = True
+                return None
 
             async def setup_connection(self):
-                return SimpleNamespace(extranonce1="", extranonce2_size=0, authorized=True)
+                return SimpleNamespace(used_version=2, flags=0)
 
             async def close(self):
                 self.closed = True
@@ -348,17 +348,19 @@ class MiningPropertyAndIntegrationTests(unittest.TestCase):
                 stratum_version=2,
             )
             with patch.dict(os.environ, {"HYBA_ENABLE_LIVE_STRATUM": "1"}, clear=False):
-                with patch("pythia_mining.stratum_client.LiveStratumV2Session", FakeLiveV2Session):
+                with patch("pythia_mining.stratum_client.LiveStratumV2Session", FakeV2Session):
                     connected = await client.connect()
+            authenticated = client.is_authenticated
+            connected_state = client.connection_state
             await client.disconnect()
-            return connected, client
+            return connected, authenticated, connected_state, client.connection_state
 
-        connected, client = asyncio.run(run_case())
+        connected, authenticated, connected_state, disconnected_state = asyncio.run(run_case())
 
         self.assertTrue(connected)
-        self.assertEqual("", client.extranonce1)
-        self.assertEqual(0, client.extranonce2_size)
-        self.assertEqual("DISCONNECTED", client.connection_state)
+        self.assertTrue(authenticated)
+        self.assertEqual("SETUP_CONNECTION_SUCCESS_V2", connected_state)
+        self.assertEqual("DISCONNECTED", disconnected_state)
 
     def test_configured_solver_projects_nonce_inside_declared_ranges(self) -> None:
         async def run_cases() -> None:

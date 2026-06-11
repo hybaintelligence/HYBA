@@ -1,270 +1,306 @@
-"""Minimal Stratum V2 binary framing and setup handshake primitives.
+"""Stratum V2 binary framing and common handshake primitives.
 
-The implementation covers the production-critical framing contract used by a
-proxy/head node: uint24 little-endian message lengths, binary frame encode /
-decode, SetupConnection construction, and SetupConnection.Success parsing.
+This module is intentionally limited to protocol-safe primitives: validating the
+binary frame header, encoding payloads, decoding complete frames, and building
+or parsing the common ``SetupConnection`` handshake.  It does not fabricate jobs
+or emulate pool behavior; callers must provide bytes received from a real
+Stratum V2 transport.
 """
-
 from __future__ import annotations
 
-import asyncio
-import socket
 from dataclasses import asdict, dataclass
-from typing import Any, Optional
+from typing import Any, Dict, Tuple
 from urllib.parse import urlparse
-
-from pythia_mining.pool_profiles import PoolProfile, validate_profile
-
-SV2_HEADER_SIZE = 6
-SV2_MAX_FRAME_PAYLOAD = (1 << 24) - 1
-SV2_SETUP_CONNECTION = 0x00
-SV2_SETUP_CONNECTION_SUCCESS = 0x01
-SV2_SETUP_CONNECTION_ERROR = 0x02
-SV2_MIN_VERSION = 2
-SV2_MAX_VERSION = 2
-SV2_MINING_PROTOCOL = 0
 
 
 class StratumV2ProtocolError(ValueError):
-    """Raised when a Stratum V2 frame or payload is malformed."""
+    """Raised when a Stratum V2 frame or common message is malformed."""
 
 
-class LiveStratumV2SessionError(ConnectionError):
-    """Raised when the live Stratum V2 setup handshake fails."""
+SV2_HEADER_SIZE = 6
+SV2_MAX_MESSAGE_SIZE = (1 << 24) - 1
+SV2_EXTENSION_CHANNEL_MSG = 0x8000
+SV2_EXTENSION_TYPE_CORE = 0x0000
+
+SV2_MSG_SETUP_CONNECTION = 0x00
+SV2_MSG_SETUP_CONNECTION_SUCCESS = 0x01
+SV2_MSG_SETUP_CONNECTION_ERROR = 0x02
+
+SV2_PROTOCOL_MINING = 0
+SV2_VERSION = 2
 
 
 @dataclass(frozen=True)
 class StratumV2Frame:
     extension_type: int
-    msg_type: int
+    message_type: int
     payload: bytes
 
-    def to_bytes(self) -> bytes:
-        return encode_frame(self.extension_type, self.msg_type, self.payload)
+    @property
+    def message_length(self) -> int:
+        return len(self.payload)
+
+    def to_dict(self, include_payload: bool = False) -> Dict[str, Any]:
+        payload = asdict(self)
+        payload["message_length"] = self.message_length
+        payload["payload"] = self.payload.hex() if include_payload else "<binary>"
+        return payload
 
 
 @dataclass(frozen=True)
-class StratumV2Handshake:
-    pool_id: str
-    used_version: int
-    flags: int
-    endpoint_host: str
-    endpoint_port: int
-    authorized: bool = True
+class SetupConnection:
+    protocol: int = SV2_PROTOCOL_MINING
+    min_version: int = SV2_VERSION
+    max_version: int = SV2_VERSION
+    flags: int = 0
+    endpoint_host: str = ""
+    endpoint_port: int = 3336
+    vendor: str = "HYBA"
+    hardware_version: str = "PULVINI-32"
+    firmware: str = "hyba-pulvini/1.0"
+    device_id: str = ""
 
-    @property
-    def extranonce1(self) -> str:
-        # Stratum V2 channel-specific extranonce material arrives after setup.
-        return ""
-
-    @property
-    def extranonce2_size(self) -> int:
-        return 0
-
-    def to_dict(self) -> dict[str, Any]:
+    def to_dict(self) -> Dict[str, Any]:
         return asdict(self)
 
 
-def encode_uint24(value: int) -> bytes:
+@dataclass(frozen=True)
+class SetupConnectionSuccess:
+    used_version: int
+    flags: int
+
+    def to_dict(self) -> Dict[str, Any]:
+        return asdict(self)
+
+
+@dataclass(frozen=True)
+class SetupConnectionError:
+    flags: int
+    error_code: str
+
+    def to_dict(self) -> Dict[str, Any]:
+        return asdict(self)
+
+
+def _require_uint(value: int, *, bits: int, field: str) -> int:
     value = int(value)
-    if value < 0 or value > SV2_MAX_FRAME_PAYLOAD:
-        raise StratumV2ProtocolError("uint24 value out of range")
-    return value.to_bytes(3, "little")
+    if value < 0 or value >= (1 << bits):
+        raise StratumV2ProtocolError(f"{field} must fit in uint{bits}")
+    return value
 
 
-def decode_uint24(payload: bytes) -> int:
-    if len(payload) != 3:
-        raise StratumV2ProtocolError("uint24 requires exactly three bytes")
+def _encode_uint(value: int, *, bits: int, field: str) -> bytes:
+    value = _require_uint(value, bits=bits, field=field)
+    return value.to_bytes(bits // 8, "little")
+
+
+def _decode_uint(payload: bytes, *, bits: int, field: str) -> int:
+    size = bits // 8
+    if len(payload) != size:
+        raise StratumV2ProtocolError(f"{field} must be exactly {size} bytes")
     return int.from_bytes(payload, "little")
 
 
-def encode_frame(extension_type: int, msg_type: int, payload: bytes) -> bytes:
-    payload = bytes(payload)
-    if not 0 <= int(extension_type) <= 0xFFFF:
-        raise StratumV2ProtocolError("extension_type must fit uint16")
-    if not 0 <= int(msg_type) <= 0xFF:
-        raise StratumV2ProtocolError("msg_type must fit uint8")
-    if len(payload) > SV2_MAX_FRAME_PAYLOAD:
-        raise StratumV2ProtocolError("payload exceeds uint24 frame length")
-    return int(extension_type).to_bytes(2, "little") + bytes([int(msg_type)]) + encode_uint24(len(payload)) + payload
+def encode_u24_le(value: int) -> bytes:
+    value = _require_uint(value, bits=24, field="message_length")
+    return value.to_bytes(3, "little")
 
 
-def decode_frame(data: bytes) -> StratumV2Frame:
-    data = bytes(data)
-    if len(data) < SV2_HEADER_SIZE:
-        raise StratumV2ProtocolError("frame shorter than Stratum V2 header")
-    extension_type = int.from_bytes(data[0:2], "little")
-    msg_type = data[2]
-    length = decode_uint24(data[3:6])
-    payload = data[6:]
-    if len(payload) != length:
-        raise StratumV2ProtocolError("frame length does not match payload")
-    return StratumV2Frame(extension_type, msg_type, payload)
+def decode_u24_le(payload: bytes) -> int:
+    if len(payload) != 3:
+        raise StratumV2ProtocolError("uint24 payload must be exactly 3 bytes")
+    return int.from_bytes(payload, "little")
 
 
-def _encode_sv2_string(value: str) -> bytes:
-    encoded = value.encode("utf-8")
-    if len(encoded) > 0xFFFF:
-        raise StratumV2ProtocolError("string too long for setup payload")
-    return len(encoded).to_bytes(2, "little") + encoded
+def encode_str0_255(value: str, *, field: str = "str0_255") -> bytes:
+    if not isinstance(value, str):
+        raise StratumV2ProtocolError(f"{field} must be a string")
+    encoded = value.encode("ascii")
+    if len(encoded) > 255:
+        raise StratumV2ProtocolError(f"{field} exceeds STR0_255 length")
+    return len(encoded).to_bytes(1, "little") + encoded
 
 
-def _decode_sv2_string(payload: bytes, offset: int = 0) -> tuple[str, int]:
-    if offset + 2 > len(payload):
-        raise StratumV2ProtocolError("missing string length")
-    size = int.from_bytes(payload[offset:offset + 2], "little")
-    offset += 2
-    if offset + size > len(payload):
-        raise StratumV2ProtocolError("string length exceeds payload")
-    return payload[offset:offset + size].decode("utf-8"), offset + size
+def decode_str0_255(payload: bytes, offset: int = 0, *, field: str = "str0_255") -> Tuple[str, int]:
+    if offset < 0 or offset >= len(payload) + 1:
+        raise StratumV2ProtocolError(f"{field} offset is out of range")
+    if offset == len(payload):
+        raise StratumV2ProtocolError(f"{field} length prefix is missing")
+    length = payload[offset]
+    start = offset + 1
+    end = start + length
+    if end > len(payload):
+        raise StratumV2ProtocolError(f"{field} payload is truncated")
+    try:
+        return payload[start:end].decode("ascii"), end
+    except UnicodeDecodeError as exc:
+        raise StratumV2ProtocolError(f"{field} must be ASCII") from exc
 
 
-def build_setup_connection_payload(
-    *,
-    endpoint_host: str,
-    endpoint_port: int,
-    vendor: str = "HYBA",
-    hardware_version: str = "PULVINI-32",
-    firmware: str = "hyba-pythia",
-    device_id: str = "pulvini-head-node",
-    flags: int = 0,
-) -> bytes:
-    if not endpoint_host:
-        raise StratumV2ProtocolError("endpoint_host is required")
-    if not 0 < int(endpoint_port) <= 65535:
-        raise StratumV2ProtocolError("endpoint_port must fit uint16")
-    return b"".join(
-        [
-            bytes([SV2_MINING_PROTOCOL]),
-            SV2_MIN_VERSION.to_bytes(2, "little"),
-            SV2_MAX_VERSION.to_bytes(2, "little"),
-            int(flags).to_bytes(4, "little"),
-            _encode_sv2_string(endpoint_host),
-            int(endpoint_port).to_bytes(2, "little"),
-            _encode_sv2_string(vendor),
-            _encode_sv2_string(hardware_version),
-            _encode_sv2_string(firmware),
-            _encode_sv2_string(device_id),
-        ]
+def encode_frame(frame: StratumV2Frame) -> bytes:
+    extension_type = _require_uint(frame.extension_type, bits=16, field="extension_type")
+    message_type = _require_uint(frame.message_type, bits=8, field="message_type")
+    if len(frame.payload) > SV2_MAX_MESSAGE_SIZE:
+        raise StratumV2ProtocolError("payload exceeds Stratum V2 uint24 length")
+    return (
+        extension_type.to_bytes(2, "little")
+        + message_type.to_bytes(1, "little")
+        + encode_u24_le(len(frame.payload))
+        + bytes(frame.payload)
     )
 
 
-def build_setup_connection_frame(**kwargs: Any) -> bytes:
-    return encode_frame(0, SV2_SETUP_CONNECTION, build_setup_connection_payload(**kwargs))
+def decode_frame(data: bytes) -> StratumV2Frame:
+    if len(data) < SV2_HEADER_SIZE:
+        raise StratumV2ProtocolError("Stratum V2 frame header is incomplete")
+    extension_type = int.from_bytes(data[0:2], "little")
+    message_type = data[2]
+    message_length = decode_u24_le(data[3:6])
+    payload = data[SV2_HEADER_SIZE:]
+    if len(payload) != message_length:
+        raise StratumV2ProtocolError("Stratum V2 frame length does not match payload")
+    return StratumV2Frame(extension_type=extension_type, message_type=message_type, payload=payload)
 
 
-def parse_setup_connection_success(payload: bytes) -> dict[str, int]:
-    if len(payload) < 6:
-        raise StratumV2ProtocolError("SetupConnection.Success payload must contain used_version and flags")
-    return {"used_version": int.from_bytes(payload[0:2], "little"), "flags": int.from_bytes(payload[2:6], "little")}
+def split_complete_frame(buffer: bytes) -> tuple[StratumV2Frame | None, bytes]:
+    if len(buffer) < SV2_HEADER_SIZE:
+        return None, buffer
+    message_length = decode_u24_le(buffer[3:6])
+    frame_size = SV2_HEADER_SIZE + message_length
+    if len(buffer) < frame_size:
+        return None, buffer
+    return decode_frame(buffer[:frame_size]), buffer[frame_size:]
 
 
-def parse_setup_connection_error(payload: bytes) -> dict[str, Any]:
-    code, offset = _decode_sv2_string(payload, 0)
-    return {"error_code": code, "extra": payload[offset:].hex()}
+def setup_connection_from_url(
+    url: str,
+    *,
+    vendor: str = "HYBA",
+    hardware_version: str = "PULVINI-32",
+    firmware: str = "hyba-pulvini/1.0",
+    device_id: str = "",
+    flags: int = 0,
+) -> SetupConnection:
+    parsed = urlparse(url)
+    if not parsed.hostname:
+        raise StratumV2ProtocolError("SetupConnection endpoint_host is required")
+    return SetupConnection(
+        flags=_require_uint(flags, bits=32, field="flags"),
+        endpoint_host=parsed.hostname,
+        endpoint_port=int(parsed.port or 3336),
+        vendor=vendor,
+        hardware_version=hardware_version,
+        firmware=firmware,
+        device_id=device_id,
+    )
 
 
-class StratumV2SocketTransport:
-    def __init__(self, url: str, *, timeout: float = 10.0):
-        self.url = url
-        self.timeout = float(timeout)
-        self.reader: Optional[asyncio.StreamReader] = None
-        self.writer: Optional[asyncio.StreamWriter] = None
-
-    async def connect(self) -> None:
-        parsed = urlparse(self.url)
-        host = parsed.hostname
-        if not host:
-            raise LiveStratumV2SessionError("Stratum V2 URL must include a hostname")
-        port = parsed.port or 3336
-        ssl_context = True if parsed.scheme in {"stratum2+ssl", "stratum2+tls"} else None
-        try:
-            self.reader, self.writer = await asyncio.wait_for(
-                asyncio.open_connection(host, port, ssl=ssl_context, family=socket.AF_UNSPEC),
-                timeout=self.timeout,
-            )
-        except Exception as exc:  # noqa: BLE001 - preserve connection cause in session error
-            raise LiveStratumV2SessionError(f"failed to connect Stratum V2 transport: {exc}") from exc
-
-    async def send_frame(self, frame: bytes) -> None:
-        if self.writer is None:
-            raise LiveStratumV2SessionError("Stratum V2 transport is not connected")
-        self.writer.write(bytes(frame))
-        await self.writer.drain()
-
-    async def read_frame(self) -> StratumV2Frame:
-        if self.reader is None:
-            raise LiveStratumV2SessionError("Stratum V2 transport is not connected")
-        header = await asyncio.wait_for(self.reader.readexactly(SV2_HEADER_SIZE), timeout=self.timeout)
-        length = decode_uint24(header[3:6])
-        payload = await asyncio.wait_for(self.reader.readexactly(length), timeout=self.timeout)
-        return decode_frame(header + payload)
-
-    async def close(self) -> None:
-        if self.writer is not None:
-            self.writer.close()
-            await self.writer.wait_closed()
-        self.reader = None
-        self.writer = None
+def encode_setup_connection_payload(message: SetupConnection) -> bytes:
+    if int(message.min_version) > int(message.max_version):
+        raise StratumV2ProtocolError("min_version cannot exceed max_version")
+    payload = bytearray()
+    payload += _encode_uint(message.protocol, bits=8, field="protocol")
+    payload += _encode_uint(message.min_version, bits=16, field="min_version")
+    payload += _encode_uint(message.max_version, bits=16, field="max_version")
+    payload += _encode_uint(message.flags, bits=32, field="flags")
+    payload += encode_str0_255(message.endpoint_host, field="endpoint_host")
+    payload += _encode_uint(message.endpoint_port, bits=16, field="endpoint_port")
+    payload += encode_str0_255(message.vendor, field="vendor")
+    payload += encode_str0_255(message.hardware_version, field="hardware_version")
+    payload += encode_str0_255(message.firmware, field="firmware")
+    payload += encode_str0_255(message.device_id, field="device_id")
+    return bytes(payload)
 
 
-class LiveStratumV2Session:
-    def __init__(self, profile: PoolProfile, *, transport: Optional[Any] = None):
-        self.profile = validate_profile(profile)
-        self.transport = transport or StratumV2SocketTransport(profile.url)
-        parsed = urlparse(profile.url)
-        self.endpoint_host = parsed.hostname or "localhost"
-        self.endpoint_port = parsed.port or 3336
-        self.handshake: Optional[StratumV2Handshake] = None
+def decode_setup_connection_payload(payload: bytes) -> SetupConnection:
+    if len(payload) < 9:
+        raise StratumV2ProtocolError("SetupConnection payload is too short")
+    protocol = payload[0]
+    min_version = _decode_uint(payload[1:3], bits=16, field="min_version")
+    max_version = _decode_uint(payload[3:5], bits=16, field="max_version")
+    flags = _decode_uint(payload[5:9], bits=32, field="flags")
+    endpoint_host, offset = decode_str0_255(payload, 9, field="endpoint_host")
+    if offset + 2 > len(payload):
+        raise StratumV2ProtocolError("endpoint_port is missing")
+    endpoint_port = _decode_uint(payload[offset:offset + 2], bits=16, field="endpoint_port")
+    offset += 2
+    vendor, offset = decode_str0_255(payload, offset, field="vendor")
+    hardware_version, offset = decode_str0_255(payload, offset, field="hardware_version")
+    firmware, offset = decode_str0_255(payload, offset, field="firmware")
+    device_id, offset = decode_str0_255(payload, offset, field="device_id")
+    if offset != len(payload):
+        raise StratumV2ProtocolError("SetupConnection payload contains trailing bytes")
+    return SetupConnection(protocol, min_version, max_version, flags, endpoint_host, endpoint_port, vendor, hardware_version, firmware, device_id)
 
-    async def connect(self) -> None:
-        await self.transport.connect()
 
-    async def setup_connection(self) -> StratumV2Handshake:
-        await self.transport.send_frame(
-            build_setup_connection_frame(
-                endpoint_host=self.endpoint_host,
-                endpoint_port=self.endpoint_port,
-                device_id=self.profile.username or "pulvini-head-node",
-            )
-        )
-        frame = await self.transport.read_frame()
-        if frame.msg_type == SV2_SETUP_CONNECTION_ERROR:
-            error = parse_setup_connection_error(frame.payload)
-            raise LiveStratumV2SessionError(f"SetupConnection.Error: {error['error_code']}")
-        if frame.msg_type != SV2_SETUP_CONNECTION_SUCCESS:
-            raise LiveStratumV2SessionError(f"unexpected Stratum V2 setup response type: {frame.msg_type}")
-        success = parse_setup_connection_success(frame.payload)
-        self.handshake = StratumV2Handshake(
-            pool_id=self.profile.pool_id,
-            used_version=success["used_version"],
-            flags=success["flags"],
-            endpoint_host=self.endpoint_host,
-            endpoint_port=self.endpoint_port,
-            authorized=True,
-        )
-        return self.handshake
+def build_setup_connection_frame(message: SetupConnection) -> StratumV2Frame:
+    return StratumV2Frame(
+        extension_type=SV2_EXTENSION_TYPE_CORE,
+        message_type=SV2_MSG_SETUP_CONNECTION,
+        payload=encode_setup_connection_payload(message),
+    )
 
-    async def close(self) -> None:
-        await self.transport.close()
+
+def parse_setup_connection_success(frame: StratumV2Frame, *, requested: SetupConnection | None = None) -> SetupConnectionSuccess:
+    if frame.extension_type != SV2_EXTENSION_TYPE_CORE or frame.message_type != SV2_MSG_SETUP_CONNECTION_SUCCESS:
+        raise StratumV2ProtocolError("expected SetupConnection.Success core frame")
+    if len(frame.payload) != 6:
+        raise StratumV2ProtocolError("SetupConnection.Success payload must be 6 bytes")
+    used_version = _decode_uint(frame.payload[0:2], bits=16, field="used_version")
+    flags = _decode_uint(frame.payload[2:6], bits=32, field="flags")
+    if requested is not None and not (int(requested.min_version) <= used_version <= int(requested.max_version)):
+        raise StratumV2ProtocolError("SetupConnection.Success used_version is outside requested range")
+    return SetupConnectionSuccess(used_version=used_version, flags=flags)
+
+
+def parse_setup_connection_error(frame: StratumV2Frame) -> SetupConnectionError:
+    if frame.extension_type != SV2_EXTENSION_TYPE_CORE or frame.message_type != SV2_MSG_SETUP_CONNECTION_ERROR:
+        raise StratumV2ProtocolError("expected SetupConnection.Error core frame")
+    if len(frame.payload) < 5:
+        raise StratumV2ProtocolError("SetupConnection.Error payload is too short")
+    flags = _decode_uint(frame.payload[0:4], bits=32, field="flags")
+    error_code, offset = decode_str0_255(frame.payload, 4, field="error_code")
+    if offset != len(frame.payload):
+        raise StratumV2ProtocolError("SetupConnection.Error payload contains trailing bytes")
+    return SetupConnectionError(flags=flags, error_code=error_code)
+
+
+def parse_setup_connection_response(frame: StratumV2Frame, *, requested: SetupConnection | None = None) -> SetupConnectionSuccess:
+    if frame.message_type == SV2_MSG_SETUP_CONNECTION_SUCCESS:
+        return parse_setup_connection_success(frame, requested=requested)
+    if frame.message_type == SV2_MSG_SETUP_CONNECTION_ERROR:
+        error = parse_setup_connection_error(frame)
+        raise StratumV2ProtocolError(f"SetupConnection.Error: {error.error_code} (flags={error.flags})")
+    raise StratumV2ProtocolError("expected SetupConnection.Success or SetupConnection.Error")
 
 
 __all__ = [
-    "LiveStratumV2Session",
-    "LiveStratumV2SessionError",
+    "SV2_EXTENSION_CHANNEL_MSG",
+    "SV2_EXTENSION_TYPE_CORE",
     "SV2_HEADER_SIZE",
-    "SV2_SETUP_CONNECTION",
-    "SV2_SETUP_CONNECTION_ERROR",
-    "SV2_SETUP_CONNECTION_SUCCESS",
+    "SV2_MAX_MESSAGE_SIZE",
+    "SV2_MSG_SETUP_CONNECTION",
+    "SV2_MSG_SETUP_CONNECTION_ERROR",
+    "SV2_MSG_SETUP_CONNECTION_SUCCESS",
+    "SV2_PROTOCOL_MINING",
+    "SV2_VERSION",
+    "SetupConnection",
+    "SetupConnectionError",
+    "SetupConnectionSuccess",
     "StratumV2Frame",
-    "StratumV2Handshake",
     "StratumV2ProtocolError",
     "build_setup_connection_frame",
-    "build_setup_connection_payload",
     "decode_frame",
-    "decode_uint24",
+    "decode_setup_connection_payload",
+    "decode_str0_255",
+    "decode_u24_le",
     "encode_frame",
-    "encode_uint24",
+    "encode_setup_connection_payload",
+    "encode_str0_255",
+    "encode_u24_le",
     "parse_setup_connection_error",
+    "parse_setup_connection_response",
     "parse_setup_connection_success",
+    "setup_connection_from_url",
+    "split_complete_frame",
 ]

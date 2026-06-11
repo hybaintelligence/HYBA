@@ -23,7 +23,7 @@ except ImportError:  # pragma: no cover - optional dependency shape only
 
 from pythia_mining.audit_logger import AuditEvent, AuditEventType, get_audit_logger
 from pythia_mining.live_stratum_session import LiveStratumSession, LiveStratumSessionError
-from pythia_mining.stratum_v2 import LiveStratumV2Session, LiveStratumV2SessionError
+from pythia_mining.live_stratum_v2_session import LiveStratumV2Session, LiveStratumV2SessionError
 from pythia_mining.metrics_store import PoolMetrics, get_metrics_store
 from pythia_mining.pool_profiles import PoolProfile, build_profile, order_profiles
 from pythia_mining.stratum_transport import StratumTransportError
@@ -349,22 +349,28 @@ class StratumClient:
             self.extranonce2_size = int(handshake.extranonce2_size)
             self.is_authenticated = handshake.authorized
             self.connection_state = "AUTHENTICATED"
+            if self.is_authenticated:
+                self.audit_logger.log_handshake_success(pool_name=self.pool_name, pool_url=self.pool_url, extranonce1=self.extranonce1, extranonce2_size=self.extranonce2_size)
+            else:
+                self.audit_logger.log_handshake_failure(pool_name=self.pool_name, pool_url=self.pool_url, error="Authorization rejected by pool")
         elif self.stratum_version == 2:
-            self.live_session = LiveStratumV2Session(profile)
-            await self.live_session.connect()
+            v2_session = LiveStratumV2Session(profile)
+            self.live_session = v2_session
+            await v2_session.connect()
             self.is_connected = True
             self.connection_state = "CONNECTED_V2"
-            handshake = await self.live_session.setup_connection()
-            self.extranonce1 = handshake.extranonce1
-            self.extranonce2_size = int(handshake.extranonce2_size)
-            self.is_authenticated = handshake.authorized
-            self.connection_state = "AUTHENTICATED_V2_SETUP"
+            handshake = await v2_session.setup_connection()
+            self.is_authenticated = True
+            self.connection_state = "SETUP_CONNECTION_SUCCESS_V2"
+            self.audit_logger.log_handshake_success(
+                pool_name=self.pool_name,
+                pool_url=self.pool_url,
+                extranonce1=f"sv2-version-{handshake.used_version}",
+                extranonce2_size=0,
+            )
         else:
-            raise LiveStratumSessionError(f"Unsupported Stratum version: {self.stratum_version}")
-        if self.is_authenticated:
-            self.audit_logger.log_handshake_success(pool_name=self.pool_name, pool_url=self.pool_url, extranonce1=self.extranonce1, extranonce2_size=self.extranonce2_size)
-        else:
-            self.audit_logger.log_handshake_failure(pool_name=self.pool_name, pool_url=self.pool_url, error="Authorization rejected by pool")
+            raise LiveStratumSessionError(f"unsupported live Stratum version: {self.stratum_version}")
+        self.last_activity = time.time()
 
     async def _connect_development_fixture(self) -> None:
         self.is_connected = True

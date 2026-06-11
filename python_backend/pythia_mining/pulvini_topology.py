@@ -1,14 +1,7 @@
-"""Lightweight PULVINI topology accessors for edge/runtime nodes.
-
-The heavy manifold imports numpy and owns state evolution.  This module keeps the
-D/I adjacency map, symmetry checks, ranges, and neighbor queries available to
-low-footprint workers without requiring manifold construction.
-"""
-
+"""PULVINI runtime D/I topology constants."""
 from __future__ import annotations
 
-from collections import deque
-from typing import Dict, List, Tuple
+from typing import Dict, List
 
 NUM_NODES = 32
 NONCE_BITS = 32
@@ -50,67 +43,4 @@ ADJACENCY_MAP: Dict[int, Dict[str, List[int]]] = {
     31: {"i": [26, 27, 28, 29, 30], "d": [15, 16, 17, 18, 19]},
 }
 
-
-def node_role(node_id: int) -> str:
-    if not 0 <= int(node_id) < NUM_NODES:
-        raise ValueError(f"node_id must be in [0, {NUM_NODES - 1}]")
-    return "D-node" if int(node_id) < 20 else "I-node"
-
-
-def get_geometric_neighbors(node_id: int) -> List[int]:
-    if node_id not in ADJACENCY_MAP:
-        raise ValueError(f"unknown PULVINI node_id: {node_id}")
-    payload = ADJACENCY_MAP[int(node_id)]
-    return list(payload.get("d", [])) + list(payload.get("i", []))
-
-
-def nonce_slice(node_id: int) -> Tuple[int, int]:
-    if not 0 <= int(node_id) < NUM_NODES:
-        raise ValueError(f"node_id must be in [0, {NUM_NODES - 1}]")
-    start = int(node_id) * SLICE_SIZE
-    return start, start + SLICE_SIZE
-
-
-def nonce_range_inclusive(node_id: int) -> Tuple[int, int]:
-    start, end = nonce_slice(node_id)
-    return start, end - 1
-
-
-def verify_symmetry() -> bool:
-    for node_id in range(NUM_NODES):
-        for neighbor in get_geometric_neighbors(node_id):
-            if node_id not in get_geometric_neighbors(neighbor):
-                return False
-    return True
-
-
-def bfs_distances(start: int) -> Dict[int, int]:
-    distances = {int(start): 0}
-    queue: deque[int] = deque([int(start)])
-    while queue:
-        node_id = queue.popleft()
-        for neighbor in get_geometric_neighbors(node_id):
-            if neighbor not in distances:
-                distances[neighbor] = distances[node_id] + 1
-                queue.append(neighbor)
-    return distances
-
-
-def graph_diameter() -> int:
-    return max(max(bfs_distances(node_id).values()) for node_id in range(NUM_NODES))
-
-
-__all__ = [
-    "ADJACENCY_MAP",
-    "MAX_UINT32_NONCE",
-    "NONCE_BITS",
-    "NUM_NODES",
-    "SLICE_SIZE",
-    "bfs_distances",
-    "get_geometric_neighbors",
-    "graph_diameter",
-    "node_role",
-    "nonce_range_inclusive",
-    "nonce_slice",
-    "verify_symmetry",
-]
+__all__ = ["ADJACENCY_MAP", "MAX_UINT32_NONCE", "NONCE_BITS", "NUM_NODES", "SLICE_SIZE"]

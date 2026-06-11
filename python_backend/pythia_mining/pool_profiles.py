@@ -96,7 +96,7 @@ class PoolCredentialConfig:
         return payload
 
 
-SUPPORTED_SCHEMES = {"stratum+tcp", "stratum+ssl", "stratum2+tcp", "stratum2+ssl", "stratum+tls"}
+SUPPORTED_SCHEMES = {"stratum+tcp", "stratum+ssl", "stratum+tls", "stratum2+tcp", "stratum2+ssl", "stratum2+tls"}
 SUPPORTED_VERSIONS = {1, 2}
 DEFAULT_POOL_SPECS: dict[str, dict[str, Any]] = {
     "viabtc": {
@@ -135,6 +135,15 @@ DEFAULT_POOL_SPECS: dict[str, dict[str, Any]] = {
         "required_fields": ["worker", "nicehash_pool_id"],
         "priority": 40,
     },
+    "stratumv2": {
+        "name": "Operator Stratum V2 Pool",
+        "url": "stratum2+ssl://pool.example.com:3336",
+        "stratum_version": 2,
+        "tls_required": True,
+        "credential_mode": "username_password",
+        "required_fields": ["username", "password"],
+        "priority": 50,
+    },
 }
 
 
@@ -154,7 +163,7 @@ def validate_pool_url(url: str, *, tls_required: bool = False) -> str:
         raise PoolProfileError("pool URL must include hostname")
     if parsed.port is not None and not (1 <= int(parsed.port) <= 65535):
         raise PoolProfileError("pool URL port is out of range")
-    if tls_required and parsed.scheme not in {"stratum+ssl", "stratum+tls", "stratum2+ssl"}:
+    if tls_required and parsed.scheme not in {"stratum+ssl", "stratum+tls", "stratum2+ssl", "stratum2+tls"}:
         raise PoolProfileError("TLS is required for this pool profile")
     return url
 
@@ -238,6 +247,9 @@ def validate_pool_config(config: PoolCredentialConfig) -> PoolCredentialConfig:
     elif config.pool_id == "nicehash":
         if not config.worker or not config.nicehash_pool_id:
             raise PoolProfileError("nicehash requires worker and NH pool id")
+    elif config.pool_id == "stratumv2":
+        if not config.username or not config.password:
+            raise PoolProfileError("stratumv2 requires username and password")
     config.to_profile()
     return config
 
