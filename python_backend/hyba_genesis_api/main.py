@@ -10,7 +10,7 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from hyba_genesis_api.api import ai, auth, health, mining, misc, products, security
+from hyba_genesis_api.api import ai, auth, health, mining, mining_ops, misc, products, security
 from hyba_genesis_api.core.substrate import (
     get_substrate_state,
     initialize_substrate,
@@ -56,6 +56,7 @@ app.middleware("http")(telemetry_middleware)
 
 app.include_router(health.router)
 app.include_router(mining.router)
+app.include_router(mining_ops.router)
 app.include_router(security.router)
 app.include_router(misc.router)
 app.include_router(ai.router)
