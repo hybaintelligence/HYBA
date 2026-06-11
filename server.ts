@@ -61,6 +61,8 @@ const logger = pino({
   timestamp: pino.stdTimeFunctions.isoTime,
 });
 
+// ── Configuration ─────────────────────────────────────────────────────────
+
 const TRUE_VALUES = new Set(["1", "true", "yes", "on"]);
 const CONFIG = {
   isProduction: process.env.NODE_ENV === "production",
@@ -163,6 +165,8 @@ function requireInternalAccess(req: Request, res: Response, next: NextFunction):
 function noStore(res: Response): void {
   res.setHeader("cache-control", "no-store");
 }
+
+// ── Auto-Connect to ViaBTC on Startup ────────────────────────────────────
 
 async function autoConnectViaBTC(): Promise<void> {
   if (!CONFIG.enableMiningAutoConnect) {
@@ -437,6 +441,8 @@ async function startServer(): Promise<void> {
     });
   });
 
+  // Public load-balancer health. Deliberately excludes backend URL, request mix,
+  // circuit counters, and path metrics.
   app.get("/bridge/health", async (_req: Request, res: Response) => {
     const reachable = await isBackendReachable();
     noStore(res);
@@ -449,6 +455,7 @@ async function startServer(): Promise<void> {
     });
   });
 
+  // Protected detailed bridge health with internal metrics.
   app.get("/bridge/internal/health", requireInternalAccess, async (_req: Request, res: Response) => {
     const reachable = await isBackendReachable();
     const uptimeSeconds = Math.floor((Date.now() - metrics.startTime) / 1000);
@@ -474,6 +481,7 @@ async function startServer(): Promise<void> {
     });
   });
 
+  // Metrics endpoint (Prometheus-compatible, internal only in production)
   app.get("/bridge/metrics", requireInternalAccess, async (_req: Request, res: Response) => {
     const reachable = await isBackendReachable();
     const lines: string[] = [
@@ -568,6 +576,7 @@ async function startServer(): Promise<void> {
   });
 
   server.listen(CONFIG.port, CONFIG.host, () => {
+    // Explicitly gated, default-false. Production expects operator/MIDAS connect.
     void autoConnectViaBTC();
 
     logger.info(

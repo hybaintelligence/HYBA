@@ -29,7 +29,14 @@ def _is_production() -> bool:
 
 
 def _credential_entries(raw: str) -> List[str]:
-    """Return credential entries while preserving Argon2 parameter commas."""
+    """Return credential entries while preserving Argon2 parameter commas.
+
+    Production credentials use semicolon or newline-delimited entries because the
+    Argon2id encoded hash contains commas in the memory/time/parallelism segment.
+    A single Argon2 credential without a semicolon is accepted for operational
+    convenience; legacy comma separation remains available only for non-Argon2
+    local/development entries.
+    """
     normalized = raw.strip()
     if not normalized:
         return []
