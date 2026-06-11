@@ -8,7 +8,7 @@ HYBA_FULLSTACK runs as:
 
 1. React/Vite static application.
 2. Express secure bridge on `PORT`, default `3000`.
-3. FastAPI backend on `127.0.0.1:3001` inside the container/runtime.
+3. FastAPI backend on `127.0.0.1:3001` inside the container/runtime or as a separately managed private service.
 4. PYTHIA mining daemon controlled only through MIDAS mining operations.
 
 The Express bridge is not the source of mining truth. It is the HTTP boundary, proxy, security header layer, request-ID propagator, and static asset server.
@@ -22,6 +22,7 @@ npm ci
 npm run lint
 npm run build
 PYTHONPATH=python_backend python3 -m unittest discover -s tests -p "test_*.py"
+python3 scripts/validate_production_env.py
 docker build -t hyba-fullstack:release .
 ```
 
@@ -41,7 +42,7 @@ Required:
 - `NODE_ENV=production`
 - `HYBA_ENV=production`
 - `JWT_SECRET`
-- `HYBA_OPERATOR_CREDENTIALS`
+- `HYBA_OPERATOR_CREDENTIALS` using Argon2id hashes
 - `PULVINI_BACKEND_URL=http://127.0.0.1:3001` unless using a separately managed backend service
 - At least one production pool URL, username, and password before live mining is enabled
 
@@ -55,10 +56,36 @@ Recommended:
 - `LOG_LEVEL=info`
 - `HYBA_ALLOW_DEV_FIXTURES=false`
 - `HYBA_ENABLE_LIVE_STRATUM=true`
-- `HYBA_ENABLE_LIVE_SHARE_SUBMIT=true`
+- `HYBA_ENABLE_MINING_AUTOCONNECT=false`
+- `HYBA_ENABLE_LIVE_SHARE_SUBMIT=false` until explicit launch approval
+- `HYBA_LIVE_SHARE_APPROVAL_ID=<approval/change-control id>` when live share submission is enabled
+- `HYBA_INTERNAL_HEALTH_TOKEN=<secret internal diagnostics token>` when scraping `/bridge/metrics` or `/bridge/internal/health`
 - `HYBA_ENABLE_AUDIT_LOGGING=true`
 - `HYBA_SECRET_MANAGER_URI=<your secret manager URI>`
 - `HYBA_METRICS_ENDPOINT=<metrics scraping endpoint>`
+
+## Operator credential standard
+
+Production operator credentials must use Argon2id, not raw SHA-256.
+
+```text
+HYBA_OPERATOR_CREDENTIALS='operator:$argon2id$v=19$m=65536,t=3,p=4$...:mining_operator'
+```
+
+Multiple operator entries are separated with semicolons because Argon2id hashes contain commas:
+
+```text
+HYBA_OPERATOR_CREDENTIALS='ceo:$argon2id$...:ceo;miner:$argon2id$...:mining_operator'
+```
+
+Generate hashes offline or through the deployment secret-management workflow:
+
+```bash
+python3 - <<'PY'
+from argon2 import PasswordHasher
+print(PasswordHasher().hash("replace-with-strong-password"))
+PY
+```
 
 ## Mining control boundary
 
@@ -81,6 +108,8 @@ IDLE -> STARTING -> RUNNING -> STOPPING -> STOPPED
 ```
 
 Forced transitions are disabled in production. Missing request IDs, invalid transitions, duplicate active requests, exhausted token buckets, and active backpressure must fail closed.
+
+Mining auto-connect is default-disabled. Pool credentials being present means the runtime is capable of connecting; it must not connect until an explicit operator/MIDAS action is issued. `HYBA_ENABLE_MINING_AUTOCONNECT=true` is an exceptional control-plane override and must not be the default launch posture.
 
 ## Regulatory separation
 
@@ -116,12 +145,24 @@ Mining operation roles/scopes:
 
 Treasury allocation, custody, payroll, tax, creditor, regulatory, and solvency decisions must remain separate from mining runtime controls.
 
-## Health checks
+## Health checks and diagnostics
 
-Container health check:
+Public container/load-balancer health check:
 
 ```bash
 curl -fsS http://127.0.0.1:3000/bridge/health
+```
+
+Protected detailed bridge health:
+
+```bash
+curl -fsS -H "X-HYBA-Internal-Token: <token>" http://127.0.0.1:3000/bridge/internal/health
+```
+
+Protected Prometheus metrics:
+
+```bash
+curl -fsS -H "X-HYBA-Internal-Token: <token>" http://127.0.0.1:3000/bridge/metrics
 ```
 
 Backend readiness check:
@@ -147,7 +188,7 @@ curl -fsS -H "Authorization: Bearer <token>" http://127.0.0.1:3000/api/mining/st
 7. Log in as an authorized operator.
 8. Check mining status; it should be inactive before an explicit connect operation.
 9. Connect to a pool only after legal, treasury, security, and operational approvals are complete.
-10. Monitor bridge metrics and MIDAS mining metrics.
+10. Monitor protected bridge metrics and MIDAS mining metrics.
 
 ## Rollback
 
@@ -170,7 +211,9 @@ A release is production-ready only when:
 - CI is green.
 - Docker image builds.
 - Production secrets are present outside source control.
+- Operator credentials use Argon2id hashes.
 - Dev fixtures are disabled.
+- Mining auto-connect is disabled unless explicitly approved.
 - At least one live pool credential set is valid if mining is to be activated.
 - Regulatory separation is accepted by the accountable operator.
 - Monitoring and rollback ownership are assigned.
