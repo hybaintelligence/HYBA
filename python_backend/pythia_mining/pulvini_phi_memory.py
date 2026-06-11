@@ -190,9 +190,9 @@ class PhiFoldingOperator:
         for _ in range(int(depth)):
             if current.size <= 1:
                 break
-            current, kernel, original_size = self.fold(current)
+            current, kernel, _original_size = self.fold(current)
             kernels.append(kernel.copy())
-            sizes.append(original_size)
+            sizes.append(int(current.size))
         return current, tuple(kernels), tuple(sizes)
 
     def unfold_recursive(self, folded: np.ndarray, kernels: Sequence[np.ndarray], sizes: Sequence[int]) -> np.ndarray:

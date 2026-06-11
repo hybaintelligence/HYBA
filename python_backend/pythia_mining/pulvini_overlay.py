@@ -392,7 +392,8 @@ class PulviniOverlayConcentrator:
         self.nodes[source_id].best_neighbor = self.best_neighbor(source_id)
 
     def route_for_share(self, node_id: int) -> List[int]:
-        return self.manifold.gradient_route_to_gateway(node_id)
+        best = self.best_neighbor(node_id)
+        return [int(node_id)] if best is None else [int(node_id), int(best)]
 
     def gradient_cancel_order(self) -> List[int]:
         return self.manifold.gradient_broadcast_order()

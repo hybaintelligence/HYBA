@@ -10,6 +10,8 @@ coverage kernel, so every uint32 nonce remains covered exactly once.
 
 from __future__ import annotations
 
+import hashlib
+import math
 from dataclasses import asdict, dataclass
 from typing import Any, Iterable, List, Sequence, Tuple
 
@@ -114,6 +116,7 @@ class PulviniNonceSpaceCompressor:
         self.nonce_space_size = int(nonce_space_size)
         self.lane_size = self.nonce_space_size // self.lanes
         self.engine = PulviniPhiMemoryCompressionEngine(fold_depth=1)
+        self.current_plan: CompressedNonceSpacePlan | None = None
 
     def _segments(self) -> Tuple[NonceSegment, ...]:
         return tuple(
@@ -129,6 +132,17 @@ class PulviniNonceSpaceCompressor:
     def _overlap_free(segments: Sequence[NonceSegment]) -> bool:
         ordered = sorted(segments, key=lambda segment: segment.start)
         return all(ordered[index - 1].end < ordered[index].start for index in range(1, len(ordered)))
+
+    def phi_resonant(self, nonce: int, threshold: float = 0.5) -> bool:
+        material = f"phi-search:{int(nonce) % self.nonce_space_size}".encode("utf-8")
+        digest = hashlib.blake2b(material, digest_size=8).digest()
+        sample = int.from_bytes(digest, "big") / float(2 ** 64)
+        phi = (1.0 + math.sqrt(5.0)) / 2.0
+        score = 1.0 - abs(0.5 - ((sample * phi) % 1.0)) * 2.0
+        return bool(score >= float(threshold))
+
+    def build_compression_plan(self) -> CompressedNonceSpacePlan:
+        return self.build_plan()
 
     def build_plan(self) -> CompressedNonceSpacePlan:
         segments = self._segments()
@@ -154,7 +168,7 @@ class PulviniNonceSpaceCompressor:
 
         complete_size = sum(segment.size for segment in segments)
         overlap_free = self._overlap_free(segments)
-        return CompressedNonceSpacePlan(
+        plan = CompressedNonceSpacePlan(
             nonce_space_size=self.nonce_space_size,
             original_lanes=self.lanes,
             working_set_dimension=working_dim,
@@ -165,6 +179,8 @@ class PulviniNonceSpaceCompressor:
             coordinates=tuple(coordinates),
             coverage_segments=segments,
         )
+        self.current_plan = plan
+        return plan
 
 
 __all__ = [
