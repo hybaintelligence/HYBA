@@ -3,7 +3,7 @@ set -eu
 
 BACKEND_HOST="${HYBA_BACKEND_HOST:-127.0.0.1}"
 BACKEND_PORT="${HYBA_BACKEND_PORT:-3001}"
-NODE_ENTRYPOINT="${HYBA_NODE_ENTRYPOINT:-dist/server.cjs}"
+NODE_ENTRYPOINT="${HYBA_NODE_ENTRYPOINT:-dist/server.mjs}"
 
 shutdown() {
   echo "[hyba-entrypoint] shutdown requested"
