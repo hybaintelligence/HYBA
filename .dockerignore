@@ -21,6 +21,11 @@ venv
 python_backend/pythia_state.json
 python_backend/mining_config.json
 python_backend/*.tmp
+data
+logs
+*.db
+*.sqlite
+*.sqlite3
 *.pem
 *.key
 *.crt
