@@ -30,20 +30,22 @@ NODE_PID=$!
 
 while :; do
   if ! kill -0 "$BACKEND_PID" 2>/dev/null; then
+    STATUS=0
     wait "$BACKEND_PID" || STATUS=$?
-    echo "[hyba-entrypoint] FastAPI backend exited with ${STATUS:-0}; stopping bridge"
+    echo "[hyba-entrypoint] FastAPI backend exited with ${STATUS}; stopping bridge"
     kill -TERM "$NODE_PID" 2>/dev/null || true
     wait "$NODE_PID" 2>/dev/null || true
-    exit "${STATUS:-1}"
+    exit "$STATUS"
   fi
 
   if ! kill -0 "$NODE_PID" 2>/dev/null; then
+    STATUS=0
     wait "$NODE_PID" || STATUS=$?
-    echo "[hyba-entrypoint] Node bridge exited with ${STATUS:-0}; stopping backend"
+    echo "[hyba-entrypoint] Node bridge exited with ${STATUS}; stopping backend"
     kill -TERM "$BACKEND_PID" 2>/dev/null || true
     wait "$BACKEND_PID" 2>/dev/null || true
-    exit "${STATUS:-1}"
+    exit "$STATUS"
   fi
 
   sleep 1
- done
+done
