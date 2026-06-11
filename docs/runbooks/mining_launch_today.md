@@ -8,15 +8,20 @@ Copy `config/mining.pools.example.env` into your secret manager, deployment plat
 
 Never commit real pool usernames, payout addresses, worker names, passwords, or API keys.
 
+Set `HYBA_SECRET_MANAGER_URI` to the URI of your secret manager service so that the application can fetch pool credentials and JWT secrets from a secure store.
+
 ## 2. Required production flags
 
 ```bash
 export NODE_ENV=production
 export HYBA_ENV=production
 export HYBA_ALLOW_DEV_FIXTURES=false
+export HYBA_ENABLE_LIVE_STRATUM=true
+export HYBA_ENABLE_LIVE_SHARE_SUBMIT=true
+export HYBA_ENABLE_AUDIT_LOGGING=true
 ```
 
-Production mode intentionally blocks simulated jobs and fixture credentials.
+Production mode intentionally blocks simulated jobs and fixture credentials. Enabling live Stratum and live share submission instructs the Stratum client to establish real network connections and submit accepted shares to pools. Audit logging should remain enabled for compliance and incident investigation.
 
 ## 3. Deterministic declared hashrate
 

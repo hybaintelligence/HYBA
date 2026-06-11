@@ -1,5 +1,5 @@
 """
-Enterprise Stratum Client v2.1 (Stratum v1 & v2 Compatibility Layer)
+Enterprise Stratum Client v2.2 (Stratum v1 & v2 Compatibility Layer)
 PYTHIA Mining System - Pool Communication Layer & Deterministic Scheduler
 """
 
@@ -10,22 +10,22 @@ import json
 import logging
 import os
 import time
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from typing import Any, Dict, List, Optional, Tuple
 from urllib.parse import urlparse
 
 try:
     import aiohttp
-except ImportError:
+except ImportError:  # pragma: no cover - optional dependency shape only
     class AiohttpUnavailable:
         ClientWebSocketResponse = Any
     aiohttp = AiohttpUnavailable()
 
+from pythia_mining.audit_logger import AuditEvent, AuditEventType, get_audit_logger
 from pythia_mining.live_stratum_session import LiveStratumSession, LiveStratumSessionError
-from pythia_mining.pool_profiles import build_profile
+from pythia_mining.metrics_store import PoolMetrics, get_metrics_store
+from pythia_mining.pool_profiles import PoolProfile, build_profile, order_profiles
 from pythia_mining.stratum_transport import StratumTransportError
-from pythia_mining.audit_logger import get_audit_logger, AuditEventType, AuditEvent
-from pythia_mining.metrics_store import get_metrics_store, PoolMetrics
 
 
 @dataclass
@@ -44,6 +44,13 @@ class MiningJob:
     stratum_version: int = 1
     is_stale: bool = False
 
+    def to_dict(self) -> Dict[str, Any]:
+        payload = asdict(self)
+        payload["coinbase1"] = self.coinbase_parts[0]
+        payload["coinbase2"] = self.coinbase_parts[1]
+        payload["target_hex"] = f"{int(self.target):064x}"
+        return payload
+
 
 @dataclass
 class ShareResult:
@@ -54,6 +61,9 @@ class ShareResult:
     nonce: int = 0
     block_hash: Optional[str] = None
     target: Optional[int] = None
+
+    def to_dict(self) -> Dict[str, Any]:
+        return asdict(self)
 
 
 class AllPoolsOfflineError(ConnectionError):
@@ -96,6 +106,32 @@ def _difficulty_to_target(difficulty: float) -> int:
     return max(1, int(target_limit / difficulty))
 
 
+def _profiles_from_legacy_config(pools_config: Dict[str, Any]) -> List[PoolProfile]:
+    profiles: List[PoolProfile] = []
+    for pool_id, payload in (pools_config or {}).items():
+        if not isinstance(payload, dict):
+            continue
+        enabled = bool(payload.get("enabled", True))
+        if not enabled:
+            continue
+        try:
+            profiles.append(
+                build_profile(
+                    str(pool_id),
+                    name=str(payload.get("name") or pool_id),
+                    url=str(payload.get("url") or payload.get("pool_url") or ""),
+                    username=str(payload.get("username") or payload.get("worker") or ""),
+                    password=str(payload.get("password") or payload.get("pass") or ""),
+                    stratum_version=int(payload.get("stratum_version") or 1),
+                    priority=int(payload.get("priority") or 100),
+                    tls_required=bool(payload.get("tls_required", False)),
+                )
+            )
+        except Exception:
+            continue
+    return order_profiles(profiles)
+
+
 class StratumClient:
     """
     Substrate-independent Stratum client.
@@ -126,6 +162,9 @@ class StratumClient:
         self.shares_submitted = 0
         self.shares_accepted = 0
         self.shares_rejected = 0
+        self.jobs_received = 0
+        self.last_job_received_at: Optional[float] = None
+        self.active_job_id: Optional[str] = None
         self.request_counter = 0
         self.connection_failures = 0
         self.last_failure_at: Optional[float] = None
@@ -134,7 +173,7 @@ class StratumClient:
         self.last_pool_event_at: Optional[float] = None
         self.last_share_submit_at: Optional[float] = None
         self.last_share_error: Optional[str] = None
-        self.stale_job_ids: set = set()
+        self.stale_job_ids: set[str] = set()
         self.reconnect_attempts = 0
         self.max_reconnect_attempts = 10
         self.reconnect_backoff_base = 1.0
@@ -267,7 +306,7 @@ class StratumClient:
                 idle_time = time.time() - self.last_activity
                 if idle_time > self.idle_timeout:
                     try:
-                        event, payload = await self.live_session.read_event(timeout=5.0)
+                        event, _payload = await self.live_session.read_event(timeout=5.0)
                         if event:
                             self.last_activity = time.time()
                             self.last_pool_event_at = self.last_activity
@@ -352,6 +391,7 @@ class StratumClient:
             old_difficulty = self.current_difficulty
             self.current_difficulty = float(payload.difficulty)
             self.audit_logger.log_difficulty_change(pool_name=self.pool_name, pool_url=self.pool_url, old_difficulty=old_difficulty, new_difficulty=self.current_difficulty)
+            self._persist_metrics()
             return None
         if event == "mining.notify":
             if payload.clean_jobs:
@@ -375,7 +415,11 @@ class StratumClient:
                 is_stale=False,
             )
             self.current_jobs[job.job_id] = job
+            self.jobs_received += 1
+            self.last_job_received_at = job.received_timestamp
+            self.active_job_id = job.job_id
             self.audit_logger.log_job_received(pool_name=self.pool_name, pool_url=self.pool_url, job_id=job.job_id, clean_jobs=payload.clean_jobs, difficulty=self.current_difficulty)
+            self._persist_metrics()
             return job
         if event == "mining.set_extranonce":
             self.audit_logger.log_extranonce_change(
@@ -535,6 +579,10 @@ class StratumClient:
             stratum_version=self.stratum_version,
         )
         self.current_jobs[job.job_id] = job
+        self.jobs_received += 1
+        self.last_job_received_at = job.received_timestamp
+        self.active_job_id = job.job_id
+        self._persist_metrics()
         return job
 
     def validate_and_record_share(self, job: MiningJob, nonce: int, extranonce2: str) -> ShareResult:
@@ -556,11 +604,40 @@ class StratumClient:
         self._persist_metrics()
         return result
 
+    def get_status(self) -> Dict[str, Any]:
+        submitted = self.shares_submitted
+        accepted = self.shares_accepted
+        current_job = self.current_jobs.get(self.active_job_id) if self.active_job_id else None
+        return {
+            "pool_name": self.pool_name,
+            "pool_url": self.pool_url,
+            "stratum_version": self.stratum_version,
+            "connection_state": self.connection_state,
+            "is_connected": self.is_connected,
+            "is_authenticated": self.is_authenticated,
+            "current_difficulty": self.current_difficulty,
+            "current_jobs_count": len(self.current_jobs),
+            "active_job_id": self.active_job_id,
+            "last_job_received_at": self.last_job_received_at,
+            "last_pool_event_at": self.last_pool_event_at,
+            "last_share_submit_at": self.last_share_submit_at,
+            "last_share_error": self.last_share_error,
+            "current_job": current_job.to_dict() if current_job else None,
+            "performance": {
+                "latency_ms": self.avg_latency,
+                "shares_submitted": submitted,
+                "shares_accepted": accepted,
+                "shares_rejected": self.shares_rejected,
+                "jobs_received": self.jobs_received,
+                "acceptance_rate": accepted / max(submitted, 1),
+            },
+        }
+
 
 class PoolManager:
-    def __init__(self):
+    def __init__(self, pools_config: Optional[Dict[str, Any]] = None):
         from pythia_mining.pool_profiles import load_pool_profiles
-        profiles = load_pool_profiles()
+        profiles = _profiles_from_legacy_config(pools_config or {}) if pools_config else load_pool_profiles()
         if _is_production() and not profiles:
             raise ProductionConfigurationError("Production mining requires at least one HYBA_POOL_<ID>_* configuration")
         self.pools: Dict[str, StratumClient] = {
@@ -583,24 +660,52 @@ class PoolManager:
                     stratum_version=1,
                 )
             }
+        self.current_pool_key: Optional[str] = None
 
     async def get_best_pool(self) -> StratumClient:
-        for pool in self.pools.values():
+        if self.current_pool_key and self.current_pool_key in self.pools:
+            current = self.pools[self.current_pool_key]
+            if current.is_connected and current.is_authenticated:
+                return current
+        for pool_id, pool in self.pools.items():
             if pool.is_connected and pool.is_authenticated:
+                self.current_pool_key = pool_id
                 return pool
         failures: list[str] = []
-        for pool in self.pools.values():
+        for pool_id, pool in self.pools.items():
             if await pool.connect():
+                self.current_pool_key = pool_id
                 return pool
             failures.append(f"{pool.pool_name}: {pool.connection_state}")
+        self.current_pool_key = None
         raise AllPoolsOfflineError("All configured mining pools are offline or unauthenticated: " + "; ".join(failures))
 
-    def get_active_pool(self) -> StratumClient:
-        return next(iter(self.pools.values()))
+    def get_active_pool(self) -> Optional[StratumClient]:
+        if self.current_pool_key and self.current_pool_key in self.pools:
+            return self.pools[self.current_pool_key]
+        return next(iter(self.pools.values()), None)
+
+    def get_all_pools_status(self) -> List[Dict[str, Any]]:
+        statuses: List[Dict[str, Any]] = []
+        for pool_id, pool in self.pools.items():
+            payload = pool.get_status()
+            payload["pool_id"] = pool_id
+            payload["is_active"] = self.current_pool_key == pool_id
+            statuses.append(payload)
+        return statuses
 
     async def disconnect_all(self):
         for pool in self.pools.values():
             await pool.disconnect()
+        self.current_pool_key = None
 
 
-__all__ = ["MiningJob", "ShareResult", "StratumClient", "PoolManager", "AllPoolsOfflineError", "ProductionConfigurationError"]
+__all__ = [
+    "MiningJob",
+    "ShareResult",
+    "StratumClient",
+    "PoolManager",
+    "AllPoolsOfflineError",
+    "ProductionConfigurationError",
+    "_difficulty_to_target",
+]

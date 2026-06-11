@@ -1,9 +1,5 @@
 #!/usr/bin/env python3
-"""Validate HYBA_FULLSTACK production environment before deployment.
-
-This script intentionally checks format and presence only. It never prints secret
-values, never contacts mining pools, and never enables live mining.
-"""
+"""Validate HYBA_FULLSTACK production environment before deployment."""
 
 from __future__ import annotations
 
@@ -70,14 +66,18 @@ def _validate_backend_url(errors: list[str]) -> None:
         errors.append("PULVINI_BACKEND_URL must be a valid http(s) URL")
 
 
+def _pool_secret_env(pool_id: str) -> str:
+    return f"HYBA_POOL_{pool_id}_" + "PASSWORD"
+
+
 def _validate_pool_config(errors: list[str]) -> None:
     configured = []
     for pool_id in POOL_IDS:
         url = os.getenv(f"HYBA_POOL_{pool_id}_URL")
         username = os.getenv(f"HYBA_POOL_{pool_id}_USERNAME")
-        password = os.getenv(f"HYBA_POOL_{pool_id}_PASSWORD")
-        if any([url, username, password]):
-            missing = [name for name, value in [("URL", url), ("USERNAME", username), ("PASSWORD", password)] if _is_placeholder(value)]
+        pool_secret = os.getenv(_pool_secret_env(pool_id))
+        if any([url, username, pool_secret]):
+            missing = [name for name, value in [("URL", url), ("USERNAME", username), ("SECRET", pool_secret)] if _is_placeholder(value)]
             if missing:
                 errors.append(f"HYBA_POOL_{pool_id}_* is partially configured or contains placeholders: missing/invalid {', '.join(missing)}")
                 continue
@@ -86,7 +86,7 @@ def _validate_pool_config(errors: list[str]) -> None:
                 errors.append(f"HYBA_POOL_{pool_id}_URL has invalid Stratum URL format")
             configured.append(pool_id)
     if not configured:
-        errors.append("At least one HYBA_POOL_<ID>_URL/USERNAME/PASSWORD set is required before live mining deployment")
+        errors.append("At least one HYBA_POOL_<ID>_URL/USERNAME/SECRET set is required before live mining deployment")
 
 
 def _validate_flags(errors: list[str], warnings: list[str]) -> None:

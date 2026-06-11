@@ -42,12 +42,9 @@ import { createServer as createViteServer, type InlineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 
-// ── Global Backend URL for post-startup calls ────────────────────────────
 let _backendUrl: URL | null = null;
 
 dotenv.config();
-
-// ── Structured Logger ─────────────────────────────────────────────────────
 
 const logger = pino({
   name: "hyba-secure-bridge",
@@ -81,8 +78,6 @@ const CONFIG = {
   internalHealthToken: process.env.HYBA_INTERNAL_HEALTH_TOKEN || "",
 } as const;
 
-// ── Circuit Breaker ───────────────────────────────────────────────────────
-
 interface CircuitState {
   failures: number;
   lastFailureTime: number;
@@ -112,7 +107,7 @@ function isCircuitOpen(): boolean {
   }
   if (elapsed > CIRCUIT_HALF_OPEN_MS && !circuitState.halfOpenAttempted) {
     circuitState.halfOpenAttempted = true;
-    return false; // allow a single probe request
+    return false;
   }
   return true;
 }
@@ -133,8 +128,6 @@ function recordProxySuccess(): void {
   circuitState.isOpen = false;
   circuitState.halfOpenAttempted = false;
 }
-
-// ── Utilities ─────────────────────────────────────────────────────────────
 
 function normalizeBackendUrl(value: string): URL {
   const parsed = new URL(value);
@@ -212,8 +205,6 @@ async function autoConnectViaBTC(): Promise<void> {
   }
 }
 
-// ── Backend Management ────────────────────────────────────────────────────
-
 async function isBackendReachable(): Promise<boolean> {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 1500);
@@ -286,8 +277,6 @@ async function waitForBackend(maxAttempts = 30): Promise<boolean> {
   return false;
 }
 
-// ── Proxy Handler (with circuit breaker) ──────────────────────────────────
-
 async function proxyToBackend(req: Request, res: Response): Promise<void> {
   if (isCircuitOpen()) {
     noStore(res);
@@ -304,7 +293,6 @@ async function proxyToBackend(req: Request, res: Response): Promise<void> {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), CONFIG.proxyTimeoutMs);
 
-  // Buffer the request body so we can use it with fetch
   let bodyBuffer: Buffer | undefined;
   if (!["GET", "HEAD"].includes(req.method)) {
     const chunks: Buffer[] = [];
@@ -358,8 +346,6 @@ async function proxyToBackend(req: Request, res: Response): Promise<void> {
   }
 }
 
-// ── Metrics ────────────────────────────────────────────────────────────────
-
 const metrics = {
   requestsTotal: 0,
   requestsByPath: new Map<string, number>(),
@@ -368,16 +354,12 @@ const metrics = {
   startTime: Date.now(),
 };
 
-// ── Application Server ────────────────────────────────────────────────────
-
 async function startServer(): Promise<void> {
-  // ── Production JWT validation ──
   if (CONFIG.isProduction && !CONFIG.jwtSecret) {
     logger.fatal("JWT_SECRET is required in production");
     process.exit(1);
   }
 
-  // ── Backend connectivity ──
   const backendReachable = await isBackendReachable();
   if (!backendReachable) {
     spawnBackend();
@@ -391,10 +373,8 @@ async function startServer(): Promise<void> {
     }
   }
 
-  // ── Express app ──
   const app = express();
 
-  // Security headers
   app.use(
     helmet({
       contentSecurityPolicy: {
@@ -415,10 +395,8 @@ async function startServer(): Promise<void> {
     }),
   );
 
-  // Compression
   app.use(compression());
 
-  // Structured HTTP logging
   const httpLogger = pinoHttp({
     logger,
     genReqId: () => generateRequestId(),
@@ -428,7 +406,6 @@ async function startServer(): Promise<void> {
   });
   app.use(httpLogger);
 
-  // Request ID propagation
   app.use((req: Request, res: Response, next: NextFunction) => {
     const requestId = (req.headers["x-request-id"] as string) || generateRequestId();
     req.headers["x-request-id"] = requestId;
@@ -436,7 +413,6 @@ async function startServer(): Promise<void> {
     next();
   });
 
-  // Metrics middleware
   app.use((req: Request, _res: Response, next: NextFunction) => {
     metrics.requestsTotal += 1;
     const pathKey = req.method + " " + req.path;
@@ -444,7 +420,6 @@ async function startServer(): Promise<void> {
     next();
   });
 
-  // Rate limiting middleware
   const limiter = rateLimit({
     windowMs: CONFIG.rateLimitWindowMs,
     max: CONFIG.rateLimitMax,
@@ -454,9 +429,6 @@ async function startServer(): Promise<void> {
   });
   app.use(limiter);
 
-  // ── Routes ──
-
-  // Root health
   app.get("/", async (_req: Request, res: Response, next: NextFunction) => {
     if (!CONFIG.isProduction) return next();
     noStore(res);
@@ -534,7 +506,6 @@ async function startServer(): Promise<void> {
     res.send(lines.join("\n"));
   });
 
-  // API proxy routes (apply before body parsing)
   app.use("/api", (req: Request, res: Response) => {
     void proxyToBackend(req, res);
   });
@@ -542,18 +513,14 @@ async function startServer(): Promise<void> {
     void proxyToBackend(req, res);
   });
 
-  // Body parsing (apply only to non-proxy routes)
   app.use(express.json({ limit: "1mb" }));
   app.use(express.urlencoded({ extended: true, limit: "1mb" }));
 
-  // ── Static / Vite middleware ──
   if (!CONFIG.isProduction) {
     logger.info("Mounting Vite dev middleware");
-    // Use an inline config instead of a file path to avoid tsx resolver issues
-    // on Windows + OneDrive paths (ERR_INVALID_URL_SCHEME).
     const projectRoot = path.resolve(process.cwd());
     const viteInlineConfig: InlineConfig = {
-      configFile: false, // do NOT load from disk — we provide everything inline
+      configFile: false,
       root: projectRoot,
       plugins: [react(), tailwindcss()],
       resolve: {
@@ -572,7 +539,6 @@ async function startServer(): Promise<void> {
       },
       appType: "spa",
       optimizeDeps: {
-        // Pre-bundle key dependencies to avoid late ESM resolution issues
         include: [
           "react",
           "react-dom",
@@ -597,7 +563,6 @@ async function startServer(): Promise<void> {
     });
   }
 
-  // ── HTTP Server ──
   const server: Server = createServer(app);
   installShutdownHandlers(server);
 
@@ -632,24 +597,19 @@ async function startServer(): Promise<void> {
   });
 }
 
-// ── Graceful Shutdown ────────────────────────────────────────────────────
-
 function installShutdownHandlers(server: Server): void {
   const shutdown = (signal: string) => {
     logger.info({ signal }, "Graceful shutdown initiated — draining connections");
 
-    // Stop accepting new connections
     server.close(() => {
       logger.info("HTTP server closed — all connections drained");
     });
 
-    // Kill backend process
     if (backendProcess && !backendProcess.killed) {
       backendProcess.kill("SIGTERM");
       logger.info("Backend process terminated");
     }
 
-    // Force exit after drain timeout
     setTimeout(() => {
       logger.info("Shutdown complete — exiting");
       process.exit(0);
@@ -660,8 +620,6 @@ function installShutdownHandlers(server: Server): void {
   process.once("SIGTERM", () => shutdown("SIGTERM"));
   process.once("SIGHUP", () => shutdown("SIGHUP"));
 }
-
-// ── Start ─────────────────────────────────────────────────────────────────
 
 startServer().catch((error: unknown) => {
   const message = error instanceof Error ? error.message : String(error);
