@@ -512,7 +512,7 @@ function Panel({ title, icon, children, isLoading, rows = 4 }: { title: string; 
         <div style={{ color: THEME.colors.clicquotOrange }}>{icon}</div><h3 className="text-xs font-mono font-bold uppercase tracking-wider" style={{ color: THEME.colors.oxford }}>{title}</h3>
       </div>
       <div className="p-4">
-        {isLoading ? <div className="space-y-3">{Array.from({ length: rows }).map((_, i) => <Skeleton key={i} width={i % 2 === 0 ? "100%" : "70%"} height="18px" />)}</div> : children}
+        {isLoading ? <div className="space-y-3">{Array.from({ length: rows }).map((_, i) => <div key={i}><Skeleton width={i % 2 === 0 ? "100%" : "70%"} height="18px" /></div>)}</div> : children}
       </div>
     </div>
   );

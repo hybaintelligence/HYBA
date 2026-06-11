@@ -224,6 +224,9 @@ class StratumClient:
             self.reconnect_attempts += 1
             await self._close_live_session()
             self._persist_metrics()
+            if isinstance(e, (ValueError, ProductionConfigurationError, LiveStratumSessionError)):
+                self.logger.error("Pool %s connection failed permanently: %s", self.pool_name, e)
+                return False
             if self.reconnect_attempts < self.max_reconnect_attempts:
                 delay = self._calculate_backoff_delay()
                 self.audit_logger.log_reconnection_attempt(
@@ -407,6 +410,15 @@ class StratumClient:
             return ShareResult(False, 410, "stale_job", job.job_id, nonce)
 
         extranonce2_value = extranonce2 or ("00" * job.extranonce2_size)
+        if self.live_session is not None and not _live_share_submit_enabled():
+            self.audit_logger.log_share_rejected(pool_name=self.pool_name, pool_url=self.pool_url, job_id=job.job_id, nonce=nonce, reason="live_share_submit_disabled", error_code=423)
+            self.shares_submitted += 1
+            self.shares_rejected += 1
+            self.last_share_error = "live_share_submit_disabled"
+            self.metrics_store.record_share_submission(pool_name=self.pool_name, pool_url=self.pool_url, job_id=job.job_id, nonce=nonce, accepted=False, error_code=423, error_message="live_share_submit_disabled")
+            self._persist_metrics()
+            return ShareResult(False, 423, "live_share_submit_disabled", job.job_id, nonce)
+
         try:
             validation = validate_share(job, nonce, extranonce2_value)
         except MiningValidationError as exc:
@@ -429,15 +441,6 @@ class StratumClient:
 
         if self.live_session is None:
             return self.validate_and_record_share(job, nonce, extranonce2_value)
-
-        if not _live_share_submit_enabled():
-            self.audit_logger.log_share_rejected(pool_name=self.pool_name, pool_url=self.pool_url, job_id=job.job_id, nonce=nonce, reason="live_share_submit_disabled", error_code=423)
-            self.shares_submitted += 1
-            self.shares_rejected += 1
-            self.last_share_error = "live_share_submit_disabled"
-            self.metrics_store.record_share_submission(pool_name=self.pool_name, pool_url=self.pool_url, job_id=job.job_id, nonce=nonce, accepted=False, error_code=423, error_message="live_share_submit_disabled", block_hash=validation.block_hash, target=validation.target)
-            self._persist_metrics()
-            return ShareResult(False, 423, "live_share_submit_disabled", job.job_id, nonce, validation.block_hash, validation.target)
 
         self.shares_submitted += 1
         self.last_share_submit_at = time.time()
@@ -510,7 +513,7 @@ class StratumClient:
         self.metrics_store.record_connection_event(pool_name=self.pool_name, pool_url=self.pool_url, event_type="disconnection")
         self._persist_metrics()
 
-    def inject_simulated_target_job(self, difficulty: float):
+    def inject_dev_fixture_target_job(self, difficulty: float):
         """Create a dev/test mining job fixture. Disabled in production."""
         if not _dev_fixtures_allowed():
             raise ProductionConfigurationError("Simulated mining jobs are disabled in production")

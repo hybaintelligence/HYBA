@@ -110,7 +110,7 @@ class GenesisAI:
         if self.allow_dev_fixture_jobs:
             self.logger.warning("Creating dev fixture mining job because HYBA_ALLOW_DEV_FIXTURES=true")
             self.jobs_received += 1
-            return active_pool.inject_simulated_target_job(difficulty=active_pool.current_difficulty)
+            return active_pool.inject_dev_fixture_target_job(difficulty=active_pool.current_difficulty)
         return None
 
     async def _mining_loop(self):

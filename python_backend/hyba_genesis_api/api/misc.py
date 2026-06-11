@@ -1,11 +1,10 @@
 from __future__ import annotations
-import math
 
 from datetime import datetime, timezone
 from typing import Any, Dict, Optional
 
 import numpy as np
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel, Field
 
 router = APIRouter(prefix="/api", tags=["misc"])
@@ -93,20 +92,20 @@ class PredictRequest(BaseModel):
 
 @router.post("/predict", response_model=Dict[str, Any])
 async def predict_params(req: PredictRequest):
-    difficulty = req.state.networkDifficulty
-    normalized_difficulty = max(difficulty, 1.0) if difficulty is not None else 1.0
-    recommended_power_scale = min(1.0, max(0.1, math.log10(normalized_difficulty) / 16.0))
-    confidence = 0.25
+    """Fail closed until a measured optimizer runtime is connected.
 
-    return {
-        "success": True,
-        "timestamp": datetime.now(timezone.utc).isoformat(),
-        "source": "deterministic_heuristic_fallback",
-        "prediction": {
-            "recommended_power_scale": round(recommended_power_scale, 4),
-            "networkDifficulty": difficulty,
-            "mode": "degraded",
+    Power recommendations are operational controls. Returning a heuristic when the
+    optimizer is unavailable would look like a successful prediction while being
+    unrelated to measured activity, so the API reports the missing dependency
+    explicitly instead of fabricating confidence or a power scale.
+    """
+
+    raise HTTPException(
+        status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+        detail={
+            "error": "optimizer_runtime_not_connected",
+            "message": "No measured optimizer runtime is connected; prediction was not generated.",
+            "networkDifficulty": req.state.networkDifficulty,
+            "timestamp": datetime.now(timezone.utc).isoformat(),
         },
-        "confidence": confidence,
-        "message": "Prediction served via deterministic fallback while optimizer runtime is unavailable.",
-    }
+    )

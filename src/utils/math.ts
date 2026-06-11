@@ -3,7 +3,7 @@
  * Substrate-independent and hardware-agnostic math equations. No approximations or fuzzy simulations.
  */
 
-import { QuantumDimensionState, SimulationStep, TestResultItem } from "../types";
+import { SimulationStep, TestResultItem } from "../types";
 
 // Fundamental Mathematical Constants
 export const GOLDEN_RATIO = (1 + Math.sqrt(5)) / 2;
@@ -13,6 +13,21 @@ export const DODECAHEDRON_VERTICES = 20;
 export interface Complex {
   r: number; // Real
   i: number; // Imaginary
+}
+
+export function generateDeterministicComplexVector(size: number, scale = 5): Complex[] {
+  if (!Number.isInteger(size) || size <= 0) {
+    throw new Error(`vector size must be a positive integer, got ${size}`);
+  }
+
+  return Array.from({ length: size }, (_, index) => {
+    const phase = (index + 1) * GOLDEN_RATIO;
+    const harmonic = (index + 1) * (GOLDEN_RATIO + 1 / DODECAHEDRON_VERTICES);
+    return {
+      r: scale * Math.cos(phase),
+      i: scale * Math.sin(harmonic)
+    };
+  });
 }
 
 /**
@@ -131,10 +146,7 @@ export function runVerificationTests(): TestResultItem[] {
   {
     const startTime = Date.now();
     const size = 512;
-    const rawVector: Complex[] = Array.from({ length: size }, () => ({
-      r: Math.random() * 10 - 5,
-      i: Math.random() * 10 - 5
-    }));
+    const rawVector: Complex[] = generateDeterministicComplexVector(size);
     
     const normalizedVector = normalize(rawVector);
     const finalSum = normalizedVector.reduce((sum, amp) => sum + (amp.r * amp.r + amp.i * amp.i), 0);
@@ -147,13 +159,13 @@ export function runVerificationTests(): TestResultItem[] {
       passed,
       proofName: "Conserved Inner Product Theorem under SU(N)",
       proofSteps: [
-        "1. Initialize a arbitrary randomized state vector |ψ_raw⟩ with high-variance coefficients.",
+        "1. Initialize a deterministic first-principles state vector |ψ_raw⟩ from golden-ratio phase harmonics.",
         "2. Apply standard normalization transformation relative to L2 metric Norm: ||ψ_raw|| = √(∑ (Re_i² + Im_i²)).",
         "3. Compute sum of squared magnitudes of the resultant wave vector Components: ∑ |ψ_i|².",
         `4. Confirm total measure equals precisely 1.000000000000 (Calculated: ${finalSum.toFixed(14)}).`
       ],
       computationLogs: [
-        `Generated raw vector size: ${size}`,
+        `Generated deterministic raw vector size: ${size}`,
         `Calculated magnitude norm factor: ${Math.sqrt(rawVector.reduce((s, a) => s + (a.r*a.r + a.i*a.i), 0)).toFixed(6)}`,
         `Sum of normalized amplitudes magnitude: ${finalSum}`,
         `Mathematical Margin error ε: ${Math.abs(finalSum - 1.0).toExponential(4)}`

@@ -112,7 +112,7 @@ class MetricsStore:
                 error_code INTEGER,
                 error_message TEXT,
                 block_hash TEXT,
-                target INTEGER,
+                target TEXT,
                 submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         """)
@@ -269,7 +269,7 @@ class MetricsStore:
                 error_code,
                 error_message,
                 block_hash,
-                target,
+                str(target) if target is not None else None,
             ))
             
             conn.commit()
@@ -504,17 +504,31 @@ _metrics_store: Optional[MetricsStore] = None
 
 
 def get_metrics_store() -> MetricsStore:
-    """Get or create the global metrics store instance."""
+    """Get or create the global metrics store instance for the active DB path."""
     global _metrics_store
+    configured_path = Path(os.getenv("HYBA_METRICS_DB_PATH", "data/metrics.db"))
+    if _metrics_store is not None and _metrics_store.db_path != configured_path:
+        _metrics_store.close()
+        _metrics_store = None
     if _metrics_store is None:
-        _metrics_store = MetricsStore()
+        _metrics_store = MetricsStore(str(configured_path))
     return _metrics_store
 
 
 def set_metrics_store(store: MetricsStore) -> None:
     """Set the global metrics store instance."""
     global _metrics_store
+    if _metrics_store is not None and _metrics_store is not store:
+        _metrics_store.close()
     _metrics_store = store
+
+
+def reset_metrics_store() -> None:
+    """Close and clear the global metrics store so env-scoped tests cannot leak state."""
+    global _metrics_store
+    if _metrics_store is not None:
+        _metrics_store.close()
+    _metrics_store = None
 
 
 __all__ = [
@@ -522,4 +536,5 @@ __all__ = [
     "MetricsStore",
     "get_metrics_store",
     "set_metrics_store",
+    "reset_metrics_store",
 ]

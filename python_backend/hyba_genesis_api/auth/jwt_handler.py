@@ -6,6 +6,7 @@ HYBA Genesis Platform Security
 from __future__ import annotations
 
 import hashlib
+import logging
 import os
 import secrets
 from datetime import datetime, timedelta, timezone
@@ -14,6 +15,8 @@ from typing import Dict, List, Optional
 import jwt
 from fastapi import Header, HTTPException, status
 from pydantic import BaseModel
+
+LOGGER = logging.getLogger(__name__)
 
 
 class TokenPayload(BaseModel):
@@ -67,8 +70,9 @@ class JWTManager:
             jti = payload.get("jti")
             if jti:
                 self.token_blacklist.add(jti)
-        except jwt.InvalidTokenError:
-            pass
+        except jwt.InvalidTokenError as exc:
+            LOGGER.warning("Token revocation requested with invalid token: %s", exc.__class__.__name__)
+            raise HTTPException(status_code=401, detail="Invalid token; revocation was not recorded") from exc
 
 
 def _generate_dev_secret() -> str:

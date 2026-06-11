@@ -257,7 +257,7 @@ class MiningPropertyAndIntegrationTests(unittest.TestCase):
         async def run_smoke() -> dict[str, object]:
             pool_manager = PoolManager()
             active_pool = await pool_manager.get_best_pool()
-            job = active_pool.inject_simulated_target_job(difficulty=1.0)
+            job = active_pool.inject_dev_fixture_target_job(difficulty=1.0)
             solver = DodecahedralQuantumSolver()
             await solver.configure_search(job.target, [(0, 2**32 - 1)])
             nonce = await solver.solve(max_iterations=25, timeout=5.0)
@@ -375,7 +375,7 @@ class MiningPropertyAndIntegrationTests(unittest.TestCase):
 
     def test_validation_primitives_build_80_byte_header_and_target(self) -> None:
         pool_manager = PoolManager()
-        job = pool_manager.get_active_pool().inject_simulated_target_job(difficulty=1.0)
+        job = pool_manager.get_active_pool().inject_dev_fixture_target_job(difficulty=1.0)
         validation = validate_share(job, nonce=0, extranonce2="00" * job.extranonce2_size)
         header = bytes.fromhex(validation.header_hex)
         self.assertEqual(80, len(header))
@@ -448,7 +448,7 @@ class AdversarialValidationTests(unittest.TestCase):
             pool_manager = PoolManager()
             active_pool = pool_manager.get_active_pool()
             with self.assertRaises(ProductionConfigurationError):
-                active_pool.inject_simulated_target_job(difficulty=1.0)
+                active_pool.inject_dev_fixture_target_job(difficulty=1.0)
 
 
 if __name__ == "__main__":
