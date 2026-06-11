@@ -13,6 +13,8 @@ HBAR = 1.0
 
 @dataclass(frozen=True)
 class ChoiCertificate:
+    dimension: int
+    choi_dimension: int
     min_eigenvalue: float
     positive_semidefinite: bool
     kraus_count: int
@@ -54,24 +56,38 @@ def kraus_operators_for_step(
     return [unitary @ k0_damping] + [math.sqrt(dt) * unitary @ operator for operator in jumps]
 
 
-def choi_certificate(kraus_operators: Sequence[np.ndarray], *, tolerance: float = 1e-9) -> ChoiCertificate:
-    """Return PSD and trace-preservation checks for a Kraus channel."""
+def choi_matrix(kraus_operators: Sequence[np.ndarray]) -> np.ndarray:
+    """Construct J(E)=sum_k vec(K_k) vec(K_k)^dagger for the full d^2 space."""
     operators = [np.asarray(operator, dtype=np.complex128) for operator in kraus_operators]
     if not operators:
-        return ChoiCertificate(0.0, True, 0, 0.0)
-
+        return np.zeros((0, 0), dtype=np.complex128)
     vectors = [operator.reshape(-1, order="F") for operator in operators]
-    gram = np.array([[np.vdot(left, right) for right in vectors] for left in vectors], dtype=np.complex128)
-    eigenvalues = np.linalg.eigvalsh(_hermitian(gram)).real
-    min_eigenvalue = float(np.min(eigenvalues)) if eigenvalues.size else 0.0
+    dim2 = vectors[0].shape[0]
+    choi = np.zeros((dim2, dim2), dtype=np.complex128)
+    for vector in vectors:
+        choi += np.outer(vector, vector.conj())
+    return _hermitian(choi)
+
+
+def choi_certificate(kraus_operators: Sequence[np.ndarray], *, tolerance: float = 1e-9) -> ChoiCertificate:
+    """Return full-Choi PSD and trace-preservation checks for a Kraus channel."""
+    operators = [np.asarray(operator, dtype=np.complex128) for operator in kraus_operators]
+    if not operators:
+        return ChoiCertificate(0, 0, 0.0, True, 0, 0.0)
 
     dim = int(operators[0].shape[0])
+    choi = choi_matrix(operators)
+    eigenvalues = np.linalg.eigvalsh(choi).real
+    min_eigenvalue = float(np.min(eigenvalues)) if eigenvalues.size else 0.0
+
     trace_matrix = np.zeros((dim, dim), dtype=np.complex128)
     for operator in operators:
         trace_matrix += operator.conj().T @ operator
     trace_error = float(np.linalg.norm(trace_matrix - np.eye(dim), ord="fro"))
 
     return ChoiCertificate(
+        dimension=dim,
+        choi_dimension=int(choi.shape[0]),
         min_eigenvalue=min_eigenvalue,
         positive_semidefinite=bool(min_eigenvalue >= -float(tolerance)),
         kraus_count=len(operators),
@@ -79,4 +95,4 @@ def choi_certificate(kraus_operators: Sequence[np.ndarray], *, tolerance: float 
     )
 
 
-__all__ = ["ChoiCertificate", "choi_certificate", "kraus_operators_for_step"]
+__all__ = ["ChoiCertificate", "choi_certificate", "choi_matrix", "kraus_operators_for_step"]
