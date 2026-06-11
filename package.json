@@ -12,6 +12,7 @@
     "seed": "tsx src/db/seed.ts",
     "test:e2e:backend": "PYTHONPATH=python_backend python3 scripts/run_backend_e2e.py",
     "test:backend": "PYTHONPATH=python_backend python3 -m unittest discover -s tests -p \"test_*.py\"",
+    "prod:env:check": "python3 scripts/validate_production_env.py",
     "prod:check": "npm run lint && npm run build && npm run test:backend && npm run test:e2e:backend",
     "docker:build": "docker build -t hyba-fullstack:local ."
   },
