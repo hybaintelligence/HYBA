@@ -1,6 +1,6 @@
 {
   "running": true,
-  "uptime_seconds": 51257.311,
+  "uptime_seconds": 51260.429,
   "active_pool": "NiceHash SSL",
   "active_pool_id": "nicehash",
   "current_job": null,
@@ -11,7 +11,7 @@
   "rejected_shares": 0,
   "acceptance_rate": null,
   "system_health": "AWAITING_JOB",
-  "cpu_load": 86.5,
+  "cpu_load": 97.8,
   "active_stratum_version": 1,
   "hashrate_ehs": null,
   "power_scale": 1.0,
