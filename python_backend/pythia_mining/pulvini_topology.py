@@ -1,0 +1,116 @@
+"""Lightweight PULVINI topology accessors for edge/runtime nodes.
+
+The heavy manifold imports numpy and owns state evolution.  This module keeps the
+D/I adjacency map, symmetry checks, ranges, and neighbor queries available to
+low-footprint workers without requiring manifold construction.
+"""
+
+from __future__ import annotations
+
+from collections import deque
+from typing import Dict, List, Tuple
+
+NUM_NODES = 32
+NONCE_BITS = 32
+MAX_UINT32_NONCE = (1 << NONCE_BITS) - 1
+SLICE_SIZE = (1 << NONCE_BITS) // NUM_NODES
+
+ADJACENCY_MAP: Dict[int, Dict[str, List[int]]] = {
+    0: {"d": [1, 4, 5], "i": [20, 21, 22]},
+    1: {"d": [0, 2, 7], "i": [20, 22, 23]},
+    2: {"d": [1, 3, 9], "i": [20, 23, 24]},
+    3: {"d": [2, 4, 11], "i": [20, 24, 25]},
+    4: {"d": [3, 0, 13], "i": [20, 25, 21]},
+    5: {"d": [0, 6, 14], "i": [21, 22, 26]},
+    6: {"d": [5, 7, 15], "i": [22, 26, 27]},
+    7: {"d": [1, 6, 8], "i": [22, 23, 27]},
+    8: {"d": [7, 9, 16], "i": [23, 27, 28]},
+    9: {"d": [2, 8, 10], "i": [23, 24, 28]},
+    10: {"d": [9, 11, 17], "i": [24, 28, 29]},
+    11: {"d": [3, 10, 12], "i": [24, 25, 29]},
+    12: {"d": [11, 13, 18], "i": [25, 29, 30]},
+    13: {"d": [4, 12, 14], "i": [25, 21, 30]},
+    14: {"d": [5, 13, 19], "i": [21, 26, 30]},
+    15: {"d": [6, 16, 19], "i": [26, 27, 31]},
+    16: {"d": [8, 15, 17], "i": [27, 28, 31]},
+    17: {"d": [10, 16, 18], "i": [28, 29, 31]},
+    18: {"d": [12, 17, 19], "i": [29, 30, 31]},
+    19: {"d": [14, 15, 18], "i": [26, 30, 31]},
+    20: {"i": [21, 22, 23, 24, 25], "d": [0, 1, 2, 3, 4]},
+    21: {"i": [20, 22, 26, 30, 25], "d": [0, 4, 13, 14, 5]},
+    22: {"i": [20, 21, 26, 27, 23], "d": [0, 5, 6, 7, 1]},
+    23: {"i": [20, 22, 27, 28, 24], "d": [1, 7, 8, 9, 2]},
+    24: {"i": [20, 23, 28, 29, 25], "d": [2, 9, 10, 11, 3]},
+    25: {"i": [20, 24, 29, 30, 21], "d": [3, 11, 12, 13, 4]},
+    26: {"i": [21, 22, 27, 31, 30], "d": [5, 6, 15, 19, 14]},
+    27: {"i": [22, 23, 28, 31, 26], "d": [6, 7, 8, 16, 15]},
+    28: {"i": [23, 24, 29, 31, 27], "d": [8, 9, 10, 17, 16]},
+    29: {"i": [24, 25, 30, 31, 28], "d": [10, 11, 12, 18, 17]},
+    30: {"i": [21, 25, 29, 31, 26], "d": [12, 13, 14, 19, 18]},
+    31: {"i": [26, 27, 28, 29, 30], "d": [15, 16, 17, 18, 19]},
+}
+
+
+def node_role(node_id: int) -> str:
+    if not 0 <= int(node_id) < NUM_NODES:
+        raise ValueError(f"node_id must be in [0, {NUM_NODES - 1}]")
+    return "D-node" if int(node_id) < 20 else "I-node"
+
+
+def get_geometric_neighbors(node_id: int) -> List[int]:
+    if node_id not in ADJACENCY_MAP:
+        raise ValueError(f"unknown PULVINI node_id: {node_id}")
+    payload = ADJACENCY_MAP[int(node_id)]
+    return list(payload.get("d", [])) + list(payload.get("i", []))
+
+
+def nonce_slice(node_id: int) -> Tuple[int, int]:
+    if not 0 <= int(node_id) < NUM_NODES:
+        raise ValueError(f"node_id must be in [0, {NUM_NODES - 1}]")
+    start = int(node_id) * SLICE_SIZE
+    return start, start + SLICE_SIZE
+
+
+def nonce_range_inclusive(node_id: int) -> Tuple[int, int]:
+    start, end = nonce_slice(node_id)
+    return start, end - 1
+
+
+def verify_symmetry() -> bool:
+    for node_id in range(NUM_NODES):
+        for neighbor in get_geometric_neighbors(node_id):
+            if node_id not in get_geometric_neighbors(neighbor):
+                return False
+    return True
+
+
+def bfs_distances(start: int) -> Dict[int, int]:
+    distances = {int(start): 0}
+    queue: deque[int] = deque([int(start)])
+    while queue:
+        node_id = queue.popleft()
+        for neighbor in get_geometric_neighbors(node_id):
+            if neighbor not in distances:
+                distances[neighbor] = distances[node_id] + 1
+                queue.append(neighbor)
+    return distances
+
+
+def graph_diameter() -> int:
+    return max(max(bfs_distances(node_id).values()) for node_id in range(NUM_NODES))
+
+
+__all__ = [
+    "ADJACENCY_MAP",
+    "MAX_UINT32_NONCE",
+    "NONCE_BITS",
+    "NUM_NODES",
+    "SLICE_SIZE",
+    "bfs_distances",
+    "get_geometric_neighbors",
+    "graph_diameter",
+    "node_role",
+    "nonce_range_inclusive",
+    "nonce_slice",
+    "verify_symmetry",
+]

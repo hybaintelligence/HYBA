@@ -23,6 +23,7 @@ except ImportError:  # pragma: no cover - optional dependency shape only
 
 from pythia_mining.audit_logger import AuditEvent, AuditEventType, get_audit_logger
 from pythia_mining.live_stratum_session import LiveStratumSession, LiveStratumSessionError
+from pythia_mining.stratum_v2 import LiveStratumV2Session, LiveStratumV2SessionError
 from pythia_mining.metrics_store import PoolMetrics, get_metrics_store
 from pythia_mining.pool_profiles import PoolProfile, build_profile, order_profiles
 from pythia_mining.stratum_transport import StratumTransportError
@@ -151,7 +152,7 @@ class StratumClient:
         self.stratum_version = stratum_version
 
         self.ws: Optional[aiohttp.ClientWebSocketResponse] = None
-        self.live_session: Optional[LiveStratumSession] = None
+        self.live_session: Optional[Any] = None
         self.is_connected = False
         self.is_authenticated = False
         self.connection_state = "DISCONNECTED"
@@ -263,7 +264,7 @@ class StratumClient:
             self.reconnect_attempts += 1
             await self._close_live_session()
             self._persist_metrics()
-            if isinstance(e, (ValueError, ProductionConfigurationError, LiveStratumSessionError)):
+            if isinstance(e, (ValueError, ProductionConfigurationError, LiveStratumSessionError, LiveStratumV2SessionError)):
                 self.logger.error("Pool %s connection failed permanently: %s", self.pool_name, e)
                 return False
             if self.reconnect_attempts < self.max_reconnect_attempts:
@@ -301,6 +302,8 @@ class StratumClient:
 
     async def _heartbeat_loop(self) -> None:
         while self.is_connected and self.live_session is not None:
+            if not hasattr(self.live_session, "read_event"):
+                break
             try:
                 await asyncio.sleep(self.heartbeat_interval)
                 idle_time = time.time() - self.last_activity
@@ -326,9 +329,6 @@ class StratumClient:
                 break
 
     async def _connect_live(self) -> None:
-        if self.stratum_version != 1:
-            raise LiveStratumSessionError("live Stratum v2 transport is not implemented; configure a Stratum v1 pool or keep this pool disabled")
-
         self.audit_logger.log_handshake_start(pool_name=self.pool_name, pool_url=self.pool_url, username=self.username)
         profile = build_profile(
             self.pool_name.lower().replace(" ", "_"),
@@ -337,17 +337,30 @@ class StratumClient:
             username=self.username,
             password=self.password,
             stratum_version=self.stratum_version,
-            tls_required=urlparse(self.pool_url).scheme in {"stratum+ssl", "stratum+tls"},
+            tls_required=urlparse(self.pool_url).scheme in {"stratum+ssl", "stratum+tls", "stratum2+ssl", "stratum2+tls"},
         )
-        self.live_session = LiveStratumSession(profile)
-        await self.live_session.connect()
-        self.is_connected = True
-        self.connection_state = "CONNECTED"
-        handshake = await self.live_session.subscribe_and_authorize()
-        self.extranonce1 = handshake.extranonce1
-        self.extranonce2_size = int(handshake.extranonce2_size)
-        self.is_authenticated = handshake.authorized
-        self.connection_state = "AUTHENTICATED"
+        if self.stratum_version == 1:
+            self.live_session = LiveStratumSession(profile)
+            await self.live_session.connect()
+            self.is_connected = True
+            self.connection_state = "CONNECTED"
+            handshake = await self.live_session.subscribe_and_authorize()
+            self.extranonce1 = handshake.extranonce1
+            self.extranonce2_size = int(handshake.extranonce2_size)
+            self.is_authenticated = handshake.authorized
+            self.connection_state = "AUTHENTICATED"
+        elif self.stratum_version == 2:
+            self.live_session = LiveStratumV2Session(profile)
+            await self.live_session.connect()
+            self.is_connected = True
+            self.connection_state = "CONNECTED_V2"
+            handshake = await self.live_session.setup_connection()
+            self.extranonce1 = handshake.extranonce1
+            self.extranonce2_size = int(handshake.extranonce2_size)
+            self.is_authenticated = handshake.authorized
+            self.connection_state = "AUTHENTICATED_V2_SETUP"
+        else:
+            raise LiveStratumSessionError(f"Unsupported Stratum version: {self.stratum_version}")
         if self.is_authenticated:
             self.audit_logger.log_handshake_success(pool_name=self.pool_name, pool_url=self.pool_url, extranonce1=self.extranonce1, extranonce2_size=self.extranonce2_size)
         else:
@@ -379,7 +392,7 @@ class StratumClient:
             raise ValueError(f"Unsupported Stratum version: {self.stratum_version}")
 
     async def poll_live_event(self, *, timeout: float = 0.1) -> Optional[MiningJob]:
-        if self.live_session is None:
+        if self.live_session is None or not hasattr(self.live_session, "read_event"):
             return None
         try:
             event, payload = await self.live_session.read_event(timeout=timeout)
@@ -536,7 +549,7 @@ class StratumClient:
         if self.live_session is not None:
             try:
                 await self.live_session.close()
-            except (LiveStratumSessionError, StratumTransportError, OSError):
+            except (LiveStratumSessionError, LiveStratumV2SessionError, StratumTransportError, OSError):
                 pass
             finally:
                 self.live_session = None

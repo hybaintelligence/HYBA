@@ -324,7 +324,21 @@ class MiningPropertyAndIntegrationTests(unittest.TestCase):
         self.assertEqual(8, client.extranonce2_size)
         self.assertEqual("DISCONNECTED", client.connection_state)
 
-    def test_live_stratum_v2_fails_closed_until_transport_exists(self) -> None:
+    def test_live_stratum_v2_setup_handshake_authenticates_with_binary_transport(self) -> None:
+        class FakeLiveV2Session:
+            def __init__(self, profile):
+                self.profile = profile
+                self.closed = False
+
+            async def connect(self):
+                self.connected = True
+
+            async def setup_connection(self):
+                return SimpleNamespace(extranonce1="", extranonce2_size=0, authorized=True)
+
+            async def close(self):
+                self.closed = True
+
         async def run_case():
             client = StratumClient(
                 pool_url="stratum2+tcp://example.com:3336",
@@ -334,14 +348,17 @@ class MiningPropertyAndIntegrationTests(unittest.TestCase):
                 stratum_version=2,
             )
             with patch.dict(os.environ, {"HYBA_ENABLE_LIVE_STRATUM": "1"}, clear=False):
-                connected = await client.connect()
+                with patch("pythia_mining.stratum_client.LiveStratumV2Session", FakeLiveV2Session):
+                    connected = await client.connect()
+            await client.disconnect()
             return connected, client
 
         connected, client = asyncio.run(run_case())
 
-        self.assertFalse(connected)
-        self.assertFalse(client.is_authenticated)
-        self.assertIn("live Stratum v2 transport is not implemented", client.connection_state)
+        self.assertTrue(connected)
+        self.assertEqual("", client.extranonce1)
+        self.assertEqual(0, client.extranonce2_size)
+        self.assertEqual("DISCONNECTED", client.connection_state)
 
     def test_configured_solver_projects_nonce_inside_declared_ranges(self) -> None:
         async def run_cases() -> None:
