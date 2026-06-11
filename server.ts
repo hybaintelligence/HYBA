@@ -10,19 +10,21 @@
  *   - Circuit breaker for backend proxy calls
  *   - Structured request ID propagation
  *   - Rate limiting with graduated backoff
- *   - Health endpoint with Prometheus-style metrics
+ *   - Public-safe health plus protected internal metrics
  *   - Graceful shutdown with connection drain
  *   - Zero fabricated responses — degraded mode when backend is unavailable
  *
  * Environment variables (see .env.example):
- *   PORT                     : HTTP port (default 3000)
- *   HOST                     : bind address (default 0.0.0.0)
- *   PULVINI_BACKEND_URL      : upstream FastAPI URL (default http://127.0.0.1:3001)
- *   JWT_SECRET               : required in production
- *   NODE_ENV                 : "production" | "development"
- *   HYBA_SPAWN_BACKEND       : "false" to disable auto-spawn
- *   BACKEND_PROXY_TIMEOUT_MS : proxy timeout (default 30000)
- *   LOG_LEVEL               : pino log level (default "info")
+ *   PORT                            : HTTP port (default 3000)
+ *   HOST                            : bind address (default 0.0.0.0)
+ *   PULVINI_BACKEND_URL             : upstream FastAPI URL (default http://127.0.0.1:3001)
+ *   JWT_SECRET                      : required in production
+ *   NODE_ENV                        : "production" | "development"
+ *   HYBA_SPAWN_BACKEND              : "false" to disable auto-spawn
+ *   HYBA_ENABLE_MINING_AUTOCONNECT  : explicit, default-false mining autoconnect gate
+ *   HYBA_INTERNAL_HEALTH_TOKEN      : protects detailed health/metrics in production
+ *   BACKEND_PROXY_TIMEOUT_MS        : proxy timeout (default 30000)
+ *   LOG_LEVEL                       : pino log level (default "info")
  */
 
 import compression from "compression";
@@ -37,13 +39,12 @@ import pino from "pino";
 import pinoHttp from "pino-http";
 import rateLimit from "express-rate-limit";
 import { createServer as createViteServer, type InlineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import tailwindcss from "@tailwindcss/vite";
 
-// ── Global Backend URL for post-startup calls ────────────────────────────
 let _backendUrl: URL | null = null;
 
 dotenv.config();
-
-// ── Structured Logger ─────────────────────────────────────────────────────
 
 const logger = pino({
   name: "hyba-secure-bridge",
@@ -60,21 +61,20 @@ const logger = pino({
   timestamp: pino.stdTimeFunctions.isoTime,
 });
 
-// ── Configuration ─────────────────────────────────────────────────────────
-
+const TRUE_VALUES = new Set(["1", "true", "yes", "on"]);
 const CONFIG = {
   isProduction: process.env.NODE_ENV === "production",
   host: process.env.HOST || "0.0.0.0",
   port: Number(process.env.PORT || 3000),
   backendUrl: normalizeBackendUrl(process.env.PULVINI_BACKEND_URL || "http://127.0.0.1:3001"),
   shouldSpawnBackend: process.env.NODE_ENV !== "production" && process.env.HYBA_SPAWN_BACKEND !== "false",
+  enableMiningAutoConnect: TRUE_VALUES.has((process.env.HYBA_ENABLE_MINING_AUTOCONNECT || "false").toLowerCase()),
   proxyTimeoutMs: Number(process.env.BACKEND_PROXY_TIMEOUT_MS || 30000),
   rateLimitWindowMs: Number(process.env.RATE_LIMIT_WINDOW_MS || 60000),
   rateLimitMax: Number(process.env.RATE_LIMIT_MAX || 100),
   jwtSecret: process.env.JWT_SECRET || "",
+  internalHealthToken: process.env.HYBA_INTERNAL_HEALTH_TOKEN || "",
 } as const;
-
-// ── Circuit Breaker ───────────────────────────────────────────────────────
 
 interface CircuitState {
   failures: number;
@@ -105,7 +105,7 @@ function isCircuitOpen(): boolean {
   }
   if (elapsed > CIRCUIT_HALF_OPEN_MS && !circuitState.halfOpenAttempted) {
     circuitState.halfOpenAttempted = true;
-    return false; // allow a single probe request
+    return false;
   }
   return true;
 }
@@ -127,8 +127,6 @@ function recordProxySuccess(): void {
   circuitState.halfOpenAttempted = false;
 }
 
-// ── Utilities ─────────────────────────────────────────────────────────────
-
 function normalizeBackendUrl(value: string): URL {
   const parsed = new URL(value);
   if (!["http:", "https:"].includes(parsed.protocol)) {
@@ -145,9 +143,33 @@ function generateRequestId(): string {
   return `req_${randomUUID()}`;
 }
 
-// ── Auto-Connect to ViaBTC on Startup ────────────────────────────────────
+function requireInternalAccess(req: Request, res: Response, next: NextFunction): void {
+  if (!CONFIG.isProduction) {
+    next();
+    return;
+  }
+  if (!CONFIG.internalHealthToken) {
+    res.status(404).json({ error: "not_found", message: "Internal diagnostics are not exposed" });
+    return;
+  }
+  const provided = req.headers["x-hyba-internal-token"];
+  if (provided === CONFIG.internalHealthToken) {
+    next();
+    return;
+  }
+  res.status(404).json({ error: "not_found", message: "Internal diagnostics are not exposed" });
+}
+
+function noStore(res: Response): void {
+  res.setHeader("cache-control", "no-store");
+}
 
 async function autoConnectViaBTC(): Promise<void> {
+  if (!CONFIG.enableMiningAutoConnect) {
+    logger.info("Mining auto-connect disabled — explicit MIDAS/operator connect required");
+    return;
+  }
+
   const poolId = process.env.HYBA_POOL_VIABTC_USERNAME ? "viabtc" : null;
   if (!poolId) {
     logger.info("No mining pool configured — skipping auto-connect");
@@ -178,8 +200,6 @@ async function autoConnectViaBTC(): Promise<void> {
     logger.warn({ err: message }, "Auto-connect to mining pool threw");
   }
 }
-
-// ── Backend Management ────────────────────────────────────────────────────
 
 async function isBackendReachable(): Promise<boolean> {
   const controller = new AbortController();
@@ -253,10 +273,9 @@ async function waitForBackend(maxAttempts = 30): Promise<boolean> {
   return false;
 }
 
-// ── Proxy Handler (with circuit breaker) ──────────────────────────────────
-
 async function proxyToBackend(req: Request, res: Response): Promise<void> {
   if (isCircuitOpen()) {
+    noStore(res);
     res.status(503).json({
       error: "circuit_breaker_open",
       message: "Backend circuit breaker is open — too many recent failures",
@@ -270,7 +289,6 @@ async function proxyToBackend(req: Request, res: Response): Promise<void> {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), CONFIG.proxyTimeoutMs);
 
-  // Buffer the request body so we can use it with fetch
   let bodyBuffer: Buffer | undefined;
   if (!["GET", "HEAD"].includes(req.method)) {
     const chunks: Buffer[] = [];
@@ -312,10 +330,10 @@ async function proxyToBackend(req: Request, res: Response): Promise<void> {
     recordProxyFailure();
     const message = error instanceof Error ? error.message : "Unknown proxy error";
     logger.error({ err: message, path: req.originalUrl, requestId }, "Backend proxy request failed");
+    noStore(res);
     res.status(503).json({
       error: "backend_unavailable",
       message: "HYBA backend is not reachable",
-      backend: CONFIG.backendUrl.toString(),
       path: req.originalUrl,
       requestId,
     });
@@ -323,8 +341,6 @@ async function proxyToBackend(req: Request, res: Response): Promise<void> {
     clearTimeout(timeout);
   }
 }
-
-// ── Metrics ────────────────────────────────────────────────────────────────
 
 const metrics = {
   requestsTotal: 0,
@@ -334,16 +350,12 @@ const metrics = {
   startTime: Date.now(),
 };
 
-// ── Application Server ────────────────────────────────────────────────────
-
 async function startServer(): Promise<void> {
-  // ── Production JWT validation ──
   if (CONFIG.isProduction && !CONFIG.jwtSecret) {
     logger.fatal("JWT_SECRET is required in production");
     process.exit(1);
   }
 
-  // ── Backend connectivity ──
   const backendReachable = await isBackendReachable();
   if (!backendReachable) {
     spawnBackend();
@@ -357,21 +369,30 @@ async function startServer(): Promise<void> {
     }
   }
 
-  // ── Express app ──
   const app = express();
 
-  // Security headers
   app.use(
     helmet({
-      contentSecurityPolicy: false, // SPA manages its own CSP
+      contentSecurityPolicy: {
+        useDefaults: true,
+        directives: {
+          "default-src": ["'self'"],
+          "script-src": ["'self'"],
+          "style-src": ["'self'", "'unsafe-inline'"],
+          "img-src": ["'self'", "data:", "https:"],
+          "connect-src": ["'self'"],
+          "object-src": ["'none'"],
+          "frame-ancestors": ["'none'"],
+          "base-uri": ["'self'"],
+          "form-action": ["'self'"],
+        },
+      },
       crossOriginEmbedderPolicy: false,
     }),
   );
 
-  // Compression
   app.use(compression());
 
-  // Structured HTTP logging
   const httpLogger = pinoHttp({
     logger,
     genReqId: () => generateRequestId(),
@@ -381,7 +402,6 @@ async function startServer(): Promise<void> {
   });
   app.use(httpLogger);
 
-  // Request ID propagation
   app.use((req: Request, res: Response, next: NextFunction) => {
     const requestId = (req.headers["x-request-id"] as string) || generateRequestId();
     req.headers["x-request-id"] = requestId;
@@ -389,7 +409,6 @@ async function startServer(): Promise<void> {
     next();
   });
 
-  // Metrics middleware
   app.use((req: Request, _res: Response, next: NextFunction) => {
     metrics.requestsTotal += 1;
     const pathKey = req.method + " " + req.path;
@@ -397,7 +416,6 @@ async function startServer(): Promise<void> {
     next();
   });
 
-  // Rate limiting middleware
   const limiter = rateLimit({
     windowMs: CONFIG.rateLimitWindowMs,
     max: CONFIG.rateLimitMax,
@@ -407,29 +425,38 @@ async function startServer(): Promise<void> {
   });
   app.use(limiter);
 
-  // ── Routes ──
-
-  // Root health
   app.get("/", async (_req: Request, res: Response, next: NextFunction) => {
     if (!CONFIG.isProduction) return next();
+    noStore(res);
     res.json({
       status: "online",
       service: "HYBA Secure Bridge",
-      version: "2.0.1",
-      backend: CONFIG.backendUrl.toString(),
+      version: "2.1.0",
       backendReachable: await isBackendReachable(),
       timestamp: new Date().toISOString(),
     });
   });
 
-  // Bridge health with metrics
   app.get("/bridge/health", async (_req: Request, res: Response) => {
     const reachable = await isBackendReachable();
-    const uptimeSeconds = Math.floor((Date.now() - metrics.startTime) / 1000);
+    noStore(res);
     res.status(reachable ? 200 : 503).json({
       status: reachable ? "ok" : "degraded",
       service: "HYBA Secure Bridge",
-      version: "2.0.1",
+      version: "2.1.0",
+      backendReachable: reachable,
+      timestamp: new Date().toISOString(),
+    });
+  });
+
+  app.get("/bridge/internal/health", requireInternalAccess, async (_req: Request, res: Response) => {
+    const reachable = await isBackendReachable();
+    const uptimeSeconds = Math.floor((Date.now() - metrics.startTime) / 1000);
+    noStore(res);
+    res.status(reachable ? 200 : 503).json({
+      status: reachable ? "ok" : "degraded",
+      service: "HYBA Secure Bridge",
+      version: "2.1.0",
       backend: CONFIG.backendUrl.toString(),
       backendReachable: reachable,
       circuitBreakerOpen: circuitState.isOpen,
@@ -447,8 +474,7 @@ async function startServer(): Promise<void> {
     });
   });
 
-  // Metrics endpoint (Prometheus-compatible)
-  app.get("/bridge/metrics", async (_req: Request, res: Response) => {
+  app.get("/bridge/metrics", requireInternalAccess, async (_req: Request, res: Response) => {
     const reachable = await isBackendReachable();
     const lines: string[] = [
       `# HELP hyba_bridge_requests_total Total requests processed`,
@@ -467,11 +493,11 @@ async function startServer(): Promise<void> {
       `# TYPE hyba_bridge_uptime_seconds counter`,
       `hyba_bridge_uptime_seconds ${Math.floor((Date.now() - metrics.startTime) / 1000)}`,
     ];
+    noStore(res);
     res.setHeader("content-type", "text/plain; charset=utf-8");
     res.send(lines.join("\n"));
   });
 
-  // API proxy routes (apply before body parsing)
   app.use("/api", (req: Request, res: Response) => {
     void proxyToBackend(req, res);
   });
@@ -479,18 +505,14 @@ async function startServer(): Promise<void> {
     void proxyToBackend(req, res);
   });
 
-  // Body parsing (apply only to non-proxy routes)
   app.use(express.json({ limit: "1mb" }));
   app.use(express.urlencoded({ extended: true, limit: "1mb" }));
 
-  // ── Static / Vite middleware ──
   if (!CONFIG.isProduction) {
     logger.info("Mounting Vite dev middleware");
-    // Use an inline config instead of a file path to avoid tsx resolver issues
-    // on Windows + OneDrive paths (ERR_INVALID_URL_SCHEME).
     const projectRoot = path.resolve(process.cwd());
     const viteInlineConfig: InlineConfig = {
-      configFile: false, // do NOT load from disk — we provide everything inline
+      configFile: false,
       root: projectRoot,
       plugins: [react(), tailwindcss()],
       resolve: {
@@ -509,7 +531,6 @@ async function startServer(): Promise<void> {
       },
       appType: "spa",
       optimizeDeps: {
-        // Pre-bundle key dependencies to avoid late ESM resolution issues
         include: [
           "react",
           "react-dom",
@@ -534,7 +555,6 @@ async function startServer(): Promise<void> {
     });
   }
 
-  // ── HTTP Server ──
   const server: Server = createServer(app);
   installShutdownHandlers(server);
 
@@ -548,7 +568,6 @@ async function startServer(): Promise<void> {
   });
 
   server.listen(CONFIG.port, CONFIG.host, () => {
-    // Auto-connect to mining pool after server is listening
     void autoConnectViaBTC();
 
     logger.info(
@@ -562,30 +581,26 @@ async function startServer(): Promise<void> {
     console.log(`  ║  Server    : http://${CONFIG.host}:${CONFIG.port}           ║`);
     console.log(`  ║  Backend   : ${CONFIG.backendUrl.toString().padEnd(25)} ║`);
     console.log(`  ║  Mode      : ${CONFIG.isProduction ? "PRODUCTION" : "DEVELOPMENT".padEnd(20)} ║`);
+    console.log(`  ║  Autoconnect: ${CONFIG.enableMiningAutoConnect ? "ENABLED " : "DISABLED"}                 ║`);
     console.log(`  ║  Circuit   : ${CIRCUIT_THRESHOLD} failures / ${CIRCUIT_RESET_MS / 1000}s reset      ║`);
     console.log("  ╚══════════════════════════════════════════════╝");
     console.log("");
   });
 }
 
-// ── Graceful Shutdown ────────────────────────────────────────────────────
-
 function installShutdownHandlers(server: Server): void {
   const shutdown = (signal: string) => {
     logger.info({ signal }, "Graceful shutdown initiated — draining connections");
 
-    // Stop accepting new connections
     server.close(() => {
       logger.info("HTTP server closed — all connections drained");
     });
 
-    // Kill backend process
     if (backendProcess && !backendProcess.killed) {
       backendProcess.kill("SIGTERM");
       logger.info("Backend process terminated");
     }
 
-    // Force exit after drain timeout
     setTimeout(() => {
       logger.info("Shutdown complete — exiting");
       process.exit(0);
@@ -596,8 +611,6 @@ function installShutdownHandlers(server: Server): void {
   process.once("SIGTERM", () => shutdown("SIGTERM"));
   process.once("SIGHUP", () => shutdown("SIGHUP"));
 }
-
-// ── Start ─────────────────────────────────────────────────────────────────
 
 startServer().catch((error: unknown) => {
   const message = error instanceof Error ? error.message : String(error);
