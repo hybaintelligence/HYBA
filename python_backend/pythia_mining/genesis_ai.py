@@ -21,6 +21,7 @@ from .ai_optimizer import AIOptimizer
 from .blockchain_oracle import BlockchainOracle
 from .consciousness_engine import ConsciousnessEngine
 from .pulvini_overlay import PulviniOverlayConcentrator
+from .pulvini_propagation import SharePropagationController
 from .quantum_solver import DodecahedralQuantumSolver
 from .stratum_client import AllPoolsOfflineError, MiningJob, PoolManager
 
@@ -49,7 +50,6 @@ class GenesisAI:
 
     def __init__(self, config: Dict[str, Any]):
         self.config = config
-        # Load pool configuration from mining_config.json if not provided
         pools_config = config.get("pools", {})
         if not pools_config:
             import json
@@ -62,6 +62,7 @@ class GenesisAI:
         self.overlay = PulviniOverlayConcentrator(
             worker_name=str(config.get("worker_name") or os.getenv("HYBA_POOL_WORKER_NAME") or "PULVINI.singularity")
         )
+        self.propagation = SharePropagationController()
         self.quantum_solver = DodecahedralQuantumSolver()
         self.blockchain_oracle = BlockchainOracle()
         self.consciousness_engine = ConsciousnessEngine()
@@ -128,6 +129,22 @@ class GenesisAI:
             return job
         return None
 
+    async def _handle_found_share(self, *, active_pool, node_id: int, nonce: int, extranonce2: str):
+        """Route a found share through PULVINI before the upstream pool submit."""
+        if self.current_job is None:
+            raise RuntimeError("cannot handle share without current job")
+        self.overlay.record_share_candidate(node_id, nonce)
+        propagation_result = await self.propagation.handle_share_found(
+            job=self.current_job,
+            finder_id=node_id,
+            nonce=nonce,
+            extranonce2=extranonce2,
+            submitter=active_pool.submit_validated_share,
+        )
+        share_result = propagation_result.share_result
+        self.overlay.record_share_outcome(node_id, nonce, share_result)
+        return propagation_result
+
     async def _mining_loop(self):
         """Asynchronous mining loop over real pool jobs only."""
         while self.is_running:
@@ -142,29 +159,45 @@ class GenesisAI:
                     continue
 
                 self.overlay.register_pool_job(self.current_job, pool_name=active_pool.pool_name)
+                if self.propagation.is_job_cancelled(self.current_job.job_id):
+                    self.health_status = "AWAITING_JOB"
+                    await asyncio.sleep(0.25)
+                    continue
+
                 await self.ai_optimizer.optimize_nonce_search(self.current_job)
                 await self.quantum_solver.configure_search(self.current_job.target, self.overlay.nonce_ranges())
                 resolved_nonce = await self.quantum_solver.solve()
 
-                if resolved_nonce is not None:
+                if resolved_nonce is not None and not self.propagation.is_job_cancelled(self.current_job.job_id):
                     self.shares_solved += 1
                     assignment = self.overlay.assignment_for_nonce(resolved_nonce)
                     node_id = assignment.node_id if assignment is not None else 0
                     extranonce2 = assignment.extranonce2 if assignment is not None else "00" * self.current_job.extranonce2_size
-                    self.overlay.record_share_candidate(node_id, resolved_nonce)
-                    share_result = await active_pool.submit_validated_share(self.current_job, resolved_nonce, extranonce2)
-                    self.overlay.record_share_outcome(node_id, resolved_nonce, share_result)
+                    propagation_result = await self._handle_found_share(
+                        active_pool=active_pool,
+                        node_id=node_id,
+                        nonce=resolved_nonce,
+                        extranonce2=extranonce2,
+                    )
+                    share_result = propagation_result.share_result
                     if share_result.accepted:
                         await self.ai_optimizer.on_share_accepted({
                             "nonce": resolved_nonce,
                             "job_id": self.current_job.job_id,
                             "node_id": node_id,
                             "extranonce2": extranonce2,
+                            "route": propagation_result.route,
+                            "cancelled_nodes": propagation_result.cancelled_nodes,
                             "block_hash": share_result.block_hash,
                         })
                     else:
                         await self.ai_optimizer.on_share_rejected(
-                            {"nonce": resolved_nonce, "job_id": self.current_job.job_id, "node_id": node_id},
+                            {
+                                "nonce": resolved_nonce,
+                                "job_id": self.current_job.job_id,
+                                "node_id": node_id,
+                                "route": propagation_result.route,
+                            },
                             share_result.error_code or 1,
                             share_result.error_message or "share rejected",
                         )
@@ -233,6 +266,7 @@ class GenesisAI:
             "power_scale": quantum_metrics.get("power_scale"),
             "pools": pools_info,
             "pulvini_overlay": overlay_snapshot,
+            "share_propagation": self.propagation.snapshot(),
             "quantum": quantum_metrics,
             "consciousness": consciousness_metrics,
             "telemetry_source": "runtime_state",
