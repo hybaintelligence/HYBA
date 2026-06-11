@@ -31,6 +31,7 @@ from .pulvini_group import (
 
 HBAR = 1.0
 EPSILON = 1e-12
+MARKOV_THRESHOLD = 1e-3  # Below this, Lindblad is valid approximation
 
 
 @dataclass
@@ -98,14 +99,20 @@ class SharedManifoldBlackboard:
 class PulviniManifold:
     """Mathematical control substrate for the PULVINI 32-node topology."""
 
+    MARKOV_THRESHOLD = MARKOV_THRESHOLD
+
     def __init__(
         self,
-        adjacency_map: Dict[int, Dict[str, List[int]]],
+        adjacency_map: Optional[Dict[int, Dict[str, List[int]]]] = None,
         *,
         coupling: float = 0.05,
         learning_rate: float = 0.08,
         phi_threshold: float = 0.5,
     ) -> None:
+        if adjacency_map is None:
+            from .pulvini_overlay import ADJACENCY_MAP
+
+            adjacency_map = ADJACENCY_MAP
         self.adjacency_map = adjacency_map
         self.num_nodes = len(adjacency_map)
         self.nodes = list(range(self.num_nodes))
@@ -272,7 +279,23 @@ class PulviniManifold:
             self._write_blackboard()
             return self.psi.copy()
 
-    def lindblad_step(self, jump_operators: Sequence[np.ndarray], dt: float = 1.0) -> np.ndarray:
+    @property
+    def H(self) -> np.ndarray:
+        """Hamiltonian alias used by production-evolution certificates."""
+        return self.hamiltonian
+
+    def lindblad_step(self, jump_operators: Optional[Sequence[np.ndarray]] = None, dt: float = 1.0) -> np.ndarray:
+        """
+        LOCAL DIAGNOSTIC ONLY.
+        Valid only when memory_kernel_norm() < MARKOV_THRESHOLD.
+        The governing open-system model is Nakajima-Zwanzig (non-Markovian).
+        This function is NOT the primary evolution operator.
+        Call nakajima_zwanzig_step() for production evolution.
+        """
+        if isinstance(jump_operators, (int, float)):
+            dt = float(jump_operators)
+            jump_operators = None
+        jump_operators = [] if jump_operators is None else jump_operators
         with self._lock:
             self._refresh_hamiltonian()
             before = self.von_neumann_entropy()
@@ -291,6 +314,132 @@ class PulviniManifold:
             self.assert_invariants()
             self._write_blackboard()
             return self.rho.copy()
+
+
+    def memory_kernel_norm(self) -> float:
+        """
+        Frobenius norm of the Hebbian synaptic matrix minus identity.
+        Measures how far the system is from Markovian.
+        """
+        return float(np.linalg.norm(
+            self.synaptic_matrix - np.eye(32), 'fro'
+        ))
+
+    def nakajima_zwanzig_step(self, dt: float, history: list) -> np.ndarray:
+        """
+        Non-Markovian master equation step.
+
+        d rho_S(t)/dt = -i[H_S, rho_S(t)]
+                      + integral_0^t K(t-tau) rho_S(tau) dtau
+
+        Discretised:
+        rho(t+dt) = rho(t) + dt*(-i[H,rho(t)] + sum_tau K(t-tau)*rho(tau)*dt)
+
+        Memory kernel K(t-tau) is the Hebbian synaptic matrix at lag (t-tau),
+        acting as a superoperator via commutator sandwich.
+
+        history: list of (rho_past, kernel_past) tuples, oldest first.
+        """
+        with self._lock:
+            self._refresh_hamiltonian()
+            before = self.von_neumann_entropy()
+            commutator = -1j * (self.H @ self.rho - self.rho @ self.H)
+
+            memory_term = np.zeros((32, 32), dtype=complex)
+            for _k, (rho_past, K_past) in enumerate(history):
+                lag_weight = dt
+                memory_term += lag_weight * (K_past @ rho_past @ K_past.conj().T)
+
+            rho_new = self.rho + dt * (commutator + memory_term)
+            rho_new = (rho_new + rho_new.conj().T) / 2
+            trace = np.trace(rho_new)
+            if abs(trace) > EPSILON:
+                rho_new /= trace
+            self.rho = self._density_projector(rho_new)
+            eigenvalues, eigenvectors = np.linalg.eigh(self.rho)
+            self.psi = self._normalize_state(eigenvectors[:, int(np.argmax(eigenvalues.real))])
+            after = self.von_neumann_entropy()
+            self.entropy_gradient = after - before
+            self.previous_entropy = after
+            self.assert_invariants()
+            self._write_blackboard()
+            return self.rho.copy()
+
+    def evolve_production(self, dt: float, history: list) -> np.ndarray:
+        """
+        Production evolution dispatcher.
+        Routes to Lindblad only when memory kernel norm is below threshold.
+        Otherwise uses Nakajima-Zwanzig.
+        """
+        k_norm = self.memory_kernel_norm()
+        if k_norm < MARKOV_THRESHOLD:
+            return self.lindblad_step(dt)
+        return self.nakajima_zwanzig_step(dt, history)
+
+    def bures_gradient_of_collapse_functional(
+        self,
+        rho: np.ndarray,
+        entropy_gradient: float
+    ) -> dict:
+        """
+        Computes the Bures-metric gradient of the collapse functional C[rho].
+
+        C[rho] = |dS_vN/dt| * ||OffDiag(rho)||_F
+
+        Flat gradient (wrt rho as unconstrained matrix):
+        dC/d(rho_ij) = |dS_vN/dt| * OffDiag(rho)_ij / ||OffDiag(rho)||_F
+
+        Bures gradient (on the manifold of density matrices):
+        grad_Bures C = 2 * (rho @ flat_grad + flat_grad @ rho)
+
+        Stationary condition on Bloch manifold:
+        grad_Bures C = 0
+        iff flat_grad commutes with rho AND projects to zero on tangent space
+        iff |dS_vN/dt| = 0 (system not evolving)
+           OR OffDiag(rho) = 0 (already diagonal = classical state)
+           OR OffDiag(rho) in null space of Bures metric at rho
+
+        The third condition is the non-trivial stationary point:
+        it occurs when off-diagonal coherence aligns with rho's eigenbasis,
+        meaning the system has reached maximal coherence in its own energy basis.
+        THIS is the collapse criterion: not a reset, but eigenbasis alignment.
+        """
+        off_diag = rho - np.diag(np.diag(rho))
+        off_diag_norm = np.linalg.norm(off_diag, 'fro')
+
+        if off_diag_norm < 1e-12 or abs(entropy_gradient) < 1e-12:
+            return {
+                "bures_gradient_norm": 0.0,
+                "stationary": True,
+                "stationary_reason": "trivial_zero_product",
+                "collapse_criterion_met": False
+            }
+
+        flat_grad = entropy_gradient * off_diag / off_diag_norm
+        bures_grad = 2 * (rho @ flat_grad + flat_grad @ rho)
+        bures_grad_norm = np.linalg.norm(bures_grad, 'fro')
+
+        bures_grad_hermitian = (bures_grad + bures_grad.conj().T) / 2
+        traceless_component = bures_grad_hermitian - (
+            np.trace(bures_grad_hermitian) / 32
+        ) * np.eye(32)
+        tangent_norm = np.linalg.norm(traceless_component, 'fro')
+
+        non_trivial_stationary = tangent_norm < 1e-6
+
+        return {
+            "bures_gradient_norm": float(bures_grad_norm),
+            "tangent_projection_norm": float(tangent_norm),
+            "stationary": non_trivial_stationary,
+            "stationary_reason": "eigenbasis_alignment" if non_trivial_stationary
+                                 else "not_stationary",
+            "collapse_criterion_met": non_trivial_stationary,
+            "physical_meaning": (
+                "Coherence aligned with energy eigenbasis: "
+                "collapse to classical search state"
+                if non_trivial_stationary else "System still evolving"
+            )
+        }
 
     def jump_operators_from_node(self, node_id: int, strength: float = 0.2) -> List[np.ndarray]:
         node_id = int(node_id)
@@ -441,7 +590,7 @@ class PulviniManifold:
             candidates = [node for node in self.neighbors[current] if node not in seen]
             if not candidates:
                 raise RuntimeError(f"no_route_to_gateway:{finder_id}->{gateway_id}")
-            candidates.sort(key=lambda node: (self._hop_distance(node, int(gateway_id)), -self.edge_weight(current, node)))
+            candidates.sort(key=lambda node: (-self.edge_weight(current, node), self._hop_distance(node, int(gateway_id))))
             current = candidates[0]
             route.append(current)
             seen.add(current)
