@@ -9,6 +9,7 @@ from threading import RLock
 from typing import Any, Dict, List, Optional, Tuple
 
 from .pulvini_manifold import PulviniManifold
+from .pulvini_nonce_compression import PulviniNonceSpaceCompressor
 
 NUM_NODES = 32
 NONCE_BITS = 32
@@ -119,6 +120,7 @@ class NodeAssignment:
     role: str
     neighbors: List[int]
     tensor_coordinate: Dict[str, Any]
+    compressed_coordinate: Dict[str, Any]
 
     def to_dict(self) -> Dict[str, Any]:
         return asdict(self)
@@ -197,6 +199,8 @@ class PulviniOverlayConcentrator:
             raise RuntimeError("PULVINI adjacency map must be symmetric before production mining starts")
         self.worker_name = worker_name
         self.manifold = manifold or PulviniManifold(ADJACENCY_MAP)
+        self.nonce_compressor = PulviniNonceSpaceCompressor(lanes=NUM_NODES, nonce_space_size=1 << NONCE_BITS)
+        self.nonce_plan = self.nonce_compressor.build_plan()
         self.state = GlobalMiningState()
         self.job_epoch = 0
         self.active_job_id: Optional[str] = None
@@ -229,6 +233,9 @@ class PulviniOverlayConcentrator:
             "internal_workers": NUM_NODES,
             "automorphism_order": len(self.manifold.automorphisms),
             "node_orbits": [list(orbit) for orbit in self.manifold.node_orbits],
+            "nonce_working_set_dimension": self.nonce_plan.working_set_dimension,
+            "nonce_working_set_compression_ratio": self.nonce_plan.working_set_compression_ratio,
+            "nonce_complete_coverage": self.nonce_plan.complete_coverage,
         }
 
     def _append_event(self, phase: str, **payload: Any) -> None:
@@ -258,35 +265,47 @@ class PulviniOverlayConcentrator:
             self.active_job_id = str(job.job_id)
             self.state.activate_job(str(job.job_id), int(job.target))
             self.manifold.begin_job(str(job.job_id), int(job.target))
+            self.nonce_plan = self.nonce_compressor.build_plan()
             self.assignments = {}
-            for node_id in range(NUM_NODES):
-                start, end = nonce_range_inclusive(node_id)
+            for node_id, segment in enumerate(self.nonce_plan.coverage_segments):
                 coordinate = self.manifold.tensor_coordinate_for_node(node_id)
+                compressed_coordinate = self.nonce_plan.coordinate_for_nonce(segment.start)
                 assignment = NodeAssignment(
                     node_id=node_id,
                     job_id=str(job.job_id),
-                    nonce_start=start,
-                    nonce_end=end,
+                    nonce_start=segment.start,
+                    nonce_end=segment.end,
                     extranonce2=self._extranonce2_for_node(node_id, str(job.job_id), getattr(job, "extranonce2_size", 4)),
                     role="hub" if node_id >= 20 else "worker",
                     neighbors=get_geometric_neighbors(node_id),
                     tensor_coordinate=coordinate.to_dict(),
+                    compressed_coordinate=compressed_coordinate.to_dict() if compressed_coordinate else {},
                 )
                 self.assignments[node_id] = assignment
                 node = self.nodes[node_id]
                 node.phase = "assigned"
                 node.active_job_id = str(job.job_id)
-                node.nonce_start = start
-                node.nonce_end = end
-                node.current_nonce = start
+                node.nonce_start = segment.start
+                node.nonce_end = segment.end
+                node.current_nonce = segment.start
                 node.last_update = time.time()
                 node.best_neighbor = self.best_neighbor(node_id)
             self._append_event("job_received", job_id=str(job.job_id), pool_name=pool_name, epoch=self.job_epoch)
-            self._append_event("work_configured", job_id=str(job.job_id), assignments=NUM_NODES, nonce_slice_size=SLICE_SIZE)
+            self._append_event(
+                "work_configured",
+                job_id=str(job.job_id),
+                assignments=NUM_NODES,
+                nonce_slice_size=SLICE_SIZE,
+                nonce_working_set_dimension=self.nonce_plan.working_set_dimension,
+                nonce_complete_coverage=self.nonce_plan.complete_coverage,
+            )
             return dict(self.assignments)
 
     def nonce_ranges(self) -> List[Tuple[int, int]]:
         return [(assignment.nonce_start, assignment.nonce_end) for assignment in self.assignments.values()]
+
+    def compressed_nonce_plan(self) -> Dict[str, Any]:
+        return self.nonce_plan.to_dict()
 
     def tensor_coordinates(self) -> List[Dict[str, Any]]:
         return [coordinate.to_dict() for coordinate in self.manifold.tensor_coordinates()]
@@ -296,6 +315,10 @@ class PulviniOverlayConcentrator:
             if assignment.nonce_start <= nonce <= assignment.nonce_end:
                 return assignment
         return None
+
+    def compressed_coordinate_for_nonce(self, nonce: int) -> Optional[Dict[str, Any]]:
+        coordinate = self.nonce_plan.coordinate_for_nonce(nonce)
+        return coordinate.to_dict() if coordinate else None
 
     def record_node_progress(self, node_id: int, nonce: int, hashes: int = 0, best_diff: Optional[int] = None) -> None:
         with self._lock:
@@ -346,6 +369,7 @@ class PulviniOverlayConcentrator:
                 "error_message": getattr(result, "error_message", None),
                 "block_hash": getattr(result, "block_hash", None),
                 "route": self.route_for_share(node_id),
+                "compressed_coordinate": self.compressed_coordinate_for_nonce(nonce),
                 "timestamp": time.time(),
             }
             self.share_ledger.append(payload)
@@ -388,6 +412,7 @@ class PulviniOverlayConcentrator:
             "active_job_id": self.active_job_id,
             "shared_state": self.state.snapshot(),
             "manifold_observation": self.manifold.observe().to_dict(),
+            "compressed_nonce_plan": self.compressed_nonce_plan(),
         }
 
     def snapshot(self) -> Dict[str, Any]:
@@ -406,6 +431,7 @@ class PulviniOverlayConcentrator:
                 "active_pool_name": self.active_pool_name,
                 "active_job_id": self.active_job_id,
                 "job_epoch": self.job_epoch,
+                "nonce_compression_plan": self.compressed_nonce_plan(),
                 "assignments": {node_id: assignment.to_dict() for node_id, assignment in self.assignments.items()},
                 "nodes": {node_id: node.to_dict() for node_id, node in self.nodes.items()},
                 "shared_state": self.state.snapshot(),
