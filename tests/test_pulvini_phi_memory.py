@@ -12,6 +12,7 @@ if str(BACKEND) not in sys.path:
     sys.path.insert(0, str(BACKEND))
 
 from pythia_mining.pulvini_phi_memory import PulviniPhiMemoryCompressionEngine  # noqa: E402
+from pythia_mining.pulvini_memory_fabric import PulviniMemoryFabric  # noqa: E402
 
 
 class PulviniPhiMemoryCompressionTests(unittest.TestCase):
@@ -47,6 +48,16 @@ class PulviniPhiMemoryCompressionTests(unittest.TestCase):
         self.assertEqual(96, result.input_elements)
         self.assertLess(result.folded_elements, result.input_elements)
         self.assertGreater(result.avg_working_set_compression_ratio, 1.0)
+
+    def test_fabric_uses_phi_folded_kernel_state(self) -> None:
+        fabric = PulviniMemoryFabric(num_nodes=32, fold_depth=2)
+        fabric.record_path([0, 20, 25, 30, 31], reward=1.0)
+        snapshot = fabric.compressed_kernel_snapshot().to_dict()
+
+        self.assertGreater(snapshot["kernel"]["kernel_norm"], 0.0)
+        self.assertTrue(snapshot["compression"]["reversible"])
+        self.assertGreater(snapshot["compression"]["working_set_compression_ratio"], 1.0)
+        self.assertGreater(snapshot["compression"]["retained_kernel_bytes"], 0)
 
 
 if __name__ == "__main__":
