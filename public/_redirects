@@ -1,0 +1,4 @@
+/api/* /api/:splat 200
+/health/* /health/:splat 200
+/bridge/health /bridge/health 200
+/* /index.html 200

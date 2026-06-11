@@ -2,16 +2,25 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Activity,
   AlertCircle,
+  BarChart3,
   CheckCircle2,
+  Cpu,
   Database,
   FileWarning,
+  Gauge,
+  Landmark,
   LogIn,
   LogOut,
   Moon,
+  RadioTower,
   RefreshCw,
+  Rocket,
+  Scale,
   Server,
   ShieldCheck,
   Sun,
+  Terminal,
+  TrendingUp,
   UserCheck,
   UserPlus,
   Wifi,
@@ -21,11 +30,9 @@ import {
 import {
   type AuthResponse,
   type ConfigurePoolRequest,
-  type HealthResponse,
   type PoolInfo,
   type TelemetryData,
   configurePool,
-  connectToPool,
   disconnectFromPool,
   fetchProfileApi,
   fetchProductsApi,
@@ -47,10 +54,14 @@ type NullableNumber = number | null | undefined;
 const THEME = {
   colors: {
     oxford: "#002147",
+    deepBlue: "#06162D",
+    mitRed: "#A31F34",
+    caltechOrange: "#FF6C0C",
+    deepmindBlue: "#0B57D0",
     clicquotGold: "#C5A55A",
-    clicquotOrange: "#E8772E",
     sand: "#F5F0EB",
     slate: "#64748B",
+    ink: "#111827",
     error: "#DC2626",
     success: "#16A34A",
     warning: "#D97706",
@@ -73,14 +84,18 @@ function fmtText(value: unknown): string {
   return typeof value === "string" && value.trim().length > 0 ? value : UNAVAILABLE;
 }
 
+function clamp(value: number, min = 0, max = 100): number {
+  return Math.max(min, Math.min(max, value));
+}
+
 function Skeleton({ width = "100%", height = "20px" }: { width?: string; height?: string }) {
-  return <div className="animate-pulse rounded bg-slate-200/40" style={{ width, height }} aria-hidden="true" />;
+  return <div className="animate-pulse rounded bg-slate-200/50" style={{ width, height }} aria-hidden="true" />;
 }
 
 function EmptyState({ message, icon }: { message: string; icon?: React.ReactNode }) {
   return (
-    <div className="flex flex-col items-center justify-center gap-2 p-8 text-center" style={{ color: THEME.colors.slate }}>
-      {icon && <div className="opacity-40">{icon}</div>}
+    <div className="flex flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-slate-200 bg-slate-50/80 p-8 text-center text-slate-500">
+      {icon && <div className="opacity-50">{icon}</div>}
       <p className="text-sm font-mono">{message}</p>
     </div>
   );
@@ -88,15 +103,15 @@ function EmptyState({ message, icon }: { message: string; icon?: React.ReactNode
 
 function ErrorState({ message, onRetry }: { message: string; onRetry?: () => void }) {
   return (
-    <div className="flex flex-col items-center justify-center gap-3 p-6 text-center rounded-lg border border-red-200 bg-red-50">
-      <div className="flex items-center gap-2 text-red-600">
-        <FileWarning className="w-5 h-5" />
-        <span className="font-mono text-sm font-semibold">Error</span>
+    <div className="executive-alert border-red-200 bg-red-50/95 text-red-950">
+      <div className="flex items-center gap-2 text-red-700">
+        <FileWarning className="h-5 w-5" />
+        <span className="font-mono text-sm font-semibold uppercase tracking-[0.18em]">Telemetry interruption</span>
       </div>
-      <p className="text-sm font-mono text-red-900">{message}</p>
+      <p className="text-sm leading-6">{message}</p>
       {onRetry && (
-        <button onClick={onRetry} className="flex items-center gap-1.5 px-4 py-2 text-xs font-mono font-bold rounded-lg bg-red-600 text-white">
-          <RefreshCw className="w-3.5 h-3.5" /> RETRY
+        <button onClick={onRetry} className="executive-button bg-red-600 text-white shadow-red-600/20">
+          <RefreshCw className="h-3.5 w-3.5" /> Retry connection
         </button>
       )}
     </div>
@@ -141,6 +156,26 @@ function AppContent() {
   const consciousness = telemetry?.consciousness || {};
 
   const runtimeStatus = useMemo(() => health?.status || "unavailable", [health]);
+  const activePoolName = fmtText(systemMetrics.activePool || poolSummary.active_pool_name);
+  const configuredPoolCount = Number(poolSummary.configured_pools ?? poolSummary.total_pools ?? 0);
+  const activePoolCount = Number(poolSummary.active_pools ?? 0);
+  const securityStatus = fmtText(security.status);
+
+  const readinessScore = useMemo(() => {
+    let score = 0;
+    if (["ok", "healthy"].includes(runtimeStatus.toLowerCase())) score += 30;
+    if (isConnected) score += latencyMs < 500 ? 20 : 12;
+    if (configuredPoolCount > 0) score += 18;
+    if (activePoolCount > 0 || activePoolName !== UNAVAILABLE) score += 14;
+    if (!["critical", "high", "error"].includes(String(security.threat_level || security.status || "").toLowerCase())) score += 18;
+    return clamp(score);
+  }, [activePoolCount, activePoolName, configuredPoolCount, isConnected, latencyMs, runtimeStatus, security.status, security.threat_level]);
+
+  const operatingPrinciples = [
+    { label: "Zero synthetic telemetry", detail: "Every KPI is sourced from backend health, pool, AI, or security endpoints." },
+    { label: "Cloudflare route ready", detail: "SPA traffic is cleanly split from proxied API calls for edge deployment." },
+    { label: "Executive control surface", detail: "Identity, pool switching, power scale, and incident signals are exposed in one console." },
+  ];
 
   const getLiveTelemetry = useCallback(async () => {
     setIsSyncing(true);
@@ -329,45 +364,91 @@ function AppContent() {
   const isLoading = !telemetry && !telemetryError;
 
   return (
-    <div className={`min-h-screen flex flex-col font-sans transition-colors duration-300 ${isDarkMode ? "bg-[#0B0C10] text-[#C5C6C7]" : "bg-[#F5F0EB] text-[#1A1A1E]"}`}>
+    <div className={`min-h-screen flex flex-col font-sans transition-colors duration-300 ${isDarkMode ? "dark bg-[#050914] text-slate-100" : "bg-[#F4F1EA] text-[#101828]"}`}>
       <NetworkToast isConnected={isConnected} latencyMs={latencyMs} isDismissed={isToastDismissed} onDismiss={() => setIsToastDismissed(true)} />
 
-      <header className="sticky top-0 z-40 border-b-2 px-6 py-4 shadow-lg" style={{ backgroundColor: THEME.colors.oxford, borderColor: THEME.colors.clicquotGold, color: "white" }}>
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <header className="sticky top-0 z-40 border-b border-white/10 bg-[#06162D]/95 px-6 py-4 shadow-2xl shadow-slate-950/20 backdrop-blur-xl text-white">
+        <div className="mx-auto flex max-w-7xl flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-3">
-            <div className="text-white font-mono text-[10px] font-bold px-2 py-0.5 rounded tracking-widest" style={{ backgroundColor: THEME.colors.clicquotOrange }}>HYBA</div>
-            <h1 className="text-sm font-sans font-extrabold tracking-wider text-white uppercase">Production Runtime Console</h1>
-            <span className="text-[9px] px-1.5 py-0.5 rounded font-mono font-semibold" style={{ backgroundColor: "rgba(10, 92, 145, 0.3)", color: "rgba(255,255,255,0.9)", border: "1px solid rgba(10, 92, 145, 0.6)" }}>v{fmtText(health?.version || "2.0.1")}</span>
+            <div className="brand-mark">HYBA</div>
+            <div>
+              <p className="text-[10px] uppercase tracking-[0.42em] text-blue-100/70">Production command center</p>
+              <h1 className="text-base font-black tracking-tight text-white md:text-lg">Genesis Runtime Console</h1>
+            </div>
+            <span className="rounded-full border border-white/15 bg-white/10 px-2.5 py-1 text-[10px] font-mono font-semibold text-white/90">v{fmtText(health?.version || "2.0.1")}</span>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <div className="flex items-center gap-1.5 px-2 py-1 rounded text-[10px] font-mono" style={{ backgroundColor: "rgba(0,0,0,0.2)" }}>
-              {isConnected ? <Wifi className="w-3 h-3" style={{ color: THEME.colors.success }} /> : <WifiOff className="w-3 h-3" style={{ color: THEME.colors.error }} />}
-              <span style={{ color: isConnected ? THEME.colors.success : THEME.colors.error }}>{isConnected ? `${latencyMs.toFixed(0)}ms` : "OFFLINE"}</span>
+            <div className="status-pill bg-white/10 text-white">
+              {isConnected ? <Wifi className="h-3.5 w-3.5 text-emerald-300" /> : <WifiOff className="h-3.5 w-3.5 text-red-300" />}
+              <span>{isConnected ? `${latencyMs.toFixed(0)}ms` : "Offline"}</span>
             </div>
-            <button onClick={() => setIsPollingActive(!isPollingActive)} className="px-3 py-1.5 rounded text-[10px] font-mono font-bold border" style={{ backgroundColor: isPollingActive ? "rgba(22, 163, 74, 0.2)" : "rgba(217, 119, 6, 0.2)", borderColor: isPollingActive ? THEME.colors.success : THEME.colors.warning, color: isPollingActive ? "#BBF7D0" : "#FDE68A" }}>{isPollingActive ? "● LIVE" : "○ PAUSED"}</button>
-            <button onClick={getLiveTelemetry} disabled={isSyncing} className="px-3 py-1.5 rounded text-[10px] font-mono font-bold flex items-center gap-1.5" style={{ backgroundColor: "rgba(10, 92, 145, 0.3)", border: "1px solid rgba(10, 92, 145, 0.6)", color: "white" }}><RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? "animate-spin" : ""}`} /> REFRESH</button>
+            <button onClick={() => setIsPollingActive(!isPollingActive)} className={`status-pill border ${isPollingActive ? "border-emerald-300/30 bg-emerald-400/15 text-emerald-100" : "border-amber-300/30 bg-amber-400/15 text-amber-100"}`}>{isPollingActive ? "● Live" : "○ Paused"}</button>
+            <button onClick={getLiveTelemetry} disabled={isSyncing} className="executive-button bg-white text-[#06162D] shadow-white/10"><RefreshCw className={`h-3.5 w-3.5 ${isSyncing ? "animate-spin" : ""}`} /> Refresh</button>
             <Sparkline data={latencyHistory} />
-            <button onClick={toggleTheme} className="p-1.5 rounded" style={{ backgroundColor: "rgba(255,255,255,0.1)" }}>{isDarkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}</button>
+            <button onClick={toggleTheme} className="rounded-full bg-white/10 p-2 text-white transition hover:bg-white/20" aria-label="Toggle color theme">{isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}</button>
           </div>
         </div>
       </header>
 
-      <main className="flex-1 max-w-7xl mx-auto w-full px-6 py-6 flex flex-col gap-6">
-        <section className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          {isLoading ? [1, 2, 3, 4].map(i => <div key={i} className="rounded-xl p-4 shadow-sm border bg-white"><Skeleton width="80px" height="12px" /><div className="mt-2"><Skeleton width="60%" height="24px" /></div></div>) : (
+      <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-6 px-6 py-6">
+        <section className="executive-hero overflow-hidden rounded-[2rem] border border-white/30 bg-white/80 p-6 shadow-2xl shadow-slate-900/10 backdrop-blur md:p-8">
+          <div className="grid gap-8 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
+            <div className="relative z-10">
+              <div className="mb-5 flex flex-wrap items-center gap-2">
+                <span className="eyebrow"><Landmark className="h-3.5 w-3.5" /> Board-ready operating picture</span>
+                <span className="eyebrow"><Rocket className="h-3.5 w-3.5" /> Cloudflare deploy path</span>
+              </div>
+              <h2 className="max-w-3xl text-4xl font-black tracking-[-0.04em] text-slate-950 md:text-6xl">
+                Institutional-grade mining AI, calibrated for production scrutiny.
+              </h2>
+              <p className="mt-5 max-w-2xl text-base leading-8 text-slate-600 md:text-lg">
+                A Stripe-quality control plane for HYBA operators: live telemetry, authenticated pool operations, risk posture, and executive evidence without fabricated metrics.
+              </p>
+              <div className="mt-8 grid gap-3 sm:grid-cols-3">
+                {operatingPrinciples.map((item) => (
+                  <div key={item.label} className="rounded-2xl border border-slate-200 bg-white/80 p-4 shadow-sm">
+                    <p className="text-xs font-black uppercase tracking-[0.18em] text-slate-900">{item.label}</p>
+                    <p className="mt-2 text-xs leading-5 text-slate-500">{item.detail}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="relative z-10 rounded-[1.5rem] border border-slate-200 bg-slate-950 p-5 text-white shadow-2xl">
+              <div className="flex items-center justify-between border-b border-white/10 pb-4">
+                <div>
+                  <p className="text-[10px] uppercase tracking-[0.3em] text-blue-200/70">Production readiness</p>
+                  <p className="mt-1 text-3xl font-black">{readinessScore}<span className="text-base text-white/50">/100</span></p>
+                </div>
+                <Gauge className="h-10 w-10 text-[#C5A55A]" />
+              </div>
+              <div className="mt-5 h-3 rounded-full bg-white/10">
+                <div className="h-3 rounded-full bg-gradient-to-r from-[#0B57D0] via-[#C5A55A] to-[#16A34A]" style={{ width: `${readinessScore}%` }} />
+              </div>
+              <div className="mt-5 grid gap-3 text-xs">
+                <ReadinessLine label="Runtime" value={runtimeStatus.toUpperCase()} positive={["OK", "HEALTHY"].includes(runtimeStatus.toUpperCase())} />
+                <ReadinessLine label="Security" value={securityStatus.toUpperCase()} positive={!securityStatus.toLowerCase().includes("error")} />
+                <ReadinessLine label="Active pool" value={activePoolName} positive={activePoolName !== UNAVAILABLE} />
+                <ReadinessLine label="Telemetry" value={isConnected ? `${latencyMs.toFixed(0)}ms latency` : "Disconnected"} positive={isConnected} />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="grid grid-cols-1 gap-4 md:grid-cols-4">
+          {isLoading ? [1, 2, 3, 4].map(i => <div key={i} className="rounded-2xl border bg-white p-5 shadow-sm"><Skeleton width="80px" height="12px" /><div className="mt-3"><Skeleton width="60%" height="28px" /></div></div>) : (
             <>
-              <MetricCard label="Runtime status" value={runtimeStatus.toUpperCase()} icon={<Activity className="w-4 h-4" />} status={runtimeStatus} />
-              <MetricCard label="Telemetry source" value={fmtText(health?.telemetry_source)} icon={<Database className="w-4 h-4" />} />
-              <MetricCard label="Active pool" value={fmtText(systemMetrics.activePool || poolSummary.active_pool_name)} icon={<Server className="w-4 h-4" />} />
-              <MetricCard label="Backend latency" value={isConnected ? `${latencyMs.toFixed(0)} ms` : UNAVAILABLE} icon={isConnected ? <Wifi className="w-4 h-4" /> : <WifiOff className="w-4 h-4" />} />
+              <MetricCard label="Runtime status" value={runtimeStatus.toUpperCase()} icon={<Activity className="h-4 w-4" />} status={runtimeStatus} />
+              <MetricCard label="Telemetry source" value={fmtText(health?.telemetry_source)} icon={<Database className="h-4 w-4" />} />
+              <MetricCard label="Active pool" value={activePoolName} icon={<RadioTower className="h-4 w-4" />} />
+              <MetricCard label="Backend latency" value={isConnected ? `${latencyMs.toFixed(0)} ms` : UNAVAILABLE} icon={isConnected ? <Wifi className="h-4 w-4" /> : <WifiOff className="h-4 w-4" />} />
             </>
           )}
         </section>
 
         {telemetryError && !isLoading && <ErrorState message={telemetryError} onRetry={getLiveTelemetry} />}
 
-        <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <Panel title="Mining Telemetry" icon={<Database className="w-4 h-4" />} isLoading={isLoading} rows={6}>
+        <section className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+          <Panel title="Mining telemetry" eyebrow="Network operations" icon={<Database className="h-4 w-4" />} isLoading={isLoading} rows={6}>
             <MetricRow label="Block height" value={fmtNum(systemMetrics.blockHeight, 0)} />
             <MetricRow label="Hashrate (EH/s)" value={fmtNum(systemMetrics.currentHashrate)} />
             <MetricRow label="Power consumption" value={fmtNum(systemMetrics.powerConsumption)} />
@@ -375,49 +456,51 @@ function AppContent() {
             <MetricRow label="Difficulty target" value={fmtText(systemMetrics.difficultyTarget)} />
             <MetricRow label="System health" value={fmtText(systemMetrics.system_health)} />
           </Panel>
-          <Panel title="Quantum Runtime" icon={<Activity className="w-4 h-4" />} isLoading={isLoading} rows={6}>
+          <Panel title="Quantum runtime" eyebrow="Optimization substrate" icon={<Cpu className="h-4 w-4" />} isLoading={isLoading} rows={6}>
             <MetricRow label="Basis coherence" value={fmtPct(health?.quantumCoherence)} />
             <MetricRow label="Phi phase alignment" value={fmtPct(health?.phiResonance)} />
             <MetricRow label="Quantum speedup" value={fmtNum(health?.quantumSpeedupFactor)} />
             <MetricRow label="Actual speedup" value={fmtNum(health?.actualSpeedupFactor)} />
             <MetricRow label="Power scale" value={`${powerScale.toFixed(1)}x`} />
-            <input type="range" min="0.1" max="10.0" step="0.1" value={powerScale} onChange={e => handlePowerScaleChange(parseFloat(e.target.value))} className="w-full h-2 rounded-lg appearance-none cursor-pointer" style={{ accentColor: THEME.colors.clicquotGold }} aria-label="Power scale control" />
+            <input type="range" min="0.1" max="10.0" step="0.1" value={powerScale} onChange={e => handlePowerScaleChange(parseFloat(e.target.value))} className="mt-3 h-2 w-full cursor-pointer appearance-none rounded-lg" style={{ accentColor: THEME.colors.clicquotGold }} aria-label="Power scale control" />
           </Panel>
-          <Panel title="Runtime Integration" icon={<ShieldCheck className="w-4 h-4" />} isLoading={isLoading} rows={6}>
+          <Panel title="Runtime integration" eyebrow="Risk and control" icon={<ShieldCheck className="h-4 w-4" />} isLoading={isLoading} rows={6}>
             <MetricRow label="AI state" value={fmtText(consciousness.status)} />
             <MetricRow label="Integrated information" value={fmtNum(consciousness.integrated_information as NullableNumber)} />
-            <MetricRow label="Security status" value={fmtText(security.status)} />
+            <MetricRow label="Security status" value={securityStatus} />
             <MetricRow label="Threat level" value={fmtText(security.threat_level)} />
-            <MetricRow label="Pools configured" value={fmtNum((poolSummary.configured_pools ?? poolSummary.total_pools) as NullableNumber, 0)} />
-            <MetricRow label="Active pools" value={fmtNum(poolSummary.active_pools as NullableNumber, 0)} />
+            <MetricRow label="Pools configured" value={fmtNum(configuredPoolCount, 0)} />
+            <MetricRow label="Active pools" value={fmtNum(activePoolCount, 0)} />
           </Panel>
         </section>
 
-        <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Panel title="Stratum Mining Pools" icon={<Database className="w-4 h-4" />} isLoading={isLoading && pools.length === 0} rows={4}>
-            {!isLoading && pools.length === 0 ? <EmptyState message="No pool telemetry available from backend." icon={<Server className="w-8 h-8" />} /> : (
-              <div className="space-y-2.5 max-h-[480px] overflow-y-auto pr-1">
+        <section className="grid grid-cols-1 gap-6 lg:grid-cols-[1.2fr_0.8fr]">
+          <Panel title="Stratum mining pools" eyebrow="Authenticated execution" icon={<Server className="h-4 w-4" />} isLoading={isLoading && pools.length === 0} rows={4}>
+            {!isLoading && pools.length === 0 ? <EmptyState message="No pool telemetry available from backend." icon={<Server className="h-8 w-8" />} /> : (
+              <div className="grid gap-3 xl:grid-cols-2">
                 {pools.map((pool, idx) => {
                   const isActive = Boolean(pool.is_active || pool.connection_state?.toLowerCase() === "connected" || pool.status?.toLowerCase() === "connected");
                   return (
-                    <div key={pool.pool_id || pool.name || idx} className="p-3 rounded-lg border text-[11px] font-mono bg-white/60">
-                      <div className="flex items-center justify-between mb-1.5">
-                        <span className="font-bold truncate">{fmtText(pool.name)}</span>
+                    <div key={pool.pool_id || pool.name || idx} className="rounded-2xl border border-slate-200 bg-white/80 p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <span className="block truncate text-sm font-black text-slate-950">{fmtText(pool.name)}</span>
+                          <span className="mt-1 block truncate font-mono text-[10px] text-slate-500">{fmtText(pool.url)}</span>
+                        </div>
                         <PoolStatusBadge status={pool.status || pool.connection_state} />
                       </div>
-                      <div className="text-[10px] truncate mb-2" style={{ color: THEME.colors.slate }}>{fmtText(pool.url)}</div>
-                      <div className="grid grid-cols-2 gap-2 text-[10px] pt-1.5 border-t border-slate-200">
-                        <span>Mode: <strong>{fmtText(pool.credential_mode)}</strong></span>
-                        <span>Configured: <strong>{pool.configured ? "YES" : "NO"}</strong></span>
-                        <span>Latency: <strong>{fmtNum(pool.performance?.latency_ms)} ms</strong></span>
-                        <span>Shares: <strong>{fmtNum(pool.performance?.shares_submitted, 0)}</strong></span>
+                      <div className="mt-4 grid grid-cols-2 gap-2 rounded-xl border border-slate-100 bg-slate-50 p-3 text-[10px] text-slate-600">
+                        <span>Mode <strong className="block truncate text-slate-900">{fmtText(pool.credential_mode)}</strong></span>
+                        <span>Configured <strong className="block text-slate-900">{pool.configured ? "YES" : "NO"}</strong></span>
+                        <span>Latency <strong className="block text-slate-900">{fmtNum(pool.performance?.latency_ms)} ms</strong></span>
+                        <span>Shares <strong className="block text-slate-900">{fmtNum(pool.performance?.shares_submitted, 0)}</strong></span>
                       </div>
-                      <div className="grid grid-cols-2 gap-2 mt-3">
-                        <button onClick={() => setSelectedPoolForConfig(pool)} disabled={isProcessing} className="py-2 rounded-lg text-xs font-mono font-bold bg-slate-900 text-white">CONFIGURE</button>
+                      <div className="mt-4 grid grid-cols-2 gap-2">
+                        <button onClick={() => setSelectedPoolForConfig(pool)} disabled={isProcessing} className="control-button bg-slate-950 text-white">Configure</button>
                         {isActive ? (
-                          <button onClick={handlePoolDisconnect} disabled={isProcessing} className="py-2 rounded-lg text-xs font-mono font-bold text-white" style={{ backgroundColor: THEME.colors.error }}>DISCONNECT</button>
+                          <button onClick={handlePoolDisconnect} disabled={isProcessing} className="control-button bg-red-600 text-white">Disconnect</button>
                         ) : (
-                          <button onClick={() => handlePoolSwitch(pool)} disabled={isProcessing} className="py-2 rounded-lg text-xs font-mono font-bold text-white" style={{ backgroundColor: pool.configured ? THEME.colors.oxford : THEME.colors.warning }}>{pool.configured ? "SWITCH" : "SETUP"}</button>
+                          <button onClick={() => handlePoolSwitch(pool)} disabled={isProcessing} className={`control-button text-white ${pool.configured ? "bg-[#002147]" : "bg-amber-600"}`}>{pool.configured ? "Switch" : "Setup"}</button>
                         )}
                       </div>
                     </div>
@@ -427,42 +510,52 @@ function AppContent() {
             )}
           </Panel>
 
-          <Panel title="Operator Identity" icon={<UserCheck className="w-4 h-4" />} isLoading={false}>
-            {currentUser ? (
-              <div className="space-y-4 font-mono text-xs">
-                <div className="p-3 rounded-lg border border-green-200 bg-green-50">
-                  <div className="flex items-center gap-2 mb-2"><CheckCircle2 className="w-4 h-4" style={{ color: THEME.colors.success }} /><span className="font-bold">Authenticated</span></div>
-                  <MetricRow label="Identity" value={currentUser.username} />
-                  <MetricRow label="Role" value={currentUser.role} />
+          <div className="grid gap-6">
+            <Panel title="Operator identity" eyebrow="Access control" icon={<UserCheck className="h-4 w-4" />} isLoading={false}>
+              {currentUser ? (
+                <div className="space-y-4 font-mono text-xs">
+                  <div className="rounded-2xl border border-green-200 bg-green-50 p-4">
+                    <div className="mb-3 flex items-center gap-2 text-green-800"><CheckCircle2 className="h-4 w-4" /><span className="font-bold uppercase tracking-[0.18em]">Authenticated</span></div>
+                    <MetricRow label="Identity" value={currentUser.username} />
+                    <MetricRow label="Role" value={currentUser.role} />
+                  </div>
+                  <button onClick={handleLogout} className="control-button w-full bg-red-600 text-white"><LogOut className="h-3.5 w-3.5" /> Log out</button>
                 </div>
-                <button onClick={handleLogout} className="w-full py-2.5 rounded-lg text-xs font-mono font-bold flex items-center justify-center gap-1.5 bg-red-600 text-white"><LogOut className="w-3.5 h-3.5" /> LOG OUT</button>
+              ) : (
+                <form onSubmit={isRegisterMode ? handleRegister : handleLogin} className="space-y-3">
+                  <AuthInput label="Operator Handle" value={usernameInput} setValue={setUsernameInput} type="text" placeholder="Enter your operator handle" />
+                  <AuthInput label="Password" value={passwordInput} setValue={setPasswordInput} type="password" placeholder="Enter your password" />
+                  <div className="grid grid-cols-2 gap-2 pt-1">
+                    <button type="submit" className="control-button bg-[#002147] text-white">{isRegisterMode ? <UserPlus className="h-3.5 w-3.5" /> : <LogIn className="h-3.5 w-3.5" />}{isRegisterMode ? "Register" : "Log in"}</button>
+                    <button type="button" onClick={() => { setIsRegisterMode(!isRegisterMode); clearAuthFeedback(); }} className="control-button border border-slate-200 bg-white text-slate-900">{isRegisterMode ? "← Log in" : "Sign up →"}</button>
+                  </div>
+                </form>
+              )}
+              {authFeedback && <Feedback feedback={authFeedback} />}
+            </Panel>
+
+            <Panel title="Forensic evidence" eyebrow="Deployment controls" icon={<Scale className="h-4 w-4" />} isLoading={false}>
+              <div className="space-y-3">
+                <EvidenceItem icon={<Terminal className="h-4 w-4" />} title="Bridge health" detail="/bridge/health exposes backend reachability, circuit breaker state, and request telemetry." />
+                <EvidenceItem icon={<BarChart3 className="h-4 w-4" />} title="Prometheus metrics" detail="/bridge/metrics emits counters and gauges for operational monitoring." />
+                <EvidenceItem icon={<TrendingUp className="h-4 w-4" />} title="Production gates" detail="npm run prod:check validates type safety, build output, backend tests, and E2E smoke coverage." />
               </div>
-            ) : (
-              <form onSubmit={isRegisterMode ? handleRegister : handleLogin} className="space-y-3">
-                <AuthInput label="Operator Handle" value={usernameInput} setValue={setUsernameInput} type="text" placeholder="Enter your operator handle" />
-                <AuthInput label="Password" value={passwordInput} setValue={setPasswordInput} type="password" placeholder="Enter your password" />
-                <div className="grid grid-cols-2 gap-2 pt-1">
-                  <button type="submit" className="font-mono py-2.5 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 text-white" style={{ backgroundColor: THEME.colors.oxford }}>{isRegisterMode ? <UserPlus className="w-3.5 h-3.5" /> : <LogIn className="w-3.5 h-3.5" />}{isRegisterMode ? "REGISTER" : "LOG IN"}</button>
-                  <button type="button" onClick={() => { setIsRegisterMode(!isRegisterMode); clearAuthFeedback(); }} className="font-mono py-2.5 rounded-lg text-xs font-bold border">{isRegisterMode ? "← LOG IN" : "SIGN UP →"}</button>
-                </div>
-              </form>
-            )}
-            {authFeedback && <Feedback feedback={authFeedback} />}
-          </Panel>
+            </Panel>
+          </div>
         </section>
 
-        <Panel title="Product Catalog" icon={<Database className="w-4 h-4" />} isLoading={false}>
-          {products.length === 0 ? <EmptyState message="No catalog records available from backend." icon={<Database className="w-8 h-8" />} /> : (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {products.map(product => <div key={product.id || product.name} className="rounded-lg p-3.5 border bg-white/60"><h5 className="font-sans font-bold text-xs truncate">{fmtText(product.name)}</h5><p className="text-[10px] mt-1 leading-relaxed" style={{ color: THEME.colors.slate }}>{fmtText(product.description)}</p></div>)}
+        <Panel title="Product catalog" eyebrow="Commercial surface" icon={<Database className="h-4 w-4" />} isLoading={false}>
+          {products.length === 0 ? <EmptyState message="No catalog records available from backend." icon={<Database className="h-8 w-8" />} /> : (
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+              {products.map(product => <div key={product.id || product.name} className="rounded-2xl border border-slate-200 bg-white/80 p-4 shadow-sm"><h5 className="truncate text-sm font-black text-slate-950">{fmtText(product.name)}</h5><p className="mt-2 text-xs leading-6 text-slate-500">{fmtText(product.description)}</p></div>)}
             </div>
           )}
         </Panel>
       </main>
 
-      <footer className="border-t-2 py-6 px-6 shrink-0 mt-8" style={{ backgroundColor: THEME.colors.oxford, borderColor: THEME.colors.clicquotGold, color: "rgba(255,255,255,0.7)" }}>
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-[10px] font-mono">
-          <span>HYBA PRODUCTION RUNTIME WORKSPACE</span><span>© 2026 HYBA GROUP</span><span className="flex items-center gap-1" style={{ color: THEME.colors.clicquotGold }}><ShieldCheck className="w-3.5 h-3.5" style={{ color: THEME.colors.clicquotOrange }} /> REAL TELEMETRY ONLY — NO FABRICATED DATA</span>
+      <footer className="mt-8 shrink-0 border-t border-white/10 bg-[#06162D] px-6 py-6 text-white/70">
+        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 text-[10px] font-mono md:flex-row">
+          <span>HYBA PRODUCTION RUNTIME WORKSPACE</span><span>© 2026 HYBA GROUP</span><span className="flex items-center gap-1 text-[#C5A55A]"><ShieldCheck className="h-3.5 w-3.5" /> REAL TELEMETRY ONLY — NO FABRICATED DATA</span>
         </div>
       </footer>
 
@@ -474,16 +567,16 @@ function AppContent() {
 function AuthInput({ label, value, setValue, type, placeholder }: { label: string; value: string; setValue: (value: string) => void; type: string; placeholder: string }) {
   return (
     <div className="space-y-2">
-      <label className="text-[10px] font-mono font-bold uppercase tracking-wider" style={{ color: THEME.colors.slate }}>{label}</label>
-      <input type={type} required placeholder={placeholder} value={value} onChange={e => setValue(e.target.value)} className="w-full rounded-lg p-2.5 font-mono text-xs outline-none transition-all border bg-slate-50" />
+      <label className="text-[10px] font-mono font-bold uppercase tracking-[0.18em] text-slate-500">{label}</label>
+      <input type={type} required placeholder={placeholder} value={value} onChange={e => setValue(e.target.value)} className="w-full rounded-xl border border-slate-200 bg-slate-50 p-3 font-mono text-xs outline-none transition focus:border-[#002147] focus:bg-white focus:ring-4 focus:ring-blue-100" />
     </div>
   );
 }
 
 function Feedback({ feedback }: { feedback: { text: string; error: boolean } }) {
   return (
-    <div className="mt-3 p-2.5 rounded-lg text-xs flex items-center gap-1.5 border" style={{ backgroundColor: feedback.error ? "#FEF2F2" : "#F0FDF4", borderColor: feedback.error ? "#FECACA" : "#BBF7D0", color: feedback.error ? "#991B1B" : "#166534" }} role="alert">
-      {feedback.error ? <AlertCircle className="w-3.5 h-3.5 shrink-0" /> : <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />}
+    <div className={`mt-3 flex items-center gap-2 rounded-xl border p-3 text-xs ${feedback.error ? "border-red-200 bg-red-50 text-red-900" : "border-green-200 bg-green-50 text-green-900"}`} role="alert">
+      {feedback.error ? <AlertCircle className="h-3.5 w-3.5 shrink-0" /> : <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />}
       <span>{feedback.text}</span>
     </div>
   );
@@ -492,24 +585,38 @@ function Feedback({ feedback }: { feedback: { text: string; error: boolean } }) 
 function PoolStatusBadge({ status }: { status?: string }) {
   const colorMap: Record<string, string> = { connected: THEME.colors.success, active: THEME.colors.success, configured: THEME.colors.success, not_configured: THEME.colors.warning, disconnected: THEME.colors.error, error: THEME.colors.error, connecting: THEME.colors.warning, reconnecting: THEME.colors.warning };
   const color = status ? colorMap[status.toLowerCase()] || THEME.colors.slate : THEME.colors.slate;
-  return <span className="px-1.5 py-0.5 rounded font-bold uppercase text-[8px] border" style={{ color, borderColor: color, backgroundColor: `${color}15` }}>{fmtText(status)}</span>;
+  return <span className="rounded-full border px-2 py-1 text-[9px] font-black uppercase tracking-[0.14em]" style={{ color, borderColor: color, backgroundColor: `${color}15` }}>{fmtText(status)}</span>;
 }
 
-function MetricCard({ label, value, icon, status }: { label: string; value: string; icon: React.ReactNode; status?: string }) {
-  const statusColor = status === "ok" || status === "healthy" ? THEME.colors.success : status === "unavailable" || status === "error" ? THEME.colors.error : THEME.colors.clicquotGold;
+function ReadinessLine({ label, value, positive }: { label: string; value: string; positive: boolean }) {
   return (
-    <div className="rounded-xl p-4 shadow-sm border bg-white">
-      <div className="flex items-center justify-between mb-2"><span className="text-[10px] font-mono font-bold uppercase tracking-wider" style={{ color: THEME.colors.slate }}>{label}</span><div style={{ color: statusColor }}>{icon}</div></div>
-      <div className="text-lg font-mono font-bold truncate" style={{ color: status ? statusColor : THEME.colors.oxford }}>{value}</div>
+    <div className="flex items-center justify-between gap-4 rounded-xl bg-white/5 px-3 py-2">
+      <span className="text-white/55">{label}</span>
+      <span className={`max-w-[60%] truncate font-mono font-bold ${positive ? "text-emerald-300" : "text-amber-300"}`}>{value}</span>
     </div>
   );
 }
 
-function Panel({ title, icon, children, isLoading, rows = 4 }: { title: string; icon: React.ReactNode; children: React.ReactNode; isLoading?: boolean; rows?: number }) {
+function MetricCard({ label, value, icon, status }: { label: string; value: string; icon: React.ReactNode; status?: string }) {
+  const normalized = status?.toLowerCase();
+  const statusColor = normalized === "ok" || normalized === "healthy" ? THEME.colors.success : normalized === "unavailable" || normalized === "error" ? THEME.colors.error : THEME.colors.deepmindBlue;
   return (
-    <div className="rounded-xl border shadow-sm overflow-hidden bg-white">
-      <div className="px-4 py-3 border-b flex items-center gap-2" style={{ backgroundColor: "rgba(0,33,71,0.04)", borderColor: "#E2E4E9" }}>
-        <div style={{ color: THEME.colors.clicquotOrange }}>{icon}</div><h3 className="text-xs font-mono font-bold uppercase tracking-wider" style={{ color: THEME.colors.oxford }}>{title}</h3>
+    <div className="group rounded-2xl border border-slate-200 bg-white/85 p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-xl">
+      <div className="mb-3 flex items-center justify-between"><span className="text-[10px] font-mono font-bold uppercase tracking-[0.18em] text-slate-500">{label}</span><div className="rounded-full bg-slate-50 p-2" style={{ color: statusColor }}>{icon}</div></div>
+      <div className="truncate text-xl font-black tracking-tight" style={{ color: status ? statusColor : THEME.colors.ink }}>{value}</div>
+    </div>
+  );
+}
+
+function Panel({ title, eyebrow, icon, children, isLoading, rows = 4 }: { title: string; eyebrow?: string; icon: React.ReactNode; children: React.ReactNode; isLoading?: boolean; rows?: number }) {
+  return (
+    <div className="overflow-hidden rounded-[1.5rem] border border-slate-200 bg-white/90 shadow-sm backdrop-blur">
+      <div className="flex items-center gap-3 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-white px-5 py-4">
+        <div className="rounded-xl bg-[#002147] p-2 text-white">{icon}</div>
+        <div>
+          {eyebrow && <p className="text-[9px] font-mono font-bold uppercase tracking-[0.24em] text-slate-400">{eyebrow}</p>}
+          <h3 className="text-sm font-black uppercase tracking-[0.12em] text-slate-950">{title}</h3>
+        </div>
       </div>
       <div className="p-4">
         {isLoading ? <div className="space-y-3">{Array.from({ length: rows }).map((_, i) => <div key={i}><Skeleton width={i % 2 === 0 ? "100%" : "70%"} height="18px" /></div>)}</div> : children}
@@ -520,9 +627,21 @@ function Panel({ title, icon, children, isLoading, rows = 4 }: { title: string; 
 
 function MetricRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-center justify-between py-1.5 border-b last:border-0" style={{ borderColor: "rgba(100,116,139,0.12)" }}>
-      <span className="text-[10px] font-mono" style={{ color: THEME.colors.slate }}>{label}</span>
-      <span className="text-[11px] font-mono font-semibold text-right max-w-[55%] truncate">{value}</span>
+    <div className="flex items-center justify-between gap-4 border-b border-slate-100 py-2 last:border-0">
+      <span className="text-[11px] font-mono text-slate-500">{label}</span>
+      <span className="max-w-[58%] truncate text-right font-mono text-xs font-bold text-slate-900">{value}</span>
+    </div>
+  );
+}
+
+function EvidenceItem({ icon, title, detail }: { icon: React.ReactNode; title: string; detail: string }) {
+  return (
+    <div className="flex gap-3 rounded-2xl border border-slate-200 bg-slate-50/80 p-3">
+      <div className="mt-0.5 text-[#0B57D0]">{icon}</div>
+      <div>
+        <p className="text-xs font-black uppercase tracking-[0.14em] text-slate-900">{title}</p>
+        <p className="mt-1 text-xs leading-5 text-slate-500">{detail}</p>
+      </div>
     </div>
   );
 }
