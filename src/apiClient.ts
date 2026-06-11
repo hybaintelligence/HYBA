@@ -146,6 +146,14 @@ const AUTH_URL = "";
 const DEFAULT_MAX_RETRIES = 3;
 const DEFAULT_BASE_DELAY_MS = 1000;
 const TOKEN_KEY = "hyba_auth_token";
+export const PULVINI_HASHRATE_CAP_EHS = 1;
+
+function assertPulviniHashrateCap(value: number | undefined, field: string): void {
+  if (value === undefined) return;
+  if (!Number.isFinite(value) || value < 0 || value > PULVINI_HASHRATE_CAP_EHS) {
+    throw new Error(`${field} must be between 0 and ${PULVINI_HASHRATE_CAP_EHS} EH/s`);
+  }
+}
 
 function getToken(): string | null {
   try {
@@ -351,7 +359,9 @@ export interface ConnectPoolResponse {
   pool: string;
   worker: string;
   url: string;
+  base_capacity_ehs?: number;
   capacity_ehs: number;
+  hashrate_cap_ehs?: number;
   daemon: unknown;
   connected_at: string;
 }
@@ -365,10 +375,12 @@ export async function configurePool(data: ConfigurePoolRequest): Promise<Configu
 }
 
 export async function connectToPool(data: ConnectPoolRequest): Promise<ConnectPoolResponse> {
+  assertPulviniHashrateCap(data.capacity_ehs, "capacity_ehs");
   return post<ConnectPoolResponse>("/mining/connect", { ...data, switch: data.switch ?? true }, { maxRetries: 0 });
 }
 
 export async function switchPool(data: ConnectPoolRequest): Promise<ConnectPoolResponse> {
+  assertPulviniHashrateCap(data.capacity_ehs, "capacity_ehs");
   return post<ConnectPoolResponse>("/mining/switch", { ...data, switch: true }, { maxRetries: 0 });
 }
 
@@ -390,6 +402,7 @@ export interface SubmitJobResponse {
   worker: string;
   pool_id: string;
   hashrate_ehs: number;
+  hashrate_cap_ehs?: number;
   total_submitted: number;
   total_accepted: number;
   acceptance_rate: number;
@@ -397,6 +410,7 @@ export interface SubmitJobResponse {
 }
 
 export async function submitJob(data: SubmitJobRequest): Promise<SubmitJobResponse> {
+  assertPulviniHashrateCap(data.hashrate_ehs, "hashrate_ehs");
   return post<SubmitJobResponse>("/mining/submit", data);
 }
 
