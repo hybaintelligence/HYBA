@@ -12,7 +12,7 @@ BACKEND = ROOT / "python_backend"
 if str(BACKEND) not in sys.path:
     sys.path.insert(0, str(BACKEND))
 
-from pythia_mining.pulvini_choi import choi_certificate, kraus_operators_for_step  # noqa: E402
+from pythia_mining.pulvini_choi import choi_certificate, choi_matrix, kraus_operators_for_step  # noqa: E402
 from pythia_mining.pulvini_gamma import EmpiricalGammaLedger, jump_operators_from_gamma  # noqa: E402
 from pythia_mining.pulvini_group import adjacency_sets, compute_graph_automorphisms, compute_node_orbits  # noqa: E402
 from pythia_mining.pulvini_manifold import PulviniManifold  # noqa: E402
@@ -60,7 +60,7 @@ class PulviniFinalMathGateTests(unittest.TestCase):
         self.assertEqual(len(self.manifold.neighbors[0]), len(jumps))
         self.assertGreater(sum(float(np.linalg.norm(op)) for op in jumps), 0.0)
 
-    def test_choi_certificate_is_positive_for_gamma_channel(self) -> None:
+    def test_full_choi_certificate_is_positive_for_gamma_channel(self) -> None:
         ledger = EmpiricalGammaLedger(num_nodes=32)
         for _ in range(4):
             ledger.record(0, nack=True)
@@ -72,7 +72,11 @@ class PulviniFinalMathGateTests(unittest.TestCase):
             num_nodes=32,
         )
         kraus = kraus_operators_for_step(self.manifold.hamiltonian, jumps, dt=1.0)
+        full_choi = choi_matrix(kraus)
         cert = choi_certificate(kraus)
+        self.assertEqual((1024, 1024), full_choi.shape)
+        self.assertEqual(32, cert.dimension)
+        self.assertEqual(1024, cert.choi_dimension)
         self.assertTrue(cert.positive_semidefinite)
         self.assertGreaterEqual(cert.min_eigenvalue, -1e-9)
         self.assertLess(cert.trace_preservation_error, 1e-8)
