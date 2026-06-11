@@ -32,6 +32,7 @@ import helmet from "helmet";
 import path from "node:path";
 import { spawn, type ChildProcessWithoutNullStreams } from "node:child_process";
 import { createServer, type Server } from "node:http";
+import { randomUUID } from "node:crypto";
 import pino from "pino";
 import pinoHttp from "pino-http";
 import rateLimit from "express-rate-limit";
@@ -143,9 +144,7 @@ function getPythonCommand(): string {
 }
 
 function generateRequestId(): string {
-  const timestamp = Date.now().toString(36);
-  const random = Math.random().toString(36).substring(2, 10);
-  return `req_${timestamp}_${random}`;
+  return `req_${randomUUID()}`;
 }
 
 // ── Auto-Connect to ViaBTC on Startup ────────────────────────────────────

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import logging
 import os
 import subprocess
 import sys
@@ -34,6 +35,7 @@ from pythia_mining.pool_profiles import (
 )
 
 router = APIRouter(prefix="/api/mining", tags=["mining"])
+LOGGER = logging.getLogger(__name__)
 
 _ACTIVE_CONNECTION: Optional[Dict[str, Any]] = None
 _JOBS_SUBMITTED: int = 0
@@ -176,14 +178,23 @@ def _config_path() -> str:
 
 
 def get_pythia_state() -> Optional[Dict[str, Any]]:
+    """Read the PYTHIA state file, failing loudly on corrupt or unreadable state."""
+
     path = _state_path()
-    if os.path.exists(path):
-        try:
-            with open(path, "r", encoding="utf-8") as file:
-                return json.load(file)
-        except (OSError, json.JSONDecodeError):
-            return None
-    return None
+    if not os.path.exists(path):
+        return None
+    try:
+        with open(path, "r", encoding="utf-8") as file:
+            state = json.load(file)
+    except OSError as exc:
+        LOGGER.exception("Failed to read PYTHIA state file", extra={"path": path})
+        raise RuntimeError(f"Failed to read PYTHIA state file {path}: {exc}") from exc
+    except json.JSONDecodeError as exc:
+        LOGGER.exception("PYTHIA state file is invalid JSON", extra={"path": path})
+        raise RuntimeError(f"PYTHIA state file {path} is invalid JSON at line {exc.lineno}, column {exc.colno}: {exc.msg}") from exc
+    if not isinstance(state, dict):
+        raise RuntimeError(f"PYTHIA state file {path} must contain a JSON object, got {type(state).__name__}")
+    return state
 
 
 def _write_state(state: Dict[str, Any]) -> None:
@@ -196,12 +207,17 @@ def _write_state(state: Dict[str, Any]) -> None:
         os.replace(temp, path)
         os.chmod(path, 0o600)
     except OSError as exc:
+        cleanup_error = None
         if os.path.exists(temp):
             try:
                 os.unlink(temp)
-            except OSError:
-                pass
-        raise RuntimeError(f"Failed to write state file: {exc}") from exc
+            except OSError as unlink_exc:
+                cleanup_error = unlink_exc
+                LOGGER.exception("Failed to remove temporary PYTHIA state file", extra={"path": temp})
+        detail = f"Failed to write state file {path}: {exc}"
+        if cleanup_error is not None:
+            detail = f"{detail}; additionally failed to remove temporary file {temp}: {cleanup_error}"
+        raise RuntimeError(detail) from exc
 
 
 def _share_counts(state: Optional[Dict[str, Any]]) -> Dict[str, int]:
@@ -288,8 +304,9 @@ def start_pythia_daemon() -> Dict[str, Any]:
         _PYTHIA_PROCESS = subprocess.Popen([sys.executable, "-m", "pythia_mining.main"], cwd=os.path.dirname(_backend_root()), env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         _DAEMON_STARTED = True
         return {"status": "started", "pid": _PYTHIA_PROCESS.pid}
-    except Exception as exc:  # pragma: no cover
-        return {"status": "error", "message": str(exc)}
+    except (OSError, ValueError) as exc:  # pragma: no cover
+        LOGGER.exception("Failed to start PYTHIA daemon")
+        raise RuntimeError(f"Failed to start PYTHIA daemon: {exc}") from exc
 
 
 def stop_pythia_daemon() -> Dict[str, Any]:
@@ -416,8 +433,6 @@ async def connect_to_pool(req: ConnectRequest, request: Request, idempotency_key
             raise StateTransitionError(f"Cannot connect from MIDAS state {current_state.value}")
 
         daemon_status = start_pythia_daemon()
-        if daemon_status.get("status") == "error":
-            raise RuntimeError(str(daemon_status.get("message")))
 
         profile = config.to_profile()
         _ACTIVE_CONNECTION = {

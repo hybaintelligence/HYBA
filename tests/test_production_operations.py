@@ -118,6 +118,68 @@ class MiningOperationsTelemetryTests(unittest.TestCase):
             self.assertEqual(1, len(store.get_share_history(limit=10)))
             store.close()
 
+class ExplicitFailureTelemetryTests(unittest.TestCase):
+    def test_websocket_metrics_are_derived_from_persisted_activity(self) -> None:
+        async def run_case() -> dict:
+            with tempfile.TemporaryDirectory() as tmpdir:
+                with patch.dict(os.environ, {"HYBA_METRICS_DB_PATH": str(Path(tmpdir) / "metrics.db")}, clear=False):
+                    from pythia_mining.metrics_store import MetricsStore, reset_metrics_store, set_metrics_store
+                    from hyba_genesis_api.websocket.handlers import WebSocketHandler
+
+                    store = MetricsStore(str(Path(tmpdir) / "metrics.db"))
+                    set_metrics_store(store)
+                    store.update_pool_metrics(
+                        PoolMetrics(
+                            pool_name="Pool",
+                            pool_url="stratum+tcp://example.com:3333",
+                            shares_submitted=4,
+                            shares_accepted=3,
+                            shares_rejected=1,
+                            connection_failures=0,
+                            avg_latency_ms=20.0,
+                            last_activity_timestamp=1.0,
+                            last_pool_event_timestamp=1.0,
+                            last_share_submit_timestamp=1.0,
+                            current_difficulty=1.0,
+                            current_jobs_count=1,
+                            acceptance_rate=0.75,
+                        )
+                    )
+                    payload = await WebSocketHandler().get_current_metrics()
+                    reset_metrics_store()
+                    return payload
+
+        payload = asyncio.run(run_case())
+        self.assertEqual("persisted_mining_activity", payload["source"])
+        self.assertEqual(4, payload["shares_submitted"])
+        self.assertEqual(3, payload["shares_accepted"])
+        self.assertEqual(1, payload["shares_rejected"])
+        self.assertEqual(0.75, payload["acceptance_rate"])
+        self.assertIsNone(payload["hashrate"])
+        self.assertIsNone(payload["quantum_speedup"])
+
+    def test_prediction_fails_closed_without_optimizer_runtime(self) -> None:
+        from fastapi import HTTPException
+        from hyba_genesis_api.api.misc import PredictRequest, predict_params
+
+        async def run_case() -> None:
+            with self.assertRaises(HTTPException) as exc_info:
+                await predict_params(PredictRequest(state={"networkDifficulty": 10}))
+            self.assertEqual(503, exc_info.exception.status_code)
+            self.assertEqual("optimizer_runtime_not_connected", exc_info.exception.detail["error"])
+
+        asyncio.run(run_case())
+
+    def test_corrupt_pythia_state_raises_diagnostic_error(self) -> None:
+        from hyba_genesis_api.api import mining
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            state_path = Path(tmpdir) / "pythia_state.json"
+            state_path.write_text("{not-json", encoding="utf-8")
+            with patch.object(mining, "_state_path", return_value=str(state_path)):
+                with self.assertRaisesRegex(RuntimeError, "invalid JSON"):
+                    mining.get_pythia_state()
+
 
 class LiveShareSubmitGateTests(unittest.TestCase):
     def test_live_share_submission_is_blocked_until_explicitly_enabled(self) -> None:

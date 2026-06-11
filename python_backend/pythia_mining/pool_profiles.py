@@ -33,7 +33,7 @@ class PoolProfile:
         payload = asdict(self)
         if not include_secret_fields:
             payload["username"] = "<configured>" if self.username else ""
-            payload["password"] = "<configured>" if self.password else ""
+            payload["password"] = "<redacted>" if self.password else ""
         return payload
 
 

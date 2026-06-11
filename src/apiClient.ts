@@ -235,9 +235,7 @@ const DEFAULT_RETRY_OPTIONS: RetryOptions = {
 };
 
 function calculateDelay(attempt: number, baseDelayMs: number, maxDelayMs: number): number {
-  const exponential = Math.min(baseDelayMs * Math.pow(2, attempt), maxDelayMs);
-  const jitter = exponential * (0.75 + Math.random() * 0.5);
-  return Math.floor(jitter);
+  return Math.floor(Math.min(baseDelayMs * Math.pow(2, attempt), maxDelayMs));
 }
 
 async function fetchWithRetry(url: string, options: RequestInit = {}, retryOptions: Partial<RetryOptions> = {}): Promise<Response> {
