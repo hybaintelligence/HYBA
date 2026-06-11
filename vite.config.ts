@@ -4,7 +4,10 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vite';
 
-const projectRoot = path.dirname(fileURLToPath(import.meta.url));
+// Windows-safe root resolution — explicitly convert to file:// URL to handle
+// OneDrive virtualised paths that can break the tsx ESM resolver.
+const __filename = fileURLToPath(import.meta.url);
+const projectRoot = path.dirname(__filename);
 
 export default defineConfig(() => {
   return {
@@ -19,6 +22,13 @@ export default defineConfig(() => {
       hmr: process.env.DISABLE_HMR !== 'true',
       // Disable file watching when DISABLE_HMR is true to save CPU during agent edits.
       watch: process.env.DISABLE_HMR === 'true' ? null : {},
+      // Force file:// scheme for all file serving on Windows to avoid tsx resolver issues
+      fs: {
+        strict: false,
+        allow: [projectRoot],
+      },
     },
+    // Pin the config file URL scheme to file:// for Windows + OneDrive compatibility
+    configFile: false,
   };
 });

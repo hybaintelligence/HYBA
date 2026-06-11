@@ -44,7 +44,16 @@ class GenesisAI:
 
     def __init__(self, config: Dict[str, Any]):
         self.config = config
-        self.pool_manager = PoolManager(config.get("pools", {}))
+        # Load pool configuration from mining_config.json if not provided
+        pools_config = config.get("pools", {})
+        if not pools_config:
+            import json
+            from pathlib import Path
+            config_path = Path(__file__).parent.parent.parent / "mining_config.json"
+            if config_path.exists():
+                with open(config_path, "r") as f:
+                    pools_config = json.load(f).get("pools", {})
+        self.pool_manager = PoolManager(pools_config)
         self.quantum_solver = DodecahedralQuantumSolver()
         self.blockchain_oracle = BlockchainOracle()
         self.consciousness_engine = ConsciousnessEngine()

@@ -1,0 +1,10 @@
+{
+  "pools": {
+    "viabtc": {
+      "url": "stratum+tcp://btc.viabtc.io:3333",
+      "username": "PYTHIA.001",
+      "password": "123",
+      "stratum_version": 1
+    }
+  }
+}

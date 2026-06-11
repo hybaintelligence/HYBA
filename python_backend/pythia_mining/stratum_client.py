@@ -24,7 +24,7 @@ except ImportError:
 from pythia_mining.live_stratum_session import LiveStratumSession, LiveStratumSessionError
 from pythia_mining.pool_profiles import build_profile
 from pythia_mining.stratum_transport import StratumTransportError
-from pythia_mining.audit_logger import get_audit_logger, AuditEventType
+from pythia_mining.audit_logger import get_audit_logger, AuditEventType, AuditEvent
 from pythia_mining.metrics_store import get_metrics_store, PoolMetrics
 
 

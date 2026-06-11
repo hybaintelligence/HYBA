@@ -35,7 +35,9 @@ import { createServer, type Server } from "node:http";
 import pino from "pino";
 import pinoHttp from "pino-http";
 import rateLimit from "express-rate-limit";
-import { createServer as createViteServer } from "vite";
+import { createServer as createViteServer, type InlineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import tailwindcss from "@tailwindcss/vite";
 
 // ── Global Backend URL for post-startup calls ────────────────────────────
 let _backendUrl: URL | null = null;
@@ -487,12 +489,45 @@ async function startServer(): Promise<void> {
   // ── Static / Vite middleware ──
   if (!CONFIG.isProduction) {
     logger.info("Mounting Vite dev middleware");
-    const viteConfigPath = path.resolve(process.cwd(), "vite.config.ts");
-    const vite = await createViteServer({
-      configFile: viteConfigPath,
-      server: { middlewareMode: true },
+    // Use an inline config instead of a file path to avoid tsx resolver issues
+    // on Windows + OneDrive paths (ERR_INVALID_URL_SCHEME).
+    const projectRoot = path.resolve(process.cwd());
+    const viteInlineConfig: InlineConfig = {
+      configFile: false, // do NOT load from disk — we provide everything inline
+      root: projectRoot,
+      plugins: [react(), tailwindcss()],
+      resolve: {
+        alias: {
+          "@": projectRoot,
+        },
+      },
+      server: {
+        middlewareMode: true,
+        hmr: process.env.DISABLE_HMR !== "true",
+        watch: process.env.DISABLE_HMR === "true" ? null : {},
+        fs: {
+          strict: false,
+          allow: [projectRoot],
+        },
+      },
       appType: "spa",
-    });
+      optimizeDeps: {
+        // Pre-bundle key dependencies to avoid late ESM resolution issues
+        include: [
+          "react",
+          "react-dom",
+          "react-dom/client",
+          "lucide-react",
+          "recharts",
+          "d3",
+          "motion",
+          "firebase/app",
+          "firebase/firestore",
+          "firebase/auth",
+        ],
+      },
+    };
+    const vite = await createViteServer(viteInlineConfig);
     app.use(vite.middlewares);
   } else {
     const distPath = path.join(process.cwd(), "dist");
