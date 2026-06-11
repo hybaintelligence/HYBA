@@ -1,6 +1,6 @@
 {
   "running": true,
-  "uptime_seconds": 35175.59,
+  "uptime_seconds": 35183.324,
   "active_pool": "Solo CKPool",
   "active_pool_id": "ckpool",
   "current_job": null,
@@ -11,7 +11,7 @@
   "rejected_shares": 0,
   "acceptance_rate": null,
   "system_health": "AWAITING_JOB",
-  "cpu_load": 99.1,
+  "cpu_load": 100.0,
   "active_stratum_version": 1,
   "hashrate_ehs": null,
   "power_scale": 1.0,
