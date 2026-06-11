@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import logging
+import math
 import os
 import subprocess
 import sys
@@ -46,6 +47,7 @@ _DAEMON_STARTED: bool = False
 
 MINING_CONTROL_ROLES = {"ceo", "treasury_admin", "mining_operator", "mining:operate"}
 MINING_READ_ROLES = {"ceo", "treasury_admin", "mining_operator", "treasury_viewer", "mining:read", "mining:operate"}
+PULVINI_HASHRATE_CAP_EHS = 1.0
 
 
 class PowerScaleRequest(BaseModel):
@@ -101,7 +103,7 @@ class ConnectRequest(BaseModel):
     btc_address: Optional[str] = None
     nicehash_pool_id: Optional[str] = None
     url: Optional[str] = None
-    capacity_ehs: float = Field(default=1.0, ge=0.01, le=100.0, description="Capacity in EH/s")
+    capacity_ehs: float = Field(default=1.0, ge=0.01, le=PULVINI_HASHRATE_CAP_EHS, description="Capacity in EH/s; hard-capped at 1 EH/s")
     switch: bool = Field(default=True, description="Disconnect active pool before connecting selected pool")
 
     @validator("pool_id")
@@ -117,7 +119,7 @@ class SubmitJobRequest(BaseModel):
     worker: str = Field(...)
     job_id: str = Field(..., description="Job identifier from pool")
     nonce: str = Field(..., description="Mining nonce (hex)")
-    hashrate_ehs: float = Field(default=0.0, ge=0.0)
+    hashrate_ehs: float = Field(default=0.0, ge=0.0, le=PULVINI_HASHRATE_CAP_EHS)
     extranonce2: Optional[str] = Field(None, description="Extranonce2 value (hex)")
 
     @validator("nonce")
@@ -163,6 +165,31 @@ def _admit_midas_control(request_id: str) -> None:
         raise HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail=exc.to_response_body(), headers={"Retry-After": str(max(1, int(exc.retry_after_seconds)))}) from exc
     except BackpressureError as exc:
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=exc.to_response_body()) from exc
+
+
+def _capped_hashrate_ehs(value: Any) -> Optional[float]:
+    if value in (None, ""):
+        return None
+    try:
+        parsed = float(value)
+    except (TypeError, ValueError) as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="hashrate_ehs must be numeric") from exc
+    if not math.isfinite(parsed) or parsed < 0.0:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="hashrate_ehs must be finite and non-negative")
+    return float(min(parsed, PULVINI_HASHRATE_CAP_EHS))
+
+
+def _effective_hashrate_ehs(base_capacity_ehs: Any, power_scale: Any = 1.0) -> Optional[float]:
+    base = _capped_hashrate_ehs(base_capacity_ehs)
+    if base is None:
+        return None
+    try:
+        scale = float(power_scale)
+    except (TypeError, ValueError) as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="power_scale must be numeric") from exc
+    if not math.isfinite(scale) or scale <= 0.0:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="power_scale must be finite and positive")
+    return float(min(base * scale, PULVINI_HASHRATE_CAP_EHS))
 
 
 def _backend_root() -> str:
@@ -294,16 +321,20 @@ def _resolve_connect_config(req: ConnectRequest) -> PoolCredentialConfig:
     return validate_pool_config(config)
 
 
-def start_pythia_daemon() -> Dict[str, Any]:
+def start_pythia_daemon(capacity_ehs: Optional[float] = None) -> Dict[str, Any]:
     global _PYTHIA_PROCESS, _DAEMON_STARTED
     if _DAEMON_STARTED and _PYTHIA_PROCESS and _PYTHIA_PROCESS.poll() is None:
         return {"status": "already_running", "pid": _PYTHIA_PROCESS.pid}
     env = os.environ.copy()
     env.setdefault("PYTHONPATH", _backend_root())
+    capped_capacity = _capped_hashrate_ehs(capacity_ehs)
+    if capped_capacity is not None:
+        env["HYBA_QUANTUM_CAPACITY_EHS"] = str(capped_capacity)
+        env["HYBA_PULVINI_HASHRATE_CAP_EHS"] = str(PULVINI_HASHRATE_CAP_EHS)
     try:
         _PYTHIA_PROCESS = subprocess.Popen([sys.executable, "-m", "pythia_mining.main"], cwd=os.path.dirname(_backend_root()), env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         _DAEMON_STARTED = True
-        return {"status": "started", "pid": _PYTHIA_PROCESS.pid}
+        return {"status": "started", "pid": _PYTHIA_PROCESS.pid, "capacity_ehs": capped_capacity, "hashrate_cap_ehs": PULVINI_HASHRATE_CAP_EHS}
     except (OSError, ValueError) as exc:  # pragma: no cover
         LOGGER.exception("Failed to start PYTHIA daemon")
         raise RuntimeError(f"Failed to start PYTHIA daemon: {exc}") from exc
@@ -381,7 +412,8 @@ async def get_pools():
             },
         })
         pools.append(pool_payload)
-    total_hashrate = state.get("hashrate_ehs") if state else (_ACTIVE_CONNECTION.get("capacity_ehs") if _ACTIVE_CONNECTION else None)
+    raw_hashrate = state.get("hashrate_ehs") if state else (_ACTIVE_CONNECTION.get("capacity_ehs") if _ACTIVE_CONNECTION else None)
+    total_hashrate = _capped_hashrate_ehs(raw_hashrate)
     return {
         "pools": pools,
         "summary": {
@@ -390,7 +422,8 @@ async def get_pools():
             "active_pools": sum(1 for pool in pools if pool.get("is_active")),
             "active_pool_name": active_pool_id,
             "total_hashrate": total_hashrate,
-            "capacity_source": "configured" if total_hashrate is not None else "not_configured",
+            "hashrate_cap_ehs": PULVINI_HASHRATE_CAP_EHS,
+            "capacity_source": "configured_capped" if total_hashrate is not None else "not_configured",
             "global_acceptance_rate": shares["accepted"] / max(shares["submitted"], 1),
             "total_shares_24h": shares["submitted"],
             "estimated_btc_per_day": None,
@@ -406,7 +439,8 @@ async def get_pools():
 async def connect_to_pool(req: ConnectRequest, request: Request, idempotency_key: str | None = Header(None, alias="Idempotency-Key")):
     global _ACTIVE_CONNECTION
     request_id = _request_id(request)
-    parameters = {"pool_id": req.pool_id, "capacity_ehs": req.capacity_ehs, "switch": req.switch}
+    capacity_ehs = _capped_hashrate_ehs(req.capacity_ehs)
+    parameters = {"pool_id": req.pool_id, "capacity_ehs": capacity_ehs, "switch": req.switch}
     idem = _idempotency_key(request, idempotency_key, "connect", parameters)
     tracked = mining_request_tracker.create_request("connect", parameters, idem)
     if tracked.status == RequestStatus.COMPLETED and tracked.result:
@@ -428,18 +462,21 @@ async def connect_to_pool(req: ConnectRequest, request: Request, idempotency_key
 
         current_state = midas_state_machine.get_state()
         if current_state in {MiningState.IDLE, MiningState.STOPPED}:
-            midas_state_machine.transition(MiningState.STARTING, request_id=request_id, reason="operator requested pool connection", metadata={"pool_id": req.pool_id, "tracked_request_id": tracked.request_id})
+            midas_state_machine.transition(MiningState.STARTING, request_id=request_id, reason="operator requested pool connection", metadata={"pool_id": req.pool_id, "tracked_request_id": tracked.request_id, "capacity_ehs": capacity_ehs, "hashrate_cap_ehs": PULVINI_HASHRATE_CAP_EHS})
         else:
             raise StateTransitionError(f"Cannot connect from MIDAS state {current_state.value}")
 
-        daemon_status = start_pythia_daemon()
+        daemon_status = start_pythia_daemon(capacity_ehs=capacity_ehs)
 
         profile = config.to_profile()
         _ACTIVE_CONNECTION = {
             "pool_id": config.pool_id,
             "worker": config.resolved_username(),
             "profile": profile.to_dict(include_secret_fields=False),
-            "capacity_ehs": req.capacity_ehs,
+            "base_capacity_ehs": capacity_ehs,
+            "capacity_ehs": capacity_ehs,
+            "power_scale": 1.0,
+            "hashrate_cap_ehs": PULVINI_HASHRATE_CAP_EHS,
             "connected_at": datetime.utcnow().isoformat(),
             "request_id": request_id,
             "credential_mode": config.credential_mode,
@@ -447,14 +484,17 @@ async def connect_to_pool(req: ConnectRequest, request: Request, idempotency_key
         state = get_pythia_state() or {}
         state["active_pool"] = config.pool_id
         state["active_worker"] = config.resolved_username()
-        state["hashrate_ehs"] = req.capacity_ehs
-        state["capacity_source"] = "configured"
+        state["base_capacity_ehs"] = capacity_ehs
+        state["hashrate_ehs"] = capacity_ehs
+        state["hashrate_cap_ehs"] = PULVINI_HASHRATE_CAP_EHS
+        state["capacity_source"] = "configured_capped"
+        state["power_scale"] = 1.0
         state["telemetry_source"] = "live_api"
         state["system_health"] = "HEALTHY"
         state["midas_state"] = "running"
         _write_state(state)
 
-        midas_state_machine.transition(MiningState.RUNNING, request_id=request_id, reason="pool connection established", metadata={"pool_id": req.pool_id, "tracked_request_id": tracked.request_id})
+        midas_state_machine.transition(MiningState.RUNNING, request_id=request_id, reason="pool connection established", metadata={"pool_id": req.pool_id, "tracked_request_id": tracked.request_id, "capacity_ehs": capacity_ehs, "hashrate_cap_ehs": PULVINI_HASHRATE_CAP_EHS})
         result = {
             "status": "connected",
             "request_id": request_id,
@@ -464,7 +504,9 @@ async def connect_to_pool(req: ConnectRequest, request: Request, idempotency_key
             "pool": config.name,
             "worker": config.resolved_username(),
             "url": config.url,
-            "capacity_ehs": req.capacity_ehs,
+            "base_capacity_ehs": capacity_ehs,
+            "capacity_ehs": capacity_ehs,
+            "hashrate_cap_ehs": PULVINI_HASHRATE_CAP_EHS,
             "daemon": daemon_status,
             "midas_state": midas_state_machine.get_state().value,
             "connected_at": _ACTIVE_CONNECTION["connected_at"],
@@ -557,10 +599,12 @@ async def submit_job(job: SubmitJobRequest, request: Request, _payload: TokenPay
         state["accepted_shares"] = _SHARES_ACCEPTED
         state["rejected_shares"] = _SHARES_REJECTED
         state["acceptance_rate"] = _SHARES_ACCEPTED / max(_JOBS_SUBMITTED, 1)
-        state["hashrate_ehs"] = job.hashrate_ehs if job.hashrate_ehs > 0 else state.get("hashrate_ehs")
+        state["hashrate_ehs"] = _capped_hashrate_ehs(job.hashrate_ehs) if job.hashrate_ehs > 0 else _capped_hashrate_ehs(state.get("hashrate_ehs"))
+        state["hashrate_cap_ehs"] = PULVINI_HASHRATE_CAP_EHS
+        state["capacity_source"] = "configured_capped" if state.get("hashrate_ehs") is not None else state.get("capacity_source")
         state["last_job"] = {"job_id": job.job_id, "nonce": job.nonce[:16] + "...", "timestamp": datetime.utcnow().isoformat(), "status": result_status, "reason": reason, "request_id": request_id}
         _write_state(state)
-        response = {"status": result_status, "request_id": request_id, "tracked_request_id": tracked.request_id, "idempotency_key": idem, "job_id": job.job_id, "worker": job.worker, "pool_id": job.pool_id, "hashrate_ehs": state.get("hashrate_ehs"), "total_submitted": _JOBS_SUBMITTED, "total_accepted": _SHARES_ACCEPTED, "acceptance_rate": _SHARES_ACCEPTED / max(_JOBS_SUBMITTED, 1), "timestamp": datetime.utcnow().isoformat()}
+        response = {"status": result_status, "request_id": request_id, "tracked_request_id": tracked.request_id, "idempotency_key": idem, "job_id": job.job_id, "worker": job.worker, "pool_id": job.pool_id, "hashrate_ehs": state.get("hashrate_ehs"), "hashrate_cap_ehs": PULVINI_HASHRATE_CAP_EHS, "total_submitted": _JOBS_SUBMITTED, "total_accepted": _SHARES_ACCEPTED, "acceptance_rate": _SHARES_ACCEPTED / max(_JOBS_SUBMITTED, 1), "timestamp": datetime.utcnow().isoformat()}
         if reason:
             response["rejection_reason"] = reason
         mining_request_tracker.update_request_status(tracked.request_id, RequestStatus.COMPLETED, result=response)
@@ -576,14 +620,17 @@ async def submit_job(job: SubmitJobRequest, request: Request, _payload: TokenPay
 async def mining_status():
     state = get_pythia_state()
     shares = _share_counts(state)
+    raw_hashrate = state.get("hashrate_ehs") if state else (_ACTIVE_CONNECTION.get("capacity_ehs") if _ACTIVE_CONNECTION else None)
+    hashrate = _capped_hashrate_ehs(raw_hashrate)
     return {
         "active": _ACTIVE_CONNECTION is not None,
         "daemon_running": _DAEMON_STARTED and _PYTHIA_PROCESS is not None and _PYTHIA_PROCESS.poll() is None,
         "connection": _redacted_connection(_ACTIVE_CONNECTION),
         "shares": shares,
         "acceptance_rate": shares["accepted"] / max(shares["submitted"], 1),
-        "hashrate_ehs": state.get("hashrate_ehs") if state else (_ACTIVE_CONNECTION.get("capacity_ehs") if _ACTIVE_CONNECTION else None),
-        "capacity_source": (state or {}).get("capacity_source", "configured" if _ACTIVE_CONNECTION else "not_configured"),
+        "hashrate_ehs": hashrate,
+        "hashrate_cap_ehs": PULVINI_HASHRATE_CAP_EHS,
+        "capacity_source": (state or {}).get("capacity_source", "configured_capped" if _ACTIVE_CONNECTION else "not_configured"),
         "last_job": state.get("last_job") if state else None,
         "system_health": state.get("system_health") if state else "HEALTHY",
         "telemetry_source": "live_api",
@@ -629,7 +676,7 @@ async def disconnect(request: Request, idempotency_key: str | None = Header(None
 @router.get("/daemon", dependencies=[Depends(require_mining_control)])
 async def daemon_status():
     running = _DAEMON_STARTED and _PYTHIA_PROCESS is not None and _PYTHIA_PROCESS.poll() is None
-    return {"status": "running" if running else "not_running", "pid": _PYTHIA_PROCESS.pid if running and _PYTHIA_PROCESS else None, "midas_state": midas_state_machine.get_state().value}
+    return {"status": "running" if running else "not_running", "pid": _PYTHIA_PROCESS.pid if running and _PYTHIA_PROCESS else None, "midas_state": midas_state_machine.get_state().value, "hashrate_cap_ehs": PULVINI_HASHRATE_CAP_EHS}
 
 
 @router.get("/stats", dependencies=[Depends(require_mining_read)])
@@ -637,11 +684,12 @@ async def get_stats():
     state = get_pythia_state()
     shares = _share_counts(state)
     quantum = state.get("quantum", {}) if state else {}
-    hashrate = state.get("hashrate_ehs") if state else (_ACTIVE_CONNECTION.get("capacity_ehs") if _ACTIVE_CONNECTION else None)
+    raw_hashrate = state.get("hashrate_ehs") if state else (_ACTIVE_CONNECTION.get("capacity_ehs") if _ACTIVE_CONNECTION else None)
+    hashrate = _capped_hashrate_ehs(raw_hashrate)
     acceptance_rate = state.get("acceptance_rate") if state else (shares["accepted"] / max(shares["submitted"], 1))
     return {
         "timeframe": "24h",
-        "summary": {"total_hashrate": hashrate, "avg_hashrate": hashrate, "peak_hashrate": hashrate, "capacity_source": "configured" if hashrate is not None else "not_configured", "total_shares": shares["submitted"], "accepted_shares": shares["accepted"], "rejected_shares": shares["rejected"], "acceptance_rate": acceptance_rate, "estimated_revenue_btc": None, "estimated_revenue_usd": None, "power_scale": state.get("power_scale") if state else 1.0, "telemetry_source": "live_api"},
+        "summary": {"total_hashrate": hashrate, "avg_hashrate": hashrate, "peak_hashrate": hashrate, "hashrate_cap_ehs": PULVINI_HASHRATE_CAP_EHS, "capacity_source": "configured_capped" if hashrate is not None else "not_configured", "total_shares": shares["submitted"], "accepted_shares": shares["accepted"], "rejected_shares": shares["rejected"], "acceptance_rate": acceptance_rate, "estimated_revenue_btc": None, "estimated_revenue_usd": None, "power_scale": state.get("power_scale") if state else 1.0, "telemetry_source": "live_api"},
         "timeseries": [],
         "quantum_performance": {"quantum_speedup_avg": None, "phi_resonance_avg": quantum.get("phi_phase_alignment") if quantum else None, "vqe_iterations_avg": None, "consciousness_correlation": None, "quantum_metrics": quantum},
         "midas": {"state": midas_state_machine.get_state().value, "state_machine": midas_state_machine.validate_state_machine(), "rate_limiter": midas_rate_limiter.metrics(), "backpressure": midas_backpressure_guard.metrics(), "requests": mining_request_tracker.get_stats()},
@@ -662,15 +710,25 @@ async def set_power_scale(data: PowerScaleRequest, request: Request, idempotency
     try:
         if midas_state_machine.get_state() != MiningState.RUNNING:
             raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail={"error": "midas_not_running", "state": midas_state_machine.get_state().value})
+        state = get_pythia_state() or {}
+        base_capacity = (_ACTIVE_CONNECTION or {}).get("base_capacity_ehs") or state.get("base_capacity_ehs") or (_ACTIVE_CONNECTION or {}).get("capacity_ehs") or state.get("hashrate_ehs")
+        effective_hashrate = _effective_hashrate_ehs(base_capacity, data.scale)
         config_file = _config_path()
         fd = os.open(config_file + ".tmp", os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
         with os.fdopen(fd, "w", encoding="utf-8") as file:
-            json.dump({"power_scale": data.scale, "timestamp": datetime.utcnow().isoformat(), "request_id": request_id}, file)
+            json.dump({"power_scale": data.scale, "hashrate_cap_ehs": PULVINI_HASHRATE_CAP_EHS, "timestamp": datetime.utcnow().isoformat(), "request_id": request_id}, file)
         os.replace(config_file + ".tmp", config_file)
         os.chmod(config_file, 0o600)
+        state["power_scale"] = data.scale
+        state["hashrate_ehs"] = effective_hashrate
+        state["hashrate_cap_ehs"] = PULVINI_HASHRATE_CAP_EHS
+        state["capacity_source"] = "configured_capped" if effective_hashrate is not None else state.get("capacity_source", "not_configured")
+        _write_state(state)
         if _ACTIVE_CONNECTION:
-            _ACTIVE_CONNECTION["capacity_ehs"] = data.scale
-        result = {"status": "success", "request_id": request_id, "tracked_request_id": tracked.request_id, "idempotency_key": idem, "requested_scale": data.scale, "midas_state": midas_state_machine.get_state().value}
+            _ACTIVE_CONNECTION["power_scale"] = data.scale
+            _ACTIVE_CONNECTION["capacity_ehs"] = effective_hashrate
+            _ACTIVE_CONNECTION["hashrate_cap_ehs"] = PULVINI_HASHRATE_CAP_EHS
+        result = {"status": "success", "request_id": request_id, "tracked_request_id": tracked.request_id, "idempotency_key": idem, "requested_scale": data.scale, "effective_hashrate_ehs": effective_hashrate, "hashrate_cap_ehs": PULVINI_HASHRATE_CAP_EHS, "midas_state": midas_state_machine.get_state().value}
         mining_request_tracker.update_request_status(tracked.request_id, RequestStatus.COMPLETED, result=result)
         return result
     except HTTPException as exc:
