@@ -54,7 +54,11 @@ Recommended:
 - `RATE_LIMIT_MAX=100`
 - `LOG_LEVEL=info`
 - `HYBA_ALLOW_DEV_FIXTURES=false`
-- `HYBA_ENABLE_LIVE_STRATUM=false` outside production or controlled staging smoke tests
+- `HYBA_ENABLE_LIVE_STRATUM=true`
+- `HYBA_ENABLE_LIVE_SHARE_SUBMIT=true`
+- `HYBA_ENABLE_AUDIT_LOGGING=true`
+- `HYBA_SECRET_MANAGER_URI=<your secret manager URI>`
+- `HYBA_METRICS_ENDPOINT=<metrics scraping endpoint>`
 
 ## Mining control boundary
 
