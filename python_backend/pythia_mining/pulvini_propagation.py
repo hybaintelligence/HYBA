@@ -1,11 +1,4 @@
-"""
-PULVINI Share Propagation Layer.
-
-When a node finds a share, the signal path is not a broadcast. The finder emits
-one inbound ShareSignal that is routed toward the H31 proxy gateway. The proxy
-submits exactly once to the upstream pool, then emits an outbound CancelSignal
-flood so every PULVINI node abandons the now-stale job.
-"""
+"""PULVINI share propagation over the mathematical manifold."""
 
 from __future__ import annotations
 
@@ -16,7 +9,8 @@ from collections import deque
 from dataclasses import asdict, dataclass, field
 from typing import Any, Awaitable, Callable, Dict, List, Optional, Set, Tuple
 
-from .pulvini_overlay import NUM_NODES, get_geometric_neighbors
+from .pulvini_manifold import PulviniManifold
+from .pulvini_overlay import ADJACENCY_MAP, NUM_NODES, get_geometric_neighbors
 
 PROXY_GATEWAY = 31
 ShareSubmitter = Callable[[Any, int, str], Awaitable[Any]]
@@ -24,8 +18,6 @@ ShareSubmitter = Callable[[Any, int, str], Awaitable[Any]]
 
 @dataclass
 class ShareSignal:
-    """Inbound signal: finder -> nearest/best hub path -> H31/proxy."""
-
     share_id: str
     job_id: str
     finder_id: int
@@ -62,8 +54,6 @@ class ShareSignal:
 
 @dataclass
 class CancelSignal:
-    """Outbound signal: H31/proxy -> all nodes via BFS flood."""
-
     job_id: str
     reason: str
     source_share_id: str
@@ -95,97 +85,58 @@ class PropagationResult:
 
 
 class ShareRouter:
-    """Greedy unicast router for inbound share propagation."""
+    """Unicast inbound router. Path is selected by manifold gradient weights."""
 
-    def __init__(self, weights: Optional[Dict[int, Dict[int, float]]] = None) -> None:
-        self.weights: Dict[int, Dict[int, float]] = weights or {
-            node_id: {neighbor: 1.0 for neighbor in get_geometric_neighbors(node_id)}
-            for node_id in range(NUM_NODES)
-        }
-
-    @staticmethod
-    def _distance_to_gateway(start: int) -> int:
-        if start == PROXY_GATEWAY:
-            return 0
-        distances = {start: 0}
-        queue: deque[int] = deque([start])
-        while queue:
-            node_id = queue.popleft()
-            for neighbor in get_geometric_neighbors(node_id):
-                if neighbor in distances:
-                    continue
-                distances[neighbor] = distances[node_id] + 1
-                if neighbor == PROXY_GATEWAY:
-                    return distances[neighbor]
-                queue.append(neighbor)
-        return NUM_NODES
+    def __init__(self, manifold: Optional[PulviniManifold] = None) -> None:
+        self.manifold = manifold or PulviniManifold(ADJACENCY_MAP)
 
     def next_hop(self, current: int, signal: ShareSignal) -> Optional[int]:
-        if current == PROXY_GATEWAY:
-            return None
-        seen = set(signal.hop_trace)
-        candidates = [neighbor for neighbor in get_geometric_neighbors(current) if neighbor not in seen]
-        if not candidates:
-            return None
-
-        def score(node_id: int) -> Tuple[int, int, float]:
-            gateway_bonus = 100 if node_id == PROXY_GATEWAY else 0
-            hub_bonus = 10 if node_id >= 20 else 0
-            closeness = -self._distance_to_gateway(node_id)
-            weight = self.weights.get(current, {}).get(node_id, 1.0)
-            return (gateway_bonus + hub_bonus, closeness, weight)
-
-        return max(candidates, key=score)
+        route = self.manifold.gradient_route_to_gateway(current, PROXY_GATEWAY)
+        for node_id in route[1:]:
+            if node_id not in signal.hop_trace:
+                return node_id
+        return None
 
     def route_to_proxy(self, signal: ShareSignal) -> List[int]:
-        route = [signal.finder_id]
-        current = signal.finder_id
-        signal.hop_trace = [signal.finder_id]
-        while current != PROXY_GATEWAY:
-            nxt = self.next_hop(current, signal)
-            if nxt is None:
-                raise RuntimeError(f"share {signal.share_id} cannot route from node {current} to proxy gateway")
-            route.append(nxt)
-            signal.hop_trace.append(nxt)
-            current = nxt
-            if len(route) > NUM_NODES:
-                raise RuntimeError(f"share {signal.share_id} route loop detected")
+        route = self.manifold.gradient_route_to_gateway(signal.finder_id, PROXY_GATEWAY)
+        signal.hop_trace = list(route)
         return route
 
 
 class CancelFlood:
-    """BFS cancellation flood from H31 to all internal PULVINI nodes."""
+    """Cancellation propagation ordered by learned manifold gradient weights."""
+
+    def __init__(self, manifold: Optional[PulviniManifold] = None) -> None:
+        self.manifold = manifold or PulviniManifold(ADJACENCY_MAP)
+
+    def _hop_count_from_gateway(self, order: List[int]) -> int:
+        distance = {PROXY_GATEWAY: 0}
+        queue: deque[int] = deque([PROXY_GATEWAY])
+        while queue:
+            node_id = queue.popleft()
+            for neighbor in get_geometric_neighbors(node_id):
+                if neighbor not in distance:
+                    distance[neighbor] = distance[node_id] + 1
+                    queue.append(neighbor)
+        return max(distance[node_id] for node_id in order)
 
     def flood(self, signal: CancelSignal) -> Tuple[List[int], int]:
-        visited: Set[int] = {PROXY_GATEWAY}
-        order = [PROXY_GATEWAY]
-        max_hop = 0
-        queue: deque[Tuple[int, int]] = deque((neighbor, 1) for neighbor in get_geometric_neighbors(PROXY_GATEWAY))
-        for neighbor in get_geometric_neighbors(PROXY_GATEWAY):
-            visited.add(neighbor)
-
-        while queue:
-            node_id, hop = queue.popleft()
-            order.append(node_id)
-            max_hop = max(max_hop, hop)
-            for neighbor in get_geometric_neighbors(node_id):
-                if neighbor not in visited:
-                    visited.add(neighbor)
-                    queue.append((neighbor, hop + 1))
-
-        if len(visited) != NUM_NODES:
-            raise RuntimeError(f"cancel flood reached {len(visited)}/{NUM_NODES} PULVINI nodes")
+        order = self.manifold.gradient_broadcast_order(PROXY_GATEWAY)
+        if len(order) != NUM_NODES:
+            raise RuntimeError(f"cancel flood reached {len(order)}/{NUM_NODES} PULVINI nodes")
+        max_hop = self._hop_count_from_gateway(order)
         signal.visited = order
         signal.max_hop = max_hop
         return order, max_hop
 
 
 class SharePropagationController:
-    """Atomic share-found sequence: route -> submit once -> cancel flood -> record."""
+    """Share-found sequence: route -> submit once -> Hebbian update -> cancel."""
 
-    def __init__(self) -> None:
-        self.router = ShareRouter()
-        self.cancel_flood = CancelFlood()
+    def __init__(self, manifold: Optional[PulviniManifold] = None) -> None:
+        self.manifold = manifold or PulviniManifold(ADJACENCY_MAP)
+        self.router = ShareRouter(self.manifold)
+        self.cancel_flood = CancelFlood(self.manifold)
         self.seen_shares: Set[str] = set()
         self.history: List[Dict[str, Any]] = []
         self.cancelled_jobs: Dict[str, CancelSignal] = {}
@@ -213,7 +164,9 @@ class SharePropagationController:
 
         route = self.router.route_to_proxy(signal)
         share_result = await submitter(job, nonce, extranonce2)
-        reason = "share_accepted" if bool(getattr(share_result, "accepted", False)) else "share_rejected"
+        accepted = bool(getattr(share_result, "accepted", False))
+        self.manifold.hebbian_fire(route, signal_type="SHARE_FOUND" if accepted else "SHARE_REJECTED", reward=1.0 if accepted else -0.1)
+        reason = "share_accepted" if accepted else "share_rejected"
         cancel = CancelSignal(job_id=str(job.job_id), reason=reason, source_share_id=signal.share_id)
         cancelled_nodes, _max_hop = self.cancel_flood.flood(cancel)
         self.cancelled_jobs[str(job.job_id)] = cancel
@@ -239,6 +192,7 @@ class SharePropagationController:
             "seen_shares": len(self.seen_shares),
             "cancelled_jobs": {job_id: signal.to_dict() for job_id, signal in self.cancelled_jobs.items()},
             "history": list(self.history),
+            "manifold": self.manifold.snapshot(),
         }
 
 
