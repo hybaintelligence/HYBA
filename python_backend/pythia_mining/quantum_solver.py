@@ -75,9 +75,7 @@ class DodecahedralQuantumSolver:
             raise QuantumSolverConfigurationError("HYBA_QUANTUM_CAPACITY_EHS must be numeric") from exc
         if not math.isfinite(parsed) or parsed <= 0:
             raise QuantumSolverConfigurationError("HYBA_QUANTUM_CAPACITY_EHS must be positive")
-        if parsed > PULVINI_HASHRATE_CAP_EHS:
-            raise QuantumSolverConfigurationError("HYBA_QUANTUM_CAPACITY_EHS must be <= 1 EH/s")
-        return parsed
+        return float(min(parsed, PULVINI_HASHRATE_CAP_EHS))
 
     def set_power_scale(self, scale: float):
         """Set the configured power scale for capacity estimates."""
