@@ -15,6 +15,9 @@ if str(BACKEND) not in sys.path:
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
+from argon2 import PasswordHasher  # noqa: E402
+from fastapi import HTTPException  # noqa: E402
+from hyba_genesis_api.api import auth as auth_api  # noqa: E402
 from hyba_genesis_api.api.mining_ops import _derive_alerts, _parse_audit_line  # noqa: E402
 from pythia_mining.metrics_store import MetricsStore, PoolMetrics  # noqa: E402
 from pythia_mining.stratum_client import MiningJob, StratumClient  # noqa: E402
@@ -37,7 +40,7 @@ class ProductionEnvironmentValidatorTests(unittest.TestCase):
         with patch.dict(os.environ, env, clear=True):
             self.assertEqual(1, validate_production_env.main())
 
-    def test_validator_accepts_minimal_valid_production_contract(self) -> None:
+    def test_validator_rejects_legacy_sha256_operator_hash_in_production(self) -> None:
         env = {
             "NODE_ENV": "production",
             "HYBA_ENV": "production",
@@ -45,14 +48,109 @@ class ProductionEnvironmentValidatorTests(unittest.TestCase):
             "HYBA_OPERATOR_CREDENTIALS": "operator:4d967bd2a5dbaeeb3d3fcc6efbb483b3d728ee3000a6daa724b402dfb9a65f45:mining_operator",
             "PULVINI_BACKEND_URL": "http://127.0.0.1:3001",
             "HYBA_ALLOW_DEV_FIXTURES": "false",
+            "HYBA_POOL_NICEHASH_URL": "stratum+ssl://sha256.eu.nicehash.com:3334",
+            "HYBA_POOL_NICEHASH_USERNAME": "ci-user",
+            "HYBA_POOL_NICEHASH_PASSWORD": "ci-secret",
+        }
+        with patch.dict(os.environ, env, clear=True):
+            self.assertEqual(1, validate_production_env.main())
+
+    def test_validator_accepts_minimal_valid_production_contract(self) -> None:
+        password_hash = PasswordHasher().hash("correct horse battery staple")
+        env = {
+            "NODE_ENV": "production",
+            "HYBA_ENV": "production",
+            "JWT_SECRET": "ci-production-secret-value-at-least-32-chars",
+            "HYBA_OPERATOR_CREDENTIALS": f"operator:{password_hash}:mining_operator",
+            "PULVINI_BACKEND_URL": "http://127.0.0.1:3001",
+            "HYBA_ALLOW_DEV_FIXTURES": "false",
             "HYBA_ENABLE_LIVE_STRATUM": "true",
             "HYBA_ENABLE_LIVE_SHARE_SUBMIT": "false",
+            "HYBA_ENABLE_MINING_AUTOCONNECT": "false",
             "HYBA_POOL_NICEHASH_URL": "stratum+ssl://sha256.eu.nicehash.com:3334",
             "HYBA_POOL_NICEHASH_USERNAME": "ci-user",
             "HYBA_POOL_NICEHASH_PASSWORD": "ci-secret",
         }
         with patch.dict(os.environ, env, clear=True):
             self.assertEqual(0, validate_production_env.main())
+
+    def test_live_share_submission_requires_approval_id(self) -> None:
+        password_hash = PasswordHasher().hash("correct horse battery staple")
+        env = {
+            "NODE_ENV": "production",
+            "HYBA_ENV": "production",
+            "JWT_SECRET": "ci-production-secret-value-at-least-32-chars",
+            "HYBA_OPERATOR_CREDENTIALS": f"operator:{password_hash}:mining_operator",
+            "PULVINI_BACKEND_URL": "http://127.0.0.1:3001",
+            "HYBA_ALLOW_DEV_FIXTURES": "false",
+            "HYBA_ENABLE_LIVE_SHARE_SUBMIT": "true",
+            "HYBA_POOL_NICEHASH_URL": "stratum+ssl://sha256.eu.nicehash.com:3334",
+            "HYBA_POOL_NICEHASH_USERNAME": "ci-user",
+            "HYBA_POOL_NICEHASH_PASSWORD": "ci-secret",
+        }
+        with patch.dict(os.environ, env, clear=True):
+            self.assertEqual(1, validate_production_env.main())
+
+
+class OperatorAuthenticationTests(unittest.TestCase):
+    def test_production_operator_login_accepts_argon2id_hash(self) -> None:
+        password_hash = PasswordHasher().hash("operator-password")
+        env = {
+            "NODE_ENV": "production",
+            "HYBA_ENV": "production",
+            "HYBA_OPERATOR_CREDENTIALS": f"operator:{password_hash}:mining_operator",
+        }
+        with patch.dict(os.environ, env, clear=True):
+            self.assertEqual(["mining_operator"], auth_api._verify_operator("operator", "operator-password"))
+
+    def test_production_operator_login_rejects_legacy_sha256_hash(self) -> None:
+        env = {
+            "NODE_ENV": "production",
+            "HYBA_ENV": "production",
+            "HYBA_OPERATOR_CREDENTIALS": "operator:4d967bd2a5dbaeeb3d3fcc6efbb483b3d728ee3000a6daa724b402dfb9a65f45:mining_operator",
+        }
+        with patch.dict(os.environ, env, clear=True):
+            with self.assertRaises(HTTPException) as exc_info:
+                auth_api._verify_operator("operator", "operator-password")
+            self.assertEqual(500, exc_info.exception.status_code)
+            self.assertEqual("operator_credentials_not_production_safe", exc_info.exception.detail["error"])
+
+
+class BridgeRuntimeHardeningTests(unittest.TestCase):
+    def test_bridge_defaults_to_explicit_operator_mining_connect(self) -> None:
+        server = (ROOT / "server.ts").read_text(encoding="utf-8")
+        self.assertIn("HYBA_ENABLE_MINING_AUTOCONNECT", server)
+        self.assertIn("Mining auto-connect disabled", server)
+        self.assertIn("enableMiningAutoConnect", server)
+
+    def test_bridge_has_csp_and_internal_only_diagnostics(self) -> None:
+        server = (ROOT / "server.ts").read_text(encoding="utf-8")
+        self.assertIn("contentSecurityPolicy", server)
+        self.assertIn('"frame-ancestors": ["\'none\'"]', server)
+        self.assertIn("/bridge/internal/health", server)
+        self.assertIn("requireInternalAccess", server)
+        self.assertNotIn("contentSecurityPolicy: false", server)
+
+    def test_bridge_proxy_error_does_not_return_backend_url(self) -> None:
+        server = (ROOT / "server.ts").read_text(encoding="utf-8")
+        error_block = server.split('error: "backend_unavailable"', 1)[1].split("});", 1)[0]
+        self.assertNotIn("backend:", error_block)
+
+    def test_cloudflare_proxy_has_timeout_and_structured_failure(self) -> None:
+        worker = (ROOT / "functions" / "api" / "[[path]].ts").read_text(encoding="utf-8")
+        self.assertIn("AbortController", worker)
+        self.assertIn("HYBA_EDGE_PROXY_TIMEOUT_MS", worker)
+        self.assertIn("backend_timeout", worker)
+        self.assertIn("x-request-id", worker)
+        self.assertIn("cache-control", worker)
+
+    def test_docker_runtime_uses_supervised_entrypoint(self) -> None:
+        dockerfile = (ROOT / "Dockerfile").read_text(encoding="utf-8")
+        entrypoint = (ROOT / "scripts" / "hyba-runtime-entrypoint.sh").read_text(encoding="utf-8")
+        self.assertIn("hyba-runtime-entrypoint.sh", dockerfile)
+        self.assertNotIn("uvicorn hyba_genesis_api.main:app --host 127.0.0.1 --port 3001 --log-level warning & node", dockerfile)
+        self.assertIn("kill -TERM", entrypoint)
+        self.assertIn("FastAPI backend exited", entrypoint)
 
 
 class MiningOperationsTelemetryTests(unittest.TestCase):
@@ -118,6 +216,7 @@ class MiningOperationsTelemetryTests(unittest.TestCase):
             self.assertEqual(1, len(store.get_share_history(limit=10)))
             store.close()
 
+
 class ExplicitFailureTelemetryTests(unittest.TestCase):
     def test_websocket_metrics_are_derived_from_persisted_activity(self) -> None:
         async def run_case() -> dict:
@@ -159,7 +258,6 @@ class ExplicitFailureTelemetryTests(unittest.TestCase):
         self.assertIsNone(payload["quantum_speedup"])
 
     def test_prediction_fails_closed_without_optimizer_runtime(self) -> None:
-        from fastapi import HTTPException
         from hyba_genesis_api.api.misc import PredictRequest, predict_params
 
         async def run_case() -> None:
