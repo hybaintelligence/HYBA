@@ -1,11 +1,4 @@
-"""
-PULVINI Mining Overlay — pool-facing singleton, 32-node internal mesh.
-
-The upstream Stratum pool sees one worker identity. Internally HYBA presents that
-single job to 32 coordinated PULVINI nodes over a dodecahedron/icosahedron dual
-compound. This module owns the deterministic nonce/extranonce2 partitioning and
-shared knowledge surface used by GenesisAI, MIDAS telemetry, and tests.
-"""
+"""PULVINI overlay: one pool-facing worker, 32-node mathematical manifold."""
 
 from __future__ import annotations
 
@@ -13,7 +6,9 @@ import time
 from collections import deque
 from dataclasses import asdict, dataclass, field
 from threading import RLock
-from typing import Any, Dict, Iterable, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
+
+from .pulvini_manifold import PulviniManifold
 
 NUM_NODES = 32
 NONCE_BITS = 32
@@ -59,21 +54,20 @@ ADJACENCY_MAP: Dict[int, Dict[str, List[int]]] = {
 def get_geometric_neighbors(node_id: int) -> List[int]:
     if node_id not in ADJACENCY_MAP:
         raise ValueError(f"unknown PULVINI node_id: {node_id}")
-    mapping = ADJACENCY_MAP[node_id]
-    return list(mapping.get("d", [])) + list(mapping.get("i", []))
+    payload = ADJACENCY_MAP[node_id]
+    return list(payload.get("d", [])) + list(payload.get("i", []))
 
 
 def nonce_slice(node_id: int) -> Tuple[int, int]:
     if not 0 <= node_id < NUM_NODES:
         raise ValueError(f"node_id must be in [0, {NUM_NODES - 1}]")
     start = node_id * SLICE_SIZE
-    end_exclusive = start + SLICE_SIZE
-    return start, end_exclusive
+    return start, start + SLICE_SIZE
 
 
 def nonce_range_inclusive(node_id: int) -> Tuple[int, int]:
-    start, end_exclusive = nonce_slice(node_id)
-    return start, end_exclusive - 1
+    start, end = nonce_slice(node_id)
+    return start, end - 1
 
 
 def verify_symmetry() -> bool:
@@ -124,6 +118,7 @@ class NodeAssignment:
     extranonce2: str
     role: str
     neighbors: List[int]
+    tensor_coordinate: Dict[str, Any]
 
     def to_dict(self) -> Dict[str, Any]:
         return asdict(self)
@@ -152,7 +147,7 @@ class NodeRuntimeState:
 
 
 class GlobalMiningState:
-    """Thread-safe logical shared state for the 32-node concentrator overlay."""
+    """Thread-safe shared state surface for the 32-node overlay."""
 
     def __init__(self) -> None:
         self._lock = RLock()
@@ -170,7 +165,7 @@ class GlobalMiningState:
 
     def update_best_diff(self, candidate: int) -> bool:
         with self._lock:
-            if candidate > self.best_diff_observed:
+            if int(candidate) > self.best_diff_observed:
                 self.best_diff_observed = int(candidate)
                 return True
             return False
@@ -195,29 +190,23 @@ class GlobalMiningState:
 
 
 class PulviniOverlayConcentrator:
-    """
-    Single pool-facing concentrator for 32 internal PULVINI nodes.
+    """Pool-facing singleton backed by the PULVINI mathematical manifold."""
 
-    The pool receives one worker identity and one Stratum share stream. Internally,
-    every node receives a deterministic assignment and writes knowledge into the
-    shared overlay state. The mesh makes every node's phase/progress visible to the
-    whole runtime without broadcasting every hash attempt upstream.
-    """
-
-    def __init__(self, worker_name: str = "PULVINI.singularity") -> None:
+    def __init__(self, worker_name: str = "PULVINI.singularity", manifold: Optional[PulviniManifold] = None) -> None:
         if not verify_symmetry():
             raise RuntimeError("PULVINI adjacency map must be symmetric before production mining starts")
         self.worker_name = worker_name
+        self.manifold = manifold or PulviniManifold(ADJACENCY_MAP)
         self.state = GlobalMiningState()
         self.job_epoch = 0
         self.active_job_id: Optional[str] = None
         self.active_pool_name: Optional[str] = None
         self.assignments: Dict[int, NodeAssignment] = {}
-        self.nodes: Dict[int, NodeRuntimeState] = {
+        self.nodes = {
             node_id: NodeRuntimeState(node_id=node_id, role="hub" if node_id >= 20 else "worker")
             for node_id in range(NUM_NODES)
         }
-        self.links: Dict[int, Dict[int, NeuralLink]] = {
+        self.links = {
             node_id: {neighbor: NeuralLink(neighbor) for neighbor in get_geometric_neighbors(node_id)}
             for node_id in range(NUM_NODES)
         }
@@ -238,6 +227,8 @@ class PulviniOverlayConcentrator:
             "pool_identity": self.worker_name,
             "pool_visible_workers": 1,
             "internal_workers": NUM_NODES,
+            "automorphism_order": len(self.manifold.automorphisms),
+            "node_orbits": [list(orbit) for orbit in self.manifold.node_orbits],
         }
 
     def _append_event(self, phase: str, **payload: Any) -> None:
@@ -256,9 +247,8 @@ class PulviniOverlayConcentrator:
             self._append_event("subscribed_authorized", pool_name=pool_name)
             self._append_event("awaiting_job", pool_name=pool_name)
 
-    def _extranonce2_for_node(self, node_id: int, extranonce2_size: int) -> str:
-        size = max(int(extranonce2_size), 1)
-        return int(node_id).to_bytes(size, byteorder="big", signed=False).hex()
+    def _extranonce2_for_node(self, node_id: int, job_id: str, extranonce2_size: int) -> str:
+        return self.manifold.manifold_drift_extranonce2(node_id, job_id, extranonce2_size)
 
     def register_pool_job(self, job: Any, pool_name: Optional[str] = None) -> Dict[int, NodeAssignment]:
         with self._lock:
@@ -267,17 +257,20 @@ class PulviniOverlayConcentrator:
             self.job_epoch += 1
             self.active_job_id = str(job.job_id)
             self.state.activate_job(str(job.job_id), int(job.target))
+            self.manifold.begin_job(str(job.job_id), int(job.target))
             self.assignments = {}
             for node_id in range(NUM_NODES):
                 start, end = nonce_range_inclusive(node_id)
+                coordinate = self.manifold.tensor_coordinate_for_node(node_id)
                 assignment = NodeAssignment(
                     node_id=node_id,
                     job_id=str(job.job_id),
                     nonce_start=start,
                     nonce_end=end,
-                    extranonce2=self._extranonce2_for_node(node_id, getattr(job, "extranonce2_size", 4)),
+                    extranonce2=self._extranonce2_for_node(node_id, str(job.job_id), getattr(job, "extranonce2_size", 4)),
                     role="hub" if node_id >= 20 else "worker",
                     neighbors=get_geometric_neighbors(node_id),
+                    tensor_coordinate=coordinate.to_dict(),
                 )
                 self.assignments[node_id] = assignment
                 node = self.nodes[node_id]
@@ -295,6 +288,9 @@ class PulviniOverlayConcentrator:
     def nonce_ranges(self) -> List[Tuple[int, int]]:
         return [(assignment.nonce_start, assignment.nonce_end) for assignment in self.assignments.values()]
 
+    def tensor_coordinates(self) -> List[Dict[str, Any]]:
+        return [coordinate.to_dict() for coordinate in self.manifold.tensor_coordinates()]
+
     def assignment_for_nonce(self, nonce: int) -> Optional[NodeAssignment]:
         for assignment in self.assignments.values():
             if assignment.nonce_start <= nonce <= assignment.nonce_end:
@@ -310,8 +306,15 @@ class PulviniOverlayConcentrator:
             node.last_update = time.time()
             self.state.set_node_progress(node_id, nonce)
             self.state.increment_hashes(hashes)
-            if best_diff is not None and self.state.update_best_diff(best_diff):
-                node.best_diff = int(best_diff)
+            if best_diff is not None:
+                self.manifold.observe_high_difficulty_hash(node_id, float(best_diff))
+                if self.state.update_best_diff(best_diff):
+                    node.best_diff = int(best_diff)
+
+    def record_nack(self, node_id: int) -> None:
+        assignment = self.assignments[node_id]
+        event = self.manifold.nack_slice(node_id, assignment.job_id, assignment.nonce_start, assignment.nonce_end)
+        self._append_event("nack_backaction", node_id=node_id, affected_nodes=event.affected_nodes)
 
     def record_share_candidate(self, node_id: int, nonce: int) -> None:
         with self._lock:
@@ -353,39 +356,38 @@ class PulviniOverlayConcentrator:
             return payload
 
     def best_neighbor(self, node_id: int) -> Optional[int]:
-        links = self.links.get(node_id, {})
-        if not links:
-            return None
-        return max(links, key=lambda neighbor: links[neighbor].weight)
+        route = self.manifold.gradient_route_to_gateway(node_id)
+        return route[1] if len(route) > 1 else None
 
     def record_link_latency(self, source_id: int, target_id: int, trip_seconds: float) -> None:
         if target_id not in self.links.get(source_id, {}):
             raise ValueError(f"nodes {source_id}->{target_id} are not adjacent in PULVINI topology")
         self.links[source_id][target_id].record_trip(trip_seconds)
+        reward = 1.0 / (max(float(trip_seconds), 0.0) + 1e-9)
+        self.manifold.hebbian_fire([source_id, target_id], signal_type="LATENCY_REWARD", reward=min(reward, 1.0))
         self.nodes[source_id].best_neighbor = self.best_neighbor(source_id)
 
     def route_for_share(self, node_id: int) -> List[int]:
-        """Return a deterministic neighbour-aware route from node to concentrator."""
-        if node_id >= 20:
-            return [node_id]
-        first_hop = self.best_neighbor(node_id)
-        if first_hop is None:
-            return [node_id]
-        if first_hop >= 20:
-            return [node_id, first_hop]
-        hub_neighbors = [neighbor for neighbor in get_geometric_neighbors(first_hop) if neighbor >= 20]
-        return [node_id, first_hop] + ([hub_neighbors[0]] if hub_neighbors else [])
+        return self.manifold.gradient_route_to_gateway(node_id)
+
+    def gradient_cancel_order(self) -> List[int]:
+        return self.manifold.gradient_broadcast_order()
+
+    def phase_heartbeat(self, tick: int) -> List[float]:
+        if not self.active_job_id:
+            return []
+        return self.manifold.phase_heartbeat(self.active_job_id, tick)
 
     def node_knows(self, node_id: int) -> Dict[str, Any]:
-        node = self.nodes[node_id]
         neighbors = get_geometric_neighbors(node_id)
         return {
-            "self": node.to_dict(),
+            "self": self.nodes[node_id].to_dict(),
             "assignment": self.assignments.get(node_id).to_dict() if node_id in self.assignments else None,
             "neighbors": [self.nodes[neighbor].to_dict() for neighbor in neighbors],
             "best_neighbor": self.best_neighbor(node_id),
             "active_job_id": self.active_job_id,
             "shared_state": self.state.snapshot(),
+            "manifold_observation": self.manifold.observe().to_dict(),
         }
 
     def snapshot(self) -> Dict[str, Any]:
@@ -407,6 +409,7 @@ class PulviniOverlayConcentrator:
                 "assignments": {node_id: assignment.to_dict() for node_id, assignment in self.assignments.items()},
                 "nodes": {node_id: node.to_dict() for node_id, node in self.nodes.items()},
                 "shared_state": self.state.snapshot(),
+                "manifold": self.manifold.snapshot(),
                 "lifecycle": list(self.lifecycle),
                 "share_ledger": list(self.share_ledger),
                 "totals": totals,
