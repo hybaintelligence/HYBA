@@ -47,7 +47,7 @@ services:
 
   hyba-bridge:
     build: .
-    command: node dist/server.cjs
+    command: node dist/server.mjs
     depends_on:
       hyba-backend:
         condition: service_healthy
