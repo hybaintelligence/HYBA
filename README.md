@@ -2,6 +2,14 @@
 
 HYBA Fullstack contains the operator UI, FastAPI backend, production mining controls, and the PYTHIA PULVINI mathematical mining layer.  The project is built around deterministic protocol handling and first-principles mathematical certificates rather than runtime simulations or fabricated telemetry.
 
+## Institutional role
+
+HYBA_FULLSTACK is HYBA's self-financing operating substrate. It is a separate repository and deployment boundary that funds the broader HYBA mission through controlled production runtime activity.
+
+It does not replace HYBA_Unified_Backend or HYBA_Unified_Frontend. It does not own HYBA Foundation programmes or HYBA Research claims. It is operated by HYBA Group / Company, governed through the same evidence and claim-boundary discipline as the rest of HYBA, and documented separately in [HYBA_FULLSTACK governance charter](docs/HYBA_FULLSTACK_GOVERNANCE.md).
+
+PULVINI is memory compression at scale and a mathematical/state-certificate layer. THEMIS is the governance, compliance, evidence, and claim-boundary authority. Do not conflate them.
+
 ## Production principle
 
 Runtime mining paths must consume real operator configuration, real pool messages, real hash/share outcomes, and deterministic mathematical transforms.  Development fixtures are isolated behind explicit gates; production checks reject fixed mining telemetry, pseudo-random runtime telemetry, and simulated target-job injection.
@@ -213,6 +221,7 @@ npm run docker:build
 
 ## Documentation
 
+- [HYBA_FULLSTACK governance charter](docs/HYBA_FULLSTACK_GOVERNANCE.md)
 - [Production readiness runbook](docs/PRODUCTION_READINESS.md)
 - [Quantum mining implementation notes](docs/QUANTUM_MINING.md)
 - [Live Stratum rollout](docs/runbooks/live_stratum_rollout.md)
