@@ -7,9 +7,27 @@ Last updated: 2026-06-12
 
 ## BLUF
 
+HYBA emerged from METIS. METIS is the root substrate: one repo, 10,000 governed uses.
+
 HYBA_FULLSTACK is HYBA's self-financing operating substrate. It exists to generate treasury capacity for HYBA Group, sustain production operations, and support the wider humanitarian mission without forcing HYBA Foundation or HYBA Research to become revenue engines.
 
-It is not the whole HYBA portfolio. It is not the Foundation. It is not HYBA Research. It is not THEMIS. It is the production-grade full-stack runtime for the PYTHIA/PYTHAGORAS mining path, the operator console, the FastAPI backend, the Stratum protocol boundary, and the PULVINI memory-compression/manifold layer used by this operating system.
+It is not the whole HYBA portfolio. It is not the Foundation. It is not HYBA Research. It is not THEMIS. It is a separate production repo and self-financing expression of the METIS doctrine: the production-grade full-stack runtime for the PYTHIA/PYTHAGORAS mining path, the operator console, the FastAPI backend, the Stratum protocol boundary, and the PULVINI memory-compression/manifold layer used by this operating system.
+
+## METIS relationship
+
+HYBA_FULLSTACK does not replace METIS and does not create a separate institutional origin story.
+
+METIS is the root substrate. HYBA_FULLSTACK is one production use of that substrate: a treasury-supporting runtime that helps fund the wider HYBA mission.
+
+The relationship is:
+
+```text
+METIS -> governed substrate
+HYBA_FULLSTACK -> self-financing production runtime emerging from the substrate
+MIDAS / PYTHIA / PYTHAGORAS -> mining and mathematical execution pathway
+PULVINI -> memory compression at scale inside the runtime
+THEMIS -> governance and evidence authority
+```
 
 ## Institutional role
 
@@ -38,7 +56,7 @@ The mandate is to:
 The correct phrase is:
 
 ```text
-HYBA_FULLSTACK funds the mission. HYBA Foundation protects the mission. HYBA Research advances the frontier. THEMIS governs evidence and permissioning. PULVINI compresses memory at scale.
+METIS is the root. HYBA_FULLSTACK funds the mission. HYBA Foundation protects the mission. HYBA Research advances the frontier. THEMIS governs evidence and permissioning. PULVINI compresses memory at scale.
 ```
 
 ## What HYBA_FULLSTACK is
@@ -59,6 +77,7 @@ HYBA_FULLSTACK is:
 HYBA_FULLSTACK is not:
 
 - the whole HYBA portfolio;
+- the root substrate; METIS is the root substrate;
 - the HYBA Foundation;
 - HYBA Research;
 - a governance authority replacing THEMIS;
@@ -120,7 +139,7 @@ HYBA_FULLSTACK must not claim, unless independently measured and legally approve
 Use this evidence hierarchy for internal reviews and external packs:
 
 1. Live pool telemetry and accepted/rejected share logs.
-2. Production readiness gates and CI results.
+2. Production readiness gates, local command-room evidence packets, and CI results where available.
 3. Runtime anti-simulation guard outputs.
 4. Local proof-of-work validation records.
 5. PULVINI mathematical certificates.
@@ -138,6 +157,7 @@ Before tagging a release candidate, the accountable operator must confirm:
 - backend regression tests passed;
 - frontend build and typecheck passed;
 - Docker image built;
+- local command-room evidence packet retained where CI is unavailable;
 - live share submission posture is explicitly recorded;
 - operator credentials are secret-managed and hashed;
 - pool credentials are real, operator-owned, and not committed;
@@ -150,7 +170,7 @@ Before tagging a release candidate, the accountable operator must confirm:
 HYBA_FULLSTACK should be described in portfolio material as:
 
 ```text
-HYBA_FULLSTACK is HYBA's self-financing full-stack operating substrate: a separate production repo that supports treasury capacity through controlled PYTHIA/PYTHAGORAS mining operations and PULVINI memory-compression certificates, while remaining governed by THEMIS and institutionally separate from HYBA Foundation and HYBA Research.
+HYBA emerged from METIS. HYBA_FULLSTACK is HYBA's self-financing full-stack operating substrate: a separate production repo and treasury-supporting expression of the METIS doctrine that supports controlled PYTHIA/PYTHAGORAS mining operations and PULVINI memory-compression certificates, while remaining governed by THEMIS and institutionally separate from HYBA Foundation and HYBA Research.
 ```
 
 This protects the humanitarian mission: HYBA_FULLSTACK can fund the mission, but it must not consume or redefine the mission.
