@@ -13,6 +13,7 @@ from typing import Any
 _OPERATOR_EXPORTS = {
     "ConsciousnessConfig",
     "ConsciousnessEngine",
+    "CoherenceClassification",
     "ConsciousnessState",
     "IntegrationRegime",
     "IntegrityStatus",
@@ -47,7 +48,7 @@ _AUTONOMICS_EXPORTS = {
 
 def __getattr__(name: str) -> Any:
     if name in _OPERATOR_EXPORTS:
-        if name in {"ManifoldConfig", "ManifoldOperator", "ManifoldState", "OperatorEvolution"}:
+        if name in {"CoherenceClassification", "ManifoldConfig", "ManifoldOperator", "ManifoldState", "OperatorEvolution"}:
             module = import_module(".pulvini_operator", __name__)
         elif name in {
             "IntegrityStatus",

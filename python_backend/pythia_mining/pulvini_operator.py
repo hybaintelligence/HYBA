@@ -34,6 +34,19 @@ class ManifoldState(str, Enum):
     MIXED = "mixed"
 
 
+class CoherenceClassification(str, Enum):
+    """Dashboard-friendly coherence classification.
+
+    This compatibility enum keeps the production façade aligned with the
+    Command Center green/yellow/red health model while ``ManifoldState`` remains
+    the lower-level density-state taxonomy.
+    """
+
+    COHERENT = "green"
+    DEGRADED = "yellow"
+    DECOHERENT = "red"
+
+
 @dataclass(frozen=True)
 class ManifoldConfig:
     """Configuration for the consolidated operator core."""
@@ -171,6 +184,59 @@ class ManifoldOperator:
         repaired = repaired / np.trace(repaired)
         return ((repaired + repaired.conj().T) / 2.0).astype(np.complex128, copy=False)
 
+    def apply_choi_map(
+        self,
+        state: NDArray[np.complex128] | Sequence[complex],
+    ) -> NDArray[np.complex128]:
+        """Compatibility alias for production density-state repair.
+
+        Historical design notes referred to the repair projection as the
+        façade's Choi/CPTP map.  The implementation uses
+        :meth:`ensure_density_state`, which enforces Hermiticity, PSD, and
+        trace-one invariants before any mining loop consumes ``rho``.
+        """
+
+        return self.ensure_density_state(state)
+
+    def compute_uhlmann_fidelity(
+        self,
+        rho_a: NDArray[np.complex128] | Sequence[complex],
+        rho_b: NDArray[np.complex128] | Sequence[complex],
+    ) -> float:
+        """Compatibility alias for :meth:`compute_fidelity`."""
+
+        return self.compute_fidelity(rho_a, rho_b)
+
+    def get_coherence_metrics(
+        self,
+        rho: NDArray[np.complex128] | Sequence[complex],
+        reference: Optional[NDArray[np.complex128] | Sequence[complex]] = None,
+    ) -> dict[str, Any]:
+        """Return dashboard coherence metrics for a repaired density state."""
+
+        matrix = self.ensure_density_state(rho)
+        coherence = self.compute_coherence(matrix)
+        purity = float(np.clip(np.real(np.trace(matrix @ matrix)), 0.0, 1.0))
+        bures_distance = (
+            0.0
+            if reference is None
+            else self.compute_bures_distance(matrix, self.ensure_density_state(reference))
+        )
+        if bures_distance <= 0.25 and purity >= self.config.mixed_purity_threshold:
+            classification = CoherenceClassification.COHERENT
+        elif bures_distance <= 0.75 or coherence > self.config.epsilon_trace:
+            classification = CoherenceClassification.DEGRADED
+        else:
+            classification = CoherenceClassification.DECOHERENT
+        return {
+            "coherence": coherence,
+            "purity": purity,
+            "bures_distance": bures_distance,
+            "classification": classification,
+            "ui_state": classification.value,
+            "state": self.classify_state(matrix).value,
+        }
+
     def compute_coherence(self, rho: NDArray[np.complex128]) -> float:
         """Return normalized l1 off-diagonal coherence."""
         matrix = self.ensure_density_state(rho)
@@ -304,6 +370,7 @@ class ManifoldOperator:
 
 
 __all__ = [
+    "CoherenceClassification",
     "ManifoldConfig",
     "ManifoldOperator",
     "ManifoldState",

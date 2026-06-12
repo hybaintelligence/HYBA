@@ -140,6 +140,24 @@ class SubstatePassport:
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
 
+    @property
+    def purity(self) -> float:
+        """Return decoded fixed-point purity in ``[0, 1]``."""
+
+        return self.purity_fixed / _FIXED_POINT_SCALE
+
+    @property
+    def fidelity(self) -> float:
+        """Return decoded fixed-point fidelity in ``[0, 1]``."""
+
+        return self.fidelity_fixed / _FIXED_POINT_SCALE
+
+    @property
+    def grover_scope(self) -> float:
+        """Return the audited nonce-space scope ratio for this passport."""
+
+        return float(np.clip(self.coverage_ratio, 0.0, 1.0))
+
     def to_blob(self) -> bytes:
         """Serialize the passport as canonical JSON bytes."""
         return json.dumps(
@@ -197,6 +215,80 @@ class SubstateVerifier:
     def __init__(self, operator: Optional[ManifoldOperator] = None) -> None:
         self.operator = operator or ManifoldOperator()
         self._certificate_cache: dict[str, SubstatePassport] = {}
+
+    def verify_binary_header(self, payload: bytes, signature: Optional[bytes] = None) -> dict[str, Any]:
+        """Parse and validate a 128-byte PULVINI binary passport header.
+
+        The returned dictionary is intentionally audit-friendly: invalid widths,
+        magic bytes, fixed-point ranges, or signature lengths are reported as
+        ``verified=False`` instead of leaking transport exceptions into mining
+        control loops.
+        """
+
+        try:
+            header = SubstateBinaryHeader.from_bytes(payload)
+            expected_signature = _normalize_signature(signature)
+        except ValueError as exc:
+            return {"verified": False, "error": str(exc)}
+        return {
+            "verified": header.signature == expected_signature,
+            "magic": header.magic,
+            "timestamp_ns": header.timestamp_ns,
+            "rho_hash": header.rho_hash,
+            "purity_fixed": header.purity_fixed,
+            "fidelity_fixed": header.fidelity_fixed,
+            "purity": header.purity_fixed / _FIXED_POINT_SCALE,
+            "fidelity": header.fidelity_fixed / _FIXED_POINT_SCALE,
+            "topology_hash": header.topology_hash,
+            "signature": header.signature,
+        }
+
+    def verify_topology_map(self, adjacency_map: dict[int, dict[str, list[int]]]) -> bool:
+        """Return whether an arbitrary adjacency map satisfies the PULVINI D/I contract."""
+
+        try:
+            if set(adjacency_map) != set(range(NUM_NODES)):
+                return False
+            for node_id, edges in adjacency_map.items():
+                if set(edges) - {"d", "i"}:
+                    return False
+                for neighbors in edges.values():
+                    for neighbor in neighbors:
+                        if int(neighbor) not in adjacency_map:
+                            return False
+                        if (
+                            int(node_id) < 20
+                            and int(neighbor) < 20
+                            and neighbor in edges.get("i", [])
+                        ):
+                            return False
+                        if (
+                            int(node_id) >= 20
+                            and int(neighbor) >= 20
+                            and neighbor in edges.get("d", [])
+                        ):
+                            return False
+            auto_cert = automorphism_runtime_certificate(adjacency_map)
+            structural = structural_certificate(adjacency_map)
+        except (KeyError, TypeError, ValueError):
+            return False
+        return bool(
+            auto_cert.get("gate_closed")
+            and structural.complete_graph
+            and structural.adjacency_preserved
+            and structural.automorphism_group_order == 120
+        )
+
+    def verify_topology(self, rho: Optional[NDArray[np.complex128]] = None) -> bool:
+        """Compatibility wrapper for the runtime topology gate.
+
+        ``rho`` is accepted so callers can pass the audited state alongside the
+        topology check; shape and density repair are validated when provided.
+        """
+
+        if rho is not None:
+            self.operator.ensure_density_state(rho)
+        return self.verify_topology_map(self.operator.adjacency_map)
 
     def generate_passport(
         self,
@@ -262,7 +354,8 @@ class SubstateVerifier:
             )
 
         topology_verified = bool(
-            auto_cert.get("gate_closed")
+            self.verify_topology_map(adjacency)
+            and auto_cert.get("gate_closed")
             and structural.complete_graph
             and structural.adjacency_preserved
             and structural.automorphism_group_order == 120

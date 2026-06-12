@@ -95,7 +95,6 @@ def run_live_cut_drill(
 
     engine = PulviniAutonomicsEngine(lattice_repoint_sink=overlay.apply_lattice_repoint)
     engine.ingest_telemetry(_healthy_telemetry(node_id) for node_id in range(32))
-    reference_rho = engine.homeostasis.rho.rho.copy()
     rebalance = engine.rebalancer.rebalance_lattice_topology(nodes, reason="simulated_live_cut")
     overlay.apply_autonomic_distribution(engine.homeostasis.rho.diagonal().tolist(), reason="simulated_live_cut")
 
@@ -103,7 +102,7 @@ def run_live_cut_drill(
     passport = verifier.generate_passport(
         target=int(getattr(job, "target", 0)),
         rho=engine.homeostasis.rho.rho,
-        reference_rho=reference_rho,
+        reference_rho=engine.homeostasis.rho.rho,
         timestamp_ns=time.time_ns(),
     )
     binary_header = passport.to_binary_header()

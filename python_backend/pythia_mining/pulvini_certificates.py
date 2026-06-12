@@ -50,6 +50,11 @@ def _load_cached_automorphism_certificate(path: Path, map_hash: str) -> dict | N
         return None
     payload["cache_status"] = "hit"
     payload.setdefault("computation_ms", 0.0)
+    if isinstance(payload.get("node_orbits_by_degree"), dict):
+        payload["node_orbits_by_degree"] = {
+            int(degree): int(count)
+            for degree, count in payload["node_orbits_by_degree"].items()
+        }
     return payload
 
 
