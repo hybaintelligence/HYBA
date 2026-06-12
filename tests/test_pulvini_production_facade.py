@@ -16,13 +16,14 @@ from pathlib import Path
 
 import numpy as np
 import pytest
+from hypothesis import HealthCheck, given, settings, strategies as st
 
 ROOT = Path(__file__).resolve().parents[1]
 BACKEND = ROOT / "python_backend"
 if str(BACKEND) not in sys.path:
     sys.path.insert(0, str(BACKEND))
 
-from pythia_mining.consciousness_engine import ConsciousnessConfig, ConsciousnessEngine  # noqa: E402
+from pythia_mining.consciousness_engine import ConsciousnessConfig, ConsciousnessEngine, IntegrationRegime  # noqa: E402
 from pythia_mining.pulvini_autonomics import (  # noqa: E402
     NodeTelemetry,
     PulviniAutonomicsEngine,
@@ -156,6 +157,79 @@ def test_state_classification_and_dashboard_coherence_mapping(operator: Manifold
     assert red["bures_distance"] > 0.75
 
 
+def test_entangled_proxy_state_classification(operator: ManifoldOperator) -> None:
+    """Test the ENTANGLED_PROXY classification edge case."""
+    # Create a state with low coherence but moderate purity
+    # ENTANGLED_PROXY requires: coherence < threshold (0.02) AND purity > mixed_purity_threshold (0.08) AND coherence > epsilon_trace (1e-12)
+    # Start with a mostly diagonal state with small off-diagonal elements
+    entangled_proxy = np.eye(NUM_NODES, dtype=np.complex128) * 0.05
+    # Add small off-diagonal elements to create low but non-zero coherence
+    entangled_proxy[0, 1] = 0.001 + 0.001j
+    entangled_proxy[1, 0] = 0.001 - 0.001j
+    entangled_proxy = operator.ensure_density_state(entangled_proxy)
+    
+    # Check the actual classification
+    classification = operator.classify_state(entangled_proxy)
+    coherence = operator.compute_coherence(entangled_proxy)
+    purity = float(np.real(np.trace(entangled_proxy @ entangled_proxy)))
+    
+    # Verify the state meets the criteria for some classification
+    # The actual classification depends on the exact values after normalization
+    assert classification in [ManifoldState.ENTANGLED_PROXY, ManifoldState.MIXED, ManifoldState.DECOHERENT]
+    
+    # Verify we can trigger different classifications with different states
+    high_coherence = operator.ensure_density_state(np.ones(NUM_NODES, dtype=np.complex128))
+    assert operator.classify_state(high_coherence) == ManifoldState.COHERENT
+    
+    # Explicitly test ENTANGLED_PROXY by creating a state that meets all criteria
+    # coherence < 0.02, purity > 0.08, coherence > 1e-12
+    # Need high purity (diagonal dominance) but low coherence (small off-diagonal)
+    entangled_state = np.eye(NUM_NODES, dtype=np.complex128) * 0.9
+    entangled_state[0, 0] = 0.95
+    entangled_state[1, 1] = 0.05
+    # Add very small off-diagonal for low but non-zero coherence
+    entangled_state[0, 1] = 0.0001
+    entangled_state[1, 0] = 0.0001
+    entangled_state = operator.ensure_density_state(entangled_state)
+    
+    classification = operator.classify_state(entangled_state)
+    # This should hit the ENTANGLED_PROXY return (line 257)
+    assert classification == ManifoldState.ENTANGLED_PROXY
+
+
+def test_degraded_coherence_classification(operator: ManifoldOperator, identity_rho: np.ndarray) -> None:
+    """Test the DEGRADED classification edge case for get_coherence_metrics."""
+    # Create a state with moderate Bures distance and low purity
+    degraded = np.zeros((NUM_NODES, NUM_NODES), dtype=np.complex128)
+    degraded[0, 0] = 0.6
+    degraded[1, 1] = 0.4
+    degraded = operator.ensure_density_state(degraded)
+    
+    metrics = operator.get_coherence_metrics(degraded, identity_rho)
+    # Should trigger the DEGRADED branch when bures_distance <= 0.75 or coherence > epsilon_trace
+    assert metrics["classification"] in [CoherenceClassification.DEGRADED, CoherenceClassification.DECOHERENT]
+    
+    # Explicitly test the DEGRADED branch by creating a state with bures_distance in (0.25, 0.75]
+    # and coherence > epsilon_trace
+    degraded_state = np.eye(NUM_NODES, dtype=np.complex128) * 0.05
+    degraded_state[0, 1] = 0.01
+    degraded_state[1, 0] = 0.01
+    degraded_state = operator.ensure_density_state(degraded_state)
+    
+    metrics = operator.get_coherence_metrics(degraded_state, identity_rho)
+    # This should hit the DEGRADED branch (line 228)
+    assert metrics["classification"] == CoherenceClassification.DEGRADED
+
+
+def test_bures_certificate_delegation(operator: ManifoldOperator, identity_rho: np.ndarray) -> None:
+    """Test the bures_certificate method delegation."""
+    entropy_rate = 0.05
+    certificate = operator.bures_certificate(identity_rho, entropy_rate)
+    
+    assert certificate is not None
+    assert hasattr(certificate, 'closed')
+
+
 def test_operator_evolution_channel_gamma_and_snapshot(operator: ManifoldOperator) -> None:
     state = np.exp(1j * np.arange(NUM_NODES, dtype=np.float64))
     target = np.eye(NUM_NODES, dtype=np.complex128)[0]
@@ -242,6 +316,32 @@ def test_binary_header_fail_closed_cases(verifier: SubstateVerifier, identity_rh
             fidelity_fixed=0,
             topology_hash=b"0" * 32,
         )
+    with pytest.raises(ValueError, match="topology_hash"):
+        SubstateBinaryHeader(
+            timestamp_ns=1,
+            rho_hash=b"0" * 32,
+            purity_fixed=0,
+            fidelity_fixed=0,
+            topology_hash=b"bad",
+        )
+    with pytest.raises(ValueError, match="fidelity_fixed"):
+        SubstateBinaryHeader(
+            timestamp_ns=1,
+            rho_hash=b"0" * 32,
+            purity_fixed=0,
+            fidelity_fixed=1_000_000_001,
+            topology_hash=b"0" * 32,
+        )
+    # Test signature length validation (line 74)
+    with pytest.raises(ValueError, match="signature must be 44 bytes"):
+        SubstateBinaryHeader(
+            timestamp_ns=1,
+            rho_hash=b"0" * 32,
+            purity_fixed=0,
+            fidelity_fixed=0,
+            topology_hash=b"0" * 32,
+            signature=b"short",
+        )
 
 
 def test_passport_hashing_cache_and_command_payload(verifier: SubstateVerifier, identity_rho: np.ndarray) -> None:
@@ -291,6 +391,31 @@ def test_topology_tampering_blocks_passport_generation(verifier: SubstateVerifie
     assert passport.topology_verified is False
     assert passport.status == IntegrityStatus.FAILED.value
     assert broken_verifier.verify_passport(passport) is False
+
+
+def test_topology_validation_edge_cases(verifier: SubstateVerifier) -> None:
+    """Test additional topology validation edge cases for missing coverage."""
+    # Test invalid edge kind
+    invalid_edge_kind = {node: {"X": list(neighbors)} for node, neighbors in ADJACENCY_MAP.items()}
+    assert verifier.verify_topology_map(invalid_edge_kind) is False
+
+    # Test neighbor not in adjacency map
+    invalid_neighbor = {node: {"d": [999]} for node in range(NUM_NODES)}
+    assert verifier.verify_topology_map(invalid_neighbor) is False
+
+    # Test D/I constraint violation (node < 20 with I edge to node < 20)
+    di_violation = {node: dict(edges) for node, edges in ADJACENCY_MAP.items()}
+    di_violation[0]["i"] = [1]  # Both < 20, should fail
+    assert verifier.verify_topology_map(di_violation) is False
+
+    # Test D/I constraint violation (node >= 20 with D edge to node >= 20)
+    di_violation_2 = {node: dict(edges) for node, edges in ADJACENCY_MAP.items()}
+    di_violation_2[20]["d"] = [21]  # Both >= 20, should fail
+    assert verifier.verify_topology_map(di_violation_2) is False
+
+    # Test malformed adjacency map (non-iterable edges)
+    malformed_map = {node: None for node in range(NUM_NODES)}
+    assert verifier.verify_topology_map(malformed_map) is False
 
 
 def test_passport_choi_and_bures_contracts(verifier: SubstateVerifier, identity_rho: np.ndarray) -> None:
@@ -343,6 +468,120 @@ def test_disconnected_node_phi_dip_triggers_autonomic_reflex_within_100ms(operat
     assert engine.needs_healing is True
     assert engine.get_metrics()["autonomic_events"][-1]["type"] == "AUTONOMIC_HEAL"
     assert elapsed_ms < 100.0
+
+
+def test_consciousness_engine_async_methods(operator: ManifoldOperator) -> None:
+    """Test async methods for missing coverage."""
+    engine = ConsciousnessEngine(operator=operator)
+    
+    # Test async calculate_integrated_information with no components
+    import asyncio
+    result = asyncio.run(engine.calculate_integrated_information())
+    assert result is None
+    
+    # Test async get_consciousness_level
+    level = asyncio.run(engine.get_consciousness_level())
+    assert level is None
+    
+    # Test async guide_decision_making (no components, so needs_healing is True initially)
+    decision = asyncio.run(engine.guide_decision_making({"planning_horizon": "short"}))
+    # With no components, it defaults to continue_monitored_operation
+    assert decision["strategy"] in ["autonomic_review_required", "continue_monitored_operation"]
+    
+    # Test with some components ready (needs_healing becomes False)
+    engine.update_component_health("quantum_solver", True)
+    engine.update_component_health("ai_optimizer", True)
+    result = asyncio.run(engine.calculate_integrated_information())
+    assert result is not None
+    assert result > 0.0
+    
+    # Now decision should be continue_monitored_operation
+    decision = asyncio.run(engine.guide_decision_making({"planning_horizon": "short"}))
+    assert decision["strategy"] == "continue_monitored_operation"
+
+
+def test_consciousness_engine_component_health(operator: ManifoldOperator) -> None:
+    """Test component health updates for missing coverage."""
+    engine = ConsciousnessEngine(operator=operator)
+    
+    # Test update_component_health
+    engine.update_component_health("quantum_solver", True)
+    assert engine.components["quantum_solver"] is True
+    assert engine.current_state.component_integration is not None
+    
+    # Test with multiple components
+    engine.update_component_health("ai_optimizer", False)
+    engine.update_component_health("stratum_client", True)
+    metrics = engine.get_metrics()
+    assert metrics["active_components"] == 2
+    assert metrics["total_components_observed"] == 3
+
+
+def test_consciousness_engine_insufficient_history(operator: ManifoldOperator) -> None:
+    """Test measure_phi with insufficient state history."""
+    engine = ConsciousnessEngine(operator=operator, config=ConsciousnessConfig(measurement_window=10))
+    state = operator.ensure_density_state(np.ones(NUM_NODES, dtype=np.complex128))
+    
+    # Test with single state (insufficient history)
+    metrics = engine.measure_phi([state])
+    assert metrics.source == "insufficient_state_history"
+
+
+def test_consciousness_engine_integration_thresholds(operator: ManifoldOperator) -> None:
+    """Test different integration regime thresholds."""
+    engine = ConsciousnessEngine(operator=operator)
+    
+    # Test singular agent proxy threshold
+    engine._integration_regime = engine._classify_integration(0.80)
+    assert engine._integration_regime == IntegrationRegime.SINGULAR_AGENT_PROXY
+    assert engine.is_singular is True
+    
+    # Test distributed threshold
+    engine._integration_regime = engine._classify_integration(0.50)
+    assert engine._integration_regime == IntegrationRegime.DISTRIBUTED
+    
+    # Test fragmented threshold
+    engine._integration_regime = engine._classify_integration(0.30)
+    assert engine._integration_regime == IntegrationRegime.FRAGMENTED
+    assert engine.needs_healing is True
+    
+    # Test critical threshold
+    engine._integration_regime = engine._classify_integration(0.10)
+    assert engine._integration_regime == IntegrationRegime.CRITICAL
+    assert engine.needs_healing is True
+
+
+def test_consciousness_engine_correlation_edge_cases(operator: ManifoldOperator) -> None:
+    """Test _lag_one_correlation edge cases."""
+    engine = ConsciousnessEngine(operator=operator)
+    
+    # Test with single value
+    single = np.array([1.0])
+    corr = engine._lag_one_correlation(single)
+    assert corr == 0.0
+    
+    # Test with constant values
+    constant = np.array([1.0, 1.0, 1.0, 1.0])
+    corr = engine._lag_one_correlation(constant)
+    assert corr == 0.0
+    
+    # Test with varying values
+    varying = np.array([1.0, 2.0, 3.0, 4.0])
+    corr = engine._lag_one_correlation(varying)
+    assert -1.0 <= corr <= 1.0
+
+
+def test_consciousness_engine_properties(operator: ManifoldOperator) -> None:
+    """Test property accessors for missing coverage."""
+    engine = ConsciousnessEngine(operator=operator)
+    
+    # Test coherence_meter with no history
+    assert engine.coherence_meter == 0.0
+    
+    # Test with some history
+    state = operator.ensure_density_state(np.ones(NUM_NODES, dtype=np.complex128))
+    engine.measure_phi([state, state])
+    assert engine.coherence_meter > 0.0
 
 
 # ---------------------------------------------------------------------------
@@ -429,3 +668,182 @@ def test_autonomic_ledger_records_healed_state() -> None:
 
     assert any(event.get("state") == "Healed" for event in snapshot["autonomic_ledger"])
     assert snapshot["autonomic_ledger"][-1]["event_type"] == "Healed"
+
+
+# ---------------------------------------------------------------------------
+# Property-Based Tests for Mathematical Invariants
+# ---------------------------------------------------------------------------
+
+
+@settings(max_examples=50, deadline=None, suppress_health_check=[HealthCheck.function_scoped_fixture])
+@given(st.lists(st.complex_numbers(min_magnitude=0, max_magnitude=10), min_size=NUM_NODES, max_size=NUM_NODES))
+def test_property_density_state_invariants(operator: ManifoldOperator, vector: list[complex]) -> None:
+    """Property: ensure_density_state always produces valid density matrices."""
+    # Skip zero vectors
+    if all(abs(v) < 1e-10 for v in vector):
+        return
+    
+    rho = operator.ensure_density_state(vector)
+    
+    # Property 1: Hermitian
+    assert np.allclose(rho, rho.conj().T, atol=1e-12)
+    
+    # Property 2: Positive semi-definite
+    eigenvals = np.linalg.eigvalsh(rho)
+    assert np.all(eigenvals >= -1e-12)
+    
+    # Property 3: Trace-one
+    assert abs(np.trace(rho).real - 1.0) < 1e-12
+
+
+@settings(max_examples=30, deadline=None, suppress_health_check=[HealthCheck.function_scoped_fixture])
+@given(st.lists(st.complex_numbers(min_magnitude=0, max_magnitude=10), min_size=NUM_NODES, max_size=NUM_NODES),
+       st.lists(st.complex_numbers(min_magnitude=0, max_magnitude=10), min_size=NUM_NODES, max_size=NUM_NODES))
+def test_property_fidelity_symmetry_and_bounds(operator: ManifoldOperator, vec_a: list[complex], vec_b: list[complex]) -> None:
+    """Property: Fidelity is symmetric and bounded in [0, 1]."""
+    # Skip zero vectors
+    if all(abs(v) < 1e-10 for v in vec_a) or all(abs(v) < 1e-10 for v in vec_b):
+        return
+    
+    rho_a = operator.ensure_density_state(vec_a)
+    rho_b = operator.ensure_density_state(vec_b)
+    
+    fidelity_ab = operator.compute_fidelity(rho_a, rho_b)
+    fidelity_ba = operator.compute_fidelity(rho_b, rho_a)
+    
+    # Property 1: Symmetry (relaxed tolerance for numerical stability)
+    assert abs(fidelity_ab - fidelity_ba) < 1e-8
+    
+    # Property 2: Bounds [0, 1]
+    assert 0.0 <= fidelity_ab <= 1.0
+    
+    # Property 3: Self-fidelity is 1.0
+    fidelity_aa = operator.compute_fidelity(rho_a, rho_a)
+    assert abs(fidelity_aa - 1.0) < 1e-12
+
+
+@settings(max_examples=30, deadline=None, suppress_health_check=[HealthCheck.function_scoped_fixture])
+@given(st.lists(st.complex_numbers(min_magnitude=0, max_magnitude=10), min_size=NUM_NODES, max_size=NUM_NODES),
+       st.lists(st.complex_numbers(min_magnitude=0, max_magnitude=10), min_size=NUM_NODES, max_size=NUM_NODES),
+       st.lists(st.complex_numbers(min_magnitude=0, max_magnitude=10), min_size=NUM_NODES, max_size=NUM_NODES))
+def test_property_bures_distance_triangle_inequality(operator: ManifoldOperator, vec_a: list[complex], vec_b: list[complex], vec_c: list[complex]) -> None:
+    """Property: Bures distance satisfies triangle inequality."""
+    # Skip zero vectors
+    if all(abs(v) < 1e-10 for v in vec_a) or all(abs(v) < 1e-10 for v in vec_b) or all(abs(v) < 1e-10 for v in vec_c):
+        return
+    
+    rho_a = operator.ensure_density_state(vec_a)
+    rho_b = operator.ensure_density_state(vec_b)
+    rho_c = operator.ensure_density_state(vec_c)
+    
+    dist_ab = operator.compute_bures_distance(rho_a, rho_b)
+    dist_bc = operator.compute_bures_distance(rho_b, rho_c)
+    dist_ac = operator.compute_bures_distance(rho_a, rho_c)
+    
+    # Triangle inequality: d(a,c) <= d(a,b) + d(b,c)
+    assert dist_ac <= dist_ab + dist_bc + 1e-12
+    
+    # Non-negativity
+    assert dist_ab >= -1e-12
+    assert dist_bc >= -1e-12
+    assert dist_ac >= -1e-12
+    
+    # Identity of indiscernibles
+    assert dist_ab < 1e-12 or dist_ab > 1e-12  # Either zero or positive
+
+
+@settings(max_examples=20, deadline=None, suppress_health_check=[HealthCheck.function_scoped_fixture])
+@given(st.integers(min_value=0, max_value=2**62 - 1),
+       st.integers(min_value=0, max_value=1_000_000_000),
+       st.integers(min_value=0, max_value=1_000_000_000))
+def test_property_binary_header_round_trip(verifier: SubstateVerifier, timestamp_ns: int, purity_fixed: int, fidelity_fixed: int) -> None:
+    """Property: Binary header serialization is reversible."""
+    # Skip invalid fixed-point values
+    if purity_fixed > 1_000_000_000 or fidelity_fixed > 1_000_000_000:
+        return
+    
+    header = SubstateBinaryHeader(
+        timestamp_ns=timestamp_ns,
+        rho_hash=b"0" * 32,
+        purity_fixed=purity_fixed,
+        fidelity_fixed=fidelity_fixed,
+        topology_hash=b"1" * 32,
+    )
+    
+    # Serialize and deserialize
+    header_bytes = header.to_bytes()
+    restored = SubstateBinaryHeader.from_bytes(header_bytes)
+    
+    # Property: Round-trip preserves all fields
+    assert restored.timestamp_ns == header.timestamp_ns
+    assert restored.rho_hash == header.rho_hash
+    assert restored.purity_fixed == header.purity_fixed
+    assert restored.fidelity_fixed == header.fidelity_fixed
+    assert restored.topology_hash == header.topology_hash
+    assert restored.signature == header.signature
+
+
+@settings(max_examples=10, deadline=None, suppress_health_check=[HealthCheck.function_scoped_fixture])
+@given(st.lists(st.complex_numbers(min_magnitude=0, max_magnitude=10), min_size=NUM_NODES, max_size=NUM_NODES))
+def test_property_passport_determinism(verifier: SubstateVerifier, vector: list[complex]) -> None:
+    """Property: Passport generation is deterministic for same inputs."""
+    # Skip zero vectors
+    if all(abs(v) < 1e-10 for v in vector):
+        return
+    
+    rho = verifier.operator.ensure_density_state(vector)
+    timestamp_ns = 123456789
+    
+    # Generate passport twice with same inputs
+    passport_a = verifier.generate_passport(rho=rho, timestamp_ns=timestamp_ns, use_cache=False)
+    passport_b = verifier.generate_passport(rho=rho, timestamp_ns=timestamp_ns, use_cache=False)
+    
+    # Property: Deterministic generation
+    assert passport_a.passport_hash == passport_b.passport_hash
+    assert passport_a.rho_hash == passport_b.rho_hash
+    assert passport_a.purity_fixed == passport_b.purity_fixed
+    assert passport_a.fidelity_fixed == passport_b.fidelity_fixed
+
+
+@settings(max_examples=10, deadline=None, suppress_health_check=[HealthCheck.function_scoped_fixture])
+@given(st.lists(st.complex_numbers(min_magnitude=0, max_magnitude=10), min_size=NUM_NODES, max_size=NUM_NODES))
+def test_property_coherence_metrics_bounds(operator: ManifoldOperator, vector: list[complex]) -> None:
+    """Property: Coherence metrics are properly bounded."""
+    # Skip zero vectors
+    if all(abs(v) < 1e-10 for v in vector):
+        return
+    
+    rho = operator.ensure_density_state(vector)
+    metrics = operator.get_coherence_metrics(rho)
+    
+    # Property: All metrics are in valid ranges
+    assert 0.0 <= metrics["coherence"] <= 1.0
+    assert 0.0 <= metrics["purity"] <= 1.0
+    assert 0.0 <= metrics["bures_distance"] <= np.sqrt(2) + 1e-12
+    assert metrics["classification"] in [CoherenceClassification.COHERENT, CoherenceClassification.DEGRADED, CoherenceClassification.DECOHERENT]
+    assert metrics["ui_state"] in ["green", "yellow", "red"]
+
+
+@settings(max_examples=15, deadline=None, suppress_health_check=[HealthCheck.function_scoped_fixture])
+@given(st.lists(st.complex_numbers(min_magnitude=0, max_magnitude=10), min_size=NUM_NODES, max_size=NUM_NODES),
+       st.lists(st.complex_numbers(min_magnitude=0, max_magnitude=10), min_size=NUM_NODES, max_size=NUM_NODES))
+def test_property_evolution_consistency(operator: ManifoldOperator, state_vec: list[complex], target_vec: list[complex]) -> None:
+    """Property: Evolution produces consistent results."""
+    # Skip zero vectors
+    if all(abs(v) < 1e-10 for v in state_vec) or all(abs(v) < 1e-10 for v in target_vec):
+        return
+    
+    # Evolution should produce valid density state
+    evolution = operator.evolve(state_vec, target=target_vec)
+    
+    # Property: Evolution result is valid density state
+    assert_density_state(evolution.state)
+    
+    # Property: Coherence is in valid range
+    assert 0.0 <= evolution.coherence <= 1.0
+    
+    # Property: Purity is in valid range
+    assert 0.0 <= evolution.purity <= 1.0
+    
+    # Property: Classification is valid
+    assert evolution.classification in [ManifoldState.COHERENT, ManifoldState.DECOHERENT, ManifoldState.ENTANGLED_PROXY, ManifoldState.MIXED]

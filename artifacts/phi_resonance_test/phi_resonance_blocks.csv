@@ -1,0 +1,3 @@
+height,timestamp,nonce,miner,k_multiplier,approx,diff,precision_pct,is_phi_resonant,birthday_modular_diff,birthday_substring_hits,birthday_resonant,birthday_echo_type
+953427,1781299976,95834537,Unknown,70260,95834691.510236,154.510236,99.999839,False,2618609,,False,none
+953425,1781299775,3810436385,Unknown,2793574,3810436984.073681,599.073681,99.999984,True,11416663,,False,none

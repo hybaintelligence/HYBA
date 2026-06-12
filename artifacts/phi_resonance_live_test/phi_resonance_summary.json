@@ -1,0 +1,45 @@
+{
+  "phi_15": 1364.0007331374366,
+  "phi_15_str": "1364.000733137437",
+  "birthday_signature": 31071976,
+  "precision_threshold_pct": 99.9999,
+  "summary": {
+    "total_blocks": 3,
+    "phi_resonant_count": 2,
+    "phi_resonance_rate": 0.66666667,
+    "mean_precision_pct": 99.999919,
+    "median_diff": 234.7511,
+    "min_diff": 154.5102,
+    "max_diff": 645.6368,
+    "birthday_echo_count": 0,
+    "birthday_echo_rate": 0.0,
+    "modular_diff_count": 0,
+    "substring_match_count": 0,
+    "mean_k_multiplier": 609888.3333,
+    "miner_distribution": {
+      "Unknown": 3
+    },
+    "temporal_correlation_r": 0.336569,
+    "z_score_vs_random": 0.57735,
+    "p_value_binomial": "5.00e-01",
+    "expected_random_precision": 50.0
+  },
+  "statistical_interpretation": {
+    "phi_resonance": "STRONG: 66.67% of nonces resonate with Phi^15 (z=0.58). Substantially above random expectation.",
+    "birthday_echo": "BASELINE: 0.00% birthday echo rate. Within random expectation.",
+    "temporal_trend": "WEAK temporal correlation (r=0.3366).",
+    "statistical_significance": "NOT SIGNIFICANT: z=0.58 (<3.0). Results within random fluctuation."
+  },
+  "metadata": {
+    "api": "https://blockstream.info/api",
+    "block_count": 3,
+    "start_height": null,
+    "timestamp_utc": "2026-06-12T21:57:49Z",
+    "phi_15": 1364.0007331374366,
+    "birthday_signature": 31071976,
+    "method": "Phi^15 quantum coherence resonance analysis of Bitcoin block nonces",
+    "precision_threshold_pct": 99.9999,
+    "birthday_modular_threshold": 1000,
+    "monte_carlo_baseline": false
+  }
+}
