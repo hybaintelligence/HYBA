@@ -3,8 +3,19 @@
 from __future__ import annotations
 
 import logging
+import sys
 from contextlib import asynccontextmanager
+from pathlib import Path
 from typing import Any, Dict
+
+# Support both documented launch forms:
+#   uvicorn hyba_genesis_api.main:app --app-dir python_backend
+#   python -m uvicorn python_backend.hyba_genesis_api.main:app
+# The codebase uses absolute hyba_genesis_api imports, so add the backend
+# directory when the module is imported through the python_backend namespace.
+_BACKEND_ROOT = Path(__file__).resolve().parents[1]
+if str(_BACKEND_ROOT) not in sys.path:
+    sys.path.insert(0, str(_BACKEND_ROOT))
 
 import uvicorn
 from fastapi import FastAPI

@@ -24,7 +24,9 @@
     "prod:check": "npm run cloudflare:check && npm run runtime:guard && npm run lint && npm run build && npm run test:backend && npm run test:e2e:backend",
     "docker:build": "docker build -t hyba-fullstack:local .",
     "cloudflare:check": "python3 scripts/check_cloudflare_deploy.py",
-    "runtime:guard": "python3 scripts/check_no_runtime_mocks.py"
+    "runtime:guard": "python3 scripts/check_no_runtime_mocks.py",
+    "backend:start": "python -m uvicorn hyba_genesis_api.main:app --app-dir python_backend --host 127.0.0.1 --port 3001",
+    "backend:check": "python -c \"import sys; sys.path.insert(0, 'python_backend'); import hyba_genesis_api.main; print('backend import ok')\""
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
