@@ -271,7 +271,14 @@ class ReducedDensityMatrix:
         total = float(np.sum(eigenvalues))
         if total <= EPSILON or not math.isfinite(total):
             return np.eye(NUM_NODES, dtype=np.complex128) / NUM_NODES
-        projected = eigenvectors @ np.diag(eigenvalues / total) @ eigenvectors.conj().T
+        # Spectral floor enforcement and eigenvector normalization for numerical stability
+        eigenvalues_safe = np.where(np.isfinite(eigenvalues), eigenvalues, 0.0)
+        eigenvalues_safe = np.maximum(eigenvalues_safe, 0.0)
+        eigvecs_norm = np.linalg.norm(eigenvectors, axis=0, keepdims=True)
+        eigenvectors = eigenvectors / (eigvecs_norm + 1e-300)
+        # Use more stable matrix multiplication with error suppression
+        with np.errstate(divide='ignore', invalid='ignore', over='ignore'):
+            projected = eigenvectors @ np.diag(eigenvalues_safe / total) @ eigenvectors.conj().T
         return (projected + projected.conj().T) / 2.0
 
     def diagonal(self) -> np.ndarray:

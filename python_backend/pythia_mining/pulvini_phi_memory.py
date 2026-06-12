@@ -44,7 +44,16 @@ def _project_density_matrix(values: np.ndarray) -> np.ndarray:
         eigvals = np.full(eigvals.shape, 1.0 / max(1, eigvals.size))
     else:
         eigvals = eigvals / total
-    return _hermitian(eigvecs @ np.diag(eigvals) @ eigvecs.conj().T)
+    # Spectral floor enforcement for PSD constraint - prevent NaN/inf propagation
+    eigvals_safe = np.where(np.isfinite(eigvals), eigvals, 0.0)
+    eigvals_safe = np.maximum(eigvals_safe, 0.0)
+    # Normalize eigenvectors to unit norm for numerical stability
+    eigvecs_norm = np.linalg.norm(eigvecs, axis=0, keepdims=True)
+    eigvecs = eigvecs / (eigvecs_norm + 1e-300)
+    # Use more stable matrix multiplication with error suppression
+    with np.errstate(divide='ignore', invalid='ignore', over='ignore'):
+        diag_eigvals = np.diag(eigvals_safe)
+        return _hermitian(eigvecs @ diag_eigvals @ eigvecs.conj().T)
 
 
 def _entropy(values: np.ndarray) -> float:

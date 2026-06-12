@@ -26,6 +26,11 @@ class PulviniPhiMemoryCompressionTests(unittest.TestCase):
         self.assertGreater(result.retained_kernel_bytes, 0)
         self.assertGreater(result.working_set_compression_ratio, 1.0)
         self.assertTrue(np.allclose(engine.decompress(result), payload))
+        # Numerical validity assertions
+        self.assertFalse(np.any(np.isnan(result.folded)), "NaN in folded output — numerical corruption")
+        self.assertFalse(np.any(np.isinf(result.folded)), "Inf in folded output — overflow")
+        self.assertFalse(np.any(np.isnan(result.reconstructed)), "NaN in reconstructed output — numerical corruption")
+        self.assertFalse(np.any(np.isinf(result.reconstructed)), "Inf in reconstructed output — overflow")
 
     def test_matrix_telemetry_reports_quantum_memory_metrics(self) -> None:
         matrix = np.eye(8, dtype=np.complex128) / 8.0
@@ -38,6 +43,11 @@ class PulviniPhiMemoryCompressionTests(unittest.TestCase):
         self.assertIsNotNone(result.entropy)
         self.assertLessEqual(result.trace_distance or 0.0, 1e-9)
         self.assertLessEqual(result.hermiticity_error or 0.0, 1e-9)
+        # Numerical validity assertions
+        self.assertFalse(np.any(np.isnan(result.folded)), "NaN in folded output — numerical corruption")
+        self.assertFalse(np.any(np.isinf(result.folded)), "Inf in folded output — overflow")
+        self.assertFalse(np.any(np.isnan(result.reconstructed)), "NaN in reconstructed output — numerical corruption")
+        self.assertFalse(np.any(np.isinf(result.reconstructed)), "Inf in reconstructed output — overflow")
 
     def test_stream_compression_tracks_working_set_ratio(self) -> None:
         chunks = [np.arange(32, dtype=np.float64), np.arange(32, 96, dtype=np.float64)]
@@ -58,6 +68,10 @@ class PulviniPhiMemoryCompressionTests(unittest.TestCase):
         self.assertTrue(snapshot["compression"]["reversible"])
         self.assertGreater(snapshot["compression"]["working_set_compression_ratio"], 1.0)
         self.assertGreater(snapshot["compression"]["retained_kernel_bytes"], 0)
+        # Numerical validity assertions - check compression output instead of kernel_values
+        compression_dict = snapshot["compression"]
+        self.assertFalse(np.isnan(compression_dict.get("reconstruction_error", 0.0)), "NaN in reconstruction error — numerical corruption")
+        self.assertFalse(np.isinf(compression_dict.get("reconstruction_error", 0.0)), "Inf in reconstruction error — overflow")
 
 
 if __name__ == "__main__":

@@ -5,6 +5,8 @@ import sys
 import unittest
 from pathlib import Path
 
+import numpy as np
+
 ROOT = Path(__file__).resolve().parents[1]
 BACKEND = ROOT / "python_backend"
 if str(BACKEND) not in sys.path:
@@ -52,9 +54,19 @@ class PulviniEndToEndShareFlowTests(unittest.TestCase):
             cert = bures_certificate(overlay.manifold.rho, overlay.manifold.entropy_gradient)
             self.assertTrue(cert.closed)
             self.assertEqual("Bures", cert.metric)
+            # Numerical validity assertions for Bures certificate
+            self.assertFalse(np.isnan(cert.bures_norm), "NaN in Bures norm — numerical corruption")
+            self.assertFalse(np.isinf(cert.bures_norm), "Inf in Bures norm — overflow")
+            self.assertFalse(np.isnan(cert.tangent_norm), "NaN in tangent norm — numerical corruption")
+            self.assertFalse(np.isinf(cert.tangent_norm), "Inf in tangent norm — overflow")
 
             overlay.phase_heartbeat(1)
             overlay.manifold.evolve_closed_system(dt=0.05)
+            # Numerical validity assertions for evolved state
+            self.assertFalse(np.any(np.isnan(overlay.manifold.psi)), "NaN in evolved state vector — numerical corruption")
+            self.assertFalse(np.any(np.isinf(overlay.manifold.psi)), "Inf in evolved state vector — overflow")
+            self.assertFalse(np.any(np.isnan(overlay.manifold.rho)), "NaN in evolved density matrix — numerical corruption")
+            self.assertFalse(np.any(np.isinf(overlay.manifold.rho)), "Inf in evolved density matrix — overflow")
             await solver.configure_compressed_search(job.target, plan)
             nonce = await solver.solve(max_iterations=16, timeout=5.0)
             self.assertIsNotNone(nonce)
@@ -90,7 +102,7 @@ class PulviniEndToEndShareFlowTests(unittest.TestCase):
             self.assertEqual(20, snapshot["nonce_compression_plan"]["working_set_dimension"])
             self.assertTrue(ledger["accepted"])
             self.assertIsNotNone(ledger["compressed_coordinate"])
-            self.assertEqual("O(I)", solver.current_config["search_complexity_order"])
+            self.assertEqual("O(1) deterministic per attempt, O(D/2^256) expected attempts to block", solver.current_config["candidate_generation_complexity"])
             stages = [entry["stage"] for entry in solver.last_solve_trace]
             self.assertIn("compressed_nonce_space_received", stages)
             self.assertIn("search_space_collapsed", stages)

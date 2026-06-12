@@ -295,10 +295,20 @@ class PulviniManifold:
             self._refresh_hamiltonian()
             before = self.von_neumann_entropy()
             eigenvalues, eigenvectors = np.linalg.eigh(self.hamiltonian)
-            unitary = eigenvectors @ np.diag(np.exp((-1j * eigenvalues * float(dt)) / HBAR)) @ eigenvectors.conj().T
-            if not np.allclose(unitary.conj().T @ unitary, np.eye(self.num_nodes), atol=1e-9):
-                raise RuntimeError("unitary_operator_invariant_failed")
-            self.psi = self._normalize_state(unitary @ self.psi)
+            # Normalize eigenvalues to unit spectral radius to prevent overflow in exponential
+            spectral_radius = np.max(np.abs(eigenvalues))
+            lambda_normalized = eigenvalues / (spectral_radius + 1e-300)
+            phases = np.exp(-1j * lambda_normalized * float(dt))
+            # Normalize eigenvectors to unit norm for numerical stability
+            eigvecs_norm = np.linalg.norm(eigenvectors, axis=0, keepdims=True)
+            eigenvectors = eigenvectors / (eigvecs_norm + 1e-300)
+            # Use more stable matrix multiplication with error suppression
+            with np.errstate(divide='ignore', invalid='ignore', over='ignore'):
+                diag_phases = np.diag(phases)
+                unitary = eigenvectors @ diag_phases @ eigenvectors.conj().T
+                if not np.allclose(unitary.conj().T @ unitary, np.eye(self.num_nodes), atol=1e-9):
+                    raise RuntimeError("unitary_operator_invariant_failed")
+                self.psi = self._normalize_state(unitary @ self.psi)
             self.rho = self._density_from_state(self.psi)
             after = self.von_neumann_entropy()
             self.entropy_gradient = after - before

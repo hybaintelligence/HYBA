@@ -71,7 +71,7 @@ class PulviniNonceCompressionTests(unittest.TestCase):
             plan = PulviniNonceSpaceCompressor().build_plan()
             solver = PulviniCompressedQuantumSolver()
             await solver.configure_compressed_search(1, plan)
-            self.assertEqual("O(I)", solver.current_config["search_complexity_order"])
+            self.assertEqual("O(1) deterministic per attempt, O(D/2^256) expected attempts to block", solver.current_config["candidate_generation_complexity"])
             self.assertTrue(solver.current_config["complete_nonce_coverage"])
             self.assertTrue(solver.current_config["overlap_free_nonce_coverage"])
             self.assertEqual(20, solver.current_config["compressed_working_set_size"])

@@ -4,7 +4,28 @@ This document explains the production-facing quantum mining layer, the mathemati
 
 ## 1. Mathematical model
 
-The current solver implements a bounded Grover-style amplitude amplification routine over a 20-state dodecahedral basis.
+The current solver implements a bounded Grover-style amplitude amplification routine over a **20-state dodecahedral basis**. This is NOT an unstructured search over the full 2^32 nonce space — it is a structurally-guided basis selection mechanism that operates on a small symbolic basis and projects results back into nonce ranges.
+
+### Scope clarification
+
+| Parameter | Value | Meaning |
+|---|---|---|
+| Basis dimension (N) | 20 | Dodecahedron vertices |
+| Nonce space | 2^32 | Full uint32 range |
+| Marked states (M) | 1 | Target-derived marked index |
+| Theoretical optimal steps | floor(π/4 × √(20/1)) = 3 | Grover iterations on basis |
+| Nonce projection | Offset % search_space | Basis index → nonce candidate |
+
+The Grover iteration operates **only** on the 20-dimensional dodecahedral basis. The measured basis index is projected into the configured nonce ranges. **No quantum speedup over SHA-256 preimage search is claimed or implied.** The actual hash verification (double-SHA256) is still performed classically.
+
+A scope certificate is available for any configuration via:
+
+```python
+from pythia_mining.pulvini_grover_certificate import grover_scope_certificate
+cert = grover_scope_certificate(target=target, nonce_ranges=nonce_ranges)
+assert not cert.quantum_speedup_claimed
+assert cert.deterministic_behavior
+```
 
 ### Grover search
 
@@ -18,7 +39,32 @@ For the current dodecahedral basis, `N = 20`. The solver treats the marked state
 
 Reference: Lov K. Grover, *A fast quantum mechanical algorithm for database search*, 1996, arXiv:quant-ph/9605043.
 
-### Dodecahedral basis
+### Efficiency comparison
+
+A honest side-by-side comparison shows the true scope:
+
+| Configuration | Theoretical steps | Notes |
+|---|---|---|
+| Grover on N=20 (this system) | ~3 | Basis selection, not SHA-256 acceleration |
+| Grover on N=2^32 (full space) | ~65,535 | Not implemented — requires quantum computer |
+| Classical brute force (2^32) | 4,294,967,296 | Full nonce enumeration |
+
+The ~3-step Grover iteration selects **which nonce to try**, not whether it solves the hash. The actual hash verification is classical double-SHA256.
+
+Full efficiency report:
+```python
+from pythia_mining.pulvini_grover_certificate import grover_efficiency_report
+report = grover_efficiency_report()
+```
+
+### Caveat for pool operators
+
+The deterministic nonce selection means that for the same pool job (same target and nonce ranges), the solver will produce the **same nonce candidate first**. This is not a bug — it is a design property that makes behavior predictable and auditable. It also means:
+- Each new pool job (with different target) produces a different nonce sequence.
+- Nonce-space coverage is maintained by the 32-lane partition, not by random sampling.
+- The solver's advantage is structured coverage, not brute-force speed.
+
+### Dodecahedral basis (basis selection, not nonce enumeration)
 
 The dodecahedral basis uses the 20 vertices of a regular dodecahedron:
 
@@ -37,7 +83,7 @@ exp(i * 2π * k * Φ)
 
 This keeps the representation deterministic and auditable while retaining dodecahedral symmetry in the complex state vector.
 
-### Oracle and diffusion operators
+### Oracle and diffusion operators (on 20-state basis only)
 
 The Grover loop applies:
 

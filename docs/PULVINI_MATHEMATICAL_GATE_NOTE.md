@@ -99,6 +99,60 @@ Bures-metric derivation implemented on the density-matrix manifold.
 | Du Sautoy automorphism | Compute from runtime adjacency map | CLOSED |
 | Empirical phi nonce evidence | Measure acceptance and compare against trivial/geometric baselines | MEASURED; UNIFORM LANE NULL NOT REJECTED |
 
+## New certificates (added 2026-06-12)
+
+The following certificates were added to close documentation gaps and provide
+mathematically precise scope statements for each innovation claim.
+
+### Grover scope certificate
+Source: `pulvini_grover_certificate.py`
+
+Documents that the Grover iteration operates on the 20-state dodecahedral basis,
+NOT the full 2^32 nonce space. Provides:
+- Exact basis dimension, nonce space size, and marked state count.
+- Theoretical optimal Grover steps vs. actual iterations.
+- A `quantum_speedup_claimed: False` flag — no quantum speedup over SHA-256.
+- A `deterministic_behavior: True` flag — same config yields same nonce.
+- An honest efficiency comparison table.
+
+### Deterministic coverage certificate
+Source: `pulvini_coverage_certificate.py`
+
+Proves that the 32 PULVINI lanes partition the uint32 nonce space:
+- Complete coverage — every nonce belongs to exactly one lane.
+- Overlap-free — lane segments are disjoint.
+- Automorphism-invariant — the action sigma(q*N+r)=q*N+sigma(r) is a bijection.
+- The automorphism group |Aut(G)|=120 preserves coverage structure.
+
+### D/I structural certificate
+Source: `pulvini_structural_certificate.py`
+
+Proves the dodecahedral/icosahedral compound structure of the 32 PULVINI nodes:
+- 20 D-nodes (degree 3, dodecahedral vertices).
+- 12 I-nodes (degree 5/10, icosahedral vertices/faces).
+- Graph is fully connected (single component).
+- All 120 automorphisms preserve adjacency exactly.
+- Explicitly disclaims SHA-256 search advantage from D/I structure.
+
+### Bures variational certificate
+Source: `pulvini_bures_variational.py`
+
+Closes the Penrose variational gate with a full Bures-metric derivation:
+- C[rho] = |dS/dt| * ||OffDiag(rho)||_F under the Bures metric.
+- grad_Bures C = 2 * (rho @ flat_grad + flat_grad @ rho).
+- Stationary classifications: trivial (zero product) vs. non-trivial (eigenbasis alignment).
+- The non-trivial stationary point IS the collapse criterion.
+
+### Memory compression proof
+Source: `pulvini_memory_compression_proof.py`
+
+Proves that phi-folding compression is reversible and complete:
+- Algebraic proof: the fold/unfold transform has non-zero determinant.
+- Numerical proof: reconstruction error < 1e-9 for lane surfaces and density matrices.
+- Complete coverage: original data is fully recoverable from folded + kernels.
+- Deterministic: same input yields same folded output.
+- Heavy-tail preserving: statistical structure is maintained.
+
 ## CI status note
 
 The requested CI failure log has not been read in this local environment. The

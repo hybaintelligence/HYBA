@@ -27,7 +27,7 @@ class PulviniCompressedQuantumSolver(DodecahedralQuantumSolver):
         self.current_config.update(
             {
                 "nonce_space_contract": "pulvini_phi_compressed_pre_search",
-                "search_complexity_order": "O(I)",
+                "candidate_generation_complexity": "O(1) deterministic per attempt, O(D/2^256) expected attempts to block",
                 "complete_nonce_coverage": True,
                 "overlap_free_nonce_coverage": True,
                 "original_lanes": int(compressed_plan.original_lanes),
@@ -157,7 +157,7 @@ class PulviniCompressedQuantumSolver(DodecahedralQuantumSolver):
         metrics.update(
             {
                 "nonce_space_contract": self.current_config.get("nonce_space_contract"),
-                "search_complexity_order": self.current_config.get("search_complexity_order"),
+                "candidate_generation_complexity": self.current_config.get("candidate_generation_complexity"),
                 "compressed_working_set_size": self.current_config.get("compressed_working_set_size"),
                 "retained_kernel_lanes": self.current_config.get("retained_kernel_lanes"),
                 "complete_nonce_coverage": self.current_config.get("complete_nonce_coverage"),

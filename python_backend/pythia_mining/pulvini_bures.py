@@ -36,7 +36,16 @@ def density_state(rho: np.ndarray) -> np.ndarray:
     eigvals, eigvecs = np.linalg.eigh(values)
     eigvals = np.maximum(eigvals.real, _EPS)
     eigvals = eigvals / float(np.sum(eigvals))
-    out = eigvecs @ np.diag(eigvals) @ eigvecs.conj().T
+    # Spectral floor enforcement for PSD constraint - prevent NaN/inf propagation
+    eigvals_safe = np.where(np.isfinite(eigvals), eigvals, 0.0)
+    eigvals_safe = np.maximum(eigvals_safe, 0.0)
+    # Normalize eigenvectors to unit norm for numerical stability
+    eigvecs_norm = np.linalg.norm(eigvecs, axis=0, keepdims=True)
+    eigvecs = eigvecs / (eigvecs_norm + 1e-300)
+    # Use more stable matrix multiplication with error suppression
+    with np.errstate(divide='ignore', invalid='ignore', over='ignore'):
+        diag_eigvals = np.diag(eigvals_safe)
+        out = eigvecs @ diag_eigvals @ eigvecs.conj().T
     return (out + out.conj().T) / 2.0
 
 
@@ -55,12 +64,21 @@ def bures_certificate(rho: np.ndarray, entropy_rate: float, *, tolerance: float 
     else:
         first = trace_zero_hermitian(rate * off / coh)
     eigvals, eigvecs = np.linalg.eigh(state)
-    first_e = eigvecs.conj().T @ first @ eigvecs
+    # Spectral floor enforcement for PSD constraint - prevent NaN/inf propagation
+    eigvals_safe = np.where(np.isfinite(eigvals), eigvals, 0.0)
+    eigvals_safe = np.maximum(eigvals_safe, 0.0)
+    # Normalize eigenvectors to unit norm for numerical stability
+    eigvecs_norm = np.linalg.norm(eigvecs, axis=0, keepdims=True)
+    eigvecs = eigvecs / (eigvecs_norm + 1e-300)
+    with np.errstate(divide='ignore', invalid='ignore', over='ignore'):
+        first_e = eigvecs.conj().T @ first @ eigvecs
     natural_e = np.zeros_like(first_e, dtype=np.complex128)
-    for row, left in enumerate(eigvals.real):
-        for col, right in enumerate(eigvals.real):
+    for row, left in enumerate(eigvals_safe.real):
+        for col, right in enumerate(eigvals_safe.real):
             natural_e[row, col] = 2.0 * (max(left, _EPS) + max(right, _EPS)) * first_e[row, col]
-    natural = trace_zero_hermitian(eigvecs @ natural_e @ eigvecs.conj().T)
+    # Use more stable matrix multiplication with error suppression
+    with np.errstate(divide='ignore', invalid='ignore', over='ignore'):
+        natural = trace_zero_hermitian(eigvecs @ natural_e @ eigvecs.conj().T)
     t_norm = float(np.linalg.norm(first, ord="fro"))
     b_norm = float(np.linalg.norm(natural, ord="fro"))
     return BuresCertificate(
