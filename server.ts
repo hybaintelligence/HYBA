@@ -20,7 +20,7 @@
  *   PULVINI_BACKEND_URL             : upstream FastAPI URL (default http://127.0.0.1:3001)
  *   JWT_SECRET                      : required in production
  *   NODE_ENV                        : "production" | "development"
- *   HYBA_SPAWN_BACKEND              : "false" to disable auto-spawn
+ *   HYBA_SPAWN_BACKEND              : "false" to disable local backend auto-spawn
  *   HYBA_ENABLE_MINING_AUTOCONNECT  : explicit, default-false mining autoconnect gate
  *   HYBA_INTERNAL_HEALTH_TOKEN      : protects detailed health/metrics in production
  *   BACKEND_PROXY_TIMEOUT_MS        : proxy timeout (default 30000)
@@ -32,9 +32,10 @@ import dotenv from "dotenv";
 import express, { type NextFunction, type Request, type Response } from "express";
 import helmet from "helmet";
 import path from "node:path";
+import os from "node:os";
 import { spawn, type ChildProcessWithoutNullStreams } from "node:child_process";
 import { createServer, type Server } from "node:http";
-import { randomUUID } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import pino from "pino";
 import pinoHttp from "pino-http";
 import rateLimit from "express-rate-limit";
@@ -69,7 +70,7 @@ const CONFIG = {
   host: process.env.HOST || "0.0.0.0",
   port: Number(process.env.PORT || 3000),
   backendUrl: normalizeBackendUrl(process.env.PULVINI_BACKEND_URL || "http://127.0.0.1:3001"),
-  shouldSpawnBackend: process.env.NODE_ENV !== "production" && process.env.HYBA_SPAWN_BACKEND !== "false",
+  shouldSpawnBackend: process.env.HYBA_SPAWN_BACKEND !== "false",
   enableMiningAutoConnect: TRUE_VALUES.has((process.env.HYBA_ENABLE_MINING_AUTOCONNECT || "false").toLowerCase()),
   proxyTimeoutMs: Number(process.env.BACKEND_PROXY_TIMEOUT_MS || 30000),
   rateLimitWindowMs: Number(process.env.RATE_LIMIT_WINDOW_MS || 60000),
@@ -138,7 +139,17 @@ function normalizeBackendUrl(value: string): URL {
 }
 
 function getPythonCommand(): string {
-  return process.platform === "win32" ? "python" : "python3";
+  return process.env.PYTHON || (process.platform === "win32" ? "python" : "python3");
+}
+
+function getBackendPort(): string {
+  if (CONFIG.backendUrl.port) return CONFIG.backendUrl.port;
+  return CONFIG.backendUrl.protocol === "https:" ? "443" : "80";
+}
+
+function getViteCacheDir(projectRoot: string): string {
+  const projectHash = createHash("sha256").update(projectRoot).digest("hex").slice(0, 12);
+  return path.join(os.tmpdir(), "hyba-vite-cache", projectHash);
 }
 
 function generateRequestId(): string {
@@ -228,7 +239,7 @@ function spawnBackend(): void {
     return;
   }
 
-  const backendPort = CONFIG.backendUrl.port;
+  const backendPort = getBackendPort();
   const backendHost = CONFIG.backendUrl.hostname;
 
   if (!["127.0.0.1", "localhost"].includes(backendHost)) {
@@ -522,6 +533,7 @@ async function startServer(): Promise<void> {
     const viteInlineConfig: InlineConfig = {
       configFile: false,
       root: projectRoot,
+      cacheDir: getViteCacheDir(projectRoot),
       plugins: [react(), tailwindcss()],
       resolve: {
         alias: {
