@@ -253,7 +253,11 @@ class ConsciousnessEngine:
     def _lag_one_correlation(values: NDArray[np.float64]) -> float:
         if values.size < 2 or np.allclose(values, values[0]):
             return 0.0
-        corr = np.corrcoef(values[:-1], values[1:])[0, 1]
+        left = values[:-1]
+        right = values[1:]
+        if np.allclose(left, left[0]) or np.allclose(right, right[0]):
+            return 0.0
+        corr = np.corrcoef(left, right)[0, 1]
         return float(0.0 if np.isnan(corr) else np.clip(corr, -1.0, 1.0))
 
     @staticmethod
