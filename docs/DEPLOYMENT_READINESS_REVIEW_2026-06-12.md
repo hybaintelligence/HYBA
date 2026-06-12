@@ -55,6 +55,10 @@ The treasury boundary note records backend tests with 222 ran, 7 failures, and 9
 
 The mining captures show submitted, accepted, and rejected shares at zero. This is consistent with controlled connection rehearsal, but it is not revenue evidence.
 
+### 3.5 Redacted environment summary mismatch
+
+`HYBA_FULLSTACK_COMMAND_ROOM_20260612/production_env_redacted.txt` shows `NODE_ENV=development`, while the runtime logs show the bridge started in production mode. The production runtime evidence is stronger than the stale/redacted env summary, but a corrected production env summary should be captured before board, treasury, payroll, or office reliance.
+
 ## 4. Remediation already applied
 
 The Windows validation helper has been hardened so it:
@@ -69,16 +73,17 @@ The Windows validation helper has been hardened so it:
 Before live share submission or treasury reliance, produce a clean command-room folder with:
 
 1. raw local production gate JSON packets;
-2. fresh inactive pre-connect mining status capture;
-3. live environment gate JSON packet;
-4. bridge health capture;
-5. backend readiness capture;
-6. authenticated operator identity/role evidence;
-7. signed approval ticket from CEO, Treasury, Legal, Security, and Operations;
-8. live share submission disabled at startup;
-9. explicit operator action to start mining;
-10. pool-side accepted/rejected share export or screenshot;
-11. post-window reconciliation against local counters.
+2. corrected redacted production environment summary;
+3. fresh inactive pre-connect mining status capture;
+4. live environment gate JSON packet;
+5. bridge health capture;
+6. backend readiness capture;
+7. authenticated operator identity/role evidence;
+8. signed approval ticket from CEO, Treasury, Legal, Security, and Operations;
+9. live share submission disabled at startup;
+10. explicit operator action to start mining;
+11. pool-side accepted/rejected share export or screenshot;
+12. post-window reconciliation against local counters.
 
 ## 6. Readiness label
 
