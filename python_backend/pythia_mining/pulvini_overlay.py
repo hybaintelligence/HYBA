@@ -2,16 +2,20 @@
 
 from __future__ import annotations
 
+import math
 import time
 from collections import deque
 from dataclasses import asdict, dataclass, field
 from threading import RLock
-from typing import Any, Dict, List, Optional, Tuple
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
 
 from .pulvini_manifold import PulviniManifold
 from .pulvini_nonce_compression import PulviniNonceSpaceCompressor
 
 from .pulvini_topology import ADJACENCY_MAP, MAX_UINT32_NONCE, NONCE_BITS, NUM_NODES, SLICE_SIZE
+
+if TYPE_CHECKING:
+    from .pulvini_autonomics import NodeTelemetry
 
 def get_geometric_neighbors(node_id: int) -> List[int]:
     if node_id not in ADJACENCY_MAP:
@@ -67,8 +71,18 @@ class NeuralLink:
         avg = sum(self._history) / len(self._history)
         self.weight = 1.0 / (avg + 1e-9)
 
+    def average_trip_seconds(self) -> Optional[float]:
+        if not self._history:
+            return None
+        return sum(self._history) / len(self._history)
+
     def to_dict(self) -> Dict[str, Any]:
-        return {"target_id": self.target_id, "weight": self.weight, "samples": len(self._history)}
+        return {
+            "target_id": self.target_id,
+            "weight": self.weight,
+            "samples": len(self._history),
+            "average_trip_seconds": self.average_trip_seconds(),
+        }
 
 
 @dataclass
@@ -82,6 +96,7 @@ class NodeAssignment:
     neighbors: List[int]
     tensor_coordinate: Dict[str, Any]
     compressed_coordinate: Dict[str, Any]
+    healing_ranges: List[Dict[str, Any]] = field(default_factory=list)
 
     def to_dict(self) -> Dict[str, Any]:
         return asdict(self)
@@ -177,6 +192,8 @@ class PulviniOverlayConcentrator:
         }
         self.lifecycle: List[Dict[str, Any]] = []
         self.share_ledger: List[Dict[str, Any]] = []
+        self.healing_routes: List[Dict[str, Any]] = []
+        self.autonomic_ledger: List[Dict[str, Any]] = []
         self._lock = RLock()
 
     @property
@@ -272,6 +289,13 @@ class PulviniOverlayConcentrator:
         return [coordinate.to_dict() for coordinate in self.manifold.tensor_coordinates()]
 
     def assignment_for_nonce(self, nonce: int) -> Optional[NodeAssignment]:
+        nonce = int(nonce)
+        for route in reversed(self.healing_routes):
+            start, end = route["nonce_range"]
+            if int(start) <= nonce <= int(end):
+                recipient = self.assignments.get(int(route["recipient_node"]))
+                if recipient is not None:
+                    return recipient
         for assignment in self.assignments.values():
             if assignment.nonce_start <= nonce <= assignment.nonce_end:
                 return assignment
@@ -344,6 +368,72 @@ class PulviniOverlayConcentrator:
         route = self.manifold.gradient_route_to_gateway(node_id)
         return route[1] if len(route) > 1 else None
 
+    def record_autonomic_event(self, event: Dict[str, Any]) -> None:
+        with self._lock:
+            payload = {"timestamp": time.time(), **dict(event)}
+            self.autonomic_ledger.append(payload)
+            if len(self.autonomic_ledger) > 256:
+                del self.autonomic_ledger[: len(self.autonomic_ledger) - 256]
+            self._append_event("autonomic_event", event_type=payload.get("event_type"), node_id=payload.get("node_id"))
+
+    def apply_lattice_repoint(self, command: Dict[str, Any]) -> None:
+        with self._lock:
+            failed_node = int(command["failed_node"])
+            recipient_node = int(command["recipient_node"])
+            nonce_start, nonce_end = [int(value) for value in command["nonce_range"]]
+            route = {
+                "failed_node": failed_node,
+                "recipient_node": recipient_node,
+                "nonce_range": [nonce_start, nonce_end],
+                "source_nonce_range": list(command.get("source_nonce_range", [nonce_start, nonce_end])),
+                "partition_index": int(command.get("partition_index", 0)),
+                "partition_count": int(command.get("partition_count", 1)),
+                "fraction": float(command["fraction"]),
+                "timestamp": time.time(),
+            }
+            route_key = (failed_node, recipient_node, nonce_start, nonce_end)
+            self.healing_routes = [
+                existing for existing in self.healing_routes
+                if (int(existing["failed_node"]), int(existing["recipient_node"]), int(existing["nonce_range"][0]), int(existing["nonce_range"][1])) != route_key
+            ]
+            self.healing_routes.append(route)
+            if len(self.healing_routes) > 512:
+                del self.healing_routes[: len(self.healing_routes) - 512]
+            if recipient_node in self.assignments:
+                assignment = self.assignments[recipient_node]
+                assignment.healing_ranges = [
+                    existing for existing in assignment.healing_ranges
+                    if (int(existing["failed_node"]), int(existing["recipient_node"]), int(existing["nonce_range"][0]), int(existing["nonce_range"][1])) != route_key
+                ]
+                assignment.healing_ranges.append(route)
+            if failed_node in self.nodes:
+                self.nodes[failed_node].phase = "autonomic_repointed"
+                self.nodes[failed_node].last_update = time.time()
+            if recipient_node in self.nodes:
+                self.nodes[recipient_node].phase = "autonomic_healing"
+                self.nodes[recipient_node].last_update = time.time()
+            self._append_event(
+                "lattice_repointed",
+                failed_node=failed_node,
+                recipient_node=recipient_node,
+                nonce_range=[nonce_start, nonce_end],
+                fraction=float(command["fraction"]),
+            )
+
+    def healing_ranges_overlap_free(self) -> bool:
+        ranges_by_recipient: Dict[int, List[Tuple[int, int]]] = {}
+        for route in self.healing_routes:
+            recipient = int(route["recipient_node"])
+            ranges_by_recipient.setdefault(recipient, []).append((int(route["nonce_range"][0]), int(route["nonce_range"][1])))
+        for recipient, assignment in self.assignments.items():
+            ranges_by_recipient.setdefault(recipient, []).append((int(assignment.nonce_start), int(assignment.nonce_end)))
+        for ranges in ranges_by_recipient.values():
+            ordered = sorted(ranges)
+            for left, right in zip(ordered, ordered[1:]):
+                if left[1] >= right[0]:
+                    return False
+        return True
+
     def record_link_latency(self, source_id: int, target_id: int, trip_seconds: float) -> None:
         if target_id not in self.links.get(source_id, {}):
             raise ValueError(f"nodes {source_id}->{target_id} are not adjacent in PULVINI topology")
@@ -358,6 +448,63 @@ class PulviniOverlayConcentrator:
 
     def gradient_cancel_order(self) -> List[int]:
         return self.manifold.gradient_broadcast_order()
+
+    def autonomic_telemetry(self, *, power_scale: float = 1.0) -> List["NodeTelemetry"]:
+        from .pulvini_autonomics import NodeTelemetry
+
+        with self._lock:
+            now = time.time()
+            observation = self.manifold.observe()
+            probabilities = observation.probabilities
+            phases = observation.phases
+            telemetry: List[NodeTelemetry] = []
+            for node_id, node in self.nodes.items():
+                sampled_latencies = [
+                    link.average_trip_seconds()
+                    for link in self.links.get(node_id, {}).values()
+                    if link.average_trip_seconds() is not None
+                ]
+                if sampled_latencies:
+                    tres = 1_000.0 * (sum(sampled_latencies) / len(sampled_latencies))
+                elif self.active_job_id and node.phase not in {"idle", "assigned"}:
+                    tres = min(10_000.0, max(0.0, now - node.last_update) * 1_000.0)
+                else:
+                    tres = 0.0
+
+                submitted = max(node.shares_submitted, 0)
+                phi_eff = 1.0 if submitted == 0 else node.shares_accepted / max(submitted, 1)
+                neighbors = get_geometric_neighbors(node_id)
+                if neighbors:
+                    phase_alignment = [
+                        (1.0 + math.cos(float(phases[node_id]) - float(phases[neighbor]))) / 2.0
+                        for neighbor in neighbors
+                    ]
+                    chi_sync = sum(phase_alignment) / len(phase_alignment)
+                else:
+                    chi_sync = 1.0
+                thermal_pressure = float(self.manifold.node_energy[node_id]) * max(float(power_scale), 1e-9)
+                thermal_entropy = max(0.0, min(1.0, 0.30 * thermal_pressure))
+                hash_rate = max(float(node.hashes), float(probabilities[node_id]) * max(self.state.total_hashes, 1))
+                telemetry.append(NodeTelemetry(
+                    node_id=node_id,
+                    tres=tres,
+                    phi_eff=max(0.0, min(1.0, phi_eff)),
+                    chi_sync=max(0.0, min(1.0, chi_sync)),
+                    thermal_entropy=thermal_entropy,
+                    hash_rate=hash_rate,
+                    timestamp=now,
+                ))
+            return telemetry
+
+    def apply_autonomic_distribution(self, amplitudes: List[float], *, reason: str = "autonomic_optimization") -> List[float]:
+        distribution = self.manifold.apply_work_distribution(amplitudes, reason=reason)
+        self._append_event(
+            "autonomic_distribution_applied",
+            reason=reason,
+            min_probability=float(min(distribution)),
+            max_probability=float(max(distribution)),
+        )
+        return [float(value) for value in distribution]
 
     def phase_heartbeat(self, tick: int) -> List[float]:
         if not self.active_job_id:
@@ -400,6 +547,9 @@ class PulviniOverlayConcentrator:
                 "manifold": self.manifold.snapshot(),
                 "lifecycle": list(self.lifecycle),
                 "share_ledger": list(self.share_ledger),
+                "healing_routes": list(self.healing_routes),
+                "autonomic_ledger": list(self.autonomic_ledger),
+                "healing_ranges_overlap_free": self.healing_ranges_overlap_free(),
                 "totals": totals,
             }
 
