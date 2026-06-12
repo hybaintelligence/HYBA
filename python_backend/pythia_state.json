@@ -1,6 +1,6 @@
 {
   "running": true,
-  "uptime_seconds": 2652.315,
+  "uptime_seconds": 2658.357,
   "active_pool": "viabtc",
   "active_pool_id": null,
   "pool_visible_worker_identity": "PULVINI.singularity",
@@ -14,7 +14,7 @@
   "rejected_shares": 0,
   "acceptance_rate": null,
   "system_health": "DEGRADED",
-  "cpu_load": 13.4,
+  "cpu_load": 12.2,
   "active_stratum_version": 2,
   "hashrate_ehs": 1.0,
   "power_scale": 1.0,
@@ -2598,7 +2598,7 @@
     "stage": "pool_bound",
     "job_id": null,
     "pool_id": null,
-    "updated_at": 1781283676.736753,
+    "updated_at": 1781283682.778214,
     "ordered_stages": [
       "connect_requested",
       "pool_bound",
