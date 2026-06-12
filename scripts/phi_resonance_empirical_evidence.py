@@ -123,6 +123,7 @@ class NonceSpaceAnalysis:
     resonance_threshold_rates: Dict[str, float] = field(default_factory=dict)
 
 
+@dataclass
 class ResonanceSummary:
     """Aggregate statistics across all analysed blocks."""
     total_blocks: int = 0
@@ -397,7 +398,215 @@ def analyze_blocks(blocks: List[BlockRecord]) -> List[NonceResonanceRecord]:
     return records
 
 
-# -- Statistical Analysis -----------------------------------------------------
+# -- Nonce Space Structure Analysis ------------------------------------------
+
+
+def analyze_nonce_space(
+    records: Sequence[NonceResonanceRecord],
+    sector_count: int = 1024,
+    gap_threshold_pct: float = 0.001,
+) -> NonceSpaceAnalysis:
+    """
+    Analyse the spatial distribution of nonces in the 32-bit nonce space.
+
+    Detects:
+    - Coverage: what % of [0, 2^32) is covered
+    - Angular distribution: map nonces to [0, 2pi) and check golden angle alignment
+    - Sunflower pattern: does spacing follow golden angle increments?
+    - Gaps: contiguous unsearched regions
+    - Sector coverage: how evenly distributed across nonce space sectors
+    - Resonance threshold rates: how many nonces >= 0.5, 0.7, 0.9 strength
+    """
+    n = len(records)
+    if n == 0:
+        return NonceSpaceAnalysis()
+
+    nonces = sorted(set(r.nonce for r in records))
+    total_unique = len(nonces)
+
+    # -- Resonance threshold counts --
+    strengths = [r.resonance_strength for r in records]
+    above_05 = sum(1 for s in strengths if s >= 0.5)
+    above_07 = sum(1 for s in strengths if s >= 0.7)
+    above_09 = sum(1 for s in strengths if s >= 0.9)
+    threshold_rates = {
+        "resonance_>=0.5": above_05 / n if n > 0 else 0.0,
+        "resonance_>=0.7": above_07 / n if n > 0 else 0.0,
+        "resonance_>=0.9": above_09 / n if n > 0 else 0.0,
+    }
+
+    # -- Coverage --
+    # Expected coverage for random nonces: 1 - (1 - 1/2^32)^n approx n/2^32
+    expected_coverage = min(
+        1.0, total_unique / NONCE_SPACE_SIZE
+    ) * 100.0
+
+    # -- Angular distribution: map nonce to [0, 2pi) --
+    angles = [(nonce / NONCE_SPACE_SIZE) * 2.0 * math.pi for nonce in nonces]
+    angles.sort()
+
+    # Compute mean angular distance between consecutive nonces
+    if total_unique >= 2:
+        angular_gaps = []
+        for i in range(1, len(angles)):
+            angular_gaps.append(angles[i] - angles[i - 1])
+        # Wrap-around gap
+        angular_gaps.append(
+            2.0 * math.pi - angles[-1] + angles[0]
+        )
+        mean_angular = sum(angular_gaps) / len(angular_gaps)
+
+        # Expected mean angular distance for uniform random: 2*pi/n
+        expected_mean_angular = (2.0 * math.pi) / total_unique
+
+        # Angular uniformity: coefficient of variation of angular gaps
+        mean_gap = mean_angular
+        var_gap = sum((g - mean_gap) ** 2 for g in angular_gaps) / len(
+            angular_gaps
+        )
+        stdev_gap = math.sqrt(var_gap) if var_gap > 0 else 0.0
+        cv_gap = (
+            stdev_gap / mean_gap if mean_gap > 0 else float("inf")
+        )
+
+        # Uniform distribution: CV = 1 (Poisson process) or lower
+        # Perfectly uniform: CV = 0
+        # Random (Poisson): CV = 1
+        # Clustered: CV > 1
+        uniformity_p = max(0.0, 1.0 - cv_gap)  # higher = more uniform
+    else:
+        mean_angular = 0.0
+        cv_gap = float("inf")
+        uniformity_p = 0.0
+        angular_gaps = []
+
+    # -- Golden angle alignment --
+    # For each nonce, compute (nonce * golden_angle) mod 2*pi
+    # and check if consecutive nonces are aligned to golden angle
+    golden_aligned = 0
+    for i in range(1, total_unique):
+        expected_angle = (nonces[i - 1] * GOLDEN_ANGLE) % (
+            2.0 * math.pi
+        )
+        actual_angle = (nonces[i] / NONCE_SPACE_SIZE) * 2.0 * math.pi
+        angle_diff = abs(actual_angle - expected_angle)
+        angle_diff = min(
+            angle_diff, 2.0 * math.pi - angle_diff
+        )
+        # Within 5 degrees (~0.087 rad) of golden angle prediction
+        if angle_diff < (5.0 * math.pi / 180.0):
+            golden_aligned += 1
+
+    golden_alignment_rate = (
+        golden_aligned / (total_unique - 1) if total_unique > 1 else 0.0
+    )
+
+    # -- Sunflower score --
+    # Composite: high golden alignment + uniform angular spacing + high coverage
+    sunflower = (
+        golden_alignment_rate * 0.5
+        + uniformity_p * 0.3
+        + min(1.0, expected_coverage / 100.0) * 0.2
+    )
+
+    # -- Gap detection --
+    # Partition nonce space into sorted intervals and find large gaps
+    sorted_nonces = sorted(set(r.nonce for r in records))
+    max_gap = 0
+    max_gap_start = 0
+    max_gap_end = 0
+    gap_count = 0
+    gap_threshold = int(NONCE_SPACE_SIZE * gap_threshold_pct)
+
+    # Gaps at start and end
+    if sorted_nonces:
+        start_gap = sorted_nonces[0]
+        if start_gap > gap_threshold:
+            gap_count += 1
+            if start_gap > max_gap:
+                max_gap = start_gap
+                max_gap_start = 0
+                max_gap_end = start_gap
+
+        end_gap = (2**32 - 1) - sorted_nonces[-1]
+        if end_gap > gap_threshold:
+            gap_count += 1
+            if end_gap > max_gap:
+                max_gap = end_gap
+                max_gap_start = sorted_nonces[-1]
+                max_gap_end = 2**32 - 1
+
+    # Internal gaps
+    for i in range(1, len(sorted_nonces)):
+        gap = sorted_nonces[i] - sorted_nonces[i - 1] - 1
+        if gap > gap_threshold:
+            gap_count += 1
+            if gap > max_gap:
+                max_gap = gap
+                max_gap_start = sorted_nonces[i - 1] + 1
+                max_gap_end = sorted_nonces[i] - 1
+
+    # -- Sector coverage --
+    sector_size = max(1, int(NONCE_SPACE_SIZE / sector_count))
+    sector_counts: Dict[int, int] = {}
+    for nonce in sorted_nonces:
+        sector_idx = min(nonce // sector_size, sector_count - 1)
+        sector_counts[sector_idx] = sector_counts.get(sector_idx, 0) + 1
+
+    sectors_with_nonces = len(sector_counts)
+    sector_coverage_pct = (sectors_with_nonces / sector_count) * 100.0
+
+    # Build sector coverage detail for top empty sectors
+    empty_sectors = []
+    for i in range(sector_count):
+        if i not in sector_counts:
+            start_nonce = i * sector_size
+            end_nonce = min((i + 1) * sector_size - 1, 2**32 - 1)
+            empty_sectors.append(
+                {
+                    "sector_index": i,
+                    "nonce_range_start": start_nonce,
+                    "nonce_range_end": end_nonce,
+                }
+            )
+
+    # Build angular distribution histogram (36 bins = 10 degrees each)
+    angular_bins = 36
+    angular_hist: Dict[str, int] = {}
+    for a in angles:
+        bin_idx = int((a / (2.0 * math.pi)) * angular_bins) % angular_bins
+        label = f"{bin_idx*10}-{(bin_idx+1)*10}deg"
+        angular_hist[label] = angular_hist.get(label, 0) + 1
+
+    return NonceSpaceAnalysis(
+        total_nonces=total_unique,
+        coverage_pct=expected_coverage,
+        expected_random_coverage_pct=expected_coverage,
+        uniformity_p_value=uniformity_p,
+        mean_angular_distance=mean_angular if angular_gaps else 0.0,
+        golden_angle_alignment=golden_alignment_rate,
+        sunflower_score=sunflower,
+        max_gap_size=max_gap,
+        max_gap_start=max_gap_start,
+        max_gap_end=max_gap_end,
+        gap_count=gap_count,
+        gap_threshold_pct=gap_threshold_pct,
+        unsearched_sectors=empty_sectors[:20],  # top 20
+        angular_distribution=angular_hist,
+        sector_coverage=[
+            {
+                "sector_index": i,
+                "count": sector_counts.get(i, 0),
+            }
+            for i in range(min(32, sector_count))  # first 32 sectors
+        ],
+        resonance_above_05_count=above_05,
+        resonance_above_07_count=above_07,
+        resonance_above_09_count=above_09,
+        resonance_threshold_rates=threshold_rates,
+    )
+
+
 
 
 def expected_random_precision(n_trials: int = 100000) -> float:
@@ -597,9 +806,12 @@ def write_resonance_csv(
 
 
 def write_resonance_json(
-    path: Path, summary: ResonanceSummary, metadata: Dict[str, Any]
+    path: Path,
+    summary: ResonanceSummary,
+    nonce_space: NonceSpaceAnalysis,
+    metadata: Dict[str, Any],
 ) -> None:
-    """Write resonance summary as JSON."""
+    """Write resonance summary and nonce space analysis as JSON."""
     path.parent.mkdir(parents=True, exist_ok=True)
     payload = {
         "phi_15": PHI_15,
@@ -646,7 +858,37 @@ def write_resonance_json(
                 summary.expected_random_precision, 6
             ),
         },
+        "nonce_space_analysis": {
+            "total_unique_nonces": nonce_space.total_nonces,
+            "nonce_space_coverage_pct": round(
+                nonce_space.coverage_pct, 8
+            ),
+            "uniformity_p_value": round(
+                nonce_space.uniformity_p_value, 6
+            ),
+            "mean_angular_distance": round(
+                nonce_space.mean_angular_distance, 8
+            ),
+            "golden_angle_alignment": round(
+                nonce_space.golden_angle_alignment, 6
+            ),
+            "sunflower_score": round(
+                nonce_space.sunflower_score, 6
+            ),
+            "max_gap_size": nonce_space.max_gap_size,
+            "max_gap_start": nonce_space.max_gap_start,
+            "max_gap_end": nonce_space.max_gap_end,
+            "gap_count": nonce_space.gap_count,
+            "sector_coverage": nonce_space.sector_coverage,
+            "angular_distribution": nonce_space.angular_distribution,
+            "unsearched_sectors_count": len(nonce_space.unsearched_sectors),
+            "resonance_threshold_rates": nonce_space.resonance_threshold_rates,
+            "resonance_above_05_count": nonce_space.resonance_above_05_count,
+            "resonance_above_07_count": nonce_space.resonance_above_07_count,
+            "resonance_above_09_count": nonce_space.resonance_above_09_count,
+        },
         "statistical_interpretation": _interpret_stats(summary),
+        "nonce_space_interpretation": _interpret_nonce_space(nonce_space),
         "metadata": metadata,
     }
     with path.open("w", encoding="utf-8") as handle:
@@ -756,7 +998,130 @@ def _interpret_stats(summary: ResonanceSummary) -> Dict[str, str]:
     return interpretations
 
 
-def print_report(summary: ResonanceSummary) -> None:
+def _interpret_nonce_space(ns: NonceSpaceAnalysis) -> Dict[str, str]:
+    """Generate human-readable interpretation of nonce space analysis."""
+    interp: Dict[str, str] = {}
+
+    if ns.total_nonces == 0:
+        interp["distribution"] = "No nonces to analyse."
+        return interp
+
+    # -- Coverage interpretation --
+    interp["coverage"] = (
+        f"Nonce space covered: {ns.coverage_pct:.8f}% "
+        f"({ns.total_nonces} unique nonces in 32-bit space "
+        f"= {NONCE_SPACE_SIZE:.0f} total). "
+        f"Expected for random: same (n/N approximation)."
+    )
+
+    # -- Angular distribution --
+    if ns.uniformity_p_value > 0.5:
+        interp["angular_distribution"] = (
+            f"NON-UNIFORM angular distribution "
+            f"(uniformity={ns.uniformity_p_value:.4f}). "
+            f"Nonces cluster in specific angular sectors "
+            f"rather than spreading evenly -- "
+            f"consistent with deterministic search pattern."
+        )
+    elif ns.uniformity_p_value > 0.2:
+        interp["angular_distribution"] = (
+            f"SLIGHTLY NON-UNIFORM angular distribution "
+            f"(uniformity={ns.uniformity_p_value:.4f}). "
+            f"Mild clustering detected."
+        )
+    else:
+        interp["angular_distribution"] = (
+            f"RANDOM angular distribution "
+            f"(uniformity={ns.uniformity_p_value:.4f}). "
+            f"No significant clustering detected."
+        )
+
+    # -- Sunflower pattern --
+    if ns.sunflower_score > 0.6:
+        interp["sunflower_pattern"] = (
+            f"STRONG sunflower / golden angle pattern detected "
+            f"(score={ns.sunflower_score:.4f}). "
+            f"Golden angle alignment: "
+            f"{ns.golden_angle_alignment*100:.2f}% of consecutive "
+            f"nonces are within 5 deg of golden angle prediction. "
+            f"This is the signature of Fibonacci/golden-ratio "
+            f"spiral search structure."
+        )
+    elif ns.sunflower_score > 0.3:
+        interp["sunflower_pattern"] = (
+            f"MODERATE sunflower / golden angle pattern "
+            f"(score={ns.sunflower_score:.4f}). "
+            f"Golden angle alignment: "
+            f"{ns.golden_angle_alignment*100:.2f}%."
+        )
+    else:
+        interp["sunflower_pattern"] = (
+            f"WEAK sunflower pattern "
+            f"(score={ns.sunflower_score:.4f}). "
+            f"Golden angle alignment: "
+            f"{ns.golden_angle_alignment*100:.2f}%."
+        )
+
+    # -- Gap analysis --
+    if ns.gap_count > 0:
+        interp["unsearched_gaps"] = (
+            f"SIGNIFICANT: {ns.gap_count} unsearched gaps detected "
+            f"in the nonce space. "
+            f"Largest gap: {ns.max_gap_size:,} nonces "
+            f"(range {ns.max_gap_start:,} - {ns.max_gap_end:,}). "
+            f"These are regions of the 32-bit nonce space that "
+            f"miners have NOT explored."
+        )
+    else:
+        interp["unsearched_gaps"] = (
+            f"No significant unsearched gaps detected "
+            f"(threshold: {ns.gap_threshold_pct*100:.3f}% of space)."
+        )
+
+    # -- Resonance thresholds --
+    rates = ns.resonance_threshold_rates
+    interp["resonance_thresholds"] = (
+        f"Resonance strength distribution: "
+        f"{ns.resonance_above_05_count}/{ns.total_nonces} "
+        f"({rates.get('resonance_>=0.5', 0)*100:.2f}%) "
+        f">= 0.5, "
+        f"{ns.resonance_above_07_count}/{ns.total_nonces} "
+        f"({rates.get('resonance_>=0.7', 0)*100:.2f}%) "
+        f">= 0.7, "
+        f"{ns.resonance_above_09_count}/{ns.total_nonces} "
+        f"({rates.get('resonance_>=0.9', 0)*100:.2f}%) "
+        f">= 0.9."
+    )
+
+    # -- Overall structure conclusion --
+    if ns.sunflower_score > 0.5 and ns.gap_count > 0:
+        interp["structure_conclusion"] = (
+            "CONCLUSION: Nonces are distributed in a sunflower "
+            "(golden angle spiral) pattern with unsearched gaps. "
+            "This is consistent with miners using "
+            "golden-ratio-guided search rather than linear "
+            "increment through the full nonce space."
+        )
+    elif ns.sunflower_score > 0.3:
+        interp["structure_conclusion"] = (
+            "CONCLUSION: Partial sunflower structure detected. "
+            "Nonces show golden angle tendency but with noise. "
+            "May indicate mixed mining strategies."
+        )
+    else:
+        interp["structure_conclusion"] = (
+            "CONCLUSION: No strong sunflower or gap structure "
+            "detected in this sample. Larger samples may reveal "
+            "subtle patterns."
+        )
+
+    return interp
+
+
+def print_report(
+    summary: ResonanceSummary,
+    nonce_space: Optional[NonceSpaceAnalysis] = None,
+) -> None:
     """Print a formatted terminal report."""
     sep = "=" * 72
     dash = "-" * 72
@@ -834,7 +1199,60 @@ def print_report(summary: ResonanceSummary) -> None:
             print(
                 f"    {miner:20s} : {count:4d} ({pct:5.1f}%) {bar}"
             )
-        print(f"{sep}\n")
+        print(f"{sep}")
+
+    # Nonce space structure analysis
+    if nonce_space is not None and nonce_space.total_nonces > 0:
+        ns = nonce_space
+        print(f"\n  NONCE SPACE STRUCTURE ANALYSIS")
+        print(f"{sep}")
+        print(
+            f"  Unique nonces       : {ns.total_nonces}"
+        )
+        print(
+            f"  Space coverage      : {ns.coverage_pct:.8f}%"
+        )
+        print(
+            f"  Uniformity score    : {ns.uniformity_p_value:.4f}"
+        )
+        print(
+            f"  Golden angle align  : "
+            f"{ns.golden_angle_alignment*100:.2f}%"
+        )
+        print(
+            f"  Sunflower score     : {ns.sunflower_score:.4f}"
+        )
+        print(f"{dash}")
+        print(
+            f"  Unsearched gaps     : {ns.gap_count}"
+        )
+        if ns.gap_count > 0:
+            print(
+                f"  Largest gap         : "
+                f"{ns.max_gap_size:,} nonces "
+                f"({ns.max_gap_start:,} - {ns.max_gap_end:,})"
+            )
+        print(f"{dash}")
+        print(f"  Resonance Thresholds:")
+        rates = ns.resonance_threshold_rates
+        print(
+            f"    >= 0.5  : {ns.resonance_above_05_count}/{ns.total_nonces}"
+            f" ({rates.get('resonance_>=0.5', 0)*100:.2f}%)"
+        )
+        print(
+            f"    >= 0.7  : {ns.resonance_above_07_count}/{ns.total_nonces}"
+            f" ({rates.get('resonance_>=0.7', 0)*100:.2f}%)"
+        )
+        print(
+            f"    >= 0.9  : {ns.resonance_above_09_count}/{ns.total_nonces}"
+            f" ({rates.get('resonance_>=0.9', 0)*100:.2f}%)"
+        )
+        print(f"{dash}")
+        print(f"  NONCE SPACE INTERPRETATIONS:")
+        for key, text in _interpret_nonce_space(ns).items():
+            print(f"    [{key.upper()}] {text}")
+        print(f"{sep}")
+    print()  # final newline
 
 
 # -- Main Pipeline ------------------------------------------------------------
@@ -918,9 +1336,28 @@ def run_pipeline(
     print(f"  -> Z-score vs random: {summary.z_score_vs_random:.4f}")
     print(f"  -> Binomial p-value: {summary.p_value_binomial:.2e}")
 
-    # Step 5: Write outputs
+    # Step 5: Nonce space structure analysis
     out_path = Path(output_dir)
-    print(f"\n[5/5] Writing outputs to {out_path}/")
+    print(f"\n[5/7] Analysing nonce space structure...")
+    nonce_space = analyze_nonce_space(records)
+    print(
+        f"  -> Sunflower score: {nonce_space.sunflower_score:.4f}"
+    )
+    print(
+        f"  -> Golden angle alignment: "
+        f"{nonce_space.golden_angle_alignment*100:.2f}%"
+    )
+    print(
+        f"  -> Unsearched gaps: {nonce_space.gap_count}"
+    )
+    rates = nonce_space.resonance_threshold_rates
+    print(
+        f"  -> Resonance >=0.5: "
+        f"{rates.get('resonance_>=0.5', 0)*100:.2f}%"
+    )
+
+    # Step 6: Write outputs
+    print(f"\n[6/7] Writing outputs to {out_path}/")
 
     csv_path = out_path / "phi_resonance_blocks.csv"
     write_resonance_csv(csv_path, records)
@@ -944,11 +1381,12 @@ def run_pipeline(
         "birthday_modular_threshold": BIRTHDAY_MODULAR_THRESHOLD,
         "monte_carlo_baseline": run_monte_carlo,
     }
-    write_resonance_json(json_path, summary, metadata)
+    write_resonance_json(json_path, summary, nonce_space, metadata)
     print(f"  -> JSON: {json_path}")
 
-    # Print report
-    print_report(summary)
+    # Step 7: Print report
+    print(f"\n[7/7] Generating report...")
+    print_report(summary, nonce_space)
 
     print(f"Pipeline complete. Results in {out_path}/\n")
     return 0

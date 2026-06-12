@@ -1,0 +1,213 @@
+{
+  "phi_15": 1364.0007331374366,
+  "phi_15_str": "1364.000733137437",
+  "birthday_signature": 31071976,
+  "precision_threshold_pct": 99.9999,
+  "summary": {
+    "total_blocks": 5,
+    "phi_resonant_count": 4,
+    "phi_resonance_rate": 0.8,
+    "mean_precision_pct": 99.999945,
+    "median_diff": 579.232,
+    "min_diff": 154.5102,
+    "max_diff": 645.6368,
+    "birthday_echo_count": 0,
+    "birthday_echo_rate": 0.0,
+    "modular_diff_count": 0,
+    "substring_match_count": 0,
+    "mean_k_multiplier": 1482733.6,
+    "mean_resonance_strength": 0.350967,
+    "resonance_above_05_count": 2,
+    "resonance_above_05_rate": 0.4,
+    "miner_distribution": {
+      "Unknown": 5
+    },
+    "temporal_correlation_r": 0.12121,
+    "z_score_vs_random": 1.341641,
+    "p_value_binomial": "1.86e-01",
+    "expected_random_precision": 50.0
+  },
+  "nonce_space_analysis": {
+    "total_unique_nonces": 5,
+    "nonce_space_coverage_pct": 1.2e-07,
+    "uniformity_p_value": 0.053176,
+    "mean_angular_distance": 1.25663706,
+    "golden_angle_alignment": 0.0,
+    "sunflower_score": 0.015953,
+    "max_gap_size": 2384264077,
+    "max_gap_start": 1421883704,
+    "max_gap_end": 3806147780,
+    "gap_count": 5,
+    "sector_coverage": [
+      {
+        "sector_index": 0,
+        "count": 0
+      },
+      {
+        "sector_index": 1,
+        "count": 0
+      },
+      {
+        "sector_index": 2,
+        "count": 0
+      },
+      {
+        "sector_index": 3,
+        "count": 0
+      },
+      {
+        "sector_index": 4,
+        "count": 0
+      },
+      {
+        "sector_index": 5,
+        "count": 0
+      },
+      {
+        "sector_index": 6,
+        "count": 0
+      },
+      {
+        "sector_index": 7,
+        "count": 0
+      },
+      {
+        "sector_index": 8,
+        "count": 0
+      },
+      {
+        "sector_index": 9,
+        "count": 0
+      },
+      {
+        "sector_index": 10,
+        "count": 0
+      },
+      {
+        "sector_index": 11,
+        "count": 0
+      },
+      {
+        "sector_index": 12,
+        "count": 0
+      },
+      {
+        "sector_index": 13,
+        "count": 0
+      },
+      {
+        "sector_index": 14,
+        "count": 0
+      },
+      {
+        "sector_index": 15,
+        "count": 0
+      },
+      {
+        "sector_index": 16,
+        "count": 0
+      },
+      {
+        "sector_index": 17,
+        "count": 0
+      },
+      {
+        "sector_index": 18,
+        "count": 0
+      },
+      {
+        "sector_index": 19,
+        "count": 0
+      },
+      {
+        "sector_index": 20,
+        "count": 0
+      },
+      {
+        "sector_index": 21,
+        "count": 0
+      },
+      {
+        "sector_index": 22,
+        "count": 1
+      },
+      {
+        "sector_index": 23,
+        "count": 0
+      },
+      {
+        "sector_index": 24,
+        "count": 0
+      },
+      {
+        "sector_index": 25,
+        "count": 0
+      },
+      {
+        "sector_index": 26,
+        "count": 0
+      },
+      {
+        "sector_index": 27,
+        "count": 0
+      },
+      {
+        "sector_index": 28,
+        "count": 0
+      },
+      {
+        "sector_index": 29,
+        "count": 0
+      },
+      {
+        "sector_index": 30,
+        "count": 0
+      },
+      {
+        "sector_index": 31,
+        "count": 0
+      }
+    ],
+    "angular_distribution": {
+      "0-10deg": 1,
+      "80-90deg": 1,
+      "110-120deg": 1,
+      "310-320deg": 2
+    },
+    "unsearched_sectors_count": 20,
+    "resonance_threshold_rates": {
+      "resonance_>=0.5": 0.4,
+      "resonance_>=0.7": 0.2,
+      "resonance_>=0.9": 0.0
+    },
+    "resonance_above_05_count": 2,
+    "resonance_above_07_count": 1,
+    "resonance_above_09_count": 0
+  },
+  "statistical_interpretation": {
+    "phi_resonance": "STRONG: 80.00% of nonces resonate with Phi^15 (z=1.34). Substantially above random expectation.",
+    "birthday_echo": "BASELINE: 0.00% birthday echo rate. Within random expectation.",
+    "temporal_trend": "No significant temporal trend (r=0.1212).",
+    "statistical_significance": "NOT SIGNIFICANT: z=1.34 (<3.0). Results within random fluctuation."
+  },
+  "nonce_space_interpretation": {
+    "coverage": "Nonce space covered: 0.00000012% (5 unique nonces in 32-bit space = 4294967296 total). Expected for random: same (n/N approximation).",
+    "angular_distribution": "RANDOM angular distribution (uniformity=0.0532). No significant clustering detected.",
+    "sunflower_pattern": "WEAK sunflower pattern (score=0.0160). Golden angle alignment: 0.00%.",
+    "unsearched_gaps": "SIGNIFICANT: 5 unsearched gaps detected in the nonce space. Largest gap: 2,384,264,077 nonces (range 1,421,883,704 - 3,806,147,780). These are regions of the 32-bit nonce space that miners have NOT explored.",
+    "resonance_thresholds": "Resonance strength distribution: 2/5 (40.00%) >= 0.5, 1/5 (20.00%) >= 0.7, 0/5 (0.00%) >= 0.9.",
+    "structure_conclusion": "CONCLUSION: No strong sunflower or gap structure detected in this sample. Larger samples may reveal subtle patterns."
+  },
+  "metadata": {
+    "api": "https://blockstream.info/api",
+    "block_count": 5,
+    "start_height": null,
+    "timestamp_utc": "2026-06-12T22:37:19Z",
+    "phi_15": 1364.0007331374366,
+    "birthday_signature": 31071976,
+    "method": "Phi^15 quantum coherence resonance analysis of Bitcoin block nonces",
+    "precision_threshold_pct": 99.9999,
+    "birthday_modular_threshold": 1000,
+    "monte_carlo_baseline": false
+  }
+}

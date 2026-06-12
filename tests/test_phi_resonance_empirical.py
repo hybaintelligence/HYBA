@@ -36,15 +36,18 @@ from phi_resonance_empirical_evidence import (
     BIRTHDAY_MODULAR_THRESHOLD,
     BlockRecord,
     NonceResonanceRecord,
+    NonceSpaceAnalysis,
     ResonanceSummary,
     compute_phi15_resonance,
     check_birthday_resonance,
     analyze_blocks,
+    analyze_nonce_space,
     binomial_p_value,
     compute_summary,
     write_resonance_csv,
     write_resonance_json,
     _interpret_stats,
+    _interpret_nonce_space,
     print_report,
 )
 
@@ -612,8 +615,19 @@ class TestWriteResonanceJSON:
             "block_count": 144,
             "timestamp_utc": "2025-10-14T21:45:23Z",
         }
+        nonce_space = analyze_nonce_space([
+            NonceResonanceRecord(
+                height=953400, timestamp=1781300000, nonce=1364,
+                miner="TestPool", k_multiplier=1, approx=1364.000733,
+                diff=0.000733, precision_pct=99.999946,
+                resonance_strength=0.999999,
+                is_phi_resonant=True, birthday_modular_diff=None,
+                birthday_substring_hits=[], birthday_resonant=False,
+                birthday_echo_type="none",
+            ),
+        ])
         json_path = tmp_path / "test_summary.json"
-        write_resonance_json(json_path, summary, metadata)
+        write_resonance_json(json_path, summary, nonce_space, metadata)
 
         assert json_path.exists()
         with json_path.open("r", encoding="utf-8") as f:
@@ -636,8 +650,19 @@ class TestWriteResonanceJSON:
     def test_json_interpretation_included(self, tmp_path: Path) -> None:
         """JSON includes human-readable interpretations."""
         summary = self.make_summary()
+        nonce_space = analyze_nonce_space([
+            NonceResonanceRecord(
+                height=953400, timestamp=1781300000, nonce=1364,
+                miner="TestPool", k_multiplier=1, approx=1364.000733,
+                diff=0.000733, precision_pct=99.999946,
+                resonance_strength=0.999999,
+                is_phi_resonant=True, birthday_modular_diff=None,
+                birthday_substring_hits=[], birthday_resonant=False,
+                birthday_echo_type="none",
+            ),
+        ])
         json_path = tmp_path / "test_interp.json"
-        write_resonance_json(json_path, summary, {})
+        write_resonance_json(json_path, summary, nonce_space, {})
 
         with json_path.open("r", encoding="utf-8") as f:
             data = json.load(f)
