@@ -5,102 +5,75 @@ echo === HYBA FULLSTACK — Production Environment Validation Gate ===
 echo.
 
 cd /d "%~dp0"
+set "PATH=%~dp0;%PATH%"
+set "PYTHONPATH=python_backend"
 
-set PATH=%~dp0;%PATH%
-set PYTHONPATH=python_backend
+:: Safe production defaults only. Secrets, operator credentials, and pool
+:: credentials must be injected by .env, sealed local environment, or secret
+:: manager before this gate is run. This file must never contain live secrets.
+if not defined NODE_ENV set "NODE_ENV=production"
+if not defined HYBA_ENV set "HYBA_ENV=production"
+if not defined HYBA_ALLOW_DEV_FIXTURES set "HYBA_ALLOW_DEV_FIXTURES=false"
+if not defined HYBA_QUANTUM_CAPACITY_EHS set "HYBA_QUANTUM_CAPACITY_EHS=1.0"
+if not defined HYBA_PULVINI_HASHRATE_CAP_EHS set "HYBA_PULVINI_HASHRATE_CAP_EHS=1.0"
+if not defined PULVINI_BACKEND_URL set "PULVINI_BACKEND_URL=http://127.0.0.1:3001"
+if not defined HYBA_ENABLE_LIVE_STRATUM set "HYBA_ENABLE_LIVE_STRATUM=true"
+if not defined HYBA_ENABLE_AUDIT_LOGGING set "HYBA_ENABLE_AUDIT_LOGGING=true"
+if not defined HYBA_ENABLE_MINING_AUTOCONNECT set "HYBA_ENABLE_MINING_AUTOCONNECT=false"
+if not defined HYBA_ENABLE_LIVE_SHARE_SUBMIT set "HYBA_ENABLE_LIVE_SHARE_SUBMIT=false"
 
-:: === Environment Variables ===
-set NODE_ENV=production
-set HYBA_ENV=production
-set HYBA_ALLOW_DEV_FIXTURES=false
-set HYBA_QUANTUM_CAPACITY_EHS=1.0
-set HYBA_PULVINI_HASHRATE_CAP_EHS=1.0
-set PULVINI_BACKEND_URL=http://127.0.0.1:3001
-set JWT_SECRET=Rl8ux6Ge-NpBxhBY0zMvw3c1endcUCKMWnmL9-N4eBI
-set HYBA_ENABLE_LIVE_STRATUM=true
-set HYBA_ENABLE_AUDIT_LOGGING=true
-set HYBA_ENABLE_MINING_AUTOCONNECT=false
-set HYBA_ENABLE_LIVE_SHARE_SUBMIT=false
-
-:: === Pool Credentials ===
-:: Braiins (Primary SHA256)
-set HYBA_POOL_BRAIINS_URL=stratum2+tcp://stratum.braiins.com:3333/9awtMD5KQgvRUh2yFbjVeT7b6hjipWcAsQHd6wEhgtDT9soosna
-set HYBA_POOL_BRAIINS_USERNAME=PYTHAGOROS.workerName
-set HYBA_POOL_BRAIINS_PASSWORD=anything123
-set HYBA_POOL_BRAIINS_STRATUM_VERSION=2
-
-:: NiceHash SHA256 (Primary Backup)
-set HYBA_POOL_NICEHASH_URL=stratum+ssl://sha256.auto.nicehash.com:443
-set HYBA_POOL_NICEHASH_WORKER=NHbaCJGb1gM7MjgJ9QnnqbG2sLVW9w8hdPzK
-set HYBA_POOL_NICEHASH_PASSWORD=x
-set HYBA_POOL_NICEHASH_NICEHASH_POOL_ID=NHbaCJGb1gM7MjgJ9QnnqbG2sLVW9w8hdPzK
-set HYBA_POOL_NICEHASH_STRATUM_VERSION=1
-
-:: CKPool (Solo Fallback)
-set HYBA_POOL_CKPOOL_URL=stratum+tcp://solo.ckpool.org:3333
-set HYBA_POOL_CKPOOL_BTC_ADDRESS=bc1qsyva7t00e0cwqzts54u7ffys7l76pp8a02x8r9
-set HYBA_POOL_CKPOOL_STRATUM_VERSION=1
+echo Required injected values before live deployment:
+echo   JWT_SECRET, HYBA_OPERATOR_CREDENTIALS, and at least one HYBA_POOL_* profile.
+echo   Live share submission additionally requires HYBA_LIVE_SHARE_APPROVAL_ID.
+echo.
 
 echo [1/4] Validating production environment...
-C:\Python311\python.exe scripts/validate_production_env.py
+call npm run prod:env:check
 if %ERRORLEVEL% neq 0 (
-    echo WARNING: Validation found issues (operator credentials missing is expected pre-MIDAS setup)
+    echo ERROR: Production environment validation failed. Aborting gate.
+    exit /b %ERRORLEVEL%
 )
 
 echo.
 echo [2/4] Running live deployment forensic audit...
-C:\Python311\python.exe scripts/audit_live_deployment.py
+call npm run live:audit
 if %ERRORLEVEL% neq 0 (
-    echo WARNING: Audit issued warnings
+    echo ERROR: Live deployment forensic audit failed. Aborting gate.
+    exit /b %ERRORLEVEL%
 )
 
 echo.
 echo [3/4] Running runtime mock/static telemetry guard...
-C:\Python311\python.exe scripts/check_no_runtime_mocks.py
+call npm run runtime:guard
 if %ERRORLEVEL% neq 0 (
-    echo WARNING: Runtime guard check found issues
+    echo ERROR: Runtime mock/static telemetry guard failed. Aborting gate.
+    exit /b %ERRORLEVEL%
 )
 
 echo.
 echo [4/4] Running Pulvini live-cut preflight readiness check...
-C:\Python311\python.exe scripts/pulvini_live_cut_readiness.py
+call npm run pulvini:live-cut:check
 if %ERRORLEVEL% neq 0 (
-    echo WARNING: Live-cut readiness check needs review
+    echo ERROR: Pulvini live-cut readiness check failed. Aborting gate.
+    exit /b %ERRORLEVEL%
 )
 
 echo.
 echo === Environment Summary ===
-echo Pool: Braiins (Primary SHA256)
-echo   URL: %HYBA_POOL_BRAIINS_URL%
-echo   User: %HYBA_POOL_BRAIINS_USERNAME%
-echo   Stratum Version: %HYBA_POOL_BRAIINS_STRATUM_VERSION%
+echo NODE_ENV=%NODE_ENV%
+echo HYBA_ENV=%HYBA_ENV%
+echo HYBA_ALLOW_DEV_FIXTURES=%HYBA_ALLOW_DEV_FIXTURES%
+echo HYBA_ENABLE_LIVE_STRATUM=%HYBA_ENABLE_LIVE_STRATUM%
+echo HYBA_ENABLE_MINING_AUTOCONNECT=%HYBA_ENABLE_MINING_AUTOCONNECT%
+echo HYBA_ENABLE_LIVE_SHARE_SUBMIT=%HYBA_ENABLE_LIVE_SHARE_SUBMIT%
+echo HYBA_ENABLE_AUDIT_LOGGING=%HYBA_ENABLE_AUDIT_LOGGING%
+echo Pool profiles are intentionally not echoed by this gate.
 echo.
-echo Pool: NiceHash SHA256 (Backup)
-echo   URL: %HYBA_POOL_NICEHASH_URL%
-echo   Worker: %HYBA_POOL_NICEHASH_WORKER%
-echo   Pool ID: %HYBA_POOL_NICEHASH_NICEHASH_POOL_ID%
-echo.
-echo Pool: CKPool (Solo Fallback)
-echo   URL: %HYBA_POOL_CKPOOL_URL%
-echo   BTC Address: %HYBA_POOL_CKPOOL_BTC_ADDRESS%
-echo.
-echo Autoconnect: DISABLED
-echo Live Share: DISABLED
-echo Audit Logging: ENABLED
-echo.
-echo === NiceHash CLI Usage ===
-echo python nicehash.py -b https://api2.nicehash.com -o ORG_ID -k API_KEY -s API_SECRET -m GET -p /main/api/v2/accounting/accounts2/
-echo.
-echo === Next Steps ===
-echo 1. Set NICEHASH_ORGANIZATION_ID, NICEHASH_API_KEY, NICEHASH_API_SECRET in .env
-echo 2. Set HYBA_OPERATOR_CREDENTIALS for MIDAS operator access
-echo 3. Rebuild: npm run build
-echo 4. Start: npm start
-echo 5. Login as mining_operator through the UI
-echo 6. Enable mining through MIDAS surface
-echo.
-echo === Evidence Packet Generated ===
-dir /b artifacts\production_readiveness\*.json 2>nul || echo No gate packets yet
+
+echo === Evidence Packet Location ===
+dir /b artifacts\production_readiness\*.json 2>nul || echo No local production gate packets found yet.
 dir /b HYBA_FULLSTACK_COMMAND_ROOM_* 2>nul
+echo.
+echo Gate complete. Preserve evidence packets and command-room folder with the launch ticket.
 
 endlocal
