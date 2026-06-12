@@ -1,0 +1,44 @@
+{
+  "environment_summary": {
+    "HYBA_ALLOW_DEV_FIXTURES": "<unset>",
+    "HYBA_ENABLE_AUDIT_LOGGING": "<unset>",
+    "HYBA_ENABLE_LIVE_SHARE_SUBMIT": "<unset>",
+    "HYBA_ENABLE_LIVE_STRATUM": "<unset>",
+    "HYBA_ENABLE_MINING_AUTOCONNECT": "<unset>",
+    "HYBA_ENV": "<unset>",
+    "HYBA_LIVE_SHARE_APPROVAL_ID": "<unset>",
+    "NODE_ENV": "<unset>",
+    "PULVINI_BACKEND_URL": "<unset>",
+    "configured_pool_profiles": "<none>"
+  },
+  "generated_at_utc": "2026-06-12T19:25:30.705324+00:00",
+  "host": {
+    "machine": "AMD64",
+    "platform": "Windows-10-10.0.19045-SP0",
+    "python": "3.11.7"
+  },
+  "mode": "rc",
+  "next_operator_actions": [
+    "Stop the cutover.",
+    "Fix the first failed step in the evidence packet.",
+    "Rerun the same local gate from a clean checkout or clean terminal session."
+  ],
+  "passed": false,
+  "status": "blocked",
+  "steps": [
+    {
+      "command": [
+        "npm",
+        "run",
+        "live:audit"
+      ],
+      "duration_seconds": 2.412853,
+      "name": "live_deployment_forensic_audit",
+      "passed": false,
+      "returncode": 9009,
+      "stderr_tail": "Python was not found; run without arguments to install from the Microsoft Store, or disable this shortcut from Settings > Apps > Advanced app settings > App execution aliases.\n",
+      "stdout_tail": "\n> hyba-fullstack@1.0.0-rc.1 live:audit\n> python3 scripts/audit_live_deployment.py\n\n"
+    }
+  ],
+  "version": "HYBA_FULLSTACK_LOCAL_PRODUCTION_GATE_V1"
+}
