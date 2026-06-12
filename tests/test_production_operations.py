@@ -20,7 +20,14 @@ from fastapi import HTTPException  # noqa: E402
 from hyba_genesis_api.api import auth as auth_api  # noqa: E402
 from hyba_genesis_api.api.mining_ops import _derive_alerts, _parse_audit_line  # noqa: E402
 from pythia_mining.metrics_store import MetricsStore, PoolMetrics  # noqa: E402
-from pythia_mining.stratum_client import MiningJob, StratumClient  # noqa: E402
+from pythia_mining.stratum_client import (  # noqa: E402
+    MiningJob,
+    StratumClient,
+    _dev_fixtures_allowed,
+    _is_production,
+    _live_share_submit_enabled,
+    _live_stratum_enabled,
+)
 from scripts import validate_production_env  # noqa: E402
 
 
@@ -67,12 +74,80 @@ class ProductionEnvironmentValidatorTests(unittest.TestCase):
             "HYBA_ENABLE_LIVE_STRATUM": "true",
             "HYBA_ENABLE_LIVE_SHARE_SUBMIT": "false",
             "HYBA_ENABLE_MINING_AUTOCONNECT": "false",
+            "HYBA_ENABLE_AUDIT_LOGGING": "true",
             "HYBA_POOL_NICEHASH_URL": "stratum+ssl://sha256.eu.nicehash.com:3334",
             "HYBA_POOL_NICEHASH_USERNAME": "ci-user",
             "HYBA_POOL_NICEHASH_PASSWORD": "ci-secret",
+            "HYBA_POOL_NICEHASH_STRATUM_VERSION": "1",
         }
         with patch.dict(os.environ, env, clear=True):
             self.assertEqual(0, validate_production_env.main())
+
+    def test_validator_accepts_viabtc_stratum_v2_live_launch_profile(self) -> None:
+        password_hash = PasswordHasher().hash("correct horse battery staple")
+        env = {
+            "NODE_ENV": "production",
+            "HYBA_ENV": "production",
+            "JWT_SECRET": "ci-production-secret-value-at-least-32-chars",
+            "HYBA_OPERATOR_CREDENTIALS": f"operator:{password_hash}:mining_operator",
+            "PULVINI_BACKEND_URL": "http://127.0.0.1:3001",
+            "HYBA_ALLOW_DEV_FIXTURES": "false",
+            "HYBA_ENABLE_LIVE_STRATUM": "true",
+            "HYBA_ENABLE_LIVE_SHARE_SUBMIT": "true",
+            "HYBA_LIVE_SHARE_APPROVAL_ID": "launch-approval-ci",
+            "HYBA_ENABLE_MINING_AUTOCONNECT": "true",
+            "HYBA_ENABLE_AUDIT_LOGGING": "true",
+            "HYBA_QUANTUM_CAPACITY_EHS": "1.0",
+            "HYBA_POOL_VIABTC_URL": "stratum2+ssl://btc.viabtc.com:443",
+            "HYBA_POOL_VIABTC_USERNAME": "PYTHIA.001",
+            "HYBA_POOL_VIABTC_PASSWORD": "123",
+            "HYBA_POOL_VIABTC_STRATUM_VERSION": "2",
+        }
+        with patch.dict(os.environ, env, clear=True):
+            self.assertEqual(0, validate_production_env.main())
+
+    def test_validator_rejects_capacity_above_pulvini_hashrate_cap(self) -> None:
+        password_hash = PasswordHasher().hash("correct horse battery staple")
+        env = {
+            "NODE_ENV": "production",
+            "HYBA_ENV": "production",
+            "JWT_SECRET": "ci-production-secret-value-at-least-32-chars",
+            "HYBA_OPERATOR_CREDENTIALS": f"operator:{password_hash}:mining_operator",
+            "PULVINI_BACKEND_URL": "http://127.0.0.1:3001",
+            "HYBA_ALLOW_DEV_FIXTURES": "false",
+            "HYBA_ENABLE_LIVE_STRATUM": "true",
+            "HYBA_ENABLE_LIVE_SHARE_SUBMIT": "false",
+            "HYBA_ENABLE_MINING_AUTOCONNECT": "false",
+            "HYBA_ENABLE_AUDIT_LOGGING": "true",
+            "HYBA_QUANTUM_CAPACITY_EHS": "1.000001",
+            "HYBA_POOL_VIABTC_URL": "stratum2+ssl://btc.viabtc.com:443",
+            "HYBA_POOL_VIABTC_USERNAME": "PYTHIA.001",
+            "HYBA_POOL_VIABTC_PASSWORD": "123",
+            "HYBA_POOL_VIABTC_STRATUM_VERSION": "2",
+        }
+        with patch.dict(os.environ, env, clear=True):
+            self.assertEqual(1, validate_production_env.main())
+
+    def test_validator_rejects_v2_url_when_pool_declares_v1(self) -> None:
+        password_hash = PasswordHasher().hash("correct horse battery staple")
+        env = {
+            "NODE_ENV": "production",
+            "HYBA_ENV": "production",
+            "JWT_SECRET": "ci-production-secret-value-at-least-32-chars",
+            "HYBA_OPERATOR_CREDENTIALS": f"operator:{password_hash}:mining_operator",
+            "PULVINI_BACKEND_URL": "http://127.0.0.1:3001",
+            "HYBA_ALLOW_DEV_FIXTURES": "false",
+            "HYBA_ENABLE_LIVE_STRATUM": "true",
+            "HYBA_ENABLE_LIVE_SHARE_SUBMIT": "false",
+            "HYBA_ENABLE_MINING_AUTOCONNECT": "false",
+            "HYBA_ENABLE_AUDIT_LOGGING": "true",
+            "HYBA_POOL_VIABTC_URL": "stratum2+ssl://btc.viabtc.com:443",
+            "HYBA_POOL_VIABTC_USERNAME": "PYTHIA.001",
+            "HYBA_POOL_VIABTC_PASSWORD": "123",
+            "HYBA_POOL_VIABTC_STRATUM_VERSION": "1",
+        }
+        with patch.dict(os.environ, env, clear=True):
+            self.assertEqual(1, validate_production_env.main())
 
     def test_live_share_submission_requires_approval_id(self) -> None:
         password_hash = PasswordHasher().hash("correct horse battery staple")
@@ -83,13 +158,29 @@ class ProductionEnvironmentValidatorTests(unittest.TestCase):
             "HYBA_OPERATOR_CREDENTIALS": f"operator:{password_hash}:mining_operator",
             "PULVINI_BACKEND_URL": "http://127.0.0.1:3001",
             "HYBA_ALLOW_DEV_FIXTURES": "false",
+            "HYBA_ENABLE_LIVE_STRATUM": "true",
             "HYBA_ENABLE_LIVE_SHARE_SUBMIT": "true",
+            "HYBA_ENABLE_AUDIT_LOGGING": "true",
             "HYBA_POOL_NICEHASH_URL": "stratum+ssl://sha256.eu.nicehash.com:3334",
             "HYBA_POOL_NICEHASH_USERNAME": "ci-user",
             "HYBA_POOL_NICEHASH_PASSWORD": "ci-secret",
         }
         with patch.dict(os.environ, env, clear=True):
             self.assertEqual(1, validate_production_env.main())
+
+    def test_stratum_runtime_gates_match_production_live_profile(self) -> None:
+        env = {
+            "NODE_ENV": "production",
+            "HYBA_ENV": "production",
+            "HYBA_ALLOW_DEV_FIXTURES": "false",
+            "HYBA_ENABLE_LIVE_STRATUM": "true",
+            "HYBA_ENABLE_LIVE_SHARE_SUBMIT": "true",
+        }
+        with patch.dict(os.environ, env, clear=True):
+            self.assertTrue(_is_production())
+            self.assertFalse(_dev_fixtures_allowed())
+            self.assertTrue(_live_stratum_enabled())
+            self.assertTrue(_live_share_submit_enabled())
 
 
 class OperatorAuthenticationTests(unittest.TestCase):

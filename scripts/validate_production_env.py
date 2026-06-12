@@ -12,6 +12,9 @@ ARGON2ID = re.compile(r"^\$argon2id\$v=\d+\$m=\d+,t=\d+,p=\d+\$[^$]+\$[^$]+$")
 POOL_IDS = ("VIABTC", "NICEHASH", "BRAIINS", "CKPOOL")
 APPROVED_ROLES = {"ceo", "treasury_admin", "mining_operator", "treasury_viewer", "mining:read", "mining:operate"}
 TRUE_VALUES = {"1", "true", "yes", "on"}
+STRATUM_V1_SCHEMES = {"stratum+ssl", "stratum+tls", "stratum+tcp"}
+STRATUM_V2_SCHEMES = {"stratum2+ssl", "stratum2+tls", "stratum2+tcp"}
+PULVINI_HASHRATE_CAP_EHS = 1.0
 
 
 def _is_placeholder(value: str | None) -> bool:
@@ -70,20 +73,37 @@ def _pool_secret_env(pool_id: str) -> str:
     return f"HYBA_POOL_{pool_id}_" + "PASSWORD"
 
 
+def _parse_stratum_version(raw: str | None, pool_id: str, errors: list[str]) -> int | None:
+    normalized = (raw or "1").strip().lower().removeprefix("v")
+    if normalized not in {"1", "2"}:
+        errors.append(f"HYBA_POOL_{pool_id}_STRATUM_VERSION must be 1, v1, 2, or v2")
+        return None
+    return int(normalized)
+
+
 def _validate_pool_config(errors: list[str]) -> None:
     configured = []
     for pool_id in POOL_IDS:
         url = os.getenv(f"HYBA_POOL_{pool_id}_URL")
         username = os.getenv(f"HYBA_POOL_{pool_id}_USERNAME")
         pool_secret = os.getenv(_pool_secret_env(pool_id))
-        if any([url, username, pool_secret]):
-            missing = [name for name, value in [("URL", url), ("USERNAME", username), ("SECRET", pool_secret)] if _is_placeholder(value)]
+        version_raw = os.getenv(f"HYBA_POOL_{pool_id}_STRATUM_VERSION")
+        if any([url, username, pool_secret, version_raw]):
+            missing = [
+                name
+                for name, value in [("URL", url), ("USERNAME", username), ("SECRET", pool_secret)]
+                if _is_placeholder(value)
+            ]
             if missing:
                 errors.append(f"HYBA_POOL_{pool_id}_* is partially configured or contains placeholders: missing/invalid {', '.join(missing)}")
                 continue
             parsed = urlparse(str(url))
-            if parsed.scheme not in {"stratum+ssl", "stratum+tls", "stratum+tcp", "stratum2+tcp"} or not parsed.hostname:
-                errors.append(f"HYBA_POOL_{pool_id}_URL has invalid Stratum URL format")
+            version = _parse_stratum_version(version_raw, pool_id, errors)
+            valid_schemes = STRATUM_V2_SCHEMES if version == 2 else STRATUM_V1_SCHEMES
+            if parsed.scheme not in valid_schemes or not parsed.hostname:
+                errors.append(
+                    f"HYBA_POOL_{pool_id}_URL has invalid Stratum URL format for version {version}: {parsed.scheme or '<missing>'}"
+                )
             configured.append(pool_id)
     if not configured:
         errors.append("At least one HYBA_POOL_<ID>_URL/USERNAME/SECRET set is required before live mining deployment")
@@ -96,11 +116,15 @@ def _validate_flags(errors: list[str], warnings: list[str]) -> None:
             errors.append(f"{name}=production is required for production deployment")
     if os.getenv("HYBA_ALLOW_DEV_FIXTURES", "false").strip().lower() in TRUE_VALUES:
         errors.append("HYBA_ALLOW_DEV_FIXTURES must be false in production")
+    if os.getenv("HYBA_ENABLE_LIVE_STRATUM", "false").strip().lower() not in TRUE_VALUES:
+        errors.append("HYBA_ENABLE_LIVE_STRATUM=true is required for production live mining")
     if os.getenv("HYBA_ENABLE_MINING_AUTOCONNECT", "false").strip().lower() in TRUE_VALUES:
         warnings.append("HYBA_ENABLE_MINING_AUTOCONNECT is enabled; this must be approved as an operator-controlled exception")
     if os.getenv("HYBA_ENABLE_LIVE_SHARE_SUBMIT", "false").strip().lower() in TRUE_VALUES:
         if _is_placeholder(os.getenv("HYBA_LIVE_SHARE_APPROVAL_ID")):
             errors.append("HYBA_ENABLE_LIVE_SHARE_SUBMIT=true requires HYBA_LIVE_SHARE_APPROVAL_ID")
+    if os.getenv("HYBA_ENABLE_AUDIT_LOGGING", "false").strip().lower() not in TRUE_VALUES:
+        errors.append("HYBA_ENABLE_AUDIT_LOGGING=true is required for production mining")
     capacity = os.getenv("HYBA_QUANTUM_CAPACITY_EHS")
     if capacity:
         try:
@@ -110,6 +134,8 @@ def _validate_flags(errors: list[str], warnings: list[str]) -> None:
         else:
             if parsed <= 0:
                 errors.append("HYBA_QUANTUM_CAPACITY_EHS must be positive when set")
+            if parsed > PULVINI_HASHRATE_CAP_EHS:
+                errors.append(f"HYBA_QUANTUM_CAPACITY_EHS must be <= {PULVINI_HASHRATE_CAP_EHS} EH/s")
 
 
 def main() -> int:
