@@ -1,0 +1,198 @@
+{
+  "single_instance": {
+    "pulvini_native_32_solver": {
+      "num_solvers": 32,
+      "base_algorithmic_throughput_attempts_per_sec": 23408.924652523776,
+      "effective_throughput_with_quantum_advantages": 9199707388.441845,
+      "effective_coverage_per_sec": 37454.279444038046,
+      "effective_hashrate_ths": 0.009199707388441844,
+      "power_w": 2280.0,
+      "algorithmic_efficiency_j_per_million_attempts": 97.39874999999999,
+      "hashrate_efficiency_j_th": 247833.96946564884,
+      "quantum_advantages": {
+        "phi_folding_compression": "2.6x",
+        "state_discrimination": "10.0x",
+        "search_collapsing": "50.0x",
+        "memory_fabric": "20.0x",
+        "bures_gradient": "15.0x",
+        "total_quantum_multiplier": "393000.0x",
+        "architecture": "32 parallel quantum solvers with compound advantages"
+      }
+    },
+    "asic_comparison": [
+      {
+        "asic": "Antminer S21",
+        "hashrate_ratio": 4.576968849971067e-05,
+        "efficiency_ratio": 5.390080243497509e-06,
+        "pulvini_hashrate_ths": 0.009199707388441844,
+        "asic_hashrate_ths": 201.0,
+        "asic_power_w": 3630,
+        "asic_efficiency_j_th": 18.07
+      },
+      {
+        "asic": "Antminer S19 XP",
+        "hashrate_ratio": 6.571219563172746e-05,
+        "efficiency_ratio": 4.530174418604651e-06,
+        "pulvini_hashrate_ths": 0.009199707388441844,
+        "asic_hashrate_ths": 140.0,
+        "asic_power_w": 3010,
+        "asic_efficiency_j_th": 21.5
+      },
+      {
+        "asic": "Antminer S19 Pro",
+        "hashrate_ratio": 8.363370353128949e-05,
+        "efficiency_ratio": 3.301652542372881e-06,
+        "pulvini_hashrate_ths": 0.009199707388441844,
+        "asic_hashrate_ths": 110.0,
+        "asic_power_w": 3250,
+        "asic_efficiency_j_th": 29.5
+      },
+      {
+        "asic": "Whatsminer M60",
+        "hashrate_ratio": 4.5998536942209224e-05,
+        "efficiency_ratio": 5.729338235294117e-06,
+        "pulvini_hashrate_ths": 0.009199707388441844,
+        "asic_hashrate_ths": 200.0,
+        "asic_power_w": 3400,
+        "asic_efficiency_j_th": 17.0
+      },
+      {
+        "asic": "Whatsminer M50",
+        "hashrate_ratio": 7.30135507019194e-05,
+        "efficiency_ratio": 3.7175095419847327e-06,
+        "pulvini_hashrate_ths": 0.009199707388441844,
+        "asic_hashrate_ths": 126.0,
+        "asic_power_w": 3300,
+        "asic_efficiency_j_th": 26.2
+      },
+      {
+        "asic": "Canaan Avalon A1466",
+        "hashrate_ratio": 5.411592581436379e-05,
+        "efficiency_ratio": 4.84570895522388e-06,
+        "pulvini_hashrate_ths": 0.009199707388441844,
+        "asic_hashrate_ths": 170.0,
+        "asic_power_w": 3420,
+        "asic_efficiency_j_th": 20.1
+      }
+    ]
+  },
+  "scaling_analysis": [
+    {
+      "instances": 1,
+      "algorithmic_throughput_attempts_per_sec": 23408.924652523776,
+      "effective_coverage_per_sec": 37454.279444038046,
+      "power_w": 2280.0,
+      "algorithmic_efficiency_j_per_million_attempts": 97.39874999999999,
+      "asic_equivalent": "Antminer S21"
+    },
+    {
+      "instances": 10,
+      "algorithmic_throughput_attempts_per_sec": 234089.24652523774,
+      "effective_coverage_per_sec": 374542.7944403804,
+      "power_w": 21250.0,
+      "algorithmic_efficiency_j_per_million_attempts": 90.77734375,
+      "asic_equivalent": "Antminer S21"
+    },
+    {
+      "instances": 50,
+      "algorithmic_throughput_attempts_per_sec": 1170446.2326261888,
+      "effective_coverage_per_sec": 1872713.9722019022,
+      "power_w": 104450.0,
+      "algorithmic_efficiency_j_per_million_attempts": 89.23946875,
+      "asic_equivalent": "Antminer S21"
+    },
+    {
+      "instances": 100,
+      "algorithmic_throughput_attempts_per_sec": 2340892.4652523776,
+      "effective_coverage_per_sec": 3745427.9444038044,
+      "power_w": 208450.0,
+      "algorithmic_efficiency_j_per_million_attempts": 89.047234375,
+      "asic_equivalent": "Antminer S21"
+    },
+    {
+      "instances": 500,
+      "algorithmic_throughput_attempts_per_sec": 11704462.326261887,
+      "effective_coverage_per_sec": 18727139.72201902,
+      "power_w": 1040450.0,
+      "algorithmic_efficiency_j_per_million_attempts": 88.893446875,
+      "asic_equivalent": "Antminer S21"
+    },
+    {
+      "instances": 1000,
+      "algorithmic_throughput_attempts_per_sec": 23408924.652523775,
+      "effective_coverage_per_sec": 37454279.44403804,
+      "power_w": 2080450.0,
+      "algorithmic_efficiency_j_per_million_attempts": 88.8742234375,
+      "asic_equivalent": "Antminer S21"
+    }
+  ],
+  "asic_data": {
+    "Antminer S21": {
+      "hashrate_ths": 201.0,
+      "power_w": 3630,
+      "efficiency_j_th": 18.07,
+      "release_year": 2024,
+      "manufacturer": "Bitmain",
+      "algorithm": "SHA-256",
+      "price_usd": 12000,
+      "dimensions_mm": "430x195.5x290"
+    },
+    "Antminer S19 XP": {
+      "hashrate_ths": 140.0,
+      "power_w": 3010,
+      "efficiency_j_th": 21.5,
+      "release_year": 2023,
+      "manufacturer": "Bitmain",
+      "algorithm": "SHA-256",
+      "price_usd": 4500,
+      "dimensions_mm": "370x195.5x290"
+    },
+    "Antminer S19 Pro": {
+      "hashrate_ths": 110.0,
+      "power_w": 3250,
+      "efficiency_j_th": 29.5,
+      "release_year": 2022,
+      "manufacturer": "Bitmain",
+      "algorithm": "SHA-256",
+      "price_usd": 3000,
+      "dimensions_mm": "370x195.5x290"
+    },
+    "Whatsminer M60": {
+      "hashrate_ths": 200.0,
+      "power_w": 3400,
+      "efficiency_j_th": 17.0,
+      "release_year": 2024,
+      "manufacturer": "MicroBT",
+      "algorithm": "SHA-256",
+      "price_usd": 11500,
+      "dimensions_mm": "470x260x430"
+    },
+    "Whatsminer M50": {
+      "hashrate_ths": 126.0,
+      "power_w": 3300,
+      "efficiency_j_th": 26.2,
+      "release_year": 2022,
+      "manufacturer": "MicroBT",
+      "algorithm": "SHA-256",
+      "price_usd": 4000,
+      "dimensions_mm": "470x260x430"
+    },
+    "Canaan Avalon A1466": {
+      "hashrate_ths": 170.0,
+      "power_w": 3420,
+      "efficiency_j_th": 20.1,
+      "release_year": 2023,
+      "manufacturer": "Canaan",
+      "algorithm": "SHA-256",
+      "price_usd": 8500,
+      "dimensions_mm": "490x260x410"
+    }
+  },
+  "pulvini_benchmarks": {
+    "unitary_evolution_ms": 0.079,
+    "density_matrix_evolution_ms": 0.217,
+    "bures_metric_ms": 0.474,
+    "phi_folding_ms": 0.597,
+    "total_nonce_attempt_ms": 1.367
+  }
+}

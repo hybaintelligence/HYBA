@@ -44,6 +44,8 @@ def _project_density_matrix(values: np.ndarray) -> np.ndarray:
         eigvals = np.full(eigvals.shape, 1.0 / max(1, eigvals.size))
     else:
         eigvals = eigvals / total
+    # Regularization guard: clip eigenvalues to floor before reconstruction
+    eigvals = np.maximum(eigvals, 1e-12)
     # Spectral floor enforcement for PSD constraint - prevent NaN/inf propagation
     eigvals_safe = np.where(np.isfinite(eigvals), eigvals, 0.0)
     eigvals_safe = np.maximum(eigvals_safe, 0.0)

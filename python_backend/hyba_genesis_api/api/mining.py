@@ -639,6 +639,66 @@ async def mining_status():
     }
 
 
+@router.get("/health", dependencies=[Depends(require_mining_read)])
+async def health_check():
+    """Comprehensive health check for mining system with detailed status."""
+    state = get_pythia_state()
+    health_status = {
+        "status": "healthy",
+        "checks": {},
+        "timestamp": datetime.utcnow().isoformat(),
+    }
+    
+    # Daemon health check
+    daemon_running = _DAEMON_STARTED and _PYTHIA_PROCESS is not None and _PYTHIA_PROCESS.poll() is None
+    health_status["checks"]["daemon"] = {
+        "status": "healthy" if daemon_running else "unhealthy",
+        "running": daemon_running,
+        "pid": _PYTHIA_PROCESS.pid if _PYTHIA_PROCESS else None,
+    }
+    
+    # Connection health check
+    connection_healthy = _ACTIVE_CONNECTION is not None
+    health_status["checks"]["connection"] = {
+        "status": "healthy" if connection_healthy else "unhealthy",
+        "active": connection_healthy,
+        "pool_id": _ACTIVE_CONNECTION.get("pool_id") if _ACTIVE_CONNECTION else None,
+    }
+    
+    # Activity health check
+    last_activity = state.get("last_job", {}).get("timestamp") if state else None
+    if last_activity:
+        try:
+            activity_age = (datetime.utcnow() - datetime.fromisoformat(last_activity)).total_seconds()
+            activity_healthy = activity_age < 300  # 5 minutes
+            health_status["checks"]["activity"] = {
+                "status": "healthy" if activity_healthy else "degraded",
+                "last_activity": last_activity,
+                "age_seconds": activity_age,
+            }
+        except (ValueError, TypeError):
+            health_status["checks"]["activity"] = {"status": "unknown", "error": "invalid_timestamp"}
+    else:
+        health_status["checks"]["activity"] = {"status": "unknown", "last_activity": None}
+    
+    # MIDAS state machine health
+    midas_healthy = midas_state_machine.validate_state_machine()
+    health_status["checks"]["midas"] = {
+        "status": "healthy" if midas_healthy else "degraded",
+        "state": midas_state_machine.get_state().value,
+        "validation": midas_healthy,
+    }
+    
+    # Overall health status
+    check_statuses = [check["status"] for check in health_status["checks"].values()]
+    if "unhealthy" in check_statuses:
+        health_status["status"] = "unhealthy"
+    elif "degraded" in check_statuses:
+        health_status["status"] = "degraded"
+    
+    return health_status
+
+
 @router.post("/disconnect", dependencies=[Depends(require_mining_control)])
 async def disconnect(request: Request, idempotency_key: str | None = Header(None, alias="Idempotency-Key")):
     global _ACTIVE_CONNECTION

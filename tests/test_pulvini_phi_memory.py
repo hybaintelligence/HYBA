@@ -11,6 +11,9 @@ BACKEND = ROOT / "python_backend"
 if str(BACKEND) not in sys.path:
     sys.path.insert(0, str(BACKEND))
 
+# Turn warnings into hard failures in test context
+np.seterr(all='raise')
+
 from pythia_mining.pulvini_phi_memory import PulviniPhiMemoryCompressionEngine  # noqa: E402
 from pythia_mining.pulvini_memory_fabric import PulviniMemoryFabric  # noqa: E402
 

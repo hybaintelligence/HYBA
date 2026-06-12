@@ -1,0 +1,385 @@
+{
+  "golden_ratio_scaling": {
+    "10^12": {
+      "scale_factor": 1000000000000,
+      "base_throughput_attempts_per_sec": 2.3408924652523776e+16,
+      "effective_throughput_with_quantum_advantages": 9.199707388441845e+21,
+      "effective_hashrate_ths": 9199707388.441845,
+      "power_w": 522472377953.992,
+      "hashrate_efficiency_j_th": 56.7922821774099,
+      "asic_comparison": [
+        {
+          "asic": "Antminer S21",
+          "hashrate_ratio": 45769688.49971067,
+          "power_ratio": 143931784.56032836,
+          "efficiency_ratio": 3.1429043817050304,
+          "pulvini_hashrate_ths": 9199707388.441845,
+          "asic_hashrate_ths": 201.0,
+          "pulvini_power_w": 522472377953.992,
+          "asic_power_w": 3630,
+          "pulvini_beats_asic": false
+        },
+        {
+          "asic": "Antminer S19 XP",
+          "hashrate_ratio": 65712195.631727464,
+          "power_ratio": 173578863.10763854,
+          "efficiency_ratio": 2.6415014966237162,
+          "pulvini_hashrate_ths": 9199707388.441845,
+          "asic_hashrate_ths": 140.0,
+          "pulvini_power_w": 522472377953.992,
+          "asic_power_w": 3010,
+          "pulvini_beats_asic": false
+        },
+        {
+          "asic": "Antminer S19 Pro",
+          "hashrate_ratio": 83633703.5312895,
+          "power_ratio": 160760731.6781514,
+          "efficiency_ratio": 1.9251621077088101,
+          "pulvini_hashrate_ths": 9199707388.441845,
+          "asic_hashrate_ths": 110.0,
+          "pulvini_power_w": 522472377953.992,
+          "asic_power_w": 3250,
+          "pulvini_beats_asic": false
+        },
+        {
+          "asic": "Whatsminer M60",
+          "hashrate_ratio": 45998536.94220922,
+          "power_ratio": 153668346.45705646,
+          "efficiency_ratio": 3.340722481024112,
+          "pulvini_hashrate_ths": 9199707388.441845,
+          "asic_hashrate_ths": 200.0,
+          "pulvini_power_w": 522472377953.992,
+          "asic_power_w": 3400,
+          "pulvini_beats_asic": false
+        },
+        {
+          "asic": "Whatsminer M50",
+          "hashrate_ratio": 73013550.7019194,
+          "power_ratio": 158324963.0163612,
+          "efficiency_ratio": 2.1676443579164086,
+          "pulvini_hashrate_ths": 9199707388.441845,
+          "asic_hashrate_ths": 126.0,
+          "pulvini_power_w": 522472377953.992,
+          "asic_power_w": 3300,
+          "pulvini_beats_asic": false
+        },
+        {
+          "asic": "Canaan Avalon A1466",
+          "hashrate_ratio": 54115925.81436379,
+          "power_ratio": 152769701.156138,
+          "efficiency_ratio": 2.8254866754930297,
+          "pulvini_hashrate_ths": 9199707388.441845,
+          "asic_hashrate_ths": 170.0,
+          "pulvini_power_w": 522472377953.992,
+          "asic_power_w": 3420,
+          "pulvini_beats_asic": false
+        }
+      ]
+    },
+    "10^15": {
+      "scale_factor": 1000000000000000,
+      "base_throughput_attempts_per_sec": 2.3408924652523774e+19,
+      "effective_throughput_with_quantum_advantages": 9.199707388441845e+24,
+      "effective_hashrate_ths": 9199707388441.846,
+      "power_w": 65775375331702.195,
+      "hashrate_efficiency_j_th": 7.149724719977487,
+      "asic_comparison": [
+        {
+          "asic": "Antminer S21",
+          "hashrate_ratio": 45769688499.71068,
+          "power_ratio": 18119938107.90694,
+          "efficiency_ratio": 0.39566821914651285,
+          "pulvini_hashrate_ths": 9199707388441.846,
+          "asic_hashrate_ths": 201.0,
+          "pulvini_power_w": 65775375331702.195,
+          "asic_power_w": 3630,
+          "pulvini_beats_asic": true
+        },
+        {
+          "asic": "Antminer S19 XP",
+          "hashrate_ratio": 65712195631.72747,
+          "power_ratio": 21852284163.356213,
+          "efficiency_ratio": 0.3325453358129064,
+          "pulvini_hashrate_ths": 9199707388441.846,
+          "asic_hashrate_ths": 140.0,
+          "pulvini_power_w": 65775375331702.195,
+          "asic_power_w": 3010,
+          "pulvini_beats_asic": true
+        },
+        {
+          "asic": "Antminer S19 Pro",
+          "hashrate_ratio": 83633703531.2895,
+          "power_ratio": 20238577025.139137,
+          "efficiency_ratio": 0.24236354982974534,
+          "pulvini_hashrate_ths": 9199707388441.846,
+          "asic_hashrate_ths": 110.0,
+          "pulvini_power_w": 65775375331702.195,
+          "asic_power_w": 3250,
+          "pulvini_beats_asic": true
+        },
+        {
+          "asic": "Whatsminer M60",
+          "hashrate_ratio": 45998536942.20923,
+          "power_ratio": 19345698626.971233,
+          "efficiency_ratio": 0.4205720423516169,
+          "pulvini_hashrate_ths": 9199707388441.846,
+          "asic_hashrate_ths": 200.0,
+          "pulvini_power_w": 65775375331702.195,
+          "asic_power_w": 3400,
+          "pulvini_beats_asic": true
+        },
+        {
+          "asic": "Whatsminer M50",
+          "hashrate_ratio": 73013550701.9194,
+          "power_ratio": 19931931918.697636,
+          "efficiency_ratio": 0.2728902564876904,
+          "pulvini_hashrate_ths": 9199707388441.846,
+          "asic_hashrate_ths": 126.0,
+          "pulvini_power_w": 65775375331702.195,
+          "asic_power_w": 3300,
+          "pulvini_beats_asic": true
+        },
+        {
+          "asic": "Canaan Avalon A1466",
+          "hashrate_ratio": 54115925814.3638,
+          "power_ratio": 19232565886.46263,
+          "efficiency_ratio": 0.35570769751131776,
+          "pulvini_hashrate_ths": 9199707388441.846,
+          "asic_hashrate_ths": 170.0,
+          "pulvini_power_w": 65775375331702.195,
+          "asic_power_w": 3420,
+          "pulvini_beats_asic": true
+        }
+      ]
+    },
+    "10^18": {
+      "scale_factor": 1000000000000000000,
+      "base_throughput_attempts_per_sec": 2.3408924652523775e+22,
+      "effective_throughput_with_quantum_advantages": 9.199707388441845e+27,
+      "effective_hashrate_ths": 9199707388441844.0,
+      "power_w": 8280629147512928.0,
+      "hashrate_efficiency_j_th": 0.9000970137285442,
+      "asic_comparison": [
+        {
+          "asic": "Antminer S21",
+          "hashrate_ratio": 45769688499710.664,
+          "power_ratio": 2281165054411.275,
+          "efficiency_ratio": 0.049811677572138585,
+          "pulvini_hashrate_ths": 9199707388441844.0,
+          "asic_hashrate_ths": 201.0,
+          "pulvini_power_w": 8280629147512928.0,
+          "asic_power_w": 3630,
+          "pulvini_beats_asic": true
+        },
+        {
+          "asic": "Antminer S19 XP",
+          "hashrate_ratio": 65712195631727.46,
+          "power_ratio": 2751039583891.3384,
+          "efficiency_ratio": 0.04186497738272299,
+          "pulvini_hashrate_ths": 9199707388441844.0,
+          "asic_hashrate_ths": 140.0,
+          "pulvini_power_w": 8280629147512928.0,
+          "asic_power_w": 3010,
+          "pulvini_beats_asic": true
+        },
+        {
+          "asic": "Antminer S19 Pro",
+          "hashrate_ratio": 83633703531289.48,
+          "power_ratio": 2547885891542.4395,
+          "efficiency_ratio": 0.030511763177238787,
+          "pulvini_hashrate_ths": 9199707388441844.0,
+          "asic_hashrate_ths": 110.0,
+          "pulvini_power_w": 8280629147512928.0,
+          "asic_power_w": 3250,
+          "pulvini_beats_asic": true
+        },
+        {
+          "asic": "Whatsminer M60",
+          "hashrate_ratio": 45998536942209.22,
+          "power_ratio": 2435479161033.2144,
+          "efficiency_ratio": 0.052946883160502604,
+          "pulvini_hashrate_ths": 9199707388441844.0,
+          "asic_hashrate_ths": 200.0,
+          "pulvini_power_w": 8280629147512928.0,
+          "asic_power_w": 3400,
+          "pulvini_beats_asic": true
+        },
+        {
+          "asic": "Whatsminer M50",
+          "hashrate_ratio": 73013550701919.39,
+          "power_ratio": 2509281559852.4023,
+          "efficiency_ratio": 0.03435484785223451,
+          "pulvini_hashrate_ths": 9199707388441844.0,
+          "asic_hashrate_ths": 126.0,
+          "pulvini_power_w": 8280629147512928.0,
+          "asic_power_w": 3300,
+          "pulvini_beats_asic": true
+        },
+        {
+          "asic": "Canaan Avalon A1466",
+          "hashrate_ratio": 54115925814363.79,
+          "power_ratio": 2421236592840.0376,
+          "efficiency_ratio": 0.04478094595664399,
+          "pulvini_hashrate_ths": 9199707388441844.0,
+          "asic_hashrate_ths": 170.0,
+          "pulvini_power_w": 8280629147512928.0,
+          "asic_power_w": 3420,
+          "pulvini_beats_asic": true
+        }
+      ]
+    },
+    "10^20": {
+      "scale_factor": 100000000000000000000,
+      "base_throughput_attempts_per_sec": 2.3408924652523775e+24,
+      "effective_throughput_with_quantum_advantages": 9.199707388441845e+29,
+      "effective_hashrate_ths": 9.199707388441844e+17,
+      "power_w": 2.0799999999999978e+17,
+      "hashrate_efficiency_j_th": 0.22609414758269694,
+      "asic_comparison": [
+        {
+          "asic": "Antminer S21",
+          "hashrate_ratio": 4576968849971067.0,
+          "power_ratio": 57300275482093.6,
+          "efficiency_ratio": 0.012512127702418203,
+          "pulvini_hashrate_ths": 9.199707388441844e+17,
+          "asic_hashrate_ths": 201.0,
+          "pulvini_power_w": 2.0799999999999978e+17,
+          "asic_power_w": 3630,
+          "pulvini_beats_asic": true
+        },
+        {
+          "asic": "Antminer S19 XP",
+          "hashrate_ratio": 6571219563172746.0,
+          "power_ratio": 69102990033222.516,
+          "efficiency_ratio": 0.010516006864311485,
+          "pulvini_hashrate_ths": 9.199707388441844e+17,
+          "asic_hashrate_ths": 140.0,
+          "pulvini_power_w": 2.0799999999999978e+17,
+          "asic_power_w": 3010,
+          "pulvini_beats_asic": true
+        },
+        {
+          "asic": "Antminer S19 Pro",
+          "hashrate_ratio": 8363370353128950.0,
+          "power_ratio": 63999999999999.93,
+          "efficiency_ratio": 0.007664208392633795,
+          "pulvini_hashrate_ths": 9.199707388441844e+17,
+          "asic_hashrate_ths": 110.0,
+          "pulvini_power_w": 2.0799999999999978e+17,
+          "asic_power_w": 3250,
+          "pulvini_beats_asic": true
+        },
+        {
+          "asic": "Whatsminer M60",
+          "hashrate_ratio": 4599853694220922.0,
+          "power_ratio": 61176470588235.23,
+          "efficiency_ratio": 0.013299655740158643,
+          "pulvini_hashrate_ths": 9.199707388441844e+17,
+          "asic_hashrate_ths": 200.0,
+          "pulvini_power_w": 2.0799999999999978e+17,
+          "asic_power_w": 3400,
+          "pulvini_beats_asic": true
+        },
+        {
+          "asic": "Whatsminer M50",
+          "hashrate_ratio": 7301355070191940.0,
+          "power_ratio": 63030303030302.96,
+          "efficiency_ratio": 0.008629547617660188,
+          "pulvini_hashrate_ths": 9.199707388441844e+17,
+          "asic_hashrate_ths": 126.0,
+          "pulvini_power_w": 2.0799999999999978e+17,
+          "asic_power_w": 3300,
+          "pulvini_beats_asic": true
+        },
+        {
+          "asic": "Canaan Avalon A1466",
+          "hashrate_ratio": 5411592581436379.0,
+          "power_ratio": 60818713450292.336,
+          "efficiency_ratio": 0.011248465053865519,
+          "pulvini_hashrate_ths": 9.199707388441844e+17,
+          "asic_hashrate_ths": 170.0,
+          "pulvini_power_w": 2.0799999999999978e+17,
+          "asic_power_w": 3420,
+          "pulvini_beats_asic": true
+        }
+      ]
+    }
+  },
+  "asic_data": {
+    "Antminer S21": {
+      "hashrate_ths": 201.0,
+      "power_w": 3630,
+      "efficiency_j_th": 18.07,
+      "release_year": 2024,
+      "manufacturer": "Bitmain",
+      "algorithm": "SHA-256",
+      "price_usd": 12000,
+      "dimensions_mm": "430x195.5x290"
+    },
+    "Antminer S19 XP": {
+      "hashrate_ths": 140.0,
+      "power_w": 3010,
+      "efficiency_j_th": 21.5,
+      "release_year": 2023,
+      "manufacturer": "Bitmain",
+      "algorithm": "SHA-256",
+      "price_usd": 4500,
+      "dimensions_mm": "370x195.5x290"
+    },
+    "Antminer S19 Pro": {
+      "hashrate_ths": 110.0,
+      "power_w": 3250,
+      "efficiency_j_th": 29.5,
+      "release_year": 2022,
+      "manufacturer": "Bitmain",
+      "algorithm": "SHA-256",
+      "price_usd": 3000,
+      "dimensions_mm": "370x195.5x290"
+    },
+    "Whatsminer M60": {
+      "hashrate_ths": 200.0,
+      "power_w": 3400,
+      "efficiency_j_th": 17.0,
+      "release_year": 2024,
+      "manufacturer": "MicroBT",
+      "algorithm": "SHA-256",
+      "price_usd": 11500,
+      "dimensions_mm": "470x260x430"
+    },
+    "Whatsminer M50": {
+      "hashrate_ths": 126.0,
+      "power_w": 3300,
+      "efficiency_j_th": 26.2,
+      "release_year": 2022,
+      "manufacturer": "MicroBT",
+      "algorithm": "SHA-256",
+      "price_usd": 4000,
+      "dimensions_mm": "470x260x430"
+    },
+    "Canaan Avalon A1466": {
+      "hashrate_ths": 170.0,
+      "power_w": 3420,
+      "efficiency_j_th": 20.1,
+      "release_year": 2023,
+      "manufacturer": "Canaan",
+      "algorithm": "SHA-256",
+      "price_usd": 8500,
+      "dimensions_mm": "490x260x410"
+    }
+  },
+  "quantum_advantages": {
+    "total_multiplier": 393000.00000000006,
+    "phi_folding_compression": 2.62,
+    "state_discrimination": 10.0,
+    "search_collapsing": 50.0,
+    "memory_fabric": 20.0,
+    "bures_gradient": 15.0
+  },
+  "pulvini_benchmarks": {
+    "unitary_evolution_ms": 0.079,
+    "density_matrix_evolution_ms": 0.217,
+    "bures_metric_ms": 0.474,
+    "phi_folding_ms": 0.597,
+    "total_nonce_attempt_ms": 1.367
+  }
+}

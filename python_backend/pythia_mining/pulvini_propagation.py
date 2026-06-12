@@ -140,6 +140,7 @@ class SharePropagationController:
         self.router = ShareRouter(self.manifold)
         self.cancel_flood = CancelFlood(self.manifold)
         self.seen_shares: Set[str] = set()
+        self.seen_job_nonces: Set[str] = set()  # Global deduplication by job_id + nonce
         self.history: List[Dict[str, Any]] = []
         self.cancelled_jobs: Dict[str, CancelSignal] = {}
 
@@ -153,6 +154,25 @@ class SharePropagationController:
         submitter: ShareSubmitter,
         hash_bytes: Optional[bytes] = None,
     ) -> PropagationResult:
+        # Global deduplication by job_id + nonce to prevent duplicate submissions across nodes
+        job_nonce_key = f"{job.job_id}:{nonce}"
+        if job_nonce_key in self.seen_job_nonces:
+            # Return early with duplicate result instead of raising exception
+            duplicate_signal = ShareSignal.create(
+                job_id=str(job.job_id),
+                finder_id=finder_id,
+                nonce=nonce,
+                extranonce2=extranonce2,
+                hash_bytes=hash_bytes,
+            )
+            return PropagationResult(
+                share_signal=duplicate_signal,
+                share_result=type('obj', (object,), {'accepted': False, 'error': 'duplicate_share', 'error_code': 421}),
+                cancel_signal=CancelSignal(job_id=str(job.job_id), reason="duplicate_share", source_share_id=duplicate_signal.share_id),
+                route=[finder_id],
+                cancelled_nodes=[],
+            )
+        
         signal = ShareSignal.create(
             job_id=str(job.job_id),
             finder_id=finder_id,
@@ -162,6 +182,9 @@ class SharePropagationController:
         )
         if signal.share_id in self.seen_shares:
             raise RuntimeError(f"duplicate share signal: {signal.share_id}")
+        
+        # Mark this job_id + nonce combination as seen globally
+        self.seen_job_nonces.add(job_nonce_key)
         self.seen_shares.add(signal.share_id)
 
         route = self.router.route_to_proxy(signal)
@@ -174,6 +197,11 @@ class SharePropagationController:
         cancel = CancelSignal(job_id=str(job.job_id), reason=reason, source_share_id=signal.share_id)
         cancelled_nodes, _max_hop = self.cancel_flood.flood(cancel)
         self.cancelled_jobs[str(job.job_id)] = cancel
+        
+        # Clean up deduplication entries for this job to prevent unbounded growth
+        keys_to_remove = [key for key in self.seen_job_nonces if key.startswith(f"{job.job_id}:")]
+        for key in keys_to_remove:
+            self.seen_job_nonces.remove(key)
 
         result = PropagationResult(
             share_signal=signal,

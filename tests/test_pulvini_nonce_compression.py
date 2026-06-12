@@ -6,10 +6,15 @@ import unittest
 from pathlib import Path
 from types import SimpleNamespace
 
+import numpy as np
+
 ROOT = Path(__file__).resolve().parents[1]
 BACKEND = ROOT / "python_backend"
 if str(BACKEND) not in sys.path:
     sys.path.insert(0, str(BACKEND))
+
+# Turn warnings into hard failures in test context
+np.seterr(all='raise')
 
 from pythia_mining.pulvini_compressed_solver import PulviniCompressedQuantumSolver  # noqa: E402
 from pythia_mining.pulvini_nonce_compression import NONCE_SPACE_SIZE, PulviniNonceSpaceCompressor  # noqa: E402

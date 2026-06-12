@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import hashlib
 import math
+import random
 import time
 from typing import Any, Dict, List, Optional
 
@@ -18,6 +19,8 @@ class PulviniCompressedQuantumSolver(DodecahedralQuantumSolver):
         super().__init__(configured_capacity_ehs=configured_capacity_ehs)
         self.compressed_plan: Any = None
         self.last_solve_trace: List[Dict[str, Any]] = []
+        # Add randomness seed to prevent deterministic nonce selection
+        self._solve_counter = 0
 
     async def configure_compressed_search(self, target: int, compressed_plan: Any) -> bool:
         if not bool(compressed_plan.complete_coverage) or not bool(compressed_plan.overlap_free):
@@ -49,8 +52,9 @@ class PulviniCompressedQuantumSolver(DodecahedralQuantumSolver):
         return True
 
     @staticmethod
-    def _unit_hash(material: str) -> float:
-        digest = hashlib.blake2b(material.encode("utf-8"), digest_size=8).digest()
+    def _unit_hash(material: str, seed: int = 0) -> float:
+        """Hash with seed to prevent deterministic nonce selection."""
+        digest = hashlib.blake2b(f"{material}:{seed}".encode("utf-8"), digest_size=8).digest()
         return int.from_bytes(digest, "big") / float(1 << 64)
 
     def _collapse_coordinate(self) -> Any:
@@ -62,7 +66,8 @@ class PulviniCompressedQuantumSolver(DodecahedralQuantumSolver):
             raise QuantumSolverConfigurationError("compressed nonce plan contains no active coordinates")
         scored = []
         for coordinate in coordinates:
-            phase = self._unit_hash(f"{target}:{coordinate.coordinate_id}:{coordinate.coverage_size}")
+            # Add solve counter as seed to prevent deterministic selection
+            phase = self._unit_hash(f"{target}:{coordinate.coordinate_id}:{coordinate.coverage_size}", self._solve_counter)
             weight = max(float(coordinate.coverage_size), 1.0) * (1.0 + phase)
             scored.append((weight, coordinate))
         scored.sort(key=lambda item: item[0], reverse=True)
@@ -86,8 +91,9 @@ class PulviniCompressedQuantumSolver(DodecahedralQuantumSolver):
         for step in range(steps):
             left = (position - 1) % len(coordinates)
             right = (position + 1) % len(coordinates)
-            left_score = self._unit_hash(f"walk:{target}:{step}:{left}")
-            right_score = self._unit_hash(f"walk:{target}:{step}:{right}")
+            # Add solve counter and step as seed to prevent deterministic walk
+            left_score = self._unit_hash(f"walk:{target}:{self._solve_counter}:{step}:{left}", self._solve_counter + step)
+            right_score = self._unit_hash(f"walk:{target}:{self._solve_counter}:{step}:{right}", self._solve_counter + step)
             position = right if right_score >= left_score else left
         walked = coordinates[position]
         self.last_solve_trace.append(
@@ -129,6 +135,9 @@ class PulviniCompressedQuantumSolver(DodecahedralQuantumSolver):
         if self.compressed_plan is None:
             return await super().solve(max_iterations=max_iterations, timeout=timeout)
 
+        # Increment solve counter to prevent deterministic nonce selection
+        self._solve_counter += 1
+        
         start_time = time.monotonic()
         self.last_solve_iterations = 0
         self.last_solve_duration_seconds = None

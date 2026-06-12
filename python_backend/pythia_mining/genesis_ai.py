@@ -27,6 +27,46 @@ from .pulvini_propagation import SharePropagationController
 from .stratum_client import AllPoolsOfflineError, MiningJob, PoolManager
 
 
+class ErrorSeverity:
+    TRANSIENT = "transient"
+    FATAL = "fatal"
+    RECOVERABLE = "recoverable"
+
+
+def classify_error(error: Exception) -> str:
+    """
+    Classify errors by severity to determine retry strategy.
+    
+    Transient errors: Network timeouts, temporary pool issues, rate limits
+    Fatal errors: Configuration errors, authentication failures, missing dependencies
+    Recoverable errors: Pool disconnections, stale jobs, temporary resource exhaustion
+    """
+    error_type = type(error).__name__
+    error_message = str(error).lower()
+    
+    # Transient network errors
+    if error_type in ["TimeoutError", "asyncio.TimeoutError", "ConnectionError", "ConnectionResetError"]:
+        return ErrorSeverity.TRANSIENT
+    if "timeout" in error_message or "network" in error_message or "connection" in error_message:
+        return ErrorSeverity.TRANSIENT
+    
+    # Fatal configuration errors
+    if error_type in ["ValueError", "KeyError", "AttributeError", "TypeError"]:
+        if "config" in error_message or "credential" in error_message or "auth" in error_message:
+            return ErrorSeverity.FATAL
+    if error_type in ["ProductionConfigurationError", "PoolProfileError"]:
+        return ErrorSeverity.FATAL
+    
+    # Recoverable pool errors
+    if error_type in ["AllPoolsOfflineError", "LiveStratumSessionError", "StratumTransportError"]:
+        return ErrorSeverity.RECOVERABLE
+    if "pool" in error_message and ("disconnect" in error_message or "offline" in error_message):
+        return ErrorSeverity.RECOVERABLE
+    
+    # Default to transient for unknown errors
+    return ErrorSeverity.TRANSIENT
+
+
 @dataclass
 class SystemMetrics:
     timestamp: float = field(default_factory=time.time)
@@ -167,14 +207,15 @@ class GenesisAI:
             self.jobs_received += 1
             self.overlay.register_pool_job(live_job, pool_name=active_pool.pool_name)
             return live_job
-        if active_pool.current_jobs:
-            job = next(reversed(active_pool.current_jobs.values()))
+        current_jobs = await active_pool.get_current_jobs_copy()
+        if current_jobs:
+            job = next(reversed(current_jobs.values()))
             self.overlay.register_pool_job(job, pool_name=active_pool.pool_name)
             return job
         if self.allow_dev_fixture_jobs:
             self.logger.warning("Creating dev fixture mining job because HYBA_ALLOW_DEV_FIXTURES=true")
             self.jobs_received += 1
-            job = active_pool.inject_dev_fixture_target_job(difficulty=active_pool.current_difficulty)
+            job = await active_pool.inject_dev_fixture_target_job(difficulty=active_pool.current_difficulty)
             self.overlay.register_pool_job(job, pool_name=active_pool.pool_name)
             return job
         return None
@@ -276,12 +317,24 @@ class GenesisAI:
                     self.health_status = "HEALTHY" if active_pool.current_jobs else "AWAITING_JOB"
                 await asyncio.sleep(0.25)
             except Exception as e:
+                severity = classify_error(e)
                 self.failure_counter += 1
-                self.logger.error("Error in mining execution loop (failures=%s): %s", self.failure_counter, e)
-                if self.failure_counter > 5:
-                    self.health_status = "DEGRADED"
-                sleep_time = min(60.0, 5.0 * (2 ** (self.failure_counter - 1)))
-                await asyncio.sleep(sleep_time)
+                self.logger.error("Error in mining execution loop (failures=%s, severity=%s): %s", self.failure_counter, severity, e)
+                
+                if severity == ErrorSeverity.FATAL:
+                    self.health_status = "CRITICAL"
+                    self.logger.critical("Fatal error in mining loop, requiring manual intervention: %s", e)
+                    # Fatal errors should stop the mining loop
+                    await asyncio.sleep(60.0)  # Long sleep before retry for fatal errors
+                elif severity == ErrorSeverity.RECOVERABLE:
+                    self.failure_counter = max(self.failure_counter - 1, 0)  # Reset counter faster for recoverable errors
+                    sleep_time = min(30.0, 2.0 * (2 ** min(self.failure_counter, 3)))
+                    await asyncio.sleep(sleep_time)
+                else:  # TRANSIENT
+                    if self.failure_counter > 5:
+                        self.health_status = "DEGRADED"
+                    sleep_time = min(60.0, 5.0 * (2 ** (self.failure_counter - 1)))
+                    await asyncio.sleep(sleep_time)
 
     async def _pool_rotation_loop(self):
         rotation_failures = 0

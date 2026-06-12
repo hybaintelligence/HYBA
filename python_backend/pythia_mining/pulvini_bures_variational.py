@@ -96,8 +96,13 @@ def bures_metric_tangent_projection(
     (Hermitian, trace-zero).
     """
     dim = rho.shape[0]
-    # Symmetrize
-    sym_grad = (rho @ flat_gradient + flat_gradient @ rho) / 2.0
+    # Regularization guard: ensure rho is well-conditioned before matmul
+    eigvals, eigvecs = np.linalg.eigh(rho)
+    eigvals = np.maximum(eigvals.real, 1e-12)
+    rho_regularized = eigvecs @ np.diag(eigvals) @ eigvecs.conj().T
+    rho_regularized = (rho_regularized + rho_regularized.conj().T) / 2.0
+    # Symmetrize with regularized rho
+    sym_grad = (rho_regularized @ flat_gradient + flat_gradient @ rho_regularized) / 2.0
     # Make Hermitian
     hermitian_grad = (sym_grad + sym_grad.conj().T) / 2.0
     # Make trace-zero (density manifold tangent space)
@@ -168,10 +173,18 @@ def bures_variational_certificate(
 
     # Compute flat gradient
     flat_grad = entropy_abs * off_diag / off_diag_norm
+    
+    # NaN assertion: ensure no NaN/inf enters Bures gradient computation
+    if np.any(np.isnan(flat_grad)) or np.any(np.isinf(flat_grad)):
+        raise ValueError("NaN or Inf detected in flat gradient - numerical corruption before Bures projection")
 
     # Project onto Bures tangent space
     bures_grad = bures_metric_tangent_projection(rho, flat_grad)
     bures_grad_norm = float(np.linalg.norm(bures_grad, ord="fro"))
+    
+    # NaN assertion: ensure no NaN/inf in Bures gradient
+    if np.any(np.isnan(bures_grad)) or np.any(np.isinf(bures_grad)):
+        raise ValueError("NaN or Inf detected in Bures gradient - numerical corruption after projection")
 
     # Check stationary on tangent space (traceless Hermitian projection)
     bures_grad_hermitian = (bures_grad + bures_grad.conj().T) / 2.0

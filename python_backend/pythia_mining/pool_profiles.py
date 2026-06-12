@@ -28,6 +28,12 @@ class PoolProfile:
     stratum_version: int = 1
     priority: int = 100
     tls_required: bool = False
+    max_reconnect_attempts: int = 10
+    max_share_retry_attempts: int = 3
+    reconnect_backoff_base: float = 1.0
+    reconnect_backoff_max: float = 60.0
+    share_retry_backoff_base: float = 0.5
+    share_retry_backoff_max: float = 5.0
 
     def to_dict(self, include_secret_fields: bool = False) -> Dict[str, Any]:
         payload = asdict(self)
@@ -53,6 +59,12 @@ class PoolCredentialConfig:
     priority: int = 100
     enabled: bool = True
     source: str = "runtime"
+    max_reconnect_attempts: int = 10
+    max_share_retry_attempts: int = 3
+    reconnect_backoff_base: float = 1.0
+    reconnect_backoff_max: float = 60.0
+    share_retry_backoff_base: float = 0.5
+    share_retry_backoff_max: float = 5.0
 
     def resolved_username(self) -> str:
         if self.pool_id == "ckpool":
@@ -76,6 +88,12 @@ class PoolCredentialConfig:
             stratum_version=self.stratum_version,
             priority=self.priority,
             tls_required=self.tls_required,
+            max_reconnect_attempts=self.max_reconnect_attempts,
+            max_share_retry_attempts=self.max_share_retry_attempts,
+            reconnect_backoff_base=self.reconnect_backoff_base,
+            reconnect_backoff_max=self.reconnect_backoff_max,
+            share_retry_backoff_base=self.share_retry_backoff_base,
+            share_retry_backoff_max=self.share_retry_backoff_max,
         )
 
     def to_dict(self, include_secret_fields: bool = False) -> Dict[str, Any]:
@@ -110,9 +128,9 @@ DEFAULT_POOL_SPECS: dict[str, dict[str, Any]] = {
     },
     "braiins": {
         "name": "Braiins Pool",
-        "url": "stratum+ssl://stratum.braiins.com:3333",
-        "stratum_version": 1,
-        "tls_required": True,
+        "url": "stratum2+tcp://stratum.braiins.com:3333",
+        "stratum_version": 2,
+        "tls_required": False,
         "credential_mode": "username_password",
         "required_fields": ["username", "password"],
         "priority": 20,
@@ -195,6 +213,12 @@ def build_profile(
     stratum_version: int = 1,
     priority: int = 100,
     tls_required: bool = False,
+    max_reconnect_attempts: int = 10,
+    max_share_retry_attempts: int = 3,
+    reconnect_backoff_base: float = 1.0,
+    reconnect_backoff_max: float = 60.0,
+    share_retry_backoff_base: float = 0.5,
+    share_retry_backoff_max: float = 5.0,
 ) -> PoolProfile:
     return validate_profile(PoolProfile(
         pool_id=pool_id.lower(),
@@ -205,6 +229,12 @@ def build_profile(
         stratum_version=int(stratum_version),
         priority=int(priority),
         tls_required=bool(tls_required),
+        max_reconnect_attempts=int(max_reconnect_attempts),
+        max_share_retry_attempts=int(max_share_retry_attempts),
+        reconnect_backoff_base=float(reconnect_backoff_base),
+        reconnect_backoff_max=float(reconnect_backoff_max),
+        share_retry_backoff_base=float(share_retry_backoff_base),
+        share_retry_backoff_max=float(share_retry_backoff_max),
     ))
 
 
