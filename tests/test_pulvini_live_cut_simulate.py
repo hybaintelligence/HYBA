@@ -40,8 +40,14 @@ class PulviniLiveCutSimulationTests(unittest.TestCase):
         self.assertAlmostEqual(1.0, payload["rho_trace"], places=12)
         self.assertTrue(payload["healing_ranges_overlap_free"])
         self.assertTrue(payload["pool_identity_stable"])
+        self.assertTrue(payload["fidelity_passed"])
+        self.assertGreater(payload["fidelity_fixed"], 900_000_000)
+        self.assertEqual(128, payload["binary_header_size"])
+        self.assertEqual(128, payload["substate_passport"]["binary_header_size"])
+        self.assertEqual(payload["fidelity_fixed"], payload["substate_passport"]["fidelity_fixed"])
         self.assertEqual([0, 1, 2], payload["severed_nodes"])
         self.assertEqual([0, 1, 2], state["latest_autonomic_event"]["failed_nodes"])
+        self.assertTrue(state["substate_passport"]["fidelity_passed"])
 
 
 if __name__ == "__main__":
