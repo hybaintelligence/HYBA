@@ -100,7 +100,7 @@ class ProductionEnvironmentValidatorTests(unittest.TestCase):
             "HYBA_QUANTUM_CAPACITY_EHS": "1.0",
             "HYBA_POOL_VIABTC_URL": "stratum2+ssl://btc.viabtc.com:443",
             "HYBA_POOL_VIABTC_USERNAME": "PYTHIA.001",
-            "HYBA_POOL_VIABTC_PASSWORD": "123",
+            "HYBA_POOL_VIABTC_PASSWORD": "ci-realistic-pool-secret",
             "HYBA_POOL_VIABTC_STRATUM_VERSION": "2",
         }
         with patch.dict(os.environ, env, clear=True):
@@ -122,7 +122,7 @@ class ProductionEnvironmentValidatorTests(unittest.TestCase):
             "HYBA_QUANTUM_CAPACITY_EHS": "1.000001",
             "HYBA_POOL_VIABTC_URL": "stratum2+ssl://btc.viabtc.com:443",
             "HYBA_POOL_VIABTC_USERNAME": "PYTHIA.001",
-            "HYBA_POOL_VIABTC_PASSWORD": "123",
+            "HYBA_POOL_VIABTC_PASSWORD": "ci-realistic-pool-secret",
             "HYBA_POOL_VIABTC_STRATUM_VERSION": "2",
         }
         with patch.dict(os.environ, env, clear=True):
@@ -143,7 +143,7 @@ class ProductionEnvironmentValidatorTests(unittest.TestCase):
             "HYBA_ENABLE_AUDIT_LOGGING": "true",
             "HYBA_POOL_VIABTC_URL": "stratum2+ssl://btc.viabtc.com:443",
             "HYBA_POOL_VIABTC_USERNAME": "PYTHIA.001",
-            "HYBA_POOL_VIABTC_PASSWORD": "123",
+            "HYBA_POOL_VIABTC_PASSWORD": "ci-realistic-pool-secret",
             "HYBA_POOL_VIABTC_STRATUM_VERSION": "1",
         }
         with patch.dict(os.environ, env, clear=True):

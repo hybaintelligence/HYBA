@@ -82,12 +82,13 @@ class GenesisAI:
     def __init__(self, config: Dict[str, Any]):
         self.config = config
         pools_config = config.get("pools", {})
-        if not pools_config:
+        runtime_env = os.getenv("NODE_ENV", os.getenv("HYBA_ENV", "development")).lower()
+        if not pools_config and runtime_env != "production":
             import json
             from pathlib import Path
             config_path = Path(__file__).parent.parent.parent / "mining_config.json"
             if config_path.exists():
-                with open(config_path, "r") as f:
+                with open(config_path, "r", encoding="utf-8") as f:
                     pools_config = json.load(f).get("pools", {})
         self.pool_manager = PoolManager(pools_config)
         self.overlay = PulviniOverlayConcentrator(

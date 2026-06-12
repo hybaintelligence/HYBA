@@ -1,10 +1,4 @@
 {
-  "pools": {
-    "viabtc": {
-      "url": "stratum2+ssl://btc.viabtc.com:443",
-      "username": "PYTHIA.001",
-      "password": "123",
-      "stratum_version": 2
-    }
-  }
+  "power_scale": 1.0,
+  "live_deployment_note": "Pool credentials are intentionally not stored here. Inject HYBA_POOL_<ID>_* secrets through the deployment environment or HYBA_POOL_CONFIG_PATH."
 }

@@ -21,7 +21,7 @@ def _is_placeholder(value: str | None) -> bool:
     if value is None:
         return True
     lowered = value.strip().lower()
-    return not lowered or "replace-with" in lowered or lowered in {"changeme", "password", "secret", "todo"}
+    return not lowered or "replace-with" in lowered or lowered in {"123", "changeme", "password", "secret", "todo"}
 
 
 def _require(name: str, errors: list[str]) -> str | None:

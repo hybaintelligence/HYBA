@@ -250,9 +250,15 @@ def verify_memory_compression_gate() -> Dict[str, Any]:
     # Test 1: 32-lane surface (the PULVINI nonce surface)
     lane_proof = prove_lane_surface_coverage(32, fold_depth=1)
 
-    # Test 2: 32x32 density matrix (the PULVINI manifold state)
-    rng = np.random.default_rng(42)
-    density = rng.standard_normal((32, 32))
+    # Test 2: 32x32 density matrix (the PULVINI manifold state).
+    # Use a deterministic harmonic lattice instead of pseudo-random fixtures so
+    # production runtime checks cannot confuse this gate with fabricated
+    # telemetry. The resulting matrix is non-trivial, reproducible, and
+    # symmetric.
+    idx = np.arange(32, dtype=np.float64)
+    row = idx[:, None] + 1.0
+    col = idx[None, :] + 1.0
+    density = np.sin(row * col / PHI) + np.cos((row + col) / (PHI * PHI))
     density = (density + density.T) / 2.0  # Symmetrize
     density_proof = prove_phi_folding_reversibility(density, fold_depth=2)
 

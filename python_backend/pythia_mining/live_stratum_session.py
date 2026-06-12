@@ -62,24 +62,33 @@ class LiveStratumSession:
     async def connect(self) -> None:
         await self.transport.connect()
 
+    async def _read_response_for_id(self, request_id: int, *, timeout: Optional[float] = None) -> Dict[str, Any]:
+        """Read until the matching JSON-RPC response arrives.
+
+        Real Stratum pools may interleave notifications such as
+        ``mining.set_difficulty`` or ``mining.notify`` during handshake and share
+        submission. Treating the next line as the response makes live deployment
+        brittle, so this helper ignores notifications and unrelated responses
+        until the requested id is observed.
+        """
+        while True:
+            line = await self.transport.read_line(timeout=timeout)
+            event, payload = parse_server_message(line)
+            if event == "response" and payload.get("id") == request_id:
+                return payload
+
     async def subscribe_and_authorize(self) -> SessionHandshake:
         subscribe_id = self.next_id()
         await self.transport.send_line(build_subscribe(subscribe_id))
-        subscribe_line = await self.transport.read_line()
-        event, payload = parse_server_message(subscribe_line)
-        if event != "response" or payload.get("id") != subscribe_id:
-            raise LiveStratumSessionError("unexpected subscribe response")
-        subscribe = parse_subscribe_result(payload)
+        subscribe_payload = await self._read_response_for_id(subscribe_id)
+        subscribe = parse_subscribe_result(subscribe_payload)
         self.extranonce1 = subscribe.extranonce1
         self.extranonce2_size = subscribe.extranonce2_size
 
         authorize_id = self.next_id()
         await self.transport.send_line(build_authorize(authorize_id, self.profile.username, self.profile.password))
-        authorize_line = await self.transport.read_line()
-        event, payload = parse_server_message(authorize_line)
-        if event != "response" or payload.get("id") != authorize_id:
-            raise LiveStratumSessionError("unexpected authorize response")
-        self.authorized = parse_authorize_result(payload)
+        authorize_payload = await self._read_response_for_id(authorize_id)
+        self.authorized = parse_authorize_result(authorize_payload)
         if not self.authorized:
             raise LiveStratumSessionError("pool rejected authorization")
         return SessionHandshake(self.profile.pool_id, self.extranonce1, self.extranonce2_size, self.authorized)
@@ -98,14 +107,9 @@ class LiveStratumSession:
         await self.transport.send_line(
             build_submit(submit_id, self.profile.username, job_id, extranonce2, ntime, nonce)
         )
-        while True:
-            event, payload = await self.read_event(include_responses=True)
-            if event != "response":
-                continue
-            if payload.get("id") != submit_id:
-                continue
-            accepted = bool(payload.get("result")) and not payload.get("error")
-            return SubmitResult(accepted=accepted, error=payload.get("error"), response=payload)
+        payload = await self._read_response_for_id(submit_id)
+        accepted = bool(payload.get("result")) and not payload.get("error")
+        return SubmitResult(accepted=accepted, error=payload.get("error"), response=payload)
 
     async def close(self) -> None:
         await self.transport.close()

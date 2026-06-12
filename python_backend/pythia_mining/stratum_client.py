@@ -6,6 +6,7 @@ PYTHIA Mining System - Pool Communication Layer & Deterministic Scheduler
 from __future__ import annotations
 
 import asyncio
+import hashlib
 import json
 import logging
 import os
@@ -197,25 +198,19 @@ class StratumClient:
         self.last_share_error: Optional[str] = None
         self.stale_job_ids: set[str] = set()
         self.reconnect_attempts = 0
-        self.max_reconnect_attempts = 10
-        self.reconnect_backoff_base = 1.0
-        self.reconnect_backoff_max = 60.0
         self.heartbeat_interval = 60.0
         self.idle_timeout = 120.0
         self._heartbeat_task: Optional[asyncio.Task] = None
         self.share_retry_attempts = 0
-        self.max_share_retry_attempts = 3
-        self.share_retry_backoff_base = 0.5
-        self.share_retry_backoff_max = 5.0
         self.logger = logging.getLogger(f"stratum.{pool_name}")
         self.audit_logger = get_audit_logger()
         self.metrics_store = get_metrics_store()
 
     def _calculate_backoff_delay(self) -> float:
         delay = min(self.reconnect_backoff_base * (2 ** self.reconnect_attempts), self.reconnect_backoff_max)
-        import random
-        jitter = delay * 0.1 * random.random()
-        return delay + jitter
+        jitter_material = f"{self.pool_name}:{self.pool_url}:{self.reconnect_attempts}".encode("utf-8")
+        jitter_unit = int.from_bytes(hashlib.blake2b(jitter_material, digest_size=2).digest(), "big") / 65535.0
+        return delay + (delay * 0.1 * jitter_unit)
 
     def _circuit_breaker_allow_request(self) -> bool:
         """Check if circuit breaker allows connection attempts."""
@@ -877,6 +872,7 @@ class PoolManager:
         
         # Find the best pool based on health score and connection status
         best_pool = None
+        best_pool_key: Optional[str] = None
         best_score = -1.0
         
         # First, check already connected pools
@@ -886,6 +882,7 @@ class PoolManager:
                 if health_score > best_score:
                     best_score = health_score
                     best_pool = pool
+                    best_pool_key = pool_id
                     self.current_pool_key = pool_id
         
         if best_pool and best_score > 0.5:
@@ -897,10 +894,11 @@ class PoolManager:
             if health_score > best_score and not pool.is_connected:
                 best_score = health_score
                 best_pool = pool
-        
-        if best_pool:
+                best_pool_key = pool_id
+
+        if best_pool and best_pool_key is not None:
             if await best_pool.connect():
-                self.current_pool_key = best_pool.pool_id
+                self.current_pool_key = best_pool_key
                 return best_pool
         
         # Last resort: try all pools in order

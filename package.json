@@ -21,12 +21,16 @@
     "prod:env:check": "python3 scripts/validate_production_env.py",
     "pulvini:live-cut:check": "python3 scripts/pulvini_live_cut_readiness.py",
     "pulvini:live-cut:simulate": "PYTHONPATH=python_backend python3 scripts/pulvini_simulate_live_cut.py",
-    "prod:check": "npm run cloudflare:check && npm run runtime:guard && npm run lint && npm run build && npm run test:backend && npm run test:e2e:backend",
+    "prod:check": "npm run live:audit && npm run cloudflare:check && npm run runtime:guard && npm run lint && npm run build && npm run test:backend && npm run test:e2e:backend",
     "docker:build": "docker build -t hyba-fullstack:local .",
     "cloudflare:check": "python3 scripts/check_cloudflare_deploy.py",
     "runtime:guard": "python3 scripts/check_no_runtime_mocks.py",
     "backend:start": "python -m uvicorn hyba_genesis_api.main:app --app-dir python_backend --host 127.0.0.1 --port 3001",
-    "backend:check": "python -c \"import sys; sys.path.insert(0, 'python_backend'); import hyba_genesis_api.main; print('backend import ok')\""
+    "backend:check": "python -c \"import sys; sys.path.insert(0, 'python_backend'); import hyba_genesis_api.main; print('backend import ok')\"",
+    "live:audit": "python3 scripts/audit_live_deployment.py",
+    "test:deployment:e2e": "PYTHONPATH=python_backend python3 -m unittest tests.test_live_deployment_e2e -v",
+    "test:deployment:property": "PYTHONPATH=python_backend python3 -m pytest tests/test_live_deployment_properties.py -v -x --tb=short",
+    "test:deployment": "npm run test:deployment:e2e && npm run test:deployment:property"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
