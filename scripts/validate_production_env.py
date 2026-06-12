@@ -9,12 +9,20 @@ import sys
 from urllib.parse import urlparse
 
 ARGON2ID = re.compile(r"^\$argon2id\$v=\d+\$m=\d+,t=\d+,p=\d+\$[^$]+\$[^$]+$")
-POOL_IDS = ("VIABTC", "NICEHASH", "BRAIINS", "CKPOOL")
+POOL_IDS = ("VIABTC", "NICEHASH", "BRAIINS", "CKPOOL", "STRATUMV2")
 APPROVED_ROLES = {"ceo", "treasury_admin", "mining_operator", "treasury_viewer", "mining:read", "mining:operate"}
 TRUE_VALUES = {"1", "true", "yes", "on"}
 STRATUM_V1_SCHEMES = {"stratum+ssl", "stratum+tls", "stratum+tcp"}
 STRATUM_V2_SCHEMES = {"stratum2+ssl", "stratum2+tls", "stratum2+tcp"}
 PULVINI_HASHRATE_CAP_EHS = 1.0
+
+POOL_REQUIREMENTS = {
+    "VIABTC": {"username": "USERNAME", "secret": "PASSWORD", "version": 1},
+    "BRAIINS": {"username": "USERNAME", "secret": "PASSWORD", "version": 2},
+    "CKPOOL": {"username": "BTC_ADDRESS", "secret": None, "version": 1},
+    "NICEHASH": {"username": "WORKER", "secret": "NICEHASH_POOL_ID", "version": 1},
+    "STRATUMV2": {"username": "USERNAME", "secret": "PASSWORD", "version": 2},
+}
 
 
 def _is_placeholder(value: str | None) -> bool:
@@ -69,44 +77,73 @@ def _validate_backend_url(errors: list[str]) -> None:
         errors.append("PULVINI_BACKEND_URL must be a valid http(s) URL")
 
 
-def _pool_secret_env(pool_id: str) -> str:
-    return f"HYBA_POOL_{pool_id}_" + "PASSWORD"
+def _env(pool_id: str, field: str) -> str | None:
+    return os.getenv(f"HYBA_POOL_{pool_id}_{field}")
 
 
 def _parse_stratum_version(raw: str | None, pool_id: str, errors: list[str]) -> int | None:
-    normalized = (raw or "1").strip().lower().removeprefix("v")
+    normalized = (raw or str(POOL_REQUIREMENTS[pool_id]["version"])).strip().lower().removeprefix("v")
     if normalized not in {"1", "2"}:
         errors.append(f"HYBA_POOL_{pool_id}_STRATUM_VERSION must be 1, v1, 2, or v2")
         return None
     return int(normalized)
 
 
+def _is_pool_configured(pool_id: str) -> bool:
+    fields = ["URL", "USERNAME", "PASSWORD", "BTC_ADDRESS", "WORKER", "NICEHASH_POOL_ID", "NH_POOL_ID", "STRATUM_VERSION"]
+    return any(_env(pool_id, field) for field in fields)
+
+
+def _pool_identity(pool_id: str) -> tuple[str, str | None]:
+    req = POOL_REQUIREMENTS[pool_id]
+    username_field = str(req["username"])
+    if pool_id == "NICEHASH":
+        return username_field, _env(pool_id, "WORKER")
+    return username_field, _env(pool_id, username_field)
+
+
+def _pool_secret(pool_id: str) -> tuple[str | None, str | None]:
+    req = POOL_REQUIREMENTS[pool_id]
+    secret_field = req["secret"]
+    if secret_field is None:
+        return None, None
+    if pool_id == "NICEHASH":
+        # Runtime accepts NH_POOL_ID or NICEHASH_POOL_ID for the pool identifier;
+        # password defaults to x internally, but live deployments still need an
+        # explicit pool identifier to avoid ambiguous share routing.
+        return "NICEHASH_POOL_ID", _env(pool_id, "NICEHASH_POOL_ID") or _env(pool_id, "NH_POOL_ID")
+    return str(secret_field), _env(pool_id, str(secret_field))
+
+
 def _validate_pool_config(errors: list[str]) -> None:
-    configured = []
+    configured: list[str] = []
     for pool_id in POOL_IDS:
-        url = os.getenv(f"HYBA_POOL_{pool_id}_URL")
-        username = os.getenv(f"HYBA_POOL_{pool_id}_USERNAME")
-        pool_secret = os.getenv(_pool_secret_env(pool_id))
-        version_raw = os.getenv(f"HYBA_POOL_{pool_id}_STRATUM_VERSION")
-        if any([url, username, pool_secret, version_raw]):
-            missing = [
-                name
-                for name, value in [("URL", url), ("USERNAME", username), ("SECRET", pool_secret)]
-                if _is_placeholder(value)
-            ]
-            if missing:
-                errors.append(f"HYBA_POOL_{pool_id}_* is partially configured or contains placeholders: missing/invalid {', '.join(missing)}")
-                continue
-            parsed = urlparse(str(url))
-            version = _parse_stratum_version(version_raw, pool_id, errors)
-            valid_schemes = STRATUM_V2_SCHEMES if version == 2 else STRATUM_V1_SCHEMES
-            if parsed.scheme not in valid_schemes or not parsed.hostname:
-                errors.append(
-                    f"HYBA_POOL_{pool_id}_URL has invalid Stratum URL format for version {version}: {parsed.scheme or '<missing>'}"
-                )
-            configured.append(pool_id)
+        if not _is_pool_configured(pool_id):
+            continue
+        url = _env(pool_id, "URL")
+        if _is_placeholder(url):
+            errors.append(f"HYBA_POOL_{pool_id}_URL is required when configuring {pool_id}")
+            continue
+        username_field, username = _pool_identity(pool_id)
+        secret_field, secret = _pool_secret(pool_id)
+        missing = []
+        if _is_placeholder(username):
+            missing.append(username_field)
+        if secret_field is not None and _is_placeholder(secret):
+            missing.append(secret_field)
+        if missing:
+            errors.append(f"HYBA_POOL_{pool_id}_* is partially configured or contains placeholders: missing/invalid {', '.join(missing)}")
+            continue
+        parsed = urlparse(str(url))
+        version = _parse_stratum_version(_env(pool_id, "STRATUM_VERSION"), pool_id, errors)
+        valid_schemes = STRATUM_V2_SCHEMES if version == 2 else STRATUM_V1_SCHEMES
+        if parsed.scheme not in valid_schemes or not parsed.hostname:
+            errors.append(
+                f"HYBA_POOL_{pool_id}_URL has invalid Stratum URL format for version {version}: {parsed.scheme or '<missing>'}"
+            )
+        configured.append(pool_id)
     if not configured:
-        errors.append("At least one HYBA_POOL_<ID>_URL/USERNAME/SECRET set is required before live mining deployment")
+        errors.append("At least one HYBA_POOL_<ID>_* credential set is required before live mining deployment")
 
 
 def _validate_flags(errors: list[str], warnings: list[str]) -> None:
