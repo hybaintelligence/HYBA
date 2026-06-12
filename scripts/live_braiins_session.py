@@ -173,8 +173,12 @@ async def monitor_mining_session(
     
     finally:
         try:
-            await client.close()
-            print("\nConnection closed")
+            if hasattr(client, 'close'):
+                await client.close()
+                print("\nConnection closed")
+            elif hasattr(client, 'disconnect'):
+                await client.disconnect()
+                print("\nConnection closed")
         except Exception as e:
             print(f"Error closing connection: {e}")
     
