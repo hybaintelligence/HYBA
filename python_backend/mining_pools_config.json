@@ -1,0 +1,15 @@
+{
+  "pools": {
+    "braiins": {
+      "btc_address": "",
+      "enabled": true,
+      "nicehash_pool_id": "",
+      "password": "anything123",
+      "priority": 20,
+      "stratum_version": 2,
+      "url": "stratum2+tcp://stratum.braiins.com:3333/9awtMD5KQgvRUh2yFbjVeT7b6hjipWcAsQHd6wEhgtDT9soosna",
+      "username": "PYTHAGOROS.workerName",
+      "worker": ""
+    }
+  }
+}

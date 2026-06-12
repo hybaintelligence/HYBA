@@ -308,8 +308,6 @@ The façade architecture achieves the goals of simplification without removing r
 2. `pulvini_overlay.py` - Distributed operations, hard to test
 3. `genesis_ai.py` - AI optimization, needs property-based tests
 4. `pulvini_memory_compression_proof.py` - Mathematical proofs, needs validation
-5. `pulvini_operator.py` - NEW - Production façade, needs integration tests
-6. `pulvini_verifier.py` - NEW - Unified verifier, needs passport validation tests
 
 ### Modules with Good Test Coverage
 1. `stratum_v2.py` - Comprehensive protocol tests
@@ -317,6 +315,8 @@ The façade architecture achieves the goals of simplification without removing r
 3. `pulvini_group.py` - Group theory tests
 4. `mining_validation.py` - Validation logic tests
 5. `consciousness_engine.py` - ENHANCED - Now has operational proxy tests
+6. `pulvini_operator.py` - NEW - Comprehensive production façade tests (21 tests in test_pulvini_production_facade.py)
+7. `pulvini_verifier.py` - NEW - Comprehensive verifier tests (21 tests in test_pulvini_production_facade.py)
 
 ## Migration Path for New Architecture
 
