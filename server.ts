@@ -101,6 +101,11 @@ const CIRCUIT_HALF_OPEN_MS = 10_000;
 const HEALTH_CHECK_FAILURE_THRESHOLD = 3;
 const HEALTH_CHECK_FAILURE_WINDOW_MS = 60_000;
 
+// Backend latency monitoring thresholds
+const LATENCY_WARNING_THRESHOLD_MS = 5000;
+const LATENCY_CRITICAL_THRESHOLD_MS = 10000;
+const LATENCY_ALERT_WINDOW_MS = 120_000;
+
 function isCircuitOpen(): boolean {
   if (!circuitState.isOpen) return false;
   const elapsed = Date.now() - circuitState.lastFailureTime;
@@ -326,6 +331,8 @@ async function proxyToBackend(req: Request, res: Response): Promise<void> {
     bodyBuffer = Buffer.concat(chunks);
   }
 
+  const startTime = Date.now();
+
   try {
     const headers = new Headers();
     for (const [key, value] of Object.entries(req.headers)) {
@@ -342,6 +349,35 @@ async function proxyToBackend(req: Request, res: Response): Promise<void> {
       body: bodyBuffer,
       signal: controller.signal,
     });
+
+    const latencyMs = Date.now() - startTime;
+    metrics.backendLatencyMs = latencyMs;
+
+    // Monitor backend latency
+    if (latencyMs > LATENCY_CRITICAL_THRESHOLD_MS) {
+      metrics.highLatencyCount += 1;
+      metrics.lastHighLatencyTime = Date.now();
+      logger.error(
+        {
+          latencyMs,
+          threshold: LATENCY_CRITICAL_THRESHOLD_MS,
+          path: req.originalUrl,
+          requestId,
+          backendUrl: CONFIG.backendUrl.toString(),
+        },
+        "🚨 CRITICAL BACKEND LATENCY — Response time exceeded threshold"
+      );
+    } else if (latencyMs > LATENCY_WARNING_THRESHOLD_MS) {
+      logger.warn(
+        {
+          latencyMs,
+          threshold: LATENCY_WARNING_THRESHOLD_MS,
+          path: req.originalUrl,
+          requestId,
+        },
+        "⚠️  High backend latency detected"
+      );
+    }
 
     recordProxySuccess();
     res.status(response.status);
@@ -377,6 +413,9 @@ const metrics = {
   circuitBreakerTrips: 0,
   healthCheckFailures: 0,
   lastHealthCheckFailure: 0,
+  backendLatencyMs: 0,
+  highLatencyCount: 0,
+  lastHighLatencyTime: 0,
   startTime: Date.now(),
 };
 
@@ -564,6 +603,12 @@ async function startServer(): Promise<void> {
       `# HELP hyba_bridge_health_check_failures Total health check failures`,
       `# TYPE hyba_bridge_health_check_failures counter`,
       `hyba_bridge_health_check_failures ${metrics.healthCheckFailures}`,
+      `# HELP hyba_bridge_backend_latency_ms Current backend latency in milliseconds`,
+      `# TYPE hyba_bridge_backend_latency_ms gauge`,
+      `hyba_bridge_backend_latency_ms ${metrics.backendLatencyMs}`,
+      `# HELP hyba_bridge_high_latency_count Total high latency events`,
+      `# TYPE hyba_bridge_high_latency_count counter`,
+      `hyba_bridge_high_latency_count ${metrics.highLatencyCount}`,
       `# HELP hyba_bridge_uptime_seconds Uptime in seconds`,
       `# TYPE hyba_bridge_uptime_seconds counter`,
       `hyba_bridge_uptime_seconds ${Math.floor((Date.now() - metrics.startTime) / 1000)}`,
