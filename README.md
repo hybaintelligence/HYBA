@@ -21,7 +21,9 @@ Runtime mining paths must consume real operator configuration, real pool message
 - **Mining core**: PYTHIA modules under `python_backend/pythia_mining`.
 - **Pool protocol layer**: Stratum v1 JSON-RPC primitives, live line transport/session handling, and Stratum v2 binary framing primitives.
 - **PULVINI manifold**: 32 internal D/I nodes presented to pools as one worker identity.
+- **Production façade**: `pulvini_operator.py` and `pulvini_verifier.py` provide clean, auditable APIs for quantum operations and certificate generation while maintaining research modules as source of truth.
 - **Mathematical gates**: automorphism, nonce compression, Bures/density-matrix, propagation, and phi-filter certificates.
+- **Binary audit serialization**: 128-byte SubstateBinaryHeader for efficient Stratum/share audit transport with deterministic passport generation.
 
 ## Step-by-step local workflow
 
