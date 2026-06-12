@@ -130,6 +130,20 @@ HYBA_Unified_Backend remains the broader backend/research/substrate boundary:
 
 Do not migrate the entire Unified backend into FULLSTACK. Only migrate or clone narrowly scoped control contracts that FULLSTACK must enforce locally.
 
+## Institutional governance boundary
+
+HYBA_FULLSTACK is HYBA's self-financing operating substrate. It sits inside HYBA Group / Company and must not be confused with HYBA Foundation or HYBA Research.
+
+Deployment approval must preserve these boundaries:
+
+- HYBA Group / Company owns production operation, revenue execution, security, and runtime accountability.
+- HYBA Foundation may benefit from mission funding, but it does not operate production mining runtime.
+- HYBA Research owns scientific claim discipline and research-grade proof publication, but it does not become the production operations team.
+- THEMIS governs compliance, evidence, allowed claims, enforcement, and regulator-ready packets.
+- PULVINI provides memory compression at scale and mathematical/state certificates; it is not the governance authority.
+
+The canonical governance note is `docs/HYBA_FULLSTACK_GOVERNANCE.md` and must be reviewed before release-candidate tagging.
+
 ## Treasury boundary
 
 Mining operations are not treasury allocation.
@@ -144,6 +158,28 @@ Mining operation roles/scopes:
 - `treasury_viewer` for read-only status
 
 Treasury allocation, custody, payroll, tax, creditor, regulatory, and solvency decisions must remain separate from mining runtime controls.
+
+## Self-financing claim boundary
+
+HYBA_FULLSTACK may be described as the self-financing operating substrate of HYBA only when the release posture is evidence-bound.
+
+Allowed language:
+
+- self-financing operating substrate;
+- production runtime for PYTHIA/PYTHAGORAS mining controls;
+- PULVINI memory-compression and certificate surface;
+- anti-simulation guarded mining runtime;
+- operator-controlled treasury-capacity engine.
+
+Disallowed language unless separately measured, legally reviewed, and approved:
+
+- guaranteed mining revenue;
+- guaranteed hashrate;
+- guaranteed solvency;
+- quantum speedup over SHA-256;
+- accepted shares without live pool confirmation;
+- Foundation impact without Foundation measurement;
+- scientific breakthrough without HYBA Research approval.
 
 ## Health checks and diagnostics
 
@@ -187,8 +223,9 @@ curl -fsS -H "Authorization: Bearer <token>" http://127.0.0.1:3000/api/mining/st
 6. Check backend readiness.
 7. Log in as an authorized operator.
 8. Check mining status; it should be inactive before an explicit connect operation.
-9. Connect to a pool only after legal, treasury, security, and operational approvals are complete.
-10. Monitor protected bridge metrics and MIDAS mining metrics.
+9. Confirm the institutional governance boundary and self-financing claim boundary are accepted.
+10. Connect to a pool only after legal, treasury, security, and operational approvals are complete.
+11. Monitor protected bridge metrics and MIDAS mining metrics.
 
 ## Rollback
 
@@ -201,6 +238,7 @@ A rollback is required if any of these happen after deployment:
 - Invalid state transition counts increase unexpectedly.
 - Pool connection attempts fail repeatedly in production.
 - Share validation produces unexpected internal errors.
+- Governance or self-financing claim boundaries are violated in production-facing material.
 
 Rollback by redeploying the last green image and revoking any newly introduced operator/pool credentials if compromise or leak is suspected.
 
@@ -216,4 +254,6 @@ A release is production-ready only when:
 - Mining auto-connect is disabled unless explicitly approved.
 - At least one live pool credential set is valid if mining is to be activated.
 - Regulatory separation is accepted by the accountable operator.
+- Institutional governance boundary is accepted by the accountable operator.
+- Self-financing claim boundary is accepted by the accountable operator.
 - Monitoring and rollback ownership are assigned.
