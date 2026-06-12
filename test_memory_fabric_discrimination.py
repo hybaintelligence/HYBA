@@ -11,9 +11,14 @@ import sys
 import numpy as np
 from pathlib import Path
 from typing import Dict, List, Tuple
-import matplotlib
-matplotlib.use('Agg')  # Non-interactive backend
-import matplotlib.pyplot as plt
+
+try:
+    import matplotlib
+    matplotlib.use('Agg')  # Non-interactive backend
+    import matplotlib.pyplot as plt
+    MATPLOTLIB_AVAILABLE = True
+except ImportError:
+    MATPLOTLIB_AVAILABLE = False
 
 ROOT = Path(__file__).resolve().parents[0]
 BACKEND = ROOT / "python_backend"
@@ -166,32 +171,35 @@ def test_state_discrimination():
         print("  → All reward patterns collapse to similar kernel states")
     
     # Create visualization
-    try:
-        fig, axes = plt.subplots(1, 3, figsize=(15, 5))
-        
-        im1 = axes[0].imshow(kernel_high, cmap='viridis', aspect='auto')
-        axes[0].set_title('High Reward Pattern')
-        axes[0].set_xlabel('Node')
-        axes[0].set_ylabel('Node')
-        plt.colorbar(im1, ax=axes[0])
-        
-        im2 = axes[1].imshow(kernel_low, cmap='viridis', aspect='auto')
-        axes[1].set_title('Low Reward Pattern')
-        axes[1].set_xlabel('Node')
-        axes[1].set_ylabel('Node')
-        plt.colorbar(im2, ax=axes[1])
-        
-        im3 = axes[2].imshow(kernel_mixed, cmap='viridis', aspect='auto')
-        axes[2].set_title('Mixed Reward Pattern')
-        axes[2].set_xlabel('Node')
-        axes[2].set_ylabel('Node')
-        plt.colorbar(im3, ax=axes[2])
-        
-        plt.tight_layout()
-        plt.savefig('/Users/demouser/Desktop/HYBA_FULLSTACK/memory_fabric_discrimination.png', dpi=150, bbox_inches='tight')
-        print(f"\n✓ Visualization saved to memory_fabric_discrimination.png")
-    except Exception as e:
-        print(f"\n⚠ Could not create visualization: {e}")
+    if MATPLOTLIB_AVAILABLE:
+        try:
+            fig, axes = plt.subplots(1, 3, figsize=(15, 5))
+            
+            im1 = axes[0].imshow(kernel_high, cmap='viridis', aspect='auto')
+            axes[0].set_title('High Reward Pattern')
+            axes[0].set_xlabel('Node')
+            axes[0].set_ylabel('Node')
+            plt.colorbar(im1, ax=axes[0])
+            
+            im2 = axes[1].imshow(kernel_low, cmap='viridis', aspect='auto')
+            axes[1].set_title('Low Reward Pattern')
+            axes[1].set_xlabel('Node')
+            axes[1].set_ylabel('Node')
+            plt.colorbar(im2, ax=axes[1])
+            
+            im3 = axes[2].imshow(kernel_mixed, cmap='viridis', aspect='auto')
+            axes[2].set_title('Mixed Reward Pattern')
+            axes[2].set_xlabel('Node')
+            axes[2].set_ylabel('Node')
+            plt.colorbar(im3, ax=axes[2])
+            
+            plt.tight_layout()
+            plt.savefig('/Users/demouser/Desktop/HYBA_FULLSTACK/memory_fabric_discrimination.png', dpi=150, bbox_inches='tight')
+            print(f"\n✓ Visualization saved to memory_fabric_discrimination.png")
+        except Exception as e:
+            print(f"\n⚠ Could not create visualization: {e}")
+    else:
+        print(f"\n⚠ Matplotlib not available - skipping visualization")
     
     print("\n" + "=" * 70)
     print("TEST COMPLETE")
