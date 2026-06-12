@@ -248,6 +248,34 @@ class PulviniManifold:
             return np.ones(self.num_nodes) / self.num_nodes
         return distribution / total
 
+    def apply_work_distribution(self, probabilities: Sequence[float], *, reason: str = "autonomic_optimization") -> np.ndarray:
+        with self._lock:
+            values = np.asarray(probabilities, dtype=np.float64)
+            if values.shape != (self.num_nodes,):
+                raise ValueError(f"probabilities must have shape ({self.num_nodes},)")
+            if not np.all(np.isfinite(values)):
+                raise ValueError("probabilities must be finite")
+            if np.any(values < -EPSILON):
+                raise ValueError("probabilities must be non-negative")
+            values = np.clip(values, 0.0, None)
+            total = float(np.sum(values))
+            if total <= EPSILON:
+                raise ValueError("at least one probability must be positive")
+            values = values / total
+            phases = np.angle(self.psi)
+            self.psi = self._normalize_state(np.sqrt(values).astype(np.complex128) * np.exp(1j * phases))
+            self.rho = self._density_from_state(self.psi)
+            self.constructor_memory.append({
+                "event": "apply_work_distribution",
+                "reason": str(reason),
+                "timestamp": time.time(),
+                "min_probability": float(np.min(values)),
+                "max_probability": float(np.max(values)),
+            })
+            self.assert_invariants()
+            self._write_blackboard()
+            return self.work_distribution().copy()
+
     def coherence_norm(self) -> float:
         diagonal = np.diag(np.diag(self.rho))
         return float(np.linalg.norm(self.rho - diagonal, ord="fro"))

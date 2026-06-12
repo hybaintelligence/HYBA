@@ -20,6 +20,7 @@ except ImportError:
 from .ai_optimizer import AIOptimizer
 from .blockchain_oracle import BlockchainOracle
 from .consciousness_engine import ConsciousnessEngine
+from .pulvini_autonomics import AutonomicOrchestrator, PulviniAutonomicsEngine
 from .pulvini_compressed_solver import PulviniCompressedQuantumSolver
 from .pulvini_overlay import PulviniOverlayConcentrator
 from .pulvini_propagation import SharePropagationController
@@ -52,6 +53,13 @@ class GenesisAI:
         self.overlay = PulviniOverlayConcentrator(
             worker_name=str(config.get("worker_name") or os.getenv("HYBA_POOL_WORKER_NAME") or "PULVINI.singularity")
         )
+        autonomics_config = config.get("autonomics") or {}
+        self.autonomics = PulviniAutonomicsEngine(
+            decoherence_threshold=float(autonomics_config.get("decoherence_threshold", 0.15)),
+            audit_sink=self._record_autonomic_audit,
+            lattice_repoint_sink=self.overlay.apply_lattice_repoint,
+        )
+        self.autonomic_orchestrator = AutonomicOrchestrator(self.autonomics)
         self.propagation = SharePropagationController(self.overlay.manifold)
         self.quantum_solver = PulviniCompressedQuantumSolver()
         self.blockchain_oracle = BlockchainOracle()
@@ -73,10 +81,61 @@ class GenesisAI:
         self.heartbeat_tick = 0
         self.health_status = "STARTING"
         self.latest_phi_optimization: Optional[Dict[str, Any]] = None
+        self.latest_autonomic_event: Optional[Dict[str, Any]] = None
         self.allow_dev_fixture_jobs = (
             os.getenv("NODE_ENV", os.getenv("HYBA_ENV", "development")).lower() != "production"
             and os.getenv("HYBA_ALLOW_DEV_FIXTURES", "false").lower() in {"1", "true", "yes", "on"}
         )
+
+    def _record_autonomic_audit(self, event: Dict[str, Any]) -> None:
+        self.overlay.record_autonomic_event(dict(event))
+        self.latest_autonomic_event = dict(event)
+
+    def _configured_power_target_watts(self) -> Optional[float]:
+        autonomics_config = self.config.get("autonomics") or {}
+        configured = autonomics_config.get("target_watts", os.getenv("HYBA_AUTONOMICS_TARGET_WATTS"))
+        if configured in (None, ""):
+            return None
+        value = float(configured)
+        if value < 0:
+            raise ValueError("autonomics target_watts must be non-negative")
+        return value
+
+    def _run_autonomic_feedback(self) -> None:
+        telemetry = self.overlay.autonomic_telemetry(power_scale=float(self.quantum_solver.get_metrics().get("power_scale") or 1.0))
+        thermal_event, thermal_rebalance = self.autonomic_orchestrator.tick(telemetry)
+        self.overlay.apply_autonomic_distribution(thermal_event.amplitudes, reason="thermal_governance")
+        self.latest_autonomic_event = thermal_event.to_dict()
+        if thermal_rebalance is not None:
+            self.repair_count += 1
+            self.overlay.apply_autonomic_distribution(
+                self.autonomics.homeostasis.rho.diagonal().tolist(),
+                reason="thermal_sacrifice_healing",
+            )
+            self.latest_autonomic_event = thermal_rebalance.to_dict()
+            self.health_status = "HEALING" if thermal_rebalance.coverage_maintained else "DEGRADED"
+        heal_event = self.autonomics.heartbeat_and_heal(reason="runtime_telemetry")
+        if heal_event is not None:
+            self.repair_count += 1
+            self.latest_autonomic_event = heal_event.to_dict()
+            self.health_status = "HEALING" if heal_event.coverage_maintained else "DEGRADED"
+        autonomics_config = self.config.get("autonomics") or {}
+        learning_rate = float(autonomics_config.get("learning_rate", 0.01))
+        if learning_rate > 0.0:
+            amplitudes = self.autonomics.optimizer.find_bures_optima(learning_rate=min(learning_rate, 1.0))
+            self.overlay.apply_autonomic_distribution(amplitudes.tolist(), reason="bures_efficiency_routing")
+            self.latest_autonomic_event = {
+                "event_type": "autonomic_distribution_applied",
+                "learning_rate": min(learning_rate, 1.0),
+                "max_amplitude": float(max(amplitudes)),
+                "min_amplitude": float(min(amplitudes)),
+            }
+        target_watts = self._configured_power_target_watts()
+        if target_watts is not None:
+            optimization = self.autonomics.optimizer.optimize_energy_envelope(target_watts=target_watts)
+            if optimization.get("new_amplitudes"):
+                self.overlay.apply_autonomic_distribution(optimization["new_amplitudes"], reason="energy_envelope")
+            self.latest_autonomic_event = optimization
 
     async def start(self) -> bool:
         self.logger.info("Initializing PYTHIA Orchestration Layer...")
@@ -156,6 +215,7 @@ class GenesisAI:
                 self.heartbeat_tick += 1
                 self.overlay.phase_heartbeat(self.heartbeat_tick)
                 self.overlay.manifold.evolve_closed_system(dt=0.05)
+                self._run_autonomic_feedback()
                 optimization = await self.ai_optimizer.optimize_nonce_search(self.current_job)
                 self.latest_phi_optimization = {
                     "strategy_used": optimization.strategy_used,
@@ -212,7 +272,8 @@ class GenesisAI:
                         self.overlay.record_nack(first_assignment.node_id)
 
                 self.failure_counter = 0
-                self.health_status = "HEALTHY" if active_pool.current_jobs else "AWAITING_JOB"
+                if self.health_status != "HEALING":
+                    self.health_status = "HEALTHY" if active_pool.current_jobs else "AWAITING_JOB"
                 await asyncio.sleep(0.25)
             except Exception as e:
                 self.failure_counter += 1
@@ -274,6 +335,9 @@ class GenesisAI:
             "power_scale": quantum_metrics.get("power_scale"),
             "pools": pools_info,
             "pulvini_overlay": overlay_snapshot,
+            "pulvini_autonomics": self.autonomics.snapshot(),
+            "autonomic_repairs": self.repair_count,
+            "latest_autonomic_event": self.latest_autonomic_event,
             "share_propagation": self.propagation.snapshot(),
             "quantum": quantum_metrics,
             "phi_scaling_engine": self.latest_phi_optimization,

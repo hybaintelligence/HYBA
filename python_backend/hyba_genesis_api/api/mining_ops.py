@@ -177,3 +177,17 @@ async def profitability_inputs():
         "btc_price_usd": None,
         "message": "Profitability requires externally supplied BTC price, power draw, electricity cost, pool fee, and hardware data.",
     }
+
+
+@router.get("/autonomics", dependencies=[Depends(require_mining_read)])
+async def autonomics_state():
+    """Return the latest standalone PULVINI autonomics state exported by mining."""
+    state = get_pythia_state() or {}
+    autonomics = state.get("pulvini_autonomics") or {}
+    return {
+        "status": "ok" if autonomics else "unavailable",
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "autonomic_repairs": state.get("autonomic_repairs", 0),
+        "latest_autonomic_event": state.get("latest_autonomic_event"),
+        "pulvini_autonomics": autonomics,
+    }

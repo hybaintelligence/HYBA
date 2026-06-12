@@ -14,6 +14,7 @@ RUN npm run build
 FROM node:22.15.0-bookworm-slim AS runtime
 ENV NODE_ENV=production \
     HYBA_ENV=production \
+    HYBA_PHASE_TRANSITION_CONTAINER=1 \
     PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONPATH=/app/python_backend \
@@ -30,10 +31,10 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends python3 python3-pip python3-venv curl ca-certificates tini \
     && rm -rf /var/lib/apt/lists/*
 
-COPY python_backend/hyba_genesis_api/requirements.txt /app/python_backend/hyba_genesis_api/requirements.txt
+COPY python_backend/requirements.phase-transition.txt /app/python_backend/requirements.phase-transition.txt
 RUN python3 -m venv /opt/hyba-venv \
     && /opt/hyba-venv/bin/python -m pip install --upgrade pip \
-    && /opt/hyba-venv/bin/python -m pip install --no-cache-dir -r /app/python_backend/hyba_genesis_api/requirements.txt
+    && /opt/hyba-venv/bin/python -m pip install --no-cache-dir -r /app/python_backend/requirements.phase-transition.txt
 ENV PATH="/opt/hyba-venv/bin:${PATH}"
 
 COPY package*.json ./
