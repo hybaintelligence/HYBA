@@ -151,6 +151,7 @@ jobs:
           HYBA_ENABLE_LIVE_STRATUM: "true"
           HYBA_ENABLE_MINING_AUTOCONNECT: "false"
           HYBA_ENABLE_LIVE_SHARE_SUBMIT: "false"
+          HYBA_ENABLE_AUDIT_LOGGING: "true"
           HYBA_POOL_NICEHASH_URL: stratum+ssl://sha256.eu.nicehash.com:33334
           HYBA_POOL_NICEHASH_USERNAME: ci-user
           HYBA_POOL_NICEHASH_PASSWORD: ci-secret
