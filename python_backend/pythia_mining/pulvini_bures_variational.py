@@ -232,10 +232,12 @@ def verify_bures_variational_gate() -> Dict[str, Any]:
 
     Tests trivial and non-trivial stationary points on the 32-node manifold.
     """
-    # Build a coherent density matrix
+    # Build a coherent density matrix from a deterministic harmonic state.
+    # This keeps the production gate reproducible without pseudo-random runtime
+    # telemetry.
     dim = 32
-    np.random.seed(42)
-    psi = np.random.randn(dim) + 1j * np.random.randn(dim)
+    idx = np.arange(dim, dtype=np.float64) + 1.0
+    psi = np.sin(idx / PHI) + 1j * np.cos(idx * PHI)
     psi = psi / np.linalg.norm(psi)
     rho = np.outer(psi, psi.conj())
 
