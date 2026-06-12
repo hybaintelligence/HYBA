@@ -97,6 +97,10 @@ const CIRCUIT_THRESHOLD = 5;
 const CIRCUIT_RESET_MS = 30_000;
 const CIRCUIT_HALF_OPEN_MS = 10_000;
 
+// Health check alerting thresholds
+const HEALTH_CHECK_FAILURE_THRESHOLD = 3;
+const HEALTH_CHECK_FAILURE_WINDOW_MS = 60_000;
+
 function isCircuitOpen(): boolean {
   if (!circuitState.isOpen) return false;
   const elapsed = Date.now() - circuitState.lastFailureTime;
@@ -120,7 +124,16 @@ function recordProxyFailure(): void {
   if (circuitState.failures >= CIRCUIT_THRESHOLD && !circuitState.isOpen) {
     circuitState.isOpen = true;
     metrics.circuitBreakerTrips += 1;
-    logger.warn({ failures: circuitState.failures }, "Proxy circuit breaker OPEN — backend considered degraded");
+    logger.error(
+      { 
+        failures: circuitState.failures, 
+        threshold: CIRCUIT_THRESHOLD,
+        resetTimeMs: CIRCUIT_RESET_MS,
+        backendUrl: CONFIG.backendUrl.toString(),
+        timestamp: new Date().toISOString()
+      }, 
+      "🚨 CIRCUIT BREAKER TRIPPED — Backend proxy circuit opened"
+    );
   }
 }
 
@@ -362,6 +375,8 @@ const metrics = {
   requestsByPath: new Map<string, number>(),
   proxyErrors: 0,
   circuitBreakerTrips: 0,
+  healthCheckFailures: 0,
+  lastHealthCheckFailure: 0,
   startTime: Date.now(),
 };
 
@@ -456,6 +471,41 @@ async function startServer(): Promise<void> {
   // circuit counters, and path metrics.
   app.get("/bridge/health", async (_req: Request, res: Response) => {
     const reachable = await isBackendReachable();
+    
+    if (!reachable) {
+      metrics.healthCheckFailures += 1;
+      metrics.lastHealthCheckFailure = Date.now();
+      
+      // Check if we've exceeded the failure threshold within the window
+      const recentFailures = metrics.healthCheckFailures;
+      const timeSinceLastFailure = Date.now() - metrics.lastHealthCheckFailure;
+      
+      if (recentFailures >= HEALTH_CHECK_FAILURE_THRESHOLD && timeSinceLastFailure < HEALTH_CHECK_FAILURE_WINDOW_MS) {
+        logger.error(
+          {
+            healthCheckFailures: metrics.healthCheckFailures,
+            threshold: HEALTH_CHECK_FAILURE_THRESHOLD,
+            windowMs: HEALTH_CHECK_FAILURE_WINDOW_MS,
+            backendUrl: CONFIG.backendUrl.toString(),
+            timestamp: new Date().toISOString(),
+          },
+          "🚨 HEALTH CHECK FAILURE THRESHOLD EXCEEDED — Backend consistently unreachable"
+        );
+      }
+    } else {
+      // Reset counter on successful health check
+      if (metrics.healthCheckFailures > 0) {
+        logger.info(
+          {
+            previousFailures: metrics.healthCheckFailures,
+            timestamp: new Date().toISOString(),
+          },
+          "Health check recovered — backend reachable again"
+        );
+        metrics.healthCheckFailures = 0;
+      }
+    }
+    
     noStore(res);
     res.status(reachable ? 200 : 503).json({
       status: reachable ? "ok" : "degraded",
@@ -505,9 +555,15 @@ async function startServer(): Promise<void> {
       `# HELP hyba_bridge_circuit_breaker_open Circuit breaker is open`,
       `# TYPE hyba_bridge_circuit_breaker_open gauge`,
       `hyba_bridge_circuit_breaker_open ${circuitState.isOpen ? 1 : 0}`,
+      `# HELP hyba_bridge_circuit_breaker_trips Total circuit breaker trips`,
+      `# TYPE hyba_bridge_circuit_breaker_trips counter`,
+      `hyba_bridge_circuit_breaker_trips ${metrics.circuitBreakerTrips}`,
       `# HELP hyba_bridge_backend_reachable Backend is reachable`,
       `# TYPE hyba_bridge_backend_reachable gauge`,
       `hyba_bridge_backend_reachable ${reachable ? 1 : 0}`,
+      `# HELP hyba_bridge_health_check_failures Total health check failures`,
+      `# TYPE hyba_bridge_health_check_failures counter`,
+      `hyba_bridge_health_check_failures ${metrics.healthCheckFailures}`,
       `# HELP hyba_bridge_uptime_seconds Uptime in seconds`,
       `# TYPE hyba_bridge_uptime_seconds counter`,
       `hyba_bridge_uptime_seconds ${Math.floor((Date.now() - metrics.startTime) / 1000)}`,

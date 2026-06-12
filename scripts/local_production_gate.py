@@ -115,7 +115,7 @@ def _redacted_env_summary() -> dict[str, str]:
 def _run_step(name: str, command: list[str]) -> StepResult:
     start = datetime.now(timezone.utc)
     completed = subprocess.run(
-        command,
+        command if sys.platform != "win32" else ["cmd", "/c"] + command,
         cwd=ROOT,
         text=True,
         capture_output=True,

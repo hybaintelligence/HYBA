@@ -18,3 +18,4 @@ config/mining.pools.env
 *.db
 *.db-shm
 *.db-wal
+artifacts/production_readiness/

@@ -121,6 +121,94 @@ class StratumV2PrimitiveTests(unittest.TestCase):
         self.assertEqual(SV2_MSG_SETUP_CONNECTION, transport.sent[0].message_type)
         self.assertTrue(transport.closed)
 
+    def test_live_session_handles_setup_connection_timeout(self):
+        async def run_case():
+            profile = build_profile("sv2", name="SV2", url="stratum2+tcp://sv2.example.com:3336", username="worker", password="secret", stratum_version=2)
+            
+            class TimeoutTransport:
+                def __init__(self):
+                    self.closed = False
+                async def connect(self):
+                    return None
+                async def send_frame(self, frame):
+                    pass
+                async def read_frame(self, timeout=None):
+                    import asyncio
+                    await asyncio.sleep(10)
+                    return None
+                async def close(self):
+                    self.closed = True
+            
+            transport = TimeoutTransport()
+            session = LiveStratumV2Session(profile, transport=transport)
+            await session.connect()
+            try:
+                await session.setup_connection()
+                self.fail("Should have raised timeout error")
+            except Exception as e:
+                self.assertIn("timeout", str(e).lower())
+            finally:
+                await session.close()
+
+        import asyncio
+        asyncio.run(run_case())
+
+    def test_live_session_handles_version_mismatch(self):
+        async def run_case():
+            profile = build_profile("sv2", name="SV2", url="stratum2+tcp://sv2.example.com:3336", username="worker", password="secret", stratum_version=2)
+            
+            class VersionMismatchTransport:
+                def __init__(self):
+                    self.closed = False
+                async def connect(self):
+                    return None
+                async def send_frame(self, frame):
+                    pass
+                async def read_frame(self, timeout=None):
+                    bad_version = (3).to_bytes(2, "little") + (0).to_bytes(4, "little")
+                    return StratumV2Frame(SV2_EXTENSION_TYPE_CORE, SV2_MSG_SETUP_CONNECTION_SUCCESS, bad_version)
+                async def close(self):
+                    self.closed = True
+            
+            transport = VersionMismatchTransport()
+            session = LiveStratumV2Session(profile, transport=transport)
+            await session.connect()
+            try:
+                await session.setup_connection()
+                self.fail("Should have raised version mismatch error")
+            except StratumV2ProtocolError as e:
+                self.assertIn("version", str(e).lower())
+            finally:
+                await session.close()
+
+        import asyncio
+        asyncio.run(run_case())
+
+    def test_pool_profile_rejects_invalid_stratum_v2_urls(self):
+        invalid_urls = [
+            "http://example.com:3336",
+            "stratum+tcp://example.com:3336",
+            "stratum2+tcp://",
+            "stratum2+tcp://example.com",
+            "stratum2+tcp://example.com:99999",
+        ]
+        for url in invalid_urls:
+            with self.assertRaises((ValueError, StratumV2ProtocolError)):
+                validate_pool_url(url, tls_required=False)
+
+    def test_pool_profile_accepts_all_valid_stratum_v2_schemes(self):
+        valid_schemes = [
+            "stratum2+tcp://sv2.example.com:3336",
+            "stratum2+ssl://sv2.example.com:3336",
+            "stratum2+tls://sv2.example.com:3336",
+        ]
+        for url in valid_schemes:
+            try:
+                validated = validate_pool_url(url, tls_required=False)
+                self.assertTrue(validiated.startswith("stratum2+"))
+            except Exception as e:
+                self.fail(f"Valid URL {url} should not raise error: {e}")
+
 
 if __name__ == "__main__":
     unittest.main()
