@@ -19,3 +19,4 @@ config/mining.pools.env
 *.db-shm
 *.db-wal
 artifacts/production_readiness/
+artifacts/funding_engine/
