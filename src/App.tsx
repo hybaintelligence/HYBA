@@ -45,6 +45,7 @@ import {
 } from "./apiClient";
 import { NetworkToast } from "./components/NetworkToast";
 import { PoolSecretsConfig } from "./components/PoolSecretsConfig";
+import { SovereignGenesisPanel } from "./components/SovereignGenesisPanel";
 import { Sparkline } from "./components/Sparkline";
 import { useApiRequest } from "./hooks/useApiRequest";
 import { useLatencyMetrics } from "./hooks/useLatencyMetrics";
@@ -69,6 +70,8 @@ const THEME = {
 } as const;
 
 const UNAVAILABLE = "—";
+
+const PHI_TIERS = [7, 10, 12, 15, 18, 20, 31, 76];
 
 function fmtNum(value: NullableNumber, digits = 2): string {
   return typeof value === "number" && Number.isFinite(value)
@@ -482,6 +485,10 @@ function AppContent() {
             <MetricRow label="Pools configured" value={fmtNum(configuredPoolCount, 0)} />
             <MetricRow label="Active pools" value={fmtNum(activePoolCount, 0)} />
           </Panel>
+        </section>
+
+        <section className="grid grid-cols-1 gap-6">
+          <SovereignGenesisPanel />
         </section>
 
         <section className="grid grid-cols-1 gap-6 lg:grid-cols-[1.2fr_0.8fr]">
