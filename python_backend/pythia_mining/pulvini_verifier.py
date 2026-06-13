@@ -393,6 +393,16 @@ class SubstateVerifier:
             self._certificate_cache[cache_key] = passport
         return passport
 
+
+    def certificate_ledger(self, passports: Sequence[SubstatePassport]) -> "CertificateLedger":
+        """Unify generated passports into an append-only compliance ledger."""
+        from .pulvini_elevation import CertificateLedger
+
+        ledger = CertificateLedger()
+        for passport in passports:
+            ledger.append("substate_passport", passport.to_dict(), timestamp_ns=passport.timestamp_ns)
+        return ledger
+
     def verify_passport(self, passport: SubstatePassport) -> bool:
         """Validate digest and all mandatory integrity gates."""
         return bool(
