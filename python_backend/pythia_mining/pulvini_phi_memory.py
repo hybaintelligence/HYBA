@@ -7,14 +7,13 @@ replay, and report audit telemetry for reconstruction and invariant checks.
 
 from __future__ import annotations
 
-import math
 from dataclasses import asdict, dataclass
-from typing import Any, Iterable, List, Sequence, Tuple
+from typing import Any, Iterable, Tuple
 
 import numpy as np
 
-PHI = (1.0 + math.sqrt(5.0)) / 2.0
-EPSILON = 1e-12
+from .phi_config import DEFAULT_SPARSE_SKIP_THRESHOLD, DEFAULT_TOLERANCE, EPSILON, PHI
+from .phi_folding import PhiFoldingOperator
 
 
 def _sparsity(values: np.ndarray) -> float:
@@ -106,6 +105,8 @@ class PhiMemoryFoldResult:
     kernels: Tuple[np.ndarray, ...]
     sizes: Tuple[int, ...]
     reconstructed: np.ndarray
+    compression_strategy: str = "phi_fold"
+    sparse_optimized: bool = False
 
     @property
     def working_set(self) -> np.ndarray:
@@ -140,96 +141,41 @@ class PhiMemoryStreamResult:
         return asdict(self)
 
 
-class PhiFoldingOperator:
-    """Reversible golden-ratio fold/unfold primitive with retained kernels."""
-
-    def __init__(self, *, tolerance: float = 1e-9) -> None:
-        self.tolerance = float(tolerance)
-
-    def fibonacci_split(self, dimension: int) -> tuple[int, int]:
-        if dimension < 1:
-            raise ValueError("dimension must be positive")
-        smaller = max(1, int(round(dimension / (PHI + 1.0))))
-        larger = int(dimension) - smaller
-        if larger < smaller and dimension > 1:
-            larger, smaller = smaller, larger
-        return larger, smaller
-
-    def phi_ratio_error(self, dimension: int) -> float:
-        larger, smaller = self.fibonacci_split(int(dimension))
-        return float(abs((larger / max(1, smaller)) - PHI))
-
-    def fold(self, payload: np.ndarray) -> tuple[np.ndarray, np.ndarray, int]:
-        values = np.asarray(payload).reshape(-1)
-        dtype = np.result_type(values.dtype, np.complex128 if np.iscomplexobj(values) else np.float64)
-        values = values.astype(dtype, copy=False)
-        original_size = int(values.size)
-        if original_size <= 1:
-            return values.copy(), np.zeros(0, dtype=dtype), original_size
-        larger, smaller = self.fibonacci_split(original_size)
-        head = values[:larger]
-        tail = values[larger:]
-        padded_tail = np.zeros(larger, dtype=dtype)
-        padded_tail[:smaller] = tail
-        w1 = 1.0 / PHI
-        w2 = 1.0 / (PHI ** 2)
-        folded = w1 * head + w2 * padded_tail
-        kernel = w2 * head - w1 * padded_tail
-        return folded, kernel, original_size
-
-    def unfold(self, folded: np.ndarray, kernel: np.ndarray, original_size: int) -> np.ndarray:
-        if int(original_size) <= 1:
-            return np.asarray(folded).reshape(-1)[: int(original_size)].copy()
-        folded_values = np.asarray(folded).reshape(-1)
-        kernel_values = np.asarray(kernel).reshape(-1)
-        larger, smaller = self.fibonacci_split(int(original_size))
-        if folded_values.size != larger or kernel_values.size != larger:
-            raise ValueError("folded payload and kernel do not match original size")
-        w1 = 1.0 / PHI
-        w2 = 1.0 / (PHI ** 2)
-        norm_sq = w1**2 + w2**2
-        head = (w1 * folded_values + w2 * kernel_values) / norm_sq
-        tail_padded = (w2 * folded_values - w1 * kernel_values) / norm_sq
-        return np.concatenate([head, tail_padded[:smaller]])
-
-    def fold_recursive(self, payload: np.ndarray, *, depth: int) -> tuple[np.ndarray, tuple[np.ndarray, ...], tuple[int, ...]]:
-        if int(depth) < 1:
-            raise ValueError("depth must be >= 1")
-        current = np.asarray(payload).reshape(-1).copy()
-        kernels: List[np.ndarray] = []
-        sizes: List[int] = [int(current.size)]
-        for _ in range(int(depth)):
-            if current.size <= 1:
-                break
-            current, kernel, _original_size = self.fold(current)
-            kernels.append(kernel.copy())
-            sizes.append(int(current.size))
-        return current, tuple(kernels), tuple(sizes)
-
-    def unfold_recursive(self, folded: np.ndarray, kernels: Sequence[np.ndarray], sizes: Sequence[int]) -> np.ndarray:
-        current = np.asarray(folded).reshape(-1).copy()
-        if len(sizes) != len(kernels) + 1:
-            raise ValueError("sizes must contain initial size plus one size per kernel")
-        for kernel, original_size in zip(reversed(kernels), reversed(sizes[:-1])):
-            current = self.unfold(current, kernel, int(original_size))
-        return current
-
-
 class PulviniPhiMemoryCompressionEngine:
     """Auditable phi folding engine for manifold, ledger, and tensor payloads."""
 
-    def __init__(self, *, tolerance: float = 1e-9, fold_depth: int = 2) -> None:
+    def __init__(
+        self,
+        *,
+        tolerance: float = DEFAULT_TOLERANCE,
+        fold_depth: int = 2,
+        sparse_skip_threshold: float = DEFAULT_SPARSE_SKIP_THRESHOLD,
+    ) -> None:
+        if float(tolerance) <= 0:
+            raise ValueError("tolerance must be positive")
         if int(fold_depth) < 1:
-            raise ValueError("fold_depth must be >= 1")
+            raise ValueError(f"fold_depth must be >= 1; received {fold_depth!r}")
+        if not 0.0 <= float(sparse_skip_threshold) <= 1.0:
+            raise ValueError("sparse_skip_threshold must be between 0.0 and 1.0")
         self.tolerance = float(tolerance)
         self.fold_depth = int(fold_depth)
+        self.sparse_skip_threshold = float(sparse_skip_threshold)
         self.operator = PhiFoldingOperator(tolerance=self.tolerance)
 
     def compress(self, payload: np.ndarray) -> PhiMemoryFoldResult:
         source = np.asarray(payload)
         flat = source.reshape(-1)
-        folded, kernels, sizes = self.operator.fold_recursive(flat, depth=self.fold_depth)
-        reconstructed_flat = self.operator.unfold_recursive(folded, kernels, sizes)[: flat.size]
+        input_sparsity = _sparsity(flat)
+        if input_sparsity >= self.sparse_skip_threshold:
+            folded = flat.copy()
+            kernels = tuple()
+            sizes = (int(flat.size),)
+            reconstructed_flat = folded.copy()
+            compression_strategy = "sparse_passthrough"
+        else:
+            folded, kernels, sizes = self.operator.fold_recursive(flat, depth=self.fold_depth)
+            reconstructed_flat = self.operator.unfold_recursive(folded, kernels, sizes)[: flat.size]
+            compression_strategy = "phi_fold"
         reconstructed = reconstructed_flat.reshape(source.shape)
         kernel_flat = np.concatenate([kernel.reshape(-1) for kernel in kernels]) if kernels else np.asarray([], dtype=folded.dtype)
         reconstruction_error = float(np.linalg.norm(flat - reconstructed_flat))
@@ -252,7 +198,7 @@ class PulviniPhiMemoryCompressionEngine:
             reversible=bool(reconstruction_error <= max(self.tolerance, EPSILON)),
             fold_depth=len(kernels),
             folded_dimension=int(folded.size),
-            input_sparsity=_sparsity(flat),
+            input_sparsity=input_sparsity,
             folded_sparsity=_sparsity(folded),
             kernel_sparsity=_sparsity(kernel_flat),
             input_tail_ratio=input_tail,
@@ -266,6 +212,8 @@ class PulviniPhiMemoryCompressionEngine:
             kernels=tuple(kernel.copy() for kernel in kernels),
             sizes=tuple(int(size) for size in sizes),
             reconstructed=reconstructed.copy(),
+            compression_strategy=compression_strategy,
+            sparse_optimized=bool(compression_strategy == "sparse_passthrough"),
         )
 
     def decompress(self, result: PhiMemoryFoldResult) -> np.ndarray:
