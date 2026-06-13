@@ -1,7 +1,7 @@
 FROM node:22.15.0-bookworm-slim AS node-deps
 WORKDIR /app
-COPY package*.json ./
-RUN npm ci
+COPY package.json package-lock.json* ./
+RUN npm install --production=false
 
 FROM node:22.15.0-bookworm-slim AS frontend-build
 WORKDIR /app
@@ -38,7 +38,7 @@ RUN python3 -m venv /opt/hyba-venv \
 ENV PATH="/opt/hyba-venv/bin:${PATH}"
 
 COPY package*.json ./
-RUN npm ci --omit=dev
+RUN npm install --omit=dev
 
 COPY --from=frontend-build /app/dist ./dist
 COPY python_backend ./python_backend
