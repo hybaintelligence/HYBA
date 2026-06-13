@@ -12,6 +12,14 @@ It is intentionally separated from the broader HYBA_Unified_Backend / HYBA_Unifi
 
 HYBA_FULLSTACK does not replace METIS. It is the self-financing production expression of the METIS doctrine.
 
+The mining innovation and expected-benefit map is maintained at:
+
+```text
+docs/MINING_INNOVATIONS_AND_CAPABILITY_MAP.md
+```
+
+That document links the funding engine's innovations to property tests and capability boundaries.
+
 ## Deployment doctrine
 
 The funding engine is deployed only through evidence gates.
@@ -63,6 +71,14 @@ HYBA_FULLSTACK search must be deterministic.
 For the same mining target and nonce range, PYTHIA must return the same nonce on repeated runs. The deployment gate runs the solver twice against the same target/range and fails if the nonce differs or falls outside the requested range.
 
 This does not claim pool acceptance. It proves local deterministic search repeatability before live mining reliance.
+
+The mining innovation property tests expand this gate by checking range-safety, invalid-range failure, PULVINI capacity caps, projection-vs-measured benchmark boundaries, phi-weight normalisation, and bounded resonance telemetry.
+
+Run the capability property suite with:
+
+```bash
+npm run test:mining:innovation
+```
 
 ## Accepted-share gate
 
