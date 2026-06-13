@@ -19,6 +19,12 @@ import sys
 from pathlib import Path
 from typing import Any
 
+try:
+    from hypothesis import given, settings
+    from hypothesis import strategies as st
+except ImportError:  # pragma: no cover - dependency guard for minimal envs
+    given = settings = st = None
+
 import pytest
 
 # ── Ensure we can import from python_backend ──────────────────────────────
@@ -419,17 +425,19 @@ class TestGoldenRatioScaling:
     def test_phi_matches_phi_scaling_engine(self) -> None:
         assert abs(GoldenRatioScaling.PHI - PHI) < 1e-12
 
-    def test_scaling_factors_four_levels(self) -> None:
+    def test_scaling_factors_requested_levels(self) -> None:
         factors = GoldenRatioScaling.get_scaling_factors()
-        assert len(factors) == 4
-        assert factors["10^12"] == 10**12
-        assert factors["10^15"] == 10**15
-        assert factors["10^18"] == 10**18
-        assert factors["10^20"] == 10**20
+        assert set(factors) == {"10^7", "10^10", "10^12", "10^15", "10^18", "10^20", "10^31", "10^76"}
+        assert factors["10^12"] == pytest.approx((10**12) * (PHI ** 12), rel=1e-12)
+        assert factors["10^76"] == pytest.approx((10**76) * (PHI ** 76), rel=1e-12)
+
+    def test_combination_scaling_factors(self) -> None:
+        factors = GoldenRatioScaling.get_scaling_factors(include_combinations=True)
+        assert factors["10^7×10^10"] == pytest.approx(factors["10^7"] * factors["10^10"], rel=1e-12)
 
     def test_apply_scaling(self) -> None:
         result = GoldenRatioScaling.apply_scaling(2.34, 12)
-        assert result == 2.34e12
+        assert result == pytest.approx(2.34 * (10**12) * (PHI ** 12), rel=1e-12)
 
     def test_governance_cap_default(self) -> None:
         assert GoldenRatioScaling.GOVERNANCE_CAP_EHS == 1.0
@@ -483,21 +491,26 @@ class TestComprehensiveComparison:
         assert "asic_comparison" in result
         assert result["pulvini_native_32_solver"]["num_solvers"] == 32
 
-    def test_golden_ratio_scaling_four_levels(self, comparison: ComprehensiveComparison) -> None:
+    def test_golden_ratio_scaling_requested_levels_and_combinations(self, comparison: ComprehensiveComparison) -> None:
         results = comparison.compare_golden_ratio_scaling()
-        assert set(results.keys()) == {"10^12", "10^15", "10^18", "10^20"}
+        required = {"10^7", "10^10", "10^12", "10^15", "10^18", "10^20", "10^31", "10^76"}
+        assert required.issubset(results.keys())
+        assert "10^7×10^10" in results
+        assert "10^31×10^76" in results
+        assert "asic_efficiency_curves" in results["10^12"]
+        assert "latency_per_phi_tier_ms" in results["10^12"]
 
     def test_golden_ratio_monotonic_throughput(self, comparison: ComprehensiveComparison) -> None:
         results = comparison.compare_golden_ratio_scaling()
-        throughputs = [results[s]["effective_hashrate_ths"] for s in ["10^12", "10^15", "10^18", "10^20"]]
+        throughputs = [results[s]["effective_hashrate_ths"] for s in ["10^7", "10^10", "10^12", "10^15", "10^18", "10^20", "10^31", "10^76"]]
         for i in range(1, len(throughputs)):
             assert throughputs[i] > throughputs[i - 1], f"Throughput not monotonic at index {i}"
 
-    def test_golden_ratio_10_12_loses_to_asics(self, comparison: ComprehensiveComparison) -> None:
-        """At 10^12 scale, PULVINI should lose to all ASICs."""
+    def test_golden_ratio_10_7_loses_to_asics(self, comparison: ComprehensiveComparison) -> None:
+        """At 10^7 dynamic scale, PULVINI should lose to all ASICs."""
         results = comparison.compare_golden_ratio_scaling()
-        for comp in results["10^12"]["asic_comparison"]:
-            assert comp["pulvini_beats_asic"] is False, f"{comp['asic']} should beat PULVINI at 10^12"
+        for comp in results["10^7"]["asic_comparison"]:
+            assert comp["pulvini_beats_asic"] is False, f"{comp['asic']} should beat PULVINI at 10^7"
 
     def test_golden_ratio_10_15_beats_all_asics(self, comparison: ComprehensiveComparison) -> None:
         """At 10^15 scale, PULVINI should beat all ASICs."""
@@ -518,7 +531,7 @@ class TestComprehensiveComparison:
     def test_efficiency_improves_with_scale(self, comparison: ComprehensiveComparison) -> None:
         """Efficiency (J/TH) should improve (decrease) as scale increases."""
         results = comparison.compare_golden_ratio_scaling()
-        effs = [results[s]["hashrate_efficiency_j_th"] for s in ["10^12", "10^15", "10^18", "10^20"]]
+        effs = [results[s]["hashrate_efficiency_j_th"] for s in ["10^7", "10^10", "10^12", "10^15", "10^18", "10^20", "10^31", "10^76"]]
         for i in range(1, len(effs)):
             assert effs[i] < effs[i - 1], f"Efficiency worsened at index {i}: {effs[i-1]} → {effs[i]}"
 
@@ -554,10 +567,18 @@ class TestComprehensiveComparison:
         for asic in eff_12:
             assert eff_15[asic] < eff_12[asic], f"{asic} efficiency ratio didn't decrease"
 
+    def test_asic_efficiency_curves_include_resonance_points(self, comparison: ComprehensiveComparison) -> None:
+        results = comparison.compare_golden_ratio_scaling()
+        curves = results["10^12"]["asic_efficiency_curves"]
+        assert len(curves) == len(ASICPerformanceData.get_all_specs())
+        assert curves[0]["energy_per_phi_tier_j"] > 0
+        assert curves[0]["latency_per_phi_tier_ms"] > 0
+        assert "resonance_delta_from_parity" in curves[0]["asic_specific_resonance_point"]
+
     def test_pulvini_beats_asic_criteria(self, comparison: ComprehensiveComparison) -> None:
         """Verification: pulvini_beats_asic should be True iff hashrate_ratio > 1 AND efficiency_ratio < 1."""
         results = comparison.compare_golden_ratio_scaling()
-        for scale in ["10^12", "10^15", "10^18", "10^20"]:
+        for scale in GoldenRatioScaling.get_scaling_factors(include_combinations=True):
             for comp in results[scale]["asic_comparison"]:
                 expected = comp["hashrate_ratio"] > 1.0 and comp["efficiency_ratio"] < 1.0
                 assert comp["pulvini_beats_asic"] == expected, (
@@ -593,7 +614,7 @@ class TestPublishedResultsCrossValidation:
         assert pub_scales == comp_scales, f"Scales differ: {pub_scales} vs {comp_scales}"
 
     def test_throughput_within_reasonable_tolerance(self, published: dict, computed: dict) -> None:
-        for scale in ["10^12", "10^15", "10^18", "10^20"]:
+        for scale in GoldenRatioScaling.get_scaling_factors(include_combinations=True):
             pub_t = published["golden_ratio_scaling"][scale]["effective_throughput_with_quantum_advantages"]
             comp_t = computed[scale]["effective_throughput_with_quantum_advantages"]
             # Allow small floating-point discrepancies
@@ -626,11 +647,11 @@ class TestPropertyBasedInvariants:
     """Invariant checks for the golden ratio scaling system."""
 
     def test_phi_scale_factor_self_similarity(self) -> None:
-        """Scaling by 10^15 then dividing by 10^3 should equal scaling by 10^12."""
-        base = 1.0
-        scaled_15 = GoldenRatioScaling.apply_scaling(base, 15)
-        scaled_12 = GoldenRatioScaling.apply_scaling(base, 12)
-        assert abs(scaled_15 / 1e3 - scaled_12) < 1e-12
+        """Dynamic scaling preserves self-similarity: S(a+b) == S(a)×S(b)."""
+        scaled_7 = GoldenRatioScaling.apply_scaling(1.0, 7)
+        scaled_10 = GoldenRatioScaling.apply_scaling(1.0, 10)
+        scaled_17 = GoldenRatioScaling.apply_scaling(1.0, 17)
+        assert scaled_7 * scaled_10 == pytest.approx(scaled_17, rel=1e-12)
 
     def test_decision_normalization_invariant(self) -> None:
         """All phi_weights from a non-empty prediction should sum to 1."""
@@ -673,9 +694,29 @@ class TestPropertyBasedInvariants:
     def test_efficiency_monotonic_with_scale(self) -> None:
         """Efficiency should always improve (decrease) as scale increases."""
         results = ComprehensiveComparison().compare_golden_ratio_scaling()
-        effs = [results[s]["hashrate_efficiency_j_th"] for s in ["10^12", "10^15", "10^18", "10^20"]]
+        effs = [results[s]["hashrate_efficiency_j_th"] for s in ["10^7", "10^10", "10^12", "10^15", "10^18", "10^20", "10^31", "10^76"]]
         for i in range(len(effs) - 1):
             assert effs[i + 1] < effs[i], f"Efficiency non-monotonic at index {i}"
+
+
+    @pytest.mark.skipif(given is None, reason="hypothesis not installed")
+    @settings(max_examples=50, deadline=None)
+    @given(st.integers(min_value=0, max_value=30), st.integers(min_value=0, max_value=30))
+    def test_dynamic_phi_combinations_are_multiplicative(self, left: int, right: int) -> None:
+        combined = GoldenRatioScaling.apply_scaling(1.0, left + right)
+        multiplied = (
+            GoldenRatioScaling.apply_scaling(1.0, left)
+            * GoldenRatioScaling.apply_scaling(1.0, right)
+        )
+        assert multiplied == pytest.approx(combined, rel=1e-12)
+
+    @pytest.mark.skipif(given is None, reason="hypothesis not installed")
+    @settings(max_examples=50, deadline=None)
+    @given(st.integers(min_value=0, max_value=75))
+    def test_dynamic_phi_scale_is_exponential(self, exponent: int) -> None:
+        current_scale = GoldenRatioScaling.scale_factor_for_exponent(exponent)
+        next_scale = GoldenRatioScaling.scale_factor_for_exponent(exponent + 1)
+        assert next_scale / current_scale == pytest.approx(10 * PHI, rel=1e-12)
 
     def test_phi_resonance_alternating_no_resonance(self) -> None:
         """[φ, 1/φ, φ, 1/φ, ...] has ratios φ⁻² and φ² — not φ — so no resonance."""

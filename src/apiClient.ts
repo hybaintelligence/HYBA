@@ -26,6 +26,9 @@ export interface SystemMetrics {
   difficultyTarget?: string | null;
   networkDifficulty?: number | null;
   power_scale?: number | null;
+  phi_tier?: number | null;
+  phi_tier_composition?: { label?: string; phi_exponent?: number; scale_factor?: number; hashrate_cap_ehs?: number } | null;
+  memory_compression_contract?: string | null;
   system_health?: string | null;
 }
 
@@ -337,8 +340,8 @@ export async function requestPrediction(payload: Record<string, unknown>): Promi
   return post<PredictionResult>("/predict", payload);
 }
 
-export async function updatePowerScale(scale: number): Promise<{ success: boolean }> {
-  return post<{ success: boolean }>("/mining/power", { scale });
+export async function updatePowerScale(scale: number, phiTier = 12): Promise<{ status: string; effective_hashrate_ehs?: number; phi_tier?: number }> {
+  return post<{ status: string; effective_hashrate_ehs?: number; phi_tier?: number }>("/mining/power", { scale, phi_tier: phiTier });
 }
 
 export interface ConnectPoolRequest {

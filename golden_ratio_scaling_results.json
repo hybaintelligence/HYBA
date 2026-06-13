@@ -1,304 +1,2460 @@
 {
   "golden_ratio_scaling": {
-    "10^12": {
-      "scale_factor": 1000000000000,
-      "base_throughput_attempts_per_sec": 2.3408924652523776e+16,
-      "effective_throughput_with_quantum_advantages": 9.199707388441845e+21,
-      "effective_hashrate_ths": 9199707388.441845,
-      "power_w": 522472377953.992,
-      "hashrate_efficiency_j_th": 56.7922821774099,
+    "10^7": {
+      "scale_factor": 290344418.5374864,
+      "scaling_model": "dynamic_phi_exponential",
+      "base_throughput_attempts_per_sec": 6796650616824.846,
+      "effective_throughput_with_quantum_advantages": 2.6710836924121646e+18,
+      "effective_hashrate_ths": 2671083.6924121645,
+      "power_w": 1746235536.14163,
+      "hashrate_efficiency_j_th": 653.7554555487044,
+      "latency_per_phi_tier_ms": 0.04708201407438134,
+      "asic_efficiency_curves": [
+        {
+          "asic": "Antminer S21",
+          "phi_exponent": 7,
+          "phi_multiplier": 29.03444185374864,
+          "scale_factor": 290344418.5374864,
+          "energy_per_phi_tier_j": 48266482.32188781,
+          "pulvini_energy_per_phi_tier_j": 1746235536.14163,
+          "latency_per_phi_tier_ms": 0.04708201407438134,
+          "asic_specific_resonance_point": {
+            "efficiency_ratio": 36.17905122018286,
+            "resonance_delta_from_parity": 35.17905122018286,
+            "within_5pct_parity": false
+          }
+        },
+        {
+          "asic": "Antminer S19 XP",
+          "phi_exponent": 7,
+          "phi_multiplier": 29.03444185374864,
+          "scale_factor": 290344418.5374864,
+          "energy_per_phi_tier_j": 57428299.38686154,
+          "pulvini_energy_per_phi_tier_j": 1746235536.14163,
+          "latency_per_phi_tier_ms": 0.04708201407438134,
+          "asic_specific_resonance_point": {
+            "efficiency_ratio": 30.407230490637414,
+            "resonance_delta_from_parity": 29.407230490637414,
+            "within_5pct_parity": false
+          }
+        },
+        {
+          "asic": "Antminer S19 Pro",
+          "phi_exponent": 7,
+          "phi_multiplier": 29.03444185374864,
+          "scale_factor": 290344418.5374864,
+          "energy_per_phi_tier_j": 78796968.92615886,
+          "pulvini_energy_per_phi_tier_j": 1746235536.14163,
+          "latency_per_phi_tier_ms": 0.04708201407438134,
+          "asic_specific_resonance_point": {
+            "efficiency_ratio": 22.161201883006928,
+            "resonance_delta_from_parity": 21.161201883006928,
+            "within_5pct_parity": false
+          }
+        },
+        {
+          "asic": "Whatsminer M60",
+          "phi_exponent": 7,
+          "phi_multiplier": 29.03444185374864,
+          "scale_factor": 290344418.5374864,
+          "energy_per_phi_tier_j": 45408422.7710068,
+          "pulvini_energy_per_phi_tier_j": 1746235536.14163,
+          "latency_per_phi_tier_ms": 0.04708201407438134,
+          "asic_specific_resonance_point": {
+            "efficiency_ratio": 38.45620326757085,
+            "resonance_delta_from_parity": 37.45620326757085,
+            "within_5pct_parity": false
+          }
+        },
+        {
+          "asic": "Whatsminer M50",
+          "phi_exponent": 7,
+          "phi_multiplier": 29.03444185374864,
+          "scale_factor": 290344418.5374864,
+          "energy_per_phi_tier_j": 69982392.7411987,
+          "pulvini_energy_per_phi_tier_j": 1746235536.14163,
+          "latency_per_phi_tier_ms": 0.04708201407438134,
+          "asic_specific_resonance_point": {
+            "efficiency_ratio": 24.952498303385664,
+            "resonance_delta_from_parity": 23.952498303385664,
+            "within_5pct_parity": false
+          }
+        },
+        {
+          "asic": "Canaan Avalon A1466",
+          "phi_exponent": 7,
+          "phi_multiplier": 29.03444185374864,
+          "scale_factor": 290344418.5374864,
+          "energy_per_phi_tier_j": 53688782.21748451,
+          "pulvini_energy_per_phi_tier_j": 1746235536.14163,
+          "latency_per_phi_tier_ms": 0.04708201407438134,
+          "asic_specific_resonance_point": {
+            "efficiency_ratio": 32.5251470422241,
+            "resonance_delta_from_parity": 31.5251470422241,
+            "within_5pct_parity": false
+          }
+        }
+      ],
       "asic_comparison": [
         {
           "asic": "Antminer S21",
-          "hashrate_ratio": 45769688.49971067,
-          "power_ratio": 143931784.56032836,
-          "efficiency_ratio": 3.1429043817050304,
-          "pulvini_hashrate_ths": 9199707388.441845,
+          "hashrate_ratio": 13288.97359409037,
+          "power_ratio": 481056.6215266198,
+          "efficiency_ratio": 36.17905122018286,
+          "pulvini_hashrate_ths": 2671083.6924121645,
           "asic_hashrate_ths": 201.0,
-          "pulvini_power_w": 522472377953.992,
+          "pulvini_power_w": 1746235536.14163,
           "asic_power_w": 3630,
           "pulvini_beats_asic": false
         },
         {
           "asic": "Antminer S19 XP",
-          "hashrate_ratio": 65712195.631727464,
-          "power_ratio": 173578863.10763854,
-          "efficiency_ratio": 2.6415014966237162,
-          "pulvini_hashrate_ths": 9199707388.441845,
+          "hashrate_ratio": 19079.16923151546,
+          "power_ratio": 580144.6963925681,
+          "efficiency_ratio": 30.407230490637414,
+          "pulvini_hashrate_ths": 2671083.6924121645,
           "asic_hashrate_ths": 140.0,
-          "pulvini_power_w": 522472377953.992,
+          "pulvini_power_w": 1746235536.14163,
           "asic_power_w": 3010,
           "pulvini_beats_asic": false
         },
         {
           "asic": "Antminer S19 Pro",
-          "hashrate_ratio": 83633703.5312895,
-          "power_ratio": 160760731.6781514,
-          "efficiency_ratio": 1.9251621077088101,
-          "pulvini_hashrate_ths": 9199707388.441845,
+          "hashrate_ratio": 24282.57902192877,
+          "power_ratio": 537303.2418897323,
+          "efficiency_ratio": 22.161201883006928,
+          "pulvini_hashrate_ths": 2671083.6924121645,
           "asic_hashrate_ths": 110.0,
-          "pulvini_power_w": 522472377953.992,
+          "pulvini_power_w": 1746235536.14163,
           "asic_power_w": 3250,
           "pulvini_beats_asic": false
         },
         {
           "asic": "Whatsminer M60",
-          "hashrate_ratio": 45998536.94220922,
-          "power_ratio": 153668346.45705646,
-          "efficiency_ratio": 3.340722481024112,
-          "pulvini_hashrate_ths": 9199707388.441845,
+          "hashrate_ratio": 13355.418462060823,
+          "power_ratio": 513598.6871004794,
+          "efficiency_ratio": 38.45620326757085,
+          "pulvini_hashrate_ths": 2671083.6924121645,
           "asic_hashrate_ths": 200.0,
-          "pulvini_power_w": 522472377953.992,
+          "pulvini_power_w": 1746235536.14163,
           "asic_power_w": 3400,
           "pulvini_beats_asic": false
         },
         {
           "asic": "Whatsminer M50",
-          "hashrate_ratio": 73013550.7019194,
-          "power_ratio": 158324963.0163612,
-          "efficiency_ratio": 2.1676443579164086,
-          "pulvini_hashrate_ths": 9199707388.441845,
+          "hashrate_ratio": 21199.07692390607,
+          "power_ratio": 529162.2836792818,
+          "efficiency_ratio": 24.952498303385664,
+          "pulvini_hashrate_ths": 2671083.6924121645,
           "asic_hashrate_ths": 126.0,
-          "pulvini_power_w": 522472377953.992,
+          "pulvini_power_w": 1746235536.14163,
           "asic_power_w": 3300,
           "pulvini_beats_asic": false
         },
         {
           "asic": "Canaan Avalon A1466",
-          "hashrate_ratio": 54115925.81436379,
-          "power_ratio": 152769701.156138,
-          "efficiency_ratio": 2.8254866754930297,
-          "pulvini_hashrate_ths": 9199707388.441845,
+          "hashrate_ratio": 15712.257014189203,
+          "power_ratio": 510595.18600632454,
+          "efficiency_ratio": 32.5251470422241,
+          "pulvini_hashrate_ths": 2671083.6924121645,
           "asic_hashrate_ths": 170.0,
-          "pulvini_power_w": 522472377953.992,
+          "pulvini_power_w": 1746235536.14163,
           "asic_power_w": 3420,
           "pulvini_beats_asic": false
         }
       ]
     },
-    "10^15": {
-      "scale_factor": 1000000000000000,
-      "base_throughput_attempts_per_sec": 2.3408924652523774e+19,
-      "effective_throughput_with_quantum_advantages": 9.199707388441845e+24,
-      "effective_hashrate_ths": 9199707388441.846,
-      "power_w": 65775375331702.195,
-      "hashrate_efficiency_j_th": 7.149724719977487,
+    "10^10": {
+      "scale_factor": 1229918693812.4426,
+      "scaling_model": "dynamic_phi_exponential",
+      "base_throughput_attempts_per_sec": 2.879107403218593e+16,
+      "effective_throughput_with_quantum_advantages": 1.1314892094649072e+22,
+      "effective_hashrate_ths": 11314892094.649073,
+      "power_w": 603916390757.9711,
+      "hashrate_efficiency_j_th": 53.373588162062035,
+      "latency_per_phi_tier_ms": 0.011114555839155833,
+      "asic_efficiency_curves": [
+        {
+          "asic": "Antminer S21",
+          "phi_exponent": 10,
+          "phi_multiplier": 122.99186938124426,
+          "scale_factor": 1229918693812.4426,
+          "energy_per_phi_tier_j": 204460100150.30875,
+          "pulvini_energy_per_phi_tier_j": 603916390757.9711,
+          "latency_per_phi_tier_ms": 0.011114555839155833,
+          "asic_specific_resonance_point": {
+            "efficiency_ratio": 2.953712681907141,
+            "resonance_delta_from_parity": 1.9537126819071409,
+            "within_5pct_parity": false
+          }
+        },
+        {
+          "asic": "Antminer S19 XP",
+          "phi_exponent": 10,
+          "phi_multiplier": 122.99186938124426,
+          "scale_factor": 1229918693812.4426,
+          "energy_per_phi_tier_j": 243270180034.95505,
+          "pulvini_energy_per_phi_tier_j": 603916390757.9711,
+          "latency_per_phi_tier_ms": 0.011114555839155833,
+          "asic_specific_resonance_point": {
+            "efficiency_ratio": 2.482492472654048,
+            "resonance_delta_from_parity": 1.482492472654048,
+            "within_5pct_parity": false
+          }
+        },
+        {
+          "asic": "Antminer S19 Pro",
+          "phi_exponent": 10,
+          "phi_multiplier": 122.99186938124426,
+          "scale_factor": 1229918693812.4426,
+          "energy_per_phi_tier_j": 333789316792.14764,
+          "pulvini_energy_per_phi_tier_j": 603916390757.9711,
+          "latency_per_phi_tier_ms": 0.011114555839155833,
+          "asic_specific_resonance_point": {
+            "efficiency_ratio": 1.8092741749851537,
+            "resonance_delta_from_parity": 0.8092741749851537,
+            "within_5pct_parity": false
+          }
+        },
+        {
+          "asic": "Whatsminer M60",
+          "phi_exponent": 10,
+          "phi_multiplier": 122.99186938124426,
+          "scale_factor": 1229918693812.4426,
+          "energy_per_phi_tier_j": 192353165609.03424,
+          "pulvini_energy_per_phi_tier_j": 603916390757.9711,
+          "latency_per_phi_tier_ms": 0.011114555839155833,
+          "asic_specific_resonance_point": {
+            "efficiency_ratio": 3.1396228330624725,
+            "resonance_delta_from_parity": 2.1396228330624725,
+            "within_5pct_parity": false
+          }
+        },
+        {
+          "asic": "Whatsminer M50",
+          "phi_exponent": 10,
+          "phi_multiplier": 122.99186938124426,
+          "scale_factor": 1229918693812.4426,
+          "energy_per_phi_tier_j": 296450172879.8057,
+          "pulvini_energy_per_phi_tier_j": 603916390757.9711,
+          "latency_per_phi_tier_ms": 0.011114555839155833,
+          "asic_specific_resonance_point": {
+            "efficiency_ratio": 2.0371598535138182,
+            "resonance_delta_from_parity": 1.0371598535138182,
+            "within_5pct_parity": false
+          }
+        },
+        {
+          "asic": "Canaan Avalon A1466",
+          "phi_exponent": 10,
+          "phi_multiplier": 122.99186938124426,
+          "scale_factor": 1229918693812.4426,
+          "energy_per_phi_tier_j": 227429331102.44638,
+          "pulvini_energy_per_phi_tier_j": 603916390757.9711,
+          "latency_per_phi_tier_ms": 0.011114555839155833,
+          "asic_specific_resonance_point": {
+            "efficiency_ratio": 2.655402396122489,
+            "resonance_delta_from_parity": 1.655402396122489,
+            "within_5pct_parity": false
+          }
+        }
+      ],
       "asic_comparison": [
         {
           "asic": "Antminer S21",
-          "hashrate_ratio": 45769688499.71068,
-          "power_ratio": 18119938107.90694,
-          "efficiency_ratio": 0.39566821914651285,
-          "pulvini_hashrate_ths": 9199707388441.846,
+          "hashrate_ratio": 56292995.49576653,
+          "power_ratio": 166368151.72395897,
+          "efficiency_ratio": 2.953712681907141,
+          "pulvini_hashrate_ths": 11314892094.649073,
           "asic_hashrate_ths": 201.0,
-          "pulvini_power_w": 65775375331702.195,
+          "pulvini_power_w": 603916390757.9711,
+          "asic_power_w": 3630,
+          "pulvini_beats_asic": false
+        },
+        {
+          "asic": "Antminer S19 XP",
+          "hashrate_ratio": 80820657.81892195,
+          "power_ratio": 200636674.6704223,
+          "efficiency_ratio": 2.482492472654048,
+          "pulvini_hashrate_ths": 11314892094.649073,
+          "asic_hashrate_ths": 140.0,
+          "pulvini_power_w": 603916390757.9711,
+          "asic_power_w": 3010,
+          "pulvini_beats_asic": false
+        },
+        {
+          "asic": "Antminer S19 Pro",
+          "hashrate_ratio": 102862655.40590066,
+          "power_ratio": 185820427.92552957,
+          "efficiency_ratio": 1.8092741749851537,
+          "pulvini_hashrate_ths": 11314892094.649073,
+          "asic_hashrate_ths": 110.0,
+          "pulvini_power_w": 603916390757.9711,
+          "asic_power_w": 3250,
+          "pulvini_beats_asic": false
+        },
+        {
+          "asic": "Whatsminer M60",
+          "hashrate_ratio": 56574460.47324536,
+          "power_ratio": 177622467.86999148,
+          "efficiency_ratio": 3.1396228330624725,
+          "pulvini_hashrate_ths": 11314892094.649073,
+          "asic_hashrate_ths": 200.0,
+          "pulvini_power_w": 603916390757.9711,
+          "asic_power_w": 3400,
+          "pulvini_beats_asic": false
+        },
+        {
+          "asic": "Whatsminer M50",
+          "hashrate_ratio": 89800730.90991327,
+          "power_ratio": 183004966.89635488,
+          "efficiency_ratio": 2.0371598535138182,
+          "pulvini_hashrate_ths": 11314892094.649073,
+          "asic_hashrate_ths": 126.0,
+          "pulvini_power_w": 603916390757.9711,
+          "asic_power_w": 3300,
+          "pulvini_beats_asic": false
+        },
+        {
+          "asic": "Canaan Avalon A1466",
+          "hashrate_ratio": 66558188.79205337,
+          "power_ratio": 176583739.98771083,
+          "efficiency_ratio": 2.655402396122489,
+          "pulvini_hashrate_ths": 11314892094.649073,
+          "asic_hashrate_ths": 170.0,
+          "pulvini_power_w": 603916390757.9711,
+          "asic_power_w": 3420,
+          "pulvini_beats_asic": false
+        }
+      ]
+    },
+    "10^12": {
+      "scale_factor": 321996894379985.0,
+      "scaling_model": "dynamic_phi_exponential",
+      "base_throughput_attempts_per_sec": 7.537601038887725e+18,
+      "effective_throughput_with_quantum_advantages": 2.9622772082828763e+24,
+      "effective_hashrate_ths": 2962277208282.8765,
+      "power_w": 29754969748921.367,
+      "hashrate_efficiency_j_th": 10.044627040886978,
+      "latency_per_phi_tier_ms": 0.0042453825606989185,
+      "asic_efficiency_curves": [
+        {
+          "asic": "Antminer S21",
+          "phi_exponent": 12,
+          "phi_multiplier": 321.996894379985,
+          "scale_factor": 321996894379985.0,
+          "energy_per_phi_tier_j": 53528349153671.58,
+          "pulvini_energy_per_phi_tier_j": 29754969748921.367,
+          "latency_per_phi_tier_ms": 0.0042453825606989185,
+          "asic_specific_resonance_point": {
+            "efficiency_ratio": 0.5558731068559478,
+            "resonance_delta_from_parity": 0.4441268931440522,
+            "within_5pct_parity": false
+          }
+        },
+        {
+          "asic": "Antminer S19 XP",
+          "phi_exponent": 12,
+          "phi_multiplier": 321.996894379985,
+          "scale_factor": 321996894379985.0,
+          "energy_per_phi_tier_j": 63688959978081.84,
+          "pulvini_energy_per_phi_tier_j": 29754969748921.367,
+          "latency_per_phi_tier_ms": 0.0042453825606989185,
+          "asic_specific_resonance_point": {
+            "efficiency_ratio": 0.467191955390092,
+            "resonance_delta_from_parity": 0.5328080446099079,
+            "within_5pct_parity": false
+          }
+        },
+        {
+          "asic": "Antminer S19 Pro",
+          "phi_exponent": 12,
+          "phi_multiplier": 321.996894379985,
+          "scale_factor": 321996894379985.0,
+          "energy_per_phi_tier_j": 87387177644344.86,
+          "pulvini_energy_per_phi_tier_j": 29754969748921.367,
+          "latency_per_phi_tier_ms": 0.0042453825606989185,
+          "asic_specific_resonance_point": {
+            "efficiency_ratio": 0.3404958318944738,
+            "resonance_delta_from_parity": 0.6595041681055263,
+            "within_5pct_parity": false
+          }
+        },
+        {
+          "asic": "Whatsminer M60",
+          "phi_exponent": 12,
+          "phi_multiplier": 321.996894379985,
+          "scale_factor": 321996894379985.0,
+          "energy_per_phi_tier_j": 50358712540808.9,
+          "pulvini_energy_per_phi_tier_j": 29754969748921.367,
+          "latency_per_phi_tier_ms": 0.0042453825606989185,
+          "asic_specific_resonance_point": {
+            "efficiency_ratio": 0.5908604141698222,
+            "resonance_delta_from_parity": 0.40913958583017784,
+            "within_5pct_parity": false
+          }
+        },
+        {
+          "asic": "Whatsminer M50",
+          "phi_exponent": 12,
+          "phi_multiplier": 321.996894379985,
+          "scale_factor": 321996894379985.0,
+          "energy_per_phi_tier_j": 77611662857011.36,
+          "pulvini_energy_per_phi_tier_j": 29754969748921.367,
+          "latency_per_phi_tier_ms": 0.0042453825606989185,
+          "asic_specific_resonance_point": {
+            "efficiency_ratio": 0.3833827114842358,
+            "resonance_delta_from_parity": 0.6166172885157641,
+            "within_5pct_parity": false
+          }
+        },
+        {
+          "asic": "Canaan Avalon A1466",
+          "phi_exponent": 12,
+          "phi_multiplier": 321.996894379985,
+          "scale_factor": 321996894379985.0,
+          "energy_per_phi_tier_j": 59541771886485.82,
+          "pulvini_energy_per_phi_tier_j": 29754969748921.367,
+          "latency_per_phi_tier_ms": 0.0042453825606989185,
+          "asic_specific_resonance_point": {
+            "efficiency_ratio": 0.4997326886013421,
+            "resonance_delta_from_parity": 0.5002673113986579,
+            "within_5pct_parity": false
+          }
+        }
+      ],
+      "asic_comparison": [
+        {
+          "asic": "Antminer S21",
+          "hashrate_ratio": 14737697553.646152,
+          "power_ratio": 8196961363.33922,
+          "efficiency_ratio": 0.5558731068559478,
+          "pulvini_hashrate_ths": 2962277208282.8765,
+          "asic_hashrate_ths": 201.0,
+          "pulvini_power_w": 29754969748921.367,
           "asic_power_w": 3630,
           "pulvini_beats_asic": true
         },
         {
           "asic": "Antminer S19 XP",
-          "hashrate_ratio": 65712195631.72747,
-          "power_ratio": 21852284163.356213,
-          "efficiency_ratio": 0.3325453358129064,
-          "pulvini_hashrate_ths": 9199707388441.846,
+          "hashrate_ratio": 21159122916.30626,
+          "power_ratio": 9885372009.608427,
+          "efficiency_ratio": 0.467191955390092,
+          "pulvini_hashrate_ths": 2962277208282.8765,
           "asic_hashrate_ths": 140.0,
-          "pulvini_power_w": 65775375331702.195,
+          "pulvini_power_w": 29754969748921.367,
           "asic_power_w": 3010,
           "pulvini_beats_asic": true
         },
         {
           "asic": "Antminer S19 Pro",
-          "hashrate_ratio": 83633703531.2895,
-          "power_ratio": 20238577025.139137,
-          "efficiency_ratio": 0.24236354982974534,
-          "pulvini_hashrate_ths": 9199707388441.846,
+          "hashrate_ratio": 26929792802.571606,
+          "power_ratio": 9155375307.36042,
+          "efficiency_ratio": 0.3404958318944738,
+          "pulvini_hashrate_ths": 2962277208282.8765,
           "asic_hashrate_ths": 110.0,
-          "pulvini_power_w": 65775375331702.195,
+          "pulvini_power_w": 29754969748921.367,
           "asic_power_w": 3250,
           "pulvini_beats_asic": true
         },
         {
           "asic": "Whatsminer M60",
-          "hashrate_ratio": 45998536942.20923,
-          "power_ratio": 19345698626.971233,
-          "efficiency_ratio": 0.4205720423516169,
-          "pulvini_hashrate_ths": 9199707388441.846,
+          "hashrate_ratio": 14811386041.414383,
+          "power_ratio": 8751461690.859226,
+          "efficiency_ratio": 0.5908604141698222,
+          "pulvini_hashrate_ths": 2962277208282.8765,
           "asic_hashrate_ths": 200.0,
-          "pulvini_power_w": 65775375331702.195,
+          "pulvini_power_w": 29754969748921.367,
           "asic_power_w": 3400,
           "pulvini_beats_asic": true
         },
         {
           "asic": "Whatsminer M50",
-          "hashrate_ratio": 73013550701.9194,
-          "power_ratio": 19931931918.697636,
-          "efficiency_ratio": 0.2728902564876904,
-          "pulvini_hashrate_ths": 9199707388441.846,
+          "hashrate_ratio": 23510136573.673622,
+          "power_ratio": 9016657499.673141,
+          "efficiency_ratio": 0.3833827114842358,
+          "pulvini_hashrate_ths": 2962277208282.8765,
           "asic_hashrate_ths": 126.0,
-          "pulvini_power_w": 65775375331702.195,
+          "pulvini_power_w": 29754969748921.367,
           "asic_power_w": 3300,
           "pulvini_beats_asic": true
         },
         {
           "asic": "Canaan Avalon A1466",
-          "hashrate_ratio": 54115925814.3638,
-          "power_ratio": 19232565886.46263,
-          "efficiency_ratio": 0.35570769751131776,
-          "pulvini_hashrate_ths": 9199707388441.846,
+          "hashrate_ratio": 17425160048.7228,
+          "power_ratio": 8700283552.316189,
+          "efficiency_ratio": 0.4997326886013421,
+          "pulvini_hashrate_ths": 2962277208282.8765,
           "asic_hashrate_ths": 170.0,
-          "pulvini_power_w": 65775375331702.195,
+          "pulvini_power_w": 29754969748921.367,
+          "asic_power_w": 3420,
+          "pulvini_beats_asic": true
+        }
+      ]
+    },
+    "10^15": {
+      "scale_factor": 1.3640007331374367e+18,
+      "scaling_model": "dynamic_phi_exponential",
+      "base_throughput_attempts_per_sec": 3.1929790388001447e+22,
+      "effective_throughput_with_quantum_advantages": 1.254840762248457e+28,
+      "effective_hashrate_ths": 1.254840762248457e+16,
+      "power_w": 1.029043082561487e+16,
+      "hashrate_efficiency_j_th": 0.8200586986970524,
+      "latency_per_phi_tier_ms": 0.0010021988748170718,
+      "asic_efficiency_curves": [
+        {
+          "asic": "Antminer S21",
+          "phi_exponent": 15,
+          "phi_multiplier": 1364.0007331374366,
+          "scale_factor": 1.3640007331374367e+18,
+          "energy_per_phi_tier_j": 2.267497257382962e+17,
+          "pulvini_energy_per_phi_tier_j": 1.029043082561487e+16,
+          "latency_per_phi_tier_ms": 0.0010021988748170718,
+          "asic_specific_resonance_point": {
+            "efficiency_ratio": 0.045382329756339365,
+            "resonance_delta_from_parity": 0.9546176702436606,
+            "within_5pct_parity": false
+          }
+        },
+        {
+          "asic": "Antminer S19 XP",
+          "phi_exponent": 15,
+          "phi_multiplier": 1364.0007331374366,
+          "scale_factor": 1.3640007331374367e+18,
+          "energy_per_phi_tier_j": 2.6979076388341824e+17,
+          "pulvini_energy_per_phi_tier_j": 1.029043082561487e+16,
+          "latency_per_phi_tier_ms": 0.0010021988748170718,
+          "asic_specific_resonance_point": {
+            "efficiency_ratio": 0.038142265055676854,
+            "resonance_delta_from_parity": 0.9618577349443231,
+            "within_5pct_parity": false
+          }
+        },
+        {
+          "asic": "Antminer S19 Pro",
+          "phi_exponent": 15,
+          "phi_multiplier": 1364.0007331374366,
+          "scale_factor": 1.3640007331374367e+18,
+          "energy_per_phi_tier_j": 3.701780248632948e+17,
+          "pulvini_energy_per_phi_tier_j": 1.029043082561487e+16,
+          "latency_per_phi_tier_ms": 0.0010021988748170718,
+          "asic_specific_resonance_point": {
+            "efficiency_ratio": 0.027798599955832285,
+            "resonance_delta_from_parity": 0.9722014000441677,
+            "within_5pct_parity": false
+          }
+        },
+        {
+          "asic": "Whatsminer M60",
+          "phi_exponent": 15,
+          "phi_multiplier": 1364.0007331374366,
+          "scale_factor": 1.3640007331374367e+18,
+          "energy_per_phi_tier_j": 2.133229295822377e+17,
+          "pulvini_energy_per_phi_tier_j": 1.029043082561487e+16,
+          "latency_per_phi_tier_ms": 0.0010021988748170718,
+          "asic_specific_resonance_point": {
+            "efficiency_ratio": 0.04823874698217955,
+            "resonance_delta_from_parity": 0.9517612530178204,
+            "within_5pct_parity": false
+          }
+        },
+        {
+          "asic": "Whatsminer M50",
+          "phi_exponent": 15,
+          "phi_multiplier": 1364.0007331374366,
+          "scale_factor": 1.3640007331374367e+18,
+          "energy_per_phi_tier_j": 3.2876827970909574e+17,
+          "pulvini_energy_per_phi_tier_j": 1.029043082561487e+16,
+          "latency_per_phi_tier_ms": 0.0010021988748170718,
+          "asic_specific_resonance_point": {
+            "efficiency_ratio": 0.031299950331948566,
+            "resonance_delta_from_parity": 0.9687000496680515,
+            "within_5pct_parity": false
+          }
+        },
+        {
+          "asic": "Canaan Avalon A1466",
+          "phi_exponent": 15,
+          "phi_multiplier": 1364.0007331374366,
+          "scale_factor": 1.3640007331374367e+18,
+          "energy_per_phi_tier_j": 2.5222299321193987e+17,
+          "pulvini_energy_per_phi_tier_j": 1.029043082561487e+16,
+          "latency_per_phi_tier_ms": 0.0010021988748170718,
+          "asic_specific_resonance_point": {
+            "efficiency_ratio": 0.040798940233684196,
+            "resonance_delta_from_parity": 0.9592010597663158,
+            "within_5pct_parity": false
+          }
+        }
+      ],
+      "asic_comparison": [
+        {
+          "asic": "Antminer S21",
+          "hashrate_ratio": 62429888669077.46,
+          "power_ratio": 2834829428544.0415,
+          "efficiency_ratio": 0.045382329756339365,
+          "pulvini_hashrate_ths": 1.254840762248457e+16,
+          "asic_hashrate_ths": 201.0,
+          "pulvini_power_w": 1.029043082561487e+16,
+          "asic_power_w": 3630,
+          "pulvini_beats_asic": true
+        },
+        {
+          "asic": "Antminer S19 XP",
+          "hashrate_ratio": 89631483017746.92,
+          "power_ratio": 3418747782596.3022,
+          "efficiency_ratio": 0.038142265055676854,
+          "pulvini_hashrate_ths": 1.254840762248457e+16,
+          "asic_hashrate_ths": 140.0,
+          "pulvini_power_w": 1.029043082561487e+16,
+          "asic_power_w": 3010,
+          "pulvini_beats_asic": true
+        },
+        {
+          "asic": "Antminer S19 Pro",
+          "hashrate_ratio": 114076432931677.9,
+          "power_ratio": 3166286407881.4985,
+          "efficiency_ratio": 0.027798599955832285,
+          "pulvini_hashrate_ths": 1.254840762248457e+16,
+          "asic_hashrate_ths": 110.0,
+          "pulvini_power_w": 1.029043082561487e+16,
+          "asic_power_w": 3250,
+          "pulvini_beats_asic": true
+        },
+        {
+          "asic": "Whatsminer M60",
+          "hashrate_ratio": 62742038112422.85,
+          "power_ratio": 3026597301651.432,
+          "efficiency_ratio": 0.04823874698217955,
+          "pulvini_hashrate_ths": 1.254840762248457e+16,
+          "asic_hashrate_ths": 200.0,
+          "pulvini_power_w": 1.029043082561487e+16,
+          "asic_power_w": 3400,
+          "pulvini_beats_asic": true
+        },
+        {
+          "asic": "Whatsminer M50",
+          "hashrate_ratio": 99590536686385.47,
+          "power_ratio": 3118312371398.4453,
+          "efficiency_ratio": 0.031299950331948566,
+          "pulvini_hashrate_ths": 1.254840762248457e+16,
+          "asic_hashrate_ths": 126.0,
+          "pulvini_power_w": 1.029043082561487e+16,
+          "asic_power_w": 3300,
+          "pulvini_beats_asic": true
+        },
+        {
+          "asic": "Canaan Avalon A1466",
+          "hashrate_ratio": 73814162485203.36,
+          "power_ratio": 3008897902226.5703,
+          "efficiency_ratio": 0.040798940233684196,
+          "pulvini_hashrate_ths": 1.254840762248457e+16,
+          "asic_hashrate_ths": 170.0,
+          "pulvini_power_w": 1.029043082561487e+16,
           "asic_power_w": 3420,
           "pulvini_beats_asic": true
         }
       ]
     },
     "10^18": {
-      "scale_factor": 1000000000000000000,
-      "base_throughput_attempts_per_sec": 2.3408924652523775e+22,
-      "effective_throughput_with_quantum_advantages": 9.199707388441845e+27,
-      "effective_hashrate_ths": 9199707388441844.0,
-      "power_w": 8280629147512928.0,
-      "hashrate_efficiency_j_th": 0.9000970137285442,
+      "scale_factor": 5.777999826929732e+21,
+      "scaling_model": "dynamic_phi_exponential",
+      "base_throughput_attempts_per_sec": 1.3525676259089351e+26,
+      "effective_throughput_with_quantum_advantages": 5.315590769822116e+31,
+      "effective_hashrate_ths": 5.315590769822116e+19,
+      "power_w": 3.5588329435727636e+18,
+      "hashrate_efficiency_j_th": 0.06695084512105619,
+      "latency_per_phi_tier_ms": 0.00023658706143063103,
+      "asic_efficiency_curves": [
+        {
+          "asic": "Antminer S21",
+          "phi_exponent": 18,
+          "phi_multiplier": 5777.999826929732,
+          "scale_factor": 5.777999826929732e+21,
+          "energy_per_phi_tier_j": 9.605272521068564e+20,
+          "pulvini_energy_per_phi_tier_j": 3.5588329435727636e+18,
+          "latency_per_phi_tier_ms": 0.00023658706143063103,
+          "asic_specific_resonance_point": {
+            "efficiency_ratio": 0.0037050827405122407,
+            "resonance_delta_from_parity": 0.9962949172594877,
+            "within_5pct_parity": false
+          }
+        },
+        {
+          "asic": "Antminer S19 XP",
+          "phi_exponent": 18,
+          "phi_multiplier": 5777.999826929732,
+          "scale_factor": 5.777999826929732e+21,
+          "energy_per_phi_tier_j": 1.142852015511755e+21,
+          "pulvini_energy_per_phi_tier_j": 3.5588329435727636e+18,
+          "latency_per_phi_tier_ms": 0.00023658706143063103,
+          "asic_specific_resonance_point": {
+            "efficiency_ratio": 0.0031139927963281947,
+            "resonance_delta_from_parity": 0.9968860072036718,
+            "within_5pct_parity": false
+          }
+        },
+        {
+          "asic": "Antminer S19 Pro",
+          "phi_exponent": 18,
+          "phi_multiplier": 5777.999826929732,
+          "scale_factor": 5.777999826929732e+21,
+          "energy_per_phi_tier_j": 1.5680992770975243e+21,
+          "pulvini_energy_per_phi_tier_j": 3.5588329435727636e+18,
+          "latency_per_phi_tier_ms": 0.00023658706143063103,
+          "asic_specific_resonance_point": {
+            "efficiency_ratio": 0.002269520173595125,
+            "resonance_delta_from_parity": 0.9977304798264048,
+            "within_5pct_parity": false
+          }
+        },
+        {
+          "asic": "Whatsminer M60",
+          "phi_exponent": 18,
+          "phi_multiplier": 5777.999826929732,
+          "scale_factor": 5.777999826929732e+21,
+          "energy_per_phi_tier_j": 9.036504308697597e+20,
+          "pulvini_energy_per_phi_tier_j": 3.5588329435727636e+18,
+          "latency_per_phi_tier_ms": 0.00023658706143063103,
+          "asic_specific_resonance_point": {
+            "efficiency_ratio": 0.003938285007120952,
+            "resonance_delta_from_parity": 0.9960617149928791,
+            "within_5pct_parity": false
+          }
+        },
+        {
+          "asic": "Whatsminer M50",
+          "phi_exponent": 18,
+          "phi_multiplier": 5777.999826929732,
+          "scale_factor": 5.777999826929732e+21,
+          "energy_per_phi_tier_j": 1.3926847816933945e+21,
+          "pulvini_energy_per_phi_tier_j": 3.5588329435727636e+18,
+          "latency_per_phi_tier_ms": 0.00023658706143063103,
+          "asic_specific_resonance_point": {
+            "efficiency_ratio": 0.002555375767979244,
+            "resonance_delta_from_parity": 0.9974446242320207,
+            "within_5pct_parity": false
+          }
+        },
+        {
+          "asic": "Canaan Avalon A1466",
+          "phi_exponent": 18,
+          "phi_multiplier": 5777.999826929732,
+          "scale_factor": 5.777999826929732e+21,
+          "energy_per_phi_tier_j": 1.0684337447342455e+21,
+          "pulvini_energy_per_phi_tier_j": 3.5588329435727636e+18,
+          "latency_per_phi_tier_ms": 0.00023658706143063103,
+          "asic_specific_resonance_point": {
+            "efficiency_ratio": 0.0033308878169679692,
+            "resonance_delta_from_parity": 0.996669112183032,
+            "within_5pct_parity": false
+          }
+        }
+      ],
       "asic_comparison": [
         {
           "asic": "Antminer S21",
-          "hashrate_ratio": 45769688499710.664,
-          "power_ratio": 2281165054411.275,
-          "efficiency_ratio": 0.049811677572138585,
-          "pulvini_hashrate_ths": 9199707388441844.0,
+          "hashrate_ratio": 2.6445725222995603e+17,
+          "power_ratio": 980394750295527.1,
+          "efficiency_ratio": 0.0037050827405122407,
+          "pulvini_hashrate_ths": 5.315590769822116e+19,
           "asic_hashrate_ths": 201.0,
-          "pulvini_power_w": 8280629147512928.0,
+          "pulvini_power_w": 3.5588329435727636e+18,
           "asic_power_w": 3630,
           "pulvini_beats_asic": true
         },
         {
           "asic": "Antminer S19 XP",
-          "hashrate_ratio": 65712195631727.46,
-          "power_ratio": 2751039583891.3384,
-          "efficiency_ratio": 0.04186497738272299,
-          "pulvini_hashrate_ths": 9199707388441844.0,
+          "hashrate_ratio": 3.79685054987294e+17,
+          "power_ratio": 1182336526103908.2,
+          "efficiency_ratio": 0.0031139927963281947,
+          "pulvini_hashrate_ths": 5.315590769822116e+19,
           "asic_hashrate_ths": 140.0,
-          "pulvini_power_w": 8280629147512928.0,
+          "pulvini_power_w": 3.5588329435727636e+18,
           "asic_power_w": 3010,
           "pulvini_beats_asic": true
         },
         {
           "asic": "Antminer S19 Pro",
-          "hashrate_ratio": 83633703531289.48,
-          "power_ratio": 2547885891542.4395,
-          "efficiency_ratio": 0.030511763177238787,
-          "pulvini_hashrate_ths": 9199707388441844.0,
+          "hashrate_ratio": 4.8323552452928326e+17,
+          "power_ratio": 1095025521099311.9,
+          "efficiency_ratio": 0.002269520173595125,
+          "pulvini_hashrate_ths": 5.315590769822116e+19,
           "asic_hashrate_ths": 110.0,
-          "pulvini_power_w": 8280629147512928.0,
+          "pulvini_power_w": 3.5588329435727636e+18,
           "asic_power_w": 3250,
           "pulvini_beats_asic": true
         },
         {
           "asic": "Whatsminer M60",
-          "hashrate_ratio": 45998536942209.22,
-          "power_ratio": 2435479161033.2144,
-          "efficiency_ratio": 0.052946883160502604,
-          "pulvini_hashrate_ths": 9199707388441844.0,
+          "hashrate_ratio": 2.6577953849110582e+17,
+          "power_ratio": 1046715571639048.1,
+          "efficiency_ratio": 0.003938285007120952,
+          "pulvini_hashrate_ths": 5.315590769822116e+19,
           "asic_hashrate_ths": 200.0,
-          "pulvini_power_w": 8280629147512928.0,
+          "pulvini_power_w": 3.5588329435727636e+18,
           "asic_power_w": 3400,
           "pulvini_beats_asic": true
         },
         {
           "asic": "Whatsminer M50",
-          "hashrate_ratio": 73013550701919.39,
-          "power_ratio": 2509281559852.4023,
-          "efficiency_ratio": 0.03435484785223451,
-          "pulvini_hashrate_ths": 9199707388441844.0,
+          "hashrate_ratio": 4.2187228331921555e+17,
+          "power_ratio": 1078434225325079.9,
+          "efficiency_ratio": 0.002555375767979244,
+          "pulvini_hashrate_ths": 5.315590769822116e+19,
           "asic_hashrate_ths": 126.0,
-          "pulvini_power_w": 8280629147512928.0,
+          "pulvini_power_w": 3.5588329435727636e+18,
           "asic_power_w": 3300,
           "pulvini_beats_asic": true
         },
         {
           "asic": "Canaan Avalon A1466",
-          "hashrate_ratio": 54115925814363.79,
-          "power_ratio": 2421236592840.0376,
-          "efficiency_ratio": 0.04478094595664399,
-          "pulvini_hashrate_ths": 9199707388441844.0,
+          "hashrate_ratio": 3.1268180998953626e+17,
+          "power_ratio": 1040594427945252.5,
+          "efficiency_ratio": 0.0033308878169679692,
+          "pulvini_hashrate_ths": 5.315590769822116e+19,
           "asic_hashrate_ths": 170.0,
-          "pulvini_power_w": 8280629147512928.0,
+          "pulvini_power_w": 3.5588329435727636e+18,
           "asic_power_w": 3420,
           "pulvini_beats_asic": true
         }
       ]
     },
     "10^20": {
-      "scale_factor": 100000000000000000000,
-      "base_throughput_attempts_per_sec": 2.3408924652523775e+24,
-      "effective_throughput_with_quantum_advantages": 9.199707388441845e+29,
-      "effective_hashrate_ths": 9.199707388441844e+17,
-      "power_w": 2.0799999999999978e+17,
-      "hashrate_efficiency_j_th": 0.22609414758269694,
+      "scale_factor": 1.512699993389305e+24,
+      "scaling_model": "dynamic_phi_exponential",
+      "base_throughput_attempts_per_sec": 3.541068016712345e+28,
+      "effective_throughput_with_quantum_advantages": 1.391639730567952e+34,
+      "effective_hashrate_ths": 1.3916397305679518e+22,
+      "power_w": 1.753437532618114e+20,
+      "hashrate_efficiency_j_th": 0.01259979500515199,
+      "latency_per_phi_tier_ms": 9.036821616804173e-05,
+      "asic_efficiency_curves": [
+        {
+          "asic": "Antminer S21",
+          "phi_exponent": 20,
+          "phi_multiplier": 15126.999933893048,
+          "scale_factor": 1.512699993389305e+24,
+          "energy_per_phi_tier_j": 2.514692993136289e+23,
+          "pulvini_energy_per_phi_tier_j": 1.753437532618114e+20,
+          "latency_per_phi_tier_ms": 9.036821616804173e-05,
+          "asic_specific_resonance_point": {
+            "efficiency_ratio": 0.000697276978702379,
+            "resonance_delta_from_parity": 0.9993027230212976,
+            "within_5pct_parity": false
+          }
+        },
+        {
+          "asic": "Antminer S19 XP",
+          "phi_exponent": 20,
+          "phi_multiplier": 15126.999933893048,
+          "scale_factor": 1.512699993389305e+24,
+          "energy_per_phi_tier_j": 2.9920254207210965e+23,
+          "pulvini_energy_per_phi_tier_j": 1.753437532618114e+20,
+          "latency_per_phi_tier_ms": 9.036821616804173e-05,
+          "asic_specific_resonance_point": {
+            "efficiency_ratio": 0.0005860369769838135,
+            "resonance_delta_from_parity": 0.9994139630230162,
+            "within_5pct_parity": false
+          }
+        },
+        {
+          "asic": "Antminer S19 Pro",
+          "phi_exponent": 20,
+          "phi_multiplier": 15126.999933893048,
+          "scale_factor": 1.512699993389305e+24,
+          "energy_per_phi_tier_j": 4.105337205175458e+23,
+          "pulvini_energy_per_phi_tier_j": 1.753437532618114e+20,
+          "latency_per_phi_tier_ms": 9.036821616804173e-05,
+          "asic_specific_resonance_point": {
+            "efficiency_ratio": 0.000427111695089898,
+            "resonance_delta_from_parity": 0.9995728883049101,
+            "within_5pct_parity": false
+          }
+        },
+        {
+          "asic": "Whatsminer M60",
+          "phi_exponent": 20,
+          "phi_multiplier": 15126.999933893048,
+          "scale_factor": 1.512699993389305e+24,
+          "energy_per_phi_tier_j": 2.365787541965518e+23,
+          "pulvini_energy_per_phi_tier_j": 1.753437532618114e+20,
+          "latency_per_phi_tier_ms": 9.036821616804173e-05,
+          "asic_specific_resonance_point": {
+            "efficiency_ratio": 0.0007411644120677641,
+            "resonance_delta_from_parity": 0.9992588355879323,
+            "within_5pct_parity": false
+          }
+        },
+        {
+          "asic": "Whatsminer M50",
+          "phi_exponent": 20,
+          "phi_multiplier": 15126.999933893048,
+          "scale_factor": 1.512699993389305e+24,
+          "energy_per_phi_tier_j": 3.6460960940880337e+23,
+          "pulvini_energy_per_phi_tier_j": 1.753437532618114e+20,
+          "latency_per_phi_tier_ms": 9.036821616804173e-05,
+          "asic_specific_resonance_point": {
+            "efficiency_ratio": 0.0004809082063035111,
+            "resonance_delta_from_parity": 0.9995190917936965,
+            "within_5pct_parity": false
+          }
+        },
+        {
+          "asic": "Canaan Avalon A1466",
+          "phi_exponent": 20,
+          "phi_multiplier": 15126.999933893048,
+          "scale_factor": 1.512699993389305e+24,
+          "energy_per_phi_tier_j": 2.7971958584415834e+23,
+          "pulvini_energy_per_phi_tier_j": 1.753437532618114e+20,
+          "latency_per_phi_tier_ms": 9.036821616804173e-05,
+          "asic_specific_resonance_point": {
+            "efficiency_ratio": 0.0006268554728931338,
+            "resonance_delta_from_parity": 0.9993731445271069,
+            "within_5pct_parity": false
+          }
+        }
+      ],
       "asic_comparison": [
         {
           "asic": "Antminer S21",
-          "hashrate_ratio": 4576968849971067.0,
-          "power_ratio": 57300275482093.6,
-          "efficiency_ratio": 0.012512127702418203,
-          "pulvini_hashrate_ths": 9.199707388441844e+17,
+          "hashrate_ratio": 6.923580749094288e+19,
+          "power_ratio": 4.830406425945218e+16,
+          "efficiency_ratio": 0.000697276978702379,
+          "pulvini_hashrate_ths": 1.3916397305679518e+22,
           "asic_hashrate_ths": 201.0,
-          "pulvini_power_w": 2.0799999999999978e+17,
+          "pulvini_power_w": 1.753437532618114e+20,
           "asic_power_w": 3630,
           "pulvini_beats_asic": true
         },
         {
           "asic": "Antminer S19 XP",
-          "hashrate_ratio": 6571219563172746.0,
-          "power_ratio": 69102990033222.516,
-          "efficiency_ratio": 0.010516006864311485,
-          "pulvini_hashrate_ths": 9.199707388441844e+17,
+          "hashrate_ratio": 9.940283789771085e+19,
+          "power_ratio": 5.825373862518651e+16,
+          "efficiency_ratio": 0.0005860369769838135,
+          "pulvini_hashrate_ths": 1.3916397305679518e+22,
           "asic_hashrate_ths": 140.0,
-          "pulvini_power_w": 2.0799999999999978e+17,
+          "pulvini_power_w": 1.753437532618114e+20,
           "asic_power_w": 3010,
           "pulvini_beats_asic": true
         },
         {
           "asic": "Antminer S19 Pro",
-          "hashrate_ratio": 8363370353128950.0,
-          "power_ratio": 63999999999999.93,
-          "efficiency_ratio": 0.007664208392633795,
-          "pulvini_hashrate_ths": 9.199707388441844e+17,
+          "hashrate_ratio": 1.265127027789047e+20,
+          "power_ratio": 5.395192408055735e+16,
+          "efficiency_ratio": 0.000427111695089898,
+          "pulvini_hashrate_ths": 1.3916397305679518e+22,
           "asic_hashrate_ths": 110.0,
-          "pulvini_power_w": 2.0799999999999978e+17,
+          "pulvini_power_w": 1.753437532618114e+20,
           "asic_power_w": 3250,
           "pulvini_beats_asic": true
         },
         {
           "asic": "Whatsminer M60",
-          "hashrate_ratio": 4599853694220922.0,
-          "power_ratio": 61176470588235.23,
-          "efficiency_ratio": 0.013299655740158643,
-          "pulvini_hashrate_ths": 9.199707388441844e+17,
+          "hashrate_ratio": 6.958198652839759e+19,
+          "power_ratio": 5.157169213582688e+16,
+          "efficiency_ratio": 0.0007411644120677641,
+          "pulvini_hashrate_ths": 1.3916397305679518e+22,
           "asic_hashrate_ths": 200.0,
-          "pulvini_power_w": 2.0799999999999978e+17,
+          "pulvini_power_w": 1.753437532618114e+20,
           "asic_power_w": 3400,
           "pulvini_beats_asic": true
         },
         {
           "asic": "Whatsminer M50",
-          "hashrate_ratio": 7301355070191940.0,
-          "power_ratio": 63030303030302.96,
-          "efficiency_ratio": 0.008629547617660188,
-          "pulvini_hashrate_ths": 9.199707388441844e+17,
+          "hashrate_ratio": 1.1044759766412316e+20,
+          "power_ratio": 5.313447068539739e+16,
+          "efficiency_ratio": 0.0004809082063035111,
+          "pulvini_hashrate_ths": 1.3916397305679518e+22,
           "asic_hashrate_ths": 126.0,
-          "pulvini_power_w": 2.0799999999999978e+17,
+          "pulvini_power_w": 1.753437532618114e+20,
           "asic_power_w": 3300,
           "pulvini_beats_asic": true
         },
         {
           "asic": "Canaan Avalon A1466",
-          "hashrate_ratio": 5411592581436379.0,
-          "power_ratio": 60818713450292.336,
-          "efficiency_ratio": 0.011248465053865519,
-          "pulvini_hashrate_ths": 9.199707388441844e+17,
+          "hashrate_ratio": 8.186116062164422e+19,
+          "power_ratio": 5.127010329292731e+16,
+          "efficiency_ratio": 0.0006268554728931338,
+          "pulvini_hashrate_ths": 1.3916397305679518e+22,
           "asic_hashrate_ths": 170.0,
-          "pulvini_power_w": 2.0799999999999978e+17,
+          "pulvini_power_w": 1.753437532618114e+20,
+          "asic_power_w": 3420,
+          "pulvini_beats_asic": true
+        }
+      ]
+    },
+    "10^31": {
+      "scale_factor": 3.010349000000335e+37,
+      "scaling_model": "dynamic_phi_exponential",
+      "base_throughput_attempts_per_sec": 7.046903291880815e+41,
+      "effective_throughput_with_quantum_advantages": 2.7694329937091604e+47,
+      "effective_hashrate_ths": 2.7694329937091604e+35,
+      "power_w": 3.573511041968841e+29,
+      "hashrate_efficiency_j_th": 1.2903403151786538e-06,
+      "latency_per_phi_tier_ms": 4.541001724384275e-07,
+      "asic_efficiency_curves": [
+        {
+          "asic": "Antminer S21",
+          "phi_exponent": 31,
+          "phi_multiplier": 3010349.0000003353,
+          "scale_factor": 3.010349000000335e+37,
+          "energy_per_phi_tier_j": 5.004365419632453e+36,
+          "pulvini_energy_per_phi_tier_j": 3.573511041968841e+29,
+          "latency_per_phi_tier_ms": 4.541001724384275e-07,
+          "asic_specific_resonance_point": {
+            "efficiency_ratio": 7.140787577081648e-08,
+            "resonance_delta_from_parity": 0.9999999285921243,
+            "within_5pct_parity": false
+          }
+        },
+        {
+          "asic": "Antminer S19 XP",
+          "phi_exponent": 31,
+          "phi_multiplier": 3010349.0000003353,
+          "scale_factor": 3.010349000000335e+37,
+          "energy_per_phi_tier_j": 5.954280936474695e+36,
+          "pulvini_energy_per_phi_tier_j": 3.573511041968841e+29,
+          "latency_per_phi_tier_ms": 4.541001724384275e-07,
+          "asic_specific_resonance_point": {
+            "efficiency_ratio": 6.001582861296064e-08,
+            "resonance_delta_from_parity": 0.9999999399841714,
+            "within_5pct_parity": false
+          }
+        },
+        {
+          "asic": "Antminer S19 Pro",
+          "phi_exponent": 31,
+          "phi_multiplier": 3010349.0000003353,
+          "scale_factor": 3.010349000000335e+37,
+          "energy_per_phi_tier_j": 8.169827331442023e+36,
+          "pulvini_energy_per_phi_tier_j": 3.573511041968841e+29,
+          "latency_per_phi_tier_ms": 4.541001724384275e-07,
+          "asic_specific_resonance_point": {
+            "efficiency_ratio": 4.374034966707301e-08,
+            "resonance_delta_from_parity": 0.9999999562596503,
+            "within_5pct_parity": false
+          }
+        },
+        {
+          "asic": "Whatsminer M60",
+          "phi_exponent": 31,
+          "phi_multiplier": 3010349.0000003353,
+          "scale_factor": 3.010349000000335e+37,
+          "energy_per_phi_tier_j": 4.7080360893055726e+36,
+          "pulvini_energy_per_phi_tier_j": 3.573511041968841e+29,
+          "latency_per_phi_tier_ms": 4.541001724384275e-07,
+          "asic_specific_resonance_point": {
+            "efficiency_ratio": 7.590237148109728e-08,
+            "resonance_delta_from_parity": 0.9999999240976285,
+            "within_5pct_parity": false
+          }
+        },
+        {
+          "asic": "Whatsminer M50",
+          "phi_exponent": 31,
+          "phi_multiplier": 3010349.0000003353,
+          "scale_factor": 3.010349000000335e+37,
+          "energy_per_phi_tier_j": 7.255914443518e+36,
+          "pulvini_energy_per_phi_tier_j": 3.573511041968841e+29,
+          "latency_per_phi_tier_ms": 4.541001724384275e-07,
+          "asic_specific_resonance_point": {
+            "efficiency_ratio": 4.92496303503303e-08,
+            "resonance_delta_from_parity": 0.9999999507503696,
+            "within_5pct_parity": false
+          }
+        },
+        {
+          "asic": "Canaan Avalon A1466",
+          "phi_exponent": 31,
+          "phi_multiplier": 3010349.0000003353,
+          "scale_factor": 3.010349000000335e+37,
+          "energy_per_phi_tier_j": 5.566560317355413e+36,
+          "pulvini_energy_per_phi_tier_j": 3.573511041968841e+29,
+          "latency_per_phi_tier_ms": 4.541001724384275e-07,
+          "asic_specific_resonance_point": {
+            "efficiency_ratio": 6.419603558102755e-08,
+            "resonance_delta_from_parity": 0.9999999358039644,
+            "within_5pct_parity": false
+          }
+        }
+      ],
+      "asic_comparison": [
+        {
+          "asic": "Antminer S21",
+          "hashrate_ratio": 1.3778273600543086e+33,
+          "power_ratio": 9.844383035726835e+25,
+          "efficiency_ratio": 7.140787577081648e-08,
+          "pulvini_hashrate_ths": 2.7694329937091604e+35,
+          "asic_hashrate_ths": 201.0,
+          "pulvini_power_w": 3.573511041968841e+29,
+          "asic_power_w": 3630,
+          "pulvini_beats_asic": true
+        },
+        {
+          "asic": "Antminer S19 XP",
+          "hashrate_ratio": 1.9781664240779716e+33,
+          "power_ratio": 1.1872129707537677e+26,
+          "efficiency_ratio": 6.001582861296064e-08,
+          "pulvini_hashrate_ths": 2.7694329937091604e+35,
+          "asic_hashrate_ths": 140.0,
+          "pulvini_power_w": 3.573511041968841e+29,
+          "asic_power_w": 3010,
+          "pulvini_beats_asic": true
+        },
+        {
+          "asic": "Antminer S19 Pro",
+          "hashrate_ratio": 2.5176663579174186e+33,
+          "power_ratio": 1.0995418590673356e+26,
+          "efficiency_ratio": 4.374034966707301e-08,
+          "pulvini_hashrate_ths": 2.7694329937091604e+35,
+          "asic_hashrate_ths": 110.0,
+          "pulvini_power_w": 3.573511041968841e+29,
+          "asic_power_w": 3250,
+          "pulvini_beats_asic": true
+        },
+        {
+          "asic": "Whatsminer M60",
+          "hashrate_ratio": 1.3847164968545803e+33,
+          "power_ratio": 1.0510326594026003e+26,
+          "efficiency_ratio": 7.590237148109728e-08,
+          "pulvini_hashrate_ths": 2.7694329937091604e+35,
+          "asic_hashrate_ths": 200.0,
+          "pulvini_power_w": 3.573511041968841e+29,
+          "asic_power_w": 3400,
+          "pulvini_beats_asic": true
+        },
+        {
+          "asic": "Whatsminer M50",
+          "hashrate_ratio": 2.1979626934199685e+33,
+          "power_ratio": 1.0828821339299519e+26,
+          "efficiency_ratio": 4.92496303503303e-08,
+          "pulvini_hashrate_ths": 2.7694329937091604e+35,
+          "asic_hashrate_ths": 126.0,
+          "pulvini_power_w": 3.573511041968841e+29,
+          "asic_power_w": 3300,
+          "pulvini_beats_asic": true
+        },
+        {
+          "asic": "Canaan Avalon A1466",
+          "hashrate_ratio": 1.6290782315936238e+33,
+          "power_ratio": 1.0448862695815325e+26,
+          "efficiency_ratio": 6.419603558102755e-08,
+          "pulvini_hashrate_ths": 2.7694329937091604e+35,
+          "asic_hashrate_ths": 170.0,
+          "pulvini_power_w": 3.573511041968841e+29,
+          "asic_power_w": 3420,
+          "pulvini_beats_asic": true
+        }
+      ]
+    },
+    "10^76": {
+      "scale_factor": 7.639424778862827e+91,
+      "scaling_model": "dynamic_phi_exponential",
+      "base_throughput_attempts_per_sec": 1.7883071903702303e+96,
+      "effective_throughput_with_quantum_advantages": 7.028047258155007e+101,
+      "effective_hashrate_ths": 7.028047258155007e+89,
+      "power_w": 4.3271883207876366e+67,
+      "hashrate_efficiency_j_th": 6.157027922324479e-23,
+      "latency_per_phi_tier_ms": 1.7894017410607793e-16,
+      "asic_efficiency_curves": [
+        {
+          "asic": "Antminer S21",
+          "phi_exponent": 76,
+          "phi_multiplier": 7639424778862826.0,
+          "scale_factor": 7.639424778862827e+91,
+          "energy_per_phi_tier_j": 1.2699681395486097e+91,
+          "pulvini_energy_per_phi_tier_j": 4.3271883207876366e+67,
+          "latency_per_phi_tier_ms": 1.7894017410607793e-16,
+          "asic_specific_resonance_point": {
+            "efficiency_ratio": 3.4073203776007074e-24,
+            "resonance_delta_from_parity": 1.0,
+            "within_5pct_parity": false
+          }
+        },
+        {
+          "asic": "Antminer S19 XP",
+          "phi_exponent": 76,
+          "phi_multiplier": 7639424778862826.0,
+          "scale_factor": 7.639424778862827e+91,
+          "energy_per_phi_tier_j": 1.5110301605033264e+91,
+          "pulvini_energy_per_phi_tier_j": 4.3271883207876366e+67,
+          "latency_per_phi_tier_ms": 1.7894017410607793e-16,
+          "asic_specific_resonance_point": {
+            "efficiency_ratio": 2.8637339173602226e-24,
+            "resonance_delta_from_parity": 1.0,
+            "within_5pct_parity": false
+          }
+        },
+        {
+          "asic": "Antminer S19 Pro",
+          "phi_exponent": 76,
+          "phi_multiplier": 7639424778862826.0,
+          "scale_factor": 7.639424778862827e+91,
+          "energy_per_phi_tier_j": 2.073273941155727e+91,
+          "pulvini_energy_per_phi_tier_j": 4.3271883207876366e+67,
+          "latency_per_phi_tier_ms": 1.7894017410607793e-16,
+          "asic_specific_resonance_point": {
+            "efficiency_ratio": 2.087128109262535e-24,
+            "resonance_delta_from_parity": 1.0,
+            "within_5pct_parity": false
+          }
+        },
+        {
+          "asic": "Whatsminer M60",
+          "phi_exponent": 76,
+          "phi_multiplier": 7639424778862826.0,
+          "scale_factor": 7.639424778862827e+91,
+          "energy_per_phi_tier_j": 1.194768033886351e+91,
+          "pulvini_energy_per_phi_tier_j": 4.3271883207876366e+67,
+          "latency_per_phi_tier_ms": 1.7894017410607793e-16,
+          "asic_specific_resonance_point": {
+            "efficiency_ratio": 3.621781130779105e-24,
+            "resonance_delta_from_parity": 1.0,
+            "within_5pct_parity": false
+          }
+        },
+        {
+          "asic": "Whatsminer M50",
+          "phi_exponent": 76,
+          "phi_multiplier": 7639424778862826.0,
+          "scale_factor": 7.639424778862827e+91,
+          "energy_per_phi_tier_j": 1.8413483816366116e+91,
+          "pulvini_energy_per_phi_tier_j": 4.3271883207876366e+67,
+          "latency_per_phi_tier_ms": 1.7894017410607793e-16,
+          "asic_specific_resonance_point": {
+            "efficiency_ratio": 2.350010657375755e-24,
+            "resonance_delta_from_parity": 1.0,
+            "within_5pct_parity": false
+          }
+        },
+        {
+          "asic": "Canaan Avalon A1466",
+          "phi_exponent": 76,
+          "phi_multiplier": 7639424778862826.0,
+          "scale_factor": 7.639424778862827e+91,
+          "energy_per_phi_tier_j": 1.4126374988891563e+91,
+          "pulvini_energy_per_phi_tier_j": 4.3271883207876366e+67,
+          "latency_per_phi_tier_ms": 1.7894017410607793e-16,
+          "asic_specific_resonance_point": {
+            "efficiency_ratio": 3.0631979713057105e-24,
+            "resonance_delta_from_parity": 1.0,
+            "within_5pct_parity": false
+          }
+        }
+      ],
+      "asic_comparison": [
+        {
+          "asic": "Antminer S21",
+          "hashrate_ratio": 3.496540924455227e+87,
+          "power_ratio": 1.1920628982886052e+64,
+          "efficiency_ratio": 3.4073203776007074e-24,
+          "pulvini_hashrate_ths": 7.028047258155007e+89,
+          "asic_hashrate_ths": 201.0,
+          "pulvini_power_w": 4.3271883207876366e+67,
+          "asic_power_w": 3630,
+          "pulvini_beats_asic": true
+        },
+        {
+          "asic": "Antminer S19 XP",
+          "hashrate_ratio": 5.020033755825004e+87,
+          "power_ratio": 1.4376040932849292e+64,
+          "efficiency_ratio": 2.8637339173602226e-24,
+          "pulvini_hashrate_ths": 7.028047258155007e+89,
+          "asic_hashrate_ths": 140.0,
+          "pulvini_power_w": 4.3271883207876366e+67,
+          "asic_power_w": 3010,
+          "pulvini_beats_asic": true
+        },
+        {
+          "asic": "Antminer S19 Pro",
+          "hashrate_ratio": 6.389133871050006e+87,
+          "power_ratio": 1.3314425602423498e+64,
+          "efficiency_ratio": 2.087128109262535e-24,
+          "pulvini_hashrate_ths": 7.028047258155007e+89,
+          "asic_hashrate_ths": 110.0,
+          "pulvini_power_w": 4.3271883207876366e+67,
+          "asic_power_w": 3250,
+          "pulvini_beats_asic": true
+        },
+        {
+          "asic": "Whatsminer M60",
+          "hashrate_ratio": 3.514023629077503e+87,
+          "power_ratio": 1.2727024472904814e+64,
+          "efficiency_ratio": 3.621781130779105e-24,
+          "pulvini_hashrate_ths": 7.028047258155007e+89,
+          "asic_hashrate_ths": 200.0,
+          "pulvini_power_w": 4.3271883207876366e+67,
+          "asic_power_w": 3400,
+          "pulvini_beats_asic": true
+        },
+        {
+          "asic": "Whatsminer M50",
+          "hashrate_ratio": 5.577815284250005e+87,
+          "power_ratio": 1.3112691881174656e+64,
+          "efficiency_ratio": 2.350010657375755e-24,
+          "pulvini_hashrate_ths": 7.028047258155007e+89,
+          "asic_hashrate_ths": 126.0,
+          "pulvini_power_w": 4.3271883207876366e+67,
+          "asic_power_w": 3300,
+          "pulvini_beats_asic": true
+        },
+        {
+          "asic": "Canaan Avalon A1466",
+          "hashrate_ratio": 4.1341454459735335e+87,
+          "power_ratio": 1.2652597429203615e+64,
+          "efficiency_ratio": 3.0631979713057105e-24,
+          "pulvini_hashrate_ths": 7.028047258155007e+89,
+          "asic_hashrate_ths": 170.0,
+          "pulvini_power_w": 4.3271883207876366e+67,
+          "asic_power_w": 3420,
+          "pulvini_beats_asic": true
+        }
+      ]
+    },
+    "10^7\u00d710^10": {
+      "scale_factor": 3.571000280033584e+20,
+      "scaling_model": "dynamic_phi_exponential",
+      "base_throughput_attempts_per_sec": 8.359327648944747e+24,
+      "effective_throughput_with_quantum_advantages": 3.2852157660352864e+30,
+      "effective_hashrate_ths": 3.2852157660352865e+18,
+      "power_w": 5.070096833016533e+17,
+      "hashrate_efficiency_j_th": 0.1543307104950158,
+      "latency_per_phi_tier_ms": 0.00038280590669322035,
+      "asic_efficiency_curves": [
+        {
+          "asic": "Antminer S21",
+          "phi_exponent": 17,
+          "phi_multiplier": 3571.000280033584,
+          "scale_factor": 3.571000280033584e+20,
+          "energy_per_phi_tier_j": 5.936384889225763e+19,
+          "pulvini_energy_per_phi_tier_j": 5.070096833016533e+17,
+          "latency_per_phi_tier_ms": 0.00038280590669322035,
+          "asic_specific_resonance_point": {
+            "efficiency_ratio": 0.008540714471223895,
+            "resonance_delta_from_parity": 0.9914592855287762,
+            "within_5pct_parity": false
+          }
+        },
+        {
+          "asic": "Antminer S19 XP",
+          "phi_exponent": 17,
+          "phi_multiplier": 3571.000280033584,
+          "scale_factor": 3.571000280033584e+20,
+          "energy_per_phi_tier_j": 7.063213896975866e+19,
+          "pulvini_energy_per_phi_tier_j": 5.070096833016533e+17,
+          "latency_per_phi_tier_ms": 0.00038280590669322035,
+          "asic_specific_resonance_point": {
+            "efficiency_ratio": 0.007178172581163525,
+            "resonance_delta_from_parity": 0.9928218274188365,
+            "within_5pct_parity": false
+          }
+        },
+        {
+          "asic": "Antminer S19 Pro",
+          "phi_exponent": 17,
+          "phi_multiplier": 3571.000280033584,
+          "scale_factor": 3.571000280033584e+20,
+          "energy_per_phi_tier_j": 9.691386509804095e+19,
+          "pulvini_energy_per_phi_tier_j": 5.070096833016533e+17,
+          "latency_per_phi_tier_ms": 0.00038280590669322035,
+          "asic_specific_resonance_point": {
+            "efficiency_ratio": 0.00523154950830562,
+            "resonance_delta_from_parity": 0.9947684504916944,
+            "within_5pct_parity": false
+          }
+        },
+        {
+          "asic": "Whatsminer M60",
+          "phi_exponent": 17,
+          "phi_multiplier": 3571.000280033584,
+          "scale_factor": 3.571000280033584e+20,
+          "energy_per_phi_tier_j": 5.584866802259987e+19,
+          "pulvini_energy_per_phi_tier_j": 5.070096833016533e+17,
+          "latency_per_phi_tier_ms": 0.00038280590669322035,
+          "asic_specific_resonance_point": {
+            "efficiency_ratio": 0.009078277087942106,
+            "resonance_delta_from_parity": 0.9909217229120579,
+            "within_5pct_parity": false
+          }
+        },
+        {
+          "asic": "Whatsminer M50",
+          "phi_exponent": 17,
+          "phi_multiplier": 3571.000280033584,
+          "scale_factor": 3.571000280033584e+20,
+          "energy_per_phi_tier_j": 8.60726530701245e+19,
+          "pulvini_energy_per_phi_tier_j": 5.070096833016533e+17,
+          "latency_per_phi_tier_ms": 0.00038280590669322035,
+          "asic_specific_resonance_point": {
+            "efficiency_ratio": 0.005890485133397549,
+            "resonance_delta_from_parity": 0.9941095148666025,
+            "within_5pct_parity": false
+          }
+        },
+        {
+          "asic": "Canaan Avalon A1466",
+          "phi_exponent": 17,
+          "phi_multiplier": 3571.000280033584,
+          "scale_factor": 3.571000280033584e+20,
+          "energy_per_phi_tier_j": 6.603283689730926e+19,
+          "pulvini_energy_per_phi_tier_j": 5.070096833016533e+17,
+          "latency_per_phi_tier_ms": 0.00038280590669322035,
+          "asic_specific_resonance_point": {
+            "efficiency_ratio": 0.007678144800747053,
+            "resonance_delta_from_parity": 0.992321855199253,
+            "within_5pct_parity": false
+          }
+        }
+      ],
+      "asic_comparison": [
+        {
+          "asic": "Antminer S21",
+          "hashrate_ratio": 1.6344357044951674e+16,
+          "power_ratio": 139672089063816.34,
+          "efficiency_ratio": 0.008540714471223895,
+          "pulvini_hashrate_ths": 3.2852157660352865e+18,
+          "asic_hashrate_ths": 201.0,
+          "pulvini_power_w": 5.070096833016533e+17,
+          "asic_power_w": 3630,
+          "pulvini_beats_asic": true
+        },
+        {
+          "asic": "Antminer S19 XP",
+          "hashrate_ratio": 2.346582690025205e+16,
+          "power_ratio": 168441755249718.72,
+          "efficiency_ratio": 0.007178172581163525,
+          "pulvini_hashrate_ths": 3.2852157660352865e+18,
+          "asic_hashrate_ths": 140.0,
+          "pulvini_power_w": 5.070096833016533e+17,
+          "asic_power_w": 3010,
+          "pulvini_beats_asic": true
+        },
+        {
+          "asic": "Antminer S19 Pro",
+          "hashrate_ratio": 2.986559787304806e+16,
+          "power_ratio": 156002979477431.78,
+          "efficiency_ratio": 0.00523154950830562,
+          "pulvini_hashrate_ths": 3.2852157660352865e+18,
+          "asic_hashrate_ths": 110.0,
+          "pulvini_power_w": 5.070096833016533e+17,
+          "asic_power_w": 3250,
+          "pulvini_beats_asic": true
+        },
+        {
+          "asic": "Whatsminer M60",
+          "hashrate_ratio": 1.6426078830176432e+16,
+          "power_ratio": 149120495088721.56,
+          "efficiency_ratio": 0.009078277087942106,
+          "pulvini_hashrate_ths": 3.2852157660352865e+18,
+          "asic_hashrate_ths": 200.0,
+          "pulvini_power_w": 5.070096833016533e+17,
+          "asic_power_w": 3400,
+          "pulvini_beats_asic": true
+        },
+        {
+          "asic": "Whatsminer M50",
+          "hashrate_ratio": 2.6073141000280052e+16,
+          "power_ratio": 153639297970197.97,
+          "efficiency_ratio": 0.005890485133397549,
+          "pulvini_hashrate_ths": 3.2852157660352865e+18,
+          "asic_hashrate_ths": 126.0,
+          "pulvini_power_w": 5.070096833016533e+17,
+          "asic_power_w": 3300,
+          "pulvini_beats_asic": true
+        },
+        {
+          "asic": "Canaan Avalon A1466",
+          "hashrate_ratio": 1.932479862373698e+16,
+          "power_ratio": 148248445409840.16,
+          "efficiency_ratio": 0.007678144800747053,
+          "pulvini_hashrate_ths": 3.2852157660352865e+18,
+          "asic_hashrate_ths": 170.0,
+          "pulvini_power_w": 5.070096833016533e+17,
+          "asic_power_w": 3420,
+          "pulvini_beats_asic": true
+        }
+      ]
+    },
+    "10^10\u00d710^12": {
+      "scale_factor": 3.960299997474942e+26,
+      "scaling_model": "dynamic_phi_exponential",
+      "base_throughput_attempts_per_sec": 9.270636424228102e+30,
+      "effective_throughput_with_quantum_advantages": 3.6433601147216447e+36,
+      "effective_hashrate_ths": 3.643360114721645e+24,
+      "power_w": 8.639189390292992e+21,
+      "hashrate_efficiency_j_th": 0.0023712147902659442,
+      "latency_per_phi_tier_ms": 3.451758707349416e-05,
+      "asic_efficiency_curves": [
+        {
+          "asic": "Antminer S21",
+          "phi_exponent": 22,
+          "phi_multiplier": 39602.999974749415,
+          "scale_factor": 3.960299997474942e+26,
+          "energy_per_phi_tier_j": 6.583551727302013e+25,
+          "pulvini_energy_per_phi_tier_j": 8.639189390292992e+21,
+          "latency_per_phi_tier_ms": 3.451758707349416e-05,
+          "asic_specific_resonance_point": {
+            "efficiency_ratio": 0.00013122384008112587,
+            "resonance_delta_from_parity": 0.9998687761599189,
+            "within_5pct_parity": false
+          }
+        },
+        {
+          "asic": "Antminer S19 XP",
+          "phi_exponent": 22,
+          "phi_multiplier": 39602.999974749415,
+          "scale_factor": 3.960299997474942e+26,
+          "energy_per_phi_tier_j": 7.833224246651536e+25,
+          "pulvini_energy_per_phi_tier_j": 8.639189390292992e+21,
+          "latency_per_phi_tier_ms": 3.451758707349416e-05,
+          "asic_specific_resonance_point": {
+            "efficiency_ratio": 0.0001102890600123695,
+            "resonance_delta_from_parity": 0.9998897109399877,
+            "within_5pct_parity": false
+          }
+        },
+        {
+          "asic": "Antminer S19 Pro",
+          "phi_exponent": 22,
+          "phi_multiplier": 39602.999974749415,
+          "scale_factor": 3.960299997474942e+26,
+          "energy_per_phi_tier_j": 1.0747912338428853e+26,
+          "pulvini_energy_per_phi_tier_j": 8.639189390292992e+21,
+          "latency_per_phi_tier_ms": 3.451758707349416e-05,
+          "asic_specific_resonance_point": {
+            "efficiency_ratio": 8.038016238189641e-05,
+            "resonance_delta_from_parity": 0.9999196198376181,
+            "within_5pct_parity": false
+          }
+        },
+        {
+          "asic": "Whatsminer M60",
+          "phi_exponent": 22,
+          "phi_multiplier": 39602.999974749415,
+          "scale_factor": 3.960299997474942e+26,
+          "energy_per_phi_tier_j": 6.193712195026796e+25,
+          "pulvini_energy_per_phi_tier_j": 8.639189390292992e+21,
+          "latency_per_phi_tier_ms": 3.451758707349416e-05,
+          "asic_specific_resonance_point": {
+            "efficiency_ratio": 0.00013948322295682025,
+            "resonance_delta_from_parity": 0.9998605167770431,
+            "within_5pct_parity": false
+          }
+        },
+        {
+          "asic": "Whatsminer M50",
+          "phi_exponent": 22,
+          "phi_multiplier": 39602.999974749415,
+          "scale_factor": 3.960299997474942e+26,
+          "energy_per_phi_tier_j": 9.545603500570709e+25,
+          "pulvini_energy_per_phi_tier_j": 8.639189390292992e+21,
+          "latency_per_phi_tier_ms": 3.451758707349416e-05,
+          "asic_specific_resonance_point": {
+            "efficiency_ratio": 9.050438130786048e-05,
+            "resonance_delta_from_parity": 0.9999094956186921,
+            "within_5pct_parity": false
+          }
+        },
+        {
+          "asic": "Canaan Avalon A1466",
+          "phi_exponent": 22,
+          "phi_multiplier": 39602.999974749415,
+          "scale_factor": 3.960299997474942e+26,
+          "energy_per_phi_tier_j": 7.323153830590507e+25,
+          "pulvini_energy_per_phi_tier_j": 8.639189390292992e+21,
+          "latency_per_phi_tier_ms": 3.451758707349416e-05,
+          "asic_specific_resonance_point": {
+            "efficiency_ratio": 0.00011797088508785791,
+            "resonance_delta_from_parity": 0.9998820291149122,
+            "within_5pct_parity": false
+          }
+        }
+      ],
+      "asic_comparison": [
+        {
+          "asic": "Antminer S21",
+          "hashrate_ratio": 1.8126169724983307e+22,
+          "power_ratio": 2.3799419807969674e+18,
+          "efficiency_ratio": 0.00013122384008112587,
+          "pulvini_hashrate_ths": 3.643360114721645e+24,
+          "asic_hashrate_ths": 201.0,
+          "pulvini_power_w": 8.639189390292992e+21,
+          "asic_power_w": 3630,
+          "pulvini_beats_asic": true
+        },
+        {
+          "asic": "Antminer S19 XP",
+          "hashrate_ratio": 2.602400081944032e+22,
+          "power_ratio": 2.870162588137207e+18,
+          "efficiency_ratio": 0.0001102890600123695,
+          "pulvini_hashrate_ths": 3.643360114721645e+24,
+          "asic_hashrate_ths": 140.0,
+          "pulvini_power_w": 8.639189390292992e+21,
+          "asic_power_w": 3010,
+          "pulvini_beats_asic": true
+        },
+        {
+          "asic": "Antminer S19 Pro",
+          "hashrate_ratio": 3.312145558837859e+22,
+          "power_ratio": 2.6582121200901514e+18,
+          "efficiency_ratio": 8.038016238189641e-05,
+          "pulvini_hashrate_ths": 3.643360114721645e+24,
+          "asic_hashrate_ths": 110.0,
+          "pulvini_power_w": 8.639189390292992e+21,
+          "asic_power_w": 3250,
+          "pulvini_beats_asic": true
+        },
+        {
+          "asic": "Whatsminer M60",
+          "hashrate_ratio": 1.8216800573608224e+22,
+          "power_ratio": 2.540938055968527e+18,
+          "efficiency_ratio": 0.00013948322295682025,
+          "pulvini_hashrate_ths": 3.643360114721645e+24,
+          "asic_hashrate_ths": 200.0,
+          "pulvini_power_w": 8.639189390292992e+21,
+          "asic_power_w": 3400,
+          "pulvini_beats_asic": true
+        },
+        {
+          "asic": "Whatsminer M50",
+          "hashrate_ratio": 2.89155564660448e+22,
+          "power_ratio": 2.6179361788766643e+18,
+          "efficiency_ratio": 9.050438130786048e-05,
+          "pulvini_hashrate_ths": 3.643360114721645e+24,
+          "asic_hashrate_ths": 126.0,
+          "pulvini_power_w": 8.639189390292992e+21,
+          "asic_power_w": 3300,
+          "pulvini_beats_asic": true
+        },
+        {
+          "asic": "Canaan Avalon A1466",
+          "hashrate_ratio": 2.1431530086597912e+22,
+          "power_ratio": 2.526078769091518e+18,
+          "efficiency_ratio": 0.00011797088508785791,
+          "pulvini_hashrate_ths": 3.643360114721645e+24,
+          "asic_hashrate_ths": 170.0,
+          "pulvini_power_w": 8.639189390292992e+21,
+          "asic_power_w": 3420,
+          "pulvini_beats_asic": true
+        }
+      ]
+    },
+    "10^12\u00d710^15": {
+      "scale_factor": 4.392040000022773e+32,
+      "scaling_model": "dynamic_phi_exponential",
+      "base_throughput_attempts_per_sec": 1.0281293343140363e+37,
+      "effective_throughput_with_quantum_advantages": 4.040548283854163e+42,
+      "effective_hashrate_ths": 4.040548283854163e+30,
+      "power_w": 1.4720743169109342e+26,
+      "hashrate_efficiency_j_th": 3.643253869266388e-05,
+      "latency_per_phi_tier_ms": 3.112448884784547e-06,
+      "asic_efficiency_curves": [
+        {
+          "asic": "Antminer S21",
+          "phi_exponent": 27,
+          "phi_multiplier": 439204.00000227726,
+          "scale_factor": 4.392040000022773e+32,
+          "energy_per_phi_tier_j": 7.301270748924473e+31,
+          "pulvini_energy_per_phi_tier_j": 1.4720743169109342e+26,
+          "latency_per_phi_tier_ms": 3.112448884784547e-06,
+          "asic_specific_resonance_point": {
+            "efficiency_ratio": 2.016189191625007e-06,
+            "resonance_delta_from_parity": 0.9999979838108084,
+            "within_5pct_parity": false
+          }
+        },
+        {
+          "asic": "Antminer S19 XP",
+          "phi_exponent": 27,
+          "phi_multiplier": 439204.00000227726,
+          "scale_factor": 4.392040000022773e+32,
+          "energy_per_phi_tier_j": 8.68717881028645e+31,
+          "pulvini_energy_per_phi_tier_j": 1.4720743169109342e+26,
+          "latency_per_phi_tier_ms": 3.112448884784547e-06,
+          "asic_specific_resonance_point": {
+            "efficiency_ratio": 1.6945366833797154e-06,
+            "resonance_delta_from_parity": 0.9999983054633166,
+            "within_5pct_parity": false
+          }
+        },
+        {
+          "asic": "Antminer S19 Pro",
+          "phi_exponent": 27,
+          "phi_multiplier": 439204.00000227726,
+          "scale_factor": 4.392040000022773e+32,
+          "energy_per_phi_tier_j": 1.1919617437369781e+32,
+          "pulvini_energy_per_phi_tier_j": 1.4720743169109342e+26,
+          "latency_per_phi_tier_ms": 3.112448884784547e-06,
+          "asic_specific_resonance_point": {
+            "efficiency_ratio": 1.2350013116157248e-06,
+            "resonance_delta_from_parity": 0.9999987649986883,
+            "within_5pct_parity": false
+          }
+        },
+        {
+          "asic": "Whatsminer M60",
+          "phi_exponent": 27,
+          "phi_multiplier": 439204.00000227726,
+          "scale_factor": 4.392040000022773e+32,
+          "energy_per_phi_tier_j": 6.868932082552077e+31,
+          "pulvini_energy_per_phi_tier_j": 1.4720743169109342e+26,
+          "latency_per_phi_tier_ms": 3.112448884784547e-06,
+          "asic_specific_resonance_point": {
+            "efficiency_ratio": 2.1430905113331692e-06,
+            "resonance_delta_from_parity": 0.9999978569094886,
+            "within_5pct_parity": false
+          }
+        },
+        {
+          "asic": "Whatsminer M50",
+          "phi_exponent": 27,
+          "phi_multiplier": 439204.00000227726,
+          "scale_factor": 4.392040000022773e+32,
+          "energy_per_phi_tier_j": 1.0586236503697907e+32,
+          "pulvini_energy_per_phi_tier_j": 1.4720743169109342e+26,
+          "latency_per_phi_tier_ms": 3.112448884784547e-06,
+          "asic_specific_resonance_point": {
+            "efficiency_ratio": 1.390554911933736e-06,
+            "resonance_delta_from_parity": 0.9999986094450881,
+            "within_5pct_parity": false
+          }
+        },
+        {
+          "asic": "Canaan Avalon A1466",
+          "phi_exponent": 27,
+          "phi_multiplier": 439204.00000227726,
+          "scale_factor": 4.392040000022773e+32,
+          "energy_per_phi_tier_j": 8.121502050546867e+31,
+          "pulvini_energy_per_phi_tier_j": 1.4720743169109342e+26,
+          "latency_per_phi_tier_ms": 3.112448884784547e-06,
+          "asic_specific_resonance_point": {
+            "efficiency_ratio": 1.8125641140628796e-06,
+            "resonance_delta_from_parity": 0.999998187435886,
+            "within_5pct_parity": false
+          }
+        }
+      ],
+      "asic_comparison": [
+        {
+          "asic": "Antminer S21",
+          "hashrate_ratio": 2.010223026793116e+28,
+          "power_ratio": 4.055301148514971e+22,
+          "efficiency_ratio": 2.016189191625007e-06,
+          "pulvini_hashrate_ths": 4.040548283854163e+30,
+          "asic_hashrate_ths": 201.0,
+          "pulvini_power_w": 1.4720743169109342e+26,
+          "asic_power_w": 3630,
+          "pulvini_beats_asic": true
+        },
+        {
+          "asic": "Antminer S19 XP",
+          "hashrate_ratio": 2.8861059170386877e+28,
+          "power_ratio": 4.89061234854131e+22,
+          "efficiency_ratio": 1.6945366833797154e-06,
+          "pulvini_hashrate_ths": 4.040548283854163e+30,
+          "asic_hashrate_ths": 140.0,
+          "pulvini_power_w": 1.4720743169109342e+26,
+          "asic_power_w": 3010,
+          "pulvini_beats_asic": true
+        },
+        {
+          "asic": "Antminer S19 Pro",
+          "hashrate_ratio": 3.6732257125946937e+28,
+          "power_ratio": 4.529459436649029e+22,
+          "efficiency_ratio": 1.2350013116157248e-06,
+          "pulvini_hashrate_ths": 4.040548283854163e+30,
+          "asic_hashrate_ths": 110.0,
+          "pulvini_power_w": 1.4720743169109342e+26,
+          "asic_power_w": 3250,
+          "pulvini_beats_asic": true
+        },
+        {
+          "asic": "Whatsminer M60",
+          "hashrate_ratio": 2.0202741419270816e+28,
+          "power_ratio": 4.329630343855689e+22,
+          "efficiency_ratio": 2.1430905113331692e-06,
+          "pulvini_hashrate_ths": 4.040548283854163e+30,
+          "asic_hashrate_ths": 200.0,
+          "pulvini_power_w": 1.4720743169109342e+26,
+          "asic_power_w": 3400,
+          "pulvini_beats_asic": true
+        },
+        {
+          "asic": "Whatsminer M50",
+          "hashrate_ratio": 3.2067843522652087e+28,
+          "power_ratio": 4.460831263366467e+22,
+          "efficiency_ratio": 1.390554911933736e-06,
+          "pulvini_hashrate_ths": 4.040548283854163e+30,
+          "asic_hashrate_ths": 126.0,
+          "pulvini_power_w": 1.4720743169109342e+26,
+          "asic_power_w": 3300,
+          "pulvini_beats_asic": true
+        },
+        {
+          "asic": "Canaan Avalon A1466",
+          "hashrate_ratio": 2.3767931081495076e+28,
+          "power_ratio": 4.304310868160626e+22,
+          "efficiency_ratio": 1.8125641140628796e-06,
+          "pulvini_hashrate_ths": 4.040548283854163e+30,
+          "asic_hashrate_ths": 170.0,
+          "pulvini_power_w": 1.4720743169109342e+26,
+          "asic_power_w": 3420,
+          "pulvini_beats_asic": true
+        }
+      ]
+    },
+    "10^15\u00d710^18": {
+      "scale_factor": 7.881196000000137e+39,
+      "scaling_model": "dynamic_phi_exponential",
+      "base_throughput_attempts_per_sec": 1.84490323335775e+44,
+      "effective_throughput_with_quantum_advantages": 7.250469707095959e+49,
+      "effective_hashrate_ths": 7.250469707095959e+37,
+      "power_w": 1.7606694339304886e+31,
+      "hashrate_efficiency_j_th": 2.428352237934792e-07,
+      "latency_per_phi_tier_ms": 1.7345083157429107e-07,
+      "asic_efficiency_curves": [
+        {
+          "asic": "Antminer S21",
+          "phi_exponent": 33,
+          "phi_multiplier": 7881196.000000136,
+          "scale_factor": 7.881196000000137e+39,
+          "energy_per_phi_tier_j": 1.3101598760722398e+39,
+          "pulvini_energy_per_phi_tier_j": 1.7606694339304886e+31,
+          "latency_per_phi_tier_ms": 1.7345083157429107e-07,
+          "asic_specific_resonance_point": {
+            "efficiency_ratio": 1.3438584603955682e-08,
+            "resonance_delta_from_parity": 0.9999999865614154,
+            "within_5pct_parity": false
+          }
+        },
+        {
+          "asic": "Antminer S19 XP",
+          "phi_exponent": 33,
+          "phi_multiplier": 7881196.000000136,
+          "scale_factor": 7.881196000000137e+39,
+          "energy_per_phi_tier_j": 1.558850987025631e+39,
+          "pulvini_energy_per_phi_tier_j": 1.7606694339304886e+31,
+          "latency_per_phi_tier_ms": 1.7345083157429107e-07,
+          "asic_specific_resonance_point": {
+            "efficiency_ratio": 1.1294661571789729e-08,
+            "resonance_delta_from_parity": 0.9999999887053385,
+            "within_5pct_parity": false
+          }
+        },
+        {
+          "asic": "Antminer S19 Pro",
+          "phi_exponent": 33,
+          "phi_multiplier": 7881196.000000136,
+          "scale_factor": 7.881196000000137e+39,
+          "energy_per_phi_tier_j": 2.1388885635933077e+39,
+          "pulvini_energy_per_phi_tier_j": 1.7606694339304886e+31,
+          "latency_per_phi_tier_ms": 1.7345083157429107e-07,
+          "asic_specific_resonance_point": {
+            "efficiency_ratio": 8.23170250147387e-09,
+            "resonance_delta_from_parity": 0.9999999917682975,
+            "within_5pct_parity": false
+          }
+        },
+        {
+          "asic": "Whatsminer M60",
+          "phi_exponent": 33,
+          "phi_multiplier": 7881196.000000136,
+          "scale_factor": 7.881196000000137e+39,
+          "energy_per_phi_tier_j": 1.2325798502063129e+39,
+          "pulvini_energy_per_phi_tier_j": 1.7606694339304886e+31,
+          "latency_per_phi_tier_ms": 1.7345083157429107e-07,
+          "asic_specific_resonance_point": {
+            "efficiency_ratio": 1.4284424929028187e-08,
+            "resonance_delta_from_parity": 0.999999985715575,
+            "within_5pct_parity": false
+          }
+        },
+        {
+          "asic": "Whatsminer M50",
+          "phi_exponent": 33,
+          "phi_multiplier": 7881196.000000136,
+          "scale_factor": 7.881196000000137e+39,
+          "energy_per_phi_tier_j": 1.8996230632591412e+39,
+          "pulvini_energy_per_phi_tier_j": 1.7606694339304886e+31,
+          "latency_per_phi_tier_ms": 1.7345083157429107e-07,
+          "asic_specific_resonance_point": {
+            "efficiency_ratio": 9.268519992117527e-09,
+            "resonance_delta_from_parity": 0.99999999073148,
+            "within_5pct_parity": false
+          }
+        },
+        {
+          "asic": "Canaan Avalon A1466",
+          "phi_exponent": 33,
+          "phi_multiplier": 7881196.000000136,
+          "scale_factor": 7.881196000000137e+39,
+          "energy_per_phi_tier_j": 1.457344411126288e+39,
+          "pulvini_energy_per_phi_tier_j": 1.7606694339304886e+31,
+          "latency_per_phi_tier_ms": 1.7345083157429107e-07,
+          "asic_specific_resonance_point": {
+            "efficiency_ratio": 1.2081354417586028e-08,
+            "resonance_delta_from_parity": 0.9999999879186455,
+            "within_5pct_parity": false
+          }
+        }
+      ],
+      "asic_comparison": [
+        {
+          "asic": "Antminer S21",
+          "hashrate_ratio": 3.6071988592517206e+35,
+          "power_ratio": 4.850329019092255e+27,
+          "efficiency_ratio": 1.3438584603955682e-08,
+          "pulvini_hashrate_ths": 7.250469707095959e+37,
+          "asic_hashrate_ths": 201.0,
+          "pulvini_power_w": 1.7606694339304886e+31,
+          "asic_power_w": 3630,
+          "pulvini_beats_asic": true
+        },
+        {
+          "asic": "Antminer S19 XP",
+          "hashrate_ratio": 5.178906933639971e+35,
+          "power_ratio": 5.849400112725876e+27,
+          "efficiency_ratio": 1.1294661571789729e-08,
+          "pulvini_hashrate_ths": 7.250469707095959e+37,
+          "asic_hashrate_ths": 140.0,
+          "pulvini_power_w": 1.7606694339304886e+31,
+          "asic_power_w": 3010,
+          "pulvini_beats_asic": true
+        },
+        {
+          "asic": "Antminer S19 Pro",
+          "hashrate_ratio": 6.5913360973599624e+35,
+          "power_ratio": 5.417444412093811e+27,
+          "efficiency_ratio": 8.23170250147387e-09,
+          "pulvini_hashrate_ths": 7.250469707095959e+37,
+          "asic_hashrate_ths": 110.0,
+          "pulvini_power_w": 1.7606694339304886e+31,
+          "asic_power_w": 3250,
+          "pulvini_beats_asic": true
+        },
+        {
+          "asic": "Whatsminer M60",
+          "hashrate_ratio": 3.6252348535479794e+35,
+          "power_ratio": 5.17843951156026e+27,
+          "efficiency_ratio": 1.4284424929028187e-08,
+          "pulvini_hashrate_ths": 7.250469707095959e+37,
+          "asic_hashrate_ths": 200.0,
+          "pulvini_power_w": 1.7606694339304886e+31,
+          "asic_power_w": 3400,
+          "pulvini_beats_asic": true
+        },
+        {
+          "asic": "Whatsminer M50",
+          "hashrate_ratio": 5.754341037377745e+35,
+          "power_ratio": 5.33536192100148e+27,
+          "efficiency_ratio": 9.268519992117527e-09,
+          "pulvini_hashrate_ths": 7.250469707095959e+37,
+          "asic_hashrate_ths": 126.0,
+          "pulvini_power_w": 1.7606694339304886e+31,
+          "asic_power_w": 3300,
+          "pulvini_beats_asic": true
+        },
+        {
+          "asic": "Canaan Avalon A1466",
+          "hashrate_ratio": 4.264982180644682e+35,
+          "power_ratio": 5.148156239562832e+27,
+          "efficiency_ratio": 1.2081354417586028e-08,
+          "pulvini_hashrate_ths": 7.250469707095959e+37,
+          "asic_hashrate_ths": 170.0,
+          "pulvini_power_w": 1.7606694339304886e+31,
+          "asic_power_w": 3420,
+          "pulvini_beats_asic": true
+        }
+      ]
+    },
+    "10^18\u00d710^20": {
+      "scale_factor": 8.74038030000001e+45,
+      "scaling_model": "dynamic_phi_exponential",
+      "base_throughput_attempts_per_sec": 2.046029038771034e+50,
+      "effective_throughput_with_quantum_advantages": 8.040894122370165e+55,
+      "effective_hashrate_ths": 8.040894122370165e+43,
+      "power_w": 3.000091949797253e+35,
+      "hashrate_efficiency_j_th": 3.7310427225385905e-09,
+      "latency_per_phi_tier_ms": 1.5640051726353354e-08,
+      "asic_efficiency_curves": [
+        {
+          "asic": "Antminer S21",
+          "phi_exponent": 38,
+          "phi_multiplier": 87403803.0000001,
+          "scale_factor": 8.74038030000001e+45,
+          "energy_per_phi_tier_j": 1.452989567912289e+45,
+          "pulvini_energy_per_phi_tier_j": 3.000091949797253e+35,
+          "latency_per_phi_tier_ms": 1.5640051726353354e-08,
+          "asic_specific_resonance_point": {
+            "efficiency_ratio": 2.0647718442382902e-10,
+            "resonance_delta_from_parity": 0.9999999997935228,
+            "within_5pct_parity": false
+          }
+        },
+        {
+          "asic": "Antminer S19 XP",
+          "phi_exponent": 38,
+          "phi_multiplier": 87403803.0000001,
+          "scale_factor": 8.74038030000001e+45,
+          "energy_per_phi_tier_j": 1.7287922363095855e+45,
+          "pulvini_energy_per_phi_tier_j": 3.000091949797253e+35,
+          "latency_per_phi_tier_ms": 1.5640051726353354e-08,
+          "asic_specific_resonance_point": {
+            "efficiency_ratio": 1.735368708157484e-10,
+            "resonance_delta_from_parity": 0.9999999998264631,
+            "within_5pct_parity": false
+          }
+        },
+        {
+          "asic": "Antminer S19 Pro",
+          "phi_exponent": 38,
+          "phi_multiplier": 87403803.0000001,
+          "scale_factor": 8.74038030000001e+45,
+          "energy_per_phi_tier_j": 2.3720637660991986e+45,
+          "pulvini_energy_per_phi_tier_j": 3.000091949797253e+35,
+          "latency_per_phi_tier_ms": 1.5640051726353354e-08,
+          "asic_specific_resonance_point": {
+            "efficiency_ratio": 1.2647602449283358e-10,
+            "resonance_delta_from_parity": 0.999999999873524,
+            "within_5pct_parity": false
+          }
+        },
+        {
+          "asic": "Whatsminer M60",
+          "phi_exponent": 38,
+          "phi_multiplier": 87403803.0000001,
+          "scale_factor": 8.74038030000001e+45,
+          "energy_per_phi_tier_j": 1.366952000802928e+45,
+          "pulvini_energy_per_phi_tier_j": 3.000091949797253e+35,
+          "latency_per_phi_tier_ms": 1.5640051726353354e-08,
+          "asic_specific_resonance_point": {
+            "efficiency_ratio": 2.1947310132579945e-10,
+            "resonance_delta_from_parity": 0.9999999997805269,
+            "within_5pct_parity": false
+          }
+        },
+        {
+          "asic": "Whatsminer M50",
+          "phi_exponent": 38,
+          "phi_multiplier": 87403803.0000001,
+          "scale_factor": 8.74038030000001e+45,
+          "energy_per_phi_tier_j": 2.106714260060983e+45,
+          "pulvini_energy_per_phi_tier_j": 3.000091949797253e+35,
+          "latency_per_phi_tier_ms": 1.5640051726353354e-08,
+          "asic_specific_resonance_point": {
+            "efficiency_ratio": 1.4240621078391568e-10,
+            "resonance_delta_from_parity": 0.9999999998575938,
+            "within_5pct_parity": false
+          }
+        },
+        {
+          "asic": "Canaan Avalon A1466",
+          "phi_exponent": 38,
+          "phi_multiplier": 87403803.0000001,
+          "scale_factor": 8.74038030000001e+45,
+          "energy_per_phi_tier_j": 1.616219718596403e+45,
+          "pulvini_energy_per_phi_tier_j": 3.000091949797253e+35,
+          "latency_per_phi_tier_ms": 1.5640051726353354e-08,
+          "asic_specific_resonance_point": {
+            "efficiency_ratio": 1.8562401604669604e-10,
+            "resonance_delta_from_parity": 0.999999999814376,
+            "within_5pct_parity": false
+          }
+        }
+      ],
+      "asic_comparison": [
+        {
+          "asic": "Antminer S21",
+          "hashrate_ratio": 4.000444837000082e+41,
+          "power_ratio": 8.264716115143948e+31,
+          "efficiency_ratio": 2.0647718442382902e-10,
+          "pulvini_hashrate_ths": 8.040894122370165e+43,
+          "asic_hashrate_ths": 201.0,
+          "pulvini_power_w": 3.000091949797253e+35,
+          "asic_power_w": 3630,
+          "pulvini_beats_asic": true
+        },
+        {
+          "asic": "Antminer S19 XP",
+          "hashrate_ratio": 5.743495801692975e+41,
+          "power_ratio": 9.96708288969187e+31,
+          "efficiency_ratio": 1.735368708157484e-10,
+          "pulvini_hashrate_ths": 8.040894122370165e+43,
+          "asic_hashrate_ths": 140.0,
+          "pulvini_power_w": 3.000091949797253e+35,
+          "asic_power_w": 3010,
+          "pulvini_beats_asic": true
+        },
+        {
+          "asic": "Antminer S19 Pro",
+          "hashrate_ratio": 7.309903747609241e+41,
+          "power_ratio": 9.231052153222318e+31,
+          "efficiency_ratio": 1.2647602449283358e-10,
+          "pulvini_hashrate_ths": 8.040894122370165e+43,
+          "asic_hashrate_ths": 110.0,
+          "pulvini_power_w": 3.000091949797253e+35,
+          "asic_power_w": 3250,
+          "pulvini_beats_asic": true
+        },
+        {
+          "asic": "Whatsminer M60",
+          "hashrate_ratio": 4.020447061185083e+41,
+          "power_ratio": 8.823799852344862e+31,
+          "efficiency_ratio": 2.1947310132579945e-10,
+          "pulvini_hashrate_ths": 8.040894122370165e+43,
+          "asic_hashrate_ths": 200.0,
+          "pulvini_power_w": 3.000091949797253e+35,
+          "asic_power_w": 3400,
+          "pulvini_beats_asic": true
+        },
+        {
+          "asic": "Whatsminer M50",
+          "hashrate_ratio": 6.381662001881083e+41,
+          "power_ratio": 9.091187726658343e+31,
+          "efficiency_ratio": 1.4240621078391568e-10,
+          "pulvini_hashrate_ths": 8.040894122370165e+43,
+          "asic_hashrate_ths": 126.0,
+          "pulvini_power_w": 3.000091949797253e+35,
+          "asic_power_w": 3300,
+          "pulvini_beats_asic": true
+        },
+        {
+          "asic": "Canaan Avalon A1466",
+          "hashrate_ratio": 4.7299377190412734e+41,
+          "power_ratio": 8.772198683617699e+31,
+          "efficiency_ratio": 1.8562401604669604e-10,
+          "pulvini_hashrate_ths": 8.040894122370165e+43,
+          "asic_hashrate_ths": 170.0,
+          "pulvini_power_w": 3.000091949797253e+35,
+          "asic_power_w": 3420,
+          "pulvini_beats_asic": true
+        }
+      ]
+    },
+    "10^20\u00d710^31": {
+      "scale_factor": 4.5537549124000075e+61,
+      "scaling_model": "dynamic_phi_exponential",
+      "base_throughput_attempts_per_sec": 1.0659850563043179e+66,
+      "effective_throughput_with_quantum_advantages": 4.18932127127597e+71,
+      "effective_hashrate_ths": 4.18932127127597e+59,
+      "power_w": 3.01246556933338e+46,
+      "hashrate_efficiency_j_th": 7.190820121598964e-14,
+      "latency_per_phi_tier_ms": 3.00191825492764e-11,
+      "asic_efficiency_curves": [
+        {
+          "asic": "Antminer S21",
+          "phi_exponent": 51,
+          "phi_multiplier": 45537549124.00008,
+          "scale_factor": 4.5537549124000075e+61,
+          "energy_per_phi_tier_j": 7.570103537195678e+60,
+          "pulvini_energy_per_phi_tier_j": 3.01246556933338e+46,
+          "latency_per_phi_tier_ms": 3.00191825492764e-11,
+          "asic_specific_resonance_point": {
+            "efficiency_ratio": 3.979424527724939e-15,
+            "resonance_delta_from_parity": 0.999999999999996,
+            "within_5pct_parity": false
+          }
+        },
+        {
+          "asic": "Antminer S19 XP",
+          "phi_exponent": 51,
+          "phi_multiplier": 45537549124.00008,
+          "scale_factor": 4.5537549124000075e+61,
+          "energy_per_phi_tier_j": 9.007040733243337e+60,
+          "pulvini_energy_per_phi_tier_j": 3.01246556933338e+46,
+          "latency_per_phi_tier_ms": 3.00191825492764e-11,
+          "asic_specific_resonance_point": {
+            "efficiency_ratio": 3.344567498418123e-15,
+            "resonance_delta_from_parity": 0.9999999999999967,
+            "within_5pct_parity": false
+          }
+        },
+        {
+          "asic": "Antminer S19 Pro",
+          "phi_exponent": 51,
+          "phi_multiplier": 45537549124.00008,
+          "scale_factor": 4.5537549124000075e+61,
+          "energy_per_phi_tier_j": 1.2358497750264113e+61,
+          "pulvini_energy_per_phi_tier_j": 3.01246556933338e+46,
+          "latency_per_phi_tier_ms": 3.00191825492764e-11,
+          "asic_specific_resonance_point": {
+            "efficiency_ratio": 2.437566142914903e-15,
+            "resonance_delta_from_parity": 0.9999999999999976,
+            "within_5pct_parity": false
+          }
+        },
+        {
+          "asic": "Whatsminer M60",
+          "phi_exponent": 51,
+          "phi_multiplier": 45537549124.00008,
+          "scale_factor": 4.5537549124000075e+61,
+          "energy_per_phi_tier_j": 7.121846161169149e+60,
+          "pulvini_energy_per_phi_tier_j": 3.01246556933338e+46,
+          "latency_per_phi_tier_ms": 3.00191825492764e-11,
+          "asic_specific_resonance_point": {
+            "efficiency_ratio": 4.229894189175861e-15,
+            "resonance_delta_from_parity": 0.9999999999999958,
+            "within_5pct_parity": false
+          }
+        },
+        {
+          "asic": "Whatsminer M50",
+          "phi_exponent": 51,
+          "phi_multiplier": 45537549124.00008,
+          "scale_factor": 4.5537549124000075e+61,
+          "energy_per_phi_tier_j": 1.0976021730743042e+61,
+          "pulvini_energy_per_phi_tier_j": 3.01246556933338e+46,
+          "latency_per_phi_tier_ms": 3.00191825492764e-11,
+          "asic_specific_resonance_point": {
+            "efficiency_ratio": 2.7445878326713606e-15,
+            "resonance_delta_from_parity": 0.9999999999999972,
+            "within_5pct_parity": false
+          }
+        },
+        {
+          "asic": "Canaan Avalon A1466",
+          "phi_exponent": 51,
+          "phi_multiplier": 45537549124.00008,
+          "scale_factor": 4.5537549124000075e+61,
+          "energy_per_phi_tier_j": 8.4205357552647e+60,
+          "pulvini_energy_per_phi_tier_j": 3.01246556933338e+46,
+          "latency_per_phi_tier_ms": 3.00191825492764e-11,
+          "asic_specific_resonance_point": {
+            "efficiency_ratio": 3.577522448556699e-15,
+            "resonance_delta_from_parity": 0.9999999999999964,
+            "within_5pct_parity": false
+          }
+        }
+      ],
+      "asic_comparison": [
+        {
+          "asic": "Antminer S21",
+          "hashrate_ratio": 2.0842394384457562e+57,
+          "power_ratio": 8.298803221304078e+42,
+          "efficiency_ratio": 3.979424527724939e-15,
+          "pulvini_hashrate_ths": 4.18932127127597e+59,
+          "asic_hashrate_ths": 201.0,
+          "pulvini_power_w": 3.01246556933338e+46,
+          "asic_power_w": 3630,
+          "pulvini_beats_asic": true
+        },
+        {
+          "asic": "Antminer S19 XP",
+          "hashrate_ratio": 2.9923723366256932e+57,
+          "power_ratio": 1.0008191260243787e+43,
+          "efficiency_ratio": 3.344567498418123e-15,
+          "pulvini_hashrate_ths": 4.18932127127597e+59,
+          "asic_hashrate_ths": 140.0,
+          "pulvini_power_w": 3.01246556933338e+46,
+          "asic_power_w": 3010,
+          "pulvini_beats_asic": true
+        },
+        {
+          "asic": "Antminer S19 Pro",
+          "hashrate_ratio": 3.8084738829781545e+57,
+          "power_ratio": 9.269124828718092e+42,
+          "efficiency_ratio": 2.437566142914903e-15,
+          "pulvini_hashrate_ths": 4.18932127127597e+59,
+          "asic_hashrate_ths": 110.0,
+          "pulvini_power_w": 3.01246556933338e+46,
+          "asic_power_w": 3250,
+          "pulvini_beats_asic": true
+        },
+        {
+          "asic": "Whatsminer M60",
+          "hashrate_ratio": 2.094660635637985e+57,
+          "power_ratio": 8.860192850980529e+42,
+          "efficiency_ratio": 4.229894189175861e-15,
+          "pulvini_hashrate_ths": 4.18932127127597e+59,
+          "asic_hashrate_ths": 200.0,
+          "pulvini_power_w": 3.01246556933338e+46,
+          "asic_power_w": 3400,
+          "pulvini_beats_asic": true
+        },
+        {
+          "asic": "Whatsminer M50",
+          "hashrate_ratio": 3.324858151806326e+57,
+          "power_ratio": 9.128683543434484e+42,
+          "efficiency_ratio": 2.7445878326713606e-15,
+          "pulvini_hashrate_ths": 4.18932127127597e+59,
+          "asic_hashrate_ths": 126.0,
+          "pulvini_power_w": 3.01246556933338e+46,
+          "asic_power_w": 3300,
+          "pulvini_beats_asic": true
+        },
+        {
+          "asic": "Canaan Avalon A1466",
+          "hashrate_ratio": 2.4643066301623356e+57,
+          "power_ratio": 8.808378857699942e+42,
+          "efficiency_ratio": 3.577522448556699e-15,
+          "pulvini_hashrate_ths": 4.18932127127597e+59,
+          "asic_hashrate_ths": 170.0,
+          "pulvini_power_w": 3.01246556933338e+46,
+          "asic_power_w": 3420,
+          "pulvini_beats_asic": true
+        }
+      ]
+    },
+    "10^31\u00d710^76": {
+      "scale_factor": 2.299733474362749e+129,
+      "scaling_model": "dynamic_phi_exponential",
+      "base_throughput_attempts_per_sec": 5.383428762224431e+133,
+      "effective_throughput_with_quantum_advantages": 2.115687503554202e+139,
+      "effective_hashrate_ths": 2.1156875035542019e+127,
+      "power_w": 7.434257329333282e+93,
+      "hashrate_efficiency_j_th": 3.5138730634104836e-34,
+      "latency_per_phi_tier_ms": 5.944167075181581e-23,
+      "asic_efficiency_curves": [
+        {
+          "asic": "Antminer S21",
+          "phi_exponent": 107,
+          "phi_multiplier": 2.2997334743627493e+22,
+          "scale_factor": 2.299733474362749e+129,
+          "energy_per_phi_tier_j": 3.823047318922443e+128,
+          "pulvini_energy_per_phi_tier_j": 7.434257329333282e+93,
+          "latency_per_phi_tier_ms": 5.944167075181581e-23,
+          "asic_specific_resonance_point": {
+            "efficiency_ratio": 1.9445894097457021e-35,
+            "resonance_delta_from_parity": 1.0,
+            "within_5pct_parity": false
+          }
+        },
+        {
+          "asic": "Antminer S19 XP",
+          "phi_exponent": 107,
+          "phi_multiplier": 2.2997334743627493e+22,
+          "scale_factor": 2.299733474362749e+129,
+          "energy_per_phi_tier_j": 4.548728132641534e+128,
+          "pulvini_energy_per_phi_tier_j": 7.434257329333282e+93,
+          "latency_per_phi_tier_ms": 5.944167075181581e-23,
+          "asic_specific_resonance_point": {
+            "efficiency_ratio": 1.6343595643769692e-35,
+            "resonance_delta_from_parity": 1.0,
+            "within_5pct_parity": false
+          }
+        },
+        {
+          "asic": "Antminer S19 Pro",
+          "phi_exponent": 107,
+          "phi_multiplier": 2.2997334743627493e+22,
+          "scale_factor": 2.299733474362749e+129,
+          "energy_per_phi_tier_j": 6.2412781354848956e+128,
+          "pulvini_energy_per_phi_tier_j": 7.434257329333282e+93,
+          "latency_per_phi_tier_ms": 5.944167075181581e-23,
+          "asic_specific_resonance_point": {
+            "efficiency_ratio": 1.1911434113255876e-35,
+            "resonance_delta_from_parity": 1.0,
+            "within_5pct_parity": false
+          }
+        },
+        {
+          "asic": "Whatsminer M60",
+          "phi_exponent": 107,
+          "phi_multiplier": 2.2997334743627493e+22,
+          "scale_factor": 2.299733474362749e+129,
+          "energy_per_phi_tier_j": 3.596668756042143e+128,
+          "pulvini_energy_per_phi_tier_j": 7.434257329333282e+93,
+          "latency_per_phi_tier_ms": 5.944167075181581e-23,
+          "asic_specific_resonance_point": {
+            "efficiency_ratio": 2.0669841549473433e-35,
+            "resonance_delta_from_parity": 1.0,
+            "within_5pct_parity": false
+          }
+        },
+        {
+          "asic": "Whatsminer M50",
+          "phi_exponent": 107,
+          "phi_multiplier": 2.2997334743627493e+22,
+          "scale_factor": 2.299733474362749e+129,
+          "energy_per_phi_tier_j": 5.5431012593120085e+128,
+          "pulvini_energy_per_phi_tier_j": 7.434257329333282e+93,
+          "latency_per_phi_tier_ms": 5.944167075181581e-23,
+          "asic_specific_resonance_point": {
+            "efficiency_ratio": 1.3411729249658335e-35,
+            "resonance_delta_from_parity": 1.0,
+            "within_5pct_parity": false
+          }
+        },
+        {
+          "asic": "Canaan Avalon A1466",
+          "phi_exponent": 107,
+          "phi_multiplier": 2.2997334743627493e+22,
+          "scale_factor": 2.299733474362749e+129,
+          "energy_per_phi_tier_j": 4.2525318821439464e+128,
+          "pulvini_energy_per_phi_tier_j": 7.434257329333282e+93,
+          "latency_per_phi_tier_ms": 5.944167075181581e-23,
+          "asic_specific_resonance_point": {
+            "efficiency_ratio": 1.7481955539355638e-35,
+            "resonance_delta_from_parity": 1.0,
+            "within_5pct_parity": false
+          }
+        }
+      ],
+      "asic_comparison": [
+        {
+          "asic": "Antminer S21",
+          "hashrate_ratio": 1.052580847539404e+125,
+          "power_ratio": 2.0480047739210145e+90,
+          "efficiency_ratio": 1.9445894097457021e-35,
+          "pulvini_hashrate_ths": 2.1156875035542019e+127,
+          "asic_hashrate_ths": 201.0,
+          "pulvini_power_w": 7.434257329333282e+93,
+          "asic_power_w": 3630,
+          "pulvini_beats_asic": true
+        },
+        {
+          "asic": "Antminer S19 XP",
+          "hashrate_ratio": 1.5112053596815728e+125,
+          "power_ratio": 2.469852933333316e+90,
+          "efficiency_ratio": 1.6343595643769692e-35,
+          "pulvini_hashrate_ths": 2.1156875035542019e+127,
+          "asic_hashrate_ths": 140.0,
+          "pulvini_power_w": 7.434257329333282e+93,
+          "asic_power_w": 3010,
+          "pulvini_beats_asic": true
+        },
+        {
+          "asic": "Antminer S19 Pro",
+          "hashrate_ratio": 1.9233522759583653e+125,
+          "power_ratio": 2.28746379364101e+90,
+          "efficiency_ratio": 1.1911434113255876e-35,
+          "pulvini_hashrate_ths": 2.1156875035542019e+127,
+          "asic_hashrate_ths": 110.0,
+          "pulvini_power_w": 7.434257329333282e+93,
+          "asic_power_w": 3250,
+          "pulvini_beats_asic": true
+        },
+        {
+          "asic": "Whatsminer M60",
+          "hashrate_ratio": 1.0578437517771009e+125,
+          "power_ratio": 2.186546273333318e+90,
+          "efficiency_ratio": 2.0669841549473433e-35,
+          "pulvini_hashrate_ths": 2.1156875035542019e+127,
+          "asic_hashrate_ths": 200.0,
+          "pulvini_power_w": 7.434257329333282e+93,
+          "asic_power_w": 3400,
+          "pulvini_beats_asic": true
+        },
+        {
+          "asic": "Whatsminer M50",
+          "hashrate_ratio": 1.6791170663128587e+125,
+          "power_ratio": 2.252805251313116e+90,
+          "efficiency_ratio": 1.3411729249658335e-35,
+          "pulvini_hashrate_ths": 2.1156875035542019e+127,
+          "asic_hashrate_ths": 126.0,
+          "pulvini_power_w": 7.434257329333282e+93,
+          "asic_power_w": 3300,
+          "pulvini_beats_asic": true
+        },
+        {
+          "asic": "Canaan Avalon A1466",
+          "hashrate_ratio": 1.2445220609142364e+125,
+          "power_ratio": 2.1737594530214277e+90,
+          "efficiency_ratio": 1.7481955539355638e-35,
+          "pulvini_hashrate_ths": 2.1156875035542019e+127,
+          "asic_hashrate_ths": 170.0,
+          "pulvini_power_w": 7.434257329333282e+93,
           "asic_power_w": 3420,
           "pulvini_beats_asic": true
         }
