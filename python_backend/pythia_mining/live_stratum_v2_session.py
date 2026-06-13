@@ -9,6 +9,7 @@ authenticated encrypted connections.
 """
 from __future__ import annotations
 
+import logging
 from dataclasses import asdict, dataclass
 from typing import Any, Dict, Optional
 
@@ -29,12 +30,16 @@ from pythia_mining.stratum_v2 import (
 )
 
 try:
-    from pythia_mining.noise_wrapper import NoiseWrapper, NoiseHandshakeResult
+    from pythia_mining.noise_wrapper import NoiseWrapper, NoiseHandshakeResult, extract_pool_authority_key
     NOISE_AVAILABLE = True
 except ImportError:
     NOISE_AVAILABLE = False
     NoiseWrapper = None
     NoiseHandshakeResult = None
+    extract_pool_authority_key = None
+
+
+logger = logging.getLogger("live_stratum_v2_session")
 
 
 class LiveStratumV2SessionError(ConnectionError):
@@ -68,6 +73,7 @@ class LiveStratumV2Session:
         setup: Optional[SetupConnection] = None,
         enable_noise: bool = False,
         noise_static_key: Optional[bytes] = None,
+        noise_remote_static_public: Optional[bytes] = None,
     ) -> None:
         self.profile = validate_profile(profile)
         if int(self.profile.stratum_version) != 2:
@@ -81,10 +87,18 @@ class LiveStratumV2Session:
         
         if self.enable_noise and NOISE_AVAILABLE:
             self.noise_wrapper = NoiseWrapper()
-            if noise_static_key:
-                self.noise_wrapper.initialize(noise_static_key)
-            else:
-                self.noise_wrapper.initialize()
+            
+            # Extract pool authority key from URL if not provided
+            remote_key = noise_remote_static_public
+            if remote_key is None and extract_pool_authority_key:
+                remote_key = extract_pool_authority_key(profile.url)
+                if remote_key:
+                    logger.info(f"Extracted pool authority key from URL")
+            
+            self.noise_wrapper.initialize(
+                local_static_key=noise_static_key,
+                remote_static_public=remote_key
+            )
         elif self.enable_noise and not NOISE_AVAILABLE:
             raise LiveStratumV2SessionError(
                 "Noise protocol requested but noiseprotocol library not available. "

@@ -20,6 +20,76 @@ except ImportError:
     Keypair = None
 
 
+# Base58 alphabet
+BASE58_ALPHABET = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"
+
+
+def base58_decode(s: str) -> bytes:
+    """Decode a base58-encoded string."""
+    if not s:
+        return b""
+    
+    # Convert to integer
+    n = 0
+    for char in s:
+        n *= 58
+        n += BASE58_ALPHABET.index(char)
+    
+    # Convert to bytes
+    result = bytearray()
+    while n > 0:
+        result.append(n % 256)
+        n //= 256
+    
+    # Add leading zero bytes
+    for char in s:
+        if char == '1':
+            result.append(0)
+        else:
+            break
+    
+    result.reverse()
+    return bytes(result)
+
+
+def extract_pool_authority_key(url: str) -> Optional[bytes]:
+    """
+    Extract Pool Authority Public Key from Stratum V2 URL.
+    
+    Args:
+        url: Stratum V2 URL with embedded base58-check encoded public key
+        
+    Returns:
+        32-byte public key if found, None otherwise
+    """
+    try:
+        # Extract the last component of the path
+        parts = url.rstrip('/').split('/')
+        if len(parts) < 1:
+            return None
+        
+        base58_key = parts[-1]
+        
+        # Decode base58
+        decoded = base58_decode(base58_key)
+        
+        # Check if it's the right length (2 bytes prefix + 32 bytes key + 4 bytes checksum = 38 bytes)
+        if len(decoded) < 38:
+            return None
+        
+        # Extract the 32-byte public key (skip 2-byte prefix)
+        public_key = decoded[2:34]
+        
+        if len(public_key) != 32:
+            return None
+            
+        return public_key
+        
+    except Exception as e:
+        logger.warning(f"Failed to extract pool authority key from URL: {e}")
+        return None
+
+
 logger = logging.getLogger("noise_wrapper")
 
 
@@ -39,12 +109,12 @@ class NoiseHandshakeResult:
 class NoiseWrapper:
     """Wrapper for Noise protocol operations in Stratum V2 context."""
 
-    def __init__(self, protocol_name: str = "Noise_XX_25519_ChaChaPoly_SHA256"):
+    def __init__(self, protocol_name: str = "Noise_NX_25519_ChaChaPoly_SHA256"):
         """
         Initialize Noise wrapper.
         
         Args:
-            protocol_name: Noise protocol pattern (default: XX for Stratum V2)
+            protocol_name: Noise protocol pattern (default: NX for Stratum V2)
         """
         if NoiseConnection is None:
             raise ImportError(
@@ -57,28 +127,29 @@ class NoiseWrapper:
         self.connection: Optional[NoiseConnection] = None
         self.handshake_complete = False
 
-    def initialize(self, local_static_key: Optional[bytes] = None) -> None:
+    def initialize(self, local_static_key: Optional[bytes] = None, remote_static_public: Optional[bytes] = None) -> None:
         """
-        Initialize Noise connection with optional static key.
+        Initialize Noise connection with optional static keys.
         
         Args:
             local_static_key: Optional local static private key (32 bytes for 25519)
-                             If not provided, one will be generated automatically.
+                             For Noise_NX, initiator doesn't need static key
+            remote_static_public: Remote static public key (required for NX pattern)
         """
         try:
             self.connection = NoiseConnection.from_name(self.protocol_name)
             self.connection.set_prologue(b"")
             
-            # Generate or set static key
+            # For Noise_NX, set remote static public key if provided
+            if remote_static_public:
+                self.connection.set_keypair_from_public_bytes(
+                    Keypair.REMOTE_STATIC, remote_static_public
+                )
+            
+            # Local static key is optional for NX pattern (initiator doesn't use it)
             if local_static_key:
                 self.connection.set_keypair_from_private_bytes(
                     Keypair.STATIC, local_static_key
-                )
-            else:
-                # Generate a new static key
-                private_key = generate_static_key()
-                self.connection.set_keypair_from_private_bytes(
-                    Keypair.STATIC, private_key
                 )
             
             logger.debug(f"Noise connection initialized with protocol: {self.protocol_name}")
