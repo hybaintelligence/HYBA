@@ -1,9 +1,9 @@
 {
   "pool_name": "braiins",
-  "pool_url": "stratum2+tcp://stratum.braiins.com:3333",
-  "stratum_version": 2,
+  "pool_url": "stratum+tcp://stratum.braiins.com:3333",
+  "stratum_version": 1,
   "duration_seconds": 300,
-  "start_time": 1781304117.4542084,
+  "start_time": 1781304340.1949472,
   "end_time": null,
   "connected": false,
   "authenticated": false,

@@ -3,6 +3,9 @@
 This adapter performs only the transport-level ``SetupConnection`` handshake.
 It intentionally does not synthesize mining jobs, extranonces, or share results;
 subsequent channel-open/job messages must arrive from a real Stratum V2 pool.
+
+Supports optional Noise protocol handshake for pools like Braiins that require
+authenticated encrypted connections.
 """
 from __future__ import annotations
 
@@ -25,6 +28,14 @@ from pythia_mining.stratum_v2 import (
     setup_connection_from_url,
 )
 
+try:
+    from pythia_mining.noise_wrapper import NoiseWrapper, NoiseHandshakeResult
+    NOISE_AVAILABLE = True
+except ImportError:
+    NOISE_AVAILABLE = False
+    NoiseWrapper = None
+    NoiseHandshakeResult = None
+
 
 class LiveStratumV2SessionError(ConnectionError):
     """Raised when a live Stratum V2 setup handshake fails."""
@@ -36,9 +47,16 @@ class StratumV2Handshake:
     used_version: int
     flags: int
     setup: Dict[str, Any]
+    noise_handshake: Optional[NoiseHandshakeResult] = None
 
     def to_dict(self) -> Dict[str, Any]:
-        return asdict(self)
+        result = asdict(self)
+        if self.noise_handshake:
+            result["noise_handshake"] = {
+                "encrypted": self.noise_handshake.encrypted,
+                "remote_static_public": self.noise_handshake.remote_static_public.hex() if self.noise_handshake.remote_static_public else None,
+            }
+        return result
 
 
 class LiveStratumV2Session:
@@ -48,6 +66,8 @@ class LiveStratumV2Session:
         *,
         transport: Optional[Any] = None,
         setup: Optional[SetupConnection] = None,
+        enable_noise: bool = False,
+        noise_static_key: Optional[bytes] = None,
     ) -> None:
         self.profile = validate_profile(profile)
         if int(self.profile.stratum_version) != 2:
@@ -55,23 +75,82 @@ class LiveStratumV2Session:
         self.transport = transport or StratumLineTransport(profile.url)
         self.setup = setup or setup_connection_from_url(profile.url)
         self.handshake: Optional[SetupConnectionSuccess] = None
+        self.enable_noise = enable_noise
+        self.noise_wrapper: Optional[NoiseWrapper] = None
+        self.noise_handshake_result: Optional[NoiseHandshakeResult] = None
+        
+        if self.enable_noise and NOISE_AVAILABLE:
+            self.noise_wrapper = NoiseWrapper()
+            if noise_static_key:
+                self.noise_wrapper.initialize(noise_static_key)
+            else:
+                self.noise_wrapper.initialize()
+        elif self.enable_noise and not NOISE_AVAILABLE:
+            raise LiveStratumV2SessionError(
+                "Noise protocol requested but noiseprotocol library not available. "
+                "Install with: pip install noiseprotocol"
+            )
 
     async def connect(self) -> None:
         await self.transport.connect()
+        
+        # Perform Noise protocol handshake if enabled
+        if self.enable_noise and self.noise_wrapper:
+            await self._perform_noise_handshake()
+
+    async def _perform_noise_handshake(self) -> None:
+        """Perform Noise protocol handshake before Stratum V2 setup."""
+        if not self.noise_wrapper:
+            return
+            
+        try:
+            # Get the underlying reader/writer from transport
+            if hasattr(self.transport, 'reader') and hasattr(self.transport, 'writer'):
+                reader = self.transport.reader
+                writer = self.transport.writer
+            else:
+                raise LiveStratumV2SessionError(
+                    "Transport does not expose reader/writer for Noise handshake"
+                )
+            
+            self.noise_handshake_result = await self.noise_wrapper.perform_handshake(
+                reader, writer, is_initiator=True
+            )
+            
+            if not self.noise_handshake_result.encrypted:
+                raise LiveStratumV2SessionError("Noise handshake did not establish encryption")
+                
+        except Exception as e:
+            raise LiveStratumV2SessionError(f"Noise protocol handshake failed: {e}")
 
     async def _send_frame(self, frame: StratumV2Frame) -> None:
+        frame_bytes = encode_frame(frame)
+        
+        # Encrypt if noise protocol is enabled
+        if self.enable_noise and self.noise_wrapper and self.noise_handshake_result:
+            frame_bytes = await self.noise_wrapper.encrypt(frame_bytes)
+        
         if hasattr(self.transport, "send_frame"):
             await self.transport.send_frame(frame)
             return
-        await self.transport.send_bytes(encode_frame(frame))
+        await self.transport.send_bytes(frame_bytes)
 
     async def _read_frame(self, *, timeout: Optional[float] = None) -> StratumV2Frame:
         if hasattr(self.transport, "read_frame"):
-            return await self.transport.read_frame(timeout=timeout)
-        header = await self.transport.read_exactly(SV2_HEADER_SIZE, timeout=timeout)
-        payload_length = decode_u24_le(header[3:6])
-        payload = await self.transport.read_exactly(payload_length, timeout=timeout) if payload_length else b""
-        return decode_frame(header + payload)
+            frame = await self.transport.read_frame(timeout=timeout)
+        else:
+            header = await self.transport.read_exactly(SV2_HEADER_SIZE, timeout=timeout)
+            payload_length = decode_u24_le(header[3:6])
+            payload = await self.transport.read_exactly(payload_length, timeout=timeout) if payload_length else b""
+            frame = decode_frame(header + payload)
+        
+        # Decrypt if noise protocol is enabled
+        if self.enable_noise and self.noise_wrapper and self.noise_handshake_result:
+            frame_bytes = encode_frame(frame)
+            decrypted_bytes = await self.noise_wrapper.decrypt(frame_bytes)
+            frame = decode_frame(decrypted_bytes)
+        
+        return frame
 
     async def setup_connection(self, *, timeout: Optional[float] = None) -> StratumV2Handshake:
         try:
@@ -85,6 +164,7 @@ class LiveStratumV2Session:
             used_version=self.handshake.used_version,
             flags=self.handshake.flags,
             setup=self.setup.to_dict(),
+            noise_handshake=self.noise_handshake_result,
         )
 
 

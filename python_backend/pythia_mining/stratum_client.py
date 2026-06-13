@@ -663,6 +663,10 @@ class StratumClient:
         self.metrics_store.record_connection_event(pool_name=self.pool_name, pool_url=self.pool_url, event_type="disconnection")
         await self._persist_metrics()
 
+    async def close(self):
+        """Alias for disconnect() for compatibility with cleanup patterns."""
+        await self.disconnect()
+
     async def inject_dev_fixture_target_job(self, difficulty: float):
         """Create a dev/test mining job fixture. Disabled in production."""
         if not _dev_fixtures_allowed():
