@@ -8,16 +8,18 @@ cryptographic shortcut or fabricating live hashrate.
 
 from __future__ import annotations
 
-import math
 import time
 from dataclasses import asdict, dataclass
 from typing import Any, Mapping, Sequence
 
 import numpy as np
 
-PHI = (1.0 + math.sqrt(5.0)) / 2.0
-PHI_INV = 1.0 / PHI
-EPSILON = 1e-12
+from .phi_config import (
+    EPSILON,
+    PHI,
+    PHI_INV,
+    PhiScalingPolicy,
+)
 
 
 @dataclass(frozen=True)
@@ -67,8 +69,26 @@ class PhiScaledEnsemble:
 
     def __init__(self, config: Mapping[str, Any] | None = None):
         self.config = dict(config or {})
-        self.phi_power = float(self.config.get("phi_scaling_power", 1.5))
+        self.policy = PhiScalingPolicy(
+            phi_scaling_power=float(self.config.get("phi_scaling_power", PhiScalingPolicy().phi_scaling_power)),
+            low_variance_threshold=float(
+                self.config.get("low_variance_threshold", PhiScalingPolicy().low_variance_threshold)
+            ),
+            high_variance_threshold=float(
+                self.config.get("high_variance_threshold", PhiScalingPolicy().high_variance_threshold)
+            ),
+            memory_limit=int(self.config.get("memory_limit", self.config.get("max_memory", PhiScalingPolicy().memory_limit))),
+        )
+        self.phi_power = self.policy.phi_scaling_power
         self.memory: list[PhiDecision] = []
+
+    def _remember(self, decision: PhiDecision) -> None:
+        if self.policy.memory_limit == 0:
+            return
+        self.memory.append(decision)
+        overflow = len(self.memory) - self.policy.memory_limit
+        if overflow > 0:
+            del self.memory[:overflow]
 
     def predict_with_phi_scaling(
         self,
@@ -77,7 +97,7 @@ class PhiScaledEnsemble:
     ) -> dict[str, Any]:
         if not model_predictions:
             decision = PhiDecision(0.0, self._calculate_indicator_harmony(indicators), 0.0, 0.0, tuple())
-            self.memory.append(decision)
+            self._remember(decision)
             return decision.to_dict()
 
         model_names = sorted(model_predictions.keys())
@@ -86,9 +106,9 @@ class PhiScaledEnsemble:
         mean_score = float(np.mean(model_scores))
         model_variance = float(np.std(model_scores))
 
-        if model_variance < 0.05:
+        if model_variance < self.policy.low_variance_threshold:
             phi_exponent = self.phi_power
-        elif model_variance > 0.2:
+        elif model_variance > self.policy.high_variance_threshold:
             phi_exponent = -1.0
         else:
             phi_exponent = PHI_INV
@@ -108,7 +128,7 @@ class PhiScaledEnsemble:
         final_score = float(np.clip(harmonic_score * (PHI ** (indicator_harmony - 1.0)), 0.0, 1.0))
         coherence = float(np.clip(1.0 - (model_variance / (PHI * 0.5)), 0.0, 1.0))
         decision = PhiDecision(harmonic_score, indicator_harmony, final_score, coherence, tuple(float(v) for v in phi_weights))
-        self.memory.append(decision)
+        self._remember(decision)
         return decision.to_dict()
 
     def _calculate_indicator_harmony(self, indicators: Mapping[str, Mapping[str, float]]) -> float:

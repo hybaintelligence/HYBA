@@ -28,10 +28,22 @@ class PulviniMemoryFabricSnapshot:
 class PulviniMemoryFabric:
     """Runtime memory fabric backed by phi compression and retained kernels."""
 
-    def __init__(self, *, num_nodes: int = 32, window: int = 64, fold_depth: int = 2) -> None:
+    def __init__(
+        self,
+        *,
+        num_nodes: int = 32,
+        window: int = 64,
+        fold_depth: int = 2,
+        kernel: Any | None = None,
+        compressor: PulviniPhiMemoryCompressionEngine | None = None,
+        tolerance: float | None = None,
+    ) -> None:
         self.num_nodes = int(num_nodes)
-        self.kernel = HebbianMemoryKernel(window=window)
-        self.compressor = PulviniPhiMemoryCompressionEngine(fold_depth=fold_depth)
+        self.kernel = kernel if kernel is not None else HebbianMemoryKernel(window=window)
+        compressor_kwargs = {"fold_depth": fold_depth}
+        if tolerance is not None:
+            compressor_kwargs["tolerance"] = float(tolerance)
+        self.compressor = compressor if compressor is not None else PulviniPhiMemoryCompressionEngine(**compressor_kwargs)
 
     def record_path(self, path: Sequence[int], reward: float) -> None:
         self.kernel.record_path(self.num_nodes, path, reward)
