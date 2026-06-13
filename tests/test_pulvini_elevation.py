@@ -6,6 +6,11 @@ from pythia_mining.pulvini_elevation import (
     KernelSupervisor,
     MathematicalException,
     PhiHealthSupervisor,
+    PhiInvariantKernelScheduler,
+    PhiScalingContract,
+    PhiStabilityDiagnostic,
+    PhiTopologyLedgerCompressor,
+    QuantumRuntimePassport,
     ProductionResponse,
     QuantumRuntimeManifestBuilder,
     StaticMathProvider,
@@ -81,6 +86,9 @@ def test_runtime_manifest_contains_regulatory_elevation_artifacts_without_numpy(
     assert manifest["certificate_ledger_root_hash"] == ledger.root_hash
     assert manifest["kernel_invariants"]["closed"] is True
     assert manifest["compliance"]["quantum_speedup_claimed"] is False
+    assert manifest["phi_scaling_contract"]["scaling_model"] == "dynamic_phi_exponential"
+    assert manifest["phi_tier_composition"][0]["label"] == "10^7"
+    assert manifest["phi_stability_diagnostic"]["stable"] is True
     assert manifest["runtime_manifest_hash"]
     json.dumps(manifest, sort_keys=True)
 
@@ -150,6 +158,8 @@ def test_telemetry_contract_fixed_point_determinism_without_hypothesis_or_numpy(
         encoded = contract.encode({"phi": phi, "bures": 1.0 - phi, "purity": phi, "manifold_drift": 0.0, "solver_latency_ms": 0.0})
         assert set(encoded) == set(contract.metrics)
         assert all(0 <= value <= contract.fixed_point_scale for value in encoded.values())
+        assert "phi_tier" in encoded
+        assert "phi_scale_factor" in encoded
         assert contract.digest([{"phi": phi, "bures": 1.0 - phi, "purity": phi}]) == contract.digest([
             {"phi": phi, "bures": 1.0 - phi, "purity": phi}
         ])
@@ -169,6 +179,7 @@ def test_manifest_writer_and_production_response_envelope_without_numpy(tmp_path
     assert manifest["manifest_json_name"] == "manifest.json"
     assert "ManifoldOperator.ensure_density_state" in manifest["capability_manifest"]["endpoint_invariants"]
     assert manifest["capability_manifest"]["capability_flags"]["supports_production_response_envelope"] is True
+    assert manifest["capability_manifest"]["capability_flags"]["supports_dynamic_phi_exponential_scaling"] is True
 
 
 def test_kernel_supervisor_logs_mathematical_exception_with_static_math_provider():
@@ -199,12 +210,14 @@ def test_kernel_supervisor_enforces_seeded_determinism_and_runtime_passport_with
     entry = ledger.entries[-1]
     passport = TelemetryContract().runtime_passport(
         "identity_kernel",
-        {"phi": 0.618, "bures": 0.0, "purity": output["purity"]},
+        {"phi": 0.618, "bures": 0.0, "purity": output["purity"], "phi_tier": 12, "phi_scale_factor": 3.21e14},
         report,
         entry,
     )
 
     assert report.closed is True
+    assert passport.phi_exponent == 12
+    assert passport.phi_scale_factor_fixed > 0
     assert TelemetryContract().verify_runtime_passport(passport, ledger) is True
 
     counter = {"value": 0}
@@ -220,6 +233,92 @@ def test_kernel_supervisor_enforces_seeded_determinism_and_runtime_passport_with
     else:
         raise AssertionError("expected deterministic contract violation")
 
+
+
+
+
+def test_phi_invariant_kernel_scheduler_routes_by_stability_and_tier_without_numpy():
+    scheduler = PhiInvariantKernelScheduler()
+    stable = PhiStabilityDiagnostic().evaluate([1.0, 1.618033988749895, 1.618033988749895 ** 2])
+    unstable = PhiStabilityDiagnostic().evaluate([1.0, 3.0, 4.0])
+    low_passport = QuantumRuntimePassport("module", 0, 0, True, "a" * 64, phi_exponent=12)
+    high_passport = QuantumRuntimePassport("module", 0, 0, True, "b" * 64, phi_exponent=76)
+
+    assert scheduler.route(low_passport, stable).route == "edge_or_asic_compatible"
+    assert scheduler.route(high_passport, stable).route == "sovereign_phi_resonant"
+    assert scheduler.route(low_passport, unstable).route == "stability_recalibration"
+
+
+def test_phi_topology_ledger_compressor_commits_invariants_violations_and_transitions_without_numpy():
+    ledger = CertificateLedger()
+    supervisor = KernelSupervisor(ledger=ledger, math_provider=StaticMathProvider())
+    supervisor.validate_phi_stability([1.0, 1.618033988749895, 1.618033988749895 ** 2], stage="stable")
+    try:
+        supervisor.validate_phi_stability([1.0, 3.0, 4.0], stage="unstable")
+    except MathematicalException:
+        pass
+
+    proof = PhiTopologyLedgerCompressor().compress(ledger)
+
+    assert proof.window_count == 2
+    assert proof.invariant_count == 1
+    assert proof.violation_count == 1
+    assert proof.transition_count == 1
+    assert len(proof.merkle_root) == 64
+
+def test_kernel_supervisor_ledgers_phi_scaling_violations_without_numpy():
+    ledger = CertificateLedger()
+    supervisor = KernelSupervisor(ledger=ledger, math_provider=StaticMathProvider())
+
+    stable = supervisor.validate_phi_stability([1.0, 1.618033988749895, 1.618033988749895 ** 2], stage="stable_phi")
+    assert stable.stable is True
+    assert ledger.entries[-1].certificate_type == "phi_scaling_invariant"
+
+    try:
+        supervisor.validate_phi_stability([1.0, 3.0, 4.0], stage="unstable_phi")
+    except MathematicalException:
+        pass
+    else:
+        raise AssertionError("expected phi scaling invariant violation")
+    assert ledger.entries[-1].certificate_type == "phi_scaling_violation"
+    assert ledger.verify_chain()
+
+
+def test_singularity_tier_10_76_ledger_stress_is_deterministic_without_numpy():
+    contract = PhiScalingContract()
+    tier = contract.tier(76)
+    ledger_a = CertificateLedger()
+    ledger_b = CertificateLedger()
+
+    for ledger in (ledger_a, ledger_b):
+        ledger.append("phi_singularity_tier", tier, timestamp_ns=76)
+        ledger.append("phi_singularity_tier", contract.combination(31, 76), timestamp_ns=107)
+
+    assert tier["phi_exponent"] == 76
+    assert tier["scale_factor"] > 10**76
+    assert ledger_a.root_hash == ledger_b.root_hash
+    assert ledger_a.verify_chain() and ledger_b.verify_chain()
+
+def test_phi_scaling_contract_exposes_requested_tiers_and_combinations_without_numpy():
+    contract = PhiScalingContract()
+    material = contract.to_dict()
+
+    assert material["requested_exponents"] == [7, 10, 12, 15, 18, 20, 31, 76]
+    assert material["tiers"][2]["label"] == "10^12"
+    assert material["tiers"][2]["scale_factor"] > 10**12
+    assert material["combinations"][0]["label"] == "10^7×10^10"
+    assert material["combinations"][0]["phi_exponent"] == 17
+
+
+def test_phi_stability_diagnostic_detects_violations_without_numpy():
+    diagnostic = PhiStabilityDiagnostic(tolerance=0.05)
+    stable = diagnostic.evaluate([1.0, 1.618033988749895, 1.618033988749895 ** 2])
+    unstable = diagnostic.evaluate([1.0, 3.0, 4.0, 20.0])
+
+    assert stable.stable is True
+    assert stable.severity.value == "ok"
+    assert unstable.stable is False
+    assert unstable.recommendation == "rebalance_or_segment_dataset_before_phi_projection"
 
 def test_elevation_bridge_returns_anonymized_read_only_research_telemetry_without_numpy():
     bridge = ElevationBridge(FakeOperator(), FakeVerifier())

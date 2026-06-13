@@ -5,10 +5,11 @@ from __future__ import annotations
 import asyncio
 import hashlib
 import math
+import os
 import time
 from typing import Any, Dict, List, Optional
 
-from .quantum_solver import DodecahedralQuantumSolver, QuantumSolverConfigurationError
+from .quantum_solver import DodecahedralQuantumSolver, QuantumSolverConfigurationError, PULVINI_HASHRATE_CAP_EHS
 
 
 class PulviniCompressedQuantumSolver(DodecahedralQuantumSolver):
@@ -27,6 +28,8 @@ class PulviniCompressedQuantumSolver(DodecahedralQuantumSolver):
             raise QuantumSolverConfigurationError("compressed nonce plan must provide complete overlap-free coverage")
         await self.configure_search(int(target), list(compressed_plan.solver_ranges))
         self.compressed_plan = compressed_plan
+        phi_tier = int(os.getenv("HYBA_PULVINI_PHI_TIER", "12"))
+        phi_multiplier = ((1.0 + math.sqrt(5.0)) / 2.0) ** phi_tier
         self.current_config.update(
             {
                 "nonce_space_contract": "pulvini_phi_compressed_pre_search",
@@ -39,6 +42,10 @@ class PulviniCompressedQuantumSolver(DodecahedralQuantumSolver):
                 "working_set_compression_ratio": float(compressed_plan.working_set_compression_ratio),
                 "phi_compression_factor": float(compressed_plan.working_set_compression_ratio),
                 "phi_filter_acceptance_ratio": float(compressed_plan.working_set_dimension / max(1, compressed_plan.original_lanes)),
+                "phi_tier": phi_tier,
+                "phi_tier_multiplier": phi_multiplier,
+                "hashrate_cap_ehs": PULVINI_HASHRATE_CAP_EHS,
+                "configured_capacity_ehs": self.configured_capacity_ehs,
                 "compressed_nonce_plan": compressed_plan.to_dict(),
             }
         )

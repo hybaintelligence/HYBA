@@ -79,6 +79,9 @@ async def get_health_status():
             "difficultyTarget": state.get("difficulty_target") if state else None,
             "networkDifficulty": state.get("network_difficulty") if state else None,
             "power_scale": state.get("power_scale") if state else None,
+            "phi_tier": state.get("phi_tier") if state else None,
+            "phi_tier_composition": state.get("phi_tier_composition") if state else None,
+            "memory_compression_contract": state.get("memory_compression_contract") if state else None,
             "system_health": state.get("system_health") if state else "unavailable",
         },
     }

@@ -23,9 +23,12 @@ if str(PYTHON_BACKEND) not in sys.path:
 from hyba_genesis_api.api.mining import (  # noqa: E402
     PULVINI_HASHRATE_CAP_EHS as API_HASHRATE_CAP_EHS,
     ConnectRequest,
+    PHI_TIERS,
+    PowerScaleRequest,
     SubmitJobRequest,
     _capped_hashrate_ehs,
     _effective_hashrate_ehs,
+    _phi_tier_composition,
 )
 from pythia_mining.quantum_solver import (  # noqa: E402
     PULVINI_HASHRATE_CAP_EHS as SOLVER_HASHRATE_CAP_EHS,
@@ -56,6 +59,22 @@ power_scales = st.floats(
     allow_nan=False,
     allow_infinity=False,
 )
+
+
+
+def test_power_scale_request_accepts_frontend_phi_tiers_and_defaults_to_1ehs_cap() -> None:
+    request = PowerScaleRequest(scale=1.0, phi_tier=12)
+    composition = _phi_tier_composition(request.phi_tier)
+
+    assert request.phi_tier in PHI_TIERS
+    assert composition["label"] == "10^12"
+    assert composition["hashrate_cap_ehs"] == API_HASHRATE_CAP_EHS
+    assert composition["memory_compression_contract"] == "pulvini_phi_compressed_pre_search"
+
+
+def test_power_scale_request_rejects_unknown_phi_tier() -> None:
+    with pytest.raises(ValidationError):
+        PowerScaleRequest(scale=1.0, phi_tier=11)
 
 
 @given(capacity=valid_connect_capacity)

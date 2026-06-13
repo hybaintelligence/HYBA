@@ -48,10 +48,35 @@ _DAEMON_STARTED: bool = False
 MINING_CONTROL_ROLES = {"ceo", "treasury_admin", "mining_operator", "mining:operate"}
 MINING_READ_ROLES = {"ceo", "treasury_admin", "mining_operator", "treasury_viewer", "mining:read", "mining:operate"}
 PULVINI_HASHRATE_CAP_EHS = 1.0
+PHI = (1.0 + math.sqrt(5.0)) / 2.0
+PHI_TIERS = (7, 10, 12, 15, 18, 20, 31, 76)
+DEFAULT_PHI_TIER = 12
+
+
+def _phi_tier_composition(phi_tier: int = DEFAULT_PHI_TIER) -> Dict[str, Any]:
+    exponent = int(phi_tier)
+    phi_multiplier = PHI ** exponent
+    scale_factor = (10 ** exponent) * phi_multiplier
+    return {
+        "label": f"10^{exponent}",
+        "phi_exponent": exponent,
+        "phi_multiplier": phi_multiplier,
+        "scale_factor": scale_factor,
+        "hashrate_cap_ehs": PULVINI_HASHRATE_CAP_EHS,
+        "memory_compression_contract": "pulvini_phi_compressed_pre_search",
+        "frontend_scaling_enabled": True,
+    }
 
 
 class PowerScaleRequest(BaseModel):
     scale: float = Field(default=1.0, ge=0.1, le=10.0)
+    phi_tier: int = Field(default=DEFAULT_PHI_TIER, description="Dynamic φ tier exponent for memory-compression scaling metadata")
+
+    @validator("phi_tier")
+    def validate_phi_tier(cls, value: int) -> int:
+        if int(value) not in PHI_TIERS:
+            raise ValueError(f"phi_tier must be one of: {PHI_TIERS}")
+        return int(value)
 
 
 class PoolCredentialRequest(BaseModel):
@@ -761,7 +786,7 @@ async def get_stats():
 async def set_power_scale(data: PowerScaleRequest, request: Request, idempotency_key: str | None = Header(None, alias="Idempotency-Key")):
     global _ACTIVE_CONNECTION
     request_id = _request_id(request)
-    parameters = {"scale": data.scale}
+    parameters = {"scale": data.scale, "phi_tier": data.phi_tier}
     idem = _idempotency_key(request, idempotency_key, "power", parameters)
     tracked = mining_request_tracker.create_request("power", parameters, idem)
     if tracked.status == RequestStatus.COMPLETED and tracked.result:
@@ -774,22 +799,28 @@ async def set_power_scale(data: PowerScaleRequest, request: Request, idempotency
         state = get_pythia_state() or {}
         base_capacity = (_ACTIVE_CONNECTION or {}).get("base_capacity_ehs") or state.get("base_capacity_ehs") or (_ACTIVE_CONNECTION or {}).get("capacity_ehs") or state.get("hashrate_ehs")
         effective_hashrate = _effective_hashrate_ehs(base_capacity, data.scale)
+        phi_tier_composition = _phi_tier_composition(data.phi_tier)
         config_file = _config_path()
         fd = os.open(config_file + ".tmp", os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
         with os.fdopen(fd, "w", encoding="utf-8") as file:
-            json.dump({"power_scale": data.scale, "hashrate_cap_ehs": PULVINI_HASHRATE_CAP_EHS, "timestamp": datetime.utcnow().isoformat(), "request_id": request_id}, file)
+            json.dump({"power_scale": data.scale, "phi_tier": data.phi_tier, "phi_tier_composition": phi_tier_composition, "memory_compression_contract": "pulvini_phi_compressed_pre_search", "hashrate_cap_ehs": PULVINI_HASHRATE_CAP_EHS, "timestamp": datetime.utcnow().isoformat(), "request_id": request_id}, file)
         os.replace(config_file + ".tmp", config_file)
         os.chmod(config_file, 0o600)
         state["power_scale"] = data.scale
+        state["phi_tier"] = data.phi_tier
+        state["phi_tier_composition"] = phi_tier_composition
+        state["memory_compression_contract"] = "pulvini_phi_compressed_pre_search"
         state["hashrate_ehs"] = effective_hashrate
         state["hashrate_cap_ehs"] = PULVINI_HASHRATE_CAP_EHS
         state["capacity_source"] = "configured_capped" if effective_hashrate is not None else state.get("capacity_source", "not_configured")
         _write_state(state)
         if _ACTIVE_CONNECTION:
             _ACTIVE_CONNECTION["power_scale"] = data.scale
+            _ACTIVE_CONNECTION["phi_tier"] = data.phi_tier
+            _ACTIVE_CONNECTION["phi_tier_composition"] = phi_tier_composition
             _ACTIVE_CONNECTION["capacity_ehs"] = effective_hashrate
             _ACTIVE_CONNECTION["hashrate_cap_ehs"] = PULVINI_HASHRATE_CAP_EHS
-        result = {"status": "success", "request_id": request_id, "tracked_request_id": tracked.request_id, "idempotency_key": idem, "requested_scale": data.scale, "effective_hashrate_ehs": effective_hashrate, "hashrate_cap_ehs": PULVINI_HASHRATE_CAP_EHS, "midas_state": midas_state_machine.get_state().value}
+        result = {"status": "success", "request_id": request_id, "tracked_request_id": tracked.request_id, "idempotency_key": idem, "requested_scale": data.scale, "phi_tier": data.phi_tier, "phi_tier_composition": phi_tier_composition, "effective_hashrate_ehs": effective_hashrate, "hashrate_cap_ehs": PULVINI_HASHRATE_CAP_EHS, "midas_state": midas_state_machine.get_state().value}
         mining_request_tracker.update_request_status(tracked.request_id, RequestStatus.COMPLETED, result=result)
         return result
     except HTTPException as exc:

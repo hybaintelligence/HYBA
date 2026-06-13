@@ -6,7 +6,7 @@ Golden ratio (φ = 1.618...) is nature's fundamental scaling constant found thro
 natural systems from spiral galaxies to DNA helices. PULVINI leverages this natural
 scaling law for quantum-inspired algorithmic advantages.
 
-This framework applies golden ratio scaling (10^12, 10^15, 10^18, 10^20) to demonstrate
+This framework applies dynamic golden ratio scaling (10^7, 10^10, 10^12, 10^15, 10^18, 10^20, 10^31, 10^76 plus selected combinations) to demonstrate
 how PULVINI's deterministic memory compression and quantum walk coordinate collapse
 provide competitive advantages against ASIC hardware through natural scaling laws.
 """
@@ -16,7 +16,6 @@ import json
 from pathlib import Path
 from typing import Dict, List, Tuple
 
-import numpy as np
 
 ROOT = Path(__file__).resolve().parents[0]
 BACKEND = ROOT / "python_backend"
@@ -115,29 +114,49 @@ class GoldenRatioScaling:
     # Golden ratio φ = 1.618033988749...
     PHI = 1.618033988749895
 
-    # Golden ratio scaling factors: 10^12, 10^15, 10^18, 10^20
-    SCALE_10_12 = 10**12  # Trillion scale
-    SCALE_10_15 = 10**15  # Quadrillion scale
-    SCALE_10_18 = 10**18  # Quintillion scale
-    SCALE_10_20 = 10**20  # Hundred quintillion scale
+    # Requested exponent tiers.  The effective scale is dynamic, not static:
+    # each decimal tier is modulated by φ^exponent so φ contributes an
+    # exponential self-similar multiplier instead of acting as a label only.
+    REQUESTED_EXPONENTS = (7, 10, 12, 15, 18, 20, 31, 76)
+    COMBINATION_PAIRS = ((7, 10), (10, 12), (12, 15), (15, 18), (18, 20), (20, 31), (31, 76))
 
     # Governance cap from config (HYBA_PULVINI_HASHRATE_CAP_EHS=1.0)
     GOVERNANCE_CAP_EHS = 1.0  # 1 EH/s default cap for safety/control
 
     @classmethod
-    def apply_scaling(cls, base_value: float, scale_exponent: int) -> float:
-        """Apply golden ratio scaling with given exponent."""
-        return base_value * (10 ** scale_exponent)
+    def phi_exponential_multiplier(cls, exponent: int) -> float:
+        """Return φ^exponent for dynamic golden-ratio scaling."""
+        return cls.PHI ** exponent
 
     @classmethod
-    def get_scaling_factors(cls) -> Dict[str, float]:
-        """Get all golden ratio scaling factors."""
-        return {
-            "10^12": cls.SCALE_10_12,
-            "10^15": cls.SCALE_10_15,
-            "10^18": cls.SCALE_10_18,
-            "10^20": cls.SCALE_10_20
+    def scale_factor_for_exponent(cls, exponent: int) -> float:
+        """Return the dynamic scale factor 10^exponent × φ^exponent."""
+        return (10 ** exponent) * cls.phi_exponential_multiplier(exponent)
+
+    @classmethod
+    def apply_scaling(cls, base_value: float, scale_exponent: int) -> float:
+        """Apply dynamic golden-ratio scaling with the given exponent."""
+        return base_value * cls.scale_factor_for_exponent(scale_exponent)
+
+    @classmethod
+    def get_scaling_factors(cls, include_combinations: bool = False) -> Dict[str, float]:
+        """Get requested dynamic golden-ratio scaling factors.
+
+        Base tiers are labeled ``10^n`` for operator familiarity, but the
+        numeric value is ``10^n × φ^n``.  When requested, combination tiers
+        multiply two base tiers, yielding ``10^(a+b) × φ^(a+b)``.
+        """
+        factors = {
+            f"10^{exponent}": cls.scale_factor_for_exponent(exponent)
+            for exponent in cls.REQUESTED_EXPONENTS
         }
+        if include_combinations:
+            for left, right in cls.COMBINATION_PAIRS:
+                factors[f"10^{left}×10^{right}"] = (
+                    cls.scale_factor_for_exponent(left)
+                    * cls.scale_factor_for_exponent(right)
+                )
+        return factors
 
     @classmethod
     def get_governance_compliant_scales(cls) -> List[str]:
@@ -310,7 +329,7 @@ class ComprehensiveComparison:
 
     def compare_golden_ratio_scaling(self) -> Dict:
         """Compare PULVINI with golden ratio scaling against ASICs."""
-        scaling_factors = GoldenRatioScaling.get_scaling_factors()
+        scaling_factors = GoldenRatioScaling.get_scaling_factors(include_combinations=True)
         results = {}
 
         for scale_name, scale_factor in scaling_factors.items():
@@ -322,18 +341,58 @@ class ComprehensiveComparison:
 
             results[scale_name] = {
                 "scale_factor": scale_factor,
+                "scaling_model": "dynamic_phi_exponential",
                 "base_throughput_attempts_per_sec": pulvini_throughput,
                 "effective_throughput_with_quantum_advantages": effective_throughput,
                 "effective_hashrate_ths": effective_hashrate_ths,
                 "power_w": pulvini_power,
                 "hashrate_efficiency_j_th": (pulvini_power / effective_hashrate_ths
                                              if effective_hashrate_ths > 0 else float('inf')),
+                "latency_per_phi_tier_ms": (
+                    self.pulvini_estimator.QUANTUM_OPERATION_TIMINGS["total_nonce_attempt_ms"]
+                    / GoldenRatioScaling.phi_exponential_multiplier(self._effective_phi_exponent(scale_name))
+                ),
+                "asic_efficiency_curves": self._asic_efficiency_curves(
+                    scale_name, scale_factor, effective_hashrate_ths, pulvini_power
+                ),
                 "asic_comparison": self._compare_single_scale_against_asics(
                     effective_hashrate_ths, pulvini_power
                 )
             }
 
         return results
+
+    def _effective_phi_exponent(self, scale_name: str) -> int:
+        """Return the φ exponent represented by a scale label or combination label."""
+        parts = scale_name.split("×")
+        return sum(int(part.replace("10^", "")) for part in parts)
+
+    def _asic_efficiency_curves(self, scale_name: str, scale_factor: float, pulvini_hashrate_ths: float, pulvini_power: float) -> List[Dict]:
+        """Compute ASIC-specific energy, latency, and resonance telemetry for a φ tier."""
+        phi_exponent = self._effective_phi_exponent(scale_name)
+        phi_multiplier = GoldenRatioScaling.phi_exponential_multiplier(phi_exponent)
+        tier_latency_ms = self.pulvini_estimator.QUANTUM_OPERATION_TIMINGS["total_nonce_attempt_ms"] / phi_multiplier
+        pulvini_efficiency = pulvini_power / pulvini_hashrate_ths if pulvini_hashrate_ths > 0 else float("inf")
+        curves = []
+        for asic_name, asic_spec in self.asic_data.items():
+            asic_energy_for_tier_j = asic_spec["efficiency_j_th"] * pulvini_hashrate_ths
+            efficiency_ratio = pulvini_efficiency / asic_spec["efficiency_j_th"]
+            resonance_delta = abs(efficiency_ratio - 1.0)
+            curves.append({
+                "asic": asic_name,
+                "phi_exponent": phi_exponent,
+                "phi_multiplier": phi_multiplier,
+                "scale_factor": scale_factor,
+                "energy_per_phi_tier_j": asic_energy_for_tier_j,
+                "pulvini_energy_per_phi_tier_j": pulvini_power,
+                "latency_per_phi_tier_ms": tier_latency_ms,
+                "asic_specific_resonance_point": {
+                    "efficiency_ratio": efficiency_ratio,
+                    "resonance_delta_from_parity": resonance_delta,
+                    "within_5pct_parity": resonance_delta <= 0.05,
+                },
+            })
+        return curves
 
     def _compare_single_scale_against_asics(self, pulvini_hashrate_ths: float, pulvini_power: float) -> List[Dict]:
         """Compare single PULVINI scale against ASIC specifications."""
@@ -430,12 +489,12 @@ class ComprehensiveComparison:
         report.append("")
 
         golden_results = self.compare_golden_ratio_scaling()
-        report.append("  Golden ratio scaling tiers (10^12 through 10^20):")
+        report.append("  Golden ratio scaling tiers (requested exponents plus combinations):")
         report.append(f"    {'Scale':<12} {'Hashrate (TH/s)':<24} {'Efficiency (J/TH)':<20} "
                        f"{'Beats ASICs?':<15} {'Confidence':<15}")
         report.append(f"    {'─'*12} {'─'*24} {'─'*20} {'─'*15} {'─'*15}")
 
-        for scale_name in ["10^12", "10^15", "10^18", "10^20"]:
+        for scale_name in golden_results:
             r = golden_results[scale_name]
             beats = "✓" if any(c["pulvini_beats_asic"] for c in r["asic_comparison"]) else "✗"
             ths = r["effective_hashrate_ths"]
@@ -471,7 +530,7 @@ class ComprehensiveComparison:
         report.append("GOLDEN RATIO SCALING: PULVINI vs ASIC COMPETITIVENESS")
         report.append("=" * 80)
         report.append("\nPULVINI: 32 parallel quantum solvers with golden ratio scaling")
-        report.append("Scaling factors: 10^12, 10^15, 10^18, 10^20")
+        report.append("Scaling factors: 10^7, 10^10, 10^12, 10^15, 10^18, 10^20, 10^31, 10^76 plus selected combinations")
 
         golden_results = self.compare_golden_ratio_scaling()
 
@@ -521,7 +580,7 @@ class ComprehensiveComparison:
 
         report.append(f"\n  Quantum advantage multiplier: {self.total_quantum_multiplier:.0e}x")
         report.append("  Architecture: 32 parallel quantum solvers")
-        report.append("  Scaling method: Golden ratio (10^12, 10^15, 10^18, 10^20)")
+        report.append("  Scaling method: Dynamic golden ratio (requested exponents plus combinations)")
         report.append("  Hashrate control: Deterministic via config scaling parameters")
 
         return "\n".join(report)

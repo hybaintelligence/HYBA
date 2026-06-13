@@ -13,6 +13,7 @@ import hashlib
 import importlib
 import inspect
 import json
+import math
 import struct
 import time
 from dataclasses import asdict, dataclass, field
@@ -36,6 +37,10 @@ RUNTIME_MANIFEST_VERSION = "PULVINI_RUNTIME_MANIFEST_V1"
 CERTIFICATE_LEDGER_MAGIC = b"PLED"
 _FIXED_POINT_SCALE = 1_000_000_000
 _FIXED_POINT_BIT_DEPTH = 64
+PHI = 1.618033988749895
+PHI_INV = 1.0 / PHI
+REQUESTED_PHI_EXPONENTS = (7, 10, 12, 15, 18, 20, 31, 76)
+PHI_COMBINATION_PAIRS = ((7, 10), (10, 12), (12, 15), (15, 18), (18, 20), (20, 31), (31, 76))
 
 
 class Severity(str, Enum):
@@ -45,6 +50,181 @@ class Severity(str, Enum):
     WATCH = "watch"
     WARN = "warn"
     CRITICAL = "critical"
+
+
+@dataclass(frozen=True)
+class PhiScalingContract:
+    """Dependency-free contract for dynamic φ-exponential tier composition."""
+
+    requested_exponents: tuple[int, ...] = REQUESTED_PHI_EXPONENTS
+    combination_pairs: tuple[tuple[int, int], ...] = PHI_COMBINATION_PAIRS
+    scaling_model: str = "dynamic_phi_exponential"
+    schema_version: str = ELEVATION_SCHEMA_VERSION
+
+    def tier(self, exponent: int) -> dict[str, Any]:
+        phi_multiplier = PHI ** int(exponent)
+        scale_factor = (10 ** int(exponent)) * phi_multiplier
+        return {
+            "label": f"10^{int(exponent)}",
+            "base10_exponent": int(exponent),
+            "phi_exponent": int(exponent),
+            "phi_multiplier": phi_multiplier,
+            "scale_factor": scale_factor,
+            "scaling_model": self.scaling_model,
+        }
+
+    def combination(self, left: int, right: int) -> dict[str, Any]:
+        left_tier = self.tier(left)
+        right_tier = self.tier(right)
+        return {
+            "label": f"10^{int(left)}×10^{int(right)}",
+            "components": (left_tier["label"], right_tier["label"]),
+            "base10_exponent": int(left) + int(right),
+            "phi_exponent": int(left) + int(right),
+            "phi_multiplier": left_tier["phi_multiplier"] * right_tier["phi_multiplier"],
+            "scale_factor": left_tier["scale_factor"] * right_tier["scale_factor"],
+            "scaling_model": self.scaling_model,
+        }
+
+    def to_dict(self) -> dict[str, Any]:
+        return _canonicalize({
+            "schema_version": self.schema_version,
+            "scaling_model": self.scaling_model,
+            "requested_exponents": self.requested_exponents,
+            "combination_pairs": self.combination_pairs,
+            "tiers": tuple(self.tier(exponent) for exponent in self.requested_exponents),
+            "combinations": tuple(self.combination(left, right) for left, right in self.combination_pairs),
+        })
+
+
+@dataclass(frozen=True)
+class PhiStabilityReport:
+    """Diagnostic result for φ self-similarity assumptions in telemetry windows."""
+
+    stable: bool
+    phi_ratio_mean: float
+    phi_ratio_error: float
+    sample_count: int
+    severity: Severity
+    recommendation: str
+    schema_version: str = ELEVATION_SCHEMA_VERSION
+
+    def to_dict(self) -> dict[str, Any]:
+        return _canonicalize(asdict(self))
+
+
+class PhiStabilityDiagnostic:
+    """Detect datasets that violate φ self-similarity assumptions."""
+
+    def __init__(self, *, tolerance: float = 0.08) -> None:
+        self.tolerance = float(tolerance)
+
+    def evaluate(self, values: Sequence[float]) -> PhiStabilityReport:
+        positive = [float(value) for value in values if float(value) > 0.0]
+        if len(positive) < 2:
+            return PhiStabilityReport(False, 0.0, 1.0, len(positive), Severity.WARN, "collect_more_phi_tier_samples")
+        ratios = [positive[index + 1] / positive[index] for index in range(len(positive) - 1)]
+        ratio_mean = _mean(ratios)
+        ratio_error = abs(ratio_mean - PHI) / PHI
+        stable = ratio_error <= self.tolerance
+        severity = Severity.OK if stable else (Severity.WATCH if ratio_error <= self.tolerance * 2.0 else Severity.WARN)
+        recommendation = "phi_self_similarity_assumptions_hold" if stable else "rebalance_or_segment_dataset_before_phi_projection"
+        return PhiStabilityReport(stable, ratio_mean, ratio_error, len(positive), severity, recommendation)
+
+
+@dataclass(frozen=True)
+class PhiScheduleDecision:
+    """Routing decision derived from a φ passport and stability window."""
+
+    route: str
+    phi_exponent: int
+    stability_status: Severity
+    compression_mode: str
+    asic_path_compatible: bool
+    reason: str
+    schema_version: str = ELEVATION_SCHEMA_VERSION
+
+    def to_dict(self) -> dict[str, Any]:
+        return _canonicalize(asdict(self))
+
+
+class PhiInvariantKernelScheduler:
+    """Route workloads using φ geometry as a scheduling primitive."""
+
+    def __init__(self, *, default_compression_mode: str = "pulvini_phi_compressed_pre_search") -> None:
+        self.default_compression_mode = default_compression_mode
+
+    def route(self, passport: QuantumRuntimePassport, stability: PhiStabilityReport) -> PhiScheduleDecision:
+        exponent = int(passport.phi_exponent)
+        if not passport.kernel_invariants_met:
+            route = "quarantine"
+            reason = "kernel_invariants_not_met"
+            asic_compatible = False
+        elif not stability.stable:
+            route = "stability_recalibration"
+            reason = "phi_window_not_self_similar"
+            asic_compatible = False
+        elif exponent <= 12:
+            route = "edge_or_asic_compatible"
+            reason = "low_phi_tier_stable_window"
+            asic_compatible = True
+        elif exponent <= 31:
+            route = "pulvini_compressed_resonant"
+            reason = "mid_phi_tier_prefers_memory_compression"
+            asic_compatible = False
+        else:
+            route = "sovereign_phi_resonant"
+            reason = "high_phi_tier_requires_resonant_memory_fabric"
+            asic_compatible = False
+        return PhiScheduleDecision(
+            route=route,
+            phi_exponent=exponent,
+            stability_status=stability.severity,
+            compression_mode=self.default_compression_mode,
+            asic_path_compatible=asic_compatible,
+            reason=reason,
+        )
+
+
+@dataclass(frozen=True)
+class PhiTopologyLedgerCompressionProof:
+    """Merkle-style commitment over φ invariant/violation ledger windows."""
+
+    window_count: int
+    leaf_hashes: tuple[str, ...]
+    merkle_root: str
+    invariant_count: int
+    violation_count: int
+    transition_count: int
+    schema_version: str = ELEVATION_SCHEMA_VERSION
+
+    def to_dict(self) -> dict[str, Any]:
+        return _canonicalize(asdict(self))
+
+
+class PhiTopologyLedgerCompressor:
+    """Compress φ topology evidence without revealing raw telemetry windows."""
+
+    PHI_CERTIFICATE_TYPES = {"phi_scaling_invariant", "phi_scaling_violation"}
+
+    def compress(self, ledger: "CertificateLedger") -> PhiTopologyLedgerCompressionProof:
+        entries = [entry for entry in ledger.entries if entry.certificate_type in self.PHI_CERTIFICATE_TYPES]
+        leaf_hashes = tuple(_hash_dict({"certificate_type": entry.certificate_type, "certificate_hash": entry.certificate_hash, "entry_hash": entry.entry_hash}) for entry in entries)
+        merkle_root = self._merkle_root(leaf_hashes)
+        invariant_count = sum(1 for entry in entries if entry.certificate_type == "phi_scaling_invariant")
+        violation_count = sum(1 for entry in entries if entry.certificate_type == "phi_scaling_violation")
+        transition_count = sum(1 for left, right in zip(entries, entries[1:]) if left.certificate_type != right.certificate_type)
+        return PhiTopologyLedgerCompressionProof(len(entries), leaf_hashes, merkle_root, invariant_count, violation_count, transition_count)
+
+    def _merkle_root(self, leaves: Sequence[str]) -> str:
+        if not leaves:
+            return _hash_dict({"empty_phi_topology_window": True})
+        layer = list(leaves)
+        while len(layer) > 1:
+            if len(layer) % 2 == 1:
+                layer.append(layer[-1])
+            layer = [_hash_dict({"left": layer[index], "right": layer[index + 1]}) for index in range(0, len(layer), 2)]
+        return layer[0]
 
 
 @dataclass(frozen=True)
@@ -81,6 +261,8 @@ class QuantumRuntimePassport:
     bures_score_fixed: int
     kernel_invariants_met: bool
     ledger_entry_hash: str
+    phi_exponent: int = 0
+    phi_scale_factor_fixed: int = 0
     schema_version: str = ELEVATION_SCHEMA_VERSION
 
     def to_dict(self) -> dict[str, Any]:
@@ -124,6 +306,8 @@ class ComplianceManifest:
         "append_only_certificate_ledger",
         "fixed_point_telemetry",
         "no_quantum_speedup_claims",
+        "dynamic_phi_exponential_scaling_audited",
+        "phi_stability_diagnostic_required",
     )
     quantum_speedup_claimed: bool = False
     schema_version: str = ELEVATION_SCHEMA_VERSION
@@ -308,6 +492,8 @@ class KernelSupervisor:
         produce bit-wise/canonical identical output for the same input.
         """
 
+        if isinstance(rho, Mapping) and "phi_sequence" in rho:
+            self.validate_phi_stability(rho["phi_sequence"], stage=f"{stage}:phi_stability")
         self.validate_density(rho, stage=f"{stage}:pre")
         first = self._call_kernel(function, self.math_provider.copy_density(rho), seed)
         second = self._call_kernel(function, self.math_provider.copy_density(rho), seed)
@@ -317,6 +503,15 @@ class KernelSupervisor:
             raise MathematicalException("kernel function is not deterministic for the given seed", report)
         report = self.validate_density(first, stage=f"{stage}:post")
         return first, report
+
+    def validate_phi_stability(self, values: Sequence[float], *, stage: str) -> PhiStabilityReport:
+        """Ledger φ self-similarity violations before promoted kernel execution."""
+        report = PhiStabilityDiagnostic().evaluate(values)
+        certificate_type = "phi_scaling_invariant" if report.stable else "phi_scaling_violation"
+        self.ledger.append(certificate_type, {"stage": stage, "report": report.to_dict()})
+        if not report.stable:
+            raise MathematicalException("phi scaling invariant violation", StaticMathProvider().invariant_report({}, stage=stage))
+        return report
 
     @staticmethod
     def _call_kernel(function: Any, rho: Any, seed: int) -> Any:
@@ -459,7 +654,7 @@ class TelemetryContract:
     version: str = TELEMETRY_CONTRACT_VERSION
     fixed_point_scale: int = _FIXED_POINT_SCALE
     fixed_point_bit_depth: int = _FIXED_POINT_BIT_DEPTH
-    metrics: tuple[str, ...] = ("phi", "bures", "purity", "manifold_drift", "solver_latency_ms")
+    metrics: tuple[str, ...] = ("phi", "bures", "purity", "manifold_drift", "solver_latency_ms", "phi_tier", "phi_scale_factor")
 
     def metric_specs(self) -> dict[str, dict[str, Any]]:
         return {
@@ -468,14 +663,19 @@ class TelemetryContract:
             "purity": FixedPointMetricSpec("purity").to_dict(),
             "manifold_drift": FixedPointMetricSpec("manifold_drift").to_dict(),
             "solver_latency_ms": FixedPointMetricSpec("solver_latency_ms", maximum=10_000.0).to_dict(),
+            "phi_tier": FixedPointMetricSpec("phi_tier", maximum=100.0).to_dict(),
+            "phi_scale_factor": FixedPointMetricSpec("phi_scale_factor", maximum=120.0).to_dict(),
         }
 
     def encode(self, sample: Mapping[str, float]) -> dict[str, int]:
         specs = self.metric_specs()
-        return {
-            metric: _to_fixed_point(float(sample.get(metric, 0.0)), maximum=float(specs[metric]["maximum"]))
-            for metric in self.metrics
-        }
+        encoded: dict[str, int] = {}
+        for metric in self.metrics:
+            value = float(sample.get(metric, 0.0))
+            if metric == "phi_scale_factor":
+                value = math.log10(value) if value > 0.0 else 0.0
+            encoded[metric] = _to_fixed_point(value, maximum=float(specs[metric]["maximum"]))
+        return encoded
 
     def digest(self, samples: Iterable[Mapping[str, float]]) -> str:
         encoded = [self.encode(sample) for sample in samples]
@@ -483,12 +683,15 @@ class TelemetryContract:
 
     def runtime_passport(self, module_id: str, sample: Mapping[str, float], invariant_report: KernelInvariantReport, ledger_entry: LedgerEntry) -> QuantumRuntimePassport:
         encoded = self.encode(sample)
+        phi_exponent = int(float(sample.get("phi_tier", 0.0)))
         return QuantumRuntimePassport(
             module_id=module_id,
             phi_value_fixed=encoded["phi"],
             bures_score_fixed=encoded["bures"],
             kernel_invariants_met=invariant_report.closed,
             ledger_entry_hash=ledger_entry.entry_hash,
+            phi_exponent=phi_exponent,
+            phi_scale_factor_fixed=encoded["phi_scale_factor"],
         )
 
     def verify_runtime_passport(self, passport: QuantumRuntimePassport, ledger: CertificateLedger) -> bool:
@@ -563,6 +766,8 @@ class PhiHealthSupervisor:
         if not samples:
             raise ValueError("at least one telemetry sample is required")
         phis = [float(s.get("phi", self.phi_target)) for s in samples]
+        phi_tiers = [float(s["phi_scale_factor"]) for s in samples if "phi_scale_factor" in s]
+        stability_report = PhiStabilityDiagnostic().evaluate(phi_tiers) if len(phi_tiers) >= 2 else None
         phi_density = _mean(phis)
         phi_drift = abs(phi_density - self.phi_target)
         manifold_drift = _mean([abs(float(s.get("manifold_drift", 0.0))) for s in samples])
@@ -578,6 +783,9 @@ class PhiHealthSupervisor:
             suggestions.append({"severity": status.value, "action": "rebalance_phi_density_window"})
         if manifold_drift > 0.05:
             suggestions.append({"severity": Severity.WARN.value, "action": "run_density_state_repair_and_topology_gate"})
+        if stability_report is not None and not stability_report.stable:
+            status = Severity.WARN if status in (Severity.OK, Severity.WATCH) else status
+            suggestions.append({"severity": Severity.WARN.value, "action": "segment_dataset_for_phi_self_similarity"})
         return RuntimeHealthPassport(status, phi_density, phi_drift, health, tuple(suggestions), self.contract.digest(samples))
 
 
@@ -672,6 +880,8 @@ class QuantumRuntimeManifestBuilder:
                 "supports_hermitian_guardrail": True,
                 "supports_autonomic_repair_ledgering": True,
                 "supports_forensic_audit_cli": True,
+                "supports_dynamic_phi_exponential_scaling": True,
+                "supports_phi_stability_diagnostic": True,
             },
             facade_api_signatures=_facade_signatures_from_instances((self.operator, self.verifier)),
             endpoint_invariants={
@@ -696,6 +906,8 @@ class QuantumRuntimeManifestBuilder:
         capability = self.capability_manifest()
         compliance = ComplianceManifest()
         invariants = self.kernel_invariants(rho)
+        phi_scaling = PhiScalingContract().to_dict()
+        stability = PhiStabilityDiagnostic().evaluate([PHI ** n for n in (0, 1, 2, 3)]).to_dict()
         payload = {
             "version": RUNTIME_MANIFEST_VERSION,
             "module_versions": {"operator": self.operator.VERSION, "verifier": self.verifier.VERSION},
@@ -704,6 +916,10 @@ class QuantumRuntimeManifestBuilder:
             "certificate_ledger_root_hash": ledger.root_hash,
             "telemetry_contract_version": TELEMETRY_CONTRACT_VERSION,
             "fixed_point_telemetry_spec": TelemetryContract().metric_specs(),
+            "phi_scaling_contract": phi_scaling,
+            "phi_tier_composition": phi_scaling["tiers"],
+            "phi_tier_combinations": phi_scaling["combinations"],
+            "phi_stability_diagnostic": stability,
             "kernel_invariants": invariants.to_dict(),
             "compliance": compliance.to_dict(),
             "quantum_speedup_claimed": False,
@@ -808,6 +1024,13 @@ __all__ = [
     "LedgerEntry",
     "MathematicalException",
     "PhiHealthSupervisor",
+    "PhiInvariantKernelScheduler",
+    "PhiScheduleDecision",
+    "PhiScalingContract",
+    "PhiStabilityDiagnostic",
+    "PhiStabilityReport",
+    "PhiTopologyLedgerCompressionProof",
+    "PhiTopologyLedgerCompressor",
     "OperatorMathProvider",
     "ProductionResponse",
     "QuantumRuntimeManifestBuilder",

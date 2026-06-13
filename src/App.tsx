@@ -142,6 +142,7 @@ function AppContent() {
   const [isPollingActive, setIsPollingActive] = useState(true);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [powerScale, setPowerScale] = useState(1);
+  const [phiTier, setPhiTier] = useState(12);
   const [selectedPoolForConfig, setSelectedPoolForConfig] = useState<PoolInfo | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -185,6 +186,9 @@ function AppContent() {
       setTelemetry(data);
       if (typeof data?.health?.systemMetrics?.power_scale === "number") {
         setPowerScale(data.health.systemMetrics.power_scale);
+      }
+      if (typeof data?.health?.systemMetrics?.phi_tier === "number") {
+        setPhiTier(data.health.systemMetrics.phi_tier);
       }
       recordPing(data.latency || 0, true);
     } catch (err) {
@@ -293,11 +297,12 @@ function AppContent() {
     setAuthFeedback({ text: "Session ended securely.", error: false });
   };
 
-  const handlePowerScaleChange = async (newScale: number) => {
+  const handlePowerScaleChange = async (newScale: number, nextPhiTier = phiTier) => {
     setPowerScale(newScale);
+    setPhiTier(nextPhiTier);
     try {
-      await updatePowerScale(newScale);
-      setAuthFeedback({ text: `Power scale request sent: ${newScale.toFixed(1)}x`, error: false });
+      await updatePowerScale(newScale, nextPhiTier);
+      setAuthFeedback({ text: `Scale request sent: ${newScale.toFixed(1)}x at φ-tier 10^${nextPhiTier} (1 EH/s capped)`, error: false });
     } catch {
       setAuthFeedback({ text: "Power scale update failed", error: true });
     }
@@ -462,7 +467,12 @@ function AppContent() {
             <MetricRow label="Quantum speedup" value={fmtNum(health?.quantumSpeedupFactor)} />
             <MetricRow label="Actual speedup" value={fmtNum(health?.actualSpeedupFactor)} />
             <MetricRow label="Power scale" value={`${powerScale.toFixed(1)}x`} />
+            <MetricRow label="φ-tier" value={`10^${phiTier}`} />
+            <MetricRow label="EH/s cap" value="1.0" />
             <input type="range" min="0.1" max="10.0" step="0.1" value={powerScale} onChange={e => handlePowerScaleChange(parseFloat(e.target.value))} className="mt-3 h-2 w-full cursor-pointer appearance-none rounded-lg" style={{ accentColor: THEME.colors.clicquotGold }} aria-label="Power scale control" />
+            <select value={phiTier} onChange={e => handlePowerScaleChange(powerScale, parseInt(e.target.value, 10))} className="mt-3 w-full rounded-lg border border-[#E2E4E9] bg-white px-3 py-2 text-xs font-mono text-[#1A1A1E]" aria-label="Phi tier control">
+              {PHI_TIERS.map(tier => <option key={tier} value={tier}>{`10^${tier} φ-tier`}</option>)}
+            </select>
           </Panel>
           <Panel title="Runtime integration" eyebrow="Risk and control" icon={<ShieldCheck className="h-4 w-4" />} isLoading={isLoading} rows={6}>
             <MetricRow label="AI state" value={fmtText(consciousness.status)} />
