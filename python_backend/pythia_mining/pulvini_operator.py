@@ -353,6 +353,19 @@ class ManifoldOperator:
             "topology_gate_closed": self.verify_topology()["gate_closed"],
         }
 
+
+    def capability_manifest(self) -> dict[str, Any]:
+        """Return the versioned production-façade capability manifest."""
+        from .pulvini_elevation import QuantumRuntimeManifestBuilder
+
+        return QuantumRuntimeManifestBuilder(self).capability_manifest().to_dict()
+
+    def quantum_runtime_manifest(self, rho: Optional[NDArray[np.complex128]] = None) -> dict[str, Any]:
+        """Return the regulator-facing runtime manifest for this façade."""
+        from .pulvini_elevation import QuantumRuntimeManifestBuilder
+
+        return QuantumRuntimeManifestBuilder(self).build(rho=rho)
+
     @property
     def state_history(self) -> tuple[NDArray[np.complex128], ...]:
         return tuple(self._state_history)
