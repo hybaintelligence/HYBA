@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PULVINI Regulator Viewport</title>
+  <style>
+    body { margin: 0; font-family: Inter, system-ui, sans-serif; background: #07111f; color: #eaf2ff; }
+    main { max-width: 980px; margin: 0 auto; padding: 32px; }
+    .card { border: 1px solid #29415f; border-radius: 18px; background: #0d1b2f; padding: 22px; margin: 16px 0; box-shadow: 0 20px 60px #0006; }
+    .status { display: inline-flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 999px; font-weight: 800; }
+    .pass { background: #103b2c; color: #7dffbd; }
+    .fail { background: #421c24; color: #ff9eaa; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+    .metric { background: #081426; border: 1px solid #203956; border-radius: 14px; padding: 16px; }
+    .metric strong { display: block; font-size: 28px; margin-top: 8px; }
+    textarea { width: 100%; min-height: 220px; background: #050b14; color: #cde3ff; border: 1px solid #29415f; border-radius: 12px; padding: 12px; }
+    button { background: #67e8f9; border: 0; color: #04111d; font-weight: 800; padding: 10px 16px; border-radius: 10px; cursor: pointer; }
+  </style>
+</head>
+<body>
+<main>
+  <h1>PULVINI Regulator Viewport</h1>
+  <p>Paste JSON from <code>scripts/pulvini_audit.py --json</code> to render a governance scorecard.</p>
+  <section class="card">
+    <textarea id="input" aria-label="Audit JSON input">{"passed":true,"chain_verified":true,"entry_count":2,"failed_passport_count":0,"mathematical_exception_count":0,"autonomic_repair_count":0,"root_hash":"demo"}</textarea>
+    <p><button id="render">Render scorecard</button></p>
+  </section>
+  <section id="scorecard" class="card" aria-live="polite"></section>
+</main>
+<script>
+function metric(label, value) {
+  return `<div class="metric"><span>${label}</span><strong>${value}</strong></div>`;
+}
+function render() {
+  const target = document.getElementById('scorecard');
+  try {
+    const payload = JSON.parse(document.getElementById('input').value);
+    const consensus = payload.consensus || payload;
+    const passed = Boolean(payload.passed);
+    const entryCount = payload.entry_count ?? (payload.node_reports || []).reduce((sum, item) => sum + (item.entry_count || 0), 0);
+    target.innerHTML = `
+      <div class="status ${passed ? 'pass' : 'fail'}">${passed ? 'MANIFOLD HEALTH: VERIFIED' : 'MANIFOLD HEALTH: ACTION REQUIRED'}</div>
+      <div class="grid">
+        ${metric('Hash chain', payload.chain_verified ?? consensus.passed ? 'PASS' : 'FAIL')}
+        ${metric('Entries', entryCount)}
+        ${metric('Failed passports', payload.failed_passport_count ?? 0)}
+        ${metric('Math exceptions', payload.mathematical_exception_count ?? consensus.mathematical_exception_count ?? 0)}
+        ${metric('Autonomic repairs', payload.autonomic_repair_count ?? consensus.autonomic_repair_count ?? 0)}
+        ${metric('Consensus nodes', consensus.node_count ?? 1)}
+      </div>
+      <p><strong>Root:</strong> <code>${payload.root_hash || consensus.consensus_root_hash || 'n/a'}</code></p>`;
+  } catch (error) {
+    target.innerHTML = `<div class="status fail">Invalid audit JSON</div><pre>${String(error)}</pre>`;
+  }
+}
+document.getElementById('render').addEventListener('click', render);
+render();
+</script>
+</body>
+</html>
