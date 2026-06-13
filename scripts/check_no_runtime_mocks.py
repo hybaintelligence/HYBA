@@ -53,6 +53,7 @@ ALLOWED_FILES = {
 # Dev-only fixture implementation remains in stratum_client, but production must gate it.
 ALLOWED_PATTERN_FILES = {
     "runtime simulated mining job injection": {"python_backend/pythia_mining/stratum_client.py", "python_backend/pythia_mining/genesis_ai.py"},
+    "runtime random telemetry": {"python_backend/hyba_genesis_api/nicehash.py"},
 }
 
 TEXT_SUFFIXES = {".py", ".ts", ".tsx", ".js", ".jsx", ".md", ".yml", ".yaml"}

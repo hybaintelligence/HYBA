@@ -682,11 +682,12 @@ async def health_check():
         health_status["checks"]["activity"] = {"status": "unknown", "last_activity": None}
     
     # MIDAS state machine health
-    midas_healthy = midas_state_machine.validate_state_machine()
+    midas_validation = midas_state_machine.validate_state_machine()
+    midas_healthy = midas_validation["valid"]
     health_status["checks"]["midas"] = {
         "status": "healthy" if midas_healthy else "degraded",
         "state": midas_state_machine.get_state().value,
-        "validation": midas_healthy,
+        "validation": midas_validation,
     }
     
     # Overall health status
