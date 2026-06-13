@@ -19,6 +19,7 @@ python-dateutil==2.9.0
 structlog==25.2.0
 python-json-logger==4.1.0
 scipy==1.17.1
+requests==2.32.5
 pytest==8.3.4
 matplotlib==3.9.2
 noiseprotocol==0.3.1
