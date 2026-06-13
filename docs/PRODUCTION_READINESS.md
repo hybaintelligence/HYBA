@@ -15,7 +15,9 @@ The Express bridge is not the source of mining truth. It is the HTTP boundary, p
 
 ## Required deployment gates
 
-A production deployment must not proceed unless all of these pass:
+A production deployment must not proceed unless all required checks pass through either hosted CI or the local command-room evidence path.
+
+Hosted CI path:
 
 ```bash
 npm ci
@@ -26,14 +28,27 @@ python3 scripts/validate_production_env.py
 docker build -t hyba-fullstack:release .
 ```
 
-The GitHub Actions workflow `Production Readiness` runs these same categories:
+Local command-room path when hosted CI cannot be completed:
+
+```bash
+npm ci
+npm run test:funding:gate
+npm run funding:gate
+npm run prod:local:gate
+npm run prod:live:gate
+npm run build
+```
+
+The local path is not a lower standard. It is a different evidence source: deterministic local execution from a clean checkout, with timestamped JSON evidence preserved under the command-room release record. The local evidence standard is defined in `docs/PRODUCTION_READINESS_LOCAL_EVIDENCE_ADDENDUM.md`.
+
+The GitHub Actions workflow `Production Readiness` and the local gate cover the same categories:
 
 - Runtime mock/static telemetry guardrails.
 - Backend regression and mining validation.
 - MIDAS production-control tests.
 - Frontend typecheck and build.
 - Production config guardrails.
-- Docker image build.
+- Docker image build where available.
 
 ## Required production environment
 
@@ -215,10 +230,10 @@ curl -fsS -H "Authorization: Bearer <token>" http://127.0.0.1:3000/api/mining/st
 
 ## Deployment steps
 
-1. Confirm CI is green on `main` or release branch.
-2. Build the production image.
-3. Inject production secrets from the deployment secret store.
-4. Start the container with no dev fixtures enabled.
+1. Confirm hosted CI is green **or** confirm the local command-room evidence packet passed under `docs/PRODUCTION_READINESS_LOCAL_EVIDENCE_ADDENDUM.md`.
+2. Build the production image or production local build.
+3. Inject production secrets from the deployment secret store or sealed local command-room environment.
+4. Start the container/runtime with no dev fixtures enabled.
 5. Check bridge health.
 6. Check backend readiness.
 7. Log in as an authorized operator.
@@ -246,8 +261,8 @@ Rollback by redeploying the last green image and revoking any newly introduced o
 
 A release is production-ready only when:
 
-- CI is green.
-- Docker image builds.
+- CI is green **or** local command-room evidence has passed and has been preserved with commit SHA, operator, timestamp, terminal output, and reviewer sign-off.
+- Docker image builds or the production local build completes for the approved command-room deployment path.
 - Production secrets are present outside source control.
 - Operator credentials use Argon2id hashes.
 - Dev fixtures are disabled.
@@ -257,3 +272,9 @@ A release is production-ready only when:
 - Institutional governance boundary is accepted by the accountable operator.
 - Self-financing claim boundary is accepted by the accountable operator.
 - Monitoring and rollback ownership are assigned.
+
+## Funding-engine accepted-share boundary
+
+Production readiness for deployment is distinct from funding-engine completion.
+
+HYBA_FULLSTACK may be production-ready for controlled live-pool capture before the first accepted share lands. The MD-offer funding trigger is not satisfied until accepted-share evidence exists locally and pool-side, as defined in `docs/FUNDING_ENGINE_DEPLOYMENT_AND_MD_OFFER_GATE.md`.
