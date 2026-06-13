@@ -114,13 +114,31 @@ They protect these invariants:
 7. Phi-scaled ensemble decisions are deterministic and weights sum to one.
 8. Phi resonance analyzer metrics remain bounded and interpretable.
 
-Run them with:
+The benefit-assessment tests live in:
+
+```text
+tests/test_mining_benefit_assessment.py
+```
+
+They compare HYBA's structured approach against explicit baselines: compression versus original active space, structured ordering versus linear order, structured phi indicators versus unstructured indicators, and measured-input benchmarks versus projection-only records. The design rationale is recorded in:
+
+```text
+docs/MINING_BENEFIT_TEST_DESIGN.md
+```
+
+Run the capability tests with:
 
 ```bash
 npm run test:mining:innovation
 ```
 
-The funding gate also includes them through:
+Run the benefit tests with:
+
+```bash
+npm run test:mining:benefit
+```
+
+The funding gate includes both suites through:
 
 ```bash
 npm run test:funding:gate
