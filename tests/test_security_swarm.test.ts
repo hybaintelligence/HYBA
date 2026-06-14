@@ -209,4 +209,33 @@ describe("HYBA stabilizer integrity monitor", () => {
       expect(status.syndrome_check_stride).toBeGreaterThan(1);
     }
   });
+
+  it("exercises evaluate_ancilla_exhaustion COMPRESSED mode transition", () => {
+    const monitor = new SecuritySwarmAgent();
+
+    for (let i = 0; i < 3; i++) {
+      monitor.trigger_response(1);
+    }
+
+    const status = monitor.get_swarm_status();
+    expect(["COMPRESSED", "EXHAUSTED"]).toContain(status.operating_mode);
+    expect(status.response_cause).toBe("resource_exhaustion");
+    expect(status.syndrome_check_stride).toBeGreaterThan(1);
+    expect(status.check_frequency).toBeLessThan(1);
+  });
+
+  it("exercises evaluate_ancilla_exhaustion NORMAL mode recovery", () => {
+    const monitor = new SecuritySwarmAgent();
+
+    for (let i = 0; i < 3; i++) {
+      monitor.trigger_response(1);
+    }
+
+    const compressedStatus = monitor.get_swarm_status();
+    expect(["COMPRESSED", "EXHAUSTED"]).toContain(compressedStatus.operating_mode);
+
+    monitor.trigger_response(0);
+    const recoveredStatus = monitor.get_swarm_status();
+    expect(["NORMAL", "COMPRESSED", "EXHAUSTED"]).toContain(recoveredStatus.operating_mode);
+  });
 });
