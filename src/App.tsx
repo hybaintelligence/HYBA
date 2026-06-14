@@ -31,6 +31,7 @@ import {
   type AuthResponse,
   type ConfigurePoolRequest,
   type PoolInfo,
+  type PowerScaleResponse,
   type TelemetryData,
   configurePool,
   disconnectFromPool,
