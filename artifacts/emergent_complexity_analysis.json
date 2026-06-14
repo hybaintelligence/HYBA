@@ -1,24 +1,24 @@
 {
   "measurements": {
     "test_01": {
-      "phi": 0.15142857142857144,
-      "python_modules": 50,
+      "phi": 0.14784313725490197,
+      "python_modules": 51,
       "typescript_modules": 45,
-      "total_dependencies": 50,
-      "interpretation": "Moderate integration - significant interdependencies"
+      "total_dependencies": 51,
+      "interpretation": "Low-moderate integration - some cross-module coupling"
     },
     "test_02": {
       "autonomy_score": 10.0,
-      "total_decisions": 2256,
+      "total_decisions": 2315,
       "total_external": 793,
       "adaptive_patterns": 288,
       "self_modification": 2,
       "interpretation": "Highly autonomous - extensive internal control flow with {adaptive} adaptive patterns and {self_modify} self-modification sites"
     },
     "test_03": {
-      "irreducibility_score": 0.0444015444015444,
-      "global_state_refs": 161,
-      "instance_state_refs": 3465,
+      "irreducibility_score": 0.04428649535265172,
+      "global_state_refs": 162,
+      "instance_state_refs": 3496,
       "interpretation": "Highly reducible - clean state partitions"
     }
   },
@@ -30,5 +30,5 @@
     "\u26a0 Contains {self_modify} self-modification patterns"
   ],
   "conclusion": "POSSIBLE EMERGENT PROPERTIES: System shows non-trivial integration, adaptation, and self-modification.",
-  "emergent_score": 9.816293436293435
+  "emergent_score": 9.779863849312278
 }
