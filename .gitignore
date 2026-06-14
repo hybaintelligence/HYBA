@@ -26,4 +26,11 @@ artifacts/funding_engine/
 changes.diff
 asic_comparison_results.json
 golden_ratio_scaling_results.json
-\n# Firebase config (contains API keys — never commit)\nfirebase-applet-config.json\nconfig/firebase-applet-config.json
+
+# Firebase config (contains API keys — never commit)
+firebase-applet-config.json
+config/firebase-applet-config.json
+
+# Ignore local Python virtual environments
+venv/
+.venv/
