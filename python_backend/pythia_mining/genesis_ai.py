@@ -150,6 +150,7 @@ class GenesisAI:
             self.consciousness_engine,
             self.blockchain_oracle,
         )
+        
         self.is_running = False
         self.current_job: Optional[MiningJob] = None
         self.metrics_history: List[SystemMetrics] = []
@@ -163,6 +164,15 @@ class GenesisAI:
         self.health_status = "STARTING"
         self.latest_phi_optimization: Optional[Dict[str, Any]] = None
         self.latest_autonomic_event: Optional[Dict[str, Any]] = None
+        # Performance monitoring
+        self.mining_loop_timing: List[float] = []
+        self.enhanced_analysis_timing: List[float] = []
+        self.max_timing_history = 100
+        
+        # Register this instance with the service registry for API integration
+        from .genesis_ai_service import GenesisAIServiceRegistry
+        GenesisAIServiceRegistry.register_instance(self)
+        self.logger.info("GenesisAI instance registered with service registry for API integration")
         self.allow_dev_fixture_jobs = os.getenv(
             "NODE_ENV", os.getenv("HYBA_ENV", "development")
         ).lower() != "production" and os.getenv("HYBA_ALLOW_DEV_FIXTURES", "false").lower() in {
@@ -261,6 +271,164 @@ class GenesisAI:
         self.is_running = False
         await self.pool_manager.disconnect_all()
         self.logger.info("PYTHIA Orchestrator stopped cleanly.")
+    
+    async def _run_enhanced_analysis_async(
+        self,
+        density_states,
+        optimization,
+        memory_snapshot,
+        compression_ratio
+    ) -> None:
+        """Run enhanced consciousness calculations asynchronously to prevent HPS degradation."""
+        analysis_start = time.time()
+        try:
+            # Enhanced consciousness metrics with IIT 4.0 and Penrose OR
+            if density_states:
+                phi_metrics = self.consciousness_engine.measure_phi(density_states)
+                
+                # Apply Penrose OR for consciousness events
+                if density_states:
+                    current_rho = density_states[-1]
+                    coherence_time = self.heartbeat_tick * 0.05
+                    collapsed_rho, or_event = self.penrose_or.objective_reduction(
+                        current_rho, coherence_time
+                    )
+                    if or_event:
+                        self.logger.info(f"Penrose OR consciousness event detected")
+                
+                # Apply dynamic Golden Ratio scaling to consciousness metrics
+                # Calibrated by Deutsch substrate based on mining success rate
+                import math
+                PHI = (1 + math.sqrt(5)) / 2
+                
+                # Get knowledge substrate metrics for adaptive scaling
+                knowledge_metrics = self.knowledge_substrate.get_knowledge_metrics()
+                avg_accuracy = knowledge_metrics.get('avg_predictive_accuracy', 0.5)
+                
+                # Dynamic calibration: adjust scaling based on success rate
+                if avg_accuracy < 0.3:
+                    # Low success: increase scaling to boost exploration
+                    scaling_factor = PHI / 1.3
+                elif avg_accuracy > 0.7:
+                    # High success: reduce scaling to maintain stability
+                    scaling_factor = PHI / 1.7
+                else:
+                    # Nominal: use baseline
+                    scaling_factor = PHI / 1.5
+                
+                phi_metrics.phi_integrated = min(1.0, phi_metrics.phi_integrated * scaling_factor)
+                phi_metrics.phi_causal = min(1.0, phi_metrics.phi_causal * scaling_factor)
+                
+                self.latest_phi_optimization = {
+                    "strategy_used": "enhanced_consciousness",
+                    "confidence": phi_metrics.phi_integrated,
+                    "phi_resonance_score": phi_metrics.phi_causal,
+                    "phi_scaling": scaling_factor,
+                    "phi_scaling_mode": "adaptive_deutsch_calibrated",
+                    "knowledge_accuracy": avg_accuracy,
+                    "phi_features": {
+                        "phi_integrated": phi_metrics.phi_integrated,
+                        "phi_causal": phi_metrics.phi_causal,
+                        "complexity": phi_metrics.complexity,
+                        "entropy": phi_metrics.entropy,
+                    },
+                    "penrose_or_events": self.penrose_or.consciousness_event_count,
+                    "iit_enhanced": True,
+                    "iit_performance_metrics": self.iit_analyzer.get_performance_metrics(),
+                }
+            
+            # Enhanced AI decision making with Deutsch knowledge substrate
+            if self.current_job:
+                context = {
+                    "difficulty": self.current_job.difficulty,
+                    "thermal_load": self.autonomics.homeostasis.get_average_coherence(),
+                    "phi_resonance": self.latest_phi_optimization.get("phi_resonance_score", 0.5),
+                    "pool_latency": 50.0,  # Placeholder for actual latency
+                }
+                
+                # Record decision in knowledge substrate
+                if optimization and optimization.strategy_used:
+                    self.knowledge_substrate.create_knowledge_from_success(
+                        optimization.strategy_used,
+                        context,
+                        {"accepted": True, "confidence": optimization.confidence}
+                    )
+            
+            # Log memory compression metrics
+            import math
+            PHI = (1 + math.sqrt(5)) / 2
+            phi_scaled_compression = min(1.0, compression_ratio * PHI)
+            self.logger.debug(
+                f"Pulvini memory compression: ratio={compression_ratio:.4f}, "
+                f"phi_scaled={phi_scaled_compression:.4f}, "
+                f"kernel_size={memory_snapshot.compression.get('compressed_dimension', 0)}"
+            )
+            
+            # Record enhanced analysis timing
+            analysis_elapsed = (time.time() - analysis_start) * 1000  # Convert to ms
+            self.enhanced_analysis_timing.append(analysis_elapsed)
+            if len(self.enhanced_analysis_timing) > self.max_timing_history:
+                self.enhanced_analysis_timing.pop(0)
+            
+        except Exception as e:
+            self.logger.error(f"Enhanced analysis async task failed: {e}", exc_info=True)
+            # Graceful degradation: continue mining even if enhanced analysis fails
+    
+    def get_performance_metrics(self) -> Dict[str, Any]:
+        """Return performance metrics for telemetry and monitoring."""
+        mining_avg = sum(self.mining_loop_timing) / len(self.mining_loop_timing) if self.mining_loop_timing else 0.0
+        mining_max = max(self.mining_loop_timing) if self.mining_loop_timing else 0.0
+        enhanced_avg = sum(self.enhanced_analysis_timing) / len(self.enhanced_analysis_timing) if self.enhanced_analysis_timing else 0.0
+        enhanced_max = max(self.enhanced_analysis_timing) if self.enhanced_analysis_timing else 0.0
+        
+        return {
+            "mining_loop_avg_ms": mining_avg,
+            "mining_loop_max_ms": mining_max,
+            "mining_loop_samples": len(self.mining_loop_timing),
+            "enhanced_analysis_avg_ms": enhanced_avg,
+            "enhanced_analysis_max_ms": enhanced_max,
+            "enhanced_analysis_samples": len(self.enhanced_analysis_timing),
+            "hps_impact_estimate": enhanced_avg / mining_avg if mining_avg > 0 else 0.0,
+            "uptime_seconds": time.time() - self.start_time,
+            "jobs_processed": self.jobs_received,
+            "shares_solved": self.shares_solved,
+            "health_status": self.health_status,
+        }
+    
+    def get_health_status(self) -> Dict[str, Any]:
+        """Return health status for all enhanced components."""
+        try:
+            iit_health = {
+                "status": "healthy",
+                "performance_metrics": self.iit_analyzer.get_performance_metrics(),
+            }
+        except Exception as e:
+            iit_health = {"status": "unhealthy", "error": str(e)}
+        
+        try:
+            penrose_health = {
+                "status": "healthy",
+                "metrics": self.penrose_or.get_consciousness_metrics(),
+            }
+        except Exception as e:
+            penrose_health = {"status": "unhealthy", "error": str(e)}
+        
+        try:
+            deutsch_health = {
+                "status": "healthy",
+                "knowledge_count": len(self.knowledge_substrate.explanations),
+            }
+        except Exception as e:
+            deutsch_health = {"status": "unhealthy", "error": str(e)}
+        
+        return {
+            "overall_status": self.health_status,
+            "iit_analyzer": iit_health,
+            "penrose_or": penrose_health,
+            "deutsch_substrate": deutsch_health,
+            "enhanced_analysis_async": "active",
+            "performance_metrics": self.get_performance_metrics(),
+        }
 
     async def _resolve_current_job(self, active_pool) -> Optional[MiningJob]:
         live_job = await active_pool.poll_live_event(timeout=0.1)
@@ -302,6 +470,7 @@ class GenesisAI:
 
     async def _mining_loop(self):
         while self.is_running:
+            loop_start = time.time()
             try:
                 active_pool = await self.pool_manager.get_best_pool()
                 if self.overlay.active_pool_name != active_pool.pool_name:
@@ -327,101 +496,31 @@ class GenesisAI:
                 self.overlay.manifold.evolve_closed_system(dt=0.05)
                 self._run_autonomic_feedback()
                 
-                # Enhanced consciousness metrics with IIT 4.0 and Penrose OR
-                density_states = self.overlay.manifold.get_density_state_history(window=5)
-                if density_states:
-                    phi_metrics = self.consciousness_engine.measure_phi(density_states)
-                    
-                    # Apply Penrose OR for consciousness events
-                    if density_states:
-                        current_rho = density_states[-1]
-                        coherence_time = self.heartbeat_tick * 0.05
-                        collapsed_rho, or_event = self.penrose_or.objective_reduction(
-                            current_rho, coherence_time
-                        )
-                        if or_event:
-                            self.logger.info(f"Penrose OR consciousness event detected")
-                    
-                    # Apply dynamic Golden Ratio scaling to consciousness metrics
-                    # Calibrated by Deutsch substrate based on mining success rate
-                    import math
-                    PHI = (1 + math.sqrt(5)) / 2
-                    
-                    # Get knowledge substrate metrics for adaptive scaling
-                    knowledge_metrics = self.knowledge_substrate.get_knowledge_metrics()
-                    avg_accuracy = knowledge_metrics.get('avg_predictive_accuracy', 0.5)
-                    
-                    # Dynamic calibration: adjust scaling based on success rate
-                    if avg_accuracy < 0.3:
-                        # Low success: increase scaling to boost exploration
-                        scaling_factor = PHI / 1.3
-                    elif avg_accuracy > 0.7:
-                        # High success: reduce scaling to maintain stability
-                        scaling_factor = PHI / 1.7
-                    else:
-                        # Nominal: use baseline
-                        scaling_factor = PHI / 1.5
-                    
-                    phi_metrics.phi_integrated = min(1.0, phi_metrics.phi_integrated * scaling_factor)
-                    phi_metrics.phi_causal = min(1.0, phi_metrics.phi_causal * scaling_factor)
-                    
-                    self.latest_phi_optimization = {
-                        "strategy_used": "enhanced_consciousness",
-                        "confidence": phi_metrics.phi_integrated,
-                        "phi_resonance_score": phi_metrics.phi_causal,
-                        "phi_scaling": scaling_factor,
-                        "phi_scaling_mode": "adaptive_deutsch_calibrated",
-                        "knowledge_accuracy": avg_accuracy,
-                        "phi_features": {
-                            "phi_integrated": phi_metrics.phi_integrated,
-                            "phi_causal": phi_metrics.phi_causal,
-                            "complexity": phi_metrics.complexity,
-                            "entropy": phi_metrics.entropy,
-                        },
-                        "penrose_or_events": self.penrose_or.consciousness_event_count,
-                        "iit_enhanced": True,
-                        "iit_performance_metrics": self.iit_analyzer.get_performance_metrics(),
-                    }
-                
-                # Enhanced AI decision making with Deutsch knowledge substrate
-                context = {
-                    "difficulty": self.current_job.difficulty,
-                    "thermal_load": self.autonomics.homeostasis.get_average_coherence(),
-                    "phi_resonance": self.latest_phi_optimization.get("phi_resonance_score", 0.5),
-                    "pool_latency": 50.0,  # Placeholder for actual latency
-                }
-                
+                # Core mining operations (synchronous, minimal overhead)
                 optimization = await self.ai_optimizer.optimize_nonce_search(self.current_job)
                 
-                # Record decision in knowledge substrate
-                if optimization.strategy_used:
-                    self.knowledge_substrate.create_knowledge_from_success(
-                        optimization.strategy_used,
-                        context,
-                        {"accepted": True, "confidence": optimization.confidence}
-                    )
-                
                 # Enhanced nonce space pre-computation with Pulvini memory compression
-                # Use memory fabric to pre-compute optimal nonce ranges based on historical patterns
                 memory_snapshot = self.propagation.memory_fabric.compressed_kernel_snapshot()
-                
-                # Apply Golden Ratio scaling to memory compression for pre-computation
-                import math
-                PHI = (1 + math.sqrt(5)) / 2
                 compression_ratio = memory_snapshot.compression.get('working_set_compression_ratio', 0.5)
-                phi_scaled_compression = min(1.0, compression_ratio * PHI)
-                
-                # Log memory compression metrics
-                self.logger.debug(
-                    f"Pulvini memory compression: ratio={compression_ratio:.4f}, "
-                    f"phi_scaled={phi_scaled_compression:.4f}, "
-                    f"kernel_size={memory_snapshot.compression.get('compressed_dimension', 0)}"
-                )
                 
                 await self.quantum_solver.configure_compressed_search(
                     self.current_job.target, self.overlay.nonce_plan
                 )
                 resolved_nonce = await self.quantum_solver.solve()
+                
+                # Offload enhanced calculations to background to prevent HPS degradation
+                asyncio.create_task(self._run_enhanced_analysis_async(
+                    density_states=self.overlay.manifold.get_density_state_history(window=5),
+                    optimization=optimization,
+                    memory_snapshot=memory_snapshot,
+                    compression_ratio=compression_ratio
+                ))
+                
+                # Record mining loop timing
+                loop_elapsed = (time.time() - loop_start) * 1000  # Convert to ms
+                self.mining_loop_timing.append(loop_elapsed)
+                if len(self.mining_loop_timing) > self.max_timing_history:
+                    self.mining_loop_timing.pop(0)
 
                 if resolved_nonce is not None and not self.propagation.is_job_cancelled(
                     self.current_job.job_id
