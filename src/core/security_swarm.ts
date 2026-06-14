@@ -488,6 +488,22 @@ class SecuritySwarmAgent {
       sanitized: this.sanitized,
     };
   }
+
+  /**
+   * METACOGNITIVE API - Expose internal state for entanglement
+   */
+  
+  public getShardA(): Uint32Array {
+    return this.permutation_shard_a;
+  }
+
+  public getShardB(): Uint32Array {
+    return this.permutation_shard_b;
+  }
+
+  public snapshot(): SecuritySwarmStatus {
+    return this.get_swarm_status();
+  }
 }
 
 export { SecuritySwarmAgent };

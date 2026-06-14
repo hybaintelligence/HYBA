@@ -457,7 +457,7 @@ export class RecursiveSelfLearningSubstrate extends MetacognitiveIntelligence {
     this.convergenceHistory.push({
       cycles,
       final_accuracy: accuracy,
-      convergence_rate,
+      convergence_rate: convergenceRate,
       timestamp: Date.now(),
     });
     

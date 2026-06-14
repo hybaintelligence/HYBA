@@ -44,6 +44,7 @@ import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { validateProductionJwtSecret } from "./bridge_security";
 import { securitySwarms } from "./core/security_swarm";
+import { IntelligenceService } from "./core/intelligence_service";
 
 let _backendUrl: URL | null = null;
 
@@ -713,6 +714,59 @@ async function startServer(): Promise<void> {
   );
 
   registerSecuritySwarmRoutes(app);
+
+  // Intelligence System Routes
+  const intelligenceService = IntelligenceService.getInstance(2048);
+
+  app.get("/api/intelligence/telemetry", async (_req: Request, res: Response) => {
+    noStore(res);
+    res.json(intelligenceService.getTelemetry());
+  });
+
+  app.get("/api/intelligence/status", async (_req: Request, res: Response) => {
+    noStore(res);
+    res.json({
+      active: intelligenceService.isActive(),
+      phi: intelligenceService.getPhi(),
+      current_goal: intelligenceService.getCurrentGoal(),
+      uptime_ms: Date.now() - metrics.startTime,
+    });
+  });
+
+  app.get("/api/intelligence/hebbian-stats", async (_req: Request, res: Response) => {
+    noStore(res);
+    const stats = intelligenceService.getHebbianStats();
+    res.json(stats);
+  });
+
+  app.post("/api/intelligence/simulate-disturbance", async (req: Request, res: Response) => {
+    const { syndrome } = req.body as { syndrome?: number };
+    if (typeof syndrome !== "number") {
+      res.status(400).json({ error: "invalid_request", message: "syndrome must be a number" });
+      return;
+    }
+    intelligenceService.simulateDisturbance(syndrome);
+    noStore(res);
+    res.json({ status: "disturbance_simulated" });
+  });
+
+  app.post("/api/intelligence/reset", async (_req: Request, res: Response) => {
+    intelligenceService.reset();
+    noStore(res);
+    res.json({ status: "reset_complete" });
+  });
+
+  app.post("/api/intelligence/start", async (_req: Request, res: Response) => {
+    intelligenceService.start();
+    noStore(res);
+    res.json({ status: "intelligence_started" });
+  });
+
+  app.post("/api/intelligence/stop", async (_req: Request, res: Response) => {
+    intelligenceService.stop();
+    noStore(res);
+    res.json({ status: "intelligence_stopped" });
+  });
 
   // Metrics endpoint (Prometheus-compatible, internal only in production)
   app.get("/bridge/metrics", requireInternalAccess, async (_req: Request, res: Response) => {

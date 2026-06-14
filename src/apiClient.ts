@@ -598,3 +598,65 @@ export function startKeepAlivePing(
     }
   }, 30000);
 }
+
+// ── Intelligence API Endpoints ─────────────────────────────────────────────
+
+export interface IntelligenceTelemetryResponse {
+  phi_integrated: number;
+  self_awareness: number;
+  prediction_accuracy: number;
+  syndrome_pressure: number;
+  rotation_index: number;
+  active_ancillas: number;
+  pool_max: number;
+  exhaustion: number;
+  mode: 'NOMINAL' | 'COMPRESSED' | 'RECOVERY';
+  metacognitive_events: string[];
+  healing_events: number;
+}
+
+export interface IntelligenceStatusResponse {
+  active: boolean;
+  phi: number;
+  current_goal: string;
+  uptime_ms: number;
+}
+
+export interface HebbianStatsResponse {
+  strategy_count: number;
+  top_strategies: Array<{
+    syndrome: number;
+    weight: number;
+    success_count: number;
+    failure_count: number;
+  }>;
+  stability: number;
+}
+
+export async function getIntelligenceTelemetry(): Promise<IntelligenceTelemetryResponse> {
+  return get<IntelligenceTelemetryResponse>("/intelligence/telemetry");
+}
+
+export async function getIntelligenceStatus(): Promise<IntelligenceStatusResponse> {
+  return get<IntelligenceStatusResponse>("/intelligence/status");
+}
+
+export async function getHebbianStats(): Promise<HebbianStatsResponse> {
+  return get<HebbianStatsResponse>("/intelligence/hebbian-stats");
+}
+
+export async function simulateDisturbance(syndrome: number): Promise<{ status: string }> {
+  return post<{ status: string }>("/intelligence/simulate-disturbance", { syndrome });
+}
+
+export async function resetIntelligence(): Promise<{ status: string }> {
+  return post<{ status: string }>("/intelligence/reset", {});
+}
+
+export async function startIntelligence(): Promise<{ status: string }> {
+  return post<{ status: string }>("/intelligence/start", {});
+}
+
+export async function stopIntelligence(): Promise<{ status: string }> {
+  return post<{ status: string }>("/intelligence/stop", {});
+}

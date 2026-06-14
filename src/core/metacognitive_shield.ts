@@ -38,7 +38,7 @@ export class MetacognitiveShield {
    * CAPTURE STATE VECTOR
    * Captures current system state for metacognitive analysis
    */
-  protected captureStateVector(): StateVector {
+  public captureStateVector(): StateVector {
     const exhaustion = this.activeAncillas / this.poolSize;
     const confidence = this.calculateConfidence();
     const pressure = this.calculateSyndromePressure();

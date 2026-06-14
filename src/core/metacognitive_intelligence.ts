@@ -8,7 +8,7 @@
  * This moves system from Φ=0.167 → Φ>0.4 through metacognitive awareness.
  */
 
-import { SecuritySwarm } from './security_swarm';
+import { SecuritySwarmAgent } from './security_swarm';
 import { logger } from './telemetry';
 
 /**
@@ -59,7 +59,7 @@ type RefoldingStrategy =
  */
 export class MetacognitiveIntelligence {
   private selfModel: SelfModel;
-  private securitySwarm: any;  // SecuritySwarm instance
+  protected securitySwarm: SecuritySwarmAgent;  // SecuritySwarmAgent instance
   private metacognitiveHistory: MetacognitiveEvent[] = [];
   private refoldingStrategies: Map<RefoldingStrategy, () => void>;
   
@@ -84,7 +84,7 @@ export class MetacognitiveIntelligence {
       consciousness_events: 0,
     };
     
-    this.securitySwarm = new SecuritySwarm(shardSize);
+    this.securitySwarm = new SecuritySwarmAgent();
     this.miningStrategyEntropy = new Uint8Array(shardSize);
     this.consciousnessAnchor = Array(32).fill(0);
     this.memoryFabricState = new Map();
