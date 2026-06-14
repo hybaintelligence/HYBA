@@ -19,8 +19,17 @@ from numpy.typing import NDArray
 
 from .pulvini_bures import BuresCertificate, bures_certificate, offdiag
 from .pulvini_certificates import adjacency_map_digest, automorphism_runtime_certificate
-from .pulvini_choi import ChoiCertificate, choi_certificate, choi_matrix, kraus_operators_for_step
-from .pulvini_gamma import EmpiricalGammaLedger, GammaEstimate, jump_operators_from_gamma
+from .pulvini_choi import (
+    ChoiCertificate,
+    choi_certificate,
+    choi_matrix,
+    kraus_operators_for_step,
+)
+from .pulvini_gamma import (
+    EmpiricalGammaLedger,
+    GammaEstimate,
+    jump_operators_from_gamma,
+)
 from .pulvini_group import adjacency_sets
 from .pulvini_topology import ADJACENCY_MAP, NUM_NODES
 
@@ -131,7 +140,9 @@ class ManifoldOperator:
 
         distance = None
         if target is not None:
-            distance = self.compute_bures_distance(rho, self.ensure_density_state(target))
+            distance = self.compute_bures_distance(
+                rho, self.ensure_density_state(target)
+            )
 
         return OperatorEvolution(
             state=rho,
@@ -220,7 +231,9 @@ class ManifoldOperator:
         bures_distance = (
             0.0
             if reference is None
-            else self.compute_bures_distance(matrix, self.ensure_density_state(reference))
+            else self.compute_bures_distance(
+                matrix, self.ensure_density_state(reference)
+            )
         )
         if bures_distance <= 0.25 and purity >= self.config.mixed_purity_threshold:
             classification = CoherenceClassification.COHERENT
@@ -248,7 +261,10 @@ class ManifoldOperator:
         matrix = self.ensure_density_state(rho)
         coherence = self.compute_coherence(matrix)
         purity = float(np.real(np.trace(matrix @ matrix)))
-        if coherence >= self.config.coherence_threshold and purity > self.config.mixed_purity_threshold:
+        if (
+            coherence >= self.config.coherence_threshold
+            and purity > self.config.mixed_purity_threshold
+        ):
             return ManifoldState.COHERENT
         if purity <= self.config.mixed_purity_threshold:
             return ManifoldState.MIXED
@@ -266,7 +282,9 @@ class ManifoldOperator:
         right = self.ensure_density_state(rho_b)
         sqrt_left = self._matrix_sqrt(left)
         fidelity_root = np.trace(self._matrix_sqrt(sqrt_left @ right @ sqrt_left))
-        fidelity = float(np.clip(np.real(fidelity_root * np.conj(fidelity_root)), 0.0, 1.0))
+        fidelity = float(
+            np.clip(np.real(fidelity_root * np.conj(fidelity_root)), 0.0, 1.0)
+        )
         return float(np.sqrt(max(0.0, 2.0 - 2.0 * np.sqrt(fidelity))))
 
     def compute_fidelity(
@@ -282,7 +300,9 @@ class ManifoldOperator:
         fidelity = np.real(fidelity_root * np.conj(fidelity_root))
         return float(np.clip(fidelity, 0.0, 1.0))
 
-    def bures_certificate(self, rho: NDArray[np.complex128], entropy_rate: float) -> BuresCertificate:
+    def bures_certificate(
+        self, rho: NDArray[np.complex128], entropy_rate: float
+    ) -> BuresCertificate:
         """Delegate to the established Bures certificate primitive."""
         return bures_certificate(self.ensure_density_state(rho), entropy_rate)
 
@@ -290,7 +310,9 @@ class ManifoldOperator:
         """Record an ACK/NACK observation for empirical jump strengths."""
         return self.gamma_ledger.record(node_id, nack=nack)
 
-    def jump_operators_for_node(self, node_id: int, gamma: Optional[float] = None) -> list[NDArray[np.complex128]]:
+    def jump_operators_for_node(
+        self, node_id: int, gamma: Optional[float] = None
+    ) -> list[NDArray[np.complex128]]:
         """Build Lindblad jump operators for a node from empirical gamma."""
         estimate = self.gamma_ledger.estimate(node_id)
         return jump_operators_from_gamma(
@@ -333,7 +355,9 @@ class ManifoldOperator:
             certificate = automorphism_runtime_certificate(self.adjacency_map)
             certificate = dict(certificate)
             certificate["operator_version"] = self.VERSION
-            certificate["adjacency_map_sha256"] = adjacency_map_digest(self.adjacency_map)
+            certificate["adjacency_map_sha256"] = adjacency_map_digest(
+                self.adjacency_map
+            )
             certificate["dimension_verified"] = self.dim == NUM_NODES
             certificate["symmetry_verified"] = (
                 certificate.get("group_order") == self.config.adjacency_symmetry
@@ -343,16 +367,21 @@ class ManifoldOperator:
 
     def snapshot(self) -> dict[str, Any]:
         """Return a compact Command Center snapshot."""
-        latest = self._state_history[-1] if self._state_history else np.eye(self.dim, dtype=np.complex128) / self.dim
+        latest = (
+            self._state_history[-1]
+            if self._state_history
+            else np.eye(self.dim, dtype=np.complex128) / self.dim
+        )
         return {
             "version": self.VERSION,
             "config": asdict(self.config),
             "state_count": len(self._state_history),
-            "latest_coherence": self._coherence_history[-1] if self._coherence_history else 0.0,
+            "latest_coherence": (
+                self._coherence_history[-1] if self._coherence_history else 0.0
+            ),
             "latest_classification": self.classify_state(latest).value,
             "topology_gate_closed": self.verify_topology()["gate_closed"],
         }
-
 
     def capability_manifest(self) -> dict[str, Any]:
         """Return the versioned production-façade capability manifest."""
@@ -360,7 +389,9 @@ class ManifoldOperator:
 
         return QuantumRuntimeManifestBuilder(self).capability_manifest().to_dict()
 
-    def quantum_runtime_manifest(self, rho: Optional[NDArray[np.complex128]] = None) -> dict[str, Any]:
+    def quantum_runtime_manifest(
+        self, rho: Optional[NDArray[np.complex128]] = None
+    ) -> dict[str, Any]:
         """Return the regulator-facing runtime manifest for this façade."""
         from .pulvini_elevation import QuantumRuntimeManifestBuilder
 

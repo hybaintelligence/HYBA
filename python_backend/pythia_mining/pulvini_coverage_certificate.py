@@ -19,14 +19,12 @@ and sigma is an element of the automorphism group of order 120.
 
 from __future__ import annotations
 
-import math
 from dataclasses import asdict, dataclass
-from typing import Any, Dict, List, Optional, Sequence, Tuple
+from typing import Any, Dict, Optional, Sequence, Tuple
 
-import numpy as np
 
 from .pulvini_group import apply_automorphism_to_nonce, compute_graph_automorphisms
-from .pulvini_topology import ADJACENCY_MAP, MAX_UINT32_NONCE, NONCE_BITS, NUM_NODES, SLICE_SIZE
+from .pulvini_topology import ADJACENCY_MAP, NUM_NODES
 
 NONCE_SPACE = 2**32
 
@@ -72,7 +70,7 @@ def verify_lane_coverages() -> Tuple[bool, bool]:
     for lane_id in range(num_lanes):
         start = lane_id * lane_size
         end = (lane_id + 1) * lane_size - 1
-        covered += (end - start + 1)
+        covered += end - start + 1
 
     is_complete = covered == NONCE_SPACE
 
@@ -180,14 +178,16 @@ def lane_coverage_report() -> Dict[str, Any]:
         start = lane_id * lane_size
         end = (lane_id + 1) * lane_size - 1
         node_type = "D-node" if lane_id < 20 else "I-node"
-        lanes.append({
-            "lane_id": lane_id,
-            "node_type": node_type,
-            "start": start,
-            "end": end,
-            "size": end - start + 1,
-            "cardinality": (NONCE_SPACE - 1 - lane_id) // NUM_NODES + 1,
-        })
+        lanes.append(
+            {
+                "lane_id": lane_id,
+                "node_type": node_type,
+                "start": start,
+                "end": end,
+                "size": end - start + 1,
+                "cardinality": (NONCE_SPACE - 1 - lane_id) // NUM_NODES + 1,
+            }
+        )
 
     return {
         "certificate_type": "lane_coverage_analysis",

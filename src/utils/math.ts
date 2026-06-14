@@ -43,11 +43,13 @@ export function normalize(vector: Complex[]): Complex[] {
  * Calculates quantum entropy of a normalized state vector
  */
 export function calculateEntropy(vector: Complex[]): number {
-  return -vector.reduce((sum, amp) => {
+  const raw = -vector.reduce((sum, amp) => {
     const prob = amp.r * amp.r + amp.i * amp.i;
     if (prob < 1e-12) return sum;
     return sum + prob * Math.log2(prob);
   }, 0);
+  // Clamp tiny floating-point negatives to zero (numerical noise from normalisation)
+  return Math.max(0, raw);
 }
 
 /**

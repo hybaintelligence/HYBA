@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from collections import deque
 from dataclasses import asdict, dataclass
-from typing import Any, Deque, Dict, Iterable, List, Sequence
+from typing import Any, Deque, Dict, Sequence
 
 import numpy as np
 
@@ -49,7 +49,7 @@ class HebbianMemoryKernel:
             return np.zeros((0, 0), dtype=np.float64)
         result = np.zeros_like(self.events[-1], dtype=np.float64)
         for index, event in enumerate(reversed(self.events)):
-            result += (self.decay ** index) * event
+            result += (self.decay**index) * event
         return result
 
     def certificate(self, *, tolerance: float = 1e-12) -> MemoryKernelCertificate:
@@ -61,7 +61,11 @@ class HebbianMemoryKernel:
             markovian=markovian,
             kernel_norm=norm,
             memory_events=len(self.events),
-            blocker=None if markovian else "Hebbian memory is active; use memory-kernel diagnostics, not a memoryless Lindblad-only claim",
+            blocker=(
+                None
+                if markovian
+                else "Hebbian memory is active; use memory-kernel diagnostics, not a memoryless Lindblad-only claim"
+            ),
         )
 
 

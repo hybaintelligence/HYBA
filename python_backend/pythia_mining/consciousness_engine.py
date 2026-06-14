@@ -117,14 +117,20 @@ class ConsciousnessEngine:
         await self.calculate_integrated_information()
         return self.current_state.consciousness_level
 
-    async def guide_decision_making(self, decision_context: Dict[str, Any]) -> Dict[str, Any]:
+    async def guide_decision_making(
+        self, decision_context: Dict[str, Any]
+    ) -> Dict[str, Any]:
         await self.calculate_integrated_information()
         return {
             "autonomy_level": self.coherence_meter,
             "risk_tolerance": "low" if self.needs_healing else "nominal",
             "planning_horizon": decision_context.get("planning_horizon"),
             "adaptability": self.current_state.component_integration,
-            "strategy": "autonomic_review_required" if self.needs_healing else "continue_monitored_operation",
+            "strategy": (
+                "autonomic_review_required"
+                if self.needs_healing
+                else "continue_monitored_operation"
+            ),
             "source": "operational_proxy",
         }
 
@@ -132,7 +138,11 @@ class ConsciousnessEngine:
         if component in self.components:
             self.components[component] = ready
         known = [value for value in self.components.values() if value is not None]
-        metrics = self._measure_component_phi(known) if known else PhiMetrics(source="not_measured")
+        metrics = (
+            self._measure_component_phi(known)
+            if known
+            else PhiMetrics(source="not_measured")
+        )
         self._record_metrics(metrics)
 
     def measure_phi(self, states: Sequence[NDArray[np.complex128]]) -> PhiMetrics:
@@ -143,15 +153,31 @@ class ConsciousnessEngine:
             self._record_metrics(metrics)
             return metrics
 
-        densities = np.asarray([self.operator.ensure_density_state(state) for state in window], dtype=np.complex128)
-        coherence_series = np.asarray([self.operator.compute_coherence(state) for state in densities], dtype=np.float64)
+        densities = np.asarray(
+            [self.operator.ensure_density_state(state) for state in window],
+            dtype=np.complex128,
+        )
+        coherence_series = np.asarray(
+            [self.operator.compute_coherence(state) for state in densities],
+            dtype=np.float64,
+        )
         effective_information = float(np.var(coherence_series))
         phi_causal = self._lag_one_correlation(coherence_series)
         entropy = self._density_entropy(densities[-1])
         entropy_scale = float(np.log2(max(self.operator.dim, 2)))
-        entropy_balance = 1.0 - min(1.0, abs(entropy - entropy_scale / 2.0) / max(entropy_scale / 2.0, 1e-12))
+        entropy_balance = 1.0 - min(
+            1.0, abs(entropy - entropy_scale / 2.0) / max(entropy_scale / 2.0, 1e-12)
+        )
         coherence_level = float(np.clip(coherence_series[-1], 0.0, 1.0))
-        phi_integrated = float(np.clip(0.55 * coherence_level + 0.25 * max(phi_causal, 0.0) + 0.20 * entropy_balance, 0.0, 1.0))
+        phi_integrated = float(
+            np.clip(
+                0.55 * coherence_level
+                + 0.25 * max(phi_causal, 0.0)
+                + 0.20 * entropy_balance,
+                0.0,
+                1.0,
+            )
+        )
         complexity = float(np.clip(phi_integrated * entropy_balance, 0.0, 1.0))
         phi_conscious = float(max(0.0, phi_causal - effective_information))
         metrics = PhiMetrics(
@@ -206,7 +232,12 @@ class ConsciousnessEngine:
         integration = active / len(known) if known else 0.0
         entropy = 0.0
         if known and 0.0 < integration < 1.0:
-            entropy = float(-(integration * np.log2(integration) + (1 - integration) * np.log2(1 - integration)))
+            entropy = float(
+                -(
+                    integration * np.log2(integration)
+                    + (1 - integration) * np.log2(1 - integration)
+                )
+            )
         phi = float(np.clip(integration * (1.0 - 0.25 * entropy), 0.0, 1.0))
         return PhiMetrics(
             phi_integrated=phi,
@@ -224,8 +255,12 @@ class ConsciousnessEngine:
         self.current_state.integrated_information = metrics.phi_integrated
         self.current_state.consciousness_level = metrics.phi_integrated
         known = [value for value in self.components.values() if value is not None]
-        self.current_state.component_integration = None if not known else sum(1 for value in known if value) / len(known)
-        self.current_state.system_complexity = float(len(known)) if known else metrics.complexity
+        self.current_state.component_integration = (
+            None if not known else sum(1 for value in known if value) / len(known)
+        )
+        self.current_state.system_complexity = (
+            float(len(known)) if known else metrics.complexity
+        )
         self.current_state.timestamp = time.time()
         self.current_state.source = metrics.source
 
@@ -278,7 +313,10 @@ class ConsciousnessEngine:
 
     @property
     def needs_healing(self) -> bool:
-        return self._integration_regime in (IntegrationRegime.FRAGMENTED, IntegrationRegime.CRITICAL)
+        return self._integration_regime in (
+            IntegrationRegime.FRAGMENTED,
+            IntegrationRegime.CRITICAL,
+        )
 
 
 __all__ = [

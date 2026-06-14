@@ -218,10 +218,18 @@ async function autoConnectViaBTC(): Promise<void> {
     }
     const capacity = Number(process.env.HYBA_QUANTUM_CAPACITY_EHS) || 1.0;
     const url = new URL("/api/mining/connect", CONFIG.backendUrl);
+    const jwtSecret = CONFIG.jwtSecret;
+    if (!jwtSecret) {
+      logger.warn("Auto-connect skipped: JWT_SECRET not set, cannot authenticate internal request");
+      return;
+    }
     const response = await fetch(url, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ pool_id: poolId, worker, password, capacity_ehs: capacity }),
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${jwtSecret}`,
+      },
+      body: JSON.stringify({ pool_id: poolId, worker, capacity_ehs: capacity }),
     });
     if (response.ok) {
       const result = await response.json();
@@ -622,15 +630,15 @@ async function startServer(): Promise<void> {
     res.send(lines.join("\n"));
   });
 
+  app.use(express.json({ limit: "1mb" }));
+  app.use(express.urlencoded({ extended: true, limit: "1mb" }));
+
   app.use("/api", (req: Request, res: Response) => {
     void proxyToBackend(req, res);
   });
   app.use("/health", (req: Request, res: Response) => {
     void proxyToBackend(req, res);
   });
-
-  app.use(express.json({ limit: "1mb" }));
-  app.use(express.urlencoded({ extended: true, limit: "1mb" }));
 
   if (!CONFIG.isProduction) {
     logger.info("Mounting Vite dev middleware");

@@ -487,7 +487,7 @@ describe("project_to_phi_floor invariants", () => {
   it("Property: Must be sign-preserving (positive input → positive output)", () => {
     fc.assert(
       fc.property(
-        fc.float({ min: 0.001, max: 1e10, noNaN: true }),
+        fc.float({ min: Math.fround(0.001), max: Math.fround(1e10), noNaN: true }),
         (value: number) => {
           const result = project_to_phi_floor(value);
           expect(result).toBeGreaterThan(0);

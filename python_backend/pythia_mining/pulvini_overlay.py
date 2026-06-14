@@ -12,10 +12,11 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
 from .pulvini_manifold import PulviniManifold
 from .pulvini_nonce_compression import PulviniNonceSpaceCompressor
 
-from .pulvini_topology import ADJACENCY_MAP, MAX_UINT32_NONCE, NONCE_BITS, NUM_NODES, SLICE_SIZE
+from .pulvini_topology import ADJACENCY_MAP, NONCE_BITS, NUM_NODES, SLICE_SIZE
 
 if TYPE_CHECKING:
     from .pulvini_autonomics import NodeTelemetry
+
 
 def get_geometric_neighbors(node_id: int) -> List[int]:
     if node_id not in ADJACENCY_MAP:
@@ -133,7 +134,9 @@ class GlobalMiningState:
         self.target: Optional[int] = None
         self.best_diff_observed = 0
         self.total_hashes = 0
-        self.node_progress: Dict[int, int] = {node_id: 0 for node_id in range(NUM_NODES)}
+        self.node_progress: Dict[int, int] = {
+            node_id: 0 for node_id in range(NUM_NODES)
+        }
 
     def activate_job(self, job_id: str, target: int) -> None:
         with self._lock:
@@ -170,12 +173,20 @@ class GlobalMiningState:
 class PulviniOverlayConcentrator:
     """Pool-facing singleton backed by the PULVINI mathematical manifold."""
 
-    def __init__(self, worker_name: str = "PULVINI.singularity", manifold: Optional[PulviniManifold] = None) -> None:
+    def __init__(
+        self,
+        worker_name: str = "PULVINI.singularity",
+        manifold: Optional[PulviniManifold] = None,
+    ) -> None:
         if not verify_symmetry():
-            raise RuntimeError("PULVINI adjacency map must be symmetric before production mining starts")
+            raise RuntimeError(
+                "PULVINI adjacency map must be symmetric before production mining starts"
+            )
         self.worker_name = worker_name
         self.manifold = manifold or PulviniManifold(ADJACENCY_MAP)
-        self.nonce_compressor = PulviniNonceSpaceCompressor(lanes=NUM_NODES, nonce_space_size=1 << NONCE_BITS)
+        self.nonce_compressor = PulviniNonceSpaceCompressor(
+            lanes=NUM_NODES, nonce_space_size=1 << NONCE_BITS
+        )
         self.nonce_plan = self.nonce_compressor.build_plan()
         self.state = GlobalMiningState()
         self.job_epoch = 0
@@ -183,11 +194,16 @@ class PulviniOverlayConcentrator:
         self.active_pool_name: Optional[str] = None
         self.assignments: Dict[int, NodeAssignment] = {}
         self.nodes = {
-            node_id: NodeRuntimeState(node_id=node_id, role="hub" if node_id >= 20 else "worker")
+            node_id: NodeRuntimeState(
+                node_id=node_id, role="hub" if node_id >= 20 else "worker"
+            )
             for node_id in range(NUM_NODES)
         }
         self.links = {
-            node_id: {neighbor: NeuralLink(neighbor) for neighbor in get_geometric_neighbors(node_id)}
+            node_id: {
+                neighbor: NeuralLink(neighbor)
+                for neighbor in get_geometric_neighbors(node_id)
+            }
             for node_id in range(NUM_NODES)
         }
         self.lifecycle: List[Dict[str, Any]] = []
@@ -225,17 +241,30 @@ class PulviniOverlayConcentrator:
         with self._lock:
             self._append_event("connect_requested", request_id=request_id)
 
-    def mark_pool_bound(self, pool_name: str, pool_url: str, stratum_version: int) -> None:
+    def mark_pool_bound(
+        self, pool_name: str, pool_url: str, stratum_version: int
+    ) -> None:
         with self._lock:
             self.active_pool_name = pool_name
-            self._append_event("pool_bound", pool_name=pool_name, pool_url=pool_url, stratum_version=stratum_version)
+            self._append_event(
+                "pool_bound",
+                pool_name=pool_name,
+                pool_url=pool_url,
+                stratum_version=stratum_version,
+            )
             self._append_event("subscribed_authorized", pool_name=pool_name)
             self._append_event("awaiting_job", pool_name=pool_name)
 
-    def _extranonce2_for_node(self, node_id: int, job_id: str, extranonce2_size: int) -> str:
-        return self.manifold.manifold_drift_extranonce2(node_id, job_id, extranonce2_size)
+    def _extranonce2_for_node(
+        self, node_id: int, job_id: str, extranonce2_size: int
+    ) -> str:
+        return self.manifold.manifold_drift_extranonce2(
+            node_id, job_id, extranonce2_size
+        )
 
-    def register_pool_job(self, job: Any, pool_name: Optional[str] = None) -> Dict[int, NodeAssignment]:
+    def register_pool_job(
+        self, job: Any, pool_name: Optional[str] = None
+    ) -> Dict[int, NodeAssignment]:
         with self._lock:
             if self.active_job_id == job.job_id and self.assignments:
                 return dict(self.assignments)
@@ -247,17 +276,23 @@ class PulviniOverlayConcentrator:
             self.assignments = {}
             for node_id, segment in enumerate(self.nonce_plan.coverage_segments):
                 coordinate = self.manifold.tensor_coordinate_for_node(node_id)
-                compressed_coordinate = self.nonce_plan.coordinate_for_nonce(segment.start)
+                compressed_coordinate = self.nonce_plan.coordinate_for_nonce(
+                    segment.start
+                )
                 assignment = NodeAssignment(
                     node_id=node_id,
                     job_id=str(job.job_id),
                     nonce_start=segment.start,
                     nonce_end=segment.end,
-                    extranonce2=self._extranonce2_for_node(node_id, str(job.job_id), getattr(job, "extranonce2_size", 4)),
+                    extranonce2=self._extranonce2_for_node(
+                        node_id, str(job.job_id), getattr(job, "extranonce2_size", 4)
+                    ),
                     role="hub" if node_id >= 20 else "worker",
                     neighbors=get_geometric_neighbors(node_id),
                     tensor_coordinate=coordinate.to_dict(),
-                    compressed_coordinate=compressed_coordinate.to_dict() if compressed_coordinate else {},
+                    compressed_coordinate=(
+                        compressed_coordinate.to_dict() if compressed_coordinate else {}
+                    ),
                 )
                 self.assignments[node_id] = assignment
                 node = self.nodes[node_id]
@@ -268,7 +303,12 @@ class PulviniOverlayConcentrator:
                 node.current_nonce = segment.start
                 node.last_update = time.time()
                 node.best_neighbor = self.best_neighbor(node_id)
-            self._append_event("job_received", job_id=str(job.job_id), pool_name=pool_name, epoch=self.job_epoch)
+            self._append_event(
+                "job_received",
+                job_id=str(job.job_id),
+                pool_name=pool_name,
+                epoch=self.job_epoch,
+            )
             self._append_event(
                 "work_configured",
                 job_id=str(job.job_id),
@@ -280,13 +320,18 @@ class PulviniOverlayConcentrator:
             return dict(self.assignments)
 
     def nonce_ranges(self) -> List[Tuple[int, int]]:
-        return [(assignment.nonce_start, assignment.nonce_end) for assignment in self.assignments.values()]
+        return [
+            (assignment.nonce_start, assignment.nonce_end)
+            for assignment in self.assignments.values()
+        ]
 
     def compressed_nonce_plan(self) -> Dict[str, Any]:
         return self.nonce_plan.to_dict()
 
     def tensor_coordinates(self) -> List[Dict[str, Any]]:
-        return [coordinate.to_dict() for coordinate in self.manifold.tensor_coordinates()]
+        return [
+            coordinate.to_dict() for coordinate in self.manifold.tensor_coordinates()
+        ]
 
     def assignment_for_nonce(self, nonce: int) -> Optional[NodeAssignment]:
         nonce = int(nonce)
@@ -305,7 +350,9 @@ class PulviniOverlayConcentrator:
         coordinate = self.nonce_plan.coordinate_for_nonce(nonce)
         return coordinate.to_dict() if coordinate else None
 
-    def record_node_progress(self, node_id: int, nonce: int, hashes: int = 0, best_diff: Optional[int] = None) -> None:
+    def record_node_progress(
+        self, node_id: int, nonce: int, hashes: int = 0, best_diff: Optional[int] = None
+    ) -> None:
         with self._lock:
             node = self.nodes[node_id]
             node.phase = "searching"
@@ -321,8 +368,12 @@ class PulviniOverlayConcentrator:
 
     def record_nack(self, node_id: int) -> None:
         assignment = self.assignments[node_id]
-        event = self.manifold.nack_slice(node_id, assignment.job_id, assignment.nonce_start, assignment.nonce_end)
-        self._append_event("nack_backaction", node_id=node_id, affected_nodes=event.affected_nodes)
+        event = self.manifold.nack_slice(
+            node_id, assignment.job_id, assignment.nonce_start, assignment.nonce_end
+        )
+        self._append_event(
+            "nack_backaction", node_id=node_id, affected_nodes=event.affected_nodes
+        )
 
     def record_share_candidate(self, node_id: int, nonce: int) -> None:
         with self._lock:
@@ -331,9 +382,16 @@ class PulviniOverlayConcentrator:
             node.current_nonce = int(nonce)
             node.shares_found += 1
             node.last_update = time.time()
-            self._append_event("candidate_evaluated", node_id=node_id, job_id=self.active_job_id, nonce=int(nonce))
+            self._append_event(
+                "candidate_evaluated",
+                node_id=node_id,
+                job_id=self.active_job_id,
+                nonce=int(nonce),
+            )
 
-    def record_share_outcome(self, node_id: int, nonce: int, result: Any) -> Dict[str, Any]:
+    def record_share_outcome(
+        self, node_id: int, nonce: int, result: Any
+    ) -> Dict[str, Any]:
         with self._lock:
             node = self.nodes[node_id]
             node.shares_submitted += 1
@@ -360,8 +418,18 @@ class PulviniOverlayConcentrator:
             self.share_ledger.append(payload)
             if len(self.share_ledger) > 256:
                 del self.share_ledger[: len(self.share_ledger) - 256]
-            self._append_event("share_submitted", node_id=node_id, job_id=payload["job_id"], nonce=int(nonce))
-            self._append_event("share_outcome_recorded", node_id=node_id, accepted=accepted, error_code=payload["error_code"])
+            self._append_event(
+                "share_submitted",
+                node_id=node_id,
+                job_id=payload["job_id"],
+                nonce=int(nonce),
+            )
+            self._append_event(
+                "share_outcome_recorded",
+                node_id=node_id,
+                accepted=accepted,
+                error_code=payload["error_code"],
+            )
             return payload
 
     def best_neighbor(self, node_id: int) -> Optional[int]:
@@ -374,7 +442,11 @@ class PulviniOverlayConcentrator:
             self.autonomic_ledger.append(payload)
             if len(self.autonomic_ledger) > 256:
                 del self.autonomic_ledger[: len(self.autonomic_ledger) - 256]
-            self._append_event("autonomic_event", event_type=payload.get("event_type"), node_id=payload.get("node_id"))
+            self._append_event(
+                "autonomic_event",
+                event_type=payload.get("event_type"),
+                node_id=payload.get("node_id"),
+            )
 
     def apply_lattice_repoint(self, command: Dict[str, Any]) -> None:
         with self._lock:
@@ -385,7 +457,9 @@ class PulviniOverlayConcentrator:
                 "failed_node": failed_node,
                 "recipient_node": recipient_node,
                 "nonce_range": [nonce_start, nonce_end],
-                "source_nonce_range": list(command.get("source_nonce_range", [nonce_start, nonce_end])),
+                "source_nonce_range": list(
+                    command.get("source_nonce_range", [nonce_start, nonce_end])
+                ),
                 "partition_index": int(command.get("partition_index", 0)),
                 "partition_count": int(command.get("partition_count", 1)),
                 "fraction": float(command["fraction"]),
@@ -393,8 +467,15 @@ class PulviniOverlayConcentrator:
             }
             route_key = (failed_node, recipient_node, nonce_start, nonce_end)
             self.healing_routes = [
-                existing for existing in self.healing_routes
-                if (int(existing["failed_node"]), int(existing["recipient_node"]), int(existing["nonce_range"][0]), int(existing["nonce_range"][1])) != route_key
+                existing
+                for existing in self.healing_routes
+                if (
+                    int(existing["failed_node"]),
+                    int(existing["recipient_node"]),
+                    int(existing["nonce_range"][0]),
+                    int(existing["nonce_range"][1]),
+                )
+                != route_key
             ]
             self.healing_routes.append(route)
             if len(self.healing_routes) > 512:
@@ -402,8 +483,15 @@ class PulviniOverlayConcentrator:
             if recipient_node in self.assignments:
                 assignment = self.assignments[recipient_node]
                 assignment.healing_ranges = [
-                    existing for existing in assignment.healing_ranges
-                    if (int(existing["failed_node"]), int(existing["recipient_node"]), int(existing["nonce_range"][0]), int(existing["nonce_range"][1])) != route_key
+                    existing
+                    for existing in assignment.healing_ranges
+                    if (
+                        int(existing["failed_node"]),
+                        int(existing["recipient_node"]),
+                        int(existing["nonce_range"][0]),
+                        int(existing["nonce_range"][1]),
+                    )
+                    != route_key
                 ]
                 assignment.healing_ranges.append(route)
             if failed_node in self.nodes:
@@ -424,9 +512,13 @@ class PulviniOverlayConcentrator:
         ranges_by_recipient: Dict[int, List[Tuple[int, int]]] = {}
         for route in self.healing_routes:
             recipient = int(route["recipient_node"])
-            ranges_by_recipient.setdefault(recipient, []).append((int(route["nonce_range"][0]), int(route["nonce_range"][1])))
+            ranges_by_recipient.setdefault(recipient, []).append(
+                (int(route["nonce_range"][0]), int(route["nonce_range"][1]))
+            )
         for recipient, assignment in self.assignments.items():
-            ranges_by_recipient.setdefault(recipient, []).append((int(assignment.nonce_start), int(assignment.nonce_end)))
+            ranges_by_recipient.setdefault(recipient, []).append(
+                (int(assignment.nonce_start), int(assignment.nonce_end))
+            )
         for ranges in ranges_by_recipient.values():
             ordered = sorted(ranges)
             for left, right in zip(ordered, ordered[1:]):
@@ -434,12 +526,20 @@ class PulviniOverlayConcentrator:
                     return False
         return True
 
-    def record_link_latency(self, source_id: int, target_id: int, trip_seconds: float) -> None:
+    def record_link_latency(
+        self, source_id: int, target_id: int, trip_seconds: float
+    ) -> None:
         if target_id not in self.links.get(source_id, {}):
-            raise ValueError(f"nodes {source_id}->{target_id} are not adjacent in PULVINI topology")
+            raise ValueError(
+                f"nodes {source_id}->{target_id} are not adjacent in PULVINI topology"
+            )
         self.links[source_id][target_id].record_trip(trip_seconds)
         reward = 1.0 / (max(float(trip_seconds), 0.0) + 1e-9)
-        self.manifold.hebbian_fire([source_id, target_id], signal_type="LATENCY_REWARD", reward=min(reward, 1.0))
+        self.manifold.hebbian_fire(
+            [source_id, target_id],
+            signal_type="LATENCY_REWARD",
+            reward=min(reward, 1.0),
+        )
         self.nodes[source_id].best_neighbor = self.best_neighbor(source_id)
 
     def route_for_share(self, node_id: int) -> List[int]:
@@ -472,31 +572,46 @@ class PulviniOverlayConcentrator:
                     tres = 0.0
 
                 submitted = max(node.shares_submitted, 0)
-                phi_eff = 1.0 if submitted == 0 else node.shares_accepted / max(submitted, 1)
+                phi_eff = (
+                    1.0 if submitted == 0 else node.shares_accepted / max(submitted, 1)
+                )
                 neighbors = get_geometric_neighbors(node_id)
                 if neighbors:
                     phase_alignment = [
-                        (1.0 + math.cos(float(phases[node_id]) - float(phases[neighbor]))) / 2.0
+                        (
+                            1.0
+                            + math.cos(float(phases[node_id]) - float(phases[neighbor]))
+                        )
+                        / 2.0
                         for neighbor in neighbors
                     ]
                     chi_sync = sum(phase_alignment) / len(phase_alignment)
                 else:
                     chi_sync = 1.0
-                thermal_pressure = float(self.manifold.node_energy[node_id]) * max(float(power_scale), 1e-9)
+                thermal_pressure = float(self.manifold.node_energy[node_id]) * max(
+                    float(power_scale), 1e-9
+                )
                 thermal_entropy = max(0.0, min(1.0, 0.30 * thermal_pressure))
-                hash_rate = max(float(node.hashes), float(probabilities[node_id]) * max(self.state.total_hashes, 1))
-                telemetry.append(NodeTelemetry(
-                    node_id=node_id,
-                    tres=tres,
-                    phi_eff=max(0.0, min(1.0, phi_eff)),
-                    chi_sync=max(0.0, min(1.0, chi_sync)),
-                    thermal_entropy=thermal_entropy,
-                    hash_rate=hash_rate,
-                    timestamp=now,
-                ))
+                hash_rate = max(
+                    float(node.hashes),
+                    float(probabilities[node_id]) * max(self.state.total_hashes, 1),
+                )
+                telemetry.append(
+                    NodeTelemetry(
+                        node_id=node_id,
+                        tres=tres,
+                        phi_eff=max(0.0, min(1.0, phi_eff)),
+                        chi_sync=max(0.0, min(1.0, chi_sync)),
+                        thermal_entropy=thermal_entropy,
+                        hash_rate=hash_rate,
+                        timestamp=now,
+                    )
+                )
             return telemetry
 
-    def apply_autonomic_distribution(self, amplitudes: List[float], *, reason: str = "autonomic_optimization") -> List[float]:
+    def apply_autonomic_distribution(
+        self, amplitudes: List[float], *, reason: str = "autonomic_optimization"
+    ) -> List[float]:
         distribution = self.manifold.apply_work_distribution(amplitudes, reason=reason)
         self._append_event(
             "autonomic_distribution_applied",
@@ -515,7 +630,11 @@ class PulviniOverlayConcentrator:
         neighbors = get_geometric_neighbors(node_id)
         return {
             "self": self.nodes[node_id].to_dict(),
-            "assignment": self.assignments.get(node_id).to_dict() if node_id in self.assignments else None,
+            "assignment": (
+                self.assignments.get(node_id).to_dict()
+                if node_id in self.assignments
+                else None
+            ),
             "neighbors": [self.nodes[neighbor].to_dict() for neighbor in neighbors],
             "best_neighbor": self.best_neighbor(node_id),
             "active_job_id": self.active_job_id,
@@ -528,9 +647,15 @@ class PulviniOverlayConcentrator:
         with self._lock:
             totals = {
                 "shares_found": sum(node.shares_found for node in self.nodes.values()),
-                "shares_submitted": sum(node.shares_submitted for node in self.nodes.values()),
-                "shares_accepted": sum(node.shares_accepted for node in self.nodes.values()),
-                "shares_rejected": sum(node.shares_rejected for node in self.nodes.values()),
+                "shares_submitted": sum(
+                    node.shares_submitted for node in self.nodes.values()
+                ),
+                "shares_accepted": sum(
+                    node.shares_accepted for node in self.nodes.values()
+                ),
+                "shares_rejected": sum(
+                    node.shares_rejected for node in self.nodes.values()
+                ),
             }
             return {
                 "topology": self.topology_report,
@@ -541,8 +666,13 @@ class PulviniOverlayConcentrator:
                 "active_job_id": self.active_job_id,
                 "job_epoch": self.job_epoch,
                 "nonce_compression_plan": self.compressed_nonce_plan(),
-                "assignments": {node_id: assignment.to_dict() for node_id, assignment in self.assignments.items()},
-                "nodes": {node_id: node.to_dict() for node_id, node in self.nodes.items()},
+                "assignments": {
+                    node_id: assignment.to_dict()
+                    for node_id, assignment in self.assignments.items()
+                },
+                "nodes": {
+                    node_id: node.to_dict() for node_id, node in self.nodes.items()
+                },
                 "shared_state": self.state.snapshot(),
                 "manifold": self.manifold.snapshot(),
                 "lifecycle": list(self.lifecycle),

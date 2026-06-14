@@ -6,10 +6,12 @@ HYBA Genesis Platform Security
 from __future__ import annotations
 
 import hashlib
+import hmac
 import logging
 import os
 import secrets
 from datetime import datetime, timedelta, timezone
+from threading import Lock
 from typing import Dict, List, Optional
 
 import jwt
@@ -38,7 +40,9 @@ class JWTManager:
         self.algorithm = algorithm
         self.token_blacklist: set[str] = set()
 
-    def create_access_token(self, user_id: str, username: str, roles: List[str], expiry_hours: int = 1) -> str:
+    def create_access_token(
+        self, user_id: str, username: str, roles: List[str], expiry_hours: int = 1
+    ) -> str:
         now = datetime.now(timezone.utc)
         payload = {
             "sub": user_id,
@@ -66,13 +70,23 @@ class JWTManager:
     def revoke_token(self, token: str) -> None:
         """Add a token's JTI to the blacklist."""
         try:
-            payload = jwt.decode(token, self.secret_key, algorithms=[self.algorithm], options={"verify_exp": False})
+            payload = jwt.decode(
+                token,
+                self.secret_key,
+                algorithms=[self.algorithm],
+                options={"verify_exp": False},
+            )
             jti = payload.get("jti")
             if jti:
                 self.token_blacklist.add(jti)
         except jwt.InvalidTokenError as exc:
-            LOGGER.warning("Token revocation requested with invalid token: %s", exc.__class__.__name__)
-            raise HTTPException(status_code=401, detail="Invalid token; revocation was not recorded") from exc
+            LOGGER.warning(
+                "Token revocation requested with invalid token: %s",
+                exc.__class__.__name__,
+            )
+            raise HTTPException(
+                status_code=401, detail="Invalid token; revocation was not recorded"
+            ) from exc
 
 
 def _generate_dev_secret() -> str:
@@ -83,6 +97,7 @@ def _generate_dev_secret() -> str:
 
 
 _DEV_SECRET: Optional[str] = None
+_DEV_SECRET_LOCK = Lock()
 
 
 def get_jwt_manager() -> JWTManager:
@@ -95,9 +110,10 @@ def get_jwt_manager() -> JWTManager:
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
                 detail="JWT_SECRET environment variable is required in production",
             )
-        if _DEV_SECRET is None:
-            _DEV_SECRET = _generate_dev_secret()
-        secret = _DEV_SECRET
+        with _DEV_SECRET_LOCK:
+            if _DEV_SECRET is None:
+                _DEV_SECRET = _generate_dev_secret()
+            secret = _DEV_SECRET
     return JWTManager(secret_key=secret)
 
 
@@ -130,4 +146,11 @@ class APIKeyManager:
         return keys
 
     def validate_api_key(self, api_key: str) -> Optional[Dict[str, str]]:
-        return self.valid_keys.get(api_key)
+        entry = self.valid_keys.get(api_key)
+        if not entry:
+            return None
+        # Constant-time comparison to prevent timing oracle on key prefix
+        for stored_key in self.valid_keys:
+            if hmac.compare_digest(stored_key, api_key):
+                return self.valid_keys[stored_key]
+        return None

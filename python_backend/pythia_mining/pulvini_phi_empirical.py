@@ -36,7 +36,11 @@ def measure_phi_acceptance(
     job_id: str | None = None,
 ) -> PhiSampleResult:
     values = [int(nonce) for nonce in nonces]
-    accepted = sum(1 for nonce in values if scorer.phi_resonance_score(nonce, job_id=job_id) >= float(threshold))
+    accepted = sum(
+        1
+        for nonce in values
+        if scorer.phi_resonance_score(nonce, job_id=job_id) >= float(threshold)
+    )
     sample_size = len(values)
     ratio = 0.0 if sample_size == 0 else accepted / sample_size
     baseline = max(0.0, min(1.0, 1.0 - float(threshold)))

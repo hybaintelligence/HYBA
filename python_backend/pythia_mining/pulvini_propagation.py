@@ -38,7 +38,12 @@ class ShareSignal:
         extranonce2: str,
         hash_bytes: Optional[bytes] = None,
     ) -> "ShareSignal":
-        digest = hash_bytes or hashlib.sha256(f"{job_id}:{finder_id}:{nonce}:{extranonce2}".encode("utf-8")).digest()
+        digest = (
+            hash_bytes
+            or hashlib.sha256(
+                f"{job_id}:{finder_id}:{nonce}:{extranonce2}".encode("utf-8")
+            ).digest()
+        )
         return cls(
             share_id=str(uuid.uuid4()),
             job_id=str(job_id),
@@ -75,7 +80,15 @@ class PropagationResult:
     cancelled_nodes: List[int]
 
     def to_dict(self) -> Dict[str, Any]:
-        result_payload = self.share_result.to_dict() if hasattr(self.share_result, "to_dict") else asdict(self.share_result) if hasattr(self.share_result, "__dataclass_fields__") else self.share_result
+        result_payload = (
+            self.share_result.to_dict()
+            if hasattr(self.share_result, "to_dict")
+            else (
+                asdict(self.share_result)
+                if hasattr(self.share_result, "__dataclass_fields__")
+                else self.share_result
+            )
+        )
         return {
             "share_signal": self.share_signal.to_dict(),
             "share_result": result_payload,
@@ -124,7 +137,9 @@ class CancelFlood:
     def flood(self, signal: CancelSignal) -> Tuple[List[int], int]:
         order = self.manifold.gradient_broadcast_order(PROXY_GATEWAY)
         if len(order) != NUM_NODES:
-            raise RuntimeError(f"cancel flood reached {len(order)}/{NUM_NODES} PULVINI nodes")
+            raise RuntimeError(
+                f"cancel flood reached {len(order)}/{NUM_NODES} PULVINI nodes"
+            )
         max_hop = self._hop_count_from_gateway(order)
         signal.visited = order
         signal.max_hop = max_hop
@@ -134,7 +149,11 @@ class CancelFlood:
 class SharePropagationController:
     """Share-found sequence: route -> submit once -> Hebbian update -> cancel."""
 
-    def __init__(self, manifold: Optional[PulviniManifold] = None, memory_fabric: Optional[PulviniMemoryFabric] = None) -> None:
+    def __init__(
+        self,
+        manifold: Optional[PulviniManifold] = None,
+        memory_fabric: Optional[PulviniMemoryFabric] = None,
+    ) -> None:
         self.manifold = manifold or PulviniManifold(ADJACENCY_MAP)
         self.memory_fabric = memory_fabric or PulviniMemoryFabric(num_nodes=NUM_NODES)
         self.router = ShareRouter(self.manifold)
@@ -167,12 +186,20 @@ class SharePropagationController:
             )
             return PropagationResult(
                 share_signal=duplicate_signal,
-                share_result=type('obj', (object,), {'accepted': False, 'error': 'duplicate_share', 'error_code': 421}),
-                cancel_signal=CancelSignal(job_id=str(job.job_id), reason="duplicate_share", source_share_id=duplicate_signal.share_id),
+                share_result=type(
+                    "obj",
+                    (object,),
+                    {"accepted": False, "error": "duplicate_share", "error_code": 421},
+                ),
+                cancel_signal=CancelSignal(
+                    job_id=str(job.job_id),
+                    reason="duplicate_share",
+                    source_share_id=duplicate_signal.share_id,
+                ),
                 route=[finder_id],
                 cancelled_nodes=[],
             )
-        
+
         signal = ShareSignal.create(
             job_id=str(job.job_id),
             finder_id=finder_id,
@@ -182,7 +209,7 @@ class SharePropagationController:
         )
         if signal.share_id in self.seen_shares:
             raise RuntimeError(f"duplicate share signal: {signal.share_id}")
-        
+
         # Mark this job_id + nonce combination as seen globally
         self.seen_job_nonces.add(job_nonce_key)
         self.seen_shares.add(signal.share_id)
@@ -191,15 +218,23 @@ class SharePropagationController:
         share_result = await submitter(job, nonce, extranonce2)
         accepted = bool(getattr(share_result, "accepted", False))
         reward = 1.0 if accepted else -0.1
-        self.manifold.hebbian_fire(route, signal_type="SHARE_FOUND" if accepted else "SHARE_REJECTED", reward=reward)
+        self.manifold.hebbian_fire(
+            route,
+            signal_type="SHARE_FOUND" if accepted else "SHARE_REJECTED",
+            reward=reward,
+        )
         self.memory_fabric.record_path(route, reward=reward)
         reason = "share_accepted" if accepted else "share_rejected"
-        cancel = CancelSignal(job_id=str(job.job_id), reason=reason, source_share_id=signal.share_id)
+        cancel = CancelSignal(
+            job_id=str(job.job_id), reason=reason, source_share_id=signal.share_id
+        )
         cancelled_nodes, _max_hop = self.cancel_flood.flood(cancel)
         self.cancelled_jobs[str(job.job_id)] = cancel
-        
+
         # Clean up deduplication entries for this job to prevent unbounded growth
-        keys_to_remove = [key for key in self.seen_job_nonces if key.startswith(f"{job.job_id}:")]
+        keys_to_remove = [
+            key for key in self.seen_job_nonces if key.startswith(f"{job.job_id}:")
+        ]
         for key in keys_to_remove:
             self.seen_job_nonces.remove(key)
 
@@ -222,7 +257,10 @@ class SharePropagationController:
         return {
             "proxy_gateway": PROXY_GATEWAY,
             "seen_shares": len(self.seen_shares),
-            "cancelled_jobs": {job_id: signal.to_dict() for job_id, signal in self.cancelled_jobs.items()},
+            "cancelled_jobs": {
+                job_id: signal.to_dict()
+                for job_id, signal in self.cancelled_jobs.items()
+            },
             "history": list(self.history),
             "manifold": self.manifold.snapshot(),
             "memory_fabric": self.memory_fabric.compressed_kernel_snapshot().to_dict(),

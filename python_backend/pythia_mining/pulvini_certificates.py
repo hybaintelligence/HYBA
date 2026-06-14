@@ -22,12 +22,19 @@ def adjacency_map_digest(adjacency_map: dict) -> str:
         }
         for node, payload in sorted(adjacency_map.items())
     }
-    material = json.dumps(normalized, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    material = json.dumps(normalized, sort_keys=True, separators=(",", ":")).encode(
+        "utf-8"
+    )
     return hashlib.sha256(material).hexdigest()
 
 
 def _certificate_cache_path(map_hash: str) -> Path:
-    root = Path(os.getenv("PULVINI_CERTIFICATE_CACHE_DIR", Path(tempfile.gettempdir()) / "hyba_pulvini_certificates"))
+    root = Path(
+        os.getenv(
+            "PULVINI_CERTIFICATE_CACHE_DIR",
+            Path(tempfile.gettempdir()) / "hyba_pulvini_certificates",
+        )
+    )
     return root / f"automorphism-{map_hash}.json"
 
 
@@ -61,12 +68,17 @@ def _load_cached_automorphism_certificate(path: Path, map_hash: str) -> dict | N
 def _store_cached_automorphism_certificate(path: Path, certificate: dict) -> None:
     try:
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(json.dumps(certificate, sort_keys=True, separators=(",", ":")), encoding="utf-8")
+        path.write_text(
+            json.dumps(certificate, sort_keys=True, separators=(",", ":")),
+            encoding="utf-8",
+        )
     except OSError:
         return
 
 
-def automorphism_runtime_certificate(adjacency_map: dict, *, use_cache: bool = True) -> dict:
+def automorphism_runtime_certificate(
+    adjacency_map: dict, *, use_cache: bool = True
+) -> dict:
     """
     Compute the exact automorphism group certificate for the runtime adjacency map.
 
@@ -93,7 +105,11 @@ def automorphism_runtime_certificate(adjacency_map: dict, *, use_cache: bool = T
         orbits.setdefault(deg, []).append(node)
 
     violations = 0
-    edges = {tuple(sorted((u, v))) for u, node_neighbors in neighbors.items() for v in node_neighbors}
+    edges = {
+        tuple(sorted((u, v)))
+        for u, node_neighbors in neighbors.items()
+        for v in node_neighbors
+    }
     for sigma in autos:
         for u, v in edges:
             left, right = sigma[u], sigma[v]
@@ -147,7 +163,9 @@ def phi_geometric_structure_certificate(
     nonce_space = int(getattr(compressor, "nonce_space_size", 2**32))
     stride = max(1, nonce_space // sample_size)
     phase = int(seed) % stride
-    sample = (phase + np.arange(sample_size, dtype=np.uint64) * np.uint64(stride)) % np.uint64(nonce_space)
+    sample = (
+        phase + np.arange(sample_size, dtype=np.uint64) * np.uint64(stride)
+    ) % np.uint64(nonce_space)
     phi_mask = np.fromiter(
         (compressor.phi_resonant(int(nonce)) for nonce in sample),
         dtype=bool,
@@ -166,15 +184,17 @@ def phi_geometric_structure_certificate(
         lane_hits = int(np.sum(phi_mask[lane_mask]))
         lane_ratio = float(lane_hits / lane_count)
         node_type = "D-node" if lane_id < 20 else "I-node"
-        lane_stats.append({
-            "lane_id": lane_id,
-            "node_type": node_type,
-            "start": int(start),
-            "end": int(end),
-            "sample_count": lane_count,
-            "phi_hits": lane_hits,
-            "phi_ratio": lane_ratio,
-        })
+        lane_stats.append(
+            {
+                "lane_id": lane_id,
+                "node_type": node_type,
+                "start": int(start),
+                "end": int(end),
+                "sample_count": lane_count,
+                "phi_hits": lane_hits,
+                "phi_ratio": lane_ratio,
+            }
+        )
         ratios.append(lane_ratio)
         counts.append(lane_count)
         hits.append(lane_hits)
@@ -195,17 +215,32 @@ def phi_geometric_structure_certificate(
     expected_hits = counts_array * overall_ratio
     expected_misses = counts_array * (1.0 - overall_ratio)
     misses = counts_array - hits_array
-    hit_only_chi_square = float(np.sum(((hits_array - expected_hits) ** 2) / expected_hits))
-    pearson_chi_square = float(np.sum(
-        ((hits_array - expected_hits) ** 2) / expected_hits
-        + ((misses - expected_misses) ** 2) / expected_misses
-    ))
-    degrees_of_freedom = max(1, len(lane_stats) - 1)
-    chi_square_critical_p_0_05 = 44.99 if degrees_of_freedom == 31 else float(
-        degrees_of_freedom
-        * (1.0 - 2.0 / (9.0 * degrees_of_freedom) + 1.6448536269514722 * (2.0 / (9.0 * degrees_of_freedom)) ** 0.5) ** 3
+    hit_only_chi_square = float(
+        np.sum(((hits_array - expected_hits) ** 2) / expected_hits)
     )
-    reject_uniform_lane_null_p_0_05 = bool(pearson_chi_square > chi_square_critical_p_0_05)
+    pearson_chi_square = float(
+        np.sum(
+            ((hits_array - expected_hits) ** 2) / expected_hits
+            + ((misses - expected_misses) ** 2) / expected_misses
+        )
+    )
+    degrees_of_freedom = max(1, len(lane_stats) - 1)
+    chi_square_critical_p_0_05 = (
+        44.99
+        if degrees_of_freedom == 31
+        else float(
+            degrees_of_freedom
+            * (
+                1.0
+                - 2.0 / (9.0 * degrees_of_freedom)
+                + 1.6448536269514722 * (2.0 / (9.0 * degrees_of_freedom)) ** 0.5
+            )
+            ** 3
+        )
+    )
+    reject_uniform_lane_null_p_0_05 = bool(
+        pearson_chi_square > chi_square_critical_p_0_05
+    )
 
     d_ratios = ratios_array[:20]
     i_ratios = ratios_array[20:]
@@ -257,4 +292,8 @@ def phi_geometric_structure_certificate(
     }
 
 
-__all__ = ["adjacency_map_digest", "automorphism_runtime_certificate", "phi_geometric_structure_certificate"]
+__all__ = [
+    "adjacency_map_digest",
+    "automorphism_runtime_certificate",
+    "phi_geometric_structure_certificate",
+]

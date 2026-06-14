@@ -36,7 +36,7 @@ export const PulviniExecutionPanel = () => {
         <div className="flex items-center gap-2">
           <Zap className="text-black w-4.5 h-4.5" />
           <h3 className="text-xs font-mono text-[#1A1A1E] font-bold uppercase tracking-wider">
-            PULVINI Breakthrough: Quantum Mathematics Execution
+            PULVINI Execution: Mathematical Runtime Surface
           </h3>
         </div>
         <span className="text-[10px] font-mono text-white bg-black px-2 py-0.5 rounded font-bold uppercase">
@@ -45,7 +45,7 @@ export const PulviniExecutionPanel = () => {
       </div>
 
       <div className="text-[11px] text-[#64748B] mb-5 leading-relaxed font-sans">
-        The PULVINI Memory Engine executes Hilbert-space operators, Hamiltonians, tensor folds, and Born-rule measurements as substrate-agnostic linear algebra. CPUs, GPUs, cloud, and edge devices are interchangeable arithmetic substrates rather than sources of quantum validity.
+        The PULVINI Memory Engine executes Hilbert-space operators, Hamiltonians, tensor folds, and bounded measurement routines as substrate-agnostic linear algebra. CPUs, GPUs, cloud, and edge devices are arithmetic substrates; proof-of-work validation remains classically verified.
       </div>
 
       <button
@@ -56,7 +56,7 @@ export const PulviniExecutionPanel = () => {
         {isExecuting ? (
           <>
             <Activity className="w-4 h-4 animate-spin text-[#94A3B8]" />
-            EXECUTING QUANTUM MATHEMATICS...
+            EXECUTING MATHEMATICAL RUNTIME...
           </>
         ) : (
           <>

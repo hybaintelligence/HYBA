@@ -22,6 +22,7 @@ from pathlib import Path
 from typing import Any, Iterable, Mapping, Optional, Protocol, Sequence, TYPE_CHECKING
 
 if TYPE_CHECKING:
+    import numpy as np
     from numpy.typing import NDArray
     from .pulvini_operator import ManifoldOperator
     from .pulvini_verifier import SubstatePassport, SubstateVerifier
@@ -40,7 +41,15 @@ _FIXED_POINT_BIT_DEPTH = 64
 PHI = 1.618033988749895
 PHI_INV = 1.0 / PHI
 REQUESTED_PHI_EXPONENTS = (7, 10, 12, 15, 18, 20, 31, 76)
-PHI_COMBINATION_PAIRS = ((7, 10), (10, 12), (12, 15), (15, 18), (18, 20), (20, 31), (31, 76))
+PHI_COMBINATION_PAIRS = (
+    (7, 10),
+    (10, 12),
+    (12, 15),
+    (15, 18),
+    (18, 20),
+    (20, 31),
+    (31, 76),
+)
 
 
 class Severity(str, Enum):
@@ -81,20 +90,28 @@ class PhiScalingContract:
             "components": (left_tier["label"], right_tier["label"]),
             "base10_exponent": int(left) + int(right),
             "phi_exponent": int(left) + int(right),
-            "phi_multiplier": left_tier["phi_multiplier"] * right_tier["phi_multiplier"],
+            "phi_multiplier": left_tier["phi_multiplier"]
+            * right_tier["phi_multiplier"],
             "scale_factor": left_tier["scale_factor"] * right_tier["scale_factor"],
             "scaling_model": self.scaling_model,
         }
 
     def to_dict(self) -> dict[str, Any]:
-        return _canonicalize({
-            "schema_version": self.schema_version,
-            "scaling_model": self.scaling_model,
-            "requested_exponents": self.requested_exponents,
-            "combination_pairs": self.combination_pairs,
-            "tiers": tuple(self.tier(exponent) for exponent in self.requested_exponents),
-            "combinations": tuple(self.combination(left, right) for left, right in self.combination_pairs),
-        })
+        return _canonicalize(
+            {
+                "schema_version": self.schema_version,
+                "scaling_model": self.scaling_model,
+                "requested_exponents": self.requested_exponents,
+                "combination_pairs": self.combination_pairs,
+                "tiers": tuple(
+                    self.tier(exponent) for exponent in self.requested_exponents
+                ),
+                "combinations": tuple(
+                    self.combination(left, right)
+                    for left, right in self.combination_pairs
+                ),
+            }
+        )
 
 
 @dataclass(frozen=True)
@@ -122,14 +139,35 @@ class PhiStabilityDiagnostic:
     def evaluate(self, values: Sequence[float]) -> PhiStabilityReport:
         positive = [float(value) for value in values if float(value) > 0.0]
         if len(positive) < 2:
-            return PhiStabilityReport(False, 0.0, 1.0, len(positive), Severity.WARN, "collect_more_phi_tier_samples")
-        ratios = [positive[index + 1] / positive[index] for index in range(len(positive) - 1)]
+            return PhiStabilityReport(
+                False,
+                0.0,
+                1.0,
+                len(positive),
+                Severity.WARN,
+                "collect_more_phi_tier_samples",
+            )
+        ratios = [
+            positive[index + 1] / positive[index] for index in range(len(positive) - 1)
+        ]
         ratio_mean = _mean(ratios)
         ratio_error = abs(ratio_mean - PHI) / PHI
         stable = ratio_error <= self.tolerance
-        severity = Severity.OK if stable else (Severity.WATCH if ratio_error <= self.tolerance * 2.0 else Severity.WARN)
-        recommendation = "phi_self_similarity_assumptions_hold" if stable else "rebalance_or_segment_dataset_before_phi_projection"
-        return PhiStabilityReport(stable, ratio_mean, ratio_error, len(positive), severity, recommendation)
+        severity = (
+            Severity.OK
+            if stable
+            else (
+                Severity.WATCH if ratio_error <= self.tolerance * 2.0 else Severity.WARN
+            )
+        )
+        recommendation = (
+            "phi_self_similarity_assumptions_hold"
+            if stable
+            else "rebalance_or_segment_dataset_before_phi_projection"
+        )
+        return PhiStabilityReport(
+            stable, ratio_mean, ratio_error, len(positive), severity, recommendation
+        )
 
 
 @dataclass(frozen=True)
@@ -151,10 +189,14 @@ class PhiScheduleDecision:
 class PhiInvariantKernelScheduler:
     """Route workloads using φ geometry as a scheduling primitive."""
 
-    def __init__(self, *, default_compression_mode: str = "pulvini_phi_compressed_pre_search") -> None:
+    def __init__(
+        self, *, default_compression_mode: str = "pulvini_phi_compressed_pre_search"
+    ) -> None:
         self.default_compression_mode = default_compression_mode
 
-    def route(self, passport: QuantumRuntimePassport, stability: PhiStabilityReport) -> PhiScheduleDecision:
+    def route(
+        self, passport: QuantumRuntimePassport, stability: PhiStabilityReport
+    ) -> PhiScheduleDecision:
         exponent = int(passport.phi_exponent)
         if not passport.kernel_invariants_met:
             route = "quarantine"
@@ -207,14 +249,44 @@ class PhiTopologyLedgerCompressor:
 
     PHI_CERTIFICATE_TYPES = {"phi_scaling_invariant", "phi_scaling_violation"}
 
-    def compress(self, ledger: "CertificateLedger") -> PhiTopologyLedgerCompressionProof:
-        entries = [entry for entry in ledger.entries if entry.certificate_type in self.PHI_CERTIFICATE_TYPES]
-        leaf_hashes = tuple(_hash_dict({"certificate_type": entry.certificate_type, "certificate_hash": entry.certificate_hash, "entry_hash": entry.entry_hash}) for entry in entries)
+    def compress(
+        self, ledger: "CertificateLedger"
+    ) -> PhiTopologyLedgerCompressionProof:
+        entries = [
+            entry
+            for entry in ledger.entries
+            if entry.certificate_type in self.PHI_CERTIFICATE_TYPES
+        ]
+        leaf_hashes = tuple(
+            _hash_dict(
+                {
+                    "certificate_type": entry.certificate_type,
+                    "certificate_hash": entry.certificate_hash,
+                    "entry_hash": entry.entry_hash,
+                }
+            )
+            for entry in entries
+        )
         merkle_root = self._merkle_root(leaf_hashes)
-        invariant_count = sum(1 for entry in entries if entry.certificate_type == "phi_scaling_invariant")
-        violation_count = sum(1 for entry in entries if entry.certificate_type == "phi_scaling_violation")
-        transition_count = sum(1 for left, right in zip(entries, entries[1:]) if left.certificate_type != right.certificate_type)
-        return PhiTopologyLedgerCompressionProof(len(entries), leaf_hashes, merkle_root, invariant_count, violation_count, transition_count)
+        invariant_count = sum(
+            1 for entry in entries if entry.certificate_type == "phi_scaling_invariant"
+        )
+        violation_count = sum(
+            1 for entry in entries if entry.certificate_type == "phi_scaling_violation"
+        )
+        transition_count = sum(
+            1
+            for left, right in zip(entries, entries[1:])
+            if left.certificate_type != right.certificate_type
+        )
+        return PhiTopologyLedgerCompressionProof(
+            len(entries),
+            leaf_hashes,
+            merkle_root,
+            invariant_count,
+            violation_count,
+            transition_count,
+        )
 
     def _merkle_root(self, leaves: Sequence[str]) -> str:
         if not leaves:
@@ -223,7 +295,10 @@ class PhiTopologyLedgerCompressor:
         while len(layer) > 1:
             if len(layer) % 2 == 1:
                 layer.append(layer[-1])
-            layer = [_hash_dict({"left": layer[index], "right": layer[index + 1]}) for index in range(0, len(layer), 2)]
+            layer = [
+                _hash_dict({"left": layer[index], "right": layer[index + 1]})
+                for index in range(0, len(layer), 2)
+            ]
         return layer[0]
 
 
@@ -334,7 +409,15 @@ class KernelInvariantReport:
 
     @property
     def closed(self) -> bool:
-        return all((self.trace_one, self.positive_semidefinite, self.hermitian, self.bures_bounds, self.purity_bounds))
+        return all(
+            (
+                self.trace_one,
+                self.positive_semidefinite,
+                self.hermitian,
+                self.bures_bounds,
+                self.purity_bounds,
+            )
+        )
 
     def to_dict(self) -> dict[str, Any]:
         return _canonicalize(asdict(self) | {"closed": self.closed})
@@ -353,14 +436,11 @@ class MathProvider(Protocol):
 
     dimension: int
 
-    def invariant_report(self, rho: Any, *, stage: str) -> KernelInvariantReport:
-        ...
+    def invariant_report(self, rho: Any, *, stage: str) -> KernelInvariantReport: ...
 
-    def copy_density(self, rho: Any) -> Any:
-        ...
+    def copy_density(self, rho: Any) -> Any: ...
 
-    def density_equal(self, left: Any, right: Any) -> bool:
-        ...
+    def density_equal(self, left: Any, right: Any) -> bool: ...
 
 
 class StaticMathProvider:
@@ -393,7 +473,7 @@ class StaticMathProvider:
             trace_one=trace_one,
             positive_semidefinite=positive,
             hermitian=hermitian,
-            bures_bounds=0.0 <= bures <= 2.0 ** 0.5,
+            bures_bounds=0.0 <= bures <= 2.0**0.5,
             purity_bounds=0.0 <= purity <= 1.0 + 1e-9,
             trace=trace,
             min_eigenvalue=min_eigenvalue,
@@ -457,24 +537,41 @@ class KernelSupervisor:
         *,
         math_provider: Optional[MathProvider] = None,
     ) -> None:
-        self.operator = operator if operator is not None else (_default_operator() if math_provider is None else None)
+        self.operator = (
+            operator
+            if operator is not None
+            else (_default_operator() if math_provider is None else None)
+        )
         self.math_provider = math_provider or OperatorMathProvider(self.operator)
         self.ledger = ledger or CertificateLedger()
 
-    def validate_density(self, rho: NDArray[np.complex128], *, stage: str) -> KernelInvariantReport:
+    def validate_density(
+        self, rho: NDArray[np.complex128], *, stage: str
+    ) -> KernelInvariantReport:
         try:
             report = self.math_provider.invariant_report(rho, stage=stage)
         except ValueError as exc:
             fallback = StaticMathProvider().invariant_report(
-                {"trace_one": False, "positive_semidefinite": False, "hermitian": False},
+                {
+                    "trace_one": False,
+                    "positive_semidefinite": False,
+                    "hermitian": False,
+                },
                 stage=stage,
             )
-            self.ledger.append("mathematical_exception", {"stage": stage, "reason": str(exc), "report": fallback.to_dict()})
+            self.ledger.append(
+                "mathematical_exception",
+                {"stage": stage, "reason": str(exc), "report": fallback.to_dict()},
+            )
             raise MathematicalException(str(exc), fallback) from exc
         if not report.closed:
-            self.ledger.append("mathematical_exception", {"stage": stage, "report": report.to_dict()})
+            self.ledger.append(
+                "mathematical_exception", {"stage": stage, "report": report.to_dict()}
+            )
             raise MathematicalException("kernel invariant violation", report)
-        self.ledger.append("kernel_invariant", {"stage": stage, "report": report.to_dict()})
+        self.ledger.append(
+            "kernel_invariant", {"stage": stage, "report": report.to_dict()}
+        )
         return report
 
     def execute_density_contract(
@@ -493,24 +590,44 @@ class KernelSupervisor:
         """
 
         if isinstance(rho, Mapping) and "phi_sequence" in rho:
-            self.validate_phi_stability(rho["phi_sequence"], stage=f"{stage}:phi_stability")
+            self.validate_phi_stability(
+                rho["phi_sequence"], stage=f"{stage}:phi_stability"
+            )
         self.validate_density(rho, stage=f"{stage}:pre")
         first = self._call_kernel(function, self.math_provider.copy_density(rho), seed)
         second = self._call_kernel(function, self.math_provider.copy_density(rho), seed)
         if not self.math_provider.density_equal(first, second):
             report = StaticMathProvider().invariant_report(first, stage=stage)
-            self.ledger.append("mathematical_exception", {"stage": stage, "reason": "non_deterministic", "report": report.to_dict()})
-            raise MathematicalException("kernel function is not deterministic for the given seed", report)
+            self.ledger.append(
+                "mathematical_exception",
+                {
+                    "stage": stage,
+                    "reason": "non_deterministic",
+                    "report": report.to_dict(),
+                },
+            )
+            raise MathematicalException(
+                "kernel function is not deterministic for the given seed", report
+            )
         report = self.validate_density(first, stage=f"{stage}:post")
         return first, report
 
-    def validate_phi_stability(self, values: Sequence[float], *, stage: str) -> PhiStabilityReport:
+    def validate_phi_stability(
+        self, values: Sequence[float], *, stage: str
+    ) -> PhiStabilityReport:
         """Ledger φ self-similarity violations before promoted kernel execution."""
         report = PhiStabilityDiagnostic().evaluate(values)
-        certificate_type = "phi_scaling_invariant" if report.stable else "phi_scaling_violation"
-        self.ledger.append(certificate_type, {"stage": stage, "report": report.to_dict()})
+        certificate_type = (
+            "phi_scaling_invariant" if report.stable else "phi_scaling_violation"
+        )
+        self.ledger.append(
+            certificate_type, {"stage": stage, "report": report.to_dict()}
+        )
         if not report.stable:
-            raise MathematicalException("phi scaling invariant violation", StaticMathProvider().invariant_report({}, stage=stage))
+            raise MathematicalException(
+                "phi scaling invariant violation",
+                StaticMathProvider().invariant_report({}, stage=stage),
+            )
         return report
 
     @staticmethod
@@ -553,7 +670,13 @@ class CertificateLedger:
     def root_hash(self) -> str:
         return self._entries[-1].entry_hash if self._entries else "0" * 64
 
-    def append(self, certificate_type: str, payload: Mapping[str, Any], *, timestamp_ns: Optional[int] = None) -> LedgerEntry:
+    def append(
+        self,
+        certificate_type: str,
+        payload: Mapping[str, Any],
+        *,
+        timestamp_ns: Optional[int] = None,
+    ) -> LedgerEntry:
         canonical = _canonicalize(dict(payload))
         certificate_hash = _hash_dict(canonical)
         material = {
@@ -562,7 +685,9 @@ class CertificateLedger:
             "certificate_type": str(certificate_type),
             "certificate_hash": certificate_hash,
             "payload": canonical,
-            "timestamp_ns": time.time_ns() if timestamp_ns is None else int(timestamp_ns),
+            "timestamp_ns": (
+                time.time_ns() if timestamp_ns is None else int(timestamp_ns)
+            ),
         }
         entry = LedgerEntry(entry_hash=_hash_dict(material), **material)
         self._entries.append(entry)
@@ -581,7 +706,9 @@ class CertificateLedger:
         return True
 
     def to_bytes(self) -> bytes:
-        payload = json.dumps([e.to_dict() for e in self._entries], sort_keys=True, separators=(",", ":")).encode()
+        payload = json.dumps(
+            [e.to_dict() for e in self._entries], sort_keys=True, separators=(",", ":")
+        ).encode()
         return CERTIFICATE_LEDGER_MAGIC + struct.pack(">I", len(payload)) + payload
 
     @classmethod
@@ -654,7 +781,15 @@ class TelemetryContract:
     version: str = TELEMETRY_CONTRACT_VERSION
     fixed_point_scale: int = _FIXED_POINT_SCALE
     fixed_point_bit_depth: int = _FIXED_POINT_BIT_DEPTH
-    metrics: tuple[str, ...] = ("phi", "bures", "purity", "manifold_drift", "solver_latency_ms", "phi_tier", "phi_scale_factor")
+    metrics: tuple[str, ...] = (
+        "phi",
+        "bures",
+        "purity",
+        "manifold_drift",
+        "solver_latency_ms",
+        "phi_tier",
+        "phi_scale_factor",
+    )
 
     def metric_specs(self) -> dict[str, dict[str, Any]]:
         return {
@@ -662,9 +797,13 @@ class TelemetryContract:
             "bures": FixedPointMetricSpec("bures").to_dict(),
             "purity": FixedPointMetricSpec("purity").to_dict(),
             "manifold_drift": FixedPointMetricSpec("manifold_drift").to_dict(),
-            "solver_latency_ms": FixedPointMetricSpec("solver_latency_ms", maximum=10_000.0).to_dict(),
+            "solver_latency_ms": FixedPointMetricSpec(
+                "solver_latency_ms", maximum=10_000.0
+            ).to_dict(),
             "phi_tier": FixedPointMetricSpec("phi_tier", maximum=100.0).to_dict(),
-            "phi_scale_factor": FixedPointMetricSpec("phi_scale_factor", maximum=120.0).to_dict(),
+            "phi_scale_factor": FixedPointMetricSpec(
+                "phi_scale_factor", maximum=120.0
+            ).to_dict(),
         }
 
     def encode(self, sample: Mapping[str, float]) -> dict[str, int]:
@@ -674,14 +813,29 @@ class TelemetryContract:
             value = float(sample.get(metric, 0.0))
             if metric == "phi_scale_factor":
                 value = math.log10(value) if value > 0.0 else 0.0
-            encoded[metric] = _to_fixed_point(value, maximum=float(specs[metric]["maximum"]))
+            encoded[metric] = _to_fixed_point(
+                value, maximum=float(specs[metric]["maximum"])
+            )
         return encoded
 
     def digest(self, samples: Iterable[Mapping[str, float]]) -> str:
         encoded = [self.encode(sample) for sample in samples]
-        return _hash_dict({"version": self.version, "fixed_point_bit_depth": self.fixed_point_bit_depth, "fixed_point_scale": self.fixed_point_scale, "samples": encoded})
+        return _hash_dict(
+            {
+                "version": self.version,
+                "fixed_point_bit_depth": self.fixed_point_bit_depth,
+                "fixed_point_scale": self.fixed_point_scale,
+                "samples": encoded,
+            }
+        )
 
-    def runtime_passport(self, module_id: str, sample: Mapping[str, float], invariant_report: KernelInvariantReport, ledger_entry: LedgerEntry) -> QuantumRuntimePassport:
+    def runtime_passport(
+        self,
+        module_id: str,
+        sample: Mapping[str, float],
+        invariant_report: KernelInvariantReport,
+        ledger_entry: LedgerEntry,
+    ) -> QuantumRuntimePassport:
         encoded = self.encode(sample)
         phi_exponent = int(float(sample.get("phi_tier", 0.0)))
         return QuantumRuntimePassport(
@@ -694,10 +848,15 @@ class TelemetryContract:
             phi_scale_factor_fixed=encoded["phi_scale_factor"],
         )
 
-    def verify_runtime_passport(self, passport: QuantumRuntimePassport, ledger: CertificateLedger) -> bool:
+    def verify_runtime_passport(
+        self, passport: QuantumRuntimePassport, ledger: CertificateLedger
+    ) -> bool:
         return bool(
             passport.kernel_invariants_met
-            and any(entry.entry_hash == passport.ledger_entry_hash for entry in ledger.entries)
+            and any(
+                entry.entry_hash == passport.ledger_entry_hash
+                for entry in ledger.entries
+            )
             and ledger.verify_chain()
         )
 
@@ -756,7 +915,13 @@ class AutonomicRepairPlan:
 class PhiHealthSupervisor:
     """Runtime Φ-density drift detector and manifold health governor."""
 
-    def __init__(self, *, phi_target: float = 0.6180339887498948, warn_drift: float = 0.08, critical_drift: float = 0.18) -> None:
+    def __init__(
+        self,
+        *,
+        phi_target: float = 0.6180339887498948,
+        warn_drift: float = 0.08,
+        critical_drift: float = 0.18,
+    ) -> None:
         self.phi_target = float(phi_target)
         self.warn_drift = float(warn_drift)
         self.critical_drift = float(critical_drift)
@@ -766,30 +931,68 @@ class PhiHealthSupervisor:
         if not samples:
             raise ValueError("at least one telemetry sample is required")
         phis = [float(s.get("phi", self.phi_target)) for s in samples]
-        phi_tiers = [float(s["phi_scale_factor"]) for s in samples if "phi_scale_factor" in s]
-        stability_report = PhiStabilityDiagnostic().evaluate(phi_tiers) if len(phi_tiers) >= 2 else None
+        phi_tiers = [
+            float(s["phi_scale_factor"]) for s in samples if "phi_scale_factor" in s
+        ]
+        stability_report = (
+            PhiStabilityDiagnostic().evaluate(phi_tiers)
+            if len(phi_tiers) >= 2
+            else None
+        )
         phi_density = _mean(phis)
         phi_drift = abs(phi_density - self.phi_target)
-        manifold_drift = _mean([abs(float(s.get("manifold_drift", 0.0))) for s in samples])
-        latency = _mean([max(0.0, float(s.get("solver_latency_ms", 0.0))) for s in samples])
-        health = _clip(1.0 - phi_drift - manifold_drift - min(latency / 10_000.0, 0.25), 0.0, 1.0)
-        status = Severity.OK if phi_drift < self.warn_drift and health >= 0.85 else Severity.WATCH
+        manifold_drift = _mean(
+            [abs(float(s.get("manifold_drift", 0.0))) for s in samples]
+        )
+        latency = _mean(
+            [max(0.0, float(s.get("solver_latency_ms", 0.0))) for s in samples]
+        )
+        health = _clip(
+            1.0 - phi_drift - manifold_drift - min(latency / 10_000.0, 0.25), 0.0, 1.0
+        )
+        status = (
+            Severity.OK
+            if phi_drift < self.warn_drift and health >= 0.85
+            else Severity.WATCH
+        )
         if phi_drift >= self.warn_drift or health < 0.75:
             status = Severity.WARN
         if phi_drift >= self.critical_drift or health < 0.45:
             status = Severity.CRITICAL
         suggestions: list[Mapping[str, str]] = []
         if status != Severity.OK:
-            suggestions.append({"severity": status.value, "action": "rebalance_phi_density_window"})
+            suggestions.append(
+                {"severity": status.value, "action": "rebalance_phi_density_window"}
+            )
         if manifold_drift > 0.05:
-            suggestions.append({"severity": Severity.WARN.value, "action": "run_density_state_repair_and_topology_gate"})
+            suggestions.append(
+                {
+                    "severity": Severity.WARN.value,
+                    "action": "run_density_state_repair_and_topology_gate",
+                }
+            )
         if stability_report is not None and not stability_report.stable:
-            status = Severity.WARN if status in (Severity.OK, Severity.WATCH) else status
-            suggestions.append({"severity": Severity.WARN.value, "action": "segment_dataset_for_phi_self_similarity"})
-        return RuntimeHealthPassport(status, phi_density, phi_drift, health, tuple(suggestions), self.contract.digest(samples))
+            status = (
+                Severity.WARN if status in (Severity.OK, Severity.WATCH) else status
+            )
+            suggestions.append(
+                {
+                    "severity": Severity.WARN.value,
+                    "action": "segment_dataset_for_phi_self_similarity",
+                }
+            )
+        return RuntimeHealthPassport(
+            status,
+            phi_density,
+            phi_drift,
+            health,
+            tuple(suggestions),
+            self.contract.digest(samples),
+        )
 
-
-    def repair_plan(self, passport: RuntimeHealthPassport, ledger: CertificateLedger) -> AutonomicRepairPlan:
+    def repair_plan(
+        self, passport: RuntimeHealthPassport, ledger: CertificateLedger
+    ) -> AutonomicRepairPlan:
         """Emit and ledger an autonomic repair plan for degraded Φ health."""
         if passport.status == Severity.OK:
             action = "observe"
@@ -815,7 +1018,9 @@ class PhiHealthSupervisor:
         entry = ledger.append("autonomic_repair", material)
         return AutonomicRepairPlan(ledger_entry_hash=entry.entry_hash, **material)
 
-    def evaluate_and_repair(self, samples: Sequence[Mapping[str, float]], ledger: CertificateLedger) -> tuple[RuntimeHealthPassport, AutonomicRepairPlan]:
+    def evaluate_and_repair(
+        self, samples: Sequence[Mapping[str, float]], ledger: CertificateLedger
+    ) -> tuple[RuntimeHealthPassport, AutonomicRepairPlan]:
         passport = self.evaluate(samples)
         return passport, self.repair_plan(passport, ledger)
 
@@ -823,21 +1028,34 @@ class PhiHealthSupervisor:
 class ElevationBridge:
     """Read-only production façade to research-kernel bridge."""
 
-    def __init__(self, operator: Optional[ManifoldOperator] = None, verifier: Optional[SubstateVerifier] = None) -> None:
+    def __init__(
+        self,
+        operator: Optional[ManifoldOperator] = None,
+        verifier: Optional[SubstateVerifier] = None,
+    ) -> None:
         self.operator = operator or _default_operator()
         self.verifier = verifier or _default_verifier(self.operator)
 
     def readonly_snapshot(self) -> dict[str, Any]:
-        return {"operator": self.operator.snapshot(), "topology_verified": self.verifier.verify_topology()}
+        return {
+            "operator": self.operator.snapshot(),
+            "topology_verified": self.verifier.verify_topology(),
+        }
 
-    def promotion_manifest(self, passport: SubstatePassport, ledger: CertificateLedger) -> dict[str, Any]:
+    def promotion_manifest(
+        self, passport: SubstatePassport, ledger: CertificateLedger
+    ) -> dict[str, Any]:
         certificate_suite = {
             "grover": bool(passport.grover_scope_verified),
             "topology": bool(passport.topology_verified),
             "automorphism": bool(passport.structural_hash),
             "coverage": bool(passport.coverage_verified),
         }
-        if not self.verifier.verify_passport(passport) or not ledger.verify_chain() or not all(certificate_suite.values()):
+        if (
+            not self.verifier.verify_passport(passport)
+            or not ledger.verify_chain()
+            or not all(certificate_suite.values())
+        ):
             raise ValueError("only verified passports and ledgers can be promoted")
         return {
             "passport_hash": passport.passport_hash,
@@ -847,21 +1065,35 @@ class ElevationBridge:
             "certificate_suite": certificate_suite,
         }
 
-    def anonymized_research_telemetry(self, samples: Sequence[Mapping[str, Any]]) -> tuple[Mapping[str, Any], ...]:
+    def anonymized_research_telemetry(
+        self, samples: Sequence[Mapping[str, Any]]
+    ) -> tuple[Mapping[str, Any], ...]:
         anonymized: list[Mapping[str, Any]] = []
         for index, sample in enumerate(samples):
-            numeric = {key: value for key, value in sample.items() if isinstance(value, (int, float))}
-            anonymized.append({
-                "sample_hash": _hash_dict({"index": index, "numeric": numeric}),
-                "fixed_point": TelemetryContract().encode({key: float(value) for key, value in numeric.items()}),
-            })
+            numeric = {
+                key: value
+                for key, value in sample.items()
+                if isinstance(value, (int, float))
+            }
+            anonymized.append(
+                {
+                    "sample_hash": _hash_dict({"index": index, "numeric": numeric}),
+                    "fixed_point": TelemetryContract().encode(
+                        {key: float(value) for key, value in numeric.items()}
+                    ),
+                }
+            )
         return tuple(anonymized)
 
 
 class QuantumRuntimeManifestBuilder:
     """Build the production-grade runtime manifest handed to institutions."""
 
-    def __init__(self, operator: Optional[ManifoldOperator] = None, verifier: Optional[SubstateVerifier] = None) -> None:
+    def __init__(
+        self,
+        operator: Optional[ManifoldOperator] = None,
+        verifier: Optional[SubstateVerifier] = None,
+    ) -> None:
         self.operator = operator or _default_operator()
         self.verifier = verifier or _default_verifier(self.operator)
 
@@ -883,35 +1115,67 @@ class QuantumRuntimeManifestBuilder:
                 "supports_dynamic_phi_exponential_scaling": True,
                 "supports_phi_stability_diagnostic": True,
             },
-            facade_api_signatures=_facade_signatures_from_instances((self.operator, self.verifier)),
+            facade_api_signatures=_facade_signatures_from_instances(
+                (self.operator, self.verifier)
+            ),
             endpoint_invariants={
-                "ManifoldOperator.ensure_density_state": ("trace_one", "positive_semidefinite", "hermitian"),
-                "ManifoldOperator.compute_bures_distance": ("bures_metric_bounds", "trace_one_inputs"),
-                "ManifoldOperator.certify_channel": ("choi_positive_semidefinite", "trace_preservation"),
-                "ManifoldOperator.verify_topology": ("automorphism_order_120", "adjacency_digest"),
-                "SubstateVerifier.generate_passport": ("coverage_complete", "grover_scope_no_speedup_claim", "binary_header_fixed_point"),
+                "ManifoldOperator.ensure_density_state": (
+                    "trace_one",
+                    "positive_semidefinite",
+                    "hermitian",
+                ),
+                "ManifoldOperator.compute_bures_distance": (
+                    "bures_metric_bounds",
+                    "trace_one_inputs",
+                ),
+                "ManifoldOperator.certify_channel": (
+                    "choi_positive_semidefinite",
+                    "trace_preservation",
+                ),
+                "ManifoldOperator.verify_topology": (
+                    "automorphism_order_120",
+                    "adjacency_digest",
+                ),
+                "SubstateVerifier.generate_passport": (
+                    "coverage_complete",
+                    "grover_scope_no_speedup_claim",
+                    "binary_header_fixed_point",
+                ),
             },
         )
 
-    def kernel_invariants(self, rho: Optional[NDArray[np.complex128]] = None) -> KernelInvariantReport:
+    def kernel_invariants(
+        self, rho: Optional[NDArray[np.complex128]] = None
+    ) -> KernelInvariantReport:
         if rho is None:
             return StaticMathProvider().invariant_report({}, stage="manifest_default")
         if isinstance(rho, Mapping):
             return StaticMathProvider().invariant_report(rho, stage="manifest")
-        return OperatorMathProvider(self.operator).invariant_report(self.operator.ensure_density_state(rho), stage="manifest")
+        return OperatorMathProvider(self.operator).invariant_report(
+            self.operator.ensure_density_state(rho), stage="manifest"
+        )
 
-
-    def build(self, ledger: Optional[CertificateLedger] = None, rho: Optional[NDArray[np.complex128]] = None) -> dict[str, Any]:
+    def build(
+        self,
+        ledger: Optional[CertificateLedger] = None,
+        rho: Optional[NDArray[np.complex128]] = None,
+    ) -> dict[str, Any]:
         ledger = ledger or CertificateLedger()
         capability = self.capability_manifest()
         compliance = ComplianceManifest()
         invariants = self.kernel_invariants(rho)
         phi_scaling = PhiScalingContract().to_dict()
-        stability = PhiStabilityDiagnostic().evaluate([PHI ** n for n in (0, 1, 2, 3)]).to_dict()
+        stability = (
+            PhiStabilityDiagnostic().evaluate([PHI**n for n in (0, 1, 2, 3)]).to_dict()
+        )
         payload = {
             "version": RUNTIME_MANIFEST_VERSION,
-            "module_versions": {"operator": self.operator.VERSION, "verifier": self.verifier.VERSION},
-            "capability_manifest": capability.to_dict() | {"manifest_hash": capability.manifest_hash},
+            "module_versions": {
+                "operator": self.operator.VERSION,
+                "verifier": self.verifier.VERSION,
+            },
+            "capability_manifest": capability.to_dict()
+            | {"manifest_hash": capability.manifest_hash},
             "manifest_json_name": "manifest.json",
             "certificate_ledger_root_hash": ledger.root_hash,
             "telemetry_contract_version": TELEMETRY_CONTRACT_VERSION,
@@ -926,17 +1190,30 @@ class QuantumRuntimeManifestBuilder:
         }
         return payload | {"runtime_manifest_hash": _hash_dict(payload)}
 
-    def write_manifest_json(self, path: str | Path, ledger: Optional[CertificateLedger] = None, rho: Optional[NDArray[np.complex128]] = None) -> Path:
+    def write_manifest_json(
+        self,
+        path: str | Path,
+        ledger: Optional[CertificateLedger] = None,
+        rho: Optional[NDArray[np.complex128]] = None,
+    ) -> Path:
         target = Path(path)
         manifest = self.build(ledger=ledger, rho=rho)
-        target.write_text(json.dumps(manifest, sort_keys=True, indent=2), encoding="utf-8")
+        target.write_text(
+            json.dumps(manifest, sort_keys=True, indent=2), encoding="utf-8"
+        )
         return target
 
-    def production_response(self, endpoint: str, result: Mapping[str, Any], ledger: CertificateLedger) -> ProductionResponse:
-        entry = ledger.append("production_response", {"endpoint": endpoint, "result": result})
+    def production_response(
+        self, endpoint: str, result: Mapping[str, Any], ledger: CertificateLedger
+    ) -> ProductionResponse:
+        entry = ledger.append(
+            "production_response", {"endpoint": endpoint, "result": result}
+        )
         return ProductionResponse(
             result=_canonicalize(result),
-            module_version_hash=_hash_dict({"operator": self.operator.VERSION, "verifier": self.verifier.VERSION}),
+            module_version_hash=_hash_dict(
+                {"operator": self.operator.VERSION, "verifier": self.verifier.VERSION}
+            ),
             ledger_entry_hash=entry.entry_hash,
             ledger_index=entry.index,
             endpoint=endpoint,
@@ -961,14 +1238,21 @@ def _canonicalize(value: Any) -> Any:
     if isinstance(value, Enum):
         return value.value
     if isinstance(value, Mapping):
-        return {str(k): _canonicalize(v) for k, v in sorted(value.items(), key=lambda item: str(item[0]))}
+        return {
+            str(k): _canonicalize(v)
+            for k, v in sorted(value.items(), key=lambda item: str(item[0]))
+        }
     if isinstance(value, (tuple, list)):
         return [_canonicalize(v) for v in value]
     return value
 
 
 def _hash_dict(payload: Mapping[str, Any]) -> str:
-    return hashlib.sha256(json.dumps(_canonicalize(payload), sort_keys=True, separators=(",", ":"), default=str).encode()).hexdigest()
+    return hashlib.sha256(
+        json.dumps(
+            _canonicalize(payload), sort_keys=True, separators=(",", ":"), default=str
+        ).encode()
+    ).hexdigest()
 
 
 def _default_operator() -> "ManifoldOperator":
@@ -985,7 +1269,9 @@ def _default_verifier(operator: "ManifoldOperator") -> "SubstateVerifier":
 
 def _require_numpy() -> Any:
     if importlib.util.find_spec("numpy") is None:
-        raise RuntimeError("NumPy is required for production mathematical-kernel execution; use StaticMathProvider for dependency-free ledger/manifest tests")
+        raise RuntimeError(
+            "NumPy is required for production mathematical-kernel execution; use StaticMathProvider for dependency-free ledger/manifest tests"
+        )
     return importlib.import_module("numpy")
 
 

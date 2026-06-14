@@ -39,11 +39,17 @@ class PulviniMemoryFabric:
         tolerance: float | None = None,
     ) -> None:
         self.num_nodes = int(num_nodes)
-        self.kernel = kernel if kernel is not None else HebbianMemoryKernel(window=window)
+        self.kernel = (
+            kernel if kernel is not None else HebbianMemoryKernel(window=window)
+        )
         compressor_kwargs = {"fold_depth": fold_depth}
         if tolerance is not None:
             compressor_kwargs["tolerance"] = float(tolerance)
-        self.compressor = compressor if compressor is not None else PulviniPhiMemoryCompressionEngine(**compressor_kwargs)
+        self.compressor = (
+            compressor
+            if compressor is not None
+            else PulviniPhiMemoryCompressionEngine(**compressor_kwargs)
+        )
 
     def record_path(self, path: Sequence[int], reward: float) -> None:
         self.kernel.record_path(self.num_nodes, path, reward)

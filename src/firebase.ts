@@ -1,10 +1,21 @@
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
-import firebaseConfig from "../firebase-applet-config.json";
+
+const firebaseConfig = {
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
+};
+
+const firestoreDatabaseId = import.meta.env.VITE_FIREBASE_FIRESTORE_DB_ID;
 
 const app = initializeApp(firebaseConfig);
-export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId); /* CRITICAL: The app will break without this line */
+export const db = getFirestore(app, firestoreDatabaseId); /* CRITICAL: The app will break without this line */
 export const auth = getAuth();
 
 export enum OperationType {
@@ -37,14 +48,14 @@ export function handleFirestoreError(error: unknown, operationType: OperationTyp
   const errInfo: FirestoreErrorInfo = {
     error: error instanceof Error ? error.message : String(error),
     authInfo: {
-      userId: auth.currentUser?.uid,
-      email: auth.currentUser?.email,
+      userId: auth.currentUser?.uid ? "[redacted]" : null,
+      email: auth.currentUser?.email ? "[redacted]" : null,
       emailVerified: auth.currentUser?.emailVerified,
       isAnonymous: auth.currentUser?.isAnonymous,
       tenantId: auth.currentUser?.tenantId,
       providerInfo: auth.currentUser?.providerData?.map(provider => ({
         providerId: provider.providerId,
-        email: provider.email,
+        email: provider.email ? "[redacted]" : null,
       })) || []
     },
     operationType,

@@ -41,9 +41,14 @@ def off_diagonal_part(rho: np.ndarray) -> np.ndarray:
 
 def trace_zero_hermitian_projection(matrix: np.ndarray) -> np.ndarray:
     """Project a matrix onto the Hermitian trace-zero tangent space."""
-    projected = (np.asarray(matrix, dtype=np.complex128) + np.asarray(matrix, dtype=np.complex128).conj().T) / 2.0
+    projected = (
+        np.asarray(matrix, dtype=np.complex128)
+        + np.asarray(matrix, dtype=np.complex128).conj().T
+    ) / 2.0
     dim = projected.shape[0]
-    projected = projected - (np.trace(projected) / dim) * np.eye(dim, dtype=np.complex128)
+    projected = projected - (np.trace(projected) / dim) * np.eye(
+        dim, dtype=np.complex128
+    )
     return projected
 
 

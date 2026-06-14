@@ -6,6 +6,7 @@ or parsing the common ``SetupConnection`` handshake.  It does not fabricate jobs
 or emulate pool behavior; callers must provide bytes received from a real
 Stratum V2 transport.
 """
+
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass
@@ -121,7 +122,9 @@ def encode_str0_255(value: str, *, field: str = "str0_255") -> bytes:
     return len(encoded).to_bytes(1, "little") + encoded
 
 
-def decode_str0_255(payload: bytes, offset: int = 0, *, field: str = "str0_255") -> Tuple[str, int]:
+def decode_str0_255(
+    payload: bytes, offset: int = 0, *, field: str = "str0_255"
+) -> Tuple[str, int]:
     if offset < 0 or offset >= len(payload) + 1:
         raise StratumV2ProtocolError(f"{field} offset is out of range")
     if offset == len(payload):
@@ -138,7 +141,9 @@ def decode_str0_255(payload: bytes, offset: int = 0, *, field: str = "str0_255")
 
 
 def encode_frame(frame: StratumV2Frame) -> bytes:
-    extension_type = _require_uint(frame.extension_type, bits=16, field="extension_type")
+    extension_type = _require_uint(
+        frame.extension_type, bits=16, field="extension_type"
+    )
     message_type = _require_uint(frame.message_type, bits=8, field="message_type")
     if len(frame.payload) > SV2_MAX_MESSAGE_SIZE:
         raise StratumV2ProtocolError("payload exceeds Stratum V2 uint24 length")
@@ -159,7 +164,9 @@ def decode_frame(data: bytes) -> StratumV2Frame:
     payload = data[SV2_HEADER_SIZE:]
     if len(payload) != message_length:
         raise StratumV2ProtocolError("Stratum V2 frame length does not match payload")
-    return StratumV2Frame(extension_type=extension_type, message_type=message_type, payload=payload)
+    return StratumV2Frame(
+        extension_type=extension_type, message_type=message_type, payload=payload
+    )
 
 
 def split_complete_frame(buffer: bytes) -> tuple[StratumV2Frame | None, bytes]:
@@ -222,15 +229,30 @@ def decode_setup_connection_payload(payload: bytes) -> SetupConnection:
     endpoint_host, offset = decode_str0_255(payload, 9, field="endpoint_host")
     if offset + 2 > len(payload):
         raise StratumV2ProtocolError("endpoint_port is missing")
-    endpoint_port = _decode_uint(payload[offset:offset + 2], bits=16, field="endpoint_port")
+    endpoint_port = _decode_uint(
+        payload[offset : offset + 2], bits=16, field="endpoint_port"
+    )
     offset += 2
     vendor, offset = decode_str0_255(payload, offset, field="vendor")
-    hardware_version, offset = decode_str0_255(payload, offset, field="hardware_version")
+    hardware_version, offset = decode_str0_255(
+        payload, offset, field="hardware_version"
+    )
     firmware, offset = decode_str0_255(payload, offset, field="firmware")
     device_id, offset = decode_str0_255(payload, offset, field="device_id")
     if offset != len(payload):
         raise StratumV2ProtocolError("SetupConnection payload contains trailing bytes")
-    return SetupConnection(protocol, min_version, max_version, flags, endpoint_host, endpoint_port, vendor, hardware_version, firmware, device_id)
+    return SetupConnection(
+        protocol,
+        min_version,
+        max_version,
+        flags,
+        endpoint_host,
+        endpoint_port,
+        vendor,
+        hardware_version,
+        firmware,
+        device_id,
+    )
 
 
 def build_setup_connection_frame(message: SetupConnection) -> StratumV2Frame:
@@ -241,37 +263,57 @@ def build_setup_connection_frame(message: SetupConnection) -> StratumV2Frame:
     )
 
 
-def parse_setup_connection_success(frame: StratumV2Frame, *, requested: SetupConnection | None = None) -> SetupConnectionSuccess:
-    if frame.extension_type != SV2_EXTENSION_TYPE_CORE or frame.message_type != SV2_MSG_SETUP_CONNECTION_SUCCESS:
+def parse_setup_connection_success(
+    frame: StratumV2Frame, *, requested: SetupConnection | None = None
+) -> SetupConnectionSuccess:
+    if (
+        frame.extension_type != SV2_EXTENSION_TYPE_CORE
+        or frame.message_type != SV2_MSG_SETUP_CONNECTION_SUCCESS
+    ):
         raise StratumV2ProtocolError("expected SetupConnection.Success core frame")
     if len(frame.payload) != 6:
         raise StratumV2ProtocolError("SetupConnection.Success payload must be 6 bytes")
     used_version = _decode_uint(frame.payload[0:2], bits=16, field="used_version")
     flags = _decode_uint(frame.payload[2:6], bits=32, field="flags")
-    if requested is not None and not (int(requested.min_version) <= used_version <= int(requested.max_version)):
-        raise StratumV2ProtocolError("SetupConnection.Success used_version is outside requested range")
+    if requested is not None and not (
+        int(requested.min_version) <= used_version <= int(requested.max_version)
+    ):
+        raise StratumV2ProtocolError(
+            "SetupConnection.Success used_version is outside requested range"
+        )
     return SetupConnectionSuccess(used_version=used_version, flags=flags)
 
 
 def parse_setup_connection_error(frame: StratumV2Frame) -> SetupConnectionError:
-    if frame.extension_type != SV2_EXTENSION_TYPE_CORE or frame.message_type != SV2_MSG_SETUP_CONNECTION_ERROR:
+    if (
+        frame.extension_type != SV2_EXTENSION_TYPE_CORE
+        or frame.message_type != SV2_MSG_SETUP_CONNECTION_ERROR
+    ):
         raise StratumV2ProtocolError("expected SetupConnection.Error core frame")
     if len(frame.payload) < 5:
         raise StratumV2ProtocolError("SetupConnection.Error payload is too short")
     flags = _decode_uint(frame.payload[0:4], bits=32, field="flags")
     error_code, offset = decode_str0_255(frame.payload, 4, field="error_code")
     if offset != len(frame.payload):
-        raise StratumV2ProtocolError("SetupConnection.Error payload contains trailing bytes")
+        raise StratumV2ProtocolError(
+            "SetupConnection.Error payload contains trailing bytes"
+        )
     return SetupConnectionError(flags=flags, error_code=error_code)
 
 
-def parse_setup_connection_response(frame: StratumV2Frame, *, requested: SetupConnection | None = None) -> SetupConnectionSuccess:
+def parse_setup_connection_response(
+    frame: StratumV2Frame, *, requested: SetupConnection | None = None
+) -> SetupConnectionSuccess:
     if frame.message_type == SV2_MSG_SETUP_CONNECTION_SUCCESS:
         return parse_setup_connection_success(frame, requested=requested)
     if frame.message_type == SV2_MSG_SETUP_CONNECTION_ERROR:
         error = parse_setup_connection_error(frame)
-        raise StratumV2ProtocolError(f"SetupConnection.Error: {error.error_code} (flags={error.flags})")
-    raise StratumV2ProtocolError("expected SetupConnection.Success or SetupConnection.Error")
+        raise StratumV2ProtocolError(
+            f"SetupConnection.Error: {error.error_code} (flags={error.flags})"
+        )
+    raise StratumV2ProtocolError(
+        "expected SetupConnection.Success or SetupConnection.Error"
+    )
 
 
 __all__ = [

@@ -39,11 +39,14 @@ reached maximal coherence in its energy eigenbasis.
 
 from __future__ import annotations
 
+import math
+
 from dataclasses import asdict, dataclass
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
 import numpy as np
 
+PHI = (1.0 + math.sqrt(5.0)) / 2.0
 _EPS = 1e-12
 
 
@@ -173,18 +176,22 @@ def bures_variational_certificate(
 
     # Compute flat gradient
     flat_grad = entropy_abs * off_diag / off_diag_norm
-    
+
     # NaN assertion: ensure no NaN/inf enters Bures gradient computation
     if np.any(np.isnan(flat_grad)) or np.any(np.isinf(flat_grad)):
-        raise ValueError("NaN or Inf detected in flat gradient - numerical corruption before Bures projection")
+        raise ValueError(
+            "NaN or Inf detected in flat gradient - numerical corruption before Bures projection"
+        )
 
     # Project onto Bures tangent space
     bures_grad = bures_metric_tangent_projection(rho, flat_grad)
     bures_grad_norm = float(np.linalg.norm(bures_grad, ord="fro"))
-    
+
     # NaN assertion: ensure no NaN/inf in Bures gradient
     if np.any(np.isnan(bures_grad)) or np.any(np.isinf(bures_grad)):
-        raise ValueError("NaN or Inf detected in Bures gradient - numerical corruption after projection")
+        raise ValueError(
+            "NaN or Inf detected in Bures gradient - numerical corruption after projection"
+        )
 
     # Check stationary on tangent space (traceless Hermitian projection)
     bures_grad_hermitian = (bures_grad + bures_grad.conj().T) / 2.0

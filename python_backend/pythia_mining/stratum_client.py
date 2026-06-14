@@ -18,13 +18,21 @@ from urllib.parse import urlparse
 try:
     import aiohttp
 except ImportError:  # pragma: no cover - optional dependency shape only
+
     class AiohttpUnavailable:
         ClientWebSocketResponse = Any
+
     aiohttp = AiohttpUnavailable()
 
 from pythia_mining.audit_logger import AuditEvent, AuditEventType, get_audit_logger
-from pythia_mining.live_stratum_session import LiveStratumSession, LiveStratumSessionError
-from pythia_mining.live_stratum_v2_session import LiveStratumV2Session, LiveStratumV2SessionError
+from pythia_mining.live_stratum_session import (
+    LiveStratumSession,
+    LiveStratumSessionError,
+)
+from pythia_mining.live_stratum_v2_session import (
+    LiveStratumV2Session,
+    LiveStratumV2SessionError,
+)
 from pythia_mining.metrics_store import PoolMetrics, get_metrics_store
 from pythia_mining.pool_profiles import PoolProfile, build_profile, order_profiles
 from pythia_mining.stratum_transport import StratumTransportError
@@ -84,7 +92,10 @@ def _env_bool(name: str, default: bool = False) -> bool:
 
 
 def _is_production() -> bool:
-    return os.getenv("NODE_ENV", os.getenv("HYBA_ENV", "development")).lower() == "production"
+    return (
+        os.getenv("NODE_ENV", os.getenv("HYBA_ENV", "development")).lower()
+        == "production"
+    )
 
 
 def _dev_fixtures_allowed() -> bool:
@@ -122,7 +133,9 @@ def _profiles_from_legacy_config(pools_config: Dict[str, Any]) -> List[PoolProfi
                     str(pool_id),
                     name=str(payload.get("name") or pool_id),
                     url=str(payload.get("url") or payload.get("pool_url") or ""),
-                    username=str(payload.get("username") or payload.get("worker") or ""),
+                    username=str(
+                        payload.get("username") or payload.get("worker") or ""
+                    ),
                     password=str(payload.get("password") or payload.get("pass") or ""),
                     stratum_version=int(payload.get("stratum_version") or 1),
                     priority=int(payload.get("priority") or 100),
@@ -142,12 +155,24 @@ class StratumClient:
     only outside production so test/smoke paths cannot leak into live deployments.
     """
 
-    def __init__(self, pool_url: str, username: str, password: str, pool_name: str, stratum_version: int = 1, 
-                 max_reconnect_attempts: int = 10, max_share_retry_attempts: int = 3,
-                 reconnect_backoff_base: float = 1.0, reconnect_backoff_max: float = 60.0,
-                 share_retry_backoff_base: float = 0.5, share_retry_backoff_max: float = 5.0):
+    def __init__(
+        self,
+        pool_url: str,
+        username: str,
+        password: str,
+        pool_name: str,
+        stratum_version: int = 1,
+        max_reconnect_attempts: int = 10,
+        max_share_retry_attempts: int = 3,
+        reconnect_backoff_base: float = 1.0,
+        reconnect_backoff_max: float = 60.0,
+        share_retry_backoff_base: float = 0.5,
+        share_retry_backoff_max: float = 5.0,
+    ):
         if _is_production() and (not username or not password):
-            raise ProductionConfigurationError(f"Missing production credentials for pool {pool_name}")
+            raise ProductionConfigurationError(
+                f"Missing production credentials for pool {pool_name}"
+            )
 
         self.pool_url = pool_url
         self.username = username
@@ -181,7 +206,7 @@ class StratumClient:
         self._blockchain_oracle = None
         self._last_block_height_check: float = 0
         self._block_height_check_interval: float = 30.0
-        
+
         # Circuit breaker state
         self._circuit_breaker_failures = 0
         self._circuit_breaker_last_failure: float = 0
@@ -207,45 +232,70 @@ class StratumClient:
         self.metrics_store = get_metrics_store()
 
     def _calculate_backoff_delay(self) -> float:
-        delay = min(self.reconnect_backoff_base * (2 ** self.reconnect_attempts), self.reconnect_backoff_max)
-        jitter_material = f"{self.pool_name}:{self.pool_url}:{self.reconnect_attempts}".encode("utf-8")
-        jitter_unit = int.from_bytes(hashlib.blake2b(jitter_material, digest_size=2).digest(), "big") / 65535.0
+        delay = min(
+            self.reconnect_backoff_base * (2**self.reconnect_attempts),
+            self.reconnect_backoff_max,
+        )
+        jitter_material = (
+            f"{self.pool_name}:{self.pool_url}:{self.reconnect_attempts}".encode(
+                "utf-8"
+            )
+        )
+        jitter_unit = (
+            int.from_bytes(
+                hashlib.blake2b(jitter_material, digest_size=2).digest(), "big"
+            )
+            / 65535.0
+        )
         return delay + (delay * 0.1 * jitter_unit)
 
     def _circuit_breaker_allow_request(self) -> bool:
         """Check if circuit breaker allows connection attempts."""
         now = time.time()
-        
+
         if self._circuit_breaker_state == "open":
             # Check if timeout has elapsed
             if now - self._circuit_breaker_last_failure > self._circuit_breaker_timeout:
                 self._circuit_breaker_state = "half_open"
-                self.logger.info("Circuit breaker transitioning to half-open state for pool %s", self.pool_name)
+                self.logger.info(
+                    "Circuit breaker transitioning to half-open state for pool %s",
+                    self.pool_name,
+                )
                 return True
             return False
-        
+
         return True
 
     def _circuit_breaker_record_success(self) -> None:
         """Record successful connection and reset circuit breaker."""
         if self._circuit_breaker_state == "half_open":
             self._circuit_breaker_state = "closed"
-            self.logger.info("Circuit breaker closed for pool %s after successful connection", self.pool_name)
+            self.logger.info(
+                "Circuit breaker closed for pool %s after successful connection",
+                self.pool_name,
+            )
         self._circuit_breaker_failures = 0
 
     def _circuit_breaker_record_failure(self) -> None:
         """Record failed connection and potentially open circuit breaker."""
         self._circuit_breaker_failures += 1
         self._circuit_breaker_last_failure = time.time()
-        
+
         if self._circuit_breaker_failures >= self._circuit_breaker_threshold:
             self._circuit_breaker_state = "open"
-            self.logger.warning("Circuit breaker opened for pool %s after %s failures", self.pool_name, self._circuit_breaker_failures)
+            self.logger.warning(
+                "Circuit breaker opened for pool %s after %s failures",
+                self.pool_name,
+                self._circuit_breaker_failures,
+            )
 
     async def connect(self) -> bool:
         # Check circuit breaker before attempting connection
         if not self._circuit_breaker_allow_request():
-            self.logger.warning("Circuit breaker is open for pool %s, rejecting connection attempt", self.pool_name)
+            self.logger.warning(
+                "Circuit breaker is open for pool %s, rejecting connection attempt",
+                self.pool_name,
+            )
             self.connection_state = "CIRCUIT_OPEN"
             return False
 
@@ -255,7 +305,12 @@ class StratumClient:
             stratum_version=self.stratum_version,
             attempt_number=self.reconnect_attempts + 1,
         )
-        self.logger.info("Connecting via Stratum v%s to pool %s (%s)", self.stratum_version, self.pool_name, self.pool_url)
+        self.logger.info(
+            "Connecting via Stratum v%s to pool %s (%s)",
+            self.stratum_version,
+            self.pool_name,
+            self.pool_url,
+        )
         self.connection_state = "CONNECTING"
         started = time.monotonic()
         try:
@@ -318,8 +373,18 @@ class StratumClient:
             self._circuit_breaker_record_failure()
             await self._close_live_session()
             await self._persist_metrics()
-            if isinstance(e, (ValueError, ProductionConfigurationError, LiveStratumSessionError, LiveStratumV2SessionError)):
-                self.logger.error("Pool %s connection failed permanently: %s", self.pool_name, e)
+            if isinstance(
+                e,
+                (
+                    ValueError,
+                    ProductionConfigurationError,
+                    LiveStratumSessionError,
+                    LiveStratumV2SessionError,
+                ),
+            ):
+                self.logger.error(
+                    "Pool %s connection failed permanently: %s", self.pool_name, e
+                )
                 return False
             if self.reconnect_attempts < self.max_reconnect_attempts:
                 delay = self._calculate_backoff_delay()
@@ -329,14 +394,24 @@ class StratumClient:
                     attempt_number=self.reconnect_attempts + 1,
                     delay_seconds=delay,
                 )
-                self.logger.info("Reconnection attempt %s/%s for pool %s in %.2f seconds", self.reconnect_attempts + 1, self.max_reconnect_attempts, self.pool_name, delay)
+                self.logger.info(
+                    "Reconnection attempt %s/%s for pool %s in %.2f seconds",
+                    self.reconnect_attempts + 1,
+                    self.max_reconnect_attempts,
+                    self.pool_name,
+                    delay,
+                )
                 await asyncio.sleep(delay)
                 return await self.connect()
             return False
 
     async def _persist_metrics(self) -> None:
         async with self._metrics_lock:
-            acceptance_rate = self.shares_accepted / self.shares_submitted if self.shares_submitted > 0 else 0.0
+            acceptance_rate = (
+                self.shares_accepted / self.shares_submitted
+                if self.shares_submitted > 0
+                else 0.0
+            )
             self.metrics_store.update_pool_metrics(
                 PoolMetrics(
                     pool_name=self.pool_name,
@@ -364,11 +439,17 @@ class StratumClient:
                 idle_time = time.time() - self.last_activity
                 if idle_time > self.idle_timeout:
                     try:
-                        event, _payload = await self.live_session.read_event(timeout=5.0)
+                        event, _payload = await self.live_session.read_event(
+                            timeout=5.0
+                        )
                         if event:
                             self.last_activity = time.time()
                             self.last_pool_event_at = self.last_activity
-                    except (asyncio.TimeoutError, StratumTransportError, LiveStratumSessionError):
+                    except (
+                        asyncio.TimeoutError,
+                        StratumTransportError,
+                        LiveStratumSessionError,
+                    ):
                         self.audit_logger.log_heartbeat_failure(
                             pool_name=self.pool_name,
                             pool_url=self.pool_url,
@@ -380,11 +461,15 @@ class StratumClient:
             except asyncio.CancelledError:
                 break
             except Exception as e:
-                self.logger.error("Heartbeat loop error for pool %s: %s", self.pool_name, e)
+                self.logger.error(
+                    "Heartbeat loop error for pool %s: %s", self.pool_name, e
+                )
                 break
 
     async def _connect_live(self) -> None:
-        self.audit_logger.log_handshake_start(pool_name=self.pool_name, pool_url=self.pool_url, username=self.username)
+        self.audit_logger.log_handshake_start(
+            pool_name=self.pool_name, pool_url=self.pool_url, username=self.username
+        )
         profile = build_profile(
             self.pool_name.lower().replace(" ", "_"),
             name=self.pool_name,
@@ -392,7 +477,8 @@ class StratumClient:
             username=self.username,
             password=self.password,
             stratum_version=self.stratum_version,
-            tls_required=urlparse(self.pool_url).scheme in {"stratum+ssl", "stratum+tls", "stratum2+ssl", "stratum2+tls"},
+            tls_required=urlparse(self.pool_url).scheme
+            in {"stratum+ssl", "stratum+tls", "stratum2+ssl", "stratum2+tls"},
         )
         if self.stratum_version == 1:
             self.live_session = LiveStratumSession(profile)
@@ -405,9 +491,18 @@ class StratumClient:
             self.is_authenticated = handshake.authorized
             self.connection_state = "AUTHENTICATED"
             if self.is_authenticated:
-                self.audit_logger.log_handshake_success(pool_name=self.pool_name, pool_url=self.pool_url, extranonce1=self.extranonce1, extranonce2_size=self.extranonce2_size)
+                self.audit_logger.log_handshake_success(
+                    pool_name=self.pool_name,
+                    pool_url=self.pool_url,
+                    extranonce1=self.extranonce1,
+                    extranonce2_size=self.extranonce2_size,
+                )
             else:
-                self.audit_logger.log_handshake_failure(pool_name=self.pool_name, pool_url=self.pool_url, error="Authorization rejected by pool")
+                self.audit_logger.log_handshake_failure(
+                    pool_name=self.pool_name,
+                    pool_url=self.pool_url,
+                    error="Authorization rejected by pool",
+                )
         elif self.stratum_version == 2:
             v2_session = LiveStratumV2Session(profile)
             self.live_session = v2_session
@@ -424,7 +519,9 @@ class StratumClient:
                 extranonce2_size=0,
             )
         else:
-            raise LiveStratumSessionError(f"unsupported live Stratum version: {self.stratum_version}")
+            raise LiveStratumSessionError(
+                f"unsupported live Stratum version: {self.stratum_version}"
+            )
         self.last_activity = time.time()
 
     async def _connect_development_fixture(self) -> None:
@@ -435,18 +532,31 @@ class StratumClient:
 
     async def _negotiate_fixture_handshake(self):
         if not _dev_fixtures_allowed():
-            raise ProductionConfigurationError("development Stratum fixtures are disabled in production")
+            raise ProductionConfigurationError(
+                "development Stratum fixtures are disabled in production"
+            )
         self.request_counter += 1
         rid = self.request_counter
         if self.stratum_version == 1:
-            self.logger.info("[Stratum v1 fixture] Subscription payload: %s", json.dumps({"id": rid, "method": "mining.subscribe", "params": ["pythia-quantum/2.0.0", None]}))
+            self.logger.info(
+                "[Stratum v1 fixture] Subscription payload: %s",
+                json.dumps(
+                    {
+                        "id": rid,
+                        "method": "mining.subscribe",
+                        "params": ["pythia-quantum/2.0.0", None],
+                    }
+                ),
+            )
             self.extranonce1 = os.getenv("HYBA_STRATUM_EXTRANONCE1", "f000bba1")
             self.extranonce2_size = int(os.getenv("HYBA_STRATUM_EXTRANONCE2_SIZE", "4"))
             self.is_authenticated = True
             self.connection_state = "AUTHENTICATED"
         elif self.stratum_version == 2:
             self.extranonce1 = os.getenv("HYBA_STRATUM_V2_EXTRANONCE1", "ff02")
-            self.extranonce2_size = int(os.getenv("HYBA_STRATUM_V2_EXTRANONCE2_SIZE", "3"))
+            self.extranonce2_size = int(
+                os.getenv("HYBA_STRATUM_V2_EXTRANONCE2_SIZE", "3")
+            )
             self.is_authenticated = True
             self.connection_state = "AUTHENTICATED_V2"
         else:
@@ -463,13 +573,18 @@ class StratumClient:
             return None
         self.last_activity = time.time()
         self.last_pool_event_at = self.last_activity
-        
+
         # Check for stale jobs based on block height on successful event read
         await self._check_block_height_for_stale_jobs()
         if event == "mining.set_difficulty":
             old_difficulty = self.current_difficulty
             self.current_difficulty = float(payload.difficulty)
-            self.audit_logger.log_difficulty_change(pool_name=self.pool_name, pool_url=self.pool_url, old_difficulty=old_difficulty, new_difficulty=self.current_difficulty)
+            self.audit_logger.log_difficulty_change(
+                pool_name=self.pool_name,
+                pool_url=self.pool_url,
+                old_difficulty=old_difficulty,
+                new_difficulty=self.current_difficulty,
+            )
             await self._persist_metrics()
             return None
         if event == "mining.notify":
@@ -477,7 +592,11 @@ class StratumClient:
                 if payload.clean_jobs:
                     for job_id in self.current_jobs:
                         self.stale_job_ids.add(job_id)
-                        self.audit_logger.log_job_stale(pool_name=self.pool_name, pool_url=self.pool_url, job_id=job_id)
+                        self.audit_logger.log_job_stale(
+                            pool_name=self.pool_name,
+                            pool_url=self.pool_url,
+                            job_id=job_id,
+                        )
                     self.current_jobs.clear()
                 job = MiningJob(
                     job_id=payload.job_id,
@@ -498,7 +617,13 @@ class StratumClient:
                 self.jobs_received += 1
                 self.last_job_received_at = job.received_timestamp
                 self.active_job_id = job.job_id
-                self.audit_logger.log_job_received(pool_name=self.pool_name, pool_url=self.pool_url, job_id=job.job_id, clean_jobs=payload.clean_jobs, difficulty=self.current_difficulty)
+                self.audit_logger.log_job_received(
+                    pool_name=self.pool_name,
+                    pool_url=self.pool_url,
+                    job_id=job.job_id,
+                    clean_jobs=payload.clean_jobs,
+                    difficulty=self.current_difficulty,
+                )
                 await self._persist_metrics()
                 return job
         if event == "mining.set_extranonce":
@@ -516,7 +641,11 @@ class StratumClient:
         if event == "mining.set_version_mask":
             return None
         if event == "unknown":
-            self.logger.warning("Pool %s sent unsupported message: method=%s", self.pool_name, payload.get("method"))
+            self.logger.warning(
+                "Pool %s sent unsupported message: method=%s",
+                self.pool_name,
+                payload.get("method"),
+            )
             return None
         return None
 
@@ -533,48 +662,124 @@ class StratumClient:
                 return False
         return True
 
-    async def submit_validated_share(self, job: MiningJob, nonce: int, extranonce2: Optional[str] = None) -> ShareResult:
+    async def submit_validated_share(
+        self, job: MiningJob, nonce: int, extranonce2: Optional[str] = None
+    ) -> ShareResult:
         """Validate locally, then submit to the pool before recording accepted/rejected counters."""
-        from pythia_mining.mining_validation import MiningValidationError, validate_share
+        from pythia_mining.mining_validation import (
+            MiningValidationError,
+            validate_share,
+        )
 
         if job.job_id in self.stale_job_ids or job.is_stale:
             self.shares_submitted += 1
             self.shares_rejected += 1
             self.last_share_error = "stale_job"
-            self.audit_logger.log_share_rejected(pool_name=self.pool_name, pool_url=self.pool_url, job_id=job.job_id, nonce=nonce, reason="stale_job", error_code=410)
-            self.metrics_store.record_share_submission(pool_name=self.pool_name, pool_url=self.pool_url, job_id=job.job_id, nonce=nonce, accepted=False, error_code=410, error_message="stale_job")
+            self.audit_logger.log_share_rejected(
+                pool_name=self.pool_name,
+                pool_url=self.pool_url,
+                job_id=job.job_id,
+                nonce=nonce,
+                reason="stale_job",
+                error_code=410,
+            )
+            self.metrics_store.record_share_submission(
+                pool_name=self.pool_name,
+                pool_url=self.pool_url,
+                job_id=job.job_id,
+                nonce=nonce,
+                accepted=False,
+                error_code=410,
+                error_message="stale_job",
+            )
             await self._persist_metrics()
             return ShareResult(False, 410, "stale_job", job.job_id, nonce)
 
         extranonce2_value = extranonce2 or ("00" * job.extranonce2_size)
         if self.live_session is not None and not _live_share_submit_enabled():
-            self.audit_logger.log_share_rejected(pool_name=self.pool_name, pool_url=self.pool_url, job_id=job.job_id, nonce=nonce, reason="live_share_submit_disabled", error_code=423)
+            self.audit_logger.log_share_rejected(
+                pool_name=self.pool_name,
+                pool_url=self.pool_url,
+                job_id=job.job_id,
+                nonce=nonce,
+                reason="live_share_submit_disabled",
+                error_code=423,
+            )
             self.shares_submitted += 1
             self.shares_rejected += 1
             self.last_share_error = "live_share_submit_disabled"
-            self.metrics_store.record_share_submission(pool_name=self.pool_name, pool_url=self.pool_url, job_id=job.job_id, nonce=nonce, accepted=False, error_code=423, error_message="live_share_submit_disabled")
+            self.metrics_store.record_share_submission(
+                pool_name=self.pool_name,
+                pool_url=self.pool_url,
+                job_id=job.job_id,
+                nonce=nonce,
+                accepted=False,
+                error_code=423,
+                error_message="live_share_submit_disabled",
+            )
             await self._persist_metrics()
-            return ShareResult(False, 423, "live_share_submit_disabled", job.job_id, nonce)
+            return ShareResult(
+                False, 423, "live_share_submit_disabled", job.job_id, nonce
+            )
 
         try:
             validation = validate_share(job, nonce, extranonce2_value)
         except MiningValidationError as exc:
-            self.audit_logger.log_share_validation_error(pool_name=self.pool_name, pool_url=self.pool_url, job_id=job.job_id, nonce=nonce, error=str(exc))
+            self.audit_logger.log_share_validation_error(
+                pool_name=self.pool_name,
+                pool_url=self.pool_url,
+                job_id=job.job_id,
+                nonce=nonce,
+                error=str(exc),
+            )
             self.shares_submitted += 1
             self.shares_rejected += 1
             self.last_share_error = str(exc)
-            self.metrics_store.record_share_submission(pool_name=self.pool_name, pool_url=self.pool_url, job_id=job.job_id, nonce=nonce, accepted=False, error_code=400, error_message=str(exc))
+            self.metrics_store.record_share_submission(
+                pool_name=self.pool_name,
+                pool_url=self.pool_url,
+                job_id=job.job_id,
+                nonce=nonce,
+                accepted=False,
+                error_code=400,
+                error_message=str(exc),
+            )
             await self._persist_metrics()
             return ShareResult(False, 400, str(exc), job.job_id, nonce)
 
         if not validation.valid:
-            self.audit_logger.log_share_rejected(pool_name=self.pool_name, pool_url=self.pool_url, job_id=job.job_id, nonce=nonce, reason=validation.reason, error_code=1)
+            self.audit_logger.log_share_rejected(
+                pool_name=self.pool_name,
+                pool_url=self.pool_url,
+                job_id=job.job_id,
+                nonce=nonce,
+                reason=validation.reason,
+                error_code=1,
+            )
             self.shares_submitted += 1
             self.shares_rejected += 1
             self.last_share_error = validation.reason
-            self.metrics_store.record_share_submission(pool_name=self.pool_name, pool_url=self.pool_url, job_id=job.job_id, nonce=nonce, accepted=False, error_code=1, error_message=validation.reason, block_hash=validation.block_hash, target=validation.target)
+            self.metrics_store.record_share_submission(
+                pool_name=self.pool_name,
+                pool_url=self.pool_url,
+                job_id=job.job_id,
+                nonce=nonce,
+                accepted=False,
+                error_code=1,
+                error_message=validation.reason,
+                block_hash=validation.block_hash,
+                target=validation.target,
+            )
             await self._persist_metrics()
-            return ShareResult(False, 1, validation.reason, job.job_id, nonce, validation.block_hash, validation.target)
+            return ShareResult(
+                False,
+                1,
+                validation.reason,
+                job.job_id,
+                nonce,
+                validation.block_hash,
+                validation.target,
+            )
 
         if self.live_session is None:
             return await self.validate_and_record_share(job, nonce, extranonce2_value)
@@ -582,26 +787,71 @@ class StratumClient:
         self.shares_submitted += 1
         self.last_share_submit_at = time.time()
         nonce_hex = nonce.to_bytes(4, byteorder="little", signed=False).hex()
-        self.audit_logger.log_share_submission(pool_name=self.pool_name, pool_url=self.pool_url, job_id=job.job_id, nonce=nonce, extranonce2=extranonce2_value)
+        self.audit_logger.log_share_submission(
+            pool_name=self.pool_name,
+            pool_url=self.pool_url,
+            job_id=job.job_id,
+            nonce=nonce,
+            extranonce2=extranonce2_value,
+        )
 
         submit_result = None
         last_exception = None
         for attempt in range(self.max_share_retry_attempts):
             try:
-                submit_result = await self.live_session.submit_share(job_id=job.job_id, extranonce2=extranonce2_value, ntime=job.ntime, nonce=nonce_hex)
+                submit_result = await self.live_session.submit_share(
+                    job_id=job.job_id,
+                    extranonce2=extranonce2_value,
+                    ntime=job.ntime,
+                    nonce=nonce_hex,
+                )
                 # Validate pool response structure
                 if not self._validate_pool_response(submit_result.response):
-                    self.logger.warning("Pool %s returned invalid response structure on attempt %s", self.pool_name, attempt + 1)
+                    self.logger.warning(
+                        "Pool %s returned invalid response structure on attempt %s",
+                        self.pool_name,
+                        attempt + 1,
+                    )
                     if attempt < self.max_share_retry_attempts - 1:
-                        await asyncio.sleep(min(self.share_retry_backoff_base * (2 ** attempt), self.share_retry_backoff_max))
+                        await asyncio.sleep(
+                            min(
+                                self.share_retry_backoff_base * (2**attempt),
+                                self.share_retry_backoff_max,
+                            )
+                        )
                         continue
                     else:
-                        self.audit_logger.log_share_rejected(pool_name=self.pool_name, pool_url=self.pool_url, job_id=job.job_id, nonce=nonce, reason="invalid_pool_response_structure", error_code=503)
+                        self.audit_logger.log_share_rejected(
+                            pool_name=self.pool_name,
+                            pool_url=self.pool_url,
+                            job_id=job.job_id,
+                            nonce=nonce,
+                            reason="invalid_pool_response_structure",
+                            error_code=503,
+                        )
                         self.shares_rejected += 1
                         self.last_share_error = "invalid_pool_response_structure"
-                        self.metrics_store.record_share_submission(pool_name=self.pool_name, pool_url=self.pool_url, job_id=job.job_id, nonce=nonce, accepted=False, error_code=503, error_message="invalid_pool_response_structure", block_hash=validation.block_hash, target=validation.target)
+                        self.metrics_store.record_share_submission(
+                            pool_name=self.pool_name,
+                            pool_url=self.pool_url,
+                            job_id=job.job_id,
+                            nonce=nonce,
+                            accepted=False,
+                            error_code=503,
+                            error_message="invalid_pool_response_structure",
+                            block_hash=validation.block_hash,
+                            target=validation.target,
+                        )
                         await self._persist_metrics()
-                        return ShareResult(False, 503, "invalid_pool_response_structure", job.job_id, nonce, validation.block_hash, validation.target)
+                        return ShareResult(
+                            False,
+                            503,
+                            "invalid_pool_response_structure",
+                            job.job_id,
+                            nonce,
+                            validation.block_hash,
+                            validation.target,
+                        )
                 if submit_result.accepted:
                     break
                 if not submit_result.accepted and submit_result.error:
@@ -609,40 +859,132 @@ class StratumClient:
             except Exception as exc:
                 last_exception = exc
                 if attempt < self.max_share_retry_attempts - 1:
-                    await asyncio.sleep(min(self.share_retry_backoff_base * (2 ** attempt), self.share_retry_backoff_max))
+                    await asyncio.sleep(
+                        min(
+                            self.share_retry_backoff_base * (2**attempt),
+                            self.share_retry_backoff_max,
+                        )
+                    )
                 else:
-                    self.audit_logger.log_share_rejected(pool_name=self.pool_name, pool_url=self.pool_url, job_id=job.job_id, nonce=nonce, reason=f"pool_submit_failed: {last_exception}", error_code=502)
+                    self.audit_logger.log_share_rejected(
+                        pool_name=self.pool_name,
+                        pool_url=self.pool_url,
+                        job_id=job.job_id,
+                        nonce=nonce,
+                        reason=f"pool_submit_failed: {last_exception}",
+                        error_code=502,
+                    )
                     self.shares_rejected += 1
                     self.last_share_error = str(last_exception)
-                    self.metrics_store.record_share_submission(pool_name=self.pool_name, pool_url=self.pool_url, job_id=job.job_id, nonce=nonce, accepted=False, error_code=502, error_message=f"pool_submit_failed: {last_exception}", block_hash=validation.block_hash, target=validation.target)
+                    self.metrics_store.record_share_submission(
+                        pool_name=self.pool_name,
+                        pool_url=self.pool_url,
+                        job_id=job.job_id,
+                        nonce=nonce,
+                        accepted=False,
+                        error_code=502,
+                        error_message=f"pool_submit_failed: {last_exception}",
+                        block_hash=validation.block_hash,
+                        target=validation.target,
+                    )
                     await self._persist_metrics()
-                    return ShareResult(False, 502, f"pool_submit_failed: {last_exception}", job.job_id, nonce, validation.block_hash, validation.target)
+                    return ShareResult(
+                        False,
+                        502,
+                        f"pool_submit_failed: {last_exception}",
+                        job.job_id,
+                        nonce,
+                        validation.block_hash,
+                        validation.target,
+                    )
 
         if submit_result is None:
             self.shares_rejected += 1
             self.last_share_error = "pool_submit_no_response"
-            self.metrics_store.record_share_submission(pool_name=self.pool_name, pool_url=self.pool_url, job_id=job.job_id, nonce=nonce, accepted=False, error_code=502, error_message="pool_submit_no_response", block_hash=validation.block_hash, target=validation.target)
+            self.metrics_store.record_share_submission(
+                pool_name=self.pool_name,
+                pool_url=self.pool_url,
+                job_id=job.job_id,
+                nonce=nonce,
+                accepted=False,
+                error_code=502,
+                error_message="pool_submit_no_response",
+                block_hash=validation.block_hash,
+                target=validation.target,
+            )
             await self._persist_metrics()
-            return ShareResult(False, 502, "pool_submit_no_response", job.job_id, nonce, validation.block_hash, validation.target)
+            return ShareResult(
+                False,
+                502,
+                "pool_submit_no_response",
+                job.job_id,
+                nonce,
+                validation.block_hash,
+                validation.target,
+            )
 
         if submit_result.accepted:
-            self.audit_logger.log_share_accepted(pool_name=self.pool_name, pool_url=self.pool_url, job_id=job.job_id, nonce=nonce, block_hash=validation.block_hash)
-            self.metrics_store.record_share_submission(pool_name=self.pool_name, pool_url=self.pool_url, job_id=job.job_id, nonce=nonce, accepted=True, block_hash=validation.block_hash, target=validation.target)
+            self.audit_logger.log_share_accepted(
+                pool_name=self.pool_name,
+                pool_url=self.pool_url,
+                job_id=job.job_id,
+                nonce=nonce,
+                block_hash=validation.block_hash,
+            )
+            self.metrics_store.record_share_submission(
+                pool_name=self.pool_name,
+                pool_url=self.pool_url,
+                job_id=job.job_id,
+                nonce=nonce,
+                accepted=True,
+                block_hash=validation.block_hash,
+                target=validation.target,
+            )
             self.shares_accepted += 1
             self.last_share_error = None
         else:
-            self.audit_logger.log_share_rejected(pool_name=self.pool_name, pool_url=self.pool_url, job_id=job.job_id, nonce=nonce, reason=str(submit_result.error), error_code=2)
-            self.metrics_store.record_share_submission(pool_name=self.pool_name, pool_url=self.pool_url, job_id=job.job_id, nonce=nonce, accepted=False, error_code=2, error_message=str(submit_result.error), block_hash=validation.block_hash, target=validation.target)
+            self.audit_logger.log_share_rejected(
+                pool_name=self.pool_name,
+                pool_url=self.pool_url,
+                job_id=job.job_id,
+                nonce=nonce,
+                reason=str(submit_result.error),
+                error_code=2,
+            )
+            self.metrics_store.record_share_submission(
+                pool_name=self.pool_name,
+                pool_url=self.pool_url,
+                job_id=job.job_id,
+                nonce=nonce,
+                accepted=False,
+                error_code=2,
+                error_message=str(submit_result.error),
+                block_hash=validation.block_hash,
+                target=validation.target,
+            )
             self.shares_rejected += 1
             self.last_share_error = str(submit_result.error)
         await self._persist_metrics()
-        return ShareResult(submit_result.accepted, None if submit_result.accepted else 2, None if submit_result.accepted else str(submit_result.error), job.job_id, nonce, validation.block_hash, validation.target)
+        return ShareResult(
+            submit_result.accepted,
+            None if submit_result.accepted else 2,
+            None if submit_result.accepted else str(submit_result.error),
+            job.job_id,
+            nonce,
+            validation.block_hash,
+            validation.target,
+        )
 
     async def _close_live_session(self) -> None:
         if self.live_session is not None:
             try:
                 await self.live_session.close()
-            except (LiveStratumSessionError, LiveStratumV2SessionError, StratumTransportError, OSError):
+            except (
+                LiveStratumSessionError,
+                LiveStratumV2SessionError,
+                StratumTransportError,
+                OSError,
+            ):
                 pass
             finally:
                 self.live_session = None
@@ -659,8 +1001,19 @@ class StratumClient:
         self.is_connected = False
         self.is_authenticated = False
         self.connection_state = "DISCONNECTED"
-        self.audit_logger.log_event(AuditEvent(AuditEventType.DISCONNECTION, self.pool_name, self.pool_url, time.time(), {}, "INFO"))
-        self.metrics_store.record_connection_event(pool_name=self.pool_name, pool_url=self.pool_url, event_type="disconnection")
+        self.audit_logger.log_event(
+            AuditEvent(
+                AuditEventType.DISCONNECTION,
+                self.pool_name,
+                self.pool_url,
+                time.time(),
+                {},
+                "INFO",
+            )
+        )
+        self.metrics_store.record_connection_event(
+            pool_name=self.pool_name, pool_url=self.pool_url, event_type="disconnection"
+        )
         await self._persist_metrics()
 
     async def close(self):
@@ -670,7 +1023,9 @@ class StratumClient:
     async def inject_dev_fixture_target_job(self, difficulty: float):
         """Create a dev/test mining job fixture. Disabled in production."""
         if not _dev_fixtures_allowed():
-            raise ProductionConfigurationError("Simulated mining jobs are disabled in production")
+            raise ProductionConfigurationError(
+                "Simulated mining jobs are disabled in production"
+            )
         if difficulty <= 0:
             raise ValueError("difficulty must be positive")
         target = _difficulty_to_target(difficulty)
@@ -695,22 +1050,62 @@ class StratumClient:
         await self._persist_metrics()
         return job
 
-    async def validate_and_record_share(self, job: MiningJob, nonce: int, extranonce2: str) -> ShareResult:
+    async def validate_and_record_share(
+        self, job: MiningJob, nonce: int, extranonce2: str
+    ) -> ShareResult:
         from pythia_mining.mining_validation import validate_share
+
         validation = validate_share(job, nonce, extranonce2)
         self.shares_submitted += 1
         self.last_share_submit_at = time.time()
         if validation.valid:
             self.shares_accepted += 1
             self.last_share_error = None
-            self.audit_logger.log_share_accepted(pool_name=self.pool_name, pool_url=self.pool_url, job_id=job.job_id, nonce=nonce, block_hash=validation.block_hash)
-            result = ShareResult(True, job_id=job.job_id, nonce=nonce, block_hash=validation.block_hash, target=validation.target)
+            self.audit_logger.log_share_accepted(
+                pool_name=self.pool_name,
+                pool_url=self.pool_url,
+                job_id=job.job_id,
+                nonce=nonce,
+                block_hash=validation.block_hash,
+            )
+            result = ShareResult(
+                True,
+                job_id=job.job_id,
+                nonce=nonce,
+                block_hash=validation.block_hash,
+                target=validation.target,
+            )
         else:
             self.shares_rejected += 1
             self.last_share_error = validation.reason
-            self.audit_logger.log_share_rejected(pool_name=self.pool_name, pool_url=self.pool_url, job_id=job.job_id, nonce=nonce, reason=validation.reason, error_code=1)
-            result = ShareResult(False, 1, validation.reason, job.job_id, nonce, validation.block_hash, validation.target)
-        self.metrics_store.record_share_submission(pool_name=self.pool_name, pool_url=self.pool_url, job_id=job.job_id, nonce=nonce, accepted=result.accepted, error_code=result.error_code, error_message=result.error_message, block_hash=result.block_hash, target=result.target)
+            self.audit_logger.log_share_rejected(
+                pool_name=self.pool_name,
+                pool_url=self.pool_url,
+                job_id=job.job_id,
+                nonce=nonce,
+                reason=validation.reason,
+                error_code=1,
+            )
+            result = ShareResult(
+                False,
+                1,
+                validation.reason,
+                job.job_id,
+                nonce,
+                validation.block_hash,
+                validation.target,
+            )
+        self.metrics_store.record_share_submission(
+            pool_name=self.pool_name,
+            pool_url=self.pool_url,
+            job_id=job.job_id,
+            nonce=nonce,
+            accepted=result.accepted,
+            error_code=result.error_code,
+            error_message=result.error_message,
+            block_hash=result.block_hash,
+            target=result.target,
+        )
         await self._persist_metrics()
         return result
 
@@ -722,13 +1117,18 @@ class StratumClient:
     async def get_active_job_copy(self) -> Optional[MiningJob]:
         """Thread-safe copy of active job."""
         async with self._jobs_lock:
-            return self.current_jobs.get(self.active_job_id) if self.active_job_id else None
+            return (
+                self.current_jobs.get(self.active_job_id)
+                if self.active_job_id
+                else None
+            )
 
     async def _check_block_height_for_stale_jobs(self) -> None:
         """Proactively check for stale jobs based on block height changes."""
         if self._blockchain_oracle is None:
             try:
                 from pythia_mining.blockchain_oracle import BlockchainOracle
+
                 self._blockchain_oracle = BlockchainOracle()
             except ImportError:
                 return
@@ -746,14 +1146,24 @@ class StratumClient:
             async with self._jobs_lock:
                 jobs_to_mark_stale = []
                 for job_id, job in self.current_jobs.items():
-                    if self._blockchain_oracle.is_job_stale_by_block_height(job.prevhash, current_tip):
+                    if self._blockchain_oracle.is_job_stale_by_block_height(
+                        job.prevhash, current_tip
+                    ):
                         jobs_to_mark_stale.append(job_id)
 
                 for job_id in jobs_to_mark_stale:
                     if job_id not in self.stale_job_ids:
                         self.stale_job_ids.add(job_id)
-                        self.audit_logger.log_job_stale(pool_name=self.pool_name, pool_url=self.pool_url, job_id=job_id)
-                        self.logger.info("Marked job %s as stale due to block height change (new tip: %s)", job_id, current_tip.hash[:16])
+                        self.audit_logger.log_job_stale(
+                            pool_name=self.pool_name,
+                            pool_url=self.pool_url,
+                            job_id=job_id,
+                        )
+                        self.logger.info(
+                            "Marked job %s as stale due to block height change (new tip: %s)",
+                            job_id,
+                            current_tip.hash[:16],
+                        )
 
                 if jobs_to_mark_stale:
                     await self._persist_metrics()
@@ -763,41 +1173,43 @@ class StratumClient:
     def get_health_score(self) -> float:
         """Calculate pool health score for graceful degradation decisions (0.0 to 1.0)."""
         score = 1.0
-        
+
         # Penalize for connection failures
         if self.connection_failures > 0:
             score -= min(0.3, self.connection_failures * 0.05)
-        
+
         # Penalize for circuit breaker state
         if self._circuit_breaker_state == "open":
             score -= 0.5
         elif self._circuit_breaker_state == "half_open":
             score -= 0.2
-        
+
         # Penalize for low acceptance rate
         if self.shares_submitted > 10:
             acceptance_rate = self.shares_accepted / self.shares_submitted
             if acceptance_rate < 0.9:
                 score -= (0.9 - acceptance_rate) * 0.5
-        
+
         # Penalize for high latency
         if self.avg_latency and self.avg_latency > 1000:  # > 1 second
             score -= min(0.2, (self.avg_latency - 1000) / 10000)
-        
+
         # Penalize for stale jobs
         if len(self.stale_job_ids) > 0:
             score -= min(0.3, len(self.stale_job_ids) * 0.1)
-        
+
         # Boost for recent activity
         if self.last_activity and (time.time() - self.last_activity) < 60:
             score += 0.1
-        
+
         return max(0.0, min(1.0, score))
 
     def get_status(self) -> Dict[str, Any]:
         submitted = self.shares_submitted
         accepted = self.shares_accepted
-        current_job = self.current_jobs.get(self.active_job_id) if self.active_job_id else None
+        current_job = (
+            self.current_jobs.get(self.active_job_id) if self.active_job_id else None
+        )
         return {
             "pool_name": self.pool_name,
             "pool_url": self.pool_url,
@@ -829,9 +1241,16 @@ class StratumClient:
 class PoolManager:
     def __init__(self, pools_config: Optional[Dict[str, Any]] = None):
         from pythia_mining.pool_profiles import load_pool_profiles
-        profiles = _profiles_from_legacy_config(pools_config or {}) if pools_config else load_pool_profiles()
+
+        profiles = (
+            _profiles_from_legacy_config(pools_config or {})
+            if pools_config
+            else load_pool_profiles()
+        )
         if _is_production() and not profiles:
-            raise ProductionConfigurationError("Production mining requires at least one HYBA_POOL_<ID>_* configuration")
+            raise ProductionConfigurationError(
+                "Production mining requires at least one HYBA_POOL_<ID>_* configuration"
+            )
         self.pools: Dict[str, StratumClient] = {
             profile.pool_id: StratumClient(
                 pool_url=profile.url,
@@ -872,13 +1291,17 @@ class PoolManager:
                     return current
                 # If current pool is degraded, try to find a healthier pool
                 logger = logging.getLogger("pool_manager")
-                logger.warning("Current pool %s has degraded health score %.2f, seeking better pool", current.pool_name, health_score)
-        
+                logger.warning(
+                    "Current pool %s has degraded health score %.2f, seeking better pool",
+                    current.pool_name,
+                    health_score,
+                )
+
         # Find the best pool based on health score and connection status
         best_pool = None
         best_pool_key: Optional[str] = None
         best_score = -1.0
-        
+
         # First, check already connected pools
         for pool_id, pool in self.pools.items():
             if pool.is_connected and pool.is_authenticated:
@@ -888,10 +1311,10 @@ class PoolManager:
                     best_pool = pool
                     best_pool_key = pool_id
                     self.current_pool_key = pool_id
-        
+
         if best_pool and best_score > 0.5:
             return best_pool
-        
+
         # If no healthy connected pool, try to connect to the best available pool
         for pool_id, pool in self.pools.items():
             health_score = pool.get_health_score()
@@ -904,7 +1327,7 @@ class PoolManager:
             if await best_pool.connect():
                 self.current_pool_key = best_pool_key
                 return best_pool
-        
+
         # Last resort: try all pools in order
         failures: list[str] = []
         for pool_id, pool in self.pools.items():
@@ -912,9 +1335,12 @@ class PoolManager:
                 self.current_pool_key = pool_id
                 return pool
             failures.append(f"{pool.pool_name}: {pool.connection_state}")
-        
+
         self.current_pool_key = None
-        raise AllPoolsOfflineError("All configured mining pools are offline or unauthenticated: " + "; ".join(failures))
+        raise AllPoolsOfflineError(
+            "All configured mining pools are offline or unauthenticated: "
+            + "; ".join(failures)
+        )
 
     def get_active_pool(self) -> Optional[StratumClient]:
         if self.current_pool_key and self.current_pool_key in self.pools:

@@ -27,7 +27,9 @@ class GammaEstimate:
 class EmpiricalGammaLedger:
     """Beta-binomial estimator for per-node NACK rate gamma_k."""
 
-    def __init__(self, num_nodes: int, *, alpha_prior: float = 1.0, beta_prior: float = 31.0) -> None:
+    def __init__(
+        self, num_nodes: int, *, alpha_prior: float = 1.0, beta_prior: float = 31.0
+    ) -> None:
         self.num_nodes = int(num_nodes)
         self.alpha_prior = float(alpha_prior)
         self.beta_prior = float(beta_prior)

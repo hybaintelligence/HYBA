@@ -12,7 +12,7 @@ import json
 import logging
 import os
 import time
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
@@ -21,6 +21,7 @@ from typing import Any, Dict, Optional
 
 class AuditEventType(Enum):
     """Types of audit events for categorization."""
+
     CONNECTION_ATTEMPT = "connection_attempt"
     CONNECTION_SUCCESS = "connection_success"
     CONNECTION_FAILURE = "connection_failure"
@@ -46,13 +47,14 @@ class AuditEventType(Enum):
 @dataclass
 class AuditEvent:
     """Structured audit event record."""
+
     event_type: AuditEventType
     pool_name: str
     pool_url: str
     timestamp: float
     event_data: Dict[str, Any]
     severity: str = "INFO"
-    
+
     def to_dict(self) -> Dict[str, Any]:
         """Convert audit event to dictionary for serialization."""
         return {
@@ -64,7 +66,7 @@ class AuditEvent:
             "severity": self.severity,
             "event_data": self.event_data,
         }
-    
+
     def to_json(self) -> str:
         """Convert audit event to JSON string."""
         return json.dumps(self.to_dict(), separators=(",", ":"))
@@ -73,11 +75,11 @@ class AuditEvent:
 class AuditLogger:
     """
     Production-grade audit logger for mining operations.
-    
+
     Provides structured logging to both file and console with proper rotation
     and severity levels. All critical operations are logged for forensic analysis.
     """
-    
+
     def __init__(
         self,
         log_dir: Optional[str] = None,
@@ -86,12 +88,12 @@ class AuditLogger:
     ):
         self.log_dir = Path(log_dir or os.getenv("HYBA_AUDIT_LOG_DIR", "logs/audit"))
         self.log_dir.mkdir(parents=True, exist_ok=True)
-        
+
         # Create main audit logger
         self.logger = logging.getLogger("hyba.audit")
         self.logger.setLevel(getattr(logging, log_level.upper()))
         self.logger.handlers.clear()
-        
+
         # File handler with JSON formatting
         log_file = self.log_dir / f"audit_{datetime.now().strftime('%Y%m%d')}.log"
         file_handler = logging.FileHandler(log_file, encoding="utf-8")
@@ -102,7 +104,7 @@ class AuditLogger:
         )
         file_handler.setFormatter(file_formatter)
         self.logger.addHandler(file_handler)
-        
+
         # Console handler if enabled
         if enable_console:
             console_handler = logging.StreamHandler()
@@ -113,12 +115,12 @@ class AuditLogger:
             )
             console_handler.setFormatter(console_formatter)
             self.logger.addHandler(console_handler)
-    
+
     def log_event(self, event: AuditEvent) -> None:
         """Log an audit event with appropriate severity."""
         log_level = getattr(logging, event.severity.upper(), logging.INFO)
         self.logger.log(log_level, event.to_json())
-    
+
     def log_connection_attempt(
         self,
         pool_name: str,
@@ -139,7 +141,7 @@ class AuditLogger:
             severity="INFO",
         )
         self.log_event(event)
-    
+
     def log_connection_success(
         self,
         pool_name: str,
@@ -160,7 +162,7 @@ class AuditLogger:
             severity="INFO",
         )
         self.log_event(event)
-    
+
     def log_connection_failure(
         self,
         pool_name: str,
@@ -181,7 +183,7 @@ class AuditLogger:
             severity="ERROR",
         )
         self.log_event(event)
-    
+
     def log_handshake_start(
         self,
         pool_name: str,
@@ -200,7 +202,7 @@ class AuditLogger:
             severity="INFO",
         )
         self.log_event(event)
-    
+
     def log_handshake_success(
         self,
         pool_name: str,
@@ -221,7 +223,7 @@ class AuditLogger:
             severity="INFO",
         )
         self.log_event(event)
-    
+
     def log_handshake_failure(
         self,
         pool_name: str,
@@ -240,7 +242,7 @@ class AuditLogger:
             severity="ERROR",
         )
         self.log_event(event)
-    
+
     def log_job_received(
         self,
         pool_name: str,
@@ -263,7 +265,7 @@ class AuditLogger:
             severity="INFO",
         )
         self.log_event(event)
-    
+
     def log_job_stale(
         self,
         pool_name: str,
@@ -282,7 +284,7 @@ class AuditLogger:
             severity="WARNING",
         )
         self.log_event(event)
-    
+
     def log_share_submission(
         self,
         pool_name: str,
@@ -305,7 +307,7 @@ class AuditLogger:
             severity="INFO",
         )
         self.log_event(event)
-    
+
     def log_share_accepted(
         self,
         pool_name: str,
@@ -328,7 +330,7 @@ class AuditLogger:
             severity="INFO",
         )
         self.log_event(event)
-    
+
     def log_share_rejected(
         self,
         pool_name: str,
@@ -353,7 +355,7 @@ class AuditLogger:
             severity="WARNING",
         )
         self.log_event(event)
-    
+
     def log_share_validation_error(
         self,
         pool_name: str,
@@ -376,7 +378,7 @@ class AuditLogger:
             severity="ERROR",
         )
         self.log_event(event)
-    
+
     def log_difficulty_change(
         self,
         pool_name: str,
@@ -397,7 +399,7 @@ class AuditLogger:
             severity="INFO",
         )
         self.log_event(event)
-    
+
     def log_extranonce_change(
         self,
         pool_name: str,
@@ -422,7 +424,7 @@ class AuditLogger:
             severity="INFO",
         )
         self.log_event(event)
-    
+
     def log_reconnection_attempt(
         self,
         pool_name: str,
@@ -443,7 +445,7 @@ class AuditLogger:
             severity="WARNING",
         )
         self.log_event(event)
-    
+
     def log_heartbeat_failure(
         self,
         pool_name: str,
@@ -462,7 +464,7 @@ class AuditLogger:
             severity="WARNING",
         )
         self.log_event(event)
-    
+
     def log_tls_verification_failure(
         self,
         pool_name: str,
@@ -481,7 +483,7 @@ class AuditLogger:
             severity="CRITICAL",
         )
         self.log_event(event)
-    
+
     def log_security_event(
         self,
         pool_name: str,

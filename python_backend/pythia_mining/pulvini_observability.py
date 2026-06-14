@@ -13,8 +13,8 @@ The framework provides:
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
-from datetime import datetime, timedelta
+from dataclasses import dataclass
+from datetime import datetime, timedelta, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional
 import uuid
@@ -22,6 +22,7 @@ import uuid
 
 class MetricType(Enum):
     """Types of metrics collected."""
+
     COUNTER = "counter"
     GAUGE = "gauge"
     HISTOGRAM = "histogram"
@@ -30,6 +31,7 @@ class MetricType(Enum):
 
 class SLOStatus(Enum):
     """SLO compliance status."""
+
     COMPLIANT = "compliant"
     WARNING = "warning"
     VIOLATED = "violated"
@@ -38,6 +40,7 @@ class SLOStatus(Enum):
 @dataclass(frozen=True)
 class SLIMetric:
     """Service Level Indicator metric."""
+
     name: str
     metric_type: MetricType
     value: float
@@ -59,6 +62,7 @@ class SLIMetric:
 @dataclass(frozen=True)
 class SLOTarget:
     """Service Level Objective target."""
+
     name: str
     slo_target: float  # Target percentage (e.g., 0.95 for 95%)
     error_budget: float  # Remaining error budget
@@ -82,6 +86,7 @@ class SLOTarget:
 @dataclass(frozen=True)
 class TraceContext:
     """Distributed tracing context."""
+
     trace_id: str
     span_id: str
     parent_span_id: Optional[str]
@@ -122,7 +127,9 @@ class ObservabilityCertificate:
     def to_dict(self) -> Dict[str, Any]:
         return {
             "slo_targets": [slo.to_dict() for slo in self.slo_targets],
-            "metrics_collected": [metric.to_dict() for metric in self.metrics_collected],
+            "metrics_collected": [
+                metric.to_dict() for metric in self.metrics_collected
+            ],
             "tracing_enabled": self.tracing_enabled,
             "structured_logging_enabled": self.structured_logging_enabled,
             "chaos_engineering_hooks": self.chaos_engineering_hooks,
@@ -153,7 +160,7 @@ class ObservabilityFramework:
             metric_type=metric_type,
             value=value,
             unit=unit,
-            timestamp=datetime.utcnow(),
+            timestamp=datetime.now(timezone.utc),
             labels=labels or {},
         )
         self.metrics.append(metric)
@@ -168,7 +175,7 @@ class ObservabilityFramework:
     ) -> SLOTarget:
         """Define an SLO target."""
         error_budget = max(0.0, target - current_value)
-        
+
         # Calculate burn rate (simplified)
         if current_value >= target:
             status = SLOStatus.COMPLIANT
@@ -201,13 +208,13 @@ class ObservabilityFramework:
         """Start a distributed trace span."""
         trace_id = str(uuid.uuid4())
         span_id = str(uuid.uuid4())
-        
+
         context = TraceContext(
             trace_id=trace_id,
             span_id=span_id,
             parent_span_id=parent_span_id,
             operation_name=operation_name,
-            start_time=datetime.utcnow(),
+            start_time=datetime.now(timezone.utc),
             end_time=None,
             duration_ms=None,
             tags=tags or {},
@@ -219,11 +226,11 @@ class ObservabilityFramework:
         """End a distributed trace span."""
         if span_id not in self.trace_contexts:
             return None
-        
+
         context = self.trace_contexts[span_id]
-        end_time = datetime.utcnow()
+        end_time = datetime.now(timezone.utc)
         duration_ms = (end_time - context.start_time).total_seconds() * 1000.0
-        
+
         updated_context = TraceContext(
             trace_id=context.trace_id,
             span_id=context.span_id,
@@ -261,7 +268,7 @@ class ObservabilityFramework:
             )
 
         slo_list = list(self.slo_targets.values())
-        
+
         # Check if all SLOs are compliant
         all_compliant = all(slo.status == SLOStatus.COMPLIANT for slo in slo_list)
 
@@ -289,31 +296,35 @@ def verify_observability_framework() -> Dict[str, Any]:
         Verification result with compliance status
     """
     framework = ObservabilityFramework()
-    
+
     # Record sample metrics
     framework.record_metric("quantum_purity", 0.98, MetricType.GAUGE, "")
     framework.record_metric("operation_latency_ms", 0.5, MetricType.HISTOGRAM, "ms")
     framework.record_metric("convergence_iterations", 15, MetricType.COUNTER, "")
-    
+
     # Define SLOs
     framework.define_slo("quantum_purity_sli", 0.95, timedelta(hours=1), 0.98)
     framework.define_slo("operation_latency_sli", 0.99, timedelta(minutes=5), 0.995)
-    
+
     # Start a trace
     trace = framework.start_trace("quantum_operation", tags={"component": "pulvini"})
     framework.end_trace(trace.span_id)
-    
+
     # Get certificate
     cert = framework.get_observability_certificate()
-    
+
     # Verify requirements
     slo_count = len(cert.slo_targets)
     tracing_works = cert.tracing_enabled
     metrics_collected = len(cert.metrics_collected) > 0
     all_compliant = all(slo.status == SLOStatus.COMPLIANT for slo in cert.slo_targets)
-    
+
     return {
-        "status": "CLOSED" if (slo_count >= 2 and tracing_works and metrics_collected) else "OPEN",
+        "status": (
+            "CLOSED"
+            if (slo_count >= 2 and tracing_works and metrics_collected)
+            else "OPEN"
+        ),
         "slo_count": slo_count,
         "tracing_enabled": tracing_works,
         "metrics_collected": metrics_collected,

@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 LOGGER = logging.getLogger(__name__)
 
@@ -20,7 +20,7 @@ class SubsystemStatus:
 
     name: str
     ready: bool = False
-    initialized_at: str | None = None
+    initialized_at: Optional[str] = None
     detail: str = "not initialized"
 
 
@@ -35,15 +35,19 @@ class SubstrateState:
             "pulvini_reconstruction_kernel": SubsystemStatus(
                 name="pulvini_reconstruction_kernel"
             ),
-            "hilbert_space_warm_start": SubsystemStatus(name="hilbert_space_warm_start"),
+            "hilbert_space_warm_start": SubsystemStatus(
+                name="hilbert_space_warm_start"
+            ),
             "phi_floor_coherence": SubsystemStatus(name="phi_floor_coherence"),
-            "pythia_consensus_monitors": SubsystemStatus(name="pythia_consensus_monitors"),
+            "pythia_consensus_monitors": SubsystemStatus(
+                name="pythia_consensus_monitors"
+            ),
             "mining_engine_optimization_sync": SubsystemStatus(
                 name="mining_engine_optimization_sync"
             ),
         }
     )
-    shutdown_at: str | None = None
+    shutdown_at: Optional[str] = None
 
 
 _STATE = SubstrateState()

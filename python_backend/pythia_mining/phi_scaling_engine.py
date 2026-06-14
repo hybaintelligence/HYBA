@@ -70,14 +70,28 @@ class PhiScaledEnsemble:
     def __init__(self, config: Mapping[str, Any] | None = None):
         self.config = dict(config or {})
         self.policy = PhiScalingPolicy(
-            phi_scaling_power=float(self.config.get("phi_scaling_power", PhiScalingPolicy().phi_scaling_power)),
+            phi_scaling_power=float(
+                self.config.get(
+                    "phi_scaling_power", PhiScalingPolicy().phi_scaling_power
+                )
+            ),
             low_variance_threshold=float(
-                self.config.get("low_variance_threshold", PhiScalingPolicy().low_variance_threshold)
+                self.config.get(
+                    "low_variance_threshold", PhiScalingPolicy().low_variance_threshold
+                )
             ),
             high_variance_threshold=float(
-                self.config.get("high_variance_threshold", PhiScalingPolicy().high_variance_threshold)
+                self.config.get(
+                    "high_variance_threshold",
+                    PhiScalingPolicy().high_variance_threshold,
+                )
             ),
-            memory_limit=int(self.config.get("memory_limit", self.config.get("max_memory", PhiScalingPolicy().memory_limit))),
+            memory_limit=int(
+                self.config.get(
+                    "memory_limit",
+                    self.config.get("max_memory", PhiScalingPolicy().memory_limit),
+                )
+            ),
         )
         self.phi_power = self.policy.phi_scaling_power
         self.memory: list[PhiDecision] = []
@@ -96,12 +110,17 @@ class PhiScaledEnsemble:
         indicators: Mapping[str, Mapping[str, float]],
     ) -> dict[str, Any]:
         if not model_predictions:
-            decision = PhiDecision(0.0, self._calculate_indicator_harmony(indicators), 0.0, 0.0, tuple())
+            decision = PhiDecision(
+                0.0, self._calculate_indicator_harmony(indicators), 0.0, 0.0, tuple()
+            )
             self._remember(decision)
             return decision.to_dict()
 
         model_names = sorted(model_predictions.keys())
-        model_scores = np.asarray([float(model_predictions[name].get("score", 0.0)) for name in model_names], dtype=np.float64)
+        model_scores = np.asarray(
+            [float(model_predictions[name].get("score", 0.0)) for name in model_names],
+            dtype=np.float64,
+        )
         model_scores = np.clip(model_scores, 0.0, 1.0)
         mean_score = float(np.mean(model_scores))
         model_variance = float(np.std(model_scores))
@@ -114,24 +133,39 @@ class PhiScaledEnsemble:
             phi_exponent = PHI_INV
 
         phi_weights = np.asarray(
-            [PHI ** (phi_exponent * (1.0 - abs(float(score) - mean_score))) for score in model_scores],
+            [
+                PHI ** (phi_exponent * (1.0 - abs(float(score) - mean_score)))
+                for score in model_scores
+            ],
             dtype=np.float64,
         )
         weight_sum = float(np.sum(phi_weights))
         if weight_sum <= EPSILON:
-            phi_weights = np.full(model_scores.shape, 1.0 / max(1, model_scores.size), dtype=np.float64)
+            phi_weights = np.full(
+                model_scores.shape, 1.0 / max(1, model_scores.size), dtype=np.float64
+            )
         else:
             phi_weights = phi_weights / weight_sum
 
         harmonic_score = float(np.sum(model_scores * phi_weights))
         indicator_harmony = self._calculate_indicator_harmony(indicators)
-        final_score = float(np.clip(harmonic_score * (PHI ** (indicator_harmony - 1.0)), 0.0, 1.0))
+        final_score = float(
+            np.clip(harmonic_score * (PHI ** (indicator_harmony - 1.0)), 0.0, 1.0)
+        )
         coherence = float(np.clip(1.0 - (model_variance / (PHI * 0.5)), 0.0, 1.0))
-        decision = PhiDecision(harmonic_score, indicator_harmony, final_score, coherence, tuple(float(v) for v in phi_weights))
+        decision = PhiDecision(
+            harmonic_score,
+            indicator_harmony,
+            final_score,
+            coherence,
+            tuple(float(v) for v in phi_weights),
+        )
         self._remember(decision)
         return decision.to_dict()
 
-    def _calculate_indicator_harmony(self, indicators: Mapping[str, Mapping[str, float]]) -> float:
+    def _calculate_indicator_harmony(
+        self, indicators: Mapping[str, Mapping[str, float]]
+    ) -> float:
         if not indicators:
             return 0.5
         harmonic_scores: list[float] = []
@@ -154,7 +188,9 @@ class PhiOptimizedFeatures:
     def __init__(self) -> None:
         self.phi_statistics: dict[str, dict[str, float]] = {}
 
-    def extract_phi_optimized_features(self, indicators: Mapping[str, Mapping[str, float]]) -> dict[str, Any]:
+    def extract_phi_optimized_features(
+        self, indicators: Mapping[str, Mapping[str, float]]
+    ) -> dict[str, Any]:
         optimized: dict[str, Any] = {}
         for domain, metrics in indicators.items():
             if not isinstance(metrics, Mapping) or not metrics:
@@ -191,7 +227,9 @@ class PhiOptimizedFeatures:
 class PhiResonanceAnalyzer:
     """Detect golden-ratio resonance in numeric sequences."""
 
-    def analyze_phi_resonance(self, data: Mapping[str, Sequence[float]] | Sequence[Sequence[float]]) -> dict[str, Any]:
+    def analyze_phi_resonance(
+        self, data: Mapping[str, Sequence[float]] | Sequence[Sequence[float]]
+    ) -> dict[str, Any]:
         if isinstance(data, Mapping):
             items = data.items()
         else:
@@ -209,17 +247,31 @@ class PhiResonanceAnalyzer:
 
     def _detect_golden_patterns(self, values: np.ndarray) -> dict[str, Any]:
         if values.size < 2:
-            return {"harmony_score": 0.5, "dominant_ratio": PHI, "is_fibonacci": False, "resonance_strength": 0.5}
+            return {
+                "harmony_score": 0.5,
+                "dominant_ratio": PHI,
+                "is_fibonacci": False,
+                "resonance_strength": 0.5,
+            }
         ratios = values[1:] / (values[:-1] + EPSILON)
         finite = ratios[np.isfinite(ratios)]
         if finite.size == 0:
-            return {"harmony_score": 0.0, "dominant_ratio": 0.0, "is_fibonacci": False, "resonance_strength": 0.0}
+            return {
+                "harmony_score": 0.0,
+                "dominant_ratio": 0.0,
+                "is_fibonacci": False,
+                "resonance_strength": 0.0,
+            }
         distances = np.abs(finite - PHI) / PHI
         harmony = float(np.clip(1.0 - np.mean(distances), 0.0, 1.0))
         rounded = np.round(finite * 10.0) / 10.0
         unique, counts = np.unique(rounded, return_counts=True)
         dominant_ratio = float(unique[int(np.argmax(counts))])
-        fibonacci_distance = min(abs(dominant_ratio - PHI), abs(dominant_ratio - PHI_INV), abs(dominant_ratio - (PHI ** 2)))
+        fibonacci_distance = min(
+            abs(dominant_ratio - PHI),
+            abs(dominant_ratio - PHI_INV),
+            abs(dominant_ratio - (PHI**2)),
+        )
         is_fibonacci = bool(fibonacci_distance < 0.1)
         return {
             "harmony_score": harmony,
@@ -229,7 +281,9 @@ class PhiResonanceAnalyzer:
         }
 
 
-def calculate_phi_performance(traditional_score: float, phi_scaled_score: float, phi_coherence: float) -> dict[str, Any]:
+def calculate_phi_performance(
+    traditional_score: float, phi_scaled_score: float, phi_coherence: float
+) -> dict[str, Any]:
     traditional = float(traditional_score)
     phi_scaled = float(phi_scaled_score)
     improvement = (phi_scaled - traditional) / (abs(traditional) + EPSILON)
@@ -267,11 +321,17 @@ def benchmark_vs_asic(
     mode = "projection_only"
     if measured_hashes_per_second is not None:
         measured = float(measured_hashes_per_second)
-        effective = measured * float(compression_factor) / float(phi_filter_acceptance_ratio)
+        effective = (
+            measured * float(compression_factor) / float(phi_filter_acceptance_ratio)
+        )
         ratio = effective / float(asic_baseline_hashes_per_second)
         mode = "measured_input"
     benchmark = PhiBenchmark(
-        measured_hashes_per_second=None if measured_hashes_per_second is None else float(measured_hashes_per_second),
+        measured_hashes_per_second=(
+            None
+            if measured_hashes_per_second is None
+            else float(measured_hashes_per_second)
+        ),
         asic_baseline_hashes_per_second=float(asic_baseline_hashes_per_second),
         effective_hashes_per_second=effective,
         phi_filter_acceptance_ratio=float(phi_filter_acceptance_ratio),

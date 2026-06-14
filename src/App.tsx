@@ -31,7 +31,6 @@ import {
   type AuthResponse,
   type ConfigurePoolRequest,
   type PoolInfo,
-  type PowerScaleResponse,
   type TelemetryData,
   configurePool,
   disconnectFromPool,
@@ -149,6 +148,7 @@ function AppContent() {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [powerScale, setPowerScale] = useState(1);
   const [phiTier, setPhiTier] = useState(12);
+  const [powerScaleResponse, setPowerScaleResponse] = useState<{ status: string; effective_hashrate_ehs?: number; phi_tier?: number; phi_tier_composition?: { label?: string; scale_factor?: number }; hashrate_cap_ehs?: number } | null>(null);
   const [selectedPoolForConfig, setSelectedPoolForConfig] = useState<PoolInfo | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -477,7 +477,7 @@ function AppContent() {
           <Panel title="Quantum runtime" eyebrow="Optimization substrate" icon={<Cpu className="h-4 w-4" />} isLoading={isLoading} rows={6}>
             <MetricRow label="Basis coherence" value={fmtPct(health?.quantumCoherence)} />
             <MetricRow label="Phi phase alignment" value={fmtPct(health?.phiResonance)} />
-            <MetricRow label="Quantum speedup" value={fmtNum(health?.quantumSpeedupFactor)} />
+            <MetricRow label="Modeled basis factor" value={fmtNum(health?.quantumSpeedupFactor)} />
             <MetricRow label="Actual speedup" value={fmtNum(health?.actualSpeedupFactor)} />
             <MetricRow label="Power scale" value={`${powerScale.toFixed(1)}x`} />
             <MetricRow label="φ-tier" value={`10^${phiTier}`} />

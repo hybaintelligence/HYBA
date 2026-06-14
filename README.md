@@ -189,7 +189,7 @@ The PULVINI gates are framed as engineering evidence with mathematical rigor, no
 
 ## Elevated Mathematical Rigor
 
-**Response to Expert Review**: The codebase has been elevated to address feedback from du Sautoy, Turing, Deutsch, Grover, Shor, Penrose, MIT, Caltech, and ETH.
+This repository presents its mathematical work as engineering evidence and certificate-backed implementation detail. Claims should remain bounded by the evidence currently present in code, tests, certificates, and live telemetry.
 
 **Group Theory (du Sautoy)**: 
 - ✅ Added Coxeter group H3 certificate with Coxeter diagram o-5-o-3-o
@@ -197,21 +197,22 @@ The PULVINI gates are framed as engineering evidence with mathematical rigor, no
 - ✅ Character orthogonality verification and conjugacy class analysis
 - ✅ Coxeter structure embedded in representation certificate
 
-**Mathematical Completeness (Shor)**:
-- ✅ Implemented state evolution models (amplitude damping, phase damping, depolarizing)
-- ✅ Purity < 1.0 in mathematically complete computations (addresses purity = 1.0)
-- ✅ Entropy increase tracking through state evolution channels
-- ✅ Certificate-based verification of mathematical completeness
+**Computation Scope**:
+- ✅ Deterministic computation through mathematics
+- ✅ Structured basis-selection and state-surface analysis
+- ✅ Classical hash verification remains in place
+- ✅ Substrate-agnostic linear algebra implementation
+- ✅ No claim of SHA-256 quantum acceleration
 
-**Production Reliability (MIT)**:
+**Production Reliability**:
 - ✅ SLI/SLO framework for quantum operations monitoring
 - ✅ Distributed tracing with span IDs and correlation tracking
 - ✅ Error budget tracking and burn rate calculations
 - ✅ Chaos engineering hooks for resilience testing
 
-**Honest Characterization (Deutsch/Grover)**:
+**Honest Characterization**:
 - ✅ Explicit `quantum_speedup_claimed=False` in all certificates
-- ✅ Clear distinction: quantum computation through mathematics, not classical heuristic
+- ✅ Clear distinction between certificate-backed mathematical behavior and unproven acceleration claims
 - ✅ Deterministic behavior certification for reproducible results
 
 **Mathematical Depth (Penrose)**:
@@ -233,33 +234,28 @@ The PULVINI gates are framed as engineering evidence with mathematical rigor, no
 
 **Validation Results**: 0 RuntimeWarnings across all modules, 9/9 tests passing with hard failure mode enabled
 
-### Quantum Performance Benchmarks
+### Mathematical Operation Benchmarks
 
-**Sub-millisecond quantum operation timings (50-iteration mean):**
+**Sub-millisecond mathematical operation timings (50-iteration mean):**
 - Unitary evolution operator U(dt): **0.079ms** (σ/μ = 1.3%)
 - Density matrix evolution: **0.217ms**
 - Bures metric computation: **0.474ms**
 - Phi-folding compression: **0.597ms** at 2.62x compression ratio (ε < 10^-14 reconstruction error)
 
-### Mathematical State Evolution
+### Computation Characteristics
 
-**Achievement**: Mathematical completeness in quantum computation framework
+The implemented runtime should be described conservatively:
 
-**Implemented State Evolution Models:**
-- **Amplitude Damping**: Energy dissipation with configurable rate γ
-- **Phase Damping**: Loss of phase coherence without energy loss
-- **Depolarizing Channel**: Uniform noise with probability p
-- **Combined State Evolution**: Multi-channel application for mathematical completeness
+- **Deterministic**: state transitions and transforms are reproducible
+- **Structured**: basis-selection and compression mechanisms are explicitly bounded
+- **Substrate Agnostic**: the linear algebra implementation is not tied to one hardware target
+- **Classically Verified**: proof-of-work validation and hash verification remain classical
 
-**Mathematical Completeness Verification:**
-- Final purity < 1.0 (mathematically complete states)
-- Entropy increase through state evolution
-- Fidelity preservation tracking
-- Certificate-based verification of mathematical completeness
+The repository does not claim quantum speedup over SHA-256, full-space nonce-search acceleration, accepted-share success without pool confirmation, or scientific breakthrough beyond the currently evidenced certificates and tests.
 
 ### Production Observability
 
-**Achievement**: Addressed MIT's feedback about production reliability and observability
+**Achievement**: Added production reliability and observability infrastructure
 
 **Implemented Framework:**
 - **SLI Metrics**: Service Level Indicators for quantum operations (purity, fidelity, convergence)

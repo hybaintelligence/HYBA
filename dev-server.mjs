@@ -11,7 +11,7 @@ const projectRoot = path.dirname(__filename);
 
 const app = express();
 const PORT = 3000;
-const BACKEND_PORT = 8000;
+const BACKEND_PORT = 3001;
 
 // API proxy to backend
 app.use('/api', createProxyMiddleware({

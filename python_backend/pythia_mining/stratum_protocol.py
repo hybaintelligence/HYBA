@@ -4,11 +4,12 @@ The functions in this module are intentionally pure and deterministic. They
 build JSON-RPC messages and parse pool notifications without opening sockets,
 which makes them safe to test and reuse from live transports.
 """
+
 from __future__ import annotations
 
 import json
 from dataclasses import dataclass, asdict
-from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
+from typing import Any, Dict, List, Sequence, Tuple
 
 
 class StratumProtocolError(ValueError):
@@ -20,6 +21,7 @@ class SubscribeResult:
     extranonce1: str
     extranonce2_size: int
     raw_result: Any
+
     def to_dict(self) -> Dict[str, Any]:
         return asdict(self)
 
@@ -35,6 +37,7 @@ class NotifyMessage:
     nbits: str
     ntime: str
     clean_jobs: bool
+
     def to_dict(self) -> Dict[str, Any]:
         return asdict(self)
 
@@ -42,6 +45,7 @@ class NotifyMessage:
 @dataclass(frozen=True)
 class DifficultyMessage:
     difficulty: float
+
     def to_dict(self) -> Dict[str, Any]:
         return asdict(self)
 
@@ -50,6 +54,7 @@ class DifficultyMessage:
 class SetExtranonceMessage:
     extranonce1: str
     extranonce2_size: int
+
     def to_dict(self) -> Dict[str, Any]:
         return asdict(self)
 
@@ -57,6 +62,7 @@ class SetExtranonceMessage:
 @dataclass(frozen=True)
 class SetVersionMaskMessage:
     version_mask: str
+
     def to_dict(self) -> Dict[str, Any]:
         return asdict(self)
 
@@ -78,7 +84,13 @@ def dumps_message(message_id: int, method: str, params: Sequence[Any]) -> str:
         raise StratumProtocolError("message_id must be positive")
     if not method:
         raise StratumProtocolError("method is required")
-    return json.dumps({"id": int(message_id), "method": method, "params": list(params)}, separators=(",", ":")) + "\n"
+    return (
+        json.dumps(
+            {"id": int(message_id), "method": method, "params": list(params)},
+            separators=(",", ":"),
+        )
+        + "\n"
+    )
 
 
 def build_subscribe(message_id: int, user_agent: str = "hyba-pulvini/1.0") -> str:
@@ -93,13 +105,24 @@ def build_authorize(message_id: int, username: str, password: str) -> str:
     return dumps_message(message_id, "mining.authorize", [username, password])
 
 
-def build_submit(message_id: int, username: str, job_id: str, extranonce2: str, ntime: str, nonce: str) -> str:
+def build_submit(
+    message_id: int,
+    username: str,
+    job_id: str,
+    extranonce2: str,
+    ntime: str,
+    nonce: str,
+) -> str:
     _require_hex(extranonce2, "extranonce2")
     _require_hex(ntime, "ntime")
     _require_hex(nonce, "nonce")
     if not username or not job_id:
         raise StratumProtocolError("username and job_id are required")
-    return dumps_message(message_id, "mining.submit", [username, job_id, extranonce2.lower(), ntime.lower(), nonce.lower()])
+    return dumps_message(
+        message_id,
+        "mining.submit",
+        [username, job_id, extranonce2.lower(), ntime.lower(), nonce.lower()],
+    )
 
 
 def parse_json_line(line: str) -> Dict[str, Any]:
@@ -117,12 +140,16 @@ def parse_subscribe_result(message: Dict[str, Any]) -> SubscribeResult:
         raise StratumProtocolError(f"subscribe failed: {message['error']}")
     result = message.get("result")
     if not isinstance(result, list) or len(result) < 3:
-        raise StratumProtocolError("subscribe result must contain subscription data, extranonce1, extranonce2_size")
+        raise StratumProtocolError(
+            "subscribe result must contain subscription data, extranonce1, extranonce2_size"
+        )
     extranonce1 = _require_hex(str(result[1]), "extranonce1")
     size = int(result[2])
     if size <= 0 or size > 32:
         raise StratumProtocolError("extranonce2_size is out of safe range")
-    return SubscribeResult(extranonce1=extranonce1, extranonce2_size=size, raw_result=result)
+    return SubscribeResult(
+        extranonce1=extranonce1, extranonce2_size=size, raw_result=result
+    )
 
 
 def parse_authorize_result(message: Dict[str, Any]) -> bool:
@@ -148,7 +175,17 @@ def parse_notify_params(params: Sequence[Any]) -> NotifyMessage:
     clean_jobs = bool(params[8])
     if not job_id:
         raise StratumProtocolError("job_id is required")
-    return NotifyMessage(job_id, prevhash, coinbase1, coinbase2, merkle_branch, version, nbits, ntime, clean_jobs)
+    return NotifyMessage(
+        job_id,
+        prevhash,
+        coinbase1,
+        coinbase2,
+        merkle_branch,
+        version,
+        nbits,
+        ntime,
+        clean_jobs,
+    )
 
 
 def parse_set_difficulty(params: Sequence[Any]) -> DifficultyMessage:
@@ -162,12 +199,16 @@ def parse_set_difficulty(params: Sequence[Any]) -> DifficultyMessage:
 
 def parse_set_extranonce(params: Sequence[Any]) -> SetExtranonceMessage:
     if len(params) < 2:
-        raise StratumProtocolError("mining.set_extranonce requires extranonce1 and extranonce2_size")
+        raise StratumProtocolError(
+            "mining.set_extranonce requires extranonce1 and extranonce2_size"
+        )
     extranonce1 = _require_hex(str(params[0]), "extranonce1")
     extranonce2_size = int(params[1])
     if extranonce2_size <= 0 or extranonce2_size > 32:
         raise StratumProtocolError("extranonce2_size is out of safe range")
-    return SetExtranonceMessage(extranonce1=extranonce1, extranonce2_size=extranonce2_size)
+    return SetExtranonceMessage(
+        extranonce1=extranonce1, extranonce2_size=extranonce2_size
+    )
 
 
 def parse_set_version_mask(params: Sequence[Any]) -> SetVersionMaskMessage:

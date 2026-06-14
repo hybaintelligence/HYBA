@@ -17,17 +17,26 @@ _BACKEND_ROOT = Path(__file__).resolve().parents[1]
 if str(_BACKEND_ROOT) not in sys.path:
     sys.path.insert(0, str(_BACKEND_ROOT))
 
-import uvicorn
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
+import uvicorn  # noqa: E402
+from fastapi import FastAPI  # noqa: E402
+from fastapi.middleware.cors import CORSMiddleware  # noqa: E402
 
-from hyba_genesis_api.api import ai, auth, health, mining, mining_ops, misc, products, security
-from hyba_genesis_api.core.substrate import (
+from hyba_genesis_api.api import (
+    ai,
+    auth,
+    health,
+    mining,
+    mining_ops,
+    misc,
+    products,
+    security,
+)  # noqa: E402
+from hyba_genesis_api.core.substrate import (  # noqa: E402
     get_substrate_state,
     initialize_substrate,
     shutdown_substrate,
 )
-from hyba_genesis_api.core.telemetry import (
+from hyba_genesis_api.core.telemetry import (  # noqa: E402
     get_metrics,
     init_logging,
     init_metrics,
@@ -43,7 +52,9 @@ async def lifespan(app: FastAPI):
     init_metrics()
     logging.info("HYBA API startup: initializing substrate lifecycle")
     initialize_substrate()
-    logging.info("HYBA API startup: substrate READY", extra={"substrate": get_substrate_state()})
+    logging.info(
+        "HYBA API startup: substrate READY", extra={"substrate": get_substrate_state()}
+    )
     yield
     logging.info("HYBA API shutdown: draining substrate lifecycle")
     shutdown_substrate()
@@ -60,8 +71,14 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=[
+        "Authorization",
+        "Content-Type",
+        "X-Request-ID",
+        "X-Correlation-ID",
+        "Idempotency-Key",
+    ],
 )
 app.middleware("http")(telemetry_middleware)
 
@@ -79,7 +96,11 @@ app.include_router(products.router)
 async def root_health_check():
     """Compatibility health endpoint used by end-to-end smoke tests."""
 
-    return {"status": "ok", "substrate": get_substrate_state(), "telemetry": get_metrics()}
+    return {
+        "status": "ok",
+        "substrate": get_substrate_state(),
+        "telemetry": get_metrics(),
+    }
 
 
 @app.get("/api/substrate", response_model=Dict[str, Any], tags=["substrate"])

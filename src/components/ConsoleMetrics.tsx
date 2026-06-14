@@ -29,10 +29,10 @@ export const ConsoleMetrics: React.FC<ConsoleMetricsProps> = ({ state, onRefresh
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-      {/* CARD 1: QUANTUM SPEEDUP */}
+      {/* CARD 1: SEARCH EFFICIENCY */}
       <div id="metric-speedup" className="bg-white border-l-4 border-clicquot-orange border-y border-r border-[#E2E4E9] rounded-xl p-5 flex flex-col justify-between transition-colors duration-200 shadow-sm">
         <div className="flex items-center justify-between">
-          <span className="text-xs font-mono text-lux-slate tracking-wider font-semibold uppercase">Quantum Acceleration</span>
+          <span className="text-xs font-mono text-lux-slate tracking-wider font-semibold uppercase">Search Efficiency</span>
           <Cpu className="text-oxford w-4.5 h-4.5" />
         </div>
         <div className="my-3">
@@ -45,7 +45,7 @@ export const ConsoleMetrics: React.FC<ConsoleMetricsProps> = ({ state, onRefresh
             </div>
           </div>
           <p className="text-xs text-lux-slate mt-1">
-            <span className="font-bold text-oxford">Actual</span> vs Theoretical O(√I) speedup
+            <span className="font-bold text-oxford">Actual</span> vs modeled basis-selection factor
           </p>
         </div>
         <div className="text-[10px] font-mono text-lux-slate/80 flex justify-between border-t border-sand-dark pt-2 mt-1">
@@ -64,7 +64,7 @@ export const ConsoleMetrics: React.FC<ConsoleMetricsProps> = ({ state, onRefresh
           <div className="text-2xl font-bold font-mono text-oxford tracking-tight">
             {state.currentHashrate.toFixed(1)} <span className="text-lux-slate text-xs font-sans">EHS</span>
           </div>
-          <p className="text-xs text-lux-slate mt-1">Calculated exascale sweep velocity</p>
+          <p className="text-xs text-lux-slate mt-1">Estimated equivalence metric from configured runtime telemetry</p>
         </div>
         
         {/* Recharts LineGraph Background Overlay */}
@@ -99,7 +99,7 @@ export const ConsoleMetrics: React.FC<ConsoleMetricsProps> = ({ state, onRefresh
           <div className="text-2xl font-bold font-mono text-oxford tracking-tight">
             {state.powerConsumption} <span className="text-lux-slate text-xs font-sans">W</span>
           </div>
-          <p className="text-xs text-lux-slate mt-1">Electrical load constraint. Nonce space focusing yields minimal heat.</p>
+          <p className="text-xs text-lux-slate mt-1">Electrical load constraint for the current runtime configuration.</p>
         </div>
         <div className="text-[10px] font-mono text-lux-slate/80 flex justify-between border-t border-sand-dark pt-2 mt-1">
           <span>SAVINGS: ~45%</span>
@@ -117,7 +117,7 @@ export const ConsoleMetrics: React.FC<ConsoleMetricsProps> = ({ state, onRefresh
           <div className="text-sm font-mono text-oxford font-bold truncate tracking-tight">
             {state.activePool.replace("stratum+tcp://", "").replace("stratum2+tcp://", "").replace("stratum+ssl://", "")}
           </div>
-          <p className="text-xs text-lux-slate mt-1">Configured for zero-decoherence target-matching blocks routing</p>
+          <p className="text-xs text-lux-slate mt-1">Configured target-routing surface for the active Stratum endpoint</p>
         </div>
         <div className="text-[10px] font-mono text-lux-slate/80 flex justify-between border-t border-sand-dark pt-2 mt-2">
           <span>POOL STATE: ONLINE</span>

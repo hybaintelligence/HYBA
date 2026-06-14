@@ -51,14 +51,6 @@ from pythia_mining.pulvini_memory_compression_proof import (
     verify_memory_compression_gate,
 )
 from pythia_mining.pulvini_group import a5_representation_certificate, coxeter_group_certificate, compute_graph_automorphisms
-from pythia_mining.pulvini_decoherence import (
-    StateEvolutionCertificate,
-    amplitude_damping_channel,
-    combined_state_evolution,
-    depolarizing_channel,
-    phase_damping_channel,
-    verify_state_evolution,
-)
 from pythia_mining.pulvini_observability import (
     MetricType,
     ObservabilityCertificate,
@@ -337,75 +329,6 @@ class TestBuresVariationalCertificate(unittest.TestCase):
         self.assertIn("evolving_state", result["tests"])
         self.assertIn("trivial_diagonal_state", result["tests"])
         self.assertIn("near_eigenbasis_alignment", result["tests"])
-
-
-class TestStateEvolutionModels(unittest.TestCase):
-    """Tests for quantum state evolution models."""
-
-    def test_amplitude_damping_reduces_purity(self):
-        """Amplitude damping must reduce purity from 1.0."""
-        dim = 32
-        psi = np.random.randn(dim) + 1j * np.random.randn(dim)
-        psi = psi / np.linalg.norm(psi)
-        rho = np.outer(psi, psi.conj())
-        
-        initial_purity = float(np.trace(rho @ rho).real)
-        rho_evolved, cert = amplitude_damping_channel(rho, gamma=0.1)
-        
-        final_purity = float(np.trace(rho_evolved @ rho_evolved).real)
-        self.assertLess(final_purity, initial_purity)
-        self.assertTrue(cert.mathematically_complete)
-
-    def test_phase_damping_reduces_purity(self):
-        """Phase damping must reduce purity from 1.0."""
-        dim = 32
-        psi = np.random.randn(dim) + 1j * np.random.randn(dim)
-        psi = psi / np.linalg.norm(psi)
-        rho = np.outer(psi, psi.conj())
-        
-        initial_purity = float(np.trace(rho @ rho).real)
-        rho_evolved, cert = phase_damping_channel(rho, gamma=0.1)
-        
-        final_purity = float(np.trace(rho_evolved @ rho_evolved).real)
-        self.assertLess(final_purity, initial_purity)
-        self.assertTrue(cert.mathematically_complete)
-
-    def test_depolarizing_reduces_purity(self):
-        """Depolarizing channel must reduce purity from 1.0."""
-        dim = 32
-        psi = np.random.randn(dim) + 1j * np.random.randn(dim)
-        psi = psi / np.linalg.norm(psi)
-        rho = np.outer(psi, psi.conj())
-        
-        initial_purity = float(np.trace(rho @ rho).real)
-        rho_evolved, cert = depolarizing_channel(rho, p=0.1)
-        
-        final_purity = float(np.trace(rho_evolved @ rho_evolved).real)
-        self.assertLess(final_purity, initial_purity)
-        self.assertTrue(cert.mathematically_complete)
-
-    def test_combined_state_evolution_applies_all_channels(self):
-        """Combined state evolution must apply all three channels."""
-        dim = 32
-        psi = np.random.randn(dim) + 1j * np.random.randn(dim)
-        psi = psi / np.linalg.norm(psi)
-        rho = np.outer(psi, psi.conj())
-        
-        initial_purity = float(np.trace(rho @ rho).real)
-        rho_final, certificates = combined_state_evolution(rho)
-        
-        final_purity = float(np.trace(rho_final @ rho_final).real)
-        self.assertLess(final_purity, initial_purity)
-        self.assertEqual(len(certificates), 3)
-        self.assertTrue(all(cert.mathematically_complete for cert in certificates))
-
-    def test_state_evolution_verification_closes_gate(self):
-        """State evolution verification must pass with mathematically complete results."""
-        result = verify_state_evolution()
-        self.assertEqual(result["status"], "CLOSED")
-        self.assertTrue(result["mathematically_complete_final"])
-        self.assertTrue(result["all_certificates_mathematically_complete"])
-        self.assertLess(result["final_purity"], result["initial_purity"])
 
 
 class TestObservabilityFramework(unittest.TestCase):

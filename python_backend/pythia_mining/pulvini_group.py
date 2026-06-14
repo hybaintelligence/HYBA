@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass
 from typing import Dict, List, Optional, Sequence, Set, Tuple
 
-NONCE_SPACE = 2 ** 32
+NONCE_SPACE = 2**32
 
 
 @dataclass(frozen=True)
@@ -26,7 +26,9 @@ class TensorCoordinate:
         return payload
 
 
-def adjacency_sets(adjacency_map: Dict[int, Dict[str, List[int]]]) -> Dict[int, Set[int]]:
+def adjacency_sets(
+    adjacency_map: Dict[int, Dict[str, List[int]]],
+) -> Dict[int, Set[int]]:
     return {
         node_id: set(payload.get("d", []) + payload.get("i", []))
         for node_id, payload in adjacency_map.items()
@@ -40,12 +42,30 @@ def assert_symmetric_graph(neighbors: Dict[int, Set[int]]) -> None:
                 raise ValueError(f"asymmetric graph edge: {node_id}->{neighbor}")
 
 
+class AutomophismBudgetExceeded(RuntimeError):
+    """Raised when backtracking exceeds the configured node-visit budget.
+
+    This bound prevents unbounded recursion on adversarial or irregular
+    ADJACENCY_MAP inputs while still completing on the nominal 32-node
+    icosahedral topology (which terminates well within the default budget).
+    """
+
+
 def compute_graph_automorphisms(
     adjacency_map: Dict[int, Dict[str, List[int]]],
     *,
     max_count: Optional[int] = None,
+    node_budget: Optional[int] = None,
 ) -> List[Tuple[int, ...]]:
-    """Enumerate graph automorphisms exactly with degree-preserving backtracking."""
+    """Enumerate graph automorphisms exactly with degree-preserving backtracking.
+
+    ``node_budget`` caps the total number of backtracking node-visits so that
+    irregular or adversarial ADJACENCY_MAP inputs (e.g. complete graphs or
+    high-symmetry random graphs) terminate in bounded time.  The nominal
+    32-node icosahedral topology completes well within the default budget of
+    500_000 visits.  Pass ``node_budget=None`` to disable the cap (not
+    recommended for untrusted inputs).
+    """
     neighbors = adjacency_sets(adjacency_map)
     assert_symmetric_graph(neighbors)
     nodes = list(range(len(adjacency_map)))
@@ -57,6 +77,7 @@ def compute_graph_automorphisms(
     mapping: Dict[int, int] = {}
     used: Set[int] = set()
     automorphisms: List[Tuple[int, ...]] = []
+    _budget: List[int] = [int(node_budget) if node_budget is not None else 500_000]
 
     def feasible_targets(source: int) -> List[int]:
         result = []
@@ -65,7 +86,9 @@ def compute_graph_automorphisms(
                 continue
             ok = True
             for mapped_source, mapped_target in mapping.items():
-                if (mapped_source in neighbors[source]) != (mapped_target in neighbors[target]):
+                if (mapped_source in neighbors[source]) != (
+                    mapped_target in neighbors[target]
+                ):
                     ok = False
                     break
             if ok:
@@ -87,6 +110,12 @@ def compute_graph_automorphisms(
         return best_source, best_targets
 
     def backtrack() -> None:
+        _budget[0] -= 1
+        if _budget[0] < 0:
+            raise AutomophismBudgetExceeded(
+                f"automorphism backtracking exceeded node budget; "
+                f"graph may be irregular or adversarial (nodes={len(nodes)})"
+            )
         if max_count is not None and len(automorphisms) >= max_count:
             return
         if len(mapping) == len(nodes):
@@ -108,7 +137,9 @@ def compute_graph_automorphisms(
     return automorphisms
 
 
-def compute_node_orbits(num_nodes: int, automorphisms: Sequence[Tuple[int, ...]]) -> List[List[int]]:
+def compute_node_orbits(
+    num_nodes: int, automorphisms: Sequence[Tuple[int, ...]]
+) -> List[List[int]]:
     unseen = set(range(num_nodes))
     orbits: List[List[int]] = []
     while unseen:
@@ -119,7 +150,9 @@ def compute_node_orbits(num_nodes: int, automorphisms: Sequence[Tuple[int, ...]]
     return orbits
 
 
-def apply_automorphism_to_nonce(nonce: int, automorphism: Sequence[int], num_nodes: int = 32) -> int:
+def apply_automorphism_to_nonce(
+    nonce: int, automorphism: Sequence[int], num_nodes: int = 32
+) -> int:
     """Action on Z_2^32 represented as sigma(q*N+r)=q*N+sigma(r)."""
     nonce = int(nonce) % NONCE_SPACE
     residue = nonce % num_nodes
@@ -127,8 +160,15 @@ def apply_automorphism_to_nonce(nonce: int, automorphism: Sequence[int], num_nod
     return (quotient * num_nodes + int(automorphism[residue])) % NONCE_SPACE
 
 
-def nonce_orbit(nonce: int, automorphisms: Sequence[Tuple[int, ...]], num_nodes: int = 32) -> List[int]:
-    return sorted({apply_automorphism_to_nonce(nonce, sigma, num_nodes) for sigma in automorphisms})
+def nonce_orbit(
+    nonce: int, automorphisms: Sequence[Tuple[int, ...]], num_nodes: int = 32
+) -> List[int]:
+    return sorted(
+        {
+            apply_automorphism_to_nonce(nonce, sigma, num_nodes)
+            for sigma in automorphisms
+        }
+    )
 
 
 def tensor_coordinate_for_node(
@@ -159,7 +199,6 @@ def tensor_coordinate_for_node(
         amplitude=float(amplitude),
         phase=float(phase),
     )
-
 
 
 @dataclass(frozen=True)
@@ -225,12 +264,8 @@ def coxeter_group_certificate() -> CoxeterGroupCertificate:
     This certifies the reflection group structure underlying the dodecahedral
     symmetry without claiming search advantage.
     """
-    coxeter_matrix = [
-        [1, 5, 3],
-        [5, 1, 3],
-        [3, 3, 1]
-    ]
-    
+    coxeter_matrix = [[1, 5, 3], [5, 1, 3], [3, 3, 1]]
+
     return CoxeterGroupCertificate(
         coxeter_group="H3 icosahedral Coxeter group",
         coxeter_diagram="o-5-o-3-o",
@@ -250,7 +285,9 @@ def coxeter_group_certificate() -> CoxeterGroupCertificate:
     )
 
 
-def a5_representation_certificate(*, full_automorphism_order: int = 120) -> A5RepresentationCertificate:
+def a5_representation_certificate(
+    *, full_automorphism_order: int = 120
+) -> A5RepresentationCertificate:
     """Return the A5 character-table certificate used by PULVINI audits.
 
     This is a representation-theory certificate, not an optimizer.  It records
@@ -281,16 +318,19 @@ def a5_representation_certificate(*, full_automorphism_order: int = 120) -> A5Re
     orthogonal = True
     for i, (_, _, chi_i) in enumerate(rows):
         for j, (_, _, chi_j) in enumerate(rows):
-            inner = sum(size * a * b for size, a, b in zip(class_sizes, chi_i, chi_j)) / order
+            inner = (
+                sum(size * a * b for size, a, b in zip(class_sizes, chi_i, chi_j))
+                / order
+            )
             expected = 1.0 if i == j else 0.0
             if abs(inner - expected) > 1e-9:
                 orthogonal = False
     dims = [dim for _, dim, _ in rows]
     max_dim = max(dims)
     permutation_dim = 20
-    
+
     coxeter_cert = coxeter_group_certificate()
-    
+
     return A5RepresentationCertificate(
         group="A5 rotational icosahedral group",
         rotational_group_order=order,
@@ -298,7 +338,11 @@ def a5_representation_certificate(*, full_automorphism_order: int = 120) -> A5Re
         conjugacy_classes=classes,
         irreducible_dimensions=dims,
         character_table=[
-            {"irrep": name, "dimension": dim, "characters": dict(zip([c["name"] for c in classes], chars))}
+            {
+                "irrep": name,
+                "dimension": dim,
+                "characters": dict(zip([c["name"] for c in classes], chars)),
+            }
             for name, dim, chars in rows
         ],
         regular_representation_dimension_sum=sum(dim * dim for dim in dims),
@@ -317,9 +361,11 @@ def a5_representation_certificate(*, full_automorphism_order: int = 120) -> A5Re
         ),
     )
 
+
 __all__ = [
     "NONCE_SPACE",
     "A5RepresentationCertificate",
+    "AutomophismBudgetExceeded",
     "CoxeterGroupCertificate",
     "TensorCoordinate",
     "a5_representation_certificate",

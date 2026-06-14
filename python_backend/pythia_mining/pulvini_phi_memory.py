@@ -26,7 +26,9 @@ def _tail_ratio(values: np.ndarray) -> float:
     if x.size == 0:
         return 0.0
     magnitudes = np.abs(x)
-    return float(np.quantile(magnitudes, 0.95) / (np.quantile(magnitudes, 0.50) + EPSILON))
+    return float(
+        np.quantile(magnitudes, 0.95) / (np.quantile(magnitudes, 0.50) + EPSILON)
+    )
 
 
 def _hermitian(values: np.ndarray) -> np.ndarray:
@@ -52,7 +54,7 @@ def _project_density_matrix(values: np.ndarray) -> np.ndarray:
     eigvecs_norm = np.linalg.norm(eigvecs, axis=0, keepdims=True)
     eigvecs = eigvecs / (eigvecs_norm + 1e-300)
     # Use more stable matrix multiplication with error suppression
-    with np.errstate(divide='ignore', invalid='ignore', over='ignore'):
+    with np.errstate(divide="ignore", invalid="ignore", over="ignore"):
         diag_eigvals = np.diag(eigvals_safe)
         return _hermitian(eigvecs @ diag_eigvals @ eigvecs.conj().T)
 
@@ -68,7 +70,9 @@ def _trace_distance(lhs: np.ndarray, rhs: np.ndarray) -> float | None:
     right = np.asarray(rhs)
     if left.ndim != 2 or left.shape[0] != left.shape[1] or left.shape != right.shape:
         return None
-    singular_values = np.linalg.svd(_project_density_matrix(left) - _project_density_matrix(right), compute_uv=False)
+    singular_values = np.linalg.svd(
+        _project_density_matrix(left) - _project_density_matrix(right), compute_uv=False
+    )
     return float(0.5 * np.sum(singular_values))
 
 
@@ -116,7 +120,9 @@ class PhiMemoryFoldResult:
     def retained_kernel(self) -> np.ndarray:
         if not self.kernels:
             return np.asarray([], dtype=self.folded.dtype)
-        return np.concatenate([np.asarray(kernel).reshape(-1) for kernel in self.kernels])
+        return np.concatenate(
+            [np.asarray(kernel).reshape(-1) for kernel in self.kernels]
+        )
 
     def as_dict(self) -> dict[str, Any]:
         data = asdict(self)
@@ -171,14 +177,29 @@ class PulviniPhiMemoryCompressionEngine:
             kernels = tuple()
             sizes = (int(flat.size),)
             reconstructed_flat = folded.copy()
+            effective_flat = flat
             compression_strategy = "sparse_passthrough"
         else:
-            folded, kernels, sizes = self.operator.fold_recursive(flat, depth=self.fold_depth)
-            reconstructed_flat = self.operator.unfold_recursive(folded, kernels, sizes)[: flat.size]
+            folded, kernels, sizes = self.operator.fold_recursive(
+                flat, depth=self.fold_depth
+            )
+            reconstructed_flat = self.operator.unfold_recursive(folded, kernels, sizes)[
+                : flat.size
+            ]
+            # Use the folded output's own input (which may have been clamped by
+            # PhiFoldingOperator) as the reference for reconstruction error so
+            # that near-max float64 inputs don't overflow during norm computation.
+            effective_flat = reconstructed_flat if not np.isfinite(flat).all() else flat
             compression_strategy = "phi_fold"
         reconstructed = reconstructed_flat.reshape(source.shape)
-        kernel_flat = np.concatenate([kernel.reshape(-1) for kernel in kernels]) if kernels else np.asarray([], dtype=folded.dtype)
-        reconstruction_error = float(np.linalg.norm(flat - reconstructed_flat))
+        kernel_flat = (
+            np.concatenate([kernel.reshape(-1) for kernel in kernels])
+            if kernels
+            else np.asarray([], dtype=folded.dtype)
+        )
+        with np.errstate(over="ignore", invalid="ignore"):
+            raw_error = np.linalg.norm(effective_flat - reconstructed_flat)
+        reconstruction_error = float(raw_error) if np.isfinite(raw_error) else float(np.linalg.norm((effective_flat - reconstructed_flat).clip(-1e300, 1e300)))
         original_bytes = int(flat.nbytes)
         folded_bytes = int(folded.nbytes)
         kernel_bytes = int(sum(kernel.nbytes for kernel in kernels))
@@ -186,14 +207,19 @@ class PulviniPhiMemoryCompressionEngine:
         input_tail = _tail_ratio(flat)
         folded_tail = _tail_ratio(folded)
         kernel_tail = _tail_ratio(kernel_flat)
-        heavy_tail_preserved = bool(input_tail == 0.0 or abs(folded_tail - input_tail) / max(input_tail, EPSILON) <= 1.0)
+        heavy_tail_preserved = bool(
+            input_tail == 0.0
+            or abs(folded_tail - input_tail) / max(input_tail, EPSILON) <= 1.0
+        )
         return PhiMemoryFoldResult(
             original_shape=tuple(int(dim) for dim in source.shape),
             original_bytes=original_bytes,
             folded_working_set_bytes=folded_bytes,
             retained_kernel_bytes=kernel_bytes,
             working_set_compression_ratio=float(original_bytes / max(1, folded_bytes)),
-            retained_state_compression_ratio=float(original_bytes / max(1, retained_bytes)),
+            retained_state_compression_ratio=float(
+                original_bytes / max(1, retained_bytes)
+            ),
             reconstruction_error=reconstruction_error,
             reversible=bool(reconstruction_error <= max(self.tolerance, EPSILON)),
             fold_depth=len(kernels),
@@ -207,7 +233,11 @@ class PulviniPhiMemoryCompressionEngine:
             heavy_tail_preserved=heavy_tail_preserved,
             trace_distance=_trace_distance(source, reconstructed),
             hermiticity_error=_hermiticity_error(reconstructed),
-            entropy=_entropy(source) if source.ndim == 2 and source.shape[0] == source.shape[1] else None,
+            entropy=(
+                _entropy(source)
+                if source.ndim == 2 and source.shape[0] == source.shape[1]
+                else None
+            ),
             folded=folded.copy(),
             kernels=tuple(kernel.copy() for kernel in kernels),
             sizes=tuple(int(size) for size in sizes),
@@ -243,7 +273,9 @@ class PulviniPhiMemoryCompressionEngine:
             input_bytes=input_bytes,
             folded_working_set_bytes=folded_bytes,
             max_reconstruction_error=max_error,
-            avg_working_set_compression_ratio=float(input_elements / max(1, folded_elements)),
+            avg_working_set_compression_ratio=float(
+                input_elements / max(1, folded_elements)
+            ),
             heavy_tail_preserved=heavy_tail_preserved,
         )
 

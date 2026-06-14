@@ -4,13 +4,14 @@ Pool credentials may be injected through environment variables or configured at
 runtime through the HYBA mining API. Secrets are persisted only in a local
 0600 JSON file intended to be backed by a deployment secret volume.
 """
+
 from __future__ import annotations
 
 import json
 import os
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Any, Dict, Iterable, Optional
+from typing import Any, Dict, Iterable
 from urllib.parse import urlparse
 
 
@@ -98,8 +99,14 @@ class PoolCredentialConfig:
 
     def to_dict(self, include_secret_fields: bool = False) -> Dict[str, Any]:
         payload = asdict(self)
-        payload["configured"] = bool(self.resolved_username() and self.resolved_password())
-        payload["resolved_username"] = self.resolved_username() if include_secret_fields else ("<configured>" if self.resolved_username() else "")
+        payload["configured"] = bool(
+            self.resolved_username() and self.resolved_password()
+        )
+        payload["resolved_username"] = (
+            self.resolved_username()
+            if include_secret_fields
+            else ("<configured>" if self.resolved_username() else "")
+        )
         if not include_secret_fields:
             if payload.get("username"):
                 payload["username"] = "<configured>"
@@ -114,7 +121,14 @@ class PoolCredentialConfig:
         return payload
 
 
-SUPPORTED_SCHEMES = {"stratum+tcp", "stratum+ssl", "stratum+tls", "stratum2+tcp", "stratum2+ssl", "stratum2+tls"}
+SUPPORTED_SCHEMES = {
+    "stratum+tcp",
+    "stratum+ssl",
+    "stratum+tls",
+    "stratum2+tcp",
+    "stratum2+ssl",
+    "stratum2+tls",
+}
 SUPPORTED_VERSIONS = {1, 2}
 DEFAULT_POOL_SPECS: dict[str, dict[str, Any]] = {
     "viabtc": {
@@ -170,7 +184,11 @@ def _backend_root() -> Path:
 
 
 def runtime_pool_config_path() -> Path:
-    return Path(os.getenv("HYBA_POOL_CONFIG_PATH", str(_backend_root() / "mining_pools_config.json")))
+    return Path(
+        os.getenv(
+            "HYBA_POOL_CONFIG_PATH", str(_backend_root() / "mining_pools_config.json")
+        )
+    )
 
 
 def validate_pool_url(url: str, *, tls_required: bool = False) -> str:
@@ -185,7 +203,12 @@ def validate_pool_url(url: str, *, tls_required: bool = False) -> str:
         raise PoolProfileError("pool URL must include an explicit port")
     if not (1 <= int(parsed.port) <= 65535):
         raise PoolProfileError("pool URL port is out of range")
-    if tls_required and parsed.scheme not in {"stratum+ssl", "stratum+tls", "stratum2+ssl", "stratum2+tls"}:
+    if tls_required and parsed.scheme not in {
+        "stratum+ssl",
+        "stratum+tls",
+        "stratum2+ssl",
+        "stratum2+tls",
+    }:
         raise PoolProfileError("TLS is required for this pool profile")
     return url
 
@@ -224,22 +247,24 @@ def build_profile(
     share_retry_backoff_base: float = 0.5,
     share_retry_backoff_max: float = 5.0,
 ) -> PoolProfile:
-    return validate_profile(PoolProfile(
-        pool_id=pool_id.lower(),
-        name=name,
-        url=url,
-        username=username,
-        password=password,
-        stratum_version=int(stratum_version),
-        priority=int(priority),
-        tls_required=bool(tls_required),
-        max_reconnect_attempts=int(max_reconnect_attempts),
-        max_share_retry_attempts=int(max_share_retry_attempts),
-        reconnect_backoff_base=float(reconnect_backoff_base),
-        reconnect_backoff_max=float(reconnect_backoff_max),
-        share_retry_backoff_base=float(share_retry_backoff_base),
-        share_retry_backoff_max=float(share_retry_backoff_max),
-    ))
+    return validate_profile(
+        PoolProfile(
+            pool_id=pool_id.lower(),
+            name=name,
+            url=url,
+            username=username,
+            password=password,
+            stratum_version=int(stratum_version),
+            priority=int(priority),
+            tls_required=bool(tls_required),
+            max_reconnect_attempts=int(max_reconnect_attempts),
+            max_share_retry_attempts=int(max_share_retry_attempts),
+            reconnect_backoff_base=float(reconnect_backoff_base),
+            reconnect_backoff_max=float(reconnect_backoff_max),
+            share_retry_backoff_base=float(share_retry_backoff_base),
+            share_retry_backoff_max=float(share_retry_backoff_max),
+        )
+    )
 
 
 def order_profiles(profiles: Iterable[PoolProfile]) -> list[PoolProfile]:
@@ -257,10 +282,16 @@ def default_pool_config(pool_id: str) -> PoolCredentialConfig:
         pool_id=pool_id,
         name=spec["name"],
         url=os.getenv(f"HYBA_POOL_{pool_id.upper()}_URL", spec["url"]),
-        stratum_version=int(os.getenv(f"HYBA_POOL_{pool_id.upper()}_STRATUM_VERSION", spec["stratum_version"])),
+        stratum_version=int(
+            os.getenv(
+                f"HYBA_POOL_{pool_id.upper()}_STRATUM_VERSION", spec["stratum_version"]
+            )
+        ),
         tls_required=bool(spec["tls_required"]),
         credential_mode=spec["credential_mode"],
-        priority=int(os.getenv(f"HYBA_POOL_{pool_id.upper()}_PRIORITY", spec["priority"])),
+        priority=int(
+            os.getenv(f"HYBA_POOL_{pool_id.upper()}_PRIORITY", spec["priority"])
+        ),
         source="default",
     )
 
@@ -288,7 +319,9 @@ def validate_pool_config(config: PoolCredentialConfig) -> PoolCredentialConfig:
     return config
 
 
-def load_runtime_pool_configs(include_env: bool = True) -> dict[str, PoolCredentialConfig]:
+def load_runtime_pool_configs(
+    include_env: bool = True,
+) -> dict[str, PoolCredentialConfig]:
     configs = {pool_id: default_pool_config(pool_id) for pool_id in DEFAULT_POOL_SPECS}
     if include_env:
         for pool_id in DEFAULT_POOL_SPECS:
@@ -297,7 +330,9 @@ def load_runtime_pool_configs(include_env: bool = True) -> dict[str, PoolCredent
             password = _env_value(pool_id, "PASSWORD")
             btc_address = _env_value(pool_id, "BTC_ADDRESS")
             worker = _env_value(pool_id, "WORKER")
-            nicehash_pool_id = _env_value(pool_id, "NH_POOL_ID") or _env_value(pool_id, "NICEHASH_POOL_ID")
+            nicehash_pool_id = _env_value(pool_id, "NH_POOL_ID") or _env_value(
+                pool_id, "NICEHASH_POOL_ID"
+            )
             if any([username, password, btc_address, worker, nicehash_pool_id]):
                 configs[pool_id] = PoolCredentialConfig(
                     pool_id=pool_id,
@@ -320,7 +355,9 @@ def load_runtime_pool_configs(include_env: bool = True) -> dict[str, PoolCredent
         try:
             raw = json.loads(path.read_text(encoding="utf-8"))
         except (OSError, json.JSONDecodeError) as exc:
-            raise PoolProfileError(f"failed to read runtime pool config: {exc}") from exc
+            raise PoolProfileError(
+                f"failed to read runtime pool config: {exc}"
+            ) from exc
         for pool_id, payload in raw.get("pools", {}).items():
             if pool_id not in DEFAULT_POOL_SPECS:
                 continue
@@ -329,7 +366,9 @@ def load_runtime_pool_configs(include_env: bool = True) -> dict[str, PoolCredent
                 pool_id=pool_id,
                 name=base.name,
                 url=str(payload.get("url") or base.url),
-                stratum_version=int(payload.get("stratum_version") or base.stratum_version),
+                stratum_version=int(
+                    payload.get("stratum_version") or base.stratum_version
+                ),
                 tls_required=base.tls_required,
                 credential_mode=base.credential_mode,
                 username=str(payload.get("username") or ""),

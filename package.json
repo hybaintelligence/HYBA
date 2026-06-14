@@ -16,7 +16,7 @@
     "test:property:backend": "cross-env PYTHONPATH=python_backend python -m pytest tests/test_property_based_backend.py -v -x --tb=short",
     "test:property:frontend": "npx vitest run tests/test_property_frontend.test.ts",
     "test:property": "npm run test:property:backend && npm run test:property:frontend",
-    "test:bridge": "npx vitest run tests/test_bridge_server.ts",
+    "test:bridge": "npx vitest run tests/test_bridge_server.test.ts",
     "test:mining:innovation": "cross-env PYTHONPATH=python_backend python -m pytest tests/test_mining_innovation_properties.py -q",
     "test:mining:benefit": "cross-env PYTHONPATH=python_backend python -m pytest tests/test_mining_benefit_assessment.py -q",
     "test:funding:gate": "cross-env PYTHONPATH=python_backend python -m pytest tests/test_funding_engine_deployment_gate.py tests/test_mining_innovation_properties.py tests/test_mining_benefit_assessment.py -q",

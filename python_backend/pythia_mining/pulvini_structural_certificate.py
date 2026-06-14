@@ -132,12 +132,14 @@ def structural_certificate(
     #   (3 D-neighbors + 3 I-neighbors)
     # I-nodes (20-31) have degree 10 in the combined D+I adjacency
     #   (5 D-neighbors + 5 I-neighbors)
-    d_nodes_count = 20   # nodes 0-19
-    i_nodes_count = 12   # nodes 20-31
+    d_nodes_count = 20  # nodes 0-19
+    i_nodes_count = 12  # nodes 20-31
     d_degree = 6  # Combined: 3 D + 3 I
     i_degree = 10  # Combined: 5 D + 5 I
 
-    representation = a5_representation_certificate(full_automorphism_order=len(automorphisms)).to_dict()
+    representation = a5_representation_certificate(
+        full_automorphism_order=len(automorphisms)
+    ).to_dict()
 
     structural_statement = (
         f"PULVINI graph has {NUM_NODES} nodes: "
@@ -202,12 +204,18 @@ def d_i_analysis() -> Dict[str, Any]:
         "d_i_edges": d_i_edges,
         "d_d_edges": d_d_edges,
         "i_i_edges": i_i_edges,
-        "d_adjacent_to_i_per_node": {n: len([v for v in neighbors[n] if v in i_nodes]) for n in d_nodes},
-        "i_adjacent_to_d_per_node": {n: len([v for v in neighbors[n] if v in d_nodes]) for n in i_nodes},
+        "d_adjacent_to_i_per_node": {
+            n: len([v for v in neighbors[n] if v in i_nodes]) for n in d_nodes
+        },
+        "i_adjacent_to_d_per_node": {
+            n: len([v for v in neighbors[n] if v in d_nodes]) for n in i_nodes
+        },
         "automorphism_group_order": len(automorphisms),
         "node_orbits": [list(orbit) for orbit in node_orbits],
         "orbit_sizes": [len(orbit) for orbit in node_orbits],
-        "representation_theory": a5_representation_certificate(full_automorphism_order=len(automorphisms)).to_dict(),
+        "representation_theory": a5_representation_certificate(
+            full_automorphism_order=len(automorphisms)
+        ).to_dict(),
         "degree_histogram": {
             deg: sum(1 for n in range(32) if len(neighbors[n]) == deg)
             for deg in set(len(neighbors[n]) for n in range(32))
