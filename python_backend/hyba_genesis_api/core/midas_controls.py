@@ -13,7 +13,7 @@ import json
 import time
 import uuid
 from dataclasses import asdict, dataclass, field
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from enum import Enum
 from threading import RLock
 from typing import Any, Optional
@@ -66,10 +66,10 @@ class StateMachineConfig:
 class MIDASStateMachine:
     """Strict production state machine for mining runtime control."""
 
-    def __init__(self, config: Optional[StateMachineConfig] = None):
+    def __init__(self, config: StateMachineConfig | None = None):
         self.config = config or StateMachineConfig()
         self.current_state = MiningState.IDLE
-        self.previous_state: Optional[MiningState] = None
+        self.previous_state: MiningState | None = None
         self.transition_history: list[StateTransition] = []
         self.state_entry_time = time.monotonic()
         self._lock = RLock()
@@ -82,9 +82,9 @@ class MIDASStateMachine:
         self,
         to_state: MiningState,
         *,
-        request_id: Optional[str] = None,
+        request_id: str | None = None,
         reason: str = "",
-        metadata: Optional[dict[str, Any]] = None,
+        metadata: dict[str, Any] | None = None,
     ) -> StateTransition:
         metadata = dict(metadata or {})
         request_id = request_id or metadata.get("request_id")
@@ -115,7 +115,7 @@ class MIDASStateMachine:
                 transition_id=str(uuid.uuid4()),
                 from_state=self.current_state,
                 to_state=to_state,
-                timestamp=datetime.now(timezone.utc),
+                timestamp=datetime.now(UTC),
                 reason=reason,
                 request_id=str(request_id),
                 duration_in_previous_state_ms=(now - self.state_entry_time) * 1000,
@@ -134,7 +134,7 @@ class MIDASStateMachine:
         self,
         to_state: MiningState,
         *,
-        request_id: Optional[str] = None,
+        request_id: str | None = None,
         reason: str = "forced",
     ) -> StateTransition:
         with self._lock:
@@ -188,7 +188,7 @@ class MIDASStateMachine:
 
 
 class RateLimitExceededError(Exception):
-    def __init__(self, retry_after_seconds: float, request_id: Optional[str] = None):
+    def __init__(self, retry_after_seconds: float, request_id: str | None = None):
         self.retry_after_seconds = max(retry_after_seconds, 0.0)
         self.request_id = request_id
         super().__init__(
@@ -205,7 +205,7 @@ class RateLimitExceededError(Exception):
 
 
 class BackpressureError(Exception):
-    def __init__(self, message: str, request_id: Optional[str] = None):
+    def __init__(self, message: str, request_id: str | None = None):
         self.request_id = request_id
         super().__init__(message)
 
@@ -236,7 +236,7 @@ class TokenBucketRateLimiter:
         self.tokens = float(self.burst_capacity)
         object.__setattr__(self, "_lock", RLock())
 
-    def allow(self, request_id: Optional[str] = None) -> bool:
+    def allow(self, request_id: str | None = None) -> bool:
         with self._lock:
             now = time.monotonic()
             elapsed = max(now - self.updated_at, 0.0)
@@ -379,7 +379,7 @@ class MiningRequestTracker:
                 existing = self.requests.get(existing_id)
                 if existing and existing.status != RequestStatus.FAILED:
                     return existing
-            now = datetime.now(timezone.utc)
+            now = datetime.now(UTC)
             request = MiningRequest(
                 request_id=self.generate_request_id(),
                 operation_type=operation_type,
@@ -406,7 +406,7 @@ class MiningRequestTracker:
             if request is None:
                 return False
             request.status = status
-            request.updated_at = datetime.now(timezone.utc)
+            request.updated_at = datetime.now(UTC)
             if result is not None:
                 request.result = result
             if error is not None:
@@ -415,7 +415,7 @@ class MiningRequestTracker:
 
     def cleanup_expired_requests(self) -> int:
         with self._lock:
-            cutoff = datetime.now(timezone.utc) - timedelta(
+            cutoff = datetime.now(UTC) - timedelta(
                 seconds=self.request_ttl_seconds
             )
             expired_ids = [
@@ -444,7 +444,7 @@ class MiningRequestTracker:
                 "idempotency_keys_tracked": len(self.idempotency_keys),
                 "request_ttl_seconds": self.request_ttl_seconds,
                 "last_cleanup": datetime.fromtimestamp(
-                    self.last_cleanup, tz=timezone.utc
+                    self.last_cleanup, tz=UTC
                 ).isoformat(),
             }
 

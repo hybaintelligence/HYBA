@@ -133,6 +133,10 @@ npm run docker:build
 docker compose -f docker-compose.production.yml up
 ```
 
+For the fastest local production-mode bring-up, see `docs/LIVE_LOCAL_DOCKER_RUNBOOK.md` and `.env.mining.local.example`.
+
+For a staged local-to-cloud rollout plan, see `docs/LOCAL_TO_MULTICLOUD_DEPLOYMENT_PLAN.md`.
+
 **Live Hashing Transition Protocol:**
 1. Configure real Stratum v1 or v2 pool profile
 2. Disable development fixtures (`HYBA_ALLOW_DEV_FIXTURES=false`)
