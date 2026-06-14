@@ -42,6 +42,7 @@ import rateLimit from "express-rate-limit";
 import { createServer as createViteServer, type InlineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
+import { validateProductionJwtSecret } from "./bridge_security";
 
 let _backendUrl: URL | null = null;
 
@@ -420,9 +421,12 @@ const metrics = {
 };
 
 async function startServer(): Promise<void> {
-  if (CONFIG.isProduction && !CONFIG.jwtSecret) {
-    logger.fatal("JWT_SECRET is required in production");
-    process.exit(1);
+  if (CONFIG.isProduction) {
+    const jwtValidation = validateProductionJwtSecret(CONFIG.jwtSecret);
+    if (!jwtValidation.ok) {
+      logger.fatal({ reason: jwtValidation.reason }, "Invalid production JWT_SECRET");
+      process.exit(1);
+    }
   }
 
   const backendReachable = await isBackendReachable();
