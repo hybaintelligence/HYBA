@@ -6,17 +6,22 @@ instrument can detect a controlled feedback/update pattern and that the science
 programme preserves the proof ladder before claims advance.
 """
 
+import importlib.util
 import json
 from pathlib import Path
 
-from tests.test_adaptive_behavior_deep_analysis import (
-    FeedbackLoopDetector,
-    MemoryAccumulationDetector,
-    ParameterOptimizationDetector,
-)
-
 
 ROOT = Path(__file__).parent.parent
+ADAPTIVE_TEST_FILE = ROOT / "tests" / "test_adaptive_behavior_deep_analysis.py"
+
+spec = importlib.util.spec_from_file_location("adaptive_behavior_deep_analysis", ADAPTIVE_TEST_FILE)
+adaptive_module = importlib.util.module_from_spec(spec)
+assert spec and spec.loader
+spec.loader.exec_module(adaptive_module)
+
+FeedbackLoopDetector = adaptive_module.FeedbackLoopDetector
+MemoryAccumulationDetector = adaptive_module.MemoryAccumulationDetector
+ParameterOptimizationDetector = adaptive_module.ParameterOptimizationDetector
 
 
 def test_feedback_detector_catches_controlled_state_update(tmp_path):
