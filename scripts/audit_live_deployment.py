@@ -57,6 +57,7 @@ EXCLUDED_PARTS = {
     "node_modules",
     "venv",
     "dist",
+    "coverage",
     "__pycache__",
     ".pytest_cache",
 }
@@ -89,6 +90,11 @@ def main() -> int:
             violations.append(f"{rel}: {reason}")
 
     for rel, path in iter_text_files(tracked):
+        if not path.exists():
+            violations.append(
+                f"{rel}: tracked text file missing from working tree (run gate from a clean checkout)"
+            )
+            continue
         text = path.read_text(encoding="utf-8", errors="ignore")
         for pattern, reason in SECRET_PATTERNS:
             for match in pattern.finditer(text):

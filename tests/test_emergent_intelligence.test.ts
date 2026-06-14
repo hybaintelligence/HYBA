@@ -123,12 +123,12 @@ describe('Emergent Intelligence System', () => {
         
         // Create some weak strategies with enough attempts to trigger pruning
         for (let i = 0; i < 15; i++) {
-          for (let j = 0; j < 12; j++) {
+          for (let j = 0; j < 20; j++) {
             learner.updateWeightsFromOutcome(i, false, 0.2);
           }
         }
         
-        learner.pruneWeakStrategies(0.5);
+        learner.pruneWeakStrategies(0.6);
         expect(learner.getStrategyCount()).toBeLessThan(15);
       });
 

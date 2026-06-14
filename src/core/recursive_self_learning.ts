@@ -125,7 +125,7 @@ export class RecursiveSelfLearningSubstrate extends MetacognitiveIntelligence {
     // Initialize mining weights (mathematical genes)
     this.miningWeights = new Float32Array(256);
     for (let i = 0; i < this.miningWeights.length; i++) {
-      this.miningWeights[i] = Math.random();
+      this.miningWeights[i] = this.deterministicUnitValue(i + 1);
     }
     
     logger.info('[RSLS] Recursive Self-Learning Substrate initialized');
@@ -593,10 +593,19 @@ export class RecursiveSelfLearningSubstrate extends MetacognitiveIntelligence {
   }
   
   // Helper methods
+  private deterministicUnitValue(seed: number): number {
+    const raw = Math.sin(seed * 12.9898 + 78.233) * 43758.5453;
+    return raw - Math.floor(raw);
+  }
   
   private getPredictionError(): number {
     if (this.predictionErrorHistory.length === 0) {
-      return Math.random() * 0.5; // Mock initial error
+      const seed =
+        this.recursiveState.recursion_depth +
+        this.shapeTransformations +
+        this.cognitiveLayers.size +
+        1;
+      return 0.1 + this.deterministicUnitValue(seed) * 0.4;
     }
     
     // Get recent average
