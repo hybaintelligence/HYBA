@@ -38,7 +38,9 @@
     "live:audit": "python scripts/audit_live_deployment.py",
     "test:deployment:e2e": "cross-env PYTHONPATH=python_backend python -m unittest tests.test_live_deployment_e2e -v",
     "test:deployment:property": "cross-env PYTHONPATH=python_backend python -m pytest tests/test_live_deployment_properties.py -v -x --tb=short",
-    "test:deployment": "npm run test:deployment:e2e && npm run test:deployment:property"
+    "test:deployment": "npm run test:deployment:e2e && npm run test:deployment:property",
+    "test:go-live": "PYTHONPATH=python_backend python -m pytest tests/test_go_live_final_coverage.py -q",
+    "test:final": "npm run test:go-live && npm run test:all && npm run test:e2e:backend && npm run test:deployment"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
