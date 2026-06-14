@@ -1,0 +1,780 @@
+Unable to find image 'node:22.15.0-bookworm-slim' locally
+22.15.0-bookworm-slim: Pulling from library/node
+Digest: sha256:557e52a0fcb928ee113df7e1fb5d4f60c1341dbda53f55e3d815ca10807efdce
+Status: Downloaded newer image for node:22.15.0-bookworm-slim
+v22.15.0
+10.9.2
+npm verbose cli /usr/local/bin/node /usr/local/bin/npm
+npm info using npm@10.9.2
+npm info using node@v22.15.0
+npm verbose title npm ci
+npm verbose argv "ci" "--omit" "dev" "--loglevel" "verbose"
+npm verbose logfile logs-max:10 dir:/root/.npm/_logs/2026-06-14T17_48_21_153Z-
+npm verbose logfile /root/.npm/_logs/2026-06-14T17_48_21_153Z-debug-0.log
+npm http fetch GET 200 https://registry.npmjs.org/npm 1679ms
+npm http fetch GET 200 https://registry.npmjs.org/@types%2fd3 858ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@types%2fexpress 75ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@types%2fjsonwebtoken 112ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@types%2fswagger-ui-express 229ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@typescript-eslint%2feslint-plugin 6628ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@typescript-eslint%2fparser 3484ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/eslint 168ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/jiti 173ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/typescript 2120ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@vitest%2fcoverage-v8 134ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@vitest%2fbrowser 229ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/vitest 383ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@edge-runtime%2fvm 155ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@opentelemetry%2fapi 143ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@types%2fnode 2079ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@vitest%2fbrowser-playwright 197ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/playwright 2458ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@vitest%2fbrowser-preview 151ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@vitest%2fbrowser-webdriverio 205ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/webdriverio 802ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/puppeteer-core 370ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@vitest%2fcoverage-istanbul 186ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@vitest%2fui 269ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/happy-dom 300ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/jsdom 324ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/canvas 154ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/autoprefixer 208ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/postcss 194ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/cross-env 329ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/esbuild 410ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/eslint-config-prettier 376ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/eslint-plugin-prettier 614ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@types%2feslint 171ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/prettier 203ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/fast-check 375ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/vite 6518ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@vitejs%2fdevtools 739ms (cache miss)
+npm http cache https://registry.npmjs.org/jiti 740ms (cache hit)
+npm http fetch GET 200 https://registry.npmjs.org/less 161ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/sass 185ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/sass-embedded 105ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/stylus 244ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/sugarss 98ms (cache miss)
+npm http cache https://registry.npmjs.org/postcss 47ms (cache hit)
+npm http fetch GET 200 https://registry.npmjs.org/terser 187ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/tsx 109ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/yaml 149ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@types%2fd3-geo 1398ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@types%2fd3-dsv 1470ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@types%2fd3-zoom 1571ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@types%2fd3-axis 1604ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@types%2fd3-chord 1621ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@types%2fd3-drag 1650ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@types%2fd3-fetch 296ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@types%2fd3-brush 1721ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@types%2fd3-force 285ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@types%2fd3-random 262ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@types%2fd3-polygon 228ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@types%2fd3-contour 275ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@types%2fd3-quadtree 250ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@types%2fd3-format 445ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@types%2fd3-dispatch 326ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@types%2fd3-delaunay 374ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@types%2fd3-hierarchy 280ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@types%2fd3-selection 293ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@types%2fd3-transition 385ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@types%2fd3-time-format 287ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@types%2fbody-parser 1021ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@types%2fqs 1298ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@types%2fserve-static 1267ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@types%2fserve-static 1144ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@types%2fms 1214ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@types%2fd3-scale-chromatic 1509ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@types%2fexpress-serve-static-core 1610ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/natural-compare 594ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/ignore 1168ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@eslint-community%2fregexpp 1250ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/ts-api-utils 1506ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@typescript-eslint%2ftype-utils 11209ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@typescript-eslint%2futils 12515ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@eslint-community%2feslint-utils 264ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@eslint%2fconfig-array 200ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@typescript-eslint%2fvisitor-keys 12942ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@eslint%2fconfig-helpers 476ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@eslint%2fcore 144ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@typescript-eslint%2fscope-manager 13211ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@humanfs%2fnode 292ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@typescript-eslint%2fvisitor-keys 12748ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@eslint%2fplugin-kit 817ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@humanwhocodes%2fmodule-importer 668ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@humanwhocodes%2fretry 642ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/escape-string-regexp 126ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@typescript-eslint%2ftypes 13913ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/cross-spawn 790ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@typescript-eslint%2fscope-manager 13995ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/eslint-scope 1148ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/esquery 496ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/eslint-visitor-keys 1117ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/espree 705ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/esutils 269ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/ajv 1708ms (cache miss)
+npm http cache https://registry.npmjs.org/ignore 169ms (cache hit)
+npm http fetch GET 200 https://registry.npmjs.org/fast-deep-equal 364ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/find-up 331ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/file-entry-cache 433ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/glob-parent 338ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/imurmurhash 332ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/json-stable-stringify-without-jsonify 283ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/optionator 279ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/obug 241ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/std-env 231ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/tinyrainbow 184ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/minimatch 476ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/magicast 292ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/istanbul-reports 179ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@bcoe%2fv8-coverage 207ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/ast-v8-to-istanbul 252ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@vitest%2futils 429ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/istanbul-lib-report 334ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/pathe 317ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/tinyexec 297ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/istanbul-lib-coverage 403ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/picomatch 340ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/tinybench 331ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/expect-type 333ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@vitest%2fmocker 339ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@vitest%2fspy 480ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/es-module-lexer 287ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@vitest%2fexpect 519ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@vitest%2frunner 361ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/why-is-node-running 193ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@vitest%2fsnapshot 310ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/postcss-value-parser 136ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@epic-web%2finvariant 117ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/fraction.js 187ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@vitest%2fpretty-format 305ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@esbuild%2faix-ppc64 203ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@esbuild%2fandroid-arm 221ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@esbuild%2fandroid-x64 211ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@esbuild%2fandroid-arm64 249ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@esbuild%2ffreebsd-arm64 172ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@esbuild%2fdarwin-x64 233ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@esbuild%2ffreebsd-x64 154ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@esbuild%2fdarwin-arm64 347ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@esbuild%2flinux-arm 187ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@esbuild%2flinux-arm64 198ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@esbuild%2flinux-ia32 231ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@esbuild%2flinux-loong64 246ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@esbuild%2flinux-mips64el 217ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@esbuild%2flinux-ppc64 197ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@typescript-eslint%2ftypescript-estree 6313ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@esbuild%2fopenbsd-arm64 705ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@esbuild%2fnetbsd-arm64 770ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@esbuild%2flinux-s390x 871ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@esbuild%2flinux-x64 827ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@esbuild%2fnetbsd-x64 811ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@esbuild%2flinux-riscv64 1002ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@esbuild%2fopenbsd-x64 436ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@esbuild%2fsunos-x64 410ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@esbuild%2fwin32-arm64 434ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@esbuild%2fopenharmony-arm64 481ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/prettier-linter-helpers 427ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/synckit 423ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@esbuild%2fwin32-ia32 517ms (cache miss)
+npm http cache https://registry.npmjs.org/picomatch 118ms (cache hit)
+npm http fetch GET 200 https://registry.npmjs.org/pure-rand 292ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/fsevents 196ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/rolldown 1225ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@types%2fgeojson 74ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@types%2fgeojson 78ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@types%2frange-parser 122ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@types%2fconnect 172ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@types%2fsend 184ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@types%2fsend 189ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@types%2fhttp-errors 201ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@types%2fmime 63ms (cache miss)
+npm http cache https://registry.npmjs.org/typescript 1578ms (cache hit)
+npm http cache https://registry.npmjs.org/eslint 707ms (cache hit)
+npm http cache https://registry.npmjs.org/@eslint-community%2feslint-utils 36ms (cache hit)
+npm http cache https://registry.npmjs.org/eslint-visitor-keys 40ms (cache hit)
+npm http cache https://registry.npmjs.org/minimatch 129ms (cache hit)
+npm http fetch GET 200 https://registry.npmjs.org/semver 332ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@typescript-eslint%2ftsconfig-utils 486ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@typescript-eslint%2fproject-service 589ms (cache miss)
+npm http cache https://registry.npmjs.org/@typescript-eslint%2ftsconfig-utils 51ms (cache hit)
+npm http fetch GET 200 https://registry.npmjs.org/brace-expansion 365ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/js-tokens 396ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/html-escaper 397ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/make-dir 400ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/estree-walker 450ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/supports-color 454ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/path-key 285ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/shebang-command 289ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/which 295ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/shebang-regex 94ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/isexe 117ms (cache miss)
+npm http cache https://registry.npmjs.org/@humanwhocodes%2fretry 80ms (cache hit)
+npm http cache https://registry.npmjs.org/fast-deep-equal 89ms (cache hit)
+npm http fetch GET 200 https://registry.npmjs.org/@types%2fjson-schema 201ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/levn 205ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/uri-js 258ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@humanfs%2fcore 281ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@humanfs%2ftypes 295ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@eslint%2fobject-schema 317ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/esrecurse 142ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/fast-json-stable-stringify 235ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@types%2fesrecurse 264ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/json-schema-traverse 458ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/estraverse 385ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/estraverse 268ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/acorn-jsx 423ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/acorn 459ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/path-exists 312ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/locate-path 527ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/flat-cache 577ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/deep-is 391ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/prelude-ls 420ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/word-wrap 363ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/type-check 247ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/fast-levenshtein 195ms (cache miss)
+npm http cache https://registry.npmjs.org/type-check 40ms (cache hit)
+npm http fetch GET 200 https://registry.npmjs.org/punycode 74ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/fast-diff 75ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@pkgr%2fcore 109ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/flatted 109ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/keyv 127ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/p-locate 86ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/json-buffer 91ms (cache miss)
+npm http cache https://registry.npmjs.org/semver 25ms (cache hit)
+npm http fetch GET 200 https://registry.npmjs.org/has-flag 128ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/p-limit 107ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/balanced-match 80ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/yocto-queue 108ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@rolldown%2fpluginutils 273ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@oxc-project%2ftypes 335ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@rolldown%2fbinding-android-arm64 369ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@rolldown%2fbinding-freebsd-x64 964ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@rolldown%2fbinding-darwin-x64 1067ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@rolldown%2fbinding-wasm32-wasi 1119ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@rolldown%2fbinding-darwin-arm64 1188ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@rolldown%2fbinding-win32-x64-msvc 908ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@rolldown%2fbinding-linux-x64-gnu 1103ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@rolldown%2fbinding-linux-x64-musl 1120ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@rolldown%2fbinding-linux-s390x-gnu 476ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@rolldown%2fbinding-linux-ppc64-gnu 569ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@rolldown%2fbinding-openharmony-arm64 324ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@rolldown%2fbinding-linux-arm64-gnu 928ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@rolldown%2fbinding-win32-arm64-msvc 596ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@rolldown%2fbinding-linux-arm64-musl 761ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@rolldown%2fbinding-linux-arm-gnueabihf 495ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@napi-rs%2fwasm-runtime 123ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@emnapi%2fcore 144ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@emnapi%2fruntime 152ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@emnapi%2fwasi-threads 146ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@tybys%2fwasm-util 151ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/msw 202ms (cache miss)
+npm http cache https://registry.npmjs.org/typescript 101ms (cache hit)
+npm http cache https://registry.npmjs.org/vite 1859ms (cache hit)
+npm http cache https://registry.npmjs.org/@types%2fnode 901ms (cache hit)
+npm http cache https://registry.npmjs.org/esbuild 120ms (cache hit)
+npm http cache https://registry.npmjs.org/tsx 47ms (cache hit)
+npm http fetch GET 200 https://registry.npmjs.org/siginfo 210ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/stackback 212ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/chai 248ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@types%2fchai 286ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/assertion-error 103ms (cache miss)
+npm http fetch GET 200 https://registry.npmjs.org/@types%2fdeep-eql 112ms (cache miss)
+npm verbose stack Error: 
+npm verbose stack `npm ci` can only install packages when your package.json and package-lock.json or npm-shrinkwrap.json are in sync. Please update your lock file with `npm install` before continuing.
+npm verbose stack
+npm verbose stack Missing: @types/d3@7.4.3 from lock file
+npm verbose stack Missing: @types/express@4.17.25 from lock file
+npm verbose stack Missing: @types/jsonwebtoken@9.0.10 from lock file
+npm verbose stack Missing: @types/swagger-ui-express@4.1.8 from lock file
+npm verbose stack Missing: @typescript-eslint/eslint-plugin@8.61.0 from lock file
+npm verbose stack Missing: eslint@10.5.0 from lock file
+npm verbose stack Missing: typescript@5.8.3 from lock file
+npm verbose stack Missing: @typescript-eslint/parser@8.61.0 from lock file
+npm verbose stack Missing: @vitest/coverage-v8@4.1.8 from lock file
+npm verbose stack Missing: vitest@4.1.8 from lock file
+npm verbose stack Missing: autoprefixer@10.5.0 from lock file
+npm verbose stack Missing: cross-env@10.1.0 from lock file
+npm verbose stack Invalid: lock file's esbuild@0.25.12 does not satisfy esbuild@0.28.1
+npm verbose stack Missing: eslint-config-prettier@10.1.8 from lock file
+npm verbose stack Missing: eslint-plugin-prettier@5.5.6 from lock file
+npm verbose stack Missing: prettier@3.8.4 from lock file
+npm verbose stack Missing: fast-check@4.8.0 from lock file
+npm verbose stack Invalid: lock file's vite@6.4.3 does not satisfy vite@8.0.16
+npm verbose stack Missing: @types/d3-axis@3.0.6 from lock file
+npm verbose stack Missing: @types/d3-brush@3.0.6 from lock file
+npm verbose stack Missing: @types/d3-chord@3.0.6 from lock file
+npm verbose stack Missing: @types/d3-contour@3.0.6 from lock file
+npm verbose stack Missing: @types/d3-delaunay@6.0.4 from lock file
+npm verbose stack Missing: @types/d3-dispatch@3.0.7 from lock file
+npm verbose stack Missing: @types/d3-drag@3.0.7 from lock file
+npm verbose stack Missing: @types/d3-dsv@3.0.7 from lock file
+npm verbose stack Missing: @types/d3-fetch@3.0.7 from lock file
+npm verbose stack Missing: @types/d3-force@3.0.10 from lock file
+npm verbose stack Missing: @types/d3-format@3.0.4 from lock file
+npm verbose stack Missing: @types/d3-geo@3.1.0 from lock file
+npm verbose stack Missing: @types/d3-hierarchy@3.1.7 from lock file
+npm verbose stack Missing: @types/d3-polygon@3.0.2 from lock file
+npm verbose stack Missing: @types/d3-quadtree@3.0.6 from lock file
+npm verbose stack Missing: @types/d3-random@3.0.3 from lock file
+npm verbose stack Missing: @types/d3-scale-chromatic@3.1.0 from lock file
+npm verbose stack Missing: @types/d3-selection@3.0.11 from lock file
+npm verbose stack Missing: @types/d3-time-format@4.0.3 from lock file
+npm verbose stack Missing: @types/d3-transition@3.0.9 from lock file
+npm verbose stack Missing: @types/d3-zoom@3.0.8 from lock file
+npm verbose stack Missing: @types/geojson@7946.0.16 from lock file
+npm verbose stack Missing: @types/body-parser@1.19.6 from lock file
+npm verbose stack Missing: @types/express-serve-static-core@4.19.8 from lock file
+npm verbose stack Missing: @types/qs@6.15.1 from lock file
+npm verbose stack Missing: @types/serve-static@1.15.10 from lock file
+npm verbose stack Missing: @types/connect@3.4.38 from lock file
+npm verbose stack Missing: @types/range-parser@1.2.7 from lock file
+npm verbose stack Missing: @types/send@1.2.1 from lock file
+npm verbose stack Missing: @types/ms@2.1.0 from lock file
+npm verbose stack Missing: @types/http-errors@2.0.5 from lock file
+npm verbose stack Missing: @types/send@0.17.6 from lock file
+npm verbose stack Missing: @eslint-community/regexpp@4.12.2 from lock file
+npm verbose stack Missing: @typescript-eslint/scope-manager@8.61.0 from lock file
+npm verbose stack Missing: @typescript-eslint/type-utils@8.61.0 from lock file
+npm verbose stack Missing: @typescript-eslint/utils@8.61.0 from lock file
+npm verbose stack Missing: @typescript-eslint/visitor-keys@8.61.0 from lock file
+npm verbose stack Missing: ignore@7.0.5 from lock file
+npm verbose stack Missing: natural-compare@1.4.0 from lock file
+npm verbose stack Missing: ts-api-utils@2.5.0 from lock file
+npm verbose stack Missing: @typescript-eslint/types@8.61.0 from lock file
+npm verbose stack Missing: @typescript-eslint/typescript-estree@8.61.0 from lock file
+npm verbose stack Missing: @typescript-eslint/project-service@8.61.0 from lock file
+npm verbose stack Missing: @typescript-eslint/tsconfig-utils@8.61.0 from lock file
+npm verbose stack Missing: minimatch@10.2.5 from lock file
+npm verbose stack Missing: semver@7.8.4 from lock file
+npm verbose stack Missing: @eslint-community/eslint-utils@4.9.1 from lock file
+npm verbose stack Missing: eslint-visitor-keys@3.4.3 from lock file
+npm verbose stack Missing: eslint-visitor-keys@5.0.1 from lock file
+npm verbose stack Missing: @bcoe/v8-coverage@1.0.2 from lock file
+npm verbose stack Missing: @vitest/utils@4.1.8 from lock file
+npm verbose stack Missing: ast-v8-to-istanbul@1.0.4 from lock file
+npm verbose stack Missing: istanbul-lib-coverage@3.2.2 from lock file
+npm verbose stack Missing: istanbul-lib-report@3.0.1 from lock file
+npm verbose stack Missing: istanbul-reports@3.2.0 from lock file
+npm verbose stack Missing: magicast@0.5.3 from lock file
+npm verbose stack Missing: obug@2.1.3 from lock file
+npm verbose stack Missing: std-env@4.1.0 from lock file
+npm verbose stack Missing: tinyrainbow@3.1.0 from lock file
+npm verbose stack Missing: @vitest/pretty-format@4.1.8 from lock file
+npm verbose stack Missing: estree-walker@3.0.3 from lock file
+npm verbose stack Missing: js-tokens@10.0.0 from lock file
+npm verbose stack Missing: fraction.js@5.3.4 from lock file
+npm verbose stack Missing: postcss-value-parser@4.2.0 from lock file
+npm verbose stack Missing: @epic-web/invariant@1.0.0 from lock file
+npm verbose stack Missing: cross-spawn@7.0.6 from lock file
+npm verbose stack Missing: path-key@3.1.1 from lock file
+npm verbose stack Missing: shebang-command@2.0.0 from lock file
+npm verbose stack Missing: which@2.0.2 from lock file
+npm verbose stack Missing: @esbuild/aix-ppc64@0.28.1 from lock file
+npm verbose stack Missing: @esbuild/android-arm@0.28.1 from lock file
+npm verbose stack Missing: @esbuild/android-arm64@0.28.1 from lock file
+npm verbose stack Missing: @esbuild/android-x64@0.28.1 from lock file
+npm verbose stack Missing: @esbuild/darwin-arm64@0.28.1 from lock file
+npm verbose stack Missing: @esbuild/darwin-x64@0.28.1 from lock file
+npm verbose stack Missing: @esbuild/freebsd-arm64@0.28.1 from lock file
+npm verbose stack Missing: @esbuild/freebsd-x64@0.28.1 from lock file
+npm verbose stack Missing: @esbuild/linux-arm@0.28.1 from lock file
+npm verbose stack Missing: @esbuild/linux-arm64@0.28.1 from lock file
+npm verbose stack Missing: @esbuild/linux-ia32@0.28.1 from lock file
+npm verbose stack Missing: @esbuild/linux-loong64@0.28.1 from lock file
+npm verbose stack Missing: @esbuild/linux-mips64el@0.28.1 from lock file
+npm verbose stack Missing: @esbuild/linux-ppc64@0.28.1 from lock file
+npm verbose stack Missing: @esbuild/linux-riscv64@0.28.1 from lock file
+npm verbose stack Missing: @esbuild/linux-s390x@0.28.1 from lock file
+npm verbose stack Missing: @esbuild/linux-x64@0.28.1 from lock file
+npm verbose stack Missing: @esbuild/netbsd-arm64@0.28.1 from lock file
+npm verbose stack Missing: @esbuild/netbsd-x64@0.28.1 from lock file
+npm verbose stack Missing: @esbuild/openbsd-arm64@0.28.1 from lock file
+npm verbose stack Missing: @esbuild/openbsd-x64@0.28.1 from lock file
+npm verbose stack Missing: @esbuild/openharmony-arm64@0.28.1 from lock file
+npm verbose stack Missing: @esbuild/sunos-x64@0.28.1 from lock file
+npm verbose stack Missing: @esbuild/win32-arm64@0.28.1 from lock file
+npm verbose stack Missing: @esbuild/win32-ia32@0.28.1 from lock file
+npm verbose stack Missing: @eslint/config-array@0.23.5 from lock file
+npm verbose stack Missing: @eslint/config-helpers@0.6.0 from lock file
+npm verbose stack Missing: @eslint/core@1.2.1 from lock file
+npm verbose stack Missing: @eslint/plugin-kit@0.7.2 from lock file
+npm verbose stack Missing: @humanfs/node@0.16.8 from lock file
+npm verbose stack Missing: @humanwhocodes/module-importer@1.0.1 from lock file
+npm verbose stack Missing: @humanwhocodes/retry@0.4.3 from lock file
+npm verbose stack Missing: ajv@6.15.0 from lock file
+npm verbose stack Missing: escape-string-regexp@4.0.0 from lock file
+npm verbose stack Missing: eslint-scope@9.1.2 from lock file
+npm verbose stack Missing: eslint-visitor-keys@5.0.1 from lock file
+npm verbose stack Missing: espree@11.2.0 from lock file
+npm verbose stack Missing: esquery@1.7.0 from lock file
+npm verbose stack Missing: esutils@2.0.3 from lock file
+npm verbose stack Missing: fast-deep-equal@3.1.3 from lock file
+npm verbose stack Missing: file-entry-cache@8.0.0 from lock file
+npm verbose stack Missing: find-up@5.0.0 from lock file
+npm verbose stack Missing: glob-parent@6.0.2 from lock file
+npm verbose stack Missing: ignore@5.3.2 from lock file
+npm verbose stack Missing: imurmurhash@0.1.4 from lock file
+npm verbose stack Missing: json-stable-stringify-without-jsonify@1.0.1 from lock file
+npm verbose stack Missing: optionator@0.9.4 from lock file
+npm verbose stack Missing: @eslint/object-schema@3.0.5 from lock file
+npm verbose stack Missing: @types/json-schema@7.0.15 from lock file
+npm verbose stack Missing: levn@0.4.1 from lock file
+npm verbose stack Missing: @humanfs/core@0.19.2 from lock file
+npm verbose stack Missing: @humanfs/types@0.15.0 from lock file
+npm verbose stack Missing: fast-json-stable-stringify@2.1.0 from lock file
+npm verbose stack Missing: json-schema-traverse@0.4.1 from lock file
+npm verbose stack Missing: uri-js@4.4.1 from lock file
+npm verbose stack Missing: prettier-linter-helpers@1.0.1 from lock file
+npm verbose stack Missing: synckit@0.11.13 from lock file
+npm verbose stack Missing: @types/esrecurse@4.3.1 from lock file
+npm verbose stack Missing: esrecurse@4.3.0 from lock file
+npm verbose stack Missing: estraverse@5.3.0 from lock file
+npm verbose stack Missing: acorn@8.17.0 from lock file
+npm verbose stack Missing: acorn-jsx@5.3.2 from lock file
+npm verbose stack Missing: eslint-visitor-keys@5.0.1 from lock file
+npm verbose stack Missing: pure-rand@8.4.0 from lock file
+npm verbose stack Missing: flat-cache@4.0.1 from lock file
+npm verbose stack Missing: locate-path@6.0.0 from lock file
+npm verbose stack Missing: path-exists@4.0.0 from lock file
+npm verbose stack Missing: flatted@3.4.2 from lock file
+npm verbose stack Missing: keyv@4.5.4 from lock file
+npm verbose stack Missing: make-dir@4.0.0 from lock file
+npm verbose stack Missing: supports-color@7.2.0 from lock file
+npm verbose stack Missing: html-escaper@2.0.2 from lock file
+npm verbose stack Missing: json-buffer@3.0.1 from lock file
+npm verbose stack Missing: prelude-ls@1.2.1 from lock file
+npm verbose stack Missing: type-check@0.4.0 from lock file
+npm verbose stack Missing: p-locate@5.0.0 from lock file
+npm verbose stack Missing: semver@7.8.4 from lock file
+npm verbose stack Missing: brace-expansion@5.0.6 from lock file
+npm verbose stack Missing: balanced-match@4.0.4 from lock file
+npm verbose stack Missing: deep-is@0.1.4 from lock file
+npm verbose stack Missing: fast-levenshtein@2.0.6 from lock file
+npm verbose stack Missing: word-wrap@1.2.5 from lock file
+npm verbose stack Missing: p-limit@3.1.0 from lock file
+npm verbose stack Missing: yocto-queue@0.1.0 from lock file
+npm verbose stack Missing: fast-diff@1.3.0 from lock file
+npm verbose stack Missing: shebang-regex@3.0.0 from lock file
+npm verbose stack Missing: has-flag@4.0.0 from lock file
+npm verbose stack Missing: @pkgr/core@0.3.6 from lock file
+npm verbose stack Missing: punycode@2.3.1 from lock file
+npm verbose stack Missing: fsevents@2.3.3 from lock file
+npm verbose stack Missing: rolldown@1.0.3 from lock file
+npm verbose stack Missing: @oxc-project/types@0.133.0 from lock file
+npm verbose stack Missing: @rolldown/binding-android-arm64@1.0.3 from lock file
+npm verbose stack Missing: @rolldown/binding-darwin-arm64@1.0.3 from lock file
+npm verbose stack Missing: @rolldown/binding-darwin-x64@1.0.3 from lock file
+npm verbose stack Missing: @rolldown/binding-freebsd-x64@1.0.3 from lock file
+npm verbose stack Missing: @rolldown/binding-linux-arm-gnueabihf@1.0.3 from lock file
+npm verbose stack Missing: @rolldown/binding-linux-arm64-gnu@1.0.3 from lock file
+npm verbose stack Missing: @rolldown/binding-linux-arm64-musl@1.0.3 from lock file
+npm verbose stack Missing: @rolldown/binding-linux-ppc64-gnu@1.0.3 from lock file
+npm verbose stack Missing: @rolldown/binding-linux-s390x-gnu@1.0.3 from lock file
+npm verbose stack Missing: @rolldown/binding-linux-x64-gnu@1.0.3 from lock file
+npm verbose stack Missing: @rolldown/binding-linux-x64-musl@1.0.3 from lock file
+npm verbose stack Missing: @rolldown/binding-openharmony-arm64@1.0.3 from lock file
+npm verbose stack Missing: @rolldown/binding-wasm32-wasi@1.0.3 from lock file
+npm verbose stack Missing: @rolldown/binding-win32-arm64-msvc@1.0.3 from lock file
+npm verbose stack Missing: @rolldown/binding-win32-x64-msvc@1.0.3 from lock file
+npm verbose stack Missing: @rolldown/pluginutils@1.0.1 from lock file
+npm verbose stack Missing: @emnapi/core@1.10.0 from lock file
+npm verbose stack Missing: @emnapi/runtime@1.10.0 from lock file
+npm verbose stack Missing: @napi-rs/wasm-runtime@1.1.5 from lock file
+npm verbose stack Missing: @emnapi/wasi-threads@1.2.1 from lock file
+npm verbose stack Missing: @tybys/wasm-util@0.10.2 from lock file
+npm verbose stack Missing: @vitest/expect@4.1.8 from lock file
+npm verbose stack Missing: @vitest/mocker@4.1.8 from lock file
+npm verbose stack Missing: @vitest/runner@4.1.8 from lock file
+npm verbose stack Missing: @vitest/snapshot@4.1.8 from lock file
+npm verbose stack Missing: @vitest/spy@4.1.8 from lock file
+npm verbose stack Missing: es-module-lexer@2.1.0 from lock file
+npm verbose stack Missing: expect-type@1.3.0 from lock file
+npm verbose stack Missing: pathe@2.0.3 from lock file
+npm verbose stack Missing: picomatch@4.0.4 from lock file
+npm verbose stack Missing: tinybench@2.9.0 from lock file
+npm verbose stack Missing: tinyexec@1.2.4 from lock file
+npm verbose stack Missing: why-is-node-running@2.3.0 from lock file
+npm verbose stack Missing: @types/chai@5.2.3 from lock file
+npm verbose stack Missing: chai@6.2.2 from lock file
+npm verbose stack Missing: @types/deep-eql@4.0.2 from lock file
+npm verbose stack Missing: assertion-error@2.0.1 from lock file
+npm verbose stack Missing: isexe@2.0.0 from lock file
+npm verbose stack Missing: siginfo@2.0.0 from lock file
+npm verbose stack Missing: stackback@0.0.2 from lock file
+npm verbose stack Missing: @types/mime@1.3.5 from lock file
+npm verbose stack
+npm verbose stack Clean install a project
+npm verbose stack
+npm verbose stack Usage:
+npm verbose stack npm ci
+npm verbose stack
+npm verbose stack Options:
+npm verbose stack [--install-strategy <hoisted|nested|shallow|linked>] [--legacy-bundling]
+npm verbose stack [--global-style] [--omit <dev|optional|peer> [--omit <dev|optional|peer> ...]]
+npm verbose stack [--include <prod|dev|optional|peer> [--include <prod|dev|optional|peer> ...]]
+npm verbose stack [--strict-peer-deps] [--foreground-scripts] [--ignore-scripts] [--no-audit]
+npm verbose stack [--no-bin-links] [--no-fund] [--dry-run]
+npm verbose stack [-w|--workspace <workspace-name> [-w|--workspace <workspace-name> ...]]
+npm verbose stack [-ws|--workspaces] [--include-workspace-root] [--install-links]
+npm verbose stack
+npm verbose stack aliases: clean-install, ic, install-clean, isntall-clean
+npm verbose stack
+npm verbose stack Run "npm help ci" for more info
+npm verbose stack     at CI.usageError (/usr/local/lib/node_modules/npm/lib/base-cmd.js:111:26)
+npm verbose stack     at CI.exec (/usr/local/lib/node_modules/npm/lib/commands/ci.js:70:18)
+npm verbose stack     at async Npm.exec (/usr/local/lib/node_modules/npm/lib/npm.js:207:9)
+npm verbose stack     at async module.exports (/usr/local/lib/node_modules/npm/lib/cli/entry.js:74:5)
+npm error code EUSAGE
+npm error
+npm error `npm ci` can only install packages when your package.json and package-lock.json or npm-shrinkwrap.json are in sync. Please update your lock file with `npm install` before continuing.
+npm error
+npm error Missing: @types/d3@7.4.3 from lock file
+npm error Missing: @types/express@4.17.25 from lock file
+npm error Missing: @types/jsonwebtoken@9.0.10 from lock file
+npm error Missing: @types/swagger-ui-express@4.1.8 from lock file
+npm error Missing: @typescript-eslint/eslint-plugin@8.61.0 from lock file
+npm error Missing: eslint@10.5.0 from lock file
+npm error Missing: typescript@5.8.3 from lock file
+npm error Missing: @typescript-eslint/parser@8.61.0 from lock file
+npm error Missing: @vitest/coverage-v8@4.1.8 from lock file
+npm error Missing: vitest@4.1.8 from lock file
+npm error Missing: autoprefixer@10.5.0 from lock file
+npm error Missing: cross-env@10.1.0 from lock file
+npm error Invalid: lock file's esbuild@0.25.12 does not satisfy esbuild@0.28.1
+npm error Missing: eslint-config-prettier@10.1.8 from lock file
+npm error Missing: eslint-plugin-prettier@5.5.6 from lock file
+npm error Missing: prettier@3.8.4 from lock file
+npm error Missing: fast-check@4.8.0 from lock file
+npm error Invalid: lock file's vite@6.4.3 does not satisfy vite@8.0.16
+npm error Missing: @types/d3-axis@3.0.6 from lock file
+npm error Missing: @types/d3-brush@3.0.6 from lock file
+npm error Missing: @types/d3-chord@3.0.6 from lock file
+npm error Missing: @types/d3-contour@3.0.6 from lock file
+npm error Missing: @types/d3-delaunay@6.0.4 from lock file
+npm error Missing: @types/d3-dispatch@3.0.7 from lock file
+npm error Missing: @types/d3-drag@3.0.7 from lock file
+npm error Missing: @types/d3-dsv@3.0.7 from lock file
+npm error Missing: @types/d3-fetch@3.0.7 from lock file
+npm error Missing: @types/d3-force@3.0.10 from lock file
+npm error Missing: @types/d3-format@3.0.4 from lock file
+npm error Missing: @types/d3-geo@3.1.0 from lock file
+npm error Missing: @types/d3-hierarchy@3.1.7 from lock file
+npm error Missing: @types/d3-polygon@3.0.2 from lock file
+npm error Missing: @types/d3-quadtree@3.0.6 from lock file
+npm error Missing: @types/d3-random@3.0.3 from lock file
+npm error Missing: @types/d3-scale-chromatic@3.1.0 from lock file
+npm error Missing: @types/d3-selection@3.0.11 from lock file
+npm error Missing: @types/d3-time-format@4.0.3 from lock file
+npm error Missing: @types/d3-transition@3.0.9 from lock file
+npm error Missing: @types/d3-zoom@3.0.8 from lock file
+npm error Missing: @types/geojson@7946.0.16 from lock file
+npm error Missing: @types/body-parser@1.19.6 from lock file
+npm error Missing: @types/express-serve-static-core@4.19.8 from lock file
+npm error Missing: @types/qs@6.15.1 from lock file
+npm error Missing: @types/serve-static@1.15.10 from lock file
+npm error Missing: @types/connect@3.4.38 from lock file
+npm error Missing: @types/range-parser@1.2.7 from lock file
+npm error Missing: @types/send@1.2.1 from lock file
+npm error Missing: @types/ms@2.1.0 from lock file
+npm error Missing: @types/http-errors@2.0.5 from lock file
+npm error Missing: @types/send@0.17.6 from lock file
+npm error Missing: @eslint-community/regexpp@4.12.2 from lock file
+npm error Missing: @typescript-eslint/scope-manager@8.61.0 from lock file
+npm error Missing: @typescript-eslint/type-utils@8.61.0 from lock file
+npm error Missing: @typescript-eslint/utils@8.61.0 from lock file
+npm error Missing: @typescript-eslint/visitor-keys@8.61.0 from lock file
+npm error Missing: ignore@7.0.5 from lock file
+npm error Missing: natural-compare@1.4.0 from lock file
+npm error Missing: ts-api-utils@2.5.0 from lock file
+npm error Missing: @typescript-eslint/types@8.61.0 from lock file
+npm error Missing: @typescript-eslint/typescript-estree@8.61.0 from lock file
+npm error Missing: @typescript-eslint/project-service@8.61.0 from lock file
+npm error Missing: @typescript-eslint/tsconfig-utils@8.61.0 from lock file
+npm error Missing: minimatch@10.2.5 from lock file
+npm error Missing: semver@7.8.4 from lock file
+npm error Missing: @eslint-community/eslint-utils@4.9.1 from lock file
+npm error Missing: eslint-visitor-keys@3.4.3 from lock file
+npm error Missing: eslint-visitor-keys@5.0.1 from lock file
+npm error Missing: @bcoe/v8-coverage@1.0.2 from lock file
+npm error Missing: @vitest/utils@4.1.8 from lock file
+npm error Missing: ast-v8-to-istanbul@1.0.4 from lock file
+npm error Missing: istanbul-lib-coverage@3.2.2 from lock file
+npm error Missing: istanbul-lib-report@3.0.1 from lock file
+npm error Missing: istanbul-reports@3.2.0 from lock file
+npm error Missing: magicast@0.5.3 from lock file
+npm error Missing: obug@2.1.3 from lock file
+npm error Missing: std-env@4.1.0 from lock file
+npm error Missing: tinyrainbow@3.1.0 from lock file
+npm error Missing: @vitest/pretty-format@4.1.8 from lock file
+npm error Missing: estree-walker@3.0.3 from lock file
+npm error Missing: js-tokens@10.0.0 from lock file
+npm error Missing: fraction.js@5.3.4 from lock file
+npm error Missing: postcss-value-parser@4.2.0 from lock file
+npm error Missing: @epic-web/invariant@1.0.0 from lock file
+npm error Missing: cross-spawn@7.0.6 from lock file
+npm error Missing: path-key@3.1.1 from lock file
+npm error Missing: shebang-command@2.0.0 from lock file
+npm error Missing: which@2.0.2 from lock file
+npm error Missing: @esbuild/aix-ppc64@0.28.1 from lock file
+npm error Missing: @esbuild/android-arm@0.28.1 from lock file
+npm error Missing: @esbuild/android-arm64@0.28.1 from lock file
+npm error Missing: @esbuild/android-x64@0.28.1 from lock file
+npm error Missing: @esbuild/darwin-arm64@0.28.1 from lock file
+npm error Missing: @esbuild/darwin-x64@0.28.1 from lock file
+npm error Missing: @esbuild/freebsd-arm64@0.28.1 from lock file
+npm error Missing: @esbuild/freebsd-x64@0.28.1 from lock file
+npm error Missing: @esbuild/linux-arm@0.28.1 from lock file
+npm error Missing: @esbuild/linux-arm64@0.28.1 from lock file
+npm error Missing: @esbuild/linux-ia32@0.28.1 from lock file
+npm error Missing: @esbuild/linux-loong64@0.28.1 from lock file
+npm error Missing: @esbuild/linux-mips64el@0.28.1 from lock file
+npm error Missing: @esbuild/linux-ppc64@0.28.1 from lock file
+npm error Missing: @esbuild/linux-riscv64@0.28.1 from lock file
+npm error Missing: @esbuild/linux-s390x@0.28.1 from lock file
+npm error Missing: @esbuild/linux-x64@0.28.1 from lock file
+npm error Missing: @esbuild/netbsd-arm64@0.28.1 from lock file
+npm error Missing: @esbuild/netbsd-x64@0.28.1 from lock file
+npm error Missing: @esbuild/openbsd-arm64@0.28.1 from lock file
+npm error Missing: @esbuild/openbsd-x64@0.28.1 from lock file
+npm error Missing: @esbuild/openharmony-arm64@0.28.1 from lock file
+npm error Missing: @esbuild/sunos-x64@0.28.1 from lock file
+npm error Missing: @esbuild/win32-arm64@0.28.1 from lock file
+npm error Missing: @esbuild/win32-ia32@0.28.1 from lock file
+npm error Missing: @eslint/config-array@0.23.5 from lock file
+npm error Missing: @eslint/config-helpers@0.6.0 from lock file
+npm error Missing: @eslint/core@1.2.1 from lock file
+npm error Missing: @eslint/plugin-kit@0.7.2 from lock file
+npm error Missing: @humanfs/node@0.16.8 from lock file
+npm error Missing: @humanwhocodes/module-importer@1.0.1 from lock file
+npm error Missing: @humanwhocodes/retry@0.4.3 from lock file
+npm error Missing: ajv@6.15.0 from lock file
+npm error Missing: escape-string-regexp@4.0.0 from lock file
+npm error Missing: eslint-scope@9.1.2 from lock file
+npm error Missing: eslint-visitor-keys@5.0.1 from lock file
+npm error Missing: espree@11.2.0 from lock file
+npm error Missing: esquery@1.7.0 from lock file
+npm error Missing: esutils@2.0.3 from lock file
+npm error Missing: fast-deep-equal@3.1.3 from lock file
+npm error Missing: file-entry-cache@8.0.0 from lock file
+npm error Missing: find-up@5.0.0 from lock file
+npm error Missing: glob-parent@6.0.2 from lock file
+npm error Missing: ignore@5.3.2 from lock file
+npm error Missing: imurmurhash@0.1.4 from lock file
+npm error Missing: json-stable-stringify-without-jsonify@1.0.1 from lock file
+npm error Missing: optionator@0.9.4 from lock file
+npm error Missing: @eslint/object-schema@3.0.5 from lock file
+npm error Missing: @types/json-schema@7.0.15 from lock file
+npm error Missing: levn@0.4.1 from lock file
+npm error Missing: @humanfs/core@0.19.2 from lock file
+npm error Missing: @humanfs/types@0.15.0 from lock file
+npm error Missing: fast-json-stable-stringify@2.1.0 from lock file
+npm error Missing: json-schema-traverse@0.4.1 from lock file
+npm error Missing: uri-js@4.4.1 from lock file
+npm error Missing: prettier-linter-helpers@1.0.1 from lock file
+npm error Missing: synckit@0.11.13 from lock file
+npm error Missing: @types/esrecurse@4.3.1 from lock file
+npm error Missing: esrecurse@4.3.0 from lock file
+npm error Missing: estraverse@5.3.0 from lock file
+npm error Missing: acorn@8.17.0 from lock file
+npm error Missing: acorn-jsx@5.3.2 from lock file
+npm error Missing: eslint-visitor-keys@5.0.1 from lock file
+npm error Missing: pure-rand@8.4.0 from lock file
+npm error Missing: flat-cache@4.0.1 from lock file
+npm error Missing: locate-path@6.0.0 from lock file
+npm error Missing: path-exists@4.0.0 from lock file
+npm error Missing: flatted@3.4.2 from lock file
+npm error Missing: keyv@4.5.4 from lock file
+npm error Missing: make-dir@4.0.0 from lock file
+npm error Missing: supports-color@7.2.0 from lock file
+npm error Missing: html-escaper@2.0.2 from lock file
+npm error Missing: json-buffer@3.0.1 from lock file
+npm error Missing: prelude-ls@1.2.1 from lock file
+npm error Missing: type-check@0.4.0 from lock file
+npm error Missing: p-locate@5.0.0 from lock file
+npm error Missing: semver@7.8.4 from lock file
+npm error Missing: brace-expansion@5.0.6 from lock file
+npm error Missing: balanced-match@4.0.4 from lock file
+npm error Missing: deep-is@0.1.4 from lock file
+npm error Missing: fast-levenshtein@2.0.6 from lock file
+npm error Missing: word-wrap@1.2.5 from lock file
+npm error Missing: p-limit@3.1.0 from lock file
+npm error Missing: yocto-queue@0.1.0 from lock file
+npm error Missing: fast-diff@1.3.0 from lock file
+npm error Missing: shebang-regex@3.0.0 from lock file
+npm error Missing: has-flag@4.0.0 from lock file
+npm error Missing: @pkgr/core@0.3.6 from lock file
+npm error Missing: punycode@2.3.1 from lock file
+npm error Missing: fsevents@2.3.3 from lock file
+npm error Missing: rolldown@1.0.3 from lock file
+npm error Missing: @oxc-project/types@0.133.0 from lock file
+npm error Missing: @rolldown/binding-android-arm64@1.0.3 from lock file
+npm error Missing: @rolldown/binding-darwin-arm64@1.0.3 from lock file
+npm error Missing: @rolldown/binding-darwin-x64@1.0.3 from lock file
+npm error Missing: @rolldown/binding-freebsd-x64@1.0.3 from lock file
+npm error Missing: @rolldown/binding-linux-arm-gnueabihf@1.0.3 from lock file
+npm error Missing: @rolldown/binding-linux-arm64-gnu@1.0.3 from lock file
+npm error Missing: @rolldown/binding-linux-arm64-musl@1.0.3 from lock file
+npm error Missing: @rolldown/binding-linux-ppc64-gnu@1.0.3 from lock file
+npm error Missing: @rolldown/binding-linux-s390x-gnu@1.0.3 from lock file
+npm error Missing: @rolldown/binding-linux-x64-gnu@1.0.3 from lock file
+npm error Missing: @rolldown/binding-linux-x64-musl@1.0.3 from lock file
+npm error Missing: @rolldown/binding-openharmony-arm64@1.0.3 from lock file
+npm error Missing: @rolldown/binding-wasm32-wasi@1.0.3 from lock file
+npm error Missing: @rolldown/binding-win32-arm64-msvc@1.0.3 from lock file
+npm error Missing: @rolldown/binding-win32-x64-msvc@1.0.3 from lock file
+npm error Missing: @rolldown/pluginutils@1.0.1 from lock file
+npm error Missing: @emnapi/core@1.10.0 from lock file
+npm error Missing: @emnapi/runtime@1.10.0 from lock file
+npm error Missing: @napi-rs/wasm-runtime@1.1.5 from lock file
+npm error Missing: @emnapi/wasi-threads@1.2.1 from lock file
+npm error Missing: @tybys/wasm-util@0.10.2 from lock file
+npm error Missing: @vitest/expect@4.1.8 from lock file
+npm error Missing: @vitest/mocker@4.1.8 from lock file
+npm error Missing: @vitest/runner@4.1.8 from lock file
+npm error Missing: @vitest/snapshot@4.1.8 from lock file
+npm error Missing: @vitest/spy@4.1.8 from lock file
+npm error Missing: es-module-lexer@2.1.0 from lock file
+npm error Missing: expect-type@1.3.0 from lock file
+npm error Missing: pathe@2.0.3 from lock file
+npm error Missing: picomatch@4.0.4 from lock file
+npm error Missing: tinybench@2.9.0 from lock file
+npm error Missing: tinyexec@1.2.4 from lock file
+npm error Missing: why-is-node-running@2.3.0 from lock file
+npm error Missing: @types/chai@5.2.3 from lock file
+npm error Missing: chai@6.2.2 from lock file
+npm error Missing: @types/deep-eql@4.0.2 from lock file
+npm error Missing: assertion-error@2.0.1 from lock file
+npm error Missing: isexe@2.0.0 from lock file
+npm error Missing: siginfo@2.0.0 from lock file
+npm error Missing: stackback@0.0.2 from lock file
+npm error Missing: @types/mime@1.3.5 from lock file
+npm error
+npm error Clean install a project
+npm error
+npm error Usage:
+npm error npm ci
+npm error
+npm error Options:
+npm error [--install-strategy <hoisted|nested|shallow|linked>] [--legacy-bundling]
+npm error [--global-style] [--omit <dev|optional|peer> [--omit <dev|optional|peer> ...]]
+npm error [--include <prod|dev|optional|peer> [--include <prod|dev|optional|peer> ...]]
+npm error [--strict-peer-deps] [--foreground-scripts] [--ignore-scripts] [--no-audit]
+npm error [--no-bin-links] [--no-fund] [--dry-run]
+npm error [-w|--workspace <workspace-name> [-w|--workspace <workspace-name> ...]]
+npm error [-ws|--workspaces] [--include-workspace-root] [--install-links]
+npm error
+npm error aliases: clean-install, ic, install-clean, isntall-clean
+npm error
+npm error Run "npm help ci" for more info
+npm verbose cwd /app
+npm verbose os Linux 6.6.87.2-microsoft-standard-WSL2
+npm verbose node v22.15.0
+npm verbose npm  v10.9.2
+npm notice
+npm notice New major version of npm available! 10.9.2 -> 11.17.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.17.0
+npm notice To update run: npm install -g npm@11.17.0
+npm notice
+npm verbose exit 1
+npm verbose code 1
+npm error A complete log of this run can be found in: /root/.npm/_logs/2026-06-14T17_48_21_153Z-debug-0.log

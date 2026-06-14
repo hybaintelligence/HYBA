@@ -300,16 +300,7 @@ function MetricLine({
   );
 }
 
-<<<<<<< Updated upstream
-interface CapabilityBadgeProps {
-  name: string;
-  enabled: boolean;
-}
-
-function CapabilityBadge({ name, enabled }: CapabilityBadgeProps) {
-=======
 const CapabilityBadge: React.FC<{ name: string; enabled: boolean }> = ({ name, enabled }) => {
->>>>>>> Stashed changes
   const displayName = name.replace(/^supports_/, "").replace(/_/g, " ");
 
   return (

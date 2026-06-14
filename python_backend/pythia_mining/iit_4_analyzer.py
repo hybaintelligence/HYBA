@@ -47,8 +47,9 @@ class IIT4Analyzer:
     For n elements, there are 2^n possible states and Bell(n) partitions.
     """
 
-    def __init__(self, system_size: int):
+    def __init__(self, system_size: int, enhanced_partitioning: bool = False):
         self.system_size = system_size
+        self.enhanced_partitioning = enhanced_partitioning
         self.mechanisms_cache: Dict[int, List[Mechanism]] = {}
 
     def calculate_phi_max(
@@ -96,10 +97,37 @@ class IIT4Analyzer:
     def _approximate_phi_max(
         self, system_state: np.ndarray, connectivity_matrix: np.ndarray
     ) -> Dict:
-        """Greedy approximation for large systems"""
+        """Greedy approximation for large systems with enhanced partitioning"""
         # Start with full system
         current_subset = set(range(self.system_size))
         current_phi = self._calculate_subset_phi(current_subset, system_state, connectivity_matrix)
+
+        if self.enhanced_partitioning:
+            # Enhanced: spectral clustering for better initial partition
+            from scipy.sparse.csgraph import laplacian
+            from scipy.sparse import csr_matrix
+            
+            # Compute graph Laplacian
+            n = self.system_size
+            sparse_conn = csr_matrix(connectivity_matrix)
+            lapl = laplacian(sparse_conn, normed=True)
+            
+            # Use eigenvectors for spectral partitioning
+            try:
+                eigenvalues, eigenvectors = np.linalg.eigh(lapl.toarray())
+                # Use second smallest eigenvector (Fiedler vector) for partitioning
+                fiedler = eigenvectors[:, 1]
+                threshold = np.median(fiedler)
+                spectral_partition = set(i for i, val in enumerate(fiedler) if val > threshold)
+                
+                # Test spectral partition
+                spectral_phi = self._calculate_subset_phi(spectral_partition, system_state, connectivity_matrix)
+                if spectral_phi > current_phi:
+                    current_subset = spectral_partition
+                    current_phi = spectral_phi
+            except Exception:
+                # Fall back to greedy if spectral fails
+                pass
 
         # Greedy removal: remove elements that decrease Φ least
         improved = True
@@ -127,7 +155,7 @@ class IIT4Analyzer:
             "phi_max": current_phi,
             "main_complex": current_subset,
             "partition_count": "approximate",
-            "method": "greedy",
+            "method": "enhanced_greedy" if self.enhanced_partitioning else "greedy",
         }
 
     def compute_cause_effect_structure(

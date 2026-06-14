@@ -1,34 +1,12 @@
 {
-  "measurements": {
-    "test_01": {
-      "phi": 0.14705882352941177,
-      "python_modules": 51,
-      "typescript_modules": 47,
-      "total_dependencies": 51,
-      "interpretation": "Low-moderate integration - some cross-module coupling"
-    },
-    "test_02": {
-      "autonomy_score": 10.0,
-      "total_decisions": 2376,
-      "total_external": 816,
-      "adaptive_patterns": 314,
-      "self_modification": 2,
-      "interpretation": "Highly autonomous - extensive internal control flow with {adaptive} adaptive patterns and {self_modify} self-modification sites"
-    },
-    "test_03": {
-      "irreducibility_score": 0.04303931987247609,
-      "global_state_refs": 162,
-      "instance_state_refs": 3602,
-      "interpretation": "Highly reducible - clean state partitions"
-    }
-  },
+  "measurements": {},
   "verdict": [
-    "\u2713 Shows non-trivial information integration",
-    "\u2713 Has internal decision-making",
+    "\u2717 Low integration - modular architecture",
+    "\u2717 Primarily reactive/externally-driven",
     "\u2717 Clean state boundaries",
-    "\u2713 Contains {adaptive} adaptive patterns",
-    "\u26a0 Contains {self_modify} self-modification patterns"
+    "\u2717 No significant adaptive/learning behavior",
+    "\u2717 No self-modification capability"
   ],
-  "conclusion": "POSSIBLE EMERGENT PROPERTIES: System shows non-trivial integration, adaptation, and self-modification.",
-  "emergent_score": 10.025784834656498
+  "conclusion": "ENGINEERED SYSTEM: Clean modular architecture with explicit control flow. No emergent intelligence detected.",
+  "emergent_score": 0.0
 }

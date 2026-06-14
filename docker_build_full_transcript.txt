@@ -1,0 +1,700 @@
+time="2026-06-14T18:56:25+01:00" level=warning msg="The \"argon2id\" variable is not set. Defaulting to a blank string."
+time="2026-06-14T18:56:25+01:00" level=warning msg="The \"v\" variable is not set. Defaulting to a blank string."
+time="2026-06-14T18:56:25+01:00" level=warning msg="The \"m\" variable is not set. Defaulting to a blank string."
+time="2026-06-14T18:56:25+01:00" level=warning msg="The \"qvzNFWKWtmi1bUwVb1qG6w\" variable is not set. Defaulting to a blank string."
+time="2026-06-14T18:56:25+01:00" level=warning msg="The \"argon2id\" variable is not set. Defaulting to a blank string."
+time="2026-06-14T18:56:25+01:00" level=warning msg="The \"v\" variable is not set. Defaulting to a blank string."
+time="2026-06-14T18:56:25+01:00" level=warning msg="The \"m\" variable is not set. Defaulting to a blank string."
+time="2026-06-14T18:56:25+01:00" level=warning msg="The \"qvzNFWKWtmi1bUwVb1qG6w\" variable is not set. Defaulting to a blank string."
+time="2026-06-14T18:56:25+01:00" level=warning msg="The \"argon2id\" variable is not set. Defaulting to a blank string."
+time="2026-06-14T18:56:25+01:00" level=warning msg="The \"v\" variable is not set. Defaulting to a blank string."
+time="2026-06-14T18:56:25+01:00" level=warning msg="The \"m\" variable is not set. Defaulting to a blank string."
+time="2026-06-14T18:56:25+01:00" level=warning msg="The \"qvzNFWKWtmi1bUwVb1qG6w\" variable is not set. Defaulting to a blank string."
+time="2026-06-14T18:56:25+01:00" level=warning msg="The \"argon2id\" variable is not set. Defaulting to a blank string."
+time="2026-06-14T18:56:25+01:00" level=warning msg="The \"v\" variable is not set. Defaulting to a blank string."
+time="2026-06-14T18:56:25+01:00" level=warning msg="The \"m\" variable is not set. Defaulting to a blank string."
+time="2026-06-14T18:56:25+01:00" level=warning msg="The \"qvzNFWKWtmi1bUwVb1qG6w\" variable is not set. Defaulting to a blank string."
+#1 [internal] load local bake definitions
+#1 reading from stdin 1.67kB done
+#1 DONE 0.0s
+
+#2 [hyba-backend internal] load build definition from Dockerfile
+#2 transferring dockerfile: 1.92kB 0.1s done
+#2 DONE 0.1s
+
+#2 [hyba-runtime internal] load build definition from Dockerfile
+#2 DONE 0.1s
+
+#3 [hyba-runtime internal] load metadata for docker.io/library/node:22.15.0-bookworm-slim
+#3 DONE 0.1s
+
+#4 [hyba-backend internal] load .dockerignore
+#4 transferring context: 629B 0.0s done
+#4 DONE 0.1s
+
+#5 [hyba-runtime internal] load build context
+#5 DONE 0.0s
+
+#6 [hyba-runtime node-deps 1/4] FROM docker.io/library/node:22.15.0-bookworm-slim@sha256:557e52a0fcb928ee113df7e1fb5d4f60c1341dbda53f55e3d815ca10807efdce
+#6 resolve docker.io/library/node:22.15.0-bookworm-slim@sha256:557e52a0fcb928ee113df7e1fb5d4f60c1341dbda53f55e3d815ca10807efdce
+#6 resolve docker.io/library/node:22.15.0-bookworm-slim@sha256:557e52a0fcb928ee113df7e1fb5d4f60c1341dbda53f55e3d815ca10807efdce 0.6s done
+#6 resolve docker.io/library/node:22.15.0-bookworm-slim@sha256:557e52a0fcb928ee113df7e1fb5d4f60c1341dbda53f55e3d815ca10807efdce 0.6s done
+#6 DONE 0.6s
+
+#5 [hyba-runtime internal] load build context
+#5 ...
+
+#7 [hyba-runtime node-deps 2/4] WORKDIR /app
+#7 CACHED
+
+#5 [hyba-runtime internal] load build context
+#5 transferring context: 76.33kB 0.4s done
+#5 DONE 0.6s
+
+#8 [hyba-runtime runtime  3/12] RUN apt-get update     && apt-get install -y --no-install-recommends python3 python3-pip python3-venv curl ca-certificates tini     && rm -rf /var/lib/apt/lists/*
+#8 ...
+
+#5 [hyba-bridge internal] load build context
+#5 DONE 0.6s
+
+#9 [hyba-runtime node-deps 3/4] COPY package.json package-lock.json* ./
+#9 DONE 0.2s
+
+#8 [hyba-runtime runtime  3/12] RUN apt-get update     && apt-get install -y --no-install-recommends python3 python3-pip python3-venv curl ca-certificates tini     && rm -rf /var/lib/apt/lists/*
+#8 ...
+
+#9 [hyba-backend node-deps 3/4] COPY package.json package-lock.json* ./
+#9 DONE 0.2s
+
+#10 [hyba-runtime node-deps 4/4] RUN npm ci
+#10 ...
+
+#8 [hyba-runtime runtime  3/12] RUN apt-get update     && apt-get install -y --no-install-recommends python3 python3-pip python3-venv curl ca-certificates tini     && rm -rf /var/lib/apt/lists/*
+#8 3.775 Get:1 http://deb.debian.org/debian bookworm InRelease [151 kB]
+#8 3.923 Get:2 http://deb.debian.org/debian bookworm-updates InRelease [55.4 kB]
+#8 3.963 Get:3 http://deb.debian.org/debian-security bookworm-security InRelease [48.0 kB]
+#8 4.415 Get:4 http://deb.debian.org/debian bookworm/main amd64 Packages [8790 kB]
+#8 7.309 Get:5 http://deb.debian.org/debian bookworm-updates/main amd64 Packages [6924 B]
+#8 7.315 Get:6 http://deb.debian.org/debian-security bookworm-security/main amd64 Packages [311 kB]
+#8 9.830 Fetched 9363 kB in 6s (1507 kB/s)
+#8 9.830 Reading package lists...
+#8 13.55 Reading package lists...
+#8 18.41 Building dependency tree...
+#8 18.94 Reading state information...
+#8 20.30 The following additional packages will be installed:
+#8 20.30   libbrotli1 libcurl4 libexpat1 libgssapi-krb5-2 libk5crypto3 libkeyutils1
+#8 20.30   libkrb5-3 libkrb5support0 libldap-2.5-0 libncursesw6 libnghttp2-14 libnsl2
+#8 20.30   libpsl5 libpython3-stdlib libpython3.11-minimal libpython3.11-stdlib
+#8 20.30   libreadline8 librtmp1 libsasl2-2 libsasl2-modules-db libsqlite3-0 libssh2-1
+#8 20.30   libssl3 libtirpc-common libtirpc3 media-types openssl python3-distutils
+#8 20.31   python3-lib2to3 python3-minimal python3-pip-whl python3-pkg-resources
+#8 20.31   python3-setuptools python3-setuptools-whl python3-wheel python3.11
+#8 20.31   python3.11-minimal python3.11-venv readline-common
+#8 20.32 Suggested packages:
+#8 20.33   krb5-doc krb5-user python3-doc python3-tk python-setuptools-doc
+#8 20.33   python3.11-doc binutils binfmt-support readline-doc
+#8 20.33 Recommended packages:
+#8 20.33   krb5-locales libldap-common libgpm2 publicsuffix libsasl2-modules
+#8 20.33   build-essential python3-dev
+#8 21.52 The following NEW packages will be installed:
+#8 21.53   ca-certificates curl libbrotli1 libcurl4 libexpat1 libgssapi-krb5-2
+#8 21.53   libk5crypto3 libkeyutils1 libkrb5-3 libkrb5support0 libldap-2.5-0
+#8 21.53   libncursesw6 libnghttp2-14 libnsl2 libpsl5 libpython3-stdlib
+#8 21.53   libpython3.11-minimal libpython3.11-stdlib libreadline8 librtmp1 libsasl2-2
+#8 21.53   libsasl2-modules-db libsqlite3-0 libssh2-1 libssl3 libtirpc-common libtirpc3
+#8 21.53   media-types openssl python3 python3-distutils python3-lib2to3
+#8 21.53   python3-minimal python3-pip python3-pip-whl python3-pkg-resources
+#8 21.53   python3-setuptools python3-setuptools-whl python3-venv python3-wheel
+#8 21.53   python3.11 python3.11-minimal python3.11-venv readline-common tini
+#8 21.72 0 upgraded, 45 newly installed, 0 to remove and 30 not upgraded.
+#8 21.72 Need to get 18.1 MB of archives.
+#8 21.72 After this operation, 55.6 MB of additional disk space will be used.
+#8 21.72 Get:1 http://deb.debian.org/debian-security bookworm-security/main amd64 libssl3 amd64 3.0.20-1~deb12u2 [2036 kB]
+#8 22.32 Get:2 http://deb.debian.org/debian bookworm/main amd64 libpython3.11-minimal amd64 3.11.2-6+deb12u7 [818 kB]
+#8 22.68 Get:3 http://deb.debian.org/debian bookworm/main amd64 libexpat1 amd64 2.5.0-1+deb12u2 [99.9 kB]
+#8 22.70 Get:4 http://deb.debian.org/debian bookworm/main amd64 python3.11-minimal amd64 3.11.2-6+deb12u7 [2066 kB]
+#8 23.85 Get:5 http://deb.debian.org/debian bookworm/main amd64 python3-minimal amd64 3.11.2-1+b1 [26.3 kB]
+#8 23.87 Get:6 http://deb.debian.org/debian bookworm/main amd64 media-types all 10.0.0 [26.1 kB]
+#8 23.91 Get:7 http://deb.debian.org/debian bookworm/main amd64 libncursesw6 amd64 6.4-4 [134 kB]
+#8 23.96 Get:8 http://deb.debian.org/debian-security bookworm-security/main amd64 libkrb5support0 amd64 1.20.1-2+deb12u5 [33.2 kB]
+#8 23.97 Get:9 http://deb.debian.org/debian-security bookworm-security/main amd64 libk5crypto3 amd64 1.20.1-2+deb12u5 [79.7 kB]
+#8 24.00 Get:10 http://deb.debian.org/debian bookworm/main amd64 libkeyutils1 amd64 1.6.3-2 [8808 B]
+#8 24.02 Get:11 http://deb.debian.org/debian-security bookworm-security/main amd64 libkrb5-3 amd64 1.20.1-2+deb12u5 [332 kB]
+#8 24.20 Get:12 http://deb.debian.org/debian-security bookworm-security/main amd64 libgssapi-krb5-2 amd64 1.20.1-2+deb12u5 [135 kB]
+#8 24.28 Get:13 http://deb.debian.org/debian bookworm/main amd64 libtirpc-common all 1.3.3+ds-1 [14.0 kB]
+#8 24.29 Get:14 http://deb.debian.org/debian bookworm/main amd64 libtirpc3 amd64 1.3.3+ds-1 [85.2 kB]
+#8 24.34 Get:15 http://deb.debian.org/debian bookworm/main amd64 libnsl2 amd64 1.3.0-2 [39.5 kB]
+#8 24.38 Get:16 http://deb.debian.org/debian bookworm/main amd64 readline-common all 8.2-1.3 [69.0 kB]
+#8 24.43 Get:17 http://deb.debian.org/debian bookworm/main amd64 libreadline8 amd64 8.2-1.3 [166 kB]
+#8 24.57 Get:18 http://deb.debian.org/debian bookworm/main amd64 libsqlite3-0 amd64 3.40.1-2+deb12u2 [839 kB]
+#8 25.76 Get:19 http://deb.debian.org/debian bookworm/main amd64 libpython3.11-stdlib amd64 3.11.2-6+deb12u7 [1797 kB]
+#8 26.08 Get:20 http://deb.debian.org/debian bookworm/main amd64 python3.11 amd64 3.11.2-6+deb12u7 [574 kB]
+#8 26.21 Get:21 http://deb.debian.org/debian bookworm/main amd64 libpython3-stdlib amd64 3.11.2-1+b1 [9312 B]
+#8 26.21 Get:22 http://deb.debian.org/debian bookworm/main amd64 python3 amd64 3.11.2-1+b1 [26.3 kB]
+#8 26.21 Get:23 http://deb.debian.org/debian-security bookworm-security/main amd64 openssl amd64 3.0.20-1~deb12u2 [1439 kB]
+#8 26.72 Get:24 http://deb.debian.org/debian bookworm/main amd64 ca-certificates all 20230311+deb12u1 [155 kB]
+#8 26.76 Get:25 http://deb.debian.org/debian bookworm/main amd64 libbrotli1 amd64 1.0.9-2+b6 [275 kB]
+#8 26.86 Get:26 http://deb.debian.org/debian bookworm/main amd64 libsasl2-modules-db amd64 2.1.28+dfsg-10 [20.3 kB]
+#8 26.86 Get:27 http://deb.debian.org/debian bookworm/main amd64 libsasl2-2 amd64 2.1.28+dfsg-10 [59.7 kB]
+#8 26.87 Get:28 http://deb.debian.org/debian bookworm/main amd64 libldap-2.5-0 amd64 2.5.13+dfsg-5 [183 kB]
+#8 26.93 Get:29 http://deb.debian.org/debian-security bookworm-security/main amd64 libnghttp2-14 amd64 1.52.0-1+deb12u3 [72.4 kB]
+#8 26.96 Get:30 http://deb.debian.org/debian bookworm/main amd64 libpsl5 amd64 0.21.2-1 [58.7 kB]
+#8 27.00 Get:31 http://deb.debian.org/debian bookworm/main amd64 librtmp1 amd64 2.4+20151223.gitfa8646d.1-2+b2 [60.8 kB]
+#8 27.05 Get:32 http://deb.debian.org/debian bookworm/main amd64 libssh2-1 amd64 1.10.0-3+b1 [179 kB]
+#8 27.11 Get:33 http://deb.debian.org/debian bookworm/main amd64 libcurl4 amd64 7.88.1-10+deb12u14 [392 kB]
+#8 27.26 Get:34 http://deb.debian.org/debian bookworm/main amd64 curl amd64 7.88.1-10+deb12u14 [316 kB]
+#8 27.36 Get:35 http://deb.debian.org/debian bookworm/main amd64 python3-lib2to3 all 3.11.2-3 [76.3 kB]
+#8 27.40 Get:36 http://deb.debian.org/debian bookworm/main amd64 python3-distutils all 3.11.2-3 [131 kB]
+#8 27.50 Get:37 http://deb.debian.org/debian bookworm/main amd64 python3-pkg-resources all 66.1.1-1+deb12u2 [297 kB]
+#8 27.59 Get:38 http://deb.debian.org/debian bookworm/main amd64 python3-setuptools all 66.1.1-1+deb12u2 [522 kB]
+#8 27.91 Get:39 http://deb.debian.org/debian bookworm/main amd64 python3-wheel all 0.38.4-2 [30.8 kB]
+#8 27.93 Get:40 http://deb.debian.org/debian bookworm/main amd64 python3-pip all 23.0.1+dfsg-1 [1325 kB]
+#8 28.50 Get:41 http://deb.debian.org/debian bookworm/main amd64 python3-pip-whl all 23.0.1+dfsg-1 [1717 kB]
+#8 29.54 Get:42 http://deb.debian.org/debian bookworm/main amd64 python3-setuptools-whl all 66.1.1-1+deb12u2 [1112 kB]
+#8 29.99 Get:43 http://deb.debian.org/debian bookworm/main amd64 python3.11-venv amd64 3.11.2-6+deb12u7 [5892 B]
+#8 29.99 Get:44 http://deb.debian.org/debian bookworm/main amd64 python3-venv amd64 3.11.2-1+b1 [1200 B]
+#8 30.00 Get:45 http://deb.debian.org/debian bookworm/main amd64 tini amd64 0.19.0-1+b3 [267 kB]
+#8 30.93 debconf: delaying package configuration, since apt-utils is not installed
+#8 31.07 Fetched 18.1 MB in 8s (2137 kB/s)
+#8 31.26 Selecting previously unselected package libssl3:amd64.
+#8 31.26 (Reading database ... 
+(Reading database ... 5%
+(Reading database ... 10%
+(Reading database ... 15%
+(Reading database ... 20%
+(Reading database ... 25%
+(Reading database ... 30%
+(Reading database ... 35%
+(Reading database ... 40%
+(Reading database ... 45%
+(Reading database ... 50%
+(Reading database ... 55%
+(Reading database ... 60%
+(Reading database ... 65%
+(Reading database ... 70%
+(Reading database ... 75%
+(Reading database ... 80%
+(Reading database ... 85%
+(Reading database ... 90%
+(Reading database ... 95%
+(Reading database ... 100%
+(Reading database ... 6091 files and directories currently installed.)
+#8 31.62 Preparing to unpack .../libssl3_3.0.20-1~deb12u2_amd64.deb ...
+#8 31.74 Unpacking libssl3:amd64 (3.0.20-1~deb12u2) ...
+#8 32.40 Selecting previously unselected package libpython3.11-minimal:amd64.
+#8 32.41 Preparing to unpack .../libpython3.11-minimal_3.11.2-6+deb12u7_amd64.deb ...
+#8 32.45 Unpacking libpython3.11-minimal:amd64 (3.11.2-6+deb12u7) ...
+#8 34.04 Selecting previously unselected package libexpat1:amd64.
+#8 34.04 Preparing to unpack .../libexpat1_2.5.0-1+deb12u2_amd64.deb ...
+#8 34.07 Unpacking libexpat1:amd64 (2.5.0-1+deb12u2) ...
+#8 34.40 Selecting previously unselected package python3.11-minimal.
+#8 34.40 Preparing to unpack .../python3.11-minimal_3.11.2-6+deb12u7_amd64.deb ...
+#8 34.46 Unpacking python3.11-minimal (3.11.2-6+deb12u7) ...
+#8 36.94 Setting up libssl3:amd64 (3.0.20-1~deb12u2) ...
+#8 37.00 Setting up libpython3.11-minimal:amd64 (3.11.2-6+deb12u7) ...
+#8 37.10 Setting up libexpat1:amd64 (2.5.0-1+deb12u2) ...
+#8 37.17 Setting up python3.11-minimal (3.11.2-6+deb12u7) ...
+#8 43.84 Selecting previously unselected package python3-minimal.
+#8 43.84 (Reading database ... 
+(Reading database ... 5%
+(Reading database ... 10%
+(Reading database ... 15%
+(Reading database ... 20%
+(Reading database ... 25%
+(Reading database ... 30%
+(Reading database ... 35%
+(Reading database ... 40%
+(Reading database ... 45%
+(Reading database ... 50%
+(Reading database ... 55%
+(Reading database ... 60%
+(Reading database ... 65%
+(Reading database ... 70%
+(Reading database ... 75%
+(Reading database ... 80%
+(Reading database ... 85%
+(Reading database ... 90%
+(Reading database ... 95%
+(Reading database ... 100%
+(Reading database ... 6419 files and directories currently installed.)
+#8 44.52 Preparing to unpack .../00-python3-minimal_3.11.2-1+b1_amd64.deb ...
+#8 44.57 Unpacking python3-minimal (3.11.2-1+b1) ...
+#8 45.15 Selecting previously unselected package media-types.
+#8 45.15 Preparing to unpack .../01-media-types_10.0.0_all.deb ...
+#8 45.19 Unpacking media-types (10.0.0) ...
+#8 45.51 Selecting previously unselected package libncursesw6:amd64.
+#8 45.51 Preparing to unpack .../02-libncursesw6_6.4-4_amd64.deb ...
+#8 45.56 Unpacking libncursesw6:amd64 (6.4-4) ...
+#8 46.31 Selecting previously unselected package libkrb5support0:amd64.
+#8 46.31 Preparing to unpack .../03-libkrb5support0_1.20.1-2+deb12u5_amd64.deb ...
+#8 46.35 Unpacking libkrb5support0:amd64 (1.20.1-2+deb12u5) ...
+#8 47.44 Selecting previously unselected package libk5crypto3:amd64.
+#8 47.45 Preparing to unpack .../04-libk5crypto3_1.20.1-2+deb12u5_amd64.deb ...
+#8 47.50 Unpacking libk5crypto3:amd64 (1.20.1-2+deb12u5) ...
+#8 50.02 Selecting previously unselected package libkeyutils1:amd64.
+#8 50.03 Preparing to unpack .../05-libkeyutils1_1.6.3-2_amd64.deb ...
+#8 50.06 Unpacking libkeyutils1:amd64 (1.6.3-2) ...
+#8 50.64 Selecting previously unselected package libkrb5-3:amd64.
+#8 50.64 Preparing to unpack .../06-libkrb5-3_1.20.1-2+deb12u5_amd64.deb ...
+#8 51.08 Unpacking libkrb5-3:amd64 (1.20.1-2+deb12u5) ...
+#8 52.45 Selecting previously unselected package libgssapi-krb5-2:amd64.
+#8 52.45 Preparing to unpack .../07-libgssapi-krb5-2_1.20.1-2+deb12u5_amd64.deb ...
+#8 52.48 Unpacking libgssapi-krb5-2:amd64 (1.20.1-2+deb12u5) ...
+#8 52.65 Selecting previously unselected package libtirpc-common.
+#8 52.66 Preparing to unpack .../08-libtirpc-common_1.3.3+ds-1_all.deb ...
+#8 52.71 Unpacking libtirpc-common (1.3.3+ds-1) ...
+#8 52.86 Selecting previously unselected package libtirpc3:amd64.
+#8 52.87 Preparing to unpack .../09-libtirpc3_1.3.3+ds-1_amd64.deb ...
+#8 52.89 Unpacking libtirpc3:amd64 (1.3.3+ds-1) ...
+#8 53.06 Selecting previously unselected package libnsl2:amd64.
+#8 53.06 Preparing to unpack .../10-libnsl2_1.3.0-2_amd64.deb ...
+#8 53.10 Unpacking libnsl2:amd64 (1.3.0-2) ...
+#8 53.25 Selecting previously unselected package readline-common.
+#8 53.25 Preparing to unpack .../11-readline-common_8.2-1.3_all.deb ...
+#8 53.29 Unpacking readline-common (8.2-1.3) ...
+#8 53.55 Selecting previously unselected package libreadline8:amd64.
+#8 53.56 Preparing to unpack .../12-libreadline8_8.2-1.3_amd64.deb ...
+#8 53.59 Unpacking libreadline8:amd64 (8.2-1.3) ...
+#8 53.99 Selecting previously unselected package libsqlite3-0:amd64.
+#8 53.99 Preparing to unpack .../13-libsqlite3-0_3.40.1-2+deb12u2_amd64.deb ...
+#8 54.05 Unpacking libsqlite3-0:amd64 (3.40.1-2+deb12u2) ...
+#8 55.42 Selecting previously unselected package libpython3.11-stdlib:amd64.
+#8 55.42 Preparing to unpack .../14-libpython3.11-stdlib_3.11.2-6+deb12u7_amd64.deb ...
+#8 55.80 Unpacking libpython3.11-stdlib:amd64 (3.11.2-6+deb12u7) ...
+#8 68.94 Selecting previously unselected package python3.11.
+#8 68.99 Preparing to unpack .../15-python3.11_3.11.2-6+deb12u7_amd64.deb ...
+#8 69.07 Unpacking python3.11 (3.11.2-6+deb12u7) ...
+#8 69.43 Selecting previously unselected package libpython3-stdlib:amd64.
+#8 69.44 Preparing to unpack .../16-libpython3-stdlib_3.11.2-1+b1_amd64.deb ...
+#8 69.46 Unpacking libpython3-stdlib:amd64 (3.11.2-1+b1) ...
+#8 69.73 Setting up python3-minimal (3.11.2-1+b1) ...
+#8 71.19 Selecting previously unselected package python3.
+#8 71.19 (Reading database ... 
+(Reading database ... 5%
+(Reading database ... 10%
+(Reading database ... 15%
+(Reading database ... 20%
+(Reading database ... 25%
+(Reading database ... 30%
+(Reading database ... 35%
+(Reading database ... 40%
+(Reading database ... 45%
+(Reading database ... 50%
+(Reading database ... 55%
+(Reading database ... 60%
+(Reading database ... 65%
+(Reading database ... 70%
+(Reading database ... 75%
+(Reading database ... 80%
+(Reading database ... 85%
+(Reading database ... 90%
+(Reading database ... 95%
+(Reading database ... 100%
+(Reading database ... 6927 files and directories currently installed.)
+#8 71.21 Preparing to unpack .../00-python3_3.11.2-1+b1_amd64.deb ...
+#8 71.26 Unpacking python3 (3.11.2-1+b1) ...
+#8 71.45 Selecting previously unselected package openssl.
+#8 71.45 Preparing to unpack .../01-openssl_3.0.20-1~deb12u2_amd64.deb ...
+#8 71.49 Unpacking openssl (3.0.20-1~deb12u2) ...
+#8 72.94 Selecting previously unselected package ca-certificates.
+#8 72.94 Preparing to unpack .../02-ca-certificates_20230311+deb12u1_all.deb ...
+#8 73.06 Unpacking ca-certificates (20230311+deb12u1) ...
+#8 73.92 Selecting previously unselected package libbrotli1:amd64.
+#8 73.92 Preparing to unpack .../03-libbrotli1_1.0.9-2+b6_amd64.deb ...
+#8 74.16 Unpacking libbrotli1:amd64 (1.0.9-2+b6) ...
+#8 74.97 Selecting previously unselected package libsasl2-modules-db:amd64.
+#8 74.97 Preparing to unpack .../04-libsasl2-modules-db_2.1.28+dfsg-10_amd64.deb ...
+#8 75.03 Unpacking libsasl2-modules-db:amd64 (2.1.28+dfsg-10) ...
+#8 75.76 Selecting previously unselected package libsasl2-2:amd64.
+#8 75.76 Preparing to unpack .../05-libsasl2-2_2.1.28+dfsg-10_amd64.deb ...
+#8 75.87 Unpacking libsasl2-2:amd64 (2.1.28+dfsg-10) ...
+#8 76.32 Selecting previously unselected package libldap-2.5-0:amd64.
+#8 76.33 Preparing to unpack .../06-libldap-2.5-0_2.5.13+dfsg-5_amd64.deb ...
+#8 76.42 Unpacking libldap-2.5-0:amd64 (2.5.13+dfsg-5) ...
+#8 76.85 Selecting previously unselected package libnghttp2-14:amd64.
+#8 76.85 Preparing to unpack .../07-libnghttp2-14_1.52.0-1+deb12u3_amd64.deb ...
+#8 76.88 Unpacking libnghttp2-14:amd64 (1.52.0-1+deb12u3) ...
+#8 77.24 Selecting previously unselected package libpsl5:amd64.
+#8 77.25 Preparing to unpack .../08-libpsl5_0.21.2-1_amd64.deb ...
+#8 77.27 Unpacking libpsl5:amd64 (0.21.2-1) ...
+#8 77.52 Selecting previously unselected package librtmp1:amd64.
+#8 77.53 Preparing to unpack .../09-librtmp1_2.4+20151223.gitfa8646d.1-2+b2_amd64.deb ...
+#8 77.55 Unpacking librtmp1:amd64 (2.4+20151223.gitfa8646d.1-2+b2) ...
+#8 77.79 Selecting previously unselected package libssh2-1:amd64.
+#8 77.79 Preparing to unpack .../10-libssh2-1_1.10.0-3+b1_amd64.deb ...
+#8 77.99 Unpacking libssh2-1:amd64 (1.10.0-3+b1) ...
+#8 78.28 Selecting previously unselected package libcurl4:amd64.
+#8 78.29 Preparing to unpack .../11-libcurl4_7.88.1-10+deb12u14_amd64.deb ...
+#8 78.31 Unpacking libcurl4:amd64 (7.88.1-10+deb12u14) ...
+#8 78.54 Selecting previously unselected package curl.
+#8 78.55 Preparing to unpack .../12-curl_7.88.1-10+deb12u14_amd64.deb ...
+#8 78.56 Unpacking curl (7.88.1-10+deb12u14) ...
+#8 78.98 Selecting previously unselected package python3-lib2to3.
+#8 78.99 Preparing to unpack .../13-python3-lib2to3_3.11.2-3_all.deb ...
+#8 79.05 Unpacking python3-lib2to3 (3.11.2-3) ...
+#8 80.24 Selecting previously unselected package python3-distutils.
+#8 80.24 Preparing to unpack .../14-python3-distutils_3.11.2-3_all.deb ...
+#8 80.32 Unpacking python3-distutils (3.11.2-3) ...
+#8 81.09 Selecting previously unselected package python3-pkg-resources.
+#8 81.09 Preparing to unpack .../15-python3-pkg-resources_66.1.1-1+deb12u2_all.deb ...
+#8 81.11 Unpacking python3-pkg-resources (66.1.1-1+deb12u2) ...
+#8 81.39 Selecting previously unselected package python3-setuptools.
+#8 81.39 Preparing to unpack .../16-python3-setuptools_66.1.1-1+deb12u2_all.deb ...
+#8 81.43 Unpacking python3-setuptools (66.1.1-1+deb12u2) ...
+#8 82.18 Selecting previously unselected package python3-wheel.
+#8 82.18 Preparing to unpack .../17-python3-wheel_0.38.4-2_all.deb ...
+#8 82.22 Unpacking python3-wheel (0.38.4-2) ...
+#8 83.62 Selecting previously unselected package python3-pip.
+#8 83.62 Preparing to unpack .../18-python3-pip_23.0.1+dfsg-1_all.deb ...
+#8 83.67 Unpacking python3-pip (23.0.1+dfsg-1) ...
+#8 86.89 Selecting previously unselected package python3-pip-whl.
+#8 86.89 Preparing to unpack .../19-python3-pip-whl_23.0.1+dfsg-1_all.deb ...
+#8 86.93 Unpacking python3-pip-whl (23.0.1+dfsg-1) ...
+#8 87.32 Selecting previously unselected package python3-setuptools-whl.
+#8 87.32 Preparing to unpack .../20-python3-setuptools-whl_66.1.1-1+deb12u2_all.deb ...
+#8 87.34 Unpacking python3-setuptools-whl (66.1.1-1+deb12u2) ...
+#8 87.64 Selecting previously unselected package python3.11-venv.
+#8 87.65 Preparing to unpack .../21-python3.11-venv_3.11.2-6+deb12u7_amd64.deb ...
+#8 87.67 Unpacking python3.11-venv (3.11.2-6+deb12u7) ...
+#8 87.80 Selecting previously unselected package python3-venv.
+#8 87.80 Preparing to unpack .../22-python3-venv_3.11.2-1+b1_amd64.deb ...
+#8 87.83 Unpacking python3-venv (3.11.2-1+b1) ...
+#8 87.97 Selecting previously unselected package tini.
+#8 87.97 Preparing to unpack .../23-tini_0.19.0-1+b3_amd64.deb ...
+#8 87.99 Unpacking tini (0.19.0-1+b3) ...
+#8 88.20 Setting up media-types (10.0.0) ...
+#8 88.28 Setting up python3-setuptools-whl (66.1.1-1+deb12u2) ...
+#8 88.40 Setting up libkeyutils1:amd64 (1.6.3-2) ...
+#8 88.50 Setting up libpsl5:amd64 (0.21.2-1) ...
+#8 88.58 Setting up libtirpc-common (1.3.3+ds-1) ...
+#8 88.70 Setting up libbrotli1:amd64 (1.0.9-2+b6) ...
+#8 88.76 Setting up libsqlite3-0:amd64 (3.40.1-2+deb12u2) ...
+#8 88.94 Setting up libnghttp2-14:amd64 (1.52.0-1+deb12u3) ...
+#8 89.03 Setting up libkrb5support0:amd64 (1.20.1-2+deb12u5) ...
+#8 89.10 Setting up libsasl2-modules-db:amd64 (2.1.28+dfsg-10) ...
+#8 89.16 Setting up librtmp1:amd64 (2.4+20151223.gitfa8646d.1-2+b2) ...
+#8 89.23 Setting up tini (0.19.0-1+b3) ...
+#8 89.31 Setting up libncursesw6:amd64 (6.4-4) ...
+#8 89.42 Setting up libk5crypto3:amd64 (1.20.1-2+deb12u5) ...
+#8 89.51 Setting up libsasl2-2:amd64 (2.1.28+dfsg-10) ...
+#8 89.60 Setting up libssh2-1:amd64 (1.10.0-3+b1) ...
+#8 89.67 Setting up libkrb5-3:amd64 (1.20.1-2+deb12u5) ...
+#8 89.73 Setting up openssl (3.0.20-1~deb12u2) ...
+#8 89.82 Setting up readline-common (8.2-1.3) ...
+#8 89.94 Setting up libreadline8:amd64 (8.2-1.3) ...
+#8 90.03 Setting up libldap-2.5-0:amd64 (2.5.13+dfsg-5) ...
+#8 90.11 Setting up ca-certificates (20230311+deb12u1) ...
+#8 92.86 debconf: unable to initialize frontend: Dialog
+#8 92.86 debconf: (TERM is not set, so the dialog frontend is not usable.)
+#8 92.86 debconf: falling back to frontend: Readline
+#8 92.87 debconf: unable to initialize frontend: Readline
+#8 92.87 debconf: (Can't locate Term/ReadLine.pm in @INC (you may need to install the Term::ReadLine module) (@INC contains: /etc/perl /usr/local/lib/x86_64-linux-gnu/perl/5.36.0 /usr/local/share/perl/5.36.0 /usr/lib/x86_64-linux-gnu/perl5/5.36 /usr/share/perl5 /usr/lib/x86_64-linux-gnu/perl-base /usr/lib/x86_64-linux-gnu/perl/5.36 /usr/share/perl/5.36 /usr/local/lib/site_perl) at /usr/share/perl5/Debconf/FrontEnd/Readline.pm line 7.)
+#8 92.87 debconf: falling back to frontend: Teletype
+#8 109.8 Updating certificates in /etc/ssl/certs...
+#8 ...
+
+#10 [hyba-runtime node-deps 4/4] RUN npm ci
+#10 109.2 npm error code EUSAGE
+#10 109.2 npm error
+#10 109.2 npm error `npm ci` can only install packages when your package.json and package-lock.json or npm-shrinkwrap.json are in sync. Please update your lock file with `npm install` before continuing.
+#10 109.2 npm error
+#10 109.2 npm error Missing: @types/d3@7.4.3 from lock file
+#10 109.2 npm error Missing: @types/express@4.17.25 from lock file
+#10 109.2 npm error Missing: @types/jsonwebtoken@9.0.10 from lock file
+#10 109.2 npm error Missing: @types/swagger-ui-express@4.1.8 from lock file
+#10 109.2 npm error Missing: @typescript-eslint/eslint-plugin@8.61.0 from lock file
+#10 109.2 npm error Missing: eslint@10.5.0 from lock file
+#10 109.2 npm error Missing: typescript@5.8.3 from lock file
+#10 109.2 npm error Missing: @typescript-eslint/parser@8.61.0 from lock file
+#10 109.2 npm error Missing: @vitest/coverage-v8@4.1.8 from lock file
+#10 109.2 npm error Missing: vitest@4.1.8 from lock file
+#10 109.2 npm error Missing: autoprefixer@10.5.0 from lock file
+#10 109.2 npm error Missing: cross-env@10.1.0 from lock file
+#10 109.2 npm error Invalid: lock file's esbuild@0.25.12 does not satisfy esbuild@0.28.1
+#10 109.2 npm error Missing: eslint-config-prettier@10.1.8 from lock file
+#10 109.2 npm error Missing: eslint-plugin-prettier@5.5.6 from lock file
+#10 109.2 npm error Missing: prettier@3.8.4 from lock file
+#10 109.2 npm error Missing: fast-check@4.8.0 from lock file
+#10 109.2 npm error Invalid: lock file's vite@6.4.3 does not satisfy vite@8.0.16
+#10 109.2 npm error Missing: @types/d3-axis@3.0.6 from lock file
+#10 109.2 npm error Missing: @types/d3-brush@3.0.6 from lock file
+#10 109.2 npm error Missing: @types/d3-chord@3.0.6 from lock file
+#10 109.2 npm error Missing: @types/d3-contour@3.0.6 from lock file
+#10 109.2 npm error Missing: @types/d3-delaunay@6.0.4 from lock file
+#10 109.2 npm error Missing: @types/d3-dispatch@3.0.7 from lock file
+#10 109.2 npm error Missing: @types/d3-drag@3.0.7 from lock file
+#10 109.2 npm error Missing: @types/d3-dsv@3.0.7 from lock file
+#10 109.2 npm error Missing: @types/d3-fetch@3.0.7 from lock file
+#10 109.2 npm error Missing: @types/d3-force@3.0.10 from lock file
+#10 109.2 npm error Missing: @types/d3-format@3.0.4 from lock file
+#10 109.2 npm error Missing: @types/d3-geo@3.1.0 from lock file
+#10 109.2 npm error Missing: @types/d3-hierarchy@3.1.7 from lock file
+#10 109.2 npm error Missing: @types/d3-polygon@3.0.2 from lock file
+#10 109.2 npm error Missing: @types/d3-quadtree@3.0.6 from lock file
+#10 109.2 npm error Missing: @types/d3-random@3.0.3 from lock file
+#10 109.2 npm error Missing: @types/d3-scale-chromatic@3.1.0 from lock file
+#10 109.2 npm error Missing: @types/d3-selection@3.0.11 from lock file
+#10 109.2 npm error Missing: @types/d3-time-format@4.0.3 from lock file
+#10 109.2 npm error Missing: @types/d3-transition@3.0.9 from lock file
+#10 109.2 npm error Missing: @types/d3-zoom@3.0.8 from lock file
+#10 109.2 npm error Missing: @types/geojson@7946.0.16 from lock file
+#10 109.2 npm error Missing: @types/body-parser@1.19.6 from lock file
+#10 109.2 npm error Missing: @types/express-serve-static-core@4.19.8 from lock file
+#10 109.2 npm error Missing: @types/qs@6.15.1 from lock file
+#10 109.2 npm error Missing: @types/serve-static@1.15.10 from lock file
+#10 109.2 npm error Missing: @types/connect@3.4.38 from lock file
+#10 109.2 npm error Missing: @types/range-parser@1.2.7 from lock file
+#10 109.2 npm error Missing: @types/send@1.2.1 from lock file
+#10 109.2 npm error Missing: @types/ms@2.1.0 from lock file
+#10 109.2 npm error Missing: @types/http-errors@2.0.5 from lock file
+#10 109.2 npm error Missing: @types/send@0.17.6 from lock file
+#10 109.2 npm error Missing: @eslint-community/regexpp@4.12.2 from lock file
+#10 109.2 npm error Missing: @typescript-eslint/scope-manager@8.61.0 from lock file
+#10 109.2 npm error Missing: @typescript-eslint/type-utils@8.61.0 from lock file
+#10 109.2 npm error Missing: @typescript-eslint/utils@8.61.0 from lock file
+#10 109.2 npm error Missing: @typescript-eslint/visitor-keys@8.61.0 from lock file
+#10 109.2 npm error Missing: ignore@7.0.5 from lock file
+#10 109.2 npm error Missing: natural-compare@1.4.0 from lock file
+#10 109.2 npm error Missing: ts-api-utils@2.5.0 from lock file
+#10 109.2 npm error Missing: @typescript-eslint/types@8.61.0 from lock file
+#10 109.2 npm error Missing: @typescript-eslint/typescript-estree@8.61.0 from lock file
+#10 109.2 npm error Missing: @typescript-eslint/project-service@8.61.0 from lock file
+#10 109.2 npm error Missing: @typescript-eslint/tsconfig-utils@8.61.0 from lock file
+#10 109.2 npm error Missing: minimatch@10.2.5 from lock file
+#10 109.2 npm error Missing: semver@7.8.4 from lock file
+#10 109.2 npm error Missing: @eslint-community/eslint-utils@4.9.1 from lock file
+#10 109.2 npm error Missing: eslint-visitor-keys@3.4.3 from lock file
+#10 109.2 npm error Missing: eslint-visitor-keys@5.0.1 from lock file
+#10 109.2 npm error Missing: @bcoe/v8-coverage@1.0.2 from lock file
+#10 109.2 npm error Missing: @vitest/utils@4.1.8 from lock file
+#10 109.2 npm error Missing: ast-v8-to-istanbul@1.0.4 from lock file
+#10 109.2 npm error Missing: istanbul-lib-coverage@3.2.2 from lock file
+#10 109.2 npm error Missing: istanbul-lib-report@3.0.1 from lock file
+#10 109.2 npm error Missing: istanbul-reports@3.2.0 from lock file
+#10 109.2 npm error Missing: magicast@0.5.3 from lock file
+#10 109.2 npm error Missing: obug@2.1.3 from lock file
+#10 109.2 npm error Missing: std-env@4.1.0 from lock file
+#10 109.2 npm error Missing: tinyrainbow@3.1.0 from lock file
+#10 109.2 npm error Missing: @vitest/pretty-format@4.1.8 from lock file
+#10 109.2 npm error Missing: estree-walker@3.0.3 from lock file
+#10 109.2 npm error Missing: js-tokens@10.0.0 from lock file
+#10 109.2 npm error Missing: fraction.js@5.3.4 from lock file
+#10 109.2 npm error Missing: postcss-value-parser@4.2.0 from lock file
+#10 109.2 npm error Missing: @epic-web/invariant@1.0.0 from lock file
+#10 109.2 npm error Missing: cross-spawn@7.0.6 from lock file
+#10 109.2 npm error Missing: path-key@3.1.1 from lock file
+#10 109.2 npm error Missing: shebang-command@2.0.0 from lock file
+#10 109.2 npm error Missing: which@2.0.2 from lock file
+#10 109.2 npm error Missing: @esbuild/aix-ppc64@0.28.1 from lock file
+#10 109.2 npm error Missing: @esbuild/android-arm@0.28.1 from lock file
+#10 109.2 npm error Missing: @esbuild/android-arm64@0.28.1 from lock file
+#10 109.2 npm error Missing: @esbuild/android-x64@0.28.1 from lock file
+#10 109.2 npm error Missing: @esbuild/darwin-arm64@0.28.1 from lock file
+#10 109.2 npm error Missing: @esbuild/darwin-x64@0.28.1 from lock file
+#10 109.2 npm error Missing: @esbuild/freebsd-arm64@0.28.1 from lock file
+#10 109.2 npm error Missing: @esbuild/freebsd-x64@0.28.1 from lock file
+#10 109.2 npm error Missing: @esbuild/linux-arm@0.28.1 from lock file
+#10 109.2 npm error Missing: @esbuild/linux-arm64@0.28.1 from lock file
+#10 109.2 npm error Missing: @esbuild/linux-ia32@0.28.1 from lock file
+#10 109.2 npm error Missing: @esbuild/linux-loong64@0.28.1 from lock file
+#10 109.2 npm error Missing: @esbuild/linux-mips64el@0.28.1 from lock file
+#10 109.2 npm error Missing: @esbuild/linux-ppc64@0.28.1 from lock file
+#10 109.2 npm error Missing: @esbuild/linux-riscv64@0.28.1 from lock file
+#10 109.2 npm error Missing: @esbuild/linux-s390x@0.28.1 from lock file
+#10 109.2 npm error Missing: @esbuild/linux-x64@0.28.1 from lock file
+#10 109.2 npm error Missing: @esbuild/netbsd-arm64@0.28.1 from lock file
+#10 109.2 npm error Missing: @esbuild/netbsd-x64@0.28.1 from lock file
+#10 109.2 npm error Missing: @esbuild/openbsd-arm64@0.28.1 from lock file
+#10 109.2 npm error Missing: @esbuild/openbsd-x64@0.28.1 from lock file
+#10 109.2 npm error Missing: @esbuild/openharmony-arm64@0.28.1 from lock file
+#10 109.2 npm error Missing: @esbuild/sunos-x64@0.28.1 from lock file
+#10 109.2 npm error Missing: @esbuild/win32-arm64@0.28.1 from lock file
+#10 109.2 npm error Missing: @esbuild/win32-ia32@0.28.1 from lock file
+#10 109.2 npm error Missing: @eslint/config-array@0.23.5 from lock file
+#10 109.2 npm error Missing: @eslint/config-helpers@0.6.0 from lock file
+#10 109.2 npm error Missing: @eslint/core@1.2.1 from lock file
+#10 109.2 npm error Missing: @eslint/plugin-kit@0.7.2 from lock file
+#10 109.2 npm error Missing: @humanfs/node@0.16.8 from lock file
+#10 109.2 npm error Missing: @humanwhocodes/module-importer@1.0.1 from lock file
+#10 109.2 npm error Missing: @humanwhocodes/retry@0.4.3 from lock file
+#10 109.2 npm error Missing: ajv@6.15.0 from lock file
+#10 109.2 npm error Missing: escape-string-regexp@4.0.0 from lock file
+#10 109.2 npm error Missing: eslint-scope@9.1.2 from lock file
+#10 109.2 npm error Missing: eslint-visitor-keys@5.0.1 from lock file
+#10 109.2 npm error Missing: espree@11.2.0 from lock file
+#10 109.2 npm error Missing: esquery@1.7.0 from lock file
+#10 109.2 npm error Missing: esutils@2.0.3 from lock file
+#10 109.2 npm error Missing: fast-deep-equal@3.1.3 from lock file
+#10 109.2 npm error Missing: file-entry-cache@8.0.0 from lock file
+#10 109.2 npm error Missing: find-up@5.0.0 from lock file
+#10 109.2 npm error Missing: glob-parent@6.0.2 from lock file
+#10 109.2 npm error Missing: ignore@5.3.2 from lock file
+#10 109.2 npm error Missing: imurmurhash@0.1.4 from lock file
+#10 109.2 npm error Missing: json-stable-stringify-without-jsonify@1.0.1 from lock file
+#10 109.2 npm error Missing: optionator@0.9.4 from lock file
+#10 109.2 npm error Missing: @eslint/object-schema@3.0.5 from lock file
+#10 109.2 npm error Missing: @types/json-schema@7.0.15 from lock file
+#10 109.2 npm error Missing: levn@0.4.1 from lock file
+#10 109.2 npm error Missing: @humanfs/core@0.19.2 from lock file
+#10 109.2 npm error Missing: @humanfs/types@0.15.0 from lock file
+#10 109.2 npm error Missing: fast-json-stable-stringify@2.1.0 from lock file
+#10 109.2 npm error Missing: json-schema-traverse@0.4.1 from lock file
+#10 109.2 npm error Missing: uri-js@4.4.1 from lock file
+#10 109.2 npm error Missing: prettier-linter-helpers@1.0.1 from lock file
+#10 109.2 npm error Missing: synckit@0.11.13 from lock file
+#10 109.2 npm error Missing: @types/esrecurse@4.3.1 from lock file
+#10 109.2 npm error Missing: esrecurse@4.3.0 from lock file
+#10 109.2 npm error Missing: estraverse@5.3.0 from lock file
+#10 109.2 npm error Missing: acorn@8.17.0 from lock file
+#10 109.2 npm error Missing: acorn-jsx@5.3.2 from lock file
+#10 109.2 npm error Missing: eslint-visitor-keys@5.0.1 from lock file
+#10 109.2 npm error Missing: pure-rand@8.4.0 from lock file
+#10 109.2 npm error Missing: flat-cache@4.0.1 from lock file
+#10 109.2 npm error Missing: locate-path@6.0.0 from lock file
+#10 109.2 npm error Missing: path-exists@4.0.0 from lock file
+#10 109.2 npm error Missing: flatted@3.4.2 from lock file
+#10 109.2 npm error Missing: keyv@4.5.4 from lock file
+#10 109.2 npm error Missing: make-dir@4.0.0 from lock file
+#10 109.2 npm error Missing: supports-color@7.2.0 from lock file
+#10 109.2 npm error Missing: html-escaper@2.0.2 from lock file
+#10 109.2 npm error Missing: json-buffer@3.0.1 from lock file
+#10 109.2 npm error Missing: prelude-ls@1.2.1 from lock file
+#10 109.2 npm error Missing: type-check@0.4.0 from lock file
+#10 109.2 npm error Missing: p-locate@5.0.0 from lock file
+#10 109.2 npm error Missing: semver@7.8.4 from lock file
+#10 109.2 npm error Missing: brace-expansion@5.0.6 from lock file
+#10 109.2 npm error Missing: balanced-match@4.0.4 from lock file
+#10 109.2 npm error Missing: deep-is@0.1.4 from lock file
+#10 109.2 npm error Missing: fast-levenshtein@2.0.6 from lock file
+#10 109.2 npm error Missing: word-wrap@1.2.5 from lock file
+#10 109.2 npm error Missing: p-limit@3.1.0 from lock file
+#10 109.2 npm error Missing: yocto-queue@0.1.0 from lock file
+#10 109.2 npm error Missing: fast-diff@1.3.0 from lock file
+#10 109.2 npm error Missing: shebang-regex@3.0.0 from lock file
+#10 109.2 npm error Missing: has-flag@4.0.0 from lock file
+#10 109.2 npm error Missing: @pkgr/core@0.3.6 from lock file
+#10 109.2 npm error Missing: punycode@2.3.1 from lock file
+#10 109.2 npm error Missing: fsevents@2.3.3 from lock file
+#10 109.2 npm error Missing: rolldown@1.0.3 from lock file
+#10 109.2 npm error Missing: @oxc-project/types@0.133.0 from lock file
+#10 109.2 npm error Missing: @rolldown/binding-android-arm64@1.0.3 from lock file
+#10 109.2 npm error Missing: @rolldown/binding-darwin-arm64@1.0.3 from lock file
+#10 109.2 npm error Missing: @rolldown/binding-darwin-x64@1.0.3 from lock file
+#10 109.2 npm error Missing: @rolldown/binding-freebsd-x64@1.0.3 from lock file
+#10 109.2 npm error Missing: @rolldown/binding-linux-arm-gnueabihf@1.0.3 from lock file
+#10 109.2 npm error Missing: @rolldown/binding-linux-arm64-gnu@1.0.3 from lock file
+#10 109.2 npm error Missing: @rolldown/binding-linux-arm64-musl@1.0.3 from lock file
+#10 109.2 npm error Missing: @rolldown/binding-linux-ppc64-gnu@1.0.3 from lock file
+#10 109.2 npm error Missing: @rolldown/binding-linux-s390x-gnu@1.0.3 from lock file
+#10 109.2 npm error Missing: @rolldown/binding-linux-x64-gnu@1.0.3 from lock file
+#10 109.2 npm error Missing: @rolldown/binding-linux-x64-musl@1.0.3 from lock file
+#10 109.2 npm error Missing: @rolldown/binding-openharmony-arm64@1.0.3 from lock file
+#10 109.2 npm error Missing: @rolldown/binding-wasm32-wasi@1.0.3 from lock file
+#10 109.2 npm error Missing: @rolldown/binding-win32-arm64-msvc@1.0.3 from lock file
+#10 109.2 npm error Missing: @rolldown/binding-win32-x64-msvc@1.0.3 from lock file
+#10 109.2 npm error Missing: @rolldown/pluginutils@1.0.1 from lock file
+#10 109.2 npm error Missing: @emnapi/core@1.10.0 from lock file
+#10 109.2 npm error Missing: @emnapi/runtime@1.10.0 from lock file
+#10 109.2 npm error Missing: @napi-rs/wasm-runtime@1.1.5 from lock file
+#10 109.2 npm error Missing: @emnapi/wasi-threads@1.2.1 from lock file
+#10 109.2 npm error Missing: @tybys/wasm-util@0.10.2 from lock file
+#10 109.2 npm error Missing: @vitest/expect@4.1.8 from lock file
+#10 109.2 npm error Missing: @vitest/mocker@4.1.8 from lock file
+#10 109.2 npm error Missing: @vitest/runner@4.1.8 from lock file
+#10 109.2 npm error Missing: @vitest/snapshot@4.1.8 from lock file
+#10 109.2 npm error Missing: @vitest/spy@4.1.8 from lock file
+#10 109.2 npm error Missing: es-module-lexer@2.1.0 from lock file
+#10 109.2 npm error Missing: expect-type@1.3.0 from lock file
+#10 109.2 npm error Missing: pathe@2.0.3 from lock file
+#10 109.2 npm error Missing: picomatch@4.0.4 from lock file
+#10 109.2 npm error Missing: tinybench@2.9.0 from lock file
+#10 109.2 npm error Missing: tinyexec@1.2.4 from lock file
+#10 109.2 npm error Missing: why-is-node-running@2.3.0 from lock file
+#10 109.2 npm error Missing: @types/chai@5.2.3 from lock file
+#10 109.2 npm error Missing: chai@6.2.2 from lock file
+#10 109.2 npm error Missing: @types/deep-eql@4.0.2 from lock file
+#10 109.2 npm error Missing: assertion-error@2.0.1 from lock file
+#10 109.2 npm error Missing: isexe@2.0.0 from lock file
+#10 109.2 npm error Missing: siginfo@2.0.0 from lock file
+#10 109.2 npm error Missing: stackback@0.0.2 from lock file
+#10 109.2 npm error Missing: @types/mime@1.3.5 from lock file
+#10 109.2 npm error
+#10 109.2 npm error Clean install a project
+#10 109.2 npm error
+#10 109.2 npm error Usage:
+#10 109.2 npm error npm ci
+#10 109.2 npm error
+#10 109.2 npm error Options:
+#10 109.2 npm error [--install-strategy <hoisted|nested|shallow|linked>] [--legacy-bundling]
+#10 109.2 npm error [--global-style] [--omit <dev|optional|peer> [--omit <dev|optional|peer> ...]]
+#10 109.2 npm error [--include <prod|dev|optional|peer> [--include <prod|dev|optional|peer> ...]]
+#10 109.2 npm error [--strict-peer-deps] [--foreground-scripts] [--ignore-scripts] [--no-audit]
+#10 109.2 npm error [--no-bin-links] [--no-fund] [--dry-run]
+#10 109.2 npm error [-w|--workspace <workspace-name> [-w|--workspace <workspace-name> ...]]
+#10 109.2 npm error [-ws|--workspaces] [--include-workspace-root] [--install-links]
+#10 109.2 npm error
+#10 109.2 npm error aliases: clean-install, ic, install-clean, isntall-clean
+#10 109.2 npm error
+#10 109.2 npm error Run "npm help ci" for more info
+#10 109.2 npm notice
+#10 109.2 npm notice New major version of npm available! 10.9.2 -> 11.17.0
+#10 109.2 npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.17.0
+#10 109.2 npm notice To update run: npm install -g npm@11.17.0
+#10 109.2 npm notice
+#10 109.2 npm error A complete log of this run can be found in: /root/.npm/_logs/2026-06-14T17_56_36_704Z-debug-0.log
+#10 ERROR: process "/bin/sh -c npm ci" did not complete successfully: exit code: 1
+
+#8 [hyba-runtime runtime  3/12] RUN apt-get update     && apt-get install -y --no-install-recommends python3 python3-pip python3-venv curl ca-certificates tini     && rm -rf /var/lib/apt/lists/*
+#8 ...
+
+#10 [hyba-runtime node-deps 4/4] RUN npm ci
+#10 ERROR: process "/bin/sh -c npm ci" did not complete successfully: exit code: 1
+
+#8 [hyba-runtime runtime  3/12] RUN apt-get update     && apt-get install -y --no-install-recommends python3 python3-pip python3-venv curl ca-certificates tini     && rm -rf /var/lib/apt/lists/*
+#8 CANCELED
+
+#8 [hyba-runtime runtime  3/12] RUN apt-get update     && apt-get install -y --no-install-recommends python3 python3-pip python3-venv curl ca-certificates tini     && rm -rf /var/lib/apt/lists/*
+#8 CANCELED
+------
+ > [hyba-runtime node-deps 4/4] RUN npm ci:
+109.2 npm error
+109.2 npm error aliases: clean-install, ic, install-clean, isntall-clean
+109.2 npm error
+109.2 npm error Run "npm help ci" for more info
+109.2 npm notice
+109.2 npm notice New major version of npm available! 10.9.2 -> 11.17.0
+109.2 npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.17.0
+109.2 npm notice To update run: npm install -g npm@11.17.0
+109.2 npm notice
+109.2 npm error A complete log of this run can be found in: /root/.npm/_logs/2026-06-14T17_56_36_704Z-debug-0.log
+------
+WARNING: The "argon2id" variable is not set. Defaulting to a blank string.
+
+WARNING: The "v" variable is not set. Defaulting to a blank string.
+
+WARNING: The "m" variable is not set. Defaulting to a blank string.
+
+WARNING: The "qvzNFWKWtmi1bUwVb1qG6w" variable is not set. Defaulting to a blank string.
+
+Dockerfile:4
+
+--------------------
+
+   2 |     WORKDIR /app
+
+   3 |     COPY package.json package-lock.json* ./
+
+   4 | >>> RUN npm ci
+
+   5 |     
+
+   6 |     FROM node:22.15.0-bookworm-slim AS frontend-build
+
+--------------------
+
+target hyba-runtime: failed to solve: process "/bin/sh -c npm ci" did not complete successfully: exit code: 1
+
+
+
+View build details: docker-desktop://dashboard/build/default/default/rg6dv0gksrbq09vdkmnn86qs8
+

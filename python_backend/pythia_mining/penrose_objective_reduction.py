@@ -55,6 +55,7 @@ class ObjectiveReductionEngine:
         effective_mass: float = EFFECTIVE_MASS_PER_NODE,
         coherence_scale: float = COHERENCE_LENGTH_SCALE,
         enable_true_or: bool = False,
+        enhanced_gravity_model: bool = False,
     ):
         """Initialize OR engine.
 
@@ -62,10 +63,12 @@ class ObjectiveReductionEngine:
             effective_mass: Effective mass per node in kg
             coherence_scale: Spatial scale of coherence in meters
             enable_true_or: If True, use Penrose criterion; if False, use operational proxy
+            enhanced_gravity_model: If True, use enhanced gravitational self-energy computation
         """
         self.effective_mass = float(effective_mass)
         self.coherence_scale = float(coherence_scale)
         self.enable_true_or = bool(enable_true_or)
+        self.enhanced_gravity_model = bool(enhanced_gravity_model)
         self.or_events: list[ObjectiveReductionEvent] = []
         self.consciousness_event_count = 0
 
@@ -130,10 +133,20 @@ class ObjectiveReductionEngine:
         - G is gravitational constant
         - m is mass in superposition
         - r is spatial separation scale
+
+        Enhanced model includes coherence-weighted mass distribution.
         """
         # Effective mass in superposition (proportional to off-diagonal elements)
         off_diagonal = np.abs(rho - np.diag(np.diag(rho)))
-        superposed_mass = self.effective_mass * float(np.sum(off_diagonal))
+        
+        if self.enhanced_gravity_model:
+            # Enhanced model: coherence-weighted mass distribution
+            coherence = np.abs(rho)
+            coherence_weighted_mass = self.effective_mass * float(np.sum(off_diagonal * coherence))
+            superposed_mass = coherence_weighted_mass
+        else:
+            # Original model
+            superposed_mass = self.effective_mass * float(np.sum(off_diagonal))
 
         if superposed_mass < 1e-30:
             # No significant superposition
@@ -219,6 +232,7 @@ class ObjectiveReductionEngine:
                 else 0.0
             ),
             "mode": "penrose_or" if self.enable_true_or else "operational_proxy",
+            "enhanced_gravity_model": self.enhanced_gravity_model,
         }
 
 
