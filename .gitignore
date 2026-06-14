@@ -20,3 +20,9 @@ config/mining.pools.env
 *.db-wal
 artifacts/production_readiness/
 artifacts/funding_engine/
+
+# Local review and generated result artifacts
+%EVDIR%/
+changes.diff
+asic_comparison_results.json
+golden_ratio_scaling_results.json
