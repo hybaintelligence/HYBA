@@ -1,56 +1,92 @@
 # HYBA Fullstack / PYTHIA PULVINI
+## Executive Summary
 
-HYBA Fullstack contains the operator UI, FastAPI backend, production mining controls, and the PYTHIA PULVINI mathematical mining layer.  The project is built around deterministic protocol handling and first-principles mathematical certificates rather than runtime simulations or fabricated telemetry.
+HYBA Fullstack represents a self-financing operating substrate that combines production-grade mining infrastructure with the PYTHIA PULVINI mathematical mining layer. The system is engineered around deterministic protocol handling and first-principles mathematical certificates, distinguishing it from conventional simulation-based approaches.
 
-## Institutional role
+**Key Value Propositions:**
+- **Deterministic Operations**: Runtime mining paths consume real operator configuration, pool messages, and hash/share outcomes
+- **Mathematical Rigor**: First-principles certificates rather than runtime simulations or fabricated telemetry
+- **Production-Ready Architecture**: Comprehensive governance, compliance, and evidence-boundary discipline
+- **Scalable Design**: 32-node internal PULVINI manifold presented as single worker identity to mining pools
 
-HYBA_FULLSTACK is HYBA's self-financing operating substrate. It is a separate repository and deployment boundary that funds the broader HYBA mission through controlled production runtime activity.
+## Institutional Context
 
-It does not replace HYBA_Unified_Backend or HYBA_Unified_Frontend. It does not own HYBA Foundation programmes or HYBA Research claims. It is operated by HYBA Group / Company, governed through the same evidence and claim-boundary discipline as the rest of HYBA, and documented separately in [HYBA_FULLSTACK governance charter](docs/HYBA_FULLSTACK_GOVERNANCE.md).
+HYBA_FULLSTACK operates as HYBA's self-financing operating substrate with distinct repository and deployment boundaries. It funds the broader HYBA mission through controlled production runtime activity while maintaining clear separation from:
+- HYBA_Unified_Backend
+- HYBA_Unified_Frontend  
+- HYBA Foundation programmes
+- HYBA Research claims
 
-PULVINI is memory compression at scale and a mathematical/state-certificate layer. THEMIS is the governance, compliance, evidence, and claim-boundary authority. Do not conflate them.
+The system operates under HYBA Group / Company governance, following evidence and claim-boundary discipline documented in the [HYBA_FULLSTACK governance charter](docs/HYBA_FULLSTACK_GOVERNANCE.md).
 
-## Production principle
+**Component Clarification:**
+- **PULVINI**: Memory compression at scale and mathematical/state-certificate layer
+- **THEMIS**: Governance, compliance, evidence, and claim-boundary authority
 
-Runtime mining paths must consume real operator configuration, real pool messages, real hash/share outcomes, and deterministic mathematical transforms.  Development fixtures are isolated behind explicit gates; production checks reject fixed mining telemetry, pseudo-random runtime telemetry, and simulated target-job injection.
+## Production Principles
 
-## Architecture at a glance
+The system enforces strict production principles:
 
-- **Frontend**: React/Vite operator console and mining controls.
-- **Backend**: FastAPI service surface under `python_backend/hyba_genesis_api`.
-- **Mining core**: PYTHIA modules under `python_backend/pythia_mining`.
-- **Pool protocol layer**: Stratum v1 JSON-RPC primitives, live line transport/session handling, and Stratum v2 binary framing primitives.
-- **PULVINI manifold**: 32 internal D/I nodes presented to pools as one worker identity.
-- **Production façade**: `pulvini_operator.py` and `pulvini_verifier.py` provide clean, auditable APIs for quantum operations and certificate generation while maintaining research modules as source of truth.
-- **Mathematical gates**: automorphism, nonce compression, Bures/density-matrix, propagation, and phi-filter certificates.
-- **Binary audit serialization**: 128-byte SubstateBinaryHeader for efficient Stratum/share audit transport with deterministic passport generation.
+1. **Real Data Only**: Runtime mining paths must consume genuine operator configuration, pool messages, and hash/share outcomes
+2. **Deterministic Transforms**: All mathematical operations are deterministic and reproducible
+3. **Explicit Gates**: Development fixtures are isolated behind explicit gates
+4. **Anti-Simulation**: Production checks reject fixed mining telemetry, pseudo-random runtime telemetry, and simulated target-job injection
 
-## Step-by-step local workflow
+## Technical Architecture
 
-### 1. Install prerequisites
+### Core Components
 
-- Node.js 22+
-- Python 3.12+ recommended for the pinned backend dependency set
-- Docker, if building the production container
+- **Frontend**: React/Vite operator console and mining controls
+- **Backend**: FastAPI service surface under `python_backend/hyba_genesis_api`
+- **Mining Core**: PYTHIA modules under `python_backend/pythia_mining`
+- **Pool Protocol Layer**: Stratum v1 JSON-RPC primitives, live line transport/session handling, and Stratum v2 binary framing primitives
+- **PULVINI Manifold**: 32 internal D/I nodes presented to pools as one worker identity
+- **Production Façade**: `pulvini_operator.py` and `pulvini_verifier.py` provide clean, auditable APIs for quantum operations
+
+### Mathematical Certificates
+
+- **Automorphism Certificate**: Runtime topology validation with degree-preserving backtracking
+- **Nonce Compression**: Space compression without dropped coverage
+- **Bures/Density-Matrix**: Non-Markovian memory state evolution
+- **Propagation Certificate**: Deterministic state propagation validation
+- **Phi-Filter Certificate**: Geometric lane structure validation
+
+### Audit Infrastructure
+
+- **Binary Serialization**: 128-byte SubstateBinaryHeader for efficient Stratum/share audit transport
+- **Deterministic Passport Generation**: Reproducible audit trail creation
+
+## Implementation Guide
+
+### Prerequisites
+
+- **Node.js 22+**: Frontend framework requirement
+- **Python 3.12+**: Backend dependency set (pinned versions recommended)
+- **Docker**: Production container deployment
+
+### Installation Process
 
 ```bash
+# Install frontend dependencies
 npm install
+
+# Install backend dependencies
 python -m pip install -r python_backend/requirements.txt
 python -m pip install -r python_backend/hyba_genesis_api/requirements.txt
 ```
 
-If your environment blocks package downloads, run only dependency-free checks and mark the dependency-dependent suite as an environment limitation.
+**Note**: If your environment blocks package downloads, run only dependency-free checks and document the dependency-dependent suite as an environmental limitation.
 
-### 2. Configure operator and pool secrets
+### Configuration Management
 
-Use environment variables or the backend pool-configuration API.  Do not commit live pool secrets.
-
+**Pool Credentials Setup:**
 ```bash
 cp config/mining.pools.example.env config/mining.pools.env
 ```
 
-Populate only real operator-owned credentials.  Supported production pool URL schemes are:
+**Security Protocol**: Populate only real operator-owned credentials. Never commit live pool secrets to version control.
 
+**Supported Pool URL Schemes:**
 - `stratum+tcp://...`
 - `stratum+ssl://...`
 - `stratum+tls://...`
@@ -58,77 +94,96 @@ Populate only real operator-owned credentials.  Supported production pool URL sc
 - `stratum2+ssl://...`
 - `stratum2+tls://...`
 
-### 3. Validate production configuration
+### Validation Workflow
 
+**1. Production Configuration Validation**
 ```bash
 npm run prod:env:check
 npm run runtime:guard
 ```
 
-The runtime guard fails if production paths contain known fabricated mining values or pseudo-random telemetry generation.
-
-### 4. Run unit, property, and integration tests
-
+**2. Test Suite Execution**
 ```bash
-npm run test:backend
-npm run test:property
-npm run test:bridge
-npm run test:e2e:backend
+npm run test:backend      # Unit tests
+npm run test:property     # Property-based tests
+npm run test:bridge       # Bridge security tests
+npm run test:e2e:backend  # End-to-end backend smoke
 ```
 
-The E2E backend smoke exercises the authenticated backend workflow.  Stratum live pool operation still requires real pool credentials and network reachability.
-
-### 5. Run the full release gate
-
+**3. Release Gate Execution**
 ```bash
 npm run prod:check
 ```
 
-This runs Cloudflare deploy checks, runtime guardrails, TypeScript linting, production build, backend tests, and the backend E2E smoke.
+This comprehensive gate includes:
+- Cloudflare deployment checks
+- Runtime guardrails validation
+- TypeScript linting
+- Production build verification
+- Backend test suite
+- Backend E2E smoke test
 
-### 6. Build and launch the production container
+### Production Deployment
 
+**Container Build and Launch:**
 ```bash
 npm run docker:build
 docker compose -f docker-compose.production.yml up
 ```
 
-### 7. Transition to live hashing
+**Live Hashing Transition Protocol:**
+1. Configure real Stratum v1 or v2 pool profile
+2. Disable development fixtures (`HYBA_ALLOW_DEV_FIXTURES=false`)
+3. Start backend and bridge services
+4. Connect `PoolManager` via operator API or UI
+5. Verify pool-side metrics against local audit log:
+   - Shares per minute
+   - Accepted/rejected counts
+   - Latency measurements
+   - Stale-job events
 
-1. Configure a real Stratum v1 or Stratum v2 pool profile.
-2. Disable development fixtures in production (`HYBA_ALLOW_DEV_FIXTURES=false`).
-3. Start the backend and bridge.
-4. Connect the `PoolManager` through the operator API or UI.
-5. Verify pool-side shares per minute, accepted/rejected counts, latency, and stale-job events against the local audit log.
+## Protocol Capabilities
 
-## Stratum V2 readiness
+### Stratum V2 Readiness
 
-The codebase now validates Stratum v2 pool URLs and credentials, includes deterministic Stratum v2 binary frame encode/decode primitives, and performs the common `SetupConnection` / `SetupConnection.Success` handshake before any channel or share traffic is considered live.  These primitives are intentionally protocol-level: they do not simulate pool behavior or fabricate jobs.  A live Stratum v2 deployment must still be connected to a real pool endpoint with operator credentials and any pool-required encrypted-transport setup.
+The codebase implements comprehensive Stratum v2 support:
+- **URL Validation**: Full validation of Stratum v2 pool URLs and credentials
+- **Binary Frame Primitives**: Deterministic encode/decode operations for Stratum v2 binary frames
+- **Protocol Handshake**: Complete `SetupConnection` / `SetupConnection.Success` handshake implementation
+- **Protocol-Level Design**: Primitives are intentionally protocol-level without pool behavior simulation or job fabrication
 
-## Mathematical certificates and scientific findings
+**Deployment Requirement**: Live Stratum v2 deployment requires connection to real pool endpoints with operator credentials and any pool-required encrypted-transport setup.
 
-The current PULVINI gates are framed as engineering evidence, not as unsupported quantum-speedup claims:
+## Mathematical Framework & Scientific Validation
 
-1. **Runtime topology automorphism certificate**
-   - The automorphism certificate is computed from the runtime `ADJACENCY_MAP` source of truth.
-   - It uses exact degree-preserving backtracking and a digest-keyed certificate cache, avoiding optional NetworkX VF2 runner failures.
-   - The expected D/I compound certificate closes when the group order is 120, D-node/I-node degree classes match, and every automorphism preserves adjacency.
+### Certificate-Based Approach
 
-2. **Single pool-visible worker, 32-node internal manifold**
-   - The pool sees one worker identity.
-   - Internally, 32 PULVINI nodes maintain assignments, propagation routes, nonce coverage, and lifecycle state.
+The PULVINI gates are framed as engineering evidence with mathematical rigor, not as unsupported quantum-speedup claims:
 
-3. **Nonce-space compression without dropped coverage**
-   - PULVINI folds the 32-lane surface into a smaller working-set dimension.
-   - The retained kernel preserves complete uint32 nonce coverage and overlap-free lane segments.
+**1. Runtime Topology Automorphism Certificate**
+- Computed from runtime `ADJACENCY_MAP` source of truth
+- Uses exact degree-preserving backtracking with digest-keyed certificate cache
+- Avoids optional NetworkX VF2 runner failures
+- Certificate closure criteria: group order of 120, matching D-node/I-node degree classes, adjacency preservation by all automorphisms
 
-4. **Phi-filter measurement**
-   - The phi certificate uses a deterministic nonce lattice rather than pseudo-random sampling.
-   - The observed filter advantage is reported as a constant-factor pruning metric only; lane uniformity tests determine whether geometric lane structure is statistically supported.
+**2. Single Pool-Visible Worker, 32-Node Internal Manifold**
+- **External View**: Pool sees one worker identity
+- **Internal Reality**: 32 PULVINI nodes maintain assignments, propagation routes, nonce coverage, and lifecycle state
 
-5. **Non-Markovian memory and Bures gates**
-   - The memory and density-matrix paths provide deterministic state evolution surfaces for share outcomes, stale-job history, and gradient/collapse metrics.
-   - The project reports these as mathematical state certificates and telemetry surfaces, not as simulated share acceptances.
+**3. Nonce-Space Compression Without Dropped Coverage**
+- Folds 32-lane surface into smaller working-set dimension
+- Retained kernel preserves complete uint32 nonce coverage
+- Overlap-free lane segments maintained
+
+**4. Phi-Filter Measurement**
+- Uses deterministic nonce lattice rather than pseudo-random sampling
+- Filter advantage reported as constant-factor pruning metric only
+- Lane uniformity tests determine statistical support for geometric lane structure
+
+**5. Non-Markovian Memory and Bures Gates**
+- Memory and density-matrix paths provide deterministic state evolution surfaces
+- Covers share outcomes, stale-job history, and gradient/collapse metrics
+- Reported as mathematical state certificates and telemetry surfaces, not simulated share acceptances
 
 ## System state and performance validation
 
