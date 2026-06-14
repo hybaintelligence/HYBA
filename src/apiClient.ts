@@ -99,10 +99,43 @@ export interface ConfigurePoolResponse {
   idempotency_key?: string;
 }
 
+export interface StabilizerMonitorTelemetry {
+  syndrome_weight?: number | null;
+  confidence?: number | null;
+  confidence_threshold?: number | null;
+  syndrome_width?: number | null;
+  sampled_ancillas?: number | null;
+  operating_mode?: string | null;
+  syndrome_check_stride?: number | null;
+  check_frequency?: number | null;
+  syndrome_rotation_index?: number | null;
+  pool_permutation_checksum?: number | null;
+  sanitized?: boolean | null;
+  cause?: string | null;
+}
+
+export interface AncillaTrapPoolTelemetry {
+  agents_total?: number | null;
+  agents_active?: number | null;
+  logical_agents?: number | null;
+  reserved_ancillas?: number | null;
+  active_ancillas?: number | null;
+  max_ancilla_pool?: number | null;
+  reserved_traps?: number | null;
+  active_traps?: number | null;
+  disturbed_traps?: number | null;
+  retired_traps?: number | null;
+}
+
+export interface SecurityDefenseSystems extends Record<string, unknown> {
+  stabilizer_monitor?: StabilizerMonitorTelemetry;
+  preallocated_ancilla_trap_pool?: AncillaTrapPoolTelemetry;
+}
+
 export interface SecurityStatus {
   status: string;
   threat_level?: string | null;
-  defense_systems?: Record<string, unknown>;
+  defense_systems?: SecurityDefenseSystems;
   recent_threats?: unknown[];
 }
 
@@ -301,6 +334,10 @@ async function getOptional<T>(path: string, fallback: T, retryOptions?: Partial<
   } catch (error) {
     return { ...fallback, error: error instanceof Error ? error.message : "endpoint_unavailable" } as T;
   }
+}
+
+export async function getSecurityStatus(): Promise<SecurityStatus> {
+  return get<SecurityStatus>("/security/status");
 }
 
 export async function fetchTelemetryData(): Promise<TelemetryData> {

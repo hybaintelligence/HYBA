@@ -43,6 +43,7 @@ import { createServer as createViteServer, type InlineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { validateProductionJwtSecret } from "./bridge_security";
+import { securitySwarms } from "./core/security_swarm";
 
 let _backendUrl: URL | null = null;
 
@@ -131,13 +132,13 @@ function recordProxyFailure(): void {
     circuitState.isOpen = true;
     metrics.circuitBreakerTrips += 1;
     logger.error(
-      { 
-        failures: circuitState.failures, 
+      {
+        failures: circuitState.failures,
         threshold: CIRCUIT_THRESHOLD,
         resetTimeMs: CIRCUIT_RESET_MS,
         backendUrl: CONFIG.backendUrl.toString(),
         timestamp: new Date().toISOString()
-      }, 
+      },
       "🚨 CIRCUIT BREAKER TRIPPED — Backend proxy circuit opened"
     );
   }
@@ -420,6 +421,69 @@ const metrics = {
   startTime: Date.now(),
 };
 
+export function registerSecuritySwarmRoutes(app: express.Application, swarm = securitySwarms): void {
+  app.get("/api/security/status", async (req: Request, res: Response) => {
+    const observerPressure = Number(req.query.observer_pressure || 0);
+    const sample = swarm.monitor_integrity(Number.isFinite(observerPressure) ? observerPressure : 0);
+    const status = swarm.get_swarm_status();
+    noStore(res);
+    res.json({
+      status: status.integrity_locked ? "protected" : "responding",
+      threat_level: sample.anomaly_detected ? "elevated" : "nominal",
+      defense_systems: {
+        stabilizer_monitor: {
+          syndrome_weight: sample.syndrome_weight,
+          confidence: sample.confidence,
+          confidence_threshold: status.confidence_threshold,
+          syndrome_width: status.syndrome_width,
+          sampled_ancillas: sample.sampled_ancillas,
+          operating_mode: status.operating_mode,
+          syndrome_check_stride: status.syndrome_check_stride,
+          check_frequency: status.check_frequency,
+          syndrome_rotation_index: status.syndrome_rotation_index,
+          pool_permutation_checksum: status.pool_permutation_checksum,
+          sanitized: status.sanitized,
+          cause: sample.cause,
+        },
+        preallocated_ancilla_trap_pool: {
+          agents_total: status.agents_total,
+          agents_active: status.agents_active,
+          logical_agents: status.logical_agents,
+          reserved_ancillas: status.reserved_ancillas,
+          active_ancillas: status.active_ancillas,
+          max_ancilla_pool: status.max_ancilla_pool,
+          reserved_traps: status.reserved_traps,
+          active_traps: status.active_traps,
+          disturbed_traps: status.disturbed_traps,
+          retired_traps: status.retired_traps,
+        },
+      },
+      recent_threats: sample.anomaly_detected
+        ? [{ type: sample.cause, syndrome_weight: sample.syndrome_weight, trap_disturbances: sample.trap_disturbances, detected_at: new Date().toISOString() }]
+        : [],
+    });
+  });
+
+  app.post("/api/security/swarm/respond", async (req: Request, res: Response) => {
+    const observerPressure = Number(req.query.observer_pressure || 1);
+    const response = swarm.trigger_response(Number.isFinite(observerPressure) ? observerPressure : 1);
+    noStore(res);
+    res.status(response.status === "integrity_response_active" ? 202 : 200).json(response);
+  });
+
+}
+
+function installSecuritySwarmHeartbeat(): ReturnType<typeof setInterval> {
+  const heartbeat = setInterval(() => {
+    securitySwarms.monitor_integrity(0);
+  }, 100);
+  const maybeUnref = heartbeat as unknown as { unref?: () => void };
+  if (typeof maybeUnref.unref === "function") {
+    maybeUnref.unref();
+  }
+  return heartbeat;
+}
+
 async function startServer(): Promise<void> {
   if (CONFIG.isProduction) {
     const jwtValidation = validateProductionJwtSecret(CONFIG.jwtSecret);
@@ -428,6 +492,8 @@ async function startServer(): Promise<void> {
       process.exit(1);
     }
   }
+
+  installSecuritySwarmHeartbeat();
 
   const backendReachable = await isBackendReachable();
   if (!backendReachable) {
@@ -470,7 +536,7 @@ async function startServer(): Promise<void> {
     logger,
     genReqId: () => generateRequestId(),
     autoLogging: {
-      ignore: (req) => req.url === "/bridge/health" || req.url === "/health",
+      ignore: (req: Request) => req.url === "/bridge/health" || req.url === "/health",
     },
   });
   app.use(httpLogger);
@@ -514,15 +580,15 @@ async function startServer(): Promise<void> {
   // circuit counters, and path metrics.
   app.get("/bridge/health", async (_req: Request, res: Response) => {
     const reachable = await isBackendReachable();
-    
+
     if (!reachable) {
       metrics.healthCheckFailures += 1;
       metrics.lastHealthCheckFailure = Date.now();
-      
+
       // Check if we've exceeded the failure threshold within the window
       const recentFailures = metrics.healthCheckFailures;
       const timeSinceLastFailure = Date.now() - metrics.lastHealthCheckFailure;
-      
+
       if (recentFailures >= HEALTH_CHECK_FAILURE_THRESHOLD && timeSinceLastFailure < HEALTH_CHECK_FAILURE_WINDOW_MS) {
         logger.error(
           {
@@ -548,7 +614,7 @@ async function startServer(): Promise<void> {
         metrics.healthCheckFailures = 0;
       }
     }
-    
+
     noStore(res);
     res.status(reachable ? 200 : 503).json({
       status: reachable ? "ok" : "degraded",
@@ -584,6 +650,8 @@ async function startServer(): Promise<void> {
       timestamp: new Date().toISOString(),
     });
   });
+
+  registerSecuritySwarmRoutes(app);
 
   // Metrics endpoint (Prometheus-compatible, internal only in production)
   app.get("/bridge/metrics", requireInternalAccess, async (_req: Request, res: Response) => {
@@ -738,8 +806,10 @@ function installShutdownHandlers(server: Server): void {
   process.once("SIGHUP", () => shutdown("SIGHUP"));
 }
 
-startServer().catch((error: unknown) => {
-  const message = error instanceof Error ? error.message : String(error);
-  logger.fatal({ err: message }, "Critical server failure on startup");
-  process.exit(1);
-});
+if (process.env.NODE_ENV !== "test") {
+  startServer().catch((error: unknown) => {
+    const message = error instanceof Error ? error.message : String(error);
+    logger.fatal({ err: message }, "Critical server failure on startup");
+    process.exit(1);
+  });
+}

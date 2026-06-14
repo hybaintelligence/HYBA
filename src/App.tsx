@@ -33,6 +33,7 @@ import {
   type PoolInfo,
   type PowerScaleResponse,
   type TelemetryData,
+  type SecurityStatus,
   configurePool,
   disconnectFromPool,
   fetchProfileApi,
@@ -47,6 +48,7 @@ import {
 import { NetworkToast } from "./components/NetworkToast";
 import { PoolSecretsConfig } from "./components/PoolSecretsConfig";
 import { SovereignGenesisPanel } from "./components/SovereignGenesisPanel";
+import { SovereignCommandPost } from "./components/SovereignCommandPost";
 import { Sparkline } from "./components/Sparkline";
 import { ExecutiveSummary } from "./components/ExecutiveSummary";
 import { useApiRequest } from "./hooks/useApiRequest";
@@ -159,7 +161,10 @@ function AppContent() {
   const systemMetrics = health?.systemMetrics || {};
   const pools: PoolInfo[] = telemetry?.pools?.pools || [];
   const poolSummary = telemetry?.pools?.summary || {};
-  const security = telemetry?.security || {};
+  const security: Partial<SecurityStatus> = telemetry?.security || {};
+  const securityDefenseSystems = security.defense_systems || {};
+  const stabilizerMonitor = securityDefenseSystems.stabilizer_monitor || {};
+  const ancillaTrapPool = securityDefenseSystems.preallocated_ancilla_trap_pool || {};
   const consciousness = telemetry?.consciousness || {};
 
   const runtimeStatus = useMemo(() => health?.status || "unavailable", [health]);
@@ -495,9 +500,20 @@ function AppContent() {
             <MetricRow label="Pools configured" value={fmtNum(configuredPoolCount, 0)} />
             <MetricRow label="Active pools" value={fmtNum(activePoolCount, 0)} />
           </Panel>
+          <Panel title="Unitary shield" eyebrow="Stabilizer integrity" icon={<ShieldCheck className="h-4 w-4" />} isLoading={isLoading} rows={8}>
+            <MetricRow label="Operating mode" value={fmtText(stabilizerMonitor.operating_mode)} />
+            <MetricRow label="Confidence" value={fmtPct(stabilizerMonitor.confidence as NullableNumber)} />
+            <MetricRow label="Check frequency" value={fmtPct(stabilizerMonitor.check_frequency as NullableNumber)} />
+            <MetricRow label="Syndrome weight" value={fmtNum(stabilizerMonitor.syndrome_weight as NullableNumber, 0)} />
+            <MetricRow label="Ancillas active/max" value={`${fmtNum(ancillaTrapPool.active_ancillas as NullableNumber, 0)} / ${fmtNum(ancillaTrapPool.max_ancilla_pool as NullableNumber, 0)}`} />
+            <MetricRow label="Traps active/retired" value={`${fmtNum(ancillaTrapPool.active_traps as NullableNumber, 0)} / ${fmtNum(ancillaTrapPool.retired_traps as NullableNumber, 0)}`} />
+            <MetricRow label="Permutation checksum" value={fmtNum(stabilizerMonitor.pool_permutation_checksum as NullableNumber, 0)} />
+            <MetricRow label="Sanitized" value={stabilizerMonitor.sanitized ? "YES" : "NO"} />
+          </Panel>
         </section>
 
         <section className="grid grid-cols-1 gap-6">
+          <SovereignCommandPost />
           <SovereignGenesisPanel />
         </section>
 
