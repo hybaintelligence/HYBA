@@ -229,8 +229,8 @@ class SecuritySwarmAgent {
     const activated_ancillas = this.activate_reserved('ancilla', Math.max(1, sample.syndrome_weight));
     const activated_traps = this.activate_reserved('trap', Math.max(1, retired_traps || sample.trap_disturbances));
     this.rotate_newly_activated_traps(this.syndrome_rotation_index);
-    this.evaluate_ancilla_exhaustion();
     this.evaluate_trap_sanitization();
+    this.evaluate_ancilla_exhaustion();
 
     for (const agent of this.agents.filter((candidate) => candidate.state === 'active')) {
       agent.phase = project_to_phi_floor(agent.phase + PHI * (sample.syndrome_weight + sample.trap_disturbances + 1));
@@ -296,6 +296,8 @@ class SecuritySwarmAgent {
   }
 
   private evaluate_ancilla_exhaustion(): void {
+    if (this.operating_mode === 'SANITIZED') return;
+    
     const reservedAncillas = this.agents.filter((agent) => agent.role === 'ancilla' && agent.state === 'reserved').length;
     const reserveRatio = reservedAncillas / Math.max(1, this.max_ancilla_pool);
 
