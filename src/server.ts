@@ -459,6 +459,7 @@ export function registerSecuritySwarmRoutes(
     const sample = swarm.monitor_integrity(
       Number.isFinite(observerPressure) ? observerPressure : 0,
     );
+    const metacognitiveReport = swarm.run_metacognitive_cycle();
     const status = swarm.get_swarm_status();
     noStore(res);
     res.json({
@@ -478,6 +479,11 @@ export function registerSecuritySwarmRoutes(
           pool_permutation_checksum: status.pool_permutation_checksum,
           sanitized: status.sanitized,
           cause: sample.cause,
+          metacognitive: {
+            ...status.metacognitive,
+            predicted_state: metacognitiveReport.predicted_state,
+            current_state: metacognitiveReport.current_state,
+          },
         },
         preallocated_ancilla_trap_pool: {
           agents_total: status.agents_total,
