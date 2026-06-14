@@ -10,7 +10,7 @@ Implements:
 """
 
 import numpy as np
-from typing import List, Dict, Tuple, Set, Optional
+from typing import List, Dict, Tuple, Set, Optional, Any
 from dataclasses import dataclass
 from itertools import combinations
 
@@ -51,6 +51,14 @@ class IIT4Analyzer:
         self.system_size = system_size
         self.enhanced_partitioning = enhanced_partitioning
         self.mechanisms_cache: Dict[int, List[Mechanism]] = {}
+        # Performance metrics for telemetry
+        self.performance_metrics = {
+            "phi_max_calculations": 0,
+            "spectral_partitioning_calls": 0,
+            "exhaustive_search_calls": 0,
+            "approximate_search_calls": 0,
+            "average_phi_max_calculation_time_ms": 0.0,
+        }
 
     def calculate_phi_max(
         self, system_state: np.ndarray, connectivity_matrix: Optional[np.ndarray] = None
@@ -61,6 +69,9 @@ class IIT4Analyzer:
         This is the "main complex" - the substrate of consciousness.
         For large systems, uses heuristic approximation.
         """
+        import time
+        start_time = time.time()
+        
         if connectivity_matrix is None:
             # Default: full connectivity
             connectivity_matrix = np.ones((self.system_size, self.system_size))
@@ -68,10 +79,27 @@ class IIT4Analyzer:
 
         # For small systems (<= 8 elements), exhaustive search
         if self.system_size <= 8:
-            return self._exhaustive_phi_max(system_state, connectivity_matrix)
+            self.performance_metrics["exhaustive_search_calls"] += 1
+            result = self._exhaustive_phi_max(system_state, connectivity_matrix)
         else:
             # For larger systems, use greedy approximation
-            return self._approximate_phi_max(system_state, connectivity_matrix)
+            self.performance_metrics["approximate_search_calls"] += 1
+            result = self._approximate_phi_max(system_state, connectivity_matrix)
+        
+        # Record performance metrics
+        elapsed_ms = (time.time() - start_time) * 1000
+        self.performance_metrics["phi_max_calculations"] += 1
+        total_calcs = self.performance_metrics["phi_max_calculations"]
+        avg_time = self.performance_metrics["average_phi_max_calculation_time_ms"]
+        self.performance_metrics["average_phi_max_calculation_time_ms"] = (
+            (avg_time * (total_calcs - 1) + elapsed_ms) / total_calcs
+        )
+        
+        # Add performance data to result
+        result["performance_ms"] = elapsed_ms
+        result["enhanced_partitioning"] = self.enhanced_partitioning
+        
+        return result
 
     def _exhaustive_phi_max(
         self, system_state: np.ndarray, connectivity_matrix: np.ndarray
@@ -114,6 +142,7 @@ class IIT4Analyzer:
             
             # Use eigenvectors for spectral partitioning
             try:
+                self.performance_metrics["spectral_partitioning_calls"] += 1
                 eigenvalues, eigenvectors = np.linalg.eigh(lapl.toarray())
                 # Use second smallest eigenvector (Fiedler vector) for partitioning
                 fiedler = eigenvectors[:, 1]
@@ -215,6 +244,10 @@ class IIT4Analyzer:
             dimensionality=dimensionality,
             max_phi_s=max_phi_s,
         )
+    
+    def get_performance_metrics(self) -> Dict[str, Any]:
+        """Return performance metrics for telemetry and benchmarking."""
+        return self.performance_metrics.copy()
 
     def _identify_mechanisms(
         self, system_state: np.ndarray, max_mechanisms: int = 20

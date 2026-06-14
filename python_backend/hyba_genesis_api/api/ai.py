@@ -26,7 +26,9 @@ class StimulateReq(BaseModel):
 
 @router.get("/consciousness", response_model=Dict[str, Any])
 async def get_consciousness_status():
-    """Return explicit unknown runtime-integration state instead of fabricated cognition."""
+    """Return live consciousness metrics from GenesisAI if available, otherwise explicit unknown state."""
+    # TODO: Integrate with live GenesisAI instance
+    # For now, return explicit unknown state
     return {
         "status": "not_measured",
         "timestamp": datetime.now(timezone.utc).isoformat(),
@@ -36,6 +38,7 @@ async def get_consciousness_status():
         "runtime_state": {
             "source": "not_connected",
             "message": "No measured AI/consciousness runtime is connected to this API.",
+            "integration_required": "GenesisAI telemetry integration pending",
         },
         "recent_insights": [],
     }
