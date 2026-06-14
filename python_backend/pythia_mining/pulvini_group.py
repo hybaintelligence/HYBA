@@ -161,9 +161,103 @@ def tensor_coordinate_for_node(
     )
 
 
+
+@dataclass(frozen=True)
+class A5RepresentationCertificate:
+    """Finite-group certificate for the rotational icosahedral group A5.
+
+    The 20 dodecahedral vertices are certified against the irreducible
+    representation data of A5 without claiming a SHA-256 search advantage.
+    Full graph automorphisms may have order 120; the orientation-preserving
+    rotational subgroup is A5 of order 60.
+    """
+
+    group: str
+    rotational_group_order: int
+    full_automorphism_order: int
+    conjugacy_classes: List[Dict[str, object]]
+    irreducible_dimensions: List[int]
+    character_table: List[Dict[str, object]]
+    regular_representation_dimension_sum: int
+    character_orthogonality_verified: bool
+    max_irrep_dimension: int
+    dodecahedral_permutation_dimension: int
+    effective_dimension_bound: int
+    heuristic_dimension_reduction: float
+    quantum_speedup_claimed: bool
+    certificate_statement: str
+
+    def to_dict(self) -> Dict[str, object]:
+        return asdict(self)
+
+
+def a5_representation_certificate(*, full_automorphism_order: int = 120) -> A5RepresentationCertificate:
+    """Return the A5 character-table certificate used by PULVINI audits.
+
+    This is a representation-theory certificate, not an optimizer.  It records
+    the exact irreducible dimensions and character table so downstream code can
+    audit whether a 20-state dodecahedral basis is being treated honestly.
+    """
+    import math
+
+    sqrt5 = math.sqrt(5.0)
+    phi = (1.0 + sqrt5) / 2.0
+    phi_bar = (1.0 - sqrt5) / 2.0
+    classes: List[Dict[str, object]] = [
+        {"name": "1A", "size": 1, "element_order": 1},
+        {"name": "2A", "size": 15, "element_order": 2},
+        {"name": "3A", "size": 20, "element_order": 3},
+        {"name": "5A", "size": 12, "element_order": 5},
+        {"name": "5B", "size": 12, "element_order": 5},
+    ]
+    rows = [
+        ("1", 1, [1.0, 1.0, 1.0, 1.0, 1.0]),
+        ("3", 3, [3.0, -1.0, 0.0, phi, phi_bar]),
+        ("3'", 3, [3.0, -1.0, 0.0, phi_bar, phi]),
+        ("4", 4, [4.0, 0.0, 1.0, -1.0, -1.0]),
+        ("5", 5, [5.0, 1.0, -1.0, 0.0, 0.0]),
+    ]
+    order = 60
+    class_sizes = [int(c["size"]) for c in classes]
+    orthogonal = True
+    for i, (_, _, chi_i) in enumerate(rows):
+        for j, (_, _, chi_j) in enumerate(rows):
+            inner = sum(size * a * b for size, a, b in zip(class_sizes, chi_i, chi_j)) / order
+            expected = 1.0 if i == j else 0.0
+            if abs(inner - expected) > 1e-9:
+                orthogonal = False
+    dims = [dim for _, dim, _ in rows]
+    max_dim = max(dims)
+    permutation_dim = 20
+    return A5RepresentationCertificate(
+        group="A5 rotational icosahedral group",
+        rotational_group_order=order,
+        full_automorphism_order=int(full_automorphism_order),
+        conjugacy_classes=classes,
+        irreducible_dimensions=dims,
+        character_table=[
+            {"irrep": name, "dimension": dim, "characters": dict(zip([c["name"] for c in classes], chars))}
+            for name, dim, chars in rows
+        ],
+        regular_representation_dimension_sum=sum(dim * dim for dim in dims),
+        character_orthogonality_verified=orthogonal,
+        max_irrep_dimension=max_dim,
+        dodecahedral_permutation_dimension=permutation_dim,
+        effective_dimension_bound=max_dim,
+        heuristic_dimension_reduction=math.sqrt(permutation_dim / max_dim),
+        quantum_speedup_claimed=False,
+        certificate_statement=(
+            "A5 has five irreducible representations of dimensions 1, 3, 3, 4, 5; "
+            "their squared dimensions sum to 60 and the character rows are orthonormal by conjugacy class sizes. "
+            "This certifies available symmetry structure for audits only; no SHA-256 quantum speedup is claimed."
+        ),
+    )
+
 __all__ = [
     "NONCE_SPACE",
+    "A5RepresentationCertificate",
     "TensorCoordinate",
+    "a5_representation_certificate",
     "adjacency_sets",
     "apply_automorphism_to_nonce",
     "assert_symmetric_graph",
