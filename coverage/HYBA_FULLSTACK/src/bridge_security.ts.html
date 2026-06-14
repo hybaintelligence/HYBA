@@ -3,7 +3,7 @@
 <html lang="en">
 
 <head>
-    <title>Code coverage report for src/core/constants.ts</title>
+    <title>Code coverage report for HYBA_FULLSTACK/src/bridge_security.ts</title>
     <meta charset="utf-8" />
     <link rel="stylesheet" href="../../prettify.css" />
     <link rel="stylesheet" href="../../base.css" />
@@ -19,34 +19,34 @@
 <body>
 <div class='wrapper'>
     <div class='pad1'>
-        <h1><a href="../../index.html">All files</a> / <a href="index.html">src/core</a> constants.ts</h1>
+        <h1><a href="../../index.html">All files</a> / <a href="index.html">HYBA_FULLSTACK/src</a> bridge_security.ts</h1>
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>9/9</span>
+                <span class='fraction'>7/7</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/0</span>
+                <span class='fraction'>4/4</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>2/2</span>
+                <span class='fraction'>1/1</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>9/9</span>
+                <span class='fraction'>7/7</span>
             </div>
         
             
@@ -87,54 +87,75 @@
 <a name='L22'></a><a href='#L22'>22</a>
 <a name='L23'></a><a href='#L23'>23</a>
 <a name='L24'></a><a href='#L24'>24</a>
-<a name='L25'></a><a href='#L25'>25</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L25'></a><a href='#L25'>25</a>
+<a name='L26'></a><a href='#L26'>26</a>
+<a name='L27'></a><a href='#L27'>27</a>
+<a name='L28'></a><a href='#L28'>28</a>
+<a name='L29'></a><a href='#L29'>29</a>
+<a name='L30'></a><a href='#L30'>30</a>
+<a name='L31'></a><a href='#L31'>31</a>
+<a name='L32'></a><a href='#L32'>32</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">239x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2929x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">104x</span>
+<span class="cline-any cline-yes">13x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">91x</span>
+<span class="cline-any cline-yes">91x</span>
+<span class="cline-any cline-yes">90x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">/**
- * HYBA Fundamental Quantum Constants
- * Substrate-independent mathematical truths.
+ * HYBA Secure Bridge configuration guardrails.
+ *
+ * Kept side-effect free so production validation can be exercised with unit and
+ * property tests without starting the Express bridge or spawning the backend.
  */
 &nbsp;
-export const PHI = (1 + Math.sqrt(5)) / 2; // Golden Ratio
-export const DODE_VERTICES = 20;
-export const FEIGEN_ALPHA = 2.50290787509589282228;
-export const FEIGEN_DELTA = 4.66920160910299067185;
-export const PLANCK_TIME = 5.391e-44;
+export const MIN_PRODUCTION_JWT_SECRET_BYTES = 32;
 &nbsp;
-/**
- * Calculates current Φ-resonance based on temporal harmonics.
- */
-export const calculate_phi_resonance = (timestamp: number): number =&gt; {
-  return (timestamp * PHI) % 1.0;
+type JwtSecretValidation = {
+  ok: boolean;
+  reason?: string;
 };
 &nbsp;
-/**
- * Hilbert-space projection for state verification.
- */
-export const project_to_phi_floor = (value: number): number =&gt; {
-  return value * Math.exp(Math.PI / PHI);
-};
+export function validateProductionJwtSecret(
+  secret: string | undefined | null,
+): JwtSecretValidation {
+  if (!secret) {
+    return { ok: false, reason: "JWT_SECRET is required in production" };
+  }
+&nbsp;
+  const byteLength = Buffer.byteLength(secret, "utf8");
+  if (byteLength &lt; MIN_PRODUCTION_JWT_SECRET_BYTES) {
+    return {
+      ok: false,
+      reason: `JWT_SECRET must be at least ${MIN_PRODUCTION_JWT_SECRET_BYTES} bytes in production`,
+    };
+  }
+&nbsp;
+  return { ok: true };
+}
 &nbsp;</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
@@ -142,7 +163,7 @@ export const project_to_phi_floor = (value: number): number =&gt; {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-06-14T14:31:11.483Z
+                at 2026-06-14T15:09:57.184Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

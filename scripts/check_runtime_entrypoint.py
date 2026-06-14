@@ -48,9 +48,7 @@ def main() -> int:
         print(command.stderr, file=sys.stderr)
         return command.returncode
     if "entrypoint command override honored" not in command.stdout:
-        print(
-            "Entry point did not execute the provided service command", file=sys.stderr
-        )
+        print("Entry point did not execute the provided service command", file=sys.stderr)
         print(command.stdout, file=sys.stderr)
         return 1
 

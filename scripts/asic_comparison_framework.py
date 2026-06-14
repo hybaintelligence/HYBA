@@ -97,9 +97,7 @@ class ASICPerformanceData:
     @classmethod
     def get_by_efficiency(cls, limit: int = 5) -> List[Tuple[str, Dict]]:
         """Get top ASICs by energy efficiency (lowest J/TH)."""
-        sorted_asics = sorted(
-            cls.ASIC_SPECS.items(), key=lambda x: x[1]["efficiency_j_th"]
-        )
+        sorted_asics = sorted(cls.ASIC_SPECS.items(), key=lambda x: x[1]["efficiency_j_th"])
         return sorted_asics[:limit]
 
     @classmethod
@@ -150,9 +148,7 @@ class GoldenRatioScaling:
         return base_value * cls.scale_factor_for_exponent(scale_exponent)
 
     @classmethod
-    def get_scaling_factors(
-        cls, include_combinations: bool = False
-    ) -> Dict[str, float]:
+    def get_scaling_factors(cls, include_combinations: bool = False) -> Dict[str, float]:
         """Get requested dynamic golden-ratio scaling factors.
 
         Base tiers are labeled ``10^n`` for operator familiarity, but the
@@ -181,9 +177,7 @@ class GoldenRatioScaling:
             effective_hashrate_ehs = effective_hashrate_ths / 1000
 
             if effective_hashrate_ehs <= cls.GOVERNANCE_CAP_EHS:
-                compliant_scales.append(
-                    f"{scale_name} ({effective_hashrate_ehs:.4f} EH/s)"
-                )
+                compliant_scales.append(f"{scale_name} ({effective_hashrate_ehs:.4f} EH/s)")
 
         return compliant_scales
 
@@ -334,14 +328,10 @@ class ComprehensiveComparison:
         for instances in [1, 10, 50, 100, 500, 1000]:
             if instances > max_instances:
                 continue
-            throughput = self.pulvini_estimator.estimate_algorithmic_throughput(
-                instances
-            )
+            throughput = self.pulvini_estimator.estimate_algorithmic_throughput(instances)
             coverage = self.pulvini_estimator.estimate_effective_coverage(instances)
             power = self.pulvini_estimator.estimate_power_consumption(instances)
-            efficiency = self.pulvini_estimator.estimate_algorithmic_efficiency(
-                instances
-            )
+            efficiency = self.pulvini_estimator.estimate_algorithmic_efficiency(instances)
             results.append(
                 {
                     "instances": instances,
@@ -349,30 +339,20 @@ class ComprehensiveComparison:
                     "effective_coverage_per_sec": coverage,
                     "power_w": power,
                     "algorithmic_efficiency_j_per_million_attempts": efficiency,
-                    "asic_equivalent": self._find_asic_equivalent(
-                        throughput, efficiency
-                    ),
+                    "asic_equivalent": self._find_asic_equivalent(throughput, efficiency),
                 }
             )
         return results
 
     def compare_golden_ratio_scaling(self) -> Dict:
         """Compare PULVINI with golden ratio scaling against ASICs."""
-        scaling_factors = GoldenRatioScaling.get_scaling_factors(
-            include_combinations=True
-        )
+        scaling_factors = GoldenRatioScaling.get_scaling_factors(include_combinations=True)
         results = {}
 
         for scale_name, scale_factor in scaling_factors.items():
-            pulvini_throughput = self.pulvini_estimator.estimate_native_throughput(
-                scale_factor
-            )
-            pulvini_coverage = (
-                self.pulvini_estimator.estimate_effective_coverage(1) * scale_factor
-            )
-            pulvini_power = self.pulvini_estimator.estimate_power_consumption(
-                1, scale_factor
-            )
+            pulvini_throughput = self.pulvini_estimator.estimate_native_throughput(scale_factor)
+            pulvini_coverage = self.pulvini_estimator.estimate_effective_coverage(1) * scale_factor
+            pulvini_power = self.pulvini_estimator.estimate_power_consumption(1, scale_factor)
             effective_throughput = pulvini_throughput * self.total_quantum_multiplier
             effective_hashrate_ths = effective_throughput / 1e12
 
@@ -389,9 +369,7 @@ class ComprehensiveComparison:
                     else float("inf")
                 ),
                 "latency_per_phi_tier_ms": (
-                    self.pulvini_estimator.QUANTUM_OPERATION_TIMINGS[
-                        "total_nonce_attempt_ms"
-                    ]
+                    self.pulvini_estimator.QUANTUM_OPERATION_TIMINGS["total_nonce_attempt_ms"]
                     / GoldenRatioScaling.phi_exponential_multiplier(
                         self._effective_phi_exponent(scale_name)
                     )
@@ -426,9 +404,7 @@ class ComprehensiveComparison:
             / phi_multiplier
         )
         pulvini_efficiency = (
-            pulvini_power / pulvini_hashrate_ths
-            if pulvini_hashrate_ths > 0
-            else float("inf")
+            pulvini_power / pulvini_hashrate_ths if pulvini_hashrate_ths > 0 else float("inf")
         )
         curves = []
         for asic_name, asic_spec in self.asic_data.items():
@@ -462,9 +438,7 @@ class ComprehensiveComparison:
             hashrate_ratio = pulvini_hashrate_ths / asic_spec["hashrate_ths"]
             power_ratio = pulvini_power / asic_spec["power_w"]
             pulvini_efficiency = (
-                pulvini_power / pulvini_hashrate_ths
-                if pulvini_hashrate_ths > 0
-                else float("inf")
+                pulvini_power / pulvini_hashrate_ths if pulvini_hashrate_ths > 0 else float("inf")
             )
             efficiency_ratio = pulvini_efficiency / asic_spec["efficiency_j_th"]
 
@@ -478,8 +452,7 @@ class ComprehensiveComparison:
                     "asic_hashrate_ths": asic_spec["hashrate_ths"],
                     "pulvini_power_w": pulvini_power,
                     "asic_power_w": asic_spec["power_w"],
-                    "pulvini_beats_asic": hashrate_ratio > 1.0
-                    and efficiency_ratio < 1.0,
+                    "pulvini_beats_asic": hashrate_ratio > 1.0 and efficiency_ratio < 1.0,
                 }
             )
         return comparisons
@@ -490,9 +463,7 @@ class ComprehensiveComparison:
         best_score = float("inf")
 
         for asic_name, asic_spec in self.asic_data.items():
-            hashrate_diff = (
-                abs(hashrate - asic_spec["hashrate_ths"]) / asic_spec["hashrate_ths"]
-            )
+            hashrate_diff = abs(hashrate - asic_spec["hashrate_ths"]) / asic_spec["hashrate_ths"]
             if hashrate_diff < best_score:
                 best_score = hashrate_diff
                 best_match = asic_name
@@ -524,9 +495,7 @@ class ComprehensiveComparison:
         report.append("    32-solver parallel throughput: ~23,409 attempts/sec")
         report.append("    Total nonce attempt latency: ~1.367 ms")
         report.append("")
-        report.append(
-            "  Phi-folding compression:         2.62x  [MEASURED — lossless ε<1e-14]"
-        )
+        report.append("  Phi-folding compression:         2.62x  [MEASURED — lossless ε<1e-14]")
         report.append(
             "  Pure-state attractor:            ✓      [MEASURED — purity=1.0, entropy=0]"
         )
@@ -538,9 +507,7 @@ class ComprehensiveComparison:
         )
         report.append("")
         report.append("  ── Caveats ──")
-        report.append(
-            "  The four sub-factors below are ASSERTED, not isolated-measured."
-        )
+        report.append("  The four sub-factors below are ASSERTED, not isolated-measured.")
         report.append("  Their product (393,000x) is the compound PROJECTION ceiling,")
         report.append("  not a confirmed empirical multiplier.")
         report.append("")
@@ -580,9 +547,7 @@ class ComprehensiveComparison:
         report.append("")
 
         golden_results = self.compare_golden_ratio_scaling()
-        report.append(
-            "  Golden ratio scaling tiers (requested exponents plus combinations):"
-        )
+        report.append("  Golden ratio scaling tiers (requested exponents plus combinations):")
         report.append(
             f"    {'Scale':<12} {'Hashrate (TH/s)':<24} {'Efficiency (J/TH)':<20} "
             f"{'Beats ASICs?':<15} {'Confidence':<15}"
@@ -591,11 +556,7 @@ class ComprehensiveComparison:
 
         for scale_name in golden_results:
             r = golden_results[scale_name]
-            beats = (
-                "✓"
-                if any(c["pulvini_beats_asic"] for c in r["asic_comparison"])
-                else "✗"
-            )
+            beats = "✓" if any(c["pulvini_beats_asic"] for c in r["asic_comparison"]) else "✗"
             ths = r["effective_hashrate_ths"]
             eff = r["hashrate_efficiency_j_th"]
             confidence = (
@@ -610,9 +571,7 @@ class ComprehensiveComparison:
         report.append("")
         report.append("  ── Assumption Checklist ──")
         for factor, status in self.FACT_STATUS.items():
-            report.append(
-                f"    [{'M' if 'MEASURED' in status else 'A'}]  {factor}: {status}"
-            )
+            report.append(f"    [{'M' if 'MEASURED' in status else 'A'}]  {factor}: {status}")
 
         report.append("")
         report.append("─" * 80)
@@ -621,15 +580,9 @@ class ComprehensiveComparison:
             "  The measured envelope (φ² compression, pure-state convergence, 3/3 "
             "discrimination,"
         )
-        report.append(
-            "  1.367 ms solve time) stands on its own. The 393,000x compound multiplier"
-        )
-        report.append(
-            "  is a projection ceiling under phi-ensemble weighting, directly useful for"
-        )
-        report.append(
-            "  roadmap decisions but NOT an empirically confirmed speedup. Any external"
-        )
+        report.append("  1.367 ms solve time) stands on its own. The 393,000x compound multiplier")
+        report.append("  is a projection ceiling under phi-ensemble weighting, directly useful for")
+        report.append("  roadmap decisions but NOT an empirically confirmed speedup. Any external")
         report.append("  communication must present BOTH layers together.")
         report.append("─" * 80)
         report.append("")
@@ -642,9 +595,7 @@ class ComprehensiveComparison:
         report.append("=" * 80)
         report.append("GOLDEN RATIO SCALING: PULVINI vs ASIC COMPETITIVENESS")
         report.append("=" * 80)
-        report.append(
-            "\nPULVINI: 32 parallel quantum solvers with golden ratio scaling"
-        )
+        report.append("\nPULVINI: 32 parallel quantum solvers with golden ratio scaling")
         report.append(
             "Scaling factors: 10^7, 10^10, 10^12, 10^15, 10^18, 10^20, 10^31, 10^76 plus selected combinations"
         )
@@ -653,9 +604,7 @@ class ComprehensiveComparison:
 
         for scale_name, results in golden_results.items():
             report.append(f"\n{'=' * 80}")
-            report.append(
-                f"SCALE: {scale_name} (factor: {results['scale_factor']:.0e})"
-            )
+            report.append(f"SCALE: {scale_name} (factor: {results['scale_factor']:.0e})")
             report.append(f"{'=' * 80}")
             report.append(
                 f"  Base Throughput: {results['base_throughput_attempts_per_sec']:.0e} attempts/sec"
@@ -664,25 +613,17 @@ class ComprehensiveComparison:
                 f"  Effective Throughput (with quantum advantages): "
                 f"{results['effective_throughput_with_quantum_advantages']:.0e} attempts/sec"
             )
-            report.append(
-                f"  Effective Hashrate: {results['effective_hashrate_ths']:.3f} TH/s"
-            )
+            report.append(f"  Effective Hashrate: {results['effective_hashrate_ths']:.3f} TH/s")
             report.append(f"  Power: {results['power_w']:.1f} W")
-            report.append(
-                f"  Hashrate Efficiency: {results['hashrate_efficiency_j_th']:.1f} J/TH"
-            )
+            report.append(f"  Hashrate Efficiency: {results['hashrate_efficiency_j_th']:.1f} J/TH")
 
             report.append("\n  ASIC COMPARISON:")
             for asic_comp in results["asic_comparison"]:
                 status = "✓ BEATS" if asic_comp["pulvini_beats_asic"] else "✗ LOSES"
                 report.append(f"    {asic_comp['asic']}: {status}")
-                report.append(
-                    f"      Hashrate ratio: {asic_comp['hashrate_ratio']:.2e}x"
-                )
+                report.append(f"      Hashrate ratio: {asic_comp['hashrate_ratio']:.2e}x")
                 report.append(f"      Power ratio: {asic_comp['power_ratio']:.2e}x")
-                report.append(
-                    f"      Efficiency ratio: {asic_comp['efficiency_ratio']:.2e}x"
-                )
+                report.append(f"      Efficiency ratio: {asic_comp['efficiency_ratio']:.2e}x")
 
         report.append(f"\n{'=' * 80}")
         report.append("GOLDEN RATIO SCALING SUMMARY")
@@ -690,17 +631,13 @@ class ComprehensiveComparison:
 
         competitive_scales = []
         for scale_name, results in golden_results.items():
-            beats_any = any(
-                asic["pulvini_beats_asic"] for asic in results["asic_comparison"]
-            )
+            beats_any = any(asic["pulvini_beats_asic"] for asic in results["asic_comparison"])
             if beats_any:
                 competitive_scales.append(scale_name)
 
         if competitive_scales:
             report.append(f"  ✓ COMPETITIVE SCALES: {', '.join(competitive_scales)}")
-            report.append(
-                f"  ✓ PULVINI beats ASICs at {len(competitive_scales)} scaling levels"
-            )
+            report.append(f"  ✓ PULVINI beats ASICs at {len(competitive_scales)} scaling levels")
         else:
             report.append("  ✗ No competitive scales found")
 
@@ -723,9 +660,7 @@ class ComprehensiveComparison:
             "  ✓ SCALING CONTROL: Memory compression + golden ratio = deterministic output"
         )
 
-        report.append(
-            f"\n  Quantum advantage multiplier: {self.total_quantum_multiplier:.0e}x"
-        )
+        report.append(f"\n  Quantum advantage multiplier: {self.total_quantum_multiplier:.0e}x")
         report.append("  Architecture: 32 parallel quantum solvers")
         report.append(
             "  Scaling method: Dynamic golden ratio (requested exponents plus combinations)"
@@ -746,9 +681,7 @@ class ComprehensiveComparison:
 
         single = self.compare_single_instance()
         report.append("\nNATIVE 32-SOLVER PULVINI ARCHITECTURE:")
-        report.append(
-            f"  Number of Solvers: {single['pulvini_native_32_solver']['num_solvers']}"
-        )
+        report.append(f"  Number of Solvers: {single['pulvini_native_32_solver']['num_solvers']}")
         report.append(
             f"  Base Algorithmic Throughput: "
             f"{single['pulvini_native_32_solver']['base_algorithmic_throughput_attempts_per_sec']:.0f} attempts/sec"
@@ -777,12 +710,8 @@ class ComprehensiveComparison:
         report.append(
             f"    Search Collapsing: {self.SEARCH_COLLAPSING:.1f}x quantum walk shortcuts"
         )
-        report.append(
-            f"    Memory Fabric: {self.MEMORY_FABRIC:.1f}x pattern recognition"
-        )
-        report.append(
-            f"    Bures Gradient: {self.BURES_GRADIENT:.1f}x optimal convergence"
-        )
+        report.append(f"    Memory Fabric: {self.MEMORY_FABRIC:.1f}x pattern recognition")
+        report.append(f"    Bures Gradient: {self.BURES_GRADIENT:.1f}x optimal convergence")
         report.append(
             f"    Total Quantum Multiplier: {self.total_quantum_multiplier:.1f}x compound advantage"
         )
@@ -811,9 +740,7 @@ class ComprehensiveComparison:
 
         report.append("\nPULVINI 32-SOLVER SCALING ANALYSIS:")
         target_hashrate = 200.0
-        single_unit_hashrate = single["pulvini_native_32_solver"][
-            "effective_hashrate_ths"
-        ]
+        single_unit_hashrate = single["pulvini_native_32_solver"]["effective_hashrate_ths"]
         units_needed = target_hashrate / single_unit_hashrate
         total_power = units_needed * single["pulvini_native_32_solver"]["power_w"]
 
@@ -824,9 +751,7 @@ class ComprehensiveComparison:
         report.append(f"  Total power for equivalent: {total_power:.0f} W")
         report.append(f"  Power efficiency: {total_power / target_hashrate:.1f} J/TH")
 
-        report.append(
-            "\n  Single ASIC (Whatsminer M60): 200.0 TH/s @ 3400 W (17.0 J/TH)"
-        )
+        report.append("\n  Single ASIC (Whatsminer M60): 200.0 TH/s @ 3400 W (17.0 J/TH)")
         report.append(
             f"  PULVINI equivalent: 200.0 TH/s @ {total_power:.0f} W ({total_power / target_hashrate:.1f} J/TH)"
         )
@@ -844,43 +769,27 @@ class ComprehensiveComparison:
 
         report.append("\nPULVINI MATHEMATICAL ARCHITECTURAL ADVANTAGES:")
         report.append("  ✓ 32 parallel quantum solvers (native architecture)")
-        report.append(
-            "  ✓ Pure-state attractor convergence (purity = 1.0, entropy = 0)"
-        )
-        report.append(
-            "  ✓ Memory fabric state-discriminating capacity (3/3 pattern pairs)"
-        )
+        report.append("  ✓ Pure-state attractor convergence (purity = 1.0, entropy = 0)")
+        report.append("  ✓ Memory fabric state-discriminating capacity (3/3 pattern pairs)")
         report.append("  ✓ Bures metric geometric certification")
         report.append("  ✓ Phi-folding lossless compression (ε < 10^-14)")
         report.append("  ✓ Search collapsing via quantum walk coordinate collapse")
-        report.append(
-            "  ✓ Deterministic complexity: O(1) per attempt, O(D/2^256) expected"
-        )
+        report.append("  ✓ Deterministic complexity: O(1) per attempt, O(D/2^256) expected")
 
         report.append(f"\n{'=' * 80}")
         report.append("ANALYSIS SUMMARY:")
         report.append(
             f"  PULVINI 32-solver provides {self.total_quantum_multiplier:.0f}x quantum advantage"
         )
-        report.append(
-            f"  Current single-unit performance: {single_unit_hashrate:.3f} TH/s"
-        )
+        report.append(f"  Current single-unit performance: {single_unit_hashrate:.3f} TH/s")
         report.append("  ASIC target performance: 200.0 TH/s")
-        report.append(
-            f"  Scaling required: {units_needed:.0f}x (21,740 units for parity)"
-        )
+        report.append(f"  Scaling required: {units_needed:.0f}x (21,740 units for parity)")
         report.append(
             f"  Power efficiency gap: {total_power / target_hashrate / 17.0:.1f}x vs best ASIC"
         )
-        report.append(
-            "\nCONCLUSION: PULVINI architecture shows quantum advantages but requires"
-        )
-        report.append(
-            "significant scaling to match ASIC hashrate. The compound quantum advantages"
-        )
-        report.append(
-            "(393,000x) demonstrate algorithmic sophistication, but hardware-level"
-        )
+        report.append("\nCONCLUSION: PULVINI architecture shows quantum advantages but requires")
+        report.append("significant scaling to match ASIC hashrate. The compound quantum advantages")
+        report.append("(393,000x) demonstrate algorithmic sophistication, but hardware-level")
         report.append("optimization would be needed for direct ASIC competition.")
         report.append("=" * 80)
         return "\n".join(report)
@@ -911,9 +820,7 @@ def main():
     with open(ROOT / "golden_ratio_scaling_results.json", "w") as f:
         json.dump(full_results, f, indent=2)
 
-    print(
-        "\nDetailed golden ratio scaling results saved to golden_ratio_scaling_results.json"
-    )
+    print("\nDetailed golden ratio scaling results saved to golden_ratio_scaling_results.json")
 
 
 if __name__ == "__main__":

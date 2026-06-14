@@ -7,8 +7,9 @@ to verify RuntimeWarnings don't reappear independently of the test suite.
 """
 
 import sys
-import numpy as np
 from pathlib import Path
+
+import numpy as np
 
 ROOT = Path(__file__).resolve().parents[0]
 BACKEND = ROOT / "python_backend"
@@ -20,9 +21,9 @@ import warnings
 
 warnings.filterwarnings("error")
 
-from pythia_mining.pulvini_phi_memory import PulviniPhiMemoryCompressionEngine
 from pythia_mining.pulvini_bures_variational import bures_variational_certificate
 from pythia_mining.pulvini_manifold import PulviniManifold
+from pythia_mining.pulvini_phi_memory import PulviniPhiMemoryCompressionEngine
 from pythia_mining.pulvini_topology import ADJACENCY_MAP
 
 

@@ -43,9 +43,7 @@ class GoLiveStratumPropertyTests(unittest.TestCase):
             extranonce2 = "".join(rng.choice(alphabet) for _ in range(8))
             ntime = "".join(rng.choice(alphabet) for _ in range(8))
             nonce = "".join(rng.choice(alphabet) for _ in range(8))
-            payload = json.loads(
-                build_submit(1, "worker", "job", extranonce2, ntime, nonce)
-            )
+            payload = json.loads(build_submit(1, "worker", "job", extranonce2, ntime, nonce))
             self.assertEqual("mining.submit", payload["method"])
             self.assertEqual(
                 ["worker", "job", extranonce2.lower(), ntime.lower(), nonce.lower()],
@@ -144,13 +142,9 @@ class GoLiveStratumPropertyTests(unittest.TestCase):
     def test_e2e_subscribe_authorize_notify_submit_flow_without_network(self) -> None:
         subscribe = json.loads(build_subscribe(1, "hyba-go-live/1300"))
         self.assertEqual(["hyba-go-live/1300"], subscribe["params"])
-        sub = parse_subscribe_result(
-            {"id": 1, "result": [[], "0a0b", 4], "error": None}
-        )
+        sub = parse_subscribe_result({"id": 1, "result": [[], "0a0b", 4], "error": None})
         self.assertEqual("0a0b", sub.extranonce1)
-        self.assertTrue(
-            parse_authorize_result({"id": 2, "result": True, "error": None})
-        )
+        self.assertTrue(parse_authorize_result({"id": 2, "result": True, "error": None}))
         kind, notify = parse_server_message(
             json.dumps(
                 {
@@ -171,13 +165,9 @@ class GoLiveStratumPropertyTests(unittest.TestCase):
         )
         self.assertEqual("mining.notify", kind)
         submit = json.loads(
-            build_submit(
-                3, "worker", notify.job_id, "00000001", notify.ntime, "00000002"
-            )
+            build_submit(3, "worker", notify.job_id, "00000001", notify.ntime, "00000002")
         )
-        self.assertEqual(
-            ["worker", "job", "00000001", "65aa00ff", "00000002"], submit["params"]
-        )
+        self.assertEqual(["worker", "job", "00000001", "65aa00ff", "00000002"], submit["params"])
         endpoint = parse_endpoint("stratum+tls://pool.example.com:3334")
         transport = StratumLineTransport(
             "stratum+tls://pool.example.com:3334", connect_timeout=1, read_timeout=1

@@ -135,9 +135,7 @@ def benchmark_unitary_evolution(iterations: int = 100) -> Dict[str, Any]:
 
 def run_full_benchmark(iterations: int = 100) -> List[Dict[str, Any]]:
     """Run full quantum performance benchmark."""
-    print(
-        f"Running quantum performance benchmark with {iterations} iterations per operation..."
-    )
+    print(f"Running quantum performance benchmark with {iterations} iterations per operation...")
 
     results = []
 

@@ -37,9 +37,7 @@ try:
         PULVINI_BINARY_MAGIC,
         SubstateVerifier,
     )
-except (
-    ModuleNotFoundError
-) as exc:  # pragma: no cover - exercised in dependency-poor shells.
+except ModuleNotFoundError as exc:  # pragma: no cover - exercised in dependency-poor shells.
     NodeTelemetry = None  # type: ignore[assignment]
     PulviniAutonomicsEngine = None  # type: ignore[assignment]
     PulviniOverlayConcentrator = None  # type: ignore[assignment]
@@ -65,9 +63,7 @@ def _parse_nodes(value: str) -> list[int]:
 
 def _healthy_telemetry(node_id: int):
     if NodeTelemetry is None:
-        raise RuntimeError(
-            f"PULVINI numerical dependencies are unavailable: {IMPORT_ERROR}"
-        )
+        raise RuntimeError(f"PULVINI numerical dependencies are unavailable: {IMPORT_ERROR}")
     return NodeTelemetry(
         node_id=node_id,
         tres=25.0,
@@ -96,19 +92,13 @@ def run_live_cut_drill(
             f"(missing: {IMPORT_ERROR})"
         )
     overlay = PulviniOverlayConcentrator(worker_name="PULVINI.singularity")
-    overlay.mark_pool_bound(
-        "PhaseTransitionPool", "stratum+tcp://phase-transition.local:3333", 2
-    )
-    job = SimpleNamespace(
-        job_id="phase-transition-live-cut", target=1, extranonce2_size=4
-    )
+    overlay.mark_pool_bound("PhaseTransitionPool", "stratum+tcp://phase-transition.local:3333", 2)
+    job = SimpleNamespace(job_id="phase-transition-live-cut", target=1, extranonce2_size=4)
     overlay.register_pool_job(job, pool_name="PhaseTransitionPool")
 
     engine = PulviniAutonomicsEngine(lattice_repoint_sink=overlay.apply_lattice_repoint)
     engine.ingest_telemetry(_healthy_telemetry(node_id) for node_id in range(32))
-    rebalance = engine.rebalancer.rebalance_lattice_topology(
-        nodes, reason="simulated_live_cut"
-    )
+    rebalance = engine.rebalancer.rebalance_lattice_topology(nodes, reason="simulated_live_cut")
     overlay.apply_autonomic_distribution(
         engine.homeostasis.rho.diagonal().tolist(), reason="simulated_live_cut"
     )

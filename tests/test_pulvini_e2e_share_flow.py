@@ -42,9 +42,7 @@ class PulviniEndToEndShareFlowTests(unittest.TestCase):
                 extranonce2_size=4,
             )
 
-            async def submitter(
-                submit_job: MiningJob, nonce: int, extranonce2: str
-            ) -> ShareResult:
+            async def submitter(submit_job: MiningJob, nonce: int, extranonce2: str) -> ShareResult:
                 submitted.append((submit_job.job_id, nonce, extranonce2))
                 return ShareResult(
                     True,
@@ -62,23 +60,17 @@ class PulviniEndToEndShareFlowTests(unittest.TestCase):
             self.assertEqual(20, plan.working_set_dimension)
             self.assertEqual(12, plan.retained_kernel_lanes)
 
-            cert = bures_certificate(
-                overlay.manifold.rho, overlay.manifold.entropy_gradient
-            )
+            cert = bures_certificate(overlay.manifold.rho, overlay.manifold.entropy_gradient)
             self.assertTrue(cert.closed)
             self.assertEqual("Bures", cert.metric)
             # Numerical validity assertions for Bures certificate
-            self.assertFalse(
-                np.isnan(cert.bures_norm), "NaN in Bures norm — numerical corruption"
-            )
+            self.assertFalse(np.isnan(cert.bures_norm), "NaN in Bures norm — numerical corruption")
             self.assertFalse(np.isinf(cert.bures_norm), "Inf in Bures norm — overflow")
             self.assertFalse(
                 np.isnan(cert.tangent_norm),
                 "NaN in tangent norm — numerical corruption",
             )
-            self.assertFalse(
-                np.isinf(cert.tangent_norm), "Inf in tangent norm — overflow"
-            )
+            self.assertFalse(np.isinf(cert.tangent_norm), "Inf in tangent norm — overflow")
 
             overlay.phase_heartbeat(1)
             overlay.manifold.evolve_closed_system(dt=0.05)
@@ -133,9 +125,7 @@ class PulviniEndToEndShareFlowTests(unittest.TestCase):
             self.assertEqual(1, snapshot["pool_visible_workers"])
             self.assertEqual(32, snapshot["internal_nodes"])
             self.assertTrue(snapshot["nonce_compression_plan"]["complete_coverage"])
-            self.assertEqual(
-                20, snapshot["nonce_compression_plan"]["working_set_dimension"]
-            )
+            self.assertEqual(20, snapshot["nonce_compression_plan"]["working_set_dimension"])
             self.assertTrue(ledger["accepted"])
             self.assertIsNotNone(ledger["compressed_coordinate"])
             self.assertEqual(
@@ -147,9 +137,7 @@ class PulviniEndToEndShareFlowTests(unittest.TestCase):
             self.assertIn("search_space_collapsed", stages)
             self.assertIn("quantum_walk_completed", stages)
             self.assertIn("tunnel_anneal_projected_nonce", stages)
-            self.assertGreater(
-                propagation_snapshot["memory_fabric"]["kernel"]["kernel_norm"], 0.0
-            )
+            self.assertGreater(propagation_snapshot["memory_fabric"]["kernel"]["kernel_norm"], 0.0)
             phases = [event["phase"] for event in snapshot["lifecycle"]]
             self.assertIn("job_received", phases)
             self.assertIn("work_configured", phases)

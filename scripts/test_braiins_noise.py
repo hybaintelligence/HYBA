@@ -132,9 +132,7 @@ def main():
     """Main entry point for noise protocol test."""
     import argparse
 
-    parser = argparse.ArgumentParser(
-        description="Test Braiins pool connection with Noise protocol"
-    )
+    parser = argparse.ArgumentParser(description="Test Braiins pool connection with Noise protocol")
     parser.add_argument(
         "--pool-url", default="stratum2+tcp://stratum.braiins.com:3333", help="Pool URL"
     )

@@ -17,10 +17,10 @@ if str(BACKEND) not in sys.path:
 np.seterr(all="raise")
 
 from pythia_mining.pulvini_compressed_solver import PulviniCompressedQuantumSolver  # noqa: E402
-from pythia_mining.pulvini_nonce_compression import (
+from pythia_mining.pulvini_nonce_compression import (  # noqa: E402
     NONCE_SPACE_SIZE,
     PulviniNonceSpaceCompressor,
-)  # noqa: E402
+)
 from pythia_mining.pulvini_overlay import NUM_NODES, PulviniOverlayConcentrator  # noqa: E402
 
 
@@ -90,9 +90,7 @@ class PulviniNonceCompressionTests(unittest.TestCase):
             self.assertTrue(solver.current_config["overlap_free_nonce_coverage"])
             self.assertEqual(20, solver.current_config["compressed_working_set_size"])
             self.assertEqual(12, solver.current_config["retained_kernel_lanes"])
-            self.assertEqual(
-                NONCE_SPACE_SIZE, solver.current_config["search_space_size"]
-            )
+            self.assertEqual(NONCE_SPACE_SIZE, solver.current_config["search_space_size"])
 
         asyncio.run(run())
 

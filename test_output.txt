@@ -1,0 +1,378 @@
+test_best_explanation_selection (tests.test_theoretical_foundations_unit.TestDeutschKnowledgeSubstrate.test_best_explanation_selection)
+Test selecting best explanation for context ... ok
+test_counterfactual_reasoning (tests.test_theoretical_foundations_unit.TestDeutschKnowledgeSubstrate.test_counterfactual_reasoning)
+Test counterfactual 'what if' reasoning ... ok
+test_explain_decision (tests.test_theoretical_foundations_unit.TestDeutschKnowledgeSubstrate.test_explain_decision)
+Test natural language explanation generation ... ok
+test_knowledge_from_failure (tests.test_theoretical_foundations_unit.TestDeutschKnowledgeSubstrate.test_knowledge_from_failure)
+Test creating knowledge from failed share ... ok
+test_knowledge_from_success (tests.test_theoretical_foundations_unit.TestDeutschKnowledgeSubstrate.test_knowledge_from_success)
+Test creating knowledge from successful share ... ok
+test_knowledge_metrics (tests.test_theoretical_foundations_unit.TestDeutschKnowledgeSubstrate.test_knowledge_metrics)
+Test knowledge substrate metrics ... ok
+test_knowledge_substrate_initialization (tests.test_theoretical_foundations_unit.TestDeutschKnowledgeSubstrate.test_knowledge_substrate_initialization)
+Test substrate creates successfully ... ok
+test_fibonacci_allocation (tests.test_theoretical_foundations_unit.TestDuSautoySymmetry.test_fibonacci_allocation)
+Test Fibonacci-based capacity allocation ... ERROR
+test_golden_spiral_search (tests.test_theoretical_foundations_unit.TestDuSautoySymmetry.test_golden_spiral_search)
+Test golden spiral search pattern ... ERROR
+test_nonce_allocation_by_orbit (tests.test_theoretical_foundations_unit.TestDuSautoySymmetry.test_nonce_allocation_by_orbit)
+Test nonce space allocation using orbits ... ERROR
+test_orbits_partition_nodes (tests.test_theoretical_foundations_unit.TestDuSautoySymmetry.test_orbits_partition_nodes)
+Test orbits form a partition of 32 nodes ... ERROR
+test_search_space_reduction (tests.test_theoretical_foundations_unit.TestDuSautoySymmetry.test_search_space_reduction)
+Test symmetry reduces search space ... ERROR
+test_symmetry_engine_initialization (tests.test_theoretical_foundations_unit.TestDuSautoySymmetry.test_symmetry_engine_initialization)
+Test symmetry engine creates with automorphisms ... ERROR
+test_symmetry_metrics (tests.test_theoretical_foundations_unit.TestDuSautoySymmetry.test_symmetry_metrics)
+Test symmetry exploitation metrics ... ERROR
+test_temporal_symmetry_detection (tests.test_theoretical_foundations_unit.TestDuSautoySymmetry.test_temporal_symmetry_detection)
+Test detecting periodicity in share history ... ERROR
+test_full_theoretical_stack (tests.test_theoretical_foundations_unit.TestIntegration.test_full_theoretical_stack)
+Test Penrose + Deutsch + Du Sautoy working together ... ERROR
+test_penrose_deutsch_integration (tests.test_theoretical_foundations_unit.TestIntegration.test_penrose_deutsch_integration)
+Test OR consciousness events + knowledge creation ... ok
+test_symmetry_knowledge_integration (tests.test_theoretical_foundations_unit.TestIntegration.test_symmetry_knowledge_integration)
+Test symmetry exploitation + knowledge substrate ... ERROR
+test_or_consciousness_metrics (tests.test_theoretical_foundations_unit.TestPenroseObjectiveReduction.test_or_consciousness_metrics)
+Test consciousness metrics tracking ... ok
+test_or_engine_initialization (tests.test_theoretical_foundations_unit.TestPenroseObjectiveReduction.test_or_engine_initialization)
+Test OR engine creates successfully ... ok
+test_or_increases_purity_on_collapse (tests.test_theoretical_foundations_unit.TestPenroseObjectiveReduction.test_or_increases_purity_on_collapse)
+When OR collapses, purity should increase ... ok
+test_or_preserves_trace (tests.test_theoretical_foundations_unit.TestPenroseObjectiveReduction.test_or_preserves_trace)
+OR must preserve trace=1 of density matrix ... ok
+test_or_produces_hermitian_matrix (tests.test_theoretical_foundations_unit.TestPenroseObjectiveReduction.test_or_produces_hermitian_matrix)
+OR output must be Hermitian ... ok
+test_counterfactual_transitivity (tests.test_theoretical_foundations_properties.TestDeutschKnowledgeProperties.test_counterfactual_transitivity)
+Property: counterfactual reasoning should be transitive ... ok
+test_explanation_accuracy_improves_with_data (tests.test_theoretical_foundations_properties.TestDeutschKnowledgeProperties.test_explanation_accuracy_improves_with_data)
+Property: explanations should improve with more data ... ok
+test_knowledge_accumulation_property (tests.test_theoretical_foundations_properties.TestDeutschKnowledgeProperties.test_knowledge_accumulation_property)
+Property: knowledge accumulates monotonically ... ok
+test_golden_spiral_search_property (tests.test_theoretical_foundations_properties.TestDuSautoySymmetryProperties.test_golden_spiral_search_property)
+Property: golden spiral should not repeat nonces quickly ... ERROR
+test_nonce_allocation_covers_space (tests.test_theoretical_foundations_properties.TestDuSautoySymmetryProperties.test_nonce_allocation_covers_space)
+Property: nonce allocation should cover entire space ... ERROR
+test_orbit_partition_property (tests.test_theoretical_foundations_properties.TestDuSautoySymmetryProperties.test_orbit_partition_property)
+Property: orbits partition the node set ... ERROR
+test_orbit_stabilizer_theorem (tests.test_theoretical_foundations_properties.TestDuSautoySymmetryProperties.test_orbit_stabilizer_theorem)
+Property: |Orbit| * |Stabilizer| = |Group| ... ERROR
+test_temporal_symmetry_detection_property (tests.test_theoretical_foundations_properties.TestDuSautoySymmetryProperties.test_temporal_symmetry_detection_property)
+Property: should detect periodicity when present ... ERROR
+test_knowledge_with_symmetry_reduces_search (tests.test_theoretical_foundations_properties.TestIntegrationProperties.test_knowledge_with_symmetry_reduces_search)
+Integration: knowledge + symmetry should reduce search space ... ERROR
+test_penrose_or_with_symmetry_preserved (tests.test_theoretical_foundations_properties.TestIntegrationProperties.test_penrose_or_with_symmetry_preserved)
+Integration: OR should preserve symmetry structure ... ERROR
+test_or_increases_purity (tests.test_theoretical_foundations_properties.TestPenroseORProperties.test_or_increases_purity)
+Property: OR collapse increases purity ... ok
+test_or_preserves_trace (tests.test_theoretical_foundations_properties.TestPenroseORProperties.test_or_preserves_trace)
+Property: OR preserves trace of density matrix ... ok
+test_or_produces_hermitian_output (tests.test_theoretical_foundations_properties.TestPenroseORProperties.test_or_produces_hermitian_output)
+Property: OR always produces Hermitian density matrix ... ok
+
+======================================================================
+ERROR: test_fibonacci_allocation (tests.test_theoretical_foundations_unit.TestDuSautoySymmetry.test_fibonacci_allocation)
+Test Fibonacci-based capacity allocation
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/demouser/Desktop/HYBA_FULLSTACK/tests/test_theoretical_foundations_unit.py", line 267, in test_fibonacci_allocation
+    engine = SymmetryExploitationEngine(self.automorphisms)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/pythia_mining/du_sautoy_symmetry.py", line 48, in __init__
+    self.orbits = self._compute_orbits()
+                  ^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/pythia_mining/du_sautoy_symmetry.py", line 65, in _compute_orbits
+    orbit_members.add(automorphism.get(node, node))
+                      ^^^^^^^^^^^^^^^^
+AttributeError: 'tuple' object has no attribute 'get'
+
+======================================================================
+ERROR: test_golden_spiral_search (tests.test_theoretical_foundations_unit.TestDuSautoySymmetry.test_golden_spiral_search)
+Test golden spiral search pattern
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/demouser/Desktop/HYBA_FULLSTACK/tests/test_theoretical_foundations_unit.py", line 284, in test_golden_spiral_search
+    engine = SymmetryExploitationEngine(self.automorphisms)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/pythia_mining/du_sautoy_symmetry.py", line 48, in __init__
+    self.orbits = self._compute_orbits()
+                  ^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/pythia_mining/du_sautoy_symmetry.py", line 65, in _compute_orbits
+    orbit_members.add(automorphism.get(node, node))
+                      ^^^^^^^^^^^^^^^^
+AttributeError: 'tuple' object has no attribute 'get'
+
+======================================================================
+ERROR: test_nonce_allocation_by_orbit (tests.test_theoretical_foundations_unit.TestDuSautoySymmetry.test_nonce_allocation_by_orbit)
+Test nonce space allocation using orbits
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/demouser/Desktop/HYBA_FULLSTACK/tests/test_theoretical_foundations_unit.py", line 248, in test_nonce_allocation_by_orbit
+    engine = SymmetryExploitationEngine(self.automorphisms)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/pythia_mining/du_sautoy_symmetry.py", line 48, in __init__
+    self.orbits = self._compute_orbits()
+                  ^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/pythia_mining/du_sautoy_symmetry.py", line 65, in _compute_orbits
+    orbit_members.add(automorphism.get(node, node))
+                      ^^^^^^^^^^^^^^^^
+AttributeError: 'tuple' object has no attribute 'get'
+
+======================================================================
+ERROR: test_orbits_partition_nodes (tests.test_theoretical_foundations_unit.TestDuSautoySymmetry.test_orbits_partition_nodes)
+Test orbits form a partition of 32 nodes
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/demouser/Desktop/HYBA_FULLSTACK/tests/test_theoretical_foundations_unit.py", line 216, in test_orbits_partition_nodes
+    engine = SymmetryExploitationEngine(self.automorphisms)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/pythia_mining/du_sautoy_symmetry.py", line 48, in __init__
+    self.orbits = self._compute_orbits()
+                  ^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/pythia_mining/du_sautoy_symmetry.py", line 65, in _compute_orbits
+    orbit_members.add(automorphism.get(node, node))
+                      ^^^^^^^^^^^^^^^^
+AttributeError: 'tuple' object has no attribute 'get'
+
+======================================================================
+ERROR: test_search_space_reduction (tests.test_theoretical_foundations_unit.TestDuSautoySymmetry.test_search_space_reduction)
+Test symmetry reduces search space
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/demouser/Desktop/HYBA_FULLSTACK/tests/test_theoretical_foundations_unit.py", line 237, in test_search_space_reduction
+    engine = SymmetryExploitationEngine(self.automorphisms)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/pythia_mining/du_sautoy_symmetry.py", line 48, in __init__
+    self.orbits = self._compute_orbits()
+                  ^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/pythia_mining/du_sautoy_symmetry.py", line 65, in _compute_orbits
+    orbit_members.add(automorphism.get(node, node))
+                      ^^^^^^^^^^^^^^^^
+AttributeError: 'tuple' object has no attribute 'get'
+
+======================================================================
+ERROR: test_symmetry_engine_initialization (tests.test_theoretical_foundations_unit.TestDuSautoySymmetry.test_symmetry_engine_initialization)
+Test symmetry engine creates with automorphisms
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/demouser/Desktop/HYBA_FULLSTACK/tests/test_theoretical_foundations_unit.py", line 208, in test_symmetry_engine_initialization
+    engine = SymmetryExploitationEngine(self.automorphisms)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/pythia_mining/du_sautoy_symmetry.py", line 48, in __init__
+    self.orbits = self._compute_orbits()
+                  ^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/pythia_mining/du_sautoy_symmetry.py", line 65, in _compute_orbits
+    orbit_members.add(automorphism.get(node, node))
+                      ^^^^^^^^^^^^^^^^
+AttributeError: 'tuple' object has no attribute 'get'
+
+======================================================================
+ERROR: test_symmetry_metrics (tests.test_theoretical_foundations_unit.TestDuSautoySymmetry.test_symmetry_metrics)
+Test symmetry exploitation metrics
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/demouser/Desktop/HYBA_FULLSTACK/tests/test_theoretical_foundations_unit.py", line 323, in test_symmetry_metrics
+    engine = SymmetryExploitationEngine(self.automorphisms)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/pythia_mining/du_sautoy_symmetry.py", line 48, in __init__
+    self.orbits = self._compute_orbits()
+                  ^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/pythia_mining/du_sautoy_symmetry.py", line 65, in _compute_orbits
+    orbit_members.add(automorphism.get(node, node))
+                      ^^^^^^^^^^^^^^^^
+AttributeError: 'tuple' object has no attribute 'get'
+
+======================================================================
+ERROR: test_temporal_symmetry_detection (tests.test_theoretical_foundations_unit.TestDuSautoySymmetry.test_temporal_symmetry_detection)
+Test detecting periodicity in share history
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/demouser/Desktop/HYBA_FULLSTACK/tests/test_theoretical_foundations_unit.py", line 301, in test_temporal_symmetry_detection
+    engine = SymmetryExploitationEngine(self.automorphisms)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/pythia_mining/du_sautoy_symmetry.py", line 48, in __init__
+    self.orbits = self._compute_orbits()
+                  ^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/pythia_mining/du_sautoy_symmetry.py", line 65, in _compute_orbits
+    orbit_members.add(automorphism.get(node, node))
+                      ^^^^^^^^^^^^^^^^
+AttributeError: 'tuple' object has no attribute 'get'
+
+======================================================================
+ERROR: test_full_theoretical_stack (tests.test_theoretical_foundations_unit.TestIntegration.test_full_theoretical_stack)
+Test Penrose + Deutsch + Du Sautoy working together
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/demouser/Desktop/HYBA_FULLSTACK/tests/test_theoretical_foundations_unit.py", line 398, in test_full_theoretical_stack
+    symmetry = SymmetryExploitationEngine(self.automorphisms)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/pythia_mining/du_sautoy_symmetry.py", line 48, in __init__
+    self.orbits = self._compute_orbits()
+                  ^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/pythia_mining/du_sautoy_symmetry.py", line 65, in _compute_orbits
+    orbit_members.add(automorphism.get(node, node))
+                      ^^^^^^^^^^^^^^^^
+AttributeError: 'tuple' object has no attribute 'get'
+
+======================================================================
+ERROR: test_symmetry_knowledge_integration (tests.test_theoretical_foundations_unit.TestIntegration.test_symmetry_knowledge_integration)
+Test symmetry exploitation + knowledge substrate
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/demouser/Desktop/HYBA_FULLSTACK/tests/test_theoretical_foundations_unit.py", line 376, in test_symmetry_knowledge_integration
+    symmetry = SymmetryExploitationEngine(self.automorphisms)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/pythia_mining/du_sautoy_symmetry.py", line 48, in __init__
+    self.orbits = self._compute_orbits()
+                  ^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/pythia_mining/du_sautoy_symmetry.py", line 65, in _compute_orbits
+    orbit_members.add(automorphism.get(node, node))
+                      ^^^^^^^^^^^^^^^^
+AttributeError: 'tuple' object has no attribute 'get'
+
+======================================================================
+ERROR: test_golden_spiral_search_property (tests.test_theoretical_foundations_properties.TestDuSautoySymmetryProperties.test_golden_spiral_search_property)
+Property: golden spiral should not repeat nonces quickly
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/demouser/Desktop/HYBA_FULLSTACK/tests/test_theoretical_foundations_properties.py", line 265, in test_golden_spiral_search_property
+    @settings(deadline=None, max_examples=20)
+               ^^^^^^^
+  File "/Users/demouser/.pyenv/versions/3.12.10/lib/python3.12/site-packages/hypothesis/core.py", line 2264, in wrapped_test
+    raise the_error_hypothesis_found
+  File "/Users/demouser/Desktop/HYBA_FULLSTACK/tests/test_theoretical_foundations_properties.py", line 268, in test_golden_spiral_search_property
+    engine = SymmetryExploitationEngine(self.automorphisms)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/pythia_mining/du_sautoy_symmetry.py", line 48, in __init__
+    self.orbits = self._compute_orbits()
+                  ^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/pythia_mining/du_sautoy_symmetry.py", line 65, in _compute_orbits
+    orbit_members.add(automorphism.get(node, node))
+                      ^^^^^^^^^^^^^^^^
+AttributeError: 'tuple' object has no attribute 'get'
+Falsifying example: test_golden_spiral_search_property(
+    self=<tests.test_theoretical_foundations_properties.TestDuSautoySymmetryProperties testMethod=test_golden_spiral_search_property>,
+    center_nonce=0,  # or any other generated value
+)
+
+======================================================================
+ERROR: test_nonce_allocation_covers_space (tests.test_theoretical_foundations_properties.TestDuSautoySymmetryProperties.test_nonce_allocation_covers_space)
+Property: nonce allocation should cover entire space
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/demouser/Desktop/HYBA_FULLSTACK/tests/test_theoretical_foundations_properties.py", line 247, in test_nonce_allocation_covers_space
+    total_nonce_space=st.integers(min_value=1000, max_value=2**20),
+           ^^^^^^^
+  File "/Users/demouser/.pyenv/versions/3.12.10/lib/python3.12/site-packages/hypothesis/core.py", line 2264, in wrapped_test
+    raise the_error_hypothesis_found
+  File "/Users/demouser/Desktop/HYBA_FULLSTACK/tests/test_theoretical_foundations_properties.py", line 252, in test_nonce_allocation_covers_space
+    engine = SymmetryExploitationEngine(self.automorphisms)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/pythia_mining/du_sautoy_symmetry.py", line 48, in __init__
+    self.orbits = self._compute_orbits()
+                  ^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/pythia_mining/du_sautoy_symmetry.py", line 65, in _compute_orbits
+    orbit_members.add(automorphism.get(node, node))
+                      ^^^^^^^^^^^^^^^^
+AttributeError: 'tuple' object has no attribute 'get'
+Falsifying example: test_nonce_allocation_covers_space(
+    self=<tests.test_theoretical_foundations_properties.TestDuSautoySymmetryProperties testMethod=test_nonce_allocation_covers_space>,
+    total_nonce_space=1000,  # or any other generated value
+)
+
+======================================================================
+ERROR: test_orbit_partition_property (tests.test_theoretical_foundations_properties.TestDuSautoySymmetryProperties.test_orbit_partition_property)
+Property: orbits partition the node set
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/demouser/Desktop/HYBA_FULLSTACK/tests/test_theoretical_foundations_properties.py", line 217, in test_orbit_partition_property
+    engine = SymmetryExploitationEngine(self.automorphisms)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/pythia_mining/du_sautoy_symmetry.py", line 48, in __init__
+    self.orbits = self._compute_orbits()
+                  ^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/pythia_mining/du_sautoy_symmetry.py", line 65, in _compute_orbits
+    orbit_members.add(automorphism.get(node, node))
+                      ^^^^^^^^^^^^^^^^
+AttributeError: 'tuple' object has no attribute 'get'
+
+======================================================================
+ERROR: test_orbit_stabilizer_theorem (tests.test_theoretical_foundations_properties.TestDuSautoySymmetryProperties.test_orbit_stabilizer_theorem)
+Property: |Orbit| * |Stabilizer| = |Group|
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/demouser/Desktop/HYBA_FULLSTACK/tests/test_theoretical_foundations_properties.py", line 238, in test_orbit_stabilizer_theorem
+    engine = SymmetryExploitationEngine(self.automorphisms)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/pythia_mining/du_sautoy_symmetry.py", line 48, in __init__
+    self.orbits = self._compute_orbits()
+                  ^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/pythia_mining/du_sautoy_symmetry.py", line 65, in _compute_orbits
+    orbit_members.add(automorphism.get(node, node))
+                      ^^^^^^^^^^^^^^^^
+AttributeError: 'tuple' object has no attribute 'get'
+
+======================================================================
+ERROR: test_temporal_symmetry_detection_property (tests.test_theoretical_foundations_properties.TestDuSautoySymmetryProperties.test_temporal_symmetry_detection_property)
+Property: should detect periodicity when present
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/demouser/Desktop/HYBA_FULLSTACK/tests/test_theoretical_foundations_properties.py", line 281, in test_temporal_symmetry_detection_property
+    share_count=st.integers(min_value=5, max_value=20),
+           ^^^^^^^
+  File "/Users/demouser/.pyenv/versions/3.12.10/lib/python3.12/site-packages/hypothesis/core.py", line 2264, in wrapped_test
+    raise the_error_hypothesis_found
+  File "/Users/demouser/Desktop/HYBA_FULLSTACK/tests/test_theoretical_foundations_properties.py", line 287, in test_temporal_symmetry_detection_property
+    engine = SymmetryExploitationEngine(self.automorphisms)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/pythia_mining/du_sautoy_symmetry.py", line 48, in __init__
+    self.orbits = self._compute_orbits()
+                  ^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/pythia_mining/du_sautoy_symmetry.py", line 65, in _compute_orbits
+    orbit_members.add(automorphism.get(node, node))
+                      ^^^^^^^^^^^^^^^^
+AttributeError: 'tuple' object has no attribute 'get'
+Falsifying example: test_temporal_symmetry_detection_property(
+    # The test always failed when commented parts were varied together.
+    self=<tests.test_theoretical_foundations_properties.TestDuSautoySymmetryProperties testMethod=test_temporal_symmetry_detection_property>,
+    share_count=5,  # or any other generated value
+    has_periodicity=False,  # or any other generated value
+)
+
+======================================================================
+ERROR: test_knowledge_with_symmetry_reduces_search (tests.test_theoretical_foundations_properties.TestIntegrationProperties.test_knowledge_with_symmetry_reduces_search)
+Integration: knowledge + symmetry should reduce search space
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/demouser/Desktop/HYBA_FULLSTACK/tests/test_theoretical_foundations_properties.py", line 330, in test_knowledge_with_symmetry_reduces_search
+    symmetry = SymmetryExploitationEngine(self.automorphisms)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/pythia_mining/du_sautoy_symmetry.py", line 48, in __init__
+    self.orbits = self._compute_orbits()
+                  ^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/pythia_mining/du_sautoy_symmetry.py", line 65, in _compute_orbits
+    orbit_members.add(automorphism.get(node, node))
+                      ^^^^^^^^^^^^^^^^
+AttributeError: 'tuple' object has no attribute 'get'
+
+======================================================================
+ERROR: test_penrose_or_with_symmetry_preserved (tests.test_theoretical_foundations_properties.TestIntegrationProperties.test_penrose_or_with_symmetry_preserved)
+Integration: OR should preserve symmetry structure
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/demouser/Desktop/HYBA_FULLSTACK/tests/test_theoretical_foundations_properties.py", line 354, in test_penrose_or_with_symmetry_preserved
+    symmetry = SymmetryExploitationEngine(self.automorphisms)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/pythia_mining/du_sautoy_symmetry.py", line 48, in __init__
+    self.orbits = self._compute_orbits()
+                  ^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/pythia_mining/du_sautoy_symmetry.py", line 65, in _compute_orbits
+    orbit_members.add(automorphism.get(node, node))
+                      ^^^^^^^^^^^^^^^^
+AttributeError: 'tuple' object has no attribute 'get'
+
+----------------------------------------------------------------------
+Ran 36 tests in 2.644s
+
+FAILED (errors=17)

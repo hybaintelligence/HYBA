@@ -16,18 +16,19 @@ from pathlib import Path
 
 import numpy as np
 import pytest
-from hypothesis import HealthCheck, given, settings, strategies as st
+from hypothesis import HealthCheck, given, settings
+from hypothesis import strategies as st
 
 ROOT = Path(__file__).resolve().parents[1]
 BACKEND = ROOT / "python_backend"
 if str(BACKEND) not in sys.path:
     sys.path.insert(0, str(BACKEND))
 
-from pythia_mining.consciousness_engine import (
+from pythia_mining.consciousness_engine import (  # noqa: E402
     ConsciousnessConfig,
     ConsciousnessEngine,
     IntegrationRegime,
-)  # noqa: E402
+)
 from pythia_mining.pulvini_autonomics import (  # noqa: E402
     NodeTelemetry,
     PulviniAutonomicsEngine,
@@ -43,9 +44,9 @@ from pythia_mining.pulvini_operator import (  # noqa: E402
 from pythia_mining.pulvini_overlay import PulviniOverlayConcentrator  # noqa: E402
 from pythia_mining.pulvini_topology import ADJACENCY_MAP, MAX_UINT32_NONCE, NUM_NODES  # noqa: E402
 from pythia_mining.pulvini_verifier import (  # noqa: E402
-    IntegrityStatus,
     PULVINI_BINARY_HEADER_SIZE,
     PULVINI_BINARY_MAGIC,
+    IntegrityStatus,
     SubstateBinaryHeader,
     SubstateVerifier,
 )
@@ -96,12 +97,8 @@ def test_apply_choi_map_repairs_non_hermitian_negative_and_bad_trace(
 def test_density_repair_handles_zero_spectrum_and_near_zero_values(
     operator: ManifoldOperator,
 ) -> None:
-    zero_repaired = operator.apply_choi_map(
-        np.zeros((NUM_NODES, NUM_NODES), dtype=np.complex128)
-    )
-    tiny_repaired = operator.apply_choi_map(
-        np.eye(NUM_NODES, dtype=np.complex128) * 1e-18
-    )
+    zero_repaired = operator.apply_choi_map(np.zeros((NUM_NODES, NUM_NODES), dtype=np.complex128))
+    tiny_repaired = operator.apply_choi_map(np.eye(NUM_NODES, dtype=np.complex128) * 1e-18)
 
     assert_density_state(zero_repaired)
     assert_density_state(tiny_repaired)
@@ -144,21 +141,13 @@ def test_uhlmann_fidelity_and_bures_geometry_axioms(operator: ManifoldOperator) 
     rho_a[0, 0] = 1.0
     rho_b[1, 1] = 1.0
 
-    assert operator.compute_uhlmann_fidelity(rho_a, rho_a) == pytest.approx(
-        1.0, abs=1e-12
-    )
-    assert operator.compute_bures_distance(rho_a, rho_a) == pytest.approx(
-        0.0, abs=1e-12
-    )
-    assert operator.compute_uhlmann_fidelity(rho_a, rho_b) == pytest.approx(
-        0.0, abs=1e-12
-    )
+    assert operator.compute_uhlmann_fidelity(rho_a, rho_a) == pytest.approx(1.0, abs=1e-12)
+    assert operator.compute_bures_distance(rho_a, rho_a) == pytest.approx(0.0, abs=1e-12)
+    assert operator.compute_uhlmann_fidelity(rho_a, rho_b) == pytest.approx(0.0, abs=1e-12)
     assert operator.compute_uhlmann_fidelity(rho_a, rho_b) == pytest.approx(
         operator.compute_uhlmann_fidelity(rho_b, rho_a), abs=1e-12
     )
-    assert operator.compute_bures_distance(rho_a, rho_b) == pytest.approx(
-        np.sqrt(2.0), abs=1e-12
-    )
+    assert operator.compute_bures_distance(rho_a, rho_b) == pytest.approx(np.sqrt(2.0), abs=1e-12)
 
 
 def test_state_classification_and_dashboard_coherence_mapping(
@@ -207,9 +196,7 @@ def test_entangled_proxy_state_classification(operator: ManifoldOperator) -> Non
     ]
 
     # Verify we can trigger different classifications with different states
-    high_coherence = operator.ensure_density_state(
-        np.ones(NUM_NODES, dtype=np.complex128)
-    )
+    high_coherence = operator.ensure_density_state(np.ones(NUM_NODES, dtype=np.complex128))
     assert operator.classify_state(high_coherence) == ManifoldState.COHERENT
 
     # ENTANGLED_PROXY is very difficult to trigger in practice
@@ -259,9 +246,7 @@ def test_degraded_coherence_classification(
     assert metrics["classification"] == CoherenceClassification.DEGRADED
 
 
-def test_bures_certificate_delegation(
-    operator: ManifoldOperator, identity_rho: np.ndarray
-) -> None:
+def test_bures_certificate_delegation(operator: ManifoldOperator, identity_rho: np.ndarray) -> None:
     """Test the bures_certificate method delegation."""
     entropy_rate = 0.05
     certificate = operator.bures_certificate(identity_rho, entropy_rate)
@@ -294,10 +279,7 @@ def test_operator_evolution_channel_gamma_and_snapshot(
     assert channel.positive_semidefinite is True
     assert choi.shape == (NUM_NODES * NUM_NODES, NUM_NODES * NUM_NODES)
     assert topology_first["group_order"] == 120
-    assert (
-        topology_second["adjacency_map_sha256"]
-        == topology_first["adjacency_map_sha256"]
-    )
+    assert topology_second["adjacency_map_sha256"] == topology_first["adjacency_map_sha256"]
     assert snapshot["state_count"] == 1
     assert operator.state_history[-1].shape == (NUM_NODES, NUM_NODES)
     assert operator.coherence_trend
@@ -321,9 +303,7 @@ def test_passport_binary_header_round_trip_and_big_endian(
     pure = np.zeros((NUM_NODES, NUM_NODES), dtype=np.complex128)
     pure[0, 0] = 1.0
     signature = b"HYBA_SIG_" + (b"0" * 35)
-    passport = verifier.generate_passport(
-        rho=pure, timestamp_ns=123_456_789, use_cache=False
-    )
+    passport = verifier.generate_passport(rho=pure, timestamp_ns=123_456_789, use_cache=False)
 
     header_bytes = passport.to_binary_header(signature=signature)
     unpacked_tuple = struct.unpack(">4sQ32sII32s44s", header_bytes)
@@ -407,12 +387,8 @@ def test_passport_hashing_cache_and_command_payload(
     verifier: SubstateVerifier, identity_rho: np.ndarray
 ) -> None:
     ts = 1_686_528_000_000_000_000
-    passport_a = verifier.generate_passport(
-        target=0x1D00FFFF, rho=identity_rho, timestamp_ns=ts
-    )
-    passport_b = verifier.generate_passport(
-        target=0x1D00FFFF, rho=identity_rho, timestamp_ns=ts
-    )
+    passport_a = verifier.generate_passport(target=0x1D00FFFF, rho=identity_rho, timestamp_ns=ts)
+    passport_b = verifier.generate_passport(target=0x1D00FFFF, rho=identity_rho, timestamp_ns=ts)
     payload = verifier.command_center_payload(passport_a)
     blob = passport_a.to_blob()
 
@@ -431,9 +407,7 @@ def test_passport_hashing_cache_and_command_payload(
 def test_passport_detects_digest_status_and_speedup_tampering(
     verifier: SubstateVerifier, identity_rho: np.ndarray
 ) -> None:
-    passport = verifier.generate_passport(
-        rho=identity_rho, timestamp_ns=42, use_cache=False
-    )
+    passport = verifier.generate_passport(rho=identity_rho, timestamp_ns=42, use_cache=False)
     bad_status = dataclasses.replace(passport, status=IntegrityStatus.FAILED.value)
     bad_speedup = dataclasses.replace(passport, quantum_speedup_claimed=True)
     bad_digest = dataclasses.replace(passport, structural_hash="f" * 64)
@@ -449,9 +423,7 @@ def test_topology_tampering_blocks_passport_generation(
     verifier: SubstateVerifier, identity_rho: np.ndarray
 ) -> None:
     tampered_31_nodes = {
-        node: dict(edges)
-        for node, edges in ADJACENCY_MAP.items()
-        if node != NUM_NODES - 1
+        node: dict(edges) for node, edges in ADJACENCY_MAP.items() if node != NUM_NODES - 1
     }
     tampered_non_di = {
         node: {kind: list(values) for kind, values in edges.items()}
@@ -476,9 +448,7 @@ def test_topology_tampering_blocks_passport_generation(
 def test_topology_validation_edge_cases(verifier: SubstateVerifier) -> None:
     """Test additional topology validation edge cases for missing coverage."""
     # Test invalid edge kind
-    invalid_edge_kind = {
-        node: {"X": list(neighbors)} for node, neighbors in ADJACENCY_MAP.items()
-    }
+    invalid_edge_kind = {node: {"X": list(neighbors)} for node, neighbors in ADJACENCY_MAP.items()}
     assert verifier.verify_topology_map(invalid_edge_kind) is False
 
     # Test neighbor not in adjacency map
@@ -685,9 +655,7 @@ def test_consciousness_engine_properties(operator: ManifoldOperator) -> None:
 # ---------------------------------------------------------------------------
 
 
-def _telemetry_with_hot_nodes(
-    hot_nodes: set[int], *, hot_entropy: float
-) -> list[NodeTelemetry]:
+def _telemetry_with_hot_nodes(hot_nodes: set[int], *, hot_entropy: float) -> list[NodeTelemetry]:
     return [
         NodeTelemetry(
             node_id=node_id,
@@ -703,9 +671,7 @@ def _telemetry_with_hot_nodes(
 
 def test_n3_wipeout_reassigns_nonce_ranges_with_zero_overlap() -> None:
     engine = PulviniAutonomicsEngine()
-    event = engine.rebalancer.rebalance_lattice_topology(
-        [0, 1, 2], reason="N=3_live_cut"
-    )
+    event = engine.rebalancer.rebalance_lattice_topology([0, 1, 2], reason="N=3_live_cut")
     ranges = [tuple(command["nonce_range"]) for command in event.lattice_commands]
 
     assert event.failed_nodes == [0, 1, 2]
@@ -718,9 +684,7 @@ def test_n3_wipeout_reassigns_nonce_ranges_with_zero_overlap() -> None:
             assert end < other_start or other_end < start
 
 
-def test_thermal_cascade_fades_hot_nodes_and_redistributes_amplitude_to_cool_nodes() -> (
-    None
-):
+def test_thermal_cascade_fades_hot_nodes_and_redistributes_amplitude_to_cool_nodes() -> None:
     governor = ThermalGovernor()
     rho = ReducedDensityMatrix()
     hot_nodes = {0, 1, 2, 3, 4}
@@ -964,9 +928,7 @@ def test_property_binary_header_round_trip(
         max_size=NUM_NODES,
     )
 )
-def test_property_passport_determinism(
-    verifier: SubstateVerifier, vector: list[complex]
-) -> None:
+def test_property_passport_determinism(verifier: SubstateVerifier, vector: list[complex]) -> None:
     """Property: Passport generation is deterministic for same inputs."""
     # Skip zero vectors
     if all(abs(v) < 1e-10 for v in vector):
@@ -976,12 +938,8 @@ def test_property_passport_determinism(
     timestamp_ns = 123456789
 
     # Generate passport twice with same inputs
-    passport_a = verifier.generate_passport(
-        rho=rho, timestamp_ns=timestamp_ns, use_cache=False
-    )
-    passport_b = verifier.generate_passport(
-        rho=rho, timestamp_ns=timestamp_ns, use_cache=False
-    )
+    passport_a = verifier.generate_passport(rho=rho, timestamp_ns=timestamp_ns, use_cache=False)
+    passport_b = verifier.generate_passport(rho=rho, timestamp_ns=timestamp_ns, use_cache=False)
 
     # Property: Deterministic generation
     assert passport_a.passport_hash == passport_b.passport_hash
@@ -1047,9 +1005,7 @@ def test_property_evolution_consistency(
 ) -> None:
     """Property: Evolution produces consistent results."""
     # Skip zero vectors
-    if all(abs(v) < 1e-10 for v in state_vec) or all(
-        abs(v) < 1e-10 for v in target_vec
-    ):
+    if all(abs(v) < 1e-10 for v in state_vec) or all(abs(v) < 1e-10 for v in target_vec):
         return
 
     # Evolution should produce valid density state

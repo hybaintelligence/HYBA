@@ -14,9 +14,7 @@ CLEAR_SCHEMES = ("stratum+tcp", "stratum2+tcp")
 
 @pytest.mark.parametrize("scheme", CLEAR_SCHEMES)
 @pytest.mark.parametrize("port", [1, 3333, 443, 65535])
-def test_tls_required_rejects_all_cleartext_stratum_urls(
-    scheme: str, port: int
-) -> None:
+def test_tls_required_rejects_all_cleartext_stratum_urls(scheme: str, port: int) -> None:
     with pytest.raises(PoolProfileError, match="TLS is required"):
         validate_pool_url(f"{scheme}://pool.example:{port}", tls_required=True)
 

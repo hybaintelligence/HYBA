@@ -20,7 +20,6 @@ from io import StringIO
 from pathlib import Path
 from typing import Any, List
 
-
 # Ensure scripts directory is importable
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPTS = ROOT / "scripts"
@@ -28,23 +27,23 @@ if str(SCRIPTS) not in sys.path:
     sys.path.insert(0, str(SCRIPTS))
 
 from phi_resonance_empirical_evidence import (
+    BIRTHDAY_SIGNATURE,
     PHI,
     PHI_15,
-    BIRTHDAY_SIGNATURE,
     PRECISION_THRESHOLD,
     BlockRecord,
     NonceResonanceRecord,
     ResonanceSummary,
-    compute_phi15_resonance,
-    check_birthday_resonance,
+    _interpret_stats,
     analyze_blocks,
     analyze_nonce_space,
     binomial_p_value,
+    check_birthday_resonance,
+    compute_phi15_resonance,
     compute_summary,
+    print_report,
     write_resonance_csv,
     write_resonance_json,
-    _interpret_stats,
-    print_report,
 )
 
 # ============================================================================
@@ -61,9 +60,7 @@ class TestPhi15MathematicalIdentity:
 
     def test_phi_15_approximate_value(self) -> None:
         """Phi^15 approx 1364.000733 (known constant)"""
-        assert abs(PHI_15 - 1364.000733) < 0.001, (
-            f"Phi^15 = {PHI_15} not approx 1364.000733"
-        )
+        assert abs(PHI_15 - 1364.000733) < 0.001, f"Phi^15 = {PHI_15} not approx 1364.000733"
 
     def test_phi_15_via_fibonacci(self) -> None:
         """Phi^n = F_n * Phi + F_{n-1} (Binet-like identity)"""
@@ -71,9 +68,7 @@ class TestPhi15MathematicalIdentity:
         # Phi^15 = F_15 * Phi + F_14
         f15, f14 = 610, 377
         computed = f15 * PHI + f14
-        assert abs(computed - PHI_15) < 0.001, (
-            f"Phi^15 via Fibonacci: {computed} != {PHI_15}"
-        )
+        assert abs(computed - PHI_15) < 0.001, f"Phi^15 via Fibonacci: {computed} != {PHI_15}"
 
     def test_phi_15_power_chain(self) -> None:
         """Phi^15 = Phi^14 * Phi  (power chain consistency)"""
@@ -154,9 +149,9 @@ class TestComputePhi15Resonance:
         far_target = round(100 * PHI_15) + 100000  # offset by 100000
         _, _, near_diff, _ = compute_phi15_resonance(near_target)
         _, _, far_diff, _ = compute_phi15_resonance(far_target)
-        assert near_diff < far_diff, (
-            f"Near diff {near_diff:.4f} should be < far diff {far_diff:.4f}"
-        )
+        assert (
+            near_diff < far_diff
+        ), f"Near diff {near_diff:.4f} should be < far diff {far_diff:.4f}"
 
     def test_known_nonce_block_919092(self) -> None:
         """Block 919,092 nonce = 4067381598 -> k=2981950, diff < 500."""
@@ -190,9 +185,9 @@ class TestComputePhi15Resonance:
         mean_diff = sum(diffs) / len(diffs)
         # Expected mean for random uniform nonces: Phi^15 / 4 ~= 341
         expected_mean = PHI_15 / 4.0
-        assert abs(mean_diff - expected_mean) < expected_mean * 0.15, (
-            f"Mean diff {mean_diff:.2f} not near expected {expected_mean:.2f}"
-        )
+        assert (
+            abs(mean_diff - expected_mean) < expected_mean * 0.15
+        ), f"Mean diff {mean_diff:.2f} not near expected {expected_mean:.2f}"
 
     def test_birthday_phi_target_resonance(self) -> None:
         """22780 * Phi^15 approx 31071937 should show strong resonance."""
@@ -283,9 +278,7 @@ class TestCheckBirthdayResonance:
 class TestAnalyzeBlocks:
     """Test the full block analysis pipeline."""
 
-    def make_block(
-        self, height: int, nonce: int, miner: str = "TestPool"
-    ) -> BlockRecord:
+    def make_block(self, height: int, nonce: int, miner: str = "TestPool") -> BlockRecord:
         return BlockRecord(
             height=height,
             block_hash="0" * 64,

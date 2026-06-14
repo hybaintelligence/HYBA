@@ -1,0 +1,22 @@
+[tool.black]
+line-length = 100
+target-version = ["py39"]
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+    \.git
+  | \.venv
+  | venv
+  | node_modules
+  | dist
+  | artifacts
+  | logs
+  | __pycache__
+)/
+'''
+
+[tool.isort]
+profile = "black"
+line_length = 100
+known_first_party = ["hyba_genesis_api", "pythia_mining"]
+skip = [".git", ".venv", "venv", "node_modules", "dist", "artifacts", "logs"]

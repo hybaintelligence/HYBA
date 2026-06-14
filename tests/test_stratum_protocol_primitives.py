@@ -26,25 +26,17 @@ from pythia_mining.stratum_protocol import (
 class StratumProtocolPrimitiveTests(unittest.TestCase):
     def test_build_messages(self):
         self.assertEqual("mining.subscribe", json.loads(build_subscribe(1))["method"])
-        self.assertEqual(
-            "mining.authorize", json.loads(build_authorize(2, "w", "x"))["method"]
-        )
+        self.assertEqual("mining.authorize", json.loads(build_authorize(2, "w", "x"))["method"])
         self.assertEqual(
             "mining.submit",
-            json.loads(build_submit(3, "w", "j", "0001", "65aa00ff", "00000002"))[
-                "method"
-            ],
+            json.loads(build_submit(3, "w", "j", "0001", "65aa00ff", "00000002"))["method"],
         )
 
     def test_parse_results(self):
-        sub = parse_subscribe_result(
-            {"id": 1, "result": [[], "0a0b", 4], "error": None}
-        )
+        sub = parse_subscribe_result({"id": 1, "result": [[], "0a0b", 4], "error": None})
         self.assertEqual("0a0b", sub.extranonce1)
         self.assertEqual(4, sub.extranonce2_size)
-        self.assertTrue(
-            parse_authorize_result({"id": 2, "result": True, "error": None})
-        )
+        self.assertTrue(parse_authorize_result({"id": 2, "result": True, "error": None}))
 
     def test_parse_notify_and_difficulty(self):
         notify = parse_notify_params(
@@ -94,9 +86,7 @@ class StratumProtocolPrimitiveTests(unittest.TestCase):
                 return None
 
         async def run_case():
-            client = StratumClient(
-                "stratum+tcp://example.com:3333", "worker", "x", "Test Pool"
-            )
+            client = StratumClient("stratum+tcp://example.com:3333", "worker", "x", "Test Pool")
             client.live_session = FakeSession()
             client.is_connected = True
             client.is_authenticated = True

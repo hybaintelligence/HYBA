@@ -5,8 +5,8 @@ Quantum Mining Integration Test
 Tests the integration of the quantum solver into the mining pipeline.
 """
 
-import sys
 import asyncio
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[0]
@@ -37,15 +37,13 @@ async def test_quantum_integration():
     print("✓ Quantum solver initialized")
 
     # Verify quantum solver has correct configuration
-    assert hasattr(genesis.quantum_solver, "current_config"), (
-        "Quantum solver missing config"
-    )
+    assert hasattr(genesis.quantum_solver, "current_config"), "Quantum solver missing config"
     print("✓ Quantum solver has configuration")
 
     # Verify AI optimizer uses quantum solver
-    assert genesis.ai_optimizer.quantum_solver is genesis.quantum_solver, (
-        "AI optimizer not linked to quantum solver"
-    )
+    assert (
+        genesis.ai_optimizer.quantum_solver is genesis.quantum_solver
+    ), "AI optimizer not linked to quantum solver"
     print("✓ AI optimizer linked to quantum solver")
 
     # Verify overlay manifold is initialized
@@ -74,17 +72,13 @@ async def test_quantum_integration():
     result = engine.compress(test_matrix)
     assert result.reversible, "Phi compression not reversible"
     assert result.working_set_compression_ratio > 1.0, "Phi compression ratio invalid"
-    print(
-        f"✓ Phi compression working (ratio: {result.working_set_compression_ratio:.2f}x)"
-    )
+    print(f"✓ Phi compression working (ratio: {result.working_set_compression_ratio:.2f}x)")
 
     # Verify quantum solver metrics
     metrics = genesis.quantum_solver.get_metrics()
     assert metrics is not None, "Quantum solver metrics not available"
     assert "candidate_generation_complexity" in metrics, "Complexity metric missing"
-    print(
-        f"✓ Quantum solver metrics available: {metrics['candidate_generation_complexity']}"
-    )
+    print(f"✓ Quantum solver metrics available: {metrics['candidate_generation_complexity']}")
 
     # Test manifold evolution
     initial_entropy = genesis.overlay.manifold.von_neumann_entropy()

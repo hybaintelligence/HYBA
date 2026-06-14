@@ -69,9 +69,7 @@ class LiveStratumSessionTests(unittest.TestCase):
             transport = FakeTransport()
             transport.responses.extend(
                 [
-                    json.dumps(
-                        {"id": None, "method": "mining.set_difficulty", "params": [2.0]}
-                    ),
+                    json.dumps({"id": None, "method": "mining.set_difficulty", "params": [2.0]}),
                     json.dumps(
                         {
                             "id": None,
@@ -112,9 +110,7 @@ class LiveStratumSessionTests(unittest.TestCase):
             await session.subscribe_and_authorize()
             transport.responses.extend(
                 [
-                    json.dumps(
-                        {"id": None, "method": "mining.set_difficulty", "params": [4]}
-                    ),
+                    json.dumps({"id": None, "method": "mining.set_difficulty", "params": [4]}),
                     json.dumps({"id": 3, "result": True, "error": None}),
                 ]
             )

@@ -10,9 +10,9 @@ from pythia_mining.pulvini_elevation import (
     PhiScalingContract,
     PhiStabilityDiagnostic,
     PhiTopologyLedgerCompressor,
-    QuantumRuntimePassport,
     ProductionResponse,
     QuantumRuntimeManifestBuilder,
+    QuantumRuntimePassport,
     StaticMathProvider,
     TelemetryContract,
 )
@@ -39,9 +39,7 @@ class FakeVerifier:
         return True
 
     def verify_passport(self, passport):
-        return bool(
-            passport.status == "verified" and not passport.quantum_speedup_claimed
-        )
+        return bool(passport.status == "verified" and not passport.quantum_speedup_claimed)
 
     def generate_passport(self, **_kwargs):
         return FakePassport()
@@ -85,23 +83,16 @@ def test_runtime_manifest_contains_regulatory_elevation_artifacts_without_numpy(
     passport = FakePassport()
     ledger.append("substate_passport", passport.to_dict(), timestamp_ns=456)
 
-    manifest = builder.build(
-        ledger, {"trace": 1.0, "purity": 1.0, "min_eigenvalue": 0.0}
-    )
+    manifest = builder.build(ledger, {"trace": 1.0, "purity": 1.0, "min_eigenvalue": 0.0})
 
     assert manifest["version"] == "PULVINI_RUNTIME_MANIFEST_V1"
     assert (
-        manifest["capability_manifest"]["capability_flags"][
-            "supports_certificate_ledger"
-        ]
-        is True
+        manifest["capability_manifest"]["capability_flags"]["supports_certificate_ledger"] is True
     )
     assert manifest["certificate_ledger_root_hash"] == ledger.root_hash
     assert manifest["kernel_invariants"]["closed"] is True
     assert manifest["compliance"]["quantum_speedup_claimed"] is False
-    assert (
-        manifest["phi_scaling_contract"]["scaling_model"] == "dynamic_phi_exponential"
-    )
+    assert manifest["phi_scaling_contract"]["scaling_model"] == "dynamic_phi_exponential"
     assert manifest["phi_tier_composition"][0]["label"] == "10^7"
     assert manifest["phi_stability_diagnostic"]["stable"] is True
     assert manifest["runtime_manifest_hash"]
@@ -194,9 +185,7 @@ def test_telemetry_contract_fixed_point_determinism_without_hypothesis_or_numpy(
             }
         )
         assert set(encoded) == set(contract.metrics)
-        assert all(
-            0 <= value <= contract.fixed_point_scale for value in encoded.values()
-        )
+        assert all(0 <= value <= contract.fixed_point_scale for value in encoded.values())
         assert "phi_tier" in encoded
         assert "phi_scale_factor" in encoded
         assert contract.digest(
@@ -211,15 +200,11 @@ def test_manifest_writer_and_production_response_envelope_without_numpy(tmp_path
     response = builder.production_response(
         "FakeOperator.verify_topology", operator.verify_topology(), ledger
     )
-    manifest_path = builder.write_manifest_json(
-        tmp_path / "manifest.json", ledger=ledger
-    )
+    manifest_path = builder.write_manifest_json(tmp_path / "manifest.json", ledger=ledger)
     manifest = json.loads(manifest_path.read_text())
 
     assert isinstance(response, ProductionResponse)
-    assert (
-        response.ledger_entry_hash == ledger.entries[response.ledger_index].entry_hash
-    )
+    assert response.ledger_entry_hash == ledger.entries[response.ledger_index].entry_hash
     assert response.module_version_hash
     assert manifest["manifest_json_name"] == "manifest.json"
     assert (
@@ -227,9 +212,7 @@ def test_manifest_writer_and_production_response_envelope_without_numpy(tmp_path
         in manifest["capability_manifest"]["endpoint_invariants"]
     )
     assert (
-        manifest["capability_manifest"]["capability_flags"][
-            "supports_production_response_envelope"
-        ]
+        manifest["capability_manifest"]["capability_flags"]["supports_production_response_envelope"]
         is True
     )
     assert (
@@ -269,9 +252,7 @@ def test_kernel_supervisor_enforces_seeded_determinism_and_runtime_passport_with
     def identity_kernel(rho, seed=0):
         return rho | {"seed": seed}
 
-    output, report = supervisor.execute_density_contract(
-        identity_kernel, density, seed=7
-    )
+    output, report = supervisor.execute_density_contract(identity_kernel, density, seed=7)
     entry = ledger.entries[-1]
     passport = TelemetryContract().runtime_passport(
         "identity_kernel",
@@ -307,16 +288,10 @@ def test_kernel_supervisor_enforces_seeded_determinism_and_runtime_passport_with
 
 def test_phi_invariant_kernel_scheduler_routes_by_stability_and_tier_without_numpy():
     scheduler = PhiInvariantKernelScheduler()
-    stable = PhiStabilityDiagnostic().evaluate(
-        [1.0, 1.618033988749895, 1.618033988749895**2]
-    )
+    stable = PhiStabilityDiagnostic().evaluate([1.0, 1.618033988749895, 1.618033988749895**2])
     unstable = PhiStabilityDiagnostic().evaluate([1.0, 3.0, 4.0])
-    low_passport = QuantumRuntimePassport(
-        "module", 0, 0, True, "a" * 64, phi_exponent=12
-    )
-    high_passport = QuantumRuntimePassport(
-        "module", 0, 0, True, "b" * 64, phi_exponent=76
-    )
+    low_passport = QuantumRuntimePassport("module", 0, 0, True, "a" * 64, phi_exponent=12)
+    high_passport = QuantumRuntimePassport("module", 0, 0, True, "b" * 64, phi_exponent=76)
 
     assert scheduler.route(low_passport, stable).route == "edge_or_asic_compatible"
     assert scheduler.route(high_passport, stable).route == "sovereign_phi_resonant"
@@ -371,9 +346,7 @@ def test_singularity_tier_10_76_ledger_stress_is_deterministic_without_numpy():
 
     for ledger in (ledger_a, ledger_b):
         ledger.append("phi_singularity_tier", tier, timestamp_ns=76)
-        ledger.append(
-            "phi_singularity_tier", contract.combination(31, 76), timestamp_ns=107
-        )
+        ledger.append("phi_singularity_tier", contract.combination(31, 76), timestamp_ns=107)
 
     assert tier["phi_exponent"] == 76
     assert tier["scale_factor"] > 10**76
@@ -400,9 +373,7 @@ def test_phi_stability_diagnostic_detects_violations_without_numpy():
     assert stable.stable is True
     assert stable.severity.value == "ok"
     assert unstable.stable is False
-    assert (
-        unstable.recommendation == "rebalance_or_segment_dataset_before_phi_projection"
-    )
+    assert unstable.recommendation == "rebalance_or_segment_dataset_before_phi_projection"
 
 
 def test_elevation_bridge_returns_anonymized_read_only_research_telemetry_without_numpy():

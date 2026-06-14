@@ -3,9 +3,10 @@ tests/test_pythagoras_full.py — Full integration and unit tests for the
 PYTHAGORAS quantum pipeline: PULVINI, TT/MPS, MPO, Ω-TDA, Remez, nonce coverage.
 """
 
-import sys
 import os
+import sys
 import unittest
+
 import numpy as np
 
 # Add the operators directory to the path
@@ -166,9 +167,7 @@ class TestPythagorasOrchestrator(unittest.TestCase):
     def test_process_with_vector(self):
         t = np.random.randn(64).astype(np.complex128)
         result = self.orch.process(t, skip_tda=True)
-        self.assertIn(
-            result.status, ["phi_resonance_achieved", "degraded_preservation"]
-        )
+        self.assertIn(result.status, ["phi_resonance_achieved", "degraded_preservation"])
         self.assertGreater(result.compression_ratio, 0)
 
     def test_process_with_matrix(self):
@@ -207,9 +206,7 @@ class TestRemezApproximator(unittest.TestCase):
         self.assertLess(error, 1e-6)
 
     def test_approximate_linear(self):
-        coeffs, error, _ = self.remez.approximate(
-            lambda x: 2.0 * x + 1.0, (0, 1), degree=1
-        )
+        coeffs, error, _ = self.remez.approximate(lambda x: 2.0 * x + 1.0, (0, 1), degree=1)
         self.assertLess(error, 1e-6)
 
     def test_approximate_phi_function(self):
@@ -297,7 +294,7 @@ class TestFoldedAmplifier(unittest.TestCase):
         self.assertAlmostEqual(np.linalg.norm(v), 1.0)
 
     def test_mark_inverts_sign(self):
-        from folded_probability_amplifier import uniform_vector, mark
+        from folded_probability_amplifier import mark, uniform_vector
 
         v = uniform_vector(8)
         marked = mark(v, [0])

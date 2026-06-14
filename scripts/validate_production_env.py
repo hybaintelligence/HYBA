@@ -55,11 +55,7 @@ def _credential_entries(raw: str) -> list[str]:
     if not normalized:
         return []
     if ";" in normalized or "\n" in normalized:
-        return [
-            item.strip()
-            for item in normalized.replace("\n", ";").split(";")
-            if item.strip()
-        ]
+        return [item.strip() for item in normalized.replace("\n", ";").split(";") if item.strip()]
     if "$argon2" in normalized:
         return [normalized]
     return [item.strip() for item in normalized.split(",") if item.strip()]
@@ -102,14 +98,9 @@ def _env(pool_id: str, field: str) -> str | None:
     return os.getenv(f"HYBA_POOL_{pool_id}_{field}")
 
 
-def _parse_stratum_version(
-    raw: str | None, pool_id: str, errors: list[str]
-) -> int | None:
+def _parse_stratum_version(raw: str | None, pool_id: str, errors: list[str]) -> int | None:
     normalized = (
-        (raw or str(POOL_REQUIREMENTS[pool_id]["version"]))
-        .strip()
-        .lower()
-        .removeprefix("v")
+        (raw or str(POOL_REQUIREMENTS[pool_id]["version"])).strip().lower().removeprefix("v")
     )
     if normalized not in {"1", "2"}:
         errors.append(f"HYBA_POOL_{pool_id}_STRATUM_VERSION must be 1, v1, 2, or v2")
@@ -148,9 +139,7 @@ def _pool_secret(pool_id: str) -> tuple[str | None, str | None]:
         # Runtime accepts NH_POOL_ID or NICEHASH_POOL_ID for the pool identifier;
         # password defaults to x internally, but live deployments still need an
         # explicit pool identifier to avoid ambiguous share routing.
-        return "NICEHASH_POOL_ID", _env(pool_id, "NICEHASH_POOL_ID") or _env(
-            pool_id, "NH_POOL_ID"
-        )
+        return "NICEHASH_POOL_ID", _env(pool_id, "NICEHASH_POOL_ID") or _env(pool_id, "NH_POOL_ID")
     return str(secret_field), _env(pool_id, str(secret_field))
 
 
@@ -161,9 +150,7 @@ def _validate_pool_config(errors: list[str]) -> None:
             continue
         url = _env(pool_id, "URL")
         if _is_placeholder(url):
-            errors.append(
-                f"HYBA_POOL_{pool_id}_URL is required when configuring {pool_id}"
-            )
+            errors.append(f"HYBA_POOL_{pool_id}_URL is required when configuring {pool_id}")
             continue
         username_field, username = _pool_identity(pool_id)
         secret_field, secret = _pool_secret(pool_id)
@@ -178,9 +165,7 @@ def _validate_pool_config(errors: list[str]) -> None:
             )
             continue
         parsed = urlparse(str(url))
-        version = _parse_stratum_version(
-            _env(pool_id, "STRATUM_VERSION"), pool_id, errors
-        )
+        version = _parse_stratum_version(_env(pool_id, "STRATUM_VERSION"), pool_id, errors)
         valid_schemes = STRATUM_V2_SCHEMES if version == 2 else STRATUM_V1_SCHEMES
         if parsed.scheme not in valid_schemes or not parsed.hostname:
             errors.append(
@@ -200,35 +185,17 @@ def _validate_flags(errors: list[str], warnings: list[str]) -> None:
             errors.append(f"{name}=production is required for production deployment")
     if os.getenv("HYBA_ALLOW_DEV_FIXTURES", "false").strip().lower() in TRUE_VALUES:
         errors.append("HYBA_ALLOW_DEV_FIXTURES must be false in production")
-    if (
-        os.getenv("HYBA_ENABLE_LIVE_STRATUM", "false").strip().lower()
-        not in TRUE_VALUES
-    ):
-        errors.append(
-            "HYBA_ENABLE_LIVE_STRATUM=true is required for production live mining"
-        )
-    if (
-        os.getenv("HYBA_ENABLE_MINING_AUTOCONNECT", "false").strip().lower()
-        in TRUE_VALUES
-    ):
+    if os.getenv("HYBA_ENABLE_LIVE_STRATUM", "false").strip().lower() not in TRUE_VALUES:
+        errors.append("HYBA_ENABLE_LIVE_STRATUM=true is required for production live mining")
+    if os.getenv("HYBA_ENABLE_MINING_AUTOCONNECT", "false").strip().lower() in TRUE_VALUES:
         warnings.append(
             "HYBA_ENABLE_MINING_AUTOCONNECT is enabled; this must be approved as an operator-controlled exception"
         )
-    if (
-        os.getenv("HYBA_ENABLE_LIVE_SHARE_SUBMIT", "false").strip().lower()
-        in TRUE_VALUES
-    ):
+    if os.getenv("HYBA_ENABLE_LIVE_SHARE_SUBMIT", "false").strip().lower() in TRUE_VALUES:
         if _is_placeholder(os.getenv("HYBA_LIVE_SHARE_APPROVAL_ID")):
-            errors.append(
-                "HYBA_ENABLE_LIVE_SHARE_SUBMIT=true requires HYBA_LIVE_SHARE_APPROVAL_ID"
-            )
-    if (
-        os.getenv("HYBA_ENABLE_AUDIT_LOGGING", "false").strip().lower()
-        not in TRUE_VALUES
-    ):
-        errors.append(
-            "HYBA_ENABLE_AUDIT_LOGGING=true is required for production mining"
-        )
+            errors.append("HYBA_ENABLE_LIVE_SHARE_SUBMIT=true requires HYBA_LIVE_SHARE_APPROVAL_ID")
+    if os.getenv("HYBA_ENABLE_AUDIT_LOGGING", "false").strip().lower() not in TRUE_VALUES:
+        errors.append("HYBA_ENABLE_AUDIT_LOGGING=true is required for production mining")
     capacity = os.getenv("HYBA_QUANTUM_CAPACITY_EHS")
     if capacity:
         try:

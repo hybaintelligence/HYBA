@@ -8,8 +8,9 @@ Bures gradient trajectories are distinguishable.
 """
 
 import sys
-import numpy as np
 from pathlib import Path
+
+import numpy as np
 
 try:
     import matplotlib
@@ -26,8 +27,8 @@ BACKEND = ROOT / "python_backend"
 if str(BACKEND) not in sys.path:
     sys.path.insert(0, str(BACKEND))
 
-from pythia_mining.pulvini_memory_fabric import PulviniMemoryFabric
 from pythia_mining.pulvini_bures import bures_certificate
+from pythia_mining.pulvini_memory_fabric import PulviniMemoryFabric
 
 
 def test_state_discrimination():

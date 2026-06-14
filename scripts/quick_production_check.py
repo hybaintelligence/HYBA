@@ -118,9 +118,7 @@ def main() -> int:
         print()
         print("Next steps:")
         print("  1. Review PRODUCTION_READINESS_SUMMARY.md")
-        print(
-            "  2. Deploy using: docker-compose -f docker-compose.production.yml up -d"
-        )
+        print("  2. Deploy using: docker-compose -f docker-compose.production.yml up -d")
         print("  3. Monitor health: curl http://localhost:3000/bridge/health")
         print()
         return 0

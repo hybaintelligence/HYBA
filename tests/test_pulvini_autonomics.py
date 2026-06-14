@@ -32,9 +32,7 @@ else:
     AutonomicOrchestrator = BuresOptimizer = DodecahedronIcosahedronCompound = (
         ManifoldHomeostasis
     ) = None
-    NodeTelemetry = PulviniAutonomicsEngine = ReducedDensityMatrix = ThermalGovernor = (
-        None
-    )
+    NodeTelemetry = PulviniAutonomicsEngine = ReducedDensityMatrix = ThermalGovernor = None
 
 
 def healthy_telemetry(
@@ -121,9 +119,7 @@ class PulviniThermalGovernorTests(unittest.TestCase):
         self.assertAlmostEqual(
             1.0 - ((0.80 - 0.70) / (0.85 - 0.70)), governor.calculate_fade_factor(0.80)
         )
-        self.assertAlmostEqual(
-            np.exp(-10.0 * (0.90 - 0.85)), governor.calculate_fade_factor(0.90)
-        )
+        self.assertAlmostEqual(np.exp(-10.0 * (0.90 - 0.85)), governor.calculate_fade_factor(0.90))
         self.assertEqual(0.0, governor.calculate_fade_factor(0.98))
 
     def test_thermal_cascade_fades_icosahedron_hubs_to_dodecahedron_workers(
@@ -243,15 +239,10 @@ class PulviniAutonomicsIntegrationTests(unittest.TestCase):
         assert event is not None
         self.assertEqual(sorted(failed), event.failed_nodes)
         self.assertTrue(event.coverage_maintained)
-        self.assertEqual(
-            0.0, float(np.sum(engine.homeostasis.rho.diagonal()[list(failed)]))
-        )
+        self.assertEqual(0.0, float(np.sum(engine.homeostasis.rho.diagonal()[list(failed)])))
         self.assertGreater(len(lattice_commands), 0)
         self.assertTrue(
-            any(
-                item["event_type"] == "autonomic_critical_nodes_detected"
-                for item in audit_events
-            )
+            any(item["event_type"] == "autonomic_critical_nodes_detected" for item in audit_events)
         )
         engine.homeostasis.rho.assert_invariants()
 
@@ -261,9 +252,7 @@ class PulviniAutonomicsIntegrationTests(unittest.TestCase):
             healthy_telemetry(node_id, hash_rate=500.0 + node_id, watts=200.0 - node_id)
             for node_id in range(32)
         )
-        event = engine.optimizer.optimize_energy_envelope(
-            target_watts=100.0, learning_rate=0.1
-        )
+        event = engine.optimizer.optimize_energy_envelope(target_watts=100.0, learning_rate=0.1)
         snapshot = engine.snapshot()
         self.assertEqual("energy_constraint_triggered", event["action"])
         self.assertEqual("ok", snapshot["status"])
@@ -315,15 +304,9 @@ class PulviniAutonomicsPropertyAndEdgeTests(unittest.TestCase):
             for node_id in range(32)
         )
         current = engine.homeostasis.rho.diagonal().copy()
-        self.assertTrue(
-            np.allclose(current, engine.optimizer.find_bures_optima(learning_rate=0.0))
-        )
-        target = BuresOptimizer(
-            engine.compound, engine.homeostasis
-        ).target_distribution()
-        self.assertTrue(
-            np.allclose(target, engine.optimizer.find_bures_optima(learning_rate=1.0))
-        )
+        self.assertTrue(np.allclose(current, engine.optimizer.find_bures_optima(learning_rate=0.0)))
+        target = BuresOptimizer(engine.compound, engine.homeostasis).target_distribution()
+        self.assertTrue(np.allclose(target, engine.optimizer.find_bures_optima(learning_rate=1.0)))
         with self.assertRaises(ValueError):
             engine.optimizer.find_bures_optima(learning_rate=1.1)
 
@@ -339,13 +322,9 @@ class PulviniAutonomicsMiningIntegrationTests(unittest.TestCase):
         )
 
         overlay = PulviniOverlayConcentrator(worker_name="PULVINI.singularity")
-        job = type(
-            "Job", (), {"job_id": "autonomic-job", "target": 1, "extranonce2_size": 4}
-        )()
+        job = type("Job", (), {"job_id": "autonomic-job", "target": 1, "extranonce2_size": 4})()
         overlay.register_pool_job(job, pool_name="Pool")
-        overlay.record_node_progress(
-            0, nonce_range_inclusive(0)[0] + 64, hashes=4096, best_diff=10
-        )
+        overlay.record_node_progress(0, nonce_range_inclusive(0)[0] + 64, hashes=4096, best_diff=10)
         overlay.record_link_latency(0, 20, 0.002)
 
         telemetry = overlay.autonomic_telemetry(power_scale=1.5)
@@ -353,13 +332,9 @@ class PulviniAutonomicsMiningIntegrationTests(unittest.TestCase):
         self.assertGreater(telemetry[0].hash_rate, 0.0)
         self.assertGreater(telemetry[0].thermal_entropy, 0.0)
 
-        engine = PulviniAutonomicsEngine(
-            lattice_repoint_sink=overlay.apply_lattice_repoint
-        )
+        engine = PulviniAutonomicsEngine(lattice_repoint_sink=overlay.apply_lattice_repoint)
         engine.ingest_telemetry(telemetry)
-        event = engine.rebalancer.rebalance_lattice_topology(
-            0, reason="integration_repoint"
-        )
+        event = engine.rebalancer.rebalance_lattice_topology(0, reason="integration_repoint")
         self.assertTrue(event.coverage_maintained)
         overlay_snapshot = overlay.snapshot()
         self.assertGreater(len(overlay_snapshot["healing_routes"]), 0)
@@ -374,9 +349,7 @@ class PulviniAutonomicsMiningIntegrationTests(unittest.TestCase):
         from pythia_mining.pulvini_overlay import PulviniOverlayConcentrator
 
         overlay = PulviniOverlayConcentrator(worker_name="PULVINI.singularity")
-        job = type(
-            "Job", (), {"job_id": "bures-job", "target": 1, "extranonce2_size": 4}
-        )()
+        job = type("Job", (), {"job_id": "bures-job", "target": 1, "extranonce2_size": 4})()
         overlay.register_pool_job(job, pool_name="Pool")
         engine = PulviniAutonomicsEngine()
         engine.ingest_telemetry(
@@ -385,9 +358,7 @@ class PulviniAutonomicsMiningIntegrationTests(unittest.TestCase):
         )
         before = overlay.manifold.work_distribution().copy()
         amplitudes = engine.optimizer.find_bures_optima(learning_rate=0.5)
-        applied = overlay.apply_autonomic_distribution(
-            amplitudes.tolist(), reason="test_bures"
-        )
+        applied = overlay.apply_autonomic_distribution(amplitudes.tolist(), reason="test_bures")
         after = overlay.manifold.work_distribution()
 
         self.assertAlmostEqual(1.0, sum(applied), places=12)
@@ -406,16 +377,12 @@ class PulviniAutonomicsMiningIntegrationTests(unittest.TestCase):
         )
 
         overlay = PulviniOverlayConcentrator(worker_name="PULVINI.singularity")
-        job = type(
-            "Job", (), {"job_id": "wipeout-job", "target": 1, "extranonce2_size": 4}
-        )()
+        job = type("Job", (), {"job_id": "wipeout-job", "target": 1, "extranonce2_size": 4})()
         overlay.mark_pool_bound("Pool", "stratum+tcp://pool.example:3333", 2)
         overlay.register_pool_job(job, pool_name="Pool")
         before = overlay.snapshot()
 
-        engine = PulviniAutonomicsEngine(
-            lattice_repoint_sink=overlay.apply_lattice_repoint
-        )
+        engine = PulviniAutonomicsEngine(lattice_repoint_sink=overlay.apply_lattice_repoint)
         engine.ingest_telemetry(healthy_telemetry(node_id) for node_id in range(32))
         event = engine.rebalancer.rebalance_lattice_topology(
             [0, 8, 15], reason="three_node_wipeout"
@@ -430,9 +397,7 @@ class PulviniAutonomicsMiningIntegrationTests(unittest.TestCase):
         self.assertTrue(after["healing_ranges_overlap_free"])
         self.assertGreater(len(after["healing_routes"]), 0)
         for failed_node in [0, 8, 15]:
-            reassigned = overlay.assignment_for_nonce(
-                nonce_range_inclusive(failed_node)[0]
-            )
+            reassigned = overlay.assignment_for_nonce(nonce_range_inclusive(failed_node)[0])
             self.assertIsNotNone(reassigned)
             assert reassigned is not None
             self.assertNotEqual(failed_node, reassigned.node_id)
@@ -446,9 +411,7 @@ class PulviniAutonomicsMiningIntegrationTests(unittest.TestCase):
         status = genesis.get_system_status()
         self.assertIn("pulvini_autonomics", status)
         self.assertIn("topology", status["pulvini_autonomics"])
-        self.assertEqual(
-            3.75, status["pulvini_autonomics"]["topology"]["redundancy_factor"]
-        )
+        self.assertEqual(3.75, status["pulvini_autonomics"]["topology"]["redundancy_factor"])
         self.assertFalse(status["fixture_jobs_enabled"])
 
 

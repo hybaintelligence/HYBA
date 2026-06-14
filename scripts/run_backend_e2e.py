@@ -186,9 +186,7 @@ def validate_endpoint(path: str, payload: dict[str, Any]) -> list[str]:
             failures.append("Pulvini execution did not return both expected operations")
         diffusion_norm = operations[0].get("diffusion_norm") if operations else None
         if diffusion_norm is None or abs(float(diffusion_norm) - 1.0) > 1e-9:
-            failures.append(
-                f"Pulvini diffusion_norm is not normalized: {diffusion_norm}"
-            )
+            failures.append(f"Pulvini diffusion_norm is not normalized: {diffusion_norm}")
     if path == "/api/mining/stats" and "summary" not in payload:
         failures.append("mining stats response is missing summary")
     if path == "/api/mining/status":
@@ -209,9 +207,7 @@ async def run_mining_connect_search_submit_smoke() -> tuple[dict[str, Any], list
     failures: list[str] = []
     pool_manager = PoolManager()
     active_pool = await pool_manager.get_best_pool()
-    job = active_pool.inject_dev_fixture_target_job(
-        difficulty=active_pool.current_difficulty
-    )
+    job = active_pool.inject_dev_fixture_target_job(difficulty=active_pool.current_difficulty)
     solver = DodecahedralQuantumSolver()
     await solver.configure_search(job.target, [(0, 2**32 - 1)])
     nonce = await solver.solve(max_iterations=25, timeout=5.0)
@@ -248,9 +244,7 @@ async def run_mining_connect_search_submit_smoke() -> tuple[dict[str, Any], list
     return report, failures
 
 
-def run_adversarial_checks(
-    base_url: str, token: str
-) -> tuple[list[dict[str, Any]], list[str]]:
+def run_adversarial_checks(base_url: str, token: str) -> tuple[list[dict[str, Any]], list[str]]:
     results: list[dict[str, Any]] = []
     failures: list[str] = []
     for endpoint in ADVERSARIAL_ENDPOINTS:
@@ -290,9 +284,7 @@ def run(args: argparse.Namespace) -> int:
     )
     env.setdefault("JWT_SECRET", "e2e-jwt-secret")
     operator_hash = hashlib.sha256(b"operator").hexdigest()
-    env.setdefault(
-        "HYBA_OPERATOR_CREDENTIALS", f"operator:{operator_hash}:mining_operator"
-    )
+    env.setdefault("HYBA_OPERATOR_CREDENTIALS", f"operator:{operator_hash}:mining_operator")
     env.setdefault("HYBA_ALLOW_DEV_FIXTURES", "true")
     env.setdefault("HYBA_ENABLE_LIVE_STRATUM", "false")
 
@@ -332,9 +324,7 @@ def run(args: argparse.Namespace) -> int:
         token = login_operator(base_url)
         report["startup"]["operator_authenticated"] = True
 
-        mining_report, mining_failures = asyncio.run(
-            run_mining_connect_search_submit_smoke()
-        )
+        mining_report, mining_failures = asyncio.run(run_mining_connect_search_submit_smoke())
         report["mining_connect_search_submit"] = mining_report
         report["validation_failures"].extend(
             f"mining smoke: {failure}" for failure in mining_failures
@@ -366,9 +356,7 @@ def run(args: argparse.Namespace) -> int:
                 f"{endpoint['path']}: {failure}" for failure in failures
             )
 
-        adversarial_results, adversarial_failures = run_adversarial_checks(
-            base_url, token
-        )
+        adversarial_results, adversarial_failures = run_adversarial_checks(base_url, token)
         report["adversarial"] = adversarial_results
         report["validation_failures"].extend(
             f"adversarial: {failure}" for failure in adversarial_failures
@@ -377,12 +365,8 @@ def run(args: argparse.Namespace) -> int:
         status, health = request_json(base_url, "GET", "/api/health")
         telemetry = health.get("telemetry", {})
         if status != 200:
-            report["validation_failures"].append(
-                f"telemetry health status was {status}"
-            )
-        if telemetry.get("requests_total", 0) < len(ENDPOINTS) + len(
-            ADVERSARIAL_ENDPOINTS
-        ):
+            report["validation_failures"].append(f"telemetry health status was {status}")
+        if telemetry.get("requests_total", 0) < len(ENDPOINTS) + len(ADVERSARIAL_ENDPOINTS):
             report["validation_failures"].append(
                 "telemetry requests_total too low: "
                 f"{telemetry.get('requests_total')} < {len(ENDPOINTS) + len(ADVERSARIAL_ENDPOINTS)}"
@@ -411,9 +395,7 @@ def run(args: argparse.Namespace) -> int:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(
-        description="Run HYBA FastAPI backend E2E validation"
-    )
+    parser = argparse.ArgumentParser(description="Run HYBA FastAPI backend E2E validation")
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=8000)
     parser.add_argument("--timeout", type=float, default=20.0)

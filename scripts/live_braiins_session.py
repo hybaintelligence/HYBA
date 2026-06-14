@@ -114,9 +114,7 @@ async def monitor_mining_session(
 
                 if jobs_count > session_stats["jobs_received"]:
                     new_jobs = jobs_count - session_stats["jobs_received"]
-                    print(
-                        f"\n[{time.time() - start_time:.1f}s] Received {new_jobs} new job(s)"
-                    )
+                    print(f"\n[{time.time() - start_time:.1f}s] Received {new_jobs} new job(s)")
 
                     for job_id, job in current_jobs.items():
                         if job_id not in [j["job_id"] for j in session_stats["jobs"]]:
@@ -150,9 +148,7 @@ async def monitor_mining_session(
             await asyncio.sleep(1)
 
         session_stats["end_time"] = time.time()
-        session_stats["duration_actual"] = (
-            session_stats["end_time"] - session_stats["start_time"]
-        )
+        session_stats["duration_actual"] = session_stats["end_time"] - session_stats["start_time"]
 
         print("\n" + "=" * 60)
         print("SESSION SUMMARY")
@@ -193,21 +189,15 @@ def main():
     """Main entry point for live mining session."""
     import argparse
 
-    parser = argparse.ArgumentParser(
-        description="Live mining session with Braiins pool"
-    )
+    parser = argparse.ArgumentParser(description="Live mining session with Braiins pool")
     parser.add_argument(
         "--pool-url", default="stratum2+tcp://stratum.braiins.com:3333", help="Pool URL"
     )
     parser.add_argument("--username", required=True, help="Mining pool username/worker")
     parser.add_argument("--password", default="x", help="Mining pool password")
     parser.add_argument("--pool-name", default="braiins", help="Pool name for logging")
-    parser.add_argument(
-        "--stratum-version", type=int, default=2, help="Stratum protocol version"
-    )
-    parser.add_argument(
-        "--duration", type=int, default=300, help="Session duration in seconds"
-    )
+    parser.add_argument("--stratum-version", type=int, default=2, help="Stratum protocol version")
+    parser.add_argument("--duration", type=int, default=300, help="Session duration in seconds")
     parser.add_argument("--output", help="Output JSON file for session stats")
 
     args = parser.parse_args()

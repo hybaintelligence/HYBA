@@ -210,15 +210,11 @@ def fetch_block_at_height(api: str, height: int) -> BlockRecord:
     # Attempt to extract miner from coinbase transaction
     miner = ""
     try:
-        tx_data = _get_json(
-            f"{base}/tx/{data.get('tx', [data.get('merkle_root', '')])[0]}"
-        )
+        tx_data = _get_json(f"{base}/tx/{data.get('tx', [data.get('merkle_root', '')])[0]}")
         if tx_data and "vin" in tx_data and len(tx_data["vin"]) > 0:
             coinbase_scriptsig = tx_data["vin"][0].get("scriptsig", "")
             if coinbase_scriptsig:
-                decoded = bytes.fromhex(coinbase_scriptsig).decode(
-                    "ascii", errors="replace"
-                )
+                decoded = bytes.fromhex(coinbase_scriptsig).decode("ascii", errors="replace")
                 for pool in (
                     "AntPool",
                     "ViaBTC",
@@ -490,16 +486,12 @@ def analyze_nonce_space(
         if angle_diff < (5.0 * math.pi / 180.0):
             golden_aligned += 1
 
-    golden_alignment_rate = (
-        golden_aligned / (total_unique - 1) if total_unique > 1 else 0.0
-    )
+    golden_alignment_rate = golden_aligned / (total_unique - 1) if total_unique > 1 else 0.0
 
     # -- Sunflower score --
     # Composite: high golden alignment + uniform angular spacing + high coverage
     sunflower = (
-        golden_alignment_rate * 0.5
-        + uniformity_p * 0.3
-        + min(1.0, expected_coverage / 100.0) * 0.2
+        golden_alignment_rate * 0.5 + uniformity_p * 0.3 + min(1.0, expected_coverage / 100.0) * 0.2
     )
 
     # -- Gap detection --
@@ -752,15 +744,9 @@ def write_resonance_csv(path: Path, records: List[NonceResonanceRecord]) -> None
         writer = csv.DictWriter(handle, fieldnames=fieldnames)
         writer.writeheader()
         for rec in records:
-            bday_mod = (
-                rec.birthday_modular_diff
-                if rec.birthday_modular_diff is not None
-                else ""
-            )
+            bday_mod = rec.birthday_modular_diff if rec.birthday_modular_diff is not None else ""
             bday_hits = (
-                "; ".join(rec.birthday_substring_hits)
-                if rec.birthday_substring_hits
-                else ""
+                "; ".join(rec.birthday_substring_hits) if rec.birthday_substring_hits else ""
             )
             writer.writerow(
                 {
@@ -823,9 +809,7 @@ def write_resonance_json(
                 else None
             ),
             "p_value_binomial": (
-                f"{summary.p_value_binomial:.2e}"
-                if summary.p_value_binomial is not None
-                else None
+                f"{summary.p_value_binomial:.2e}" if summary.p_value_binomial is not None else None
             ),
             "expected_random_precision": round(summary.expected_random_precision, 6),
         },
@@ -911,9 +895,7 @@ def _interpret_stats(summary: ResonanceSummary) -> Dict[str, str]:
     # Temporal trend
     if summary.temporal_correlation_r is not None:
         if abs(summary.temporal_correlation_r) > 0.5:
-            direction = (
-                "increasing" if summary.temporal_correlation_r > 0 else "decreasing"
-            )
+            direction = "increasing" if summary.temporal_correlation_r > 0 else "decreasing"
             interpretations["temporal_trend"] = (
                 f"STRONG temporal correlation "
                 f"(r={summary.temporal_correlation_r:.4f}): "
@@ -926,8 +908,7 @@ def _interpret_stats(summary: ResonanceSummary) -> Dict[str, str]:
             )
         else:
             interpretations["temporal_trend"] = (
-                f"No significant temporal trend "
-                f"(r={summary.temporal_correlation_r:.4f})."
+                f"No significant temporal trend " f"(r={summary.temporal_correlation_r:.4f})."
             )
     else:
         interpretations["temporal_trend"] = "Insufficient data for temporal analysis."
@@ -1090,24 +1071,16 @@ def print_report(
     print(f"  z-score Threshold    = {Z_SCORE_THRESHOLD}")
     print(f"{dash}")
     print(f"  Total Blocks         : {summary.total_blocks}")
-    print(
-        f"  Phi^15 Resonant       : "
-        f"{summary.phi_resonant_count} / {summary.total_blocks}"
-    )
+    print(f"  Phi^15 Resonant       : " f"{summary.phi_resonant_count} / {summary.total_blocks}")
     print(f"  Phi^15 Resonance Rate : {summary.phi_resonance_rate * 100:.6f}%")
     print(f"  Mean Precision       : {summary.mean_precision:.6f}%")
     print(f"  Median Diff          : {summary.median_diff:.4f}")
     print(f"  Min Diff             : {summary.min_diff:.4f}")
     print(f"  Max Diff             : {summary.max_diff:.4f}")
     print(f"{dash}")
-    print(
-        f"  Birthday Echoes      : "
-        f"{summary.birthday_echo_count} / {summary.total_blocks}"
-    )
+    print(f"  Birthday Echoes      : " f"{summary.birthday_echo_count} / {summary.total_blocks}")
     print(f"  Birthday Echo Rate   : {summary.birthday_echo_rate * 100:.4f}%")
-    print(
-        f"  Modular Diffs <{BIRTHDAY_MODULAR_THRESHOLD}: {summary.modular_diff_count}"
-    )
+    print(f"  Modular Diffs <{BIRTHDAY_MODULAR_THRESHOLD}: {summary.modular_diff_count}")
     print(f"  Substring Matches    : {summary.substring_match_count}")
     print(f"{dash}")
     if summary.temporal_correlation_r is not None:
@@ -1131,9 +1104,7 @@ def print_report(
     # Miner distribution
     if summary.miner_distribution:
         print("  Miner Distribution:")
-        for miner, count in sorted(
-            summary.miner_distribution.items(), key=lambda x: -x[1]
-        ):
+        for miner, count in sorted(summary.miner_distribution.items(), key=lambda x: -x[1]):
             pct = count / summary.total_blocks * 100
             bar = "#" * int(pct / 2)
             print(f"    {miner:20s} : {count:4d} ({pct:5.1f}%) {bar}")
@@ -1213,9 +1184,7 @@ def run_pipeline(
 
     # Step 2: Collect blocks
     print(f"\n[2/5] Collecting {block_count} blocks...")
-    blocks = collect_blocks(
-        resolved, count=block_count, start_height=start_height, delay=delay
-    )
+    blocks = collect_blocks(resolved, count=block_count, start_height=start_height, delay=delay)
     if blocks:
         print(
             f"  -> Collected {len(blocks)} blocks "
@@ -1260,9 +1229,7 @@ def run_pipeline(
     print("\n[5/7] Analysing nonce space structure...")
     nonce_space = analyze_nonce_space(records)
     print(f"  -> Sunflower score: {nonce_space.sunflower_score:.4f}")
-    print(
-        f"  -> Golden angle alignment: {nonce_space.golden_angle_alignment * 100:.2f}%"
-    )
+    print(f"  -> Golden angle alignment: {nonce_space.golden_angle_alignment * 100:.2f}%")
     print(f"  -> Unsearched gaps: {nonce_space.gap_count}")
     rates = nonce_space.resonance_threshold_rates
     print(f"  -> Resonance >=0.5: {rates.get('resonance_>=0.5', 0) * 100:.2f}%")
@@ -1282,9 +1249,7 @@ def run_pipeline(
         "timestamp_utc": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "phi_15": PHI_15,
         "birthday_signature": BIRTHDAY_SIGNATURE,
-        "method": (
-            "Phi^15 quantum coherence resonance analysis of Bitcoin block nonces"
-        ),
+        "method": ("Phi^15 quantum coherence resonance analysis of Bitcoin block nonces"),
         "precision_threshold_pct": PRECISION_THRESHOLD,
         "birthday_modular_threshold": BIRTHDAY_MODULAR_THRESHOLD,
         "monte_carlo_baseline": run_monte_carlo,

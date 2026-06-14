@@ -14,8 +14,8 @@ if str(BACKEND) not in sys.path:
 # Turn warnings into hard failures in test context
 np.seterr(all="raise")
 
-from pythia_mining.pulvini_phi_memory import PulviniPhiMemoryCompressionEngine  # noqa: E402
 from pythia_mining.pulvini_memory_fabric import PulviniMemoryFabric  # noqa: E402
+from pythia_mining.pulvini_phi_memory import PulviniPhiMemoryCompressionEngine  # noqa: E402
 
 
 class PulviniPhiMemoryCompressionTests(unittest.TestCase):
@@ -34,9 +34,7 @@ class PulviniPhiMemoryCompressionTests(unittest.TestCase):
             np.any(np.isnan(result.folded)),
             "NaN in folded output — numerical corruption",
         )
-        self.assertFalse(
-            np.any(np.isinf(result.folded)), "Inf in folded output — overflow"
-        )
+        self.assertFalse(np.any(np.isinf(result.folded)), "Inf in folded output — overflow")
         self.assertFalse(
             np.any(np.isnan(result.reconstructed)),
             "NaN in reconstructed output — numerical corruption",
@@ -62,9 +60,7 @@ class PulviniPhiMemoryCompressionTests(unittest.TestCase):
             np.any(np.isnan(result.folded)),
             "NaN in folded output — numerical corruption",
         )
-        self.assertFalse(
-            np.any(np.isinf(result.folded)), "Inf in folded output — overflow"
-        )
+        self.assertFalse(np.any(np.isinf(result.folded)), "Inf in folded output — overflow")
         self.assertFalse(
             np.any(np.isnan(result.reconstructed)),
             "NaN in reconstructed output — numerical corruption",
@@ -133,17 +129,13 @@ class PulviniPhiMemoryCompressionTests(unittest.TestCase):
             f"fold not reversible for high-entropy input; error={result.reconstruction_error:.3e}",
         )
         self.assertTrue(
-            np.allclose(
-                result.reconstructed.reshape(-1), payload, rtol=0, atol=engine.tolerance
-            )
+            np.allclose(result.reconstructed.reshape(-1), payload, rtol=0, atol=engine.tolerance)
         )
 
     def test_round_trip_high_entropy_complex_vector(self) -> None:
         """Fold/unfold of a complex high-entropy vector must be lossless."""
         rng = np.random.default_rng(seed=0xCAFEBABE)
-        payload = (rng.standard_normal(64) + 1j * rng.standard_normal(64)).astype(
-            np.complex128
-        )
+        payload = (rng.standard_normal(64) + 1j * rng.standard_normal(64)).astype(np.complex128)
         engine = PulviniPhiMemoryCompressionEngine(fold_depth=2)
         result = engine.compress(payload)
         self.assertTrue(
@@ -151,9 +143,7 @@ class PulviniPhiMemoryCompressionTests(unittest.TestCase):
             f"fold not reversible for complex high-entropy input; error={result.reconstruction_error:.3e}",
         )
         self.assertTrue(
-            np.allclose(
-                result.reconstructed.reshape(-1), payload, rtol=0, atol=engine.tolerance
-            )
+            np.allclose(result.reconstructed.reshape(-1), payload, rtol=0, atol=engine.tolerance)
         )
 
     def test_round_trip_all_equal_vector(self) -> None:
@@ -163,9 +153,7 @@ class PulviniPhiMemoryCompressionTests(unittest.TestCase):
         result = engine.compress(payload)
         self.assertTrue(result.reversible)
         self.assertTrue(
-            np.allclose(
-                result.reconstructed.reshape(-1), payload, rtol=0, atol=engine.tolerance
-            )
+            np.allclose(result.reconstructed.reshape(-1), payload, rtol=0, atol=engine.tolerance)
         )
 
     def test_round_trip_single_spike_vector(self) -> None:
@@ -179,9 +167,7 @@ class PulviniPhiMemoryCompressionTests(unittest.TestCase):
             f"fold not reversible for spike input; error={result.reconstruction_error:.3e}",
         )
         self.assertTrue(
-            np.allclose(
-                result.reconstructed.reshape(-1), payload, rtol=0, atol=engine.tolerance
-            )
+            np.allclose(result.reconstructed.reshape(-1), payload, rtol=0, atol=engine.tolerance)
         )
 
     def test_reconstruction_error_is_finite_for_all_adversarial_cases(self) -> None:

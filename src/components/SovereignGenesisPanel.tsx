@@ -214,8 +214,12 @@ export function SovereignGenesisPanel() {
               >
             )
               .slice(0, 6)
-              .map(([key, enabled]) => (
-                <CapabilityBadge key={key} name={key} enabled={Boolean(enabled)} />
+              .map(([capabilityKey, enabled]) => (
+                <CapabilityBadge
+                  key={capabilityKey}
+                  name={capabilityKey}
+                  enabled={Boolean(enabled)}
+                />
               ))}
           </div>
         </div>

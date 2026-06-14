@@ -20,10 +20,14 @@ PYTHON_BACKEND = ROOT / "python_backend"
 if str(PYTHON_BACKEND) not in sys.path:
     sys.path.insert(0, str(PYTHON_BACKEND))
 
+from hyba_genesis_api.api.mining import (
+    PHI_TIERS,
+)
 from hyba_genesis_api.api.mining import (  # noqa: E402
     PULVINI_HASHRATE_CAP_EHS as API_HASHRATE_CAP_EHS,
+)
+from hyba_genesis_api.api.mining import (
     ConnectRequest,
-    PHI_TIERS,
     PowerScaleRequest,
     SubmitJobRequest,
     _capped_hashrate_ehs,
@@ -32,6 +36,8 @@ from hyba_genesis_api.api.mining import (  # noqa: E402
 )
 from pythia_mining.quantum_solver import (  # noqa: E402
     PULVINI_HASHRATE_CAP_EHS as SOLVER_HASHRATE_CAP_EHS,
+)
+from pythia_mining.quantum_solver import (
     DodecahedralQuantumSolver,
 )
 
@@ -61,19 +67,14 @@ power_scales = st.floats(
 )
 
 
-def test_power_scale_request_accepts_frontend_phi_tiers_and_defaults_to_1ehs_cap() -> (
-    None
-):
+def test_power_scale_request_accepts_frontend_phi_tiers_and_defaults_to_1ehs_cap() -> None:
     request = PowerScaleRequest(scale=1.0, phi_tier=12)
     composition = _phi_tier_composition(request.phi_tier)
 
     assert request.phi_tier in PHI_TIERS
     assert composition["label"] == "10^12"
     assert composition["hashrate_cap_ehs"] == API_HASHRATE_CAP_EHS
-    assert (
-        composition["memory_compression_contract"]
-        == "pulvini_phi_compressed_pre_search"
-    )
+    assert composition["memory_compression_contract"] == "pulvini_phi_compressed_pre_search"
 
 
 def test_power_scale_request_rejects_unknown_phi_tier() -> None:
@@ -136,9 +137,7 @@ def test_power_scaled_api_hashrate_never_exceeds_one_ehs(
     scale=power_scales,
 )
 @settings(max_examples=100)
-def test_solver_metrics_never_exceed_one_ehs(
-    configured_capacity: float, scale: float
-) -> None:
+def test_solver_metrics_never_exceed_one_ehs(configured_capacity: float, scale: float) -> None:
     solver = DodecahedralQuantumSolver(configured_capacity_ehs=configured_capacity)
     solver.set_power_scale(scale)
 

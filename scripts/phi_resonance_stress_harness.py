@@ -48,12 +48,8 @@ def run_harness(exponents: list[int], *, inject_every: int = 3) -> dict[str, Any
     for index, exponent in enumerate(exponents):
         inject = inject_every > 0 and index % inject_every == inject_every - 1
         tier = contract.tier(exponent)
-        report = diagnostic.evaluate(
-            _window_for_exponent(exponent, discontinuity=inject)
-        )
-        certificate_type = (
-            "phi_scaling_invariant" if report.stable else "phi_scaling_violation"
-        )
+        report = diagnostic.evaluate(_window_for_exponent(exponent, discontinuity=inject))
+        certificate_type = "phi_scaling_invariant" if report.stable else "phi_scaling_violation"
         entry = ledger.append(
             certificate_type,
             {"tier": tier, "stability": report.to_dict()},
@@ -95,16 +91,12 @@ def run_harness(exponents: list[int], *, inject_every: int = 3) -> dict[str, Any
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(
-        description="Run PULVINI φ-resonance stress harness"
-    )
+    parser = argparse.ArgumentParser(description="Run PULVINI φ-resonance stress harness")
     parser.add_argument("--exponents", default="7,10,12,15,18,20,31,76")
     parser.add_argument("--inject-every", type=int, default=3)
     parser.add_argument("--output", type=Path)
     args = parser.parse_args()
-    exponents = [
-        int(item.strip()) for item in args.exponents.split(",") if item.strip()
-    ]
+    exponents = [int(item.strip()) for item in args.exponents.split(",") if item.strip()]
     result = run_harness(exponents, inject_every=args.inject_every)
     payload = json.dumps(result, sort_keys=True, indent=2)
     if args.output:

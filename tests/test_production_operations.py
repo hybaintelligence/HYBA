@@ -17,6 +17,7 @@ if str(ROOT) not in sys.path:
 
 from argon2 import PasswordHasher  # noqa: E402
 from fastapi import HTTPException  # noqa: E402
+
 from hyba_genesis_api.api import auth as auth_api  # noqa: E402
 from hyba_genesis_api.api.mining_ops import _derive_alerts, _parse_audit_line  # noqa: E402
 from pythia_mining.metrics_store import MetricsStore, PoolMetrics  # noqa: E402
@@ -230,15 +231,11 @@ class BridgeRuntimeHardeningTests(unittest.TestCase):
 
     def test_bridge_proxy_error_does_not_return_backend_url(self) -> None:
         server = (ROOT / "server.ts").read_text(encoding="utf-8")
-        error_block = server.split('error: "backend_unavailable"', 1)[1].split(
-            "});", 1
-        )[0]
+        error_block = server.split('error: "backend_unavailable"', 1)[1].split("});", 1)[0]
         self.assertNotIn("backend:", error_block)
 
     def test_cloudflare_proxy_has_timeout_and_structured_failure(self) -> None:
-        worker = (ROOT / "functions" / "api" / "[[path]].ts").read_text(
-            encoding="utf-8"
-        )
+        worker = (ROOT / "functions" / "api" / "[[path]].ts").read_text(encoding="utf-8")
         self.assertIn("AbortController", worker)
         self.assertIn("HYBA_EDGE_PROXY_TIMEOUT_MS", worker)
         self.assertIn("backend_timeout", worker)
@@ -247,9 +244,7 @@ class BridgeRuntimeHardeningTests(unittest.TestCase):
 
     def test_docker_runtime_uses_supervised_entrypoint(self) -> None:
         dockerfile = (ROOT / "Dockerfile").read_text(encoding="utf-8")
-        entrypoint = (ROOT / "scripts" / "hyba-runtime-entrypoint.sh").read_text(
-            encoding="utf-8"
-        )
+        entrypoint = (ROOT / "scripts" / "hyba-runtime-entrypoint.sh").read_text(encoding="utf-8")
         self.assertIn("hyba-runtime-entrypoint.sh", dockerfile)
         self.assertNotIn(
             "uvicorn hyba_genesis_api.main:app --host 127.0.0.1 --port 3001 --log-level warning & node",
@@ -334,12 +329,12 @@ class ExplicitFailureTelemetryTests(unittest.TestCase):
                     {"HYBA_METRICS_DB_PATH": str(Path(tmpdir) / "metrics.db")},
                     clear=False,
                 ):
+                    from hyba_genesis_api.websocket.handlers import WebSocketHandler
                     from pythia_mining.metrics_store import (
                         MetricsStore,
                         reset_metrics_store,
                         set_metrics_store,
                     )
-                    from hyba_genesis_api.websocket.handlers import WebSocketHandler
 
                     store = MetricsStore(str(Path(tmpdir) / "metrics.db"))
                     set_metrics_store(store)
@@ -380,9 +375,7 @@ class ExplicitFailureTelemetryTests(unittest.TestCase):
             with self.assertRaises(HTTPException) as exc_info:
                 await predict_params(PredictRequest(state={"networkDifficulty": 10}))
             self.assertEqual(503, exc_info.exception.status_code)
-            self.assertEqual(
-                "optimizer_runtime_not_connected", exc_info.exception.detail["error"]
-            )
+            self.assertEqual("optimizer_runtime_not_connected", exc_info.exception.detail["error"])
 
         asyncio.run(run_case())
 

@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import sys
 import unittest
+from datetime import timedelta
 from pathlib import Path
 
 import numpy as np
@@ -18,9 +19,10 @@ BACKEND = ROOT / "python_backend"
 if str(BACKEND) not in sys.path:
     sys.path.insert(0, str(BACKEND))
 
-from pythia_mining.pulvini_grover_certificate import (
-    grover_efficiency_report,
-    grover_scope_certificate,
+from pythia_mining.pulvini_bures_variational import (
+    bures_metric_tangent_projection,
+    bures_variational_certificate,
+    verify_bures_variational_gate,
 )
 from pythia_mining.pulvini_coverage_certificate import (
     coverage_certificate,
@@ -28,16 +30,14 @@ from pythia_mining.pulvini_coverage_certificate import (
     verify_automorphism_preserves_coverage,
     verify_lane_coverages,
 )
-from pythia_mining.pulvini_structural_certificate import (
-    d_i_analysis,
-    structural_certificate,
-    verify_adjacency_preserved_for_all,
-    verify_graph_connectivity,
+from pythia_mining.pulvini_group import (
+    a5_representation_certificate,
+    compute_graph_automorphisms,
+    coxeter_group_certificate,
 )
-from pythia_mining.pulvini_bures_variational import (
-    bures_metric_tangent_projection,
-    bures_variational_certificate,
-    verify_bures_variational_gate,
+from pythia_mining.pulvini_grover_certificate import (
+    grover_efficiency_report,
+    grover_scope_certificate,
 )
 from pythia_mining.pulvini_memory_compression_proof import (
     phi_folding_mathematical_proof,
@@ -45,16 +45,17 @@ from pythia_mining.pulvini_memory_compression_proof import (
     prove_phi_folding_reversibility,
     verify_memory_compression_gate,
 )
-from pythia_mining.pulvini_group import (
-    a5_representation_certificate,
-    coxeter_group_certificate,
-    compute_graph_automorphisms,
-)
 from pythia_mining.pulvini_observability import (
     MetricType,
     ObservabilityFramework,
     SLOStatus,
     verify_observability_framework,
+)
+from pythia_mining.pulvini_structural_certificate import (
+    d_i_analysis,
+    structural_certificate,
+    verify_adjacency_preserved_for_all,
+    verify_graph_connectivity,
 )
 from pythia_mining.pulvini_topology import ADJACENCY_MAP
 
@@ -142,9 +143,7 @@ class TestCoxeterGroupCertificate(unittest.TestCase):
     def test_coxeter_certificate_embedded_in_a5(self):
         cert = a5_representation_certificate()
         self.assertIn("coxeter_structure", cert.to_dict())
-        self.assertEqual(
-            cert.coxeter_structure["coxeter_group"], "H3 icosahedral Coxeter group"
-        )
+        self.assertEqual(cert.coxeter_structure["coxeter_group"], "H3 icosahedral Coxeter group")
 
 
 class TestA5RepresentationCertificate(unittest.TestCase):

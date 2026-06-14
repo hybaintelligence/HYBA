@@ -46,9 +46,7 @@ class FakeV2Transport:
 
     async def read_frame(self, timeout=None):
         payload = SV2_VERSION.to_bytes(2, "little") + (0).to_bytes(4, "little")
-        return StratumV2Frame(
-            SV2_EXTENSION_TYPE_CORE, SV2_MSG_SETUP_CONNECTION_SUCCESS, payload
-        )
+        return StratumV2Frame(SV2_EXTENSION_TYPE_CORE, SV2_MSG_SETUP_CONNECTION_SUCCESS, payload)
 
     async def close(self):
         self.closed = True
@@ -63,9 +61,7 @@ class StratumV2PrimitiveTests(unittest.TestCase):
         self.assertEqual(3, decode_u24_le(encode_u24_le(3)))
 
     def test_split_complete_frame_preserves_trailing_bytes(self):
-        encoded = encode_frame(
-            StratumV2Frame(extension_type=1, message_type=2, payload=b"payload")
-        )
+        encoded = encode_frame(StratumV2Frame(extension_type=1, message_type=2, payload=b"payload"))
         frame, rest = split_complete_frame(encoded + b"next")
         self.assertIsNotNone(frame)
         assert frame is not None
@@ -110,14 +106,10 @@ class StratumV2PrimitiveTests(unittest.TestCase):
         with self.assertRaises(StratumV2ProtocolError):
             decode_frame(b"\x00\x00\x01\x02\x00\x00x")
         with self.assertRaises(StratumV2ProtocolError):
-            encode_frame(
-                StratumV2Frame(extension_type=1 << 16, message_type=1, payload=b"")
-            )
+            encode_frame(StratumV2Frame(extension_type=1 << 16, message_type=1, payload=b""))
 
     def test_pool_profile_accepts_stratum_v2_tls_endpoint(self):
-        url = validate_pool_url(
-            "stratum2+tls://sv2.example.com:3336", tls_required=True
-        )
+        url = validate_pool_url("stratum2+tls://sv2.example.com:3336", tls_required=True)
         endpoint = parse_endpoint(url)
         profile = build_profile(
             "sv2",

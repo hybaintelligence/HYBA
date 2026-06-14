@@ -8,7 +8,7 @@ ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, os.path.join(ROOT, "python_backend"))
 sys.path.insert(0, os.path.join(ROOT, "implementation_patches"))
 
-from pythia_mining.phi_config import PHI, DEFAULT_ENSEMBLE_MEMORY_LIMIT  # noqa: E402
+from pythia_mining.phi_config import DEFAULT_ENSEMBLE_MEMORY_LIMIT, PHI  # noqa: E402
 from pythia_mining.phi_folding import PhiFoldingOperator  # noqa: E402
 from pythia_mining.phi_scaling_engine import PhiScaledEnsemble  # noqa: E402
 from pythia_mining.pulvini_memory_fabric import PulviniMemoryFabric  # noqa: E402
@@ -43,9 +43,7 @@ class PhiConfigAndMemoryRefactorTests(unittest.TestCase):
     def test_sparse_payload_uses_passthrough_without_losing_reversibility(self) -> None:
         payload = np.zeros((8, 8), dtype=np.float64)
         payload[0, 0] = 42.0
-        engine = PulviniPhiMemoryCompressionEngine(
-            fold_depth=2, sparse_skip_threshold=0.80
-        )
+        engine = PulviniPhiMemoryCompressionEngine(fold_depth=2, sparse_skip_threshold=0.80)
         result = engine.compress(payload)
         self.assertEqual(result.compression_strategy, "sparse_passthrough")
         self.assertTrue(result.sparse_optimized)
@@ -73,9 +71,7 @@ class PhiConfigAndMemoryRefactorTests(unittest.TestCase):
 
                 return Cert()
 
-        fabric = PulviniMemoryFabric(
-            num_nodes=4, kernel=KernelStub(), fold_depth=1, tolerance=1e-6
-        )
+        fabric = PulviniMemoryFabric(num_nodes=4, kernel=KernelStub(), fold_depth=1, tolerance=1e-6)
         snapshot = fabric.compressed_kernel_snapshot().to_dict()
         self.assertEqual(snapshot["kernel"], {"stub": True})
         self.assertLessEqual(snapshot["compression"]["reconstruction_error"], 1e-6)

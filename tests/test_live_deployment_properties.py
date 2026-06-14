@@ -19,12 +19,8 @@ from pythia_mining.stratum_client import StratumClient  # noqa: E402
 
 @given(
     attempt=st.integers(min_value=0, max_value=20),
-    base=st.floats(
-        min_value=0.01, max_value=5.0, allow_nan=False, allow_infinity=False
-    ),
-    cap=st.floats(
-        min_value=5.0, max_value=120.0, allow_nan=False, allow_infinity=False
-    ),
+    base=st.floats(min_value=0.01, max_value=5.0, allow_nan=False, allow_infinity=False),
+    cap=st.floats(min_value=5.0, max_value=120.0, allow_nan=False, allow_infinity=False),
 )
 @settings(max_examples=75)
 def test_property_backoff_is_bounded_and_deterministic_without_random_runtime(
@@ -100,9 +96,7 @@ def test_property_pool_status_acceptance_rate_never_exceeds_one(
     response_id=st.integers(min_value=1, max_value=20),
 )
 @settings(max_examples=25)
-def test_property_matching_response_reader_skips_notifications(
-    size: int, response_id: int
-) -> None:
+def test_property_matching_response_reader_skips_notifications(size: int, response_id: int) -> None:
     from pythia_mining.live_stratum_session import LiveStratumSession
     from pythia_mining.pool_profiles import build_profile
 

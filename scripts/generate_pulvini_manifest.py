@@ -55,15 +55,11 @@ def build_manifest(*, production_runtime: bool) -> dict[str, Any]:
         return builder.build(ledger=ledger)
     operator = BuildOperator()
     builder = QuantumRuntimeManifestBuilder(operator, BuildVerifier(operator))
-    return builder.build(
-        ledger=ledger, rho={"trace": 1.0, "purity": 1.0, "min_eigenvalue": 0.0}
-    )
+    return builder.build(ledger=ledger, rho={"trace": 1.0, "purity": 1.0, "min_eigenvalue": 0.0})
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(
-        description="Generate PULVINI manifest.json for CI/CD."
-    )
+    parser = argparse.ArgumentParser(description="Generate PULVINI manifest.json for CI/CD.")
     parser.add_argument(
         "--output",
         type=Path,
@@ -77,9 +73,7 @@ def main(argv: list[str] | None = None) -> int:
     )
     args = parser.parse_args(argv)
     manifest = build_manifest(production_runtime=args.production_runtime)
-    args.output.write_text(
-        json.dumps(manifest, sort_keys=True, indent=2), encoding="utf-8"
-    )
+    args.output.write_text(json.dumps(manifest, sort_keys=True, indent=2), encoding="utf-8")
     print(args.output)
     return 0
 
