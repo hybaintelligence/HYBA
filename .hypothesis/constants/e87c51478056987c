@@ -1,0 +1,4 @@
+# file: /Users/demouser/Desktop/HYBA_FULLSTACK/scripts/funding_engine_deployment_gate.py
+# hypothesis_version: 6.155.2
+
+[0.0, 0.001, 0.1, 0.5, 1.0, 5.0, 160, 4095, 486604799, '%Y%m%dT%H%M%SZ', '*.json', '--command-room-dir', '--nonce-end', '--nonce-start', '--output-dir', '--phi-dir', '--target', '<redacted>', 'HYBA_', 'NODE_ENV', 'PYTHONPATH', '__main__', 'accepted', 'accepted_shares', 'bad_value', 'command_room_dir', 'csv_fields', 'csv_path', 'csv_rows', 'deterministic_search', 'diff', 'env', 'error', 'failed', 'files_checked', 'first_nonce', 'height', 'json_path', 'jwt', 'key', 'missing', 'missing_csv_fields', 'nonce', 'nonce_end', 'nonce_start', 'passed', 'password', 'phi_dir', 'platform', 'pre-share', 'precision_pct', 'python', 'python_backend', 'r', 'required', 'resonance_strength', 'second_nonce', 'secret', 'shares_accepted', 'store_true', 'summary', 'summary_fields', 'target', 'timestamp', 'token', 'utf-8', 'warning']

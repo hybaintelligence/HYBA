@@ -1,0 +1,4 @@
+# file: /Users/demouser/Desktop/HYBA_FULLSTACK/src/euclid/pythagoras/quantum/operators/nonce_space_coverage.py
+# hypothesis_version: 6.155.2
+
+[-1.0, 0.0, 0.5, 1.0, 2.0, 5.0, 'PlatonicNonceOverlay']

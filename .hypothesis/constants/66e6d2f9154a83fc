@@ -1,0 +1,4 @@
+# file: /Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/pythia_mining/pulvini_verifier.py
+# hypothesis_version: 6.155.2
+
+[b'\x00', b'PULV', 0.0, 1.0, 120, 128, 1000000000, ',', '0', ':', '>4sQ32sII32s44s', 'CertificateLedger', 'IntegrityStatus', 'PULVINI_BINARY_MAGIC', 'SUBSTATE_PASSPORT_V1', 'SUBSTATE_VERIFIER_V1', 'SubstateBinaryHeader', 'SubstatePassport', 'SubstateVerifier', 'adjacency', 'binary_header_size', 'bures_closed', 'choi_verified', 'coverage_ratio', 'coverage_verified', 'd', 'entropy_rate', 'error', 'failed', 'fidelity', 'fidelity_fixed', 'gate_closed', 'hamiltonian_sha256', 'i', 'information_content', 'magic', 'manifold_dimension', 'marginal', 'nonce_ranges', 'passport_hash', 'purity', 'purity_fixed', 'reference_rho_sha256', 'rho_hash', 'rho_sha256', 'signature', 'status', 'structural_hash', 'substate_passport', 'target', 'timestamp_ns', 'topology_hash', 'topology_verified', 'utf-8', 'verified', 'version']

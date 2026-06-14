@@ -504,6 +504,16 @@ class SecuritySwarmAgent {
   public snapshot(): SecuritySwarmStatus {
     return this.get_swarm_status();
   }
+
+  /**
+   * Run a metacognitive cycle and return a report with current and predicted state.
+   */
+  public run_metacognitive_cycle(): { current_state: string; predicted_state: string } {
+    const status = this.get_swarm_status();
+    const current_state = status.integrity_locked ? "protected" : "responding";
+    const predicted_state = status.operating_mode === "SANITIZED" ? "degraded" : "stable";
+    return { current_state, predicted_state };
+  }
 }
 
 export { SecuritySwarmAgent };
