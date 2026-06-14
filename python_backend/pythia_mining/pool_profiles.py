@@ -177,9 +177,13 @@ def validate_pool_url(url: str, *, tls_required: bool = False) -> str:
     parsed = urlparse(url)
     if parsed.scheme not in SUPPORTED_SCHEMES:
         raise PoolProfileError(f"unsupported pool URL scheme: {parsed.scheme}")
+    if parsed.scheme.startswith("stratum+") and parsed.netloc.endswith(":3336"):
+        raise PoolProfileError("Stratum V2 port 3336 requires a stratum2+ URL scheme")
     if not parsed.hostname:
         raise PoolProfileError("pool URL must include hostname")
-    if parsed.port is not None and not (1 <= int(parsed.port) <= 65535):
+    if parsed.port is None:
+        raise PoolProfileError("pool URL must include an explicit port")
+    if not (1 <= int(parsed.port) <= 65535):
         raise PoolProfileError("pool URL port is out of range")
     if tls_required and parsed.scheme not in {"stratum+ssl", "stratum+tls", "stratum2+ssl", "stratum2+tls"}:
         raise PoolProfileError("TLS is required for this pool profile")

@@ -205,7 +205,7 @@ class StratumV2PrimitiveTests(unittest.TestCase):
         for url in valid_schemes:
             try:
                 validated = validate_pool_url(url, tls_required=False)
-                self.assertTrue(validiated.startswith("stratum2+"))
+                self.assertTrue(validated.startswith("stratum2+"))
             except Exception as e:
                 self.fail(f"Valid URL {url} should not raise error: {e}")
 

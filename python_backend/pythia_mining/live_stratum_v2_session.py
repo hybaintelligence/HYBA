@@ -9,6 +9,7 @@ authenticated encrypted connections.
 """
 from __future__ import annotations
 
+import asyncio
 import logging
 from dataclasses import asdict, dataclass
 from typing import Any, Dict, Optional
@@ -150,13 +151,16 @@ class LiveStratumV2Session:
         await self.transport.send_bytes(frame_bytes)
 
     async def _read_frame(self, *, timeout: Optional[float] = None) -> StratumV2Frame:
+        read_timeout = timeout if timeout is not None else 5.0
         if hasattr(self.transport, "read_frame"):
-            frame = await self.transport.read_frame(timeout=timeout)
+            frame = await asyncio.wait_for(self.transport.read_frame(timeout=timeout), timeout=read_timeout)
         else:
-            header = await self.transport.read_exactly(SV2_HEADER_SIZE, timeout=timeout)
+            header = await asyncio.wait_for(self.transport.read_exactly(SV2_HEADER_SIZE, timeout=timeout), timeout=read_timeout)
             payload_length = decode_u24_le(header[3:6])
-            payload = await self.transport.read_exactly(payload_length, timeout=timeout) if payload_length else b""
+            payload = await asyncio.wait_for(self.transport.read_exactly(payload_length, timeout=timeout), timeout=read_timeout) if payload_length else b""
             frame = decode_frame(header + payload)
+        if frame is None:
+            raise LiveStratumV2SessionError("SetupConnection response timeout: no Stratum V2 frame received")
         
         # Decrypt if noise protocol is enabled
         if self.enable_noise and self.noise_wrapper and self.noise_handshake_result:
@@ -171,8 +175,8 @@ class LiveStratumV2Session:
             await self._send_frame(build_setup_connection_frame(self.setup))
             response = await self._read_frame(timeout=timeout)
             self.handshake = parse_setup_connection_response(response, requested=self.setup)
-        except StratumV2ProtocolError as exc:
-            raise LiveStratumV2SessionError(str(exc)) from exc
+        except asyncio.TimeoutError as exc:
+            raise LiveStratumV2SessionError("SetupConnection response timeout") from exc
         return StratumV2Handshake(
             pool_id=self.profile.pool_id,
             used_version=self.handshake.used_version,
