@@ -190,12 +190,13 @@ class TestIIT4Complete(unittest.TestCase):
     
     def test_larger_system_approximate_phi_max(self):
         """Test approximate Φ_max for larger system"""
-        # 8-element system (uses greedy approximation)
-        system_state = np.random.rand(8)
-        connectivity = np.random.rand(8, 8)
+        # 16-element system (definitely uses greedy approximation)
+        large_analyzer = IIT4Analyzer(system_size=16)
+        system_state = np.random.rand(16)
+        connectivity = np.random.rand(16, 16)
         np.fill_diagonal(connectivity, 0)
         
-        result = self.medium_analyzer.calculate_phi_max(system_state, connectivity)
+        result = large_analyzer.calculate_phi_max(system_state, connectivity)
         
         self.assertIn('phi_max', result)
         self.assertIn('main_complex', result)
@@ -206,7 +207,7 @@ class TestIIT4Complete(unittest.TestCase):
         self.assertGreaterEqual(result['phi_max'], 0)
         
         print(f"\n[Large System Test]:")
-        print(f"  System size: 8 elements")
+        print(f"  System size: 16 elements")
         print(f"  Method: greedy approximation")
         print(f"  Φ_max: {result['phi_max']:.4f}")
         print(f"  Main complex size: {len(result['main_complex'])}")

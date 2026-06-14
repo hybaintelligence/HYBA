@@ -22,7 +22,7 @@ from .blockchain_oracle import BlockchainOracle
 from .consciousness_engine import ConsciousnessEngine
 from .pulvini_autonomics import AutonomicOrchestrator, PulviniAutonomicsEngine
 from .pulvini_compressed_solver import PulviniCompressedQuantumSolver
-from .pulvini_memory_fabric import EvolvingMemoryFabric
+from .pulvini_memory_fabric import PulviniMemoryFabric
 from .pulvini_overlay import PulviniOverlayConcentrator
 from .pulvini_propagation import SharePropagationController
 from .stratum_client import AllPoolsOfflineError, MiningJob, PoolManager
@@ -118,7 +118,7 @@ class GenesisAI:
         self.autonomic_orchestrator = AutonomicOrchestrator(self.autonomics)
         self.propagation = SharePropagationController(
             self.overlay.manifold,
-            memory_fabric=EvolvingMemoryFabric(num_nodes=32),
+            memory_fabric=PulviniMemoryFabric(num_nodes=32),
         )
         self.quantum_solver = PulviniCompressedQuantumSolver()
         self.blockchain_oracle = BlockchainOracle()
