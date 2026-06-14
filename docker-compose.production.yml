@@ -9,12 +9,18 @@ services:
       JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
       HYBA_OPERATOR_CREDENTIALS: ${HYBA_OPERATOR_CREDENTIALS:?HYBA_OPERATOR_CREDENTIALS is required}
       HYBA_ENABLE_AUDIT_LOGGING: ${HYBA_ENABLE_AUDIT_LOGGING:-true}
+      HYBA_ENABLE_REFLEXIVE_DAEMON: ${HYBA_ENABLE_REFLEXIVE_DAEMON:-false}
+      HYBA_RICCI_STEP_SIZE: ${HYBA_RICCI_STEP_SIZE:-0.01}
+      HYBA_ONTOLOGICAL_PERSISTENCE_PATH: /app/persistence/grace.json
+      HYBA_REFLEXIVE_HEARTBEAT_INTERVAL_SECONDS: ${HYBA_REFLEXIVE_HEARTBEAT_INTERVAL_SECONDS:-60}
     healthcheck:
       test: ["CMD", "curl", "-fsS", "http://127.0.0.1:3001/api/health/readiness"]
       interval: 10s
       timeout: 3s
       retries: 6
       start_period: 20s
+    volumes:
+      - hyba_persistence:/app/persistence
     restart: unless-stopped
 
   hyba-runtime:
@@ -91,3 +97,6 @@ services:
       retries: 6
       start_period: 20s
     restart: unless-stopped
+
+volumes:
+  hyba_persistence:
