@@ -18,13 +18,25 @@ ENTRYPOINT = ROOT / "scripts" / "hyba-runtime-entrypoint.sh"
 
 
 def main() -> int:
-    syntax = subprocess.run(["sh", "-n", str(ENTRYPOINT)], cwd=ROOT, text=True, capture_output=True, check=False)
+    syntax = subprocess.run(
+        ["sh", "-n", str(ENTRYPOINT)],
+        cwd=ROOT,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
     if syntax.returncode != 0:
         print(syntax.stderr, file=sys.stderr)
         return syntax.returncode
 
     command = subprocess.run(
-        ["sh", str(ENTRYPOINT), "python", "-c", "print('entrypoint command override honored')"],
+        [
+            "sh",
+            str(ENTRYPOINT),
+            "python",
+            "-c",
+            "print('entrypoint command override honored')",
+        ],
         cwd=ROOT,
         text=True,
         capture_output=True,
@@ -36,7 +48,9 @@ def main() -> int:
         print(command.stderr, file=sys.stderr)
         return command.returncode
     if "entrypoint command override honored" not in command.stdout:
-        print("Entry point did not execute the provided service command", file=sys.stderr)
+        print(
+            "Entry point did not execute the provided service command", file=sys.stderr
+        )
         print(command.stdout, file=sys.stderr)
         return 1
 

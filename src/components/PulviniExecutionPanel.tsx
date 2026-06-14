@@ -13,15 +13,17 @@ export const PulviniExecutionPanel = () => {
     setResult(null);
     try {
       const data = await executePulvini();
-      
+
       if (data.status === "error") {
         throw new Error(data.error || data.details || "Execution failed");
       }
-      
+
       setResult(data);
     } catch (err: unknown) {
       console.error(err);
-      setError(err instanceof Error ? err.message : "Failed to reach HYBA_Unified_Backend. Is it running?");
+      setError(
+        err instanceof Error ? err.message : "Failed to reach HYBA_Unified_Backend. Is it running?",
+      );
     } finally {
       setIsExecuting(false);
     }
@@ -45,7 +47,10 @@ export const PulviniExecutionPanel = () => {
       </div>
 
       <div className="text-[11px] text-[#64748B] mb-5 leading-relaxed font-sans">
-        The PULVINI Memory Engine executes Hilbert-space operators, Hamiltonians, tensor folds, and bounded measurement routines as substrate-agnostic linear algebra. CPUs, GPUs, cloud, and edge devices are arithmetic substrates; proof-of-work validation remains classically verified.
+        The PULVINI Memory Engine executes Hilbert-space operators, Hamiltonians, tensor folds, and
+        bounded measurement routines as substrate-agnostic linear algebra. CPUs, GPUs, cloud, and
+        edge devices are arithmetic substrates; proof-of-work validation remains classically
+        verified.
       </div>
 
       <button
@@ -60,7 +65,7 @@ export const PulviniExecutionPanel = () => {
           </>
         ) : (
           <>
-            <SettingsIcon /> INITIALIZE METIS SUBSTRATE BATCH 
+            <SettingsIcon /> INITIALIZE METIS SUBSTRATE BATCH
           </>
         )}
       </button>
@@ -81,11 +86,15 @@ export const PulviniExecutionPanel = () => {
             <div className="grid grid-cols-2 gap-3 text-[10px] font-mono text-[#64748B]">
               <div className="flex flex-col">
                 <span>State Vector Entries</span>
-                <span className="text-black font-bold text-xs">{stateVectorOperation?.state_vector_entries ?? "N/A"}</span>
+                <span className="text-black font-bold text-xs">
+                  {stateVectorOperation?.state_vector_entries ?? "N/A"}
+                </span>
               </div>
               <div className="flex flex-col">
                 <span>Invariants</span>
-                <span className="text-black font-bold text-xs">{stateVectorOperation?.invariants ?? "N/A"}</span>
+                <span className="text-black font-bold text-xs">
+                  {stateVectorOperation?.invariants ?? "N/A"}
+                </span>
               </div>
               <div className="col-span-2 flex flex-col">
                 <span>Diffusion Norm Purity</span>
@@ -106,35 +115,49 @@ export const PulviniExecutionPanel = () => {
               <div className="flex flex-col">
                 <span>Original Dims</span>
                 <span className="text-black font-bold text-xs">
-                  {projectionOperation?.original_dimensions !== undefined ? `${projectionOperation.original_dimensions}D` : "N/A"}
+                  {projectionOperation?.original_dimensions !== undefined
+                    ? `${projectionOperation.original_dimensions}D`
+                    : "N/A"}
                 </span>
               </div>
               <div className="flex flex-col">
                 <span>Projected Dims</span>
                 <span className="text-black font-bold text-xs">
-                  {projectionOperation?.projected_dimensions !== undefined ? `${projectionOperation.projected_dimensions}D` : "N/A"}
+                  {projectionOperation?.projected_dimensions !== undefined
+                    ? `${projectionOperation.projected_dimensions}D`
+                    : "N/A"}
                 </span>
               </div>
               <div className="flex flex-col">
                 <span>Topological Anchoring</span>
-                <span className="text-black font-bold text-xs capitalize">{projectionOperation?.topological_anchoring ?? "N/A"}</span>
+                <span className="text-black font-bold text-xs capitalize">
+                  {projectionOperation?.topological_anchoring ?? "N/A"}
+                </span>
               </div>
               <div className="flex flex-col">
                 <span>Purity</span>
-                <span className="text-black font-bold text-xs">{projectionOperation?.purity ?? "N/A"}</span>
+                <span className="text-black font-bold text-xs">
+                  {projectionOperation?.purity ?? "N/A"}
+                </span>
               </div>
             </div>
           </div>
 
           <div className="flex items-center gap-4 border-t border-[#E2E4E9] pt-4 mt-2">
-             <div className="flex-1 bg-black text-white p-3 rounded-lg text-center">
-                 <div className="text-[9px] text-gray-400 font-mono uppercase">Metric Compression</div>
-                 <div className="text-xs font-bold font-mono">{result.metric_compression ?? "N/A"}</div>
-             </div>
-             <div className="flex-1 bg-[#F4F4F7] text-black border border-[#E2E4E9] p-3 rounded-lg text-center">
-                 <div className="text-[9px] text-[#64748B] font-mono uppercase">Hamiltonian Generation</div>
-                 <div className="text-xs font-bold font-mono">{result.hamiltonian_generation ?? "N/A"}</div>
-             </div>
+            <div className="flex-1 bg-black text-white p-3 rounded-lg text-center">
+              <div className="text-[9px] text-gray-400 font-mono uppercase">Metric Compression</div>
+              <div className="text-xs font-bold font-mono">
+                {result.metric_compression ?? "N/A"}
+              </div>
+            </div>
+            <div className="flex-1 bg-[#F4F4F7] text-black border border-[#E2E4E9] p-3 rounded-lg text-center">
+              <div className="text-[9px] text-[#64748B] font-mono uppercase">
+                Hamiltonian Generation
+              </div>
+              <div className="text-xs font-bold font-mono">
+                {result.hamiltonian_generation ?? "N/A"}
+              </div>
+            </div>
           </div>
         </div>
       )}

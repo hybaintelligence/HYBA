@@ -27,7 +27,9 @@ class PulviniMemoryAndPhiTests(unittest.TestCase):
 
     def test_phi_sample_reports_one_measured_datapoint(self) -> None:
         manifold = PulviniManifold(ADJACENCY_MAP)
-        result = measure_phi_acceptance(manifold, range(512), threshold=0.5, job_id="sample-job")
+        result = measure_phi_acceptance(
+            manifold, range(512), threshold=0.5, job_id="sample-job"
+        )
         self.assertEqual(512, result.sample_size)
         self.assertGreaterEqual(result.acceptance_ratio, 0.0)
         self.assertLessEqual(result.acceptance_ratio, 1.0)

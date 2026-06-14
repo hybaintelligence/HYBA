@@ -27,14 +27,19 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 try:
-    from pythia_mining.pulvini_autonomics import NodeTelemetry, PulviniAutonomicsEngine  # noqa: E402
+    from pythia_mining.pulvini_autonomics import (
+        NodeTelemetry,
+        PulviniAutonomicsEngine,
+    )  # noqa: E402
     from pythia_mining.pulvini_overlay import PulviniOverlayConcentrator  # noqa: E402
     from pythia_mining.pulvini_verifier import (  # noqa: E402
         PULVINI_BINARY_HEADER_SIZE,
         PULVINI_BINARY_MAGIC,
         SubstateVerifier,
     )
-except ModuleNotFoundError as exc:  # pragma: no cover - exercised in dependency-poor shells.
+except (
+    ModuleNotFoundError
+) as exc:  # pragma: no cover - exercised in dependency-poor shells.
     NodeTelemetry = None  # type: ignore[assignment]
     PulviniAutonomicsEngine = None  # type: ignore[assignment]
     PulviniOverlayConcentrator = None  # type: ignore[assignment]
@@ -60,7 +65,9 @@ def _parse_nodes(value: str) -> list[int]:
 
 def _healthy_telemetry(node_id: int):
     if NodeTelemetry is None:
-        raise RuntimeError(f"PULVINI numerical dependencies are unavailable: {IMPORT_ERROR}")
+        raise RuntimeError(
+            f"PULVINI numerical dependencies are unavailable: {IMPORT_ERROR}"
+        )
     return NodeTelemetry(
         node_id=node_id,
         tres=25.0,
@@ -89,14 +96,22 @@ def run_live_cut_drill(
             f"(missing: {IMPORT_ERROR})"
         )
     overlay = PulviniOverlayConcentrator(worker_name="PULVINI.singularity")
-    overlay.mark_pool_bound("PhaseTransitionPool", "stratum+tcp://phase-transition.local:3333", 2)
-    job = SimpleNamespace(job_id="phase-transition-live-cut", target=1, extranonce2_size=4)
+    overlay.mark_pool_bound(
+        "PhaseTransitionPool", "stratum+tcp://phase-transition.local:3333", 2
+    )
+    job = SimpleNamespace(
+        job_id="phase-transition-live-cut", target=1, extranonce2_size=4
+    )
     overlay.register_pool_job(job, pool_name="PhaseTransitionPool")
 
     engine = PulviniAutonomicsEngine(lattice_repoint_sink=overlay.apply_lattice_repoint)
     engine.ingest_telemetry(_healthy_telemetry(node_id) for node_id in range(32))
-    rebalance = engine.rebalancer.rebalance_lattice_topology(nodes, reason="simulated_live_cut")
-    overlay.apply_autonomic_distribution(engine.homeostasis.rho.diagonal().tolist(), reason="simulated_live_cut")
+    rebalance = engine.rebalancer.rebalance_lattice_topology(
+        nodes, reason="simulated_live_cut"
+    )
+    overlay.apply_autonomic_distribution(
+        engine.homeostasis.rho.diagonal().tolist(), reason="simulated_live_cut"
+    )
 
     verifier = SubstateVerifier()
     passport = verifier.generate_passport(
@@ -167,9 +182,18 @@ def run_live_cut_drill(
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Simulate a PULVINI live-cut and report post-cut purity")
-    parser.add_argument("--nodes", type=_parse_nodes, default=[0, 1, 2], help="Comma-separated node ids to cut")
-    parser.add_argument("--state", type=Path, default=Path("python_backend/pythia_state.live_cut.json"))
+    parser = argparse.ArgumentParser(
+        description="Simulate a PULVINI live-cut and report post-cut purity"
+    )
+    parser.add_argument(
+        "--nodes",
+        type=_parse_nodes,
+        default=[0, 1, 2],
+        help="Comma-separated node ids to cut",
+    )
+    parser.add_argument(
+        "--state", type=Path, default=Path("python_backend/pythia_state.live_cut.json")
+    )
     parser.add_argument("--min-purity", type=float, default=0.9)
     parser.add_argument("--min-fidelity-fixed", type=int, default=900_000_000)
     parser.add_argument("--json", action="store_true")

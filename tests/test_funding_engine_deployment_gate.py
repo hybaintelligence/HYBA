@@ -53,7 +53,9 @@ def _write_phi_artifacts(base: Path) -> None:
             "birthday_echo_type": "none",
         },
     ]
-    with (base / "phi_resonance_blocks.csv").open("w", newline="", encoding="utf-8") as handle:
+    with (base / "phi_resonance_blocks.csv").open(
+        "w", newline="", encoding="utf-8"
+    ) as handle:
         writer = csv.DictWriter(handle, fieldnames=list(rows[0].keys()))
         writer.writeheader()
         writer.writerows(rows)
@@ -82,7 +84,9 @@ def test_phi_resonance_artifact_gate_passes(tmp_path: Path) -> None:
 def test_phi_resonance_artifact_gate_fails_on_missing_fields(tmp_path: Path) -> None:
     phi_dir = tmp_path / "phi"
     phi_dir.mkdir()
-    (phi_dir / "phi_resonance_blocks.csv").write_text("height,nonce\n1,2\n", encoding="utf-8")
+    (phi_dir / "phi_resonance_blocks.csv").write_text(
+        "height,nonce\n1,2\n", encoding="utf-8"
+    )
     (phi_dir / "phi_resonance_summary.json").write_text("{}", encoding="utf-8")
     result = check_phi_resonance_artifacts(phi_dir)
     assert result.status == "failed"
@@ -113,7 +117,9 @@ def test_accepted_share_gate_warns_when_not_required(tmp_path: Path) -> None:
 
 
 def test_deterministic_search_repeats_nonce() -> None:
-    result = check_deterministic_search(target=0x1D00FFFF, nonce_start=0, nonce_end=4095)
+    result = check_deterministic_search(
+        target=0x1D00FFFF, nonce_start=0, nonce_end=4095
+    )
     assert result.status == "passed"
     assert result.details["first_nonce"] == result.details["second_nonce"]
     assert 0 <= result.details["first_nonce"] <= 4095

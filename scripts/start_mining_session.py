@@ -28,7 +28,6 @@ from __future__ import annotations
 
 import json
 import os
-import sys
 import time
 from datetime import datetime, timezone
 from pathlib import Path
@@ -36,10 +35,11 @@ from typing import Any
 
 import requests
 
-
 BASE = os.getenv("HYBA_BACKEND_BASE", "http://127.0.0.1:3001")
 BRIDGE = os.getenv("HYBA_BRIDGE_BASE", "http://127.0.0.1:3000")
-EVIDENCE_DIR = Path(os.getenv("HYBA_EVIDENCE_DIR", "HYBA_FULLSTACK_COMMAND_ROOM_20260612"))
+EVIDENCE_DIR = Path(
+    os.getenv("HYBA_EVIDENCE_DIR", "HYBA_FULLSTACK_COMMAND_ROOM_20260612")
+)
 SESSION_MINUTES = int(os.getenv("HYBA_SESSION_MINUTES", "5"))
 SESSION_CAPACITY_EHS = float(os.getenv("HYBA_SESSION_CAPACITY_EHS", "0.1"))
 
@@ -122,7 +122,9 @@ def main() -> int:
 
     # 1. Health snapshots before authentication or pool mutation.
     write_json("bridge_health_pre_session.json", get_json(f"{BRIDGE}/bridge/health"))
-    write_json("backend_readiness_pre_session.json", get_json(f"{BASE}/api/health/readiness"))
+    write_json(
+        "backend_readiness_pre_session.json", get_json(f"{BASE}/api/health/readiness")
+    )
 
     # 2. Login with externally supplied operator credentials.
     log("Authenticating operator")
@@ -234,8 +236,12 @@ def main() -> int:
     # 8. Disconnect and prove post-disconnect state.
     log("Disconnecting mining session")
     try:
-        disconnect_response = post_json(f"{BASE}/api/mining/disconnect", headers=headers)
-        write_json("pool_disconnect_response.json", redact_status(disconnect_response.json()))
+        disconnect_response = post_json(
+            f"{BASE}/api/mining/disconnect", headers=headers
+        )
+        write_json(
+            "pool_disconnect_response.json", redact_status(disconnect_response.json())
+        )
     except requests.HTTPError as exc:
         write_json(
             "pool_disconnect_response.json",

@@ -37,8 +37,16 @@ from hyba_genesis_api.core.midas_controls import (  # noqa: E402
     StateTransitionError,
     TokenBucketRateLimiter,
 )
-from hyba_genesis_api.core.substrate import get_substrate_state, initialize_substrate, shutdown_substrate  # noqa: E402
-from pythia_mining.mining_validation import build_block_header, compact_to_target, validate_share  # noqa: E402
+from hyba_genesis_api.core.substrate import (
+    get_substrate_state,
+    initialize_substrate,
+    shutdown_substrate,
+)  # noqa: E402
+from pythia_mining.mining_validation import (
+    build_block_header,
+    compact_to_target,
+    validate_share,
+)  # noqa: E402
 from pythia_mining.quantum_solver import (  # noqa: E402
     DODECAHEDRON_VERTICES,
     QuantumSolverConfigurationError,
@@ -65,13 +73,21 @@ class MIDASProductionControlTests(unittest.TestCase):
         machine = MIDASStateMachine()
         request_id = "req-prod-path"
 
-        for state in [MiningState.STARTING, MiningState.RUNNING, MiningState.STOPPING, MiningState.STOPPED]:
+        for state in [
+            MiningState.STARTING,
+            MiningState.RUNNING,
+            MiningState.STOPPING,
+            MiningState.STOPPED,
+        ]:
             machine.transition(state, request_id=request_id)
 
         validation = machine.validate_state_machine()
         self.assertTrue(validation["valid"])
         self.assertEqual("stopped", validation["current_state"])
-        self.assertEqual([request_id] * 4, [transition.request_id for transition in machine.get_transition_history()])
+        self.assertEqual(
+            [request_id] * 4,
+            [transition.request_id for transition in machine.get_transition_history()],
+        )
 
     def test_midas_transition_guard_is_atomic_under_concurrent_calls(self) -> None:
         machine = MIDASStateMachine()
@@ -89,7 +105,9 @@ class MIDASProductionControlTests(unittest.TestCase):
 
         self.assertEqual(1, results.count(True))
         self.assertEqual(MiningState.RUNNING, machine.get_state())
-        self.assertEqual(1, machine.validate_state_machine()["metrics"]["invalid_transitions_total"])
+        self.assertEqual(
+            1, machine.validate_state_machine()["metrics"]["invalid_transitions_total"]
+        )
 
     def test_midas_rejects_invalid_transitions_and_missing_request_id(self) -> None:
         machine = MIDASStateMachine()
@@ -99,7 +117,9 @@ class MIDASProductionControlTests(unittest.TestCase):
             machine.transition(MiningState.RUNNING, request_id="req-invalid")
         with self.assertRaisesRegex(StateTransitionError, "Forced transition"):
             machine.force_transition(MiningState.RUNNING, request_id="req-force")
-        self.assertEqual(3, machine.validate_state_machine()["metrics"]["invalid_transitions_total"])
+        self.assertEqual(
+            3, machine.validate_state_machine()["metrics"]["invalid_transitions_total"]
+        )
 
     def test_midas_rate_limit_is_retryable_and_observable(self) -> None:
         limiter = TokenBucketRateLimiter(rate_per_second=10, burst_capacity=2)
@@ -129,7 +149,9 @@ class MIDASProductionControlTests(unittest.TestCase):
         tracker = MiningRequestTracker()
 
         def create_duplicate() -> str:
-            return tracker.create_request("start", {"miner": "alpha"}, idempotency_key="idem-race").request_id
+            return tracker.create_request(
+                "start", {"miner": "alpha"}, idempotency_key="idem-race"
+            ).request_id
 
         with ThreadPoolExecutor(max_workers=8) as executor:
             request_ids = list(executor.map(lambda _: create_duplicate(), range(16)))
@@ -139,14 +161,22 @@ class MIDASProductionControlTests(unittest.TestCase):
 
     def test_mining_request_tracker_failed_boundary_is_retryable(self) -> None:
         tracker = MiningRequestTracker()
-        first = tracker.create_request("start", {"miner": "alpha"}, idempotency_key="idem-boundary")
-        tracker.update_request_status(first.request_id, RequestStatus.FAILED, error="pool unavailable")
-        retry = tracker.create_request("start", {"miner": "alpha"}, idempotency_key="idem-boundary")
+        first = tracker.create_request(
+            "start", {"miner": "alpha"}, idempotency_key="idem-boundary"
+        )
+        tracker.update_request_status(
+            first.request_id, RequestStatus.FAILED, error="pool unavailable"
+        )
+        retry = tracker.create_request(
+            "start", {"miner": "alpha"}, idempotency_key="idem-boundary"
+        )
         self.assertNotEqual(first.request_id, retry.request_id)
 
     def test_mining_request_tracker_cleanup_keeps_maps_consistent(self) -> None:
         tracker = MiningRequestTracker(request_ttl_seconds=1)
-        request = tracker.create_request("start", {"miner": "alpha"}, idempotency_key="idem-expire")
+        request = tracker.create_request(
+            "start", {"miner": "alpha"}, idempotency_key="idem-expire"
+        )
         request.created_at = datetime.now(UTC) - timedelta(seconds=5)
         removed = tracker.cleanup_expired_requests()
         self.assertEqual(1, removed)
@@ -155,14 +185,18 @@ class MIDASProductionControlTests(unittest.TestCase):
 
 
 class SubstrateUnitTests(unittest.TestCase):
-    def test_substrate_initialization_is_deterministic_and_json_serializable(self) -> None:
+    def test_substrate_initialization_is_deterministic_and_json_serializable(
+        self,
+    ) -> None:
         first_state = initialize_substrate()
         second_state = initialize_substrate()
 
         self.assertTrue(first_state["ready"])
         self.assertTrue(second_state["ready"])
         self.assertEqual(EXPECTED_INIT_ORDER, second_state["initialization_order"])
-        self.assertEqual(EXPECTED_INIT_ORDER, get_substrate_state()["initialization_order"])
+        self.assertEqual(
+            EXPECTED_INIT_ORDER, get_substrate_state()["initialization_order"]
+        )
         self.assertIsInstance(json.dumps(second_state), str)
 
         shutdown_state = shutdown_substrate()
@@ -175,21 +209,29 @@ class SubstrateUnitTests(unittest.TestCase):
         self.assertEqual("PULVINI Memory Engine Executed", payload["message"])
         self.assertEqual(2, len(payload["operations"]))
         self.assertEqual(2**14, payload["operations"][0]["state_vector_entries"])
-        self.assertAlmostEqual(1.0, float(payload["operations"][0]["diffusion_norm"]), places=12)
+        self.assertAlmostEqual(
+            1.0, float(payload["operations"][0]["diffusion_norm"]), places=12
+        )
         self.assertEqual(158, payload["operations"][1]["projected_dimensions"])
 
 
 class MiningPropertyAndIntegrationTests(unittest.TestCase):
-    def test_quantum_solver_capacity_is_not_reported_without_configuration(self) -> None:
+    def test_quantum_solver_capacity_is_not_reported_without_configuration(
+        self,
+    ) -> None:
         solver = DodecahedralQuantumSolver()
         metrics = solver.get_metrics()
         self.assertTrue(metrics["available"])
         self.assertIsNone(metrics["hashrate_ehs"])
         self.assertEqual("not_configured", metrics["capacity_source"])
         self.assertEqual("derived_runtime_state", metrics["telemetry_source"])
-        self.assertAlmostEqual(math.log2(DODECAHEDRON_VERTICES), metrics["von_neumann_entropy"], places=4)
+        self.assertAlmostEqual(
+            math.log2(DODECAHEDRON_VERTICES), metrics["von_neumann_entropy"], places=4
+        )
 
-    def test_quantum_solver_configured_capacity_is_monotonic_by_power_scale(self) -> None:
+    def test_quantum_solver_configured_capacity_is_monotonic_by_power_scale(
+        self,
+    ) -> None:
         solver = DodecahedralQuantumSolver(configured_capacity_ehs=10.0)
         previous_hashrate = -math.inf
         for scale in [0.1, 0.5, 1.0, 2.5, 10.0]:
@@ -206,15 +248,22 @@ class MiningPropertyAndIntegrationTests(unittest.TestCase):
         row_norms = np.linalg.norm(solver.basis_states, axis=1)
         self.assertTrue(np.isfinite(solver.basis_states).all())
         self.assertTrue(np.allclose(row_norms, 1.0, atol=1e-12))
-        self.assertEqual(DODECAHEDRON_VERTICES, len({tuple(np.round(row.real, 12)) for row in solver.basis_states}))
+        self.assertEqual(
+            DODECAHEDRON_VERTICES,
+            len({tuple(np.round(row.real, 12)) for row in solver.basis_states}),
+        )
 
     def test_entropy_property_is_bounded_for_random_complex_amplitudes(self) -> None:
         solver = DodecahedralQuantumSolver()
         rng = random.Random(2026)
 
         for _ in range(100):
-            real = np.array([rng.uniform(-1.0, 1.0) for _ in range(DODECAHEDRON_VERTICES)])
-            imag = np.array([rng.uniform(-1.0, 1.0) for _ in range(DODECAHEDRON_VERTICES)])
+            real = np.array(
+                [rng.uniform(-1.0, 1.0) for _ in range(DODECAHEDRON_VERTICES)]
+            )
+            imag = np.array(
+                [rng.uniform(-1.0, 1.0) for _ in range(DODECAHEDRON_VERTICES)]
+            )
             amplitudes = real + 1j * imag
             entropy = solver.calculate_integrated_entropy(amplitudes)
             self.assertGreaterEqual(entropy, 0.0)
@@ -229,7 +278,9 @@ class MiningPropertyAndIntegrationTests(unittest.TestCase):
 
         solver = asyncio.run(run_case())
 
-        self.assertEqual([(0, 0), (10, 19), (100, 149)], solver.current_config["nonce_ranges"])
+        self.assertEqual(
+            [(0, 0), (10, 19), (100, 149)], solver.current_config["nonce_ranges"]
+        )
         self.assertEqual(61, solver.current_config["search_space_size"])
         for basis_index in range(DODECAHEDRON_VERTICES):
             nonce = solver._project_index_to_nonce(basis_index)
@@ -253,7 +304,9 @@ class MiningPropertyAndIntegrationTests(unittest.TestCase):
         self.assertGreater(metrics["last_solve_iterations"], 0)
         self.assertIsNone(metrics["last_error"])
 
-    def test_connect_search_submit_smoke_uses_validation_before_accounting(self) -> None:
+    def test_connect_search_submit_smoke_uses_validation_before_accounting(
+        self,
+    ) -> None:
         async def run_smoke() -> dict[str, object]:
             pool_manager = PoolManager()
             active_pool = await pool_manager.get_best_pool()
@@ -262,7 +315,9 @@ class MiningPropertyAndIntegrationTests(unittest.TestCase):
             await solver.configure_search(job.target, [(0, 2**32 - 1)])
             nonce = await solver.solve(max_iterations=25, timeout=5.0)
             assert nonce is not None
-            result = active_pool.validate_and_record_share(job, nonce, "00" * job.extranonce2_size)
+            result = active_pool.validate_and_record_share(
+                job, nonce, "00" * job.extranonce2_size
+            )
             payload = {
                 "connected": active_pool.is_connected,
                 "authenticated": active_pool.is_authenticated,
@@ -298,7 +353,9 @@ class MiningPropertyAndIntegrationTests(unittest.TestCase):
                 return None
 
             async def subscribe_and_authorize(self):
-                return SimpleNamespace(extranonce1="abc123", extranonce2_size=8, authorized=True)
+                return SimpleNamespace(
+                    extranonce1="abc123", extranonce2_size=8, authorized=True
+                )
 
             async def close(self):
                 self.closed = True
@@ -312,7 +369,9 @@ class MiningPropertyAndIntegrationTests(unittest.TestCase):
                 stratum_version=1,
             )
             with patch.dict(os.environ, {"HYBA_ENABLE_LIVE_STRATUM": "1"}, clear=False):
-                with patch("pythia_mining.stratum_client.LiveStratumSession", FakeLiveSession):
+                with patch(
+                    "pythia_mining.stratum_client.LiveStratumSession", FakeLiveSession
+                ):
                     connected = await client.connect()
             await client.disconnect()
             return connected, client
@@ -348,14 +407,18 @@ class MiningPropertyAndIntegrationTests(unittest.TestCase):
                 stratum_version=2,
             )
             with patch.dict(os.environ, {"HYBA_ENABLE_LIVE_STRATUM": "1"}, clear=False):
-                with patch("pythia_mining.stratum_client.LiveStratumV2Session", FakeV2Session):
+                with patch(
+                    "pythia_mining.stratum_client.LiveStratumV2Session", FakeV2Session
+                ):
                     connected = await client.connect()
             authenticated = client.is_authenticated
             connected_state = client.connection_state
             await client.disconnect()
             return connected, authenticated, connected_state, client.connection_state
 
-        connected, authenticated, connected_state, disconnected_state = asyncio.run(run_case())
+        connected, authenticated, connected_state, disconnected_state = asyncio.run(
+            run_case()
+        )
 
         self.assertTrue(connected)
         self.assertTrue(authenticated)
@@ -370,7 +433,9 @@ class MiningPropertyAndIntegrationTests(unittest.TestCase):
                 start = rng.randint(0, 1_000_000)
                 end = start + rng.randint(0, 500)
                 target = rng.randint(1, 2**224)
-                await solver.configure_search(target=target, nonce_ranges=[(start, end)])
+                await solver.configure_search(
+                    target=target, nonce_ranges=[(start, end)]
+                )
                 nonce = await solver.solve(max_iterations=25, timeout=5.0)
                 self.assertIsInstance(nonce, int)
                 self.assertGreaterEqual(nonce, start)
@@ -394,8 +459,12 @@ class MiningPropertyAndIntegrationTests(unittest.TestCase):
 
     def test_validation_primitives_build_80_byte_header_and_target(self) -> None:
         pool_manager = PoolManager()
-        job = pool_manager.get_active_pool().inject_dev_fixture_target_job(difficulty=1.0)
-        validation = validate_share(job, nonce=0, extranonce2="00" * job.extranonce2_size)
+        job = pool_manager.get_active_pool().inject_dev_fixture_target_job(
+            difficulty=1.0
+        )
+        validation = validate_share(
+            job, nonce=0, extranonce2="00" * job.extranonce2_size
+        )
         header = bytes.fromhex(validation.header_hex)
         self.assertEqual(80, len(header))
         self.assertEqual(header, build_block_header(job, validation.merkle_root, 0))
@@ -419,7 +488,12 @@ class AdversarialValidationTests(unittest.TestCase):
         for difficulty in [-1, 0]:
             with self.assertRaises(ValidationError):
                 PredictRequest(state={"networkDifficulty": difficulty})
-        self.assertEqual(7_234_567_890_123, PredictRequest(state={"networkDifficulty": 7_234_567_890_123}).state.networkDifficulty)
+        self.assertEqual(
+            7_234_567_890_123,
+            PredictRequest(
+                state={"networkDifficulty": 7_234_567_890_123}
+            ).state.networkDifficulty,
+        )
 
     def test_solver_rejects_invalid_targets_and_nonce_ranges(self) -> None:
         async def run_cases() -> None:
@@ -446,11 +520,14 @@ class AdversarialValidationTests(unittest.TestCase):
 
         asyncio.run(run_case())
 
-    def test_production_requires_external_pool_configuration_and_blocks_fixtures(self) -> None:
+    def test_production_requires_external_pool_configuration_and_blocks_fixtures(
+        self,
+    ) -> None:
         clean_env = {
             key: value
             for key, value in os.environ.items()
-            if not key.startswith("HYBA_POOL_") and key not in {"NODE_ENV", "HYBA_ENV", "HYBA_ALLOW_DEV_FIXTURES"}
+            if not key.startswith("HYBA_POOL_")
+            and key not in {"NODE_ENV", "HYBA_ENV", "HYBA_ALLOW_DEV_FIXTURES"}
         }
         with patch.dict(os.environ, clean_env, clear=True):
             os.environ["NODE_ENV"] = "production"

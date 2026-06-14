@@ -68,9 +68,26 @@ ENDPOINTS: list[dict[str, Any]] = [
     {"method": "POST", "path": "/api/pulvini/execute", "body": {}},
 ]
 ADVERSARIAL_ENDPOINTS: list[dict[str, Any]] = [
-    {"method": "POST", "path": "/api/mining/power", "body": {"scale": -1}, "expected_status": 422, "auth": True},
-    {"method": "POST", "path": "/api/mining/power", "body": {"scale": 10_000}, "expected_status": 422, "auth": True},
-    {"method": "POST", "path": "/api/security/shield", "body": {"strength": 2}, "expected_status": 422},
+    {
+        "method": "POST",
+        "path": "/api/mining/power",
+        "body": {"scale": -1},
+        "expected_status": 422,
+        "auth": True,
+    },
+    {
+        "method": "POST",
+        "path": "/api/mining/power",
+        "body": {"scale": 10_000},
+        "expected_status": 422,
+        "auth": True,
+    },
+    {
+        "method": "POST",
+        "path": "/api/security/shield",
+        "body": {"strength": 2},
+        "expected_status": 422,
+    },
     {
         "method": "POST",
         "path": "/api/predict",
@@ -88,7 +105,10 @@ def request_json(
     token: str | None = None,
 ) -> tuple[int, dict[str, Any]]:
     payload = None if body is None else json.dumps(body).encode("utf-8")
-    headers = {"Content-Type": "application/json", "x-request-id": f"e2e-{time.time_ns()}"}
+    headers = {
+        "Content-Type": "application/json",
+        "x-request-id": f"e2e-{time.time_ns()}",
+    }
     if token:
         headers["Authorization"] = f"Bearer {token}"
     request = Request(f"{base_url}{path}", data=payload, method=method, headers=headers)
@@ -113,11 +133,18 @@ def wait_for_ready(base_url: str, timeout_seconds: float) -> None:
         except (ConnectionError, TimeoutError, URLError, json.JSONDecodeError) as exc:
             last_error = str(exc)
         time.sleep(0.25)
-    raise RuntimeError(f"FastAPI backend did not become ready within {timeout_seconds}s: {last_error}")
+    raise RuntimeError(
+        f"FastAPI backend did not become ready within {timeout_seconds}s: {last_error}"
+    )
 
 
 def login_operator(base_url: str) -> str:
-    status, payload = request_json(base_url, "POST", "/api/auth/login", {"username": "operator", "password": "operator"})
+    status, payload = request_json(
+        base_url,
+        "POST",
+        "/api/auth/login",
+        {"username": "operator", "password": "operator"},
+    )
     if status != 200 or not payload.get("token"):
         raise RuntimeError(f"operator login failed: status={status} payload={payload}")
     return str(payload["token"])
@@ -141,7 +168,13 @@ def validate_substrate(payload: dict[str, Any]) -> list[str]:
 
 def validate_endpoint(path: str, payload: dict[str, Any]) -> list[str]:
     failures: list[str] = []
-    if path in {"/health", "/api/health", "/api/health/ready", "/api/health/readiness", "/api/substrate"}:
+    if path in {
+        "/health",
+        "/api/health",
+        "/api/health/ready",
+        "/api/health/readiness",
+        "/api/substrate",
+    }:
         failures.extend(validate_substrate(payload))
     if path == "/health" and payload.get("status") != "ok":
         failures.append("/health did not return status=ok")
@@ -153,7 +186,9 @@ def validate_endpoint(path: str, payload: dict[str, Any]) -> list[str]:
             failures.append("Pulvini execution did not return both expected operations")
         diffusion_norm = operations[0].get("diffusion_norm") if operations else None
         if diffusion_norm is None or abs(float(diffusion_norm) - 1.0) > 1e-9:
-            failures.append(f"Pulvini diffusion_norm is not normalized: {diffusion_norm}")
+            failures.append(
+                f"Pulvini diffusion_norm is not normalized: {diffusion_norm}"
+            )
     if path == "/api/mining/stats" and "summary" not in payload:
         failures.append("mining stats response is missing summary")
     if path == "/api/mining/status":
@@ -174,7 +209,9 @@ async def run_mining_connect_search_submit_smoke() -> tuple[dict[str, Any], list
     failures: list[str] = []
     pool_manager = PoolManager()
     active_pool = await pool_manager.get_best_pool()
-    job = active_pool.inject_dev_fixture_target_job(difficulty=active_pool.current_difficulty)
+    job = active_pool.inject_dev_fixture_target_job(
+        difficulty=active_pool.current_difficulty
+    )
     solver = DodecahedralQuantumSolver()
     await solver.configure_search(job.target, [(0, 2**32 - 1)])
     nonce = await solver.solve(max_iterations=25, timeout=5.0)
@@ -211,7 +248,9 @@ async def run_mining_connect_search_submit_smoke() -> tuple[dict[str, Any], list
     return report, failures
 
 
-def run_adversarial_checks(base_url: str, token: str) -> tuple[list[dict[str, Any]], list[str]]:
+def run_adversarial_checks(
+    base_url: str, token: str
+) -> tuple[list[dict[str, Any]], list[str]]:
     results: list[dict[str, Any]] = []
     failures: list[str] = []
     for endpoint in ADVERSARIAL_ENDPOINTS:
@@ -234,7 +273,9 @@ def run_adversarial_checks(base_url: str, token: str) -> tuple[list[dict[str, An
             }
         )
         if not passed:
-            failures.append(f"{endpoint['path']} expected {endpoint['expected_status']} got {status}")
+            failures.append(
+                f"{endpoint['path']} expected {endpoint['expected_status']} got {status}"
+            )
     return results, failures
 
 
@@ -242,14 +283,22 @@ def run(args: argparse.Namespace) -> int:
     base_url = f"http://{args.host}:{args.port}"
     env = os.environ.copy()
     existing_pythonpath = env.get("PYTHONPATH")
-    env["PYTHONPATH"] = str(PYTHON_BACKEND) if not existing_pythonpath else f"{PYTHON_BACKEND}{os.pathsep}{existing_pythonpath}"
+    env["PYTHONPATH"] = (
+        str(PYTHON_BACKEND)
+        if not existing_pythonpath
+        else f"{PYTHON_BACKEND}{os.pathsep}{existing_pythonpath}"
+    )
     env.setdefault("JWT_SECRET", "e2e-jwt-secret")
     operator_hash = hashlib.sha256(b"operator").hexdigest()
-    env.setdefault("HYBA_OPERATOR_CREDENTIALS", f"operator:{operator_hash}:mining_operator")
+    env.setdefault(
+        "HYBA_OPERATOR_CREDENTIALS", f"operator:{operator_hash}:mining_operator"
+    )
     env.setdefault("HYBA_ALLOW_DEV_FIXTURES", "true")
     env.setdefault("HYBA_ENABLE_LIVE_STRATUM", "false")
 
-    log_file = tempfile.NamedTemporaryFile("w+", prefix="hyba-fastapi-e2e-", suffix=".log", delete=False)
+    log_file = tempfile.NamedTemporaryFile(
+        "w+", prefix="hyba-fastapi-e2e-", suffix=".log", delete=False
+    )
     process = subprocess.Popen(
         [
             sys.executable,
@@ -283,9 +332,13 @@ def run(args: argparse.Namespace) -> int:
         token = login_operator(base_url)
         report["startup"]["operator_authenticated"] = True
 
-        mining_report, mining_failures = asyncio.run(run_mining_connect_search_submit_smoke())
+        mining_report, mining_failures = asyncio.run(
+            run_mining_connect_search_submit_smoke()
+        )
         report["mining_connect_search_submit"] = mining_report
-        report["validation_failures"].extend(f"mining smoke: {failure}" for failure in mining_failures)
+        report["validation_failures"].extend(
+            f"mining smoke: {failure}" for failure in mining_failures
+        )
 
         for endpoint in ENDPOINTS:
             started = time.perf_counter()
@@ -309,17 +362,27 @@ def run(args: argparse.Namespace) -> int:
                     "response_keys": sorted(payload.keys()),
                 }
             )
-            report["validation_failures"].extend(f"{endpoint['path']}: {failure}" for failure in failures)
+            report["validation_failures"].extend(
+                f"{endpoint['path']}: {failure}" for failure in failures
+            )
 
-        adversarial_results, adversarial_failures = run_adversarial_checks(base_url, token)
+        adversarial_results, adversarial_failures = run_adversarial_checks(
+            base_url, token
+        )
         report["adversarial"] = adversarial_results
-        report["validation_failures"].extend(f"adversarial: {failure}" for failure in adversarial_failures)
+        report["validation_failures"].extend(
+            f"adversarial: {failure}" for failure in adversarial_failures
+        )
 
         status, health = request_json(base_url, "GET", "/api/health")
         telemetry = health.get("telemetry", {})
         if status != 200:
-            report["validation_failures"].append(f"telemetry health status was {status}")
-        if telemetry.get("requests_total", 0) < len(ENDPOINTS) + len(ADVERSARIAL_ENDPOINTS):
+            report["validation_failures"].append(
+                f"telemetry health status was {status}"
+            )
+        if telemetry.get("requests_total", 0) < len(ENDPOINTS) + len(
+            ADVERSARIAL_ENDPOINTS
+        ):
             report["validation_failures"].append(
                 "telemetry requests_total too low: "
                 f"{telemetry.get('requests_total')} < {len(ENDPOINTS) + len(ADVERSARIAL_ENDPOINTS)}"
@@ -348,7 +411,9 @@ def run(args: argparse.Namespace) -> int:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Run HYBA FastAPI backend E2E validation")
+    parser = argparse.ArgumentParser(
+        description="Run HYBA FastAPI backend E2E validation"
+    )
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=8000)
     parser.add_argument("--timeout", type=float, default=20.0)

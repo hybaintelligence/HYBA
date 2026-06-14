@@ -43,14 +43,16 @@ function createTestApp(): express.Application {
   // Metrics endpoint (Prometheus-compatible)
   app.get("/bridge/metrics", (_req, res) => {
     res.setHeader("content-type", "text/plain; charset=utf-8");
-    res.send([
-      "# HELP hyba_bridge_requests_total Total requests processed",
-      "# TYPE hyba_bridge_requests_total counter",
-      "hyba_bridge_requests_total 0",
-      "# HELP hyba_bridge_uptime_seconds Uptime in seconds",
-      "# TYPE hyba_bridge_uptime_seconds counter",
-      "hyba_bridge_uptime_seconds 42",
-    ].join("\n"));
+    res.send(
+      [
+        "# HELP hyba_bridge_requests_total Total requests processed",
+        "# TYPE hyba_bridge_requests_total counter",
+        "hyba_bridge_requests_total 0",
+        "# HELP hyba_bridge_uptime_seconds Uptime in seconds",
+        "# TYPE hyba_bridge_uptime_seconds counter",
+        "hyba_bridge_uptime_seconds 42",
+      ].join("\n"),
+    );
   });
 
   // Proxy endpoint
@@ -212,11 +214,7 @@ describe("HYBA Secure Bridge", () => {
   // ── Backend URL Configuration ─────────────────────────────────────
 
   it("Backend URL should be valid HTTP(S)", () => {
-    const validUrls = [
-      "http://127.0.0.1:3001",
-      "https://backend.hyba.ai",
-      "http://localhost:8000",
-    ];
+    const validUrls = ["http://127.0.0.1:3001", "https://backend.hyba.ai", "http://localhost:8000"];
     for (const url of validUrls) {
       const parsed = new URL(url);
       expect(["http:", "https:"]).toContain(parsed.protocol);
@@ -224,11 +222,7 @@ describe("HYBA Secure Bridge", () => {
   });
 
   it("Backend URL should reject invalid protocols", () => {
-    const invalidUrls = [
-      "ftp://backend.hyba.ai",
-      "file:///path",
-      "ws://localhost:3001",
-    ];
+    const invalidUrls = ["ftp://backend.hyba.ai", "file:///path", "ws://localhost:3001"];
     for (const url of invalidUrls) {
       // new URL() parses all valid URLs — the normalizeBackendUrl guard rejects non-http(s) protocols
       const parsed = new URL(url);

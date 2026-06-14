@@ -61,15 +61,19 @@ power_scales = st.floats(
 )
 
 
-
-def test_power_scale_request_accepts_frontend_phi_tiers_and_defaults_to_1ehs_cap() -> None:
+def test_power_scale_request_accepts_frontend_phi_tiers_and_defaults_to_1ehs_cap() -> (
+    None
+):
     request = PowerScaleRequest(scale=1.0, phi_tier=12)
     composition = _phi_tier_composition(request.phi_tier)
 
     assert request.phi_tier in PHI_TIERS
     assert composition["label"] == "10^12"
     assert composition["hashrate_cap_ehs"] == API_HASHRATE_CAP_EHS
-    assert composition["memory_compression_contract"] == "pulvini_phi_compressed_pre_search"
+    assert (
+        composition["memory_compression_contract"]
+        == "pulvini_phi_compressed_pre_search"
+    )
 
 
 def test_power_scale_request_rejects_unknown_phi_tier() -> None:
@@ -116,16 +120,25 @@ def test_api_hashrate_clamp_never_exceeds_one_ehs(raw_hashrate: float) -> None:
 
 @given(base_capacity=finite_nonnegative, scale=power_scales)
 @settings(max_examples=100)
-def test_power_scaled_api_hashrate_never_exceeds_one_ehs(base_capacity: float, scale: float) -> None:
+def test_power_scaled_api_hashrate_never_exceeds_one_ehs(
+    base_capacity: float, scale: float
+) -> None:
     effective = _effective_hashrate_ehs(base_capacity, scale)
 
     assert effective is not None
     assert 0.0 <= effective <= API_HASHRATE_CAP_EHS
 
 
-@given(configured_capacity=st.floats(min_value=1e-9, max_value=10_000.0, allow_nan=False, allow_infinity=False), scale=power_scales)
+@given(
+    configured_capacity=st.floats(
+        min_value=1e-9, max_value=10_000.0, allow_nan=False, allow_infinity=False
+    ),
+    scale=power_scales,
+)
 @settings(max_examples=100)
-def test_solver_metrics_never_exceed_one_ehs(configured_capacity: float, scale: float) -> None:
+def test_solver_metrics_never_exceed_one_ehs(
+    configured_capacity: float, scale: float
+) -> None:
     solver = DodecahedralQuantumSolver(configured_capacity_ehs=configured_capacity)
     solver.set_power_scale(scale)
 
@@ -138,7 +151,9 @@ def test_solver_metrics_never_exceed_one_ehs(configured_capacity: float, scale: 
 
 @given(configured_capacity=above_cap)
 @settings(max_examples=100)
-def test_solver_clamps_over_cap_configured_capacity_for_legacy_callers(configured_capacity: float) -> None:
+def test_solver_clamps_over_cap_configured_capacity_for_legacy_callers(
+    configured_capacity: float,
+) -> None:
     solver = DodecahedralQuantumSolver(configured_capacity_ehs=configured_capacity)
 
     assert solver.configured_capacity_ehs == SOLVER_HASHRATE_CAP_EHS

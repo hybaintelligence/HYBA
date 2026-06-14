@@ -68,7 +68,9 @@ def test_property_pythia_search_is_deterministic_for_same_target_and_range(
         [(0, MAX_UINT32_NONCE + 1)],
     ],
 )
-def test_property_pythia_rejects_invalid_nonce_ranges(nonce_ranges: list[tuple[int, int]]) -> None:
+def test_property_pythia_rejects_invalid_nonce_ranges(
+    nonce_ranges: list[tuple[int, int]],
+) -> None:
     """Capability invariant: the solver must fail closed on invalid search spaces."""
 
     async def _run() -> None:
@@ -80,7 +82,9 @@ def test_property_pythia_rejects_invalid_nonce_ranges(nonce_ranges: list[tuple[i
 
 
 @pytest.mark.parametrize("configured_capacity", [0.01, 0.1, 1.0, 10.0, 10_000.0])
-def test_property_pulvini_capacity_never_exceeds_governance_cap(configured_capacity: float) -> None:
+def test_property_pulvini_capacity_never_exceeds_governance_cap(
+    configured_capacity: float,
+) -> None:
     """Capability invariant: configured hashrate estimates remain capped at the PULVINI boundary."""
     solver = DodecahedralQuantumSolver(configured_capacity_ehs=configured_capacity)
     assert solver.configured_capacity_ehs <= PULVINI_HASHRATE_CAP_EHS
@@ -102,7 +106,9 @@ def test_property_unconfigured_solver_does_not_fabricate_hashrate() -> None:
     assert metrics["telemetry_source"] == "derived_runtime_state"
 
 
-def test_property_benchmark_projection_is_not_reported_as_measured_performance() -> None:
+def test_property_benchmark_projection_is_not_reported_as_measured_performance() -> (
+    None
+):
     """Capability invariant: projection-only benchmark records cannot masquerade as measured mining performance."""
     projection = benchmark_vs_asic(measured_hashes_per_second=None)
     assert projection["benchmark_mode"] == "projection_only"

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Collect public Bitcoin block metadata from a Blockstream-compatible API."""
+
 from __future__ import annotations
 
 import argparse
@@ -12,6 +13,7 @@ from pathlib import Path
 from typing import Any, List, Optional
 
 DEFAULT_API = "https://blockstream.info/api"
+
 
 @dataclass(frozen=True)
 class BlockRecord:
@@ -27,19 +29,24 @@ class BlockRecord:
     merkle_root: str
     previous_block_hash: str
 
+
 def _get_text(url: str, timeout: int = 20) -> str:
     req = urllib.request.Request(url, headers={"User-Agent": "HYBA-Phi-Collector/1.0"})
     with urllib.request.urlopen(req, timeout=timeout) as response:
         return response.read().decode("utf-8").strip()
 
+
 def _get_json(url: str, timeout: int = 20) -> Any:
     return json.loads(_get_text(url, timeout=timeout))
+
 
 def api_base(value: str) -> str:
     return value.rstrip("/")
 
+
 def tip_height(api: str) -> int:
     return int(_get_text(f"{api_base(api)}/blocks/tip/height"))
+
 
 def block_at_height(api: str, height: int) -> BlockRecord:
     base = api_base(api)
@@ -59,7 +66,10 @@ def block_at_height(api: str, height: int) -> BlockRecord:
         previous_block_hash=str(data.get("previousblockhash", "")),
     )
 
-def collect(api: str, count: int = 200, start_height: Optional[int] = None, delay: float = 0.1) -> List[BlockRecord]:
+
+def collect(
+    api: str, count: int = 200, start_height: Optional[int] = None, delay: float = 0.1
+) -> List[BlockRecord]:
     if count < 1:
         raise ValueError("count must be at least 1")
     start = tip_height(api) if start_height is None else int(start_height)
@@ -72,6 +82,7 @@ def collect(api: str, count: int = 200, start_height: Optional[int] = None, dela
             time.sleep(delay)
     return rows
 
+
 def write_csv(path: Path, rows: List[BlockRecord]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", newline="", encoding="utf-8") as handle:
@@ -79,6 +90,7 @@ def write_csv(path: Path, rows: List[BlockRecord]) -> None:
         writer.writeheader()
         for row in rows:
             writer.writerow(asdict(row))
+
 
 def main() -> int:
     parser = argparse.ArgumentParser()
@@ -90,8 +102,19 @@ def main() -> int:
     args = parser.parse_args()
     rows = collect(args.api, args.blocks, args.start_height, args.delay)
     write_csv(Path(args.out), rows)
-    print(json.dumps({"rows": len(rows), "out": args.out, "first_height": rows[0].height, "last_height": rows[-1].height}, indent=2))
+    print(
+        json.dumps(
+            {
+                "rows": len(rows),
+                "out": args.out,
+                "first_height": rows[0].height,
+                "last_height": rows[-1].height,
+            },
+            indent=2,
+        )
+    )
     return 0
+
 
 if __name__ == "__main__":
     raise SystemExit(main())

@@ -25,7 +25,7 @@ describe("production JWT secret validation", () => {
       fc.property(fc.string({ minLength: 0, maxLength: 128 }), (secret) => {
         const expected = Buffer.byteLength(secret, "utf8") >= MIN_PRODUCTION_JWT_SECRET_BYTES;
         expect(validateProductionJwtSecret(secret).ok).toBe(expected);
-      })
+      }),
     );
   });
 });

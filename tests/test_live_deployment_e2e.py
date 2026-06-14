@@ -17,7 +17,11 @@ if str(BACKEND) not in sys.path:
 from pythia_mining.pulvini_compressed_solver import PulviniCompressedQuantumSolver  # noqa: E402
 from pythia_mining.pulvini_overlay import PulviniOverlayConcentrator  # noqa: E402
 from pythia_mining.pulvini_propagation import SharePropagationController  # noqa: E402
-from pythia_mining.stratum_client import MiningJob, PoolManager, ShareResult, StratumClient  # noqa: E402
+from pythia_mining.stratum_client import (
+    MiningJob,
+    PoolManager,
+    StratumClient,
+)  # noqa: E402
 
 
 class InterleavedHandshakeTransport:
@@ -25,23 +29,27 @@ class InterleavedHandshakeTransport:
         self.sent: list[str] = []
         self.closed = False
         self.responses = [
-            json.dumps({"id": None, "method": "mining.set_difficulty", "params": [8.0]}),
+            json.dumps(
+                {"id": None, "method": "mining.set_difficulty", "params": [8.0]}
+            ),
             json.dumps({"id": 1, "result": [[], "0a0b", 4], "error": None}),
-            json.dumps({
-                "id": None,
-                "method": "mining.notify",
-                "params": [
-                    "preauth-job",
-                    "00" * 32,
-                    "0100000001",
-                    "ffffffff",
-                    [],
-                    "20000000",
-                    "1d00ffff",
-                    "6578ab4e",
-                    True,
-                ],
-            }),
+            json.dumps(
+                {
+                    "id": None,
+                    "method": "mining.notify",
+                    "params": [
+                        "preauth-job",
+                        "00" * 32,
+                        "0100000001",
+                        "ffffffff",
+                        [],
+                        "20000000",
+                        "1d00ffff",
+                        "6578ab4e",
+                        True,
+                    ],
+                }
+            ),
             json.dumps({"id": 2, "result": True, "error": None}),
         ]
 
@@ -88,12 +96,16 @@ class LiveDeploymentEndToEndTests(unittest.TestCase):
                         (),
                         {
                             "submit_share": staticmethod(
-                                lambda **kwargs: _accepted_submit_result(kwargs["job_id"])
+                                lambda **kwargs: _accepted_submit_result(
+                                    kwargs["job_id"]
+                                )
                             )
                         },
                     )()
                     client.connection_state = "AUTHENTICATED"
-                    overlay = PulviniOverlayConcentrator(worker_name="PULVINI.singularity")
+                    overlay = PulviniOverlayConcentrator(
+                        worker_name="PULVINI.singularity"
+                    )
                     propagation = SharePropagationController(overlay.manifold)
                     solver = PulviniCompressedQuantumSolver(configured_capacity_ehs=1.0)
                     job = MiningJob(
@@ -109,7 +121,9 @@ class LiveDeploymentEndToEndTests(unittest.TestCase):
                         extranonce2_size=client.extranonce2_size,
                     )
                     overlay.register_pool_job(job, pool_name=client.pool_name)
-                    await solver.configure_compressed_search(job.target, overlay.nonce_plan)
+                    await solver.configure_compressed_search(
+                        job.target, overlay.nonce_plan
+                    )
                     nonce = await solver.solve(max_iterations=16, timeout=5.0)
                     self.assertIsNotNone(nonce)
                     assert nonce is not None
@@ -123,7 +137,9 @@ class LiveDeploymentEndToEndTests(unittest.TestCase):
                         extranonce2=assignment.extranonce2,
                         submitter=client.submit_validated_share,
                     )
-                    overlay.record_share_outcome(assignment.node_id, nonce, result.share_result)
+                    overlay.record_share_outcome(
+                        assignment.node_id, nonce, result.share_result
+                    )
                     return {
                         "accepted": result.share_result.accepted,
                         "status": client.get_status(),
@@ -142,11 +158,20 @@ class LiveDeploymentEndToEndTests(unittest.TestCase):
         self.assertLessEqual(outcome["solver"]["hashrate_ehs"], 1.0)
         self.assertTrue(outcome["solver"]["complete_nonce_coverage"])
 
-    def test_pool_manager_uses_dict_key_when_connecting_degraded_best_pool(self) -> None:
+    def test_pool_manager_uses_dict_key_when_connecting_degraded_best_pool(
+        self,
+    ) -> None:
         async def run_case() -> str | None:
-            manager = PoolManager({
-                "alpha": {"name": "Alpha", "url": "stratum+tcp://alpha.example:3333", "username": "worker", "password": "x"}
-            })
+            manager = PoolManager(
+                {
+                    "alpha": {
+                        "name": "Alpha",
+                        "url": "stratum+tcp://alpha.example:3333",
+                        "username": "worker",
+                        "password": "x",
+                    }
+                }
+            )
             pool = manager.pools["alpha"]
             pool.is_connected = False
             pool.connection_failures = 1
@@ -195,7 +220,11 @@ def _accepted_submit_result(job_id: str):
     from pythia_mining.live_stratum_session import SubmitResult
 
     async def inner(**kwargs):
-        return SubmitResult(accepted=True, error=None, response={"id": 3, "result": True, "error": None, "job_id": job_id})
+        return SubmitResult(
+            accepted=True,
+            error=None,
+            response={"id": 3, "result": True, "error": None, "job_id": job_id},
+        )
 
     return inner()
 

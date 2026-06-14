@@ -166,7 +166,9 @@ class TestPythagorasOrchestrator(unittest.TestCase):
     def test_process_with_vector(self):
         t = np.random.randn(64).astype(np.complex128)
         result = self.orch.process(t, skip_tda=True)
-        self.assertIn(result.status, ["phi_resonance_achieved", "degraded_preservation"])
+        self.assertIn(
+            result.status, ["phi_resonance_achieved", "degraded_preservation"]
+        )
         self.assertGreater(result.compression_ratio, 0)
 
     def test_process_with_matrix(self):
@@ -205,7 +207,9 @@ class TestRemezApproximator(unittest.TestCase):
         self.assertLess(error, 1e-6)
 
     def test_approximate_linear(self):
-        coeffs, error, _ = self.remez.approximate(lambda x: 2.0 * x + 1.0, (0, 1), degree=1)
+        coeffs, error, _ = self.remez.approximate(
+            lambda x: 2.0 * x + 1.0, (0, 1), degree=1
+        )
         self.assertLess(error, 1e-6)
 
     def test_approximate_phi_function(self):
@@ -272,7 +276,6 @@ class TestMatrixChecks(unittest.TestCase):
         self.checker = MatrixInvariantChecker()
 
     def test_square_matrix_detected(self):
-        from matrix_checks import MatrixCheck
 
         m = np.eye(3)
         result = self.checker.check(m)

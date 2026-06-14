@@ -19,41 +19,39 @@ if str(BACKEND) not in sys.path:
     sys.path.insert(0, str(BACKEND))
 
 from pythia_mining.pulvini_grover_certificate import (
-    GroverScopeCertificate,
     grover_efficiency_report,
     grover_scope_certificate,
 )
 from pythia_mining.pulvini_coverage_certificate import (
-    CoverageCertificate,
     coverage_certificate,
     lane_coverage_report,
     verify_automorphism_preserves_coverage,
     verify_lane_coverages,
 )
 from pythia_mining.pulvini_structural_certificate import (
-    StructuralCertificate,
     d_i_analysis,
     structural_certificate,
     verify_adjacency_preserved_for_all,
     verify_graph_connectivity,
 )
 from pythia_mining.pulvini_bures_variational import (
-    BuresVariationalCertificate,
     bures_metric_tangent_projection,
     bures_variational_certificate,
     verify_bures_variational_gate,
 )
 from pythia_mining.pulvini_memory_compression_proof import (
-    MemoryCompressionProof,
     phi_folding_mathematical_proof,
     prove_lane_surface_coverage,
     prove_phi_folding_reversibility,
     verify_memory_compression_gate,
 )
-from pythia_mining.pulvini_group import a5_representation_certificate, coxeter_group_certificate, compute_graph_automorphisms
+from pythia_mining.pulvini_group import (
+    a5_representation_certificate,
+    coxeter_group_certificate,
+    compute_graph_automorphisms,
+)
 from pythia_mining.pulvini_observability import (
     MetricType,
-    ObservabilityCertificate,
     ObservabilityFramework,
     SLOStatus,
     verify_observability_framework,
@@ -144,7 +142,9 @@ class TestCoxeterGroupCertificate(unittest.TestCase):
     def test_coxeter_certificate_embedded_in_a5(self):
         cert = a5_representation_certificate()
         self.assertIn("coxeter_structure", cert.to_dict())
-        self.assertEqual(cert.coxeter_structure["coxeter_group"], "H3 icosahedral Coxeter group")
+        self.assertEqual(
+            cert.coxeter_structure["coxeter_group"], "H3 icosahedral Coxeter group"
+        )
 
 
 class TestA5RepresentationCertificate(unittest.TestCase):
@@ -363,7 +363,7 @@ class TestObservabilityFramework(unittest.TestCase):
         trace = framework.start_trace("test_operation", tags={"component": "test"})
         self.assertIsNotNone(trace.trace_id)
         self.assertIsNotNone(trace.span_id)
-        
+
         ended_trace = framework.end_trace(trace.span_id)
         self.assertIsNotNone(ended_trace.duration_ms)
         self.assertGreater(ended_trace.duration_ms, 0)
@@ -373,7 +373,7 @@ class TestObservabilityFramework(unittest.TestCase):
         framework = ObservabilityFramework()
         framework.record_metric("test", 1.0)
         framework.define_slo("test_slo", 0.95, timedelta(hours=1), 0.97)
-        
+
         cert = framework.get_observability_certificate()
         self.assertTrue(cert.tracing_enabled)
         self.assertTrue(cert.structured_logging_enabled)

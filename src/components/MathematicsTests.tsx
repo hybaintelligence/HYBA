@@ -1,5 +1,14 @@
 import React, { useState } from "react";
-import { Play, CheckCircle, XCircle, Terminal, HelpCircle, ChevronDown, ChevronUp, Loader } from "lucide-react";
+import {
+  Play,
+  CheckCircle,
+  XCircle,
+  Terminal,
+  HelpCircle,
+  ChevronDown,
+  ChevronUp,
+  Loader,
+} from "lucide-react";
 import { TestResultItem } from "../types";
 
 export const MathematicsTests: React.FC = () => {
@@ -27,7 +36,7 @@ export const MathematicsTests: React.FC = () => {
   };
 
   const toggleExpand = (id: string) => {
-    setExpandedId(prev => (prev === id ? null : id));
+    setExpandedId((prev) => (prev === id ? null : id));
   };
 
   return (
@@ -41,10 +50,11 @@ export const MathematicsTests: React.FC = () => {
             </h3>
           </div>
           <p className="text-xs text-[#64748B] mt-1 leading-relaxed">
-            Execute a strict suite of backend numerical proofs validating space normalization, uniform Hadamard entropy bounds, and quadratic Grover scale convergence.
+            Execute a strict suite of backend numerical proofs validating space normalization,
+            uniform Hadamard entropy bounds, and quadratic Grover scale convergence.
           </p>
         </div>
-        
+
         <button
           type="button"
           onClick={runProofs}
@@ -75,9 +85,12 @@ export const MathematicsTests: React.FC = () => {
       {!results && !isRunning && (
         <div className="bg-[#F8FAFC] border border-[#E2E4E9] rounded-xl p-8 text-center flex flex-col items-center justify-center">
           <Terminal className="text-[#94A3B8] w-12 h-12 mb-3" />
-          <p className="text-sm font-mono text-[#1A1A1E] font-medium">SYSTEM COHERENCE VERIFICATION UNTESTED</p>
+          <p className="text-sm font-mono text-[#1A1A1E] font-medium">
+            SYSTEM COHERENCE VERIFICATION UNTESTED
+          </p>
           <p className="text-xs text-[#64748B] mt-1 max-w-md">
-            Click &quot;Run Verification Proofs&quot; to prompt server-side mathematical matrix operations. Tests are executed directly in Node.js to check for phase error tolerances.
+            Click &quot;Run Verification Proofs&quot; to prompt server-side mathematical matrix
+            operations. Tests are executed directly in Node.js to check for phase error tolerances.
           </p>
         </div>
       )}
@@ -88,9 +101,12 @@ export const MathematicsTests: React.FC = () => {
           <div className="relative w-16 h-16 mb-4">
             <div className="absolute inset-0 rounded-full border-4 border-[#E2E4E9] border-t-black animate-spin" />
           </div>
-          <p className="text-sm font-mono text-[#1A1A1E] animate-pulse uppercase tracking-wider">Solving Wave Equations</p>
+          <p className="text-sm font-mono text-[#1A1A1E] animate-pulse uppercase tracking-wider">
+            Solving Wave Equations
+          </p>
           <p className="text-xs text-[#64748B] mt-2 max-w-sm">
-            Applying Kron tensor products, measuring phase coherence coordinates, and computing high-density state transforms.
+            Applying Kron tensor products, measuring phase coherence coordinates, and computing
+            high-density state transforms.
           </p>
         </div>
       )}
@@ -101,10 +117,12 @@ export const MathematicsTests: React.FC = () => {
           {results.map((test) => {
             const isExpanded = expandedId === test.id;
             return (
-              <div 
-                key={test.id} 
+              <div
+                key={test.id}
                 className={`border rounded-lg transition-all duration-200 ${
-                  isExpanded ? "border-[#E2E4E9] bg-[#F8FAFC]" : "border-[#E2E4E9]/60 hover:border-[#E2E4E9] bg-[#F8FAFC]/30"
+                  isExpanded
+                    ? "border-[#E2E4E9] bg-[#F8FAFC]"
+                    : "border-[#E2E4E9]/60 hover:border-[#E2E4E9] bg-[#F8FAFC]/30"
                 }`}
               >
                 {/* HEADER ROW */}
@@ -143,7 +161,6 @@ export const MathematicsTests: React.FC = () => {
                 {/* CONTENT SECTION */}
                 {isExpanded && (
                   <div className="px-4 pb-4 pt-2 border-t border-[#E2E4E9] font-mono text-xs text-[#334155]">
-                    
                     {/* THEOREM BLOCK */}
                     <div className="bg-white border-l-2 border-black rounded p-3 mb-3 border border-[#E2E4E9]">
                       <div className="text-[10px] text-black font-bold uppercase tracking-wider mb-1 flex items-center gap-1">
@@ -172,7 +189,6 @@ export const MathematicsTests: React.FC = () => {
                         ))}
                       </div>
                     </div>
-
                   </div>
                 )}
               </div>

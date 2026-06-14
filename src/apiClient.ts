@@ -27,7 +27,12 @@ export interface SystemMetrics {
   networkDifficulty?: number | null;
   power_scale?: number | null;
   phi_tier?: number | null;
-  phi_tier_composition?: { label?: string; phi_exponent?: number; scale_factor?: number; hashrate_cap_ehs?: number } | null;
+  phi_tier_composition?: {
+    label?: string;
+    phi_exponent?: number;
+    scale_factor?: number;
+    hashrate_cap_ehs?: number;
+  } | null;
   memory_compression_contract?: string | null;
   system_health?: string | null;
 }
@@ -249,7 +254,12 @@ async function parseApiError(response: Response): Promise<HybaApiError> {
     const body = await response.json();
     return new HybaApiError({
       code: body.error || body.detail?.error || "unknown_error",
-      message: body.message || body.detail?.message || body.detail?.detail || body.detail || `HTTP ${response.status}`,
+      message:
+        body.message ||
+        body.detail?.message ||
+        body.detail?.detail ||
+        body.detail ||
+        `HTTP ${response.status}`,
       status: response.status,
       requestId,
       details: body.details || body,
@@ -291,8 +301,15 @@ function calculateDelay(attempt: number, baseDelayMs: number, maxDelayMs: number
   return Math.floor(Math.min(baseDelayMs * Math.pow(2, attempt), maxDelayMs));
 }
 
-async function fetchWithRetry(url: string, options: RequestInit = {}, retryOptions: Partial<RetryOptions> = {}): Promise<Response> {
-  const { maxRetries, baseDelayMs, maxDelayMs, retryOn } = { ...DEFAULT_RETRY_OPTIONS, ...retryOptions };
+async function fetchWithRetry(
+  url: string,
+  options: RequestInit = {},
+  retryOptions: Partial<RetryOptions> = {},
+): Promise<Response> {
+  const { maxRetries, baseDelayMs, maxDelayMs, retryOn } = {
+    ...DEFAULT_RETRY_OPTIONS,
+    ...retryOptions,
+  };
   const interceptedOptions = authInterceptor(options);
   let lastError: Error | null = null;
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
@@ -302,12 +319,12 @@ async function fetchWithRetry(url: string, options: RequestInit = {}, retryOptio
         return response;
       }
       const delay = calculateDelay(attempt, baseDelayMs, maxDelayMs);
-      await new Promise(resolve => setTimeout(resolve, delay));
+      await new Promise((resolve) => setTimeout(resolve, delay));
       lastError = await parseApiError(response);
     } catch (error) {
       if (attempt >= maxRetries) throw error;
       const delay = calculateDelay(attempt, baseDelayMs, maxDelayMs);
-      await new Promise(resolve => setTimeout(resolve, delay));
+      await new Promise((resolve) => setTimeout(resolve, delay));
       lastError = error instanceof Error ? error : new Error(String(error));
     }
   }
@@ -320,19 +337,38 @@ async function get<T>(path: string, retryOptions?: Partial<RetryOptions>): Promi
   return response.json() as Promise<T>;
 }
 
-async function post<T>(path: string, body: unknown, retryOptions?: Partial<RetryOptions>): Promise<T> {
-  const response = await fetchWithRetry(`${BACKEND_URL}${path}`, { method: "POST", body: JSON.stringify(body) }, retryOptions);
+async function post<T>(
+  path: string,
+  body: unknown,
+  retryOptions?: Partial<RetryOptions>,
+): Promise<T> {
+  const response = await fetchWithRetry(
+    `${BACKEND_URL}${path}`,
+    { method: "POST", body: JSON.stringify(body) },
+    retryOptions,
+  );
   if (!response.ok) throw await parseApiError(response);
   return response.json() as Promise<T>;
 }
 
-async function getOptional<T>(path: string, fallback: T, retryOptions?: Partial<RetryOptions>): Promise<T> {
+async function getOptional<T>(
+  path: string,
+  fallback: T,
+  retryOptions?: Partial<RetryOptions>,
+): Promise<T> {
   try {
-    const response = await fetchWithRetry(`${BACKEND_URL}${path}`, { method: "GET" }, { maxRetries: 1, baseDelayMs: 250, ...retryOptions });
+    const response = await fetchWithRetry(
+      `${BACKEND_URL}${path}`,
+      { method: "GET" },
+      { maxRetries: 1, baseDelayMs: 250, ...retryOptions },
+    );
     if (!response.ok) return { ...fallback, http_status: response.status } as T;
     return response.json() as Promise<T>;
   } catch (error) {
-    return { ...fallback, error: error instanceof Error ? error.message : "endpoint_unavailable" } as T;
+    return {
+      ...fallback,
+      error: error instanceof Error ? error.message : "endpoint_unavailable",
+    } as T;
   }
 }
 
@@ -344,11 +380,32 @@ export async function fetchTelemetryData(): Promise<TelemetryData> {
   const start = performance.now();
   const health = await get<HealthResponse>("/health");
   const [consciousness, pools, security] = await Promise.all([
-    getOptional<ConsciousnessResponse>("/ai/consciousness", { status: "unavailable", source: "ai_endpoint_unavailable", consciousness_level: null, phi_resonance: null, integrated_information: null }),
-    getOptional<PoolsResponse>("/mining/pools", { pools: [], summary: { total_pools: 0, active_pools: 0, telemetry_source: "unavailable" } }),
-    getOptional<SecurityStatus>("/security/status", { status: "unavailable", threat_level: null, defense_systems: {}, recent_threats: [] }),
+    getOptional<ConsciousnessResponse>("/ai/consciousness", {
+      status: "unavailable",
+      source: "ai_endpoint_unavailable",
+      consciousness_level: null,
+      phi_resonance: null,
+      integrated_information: null,
+    }),
+    getOptional<PoolsResponse>("/mining/pools", {
+      pools: [],
+      summary: { total_pools: 0, active_pools: 0, telemetry_source: "unavailable" },
+    }),
+    getOptional<SecurityStatus>("/security/status", {
+      status: "unavailable",
+      threat_level: null,
+      defense_systems: {},
+      recent_threats: [],
+    }),
   ]);
-  return { status: "success", latency: performance.now() - start, health, consciousness, pools, security };
+  return {
+    status: "success",
+    latency: performance.now() - start,
+    health,
+    consciousness,
+    pools,
+    security,
+  };
 }
 
 export interface PulviniResult {
@@ -373,12 +430,20 @@ export interface PredictionResult {
   error?: string;
 }
 
-export async function requestPrediction(payload: Record<string, unknown>): Promise<PredictionResult> {
+export async function requestPrediction(
+  payload: Record<string, unknown>,
+): Promise<PredictionResult> {
   return post<PredictionResult>("/predict", payload);
 }
 
-export async function updatePowerScale(scale: number, phiTier = 12): Promise<{ status: string; effective_hashrate_ehs?: number; phi_tier?: number }> {
-  return post<{ status: string; effective_hashrate_ehs?: number; phi_tier?: number }>("/mining/power", { scale, phi_tier: phiTier });
+export async function updatePowerScale(
+  scale: number,
+  phiTier = 12,
+): Promise<{ status: string; effective_hashrate_ehs?: number; phi_tier?: number }> {
+  return post<{ status: string; effective_hashrate_ehs?: number; phi_tier?: number }>(
+    "/mining/power",
+    { scale, phi_tier: phiTier },
+  );
 }
 
 export interface ConnectPoolRequest {
@@ -416,7 +481,11 @@ export async function configurePool(data: ConfigurePoolRequest): Promise<Configu
 
 export async function connectToPool(data: ConnectPoolRequest): Promise<ConnectPoolResponse> {
   assertPulviniHashrateCap(data.capacity_ehs, "capacity_ehs");
-  return post<ConnectPoolResponse>("/mining/connect", { ...data, switch: data.switch ?? true }, { maxRetries: 0 });
+  return post<ConnectPoolResponse>(
+    "/mining/connect",
+    { ...data, switch: data.switch ?? true },
+    { maxRetries: 0 },
+  );
 }
 
 export async function switchPool(data: ConnectPoolRequest): Promise<ConnectPoolResponse> {
@@ -425,7 +494,11 @@ export async function switchPool(data: ConnectPoolRequest): Promise<ConnectPoolR
 }
 
 export async function disconnectFromPool(): Promise<{ status: string; previous_pool?: string }> {
-  return post<{ status: string; previous_pool?: string }>("/mining/disconnect", {}, { maxRetries: 0 });
+  return post<{ status: string; previous_pool?: string }>(
+    "/mining/disconnect",
+    {},
+    { maxRetries: 0 },
+  );
 }
 
 export interface SubmitJobRequest {
@@ -454,7 +527,10 @@ export async function submitJob(data: SubmitJobRequest): Promise<SubmitJobRespon
   return post<SubmitJobResponse>("/mining/submit", data);
 }
 
-export async function loginApi(credentials: { username: string; password: string }): Promise<AuthResponse> {
+export async function loginApi(credentials: {
+  username: string;
+  password: string;
+}): Promise<AuthResponse> {
   const options = authInterceptor({ method: "POST", body: JSON.stringify(credentials) });
   const response = await fetch(`${AUTH_URL}/api/auth/login`, options);
   if (!response.ok) throw await parseApiError(response);
@@ -463,7 +539,10 @@ export async function loginApi(credentials: { username: string; password: string
   return data;
 }
 
-export async function registerApi(userData: { username: string; password: string }): Promise<AuthResponse> {
+export async function registerApi(userData: {
+  username: string;
+  password: string;
+}): Promise<AuthResponse> {
   const options = authInterceptor({ method: "POST", body: JSON.stringify(userData) });
   const response = await fetch(`${AUTH_URL}/api/auth/register`, options);
   if (!response.ok) throw await parseApiError(response);
@@ -486,7 +565,9 @@ export function isAuthenticated(): boolean {
   return getToken() !== null;
 }
 
-export function startKeepAlivePing(onPingResult?: (latency: number, success: boolean) => void): number {
+export function startKeepAlivePing(
+  onPingResult?: (latency: number, success: boolean) => void,
+): number {
   return window.setInterval(async () => {
     const start = performance.now();
     try {

@@ -3,7 +3,7 @@ import { get_trace_context, init_logging, init_metrics, logger } from "../src/co
 
 describe("HYBA telemetry service", () => {
   it("initializes structured logging and metrics through the shared logger", () => {
-    const info = vi.spyOn(logger, "info").mockImplementation(() => {});
+    const info = vi.spyOn(logger, "info").mockImplementation(() => undefined as never);
 
     init_logging();
     init_metrics();

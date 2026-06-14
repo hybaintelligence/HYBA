@@ -3,10 +3,11 @@ export const swaggerDocument = {
   info: {
     title: "Quantum ASIC Annihilation Console API",
     version: "2.5.0",
-    description: "Full-stack APIs supporting Dodecahedral Hilbert Space Grover search optimizations, mathematical proofs, session JWT auth, and live physical telemetry.",
+    description:
+      "Full-stack APIs supporting Dodecahedral Hilbert Space Grover search optimizations, mathematical proofs, session JWT auth, and live physical telemetry.",
     contact: {
-      email: "operator@quantum.hyba"
-    }
+      email: "operator@quantum.hyba",
+    },
   },
   servers: [
     {
@@ -15,19 +16,20 @@ export const swaggerDocument = {
       variables: {
         protocol: {
           default: "https",
-          enum: ["http", "https"]
+          enum: ["http", "https"],
         },
         host: {
-          default: "localhost:3000"
-        }
-      }
-    }
+          default: "localhost:3000",
+        },
+      },
+    },
   ],
   paths: {
     "/api/auth/register": {
       post: {
         summary: "User Registration",
-        description: "Creates a new user profile with a secure hashed password. Idempotently saved in localized JSON DB.",
+        description:
+          "Creates a new user profile with a secure hashed password. Idempotently saved in localized JSON DB.",
         requestBody: {
           required: true,
           content: {
@@ -37,11 +39,11 @@ export const swaggerDocument = {
                 required: ["username", "password"],
                 properties: {
                   username: { type: "string", example: "operator" },
-                  password: { type: "string", example: "operator123" }
-                }
-              }
-            }
-          }
+                  password: { type: "string", example: "operator123" },
+                },
+              },
+            },
+          },
         },
         responses: {
           201: {
@@ -58,24 +60,25 @@ export const swaggerDocument = {
                       properties: {
                         id: { type: "string", example: "u3" },
                         username: { type: "string", example: "operator" },
-                        role: { type: "string", example: "operator" }
-                      }
-                    }
-                  }
-                }
-              }
-            }
+                        role: { type: "string", example: "operator" },
+                      },
+                    },
+                  },
+                },
+              },
+            },
           },
           400: {
-            description: "Bad Request - Missing fields, or username already taken."
-          }
-        }
-      }
+            description: "Bad Request - Missing fields, or username already taken.",
+          },
+        },
+      },
     },
     "/api/auth/login": {
       post: {
         summary: "User Authentication / Login",
-        description: "Verifies user credentials and yields a valid JSON Web Token (JWT) for session management.",
+        description:
+          "Verifies user credentials and yields a valid JSON Web Token (JWT) for session management.",
         requestBody: {
           required: true,
           content: {
@@ -85,11 +88,11 @@ export const swaggerDocument = {
                 required: ["username", "password"],
                 properties: {
                   username: { type: "string", example: "admin" },
-                  password: { type: "string", example: "admin123" }
-                }
-              }
-            }
-          }
+                  password: { type: "string", example: "admin123" },
+                },
+              },
+            },
+          },
         },
         responses: {
           200: {
@@ -105,19 +108,19 @@ export const swaggerDocument = {
                       type: "object",
                       properties: {
                         username: { type: "string", example: "admin" },
-                        role: { type: "string", example: "administrator" }
-                      }
-                    }
-                  }
-                }
-              }
-            }
+                        role: { type: "string", example: "administrator" },
+                      },
+                    },
+                  },
+                },
+              },
+            },
           },
           401: {
-            description: "Unauthorized - Invalid username or password."
-          }
-        }
-      }
+            description: "Unauthorized - Invalid username or password.",
+          },
+        },
+      },
     },
     "/api/auth/profile": {
       get: {
@@ -125,8 +128,8 @@ export const swaggerDocument = {
         description: "Decodes JWT and returns profile. Requires Bearer Token authorization header.",
         security: [
           {
-            BearerAuth: []
-          }
+            BearerAuth: [],
+          },
         ],
         responses: {
           200: {
@@ -143,24 +146,25 @@ export const swaggerDocument = {
                         id: { type: "string", example: "u1" },
                         username: { type: "string", example: "admin" },
                         role: { type: "string", example: "administrator" },
-                        createdAt: { type: "string", example: "2026-06-09T09:38:40.000Z" }
-                      }
-                    }
-                  }
-                }
-              }
-            }
+                        createdAt: { type: "string", example: "2026-06-09T09:38:40.000Z" },
+                      },
+                    },
+                  },
+                },
+              },
+            },
           },
           401: {
-            description: "Unauthorized - Bearer token missing / expired / malformed."
-          }
-        }
-      }
+            description: "Unauthorized - Bearer token missing / expired / malformed.",
+          },
+        },
+      },
     },
     "/api/health": {
       get: {
         summary: "Fetch Health & Physics Live Telemetry",
-        description: "Extracts active atomic stats, quantum coherence coefficient, block height, and golden ratio invariants.",
+        description:
+          "Extracts active atomic stats, quantum coherence coefficient, block height, and golden ratio invariants.",
         responses: {
           200: {
             description: "Telemetry payload retrieved successfully.",
@@ -173,19 +177,20 @@ export const swaggerDocument = {
                     timestamp: { type: "string", example: "2026-06-09T09:38:40.000Z" },
                     quantumCoherence: { type: "number", nullable: true, example: null },
                     quantumSpeedupFactor: { type: "number", nullable: true, example: null },
-                    phiResonance: { type: "number", nullable: true, example: null }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
+                    phiResonance: { type: "number", nullable: true, example: null },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
     },
     "/api/tests/run": {
       get: {
         summary: "Run Quantum Symmetries Proofs",
-        description: "Executes mathematical checks testing unitary normalization, maximum Hadamard entropy, and quadratic speedup limits.",
+        description:
+          "Executes mathematical checks testing unitary normalization, maximum Hadamard entropy, and quadratic speedup limits.",
         responses: {
           200: {
             description: "Mathematical tests ran completely.",
@@ -195,19 +200,20 @@ export const swaggerDocument = {
                   type: "object",
                   properties: {
                     success: { type: "boolean", example: true },
-                    tests: { type: "array", items: { type: "object" } }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
+                    tests: { type: "array", items: { type: "object" } },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
     },
     "/api/predict": {
       post: {
         summary: "Calibrate Wave Realignment Solutions",
-        description: "Accepts high-dimensional core mining inputs to determine golden-ratio Grover iterations and resonance radius bounds.",
+        description:
+          "Accepts high-dimensional core mining inputs to determine golden-ratio Grover iterations and resonance radius bounds.",
         requestBody: {
           required: true,
           content: {
@@ -215,11 +221,11 @@ export const swaggerDocument = {
               schema: {
                 type: "object",
                 properties: {
-                  state: { type: "object" }
-                }
-              }
-            }
-          }
+                  state: { type: "object" },
+                },
+              },
+            },
+          },
         },
         responses: {
           200: {
@@ -230,19 +236,20 @@ export const swaggerDocument = {
                   type: "object",
                   properties: {
                     success: { type: "boolean", example: true },
-                    params: { type: "object" }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
+                    params: { type: "object" },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
     },
     "/api/products": {
       get: {
         summary: "Get Seeded Quantum Hardware Products",
-        description: "Retrieves complete catalog of seeded quantum accelerator chips and co-processors from JSON DB.",
+        description:
+          "Retrieves complete catalog of seeded quantum accelerator chips and co-processors from JSON DB.",
         responses: {
           200: {
             description: "Seeded items resolved successfully.",
@@ -254,23 +261,27 @@ export const swaggerDocument = {
                     type: "object",
                     properties: {
                       id: { type: "string", example: "prod-dodeca" },
-                      name: { type: "string", example: "Dodecahedral Quantum State Accelerator v2" },
+                      name: {
+                        type: "string",
+                        example: "Dodecahedral Quantum State Accelerator v2",
+                      },
                       description: { type: "string" },
                       category: { type: "string" },
-                      qubitDimension: { type: "number" }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
+                      qubitDimension: { type: "number" },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
     },
     "/api/ai/chat": {
       post: {
         summary: "PYTHAGORAS-v2 Chat Coprocessor",
-        description: "Initiates specialized conversation with the PYTHAGORAS AI reasoning engine (Gemini or Local fallback mode).",
+        description:
+          "Initiates specialized conversation with the PYTHAGORAS AI reasoning engine (Gemini or Local fallback mode).",
         requestBody: {
           required: true,
           content: {
@@ -280,11 +291,11 @@ export const swaggerDocument = {
                 required: ["message"],
                 properties: {
                   message: { type: "string", example: "Explain why Grover costs O(sqrt(I)) here." },
-                  history: { type: "array", items: { type: "object" } }
-                }
-              }
-            }
-          }
+                  history: { type: "array", items: { type: "object" } },
+                },
+              },
+            },
+          },
         },
         responses: {
           200: {
@@ -296,15 +307,15 @@ export const swaggerDocument = {
                   properties: {
                     reply: { type: "string" },
                     model: { type: "string" },
-                    fallback: { type: "boolean" }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
+                    fallback: { type: "boolean" },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
   },
   components: {
     securitySchemes: {
@@ -312,8 +323,8 @@ export const swaggerDocument = {
         type: "http",
         scheme: "bearer",
         bearerFormat: "JWT",
-        description: "Provide JSON Web Token (JWT) for session authentication."
-      }
-    }
-  }
+        description: "Provide JSON Web Token (JWT) for session authentication.",
+      },
+    },
+  },
 };

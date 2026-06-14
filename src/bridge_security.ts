@@ -12,7 +12,9 @@ type JwtSecretValidation = {
   reason?: string;
 };
 
-export function validateProductionJwtSecret(secret: string | undefined | null): JwtSecretValidation {
+export function validateProductionJwtSecret(
+  secret: string | undefined | null,
+): JwtSecretValidation {
   if (!secret) {
     return { ok: false, reason: "JWT_SECRET is required in production" };
   }

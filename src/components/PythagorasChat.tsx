@@ -11,8 +11,8 @@ export const PythagorasChat: React.FC = () => {
 \nI am initialized and ready to verify spatial mining optimizations. 
 \nMy systems are designed to parse **dodecahedral Hilbert spaces**, rotate **eigenvector phases** with the Golden Ratio $\\Phi$, and optimize Grover iterations to mathematically annihilate classical ASIC hardware velocity. 
 \nAsk me any question regarding the underlying mathematics, speedup theorems, or configuration parameters.`,
-      timestamp: new Date().toLocaleTimeString()
-    }
+      timestamp: new Date().toLocaleTimeString(),
+    },
   ]);
   const [inputValue, setInputValue] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -31,46 +31,46 @@ export const PythagorasChat: React.FC = () => {
       id: "usr_" + Date.now(),
       role: "user",
       content: textToSend,
-      timestamp: new Date().toLocaleTimeString()
+      timestamp: new Date().toLocaleTimeString(),
     };
 
-    setMessages(prev => [...prev, userMessage]);
+    setMessages((prev) => [...prev, userMessage]);
     setInputValue("");
     setIsLoading(true);
 
     try {
-      const historyPayload = messages.map(msg => ({
+      const historyPayload = messages.map((msg) => ({
         role: msg.role === "model" ? "model" : "user",
-        parts: [{ text: msg.content }]
+        parts: [{ text: msg.content }],
       }));
 
       const response = await fetch("/api/ai/chat", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           message: textToSend,
-          history: historyPayload
-        })
+          history: historyPayload,
+        }),
       });
 
       const data = await response.json();
-      
+
       const aiMessage: ChatMessage = {
         id: "ai_" + Date.now(),
         role: "model",
         content: data.reply || "No reply generated.",
-        timestamp: new Date().toLocaleTimeString()
+        timestamp: new Date().toLocaleTimeString(),
       };
 
       if (data.model) {
         setActiveEngine(data.model + (data.fallback ? " (Local Fallback)" : " (Premium link)"));
       }
 
-      setMessages(prev => [...prev, aiMessage]);
+      setMessages((prev) => [...prev, aiMessage]);
     } catch (err: any) {
-      setMessages(prev => [
+      setMessages((prev) => [
         ...prev,
         {
           id: "err_" + Date.now(),
@@ -78,8 +78,8 @@ export const PythagorasChat: React.FC = () => {
           content: `### Telemetry Interrupted
 \nMy apologies, but my connection endpoint suffered a mathematical interruption: \`${err.message}\`. 
 \nPlease ensure your local Express dev server is running on port 3000.`,
-          timestamp: new Date().toLocaleTimeString()
-        }
+          timestamp: new Date().toLocaleTimeString(),
+        },
       ]);
     } finally {
       setIsLoading(false);
@@ -94,9 +94,18 @@ export const PythagorasChat: React.FC = () => {
   };
 
   const chips = [
-    { label: "ASIC vs Quantum O(√I)", text: "How does the O(√I) structured search annihilate ASIC advantage?" },
-    { label: "Phase Resonance (Φ^15)", text: "Explain how our golden ratio modulations Φ^15 prevent decoherence and stabilize state vectors." },
-    { label: "Proof complexity", text: "Prove mathematically that Dodecahedral symmetry reduces quantum entropy." }
+    {
+      label: "ASIC vs Quantum O(√I)",
+      text: "How does the O(√I) structured search annihilate ASIC advantage?",
+    },
+    {
+      label: "Phase Resonance (Φ^15)",
+      text: "Explain how our golden ratio modulations Φ^15 prevent decoherence and stabilize state vectors.",
+    },
+    {
+      label: "Proof complexity",
+      text: "Prove mathematically that Dodecahedral symmetry reduces quantum entropy.",
+    },
   ];
 
   return (
@@ -116,7 +125,11 @@ export const PythagorasChat: React.FC = () => {
         </div>
         <div className="flex items-center gap-1 text-[9px] font-mono text-lux-slate bg-white px-2 py-1 rounded border border-[#E2E4E9]">
           <Server className="w-3 h-3 text-oxford shrink-0" />
-          <span className="truncate max-w-[130px] text-oxford font-bold">{activeEngine === "Detecting Active Engine..." ? "PYTHAGORAS Engine ready" : activeEngine}</span>
+          <span className="truncate max-w-[130px] text-oxford font-bold">
+            {activeEngine === "Detecting Active Engine..."
+              ? "PYTHAGORAS Engine ready"
+              : activeEngine}
+          </span>
         </div>
       </div>
 
@@ -125,7 +138,10 @@ export const PythagorasChat: React.FC = () => {
         {messages.map((msg) => {
           const isAI = msg.role === "model";
           return (
-            <div key={msg.id} className={`flex max-w-[85%] flex-col ${isAI ? "mr-auto" : "ml-auto"}`}>
+            <div
+              key={msg.id}
+              className={`flex max-w-[85%] flex-col ${isAI ? "mr-auto" : "ml-auto"}`}
+            >
               <div className="flex items-center gap-1.5 text-[9px] font-mono text-lux-slate mb-1 px-1">
                 {isAI ? (
                   <>
@@ -140,26 +156,40 @@ export const PythagorasChat: React.FC = () => {
                 )}
                 <span>• {msg.timestamp}</span>
               </div>
-              <div 
+              <div
                 className={`p-3 rounded-lg border text-xs leading-relaxed font-sans ${
-                  isAI 
-                    ? "bg-[#F8FAFC] border-[#E2E4E9] text-[#1A1A1E]" 
+                  isAI
+                    ? "bg-[#F8FAFC] border-[#E2E4E9] text-[#1A1A1E]"
                     : "bg-[#F4F4F7] border-[#E2E4E9] text-[#1A1A1E]"
                 }`}
               >
                 {/* Manual simple markdown processing for code/subtitles */}
                 {msg.content.split("\n").map((line, lIdx) => {
                   if (line.startsWith("### ")) {
-                    return <h4 key={lIdx} className="font-mono text-xs font-bold text-black mt-2 mb-1 uppercase">{line.slice(4)}</h4>;
+                    return (
+                      <h4
+                        key={lIdx}
+                        className="font-mono text-xs font-bold text-black mt-2 mb-1 uppercase"
+                      >
+                        {line.slice(4)}
+                      </h4>
+                    );
                   }
                   if (line.startsWith("**")) {
-                    return <p key={lIdx} className="font-bold text-[#1A1A1E] my-1">{line}</p>;
+                    return (
+                      <p key={lIdx} className="font-bold text-[#1A1A1E] my-1">
+                        {line}
+                      </p>
+                    );
                   }
                   if (line.includes("$$")) {
                     // Render simple formula center-aligned
                     const cleanFormula = line.replace(/\$\$/g, "");
                     return (
-                      <div key={lIdx} className="bg-white border border-[#E2E4E9] p-2 my-2 text-center rounded font-mono text-black text-[11px] tracking-normal overflow-x-auto">
+                      <div
+                        key={lIdx}
+                        className="bg-white border border-[#E2E4E9] p-2 my-2 text-center rounded font-mono text-black text-[11px] tracking-normal overflow-x-auto"
+                      >
                         {cleanFormula}
                       </div>
                     );
@@ -171,7 +201,14 @@ export const PythagorasChat: React.FC = () => {
                       </ul>
                     );
                   }
-                  return <p key={lIdx} className="my-1 text-[#334155] whitespace-pre-wrap leading-relaxed">{line}</p>;
+                  return (
+                    <p
+                      key={lIdx}
+                      className="my-1 text-[#334155] whitespace-pre-wrap leading-relaxed"
+                    >
+                      {line}
+                    </p>
+                  );
                 })}
               </div>
             </div>
@@ -187,9 +224,18 @@ export const PythagorasChat: React.FC = () => {
             </div>
             <div className="p-3 bg-[#F8FAFC] border border-[#E2E4E9] rounded-lg text-xs flex items-center gap-2">
               <div className="flex gap-1">
-                <div className="w-1.5 h-1.5 bg-black rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
-                <div className="w-1.5 h-1.5 bg-black rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-                <div className="w-1.5 h-1.5 bg-black rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+                <div
+                  className="w-1.5 h-1.5 bg-black rounded-full animate-bounce"
+                  style={{ animationDelay: "0ms" }}
+                />
+                <div
+                  className="w-1.5 h-1.5 bg-black rounded-full animate-bounce"
+                  style={{ animationDelay: "150ms" }}
+                />
+                <div
+                  className="w-1.5 h-1.5 bg-black rounded-full animate-bounce"
+                  style={{ animationDelay: "300ms" }}
+                />
               </div>
               <span className="text-[#64748B] font-mono text-[10px]">Tuning phase angles...</span>
             </div>

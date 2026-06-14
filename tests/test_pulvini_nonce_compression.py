@@ -14,10 +14,13 @@ if str(BACKEND) not in sys.path:
     sys.path.insert(0, str(BACKEND))
 
 # Turn warnings into hard failures in test context
-np.seterr(all='raise')
+np.seterr(all="raise")
 
 from pythia_mining.pulvini_compressed_solver import PulviniCompressedQuantumSolver  # noqa: E402
-from pythia_mining.pulvini_nonce_compression import NONCE_SPACE_SIZE, PulviniNonceSpaceCompressor  # noqa: E402
+from pythia_mining.pulvini_nonce_compression import (
+    NONCE_SPACE_SIZE,
+    PulviniNonceSpaceCompressor,
+)  # noqa: E402
 from pythia_mining.pulvini_overlay import NUM_NODES, PulviniOverlayConcentrator  # noqa: E402
 
 
@@ -38,7 +41,10 @@ class PulviniNonceCompressionTests(unittest.TestCase):
         covered = sum(segment.size for segment in plan.coverage_segments)
         self.assertEqual(NONCE_SPACE_SIZE, covered)
         for index in range(1, len(plan.coverage_segments)):
-            self.assertEqual(plan.coverage_segments[index - 1].end + 1, plan.coverage_segments[index].start)
+            self.assertEqual(
+                plan.coverage_segments[index - 1].end + 1,
+                plan.coverage_segments[index].start,
+            )
 
     def test_compressed_coordinate_maps_nonce_to_retained_segments(self) -> None:
         plan = PulviniNonceSpaceCompressor().build_plan()
@@ -76,12 +82,17 @@ class PulviniNonceCompressionTests(unittest.TestCase):
             plan = PulviniNonceSpaceCompressor().build_plan()
             solver = PulviniCompressedQuantumSolver()
             await solver.configure_compressed_search(1, plan)
-            self.assertEqual("O(1) deterministic per attempt, O(D/2^256) expected attempts to block", solver.current_config["candidate_generation_complexity"])
+            self.assertEqual(
+                "O(1) deterministic per attempt, O(D/2^256) expected attempts to block",
+                solver.current_config["candidate_generation_complexity"],
+            )
             self.assertTrue(solver.current_config["complete_nonce_coverage"])
             self.assertTrue(solver.current_config["overlap_free_nonce_coverage"])
             self.assertEqual(20, solver.current_config["compressed_working_set_size"])
             self.assertEqual(12, solver.current_config["retained_kernel_lanes"])
-            self.assertEqual(NONCE_SPACE_SIZE, solver.current_config["search_space_size"])
+            self.assertEqual(
+                NONCE_SPACE_SIZE, solver.current_config["search_space_size"]
+            )
 
         asyncio.run(run())
 

@@ -3,6 +3,7 @@
 Run with:
     python -m pytest tests/test_production_math_primitives.py
 """
+
 import math
 
 import numpy as np

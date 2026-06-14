@@ -5,6 +5,7 @@ The check is intentionally filesystem-only so it can run in CI before secrets ar
 available. It verifies the repo contains the Pages config, security headers,
 SPA fallback, and edge API proxy functions required for a production deploy.
 """
+
 from __future__ import annotations
 
 import json
@@ -41,10 +42,14 @@ def main() -> None:
 
     wrangler = (ROOT / "wrangler.toml").read_text()
     if "pages_build_output_dir" not in wrangler or "dist" not in wrangler:
-        fail("wrangler.toml must set pages_build_output_dir = \"dist\"")
+        fail('wrangler.toml must set pages_build_output_dir = "dist"')
 
     headers = (ROOT / "public/_headers").read_text()
-    for header in ["Strict-Transport-Security", "X-Content-Type-Options", "Referrer-Policy"]:
+    for header in [
+        "Strict-Transport-Security",
+        "X-Content-Type-Options",
+        "Referrer-Policy",
+    ]:
         if header not in headers:
             fail(f"public/_headers missing security header: {header}")
 

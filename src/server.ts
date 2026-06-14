@@ -73,7 +73,9 @@ const CONFIG = {
   port: Number(process.env.PORT || 3000),
   backendUrl: normalizeBackendUrl(process.env.PULVINI_BACKEND_URL || "http://127.0.0.1:3001"),
   shouldSpawnBackend: process.env.HYBA_SPAWN_BACKEND !== "false",
-  enableMiningAutoConnect: TRUE_VALUES.has((process.env.HYBA_ENABLE_MINING_AUTOCONNECT || "false").toLowerCase()),
+  enableMiningAutoConnect: TRUE_VALUES.has(
+    (process.env.HYBA_ENABLE_MINING_AUTOCONNECT || "false").toLowerCase(),
+  ),
   proxyTimeoutMs: Number(process.env.BACKEND_PROXY_TIMEOUT_MS || 30000),
   rateLimitWindowMs: Number(process.env.RATE_LIMIT_WINDOW_MS || 60000),
   rateLimitMax: Number(process.env.RATE_LIMIT_MAX || 100),
@@ -137,9 +139,9 @@ function recordProxyFailure(): void {
         threshold: CIRCUIT_THRESHOLD,
         resetTimeMs: CIRCUIT_RESET_MS,
         backendUrl: CONFIG.backendUrl.toString(),
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       },
-      "🚨 CIRCUIT BREAKER TRIPPED — Backend proxy circuit opened"
+      "🚨 CIRCUIT BREAKER TRIPPED — Backend proxy circuit opened",
     );
   }
 }
@@ -228,13 +230,16 @@ async function autoConnectViaBTC(): Promise<void> {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${jwtSecret}`,
+        Authorization: `Bearer ${jwtSecret}`,
       },
       body: JSON.stringify({ pool_id: poolId, worker, capacity_ehs: capacity }),
     });
     if (response.ok) {
       const result = await response.json();
-      logger.info({ pool: result.pool, worker, capacity_ehs: capacity }, "✅ Auto-connected to mining pool");
+      logger.info(
+        { pool: result.pool, worker, capacity_ehs: capacity },
+        "✅ Auto-connected to mining pool",
+      );
     } else {
       logger.warn({ status: response.status }, "Auto-connect to mining pool failed");
     }
@@ -271,7 +276,10 @@ function spawnBackend(): void {
   const backendHost = CONFIG.backendUrl.hostname;
 
   if (!["127.0.0.1", "localhost"].includes(backendHost)) {
-    logger.warn({ backendUrl: CONFIG.backendUrl.toString() }, "Backend auto-spawn skipped for non-local backend URL");
+    logger.warn(
+      { backendUrl: CONFIG.backendUrl.toString() },
+      "Backend auto-spawn skipped for non-local backend URL",
+    );
     return;
   }
 
@@ -282,11 +290,15 @@ function spawnBackend(): void {
   backendProcess = spawn(
     python,
     [
-      "-m", "uvicorn",
+      "-m",
+      "uvicorn",
       "hyba_genesis_api.main:app",
-      "--host", backendHost,
-      "--port", backendPort,
-      "--log-level", process.env.LOG_LEVEL === "debug" ? "debug" : "warning",
+      "--host",
+      backendHost,
+      "--port",
+      backendPort,
+      "--log-level",
+      process.env.LOG_LEVEL === "debug" ? "debug" : "warning",
     ],
     {
       cwd: process.cwd(),
@@ -300,8 +312,12 @@ function spawnBackend(): void {
     },
   );
 
-  backendProcess.stdout?.on("data", (data: Buffer) => logger.info({ backend: data.toString().trim() }, "FastAPI stdout"));
-  backendProcess.stderr?.on("data", (data: Buffer) => logger.warn({ backend: data.toString().trim() }, "FastAPI stderr"));
+  backendProcess.stdout?.on("data", (data: Buffer) =>
+    logger.info({ backend: data.toString().trim() }, "FastAPI stdout"),
+  );
+  backendProcess.stderr?.on("data", (data: Buffer) =>
+    logger.warn({ backend: data.toString().trim() }, "FastAPI stderr"),
+  );
   backendProcess.on("exit", (code: number | null) => {
     logger.warn({ code }, "FastAPI backend exited");
     backendProcess = null;
@@ -311,7 +327,7 @@ function spawnBackend(): void {
 async function waitForBackend(maxAttempts = 30): Promise<boolean> {
   for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
     if (await isBackendReachable()) return true;
-    await new Promise(resolve => setTimeout(resolve, Math.min(250 * attempt, 2000)));
+    await new Promise((resolve) => setTimeout(resolve, Math.min(250 * attempt, 2000)));
   }
   return false;
 }
@@ -375,7 +391,7 @@ async function proxyToBackend(req: Request, res: Response): Promise<void> {
           requestId,
           backendUrl: CONFIG.backendUrl.toString(),
         },
-        "🚨 CRITICAL BACKEND LATENCY — Response time exceeded threshold"
+        "🚨 CRITICAL BACKEND LATENCY — Response time exceeded threshold",
       );
     } else if (latencyMs > LATENCY_WARNING_THRESHOLD_MS) {
       logger.warn(
@@ -385,14 +401,16 @@ async function proxyToBackend(req: Request, res: Response): Promise<void> {
           path: req.originalUrl,
           requestId,
         },
-        "⚠️  High backend latency detected"
+        "⚠️  High backend latency detected",
       );
     }
 
     recordProxySuccess();
     res.status(response.status);
     response.headers.forEach((value, key) => {
-      if (!["content-encoding", "content-length", "transfer-encoding"].includes(key.toLowerCase())) {
+      if (
+        !["content-encoding", "content-length", "transfer-encoding"].includes(key.toLowerCase())
+      ) {
         res.setHeader(key, value);
       }
     });
@@ -403,7 +421,10 @@ async function proxyToBackend(req: Request, res: Response): Promise<void> {
   } catch (error: unknown) {
     recordProxyFailure();
     const message = error instanceof Error ? error.message : "Unknown proxy error";
-    logger.error({ err: message, path: req.originalUrl, requestId }, "Backend proxy request failed");
+    logger.error(
+      { err: message, path: req.originalUrl, requestId },
+      "Backend proxy request failed",
+    );
     noStore(res);
     res.status(503).json({
       error: "backend_unavailable",
@@ -429,10 +450,15 @@ const metrics = {
   startTime: Date.now(),
 };
 
-export function registerSecuritySwarmRoutes(app: express.Application, swarm = securitySwarms): void {
+export function registerSecuritySwarmRoutes(
+  app: express.Application,
+  swarm = securitySwarms,
+): void {
   app.get("/api/security/status", async (req: Request, res: Response) => {
     const observerPressure = Number(req.query.observer_pressure || 0);
-    const sample = swarm.monitor_integrity(Number.isFinite(observerPressure) ? observerPressure : 0);
+    const sample = swarm.monitor_integrity(
+      Number.isFinite(observerPressure) ? observerPressure : 0,
+    );
     const status = swarm.get_swarm_status();
     noStore(res);
     res.json({
@@ -467,18 +493,26 @@ export function registerSecuritySwarmRoutes(app: express.Application, swarm = se
         },
       },
       recent_threats: sample.anomaly_detected
-        ? [{ type: sample.cause, syndrome_weight: sample.syndrome_weight, trap_disturbances: sample.trap_disturbances, detected_at: new Date().toISOString() }]
+        ? [
+            {
+              type: sample.cause,
+              syndrome_weight: sample.syndrome_weight,
+              trap_disturbances: sample.trap_disturbances,
+              detected_at: new Date().toISOString(),
+            },
+          ]
         : [],
     });
   });
 
   app.post("/api/security/swarm/respond", async (req: Request, res: Response) => {
     const observerPressure = Number(req.query.observer_pressure || 1);
-    const response = swarm.trigger_response(Number.isFinite(observerPressure) ? observerPressure : 1);
+    const response = swarm.trigger_response(
+      Number.isFinite(observerPressure) ? observerPressure : 1,
+    );
     noStore(res);
     res.status(response.status === "integrity_response_active" ? 202 : 200).json(response);
   });
-
 }
 
 function installSecuritySwarmHeartbeat(): ReturnType<typeof setInterval> {
@@ -509,10 +543,16 @@ async function startServer(): Promise<void> {
     const ready = await waitForBackend();
     if (!ready) {
       if (CONFIG.isProduction) {
-        logger.fatal({ backendUrl: CONFIG.backendUrl.toString() }, "Backend readiness is required in production");
+        logger.fatal(
+          { backendUrl: CONFIG.backendUrl.toString() },
+          "Backend readiness is required in production",
+        );
         process.exit(1);
       }
-      logger.warn({ backendUrl: CONFIG.backendUrl.toString() }, "Backend not ready — starting in DEGRADED mode");
+      logger.warn(
+        { backendUrl: CONFIG.backendUrl.toString() },
+        "Backend not ready — starting in DEGRADED mode",
+      );
     }
   }
 
@@ -597,7 +637,10 @@ async function startServer(): Promise<void> {
       const recentFailures = metrics.healthCheckFailures;
       const timeSinceLastFailure = Date.now() - metrics.lastHealthCheckFailure;
 
-      if (recentFailures >= HEALTH_CHECK_FAILURE_THRESHOLD && timeSinceLastFailure < HEALTH_CHECK_FAILURE_WINDOW_MS) {
+      if (
+        recentFailures >= HEALTH_CHECK_FAILURE_THRESHOLD &&
+        timeSinceLastFailure < HEALTH_CHECK_FAILURE_WINDOW_MS
+      ) {
         logger.error(
           {
             healthCheckFailures: metrics.healthCheckFailures,
@@ -606,7 +649,7 @@ async function startServer(): Promise<void> {
             backendUrl: CONFIG.backendUrl.toString(),
             timestamp: new Date().toISOString(),
           },
-          "🚨 HEALTH CHECK FAILURE THRESHOLD EXCEEDED — Backend consistently unreachable"
+          "🚨 HEALTH CHECK FAILURE THRESHOLD EXCEEDED — Backend consistently unreachable",
         );
       }
     } else {
@@ -617,7 +660,7 @@ async function startServer(): Promise<void> {
             previousFailures: metrics.healthCheckFailures,
             timestamp: new Date().toISOString(),
           },
-          "Health check recovered — backend reachable again"
+          "Health check recovered — backend reachable again",
         );
         metrics.healthCheckFailures = 0;
       }
@@ -634,30 +677,34 @@ async function startServer(): Promise<void> {
   });
 
   // Protected detailed bridge health with internal metrics.
-  app.get("/bridge/internal/health", requireInternalAccess, async (_req: Request, res: Response) => {
-    const reachable = await isBackendReachable();
-    const uptimeSeconds = Math.floor((Date.now() - metrics.startTime) / 1000);
-    noStore(res);
-    res.status(reachable ? 200 : 503).json({
-      status: reachable ? "ok" : "degraded",
-      service: "HYBA Secure Bridge",
-      version: "2.1.0",
-      backend: CONFIG.backendUrl.toString(),
-      backendReachable: reachable,
-      circuitBreakerOpen: circuitState.isOpen,
-      circuitFailures: circuitState.failures,
-      uptimeSeconds,
-      metrics: {
-        requestsTotal: metrics.requestsTotal,
-        proxyErrors: metrics.proxyErrors,
-        circuitBreakerTrips: metrics.circuitBreakerTrips,
-        topPaths: Array.from(metrics.requestsByPath.entries())
-          .sort((a, b) => b[1] - a[1])
-          .slice(0, 10),
-      },
-      timestamp: new Date().toISOString(),
-    });
-  });
+  app.get(
+    "/bridge/internal/health",
+    requireInternalAccess,
+    async (_req: Request, res: Response) => {
+      const reachable = await isBackendReachable();
+      const uptimeSeconds = Math.floor((Date.now() - metrics.startTime) / 1000);
+      noStore(res);
+      res.status(reachable ? 200 : 503).json({
+        status: reachable ? "ok" : "degraded",
+        service: "HYBA Secure Bridge",
+        version: "2.1.0",
+        backend: CONFIG.backendUrl.toString(),
+        backendReachable: reachable,
+        circuitBreakerOpen: circuitState.isOpen,
+        circuitFailures: circuitState.failures,
+        uptimeSeconds,
+        metrics: {
+          requestsTotal: metrics.requestsTotal,
+          proxyErrors: metrics.proxyErrors,
+          circuitBreakerTrips: metrics.circuitBreakerTrips,
+          topPaths: Array.from(metrics.requestsByPath.entries())
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 10),
+        },
+        timestamp: new Date().toISOString(),
+      });
+    },
+  );
 
   registerSecuritySwarmRoutes(app);
 
@@ -782,9 +829,15 @@ async function startServer(): Promise<void> {
     console.log("  ╠══════════════════════════════════════════════╣");
     console.log(`  ║  Server    : http://${CONFIG.host}:${CONFIG.port}           ║`);
     console.log(`  ║  Backend   : ${CONFIG.backendUrl.toString().padEnd(25)} ║`);
-    console.log(`  ║  Mode      : ${CONFIG.isProduction ? "PRODUCTION" : "DEVELOPMENT".padEnd(20)} ║`);
-    console.log(`  ║  Autoconnect: ${CONFIG.enableMiningAutoConnect ? "ENABLED " : "DISABLED"}                 ║`);
-    console.log(`  ║  Circuit   : ${CIRCUIT_THRESHOLD} failures / ${CIRCUIT_RESET_MS / 1000}s reset      ║`);
+    console.log(
+      `  ║  Mode      : ${CONFIG.isProduction ? "PRODUCTION" : "DEVELOPMENT".padEnd(20)} ║`,
+    );
+    console.log(
+      `  ║  Autoconnect: ${CONFIG.enableMiningAutoConnect ? "ENABLED " : "DISABLED"}                 ║`,
+    );
+    console.log(
+      `  ║  Circuit   : ${CIRCUIT_THRESHOLD} failures / ${CIRCUIT_RESET_MS / 1000}s reset      ║`,
+    );
     console.log("  ╚══════════════════════════════════════════════╝");
     console.log("");
   });
