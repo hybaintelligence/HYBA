@@ -155,7 +155,7 @@ export function SovereignGenesisPanel() {
           </div>
           <MetricLine label="Capabilities Enabled" value={`${capabilityCount}/${totalCapabilities}`} />
           <div className="mt-3 grid grid-cols-2 gap-1.5">
-            {Object.entries(manifest.capability_manifest.capability_flags).slice(0, 6).map(([key, enabled]) => (
+            {(Object.entries(manifest.capability_manifest.capability_flags) as Array<[string, unknown]>).slice(0, 6).map(([key, enabled]) => (
               <CapabilityBadge key={key} name={key} enabled={Boolean(enabled)} />
             ))}
           </div>
@@ -229,7 +229,12 @@ function MetricLine({ label, value, positive }: { label: string; value: string; 
   );
 }
 
-function CapabilityBadge({ name, enabled }: { name: string; enabled: boolean }) {
+interface CapabilityBadgeProps extends React.HTMLAttributes<HTMLDivElement> {
+  name: string;
+  enabled: boolean;
+}
+
+function CapabilityBadge({ name, enabled, ...props }: CapabilityBadgeProps) {
   const displayName = name.replace(/^supports_/, "").replace(/_/g, " ");
   
   return (
