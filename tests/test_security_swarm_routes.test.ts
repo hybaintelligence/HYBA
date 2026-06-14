@@ -39,6 +39,8 @@ describe("HYBA security swarm HTTP routes", () => {
     expect(body.defense_systems.stabilizer_monitor).toHaveProperty("syndrome_weight");
     expect(body.defense_systems.stabilizer_monitor).toHaveProperty("confidence");
     expect(body.defense_systems.stabilizer_monitor).not.toHaveProperty("syndrome");
+    expect(body.defense_systems.stabilizer_monitor.metacognitive).toHaveProperty("self_awareness");
+    expect(body.defense_systems.stabilizer_monitor.metacognitive).toHaveProperty("predicted_state");
     expect(body.defense_systems.preallocated_ancilla_trap_pool.logical_agents).toBe(1);
   });
 

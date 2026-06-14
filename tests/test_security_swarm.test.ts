@@ -163,3 +163,57 @@ describe("HYBA stabilizer integrity monitor", () => {
     );
   });
 });
+
+describe("HYBA metacognitive stabilizer monitor", () => {
+  it("property: holographic XOR reconstruction remains in the finite pool after re-sharding", () => {
+    fc.assert(
+      fc.property(fc.integer(), (syndromeSeed) => {
+        const monitor = new SecuritySwarmAgent();
+        const index = 4;
+        const originalRealIndex = monitor.get_resource_index(index);
+
+        monitor.handle_anomaly(syndromeSeed);
+        const newRealIndex = monitor.get_resource_index(index);
+
+        expect(originalRealIndex).toBeGreaterThanOrEqual(0);
+        expect(originalRealIndex).toBeLessThan(monitor.get_swarm_status().agents_total);
+        expect(newRealIndex).toBeGreaterThanOrEqual(0);
+        expect(newRealIndex).toBeLessThan(monitor.get_swarm_status().agents_total);
+      }),
+      { numRuns: 50 },
+    );
+  });
+
+  it("predicts degradation and triggers a preemptive shard rotation", () => {
+    const monitor = new SecuritySwarmAgent();
+    monitor.inject_state_history_for_test([
+      { phi_integrated: 0.9, syndrome_pressure: 0.1, shard_entropy: 0.8, confidence_delta: 0.02, resource_exhaustion: 0.1 },
+      { phi_integrated: 0.8, syndrome_pressure: 0.3, shard_entropy: 0.8, confidence_delta: 0.08, resource_exhaustion: 0.1 },
+      { phi_integrated: 0.7, syndrome_pressure: 0.5, shard_entropy: 0.8, confidence_delta: 0.13, resource_exhaustion: 0.1 },
+    ]);
+
+    const report = monitor.run_metacognitive_cycle();
+    const status = monitor.get_swarm_status();
+
+    expect(report.is_predicting_disturbance).toBe(true);
+    expect(report.last_event).toBe("PREEMPTIVE_SHARD_ROTATION");
+    expect(status.metacognitive.events).toContain("PREEMPTIVE_SHARD_ROTATION");
+  });
+
+  it("reinforces syndrome shuffle weights after high-phi defensive outcomes", () => {
+    const monitor = new SecuritySwarmAgent();
+    const syndrome = 0xabcdef;
+
+    for (let i = 0; i < 5; i++) {
+      monitor.simulate_intrusion_for_test(syndrome, {
+        phi_integrated: 0.95,
+        syndrome_pressure: 0.05,
+        confidence_delta: 0.01,
+      });
+      monitor.run_metacognitive_cycle();
+    }
+
+    expect(monitor.get_strategy_weight(syndrome)).toBeGreaterThan(1.0);
+    expect(monitor.get_swarm_status().metacognitive.strategy_weights[String(syndrome)]).toBeGreaterThan(1.0);
+  });
+});

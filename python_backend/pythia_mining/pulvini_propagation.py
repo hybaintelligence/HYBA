@@ -223,7 +223,10 @@ class SharePropagationController:
             signal_type="SHARE_FOUND" if accepted else "SHARE_REJECTED",
             reward=reward,
         )
-        self.memory_fabric.record_path(route, reward=reward)
+        if accepted and hasattr(self.memory_fabric, "reinforce_successful_path"):
+            self.memory_fabric.reinforce_successful_path(route, reward=reward)
+        else:
+            self.memory_fabric.record_path(route, reward=reward)
         reason = "share_accepted" if accepted else "share_rejected"
         cancel = CancelSignal(
             job_id=str(job.job_id), reason=reason, source_share_id=signal.share_id

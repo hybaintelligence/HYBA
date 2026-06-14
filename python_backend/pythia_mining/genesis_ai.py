@@ -22,6 +22,7 @@ from .blockchain_oracle import BlockchainOracle
 from .consciousness_engine import ConsciousnessEngine
 from .pulvini_autonomics import AutonomicOrchestrator, PulviniAutonomicsEngine
 from .pulvini_compressed_solver import PulviniCompressedQuantumSolver
+from .pulvini_memory_fabric import EvolvingMemoryFabric
 from .pulvini_overlay import PulviniOverlayConcentrator
 from .pulvini_propagation import SharePropagationController
 from .stratum_client import AllPoolsOfflineError, MiningJob, PoolManager
@@ -129,7 +130,10 @@ class GenesisAI:
             lattice_repoint_sink=self.overlay.apply_lattice_repoint,
         )
         self.autonomic_orchestrator = AutonomicOrchestrator(self.autonomics)
-        self.propagation = SharePropagationController(self.overlay.manifold)
+        self.propagation = SharePropagationController(
+            self.overlay.manifold,
+            memory_fabric=EvolvingMemoryFabric(num_nodes=32),
+        )
         self.quantum_solver = PulviniCompressedQuantumSolver()
         self.blockchain_oracle = BlockchainOracle()
         self.consciousness_engine = ConsciousnessEngine()
@@ -345,8 +349,9 @@ class GenesisAI:
                 )
                 resolved_nonce = await self.quantum_solver.solve()
 
-                if resolved_nonce is not None and not self.propagation.is_job_cancelled(
-                    self.current_job.job_id
+                if (
+                    resolved_nonce is not None
+                    and not self.propagation.is_job_cancelled(self.current_job.job_id)
                 ):
                     self.shares_solved += 1
                     assignment = self.overlay.assignment_for_nonce(resolved_nonce)
@@ -375,6 +380,12 @@ class GenesisAI:
                                 "block_hash": share_result.block_hash,
                                 "manifold": self.overlay.manifold.observe().to_dict(),
                                 "compressed_nonce_plan": self.overlay.compressed_nonce_plan(),
+                                "strategy_used": optimization.strategy_used,
+                                "phi_resonance_score": optimization.phi_resonance_score,
+                                "thermal_cost": self.quantum_solver.get_metrics().get(
+                                    "power_scale"
+                                ),
+                                "solve_time": optimization.search_time,
                             }
                         )
                     else:
@@ -386,6 +397,12 @@ class GenesisAI:
                                 "route": propagation_result.route,
                                 "manifold": self.overlay.manifold.observe().to_dict(),
                                 "compressed_nonce_plan": self.overlay.compressed_nonce_plan(),
+                                "strategy_used": optimization.strategy_used,
+                                "phi_resonance_score": optimization.phi_resonance_score,
+                                "thermal_cost": self.quantum_solver.get_metrics().get(
+                                    "power_scale"
+                                ),
+                                "solve_time": optimization.search_time,
                             },
                             share_result.error_code or 1,
                             share_result.error_message or "share rejected",
@@ -506,6 +523,7 @@ class GenesisAI:
             "autonomic_repairs": self.repair_count,
             "latest_autonomic_event": self.latest_autonomic_event,
             "share_propagation": self.propagation.snapshot(),
+            "meta_learning": self.ai_optimizer.meta_learning_snapshot(),
             "quantum": quantum_metrics,
             "phi_scaling_engine": self.latest_phi_optimization,
             "consciousness": consciousness_metrics,
