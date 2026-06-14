@@ -12,7 +12,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).parent.parent
 REGISTRY = ROOT / "docs" / "ADAPTIVE_SYSTEMS_CAPABILITY_REGISTRY.md"
-CAPABILITY_ID_RE = re.compile(r"^### (ADAPT-[A-Z]+-\d{3}) — (.+)$", re.MULTILINE)
+CAPABILITY_ID_RE = re.compile(r"^### (ADAPT-[A-Z-]+-\d{3}) — (.+)$", re.MULTILINE)
 
 
 def _registry_text() -> str:
@@ -87,9 +87,10 @@ def test_status_values_are_from_declared_vocabulary():
         "runtime-needed",
         "external-review-needed",
     }
-    status_lines = re.findall(r"\*\*Status:\*\* `([^`]+)`", text)
+    status_lines = re.findall(r"\*\*Status:\*\* (.+)", text)
 
     assert status_lines, "registry must include status lines"
     for status_line in status_lines:
-        values = {value.strip() for value in status_line.split("`, `")}
+        values = set(re.findall(r"`([^`]+)`", status_line))
+        assert values, f"status line must contain backtick status values: {status_line}"
         assert values <= allowed, f"unknown status value(s): {values - allowed}"
