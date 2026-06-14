@@ -1,8 +1,11 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import fc from "fast-check";
 import { SecuritySwarmAgent } from "../src/core/security_swarm";
 
 describe("HYBA stabilizer integrity monitor", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
   it("keeps the stabilizer monitor locked without disturbance", () => {
     const monitor = new SecuritySwarmAgent();
     const sample = monitor.monitor_integrity(0);
@@ -85,6 +88,30 @@ describe("HYBA stabilizer integrity monitor", () => {
     expect(status.syndrome_check_stride).toBeGreaterThan(1);
     expect(status.check_frequency).toBeLessThan(1);
     expect(sample.sampled_ancillas).toBeLessThan(status.active_ancillas);
+  });
+
+  it("runs a stabilizer response when coherence drifts below threshold", async () => {
+    vi.spyOn(Date, "now").mockReturnValue(0);
+
+    const monitor = new SecuritySwarmAgent();
+    const responseSpy = vi.spyOn(monitor, "trigger_response");
+    const coherence = await monitor.sync_coherence();
+
+    expect(coherence).toBeLessThan(0.85);
+    expect(responseSpy).toHaveBeenCalledWith(0.25);
+  });
+
+  it("marks finite ancilla depletion as resource exhaustion before sanitization", () => {
+    const monitor = new SecuritySwarmAgent();
+
+    monitor.trigger_response(1);
+    const status = monitor.get_swarm_status();
+
+    expect(status.operating_mode).toBe("EXHAUSTED");
+    expect(status.response_cause).toBe("resource_exhaustion");
+    expect(status.syndrome_check_stride).toBe(10);
+    expect(status.check_frequency).toBe(0.1);
+    expect(status.sanitized).toBe(false);
   });
 
   it("property: syndrome telemetry remains bounded for all disturbance probabilities", () => {

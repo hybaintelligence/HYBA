@@ -165,7 +165,8 @@ class SecuritySwarmAgent {
     });
 
     let trap_disturbances = 0;
-    for (const [index, trap] of activeTraps.entries()) {
+    for (let index = 0; index < activeTraps.length; index++) {
+      const trap = activeTraps[index];
       const trapNoise = clamp01(disturbance * Math.abs(Math.cos(resonance + trap.phase + index * PHI)));
       const disturbed = disturbance >= 1 ? true : trapNoise > 0.35;
       trap.trap_disturbed = trap.trap_disturbed || disturbed;

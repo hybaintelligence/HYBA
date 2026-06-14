@@ -1,5 +1,5 @@
-import pino from 'pino';
-import crypto from 'crypto';
+import * as pino from 'pino';
+import * as crypto from 'node:crypto';
 
 /**
  * HYBA Telemetry Service (Stripe-Grade)
