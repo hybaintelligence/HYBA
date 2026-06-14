@@ -104,6 +104,25 @@ export interface ConfigurePoolResponse {
   idempotency_key?: string;
 }
 
+export interface MetacognitiveStateTelemetry {
+  phi_integrated?: number | null;
+  syndrome_pressure?: number | null;
+  shard_entropy?: number | null;
+  confidence_delta?: number | null;
+  resource_exhaustion?: number | null;
+}
+
+export interface MetacognitiveTelemetry {
+  self_awareness?: number | null;
+  metacognitive_depth?: number | null;
+  is_predicting_disturbance?: boolean | null;
+  prediction_accuracy?: number | null;
+  events?: string[] | null;
+  strategy_weights?: Record<string, number> | null;
+  predicted_state?: MetacognitiveStateTelemetry | null;
+  current_state?: MetacognitiveStateTelemetry | null;
+}
+
 export interface StabilizerMonitorTelemetry {
   syndrome_weight?: number | null;
   confidence?: number | null;
@@ -117,6 +136,7 @@ export interface StabilizerMonitorTelemetry {
   pool_permutation_checksum?: number | null;
   sanitized?: boolean | null;
   cause?: string | null;
+  metacognitive?: MetacognitiveTelemetry | null;
 }
 
 export interface AncillaTrapPoolTelemetry {

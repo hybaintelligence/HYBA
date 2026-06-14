@@ -10,6 +10,7 @@ import time
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
 
+from .ai_optimizer_meta import MetaLearningOptimizer
 from .phi_scaling_engine import (
     PhiOptimizedFeatures,
     PhiScaledEnsemble,
@@ -53,6 +54,10 @@ class AIOptimizer:
         self.phi_features = PhiOptimizedFeatures()
         self.success_history: List[bool] = []
         self.rejection_history: List[Dict[str, Any]] = []
+        self.meta_optimizer = MetaLearningOptimizer(
+            initial_strategies=["phi_scaled_compressed_solver_search"]
+        )
+        self.latest_meta_learning_event: Optional[Dict[str, Any]] = None
         self.logger = logging.getLogger("ai_optimizer")
 
     async def optimize_nonce_search(self, job: MiningJob) -> OptimizationResult:
@@ -107,13 +112,31 @@ class AIOptimizer:
             search_space_size=metrics.get("search_space_size"),
         )
 
+    def _update_meta_learning(
+        self, share_info: Dict[str, Any], *, accepted: bool
+    ) -> Dict[str, Any]:
+        strategy_id = str(
+            share_info.get("strategy_used") or "phi_scaled_compressed_solver_search"
+        )
+        event = self.meta_optimizer.update_from_outcome(
+            strategy_id=strategy_id,
+            accepted=accepted,
+            phi_resonance=share_info.get("phi_resonance_score"),
+            thermal_cost=share_info.get("thermal_cost"),
+            solve_time=share_info.get("solve_time"),
+        )
+        self.latest_meta_learning_event = event
+        return event
+
     async def on_share_accepted(self, share_info: Dict[str, Any]) -> None:
         self.success_history.append(True)
+        self._update_meta_learning(share_info, accepted=True)
 
     async def on_share_rejected(
         self, share_info: Dict[str, Any], error_code: int, error_msg: str
     ) -> None:
         self.success_history.append(False)
+        self._update_meta_learning(share_info, accepted=False)
         self.rejection_history.append(
             {
                 "timestamp": time.time(),
@@ -123,3 +146,6 @@ class AIOptimizer:
                 "job_id": share_info.get("job_id"),
             }
         )
+
+    def meta_learning_snapshot(self) -> Dict[str, Any]:
+        return self.meta_optimizer.snapshot()
