@@ -32,6 +32,7 @@ from dataclasses import asdict, dataclass
 from typing import Any, Dict, List, Sequence, Tuple
 
 from .pulvini_group import (
+    a5_representation_certificate,
     adjacency_sets,
     compute_graph_automorphisms,
     compute_node_orbits,
@@ -67,6 +68,7 @@ class StructuralCertificate:
     orbit_sizes: List[int]
     complete_graph: bool
     adjacency_preserved: bool
+    representation_theory: Dict[str, Any]
     structural_statement: str
 
     def to_dict(self) -> Dict[str, Any]:
@@ -135,6 +137,8 @@ def structural_certificate(
     d_degree = 6  # Combined: 3 D + 3 I
     i_degree = 10  # Combined: 5 D + 5 I
 
+    representation = a5_representation_certificate(full_automorphism_order=len(automorphisms)).to_dict()
+
     structural_statement = (
         f"PULVINI graph has {NUM_NODES} nodes: "
         f"{d_nodes_count} D-nodes (degree {d_degree}, dodecahedral: 3 D-edge + 3 I-edge) and "
@@ -159,6 +163,7 @@ def structural_certificate(
         orbit_sizes=orbit_sizes,
         complete_graph=is_connected,
         adjacency_preserved=adjacency_ok,
+        representation_theory=representation,
         structural_statement=structural_statement,
     )
 
@@ -202,6 +207,7 @@ def d_i_analysis() -> Dict[str, Any]:
         "automorphism_group_order": len(automorphisms),
         "node_orbits": [list(orbit) for orbit in node_orbits],
         "orbit_sizes": [len(orbit) for orbit in node_orbits],
+        "representation_theory": a5_representation_certificate(full_automorphism_order=len(automorphisms)).to_dict(),
         "degree_histogram": {
             deg: sum(1 for n in range(32) if len(neighbors[n]) == deg)
             for deg in set(len(neighbors[n]) for n in range(32))

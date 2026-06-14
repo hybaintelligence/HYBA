@@ -50,7 +50,7 @@ from pythia_mining.pulvini_memory_compression_proof import (
     prove_phi_folding_reversibility,
     verify_memory_compression_gate,
 )
-from pythia_mining.pulvini_group import compute_graph_automorphisms
+from pythia_mining.pulvini_group import a5_representation_certificate, compute_graph_automorphisms
 from pythia_mining.pulvini_topology import ADJACENCY_MAP
 
 
@@ -113,6 +113,31 @@ class TestGroverScopeCertificate(unittest.TestCase):
         report = grover_efficiency_report()
         self.assertEqual(report["grover_theoretical_steps_for_basis"], 3)
         self.assertEqual(report["classical_brute_force_steps_for_full_2_32"], 2**32)
+
+
+class TestA5RepresentationCertificate(unittest.TestCase):
+    """Tests for the A5 representation-theory certificate."""
+
+    def test_a5_character_table_has_five_irreps(self):
+        cert = a5_representation_certificate()
+        self.assertEqual(cert.irreducible_dimensions, [1, 3, 3, 4, 5])
+        self.assertEqual(len(cert.character_table), 5)
+
+    def test_a5_regular_dimension_sum_and_orthogonality(self):
+        cert = a5_representation_certificate()
+        self.assertEqual(cert.regular_representation_dimension_sum, 60)
+        self.assertTrue(cert.character_orthogonality_verified)
+
+    def test_a5_certificate_is_honest_about_speedup(self):
+        cert = a5_representation_certificate()
+        self.assertFalse(cert.quantum_speedup_claimed)
+        self.assertAlmostEqual(cert.heuristic_dimension_reduction, 2.0)
+
+    def test_structural_certificate_embeds_representation_theory(self):
+        cert = structural_certificate()
+        self.assertEqual(cert.representation_theory["rotational_group_order"], 60)
+        self.assertEqual(cert.representation_theory["full_automorphism_order"], 120)
+        self.assertTrue(cert.representation_theory["character_orthogonality_verified"])
 
 
 class TestCoverageCertificate(unittest.TestCase):
