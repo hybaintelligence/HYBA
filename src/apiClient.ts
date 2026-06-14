@@ -340,8 +340,28 @@ export async function requestPrediction(payload: Record<string, unknown>): Promi
   return post<PredictionResult>("/predict", payload);
 }
 
-export async function updatePowerScale(scale: number, phiTier = 12): Promise<{ status: string; effective_hashrate_ehs?: number; phi_tier?: number }> {
-  return post<{ status: string; effective_hashrate_ehs?: number; phi_tier?: number }>("/mining/power", { scale, phi_tier: phiTier });
+export interface PowerScaleResponse {
+  status: string;
+  effective_hashrate_ehs?: number;
+  phi_tier?: number;
+  intelligence_scaling?: {
+    base_intelligence: number;
+    scale_multiplier: number;
+    scaled_intelligence: number;
+    phi_multiplier: number;
+    final_intelligence: number;
+    scaling_formula: string;
+  };
+  hardware_scaling?: {
+    base_hashrate_ehs: number;
+    scale_multiplier: number;
+    scaled_hashrate_ehs: number;
+    scaling_formula: string;
+  };
+}
+
+export async function updatePowerScale(scale: number, phiTier = 12): Promise<PowerScaleResponse> {
+  return post<PowerScaleResponse>("/mining/power", { scale, phi_tier: phiTier });
 }
 
 export interface ConnectPoolRequest {
