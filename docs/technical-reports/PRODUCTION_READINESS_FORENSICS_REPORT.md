@@ -438,7 +438,7 @@ HYBA_ENV=production
 PULVINI_BACKEND_URL=http://127.0.0.1:3001  # ⛔ MISSING
 
 # Authentication (CONFIGURED)
-JWT_SECRET=Rl8ux6Ge-NpBxhBY0zMvw3c1endcUCKMWnmL9-N4eBI
+JWT_SECRET=replace-with-secret-manager-value-at-deploy-time
 HYBA_OPERATOR_CREDENTIALS=operator:$argon2id$v=19$...:ceo
 
 # Mining Controls (CONFIGURED)

@@ -5,6 +5,11 @@ BACKEND_HOST="${HYBA_BACKEND_HOST:-127.0.0.1}"
 BACKEND_PORT="${HYBA_BACKEND_PORT:-3001}"
 NODE_ENTRYPOINT="${HYBA_NODE_ENTRYPOINT:-dist/server.mjs}"
 
+if [ "$#" -gt 0 ]; then
+  echo "[hyba-entrypoint] executing service command: $*"
+  exec "$@"
+fi
+
 shutdown() {
   echo "[hyba-entrypoint] shutdown requested"
   if [ -n "${BACKEND_PID:-}" ] && kill -0 "$BACKEND_PID" 2>/dev/null; then
@@ -13,6 +18,9 @@ shutdown() {
   if [ -n "${NODE_PID:-}" ] && kill -0 "$NODE_PID" 2>/dev/null; then
     kill -TERM "$NODE_PID" 2>/dev/null || true
   fi
+  wait "$BACKEND_PID" 2>/dev/null || true
+  wait "$NODE_PID" 2>/dev/null || true
+  exit 0
 }
 
 trap shutdown INT TERM HUP
