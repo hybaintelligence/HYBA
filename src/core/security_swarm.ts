@@ -175,17 +175,30 @@ class SecuritySwarmAgent {
     }
 
     const syndrome_weight = syndrome.reduce<number>((sum, bit) => sum + bit, 0);
-    const syndromePenalty = syndrome_weight / Math.max(1, activeAncillas.length || this.syndrome_width);
-    const trapPenalty = trap_disturbances / Math.max(1, activeTraps.length || this.reserved_trap_pool);
+    const syndromePenalty =
+      syndrome_weight / Math.max(1, activeAncillas.length || this.syndrome_width);
+    const trapPenalty =
+      trap_disturbances / Math.max(1, activeTraps.length || this.reserved_trap_pool);
     const confidence = clamp01(1 - syndromePenalty * 0.75 - trapPenalty * 0.25);
-    const cause: ResponseCause = trap_disturbances > 0 ? 'trap_disturbance' : syndrome_weight > this.syndrome_weight_threshold ? 'syndrome_anomaly' : 'none';
+    const sampleCause: ResponseCause =
+      trap_disturbances > 0
+        ? "trap_disturbance"
+        : syndrome_weight > this.syndrome_weight_threshold
+          ? "syndrome_anomaly"
+          : "none";
+
+    // Preserve resource_exhaustion cause in degraded modes
+    const cause: ResponseCause =
+      this.operating_mode !== "NORMAL" && this.last_syndrome.cause === "resource_exhaustion"
+        ? "resource_exhaustion"
+        : sampleCause;
 
     this.last_syndrome = {
       syndrome,
       syndrome_weight,
       trap_disturbances,
       confidence,
-      anomaly_detected: confidence < this.confidence_threshold || cause !== 'none',
+      anomaly_detected: confidence < this.confidence_threshold || sampleCause !== "none",
       cause,
       operating_mode: this.operating_mode,
       sampled_ancillas: activeAncillas.length,
@@ -225,10 +238,18 @@ class SecuritySwarmAgent {
     }
 
     const syndromeBitstring = this.encode_syndrome_bitstring(sample.syndrome);
-    this.update_permutation_shards(syndromeBitstring);
-    this.syndrome_rotation_index = this.derive_clifford_index(syndromeBitstring);
-    const activated_ancillas = this.activate_reserved('ancilla', Math.max(1, sample.syndrome_weight));
-    const activated_traps = this.activate_reserved('trap', Math.max(1, retired_traps || sample.trap_disturbances));
+    if (!this.sanitized) {
+      this.update_permutation_shards(syndromeBitstring);
+      this.syndrome_rotation_index = this.derive_clifford_index(syndromeBitstring);
+    }
+    const activated_ancillas = this.activate_reserved(
+      "ancilla",
+      Math.max(1, sample.syndrome_weight),
+    );
+    const activated_traps = this.activate_reserved(
+      "trap",
+      Math.max(1, retired_traps || sample.trap_disturbances),
+    );
     this.rotate_newly_activated_traps(this.syndrome_rotation_index);
     this.evaluate_trap_sanitization();
     this.evaluate_ancilla_exhaustion();
