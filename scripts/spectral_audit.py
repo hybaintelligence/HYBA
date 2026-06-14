@@ -7,8 +7,9 @@ structural (inherent to icosahedral graph Laplacian) or numerical (accumulated e
 """
 
 import sys
-import numpy as np
 from pathlib import Path
+
+import numpy as np
 
 ROOT = Path(__file__).resolve().parents[0]
 BACKEND = ROOT / "python_backend"

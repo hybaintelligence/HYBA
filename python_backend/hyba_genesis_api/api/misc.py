@@ -24,9 +24,7 @@ async def get_pitfalls():
 
 
 class ExperimentConfig(BaseModel):
-    experiment_type: str = Field(
-        default="phi_blockchain_correlation", min_length=1, max_length=128
-    )
+    experiment_type: str = Field(default="phi_blockchain_correlation", min_length=1, max_length=128)
 
 
 @router.post("/toe/experiments", response_model=Dict[str, Any])
@@ -54,9 +52,7 @@ async def execute_pulvini():
     projection_basis = np.eye(hamiltonian_size, dtype=np.float64)[:158]
     projected_dimensions = int(projection_basis.shape[0])
     orthonormality_error = float(
-        np.linalg.norm(
-            projection_basis @ projection_basis.T - np.eye(projected_dimensions)
-        )
+        np.linalg.norm(projection_basis @ projection_basis.T - np.eye(projected_dimensions))
     )
     norm_error = abs(1.0 - diffusion_norm)
     projection_purity = max(0.0, 1.0 - orthonormality_error)

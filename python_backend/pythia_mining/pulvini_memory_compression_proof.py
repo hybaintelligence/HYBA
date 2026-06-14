@@ -122,9 +122,7 @@ def prove_phi_folding_reversibility(
     Returns:
         A MemoryCompressionProof with the results.
     """
-    engine = PulviniPhiMemoryCompressionEngine(
-        tolerance=tolerance, fold_depth=fold_depth
-    )
+    engine = PulviniPhiMemoryCompressionEngine(tolerance=tolerance, fold_depth=fold_depth)
     result = engine.compress(data)
 
     # Reconstruct and measure error
@@ -195,9 +193,7 @@ def prove_lane_surface_coverage(
     """
     # Create the lane surface: a vector of lane indices
     lane_surface = np.arange(num_lanes, dtype=np.float64)
-    return prove_phi_folding_reversibility(
-        lane_surface, fold_depth=fold_depth, tolerance=tolerance
-    )
+    return prove_phi_folding_reversibility(lane_surface, fold_depth=fold_depth, tolerance=tolerance)
 
 
 def phi_folding_mathematical_proof() -> Dict[str, Any]:
@@ -271,9 +267,7 @@ def verify_memory_compression_gate() -> Dict[str, Any]:
 
     return {
         "gate": "Memory compression coverage (phi-folding reversibility)",
-        "status": (
-            "CLOSED" if lane_proof.reversible and density_proof.reversible else "FAILED"
-        ),
+        "status": ("CLOSED" if lane_proof.reversible and density_proof.reversible else "FAILED"),
         "lane_surface_32": {
             "original_size": lane_proof.original_size,
             "folded_size": lane_proof.folded_size,

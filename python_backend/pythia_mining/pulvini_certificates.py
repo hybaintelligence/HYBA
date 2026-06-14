@@ -22,9 +22,7 @@ def adjacency_map_digest(adjacency_map: dict) -> str:
         }
         for node, payload in sorted(adjacency_map.items())
     }
-    material = json.dumps(normalized, sort_keys=True, separators=(",", ":")).encode(
-        "utf-8"
-    )
+    material = json.dumps(normalized, sort_keys=True, separators=(",", ":")).encode("utf-8")
     return hashlib.sha256(material).hexdigest()
 
 
@@ -59,8 +57,7 @@ def _load_cached_automorphism_certificate(path: Path, map_hash: str) -> dict | N
     payload.setdefault("computation_ms", 0.0)
     if isinstance(payload.get("node_orbits_by_degree"), dict):
         payload["node_orbits_by_degree"] = {
-            int(degree): int(count)
-            for degree, count in payload["node_orbits_by_degree"].items()
+            int(degree): int(count) for degree, count in payload["node_orbits_by_degree"].items()
         }
     return payload
 
@@ -76,9 +73,7 @@ def _store_cached_automorphism_certificate(path: Path, certificate: dict) -> Non
         return
 
 
-def automorphism_runtime_certificate(
-    adjacency_map: dict, *, use_cache: bool = True
-) -> dict:
+def automorphism_runtime_certificate(adjacency_map: dict, *, use_cache: bool = True) -> dict:
     """
     Compute the exact automorphism group certificate for the runtime adjacency map.
 
@@ -106,9 +101,7 @@ def automorphism_runtime_certificate(
 
     violations = 0
     edges = {
-        tuple(sorted((u, v)))
-        for u, node_neighbors in neighbors.items()
-        for v in node_neighbors
+        tuple(sorted((u, v))) for u, node_neighbors in neighbors.items() for v in node_neighbors
     }
     for sigma in autos:
         for u, v in edges:
@@ -163,9 +156,9 @@ def phi_geometric_structure_certificate(
     nonce_space = int(getattr(compressor, "nonce_space_size", 2**32))
     stride = max(1, nonce_space // sample_size)
     phase = int(seed) % stride
-    sample = (
-        phase + np.arange(sample_size, dtype=np.uint64) * np.uint64(stride)
-    ) % np.uint64(nonce_space)
+    sample = (phase + np.arange(sample_size, dtype=np.uint64) * np.uint64(stride)) % np.uint64(
+        nonce_space
+    )
     phi_mask = np.fromiter(
         (compressor.phi_resonant(int(nonce)) for nonce in sample),
         dtype=bool,
@@ -215,9 +208,7 @@ def phi_geometric_structure_certificate(
     expected_hits = counts_array * overall_ratio
     expected_misses = counts_array * (1.0 - overall_ratio)
     misses = counts_array - hits_array
-    hit_only_chi_square = float(
-        np.sum(((hits_array - expected_hits) ** 2) / expected_hits)
-    )
+    hit_only_chi_square = float(np.sum(((hits_array - expected_hits) ** 2) / expected_hits))
     pearson_chi_square = float(
         np.sum(
             ((hits_array - expected_hits) ** 2) / expected_hits
@@ -238,9 +229,7 @@ def phi_geometric_structure_certificate(
             ** 3
         )
     )
-    reject_uniform_lane_null_p_0_05 = bool(
-        pearson_chi_square > chi_square_critical_p_0_05
-    )
+    reject_uniform_lane_null_p_0_05 = bool(pearson_chi_square > chi_square_critical_p_0_05)
 
     d_ratios = ratios_array[:20]
     i_ratios = ratios_array[20:]

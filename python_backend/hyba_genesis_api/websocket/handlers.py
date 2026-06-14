@@ -39,16 +39,12 @@ class WebSocketHandler:
                 },
             }
 
-        active_pools = [
-            pool for pool in pools if pool.last_pool_event_timestamp is not None
-        ]
+        active_pools = [pool for pool in pools if pool.last_pool_event_timestamp is not None]
         submitted = sum(pool.shares_submitted for pool in pools)
         accepted = sum(pool.shares_accepted for pool in pools)
         rejected = sum(pool.shares_rejected for pool in pools)
         acceptance_rate = accepted / submitted if submitted else None
-        latencies = [
-            pool.avg_latency_ms for pool in pools if pool.avg_latency_ms is not None
-        ]
+        latencies = [pool.avg_latency_ms for pool in pools if pool.avg_latency_ms is not None]
 
         return {
             "status": "ok" if pools else "not_connected",
@@ -64,7 +60,5 @@ class WebSocketHandler:
             "consciousness_level": None,
             "phi_resonance": None,
             "quantum_speedup": None,
-            "message": (
-                None if pools else "No persisted mining activity is available yet."
-            ),
+            "message": (None if pools else "No persisted mining activity is available yet."),
         }

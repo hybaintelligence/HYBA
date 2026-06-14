@@ -11,7 +11,7 @@ sys.path.insert(0, str(ROOT))
 
 print("Testing noise protocol import...")
 try:
-    from pythia_mining.noise_wrapper import NoiseWrapper, NoiseHandshakeResult
+    from pythia_mining.noise_wrapper import NoiseHandshakeResult, NoiseWrapper
 
     print("✓ noise_wrapper imported successfully")
 except ImportError as e:

@@ -104,9 +104,7 @@ class PoolCredentialRequest(BaseModel):
     def validate_pool(cls, value: str) -> str:
         pool_id = value.lower()
         if pool_id not in DEFAULT_POOL_SPECS:
-            raise ValueError(
-                f"pool_id must be one of: {', '.join(sorted(DEFAULT_POOL_SPECS))}"
-            )
+            raise ValueError(f"pool_id must be one of: {', '.join(sorted(DEFAULT_POOL_SPECS))}")
         return pool_id
 
     @validator("username", "worker", "nicehash_pool_id")
@@ -135,9 +133,7 @@ class PoolCredentialRequest(BaseModel):
 
 
 class ConnectRequest(BaseModel):
-    pool_id: str = Field(
-        ..., description="Pool identifier (viabtc, braiins, ckpool, nicehash)"
-    )
+    pool_id: str = Field(..., description="Pool identifier (viabtc, braiins, ckpool, nicehash)")
     worker: Optional[str] = Field(None, description="Legacy worker/username override")
     password: Optional[str] = Field(None, description="Legacy password override")
     username: Optional[str] = None
@@ -159,9 +155,7 @@ class ConnectRequest(BaseModel):
     def validate_pool(cls, value: str) -> str:
         pool_id = value.lower()
         if pool_id not in DEFAULT_POOL_SPECS:
-            raise ValueError(
-                f"pool_id must be one of: {', '.join(sorted(DEFAULT_POOL_SPECS))}"
-            )
+            raise ValueError(f"pool_id must be one of: {', '.join(sorted(DEFAULT_POOL_SPECS))}")
         return pool_id
 
 
@@ -208,9 +202,7 @@ async def require_mining_read(
 
 
 def _request_id(request: Request) -> str:
-    request_id = request.headers.get("x-request-id") or request.headers.get(
-        "x-correlation-id"
-    )
+    request_id = request.headers.get("x-request-id") or request.headers.get("x-correlation-id")
     if request_id:
         return request_id[:128]
     return mining_request_tracker.generate_request_id()
@@ -265,9 +257,7 @@ def _capped_hashrate_ehs(value: Any) -> Optional[float]:
     return float(min(parsed, PULVINI_HASHRATE_CAP_EHS))
 
 
-def _effective_hashrate_ehs(
-    base_capacity_ehs: Any, power_scale: Any = 1.0
-) -> Optional[float]:
+def _effective_hashrate_ehs(base_capacity_ehs: Any, power_scale: Any = 1.0) -> Optional[float]:
     base = _capped_hashrate_ehs(base_capacity_ehs)
     if base is None:
         return None
@@ -343,7 +333,9 @@ def _write_state(state: Dict[str, Any]) -> None:
                 )
         detail = f"Failed to write state file {path}: {exc}"
         if cleanup_error is not None:
-            detail = f"{detail}; additionally failed to remove temporary file {temp}: {cleanup_error}"
+            detail = (
+                f"{detail}; additionally failed to remove temporary file {temp}: {cleanup_error}"
+            )
         raise RuntimeError(detail) from exc
 
 
@@ -381,9 +373,7 @@ def _pool_config_response(
     payload["status"] = (
         "connected"
         if active_pool_id == config.pool_id
-        else "configured"
-        if payload.get("configured")
-        else "not_configured"
+        else "configured" if payload.get("configured") else "not_configured"
     )
     return payload
 
@@ -499,9 +489,7 @@ async def get_pool_config():
     active_pool_id = _ACTIVE_CONNECTION.get("pool_id") if _ACTIVE_CONNECTION else None
     configs = load_runtime_pool_configs()
     return {
-        "pools": [
-            _pool_config_response(config, active_pool_id) for config in configs.values()
-        ],
+        "pools": [_pool_config_response(config, active_pool_id) for config in configs.values()],
         "active_pool_id": active_pool_id,
         "timestamp": datetime.now(timezone.utc).isoformat(),
     }
@@ -520,9 +508,7 @@ async def configure_pool(
     if tracked.status == RequestStatus.COMPLETED and tracked.result:
         return tracked.result
     _admit_midas_control(request_id)
-    mining_request_tracker.update_request_status(
-        tracked.request_id, RequestStatus.PROCESSING
-    )
+    mining_request_tracker.update_request_status(tracked.request_id, RequestStatus.PROCESSING)
     try:
         config = save_runtime_pool_config(_build_pool_config_from_request(req))
         result = {
@@ -578,9 +564,7 @@ async def get_pools():
                     "shares_accepted": shares["accepted"] if is_active else 0,
                     "shares_rejected": shares["rejected"] if is_active else 0,
                     "acceptance_rate": (
-                        shares["accepted"] / max(shares["submitted"], 1)
-                        if is_active
-                        else 0
+                        shares["accepted"] / max(shares["submitted"], 1) if is_active else 0
                     ),
                 },
             }
@@ -642,9 +626,7 @@ async def connect_to_pool(
             "idempotency_key": idem,
         }
     _admit_midas_control(request_id)
-    mining_request_tracker.update_request_status(
-        tracked.request_id, RequestStatus.PROCESSING
-    )
+    mining_request_tracker.update_request_status(tracked.request_id, RequestStatus.PROCESSING)
     try:
         config = _resolve_connect_config(req)
         if _ACTIVE_CONNECTION is not None:
@@ -684,9 +666,7 @@ async def connect_to_pool(
                 },
             )
         else:
-            raise StateTransitionError(
-                f"Cannot connect from MIDAS state {current_state.value}"
-            )
+            raise StateTransitionError(f"Cannot connect from MIDAS state {current_state.value}")
 
         daemon_status = start_pythia_daemon(capacity_ehs=capacity_ehs)
 
@@ -804,9 +784,7 @@ async def submit_job(
             "idempotency_key": idem,
         }
     _admit_midas_control(request_id)
-    mining_request_tracker.update_request_status(
-        tracked.request_id, RequestStatus.PROCESSING
-    )
+    mining_request_tracker.update_request_status(tracked.request_id, RequestStatus.PROCESSING)
     try:
         if _ACTIVE_CONNECTION is None:
             raise HTTPException(
@@ -995,9 +973,7 @@ async def health_check():
 
     # Daemon health check
     daemon_running = (
-        _DAEMON_STARTED
-        and _PYTHIA_PROCESS is not None
-        and _PYTHIA_PROCESS.poll() is None
+        _DAEMON_STARTED and _PYTHIA_PROCESS is not None and _PYTHIA_PROCESS.poll() is None
     )
     health_status["checks"]["daemon"] = {
         "status": "healthy" if daemon_running else "unhealthy",
@@ -1064,17 +1040,13 @@ async def disconnect(
 ):
     global _ACTIVE_CONNECTION
     request_id = _request_id(request)
-    parameters = {
-        "active_pool": _ACTIVE_CONNECTION.get("pool_id") if _ACTIVE_CONNECTION else None
-    }
+    parameters = {"active_pool": _ACTIVE_CONNECTION.get("pool_id") if _ACTIVE_CONNECTION else None}
     idem = _idempotency_key(request, idempotency_key, "disconnect", parameters)
     tracked = mining_request_tracker.create_request("disconnect", parameters, idem)
     if tracked.status == RequestStatus.COMPLETED and tracked.result:
         return tracked.result
     _admit_midas_control(request_id)
-    mining_request_tracker.update_request_status(
-        tracked.request_id, RequestStatus.PROCESSING
-    )
+    mining_request_tracker.update_request_status(tracked.request_id, RequestStatus.PROCESSING)
     try:
         pool_name = _ACTIVE_CONNECTION.get("pool_id") if _ACTIVE_CONNECTION else None
         if midas_state_machine.get_state() == MiningState.RUNNING:
@@ -1125,11 +1097,7 @@ async def disconnect(
 
 @router.get("/daemon", dependencies=[Depends(require_mining_control)])
 async def daemon_status():
-    running = (
-        _DAEMON_STARTED
-        and _PYTHIA_PROCESS is not None
-        and _PYTHIA_PROCESS.poll() is None
-    )
+    running = _DAEMON_STARTED and _PYTHIA_PROCESS is not None and _PYTHIA_PROCESS.poll() is None
     return {
         "status": "running" if running else "not_running",
         "pid": _PYTHIA_PROCESS.pid if running and _PYTHIA_PROCESS else None,
@@ -1161,9 +1129,7 @@ async def get_stats():
             "avg_hashrate": hashrate,
             "peak_hashrate": hashrate,
             "hashrate_cap_ehs": PULVINI_HASHRATE_CAP_EHS,
-            "capacity_source": (
-                "configured_capped" if hashrate is not None else "not_configured"
-            ),
+            "capacity_source": ("configured_capped" if hashrate is not None else "not_configured"),
             "total_shares": shares["submitted"],
             "accepted_shares": shares["accepted"],
             "rejected_shares": shares["rejected"],
@@ -1176,9 +1142,7 @@ async def get_stats():
         "timeseries": [],
         "quantum_performance": {
             "quantum_speedup_avg": None,
-            "phi_resonance_avg": (
-                quantum.get("phi_phase_alignment") if quantum else None
-            ),
+            "phi_resonance_avg": (quantum.get("phi_phase_alignment") if quantum else None),
             "vqe_iterations_avg": None,
             "consciousness_correlation": None,
             "quantum_metrics": quantum,
@@ -1207,9 +1171,7 @@ async def set_power_scale(
     if tracked.status == RequestStatus.COMPLETED and tracked.result:
         return tracked.result
     _admit_midas_control(request_id)
-    mining_request_tracker.update_request_status(
-        tracked.request_id, RequestStatus.PROCESSING
-    )
+    mining_request_tracker.update_request_status(tracked.request_id, RequestStatus.PROCESSING)
     try:
         if midas_state_machine.get_state() != MiningState.RUNNING:
             raise HTTPException(

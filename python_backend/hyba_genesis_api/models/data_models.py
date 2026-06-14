@@ -3,10 +3,11 @@ HYBA Genesis Platform - Data Models
 Complete API schemas and domain models
 """
 
-from typing import List, Optional, Tuple
-from pydantic import BaseModel, Field
 from datetime import datetime, timezone
 from enum import Enum
+from typing import List, Optional, Tuple
+
+from pydantic import BaseModel, Field
 
 
 class Role(str, Enum):

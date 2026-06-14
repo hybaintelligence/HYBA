@@ -53,16 +53,12 @@ def kraus_operators_for_step(
 
     h_eigs, h_vecs = np.linalg.eigh(hamiltonian)
     unitary = h_vecs @ np.diag(np.exp((-1j * h_eigs * dt) / HBAR)) @ h_vecs.conj().T
-    return [unitary @ k0_damping] + [
-        math.sqrt(dt) * unitary @ operator for operator in jumps
-    ]
+    return [unitary @ k0_damping] + [math.sqrt(dt) * unitary @ operator for operator in jumps]
 
 
 def choi_matrix(kraus_operators: Sequence[np.ndarray]) -> np.ndarray:
     """Construct J(E)=sum_k vec(K_k) vec(K_k)^dagger for the full d^2 space."""
-    operators = [
-        np.asarray(operator, dtype=np.complex128) for operator in kraus_operators
-    ]
+    operators = [np.asarray(operator, dtype=np.complex128) for operator in kraus_operators]
     if not operators:
         return np.zeros((0, 0), dtype=np.complex128)
     vectors = [operator.reshape(-1, order="F") for operator in operators]
@@ -77,9 +73,7 @@ def choi_certificate(
     kraus_operators: Sequence[np.ndarray], *, tolerance: float = 1e-9
 ) -> ChoiCertificate:
     """Return full-Choi PSD and trace-preservation checks for a Kraus channel."""
-    operators = [
-        np.asarray(operator, dtype=np.complex128) for operator in kraus_operators
-    ]
+    operators = [np.asarray(operator, dtype=np.complex128) for operator in kraus_operators]
     if not operators:
         return ChoiCertificate(0, 0, 0.0, True, 0, 0.0)
 

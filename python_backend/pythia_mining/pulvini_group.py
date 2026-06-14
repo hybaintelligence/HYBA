@@ -71,8 +71,7 @@ def compute_graph_automorphisms(
     nodes = list(range(len(adjacency_map)))
     degree = {node_id: len(neighbors[node_id]) for node_id in nodes}
     candidates = {
-        node_id: {other for other in nodes if degree[other] == degree[node_id]}
-        for node_id in nodes
+        node_id: {other for other in nodes if degree[other] == degree[node_id]} for node_id in nodes
     }
     mapping: Dict[int, int] = {}
     used: Set[int] = set()
@@ -86,9 +85,7 @@ def compute_graph_automorphisms(
                 continue
             ok = True
             for mapped_source, mapped_target in mapping.items():
-                if (mapped_source in neighbors[source]) != (
-                    mapped_target in neighbors[target]
-                ):
+                if (mapped_source in neighbors[source]) != (mapped_target in neighbors[target]):
                     ok = False
                     break
             if ok:
@@ -163,12 +160,7 @@ def apply_automorphism_to_nonce(
 def nonce_orbit(
     nonce: int, automorphisms: Sequence[Tuple[int, ...]], num_nodes: int = 32
 ) -> List[int]:
-    return sorted(
-        {
-            apply_automorphism_to_nonce(nonce, sigma, num_nodes)
-            for sigma in automorphisms
-        }
-    )
+    return sorted({apply_automorphism_to_nonce(nonce, sigma, num_nodes) for sigma in automorphisms})
 
 
 def tensor_coordinate_for_node(
@@ -318,10 +310,7 @@ def a5_representation_certificate(
     orthogonal = True
     for i, (_, _, chi_i) in enumerate(rows):
         for j, (_, _, chi_j) in enumerate(rows):
-            inner = (
-                sum(size * a * b for size, a, b in zip(class_sizes, chi_i, chi_j))
-                / order
-            )
+            inner = sum(size * a * b for size, a, b in zip(class_sizes, chi_i, chi_j)) / order
             expected = 1.0 if i == j else 0.0
             if abs(inner - expected) > 1e-9:
                 orthogonal = False

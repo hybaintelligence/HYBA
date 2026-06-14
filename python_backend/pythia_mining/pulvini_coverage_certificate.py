@@ -22,7 +22,6 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass
 from typing import Any, Dict, Optional, Sequence, Tuple
 
-
 from .pulvini_group import apply_automorphism_to_nonce, compute_graph_automorphisms
 from .pulvini_topology import ADJACENCY_MAP, NUM_NODES
 

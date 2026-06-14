@@ -8,7 +8,7 @@ which makes them safe to test and reuse from live transports.
 from __future__ import annotations
 
 import json
-from dataclasses import dataclass, asdict
+from dataclasses import asdict, dataclass
 from typing import Any, Dict, List, Sequence, Tuple
 
 
@@ -147,9 +147,7 @@ def parse_subscribe_result(message: Dict[str, Any]) -> SubscribeResult:
     size = int(result[2])
     if size <= 0 or size > 32:
         raise StratumProtocolError("extranonce2_size is out of safe range")
-    return SubscribeResult(
-        extranonce1=extranonce1, extranonce2_size=size, raw_result=result
-    )
+    return SubscribeResult(extranonce1=extranonce1, extranonce2_size=size, raw_result=result)
 
 
 def parse_authorize_result(message: Dict[str, Any]) -> bool:
@@ -206,9 +204,7 @@ def parse_set_extranonce(params: Sequence[Any]) -> SetExtranonceMessage:
     extranonce2_size = int(params[1])
     if extranonce2_size <= 0 or extranonce2_size > 32:
         raise StratumProtocolError("extranonce2_size is out of safe range")
-    return SetExtranonceMessage(
-        extranonce1=extranonce1, extranonce2_size=extranonce2_size
-    )
+    return SetExtranonceMessage(extranonce1=extranonce1, extranonce2_size=extranonce2_size)
 
 
 def parse_set_version_mask(params: Sequence[Any]) -> SetVersionMaskMessage:

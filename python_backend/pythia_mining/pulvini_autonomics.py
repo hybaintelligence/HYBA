@@ -107,9 +107,7 @@ class NodeTelemetry:
         if self.hash_rate < 0:
             raise ValueError("hash_rate must be non-negative")
 
-    def coherence_score(
-        self, weights: Tuple[float, float, float] = (0.33, 0.33, 0.34)
-    ) -> float:
+    def coherence_score(self, weights: Tuple[float, float, float] = (0.33, 0.33, 0.34)) -> float:
         """Return ``Si = w1*Tres + w2*phi_eff + w3*chi_sync`` in [0, 1]."""
 
         if len(weights) != 3:
@@ -181,17 +179,11 @@ class DodecahedronIcosahedronCompound:
         d_degrees = self.degrees[:20]
         i_degrees = self.degrees[20:]
         if not np.all(d_degrees == 3):
-            raise ValueError(
-                f"D-node degree profile must be exactly 3, got {d_degrees.tolist()}"
-            )
+            raise ValueError(f"D-node degree profile must be exactly 3, got {d_degrees.tolist()}")
         if not np.all(i_degrees == 5):
-            raise ValueError(
-                f"I-node degree profile must be exactly 5, got {i_degrees.tolist()}"
-            )
+            raise ValueError(f"I-node degree profile must be exactly 5, got {i_degrees.tolist()}")
 
-    def neighbors(
-        self, node_id: int, *, live_nodes: Optional[Set[int]] = None
-    ) -> List[int]:
+    def neighbors(self, node_id: int, *, live_nodes: Optional[Set[int]] = None) -> List[int]:
         self._validate_node_id(node_id)
         values = np.where(self.adjacency[int(node_id)] == 1)[0].astype(int).tolist()
         if live_nodes is not None:
@@ -216,16 +208,10 @@ class DodecahedronIcosahedronCompound:
     def nonce_range(self, node_id: int) -> Tuple[int, int]:
         self._validate_node_id(node_id)
         start = int(node_id) * SLICE_SIZE
-        end = (
-            MAX_UINT32_NONCE
-            if int(node_id) == NUM_NODES - 1
-            else start + SLICE_SIZE - 1
-        )
+        end = MAX_UINT32_NONCE if int(node_id) == NUM_NODES - 1 else start + SLICE_SIZE - 1
         return start, end
 
-    def healing_candidates(
-        self, failed_node: int, failed_nodes: Iterable[int] = ()
-    ) -> List[int]:
+    def healing_candidates(self, failed_node: int, failed_nodes: Iterable[int] = ()) -> List[int]:
         """Return live repair nodes, expanding by BFS if direct neighbors failed.
 
         Direct geometric neighbors are always preferred.  If a clustered failure
@@ -237,9 +223,7 @@ class DodecahedronIcosahedronCompound:
         self._validate_node_id(failed_node)
         failed: Set[int] = {int(node) for node in failed_nodes}
         failed.add(int(failed_node))
-        direct = self.neighbors(
-            int(failed_node), live_nodes=set(range(NUM_NODES)) - failed
-        )
+        direct = self.neighbors(int(failed_node), live_nodes=set(range(NUM_NODES)) - failed)
         if direct:
             return direct
 
@@ -275,8 +259,7 @@ class DodecahedronIcosahedronCompound:
             "automorphism_group_size": self.automorphism_group_size,
             "automorphism_verified": bool(self.automorphism_group_size == 120),
             "bipartite": bool(
-                np.sum(self.adjacency[:20, :20]) == 0
-                and np.sum(self.adjacency[20:, 20:]) == 0
+                np.sum(self.adjacency[:20, :20]) == 0 and np.sum(self.adjacency[20:, 20:]) == 0
             ),
         }
 
@@ -324,9 +307,7 @@ class ReducedDensityMatrix:
         # Use more stable matrix multiplication with error suppression
         with np.errstate(divide="ignore", invalid="ignore", over="ignore"):
             projected = (
-                eigenvectors
-                @ np.diag(eigenvalues_safe / total_safe)
-                @ eigenvectors.conj().T
+                eigenvectors @ np.diag(eigenvalues_safe / total_safe) @ eigenvectors.conj().T
             )
         return (projected + projected.conj().T) / 2.0
 
@@ -547,9 +528,7 @@ class ThermalGovernor:
             weights /= total
         return np.asarray(amplitudes, dtype=np.float64) + weights * float(amount)
 
-    def reconstruct_rho(
-        self, reference_rho: np.ndarray, amplitudes: Sequence[float]
-    ) -> np.ndarray:
+    def reconstruct_rho(self, reference_rho: np.ndarray, amplitudes: Sequence[float]) -> np.ndarray:
         values = self._normalize_amplitudes(np.asarray(amplitudes, dtype=np.float64))
         phases = self._phases_from_reference(reference_rho)
         psi = np.sqrt(values).astype(np.complex128) * np.exp(1j * phases)
@@ -593,9 +572,7 @@ class ThermalGovernor:
             by_node = {int(item.node_id): item for item in telemetry}
             ordered = [by_node[node_id] for node_id in range(NUM_NODES)]
         if len(ordered) != NUM_NODES:
-            raise ValueError(
-                f"thermal governance requires telemetry for {NUM_NODES} nodes"
-            )
+            raise ValueError(f"thermal governance requires telemetry for {NUM_NODES} nodes")
         return ordered
 
     @staticmethod
@@ -643,24 +620,17 @@ class ManifoldHomeostasis:
 
     def health_matrix(self) -> Dict[int, float]:
         with self._lock:
-            return {
-                node_id: item.coherence_score()
-                for node_id, item in self.telemetry.items()
-            }
+            return {node_id: item.coherence_score() for node_id, item in self.telemetry.items()}
 
     def live_nodes(self) -> Set[int]:
         health = self.health_matrix()
         return {
-            node_id
-            for node_id in range(NUM_NODES)
-            if health.get(node_id, 1.0) >= self.threshold
+            node_id for node_id in range(NUM_NODES) if health.get(node_id, 1.0) >= self.threshold
         }
 
     def monitor_heartbeat(self) -> List[int]:
         health = self.health_matrix()
-        critical = sorted(
-            node_id for node_id, score in health.items() if score < self.threshold
-        )
+        critical = sorted(node_id for node_id, score in health.items() if score < self.threshold)
         with self._lock:
             self.coherence_history.append((time.time(), health))
             if len(self.coherence_history) > 512:
@@ -675,9 +645,7 @@ class ManifoldHomeostasis:
             )
         return critical
 
-    def log_failure(
-        self, node_id: int, reason: str, cascade: Sequence[int]
-    ) -> Dict[str, Any]:
+    def log_failure(self, node_id: int, reason: str, cascade: Sequence[int]) -> Dict[str, Any]:
         event = {
             "timestamp": time.time(),
             "event_type": "autonomic_node_failure",
@@ -686,9 +654,7 @@ class ManifoldHomeostasis:
             "secondary_at_risk": list(cascade),
             "rho_purity": self.rho.purity(),
             "avg_coherence": (
-                float(np.mean(list(self.health_matrix().values())))
-                if self.telemetry
-                else 1.0
+                float(np.mean(list(self.health_matrix().values()))) if self.telemetry else 1.0
             ),
         }
         with self._lock:
@@ -702,10 +668,7 @@ class ManifoldHomeostasis:
         at_risk = []
         health = self.health_matrix()
         for neighbor in self.compound.neighbors(node_id):
-            if (
-                health.get(neighbor, 1.0) < 0.3
-                and self.rho.coherence(node_id, neighbor) > 0.5
-            ):
+            if health.get(neighbor, 1.0) < 0.3 and self.rho.coherence(node_id, neighbor) > 0.5:
                 at_risk.append(neighbor)
         return sorted(at_risk)
 
@@ -845,24 +808,19 @@ class BuresOptimizer:
         self.homeostasis = homeostasis
         self.optimization_log: List[Dict[str, Any]] = []
 
-    def efficiency_manifold(
-        self, *, include_critical: bool = False
-    ) -> Dict[int, float]:
+    def efficiency_manifold(self, *, include_critical: bool = False) -> Dict[int, float]:
         health = self.homeostasis.health_matrix()
         raw: Dict[int, float] = {}
         governor = ThermalGovernor()
         for node_id, telemetry in self.homeostasis.telemetry.items():
             thermal_fade = governor.calculate_fade_factor(telemetry.thermal_entropy)
             if (
-                not include_critical
-                and health.get(node_id, 1.0) < self.homeostasis.threshold
+                not include_critical and health.get(node_id, 1.0) < self.homeostasis.threshold
             ) or thermal_fade <= EPSILON:
                 raw[node_id] = 0.0
                 continue
             denominator = max(float(telemetry.thermal_entropy), EPSILON)
-            raw[node_id] = (
-                max(float(telemetry.hash_rate), 0.0) / denominator
-            ) * thermal_fade
+            raw[node_id] = (max(float(telemetry.hash_rate), 0.0) / denominator) * thermal_fade
         maximum = max(raw.values(), default=0.0)
         if maximum <= EPSILON:
             return {node_id: 0.0 for node_id in raw}
@@ -890,9 +848,7 @@ class BuresOptimizer:
         current = self.homeostasis.rho.diagonal()
         current = current / max(float(np.sum(current)), EPSILON)
         target = self.target_distribution()
-        sqrt_step = (1.0 - learning_rate) * np.sqrt(current) + learning_rate * np.sqrt(
-            target
-        )
+        sqrt_step = (1.0 - learning_rate) * np.sqrt(current) + learning_rate * np.sqrt(target)
         stepped = np.square(sqrt_step)
         total = float(np.sum(stepped))
         if total <= EPSILON:
@@ -956,17 +912,13 @@ class PulviniAutonomicsEngine:
         self.thermal_log: List[Dict[str, Any]] = []
         self.sacrificed_nodes: Set[int] = set()
 
-    def ingest_telemetry(
-        self, telemetry: NodeTelemetry | Iterable[NodeTelemetry]
-    ) -> None:
+    def ingest_telemetry(self, telemetry: NodeTelemetry | Iterable[NodeTelemetry]) -> None:
         if isinstance(telemetry, NodeTelemetry):
             self.homeostasis.update_telemetry(telemetry.node_id, telemetry)
         else:
             self.homeostasis.bulk_update(telemetry)
 
-    def heartbeat_and_heal(
-        self, *, reason: str = "decoherence"
-    ) -> Optional[RebalanceEvent]:
+    def heartbeat_and_heal(self, *, reason: str = "decoherence") -> Optional[RebalanceEvent]:
         critical = self.homeostasis.monitor_heartbeat()
         if not critical:
             return None
@@ -978,9 +930,7 @@ class PulviniAutonomicsEngine:
         if telemetry is not None:
             self.ingest_telemetry(telemetry)
         if len(self.homeostasis.telemetry) != NUM_NODES:
-            raise ValueError(
-                f"thermal_tick requires telemetry for all {NUM_NODES} nodes"
-            )
+            raise ValueError(f"thermal_tick requires telemetry for all {NUM_NODES} nodes")
         evolved_rho, event = self.thermal_governor.apply_thermal_governance(
             self.homeostasis.rho.rho,
             self.homeostasis.telemetry,
@@ -991,9 +941,7 @@ class PulviniAutonomicsEngine:
         if len(self.thermal_log) > 512:
             del self.thermal_log[: len(self.thermal_log) - 512]
         newly_sacrificed = [
-            node_id
-            for node_id in event.sacrificed_nodes
-            if node_id not in self.sacrificed_nodes
+            node_id for node_id in event.sacrificed_nodes if node_id not in self.sacrificed_nodes
         ]
         rebalance = None
         if newly_sacrificed:

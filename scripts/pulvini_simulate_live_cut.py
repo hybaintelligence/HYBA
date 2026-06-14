@@ -27,10 +27,10 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 try:
-    from pythia_mining.pulvini_autonomics import (
+    from pythia_mining.pulvini_autonomics import (  # noqa: E402
         NodeTelemetry,
         PulviniAutonomicsEngine,
-    )  # noqa: E402
+    )
     from pythia_mining.pulvini_overlay import PulviniOverlayConcentrator  # noqa: E402
     from pythia_mining.pulvini_verifier import (  # noqa: E402
         PULVINI_BINARY_HEADER_SIZE,

@@ -20,10 +20,10 @@ PYTHON_BACKEND = ROOT / "python_backend"
 if str(PYTHON_BACKEND) not in sys.path:
     sys.path.insert(0, str(PYTHON_BACKEND))
 
-from pythia_mining.pulvini_elevation import (
+from pythia_mining.pulvini_elevation import (  # noqa: E402
     CertificateLedger,
     QuantumRuntimeManifestBuilder,
-)  # noqa: E402
+)
 
 
 class BuildOperator:

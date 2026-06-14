@@ -15,11 +15,11 @@ if str(BACKEND) not in sys.path:
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from pythia_mining.pool_profiles import PoolProfile
 from pythia_mining.live_stratum_v2_session import (
     LiveStratumV2Session,
     LiveStratumV2SessionError,
 )
+from pythia_mining.pool_profiles import PoolProfile
 
 
 async def test_braiins_noise_connection(

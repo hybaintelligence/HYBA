@@ -83,13 +83,9 @@ class AIOptimizer:
         model_predictions = {
             "solver_phi": {"score": phi_score},
             "difficulty_window": {"score": indicators["job"]["target_norm"]},
-            "search_space": {
-                "score": min(1.0, indicators["solver"]["search_space_size_norm"])
-            },
+            "search_space": {"score": min(1.0, indicators["solver"]["search_space_size_norm"])},
         }
-        phi_scaling = self.phi_ensemble.predict_with_phi_scaling(
-            model_predictions, indicators
-        )
+        phi_scaling = self.phi_ensemble.predict_with_phi_scaling(model_predictions, indicators)
         phi_features = self.phi_features.extract_phi_optimized_features(indicators)
         benchmark = benchmark_vs_asic(
             measured_hashes_per_second=metrics.get("hashrate_hps"),

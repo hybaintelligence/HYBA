@@ -52,20 +52,12 @@ def classify_error(error: Exception) -> str:
         "ConnectionResetError",
     ]:
         return ErrorSeverity.TRANSIENT
-    if (
-        "timeout" in error_message
-        or "network" in error_message
-        or "connection" in error_message
-    ):
+    if "timeout" in error_message or "network" in error_message or "connection" in error_message:
         return ErrorSeverity.TRANSIENT
 
     # Fatal configuration errors
     if error_type in ["ValueError", "KeyError", "AttributeError", "TypeError"]:
-        if (
-            "config" in error_message
-            or "credential" in error_message
-            or "auth" in error_message
-        ):
+        if "config" in error_message or "credential" in error_message or "auth" in error_message:
             return ErrorSeverity.FATAL
     if error_type in ["ProductionConfigurationError", "PoolProfileError"]:
         return ErrorSeverity.FATAL
@@ -77,9 +69,7 @@ def classify_error(error: Exception) -> str:
         "StratumTransportError",
     ]:
         return ErrorSeverity.RECOVERABLE
-    if "pool" in error_message and (
-        "disconnect" in error_message or "offline" in error_message
-    ):
+    if "pool" in error_message and ("disconnect" in error_message or "offline" in error_message):
         return ErrorSeverity.RECOVERABLE
 
     # Default to transient for unknown errors
@@ -101,9 +91,7 @@ class GenesisAI:
     def __init__(self, config: Dict[str, Any]):
         self.config = config
         pools_config = config.get("pools", {})
-        runtime_env = os.getenv(
-            "NODE_ENV", os.getenv("HYBA_ENV", "development")
-        ).lower()
+        runtime_env = os.getenv("NODE_ENV", os.getenv("HYBA_ENV", "development")).lower()
         if not pools_config and runtime_env != "production":
             import json
             from pathlib import Path
@@ -122,9 +110,7 @@ class GenesisAI:
         )
         autonomics_config = config.get("autonomics") or {}
         self.autonomics = PulviniAutonomicsEngine(
-            decoherence_threshold=float(
-                autonomics_config.get("decoherence_threshold", 0.15)
-            ),
+            decoherence_threshold=float(autonomics_config.get("decoherence_threshold", 0.15)),
             audit_sink=self._record_autonomic_audit,
             lattice_repoint_sink=self.overlay.apply_lattice_repoint,
         )
@@ -153,9 +139,7 @@ class GenesisAI:
         self.latest_autonomic_event: Optional[Dict[str, Any]] = None
         self.allow_dev_fixture_jobs = os.getenv(
             "NODE_ENV", os.getenv("HYBA_ENV", "development")
-        ).lower() != "production" and os.getenv(
-            "HYBA_ALLOW_DEV_FIXTURES", "false"
-        ).lower() in {
+        ).lower() != "production" and os.getenv("HYBA_ALLOW_DEV_FIXTURES", "false").lower() in {
             "1",
             "true",
             "yes",
@@ -180,9 +164,7 @@ class GenesisAI:
 
     def _run_autonomic_feedback(self) -> None:
         telemetry = self.overlay.autonomic_telemetry(
-            power_scale=float(
-                self.quantum_solver.get_metrics().get("power_scale") or 1.0
-            )
+            power_scale=float(self.quantum_solver.get_metrics().get("power_scale") or 1.0)
         )
         thermal_event, thermal_rebalance = self.autonomic_orchestrator.tick(telemetry)
         self.overlay.apply_autonomic_distribution(
@@ -196,16 +178,12 @@ class GenesisAI:
                 reason="thermal_sacrifice_healing",
             )
             self.latest_autonomic_event = thermal_rebalance.to_dict()
-            self.health_status = (
-                "HEALING" if thermal_rebalance.coverage_maintained else "DEGRADED"
-            )
+            self.health_status = "HEALING" if thermal_rebalance.coverage_maintained else "DEGRADED"
         heal_event = self.autonomics.heartbeat_and_heal(reason="runtime_telemetry")
         if heal_event is not None:
             self.repair_count += 1
             self.latest_autonomic_event = heal_event.to_dict()
-            self.health_status = (
-                "HEALING" if heal_event.coverage_maintained else "DEGRADED"
-            )
+            self.health_status = "HEALING" if heal_event.coverage_maintained else "DEGRADED"
         autonomics_config = self.config.get("autonomics") or {}
         learning_rate = float(autonomics_config.get("learning_rate", 0.01))
         if learning_rate > 0.0:
@@ -250,9 +228,7 @@ class GenesisAI:
 
         asyncio.create_task(self._mining_loop())
         asyncio.create_task(self._pool_rotation_loop())
-        self.logger.info(
-            "PYTHIA Genesis Orchestrator running without simulated production jobs."
-        )
+        self.logger.info("PYTHIA Genesis Orchestrator running without simulated production jobs.")
         return True
 
     async def stop(self) -> None:
@@ -283,9 +259,7 @@ class GenesisAI:
             return job
         return None
 
-    async def _handle_found_share(
-        self, *, active_pool, node_id: int, nonce: int, extranonce2: str
-    ):
+    async def _handle_found_share(self, *, active_pool, node_id: int, nonce: int, extranonce2: str):
         if self.current_job is None:
             raise RuntimeError("cannot handle share without current job")
         self.overlay.record_share_candidate(node_id, nonce)
@@ -316,9 +290,7 @@ class GenesisAI:
                     await asyncio.sleep(0.5)
                     continue
 
-                self.overlay.register_pool_job(
-                    self.current_job, pool_name=active_pool.pool_name
-                )
+                self.overlay.register_pool_job(self.current_job, pool_name=active_pool.pool_name)
                 if self.propagation.is_job_cancelled(self.current_job.job_id):
                     self.health_status = "AWAITING_JOB"
                     await asyncio.sleep(0.25)
@@ -328,9 +300,7 @@ class GenesisAI:
                 self.overlay.phase_heartbeat(self.heartbeat_tick)
                 self.overlay.manifold.evolve_closed_system(dt=0.05)
                 self._run_autonomic_feedback()
-                optimization = await self.ai_optimizer.optimize_nonce_search(
-                    self.current_job
-                )
+                optimization = await self.ai_optimizer.optimize_nonce_search(self.current_job)
                 self.latest_phi_optimization = {
                     "strategy_used": optimization.strategy_used,
                     "confidence": optimization.confidence,
@@ -391,17 +361,13 @@ class GenesisAI:
                             share_result.error_message or "share rejected",
                         )
                 elif resolved_nonce is None and self.current_job is not None:
-                    first_assignment = next(
-                        iter(self.overlay.assignments.values()), None
-                    )
+                    first_assignment = next(iter(self.overlay.assignments.values()), None)
                     if first_assignment is not None:
                         self.overlay.record_nack(first_assignment.node_id)
 
                 self.failure_counter = 0
                 if self.health_status != "HEALING":
-                    self.health_status = (
-                        "HEALTHY" if active_pool.current_jobs else "AWAITING_JOB"
-                    )
+                    self.health_status = "HEALTHY" if active_pool.current_jobs else "AWAITING_JOB"
                 await asyncio.sleep(0.25)
             except Exception as e:
                 severity = classify_error(e)
@@ -420,9 +386,7 @@ class GenesisAI:
                         e,
                     )
                     # Fatal errors should stop the mining loop
-                    await asyncio.sleep(
-                        60.0
-                    )  # Long sleep before retry for fatal errors
+                    await asyncio.sleep(60.0)  # Long sleep before retry for fatal errors
                 elif severity == ErrorSeverity.RECOVERABLE:
                     self.failure_counter = max(
                         self.failure_counter - 1, 0
@@ -454,9 +418,7 @@ class GenesisAI:
                 rotation_failures = 0
             except Exception as e:
                 rotation_failures += 1
-                self.logger.error(
-                    "Pool scheduler failed (failures=%s): %s", rotation_failures, e
-                )
+                self.logger.error("Pool scheduler failed (failures=%s): %s", rotation_failures, e)
                 self.health_status = "DEGRADED"
                 await asyncio.sleep(min(60.0, 10.0 * rotation_failures))
 
@@ -495,9 +457,7 @@ class GenesisAI:
             "acceptance_rate": None if acceptance is None else round(acceptance, 6),
             "system_health": self.health_status,
             "cpu_load": cpu_load,
-            "active_stratum_version": (
-                active_pool.stratum_version if active_pool else None
-            ),
+            "active_stratum_version": (active_pool.stratum_version if active_pool else None),
             "hashrate_ehs": quantum_metrics.get("hashrate_ehs"),
             "power_scale": quantum_metrics.get("power_scale"),
             "pools": pools_info,

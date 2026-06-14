@@ -9,11 +9,12 @@ Benchmarks the quantum operations including:
 - Unitary time evolution
 """
 
+import statistics
 import sys
 import time
-import statistics
 from pathlib import Path
-from typing import Dict, List, Any
+from typing import Any, Dict, List
+
 import numpy as np
 
 ROOT = Path(__file__).resolve().parents[0]
@@ -21,8 +22,8 @@ BACKEND = ROOT / "python_backend"
 if str(BACKEND) not in sys.path:
     sys.path.insert(0, str(BACKEND))
 
-from pythia_mining.pulvini_manifold import PulviniManifold
 from pythia_mining.pulvini_bures import bures_certificate
+from pythia_mining.pulvini_manifold import PulviniManifold
 from pythia_mining.pulvini_phi_memory import PulviniPhiMemoryCompressionEngine
 from pythia_mining.pulvini_topology import ADJACENCY_MAP
 

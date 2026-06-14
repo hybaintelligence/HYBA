@@ -55,9 +55,7 @@ class PhiFoldingOperator:
         kernel = w2 * head - w1 * padded_tail
         return folded, kernel, original_size
 
-    def unfold(
-        self, folded: np.ndarray, kernel: np.ndarray, original_size: int
-    ) -> np.ndarray:
+    def unfold(self, folded: np.ndarray, kernel: np.ndarray, original_size: int) -> np.ndarray:
         if int(original_size) <= 1:
             return np.asarray(folded).reshape(-1)[: int(original_size)].copy()
         folded_values = np.asarray(folded).reshape(-1)

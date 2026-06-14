@@ -92,10 +92,7 @@ def _env_bool(name: str, default: bool = False) -> bool:
 
 
 def _is_production() -> bool:
-    return (
-        os.getenv("NODE_ENV", os.getenv("HYBA_ENV", "development")).lower()
-        == "production"
-    )
+    return os.getenv("NODE_ENV", os.getenv("HYBA_ENV", "development")).lower() == "production"
 
 
 def _dev_fixtures_allowed() -> bool:
@@ -133,9 +130,7 @@ def _profiles_from_legacy_config(pools_config: Dict[str, Any]) -> List[PoolProfi
                     str(pool_id),
                     name=str(payload.get("name") or pool_id),
                     url=str(payload.get("url") or payload.get("pool_url") or ""),
-                    username=str(
-                        payload.get("username") or payload.get("worker") or ""
-                    ),
+                    username=str(payload.get("username") or payload.get("worker") or ""),
                     password=str(payload.get("password") or payload.get("pass") or ""),
                     stratum_version=int(payload.get("stratum_version") or 1),
                     priority=int(payload.get("priority") or 100),
@@ -236,15 +231,11 @@ class StratumClient:
             self.reconnect_backoff_base * (2**self.reconnect_attempts),
             self.reconnect_backoff_max,
         )
-        jitter_material = (
-            f"{self.pool_name}:{self.pool_url}:{self.reconnect_attempts}".encode(
-                "utf-8"
-            )
+        jitter_material = f"{self.pool_name}:{self.pool_url}:{self.reconnect_attempts}".encode(
+            "utf-8"
         )
         jitter_unit = (
-            int.from_bytes(
-                hashlib.blake2b(jitter_material, digest_size=2).digest(), "big"
-            )
+            int.from_bytes(hashlib.blake2b(jitter_material, digest_size=2).digest(), "big")
             / 65535.0
         )
         return delay + (delay * 0.1 * jitter_unit)
@@ -319,7 +310,9 @@ class StratumClient:
                 raise ValueError(f"Invalid pool URL: {self.pool_url}")
             if parsed.port is None:
                 default_port = 3334 if self.stratum_version == 2 else 3333
-                self.pool_url = f"{parsed.scheme}://{parsed.hostname}:{default_port}{parsed.path or ''}"
+                self.pool_url = (
+                    f"{parsed.scheme}://{parsed.hostname}:{default_port}{parsed.path or ''}"
+                )
 
             self.connection_state = "ESTABLISHING"
             if _live_stratum_enabled():
@@ -382,9 +375,7 @@ class StratumClient:
                     LiveStratumV2SessionError,
                 ),
             ):
-                self.logger.error(
-                    "Pool %s connection failed permanently: %s", self.pool_name, e
-                )
+                self.logger.error("Pool %s connection failed permanently: %s", self.pool_name, e)
                 return False
             if self.reconnect_attempts < self.max_reconnect_attempts:
                 delay = self._calculate_backoff_delay()
@@ -408,9 +399,7 @@ class StratumClient:
     async def _persist_metrics(self) -> None:
         async with self._metrics_lock:
             acceptance_rate = (
-                self.shares_accepted / self.shares_submitted
-                if self.shares_submitted > 0
-                else 0.0
+                self.shares_accepted / self.shares_submitted if self.shares_submitted > 0 else 0.0
             )
             self.metrics_store.update_pool_metrics(
                 PoolMetrics(
@@ -439,9 +428,7 @@ class StratumClient:
                 idle_time = time.time() - self.last_activity
                 if idle_time > self.idle_timeout:
                     try:
-                        event, _payload = await self.live_session.read_event(
-                            timeout=5.0
-                        )
+                        event, _payload = await self.live_session.read_event(timeout=5.0)
                         if event:
                             self.last_activity = time.time()
                             self.last_pool_event_at = self.last_activity
@@ -461,9 +448,7 @@ class StratumClient:
             except asyncio.CancelledError:
                 break
             except Exception as e:
-                self.logger.error(
-                    "Heartbeat loop error for pool %s: %s", self.pool_name, e
-                )
+                self.logger.error("Heartbeat loop error for pool %s: %s", self.pool_name, e)
                 break
 
     async def _connect_live(self) -> None:
@@ -554,9 +539,7 @@ class StratumClient:
             self.connection_state = "AUTHENTICATED"
         elif self.stratum_version == 2:
             self.extranonce1 = os.getenv("HYBA_STRATUM_V2_EXTRANONCE1", "ff02")
-            self.extranonce2_size = int(
-                os.getenv("HYBA_STRATUM_V2_EXTRANONCE2_SIZE", "3")
-            )
+            self.extranonce2_size = int(os.getenv("HYBA_STRATUM_V2_EXTRANONCE2_SIZE", "3"))
             self.is_authenticated = True
             self.connection_state = "AUTHENTICATED_V2"
         else:
@@ -718,9 +701,7 @@ class StratumClient:
                 error_message="live_share_submit_disabled",
             )
             await self._persist_metrics()
-            return ShareResult(
-                False, 423, "live_share_submit_disabled", job.job_id, nonce
-            )
+            return ShareResult(False, 423, "live_share_submit_disabled", job.job_id, nonce)
 
         try:
             validation = validate_share(job, nonce, extranonce2_value)
@@ -1023,9 +1004,7 @@ class StratumClient:
     async def inject_dev_fixture_target_job(self, difficulty: float):
         """Create a dev/test mining job fixture. Disabled in production."""
         if not _dev_fixtures_allowed():
-            raise ProductionConfigurationError(
-                "Simulated mining jobs are disabled in production"
-            )
+            raise ProductionConfigurationError("Simulated mining jobs are disabled in production")
         if difficulty <= 0:
             raise ValueError("difficulty must be positive")
         target = _difficulty_to_target(difficulty)
@@ -1117,11 +1096,7 @@ class StratumClient:
     async def get_active_job_copy(self) -> Optional[MiningJob]:
         """Thread-safe copy of active job."""
         async with self._jobs_lock:
-            return (
-                self.current_jobs.get(self.active_job_id)
-                if self.active_job_id
-                else None
-            )
+            return self.current_jobs.get(self.active_job_id) if self.active_job_id else None
 
     async def _check_block_height_for_stale_jobs(self) -> None:
         """Proactively check for stale jobs based on block height changes."""
@@ -1207,9 +1182,7 @@ class StratumClient:
     def get_status(self) -> Dict[str, Any]:
         submitted = self.shares_submitted
         accepted = self.shares_accepted
-        current_job = (
-            self.current_jobs.get(self.active_job_id) if self.active_job_id else None
-        )
+        current_job = self.current_jobs.get(self.active_job_id) if self.active_job_id else None
         return {
             "pool_name": self.pool_name,
             "pool_url": self.pool_url,
@@ -1338,8 +1311,7 @@ class PoolManager:
 
         self.current_pool_key = None
         raise AllPoolsOfflineError(
-            "All configured mining pools are offline or unauthenticated: "
-            + "; ".join(failures)
+            "All configured mining pools are offline or unauthenticated: " + "; ".join(failures)
         )
 
     def get_active_pool(self) -> Optional[StratumClient]:

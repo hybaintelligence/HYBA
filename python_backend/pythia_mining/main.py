@@ -1,10 +1,11 @@
 # main.py
 import asyncio
-import logging
-import time
 import json
+import logging
 import os
 import signal
+import time
+
 from .genesis_ai import GenesisAI
 
 logging.basicConfig(
@@ -117,9 +118,7 @@ async def main():
     logger.info("Initializing PYTHIA Quantum Mining Orchestrator background daemon...")
 
     if await pythia.start():
-        logger.info(
-            "PYTHIA Quantum Mining System fully operational & quantum coherent."
-        )
+        logger.info("PYTHIA Quantum Mining System fully operational & quantum coherent.")
         export_path = os.path.join(
             os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
             "pythia_state.json",

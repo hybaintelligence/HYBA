@@ -100,18 +100,14 @@ class CompressedNonceSpacePlan:
             "overlap_free": self.overlap_free,
             "coverage_size": self.coverage_size,
             "coordinates": [coordinate.to_dict() for coordinate in self.coordinates],
-            "coverage_segments": [
-                segment.to_dict() for segment in self.coverage_segments
-            ],
+            "coverage_segments": [segment.to_dict() for segment in self.coverage_segments],
         }
 
 
 class PulviniNonceSpaceCompressor:
     """Compress the lane surface before search while retaining exact coverage."""
 
-    def __init__(
-        self, *, lanes: int = 32, nonce_space_size: int = NONCE_SPACE_SIZE
-    ) -> None:
+    def __init__(self, *, lanes: int = 32, nonce_space_size: int = NONCE_SPACE_SIZE) -> None:
         if lanes <= 0:
             raise ValueError("lanes must be positive")
         if nonce_space_size <= 0 or nonce_space_size % lanes != 0:
@@ -136,8 +132,7 @@ class PulviniNonceSpaceCompressor:
     def _overlap_free(segments: Sequence[NonceSegment]) -> bool:
         ordered = sorted(segments, key=lambda segment: segment.start)
         return all(
-            ordered[index - 1].end < ordered[index].start
-            for index in range(1, len(ordered))
+            ordered[index - 1].end < ordered[index].start for index in range(1, len(ordered))
         )
 
     def phi_resonant(self, nonce: int, threshold: float = 0.5) -> bool:
@@ -181,9 +176,7 @@ class PulviniNonceSpaceCompressor:
             working_set_dimension=working_dim,
             retained_kernel_lanes=kernel_lanes,
             working_set_compression_ratio=float(self.lanes / max(1, working_dim)),
-            complete_coverage=bool(
-                complete_size == self.nonce_space_size and overlap_free
-            ),
+            complete_coverage=bool(complete_size == self.nonce_space_size and overlap_free),
             overlap_free=overlap_free,
             coordinates=tuple(coordinates),
             coverage_segments=segments,

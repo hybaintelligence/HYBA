@@ -59,9 +59,7 @@ class DodecahedralQuantumSolver:
         self.last_solve_duration_seconds: Optional[float] = None
         self.last_solution_nonce: Optional[int] = None
         self.last_error: Optional[str] = None
-        self.configured_capacity_ehs = self._load_configured_capacity(
-            configured_capacity_ehs
-        )
+        self.configured_capacity_ehs = self._load_configured_capacity(configured_capacity_ehs)
         self.basis_states = self._generate_dodecahedral_basis_states()
 
     @staticmethod
@@ -80,21 +78,13 @@ class DodecahedralQuantumSolver:
                 "HYBA_QUANTUM_CAPACITY_EHS must be numeric"
             ) from exc
         if not math.isfinite(parsed) or parsed <= 0:
-            raise QuantumSolverConfigurationError(
-                "HYBA_QUANTUM_CAPACITY_EHS must be positive"
-            )
+            raise QuantumSolverConfigurationError("HYBA_QUANTUM_CAPACITY_EHS must be positive")
         return float(min(parsed, PULVINI_HASHRATE_CAP_EHS))
 
     def set_power_scale(self, scale: float):
         """Set the configured power scale for capacity estimates."""
-        if (
-            not isinstance(scale, (int, float))
-            or not math.isfinite(float(scale))
-            or scale <= 0
-        ):
-            raise QuantumSolverConfigurationError(
-                "power scale must be a positive finite number"
-            )
+        if not isinstance(scale, (int, float)) or not math.isfinite(float(scale)) or scale <= 0:
+            raise QuantumSolverConfigurationError("power scale must be a positive finite number")
         self.power_scale = float(scale)
 
     def calculate_integrated_hashrate(self) -> Optional[float]:
@@ -143,9 +133,7 @@ class DodecahedralQuantumSolver:
         raw_coords = np.array(vertices, dtype=np.complex128)
         norms = np.linalg.norm(raw_coords, axis=1, keepdims=True)
         if not np.isfinite(norms).all() or np.any(norms <= 0):
-            raise QuantumNumericalInstabilityError(
-                "Dodecahedral basis contains invalid norms"
-            )
+            raise QuantumNumericalInstabilityError("Dodecahedral basis contains invalid norms")
         normalized_basis = raw_coords / norms
 
         for i in range(DODECAHEDRON_VERTICES):
@@ -160,9 +148,7 @@ class DodecahedralQuantumSolver:
         nonce_ranges: List[Tuple[int, int]],
     ) -> List[Tuple[int, int]]:
         if not nonce_ranges:
-            raise QuantumSolverConfigurationError(
-                "At least one nonce range is required"
-            )
+            raise QuantumSolverConfigurationError("At least one nonce range is required")
 
         validated: List[Tuple[int, int]] = []
         for index, nonce_range in enumerate(nonce_ranges):
@@ -172,23 +158,15 @@ class DodecahedralQuantumSolver:
                 )
             start, end = int(nonce_range[0]), int(nonce_range[1])
             if start < 0 or end < 0:
-                raise QuantumSolverConfigurationError(
-                    "Nonce range bounds must be non-negative"
-                )
+                raise QuantumSolverConfigurationError("Nonce range bounds must be non-negative")
             if start > end:
-                raise QuantumSolverConfigurationError(
-                    "Nonce range start must be <= end"
-                )
+                raise QuantumSolverConfigurationError("Nonce range start must be <= end")
             if end > MAX_UINT32_NONCE:
-                raise QuantumSolverConfigurationError(
-                    "Nonce range end exceeds uint32 nonce space"
-                )
+                raise QuantumSolverConfigurationError("Nonce range end exceeds uint32 nonce space")
             validated.append((start, end))
         return validated
 
-    async def configure_search(
-        self, target: int, nonce_ranges: List[Tuple[int, int]]
-    ) -> bool:
+    async def configure_search(self, target: int, nonce_ranges: List[Tuple[int, int]]) -> bool:
         if not isinstance(target, int) or target <= 0:
             raise QuantumSolverConfigurationError(
                 "Mining target must be a positive non-zero integer"
@@ -197,9 +175,7 @@ class DodecahedralQuantumSolver:
         validated_ranges = self._validate_nonce_ranges(nonce_ranges)
         search_space_size = sum((end - start + 1) for start, end in validated_ranges)
         if search_space_size <= 0:
-            raise QuantumSolverConfigurationError(
-                "Nonce search space must be non-empty"
-            )
+            raise QuantumSolverConfigurationError("Nonce search space must be non-empty")
 
         self.current_config = {
             "target": target,
@@ -227,9 +203,7 @@ class DodecahedralQuantumSolver:
     @staticmethod
     def _assert_finite_state(state: np.ndarray, label: str) -> None:
         if not np.isfinite(state).all():
-            raise QuantumNumericalInstabilityError(
-                f"{label} contains NaN or Inf values"
-            )
+            raise QuantumNumericalInstabilityError(f"{label} contains NaN or Inf values")
 
     def _basis_coherence(self) -> float:
         """Derive coherence from observed row-norm spread instead of using a fixed score."""
@@ -251,9 +225,7 @@ class DodecahedralQuantumSolver:
 
     def _marked_state_index(self) -> int:
         if not self.current_config:
-            raise QuantumSolverConfigurationError(
-                "Solver must be configured before solving"
-            )
+            raise QuantumSolverConfigurationError("Solver must be configured before solving")
         target = int(self.current_config["target"])
         nonce_ranges = self.current_config["nonce_ranges"]
         range_fingerprint = sum((start * 31 + end * 17) for start, end in nonce_ranges)
@@ -275,22 +247,16 @@ class DodecahedralQuantumSolver:
             "Measured state could not be projected to a nonce range"
         )
 
-    async def solve(
-        self, max_iterations: int = 100, timeout: float = 30.0
-    ) -> Optional[int]:
+    async def solve(self, max_iterations: int = 100, timeout: float = 30.0) -> Optional[int]:
         """
         Run bounded Grover amplitude amplification over the configured search space.
 
         The oracle uses ``O = I - 2|w><w|`` and diffusion uses ``D = 2|s><s| - I``.
         """
         if max_iterations <= 0 or timeout <= 0:
-            raise QuantumSolverConfigurationError(
-                "max_iterations and timeout must be positive"
-            )
+            raise QuantumSolverConfigurationError("max_iterations and timeout must be positive")
         if not self.current_config:
-            raise QuantumSolverConfigurationError(
-                "Solver must be configured before solving"
-            )
+            raise QuantumSolverConfigurationError("Solver must be configured before solving")
 
         start_time = time.monotonic()
         self.last_solve_iterations = 0

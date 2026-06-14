@@ -137,9 +137,7 @@ class CancelFlood:
     def flood(self, signal: CancelSignal) -> Tuple[List[int], int]:
         order = self.manifold.gradient_broadcast_order(PROXY_GATEWAY)
         if len(order) != NUM_NODES:
-            raise RuntimeError(
-                f"cancel flood reached {len(order)}/{NUM_NODES} PULVINI nodes"
-            )
+            raise RuntimeError(f"cancel flood reached {len(order)}/{NUM_NODES} PULVINI nodes")
         max_hop = self._hop_count_from_gateway(order)
         signal.visited = order
         signal.max_hop = max_hop
@@ -232,9 +230,7 @@ class SharePropagationController:
         self.cancelled_jobs[str(job.job_id)] = cancel
 
         # Clean up deduplication entries for this job to prevent unbounded growth
-        keys_to_remove = [
-            key for key in self.seen_job_nonces if key.startswith(f"{job.job_id}:")
-        ]
+        keys_to_remove = [key for key in self.seen_job_nonces if key.startswith(f"{job.job_id}:")]
         for key in keys_to_remove:
             self.seen_job_nonces.remove(key)
 
@@ -258,8 +254,7 @@ class SharePropagationController:
             "proxy_gateway": PROXY_GATEWAY,
             "seen_shares": len(self.seen_shares),
             "cancelled_jobs": {
-                job_id: signal.to_dict()
-                for job_id, signal in self.cancelled_jobs.items()
+                job_id: signal.to_dict() for job_id, signal in self.cancelled_jobs.items()
             },
             "history": list(self.history),
             "manifold": self.manifold.snapshot(),

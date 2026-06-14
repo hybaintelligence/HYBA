@@ -50,9 +50,7 @@ def parse_endpoint(url: str, *, default_port: int = 3333) -> TransportEndpoint:
 
 
 class StratumLineTransport:
-    def __init__(
-        self, url: str, *, connect_timeout: float = 10.0, read_timeout: float = 30.0
-    ):
+    def __init__(self, url: str, *, connect_timeout: float = 10.0, read_timeout: float = 30.0):
         self.url = url
         self.endpoint = parse_endpoint(url)
         self.connect_timeout = float(connect_timeout)
@@ -76,9 +74,7 @@ class StratumLineTransport:
             ssl_context.maximum_version = ssl.TLSVersion.TLSv1_3
         try:
             self.reader, self.writer = await asyncio.wait_for(
-                asyncio.open_connection(
-                    self.endpoint.host, self.endpoint.port, ssl=ssl_context
-                ),
+                asyncio.open_connection(self.endpoint.host, self.endpoint.port, ssl=ssl_context),
                 timeout=self.connect_timeout,
             )
         except ssl.SSLCertVerificationError as exc:
@@ -103,9 +99,7 @@ class StratumLineTransport:
         payload = line if line.endswith("\n") else line + "\n"
         await self.send_bytes(payload.encode("utf-8"))
 
-    async def read_exactly(
-        self, size: int, *, timeout: Optional[float] = None
-    ) -> bytes:
+    async def read_exactly(self, size: int, *, timeout: Optional[float] = None) -> bytes:
         if self.reader is None:
             raise StratumTransportError("transport is not connected")
         if int(size) <= 0:

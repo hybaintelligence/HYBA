@@ -33,8 +33,7 @@ def trace_zero_hermitian(matrix: np.ndarray) -> np.ndarray:
 
 def density_state(rho: np.ndarray) -> np.ndarray:
     values = (
-        np.asarray(rho, dtype=np.complex128)
-        + np.asarray(rho, dtype=np.complex128).conj().T
+        np.asarray(rho, dtype=np.complex128) + np.asarray(rho, dtype=np.complex128).conj().T
     ) / 2.0
     eigvals, eigvecs = np.linalg.eigh(values)
     eigvals = np.maximum(eigvals.real, _EPS)
@@ -91,9 +90,7 @@ def bures_certificate(
     natural_e = np.zeros_like(first_e, dtype=np.complex128)
     for row, left in enumerate(eigvals_safe.real):
         for col, right in enumerate(eigvals_safe.real):
-            natural_e[row, col] = (
-                2.0 * (max(left, _EPS) + max(right, _EPS)) * first_e[row, col]
-            )
+            natural_e[row, col] = 2.0 * (max(left, _EPS) + max(right, _EPS)) * first_e[row, col]
     # Use more stable matrix multiplication with error suppression
     with np.errstate(divide="ignore", invalid="ignore", over="ignore"):
         natural = trace_zero_hermitian(eigvecs @ natural_e @ eigvecs.conj().T)

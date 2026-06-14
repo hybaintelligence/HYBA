@@ -29,10 +29,7 @@ class AuthRequest(BaseModel):
 
 
 def _is_production() -> bool:
-    return (
-        os.getenv("NODE_ENV", os.getenv("HYBA_ENV", "development")).lower()
-        == "production"
-    )
+    return os.getenv("NODE_ENV", os.getenv("HYBA_ENV", "development")).lower() == "production"
 
 
 def _credential_entries(raw: str) -> List[str]:
@@ -48,11 +45,7 @@ def _credential_entries(raw: str) -> List[str]:
     if not normalized:
         return []
     if ";" in normalized or "\n" in normalized:
-        return [
-            item.strip()
-            for item in normalized.replace("\n", ";").split(";")
-            if item.strip()
-        ]
+        return [item.strip() for item in normalized.replace("\n", ";").split(";") if item.strip()]
     if "$argon2" in normalized:
         return [normalized]
     return [item.strip() for item in normalized.split(",") if item.strip()]
@@ -116,15 +109,11 @@ def _verify_operator(username: str, password: str) -> List[str]:
         # Development-only operator for local smoke testing; disabled in production.
         if username == "operator" and password == "operator":
             return ["operator"]
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials"
-        )
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
 
     expected = operator["password_hash"]
     if not _verify_password(password, expected):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials"
-        )
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
     return operator["roles"]
 
 

@@ -71,9 +71,7 @@ class BackActionEvent:
 class SharedManifoldBlackboard:
     """Zero-copy shared memory surface for the complex 32-node state vector."""
 
-    def __init__(
-        self, *, name: Optional[str] = None, num_nodes: int = 32, create: bool = True
-    ):
+    def __init__(self, *, name: Optional[str] = None, num_nodes: int = 32, create: bool = True):
         self.num_nodes = int(num_nodes)
         self.size = self.num_nodes * 2 * 8
         self.shm = shared_memory.SharedMemory(name=name, create=create, size=self.size)
@@ -202,9 +200,7 @@ class PulviniManifold:
         return self._hermitian(diagonal + off_diagonal)
 
     def _refresh_hamiltonian(self) -> None:
-        self.synaptic_matrix = (
-            (self.synaptic_matrix + self.synaptic_matrix.T) / 2.0
-        ).real
+        self.synaptic_matrix = ((self.synaptic_matrix + self.synaptic_matrix.T) / 2.0).real
         self.hamiltonian = self._build_hamiltonian()
 
     def attach_blackboard(self, blackboard: SharedManifoldBlackboard) -> None:
@@ -320,9 +316,7 @@ class PulviniManifold:
             with np.errstate(divide="ignore", invalid="ignore", over="ignore"):
                 diag_phases = np.diag(phases)
                 unitary = eigenvectors @ diag_phases @ eigenvectors.conj().T
-                if not np.allclose(
-                    unitary.conj().T @ unitary, np.eye(self.num_nodes), atol=1e-9
-                ):
+                if not np.allclose(unitary.conj().T @ unitary, np.eye(self.num_nodes), atol=1e-9):
                     raise RuntimeError("unitary_operator_invariant_failed")
                 self.psi = self._normalize_state(unitary @ self.psi)
             self.rho = self._density_from_state(self.psi)
@@ -365,9 +359,7 @@ class PulviniManifold:
                 )
             self.rho = self._density_projector(self.rho + float(dt) * derivative)
             eigenvalues, eigenvectors = np.linalg.eigh(self.rho)
-            self.psi = self._normalize_state(
-                eigenvectors[:, int(np.argmax(eigenvalues.real))]
-            )
+            self.psi = self._normalize_state(eigenvectors[:, int(np.argmax(eigenvalues.real))])
             after = self.von_neumann_entropy()
             self.entropy_gradient = after - before
             self.previous_entropy = after
@@ -414,9 +406,7 @@ class PulviniManifold:
                 rho_new /= trace
             self.rho = self._density_projector(rho_new)
             eigenvalues, eigenvectors = np.linalg.eigh(self.rho)
-            self.psi = self._normalize_state(
-                eigenvectors[:, int(np.argmax(eigenvalues.real))]
-            )
+            self.psi = self._normalize_state(eigenvectors[:, int(np.argmax(eigenvalues.real))])
             after = self.von_neumann_entropy()
             self.entropy_gradient = after - before
             self.previous_entropy = after
@@ -477,9 +467,9 @@ class PulviniManifold:
         bures_grad_norm = np.linalg.norm(bures_grad, "fro")
 
         bures_grad_hermitian = (bures_grad + bures_grad.conj().T) / 2
-        traceless_component = bures_grad_hermitian - (
-            np.trace(bures_grad_hermitian) / 32
-        ) * np.eye(32)
+        traceless_component = bures_grad_hermitian - (np.trace(bures_grad_hermitian) / 32) * np.eye(
+            32
+        )
         tangent_norm = np.linalg.norm(traceless_component, "fro")
 
         non_trivial_stationary = tangent_norm < 1e-6
@@ -493,16 +483,13 @@ class PulviniManifold:
             ),
             "collapse_criterion_met": non_trivial_stationary,
             "physical_meaning": (
-                "Coherence aligned with energy eigenbasis: "
-                "collapse to classical search state"
+                "Coherence aligned with energy eigenbasis: " "collapse to classical search state"
                 if non_trivial_stationary
                 else "System still evolving"
             ),
         }
 
-    def jump_operators_from_node(
-        self, node_id: int, strength: float = 0.2
-    ) -> List[np.ndarray]:
+    def jump_operators_from_node(self, node_id: int, strength: float = 0.2) -> List[np.ndarray]:
         node_id = int(node_id)
         targets = sorted(self.neighbors[node_id])
         if not targets:
@@ -545,9 +532,7 @@ class PulviniManifold:
         )
         return event
 
-    def observe_high_difficulty_hash(
-        self, node_id: int, difficulty_score: float
-    ) -> None:
+    def observe_high_difficulty_hash(self, node_id: int, difficulty_score: float) -> None:
         with self._lock:
             node_id = int(node_id)
             self.node_energy[node_id] = max(
@@ -620,9 +605,7 @@ class PulviniManifold:
         job_id: Optional[str] = None,
     ) -> Dict[str, Any]:
         sample = list(nonces)
-        accepted = self.apply_phi_projection_operator(
-            sample, threshold=threshold, job_id=job_id
-        )
+        accepted = self.apply_phi_projection_operator(sample, threshold=threshold, job_id=job_id)
         return {
             "sample_size": len(sample),
             "accepted": len(accepted),
@@ -639,9 +622,7 @@ class PulviniManifold:
         if len(path) < 2:
             return
         reward_value = float(
-            reward
-            if reward is not None
-            else (1.0 if signal_type == "SHARE_FOUND" else -0.1)
+            reward if reward is not None else (1.0 if signal_type == "SHARE_FOUND" else -0.1)
         )
         with self._lock:
             for left, right in zip(path, path[1:]):
@@ -696,9 +677,7 @@ class PulviniManifold:
                     queue.append((neighbor, distance + 1))
         return self.num_nodes
 
-    def gradient_route_to_gateway(
-        self, finder_id: int, gateway_id: int = 31
-    ) -> List[int]:
+    def gradient_route_to_gateway(self, finder_id: int, gateway_id: int = 31) -> List[int]:
         route = [int(finder_id)]
         seen = {int(finder_id)}
         current = int(finder_id)
@@ -726,23 +705,15 @@ class PulviniManifold:
         while frontier:
             next_frontier: List[int] = []
             for node in frontier:
-                candidates = [
-                    neighbor
-                    for neighbor in self.neighbors[node]
-                    if neighbor not in seen
-                ]
-                candidates.sort(
-                    key=lambda neighbor: self.edge_weight(node, neighbor), reverse=True
-                )
+                candidates = [neighbor for neighbor in self.neighbors[node] if neighbor not in seen]
+                candidates.sort(key=lambda neighbor: self.edge_weight(node, neighbor), reverse=True)
                 for neighbor in candidates:
                     seen.add(neighbor)
                     order.append(neighbor)
                     next_frontier.append(neighbor)
             frontier = next_frontier
         if len(order) != self.num_nodes:
-            raise RuntimeError(
-                f"gradient_broadcast_incomplete:{len(order)}/{self.num_nodes}"
-            )
+            raise RuntimeError(f"gradient_broadcast_incomplete:{len(order)}/{self.num_nodes}")
         return order
 
     def phase_heartbeat(self, job_id: str, tick: int) -> List[float]:
@@ -772,16 +743,12 @@ class PulviniManifold:
             self._write_blackboard()
             return phases
 
-    def manifold_drift_extranonce2(
-        self, node_id: int, job_id: str, extranonce2_size: int
-    ) -> str:
+    def manifold_drift_extranonce2(self, node_id: int, job_id: str, extranonce2_size: int) -> str:
         coord = self.tensor_coordinate_for_node(node_id)
         material = f"{job_id}:{coord.orbit_id}:{coord.node_id}:{len(self.automorphisms)}".encode(
             "utf-8"
         )
-        digest = hashlib.blake2b(
-            material, digest_size=max(int(extranonce2_size), 1)
-        ).digest()
+        digest = hashlib.blake2b(material, digest_size=max(int(extranonce2_size), 1)).digest()
         return digest.hex()[: max(int(extranonce2_size), 1) * 2]
 
     def tensor_coordinate_for_node(self, node_id: int) -> TensorCoordinate:
@@ -802,9 +769,7 @@ class PulviniManifold:
     def nonce_orbit(self, nonce: int) -> List[int]:
         return nonce_orbit(int(nonce), self.automorphisms, self.num_nodes)
 
-    def apply_automorphism_to_nonce(
-        self, nonce: int, automorphism: Sequence[int]
-    ) -> int:
+    def apply_automorphism_to_nonce(self, nonce: int, automorphism: Sequence[int]) -> int:
         return apply_automorphism_to_nonce(int(nonce), automorphism, self.num_nodes)
 
     def observe(self) -> ManifoldObservation:
@@ -820,9 +785,7 @@ class PulviniManifold:
             hamiltonian_hermitian=bool(
                 np.allclose(self.hamiltonian, self.hamiltonian.conj().T, atol=1e-10)
             ),
-            density_hermitian=bool(
-                np.allclose(self.rho, self.rho.conj().T, atol=1e-10)
-            ),
+            density_hermitian=bool(np.allclose(self.rho, self.rho.conj().T, atol=1e-10)),
             density_positive_semidefinite=bool(float(np.min(density_eigs)) >= -1e-9),
             automorphism_order=len(self.automorphisms),
             node_orbits=[list(orbit) for orbit in self.node_orbits],
@@ -841,9 +804,7 @@ class PulviniManifold:
                 "tensor_coordinates": [
                     coordinate.to_dict() for coordinate in self.tensor_coordinates()
                 ],
-                "backaction_ledger": [
-                    event.to_dict() for event in self.backaction_ledger[-32:]
-                ],
+                "backaction_ledger": [event.to_dict() for event in self.backaction_ledger[-32:]],
                 "constructor_memory_tail": list(self.constructor_memory[-32:]),
             }
         )

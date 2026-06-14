@@ -7,16 +7,17 @@ or trivial (maximally mixed state).
 """
 
 import sys
-import numpy as np
 from pathlib import Path
+
+import numpy as np
 
 ROOT = Path(__file__).resolve().parents[0]
 BACKEND = ROOT / "python_backend"
 if str(BACKEND) not in sys.path:
     sys.path.insert(0, str(BACKEND))
 
-from pythia_mining.pulvini_manifold import PulviniManifold
 from pythia_mining.pulvini_bures import bures_certificate
+from pythia_mining.pulvini_manifold import PulviniManifold
 from pythia_mining.pulvini_topology import ADJACENCY_MAP
 
 

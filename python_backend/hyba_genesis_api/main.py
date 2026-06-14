@@ -21,7 +21,7 @@ import uvicorn  # noqa: E402
 from fastapi import FastAPI  # noqa: E402
 from fastapi.middleware.cors import CORSMiddleware  # noqa: E402
 
-from hyba_genesis_api.api import (
+from hyba_genesis_api.api import (  # noqa: E402
     ai,
     auth,
     health,
@@ -30,7 +30,7 @@ from hyba_genesis_api.api import (
     misc,
     products,
     security,
-)  # noqa: E402
+)
 from hyba_genesis_api.core.substrate import (  # noqa: E402
     get_substrate_state,
     initialize_substrate,
@@ -52,9 +52,7 @@ async def lifespan(app: FastAPI):
     init_metrics()
     logging.info("HYBA API startup: initializing substrate lifecycle")
     initialize_substrate()
-    logging.info(
-        "HYBA API startup: substrate READY", extra={"substrate": get_substrate_state()}
-    )
+    logging.info("HYBA API startup: substrate READY", extra={"substrate": get_substrate_state()})
     yield
     logging.info("HYBA API shutdown: draining substrate lifecycle")
     shutdown_substrate()

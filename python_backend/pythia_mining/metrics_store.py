@@ -9,11 +9,11 @@ from __future__ import annotations
 
 import os
 import sqlite3
+import threading
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Optional, Dict, Any, List
-import threading
+from typing import Any, Dict, List, Optional
 
 
 @dataclass

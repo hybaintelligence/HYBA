@@ -8,8 +8,8 @@ import json
 import time
 from pathlib import Path
 
-from phi_block_collector import collect, write_csv
 from phi_block_analyser import features, read_csv, summary, write_features
+from phi_block_collector import collect, write_csv
 
 
 def main() -> int:

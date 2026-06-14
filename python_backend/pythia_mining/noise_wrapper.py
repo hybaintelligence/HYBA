@@ -13,7 +13,7 @@ from dataclasses import dataclass
 from typing import Optional
 
 try:
-    from noise.connection import NoiseConnection, Keypair
+    from noise.connection import Keypair, NoiseConnection
     from noise.noise_protocol import NoiseProtocol
 except ImportError:
     NoiseConnection = None
@@ -126,9 +126,7 @@ class NoiseWrapper:
 
         # Convert string to bytes for the noise library
         self.protocol_name = (
-            protocol_name.encode("ascii")
-            if isinstance(protocol_name, str)
-            else protocol_name
+            protocol_name.encode("ascii") if isinstance(protocol_name, str) else protocol_name
         )
         self.connection: Optional[NoiseConnection] = None
         self.handshake_complete = False
@@ -158,13 +156,9 @@ class NoiseWrapper:
 
             # Local static key is optional for NX pattern (initiator doesn't use it)
             if local_static_key:
-                self.connection.set_keypair_from_private_bytes(
-                    Keypair.STATIC, local_static_key
-                )
+                self.connection.set_keypair_from_private_bytes(Keypair.STATIC, local_static_key)
 
-            logger.debug(
-                f"Noise connection initialized with protocol: {self.protocol_name}"
-            )
+            logger.debug(f"Noise connection initialized with protocol: {self.protocol_name}")
         except Exception as e:
             raise NoiseProtocolError(f"Failed to initialize Noise connection: {e}")
 
@@ -211,17 +205,11 @@ class NoiseWrapper:
                 # Read handshake message if needed
                 if not self.connection.handshake_finished:
                     try:
-                        length_bytes = await asyncio.wait_for(
-                            reader.readexactly(4), timeout=30.0
-                        )
+                        length_bytes = await asyncio.wait_for(reader.readexactly(4), timeout=30.0)
                         length = int.from_bytes(length_bytes, "big")
-                        message = await asyncio.wait_for(
-                            reader.readexactly(length), timeout=30.0
-                        )
+                        message = await asyncio.wait_for(reader.readexactly(length), timeout=30.0)
                         self.connection.read_message(message)
-                        logger.debug(
-                            f"Received handshake message ({len(message)} bytes)"
-                        )
+                        logger.debug(f"Received handshake message ({len(message)} bytes)")
                     except asyncio.TimeoutError:
                         raise NoiseProtocolError("Handshake timeout")
 

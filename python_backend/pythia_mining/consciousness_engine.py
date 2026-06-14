@@ -117,9 +117,7 @@ class ConsciousnessEngine:
         await self.calculate_integrated_information()
         return self.current_state.consciousness_level
 
-    async def guide_decision_making(
-        self, decision_context: Dict[str, Any]
-    ) -> Dict[str, Any]:
+    async def guide_decision_making(self, decision_context: Dict[str, Any]) -> Dict[str, Any]:
         await self.calculate_integrated_information()
         return {
             "autonomy_level": self.coherence_meter,
@@ -138,11 +136,7 @@ class ConsciousnessEngine:
         if component in self.components:
             self.components[component] = ready
         known = [value for value in self.components.values() if value is not None]
-        metrics = (
-            self._measure_component_phi(known)
-            if known
-            else PhiMetrics(source="not_measured")
-        )
+        metrics = self._measure_component_phi(known) if known else PhiMetrics(source="not_measured")
         self._record_metrics(metrics)
 
     def measure_phi(self, states: Sequence[NDArray[np.complex128]]) -> PhiMetrics:
@@ -171,9 +165,7 @@ class ConsciousnessEngine:
         coherence_level = float(np.clip(coherence_series[-1], 0.0, 1.0))
         phi_integrated = float(
             np.clip(
-                0.55 * coherence_level
-                + 0.25 * max(phi_causal, 0.0)
-                + 0.20 * entropy_balance,
+                0.55 * coherence_level + 0.25 * max(phi_causal, 0.0) + 0.20 * entropy_balance,
                 0.0,
                 1.0,
             )
@@ -233,10 +225,7 @@ class ConsciousnessEngine:
         entropy = 0.0
         if known and 0.0 < integration < 1.0:
             entropy = float(
-                -(
-                    integration * np.log2(integration)
-                    + (1 - integration) * np.log2(1 - integration)
-                )
+                -(integration * np.log2(integration) + (1 - integration) * np.log2(1 - integration))
             )
         phi = float(np.clip(integration * (1.0 - 0.25 * entropy), 0.0, 1.0))
         return PhiMetrics(
@@ -258,9 +247,7 @@ class ConsciousnessEngine:
         self.current_state.component_integration = (
             None if not known else sum(1 for value in known if value) / len(known)
         )
-        self.current_state.system_complexity = (
-            float(len(known)) if known else metrics.complexity
-        )
+        self.current_state.system_complexity = float(len(known)) if known else metrics.complexity
         self.current_state.timestamp = time.time()
         self.current_state.source = metrics.source
 
