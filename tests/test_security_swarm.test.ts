@@ -162,4 +162,51 @@ describe("HYBA stabilizer integrity monitor", () => {
       { numRuns: 30 },
     );
   });
+
+  it("verifies all trigger_response return fields are populated correctly", () => {
+    const monitor = new SecuritySwarmAgent();
+    const response = monitor.trigger_response(1);
+    const status = monitor.get_swarm_status();
+
+    expect(response.status).toBe("integrity_response_active");
+    expect(response.cause).toBeDefined();
+    expect(response.activated_ancillas).toBeGreaterThanOrEqual(0);
+    expect(response.activated_traps).toBeGreaterThanOrEqual(0);
+    expect(response.retired_traps).toBeGreaterThanOrEqual(0);
+    expect(response.active_agents).toBe(status.active_ancillas + status.active_traps + 1);
+    expect(response.confidence).toBeGreaterThanOrEqual(0);
+    expect(response.confidence).toBeLessThanOrEqual(1);
+    expect(response.syndrome_rotation_index).toBeGreaterThanOrEqual(0);
+    expect(response.syndrome_rotation_index).toBeLessThan(24);
+    expect(response.pool_permutation_checksum).toBe(status.pool_permutation_checksum);
+    expect(response.sanitized).toBe(status.sanitized);
+    expect(response.note).toContain("no logical quantum state is cloned");
+  });
+
+  it("exercises get_sampled_ancillas in NORMAL operating mode", () => {
+    const monitor = new SecuritySwarmAgent();
+    const status = monitor.get_swarm_status();
+    expect(status.operating_mode).toBe("NORMAL");
+
+    const sample = monitor.monitor_integrity(0);
+    expect(sample.sampled_ancillas).toBeGreaterThan(0);
+    expect(sample.sampled_ancillas).toBeLessThanOrEqual(status.syndrome_width);
+  });
+
+  it("exercises get_sampled_ancillas in COMPRESSED operating mode with stride filtering", () => {
+    const monitor = new SecuritySwarmAgent();
+
+    for (let i = 0; i < 6; i++) {
+      monitor.trigger_response(1);
+    }
+
+    const status = monitor.get_swarm_status();
+    expect(["COMPRESSED", "EXHAUSTED", "SANITIZED"]).toContain(status.operating_mode);
+
+    if (status.operating_mode !== "SANITIZED") {
+      const sample = monitor.monitor_integrity(0);
+      expect(sample.sampled_ancillas).toBeLessThan(status.active_ancillas);
+      expect(status.syndrome_check_stride).toBeGreaterThan(1);
+    }
+  });
 });
