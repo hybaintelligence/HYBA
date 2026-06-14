@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
+import asyncio
 import logging
+import os
 import sys
-from contextlib import asynccontextmanager
+from contextlib import asynccontextmanager, suppress
 from pathlib import Path
 from typing import Any, Dict
 
@@ -25,6 +27,7 @@ from hyba_genesis_api.api import (  # noqa: E402
     ai,
     auth,
     health,
+    intelligence,
     mining,
     mining_jobs,
     mining_ops,
@@ -32,6 +35,12 @@ from hyba_genesis_api.api import (  # noqa: E402
     products,
     security,
 )
+from hyba_genesis_api.core.recursive_closure import build_buffered_closure  # noqa: E402
+from hyba_genesis_api.core.reflexive_controller import (  # noqa: E402
+    ReflexiveController,
+    default_reflexive_root,
+)
+from hyba_genesis_api.core.reflexive_daemon import IntelligenceHeartbeat  # noqa: E402
 from hyba_genesis_api.core.substrate import (  # noqa: E402
     get_substrate_state,
     initialize_substrate,
@@ -54,7 +63,24 @@ async def lifespan(app: FastAPI):
     logging.info("HYBA API startup: initializing substrate lifecycle")
     initialize_substrate()
     logging.info("HYBA API startup: substrate READY", extra={"substrate": get_substrate_state()})
-    yield
+    heartbeat = None
+    heartbeat_task = None
+    if os.getenv("HYBA_ENABLE_REFLEXIVE_DAEMON", "false").lower() == "true":
+        controller = ReflexiveController(default_reflexive_root())
+        closure, _buffer = build_buffered_closure(controller)
+        heartbeat = IntelligenceHeartbeat(controller, closure)
+        interval = float(os.getenv("HYBA_REFLEXIVE_HEARTBEAT_INTERVAL_SECONDS", "60"))
+        heartbeat_task = asyncio.create_task(heartbeat.pulse(interval_seconds=interval))
+        logging.info("HYBA reflexive heartbeat enabled", extra={"interval_seconds": interval})
+    try:
+        yield
+    finally:
+        if heartbeat is not None:
+            heartbeat.stop()
+        if heartbeat_task is not None:
+            heartbeat_task.cancel()
+            with suppress(asyncio.CancelledError):
+                await heartbeat_task
     logging.info("HYBA API shutdown: draining substrate lifecycle")
     shutdown_substrate()
 
@@ -82,6 +108,7 @@ app.add_middleware(
 app.middleware("http")(telemetry_middleware)
 
 app.include_router(health.router)
+app.include_router(intelligence.router)
 app.include_router(mining.router)
 app.include_router(mining_jobs.router)
 app.include_router(mining_ops.router)

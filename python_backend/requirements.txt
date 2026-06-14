@@ -23,3 +23,4 @@ requests==2.32.5
 pytest==8.3.4
 matplotlib==3.9.2
 noiseprotocol==0.3.1
+httpx==0.28.1
