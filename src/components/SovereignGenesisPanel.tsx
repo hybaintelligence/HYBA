@@ -156,7 +156,7 @@ export function SovereignGenesisPanel() {
           <MetricLine label="Capabilities Enabled" value={`${capabilityCount}/${totalCapabilities}`} />
           <div className="mt-3 grid grid-cols-2 gap-1.5">
             {Object.entries(manifest.capability_manifest.capability_flags).slice(0, 6).map(([key, enabled]) => (
-              <CapabilityBadge key={key} name={key} enabled={enabled} />
+              <CapabilityBadge key={key} name={key} enabled={Boolean(enabled)} />
             ))}
           </div>
         </div>
