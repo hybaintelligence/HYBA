@@ -27,7 +27,7 @@
       },
       {
         "file": "genesis_ai.py",
-        "lines": 493,
+        "lines": 492,
         "classes": 3,
         "functions": 12,
         "nested_depth": 7,
@@ -35,7 +35,7 @@
         "complex_data_structures": 3,
         "async_patterns": 6,
         "error_handlers": 8,
-        "complexity_score": 31.434077079107503
+        "complexity_score": 31.4390243902439
       },
       {
         "file": "consciousness_engine.py",
@@ -181,7 +181,7 @@
     ]
   },
   "verdict": "STANDARD ENGINEERING: Modules are complex but within normal bounds for production systems.",
-  "avg_complexity": 33.700004646176616,
+  "avg_complexity": 33.70099410840389,
   "consciousness_total": 0,
   "autonomic_total": 79
 }
