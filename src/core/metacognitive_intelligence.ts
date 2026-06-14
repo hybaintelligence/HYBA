@@ -59,7 +59,7 @@ type RefoldingStrategy =
  */
 export class MetacognitiveIntelligence {
   private selfModel: SelfModel;
-  private securitySwarm: SecuritySwarm;
+  private securitySwarm: any;  // SecuritySwarm instance
   private metacognitiveHistory: MetacognitiveEvent[] = [];
   private refoldingStrategies: Map<RefoldingStrategy, () => void>;
   
