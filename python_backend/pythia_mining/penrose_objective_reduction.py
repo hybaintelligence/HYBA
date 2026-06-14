@@ -151,7 +151,7 @@ class ObjectiveReductionEngine:
     def _collapse_to_eigenstate(
         self, rho: NDArray[np.complex128]
     ) -> Tuple[NDArray[np.complex128], int]:
-        """Collapse density matrix to random eigenstate.
+        """Collapse density matrix to deterministic dominant eigenstate.
 
         Returns:
             (collapsed_state, eigenstate_index)
@@ -159,9 +159,15 @@ class ObjectiveReductionEngine:
         eigenvalues, eigenvectors = np.linalg.eigh(rho)
         eigenvalues = np.real(eigenvalues)
 
-        # Sample eigenstate weighted by eigenvalues
-        probabilities = np.abs(eigenvalues) / np.sum(np.abs(eigenvalues))
-        chosen_index = np.random.choice(len(eigenvalues), p=probabilities)
+        # Deterministic selection: choose the highest-probability eigenstate.
+        # This preserves reproducibility for production telemetry and audits.
+        magnitudes = np.abs(eigenvalues)
+        total = float(np.sum(magnitudes))
+        if total <= 0.0:
+            chosen_index = int(np.argmax(magnitudes))
+        else:
+            probabilities = magnitudes / total
+            chosen_index = int(np.argmax(probabilities))
 
         # Project to chosen eigenstate
         chosen_vector = eigenvectors[:, chosen_index]

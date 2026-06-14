@@ -44,7 +44,7 @@ class MetaLearningOptimizer:
         self.strategy_weights: Dict[str, float] = {}
         self.performance_history: Deque[Dict[str, Any]] = deque(maxlen=1000)
         self.thermal_memory: Deque[float] = deque(maxlen=100)
-        self._rng = np.random.default_rng(rng_seed)
+        self._selection_offset = int(rng_seed or 0)
         for strategy_id in initial_strategies or ():
             self.ensure_strategy(strategy_id)
 
@@ -98,7 +98,7 @@ class MetaLearningOptimizer:
         return {s: float(p) for s, p in zip(strategies, probabilities)}
 
     def select_strategy(self, job_features: Optional[Dict[str, Any]] = None) -> str:
-        """Select a known strategy using softmax probabilities.
+        """Select a known strategy deterministically from softmax probabilities.
 
         ``job_features`` is accepted for future feature-conditioned policies; current
         weighting remains outcome-only and auditable.
@@ -107,10 +107,17 @@ class MetaLearningOptimizer:
         if not self.strategy_weights:
             return "golden_ratio_baseline"
         probabilities = self.strategy_probabilities()
-        strategies = list(probabilities)
-        return str(
-            self._rng.choice(strategies, p=[probabilities[s] for s in strategies])
-        )
+        ranked = sorted(probabilities.items(), key=lambda item: (-item[1], item[0]))
+        top_probability = ranked[0][1]
+        top_strategies = [
+            strategy
+            for strategy, probability in ranked
+            if abs(probability - top_probability) < 1e-12
+        ]
+        tie_break_index = (
+            self._selection_offset + len(self.performance_history)
+        ) % len(top_strategies)
+        return str(top_strategies[tie_break_index])
 
     def snapshot(self) -> Dict[str, Any]:
         return {
