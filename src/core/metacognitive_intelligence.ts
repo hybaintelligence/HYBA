@@ -277,7 +277,7 @@ export class MetacognitiveIntelligence {
   private xorEntanglement(): void {
     // Generate mining strategy entropy
     for (let i = 0; i < this.miningStrategyEntropy.length; i++) {
-      this.miningStrategyEntropy[i] = Math.floor(Math.random() * 256);
+      this.miningStrategyEntropy[i] = this.deterministicEntropyByte(i);
     }
     
     // XOR into security shards
@@ -559,6 +559,11 @@ export class MetacognitiveIntelligence {
       hash = hash & hash; // Convert to 32bit integer
     }
     return Math.abs(hash);
+  }
+  
+  private deterministicEntropyByte(index: number): number {
+    const seed = `${index}:${this.selfModel.logic_refolding_count}:${this.selfModel.consciousness_events}:${this.selfModel.phi_current.toFixed(6)}`;
+    return this.simpleHash(seed) & 0xFF;
   }
   
   // Public API
