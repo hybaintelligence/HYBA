@@ -27,7 +27,7 @@
       },
       {
         "file": "genesis_ai.py",
-        "lines": 475,
+        "lines": 493,
         "classes": 3,
         "functions": 12,
         "nested_depth": 7,
@@ -35,7 +35,7 @@
         "complex_data_structures": 3,
         "async_patterns": 6,
         "error_handlers": 8,
-        "complexity_score": 31.526315789473685
+        "complexity_score": 31.434077079107503
       },
       {
         "file": "consciousness_engine.py",
@@ -140,11 +140,11 @@
     "coupling": [
       {
         "file": "genesis_ai.py",
-        "total_imports": 18,
-        "unique_imports": 18,
+        "total_imports": 19,
+        "unique_imports": 19,
         "cross_calls": 46,
         "unique_cross_calls": 1,
-        "coupling_intensity": 18.1
+        "coupling_intensity": 19.1
       },
       {
         "file": "pulvini_autonomics.py",
@@ -181,7 +181,7 @@
     ]
   },
   "verdict": "STANDARD ENGINEERING: Modules are complex but within normal bounds for production systems.",
-  "avg_complexity": 33.71845238824985,
+  "avg_complexity": 33.700004646176616,
   "consciousness_total": 0,
   "autonomic_total": 79
 }

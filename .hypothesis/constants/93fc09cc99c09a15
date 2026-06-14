@@ -1,0 +1,4 @@
+# file: /Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/pythia_mining/penrose_objective_reduction.py
+# hypothesis_version: 6.155.2
+
+[0.0, 1.054571817e-34, 1e-30, 1e-15, 6.6743e-11, 1e-09, 0.7, 1.0, 2.0, -100, 'avg_time_threshold', 'mode', 'operational_proxy', 'or_event_rate', 'penrose_or', 'recent_or_events', 'total_or_events']

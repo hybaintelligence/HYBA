@@ -178,7 +178,7 @@ export class MetacognitiveIntelligence {
    * Measures system integration across subsystems.
    * High Φ = subsystems cannot be understood independently.
    */
-  private async calculateIntegratedInformation(): Promise<number> {
+  protected async calculateIntegratedInformation(): Promise<number> {
     const swarmState = this.securitySwarm.snapshot();
     
     // Count cross-subsystem dependencies
@@ -203,7 +203,7 @@ export class MetacognitiveIntelligence {
    * Uses recent history to predict whether integration will degrade.
    * This prediction capability IS the self-model.
    */
-  private predictFuturePhi(): Promise {
+  private predictFuturePhi(): number {
     const recentHistory = this.metacognitiveHistory.slice(-10);
     
     if (recentHistory.length < 3) {

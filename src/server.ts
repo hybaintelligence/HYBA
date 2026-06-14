@@ -460,8 +460,12 @@ export function registerSecuritySwarmRoutes(
     const sample = swarm.monitor_integrity(
       Number.isFinite(observerPressure) ? observerPressure : 0,
     );
-    const metacognitiveReport = swarm.run_metacognitive_cycle();
     const status = swarm.get_swarm_status();
+    const metacognitiveReport = {
+      current_state: status.operating_mode,
+      predicted_state: status.anomaly_detected ? "integrity_response_active" : "nominal",
+      confidence: status.last_confidence,
+    };
     noStore(res);
     res.json({
       status: status.integrity_locked ? "protected" : "responding",
@@ -481,9 +485,9 @@ export function registerSecuritySwarmRoutes(
           sanitized: status.sanitized,
           cause: sample.cause,
           metacognitive: {
-            ...status.metacognitive,
-            predicted_state: metacognitiveReport.predicted_state,
             current_state: metacognitiveReport.current_state,
+            predicted_state: metacognitiveReport.predicted_state,
+            confidence: metacognitiveReport.confidence,
           },
         },
         preallocated_ancilla_trap_pool: {

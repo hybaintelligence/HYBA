@@ -215,11 +215,12 @@ export function SovereignGenesisPanel() {
             )
               .slice(0, 6)
               .map(([capabilityKey, enabled]) => (
-                <CapabilityBadge
-                  key={capabilityKey}
-                  name={capabilityKey}
-                  enabled={Boolean(enabled)}
-                />
+                <React.Fragment key={capabilityKey}>
+                  <CapabilityBadge
+                    name={capabilityKey}
+                    enabled={Boolean(enabled)}
+                  />
+                </React.Fragment>
               ))}
           </div>
         </div>
@@ -299,12 +300,12 @@ function MetricLine({
   );
 }
 
-interface CapabilityBadgeProps extends React.HTMLAttributes<HTMLDivElement> {
+interface CapabilityBadgeProps {
   name: string;
   enabled: boolean;
 }
 
-function CapabilityBadge({ name, enabled, ...props }: CapabilityBadgeProps) {
+function CapabilityBadge({ name, enabled }: CapabilityBadgeProps) {
   const displayName = name.replace(/^supports_/, "").replace(/_/g, " ");
 
   return (
