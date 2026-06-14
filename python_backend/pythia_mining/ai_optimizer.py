@@ -115,9 +115,7 @@ class AIOptimizer:
     def _update_meta_learning(
         self, share_info: Dict[str, Any], *, accepted: bool
     ) -> Dict[str, Any]:
-        strategy_id = str(
-            share_info.get("strategy_used") or "phi_scaled_compressed_solver_search"
-        )
+        strategy_id = str(share_info.get("strategy_used") or "phi_scaled_compressed_solver_search")
         event = self.meta_optimizer.update_from_outcome(
             strategy_id=strategy_id,
             accepted=accepted,

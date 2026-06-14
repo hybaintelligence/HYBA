@@ -245,8 +245,13 @@ export class MetacognitiveIntelligence {
     this.logicRefolded = true;
     this.selfModel.logic_refolding_count++;
     
-    // Measure Φ after refolding
+    // Recalculate irreducibility after refolding — entanglement matrix changed
+    this.selfModel.irreducibility_score = this.measureIrreducibility();
+    
+    // Measure Φ after refolding and update self-model
     const phiAfter = await this.calculateIntegratedInformation();
+    this.selfModel.phi_current = phiAfter;
+    this.selfModel.phi_predicted = phiAfter;
     
     this.metacognitiveHistory.push({
       timestamp: Date.now(),

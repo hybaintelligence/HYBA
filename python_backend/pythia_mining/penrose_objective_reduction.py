@@ -123,9 +123,7 @@ class ObjectiveReductionEngine:
 
         return rho, False
 
-    def _compute_gravitational_self_energy(
-        self, rho: NDArray[np.complex128]
-    ) -> float:
+    def _compute_gravitational_self_energy(self, rho: NDArray[np.complex128]) -> float:
         """Compute gravitational self-energy uncertainty.
 
         Penrose: ΔE = G * m^2 / r where:
@@ -142,9 +140,7 @@ class ObjectiveReductionEngine:
             return 0.0
 
         # Gravitational self-energy
-        energy_uncertainty = (
-            GRAVITATIONAL_CONSTANT * superposed_mass**2 / self.coherence_scale
-        )
+        energy_uncertainty = GRAVITATIONAL_CONSTANT * superposed_mass**2 / self.coherence_scale
 
         return float(energy_uncertainty)
 
@@ -218,9 +214,7 @@ class ObjectiveReductionEngine:
                 else 0.0
             ),
             "avg_time_threshold": (
-                float(
-                    np.mean([e.time_threshold for e in recent_events if e.collapse_occurred])
-                )
+                float(np.mean([e.time_threshold for e in recent_events if e.collapse_occurred]))
                 if recent_events
                 else 0.0
             ),

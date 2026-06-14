@@ -465,6 +465,7 @@ export function registerSecuritySwarmRoutes(
       current_state: status.operating_mode,
       predicted_state: status.anomaly_detected ? "integrity_response_active" : "nominal",
       confidence: status.last_confidence,
+      self_awareness: status.last_confidence, // Self-awareness metric (confidence in own state)
     };
     noStore(res);
     res.json({
@@ -488,6 +489,7 @@ export function registerSecuritySwarmRoutes(
             current_state: metacognitiveReport.current_state,
             predicted_state: metacognitiveReport.predicted_state,
             confidence: metacognitiveReport.confidence,
+            self_awareness: metacognitiveReport.self_awareness,
           },
         },
         preallocated_ancilla_trap_pool: {

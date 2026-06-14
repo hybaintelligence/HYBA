@@ -97,9 +97,7 @@ class KnowledgeSubstrate:
             self._criticize_explanation(explanation, context, outcome)
 
         # Generate new explanation accounting for failure
-        explanation_text = self._conjecture_failure_explanation(
-            strategy_id, context, outcome
-        )
+        explanation_text = self._conjecture_failure_explanation(strategy_id, context, outcome)
 
         if explanation_text:
             explanation = Explanation(
@@ -129,9 +127,7 @@ class KnowledgeSubstrate:
         """
 
         # Predict counterfactual outcome
-        predicted_outcome = self._simulate_alternative_strategy(
-            alternative_strategy, context
-        )
+        predicted_outcome = self._simulate_alternative_strategy(alternative_strategy, context)
 
         # Compute confidence from explanation quality
         confidence = self._counterfactual_confidence(alternative_strategy, context)
@@ -157,15 +153,11 @@ class KnowledgeSubstrate:
         for strategy_id, explanations in self.explanations.items():
             for explanation in explanations:
                 # Score explanation by accuracy and similarity to context
-                similarity = self._feature_similarity(
-                    features, explanation.context_features
-                )
+                similarity = self._feature_similarity(features, explanation.context_features)
                 score = explanation.predictive_accuracy * similarity
 
                 # Deutsch: prefer hard-to-vary explanations
-                score *= explanation.times_survived_criticism / max(
-                    explanation.times_tested, 1
-                )
+                score *= explanation.times_survived_criticism / max(explanation.times_tested, 1)
 
                 if score > best_score:
                     best_score = score
@@ -173,9 +165,7 @@ class KnowledgeSubstrate:
 
         return best_strategy
 
-    def explain_decision(
-        self, strategy_id: str, context: Dict[str, Any]
-    ) -> Dict[str, Any]:
+    def explain_decision(self, strategy_id: str, context: Dict[str, Any]) -> Dict[str, Any]:
         """Generate natural language explanation of why strategy was chosen"""
 
         explanations = self._find_relevant_explanations(strategy_id, context)
@@ -326,9 +316,7 @@ class KnowledgeSubstrate:
 
         return {"predicted_acceptance": 0.5, "confidence": 0.3}  # Unknown strategy
 
-    def _counterfactual_confidence(
-        self, strategy_id: str, context: Dict[str, Any]
-    ) -> float:
+    def _counterfactual_confidence(self, strategy_id: str, context: Dict[str, Any]) -> float:
         """Confidence in counterfactual prediction"""
 
         if strategy_id not in self.explanations:
@@ -352,11 +340,7 @@ class KnowledgeSubstrate:
         avg_accuracy = (
             float(
                 np.mean(
-                    [
-                        exp.predictive_accuracy
-                        for exps in self.explanations.values()
-                        for exp in exps
-                    ]
+                    [exp.predictive_accuracy for exps in self.explanations.values() for exp in exps]
                 )
             )
             if total_explanations > 0
@@ -370,7 +354,8 @@ class KnowledgeSubstrate:
             "counterfactual_models": len(self.counterfactuals),
             "criticism_events": len(self.criticism_history),
             "knowledge_growth_rate": (
-                total_explanations / (time.time() - self.explanations[next(iter(self.explanations))][0].created_at)
+                total_explanations
+                / (time.time() - self.explanations[next(iter(self.explanations))][0].created_at)
                 if self.explanations
                 else 0.0
             ),

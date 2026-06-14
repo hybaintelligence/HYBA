@@ -53,6 +53,27 @@ export interface SwarmResponse {
   note: string;
 }
 
+export interface MetacognitiveState {
+  phi_integrated: number;
+  syndrome_pressure: number;
+  shard_entropy: number;
+  confidence_delta: number;
+  resource_exhaustion: number;
+}
+
+export interface MetacognitiveReport {
+  is_predicting_disturbance: boolean;
+  last_event: string;
+  confidence_trend: number;
+  resource_pressure: number;
+}
+
+export interface MetacognitiveStatus {
+  events: string[];
+  strategy_weights: Record<string, number>;
+  state_history: MetacognitiveState[];
+}
+
 export interface SecuritySwarmStatus {
   agents_total: number;
   agents_active: number;
@@ -77,6 +98,7 @@ export interface SecuritySwarmStatus {
   syndrome_rotation_index: number;
   pool_permutation_checksum: number;
   sanitized: boolean;
+  metacognitive: MetacognitiveStatus;
 }
 
 const clamp01 = (value: number): number => Math.max(0, Math.min(1, value));
@@ -113,6 +135,9 @@ class SecuritySwarmAgent {
     sampled_ancillas: 8,
     check_frequency: 1.0,
   };
+  private metacognitive_events: string[] = [];
+  private metacognitive_strategy_weights: Record<string, number> = {};
+  private metacognitive_state_history: MetacognitiveState[] = [];
 
   constructor() {
     this.boot();
@@ -399,7 +424,11 @@ class SecuritySwarmAgent {
     return randomBytes(4).readUInt32BE(0);
   }
 
-  private get_resource_index(logicalIndex: number): number {
+  public get_resource_index(logicalIndex: number): number {
+    if (logicalIndex < 0 || logicalIndex >= this.permutation_shard_a.length) {
+      logger.warn({ ...get_trace_context(), logicalIndex, poolSize: this.permutation_shard_a.length }, 'Invalid resource index requested');
+      return 0;
+    }
     return (this.permutation_shard_a[logicalIndex] ^ this.permutation_shard_b[logicalIndex]) >>> 0;
   }
 
@@ -458,6 +487,181 @@ class SecuritySwarmAgent {
     return this.agents.filter((agent) => agent.state === 'active').length;
   }
 
+  /**
+   * Handle anomaly with holographic re-sharding. This method processes
+   * an anomaly detected in the system and triggers appropriate defensive
+   * measures including permutation shard updates.
+   */
+  public handle_anomaly(syndromeSeed: number): void {
+    const ctx = get_trace_context();
+    try {
+      const syndromeBitstring = this.encode_syndrome_bitstring(
+        Array.from({ length: 8 }, (_, i) => ((syndromeSeed >> i) & 1) as 0 | 1),
+      );
+      
+      if (!this.sanitized) {
+        this.update_permutation_shards(syndromeBitstring);
+        this.syndrome_rotation_index = this.derive_clifford_index(syndromeBitstring);
+        
+        logger.info(
+          { ...ctx, syndromeSeed, syndrome_rotation_index: this.syndrome_rotation_index },
+          'HYBA metacognitive anomaly handler: holographic re-sharding complete',
+        );
+        
+        this.metacognitive_events.push('HOLOGRAPHIC_RESHARDING');
+      } else {
+        logger.warn({ ...ctx, syndromeSeed }, 'HYBA metacognitive anomaly handler: pool sanitized, re-sharding skipped');
+      }
+    } catch (error) {
+      logger.error({ ...ctx, syndromeSeed, error: error instanceof Error ? error.message : String(error) }, 'HYBA metacognitive anomaly handler failed');
+      throw error;
+    }
+  }
+
+  /**
+   * Inject state history for testing metacognitive predictions.
+   * This method allows controlled injection of historical state data
+   * for testing predictive algorithms without requiring live operation.
+   */
+  public inject_state_history_for_test(history: MetacognitiveState[]): void {
+    const ctx = get_trace_context();
+    try {
+      if (!Array.isArray(history) || history.length === 0) {
+        logger.warn({ ...ctx, historyLength: history?.length }, 'Invalid state history provided for injection');
+        return;
+      }
+
+      for (const state of history) {
+        if (
+          typeof state.phi_integrated !== 'number' ||
+          typeof state.syndrome_pressure !== 'number' ||
+          typeof state.shard_entropy !== 'number' ||
+          typeof state.confidence_delta !== 'number' ||
+          typeof state.resource_exhaustion !== 'number'
+        ) {
+          logger.warn({ ...ctx, state }, 'Invalid state entry in history, skipping');
+          continue;
+        }
+        this.metacognitive_state_history.push({ ...state });
+      }
+
+      logger.info({ ...ctx, injectedCount: this.metacognitive_state_history.length }, 'HYBA metacognitive state history injected');
+    } catch (error) {
+      logger.error({ ...ctx, error: error instanceof Error ? error.message : String(error) }, 'HYBA metacognitive state history injection failed');
+      throw error;
+    }
+  }
+
+  /**
+   * Run metacognitive cycle for predictive analysis.
+   * This method analyzes historical state data to predict potential
+   * disturbances and triggers preemptive defensive measures.
+   */
+  public run_metacognitive_cycle(): MetacognitiveReport {
+    const ctx = get_trace_context();
+    try {
+      const history = this.metacognitive_state_history;
+      if (history.length < 3) {
+        return {
+          is_predicting_disturbance: false,
+          last_event: 'INSUFFICIENT_HISTORY',
+          confidence_trend: 0,
+          resource_pressure: 0,
+        };
+      }
+
+      // Analyze trends in the historical data
+      const recentStates = history.slice(-3);
+      const confidenceTrend =
+        recentStates.reduce((sum, state) => sum + state.confidence_delta, 0) / recentStates.length;
+      const syndromePressure =
+        recentStates.reduce((sum, state) => sum + state.syndrome_pressure, 0) / recentStates.length;
+      const resourcePressure =
+        recentStates.reduce((sum, state) => sum + state.resource_exhaustion, 0) / recentStates.length;
+
+      // Predictive logic: if confidence is declining and syndrome pressure is increasing
+      const isPredictingDisturbance = confidenceTrend >= 0.05 && syndromePressure >= 0.3;
+
+      let lastEvent = 'NOMINAL';
+      if (isPredictingDisturbance) {
+        lastEvent = 'PREEMPTIVE_SHARD_ROTATION';
+        this.metacognitive_events.push(lastEvent);
+        
+        // Trigger preemptive rotation
+        const rotationSeed = Math.floor(Math.random() * 0xffffff);
+        this.handle_anomaly(rotationSeed);
+        
+        logger.info(
+          { ...ctx, confidenceTrend, syndromePressure, resourcePressure },
+          'HYBA metacognitive cycle: preemptive shard rotation triggered',
+        );
+      }
+
+      return {
+        is_predicting_disturbance: isPredictingDisturbance,
+        last_event: lastEvent,
+        confidence_trend: confidenceTrend,
+        resource_pressure: resourcePressure,
+      };
+    } catch (error) {
+      logger.error({ ...ctx, error: error instanceof Error ? error.message : String(error) }, 'HYBA metacognitive cycle failed');
+      return {
+        is_predicting_disturbance: false,
+        last_event: 'CYCLE_ERROR',
+        confidence_trend: 0,
+        resource_pressure: 0,
+      };
+    }
+  }
+
+  /**
+   * Simulate intrusion for testing defensive responses.
+   * This method simulates an intrusion scenario with specific
+   * parameters to test the system's defensive capabilities.
+   */
+  public simulate_intrusion_for_test(syndrome: number, params: {
+    phi_integrated: number;
+    syndrome_pressure: number;
+    confidence_delta: number;
+  }): void {
+    const ctx = get_trace_context();
+    try {
+      const state: MetacognitiveState = {
+        phi_integrated: params.phi_integrated,
+        syndrome_pressure: params.syndrome_pressure,
+        shard_entropy: 0.8, // Default entropy for intrusion simulation
+        confidence_delta: params.confidence_delta,
+        resource_exhaustion: 0.1, // Default resource exhaustion for intrusion simulation
+      };
+
+      this.metacognitive_state_history.push(state);
+      
+      // Update strategy weight for this syndrome pattern
+      const syndromeKey = String(syndrome);
+      const currentWeight = this.metacognitive_strategy_weights[syndromeKey] || 1.0;
+      const reinforcement = params.phi_integrated > 0.9 ? 0.1 : 0.05;
+      this.metacognitive_strategy_weights[syndromeKey] = currentWeight + reinforcement;
+
+      logger.info(
+        { ...ctx, syndrome, phi_integrated: params.phi_integrated, newWeight: this.metacognitive_strategy_weights[syndromeKey] },
+        'HYBA metacognitive intrusion simulation complete',
+      );
+    } catch (error) {
+      logger.error({ ...ctx, syndrome, error: error instanceof Error ? error.message : String(error) }, 'HYBA metacognitive intrusion simulation failed');
+      throw error;
+    }
+  }
+
+  /**
+   * Get strategy weight for a specific syndrome pattern.
+   * This method returns the current strategy weight for a given
+   * syndrome, which reflects the system's learned defensive response.
+   */
+  public get_strategy_weight(syndrome: number): number {
+    const syndromeKey = String(syndrome);
+    return this.metacognitive_strategy_weights[syndromeKey] || 1.0;
+  }
+
   public get_swarm_status(): SecuritySwarmStatus {
     const byRoleAndState = (role: AgentRole, state?: AgentState): number =>
       this.agents.filter((agent) => agent.role === role && (state ? agent.state === state : true)).length;
@@ -486,6 +690,11 @@ class SecuritySwarmAgent {
       syndrome_rotation_index: this.syndrome_rotation_index,
       pool_permutation_checksum: this.pool_permutation_checksum,
       sanitized: this.sanitized,
+      metacognitive: {
+        events: this.metacognitive_events,
+        strategy_weights: this.metacognitive_strategy_weights,
+        state_history: this.metacognitive_state_history,
+      },
     };
   }
 
@@ -503,16 +712,6 @@ class SecuritySwarmAgent {
 
   public snapshot(): SecuritySwarmStatus {
     return this.get_swarm_status();
-  }
-
-  /**
-   * Run a metacognitive cycle and return a report with current and predicted state.
-   */
-  public run_metacognitive_cycle(): { current_state: string; predicted_state: string } {
-    const status = this.get_swarm_status();
-    const current_state = status.integrity_locked ? "protected" : "responding";
-    const predicted_state = status.operating_mode === "SANITIZED" ? "degraded" : "stable";
-    return { current_state, predicted_state };
   }
 }
 

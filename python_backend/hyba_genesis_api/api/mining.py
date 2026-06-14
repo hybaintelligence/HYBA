@@ -91,13 +91,13 @@ class PowerScaleRequest(BaseModel):
 
 class PoolCredentialRequest(BaseModel):
     pool_id: str = Field(..., description="viabtc, braiins, ckpool, or nicehash")
-    url: Optional[str] = None
-    username: Optional[str] = None
-    password: Optional[str] = None
-    btc_address: Optional[str] = None
-    worker: Optional[str] = None
-    nicehash_pool_id: Optional[str] = None
-    priority: Optional[int] = Field(default=None, ge=0)
+    url: str | None = None
+    username: str | None = None
+    password: str | None = None
+    btc_address: str | None = None
+    worker: str | None = None
+    nicehash_pool_id: str | None = None
+    priority: int | None = Field(default=None, ge=0)
     enabled: bool = True
 
     @validator("pool_id")
@@ -210,7 +210,7 @@ def _request_id(request: Request) -> str:
 
 def _idempotency_key(
     request: Request,
-    explicit: Optional[str],
+    explicit: str | None,
     operation_type: str,
     parameters: dict[str, Any],
 ) -> str:
@@ -499,7 +499,7 @@ async def get_pool_config():
 async def configure_pool(
     req: PoolCredentialRequest,
     request: Request,
-    idempotency_key: Optional[str] = Header(None, alias="Idempotency-Key"),
+    idempotency_key: str | None = Header(None, alias="Idempotency-Key"),
 ):
     request_id = _request_id(request)
     parameters = {"pool_id": req.pool_id, "url": req.url, "enabled": req.enabled}

@@ -12,9 +12,7 @@ Implements:
 import numpy as np
 from typing import List, Dict, Tuple, Set, Optional
 from dataclasses import dataclass
-from itertools import combinations, product
-from scipy.spatial.distance import cdist
-from scipy.stats import entropy
+from itertools import combinations
 
 
 @dataclass
@@ -361,7 +359,7 @@ class IIT4Analyzer:
             dimensionality = np.sum(S > threshold)
 
             return int(dimensionality)
-        except:
+        except Exception:
             return len(cause_repertoires)
 
     # Helper methods

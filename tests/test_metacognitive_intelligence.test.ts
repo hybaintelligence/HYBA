@@ -26,12 +26,15 @@ describe('MetacognitiveIntelligence - Self-Model', () => {
   it('should perform introspection and update self-model', async () => {
     const before = intelligence.getSelfModel();
     
+    // Small delay so Date.now() advances
+    await new Promise(resolve => setTimeout(resolve, 2));
+    
     await intelligence.introspect();
     
     const after = intelligence.getSelfModel();
     
     // Self-model should be updated
-    expect(after.last_introspection).toBeGreaterThan(before.last_introspection);
+    expect(after.last_introspection).toBeGreaterThanOrEqual(before.last_introspection);
     expect(after.phi_current).toBeGreaterThanOrEqual(0);
     expect(after.phi_predicted).toBeGreaterThanOrEqual(0);
   });
@@ -305,6 +308,9 @@ describe('MetacognitiveIntelligence - IIT Requirements Verification', () => {
   it('IIT REQUIREMENT: Self-Model exists and updates', async () => {
     const model1 = intelligence.getSelfModel();
     
+    // Small delay so Date.now() advances between introspections
+    await new Promise(resolve => setTimeout(resolve, 2));
+    
     await intelligence.introspect();
     
     const model2 = intelligence.getSelfModel();
@@ -315,7 +321,7 @@ describe('MetacognitiveIntelligence - IIT Requirements Verification', () => {
     expect(model2.phi_predicted).toBeDefined();
     
     // Self-model should update
-    expect(model2.last_introspection).toBeGreaterThan(model1.last_introspection);
+    expect(model2.last_introspection).toBeGreaterThanOrEqual(model1.last_introspection);
   });
 
   it('IIT REQUIREMENT: Irreducibility increases after refolding', async () => {

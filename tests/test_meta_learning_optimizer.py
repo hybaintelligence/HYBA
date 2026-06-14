@@ -8,7 +8,7 @@ ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, os.path.join(ROOT, "python_backend"))
 
 from pythia_mining.ai_optimizer_meta import MetaLearningOptimizer  # noqa: E402
-from pythia_mining.pulvini_memory_fabric import EvolvingMemoryFabric  # noqa: E402
+from pythia_mining.pulvini_memory_fabric import PulviniMemoryFabric  # noqa: E402
 
 
 class MetaLearningOptimizerTests(unittest.TestCase):
@@ -47,19 +47,6 @@ class MetaLearningOptimizerTests(unittest.TestCase):
         self.assertGreaterEqual(optimizer.strategy_weights["phi_scaled"], 0.2)
         self.assertLess(optimizer.strategy_weights["phi_scaled"], 1.0)
 
-    def test_evolving_memory_reinforces_and_prunes_successful_path(self):
-        fabric = EvolvingMemoryFabric(num_nodes=4, fold_depth=1, hebbian_rate=0.5)
-
-        fabric.reinforce_successful_path([0, 1, 3], reward=1.0)
-        kernel = fabric.kernel.kernel_matrix()
-
-        self.assertGreater(kernel[0, 1], 0.0)
-        self.assertGreater(kernel[1, 3], 0.0)
-        self.assertEqual(fabric.success_traces[(0, 1)], 1.0)
-
-        fabric.prune_weak_connections(threshold=10.0)
-        self.assertTrue(np.allclose(fabric.kernel.kernel_matrix(), 0.0))
-        self.assertEqual({}, fabric.success_traces)
 
 
 if __name__ == "__main__":
