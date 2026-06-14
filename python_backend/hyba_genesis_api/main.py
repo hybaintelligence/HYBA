@@ -26,6 +26,7 @@ from hyba_genesis_api.api import (  # noqa: E402
     auth,
     health,
     mining,
+    mining_jobs,
     mining_ops,
     misc,
     products,
@@ -82,6 +83,7 @@ app.middleware("http")(telemetry_middleware)
 
 app.include_router(health.router)
 app.include_router(mining.router)
+app.include_router(mining_jobs.router)
 app.include_router(mining_ops.router)
 app.include_router(security.router)
 app.include_router(misc.router)
