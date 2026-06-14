@@ -70,13 +70,34 @@
     height: 2.25rem;
     width: 2.25rem;
     border-radius: 0.85rem;
-    background: linear-gradient(135deg, #0b57d0 0%, #002147 52%, #c5a55a 100%);
-    box-shadow: 0 18px 45px rgba(11, 87, 208, 0.28);
+    background: linear-gradient(135deg, #003666 0%, #002147 52%, #c5a55a 100%);
+    box-shadow: 0 18px 45px rgba(0, 54, 102, 0.28);
     color: #fff;
     font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
     font-size: 0.55rem;
     font-weight: 900;
     letter-spacing: 0.12em;
+  }
+
+  .executive-summary-card {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(247, 245, 240, 0.9) 100%);
+    border: 1px solid rgba(0, 54, 102, 0.12);
+    box-shadow: 0 4px 24px rgba(0, 54, 102, 0.08);
+  }
+
+  .mckinsey-blue-bg {
+    background: linear-gradient(135deg, #003666 0%, #002147 100%);
+  }
+
+  .executive-typography {
+    font-family: "Georgia", "Times New Roman", Times, serif;
+  }
+
+  .kpi-card {
+    background: white;
+    border: 1px solid rgba(0, 54, 102, 0.1);
+    border-left: 3px solid #003666;
+    box-shadow: 0 2px 12px rgba(0, 54, 102, 0.06);
   }
 
   .executive-hero {

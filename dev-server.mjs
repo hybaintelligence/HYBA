@@ -1,55 +1,47 @@
-/**
- * HYBA Dev Server Bootstrap
- *
- * Transpiles server.ts on-the-fly with esbuild and runs it,
- * bypassing tsx which has known ESM loader issues with
- * Windows + OneDrive paths (ERR_INVALID_URL_SCHEME).
- *
- * Usage: node dev-server.mjs
- */
+import express from 'express';
+import { createProxyMiddleware } from 'http-proxy-middleware';
+import { createServer as createViteServer } from 'vite';
+import react from '@vitejs/plugin-react';
+import tailwindcss from '@tailwindcss/vite';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-import { createRequire } from "node:module";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
+const __filename = fileURLToPath(import.meta.url);
+const projectRoot = path.dirname(__filename);
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const app = express();
+const PORT = 3000;
+const BACKEND_PORT = 8000;
 
-// Use esbuild (already a devDependency) to transpile the server
-const require = createRequire(import.meta.url);
-const esbuild = require("esbuild");
-
-async function main() {
-  const serverPath = path.join(__dirname, "server.ts");
-
-  // Transpile server.ts to a temporary file
-  const result = await esbuild.build({
-    entryPoints: [serverPath],
-    bundle: true,
-    platform: "node",
-    format: "esm",
-    packages: "external",
-    sourcemap: "inline",
-    outfile: path.join(__dirname, "node_modules", ".hyba-dev-server.mjs"),
-    tsconfig: path.join(__dirname, "tsconfig.json"),
-  });
-
-  if (result.errors.length > 0) {
-    console.error("esbuild transpilation failed:", result.errors);
-    process.exit(1);
+// API proxy to backend
+app.use('/api', createProxyMiddleware({
+  target: `http://127.0.0.1:${BACKEND_PORT}`,
+  changeOrigin: true,
+  logLevel: 'warn',
+  onError: (err, req, res) => {
+    console.error('Proxy error:', err.message);
+    res.status(500).json({ error: 'Backend unavailable', detail: err.message });
   }
+}));
 
-  // Dynamically import the transpiled server
-  const serverUrl = new URL(
-    "file:///" +
-      path
-        .join(__dirname, "node_modules", ".hyba-dev-server.mjs")
-        .replace(/\\/g, "/"),
-  );
+// Create Vite dev server
+const vite = await createViteServer({
+  plugins: [react(), tailwindcss()],
+  root: projectRoot,
+  server: { 
+    middlewareMode: true,
+    hmr: process.env.DISABLE_HMR !== 'true',
+  },
+  appType: 'spa'
+});
 
-  await import(serverUrl.href);
-}
+// Use Vite's connect instance as middleware
+app.use(vite.middlewares);
 
-main().catch((err) => {
-  console.error("Dev server bootstrap failed:", err);
-  process.exit(1);
+// Start server
+app.listen(PORT, () => {
+  console.log(`\n🚀 HYBA Development Server`);
+  console.log(`   Frontend: http://localhost:${PORT}`);
+  console.log(`   Backend API: http://localhost:${BACKEND_PORT}`);
+  console.log(`   Proxy: /api -> http://localhost:${BACKEND_PORT}\n`);
 });

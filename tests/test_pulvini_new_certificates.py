@@ -50,7 +50,22 @@ from pythia_mining.pulvini_memory_compression_proof import (
     prove_phi_folding_reversibility,
     verify_memory_compression_gate,
 )
-from pythia_mining.pulvini_group import a5_representation_certificate, compute_graph_automorphisms
+from pythia_mining.pulvini_group import a5_representation_certificate, coxeter_group_certificate, compute_graph_automorphisms
+from pythia_mining.pulvini_decoherence import (
+    StateEvolutionCertificate,
+    amplitude_damping_channel,
+    combined_state_evolution,
+    depolarizing_channel,
+    phase_damping_channel,
+    verify_state_evolution,
+)
+from pythia_mining.pulvini_observability import (
+    MetricType,
+    ObservabilityCertificate,
+    ObservabilityFramework,
+    SLOStatus,
+    verify_observability_framework,
+)
 from pythia_mining.pulvini_topology import ADJACENCY_MAP
 
 
@@ -115,6 +130,31 @@ class TestGroverScopeCertificate(unittest.TestCase):
         self.assertEqual(report["classical_brute_force_steps_for_full_2_32"], 2**32)
 
 
+class TestCoxeterGroupCertificate(unittest.TestCase):
+    """Tests for the Coxeter group certificate."""
+
+    def test_coxeter_group_is_h3(self):
+        cert = coxeter_group_certificate()
+        self.assertEqual(cert.coxeter_group, "H3 icosahedral Coxeter group")
+        self.assertEqual(cert.rank, 3)
+        self.assertEqual(cert.order, 120)
+
+    def test_coxeter_diagram_is_correct(self):
+        cert = coxeter_group_certificate()
+        self.assertEqual(cert.coxeter_diagram, "o-5-o-3-o")
+        self.assertEqual(cert.coxeter_matrix, [[1, 5, 3], [5, 1, 3], [3, 3, 1]])
+
+    def test_coxeter_root_system_type(self):
+        cert = coxeter_group_certificate()
+        self.assertEqual(cert.root_system_type, "H3")
+        self.assertIn("non-crystallographic", cert.weyl_group_type)
+
+    def test_coxeter_certificate_embedded_in_a5(self):
+        cert = a5_representation_certificate()
+        self.assertIn("coxeter_structure", cert.to_dict())
+        self.assertEqual(cert.coxeter_structure["coxeter_group"], "H3 icosahedral Coxeter group")
+
+
 class TestA5RepresentationCertificate(unittest.TestCase):
     """Tests for the A5 representation-theory certificate."""
 
@@ -132,6 +172,11 @@ class TestA5RepresentationCertificate(unittest.TestCase):
         cert = a5_representation_certificate()
         self.assertFalse(cert.quantum_speedup_claimed)
         self.assertAlmostEqual(cert.heuristic_dimension_reduction, 2.0)
+
+    def test_a5_certificate_includes_coxeter_structure(self):
+        cert = a5_representation_certificate()
+        self.assertIn("coxeter_structure", cert.to_dict())
+        self.assertEqual(cert.coxeter_structure["order"], 120)
 
     def test_structural_certificate_embeds_representation_theory(self):
         cert = structural_certificate()
@@ -292,6 +337,133 @@ class TestBuresVariationalCertificate(unittest.TestCase):
         self.assertIn("evolving_state", result["tests"])
         self.assertIn("trivial_diagonal_state", result["tests"])
         self.assertIn("near_eigenbasis_alignment", result["tests"])
+
+
+class TestStateEvolutionModels(unittest.TestCase):
+    """Tests for quantum state evolution models."""
+
+    def test_amplitude_damping_reduces_purity(self):
+        """Amplitude damping must reduce purity from 1.0."""
+        dim = 32
+        psi = np.random.randn(dim) + 1j * np.random.randn(dim)
+        psi = psi / np.linalg.norm(psi)
+        rho = np.outer(psi, psi.conj())
+        
+        initial_purity = float(np.trace(rho @ rho).real)
+        rho_evolved, cert = amplitude_damping_channel(rho, gamma=0.1)
+        
+        final_purity = float(np.trace(rho_evolved @ rho_evolved).real)
+        self.assertLess(final_purity, initial_purity)
+        self.assertTrue(cert.mathematically_complete)
+
+    def test_phase_damping_reduces_purity(self):
+        """Phase damping must reduce purity from 1.0."""
+        dim = 32
+        psi = np.random.randn(dim) + 1j * np.random.randn(dim)
+        psi = psi / np.linalg.norm(psi)
+        rho = np.outer(psi, psi.conj())
+        
+        initial_purity = float(np.trace(rho @ rho).real)
+        rho_evolved, cert = phase_damping_channel(rho, gamma=0.1)
+        
+        final_purity = float(np.trace(rho_evolved @ rho_evolved).real)
+        self.assertLess(final_purity, initial_purity)
+        self.assertTrue(cert.mathematically_complete)
+
+    def test_depolarizing_reduces_purity(self):
+        """Depolarizing channel must reduce purity from 1.0."""
+        dim = 32
+        psi = np.random.randn(dim) + 1j * np.random.randn(dim)
+        psi = psi / np.linalg.norm(psi)
+        rho = np.outer(psi, psi.conj())
+        
+        initial_purity = float(np.trace(rho @ rho).real)
+        rho_evolved, cert = depolarizing_channel(rho, p=0.1)
+        
+        final_purity = float(np.trace(rho_evolved @ rho_evolved).real)
+        self.assertLess(final_purity, initial_purity)
+        self.assertTrue(cert.mathematically_complete)
+
+    def test_combined_state_evolution_applies_all_channels(self):
+        """Combined state evolution must apply all three channels."""
+        dim = 32
+        psi = np.random.randn(dim) + 1j * np.random.randn(dim)
+        psi = psi / np.linalg.norm(psi)
+        rho = np.outer(psi, psi.conj())
+        
+        initial_purity = float(np.trace(rho @ rho).real)
+        rho_final, certificates = combined_state_evolution(rho)
+        
+        final_purity = float(np.trace(rho_final @ rho_final).real)
+        self.assertLess(final_purity, initial_purity)
+        self.assertEqual(len(certificates), 3)
+        self.assertTrue(all(cert.mathematically_complete for cert in certificates))
+
+    def test_state_evolution_verification_closes_gate(self):
+        """State evolution verification must pass with mathematically complete results."""
+        result = verify_state_evolution()
+        self.assertEqual(result["status"], "CLOSED")
+        self.assertTrue(result["mathematically_complete_final"])
+        self.assertTrue(result["all_certificates_mathematically_complete"])
+        self.assertLess(result["final_purity"], result["initial_purity"])
+
+
+class TestObservabilityFramework(unittest.TestCase):
+    """Tests for observability framework (MIT requirements)."""
+
+    def test_metric_recording(self):
+        """Framework must record metrics correctly."""
+        framework = ObservabilityFramework()
+        metric = framework.record_metric("test_metric", 42.0, MetricType.GAUGE, "units")
+        self.assertEqual(metric.name, "test_metric")
+        self.assertEqual(metric.value, 42.0)
+        self.assertEqual(len(framework.metrics), 1)
+
+    def test_slo_definition(self):
+        """Framework must define SLO targets."""
+        framework = ObservabilityFramework()
+        slo = framework.define_slo("test_slo", 0.95, timedelta(hours=1), 0.97)
+        self.assertEqual(slo.name, "test_slo")
+        self.assertEqual(slo.slo_target, 0.95)
+        self.assertEqual(slo.status, SLOStatus.COMPLIANT)
+
+    def test_slo_violation_detection(self):
+        """Framework must detect SLO violations."""
+        framework = ObservabilityFramework()
+        slo = framework.define_slo("test_slo", 0.95, timedelta(hours=1), 0.85)
+        self.assertEqual(slo.status, SLOStatus.VIOLATED)
+        self.assertGreater(slo.burn_rate, 0.0)
+
+    def test_tracing_context(self):
+        """Framework must support distributed tracing."""
+        framework = ObservabilityFramework()
+        trace = framework.start_trace("test_operation", tags={"component": "test"})
+        self.assertIsNotNone(trace.trace_id)
+        self.assertIsNotNone(trace.span_id)
+        
+        ended_trace = framework.end_trace(trace.span_id)
+        self.assertIsNotNone(ended_trace.duration_ms)
+        self.assertGreater(ended_trace.duration_ms, 0)
+
+    def test_observability_certificate_generation(self):
+        """Framework must generate compliance certificate."""
+        framework = ObservabilityFramework()
+        framework.record_metric("test", 1.0)
+        framework.define_slo("test_slo", 0.95, timedelta(hours=1), 0.97)
+        
+        cert = framework.get_observability_certificate()
+        self.assertTrue(cert.tracing_enabled)
+        self.assertTrue(cert.structured_logging_enabled)
+        self.assertTrue(cert.chaos_engineering_hooks)
+        self.assertGreater(len(cert.slo_targets), 0)
+
+    def test_observability_verification_closes_gate(self):
+        """Observability verification must meet MIT requirements."""
+        result = verify_observability_framework()
+        self.assertEqual(result["status"], "CLOSED")
+        self.assertGreater(result["slo_count"], 0)
+        self.assertTrue(result["tracing_enabled"])
+        self.assertTrue(result["metrics_collected"])
 
 
 class TestMemoryCompressionProof(unittest.TestCase):

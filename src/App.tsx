@@ -47,6 +47,7 @@ import { NetworkToast } from "./components/NetworkToast";
 import { PoolSecretsConfig } from "./components/PoolSecretsConfig";
 import { SovereignGenesisPanel } from "./components/SovereignGenesisPanel";
 import { Sparkline } from "./components/Sparkline";
+import { ExecutiveSummary } from "./components/ExecutiveSummary";
 import { useApiRequest } from "./hooks/useApiRequest";
 import { useLatencyMetrics } from "./hooks/useLatencyMetrics";
 
@@ -54,6 +55,7 @@ type NullableNumber = number | null | undefined;
 
 const THEME = {
   colors: {
+    mckinseyBlue: "#003666",
     oxford: "#002147",
     deepBlue: "#06162D",
     mitRed: "#A31F34",
@@ -375,13 +377,13 @@ function AppContent() {
     <div className={`min-h-screen flex flex-col font-sans transition-colors duration-300 ${isDarkMode ? "dark bg-[#050914] text-slate-100" : "bg-[#F4F1EA] text-[#101828]"}`}>
       <NetworkToast isConnected={isConnected} latencyMs={latencyMs} isDismissed={isToastDismissed} onDismiss={() => setIsToastDismissed(true)} />
 
-      <header className="sticky top-0 z-40 border-b border-white/10 bg-[#06162D]/95 px-6 py-4 shadow-2xl shadow-slate-950/20 backdrop-blur-xl text-white">
+      <header className="sticky top-0 z-40 border-b border-white/10 mckinsey-blue-bg px-6 py-4 shadow-2xl shadow-slate-950/20 backdrop-blur-xl text-white">
         <div className="mx-auto flex max-w-7xl flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-3">
             <div className="brand-mark">HYBA</div>
             <div>
-              <p className="text-[10px] uppercase tracking-[0.42em] text-blue-100/70">Production command center</p>
-              <h1 className="text-base font-black tracking-tight text-white md:text-lg">Genesis Runtime Console</h1>
+              <p className="text-[10px] uppercase tracking-[0.42em] text-blue-100/70">Enterprise Command Center</p>
+              <h1 className="text-base font-black tracking-tight text-white md:text-lg executive-typography">Genesis Runtime Console</h1>
             </div>
             <span className="rounded-full border border-white/15 bg-white/10 px-2.5 py-1 text-[10px] font-mono font-semibold text-white/90">v{fmtText(health?.version || "2.0.1")}</span>
           </div>
@@ -399,38 +401,45 @@ function AppContent() {
       </header>
 
       <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-6 px-6 py-6">
+        <ExecutiveSummary 
+          readinessScore={readinessScore}
+          runtimeStatus={runtimeStatus}
+          securityStatus={securityStatus}
+          activePoolCount={activePoolCount}
+          latencyMs={latencyMs}
+        />
         <section className="executive-hero overflow-hidden rounded-[2rem] border border-white/30 bg-white/80 p-6 shadow-2xl shadow-slate-900/10 backdrop-blur md:p-8">
           <div className="grid gap-8 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
             <div className="relative z-10">
               <div className="mb-5 flex flex-wrap items-center gap-2">
-                <span className="eyebrow"><Landmark className="h-3.5 w-3.5" /> Board-ready operating picture</span>
-                <span className="eyebrow"><Rocket className="h-3.5 w-3.5" /> Cloudflare deploy path</span>
+                <span className="eyebrow"><Landmark className="h-3.5 w-3.5" /> Executive Dashboard</span>
+                <span className="eyebrow"><Rocket className="h-3.5 w-3.5" /> Production-Ready</span>
               </div>
-              <h2 className="max-w-3xl text-4xl font-black tracking-[-0.04em] text-slate-950 md:text-6xl">
-                Institutional-grade mining AI, calibrated for production scrutiny.
+              <h2 className="max-w-3xl text-4xl font-black tracking-[-0.04em] text-slate-950 md:text-6xl executive-typography">
+                Enterprise-Grade Mining Operations
               </h2>
               <p className="mt-5 max-w-2xl text-base leading-8 text-slate-600 md:text-lg">
-                A Stripe-quality control plane for HYBA operators: live telemetry, authenticated pool operations, risk posture, and executive evidence without fabricated metrics.
+                Institutional-caliber control surface for HYBA operators: real-time telemetry, authenticated pool management, risk monitoring, and executive reporting with zero synthetic metrics.
               </p>
               <div className="mt-8 grid gap-3 sm:grid-cols-3">
                 {operatingPrinciples.map((item) => (
-                  <div key={item.label} className="rounded-2xl border border-slate-200 bg-white/80 p-4 shadow-sm">
+                  <div key={item.label} className="kpi-card rounded-xl p-4">
                     <p className="text-xs font-black uppercase tracking-[0.18em] text-slate-900">{item.label}</p>
                     <p className="mt-2 text-xs leading-5 text-slate-500">{item.detail}</p>
                   </div>
                 ))}
               </div>
             </div>
-            <div className="relative z-10 rounded-[1.5rem] border border-slate-200 bg-slate-950 p-5 text-white shadow-2xl">
+            <div className="relative z-10 rounded-[1.5rem] border border-slate-200 mckinsey-blue-bg p-5 text-white shadow-2xl">
               <div className="flex items-center justify-between border-b border-white/10 pb-4">
                 <div>
-                  <p className="text-[10px] uppercase tracking-[0.3em] text-blue-200/70">Production readiness</p>
-                  <p className="mt-1 text-3xl font-black">{readinessScore}<span className="text-base text-white/50">/100</span></p>
+                  <p className="text-[10px] uppercase tracking-[0.3em] text-blue-200/70">Executive Readiness Score</p>
+                  <p className="mt-1 text-3xl font-black executive-typography">{readinessScore}<span className="text-base text-white/50">/100</span></p>
                 </div>
                 <Gauge className="h-10 w-10 text-[#C5A55A]" />
               </div>
               <div className="mt-5 h-3 rounded-full bg-white/10">
-                <div className="h-3 rounded-full bg-gradient-to-r from-[#0B57D0] via-[#C5A55A] to-[#16A34A]" style={{ width: `${readinessScore}%` }} />
+                <div className="h-3 rounded-full bg-gradient-to-r from-[#003666] via-[#C5A55A] to-[#16A34A]" style={{ width: `${readinessScore}%` }} />
               </div>
               <div className="mt-5 grid gap-3 text-xs">
                 <ReadinessLine label="Runtime" value={runtimeStatus.toUpperCase()} positive={["OK", "HEALTHY"].includes(runtimeStatus.toUpperCase())} />
@@ -443,7 +452,7 @@ function AppContent() {
         </section>
 
         <section className="grid grid-cols-1 gap-4 md:grid-cols-4">
-          {isLoading ? [1, 2, 3, 4].map(i => <div key={i} className="rounded-2xl border bg-white p-5 shadow-sm"><Skeleton width="80px" height="12px" /><div className="mt-3"><Skeleton width="60%" height="28px" /></div></div>) : (
+          {isLoading ? [1, 2, 3, 4].map(i => <div key={i} className="kpi-card rounded-xl p-5"><Skeleton width="80px" height="12px" /><div className="mt-3"><Skeleton width="60%" height="28px" /></div></div>) : (
             <>
               <MetricCard label="Runtime status" value={runtimeStatus.toUpperCase()} icon={<Activity className="h-4 w-4" />} status={runtimeStatus} />
               <MetricCard label="Telemetry source" value={fmtText(health?.telemetry_source)} icon={<Database className="h-4 w-4" />} />
@@ -616,9 +625,9 @@ function ReadinessLine({ label, value, positive }: { label: string; value: strin
 
 function MetricCard({ label, value, icon, status }: { label: string; value: string; icon: React.ReactNode; status?: string }) {
   const normalized = status?.toLowerCase();
-  const statusColor = normalized === "ok" || normalized === "healthy" ? THEME.colors.success : normalized === "unavailable" || normalized === "error" ? THEME.colors.error : THEME.colors.deepmindBlue;
+  const statusColor = normalized === "ok" || normalized === "healthy" ? THEME.colors.success : normalized === "unavailable" || normalized === "error" ? THEME.colors.error : THEME.colors.mckinseyBlue;
   return (
-    <div className="group rounded-2xl border border-slate-200 bg-white/85 p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-xl">
+    <div className="kpi-card group rounded-xl p-5 transition hover:-translate-y-0.5 hover:shadow-lg">
       <div className="mb-3 flex items-center justify-between"><span className="text-[10px] font-mono font-bold uppercase tracking-[0.18em] text-slate-500">{label}</span><div className="rounded-full bg-slate-50 p-2" style={{ color: statusColor }}>{icon}</div></div>
       <div className="truncate text-xl font-black tracking-tight" style={{ color: status ? statusColor : THEME.colors.ink }}>{value}</div>
     </div>
