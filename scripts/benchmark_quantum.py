@@ -30,14 +30,14 @@ from pythia_mining.pulvini_topology import ADJACENCY_MAP
 def benchmark_density_matrix_evolution(iterations: int = 100) -> Dict[str, Any]:
     """Benchmark density matrix evolution operations."""
     manifold = PulviniManifold(adjacency_map=ADJACENCY_MAP)
-    
+
     times = []
     for _ in range(iterations):
         start = time.perf_counter()
         manifold.evolve_closed_system(dt=0.05)
         end = time.perf_counter()
         times.append(end - start)
-    
+
     return {
         "operation": "density_matrix_evolution",
         "iterations": iterations,
@@ -52,14 +52,14 @@ def benchmark_density_matrix_evolution(iterations: int = 100) -> Dict[str, Any]:
 def benchmark_bures_metric(iterations: int = 100) -> Dict[str, Any]:
     """Benchmark Bures metric computation."""
     manifold = PulviniManifold(adjacency_map=ADJACENCY_MAP)
-    
+
     times = []
     for _ in range(iterations):
         start = time.perf_counter()
         cert = bures_certificate(manifold.rho, manifold.entropy_gradient)
         end = time.perf_counter()
         times.append(end - start)
-    
+
     return {
         "operation": "bures_metric_computation",
         "iterations": iterations,
@@ -74,21 +74,21 @@ def benchmark_bures_metric(iterations: int = 100) -> Dict[str, Any]:
 def benchmark_phi_compression(iterations: int = 100) -> Dict[str, Any]:
     """Benchmark phi-folding compression."""
     engine = PulviniPhiMemoryCompressionEngine(fold_depth=2)
-    
+
     times = []
     compression_ratios = []
-    
+
     for _ in range(iterations):
         matrix = np.random.randn(32, 32) + 1j * np.random.randn(32, 32)
         matrix = (matrix + matrix.conj().T) / 2  # Make Hermitian
-        
+
         start = time.perf_counter()
         result = engine.compress(matrix)
         end = time.perf_counter()
-        
+
         times.append(end - start)
         compression_ratios.append(result.working_set_compression_ratio)
-    
+
     return {
         "operation": "phi_folding_compression",
         "iterations": iterations,
@@ -105,7 +105,7 @@ def benchmark_phi_compression(iterations: int = 100) -> Dict[str, Any]:
 def benchmark_unitary_evolution(iterations: int = 100) -> Dict[str, Any]:
     """Benchmark unitary time evolution operator."""
     manifold = PulviniManifold(adjacency_map=ADJACENCY_MAP)
-    
+
     times = []
     for _ in range(iterations):
         start = time.perf_counter()
@@ -115,12 +115,12 @@ def benchmark_unitary_evolution(iterations: int = 100) -> Dict[str, Any]:
         phases = np.exp(-1j * lambda_normalized * 0.05)
         eigvecs_norm = np.linalg.norm(eigenvectors, axis=0, keepdims=True)
         eigenvectors = eigenvectors / (eigvecs_norm + 1e-300)
-        with np.errstate(divide='ignore', invalid='ignore', over='ignore'):
+        with np.errstate(divide="ignore", invalid="ignore", over="ignore"):
             diag_phases = np.diag(phases)
             unitary = eigenvectors @ diag_phases @ eigenvectors.conj().T
         end = time.perf_counter()
         times.append(end - start)
-    
+
     return {
         "operation": "unitary_evolution_operator",
         "iterations": iterations,
@@ -134,26 +134,30 @@ def benchmark_unitary_evolution(iterations: int = 100) -> Dict[str, Any]:
 
 def run_full_benchmark(iterations: int = 100) -> List[Dict[str, Any]]:
     """Run full quantum performance benchmark."""
-    print(f"Running quantum performance benchmark with {iterations} iterations per operation...")
-    
+    print(
+        f"Running quantum performance benchmark with {iterations} iterations per operation..."
+    )
+
     results = []
-    
+
     print("Benchmarking density matrix evolution...")
     results.append(benchmark_density_matrix_evolution(iterations))
     print(f"  Mean: {results[-1]['mean_ms']:.3f}ms")
-    
+
     print("Benchmarking Bures metric computation...")
     results.append(benchmark_bures_metric(iterations))
     print(f"  Mean: {results[-1]['mean_ms']:.3f}ms")
-    
+
     print("Benchmarking phi-folding compression...")
     results.append(benchmark_phi_compression(iterations))
-    print(f"  Mean: {results[-1]['mean_ms']:.3f}ms, Compression: {results[-1]['mean_compression_ratio']:.2f}x")
-    
+    print(
+        f"  Mean: {results[-1]['mean_ms']:.3f}ms, Compression: {results[-1]['mean_compression_ratio']:.2f}x"
+    )
+
     print("Benchmarking unitary evolution operator...")
     results.append(benchmark_unitary_evolution(iterations))
     print(f"  Mean: {results[-1]['mean_ms']:.3f}ms")
-    
+
     return results
 
 
@@ -161,13 +165,13 @@ def main():
     iterations = 100
     if len(sys.argv) > 1:
         iterations = int(sys.argv[1])
-    
+
     results = run_full_benchmark(iterations)
-    
+
     print("\n" + "=" * 60)
     print("QUANTUM PERFORMANCE BENCHMARK RESULTS")
     print("=" * 60)
-    
+
     for result in results:
         print(f"\n{result['operation'].replace('_', ' ').title()}:")
         print(f"  Iterations: {result['iterations']}")
@@ -176,9 +180,9 @@ def main():
         print(f"  Min: {result['min_ms']:.3f}ms")
         print(f"  Max: {result['max_ms']:.3f}ms")
         print(f"  Std Dev: {result['std_ms']:.3f}ms")
-        if 'mean_compression_ratio' in result:
+        if "mean_compression_ratio" in result:
             print(f"  Mean Compression Ratio: {result['mean_compression_ratio']:.2f}x")
-    
+
     print("\n" + "=" * 60)
     print("Benchmark complete. System is numerically stable with 0 warnings.")
     print("=" * 60)

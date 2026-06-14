@@ -180,13 +180,17 @@ def check_phi_resonance_artifacts(phi_dir: Path) -> GateCheck:
     )
 
     if abs(mean_strength - computed_mean) > 0.001:
-        details["error"] = "summary mean_resonance_strength does not match CSV within tolerance"
+        details["error"] = (
+            "summary mean_resonance_strength does not match CSV within tolerance"
+        )
         return GateCheck("phi_resonance_artifacts", "failed", details)
     if above_count != computed_above:
         details["error"] = "summary resonance_above_05_count does not match CSV"
         return GateCheck("phi_resonance_artifacts", "failed", details)
     if abs(above_rate - computed_rate) > 0.001:
-        details["error"] = "summary resonance_above_05_rate does not match CSV within tolerance"
+        details["error"] = (
+            "summary resonance_above_05_rate does not match CSV within tolerance"
+        )
         return GateCheck("phi_resonance_artifacts", "failed", details)
 
     return GateCheck("phi_resonance_artifacts", "passed", details)
@@ -196,11 +200,15 @@ async def _solve_once(target: int, nonce_start: int, nonce_end: int) -> int | No
     from pythia_mining.quantum_solver import DodecahedralQuantumSolver
 
     solver = DodecahedralQuantumSolver(configured_capacity_ehs=0.1)
-    await solver.configure_search(target=target, nonce_ranges=[(nonce_start, nonce_end)])
+    await solver.configure_search(
+        target=target, nonce_ranges=[(nonce_start, nonce_end)]
+    )
     return await solver.solve(max_iterations=20, timeout=5.0)
 
 
-def check_deterministic_search(target: int, nonce_start: int, nonce_end: int) -> GateCheck:
+def check_deterministic_search(
+    target: int, nonce_start: int, nonce_end: int
+) -> GateCheck:
     details = {"target": target, "nonce_start": nonce_start, "nonce_end": nonce_end}
     try:
         first = asyncio.run(_solve_once(target, nonce_start, nonce_end))
@@ -248,7 +256,9 @@ def check_accepted_share_artifacts(command_room_dir: Path, required: bool) -> Ga
     }
     if not command_room_dir.exists():
         details["error"] = "command-room directory not found"
-        return GateCheck("accepted_share_evidence", "failed" if required else "warning", details)
+        return GateCheck(
+            "accepted_share_evidence", "failed" if required else "warning", details
+        )
 
     for path in sorted(command_room_dir.rglob("*.json")):
         try:
@@ -265,7 +275,9 @@ def check_accepted_share_artifacts(command_room_dir: Path, required: bool) -> Ga
         return GateCheck("accepted_share_evidence", "passed", details)
 
     details["error"] = "no accepted-share evidence found"
-    return GateCheck("accepted_share_evidence", "failed" if required else "warning", details)
+    return GateCheck(
+        "accepted_share_evidence", "failed" if required else "warning", details
+    )
 
 
 def write_report(report: FundingGateReport, output_dir: Path) -> Path:
@@ -278,9 +290,13 @@ def write_report(report: FundingGateReport, output_dir: Path) -> Path:
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="HYBA_FULLSTACK funding-engine deployment gate")
+    parser = argparse.ArgumentParser(
+        description="HYBA_FULLSTACK funding-engine deployment gate"
+    )
     parser.add_argument("--phi-dir", default="artifacts/phi_resonance")
-    parser.add_argument("--command-room-dir", default="HYBA_FULLSTACK_COMMAND_ROOM_20260612")
+    parser.add_argument(
+        "--command-room-dir", default="HYBA_FULLSTACK_COMMAND_ROOM_20260612"
+    )
     parser.add_argument("--output-dir", default="artifacts/funding_engine")
     parser.add_argument("--target", type=int, default=0x1D00FFFF)
     parser.add_argument("--nonce-start", type=int, default=0)
@@ -294,7 +310,9 @@ def main() -> int:
     checks = [
         check_phi_resonance_artifacts(ROOT / args.phi_dir),
         check_deterministic_search(args.target, args.nonce_start, args.nonce_end),
-        check_accepted_share_artifacts(ROOT / args.command_room_dir, args.require_accepted_share),
+        check_accepted_share_artifacts(
+            ROOT / args.command_room_dir, args.require_accepted_share
+        ),
     ]
 
     hard_failures = [check for check in checks if check.status == "failed"]
@@ -303,14 +321,25 @@ def main() -> int:
 
     next_actions: list[str] = []
     if status != "passed":
-        if any(check.name == "accepted_share_evidence" for check in hard_failures + warnings):
-            next_actions.append("Capture pool-side accepted-share evidence before releasing MD offers.")
+        if any(
+            check.name == "accepted_share_evidence"
+            for check in hard_failures + warnings
+        ):
+            next_actions.append(
+                "Capture pool-side accepted-share evidence before releasing MD offers."
+            )
         if any(check.name == "phi_resonance_artifacts" for check in hard_failures):
-            next_actions.append("Run scripts/phi_resonance_empirical_evidence.py and preserve CSV/JSON artefacts.")
+            next_actions.append(
+                "Run scripts/phi_resonance_empirical_evidence.py and preserve CSV/JSON artefacts."
+            )
         if any(check.name == "deterministic_search" for check in hard_failures):
-            next_actions.append("Do not deploy until deterministic search repeatability is restored.")
+            next_actions.append(
+                "Do not deploy until deterministic search repeatability is restored."
+            )
     else:
-        next_actions.append("Funding-engine gate passed; proceed according to signed command-room approval.")
+        next_actions.append(
+            "Funding-engine gate passed; proceed according to signed command-room approval."
+        )
 
     report = FundingGateReport(
         status=status,

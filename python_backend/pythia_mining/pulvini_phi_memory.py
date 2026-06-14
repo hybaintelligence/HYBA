@@ -199,7 +199,15 @@ class PulviniPhiMemoryCompressionEngine:
         )
         with np.errstate(over="ignore", invalid="ignore"):
             raw_error = np.linalg.norm(effective_flat - reconstructed_flat)
-        reconstruction_error = float(raw_error) if np.isfinite(raw_error) else float(np.linalg.norm((effective_flat - reconstructed_flat).clip(-1e300, 1e300)))
+        reconstruction_error = (
+            float(raw_error)
+            if np.isfinite(raw_error)
+            else float(
+                np.linalg.norm(
+                    (effective_flat - reconstructed_flat).clip(-1e300, 1e300)
+                )
+            )
+        )
         original_bytes = int(flat.nbytes)
         folded_bytes = int(folded.nbytes)
         kernel_bytes = int(sum(kernel.nbytes for kernel in kernels))

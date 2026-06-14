@@ -381,7 +381,9 @@ def _pool_config_response(
     payload["status"] = (
         "connected"
         if active_pool_id == config.pool_id
-        else "configured" if payload.get("configured") else "not_configured"
+        else "configured"
+        if payload.get("configured")
+        else "not_configured"
     )
     return payload
 
@@ -389,7 +391,9 @@ def _pool_config_response(
 def _build_pool_config_from_request(req: PoolCredentialRequest) -> PoolCredentialConfig:
     base = load_runtime_pool_configs().get(req.pool_id)
     if base is None:
-        base = PoolCredentialConfig(**DEFAULT_POOL_SPECS[req.pool_id], pool_id=req.pool_id)  # type: ignore[arg-type]
+        base = PoolCredentialConfig(
+            **DEFAULT_POOL_SPECS[req.pool_id], pool_id=req.pool_id
+        )  # type: ignore[arg-type]
     return PoolCredentialConfig(
         pool_id=req.pool_id,
         name=base.name,

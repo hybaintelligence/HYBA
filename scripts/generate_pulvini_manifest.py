@@ -20,7 +20,10 @@ PYTHON_BACKEND = ROOT / "python_backend"
 if str(PYTHON_BACKEND) not in sys.path:
     sys.path.insert(0, str(PYTHON_BACKEND))
 
-from pythia_mining.pulvini_elevation import CertificateLedger, QuantumRuntimeManifestBuilder  # noqa: E402
+from pythia_mining.pulvini_elevation import (
+    CertificateLedger,
+    QuantumRuntimeManifestBuilder,
+)  # noqa: E402
 
 
 class BuildOperator:
@@ -52,16 +55,31 @@ def build_manifest(*, production_runtime: bool) -> dict[str, Any]:
         return builder.build(ledger=ledger)
     operator = BuildOperator()
     builder = QuantumRuntimeManifestBuilder(operator, BuildVerifier(operator))
-    return builder.build(ledger=ledger, rho={"trace": 1.0, "purity": 1.0, "min_eigenvalue": 0.0})
+    return builder.build(
+        ledger=ledger, rho={"trace": 1.0, "purity": 1.0, "min_eigenvalue": 0.0}
+    )
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Generate PULVINI manifest.json for CI/CD.")
-    parser.add_argument("--output", type=Path, default=Path("manifest.json"), help="Output manifest path.")
-    parser.add_argument("--production-runtime", action="store_true", help="Use the real PULVINI façade instead of dependency-free build stubs.")
+    parser = argparse.ArgumentParser(
+        description="Generate PULVINI manifest.json for CI/CD."
+    )
+    parser.add_argument(
+        "--output",
+        type=Path,
+        default=Path("manifest.json"),
+        help="Output manifest path.",
+    )
+    parser.add_argument(
+        "--production-runtime",
+        action="store_true",
+        help="Use the real PULVINI façade instead of dependency-free build stubs.",
+    )
     args = parser.parse_args(argv)
     manifest = build_manifest(production_runtime=args.production_runtime)
-    args.output.write_text(json.dumps(manifest, sort_keys=True, indent=2), encoding="utf-8")
+    args.output.write_text(
+        json.dumps(manifest, sort_keys=True, indent=2), encoding="utf-8"
+    )
     print(args.output)
     return 0
 

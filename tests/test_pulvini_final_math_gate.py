@@ -13,12 +13,26 @@ if str(BACKEND) not in sys.path:
     sys.path.insert(0, str(BACKEND))
 
 from pythia_mining.pulvini_certificates import automorphism_runtime_certificate  # noqa: E402
-from pythia_mining.pulvini_choi import choi_certificate, choi_matrix, kraus_operators_for_step  # noqa: E402
-from pythia_mining.pulvini_gamma import EmpiricalGammaLedger, jump_operators_from_gamma  # noqa: E402
-from pythia_mining.pulvini_group import adjacency_sets, compute_graph_automorphisms, compute_node_orbits  # noqa: E402
+from pythia_mining.pulvini_choi import (
+    choi_certificate,
+    choi_matrix,
+    kraus_operators_for_step,
+)  # noqa: E402
+from pythia_mining.pulvini_gamma import (
+    EmpiricalGammaLedger,
+    jump_operators_from_gamma,
+)  # noqa: E402
+from pythia_mining.pulvini_group import (
+    adjacency_sets,
+    compute_graph_automorphisms,
+    compute_node_orbits,
+)  # noqa: E402
 from pythia_mining.pulvini_manifold import PulviniManifold  # noqa: E402
 from pythia_mining.pulvini_overlay import ADJACENCY_MAP  # noqa: E402
-from pythia_mining.pulvini_variational import trace_zero_hermitian_projection, variational_certificate  # noqa: E402
+from pythia_mining.pulvini_variational import (
+    trace_zero_hermitian_projection,
+    variational_certificate,
+)  # noqa: E402
 
 
 class PulviniFinalMathGateTests(unittest.TestCase):
@@ -27,7 +41,9 @@ class PulviniFinalMathGateTests(unittest.TestCase):
 
     def test_variational_certificate_is_not_falsely_closed(self) -> None:
         self.manifold.entropy_gradient = 0.75
-        cert = variational_certificate(self.manifold.rho, self.manifold.entropy_gradient)
+        cert = variational_certificate(
+            self.manifold.rho, self.manifold.entropy_gradient
+        )
         self.assertIn("candidate", cert.functional)
         self.assertIn("trace-zero", cert.tangent_space)
         self.assertGreater(cert.control_energy, 0.0)
@@ -35,7 +51,6 @@ class PulviniFinalMathGateTests(unittest.TestCase):
         self.assertFalse(cert.closed)
         self.assertIn("no proof", cert.blocker)
         self.assertIn("Bures", cert.required_derivation)
-
 
     def test_automorphism_certificate_closes_du_sautoy_gate(self) -> None:
         cert = automorphism_runtime_certificate(ADJACENCY_MAP)
@@ -86,11 +101,14 @@ class PulviniFinalMathGateTests(unittest.TestCase):
         self.assertIn("tangent_projection_norm", result2)
         self.assertIn("physical_meaning", result2)
 
-        print(f"Penrose gate: Bures gradient norm = "
-              f"{result2['bures_gradient_norm']:.6f}")
+        print(
+            f"Penrose gate: Bures gradient norm = {result2['bures_gradient_norm']:.6f}"
+        )
         print(f"Penrose gate: {result2['physical_meaning']}")
 
-    def test_trace_zero_hermitian_projection_stays_on_density_tangent_space(self) -> None:
+    def test_trace_zero_hermitian_projection_stays_on_density_tangent_space(
+        self,
+    ) -> None:
         raw = np.zeros((32, 32), dtype=np.complex128)
         raw[0, 1] = 1.0 + 2.0j
         raw[2, 2] = 7.0
@@ -136,7 +154,9 @@ class PulviniFinalMathGateTests(unittest.TestCase):
         self.assertGreaterEqual(cert.min_eigenvalue, -1e-9)
         self.assertLess(cert.trace_preservation_error, 1e-8)
 
-    def test_automorphism_order_is_computed_from_runtime_adjacency_map_with_timing(self) -> None:
+    def test_automorphism_order_is_computed_from_runtime_adjacency_map_with_timing(
+        self,
+    ) -> None:
         neighbors = adjacency_sets(ADJACENCY_MAP)
         started = time.perf_counter()
         automorphisms = compute_graph_automorphisms(ADJACENCY_MAP)
@@ -144,7 +164,9 @@ class PulviniFinalMathGateTests(unittest.TestCase):
         orbits = compute_node_orbits(len(ADJACENCY_MAP), automorphisms)
         degree_histogram: dict[int, int] = {}
         for node_neighbors in neighbors.values():
-            degree_histogram[len(node_neighbors)] = degree_histogram.get(len(node_neighbors), 0) + 1
+            degree_histogram[len(node_neighbors)] = (
+                degree_histogram.get(len(node_neighbors), 0) + 1
+            )
 
         self.assertEqual(120, len(automorphisms))
         self.assertLess(elapsed, 1.0)

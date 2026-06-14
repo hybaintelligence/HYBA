@@ -17,7 +17,8 @@ if str(BACKEND) not in sys.path:
 
 # Enable all warnings to detect any issues
 import warnings
-warnings.filterwarnings('error')
+
+warnings.filterwarnings("error")
 
 from pythia_mining.pulvini_phi_memory import PulviniPhiMemoryCompressionEngine
 from pythia_mining.pulvini_bures_variational import bures_variational_certificate
@@ -49,7 +50,9 @@ def test_bures_variational_isolation():
     try:
         manifold = PulviniManifold(adjacency_map=ADJACENCY_MAP)
         cert = bures_variational_certificate(manifold.rho, manifold.entropy_gradient)
-        print(f"✓ pulvini_bures_variational: No RuntimeWarnings (norm={cert.bures_gradient_norm:.6f})")
+        print(
+            f"✓ pulvini_bures_variational: No RuntimeWarnings (norm={cert.bures_gradient_norm:.6f})"
+        )
         return True
     except RuntimeWarning as e:
         print(f"✗ pulvini_bures_variational: RuntimeWarning detected - {e}")
@@ -63,10 +66,10 @@ def main():
     print("=" * 70)
     print("MODULE ISOLATION TEST")
     print("=" * 70)
-    
+
     phi_result = test_phi_memory_isolation()
     bures_result = test_bures_variational_isolation()
-    
+
     print("\n" + "=" * 70)
     if phi_result and bures_result:
         print("✓ ALL MODULES CLEAN - No RuntimeWarnings in isolation")

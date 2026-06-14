@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from "react";
 
-const STORAGE_KEY = 'hyba_latency_history';
+const STORAGE_KEY = "hyba_latency_history";
 
 export interface LatencyPoint {
   time: string;
@@ -25,7 +25,7 @@ try {
 }
 
 function notifyListeners() {
-  globalListeners.forEach(listener => listener());
+  globalListeners.forEach((listener) => listener());
 }
 
 export function recordPing(latency: number, success: boolean) {
@@ -39,7 +39,7 @@ export function recordPing(latency: number, success: boolean) {
     try {
       sessionStorage.setItem(STORAGE_KEY, JSON.stringify(globalLatencyHistory));
     } catch (e) {
-      console.error('Error writing to sessionStorage:', e);
+      console.error("Error writing to sessionStorage:", e);
     }
   }
   notifyListeners();
@@ -55,10 +55,11 @@ export function ensurePingInterval() {
     const start = performance.now();
     try {
       const metaEnv = (import.meta as any).env || {};
-      const backendUrl = (typeof process !== "undefined" && process.env?.HYBA_BACKEND_URL) || 
-                         metaEnv.VITE_HYBA_BACKEND_URL || 
-                         metaEnv.VITE_PULVINI_BACKEND_URL || 
-                         "http://127.0.0.1:8000/api";
+      const backendUrl =
+        (typeof process !== "undefined" && process.env?.HYBA_BACKEND_URL) ||
+        metaEnv.VITE_HYBA_BACKEND_URL ||
+        metaEnv.VITE_PULVINI_BACKEND_URL ||
+        "http://127.0.0.1:8000/api";
       const response = await fetch(`${backendUrl}/health`);
       const latency = performance.now() - start;
       recordPing(latency, response.ok);
@@ -75,7 +76,7 @@ export function useLatencyMetrics() {
   const [, setTick] = useState(0);
 
   useEffect(() => {
-    const forceUpdate = () => setTick(tick => tick + 1);
+    const forceUpdate = () => setTick((tick) => tick + 1);
     globalListeners.add(forceUpdate);
     ensurePingInterval();
 
@@ -95,6 +96,6 @@ export function useLatencyMetrics() {
     latencyHistory: globalLatencyHistory,
     isToastDismissed: globalIsToastDismissed,
     setIsToastDismissed,
-    recordPing
+    recordPing,
   };
 }

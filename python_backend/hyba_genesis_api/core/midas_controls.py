@@ -415,9 +415,7 @@ class MiningRequestTracker:
 
     def cleanup_expired_requests(self) -> int:
         with self._lock:
-            cutoff = datetime.now(UTC) - timedelta(
-                seconds=self.request_ttl_seconds
-            )
+            cutoff = datetime.now(UTC) - timedelta(seconds=self.request_ttl_seconds)
             expired_ids = [
                 rid for rid, req in self.requests.items() if req.created_at < cutoff
             ]

@@ -37,15 +37,23 @@ class PulviniManifoldUnitTests(unittest.TestCase):
         i_orbit = self.manifold.nonce_orbit(31)
         self.assertEqual(20, len(d_orbit))
         self.assertEqual(12, len(i_orbit))
-        self.assertTrue(all(value % 32 in self.manifold.node_orbits[0] for value in d_orbit))
-        self.assertTrue(all(value % 32 in self.manifold.node_orbits[1] for value in i_orbit))
+        self.assertTrue(
+            all(value % 32 in self.manifold.node_orbits[0] for value in d_orbit)
+        )
+        self.assertTrue(
+            all(value % 32 in self.manifold.node_orbits[1] for value in i_orbit)
+        )
 
     def test_hebbian_update_preserves_hermitian_hamiltonian_and_unit_norm(self) -> None:
         before = self.manifold.edge_weight(0, 20)
         self.manifold.hebbian_fire([0, 20, 25, 30, 31], signal_type="SHARE_FOUND")
         self.assertGreater(self.manifold.edge_weight(0, 20), before)
-        self.assertAlmostEqual(self.manifold.edge_weight(0, 20), self.manifold.edge_weight(20, 0))
-        self.assertTrue(np.allclose(self.manifold.hamiltonian, self.manifold.hamiltonian.conj().T))
+        self.assertAlmostEqual(
+            self.manifold.edge_weight(0, 20), self.manifold.edge_weight(20, 0)
+        )
+        self.assertTrue(
+            np.allclose(self.manifold.hamiltonian, self.manifold.hamiltonian.conj().T)
+        )
         self.manifold.evolve_closed_system(dt=0.25)
         self.assertAlmostEqual(float(np.linalg.norm(self.manifold.psi)), 1.0, places=10)
         self.assertAlmostEqual(float(np.trace(self.manifold.rho).real), 1.0, places=10)
@@ -58,14 +66,22 @@ class PulviniManifoldUnitTests(unittest.TestCase):
         self.assertEqual("nack_slice_exhausted", event.event_type)
         self.assertLess(after[0], before[0])
         self.assertAlmostEqual(float(np.trace(self.manifold.rho).real), 1.0, places=10)
-        self.assertGreaterEqual(float(np.min(np.linalg.eigvalsh(self.manifold.rho).real)), -1e-9)
+        self.assertGreaterEqual(
+            float(np.min(np.linalg.eigvalsh(self.manifold.rho).real)), -1e-9
+        )
 
     def test_threshold_projection_and_phi_projection_are_operational(self) -> None:
-        self.assertFalse(self.manifold.collapse_if_threshold(found_node=3, critical_value=10.0))
+        self.assertFalse(
+            self.manifold.collapse_if_threshold(found_node=3, critical_value=10.0)
+        )
         self.manifold.entropy_gradient = 10.0
-        self.assertTrue(self.manifold.collapse_if_threshold(found_node=3, critical_value=0.1))
+        self.assertTrue(
+            self.manifold.collapse_if_threshold(found_node=3, critical_value=0.1)
+        )
         self.assertEqual(3, int(np.argmax(self.manifold.work_distribution())))
-        payload = self.manifold.calibrate_phi_projection(range(256), threshold=0.5, job_id="job-beta")
+        payload = self.manifold.calibrate_phi_projection(
+            range(256), threshold=0.5, job_id="job-beta"
+        )
         self.assertEqual(256, payload["sample_size"])
         self.assertGreaterEqual(payload["acceptance_ratio"], 0.0)
         self.assertLessEqual(payload["acceptance_ratio"], 1.0)
@@ -82,20 +98,29 @@ class PulviniManifoldUnitTests(unittest.TestCase):
 
 
 class PulviniManifoldIntegrationTests(unittest.TestCase):
-    def test_overlay_assignments_include_tensor_coordinates_and_manifold_drift(self) -> None:
+    def test_overlay_assignments_include_tensor_coordinates_and_manifold_drift(
+        self,
+    ) -> None:
         overlay = PulviniOverlayConcentrator()
         job = SimpleNamespace(job_id="job-gamma", target=12345, extranonce2_size=4)
         assignments = overlay.register_pool_job(job, pool_name="Pool")
         self.assertEqual(32, len(assignments))
-        self.assertEqual(32, len({assignment.extranonce2 for assignment in assignments.values()}))
+        self.assertEqual(
+            32, len({assignment.extranonce2 for assignment in assignments.values()})
+        )
         for assignment in assignments.values():
             self.assertIn("orbit_id", assignment.tensor_coordinate)
             self.assertIn("nonce_residue", assignment.tensor_coordinate)
         snapshot = overlay.snapshot()
         self.assertEqual(120, snapshot["manifold"]["automorphism_group"]["order"])
-        self.assertEqual("sigma(q*N+r)=q*N+sigma(r)", snapshot["manifold"]["automorphism_group"]["nonce_action"])
+        self.assertEqual(
+            "sigma(q*N+r)=q*N+sigma(r)",
+            snapshot["manifold"]["automorphism_group"]["nonce_action"],
+        )
 
-    def test_share_propagation_uses_same_manifold_for_route_and_hebbian_update(self) -> None:
+    def test_share_propagation_uses_same_manifold_for_route_and_hebbian_update(
+        self,
+    ) -> None:
         async def run_case() -> dict:
             manifold = PulviniManifold(ADJACENCY_MAP)
             controller = SharePropagationController(manifold)
@@ -103,7 +128,9 @@ class PulviniManifoldIntegrationTests(unittest.TestCase):
             before = manifold.edge_weight(0, 20)
 
             async def submitter(_job, nonce, extranonce2):
-                return ShareResult(True, job_id=_job.job_id, nonce=nonce, block_hash="00" * 32)
+                return ShareResult(
+                    True, job_id=_job.job_id, nonce=nonce, block_hash="00" * 32
+                )
 
             result = await controller.handle_share_found(
                 job=job,
@@ -129,7 +156,9 @@ class PulviniManifoldIntegrationTests(unittest.TestCase):
 
 
 class PulviniManifoldPropertyStyleTests(unittest.TestCase):
-    def test_random_like_closed_evolution_preserves_invariants_across_steps(self) -> None:
+    def test_random_like_closed_evolution_preserves_invariants_across_steps(
+        self,
+    ) -> None:
         manifold = PulviniManifold(ADJACENCY_MAP)
         for index, dt in enumerate([0.01, 0.05, 0.1, 0.25, 0.5]):
             manifold.phase_heartbeat("job-epsilon", index)
@@ -137,7 +166,9 @@ class PulviniManifoldPropertyStyleTests(unittest.TestCase):
             manifold.evolve_closed_system(dt=dt)
             manifold.assert_invariants()
 
-    def test_every_node_has_valid_gradient_route_and_broadcast_covers_all_nodes(self) -> None:
+    def test_every_node_has_valid_gradient_route_and_broadcast_covers_all_nodes(
+        self,
+    ) -> None:
         manifold = PulviniManifold(ADJACENCY_MAP)
         for node_id in range(32):
             route = manifold.gradient_route_to_gateway(node_id)

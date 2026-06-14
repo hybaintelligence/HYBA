@@ -16,7 +16,11 @@ from pythia_mining.pulvini_certificates import automorphism_runtime_certificate 
 from pythia_mining.pulvini_compressed_solver import PulviniCompressedQuantumSolver  # noqa: E402
 from pythia_mining.pulvini_manifold import PulviniManifold  # noqa: E402
 from pythia_mining.pulvini_overlay import ADJACENCY_MAP, PulviniOverlayConcentrator  # noqa: E402
-from pythia_mining.pulvini_propagation import CancelFlood, PROXY_GATEWAY, SharePropagationController  # noqa: E402
+from pythia_mining.pulvini_propagation import (
+    CancelFlood,
+    PROXY_GATEWAY,
+    SharePropagationController,
+)  # noqa: E402
 from pythia_mining.stratum_client import MiningJob, ShareResult  # noqa: E402
 
 
@@ -84,7 +88,9 @@ class PulviniProductionWorkflowTests(unittest.TestCase):
 
         controller = SharePropagationController(manifold)
 
-        async def submitter(submit_job: MiningJob, nonce: int, extranonce2: str) -> ShareResult:
+        async def submitter(
+            submit_job: MiningJob, nonce: int, extranonce2: str
+        ) -> ShareResult:
             return ShareResult(
                 accepted=True,
                 job_id=submit_job.job_id,
@@ -130,7 +136,7 @@ class PulviniProductionWorkflowTests(unittest.TestCase):
         print("E2E WORKFLOW: PASS")
         print(f"  Route hops: {len(result.route)}")
         print(f"  Cancel reach: {len(reached)}/32 nodes")
-        print(f"  Memory kernel norm: {snapshot.kernel["kernel_norm"]:.6f}")
+        print(f"  Memory kernel norm: {snapshot.kernel['kernel_norm']:.6f}")
         print(f"  Bures gradient: {bures_result['bures_gradient_norm']:.6f}")
         print(f"  Aut(G) order: {auto_cert['group_order']}")
 

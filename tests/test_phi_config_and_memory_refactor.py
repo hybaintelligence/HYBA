@@ -26,7 +26,13 @@ class PhiConfigAndMemoryRefactorTests(unittest.TestCase):
             self.assertLess(operator.phi_ratio_error(dimension), PHI)
 
     def test_ensemble_memory_is_bounded_and_thresholds_are_configurable(self) -> None:
-        engine = PhiScaledEnsemble({"memory_limit": 3, "low_variance_threshold": 0.01, "high_variance_threshold": 0.03})
+        engine = PhiScaledEnsemble(
+            {
+                "memory_limit": 3,
+                "low_variance_threshold": 0.01,
+                "high_variance_threshold": 0.03,
+            }
+        )
         predictions = {"a": {"score": 0.1}, "b": {"score": 0.9}}
         indicators = {"lane": {"x": 1.0, "y": PHI, "z": PHI * PHI}}
         for _ in range(8):
@@ -37,7 +43,9 @@ class PhiConfigAndMemoryRefactorTests(unittest.TestCase):
     def test_sparse_payload_uses_passthrough_without_losing_reversibility(self) -> None:
         payload = np.zeros((8, 8), dtype=np.float64)
         payload[0, 0] = 42.0
-        engine = PulviniPhiMemoryCompressionEngine(fold_depth=2, sparse_skip_threshold=0.80)
+        engine = PulviniPhiMemoryCompressionEngine(
+            fold_depth=2, sparse_skip_threshold=0.80
+        )
         result = engine.compress(payload)
         self.assertEqual(result.compression_strategy, "sparse_passthrough")
         self.assertTrue(result.sparse_optimized)
@@ -65,7 +73,9 @@ class PhiConfigAndMemoryRefactorTests(unittest.TestCase):
 
                 return Cert()
 
-        fabric = PulviniMemoryFabric(num_nodes=4, kernel=KernelStub(), fold_depth=1, tolerance=1e-6)
+        fabric = PulviniMemoryFabric(
+            num_nodes=4, kernel=KernelStub(), fold_depth=1, tolerance=1e-6
+        )
         snapshot = fabric.compressed_kernel_snapshot().to_dict()
         self.assertEqual(snapshot["kernel"], {"stub": True})
         self.assertLessEqual(snapshot["compression"]["reconstruction_error"], 1e-6)

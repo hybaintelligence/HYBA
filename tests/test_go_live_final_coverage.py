@@ -43,15 +43,32 @@ class GoLiveStratumPropertyTests(unittest.TestCase):
             extranonce2 = "".join(rng.choice(alphabet) for _ in range(8))
             ntime = "".join(rng.choice(alphabet) for _ in range(8))
             nonce = "".join(rng.choice(alphabet) for _ in range(8))
-            payload = json.loads(build_submit(1, "worker", "job", extranonce2, ntime, nonce))
+            payload = json.loads(
+                build_submit(1, "worker", "job", extranonce2, ntime, nonce)
+            )
             self.assertEqual("mining.submit", payload["method"])
-            self.assertEqual(["worker", "job", extranonce2.lower(), ntime.lower(), nonce.lower()], payload["params"])
+            self.assertEqual(
+                ["worker", "job", extranonce2.lower(), ntime.lower(), nonce.lower()],
+                payload["params"],
+            )
 
-    def test_property_parse_notify_round_trips_arbitrary_valid_merkle_branches(self) -> None:
+    def test_property_parse_notify_round_trips_arbitrary_valid_merkle_branches(
+        self,
+    ) -> None:
         rng = random.Random(20260614)
         for branch_len in range(33):
             branch = [f"{rng.getrandbits(256):064x}" for _ in range(branch_len)]
-            params = ["job", "00" * 32, "01", "02", branch, "20000000", "1d00ffff", "65aa00ff", bool(branch_len % 2)]
+            params = [
+                "job",
+                "00" * 32,
+                "01",
+                "02",
+                branch,
+                "20000000",
+                "1d00ffff",
+                "65aa00ff",
+                bool(branch_len % 2),
+            ]
             message = parse_notify_params(params)
             self.assertEqual(branch, message.merkle_branch)
             self.assertEqual(bool(branch_len % 2), message.clean_jobs)
@@ -84,12 +101,30 @@ class GoLiveStratumPropertyTests(unittest.TestCase):
             with self.assertRaises((StratumProtocolError, StratumTransportError)):
                 call()
 
-    def test_integration_server_message_dispatches_supported_and_future_messages(self) -> None:
+    def test_integration_server_message_dispatches_supported_and_future_messages(
+        self,
+    ) -> None:
         cases = [
-            ({"method": "mining.set_difficulty", "params": [4]}, "mining.set_difficulty", 4.0),
-            ({"method": "mining.set_extranonce", "params": ["0a0b", 4]}, "mining.set_extranonce", 4),
-            ({"method": "mining.set_version_mask", "params": ["1fffe000"]}, "mining.set_version_mask", "1fffe000"),
-            ({"method": "client.show_message", "params": ["ready"]}, "unknown", "client.show_message"),
+            (
+                {"method": "mining.set_difficulty", "params": [4]},
+                "mining.set_difficulty",
+                4.0,
+            ),
+            (
+                {"method": "mining.set_extranonce", "params": ["0a0b", 4]},
+                "mining.set_extranonce",
+                4,
+            ),
+            (
+                {"method": "mining.set_version_mask", "params": ["1fffe000"]},
+                "mining.set_version_mask",
+                "1fffe000",
+            ),
+            (
+                {"method": "client.show_message", "params": ["ready"]},
+                "unknown",
+                "client.show_message",
+            ),
             ({"id": 7, "result": True, "error": None}, "response", True),
         ]
         for wire, expected_kind, expected_value in cases:
@@ -109,15 +144,44 @@ class GoLiveStratumPropertyTests(unittest.TestCase):
     def test_e2e_subscribe_authorize_notify_submit_flow_without_network(self) -> None:
         subscribe = json.loads(build_subscribe(1, "hyba-go-live/1300"))
         self.assertEqual(["hyba-go-live/1300"], subscribe["params"])
-        sub = parse_subscribe_result({"id": 1, "result": [[], "0a0b", 4], "error": None})
+        sub = parse_subscribe_result(
+            {"id": 1, "result": [[], "0a0b", 4], "error": None}
+        )
         self.assertEqual("0a0b", sub.extranonce1)
-        self.assertTrue(parse_authorize_result({"id": 2, "result": True, "error": None}))
-        kind, notify = parse_server_message(json.dumps({"method": "mining.notify", "params": ["job", "00" * 32, "01", "02", [], "20", "1d00ffff", "65aa00ff", True]}))
+        self.assertTrue(
+            parse_authorize_result({"id": 2, "result": True, "error": None})
+        )
+        kind, notify = parse_server_message(
+            json.dumps(
+                {
+                    "method": "mining.notify",
+                    "params": [
+                        "job",
+                        "00" * 32,
+                        "01",
+                        "02",
+                        [],
+                        "20",
+                        "1d00ffff",
+                        "65aa00ff",
+                        True,
+                    ],
+                }
+            )
+        )
         self.assertEqual("mining.notify", kind)
-        submit = json.loads(build_submit(3, "worker", notify.job_id, "00000001", notify.ntime, "00000002"))
-        self.assertEqual(["worker", "job", "00000001", "65aa00ff", "00000002"], submit["params"])
+        submit = json.loads(
+            build_submit(
+                3, "worker", notify.job_id, "00000001", notify.ntime, "00000002"
+            )
+        )
+        self.assertEqual(
+            ["worker", "job", "00000001", "65aa00ff", "00000002"], submit["params"]
+        )
         endpoint = parse_endpoint("stratum+tls://pool.example.com:3334")
-        transport = StratumLineTransport("stratum+tls://pool.example.com:3334", connect_timeout=1, read_timeout=1)
+        transport = StratumLineTransport(
+            "stratum+tls://pool.example.com:3334", connect_timeout=1, read_timeout=1
+        )
         self.assertTrue(endpoint.use_tls)
         self.assertFalse(transport.connected)
 

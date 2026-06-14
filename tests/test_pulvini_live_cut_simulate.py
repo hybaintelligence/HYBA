@@ -11,7 +11,10 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 
 
-@unittest.skipIf(importlib.util.find_spec("numpy") is None, "NumPy is required for the PULVINI live-cut drill")
+@unittest.skipIf(
+    importlib.util.find_spec("numpy") is None,
+    "NumPy is required for the PULVINI live-cut drill",
+)
 class PulviniLiveCutSimulationTests(unittest.TestCase):
     def test_three_node_drill_reports_high_purity_and_valid_state(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -44,7 +47,9 @@ class PulviniLiveCutSimulationTests(unittest.TestCase):
         self.assertGreater(payload["fidelity_fixed"], 900_000_000)
         self.assertEqual(128, payload["binary_header_size"])
         self.assertEqual(128, payload["substate_passport"]["binary_header_size"])
-        self.assertEqual(payload["fidelity_fixed"], payload["substate_passport"]["fidelity_fixed"])
+        self.assertEqual(
+            payload["fidelity_fixed"], payload["substate_passport"]["fidelity_fixed"]
+        )
         self.assertEqual([0, 1, 2], payload["severed_nodes"])
         self.assertEqual([0, 1, 2], state["latest_autonomic_event"]["failed_nodes"])
         self.assertTrue(state["substate_passport"]["fidelity_passed"])

@@ -11,7 +11,7 @@ interface GroverVisualizerProps {
 export const GroverVisualizer: React.FC<GroverVisualizerProps> = ({
   markedIndex,
   dimensionSize,
-  optimalSteps
+  optimalSteps,
 }) => {
   const [selectedStep, setSelectedStep] = useState<number>(0);
 
@@ -48,14 +48,20 @@ export const GroverVisualizer: React.FC<GroverVisualizerProps> = ({
       </div>
 
       <p className="text-xs text-[#64748B] mb-5 leading-relaxed">
-        Observe the state vector rotating in the Hilbert space. As you scrub from Step 0 (Hadamard uniformity) to Step {optimalSteps} (optimal convergence boundary), you watch the amplitude at index <span className="text-black font-mono font-bold">#{markedIndex}</span> inflate while the residual background phase interference is suppressed.
+        Observe the state vector rotating in the Hilbert space. As you scrub from Step 0 (Hadamard
+        uniformity) to Step {optimalSteps} (optimal convergence boundary), you watch the amplitude
+        at index <span className="text-black font-mono font-bold">#{markedIndex}</span> inflate
+        while the residual background phase interference is suppressed.
       </p>
 
       {/* AMPLITUDE GRID CHART */}
       <div className="bg-[#F8FAFC] border border-[#E2E4E9] rounded-xl p-4 mb-5">
         <div className="flex justify-between items-center text-[10px] font-mono text-[#64748B] mb-2 border-b border-[#E2E4E9] pb-1">
           <span>AMPLITUDE COEFFICIENTS |ψ_i|</span>
-          <span>STEP {currentStepData.step} / {computationSteps.length - 1} ({currentStepData.operation})</span>
+          <span>
+            STEP {currentStepData.step} / {computationSteps.length - 1} ({currentStepData.operation}
+            )
+          </span>
         </div>
 
         {/* The bar graphs */}
@@ -70,10 +76,10 @@ export const GroverVisualizer: React.FC<GroverVisualizerProps> = ({
             const isTarget = idx === markedIndex;
             const barHeightPercent = (amp / maxAmp) * 100;
             const probability = amp * amp;
-            
+
             return (
-              <div 
-                key={idx} 
+              <div
+                key={idx}
                 className="flex-1 flex flex-col items-center group relative h-full justify-end"
               >
                 {/* TOOLTIP */}
@@ -83,12 +89,12 @@ export const GroverVisualizer: React.FC<GroverVisualizerProps> = ({
                   <div className="text-clicquot-gold">Prob: {(probability * 100).toFixed(2)}%</div>
                 </div>
 
-                <div 
+                <div
                   className={`w-full transition-all duration-300 rounded-t-[1px] ${
-                    isTarget 
-                      ? "bg-clicquot-orange relative z-10 shadow-[0_0_8px_rgba(252,95,16,0.6)]" 
-                      : idx % 2 === 0 
-                        ? "bg-mckinsey-light/30 group-hover:bg-oxford/70" 
+                    isTarget
+                      ? "bg-clicquot-orange relative z-10 shadow-[0_0_8px_rgba(252,95,16,0.6)]"
+                      : idx % 2 === 0
+                        ? "bg-mckinsey-light/30 group-hover:bg-oxford/70"
                         : "bg-mckinsey-blue/15 group-hover:bg-oxford/70"
                   }`}
                   style={{ height: `${Math.max(barHeightPercent, 3)}%` }}
@@ -109,7 +115,10 @@ export const GroverVisualizer: React.FC<GroverVisualizerProps> = ({
       {/* ITERATION CONTROLLER SCRUBBER */}
       <div className="bg-[#F8FAFC] border border-[#E2E4E9] rounded-xl p-4">
         <div className="flex justify-between items-center mb-2">
-          <label htmlFor="grover-step-scrubber" className="text-xs font-mono text-oxford font-semibold tracking-wide">
+          <label
+            htmlFor="grover-step-scrubber"
+            className="text-xs font-mono text-oxford font-semibold tracking-wide"
+          >
             SCRUB GROVER EVOLUTION TIMELINE
           </label>
           <span className="text-xs font-mono font-bold text-clicquot-orange">
@@ -135,7 +144,9 @@ export const GroverVisualizer: React.FC<GroverVisualizerProps> = ({
         <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-4 text-[11px] font-mono">
           <div className="bg-white p-2 rounded-lg border border-[#E2E4E9]">
             <div className="text-[#94A3B8] text-[9px] uppercase">State Entropy</div>
-            <div className="text-[#1A1A1E] font-bold">{currentStepData.entropy.toFixed(4)} bits</div>
+            <div className="text-[#1A1A1E] font-bold">
+              {currentStepData.entropy.toFixed(4)} bits
+            </div>
           </div>
           <div className="bg-white p-2 rounded-lg border border-[#E2E4E9]">
             <div className="text-[#94A3B8] text-[9px] uppercase">Marked Amp</div>
@@ -153,7 +164,11 @@ export const GroverVisualizer: React.FC<GroverVisualizerProps> = ({
       <div className="mt-4 flex items-start gap-2 text-[10px] text-[#64748B] leading-relaxed font-mono">
         <Info className="w-3.5 h-3.5 text-[#94A3B8] shrink-0 mt-0.5" />
         <span>
-          <strong>Unitary Operator Details</strong>: The Grover rotation operates purely over complex numbers. Unlike classical searches that consume electricity linear to the sample bounds O(N), this model scales as O(\sqrt(N)) utilizing the trigonometric rotation cycle. At Step {optimalSteps}, the target state is rotated exactly perpendicular to the orthogonal non-solution subspace vectors.
+          <strong>Unitary Operator Details</strong>: The Grover rotation operates purely over
+          complex numbers. Unlike classical searches that consume electricity linear to the sample
+          bounds O(N), this model scales as O(\sqrt(N)) utilizing the trigonometric rotation cycle.
+          At Step {optimalSteps}, the target state is rotated exactly perpendicular to the
+          orthogonal non-solution subspace vectors.
         </span>
       </div>
     </div>

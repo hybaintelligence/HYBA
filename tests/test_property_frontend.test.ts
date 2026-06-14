@@ -80,9 +80,9 @@ describe("computeQuantumGrover invariants", () => {
             expect(step.solutionProbability).toBeGreaterThanOrEqual(0);
             expect(step.solutionProbability).toBeLessThanOrEqual(1);
           }
-        }
+        },
       ),
-      { numRuns: 50 }
+      { numRuns: 50 },
     );
   });
 
@@ -100,9 +100,9 @@ describe("computeQuantumGrover invariants", () => {
             expect(step.entropy).toBeGreaterThanOrEqual(0);
             expect(step.entropy).toBeLessThanOrEqual(maxEntropy + 1e-10);
           }
-        }
+        },
       ),
-      { numRuns: 50 }
+      { numRuns: 50 },
     );
   });
 
@@ -118,9 +118,9 @@ describe("computeQuantumGrover invariants", () => {
           for (const step of steps) {
             expect(step.amplitudes).toHaveLength(dimensionSize);
           }
-        }
+        },
       ),
-      { numRuns: 20 }
+      { numRuns: 20 },
     );
   });
 
@@ -134,9 +134,9 @@ describe("computeQuantumGrover invariants", () => {
           fc.pre(markedIndex < dimensionSize);
           const steps = computeQuantumGrover(markedIndex, dimensionSize, iterations);
           expect(steps).toHaveLength(iterations + 1);
-        }
+        },
       ),
-      { numRuns: 20 }
+      { numRuns: 20 },
     );
   });
 
@@ -151,9 +151,9 @@ describe("computeQuantumGrover invariants", () => {
           expect(steps[0].step).toBe(0);
           expect(steps[0].operation).toContain("Hadamard");
           expect(steps[0].markedStateIndex).toBe(markedIndex);
-        }
+        },
       ),
-      { numRuns: 20 }
+      { numRuns: 20 },
     );
   });
 });
@@ -170,31 +170,28 @@ describe("normalize vector invariants", () => {
           .array(
             fc.tuple(
               fc.float({ min: -10, max: 10, noNaN: true }),
-              fc.float({ min: -10, max: 10, noNaN: true })
+              fc.float({ min: -10, max: 10, noNaN: true }),
             ),
-            { minLength: 1, maxLength: 100 }
+            { minLength: 1, maxLength: 100 },
           )
           .map((tuples) => tuples.map(([r, i]) => ({ r, i }))),
         (vector: Complex[]) => {
           const normalized = normalize(vector);
-          const normSq = normalized.reduce(
-            (sum, amp) => sum + (amp.r * amp.r + amp.i * amp.i),
-            0
-          );
+          const normSq = normalized.reduce((sum, amp) => sum + (amp.r * amp.r + amp.i * amp.i), 0);
           expect(Math.abs(normSq - 1.0)).toBeLessThan(1e-12);
-        }
+        },
       ),
-      { numRuns: 200 }
+      { numRuns: 200 },
     );
   });
 
   it("Property: Normalization of zero vector should not crash (norm=0 case)", () => {
-    const zeroVec: Complex[] = [{ r: 0, i: 0 }, { r: 0, i: 0 }];
+    const zeroVec: Complex[] = [
+      { r: 0, i: 0 },
+      { r: 0, i: 0 },
+    ];
     const normalized = normalize(zeroVec);
-    const normSq = normalized.reduce(
-      (sum, amp) => sum + (amp.r * amp.r + amp.i * amp.i),
-      0
-    );
+    const normSq = normalized.reduce((sum, amp) => sum + (amp.r * amp.r + amp.i * amp.i), 0);
     // When input is zero vector, normalized result should not be NaN
     expect(normalized.every((c) => !isNaN(c.r) && !isNaN(c.i))).toBe(true);
     // And should still produce finite values
@@ -203,22 +200,16 @@ describe("normalize vector invariants", () => {
 
   it("Property: Already normalized vectors should remain normalized", () => {
     fc.assert(
-      fc.property(
-        fc.integer({ min: 2, max: 64 }),
-        (dim: number) => {
-          const unitVec: Complex[] = Array.from({ length: dim }, () => ({
-            r: 1 / Math.sqrt(dim),
-            i: 0,
-          }));
-          const normalized = normalize(unitVec);
-          const normSq = normalized.reduce(
-            (sum, amp) => sum + (amp.r * amp.r + amp.i * amp.i),
-            0
-          );
-          expect(Math.abs(normSq - 1.0)).toBeLessThan(1e-12);
-        }
-      ),
-      { numRuns: 50 }
+      fc.property(fc.integer({ min: 2, max: 64 }), (dim: number) => {
+        const unitVec: Complex[] = Array.from({ length: dim }, () => ({
+          r: 1 / Math.sqrt(dim),
+          i: 0,
+        }));
+        const normalized = normalize(unitVec);
+        const normSq = normalized.reduce((sum, amp) => sum + (amp.r * amp.r + amp.i * amp.i), 0);
+        expect(Math.abs(normSq - 1.0)).toBeLessThan(1e-12);
+      }),
+      { numRuns: 50 },
     );
   });
 });
@@ -230,36 +221,30 @@ describe("normalize vector invariants", () => {
 describe("calculateEntropy invariants", () => {
   it("Property: Entropy of a pure state (single amplitude = 1) must be 0", () => {
     fc.assert(
-      fc.property(
-        fc.integer({ min: 2, max: 64 }),
-        (dim: number) => {
-          const pureState: Complex[] = Array.from({ length: dim }, (_, i) => ({
-            r: i === 0 ? 1 : 0,
-            i: 0,
-          }));
-          const entropy = calculateEntropy(pureState);
-          expect(Math.abs(entropy)).toBeLessThan(1e-12);
-        }
-      ),
-      { numRuns: 20 }
+      fc.property(fc.integer({ min: 2, max: 64 }), (dim: number) => {
+        const pureState: Complex[] = Array.from({ length: dim }, (_, i) => ({
+          r: i === 0 ? 1 : 0,
+          i: 0,
+        }));
+        const entropy = calculateEntropy(pureState);
+        expect(Math.abs(entropy)).toBeLessThan(1e-12);
+      }),
+      { numRuns: 20 },
     );
   });
 
   it("Property: Entropy of uniform superposition must be log2(N)", () => {
     fc.assert(
-      fc.property(
-        fc.integer({ min: 2, max: 128 }),
-        (dim: number) => {
-          const uniformState: Complex[] = Array.from({ length: dim }, () => ({
-            r: 1 / Math.sqrt(dim),
-            i: 0,
-          }));
-          const entropy = calculateEntropy(uniformState);
-          const expected = Math.log2(dim);
-          expect(Math.abs(entropy - expected)).toBeLessThan(1e-12);
-        }
-      ),
-      { numRuns: 20 }
+      fc.property(fc.integer({ min: 2, max: 128 }), (dim: number) => {
+        const uniformState: Complex[] = Array.from({ length: dim }, () => ({
+          r: 1 / Math.sqrt(dim),
+          i: 0,
+        }));
+        const entropy = calculateEntropy(uniformState);
+        const expected = Math.log2(dim);
+        expect(Math.abs(entropy - expected)).toBeLessThan(1e-12);
+      }),
+      { numRuns: 20 },
     );
   });
 });
@@ -271,66 +256,51 @@ describe("calculateEntropy invariants", () => {
 describe("getDodecahedralVertices invariants", () => {
   it("Property: Must return exactly DODECAHEDRON_VERTICES (20) vertices", () => {
     fc.assert(
-      fc.property(
-        fc.integer({ min: 2, max: 256 }),
-        (dim: number) => {
-          const vertices = getDodecahedralVertices(dim);
-          expect(vertices).toHaveLength(DODECAHEDRON_VERTICES);
-        }
-      ),
-      { numRuns: 20 }
+      fc.property(fc.integer({ min: 2, max: 256 }), (dim: number) => {
+        const vertices = getDodecahedralVertices(dim);
+        expect(vertices).toHaveLength(DODECAHEDRON_VERTICES);
+      }),
+      { numRuns: 20 },
     );
   });
 
   it("Property: Each vertex must have the correct dimension size", () => {
     fc.assert(
-      fc.property(
-        fc.integer({ min: 2, max: 256 }),
-        (dim: number) => {
-          const vertices = getDodecahedralVertices(dim);
-          for (const vertex of vertices) {
-            expect(vertex).toHaveLength(dim);
-          }
+      fc.property(fc.integer({ min: 2, max: 256 }), (dim: number) => {
+        const vertices = getDodecahedralVertices(dim);
+        for (const vertex of vertices) {
+          expect(vertex).toHaveLength(dim);
         }
-      ),
-      { numRuns: 20 }
+      }),
+      { numRuns: 20 },
     );
   });
 
   it("Property: Each vertex must be normalized (unit L2 norm)", () => {
     fc.assert(
-      fc.property(
-        fc.integer({ min: 2, max: 128 }),
-        (dim: number) => {
-          const vertices = getDodecahedralVertices(dim);
-          for (const vertex of vertices) {
-            const normSq = vertex.reduce(
-              (sum, amp) => sum + (amp.r * amp.r + amp.i * amp.i),
-              0
-            );
-            expect(Math.abs(normSq - 1.0)).toBeLessThan(1e-12);
-          }
+      fc.property(fc.integer({ min: 2, max: 128 }), (dim: number) => {
+        const vertices = getDodecahedralVertices(dim);
+        for (const vertex of vertices) {
+          const normSq = vertex.reduce((sum, amp) => sum + (amp.r * amp.r + amp.i * amp.i), 0);
+          expect(Math.abs(normSq - 1.0)).toBeLessThan(1e-12);
         }
-      ),
-      { numRuns: 10 }
+      }),
+      { numRuns: 10 },
     );
   });
 
   it("Property: All vertex entries must be finite numbers", () => {
     fc.assert(
-      fc.property(
-        fc.integer({ min: 2, max: 64 }),
-        (dim: number) => {
-          const vertices = getDodecahedralVertices(dim);
-          for (const vertex of vertices) {
-            for (const c of vertex) {
-              expect(isFinite(c.r)).toBe(true);
-              expect(isFinite(c.i)).toBe(true);
-            }
+      fc.property(fc.integer({ min: 2, max: 64 }), (dim: number) => {
+        const vertices = getDodecahedralVertices(dim);
+        for (const vertex of vertices) {
+          for (const c of vertex) {
+            expect(isFinite(c.r)).toBe(true);
+            expect(isFinite(c.i)).toBe(true);
           }
         }
-      ),
-      { numRuns: 10 }
+      }),
+      { numRuns: 10 },
     );
   });
 });
@@ -352,21 +322,18 @@ describe("generateDeterministicComplexVector invariants", () => {
             expect(first[i].r).toBe(second[i].r);
             expect(first[i].i).toBe(second[i].i);
           }
-        }
+        },
       ),
-      { numRuns: 50 }
+      { numRuns: 50 },
     );
   });
 
   it("Property: Must throw an error for non-positive size", () => {
     fc.assert(
-      fc.property(
-        fc.integer({ min: -100, max: 0 }),
-        (size: number) => {
-          expect(() => generateDeterministicComplexVector(size)).toThrow();
-        }
-      ),
-      { numRuns: 50 }
+      fc.property(fc.integer({ min: -100, max: 0 }), (size: number) => {
+        expect(() => generateDeterministicComplexVector(size)).toThrow();
+      }),
+      { numRuns: 50 },
     );
   });
 
@@ -377,30 +344,24 @@ describe("generateDeterministicComplexVector invariants", () => {
 
   it("Property: Output array must have exactly the requested length", () => {
     fc.assert(
-      fc.property(
-        fc.integer({ min: 1, max: 256 }),
-        (size: number) => {
-          const result = generateDeterministicComplexVector(size);
-          expect(result).toHaveLength(size);
-        }
-      ),
-      { numRuns: 50 }
+      fc.property(fc.integer({ min: 1, max: 256 }), (size: number) => {
+        const result = generateDeterministicComplexVector(size);
+        expect(result).toHaveLength(size);
+      }),
+      { numRuns: 50 },
     );
   });
 
   it("Property: All components must be finite numbers", () => {
     fc.assert(
-      fc.property(
-        fc.integer({ min: 1, max: 256 }),
-        (size: number) => {
-          const result = generateDeterministicComplexVector(size);
-          for (const c of result) {
-            expect(isFinite(c.r)).toBe(true);
-            expect(isFinite(c.i)).toBe(true);
-          }
+      fc.property(fc.integer({ min: 1, max: 256 }), (size: number) => {
+        const result = generateDeterministicComplexVector(size);
+        for (const c of result) {
+          expect(isFinite(c.r)).toBe(true);
+          expect(isFinite(c.i)).toBe(true);
         }
-      ),
-      { numRuns: 50 }
+      }),
+      { numRuns: 50 },
     );
   });
 });
@@ -435,29 +396,23 @@ describe("Constants invariants", () => {
 describe("calculate_phi_resonance invariants", () => {
   it("Property: Resonance must always be in [0, 1)", () => {
     fc.assert(
-      fc.property(
-        fc.integer({ min: 0, max: 1_000_000_000_000 }),
-        (timestamp: number) => {
-          const resonance = calculate_phi_resonance(timestamp);
-          expect(resonance).toBeGreaterThanOrEqual(0);
-          expect(resonance).toBeLessThan(1);
-        }
-      ),
-      { numRuns: 100 }
+      fc.property(fc.integer({ min: 0, max: 1_000_000_000_000 }), (timestamp: number) => {
+        const resonance = calculate_phi_resonance(timestamp);
+        expect(resonance).toBeGreaterThanOrEqual(0);
+        expect(resonance).toBeLessThan(1);
+      }),
+      { numRuns: 100 },
     );
   });
 
   it("Property: Resonance must be deterministic for the same timestamp", () => {
     fc.assert(
-      fc.property(
-        fc.integer({ min: 0, max: 1_000_000 }),
-        (timestamp: number) => {
-          const first = calculate_phi_resonance(timestamp);
-          const second = calculate_phi_resonance(timestamp);
-          expect(first).toBe(second);
-        }
-      ),
-      { numRuns: 100 }
+      fc.property(fc.integer({ min: 0, max: 1_000_000 }), (timestamp: number) => {
+        const first = calculate_phi_resonance(timestamp);
+        const second = calculate_phi_resonance(timestamp);
+        expect(first).toBe(second);
+      }),
+      { numRuns: 100 },
     );
   });
 
@@ -473,14 +428,11 @@ describe("calculate_phi_resonance invariants", () => {
 describe("project_to_phi_floor invariants", () => {
   it("Property: Must always produce finite output for finite input", () => {
     fc.assert(
-      fc.property(
-        fc.float({ min: -1e10, max: 1e10, noNaN: true }),
-        (value: number) => {
-          const result = project_to_phi_floor(value);
-          expect(isFinite(result)).toBe(true);
-        }
-      ),
-      { numRuns: 100 }
+      fc.property(fc.float({ min: -1e10, max: 1e10, noNaN: true }), (value: number) => {
+        const result = project_to_phi_floor(value);
+        expect(isFinite(result)).toBe(true);
+      }),
+      { numRuns: 100 },
     );
   });
 
@@ -491,9 +443,9 @@ describe("project_to_phi_floor invariants", () => {
         (value: number) => {
           const result = project_to_phi_floor(value);
           expect(result).toBeGreaterThan(0);
-        }
+        },
       ),
-      { numRuns: 50 }
+      { numRuns: 50 },
     );
   });
 
@@ -515,19 +467,13 @@ describe("Grover amplitude amplification", () => {
         (dimension: number, targetIdx: number) => {
           fc.pre(targetIdx < dimension);
           const optIters = Math.floor((Math.PI / 4) * Math.sqrt(dimension));
-          const steps = computeQuantumGrover(
-            targetIdx,
-            dimension,
-            Math.max(optIters, 1)
-          );
+          const steps = computeQuantumGrover(targetIdx, dimension, Math.max(optIters, 1));
           const finalStep = steps[steps.length - 1];
           const baselineProb = 1.0 / dimension;
-          expect(finalStep.solutionProbability).toBeGreaterThanOrEqual(
-            baselineProb * 0.5
-          );
-        }
+          expect(finalStep.solutionProbability).toBeGreaterThanOrEqual(baselineProb * 0.5);
+        },
       ),
-      { numRuns: 50 }
+      { numRuns: 50 },
     );
   });
 });
@@ -544,17 +490,17 @@ describe("Entropy bounds for complex vectors", () => {
           .array(
             fc.tuple(
               fc.float({ min: -5, max: 5, noNaN: true }),
-              fc.float({ min: -5, max: 5, noNaN: true })
+              fc.float({ min: -5, max: 5, noNaN: true }),
             ),
-            { minLength: 2, maxLength: 50 }
+            { minLength: 2, maxLength: 50 },
           )
           .map((tuples) => normalize(tuples.map(([r, i]) => ({ r, i })))),
         (vector: Complex[]) => {
           const entropy = calculateEntropy(vector);
           expect(entropy).toBeGreaterThanOrEqual(0);
-        }
+        },
       ),
-      { numRuns: 100 }
+      { numRuns: 100 },
     );
   });
 
@@ -565,9 +511,9 @@ describe("Entropy bounds for complex vectors", () => {
           .array(
             fc.tuple(
               fc.float({ min: -5, max: 5, noNaN: true }),
-              fc.float({ min: -5, max: 5, noNaN: true })
+              fc.float({ min: -5, max: 5, noNaN: true }),
             ),
-            { minLength: 2, maxLength: 50 }
+            { minLength: 2, maxLength: 50 },
           )
           .map((tuples) => ({
             vector: normalize(tuples.map(([r, i]) => ({ r, i }))),
@@ -577,9 +523,9 @@ describe("Entropy bounds for complex vectors", () => {
           const entropy = calculateEntropy(vector);
           const maxEntropy = Math.log2(dim);
           expect(entropy).toBeLessThanOrEqual(maxEntropy + 1e-12);
-        }
+        },
       ),
-      { numRuns: 100 }
+      { numRuns: 100 },
     );
   });
 });

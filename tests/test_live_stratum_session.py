@@ -54,6 +54,7 @@ class LiveStratumSessionTests(unittest.TestCase):
             return handshake, transport
 
         import asyncio
+
         handshake, transport = asyncio.run(run_case())
         self.assertEqual("alpha", handshake.pool_id)
         self.assertEqual("0a0b", handshake.extranonce1)
@@ -66,30 +67,37 @@ class LiveStratumSessionTests(unittest.TestCase):
     def test_read_event_parses_notify_and_difficulty(self):
         async def run_case():
             transport = FakeTransport()
-            transport.responses.extend([
-                json.dumps({"id": None, "method": "mining.set_difficulty", "params": [2.0]}),
-                json.dumps({
-                    "id": None,
-                    "method": "mining.notify",
-                    "params": [
-                        "job-1",
-                        "00" * 32,
-                        "0100000001",
-                        "ffffffff",
-                        ["11" * 32],
-                        "20000000",
-                        "1d00ffff",
-                        "6578ab4e",
-                        True,
-                    ],
-                }),
-            ])
+            transport.responses.extend(
+                [
+                    json.dumps(
+                        {"id": None, "method": "mining.set_difficulty", "params": [2.0]}
+                    ),
+                    json.dumps(
+                        {
+                            "id": None,
+                            "method": "mining.notify",
+                            "params": [
+                                "job-1",
+                                "00" * 32,
+                                "0100000001",
+                                "ffffffff",
+                                ["11" * 32],
+                                "20000000",
+                                "1d00ffff",
+                                "6578ab4e",
+                                True,
+                            ],
+                        }
+                    ),
+                ]
+            )
             session = LiveStratumSession(self._profile(), transport=transport)
             difficulty_event = await session.read_event()
             notify_event = await session.read_event()
             return difficulty_event, notify_event
 
         import asyncio
+
         difficulty_event, notify_event = asyncio.run(run_case())
         self.assertEqual("mining.set_difficulty", difficulty_event[0])
         self.assertEqual(2.0, difficulty_event[1].difficulty)
@@ -102,10 +110,14 @@ class LiveStratumSessionTests(unittest.TestCase):
             session = LiveStratumSession(self._profile(), transport=transport)
             await session.connect()
             await session.subscribe_and_authorize()
-            transport.responses.extend([
-                json.dumps({"id": None, "method": "mining.set_difficulty", "params": [4]}),
-                json.dumps({"id": 3, "result": True, "error": None}),
-            ])
+            transport.responses.extend(
+                [
+                    json.dumps(
+                        {"id": None, "method": "mining.set_difficulty", "params": [4]}
+                    ),
+                    json.dumps({"id": 3, "result": True, "error": None}),
+                ]
+            )
             result = await session.submit_share(
                 job_id="job-1",
                 extranonce2="00000000",
@@ -115,6 +127,7 @@ class LiveStratumSessionTests(unittest.TestCase):
             return result, transport
 
         import asyncio
+
         result, transport = asyncio.run(run_case())
         self.assertTrue(result.accepted)
         self.assertIsNone(result.error)

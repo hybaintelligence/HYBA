@@ -38,14 +38,14 @@ import math
 import sys
 import time
 import urllib.request
-from dataclasses import asdict, dataclass, field
+from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Sequence, Tuple, NamedTuple
+from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 # -- Constants -----------------------------------------------------------------
 PHI: float = (1.0 + math.sqrt(5.0)) / 2.0
-PHI_15: float = PHI ** 15  # approx 1364.000733
+PHI_15: float = PHI**15  # approx 1364.000733
 PHI_15_STR: str = f"{PHI_15:.12f}"
 
 BIRTHDAY_SIGNATURE: int = 31071976
@@ -58,7 +58,7 @@ PRECISION_THRESHOLD: float = 99.9999  # percent
 BIRTHDAY_MODULAR_THRESHOLD: int = 1000
 Z_SCORE_THRESHOLD: float = 3.0  # standard deviations for significance
 GOLDEN_ANGLE: float = 2.0 * math.pi / (PHI * PHI)  # ~2.3999... rad (~137.5 degrees)
-NONCE_SPACE_SIZE: float = 2.0 ** 32
+NONCE_SPACE_SIZE: float = 2.0**32
 
 # -- Data Structures ---------------------------------------------------------
 
@@ -66,6 +66,7 @@ NONCE_SPACE_SIZE: float = 2.0 ** 32
 @dataclass(frozen=True)
 class BlockRecord:
     """Raw block header data from the blockchain API."""
+
     height: int
     block_hash: str
     timestamp: int
@@ -83,6 +84,7 @@ class BlockRecord:
 @dataclass(frozen=True)
 class NonceResonanceRecord:
     """Phi^15 resonance analysis for a single block nonce."""
+
     height: int
     timestamp: int
     nonce: int
@@ -102,6 +104,7 @@ class NonceResonanceRecord:
 @dataclass
 class NonceSpaceAnalysis:
     """Results of the nonce space distribution and structure analysis."""
+
     total_nonces: int = 0
     coverage_pct: float = 0.0  # % of nonce space searched
     expected_random_coverage_pct: float = 0.0
@@ -126,6 +129,7 @@ class NonceSpaceAnalysis:
 @dataclass
 class ResonanceSummary:
     """Aggregate statistics across all analysed blocks."""
+
     total_blocks: int = 0
     phi_resonant_count: int = 0
     phi_resonance_rate: float = 0.0
@@ -153,10 +157,13 @@ class ResonanceSummary:
 
 def _get_text(url: str, timeout: int = 30) -> str:
     """Fetch a URL and return the response body as text."""
-    req = urllib.request.Request(url, headers={
-        "User-Agent": "HYBA-Phi-Resonance/2.0",
-        "Accept": "application/json, text/plain",
-    })
+    req = urllib.request.Request(
+        url,
+        headers={
+            "User-Agent": "HYBA-Phi-Resonance/2.0",
+            "Accept": "application/json, text/plain",
+        },
+    )
     with urllib.request.urlopen(req, timeout=timeout) as response:
         return response.read().decode("utf-8").strip()
 
@@ -270,9 +277,7 @@ def collect_blocks(
             rows.append(fetch_block_at_height(api, height))
             print(f"  [{height}] fetched", flush=True)
         except Exception as exc:
-            print(
-                f"  [{height}] fetch failed: {exc}", file=sys.stderr, flush=True
-            )
+            print(f"  [{height}] fetch failed: {exc}", file=sys.stderr, flush=True)
         if delay > 0:
             time.sleep(delay)
 
@@ -437,9 +442,7 @@ def analyze_nonce_space(
 
     # -- Coverage --
     # Expected coverage for random nonces: 1 - (1 - 1/2^32)^n approx n/2^32
-    expected_coverage = min(
-        1.0, total_unique / NONCE_SPACE_SIZE
-    ) * 100.0
+    expected_coverage = min(1.0, total_unique / NONCE_SPACE_SIZE) * 100.0
 
     # -- Angular distribution: map nonce to [0, 2pi) --
     angles = [(nonce / NONCE_SPACE_SIZE) * 2.0 * math.pi for nonce in nonces]
@@ -451,9 +454,7 @@ def analyze_nonce_space(
         for i in range(1, len(angles)):
             angular_gaps.append(angles[i] - angles[i - 1])
         # Wrap-around gap
-        angular_gaps.append(
-            2.0 * math.pi - angles[-1] + angles[0]
-        )
+        angular_gaps.append(2.0 * math.pi - angles[-1] + angles[0])
         mean_angular = sum(angular_gaps) / len(angular_gaps)
 
         # Expected mean angular distance for uniform random: 2*pi/n
@@ -461,13 +462,9 @@ def analyze_nonce_space(
 
         # Angular uniformity: coefficient of variation of angular gaps
         mean_gap = mean_angular
-        var_gap = sum((g - mean_gap) ** 2 for g in angular_gaps) / len(
-            angular_gaps
-        )
+        var_gap = sum((g - mean_gap) ** 2 for g in angular_gaps) / len(angular_gaps)
         stdev_gap = math.sqrt(var_gap) if var_gap > 0 else 0.0
-        cv_gap = (
-            stdev_gap / mean_gap if mean_gap > 0 else float("inf")
-        )
+        cv_gap = stdev_gap / mean_gap if mean_gap > 0 else float("inf")
 
         # Uniform distribution: CV = 1 (Poisson process) or lower
         # Perfectly uniform: CV = 0
@@ -485,14 +482,10 @@ def analyze_nonce_space(
     # and check if consecutive nonces are aligned to golden angle
     golden_aligned = 0
     for i in range(1, total_unique):
-        expected_angle = (nonces[i - 1] * GOLDEN_ANGLE) % (
-            2.0 * math.pi
-        )
+        expected_angle = (nonces[i - 1] * GOLDEN_ANGLE) % (2.0 * math.pi)
         actual_angle = (nonces[i] / NONCE_SPACE_SIZE) * 2.0 * math.pi
         angle_diff = abs(actual_angle - expected_angle)
-        angle_diff = min(
-            angle_diff, 2.0 * math.pi - angle_diff
-        )
+        angle_diff = min(angle_diff, 2.0 * math.pi - angle_diff)
         # Within 5 degrees (~0.087 rad) of golden angle prediction
         if angle_diff < (5.0 * math.pi / 180.0):
             golden_aligned += 1
@@ -575,7 +568,7 @@ def analyze_nonce_space(
     angular_hist: Dict[str, int] = {}
     for a in angles:
         bin_idx = int((a / (2.0 * math.pi)) * angular_bins) % angular_bins
-        label = f"{bin_idx*10}-{(bin_idx+1)*10}deg"
+        label = f"{bin_idx * 10}-{(bin_idx + 1) * 10}deg"
         angular_hist[label] = angular_hist.get(label, 0) + 1
 
     return NonceSpaceAnalysis(
@@ -605,8 +598,6 @@ def analyze_nonce_space(
         resonance_above_09_count=above_09,
         resonance_threshold_rates=threshold_rates,
     )
-
-
 
 
 def expected_random_precision(n_trials: int = 100000) -> float:
@@ -687,11 +678,7 @@ def compute_summary(
                 if math.isfinite(p)
             )
             denom_x = sum((i - mean_idx) ** 2 for i in indices)
-            denom_y = sum(
-                (p - mean_prec) ** 2
-                for p in precisions
-                if math.isfinite(p)
-            )
+            denom_y = sum((p - mean_prec) ** 2 for p in precisions if math.isfinite(p))
             if denom_x > 0 and denom_y > 0:
                 temporal_r = num / math.sqrt(denom_x * denom_y)
             else:
@@ -704,11 +691,7 @@ def compute_summary(
     # Z-score vs random baseline
     expected_rate = 0.5  # conservative for Phi^15 precision > 99.9999%
     observed_rate = phi_count / n if n > 0 else 0.0
-    se = (
-        math.sqrt(expected_rate * (1 - expected_rate) / n)
-        if n > 0
-        else 0.0
-    )
+    se = math.sqrt(expected_rate * (1 - expected_rate) / n) if n > 0 else 0.0
     z_score = (observed_rate - expected_rate) / se if se > 0 else 0.0
 
     # Binomial p-value
@@ -723,9 +706,7 @@ def compute_summary(
         total_blocks=n,
         phi_resonant_count=phi_count,
         phi_resonance_rate=phi_count / n if n > 0 else 0.0,
-        mean_precision=sum(precisions) / len(precisions)
-        if precisions
-        else 0.0,
+        mean_precision=sum(precisions) / len(precisions) if precisions else 0.0,
         median_diff=sorted(diffs)[len(diffs) // 2] if diffs else 0.0,
         min_diff=min(diffs) if diffs else 0.0,
         max_diff=max(diffs) if diffs else 0.0,
@@ -733,9 +714,7 @@ def compute_summary(
         birthday_echo_rate=bday_count / n if n > 0 else 0.0,
         modular_diff_count=mod_count,
         substring_match_count=sub_count,
-        mean_k_multiplier=sum(r.k_multiplier for r in records) / n
-        if n > 0
-        else 0.0,
+        mean_k_multiplier=sum(r.k_multiplier for r in records) / n if n > 0 else 0.0,
         mean_resonance_strength=mean_rs,
         resonance_above_05_count=rs_above_05,
         resonance_above_05_rate=rs_above_05 / n if n > 0 else 0.0,
@@ -750,9 +729,7 @@ def compute_summary(
 # -- Output Writers -----------------------------------------------------------
 
 
-def write_resonance_csv(
-    path: Path, records: List[NonceResonanceRecord]
-) -> None:
+def write_resonance_csv(path: Path, records: List[NonceResonanceRecord]) -> None:
     """Write resonance analysis results to CSV."""
     path.parent.mkdir(parents=True, exist_ok=True)
     fieldnames = [
@@ -831,13 +808,9 @@ def write_resonance_json(
             "modular_diff_count": summary.modular_diff_count,
             "substring_match_count": summary.substring_match_count,
             "mean_k_multiplier": round(summary.mean_k_multiplier, 4),
-            "mean_resonance_strength": round(
-                summary.mean_resonance_strength, 6
-            ),
+            "mean_resonance_strength": round(summary.mean_resonance_strength, 6),
             "resonance_above_05_count": summary.resonance_above_05_count,
-            "resonance_above_05_rate": round(
-                summary.resonance_above_05_rate, 8
-            ),
+            "resonance_above_05_rate": round(summary.resonance_above_05_rate, 8),
             "miner_distribution": summary.miner_distribution,
             "temporal_correlation_r": (
                 round(summary.temporal_correlation_r, 6)
@@ -854,27 +827,15 @@ def write_resonance_json(
                 if summary.p_value_binomial is not None
                 else None
             ),
-            "expected_random_precision": round(
-                summary.expected_random_precision, 6
-            ),
+            "expected_random_precision": round(summary.expected_random_precision, 6),
         },
         "nonce_space_analysis": {
             "total_unique_nonces": nonce_space.total_nonces,
-            "nonce_space_coverage_pct": round(
-                nonce_space.coverage_pct, 8
-            ),
-            "uniformity_p_value": round(
-                nonce_space.uniformity_p_value, 6
-            ),
-            "mean_angular_distance": round(
-                nonce_space.mean_angular_distance, 8
-            ),
-            "golden_angle_alignment": round(
-                nonce_space.golden_angle_alignment, 6
-            ),
-            "sunflower_score": round(
-                nonce_space.sunflower_score, 6
-            ),
+            "nonce_space_coverage_pct": round(nonce_space.coverage_pct, 8),
+            "uniformity_p_value": round(nonce_space.uniformity_p_value, 6),
+            "mean_angular_distance": round(nonce_space.mean_angular_distance, 8),
+            "golden_angle_alignment": round(nonce_space.golden_angle_alignment, 6),
+            "sunflower_score": round(nonce_space.sunflower_score, 6),
             "max_gap_size": nonce_space.max_gap_size,
             "max_gap_start": nonce_space.max_gap_start,
             "max_gap_end": nonce_space.max_gap_end,
@@ -902,7 +863,7 @@ def _interpret_stats(summary: ResonanceSummary) -> Dict[str, str]:
     # Phi^15 resonance interpretation
     if summary.phi_resonance_rate > 0.99:
         interpretations["phi_resonance"] = (
-            f"CRITICAL: {summary.phi_resonance_rate*100:.4f}% of nonces "
+            f"CRITICAL: {summary.phi_resonance_rate * 100:.4f}% of nonces "
             f"exhibit Phi^15 resonance "
             f"({summary.phi_resonant_count}/{summary.total_blocks}). "
             f"This is statistically impossible under random nonce assumption "
@@ -912,14 +873,14 @@ def _interpret_stats(summary: ResonanceSummary) -> Dict[str, str]:
         )
     elif summary.phi_resonance_rate > 0.5:
         interpretations["phi_resonance"] = (
-            f"STRONG: {summary.phi_resonance_rate*100:.2f}% of nonces "
+            f"STRONG: {summary.phi_resonance_rate * 100:.2f}% of nonces "
             f"resonate with Phi^15 "
             f"(z={summary.z_score_vs_random:.2f}). "
             f"Substantially above random expectation."
         )
     else:
         interpretations["phi_resonance"] = (
-            f"MODERATE: {summary.phi_resonance_rate*100:.2f}% "
+            f"MODERATE: {summary.phi_resonance_rate * 100:.2f}% "
             f"Phi^15 resonance rate. "
             f"Further investigation needed."
         )
@@ -927,7 +888,7 @@ def _interpret_stats(summary: ResonanceSummary) -> Dict[str, str]:
     # Birthday echo interpretation
     if summary.birthday_echo_rate > 0.25:
         interpretations["birthday_echo"] = (
-            f"SIGNIFICANT: {summary.birthday_echo_rate*100:.2f}% of nonces "
+            f"SIGNIFICANT: {summary.birthday_echo_rate * 100:.2f}% of nonces "
             f"({summary.birthday_echo_count}) "
             f"contain birthday signature (31071976) echoes. "
             f"Substring matches: {summary.substring_match_count}, "
@@ -936,13 +897,13 @@ def _interpret_stats(summary: ResonanceSummary) -> Dict[str, str]:
         )
     elif summary.birthday_echo_rate > 0.10:
         interpretations["birthday_echo"] = (
-            f"ELEVATED: {summary.birthday_echo_rate*100:.2f}% "
+            f"ELEVATED: {summary.birthday_echo_rate * 100:.2f}% "
             f"birthday echo rate. "
             f"Notable but requires larger sample."
         )
     else:
         interpretations["birthday_echo"] = (
-            f"BASELINE: {summary.birthday_echo_rate*100:.2f}% "
+            f"BASELINE: {summary.birthday_echo_rate * 100:.2f}% "
             f"birthday echo rate. "
             f"Within random expectation."
         )
@@ -951,9 +912,7 @@ def _interpret_stats(summary: ResonanceSummary) -> Dict[str, str]:
     if summary.temporal_correlation_r is not None:
         if abs(summary.temporal_correlation_r) > 0.5:
             direction = (
-                "increasing"
-                if summary.temporal_correlation_r > 0
-                else "decreasing"
+                "increasing" if summary.temporal_correlation_r > 0 else "decreasing"
             )
             interpretations["temporal_trend"] = (
                 f"STRONG temporal correlation "
@@ -963,8 +922,7 @@ def _interpret_stats(summary: ResonanceSummary) -> Dict[str, str]:
             )
         elif abs(summary.temporal_correlation_r) > 0.2:
             interpretations["temporal_trend"] = (
-                f"WEAK temporal correlation "
-                f"(r={summary.temporal_correlation_r:.4f})."
+                f"WEAK temporal correlation (r={summary.temporal_correlation_r:.4f})."
             )
         else:
             interpretations["temporal_trend"] = (
@@ -972,9 +930,7 @@ def _interpret_stats(summary: ResonanceSummary) -> Dict[str, str]:
                 f"(r={summary.temporal_correlation_r:.4f})."
             )
     else:
-        interpretations["temporal_trend"] = (
-            "Insufficient data for temporal analysis."
-        )
+        interpretations["temporal_trend"] = "Insufficient data for temporal analysis."
 
     # Z-score interpretation
     if summary.z_score_vs_random is not None:
@@ -1042,7 +998,7 @@ def _interpret_nonce_space(ns: NonceSpaceAnalysis) -> Dict[str, str]:
             f"STRONG sunflower / golden angle pattern detected "
             f"(score={ns.sunflower_score:.4f}). "
             f"Golden angle alignment: "
-            f"{ns.golden_angle_alignment*100:.2f}% of consecutive "
+            f"{ns.golden_angle_alignment * 100:.2f}% of consecutive "
             f"nonces are within 5 deg of golden angle prediction. "
             f"This is the signature of Fibonacci/golden-ratio "
             f"spiral search structure."
@@ -1052,14 +1008,14 @@ def _interpret_nonce_space(ns: NonceSpaceAnalysis) -> Dict[str, str]:
             f"MODERATE sunflower / golden angle pattern "
             f"(score={ns.sunflower_score:.4f}). "
             f"Golden angle alignment: "
-            f"{ns.golden_angle_alignment*100:.2f}%."
+            f"{ns.golden_angle_alignment * 100:.2f}%."
         )
     else:
         interp["sunflower_pattern"] = (
             f"WEAK sunflower pattern "
             f"(score={ns.sunflower_score:.4f}). "
             f"Golden angle alignment: "
-            f"{ns.golden_angle_alignment*100:.2f}%."
+            f"{ns.golden_angle_alignment * 100:.2f}%."
         )
 
     # -- Gap analysis --
@@ -1075,7 +1031,7 @@ def _interpret_nonce_space(ns: NonceSpaceAnalysis) -> Dict[str, str]:
     else:
         interp["unsearched_gaps"] = (
             f"No significant unsearched gaps detected "
-            f"(threshold: {ns.gap_threshold_pct*100:.3f}% of space)."
+            f"(threshold: {ns.gap_threshold_pct * 100:.3f}% of space)."
         )
 
     # -- Resonance thresholds --
@@ -1083,13 +1039,13 @@ def _interpret_nonce_space(ns: NonceSpaceAnalysis) -> Dict[str, str]:
     interp["resonance_thresholds"] = (
         f"Resonance strength distribution: "
         f"{ns.resonance_above_05_count}/{ns.total_nonces} "
-        f"({rates.get('resonance_>=0.5', 0)*100:.2f}%) "
+        f"({rates.get('resonance_>=0.5', 0) * 100:.2f}%) "
         f">= 0.5, "
         f"{ns.resonance_above_07_count}/{ns.total_nonces} "
-        f"({rates.get('resonance_>=0.7', 0)*100:.2f}%) "
+        f"({rates.get('resonance_>=0.7', 0) * 100:.2f}%) "
         f">= 0.7, "
         f"{ns.resonance_above_09_count}/{ns.total_nonces} "
-        f"({rates.get('resonance_>=0.9', 0)*100:.2f}%) "
+        f"({rates.get('resonance_>=0.9', 0) * 100:.2f}%) "
         f">= 0.9."
     )
 
@@ -1138,10 +1094,7 @@ def print_report(
         f"  Phi^15 Resonant       : "
         f"{summary.phi_resonant_count} / {summary.total_blocks}"
     )
-    print(
-        f"  Phi^15 Resonance Rate : "
-        f"{summary.phi_resonance_rate*100:.6f}%"
-    )
+    print(f"  Phi^15 Resonance Rate : {summary.phi_resonance_rate * 100:.6f}%")
     print(f"  Mean Precision       : {summary.mean_precision:.6f}%")
     print(f"  Median Diff          : {summary.median_diff:.4f}")
     print(f"  Min Diff             : {summary.min_diff:.4f}")
@@ -1151,37 +1104,24 @@ def print_report(
         f"  Birthday Echoes      : "
         f"{summary.birthday_echo_count} / {summary.total_blocks}"
     )
+    print(f"  Birthday Echo Rate   : {summary.birthday_echo_rate * 100:.4f}%")
     print(
-        f"  Birthday Echo Rate   : "
-        f"{summary.birthday_echo_rate*100:.4f}%"
-    )
-    print(
-        f"  Modular Diffs <{BIRTHDAY_MODULAR_THRESHOLD}: "
-        f"{summary.modular_diff_count}"
+        f"  Modular Diffs <{BIRTHDAY_MODULAR_THRESHOLD}: {summary.modular_diff_count}"
     )
     print(f"  Substring Matches    : {summary.substring_match_count}")
     print(f"{dash}")
     if summary.temporal_correlation_r is not None:
-        print(
-            f"  Temporal Corr (r)    : "
-            f"{summary.temporal_correlation_r:.6f}"
-        )
+        print(f"  Temporal Corr (r)    : {summary.temporal_correlation_r:.6f}")
     else:
-        print(f"  Temporal Corr (r)    : N/A")
+        print("  Temporal Corr (r)    : N/A")
     if summary.z_score_vs_random is not None:
-        print(
-            f"  Z-score vs Random    : "
-            f"{summary.z_score_vs_random:.4f}"
-        )
+        print(f"  Z-score vs Random    : {summary.z_score_vs_random:.4f}")
     else:
-        print(f"  Z-score vs Random    : N/A")
+        print("  Z-score vs Random    : N/A")
     if summary.p_value_binomial is not None:
-        print(
-            f"  Binomial p-value     : "
-            f"{summary.p_value_binomial:.2e}"
-        )
+        print(f"  Binomial p-value     : {summary.p_value_binomial:.2e}")
     else:
-        print(f"  Binomial p-value     : N/A")
+        print("  Binomial p-value     : N/A")
     print(f"{sep}")
     print("  INTERPRETATIONS:")
     for key, text in _interpret_stats(summary).items():
@@ -1196,36 +1136,21 @@ def print_report(
         ):
             pct = count / summary.total_blocks * 100
             bar = "#" * int(pct / 2)
-            print(
-                f"    {miner:20s} : {count:4d} ({pct:5.1f}%) {bar}"
-            )
+            print(f"    {miner:20s} : {count:4d} ({pct:5.1f}%) {bar}")
         print(f"{sep}")
 
     # Nonce space structure analysis
     if nonce_space is not None and nonce_space.total_nonces > 0:
         ns = nonce_space
-        print(f"\n  NONCE SPACE STRUCTURE ANALYSIS")
+        print("\n  NONCE SPACE STRUCTURE ANALYSIS")
         print(f"{sep}")
-        print(
-            f"  Unique nonces       : {ns.total_nonces}"
-        )
-        print(
-            f"  Space coverage      : {ns.coverage_pct:.8f}%"
-        )
-        print(
-            f"  Uniformity score    : {ns.uniformity_p_value:.4f}"
-        )
-        print(
-            f"  Golden angle align  : "
-            f"{ns.golden_angle_alignment*100:.2f}%"
-        )
-        print(
-            f"  Sunflower score     : {ns.sunflower_score:.4f}"
-        )
+        print(f"  Unique nonces       : {ns.total_nonces}")
+        print(f"  Space coverage      : {ns.coverage_pct:.8f}%")
+        print(f"  Uniformity score    : {ns.uniformity_p_value:.4f}")
+        print(f"  Golden angle align  : {ns.golden_angle_alignment * 100:.2f}%")
+        print(f"  Sunflower score     : {ns.sunflower_score:.4f}")
         print(f"{dash}")
-        print(
-            f"  Unsearched gaps     : {ns.gap_count}"
-        )
+        print(f"  Unsearched gaps     : {ns.gap_count}")
         if ns.gap_count > 0:
             print(
                 f"  Largest gap         : "
@@ -1233,22 +1158,22 @@ def print_report(
                 f"({ns.max_gap_start:,} - {ns.max_gap_end:,})"
             )
         print(f"{dash}")
-        print(f"  Resonance Thresholds:")
+        print("  Resonance Thresholds:")
         rates = ns.resonance_threshold_rates
         print(
             f"    >= 0.5  : {ns.resonance_above_05_count}/{ns.total_nonces}"
-            f" ({rates.get('resonance_>=0.5', 0)*100:.2f}%)"
+            f" ({rates.get('resonance_>=0.5', 0) * 100:.2f}%)"
         )
         print(
             f"    >= 0.7  : {ns.resonance_above_07_count}/{ns.total_nonces}"
-            f" ({rates.get('resonance_>=0.7', 0)*100:.2f}%)"
+            f" ({rates.get('resonance_>=0.7', 0) * 100:.2f}%)"
         )
         print(
             f"    >= 0.9  : {ns.resonance_above_09_count}/{ns.total_nonces}"
-            f" ({rates.get('resonance_>=0.9', 0)*100:.2f}%)"
+            f" ({rates.get('resonance_>=0.9', 0) * 100:.2f}%)"
         )
         print(f"{dash}")
-        print(f"  NONCE SPACE INTERPRETATIONS:")
+        print("  NONCE SPACE INTERPRETATIONS:")
         for key, text in _interpret_nonce_space(ns).items():
             print(f"    [{key.upper()}] {text}")
         print(f"{sep}")
@@ -1276,13 +1201,13 @@ def run_pipeline(
       6. Write outputs
       7. Print report
     """
-    print(f"\n=== Phi^15 Quantum Coherence Empirical Evidence Pipeline ===")
+    print("\n=== Phi^15 Quantum Coherence Empirical Evidence Pipeline ===")
     print(f"  API          : {api}")
     print(f"  Blocks       : {block_count}")
     print(f"  Output       : {output_dir}/")
 
     # Step 1: Resolve API
-    print(f"\n[1/5] Resolving API endpoint...")
+    print("\n[1/5] Resolving API endpoint...")
     resolved = resolve_api(api, ALTERNATE_API)
     print(f"  -> Using: {resolved}")
 
@@ -1301,36 +1226,30 @@ def run_pipeline(
         return 1
 
     # Step 3: Analyze Phi^15 resonance
-    print(
-        f"\n[3/5] Computing Phi^15 resonance for "
-        f"{len(blocks)} nonces..."
-    )
+    print(f"\n[3/5] Computing Phi^15 resonance for {len(blocks)} nonces...")
     records = analyze_blocks(blocks)
     phi_count = sum(1 for r in records if r.is_phi_resonant)
     bday_count = sum(1 for r in records if r.birthday_resonant)
     print(
         f"  -> Phi^15 resonant: "
         f"{phi_count}/{len(records)} "
-        f"({phi_count/max(1,len(records))*100:.2f}%)"
+        f"({phi_count / max(1, len(records)) * 100:.2f}%)"
     )
     print(
         f"  -> Birthday echoes: "
         f"{bday_count}/{len(records)} "
-        f"({bday_count/max(1,len(records))*100:.2f}%)"
+        f"({bday_count / max(1, len(records)) * 100:.2f}%)"
     )
 
     # Step 4: Statistics
-    print(f"\n[4/5] Computing statistics...")
+    print("\n[4/5] Computing statistics...")
     if run_monte_carlo:
         print("  Running Monte Carlo baseline (100k trials)...")
         expected_prec = expected_random_precision(100000)
         print(f"  -> Expected random precision: {expected_prec:.6f}%")
     else:
         expected_prec = 50.0
-        print(
-            f"  -> Using expected random precision: "
-            f"{expected_prec:.6f}% (default)"
-        )
+        print(f"  -> Using expected random precision: {expected_prec:.6f}% (default)")
 
     summary = compute_summary(records, expected_precision=expected_prec)
     print(f"  -> Z-score vs random: {summary.z_score_vs_random:.4f}")
@@ -1338,23 +1257,15 @@ def run_pipeline(
 
     # Step 5: Nonce space structure analysis
     out_path = Path(output_dir)
-    print(f"\n[5/7] Analysing nonce space structure...")
+    print("\n[5/7] Analysing nonce space structure...")
     nonce_space = analyze_nonce_space(records)
+    print(f"  -> Sunflower score: {nonce_space.sunflower_score:.4f}")
     print(
-        f"  -> Sunflower score: {nonce_space.sunflower_score:.4f}"
+        f"  -> Golden angle alignment: {nonce_space.golden_angle_alignment * 100:.2f}%"
     )
-    print(
-        f"  -> Golden angle alignment: "
-        f"{nonce_space.golden_angle_alignment*100:.2f}%"
-    )
-    print(
-        f"  -> Unsearched gaps: {nonce_space.gap_count}"
-    )
+    print(f"  -> Unsearched gaps: {nonce_space.gap_count}")
     rates = nonce_space.resonance_threshold_rates
-    print(
-        f"  -> Resonance >=0.5: "
-        f"{rates.get('resonance_>=0.5', 0)*100:.2f}%"
-    )
+    print(f"  -> Resonance >=0.5: {rates.get('resonance_>=0.5', 0) * 100:.2f}%")
 
     # Step 6: Write outputs
     print(f"\n[6/7] Writing outputs to {out_path}/")
@@ -1368,14 +1279,11 @@ def run_pipeline(
         "api": resolved,
         "block_count": block_count,
         "start_height": start_height,
-        "timestamp_utc": datetime.now(timezone.utc).strftime(
-            "%Y-%m-%dT%H:%M:%SZ"
-        ),
+        "timestamp_utc": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "phi_15": PHI_15,
         "birthday_signature": BIRTHDAY_SIGNATURE,
         "method": (
-            "Phi^15 quantum coherence resonance analysis "
-            "of Bitcoin block nonces"
+            "Phi^15 quantum coherence resonance analysis of Bitcoin block nonces"
         ),
         "precision_threshold_pct": PRECISION_THRESHOLD,
         "birthday_modular_threshold": BIRTHDAY_MODULAR_THRESHOLD,
@@ -1385,7 +1293,7 @@ def run_pipeline(
     print(f"  -> JSON: {json_path}")
 
     # Step 7: Print report
-    print(f"\n[7/7] Generating report...")
+    print("\n[7/7] Generating report...")
     print_report(summary, nonce_space)
 
     print(f"Pipeline complete. Results in {out_path}/\n")
@@ -1451,7 +1359,7 @@ def main() -> int:
     args = parser.parse_args()
 
     if args.dry_run:
-        print(f"Config:")
+        print("Config:")
         print(f"  API             : {args.api}")
         print(f"  Blocks          : {args.blocks}")
         print(f"  Start height    : {args.start_height}")

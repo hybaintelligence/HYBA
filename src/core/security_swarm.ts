@@ -1,6 +1,6 @@
-import { randomBytes } from 'node:crypto';
-import { logger, get_trace_context } from './telemetry';
-import { PHI, calculate_phi_resonance, project_to_phi_floor } from './constants';
+import { randomBytes } from "node:crypto";
+import { logger, get_trace_context } from "./telemetry";
+import { PHI, calculate_phi_resonance, project_to_phi_floor } from "./constants";
 
 /**
  * HYBA Stabilizer Integrity Monitor
@@ -12,10 +12,14 @@ import { PHI, calculate_phi_resonance, project_to_phi_floor } from './constants'
  *   - syndrome-derived confidence instead of reference-state fidelity.
  */
 
-export type AgentRole = 'logical' | 'ancilla' | 'trap';
-export type AgentState = 'reserved' | 'active' | 'retired';
-export type ResponseCause = 'none' | 'syndrome_anomaly' | 'trap_disturbance' | 'resource_exhaustion';
-export type OperatingMode = 'NORMAL' | 'COMPRESSED' | 'EXHAUSTED' | 'SANITIZED';
+export type AgentRole = "logical" | "ancilla" | "trap";
+export type AgentState = "reserved" | "active" | "retired";
+export type ResponseCause =
+  | "none"
+  | "syndrome_anomaly"
+  | "trap_disturbance"
+  | "resource_exhaustion";
+export type OperatingMode = "NORMAL" | "COMPRESSED" | "EXHAUSTED" | "SANITIZED";
 
 export interface SwarmAgent {
   id: string;
@@ -40,7 +44,7 @@ export interface StabilizerSyndromeSample {
 }
 
 export interface SwarmResponse {
-  status: 'nominal' | 'integrity_response_active';
+  status: "nominal" | "integrity_response_active";
   cause: ResponseCause;
   activated_ancillas: number;
   activated_traps: number;
@@ -80,7 +84,8 @@ export interface SecuritySwarmStatus {
 }
 
 const clamp01 = (value: number): number => Math.max(0, Math.min(1, value));
-const bitFromProbability = (value: number, threshold: number): 0 | 1 => (value >= threshold ? 1 : 0);
+const bitFromProbability = (value: number, threshold: number): 0 | 1 =>
+  value >= threshold ? 1 : 0;
 
 class SecuritySwarmAgent {
   private agents: SwarmAgent[] = [];
@@ -93,7 +98,7 @@ class SecuritySwarmAgent {
   private readonly syndrome_weight_threshold = 1;
   private readonly compressed_pool_ratio = 0.5;
   private readonly exhausted_pool_ratio = 0.2;
-  private operating_mode: OperatingMode = 'NORMAL';
+  private operating_mode: OperatingMode = "NORMAL";
   private syndrome_check_stride = 1;
   private check_frequency = 1.0;
   private syndrome_round = 0;
@@ -108,8 +113,8 @@ class SecuritySwarmAgent {
     trap_disturbances: 0,
     confidence: 1,
     anomaly_detected: false,
-    cause: 'none',
-    operating_mode: 'NORMAL',
+    cause: "none",
+    operating_mode: "NORMAL",
     sampled_ancillas: 8,
     check_frequency: 1.0,
   };
@@ -121,13 +126,15 @@ class SecuritySwarmAgent {
   private boot(): void {
     this.agents = [];
     for (let i = 0; i < this.logical_width; i++) {
-      this.agents.push(this.create_agent(i, 'logical', 'active'));
+      this.agents.push(this.create_agent(i, "logical", "active"));
     }
     for (let i = 0; i < this.reserved_ancilla_pool; i++) {
-      this.agents.push(this.create_agent(i, 'ancilla', i < this.syndrome_width ? 'active' : 'reserved'));
+      this.agents.push(
+        this.create_agent(i, "ancilla", i < this.syndrome_width ? "active" : "reserved"),
+      );
     }
     for (let i = 0; i < this.reserved_trap_pool; i++) {
-      this.agents.push(this.create_agent(i, 'trap', i < 2 ? 'active' : 'reserved'));
+      this.agents.push(this.create_agent(i, "trap", i < 2 ? "active" : "reserved"));
     }
     this.initialize_holographic_pool();
   }
@@ -153,11 +160,15 @@ class SecuritySwarmAgent {
     this.syndrome_round += 1;
     const disturbance = clamp01(disturbance_probability);
     const activeAncillas = this.get_sampled_ancillas();
-    const activeTraps = this.agents.filter((agent) => agent.role === 'trap' && agent.state === 'active');
+    const activeTraps = this.agents.filter(
+      (agent) => agent.role === "trap" && agent.state === "active",
+    );
 
     const resonance = calculate_phi_resonance(this.syndrome_round);
     const syndrome = activeAncillas.map((agent, index) => {
-      const projectedNoise = clamp01(disturbance * Math.abs(Math.sin(resonance + agent.phase + index / PHI)));
+      const projectedNoise = clamp01(
+        disturbance * Math.abs(Math.sin(resonance + agent.phase + index / PHI)),
+      );
       const syndromeBit = bitFromProbability(projectedNoise, 0.5);
       agent.syndrome_bit = syndromeBit;
       agent.entropy = clamp01(agent.entropy + projectedNoise / Math.max(1, activeAncillas.length));
@@ -166,7 +177,9 @@ class SecuritySwarmAgent {
 
     let trap_disturbances = 0;
     for (const [index, trap] of activeTraps.entries()) {
-      const trapNoise = clamp01(disturbance * Math.abs(Math.cos(resonance + trap.phase + index * PHI)));
+      const trapNoise = clamp01(
+        disturbance * Math.abs(Math.cos(resonance + trap.phase + index * PHI)),
+      );
       const disturbed = disturbance >= 1 ? true : trapNoise > 0.35;
       trap.trap_disturbed = trap.trap_disturbed || disturbed;
       trap.entropy = clamp01(trap.entropy + trapNoise / 2);
@@ -174,17 +187,30 @@ class SecuritySwarmAgent {
     }
 
     const syndrome_weight = syndrome.reduce<number>((sum, bit) => sum + bit, 0);
-    const syndromePenalty = syndrome_weight / Math.max(1, activeAncillas.length || this.syndrome_width);
-    const trapPenalty = trap_disturbances / Math.max(1, activeTraps.length || this.reserved_trap_pool);
+    const syndromePenalty =
+      syndrome_weight / Math.max(1, activeAncillas.length || this.syndrome_width);
+    const trapPenalty =
+      trap_disturbances / Math.max(1, activeTraps.length || this.reserved_trap_pool);
     const confidence = clamp01(1 - syndromePenalty * 0.75 - trapPenalty * 0.25);
-    const cause: ResponseCause = trap_disturbances > 0 ? 'trap_disturbance' : syndrome_weight > this.syndrome_weight_threshold ? 'syndrome_anomaly' : 'none';
+    const sampleCause: ResponseCause =
+      trap_disturbances > 0
+        ? "trap_disturbance"
+        : syndrome_weight > this.syndrome_weight_threshold
+          ? "syndrome_anomaly"
+          : "none";
+
+    // Preserve resource_exhaustion cause in degraded modes
+    const cause: ResponseCause =
+      this.operating_mode !== "NORMAL" && this.last_syndrome.cause === "resource_exhaustion"
+        ? "resource_exhaustion"
+        : sampleCause;
 
     this.last_syndrome = {
       syndrome,
       syndrome_weight,
       trap_disturbances,
       confidence,
-      anomaly_detected: confidence < this.confidence_threshold || cause !== 'none',
+      anomaly_detected: confidence < this.confidence_threshold || sampleCause !== "none",
       cause,
       operating_mode: this.operating_mode,
       sampled_ancillas: activeAncillas.length,
@@ -203,8 +229,8 @@ class SecuritySwarmAgent {
     const sample = this.monitor_integrity(disturbance_probability);
     if (!sample.anomaly_detected) {
       return {
-        status: 'nominal',
-        cause: 'none',
+        status: "nominal",
+        cause: "none",
         activated_ancillas: 0,
         activated_traps: 0,
         retired_traps: 0,
@@ -213,36 +239,55 @@ class SecuritySwarmAgent {
         syndrome_rotation_index: this.syndrome_rotation_index,
         pool_permutation_checksum: this.pool_permutation_checksum,
         sanitized: this.sanitized,
-        note: 'No syndrome or trap anomaly observed.',
+        note: "No syndrome or trap anomaly observed.",
       };
     }
 
     let retired_traps = 0;
-    for (const trap of this.agents.filter((agent) => agent.role === 'trap' && agent.trap_disturbed && agent.state === 'active')) {
-      trap.state = 'retired';
+    for (const trap of this.agents.filter(
+      (agent) => agent.role === "trap" && agent.trap_disturbed && agent.state === "active",
+    )) {
+      trap.state = "retired";
       retired_traps += 1;
     }
 
     const syndromeBitstring = this.encode_syndrome_bitstring(sample.syndrome);
-    this.update_permutation_shards(syndromeBitstring);
-    this.syndrome_rotation_index = this.derive_clifford_index(syndromeBitstring);
-    const activated_ancillas = this.activate_reserved('ancilla', Math.max(1, sample.syndrome_weight));
-    const activated_traps = this.activate_reserved('trap', Math.max(1, retired_traps || sample.trap_disturbances));
+    if (!this.sanitized) {
+      this.update_permutation_shards(syndromeBitstring);
+      this.syndrome_rotation_index = this.derive_clifford_index(syndromeBitstring);
+    }
+    const activated_ancillas = this.activate_reserved(
+      "ancilla",
+      Math.max(1, sample.syndrome_weight),
+    );
+    const activated_traps = this.activate_reserved(
+      "trap",
+      Math.max(1, retired_traps || sample.trap_disturbances),
+    );
     this.rotate_newly_activated_traps(this.syndrome_rotation_index);
     this.evaluate_trap_sanitization();
     this.evaluate_ancilla_exhaustion();
 
-    for (const agent of this.agents.filter((candidate) => candidate.state === 'active')) {
-      agent.phase = project_to_phi_floor(agent.phase + PHI * (sample.syndrome_weight + sample.trap_disturbances + 1));
+    for (const agent of this.agents.filter((candidate) => candidate.state === "active")) {
+      agent.phase = project_to_phi_floor(
+        agent.phase + PHI * (sample.syndrome_weight + sample.trap_disturbances + 1),
+      );
     }
 
     logger.warn(
-      { ...get_trace_context(), syndrome_weight: sample.syndrome_weight, trap_disturbances: sample.trap_disturbances, confidence: sample.confidence, cause: sample.cause, operating_mode: this.operating_mode },
-      'HYBA stabilizer integrity response active — expanding pre-allocated measurement coverage',
+      {
+        ...get_trace_context(),
+        syndrome_weight: sample.syndrome_weight,
+        trap_disturbances: sample.trap_disturbances,
+        confidence: sample.confidence,
+        cause: sample.cause,
+        operating_mode: this.operating_mode,
+      },
+      "HYBA stabilizer integrity response active — expanding pre-allocated measurement coverage",
     );
 
     return {
-      status: 'integrity_response_active',
+      status: "integrity_response_active",
       cause: sample.cause,
       activated_ancillas,
       activated_traps,
@@ -252,7 +297,7 @@ class SecuritySwarmAgent {
       syndrome_rotation_index: this.syndrome_rotation_index,
       pool_permutation_checksum: this.pool_permutation_checksum,
       sanitized: this.sanitized,
-      note: 'Response uses pre-allocated ancillas/traps; no logical quantum state is cloned.',
+      note: "Response uses pre-allocated ancillas/traps; no logical quantum state is cloned.",
     };
   }
 
@@ -268,9 +313,11 @@ class SecuritySwarmAgent {
     let coherence = 0;
     let activeCount = 0;
     this.agents = this.agents.map((agent, i) => {
-      if (agent.state !== 'active') return agent;
+      if (agent.state !== "active") return agent;
       const projection = project_to_phi_floor(resonance * (i + 1) + agent.phase);
-      const agentCoherence = clamp01(Math.abs(Math.sin(projection)) * (agent.trap_disturbed ? 0.5 : 1));
+      const agentCoherence = clamp01(
+        Math.abs(Math.sin(projection)) * (agent.trap_disturbed ? 0.5 : 1),
+      );
       coherence += agentCoherence;
       activeCount += 1;
 
@@ -282,7 +329,10 @@ class SecuritySwarmAgent {
 
     const normalized_coherence = coherence / Math.max(1, activeCount);
     if (normalized_coherence < 0.85) {
-      logger.warn({ ...ctx, coherence: normalized_coherence }, 'Security Swarm: Coherence drift detected. Running stabilizer response.');
+      logger.warn(
+        { ...ctx, coherence: normalized_coherence },
+        "Security Swarm: Coherence drift detected. Running stabilizer response.",
+      );
       this.trigger_response(0.25);
     }
 
@@ -290,39 +340,45 @@ class SecuritySwarmAgent {
   }
 
   private get_sampled_ancillas(): SwarmAgent[] {
-    const activeAncillas = this.agents.filter((agent) => agent.role === 'ancilla' && agent.state === 'active');
-    if (this.operating_mode === 'NORMAL') return activeAncillas.slice(0, this.syndrome_width);
-    return activeAncillas.filter((_, index) => (index + this.syndrome_round) % this.syndrome_check_stride === 0).slice(0, this.syndrome_width);
+    const activeAncillas = this.agents.filter(
+      (agent) => agent.role === "ancilla" && agent.state === "active",
+    );
+    if (this.operating_mode === "NORMAL") return activeAncillas.slice(0, this.syndrome_width);
+    return activeAncillas
+      .filter((_, index) => (index + this.syndrome_round) % this.syndrome_check_stride === 0)
+      .slice(0, this.syndrome_width);
   }
 
   private evaluate_ancilla_exhaustion(): void {
-    if (this.operating_mode === 'SANITIZED') return;
-    
-    const reservedAncillas = this.agents.filter((agent) => agent.role === 'ancilla' && agent.state === 'reserved').length;
+    if (this.operating_mode === "SANITIZED") return;
+
+    const reservedAncillas = this.agents.filter(
+      (agent) => agent.role === "ancilla" && agent.state === "reserved",
+    ).length;
     const reserveRatio = reservedAncillas / Math.max(1, this.max_ancilla_pool);
 
     if (reserveRatio < this.exhausted_pool_ratio) {
-      this.set_operating_mode('EXHAUSTED', 10, 0.1);
+      this.set_operating_mode("EXHAUSTED", 10, 0.1);
       return;
     }
 
     if (reserveRatio < this.compressed_pool_ratio) {
-      this.set_operating_mode('COMPRESSED', 2, 0.5);
+      this.set_operating_mode("COMPRESSED", 2, 0.5);
       return;
     }
 
-    this.set_operating_mode('NORMAL', 1, 1.0);
+    this.set_operating_mode("NORMAL", 1, 1.0);
   }
 
   private set_operating_mode(mode: OperatingMode, stride: number, frequency: number): void {
     this.operating_mode = mode;
     this.syndrome_check_stride = stride;
     this.check_frequency = frequency;
-    if (mode !== 'NORMAL') {
+    if (mode !== "NORMAL") {
       this.last_syndrome = {
         ...this.last_syndrome,
         anomaly_detected: true,
-        cause: 'resource_exhaustion',
+        cause: "resource_exhaustion",
         operating_mode: mode,
         check_frequency: frequency,
       };
@@ -334,7 +390,10 @@ class SecuritySwarmAgent {
   }
 
   private derive_clifford_index(syndromeBitstring: number): number {
-    const hammingWeight = syndromeBitstring.toString(2).split('').filter((bit) => bit === '1').length;
+    const hammingWeight = syndromeBitstring
+      .toString(2)
+      .split("")
+      .filter((bit) => bit === "1").length;
     return ((hammingWeight * 0xdeadbeef) ^ syndromeBitstring) % 24;
   }
 
@@ -349,10 +408,15 @@ class SecuritySwarmAgent {
   }
 
   private derive_deterministic_shuffle(syndromeBitstring: number): number[] {
-    const nextPermutation = Array.from({ length: this.agents.length }, (_, logicalIndex) => this.get_resource_index(logicalIndex));
+    const nextPermutation = Array.from({ length: this.agents.length }, (_, logicalIndex) =>
+      this.get_resource_index(logicalIndex),
+    );
     for (let i = nextPermutation.length - 1; i > 0; i--) {
       const swapIndex = Math.abs((syndromeBitstring ^ (i * 31)) % (i + 1));
-      [nextPermutation[i], nextPermutation[swapIndex]] = [nextPermutation[swapIndex], nextPermutation[i]];
+      [nextPermutation[i], nextPermutation[swapIndex]] = [
+        nextPermutation[swapIndex],
+        nextPermutation[i],
+      ];
     }
     return nextPermutation;
   }
@@ -369,7 +433,8 @@ class SecuritySwarmAgent {
   }
 
   private derive_shard_mask(syndromeBitstring: number, index: number): number {
-    const syndromeDomain = ((syndromeBitstring * 2_654_435_761) ^ (index * 2_246_822_519) ^ 0x9e3779b9) >>> 0;
+    const syndromeDomain =
+      ((syndromeBitstring * 2_654_435_761) ^ (index * 2_246_822_519) ^ 0x9e3779b9) >>> 0;
     return (syndromeDomain ^ this.crypto_uint32()) >>> 0;
   }
 
@@ -390,11 +455,15 @@ class SecuritySwarmAgent {
   }
 
   private evaluate_trap_sanitization(): void {
-    const activeTraps = this.agents.filter((agent) => agent.role === 'trap' && agent.state === 'active').length;
-    const reservedTraps = this.agents.filter((agent) => agent.role === 'trap' && agent.state === 'reserved').length;
+    const activeTraps = this.agents.filter(
+      (agent) => agent.role === "trap" && agent.state === "active",
+    ).length;
+    const reservedTraps = this.agents.filter(
+      (agent) => agent.role === "trap" && agent.state === "reserved",
+    ).length;
     if (activeTraps === 0 && reservedTraps === 0 && !this.sanitized) {
       this.sanitized = true;
-      this.operating_mode = 'SANITIZED';
+      this.operating_mode = "SANITIZED";
       for (let i = 0; i < this.permutation_shard_a.length; i++) {
         this.permutation_shard_a[i] = this.crypto_uint32();
         this.permutation_shard_b[i] = this.crypto_uint32();
@@ -403,7 +472,7 @@ class SecuritySwarmAgent {
       this.last_syndrome = {
         ...this.last_syndrome,
         anomaly_detected: true,
-        cause: 'resource_exhaustion',
+        cause: "resource_exhaustion",
         operating_mode: this.operating_mode,
       };
     }
@@ -411,7 +480,9 @@ class SecuritySwarmAgent {
 
   private rotate_newly_activated_traps(rotationIndex: number): void {
     const phaseShift = project_to_phi_floor((rotationIndex + 1) * PHI);
-    for (const trap of this.agents.filter((agent) => agent.role === 'trap' && agent.state === 'active' && !agent.trap_disturbed)) {
+    for (const trap of this.agents.filter(
+      (agent) => agent.role === "trap" && agent.state === "active" && !agent.trap_disturbed,
+    )) {
       trap.phase = project_to_phi_floor(trap.phase + phaseShift);
     }
   }
@@ -421,9 +492,9 @@ class SecuritySwarmAgent {
     for (let logicalIndex = 0; logicalIndex < this.permutation_shard_a.length; logicalIndex++) {
       const agentIndex = this.get_resource_index(logicalIndex);
       const agent = this.agents[agentIndex];
-      if (!agent || agent.role !== role || agent.state !== 'reserved') continue;
+      if (!agent || agent.role !== role || agent.state !== "reserved") continue;
       if (activated >= requested) break;
-      agent.state = 'active';
+      agent.state = "active";
       agent.trap_disturbed = false;
       agent.syndrome_bit = 0;
       agent.entropy = 0;
@@ -433,24 +504,28 @@ class SecuritySwarmAgent {
   }
 
   private active_agents_count(): number {
-    return this.agents.filter((agent) => agent.state === 'active').length;
+    return this.agents.filter((agent) => agent.state === "active").length;
   }
 
   public get_swarm_status(): SecuritySwarmStatus {
     const byRoleAndState = (role: AgentRole, state?: AgentState): number =>
-      this.agents.filter((agent) => agent.role === role && (state ? agent.state === state : true)).length;
+      this.agents.filter((agent) => agent.role === role && (state ? agent.state === state : true))
+        .length;
 
     return {
       agents_total: this.agents.length,
       agents_active: this.active_agents_count(),
-      logical_agents: byRoleAndState('logical'),
-      reserved_ancillas: byRoleAndState('ancilla', 'reserved'),
-      active_ancillas: byRoleAndState('ancilla', 'active'),
-      reserved_traps: byRoleAndState('trap', 'reserved'),
-      active_traps: byRoleAndState('trap', 'active'),
-      disturbed_traps: this.agents.filter((agent) => agent.role === 'trap' && agent.trap_disturbed).length,
-      retired_traps: byRoleAndState('trap', 'retired'),
-      integrity_locked: !this.last_syndrome.anomaly_detected && this.last_syndrome.confidence >= this.confidence_threshold,
+      logical_agents: byRoleAndState("logical"),
+      reserved_ancillas: byRoleAndState("ancilla", "reserved"),
+      active_ancillas: byRoleAndState("ancilla", "active"),
+      reserved_traps: byRoleAndState("trap", "reserved"),
+      active_traps: byRoleAndState("trap", "active"),
+      disturbed_traps: this.agents.filter((agent) => agent.role === "trap" && agent.trap_disturbed)
+        .length,
+      retired_traps: byRoleAndState("trap", "retired"),
+      integrity_locked:
+        !this.last_syndrome.anomaly_detected &&
+        this.last_syndrome.confidence >= this.confidence_threshold,
       confidence_threshold: this.confidence_threshold,
       syndrome_width: this.syndrome_width,
       last_syndrome_weight: this.last_syndrome.syndrome_weight,

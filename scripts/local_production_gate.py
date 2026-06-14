@@ -106,9 +106,22 @@ def _redacted_env_summary() -> dict[str, str]:
             summary[name] = value
     configured_pools = []
     for pool in ("VIABTC", "NICEHASH", "BRAIINS", "CKPOOL", "STRATUMV2"):
-        if any(os.getenv(f"HYBA_POOL_{pool}_{field}") for field in ("URL", "USERNAME", "PASSWORD", "BTC_ADDRESS", "WORKER", "NICEHASH_POOL_ID", "NH_POOL_ID")):
+        if any(
+            os.getenv(f"HYBA_POOL_{pool}_{field}")
+            for field in (
+                "URL",
+                "USERNAME",
+                "PASSWORD",
+                "BTC_ADDRESS",
+                "WORKER",
+                "NICEHASH_POOL_ID",
+                "NH_POOL_ID",
+            )
+        ):
             configured_pools.append(pool)
-    summary["configured_pool_profiles"] = ",".join(configured_pools) if configured_pools else "<none>"
+    summary["configured_pool_profiles"] = (
+        ",".join(configured_pools) if configured_pools else "<none>"
+    )
     return summary
 
 
@@ -164,9 +177,17 @@ def _next_actions(mode: Mode, passed: bool) -> list[str]:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Run local HYBA_FULLSTACK production evidence gate")
-    parser.add_argument("--mode", choices=("rc", "live", "command-room"), default="command-room")
-    parser.add_argument("--continue-on-failure", action="store_true", help="Run remaining steps after a failure while still returning non-zero")
+    parser = argparse.ArgumentParser(
+        description="Run local HYBA_FULLSTACK production evidence gate"
+    )
+    parser.add_argument(
+        "--mode", choices=("rc", "live", "command-room"), default="command-room"
+    )
+    parser.add_argument(
+        "--continue-on-failure",
+        action="store_true",
+        help="Run remaining steps after a failure while still returning non-zero",
+    )
     args = parser.parse_args(argv)
 
     steps: list[StepResult] = []
@@ -179,7 +200,9 @@ def main(argv: list[str] | None = None) -> int:
         if not result.passed and not args.continue_on_failure:
             break
 
-    passed = all(step.passed for step in steps) and len(steps) == len(_steps_for_mode(args.mode))
+    passed = all(step.passed for step in steps) and len(steps) == len(
+        _steps_for_mode(args.mode)
+    )
     status = "passed" if passed else "blocked"
     now = datetime.now(timezone.utc)
     report = GateReport(
@@ -199,8 +222,13 @@ def main(argv: list[str] | None = None) -> int:
     )
 
     ARTIFACT_DIR.mkdir(parents=True, exist_ok=True)
-    artifact = ARTIFACT_DIR / f"local_production_gate_{args.mode}_{now.strftime('%Y%m%dT%H%M%SZ')}.json"
-    artifact.write_text(json.dumps(report.to_dict(), indent=2, sort_keys=True), encoding="utf-8")
+    artifact = (
+        ARTIFACT_DIR
+        / f"local_production_gate_{args.mode}_{now.strftime('%Y%m%dT%H%M%SZ')}.json"
+    )
+    artifact.write_text(
+        json.dumps(report.to_dict(), indent=2, sort_keys=True), encoding="utf-8"
+    )
     print(f"Evidence packet: {artifact.relative_to(ROOT)}")
     print(f"Gate status: {status}")
     return 0 if passed else 1

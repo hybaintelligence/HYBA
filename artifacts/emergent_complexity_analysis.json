@@ -1,0 +1,34 @@
+{
+  "measurements": {
+    "test_01": {
+      "phi": 0.1671497584541063,
+      "python_modules": 46,
+      "typescript_modules": 37,
+      "total_dependencies": 46,
+      "interpretation": "Moderate integration - significant interdependencies"
+    },
+    "test_02": {
+      "autonomy_score": 10.0,
+      "total_decisions": 1976,
+      "total_external": 706,
+      "adaptive_patterns": 152,
+      "self_modification": 2,
+      "interpretation": "Highly autonomous - extensive internal control flow with 152 adaptive patterns and 2 self-modification sites"
+    },
+    "test_03": {
+      "irreducibility_score": 0.051998700032499186,
+      "global_state_refs": 160,
+      "instance_state_refs": 2917,
+      "interpretation": "Highly reducible - clean state partitions"
+    }
+  },
+  "verdict": [
+    "\u2713 Shows non-trivial information integration",
+    "\u2713 Has internal decision-making",
+    "\u2717 Clean state boundaries",
+    "\u2713 Contains 152 adaptive patterns",
+    "\u26a0 Contains 2 self-modification patterns"
+  ],
+  "conclusion": "POSSIBLE EMERGENT PROPERTIES: System shows non-trivial integration, adaptation, and self-modification.",
+  "emergent_score": 8.651491084703558
+}

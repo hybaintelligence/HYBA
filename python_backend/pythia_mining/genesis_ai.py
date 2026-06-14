@@ -345,9 +345,8 @@ class GenesisAI:
                 )
                 resolved_nonce = await self.quantum_solver.solve()
 
-                if (
-                    resolved_nonce is not None
-                    and not self.propagation.is_job_cancelled(self.current_job.job_id)
+                if resolved_nonce is not None and not self.propagation.is_job_cancelled(
+                    self.current_job.job_id
                 ):
                     self.shares_solved += 1
                     assignment = self.overlay.assignment_for_nonce(resolved_nonce)

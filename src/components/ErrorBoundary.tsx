@@ -12,7 +12,7 @@ interface State {
 
 export class ErrorBoundary extends Component<Props, State> {
   public state: State = {
-    hasError: false
+    hasError: false,
   };
 
   constructor(props: Props) {
@@ -35,9 +35,12 @@ export class ErrorBoundary extends Component<Props, State> {
             <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
               <AlertTriangle className="w-8 h-8 text-red-600" />
             </div>
-            <h1 className="text-2xl font-bold font-sans text-oxford mb-2">Substrate Interface Discontinuity</h1>
+            <h1 className="text-2xl font-bold font-sans text-oxford mb-2">
+              Substrate Interface Discontinuity
+            </h1>
             <p className="text-gray-600 mb-6 font-mono text-sm">
-              The neural interface encountered a critical rendering exception. Phi-resonance destabilized.
+              The neural interface encountered a critical rendering exception. Phi-resonance
+              destabilized.
             </p>
             <div className="bg-red-50 p-4 rounded-lg mb-6 text-left overflow-auto max-h-32">
               <code className="text-xs text-red-700 font-mono">

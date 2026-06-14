@@ -46,7 +46,10 @@ describe("HYBA security swarm HTTP routes", () => {
     const started = await startSecurityRoutesServer();
     server = started.server;
 
-    const response = await fetch(`${started.baseUrl}/api/security/swarm/respond?observer_pressure=1`, { method: "POST" });
+    const response = await fetch(
+      `${started.baseUrl}/api/security/swarm/respond?observer_pressure=1`,
+      { method: "POST" },
+    );
     const body = await response.json();
 
     expect(response.status).toBe(202);

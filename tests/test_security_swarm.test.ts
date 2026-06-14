@@ -37,8 +37,12 @@ describe("HYBA stabilizer integrity monitor", () => {
     expect(after.agents_total).toBe(before.agents_total);
     expect(after.logical_agents).toBe(1);
     expect(response.activated_ancillas + response.activated_traps).toBeGreaterThan(0);
-    expect(after.reserved_ancillas + after.active_ancillas).toBe(before.reserved_ancillas + before.active_ancillas);
-    expect(after.reserved_traps + after.active_traps + after.retired_traps).toBe(before.reserved_traps + before.active_traps + before.retired_traps);
+    expect(after.reserved_ancillas + after.active_ancillas).toBe(
+      before.reserved_ancillas + before.active_ancillas,
+    );
+    expect(after.reserved_traps + after.active_traps + after.retired_traps).toBe(
+      before.reserved_traps + before.active_traps + before.retired_traps,
+    );
   });
 
   it("uses syndrome bits as a deterministic Clifford phase index and pool shuffle", () => {
@@ -99,27 +103,34 @@ describe("HYBA stabilizer integrity monitor", () => {
         expect(sample.syndrome_weight).toBeLessThanOrEqual(sample.sampled_ancillas);
         expect(sample.trap_disturbances).toBeGreaterThanOrEqual(0);
       }),
-      { numRuns: 50 }
+      { numRuns: 50 },
     );
   });
 
   it("property: response never changes the pre-allocated resource budget", () => {
     fc.assert(
-      fc.property(fc.array(fc.float({ min: 0, max: 1, noNaN: true }), { minLength: 1, maxLength: 12 }), (disturbances) => {
-        const monitor = new SecuritySwarmAgent();
-        const initial = monitor.get_swarm_status();
+      fc.property(
+        fc.array(fc.float({ min: 0, max: 1, noNaN: true }), { minLength: 1, maxLength: 12 }),
+        (disturbances) => {
+          const monitor = new SecuritySwarmAgent();
+          const initial = monitor.get_swarm_status();
 
-        for (const disturbance of disturbances) {
-          monitor.trigger_response(disturbance);
-        }
+          for (const disturbance of disturbances) {
+            monitor.trigger_response(disturbance);
+          }
 
-        const final = monitor.get_swarm_status();
-        expect(final.agents_total).toBe(initial.agents_total);
-        expect(final.logical_agents).toBe(1);
-        expect(final.reserved_ancillas + final.active_ancillas).toBe(initial.reserved_ancillas + initial.active_ancillas);
-        expect(final.reserved_traps + final.active_traps + final.retired_traps).toBe(initial.reserved_traps + initial.active_traps + initial.retired_traps);
-      }),
-      { numRuns: 30 }
+          const final = monitor.get_swarm_status();
+          expect(final.agents_total).toBe(initial.agents_total);
+          expect(final.logical_agents).toBe(1);
+          expect(final.reserved_ancillas + final.active_ancillas).toBe(
+            initial.reserved_ancillas + initial.active_ancillas,
+          );
+          expect(final.reserved_traps + final.active_traps + final.retired_traps).toBe(
+            initial.reserved_traps + initial.active_traps + initial.retired_traps,
+          );
+        },
+      ),
+      { numRuns: 30 },
     );
   });
 });
