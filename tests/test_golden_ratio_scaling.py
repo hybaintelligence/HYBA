@@ -2,13 +2,17 @@
 Comprehensive Audit & Tests for Golden Ratio Scaling
 =====================================================
 
-The golden ratio (φ = 1.618033988749895) is nature's fundamental scaling constant.
-This test suite verifies:
+The golden ratio (φ = 1.618033988749895) is implemented as a mathematical invariant
+for deterministic scaling, traversal guidance, and ensemble weighting in the
+HENDRIX-Φ solver system. This test suite verifies:
   1. φ satisfies its defining quadratic: φ² = φ + 1
-  2. The scaling engine correctly applies φ-based weighting
-  3. The ASIC comparison framework produces correct golden-ratio-scale results
+  2. The scaling engine correctly applies φ-based deterministic weighting
+  3. The ASIC comparison framework maintains proper projection boundaries
   4. Edge cases and property-based invariants hold
-  5. Cross-validation of the published golden-ratio-scaling results
+  5. Cross-validation of mathematical implementations against reference values
+
+Note: φ provides structured guidance for traversal and scaling decisions;
+SHA-256 verification and pool-side acceptance remain external proof oracles.
 """
 
 from __future__ import annotations
@@ -30,8 +34,11 @@ import pytest
 # ── Ensure we can import from python_backend ──────────────────────────────
 ROOT = Path(__file__).resolve().parents[1]
 BACKEND = ROOT / "python_backend"
+SCRIPTS = ROOT / "scripts"
 if str(BACKEND) not in sys.path:
     sys.path.insert(0, str(BACKEND))
+if str(SCRIPTS) not in sys.path:
+    sys.path.insert(0, str(SCRIPTS))
 
 from asic_comparison_framework import (
     ASICPerformanceData,

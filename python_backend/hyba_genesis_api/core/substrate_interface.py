@@ -29,11 +29,7 @@ class SubstrateContract(ABC):
             "counterfactuals": list(counterfactuals),
             "governance_tags": self._generate_tags(bounded_phi),
             "thermal_envelope": "stable",
-<<<<<<< Updated upstream
-            "claim_boundary": "Measured classical substrate coherence envelope",
-=======
             "claim_boundary": "Classical substrate telemetry envelope with bounded phi resonance.",
->>>>>>> Stashed changes
         }
 
     def _generate_tags(self, phi: float) -> List[str]:

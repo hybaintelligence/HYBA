@@ -1,8 +1,8 @@
 {
   "measurements": {
     "feedback_loops": {
-      "total": 996,
-      "files": 87,
+      "total": 1049,
+      "files": 90,
       "top_files": [
         {
           "file": "mining.py",
@@ -1580,15 +1580,15 @@
       ]
     },
     "optimizations": {
-      "total": 220,
+      "total": 254,
       "files": 25
     },
     "memory": {
-      "total": 673,
-      "files": 51,
+      "total": 707,
+      "files": 52,
       "by_type": {
-        "memory_reference": 242,
-        "history_tracking": 139,
+        "memory_reference": 241,
+        "history_tracking": 174,
         "retention": 47,
         "ledger_state": 157,
         "caching": 43,
@@ -1597,12 +1597,12 @@
       }
     },
     "self_modification": {
-      "total": 5,
+      "total": 6,
       "files": 4,
-      "dangerous_sites": 3,
+      "dangerous_sites": 4,
       "by_severity": {
         "MODERATE": 2,
-        "DANGEROUS": 3
+        "DANGEROUS": 4
       },
       "dangerous_details": [
         {
@@ -1614,17 +1614,24 @@
         },
         {
           "file": "metal_sha256_pipeline.py",
-          "type": "exec_usage",
+          "type": "eval_usage",
           "severity": "DANGEROUS",
-          "line": 268,
-          "context": "self._force_mlx_exec(mx, test)"
+          "line": 306,
+          "context": "mx.eval(arr)"
         },
         {
           "file": "metal_sha256_pipeline.py",
-          "type": "exec_usage",
+          "type": "eval_usage",
           "severity": "DANGEROUS",
-          "line": 290,
-          "context": "def _force_mlx_exec(mx: Any, value: Any) -> None:"
+          "line": 311,
+          "context": "mx.eval(arr)"
+        },
+        {
+          "file": "metal_sha256_pipeline.py",
+          "type": "eval_usage",
+          "severity": "DANGEROUS",
+          "line": 315,
+          "context": "mx.eval(arr)"
         }
       ]
     }
