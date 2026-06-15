@@ -56,6 +56,30 @@ async def test_unified_engine_starts_as_one_powerhouse_stack() -> None:
 
 
 @pytest.mark.asyncio
+async def test_unified_engine_real_search_returns_candidate_for_sha256d_verification() -> None:
+    engine = UnifiedMiningEngine()
+
+    result = await engine.search(_job())
+    state_after_search = engine.get_unified_state()
+
+    assert result.nonce is not None
+    assert 0 <= result.nonce <= 2**32 - 1
+    assert result.quantum_used is True
+    assert result.strategy_used == "phi_scaled_compressed_solver_search"
+    assert state_after_search["state"]["solve_count"] == 1
+
+    verification = engine.submit_candidate(_job(), result.nonce)
+    state_after_verify = engine.get_unified_state()
+
+    assert verification.nonce == result.nonce
+    assert isinstance(verification.block_hash, str)
+    assert len(verification.block_hash) == 64
+    assert state_after_verify["state"]["last_candidate_hash"] == verification.block_hash
+    assert state_after_verify["state"]["last_candidate_valid"] is verification.valid
+    assert state_after_verify["proofs"]["sha256d_external_oracle"] == "bitcoin_header_double_sha256_pool_target"
+
+
+@pytest.mark.asyncio
 async def test_rejected_share_drives_conservative_regime_without_faking_acceptance() -> None:
     engine = UnifiedMiningEngine()
     engine.optimizer.optimize_nonce_search = _fake_optimise  # type: ignore[method-assign]
