@@ -34,6 +34,7 @@ RC_STEPS = [
     ("evidence_first_intelligence_endpoints", ["npm", "run", "test:evidence:first"]),
     ("hendrix_phi_core_invariants", ["npm", "run", "test:hendrix:core"]),
     ("stratum_share_acceptance_e2e", ["npm", "run", "test:share:e2e"]),
+    ("unified_mining_engine_control_loop", ["npm", "run", "test:unified:engine"]),
     ("adaptive_science_bundle", ["npm", "run", "test:adaptive:science"]),
     ("funding_gate_without_live_share_claim", ["npm", "run", "funding:gate"]),
     ("elevation_packet_bundle", ["npm", "run", "elevation:full"]),
@@ -175,6 +176,10 @@ def _doctrine(mode: Mode) -> dict[str, object]:
             "HENDRIX-Φ treats nonce discovery as structured deterministic solving "
             "over a phi-resonant manifold, while external funding/revenue claims "
             "still require pool-side accepted-share evidence."
+        ),
+        "unified_engine": (
+            "PYTHIA/PULVINI unifies ConsciousnessEngine, AIOptimizer, HENDRIX-Φ, "
+            "PULVINI compression, PhiScaling, and Stratum feedback in one tested loop."
         ),
         "phi_role": "first_class_operational_invariant",
         "memory_compression": "PULVINI memory compression and autonomic recovery remain required evidence surfaces.",
