@@ -130,9 +130,9 @@ Ready to execute:
 
 ```bash
 # 1. Inject production secrets (DO NOT USE EXAMPLES)
-export JWT_SECRET=[production-secret-from-vault]
-export HYBA_OPERATOR_CREDENTIALS=[production-argon2id-from-vault]
-export HYBA_POOL_BRAIINS_PASSWORD=[production-pool-password-from-vault]
+export JWT_SECRET=replace-with-32-byte-secret
+export HYBA_OPERATOR_CREDENTIALS=replace-with-argon2id-entry
+export HYBA_POOL_BRAIINS_PASSWORD=replace-with-pool-password
 
 # 2. Build production Docker images
 docker-compose -f docker-compose.production.yml build
