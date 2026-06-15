@@ -36,6 +36,8 @@
     "test:elevation:phi": "npm run python:env:check && cross-env PYTHONPATH=python_backend python -m pytest tests/test_phi_resonance_elevation_properties.py tests/test_phi_resonance_elevation_packet.py -q",
     "test:elevation:metal": "npm run python:env:check && cross-env PYTHONPATH=python_backend python -m pytest tests/test_apple_silicon_metal_gate.py -q",
     "test:elevation:runtime": "npm run python:env:check && cross-env PYTHONPATH=python_backend python -m pytest tests/test_runtime_elevation_trace_packet.py -q",
+    "test:post-quantum": "npm run python:env:check && cross-env PYTHONPATH=python_backend python -m pytest tests/test_post_quantum_benchmark.py -v --tb=short",
+    "benchmark:post-quantum": "npm run python:env:check && cross-env PYTHONPATH=python_backend python -m pytest tests/test_post_quantum_benchmark.py -v --tb=short -s",
     "elevation:millennium": "cross-env PYTHONPATH=python_backend python scripts/run_millennium_elevation_gate.py",
     "elevation:phi": "cross-env PYTHONPATH=python_backend python scripts/run_phi_resonance_elevation_gate.py",
     "elevation:metal": "cross-env PYTHONPATH=python_backend python scripts/apple_silicon_metal_gate.py",
