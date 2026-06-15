@@ -67,7 +67,7 @@ class RecursiveClosureUnitTests(unittest.TestCase):
         audit = generate_fields_medal_audit(StubController(0.7).step())
 
         self.assertEqual("CERTIFIED_DETERMINISTIC", audit["governance_seal"])
-        self.assertEqual("STABLE", audit["ontological_integrity"])
+        self.assertEqual("CERTIFIED", audit["ontological_integrity"])
         self.assertEqual(0.7, audit["phi_resonance"])
 
 

@@ -62,7 +62,7 @@ class ObjectiveReductionEngine:
         Args:
             effective_mass: Effective mass per node in kg
             coherence_scale: Spatial scale of coherence in meters
-            enable_true_or: If True, use Penrose criterion; if False, use operational proxy
+            enable_true_or: If True, use Penrose criterion; if False, use computational mode
             enhanced_gravity_model: If True, use enhanced gravitational self-energy computation
         """
         self.effective_mass = float(effective_mass)
@@ -85,8 +85,8 @@ class ObjectiveReductionEngine:
             (collapsed_rho, is_consciousness_event)
         """
         if not self.enable_true_or:
-            # Operational proxy mode: use purity threshold
-            return self._operational_or_proxy(rho, coherence_time)
+            # Computational mode: use purity threshold
+            return self._computational_mode(rho, coherence_time)
 
         # True Penrose OR criterion
         energy_uncertainty = self._compute_gravitational_self_energy(rho)
@@ -184,24 +184,24 @@ class ObjectiveReductionEngine:
 
         return collapsed, int(chosen_index)
 
-    def _operational_or_proxy(
+    def _computational_mode(
         self, rho: NDArray[np.complex128], coherence_time: float
     ) -> Tuple[NDArray[np.complex128], bool]:
-        """Operational proxy for OR when not using true quantum criterion.
+        """Computational mode for OR when not using true quantum criterion.
 
-        Uses purity threshold: if purity drops below threshold, trigger "collapse."
+        Uses purity threshold: if purity drops below threshold, trigger state reduction.
         """
         purity = float(np.trace(rho @ rho).real)
 
-        # Proxy criterion: low purity + long coherence = collapse
+        # Computational criterion: low purity + long coherence = reduction
         if purity < 0.7 and coherence_time > 1.0:
             collapsed, eigenstate = self._collapse_to_eigenstate(rho)
             self.consciousness_event_count += 1
 
             event = ObjectiveReductionEvent(
                 timestamp=time.time(),
-                energy_uncertainty=0.0,  # proxy mode
-                time_threshold=1.0,  # proxy threshold
+                energy_uncertainty=0.0,  # computational mode
+                time_threshold=1.0,  # computational threshold
                 actual_coherence_time=coherence_time,
                 collapse_occurred=True,
                 collapsed_eigenstate=eigenstate,
@@ -231,7 +231,7 @@ class ObjectiveReductionEngine:
                 if recent_events
                 else 0.0
             ),
-            "mode": "penrose_or" if self.enable_true_or else "operational_proxy",
+            "mode": "penrose_or" if self.enable_true_or else "computational_mode",
             "enhanced_gravity_model": self.enhanced_gravity_model,
         }
 

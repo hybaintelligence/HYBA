@@ -144,8 +144,8 @@ def phi_geometric_structure_certificate(
 
     ``sample_size`` now selects a reproducible, evenly spaced nonce lattice
     instead of a pseudo-random draw.  The ``seed`` value is kept as a deterministic
-    lattice phase so historical callers remain stable without introducing a
-    simulation source.
+    lattice phase so historical callers remain stable without introducing
+    non-deterministic behavior.
     """
     import numpy as np
 

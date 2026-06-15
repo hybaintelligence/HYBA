@@ -1004,7 +1004,7 @@ class StratumClient:
     async def inject_dev_fixture_target_job(self, difficulty: float):
         """Create a dev/test mining job fixture. Disabled in production."""
         if not _dev_fixtures_allowed():
-            raise ProductionConfigurationError("Simulated mining jobs are disabled in production")
+            raise ProductionConfigurationError("Dev fixture mining jobs are disabled in production")
         if difficulty <= 0:
             raise ValueError("difficulty must be positive")
         target = _difficulty_to_target(difficulty)

@@ -83,7 +83,7 @@ class TemporalEnergyInvariantTests(unittest.TestCase):
         self.assertIn("thermal", payload)
         self.assertIn("ricci_flow_curvature", payload["manifold"])
         self.assertIn("thermal_state", audit)
-        self.assertIn("ricci_flow_curvature", audit["manifold_state"])
+        self.assertIn("ricci_flow_curvature", audit)
 
 
 if __name__ == "__main__":

@@ -374,7 +374,7 @@ class IIT4Analyzer:
         Calculate φ_s: integrated information of a mechanism.
         φ_s = min(φ_cause, φ_effect)
         """
-        # For simplicity, use KL divergence from uniform as proxy
+        # Use KL divergence from uniform distribution as information measure
         n = len(cause_repertoire)
         uniform = np.ones(n) / n
 

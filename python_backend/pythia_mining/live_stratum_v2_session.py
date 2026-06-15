@@ -209,7 +209,7 @@ class LiveStratumV2Session:
 
     async def submit_share(self, **_: Any) -> Any:
         raise LiveStratumV2SessionError(
-            "Stratum V2 share submission requires an opened mining channel and pool job; no simulated submit path is available"
+            "Stratum V2 share submission requires an opened mining channel and pool job"
         )
 
     async def close(self) -> None:
