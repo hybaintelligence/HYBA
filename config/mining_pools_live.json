@@ -1,9 +1,15 @@
 {
-  "default_pool": "brains",
+  "default_pool": "ckpool",
   "pools": {
-    "brains": {
-      "name": "Brains Pool",
-      "url": "stratum+tcp://pool.brains.btc:3333",
+    "viabtc": {
+      "enabled": false
+    },
+    "braiins": {
+      "enabled": false
+    },
+    "ckpool": {
+      "name": "Solo CKPool",
+      "url": "stratum+tcp://solo.ckpool.org:3333",
       "stratum_version": 1,
       "btc_address": "bc1qsyva7t00e0cwqzts54u7ffys7l76pp8a02x8r9",
       "username": "",
@@ -11,20 +17,7 @@
       "worker": "hendrix_phi",
       "priority": 1,
       "enabled": true,
-      "is_default": true,
-      "description": "Brains mining pool - primary choice"
-    },
-    "ckpool": {
-      "name": "CKPool",
-      "url": "stratum+tcp://solo.ckpool.org:3333",
-      "stratum_version": 1,
-      "btc_address": "bc1qsyva7t00e0cwqzts54u7ffys7l76pp8a02x8r9",
-      "username": "",
-      "password": "x",
-      "worker": "hendrix_phi",
-      "priority": 2,
-      "enabled": true,
-      "description": "CKPool solo mining"
+      "description": "CKPool solo mining - primary"
     },
     "nicehash": {
       "name": "NiceHash",
@@ -34,31 +27,12 @@
       "password": "x",
       "worker": "hendrix_phi",
       "nicehash_pool_id": "NHbaCJGb1gM7MjgJ9QnnqbG2sLVW9w8hdPzK",
-      "priority": 3,
+      "priority": 2,
       "enabled": true,
-      "description": "NiceHash auto-trading SHA256"
+      "description": "NiceHash auto-trading SHA256 - backup"
     },
-    "slushpool": {
-      "name": "SlushPool",
-      "url": "stratum+tcp://stratum.slushpool.com:3333",
-      "stratum_version": 1,
-      "username": "slush_user",
-      "password": "x",
-      "worker": "hendrix_phi",
-      "priority": 4,
-      "enabled": false,
-      "description": "SlushPool - optional"
-    },
-    "hiveon": {
-      "name": "Hiveon Pool",
-      "url": "stratum+ssl://eth-us-w1.hiveon.com:443",
-      "stratum_version": 1,
-      "username": "hiveon_user",
-      "password": "x",
-      "worker": "hendrix_phi",
-      "priority": 5,
-      "enabled": false,
-      "description": "Hiveon pool - optional"
+    "stratumv2": {
+      "enabled": false
     }
   }
 }
