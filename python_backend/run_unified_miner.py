@@ -31,7 +31,11 @@ from typing import Any, List, Optional
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from pythia_mining.phi_unified_mining_engine import UnifiedMiningEngine
-from pythia_mining.pool_profiles import PoolCredentialConfig, load_runtime_pool_configs
+from pythia_mining.pool_profiles import (
+    PoolCredentialConfig,
+    PoolProfileError,
+    load_runtime_pool_configs,
+)
 from pythia_mining.stratum_client import MiningJob, ShareResult, StratumClient
 
 
@@ -75,12 +79,28 @@ class UnifiedMiner:
         os.environ["HYBA_POOL_CONFIG_PATH"] = self.pool_config_path
 
         configs = load_runtime_pool_configs()
-        self.pool_configs = [cfg for cfg in configs.values() if cfg.enabled]
+        valid_configs: list[PoolCredentialConfig] = []
+        skipped: list[str] = []
+        for cfg in configs.values():
+            if not cfg.enabled:
+                continue
+            try:
+                cfg.to_profile()
+            except PoolProfileError as exc:
+                skipped.append(f"{cfg.pool_id}: {exc}")
+                continue
+            valid_configs.append(cfg)
+
+        self.pool_configs = valid_configs
         if not self.pool_configs:
-            logger.error("No enabled pool configurations found")
+            logger.error("No enabled, valid pool configurations found")
+            if skipped:
+                logger.error("Skipped invalid pool profiles: %s", "; ".join(skipped))
             sys.exit(1)
 
-        logger.info("Loaded %s pool(s):", len(self.pool_configs))
+        logger.info("Loaded %s valid pool(s):", len(self.pool_configs))
+        if skipped:
+            logger.info("Skipped incomplete default pool profiles: %s", "; ".join(skipped))
         for i, cfg in enumerate(self.pool_configs):
             username = cfg.btc_address or cfg.username or cfg.worker or "(not set)"
             logger.info("  [%s] %-20s -> %-45s user: %s", i, cfg.name, cfg.url, username)
