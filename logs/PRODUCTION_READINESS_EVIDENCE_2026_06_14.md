@@ -130,7 +130,7 @@ Ready to execute:
 
 ```bash
 # 1. Inject production secrets (DO NOT USE EXAMPLES)
-export JWT_SECRET=[production-secret-from-vault]
+export JWT_SECRET=replace-with-production-secret
 export HYBA_OPERATOR_CREDENTIALS=[production-argon2id-from-vault]
 export HYBA_POOL_BRAIINS_PASSWORD=[production-pool-password-from-vault]
 

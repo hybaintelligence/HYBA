@@ -164,7 +164,10 @@ class PhiScaledEnsemble:
         for metrics in indicators.values():
             if not isinstance(metrics, Mapping) or not metrics:
                 continue
-            values = np.asarray([float(v) for v in metrics.values()], dtype=np.float64)
+            values = np.asarray(
+                [float(v) for v in metrics.values() if v is not None],
+                dtype=np.float64,
+            )
             values = values[np.isfinite(values)]
             if values.size <= 1:
                 continue
@@ -189,6 +192,8 @@ class PhiOptimizedFeatures:
                 continue
             domain_scores: list[PhiFeatureScore] = []
             for metric_name, value in metrics.items():
+                if value is None:
+                    continue
                 numeric = float(value)
                 phi_alignment = self._calculate_phi_alignment(numeric)
                 amplification = float(PHI ** ((phi_alignment * 2.0) - 1.0))

@@ -54,7 +54,7 @@ Create a `.env` file in the project root:
 
 ```bash
 # Required Security Variables
-JWT_SECRET=your-secure-jwt-secret-here
+JWT_SECRET=replace-with-your-production-secret
 HYBA_OPERATOR_CREDENTIALS=your-operator-credentials
 
 # Production Environment

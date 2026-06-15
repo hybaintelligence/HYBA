@@ -16,10 +16,13 @@ from hyba_genesis_api.core.reflexive_controller import ReflexiveController, defa
 router = APIRouter(prefix="/api/v1/intelligence", tags=["intelligence"])
 
 MEASURED_TELEMETRY_SOURCE = "measured_reflexive_controller_runtime"
+    "no fabricated, simulated, fixture, or synthetic telemetry."
+>>>>>>> Stashed changes
+)
 MEASURED_CLAIM_BOUNDARY = (
     "Measured reflexive codebase state from the current controller step; "
-<<<<<<< Updated upstream
-    "runtime values are derived from controller observations only."
+    "no fabricated, simulated, fixture, or synthetic telemetry."
+)
 =======
     "no fabricated, simulated, fixture, or synthetic telemetry."
 >>>>>>> Stashed changes

@@ -1,0 +1,28 @@
+{
+  "absolute_delta": null,
+  "apple_silicon_detected": false,
+  "claim_boundary": {
+    "not_supported": [
+      "Apple Silicon GPU acceleration",
+      "Metal-backed tensor execution",
+      "hardware speedup claim"
+    ],
+    "supported": "MLX/Metal acceleration is unavailable or not yet measured on this host."
+  },
+  "cpu_fallback_verified": false,
+  "cpu_result": null,
+  "elapsed_ms": null,
+  "forensic_sha256": "c84f45b3e8426434aa80e1133c77016bfbfcb416b8f3329825a3baf1d485ee79",
+  "generated_by": "python_backend.pythia_mining.apple_silicon_metal",
+  "gpu_result": null,
+  "matrix_size": 0,
+  "measurement_basis": "host is not Apple Silicon Darwin",
+  "metal_path_attempted": false,
+  "metal_path_verified": false,
+  "mlx_available": false,
+  "platform_machine": "AMD64",
+  "platform_system": "Windows",
+  "schema_version": "2026-06-15.apple-silicon-metal.v1",
+  "status": "failed",
+  "unified_memory_semantics": "not_measured"
+}

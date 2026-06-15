@@ -223,7 +223,7 @@ class UnifiedMiningEngine:
         self.state.phi_gradient_efficiency = 1.0284
         self.state.m32_domains_covered = len(M32)
         self.state.working_set_compression = float(
-            metrics.get("phi_compression_factor", 1.86)
+            metrics.get("phi_compression_factor") or 1.86
         )
         self.state.strategy_name = result.strategy_used
         self._sync_verifier_state()
