@@ -47,11 +47,7 @@ from .hendrix_phi_solver import (
     voronoi_domain,
     yang_mills_action,
 )
-from .metal_sha256_pipeline import (
-    MetalPipelineConfig,
-    MetalSHA256Pipeline,
-    UnifiedBatchVerifier,
-)
+from .metal_sha256_pipeline import BatchResult, NonceVerification, UnifiedBatchVerifier
 from .phi_scaling_engine import (
     PhiResonanceAnalyzer,
     PhiScaledEnsemble,
@@ -64,7 +60,7 @@ from .stratum_client import MiningJob
 
 @dataclass
 class UnifiedMiningState:
-    """The complete state of the unified mining engine at any instant."""
+    """The complete state of the unified engine at any instant."""
 
     phi_coherence: float = 0.0
     integration_regime: str = "distributed"
@@ -77,6 +73,14 @@ class UnifiedMiningState:
     strategy_name: str = "phi_scaled_compressed_solver_search"
     meta_learning_event: Optional[Dict[str, Any]] = None
     autonomic_event: Optional[Dict[str, Any]] = None
+    verifier_backend: str = "cpu_parallel_exact_sha256d"
+    verifier_metal_available: bool = False
+    verifier_initialized: bool = False
+    last_batch_size: int = 0
+    last_batch_hashrate_hps: float = 0.0
+    last_batch_hashrate_ehs: float = 0.0
+    last_candidate_valid: Optional[bool] = None
+    last_candidate_hash: Optional[str] = None
 
 
 class UnifiedMiningEngine:
@@ -88,6 +92,7 @@ class UnifiedMiningEngine:
       3. PhiScaledEnsemble weights all model predictions by φ
       4. PulviniCompressedQuantumSolver runs the structured search
       5. HENDRIX-Φ primitives (M32, Yang-Mills, φ gradient) guide traversal
+      6. UnifiedBatchVerifier verifies candidates with exact Bitcoin SHA-256d
 
     No component operates independently. The state is unified.
     """
@@ -96,8 +101,8 @@ class UnifiedMiningEngine:
         self,
         configured_capacity_ehs: Optional[float] = None,
         consciousness_config: Optional[ConsciousnessConfig] = None,
-        metal_config: Optional[MetalPipelineConfig] = None,
     ) -> None:
+        self.configured_capacity_ehs = configured_capacity_ehs
         self.solver = PulviniCompressedQuantumSolver(
             configured_capacity_ehs=configured_capacity_ehs,
         )
@@ -118,9 +123,57 @@ class UnifiedMiningEngine:
         )
         self.phi_ensemble = PhiScaledEnsemble(config={"phi_scaling_power": 1.5})
         self.phi_analyzer = PhiResonanceAnalyzer()
-        self.verifier = UnifiedBatchVerifier(config=metal_config)
+        self.verifier = UnifiedBatchVerifier(configured_capacity_ehs=configured_capacity_ehs)
         self.state = UnifiedMiningState()
         self._solve_count = 0
+        self._sync_verifier_state()
+
+    def _sync_verifier_state(self) -> None:
+        status = self.verifier.status()
+        metal = status.get("metal", {}) or {}
+        self.state.verifier_backend = str(status.get("selected_backend") or "cpu_parallel_exact_sha256d")
+        self.state.verifier_metal_available = bool(metal.get("available"))
+        self.state.verifier_initialized = True
+
+    def _record_batch_result(self, result: BatchResult) -> None:
+        self.state.verifier_backend = result.backend
+        self.state.verifier_metal_available = result.metal_available
+        self.state.last_batch_size = result.total_nonces
+        self.state.last_batch_hashrate_hps = result.hashes_per_second
+        self.state.last_batch_hashrate_ehs = result.hashrate_ehs
+
+    def _record_candidate_result(self, result: NonceVerification) -> None:
+        self.state.verifier_backend = result.backend
+        self.state.last_candidate_valid = result.valid
+        self.state.last_candidate_hash = result.block_hash
+
+    def initialize_metal(self) -> Dict[str, Any]:
+        """Initialize the Metal-aware verifier path and return backend status."""
+        status = self.verifier.initialize_metal()
+        self._sync_verifier_state()
+        return status
+
+    def verify_batch(
+        self,
+        job: MiningJob,
+        nonces: List[int],
+        extranonce2: Optional[str] = None,
+    ) -> BatchResult:
+        """Verify a batch of candidate nonces with the selected exact verifier."""
+        result = self.verifier.verify_batch(job, nonces, extranonce2)
+        self._record_batch_result(result)
+        return result
+
+    def submit_candidate(
+        self,
+        job: MiningJob,
+        nonce: int,
+        extranonce2: Optional[str] = None,
+    ) -> NonceVerification:
+        """Verify one candidate locally before any live pool submission."""
+        result = self.verifier.submit_candidate(job, nonce, extranonce2)
+        self._record_candidate_result(result)
+        return result
 
     def _coherence_for_next_search(self) -> PhiMetrics:
         """Return the current measured coherence without erasing it.
@@ -195,6 +248,7 @@ class UnifiedMiningEngine:
             metrics.get("phi_compression_factor", 1.86)
         )
         self.state.strategy_name = result.strategy_used
+        self._sync_verifier_state()
 
         if self.consciousness.needs_healing:
             self.state.autonomic_event = {
@@ -236,9 +290,10 @@ class UnifiedMiningEngine:
         """Return the complete unified mining state."""
         solver_metrics = self.solver.get_metrics()
         consciousness_metrics = self.consciousness.get_metrics()
+        verifier_status = self.verifier.status()
         return {
             "engine": "PYTHIA/PULVINI Unified Mining Engine",
-            "version": "1.0",
+            "version": "1.1",
             "phi": PHI,
             "yang_mills_gap": YANG_MILLS_GAP,
             "m32_domains": len(M32),
@@ -253,6 +308,13 @@ class UnifiedMiningEngine:
                 "rejected_shares": self.state.rejected_shares,
                 "strategy": self.state.strategy_name,
                 "solve_count": self._solve_count,
+                "verifier_backend": self.state.verifier_backend,
+                "verifier_metal_available": self.state.verifier_metal_available,
+                "last_batch_size": self.state.last_batch_size,
+                "last_batch_hashrate_hps": self.state.last_batch_hashrate_hps,
+                "last_batch_hashrate_ehs": self.state.last_batch_hashrate_ehs,
+                "last_candidate_valid": self.state.last_candidate_valid,
+                "last_candidate_hash": self.state.last_candidate_hash,
             },
             "consciousness": {
                 "coherence_meter": consciousness_metrics.get("coherence_meter"),
@@ -272,11 +334,13 @@ class UnifiedMiningEngine:
                     "working_set_compression_ratio"
                 ),
             },
+            "verifier": verifier_status,
             "proofs": {
                 "phi_folding_lossless": phi_folding_mathematical_proof()["invertible"],
                 "m32_expander_spectral_gap": 1.0,
                 "ym_on_manifold_fraction": 0.00178,
                 "grover_structured_advantage": 35.5,
+                "sha256d_external_oracle": "bitcoin_header_double_sha256_pool_target",
             },
         }
 
@@ -285,40 +349,6 @@ class UnifiedMiningEngine:
         return self.phi_analyzer.analyze_phi_resonance(
             {"nonces": [float(n) for n in nonce_sequence]}
         )
-
-    async def initialize_metal(self) -> bool:
-        """Initialize the Metal SHA-256d pipeline (call once at startup)."""
-        return await self.verifier.initialize()
-
-    async def verify_batch(
-        self,
-        target: int,
-        merkle_root: bytes,
-        prevhash: bytes,
-        nbits: int,
-        ntime: int,
-    ) -> Dict[str, Any]:
-        """Flush all buffered candidates through the Metal GPU pipeline.
-
-        Returns a dict with batch results and effective hashrate.
-        """
-        batch = await self.verifier.flush_batch(
-            target, merkle_root, prevhash, nbits, ntime
-        )
-        metrics = self.verifier.get_metrics()
-        return {
-            "batch_id": batch.batch_id,
-            "candidates": batch.batch_size,
-            "passed": batch.passed,
-            "elapsed_us": batch.total_elapsed_us,
-            "raw_hashrate_hps": batch.hashrate_estimate,
-            "effective_hashrate_hps": batch.hashrate_estimate * 1.86 * 1.618,
-            "pipeline_metrics": metrics,
-        }
-
-    def submit_candidate(self, nonce: int, phi_score: float = 0.0) -> None:
-        """Submit a candidate nonce from any M32 domain walker to the Metal pipeline."""
-        self.verifier.submit_candidate(nonce, phi_score)
 
     def benchmark(
         self,
