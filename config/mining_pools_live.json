@@ -1,0 +1,23 @@
+{
+  "pools": {
+    "ckpool": {
+      "url": "stratum+tcp://solo.ckpool.org:3333",
+      "stratum_version": 1,
+      "btc_address": "bc1qsyva7t00e0cwqzts54u7ffys7l76pp8a02x8r9",
+      "username": "",
+      "password": "x",
+      "priority": 10,
+      "enabled": true
+    },
+    "nicehash": {
+      "url": "stratum+ssl://sha256.auto.nicehash.com:443",
+      "stratum_version": 1,
+      "username": "NHbaCJGb1gM7MjgJ9QnnqbG2sLVW9w8hdPzK",
+      "password": "x",
+      "worker": "hendrix_phi",
+      "nicehash_pool_id": "NHbaCJGb1gM7MjgJ9QnnqbG2sLVW9w8hdPzK",
+      "priority": 20,
+      "enabled": true
+    }
+  }
+}

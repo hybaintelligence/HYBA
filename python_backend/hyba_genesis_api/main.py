@@ -25,6 +25,7 @@ from fastapi.middleware.cors import CORSMiddleware  # noqa: E402
 
 from hyba_genesis_api.api import (  # noqa: E402
     ai,
+    ai_memory,
     auth,
     health,
     intelligence,
@@ -34,6 +35,7 @@ from hyba_genesis_api.api import (  # noqa: E402
     misc,
     products,
     security,
+    unified_mining,
 )
 from hyba_genesis_api.core.recursive_closure import build_buffered_closure  # noqa: E402
 from hyba_genesis_api.core.reflexive_controller import (  # noqa: E402
@@ -117,6 +119,8 @@ app.include_router(misc.router)
 app.include_router(ai.router)
 app.include_router(auth.router)
 app.include_router(products.router)
+app.include_router(unified_mining.router)
+app.include_router(ai_memory.router)
 
 
 @app.get("/health", response_model=Dict[str, Any], tags=["health"])
