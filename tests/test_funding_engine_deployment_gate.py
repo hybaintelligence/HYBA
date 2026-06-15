@@ -17,8 +17,7 @@ from funding_engine_deployment_gate import (  # noqa: E402
 )
 
 
-def _write_phi_artifacts(base: Path) -> None:
-    base.mkdir(parents=True, exist_ok=True)
+def _write_phi_csv(base: Path) -> None:
     rows = [
         {
             "height": "1",
@@ -57,6 +56,11 @@ def _write_phi_artifacts(base: Path) -> None:
         writer = csv.DictWriter(handle, fieldnames=list(rows[0].keys()))
         writer.writeheader()
         writer.writerows(rows)
+
+
+def _write_phi_artifacts(base: Path) -> None:
+    base.mkdir(parents=True, exist_ok=True)
+    _write_phi_csv(base)
     (base / "phi_resonance_summary.json").write_text(
         json.dumps(
             {
@@ -71,12 +75,40 @@ def _write_phi_artifacts(base: Path) -> None:
     )
 
 
+def _write_phi15_artifacts(base: Path) -> None:
+    base.mkdir(parents=True, exist_ok=True)
+    _write_phi_csv(base)
+    (base / "phi_resonance_summary.json").write_text(
+        json.dumps(
+            {
+                "summary": {
+                    "z_score_vs_random": 8.164966,
+                    "p_value_binomial": "3.73e-16",
+                    "phi_resonance_rate": 0.91666667,
+                    "total_blocks": 2,
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
+
+
 def test_phi_resonance_artifact_gate_passes(tmp_path: Path) -> None:
     phi_dir = tmp_path / "phi"
     _write_phi_artifacts(phi_dir)
     result = check_phi_resonance_artifacts(phi_dir)
     assert result.status == "passed"
-    assert result.details["resonance_above_05_count"] == 1
+    assert result.details["computed_resonance_above_05_count"] == 1
+
+
+def test_phi_resonance_artifact_gate_accepts_current_phi15_summary_schema(tmp_path: Path) -> None:
+    phi_dir = tmp_path / "phi15"
+    _write_phi15_artifacts(phi_dir)
+    result = check_phi_resonance_artifacts(phi_dir)
+    assert result.status == "passed"
+    assert result.details["z_score"] == 8.164966
+    assert result.details["reported_resonance_rate"] == 0.91666667
+    assert result.details["computed_resonance_above_05_count"] == 1
 
 
 def test_phi_resonance_artifact_gate_fails_on_missing_fields(tmp_path: Path) -> None:
