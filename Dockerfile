@@ -1,9 +1,9 @@
 FROM node:22.15.0-bookworm-slim AS node-deps
 WORKDIR /app
 COPY package.json package-lock.json* ./
-# Use npm install (not ci) to resolve complete dependency tree including dev dependencies
-# This ensures npm ci --omit=dev in runtime stage can find all transitive dev deps
-RUN npm install --legacy-peer-deps
+# Tactical local-container build mode: use npm install while the monorepo lockfile is being repaired.
+# Final reproducible production posture should restore npm ci once package-lock.json is regenerated under Node 22+ outside OneDrive.
+RUN npm install --legacy-peer-deps --no-audit --no-fund
 
 FROM node:22.15.0-bookworm-slim AS frontend-build
 WORKDIR /app
@@ -40,7 +40,7 @@ RUN python3 -m venv /opt/hyba-venv \
 ENV PATH="/opt/hyba-venv/bin:${PATH}"
 
 COPY package.json package-lock.json* ./
-RUN npm ci --omit=dev
+RUN npm install --omit=dev --legacy-peer-deps --no-audit --no-fund
 
 COPY --from=frontend-build /app/dist ./dist
 COPY python_backend ./python_backend
