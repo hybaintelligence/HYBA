@@ -1,5 +1,11 @@
 #!/usr/bin/env python3
-"""Validate HYBA_FULLSTACK production environment before deployment."""
+"""Validate HYBA_FULLSTACK production environment before deployment.
+
+Bitcoin/Stratum pool profile values are open-network launch configuration, not
+application secrets. The validator therefore separates private HYBA operator
+credentials from pool routing/auth parameters such as worker names, payout
+addresses, pool ids, and the conventional Stratum password value ``x``.
+"""
 
 from __future__ import annotations
 
@@ -23,12 +29,15 @@ STRATUM_V1_SCHEMES = {"stratum+ssl", "stratum+tls", "stratum+tcp"}
 STRATUM_V2_SCHEMES = {"stratum2+ssl", "stratum2+tls", "stratum2+tcp"}
 PULVINI_HASHRATE_CAP_EHS = 1.0
 
+# Pool auth parameters are not treated as private HYBA secrets. They are still
+# validated because the runtime needs an unambiguous launch profile. Use "x"
+# for pools that do not require a meaningful Stratum password.
 POOL_REQUIREMENTS = {
-    "VIABTC": {"username": "USERNAME", "secret": "PASSWORD", "version": 1},
-    "BRAIINS": {"username": "USERNAME", "secret": "PASSWORD", "version": 2},
-    "CKPOOL": {"username": "BTC_ADDRESS", "secret": None, "version": 1},
-    "NICEHASH": {"username": "WORKER", "secret": "NICEHASH_POOL_ID", "version": 1},
-    "STRATUMV2": {"username": "USERNAME", "secret": "PASSWORD", "version": 2},
+    "VIABTC": {"identity": "USERNAME", "auth": "PASSWORD", "version": 1},
+    "BRAIINS": {"identity": "USERNAME", "auth": "PASSWORD", "version": 2},
+    "CKPOOL": {"identity": "BTC_ADDRESS", "auth": None, "version": 1},
+    "NICEHASH": {"identity": "WORKER", "auth": "NICEHASH_POOL_ID", "version": 1},
+    "STRATUMV2": {"identity": "USERNAME", "auth": "PASSWORD", "version": 2},
 }
 
 
@@ -124,23 +133,20 @@ def _is_pool_configured(pool_id: str) -> bool:
 
 def _pool_identity(pool_id: str) -> tuple[str, str | None]:
     req = POOL_REQUIREMENTS[pool_id]
-    username_field = str(req["username"])
-    if pool_id == "NICEHASH":
-        return username_field, _env(pool_id, "WORKER")
-    return username_field, _env(pool_id, username_field)
+    identity_field = str(req["identity"])
+    return identity_field, _env(pool_id, identity_field)
 
 
-def _pool_secret(pool_id: str) -> tuple[str | None, str | None]:
+def _pool_auth(pool_id: str) -> tuple[str | None, str | None]:
     req = POOL_REQUIREMENTS[pool_id]
-    secret_field = req["secret"]
-    if secret_field is None:
+    auth_field = req["auth"]
+    if auth_field is None:
         return None, None
     if pool_id == "NICEHASH":
         # Runtime accepts NH_POOL_ID or NICEHASH_POOL_ID for the pool identifier;
-        # password defaults to x internally, but live deployments still need an
-        # explicit pool identifier to avoid ambiguous share routing.
+        # this is an open-network routing value, not a HYBA application secret.
         return "NICEHASH_POOL_ID", _env(pool_id, "NICEHASH_POOL_ID") or _env(pool_id, "NH_POOL_ID")
-    return str(secret_field), _env(pool_id, str(secret_field))
+    return str(auth_field), _env(pool_id, str(auth_field))
 
 
 def _validate_pool_config(errors: list[str]) -> None:
@@ -152,13 +158,13 @@ def _validate_pool_config(errors: list[str]) -> None:
         if _is_placeholder(url):
             errors.append(f"HYBA_POOL_{pool_id}_URL is required when configuring {pool_id}")
             continue
-        username_field, username = _pool_identity(pool_id)
-        secret_field, secret = _pool_secret(pool_id)
+        identity_field, identity = _pool_identity(pool_id)
+        auth_field, auth = _pool_auth(pool_id)
         missing = []
-        if _is_placeholder(username):
-            missing.append(username_field)
-        if secret_field is not None and _is_placeholder(secret):
-            missing.append(secret_field)
+        if _is_placeholder(identity):
+            missing.append(identity_field)
+        if auth_field is not None and _is_placeholder(auth):
+            missing.append(auth_field)
         if missing:
             errors.append(
                 f"HYBA_POOL_{pool_id}_* is partially configured or contains placeholders: missing/invalid {', '.join(missing)}"
@@ -174,7 +180,7 @@ def _validate_pool_config(errors: list[str]) -> None:
         configured.append(pool_id)
     if not configured:
         errors.append(
-            "At least one HYBA_POOL_<ID>_* credential set is required before live mining deployment"
+            "At least one HYBA_POOL_<ID>_* open-network pool profile is required before live mining deployment"
         )
 
 
