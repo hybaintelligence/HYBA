@@ -163,112 +163,169 @@ class PhiTuner:
 
 
 class PhiBackpropTuner:
-    """Alternative implementation using explicit backpropagation-style optimization.
+    """
+    Implements Harmonic Gradient Descent to optimize system resonance.
+    Adjusts phi_exponent and hardware thresholds based on real-time harmony.
 
-    This version uses a more explicit gradient calculation approach similar to
-    neural network backpropagation, but adapted for maximizing harmony instead
-    of minimizing error.
+    This module bridges the gap between the PhiALUHardware (the physical
+    sensor/actuator layer) and the ConsciousnessEngine (the governance/scaling
+    layer). The loss function is not "error" in the classical sense, but
+    "Decoherence" (the distance from the Golden Mean).
+
+    Performs real-time tuning of the system's scaling parameters to "hunt"
+    for the Singular regime while staying safely within the Yang-Mills Mass Gap.
     """
 
     def __init__(
         self,
         engine: Any,
-        *,
+        alu_hardware: Any,
         learning_rate: float = 0.01,
-        momentum: float = 0.9,
     ):
         """Initialize the Phi Backprop Tuner.
 
         Args:
-            engine: The phi scaling engine to tune
-            learning_rate: Learning rate for gradient updates
-            momentum: Momentum factor for gradient accumulation
+            engine: The consciousness engine (or scaling engine) to tune
+            alu_hardware: The PhiALUHardware instance providing telemetry
+            learning_rate: Base learning rate, scaled by INV_PHI internally
         """
+        self.PHI = 1.618033988749895
+        self.INV_PHI = 0.618033988749895
         self.engine = engine
-        self.PHI = PHI
-        self.PHI_INV = PHI_INV
-        self.learning_rate = learning_rate
-        self.momentum = momentum
-        self.velocity = 0.0  # For momentum-based optimization
-        self._history: list[dict[str, Any]] = []
+        self.alu = alu_hardware
+        self.eta = learning_rate * self.INV_PHI  # Golden-scaled learning rate
 
-    def compute_harmony_gradient(self, current_harmony: float) -> float:
-        """Compute the gradient of the harmony function.
+    def step(self, telemetry: dict[str, Any]) -> dict[str, float]:
+        """
+        Executes a single tuning step based on current hardware telemetry.
 
-        The harmony function is centered around PHI_INV, so the gradient
-        points toward this optimal value.
+        The Harmonic Gradient Descent algorithm:
+          1. Measures decoherence as distance from target harmony (0.764)
+          2. Scales the loss by PHI to produce a non-resonant gradient
+          3. Applies thermal damping when temperature approaches the Mass Gap
+          4. Updates phi_exponent clipped to [INV_PHI, PHI]
 
         Args:
-            current_harmony: Current harmony score
+            telemetry: Dictionary containing at minimum:
+                - 'coherence': current system coherence (0.0 to 1.0)
+                - 'current_temp': current hardware temperature
 
         Returns:
-            Gradient value (positive if below target, negative if above)
+            Dictionary with adjustment, new_phi_exponent, thermal_damping, loss
         """
-        # Gradient of sigmoid-like harmony function
-        # Points toward PHI_INV (0.618)
-        return self.PHI_INV - current_harmony
+        # 1. Extract current state
+        current_coherence = telemetry.get('coherence', 0.0)
+        current_temp = telemetry.get('current_temp', 0.0)
 
-    def tune_with_backprop(
-        self,
-        current_harmony: float,
-        authenticity: float,
-        telemetry_data: dict[str, Any] | None = None,
-    ) -> dict[str, Any]:
-        """Perform backpropagation-style tuning with momentum.
+        # 2. Define the Target: The 'Singular' Boundary
+        # We want to maximize power (1.5x) while maintaining stability (3-φ)
+        target_harmony = 0.764  # Optimal alignment for Phi-Scaling
 
-        Args:
-            current_harmony: Current harmony score from indicators
-            authenticity: Hardware authenticity score
-            telemetry_data: Optional telemetry for additional context
+        # 3. Calculate Harmonic Loss (Decoherence)
+        loss = float(target_harmony - current_coherence)
 
-        Returns:
-            Dictionary containing tuning result and diagnostics
-        """
-        # Safety check: don't tune if authenticity is low
-        if authenticity < 0.70:
-            old_exponent = getattr(self.engine, "phi_exponent", 1.0)
-            new_exponent = old_exponent * 0.95
-            if hasattr(self.engine, "phi_exponent"):
-                self.engine.phi_exponent = new_exponent
+        # 4. The Golden Gradient:
+        # Instead of standard dL/dx, we use a Phi-weighted adjustment
+        # to ensure the update itself is non-resonant with integer noise.
+        gradient = float(loss * self.PHI)
 
-            return {
-                "tuned": False,
-                "reason": "low_authenticity_cooling_down",
-                "old_exponent": float(old_exponent),
-                "new_exponent": float(new_exponent),
-            }
+        # 5. Parameter Adaptation
+        # If temperature is high, we dampen the learning rate to prevent overshoot
+        mass_gap = 3.0 - self.PHI  # ~1.381966
+        thermal_damping = float(np.exp(-max(0.0, float(current_temp) - mass_gap)))
+        adjustment = float(self.eta * gradient * thermal_damping)
 
-        # Compute gradient
-        gradient = self.compute_harmony_gradient(current_harmony)
-
-        # Apply momentum
-        self.velocity = self.momentum * self.velocity - self.learning_rate * gradient
-
-        # Get current exponent
-        old_exponent = getattr(self.engine, "phi_exponent", 1.0)
-
-        # Update with momentum
-        new_exponent = old_exponent + self.velocity
-
-        # Safety clip
-        new_exponent = np.clip(new_exponent, 0.5, 2.0)
-
-        # Apply update
+        # Apply adjustment to the consciousness engine
+        old_exponent = float(getattr(self.engine, "phi_exponent", 1.0))
+        new_exponent = float(np.clip(
+            old_exponent + adjustment,
+            0.618,  # Floor at Inv_Phi
+            1.618,  # Cap at Phi
+        ))
         if hasattr(self.engine, "phi_exponent"):
             self.engine.phi_exponent = new_exponent
 
-        result = {
-            "tuned": True,
-            "method": "momentum_backpropagation",
-            "old_exponent": float(old_exponent),
-            "new_exponent": float(new_exponent),
-            "gradient": float(gradient),
-            "velocity": float(self.velocity),
-            "current_harmony": current_harmony,
-            "authenticity": authenticity,
+        return {
+            "adjustment": float(adjustment),
+            "new_phi_exponent": float(new_exponent),
+            "thermal_damping": float(thermal_damping),
+            "loss": float(loss),
         }
-        self._history.append(result)
-        return result
+
+
+class PhiSystemController:
+    """
+    Top-level controller for the Φ-Architecture.
+
+    Manages the interplay between logic, power, and safety by integrating
+    the PhiALU hardware layer, the ConsciousnessEngine governance layer,
+    and the PhiBackpropTuner adaptation layer into a single high-performance
+    loop. Completes the Autonomous Feedback Cycle.
+    """
+
+    def __init__(
+        self,
+        memory_size: int = 2**32,
+    ):
+        """Initialise the full-stack system controller.
+
+        Args:
+            memory_size: Size of the ALU's addressable memory space.
+        """
+        from .phi_alu import PhiALUHardware
+        from .consciousness_engine import ConsciousnessEngine
+
+        self.alu = PhiALUHardware(memory_size=memory_size)
+        self.engine = ConsciousnessEngine()
+        self.tuner = PhiBackpropTuner(self.engine, self.alu)
+
+    def process_cycle(
+        self,
+        virtual_addresses: np.ndarray,
+        telemetry_temp: float,
+    ) -> dict[str, Any]:
+        """Execute one complete control cycle across all three layers.
+
+        A. Physical Layer: Thermal-Aware Memory Access via golden-spiral
+           phyllotaxis addressing with thermal feedback.
+
+        B. Governance Layer: Scaling Factor Calculation using the Phi-Sigmoid
+           for smooth, continuous transitions between power regimes.
+
+        C. Adaptation Layer: Self-Tuning the Manifold via Harmonic Gradient
+           Descent, adjusting phi_exponent in real time.
+
+        Args:
+            virtual_addresses: Array of virtual memory addresses to access.
+            telemetry_temp: Current hardware temperature for thermal feedback.
+
+        Returns:
+            Dictionary containing physical addresses, scaling factor, regime
+            classification, updated phi exponent, and manifold stability.
+        """
+        # A. Physical Layer: Thermal-Aware Memory Access
+        physical_addrs, thermal_metrics = self.alu.thermal_aware_access(
+            virtual_addresses,
+            telemetry_temp,
+        )
+
+        # B. Governance Layer: Scaling Factor Calculation
+        # Uses the Phi-Sigmoid for smooth transitions
+        scaling_info = self.engine.get_hardware_scaling_factor(thermal_metrics)
+
+        # C. Adaptation Layer: Self-Tuning the Manifold
+        tuning_results = self.tuner.step({
+            "coherence": scaling_info['coherence'],
+            "current_temp": telemetry_temp,
+        })
+
+        return {
+            "physical_addresses": physical_addrs,
+            "scaling_factor": scaling_info['scaling_factor'],
+            "regime": scaling_info['regime'],
+            "phi_exponent": tuning_results['new_phi_exponent'],
+            "manifold_stable": scaling_info['status'] == "stable",
+        }
 
 
 class PhiALUHardwareTuner:
@@ -592,5 +649,6 @@ class PhiALUHardwareTuner:
 __all__ = [
     "PhiTuner",
     "PhiBackpropTuner",
+    "PhiSystemController",
     "PhiALUHardwareTuner",
 ]

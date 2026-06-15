@@ -275,7 +275,12 @@ class PhiNonceGenerator:
         
         # Consciousness integration score
         if self.consciousness:
-            consciousness_score = self.consciousness.get_integration_level()
+            # Use available method from GenesisAI
+            try:
+                metrics = self.consciousness.get_consciousness_metrics()
+                consciousness_score = metrics.get("integration_level", 0.5)
+            except (AttributeError, KeyError):
+                consciousness_score = 0.5
         else:
             consciousness_score = 0.5  # Default neutral
         

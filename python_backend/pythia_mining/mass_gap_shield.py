@@ -13,6 +13,7 @@ from dataclasses import dataclass
 import time
 
 PHI = 1.618033988749895
+INV_PHI = 0.618033988749895
 MASS_GAP_LIMIT = 3.0 - PHI  # 1.381966011250105
 
 @dataclass
