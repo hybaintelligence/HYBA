@@ -24,7 +24,7 @@ EXCLUDED_PARTS = {
 
 # Runtime code may use words like "fallback" for operational degradation, so this
 # list focuses on high-risk literal values and phrases that previously represented
-# fabricated mining, valuation, or AI telemetry.
+# fabricated mining, valuation, AI telemetry, or fake semantic audit labels.
 BANNED_PATTERNS = [
     (re.compile(r"\b12345678\b"), "fixed optimizer nonce"),
     (re.compile(r"\b1234\b"), "fixed share count"),
@@ -48,6 +48,10 @@ BANNED_PATTERNS = [
         re.compile(r"inject_simulated_target_job\("),
         "runtime simulated mining job injection",
     ),
+    (re.compile(r"Simulated Coherence", re.IGNORECASE), "simulated semantic audit label"),
+    (re.compile(r"simulated\s+(?:coherence|telemetry|state|audit)", re.IGNORECASE), "simulated semantic audit label"),
+    (re.compile(r"fixture\s+(?:telemetry|state|audit)", re.IGNORECASE), "fixture semantic audit label"),
+    (re.compile(r"placeholder\s+(?:telemetry|state|audit)", re.IGNORECASE), "placeholder semantic audit label"),
     (re.compile(r"nonce\s*%\s*67"), "fake share acceptance rule"),
     (re.compile(r"Mock save logic", re.IGNORECASE), "mock credential save"),
     (re.compile(r"demoState", re.IGNORECASE), "frontend demo state payload"),
