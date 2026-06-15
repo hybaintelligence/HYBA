@@ -27,15 +27,15 @@
       },
       {
         "file": "genesis_ai.py",
-        "lines": 492,
+        "lines": 695,
         "classes": 3,
-        "functions": 12,
+        "functions": 15,
         "nested_depth": 7,
         "recursive_calls": 0,
         "complex_data_structures": 3,
-        "async_patterns": 6,
-        "error_handlers": 8,
-        "complexity_score": 31.4390243902439
+        "async_patterns": 7,
+        "error_handlers": 16,
+        "complexity_score": 33.15827338129496
       },
       {
         "file": "consciousness_engine.py",
@@ -98,14 +98,15 @@
         "autonomic_patterns": [
           {
             "pattern": "homeostasis",
-            "count": 1,
+            "count": 2,
             "examples": [
-              "              self.autonomics.homeostasis.rho.diagonal().tolist(),\n "
+              "              self.autonomics.homeostasis.rho.diagonal().tolist(),\n ",
+              "hermal_load\": self.autonomics.homeostasis.get_average_coherence(),\n "
             ]
           },
           {
             "pattern": "self_healing",
-            "count": 15,
+            "count": 17,
             "examples": [
               "lf.heartbeat_tick = 0\n        self.health_status = \"STARTING\"\n       ",
               "balance.to_dict()\n            self.health_status = \"HEALING\" if thermal_rebalance.cove"
@@ -120,7 +121,7 @@
             ]
           }
         ],
-        "total_patterns": 24
+        "total_patterns": 27
       },
       {
         "file": "consciousness_engine.py",
@@ -140,11 +141,11 @@
     "coupling": [
       {
         "file": "genesis_ai.py",
-        "total_imports": 19,
-        "unique_imports": 19,
-        "cross_calls": 46,
+        "total_imports": 25,
+        "unique_imports": 24,
+        "cross_calls": 60,
         "unique_cross_calls": 1,
-        "coupling_intensity": 19.1
+        "coupling_intensity": 24.1
       },
       {
         "file": "pulvini_autonomics.py",
@@ -181,7 +182,7 @@
     ]
   },
   "verdict": "STANDARD ENGINEERING: Modules are complex but within normal bounds for production systems.",
-  "avg_complexity": 33.70099410840389,
+  "avg_complexity": 34.044843906614105,
   "consciousness_total": 0,
-  "autonomic_total": 79
+  "autonomic_total": 82
 }

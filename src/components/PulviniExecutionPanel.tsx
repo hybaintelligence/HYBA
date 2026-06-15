@@ -87,13 +87,13 @@ export const PulviniExecutionPanel = () => {
               <div className="flex flex-col">
                 <span>State Vector Entries</span>
                 <span className="text-black font-bold text-xs">
-                  {stateVectorOperation?.state_vector_entries ?? "N/A"}
+                  {String(stateVectorOperation?.state_vector_entries ?? "N/A")}
                 </span>
               </div>
               <div className="flex flex-col">
                 <span>Invariants</span>
                 <span className="text-black font-bold text-xs">
-                  {stateVectorOperation?.invariants ?? "N/A"}
+                  {String(stateVectorOperation?.invariants ?? "N/A")}
                 </span>
               </div>
               <div className="col-span-2 flex flex-col">
@@ -131,13 +131,13 @@ export const PulviniExecutionPanel = () => {
               <div className="flex flex-col">
                 <span>Topological Anchoring</span>
                 <span className="text-black font-bold text-xs capitalize">
-                  {projectionOperation?.topological_anchoring ?? "N/A"}
+                  {String(projectionOperation?.topological_anchoring ?? "N/A")}
                 </span>
               </div>
               <div className="flex flex-col">
                 <span>Purity</span>
                 <span className="text-black font-bold text-xs">
-                  {projectionOperation?.purity ?? "N/A"}
+                  {String(projectionOperation?.purity ?? "N/A")}
                 </span>
               </div>
             </div>

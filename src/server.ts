@@ -365,7 +365,7 @@ async function proxyToBackend(req: Request, res: Response): Promise<void> {
     for (const [key, value] of Object.entries(req.headers)) {
       if (value === undefined) continue;
       if (["host", "content-length", "connection"].includes(key.toLowerCase())) continue;
-      headers.set(key, Array.isArray(value) ? value.join(",") : value);
+      headers.set(key, Array.isArray(value) ? value.join(",") : String(value));
     }
     headers.set("x-request-id", requestId);
 
@@ -373,7 +373,7 @@ async function proxyToBackend(req: Request, res: Response): Promise<void> {
     const response = await fetch(target, {
       method,
       headers,
-      body: bodyBuffer,
+      body: bodyBuffer as BodyInit | null,
       signal: controller.signal,
     });
 
@@ -543,7 +543,7 @@ async function startServer(): Promise<void> {
   if (CONFIG.isProduction) {
     const jwtValidation = validateProductionJwtSecret(CONFIG.jwtSecret);
     if (!jwtValidation.ok) {
-      logger.fatal({ reason: jwtValidation.reason }, "Invalid production JWT_SECRET");
+      logger.fatal({ reason: (jwtValidation as { ok: false; reason: string }).reason }, "Invalid production JWT_SECRET");
       process.exit(1);
     }
   }

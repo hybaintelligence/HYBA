@@ -1,23 +1,1631 @@
 {
   "measurements": {
+    "feedback_loops": {
+      "total": 953,
+      "files": 81,
+      "top_files": [
+        {
+          "file": "mining.py",
+          "feedback_loops": [
+            {
+              "type": "state_feedback",
+              "variables": [
+                "value"
+              ],
+              "line": 114
+            },
+            {
+              "type": "state_feedback",
+              "variables": [
+                "value"
+              ],
+              "line": 127
+            },
+            {
+              "type": "state_feedback",
+              "variables": [
+                "config"
+              ],
+              "line": 418
+            },
+            {
+              "type": "state_feedback",
+              "variables": [
+                "detail"
+              ],
+              "line": 336
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\.append\\(",
+              "line": 572
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\.update\\(",
+              "line": 554
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 45
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 137
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 138
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 139
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 140
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 141
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 142
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 168
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 371
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 372
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 373
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 443
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 451
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 452
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 608
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 687
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 688
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 689
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 690
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 691
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 692
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 693
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 694
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 695
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 696
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 755
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 766
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 872
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 873
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 874
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 875
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 876
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 881
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 882
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 887
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 912
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 978
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 986
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 1001
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 1007
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 1012
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 1020
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 1029
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 1031
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 1039
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 1061
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 1062
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 1063
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 1164
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 1210
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 1211
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 1212
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 1213
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 1214
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 1215
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 1216
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 1223
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 1224
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 1225
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 1226
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 1227
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\+=",
+              "line": 812
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\+=",
+              "line": 823
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\+=",
+              "line": 846
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\+=",
+              "line": 850
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\+=",
+              "line": 854
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\+=",
+              "line": 860
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\+=",
+              "line": 866
+            }
+          ],
+          "count": 74
+        },
+        {
+          "file": "pulvini_autonomics.py",
+          "feedback_loops": [
+            {
+              "type": "state_feedback",
+              "variables": [
+                "self.rho"
+              ],
+              "line": 287
+            },
+            {
+              "type": "state_feedback",
+              "variables": [
+                "eigenvalues"
+              ],
+              "line": 296
+            },
+            {
+              "type": "state_feedback",
+              "variables": [
+                "eigenvalues_safe"
+              ],
+              "line": 304
+            },
+            {
+              "type": "state_feedback",
+              "variables": [
+                "eigenvectors"
+              ],
+              "line": 306
+            },
+            {
+              "type": "state_feedback",
+              "variables": [
+                "values"
+              ],
+              "line": 325
+            },
+            {
+              "type": "state_feedback",
+              "variables": [
+                "after"
+              ],
+              "line": 501
+            },
+            {
+              "type": "state_feedback",
+              "variables": [
+                "norm"
+              ],
+              "line": 535
+            },
+            {
+              "type": "state_feedback",
+              "variables": [
+                "values"
+              ],
+              "line": 559
+            },
+            {
+              "type": "state_feedback",
+              "variables": [
+                "current"
+              ],
+              "line": 849
+            },
+            {
+              "type": "state_feedback",
+              "variables": [
+                "values"
+              ],
+              "line": 190
+            },
+            {
+              "type": "state_feedback",
+              "variables": [
+                "before"
+              ],
+              "line": 466
+            },
+            {
+              "type": "state_feedback",
+              "variables": [
+                "after"
+              ],
+              "line": 499
+            },
+            {
+              "type": "state_feedback",
+              "variables": [
+                "psi"
+              ],
+              "line": 539
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\.append\\(",
+              "line": 240
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\.append\\(",
+              "line": 242
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\.append\\(",
+              "line": 482
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\.append\\(",
+              "line": 484
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\.append\\(",
+              "line": 485
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\.append\\(",
+              "line": 635
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\.append\\(",
+              "line": 661
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\.append\\(",
+              "line": 672
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\.append\\(",
+              "line": 737
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\.append\\(",
+              "line": 751
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\.append\\(",
+              "line": 773
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\.append\\(",
+              "line": 873
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\.append\\(",
+              "line": 885
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\.append\\(",
+              "line": 940
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\.update\\(",
+              "line": 948
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 166
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 167
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 168
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 214
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 224
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 231
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 234
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 394
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 469
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 470
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 471
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 478
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 480
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 523
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 585
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 597
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 688
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 693
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 697
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 718
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 720
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 777
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 820
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 823
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 833
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 839
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 896
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 897
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 913
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\+=",
+              "line": 725
+            }
+          ],
+          "count": 58
+        },
+        {
+          "file": "pulvini_manifold.py",
+          "feedback_loops": [
+            {
+              "type": "state_feedback",
+              "variables": [
+                "MARKOV_THRESHOLD"
+              ],
+              "line": 102
+            },
+            {
+              "type": "state_feedback",
+              "variables": [
+                "psi"
+              ],
+              "line": 81
+            },
+            {
+              "type": "state_feedback",
+              "variables": [
+                "psi"
+              ],
+              "line": 169
+            },
+            {
+              "type": "state_feedback",
+              "variables": [
+                "norm"
+              ],
+              "line": 170
+            },
+            {
+              "type": "state_feedback",
+              "variables": [
+                "matrix"
+              ],
+              "line": 181
+            },
+            {
+              "type": "state_feedback",
+              "variables": [
+                "rho"
+              ],
+              "line": 186
+            },
+            {
+              "type": "state_feedback",
+              "variables": [
+                "eigenvalues"
+              ],
+              "line": 188
+            },
+            {
+              "type": "state_feedback",
+              "variables": [
+                "self.synaptic_matrix"
+              ],
+              "line": 203
+            },
+            {
+              "type": "state_feedback",
+              "variables": [
+                "eigenvalues"
+              ],
+              "line": 295
+            },
+            {
+              "type": "state_feedback",
+              "variables": [
+                "jump_operators"
+              ],
+              "line": 348
+            },
+            {
+              "type": "state_feedback",
+              "variables": [
+                "node_id"
+              ],
+              "line": 493
+            },
+            {
+              "type": "state_feedback",
+              "variables": [
+                "digest"
+              ],
+              "line": 583
+            },
+            {
+              "type": "state_feedback",
+              "variables": [
+                "digest"
+              ],
+              "line": 751
+            },
+            {
+              "type": "state_feedback",
+              "variables": [
+                "values"
+              ],
+              "line": 266
+            },
+            {
+              "type": "state_feedback",
+              "variables": [
+                "values"
+              ],
+              "line": 270
+            },
+            {
+              "type": "state_feedback",
+              "variables": [
+                "eigenvectors"
+              ],
+              "line": 314
+            },
+            {
+              "type": "state_feedback",
+              "variables": [
+                "self.rho"
+              ],
+              "line": 360
+            },
+            {
+              "type": "state_feedback",
+              "variables": [
+                "rho_new"
+              ],
+              "line": 403
+            },
+            {
+              "type": "state_feedback",
+              "variables": [
+                "node_id"
+              ],
+              "line": 537
+            },
+            {
+              "type": "state_feedback",
+              "variables": [
+                "self.psi"
+              ],
+              "line": 542
+            },
+            {
+              "type": "state_feedback",
+              "variables": [
+                "self.psi"
+              ],
+              "line": 732
+            },
+            {
+              "type": "state_feedback",
+              "variables": [
+                "self.psi"
+              ],
+              "line": 321
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\.append\\(",
+              "line": 236
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\.append\\(",
+              "line": 276
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\.append\\(",
+              "line": 502
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\.append\\(",
+              "line": 525
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\.append\\(",
+              "line": 526
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\.append\\(",
+              "line": 545
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\.append\\(",
+              "line": 565
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\.append\\(",
+              "line": 639
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\.append\\(",
+              "line": 677
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\.append\\(",
+              "line": 695
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\.append\\(",
+              "line": 712
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\.append\\(",
+              "line": 713
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\.append\\(",
+              "line": 731
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\.append\\(",
+              "line": 734
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\.update\\(",
+              "line": 796
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 74
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 123
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 124
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 126
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 143
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 164
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 434
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 498
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 538
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 579
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 591
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 592
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 604
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 605
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 620
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 706
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 730
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\+=",
+              "line": 357
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\+=",
+              "line": 400
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\+=",
+              "line": 671
+            }
+          ],
+          "count": 57
+        },
+        {
+          "file": "stratum_client.py",
+          "feedback_loops": [
+            {
+              "type": "accumulation",
+              "pattern": "\\.append\\(",
+              "line": 128
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\.append\\(",
+              "line": 1127
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\.append\\(",
+              "line": 1310
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\.append\\(",
+              "line": 1328
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 59
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 60
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 61
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 68
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 69
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 72
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 73
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 120
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 184
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 185
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 199
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 200
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 213
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 214
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 216
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 217
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 218
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 219
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 223
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 599
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 649
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 1025
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 1253
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 1275
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 1305
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 1326
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 1327
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\+=",
+              "line": 272
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\+=",
+              "line": 363
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\+=",
+              "line": 365
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\+=",
+              "line": 523
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\+=",
+              "line": 600
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\+=",
+              "line": 658
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\+=",
+              "line": 659
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\+=",
+              "line": 691
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\+=",
+              "line": 692
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\+=",
+              "line": 716
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\+=",
+              "line": 717
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\+=",
+              "line": 740
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\+=",
+              "line": 741
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\+=",
+              "line": 768
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\+=",
+              "line": 813
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\+=",
+              "line": 858
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\+=",
+              "line": 883
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\+=",
+              "line": 924
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\+=",
+              "line": 946
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\+=",
+              "line": 1026
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\+=",
+              "line": 1038
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\+=",
+              "line": 1041
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\+=",
+              "line": 1058
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\+=",
+              "line": 1178
+            }
+          ],
+          "count": 55
+        },
+        {
+          "file": "nicehash.py",
+          "feedback_loops": [
+            {
+              "type": "state_feedback",
+              "variables": [
+                "initial_params"
+              ],
+              "line": 236
+            },
+            {
+              "type": "state_feedback",
+              "variables": [
+                "result"
+              ],
+              "line": 144
+            },
+            {
+              "type": "state_feedback",
+              "variables": [
+                "concatenated"
+              ],
+              "line": 273
+            },
+            {
+              "type": "state_feedback",
+              "variables": [
+                "allocation"
+              ],
+              "line": 345
+            },
+            {
+              "type": "state_feedback",
+              "variables": [
+                "current_state"
+              ],
+              "line": 199
+            },
+            {
+              "type": "state_feedback",
+              "variables": [
+                "state"
+              ],
+              "line": 294
+            },
+            {
+              "type": "state_feedback",
+              "variables": [
+                "expected_state"
+              ],
+              "line": 313
+            },
+            {
+              "type": "state_feedback",
+              "variables": [
+                "current_state"
+              ],
+              "line": 202
+            },
+            {
+              "type": "state_feedback",
+              "variables": [
+                "body"
+              ],
+              "line": 414
+            },
+            {
+              "type": "state_feedback",
+              "variables": [
+                "body"
+              ],
+              "line": 534
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\.append\\(",
+              "line": 362
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\.extend\\(",
+              "line": 264
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\.extend\\(",
+              "line": 271
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\.update\\(",
+              "line": 549
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 58
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 60
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 75
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 167
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 167
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 178
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 398
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 501
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
+              "line": 580
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\+=",
+              "line": 205
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\+=",
+              "line": 272
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\+=",
+              "line": 275
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\+=",
+              "line": 360
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\+=",
+              "line": 408
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\+=",
+              "line": 518
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\+=",
+              "line": 519
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\+=",
+              "line": 520
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\+=",
+              "line": 521
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\+=",
+              "line": 522
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\+=",
+              "line": 523
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\+=",
+              "line": 524
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\+=",
+              "line": 525
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\+=",
+              "line": 526
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\+=",
+              "line": 527
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\+=",
+              "line": 528
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\+=",
+              "line": 529
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\+=",
+              "line": 530
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\+=",
+              "line": 531
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\+=",
+              "line": 536
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\+=",
+              "line": 537
+            },
+            {
+              "type": "accumulation",
+              "pattern": "\\+=",
+              "line": 552
+            }
+          ],
+          "count": 45
+        }
+      ]
+    },
+    "optimizations": {
+      "total": 184,
+      "files": 22
+    },
     "memory": {
-      "total": 552,
-      "files": 39,
+      "total": 609,
+      "files": 47,
       "by_type": {
-        "memory_reference": 144,
-        "history_tracking": 120,
-        "caching": 39,
+        "memory_reference": 179,
+        "history_tracking": 138,
         "retention": 47,
-        "memory_storage": 3,
         "ledger_state": 157,
-        "manifest_state": 42
+        "caching": 43,
+        "manifest_state": 42,
+        "memory_storage": 3
       }
+    },
+    "self_modification": {
+      "total": 4,
+      "files": 3,
+      "dangerous_sites": 2,
+      "by_severity": {
+        "MODERATE": 2,
+        "DANGEROUS": 2
+      },
+      "dangerous_details": [
+        {
+          "file": "apple_silicon_metal.py",
+          "type": "eval_usage",
+          "severity": "DANGEROUS",
+          "line": 132,
+          "context": "mx.eval(gpu_value)"
+        },
+        {
+          "file": "apple_silicon_metal.py",
+          "type": "eval_usage",
+          "severity": "DANGEROUS",
+          "line": 142,
+          "context": "mx.eval(cpu_value)"
+        }
+      ]
     }
   },
-  "genuine_adaptive": false,
+  "genuine_adaptive": true,
   "has_learning": false,
-  "has_dangerous_self_mod": false,
-  "conclusion": "DETERMINISTIC SYSTEM: Adaptive keywords are insufficient for adaptive-behavior claim.",
+  "has_dangerous_self_mod": true,
+  "conclusion": "STATEFUL SYSTEM: Accumulates memory and uses feedback, but learning remains unproven.",
   "claim_boundary": {
     "supported": "stateful adaptive computation where feedback, optimisation, and memory evidence exist",
     "not_supported_by_this_test_alone": [

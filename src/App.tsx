@@ -191,15 +191,15 @@ function AppContent() {
   const health = telemetry?.health;
   const systemMetrics = health?.systemMetrics || {};
   const pools: PoolInfo[] = telemetry?.pools?.pools || [];
-  const poolSummary = telemetry?.pools?.summary || {};
+  const poolSummary = telemetry?.pools?.summary || { total_pools: 0, active_pools: 0, telemetry_source: "unavailable" };
   const security: Partial<SecurityStatus> = telemetry?.security || {};
   const securityDefenseSystems = security.defense_systems || {};
   const stabilizerMonitor = securityDefenseSystems.stabilizer_monitor || {};
   const ancillaTrapPool = securityDefenseSystems.preallocated_ancilla_trap_pool || {};
-  const consciousness = telemetry?.consciousness || {};
+  const consciousness = telemetry?.consciousness || { status: "unavailable", source: "unavailable" };
 
   const runtimeStatus = useMemo(() => health?.status || "unavailable", [health]);
-  const activePoolName = fmtText(systemMetrics.activePool || poolSummary.active_pool_name);
+  const activePoolName = fmtText(systemMetrics.activePool || pools.find(p => p.is_active)?.name);
   const configuredPoolCount = Number(poolSummary.configured_pools ?? poolSummary.total_pools ?? 0);
   const activePoolCount = Number(poolSummary.active_pools ?? 0);
   const securityStatus = fmtText(security.status);
