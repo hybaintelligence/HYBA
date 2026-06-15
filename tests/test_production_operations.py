@@ -42,8 +42,8 @@ class ProductionEnvironmentValidatorTests(unittest.TestCase):
             "PULVINI_BACKEND_URL": "http://127.0.0.1:3001",
             "HYBA_ALLOW_DEV_FIXTURES": "false",
             "HYBA_POOL_NICEHASH_URL": "stratum+ssl://sha256.eu.nicehash.com:3334",
-            "HYBA_POOL_NICEHASH_USERNAME": "ci-user",
-            "HYBA_POOL_NICEHASH_PASSWORD": "ci-secret",
+            "HYBA_POOL_NICEHASH_WORKER": "ci-worker",
+            "HYBA_POOL_NICEHASH_NICEHASH_POOL_ID": "ci-pool-id",
         }
         with patch.dict(os.environ, env, clear=True):
             self.assertEqual(1, validate_production_env.main())
@@ -57,8 +57,8 @@ class ProductionEnvironmentValidatorTests(unittest.TestCase):
             "PULVINI_BACKEND_URL": "http://127.0.0.1:3001",
             "HYBA_ALLOW_DEV_FIXTURES": "false",
             "HYBA_POOL_NICEHASH_URL": "stratum+ssl://sha256.eu.nicehash.com:3334",
-            "HYBA_POOL_NICEHASH_USERNAME": "ci-user",
-            "HYBA_POOL_NICEHASH_PASSWORD": "ci-secret",
+            "HYBA_POOL_NICEHASH_WORKER": "ci-worker",
+            "HYBA_POOL_NICEHASH_NICEHASH_POOL_ID": "ci-pool-id",
         }
         with patch.dict(os.environ, env, clear=True):
             self.assertEqual(1, validate_production_env.main())
@@ -77,9 +77,29 @@ class ProductionEnvironmentValidatorTests(unittest.TestCase):
             "HYBA_ENABLE_MINING_AUTOCONNECT": "false",
             "HYBA_ENABLE_AUDIT_LOGGING": "true",
             "HYBA_POOL_NICEHASH_URL": "stratum+ssl://sha256.eu.nicehash.com:3334",
-            "HYBA_POOL_NICEHASH_USERNAME": "ci-user",
-            "HYBA_POOL_NICEHASH_PASSWORD": "ci-secret",
+            "HYBA_POOL_NICEHASH_WORKER": "ci-worker",
+            "HYBA_POOL_NICEHASH_NICEHASH_POOL_ID": "ci-open-network-pool-id",
             "HYBA_POOL_NICEHASH_STRATUM_VERSION": "1",
+        }
+        with patch.dict(os.environ, env, clear=True):
+            self.assertEqual(0, validate_production_env.main())
+
+    def test_validator_accepts_ckpool_btc_address_without_pool_password(self) -> None:
+        password_hash = PasswordHasher().hash("correct horse battery staple")
+        env = {
+            "NODE_ENV": "production",
+            "HYBA_ENV": "production",
+            "JWT_SECRET": "ci-production-secret-value-at-least-32-chars",
+            "HYBA_OPERATOR_CREDENTIALS": f"operator:{password_hash}:mining_operator",
+            "PULVINI_BACKEND_URL": "http://127.0.0.1:3001",
+            "HYBA_ALLOW_DEV_FIXTURES": "false",
+            "HYBA_ENABLE_LIVE_STRATUM": "true",
+            "HYBA_ENABLE_LIVE_SHARE_SUBMIT": "false",
+            "HYBA_ENABLE_MINING_AUTOCONNECT": "false",
+            "HYBA_ENABLE_AUDIT_LOGGING": "true",
+            "HYBA_POOL_CKPOOL_URL": "stratum+tcp://solo.ckpool.org:3333",
+            "HYBA_POOL_CKPOOL_BTC_ADDRESS": "bc1qexampleopennetworkpayout000000000000000000",
+            "HYBA_POOL_CKPOOL_STRATUM_VERSION": "1",
         }
         with patch.dict(os.environ, env, clear=True):
             self.assertEqual(0, validate_production_env.main())
@@ -101,7 +121,7 @@ class ProductionEnvironmentValidatorTests(unittest.TestCase):
             "HYBA_QUANTUM_CAPACITY_EHS": "1.0",
             "HYBA_POOL_VIABTC_URL": "stratum2+ssl://btc.viabtc.com:443",
             "HYBA_POOL_VIABTC_USERNAME": "PYTHIA.001",
-            "HYBA_POOL_VIABTC_PASSWORD": "ci-realistic-pool-secret",
+            "HYBA_POOL_VIABTC_PASSWORD": "x",
             "HYBA_POOL_VIABTC_STRATUM_VERSION": "2",
         }
         with patch.dict(os.environ, env, clear=True):
@@ -123,7 +143,7 @@ class ProductionEnvironmentValidatorTests(unittest.TestCase):
             "HYBA_QUANTUM_CAPACITY_EHS": "1.000001",
             "HYBA_POOL_VIABTC_URL": "stratum2+ssl://btc.viabtc.com:443",
             "HYBA_POOL_VIABTC_USERNAME": "PYTHIA.001",
-            "HYBA_POOL_VIABTC_PASSWORD": "ci-realistic-pool-secret",
+            "HYBA_POOL_VIABTC_PASSWORD": "x",
             "HYBA_POOL_VIABTC_STRATUM_VERSION": "2",
         }
         with patch.dict(os.environ, env, clear=True):
@@ -144,7 +164,7 @@ class ProductionEnvironmentValidatorTests(unittest.TestCase):
             "HYBA_ENABLE_AUDIT_LOGGING": "true",
             "HYBA_POOL_VIABTC_URL": "stratum2+ssl://btc.viabtc.com:443",
             "HYBA_POOL_VIABTC_USERNAME": "PYTHIA.001",
-            "HYBA_POOL_VIABTC_PASSWORD": "ci-realistic-pool-secret",
+            "HYBA_POOL_VIABTC_PASSWORD": "x",
             "HYBA_POOL_VIABTC_STRATUM_VERSION": "1",
         }
         with patch.dict(os.environ, env, clear=True):
@@ -163,8 +183,8 @@ class ProductionEnvironmentValidatorTests(unittest.TestCase):
             "HYBA_ENABLE_LIVE_SHARE_SUBMIT": "true",
             "HYBA_ENABLE_AUDIT_LOGGING": "true",
             "HYBA_POOL_NICEHASH_URL": "stratum+ssl://sha256.eu.nicehash.com:3334",
-            "HYBA_POOL_NICEHASH_USERNAME": "ci-user",
-            "HYBA_POOL_NICEHASH_PASSWORD": "ci-secret",
+            "HYBA_POOL_NICEHASH_WORKER": "ci-worker",
+            "HYBA_POOL_NICEHASH_NICEHASH_POOL_ID": "ci-open-network-pool-id",
         }
         with patch.dict(os.environ, env, clear=True):
             self.assertEqual(1, validate_production_env.main())
@@ -406,7 +426,7 @@ class LiveShareSubmitGateTests(unittest.TestCase):
                     client = StratumClient(
                         pool_url="stratum+tcp://example.com:3333",
                         username="worker",
-                        password="secret",
+                        password="x",
                         pool_name="Example Pool",
                         stratum_version=1,
                     )
