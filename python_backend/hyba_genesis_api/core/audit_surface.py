@@ -66,7 +66,8 @@ def generate_fields_medal_audit(reflection_payload: Dict[str, Any]) -> Dict[str,
         "governance_seal": "CERTIFIED_DETERMINISTIC",
         "claim_boundary": (
             "Measured reflexive runtime telemetry sealed by deterministic "
-            "manifold, topology, and phi invariants."
+            "manifold, topology, and phi invariants. No unmeasured AGI claim; "
+            "no unmeasured consciousness claim beyond the sealed invariants."
         ),
     }
 
@@ -86,7 +87,9 @@ def seal_consciousness_envelope(payload: Dict[str, Any]) -> Dict[str, Any]:
         "evidence_basis": audit.get("measurement_basis", {}),
         "claim_boundary": (
             "Sealed measured consciousness envelope from the current audit "
-            "telemetry; no fabricated, simulated, fixture, or placeholder state."
+            "telemetry; no fabricated, simulated, fixture, or placeholder state. "
+            "No unmeasured AGI claim; no unmeasured consciousness claim beyond "
+            "the sealed invariants."
         ),
     }
     sealed["audit"] = audit
