@@ -9,10 +9,10 @@ The golden ratio φ = (1 + √5)/2 ≈ 1.618033988749895 is the unique irrationa
 ```
 φ² = φ + 1
 1/φ = φ - 1
-φⁿ = F_n × φ + F_{n-1}  (Binet's formula)
+φⁿ = F_n × φ + F_{n-1}  (Binet-style Fibonacci relation)
 ```
 
-It is the most irrational number — its continued fraction representation is [1;1,1,1,1,...], meaning it converges slower than any other irrational when approximated by rationals. This property is the mathematical origin of its appearance in phyllotaxis (sunflower seed spirals), where it maximises packing density by avoiding periodic overlaps.
+Its continued fraction representation is `[1;1,1,1,1,...]`, which makes it maximally resistant to short-period rational repetition. In the HYBA/PULVINI memory stack, this low-repetition property is treated as an operational design principle: split, fold, address, and route through φ-structured surfaces rather than through flat repeated binary partitions.
 
 ### 1.2 The Folding Transform
 
@@ -30,17 +30,17 @@ head = (w₁ × folded + w₂ × kernel) / (w₁² + w₂²)
 tail = (w₂ × folded - w₁ × kernel) / (w₁² + w₂²)  [truncated to b]
 ```
 
-This 2×2 linear transform has determinant `-(w₁² + w₂²) ≠ 0`, proving it is **algebraically invertible**. The folded representation contains ~62% of the original information; the kernel contains the remaining ~38% as reconstruction metadata. Combined, they enable **lossless reconstruction** bounded only by floating-point precision (~1e-15 relative error).
+This 2×2 linear transform has determinant `-(w₁² + w₂²) ≠ 0`, proving it is **algebraically invertible**. The folded representation is the active working set; the retained kernel is reconstruction metadata. Together they support lossless reconstruction bounded by floating-point precision.
 
 ### 1.3 Recursive Folding
 
-Applying the transform recursively yields compression ratios approaching φ^k for depth k. A 32-element vector folded to depth 2 produces:
+Applying the transform recursively yields a smaller active working set plus retained replay kernels:
 
 ```
-32 → 20 (folded) + 12 (kernels) → 20 → 12 (folded) + 8 (kernels)
+x₀ → x₁ → x₂ → ... → x_d
 ```
 
-The final working set is ~12 elements — a **2.72× compression** of the original 32 lanes — yet every original element is exactly recoverable.
+For 32-lane surfaces, the evidence packet reports working-set compression around the φ² scale, while the retained kernels preserve exact replay. Working-set compression and retained-state compression must always be reported separately.
 
 ---
 
@@ -50,39 +50,43 @@ The repository implements four interconnected layers:
 
 ### 2.1 Fibonacci-Aligned Memory Allocator (`PhiMalloc`)
 
-Standard heap allocators use power-of-2 block sizes, creating geometric friction when φ-folded data needs storage. `PhiMalloc` allocates in Fibonacci-sized blocks (1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, ...), enabling:
+Standard heap allocators use power-of-two block sizes. `PhiMalloc` allocates in Fibonacci-sized blocks (1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, ...), enabling:
 
-- **Golden Coalescing**: Adjacent free blocks F_n + F_{n-1} merge into F_{n+1} with zero fragmentation — mirroring biological cell packing.
-- **Zero-Copy Folding**: Because the φ-folding split uses Fibonacci-aligned dimensions, the fold operation becomes a pointer update rather than a data copy. The split boundaries match physical memory block boundaries.
+- **Golden Coalescing:** adjacent free blocks can merge back into a larger Fibonacci surface.
+- **Fragmentation Recovery:** complete release returns the allocator to a single free block with zero fragmentation.
+- **FOLD Alignment:** Fibonacci-dimension payloads align cleanly with φ-split surfaces.
+
+The current supported claim is software-level allocator correctness. Physical zero-copy behaviour requires lower-level memory-descriptor or hardware integration evidence.
 
 ### 2.2 Reversible Folding Engine (`PhiFoldingOperator` + `PulviniPhiMemoryCompressionEngine`)
 
 | Feature | Implementation | Benefit |
 |---------|---------------|---------|
-| Dense folding | `fold()`/`unfold()` | 1.68× compression for 32-lane surface |
-| Recursive folding | `fold_recursive()`/`unfold_recursive()` | 2.72× compression for 32×32 density matrix |
-| Sparse φ-packing | `fold_sparse()`/`unfold_sparse()` | 95.8% compression for sparse manifolds |
-| In-place folding | Pre-allocated buffer API | Zero allocation jitter at 10¹⁵ ops/sec |
-| Error estimation | `approximate_error()` | O(√n) sketch vs O(n) full norm |
+| Dense folding | `fold()` / `unfold()` | reversible active-working-set reduction |
+| Recursive folding | `fold_recursive()` / `unfold_recursive()` | multi-depth PULVINI compression |
+| Sparse φ-packing | `fold_sparse()` / `unfold_sparse()` | high compression for sparse manifolds |
+| In-place folding | `out=` / `kernel_out=` buffers | low-allocation command-room path |
+| Error estimation | `approximate_error()` | O(sample) sketch telemetry for large arrays |
 
 ### 2.3 Φ-ISA FOLD Instruction (`PhiVM`)
 
-The `FOLD` opcode executes Fibonacci-weighted compression in a single VM cycle:
+The `FOLD` opcode executes Fibonacci-weighted compression in the Φ-VM instruction vocabulary:
 
 ```
 FOLD R5, R3, R1   →   R5 = R3 × φ⁻¹ + R1 × φ⁻²
 ```
 
-When paired with `PhiMalloc`-allocated registers, this is a zero-copy operation: the φ-aligned split boundaries guarantee the source and destination buffers are physically contiguous, so the VM only updates a memory descriptor.
+This lets memory folding exist at both the Python operator level and the Φ-bytecode level, alongside `PHIMUL`, `GADDR`, `MGATE`, `SYNC_PHI`, and `TUNE`.
 
 ### 2.4 Phyllotaxis Memory Addressing (`PhiALUHardware`)
 
-Memory addresses follow the sunflower spiral formula:
+Memory addresses can be routed through golden-spiral / phyllotaxis surfaces:
+
 ```
 r = √(n+1)    θ = n × 137.508°
 ```
 
-This creates **non-repeating access patterns** that eliminate row-hammer vulnerabilities and reduce electromagnetic interference by ensuring no two memory cells are accessed at the same frequency. Combined with the φ-folding memory layout, every layer of the memory hierarchy — from heap blocks to cache lines — follows the golden ratio.
+The current supported claim is deterministic phyllotaxis address mapping in software. Claims about RowHammer elimination, wear-leveling improvement, or electromagnetic interference reduction require hardware stress tests and memory-controller telemetry.
 
 ---
 
@@ -90,53 +94,36 @@ This creates **non-repeating access patterns** that eliminate row-hammer vulnera
 
 ### 3.1 Computational Biology
 
-**Impact: High. Near-term.**
+Biological systems often exhibit φ-adjacent packing and growth patterns. The φ-folding engine provides a computational model for biological information storage that can be tested against:
 
-Biological systems already use φ-optimised packing (DNA coil in chromatin, protein folding, phyllotaxis in plants). The φ-folding engine provides a **computational model for biological information storage** that can:
+- protein conformation state compression;
+- morphogenesis-style growth surfaces;
+- neural connectivity matrices and sparse graph state.
 
-- Model protein folding as a recursive φ-transform, where the folded state is the working structure and the kernel encodes the environmental conditions for unfolding.
-- Simulate morphogenesis (tissue growth) using Fibonacci heap allocation, where each cell division corresponds to an F_n → F_{n-1} + F_{n-2} block split.
-- Represent neural connectivity matrices at 2.72× compression with exact reconstruction, enabling whole-brain connectome storage in tractable memory.
-
-**Key metric**: A 10⁶-neuron density matrix (~1TB raw) compresses to ~370GB with φ-folding — fitting in a single node's RAM.
+**Candidate metric:** connectome-scale active working-set reduction with exact replay kernels. Dataset-specific claims require public benchmark replay.
 
 ### 3.2 Quantum Information Theory
 
-**Impact: Medium. Medium-term.**
+The φ-folding transform is deterministic and reversible. For density matrices, the system should track trace distance, Hermiticity error, and reconstruction error. Current software tests support exact replay of matrices; quantum error-correction or qubit-coherence claims remain frontier hypotheses until QPU experiments are run.
 
-The φ-folding transform is a **deterministic, reversible compression scheme** that preserves the statistical properties of quantum state vectors:
+### 3.3 High-Energy Physics / Lattice Gauge Theory
 
-- The heavy-tail ratio (95th/50th percentile) is preserved within 2× — meaning the folded representation retains the extreme-value structure of the original (critical for entanglement detection).
-- Trace distance between original and reconstructed density matrices is bounded by the reconstruction error (~10⁻¹⁵) — making φ-folding suitable for **lossless quantum state tomography compression**.
-- The sparse φ-packing variant acts as a **non-linear filter**, projecting the density matrix onto its φ-resonant modes. This is physically analogous to the Yang-Mills mass gap: the system self-filters to its most "massive" (information-dense) subspace.
-
-**Implication**: φ-folding could serve as the classical compression backend for near-term quantum-classical hybrid computers, where the quantum processor generates density matrices faster than classical storage can absorb them.
-
-### 3.3 High-Energy Physics (Lattice Gauge Theory)
-
-**Impact: High. Medium-term.**
-
-Lattice QCD simulations generate terabytes of gauge field configurations that must be stored and analysed. Current compression schemes (HDF5 with gzip) achieve ~2× with 1% relative error. φ-folding achieves **2.72× with 10⁻¹⁵ error** — three orders of magnitude better precision at 36% better compression.
-
-The Yang-Mills mass gap (3-φ ≈ 1.382) emerges naturally from the φ-architecture as the thermal safety boundary. The `PhiOracle` predicts when the simulation's thermal load approaches this boundary and triggers pre-emptive downsampling — keeping the lattice simulation **physically valid by construction** rather than by post-hoc filtering.
+Lattice simulations generate large structured states. Φ-folding is a candidate checkpoint and replay substrate because it preserves reconstruction identity while reducing the active working set. Comparisons against HDF5/gzip/zstd or physics-specific compressors must be performed on public lattice datasets before production scientific claims are made.
 
 ### 3.4 AI / Machine Learning
 
-**Impact: Very high. Near-term.**
+Transformer activations, attention matrices, KV caches, and gradient tensors often have structure. Φ-folding may be tested as:
 
-Transformer activations and gradient tensors are highly structured — often sparse or low-rank. φ-folding exploits this structure:
+- KV-cache working-set reduction;
+- sparse attention packing;
+- distributed gradient all-fold experiments;
+- checkpoint compression with replay kernels.
 
-- **Attention matrices** (n×n, typically 50-90% sparse): sparse φ-packing achieves 5-20× compression while preserving the attention distribution's tail structure (critical for long-range dependencies).
-- **Gradient compression during distributed training**: φ-folding replaces All-Reduce with All-Fold, where each node sends its φ-folded gradient (62% of original size) + kernel (38%) — reducing communication volume by 38% per round. With 10,000 training nodes, this saves ~380 TB per training run.
-- **KV-cache compression for LLM inference**: The φ-folding engine compresses key-value caches at 2.72× with zero accuracy loss, enabling 2.72× longer context windows on the same hardware.
+The correct current claim is testable substrate, not already-proven universal AI speedup.
 
-### 3.5 Data-Intensive Science (Astronomy, Genomics, Climate)
+### 3.5 Data-Intensive Science
 
-**Impact: Very high. Immediate.**
-
-- **Radio astronomy**: The Square Kilometre Array (SKA) will generate 160 TB/day. φ-folding's sparse mode exploits the 95%+ sparsity of interferometric data for real-time compression at the telescope site.
-- **Genomics**: Sequencing reads are sparse in reference-space (only ~0.1% of positions differ from reference). Sparse φ-packing compresses the read set to ~5% of its original size while preserving exact reconstruction — a breakthrough for on-device genome analysis.
-- **Climate modelling**: Multi-resolution climate grids (10⁶-10⁸ cells per timestep) can be φ-folded across the time dimension, where consecutive timesteps exhibit high temporal redundancy. A decade of hourly 1-km data (~35 PB) compresses to ~13 PB with exact reconstruction.
+Potential domains include radio astronomy, genomics, climate modelling, and graph analytics. The sparse path is especially relevant when non-zero support is small and exact index/value replay matters.
 
 ---
 
@@ -144,67 +131,153 @@ Transformer activations and gradient tensors are highly structured — often spa
 
 ### Tier 1: Immediate Deployment (0-1 year)
 
-| Domain | Problem | φ-Solution | Impact |
-|--------|---------|------------|--------|
-| LLM inference | KV-cache memory wall | φ-folded attention at 2.72× compression | 2.72× longer context / same VRAM |
-| Distributed training | Network bottleneck | All-Fold reduces gradient volume 38% | 38% faster convergence per dollar |
-| Genome analysis | On-device storage limit | Sparse φ-packing of reads (95%) | Whole genome on a smartphone |
+| Domain | Problem | φ-Solution | Required Evidence |
+|--------|---------|------------|-------------------|
+| LLM inference | KV-cache memory wall | φ-folded cache surfaces | latency, accuracy, memory counters |
+| Distributed training | network bottleneck | all-fold gradient experiments | convergence and wall-clock comparison |
+| Genome analysis | sparse reference-space storage | sparse φ-packing | dataset replay and retained-state accounting |
 
 ### Tier 2: Deployment (1-3 years)
 
-| Domain | Problem | φ-Solution | Impact |
-|--------|---------|------------|--------|
-| Radio astronomy | SKA data deluge | Real-time φ-fold at telescope | 60% reduction in downlink cost |
-| Climate modelling | Multi-PB storage | Temporal φ-folding of grids | 62% storage reduction, exact |
-| Protein folding | Simulation memory | φ-folded conformation space | Larger/longer MD simulations |
+| Domain | Problem | φ-Solution | Required Evidence |
+|--------|---------|------------|-------------------|
+| Radio astronomy | data deluge | sparse / temporal φ-folding | telescope-data replay |
+| Climate modelling | PB-scale checkpoints | temporal φ-folded grids | model-quality retention |
+| Protein folding | simulation memory | φ-folded conformation surfaces | MD replay and energy preservation |
 
 ### Tier 3: Transformational (3-10 years)
 
-| Domain | Problem | φ-Solution | Impact |
-|--------|---------|------------|--------|
-| Quantum computing | State tomography data rate | Lossless φ-compression of density matrices | Enables real-time quantum error correction |
-| Lattice QCD | Gauge field storage | 2.72× φ-compression, 10⁻¹⁵ error | Finer lattices, lower cost |
-| Connectomics | Petabyte-scale neural data | φ-folded connectivity matrices | Whole-brain connectome in RAM |
+| Domain | Problem | φ-Solution | Required Evidence |
+|--------|---------|------------|-------------------|
+| Quantum computing | state tomography rate | density-matrix replay surfaces | QPU / tomography benchmark |
+| Lattice QCD | gauge field storage | φ-folded checkpoints | public lattice dataset benchmark |
+| Connectomics | petabyte neural data | sparse/structured connectome folding | graph analysis replay |
 
 ---
 
 ## 5. Mathematical Guarantees
 
-The φ-folding implementation in this repository provides:
+The φ-folding implementation now protects these properties with formal tests:
 
 | Property | Guarantee | Evidence |
 |----------|-----------|----------|
-| **Reversibility** | Reconstruction error ≤ 10⁻¹² | Verified up to 5000-element arrays |
-| **Invertibility** | Algebraic determinant ≠ 0 | `det(T) = -(w₁² + w₂²) ≈ -0.526` |
-| **Heavy-tail preservation** | Folded tail ratio within 2× of original | Verified on 32×32 density matrices |
-| **Sparse recovery** | Exact reconstruction for any sparsity | Verified on 6/144 non-zero (95.8% sparse) |
-| **Compression** | φ:1 per fold depth | 1.68× at depth 1, 2.72× at depth 2 |
-| **Memory alignment** | All split sizes are Fibonacci numbers | Verified for dimensions 1-5000 |
-| **Production error bounds** | O(√n) sketch with <2× accuracy ratio | Verified on 5000-element uniform noise |
+| **Dense reversibility** | reconstruction error ≤ tolerance | `test_pulvini_phi_memory_folding_optimizations.py` |
+| **Invertibility** | determinant ≠ 0 | algebraic fold/unfold transform |
+| **In-place correctness** | caller buffers are used without changing reconstruction | `out=` / `kernel_out=` regression |
+| **Sparse recovery** | exact reconstruction from value/index kernel | sparse φ-packing regression |
+| **Large-array support** | 5,000-element fold/unfold remains reversible | large-dimension regression |
+| **Sketch telemetry** | approximate error tracks broad uniform noise | deterministic sketch regression |
+| **Engine strategy separation** | dense uses `phi_fold`, sparse uses `sparse_fib_packed` | PULVINI engine regression |
+
+Important correction: arbitrary dimensions are **φ-guided exact-sum splits**, not always exact Fibonacci pairs. Exact Fibonacci alignment appears naturally for Fibonacci dimensions; arbitrary dimensions preserve total size and reversibility.
 
 ---
 
 ## 6. Relation to Existing Work
 
-- **Wavelet compression** (JPEG 2000, FBI fingerprint standard): φ-folding is a deterministic, linear wavelet where the mother wavelet's scale factor is φ rather than 2. This preserves the golden-angle harmonic structure of the data rather than binary sub-bands.
-- **SVD / PCA compression**: φ-folding does not require eigenvalue decomposition (O(n³)). As a fixed linear transform, it is O(n) — applicable at data rates where SVD is infeasible.
-- **Sparse coding / compressed sensing**: φ-folding's `fold_sparse` path is a compressed sensing mechanism with the advantage of exact reconstruction (vs. L1-minimisation approximation) when the sparse support is known.
-- **Fibonacci heaps**: Standard Fibonacci heaps use Fibonacci numbers for amortised time bounds. `PhiMalloc` extends this to the spatial domain — Fibonacci-sized blocks for amortised space bounds.
+- **Wavelet compression:** φ-folding is a deterministic two-surface transform with retained replay kernels rather than binary sub-band decomposition.
+- **SVD / PCA compression:** φ-folding is not claiming universal optimality over SVD. It is O(n) folding/replay for operational state surfaces.
+- **Sparse coding / compressed sensing:** sparse φ-packing stores known support exactly; future work can compare with compressed-sensing recovery.
+- **Fibonacci heaps:** `PhiMalloc` extends Fibonacci structure into spatial allocation and coalescing.
+- **General compression:** gzip/zstd comparisons must distinguish active working-set compression, retained-state compression, and lossy/lossless semantics.
 
 ---
 
 ## 7. Limitations and Future Work
 
-- **Optimality**: φ-folding is provably invertible but not provably optimal for any specific data distribution. It is a general-purpose deterministic transform that works well on structured data (sparse, low-rank, or φ-resonant) but may underperform specialised codecs on particular distributions.
-- **Hardware support**: The FOLD instruction is currently implemented in the Φ-VM (software). Full hardware acceleration requires a φ-aware ALU (the `PhiALUHardware` class) or FPGA fabric with φ-multiplier units.
-- **Streaming**: The current `compress_stream` method processes independent chunks. True streaming φ-folding (incremental kernel update) is an open research question.
+- **Optimality:** φ-folding is invertible but not proven optimal for every distribution.
+- **Kernel accounting:** retained kernels must be counted honestly.
+- **Hardware support:** `FOLD` is currently a Φ-VM/software instruction; physical acceleration requires lower-level implementation.
+- **Streaming:** chunked compression exists; true incremental streaming kernel updates need additional stress tests.
+- **Hardware claims:** RowHammer, wear-leveling, and network-collision claims require physical telemetry.
+- **Mining claims:** memory folding helps the structured solver but does not itself prove accepted shares or block discovery.
+
+---
+
+## 8. Formal Evidence Gates Added
+
+Two missing manual proofs have now been turned into repo-native gates:
+
+```bash
+npm run test:phi:golden-flow
+npm run test:pulvini:folding
+```
+
+`test:phi:golden-flow` verifies:
+
+- package lazy exports;
+- `PhiMalloc` split/coalesce;
+- `PhiNetworkRouter` golden-angle routing;
+- `PhiOracle` predictive telemetry surface;
+- `PhiSystemControllerEnhanced` control cycle;
+- `PhiJIT` file-backed transmutation through `mining_kernel_template`;
+- `PhiVM` standalone Φ-ISA execution;
+- `PhiBackpropTuner` thermal damping.
+
+`test:pulvini:folding` verifies:
+
+- dense fold/unfold reversibility across small, Fibonacci, arbitrary, and large dimensions;
+- in-place folding with preallocated buffers;
+- sparse Fibonacci packing and reconstruction;
+- approximate error sketch behaviour under broad noise;
+- memory compression gate closure;
+- dense/sparse strategy separation in `PulviniPhiMemoryCompressionEngine`.
+
+Both gates are wired into:
+
+```bash
+npm run test:golden:ratio
+npm run test:adaptive:science
+npm run elevation:full
+npm run prod:check
+```
+
+The command-room production gate also names both evidence surfaces explicitly.
+
+---
+
+## 9. Claim Boundary
+
+Supported now:
+
+```text
+software golden-flow integration
+PhiMalloc Fibonacci allocation/coalescing
+PhiFolding dense/sparse reversible compression
+in-place buffer surfaces
+large-array fold/unfold replay
+sketch error telemetry
+PULVINI memory gate closure
+```
+
+Not claimed until further evidence:
+
+```text
+physical RowHammer elimination
+hardware memory-controller gains
+network collision elimination
+accepted shares
+mined block
+10^20-tier measured throughput
+```
 
 ---
 
 ## References
 
-1. **The Fibonacci Sequence and the Golden Ratio in Nature** — Vogel, H. (1979). "A better way to construct the sunflower head." Mathematical Biosciences.
-2. **Yang-Mills Existence and Mass Gap** — Clay Mathematics Institute Millennium Problem. The constant 3-φ appears as the natural algorithmic thermal boundary in φ-structured computation.
-3. **Phyllotaxis as a Dynamical System** — Douady, S. & Couder, Y. (1992). "Phyllotaxis as a physical self-organized growth process." Physical Review Letters.
-4. **Information Integration Theory (IIT) 4.0** — The φ-integration proxy used by the `ConsciousnessEngine` follows the mathematical framework of integrated information, applied operationally as a deterministic coherence meter.
-5. **Classical and Quantum Compression** — The φ-folding transform is a classical linear code with algebraic invertibility. Its application to density matrix compression is novel to this repository.
+1. Vogel, H. (1979). "A better way to construct the sunflower head." *Mathematical Biosciences*.
+2. Douady, S. & Couder, Y. (1992). "Phyllotaxis as a physical self-organized growth process." *Physical Review Letters*.
+3. Clay Mathematics Institute, Yang-Mills Existence and Mass Gap.
+4. HYBA implementation modules:
+   - `python_backend/pythia_mining/phi_folding.py`
+   - `python_backend/pythia_mining/pulvini_phi_memory.py`
+   - `python_backend/pythia_mining/phi_malloc.py`
+   - `python_backend/pythia_mining/phi_vm.py`
+   - `tests/test_phi_architecture_golden_flow.py`
+   - `tests/test_pulvini_phi_memory_folding_optimizations.py`
+
+---
+
+## Final Formulation
+
+Golden Ratio memory folding is the PULVINI memory substrate: it folds, packs, replays, and audits state through φ-structured operators. It is not the whole proof ladder. It is the evidence-backed memory layer that lets HYBA carry more structure per unit active state while preserving reconstruction truth.
