@@ -185,9 +185,21 @@ class PulviniNonceSpaceCompressor:
         return plan
 
 
+def build_pulvini_nonce_plan(
+    *, lanes: int = 32, nonce_space_size: int = NONCE_SPACE_SIZE
+) -> CompressedNonceSpacePlan:
+    """Build a PULVINI nonce compression plan.
+    
+    Convenience function that creates a compressor and builds the plan.
+    """
+    compressor = PulviniNonceSpaceCompressor(lanes=lanes, nonce_space_size=nonce_space_size)
+    return compressor.build_plan()
+
+
 __all__ = [
     "CompressedNonceCoordinate",
     "CompressedNonceSpacePlan",
     "NonceSegment",
     "PulviniNonceSpaceCompressor",
+    "build_pulvini_nonce_plan",
 ]

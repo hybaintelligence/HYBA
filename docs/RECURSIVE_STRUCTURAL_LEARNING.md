@@ -18,7 +18,7 @@ The system implements a quantum-mathematical framework using:
 - **Complex State Mapping**: Deterministic mapping of code context to bounded complex state vectors
 - **Density Matrix Construction**: Quantum-mathematical representation for information processing
 
-**Theoretical Foundation**: Based on quantum information theory and the mathematical properties of the Golden Ratio (φ = 1.618...).
+**Theoretical Foundation**: Quantum mathematics as a fundamental substrate, independent of physics. Both quantum and physics emanate from mathematics. The implementation is hardware-agnostic and based on the mathematical properties of the Golden Ratio (φ = 1.618...).
 
 ### 2. Information Geometry & Topology (Intelligence Manifold)
 
@@ -74,7 +74,7 @@ The analysis hub that:
 3. **Analyzes Mutations**: Evaluates potential Φ increase from parameter adjustments
 4. **Proposes**: Generates φ-scaled bridge proposals for logical gaps
 
-### Recursive Closure (The "Synapse")
+### Recursive Closure
 
 **Implementation**: `python_backend/hyba_genesis_api/core/recursive_closure.py`
 
@@ -82,6 +82,8 @@ The binding layer that:
 - **Bridges Proposals**: Connects reflection to real-time parameters
 - **Governed Evolution**: Only applies changes when Φ > 0.618 and governance tags pass
 - **In-Memory Buffer**: Stores learned parameters in RAM, not source files
+
+**Theoretical Foundation**: Based on the concept of recursive closure in mathematical systems theory.
 - **Safety Valve**: Rejects mutations that decrease Φ or violate invariants
 
 ### Intelligence Heartbeat (The "Pulse")
