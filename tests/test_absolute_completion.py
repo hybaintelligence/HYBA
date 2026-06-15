@@ -69,12 +69,31 @@ class AbsoluteCompletionTests(unittest.TestCase):
         self.assertEqual(1, snapshot["pulses"])
         self.assertIn(snapshot["history"][0]["status"], {"EVOLVED", "STAGNATED"})
 
-    def test_final_audit_seal_preserves_claim_boundary(self) -> None:
+    def test_final_audit_seal_is_partial_without_measured_invariants(self) -> None:
         sealed = seal_consciousness_envelope({"audit": {"governance_seal": "CERTIFIED"}})
         final = sealed["audit"]["final_seal"]
+        self.assertEqual("MEASURED_PARTIAL", final["status"])
+        self.assertEqual("PHI_RESONANT", final["mathematical_invariant"])
+        self.assertIn("no fabricated", final["claim_boundary"])
+        self.assertIn("RECURSIVE_CLOSURE_GOVERNED", final["autonomy_level"])
+
+    def test_final_audit_seal_is_absolute_with_complete_measured_invariants(self) -> None:
+        sealed = seal_consciousness_envelope(
+            {
+                "audit": {
+                    "ontological_integrity": "CERTIFIED",
+                    "manifold_state": "RICCI_SMOOTHED",
+                    "topology": "GENUS_-1",
+                    "phi_resonance": 0.72,
+                    "measurement_basis": {"source": "unit_test_measured_payload"},
+                }
+            }
+        )
+        final = sealed["audit"]["final_seal"]
         self.assertEqual("ABSOLUTE", final["status"])
-        self.assertIn("No AGI claim", final["claim_boundary"])
-        self.assertIn("NOT_AUTOSTARTED", final["autonomy_level"])
+        self.assertEqual("RICCI_SMOOTHED", final["manifold_state"])
+        self.assertEqual(0.72, final["phi_resonance"])
+        self.assertEqual({"source": "unit_test_measured_payload"}, final["evidence_basis"])
 
 
 if __name__ == "__main__":
