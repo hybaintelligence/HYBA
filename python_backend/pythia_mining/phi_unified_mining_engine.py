@@ -30,11 +30,7 @@ from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
 
 from .ai_optimizer import AIOptimizer, OptimizationResult, SearchStrategy
-from .consciousness_engine import (
-    ConsciousnessConfig,
-    ConsciousnessEngine,
-    PhiMetrics,
-)
+from .consciousness_engine import ConsciousnessConfig, ConsciousnessEngine, PhiMetrics
 from .golden_ratio_library import PHI
 from .hendrix_phi_solver import (
     M32,
@@ -48,11 +44,7 @@ from .hendrix_phi_solver import (
     yang_mills_action,
 )
 from .metal_sha256_pipeline import BatchResult, NonceVerification, UnifiedBatchVerifier
-from .phi_scaling_engine import (
-    PhiResonanceAnalyzer,
-    PhiScaledEnsemble,
-    benchmark_vs_asic,
-)
+from .phi_scaling_engine import PhiResonanceAnalyzer, PhiScaledEnsemble, benchmark_vs_asic
 from .pulvini_compressed_solver import PulviniCompressedQuantumSolver
 from .pulvini_memory_compression_proof import phi_folding_mathematical_proof
 from .stratum_client import MiningJob
@@ -84,18 +76,7 @@ class UnifiedMiningState:
 
 
 class UnifiedMiningEngine:
-    """One engine. One pipeline. One powerhouse.
-
-    The full stack integrated:
-      1. ConsciousnessEngine measures system coherence → adapts search regime
-      2. MetaLearningOptimizer learns from every share → tunes strategy mix
-      3. PhiScaledEnsemble weights all model predictions by φ
-      4. PulviniCompressedQuantumSolver runs the structured search
-      5. HENDRIX-Φ primitives (M32, Yang-Mills, φ gradient) guide traversal
-      6. UnifiedBatchVerifier verifies candidates with exact Bitcoin SHA-256d
-
-    No component operates independently. The state is unified.
-    """
+    """One engine. One pipeline. One powerhouse."""
 
     def __init__(
         self,
@@ -131,7 +112,9 @@ class UnifiedMiningEngine:
     def _sync_verifier_state(self) -> None:
         status = self.verifier.status()
         metal = status.get("metal", {}) or {}
-        self.state.verifier_backend = str(status.get("selected_backend") or "cpu_parallel_exact_sha256d")
+        self.state.verifier_backend = str(
+            status.get("selected_backend") or "cpu_parallel_exact_sha256d"
+        )
         self.state.verifier_metal_available = bool(metal.get("available"))
         self.state.verifier_initialized = True
 
@@ -176,41 +159,36 @@ class UnifiedMiningEngine:
         return result
 
     def _coherence_for_next_search(self) -> PhiMetrics:
-        """Return the current measured coherence without erasing it.
-
-        Earlier versions called ``measure_phi([])`` at the start of every search.
-        That produced an ``insufficient_state_history`` metric and could reset the
-        engine to a defensive regime even after share feedback had already updated
-        the runtime state. The unified engine must let the measured state talk:
-        if share feedback or component health has produced a current coherence
-        value, reuse it. If the engine has never measured anything, seed the
-        component-health proxy by marking the solver as ready.
-        """
+        """Return the current measured coherence without erasing it."""
         if self.consciousness.current_state.integrated_information is not None:
             return PhiMetrics(
-                phi_integrated=float(self.consciousness.current_state.integrated_information or 0.0),
-                phi_causal=float(self.consciousness.current_state.component_integration or 0.0),
+                phi_integrated=float(
+                    self.consciousness.current_state.integrated_information or 0.0
+                ),
+                phi_causal=float(
+                    self.consciousness.current_state.component_integration or 0.0
+                ),
                 complexity=float(self.consciousness.current_state.system_complexity or 0.0),
-                source=str(self.consciousness.current_state.source or "component_health_operational_proxy"),
+                source=str(
+                    self.consciousness.current_state.source
+                    or "component_health_operational_proxy"
+                ),
             )
         self.consciousness.update_component_health("quantum_solver", True)
         return PhiMetrics(
-            phi_integrated=float(self.consciousness.current_state.integrated_information or 0.0),
+            phi_integrated=float(
+                self.consciousness.current_state.integrated_information or 0.0
+            ),
             phi_causal=float(self.consciousness.current_state.component_integration or 0.0),
             complexity=float(self.consciousness.current_state.system_complexity or 0.0),
-            source=str(self.consciousness.current_state.source or "component_health_operational_proxy"),
+            source=str(
+                self.consciousness.current_state.source
+                or "component_health_operational_proxy"
+            ),
         )
 
     async def search(self, job: MiningJob) -> OptimizationResult:
-        """Run one complete mining search cycle.
-
-        This is the single entry point. Every component contributes:
-          1. Consciousness → read current measured coherence → set regime
-          2. AI Optimizer → run φ-scaled ensemble
-          3. Solver → execute structured search (M32 + YM + φ gradient)
-          4. PULVINI → compress/decompress lane state
-          5. Meta → record outcome for learning
-        """
+        """Run one complete mining search cycle."""
         self._solve_count += 1
 
         phi_metrics = self._coherence_for_next_search()
@@ -264,14 +242,8 @@ class UnifiedMiningEngine:
 
         return result
 
-    async def on_share_result(
-        self, share_info: Dict[str, Any], accepted: bool
-    ) -> None:
-        """Process a share result: update consciousness + meta-learning.
-
-        This closes the feedback loop:
-        search → submit → learn → adapt → search.
-        """
+    async def on_share_result(self, share_info: Dict[str, Any], accepted: bool) -> None:
+        """Process a share result: update consciousness + meta-learning."""
         if accepted:
             await self.optimizer.on_share_accepted(share_info)
             self.state.accepted_shares += 1
@@ -308,6 +280,8 @@ class UnifiedMiningEngine:
                 "rejected_shares": self.state.rejected_shares,
                 "strategy": self.state.strategy_name,
                 "solve_count": self._solve_count,
+                "meta_learning_event": self.state.meta_learning_event,
+                "autonomic_event": self.state.autonomic_event,
                 "verifier_backend": self.state.verifier_backend,
                 "verifier_metal_available": self.state.verifier_metal_available,
                 "last_batch_size": self.state.last_batch_size,
