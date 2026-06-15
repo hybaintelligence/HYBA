@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""Run the standalone HYBA_FULLSTACK Millennium elevation gate.
+"""Run the standalone HYBA_FULLSTACK elevation gate.
 
-This runner preserves production compatibility: it does not modify existing npm
-scripts, production gates, or runtime APIs. It generates the local extracted
-Millennium packet and executes the packet verifier.
+This runner preserves production compatibility: it does not modify production
+routes, funding gates, Docker entrypoints, or runtime APIs. It generates the
+local Millennium packet, generates the phi packet, and executes the verifier
+suites.
 """
 
 from __future__ import annotations
@@ -28,7 +29,12 @@ def main(argv: Iterable[str] | None = None) -> int:
     parser.add_argument(
         "--output-dir",
         default="artifacts/millennium_runtime_elevation",
-        help="Where the elevation packet should be written.",
+        help="Where the Millennium elevation packet should be written.",
+    )
+    parser.add_argument(
+        "--phi-output-dir",
+        default="artifacts/phi_resonance_elevation",
+        help="Where the phi resonance elevation packet should be written.",
     )
     args = parser.parse_args(list(argv) if argv is not None else None)
 
@@ -40,8 +46,17 @@ def main(argv: Iterable[str] | None = None) -> int:
             args.output_dir,
         ]
     )
+    run(
+        [
+            sys.executable,
+            "scripts/generate_phi_resonance_elevation_packet.py",
+            "--output-dir",
+            args.phi_output_dir,
+        ]
+    )
     run([sys.executable, "-m", "pytest", "tests/test_millennium_runtime_elevation_packet.py", "-q"])
-    print("Millennium runtime elevation gate passed")
+    run([sys.executable, "-m", "pytest", "tests/test_phi_resonance_elevation_properties.py", "-q"])
+    print("Millennium + phi runtime elevation gate passed")
     return 0
 
 
