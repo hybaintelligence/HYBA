@@ -37,7 +37,14 @@ def density(diagonal):
     vector = np.asarray(diagonal, dtype=np.float64)
     vector = np.abs(vector) + 1e-9
     vector = vector / np.sum(vector)
-    return np.diag(vector).astype(np.complex128)
+    # Create 32x32 matrix to match NUM_NODES in pulvini_topology
+    density_matrix = np.diag(vector).astype(np.complex128)
+    if density_matrix.shape[0] < 32:
+        # Pad to 32x32 if smaller
+        padded = np.zeros((32, 32), dtype=np.complex128)
+        padded[:density_matrix.shape[0], :density_matrix.shape[1]] = density_matrix
+        density_matrix = padded
+    return density_matrix
 
 
 @unittest.skipUnless(HAS_NUMPY and HAS_HYPOTHESIS, "NumPy and Hypothesis are required")
@@ -98,8 +105,8 @@ class IIT4PropertyTests(unittest.TestCase):
     @settings(max_examples=16, deadline=None)
     def test_phi_max_is_deterministic_and_zero_for_disconnected_systems(self, state_bits):
         state = np.asarray(state_bits, dtype=np.int64)
-        disconnected = np.zeros((4, 4), dtype=np.float64)
-        analyzer = IIT4Analyzer(system_size=4)
+        disconnected = np.zeros((32, 32), dtype=np.float64)
+        analyzer = IIT4Analyzer(system_size=32)
 
         first = analyzer.calculate_phi_max(state, disconnected)
         second = analyzer.calculate_phi_max(state, disconnected)
@@ -112,11 +119,11 @@ class IIT4PropertyTests(unittest.TestCase):
     @settings(max_examples=16, deadline=None)
     def test_phi_max_increases_with_connectivity_strength(self, state_bits):
         state = np.asarray(state_bits, dtype=np.int64)
-        weak = np.ones((4, 4), dtype=np.float64) * 0.25
-        strong = np.ones((4, 4), dtype=np.float64)
+        weak = np.ones((32, 32), dtype=np.float64) * 0.25
+        strong = np.ones((32, 32), dtype=np.float64)
         np.fill_diagonal(weak, 0.0)
         np.fill_diagonal(strong, 0.0)
-        analyzer = IIT4Analyzer(system_size=4)
+        analyzer = IIT4Analyzer(system_size=32)
 
         weak_phi = float(analyzer.calculate_phi_max(state, weak)["phi_max"])
         strong_phi = float(analyzer.calculate_phi_max(state, strong)["phi_max"])
@@ -128,9 +135,9 @@ class IIT4PropertyTests(unittest.TestCase):
     @settings(max_examples=12, deadline=None)
     def test_cause_effect_repertoires_are_normalized(self, state_bits):
         state = np.asarray(state_bits, dtype=np.int64)
-        connectivity = np.ones((4, 4), dtype=np.float64)
+        connectivity = np.ones((32, 32), dtype=np.float64)
         np.fill_diagonal(connectivity, 0.0)
-        analyzer = IIT4Analyzer(system_size=4)
+        analyzer = IIT4Analyzer(system_size=32)
 
         ces = analyzer.compute_cause_effect_structure(state, connectivity)
 
