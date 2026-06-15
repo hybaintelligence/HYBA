@@ -166,11 +166,11 @@ def seed_phi_resonance_evidence(conn):
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                     """, (
                         "bitcoin_phi_resonance",
-                        int(row["block_height"]),
+                        int(row["height"]),
                         int(row["nonce"]),
-                        float(row["phi_resonance"]),
+                        float(row["resonance_strength"]),
                         15,
-                        float(row["precision"]),
+                        float(row["precision_pct"]),
                         "https://blockstream.info/api",
                         0.95  # High reliability: empirical blockchain data
                     ))
