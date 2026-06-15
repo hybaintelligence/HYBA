@@ -7,10 +7,10 @@ coherent Φ-Architecture execution flow.
 """
 
 import time
+import json
 import numpy as np
 from typing import Dict, Optional, Any, List
-from dataclasses import dataclass, asdict
-from dataclasses_json import dataclass_json
+from dataclasses import dataclass, asdict, is_dataclass
 
 from .phi_alu import PhiALUHardware
 from .phi_fibonacci_lcg import PhiNonceGeneratorHardware
@@ -21,7 +21,6 @@ PHI = 1.618033988749895
 INV_PHI = 0.618033988749895
 MASS_GAP = 3.0 - PHI
 
-@dataclass_json
 @dataclass
 class PhiTelemetry:
     """Real-time Φ-architecture telemetry"""
@@ -34,8 +33,13 @@ class PhiTelemetry:
     execution_authenticity: float
     golden_coverage: float
     hardware_resonance: float
+    
+    def to_dict(self):
+        return asdict(self)
+    
+    def to_json(self):
+        return json.dumps(self.to_dict(), default=str)
 
-@dataclass_json
 @dataclass  
 class PhiExecutionCycle:
     """Complete Φ-cycle execution record"""
@@ -46,6 +50,16 @@ class PhiExecutionCycle:
     decisions: Dict[str, Any]
     optimizations: Dict[str, float]
     hardware_actions: List[str]
+    
+    def to_dict(self):
+        result = asdict(self)
+        # Convert nested dataclasses
+        if is_dataclass(result['telemetry']):
+            result['telemetry'] = asdict(result['telemetry'])
+        return result
+    
+    def to_json(self):
+        return json.dumps(self.to_dict(), default=str)
 
 class PhiCoreOrchestrator:
     """

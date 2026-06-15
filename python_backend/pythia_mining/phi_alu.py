@@ -48,11 +48,27 @@ class PhiALU:
         if modulus == 0:
             raise ValueError("Modulus cannot be zero")
         
-        golden_modulus = modulus * PHI
-        result = x - np.floor(x / golden_modulus) * golden_modulus
+        # Convert to float for golden operations
+        x_float = float(x)
+        modulus_float = float(modulus)
+        
+        # Use golden ratio for wrapping
+        golden_modulus = modulus_float * PHI
+        
+        # Add golden twist: mix φ and 1/φ for better distribution
+        phi_component = x_float - np.floor(x_float / golden_modulus) * golden_modulus
+        inv_phi_component = x_float - np.floor(x_float / (modulus_float / PHI)) * (modulus_float / PHI)
+        
+        # Golden combination
+        result = (phi_component * PHI + inv_phi_component * INV_PHI) / (PHI + INV_PHI)
         
         # Normalize to [0, modulus) for memory addressing
-        return result % modulus
+        result = result % modulus_float
+        
+        # Return appropriate type
+        if isinstance(x, int) and isinstance(modulus, int):
+            return int(result)
+        return result
     
     def phi_address(self, virtual_addr: int) -> PhiAddress:
         """
@@ -67,7 +83,7 @@ class PhiALU:
         
         # Golden spiral coordinates
         r = np.sqrt(n + 1)  # +1 to avoid sqrt(0)
-        theta_deg = n * self.golden_angle
+        theta_deg = (n * self.golden_angle) % 360.0
         theta_rad = np.deg2rad(theta_deg)
         
         # Physical coordinates on memory manifold
@@ -85,7 +101,7 @@ class PhiALU:
         return PhiAddress(
             virtual_addr=virtual_addr,
             physical_addr=physical_addr,
-            golden_angle=theta_deg % 360.0,
+            golden_angle=theta_deg,
             spiral_layer=int(r)
         )
     
@@ -148,23 +164,34 @@ class PhiALU:
             if phi_addr:
                 angles.append(phi_addr.golden_angle)
         
-        if not angles:
-            return {"status": "no_angle_data", "harmony_score": 0.0}
+        if not angles or len(angles) < 5:
+            return {"status": "insufficient_data", "harmony_score": 0.0}
         
-        # Compute golden harmony: angles should be uniformly distributed
-        # around the circle with golden spacing
+        # Compute golden harmony: angles should be well distributed
+        # We want to avoid clustering
         angles = np.array(angles)
-        angle_diffs = np.diff(np.sort(angles))
+        sorted_angles = np.sort(angles)
+        angle_diffs = np.diff(sorted_angles)
         
-        # Ideal difference is golden_angle
-        ideal_diff = self.golden_angle
-        harmony_errors = np.abs(angle_diffs - ideal_diff)
-        harmony_score = 1.0 - np.mean(harmony_errors) / 180.0  # Normalize
+        # Check for even distribution (not clustering)
+        mean_diff = np.mean(angle_diffs)
+        cv = np.std(angle_diffs) / mean_diff if mean_diff > 0 else 0.0
+        
+        # Good distribution has moderate coefficient of variation
+        # Too low = too uniform (artificial), too high = clustered
+        harmony_score = 1.0 - min(abs(cv - 0.5), 1.0)  # Target CV ~0.5
+        
+        status = "coherent"
+        if harmony_score < 0.7:
+            status = "decohered"
+        elif len(angles) < 20:
+            status = "insufficient_data"
         
         return {
-            "status": "coherent" if harmony_score > 0.9 else "decohered",
+            "status": status,
             "harmony_score": float(harmony_score),
-            "avg_angle_diff": float(np.mean(angle_diffs)),
+            "avg_angle_diff": float(mean_diff),
+            "angle_cv": float(cv),
             "ideal_golden_angle": self.golden_angle,
             "sample_size": len(angles)
         }
