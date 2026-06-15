@@ -94,20 +94,82 @@ class PredictRequest(BaseModel):
 
 @router.post("/predict", response_model=Dict[str, Any])
 async def predict_params(req: PredictRequest):
-    """Fail closed until a measured optimizer runtime is connected.
+    """Generate power and strategy predictions from live optimizer measurements.
 
-    Power recommendations are operational controls. Returning a heuristic when the
-    optimizer is unavailable would look like a successful prediction while being
-    unrelated to measured activity, so the API reports the missing dependency
-    explicitly instead of fabricating confidence or a power scale.
+    Power recommendations are operational controls. This endpoint returns predictions
+    only when a measured optimizer runtime is connected. When unavailable, it reports
+    the missing dependency explicitly rather than fabricating confidence or power scale.
     """
-
-    raise HTTPException(
-        status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-        detail={
-            "error": "optimizer_runtime_not_connected",
-            "message": "No measured optimizer runtime is connected; prediction was not generated.",
-            "networkDifficulty": req.state.networkDifficulty,
+    
+    try:
+        from python_backend.pythia_mining.genesis_ai_service import GenesisAIServiceRegistry
+        
+        optimizer = GenesisAIServiceRegistry.get_ai_optimizer()
+        
+        if optimizer is None:
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail={
+                    "error": "optimizer_runtime_not_connected",
+                    "message": "No measured optimizer runtime is connected; prediction was not generated.",
+                    "networkDifficulty": req.state.networkDifficulty,
+                    "timestamp": datetime.now(timezone.utc).isoformat(),
+                },
+            )
+        
+        # Get current optimizer state and meta-learning snapshot
+        meta_snapshot = optimizer.meta_learning_snapshot()
+        strategy_probs = meta_snapshot.get("strategy_probabilities", {})
+        recent_performance = meta_snapshot.get("recent_performance", [])
+        
+        # Calculate recommendation based on measured optimizer state
+        recommended_strategy = max(strategy_probs.items(), key=lambda x: x[1])[0] if strategy_probs else "phi_scaled_compressed_solver_search"
+        
+        # Derive power scale recommendation from recent performance
+        recent_accepted = [p for p in recent_performance[-10:] if p.get("accepted", False)]
+        acceptance_rate = len(recent_accepted) / max(1, len(recent_performance[-10:]))
+        
+        # Conservative power scaling based on acceptance rate
+        if acceptance_rate > 0.7:
+            recommended_power_scale = 1.0  # Stable
+        elif acceptance_rate > 0.4:
+            recommended_power_scale = 1.1  # Slight increase
+        else:
+            recommended_power_scale = 1.2  # Increase exploration
+        
+        # Calculate confidence from strategy entropy
+        if strategy_probs:
+            strategy_values = list(strategy_probs.values())
+            entropy = -sum(p * np.log(p + 1e-12) for p in strategy_values if p > 0)
+            max_entropy = np.log(len(strategy_probs))
+            confidence = 1.0 - (entropy / max(max_entropy, 1e-12))
+        else:
+            confidence = 0.0
+        
+        return {
+            "success": True,
+            "status": "predicted",
             "timestamp": datetime.now(timezone.utc).isoformat(),
-        },
-    )
+            "source": "measured_optimizer_runtime",
+            "networkDifficulty": req.state.networkDifficulty,
+            "recommendation": {
+                "strategy": recommended_strategy,
+                "power_scale": recommended_power_scale,
+                "confidence": float(confidence),
+            },
+            "optimizer_state": {
+                "acceptance_rate": float(acceptance_rate),
+                "strategy_probabilities": strategy_probs,
+                "recent_performance_samples": len(recent_performance),
+            },
+        }
+        
+    except ImportError:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail={
+                "error": "optimizer_module_not_available",
+                "message": "Optimizer module is not available in this environment.",
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+            },
+        )

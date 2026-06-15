@@ -35,6 +35,7 @@ if str(BACKEND) not in sys.path:
 
 from pythia_mining.consciousness_engine import ConsciousnessEngine  # noqa: E402
 from pythia_mining.iit_4_analyzer import IIT4Analyzer  # noqa: E402
+from pythia_mining.pulvini_topology import NUM_NODES  # noqa: E402
 from scripts.generate_scientific_baselines import all_baselines, canonical_bytes  # noqa: E402
 
 
@@ -59,13 +60,23 @@ class EvidencePoint:
         return asdict(self)
 
 
-def density(diagonal: Iterable[float]) -> np.ndarray:
-    """Return a normalized diagonal density matrix from a positive vector."""
+def density(diagonal: Iterable[float], *, dimension: int = NUM_NODES) -> np.ndarray:
+    """Return a normalized diagonal density matrix padded to runtime dimension.
+
+    The evidence histories use compact four-state examples for reviewability,
+    while ``ConsciousnessEngine`` consumes the production PULVINI topology
+    dimension.  Padding embeds the compact state in the 32-node density manifold
+    without changing trace, positivity, or deterministic replay.
+    """
 
     vector = np.asarray(list(diagonal), dtype=np.float64)
     vector = np.abs(vector) + 1e-12
     vector = vector / np.sum(vector)
-    return np.diag(vector).astype(np.complex128)
+    if vector.shape[0] > dimension:
+        raise ValueError(f"density vector length {vector.shape[0]} exceeds dimension {dimension}")
+    padded = np.zeros(dimension, dtype=np.float64)
+    padded[: vector.shape[0]] = vector
+    return np.diag(padded).astype(np.complex128)
 
 
 def deterministic_histories() -> Dict[str, List[np.ndarray]]:
@@ -94,11 +105,14 @@ def deterministic_histories() -> Dict[str, List[np.ndarray]]:
 
 
 def vector_state_from_density(rho: np.ndarray) -> np.ndarray:
-    """Map a density diagonal to a binary IIT state for deterministic replay."""
+    """Map non-zero density diagonal support to a binary IIT state."""
 
     diagonal = np.real(np.diag(rho))
-    threshold = float(np.median(diagonal))
-    return np.asarray([1 if value >= threshold else 0 for value in diagonal], dtype=np.int64)
+    support = diagonal[diagonal > 0.0]
+    if support.size == 0:
+        support = diagonal[:4]
+    threshold = float(np.median(support))
+    return np.asarray([1 if value >= threshold else 0 for value in support], dtype=np.int64)
 
 
 def connectivity_matrix(kind: str, size: int = 4) -> np.ndarray:

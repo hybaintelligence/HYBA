@@ -1,13 +1,16 @@
 """GenesisAI Service Registry for API Integration."""
 
-from typing import Optional, Dict, Any
-from .genesis_ai import GenesisAI
+from typing import Optional, Dict, Any, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from .genesis_ai import GenesisAI
+    from .ai_optimizer import AIOptimizer
 
 class GenesisAIServiceRegistry:
     """Singleton registry for GenesisAI instance to enable API integration."""
     
     _instance: Optional['GenesisAIServiceRegistry'] = None
-    _genesis_ai: Optional[GenesisAI] = None
+    _genesis_ai: Optional['GenesisAI'] = None
     
     def __new__(cls):
         if cls._instance is None:
@@ -15,12 +18,12 @@ class GenesisAIServiceRegistry:
         return cls._instance
     
     @classmethod
-    def register_instance(cls, genesis_ai: GenesisAI) -> None:
+    def register_instance(cls, genesis_ai: 'GenesisAI') -> None:
         """Register the GenesisAI instance for API access."""
         cls._genesis_ai = genesis_ai
     
     @classmethod
-    def get_instance(cls) -> Optional[GenesisAI]:
+    def get_instance(cls) -> Optional['GenesisAI']:
         """Get the registered GenesisAI instance."""
         return cls._genesis_ai
     
@@ -28,6 +31,13 @@ class GenesisAIServiceRegistry:
     def is_registered(cls) -> bool:
         """Check if a GenesisAI instance is registered."""
         return cls._genesis_ai is not None
+    
+    @classmethod
+    def get_ai_optimizer(cls) -> Optional['AIOptimizer']:
+        """Get the AI optimizer instance from GenesisAI."""
+        if cls._genesis_ai is None:
+            return None
+        return getattr(cls._genesis_ai, 'ai_optimizer', None)
     
     @classmethod
     def get_consciousness_metrics(cls) -> Dict[str, Any]:

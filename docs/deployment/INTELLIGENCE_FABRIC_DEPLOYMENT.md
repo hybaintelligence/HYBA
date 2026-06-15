@@ -54,8 +54,8 @@ Create a `.env` file in the project root:
 
 ```bash
 # Required Security Variables
-JWT_SECRET=replace-with-your-production-secret
-HYBA_OPERATOR_CREDENTIALS=your-operator-credentials
+JWT_SECRET=replace-with-32-byte-secret
+HYBA_OPERATOR_CREDENTIALS=replace-with-argon2id-entry
 
 # Production Environment
 NODE_ENV=production

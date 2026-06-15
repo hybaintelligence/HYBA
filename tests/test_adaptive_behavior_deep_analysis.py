@@ -11,6 +11,8 @@ Scientific posture:
 - The output artifact is evidence for the proof ladder, not a final claim.
 """
 
+from __future__ import annotations
+
 import ast
 import json
 import re
@@ -115,7 +117,6 @@ class FeedbackLoopDetector:
         return node.attr
 
     def _assigns_to_self(self, node) -> bool:
-        target = None
         if isinstance(node, ast.Assign):
             targets = node.targets
         elif isinstance(node, ast.AugAssign):
@@ -206,33 +207,52 @@ class SelfModificationDetector:
     def analyze_file(self, file_path: Path) -> Dict:
         try:
             content = file_path.read_text(encoding="utf-8")
+            tree = ast.parse(content, filename=str(file_path))
             modifications = []
-            self_modify_patterns = [
-                (r"eval\s*\(", "eval_usage", "DANGEROUS"),
-                (r"exec\s*\(", "exec_usage", "DANGEROUS"),
-                (r"compile\s*\(", "compile_usage", "MODERATE"),
-                (r"__setattr__", "setattr_override", "MODERATE"),
-                (r"setattr\s*\(", "setattr_usage", "LOW"),
-                (r"__dict__\[", "dict_manipulation", "LOW"),
-                (r"globals\(\)", "globals_access", "MODERATE"),
-                (r"locals\(\)", "locals_access", "LOW"),
-                (r"type\s*\(.*\)\(", "dynamic_type_creation", "MODERATE"),
-            ]
-            for pattern, label, severity in self_modify_patterns:
-                for match in re.finditer(pattern, content, re.IGNORECASE):
-                    line_num = content[: match.start()].count("\n") + 1
-                    line_start = content.rfind("\n", 0, match.start()) + 1
-                    line_end = content.find("\n", match.end())
-                    if line_end == -1:
-                        line_end = len(content)
-                    modifications.append(
-                        {
-                            "type": label,
-                            "severity": severity,
-                            "line": line_num,
-                            "context": content[line_start:line_end].strip()[:160],
-                        }
-                    )
+
+            for node in ast.walk(tree):
+                if not isinstance(node, ast.Call):
+                    continue
+
+                label = None
+                severity = None
+                context = ""
+                if isinstance(node.func, ast.Name) and node.func.id in {"eval", "exec"}:
+                    label = f"{node.func.id}_usage"
+                    severity = "DANGEROUS"
+                elif isinstance(node.func, ast.Name) and node.func.id == "compile":
+                    label = "compile_usage"
+                    severity = "MODERATE"
+                elif isinstance(node.func, ast.Name) and node.func.id == "setattr":
+                    label = "setattr_usage"
+                    severity = "LOW"
+                elif isinstance(node.func, ast.Name) and node.func.id in {"globals", "locals"}:
+                    label = f"{node.func.id}_access"
+                    severity = "MODERATE" if node.func.id == "globals" else "LOW"
+                elif isinstance(node.func, ast.Name) and node.func.id == "type":
+                    label = "dynamic_type_creation"
+                    severity = "MODERATE"
+                elif isinstance(node.func, ast.Attribute) and node.func.attr == "__setattr__":
+                    label = "setattr_override"
+                    severity = "MODERATE"
+
+                if label is None or severity is None:
+                    continue
+
+                line_num = getattr(node, "lineno", 0)
+                line_start = content.rfind("\n", 0, max(0, getattr(node, "col_offset", 0))) + 1
+                lines = content.splitlines()
+                if 1 <= line_num <= len(lines):
+                    context = lines[line_num - 1].strip()[:160]
+                modifications.append(
+                    {
+                        "type": label,
+                        "severity": severity,
+                        "line": line_num,
+                        "context": context,
+                    }
+                )
+
             return {"file": str(file_path.name), "modifications": modifications, "count": len(modifications)}
         except Exception as exc:
             return {"file": str(file_path.name), "error": str(exc), "count": 0}
@@ -347,7 +367,7 @@ class TestAdaptiveBehaviorDeepAnalysis(unittest.TestCase):
         print("\n=== SELF-MODIFICATION SITE ANALYSIS ===")
         print(f"Total self-modification patterns: {total_modifications}")
         print(f"Files with self-modification: {len(all_results)}")
-        print(f"DANGEROUS sites (eval/exec): {len(dangerous_sites)}")
+        print(f"DANGEROUS sites (builtin eval/exec): {len(dangerous_sites)}")
         for severity in ["DANGEROUS", "MODERATE", "LOW"]:
             print(f"  {severity}: {severity_counts.get(severity, 0)}")
 
@@ -407,7 +427,7 @@ class TestAdaptiveBehaviorDeepAnalysis(unittest.TestCase):
 
         self.assertFalse(
             has_dangerous_self_mod,
-            "Dangerous eval/exec self-modification must be triaged before any emergence claim advances.",
+            "Dangerous builtin eval/exec self-modification must be triaged before any emergence claim advances.",
         )
 
 

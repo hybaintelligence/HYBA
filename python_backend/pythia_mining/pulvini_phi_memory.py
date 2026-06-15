@@ -168,34 +168,49 @@ class PulviniPhiMemoryCompressionEngine:
         source = np.asarray(payload)
         flat = source.reshape(-1)
         input_sparsity = _sparsity(flat)
+
+        # Strategy selection: sparse → fib-packed, dense → phi-fold
         if input_sparsity >= self.sparse_skip_threshold:
-            folded = flat.copy()
-            kernels = tuple()
-            sizes = (int(flat.size),)
-            reconstructed_flat = folded.copy()
+            # Sparse-optimised fold: pack non-zero elements + indices into
+            # Fibonacci-sized blocks for zero-copy PhiMalloc compatibility
+            folded, sparse_kernel, _ = self.operator.fold_sparse(
+                flat, sparse_threshold=self.sparse_skip_threshold
+            )
+            # For sparse case, store the kernel arrays from SparsePhiFoldKernel
+            kernels = (sparse_kernel.kernel_values,)
+            sparse_kernel_obj = sparse_kernel  # Keep reference for unfold
+            sizes = (int(flat.size), int(folded.size))
+            reconstructed_flat = self.operator.unfold_sparse(folded, sparse_kernel, int(flat.size))
             effective_flat = flat
-            compression_strategy = "sparse_passthrough"
+            compression_strategy = "sparse_fib_packed"
         else:
+            sparse_kernel_obj = None
             folded, kernels, sizes = self.operator.fold_recursive(flat, depth=self.fold_depth)
             reconstructed_flat = self.operator.unfold_recursive(folded, kernels, sizes)[: flat.size]
-            # Use the folded output's own input (which may have been clamped by
-            # PhiFoldingOperator) as the reference for reconstruction error so
-            # that near-max float64 inputs don't overflow during norm computation.
             effective_flat = reconstructed_flat if not np.isfinite(flat).all() else flat
             compression_strategy = "phi_fold"
+
         reconstructed = reconstructed_flat.reshape(source.shape)
         kernel_flat = (
             np.concatenate([kernel.reshape(-1) for kernel in kernels])
             if kernels
             else np.asarray([], dtype=folded.dtype)
         )
-        with np.errstate(over="ignore", invalid="ignore"):
-            raw_error = np.linalg.norm(effective_flat - reconstructed_flat)
-        reconstruction_error = (
-            float(raw_error)
-            if np.isfinite(raw_error)
-            else float(np.linalg.norm((effective_flat - reconstructed_flat).clip(-1e300, 1e300)))
-        )
+
+        # Use randomised sketch for production error bounds when array is large
+        if flat.size > 1000:
+            reconstruction_error = self.operator.approximate_error(
+                effective_flat, reconstructed_flat, sketch_size=min(500, flat.size // 10)
+            )
+        else:
+            with np.errstate(over="ignore", invalid="ignore"):
+                raw_error = np.linalg.norm(effective_flat - reconstructed_flat)
+            reconstruction_error = (
+                float(raw_error)
+                if np.isfinite(raw_error)
+                else float(np.linalg.norm((effective_flat - reconstructed_flat).clip(-1e300, 1e300)))
+            )
+
         original_bytes = int(flat.nbytes)
         folded_bytes = int(folded.nbytes)
         kernel_bytes = int(sum(kernel.nbytes for kernel in kernels))
@@ -236,7 +251,7 @@ class PulviniPhiMemoryCompressionEngine:
             sizes=tuple(int(size) for size in sizes),
             reconstructed=reconstructed.copy(),
             compression_strategy=compression_strategy,
-            sparse_optimized=bool(compression_strategy == "sparse_passthrough"),
+            sparse_optimized=bool(compression_strategy in ("sparse_passthrough", "sparse_fib_packed")),
         )
 
     def decompress(self, result: PhiMemoryFoldResult) -> np.ndarray:

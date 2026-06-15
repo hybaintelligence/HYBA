@@ -16,16 +16,9 @@ from hyba_genesis_api.core.reflexive_controller import ReflexiveController, defa
 router = APIRouter(prefix="/api/v1/intelligence", tags=["intelligence"])
 
 MEASURED_TELEMETRY_SOURCE = "measured_reflexive_controller_runtime"
-    "no fabricated, simulated, fixture, or synthetic telemetry."
->>>>>>> Stashed changes
-)
 MEASURED_CLAIM_BOUNDARY = (
     "Measured reflexive codebase state from the current controller step; "
-    "no fabricated, simulated, fixture, or synthetic telemetry."
-)
-=======
-    "no fabricated, simulated, fixture, or synthetic telemetry."
->>>>>>> Stashed changes
+    "runtime values are derived from controller observations only."
 )
 
 
@@ -63,17 +56,26 @@ async def intelligence_health() -> Dict[str, Any]:
     """Return measured dashboard telemetry for the scoped reflexive controller."""
 
     controller = ReflexiveController(default_reflexive_root())
-    umwelt = controller.observe_codebase()
-    state = controller.fabric.map_to_complex_state(umwelt)
+    umwelt_str = controller.observe_codebase()
+    state = controller.fabric.map_to_complex_state(umwelt_str)
     phi = controller.fabric.calculate_resonance(state)
+    # Parse the umwelt string to get file counts
+    file_counts = {}
+    if umwelt_str:
+        for item in umwelt_str.split('|'):
+            if ':' in item:
+                file_part, count_part = item.split(':', 1)
+                file_counts[file_part] = int(count_part) if count_part.isdigit() else 0
+    
     return {
         "phi_resonance": round(phi, 6),
         "system_state": "coherent" if phi > 0.5 else "fragmented",
         "telemetry_source": MEASURED_TELEMETRY_SOURCE,
         "measurement_basis": {
             "controller_root": str(default_reflexive_root()),
-            "observed_nodes": len(getattr(state, "amplitudes", []) or []),
-            "umwelt_summary": str(umwelt)[:200] if umwelt else "",
+            "observed_nodes": len(state),
+            "umwelt_keys": sorted(file_counts.keys()),
+            "file_count": len(file_counts),
         },
         "claim_boundary": MEASURED_CLAIM_BOUNDARY,
     }

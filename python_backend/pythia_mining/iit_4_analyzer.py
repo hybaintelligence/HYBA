@@ -60,6 +60,20 @@ class IIT4Analyzer:
             "average_phi_max_calculation_time_ms": 0.0,
         }
 
+    def _effective_size(self, system_state: np.ndarray, connectivity_matrix: Optional[np.ndarray] = None) -> int:
+        """Return the observed state size bounded by the configured topology.
+
+        Runtime tests often use a compact 4-element state with a 32-node matrix to
+        exercise the production topology without allocating a full state vector.
+        Mechanism enumeration must therefore be bounded by the actual observed
+        state, while connectivity-only Φ estimates may still use the full matrix.
+        """
+
+        observed = int(np.asarray(system_state).shape[0])
+        if connectivity_matrix is not None:
+            observed = min(observed, int(np.asarray(connectivity_matrix).shape[0]))
+        return max(0, min(int(self.system_size), observed))
+
     def calculate_phi_max(
         self, system_state: np.ndarray, connectivity_matrix: Optional[np.ndarray] = None
     ) -> Dict:
@@ -71,7 +85,7 @@ class IIT4Analyzer:
         """
         import time
         start_time = time.time()
-        
+
         if connectivity_matrix is None:
             # Default: full connectivity
             connectivity_matrix = np.ones((self.system_size, self.system_size))
@@ -85,7 +99,7 @@ class IIT4Analyzer:
             # For larger systems, use greedy approximation
             self.performance_metrics["approximate_search_calls"] += 1
             result = self._approximate_phi_max(system_state, connectivity_matrix)
-        
+
         # Record performance metrics
         elapsed_ms = (time.time() - start_time) * 1000
         self.performance_metrics["phi_max_calculations"] += 1
@@ -94,18 +108,19 @@ class IIT4Analyzer:
         self.performance_metrics["average_phi_max_calculation_time_ms"] = (
             (avg_time * (total_calcs - 1) + elapsed_ms) / total_calcs
         )
-        
+
         # Add performance data to result
         result["performance_ms"] = elapsed_ms
         result["enhanced_partitioning"] = self.enhanced_partitioning
-        
+
         return result
 
     def _exhaustive_phi_max(
         self, system_state: np.ndarray, connectivity_matrix: np.ndarray
     ) -> Dict:
         """Exhaustive search for small systems"""
-        all_partitions = list(self._generate_bipartitions(set(range(self.system_size))))
+        effective_size = self._effective_size(system_state, connectivity_matrix)
+        all_partitions = list(self._generate_bipartitions(set(range(effective_size))))
 
         phi_values = []
         for partition in all_partitions:
@@ -113,33 +128,35 @@ class IIT4Analyzer:
             phi_values.append((partition, phi))
 
         # Main complex = partition with maximum Φ
-        main_complex, phi_max = max(phi_values, key=lambda x: x[1])
+        main_complex, phi_max = max(phi_values, key=lambda x: x[1]) if phi_values else ((set(), set()), 0.0)
 
         return {
             "phi_max": phi_max,
             "main_complex": main_complex,
             "partition_count": len(all_partitions),
-            "all_phi_values": sorted(phi_values, key=lambda x: x[1], reverse=True)[:10],  # Top 10
+            "all_phi_values": sorted(phi_values, key=lambda x: x[1], reverse=True)[:10],
         }
 
     def _approximate_phi_max(
         self, system_state: np.ndarray, connectivity_matrix: np.ndarray
     ) -> Dict:
         """Greedy approximation for large systems with enhanced partitioning"""
-        # Start with full system
-        current_subset = set(range(self.system_size))
+        effective_size = min(int(self.system_size), int(connectivity_matrix.shape[0]))
+        # Start with full available topology.  This routine uses connectivity
+        # strength only, so it can evaluate a 32-node topology with a compact
+        # state vector without indexing beyond the observed state.
+        current_subset = set(range(effective_size))
         current_phi = self._calculate_subset_phi(current_subset, system_state, connectivity_matrix)
 
         if self.enhanced_partitioning:
             # Enhanced: spectral clustering for better initial partition
             from scipy.sparse.csgraph import laplacian
             from scipy.sparse import csr_matrix
-            
+
             # Compute graph Laplacian
-            n = self.system_size
-            sparse_conn = csr_matrix(connectivity_matrix)
+            sparse_conn = csr_matrix(connectivity_matrix[:effective_size, :effective_size])
             lapl = laplacian(sparse_conn, normed=True)
-            
+
             # Use eigenvectors for spectral partitioning
             try:
                 self.performance_metrics["spectral_partitioning_calls"] += 1
@@ -148,7 +165,7 @@ class IIT4Analyzer:
                 fiedler = eigenvectors[:, 1]
                 threshold = np.median(fiedler)
                 spectral_partition = set(i for i, val in enumerate(fiedler) if val > threshold)
-                
+
                 # Test spectral partition
                 spectral_phi = self._calculate_subset_phi(spectral_partition, system_state, connectivity_matrix)
                 if spectral_phi > current_phi:
@@ -202,8 +219,8 @@ class IIT4Analyzer:
             connectivity_matrix = np.ones((self.system_size, self.system_size))
             np.fill_diagonal(connectivity_matrix, 0)
 
-        # Identify mechanisms (power set of elements, limited for large systems)
-        mechanisms = self._identify_mechanisms(system_state)
+        # Identify mechanisms (power set of observed elements, limited for large systems)
+        mechanisms = self._identify_mechanisms(system_state, connectivity_matrix=connectivity_matrix)
 
         cause_repertoires = {}
         effect_repertoires = {}
@@ -244,39 +261,45 @@ class IIT4Analyzer:
             dimensionality=dimensionality,
             max_phi_s=max_phi_s,
         )
-    
+
     def get_performance_metrics(self) -> Dict[str, Any]:
         """Return performance metrics for telemetry and benchmarking."""
         return self.performance_metrics.copy()
 
     def _identify_mechanisms(
-        self, system_state: np.ndarray, max_mechanisms: int = 20
+        self,
+        system_state: np.ndarray,
+        max_mechanisms: int = 20,
+        connectivity_matrix: Optional[np.ndarray] = None,
     ) -> List[Mechanism]:
         """
         Identify relevant mechanisms.
         For large systems, limit to most active elements.
         """
         mechanisms = []
+        effective_size = self._effective_size(system_state, connectivity_matrix)
 
-        # For small systems, consider all non-empty subsets
-        if self.system_size <= 4:
-            for size in range(1, self.system_size + 1):
-                for elements in combinations(range(self.system_size), size):
+        # For small observed systems, consider all non-empty subsets
+        if effective_size <= 4:
+            for size in range(1, effective_size + 1):
+                for elements in combinations(range(effective_size), size):
                     mechanism = Mechanism(
                         elements=set(elements), state=system_state[list(elements)]
                     )
                     mechanisms.append(mechanism)
         else:
-            # For larger systems, focus on individual elements and pairs
-            # Individual elements
-            for i in range(min(self.system_size, max_mechanisms // 2)):
+            # For larger systems, focus on individual elements and pairs.
+            # Bound enumeration by actual observed state length to avoid indexing
+            # compact test vectors as if they were full 32-node runtime states.
+            limit = min(effective_size, max_mechanisms // 2)
+            for i in range(limit):
                 mechanism = Mechanism(elements={i}, state=np.array([system_state[i]]))
                 mechanisms.append(mechanism)
 
             # Connected pairs (based on connectivity)
             pair_count = 0
-            for i in range(self.system_size):
-                for j in range(i + 1, self.system_size):
+            for i in range(effective_size):
+                for j in range(i + 1, effective_size):
                     if pair_count >= max_mechanisms // 2:
                         break
                     mechanism = Mechanism(
@@ -284,6 +307,8 @@ class IIT4Analyzer:
                     )
                     mechanisms.append(mechanism)
                     pair_count += 1
+                if pair_count >= max_mechanisms // 2:
+                    break
 
         return mechanisms
 

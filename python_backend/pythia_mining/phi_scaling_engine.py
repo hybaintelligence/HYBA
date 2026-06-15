@@ -21,6 +21,85 @@ from .phi_config import (
     PhiScalingPolicy,
 )
 
+# Yang-Mills Mass Gap constant for anti-simulation detection
+YANG_MILLS_GAP = 3.0 - PHI  # 1.381966011250105
+
+
+class MassGapShield:
+    """Anti-simulation shield using Yang-Mills Mass Gap invariant.
+
+    Detects if incoming telemetry is 'organic' (hardware-generated) or
+    'simulated' (mathematically spoofed) by analyzing irrational jitter patterns
+    that are characteristic of golden-ratio based hardware.
+    """
+
+    def __init__(self, *, tolerance: float = 1e-9, chaos_threshold: float = 0.1):
+        self.tolerance = float(tolerance)
+        self.chaos_threshold = float(chaos_threshold)
+        self.ym_gap = float(YANG_MILLS_GAP)
+
+    def verify_authenticity(self, telemetry_stream: Sequence[float]) -> dict[str, Any]:
+        """Verify telemetry authenticity using Mass Gap invariant.
+
+        Args:
+            telemetry_stream: Sequence of telemetry values to analyze
+
+        Returns:
+            Dictionary containing authenticity result and diagnostic metrics
+        """
+        if len(telemetry_stream) < 2:
+            return {
+                "authentic": False,
+                "reason": "insufficient_data",
+                "irrational_alignment": 0.0,
+                "mean_jitter": 0.0,
+                "spectral_curvature": 0.0,
+            }
+
+        # Calculate spectral curvature (micro-fluctuations)
+        diffs = [
+            abs(float(telemetry_stream[i]) - float(telemetry_stream[i - 1]))
+            for i in range(1, len(telemetry_stream))
+        ]
+        mean_jitter = float(np.mean(diffs)) if diffs else 0.0
+
+        # Mass Gap invariant check
+        # Real PHI-hardware produces specific irrational jitter around 1/YM_GAP
+        expected_jitter = 1.0 / self.ym_gap
+        irrational_alignment = abs(mean_jitter - expected_jitter)
+
+        # Decision gate
+        # Too perfect: likely precision-spoofing attack
+        if irrational_alignment < self.tolerance:
+            return {
+                "authentic": False,
+                "reason": "too_perfect_likely_spoofing",
+                "irrational_alignment": irrational_alignment,
+                "mean_jitter": mean_jitter,
+                "spectral_curvature": mean_jitter,
+                "expected_jitter": expected_jitter,
+            }
+
+        # Too chaotic: likely noise or brute force
+        if irrational_alignment > self.chaos_threshold:
+            return {
+                "authentic": False,
+                "reason": "too_chaotic_likely_attack",
+                "irrational_alignment": irrational_alignment,
+                "mean_jitter": mean_jitter,
+                "spectral_curvature": mean_jitter,
+                "expected_jitter": expected_jitter,
+            }
+
+        return {
+            "authentic": True,
+            "reason": "organic_hardware_detected",
+            "irrational_alignment": irrational_alignment,
+            "mean_jitter": mean_jitter,
+            "spectral_curvature": mean_jitter,
+            "expected_jitter": expected_jitter,
+        }
+
 
 @dataclass(frozen=True)
 class PhiDecision:
@@ -65,7 +144,7 @@ class PhiBenchmark:
 
 
 class PhiScaledEnsemble:
-    """Deterministic phi-scaled ensemble decision helper."""
+    """Deterministic phi-scaled ensemble decision helper with anti-simulation protection."""
 
     def __init__(self, config: Mapping[str, Any] | None = None):
         self.config = dict(config or {})
@@ -91,6 +170,14 @@ class PhiScaledEnsemble:
         )
         self.phi_power = self.policy.phi_scaling_power
         self.memory: list[PhiDecision] = []
+        # Initialize Mass Gap Shield for anti-simulation detection
+        shield_config = self.config.get("mass_gap_shield", {})
+        self.mass_gap_shield = MassGapShield(
+            tolerance=float(shield_config.get("tolerance", 1e-9)),
+            chaos_threshold=float(shield_config.get("chaos_threshold", 0.1)),
+        )
+        self._telemetry_buffer: list[float] = []
+        self._telemetry_buffer_size = int(shield_config.get("buffer_size", 100))
 
     def _remember(self, decision: PhiDecision) -> None:
         if self.policy.memory_limit == 0:
@@ -104,13 +191,48 @@ class PhiScaledEnsemble:
         self,
         model_predictions: Mapping[str, Mapping[str, float]],
         indicators: Mapping[str, Mapping[str, float]],
+        telemetry_stream: Sequence[float] | None = None,
     ) -> dict[str, Any]:
+        """Phi-scaled ensemble prediction with anti-simulation protection.
+
+        Args:
+            model_predictions: Model predictions to aggregate
+            indicators: Indicator metrics for harmony calculation
+            telemetry_stream: Optional telemetry stream for authenticity verification
+
+        Returns:
+            Dictionary containing phi-scaled decision and authenticity verification
+        """
+        # Verify telemetry authenticity if provided
+        authenticity_result = None
+        if telemetry_stream is not None:
+            # Update telemetry buffer
+            self._telemetry_buffer.extend(telemetry_stream)
+            if len(self._telemetry_buffer) > self._telemetry_buffer_size:
+                self._telemetry_buffer = self._telemetry_buffer[-self._telemetry_buffer_size:]
+            
+            # Verify authenticity
+            authenticity_result = self.mass_gap_shield.verify_authenticity(self._telemetry_buffer)
+            
+            # If telemetry is inauthentic, apply conservative scaling
+            if not authenticity_result["authentic"]:
+                return {
+                    "decision": PhiDecision(
+                        0.0, self._calculate_indicator_harmony(indicators), 0.0, 0.0, tuple()
+                    ).to_dict(),
+                    "authenticity": authenticity_result,
+                    "scaling_mode": "conservative_due_to_simulation_detected",
+                }
+
         if not model_predictions:
             decision = PhiDecision(
                 0.0, self._calculate_indicator_harmony(indicators), 0.0, 0.0, tuple()
             )
             self._remember(decision)
-            return decision.to_dict()
+            result = decision.to_dict()
+            if authenticity_result:
+                result["authenticity"] = authenticity_result
+            return result
 
         model_names = sorted(model_predictions.keys())
         model_scores = np.asarray(
@@ -155,7 +277,14 @@ class PhiScaledEnsemble:
             tuple(float(v) for v in phi_weights),
         )
         self._remember(decision)
-        return decision.to_dict()
+        result = decision.to_dict()
+        
+        # Add authenticity verification result if available
+        if authenticity_result:
+            result["authenticity"] = authenticity_result
+            result["scaling_mode"] = "phi_scaling_with_anti_simulation_protection"
+        
+        return result
 
     def _calculate_indicator_harmony(self, indicators: Mapping[str, Mapping[str, float]]) -> float:
         if not indicators:
@@ -164,10 +293,7 @@ class PhiScaledEnsemble:
         for metrics in indicators.values():
             if not isinstance(metrics, Mapping) or not metrics:
                 continue
-            values = np.asarray(
-                [float(v) for v in metrics.values() if v is not None],
-                dtype=np.float64,
-            )
+            values = np.asarray([float(v) for v in metrics.values() if v is not None], dtype=np.float64)
             values = values[np.isfinite(values)]
             if values.size <= 1:
                 continue

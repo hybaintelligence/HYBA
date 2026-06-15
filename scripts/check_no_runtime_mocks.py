@@ -75,6 +75,8 @@ ALLOWED_PATTERN_FILES = {
         "src/core/perturbation_analyzer.ts",
         # Security: shard rotation seed (should migrate to crypto.randomBytes in production)
         "src/core/security_swarm.ts",
+        # Mathematical algorithms: sketch-based error estimation uses random sampling
+        "python_backend/pythia_mining/phi_folding.py",
     },
 }
 

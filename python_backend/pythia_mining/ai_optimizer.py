@@ -6,6 +6,7 @@ PYTHIA Mining System - Intelligence Layer
 from __future__ import annotations
 
 import logging
+import os
 import time
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
@@ -16,6 +17,7 @@ from .phi_scaling_engine import (
     PhiScaledEnsemble,
     benchmark_vs_asic,
 )
+from .pulvini_nonce_compression import build_pulvini_nonce_plan
 from .stratum_client import MiningJob
 
 
@@ -60,6 +62,42 @@ class AIOptimizer:
         self.latest_meta_learning_event: Optional[Dict[str, Any]] = None
         self.logger = logging.getLogger("ai_optimizer")
 
+    @staticmethod
+    def _configured_max_iterations() -> int:
+        raw = os.getenv("HYBA_MINING_MAX_SOLVER_ITERATIONS", "1448")
+        try:
+            parsed = int(raw)
+        except ValueError:
+            parsed = 1448
+        return max(1, parsed)
+
+    @staticmethod
+    def _configured_timeout_cap_seconds() -> float:
+        """Operator-visible cap; defaults to the full conservative regime window."""
+        raw = os.getenv("HYBA_MINING_SEARCH_TIMEOUT_CAP_SECONDS", "120.0")
+        try:
+            parsed = float(raw)
+        except ValueError:
+            parsed = 120.0
+        return max(0.001, parsed)
+
+    async def _configure_solver_for_job(self, job: MiningJob) -> None:
+        """
+        Enforce the unified PYTHIA/PULVINI contract before every search.
+
+        The unified engine is not allowed to say "PULVINI compressed mining" while
+        silently routing through an uncompressed base solver. If the solver supports
+        the compressed-search interface, every job gets a complete, overlap-free
+        PULVINI nonce plan before search begins.
+        """
+        if hasattr(self.quantum_solver, "configure_compressed_search"):
+            compressed_plan = build_pulvini_nonce_plan()
+            await self.quantum_solver.configure_compressed_search(
+                int(job.target), compressed_plan
+            )
+            return
+        await self.quantum_solver.configure_search(int(job.target), [(0, 2**32 - 1)])
+
     async def optimize_nonce_search(self, job: MiningJob) -> OptimizationResult:
         """
         Prepare the solver for a real mining job and run a bounded nonce search.
@@ -70,10 +108,16 @@ class AIOptimizer:
         verification and pool submission.
         """
         start_time = time.time()
-        await self.quantum_solver.configure_search(job.target, [(0, 2**32 - 1)])
+        await self._configure_solver_for_job(job)
         initial_metrics = self.quantum_solver.get_metrics()
-        solve_timeout = max(0.001, min(float(self.current_strategy.max_search_time), 5.0))
-        nonce = await self.quantum_solver.solve(max_iterations=100, timeout=solve_timeout)
+        solve_timeout = min(
+            float(self.current_strategy.max_search_time),
+            self._configured_timeout_cap_seconds(),
+        )
+        nonce = await self.quantum_solver.solve(
+            max_iterations=self._configured_max_iterations(),
+            timeout=max(0.001, solve_timeout),
+        )
         metrics = self.quantum_solver.get_metrics()
 
         indicators = {
@@ -83,6 +127,15 @@ class AIOptimizer:
                 "search_space_size_norm": float(
                     (metrics.get("search_space_size") or initial_metrics.get("search_space_size") or 0)
                     / max(1, 2**32)
+                ),
+                "compressed_working_set_size": int(
+                    metrics.get("compressed_working_set_size") or 0
+                ),
+                "complete_nonce_coverage": bool(
+                    metrics.get("complete_nonce_coverage")
+                ),
+                "overlap_free_nonce_coverage": bool(
+                    metrics.get("overlap_free_nonce_coverage")
                 ),
             },
             "job": {

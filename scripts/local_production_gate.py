@@ -36,6 +36,9 @@ RC_STEPS = [
     ("stratum_share_acceptance_e2e", ["npm", "run", "test:share:e2e"]),
     ("unified_mining_engine_control_loop", ["npm", "run", "test:unified:engine"]),
     ("unified_mining_api_surface", ["npm", "run", "test:unified:api"]),
+    ("phi_architecture_golden_flow", ["npm", "run", "test:phi:golden-flow"]),
+    ("pulvini_phi_memory_folding", ["npm", "run", "test:pulvini:folding"]),
+    ("post_quantum_benchmark_contracts", ["npm", "run", "test:post-quantum"]),
     ("adaptive_science_bundle", ["npm", "run", "test:adaptive:science"]),
     ("funding_gate_without_live_share_claim", ["npm", "run", "funding:gate"]),
     ("elevation_packet_bundle", ["npm", "run", "elevation:full"]),
@@ -183,7 +186,19 @@ def _doctrine(mode: Mode) -> dict[str, object]:
             "PULVINI compression, PhiScaling, and Stratum feedback in one tested loop."
         ),
         "phi_role": "first_class_operational_invariant",
-        "memory_compression": "PULVINI memory compression and autonomic recovery remain required evidence surfaces.",
+        "golden_flow": (
+            "PhiMalloc, PhiNetworkRouter, PhiOracle, PhiSystemControllerEnhanced, "
+            "PhiJIT, PhiVM, and PhiBackpropTuner are tested as one golden-flow surface."
+        ),
+        "memory_compression": (
+            "PULVINI memory compression now includes dense fold/unfold, in-place buffers, "
+            "sparse_fib_packed strategy, large-array replay, and sketch telemetry gates."
+        ),
+        "post_quantum_benchmark": (
+            "The post-quantum benchmark covers deterministic passports, exact M32/A5 group "
+            "closure, Bures geometry, non-Markovian memory, phi compression, passport "
+            "integrity, density-state repair, and performance boundaries."
+        ),
         "hardware_scaling": "Apple Silicon MLX/Metal evidence is included when available and non-breaking otherwise.",
         "live_pool_policy": {
             "pool_profile": "open Bitcoin/Stratum routing-auth config; not a HYBA app secret",
@@ -251,7 +266,7 @@ def main(argv: list[str] | None = None) -> int:
     status = "passed" if passed else "blocked"
     now = datetime.now(timezone.utc)
     report = GateReport(
-        version="HYBA_FULLSTACK_LOCAL_PRODUCTION_GATE_V3",
+        version="HYBA_FULLSTACK_LOCAL_PRODUCTION_GATE_V5",
         mode=args.mode,
         status=status,
         passed=passed,

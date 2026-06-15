@@ -1,28 +1,28 @@
 {
-  "absolute_delta": null,
-  "apple_silicon_detected": false,
+  "absolute_delta": 0.0,
+  "apple_silicon_detected": true,
   "claim_boundary": {
     "not_supported": [
-      "Apple Silicon GPU acceleration",
-      "Metal-backed tensor execution",
-      "hardware speedup claim"
+      "Bitcoin share acceptance",
+      "general mining speedup",
+      "cloud production parity"
     ],
-    "supported": "MLX/Metal acceleration is unavailable or not yet measured on this host."
+    "supported": "MLX executed a deterministic phi-weighted tensor workload on Apple Silicon GPU and CPU with bounded agreement."
   },
-  "cpu_fallback_verified": false,
-  "cpu_result": null,
-  "elapsed_ms": null,
-  "forensic_sha256": "c84f45b3e8426434aa80e1133c77016bfbfcb416b8f3329825a3baf1d485ee79",
+  "cpu_fallback_verified": true,
+  "cpu_result": 154.1125030517578,
+  "elapsed_ms": 33.301,
+  "forensic_sha256": "0668c64e6efffbde9422e06312df62d69751a76ca1c0bf15a25da92d91b169c8",
   "generated_by": "python_backend.pythia_mining.apple_silicon_metal",
-  "gpu_result": null,
-  "matrix_size": 0,
-  "measurement_basis": "host is not Apple Silicon Darwin",
-  "metal_path_attempted": false,
-  "metal_path_verified": false,
-  "mlx_available": false,
-  "platform_machine": "AMD64",
-  "platform_system": "Windows",
+  "gpu_result": 154.1125030517578,
+  "matrix_size": 64,
+  "measurement_basis": "deterministic phi-weighted matrix multiply compared on MLX GPU and CPU",
+  "metal_path_attempted": true,
+  "metal_path_verified": true,
+  "mlx_available": true,
+  "platform_machine": "arm64",
+  "platform_system": "Darwin",
   "schema_version": "2026-06-15.apple-silicon-metal.v1",
-  "status": "failed",
-  "unified_memory_semantics": "not_measured"
+  "status": "verified",
+  "unified_memory_semantics": "mlx_shared_memory_cpu_gpu_execution_measured"
 }

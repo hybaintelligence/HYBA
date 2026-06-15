@@ -299,8 +299,13 @@ class MetalSHA256Pipeline:
         mx = self._mlx_core
         dtype = getattr(mx, "uint32", getattr(mx, "float32", None))
         device = getattr(mx, "gpu", None)
-        if device is not None and hasattr(mx, "default_device"):
-            with mx.default_device(device):
+        if device is not None and hasattr(mx, "set_default_device"):
+            mx.set_default_device(device)
+            arr = mx.array(list(nonces), dtype=dtype)
+            if hasattr(mx, "eval"):
+                mx.eval(arr)
+        elif device is not None and hasattr(mx, "default_device"):
+            with mx.default_device():
                 arr = mx.array(list(nonces), dtype=dtype)
                 if hasattr(mx, "eval"):
                     mx.eval(arr)

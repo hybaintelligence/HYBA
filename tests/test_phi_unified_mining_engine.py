@@ -80,6 +80,28 @@ async def test_unified_engine_real_search_returns_candidate_for_sha256d_verifica
 
 
 @pytest.mark.asyncio
+async def test_unified_search_uses_pulvini_compressed_plan_not_base_solver() -> None:
+    engine = UnifiedMiningEngine()
+
+    result = await engine.search(_job())
+    metrics = engine.solver.get_metrics()
+
+    assert result.nonce is not None
+    assert metrics["nonce_space_contract"] == "pulvini_phi_compressed_pre_search"
+    assert metrics["candidate_generation_complexity"].startswith("O(1) deterministic")
+    assert metrics["complete_nonce_coverage"] is True
+    assert metrics["overlap_free_nonce_coverage"] is True
+    assert metrics["compressed_working_set_size"] == 20
+    assert metrics["retained_kernel_lanes"] == 12
+    assert metrics["search_space_size"] == 2**32
+    assert metrics["last_solve_iterations"] <= 1448
+    assert any(
+        event["stage"] == "tunnel_anneal_projected_nonce"
+        for event in metrics["last_solve_trace"]
+    )
+
+
+@pytest.mark.asyncio
 async def test_rejected_share_drives_conservative_regime_without_faking_acceptance() -> None:
     engine = UnifiedMiningEngine()
     engine.optimizer.optimize_nonce_search = _fake_optimise  # type: ignore[method-assign]

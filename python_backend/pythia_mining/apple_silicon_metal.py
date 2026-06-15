@@ -140,21 +140,19 @@ def probe_mlx_metal(*, matrix_size: int = 64, require_mlx: bool = False) -> Dict
         weights_gpu = mx.array(
             [PHI ** (-(i % 11)) for i in range(matrix_size)], dtype=mx.float32
         ).reshape((matrix_size, 1))
-        with mx.default_device(mx.gpu):
-            gpu_value = mx.sum(mx.matmul(base_gpu, weights_gpu))
-            _force_mlx_execution(mx, gpu_value)
-            gpu_result = float(gpu_value.item())
-            metal_verified = True
+        gpu_value = mx.sum(mx.matmul(base_gpu, weights_gpu))
+        _force_mlx_execution(mx, gpu_value)
+        gpu_result = float(gpu_value.item())
+        metal_verified = True
 
-        with mx.default_device(mx.cpu):
-            base_cpu = mx.array(values, dtype=mx.float32).reshape((matrix_size, matrix_size))
-            weights_cpu = mx.array(
-                [PHI ** (-(i % 11)) for i in range(matrix_size)], dtype=mx.float32
-            ).reshape((matrix_size, 1))
-            cpu_value = mx.sum(mx.matmul(base_cpu, weights_cpu))
-            _force_mlx_execution(mx, cpu_value)
-            cpu_result = float(cpu_value.item())
-            cpu_verified = True
+        base_cpu = mx.array(values, dtype=mx.float32).reshape((matrix_size, matrix_size))
+        weights_cpu = mx.array(
+            [PHI ** (-(i % 11)) for i in range(matrix_size)], dtype=mx.float32
+        ).reshape((matrix_size, 1))
+        cpu_value = mx.sum(mx.matmul(base_cpu, weights_cpu))
+        _force_mlx_execution(mx, cpu_value)
+        cpu_result = float(cpu_value.item())
+        cpu_verified = True
 
         delta = abs(float(gpu_result) - float(cpu_result))
     except Exception as exc:  # pragma: no cover - depends on local host

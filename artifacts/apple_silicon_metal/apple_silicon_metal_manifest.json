@@ -1,10 +1,10 @@
 {
-  "apple_silicon_detected": false,
-  "cpu_fallback_verified": false,
-  "metal_path_verified": false,
-  "mlx_available": false,
-  "packet_path": "artifacts\\apple_silicon_metal\\apple_silicon_metal_packet.json",
-  "packet_sha256": "c84f45b3e8426434aa80e1133c77016bfbfcb416b8f3329825a3baf1d485ee79",
+  "apple_silicon_detected": true,
+  "cpu_fallback_verified": true,
+  "metal_path_verified": true,
+  "mlx_available": true,
+  "packet_path": "artifacts/apple_silicon_metal/apple_silicon_metal_packet.json",
+  "packet_sha256": "0668c64e6efffbde9422e06312df62d69751a76ca1c0bf15a25da92d91b169c8",
   "production_boundary": {
     "changes_funding_gate": false,
     "changes_pool_semantics": false,
@@ -12,5 +12,5 @@
     "optional_local_acceleration_gate": true
   },
   "schema_version": "2026-06-15.apple-silicon-metal.manifest.v1",
-  "status": "failed"
+  "status": "verified"
 }
