@@ -9,7 +9,7 @@
     "start": "node -e \"process.env.NODE_ENV='production'; import('./dist/server.mjs').catch(err => { console.error(err); process.exit(1); })\"",
     "start:dev": "node dist/server.mjs",
     "clean": "node -e \"import('node:fs').then(fs => fs.rmSync('dist', { recursive: true, force: true }))\"",
-    "lint": "tsc --NoEmit",
+    "lint": "tsc --noEmit",
     "seed": "tsx src/db/seed.ts",
     "test:e2e:backend": "cross-env PYTHONPATH=python_backend python scripts/run_backend_e2e.py",
     "test:backend": "cross-env PYTHONPATH=python_backend python -m unittest discover -s tests -p \"test_*.py\"",
