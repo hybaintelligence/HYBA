@@ -35,6 +35,7 @@ RC_STEPS = [
     ("hendrix_phi_core_invariants", ["npm", "run", "test:hendrix:core"]),
     ("stratum_share_acceptance_e2e", ["npm", "run", "test:share:e2e"]),
     ("unified_mining_engine_control_loop", ["npm", "run", "test:unified:engine"]),
+    ("unified_mining_api_surface", ["npm", "run", "test:unified:api"]),
     ("adaptive_science_bundle", ["npm", "run", "test:adaptive:science"]),
     ("funding_gate_without_live_share_claim", ["npm", "run", "funding:gate"]),
     ("elevation_packet_bundle", ["npm", "run", "elevation:full"]),
@@ -208,7 +209,7 @@ def _next_actions(mode: Mode, passed: bool) -> list[str]:
         ]
     return [
         "Start production with HYBA_ENABLE_LIVE_SHARE_SUBMIT=false and HYBA_ENABLE_MINING_AUTOCONNECT=false.",
-        "Check /bridge/health, backend readiness, authenticated mining status, and /api/v1/intelligence/audit.",
+        "Check /bridge/health, backend readiness, authenticated mining status, /api/v1/unified/health, and /api/v1/intelligence/audit.",
         "Only enable live share submission after legal, treasury, security, operations, and CEO approval are attached to HYBA_LIVE_SHARE_APPROVAL_ID.",
         "Capture pool-side accepted/rejected share evidence before making revenue or solvency claims.",
     ]
@@ -250,7 +251,7 @@ def main(argv: list[str] | None = None) -> int:
     status = "passed" if passed else "blocked"
     now = datetime.now(timezone.utc)
     report = GateReport(
-        version="HYBA_FULLSTACK_LOCAL_PRODUCTION_GATE_V2",
+        version="HYBA_FULLSTACK_LOCAL_PRODUCTION_GATE_V3",
         mode=args.mode,
         status=status,
         passed=passed,
