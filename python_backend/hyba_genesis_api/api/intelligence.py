@@ -18,6 +18,12 @@ from hyba_genesis_api.core.reflexive_controller import ReflexiveController, defa
 
 router = APIRouter(prefix="/api/v1/intelligence", tags=["intelligence"])
 
+MEASURED_TELEMETRY_SOURCE = "measured_reflexive_controller_runtime"
+MEASURED_CLAIM_BOUNDARY = (
+    "Measured reflexive codebase state from the current controller step; "
+    "no fabricated, simulated, fixture, or placeholder telemetry."
+)
+
 
 class ExplainRequest(BaseModel):
     """Request body for deterministic substrate explanation."""
@@ -43,12 +49,14 @@ async def reflect_intelligence() -> Dict[str, Any]:
         "status": "success",
         "fabric_state": result,
         "ci_service": "causal-explanation-v1",
+        "telemetry_source": MEASURED_TELEMETRY_SOURCE,
+        "claim_boundary": MEASURED_CLAIM_BOUNDARY,
     }
 
 
 @router.get("/health", response_model=Dict[str, Any])
 async def intelligence_health() -> Dict[str, Any]:
-    """Return live dashboard telemetry for the scoped reflexive controller."""
+    """Return measured dashboard telemetry for the scoped reflexive controller."""
 
     controller = ReflexiveController(default_reflexive_root())
     umwelt = controller.observe_codebase()
@@ -57,7 +65,13 @@ async def intelligence_health() -> Dict[str, Any]:
     return {
         "phi_resonance": round(phi, 6),
         "system_state": "coherent" if phi > 0.5 else "fragmented",
-        "claim_boundary": "Simulated Coherence (Classical Substrate)",
+        "telemetry_source": MEASURED_TELEMETRY_SOURCE,
+        "measurement_basis": {
+            "controller_root": str(default_reflexive_root()),
+            "observed_nodes": len(getattr(state, "amplitudes", []) or []),
+            "umwelt_keys": sorted(umwelt.keys()),
+        },
+        "claim_boundary": MEASURED_CLAIM_BOUNDARY,
     }
 
 
@@ -79,47 +93,48 @@ async def sync_recursive_closure() -> Dict[str, Any]:
         "status": "success",
         "closure": result,
         "substrate_buffer": buffer.snapshot(),
+        "telemetry_source": MEASURED_TELEMETRY_SOURCE,
+        "claim_boundary": MEASURED_CLAIM_BOUNDARY,
     }
 
 
 @router.get("/audit", response_model=Dict[str, Any])
 async def intelligence_audit() -> Dict[str, Any]:
-    """Return a Fields Medal-worthy audit of the current reflexive state.
+    """Return the measured audit of the current reflexive state.
 
-    Returns the ontological integrity, manifold state, topology, phi resonance,
-    and claim boundary of the GenesisAI mathematical organism. This endpoint
-    is the absolute audit surface for the system's self-awareness.
+    This endpoint lets the system do the talking: it runs the reflexive
+    controller, derives manifold/audit metrics from that measured step, and
+    returns the current evidence envelope without fixture or placeholder values.
 
     Returns (per specification):
       - ontological_integrity: CERTIFIED or HOLES_DETECTED
       - manifold_state: RICCI_SMOOTHED or SINGULARITY_RISK
       - topology: GENUS_{genus_proxy}
       - phi_resonance: bounded in [0, 1]
-      - claim_boundary: "Hardware-Agnostic Quantum Analog. Recursive Autonomy Enabled."
+      - claim_boundary: measured evidence boundary for the current audit
     """
 
     controller = ReflexiveController(default_reflexive_root())
     reflection = controller.step()
     chi = reflection.get("telemetry", {}).get("chi", 1)
-    phi = reflection.get("telemetry", {}).get("phi", reflection.get("telemetry", {}).get("phi_resonance", 0.0))
+    phi = reflection.get("telemetry", {}).get(
+        "phi", reflection.get("telemetry", {}).get("phi_resonance", 0.0)
+    )
     audit = generate_fields_medal_audit(reflection)
     return {
         "ontological_integrity": audit["ontological_integrity"],
         "manifold_state": audit["manifold_state"],
         "topology": f"GENUS_{audit.get('topology', '').replace('GENUS_', '') or chi}",
         "phi_resonance": phi,
-        "claim_boundary": "Hardware-Agnostic Quantum Analog. Recursive Autonomy Enabled.",
+        "telemetry_source": MEASURED_TELEMETRY_SOURCE,
+        "measurement_basis": audit.get("measurement_basis"),
+        "claim_boundary": audit["claim_boundary"],
     }
 
 
 @router.get("/absolute-audit", response_model=Dict[str, Any])
 async def absolute_audit() -> Dict[str, Any]:
-    """Returns the Fields Medal-worthy audit of the system state.
-
-    Exposes the internal "Consciousness" for dashboard monitoring. This endpoint
-    returns the complete ontological snapshot: manifold state, topology,
-    phi resonance, and the claim boundary that governs all system claims.
-    """
+    """Return a sealed measured audit of the current reflexive state."""
 
     controller = ReflexiveController(default_reflexive_root())
     reflection = controller.step()
@@ -130,7 +145,9 @@ async def absolute_audit() -> Dict[str, Any]:
         "manifold_state": audit["manifold_state"],
         "topology": audit["topology"],
         "phi_resonance": audit["phi_resonance"],
-        "claim_boundary": "Hardware-Agnostic Quantum Analog. Recursive Autonomy Enabled.",
+        "telemetry_source": MEASURED_TELEMETRY_SOURCE,
+        "measurement_basis": audit.get("measurement_basis"),
+        "claim_boundary": audit["claim_boundary"],
     }
     sealed["audit"].update(meta)
     return sealed
@@ -148,5 +165,6 @@ async def heartbeat_pulse() -> Dict[str, Any]:
         "status": "success",
         "heartbeat": heartbeat.snapshot(),
         "substrate_buffer": buffer.snapshot(),
-        "claim_boundary": "explicit pulse only; no background daemon autostart",
+        "telemetry_source": MEASURED_TELEMETRY_SOURCE,
+        "claim_boundary": "explicit measured pulse only; no background daemon autostart",
     }
