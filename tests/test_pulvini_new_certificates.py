@@ -372,6 +372,10 @@ class TestObservabilityFramework(unittest.TestCase):
         framework = ObservabilityFramework()
         framework.record_metric("test", 1.0)
         framework.define_slo("test_slo", 0.95, timedelta(hours=1), 0.97)
+        
+        # Create a trace to enable tracing
+        trace = framework.start_trace("test_span", tags={"op": "test"})
+        framework.end_trace(trace.span_id)
 
         cert = framework.get_observability_certificate()
         self.assertTrue(cert.tracing_enabled)
