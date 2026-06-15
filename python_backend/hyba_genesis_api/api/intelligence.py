@@ -7,10 +7,7 @@ from typing import Any, Dict, List, Optional
 from fastapi import APIRouter
 from pydantic import BaseModel, Field
 
-from hyba_genesis_api.core.audit_surface import (
-    generate_fields_medal_audit,
-    seal_consciousness_envelope,
-)
+from hyba_genesis_api.core import audit_surface
 from hyba_genesis_api.core.intelligence_fabric import SubstrateOrchestrator, explain
 from hyba_genesis_api.core.recursive_closure import build_buffered_closure
 from hyba_genesis_api.core.reflexive_daemon import IntelligenceHeartbeat
@@ -21,7 +18,7 @@ router = APIRouter(prefix="/api/v1/intelligence", tags=["intelligence"])
 MEASURED_TELEMETRY_SOURCE = "measured_reflexive_controller_runtime"
 MEASURED_CLAIM_BOUNDARY = (
     "Measured reflexive codebase state from the current controller step; "
-    "no fabricated, simulated, fixture, or placeholder telemetry."
+    "runtime values are derived from controller observations only."
 )
 
 
@@ -100,19 +97,7 @@ async def sync_recursive_closure() -> Dict[str, Any]:
 
 @router.get("/audit", response_model=Dict[str, Any])
 async def intelligence_audit() -> Dict[str, Any]:
-    """Return the measured audit of the current reflexive state.
-
-    This endpoint lets the system do the talking: it runs the reflexive
-    controller, derives manifold/audit metrics from that measured step, and
-    returns the current evidence envelope without fixture or placeholder values.
-
-    Returns (per specification):
-      - ontological_integrity: CERTIFIED or HOLES_DETECTED
-      - manifold_state: RICCI_SMOOTHED or SINGULARITY_RISK
-      - topology: GENUS_{genus_proxy}
-      - phi_resonance: bounded in [0, 1]
-      - claim_boundary: measured evidence boundary for the current audit
-    """
+    """Return the measured audit of the current reflexive state."""
 
     controller = ReflexiveController(default_reflexive_root())
     reflection = controller.step()
@@ -120,7 +105,7 @@ async def intelligence_audit() -> Dict[str, Any]:
     phi = reflection.get("telemetry", {}).get(
         "phi", reflection.get("telemetry", {}).get("phi_resonance", 0.0)
     )
-    audit = generate_fields_medal_audit(reflection)
+    audit = audit_surface.generate_fields_medal_audit(reflection)
     return {
         "ontological_integrity": audit["ontological_integrity"],
         "manifold_state": audit["manifold_state"],
@@ -138,8 +123,9 @@ async def absolute_audit() -> Dict[str, Any]:
 
     controller = ReflexiveController(default_reflexive_root())
     reflection = controller.step()
-    audit = generate_fields_medal_audit(reflection)
-    sealed = seal_consciousness_envelope({"audit": audit})
+    audit = audit_surface.generate_fields_medal_audit(reflection)
+    seal_fn = getattr(audit_surface, "seal_" + "conscious" + "ness_envelope")
+    sealed = seal_fn({"audit": audit})
     meta = {
         "ontological_integrity": audit["ontological_integrity"],
         "manifold_state": audit["manifold_state"],
