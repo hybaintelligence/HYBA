@@ -1,0 +1,98 @@
+{
+  "artifact_sha256": "166e78900ed363c0140922b127b1d9232c88cf542643a210f0f772ec7456784d",
+  "checks": [
+    {
+      "detail": "",
+      "duration_seconds": 0.015999999988707714,
+      "name": "required_mining_surfaces_present",
+      "severity": "critical",
+      "status": "pass",
+      "summary": "canonical mining files present"
+    },
+    {
+      "detail": "",
+      "duration_seconds": 0.0,
+      "name": "operator_environment_safety",
+      "severity": "critical",
+      "status": "pass",
+      "summary": "no critical unsafe live-mining flags detected"
+    },
+    {
+      "detail": "production env flags are not both set; acceptable for code preparation, not for live cutover\nno pool profile configured; acceptable for preparation, blocks actual live mining",
+      "duration_seconds": 0.0,
+      "name": "operator_environment_advisories",
+      "severity": "advisory",
+      "status": "warn",
+      "summary": "operator environment has live-readiness advisories"
+    },
+    {
+      "detail": "{\"metrics\": {\"compressed_working_set_size\": 19, \"last_solve_iterations\": 5}, \"nonce\": 4155892665}",
+      "duration_seconds": 0.8899999999994179,
+      "name": "unified_engine_pulvini_contract",
+      "severity": "critical",
+      "status": "pass",
+      "summary": "unified engine routes through compressed PULVINI search and SHA-256d verification boundary"
+    },
+    {
+      "detail": "",
+      "duration_seconds": 0.01600000000325963,
+      "name": "bitcoin_and_stratum_pitfall_contracts",
+      "severity": "critical",
+      "status": "pass",
+      "summary": "byte order, compact target, local validation, stale jobs, pool ACK, and malformed response pitfalls are covered"
+    },
+    {
+      "detail": ".................                                                        [100%]\n============================== warnings summary ===============================\npython_backend\\hyba_genesis_api\\api\\mining.py:85\n  C:\\Users\\USER\\OneDrive\\Desktop\\HYBA_FULLSTACK\\python_backend\\hyba_genesis_api\\api\\mining.py:85: PydanticDeprecatedSince20: Pydantic V1 style `@validator` validators are deprecated. You should migrate to Pydantic V2 style `@field_validator` validators, see the migration guide for more details. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.13/migration/\n    @validator(\"phi_tier\")\n\npython_backend\\hyba_genesis_api\\api\\mining.py:103\n  C:\\Users\\USER\\OneDrive\\Desktop\\HYBA_FULLSTACK\\python_backend\\hyba_genesis_api\\api\\mining.py:103: PydanticDeprecatedSince20: Pydantic V1 style `@validator` validators are deprecated. You should migrate to Pydantic V2 style `@field_validator` validators, see the migration guide for more details. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.13/migration/\n    @validator(\"pool_id\")\n\npython_backend\\hyba_genesis_api\\api\\mining.py:110\n  C:\\Users\\USER\\OneDrive\\Desktop\\HYBA_FULLSTACK\\python_backend\\hyba_genesis_api\\api\\mining.py:110: PydanticDeprecatedSince20: Pydantic V1 style `@validator` validators are deprecated. You should migrate to Pydantic V2 style `@field_validator` validators, see the migration guide for more details. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.13/migration/\n    @validator(\"username\", \"worker\", \"nicehash_pool_id\")\n\npython_backend\\hyba_genesis_api\\api\\mining.py:123\n  C:\\Users\\USER\\OneDrive\\Desktop\\HYBA_FULLSTACK\\python_backend\\hyba_genesis_api\\api\\mining.py:123: PydanticDeprecatedSince20: Pydantic V1 style `@validator` validators are deprecated. You should migrate to Pydantic V2 style `@field_validator` validators, see the migration guide for more details. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.13/migration/\n    @validator(\"btc_address\")\n\npython_backend\\hyba_genesis_api\\api\\mining.py:154\n  C:\\Users\\USER\\OneDrive\\Desktop\\HYBA_FULLSTACK\\python_backend\\hyba_genesis_api\\api\\mining.py:154: PydanticDeprecatedSince20: Pydantic V1 style `@validator` validators are deprecated. You should migrate to Pydantic V2 style `@field_validator` validators, see the migration guide for more details. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.13/migration/\n    @validator(\"pool_id\")\n\npython_backend\\hyba_genesis_api\\api\\mining.py:170\n  C:\\Users\\USER\\OneDrive\\Desktop\\HYBA_FULLSTACK\\python_backend\\hyba_genesis_api\\api\\mining.py:170: PydanticDeprecatedSince20: Pydantic V1 style `@validator` validators are deprecated. You should migrate to Pydantic V2 style `@field_validator` validators, see the migration guide for more details. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.13/migration/\n    @validator(\"nonce\")\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n17 passed, 6 warnings in 5.18s",
+      "duration_seconds": 9.468999999997322,
+      "name": "focused_mining_regression_tests",
+      "severity": "critical",
+      "status": "pass",
+      "summary": "focused mining regression tests passed"
+    },
+    {
+      "detail": "run npm run build before deployment",
+      "duration_seconds": 0.0,
+      "name": "production_build",
+      "severity": "advisory",
+      "status": "skip",
+      "summary": "production build skipped by operator flag"
+    },
+    {
+      "detail": "{\n  \"present\": [\n    \"artifacts/phi_resonance_100blocks/phi_resonance_summary.json\",\n    \"artifacts/phi_hash_validity/phi_hash_correlation_summary.json\",\n    \"artifacts/phi_structured_search/structured_search_comparison.json\",\n    \"artifacts/phi_stack/complete_stack_analysis.json\"\n  ],\n  \"missing\": []\n}",
+      "duration_seconds": 0.0,
+      "name": "empirical_evidence_artifacts",
+      "severity": "advisory",
+      "status": "pass",
+      "summary": "empirical evidence artifacts are present locally"
+    }
+  ],
+  "environment_summary": {
+    "HYBA_ALLOW_DEV_FIXTURES": "<unset>",
+    "HYBA_ENABLE_AUDIT_LOGGING": "<unset>",
+    "HYBA_ENABLE_LIVE_SHARE_SUBMIT": "<unset>",
+    "HYBA_ENABLE_LIVE_STRATUM": "<unset>",
+    "HYBA_ENABLE_MINING_AUTOCONNECT": "<unset>",
+    "HYBA_ENV": "<unset>",
+    "HYBA_LIVE_SHARE_APPROVAL_ID": "<unset>",
+    "HYBA_MINING_MAX_SOLVER_ITERATIONS": "<unset>",
+    "HYBA_MINING_SEARCH_TIMEOUT_CAP_SECONDS": "<unset>",
+    "NODE_ENV": "<unset>",
+    "PULVINI_BACKEND_URL": "<unset>",
+    "configured_pool_profiles": "<none>"
+  },
+  "generated_at_utc": "2026-06-15T20:30:16.414317+00:00",
+  "host": {
+    "machine": "AMD64",
+    "platform": "Windows-10-10.0.19045-SP0",
+    "python": "3.11.7"
+  },
+  "mode": "command-room",
+  "next_operator_actions": [
+    "The software path is ready for controlled deployment preparation.",
+    "Before live mining, inject production env, at least one pool profile, and audit logging, then run this doctor with --mode live.",
+    "Keep broad science/elevation suites as advisory/review evidence, not blockers for the same-day mining cutover."
+  ],
+  "passed": true,
+  "status": "ready",
+  "version": "HYBA_MINING_OPERATIONAL_READINESS_V1"
+}

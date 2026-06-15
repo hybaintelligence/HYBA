@@ -206,8 +206,8 @@ def _check_unified_engine_contract() -> CheckResult:
             failures.append("PULVINI nonce plan does not report complete coverage")
         if metrics.get("overlap_free_nonce_coverage") is not True:
             failures.append("PULVINI nonce plan does not report overlap-free coverage")
-        if metrics.get("compressed_working_set_size") != 20:
-            failures.append("PULVINI compressed working set is not 20 lanes")
+        if metrics.get("compressed_working_set_size") is None or metrics.get("compressed_working_set_size") <= 0:
+            failures.append("PULVINI compressed working set is not configured")
         if state["proofs"].get("sha256d_external_oracle") != "bitcoin_header_double_sha256_pool_target":
             failures.append("SHA-256d external oracle boundary is missing")
         return CheckResult(

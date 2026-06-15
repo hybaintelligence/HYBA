@@ -213,6 +213,7 @@ class PulviniCompressedQuantumSolver(DodecahedralQuantumSolver):
                 ),
                 "retained_kernel_lanes": self.current_config.get("retained_kernel_lanes"),
                 "complete_nonce_coverage": self.current_config.get("complete_nonce_coverage"),
+                "overlap_free_nonce_coverage": self.current_config.get("overlap_free_nonce_coverage"),
                 "working_set_compression_ratio": self.current_config.get(
                     "working_set_compression_ratio"
                 ),
@@ -220,6 +221,7 @@ class PulviniCompressedQuantumSolver(DodecahedralQuantumSolver):
                 "phi_filter_acceptance_ratio": self.current_config.get(
                     "phi_filter_acceptance_ratio"
                 ),
+                "search_space_size": self.current_config.get("search_space_size"),
                 "last_solve_trace": list(self.last_solve_trace),
             }
         )

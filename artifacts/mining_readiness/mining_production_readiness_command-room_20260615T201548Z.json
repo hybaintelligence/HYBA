@@ -1,0 +1,98 @@
+{
+  "artifact_sha256": "e7d6266b9539dfe929ec28af833f9035ab0ac5a0b7b0928bb7830aa530f8d5dc",
+  "checks": [
+    {
+      "detail": "",
+      "duration_seconds": 0.0,
+      "name": "required_mining_surfaces_present",
+      "severity": "critical",
+      "status": "pass",
+      "summary": "canonical mining files present"
+    },
+    {
+      "detail": "",
+      "duration_seconds": 0.0,
+      "name": "operator_environment_safety",
+      "severity": "critical",
+      "status": "pass",
+      "summary": "no critical unsafe live-mining flags detected"
+    },
+    {
+      "detail": "production env flags are not both set; acceptable for code preparation, not for live cutover\nno pool profile configured; acceptable for preparation, blocks actual live mining",
+      "duration_seconds": 0.0,
+      "name": "operator_environment_advisories",
+      "severity": "advisory",
+      "status": "warn",
+      "summary": "operator environment has live-readiness advisories"
+    },
+    {
+      "detail": "PULVINI nonce plan does not report overlap-free coverage\nPULVINI compressed working set is not 20 lanes",
+      "duration_seconds": 1.187000000005355,
+      "name": "unified_engine_pulvini_contract",
+      "severity": "critical",
+      "status": "fail",
+      "summary": "unified engine contract failed"
+    },
+    {
+      "detail": "",
+      "duration_seconds": 0.030999999988125637,
+      "name": "bitcoin_and_stratum_pitfall_contracts",
+      "severity": "critical",
+      "status": "pass",
+      "summary": "byte order, compact target, local validation, stale jobs, pool ACK, and malformed response pitfalls are covered"
+    },
+    {
+      "detail": "self.assertTrue(solver.current_config[\"overlap_free_nonce_coverage\"])\n            self.assertEqual(20, solver.current_config[\"compressed_working_set_size\"])\n            self.assertEqual(12, solver.current_config[\"retained_kernel_lanes\"])\n            self.assertEqual(NONCE_SPACE_SIZE, solver.current_config[\"search_space_size\"])\n    \n>       asyncio.run(run())\n\ntests\\test_pulvini_nonce_compression.py:95: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\nC:\\Python311\\Lib\\asyncio\\runners.py:190: in run\n    return runner.run(main)\n           ^^^^^^^^^^^^^^^^\nC:\\Python311\\Lib\\asyncio\\runners.py:118: in run\n    return self._loop.run_until_complete(task)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Python311\\Lib\\asyncio\\base_events.py:653: in run_until_complete\n    return future.result()\n           ^^^^^^^^^^^^^^^\ntests\\test_pulvini_nonce_compression.py:91: in run\n    self.assertEqual(20, solver.current_config[\"compressed_working_set_size\"])\nE   AssertionError: 20 != 19\n============================== warnings summary ===============================\npython_backend\\hyba_genesis_api\\api\\mining.py:85\n  C:\\Users\\USER\\OneDrive\\Desktop\\HYBA_FULLSTACK\\python_backend\\hyba_genesis_api\\api\\mining.py:85: PydanticDeprecatedSince20: Pydantic V1 style `@validator` validators are deprecated. You should migrate to Pydantic V2 style `@field_validator` validators, see the migration guide for more details. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.13/migration/\n    @validator(\"phi_tier\")\n\npython_backend\\hyba_genesis_api\\api\\mining.py:103\n  C:\\Users\\USER\\OneDrive\\Desktop\\HYBA_FULLSTACK\\python_backend\\hyba_genesis_api\\api\\mining.py:103: PydanticDeprecatedSince20: Pydantic V1 style `@validator` validators are deprecated. You should migrate to Pydantic V2 style `@field_validator` validators, see the migration guide for more details. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.13/migration/\n    @validator(\"pool_id\")\n\npython_backend\\hyba_genesis_api\\api\\mining.py:110\n  C:\\Users\\USER\\OneDrive\\Desktop\\HYBA_FULLSTACK\\python_backend\\hyba_genesis_api\\api\\mining.py:110: PydanticDeprecatedSince20: Pydantic V1 style `@validator` validators are deprecated. You should migrate to Pydantic V2 style `@field_validator` validators, see the migration guide for more details. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.13/migration/\n    @validator(\"username\", \"worker\", \"nicehash_pool_id\")\n\npython_backend\\hyba_genesis_api\\api\\mining.py:123\n  C:\\Users\\USER\\OneDrive\\Desktop\\HYBA_FULLSTACK\\python_backend\\hyba_genesis_api\\api\\mining.py:123: PydanticDeprecatedSince20: Pydantic V1 style `@validator` validators are deprecated. You should migrate to Pydantic V2 style `@field_validator` validators, see the migration guide for more details. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.13/migration/\n    @validator(\"btc_address\")\n\npython_backend\\hyba_genesis_api\\api\\mining.py:154\n  C:\\Users\\USER\\OneDrive\\Desktop\\HYBA_FULLSTACK\\python_backend\\hyba_genesis_api\\api\\mining.py:154: PydanticDeprecatedSince20: Pydantic V1 style `@validator` validators are deprecated. You should migrate to Pydantic V2 style `@field_validator` validators, see the migration guide for more details. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.13/migration/\n    @validator(\"pool_id\")\n\npython_backend\\hyba_genesis_api\\api\\mining.py:170\n  C:\\Users\\USER\\OneDrive\\Desktop\\HYBA_FULLSTACK\\python_backend\\hyba_genesis_api\\api\\mining.py:170: PydanticDeprecatedSince20: Pydantic V1 style `@validator` validators are deprecated. You should migrate to Pydantic V2 style `@field_validator` validators, see the migration guide for more details. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.13/migration/\n    @validator(\"nonce\")\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n=========================== short test summary info ===========================\nFAILED tests/test_phi_unified_mining_engine.py::test_unified_search_uses_pulvini_compressed_plan_not_base_solver\nFAILED tests/test_pulvini_nonce_compression.py::PulviniNonceCompressionTests::test_phi_plan_compresses_working_set_and_keeps_full_coverage\nFAILED tests/test_pulvini_nonce_compression.py::PulviniNonceCompressionTests::test_overlay_assigns_from_compressed_nonce_plan\nFAILED tests/test_pulvini_nonce_compression.py::PulviniNonceCompressionTests::test_compressed_coordinate_maps_nonce_to_retained_segments\nFAILED tests/test_pulvini_nonce_compression.py::PulviniNonceCompressionTests::test_solver_is_configured_from_compressed_plan_before_search\n5 failed, 12 passed, 6 warnings in 5.01s",
+      "duration_seconds": 9.5,
+      "name": "focused_mining_regression_tests",
+      "severity": "critical",
+      "status": "fail",
+      "summary": "focused mining regression tests failed"
+    },
+    {
+      "detail": "> hyba-fullstack@1.0.0-rc.1 build\n> vite build --config vite.config.build.ts && esbuild ./src/server.ts --bundle --platform=node --format=esm --packages=external --sourcemap --outfile=dist/server.mjs\n\n\n\u001b[33mYou are using Node.js 20.18.0. Vite requires Node.js version 20.19+ or 22.12+. Please upgrade your Node.js version.\u001b[39m\nfile:///C:/Users/USER/OneDrive/Desktop/HYBA_FULLSTACK/node_modules/rolldown/dist/shared/binding-CXquf8ay.mjs:507\n\t\tif (loadErrors.length > 0) throw new Error(\"Cannot find native binding. npm has a bug related to optional dependencies (https://github.com/npm/cli/issues/4828). Please try `npm i` again after removing both package-lock.json and node_modules directory.\", { cause: loadErrors.reduce((err, cur) => {\n\t\t                                 ^\n\nError: Cannot find native binding. npm has a bug related to optional dependencies (https://github.com/npm/cli/issues/4828). Please try `npm i` again after removing both package-lock.json and node_modules directory.\n    at file:///C:/Users/USER/OneDrive/Desktop/HYBA_FULLSTACK/node_modules/rolldown/dist/shared/binding-CXquf8ay.mjs:507:36\n    at file:///C:/Users/USER/OneDrive/Desktop/HYBA_FULLSTACK/node_modules/rolldown/dist/shared/binding-CXquf8ay.mjs:9:49\n    ... 2 lines matching cause stack trace ...\n    at async ModuleLoader.import (node:internal/modules/esm/loader:473:24)\n    at async CAC.<anonymous> (file:///C:/Users/USER/OneDrive/Desktop/HYBA_FULLSTACK/node_modules/vite/dist/node/cli.js:763:28) {\n  [cause]: Error: Cannot find module '@rolldown/binding-win32-x64-msvc'\n  Require stack:\n  - C:\\Users\\USER\\OneDrive\\Desktop\\HYBA_FULLSTACK\\node_modules\\rolldown\\dist\\shared\\binding-CXquf8ay.mjs\n      at Module._resolveFilename (node:internal/modules/cjs/loader:1225:15)\n      ... 2 lines matching cause stack trace ...\n      at require (node:internal/modules/helpers:179:18)\n      at requireNative (file:///C:/Users/USER/OneDrive/Desktop/HYBA_FULLSTACK/node_modules/rolldown/dist/shared/binding-CXquf8ay.mjs:147:21)\n      at file:///C:/Users/USER/OneDrive/Desktop/HYBA_FULLSTACK/node_modules/rolldown/dist/shared/binding-CXquf8ay.mjs:475:18\n      at file:///C:/Users/USER/OneDrive/Desktop/HYBA_FULLSTACK/node_modules/rolldown/dist/shared/binding-CXquf8ay.mjs:9:49\n      at file:///C:/Users/USER/OneDrive/Desktop/HYBA_FULLSTACK/node_modules/rolldown/dist/shared/parse-Bg2pr2Q5.mjs:3:46\n      at ModuleJob.run (node:internal/modules/esm/module_job:234:25)\n      at async ModuleLoader.import (node:internal/modules/esm/loader:473:24) {\n    code: 'MODULE_NOT_FOUND',\n    requireStack: [\n      'C:\\\\Users\\\\USER\\\\OneDrive\\\\Desktop\\\\HYBA_FULLSTACK\\\\node_modules\\\\rolldown\\\\dist\\\\shared\\\\binding-CXquf8ay.mjs'\n    ],\n    cause: Error: Cannot find module './rolldown-binding.win32-x64-msvc.node'\n    Require stack:\n    - C:\\Users\\USER\\OneDrive\\Desktop\\HYBA_FULLSTACK\\node_modules\\rolldown\\dist\\shared\\binding-CXquf8ay.mjs\n        at Module._resolveFilename (node:internal/modules/cjs/loader:1225:15)\n        at Module._load (node:internal/modules/cjs/loader:1051:27)\n        at Module.require (node:internal/modules/cjs/loader:1311:19)\n        at require (node:internal/modules/helpers:179:18)\n        at requireNative (file:///C:/Users/USER/OneDrive/Desktop/HYBA_FULLSTACK/node_modules/rolldown/dist/shared/binding-CXquf8ay.mjs:142:12)\n        at file:///C:/Users/USER/OneDrive/Desktop/HYBA_FULLSTACK/node_modules/rolldown/dist/shared/binding-CXquf8ay.mjs:475:18\n        at file:///C:/Users/USER/OneDrive/Desktop/HYBA_FULLSTACK/node_modules/rolldown/dist/shared/binding-CXquf8ay.mjs:9:49\n        at file:///C:/Users/USER/OneDrive/Desktop/HYBA_FULLSTACK/node_modules/rolldown/dist/shared/parse-Bg2pr2Q5.mjs:3:46\n        at ModuleJob.run (node:internal/modules/esm/module_job:234:25)\n        at async ModuleLoader.import (node:internal/modules/esm/loader:473:24) {\n      code: 'MODULE_NOT_FOUND',\n      requireStack: [\n        'C:\\\\Users\\\\USER\\\\OneDrive\\\\Desktop\\\\HYBA_FULLSTACK\\\\node_modules\\\\rolldown\\\\dist\\\\shared\\\\binding-CXquf8ay.mjs'\n      ]\n    }\n  }\n}\n\nNode.js v20.18.0",
+      "duration_seconds": 1.0,
+      "name": "production_build",
+      "severity": "critical",
+      "status": "fail",
+      "summary": "production build failed"
+    },
+    {
+      "detail": "{\n  \"present\": [\n    \"artifacts/phi_resonance_100blocks/phi_resonance_summary.json\",\n    \"artifacts/phi_hash_validity/phi_hash_correlation_summary.json\",\n    \"artifacts/phi_structured_search/structured_search_comparison.json\",\n    \"artifacts/phi_stack/complete_stack_analysis.json\"\n  ],\n  \"missing\": []\n}",
+      "duration_seconds": 0.0,
+      "name": "empirical_evidence_artifacts",
+      "severity": "advisory",
+      "status": "pass",
+      "summary": "empirical evidence artifacts are present locally"
+    }
+  ],
+  "environment_summary": {
+    "HYBA_ALLOW_DEV_FIXTURES": "<unset>",
+    "HYBA_ENABLE_AUDIT_LOGGING": "<unset>",
+    "HYBA_ENABLE_LIVE_SHARE_SUBMIT": "<unset>",
+    "HYBA_ENABLE_LIVE_STRATUM": "<unset>",
+    "HYBA_ENABLE_MINING_AUTOCONNECT": "<unset>",
+    "HYBA_ENV": "<unset>",
+    "HYBA_LIVE_SHARE_APPROVAL_ID": "<unset>",
+    "HYBA_MINING_MAX_SOLVER_ITERATIONS": "<unset>",
+    "HYBA_MINING_SEARCH_TIMEOUT_CAP_SECONDS": "<unset>",
+    "NODE_ENV": "<unset>",
+    "PULVINI_BACKEND_URL": "<unset>",
+    "configured_pool_profiles": "<none>"
+  },
+  "generated_at_utc": "2026-06-15T20:15:48.547151+00:00",
+  "host": {
+    "machine": "AMD64",
+    "platform": "Windows-10-10.0.19045-SP0",
+    "python": "3.11.7"
+  },
+  "mode": "command-room",
+  "next_operator_actions": [
+    "Fix the first CRITICAL failure in the readiness packet; advisory warnings can wait.",
+    "Rerun the same readiness doctor command from a clean terminal after the fix.",
+    "Do not enable live share submission while any CRITICAL failure remains."
+  ],
+  "passed": false,
+  "status": "blocked",
+  "version": "HYBA_MINING_OPERATIONAL_READINESS_V1"
+}
