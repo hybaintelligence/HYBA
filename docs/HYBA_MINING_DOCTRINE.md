@@ -1,4 +1,4 @@
-# HYBA Mining Doctrine — Deterministic Structured Proof Generation
+tio scaling leads to increase hashrate# HYBA Mining Doctrine — Deterministic Structured Proof Generation
 
 **Date:** 2026-06-15
 **Status:** Canonical

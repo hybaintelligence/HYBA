@@ -143,7 +143,7 @@ class UnifiedMiner:
         logger.info("=" * 72)
 
         while RUNNING:
-            if not self.stratum or not self.stratum.is_connected():
+            if not self.stratum or not self.stratum.is_connected:
                 logger.warning("Not connected. Reconnecting...")
                 if not await self.connect_next_pool():
                     logger.error("All pools unreachable. Retrying in 30s...")
@@ -151,11 +151,14 @@ class UnifiedMiner:
                     continue
 
             try:
-                # Wait for a mining job from the pool
-                job = await self.stratum.wait_for_job(timeout=10.0)
+                # Poll for live events from pool (jobs, difficulty changes)
+                job = await self.stratum.poll_live_event(timeout=1.0)
                 if job is None:
-                    await asyncio.sleep(0.5)
-                    continue
+                    # No new job, check if we have an active job
+                    job = await self.stratum.get_active_job_copy()
+                    if job is None:
+                        await asyncio.sleep(0.5)
+                        continue
 
                 # Run one deterministic structured search
                 result = await self.engine.search(job)
@@ -163,8 +166,8 @@ class UnifiedMiner:
 
                 if result.nonce is not None:
                     # Submit the found nonce to the pool
-                    accepted = await self.stratum.submit_share(
-                        job_id=job.job_id,
+                    share_result = await self.stratum.submit_validated_share(
+                        job=job,
                         nonce=result.nonce,
                     )
                     share_info = {
@@ -176,14 +179,14 @@ class UnifiedMiner:
                     }
 
                     # Feed back into the engine (meta-learning + consciousness)
-                    await self.engine.on_share_result(share_info, accepted=accepted)
+                    await self.engine.on_share_result(share_info, accepted=share_result.accepted)
 
-                    if accepted:
+                    if share_result.accepted:
                         self._accepted += 1
                         logger.info(f"✅ Share ACCEPTED — nonce={result.nonce}, job={job.job_id}")
                     else:
                         self._rejected += 1
-                        logger.info(f"❌ Share REJECTED — nonce={result.nonce}, job={job.job_id}")
+                        logger.info(f"❌ Share REJECTED — nonce={result.nonce}, job={job.job_id}, reason={share_result.error_message}")
 
                 # Periodic stats
                 now = time.time()
