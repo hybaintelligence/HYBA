@@ -19,8 +19,8 @@ from pydantic import BaseModel, Field
 from hyba_genesis_api.api.mining import require_mining_control, require_mining_read
 from hyba_genesis_api.auth.jwt_handler import TokenPayload
 from pythia_mining.hendrix_phi_solver import (
+    YANG_MILLS_GAP,
     phi_resonance,
-    soft_mass_gap_gate,
     voronoi_domain,
     yang_mills_action,
 )
@@ -168,7 +168,7 @@ async def analyze_batch_resonance(req: BatchResonanceRequest) -> BatchResonanceR
                 nonce=candidate,
                 phi_resonance_strength=phi_resonance(candidate),
                 yang_mills_action=action,
-                is_mass_gate_passed=soft_mass_gap_gate(action),
+                is_mass_gate_passed=action >= YANG_MILLS_GAP,
                 voronoi_domain=voronoi_domain(candidate),
             )
         )
