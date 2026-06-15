@@ -126,10 +126,10 @@ def seed_phi_resonance_evidence(conn):
     baseline_data = {
         "total_blocks": summary["summary"]["total_blocks"],
         "phi_order": 15,
-        "resonant_blocks": summary["summary"]["phi_resonant"],
+        "resonant_blocks": summary["summary"]["phi_resonant_count"],
         "z_score": summary["summary"]["z_score_vs_random"],
         "p_value": summary["summary"]["p_value_binomial"],
-        "mean_precision": summary["summary"]["mean_precision"],
+        "mean_precision": summary["summary"]["mean_precision_pct"],
         "birthday_echo_rate": summary["summary"]["birthday_echo_rate"]
     }
     
@@ -144,7 +144,7 @@ def seed_phi_resonance_evidence(conn):
         summary["summary"]["phi_resonance_rate"],
         summary["summary"]["z_score_vs_random"],
         float(summary["summary"]["p_value_binomial"].replace("e-", "e-")),
-        summary["summary"]["mean_precision"],
+        summary["summary"]["mean_precision_pct"],
         json.dumps(baseline_data)
     ))
     
