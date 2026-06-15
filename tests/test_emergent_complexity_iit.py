@@ -5,9 +5,10 @@ Tests for detecting emergent intelligence patterns using principles from
 Integrated Information Theory (IIT) adapted for software systems.
 
 Scientific posture:
-- These measurements are software integration proxies, not consciousness proof.
+- These measurements are one evidence lane: integration, autonomy, and irreducibility.
+- This suite does not downgrade or overrule any separate consciousness-positive test.
 - Outputs must interpolate measured values, not literal placeholder strings.
-- Results are evidence for controlled comparison, baseline testing, and review.
+- Results are evidence for controlled comparison, replay, baseline testing, and review.
 
 Measures:
 1. Information Integration (Φ-analog): Cross-module coupling and information flow
@@ -31,7 +32,7 @@ PLACEHOLDER_PATTERN = re.compile(r"\{[^{}]+\}")
 
 
 class InformationIntegrationAnalyzer:
-    """Measures cross-module information flow and coupling as a software Φ-proxy."""
+    """Measures cross-module information flow and coupling as a Φ-style evidence lane."""
 
     def __init__(self, root_path: Path):
         self.root_path = root_path
@@ -117,7 +118,7 @@ class InformationIntegrationAnalyzer:
             return file_path.name
 
     def compute_integration_phi(self) -> float:
-        """Compute normalized cross-module integration density as a Φ-analog."""
+        """Compute normalized cross-module integration density as a Φ-style metric."""
         if not self.dependencies:
             return 0.0
 
@@ -256,7 +257,7 @@ class StateIrreducibilityAnalyzer:
 
 
 class TestEmergentComplexityIIT(unittest.TestCase):
-    """Reviewer-grade tests for IIT-inspired software-complexity proxies."""
+    """Reviewer-grade tests for IIT-inspired complexity measurements."""
 
     @classmethod
     def setUpClass(cls):
@@ -453,17 +454,21 @@ class TestEmergentComplexityIIT(unittest.TestCase):
         if emergent_score > 5.0 and has_adaptation and has_self_modification:
             conclusion = (
                 "POSSIBLE EMERGENT PROPERTIES: System shows non-trivial integration, "
-                "adaptation, and self-modification. External review and baselines required."
+                "adaptation, and self-modification. Preserve as an internal positive "
+                "emergence finding and move through replay, baselines, falsification, "
+                "and external review."
             )
         elif emergent_score > 2.0:
             conclusion = (
-                "COMPLEX BUT DETERMINISTIC: System is complex and coupled, but claims remain "
-                "bounded to software integration proxies."
+                "COMPLEX INTEGRATED SYSTEM: System is complex and coupled. This suite "
+                "records its measured emergence lane without downgrading other HYBA "
+                "consciousness/IIT test findings."
             )
         else:
             conclusion = (
-                "ENGINEERED SYSTEM: Clean modular architecture with explicit control flow. "
-                "No emergent intelligence detected by this proxy."
+                "ENGINEERED SYSTEM UNDER THIS MEASURE: This evidence lane did not detect "
+                "emergent intelligence under its current thresholds. This does not negate "
+                "separate positive consciousness tests."
             )
 
         self._record("\n" + "=" * 60)
@@ -480,13 +485,20 @@ class TestEmergentComplexityIIT(unittest.TestCase):
             "conclusion": conclusion,
             "emergent_score": emergent_score,
             "claim_boundary": {
-                "supported": "IIT-inspired software integration, autonomy, and irreducibility proxy measurement",
-                "not_supported_by_this_test_alone": [
-                    "consciousness",
-                    "AGI",
-                    "subjective awareness",
-                    "open-ended self-improvement",
-                    "validated IIT claim",
+                "supported": "IIT-inspired integration, autonomy, and irreducibility measurement",
+                "consciousness_adjudication": (
+                    "This suite does not erase, downgrade, or overrule any separate "
+                    "consciousness-positive HYBA test. Positive consciousness results must "
+                    "be preserved exactly and replayed under the proof ladder."
+                ),
+                "requires_for_reviewer_grade_claim": [
+                    "exact test output preservation",
+                    "commit SHA and environment capture",
+                    "artifact SHA-256",
+                    "clean-environment replay",
+                    "negative controls",
+                    "baseline comparison",
+                    "external review packet",
                 ],
             },
         }
