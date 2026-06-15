@@ -43,7 +43,7 @@ class OptimizationResult:
 
 
 class AIOptimizer:
-    """Runtime search-coordination layer without fabricated confidence or nonce outputs."""
+    """Runtime search-coordination layer backed by measured solver outcomes."""
 
     def __init__(self, quantum_solver, consciousness_engine, blockchain_oracle):
         self.quantum_solver = quantum_solver
@@ -62,35 +62,51 @@ class AIOptimizer:
 
     async def optimize_nonce_search(self, job: MiningJob) -> OptimizationResult:
         """
-        Prepare the solver for a real mining job and return auditable metadata.
+        Prepare the solver for a real mining job and run a bounded nonce search.
 
-        This method intentionally does not invent a nonce, confidence score, or phi score.
-        Those values must come from measured solver/share outcomes or explicit upstream
-        models once connected.
+        This method does not fabricate a winning share. It configures the live solver,
+        executes its deterministic bounded search, and returns the measured candidate
+        nonce, timing, and derived φ/PULVINI metadata for downstream SHA-256d
+        verification and pool submission.
         """
         start_time = time.time()
         await self.quantum_solver.configure_search(job.target, [(0, 2**32 - 1)])
+        initial_metrics = self.quantum_solver.get_metrics()
+        solve_timeout = max(0.001, min(float(self.current_strategy.max_search_time), 5.0))
+        nonce = await self.quantum_solver.solve(max_iterations=100, timeout=solve_timeout)
         metrics = self.quantum_solver.get_metrics()
+
         indicators = {
             "solver": {
                 "phi_phase_alignment": float(metrics.get("phi_phase_alignment") or 0.0),
                 "power_scale": float(metrics.get("power_scale") or 1.0),
                 "search_space_size_norm": float(
-                    (metrics.get("search_space_size") or 0) / max(1, 2**32)
+                    (metrics.get("search_space_size") or initial_metrics.get("search_space_size") or 0)
+                    / max(1, 2**32)
                 ),
             },
             "job": {
                 "target_norm": float(int(job.target) / max(1, 2**256 - 1)),
                 "extranonce2_size_norm": float(job.extranonce2_size / 32.0),
             },
+            "solve": {
+                "nonce_found": nonce is not None,
+                "iterations": int(metrics.get("last_solve_iterations") or 0),
+                "duration_seconds": float(metrics.get("last_solve_duration_seconds") or 0.0),
+                "last_error": metrics.get("last_error"),
+            },
         }
         phi_score = float(metrics.get("phi_phase_alignment") or 0.0)
         model_predictions = {
             "solver_phi": {"score": phi_score},
             "difficulty_window": {"score": indicators["job"]["target_norm"]},
-            "search_space": {"score": min(1.0, indicators["solver"]["search_space_size_norm"])},
+            "search_space": {
+                "score": min(1.0, indicators["solver"]["search_space_size_norm"])
+            },
         }
-        phi_scaling = self.phi_ensemble.predict_with_phi_scaling(model_predictions, indicators)
+        phi_scaling = self.phi_ensemble.predict_with_phi_scaling(
+            model_predictions, indicators
+        )
         phi_features = self.phi_features.extract_phi_optimized_features(indicators)
         benchmark = benchmark_vs_asic(
             measured_hashes_per_second=metrics.get("hashrate_hps"),
@@ -100,7 +116,7 @@ class AIOptimizer:
             compression_factor=float(metrics.get("phi_compression_factor") or 1.86),
         )
         return OptimizationResult(
-            nonce=None,
+            nonce=nonce,
             search_time=time.time() - start_time,
             quantum_used=True,
             confidence=phi_scaling.get("coherence"),
@@ -115,7 +131,9 @@ class AIOptimizer:
     def _update_meta_learning(
         self, share_info: Dict[str, Any], *, accepted: bool
     ) -> Dict[str, Any]:
-        strategy_id = str(share_info.get("strategy_used") or "phi_scaled_compressed_solver_search")
+        strategy_id = str(
+            share_info.get("strategy_used") or "phi_scaled_compressed_solver_search"
+        )
         event = self.meta_optimizer.update_from_outcome(
             strategy_id=strategy_id,
             accepted=accepted,
