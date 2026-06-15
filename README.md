@@ -224,6 +224,7 @@ HYBA_ONTOLOGICAL_PERSISTENCE_PATH: "/app/persistence/grace.json"
 ### Documentation
 
 - `docs/RECURSIVE_STRUCTURAL_LEARNING.md` - Comprehensive technical documentation
+- `docs/ONTOLOGICAL_CLOSURE_CERTIFICATE.md` - Absolute closure certificate with performance benchmarks
 - `docs/INTELLIGENCE_FABRIC_DEPLOYMENT.md` - Production deployment guide
 - `docs/INTEGRATION_VERIFICATION.md` - Integration verification report
 
