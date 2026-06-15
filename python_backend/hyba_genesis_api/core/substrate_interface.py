@@ -29,7 +29,7 @@ class SubstrateContract(ABC):
             "counterfactuals": list(counterfactuals),
             "governance_tags": self._generate_tags(bounded_phi),
             "thermal_envelope": "stable",
-            "claim_boundary": "Simulated Coherence (Classical Substrate)",
+            "claim_boundary": "Measured classical substrate coherence envelope",
         }
 
     def _generate_tags(self, phi: float) -> List[str]:
