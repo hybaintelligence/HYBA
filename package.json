@@ -20,7 +20,7 @@
     "test:mining:innovation": "cross-env PYTHONPATH=python_backend python -m pytest tests/test_mining_innovation_properties.py -q",
     "test:mining:benefit": "cross-env PYTHONPATH=python_backend python -m pytest tests/test_mining_benefit_assessment.py -q",
     "test:funding:gate": "cross-env PYTHONPATH=python_backend python -m pytest tests/test_funding_engine_deployment_gate.py tests/test_mining_innovation_properties.py tests/test_mining_benefit_assessment.py -q",
-    "test:adaptive:science": "cross-env PYTHONPATH=python_backend python -m pytest tests/test_adaptive_behavior_deep_analysis.py tests/test_emergent_complexity_iit.py tests/test_pulvini_autonomics.py tests/test_adaptive_science_claim_gate.py -q",
+    "test:adaptive:science": "cross-env PYTHONPATH=python_backend python -m pytest tests/test_adaptive_behavior_deep_analysis.py tests/test_emergent_complexity_iit.py tests/test_pulvini_autonomics.py tests/test_adaptive_science_claim_gate.py tests/test_scientific_baselines.py -q",
     "test:all": "npm run test:property && npm run test:backend && npm run test:bridge",
     "prod:env:check": "python scripts/validate_production_env.py",
     "prod:local:gate": "python scripts/local_production_gate.py --mode rc",
