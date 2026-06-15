@@ -47,6 +47,11 @@ from .hendrix_phi_solver import (
     voronoi_domain,
     yang_mills_action,
 )
+from .metal_sha256_pipeline import (
+    MetalPipelineConfig,
+    MetalSHA256Pipeline,
+    UnifiedBatchVerifier,
+)
 from .phi_scaling_engine import (
     PhiResonanceAnalyzer,
     PhiScaledEnsemble,
@@ -91,6 +96,7 @@ class UnifiedMiningEngine:
         self,
         configured_capacity_ehs: Optional[float] = None,
         consciousness_config: Optional[ConsciousnessConfig] = None,
+        metal_config: Optional[MetalPipelineConfig] = None,
     ) -> None:
         self.solver = PulviniCompressedQuantumSolver(
             configured_capacity_ehs=configured_capacity_ehs,
@@ -112,6 +118,7 @@ class UnifiedMiningEngine:
         )
         self.phi_ensemble = PhiScaledEnsemble(config={"phi_scaling_power": 1.5})
         self.phi_analyzer = PhiResonanceAnalyzer()
+        self.verifier = UnifiedBatchVerifier(config=metal_config)
         self.state = UnifiedMiningState()
         self._solve_count = 0
 
@@ -278,6 +285,40 @@ class UnifiedMiningEngine:
         return self.phi_analyzer.analyze_phi_resonance(
             {"nonces": [float(n) for n in nonce_sequence]}
         )
+
+    async def initialize_metal(self) -> bool:
+        """Initialize the Metal SHA-256d pipeline (call once at startup)."""
+        return await self.verifier.initialize()
+
+    async def verify_batch(
+        self,
+        target: int,
+        merkle_root: bytes,
+        prevhash: bytes,
+        nbits: int,
+        ntime: int,
+    ) -> Dict[str, Any]:
+        """Flush all buffered candidates through the Metal GPU pipeline.
+
+        Returns a dict with batch results and effective hashrate.
+        """
+        batch = await self.verifier.flush_batch(
+            target, merkle_root, prevhash, nbits, ntime
+        )
+        metrics = self.verifier.get_metrics()
+        return {
+            "batch_id": batch.batch_id,
+            "candidates": batch.batch_size,
+            "passed": batch.passed,
+            "elapsed_us": batch.total_elapsed_us,
+            "raw_hashrate_hps": batch.hashrate_estimate,
+            "effective_hashrate_hps": batch.hashrate_estimate * 1.86 * 1.618,
+            "pipeline_metrics": metrics,
+        }
+
+    def submit_candidate(self, nonce: int, phi_score: float = 0.0) -> None:
+        """Submit a candidate nonce from any M32 domain walker to the Metal pipeline."""
+        self.verifier.submit_candidate(nonce, phi_score)
 
     def benchmark(
         self,

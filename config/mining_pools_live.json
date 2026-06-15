@@ -1,23 +1,64 @@
 {
+  "default_pool": "brains",
   "pools": {
+    "brains": {
+      "name": "Brains Pool",
+      "url": "stratum+tcp://pool.brains.btc:3333",
+      "stratum_version": 1,
+      "btc_address": "bc1qsyva7t00e0cwqzts54u7ffys7l76pp8a02x8r9",
+      "username": "",
+      "password": "x",
+      "worker": "hendrix_phi",
+      "priority": 1,
+      "enabled": true,
+      "is_default": true,
+      "description": "Brains mining pool - primary choice"
+    },
     "ckpool": {
+      "name": "CKPool",
       "url": "stratum+tcp://solo.ckpool.org:3333",
       "stratum_version": 1,
       "btc_address": "bc1qsyva7t00e0cwqzts54u7ffys7l76pp8a02x8r9",
       "username": "",
       "password": "x",
-      "priority": 10,
-      "enabled": true
+      "worker": "hendrix_phi",
+      "priority": 2,
+      "enabled": true,
+      "description": "CKPool solo mining"
     },
     "nicehash": {
+      "name": "NiceHash",
       "url": "stratum+ssl://sha256.auto.nicehash.com:443",
       "stratum_version": 1,
       "username": "NHbaCJGb1gM7MjgJ9QnnqbG2sLVW9w8hdPzK",
       "password": "x",
       "worker": "hendrix_phi",
       "nicehash_pool_id": "NHbaCJGb1gM7MjgJ9QnnqbG2sLVW9w8hdPzK",
-      "priority": 20,
-      "enabled": true
+      "priority": 3,
+      "enabled": true,
+      "description": "NiceHash auto-trading SHA256"
+    },
+    "slushpool": {
+      "name": "SlushPool",
+      "url": "stratum+tcp://stratum.slushpool.com:3333",
+      "stratum_version": 1,
+      "username": "slush_user",
+      "password": "x",
+      "worker": "hendrix_phi",
+      "priority": 4,
+      "enabled": false,
+      "description": "SlushPool - optional"
+    },
+    "hiveon": {
+      "name": "Hiveon Pool",
+      "url": "stratum+ssl://eth-us-w1.hiveon.com:443",
+      "stratum_version": 1,
+      "username": "hiveon_user",
+      "password": "x",
+      "worker": "hendrix_phi",
+      "priority": 5,
+      "enabled": false,
+      "description": "Hiveon pool - optional"
     }
   }
 }

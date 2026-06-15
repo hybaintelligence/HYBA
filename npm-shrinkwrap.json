@@ -19,6 +19,7 @@
         "dotenv": "^17.2.3",
         "express": "^4.21.2",
         "express-rate-limit": "^8.5.2",
+        "fast-check": "^4.8.0",
         "firebase": "^12.14.0",
         "helmet": "^8.2.0",
         "http-proxy-middleware": "^4.1.0",
@@ -3976,6 +3977,28 @@
       "integrity": "sha512-fjquC59cD7CyW6urNXK0FBufkZcoiGG80wTuPujX590cB5Ttln20E2UB4S/WARVqhXffZl2LNgS+gQdPIIim/g==",
       "license": "MIT"
     },
+    "node_modules/fast-check": {
+      "version": "4.8.0",
+      "resolved": "https://registry.npmjs.org/fast-check/-/fast-check-4.8.0.tgz",
+      "integrity": "sha512-GOJ158CUMnN6cSahsv4+ExARvIDuzzinFjkp0E9WtiBa5zcVeLozVkWaE4IzFcc+Y48Wp1EDlUZsXRyAztQcSg==",
+      "funding": [
+        {
+          "type": "individual",
+          "url": "https://github.com/sponsors/dubzzz"
+        },
+        {
+          "type": "opencollective",
+          "url": "https://opencollective.com/fast-check"
+        }
+      ],
+      "license": "MIT",
+      "dependencies": {
+        "pure-rand": "^8.0.0"
+      },
+      "engines": {
+        "node": ">=12.17.0"
+      }
+    },
     "node_modules/fast-png": {
       "version": "6.4.0",
       "resolved": "https://registry.npmjs.org/fast-png/-/fast-png-6.4.0.tgz",
@@ -5651,6 +5674,22 @@
       "engines": {
         "node": ">=10"
       }
+    },
+    "node_modules/pure-rand": {
+      "version": "8.4.0",
+      "resolved": "https://registry.npmjs.org/pure-rand/-/pure-rand-8.4.0.tgz",
+      "integrity": "sha512-IoM8YF/jY0hiugFo/wOWqfmarlE6J0wc6fDK1PhftMk7MGhVZl88sZimmqBBFomLOCSmcCCpsfj7wXASCpvK9A==",
+      "funding": [
+        {
+          "type": "individual",
+          "url": "https://github.com/sponsors/dubzzz"
+        },
+        {
+          "type": "opencollective",
+          "url": "https://opencollective.com/fast-check"
+        }
+      ],
+      "license": "MIT"
     },
     "node_modules/qs": {
       "version": "6.15.2",

@@ -33,6 +33,7 @@ from hyba_genesis_api.api import (  # noqa: E402
     mining_jobs,
     mining_ops,
     misc,
+    pool_management,
     products,
     security,
     unified_mining,
@@ -121,6 +122,7 @@ app.include_router(auth.router)
 app.include_router(products.router)
 app.include_router(unified_mining.router)
 app.include_router(ai_memory.router)
+app.include_router(pool_management.router)
 
 
 @app.get("/health", response_model=Dict[str, Any], tags=["health"])

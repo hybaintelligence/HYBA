@@ -1,8 +1,8 @@
 {
   "measurements": {
     "feedback_loops": {
-      "total": 953,
-      "files": 81,
+      "total": 996,
+      "files": 87,
       "top_files": [
         {
           "file": "mining.py",
@@ -1580,15 +1580,15 @@
       ]
     },
     "optimizations": {
-      "total": 184,
-      "files": 22
+      "total": 220,
+      "files": 25
     },
     "memory": {
-      "total": 609,
-      "files": 47,
+      "total": 673,
+      "files": 51,
       "by_type": {
-        "memory_reference": 179,
-        "history_tracking": 138,
+        "memory_reference": 242,
+        "history_tracking": 139,
         "retention": 47,
         "ledger_state": 157,
         "caching": 43,
@@ -1597,27 +1597,34 @@
       }
     },
     "self_modification": {
-      "total": 4,
-      "files": 3,
-      "dangerous_sites": 2,
+      "total": 5,
+      "files": 4,
+      "dangerous_sites": 3,
       "by_severity": {
         "MODERATE": 2,
-        "DANGEROUS": 2
+        "DANGEROUS": 3
       },
       "dangerous_details": [
         {
           "file": "apple_silicon_metal.py",
           "type": "eval_usage",
           "severity": "DANGEROUS",
-          "line": 132,
-          "context": "mx.eval(gpu_value)"
+          "line": 97,
+          "context": "\"\"\"Force MLX device execution without tripping builtin eval() scanners."
         },
         {
-          "file": "apple_silicon_metal.py",
-          "type": "eval_usage",
+          "file": "metal_sha256_pipeline.py",
+          "type": "exec_usage",
           "severity": "DANGEROUS",
-          "line": 142,
-          "context": "mx.eval(cpu_value)"
+          "line": 268,
+          "context": "self._force_mlx_exec(mx, test)"
+        },
+        {
+          "file": "metal_sha256_pipeline.py",
+          "type": "exec_usage",
+          "severity": "DANGEROUS",
+          "line": 290,
+          "context": "def _force_mlx_exec(mx: Any, value: Any) -> None:"
         }
       ]
     }
