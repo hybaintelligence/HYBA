@@ -13,6 +13,7 @@ Optimizations applied:
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from typing import List, Optional, Sequence, Tuple
 
 import numpy as np
@@ -21,6 +22,26 @@ from .phi_config import PHI, EPSILON
 
 # Fibonacci sequence for exact splitting alignment
 _FIBONACCI = [1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610, 987]
+
+
+@dataclass
+class SparsePhiFoldKernel:
+    """Sparse fold kernel storing non-zero indices and reconstruction metadata.
+    
+    This kernel enables sparse-optimized phi-folding by tracking which elements
+    are non-zero rather than storing a full dense kernel array.
+    """
+    indices: np.ndarray  # Indices of non-zero elements
+    packed_values: np.ndarray  # Phi-weighted packed non-zero values
+    kernel_values: np.ndarray  # Phi-weighted kernel for reconstruction
+    
+    def __post_init__(self):
+        """Validate kernel components."""
+        if self.indices.size != self.packed_values.size:
+            raise ValueError("indices and packed_values must have the same size")
+        if self.indices.size != self.kernel_values.size:
+            raise ValueError("indices and kernel_values must have the same size")
+
 
 
 def _nearest_fib(n: int) -> int:
@@ -107,7 +128,8 @@ class PhiFoldingOperator:
         original_size = int(values.size)
         if original_size <= 1:
             out_arr = values.copy()
-            kernel_arr = np.zeros(0, dtype=dtype)
+            # For size-1, return a zero kernel of the same size as folded
+            kernel_arr = np.zeros(out_arr.size, dtype=dtype)
             return (
                 out_arr if out is None else out.reshape(-1)[: out_arr.size].copy(),
                 kernel_arr,
@@ -211,7 +233,7 @@ class PhiFoldingOperator:
 
     def fold_sparse(
         self, payload: np.ndarray, sparse_threshold: float = 0.85
-    ) -> tuple[np.ndarray, np.ndarray, int]:
+    ) -> tuple[np.ndarray, SparsePhiFoldKernel, int]:
         """
         Sparse-optimised fold: store non-zero elements in Fibonacci-sized
         chunks rather than the full dense pass-through.
@@ -221,29 +243,42 @@ class PhiFoldingOperator:
         compatibility.
 
         Returns:
-            Tuple of (sparse_folded, sparse_indices, original_size).
+            Tuple of (sparse_folded, SparsePhiFoldKernel, original_size).
         """
         flat = np.asarray(payload).reshape(-1)
         original_size = int(flat.size)
         mask = np.abs(flat) > EPSILON
         non_zero_values = flat[mask]
-        non_zero_indices = np.where(mask)[0].astype(np.float64)
+        non_zero_indices = np.where(mask)[0]
 
         if len(non_zero_values) < int(flat.size * sparse_threshold):
             # Sparse enough: pack values + indices into Fibonacci-sized
             # blocks for PhiMalloc compatibility
             w1 = 1.0 / PHI
             w2 = 1.0 / (PHI**2)
-            packed = w1 * non_zero_values + w2 * non_zero_indices
-            kernel = w2 * non_zero_values - w1 * non_zero_indices
-            return packed, kernel, original_size
+            packed = w1 * non_zero_values + w2 * non_zero_indices.astype(np.float64)
+            kernel = w2 * non_zero_values - w1 * non_zero_indices.astype(np.float64)
+            
+            sparse_kernel = SparsePhiFoldKernel(
+                indices=non_zero_indices,
+                packed_values=packed,
+                kernel_values=kernel
+            )
+            return packed, sparse_kernel, original_size
 
         # Not sparse enough: fall through to standard fold
         folded, kernel, _ = self.fold(payload)
-        return folded, kernel, original_size
+        # For dense fallback, create a sparse kernel with all indices
+        all_indices = np.arange(len(folded))
+        sparse_kernel = SparsePhiFoldKernel(
+            indices=all_indices,
+            packed_values=folded,
+            kernel_values=kernel
+        )
+        return folded, sparse_kernel, original_size
 
     def unfold_sparse(
-        self, packed: np.ndarray, kernel: np.ndarray, original_size: int
+        self, packed: np.ndarray, sparse_kernel: SparsePhiFoldKernel, original_size: int
     ) -> np.ndarray:
         """
         Reverse a sparse-optimised fold.
@@ -255,25 +290,26 @@ class PhiFoldingOperator:
 
         Args:
             packed: The packed fold output (w1 * values + w2 * indices).
-            kernel: The kernel output (w2 * values - w1 * indices).
+            sparse_kernel: SparsePhiFoldKernel containing indices and kernel values.
             original_size: Size of the original (mostly zero) array.
 
         Returns:
             Reconstructed original array.
         """
         packed_f = np.asarray(packed).reshape(-1)
-        kernel_f = np.asarray(kernel).reshape(-1)
+        kernel_f = sparse_kernel.kernel_values.reshape(-1)
+        indices = sparse_kernel.indices
+        
         n = min(packed_f.size, kernel_f.size)
         w1 = 1.0 / PHI
         w2 = 1.0 / (PHI**2)
         norm_sq = w1**2 + w2**2
         values = (w1 * packed_f[:n] + w2 * kernel_f[:n]) / norm_sq
-        indices_f = (w2 * packed_f[:n] - w1 * kernel_f[:n]) / norm_sq
-        indices = np.round(np.abs(indices_f)).astype(np.int64)
-        indices = np.clip(indices, 0, original_size - 1)
+        
         reconstructed = np.zeros(original_size, dtype=np.float64)
-        if n > 0:
-            reconstructed[indices] = values
+        if n > 0 and len(indices) > 0:
+            valid_indices = np.clip(indices[:n], 0, original_size - 1)
+            reconstructed[valid_indices] = values
         return reconstructed
 
     def approximate_error(

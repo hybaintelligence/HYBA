@@ -173,15 +173,18 @@ class PulviniPhiMemoryCompressionEngine:
         if input_sparsity >= self.sparse_skip_threshold:
             # Sparse-optimised fold: pack non-zero elements + indices into
             # Fibonacci-sized blocks for zero-copy PhiMalloc compatibility
-            folded, kernel_arr, _ = self.operator.fold_sparse(
+            folded, sparse_kernel, _ = self.operator.fold_sparse(
                 flat, sparse_threshold=self.sparse_skip_threshold
             )
-            kernels = (kernel_arr,)
+            # For sparse case, store the kernel arrays from SparsePhiFoldKernel
+            kernels = (sparse_kernel.kernel_values,)
+            sparse_kernel_obj = sparse_kernel  # Keep reference for unfold
             sizes = (int(flat.size), int(folded.size))
-            reconstructed_flat = self.operator.unfold_sparse(folded, kernel_arr, int(flat.size))
+            reconstructed_flat = self.operator.unfold_sparse(folded, sparse_kernel, int(flat.size))
             effective_flat = flat
             compression_strategy = "sparse_fib_packed"
         else:
+            sparse_kernel_obj = None
             folded, kernels, sizes = self.operator.fold_recursive(flat, depth=self.fold_depth)
             reconstructed_flat = self.operator.unfold_recursive(folded, kernels, sizes)[: flat.size]
             effective_flat = reconstructed_flat if not np.isfinite(flat).all() else flat
@@ -248,7 +251,7 @@ class PulviniPhiMemoryCompressionEngine:
             sizes=tuple(int(size) for size in sizes),
             reconstructed=reconstructed.copy(),
             compression_strategy=compression_strategy,
-            sparse_optimized=bool(compression_strategy == "sparse_passthrough"),
+            sparse_optimized=bool(compression_strategy in ("sparse_passthrough", "sparse_fib_packed")),
         )
 
     def decompress(self, result: PhiMemoryFoldResult) -> np.ndarray:

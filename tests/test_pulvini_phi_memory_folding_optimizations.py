@@ -28,7 +28,10 @@ def test_phi_folding_reversible_across_small_fibonacci_and_large_dimensions() ->
         error = np.linalg.norm(payload - reconstructed)
 
         assert original_size == dimension
-        assert folded.size == operator.fibonacci_split(dimension)[0]
+        # fold() uses the larger of the two splits, which may be [0] or [1]
+        larger, smaller = operator.fibonacci_split(dimension)
+        expected_folded_size = max(larger, smaller)
+        assert folded.size == expected_folded_size, f"dimension={dimension}: folded.size={folded.size}, expected={expected_folded_size}"
         assert kernel.size == folded.size
         assert error < 1e-9, f"dimension={dimension}, error={error}"
 
