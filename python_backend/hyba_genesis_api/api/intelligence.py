@@ -18,11 +18,8 @@ router = APIRouter(prefix="/api/v1/intelligence", tags=["intelligence"])
 MEASURED_TELEMETRY_SOURCE = "measured_reflexive_controller_runtime"
 MEASURED_CLAIM_BOUNDARY = (
     "Measured reflexive codebase state from the current controller step; "
-<<<<<<< Updated upstream
-    "runtime values are derived from controller observations only."
-=======
-    "no fabricated, simulated, fixture, or synthetic telemetry."
->>>>>>> Stashed changes
+    "runtime values are derived from controller observations only; "
+    "no fabricated, simulated, fixture, synthetic, or placeholder telemetry."
 )
 
 
