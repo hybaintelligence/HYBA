@@ -1,0 +1,268 @@
+{
+  "benchmark": "POST_QUANTUM_BENCHMARK_V1",
+  "description": "PULVINI is not quantum computing \u2014 it is what comes after quantum.",
+  "timestamp_utc": "2026-06-15T19:42:37Z",
+  "environment": {
+    "python": "Python 3.12.7",
+    "platform": "macOS-26.5.1-arm64-arm-64bit",
+    "numpy": "2.4.6",
+    "hypothesis": "6.92.1",
+    "pytest": "8.3.4"
+  },
+  "summary": {
+    "total": 35,
+    "passed": 35,
+    "failed": 0,
+    "all_passed": true,
+    "wall_clock_seconds": 18.51,
+    "exit_code": 0
+  },
+  "tests": [
+    {
+      "nodeid": "tests/test_post_quantum_benchmark.py::TestDeterminism::test_passport_is_deterministic_across_runs",
+      "class": "TestDeterminism",
+      "name": "test_passport_is_deterministic_across_runs",
+      "outcome": "PASSED",
+      "failure": null
+    },
+    {
+      "nodeid": "tests/test_post_quantum_benchmark.py::TestDeterminism::test_bures_certificate_is_deterministic",
+      "class": "TestDeterminism",
+      "name": "test_bures_certificate_is_deterministic",
+      "outcome": "PASSED",
+      "failure": null
+    },
+    {
+      "nodeid": "tests/test_post_quantum_benchmark.py::TestDeterminism::test_manifold_evolution_is_deterministic",
+      "class": "TestDeterminism",
+      "name": "test_manifold_evolution_is_deterministic",
+      "outcome": "PASSED",
+      "failure": null
+    },
+    {
+      "nodeid": "tests/test_post_quantum_benchmark.py::TestDeterminism::test_phi_resonance_score_is_pure_deterministic_function",
+      "class": "TestDeterminism",
+      "name": "test_phi_resonance_score_is_pure_deterministic_function",
+      "outcome": "PASSED",
+      "failure": null
+    },
+    {
+      "nodeid": "tests/test_post_quantum_benchmark.py::TestGroupClosure::test_automorphism_group_order_is_exactly_120",
+      "class": "TestGroupClosure",
+      "name": "test_automorphism_group_order_is_exactly_120",
+      "outcome": "PASSED",
+      "failure": null
+    },
+    {
+      "nodeid": "tests/test_post_quantum_benchmark.py::TestGroupClosure::test_composition_of_any_two_automorphisms_is_in_group",
+      "class": "TestGroupClosure",
+      "name": "test_composition_of_any_two_automorphisms_is_in_group",
+      "outcome": "PASSED",
+      "failure": null
+    },
+    {
+      "nodeid": "tests/test_post_quantum_benchmark.py::TestGroupClosure::test_coxeter_certificate_matches_topology",
+      "class": "TestGroupClosure",
+      "name": "test_coxeter_certificate_matches_topology",
+      "outcome": "PASSED",
+      "failure": null
+    },
+    {
+      "nodeid": "tests/test_post_quantum_benchmark.py::TestGroupClosure::test_a5_character_orthogonality_is_exact",
+      "class": "TestGroupClosure",
+      "name": "test_a5_character_orthogonality_is_exact",
+      "outcome": "PASSED",
+      "failure": null
+    },
+    {
+      "nodeid": "tests/test_post_quantum_benchmark.py::TestGroupClosure::test_nonce_orbit_under_automorphisms_covers_residue_class",
+      "class": "TestGroupClosure",
+      "name": "test_nonce_orbit_under_automorphisms_covers_residue_class",
+      "outcome": "PASSED",
+      "failure": null
+    },
+    {
+      "nodeid": "tests/test_post_quantum_benchmark.py::TestBuresGeometry::test_pure_state_is_stationary_on_bures_manifold",
+      "class": "TestBuresGeometry",
+      "name": "test_pure_state_is_stationary_on_bures_manifold",
+      "outcome": "PASSED",
+      "failure": null
+    },
+    {
+      "nodeid": "tests/test_post_quantum_benchmark.py::TestBuresGeometry::test_mixed_state_has_nonzero_bures_gradient",
+      "class": "TestBuresGeometry",
+      "name": "test_mixed_state_has_nonzero_bures_gradient",
+      "outcome": "PASSED",
+      "failure": null
+    },
+    {
+      "nodeid": "tests/test_post_quantum_benchmark.py::TestBuresGeometry::test_operator_bures_distance_is_symmetric",
+      "class": "TestBuresGeometry",
+      "name": "test_operator_bures_distance_is_symmetric",
+      "outcome": "PASSED",
+      "failure": null
+    },
+    {
+      "nodeid": "tests/test_post_quantum_benchmark.py::TestBuresGeometry::test_bures_distance_to_self_is_zero",
+      "class": "TestBuresGeometry",
+      "name": "test_bures_distance_to_self_is_zero",
+      "outcome": "PASSED",
+      "failure": null
+    },
+    {
+      "nodeid": "tests/test_post_quantum_benchmark.py::TestBuresGeometry::test_bures_certificate_is_always_closed",
+      "class": "TestBuresGeometry",
+      "name": "test_bures_certificate_is_always_closed",
+      "outcome": "PASSED",
+      "failure": null
+    },
+    {
+      "nodeid": "tests/test_post_quantum_benchmark.py::TestNonMarkovianMemory::test_nakajima_zwanzig_step_changes_entropy",
+      "class": "TestNonMarkovianMemory",
+      "name": "test_nakajima_zwanzig_step_changes_entropy",
+      "outcome": "PASSED",
+      "failure": null
+    },
+    {
+      "nodeid": "tests/test_post_quantum_benchmark.py::TestNonMarkovianMemory::test_memory_kernel_norm_is_finite_and_positive",
+      "class": "TestNonMarkovianMemory",
+      "name": "test_memory_kernel_norm_is_finite_and_positive",
+      "outcome": "PASSED",
+      "failure": null
+    },
+    {
+      "nodeid": "tests/test_post_quantum_benchmark.py::TestNonMarkovianMemory::test_causal_history_accumulates_across_nack_events",
+      "class": "TestNonMarkovianMemory",
+      "name": "test_causal_history_accumulates_across_nack_events",
+      "outcome": "PASSED",
+      "failure": null
+    },
+    {
+      "nodeid": "tests/test_post_quantum_benchmark.py::TestNonMarkovianMemory::test_hebbian_reinforcement_alters_route_probabilities",
+      "class": "TestNonMarkovianMemory",
+      "name": "test_hebbian_reinforcement_alters_route_probabilities",
+      "outcome": "PASSED",
+      "failure": null
+    },
+    {
+      "nodeid": "tests/test_post_quantum_benchmark.py::TestPhiCompression::test_nonce_plan_covers_full_uint32_space",
+      "class": "TestPhiCompression",
+      "name": "test_nonce_plan_covers_full_uint32_space",
+      "outcome": "PASSED",
+      "failure": null
+    },
+    {
+      "nodeid": "tests/test_post_quantum_benchmark.py::TestPhiCompression::test_phi_memory_compression_is_lossless",
+      "class": "TestPhiCompression",
+      "name": "test_phi_memory_compression_is_lossless",
+      "outcome": "PASSED",
+      "failure": null
+    },
+    {
+      "nodeid": "tests/test_post_quantum_benchmark.py::TestPhiCompression::test_phi_compression_maintains_coverage_invariant",
+      "class": "TestPhiCompression",
+      "name": "test_phi_compression_maintains_coverage_invariant",
+      "outcome": "PASSED",
+      "failure": null
+    },
+    {
+      "nodeid": "tests/test_post_quantum_benchmark.py::TestPhiCompression::test_compression_ratio_is_phi_resonant",
+      "class": "TestPhiCompression",
+      "name": "test_compression_ratio_is_phi_resonant",
+      "outcome": "PASSED",
+      "failure": null
+    },
+    {
+      "nodeid": "tests/test_post_quantum_benchmark.py::TestPassportIntegrity::test_passport_self_verifies_via_embedded_hash",
+      "class": "TestPassportIntegrity",
+      "name": "test_passport_self_verifies_via_embedded_hash",
+      "outcome": "PASSED",
+      "failure": null
+    },
+    {
+      "nodeid": "tests/test_post_quantum_benchmark.py::TestPassportIntegrity::test_passport_round_trips_through_128_byte_binary_header",
+      "class": "TestPassportIntegrity",
+      "name": "test_passport_round_trips_through_128_byte_binary_header",
+      "outcome": "PASSED",
+      "failure": null
+    },
+    {
+      "nodeid": "tests/test_post_quantum_benchmark.py::TestPassportIntegrity::test_passport_explicitly_denies_quantum_speedup",
+      "class": "TestPassportIntegrity",
+      "name": "test_passport_explicitly_denies_quantum_speedup",
+      "outcome": "PASSED",
+      "failure": null
+    },
+    {
+      "nodeid": "tests/test_post_quantum_benchmark.py::TestPassportIntegrity::test_topology_verification_closes_on_canonical_map",
+      "class": "TestPassportIntegrity",
+      "name": "test_topology_verification_closes_on_canonical_map",
+      "outcome": "PASSED",
+      "failure": null
+    },
+    {
+      "nodeid": "tests/test_post_quantum_benchmark.py::TestPassportIntegrity::test_tampered_passport_fails_hash_verification",
+      "class": "TestPassportIntegrity",
+      "name": "test_tampered_passport_fails_hash_verification",
+      "outcome": "PASSED",
+      "failure": null
+    },
+    {
+      "nodeid": "tests/test_post_quantum_benchmark.py::TestPassportIntegrity::test_two_different_states_produce_different_passport_hashes",
+      "class": "TestPassportIntegrity",
+      "name": "test_two_different_states_produce_different_passport_hashes",
+      "outcome": "PASSED",
+      "failure": null
+    },
+    {
+      "nodeid": "tests/test_post_quantum_benchmark.py::TestDensityStateRepair::test_state_vector_always_becomes_valid_density_matrix",
+      "class": "TestDensityStateRepair",
+      "name": "test_state_vector_always_becomes_valid_density_matrix",
+      "outcome": "PASSED",
+      "failure": null
+    },
+    {
+      "nodeid": "tests/test_post_quantum_benchmark.py::TestDensityStateRepair::test_maximally_mixed_state_is_repaired_to_valid_density",
+      "class": "TestDensityStateRepair",
+      "name": "test_maximally_mixed_state_is_repaired_to_valid_density",
+      "outcome": "PASSED",
+      "failure": null
+    },
+    {
+      "nodeid": "tests/test_post_quantum_benchmark.py::TestDensityStateRepair::test_pure_state_purity_is_one",
+      "class": "TestDensityStateRepair",
+      "name": "test_pure_state_purity_is_one",
+      "outcome": "PASSED",
+      "failure": null
+    },
+    {
+      "nodeid": "tests/test_post_quantum_benchmark.py::TestPerformanceBoundary::test_bures_certificate_under_1ms",
+      "class": "TestPerformanceBoundary",
+      "name": "test_bures_certificate_under_1ms",
+      "outcome": "PASSED",
+      "failure": null
+    },
+    {
+      "nodeid": "tests/test_post_quantum_benchmark.py::TestPerformanceBoundary::test_passport_generation_under_50ms",
+      "class": "TestPerformanceBoundary",
+      "name": "test_passport_generation_under_50ms",
+      "outcome": "PASSED",
+      "failure": null
+    },
+    {
+      "nodeid": "tests/test_post_quantum_benchmark.py::TestPerformanceBoundary::test_phi_compression_under_10ms",
+      "class": "TestPerformanceBoundary",
+      "name": "test_phi_compression_under_10ms",
+      "outcome": "PASSED",
+      "failure": null
+    },
+    {
+      "nodeid": "tests/test_post_quantum_benchmark.py::TestPerformanceBoundary::test_manifold_evolution_under_5ms",
+      "class": "TestPerformanceBoundary",
+      "name": "test_manifold_evolution_under_5ms",
+      "outcome": "PASSED",
+      "failure": null
+    }
+  ],
+  "integrity_sha256": "cf06160343b9dab10988e75641350c70050c51860199c09da747bac3abce8290"
+}

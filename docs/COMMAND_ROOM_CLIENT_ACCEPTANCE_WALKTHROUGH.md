@@ -130,7 +130,7 @@ export PULVINI_BACKEND_URL=http://127.0.0.1:3001
 Inject private values locally only. Do not commit or paste them into chat:
 
 ```bash
-export JWT_SECRET='<real-32-byte-plus-secret>'
+export JWT_SECRET=replace-with-32-byte-secret
 export HYBA_OPERATOR_CREDENTIALS='<real-argon2id-operator-entry>'
 export HYBA_POOL_<POOL>_URL='<real-pool-url>'
 export HYBA_POOL_<POOL>_USERNAME='<real-worker>'

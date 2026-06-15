@@ -100,12 +100,13 @@ class PulviniManifoldH4:
 
         self.synaptic_matrix = self._initial_synaptic_matrix()
         self.node_energy = np.ones(self.num_nodes, dtype=np.float64)
+        # Initialize phi_3_phases BEFORE calling _initial_state_vector which sets it
+        self.phi_3_phases = np.zeros(self.num_nodes, dtype=np.float64)
         self.psi = self._initial_state_vector()
         self.rho = self._density_from_state(self.psi)
         self.hamiltonian = self._build_hamiltonian()
         self.previous_entropy = self.von_neumann_entropy()
         self.entropy_gradient = 0.0
-        self.phi_3_phases = np.zeros(self.num_nodes, dtype=np.float64)
         self.constructor_memory: List[Dict[str, Any]] = []
 
     def _initial_synaptic_matrix(self) -> np.ndarray:
@@ -169,14 +170,23 @@ class PulviniManifoldH4:
         self.synaptic_matrix = ((self.synaptic_matrix + self.synaptic_matrix.T) / 2.0).real
         self.hamiltonian = self._build_hamiltonian()
 
-    def _phi_3_gate(self, action: float) -> float:
+    def _phi_3_gate(self, curvature: float) -> float:
         """4D Yang-Mills mass gap gate: accept/reject based on φ³ curvature.
 
-        In 4D, the mass gap is 4 - φ³ ≈ -2.236. Low curvature (action < gap)
-        means high acceptance probability. High curvature means rejection.
+        In 4D H₄, the mass gap is |4 - φ³| ≈ 0.236 (absolute gap magnitude).
+        Low curvature (curvature < gap_threshold) → high acceptance probability.
+        High curvature → exponentially decaying probability.
+
+        The gap_threshold = |4 - φ³| ≈ 0.236 defines the boundary between
+        the "mass gap" region (accepted) and the "continuum" (rejected).
+        For H₄ this is narrower than H₃'s 1.382 because the 4D topology
+        provides finer-grained curvature discrimination.
+
+        Equivalent acceptance rate at 1/φ ≈ 0.618 for standard tuning.
         """
-        if action >= self.h4_gap:
-            return math.exp(-(action - self.h4_gap))
+        gap_threshold = abs(self.h4_gap)  # ≈ 0.236
+        if curvature >= gap_threshold:
+            return math.exp(-(curvature - gap_threshold) / 0.5)
         return 1.0
 
     def assert_invariants(self) -> None:

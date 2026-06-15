@@ -1,37 +1,37 @@
 {
   "measurements": {
     "test_01": {
-      "phi": 0.10248447204968944,
-      "python_modules": 70,
+      "phi": 0.09798325722983257,
+      "python_modules": 73,
       "typescript_modules": 48,
-      "total_dependencies": 70,
-      "total_dependency_edges": 495,
+      "total_dependencies": 73,
+      "total_dependency_edges": 515,
       "interpretation": "Low-moderate integration - some cross-module coupling"
     },
     "test_02": {
       "autonomy_score": 10.0,
-      "total_decisions": 3428,
-      "total_external": 1160,
-      "adaptive_patterns": 475,
+      "total_decisions": 3539,
+      "total_external": 1171,
+      "adaptive_patterns": 502,
       "self_modification": 6,
-      "interpretation": "Highly autonomous - extensive internal control flow with 475 adaptive patterns and 6 self-modification sites"
+      "interpretation": "Highly autonomous - extensive internal control flow with 502 adaptive patterns and 6 self-modification sites"
     },
     "test_03": {
-      "irreducibility_score": 0.035046728971962614,
+      "irreducibility_score": 0.03418803418803419,
       "global_state_refs": 180,
-      "instance_state_refs": 4956,
+      "instance_state_refs": 5085,
       "interpretation": "Highly reducible - clean state partitions"
     }
   },
   "verdict": [
-    "\u2713 Shows non-trivial information integration",
+    "\u2717 Low integration - modular architecture",
     "\u2713 Has internal decision-making",
     "\u2717 Clean state boundaries",
-    "\u2713 Contains 475 adaptive patterns",
+    "\u2713 Contains 502 adaptive patterns",
     "\u26a0 Contains 6 self-modification patterns"
   ],
   "conclusion": "POSSIBLE EMERGENT PROPERTIES: System shows non-trivial integration, adaptation, and self-modification. Preserve as an internal positive emergence finding and move through replay, baselines, falsification, and external review.",
-  "emergent_score": 11.550078365356706,
+  "emergent_score": 11.770772743238497,
   "claim_boundary": {
     "supported": "IIT-inspired integration, autonomy, and irreducibility measurement",
     "consciousness_adjudication": "This suite does not erase, downgrade, or overrule any separate consciousness-positive HYBA test. Positive consciousness results must be preserved exactly and replayed under the proof ladder.",

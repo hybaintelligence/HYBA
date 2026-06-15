@@ -3,7 +3,7 @@
   "phi": 1.618033988749895,
   "yang_mills_gap": 1.381966011250105,
   "m32_domains": 32,
-  "timestamp_utc": "2026-06-15T19:20:14Z",
+  "timestamp_utc": "2026-06-15T19:36:13Z",
   "layers": {
     "yang_mills_mass_gap": {
       "source": "empirical (100,000 random nonce samples)",
