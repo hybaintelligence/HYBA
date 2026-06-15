@@ -1,8 +1,9 @@
-"""Validated pool profiles and runtime pool credential configuration.
+"""Validated open-network Bitcoin/Stratum pool profiles.
 
-Pool credentials may be injected through environment variables or configured at
-runtime through the HYBA mining API. Secrets are persisted only in a local
-0600 JSON file intended to be backed by a deployment secret volume.
+Pool URL, payout address, worker name, pool id, and the conventional Stratum
+password value ``x`` are launch configuration for an open Bitcoin network, not
+HYBA application secrets. Runtime profile files are still written with 0600 file
+permissions so operators do not accidentally expose deployment routing choices.
 """
 
 from __future__ import annotations
@@ -40,7 +41,7 @@ class PoolProfile:
         payload = asdict(self)
         if not include_secret_fields:
             payload["username"] = "<configured>" if self.username else ""
-            payload["password"] = "<redacted>" if self.password else ""
+            payload["password"] = "<configured>" if self.password else ""
         return payload
 
 
@@ -218,7 +219,7 @@ def validate_profile(profile: PoolProfile) -> PoolProfile:
     if not profile.username:
         raise PoolProfileError(f"pool {profile.pool_id} requires username")
     if profile.password is None or profile.password == "":
-        raise PoolProfileError(f"pool {profile.pool_id} requires password")
+        raise PoolProfileError(f"pool {profile.pool_id} requires password/auth value")
     if int(profile.stratum_version) not in SUPPORTED_VERSIONS:
         raise PoolProfileError("stratum_version must be 1 or 2")
     if int(profile.priority) < 0:
@@ -297,7 +298,7 @@ def validate_pool_config(config: PoolCredentialConfig) -> PoolCredentialConfig:
         raise PoolProfileError("stratum_version must be 1 or 2")
     if config.pool_id in {"viabtc", "braiins"}:
         if not config.username or not config.password:
-            raise PoolProfileError(f"{config.pool_id} requires username and password")
+            raise PoolProfileError(f"{config.pool_id} requires username and password/auth value")
     elif config.pool_id == "ckpool":
         if not config.btc_address and not config.username:
             raise PoolProfileError("ckpool requires a BTC address")
@@ -306,7 +307,7 @@ def validate_pool_config(config: PoolCredentialConfig) -> PoolCredentialConfig:
             raise PoolProfileError("nicehash requires worker and NH pool id")
     elif config.pool_id == "stratumv2":
         if not config.username or not config.password:
-            raise PoolProfileError("stratumv2 requires username and password")
+            raise PoolProfileError("stratumv2 requires username and password/auth value")
     config.to_profile()
     return config
 
