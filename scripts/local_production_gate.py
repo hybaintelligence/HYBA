@@ -12,6 +12,7 @@ activation remains an operator action after this evidence packet is reviewed.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import platform
@@ -30,6 +31,12 @@ Mode = Literal["rc", "live", "command-room"]
 RC_STEPS = [
     ("live_deployment_forensic_audit", ["npm", "run", "live:audit"]),
     ("runtime_mock_guard", ["npm", "run", "runtime:guard"]),
+    ("evidence_first_intelligence_endpoints", ["npm", "run", "test:evidence:first"]),
+    ("hendrix_phi_core_invariants", ["npm", "run", "test:hendrix:core"]),
+    ("stratum_share_acceptance_e2e", ["npm", "run", "test:share:e2e"]),
+    ("adaptive_science_bundle", ["npm", "run", "test:adaptive:science"]),
+    ("funding_gate_without_live_share_claim", ["npm", "run", "funding:gate"]),
+    ("elevation_packet_bundle", ["npm", "run", "elevation:full"]),
     ("typescript_lint", ["npm", "run", "lint"]),
     ("production_build", ["npm", "run", "build"]),
     ("backend_unit_tests", ["npm", "run", "test:backend"]),
@@ -41,6 +48,8 @@ RC_STEPS = [
 LIVE_STEPS = [
     ("production_environment_validation", ["npm", "run", "prod:env:check"]),
     ("pulvini_live_cut_preflight", ["npm", "run", "pulvini:live-cut:check"]),
+    ("runtime_trace_packet", ["npm", "run", "elevation:runtime"]),
+    ("share_acceptance_evidence_gate", ["npm", "run", "elevation:share:e2e"]),
 ]
 
 REDACT_KEYS = ("SECRET", "PASSWORD", "CREDENTIAL", "TOKEN", "PRIVATE", "KEY")
@@ -66,8 +75,10 @@ class GateReport:
     generated_at_utc: str
     host: dict[str, str]
     environment_summary: dict[str, str]
+    doctrine: dict[str, object]
     steps: list[StepResult] = field(default_factory=list)
     next_operator_actions: list[str] = field(default_factory=list)
+    artifact_sha256: str | None = None
 
     def to_dict(self) -> dict[str, object]:
         payload = asdict(self)
@@ -156,6 +167,27 @@ def _steps_for_mode(mode: Mode) -> list[tuple[str, list[str]]]:
     return RC_STEPS + LIVE_STEPS
 
 
+def _doctrine(mode: Mode) -> dict[str, object]:
+    return {
+        "evidence_first": True,
+        "simulated_runtime_claims_allowed": False,
+        "deterministic_solving_posture": (
+            "HENDRIX-Φ treats nonce discovery as structured deterministic solving "
+            "over a phi-resonant manifold, while external funding/revenue claims "
+            "still require pool-side accepted-share evidence."
+        ),
+        "phi_role": "first_class_operational_invariant",
+        "memory_compression": "PULVINI memory compression and autonomic recovery remain required evidence surfaces.",
+        "hardware_scaling": "Apple Silicon MLX/Metal evidence is included when available and non-breaking otherwise.",
+        "live_pool_policy": {
+            "autoconnect": "disabled unless explicitly enabled by operator",
+            "share_submit": "disabled unless explicitly enabled by operator",
+            "accepted_share_claim": "requires pool ACK and accepted-share gate evidence",
+        },
+        "mode": mode,
+    }
+
+
 def _next_actions(mode: Mode, passed: bool) -> list[str]:
     if not passed:
         return [
@@ -170,10 +202,20 @@ def _next_actions(mode: Mode, passed: bool) -> list[str]:
         ]
     return [
         "Start production with HYBA_ENABLE_LIVE_SHARE_SUBMIT=false and HYBA_ENABLE_MINING_AUTOCONNECT=false.",
-        "Check /bridge/health, backend readiness, and authenticated mining status.",
+        "Check /bridge/health, backend readiness, authenticated mining status, and /api/v1/intelligence/audit.",
         "Only enable live share submission after legal, treasury, security, operations, and CEO approval are attached to HYBA_LIVE_SHARE_APPROVAL_ID.",
         "Capture pool-side accepted/rejected share evidence before making revenue or solvency claims.",
     ]
+
+
+def _write_report(report: GateReport, artifact: Path) -> str:
+    payload = report.to_dict()
+    payload["artifact_sha256"] = None
+    raw = json.dumps(payload, indent=2, sort_keys=True)
+    digest = hashlib.sha256(raw.encode("utf-8")).hexdigest()
+    payload["artifact_sha256"] = digest
+    artifact.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
+    return digest
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -202,7 +244,7 @@ def main(argv: list[str] | None = None) -> int:
     status = "passed" if passed else "blocked"
     now = datetime.now(timezone.utc)
     report = GateReport(
-        version="HYBA_FULLSTACK_LOCAL_PRODUCTION_GATE_V1",
+        version="HYBA_FULLSTACK_LOCAL_PRODUCTION_GATE_V2",
         mode=args.mode,
         status=status,
         passed=passed,
@@ -213,6 +255,7 @@ def main(argv: list[str] | None = None) -> int:
             "machine": platform.machine(),
         },
         environment_summary=_redacted_env_summary(),
+        doctrine=_doctrine(args.mode),
         steps=steps,
         next_operator_actions=_next_actions(args.mode, passed),
     )
@@ -221,8 +264,9 @@ def main(argv: list[str] | None = None) -> int:
     artifact = (
         ARTIFACT_DIR / f"local_production_gate_{args.mode}_{now.strftime('%Y%m%dT%H%M%SZ')}.json"
     )
-    artifact.write_text(json.dumps(report.to_dict(), indent=2, sort_keys=True), encoding="utf-8")
+    digest = _write_report(report, artifact)
     print(f"Evidence packet: {artifact.relative_to(ROOT)}")
+    print(f"Artifact SHA-256: {digest}")
     print(f"Gate status: {status}")
     return 0 if passed else 1
 
