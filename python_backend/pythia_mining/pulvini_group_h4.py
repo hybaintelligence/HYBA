@@ -348,78 +348,57 @@ def _generate_h4_theoretical_automorphisms(
     *,
     max_count: Optional[int] = None,
 ) -> List[Tuple[int, ...]]:
-    """Generate H₄ automorphisms from theoretical group generators.
+    """Generate graph automorphisms for the 600-cell Cayley graph on ℤ₁₂₀.
 
-    For the 600-cell (120 vertices), the H₄ Coxeter group has order 14,400.
-    Full enumeration via backtracking is computationally prohibitive for N > 64.
-    Instead, we generate the known orbit structure from theory:
+    The adjacency graph is constructed as a Cayley graph Cay(ℤ_N, O) where
+    N = 120 and O = {±1, ±11, ±19, ±29, ±41, ±59} mod 120 (see
+    pulvini_topology_h4.py). For such a graph, the following permutations
+    are provably graph automorphisms (they preserve adjacency by
+    construction):
 
-    H₄ acts transitively on the 120 vertices of the 600-cell.
-    Vertex stabilizer: binary icosahedral group (2I, order 120).
-    Orbits: 10 orbits of 12 vertices each.
+      1. Translations: πₜ(i) = (i + t) mod N for t ∈ ℤ_N
+         (always preserve Cayley graph adjacency since
+          πₜ(i) - πₜ(j) = i - j mod N)
 
-    This function returns:
-      - The identity permutation (always)
-      - A set of explicit generators that capture the orbit structure
-      - Up to max_count permutations total
+      2. Sign-flip: π(i) = (-i) mod N
+         (preserves the offset set because O is symmetric:
+          -o ∈ O for all o ∈ O)
 
-    The generators are constructed from the known 10-orbit structure:
-      orbit_shift(t): maps orbit i to orbit (i+1) mod 10 (cyclic shift)
-      orbit_permute(t): cyclic permutation within each orbit of size 12
-      reflection(t): reflection of orbit ordering
+    These generate the dihedral-like group of size 2N = 240, which is a
+    subgroup of the full H₄ group (order 14,400). The action on the 120
+    vertices is transitive: there is 1 orbit of size 120.
+
+    For the 600-cell's full H₄ automorphism group (order 14,400), full
+    backtracking enumeration on 120 vertices is computationally prohibitive.
+    The translation+sign-flip subgroup provides verified, valid automorphisms
+    that correctly cover all vertices in orbit computation.
     """
-    automorphisms = []
-    # Always include identity
-    automorphisms.append(tuple(range(num_nodes)))
+    automorphisms: List[Tuple[int, ...]] = []
+    identity = tuple(range(num_nodes))
+    automorphisms.append(identity)
 
-    # Generate generators based on orbit structure
-    orbit_size = 12
-    n_orbits = num_nodes // orbit_size  # 10
+    count = 1  # identity already added
 
-    # Generator 1: cyclic shift of orbits
-    shift = list(range(num_nodes))
-    for o in range(n_orbits):
-        src_start = o * orbit_size
-        dst_start = ((o + 1) % n_orbits) * orbit_size
-        for v in range(orbit_size):
-            shift[src_start + v] = dst_start + v
-    automorphisms.append(tuple(shift))
+    # 1) Translation automorphisms: πₜ(i) = (i + t) mod N
+    #    Skip t=0 since it's the identity (already included)
+    for t in range(1, num_nodes):
+        if max_count is not None and count >= max_count:
+            break
+        perm = tuple((i + t) % num_nodes for i in range(num_nodes))
+        automorphisms.append(perm)
+        count += 1
 
-    # Generator 2: reflection of orbits (reverse order)
-    reflect = list(range(num_nodes))
-    for o in range(n_orbits):
-        src_start = o * orbit_size
-        dst_start = (n_orbits - 1 - o) * orbit_size
-        for v in range(orbit_size):
-            reflect[src_start + v] = dst_start + v
-    automorphisms.append(tuple(reflect))
+    # 2) Sign-flip + translation automorphisms: π(i) = (-i + t) mod N
+    for t in range(num_nodes):
+        if max_count is not None and count >= max_count:
+            break
+        perm = tuple((-i + t) % num_nodes for i in range(num_nodes))
+        # Skip if this would duplicate the identity or a pure translation
+        # (only happens when t=0 for sign-flip — identity is t=0,s=1)
+        automorphisms.append(perm)
+        count += 1
 
-    # Generator 3: cyclic shift within first orbit
-    within = list(range(num_nodes))
-    for v in range(orbit_size):
-        within[v] = (v + 1) % orbit_size
-    automorphisms.append(tuple(within))
-
-    # Generator 4: reflection within first orbit
-    within_rev = list(range(num_nodes))
-    for v in range(orbit_size):
-        within_rev[v] = (orbit_size - 1 - v) % orbit_size
-    automorphisms.append(tuple(within_rev))
-
-    # Generator 5: φ³-weighted permutation mixing two orbits
-    phi_mix = list(range(num_nodes))
-    for o in range(0, n_orbits, 2):
-        if o + 1 < n_orbits:
-            src_start = o * orbit_size
-            dst_start = (o + 1) * orbit_size
-            for v in range(orbit_size // 2):
-                idx1 = src_start + v
-                idx2 = dst_start + v
-                phi_mix[idx1] = idx2
-                phi_mix[idx2] = idx1
-    automorphisms.append(tuple(phi_mix))
-
-    # Apply max_count limit
+    # Cap to max_count
     if max_count is not None:
         automorphisms = automorphisms[:max_count]
 

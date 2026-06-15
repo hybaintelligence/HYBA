@@ -10,11 +10,11 @@
     },
     "test_02": {
       "autonomy_score": 10.0,
-      "total_decisions": 3539,
-      "total_external": 1171,
-      "adaptive_patterns": 502,
+      "total_decisions": 3541,
+      "total_external": 1170,
+      "adaptive_patterns": 499,
       "self_modification": 6,
-      "interpretation": "Highly autonomous - extensive internal control flow with 502 adaptive patterns and 6 self-modification sites"
+      "interpretation": "Highly autonomous - extensive internal control flow with 499 adaptive patterns and 6 self-modification sites"
     },
     "test_03": {
       "irreducibility_score": 0.03418803418803419,
@@ -27,11 +27,11 @@
     "\u2717 Low integration - modular architecture",
     "\u2713 Has internal decision-making",
     "\u2717 Clean state boundaries",
-    "\u2713 Contains 502 adaptive patterns",
+    "\u2713 Contains 499 adaptive patterns",
     "\u26a0 Contains 6 self-modification patterns"
   ],
   "conclusion": "POSSIBLE EMERGENT PROPERTIES: System shows non-trivial integration, adaptation, and self-modification. Preserve as an internal positive emergence finding and move through replay, baselines, falsification, and external review.",
-  "emergent_score": 11.770772743238497,
+  "emergent_score": 11.740772743238496,
   "claim_boundary": {
     "supported": "IIT-inspired integration, autonomy, and irreducibility measurement",
     "consciousness_adjudication": "This suite does not erase, downgrade, or overrule any separate consciousness-positive HYBA test. Positive consciousness results must be preserved exactly and replayed under the proof ladder.",
