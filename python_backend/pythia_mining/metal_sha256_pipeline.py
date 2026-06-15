@@ -1,508 +1,507 @@
-"""
-HYBA Metal SHA-256d Pipeline — Exa-Hash Scale Parallel Verification
-====================================================================
+"""Metal-aware Bitcoin SHA-256d batch verification pipeline.
 
-Implements batch SHA-256d verification on Apple Silicon GPU via Metal
-Performance Shaders (MPS) and MLX.
+This module is the production verifier layer for HENDRIX-Φ candidate nonces.
+It keeps the cryptographic oracle exact: every candidate is validated with the
+same Bitcoin block-header double-SHA256 rules used by ``mining_validation``.
 
-Architecture:
-  32 CPU cores (M32 domain walkers) → candidate buffer → 60 GPU cores
-  (parallel SHA-256d) → share submit → feedback loop
-
-Each GPU core independently verifies a candidate nonce against the
-pool target. The 60-core GPU processes 60 candidates per batch,
-with 4 pipeline stages in flight (240 candidates in flight at once).
-
-The structured search (HENDRIX-Φ) generates ~2,000-10,000 candidates/sec
-per CPU core. With 31 walkers, that's ~62,000-310,000 candidates/sec.
-The 60 GPU cores can verify ~60 × 4 × 1000 = 240,000 hashes/sec
-at conservative GPU clock speeds. Both match.
-
-With phi folding compression (1.86×) and the Yang-Mills gate (1/0.618),
-each verification covers more nonce space than a raw SHA-256d call.
-Effective throughput: 240,000 × 1.86 × 1.618 ≈ 721,000 raw-equivalent
-hash verifications per second — on a single M3 Ultra.
-
-Scaling: 4× M3 Ultras in a cluster = 2.88M hashes/sec ≈ 2.88 MH/s
-PULVINI compression × phi gate = 2.88M × 3.01 ≈ 8.67 MH/s effective.
-At pool difficulty, this contributes meaningful share throughput.
+On Apple Silicon with MLX available, ``MetalSHA256Pipeline`` stages nonce batches
+through the MLX/Metal device path before exact digest verification. On all other
+hosts, ``CPUParallelVerifier`` provides a deterministic bounded-worker fallback.
+The unified wrapper reports the backend used for every batch so operator
+telemetry can distinguish measured host throughput from configured EHS capacity.
 """
 
 from __future__ import annotations
 
-import asyncio
 import hashlib
-import math
 import os
 import platform
-import struct
 import time
-from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from concurrent.futures import ThreadPoolExecutor
+from dataclasses import asdict, dataclass, field
+from typing import Any, Iterable, List, Optional, Sequence
 
-from .phi_config import PHI
+from pythia_mining.mining_validation import (
+    MiningValidationError,
+    ShareValidationResult,
+    build_block_header,
+    coinbase_hash_hex,
+    compute_merkle_root,
+    display_hash,
+    effective_target,
+    hash256,
+    validate_share,
+)
+from pythia_mining.stratum_client import MiningJob
 
-# ── Constants ────────────────────────────────────────────────────────────────
-
-# SHA-256 block constants
-SHA256_K = [
-    0x428A2F98, 0x71374491, 0xB5C0FBCF, 0xE9B5DBA5,
-    0x3956C25B, 0x59F111F1, 0x923F82A4, 0xAB1C5ED5,
-    0xD807AA98, 0x12835B01, 0x243185BE, 0x550C7DC3,
-    0x72BE5D74, 0x80DEB1FE, 0x9BDC06A7, 0xC19BF174,
-    0xE49B69C1, 0xEFBE4786, 0x0FC19DC6, 0x240CA1CC,
-    0x2DE92C6F, 0x4A7484AA, 0x5CB0A9DC, 0x76F988DA,
-    0x983E5152, 0xA831C66D, 0xB00327C8, 0xBF597FC7,
-    0xC6E00BF3, 0xD5A79147, 0x06CA6351, 0x14292967,
-    0x27B70A85, 0x2E1B2138, 0x4D2C6DFC, 0x53380D13,
-    0x650A7354, 0x766A0ABB, 0x81C2C92E, 0x92722C85,
-    0xA2BFE8A1, 0xA81A664B, 0xC24B8B70, 0xC76C51A3,
-    0xD192E819, 0xD6990624, 0xF40E3585, 0x106AA070,
-    0x19A4C116, 0x1E376C08, 0x2748774C, 0x34B0BCB5,
-    0x391C0CB3, 0x4ED8AA4A, 0x5B9CCA4F, 0x682E6FF3,
-    0x748F82EE, 0x78A5636F, 0x84C87814, 0x8CC70208,
-    0x90BEFFFA, 0xA4506CEB, 0xBEF9A3F7, 0xC67178F2,
-]
-
-# ── Data Structures ──────────────────────────────────────────────────────────
+UINT32_MAX = 2**32 - 1
+DEFAULT_CPU_WORKERS = 32
 
 
-@dataclass
-class MetalPipelineConfig:
-    """Configuration for the Metal-accelerated SHA-256d pipeline."""
-
-    batch_size: int = 60                  # matches M3 Ultra GPU core count
-    pipeline_depth: int = 4               # batches in flight
-    target_ms_per_hash: float = 0.5       # target latency per hash
-    max_batch_time_ms: float = 100.0      # max time before timeout
-    metal_device: int = 0
-    use_mlx: bool = True                  # try MLX first, fall back to CPU
-    cpu_fallback: bool = True             # CPU parallel fallback if no MLX
-
-    @property
-    def candidates_in_flight(self) -> int:
-        return self.batch_size * self.pipeline_depth
-
-
-@dataclass
-class HashResult:
-    """Result of a single SHA-256d verification."""
+@dataclass(frozen=True)
+class NonceVerification:
+    """Exact local verification result for one nonce candidate."""
 
     nonce: int
+    valid: bool
     block_hash: str
-    leading_zeros: int
-    target_passed: bool
-    elapsed_us: float
-    phi_resonance_score: float
+    hash_int: int
+    target: int
+    header_hex: str
+    merkle_root: str
+    reason: Optional[str] = None
+    backend: str = "cpu_parallel_exact_sha256d"
+    elapsed_seconds: float = 0.0
+
+    @classmethod
+    def from_share_validation(
+        cls,
+        *,
+        nonce: int,
+        validation: ShareValidationResult,
+        backend: str,
+        elapsed_seconds: float,
+    ) -> "NonceVerification":
+        return cls(
+            nonce=nonce,
+            valid=bool(validation.valid),
+            block_hash=validation.block_hash,
+            hash_int=int(validation.hash_int),
+            target=int(validation.target),
+            header_hex=validation.header_hex,
+            merkle_root=validation.merkle_root,
+            reason=validation.reason,
+            backend=backend,
+            elapsed_seconds=float(elapsed_seconds),
+        )
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)
 
 
-@dataclass
+@dataclass(frozen=True)
 class BatchResult:
-    """Result of a batch of SHA-256d verifications."""
+    """Batch-level verifier metrics and winner summary."""
 
-    candidates: List[HashResult]
-    batch_id: int
-    batch_size: int
-    total_elapsed_us: float
-    passed: int
-    failed: int
+    backend: str
+    total_nonces: int
+    elapsed_seconds: float
+    hashes_per_second: float
+    hashrate_ehs: float
+    configured_capacity_ehs: Optional[float]
+    target: int
+    winners: List[NonceVerification] = field(default_factory=list)
+    best_nonce: Optional[int] = None
+    best_hash: Optional[str] = None
+    best_hash_int: Optional[int] = None
+    best_reason: Optional[str] = None
+    metal_available: bool = False
+    cpu_workers: int = DEFAULT_CPU_WORKERS
 
     @property
-    def hashrate_estimate(self) -> float:
-        """Estimated hashrate from this batch in hashes/second."""
-        elapsed_s = self.total_elapsed_us / 1_000_000
-        return self.batch_size / elapsed_s if elapsed_s > 0 else 0.0
+    def accepted_count(self) -> int:
+        return len(self.winners)
+
+    def to_dict(self) -> dict[str, Any]:
+        payload = asdict(self)
+        payload["accepted_count"] = self.accepted_count
+        return payload
 
 
-# ── Python Reference SHA-256d (for CPU fallback + verification) ──────────────
+def _resolve_extranonce2(job: MiningJob, extranonce2: Optional[str]) -> str:
+    if extranonce2 is not None:
+        return extranonce2
+    return "00" * int(job.extranonce2_size)
 
 
-def sha256d(nonce: int, merkle_root: bytes, prevhash: bytes, nbits: int,
-            ntime: int, version: int = 0x20000000) -> bytes:
-    """Compute double-SHA256 of a Bitcoin block header for a given nonce."""
-    header = struct.pack(
-        "<I32s32sIII",
-        version,
-        prevhash,
-        merkle_root,
-        ntime,
-        nbits,
-        nonce,
+def _check_nonce(nonce: int) -> int:
+    if not isinstance(nonce, int) or nonce < 0 or nonce > UINT32_MAX:
+        raise MiningValidationError("nonce must be an unsigned 32-bit integer")
+    return int(nonce)
+
+
+def verify_nonce(
+    job: MiningJob,
+    nonce: int,
+    extranonce2: Optional[str] = None,
+    *,
+    backend: str = "cpu_parallel_exact_sha256d",
+) -> NonceVerification:
+    """Verify one Bitcoin block-header nonce with canonical double-SHA256."""
+
+    checked_nonce = _check_nonce(nonce)
+    started = time.perf_counter()
+    validation = validate_share(job, checked_nonce, _resolve_extranonce2(job, extranonce2))
+    elapsed = time.perf_counter() - started
+    return NonceVerification.from_share_validation(
+        nonce=checked_nonce,
+        validation=validation,
+        backend=backend,
+        elapsed_seconds=elapsed,
     )
-    return hashlib.sha256(hashlib.sha256(header).digest()).digest()
 
 
-def verify_nonce(nonce: int, target: int, merkle_root: bytes,
-                 prevhash: bytes, nbits: int, ntime: int,
-                 version: int = 0x20000000) -> Tuple[bytes, int, bool]:
-    """Verify a single nonce against a pool target. Returns (hash, leading_zeros, passed)."""
-    h = sha256d(nonce, merkle_root, prevhash, nbits, ntime, version)
-    hash_int = int.from_bytes(h, 'big')
-    leading_zeros = 256 - hash_int.bit_length()
-    passed = hash_int <= target
-    return h, leading_zeros, passed
+def verify_header_sha256d(header: bytes, target: int) -> tuple[bool, str, int]:
+    """Verify a raw 80-byte Bitcoin header against a target."""
+
+    if len(header) != 80:
+        raise MiningValidationError("block header must be exactly 80 bytes")
+    digest = hash256(header)
+    hash_int = int.from_bytes(digest, byteorder="little", signed=False)
+    return hash_int <= int(target), display_hash(digest), hash_int
 
 
-# ── CPU Batch Verifier (Parallel Fallback) ────────────────────────────────────
+def _build_header_for_nonce(job: MiningJob, nonce: int, extranonce2: str) -> tuple[bytes, str]:
+    coinbase_hash = coinbase_hash_hex(job, extranonce2)
+    merkle_root = compute_merkle_root(coinbase_hash, job.merkle_branch)
+    return build_block_header(job, merkle_root, nonce), merkle_root
+
+
+def sha256d_headers(headers: Sequence[bytes]) -> list[bytes]:
+    """Hash a sequence of 80-byte headers exactly with hashlib."""
+
+    return [hashlib.sha256(hashlib.sha256(header).digest()).digest() for header in headers]
 
 
 class CPUParallelVerifier:
-    """CPU-based parallel SHA-256d verifier using multiprocessing or asyncio.
+    """Bounded-worker exact SHA-256d batch verifier."""
 
-    Used as fallback when MLX/Metal is unavailable. Still provides
-    significant throughput via the phi gate (pre-filtering).
-    """
+    def __init__(self, workers: Optional[int] = None) -> None:
+        env_workers = os.getenv("HYBA_CPU_VERIFY_WORKERS")
+        configured = int(env_workers) if env_workers and env_workers.isdigit() else workers
+        if configured is None:
+            configured = DEFAULT_CPU_WORKERS
+        self.workers = max(1, min(int(configured), DEFAULT_CPU_WORKERS))
+        self.backend = "cpu_parallel_exact_sha256d"
 
-    def __init__(self, max_workers: int = 32):
-        self.max_workers = max_workers
-        self._batch_counter = 0
-
-    async def verify_batch(
+    def verify_batch(
         self,
-        nonces: List[int],
-        target: int,
-        merkle_root: bytes,
-        prevhash: bytes,
-        nbits: int,
-        ntime: int,
-        phi_scores: Optional[List[float]] = None,
+        job: MiningJob,
+        nonces: Iterable[int],
+        extranonce2: Optional[str] = None,
+        *,
+        configured_capacity_ehs: Optional[float] = None,
     ) -> BatchResult:
-        """Verify a batch of nonces using asyncio gather (parallel CPU)."""
-        n = len(nonces)
-        if n == 0:
-            return BatchResult([], self._batch_counter, 0, 0, 0, 0)
-
-        self._batch_counter += 1
-        t0 = time.perf_counter()
-
-        phi_scores = phi_scores or [0.5] * n
-
-        # Run verifications concurrently
-        async def verify_one(i: int) -> HashResult:
-            h, leading_zeros, passed = verify_nonce(
-                nonces[i], target, merkle_root, prevhash, nbits, ntime
-            )
-            return HashResult(
-                nonce=nonces[i],
-                block_hash=h.hex(),
-                leading_zeros=leading_zeros,
-                target_passed=passed,
-                elapsed_us=0,
-                phi_resonance_score=phi_scores[i],
+        nonce_list = [_check_nonce(int(nonce)) for nonce in nonces]
+        target = effective_target(job)
+        if not nonce_list:
+            return BatchResult(
+                backend=self.backend,
+                total_nonces=0,
+                elapsed_seconds=0.0,
+                hashes_per_second=0.0,
+                hashrate_ehs=0.0,
+                configured_capacity_ehs=configured_capacity_ehs,
+                target=target,
+                cpu_workers=self.workers,
             )
 
-        tasks = [verify_one(i) for i in range(n)]
-        results = await asyncio.gather(*tasks)
-
-        elapsed = (time.perf_counter() - t0) * 1_000_000  # microseconds
-        passed = sum(1 for r in results if r.target_passed)
-
-        return BatchResult(
-            candidates=results,
-            batch_id=self._batch_counter,
-            batch_size=n,
-            total_elapsed_us=elapsed,
-            passed=passed,
-            failed=n - passed,
+        started = time.perf_counter()
+        with ThreadPoolExecutor(max_workers=self.workers) as executor:
+            results = list(
+                executor.map(
+                    lambda nonce: verify_nonce(
+                        job,
+                        nonce,
+                        extranonce2,
+                        backend=self.backend,
+                    ),
+                    nonce_list,
+                )
+            )
+        elapsed = max(time.perf_counter() - started, 1e-12)
+        return _batch_result_from_verifications(
+            backend=self.backend,
+            verifications=results,
+            elapsed_seconds=elapsed,
+            target=target,
+            metal_available=False,
+            cpu_workers=self.workers,
+            configured_capacity_ehs=configured_capacity_ehs,
         )
 
-
-# ── MLX/Metal Batch Verifier ─────────────────────────────────────────────────
+    def verify_nonce(
+        self,
+        job: MiningJob,
+        nonce: int,
+        extranonce2: Optional[str] = None,
+    ) -> NonceVerification:
+        return verify_nonce(job, nonce, extranonce2, backend=self.backend)
 
 
 class MetalSHA256Pipeline:
-    """GPU-accelerated SHA-256d verification pipeline using MLX/Metal.
+    """Apple Silicon MLX/Metal batch staging with exact SHA-256d verification."""
 
-    The pipeline:
-      1. Receives candidates from M32 domain walkers (CPU)
-      2. Batches them into GPU-sized chunks (60 = M3 Ultra GPU core count)
-      3. Runs parallel SHA-256d on GPU via MLX matrix operations
-      4. Returns only candidates that pass the pool target
-      5. Feeds acceptance data back to consciousness engine
+    def __init__(self, require_mlx: bool = False) -> None:
+        self.require_mlx = bool(require_mlx)
+        self.backend = "metal_mlx_staged_exact_sha256d"
+        self.apple_silicon_detected = (
+            platform.system() == "Darwin" and platform.machine().lower() in {"arm64", "aarch64"}
+        )
+        self._mlx_core: Optional[Any] = None
+        self._mlx_error: Optional[str] = None
+        self._load_mlx()
 
-    Architecture:
-                     ┌──────────────┐
-        M32 CPU ────►│  Candidate   │────►┌──────────────┐
-        Walkers      │  Buffer      │     │  GPU Batch   │
-        (31 cores)   │  (240 slots) │     │  SHA-256d    │
-                     └──────────────┘     │  (60 cores)  │
-                                          └──────┬───────┘
-                                                 │
-                                          ┌──────▼───────┐
-                                          │  Share       │────► Pool
-                                          │  Filter      │
-                                          └──────────────┘
-    """
-
-    def __init__(
-        self,
-        config: Optional[MetalPipelineConfig] = None,
-    ):
-        self.config = config or MetalPipelineConfig()
-        self._batch_counter = 0
-        self._total_hashes = 0
-        self._total_passed = 0
-        self._mlx_available = False
-        self._mlx = None
-        self._initialized = False
-        self._batch_times: List[float] = []
-
-    async def initialize(self) -> bool:
-        """Initialize MLX and verify GPU availability."""
-        if not (platform.system() == "Darwin" and
-                platform.machine().lower() in {"arm64", "aarch64"}):
-            print("[MetalSHA256] Not Apple Silicon, falling back to CPU")
-            return False
-
+    def _load_mlx(self) -> None:
         try:
-            import mlx.core as mx
-            self._mlx = mx
-            self._mlx_available = True
+            import mlx.core as mx  # type: ignore
 
-            # Verify GPU is accessible
-            device_info = []
-            for i in range(min(4, 32)):
-                try:
-                    with mx.default_device(mx.gpu):
-                        test = mx.array([PHI], dtype=mx.float32)
-                        self._force_mlx_exec(mx, test)
-                        device_info.append(i)
-                except Exception:
-                    break
+            self._mlx_core = mx
+        except Exception as exc:  # pragma: no cover - depends on host extras
+            self._mlx_core = None
+            self._mlx_error = str(exc)
+            if self.require_mlx:
+                raise RuntimeError(f"MLX/Metal verifier requested but unavailable: {exc}") from exc
 
-            if device_info:
-                self._initialized = True
-                print(f"[MetalSHA256] ✅ MLX/Metal initialized — "
-                      f"{len(device_info)} GPU device(s) available")
-                print(f"              Batch: {self.config.batch_size}/batch, "
-                      f"Pipeline depth: {self.config.pipeline_depth}, "
-                      f"Total in flight: {self.config.candidates_in_flight}")
-                return True
-            else:
-                print("[MetalSHA256] MLX loaded but no GPU device found")
-                return False
+    @property
+    def mlx_available(self) -> bool:
+        return self._mlx_core is not None
 
-        except Exception as exc:
-            print(f"[MetalSHA256] MLX unavailable: {exc}")
-            return False
+    @property
+    def available(self) -> bool:
+        allow_any_platform = os.getenv("HYBA_ENABLE_MLX_SHA256_ANY_PLATFORM", "").lower() in {
+            "1",
+            "true",
+            "yes",
+            "on",
+        }
+        return bool(self.mlx_available and (self.apple_silicon_detected or allow_any_platform))
 
-    @staticmethod
-    def _force_mlx_exec(mx: Any, value: Any) -> None:
-        """Force MLX device evaluation."""
-        getattr(mx, "eval")(value)
+    @property
+    def unavailable_reason(self) -> Optional[str]:
+        if self.available:
+            return None
+        if not self.mlx_available:
+            return self._mlx_error or "mlx_not_available"
+        if not self.apple_silicon_detected:
+            return "apple_silicon_not_detected"
+        return "metal_unavailable"
 
-    async def verify_batch_metal(
-        self,
-        nonces: List[int],
-        target: int,
-        merkle_root: bytes,
-        prevhash: bytes,
-        nbits: int,
-        ntime: int,
-        phi_scores: Optional[List[float]] = None,
-    ) -> BatchResult:
-        """Verify a batch using Metal GPU acceleration via MLX.
+    def initialize(self) -> dict[str, Any]:
+        if self.available:
+            self._stage_nonces([0, 1, 2, 3])
+        elif self.require_mlx:
+            raise RuntimeError(self.unavailable_reason or "MLX/Metal unavailable")
+        return self.status()
 
-        Uses MLX array operations to parallelize the SHA-256d block
-        computation on the GPU. Each nonce becomes a row in a batch
-        matrix, processed in parallel by the 60 GPU cores.
-        """
-        if not self._initialized:
-            return await self._fallback_cpu(
-                nonces, target, merkle_root, prevhash, nbits, ntime, phi_scores
-            )
-
-        n = len(nonces)
-        if n == 0:
-            return BatchResult([], self._batch_counter, 0, 0, 0, 0)
-
-        self._batch_counter += 1
-        t0 = time.perf_counter()
-        mx = self._mlx
-        phi_scores = phi_scores or [0.5] * n
-
-        results: List[HashResult] = []
-
-        try:
-            # Process in sub-batches matching GPU core count
-            sub_batch_size = self.config.batch_size
-            for start in range(0, n, sub_batch_size):
-                end = min(start + sub_batch_size, n)
-                batch = nonces[start:end]
-                phi_batch = phi_scores[start:end]
-
-                # Build header components as MLX tensors
-                # Each nonce differs only in the last 4 bytes of the header
-                # So we can parallelize the final SHA-256 compression
-                with mx.default_device(mx.gpu):
-                    # Create nonce tensor
-                    nonce_tensor = mx.array(batch, dtype=mx.uint32)
-
-                    # Compute block hashes in parallel on GPU
-                    # Using Python's hashlib per-item for correctness,
-                    # parallelized via MLX's implicit vectorization
-                    for i, nonce in enumerate(batch):
-                        h, leading_zeros, passed = verify_nonce(
-                            nonce, target, merkle_root, prevhash, nbits, ntime
-                        )
-                        results.append(HashResult(
-                            nonce=nonce,
-                            block_hash=h.hex(),
-                            leading_zeros=leading_zeros,
-                            target_passed=passed,
-                            elapsed_us=0,
-                            phi_resonance_score=phi_batch[i],
-                        ))
-
-        except Exception as exc:
-            print(f"[MetalSHA256] GPU error: {exc}, falling back to CPU for this batch")
-            return await self._fallback_cpu(
-                nonces, target, merkle_root, prevhash, nbits, ntime, phi_scores
-            )
-
-        elapsed = (time.perf_counter() - t0) * 1_000_000
-        self._batch_times.append(elapsed)
-        if len(self._batch_times) > 100:
-            self._batch_times.pop(0)
-
-        passed = sum(1 for r in results if r.target_passed)
-        self._total_hashes += n
-        self._total_passed += passed
-
-        return BatchResult(
-            candidates=results,
-            batch_id=self._batch_counter,
-            batch_size=n,
-            total_elapsed_us=elapsed,
-            passed=passed,
-            failed=n - passed,
-        )
-
-    async def _fallback_cpu(
-        self,
-        nonces: List[int],
-        target: int,
-        merkle_root: bytes,
-        prevhash: bytes,
-        nbits: int,
-        ntime: int,
-        phi_scores: Optional[List[float]] = None,
-    ) -> BatchResult:
-        """Fallback to CPU parallel verification when GPU unavailable."""
-        verifier = CPUParallelVerifier(max_workers=32)
-        return await verifier.verify_batch(
-            nonces, target, merkle_root, prevhash, nbits, ntime, phi_scores
-        )
-
-    def get_metrics(self) -> Dict[str, Any]:
-        """Return pipeline metrics and effective hashrate estimates."""
-        avg_batch_us = (
-            sum(self._batch_times) / len(self._batch_times)
-            if self._batch_times
-            else 0
-        )
-        avg_batch_s = avg_batch_us / 1_000_000
-        batch_size = self.config.batch_size
-        raw_hps = batch_size / avg_batch_s if avg_batch_s > 0 else 0
-
-        # Apply phi amplification factors
-        phi_compression = 1.86  # PULVINI depth 2
-        phi_gate = 1.618  # 1/0.618
-        effective_hps = raw_hps * phi_compression * phi_gate
-
+    def status(self) -> dict[str, Any]:
         return {
-            "initialized": self._initialized,
-            "mlx_available": self._mlx_available,
-            "total_hashes": self._total_hashes,
-            "total_passed": self._total_passed,
-            "accept_rate": (
-                self._total_passed / self._total_hashes
-                if self._total_hashes > 0
-                else 0
-            ),
-            "batch_size": batch_size,
-            "pipeline_depth": self.config.pipeline_depth,
-            "avg_batch_time_us": round(avg_batch_us, 2),
-            "raw_hashrate_hps": round(raw_hps, 2),
-            "effective_hashrate_hps": round(effective_hps, 2),
-            "effective_hashrate_ghs": round(effective_hps / 1e9, 4),
-            "effective_hashrate_ths": round(effective_hps / 1e12, 6),
-            "effective_hashrate_phs": round(effective_hps / 1e15, 8),
-            "amplification_factors": {
-                "pulvini_compression": phi_compression,
-                "phi_gate_efficiency": phi_gate,
-                "total_phi_amplification": phi_compression * phi_gate,
-            },
-            "pipeline": {
-                "batch_size": batch_size,
-                "depth": self.config.pipeline_depth,
-                "candidates_in_flight": self.config.candidates_in_flight,
-                "target_ms_per_hash": self.config.target_ms_per_hash,
-            },
+            "backend": self.backend,
+            "available": self.available,
+            "mlx_available": self.mlx_available,
+            "apple_silicon_detected": self.apple_silicon_detected,
+            "unavailable_reason": self.unavailable_reason,
         }
 
+    def _stage_nonces(self, nonces: Sequence[int]) -> None:
+        if not self.available or self._mlx_core is None:
+            return
+        mx = self._mlx_core
+        dtype = getattr(mx, "uint32", getattr(mx, "float32", None))
+        device = getattr(mx, "gpu", None)
+        if device is not None and hasattr(mx, "default_device"):
+            with mx.default_device(device):
+                arr = mx.array(list(nonces), dtype=dtype)
+                if hasattr(mx, "eval"):
+                    mx.eval(arr)
+        else:
+            arr = mx.array(list(nonces), dtype=dtype)
+            if hasattr(mx, "eval"):
+                mx.eval(arr)
 
-# ── Unified Verifier ─────────────────────────────────────────────────────────
+    def verify_batch(
+        self,
+        job: MiningJob,
+        nonces: Iterable[int],
+        extranonce2: Optional[str] = None,
+        *,
+        cpu_workers: int = DEFAULT_CPU_WORKERS,
+        configured_capacity_ehs: Optional[float] = None,
+    ) -> BatchResult:
+        nonce_list = [_check_nonce(int(nonce)) for nonce in nonces]
+        target = effective_target(job)
+        if not nonce_list:
+            return BatchResult(
+                backend=self.backend,
+                total_nonces=0,
+                elapsed_seconds=0.0,
+                hashes_per_second=0.0,
+                hashrate_ehs=0.0,
+                configured_capacity_ehs=configured_capacity_ehs,
+                target=target,
+                metal_available=self.available,
+                cpu_workers=cpu_workers,
+            )
+        started = time.perf_counter()
+        self._stage_nonces(nonce_list)
+        with ThreadPoolExecutor(max_workers=max(1, min(int(cpu_workers), DEFAULT_CPU_WORKERS))) as executor:
+            results = list(
+                executor.map(
+                    lambda nonce: verify_nonce(
+                        job,
+                        nonce,
+                        extranonce2,
+                        backend=self.backend,
+                    ),
+                    nonce_list,
+                )
+            )
+        elapsed = max(time.perf_counter() - started, 1e-12)
+        return _batch_result_from_verifications(
+            backend=self.backend,
+            verifications=results,
+            elapsed_seconds=elapsed,
+            target=target,
+            metal_available=self.available,
+            cpu_workers=cpu_workers,
+            configured_capacity_ehs=configured_capacity_ehs,
+        )
+
+    def verify_nonce(
+        self,
+        job: MiningJob,
+        nonce: int,
+        extranonce2: Optional[str] = None,
+    ) -> NonceVerification:
+        if self.available:
+            self._stage_nonces([nonce])
+        return verify_nonce(job, nonce, extranonce2, backend=self.backend)
+
+
+def _batch_result_from_verifications(
+    *,
+    backend: str,
+    verifications: Sequence[NonceVerification],
+    elapsed_seconds: float,
+    target: int,
+    metal_available: bool,
+    cpu_workers: int,
+    configured_capacity_ehs: Optional[float],
+) -> BatchResult:
+    total = len(verifications)
+    hashes_per_second = total / max(elapsed_seconds, 1e-12)
+    best = min(verifications, key=lambda item: item.hash_int) if verifications else None
+    winners = [item for item in verifications if item.valid]
+    return BatchResult(
+        backend=backend,
+        total_nonces=total,
+        elapsed_seconds=float(elapsed_seconds),
+        hashes_per_second=float(hashes_per_second),
+        hashrate_ehs=float(hashes_per_second / 1e18),
+        configured_capacity_ehs=configured_capacity_ehs,
+        target=int(target),
+        winners=winners,
+        best_nonce=best.nonce if best else None,
+        best_hash=best.block_hash if best else None,
+        best_hash_int=best.hash_int if best else None,
+        best_reason=best.reason if best else None,
+        metal_available=bool(metal_available),
+        cpu_workers=int(cpu_workers),
+    )
 
 
 class UnifiedBatchVerifier:
-    """Unified verifier that auto-selects Metal GPU or CPU fallback.
+    """Select Metal when verified, otherwise use exact CPU batch verification."""
 
-    This is the entry point used by the UnifiedMiningEngine. It:
-    1. Collects candidates from all M32 domain walkers
-    2. Batches them for optimal GPU throughput
-    3. Runs parallel SHA-256d verification
-    4. Returns only candidates that pass the pool target
-    """
-
-    def __init__(self, config: Optional[MetalPipelineConfig] = None):
-        self.config = config or MetalPipelineConfig()
-        self.metal_pipeline = MetalSHA256Pipeline(config)
-        self.cpu_verifier = CPUParallelVerifier(max_workers=32)
-        self._use_metal = False
-        self._candidate_buffer: List[Tuple[int, float]] = []  # (nonce, phi_score)
-
-    async def initialize(self) -> bool:
-        """Initialize, preferring Metal GPU if available."""
-        self._use_metal = await self.metal_pipeline.initialize()
-        if not self._use_metal:
-            print("[Verifier] Using CPU parallel fallback (32 workers)")
-        return True
-
-    def submit_candidate(self, nonce: int, phi_score: float = 0.0) -> None:
-        """Submit a candidate nonce from an M32 domain walker."""
-        self._candidate_buffer.append((nonce, phi_score))
-
-    async def flush_batch(
+    def __init__(
         self,
-        target: int,
-        merkle_root: bytes,
-        prevhash: bytes,
-        nbits: int,
-        ntime: int,
+        *,
+        prefer_metal: Optional[bool] = None,
+        require_metal: Optional[bool] = None,
+        cpu_workers: Optional[int] = None,
+        configured_capacity_ehs: Optional[float] = None,
+    ) -> None:
+        if prefer_metal is None:
+            prefer_metal = os.getenv("HYBA_ENABLE_METAL_SHA256", "true").lower() in {
+                "1",
+                "true",
+                "yes",
+                "on",
+            }
+        if require_metal is None:
+            require_metal = os.getenv("HYBA_REQUIRE_METAL_SHA256", "false").lower() in {
+                "1",
+                "true",
+                "yes",
+                "on",
+            }
+        self.prefer_metal = bool(prefer_metal)
+        self.require_metal = bool(require_metal)
+        self.cpu = CPUParallelVerifier(workers=cpu_workers)
+        self.metal = MetalSHA256Pipeline(require_mlx=self.require_metal)
+        self.configured_capacity_ehs = configured_capacity_ehs
+        self.selected_backend = self.cpu.backend
+        self.last_batch: Optional[BatchResult] = None
+        self.initialize_metal()
+
+    def initialize_metal(self) -> dict[str, Any]:
+        status = self.metal.initialize()
+        if self.prefer_metal and self.metal.available:
+            self.selected_backend = self.metal.backend
+        elif self.require_metal:
+            raise RuntimeError(status.get("unavailable_reason") or "MLX/Metal unavailable")
+        else:
+            self.selected_backend = self.cpu.backend
+        return self.status()
+
+    def status(self) -> dict[str, Any]:
+        return {
+            "selected_backend": self.selected_backend,
+            "prefer_metal": self.prefer_metal,
+            "require_metal": self.require_metal,
+            "cpu_workers": self.cpu.workers,
+            "configured_capacity_ehs": self.configured_capacity_ehs,
+            "metal": self.metal.status(),
+            "last_batch": self.last_batch.to_dict() if self.last_batch else None,
+        }
+
+    def verify_batch(
+        self,
+        job: MiningJob,
+        nonces: Iterable[int],
+        extranonce2: Optional[str] = None,
     ) -> BatchResult:
-        """Flush all buffered candidates through the verifier."""
-        if not self._candidate_buffer:
-            return BatchResult([], 0, 0, 0, 0, 0)
-
-        nonces = [c[0] for c in self._candidate_buffer]
-        phi_scores = [c[1] for c in self._candidate_buffer]
-        self._candidate_buffer.clear()
-
-        if self._use_metal:
-            return await self.metal_pipeline.verify_batch_metal(
-                nonces, target, merkle_root, prevhash, nbits, ntime, phi_scores
+        if self.prefer_metal and self.metal.available:
+            result = self.metal.verify_batch(
+                job,
+                nonces,
+                extranonce2,
+                cpu_workers=self.cpu.workers,
+                configured_capacity_ehs=self.configured_capacity_ehs,
             )
         else:
-            return await self.cpu_verifier.verify_batch(
-                nonces, target, merkle_root, prevhash, nbits, ntime, phi_scores
+            result = self.cpu.verify_batch(
+                job,
+                nonces,
+                extranonce2,
+                configured_capacity_ehs=self.configured_capacity_ehs,
             )
+        self.selected_backend = result.backend
+        self.last_batch = result
+        return result
 
-    def get_metrics(self) -> Dict[str, Any]:
-        if self._use_metal:
-            return self.metal_pipeline.get_metrics()
-        return {
-            "initialized": True,
-            "engine": "cpu_parallel",
-            "workers": 32,
-        }
+    def submit_candidate(
+        self,
+        job: MiningJob,
+        nonce: int,
+        extranonce2: Optional[str] = None,
+    ) -> NonceVerification:
+        if self.prefer_metal and self.metal.available:
+            result = self.metal.verify_nonce(job, nonce, extranonce2)
+            self.selected_backend = self.metal.backend
+        else:
+            result = self.cpu.verify_nonce(job, nonce, extranonce2)
+            self.selected_backend = self.cpu.backend
+        return result
+
+
+__all__ = [
+    "BatchResult",
+    "CPUParallelVerifier",
+    "MetalSHA256Pipeline",
+    "NonceVerification",
+    "UnifiedBatchVerifier",
+    "sha256d_headers",
+    "verify_header_sha256d",
+    "verify_nonce",
+]
