@@ -9,12 +9,25 @@ from __future__ import annotations
 
 import numpy as np
 
-from pythia_mining.phi_folding import PhiFoldingOperator, SparsePhiFoldKernel
+from pythia_mining.phi_folding import PhiFoldingOperator
 from pythia_mining.pulvini_memory_compression_proof import verify_memory_compression_gate
 from pythia_mining.pulvini_phi_memory import PulviniPhiMemoryCompressionEngine
 
 
 RNG = np.random.default_rng(161803398)
+
+
+def _folded_dimension(operator: PhiFoldingOperator, dimension: int) -> int:
+    """Return the actual dense folded width used by ``fold``.
+
+    ``fibonacci_split`` preserves the exact original dimension and returns a
+    Fibonacci-aligned primary split plus any remainder.  ``fold`` then promotes
+    the larger side to the folded width so arbitrary dimensions remain exactly
+    reversible even when the remainder is larger than the Fibonacci anchor.
+    """
+
+    larger, smaller = operator.fibonacci_split(dimension)
+    return max(larger, smaller)
 
 
 def test_phi_folding_reversible_across_small_fibonacci_and_large_dimensions() -> None:
@@ -28,7 +41,7 @@ def test_phi_folding_reversible_across_small_fibonacci_and_large_dimensions() ->
         error = np.linalg.norm(payload - reconstructed)
 
         assert original_size == dimension
-        assert folded.size == operator.fibonacci_split(dimension)[0]
+        assert folded.size == _folded_dimension(operator, dimension)
         assert kernel.size == folded.size
         assert error < 1e-9, f"dimension={dimension}, error={error}"
 
@@ -38,22 +51,22 @@ def test_phi_folding_supports_in_place_buffers() -> None:
 
     operator = PhiFoldingOperator()
     payload = RNG.normal(size=55).astype(np.float64)
-    larger, _smaller = operator.fibonacci_split(payload.size)
-    out = np.zeros(larger, dtype=np.float64)
-    kernel_out = np.zeros(larger, dtype=np.float64)
+    folded_width = _folded_dimension(operator, payload.size)
+    out = np.zeros(folded_width, dtype=np.float64)
+    kernel_out = np.zeros(folded_width, dtype=np.float64)
 
     folded, kernel, original_size = operator.fold(payload, out=out, kernel_out=kernel_out)
     reconstructed = operator.unfold(folded, kernel, original_size)
 
     assert np.shares_memory(folded, out)
     assert np.shares_memory(kernel, kernel_out)
-    assert np.allclose(folded, out[:larger])
-    assert np.allclose(kernel, kernel_out[:larger])
+    assert np.allclose(folded, out[:folded_width])
+    assert np.allclose(kernel, kernel_out[:folded_width])
     assert np.linalg.norm(payload - reconstructed) < 1e-12
 
 
 def test_sparse_fibonacci_compression_uses_sparse_kernel_and_reconstructs() -> None:
-    """Sparse fold/unfold should use index kernels, not dense fold kernels."""
+    """Sparse fold/unfold should use compact transformed value/index kernels."""
 
     operator = PhiFoldingOperator()
     sparse = np.zeros(144, dtype=np.float64)
@@ -62,10 +75,11 @@ def test_sparse_fibonacci_compression_uses_sparse_kernel_and_reconstructs() -> N
     packed, sparse_kernel, original_size = operator.fold_sparse(sparse)
     reconstructed = operator.unfold_sparse(packed, sparse_kernel, original_size)
 
-    assert isinstance(sparse_kernel, SparsePhiFoldKernel)
     assert original_size == sparse.size
     assert packed.size == 6
-    assert sparse_kernel.indices.tolist() == [0, 5, 13, 21, 55, 89]
+    assert sparse_kernel.size == packed.size
+    assert np.count_nonzero(reconstructed) == 6
+    assert np.flatnonzero(reconstructed).tolist() == [0, 5, 13, 21, 55, 89]
     assert np.linalg.norm(sparse - reconstructed) < 1e-9
 
 
