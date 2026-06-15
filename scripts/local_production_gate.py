@@ -185,6 +185,7 @@ def _doctrine(mode: Mode) -> dict[str, object]:
         "memory_compression": "PULVINI memory compression and autonomic recovery remain required evidence surfaces.",
         "hardware_scaling": "Apple Silicon MLX/Metal evidence is included when available and non-breaking otherwise.",
         "live_pool_policy": {
+            "pool_profile": "open Bitcoin/Stratum routing-auth config; not a HYBA app secret",
             "autoconnect": "disabled unless explicitly enabled by operator",
             "share_submit": "disabled unless explicitly enabled by operator",
             "accepted_share_claim": "requires pool ACK and accepted-share gate evidence",
@@ -202,7 +203,7 @@ def _next_actions(mode: Mode, passed: bool) -> list[str]:
         ]
     if mode == "rc":
         return [
-            "Run npm run prod:live:gate with production secrets injected but share submission disabled.",
+            "Run npm run prod:live:gate with private HYBA app credentials and open Bitcoin pool profiles injected.",
             "Preserve this evidence JSON with the release ticket.",
         ]
     return [
