@@ -102,18 +102,26 @@ class UnifiedMiner:
             return False
 
         cfg = self.pool_configs[idx]
-        profile = cfg.to_profile()
         logger.info(f"Connecting to {cfg.name} at {cfg.url}...")
 
         try:
+            # StratumClient now takes direct pool fields, not profiles
             self.stratum = StratumClient(
-                profiles=[profile],
-                metrics_store=None,
+                pool_url=cfg.url,
+                username=cfg.username or cfg.btc_address or "",
+                password=cfg.password or "x",
+                pool_name=cfg.name,
+                stratum_version=cfg.stratum_version,
             )
-            await self.stratum.connect()
-            logger.info(f"✅ Connected to {cfg.name}")
-            self.active_pool_idx = idx
-            return True
+            success = await self.stratum.connect()
+            if success:
+                logger.info(f"✅ Connected to {cfg.name}")
+                self.active_pool_idx = idx
+                return True
+            else:
+                logger.error(f"❌ Failed to connect to {cfg.name}")
+                self.stratum = None
+                return False
         except Exception as exc:
             logger.error(f"❌ Failed to connect to {cfg.name}: {exc}")
             self.stratum = None
