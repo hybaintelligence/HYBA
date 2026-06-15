@@ -18,7 +18,11 @@ router = APIRouter(prefix="/api/v1/intelligence", tags=["intelligence"])
 MEASURED_TELEMETRY_SOURCE = "measured_reflexive_controller_runtime"
 MEASURED_CLAIM_BOUNDARY = (
     "Measured reflexive codebase state from the current controller step; "
+<<<<<<< Updated upstream
     "runtime values are derived from controller observations only."
+=======
+    "no fabricated, simulated, fixture, or synthetic telemetry."
+>>>>>>> Stashed changes
 )
 
 
@@ -66,7 +70,7 @@ async def intelligence_health() -> Dict[str, Any]:
         "measurement_basis": {
             "controller_root": str(default_reflexive_root()),
             "observed_nodes": len(getattr(state, "amplitudes", []) or []),
-            "umwelt_keys": sorted(umwelt.keys()),
+            "umwelt_summary": str(umwelt)[:200] if umwelt else "",
         },
         "claim_boundary": MEASURED_CLAIM_BOUNDARY,
     }

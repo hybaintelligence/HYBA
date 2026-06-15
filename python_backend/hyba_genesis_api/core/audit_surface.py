@@ -87,9 +87,13 @@ def seal_consciousness_envelope(payload: Dict[str, Any]) -> Dict[str, Any]:
         "evidence_basis": audit.get("measurement_basis", {}),
         "claim_boundary": (
             "Sealed measured consciousness envelope from the current audit "
+<<<<<<< Updated upstream
             "telemetry; no fabricated or unmeasured runtime values. "
             "No unmeasured AGI claim; no unmeasured consciousness claim beyond "
             "the sealed invariants."
+=======
+            "telemetry; no fabricated, simulated, fixture, or synthetic state."
+>>>>>>> Stashed changes
         ),
     }
     sealed["audit"] = audit
