@@ -68,3 +68,25 @@ def test_prepare_doctor_can_skip_build_without_turning_build_into_blocker() -> N
     assert build.severity == "advisory"
     assert build.status == "skip"
     assert report.status in {"ready", "blocked"}
+
+
+def test_reflexive_daemon_without_audit_logging_is_advisory(monkeypatch) -> None:
+    monkeypatch.setenv("HYBA_ENABLE_REFLEXIVE_DAEMON", "true")
+    monkeypatch.delenv("HYBA_ENABLE_AUDIT_LOGGING", raising=False)
+    monkeypatch.delenv("HYBA_ONTOLOGICAL_STATE_PATH", raising=False)
+    monkeypatch.delenv("HYBA_ONTOLOGICAL_PERSISTENCE_PATH", raising=False)
+
+    critical, advisory = _check_environment("command-room")
+
+    assert critical.status == "pass"
+    assert advisory.status == "warn"
+    assert "HYBA_ENABLE_REFLEXIVE_DAEMON" in advisory.detail
+
+
+def test_ontological_persistence_rejects_secret_or_temp_paths(monkeypatch) -> None:
+    monkeypatch.setenv("HYBA_ONTOLOGICAL_STATE_PATH", "/tmp/hyba_secret_grace.json")
+
+    critical, _advisory = _check_environment("command-room")
+
+    assert critical.status == "fail"
+    assert "ontological persistence path" in critical.detail

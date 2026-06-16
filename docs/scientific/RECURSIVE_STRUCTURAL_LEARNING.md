@@ -329,3 +329,16 @@ The system is production-ready with comprehensive test coverage, explicit govern
 **Tests**: 44/44 PASSING
 **Governance**: EXPLICIT BOUNDARIES ENFORCED
 **Determinism**: VERIFIED
+
+## Production Hardening Addendum (Forensic Review Follow-up)
+
+The operator console now treats recursive-intelligence outputs as governance telemetry rather than performance proof. The user-facing governance dashboard must show readiness, real-telemetry provenance, pool-operator state, security posture, reflexive claim-boundary tags, and φ evidence context together so that operators can identify misconfiguration before live cutover.
+
+Additional production-readiness checks apply to the reflexive daemon and ontological persistence path:
+
+- `HYBA_ENABLE_REFLEXIVE_DAEMON=true` should be paired with `HYBA_ENABLE_AUDIT_LOGGING=true` so reflection cycles remain forensically traceable.
+- `HYBA_ONTOLOGICAL_STATE_PATH` / `HYBA_ONTOLOGICAL_PERSISTENCE_PATH` must not point to temp directories, `.env` files, or secret-bearing paths.
+- If the persistence path already exists during a doctor run, it must not be group/world accessible; persisted high-Φ artifacts can reveal code-structure context and should be restricted to the runtime operator account.
+- φ-resonance and topological metrics remain bounded diagnostics. They must not be described as mining-yield predictors unless controlled empirical studies using real pool telemetry support that claim.
+
+External audit, penetration testing, and empirical mining-yield studies remain governance requirements outside the automated gate. Until those artifacts exist, public or investor-facing material should describe PULVINI and recursive learning as deterministic, auditable certificate/diagnostic surfaces only.

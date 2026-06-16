@@ -295,6 +295,20 @@ def _check_environment(mode: Mode) -> list[CheckResult]:
     if _env_bool("HYBA_ENABLE_MINING_AUTOCONNECT"):
         warnings.append("HYBA_ENABLE_MINING_AUTOCONNECT is enabled; operator should confirm this is intentional")
 
+    reflexive_enabled = _env_bool("HYBA_ENABLE_REFLEXIVE_DAEMON")
+    persistence_path = os.getenv("HYBA_ONTOLOGICAL_STATE_PATH") or os.getenv("HYBA_ONTOLOGICAL_PERSISTENCE_PATH")
+    if reflexive_enabled and not _env_bool("HYBA_ENABLE_AUDIT_LOGGING"):
+        warnings.append("HYBA_ENABLE_REFLEXIVE_DAEMON=true should be paired with HYBA_ENABLE_AUDIT_LOGGING=true for forensic traceability")
+    if persistence_path:
+        path = Path(persistence_path)
+        sensitive_fragments = ("/tmp", ".env", "secret", "credential", "token")
+        if any(fragment in persistence_path.lower() for fragment in sensitive_fragments):
+            failures.append("HYBA ontological persistence path must not point at temp, .env, or secret-bearing locations")
+        if path.exists():
+            mode_bits = path.stat().st_mode & 0o777
+            if mode_bits & 0o077:
+                failures.append("HYBA ontological persistence path must not be group/world accessible")
+
     if mode == "live":
         if node_env != "production":
             failures.append("NODE_ENV=production is required in live mode")

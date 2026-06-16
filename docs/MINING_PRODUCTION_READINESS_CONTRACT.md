@@ -144,6 +144,18 @@ Use the live version after production env and pool profiles are injected:
 npm run prod:mining:live:ready
 ```
 
+For review-environment edge-case injection, run the non-network pipeline audit. It verifies pool failover under an open circuit breaker, stale-job invalidation on block-tip mismatch, malformed nonce rejection before mining logic, and HTTP 429 rate-limit semantics without submitting live shares:
+
+```bash
+npm run review:pipeline:audit
+```
+
+For a command-room preflight that combines the readiness doctor, the review pipeline audit, and local proof-of-work / Stratum share guardrail tests, run:
+
+```bash
+npm run preflight:production
+```
+
 The old broad forensic gate remains available for deeper review:
 
 ```bash
