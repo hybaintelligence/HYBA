@@ -1,5 +1,6 @@
 name = "hyba-fullstack"
 pages_build_output_dir = "dist"
+# Cloudflare Pages Git builds must use `npm run build`, not `npm build`.
 compatibility_date = "2026-06-11"
 
 [vars]
