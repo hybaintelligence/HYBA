@@ -1,8 +1,9 @@
 """Focused regression tests for the live miner search workflow.
 
 These tests keep the basics honest: nonce ranges stay inside the PULVINI
-coverage plan, telemetry formatting cannot crash search, and the nonce handler
-feeds the unified engine for both local rejects and pool outcomes.
+coverage plan, telemetry formatting cannot crash search, the live miner consumes
+structured solver candidates, and the nonce handler feeds the unified engine for
+both local rejects and pool outcomes.
 """
 
 from __future__ import annotations
@@ -25,6 +26,14 @@ class DummyJob:
 
 
 @dataclass
+class DummySearchResult:
+    nonce: int | None
+    search_time: float = 0.01
+    strategy_used: str = "phi_scaled_compressed_solver_search"
+    phi_resonance_score: float | None = 0.618
+
+
+@dataclass
 class DummyLocalResult:
     valid: bool
     block_hash: str = "00" * 32
@@ -42,10 +51,22 @@ class DummyShareResult:
 
 
 class DummyEngine:
-    def __init__(self, result: DummyLocalResult) -> None:
+    def __init__(
+        self,
+        result: DummyLocalResult,
+        search_results: list[DummySearchResult] | None = None,
+    ) -> None:
         self.result = result
+        self.search_results = list(search_results or [])
+        self.search_calls: list[Any] = []
         self.submitted: list[tuple[Any, int]] = []
         self.feedback: list[tuple[dict[str, Any], bool]] = []
+
+    async def search(self, job: Any) -> DummySearchResult:
+        self.search_calls.append(job)
+        if self.search_results:
+            return self.search_results.pop(0)
+        return DummySearchResult(nonce=123)
 
     def submit_candidate(self, job: Any, nonce: int) -> DummyLocalResult:
         self.submitted.append((job, nonce))
@@ -97,6 +118,78 @@ def test_safe_target_hex_cannot_crash_scan_logging() -> None:
     assert UnifiedMiner._safe_target_hex(None) == "unknown"
     assert UnifiedMiner._safe_target_hex("not-an-int") == "unknown"
     assert UnifiedMiner._safe_target_hex(1).startswith("0x")
+
+
+def test_nonce_plan_telemetry_uses_current_plan_field_names() -> None:
+    @dataclass
+    class Segment:
+        start: int
+        end: int
+
+    @dataclass
+    class Plan:
+        coverage_segments: tuple[Segment, ...]
+        complete_coverage: bool
+        overlap_free: bool
+
+        @property
+        def solver_ranges(self) -> list[tuple[int, int]]:
+            return [(segment.start, segment.end) for segment in self.coverage_segments]
+
+    assert UnifiedMiner._nonce_plan_telemetry(
+        Plan(
+            coverage_segments=(Segment(10, 12), Segment(20, 22)),
+            complete_coverage=True,
+            overlap_free=True,
+        )
+    ) == (2, True, True, 2)
+
+
+def test_structured_search_batch_uses_engine_search_candidate_not_cursor() -> None:
+    engine = DummyEngine(
+        DummyLocalResult(valid=False, reason="hash_above_target"),
+        search_results=[
+            DummySearchResult(
+                nonce=987_654,
+                strategy_used="phi_scaled_compressed_solver_search",
+                phi_resonance_score=0.9,
+            )
+        ],
+    )
+    miner = _miner_with(engine)
+
+    checked, passed, failed = asyncio.run(
+        miner._run_structured_search_batch(DummyJob(), batch_size=1)
+    )
+
+    assert checked == 1
+    assert passed == 0
+    assert failed == 1
+    assert len(engine.search_calls) == 1
+    assert engine.submitted[0][1] == 987_654
+    share_info, accepted = engine.feedback[0]
+    assert accepted is False
+    assert share_info["strategy_used"] == "phi_scaled_compressed_solver_search"
+    assert share_info["phi_resonance_score"] == 0.9
+
+
+def test_structured_search_batch_does_not_submit_when_solver_returns_no_nonce() -> None:
+    engine = DummyEngine(
+        DummyLocalResult(valid=False, reason="hash_above_target"),
+        search_results=[DummySearchResult(nonce=None)],
+    )
+    miner = _miner_with(engine)
+
+    checked, passed, failed = asyncio.run(
+        miner._run_structured_search_batch(DummyJob(), batch_size=1)
+    )
+
+    assert checked == 0
+    assert passed == 0
+    assert failed == 1
+    assert len(engine.search_calls) == 1
+    assert engine.submitted == []
+    assert engine.feedback == []
 
 
 def test_local_reject_feeds_back_to_engine() -> None:
