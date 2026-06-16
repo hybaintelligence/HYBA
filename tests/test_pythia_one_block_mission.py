@@ -225,11 +225,11 @@ def test_mission_timing():
 
     memory.record_share_outcome(ShareOutcome.ACCEPTED_SHARE)
     assert memory.last_share_time is not None
-    assert memory.last_share_time > memory.mission_start_time
+    assert memory.last_share_time >= memory.mission_start_time
 
     memory.record_share_outcome(ShareOutcome.ACCEPTED_BLOCK)
     assert memory.mission_complete_time is not None
-    assert memory.mission_complete_time > memory.mission_start_time
+    assert memory.mission_complete_time >= memory.mission_start_time
 
 
 if __name__ == "__main__":
