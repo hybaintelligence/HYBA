@@ -53,7 +53,7 @@ class PredictionEndpointTests(unittest.TestCase):
         }
 
         with patch(
-            "python_backend.pythia_mining.genesis_ai_service.GenesisAIServiceRegistry"
+            "hyba_genesis_api.api.misc.GenesisAIServiceRegistry"
         ) as mock_registry:
             mock_registry.get_ai_optimizer.return_value = mock_optimizer
             
@@ -95,7 +95,7 @@ class PredictionEndpointTests(unittest.TestCase):
         }
 
         with patch(
-            "python_backend.pythia_mining.genesis_ai_service.GenesisAIServiceRegistry"
+            "hyba_genesis_api.api.misc.GenesisAIServiceRegistry"
         ) as mock_registry:
             mock_registry.get_ai_optimizer.return_value = mock_optimizer
             
@@ -135,7 +135,7 @@ class PredictionEndpointTests(unittest.TestCase):
         }
 
         with patch(
-            "python_backend.pythia_mining.genesis_ai_service.GenesisAIServiceRegistry"
+            "hyba_genesis_api.api.misc.GenesisAIServiceRegistry"
         ) as mock_registry:
             mock_registry.get_ai_optimizer.return_value = mock_optimizer
             
@@ -171,7 +171,7 @@ class PredictionEndpointTests(unittest.TestCase):
         }
 
         with patch(
-            "python_backend.pythia_mining.genesis_ai_service.GenesisAIServiceRegistry"
+            "hyba_genesis_api.api.misc.GenesisAIServiceRegistry"
         ) as mock_registry:
             mock_registry.get_ai_optimizer.return_value = mock_optimizer
             result = asyncio.run(predict_params(request))

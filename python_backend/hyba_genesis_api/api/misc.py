@@ -102,7 +102,7 @@ async def predict_params(req: PredictRequest):
     """
     
     try:
-        from python_backend.pythia_mining.genesis_ai_service import GenesisAIServiceRegistry
+        from pythia_mining.genesis_ai_service import GenesisAIServiceRegistry
         
         optimizer = GenesisAIServiceRegistry.get_ai_optimizer()
         
