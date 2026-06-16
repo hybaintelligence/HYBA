@@ -15,6 +15,10 @@ pythia_state.json
 build/
 # Runtime-only deployment secrets and telemetry artifacts
 config/mining.pools.env
+config/mining_pools.local.json
+config/mining_pools.*.local.json
+python_backend/mining_pools.local.json
+python_backend/mining_pools.*.local.json
 *.db
 *.db-shm
 *.db-wal
