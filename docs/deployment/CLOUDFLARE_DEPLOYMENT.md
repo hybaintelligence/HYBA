@@ -11,11 +11,11 @@ This repo is now prepared for a Cloudflare Pages deployment from Git while prese
 | Runtime | Cloudflare Pages Functions |
 | Required environment variable | `HYBA_BACKEND_URL=https://<your-fastapi-origin>` |
 
-`wrangler.toml` pins the Pages output directory to `dist`. The Pages Functions under `functions/` proxy `/api/*` and `/health/*` to `HYBA_BACKEND_URL`, so the SPA can continue to call same-origin API routes after deployment.
+`wrangler.toml` pins the Pages output directory to `dist`. Cloudflare's build-command field must still be set to `npm run build`; `npm build` is not a valid npm CLI command and will fail before Vite starts. The Pages Functions under `functions/` proxy `/api/*` and `/health/*` to `HYBA_BACKEND_URL`, so the SPA can continue to call same-origin API routes after deployment.
 
 ## Production gates
 
-Run these before connecting the production branch to Cloudflare:
+Run these before connecting the production branch to Cloudflare or after changing Pages dashboard settings:
 
 ```bash
 npm run cloudflare:check

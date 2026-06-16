@@ -44,6 +44,12 @@ def main() -> None:
     if "pages_build_output_dir" not in wrangler or "dist" not in wrangler:
         fail('wrangler.toml must set pages_build_output_dir = "dist"')
 
+    deployment_doc = (ROOT / "docs/deployment/CLOUDFLARE_DEPLOYMENT.md").read_text()
+    if "Build command | `npm run build`" not in deployment_doc:
+        fail("Cloudflare deployment docs must pin the Pages build command to `npm run build`")
+    if "Build command | `npm build`" in deployment_doc:
+        fail("Cloudflare Pages build command must not be documented as `npm build`")
+
     headers = (ROOT / "public/_headers").read_text()
     for header in [
         "Strict-Transport-Security",
