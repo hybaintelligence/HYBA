@@ -4,16 +4,17 @@ HYBA Unified Miner — Deterministic Structured Proof Generation
 ================================================================
 Launches the PYTHIA/PULVINI Unified Mining Engine against configured pools.
 
-The miner uses the current StratumClient API directly:
-  - direct pool_url/username/password construction from validated PoolProfile
-  - boolean connection/authentication state
-  - poll_live_event() / get_active_job_copy() for jobs
-  - submit_validated_share() for exact SHA-256d validation and optional live submit
+Production invariants:
+  - live/prod mode never injects dev fixture jobs
+  - live candidate generation must call UnifiedMiningEngine.search(job)
+  - every no-job / no-search / no-submit state records an explicit reason
+  - live submission remains guarded by StratumClient.submit_validated_share()
 
 Environment:
   HYBA_POOL_CONFIG_PATH=config/mining_pools_live.json
   HYBA_ENABLE_LIVE_STRATUM=true for real pool IO
   HYBA_ENABLE_LIVE_SHARE_SUBMIT=true only when intentionally submitting live shares
+  HYBA_ALLOW_DEV_FIXTURES=true only for non-production, non-live development runs
 """
 
 from __future__ import annotations
@@ -48,6 +49,7 @@ logger = logging.getLogger("unified_miner")
 
 RUNNING = True
 UINT32_MAX = 2**32 - 1
+TRUTHY = {"1", "true", "yes", "on"}
 
 
 def signal_handler(signum: int, frame: Any) -> None:
@@ -55,6 +57,10 @@ def signal_handler(signum: int, frame: Any) -> None:
     global RUNNING
     logger.info("Received signal %s, shutting down...", signum)
     RUNNING = False
+
+
+def _env_true(name: str) -> bool:
+    return os.getenv(name, "").strip().lower() in TRUTHY
 
 
 class UnifiedMiner:
@@ -74,6 +80,10 @@ class UnifiedMiner:
         self._accepted = 0
         self._rejected = 0
         self._locally_invalid = 0
+        self._last_no_job_reason: Optional[str] = None
+        self._last_search_skip_reason: Optional[str] = None
+        self._last_submit_reason: Optional[str] = None
+        self._reason_log_cache: dict[str, str] = {}
 
     @staticmethod
     def _safe_target_hex(target: Any) -> str:
@@ -114,6 +124,58 @@ class UnifiedMiner:
             len(solver_ranges),
         )
 
+    @staticmethod
+    def _production_mode() -> bool:
+        return (
+            os.getenv("HYBA_ENV", "").strip().lower() == "production"
+            or os.getenv("NODE_ENV", "").strip().lower() == "production"
+        )
+
+    @staticmethod
+    def _live_stratum_enabled() -> bool:
+        return _env_true("HYBA_ENABLE_LIVE_STRATUM")
+
+    @classmethod
+    def _dev_fixtures_allowed(cls) -> bool:
+        return (
+            _env_true("HYBA_ALLOW_DEV_FIXTURES")
+            and not cls._production_mode()
+            and not cls._live_stratum_enabled()
+        )
+
+    def _record_reason(
+        self,
+        category: str,
+        reason: str,
+        *,
+        level: int = logging.INFO,
+        detail: Optional[str] = None,
+    ) -> None:
+        """Record and log state-transition reasons without spamming every loop."""
+        if not hasattr(self, "_reason_log_cache"):
+            self._reason_log_cache = {}
+        setattr(self, f"_last_{category}_reason", reason)
+        previous = self._reason_log_cache.get(category)
+        if previous == reason:
+            return
+        self._reason_log_cache[category] = reason
+        suffix = f" — {detail}" if detail else ""
+        logger.log(level, "%s reason: %s%s", category.replace("_", " "), reason, suffix)
+
+    def _log_runtime_mode(self) -> None:
+        logger.info(
+            "Runtime mode: HYBA_ENV=%s NODE_ENV=%s live_stratum=%s live_submit=%s dev_fixtures_allowed=%s",
+            os.getenv("HYBA_ENV", ""),
+            os.getenv("NODE_ENV", ""),
+            self._live_stratum_enabled(),
+            _env_true("HYBA_ENABLE_LIVE_SHARE_SUBMIT"),
+            self._dev_fixtures_allowed(),
+        )
+        if self._production_mode() and _env_true("HYBA_ALLOW_DEV_FIXTURES"):
+            logger.warning(
+                "HYBA_ALLOW_DEV_FIXTURES is set but ignored because production mode is active"
+            )
+
     def load_pools(self) -> None:
         """Load enabled pool configurations from env/runtime config."""
         os.environ["HYBA_POOL_CONFIG_PATH"] = self.pool_config_path
@@ -149,6 +211,7 @@ class UnifiedMiner:
         """Connect to the pool at the given index using the current StratumClient API."""
         if idx >= len(self.pool_configs):
             logger.error("Pool index %s out of range", idx)
+            self._record_reason("no_job", "pool_index_out_of_range", level=logging.ERROR)
             return False
 
         cfg = self.pool_configs[idx]
@@ -174,13 +237,26 @@ class UnifiedMiner:
             connected = await self.stratum.connect()
             if not connected or not self.stratum.is_connected:
                 logger.error("Pool %s did not reach connected state", profile.name)
+                self._record_reason(
+                    "no_job",
+                    "pool_connect_failed",
+                    level=logging.ERROR,
+                    detail=profile.name,
+                )
                 self.stratum = None
                 return False
             logger.info("Connected to %s", profile.name)
+            self._record_reason("no_job", "connected_waiting_for_job")
             self.active_pool_idx = idx
             return True
         except Exception as exc:
-            logger.error("Failed to connect to %s: %s", profile.name, exc)
+            logger.exception("Failed to connect to %s", profile.name)
+            self._record_reason(
+                "no_job",
+                "pool_connect_exception",
+                level=logging.ERROR,
+                detail=f"{profile.name}: {exc}",
+            )
             self.stratum = None
             return False
 
@@ -191,11 +267,16 @@ class UnifiedMiner:
             idx = (self.active_pool_idx + offset) % n
             if await self.connect_pool(idx):
                 return True
+        self._record_reason("no_job", "all_pools_unreachable", level=logging.ERROR)
         return False
 
     async def _next_job(self, timeout: float = 10.0) -> Optional[MiningJob]:
-        """Poll live Stratum events or return the active/dev fixture job."""
+        """Poll live Stratum events and fail closed on fixtures in live/prod mode."""
         if self.stratum is None:
+            self._record_reason("no_job", "stratum_client_missing", level=logging.ERROR)
+            return None
+        if not getattr(self.stratum, "is_connected", False):
+            self._record_reason("no_job", "stratum_not_connected", level=logging.WARNING)
             return None
 
         deadline = time.monotonic() + timeout
@@ -203,18 +284,41 @@ class UnifiedMiner:
             remaining = max(0.05, min(1.0, deadline - time.monotonic()))
             job = await self.stratum.poll_live_event(timeout=remaining)
             if job is not None:
+                self._record_reason("no_job", "job_received")
                 return job
 
             active_job = await self.stratum.get_active_job_copy()
             if active_job is not None:
+                self._record_reason("no_job", "active_job_available")
                 return active_job
 
-            if self.stratum.live_session is None:
-                return await self.stratum.inject_dev_fixture_target_job(
-                    difficulty=self.stratum.current_difficulty
+            if getattr(self.stratum, "live_session", None) is None:
+                if self._dev_fixtures_allowed():
+                    self._record_reason(
+                        "no_job",
+                        "dev_fixture_injected_explicit_non_live_mode",
+                        level=logging.WARNING,
+                    )
+                    return await self.stratum.inject_dev_fixture_target_job(
+                        difficulty=self.stratum.current_difficulty
+                    )
+
+                self._record_reason(
+                    "no_job",
+                    "live_session_missing_dev_fixture_refused",
+                    level=logging.ERROR,
+                    detail="no live session means no job and no search in production/live mode",
                 )
+                return None
 
             await asyncio.sleep(0.05)
+
+        self._record_reason(
+            "no_job",
+            "job_poll_timeout_no_notify_or_active_job",
+            level=logging.WARNING,
+            detail=f"timeout={timeout:.1f}s",
+        )
         return None
 
     async def _handle_nonce_result(
@@ -252,6 +356,11 @@ class UnifiedMiner:
                     "error_msg": local.reason or "local_sha256d_target_miss",
                 }
             )
+            self._record_reason(
+                "submit",
+                "local_validation_rejected_before_pool_submit",
+                detail=share_info["error_msg"],
+            )
             await self.engine.on_share_result(share_info, accepted=False)
             logger.info(
                 "Candidate rejected locally — nonce=%s, job=%s, reason=%s",
@@ -264,9 +373,11 @@ class UnifiedMiner:
         if self.stratum is None:
             self._rejected += 1
             share_info.update({"error_code": 503, "error_msg": "stratum_disconnected"})
+            self._record_reason("submit", "stratum_disconnected_after_local_pass", level=logging.ERROR)
             await self.engine.on_share_result(share_info, accepted=False)
             return True
 
+        self._record_reason("submit", "candidate_locally_valid_submitting_to_pool")
         share: ShareResult = await self.stratum.submit_validated_share(job, nonce)
         share_info.update(
             {
@@ -280,9 +391,16 @@ class UnifiedMiner:
 
         if share.accepted:
             self._accepted += 1
+            self._record_reason("submit", "pool_accepted_share")
             logger.info("🎉 SHARE ACCEPTED — nonce=%s, job=%s", nonce, job.job_id)
         else:
             self._rejected += 1
+            self._record_reason(
+                "submit",
+                "pool_or_submit_guard_rejected_share",
+                level=logging.WARNING,
+                detail=share.error_message or str(share.error_code),
+            )
             logger.info(
                 "Share rejected — nonce=%s, job=%s, reason=%s",
                 nonce,
@@ -311,17 +429,30 @@ class UnifiedMiner:
                 break
 
             search_start = time.monotonic()
-            result = await self.engine.search(job)
+            try:
+                result = await self.engine.search(job)
+            except Exception as exc:
+                local_fail += 1
+                self._record_reason(
+                    "search_skip",
+                    "engine_search_exception",
+                    level=logging.ERROR,
+                    detail=str(exc),
+                )
+                logger.exception("Structured engine.search failed for job=%s", job.job_id)
+                continue
+
             search_time = float(
                 getattr(result, "search_time", None) or (time.monotonic() - search_start)
             )
             raw_nonce = getattr(result, "nonce", None)
             if raw_nonce is None:
                 local_fail += 1
-                logger.debug(
-                    "Structured solver returned no nonce for job=%s strategy=%s",
-                    job.job_id,
-                    getattr(result, "strategy_used", "unknown"),
+                self._record_reason(
+                    "search_skip",
+                    "structured_solver_returned_no_nonce",
+                    level=logging.WARNING,
+                    detail=f"job={job.job_id} strategy={getattr(result, 'strategy_used', 'unknown')}",
                 )
                 continue
 
@@ -329,9 +460,15 @@ class UnifiedMiner:
                 nonce = int(raw_nonce) & UINT32_MAX
             except (TypeError, ValueError, OverflowError):
                 local_fail += 1
-                logger.warning("Structured solver returned non-integer nonce: %r", raw_nonce)
+                self._record_reason(
+                    "search_skip",
+                    "structured_solver_returned_non_integer_nonce",
+                    level=logging.ERROR,
+                    detail=repr(raw_nonce),
+                )
                 continue
 
+            self._record_reason("search_skip", "search_active_candidate_generated")
             self._total_searches += 1
             batch_checked += 1
             locally_valid = await self._handle_nonce_result(
@@ -357,6 +494,7 @@ class UnifiedMiner:
         logger.info("  HENDRIX-Φ + PULVINI Unified Miner — Structured Solver Traversal")
         logger.info("  Structured search cycles per job poll: %d", batch_size)
         logger.info("=" * 72)
+        self._log_runtime_mode()
 
         from pythia_mining.pulvini_nonce_compression import build_pulvini_nonce_plan
 
@@ -373,20 +511,29 @@ class UnifiedMiner:
                 active_ranges,
             )
         except Exception as exc:
+            if self._production_mode() or self._live_stratum_enabled():
+                logger.exception("Unable to build PULVINI nonce-plan telemetry in live/prod mode")
+                raise RuntimeError("pulvini_nonce_plan_unavailable_in_live_mode") from exc
             logger.warning("Unable to build PULVINI nonce-plan telemetry: %s", exc)
 
         while RUNNING:
             if not self.stratum or not self.stratum.is_connected:
-                logger.warning("Not connected. Reconnecting...")
+                self._record_reason("no_job", "not_connected_reconnect_required", level=logging.WARNING)
                 if not await self.connect_next_pool():
-                    logger.error("All pools unreachable. Retrying in 30s...")
+                    self._record_reason("no_job", "all_pools_unreachable_retrying", level=logging.ERROR)
                     await asyncio.sleep(30)
                     continue
 
             try:
                 job = await self._next_job(timeout=10.0)
                 if job is None:
-                    await asyncio.sleep(0.01)
+                    self._record_reason(
+                        "search_skip",
+                        "not_searching_because_no_live_job",
+                        level=logging.WARNING,
+                        detail=self._last_no_job_reason,
+                    )
+                    await asyncio.sleep(0.25)
                     continue
 
                 batch_start = time.monotonic()
@@ -409,10 +556,11 @@ class UnifiedMiner:
                         self._total_searches,
                     )
                 elif local_fail and not batch_checked:
-                    logger.info(
-                        "Structured search batch produced no candidate: failures=%d target=%s",
-                        local_fail,
-                        self._safe_target_hex(getattr(job, "target", None)),
+                    self._record_reason(
+                        "search_skip",
+                        "structured_search_batch_produced_no_candidates",
+                        level=logging.WARNING,
+                        detail=f"failures={local_fail} target={self._safe_target_hex(getattr(job, 'target', None))}",
                     )
 
                 now = time.monotonic()
@@ -422,7 +570,8 @@ class UnifiedMiner:
             except asyncio.CancelledError:
                 break
             except Exception as exc:
-                logger.error("Search error: %s", exc)
+                self._record_reason("search_skip", "search_loop_exception", level=logging.ERROR, detail=str(exc))
+                logger.exception("Search loop error")
                 await asyncio.sleep(1)
 
     async def print_stats(self) -> None:
@@ -440,6 +589,9 @@ class UnifiedMiner:
             "  Accept rate:       %.1f%%",
             self._accepted / max(1, self._accepted + self._rejected) * 100,
         )
+        logger.info("  Last no-job reason:      %s", self._last_no_job_reason)
+        logger.info("  Last no-search reason:   %s", self._last_search_skip_reason)
+        logger.info("  Last no-submit reason:   %s", self._last_submit_reason)
         logger.info("")
         logger.info("  ENGINE STATE:")
         logger.info("  Coherence:    %.4f", state["state"]["phi_coherence"])
