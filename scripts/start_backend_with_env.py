@@ -1,6 +1,9 @@
 """Start the backend with correct env from .env file."""
+import logging
 import os
 import sys
+
+logger = logging.getLogger("start_backend")
 
 # Load .env file at the project root
 env_path = os.path.join(os.path.dirname(__file__), '..', '.env')
@@ -17,17 +20,16 @@ if os.path.exists(env_path):
                 # DON'T overwrite already-set env vars
                 if key not in os.environ:
                     os.environ[key] = value
-    print(f"[start_backend] Loaded env from {env_path}, found {len([k for k in os.environ])} env vars")
-    # Verify the credential
-    cred = os.environ.get('HYBA_OPERATOR_CREDENTIALS', 'NOT_SET')
-    print(f"[start_backend] HYBA_OPERATOR_CREDENTIALS = {cred[:40]}...")
+    logger.info("Loaded env from %s (set %d vars)", env_path, 
+                sum(1 for k in os.environ if k not in ('NODE_ENV', 'HYBA_ENV')))
 
 # Also explicitly set NODE_ENV and HYBA_ENV
 os.environ.setdefault('NODE_ENV', 'production')
 os.environ.setdefault('HYBA_ENV', 'production')
 
 # Start uvicorn
-sys.argv = ['uvicorn', 'hyba_genesis_api.main:app', '--app-dir', 'python_backend', '--host', '127.0.0.1', '--port', '3001']
+sys.argv = ['uvicorn', 'hyba_genesis_api.main:app', '--app-dir', 'python_backend',
+            '--host', '127.0.0.1', '--port', '3001']
 
 import uvicorn
 uvicorn.run(

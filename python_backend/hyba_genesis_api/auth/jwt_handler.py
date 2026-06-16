@@ -31,14 +31,36 @@ class TokenPayload(BaseModel):
 
 
 class JWTManager:
-    """Production-grade JWT manager with blacklist support and key rotation readiness."""
+    """Production-grade JWT manager with TTL-evicting blacklist and key rotation readiness."""
+
+    # Maximum blacklist size before TTL-based eviction runs (prevents unbounded growth)
+    _MAX_BLACKLIST_SIZE = 100_000
+    # Fraction of _MAX_BLACKLIST_SIZE to evict when pruning
+    _EVICT_FRACTION = 0.25
 
     def __init__(self, secret_key: str, algorithm: str = "HS256"):
         if not secret_key:
             raise RuntimeError("JWT_SECRET is required")
         self.secret_key = secret_key
         self.algorithm = algorithm
-        self.token_blacklist: set[str] = set()
+        # token_blacklist: jti -> expiry epoch seconds
+        self.token_blacklist: dict[str, int] = {}
+
+    def _prune_blacklist(self) -> None:
+        """Evict expired JTIs to prevent unbounded growth."""
+        now = datetime.now(timezone.utc).timestamp()
+        expired = [jti for jti, exp in self.token_blacklist.items() if exp <= now]
+        for jti in expired:
+            del self.token_blacklist[jti]
+        # If still over limit after pruning expired entries, evict oldest
+        if len(self.token_blacklist) > self._MAX_BLACKLIST_SIZE:
+            # Sort by expiry (ascending) and evict the oldest fraction
+            sorted_jtis = sorted(
+                self.token_blacklist.items(), key=lambda x: x[1]
+            )
+            evict_count = int(self._MAX_BLACKLIST_SIZE * self._EVICT_FRACTION)
+            for jti, _ in sorted_jtis[:evict_count]:
+                del self.token_blacklist[jti]
 
     def create_access_token(
         self, user_id: str, username: str, roles: List[str], expiry_hours: int = 1
@@ -59,7 +81,8 @@ class JWTManager:
         try:
             payload = jwt.decode(token, self.secret_key, algorithms=[self.algorithm])
             jti = payload.get("jti", "")
-            if jti and jti in self.token_blacklist:
+            exp = payload.get("exp", 0)
+            if jti and self.token_blacklist.get(jti, 0) == exp:
                 raise HTTPException(status_code=401, detail="Token revoked")
             return TokenPayload(**payload)
         except jwt.ExpiredSignatureError:
@@ -68,7 +91,7 @@ class JWTManager:
             raise HTTPException(status_code=401, detail="Invalid token")
 
     def revoke_token(self, token: str) -> None:
-        """Add a token's JTI to the blacklist."""
+        """Add a token's JTI to the blacklist keyed by expiry for TTL eviction."""
         try:
             payload = jwt.decode(
                 token,
@@ -77,8 +100,10 @@ class JWTManager:
                 options={"verify_exp": False},
             )
             jti = payload.get("jti")
+            exp = payload.get("exp", 0)
             if jti:
-                self.token_blacklist.add(jti)
+                self.token_blacklist[jti] = exp
+                self._prune_blacklist()
         except jwt.InvalidTokenError as exc:
             LOGGER.warning(
                 "Token revocation requested with invalid token: %s",

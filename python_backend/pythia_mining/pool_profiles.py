@@ -408,22 +408,44 @@ def load_runtime_pool_configs(
             if pool_id not in DEFAULT_POOL_SPECS:
                 continue
             base = configs[pool_id]
-            configs[pool_id] = PoolCredentialConfig(
-                pool_id=pool_id,
-                name=base.name,
-                url=str(payload.get("url") or base.url),
-                stratum_version=int(payload.get("stratum_version") or base.stratum_version),
-                tls_required=base.tls_required,
-                credential_mode=base.credential_mode,
-                username=str(payload.get("username") or ""),
-                password=str(payload.get("password") or ""),
-                btc_address=str(payload.get("btc_address") or ""),
-                worker=str(payload.get("worker") or ""),
-                nicehash_pool_id=str(payload.get("nicehash_pool_id") or ""),
-                priority=int(payload.get("priority") or base.priority),
-                enabled=bool(payload.get("enabled", True)),
-                source="runtime",
-            )
+            # Preserve env-configured credentials; runtime file only overrides if explicitly set
+            # and only if not already configured via env (source == "env")
+            if base.source == "env":
+                # Env var source takes precedence; env-configured profiles are always implicitly enabled
+                configs[pool_id] = PoolCredentialConfig(
+                    pool_id=pool_id,
+                    name=base.name,
+                    url=str(payload.get("url") or base.url),
+                    stratum_version=int(payload.get("stratum_version") or base.stratum_version),
+                    tls_required=base.tls_required,
+                    credential_mode=base.credential_mode,
+                    username=base.username,  # Keep env-configured username
+                    password=base.password,  # Keep env-configured password
+                    btc_address=base.btc_address,  # Keep env-configured btc_address
+                    worker=base.worker,  # Keep env-configured worker
+                    nicehash_pool_id=base.nicehash_pool_id,  # Keep env-configured nicehash_pool_id
+                    priority=int(payload.get("priority") or base.priority),
+                    enabled=True,  # Env-configured profiles are implicitly enabled
+                    source="env",
+                )
+            else:
+                # No env config; use runtime file values
+                configs[pool_id] = PoolCredentialConfig(
+                    pool_id=pool_id,
+                    name=base.name,
+                    url=str(payload.get("url") or base.url),
+                    stratum_version=int(payload.get("stratum_version") or base.stratum_version),
+                    tls_required=base.tls_required,
+                    credential_mode=base.credential_mode,
+                    username=str(payload.get("username") or ""),
+                    password=str(payload.get("password") or ""),
+                    btc_address=str(payload.get("btc_address") or ""),
+                    worker=str(payload.get("worker") or ""),
+                    nicehash_pool_id=str(payload.get("nicehash_pool_id") or ""),
+                    priority=int(payload.get("priority") or base.priority),
+                    enabled=bool(payload.get("enabled", True)),
+                    source="runtime",
+                )
     return configs
 
 

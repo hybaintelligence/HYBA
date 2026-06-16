@@ -91,3 +91,80 @@ def test_default_pool_config_redacts_inline_credentials_in_public_dict(monkeypat
     assert public["url"] == "stratum+tcp://stratum.braiins.com:3333"
     assert public["resolved_username"] == "<configured>"
     assert "token" not in str(public)
+
+
+def test_env_configured_pool_overrides_disabled_runtime_config(monkeypatch, tmp_path) -> None:
+    """Env-configured pools should enable even if runtime config has enabled=false."""
+    runtime_config_file = tmp_path / "pools.json"
+    runtime_config_file.write_text(
+        """{
+      "pools": {
+        "braiins": {
+          "url": "stratum+tcp://stratum.braiins.com:3333",
+          "stratum_version": 1,
+          "username": "",
+          "password": "",
+          "enabled": false,
+          "priority": 20
+        }
+      }
+    }"""
+    )
+
+    monkeypatch.setenv("HYBA_POOL_CONFIG_PATH", str(runtime_config_file))
+    monkeypatch.setenv("HYBA_POOL_BRAIINS_USERNAME", "worker")
+    monkeypatch.setenv("HYBA_POOL_BRAIINS_PASSWORD", "x")
+
+    profiles = {profile.pool_id: profile for profile in load_pool_profiles()}
+
+    assert "braiins" in profiles
+    assert profiles["braiins"].username == "worker"
+    assert profiles["braiins"].password == "x"
+
+
+def test_runtime_pool_config_disabled_flag_respected_without_env_override(monkeypatch, tmp_path) -> None:
+    """Without env vars, runtime config enabled=false should prevent profile from loading."""
+    runtime_config_file = tmp_path / "pools.json"
+    runtime_config_file.write_text(
+        """{
+      "pools": {
+        "braiins": {
+          "url": "stratum+tcp://stratum.braiins.com:3333",
+          "stratum_version": 1,
+          "username": "stored_worker",
+          "password": "stored_pass",
+          "enabled": false,
+          "priority": 20
+        }
+      }
+    }"""
+    )
+
+    monkeypatch.setenv("HYBA_POOL_CONFIG_PATH", str(runtime_config_file))
+    monkeypatch.delenv("HYBA_POOL_BRAIINS_USERNAME", raising=False)
+    monkeypatch.delenv("HYBA_POOL_BRAIINS_PASSWORD", raising=False)
+
+    profiles = {profile.pool_id: profile for profile in load_pool_profiles()}
+
+    assert "braiins" not in profiles
+
+
+def test_rotation_pools_all_stratum_v1_job_capable(monkeypatch, tmp_path) -> None:
+    """All rotation pool defaults must be job-flow capable (Stratum V1)."""
+    monkeypatch.setenv("HYBA_POOL_CONFIG_PATH", str(tmp_path / "missing.json"))
+    monkeypatch.setenv("HYBA_POOL_VIABTC_USERNAME", "viabtc_worker")
+    monkeypatch.setenv("HYBA_POOL_VIABTC_PASSWORD", "x")
+    monkeypatch.setenv("HYBA_POOL_BRAIINS_USERNAME", "braiins_worker")
+    monkeypatch.setenv("HYBA_POOL_BRAIINS_PASSWORD", "x")
+    monkeypatch.setenv("HYBA_POOL_NICEHASH_WORKER", "nicehash_worker")
+    monkeypatch.setenv("HYBA_POOL_NICEHASH_NH_POOL_ID", "pool123")
+    monkeypatch.setenv("HYBA_POOL_CKPOOL_BTC_ADDRESS", "1A1z7agoat4xFrqyqyUeGvW1vKjjzJ8D2s")
+
+    profiles = {profile.pool_id: profile for profile in load_pool_profiles()}
+
+    for pool_id in ("viabtc", "braiins", "nicehash", "ckpool"):
+        assert pool_id in profiles, f"{pool_id} not loaded"
+        profile = profiles[pool_id]
+        assert profile.stratum_version == 1, f"{pool_id} must be Stratum V1, got {profile.stratum_version}"
+        assert profile.username, f"{pool_id} missing username"
+        assert profile.password, f"{pool_id} missing password"

@@ -14,6 +14,21 @@
  *   - Graceful shutdown with connection drain
  *   - Zero fabricated responses — degraded mode when backend is unavailable
  *   - No JWT signing secret is ever transmitted as an access token
+ *
+ * Environment variables:
+ *   NODE_ENV                          Set "production" to lock down internal routes
+ *   HYBA_ALLOW_DEV_INTERNAL_ROUTES    Allow internal routes without token (dev only, default false)
+ *   HYBA_SWARM_HEARTBEAT_INTERVAL_MS  Security swarm heartbeat (default 3000ms, was 100ms)
+ *   HYBA_PROXY_BODY_SIZE_LIMIT        Max body size for proxied routes (default 10MB, returns 413)
+ *   HYBA_ENABLE_MINING_AUTOCONNECT    Auto-connect to ViaBTC on startup (default false)
+ *   HYBA_INTERNAL_HEALTH_TOKEN        Token for /bridge/internal/* routes
+ *   JWT_SECRET                        Required in production; auto-generated dev fallback
+ *   PULVINI_BACKEND_URL               FastAPI backend URL (default http://127.0.0.1:3001)
+ *   HYBA_SPAWN_BACKEND                Auto-spawn FastAPI subprocess (default true)
+ *   LOG_LEVEL                         pino log level (default "info")
+ *   HOST                              Express listen address (default 0.0.0.0)
+ *   PORT                              Express listen port (default 3000)
+ *   HYBA_CSP_CONNECT_SRC              Extra CSP connect-src origins (comma-separated)
  */
 
 import compression from "compression";
@@ -49,6 +64,9 @@ const TRUE_VALUES = new Set(["1", "true", "yes", "on"]);
 
 const CONFIG = {
   isProduction: process.env.NODE_ENV === "production",
+  allowDevInternalRoutes: TRUE_VALUES.has(
+    (process.env.HYBA_ALLOW_DEV_INTERNAL_ROUTES || "false").toLowerCase(),
+  ),
   host: process.env.HOST || "0.0.0.0",
   port: Number(process.env.PORT || 3000),
   backendUrl: normalizeBackendUrl(process.env.PULVINI_BACKEND_URL || "http://127.0.0.1:3001"),
@@ -62,6 +80,8 @@ const CONFIG = {
   jwtSecret: process.env.JWT_SECRET || "",
   internalHealthToken: process.env.HYBA_INTERNAL_HEALTH_TOKEN || "",
   cspConnectSrc: parseCspConnectSrc(process.env.HYBA_CSP_CONNECT_SRC),
+  swarmHeartbeatIntervalMs: Number(process.env.HYBA_SWARM_HEARTBEAT_INTERVAL_MS || 3000),
+  proxyBodySizeLimit: Number(process.env.HYBA_PROXY_BODY_SIZE_LIMIT || 10 * 1024 * 1024),
 } as const;
 
 interface CircuitState {
@@ -158,7 +178,7 @@ function createInternalMiningJwt(): string | null {
 }
 
 function requireInternalAccess(req: Request, res: Response, next: NextFunction): void {
-  if (!CONFIG.isProduction) {
+  if (!CONFIG.isProduction && CONFIG.allowDevInternalRoutes) {
     next();
     return;
   }
@@ -307,8 +327,22 @@ function spawnBackend(): void {
     env: { ...process.env, PYTHONPATH: process.env.PYTHONPATH ? `${pythonPath}${path.delimiter}${process.env.PYTHONPATH}` : pythonPath },
     stdio: "pipe",
   });
-  backendProcess.stdout?.on("data", (data: Buffer) => logger.info({ backend: data.toString().trim() }, "FastAPI stdout"));
-  backendProcess.stderr?.on("data", (data: Buffer) => logger.warn({ backend: data.toString().trim() }, "FastAPI stderr"));
+  const isDebugLogging = process.env.LOG_LEVEL === "debug";
+  backendProcess.stdout?.on("data", (data: Buffer) => {
+    if (isDebugLogging) {
+      logger.debug({ backend: data.toString().trim() }, "FastAPI stdout");
+    }
+  });
+  backendProcess.stderr?.on("data", (data: Buffer) => {
+    if (isDebugLogging) {
+      logger.debug({ backend: data.toString().trim() }, "FastAPI stderr");
+    } else {
+      const line = data.toString().trim();
+      if (line && (line.includes("ERROR") || line.includes("WARNING") || line.includes("CRITICAL"))) {
+        logger.warn({ backend: line }, "FastAPI stderr");
+      }
+    }
+  });
   backendProcess.on("exit", (code: number | null) => {
     logger.warn({ code }, "FastAPI backend exited");
     backendProcess = null;
@@ -400,7 +434,7 @@ export function registerSecuritySwarmRoutes(app: express.Application, swarm = se
 }
 
 function installSecuritySwarmHeartbeat(): ReturnType<typeof setInterval> {
-  const heartbeat = setInterval(() => securitySwarms.monitor_integrity(0), 100);
+  const heartbeat = setInterval(() => securitySwarms.monitor_integrity(0), CONFIG.swarmHeartbeatIntervalMs);
   const maybeUnref = heartbeat as unknown as { unref?: () => void };
   if (typeof maybeUnref.unref === "function") maybeUnref.unref();
   return heartbeat;
@@ -429,7 +463,22 @@ async function startServer(): Promise<void> {
   }
 
   const app = express();
-  app.use(helmet({ contentSecurityPolicy: { useDefaults: true, directives: { "default-src": ["'self'"], "script-src": ["'self'"], "style-src": ["'self'", "'unsafe-inline'"], "img-src": ["'self'", "data:", "https:"], "connect-src": CONFIG.cspConnectSrc, "object-src": ["'none'"], "frame-ancestors": ["'none'"], "base-uri": ["'self'"], "form-action": ["'self'"] } }, crossOriginEmbedderPolicy: false }));
+  const cspDirectives = {
+    "default-src": ["'self'"],
+    "script-src": ["'self'"],
+    // unsafe-inline removed for XSS hardening; use hashed/nonced styles
+    "style-src": ["'self'"],
+    "img-src": ["'self'", "data:", "https:"],
+    "connect-src": CONFIG.cspConnectSrc,
+    "object-src": ["'none'"],
+    "frame-ancestors": ["'none'"],
+    "base-uri": ["'self'"],
+    "form-action": ["'self'"],
+  };
+  app.use(helmet({
+    contentSecurityPolicy: { useDefaults: true, directives: cspDirectives },
+    crossOriginEmbedderPolicy: false,
+  }));
   app.use(compression());
   app.use(pinoHttp({ logger, genReqId: () => generateRequestId(), autoLogging: { ignore: (req: Request) => req.url === "/bridge/health" || req.url === "/health" } }));
   app.use((req: Request, res: Response, next: NextFunction) => { const requestId = (req.headers["x-request-id"] as string) || generateRequestId(); req.headers["x-request-id"] = requestId; res.setHeader("x-request-id", requestId); next(); });
@@ -455,6 +504,15 @@ async function startServer(): Promise<void> {
 
   app.get("/bridge/metrics", requireInternalAccess, async (_req: Request, res: Response) => { const reachable = await isBackendReachable(); const lines: string[] = ["# HELP hyba_bridge_requests_total Total requests processed", "# TYPE hyba_bridge_requests_total counter", `hyba_bridge_requests_total ${metrics.requestsTotal}`, "# HELP hyba_bridge_proxy_errors Total proxy errors", "# TYPE hyba_bridge_proxy_errors counter", `hyba_bridge_proxy_errors ${metrics.proxyErrors}`, "# HELP hyba_bridge_circuit_breaker_open Circuit breaker is open", "# TYPE hyba_bridge_circuit_breaker_open gauge", `hyba_bridge_circuit_breaker_open ${circuitState.isOpen ? 1 : 0}`, "# HELP hyba_bridge_circuit_breaker_trips Total circuit breaker trips", "# TYPE hyba_bridge_circuit_breaker_trips counter", `hyba_bridge_circuit_breaker_trips ${metrics.circuitBreakerTrips}`, "# HELP hyba_bridge_backend_reachable Backend is reachable", "# TYPE hyba_bridge_backend_reachable gauge", `hyba_bridge_backend_reachable ${reachable ? 1 : 0}`, "# HELP hyba_bridge_health_check_failures Total health check failures", "# TYPE hyba_bridge_health_check_failures counter", `hyba_bridge_health_check_failures ${metrics.healthCheckFailures}`, "# HELP hyba_bridge_backend_latency_ms Current backend latency in milliseconds", "# TYPE hyba_bridge_backend_latency_ms gauge", `hyba_bridge_backend_latency_ms ${metrics.backendLatencyMs}`, "# HELP hyba_bridge_high_latency_count Total high latency events", "# TYPE hyba_bridge_high_latency_count counter", `hyba_bridge_high_latency_count ${metrics.highLatencyCount}`, "# HELP hyba_bridge_uptime_seconds Uptime in seconds", "# TYPE hyba_bridge_uptime_seconds counter", `hyba_bridge_uptime_seconds ${Math.floor((Date.now() - metrics.startTime) / 1000)}`]; noStore(res); res.setHeader("content-type", "text/plain; charset=utf-8"); res.send(lines.join("\n")); });
 
+  // Enforce body size limit for all proxied routes before streaming begins
+  app.use(["/api", "/health"], (req: Request, res: Response, next: NextFunction) => {
+    const contentLength = parseInt(req.headers["content-length"] || "0", 10);
+    if (contentLength > CONFIG.proxyBodySizeLimit) {
+      res.status(413).json({ error: "payload_too_large", message: "Request body exceeds size limit" });
+      return;
+    }
+    next();
+  });
   app.use("/api", (req: Request, res: Response) => { void proxyToBackend(req, res); });
   app.use("/health", (req: Request, res: Response) => { void proxyToBackend(req, res); });
 

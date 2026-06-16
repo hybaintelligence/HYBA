@@ -8,7 +8,7 @@ import os
 import sys
 from contextlib import asynccontextmanager, suppress
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 # Support both documented launch forms:
 #   uvicorn hyba_genesis_api.main:app --app-dir python_backend
@@ -57,6 +57,17 @@ from hyba_genesis_api.core.telemetry import (  # noqa: E402
 )
 
 
+def _parse_cors_origins() -> List[str]:
+    """Read CORS origins from env, falling back to safe localhost defaults.
+
+    Set HYBA_CORS_ORIGINS as a comma-separated list (e.g. https://app.hyba.ai,https://console.hyba.ai).
+    Production deployments MUST configure this; localhost defaults are for development only.
+    """
+    raw = os.getenv("HYBA_CORS_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000")
+    origins = [o.strip() for o in raw.split(",") if o.strip()]
+    return origins
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application startup/shutdown lifecycle."""
@@ -95,9 +106,18 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+# CORS: configurable via HYBA_CORS_ORIGINS env var (comma-separated)
+_cors_origins = _parse_cors_origins()
+if _cors_origins and "*" in _cors_origins and os.getenv("HYBA_CORS_ALLOW_CREDENTIALS", "true").lower() == "true":
+    logging.warning(
+        "CORS is configured with * origins while allow_credentials=True. "
+        "This is insecure and will be rejected by browsers. "
+        "Set HYBA_CORS_ORIGINS to explicit origins in production."
+    )
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+    allow_origins=_cors_origins,
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allow_headers=[
@@ -144,4 +164,7 @@ async def get_substrate_status():
 
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    host = os.getenv("HYBA_BACKEND_HOST", "127.0.0.1")
+    port = int(os.getenv("HYBA_BACKEND_PORT", os.getenv("PORT", "3001")))
+    logging.info("Starting HYBA API on %s:%s", host, port)
+    uvicorn.run(app, host=host, port=port)
