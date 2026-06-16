@@ -50,11 +50,11 @@ active search space and the kernels being the reconstruction key.
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass
-from typing import Any, Dict, List, Optional, Sequence, Tuple
+from typing import Any, Dict, Tuple
 
 import numpy as np
 
-from .pulvini_phi_memory import PhiFoldingOperator, PulviniPhiMemoryCompressionEngine
+from .pulvini_phi_memory import PulviniPhiMemoryCompressionEngine
 
 PHI = (1.0 + np.sqrt(5.0)) / 2.0
 _EPS = 1e-12
@@ -204,8 +204,8 @@ def phi_folding_mathematical_proof() -> Dict[str, Any]:
     determinant.
     """
     w1 = 1.0 / PHI
-    w2 = 1.0 / (PHI ** 2)
-    norm_sq = w1 ** 2 + w2 ** 2
+    w2 = 1.0 / (PHI**2)
+    norm_sq = w1**2 + w2**2
 
     # The 2x2 transform matrix for (head_i, tail_i) -> (folded_i, kernel_i)
     transform_matrix = np.array([[w1, w2], [w2, -w1]])
@@ -267,7 +267,7 @@ def verify_memory_compression_gate() -> Dict[str, Any]:
 
     return {
         "gate": "Memory compression coverage (phi-folding reversibility)",
-        "status": "CLOSED" if lane_proof.reversible and density_proof.reversible else "FAILED",
+        "status": ("CLOSED" if lane_proof.reversible and density_proof.reversible else "FAILED"),
         "lane_surface_32": {
             "original_size": lane_proof.original_size,
             "folded_size": lane_proof.folded_size,

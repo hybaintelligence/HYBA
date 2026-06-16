@@ -3,9 +3,10 @@ tests/test_pythagoras_full.py — Full integration and unit tests for the
 PYTHAGORAS quantum pipeline: PULVINI, TT/MPS, MPO, Ω-TDA, Remez, nonce coverage.
 """
 
-import sys
 import os
+import sys
 import unittest
+
 import numpy as np
 
 # Add the operators directory to the path
@@ -272,7 +273,6 @@ class TestMatrixChecks(unittest.TestCase):
         self.checker = MatrixInvariantChecker()
 
     def test_square_matrix_detected(self):
-        from matrix_checks import MatrixCheck
 
         m = np.eye(3)
         result = self.checker.check(m)
@@ -294,7 +294,7 @@ class TestFoldedAmplifier(unittest.TestCase):
         self.assertAlmostEqual(np.linalg.norm(v), 1.0)
 
     def test_mark_inverts_sign(self):
-        from folded_probability_amplifier import uniform_vector, mark
+        from folded_probability_amplifier import mark, uniform_vector
 
         v = uniform_vector(8)
         marked = mark(v, [0])

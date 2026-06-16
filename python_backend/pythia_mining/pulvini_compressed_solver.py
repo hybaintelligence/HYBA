@@ -5,10 +5,15 @@ from __future__ import annotations
 import asyncio
 import hashlib
 import math
+import os
 import time
 from typing import Any, Dict, List, Optional
 
-from .quantum_solver import DodecahedralQuantumSolver, QuantumSolverConfigurationError
+from .quantum_solver import (
+    PULVINI_HASHRATE_CAP_EHS,
+    DodecahedralQuantumSolver,
+    QuantumSolverConfigurationError,
+)
 
 
 class PulviniCompressedQuantumSolver(DodecahedralQuantumSolver):
@@ -24,9 +29,13 @@ class PulviniCompressedQuantumSolver(DodecahedralQuantumSolver):
 
     async def configure_compressed_search(self, target: int, compressed_plan: Any) -> bool:
         if not bool(compressed_plan.complete_coverage) or not bool(compressed_plan.overlap_free):
-            raise QuantumSolverConfigurationError("compressed nonce plan must provide complete overlap-free coverage")
+            raise QuantumSolverConfigurationError(
+                "compressed nonce plan must provide complete overlap-free coverage"
+            )
         await self.configure_search(int(target), list(compressed_plan.solver_ranges))
         self.compressed_plan = compressed_plan
+        phi_tier = int(os.getenv("HYBA_PULVINI_PHI_TIER", "12"))
+        phi_multiplier = ((1.0 + math.sqrt(5.0)) / 2.0) ** phi_tier
         self.current_config.update(
             {
                 "nonce_space_contract": "pulvini_phi_compressed_pre_search",
@@ -36,9 +45,17 @@ class PulviniCompressedQuantumSolver(DodecahedralQuantumSolver):
                 "original_lanes": int(compressed_plan.original_lanes),
                 "compressed_working_set_size": int(compressed_plan.working_set_dimension),
                 "retained_kernel_lanes": int(compressed_plan.retained_kernel_lanes),
-                "working_set_compression_ratio": float(compressed_plan.working_set_compression_ratio),
+                "working_set_compression_ratio": float(
+                    compressed_plan.working_set_compression_ratio
+                ),
                 "phi_compression_factor": float(compressed_plan.working_set_compression_ratio),
-                "phi_filter_acceptance_ratio": float(compressed_plan.working_set_dimension / max(1, compressed_plan.original_lanes)),
+                "phi_filter_acceptance_ratio": float(
+                    compressed_plan.working_set_dimension / max(1, compressed_plan.original_lanes)
+                ),
+                "phi_tier": phi_tier,
+                "phi_tier_multiplier": phi_multiplier,
+                "hashrate_cap_ehs": PULVINI_HASHRATE_CAP_EHS,
+                "configured_capacity_ehs": self.configured_capacity_ehs,
                 "compressed_nonce_plan": compressed_plan.to_dict(),
             }
         )
@@ -59,14 +76,21 @@ class PulviniCompressedQuantumSolver(DodecahedralQuantumSolver):
 
     def _collapse_coordinate(self) -> Any:
         if self.compressed_plan is None:
-            raise QuantumSolverConfigurationError("compressed solver must be configured before solving")
+            raise QuantumSolverConfigurationError(
+                "compressed solver must be configured before solving"
+            )
         target = int(self.current_config["target"])
         coordinates = list(self.compressed_plan.coordinates)
         if not coordinates:
-            raise QuantumSolverConfigurationError("compressed nonce plan contains no active coordinates")
+            raise QuantumSolverConfigurationError(
+                "compressed nonce plan contains no active coordinates"
+            )
         scored = []
         for coordinate in coordinates:
-            phase = self._unit_hash(f"{target}:{coordinate.coordinate_id}:{coordinate.coverage_size}", self._solve_counter)
+            phase = self._unit_hash(
+                f"{target}:{coordinate.coordinate_id}:{coordinate.coverage_size}",
+                self._solve_counter,
+            )
             weight = max(float(coordinate.coverage_size), 1.0) * (1.0 + phase)
             scored.append((weight, coordinate))
         scored.sort(key=lambda item: item[0], reverse=True)
@@ -90,8 +114,14 @@ class PulviniCompressedQuantumSolver(DodecahedralQuantumSolver):
         for step in range(steps):
             left = (position - 1) % len(coordinates)
             right = (position + 1) % len(coordinates)
-            left_score = self._unit_hash(f"walk:{target}:{self._solve_counter}:{step}:{left}", self._solve_counter + step)
-            right_score = self._unit_hash(f"walk:{target}:{self._solve_counter}:{step}:{right}", self._solve_counter + step)
+            left_score = self._unit_hash(
+                f"walk:{target}:{self._solve_counter}:{step}:{left}",
+                self._solve_counter + step,
+            )
+            right_score = self._unit_hash(
+                f"walk:{target}:{self._solve_counter}:{step}:{right}",
+                self._solve_counter + step,
+            )
             position = right if right_score >= left_score else left
         walked = coordinates[position]
         self.last_solve_trace.append(
@@ -106,7 +136,9 @@ class PulviniCompressedQuantumSolver(DodecahedralQuantumSolver):
     def _tunnel_anneal_project_nonce(self, coordinate: Any) -> int:
         segments = list(coordinate.active_segments)
         if not segments:
-            raise QuantumSolverConfigurationError("compressed coordinate contains no retained segments")
+            raise QuantumSolverConfigurationError(
+                "compressed coordinate contains no retained segments"
+            )
         target = int(self.current_config["target"])
         anneal_values = [
             self._unit_hash(f"anneal:{target}:{coordinate.coordinate_id}:{segment.lane_id}")
@@ -114,7 +146,9 @@ class PulviniCompressedQuantumSolver(DodecahedralQuantumSolver):
         ]
         segment_index = max(range(len(segments)), key=lambda index: anneal_values[index])
         segment = segments[segment_index]
-        offset_fraction = self._unit_hash(f"tunnel:{target}:{coordinate.coordinate_id}:{segment.start}:{segment.end}")
+        offset_fraction = self._unit_hash(
+            f"tunnel:{target}:{coordinate.coordinate_id}:{segment.start}:{segment.end}"
+        )
         offset = min(segment.size - 1, int(offset_fraction * segment.size))
         nonce = int(segment.start + offset)
         self.last_solve_trace.append(
@@ -150,7 +184,13 @@ class PulviniCompressedQuantumSolver(DodecahedralQuantumSolver):
             if time.monotonic() - start_time >= timeout:
                 self.last_error = "timeout"
                 return None
-            self.last_solve_iterations = max(1, min(int(max_iterations), int(math.ceil(math.sqrt(self.compressed_plan.working_set_dimension)))))
+            self.last_solve_iterations = max(
+                1,
+                min(
+                    int(max_iterations),
+                    int(math.ceil(math.sqrt(self.compressed_plan.working_set_dimension))),
+                ),
+            )
             self.last_solution_nonce = nonce
             self.last_solve_duration_seconds = time.monotonic() - start_time
             self.current_config["last_solve_trace"] = list(self.last_solve_trace)
@@ -165,13 +205,23 @@ class PulviniCompressedQuantumSolver(DodecahedralQuantumSolver):
         metrics.update(
             {
                 "nonce_space_contract": self.current_config.get("nonce_space_contract"),
-                "candidate_generation_complexity": self.current_config.get("candidate_generation_complexity"),
-                "compressed_working_set_size": self.current_config.get("compressed_working_set_size"),
+                "candidate_generation_complexity": self.current_config.get(
+                    "candidate_generation_complexity"
+                ),
+                "compressed_working_set_size": self.current_config.get(
+                    "compressed_working_set_size"
+                ),
                 "retained_kernel_lanes": self.current_config.get("retained_kernel_lanes"),
                 "complete_nonce_coverage": self.current_config.get("complete_nonce_coverage"),
-                "working_set_compression_ratio": self.current_config.get("working_set_compression_ratio"),
+                "overlap_free_nonce_coverage": self.current_config.get("overlap_free_nonce_coverage"),
+                "working_set_compression_ratio": self.current_config.get(
+                    "working_set_compression_ratio"
+                ),
                 "phi_compression_factor": self.current_config.get("phi_compression_factor"),
-                "phi_filter_acceptance_ratio": self.current_config.get("phi_filter_acceptance_ratio"),
+                "phi_filter_acceptance_ratio": self.current_config.get(
+                    "phi_filter_acceptance_ratio"
+                ),
+                "search_space_size": self.current_config.get("search_space_size"),
                 "last_solve_trace": list(self.last_solve_trace),
             }
         )

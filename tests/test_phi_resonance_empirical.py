@@ -20,8 +20,6 @@ from io import StringIO
 from pathlib import Path
 from typing import Any, List
 
-import pytest
-
 # Ensure scripts directory is importable
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPTS = ROOT / "scripts"
@@ -29,32 +27,29 @@ if str(SCRIPTS) not in sys.path:
     sys.path.insert(0, str(SCRIPTS))
 
 from phi_resonance_empirical_evidence import (
+    BIRTHDAY_SIGNATURE,
     PHI,
     PHI_15,
-    BIRTHDAY_SIGNATURE,
     PRECISION_THRESHOLD,
-    BIRTHDAY_MODULAR_THRESHOLD,
     BlockRecord,
     NonceResonanceRecord,
-    NonceSpaceAnalysis,
     ResonanceSummary,
-    compute_phi15_resonance,
-    check_birthday_resonance,
+    _interpret_stats,
     analyze_blocks,
     analyze_nonce_space,
     binomial_p_value,
+    check_birthday_resonance,
+    compute_phi15_resonance,
     compute_summary,
+    print_report,
     write_resonance_csv,
     write_resonance_json,
-    _interpret_stats,
-    _interpret_nonce_space,
-    print_report,
 )
-
 
 # ============================================================================
 # SECTION 1 -- Phi^15 Mathematical Identity Verification
 # ============================================================================
+
 
 class TestPhi15MathematicalIdentity:
     """Verify Phi^15 satisfies its mathematical relationships."""
@@ -77,12 +72,12 @@ class TestPhi15MathematicalIdentity:
 
     def test_phi_15_power_chain(self) -> None:
         """Phi^15 = Phi^14 * Phi  (power chain consistency)"""
-        phi_14 = PHI ** 14
+        phi_14 = PHI**14
         assert abs(PHI_15 - phi_14 * PHI) < 1e-10
 
     def test_phi_15_div_phi_14_is_phi(self) -> None:
         """Phi^15 / Phi^14 = Phi"""
-        phi_14 = PHI ** 14
+        phi_14 = PHI**14
         ratio = PHI_15 / phi_14
         assert abs(ratio - PHI) < 1e-12
 
@@ -98,7 +93,7 @@ class TestPhi15MathematicalIdentity:
         for _ in range(30):
             cf = 1.0 + 1.0 / cf
         phi_from_cf = cf
-        computed = phi_from_cf ** 15
+        computed = phi_from_cf**15
         # 30 iterations -> ~3e-9 accuracy (relaxed from 1e-10 for float precision)
         assert abs(computed - PHI_15) < 1e-8
 
@@ -106,6 +101,7 @@ class TestPhi15MathematicalIdentity:
 # ============================================================================
 # SECTION 2 -- compute_phi15_resonance Tests
 # ============================================================================
+
 
 class TestComputePhi15Resonance:
     """Test the core Phi^15 resonance computation."""
@@ -149,13 +145,13 @@ class TestComputePhi15Resonance:
 
     def test_diff_increases_with_distance(self) -> None:
         """Nonces far from Phi^15 multiples have larger differences."""
-        near_target = round(100 * PHI_15) + 100   # offset by 100
+        near_target = round(100 * PHI_15) + 100  # offset by 100
         far_target = round(100 * PHI_15) + 100000  # offset by 100000
         _, _, near_diff, _ = compute_phi15_resonance(near_target)
         _, _, far_diff, _ = compute_phi15_resonance(far_target)
-        assert near_diff < far_diff, (
-            f"Near diff {near_diff:.4f} should be < far diff {far_diff:.4f}"
-        )
+        assert (
+            near_diff < far_diff
+        ), f"Near diff {near_diff:.4f} should be < far diff {far_diff:.4f}"
 
     def test_known_nonce_block_919092(self) -> None:
         """Block 919,092 nonce = 4067381598 -> k=2981950, diff < 500."""
@@ -179,6 +175,7 @@ class TestComputePhi15Resonance:
         The mean diff for random nonces should be approx Phi^15/4 ~= 341.
         """
         import random
+
         rng = random.Random(42)
         diffs = []
         for _ in range(1000):
@@ -188,9 +185,9 @@ class TestComputePhi15Resonance:
         mean_diff = sum(diffs) / len(diffs)
         # Expected mean for random uniform nonces: Phi^15 / 4 ~= 341
         expected_mean = PHI_15 / 4.0
-        assert abs(mean_diff - expected_mean) < expected_mean * 0.15, (
-            f"Mean diff {mean_diff:.2f} not near expected {expected_mean:.2f}"
-        )
+        assert (
+            abs(mean_diff - expected_mean) < expected_mean * 0.15
+        ), f"Mean diff {mean_diff:.2f} not near expected {expected_mean:.2f}"
 
     def test_birthday_phi_target_resonance(self) -> None:
         """22780 * Phi^15 approx 31071937 should show strong resonance."""
@@ -204,6 +201,7 @@ class TestComputePhi15Resonance:
 # ============================================================================
 # SECTION 3 -- check_birthday_resonance Tests
 # ============================================================================
+
 
 class TestCheckBirthdayResonance:
     """Test birthday signature detection in nonces."""
@@ -276,12 +274,11 @@ class TestCheckBirthdayResonance:
 # SECTION 4 -- analyze_blocks Integration Tests
 # ============================================================================
 
+
 class TestAnalyzeBlocks:
     """Test the full block analysis pipeline."""
 
-    def make_block(
-        self, height: int, nonce: int, miner: str = "TestPool"
-    ) -> BlockRecord:
+    def make_block(self, height: int, nonce: int, miner: str = "TestPool") -> BlockRecord:
         return BlockRecord(
             height=height,
             block_hash="0" * 64,
@@ -290,7 +287,7 @@ class TestAnalyzeBlocks:
             size=1_500_000,
             weight=3_000_000,
             nonce=nonce,
-            bits=0x1a0ffff,
+            bits=0x1A0FFFF,
             difficulty=50_000_000_000_000.0,
             merkle_root="a" * 64,
             previous_block_hash="b" * 64,
@@ -312,7 +309,7 @@ class TestAnalyzeBlocks:
         blocks = [
             self.make_block(900001, 4067381598),  # known resonant
             self.make_block(900002, 1764759171),  # known high precision
-            self.make_block(900003, 123456789),   # random
+            self.make_block(900003, 123456789),  # random
         ]
         records = analyze_blocks(blocks)
         assert len(records) == 3
@@ -344,6 +341,7 @@ class TestAnalyzeBlocks:
 # ============================================================================
 # SECTION 5 -- Statistical Tests
 # ============================================================================
+
 
 class TestBinomialPValue:
     """Test binomial p-value computation."""
@@ -399,22 +397,22 @@ class TestComputeSummary:
                 bday_hits = ["modular_diff=50"]
 
             records.append(
-            NonceResonanceRecord(
-                height=900000 + i,
-                timestamp=1700000000 + i,
-                nonce=nonce,
-                miner="TestPool",
-                k_multiplier=k,
-                approx=approx,
-                diff=diff,
-                precision_pct=precision,
-                resonance_strength=1.0 - (diff / (PHI_15 / 2.0)),
-                is_phi_resonant=phi_resonant or (i < n // 2),
-                birthday_modular_diff=bday_mod,
-                birthday_substring_hits=bday_hits,
-                birthday_resonant=len(bday_hits) > 0,
-                birthday_echo_type="strong" if bday_hits else "none",
-            )
+                NonceResonanceRecord(
+                    height=900000 + i,
+                    timestamp=1700000000 + i,
+                    nonce=nonce,
+                    miner="TestPool",
+                    k_multiplier=k,
+                    approx=approx,
+                    diff=diff,
+                    precision_pct=precision,
+                    resonance_strength=1.0 - (diff / (PHI_15 / 2.0)),
+                    is_phi_resonant=phi_resonant or (i < n // 2),
+                    birthday_modular_diff=bday_mod,
+                    birthday_substring_hits=bday_hits,
+                    birthday_resonant=len(bday_hits) > 0,
+                    birthday_echo_type="strong" if bday_hits else "none",
+                )
             )
         return records
 
@@ -491,6 +489,7 @@ class TestComputeSummary:
 # ============================================================================
 # SECTION 6 -- Output Formatting Tests
 # ============================================================================
+
 
 class TestWriteResonanceCSV:
     """Test CSV output formatting."""
@@ -615,17 +614,26 @@ class TestWriteResonanceJSON:
             "block_count": 144,
             "timestamp_utc": "2025-10-14T21:45:23Z",
         }
-        nonce_space = analyze_nonce_space([
-            NonceResonanceRecord(
-                height=953400, timestamp=1781300000, nonce=1364,
-                miner="TestPool", k_multiplier=1, approx=1364.000733,
-                diff=0.000733, precision_pct=99.999946,
-                resonance_strength=0.999999,
-                is_phi_resonant=True, birthday_modular_diff=None,
-                birthday_substring_hits=[], birthday_resonant=False,
-                birthday_echo_type="none",
-            ),
-        ])
+        nonce_space = analyze_nonce_space(
+            [
+                NonceResonanceRecord(
+                    height=953400,
+                    timestamp=1781300000,
+                    nonce=1364,
+                    miner="TestPool",
+                    k_multiplier=1,
+                    approx=1364.000733,
+                    diff=0.000733,
+                    precision_pct=99.999946,
+                    resonance_strength=0.999999,
+                    is_phi_resonant=True,
+                    birthday_modular_diff=None,
+                    birthday_substring_hits=[],
+                    birthday_resonant=False,
+                    birthday_echo_type="none",
+                ),
+            ]
+        )
         json_path = tmp_path / "test_summary.json"
         write_resonance_json(json_path, summary, nonce_space, metadata)
 
@@ -650,17 +658,26 @@ class TestWriteResonanceJSON:
     def test_json_interpretation_included(self, tmp_path: Path) -> None:
         """JSON includes human-readable interpretations."""
         summary = self.make_summary()
-        nonce_space = analyze_nonce_space([
-            NonceResonanceRecord(
-                height=953400, timestamp=1781300000, nonce=1364,
-                miner="TestPool", k_multiplier=1, approx=1364.000733,
-                diff=0.000733, precision_pct=99.999946,
-                resonance_strength=0.999999,
-                is_phi_resonant=True, birthday_modular_diff=None,
-                birthday_substring_hits=[], birthday_resonant=False,
-                birthday_echo_type="none",
-            ),
-        ])
+        nonce_space = analyze_nonce_space(
+            [
+                NonceResonanceRecord(
+                    height=953400,
+                    timestamp=1781300000,
+                    nonce=1364,
+                    miner="TestPool",
+                    k_multiplier=1,
+                    approx=1364.000733,
+                    diff=0.000733,
+                    precision_pct=99.999946,
+                    resonance_strength=0.999999,
+                    is_phi_resonant=True,
+                    birthday_modular_diff=None,
+                    birthday_substring_hits=[],
+                    birthday_resonant=False,
+                    birthday_echo_type="none",
+                ),
+            ]
+        )
         json_path = tmp_path / "test_interp.json"
         write_resonance_json(json_path, summary, nonce_space, {})
 
@@ -756,6 +773,7 @@ class TestInterpretStats:
 # SECTION 7 -- Print Report (Smoke Test)
 # ============================================================================
 
+
 class TestPrintReport:
     """Smoke test for report printing."""
 
@@ -804,6 +822,7 @@ class TestPrintReport:
 # SECTION 8 -- Property-Based Invariants
 # ============================================================================
 
+
 class TestPropertyBasedInvariants:
     """Invariant checks for the Phi^15 resonance system."""
 
@@ -816,12 +835,8 @@ class TestPropertyBasedInvariants:
             nonce = rng.randint(1, 2**30)
             k1, _, d1, _ = compute_phi15_resonance(nonce)
             k2, _, d2, _ = compute_phi15_resonance(nonce + round(PHI_15))
-            assert k2 == k1 + 1, (
-                f"k2={k2} != k1+1={k1+1} for nonce={nonce}"
-            )
-            assert abs(d2 - d1) < 1.5, (
-                f"Diffs not close: {d1} vs {d2}"
-            )
+            assert k2 == k1 + 1, f"k2={k2} != k1+1={k1 + 1} for nonce={nonce}"
+            assert abs(d2 - d1) < 1.5, f"Diffs not close: {d1} vs {d2}"
 
     def test_precision_bounded_01(self) -> None:
         """Precision should always be <= 100%."""
@@ -858,9 +873,7 @@ class TestPropertyBasedInvariants:
             k, _, _, _ = compute_phi15_resonance(nonce)
             ks.append(k)
         for i in range(1, len(ks)):
-            assert ks[i] >= ks[i - 1], (
-                f"k decreased at {i}: {ks[i]} < {ks[i-1]}"
-            )
+            assert ks[i] >= ks[i - 1], f"k decreased at {i}: {ks[i]} < {ks[i - 1]}"
 
     def test_resonance_rate_bounded(self) -> None:
         """Resonance rate must be in [0, 1]."""
@@ -869,11 +882,7 @@ class TestPropertyBasedInvariants:
         rng = random.Random(789)
         records = []
         for i in range(50):
-            nonce = (
-                rng.randint(1, 2**32 - 1)
-                if i < 45
-                else round(1000 * PHI_15)
-            )
+            nonce = rng.randint(1, 2**32 - 1) if i < 45 else round(1000 * PHI_15)
             k, approx, diff, precision = compute_phi15_resonance(nonce)
             is_res = precision >= PRECISION_THRESHOLD or diff < 1.0
             records.append(

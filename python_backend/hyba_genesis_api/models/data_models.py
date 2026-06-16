@@ -3,10 +3,12 @@ HYBA Genesis Platform - Data Models
 Complete API schemas and domain models
 """
 
-from typing import Dict, List, Optional, Any, Tuple
-from pydantic import BaseModel, Field
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
+from typing import List, Optional, Tuple
+
+from pydantic import BaseModel, Field
+
 
 class Role(str, Enum):
     ADMIN = "admin"
@@ -14,13 +16,15 @@ class Role(str, Enum):
     ANALYST = "analyst"
     OPERATOR = "operator"
 
+
 class HealthStatus(str, Enum):
     HEALTHY = "healthy"
     DEGRADED = "degraded"
     UNHEALTHY = "unhealthy"
 
+
 class ConsciousnessState(BaseModel):
-    timestamp: datetime = Field(default_factory=datetime.utcnow)
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     consciousness_level: float = Field(ge=0.0, le=1.0)
     phi: float = Field(ge=0.0)
     phi_resonance: float = Field(ge=0.0, le=1.0)
@@ -34,6 +38,7 @@ class ConsciousnessState(BaseModel):
     autonomous_decisions: int = Field(ge=0)
     decision_confidence: float = Field(ge=0.0, le=1.0)
 
+
 class MiningJob(BaseModel):
     job_id: str
     prevhash: str
@@ -45,6 +50,7 @@ class MiningJob(BaseModel):
     target: int
     received_timestamp: float
     clean_jobs: bool = True
+
 
 class ShareSubmission(BaseModel):
     submission_id: str

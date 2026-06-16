@@ -1,0 +1,75 @@
+"""Tests for enhanced Deutsch knowledge substrate implementation."""
+import unittest
+from python_backend.pythia_mining.deutsch_knowledge_substrate import KnowledgeSubstrate
+
+class TestEnhancedDeutsch(unittest.TestCase):
+    def setUp(self):
+        """Ensure each test uses a fresh KnowledgeSubstrate instance."""
+        self.substrate = KnowledgeSubstrate()
+    
+    def test_backward_compatibility(self):
+        self.assertIsNotNone(self.substrate.explanations)
+        self.assertIsNotNone(self.substrate.counterfactuals)
+    
+    def test_enhanced_explanation_generation(self):
+        context = {
+            'difficulty': 1000000,
+            'thermal_load': 0.5,
+            'phi_resonance': 0.618,
+            'pool_latency': 45
+        }
+        outcome = {'accepted': True}
+        
+        explanation = self.substrate.create_knowledge_from_success('strategy_a', context, outcome)
+        # φ-resonance is always included in fallback explanation (line 241-242)
+        self.assertIn('φ-resonance', explanation.explanation_text)
+        self.assertIn('thermal', explanation.explanation_text.lower())
+    
+    def test_enhanced_failure_analysis(self):
+        context = {
+            'difficulty': 1000000,
+            'thermal_load': 0.9,
+            'phi_resonance': 0.2,
+            'pool_latency': 250
+        }
+        outcome = {'accepted': False}
+        
+        explanation = self.substrate.create_knowledge_from_failure('strategy_b', context, outcome)
+        if explanation:
+            self.assertIn('failed', explanation.explanation_text.lower())
+    
+    def test_enhanced_counterfactual_simulation(self):
+        self.substrate.strategy_performance['strategy_a'] = [0.8, 0.9, 0.7]
+        
+        context = {
+            'thermal_load': 0.5,
+            'phi_resonance': 0.6,
+            'pool_latency': 50
+        }
+        
+        counterfactual = self.substrate.counterfactual_reasoning(
+            'strategy_a', {'accepted': True}, 'strategy_b', context
+        )
+        
+        self.assertIn('predicted_acceptance', counterfactual.predicted_counterfactual_outcome)
+        self.assertIn('confidence', counterfactual.predicted_counterfactual_outcome)
+    
+    def test_context_aware_modeling(self):
+        self.substrate.strategy_performance['strategy_a'] = [0.7, 0.8]
+        
+        context = {
+            'thermal_load': 0.5,
+            'phi_resonance': 0.6,
+            'pool_latency': 50
+        }
+        
+        simulation = self.substrate._simulate_alternative_strategy('strategy_a', context)
+        
+        # Enhanced simulation should include context factors
+        self.assertIn('context_factors', simulation)
+        self.assertIn('thermal', simulation['context_factors'])
+        self.assertIn('phi', simulation['context_factors'])
+        self.assertIn('latency', simulation['context_factors'])
+
+if __name__ == '__main__':
+    unittest.main()

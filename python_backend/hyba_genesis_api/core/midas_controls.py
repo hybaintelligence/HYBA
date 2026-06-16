@@ -16,7 +16,7 @@ from dataclasses import asdict, dataclass, field
 from datetime import UTC, datetime, timedelta
 from enum import Enum
 from threading import RLock
-from typing import Any
+from typing import Any, Optional
 
 
 class MiningState(Enum):
@@ -95,7 +95,9 @@ class MIDASStateMachine:
 
             if to_state not in self.config.allowed_transitions.get(self.current_state, set()):
                 self.metrics["invalid_transitions_total"] += 1
-                valid = [s.value for s in self.config.allowed_transitions.get(self.current_state, set())]
+                valid = [
+                    s.value for s in self.config.allowed_transitions.get(self.current_state, set())
+                ]
                 raise StateTransitionError(
                     f"Invalid state transition from {self.current_state.value} to {to_state.value}. "
                     f"Valid transitions from {self.current_state.value}: {valid}"
@@ -117,11 +119,19 @@ class MIDASStateMachine:
             self.state_entry_time = time.monotonic()
             self.transition_history.append(transition)
             self.metrics["transitions_total"] += 1
-            metric_name = f"transition_{transition.from_state.value}_to_{transition.to_state.value}_total"
+            metric_name = (
+                f"transition_{transition.from_state.value}_to_{transition.to_state.value}_total"
+            )
             self.metrics[metric_name] = self.metrics.get(metric_name, 0) + 1
             return transition
 
-    def force_transition(self, to_state: MiningState, *, request_id: str | None = None, reason: str = "forced") -> StateTransition:
+    def force_transition(
+        self,
+        to_state: MiningState,
+        *,
+        request_id: str | None = None,
+        reason: str = "forced",
+    ) -> StateTransition:
         with self._lock:
             self.metrics["invalid_transitions_total"] += 1
         raise StateTransitionError(
@@ -137,7 +147,13 @@ class MIDASStateMachine:
             return list(self.transition_history[-limit:])
 
     def validate_state_machine(self) -> dict[str, Any]:
-        canonical = [MiningState.IDLE, MiningState.STARTING, MiningState.RUNNING, MiningState.STOPPING, MiningState.STOPPED]
+        canonical = [
+            MiningState.IDLE,
+            MiningState.STARTING,
+            MiningState.RUNNING,
+            MiningState.STOPPING,
+            MiningState.STOPPED,
+        ]
         errors: list[str] = []
         with self._lock:
             current_state = self.current_state
@@ -146,8 +162,12 @@ class MIDASStateMachine:
         if current_state not in canonical:
             errors.append(f"non-canonical state: {current_state.value}")
         for transition in history:
-            if transition.to_state not in self.config.allowed_transitions.get(transition.from_state, set()):
-                errors.append(f"invalid historical transition: {transition.from_state.value}->{transition.to_state.value}")
+            if transition.to_state not in self.config.allowed_transitions.get(
+                transition.from_state, set()
+            ):
+                errors.append(
+                    f"invalid historical transition: {transition.from_state.value}->{transition.to_state.value}"
+                )
             if not transition.request_id:
                 errors.append(f"transition {transition.transition_id} missing request_id")
         return {
@@ -197,6 +217,7 @@ class TokenBucketRateLimiter:
     updated_at: float = field(default_factory=time.monotonic)
     allowed_total: int = 0
     rejected_total: int = 0
+    _lock: RLock = field(init=False, repr=False, compare=False)
 
     def __post_init__(self) -> None:
         if self.rate_per_second <= 0:
@@ -204,29 +225,32 @@ class TokenBucketRateLimiter:
         if self.burst_capacity <= 0:
             raise ValueError("burst_capacity must be positive")
         self.tokens = float(self.burst_capacity)
+        object.__setattr__(self, "_lock", RLock())
 
     def allow(self, request_id: str | None = None) -> bool:
-        now = time.monotonic()
-        elapsed = max(now - self.updated_at, 0.0)
-        self.tokens = min(self.burst_capacity, self.tokens + elapsed * self.rate_per_second)
-        self.updated_at = now
-        if self.tokens >= 1.0:
-            self.tokens -= 1.0
-            self.allowed_total += 1
-            return True
-        self.rejected_total += 1
-        retry_after = (1.0 - self.tokens) / self.rate_per_second
+        with self._lock:
+            now = time.monotonic()
+            elapsed = max(now - self.updated_at, 0.0)
+            self.tokens = min(self.burst_capacity, self.tokens + elapsed * self.rate_per_second)
+            self.updated_at = now
+            if self.tokens >= 1.0:
+                self.tokens -= 1.0
+                self.allowed_total += 1
+                return True
+            self.rejected_total += 1
+            retry_after = (1.0 - self.tokens) / self.rate_per_second
         raise RateLimitExceededError(retry_after, request_id=request_id)
 
     def metrics(self) -> dict[str, Any]:
-        return {
-            "scope": "process",
-            "rate_per_second": self.rate_per_second,
-            "burst_capacity": self.burst_capacity,
-            "tokens_available": round(self.tokens, 6),
-            "allowed_total": self.allowed_total,
-            "rejected_total": self.rejected_total,
-        }
+        with self._lock:
+            return {
+                "scope": "process",
+                "rate_per_second": self.rate_per_second,
+                "burst_capacity": self.burst_capacity,
+                "tokens_available": round(self.tokens, 6),
+                "allowed_total": self.allowed_total,
+                "rejected_total": self.rejected_total,
+            }
 
 
 @dataclass
@@ -237,7 +261,7 @@ class BackpressureGuard:
     queue_depth: int = 0
     rejected_total: int = 0
 
-    def admit(self, request_id: str | None = None) -> None:
+    def admit(self, request_id: Optional[str] = None) -> None:
         if self.inflight >= self.max_inflight or self.queue_depth >= self.max_queue_depth:
             self.rejected_total += 1
             raise BackpressureError(
@@ -269,7 +293,11 @@ class RequestStatus(Enum):
     CANCELLED = "cancelled"
 
 
-TERMINAL_STATUSES = {RequestStatus.COMPLETED, RequestStatus.FAILED, RequestStatus.CANCELLED}
+TERMINAL_STATUSES = {
+    RequestStatus.COMPLETED,
+    RequestStatus.FAILED,
+    RequestStatus.CANCELLED,
+}
 
 
 @dataclass
@@ -280,11 +308,11 @@ class MiningRequest:
     status: RequestStatus
     created_at: datetime
     updated_at: datetime
-    result: dict[str, Any] | None = None
-    error: str | None = None
+    result: Optional[dict[str, Any]] = None
+    error: Optional[str] = None
     retry_count: int = 0
     max_retries: int = 3
-    idempotency_key: str | None = None
+    idempotency_key: Optional[str] = None
 
     def to_dict(self) -> dict[str, Any]:
         data = asdict(self)
@@ -316,9 +344,16 @@ class MiningRequestTracker:
             params_str = repr(sorted(parameters.items()))
         return hashlib.sha256(f"{operation_type}:{params_str}".encode("utf-8")).hexdigest()
 
-    def create_request(self, operation_type: str, parameters: dict[str, Any], idempotency_key: str | None = None) -> MiningRequest:
+    def create_request(
+        self,
+        operation_type: str,
+        parameters: dict[str, Any],
+        idempotency_key: Optional[str] = None,
+    ) -> MiningRequest:
         with self._lock:
-            idempotency_key = idempotency_key or self.generate_idempotency_key(operation_type, parameters)
+            idempotency_key = idempotency_key or self.generate_idempotency_key(
+                operation_type, parameters
+            )
             existing_id = self.idempotency_keys.get(idempotency_key)
             if existing_id:
                 existing = self.requests.get(existing_id)
@@ -343,8 +378,8 @@ class MiningRequestTracker:
         request_id: str,
         status: RequestStatus,
         *,
-        result: dict[str, Any] | None = None,
-        error: str | None = None,
+        result: Optional[dict[str, Any]] = None,
+        error: Optional[str] = None,
     ) -> bool:
         with self._lock:
             request = self.requests.get(request_id)
@@ -364,7 +399,10 @@ class MiningRequestTracker:
             expired_ids = [rid for rid, req in self.requests.items() if req.created_at < cutoff]
             for request_id in expired_ids:
                 request = self.requests.pop(request_id)
-                if request.idempotency_key and self.idempotency_keys.get(request.idempotency_key) == request_id:
+                if (
+                    request.idempotency_key
+                    and self.idempotency_keys.get(request.idempotency_key) == request_id
+                ):
                     del self.idempotency_keys[request.idempotency_key]
             self.last_cleanup = time.time()
             return len(expired_ids)

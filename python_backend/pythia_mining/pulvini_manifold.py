@@ -14,7 +14,7 @@ import time
 from dataclasses import asdict, dataclass, field
 from multiprocessing import shared_memory
 from threading import RLock
-from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
+from typing import Any, Dict, Iterable, List, Optional, Sequence
 
 import numpy as np
 
@@ -190,7 +190,9 @@ class PulviniManifold:
         if not math.isfinite(total) or total <= EPSILON:
             dim = rho.shape[0]
             return np.eye(dim, dtype=np.complex128) / dim
-        return PulviniManifold._hermitian(eigenvectors @ np.diag(eigenvalues / total) @ eigenvectors.conj().T)
+        return PulviniManifold._hermitian(
+            eigenvectors @ np.diag(eigenvalues / total) @ eigenvectors.conj().T
+        )
 
     def _build_hamiltonian(self) -> np.ndarray:
         diagonal = np.diag(self.node_energy.astype(np.complex128))
@@ -231,13 +233,15 @@ class PulviniManifold:
             self._refresh_hamiltonian()
             self.previous_entropy = self.von_neumann_entropy()
             self.entropy_gradient = 0.0
-            self.constructor_memory.append({
-                "event": "begin_job",
-                "job_id": self.current_job_id,
-                "target": self.current_target,
-                "automorphism_order": len(self.automorphisms),
-                "timestamp": time.time(),
-            })
+            self.constructor_memory.append(
+                {
+                    "event": "begin_job",
+                    "job_id": self.current_job_id,
+                    "target": self.current_target,
+                    "automorphism_order": len(self.automorphisms),
+                    "timestamp": time.time(),
+                }
+            )
             self.assert_invariants()
             self._write_blackboard()
 
@@ -248,7 +252,9 @@ class PulviniManifold:
             return np.ones(self.num_nodes) / self.num_nodes
         return distribution / total
 
-    def apply_work_distribution(self, probabilities: Sequence[float], *, reason: str = "autonomic_optimization") -> np.ndarray:
+    def apply_work_distribution(
+        self, probabilities: Sequence[float], *, reason: str = "autonomic_optimization"
+    ) -> np.ndarray:
         with self._lock:
             values = np.asarray(probabilities, dtype=np.float64)
             if values.shape != (self.num_nodes,):
@@ -263,15 +269,19 @@ class PulviniManifold:
                 raise ValueError("at least one probability must be positive")
             values = values / total
             phases = np.angle(self.psi)
-            self.psi = self._normalize_state(np.sqrt(values).astype(np.complex128) * np.exp(1j * phases))
+            self.psi = self._normalize_state(
+                np.sqrt(values).astype(np.complex128) * np.exp(1j * phases)
+            )
             self.rho = self._density_from_state(self.psi)
-            self.constructor_memory.append({
-                "event": "apply_work_distribution",
-                "reason": str(reason),
-                "timestamp": time.time(),
-                "min_probability": float(np.min(values)),
-                "max_probability": float(np.max(values)),
-            })
+            self.constructor_memory.append(
+                {
+                    "event": "apply_work_distribution",
+                    "reason": str(reason),
+                    "timestamp": time.time(),
+                    "min_probability": float(np.min(values)),
+                    "max_probability": float(np.max(values)),
+                }
+            )
             self.assert_invariants()
             self._write_blackboard()
             return self.work_distribution().copy()
@@ -303,7 +313,7 @@ class PulviniManifold:
             eigvecs_norm = np.linalg.norm(eigenvectors, axis=0, keepdims=True)
             eigenvectors = eigenvectors / (eigvecs_norm + 1e-300)
             # Use more stable matrix multiplication with error suppression
-            with np.errstate(divide='ignore', invalid='ignore', over='ignore'):
+            with np.errstate(divide="ignore", invalid="ignore", over="ignore"):
                 diag_phases = np.diag(phases)
                 unitary = eigenvectors @ diag_phases @ eigenvectors.conj().T
                 if not np.allclose(unitary.conj().T @ unitary, np.eye(self.num_nodes), atol=1e-9):
@@ -322,7 +332,9 @@ class PulviniManifold:
         """Hamiltonian alias used by production-evolution certificates."""
         return self.hamiltonian
 
-    def lindblad_step(self, jump_operators: Optional[Sequence[np.ndarray]] = None, dt: float = 1.0) -> np.ndarray:
+    def lindblad_step(
+        self, jump_operators: Optional[Sequence[np.ndarray]] = None, dt: float = 1.0
+    ) -> np.ndarray:
         """
         LOCAL DIAGNOSTIC ONLY.
         Valid only when memory_kernel_norm() < MARKOV_THRESHOLD.
@@ -342,7 +354,9 @@ class PulviniManifold:
             for operator in jump_operators:
                 l_op = np.asarray(operator, dtype=np.complex128)
                 ldag_l = l_op.conj().T @ l_op
-                derivative += l_op @ self.rho @ l_op.conj().T - 0.5 * (ldag_l @ self.rho + self.rho @ ldag_l)
+                derivative += l_op @ self.rho @ l_op.conj().T - 0.5 * (
+                    ldag_l @ self.rho + self.rho @ ldag_l
+                )
             self.rho = self._density_projector(self.rho + float(dt) * derivative)
             eigenvalues, eigenvectors = np.linalg.eigh(self.rho)
             self.psi = self._normalize_state(eigenvectors[:, int(np.argmax(eigenvalues.real))])
@@ -353,15 +367,12 @@ class PulviniManifold:
             self._write_blackboard()
             return self.rho.copy()
 
-
     def memory_kernel_norm(self) -> float:
         """
         Frobenius norm of the Hebbian synaptic matrix minus identity.
         Measures how far the system is from Markovian.
         """
-        return float(np.linalg.norm(
-            self.synaptic_matrix - np.eye(32), 'fro'
-        ))
+        return float(np.linalg.norm(self.synaptic_matrix - np.eye(32), "fro"))
 
     def nakajima_zwanzig_step(self, dt: float, history: list) -> np.ndarray:
         """
@@ -415,9 +426,7 @@ class PulviniManifold:
         return self.nakajima_zwanzig_step(dt, history)
 
     def bures_gradient_of_collapse_functional(
-        self,
-        rho: np.ndarray,
-        entropy_gradient: float
+        self, rho: np.ndarray, entropy_gradient: float
     ) -> dict:
         """
         Computes the Bures-metric gradient of the collapse functional C[rho].
@@ -443,25 +452,25 @@ class PulviniManifold:
         THIS is the collapse criterion: not a reset, but eigenbasis alignment.
         """
         off_diag = rho - np.diag(np.diag(rho))
-        off_diag_norm = np.linalg.norm(off_diag, 'fro')
+        off_diag_norm = np.linalg.norm(off_diag, "fro")
 
         if off_diag_norm < 1e-12 or abs(entropy_gradient) < 1e-12:
             return {
                 "bures_gradient_norm": 0.0,
                 "stationary": True,
                 "stationary_reason": "trivial_zero_product",
-                "collapse_criterion_met": False
+                "collapse_criterion_met": False,
             }
 
         flat_grad = entropy_gradient * off_diag / off_diag_norm
         bures_grad = 2 * (rho @ flat_grad + flat_grad @ rho)
-        bures_grad_norm = np.linalg.norm(bures_grad, 'fro')
+        bures_grad_norm = np.linalg.norm(bures_grad, "fro")
 
         bures_grad_hermitian = (bures_grad + bures_grad.conj().T) / 2
-        traceless_component = bures_grad_hermitian - (
-            np.trace(bures_grad_hermitian) / 32
-        ) * np.eye(32)
-        tangent_norm = np.linalg.norm(traceless_component, 'fro')
+        traceless_component = bures_grad_hermitian - (np.trace(bures_grad_hermitian) / 32) * np.eye(
+            32
+        )
+        tangent_norm = np.linalg.norm(traceless_component, "fro")
 
         non_trivial_stationary = tangent_norm < 1e-6
 
@@ -469,14 +478,15 @@ class PulviniManifold:
             "bures_gradient_norm": float(bures_grad_norm),
             "tangent_projection_norm": float(tangent_norm),
             "stationary": non_trivial_stationary,
-            "stationary_reason": "eigenbasis_alignment" if non_trivial_stationary
-                                 else "not_stationary",
+            "stationary_reason": (
+                "eigenbasis_alignment" if non_trivial_stationary else "not_stationary"
+            ),
             "collapse_criterion_met": non_trivial_stationary,
             "physical_meaning": (
-                "Coherence aligned with energy eigenbasis: "
-                "collapse to classical search state"
-                if non_trivial_stationary else "System still evolving"
-            )
+                "Coherence aligned with energy eigenbasis: " "collapse to classical search state"
+                if non_trivial_stationary
+                else "System still evolving"
+            ),
         }
 
     def jump_operators_from_node(self, node_id: int, strength: float = 0.2) -> List[np.ndarray]:
@@ -492,7 +502,14 @@ class PulviniManifold:
             jumps.append(op)
         return jumps
 
-    def nack_slice(self, node_id: int, job_id: str, nonce_start: int, nonce_end: int, strength: float = 0.2) -> BackActionEvent:
+    def nack_slice(
+        self,
+        node_id: int,
+        job_id: str,
+        nonce_start: int,
+        nonce_end: int,
+        strength: float = 0.2,
+    ) -> BackActionEvent:
         before = self.von_neumann_entropy()
         self.lindblad_step(self.jump_operators_from_node(node_id, strength), dt=1.0)
         after = self.von_neumann_entropy()
@@ -506,28 +523,34 @@ class PulviniManifold:
             entropy_after=after,
         )
         self.backaction_ledger.append(event)
-        self.constructor_memory.append({
-            **event.to_dict(),
-            "nonce_start": int(nonce_start),
-            "nonce_end": int(nonce_end),
-        })
+        self.constructor_memory.append(
+            {
+                **event.to_dict(),
+                "nonce_start": int(nonce_start),
+                "nonce_end": int(nonce_end),
+            }
+        )
         return event
 
     def observe_high_difficulty_hash(self, node_id: int, difficulty_score: float) -> None:
         with self._lock:
             node_id = int(node_id)
-            self.node_energy[node_id] = max(self.node_energy[node_id], 1.0 + float(difficulty_score))
+            self.node_energy[node_id] = max(
+                self.node_energy[node_id], 1.0 + float(difficulty_score)
+            )
             self.psi[node_id] *= np.exp(1j * min(float(difficulty_score), math.pi))
             self.psi = self._normalize_state(self.psi)
             self.rho = self._density_from_state(self.psi)
             self._refresh_hamiltonian()
-            self.constructor_memory.append({
-                "event": "high_difficulty_observation",
-                "node_id": node_id,
-                "difficulty_score": float(difficulty_score),
-                "job_id": self.current_job_id,
-                "timestamp": time.time(),
-            })
+            self.constructor_memory.append(
+                {
+                    "event": "high_difficulty_observation",
+                    "node_id": node_id,
+                    "difficulty_score": float(difficulty_score),
+                    "job_id": self.current_job_id,
+                    "timestamp": time.time(),
+                }
+            )
             self.assert_invariants()
             self._write_blackboard()
 
@@ -539,30 +562,48 @@ class PulviniManifold:
             psi[int(found_node)] = 1.0 + 0.0j
             self.psi = psi
             self.rho = self._density_from_state(self.psi)
-            self.constructor_memory.append({
-                "event": "threshold_projection",
-                "node_id": int(found_node),
-                "control_energy": self.control_collapse_energy(),
-                "critical_value": float(critical_value),
-                "job_id": self.current_job_id,
-                "timestamp": time.time(),
-            })
+            self.constructor_memory.append(
+                {
+                    "event": "threshold_projection",
+                    "node_id": int(found_node),
+                    "control_energy": self.control_collapse_energy(),
+                    "critical_value": float(critical_value),
+                    "job_id": self.current_job_id,
+                    "timestamp": time.time(),
+                }
+            )
             self.assert_invariants()
             self._write_blackboard()
             return True
 
     def phi_resonance_score(self, nonce: int, job_id: Optional[str] = None) -> float:
-        material = f"{job_id or self.current_job_id or 'job'}:{int(nonce) % NONCE_SPACE}".encode("utf-8")
+        material = f"{job_id or self.current_job_id or 'job'}:{int(nonce) % NONCE_SPACE}".encode(
+            "utf-8"
+        )
         digest = hashlib.blake2b(material, digest_size=8).digest()
-        sample = int.from_bytes(digest, "big") / float(2 ** 64)
+        sample = int.from_bytes(digest, "big") / float(2**64)
         phi = (1.0 + math.sqrt(5.0)) / 2.0
         return 1.0 - abs(0.5 - ((sample * phi) % 1.0)) * 2.0
 
-    def apply_phi_projection_operator(self, nonces: Iterable[int], threshold: Optional[float] = None, job_id: Optional[str] = None) -> List[int]:
+    def apply_phi_projection_operator(
+        self,
+        nonces: Iterable[int],
+        threshold: Optional[float] = None,
+        job_id: Optional[str] = None,
+    ) -> List[int]:
         cutoff = self.phi_threshold if threshold is None else float(threshold)
-        return [int(nonce) for nonce in nonces if self.phi_resonance_score(int(nonce), job_id=job_id) >= cutoff]
+        return [
+            int(nonce)
+            for nonce in nonces
+            if self.phi_resonance_score(int(nonce), job_id=job_id) >= cutoff
+        ]
 
-    def calibrate_phi_projection(self, nonces: Iterable[int], threshold: Optional[float] = None, job_id: Optional[str] = None) -> Dict[str, Any]:
+    def calibrate_phi_projection(
+        self,
+        nonces: Iterable[int],
+        threshold: Optional[float] = None,
+        job_id: Optional[str] = None,
+    ) -> Dict[str, Any]:
         sample = list(nonces)
         accepted = self.apply_phi_projection_operator(sample, threshold=threshold, job_id=job_id)
         return {
@@ -572,32 +613,48 @@ class PulviniManifold:
             "threshold": self.phi_threshold if threshold is None else float(threshold),
         }
 
-    def hebbian_fire(self, path: Sequence[int], signal_type: str = "SHARE_FOUND", reward: Optional[float] = None) -> None:
+    def hebbian_fire(
+        self,
+        path: Sequence[int],
+        signal_type: str = "SHARE_FOUND",
+        reward: Optional[float] = None,
+    ) -> None:
         if len(path) < 2:
             return
-        reward_value = float(reward if reward is not None else (1.0 if signal_type == "SHARE_FOUND" else -0.1))
+        reward_value = float(
+            reward if reward is not None else (1.0 if signal_type == "SHARE_FOUND" else -0.1)
+        )
         with self._lock:
             for left, right in zip(path, path[1:]):
                 if int(right) not in self.neighbors[int(left)]:
                     raise ValueError(f"non_adjacent_path_edge:{left}->{right}")
-                new_weight = max(0.0, float(self.synaptic_matrix[int(left), int(right)]) + self.learning_rate * reward_value)
+                new_weight = max(
+                    0.0,
+                    float(self.synaptic_matrix[int(left), int(right)])
+                    + self.learning_rate * reward_value,
+                )
                 self.synaptic_matrix[int(left), int(right)] = new_weight
                 self.synaptic_matrix[int(right), int(left)] = new_weight
             self._refresh_hamiltonian()
-            self.constructor_memory.append({
-                "event": "hebbian_fire",
-                "path": list(map(int, path)),
-                "signal_type": signal_type,
-                "reward": reward_value,
-                "timestamp": time.time(),
-            })
+            self.constructor_memory.append(
+                {
+                    "event": "hebbian_fire",
+                    "path": list(map(int, path)),
+                    "signal_type": signal_type,
+                    "reward": reward_value,
+                    "timestamp": time.time(),
+                }
+            )
             self.assert_invariants()
 
     def edge_weight(self, left: int, right: int) -> float:
         return float(self.synaptic_matrix[int(left), int(right)])
 
     def route_probabilities(self, node_id: int) -> Dict[int, float]:
-        weights = {neighbor: max(self.edge_weight(node_id, neighbor), 0.0) for neighbor in self.neighbors[int(node_id)]}
+        weights = {
+            neighbor: max(self.edge_weight(node_id, neighbor), 0.0)
+            for neighbor in self.neighbors[int(node_id)]
+        }
         total = sum(weights.values())
         if total <= EPSILON:
             return {neighbor: 1.0 / len(weights) for neighbor in weights}
@@ -628,7 +685,12 @@ class PulviniManifold:
             candidates = [node for node in self.neighbors[current] if node not in seen]
             if not candidates:
                 raise RuntimeError(f"no_route_to_gateway:{finder_id}->{gateway_id}")
-            candidates.sort(key=lambda node: (-self.edge_weight(current, node), self._hop_distance(node, int(gateway_id))))
+            candidates.sort(
+                key=lambda node: (
+                    -self.edge_weight(current, node),
+                    self._hop_distance(node, int(gateway_id)),
+                )
+            )
             current = candidates[0]
             route.append(current)
             seen.add(current)
@@ -659,19 +721,33 @@ class PulviniManifold:
             phases = []
             for node_id in self.nodes:
                 orbit_id = self.node_to_orbit[node_id]
-                phase = 2.0 * math.pi * ((int(tick) + node_id + orbit_id) % self.num_nodes) / self.num_nodes
+                phase = (
+                    2.0
+                    * math.pi
+                    * ((int(tick) + node_id + orbit_id) % self.num_nodes)
+                    / self.num_nodes
+                )
                 self.psi[node_id] = abs(self.psi[node_id]) * np.exp(1j * phase)
                 phases.append(float(phase))
             self.psi = self._normalize_state(self.psi)
             self.rho = self._density_from_state(self.psi)
-            self.constructor_memory.append({"event": "phase_heartbeat", "job_id": str(job_id), "tick": int(tick), "timestamp": time.time()})
+            self.constructor_memory.append(
+                {
+                    "event": "phase_heartbeat",
+                    "job_id": str(job_id),
+                    "tick": int(tick),
+                    "timestamp": time.time(),
+                }
+            )
             self.assert_invariants()
             self._write_blackboard()
             return phases
 
     def manifold_drift_extranonce2(self, node_id: int, job_id: str, extranonce2_size: int) -> str:
         coord = self.tensor_coordinate_for_node(node_id)
-        material = f"{job_id}:{coord.orbit_id}:{coord.node_id}:{len(self.automorphisms)}".encode("utf-8")
+        material = f"{job_id}:{coord.orbit_id}:{coord.node_id}:{len(self.automorphisms)}".encode(
+            "utf-8"
+        )
         digest = hashlib.blake2b(material, digest_size=max(int(extranonce2_size), 1)).digest()
         return digest.hex()[: max(int(extranonce2_size), 1) * 2]
 
@@ -706,7 +782,9 @@ class PulviniManifold:
             coherence_norm=self.coherence_norm(),
             state_norm=float(np.linalg.norm(self.psi)),
             density_trace=float(np.trace(self.rho).real),
-            hamiltonian_hermitian=bool(np.allclose(self.hamiltonian, self.hamiltonian.conj().T, atol=1e-10)),
+            hamiltonian_hermitian=bool(
+                np.allclose(self.hamiltonian, self.hamiltonian.conj().T, atol=1e-10)
+            ),
             density_hermitian=bool(np.allclose(self.rho, self.rho.conj().T, atol=1e-10)),
             density_positive_semidefinite=bool(float(np.min(density_eigs)) >= -1e-9),
             automorphism_order=len(self.automorphisms),
@@ -715,17 +793,21 @@ class PulviniManifold:
 
     def snapshot(self) -> Dict[str, Any]:
         payload = self.observe().to_dict()
-        payload.update({
-            "control_collapse_energy": self.control_collapse_energy(),
-            "automorphism_group": {
-                "order": len(self.automorphisms),
-                "node_orbits": [list(orbit) for orbit in self.node_orbits],
-                "nonce_action": "sigma(q*N+r)=q*N+sigma(r)",
-            },
-            "tensor_coordinates": [coordinate.to_dict() for coordinate in self.tensor_coordinates()],
-            "backaction_ledger": [event.to_dict() for event in self.backaction_ledger[-32:]],
-            "constructor_memory_tail": list(self.constructor_memory[-32:]),
-        })
+        payload.update(
+            {
+                "control_collapse_energy": self.control_collapse_energy(),
+                "automorphism_group": {
+                    "order": len(self.automorphisms),
+                    "node_orbits": [list(orbit) for orbit in self.node_orbits],
+                    "nonce_action": "sigma(q*N+r)=q*N+sigma(r)",
+                },
+                "tensor_coordinates": [
+                    coordinate.to_dict() for coordinate in self.tensor_coordinates()
+                ],
+                "backaction_ledger": [event.to_dict() for event in self.backaction_ledger[-32:]],
+                "constructor_memory_tail": list(self.constructor_memory[-32:]),
+            }
+        )
         return payload
 
 

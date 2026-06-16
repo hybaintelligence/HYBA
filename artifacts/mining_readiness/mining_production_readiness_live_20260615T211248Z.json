@@ -1,0 +1,98 @@
+{
+  "artifact_sha256": "1b2f89b1e8f68ac0333fbc070b233bcb0fa80b7c714c33c5a31a55a484f8981c",
+  "checks": [
+    {
+      "detail": "",
+      "duration_seconds": 0.0,
+      "name": "required_mining_surfaces_present",
+      "severity": "critical",
+      "status": "pass",
+      "summary": "canonical mining files present"
+    },
+    {
+      "detail": "",
+      "duration_seconds": 0.0,
+      "name": "operator_environment_safety",
+      "severity": "critical",
+      "status": "pass",
+      "summary": "no critical unsafe live-mining flags detected"
+    },
+    {
+      "detail": "",
+      "duration_seconds": 0.0,
+      "name": "operator_environment_advisories",
+      "severity": "advisory",
+      "status": "pass",
+      "summary": "no operator environment advisories"
+    },
+    {
+      "detail": "{\"metrics\": {\"compressed_working_set_size\": 19, \"last_solve_iterations\": 5}, \"nonce\": 4155892665}",
+      "duration_seconds": 1.9839999999967404,
+      "name": "unified_engine_pulvini_contract",
+      "severity": "critical",
+      "status": "pass",
+      "summary": "unified engine routes through compressed PULVINI search and SHA-256d verification boundary"
+    },
+    {
+      "detail": "",
+      "duration_seconds": 0.01600000000325963,
+      "name": "bitcoin_and_stratum_pitfall_contracts",
+      "severity": "critical",
+      "status": "pass",
+      "summary": "byte order, compact target, local validation, stale jobs, pool ACK, and malformed response pitfalls are covered"
+    },
+    {
+      "detail": ".................                                                        [100%]\n============================== warnings summary ===============================\npython_backend\\hyba_genesis_api\\api\\mining.py:85\n  C:\\Users\\USER\\OneDrive\\Desktop\\HYBA_FULLSTACK\\python_backend\\hyba_genesis_api\\api\\mining.py:85: PydanticDeprecatedSince20: Pydantic V1 style `@validator` validators are deprecated. You should migrate to Pydantic V2 style `@field_validator` validators, see the migration guide for more details. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.13/migration/\n    @validator(\"phi_tier\")\n\npython_backend\\hyba_genesis_api\\api\\mining.py:103\n  C:\\Users\\USER\\OneDrive\\Desktop\\HYBA_FULLSTACK\\python_backend\\hyba_genesis_api\\api\\mining.py:103: PydanticDeprecatedSince20: Pydantic V1 style `@validator` validators are deprecated. You should migrate to Pydantic V2 style `@field_validator` validators, see the migration guide for more details. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.13/migration/\n    @validator(\"pool_id\")\n\npython_backend\\hyba_genesis_api\\api\\mining.py:110\n  C:\\Users\\USER\\OneDrive\\Desktop\\HYBA_FULLSTACK\\python_backend\\hyba_genesis_api\\api\\mining.py:110: PydanticDeprecatedSince20: Pydantic V1 style `@validator` validators are deprecated. You should migrate to Pydantic V2 style `@field_validator` validators, see the migration guide for more details. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.13/migration/\n    @validator(\"username\", \"worker\", \"nicehash_pool_id\")\n\npython_backend\\hyba_genesis_api\\api\\mining.py:123\n  C:\\Users\\USER\\OneDrive\\Desktop\\HYBA_FULLSTACK\\python_backend\\hyba_genesis_api\\api\\mining.py:123: PydanticDeprecatedSince20: Pydantic V1 style `@validator` validators are deprecated. You should migrate to Pydantic V2 style `@field_validator` validators, see the migration guide for more details. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.13/migration/\n    @validator(\"btc_address\")\n\npython_backend\\hyba_genesis_api\\api\\mining.py:154\n  C:\\Users\\USER\\OneDrive\\Desktop\\HYBA_FULLSTACK\\python_backend\\hyba_genesis_api\\api\\mining.py:154: PydanticDeprecatedSince20: Pydantic V1 style `@validator` validators are deprecated. You should migrate to Pydantic V2 style `@field_validator` validators, see the migration guide for more details. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.13/migration/\n    @validator(\"pool_id\")\n\npython_backend\\hyba_genesis_api\\api\\mining.py:170\n  C:\\Users\\USER\\OneDrive\\Desktop\\HYBA_FULLSTACK\\python_backend\\hyba_genesis_api\\api\\mining.py:170: PydanticDeprecatedSince20: Pydantic V1 style `@validator` validators are deprecated. You should migrate to Pydantic V2 style `@field_validator` validators, see the migration guide for more details. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.13/migration/\n    @validator(\"nonce\")\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n17 passed, 6 warnings in 3.31s",
+      "duration_seconds": 6.10899999999674,
+      "name": "focused_mining_regression_tests",
+      "severity": "critical",
+      "status": "pass",
+      "summary": "focused mining regression tests passed"
+    },
+    {
+      "detail": "> hyba-fullstack@1.0.0-rc.1 build\n> vite build --config vite.config.build.ts && esbuild ./src/server.ts --bundle --platform=node --format=esm --packages=external --sourcemap --outfile=dist/server.mjs\n\n\u001b[36mvite v5.4.21 \u001b[32mbuilding for production...\u001b[36m\u001b[39m\ntransforming...\n\u001b[32m\u00e2\u0153\u201c\u001b[39m 2657 modules transformed.\nrendering chunks...\ncomputing gzip size...\n\u001b[2mdist/\u001b[22m\u001b[32mindex.html                 \u001b[39m\u001b[1m\u001b[2m  0.42 kB\u001b[22m\u001b[1m\u001b[22m\u001b[2m \u00e2\u201d\u201a gzip:   0.29 kB\u001b[22m\n\u001b[2mdist/\u001b[22m\u001b[35massets/index-HUA7TP5p.css  \u001b[39m\u001b[1m\u001b[2m 56.82 kB\u001b[22m\u001b[1m\u001b[22m\u001b[2m \u00e2\u201d\u201a gzip:  10.71 kB\u001b[22m\n\u001b[2mdist/\u001b[22m\u001b[36massets/index-BrqaBpfH.js   \u001b[39m\u001b[1m\u001b[33m700.95 kB\u001b[39m\u001b[22m\u001b[2m \u00e2\u201d\u201a gzip: 217.67 kB\u001b[22m\n\u001b[32m\u00e2\u0153\u201c built in 14.99s\u001b[39m\n\n\u001b[33m\n(!) Some chunks are larger than 500 kB after minification. Consider:\n- Using dynamic import() to code-split the application\n- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks\n- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\u001b[39m\n\n  dist\\server.mjs       73.3kb\n  dist\\server.mjs.map  138.6kb\n\nDone in 20ms",
+      "duration_seconds": 18.046999999991385,
+      "name": "production_build",
+      "severity": "critical",
+      "status": "pass",
+      "summary": "production build passed"
+    },
+    {
+      "detail": "{\n  \"present\": [\n    \"artifacts/phi_resonance_100blocks/phi_resonance_summary.json\",\n    \"artifacts/phi_hash_validity/phi_hash_correlation_summary.json\",\n    \"artifacts/phi_structured_search/structured_search_comparison.json\",\n    \"artifacts/phi_stack/complete_stack_analysis.json\"\n  ],\n  \"missing\": []\n}",
+      "duration_seconds": 0.0,
+      "name": "empirical_evidence_artifacts",
+      "severity": "advisory",
+      "status": "pass",
+      "summary": "empirical evidence artifacts are present locally"
+    }
+  ],
+  "environment_summary": {
+    "HYBA_ALLOW_DEV_FIXTURES": "false",
+    "HYBA_ENABLE_AUDIT_LOGGING": "true",
+    "HYBA_ENABLE_LIVE_SHARE_SUBMIT": "false",
+    "HYBA_ENABLE_LIVE_STRATUM": "true",
+    "HYBA_ENABLE_MINING_AUTOCONNECT": "false",
+    "HYBA_ENV": "production",
+    "HYBA_LIVE_SHARE_APPROVAL_ID": "<unset>",
+    "HYBA_MINING_MAX_SOLVER_ITERATIONS": "<unset>",
+    "HYBA_MINING_SEARCH_TIMEOUT_CAP_SECONDS": "<unset>",
+    "NODE_ENV": "production",
+    "PULVINI_BACKEND_URL": "<unset>",
+    "configured_pool_profiles": "BRAIINS"
+  },
+  "generated_at_utc": "2026-06-15T21:12:48.169024+00:00",
+  "host": {
+    "machine": "AMD64",
+    "platform": "Windows-10-10.0.19045-SP0",
+    "python": "3.11.7"
+  },
+  "mode": "live",
+  "next_operator_actions": [
+    "Start with HYBA_ENABLE_LIVE_SHARE_SUBMIT=false and confirm subscribe/authorize/job receipt first.",
+    "Enable live share submission only with HYBA_LIVE_SHARE_APPROVAL_ID attached.",
+    "Treat accepted-share evidence as pool-side truth; local candidate validity is necessary but not sufficient."
+  ],
+  "passed": true,
+  "status": "ready",
+  "version": "HYBA_MINING_OPERATIONAL_READINESS_V1"
+}

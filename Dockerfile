@@ -1,7 +1,9 @@
 FROM node:22.15.0-bookworm-slim AS node-deps
 WORKDIR /app
-COPY package*.json ./
-RUN npm ci
+COPY package.json package-lock.json* ./
+# Tactical local-container build mode: use npm install while the monorepo lockfile is being repaired.
+# Final reproducible production posture should restore npm ci once package-lock.json is regenerated under Node 22+ outside OneDrive.
+RUN npm install --legacy-peer-deps --no-audit --no-fund
 
 FROM node:22.15.0-bookworm-slim AS frontend-build
 WORKDIR /app
@@ -31,14 +33,14 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends python3 python3-pip python3-venv curl ca-certificates tini \
     && rm -rf /var/lib/apt/lists/*
 
-COPY python_backend/requirements.phase-transition.txt /app/python_backend/requirements.phase-transition.txt
+COPY python_backend/requirements.txt /app/python_backend/requirements.txt
 RUN python3 -m venv /opt/hyba-venv \
     && /opt/hyba-venv/bin/python -m pip install --upgrade pip \
-    && /opt/hyba-venv/bin/python -m pip install --no-cache-dir -r /app/python_backend/requirements.phase-transition.txt
+    && /opt/hyba-venv/bin/python -m pip install --no-cache-dir -r /app/python_backend/requirements.txt
 ENV PATH="/opt/hyba-venv/bin:${PATH}"
 
-COPY package*.json ./
-RUN npm ci --omit=dev
+COPY package.json package-lock.json* ./
+RUN npm install --omit=dev --legacy-peer-deps --no-audit --no-fund
 
 COPY --from=frontend-build /app/dist ./dist
 COPY python_backend ./python_backend

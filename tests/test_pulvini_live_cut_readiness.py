@@ -47,34 +47,53 @@ class PulviniLiveCutReadinessTests(unittest.TestCase):
         state["pulvini_overlay"]["healing_routes"] = []
         report = evaluate_live_cut_state(state, mode="postcut")
         self.assertFalse(report.passed)
-        self.assertIn("postcut_healing_observed", [check.code for check in report.checks if not check.passed])
+        self.assertIn(
+            "postcut_healing_observed",
+            [check.code for check in report.checks if not check.passed],
+        )
 
     def test_trace_drift_blocks_live_cut(self) -> None:
         state = base_state()
         state["pulvini_autonomics"]["rho"]["trace"] = 0.99
         report = evaluate_live_cut_state(state, mode="preflight", tolerance=1e-9)
         self.assertFalse(report.passed)
-        self.assertIn("rho_trace_unit", [check.code for check in report.checks if not check.passed])
-
+        self.assertIn(
+            "rho_trace_unit",
+            [check.code for check in report.checks if not check.passed],
+        )
 
     def test_expected_severed_nodes_must_be_observed(self) -> None:
-        report = evaluate_live_cut_state(base_state(), mode="postcut", expected_severed_nodes=[0, 1, 2])
+        report = evaluate_live_cut_state(
+            base_state(), mode="postcut", expected_severed_nodes=[0, 1, 2]
+        )
         self.assertFalse(report.passed)
-        self.assertIn("expected_severed_nodes_observed", [check.code for check in report.checks if not check.passed])
+        self.assertIn(
+            "expected_severed_nodes_observed",
+            [check.code for check in report.checks if not check.passed],
+        )
 
     def test_low_purity_blocks_live_cut(self) -> None:
         state = base_state()
         state["pulvini_autonomics"]["rho"]["purity"] = 0.2
         report = evaluate_live_cut_state(state, mode="preflight", min_purity=0.9)
         self.assertFalse(report.passed)
-        self.assertIn("rho_purity_minimum", [check.code for check in report.checks if not check.passed])
+        self.assertIn(
+            "rho_purity_minimum",
+            [check.code for check in report.checks if not check.passed],
+        )
 
     def test_cli_emits_json_and_exit_zero_for_valid_state(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "pythia_state.json"
             path.write_text(json.dumps(base_state()), encoding="utf-8")
             result = subprocess.run(
-                [sys.executable, "scripts/pulvini_live_cut_readiness.py", "--state", str(path), "--json"],
+                [
+                    sys.executable,
+                    "scripts/pulvini_live_cut_readiness.py",
+                    "--state",
+                    str(path),
+                    "--json",
+                ],
                 cwd=ROOT,
                 check=False,
                 capture_output=True,

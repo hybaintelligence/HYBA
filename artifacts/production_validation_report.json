@@ -1,0 +1,138 @@
+{
+  "timestamp_utc": "2026-06-15T13:53:42.575850+00:00",
+  "summary": {
+    "total_checks": 20,
+    "passed": 17,
+    "failed": 3,
+    "pass_rate": 85.0,
+    "duration_seconds": 0.29729223251342773,
+    "errors": [
+      "Unified mining engine initializes: AIOptimizer.__init__() missing 3 required positional arguments: 'quantum_solver', 'consciousness_engine', and 'blockchain_oracle'",
+      "Consciousness engine initializes: 'ConsciousnessEngine' object has no attribute 'get_state'",
+      "Consciousness coherence valid: 'ConsciousnessEngine' object has no attribute 'get_state'"
+    ],
+    "warnings": []
+  },
+  "checks": [
+    {
+      "name": "Import pythia_mining.hendrix_phi_solver",
+      "passed": true,
+      "result": true,
+      "timestamp": "2026-06-15T13:53:42.293930+00:00"
+    },
+    {
+      "name": "Import pythia_mining.consciousness_engine",
+      "passed": true,
+      "result": true,
+      "timestamp": "2026-06-15T13:53:42.338800+00:00"
+    },
+    {
+      "name": "Import pythia_mining.ai_optimizer",
+      "passed": true,
+      "result": true,
+      "timestamp": "2026-06-15T13:53:42.434986+00:00"
+    },
+    {
+      "name": "Import pythia_mining.phi_unified_mining_engine",
+      "passed": true,
+      "result": true,
+      "timestamp": "2026-06-15T13:53:42.438967+00:00"
+    },
+    {
+      "name": "Import pythia_mining.golden_ratio_library",
+      "passed": true,
+      "result": true,
+      "timestamp": "2026-06-15T13:53:42.438991+00:00"
+    },
+    {
+      "name": "Database file exists",
+      "passed": true,
+      "result": true,
+      "timestamp": "2026-06-15T13:53:42.439096+00:00"
+    },
+    {
+      "name": "Database schema valid",
+      "passed": true,
+      "result": true,
+      "timestamp": "2026-06-15T13:53:42.439557+00:00"
+    },
+    {
+      "name": "AI memories seeded",
+      "passed": true,
+      "result": 4,
+      "timestamp": "2026-06-15T13:53:42.439858+00:00"
+    },
+    {
+      "name": "Unified mining engine initializes",
+      "passed": false,
+      "error": "AIOptimizer.__init__() missing 3 required positional arguments: 'quantum_solver', 'consciousness_engine', and 'blockchain_oracle'",
+      "timestamp": "2026-06-15T13:53:42.439990+00:00"
+    },
+    {
+      "name": "M32 domains loaded",
+      "passed": true,
+      "result": 32,
+      "timestamp": "2026-06-15T13:53:42.440009+00:00"
+    },
+    {
+      "name": "Yang-Mills mass gap valid",
+      "passed": true,
+      "result": true,
+      "timestamp": "2026-06-15T13:53:42.440015+00:00"
+    },
+    {
+      "name": "Consciousness engine initializes",
+      "passed": false,
+      "error": "'ConsciousnessEngine' object has no attribute 'get_state'",
+      "timestamp": "2026-06-15T13:53:42.440044+00:00"
+    },
+    {
+      "name": "Consciousness coherence valid",
+      "passed": false,
+      "error": "'ConsciousnessEngine' object has no attribute 'get_state'",
+      "timestamp": "2026-06-15T13:53:42.440065+00:00"
+    },
+    {
+      "name": "API modules importable",
+      "passed": true,
+      "result": true,
+      "timestamp": "2026-06-15T13:53:42.569385+00:00"
+    },
+    {
+      "name": "Unified mining router available",
+      "passed": true,
+      "result": true,
+      "timestamp": "2026-06-15T13:53:42.569412+00:00"
+    },
+    {
+      "name": "AI memory router available",
+      "passed": true,
+      "result": true,
+      "timestamp": "2026-06-15T13:53:42.569418+00:00"
+    },
+    {
+      "name": "Evidence artifacts generated",
+      "passed": true,
+      "result": true,
+      "timestamp": "2026-06-15T13:53:42.569624+00:00"
+    },
+    {
+      "name": "Bitcoin \u03a6^15 analysis (z-score)",
+      "passed": true,
+      "result": 4.706787,
+      "timestamp": "2026-06-15T13:53:42.569812+00:00"
+    },
+    {
+      "name": "\u03a6 resonance throughput (nonces/sec)",
+      "passed": true,
+      "result": 200435.05686705533,
+      "timestamp": "2026-06-15T13:53:42.574829+00:00"
+    },
+    {
+      "name": "Yang-Mills action throughput (nonces/sec)",
+      "passed": true,
+      "result": 1219274.4186046512,
+      "timestamp": "2026-06-15T13:53:42.575666+00:00"
+    }
+  ]
+}

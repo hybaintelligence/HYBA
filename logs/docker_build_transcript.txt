@@ -1,0 +1,403 @@
+time="2026-06-14T18:36:58+01:00" level=warning msg="The \"argon2id\" variable is not set. Defaulting to a blank string."
+time="2026-06-14T18:36:58+01:00" level=warning msg="The \"v\" variable is not set. Defaulting to a blank string."
+time="2026-06-14T18:36:58+01:00" level=warning msg="The \"m\" variable is not set. Defaulting to a blank string."
+time="2026-06-14T18:36:58+01:00" level=warning msg="The \"qvzNFWKWtmi1bUwVb1qG6w\" variable is not set. Defaulting to a blank string."
+time="2026-06-14T18:36:58+01:00" level=warning msg="The \"argon2id\" variable is not set. Defaulting to a blank string."
+time="2026-06-14T18:36:58+01:00" level=warning msg="The \"v\" variable is not set. Defaulting to a blank string."
+time="2026-06-14T18:36:58+01:00" level=warning msg="The \"m\" variable is not set. Defaulting to a blank string."
+time="2026-06-14T18:36:58+01:00" level=warning msg="The \"qvzNFWKWtmi1bUwVb1qG6w\" variable is not set. Defaulting to a blank string."
+time="2026-06-14T18:36:58+01:00" level=warning msg="The \"argon2id\" variable is not set. Defaulting to a blank string."
+time="2026-06-14T18:36:58+01:00" level=warning msg="The \"v\" variable is not set. Defaulting to a blank string."
+time="2026-06-14T18:36:58+01:00" level=warning msg="The \"m\" variable is not set. Defaulting to a blank string."
+time="2026-06-14T18:36:58+01:00" level=warning msg="The \"qvzNFWKWtmi1bUwVb1qG6w\" variable is not set. Defaulting to a blank string."
+time="2026-06-14T18:36:58+01:00" level=warning msg="The \"argon2id\" variable is not set. Defaulting to a blank string."
+time="2026-06-14T18:36:58+01:00" level=warning msg="The \"v\" variable is not set. Defaulting to a blank string."
+time="2026-06-14T18:36:58+01:00" level=warning msg="The \"m\" variable is not set. Defaulting to a blank string."
+time="2026-06-14T18:36:58+01:00" level=warning msg="The \"qvzNFWKWtmi1bUwVb1qG6w\" variable is not set. Defaulting to a blank string."
+#1 [internal] load local bake definitions
+#1 reading from stdin 1.60kB done
+#1 DONE 0.0s
+
+#2 [hyba-backend internal] load build definition from Dockerfile
+#2 transferring dockerfile:
+#2 transferring dockerfile: 1.92kB 0.2s done
+#2 DONE 0.7s
+
+#3 [hyba-runtime internal] load metadata for docker.io/library/node:22.15.0-bookworm-slim
+#3 ...
+
+#4 [auth] library/node:pull token for registry-1.docker.io
+#4 DONE 0.0s
+
+#3 [hyba-bridge internal] load metadata for docker.io/library/node:22.15.0-bookworm-slim
+#3 DONE 1.5s
+
+#5 [hyba-bridge internal] load .dockerignore
+#5 transferring context: 629B 0.0s done
+#5 DONE 0.1s
+
+#5 [hyba-backend internal] load .dockerignore
+#5 DONE 0.1s
+
+#6 [hyba-bridge internal] load build context
+#6 DONE 0.0s
+
+#7 [hyba-bridge node-deps 1/4] FROM docker.io/library/node:22.15.0-bookworm-slim@sha256:557e52a0fcb928ee113df7e1fb5d4f60c1341dbda53f55e3d815ca10807efdce
+#7 resolve docker.io/library/node:22.15.0-bookworm-slim@sha256:557e52a0fcb928ee113df7e1fb5d4f60c1341dbda53f55e3d815ca10807efdce
+#7 resolve docker.io/library/node:22.15.0-bookworm-slim@sha256:557e52a0fcb928ee113df7e1fb5d4f60c1341dbda53f55e3d815ca10807efdce 0.2s done
+#7 resolve docker.io/library/node:22.15.0-bookworm-slim@sha256:557e52a0fcb928ee113df7e1fb5d4f60c1341dbda53f55e3d815ca10807efdce 0.2s done
+#7 DONE 0.2s
+
+#6 [hyba-backend internal] load build context
+#6 transferring context: 1.89MB 4.5s
+#6 transferring context: 3.75MB 7.9s done
+#6 transferring context: 3.75MB 7.9s done
+#6 DONE 8.3s
+
+#6 [hyba-bridge internal] load build context
+#6 DONE 8.3s
+
+#8 [hyba-bridge node-deps 2/4] WORKDIR /app
+#8 CACHED
+
+#9 [hyba-bridge runtime  3/12] RUN apt-get update     && apt-get install -y --no-install-recommends python3 python3-pip python3-venv curl ca-certificates tini     && rm -rf /var/lib/apt/lists/*
+#9 CACHED
+
+#10 [hyba-bridge runtime  4/12] COPY python_backend/requirements.phase-transition.txt /app/python_backend/requirements.phase-transition.txt
+#10 CACHED
+
+#11 [hyba-bridge runtime  5/12] RUN python3 -m venv /opt/hyba-venv     && /opt/hyba-venv/bin/python -m pip install --upgrade pip     && /opt/hyba-venv/bin/python -m pip install --no-cache-dir -r /app/python_backend/requirements.phase-transition.txt
+#11 CACHED
+
+#8 [hyba-backend node-deps 2/4] WORKDIR /app
+#8 CACHED
+
+#9 [hyba-backend runtime  3/12] RUN apt-get update     && apt-get install -y --no-install-recommends python3 python3-pip python3-venv curl ca-certificates tini     && rm -rf /var/lib/apt/lists/*
+#9 CACHED
+
+#10 [hyba-backend runtime  4/12] COPY python_backend/requirements.phase-transition.txt /app/python_backend/requirements.phase-transition.txt
+#10 CACHED
+
+#12 [hyba-backend runtime  6/12] COPY package.json package-lock.json* ./
+#12 ...
+
+#8 [hyba-bridge node-deps 2/4] WORKDIR /app
+#8 CACHED
+
+#12 [hyba-bridge runtime  6/12] COPY package.json package-lock.json* ./
+#12 DONE 1.6s
+
+#13 [hyba-bridge node-deps 3/4] COPY package.json package-lock.json* ./
+#13 DONE 1.6s
+
+#12 [hyba-runtime runtime  6/12] COPY package.json package-lock.json* ./
+#12 DONE 1.6s
+
+#14 [hyba-bridge node-deps 4/4] RUN npm ci
+#14 ...
+
+#15 [hyba-backend runtime  7/12] RUN npm ci --omit=dev
+#15 254.4 npm error code EUSAGE
+#15 254.4 npm error
+#15 254.4 npm error `npm ci` can only install packages when your package.json and package-lock.json or npm-shrinkwrap.json are in sync. Please update your lock file with `npm install` before continuing.
+#15 254.4 npm error
+#15 254.4 npm error Missing: @types/d3@7.4.3 from lock file
+#15 254.4 npm error Missing: @types/express@4.17.25 from lock file
+#15 254.4 npm error Missing: @types/jsonwebtoken@9.0.10 from lock file
+#15 254.4 npm error Missing: @types/swagger-ui-express@4.1.8 from lock file
+#15 254.4 npm error Missing: @typescript-eslint/eslint-plugin@8.61.0 from lock file
+#15 254.4 npm error Missing: eslint@10.5.0 from lock file
+#15 254.4 npm error Missing: typescript@5.8.3 from lock file
+#15 254.4 npm error Missing: @typescript-eslint/parser@8.61.0 from lock file
+#15 254.4 npm error Missing: @vitest/coverage-v8@4.1.8 from lock file
+#15 254.4 npm error Missing: vitest@4.1.8 from lock file
+#15 254.4 npm error Missing: autoprefixer@10.5.0 from lock file
+#15 254.4 npm error Missing: cross-env@10.1.0 from lock file
+#15 254.4 npm error Invalid: lock file's esbuild@0.25.12 does not satisfy esbuild@0.28.1
+#15 254.4 npm error Missing: eslint-config-prettier@10.1.8 from lock file
+#15 254.4 npm error Missing: eslint-plugin-prettier@5.5.6 from lock file
+#15 254.4 npm error Missing: prettier@3.8.4 from lock file
+#15 254.4 npm error Missing: fast-check@4.8.0 from lock file
+#15 254.4 npm error Invalid: lock file's vite@6.4.3 does not satisfy vite@8.0.16
+#15 254.4 npm error Missing: @types/d3-axis@3.0.6 from lock file
+#15 254.4 npm error Missing: @types/d3-brush@3.0.6 from lock file
+#15 254.4 npm error Missing: @types/d3-chord@3.0.6 from lock file
+#15 254.4 npm error Missing: @types/d3-contour@3.0.6 from lock file
+#15 254.4 npm error Missing: @types/d3-delaunay@6.0.4 from lock file
+#15 254.4 npm error Missing: @types/d3-dispatch@3.0.7 from lock file
+#15 254.4 npm error Missing: @types/d3-drag@3.0.7 from lock file
+#15 254.4 npm error Missing: @types/d3-dsv@3.0.7 from lock file
+#15 254.4 npm error Missing: @types/d3-fetch@3.0.7 from lock file
+#15 254.4 npm error Missing: @types/d3-force@3.0.10 from lock file
+#15 254.4 npm error Missing: @types/d3-format@3.0.4 from lock file
+#15 254.4 npm error Missing: @types/d3-geo@3.1.0 from lock file
+#15 254.4 npm error Missing: @types/d3-hierarchy@3.1.7 from lock file
+#15 254.4 npm error Missing: @types/d3-polygon@3.0.2 from lock file
+#15 254.4 npm error Missing: @types/d3-quadtree@3.0.6 from lock file
+#15 254.4 npm error Missing: @types/d3-random@3.0.3 from lock file
+#15 254.4 npm error Missing: @types/d3-scale-chromatic@3.1.0 from lock file
+#15 254.4 npm error Missing: @types/d3-selection@3.0.11 from lock file
+#15 254.4 npm error Missing: @types/d3-time-format@4.0.3 from lock file
+#15 254.4 npm error Missing: @types/d3-transition@3.0.9 from lock file
+#15 254.4 npm error Missing: @types/d3-zoom@3.0.8 from lock file
+#15 254.4 npm error Missing: @types/geojson@7946.0.16 from lock file
+#15 254.4 npm error Missing: @types/body-parser@1.19.6 from lock file
+#15 254.4 npm error Missing: @types/express-serve-static-core@4.19.8 from lock file
+#15 254.4 npm error Missing: @types/qs@6.15.1 from lock file
+#15 254.4 npm error Missing: @types/serve-static@1.15.10 from lock file
+#15 254.4 npm error Missing: @types/connect@3.4.38 from lock file
+#15 254.4 npm error Missing: @types/range-parser@1.2.7 from lock file
+#15 254.4 npm error Missing: @types/send@1.2.1 from lock file
+#15 254.4 npm error Missing: @types/ms@2.1.0 from lock file
+#15 254.4 npm error Missing: @types/http-errors@2.0.5 from lock file
+#15 254.4 npm error Missing: @types/send@0.17.6 from lock file
+#15 254.4 npm error Missing: @eslint-community/regexpp@4.12.2 from lock file
+#15 254.4 npm error Missing: @typescript-eslint/scope-manager@8.61.0 from lock file
+#15 254.4 npm error Missing: @typescript-eslint/type-utils@8.61.0 from lock file
+#15 254.4 npm error Missing: @typescript-eslint/utils@8.61.0 from lock file
+#15 254.4 npm error Missing: @typescript-eslint/visitor-keys@8.61.0 from lock file
+#15 254.4 npm error Missing: ignore@7.0.5 from lock file
+#15 254.4 npm error Missing: natural-compare@1.4.0 from lock file
+#15 254.4 npm error Missing: ts-api-utils@2.5.0 from lock file
+#15 254.4 npm error Missing: @typescript-eslint/types@8.61.0 from lock file
+#15 254.4 npm error Missing: @typescript-eslint/typescript-estree@8.61.0 from lock file
+#15 254.4 npm error Missing: @typescript-eslint/project-service@8.61.0 from lock file
+#15 254.4 npm error Missing: @typescript-eslint/tsconfig-utils@8.61.0 from lock file
+#15 254.4 npm error Missing: minimatch@10.2.5 from lock file
+#15 254.4 npm error Missing: semver@7.8.4 from lock file
+#15 254.4 npm error Missing: @eslint-community/eslint-utils@4.9.1 from lock file
+#15 254.4 npm error Missing: eslint-visitor-keys@3.4.3 from lock file
+#15 254.4 npm error Missing: eslint-visitor-keys@5.0.1 from lock file
+#15 254.4 npm error Missing: @bcoe/v8-coverage@1.0.2 from lock file
+#15 254.4 npm error Missing: @vitest/utils@4.1.8 from lock file
+#15 254.4 npm error Missing: ast-v8-to-istanbul@1.0.4 from lock file
+#15 254.4 npm error Missing: istanbul-lib-coverage@3.2.2 from lock file
+#15 254.4 npm error Missing: istanbul-lib-report@3.0.1 from lock file
+#15 254.4 npm error Missing: istanbul-reports@3.2.0 from lock file
+#15 254.4 npm error Missing: magicast@0.5.3 from lock file
+#15 254.4 npm error Missing: obug@2.1.3 from lock file
+#15 254.4 npm error Missing: std-env@4.1.0 from lock file
+#15 254.4 npm error Missing: tinyrainbow@3.1.0 from lock file
+#15 254.4 npm error Missing: @vitest/pretty-format@4.1.8 from lock file
+#15 254.4 npm error Missing: estree-walker@3.0.3 from lock file
+#15 254.4 npm error Missing: js-tokens@10.0.0 from lock file
+#15 254.4 npm error Missing: fraction.js@5.3.4 from lock file
+#15 254.4 npm error Missing: postcss-value-parser@4.2.0 from lock file
+#15 254.4 npm error Missing: @epic-web/invariant@1.0.0 from lock file
+#15 254.4 npm error Missing: cross-spawn@7.0.6 from lock file
+#15 254.4 npm error Missing: path-key@3.1.1 from lock file
+#15 254.4 npm error Missing: shebang-command@2.0.0 from lock file
+#15 254.4 npm error Missing: which@2.0.2 from lock file
+#15 254.4 npm error Missing: @esbuild/aix-ppc64@0.28.1 from lock file
+#15 254.4 npm error Missing: @esbuild/android-arm@0.28.1 from lock file
+#15 254.4 npm error Missing: @esbuild/android-arm64@0.28.1 from lock file
+#15 254.4 npm error Missing: @esbuild/android-x64@0.28.1 from lock file
+#15 254.4 npm error Missing: @esbuild/darwin-arm64@0.28.1 from lock file
+#15 254.4 npm error Missing: @esbuild/darwin-x64@0.28.1 from lock file
+#15 254.4 npm error Missing: @esbuild/freebsd-arm64@0.28.1 from lock file
+#15 254.4 npm error Missing: @esbuild/freebsd-x64@0.28.1 from lock file
+#15 254.4 npm error Missing: @esbuild/linux-arm@0.28.1 from lock file
+#15 254.4 npm error Missing: @esbuild/linux-arm64@0.28.1 from lock file
+#15 254.4 npm error Missing: @esbuild/linux-ia32@0.28.1 from lock file
+#15 254.4 npm error Missing: @esbuild/linux-loong64@0.28.1 from lock file
+#15 254.4 npm error Missing: @esbuild/linux-mips64el@0.28.1 from lock file
+#15 254.4 npm error Missing: @esbuild/linux-ppc64@0.28.1 from lock file
+#15 254.4 npm error Missing: @esbuild/linux-riscv64@0.28.1 from lock file
+#15 254.4 npm error Missing: @esbuild/linux-s390x@0.28.1 from lock file
+#15 254.4 npm error Missing: @esbuild/linux-x64@0.28.1 from lock file
+#15 254.4 npm error Missing: @esbuild/netbsd-arm64@0.28.1 from lock file
+#15 254.4 npm error Missing: @esbuild/netbsd-x64@0.28.1 from lock file
+#15 254.4 npm error Missing: @esbuild/openbsd-arm64@0.28.1 from lock file
+#15 254.4 npm error Missing: @esbuild/openbsd-x64@0.28.1 from lock file
+#15 254.4 npm error Missing: @esbuild/openharmony-arm64@0.28.1 from lock file
+#15 254.4 npm error Missing: @esbuild/sunos-x64@0.28.1 from lock file
+#15 254.4 npm error Missing: @esbuild/win32-arm64@0.28.1 from lock file
+#15 254.4 npm error Missing: @esbuild/win32-ia32@0.28.1 from lock file
+#15 254.4 npm error Missing: @eslint/config-array@0.23.5 from lock file
+#15 254.4 npm error Missing: @eslint/config-helpers@0.6.0 from lock file
+#15 254.4 npm error Missing: @eslint/core@1.2.1 from lock file
+#15 254.4 npm error Missing: @eslint/plugin-kit@0.7.2 from lock file
+#15 254.4 npm error Missing: @humanfs/node@0.16.8 from lock file
+#15 254.4 npm error Missing: @humanwhocodes/module-importer@1.0.1 from lock file
+#15 254.4 npm error Missing: @humanwhocodes/retry@0.4.3 from lock file
+#15 254.4 npm error Missing: ajv@6.15.0 from lock file
+#15 254.4 npm error Missing: escape-string-regexp@4.0.0 from lock file
+#15 254.4 npm error Missing: eslint-scope@9.1.2 from lock file
+#15 254.4 npm error Missing: eslint-visitor-keys@5.0.1 from lock file
+#15 254.4 npm error Missing: espree@11.2.0 from lock file
+#15 254.4 npm error Missing: esquery@1.7.0 from lock file
+#15 254.4 npm error Missing: esutils@2.0.3 from lock file
+#15 254.4 npm error Missing: fast-deep-equal@3.1.3 from lock file
+#15 254.4 npm error Missing: file-entry-cache@8.0.0 from lock file
+#15 254.4 npm error Missing: find-up@5.0.0 from lock file
+#15 254.4 npm error Missing: glob-parent@6.0.2 from lock file
+#15 254.4 npm error Missing: ignore@5.3.2 from lock file
+#15 254.4 npm error Missing: imurmurhash@0.1.4 from lock file
+#15 254.4 npm error Missing: json-stable-stringify-without-jsonify@1.0.1 from lock file
+#15 254.4 npm error Missing: optionator@0.9.4 from lock file
+#15 254.4 npm error Missing: @eslint/object-schema@3.0.5 from lock file
+#15 254.4 npm error Missing: @types/json-schema@7.0.15 from lock file
+#15 254.4 npm error Missing: levn@0.4.1 from lock file
+#15 254.4 npm error Missing: @humanfs/core@0.19.2 from lock file
+#15 254.4 npm error Missing: @humanfs/types@0.15.0 from lock file
+#15 254.4 npm error Missing: fast-json-stable-stringify@2.1.0 from lock file
+#15 254.4 npm error Missing: json-schema-traverse@0.4.1 from lock file
+#15 254.4 npm error Missing: uri-js@4.4.1 from lock file
+#15 254.4 npm error Missing: prettier-linter-helpers@1.0.1 from lock file
+#15 254.4 npm error Missing: synckit@0.11.13 from lock file
+#15 254.4 npm error Missing: @types/esrecurse@4.3.1 from lock file
+#15 254.4 npm error Missing: esrecurse@4.3.0 from lock file
+#15 254.4 npm error Missing: estraverse@5.3.0 from lock file
+#15 254.4 npm error Missing: acorn@8.17.0 from lock file
+#15 254.4 npm error Missing: acorn-jsx@5.3.2 from lock file
+#15 254.4 npm error Missing: eslint-visitor-keys@5.0.1 from lock file
+#15 254.4 npm error Missing: pure-rand@8.4.0 from lock file
+#15 254.4 npm error Missing: flat-cache@4.0.1 from lock file
+#15 254.4 npm error Missing: locate-path@6.0.0 from lock file
+#15 254.4 npm error Missing: path-exists@4.0.0 from lock file
+#15 254.4 npm error Missing: flatted@3.4.2 from lock file
+#15 254.4 npm error Missing: keyv@4.5.4 from lock file
+#15 254.4 npm error Missing: make-dir@4.0.0 from lock file
+#15 254.4 npm error Missing: supports-color@7.2.0 from lock file
+#15 254.4 npm error Missing: html-escaper@2.0.2 from lock file
+#15 254.4 npm error Missing: json-buffer@3.0.1 from lock file
+#15 254.4 npm error Missing: prelude-ls@1.2.1 from lock file
+#15 254.4 npm error Missing: type-check@0.4.0 from lock file
+#15 254.4 npm error Missing: p-locate@5.0.0 from lock file
+#15 254.4 npm error Missing: semver@7.8.4 from lock file
+#15 254.4 npm error Missing: brace-expansion@5.0.6 from lock file
+#15 254.4 npm error Missing: balanced-match@4.0.4 from lock file
+#15 254.4 npm error Missing: deep-is@0.1.4 from lock file
+#15 254.4 npm error Missing: fast-levenshtein@2.0.6 from lock file
+#15 254.4 npm error Missing: word-wrap@1.2.5 from lock file
+#15 254.4 npm error Missing: p-limit@3.1.0 from lock file
+#15 254.4 npm error Missing: yocto-queue@0.1.0 from lock file
+#15 254.4 npm error Missing: fast-diff@1.3.0 from lock file
+#15 254.4 npm error Missing: shebang-regex@3.0.0 from lock file
+#15 254.4 npm error Missing: has-flag@4.0.0 from lock file
+#15 254.4 npm error Missing: @pkgr/core@0.3.6 from lock file
+#15 254.4 npm error Missing: punycode@2.3.1 from lock file
+#15 254.4 npm error Missing: fsevents@2.3.3 from lock file
+#15 254.4 npm error Missing: rolldown@1.0.3 from lock file
+#15 254.4 npm error Missing: @oxc-project/types@0.133.0 from lock file
+#15 254.4 npm error Missing: @rolldown/binding-android-arm64@1.0.3 from lock file
+#15 254.4 npm error Missing: @rolldown/binding-darwin-arm64@1.0.3 from lock file
+#15 254.4 npm error Missing: @rolldown/binding-darwin-x64@1.0.3 from lock file
+#15 254.4 npm error Missing: @rolldown/binding-freebsd-x64@1.0.3 from lock file
+#15 254.4 npm error Missing: @rolldown/binding-linux-arm-gnueabihf@1.0.3 from lock file
+#15 254.4 npm error Missing: @rolldown/binding-linux-arm64-gnu@1.0.3 from lock file
+#15 254.4 npm error Missing: @rolldown/binding-linux-arm64-musl@1.0.3 from lock file
+#15 254.4 npm error Missing: @rolldown/binding-linux-ppc64-gnu@1.0.3 from lock file
+#15 254.4 npm error Missing: @rolldown/binding-linux-s390x-gnu@1.0.3 from lock file
+#15 254.4 npm error Missing: @rolldown/binding-linux-x64-gnu@1.0.3 from lock file
+#15 254.4 npm error Missing: @rolldown/binding-linux-x64-musl@1.0.3 from lock file
+#15 254.4 npm error Missing: @rolldown/binding-openharmony-arm64@1.0.3 from lock file
+#15 254.4 npm error Missing: @rolldown/binding-wasm32-wasi@1.0.3 from lock file
+#15 254.4 npm error Missing: @rolldown/binding-win32-arm64-msvc@1.0.3 from lock file
+#15 254.4 npm error Missing: @rolldown/binding-win32-x64-msvc@1.0.3 from lock file
+#15 254.4 npm error Missing: @rolldown/pluginutils@1.0.1 from lock file
+#15 254.4 npm error Missing: @emnapi/core@1.10.0 from lock file
+#15 254.4 npm error Missing: @emnapi/runtime@1.10.0 from lock file
+#15 254.4 npm error Missing: @napi-rs/wasm-runtime@1.1.5 from lock file
+#15 254.4 npm error Missing: @emnapi/wasi-threads@1.2.1 from lock file
+#15 254.4 npm error Missing: @tybys/wasm-util@0.10.2 from lock file
+#15 254.4 npm error Missing: @vitest/expect@4.1.8 from lock file
+#15 254.4 npm error Missing: @vitest/mocker@4.1.8 from lock file
+#15 254.4 npm error Missing: @vitest/runner@4.1.8 from lock file
+#15 254.4 npm error Missing: @vitest/snapshot@4.1.8 from lock file
+#15 254.4 npm error Missing: @vitest/spy@4.1.8 from lock file
+#15 254.4 npm error Missing: es-module-lexer@2.1.0 from lock file
+#15 254.4 npm error Missing: expect-type@1.3.0 from lock file
+#15 254.4 npm error Missing: pathe@2.0.3 from lock file
+#15 254.4 npm error Missing: picomatch@4.0.4 from lock file
+#15 254.4 npm error Missing: tinybench@2.9.0 from lock file
+#15 254.4 npm error Missing: tinyexec@1.2.4 from lock file
+#15 254.4 npm error Missing: why-is-node-running@2.3.0 from lock file
+#15 254.4 npm error Missing: @types/chai@5.2.3 from lock file
+#15 254.4 npm error Missing: chai@6.2.2 from lock file
+#15 254.4 npm error Missing: @types/deep-eql@4.0.2 from lock file
+#15 254.4 npm error Missing: assertion-error@2.0.1 from lock file
+#15 254.4 npm error Missing: isexe@2.0.0 from lock file
+#15 254.4 npm error Missing: siginfo@2.0.0 from lock file
+#15 254.4 npm error Missing: stackback@0.0.2 from lock file
+#15 254.4 npm error Missing: @types/mime@1.3.5 from lock file
+#15 254.4 npm error
+#15 254.4 npm error Clean install a project
+#15 254.4 npm error
+#15 254.4 npm error Usage:
+#15 254.4 npm error npm ci
+#15 254.4 npm error
+#15 254.4 npm error Options:
+#15 254.4 npm error [--install-strategy <hoisted|nested|shallow|linked>] [--legacy-bundling]
+#15 254.4 npm error [--global-style] [--omit <dev|optional|peer> [--omit <dev|optional|peer> ...]]
+#15 254.4 npm error [--include <prod|dev|optional|peer> [--include <prod|dev|optional|peer> ...]]
+#15 254.4 npm error [--strict-peer-deps] [--foreground-scripts] [--ignore-scripts] [--no-audit]
+#15 254.4 npm error [--no-bin-links] [--no-fund] [--dry-run]
+#15 254.4 npm error [-w|--workspace <workspace-name> [-w|--workspace <workspace-name> ...]]
+#15 254.4 npm error [-ws|--workspaces] [--include-workspace-root] [--install-links]
+#15 254.4 npm error
+#15 254.4 npm error aliases: clean-install, ic, install-clean, isntall-clean
+#15 254.4 npm error
+#15 254.4 npm error Run "npm help ci" for more info
+#15 254.4 npm notice
+#15 254.4 npm notice New major version of npm available! 10.9.2 -> 11.17.0
+#15 254.4 npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.17.0
+#15 254.4 npm notice To update run: npm install -g npm@11.17.0
+#15 254.4 npm notice
+#15 254.4 npm error A complete log of this run can be found in: /root/.npm/_logs/2026-06-14T17_37_33_262Z-debug-0.log
+#15 ERROR: process "/bin/sh -c npm ci --omit=dev" did not complete successfully: exit code: 1
+
+#14 [hyba-backend node-deps 4/4] RUN npm ci
+#14 ...
+
+#15 [hyba-runtime runtime  7/12] RUN npm ci --omit=dev
+#15 ERROR: process "/bin/sh -c npm ci --omit=dev" did not complete successfully: exit code: 1
+
+#14 [hyba-backend node-deps 4/4] RUN npm ci
+#14 CANCELED
+
+#14 [hyba-runtime node-deps 4/4] RUN npm ci
+#14 CANCELED
+------
+ > [hyba-runtime runtime  7/12] RUN npm ci --omit=dev:
+254.4 npm error
+254.4 npm error aliases: clean-install, ic, install-clean, isntall-clean
+254.4 npm error
+254.4 npm error Run "npm help ci" for more info
+254.4 npm notice
+254.4 npm notice New major version of npm available! 10.9.2 -> 11.17.0
+254.4 npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.17.0
+254.4 npm notice To update run: npm install -g npm@11.17.0
+254.4 npm notice
+254.4 npm error A complete log of this run can be found in: /root/.npm/_logs/2026-06-14T17_37_33_262Z-debug-0.log
+------
+WARNING: The "argon2id" variable is not set. Defaulting to a blank string.
+
+WARNING: The "v" variable is not set. Defaulting to a blank string.
+
+WARNING: The "m" variable is not set. Defaulting to a blank string.
+
+WARNING: The "qvzNFWKWtmi1bUwVb1qG6w" variable is not set. Defaulting to a blank string.
+
+Dockerfile:41
+
+--------------------
+
+  39 |     
+
+  40 |     COPY package.json package-lock.json* ./
+
+  41 | >>> RUN npm ci --omit=dev
+
+  42 |     
+
+  43 |     COPY --from=frontend-build /app/dist ./dist
+
+--------------------
+
+target hyba-bridge: failed to solve: process "/bin/sh -c npm ci --omit=dev" did not complete successfully: exit code: 1
+
+
+
+View build details: docker-desktop://dashboard/build/default/default/9crljmr6zw5c1may5h72tuair
+

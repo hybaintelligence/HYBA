@@ -1,0 +1,1 @@
+Runtime mock/static telemetry guardrail passed.

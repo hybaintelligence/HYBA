@@ -13,12 +13,26 @@ if str(BACKEND) not in sys.path:
     sys.path.insert(0, str(BACKEND))
 
 from pythia_mining.pulvini_certificates import automorphism_runtime_certificate  # noqa: E402
-from pythia_mining.pulvini_choi import choi_certificate, choi_matrix, kraus_operators_for_step  # noqa: E402
-from pythia_mining.pulvini_gamma import EmpiricalGammaLedger, jump_operators_from_gamma  # noqa: E402
-from pythia_mining.pulvini_group import adjacency_sets, compute_graph_automorphisms, compute_node_orbits  # noqa: E402
+from pythia_mining.pulvini_choi import (  # noqa: E402
+    choi_certificate,
+    choi_matrix,
+    kraus_operators_for_step,
+)
+from pythia_mining.pulvini_gamma import (  # noqa: E402
+    EmpiricalGammaLedger,
+    jump_operators_from_gamma,
+)
+from pythia_mining.pulvini_group import (  # noqa: E402
+    adjacency_sets,
+    compute_graph_automorphisms,
+    compute_node_orbits,
+)
 from pythia_mining.pulvini_manifold import PulviniManifold  # noqa: E402
 from pythia_mining.pulvini_overlay import ADJACENCY_MAP  # noqa: E402
-from pythia_mining.pulvini_variational import trace_zero_hermitian_projection, variational_certificate  # noqa: E402
+from pythia_mining.pulvini_variational import (  # noqa: E402
+    trace_zero_hermitian_projection,
+    variational_certificate,
+)
 
 
 class PulviniFinalMathGateTests(unittest.TestCase):
@@ -36,7 +50,6 @@ class PulviniFinalMathGateTests(unittest.TestCase):
         self.assertIn("no proof", cert.blocker)
         self.assertIn("Bures", cert.required_derivation)
 
-
     def test_automorphism_certificate_closes_du_sautoy_gate(self) -> None:
         cert = automorphism_runtime_certificate(ADJACENCY_MAP)
 
@@ -52,9 +65,7 @@ class PulviniFinalMathGateTests(unittest.TestCase):
 
         rng = np.random.default_rng(20260611)
         manifold.synaptic_matrix += 0.1 * rng.standard_normal((32, 32))
-        manifold.synaptic_matrix = (
-            manifold.synaptic_matrix + manifold.synaptic_matrix.T
-        ) / 2
+        manifold.synaptic_matrix = (manifold.synaptic_matrix + manifold.synaptic_matrix.T) / 2
 
         k_norm = manifold.memory_kernel_norm()
         self.assertGreater(k_norm, manifold.MARKOV_THRESHOLD)
@@ -72,25 +83,22 @@ class PulviniFinalMathGateTests(unittest.TestCase):
         manifold = PulviniManifold(ADJACENCY_MAP)
 
         rho_diagonal = np.diag(np.ones(32) / 32)
-        result = manifold.bures_gradient_of_collapse_functional(
-            rho_diagonal, entropy_gradient=0.5
-        )
+        result = manifold.bures_gradient_of_collapse_functional(rho_diagonal, entropy_gradient=0.5)
         self.assertEqual(result["stationary_reason"], "trivial_zero_product")
         self.assertFalse(result["collapse_criterion_met"])
 
         rho_coherent = manifold.rho
-        result2 = manifold.bures_gradient_of_collapse_functional(
-            rho_coherent, entropy_gradient=0.3
-        )
+        result2 = manifold.bures_gradient_of_collapse_functional(rho_coherent, entropy_gradient=0.3)
         self.assertIn("bures_gradient_norm", result2)
         self.assertIn("tangent_projection_norm", result2)
         self.assertIn("physical_meaning", result2)
 
-        print(f"Penrose gate: Bures gradient norm = "
-              f"{result2['bures_gradient_norm']:.6f}")
+        print(f"Penrose gate: Bures gradient norm = {result2['bures_gradient_norm']:.6f}")
         print(f"Penrose gate: {result2['physical_meaning']}")
 
-    def test_trace_zero_hermitian_projection_stays_on_density_tangent_space(self) -> None:
+    def test_trace_zero_hermitian_projection_stays_on_density_tangent_space(
+        self,
+    ) -> None:
         raw = np.zeros((32, 32), dtype=np.complex128)
         raw[0, 1] = 1.0 + 2.0j
         raw[2, 2] = 7.0
@@ -136,7 +144,9 @@ class PulviniFinalMathGateTests(unittest.TestCase):
         self.assertGreaterEqual(cert.min_eigenvalue, -1e-9)
         self.assertLess(cert.trace_preservation_error, 1e-8)
 
-    def test_automorphism_order_is_computed_from_runtime_adjacency_map_with_timing(self) -> None:
+    def test_automorphism_order_is_computed_from_runtime_adjacency_map_with_timing(
+        self,
+    ) -> None:
         neighbors = adjacency_sets(ADJACENCY_MAP)
         started = time.perf_counter()
         automorphisms = compute_graph_automorphisms(ADJACENCY_MAP)

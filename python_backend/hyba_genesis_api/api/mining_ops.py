@@ -10,7 +10,7 @@ import json
 import os
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any
+from typing import Any, Optional
 
 from fastapi import APIRouter, Depends, Query
 
@@ -24,7 +24,7 @@ def _audit_log_dir() -> Path:
     return Path(os.getenv("HYBA_AUDIT_LOG_DIR", "logs/audit"))
 
 
-def _parse_audit_line(line: str) -> dict[str, Any] | None:
+def _parse_audit_line(line: str) -> Optional[dict[str, Any]]:
     # File format is "timestamp | LEVEL | logger | {json}".
     if " | " in line:
         candidate = line.rsplit(" | ", 1)[-1]
@@ -64,7 +64,9 @@ def _recent_audit_events(limit: int) -> list[dict[str, Any]]:
     return events
 
 
-def _derive_alerts(metrics: list[dict[str, Any]], state: dict[str, Any] | None) -> list[dict[str, Any]]:
+def _derive_alerts(
+    metrics: list[dict[str, Any]], state: Optional[dict[str, Any]]
+) -> list[dict[str, Any]]:
     alerts: list[dict[str, Any]] = []
     now = datetime.now(timezone.utc).isoformat()
     for pool in metrics:
@@ -75,49 +77,59 @@ def _derive_alerts(metrics: list[dict[str, Any]], state: dict[str, Any] | None) 
         latency = pool.get("avg_latency_ms")
         acceptance_rate = float(pool.get("acceptance_rate") or 0.0)
         if submitted >= 10 and acceptance_rate < 0.5:
-            alerts.append({
-                "severity": "warning",
-                "code": "low_share_acceptance_rate",
-                "pool_name": pool_name,
-                "message": "Share acceptance rate is below 50% after at least 10 submissions.",
-                "value": acceptance_rate,
-                "timestamp": now,
-            })
+            alerts.append(
+                {
+                    "severity": "warning",
+                    "code": "low_share_acceptance_rate",
+                    "pool_name": pool_name,
+                    "message": "Share acceptance rate is below 50% after at least 10 submissions.",
+                    "value": acceptance_rate,
+                    "timestamp": now,
+                }
+            )
         if submitted >= 10 and rejected / max(submitted, 1) > 0.5:
-            alerts.append({
-                "severity": "warning",
-                "code": "high_share_rejection_rate",
-                "pool_name": pool_name,
-                "message": "Share rejection rate is above 50% after at least 10 submissions.",
-                "value": rejected / max(submitted, 1),
-                "timestamp": now,
-            })
+            alerts.append(
+                {
+                    "severity": "warning",
+                    "code": "high_share_rejection_rate",
+                    "pool_name": pool_name,
+                    "message": "Share rejection rate is above 50% after at least 10 submissions.",
+                    "value": rejected / max(submitted, 1),
+                    "timestamp": now,
+                }
+            )
         if failures >= 3:
-            alerts.append({
-                "severity": "critical",
-                "code": "repeated_pool_connection_failures",
-                "pool_name": pool_name,
-                "message": "Pool has three or more recorded connection failures.",
-                "value": failures,
-                "timestamp": now,
-            })
+            alerts.append(
+                {
+                    "severity": "critical",
+                    "code": "repeated_pool_connection_failures",
+                    "pool_name": pool_name,
+                    "message": "Pool has three or more recorded connection failures.",
+                    "value": failures,
+                    "timestamp": now,
+                }
+            )
         if latency is not None and float(latency) > 5_000:
-            alerts.append({
-                "severity": "warning",
-                "code": "high_pool_latency",
-                "pool_name": pool_name,
-                "message": "Average pool latency is above 5 seconds.",
-                "value": latency,
-                "timestamp": now,
-            })
+            alerts.append(
+                {
+                    "severity": "warning",
+                    "code": "high_pool_latency",
+                    "pool_name": pool_name,
+                    "message": "Average pool latency is above 5 seconds.",
+                    "value": latency,
+                    "timestamp": now,
+                }
+            )
     if state and state.get("system_health") in {"DEGRADED", "ERROR"}:
-        alerts.append({
-            "severity": "critical",
-            "code": "mining_system_health_degraded",
-            "message": "PYTHIA mining state reports degraded or error health.",
-            "value": state.get("system_health"),
-            "timestamp": now,
-        })
+        alerts.append(
+            {
+                "severity": "critical",
+                "code": "mining_system_health_degraded",
+                "message": "PYTHIA mining state reports degraded or error health.",
+                "value": state.get("system_health"),
+                "timestamp": now,
+            }
+        )
     return alerts
 
 

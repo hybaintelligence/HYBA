@@ -1,5 +1,5 @@
-import { logger } from './telemetry';
-import { FEIGEN_DELTA, calculate_phi_resonance } from './constants';
+import { logger } from "./telemetry";
+import { FEIGEN_DELTA, calculate_phi_resonance } from "./constants";
 
 /**
  * Predictive Attack Intelligence
@@ -15,14 +15,17 @@ export class PredictiveIntel {
    */
   public forecast_spectral_anomaly(): number {
     const resonance = calculate_phi_resonance(Date.now());
-    
+
     // Non-linear projection of bifurcation points
     // This isn't a "probability" - it's a deterministic calculation of where
     // the system state will be in 1 quantum step.
     const anomaly_projected = (resonance * FEIGEN_DELTA) % 1.0;
 
     if (anomaly_projected > 0.98) {
-        logger.info({ anomaly_score: anomaly_projected }, 'Predictive Intel: Future anomaly vertex detected. Pre-configuring swarm defense.');
+      logger.info(
+        { anomaly_score: anomaly_projected },
+        "Predictive Intel: Future anomaly vertex detected. Pre-configuring swarm defense.",
+      );
     }
 
     return anomaly_projected;

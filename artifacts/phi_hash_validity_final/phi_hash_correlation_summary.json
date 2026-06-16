@@ -1,0 +1,24 @@
+{
+  "phi_15": 1364.0007331374366,
+  "method": "Phi^15 Resonance vs Hash Leading-Zero-Bit Correlation",
+  "correlation": {
+    "n": 66,
+    "pearson_r": -0.072734,
+    "pearson_p_value": "5.60e-01",
+    "spearman_r": -0.069467,
+    "phi_high_group_mean_zero_bits": 79.3939,
+    "phi_low_group_mean_zero_bits": 79.7879,
+    "zero_bit_diff_observed": -0.394,
+    "zero_bit_diff_p_value_resampled": "0.3070",
+    "phi_resonant_rate": 0.939394,
+    "above_median_hash_prob_if_phi_resonant": 0.419355,
+    "total_blocks": 66
+  },
+  "interpretation": {
+    "pearson": "WEAK or no correlation (r=-0.0727, p=0.5596): Phi^15 resonance does not significantly predict hash leading zeros.",
+    "group_difference": "NO DIFFERENCE: High-\u03a6 and low-\u03a6 nonces produce similar hash leading zero counts (diff=-0.39 bits, p=0.3070).",
+    "above_median": "NO PREDICTIVE POWER: \u03a6-resonant nonces have a 41.9% probability of producing an above-median hash (near 50% chance).",
+    "verdict": "NO EVIDENCE: No significant correlation between Phi^15 resonance and hash leading zeros found in this sample. The Phi^15 nonce pattern exists but does not predict hash quality."
+  },
+  "timestamp_utc": "2026-06-15T13:41:49Z"
+}

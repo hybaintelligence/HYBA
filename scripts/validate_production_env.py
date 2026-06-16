@@ -1,5 +1,11 @@
 #!/usr/bin/env python3
-"""Validate HYBA_FULLSTACK production environment before deployment."""
+"""Validate HYBA_FULLSTACK production environment before deployment.
+
+Bitcoin/Stratum pool profile values are open-network launch configuration, not
+application secrets. The validator therefore separates private HYBA operator
+credentials from pool routing/auth parameters such as worker names, payout
+addresses, pool ids, and the conventional Stratum password value ``x``.
+"""
 
 from __future__ import annotations
 
@@ -10,18 +16,28 @@ from urllib.parse import urlparse
 
 ARGON2ID = re.compile(r"^\$argon2id\$v=\d+\$m=\d+,t=\d+,p=\d+\$[^$]+\$[^$]+$")
 POOL_IDS = ("VIABTC", "NICEHASH", "BRAIINS", "CKPOOL", "STRATUMV2")
-APPROVED_ROLES = {"ceo", "treasury_admin", "mining_operator", "treasury_viewer", "mining:read", "mining:operate"}
+APPROVED_ROLES = {
+    "ceo",
+    "treasury_admin",
+    "mining_operator",
+    "treasury_viewer",
+    "mining:read",
+    "mining:operate",
+}
 TRUE_VALUES = {"1", "true", "yes", "on"}
 STRATUM_V1_SCHEMES = {"stratum+ssl", "stratum+tls", "stratum+tcp"}
 STRATUM_V2_SCHEMES = {"stratum2+ssl", "stratum2+tls", "stratum2+tcp"}
 PULVINI_HASHRATE_CAP_EHS = 1.0
 
+# Pool auth parameters are not treated as private HYBA secrets. They are still
+# validated because the runtime needs an unambiguous launch profile. Use "x"
+# for pools that do not require a meaningful Stratum password.
 POOL_REQUIREMENTS = {
-    "VIABTC": {"username": "USERNAME", "secret": "PASSWORD", "version": 1},
-    "BRAIINS": {"username": "USERNAME", "secret": "PASSWORD", "version": 2},
-    "CKPOOL": {"username": "BTC_ADDRESS", "secret": None, "version": 1},
-    "NICEHASH": {"username": "WORKER", "secret": "NICEHASH_POOL_ID", "version": 1},
-    "STRATUMV2": {"username": "USERNAME", "secret": "PASSWORD", "version": 2},
+    "VIABTC": {"identity": "USERNAME", "auth": "PASSWORD", "version": 1},
+    "BRAIINS": {"identity": "USERNAME", "auth": "PASSWORD", "version": 2},
+    "CKPOOL": {"identity": "BTC_ADDRESS", "auth": None, "version": 1},
+    "NICEHASH": {"identity": "WORKER", "auth": "NICEHASH_POOL_ID", "version": 1},
+    "STRATUMV2": {"identity": "USERNAME", "auth": "PASSWORD", "version": 2},
 }
 
 
@@ -29,7 +45,11 @@ def _is_placeholder(value: str | None) -> bool:
     if value is None:
         return True
     lowered = value.strip().lower()
-    return not lowered or "replace-with" in lowered or lowered in {"123", "changeme", "password", "secret", "todo"}
+    return (
+        not lowered
+        or "replace-with" in lowered
+        or lowered in {"123", "changeme", "password", "secret", "todo"}
+    )
 
 
 def _require(name: str, errors: list[str]) -> str | None:
@@ -57,15 +77,21 @@ def _validate_operator_credentials(errors: list[str]) -> None:
     for item in _credential_entries(raw):
         parts = item.split(":", 2)
         if len(parts) != 3:
-            errors.append("HYBA_OPERATOR_CREDENTIALS entries must use username:$argon2id$...:role separated by semicolons")
+            errors.append(
+                "HYBA_OPERATOR_CREDENTIALS entries must use username:$argon2id$...:role separated by semicolons"
+            )
             continue
         username, password_hash, role = (part.strip() for part in parts)
         if not username:
             errors.append("HYBA_OPERATOR_CREDENTIALS contains an empty username")
         if not ARGON2ID.match(password_hash):
-            errors.append("HYBA_OPERATOR_CREDENTIALS password field must be an Argon2id encoded hash")
+            errors.append(
+                "HYBA_OPERATOR_CREDENTIALS password field must be an Argon2id encoded hash"
+            )
         if role not in APPROVED_ROLES:
-            errors.append(f"HYBA_OPERATOR_CREDENTIALS role {role!r} is not an approved production role/scope")
+            errors.append(
+                f"HYBA_OPERATOR_CREDENTIALS role {role!r} is not an approved production role/scope"
+            )
 
 
 def _validate_backend_url(errors: list[str]) -> None:
@@ -82,7 +108,9 @@ def _env(pool_id: str, field: str) -> str | None:
 
 
 def _parse_stratum_version(raw: str | None, pool_id: str, errors: list[str]) -> int | None:
-    normalized = (raw or str(POOL_REQUIREMENTS[pool_id]["version"])).strip().lower().removeprefix("v")
+    normalized = (
+        (raw or str(POOL_REQUIREMENTS[pool_id]["version"])).strip().lower().removeprefix("v")
+    )
     if normalized not in {"1", "2"}:
         errors.append(f"HYBA_POOL_{pool_id}_STRATUM_VERSION must be 1, v1, 2, or v2")
         return None
@@ -90,29 +118,35 @@ def _parse_stratum_version(raw: str | None, pool_id: str, errors: list[str]) -> 
 
 
 def _is_pool_configured(pool_id: str) -> bool:
-    fields = ["URL", "USERNAME", "PASSWORD", "BTC_ADDRESS", "WORKER", "NICEHASH_POOL_ID", "NH_POOL_ID", "STRATUM_VERSION"]
+    fields = [
+        "URL",
+        "USERNAME",
+        "PASSWORD",
+        "BTC_ADDRESS",
+        "WORKER",
+        "NICEHASH_POOL_ID",
+        "NH_POOL_ID",
+        "STRATUM_VERSION",
+    ]
     return any(_env(pool_id, field) for field in fields)
 
 
 def _pool_identity(pool_id: str) -> tuple[str, str | None]:
     req = POOL_REQUIREMENTS[pool_id]
-    username_field = str(req["username"])
-    if pool_id == "NICEHASH":
-        return username_field, _env(pool_id, "WORKER")
-    return username_field, _env(pool_id, username_field)
+    identity_field = str(req["identity"])
+    return identity_field, _env(pool_id, identity_field)
 
 
-def _pool_secret(pool_id: str) -> tuple[str | None, str | None]:
+def _pool_auth(pool_id: str) -> tuple[str | None, str | None]:
     req = POOL_REQUIREMENTS[pool_id]
-    secret_field = req["secret"]
-    if secret_field is None:
+    auth_field = req["auth"]
+    if auth_field is None:
         return None, None
     if pool_id == "NICEHASH":
         # Runtime accepts NH_POOL_ID or NICEHASH_POOL_ID for the pool identifier;
-        # password defaults to x internally, but live deployments still need an
-        # explicit pool identifier to avoid ambiguous share routing.
+        # this is an open-network routing value, not a HYBA application secret.
         return "NICEHASH_POOL_ID", _env(pool_id, "NICEHASH_POOL_ID") or _env(pool_id, "NH_POOL_ID")
-    return str(secret_field), _env(pool_id, str(secret_field))
+    return str(auth_field), _env(pool_id, str(auth_field))
 
 
 def _validate_pool_config(errors: list[str]) -> None:
@@ -124,15 +158,17 @@ def _validate_pool_config(errors: list[str]) -> None:
         if _is_placeholder(url):
             errors.append(f"HYBA_POOL_{pool_id}_URL is required when configuring {pool_id}")
             continue
-        username_field, username = _pool_identity(pool_id)
-        secret_field, secret = _pool_secret(pool_id)
+        identity_field, identity = _pool_identity(pool_id)
+        auth_field, auth = _pool_auth(pool_id)
         missing = []
-        if _is_placeholder(username):
-            missing.append(username_field)
-        if secret_field is not None and _is_placeholder(secret):
-            missing.append(secret_field)
+        if _is_placeholder(identity):
+            missing.append(identity_field)
+        if auth_field is not None and _is_placeholder(auth):
+            missing.append(auth_field)
         if missing:
-            errors.append(f"HYBA_POOL_{pool_id}_* is partially configured or contains placeholders: missing/invalid {', '.join(missing)}")
+            errors.append(
+                f"HYBA_POOL_{pool_id}_* is partially configured or contains placeholders: missing/invalid {', '.join(missing)}"
+            )
             continue
         parsed = urlparse(str(url))
         version = _parse_stratum_version(_env(pool_id, "STRATUM_VERSION"), pool_id, errors)
@@ -143,7 +179,9 @@ def _validate_pool_config(errors: list[str]) -> None:
             )
         configured.append(pool_id)
     if not configured:
-        errors.append("At least one HYBA_POOL_<ID>_* credential set is required before live mining deployment")
+        errors.append(
+            "At least one HYBA_POOL_<ID>_* open-network pool profile is required before live mining deployment"
+        )
 
 
 def _validate_flags(errors: list[str], warnings: list[str]) -> None:
@@ -156,7 +194,9 @@ def _validate_flags(errors: list[str], warnings: list[str]) -> None:
     if os.getenv("HYBA_ENABLE_LIVE_STRATUM", "false").strip().lower() not in TRUE_VALUES:
         errors.append("HYBA_ENABLE_LIVE_STRATUM=true is required for production live mining")
     if os.getenv("HYBA_ENABLE_MINING_AUTOCONNECT", "false").strip().lower() in TRUE_VALUES:
-        warnings.append("HYBA_ENABLE_MINING_AUTOCONNECT is enabled; this must be approved as an operator-controlled exception")
+        warnings.append(
+            "HYBA_ENABLE_MINING_AUTOCONNECT is enabled; this must be approved as an operator-controlled exception"
+        )
     if os.getenv("HYBA_ENABLE_LIVE_SHARE_SUBMIT", "false").strip().lower() in TRUE_VALUES:
         if _is_placeholder(os.getenv("HYBA_LIVE_SHARE_APPROVAL_ID")):
             errors.append("HYBA_ENABLE_LIVE_SHARE_SUBMIT=true requires HYBA_LIVE_SHARE_APPROVAL_ID")
@@ -172,7 +212,9 @@ def _validate_flags(errors: list[str], warnings: list[str]) -> None:
             if parsed <= 0:
                 errors.append("HYBA_QUANTUM_CAPACITY_EHS must be positive when set")
             if parsed > PULVINI_HASHRATE_CAP_EHS:
-                errors.append(f"HYBA_QUANTUM_CAPACITY_EHS must be <= {PULVINI_HASHRATE_CAP_EHS} EH/s")
+                errors.append(
+                    f"HYBA_QUANTUM_CAPACITY_EHS must be <= {PULVINI_HASHRATE_CAP_EHS} EH/s"
+                )
 
 
 def main() -> int:

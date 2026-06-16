@@ -3,15 +3,15 @@
 This adapter composes the pure protocol primitives and the async line transport.
 It owns live subscribe/authorize, pool event reads, and share submission responses.
 """
+
 from __future__ import annotations
 
 import itertools
-from dataclasses import dataclass, asdict
+from dataclasses import asdict, dataclass
 from typing import Any, Dict, Optional
 
 from pythia_mining.pool_profiles import PoolProfile, validate_profile
 from pythia_mining.stratum_protocol import (
-    StratumProtocolError,
     build_authorize,
     build_submit,
     build_subscribe,
@@ -19,7 +19,7 @@ from pythia_mining.stratum_protocol import (
     parse_server_message,
     parse_subscribe_result,
 )
-from pythia_mining.stratum_transport import StratumLineTransport, StratumTransportError
+from pythia_mining.stratum_transport import StratumLineTransport
 
 
 class LiveStratumSessionError(ConnectionError):
@@ -62,7 +62,9 @@ class LiveStratumSession:
     async def connect(self) -> None:
         await self.transport.connect()
 
-    async def _read_response_for_id(self, request_id: int, *, timeout: Optional[float] = None) -> Dict[str, Any]:
+    async def _read_response_for_id(
+        self, request_id: int, *, timeout: Optional[float] = None
+    ) -> Dict[str, Any]:
         """Read until the matching JSON-RPC response arrives.
 
         Real Stratum pools may interleave notifications such as
@@ -86,12 +88,19 @@ class LiveStratumSession:
         self.extranonce2_size = subscribe.extranonce2_size
 
         authorize_id = self.next_id()
-        await self.transport.send_line(build_authorize(authorize_id, self.profile.username, self.profile.password))
+        await self.transport.send_line(
+            build_authorize(authorize_id, self.profile.username, self.profile.password)
+        )
         authorize_payload = await self._read_response_for_id(authorize_id)
         self.authorized = parse_authorize_result(authorize_payload)
         if not self.authorized:
             raise LiveStratumSessionError("pool rejected authorization")
-        return SessionHandshake(self.profile.pool_id, self.extranonce1, self.extranonce2_size, self.authorized)
+        return SessionHandshake(
+            self.profile.pool_id,
+            self.extranonce1,
+            self.extranonce2_size,
+            self.authorized,
+        )
 
     async def read_event(self, *, timeout: Optional[float] = None, include_responses: bool = False):
         while True:
@@ -100,7 +109,9 @@ class LiveStratumSession:
             if include_responses or event != "response":
                 return event, payload
 
-    async def submit_share(self, *, job_id: str, extranonce2: str, ntime: str, nonce: str) -> SubmitResult:
+    async def submit_share(
+        self, *, job_id: str, extranonce2: str, ntime: str, nonce: str
+    ) -> SubmitResult:
         if not self.authorized:
             raise LiveStratumSessionError("cannot submit before authorization")
         submit_id = self.next_id()
@@ -115,4 +126,9 @@ class LiveStratumSession:
         await self.transport.close()
 
 
-__all__ = ["LiveStratumSessionError", "SessionHandshake", "SubmitResult", "LiveStratumSession"]
+__all__ = [
+    "LiveStratumSessionError",
+    "SessionHandshake",
+    "SubmitResult",
+    "LiveStratumSession",
+]

@@ -26,6 +26,14 @@ export interface SystemMetrics {
   difficultyTarget?: string | null;
   networkDifficulty?: number | null;
   power_scale?: number | null;
+  phi_tier?: number | null;
+  phi_tier_composition?: {
+    label?: string;
+    phi_exponent?: number;
+    scale_factor?: number;
+    hashrate_cap_ehs?: number;
+  } | null;
+  memory_compression_contract?: string | null;
   system_health?: string | null;
 }
 
@@ -96,10 +104,63 @@ export interface ConfigurePoolResponse {
   idempotency_key?: string;
 }
 
+export interface MetacognitiveStateTelemetry {
+  phi_integrated?: number | null;
+  syndrome_pressure?: number | null;
+  shard_entropy?: number | null;
+  confidence_delta?: number | null;
+  resource_exhaustion?: number | null;
+}
+
+export interface MetacognitiveTelemetry {
+  self_awareness?: number | null;
+  metacognitive_depth?: number | null;
+  is_predicting_disturbance?: boolean | null;
+  prediction_accuracy?: number | null;
+  events?: string[] | null;
+  strategy_weights?: Record<string, number> | null;
+  predicted_state?: MetacognitiveStateTelemetry | null;
+  current_state?: MetacognitiveStateTelemetry | null;
+}
+
+export interface StabilizerMonitorTelemetry {
+  syndrome_weight?: number | null;
+  confidence?: number | null;
+  confidence_threshold?: number | null;
+  syndrome_width?: number | null;
+  sampled_ancillas?: number | null;
+  operating_mode?: string | null;
+  syndrome_check_stride?: number | null;
+  check_frequency?: number | null;
+  syndrome_rotation_index?: number | null;
+  pool_permutation_checksum?: number | null;
+  sanitized?: boolean | null;
+  cause?: string | null;
+  metacognitive?: MetacognitiveTelemetry | null;
+}
+
+export interface AncillaTrapPoolTelemetry {
+  agents_total?: number | null;
+  agents_active?: number | null;
+  logical_agents?: number | null;
+  reserved_ancillas?: number | null;
+  active_ancillas?: number | null;
+  max_ancilla_pool?: number | null;
+  reserved_traps?: number | null;
+  active_traps?: number | null;
+  disturbed_traps?: number | null;
+  retired_traps?: number | null;
+}
+
+export interface SecurityDefenseSystems extends Record<string, unknown> {
+  stabilizer_monitor?: StabilizerMonitorTelemetry;
+  preallocated_ancilla_trap_pool?: AncillaTrapPoolTelemetry;
+}
+
 export interface SecurityStatus {
   status: string;
   threat_level?: string | null;
-  defense_systems?: Record<string, unknown>;
+  defense_systems?: SecurityDefenseSystems;
   recent_threats?: unknown[];
 }
 
@@ -213,7 +274,12 @@ async function parseApiError(response: Response): Promise<HybaApiError> {
     const body = await response.json();
     return new HybaApiError({
       code: body.error || body.detail?.error || "unknown_error",
-      message: body.message || body.detail?.detail || body.detail || `HTTP ${response.status}`,
+      message:
+        body.message ||
+        body.detail?.message ||
+        body.detail?.detail ||
+        body.detail ||
+        `HTTP ${response.status}`,
       status: response.status,
       requestId,
       details: body.details || body,
@@ -255,8 +321,15 @@ function calculateDelay(attempt: number, baseDelayMs: number, maxDelayMs: number
   return Math.floor(Math.min(baseDelayMs * Math.pow(2, attempt), maxDelayMs));
 }
 
-async function fetchWithRetry(url: string, options: RequestInit = {}, retryOptions: Partial<RetryOptions> = {}): Promise<Response> {
-  const { maxRetries, baseDelayMs, maxDelayMs, retryOn } = { ...DEFAULT_RETRY_OPTIONS, ...retryOptions };
+async function fetchWithRetry(
+  url: string,
+  options: RequestInit = {},
+  retryOptions: Partial<RetryOptions> = {},
+): Promise<Response> {
+  const { maxRetries, baseDelayMs, maxDelayMs, retryOn } = {
+    ...DEFAULT_RETRY_OPTIONS,
+    ...retryOptions,
+  };
   const interceptedOptions = authInterceptor(options);
   let lastError: Error | null = null;
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
@@ -266,12 +339,12 @@ async function fetchWithRetry(url: string, options: RequestInit = {}, retryOptio
         return response;
       }
       const delay = calculateDelay(attempt, baseDelayMs, maxDelayMs);
-      await new Promise(resolve => setTimeout(resolve, delay));
+      await new Promise((resolve) => setTimeout(resolve, delay));
       lastError = await parseApiError(response);
     } catch (error) {
       if (attempt >= maxRetries) throw error;
       const delay = calculateDelay(attempt, baseDelayMs, maxDelayMs);
-      await new Promise(resolve => setTimeout(resolve, delay));
+      await new Promise((resolve) => setTimeout(resolve, delay));
       lastError = error instanceof Error ? error : new Error(String(error));
     }
   }
@@ -284,31 +357,75 @@ async function get<T>(path: string, retryOptions?: Partial<RetryOptions>): Promi
   return response.json() as Promise<T>;
 }
 
-async function post<T>(path: string, body: unknown, retryOptions?: Partial<RetryOptions>): Promise<T> {
-  const response = await fetchWithRetry(`${BACKEND_URL}${path}`, { method: "POST", body: JSON.stringify(body) }, retryOptions);
+async function post<T>(
+  path: string,
+  body: unknown,
+  retryOptions?: Partial<RetryOptions>,
+): Promise<T> {
+  const response = await fetchWithRetry(
+    `${BACKEND_URL}${path}`,
+    { method: "POST", body: JSON.stringify(body) },
+    retryOptions,
+  );
   if (!response.ok) throw await parseApiError(response);
   return response.json() as Promise<T>;
 }
 
-async function getOptional<T>(path: string, fallback: T, retryOptions?: Partial<RetryOptions>): Promise<T> {
+async function getOptional<T>(
+  path: string,
+  fallback: T,
+  retryOptions?: Partial<RetryOptions>,
+): Promise<T> {
   try {
-    const response = await fetchWithRetry(`${BACKEND_URL}${path}`, { method: "GET" }, { maxRetries: 1, baseDelayMs: 250, ...retryOptions });
+    const response = await fetchWithRetry(
+      `${BACKEND_URL}${path}`,
+      { method: "GET" },
+      { maxRetries: 1, baseDelayMs: 250, ...retryOptions },
+    );
     if (!response.ok) return { ...fallback, http_status: response.status } as T;
     return response.json() as Promise<T>;
   } catch (error) {
-    return { ...fallback, error: error instanceof Error ? error.message : "endpoint_unavailable" } as T;
+    return {
+      ...fallback,
+      error: error instanceof Error ? error.message : "endpoint_unavailable",
+    } as T;
   }
+}
+
+export async function getSecurityStatus(): Promise<SecurityStatus> {
+  return get<SecurityStatus>("/security/status");
 }
 
 export async function fetchTelemetryData(): Promise<TelemetryData> {
   const start = performance.now();
   const health = await get<HealthResponse>("/health");
   const [consciousness, pools, security] = await Promise.all([
-    getOptional<ConsciousnessResponse>("/ai/consciousness", { status: "unavailable", source: "ai_endpoint_unavailable", consciousness_level: null, phi_resonance: null, integrated_information: null }),
-    getOptional<PoolsResponse>("/mining/pools", { pools: [], summary: { total_pools: 0, active_pools: 0, telemetry_source: "unavailable" } }),
-    getOptional<SecurityStatus>("/security/status", { status: "unavailable", threat_level: null, defense_systems: {}, recent_threats: [] }),
+    getOptional<ConsciousnessResponse>("/ai/consciousness", {
+      status: "unavailable",
+      source: "ai_endpoint_unavailable",
+      consciousness_level: null,
+      phi_resonance: null,
+      integrated_information: null,
+    }),
+    getOptional<PoolsResponse>("/mining/pools", {
+      pools: [],
+      summary: { total_pools: 0, active_pools: 0, telemetry_source: "unavailable" },
+    }),
+    getOptional<SecurityStatus>("/security/status", {
+      status: "unavailable",
+      threat_level: null,
+      defense_systems: {},
+      recent_threats: [],
+    }),
   ]);
-  return { status: "success", latency: performance.now() - start, health, consciousness, pools, security };
+  return {
+    status: "success",
+    latency: performance.now() - start,
+    health,
+    consciousness,
+    pools,
+    security,
+  };
 }
 
 export interface PulviniResult {
@@ -333,12 +450,20 @@ export interface PredictionResult {
   error?: string;
 }
 
-export async function requestPrediction(payload: Record<string, unknown>): Promise<PredictionResult> {
+export async function requestPrediction(
+  payload: Record<string, unknown>,
+): Promise<PredictionResult> {
   return post<PredictionResult>("/predict", payload);
 }
 
-export async function updatePowerScale(scale: number): Promise<{ success: boolean }> {
-  return post<{ success: boolean }>("/mining/power", { scale });
+export async function updatePowerScale(
+  scale: number,
+  phiTier = 12,
+): Promise<{ status: string; effective_hashrate_ehs?: number; phi_tier?: number }> {
+  return post<{ status: string; effective_hashrate_ehs?: number; phi_tier?: number }>(
+    "/mining/power",
+    { scale, phi_tier: phiTier },
+  );
 }
 
 export interface ConnectPoolRequest {
@@ -376,7 +501,11 @@ export async function configurePool(data: ConfigurePoolRequest): Promise<Configu
 
 export async function connectToPool(data: ConnectPoolRequest): Promise<ConnectPoolResponse> {
   assertPulviniHashrateCap(data.capacity_ehs, "capacity_ehs");
-  return post<ConnectPoolResponse>("/mining/connect", { ...data, switch: data.switch ?? true }, { maxRetries: 0 });
+  return post<ConnectPoolResponse>(
+    "/mining/connect",
+    { ...data, switch: data.switch ?? true },
+    { maxRetries: 0 },
+  );
 }
 
 export async function switchPool(data: ConnectPoolRequest): Promise<ConnectPoolResponse> {
@@ -385,7 +514,11 @@ export async function switchPool(data: ConnectPoolRequest): Promise<ConnectPoolR
 }
 
 export async function disconnectFromPool(): Promise<{ status: string; previous_pool?: string }> {
-  return post<{ status: string; previous_pool?: string }>("/mining/disconnect", {}, { maxRetries: 0 });
+  return post<{ status: string; previous_pool?: string }>(
+    "/mining/disconnect",
+    {},
+    { maxRetries: 0 },
+  );
 }
 
 export interface SubmitJobRequest {
@@ -414,7 +547,10 @@ export async function submitJob(data: SubmitJobRequest): Promise<SubmitJobRespon
   return post<SubmitJobResponse>("/mining/submit", data);
 }
 
-export async function loginApi(credentials: { username: string; password: string }): Promise<AuthResponse> {
+export async function loginApi(credentials: {
+  username: string;
+  password: string;
+}): Promise<AuthResponse> {
   const options = authInterceptor({ method: "POST", body: JSON.stringify(credentials) });
   const response = await fetch(`${AUTH_URL}/api/auth/login`, options);
   if (!response.ok) throw await parseApiError(response);
@@ -423,7 +559,10 @@ export async function loginApi(credentials: { username: string; password: string
   return data;
 }
 
-export async function registerApi(userData: { username: string; password: string }): Promise<AuthResponse> {
+export async function registerApi(userData: {
+  username: string;
+  password: string;
+}): Promise<AuthResponse> {
   const options = authInterceptor({ method: "POST", body: JSON.stringify(userData) });
   const response = await fetch(`${AUTH_URL}/api/auth/register`, options);
   if (!response.ok) throw await parseApiError(response);
@@ -446,7 +585,9 @@ export function isAuthenticated(): boolean {
   return getToken() !== null;
 }
 
-export function startKeepAlivePing(onPingResult?: (latency: number, success: boolean) => void): number {
+export function startKeepAlivePing(
+  onPingResult?: (latency: number, success: boolean) => void,
+): number {
   return window.setInterval(async () => {
     const start = performance.now();
     try {
@@ -456,4 +597,66 @@ export function startKeepAlivePing(onPingResult?: (latency: number, success: boo
       onPingResult?.(performance.now() - start, false);
     }
   }, 30000);
+}
+
+// ── Intelligence API Endpoints ─────────────────────────────────────────────
+
+export interface IntelligenceTelemetryResponse {
+  phi_integrated: number;
+  self_awareness: number;
+  prediction_accuracy: number;
+  syndrome_pressure: number;
+  rotation_index: number;
+  active_ancillas: number;
+  pool_max: number;
+  exhaustion: number;
+  mode: 'NOMINAL' | 'COMPRESSED' | 'RECOVERY';
+  metacognitive_events: string[];
+  healing_events: number;
+}
+
+export interface IntelligenceStatusResponse {
+  active: boolean;
+  phi: number;
+  current_goal: string;
+  uptime_ms: number;
+}
+
+export interface HebbianStatsResponse {
+  strategy_count: number;
+  top_strategies: Array<{
+    syndrome: number;
+    weight: number;
+    success_count: number;
+    failure_count: number;
+  }>;
+  stability: number;
+}
+
+export async function getIntelligenceTelemetry(): Promise<IntelligenceTelemetryResponse> {
+  return get<IntelligenceTelemetryResponse>("/intelligence/telemetry");
+}
+
+export async function getIntelligenceStatus(): Promise<IntelligenceStatusResponse> {
+  return get<IntelligenceStatusResponse>("/intelligence/status");
+}
+
+export async function getHebbianStats(): Promise<HebbianStatsResponse> {
+  return get<HebbianStatsResponse>("/intelligence/hebbian-stats");
+}
+
+export async function simulateDisturbance(syndrome: number): Promise<{ status: string }> {
+  return post<{ status: string }>("/intelligence/simulate-disturbance", { syndrome });
+}
+
+export async function resetIntelligence(): Promise<{ status: string }> {
+  return post<{ status: string }>("/intelligence/reset", {});
+}
+
+export async function startIntelligence(): Promise<{ status: string }> {
+  return post<{ status: string }>("/intelligence/start", {});
+}
+
+export async function stopIntelligence(): Promise<{ status: string }> {
+  return post<{ status: string }>("/intelligence/stop", {});
 }

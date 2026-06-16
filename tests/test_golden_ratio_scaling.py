@@ -2,13 +2,17 @@
 Comprehensive Audit & Tests for Golden Ratio Scaling
 =====================================================
 
-The golden ratio (φ = 1.618033988749895) is nature's fundamental scaling constant.
-This test suite verifies:
+The golden ratio (φ = 1.618033988749895) is implemented as a mathematical invariant
+for deterministic scaling, traversal guidance, and ensemble weighting in the
+HENDRIX-Φ solver system. This test suite verifies:
   1. φ satisfies its defining quadratic: φ² = φ + 1
-  2. The scaling engine correctly applies φ-based weighting
-  3. The ASIC comparison framework produces correct golden-ratio-scale results
+  2. The scaling engine correctly applies φ-based deterministic weighting
+  3. The ASIC comparison framework maintains proper projection boundaries
   4. Edge cases and property-based invariants hold
-  5. Cross-validation of the published golden-ratio-scaling results
+  5. Cross-validation of mathematical implementations against reference values
+
+Note: φ provides structured guidance for traversal and scaling decisions;
+SHA-256 verification and pool-side acceptance remain external proof oracles.
 """
 
 from __future__ import annotations
@@ -19,13 +23,29 @@ import sys
 from pathlib import Path
 from typing import Any
 
+try:
+    from hypothesis import given, settings
+    from hypothesis import strategies as st
+except ImportError:  # pragma: no cover - dependency guard for minimal envs
+    given = settings = st = None
+
 import pytest
 
 # ── Ensure we can import from python_backend ──────────────────────────────
 ROOT = Path(__file__).resolve().parents[1]
 BACKEND = ROOT / "python_backend"
+SCRIPTS = ROOT / "scripts"
 if str(BACKEND) not in sys.path:
     sys.path.insert(0, str(BACKEND))
+if str(SCRIPTS) not in sys.path:
+    sys.path.insert(0, str(SCRIPTS))
+
+from asic_comparison_framework import (
+    ASICPerformanceData,
+    ComprehensiveComparison,
+    GoldenRatioScaling,
+    PULVINIPerformanceEstimator,
+)
 
 # ── Imports from the codebase under test ──────────────────────────────────
 from pythia_mining.phi_scaling_engine import (
@@ -39,16 +59,10 @@ from pythia_mining.phi_scaling_engine import (
     why_phi_beats_quantum,
 )
 
-from asic_comparison_framework import (
-    ASICPerformanceData,
-    ComprehensiveComparison,
-    GoldenRatioScaling,
-    PULVINIPerformanceEstimator,
-)
-
 # ============================================================================
 # SECTION 1 — Golden Ratio Mathematical Identity Verification
 # ============================================================================
+
 
 class TestPhiMathematicalIdentity:
     """Verify φ satisfies its fundamental mathematical properties."""
@@ -78,8 +92,8 @@ class TestPhiMathematicalIdentity:
 
     def test_phi_powers(self) -> None:
         """φ³ = φ² + φ  (extending the identity)"""
-        phi3 = PHI ** 3
-        phi2_plus_phi = (PHI ** 2) + PHI
+        phi3 = PHI**3
+        phi2_plus_phi = (PHI**2) + PHI
         assert abs(phi3 - phi2_plus_phi) < 1e-14
 
     def test_phi_golden_angle(self) -> None:
@@ -89,13 +103,15 @@ class TestPhiMathematicalIdentity:
 
     def test_phi_logarithmic_spiral(self) -> None:
         """A logarithmic spiral with growth factor φ⁴ has radius ratio φ² per quarter-turn."""
-        quarter_turn_growth = PHI ** 2
-        full_turn_growth = quarter_turn_growth ** 4
-        assert abs(full_turn_growth - PHI ** 8) < 1e-12
+        quarter_turn_growth = PHI**2
+        full_turn_growth = quarter_turn_growth**4
+        assert abs(full_turn_growth - PHI**8) < 1e-12
+
 
 # ============================================================================
 # SECTION 2 — phi_scaling_engine Core Tests (Edge Cases + Properties)
 # ============================================================================
+
 
 class TestPhiScaledEnsemble:
     """Deterministic φ-scaled ensemble decision helper."""
@@ -109,10 +125,7 @@ class TestPhiScaledEnsemble:
 
     def test_single_model_returns_valid_weights(self) -> None:
         engine = PhiScaledEnsemble()
-        result = engine.predict_with_phi_scaling(
-            {"alpha": {"score": 0.5}},
-            {}
-        )
+        result = engine.predict_with_phi_scaling({"alpha": {"score": 0.5}}, {})
         self._assert_valid_phi_decision(result)
 
     def test_identical_scores_use_phi_power_exponent(self) -> None:
@@ -124,7 +137,7 @@ class TestPhiScaledEnsemble:
                 "b": {"score": 0.71},
                 "c": {"score": 0.69},
             },
-            {}
+            {},
         )
         self._assert_valid_phi_decision(result)
         # Low variance → weights should be nearly uniform
@@ -139,7 +152,7 @@ class TestPhiScaledEnsemble:
                 "bad": {"score": 0.15},
                 "mid": {"score": 0.50},
             },
-            {}
+            {},
         )
         self._assert_valid_phi_decision(result)
 
@@ -148,7 +161,7 @@ class TestPhiScaledEnsemble:
         engine = PhiScaledEnsemble()
         result = engine.predict_with_phi_scaling(
             {"m": {"score": 0.5}},
-            {"nature": {"a": 1.0, "b": PHI, "c": PHI ** 2, "d": PHI ** 3}}
+            {"nature": {"a": 1.0, "b": PHI, "c": PHI**2, "d": PHI**3}},
         )
         self._assert_valid_phi_decision(result)
         # Ratios: φ, φ, φ → all exactly φ → harmony ≈ 1.0
@@ -158,8 +171,7 @@ class TestPhiScaledEnsemble:
         """φ, φ⁻¹, φ² are not consecutive φ ratios — harmony ≈ 0."""
         engine = PhiScaledEnsemble()
         result = engine.predict_with_phi_scaling(
-            {"m": {"score": 0.5}},
-            {"nature": {"a": PHI, "b": PHI_INV, "c": PHI ** 2}}
+            {"m": {"score": 0.5}}, {"nature": {"a": PHI, "b": PHI_INV, "c": PHI**2}}
         )
         self._assert_valid_phi_decision(result)
         # Ratios: φ⁻¹/φ ≈ 0.382, φ²/φ⁻¹ ≈ 4.236 → neither ≈ φ → harmony ≈ 0
@@ -168,8 +180,7 @@ class TestPhiScaledEnsemble:
     def test_indicator_harmony_poor_sequence(self) -> None:
         engine = PhiScaledEnsemble()
         result = engine.predict_with_phi_scaling(
-            {"m": {"score": 0.5}},
-            {"chaos": {"x": 0.0, "y": 1000.0, "z": 0.001}}
+            {"m": {"score": 0.5}}, {"chaos": {"x": 0.0, "y": 1000.0, "z": 0.001}}
         )
         self._assert_valid_phi_decision(result)
         assert result["indicator_harmony"] < 0.5
@@ -182,10 +193,7 @@ class TestPhiScaledEnsemble:
 
     def test_phi_power_configurable(self) -> None:
         engine = PhiScaledEnsemble({"phi_scaling_power": 2.0})
-        result = engine.predict_with_phi_scaling(
-            {"a": {"score": 0.5}, "b": {"score": 0.5}},
-            {}
-        )
+        result = engine.predict_with_phi_scaling({"a": {"score": 0.5}, "b": {"score": 0.5}}, {})
         self._assert_valid_phi_decision(result)
 
     def _assert_valid_phi_decision(self, d: dict) -> None:
@@ -209,31 +217,23 @@ class TestPhiOptimizedFeatures:
 
     def test_perfect_phi_alignment(self) -> None:
         features = PhiOptimizedFeatures()
-        result = features.extract_phi_optimized_features(
-            {"test": {"phi_val": PHI}}
-        )
+        result = features.extract_phi_optimized_features({"test": {"phi_val": PHI}})
         assert len(result["test"]) == 1
         assert result["test"][0]["phi_alignment"] > 0.999
 
     def test_poor_alignment(self) -> None:
         features = PhiOptimizedFeatures()
-        result = features.extract_phi_optimized_features(
-            {"test": {"bad": 999.0}}
-        )
+        result = features.extract_phi_optimized_features({"test": {"bad": 999.0}})
         assert result["test"][0]["phi_alignment"] < 0.5
 
     def test_amplification_exceeds_one_for_aligned(self) -> None:
         features = PhiOptimizedFeatures()
-        result = features.extract_phi_optimized_features(
-            {"test": {"phi": PHI}}
-        )
+        result = features.extract_phi_optimized_features({"test": {"phi": PHI}})
         assert result["test"][0]["amplification"] >= 1.0
 
     def test_phi_statistics_tracked(self) -> None:
         features = PhiOptimizedFeatures()
-        features.extract_phi_optimized_features(
-            {"lane": {"a": PHI, "b": PHI_INV}}
-        )
+        features.extract_phi_optimized_features({"lane": {"a": PHI, "b": PHI_INV}})
         assert "lane" in features.phi_statistics
         assert "mean_alignment" in features.phi_statistics["lane"]
 
@@ -250,9 +250,7 @@ class TestPhiResonanceAnalyzer:
 
     def test_fibonacci_sequence_detected(self) -> None:
         analyzer = PhiResonanceAnalyzer()
-        result = analyzer.analyze_phi_resonance(
-            {"fib": [1, 2, 3, 5, 8, 13, 21, 34, 55]}
-        )
+        result = analyzer.analyze_phi_resonance({"fib": [1, 2, 3, 5, 8, 13, 21, 34, 55]})
         assert "fib_resonance" in result
         assert result["fib_resonance"]["is_fibonacci"] is True
         assert result["fib_resonance"]["harmony_score"] > 0.8
@@ -260,9 +258,7 @@ class TestPhiResonanceAnalyzer:
     def test_arithmetic_sequence_low_resonance(self) -> None:
         """Arithmetic progression has consistent but non-φ ratios, no fibonacci."""
         analyzer = PhiResonanceAnalyzer()
-        result = analyzer.analyze_phi_resonance(
-            {"random": [0.1, 0.2, 0.3, 0.4, 0.5, 0.6]}
-        )
+        result = analyzer.analyze_phi_resonance({"random": [0.1, 0.2, 0.3, 0.4, 0.5, 0.6]})
         # Arithmetic series → ratios converge to 1.0, not φ, not fibonacci
         assert "random_resonance" in result
         assert result["random_resonance"]["is_fibonacci"] is False
@@ -285,9 +281,7 @@ class TestPhiResonanceAnalyzer:
 
     def test_list_of_sequences(self) -> None:
         analyzer = PhiResonanceAnalyzer()
-        result = analyzer.analyze_phi_resonance(
-            [[1, 2, 3, 5, 8], [0.1, 0.2, 0.3]]
-        )
+        result = analyzer.analyze_phi_resonance([[1, 2, 3, 5, 8], [0.1, 0.2, 0.3]])
         assert "series_0_resonance" in result
 
     def test_inf_values_handled(self) -> None:
@@ -339,7 +333,9 @@ class TestBenchmarkVsASIC:
         )
         expected_effective = 1e15 * 3.0 / 0.5
         assert result["effective_hashes_per_second"] == pytest.approx(expected_effective, rel=1e-6)
-        assert result["projected_vs_asic_ratio"] == pytest.approx(expected_effective / 200e12, rel=1e-6)
+        assert result["projected_vs_asic_ratio"] == pytest.approx(
+            expected_effective / 200e12, rel=1e-6
+        )
 
 
 class TestCalculatePhiPerformance:
@@ -377,6 +373,7 @@ class TestWhyPhiBeatsQuantum:
 # ============================================================================
 # SECTION 3 — ASIC Comparison Framework Tests
 # ============================================================================
+
 
 class TestASICPerformanceData:
     """Real-world ASIC specifications."""
@@ -419,17 +416,28 @@ class TestGoldenRatioScaling:
     def test_phi_matches_phi_scaling_engine(self) -> None:
         assert abs(GoldenRatioScaling.PHI - PHI) < 1e-12
 
-    def test_scaling_factors_four_levels(self) -> None:
+    def test_scaling_factors_requested_levels(self) -> None:
         factors = GoldenRatioScaling.get_scaling_factors()
-        assert len(factors) == 4
-        assert factors["10^12"] == 10**12
-        assert factors["10^15"] == 10**15
-        assert factors["10^18"] == 10**18
-        assert factors["10^20"] == 10**20
+        assert set(factors) == {
+            "10^7",
+            "10^10",
+            "10^12",
+            "10^15",
+            "10^18",
+            "10^20",
+            "10^31",
+            "10^76",
+        }
+        assert factors["10^12"] == pytest.approx((10**12) * (PHI**12), rel=1e-12)
+        assert factors["10^76"] == pytest.approx((10**76) * (PHI**76), rel=1e-12)
+
+    def test_combination_scaling_factors(self) -> None:
+        factors = GoldenRatioScaling.get_scaling_factors(include_combinations=True)
+        assert factors["10^7×10^10"] == pytest.approx(factors["10^7"] * factors["10^10"], rel=1e-12)
 
     def test_apply_scaling(self) -> None:
         result = GoldenRatioScaling.apply_scaling(2.34, 12)
-        assert result == 2.34e12
+        assert result == pytest.approx(2.34 * (10**12) * (PHI**12), rel=1e-12)
 
     def test_governance_cap_default(self) -> None:
         assert GoldenRatioScaling.GOVERNANCE_CAP_EHS == 1.0
@@ -477,33 +485,67 @@ class TestComprehensiveComparison:
         # 2.62 × 10 × 50 × 20 × 15 = 393,000
         assert abs(comparison.total_quantum_multiplier - 393000.0) < 1.0
 
-    def test_single_instance_returns_full_structure(self, comparison: ComprehensiveComparison) -> None:
+    def test_single_instance_returns_full_structure(
+        self, comparison: ComprehensiveComparison
+    ) -> None:
         result = comparison.compare_single_instance()
         assert "pulvini_native_32_solver" in result
         assert "asic_comparison" in result
         assert result["pulvini_native_32_solver"]["num_solvers"] == 32
 
-    def test_golden_ratio_scaling_four_levels(self, comparison: ComprehensiveComparison) -> None:
+    def test_golden_ratio_scaling_requested_levels_and_combinations(
+        self, comparison: ComprehensiveComparison
+    ) -> None:
         results = comparison.compare_golden_ratio_scaling()
-        assert set(results.keys()) == {"10^12", "10^15", "10^18", "10^20"}
+        required = {
+            "10^7",
+            "10^10",
+            "10^12",
+            "10^15",
+            "10^18",
+            "10^20",
+            "10^31",
+            "10^76",
+        }
+        assert required.issubset(results.keys())
+        assert "10^7×10^10" in results
+        assert "10^31×10^76" in results
+        assert "asic_efficiency_curves" in results["10^12"]
+        assert "latency_per_phi_tier_ms" in results["10^12"]
 
     def test_golden_ratio_monotonic_throughput(self, comparison: ComprehensiveComparison) -> None:
         results = comparison.compare_golden_ratio_scaling()
-        throughputs = [results[s]["effective_hashrate_ths"] for s in ["10^12", "10^15", "10^18", "10^20"]]
+        throughputs = [
+            results[s]["effective_hashrate_ths"]
+            for s in [
+                "10^7",
+                "10^10",
+                "10^12",
+                "10^15",
+                "10^18",
+                "10^20",
+                "10^31",
+                "10^76",
+            ]
+        ]
         for i in range(1, len(throughputs)):
             assert throughputs[i] > throughputs[i - 1], f"Throughput not monotonic at index {i}"
 
-    def test_golden_ratio_10_12_loses_to_asics(self, comparison: ComprehensiveComparison) -> None:
-        """At 10^12 scale, PULVINI should lose to all ASICs."""
+    def test_golden_ratio_10_7_loses_to_asics(self, comparison: ComprehensiveComparison) -> None:
+        """At 10^7 dynamic scale, PULVINI should lose to all ASICs."""
         results = comparison.compare_golden_ratio_scaling()
-        for comp in results["10^12"]["asic_comparison"]:
-            assert comp["pulvini_beats_asic"] is False, f"{comp['asic']} should beat PULVINI at 10^12"
+        for comp in results["10^7"]["asic_comparison"]:
+            assert (
+                comp["pulvini_beats_asic"] is False
+            ), f"{comp['asic']} should beat PULVINI at 10^7"
 
     def test_golden_ratio_10_15_beats_all_asics(self, comparison: ComprehensiveComparison) -> None:
         """At 10^15 scale, PULVINI should beat all ASICs."""
         results = comparison.compare_golden_ratio_scaling()
         for comp in results["10^15"]["asic_comparison"]:
-            assert comp["pulvini_beats_asic"] is True, f"{comp['asic']} should lose to PULVINI at 10^15"
+            assert (
+                comp["pulvini_beats_asic"] is True
+            ), f"{comp['asic']} should lose to PULVINI at 10^15"
 
     def test_golden_ratio_10_18_beats_all_asics(self, comparison: ComprehensiveComparison) -> None:
         results = comparison.compare_golden_ratio_scaling()
@@ -518,9 +560,23 @@ class TestComprehensiveComparison:
     def test_efficiency_improves_with_scale(self, comparison: ComprehensiveComparison) -> None:
         """Efficiency (J/TH) should improve (decrease) as scale increases."""
         results = comparison.compare_golden_ratio_scaling()
-        effs = [results[s]["hashrate_efficiency_j_th"] for s in ["10^12", "10^15", "10^18", "10^20"]]
+        effs = [
+            results[s]["hashrate_efficiency_j_th"]
+            for s in [
+                "10^7",
+                "10^10",
+                "10^12",
+                "10^15",
+                "10^18",
+                "10^20",
+                "10^31",
+                "10^76",
+            ]
+        ]
         for i in range(1, len(effs)):
-            assert effs[i] < effs[i - 1], f"Efficiency worsened at index {i}: {effs[i-1]} → {effs[i]}"
+            assert (
+                effs[i] < effs[i - 1]
+            ), f"Efficiency worsened at index {i}: {effs[i - 1]} → {effs[i]}"
 
     def test_report_generated(self, comparison: ComprehensiveComparison) -> None:
         report = comparison.generate_golden_ratio_report()
@@ -547,17 +603,29 @@ class TestComprehensiveComparison:
         for asic in ratios_12:
             assert ratios_15[asic] > ratios_12[asic], f"{asic} ratio didn't increase"
 
-    def test_efficiency_ratio_decreases_with_scale(self, comparison: ComprehensiveComparison) -> None:
+    def test_efficiency_ratio_decreases_with_scale(
+        self, comparison: ComprehensiveComparison
+    ) -> None:
         results = comparison.compare_golden_ratio_scaling()
         eff_12 = {c["asic"]: c["efficiency_ratio"] for c in results["10^12"]["asic_comparison"]}
         eff_15 = {c["asic"]: c["efficiency_ratio"] for c in results["10^15"]["asic_comparison"]}
         for asic in eff_12:
             assert eff_15[asic] < eff_12[asic], f"{asic} efficiency ratio didn't decrease"
 
+    def test_asic_efficiency_curves_include_resonance_points(
+        self, comparison: ComprehensiveComparison
+    ) -> None:
+        results = comparison.compare_golden_ratio_scaling()
+        curves = results["10^12"]["asic_efficiency_curves"]
+        assert len(curves) == len(ASICPerformanceData.get_all_specs())
+        assert curves[0]["energy_per_phi_tier_j"] > 0
+        assert curves[0]["latency_per_phi_tier_ms"] > 0
+        assert "resonance_delta_from_parity" in curves[0]["asic_specific_resonance_point"]
+
     def test_pulvini_beats_asic_criteria(self, comparison: ComprehensiveComparison) -> None:
         """Verification: pulvini_beats_asic should be True iff hashrate_ratio > 1 AND efficiency_ratio < 1."""
         results = comparison.compare_golden_ratio_scaling()
-        for scale in ["10^12", "10^15", "10^18", "10^20"]:
+        for scale in GoldenRatioScaling.get_scaling_factors(include_combinations=True):
             for comp in results[scale]["asic_comparison"]:
                 expected = comp["hashrate_ratio"] > 1.0 and comp["efficiency_ratio"] < 1.0
                 assert comp["pulvini_beats_asic"] == expected, (
@@ -570,6 +638,7 @@ class TestComprehensiveComparison:
 # ============================================================================
 # SECTION 4 — Cross-Validation Against Published Golden Ratio Results
 # ============================================================================
+
 
 class TestPublishedResultsCrossValidation:
     """Validate against golden_ratio_scaling_results.json."""
@@ -593,12 +662,16 @@ class TestPublishedResultsCrossValidation:
         assert pub_scales == comp_scales, f"Scales differ: {pub_scales} vs {comp_scales}"
 
     def test_throughput_within_reasonable_tolerance(self, published: dict, computed: dict) -> None:
-        for scale in ["10^12", "10^15", "10^18", "10^20"]:
-            pub_t = published["golden_ratio_scaling"][scale]["effective_throughput_with_quantum_advantages"]
+        for scale in GoldenRatioScaling.get_scaling_factors(include_combinations=True):
+            pub_t = published["golden_ratio_scaling"][scale][
+                "effective_throughput_with_quantum_advantages"
+            ]
             comp_t = computed[scale]["effective_throughput_with_quantum_advantages"]
             # Allow small floating-point discrepancies
             ratio = comp_t / pub_t if pub_t != 0 else float("inf")
-            assert 0.99 < ratio < 1.01, f"Throughput mismatch at {scale}: {comp_t} vs {pub_t} (ratio {ratio})"
+            assert (
+                0.99 < ratio < 1.01
+            ), f"Throughput mismatch at {scale}: {comp_t} vs {pub_t} (ratio {ratio})"
 
     def test_asic_data_consistent(self, published: dict) -> None:
         pub_asics = published["asic_data"]
@@ -606,42 +679,45 @@ class TestPublishedResultsCrossValidation:
         for name in pub_asics:
             assert name in code_asics, f"{name} missing from code"
             for key in ["hashrate_ths", "power_w", "efficiency_j_th"]:
-                assert pub_asics[name][key] == code_asics[name][key], (
-                    f"{name}.{key} mismatch: {pub_asics[name][key]} vs {code_asics[name][key]}"
-                )
+                assert (
+                    pub_asics[name][key] == code_asics[name][key]
+                ), f"{name}.{key} mismatch: {pub_asics[name][key]} vs {code_asics[name][key]}"
 
     def test_quantum_advantages_consistent(self, published: dict) -> None:
         comparison = ComprehensiveComparison()
         pub_qa = published["quantum_advantages"]
         assert abs(pub_qa["total_multiplier"] - comparison.total_quantum_multiplier) < 0.1
-        assert pub_qa["phi_folding_compression"] == pytest.approx(comparison.PHI_FOLDING_COMPRESSION, rel=1e-3)
-        assert pub_qa["state_discrimination"] == pytest.approx(comparison.STATE_DISCRIMINATION, rel=1e-3)
+        assert pub_qa["phi_folding_compression"] == pytest.approx(
+            comparison.PHI_FOLDING_COMPRESSION, rel=1e-3
+        )
+        assert pub_qa["state_discrimination"] == pytest.approx(
+            comparison.STATE_DISCRIMINATION, rel=1e-3
+        )
 
 
 # ============================================================================
 # SECTION 5 — Property-Based Tests (Invariant-Driven)
 # ============================================================================
 
+
 class TestPropertyBasedInvariants:
     """Invariant checks for the golden ratio scaling system."""
 
     def test_phi_scale_factor_self_similarity(self) -> None:
-        """Scaling by 10^15 then dividing by 10^3 should equal scaling by 10^12."""
-        base = 1.0
-        scaled_15 = GoldenRatioScaling.apply_scaling(base, 15)
-        scaled_12 = GoldenRatioScaling.apply_scaling(base, 12)
-        assert abs(scaled_15 / 1e3 - scaled_12) < 1e-12
+        """Dynamic scaling preserves self-similarity: S(a+b) == S(a)×S(b)."""
+        scaled_7 = GoldenRatioScaling.apply_scaling(1.0, 7)
+        scaled_10 = GoldenRatioScaling.apply_scaling(1.0, 10)
+        scaled_17 = GoldenRatioScaling.apply_scaling(1.0, 17)
+        assert scaled_7 * scaled_10 == pytest.approx(scaled_17, rel=1e-12)
 
     def test_decision_normalization_invariant(self) -> None:
         """All phi_weights from a non-empty prediction should sum to 1."""
         import random
+
         engine = PhiScaledEnsemble()
         for _ in range(20):
             n = random.randint(1, 5)
-            predictions = {
-                f"m{i}": {"score": random.uniform(0, 1)}
-                for i in range(n)
-            }
+            predictions = {f"m{i}": {"score": random.uniform(0, 1)} for i in range(n)}
             result = engine.predict_with_phi_scaling(predictions, {})
             if result["phi_weights"]:
                 assert abs(sum(result["phi_weights"]) - 1.0) < 1e-10
@@ -662,7 +738,9 @@ class TestPropertyBasedInvariants:
                 "b": {"score": 0.5 - variance},
             }
             result = engine.predict_with_phi_scaling(predictions, {})
-            assert 0.0 <= result["coherence"] <= 1.0, f"Coherence out of bounds for variance {variance}"
+            assert (
+                0.0 <= result["coherence"] <= 1.0
+            ), f"Coherence out of bounds for variance {variance}"
 
     def test_power_scaling_sub_linear(self) -> None:
         """Doubling the golden ratio scale should less-than-double the power (sub-linear)."""
@@ -673,9 +751,39 @@ class TestPropertyBasedInvariants:
     def test_efficiency_monotonic_with_scale(self) -> None:
         """Efficiency should always improve (decrease) as scale increases."""
         results = ComprehensiveComparison().compare_golden_ratio_scaling()
-        effs = [results[s]["hashrate_efficiency_j_th"] for s in ["10^12", "10^15", "10^18", "10^20"]]
+        effs = [
+            results[s]["hashrate_efficiency_j_th"]
+            for s in [
+                "10^7",
+                "10^10",
+                "10^12",
+                "10^15",
+                "10^18",
+                "10^20",
+                "10^31",
+                "10^76",
+            ]
+        ]
         for i in range(len(effs) - 1):
             assert effs[i + 1] < effs[i], f"Efficiency non-monotonic at index {i}"
+
+    @pytest.mark.skipif(given is None, reason="hypothesis not installed")
+    @settings(max_examples=50, deadline=None)
+    @given(st.integers(min_value=0, max_value=30), st.integers(min_value=0, max_value=30))
+    def test_dynamic_phi_combinations_are_multiplicative(self, left: int, right: int) -> None:
+        combined = GoldenRatioScaling.apply_scaling(1.0, left + right)
+        multiplied = GoldenRatioScaling.apply_scaling(1.0, left) * GoldenRatioScaling.apply_scaling(
+            1.0, right
+        )
+        assert multiplied == pytest.approx(combined, rel=1e-12)
+
+    @pytest.mark.skipif(given is None, reason="hypothesis not installed")
+    @settings(max_examples=50, deadline=None)
+    @given(st.integers(min_value=0, max_value=75))
+    def test_dynamic_phi_scale_is_exponential(self, exponent: int) -> None:
+        current_scale = GoldenRatioScaling.scale_factor_for_exponent(exponent)
+        next_scale = GoldenRatioScaling.scale_factor_for_exponent(exponent + 1)
+        assert next_scale / current_scale == pytest.approx(10 * PHI, rel=1e-12)
 
     def test_phi_resonance_alternating_no_resonance(self) -> None:
         """[φ, 1/φ, φ, 1/φ, ...] has ratios φ⁻² and φ² — not φ — so no resonance."""
@@ -691,21 +799,31 @@ class TestPropertyBasedInvariants:
 # SECTION 6 — Structural / Code Quality Checks
 # ============================================================================
 
+
 class TestCodeQuality:
     """Basic structural quality checks."""
 
     def test_phi_scaling_engine_has_all_exports(self) -> None:
         from pythia_mining import phi_scaling_engine
+
         for name in [
-            "PHI", "PHI_INV", "PhiDecision", "PhiFeatureScore",
-            "PhiBenchmark", "PhiScaledEnsemble", "PhiOptimizedFeatures",
-            "PhiResonanceAnalyzer", "benchmark_vs_asic", "calculate_phi_performance",
+            "PHI",
+            "PHI_INV",
+            "PhiDecision",
+            "PhiFeatureScore",
+            "PhiBenchmark",
+            "PhiScaledEnsemble",
+            "PhiOptimizedFeatures",
+            "PhiResonanceAnalyzer",
+            "benchmark_vs_asic",
+            "calculate_phi_performance",
         ]:
             assert hasattr(phi_scaling_engine, name), f"Missing export: {name}"
 
     def test_no_subprocess_calls_in_comparison_framework(self) -> None:
         """The comparison framework should be pure math, no subprocess calls."""
         import inspect
+
         source = inspect.getsource(ComprehensiveComparison)
         assert "subprocess" not in source
         assert "os.system" not in source

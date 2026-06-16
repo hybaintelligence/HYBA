@@ -15,8 +15,8 @@ from pythia_mining.pulvini_propagation import (  # noqa: E402
     PROXY_GATEWAY,
     CancelFlood,
     SharePropagationController,
-    ShareSignal,
     ShareRouter,
+    ShareSignal,
 )
 from pythia_mining.stratum_client import ShareResult  # noqa: E402
 
@@ -53,7 +53,9 @@ class PulviniSharePropagationTests(unittest.TestCase):
 
             async def submitter(submit_job, nonce, extranonce2):
                 submitted.append((submit_job.job_id, nonce, extranonce2))
-                return ShareResult(True, job_id=submit_job.job_id, nonce=nonce, block_hash="00" * 32)
+                return ShareResult(
+                    True, job_id=submit_job.job_id, nonce=nonce, block_hash="00" * 32
+                )
 
             result = await controller.handle_share_found(
                 job=job,
@@ -80,15 +82,26 @@ class PulviniSharePropagationTests(unittest.TestCase):
         self.assertIn("memory_fabric", snapshot)
         self.assertGreater(snapshot["memory_fabric"]["kernel"]["kernel_norm"], 0.0)
         self.assertTrue(snapshot["memory_fabric"]["compression"]["reversible"])
-        self.assertGreater(snapshot["memory_fabric"]["compression"]["working_set_compression_ratio"], 1.0)
+        self.assertGreater(
+            snapshot["memory_fabric"]["compression"]["working_set_compression_ratio"],
+            1.0,
+        )
 
-    def test_rejected_share_still_records_cancelled_job_to_stop_stale_work(self) -> None:
+    def test_rejected_share_still_records_cancelled_job_to_stop_stale_work(
+        self,
+    ) -> None:
         async def run_case():
             controller = SharePropagationController()
             job = SimpleNamespace(job_id="job-3")
 
             async def submitter(submit_job, nonce, extranonce2):
-                return ShareResult(False, error_code=2, error_message="low difficulty", job_id=submit_job.job_id, nonce=nonce)
+                return ShareResult(
+                    False,
+                    error_code=2,
+                    error_message="low difficulty",
+                    job_id=submit_job.job_id,
+                    nonce=nonce,
+                )
 
             return await controller.handle_share_found(
                 job=job,

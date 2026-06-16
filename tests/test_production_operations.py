@@ -17,6 +17,7 @@ if str(ROOT) not in sys.path:
 
 from argon2 import PasswordHasher  # noqa: E402
 from fastapi import HTTPException  # noqa: E402
+
 from hyba_genesis_api.api import auth as auth_api  # noqa: E402
 from hyba_genesis_api.api.mining_ops import _derive_alerts, _parse_audit_line  # noqa: E402
 from pythia_mining.metrics_store import MetricsStore, PoolMetrics  # noqa: E402
@@ -41,8 +42,8 @@ class ProductionEnvironmentValidatorTests(unittest.TestCase):
             "PULVINI_BACKEND_URL": "http://127.0.0.1:3001",
             "HYBA_ALLOW_DEV_FIXTURES": "false",
             "HYBA_POOL_NICEHASH_URL": "stratum+ssl://sha256.eu.nicehash.com:3334",
-            "HYBA_POOL_NICEHASH_USERNAME": "ci-user",
-            "HYBA_POOL_NICEHASH_PASSWORD": "ci-secret",
+            "HYBA_POOL_NICEHASH_WORKER": "ci-worker",
+            "HYBA_POOL_NICEHASH_NICEHASH_POOL_ID": "ci-pool-id",
         }
         with patch.dict(os.environ, env, clear=True):
             self.assertEqual(1, validate_production_env.main())
@@ -56,8 +57,8 @@ class ProductionEnvironmentValidatorTests(unittest.TestCase):
             "PULVINI_BACKEND_URL": "http://127.0.0.1:3001",
             "HYBA_ALLOW_DEV_FIXTURES": "false",
             "HYBA_POOL_NICEHASH_URL": "stratum+ssl://sha256.eu.nicehash.com:3334",
-            "HYBA_POOL_NICEHASH_USERNAME": "ci-user",
-            "HYBA_POOL_NICEHASH_PASSWORD": "ci-secret",
+            "HYBA_POOL_NICEHASH_WORKER": "ci-worker",
+            "HYBA_POOL_NICEHASH_NICEHASH_POOL_ID": "ci-pool-id",
         }
         with patch.dict(os.environ, env, clear=True):
             self.assertEqual(1, validate_production_env.main())
@@ -76,9 +77,29 @@ class ProductionEnvironmentValidatorTests(unittest.TestCase):
             "HYBA_ENABLE_MINING_AUTOCONNECT": "false",
             "HYBA_ENABLE_AUDIT_LOGGING": "true",
             "HYBA_POOL_NICEHASH_URL": "stratum+ssl://sha256.eu.nicehash.com:3334",
-            "HYBA_POOL_NICEHASH_USERNAME": "ci-user",
-            "HYBA_POOL_NICEHASH_PASSWORD": "ci-secret",
+            "HYBA_POOL_NICEHASH_WORKER": "ci-worker",
+            "HYBA_POOL_NICEHASH_NICEHASH_POOL_ID": "ci-open-network-pool-id",
             "HYBA_POOL_NICEHASH_STRATUM_VERSION": "1",
+        }
+        with patch.dict(os.environ, env, clear=True):
+            self.assertEqual(0, validate_production_env.main())
+
+    def test_validator_accepts_ckpool_btc_address_without_pool_password(self) -> None:
+        password_hash = PasswordHasher().hash("correct horse battery staple")
+        env = {
+            "NODE_ENV": "production",
+            "HYBA_ENV": "production",
+            "JWT_SECRET": "ci-production-secret-value-at-least-32-chars",
+            "HYBA_OPERATOR_CREDENTIALS": f"operator:{password_hash}:mining_operator",
+            "PULVINI_BACKEND_URL": "http://127.0.0.1:3001",
+            "HYBA_ALLOW_DEV_FIXTURES": "false",
+            "HYBA_ENABLE_LIVE_STRATUM": "true",
+            "HYBA_ENABLE_LIVE_SHARE_SUBMIT": "false",
+            "HYBA_ENABLE_MINING_AUTOCONNECT": "false",
+            "HYBA_ENABLE_AUDIT_LOGGING": "true",
+            "HYBA_POOL_CKPOOL_URL": "stratum+tcp://solo.ckpool.org:3333",
+            "HYBA_POOL_CKPOOL_BTC_ADDRESS": "bc1qexampleopennetworkpayout000000000000000000",
+            "HYBA_POOL_CKPOOL_STRATUM_VERSION": "1",
         }
         with patch.dict(os.environ, env, clear=True):
             self.assertEqual(0, validate_production_env.main())
@@ -100,7 +121,7 @@ class ProductionEnvironmentValidatorTests(unittest.TestCase):
             "HYBA_QUANTUM_CAPACITY_EHS": "1.0",
             "HYBA_POOL_VIABTC_URL": "stratum2+ssl://btc.viabtc.com:443",
             "HYBA_POOL_VIABTC_USERNAME": "PYTHIA.001",
-            "HYBA_POOL_VIABTC_PASSWORD": "ci-realistic-pool-secret",
+            "HYBA_POOL_VIABTC_PASSWORD": "x",
             "HYBA_POOL_VIABTC_STRATUM_VERSION": "2",
         }
         with patch.dict(os.environ, env, clear=True):
@@ -122,7 +143,7 @@ class ProductionEnvironmentValidatorTests(unittest.TestCase):
             "HYBA_QUANTUM_CAPACITY_EHS": "1.000001",
             "HYBA_POOL_VIABTC_URL": "stratum2+ssl://btc.viabtc.com:443",
             "HYBA_POOL_VIABTC_USERNAME": "PYTHIA.001",
-            "HYBA_POOL_VIABTC_PASSWORD": "ci-realistic-pool-secret",
+            "HYBA_POOL_VIABTC_PASSWORD": "x",
             "HYBA_POOL_VIABTC_STRATUM_VERSION": "2",
         }
         with patch.dict(os.environ, env, clear=True):
@@ -143,7 +164,7 @@ class ProductionEnvironmentValidatorTests(unittest.TestCase):
             "HYBA_ENABLE_AUDIT_LOGGING": "true",
             "HYBA_POOL_VIABTC_URL": "stratum2+ssl://btc.viabtc.com:443",
             "HYBA_POOL_VIABTC_USERNAME": "PYTHIA.001",
-            "HYBA_POOL_VIABTC_PASSWORD": "ci-realistic-pool-secret",
+            "HYBA_POOL_VIABTC_PASSWORD": "x",
             "HYBA_POOL_VIABTC_STRATUM_VERSION": "1",
         }
         with patch.dict(os.environ, env, clear=True):
@@ -162,8 +183,8 @@ class ProductionEnvironmentValidatorTests(unittest.TestCase):
             "HYBA_ENABLE_LIVE_SHARE_SUBMIT": "true",
             "HYBA_ENABLE_AUDIT_LOGGING": "true",
             "HYBA_POOL_NICEHASH_URL": "stratum+ssl://sha256.eu.nicehash.com:3334",
-            "HYBA_POOL_NICEHASH_USERNAME": "ci-user",
-            "HYBA_POOL_NICEHASH_PASSWORD": "ci-secret",
+            "HYBA_POOL_NICEHASH_WORKER": "ci-worker",
+            "HYBA_POOL_NICEHASH_NICEHASH_POOL_ID": "ci-open-network-pool-id",
         }
         with patch.dict(os.environ, env, clear=True):
             self.assertEqual(1, validate_production_env.main())
@@ -192,7 +213,10 @@ class OperatorAuthenticationTests(unittest.TestCase):
             "HYBA_OPERATOR_CREDENTIALS": f"operator:{password_hash}:mining_operator",
         }
         with patch.dict(os.environ, env, clear=True):
-            self.assertEqual(["mining_operator"], auth_api._verify_operator("operator", "operator-password"))
+            self.assertEqual(
+                ["mining_operator"],
+                auth_api._verify_operator("operator", "operator-password"),
+            )
 
     def test_production_operator_login_rejects_legacy_sha256_hash(self) -> None:
         env = {
@@ -204,7 +228,10 @@ class OperatorAuthenticationTests(unittest.TestCase):
             with self.assertRaises(HTTPException) as exc_info:
                 auth_api._verify_operator("operator", "operator-password")
             self.assertEqual(500, exc_info.exception.status_code)
-            self.assertEqual("operator_credentials_not_production_safe", exc_info.exception.detail["error"])
+            self.assertEqual(
+                "operator_credentials_not_production_safe",
+                exc_info.exception.detail["error"],
+            )
 
 
 class BridgeRuntimeHardeningTests(unittest.TestCase):
@@ -239,7 +266,10 @@ class BridgeRuntimeHardeningTests(unittest.TestCase):
         dockerfile = (ROOT / "Dockerfile").read_text(encoding="utf-8")
         entrypoint = (ROOT / "scripts" / "hyba-runtime-entrypoint.sh").read_text(encoding="utf-8")
         self.assertIn("hyba-runtime-entrypoint.sh", dockerfile)
-        self.assertNotIn("uvicorn hyba_genesis_api.main:app --host 127.0.0.1 --port 3001 --log-level warning & node", dockerfile)
+        self.assertNotIn(
+            "uvicorn hyba_genesis_api.main:app --host 127.0.0.1 --port 3001 --log-level warning & node",
+            dockerfile,
+        )
         self.assertIn("kill -TERM", entrypoint)
         self.assertIn("FastAPI backend exited", entrypoint)
 
@@ -255,7 +285,9 @@ class MiningOperationsTelemetryTests(unittest.TestCase):
         self.assertEqual("[REDACTED]", parsed["event_data"]["token"])
         self.assertEqual("ok", parsed["event_data"]["safe"])
 
-    def test_alert_derivation_flags_rejection_failures_latency_and_degraded_health(self) -> None:
+    def test_alert_derivation_flags_rejection_failures_latency_and_degraded_health(
+        self,
+    ) -> None:
         alerts = _derive_alerts(
             [
                 {
@@ -312,9 +344,17 @@ class ExplicitFailureTelemetryTests(unittest.TestCase):
     def test_websocket_metrics_are_derived_from_persisted_activity(self) -> None:
         async def run_case() -> dict:
             with tempfile.TemporaryDirectory() as tmpdir:
-                with patch.dict(os.environ, {"HYBA_METRICS_DB_PATH": str(Path(tmpdir) / "metrics.db")}, clear=False):
-                    from pythia_mining.metrics_store import MetricsStore, reset_metrics_store, set_metrics_store
+                with patch.dict(
+                    os.environ,
+                    {"HYBA_METRICS_DB_PATH": str(Path(tmpdir) / "metrics.db")},
+                    clear=False,
+                ):
                     from hyba_genesis_api.websocket.handlers import WebSocketHandler
+                    from pythia_mining.metrics_store import (
+                        MetricsStore,
+                        reset_metrics_store,
+                        set_metrics_store,
+                    )
 
                     store = MetricsStore(str(Path(tmpdir) / "metrics.db"))
                     set_metrics_store(store)
@@ -386,7 +426,7 @@ class LiveShareSubmitGateTests(unittest.TestCase):
                     client = StratumClient(
                         pool_url="stratum+tcp://example.com:3333",
                         username="worker",
-                        password="secret",
+                        password="x",
                         pool_name="Example Pool",
                         stratum_version=1,
                     )

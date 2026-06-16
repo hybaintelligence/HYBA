@@ -11,7 +11,6 @@ from __future__ import annotations
 import argparse
 import json
 import math
-import sys
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any, Iterable
@@ -105,7 +104,12 @@ def _check_trace(autonomics: dict[str, Any], *, tolerance: float) -> CheckResult
 def _check_purity(autonomics: dict[str, Any], *, min_purity: float) -> CheckResult:
     value = _numeric_path(autonomics, ["rho", "purity"])
     if value is None:
-        return CheckResult("rho_purity_present", False, "rho.purity is missing or non-numeric", _get_path(autonomics, ["rho", "purity"]))
+        return CheckResult(
+            "rho_purity_present",
+            False,
+            "rho.purity is missing or non-numeric",
+            _get_path(autonomics, ["rho", "purity"]),
+        )
     return CheckResult(
         "rho_purity_minimum",
         value >= min_purity,
@@ -126,39 +130,59 @@ def _parse_node_list(value: str | None) -> set[int]:
     return nodes
 
 
-def evaluate_live_cut_state(state: dict[str, Any], *, mode: str = "preflight", tolerance: float = 1e-9, min_purity: float = 0.9, expected_severed_nodes: Iterable[int] = (), state_path: str = "<memory>") -> LiveCutReport:
+def evaluate_live_cut_state(
+    state: dict[str, Any],
+    *,
+    mode: str = "preflight",
+    tolerance: float = 1e-9,
+    min_purity: float = 0.9,
+    expected_severed_nodes: Iterable[int] = (),
+    state_path: str = "<memory>",
+) -> LiveCutReport:
     """Evaluate exported PYTHIA state against live-cut invariants."""
 
     overlay = state.get("pulvini_overlay") or {}
     autonomics = state.get("pulvini_autonomics") or {}
     checks: list[CheckResult] = []
 
-    checks.append(CheckResult(
-        "autonomics_available",
-        bool(autonomics) and autonomics.get("status") == "ok",
-        "pulvini_autonomics.status must be ok",
-        autonomics.get("status"),
-    ))
+    checks.append(
+        CheckResult(
+            "autonomics_available",
+            bool(autonomics) and autonomics.get("status") == "ok",
+            "pulvini_autonomics.status must be ok",
+            autonomics.get("status"),
+        )
+    )
     checks.append(_check_trace(autonomics, tolerance=tolerance))
     checks.append(_check_purity(autonomics, min_purity=min_purity))
-    checks.append(CheckResult(
-        "pool_identity_one",
-        int(state.get("pool_visible_workers") or overlay.get("pool_visible_workers") or 0) == 1,
-        "pool-visible worker count must remain one",
-        state.get("pool_visible_workers") or overlay.get("pool_visible_workers"),
-    ))
-    checks.append(CheckResult(
-        "active_job_locked",
-        bool(state.get("current_job_id") or overlay.get("active_job_id") or state.get("current_job")),
-        "active job id must be present before and after live cut",
-        state.get("current_job_id") or overlay.get("active_job_id") or state.get("current_job"),
-    ))
-    checks.append(CheckResult(
-        "healing_ranges_overlap_free",
-        _bool_value(overlay.get("healing_ranges_overlap_free", True)),
-        "healing ranges must not overlap recipient native ranges or each other",
-        overlay.get("healing_ranges_overlap_free"),
-    ))
+    checks.append(
+        CheckResult(
+            "pool_identity_one",
+            int(state.get("pool_visible_workers") or overlay.get("pool_visible_workers") or 0) == 1,
+            "pool-visible worker count must remain one",
+            state.get("pool_visible_workers") or overlay.get("pool_visible_workers"),
+        )
+    )
+    checks.append(
+        CheckResult(
+            "active_job_locked",
+            bool(
+                state.get("current_job_id")
+                or overlay.get("active_job_id")
+                or state.get("current_job")
+            ),
+            "active job id must be present before and after live cut",
+            state.get("current_job_id") or overlay.get("active_job_id") or state.get("current_job"),
+        )
+    )
+    checks.append(
+        CheckResult(
+            "healing_ranges_overlap_free",
+            _bool_value(overlay.get("healing_ranges_overlap_free", True)),
+            "healing ranges must not overlap recipient native ranges or each other",
+            overlay.get("healing_ranges_overlap_free"),
+        )
+    )
 
     sacrificed = {int(node_id) for node_id in autonomics.get("sacrificed_nodes") or []}
     rebalanced = _rebalanced_nodes(autonomics)
@@ -167,39 +191,50 @@ def evaluate_live_cut_state(state: dict[str, Any], *, mode: str = "preflight", t
     missing_routes = sorted(sacrificed - routed)
     expected = {int(node_id) for node_id in expected_severed_nodes}
 
-    checks.append(CheckResult(
-        "sacrificed_nodes_rebalanced",
-        not missing_rebalance,
-        "every sacrificed node must have a corresponding rebalance event",
-        {"sacrificed": sorted(sacrificed), "missing_rebalance": missing_rebalance},
-    ))
-    checks.append(CheckResult(
-        "sacrificed_nodes_have_healing_routes",
-        not missing_routes,
-        "every sacrificed node must have exported healing routes",
-        {"sacrificed": sorted(sacrificed), "missing_routes": missing_routes},
-    ))
+    checks.append(
+        CheckResult(
+            "sacrificed_nodes_rebalanced",
+            not missing_rebalance,
+            "every sacrificed node must have a corresponding rebalance event",
+            {"sacrificed": sorted(sacrificed), "missing_rebalance": missing_rebalance},
+        )
+    )
+    checks.append(
+        CheckResult(
+            "sacrificed_nodes_have_healing_routes",
+            not missing_routes,
+            "every sacrificed node must have exported healing routes",
+            {"sacrificed": sorted(sacrificed), "missing_routes": missing_routes},
+        )
+    )
 
     if expected:
-        checks.append(CheckResult(
-            "expected_severed_nodes_observed",
-            expected.issubset(sacrificed | rebalanced | routed),
-            "all expected severed nodes must appear in sacrificed nodes, rebalances, or healing routes",
-            {
-                "expected": sorted(expected),
-                "sacrificed": sorted(sacrificed),
-                "rebalanced": sorted(rebalanced),
-                "routed": sorted(routed),
-            },
-        ))
+        checks.append(
+            CheckResult(
+                "expected_severed_nodes_observed",
+                expected.issubset(sacrificed | rebalanced | routed),
+                "all expected severed nodes must appear in sacrificed nodes, rebalances, or healing routes",
+                {
+                    "expected": sorted(expected),
+                    "sacrificed": sorted(sacrificed),
+                    "rebalanced": sorted(rebalanced),
+                    "routed": sorted(routed),
+                },
+            )
+        )
 
     if mode == "postcut":
-        checks.append(CheckResult(
-            "postcut_healing_observed",
-            bool(sacrificed or overlay.get("healing_routes")),
-            "post-cut state must include a sacrificed node or healing route",
-            {"sacrificed": sorted(sacrificed), "healing_routes": len(overlay.get("healing_routes") or [])},
-        ))
+        checks.append(
+            CheckResult(
+                "postcut_healing_observed",
+                bool(sacrificed or overlay.get("healing_routes")),
+                "post-cut state must include a sacrificed node or healing route",
+                {
+                    "sacrificed": sorted(sacrificed),
+                    "healing_routes": len(overlay.get("healing_routes") or []),
+                },
+            )
+        )
 
     passed = all(check.passed for check in checks)
     if passed:
@@ -235,12 +270,30 @@ def _print_human(report: LiveCutReport) -> None:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Validate PULVINI live-cut readiness/post-cut invariants")
-    parser.add_argument("--state", type=Path, default=DEFAULT_STATE_PATH, help="Path to exported pythia_state.json")
+    parser = argparse.ArgumentParser(
+        description="Validate PULVINI live-cut readiness/post-cut invariants"
+    )
+    parser.add_argument(
+        "--state",
+        type=Path,
+        default=DEFAULT_STATE_PATH,
+        help="Path to exported pythia_state.json",
+    )
     parser.add_argument("--mode", choices=("preflight", "postcut"), default="preflight")
-    parser.add_argument("--tolerance", type=float, default=1e-9, help="Absolute tolerance for rho.trace == 1")
-    parser.add_argument("--min-purity", type=float, default=0.9, help="Minimum acceptable rho.purity")
-    parser.add_argument("--expected-severed-nodes", default="", help="Comma-separated node ids expected to be severed/healed, e.g. 0,1,2")
+    parser.add_argument(
+        "--tolerance",
+        type=float,
+        default=1e-9,
+        help="Absolute tolerance for rho.trace == 1",
+    )
+    parser.add_argument(
+        "--min-purity", type=float, default=0.9, help="Minimum acceptable rho.purity"
+    )
+    parser.add_argument(
+        "--expected-severed-nodes",
+        default="",
+        help="Comma-separated node ids expected to be severed/healed, e.g. 0,1,2",
+    )
     parser.add_argument("--json", action="store_true", help="Emit machine-readable JSON")
     args = parser.parse_args(argv)
 

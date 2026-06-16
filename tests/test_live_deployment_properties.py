@@ -3,7 +3,6 @@ from __future__ import annotations
 import asyncio
 import sys
 from pathlib import Path
-from types import SimpleNamespace
 
 from hypothesis import given, settings
 from hypothesis import strategies as st
@@ -24,7 +23,9 @@ from pythia_mining.stratum_client import StratumClient  # noqa: E402
     cap=st.floats(min_value=5.0, max_value=120.0, allow_nan=False, allow_infinity=False),
 )
 @settings(max_examples=75)
-def test_property_backoff_is_bounded_and_deterministic_without_random_runtime(attempt: int, base: float, cap: float) -> None:
+def test_property_backoff_is_bounded_and_deterministic_without_random_runtime(
+    attempt: int, base: float, cap: float
+) -> None:
     client = StratumClient(
         pool_url="stratum+tcp://example.com:3333",
         username="worker",
@@ -48,7 +49,9 @@ def test_property_backoff_is_bounded_and_deterministic_without_random_runtime(at
     iterations=st.integers(min_value=1, max_value=64),
 )
 @settings(max_examples=50, deadline=None)
-def test_property_compressed_solver_outputs_uint32_nonce_inside_complete_plan(target: int, iterations: int) -> None:
+def test_property_compressed_solver_outputs_uint32_nonce_inside_complete_plan(
+    target: int, iterations: int
+) -> None:
     async def run_case() -> tuple[int | None, PulviniCompressedQuantumSolver]:
         plan = build_pulvini_nonce_plan()
         solver = PulviniCompressedQuantumSolver(configured_capacity_ehs=1.0)
@@ -70,7 +73,9 @@ def test_property_compressed_solver_outputs_uint32_nonce_inside_complete_plan(ta
     rejected=st.integers(min_value=0, max_value=1_000_000),
 )
 @settings(max_examples=100)
-def test_property_pool_status_acceptance_rate_never_exceeds_one(submitted: int, accepted: int, rejected: int) -> None:
+def test_property_pool_status_acceptance_rate_never_exceeds_one(
+    submitted: int, accepted: int, rejected: int
+) -> None:
     client = StratumClient(
         pool_url="stratum+tcp://example.com:3333",
         username="worker",
@@ -116,7 +121,13 @@ def test_property_matching_response_reader_skips_notifications(size: int, respon
 
     async def run_case() -> dict:
         session = LiveStratumSession(
-            build_profile("p", name="Pool", url="stratum+tcp://example.com:3333", username="w", password="x"),
+            build_profile(
+                "p",
+                name="Pool",
+                url="stratum+tcp://example.com:3333",
+                username="w",
+                password="x",
+            ),
             transport=Transport(),
         )
         return await session._read_response_for_id(response_id)

@@ -60,5 +60,5 @@ class WebSocketHandler:
             "consciousness_level": None,
             "phi_resonance": None,
             "quantum_speedup": None,
-            "message": None if pools else "No persisted mining activity is available yet.",
+            "message": (None if pools else "No persisted mining activity is available yet."),
         }

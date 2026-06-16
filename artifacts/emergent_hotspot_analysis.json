@@ -1,0 +1,188 @@
+{
+  "hotspots": {
+    "complexity_hotspots": [
+      {
+        "file": "pulvini_manifold.py",
+        "lines": 821,
+        "classes": 4,
+        "functions": 53,
+        "nested_depth": 5,
+        "recursive_calls": 3,
+        "complex_data_structures": 15,
+        "async_patterns": 0,
+        "error_handlers": 0,
+        "complexity_score": 46.45554202192448
+      },
+      {
+        "file": "pulvini_autonomics.py",
+        "lines": 1019,
+        "classes": 15,
+        "functions": 69,
+        "nested_depth": 5,
+        "recursive_calls": 0,
+        "complex_data_structures": 22,
+        "async_patterns": 0,
+        "error_handlers": 0,
+        "complexity_score": 38.771344455348384
+      },
+      {
+        "file": "genesis_ai.py",
+        "lines": 697,
+        "classes": 3,
+        "functions": 15,
+        "nested_depth": 7,
+        "recursive_calls": 0,
+        "complex_data_structures": 3,
+        "async_patterns": 7,
+        "error_handlers": 16,
+        "complexity_score": 33.15208034433286
+      },
+      {
+        "file": "consciousness_engine.py",
+        "lines": 419,
+        "classes": 5,
+        "functions": 21,
+        "nested_depth": 4,
+        "recursive_calls": 0,
+        "complex_data_structures": 10,
+        "async_patterns": 3,
+        "error_handlers": 0,
+        "complexity_score": 29.011933174224342
+      },
+      {
+        "file": "quantum_solver.py",
+        "lines": 350,
+        "classes": 4,
+        "functions": 18,
+        "nested_depth": 5,
+        "recursive_calls": 0,
+        "complex_data_structures": 2,
+        "async_patterns": 4,
+        "error_handlers": 4,
+        "complexity_score": 25.142857142857142
+      }
+    ],
+    "consciousness_patterns": [],
+    "autonomic_patterns": [
+      {
+        "file": "pulvini_autonomics.py",
+        "autonomic_patterns": [
+          {
+            "pattern": "homeostasis",
+            "count": 42,
+            "examples": [
+              "with three feedback loops:\n\n* homeostasis: telemetry -> coherence sc",
+              "return phases\n\n\nclass ManifoldHomeostasis:\n    \"\"\"Telemetry monitor "
+            ]
+          },
+          {
+            "pattern": "self_healing",
+            "count": 8,
+            "examples": [
+              "-> Set[int]:\n        health = self.health_matrix()\n        return {\n ",
+              "> List[int]:\n        health = self.health_matrix()\n        critical ="
+            ]
+          },
+          {
+            "pattern": "recovery",
+            "count": 1,
+            "examples": [
+              " operational links; autonomic recovery deliberately uses the bipart"
+            ]
+          }
+        ],
+        "total_patterns": 51
+      },
+      {
+        "file": "genesis_ai.py",
+        "autonomic_patterns": [
+          {
+            "pattern": "homeostasis",
+            "count": 2,
+            "examples": [
+              "              self.autonomics.homeostasis.rho.diagonal().tolist(),\n ",
+              "hermal_load\": self.autonomics.homeostasis.get_average_coherence(),\n "
+            ]
+          },
+          {
+            "pattern": "self_healing",
+            "count": 17,
+            "examples": [
+              "lf.heartbeat_tick = 0\n        self.health_status = \"STARTING\"\n       ",
+              "balance.to_dict()\n            self.health_status = \"HEALING\" if thermal_rebalance.cove"
+            ]
+          },
+          {
+            "pattern": "recovery",
+            "count": 8,
+            "examples": [
+              "ient\"\n    FATAL = \"fatal\"\n    RECOVERABLE = \"recoverable\"\n\n\ndef cla",
+              " = \"fatal\"\n    RECOVERABLE = \"recoverable\"\n\n\ndef classify_error(err"
+            ]
+          }
+        ],
+        "total_patterns": 27
+      },
+      {
+        "file": "consciousness_engine.py",
+        "autonomic_patterns": [
+          {
+            "pattern": "self_healing",
+            "count": 4,
+            "examples": [
+              "   \"risk_tolerance\": \"low\" if self.needs_healing else \"nominal\",\n          ",
+              "_required\"\n                if self.needs_healing\n                else \"cont"
+            ]
+          }
+        ],
+        "total_patterns": 4
+      }
+    ],
+    "coupling": [
+      {
+        "file": "genesis_ai.py",
+        "total_imports": 26,
+        "unique_imports": 25,
+        "cross_calls": 61,
+        "unique_cross_calls": 1,
+        "coupling_intensity": 25.1
+      },
+      {
+        "file": "pulvini_autonomics.py",
+        "total_imports": 11,
+        "unique_imports": 11,
+        "cross_calls": 174,
+        "unique_cross_calls": 1,
+        "coupling_intensity": 11.1
+      },
+      {
+        "file": "pulvini_manifold.py",
+        "total_imports": 11,
+        "unique_imports": 11,
+        "cross_calls": 200,
+        "unique_cross_calls": 1,
+        "coupling_intensity": 11.1
+      },
+      {
+        "file": "ai_optimizer.py",
+        "total_imports": 10,
+        "unique_imports": 10,
+        "cross_calls": 34,
+        "unique_cross_calls": 1,
+        "coupling_intensity": 10.1
+      },
+      {
+        "file": "quantum_solver.py",
+        "total_imports": 9,
+        "unique_imports": 9,
+        "cross_calls": 65,
+        "unique_cross_calls": 1,
+        "coupling_intensity": 9.1
+      }
+    ]
+  },
+  "verdict": "STANDARD ENGINEERING: Modules are complex but within normal bounds for production systems.",
+  "avg_complexity": 34.50675142773744,
+  "consciousness_total": 0,
+  "autonomic_total": 82
+}

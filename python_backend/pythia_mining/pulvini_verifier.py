@@ -13,10 +13,13 @@ import struct
 import time
 from dataclasses import asdict, dataclass, field
 from enum import Enum
-from typing import Any, ClassVar, Optional, Sequence
+from typing import TYPE_CHECKING, Any, ClassVar, Optional, Sequence
 
 import numpy as np
 from numpy.typing import NDArray
+
+if TYPE_CHECKING:
+    from .pulvini_elevation import CertificateLedger
 
 from .pulvini_bures import bures_certificate
 from .pulvini_certificates import adjacency_map_digest, automorphism_runtime_certificate
@@ -216,7 +219,9 @@ class SubstateVerifier:
         self.operator = operator or ManifoldOperator()
         self._certificate_cache: dict[str, SubstatePassport] = {}
 
-    def verify_binary_header(self, payload: bytes, signature: Optional[bytes] = None) -> dict[str, Any]:
+    def verify_binary_header(
+        self, payload: bytes, signature: Optional[bytes] = None
+    ) -> dict[str, Any]:
         """Parse and validate a 128-byte PULVINI binary passport header.
 
         The returned dictionary is intentionally audit-friendly: invalid widths,
@@ -349,9 +354,7 @@ class SubstateVerifier:
                 if reference_rho is None
                 else self.operator.ensure_density_state(reference_rho)
             )
-            fidelity_fixed = _to_fixed_point(
-                self.operator.compute_fidelity(density, reference)
-            )
+            fidelity_fixed = _to_fixed_point(self.operator.compute_fidelity(density, reference))
 
         topology_verified = bool(
             self.verify_topology_map(adjacency)
@@ -383,7 +386,7 @@ class SubstateVerifier:
             "purity_fixed": purity_fixed,
             "fidelity_fixed": fidelity_fixed,
             "quantum_speedup_claimed": bool(grover.quantum_speedup_claimed),
-            "timestamp_ns": time.time_ns() if timestamp_ns is None else int(timestamp_ns),
+            "timestamp_ns": (time.time_ns() if timestamp_ns is None else int(timestamp_ns)),
             "version": SubstatePassport.__dataclass_fields__["version"].default,
             "status": status.value,
         }
@@ -393,14 +396,17 @@ class SubstateVerifier:
             self._certificate_cache[cache_key] = passport
         return passport
 
-
     def certificate_ledger(self, passports: Sequence[SubstatePassport]) -> "CertificateLedger":
         """Unify generated passports into an append-only compliance ledger."""
         from .pulvini_elevation import CertificateLedger
 
         ledger = CertificateLedger()
         for passport in passports:
-            ledger.append("substate_passport", passport.to_dict(), timestamp_ns=passport.timestamp_ns)
+            ledger.append(
+                "substate_passport",
+                passport.to_dict(),
+                timestamp_ns=passport.timestamp_ns,
+            )
         return ledger
 
     def verify_passport(self, passport: SubstatePassport) -> bool:

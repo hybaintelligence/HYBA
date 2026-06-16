@@ -1,0 +1,40 @@
+{
+  "findings": [
+    {
+      "detail": {
+        "name": "Braiins Pool",
+        "password": "<configured>",
+        "pool_id": "braiins",
+        "priority": 3,
+        "stratum_version": 2,
+        "tls_required": false,
+        "url": "stratum2+tcp://stratum.braiins.com:3333/9awtMD5KQgvRUh2yFbjVeT7b6hjipWcAsQHd6wEhgtDT9soosna",
+        "username": "<configured>"
+      },
+      "message": "profile is not job-flow capable with the current daemon; use Stratum v1 until v2 channel/job flow is implemented",
+      "pool_id": "braiins",
+      "severity": "critical",
+      "status": "fail"
+    },
+    {
+      "detail": {
+        "name": "Braiins Pool",
+        "password": "<configured>",
+        "pool_id": "braiins",
+        "priority": 3,
+        "stratum_version": 2,
+        "tls_required": false,
+        "url": "stratum2+tcp://stratum.braiins.com:3333/9awtMD5KQgvRUh2yFbjVeT7b6hjipWcAsQHd6wEhgtDT9soosna",
+        "username": "<configured>"
+      },
+      "message": "Braiins must be configured with HYBA_POOL_BRAIINS_STRATUM_VERSION=1 for mining.notify job flow",
+      "pool_id": "braiins",
+      "severity": "critical",
+      "status": "fail"
+    }
+  ],
+  "generated_at": 1781603659.2812228,
+  "loaded_profile_count": 3,
+  "mode": "prepare",
+  "status": "blocked"
+}

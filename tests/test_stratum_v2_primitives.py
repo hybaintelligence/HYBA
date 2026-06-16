@@ -69,7 +69,14 @@ class StratumV2PrimitiveTests(unittest.TestCase):
         self.assertEqual(b"next", rest)
 
     def test_setup_connection_payload_round_trips_spec_fields(self):
-        setup = SetupConnection(endpoint_host="sv2.example.com", endpoint_port=3336, vendor="HYBA", hardware_version="PULVINI-32", firmware="test-fw", device_id="")
+        setup = SetupConnection(
+            endpoint_host="sv2.example.com",
+            endpoint_port=3336,
+            vendor="HYBA",
+            hardware_version="PULVINI-32",
+            firmware="test-fw",
+            device_id="",
+        )
         frame = build_setup_connection_frame(setup)
         self.assertEqual(SV2_EXTENSION_TYPE_CORE, frame.extension_type)
         self.assertEqual(SV2_MSG_SETUP_CONNECTION, frame.message_type)
@@ -85,7 +92,11 @@ class StratumV2PrimitiveTests(unittest.TestCase):
         )
         success = parse_setup_connection_response(success_frame, requested=requested)
         self.assertEqual(SV2_VERSION, success.used_version)
-        bad_version = StratumV2Frame(SV2_EXTENSION_TYPE_CORE, SV2_MSG_SETUP_CONNECTION_SUCCESS, (3).to_bytes(2, "little") + (0).to_bytes(4, "little"))
+        bad_version = StratumV2Frame(
+            SV2_EXTENSION_TYPE_CORE,
+            SV2_MSG_SETUP_CONNECTION_SUCCESS,
+            (3).to_bytes(2, "little") + (0).to_bytes(4, "little"),
+        )
         with self.assertRaises(StratumV2ProtocolError):
             parse_setup_connection_response(bad_version, requested=requested)
 
@@ -100,13 +111,28 @@ class StratumV2PrimitiveTests(unittest.TestCase):
     def test_pool_profile_accepts_stratum_v2_tls_endpoint(self):
         url = validate_pool_url("stratum2+tls://sv2.example.com:3336", tls_required=True)
         endpoint = parse_endpoint(url)
-        profile = build_profile("sv2", name="SV2", url=url, username="worker", password="secret", stratum_version=2, tls_required=True)
+        profile = build_profile(
+            "sv2",
+            name="SV2",
+            url=url,
+            username="worker",
+            password="secret",
+            stratum_version=2,
+            tls_required=True,
+        )
         self.assertTrue(endpoint.use_tls)
         self.assertEqual(2, profile.stratum_version)
 
     def test_live_session_sends_setup_connection_and_accepts_success(self):
         async def run_case():
-            profile = build_profile("sv2", name="SV2", url="stratum2+tcp://sv2.example.com:3336", username="worker", password="secret", stratum_version=2)
+            profile = build_profile(
+                "sv2",
+                name="SV2",
+                url="stratum2+tcp://sv2.example.com:3336",
+                username="worker",
+                password="secret",
+                stratum_version=2,
+            )
             transport = FakeV2Transport()
             session = LiveStratumV2Session(profile, transport=transport)
             await session.connect()
@@ -115,6 +141,7 @@ class StratumV2PrimitiveTests(unittest.TestCase):
             return handshake, transport
 
         import asyncio
+
         handshake, transport = asyncio.run(run_case())
         self.assertEqual(SV2_VERSION, handshake.used_version)
         self.assertEqual(1, len(transport.sent))
@@ -123,22 +150,34 @@ class StratumV2PrimitiveTests(unittest.TestCase):
 
     def test_live_session_handles_setup_connection_timeout(self):
         async def run_case():
-            profile = build_profile("sv2", name="SV2", url="stratum2+tcp://sv2.example.com:3336", username="worker", password="secret", stratum_version=2)
-            
+            profile = build_profile(
+                "sv2",
+                name="SV2",
+                url="stratum2+tcp://sv2.example.com:3336",
+                username="worker",
+                password="secret",
+                stratum_version=2,
+            )
+
             class TimeoutTransport:
                 def __init__(self):
                     self.closed = False
+
                 async def connect(self):
                     return None
+
                 async def send_frame(self, frame):
                     pass
+
                 async def read_frame(self, timeout=None):
                     import asyncio
+
                     await asyncio.sleep(10)
                     return None
+
                 async def close(self):
                     self.closed = True
-            
+
             transport = TimeoutTransport()
             session = LiveStratumV2Session(profile, transport=transport)
             await session.connect()
@@ -151,25 +190,41 @@ class StratumV2PrimitiveTests(unittest.TestCase):
                 await session.close()
 
         import asyncio
+
         asyncio.run(run_case())
 
     def test_live_session_handles_version_mismatch(self):
         async def run_case():
-            profile = build_profile("sv2", name="SV2", url="stratum2+tcp://sv2.example.com:3336", username="worker", password="secret", stratum_version=2)
-            
+            profile = build_profile(
+                "sv2",
+                name="SV2",
+                url="stratum2+tcp://sv2.example.com:3336",
+                username="worker",
+                password="secret",
+                stratum_version=2,
+            )
+
             class VersionMismatchTransport:
                 def __init__(self):
                     self.closed = False
+
                 async def connect(self):
                     return None
+
                 async def send_frame(self, frame):
                     pass
+
                 async def read_frame(self, timeout=None):
                     bad_version = (3).to_bytes(2, "little") + (0).to_bytes(4, "little")
-                    return StratumV2Frame(SV2_EXTENSION_TYPE_CORE, SV2_MSG_SETUP_CONNECTION_SUCCESS, bad_version)
+                    return StratumV2Frame(
+                        SV2_EXTENSION_TYPE_CORE,
+                        SV2_MSG_SETUP_CONNECTION_SUCCESS,
+                        bad_version,
+                    )
+
                 async def close(self):
                     self.closed = True
-            
+
             transport = VersionMismatchTransport()
             session = LiveStratumV2Session(profile, transport=transport)
             await session.connect()
@@ -182,6 +237,7 @@ class StratumV2PrimitiveTests(unittest.TestCase):
                 await session.close()
 
         import asyncio
+
         asyncio.run(run_case())
 
     def test_pool_profile_rejects_invalid_stratum_v2_urls(self):
@@ -205,7 +261,7 @@ class StratumV2PrimitiveTests(unittest.TestCase):
         for url in valid_schemes:
             try:
                 validated = validate_pool_url(url, tls_required=False)
-                self.assertTrue(validiated.startswith("stratum2+"))
+                self.assertTrue(validated.startswith("stratum2+"))
             except Exception as e:
                 self.fail(f"Valid URL {url} should not raise error: {e}")
 

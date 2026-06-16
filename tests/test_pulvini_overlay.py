@@ -55,7 +55,10 @@ class PulviniOverlayTopologyTests(unittest.TestCase):
         self.assertEqual(32, snapshot["internal_nodes"])
         self.assertEqual("job-1", snapshot["active_job_id"])
         self.assertEqual(NUM_NODES, len(assignments))
-        self.assertEqual(NUM_NODES, len({assignment.extranonce2 for assignment in assignments.values()}))
+        self.assertEqual(
+            NUM_NODES,
+            len({assignment.extranonce2 for assignment in assignments.values()}),
+        )
         self.assertEqual(NUM_NODES, len(overlay.nonce_ranges()))
         phases = [event["phase"] for event in snapshot["lifecycle"]]
         self.assertIn("job_received", phases)
@@ -82,7 +85,12 @@ class PulviniOverlayTopologyTests(unittest.TestCase):
         outcome = overlay.record_share_outcome(
             0,
             nonce_range_inclusive(0)[0] + 11,
-            ShareResult(True, job_id="job-2", nonce=nonce_range_inclusive(0)[0] + 11, block_hash="00" * 32),
+            ShareResult(
+                True,
+                job_id="job-2",
+                nonce=nonce_range_inclusive(0)[0] + 11,
+                block_hash="00" * 32,
+            ),
         )
         knowledge = overlay.node_knows(0)
 

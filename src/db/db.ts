@@ -1,13 +1,13 @@
-import { 
-  collection, 
-  doc, 
-  getDoc, 
-  getDocs, 
-  setDoc, 
-  query, 
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  setDoc,
+  query,
   where,
   addDoc,
-  serverTimestamp 
+  serverTimestamp,
 } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import bcrypt from "bcryptjs";
@@ -54,9 +54,9 @@ export async function readDb(): Promise<DatabaseSchema> {
     const logsSnap = await getDocs(collection(db, "calibrationLogs"));
 
     return {
-      users: usersSnap.docs.map(d => ({ id: d.id, ...d.data() } as User)),
-      products: productsSnap.docs.map(d => ({ id: d.id, ...d.data() } as QuantumProduct)),
-      calibrationLogs: logsSnap.docs.map(d => ({ id: d.id, ...d.data() } as CalibrationLog))
+      users: usersSnap.docs.map((d) => ({ id: d.id, ...d.data() }) as User),
+      products: productsSnap.docs.map((d) => ({ id: d.id, ...d.data() }) as QuantumProduct),
+      calibrationLogs: logsSnap.docs.map((d) => ({ id: d.id, ...d.data() }) as CalibrationLog),
     };
   } catch (err) {
     console.error("Failed to read from Firestore:", err);

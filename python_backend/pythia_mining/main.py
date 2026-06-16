@@ -1,19 +1,22 @@
 # main.py
 import asyncio
-import logging
-import time
 import json
+import logging
 import os
 import signal
+import time
+
 from .genesis_ai import GenesisAI
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
 logger = logging.getLogger("pythia_main")
 
 config = {
     "logging": {
         "level": "INFO",
-        "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+        "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     }
 }
 
@@ -92,7 +95,12 @@ def enrich_runtime_sequence(status):
             },
         },
     }
-    status["connect_ready"] = bool(active_pool) and stage in {"pool_bound", "subscribed_authorized", "awaiting_job", "job_received"}
+    status["connect_ready"] = bool(active_pool) and stage in {
+        "pool_bound",
+        "subscribed_authorized",
+        "awaiting_job",
+        "job_received",
+    }
     return status
 
 
@@ -111,8 +119,14 @@ async def main():
 
     if await pythia.start():
         logger.info("PYTHIA Quantum Mining System fully operational & quantum coherent.")
-        export_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "pythia_state.json")
-        config_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "mining_config.json")
+        export_path = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+            "pythia_state.json",
+        )
+        config_path = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+            "mining_config.json",
+        )
         logger.info(f"Targeting state vector telemetry export: {export_path}")
 
         while not SHUTDOWN_EVENT.is_set():
@@ -123,8 +137,12 @@ async def main():
                         with open(config_path, "r") as f:
                             cmd_config = json.load(f)
                             if "power_scale" in cmd_config:
-                                pythia.quantum_solver.set_power_scale(float(cmd_config["power_scale"]))
-                                logger.info(f"Governance Layer: Power scale adjusted to {cmd_config['power_scale']}x")
+                                pythia.quantum_solver.set_power_scale(
+                                    float(cmd_config["power_scale"])
+                                )
+                                logger.info(
+                                    f"Governance Layer: Power scale adjusted to {cmd_config['power_scale']}x"
+                                )
                         # Clear processed config
                         os.remove(config_path)
                     except Exception as ce:

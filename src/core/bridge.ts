@@ -1,22 +1,22 @@
-import axios from 'axios';
-import { logger, get_trace_context } from './telemetry';
-import { calculate_phi_resonance } from './constants';
+import axios from "axios";
+import { logger, get_trace_context } from "./telemetry";
+import { calculate_phi_resonance } from "./constants";
 
 /**
  * HYBA Substrate Bridge
- * High-performance, low-latency RPC link between the Express secure bridge 
+ * High-performance, low-latency RPC link between the Express secure bridge
  * and the Python mathematical core.
  */
 
-const PYTHON_CORE_URL = process.env.PYTHON_CORE_URL || 'http://127.0.0.1:3001';
+const PYTHON_CORE_URL = process.env.PYTHON_CORE_URL || "http://127.0.0.1:3001";
 
 const client = axios.create({
   baseURL: PYTHON_CORE_URL,
   timeout: 5000,
   headers: {
-    'Content-Type': 'application/json',
-    'X-System-Origin': 'HYBA-TS-SUBSTRATE'
-  }
+    "Content-Type": "application/json",
+    "X-System-Origin": "HYBA-TS-SUBSTRATE",
+  },
 });
 
 /**
@@ -24,7 +24,7 @@ const client = axios.create({
  */
 client.interceptors.request.use((config) => {
   const resonance = calculate_phi_resonance(Date.now());
-  config.headers['X-Substrate-Resonance'] = resonance.toFixed(10);
+  config.headers["X-Substrate-Resonance"] = resonance.toFixed(10);
   return config;
 });
 
@@ -42,23 +42,26 @@ export const bridge = {
         url: path,
         data,
         headers: {
-          'X-Request-ID': ctx.trace_id
-        }
+          "X-Request-ID": ctx.trace_id,
+        },
       });
 
       const latency = Date.now() - startTime;
-      logger.debug({ ...ctx, path, latency }, 'Bridge: Deterministic RPC call successful.');
-      
+      logger.debug({ ...ctx, path, latency }, "Bridge: Deterministic RPC call successful.");
+
       return response.data;
     } catch (error: any) {
       const latency = Date.now() - startTime;
-      logger.error({ 
-        ...ctx, 
-        path, 
-        latency, 
-        err: error.message,
-        response: error.response?.data 
-      }, 'Bridge: RPC call failed. Substrate discontinuity detected.');
+      logger.error(
+        {
+          ...ctx,
+          path,
+          latency,
+          err: error.message,
+          response: error.response?.data,
+        },
+        "Bridge: RPC call failed. Substrate discontinuity detected.",
+      );
       throw error;
     }
   },
@@ -68,10 +71,10 @@ export const bridge = {
    */
   async ping(): Promise<boolean> {
     try {
-      const result = await this.call('GET', '/');
-      return result.status === 'ok';
+      const result = await this.call("GET", "/");
+      return result.status === "ok";
     } catch {
       return false;
     }
-  }
+  },
 };

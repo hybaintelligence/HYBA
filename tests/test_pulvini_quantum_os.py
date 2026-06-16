@@ -19,10 +19,10 @@ pytestmark = pytest.mark.skipif(
 
 def _quantum_os_exports():
     from pythia_mining import (
-        ConsciousnessEngine,
-        ManifoldOperator,
         PULVINI_BINARY_HEADER_SIZE,
         PULVINI_BINARY_MAGIC,
+        ConsciousnessEngine,
+        ManifoldOperator,
         SubstateBinaryHeader,
         SubstateVerifier,
     )

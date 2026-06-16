@@ -69,7 +69,9 @@ def choi_matrix(kraus_operators: Sequence[np.ndarray]) -> np.ndarray:
     return _hermitian(choi)
 
 
-def choi_certificate(kraus_operators: Sequence[np.ndarray], *, tolerance: float = 1e-9) -> ChoiCertificate:
+def choi_certificate(
+    kraus_operators: Sequence[np.ndarray], *, tolerance: float = 1e-9
+) -> ChoiCertificate:
     """Return full-Choi PSD and trace-preservation checks for a Kraus channel."""
     operators = [np.asarray(operator, dtype=np.complex128) for operator in kraus_operators]
     if not operators:
@@ -95,4 +97,9 @@ def choi_certificate(kraus_operators: Sequence[np.ndarray], *, tolerance: float 
     )
 
 
-__all__ = ["ChoiCertificate", "choi_certificate", "choi_matrix", "kraus_operators_for_step"]
+__all__ = [
+    "ChoiCertificate",
+    "choi_certificate",
+    "choi_matrix",
+    "kraus_operators_for_step",
+]

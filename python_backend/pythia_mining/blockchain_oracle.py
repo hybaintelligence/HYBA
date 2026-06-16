@@ -5,7 +5,6 @@ HYBA / PYTHIA Mining System - Structural Analysis Boundary
 
 from __future__ import annotations
 
-import asyncio
 import logging
 import time
 from dataclasses import dataclass
@@ -36,7 +35,7 @@ class BlockTip:
 class BlockchainOracle:
     """
     Blockchain oracle for block height monitoring and stale job detection.
-    
+
     Supports multiple data sources with fallback for production resilience.
     """
 
@@ -79,7 +78,7 @@ class BlockchainOracle:
                                 height=height,
                                 hash=data.get("hash", ""),
                                 timestamp=time.time(),
-                                source="blockchain.info"
+                                source="blockchain.info",
                             )
         except Exception as e:
             self.logger.warning("Failed to fetch from blockchain.info: %s", e)
@@ -96,7 +95,7 @@ class BlockchainOracle:
                                 height=height,
                                 hash=block_hash.strip(),
                                 timestamp=time.time(),
-                                source="blockstream.info"
+                                source="blockstream.info",
                             )
         except Exception as e:
             self.logger.warning("Failed to fetch from blockstream.info: %s", e)
@@ -109,24 +108,34 @@ class BlockchainOracle:
             return None
 
         now = time.time()
-        if self._current_tip and not force_refresh and (now - self._last_update) < self._update_interval:
+        if (
+            self._current_tip
+            and not force_refresh
+            and (now - self._last_update) < self._update_interval
+        ):
             return self._current_tip
 
         new_tip = await self._fetch_blockchain_info_api()
         if new_tip:
             self._current_tip = new_tip
             self._last_update = now
-            self.logger.info("Updated blockchain tip: height=%d, hash=%s, source=%s", 
-                           new_tip.height, new_tip.hash[:16], new_tip.source)
+            self.logger.info(
+                "Updated blockchain tip: height=%d, hash=%s, source=%s",
+                new_tip.height,
+                new_tip.hash[:16],
+                new_tip.source,
+            )
         else:
             self.logger.warning("Failed to update blockchain tip, using cached value")
 
         return self._current_tip
 
-    def is_job_stale_by_block_height(self, job_prevhash: str, current_tip: Optional[BlockTip]) -> bool:
+    def is_job_stale_by_block_height(
+        self, job_prevhash: str, current_tip: Optional[BlockTip]
+    ) -> bool:
         """
         Check if a job is stale based on block height monitoring.
-        
+
         A job is considered stale if:
         1. We have a current block tip
         2. The job's prevhash doesn't match the current tip hash

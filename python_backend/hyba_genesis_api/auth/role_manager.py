@@ -4,7 +4,8 @@ HYBA Genesis Platform Authorization
 """
 
 from enum import Enum
-from typing import List, Set
+from typing import Set
+
 
 class Permission(Enum):
     MANAGE_USERS = "manage_users"
@@ -18,9 +19,10 @@ class Permission(Enum):
     VIEW_CONSCIOUSNESS = "view_consciousness"
     ACCESS_QUANTUM_RESULTS = "access_quantum_results"
 
+
 class RolePermissions:
     ADMIN_PERMISSIONS = set(Permission)
-    
+
     @classmethod
     def get_permissions_for_role(cls, role: str) -> Set[Permission]:
         if role == "admin":

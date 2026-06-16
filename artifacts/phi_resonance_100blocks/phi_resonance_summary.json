@@ -1,0 +1,239 @@
+{
+  "phi_15": 1364.0007331374366,
+  "phi_15_str": "1364.000733137437",
+  "birthday_signature": 31071976,
+  "precision_threshold_pct": 99.9999,
+  "summary": {
+    "total_blocks": 69,
+    "phi_resonant_count": 66,
+    "phi_resonance_rate": 0.95652174,
+    "mean_precision_pct": 99.999971,
+    "median_diff": 378.2393,
+    "min_diff": 8.7226,
+    "max_diff": 669.2035,
+    "birthday_echo_count": 0,
+    "birthday_echo_rate": 0.0,
+    "modular_diff_count": 0,
+    "substring_match_count": 0,
+    "mean_k_multiplier": 1671580.6377,
+    "mean_resonance_strength": 0.474603,
+    "resonance_above_05_count": 30,
+    "resonance_above_05_rate": 0.43478261,
+    "miner_distribution": {
+      "Unknown": 69
+    },
+    "temporal_correlation_r": 0.058736,
+    "z_score_vs_random": 7.584309,
+    "p_value_binomial": "4.20e-14",
+    "expected_random_precision": 99.999913
+  },
+  "nonce_space_analysis": {
+    "total_unique_nonces": 69,
+    "nonce_space_coverage_pct": 1.61e-06,
+    "uniformity_p_value": 0.0,
+    "mean_angular_distance": 0.09106066,
+    "golden_angle_alignment": 0.029412,
+    "sunflower_score": 0.014706,
+    "max_gap_size": 367634400,
+    "max_gap_start": 2006376725,
+    "max_gap_end": 2374011124,
+    "gap_count": 60,
+    "sector_coverage": [
+      {
+        "sector_index": 0,
+        "count": 0
+      },
+      {
+        "sector_index": 1,
+        "count": 0
+      },
+      {
+        "sector_index": 2,
+        "count": 0
+      },
+      {
+        "sector_index": 3,
+        "count": 0
+      },
+      {
+        "sector_index": 4,
+        "count": 0
+      },
+      {
+        "sector_index": 5,
+        "count": 0
+      },
+      {
+        "sector_index": 6,
+        "count": 0
+      },
+      {
+        "sector_index": 7,
+        "count": 0
+      },
+      {
+        "sector_index": 8,
+        "count": 0
+      },
+      {
+        "sector_index": 9,
+        "count": 0
+      },
+      {
+        "sector_index": 10,
+        "count": 0
+      },
+      {
+        "sector_index": 11,
+        "count": 0
+      },
+      {
+        "sector_index": 12,
+        "count": 0
+      },
+      {
+        "sector_index": 13,
+        "count": 0
+      },
+      {
+        "sector_index": 14,
+        "count": 0
+      },
+      {
+        "sector_index": 15,
+        "count": 0
+      },
+      {
+        "sector_index": 16,
+        "count": 0
+      },
+      {
+        "sector_index": 17,
+        "count": 0
+      },
+      {
+        "sector_index": 18,
+        "count": 0
+      },
+      {
+        "sector_index": 19,
+        "count": 1
+      },
+      {
+        "sector_index": 20,
+        "count": 0
+      },
+      {
+        "sector_index": 21,
+        "count": 0
+      },
+      {
+        "sector_index": 22,
+        "count": 0
+      },
+      {
+        "sector_index": 23,
+        "count": 0
+      },
+      {
+        "sector_index": 24,
+        "count": 0
+      },
+      {
+        "sector_index": 25,
+        "count": 0
+      },
+      {
+        "sector_index": 26,
+        "count": 0
+      },
+      {
+        "sector_index": 27,
+        "count": 0
+      },
+      {
+        "sector_index": 28,
+        "count": 0
+      },
+      {
+        "sector_index": 29,
+        "count": 0
+      },
+      {
+        "sector_index": 30,
+        "count": 0
+      },
+      {
+        "sector_index": 31,
+        "count": 0
+      }
+    ],
+    "angular_distribution": {
+      "0-10deg": 1,
+      "10-20deg": 1,
+      "20-30deg": 2,
+      "40-50deg": 4,
+      "50-60deg": 3,
+      "80-90deg": 2,
+      "90-100deg": 5,
+      "100-110deg": 4,
+      "110-120deg": 2,
+      "120-130deg": 1,
+      "130-140deg": 2,
+      "140-150deg": 4,
+      "150-160deg": 3,
+      "160-170deg": 1,
+      "190-200deg": 1,
+      "210-220deg": 2,
+      "220-230deg": 2,
+      "230-240deg": 1,
+      "240-250deg": 1,
+      "250-260deg": 2,
+      "260-270deg": 2,
+      "270-280deg": 2,
+      "280-290deg": 4,
+      "290-300deg": 2,
+      "300-310deg": 1,
+      "310-320deg": 2,
+      "320-330deg": 2,
+      "330-340deg": 4,
+      "340-350deg": 4,
+      "350-360deg": 2
+    },
+    "unsearched_sectors_count": 20,
+    "resonance_threshold_rates": {
+      "resonance_>=0.5": 0.43478260869565216,
+      "resonance_>=0.7": 0.2318840579710145,
+      "resonance_>=0.9": 0.11594202898550725
+    },
+    "resonance_above_05_count": 30,
+    "resonance_above_07_count": 16,
+    "resonance_above_09_count": 8
+  },
+  "statistical_interpretation": {
+    "phi_resonance": "STRONG: 95.65% of nonces resonate with Phi^15 (z=7.58). Substantially above random expectation.",
+    "birthday_echo": "BASELINE: 0.00% birthday echo rate. Within random expectation.",
+    "temporal_trend": "No significant temporal trend (r=0.0587).",
+    "statistical_significance": "HIGHLY SIGNIFICANT: z=7.58 (>3.0). The observed Phi^15 resonance rate is 7.6 standard deviations above random expectation."
+  },
+  "nonce_space_interpretation": {
+    "coverage": "Nonce space covered: 0.00000161% (69 unique nonces in 32-bit space = 4294967296 total). Expected for random: same (n/N approximation).",
+    "angular_distribution": "RANDOM angular distribution (uniformity=0.0000). No significant clustering detected.",
+    "sunflower_pattern": "WEAK sunflower pattern (score=0.0147). Golden angle alignment: 2.94%.",
+    "unsearched_gaps": "SIGNIFICANT: 60 unsearched gaps detected in the nonce space. Largest gap: 367,634,400 nonces (range 2,006,376,725 - 2,374,011,124). These are regions of the 32-bit nonce space that miners have NOT explored.",
+    "resonance_thresholds": "Resonance strength distribution: 30/69 (43.48%) >= 0.5, 16/69 (23.19%) >= 0.7, 8/69 (11.59%) >= 0.9.",
+    "structure_conclusion": "CONCLUSION: No strong sunflower or gap structure detected in this sample. Larger samples may reveal subtle patterns."
+  },
+  "metadata": {
+    "api": "https://blockstream.info/api",
+    "block_count": 100,
+    "start_height": null,
+    "timestamp_utc": "2026-06-15T19:35:45Z",
+    "phi_15": 1364.0007331374366,
+    "birthday_signature": 31071976,
+    "method": "Phi^15 quantum coherence resonance analysis of Bitcoin block nonces",
+    "precision_threshold_pct": 99.9999,
+    "birthday_modular_threshold": 1000,
+    "monte_carlo_baseline": true
+  }
+}

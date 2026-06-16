@@ -63,7 +63,9 @@ class DodecahedralQuantumSolver:
         self.basis_states = self._generate_dodecahedral_basis_states()
 
     @staticmethod
-    def _load_configured_capacity(configured_capacity_ehs: Optional[float]) -> Optional[float]:
+    def _load_configured_capacity(
+        configured_capacity_ehs: Optional[float],
+    ) -> Optional[float]:
         raw_value: Optional[float | str] = configured_capacity_ehs
         if raw_value is None:
             raw_value = os.getenv("HYBA_QUANTUM_CAPACITY_EHS")
@@ -72,7 +74,9 @@ class DodecahedralQuantumSolver:
         try:
             parsed = float(raw_value)
         except (TypeError, ValueError) as exc:
-            raise QuantumSolverConfigurationError("HYBA_QUANTUM_CAPACITY_EHS must be numeric") from exc
+            raise QuantumSolverConfigurationError(
+                "HYBA_QUANTUM_CAPACITY_EHS must be numeric"
+            ) from exc
         if not math.isfinite(parsed) or parsed <= 0:
             raise QuantumSolverConfigurationError("HYBA_QUANTUM_CAPACITY_EHS must be positive")
         return float(min(parsed, PULVINI_HASHRATE_CAP_EHS))
@@ -93,7 +97,12 @@ class DodecahedralQuantumSolver:
         """
         if self.configured_capacity_ehs is None:
             return None
-        return float(min(self.configured_capacity_ehs * self.power_scale, PULVINI_HASHRATE_CAP_EHS))
+        return float(
+            min(
+                self.configured_capacity_ehs * self.power_scale,
+                PULVINI_HASHRATE_CAP_EHS,
+            )
+        )
 
     def _generate_dodecahedral_basis_states(self) -> np.ndarray:
         """
@@ -135,14 +144,18 @@ class DodecahedralQuantumSolver:
         return normalized_basis
 
     @staticmethod
-    def _validate_nonce_ranges(nonce_ranges: List[Tuple[int, int]]) -> List[Tuple[int, int]]:
+    def _validate_nonce_ranges(
+        nonce_ranges: List[Tuple[int, int]],
+    ) -> List[Tuple[int, int]]:
         if not nonce_ranges:
             raise QuantumSolverConfigurationError("At least one nonce range is required")
 
         validated: List[Tuple[int, int]] = []
         for index, nonce_range in enumerate(nonce_ranges):
             if len(nonce_range) != 2:
-                raise QuantumSolverConfigurationError(f"Nonce range {index} must contain exactly two bounds")
+                raise QuantumSolverConfigurationError(
+                    f"Nonce range {index} must contain exactly two bounds"
+                )
             start, end = int(nonce_range[0]), int(nonce_range[1])
             if start < 0 or end < 0:
                 raise QuantumSolverConfigurationError("Nonce range bounds must be non-negative")
@@ -155,7 +168,9 @@ class DodecahedralQuantumSolver:
 
     async def configure_search(self, target: int, nonce_ranges: List[Tuple[int, int]]) -> bool:
         if not isinstance(target, int) or target <= 0:
-            raise QuantumSolverConfigurationError("Mining target must be a positive non-zero integer")
+            raise QuantumSolverConfigurationError(
+                "Mining target must be a positive non-zero integer"
+            )
 
         validated_ranges = self._validate_nonce_ranges(nonce_ranges)
         search_space_size = sum((end - start + 1) for start, end in validated_ranges)
@@ -178,7 +193,9 @@ class DodecahedralQuantumSolver:
         probabilities = np.abs(amplitudes) ** 2
         total_probability = float(np.sum(probabilities))
         if not math.isfinite(total_probability) or total_probability <= 0:
-            raise QuantumNumericalInstabilityError("Entropy probabilities do not form a valid distribution")
+            raise QuantumNumericalInstabilityError(
+                "Entropy probabilities do not form a valid distribution"
+            )
         probabilities = probabilities / total_probability
         probabilities = np.where(probabilities > 1e-15, probabilities, 1e-15)
         return -float(np.sum(probabilities * np.log2(probabilities)))
@@ -216,7 +233,9 @@ class DodecahedralQuantumSolver:
 
     def _project_index_to_nonce(self, basis_index: int) -> int:
         if not self.current_config:
-            raise QuantumSolverConfigurationError("Solver must be configured before projecting a nonce")
+            raise QuantumSolverConfigurationError(
+                "Solver must be configured before projecting a nonce"
+            )
 
         offset = basis_index % int(self.current_config["search_space_size"])
         for start, end in self.current_config["nonce_ranges"]:
@@ -224,7 +243,9 @@ class DodecahedralQuantumSolver:
             if offset < span:
                 return int(start + offset)
             offset -= span
-        raise QuantumSolverConfigurationError("Measured state could not be projected to a nonce range")
+        raise QuantumSolverConfigurationError(
+            "Measured state could not be projected to a nonce range"
+        )
 
     async def solve(self, max_iterations: int = 100, timeout: float = 30.0) -> Optional[int]:
         """
@@ -280,7 +301,11 @@ class DodecahedralQuantumSolver:
             self.last_solve_duration_seconds = time.monotonic() - start_time
             self.last_error = None
             return nonce
-        except (np.linalg.LinAlgError, FloatingPointError, QuantumNumericalInstabilityError) as exc:
+        except (
+            np.linalg.LinAlgError,
+            FloatingPointError,
+            QuantumNumericalInstabilityError,
+        ) as exc:
             self.last_error = str(exc)
             self.last_solve_duration_seconds = time.monotonic() - start_time
             self.logger.error("Numerical instability in Grover solve: %s", exc)
@@ -297,7 +322,9 @@ class DodecahedralQuantumSolver:
         return True
 
     def get_metrics(self) -> Dict[str, Any]:
-        state_vector = np.ones(DODECAHEDRON_VERTICES, dtype=np.complex128) / math.sqrt(DODECAHEDRON_VERTICES)
+        state_vector = np.ones(DODECAHEDRON_VERTICES, dtype=np.complex128) / math.sqrt(
+            DODECAHEDRON_VERTICES
+        )
         entropy = self.calculate_integrated_entropy(state_vector)
         hashrate_ehs = self.calculate_integrated_hashrate()
 
@@ -305,7 +332,9 @@ class DodecahedralQuantumSolver:
             "available": self.is_available(),
             "configured": bool(self.current_config),
             "telemetry_source": "derived_runtime_state",
-            "capacity_source": "configured_estimate" if hashrate_ehs is not None else "not_configured",
+            "capacity_source": (
+                "configured_estimate" if hashrate_ehs is not None else "not_configured"
+            ),
             "hashrate_ehs": None if hashrate_ehs is None else round(hashrate_ehs, 4),
             "hashrate_cap_ehs": PULVINI_HASHRATE_CAP_EHS,
             "power_scale": self.power_scale,

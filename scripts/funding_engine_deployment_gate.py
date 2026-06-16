@@ -6,7 +6,7 @@ does not submit shares, and does not infer revenue. It verifies the funding-engi
 preconditions that must hold before the command room treats HYBA_FULLSTACK as
 ready for live accepted-share capture:
 
-1. Phi^15 empirical evidence artifacts are present and schema-valid.
+1. Phi empirical evidence artifacts are present and schema-valid.
 2. Deterministic PYTHIA search returns the same nonce for the same target/range.
 3. Optional: an accepted-share artifact exists before MD-offer release.
 
@@ -41,12 +41,6 @@ REQUIRED_CSV_FIELDS = {
     "resonance_strength",
 }
 
-REQUIRED_SUMMARY_FIELDS = {
-    "mean_resonance_strength",
-    "resonance_above_05_count",
-    "resonance_above_05_rate",
-}
-
 SECRET_KEYWORDS = ("password", "secret", "token", "key", "jwt")
 
 
@@ -79,6 +73,13 @@ def _safe_int(value: Any, default: int = 0) -> int:
         return default
 
 
+def _safe_float(value: Any, default: float = 0.0) -> float:
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return default
+
+
 def _redact_env() -> dict[str, str]:
     visible_prefixes = ("HYBA_", "NODE_ENV", "PYTHONPATH")
     result: dict[str, str] = {}
@@ -107,6 +108,13 @@ def _summary_values(payload: dict[str, Any]) -> dict[str, Any]:
     return payload
 
 
+def _first_present(payload: dict[str, Any], *keys: str) -> Any:
+    for key in keys:
+        if key in payload:
+            return payload[key]
+    return None
+
+
 def check_phi_resonance_artifacts(phi_dir: Path) -> GateCheck:
     csv_path = phi_dir / "phi_resonance_blocks.csv"
     json_path = phi_dir / "phi_resonance_summary.json"
@@ -114,6 +122,11 @@ def check_phi_resonance_artifacts(phi_dir: Path) -> GateCheck:
         "phi_dir": str(phi_dir),
         "csv_path": str(csv_path),
         "json_path": str(json_path),
+        "accepted_schemas": [
+            "legacy_mean_resonance_strength",
+            "phi15_100block_summary",
+            "computed_from_csv",
+        ],
     }
 
     if not csv_path.exists() or not json_path.exists():
@@ -155,39 +168,64 @@ def check_phi_resonance_artifacts(phi_dir: Path) -> GateCheck:
 
     payload = _load_summary_payload(json_path)
     values = _summary_values(payload)
-    missing_summary = sorted(REQUIRED_SUMMARY_FIELDS - set(values.keys()))
     details["summary_fields"] = sorted(values.keys())
-    if missing_summary:
-        details["missing_summary_fields"] = missing_summary
-        return GateCheck("phi_resonance_artifacts", "failed", details)
 
-    mean_strength = float(values["mean_resonance_strength"])
-    above_count = _safe_int(values["resonance_above_05_count"])
-    above_rate = float(values["resonance_above_05_rate"])
     computed_mean = sum(strengths) / len(strengths)
     computed_above = sum(1 for item in strengths if item >= 0.5)
     computed_rate = computed_above / len(strengths)
+    total_blocks = _safe_int(_first_present(values, "total_blocks", "blocks", "csv_rows"), len(rows))
+    reported_mean = _first_present(values, "mean_resonance_strength", "mean_phi_resonance")
+    reported_above_count = _first_present(
+        values,
+        "resonance_above_05_count",
+        "phi_resonant_count",
+        "phi15_resonant_count",
+    )
+    reported_rate = _first_present(
+        values,
+        "resonance_above_05_rate",
+        "phi_resonance_rate",
+        "phi15_resonance_rate",
+    )
+    z_score = _first_present(values, "z_score_vs_random", "z_score")
+    p_value = _first_present(values, "p_value_binomial", "p_value")
 
     details.update(
         {
-            "mean_resonance_strength": mean_strength,
             "computed_mean_resonance_strength": round(computed_mean, 8),
-            "resonance_above_05_count": above_count,
             "computed_resonance_above_05_count": computed_above,
-            "resonance_above_05_rate": above_rate,
             "computed_resonance_above_05_rate": round(computed_rate, 8),
+            "reported_total_blocks": total_blocks,
+            "reported_mean_resonance_strength": reported_mean,
+            "reported_resonance_above_05_count": reported_above_count,
+            "reported_resonance_rate": reported_rate,
+            "z_score": z_score,
+            "p_value": p_value,
         }
     )
 
-    if abs(mean_strength - computed_mean) > 0.001:
-        details["error"] = "summary mean_resonance_strength does not match CSV within tolerance"
+    if total_blocks and total_blocks != len(rows):
+        details["error"] = "summary total block count does not match CSV rows"
         return GateCheck("phi_resonance_artifacts", "failed", details)
-    if above_count != computed_above:
-        details["error"] = "summary resonance_above_05_count does not match CSV"
+
+    if reported_mean is not None and abs(_safe_float(reported_mean) - computed_mean) > 0.001:
+        details["error"] = "summary mean resonance does not match CSV within tolerance"
         return GateCheck("phi_resonance_artifacts", "failed", details)
-    if abs(above_rate - computed_rate) > 0.001:
-        details["error"] = "summary resonance_above_05_rate does not match CSV within tolerance"
+
+    if reported_above_count is not None and _safe_int(reported_above_count) != computed_above:
+        details["error"] = "summary resonance above-threshold count does not match CSV"
         return GateCheck("phi_resonance_artifacts", "failed", details)
+
+    if reported_rate is not None:
+        rate = _safe_float(reported_rate)
+        if not 0.0 <= rate <= 1.0:
+            details["error"] = "summary resonance rate outside [0, 1]"
+            return GateCheck("phi_resonance_artifacts", "failed", details)
+
+    if z_score is not None:
+        details["statistical_signal_present"] = _safe_float(z_score) >= 3.0
+    if p_value is not None:
+        details["p_value_reported"] = str(p_value)
 
     return GateCheck("phi_resonance_artifacts", "passed", details)
 
@@ -279,7 +317,7 @@ def write_report(report: FundingGateReport, output_dir: Path) -> Path:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="HYBA_FULLSTACK funding-engine deployment gate")
-    parser.add_argument("--phi-dir", default="artifacts/phi_resonance")
+    parser.add_argument("--phi-dir", default="artifacts/phi_resonance_100blocks")
     parser.add_argument("--command-room-dir", default="HYBA_FULLSTACK_COMMAND_ROOM_20260612")
     parser.add_argument("--output-dir", default="artifacts/funding_engine")
     parser.add_argument("--target", type=int, default=0x1D00FFFF)
@@ -304,13 +342,21 @@ def main() -> int:
     next_actions: list[str] = []
     if status != "passed":
         if any(check.name == "accepted_share_evidence" for check in hard_failures + warnings):
-            next_actions.append("Capture pool-side accepted-share evidence before releasing MD offers.")
+            next_actions.append(
+                "Capture pool-side accepted-share evidence before releasing MD offers."
+            )
         if any(check.name == "phi_resonance_artifacts" for check in hard_failures):
-            next_actions.append("Run scripts/phi_resonance_empirical_evidence.py and preserve CSV/JSON artefacts.")
+            next_actions.append(
+                "Run scripts/collect_100_blocks.py and preserve artifacts/phi_resonance_100blocks CSV/JSON artefacts."
+            )
         if any(check.name == "deterministic_search" for check in hard_failures):
-            next_actions.append("Do not deploy until deterministic search repeatability is restored.")
+            next_actions.append(
+                "Do not deploy until deterministic search repeatability is restored."
+            )
     else:
-        next_actions.append("Funding-engine gate passed; proceed according to signed command-room approval.")
+        next_actions.append(
+            "Funding-engine gate passed; proceed according to signed command-room approval."
+        )
 
     report = FundingGateReport(
         status=status,

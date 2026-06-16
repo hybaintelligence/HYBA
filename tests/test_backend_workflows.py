@@ -37,12 +37,20 @@ from hyba_genesis_api.core.midas_controls import (  # noqa: E402
     StateTransitionError,
     TokenBucketRateLimiter,
 )
-from hyba_genesis_api.core.substrate import get_substrate_state, initialize_substrate, shutdown_substrate  # noqa: E402
-from pythia_mining.mining_validation import build_block_header, compact_to_target, validate_share  # noqa: E402
+from hyba_genesis_api.core.substrate import (  # noqa: E402
+    get_substrate_state,
+    initialize_substrate,
+    shutdown_substrate,
+)
+from pythia_mining.mining_validation import (  # noqa: E402
+    build_block_header,
+    compact_to_target,
+    validate_share,
+)
 from pythia_mining.quantum_solver import (  # noqa: E402
     DODECAHEDRON_VERTICES,
-    QuantumSolverConfigurationError,
     DodecahedralQuantumSolver,
+    QuantumSolverConfigurationError,
 )
 from pythia_mining.stratum_client import (  # noqa: E402
     AllPoolsOfflineError,
@@ -65,13 +73,21 @@ class MIDASProductionControlTests(unittest.TestCase):
         machine = MIDASStateMachine()
         request_id = "req-prod-path"
 
-        for state in [MiningState.STARTING, MiningState.RUNNING, MiningState.STOPPING, MiningState.STOPPED]:
+        for state in [
+            MiningState.STARTING,
+            MiningState.RUNNING,
+            MiningState.STOPPING,
+            MiningState.STOPPED,
+        ]:
             machine.transition(state, request_id=request_id)
 
         validation = machine.validate_state_machine()
         self.assertTrue(validation["valid"])
         self.assertEqual("stopped", validation["current_state"])
-        self.assertEqual([request_id] * 4, [transition.request_id for transition in machine.get_transition_history()])
+        self.assertEqual(
+            [request_id] * 4,
+            [transition.request_id for transition in machine.get_transition_history()],
+        )
 
     def test_midas_transition_guard_is_atomic_under_concurrent_calls(self) -> None:
         machine = MIDASStateMachine()
@@ -89,7 +105,9 @@ class MIDASProductionControlTests(unittest.TestCase):
 
         self.assertEqual(1, results.count(True))
         self.assertEqual(MiningState.RUNNING, machine.get_state())
-        self.assertEqual(1, machine.validate_state_machine()["metrics"]["invalid_transitions_total"])
+        self.assertEqual(
+            1, machine.validate_state_machine()["metrics"]["invalid_transitions_total"]
+        )
 
     def test_midas_rejects_invalid_transitions_and_missing_request_id(self) -> None:
         machine = MIDASStateMachine()
@@ -99,7 +117,9 @@ class MIDASProductionControlTests(unittest.TestCase):
             machine.transition(MiningState.RUNNING, request_id="req-invalid")
         with self.assertRaisesRegex(StateTransitionError, "Forced transition"):
             machine.force_transition(MiningState.RUNNING, request_id="req-force")
-        self.assertEqual(3, machine.validate_state_machine()["metrics"]["invalid_transitions_total"])
+        self.assertEqual(
+            3, machine.validate_state_machine()["metrics"]["invalid_transitions_total"]
+        )
 
     def test_midas_rate_limit_is_retryable_and_observable(self) -> None:
         limiter = TokenBucketRateLimiter(rate_per_second=10, burst_capacity=2)
@@ -129,7 +149,9 @@ class MIDASProductionControlTests(unittest.TestCase):
         tracker = MiningRequestTracker()
 
         def create_duplicate() -> str:
-            return tracker.create_request("start", {"miner": "alpha"}, idempotency_key="idem-race").request_id
+            return tracker.create_request(
+                "start", {"miner": "alpha"}, idempotency_key="idem-race"
+            ).request_id
 
         with ThreadPoolExecutor(max_workers=8) as executor:
             request_ids = list(executor.map(lambda _: create_duplicate(), range(16)))
@@ -140,7 +162,9 @@ class MIDASProductionControlTests(unittest.TestCase):
     def test_mining_request_tracker_failed_boundary_is_retryable(self) -> None:
         tracker = MiningRequestTracker()
         first = tracker.create_request("start", {"miner": "alpha"}, idempotency_key="idem-boundary")
-        tracker.update_request_status(first.request_id, RequestStatus.FAILED, error="pool unavailable")
+        tracker.update_request_status(
+            first.request_id, RequestStatus.FAILED, error="pool unavailable"
+        )
         retry = tracker.create_request("start", {"miner": "alpha"}, idempotency_key="idem-boundary")
         self.assertNotEqual(first.request_id, retry.request_id)
 
@@ -155,7 +179,9 @@ class MIDASProductionControlTests(unittest.TestCase):
 
 
 class SubstrateUnitTests(unittest.TestCase):
-    def test_substrate_initialization_is_deterministic_and_json_serializable(self) -> None:
+    def test_substrate_initialization_is_deterministic_and_json_serializable(
+        self,
+    ) -> None:
         first_state = initialize_substrate()
         second_state = initialize_substrate()
 
@@ -180,16 +206,22 @@ class SubstrateUnitTests(unittest.TestCase):
 
 
 class MiningPropertyAndIntegrationTests(unittest.TestCase):
-    def test_quantum_solver_capacity_is_not_reported_without_configuration(self) -> None:
+    def test_quantum_solver_capacity_is_not_reported_without_configuration(
+        self,
+    ) -> None:
         solver = DodecahedralQuantumSolver()
         metrics = solver.get_metrics()
         self.assertTrue(metrics["available"])
         self.assertIsNone(metrics["hashrate_ehs"])
         self.assertEqual("not_configured", metrics["capacity_source"])
         self.assertEqual("derived_runtime_state", metrics["telemetry_source"])
-        self.assertAlmostEqual(math.log2(DODECAHEDRON_VERTICES), metrics["von_neumann_entropy"], places=4)
+        self.assertAlmostEqual(
+            math.log2(DODECAHEDRON_VERTICES), metrics["von_neumann_entropy"], places=4
+        )
 
-    def test_quantum_solver_configured_capacity_is_monotonic_by_power_scale(self) -> None:
+    def test_quantum_solver_configured_capacity_is_monotonic_by_power_scale(
+        self,
+    ) -> None:
         solver = DodecahedralQuantumSolver(configured_capacity_ehs=10.0)
         previous_hashrate = -math.inf
         for scale in [0.1, 0.5, 1.0, 2.5, 10.0]:
@@ -206,7 +238,10 @@ class MiningPropertyAndIntegrationTests(unittest.TestCase):
         row_norms = np.linalg.norm(solver.basis_states, axis=1)
         self.assertTrue(np.isfinite(solver.basis_states).all())
         self.assertTrue(np.allclose(row_norms, 1.0, atol=1e-12))
-        self.assertEqual(DODECAHEDRON_VERTICES, len({tuple(np.round(row.real, 12)) for row in solver.basis_states}))
+        self.assertEqual(
+            DODECAHEDRON_VERTICES,
+            len({tuple(np.round(row.real, 12)) for row in solver.basis_states}),
+        )
 
     def test_entropy_property_is_bounded_for_random_complex_amplitudes(self) -> None:
         solver = DodecahedralQuantumSolver()
@@ -253,7 +288,9 @@ class MiningPropertyAndIntegrationTests(unittest.TestCase):
         self.assertGreater(metrics["last_solve_iterations"], 0)
         self.assertIsNone(metrics["last_error"])
 
-    def test_connect_search_submit_smoke_uses_validation_before_accounting(self) -> None:
+    def test_connect_search_submit_smoke_uses_validation_before_accounting(
+        self,
+    ) -> None:
         async def run_smoke() -> dict[str, object]:
             pool_manager = PoolManager()
             active_pool = await pool_manager.get_best_pool()
@@ -262,7 +299,7 @@ class MiningPropertyAndIntegrationTests(unittest.TestCase):
             await solver.configure_search(job.target, [(0, 2**32 - 1)])
             nonce = await solver.solve(max_iterations=25, timeout=5.0)
             assert nonce is not None
-            result = active_pool.validate_and_record_share(job, nonce, "00" * job.extranonce2_size)
+            result = await active_pool.validate_and_record_share(job, nonce, "00" * job.extranonce2_size)
             payload = {
                 "connected": active_pool.is_connected,
                 "authenticated": active_pool.is_authenticated,
@@ -419,7 +456,10 @@ class AdversarialValidationTests(unittest.TestCase):
         for difficulty in [-1, 0]:
             with self.assertRaises(ValidationError):
                 PredictRequest(state={"networkDifficulty": difficulty})
-        self.assertEqual(7_234_567_890_123, PredictRequest(state={"networkDifficulty": 7_234_567_890_123}).state.networkDifficulty)
+        self.assertEqual(
+            7_234_567_890_123,
+            PredictRequest(state={"networkDifficulty": 7_234_567_890_123}).state.networkDifficulty,
+        )
 
     def test_solver_rejects_invalid_targets_and_nonce_ranges(self) -> None:
         async def run_cases() -> None:
@@ -446,11 +486,14 @@ class AdversarialValidationTests(unittest.TestCase):
 
         asyncio.run(run_case())
 
-    def test_production_requires_external_pool_configuration_and_blocks_fixtures(self) -> None:
+    def test_production_requires_external_pool_configuration_and_blocks_fixtures(
+        self,
+    ) -> None:
         clean_env = {
             key: value
             for key, value in os.environ.items()
-            if not key.startswith("HYBA_POOL_") and key not in {"NODE_ENV", "HYBA_ENV", "HYBA_ALLOW_DEV_FIXTURES"}
+            if not key.startswith("HYBA_POOL_")
+            and key not in {"NODE_ENV", "HYBA_ENV", "HYBA_ALLOW_DEV_FIXTURES"}
         }
         with patch.dict(os.environ, clean_env, clear=True):
             os.environ["NODE_ENV"] = "production"

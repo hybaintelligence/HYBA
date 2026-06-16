@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 LOGGER = logging.getLogger(__name__)
 
@@ -20,7 +20,7 @@ class SubsystemStatus:
 
     name: str
     ready: bool = False
-    initialized_at: str | None = None
+    initialized_at: Optional[str] = None
     detail: str = "not initialized"
 
 
@@ -32,9 +32,7 @@ class SubstrateState:
     initialization_order: List[str] = field(default_factory=list)
     subsystems: Dict[str, SubsystemStatus] = field(
         default_factory=lambda: {
-            "pulvini_reconstruction_kernel": SubsystemStatus(
-                name="pulvini_reconstruction_kernel"
-            ),
+            "pulvini_reconstruction_kernel": SubsystemStatus(name="pulvini_reconstruction_kernel"),
             "hilbert_space_warm_start": SubsystemStatus(name="hilbert_space_warm_start"),
             "phi_floor_coherence": SubsystemStatus(name="phi_floor_coherence"),
             "pythia_consensus_monitors": SubsystemStatus(name="pythia_consensus_monitors"),
@@ -43,7 +41,7 @@ class SubstrateState:
             ),
         }
     )
-    shutdown_at: str | None = None
+    shutdown_at: Optional[str] = None
 
 
 _STATE = SubstrateState()
@@ -138,7 +136,5 @@ def get_substrate_state() -> Dict[str, object]:
         "ready": is_ready(),
         "initialization_order": list(_STATE.initialization_order),
         "shutdown_at": _STATE.shutdown_at,
-        "subsystems": {
-            name: asdict(status) for name, status in _STATE.subsystems.items()
-        },
+        "subsystems": {name: asdict(status) for name, status in _STATE.subsystems.items()},
     }

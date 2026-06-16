@@ -27,7 +27,10 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 try:
-    from pythia_mining.pulvini_autonomics import NodeTelemetry, PulviniAutonomicsEngine  # noqa: E402
+    from pythia_mining.pulvini_autonomics import (  # noqa: E402
+        NodeTelemetry,
+        PulviniAutonomicsEngine,
+    )
     from pythia_mining.pulvini_overlay import PulviniOverlayConcentrator  # noqa: E402
     from pythia_mining.pulvini_verifier import (  # noqa: E402
         PULVINI_BINARY_HEADER_SIZE,
@@ -96,7 +99,9 @@ def run_live_cut_drill(
     engine = PulviniAutonomicsEngine(lattice_repoint_sink=overlay.apply_lattice_repoint)
     engine.ingest_telemetry(_healthy_telemetry(node_id) for node_id in range(32))
     rebalance = engine.rebalancer.rebalance_lattice_topology(nodes, reason="simulated_live_cut")
-    overlay.apply_autonomic_distribution(engine.homeostasis.rho.diagonal().tolist(), reason="simulated_live_cut")
+    overlay.apply_autonomic_distribution(
+        engine.homeostasis.rho.diagonal().tolist(), reason="simulated_live_cut"
+    )
 
     verifier = SubstateVerifier()
     passport = verifier.generate_passport(
@@ -167,9 +172,18 @@ def run_live_cut_drill(
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Simulate a PULVINI live-cut and report post-cut purity")
-    parser.add_argument("--nodes", type=_parse_nodes, default=[0, 1, 2], help="Comma-separated node ids to cut")
-    parser.add_argument("--state", type=Path, default=Path("python_backend/pythia_state.live_cut.json"))
+    parser = argparse.ArgumentParser(
+        description="Simulate a PULVINI live-cut and report post-cut purity"
+    )
+    parser.add_argument(
+        "--nodes",
+        type=_parse_nodes,
+        default=[0, 1, 2],
+        help="Comma-separated node ids to cut",
+    )
+    parser.add_argument(
+        "--state", type=Path, default=Path("python_backend/pythia_state.live_cut.json")
+    )
     parser.add_argument("--min-purity", type=float, default=0.9)
     parser.add_argument("--min-fidelity-fixed", type=int, default=900_000_000)
     parser.add_argument("--json", action="store_true")

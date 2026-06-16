@@ -13,7 +13,7 @@ if str(BACKEND) not in sys.path:
     sys.path.insert(0, str(BACKEND))
 
 # Turn warnings into hard failures in test context
-np.seterr(all='raise')
+np.seterr(all="raise")
 
 from pythia_mining.pulvini_bures import bures_certificate  # noqa: E402
 from pythia_mining.pulvini_compressed_solver import PulviniCompressedQuantumSolver  # noqa: E402
@@ -44,7 +44,13 @@ class PulviniEndToEndShareFlowTests(unittest.TestCase):
 
             async def submitter(submit_job: MiningJob, nonce: int, extranonce2: str) -> ShareResult:
                 submitted.append((submit_job.job_id, nonce, extranonce2))
-                return ShareResult(True, job_id=submit_job.job_id, nonce=nonce, block_hash="00" * 32, target=submit_job.target)
+                return ShareResult(
+                    True,
+                    job_id=submit_job.job_id,
+                    nonce=nonce,
+                    block_hash="00" * 32,
+                    target=submit_job.target,
+                )
 
             assignments = overlay.register_pool_job(job, pool_name="Pool")
             plan = overlay.nonce_plan
@@ -60,16 +66,31 @@ class PulviniEndToEndShareFlowTests(unittest.TestCase):
             # Numerical validity assertions for Bures certificate
             self.assertFalse(np.isnan(cert.bures_norm), "NaN in Bures norm — numerical corruption")
             self.assertFalse(np.isinf(cert.bures_norm), "Inf in Bures norm — overflow")
-            self.assertFalse(np.isnan(cert.tangent_norm), "NaN in tangent norm — numerical corruption")
+            self.assertFalse(
+                np.isnan(cert.tangent_norm),
+                "NaN in tangent norm — numerical corruption",
+            )
             self.assertFalse(np.isinf(cert.tangent_norm), "Inf in tangent norm — overflow")
 
             overlay.phase_heartbeat(1)
             overlay.manifold.evolve_closed_system(dt=0.05)
             # Numerical validity assertions for evolved state
-            self.assertFalse(np.any(np.isnan(overlay.manifold.psi)), "NaN in evolved state vector — numerical corruption")
-            self.assertFalse(np.any(np.isinf(overlay.manifold.psi)), "Inf in evolved state vector — overflow")
-            self.assertFalse(np.any(np.isnan(overlay.manifold.rho)), "NaN in evolved density matrix — numerical corruption")
-            self.assertFalse(np.any(np.isinf(overlay.manifold.rho)), "Inf in evolved density matrix — overflow")
+            self.assertFalse(
+                np.any(np.isnan(overlay.manifold.psi)),
+                "NaN in evolved state vector — numerical corruption",
+            )
+            self.assertFalse(
+                np.any(np.isinf(overlay.manifold.psi)),
+                "Inf in evolved state vector — overflow",
+            )
+            self.assertFalse(
+                np.any(np.isnan(overlay.manifold.rho)),
+                "NaN in evolved density matrix — numerical corruption",
+            )
+            self.assertFalse(
+                np.any(np.isinf(overlay.manifold.rho)),
+                "Inf in evolved density matrix — overflow",
+            )
             await solver.configure_compressed_search(job.target, plan)
             nonce = await solver.solve(max_iterations=16, timeout=5.0)
             self.assertIsNotNone(nonce)
@@ -88,7 +109,9 @@ class PulviniEndToEndShareFlowTests(unittest.TestCase):
                 extranonce2=assignment.extranonce2,
                 submitter=submitter,
             )
-            ledger = overlay.record_share_outcome(assignment.node_id, nonce, propagation_result.share_result)
+            ledger = overlay.record_share_outcome(
+                assignment.node_id, nonce, propagation_result.share_result
+            )
             snapshot = overlay.snapshot()
             propagation_snapshot = propagation.snapshot()
 
@@ -105,7 +128,10 @@ class PulviniEndToEndShareFlowTests(unittest.TestCase):
             self.assertEqual(20, snapshot["nonce_compression_plan"]["working_set_dimension"])
             self.assertTrue(ledger["accepted"])
             self.assertIsNotNone(ledger["compressed_coordinate"])
-            self.assertEqual("O(1) deterministic per attempt, O(D/2^256) expected attempts to block", solver.current_config["candidate_generation_complexity"])
+            self.assertEqual(
+                "O(1) deterministic per attempt, O(D/2^256) expected attempts to block",
+                solver.current_config["candidate_generation_complexity"],
+            )
             stages = [entry["stage"] for entry in solver.last_solve_trace]
             self.assertIn("compressed_nonce_space_received", stages)
             self.assertIn("search_space_collapsed", stages)

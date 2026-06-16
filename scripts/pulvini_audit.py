@@ -28,9 +28,15 @@ def verify_ledger(path: Path) -> dict[str, Any]:
     ledger = CertificateLedger.from_bytes(path.read_bytes())
     chain_verified = ledger.verify_chain()
     passport_checks = [_inspect_passport_entry(entry.to_dict()) for entry in ledger.entries]
-    invariant_violations = [entry for entry in ledger.entries if entry.certificate_type == "mathematical_exception"]
-    autonomic_repairs = [entry for entry in ledger.entries if entry.certificate_type == "autonomic_repair"]
-    failed_passports = [check for check in passport_checks if check["checked"] and not check["verified"]]
+    invariant_violations = [
+        entry for entry in ledger.entries if entry.certificate_type == "mathematical_exception"
+    ]
+    autonomic_repairs = [
+        entry for entry in ledger.entries if entry.certificate_type == "autonomic_repair"
+    ]
+    failed_passports = [
+        check for check in passport_checks if check["checked"] and not check["verified"]
+    ]
     passed = bool(chain_verified and not failed_passports and not invariant_violations)
     return {
         "passed": passed,
@@ -47,10 +53,20 @@ def verify_ledger(path: Path) -> dict[str, Any]:
 def _inspect_passport_entry(entry: Mapping[str, Any]) -> dict[str, Any]:
     payload = entry.get("payload", {})
     if not isinstance(payload, Mapping):
-        return {"entry_index": entry.get("index"), "checked": False, "verified": False, "reason": "payload_not_mapping"}
+        return {
+            "entry_index": entry.get("index"),
+            "checked": False,
+            "verified": False,
+            "reason": "payload_not_mapping",
+        }
     candidate = payload.get("passport", payload)
     if not isinstance(candidate, Mapping) or "kernel_invariants_met" not in candidate:
-        return {"entry_index": entry.get("index"), "checked": False, "verified": True, "reason": "not_runtime_passport"}
+        return {
+            "entry_index": entry.get("index"),
+            "checked": False,
+            "verified": True,
+            "reason": "not_runtime_passport",
+        }
     verified = bool(candidate.get("kernel_invariants_met") and candidate.get("ledger_entry_hash"))
     return {
         "entry_index": entry.get("index"),
@@ -62,8 +78,15 @@ def _inspect_passport_entry(entry: Mapping[str, Any]) -> dict[str, Any]:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Verify one or more PULVINI CertificateLedger exports.")
-    parser.add_argument("ledger", nargs="+", type=Path, help="Path(s) to CertificateLedger binary exports produced by to_bytes().")
+    parser = argparse.ArgumentParser(
+        description="Verify one or more PULVINI CertificateLedger exports."
+    )
+    parser.add_argument(
+        "ledger",
+        nargs="+",
+        type=Path,
+        help="Path(s) to CertificateLedger binary exports produced by to_bytes().",
+    )
     parser.add_argument("--json", action="store_true", help="Emit compact JSON only.")
     args = parser.parse_args(argv)
     reports = [verify_ledger(path) for path in args.ledger]
@@ -72,7 +95,11 @@ def main(argv: list[str] | None = None) -> int:
     else:
         ledgers = [CertificateLedger.from_bytes(path.read_bytes()) for path in args.ledger]
         consensus = ConsensusLedger(ledgers).report().to_dict()
-        report = {"passed": bool(consensus["passed"] and all(item["passed"] for item in reports)), "node_reports": reports, "consensus": consensus}
+        report = {
+            "passed": bool(consensus["passed"] and all(item["passed"] for item in reports)),
+            "node_reports": reports,
+            "consensus": consensus,
+        }
     if args.json:
         print(json.dumps(report, sort_keys=True, separators=(",", ":")))
     else:

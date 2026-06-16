@@ -14,6 +14,9 @@
     .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
     .metric { background: #081426; border: 1px solid #203956; border-radius: 14px; padding: 16px; }
     .metric strong { display: block; font-size: 28px; margin-top: 8px; }
+    .tier { background: #071a2c; border: 1px solid #21466a; border-radius: 12px; padding: 10px; margin: 8px 0; }
+    .tier code { color: #f8d477; }
+    .spiral { width: 100%; max-width: 520px; min-height: 220px; margin-top: 12px; }
     textarea { width: 100%; min-height: 220px; background: #050b14; color: #cde3ff; border: 1px solid #29415f; border-radius: 12px; padding: 12px; }
     button { background: #67e8f9; border: 0; color: #04111d; font-weight: 800; padding: 10px 16px; border-radius: 10px; cursor: pointer; }
   </style>
@@ -23,7 +26,7 @@
   <h1>PULVINI Regulator Viewport</h1>
   <p>Paste JSON from <code>scripts/pulvini_audit.py --json</code> to render a governance scorecard.</p>
   <section class="card">
-    <textarea id="input" aria-label="Audit JSON input">{"passed":true,"chain_verified":true,"entry_count":2,"failed_passport_count":0,"mathematical_exception_count":0,"autonomic_repair_count":0,"root_hash":"demo"}</textarea>
+    <textarea id="input" aria-label="Audit JSON input">{"passed":true,"chain_verified":true,"entry_count":2,"failed_passport_count":0,"mathematical_exception_count":0,"autonomic_repair_count":0,"root_hash":"demo","phi_tier_composition":[{"label":"10^7","phi_exponent":7,"scale_factor":290344418.5374864},{"label":"10^10","phi_exponent":10,"scale_factor":122991869381.24431}],"phi_stability_diagnostic":{"stable":true,"severity":"ok","phi_ratio_error":0.0}}</textarea>
     <p><button id="render">Render scorecard</button></p>
   </section>
   <section id="scorecard" class="card" aria-live="polite"></section>
@@ -31,6 +34,42 @@
 <script>
 function metric(label, value) {
   return `<div class="metric"><span>${label}</span><strong>${value}</strong></div>`;
+}
+function formatScientific(value) {
+  const number = Number(value);
+  return Number.isFinite(number) ? number.toExponential(3) : String(value ?? "n/a");
+}
+function goldenSpiral(tiers) {
+  const count = Math.max(1, Math.min(8, tiers.length));
+  const points = Array.from({ length: count * 16 }, (_, i) => {
+    const theta = i * 0.35;
+    const radius = 4 * Math.pow(1.61803398875, i / 16);
+    return `${260 + Math.cos(theta) * radius},${120 + Math.sin(theta) * radius}`;
+  }).join(" ");
+  const nodes = tiers.slice(0, count).map((tier, i) => {
+    const theta = i * 1.1;
+    const radius = 22 * Math.pow(1.61803398875, i / 2);
+    const x = 260 + Math.cos(theta) * radius;
+    const y = 120 + Math.sin(theta) * radius;
+    return `<circle cx="${x}" cy="${y}" r="6" fill="#f8d477"><title>${tier.label} φ^${tier.phi_exponent}</title></circle>`;
+  }).join("");
+  return `<svg class="spiral" viewBox="0 0 520 240" role="img" aria-label="Golden spiral workload structure"><polyline points="${points}" fill="none" stroke="#67e8f9" stroke-width="3" opacity="0.8"/>${nodes}</svg>`;
+}
+function renderPhiTiers(payload) {
+  const tiers = payload.phi_tier_composition || payload.phi_scaling_contract?.tiers || [];
+  const stability = payload.phi_stability_diagnostic || {};
+  if (!tiers.length && !Object.keys(stability).length) return "";
+  const tierRows = tiers.slice(0, 8).map((tier) => `
+    <div class="tier"><strong>${tier.label || "φ-tier"}</strong> · φ exponent <code>${tier.phi_exponent ?? "n/a"}</code> · scale <code>${formatScientific(tier.scale_factor)}</code></div>`).join("");
+  return `
+    <h2>φ-tier composition</h2>
+    <div class="grid">
+      ${metric("φ stability", stability.stable === false ? "WATCH" : "PASS")}
+      ${metric("φ severity", stability.severity || "ok")}
+      ${metric("φ ratio error", stability.phi_ratio_error ?? 0)}
+    </div>
+    ${tierRows}
+    ${goldenSpiral(tiers)}`;
 }
 function render() {
   const target = document.getElementById('scorecard');
@@ -49,7 +88,8 @@ function render() {
         ${metric('Autonomic repairs', payload.autonomic_repair_count ?? consensus.autonomic_repair_count ?? 0)}
         ${metric('Consensus nodes', consensus.node_count ?? 1)}
       </div>
-      <p><strong>Root:</strong> <code>${payload.root_hash || consensus.consensus_root_hash || 'n/a'}</code></p>`;
+      <p><strong>Root:</strong> <code>${payload.root_hash || consensus.consensus_root_hash || 'n/a'}</code></p>
+      ${renderPhiTiers(payload)}`;
   } catch (error) {
     target.innerHTML = `<div class="status fail">Invalid audit JSON</div><pre>${String(error)}</pre>`;
   }

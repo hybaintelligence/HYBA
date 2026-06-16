@@ -1,0 +1,64 @@
+{
+  "phi": 1.618033988749895,
+  "yang_mills_gap": 1.381966011250105,
+  "m32_domains": 32,
+  "timestamp_utc": "2026-06-15T19:33:33Z",
+  "method": "HENDRIX-\u03a6 structured search operationalization via M32 + Yang-Mills curvature gating + phi gradient proposals",
+  "strategies": [
+    {
+      "name": "RANDOM",
+      "n_steps": 10,
+      "mean_phi_resonance": 0.495214,
+      "max_phi_resonance": 0.708478,
+      "mean_ym_action": 136.681525,
+      "ym_gate_pass_rate": 1.0,
+      "domain_coverage": 10,
+      "domain_entropy": 3.321928,
+      "top_10pct_mean_phi": 0.708478,
+      "first_quartile_ym": 50.767031
+    },
+    {
+      "name": "LINEAR",
+      "n_steps": 10,
+      "mean_phi_resonance": 0.578567,
+      "max_phi_resonance": 0.814923,
+      "mean_ym_action": 9.176625,
+      "ym_gate_pass_rate": 1.0,
+      "domain_coverage": 3,
+      "domain_entropy": 1.360964,
+      "top_10pct_mean_phi": 0.814923,
+      "first_quartile_ym": 8.937063
+    },
+    {
+      "name": "FIBONACCI",
+      "n_steps": 10,
+      "mean_phi_resonance": 0.543305,
+      "max_phi_resonance": 0.702025,
+      "mean_ym_action": 15.747736,
+      "ym_gate_pass_rate": 1.0,
+      "domain_coverage": 8,
+      "domain_entropy": 2.846439,
+      "top_10pct_mean_phi": 0.702025,
+      "first_quartile_ym": 8.937063
+    },
+    {
+      "name": "HENDRIX-\u03a6",
+      "n_steps": 10,
+      "mean_phi_resonance": 0.338764,
+      "max_phi_resonance": 0.708602,
+      "mean_ym_action": 29.023166,
+      "ym_gate_pass_rate": 1.0,
+      "domain_coverage": 7,
+      "domain_entropy": 2.646439,
+      "top_10pct_mean_phi": 0.708602,
+      "first_quartile_ym": 8.68525
+    }
+  ],
+  "interpretation": {
+    "phi_improvement": "HENDRIX-\u03a6 mean phi_resonance is +41.45% below linear scan.",
+    "top_candidates": "HENDRIX-\u03a6 top-10% phi_resonance is +13.05% below linear scan \u2014 meaning its best nonce candidates are weaker search targets.",
+    "domain_coverage": "HENDRIX-\u03a6 visits 7/32 M32 domains (+4 vs linear scan more).",
+    "yang_mills_gating": "HENDRIX-\u03a6 mass gate pass rate: 100.0% (linear: 100.0%). Lower gate pass rate means the search is concentrating on low-curvature (mass-gapped) nonces.",
+    "verdict": "BASELINE: HENDRIX-\u03a6 performs comparably to linear/random search at this scale. Structural advantages may emerge at larger search depths or with different hyperparameters."
+  }
+}

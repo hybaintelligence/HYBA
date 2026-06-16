@@ -11,7 +11,10 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 
 
-@unittest.skipIf(importlib.util.find_spec("numpy") is None, "NumPy is required for the PULVINI live-cut drill")
+@unittest.skipIf(
+    importlib.util.find_spec("numpy") is None,
+    "NumPy is required for the PULVINI live-cut drill",
+)
 class PulviniLiveCutSimulationTests(unittest.TestCase):
     def test_three_node_drill_reports_high_purity_and_valid_state(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

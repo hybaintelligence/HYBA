@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Run the full public-block Phi structured evidence pipeline."""
+
 from __future__ import annotations
 
 import argparse
@@ -7,8 +8,8 @@ import json
 import time
 from pathlib import Path
 
-from phi_block_collector import collect, write_csv
 from phi_block_analyser import features, read_csv, summary, write_features
+from phi_block_collector import collect, write_csv
 
 
 def main() -> int:
@@ -36,17 +37,25 @@ def main() -> int:
     ks = [int(x.strip()) for x in args.ks.split(",") if x.strip()]
     payload = summary(feats, ks, args.trials)
     summary_json.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
-    metadata_json.write_text(json.dumps({
-        "api": args.api,
-        "blocks": args.blocks,
-        "start_height": args.start_height,
-        "needle_quantile": args.needle_quantile,
-        "created_at_unix": int(time.time()),
-        "method": "public block metadata collection plus Phi-structured enrichment analysis",
-        "scope": "public-chain empirical evidence only",
-    }, indent=2, sort_keys=True), encoding="utf-8")
+    metadata_json.write_text(
+        json.dumps(
+            {
+                "api": args.api,
+                "blocks": args.blocks,
+                "start_height": args.start_height,
+                "needle_quantile": args.needle_quantile,
+                "created_at_unix": int(time.time()),
+                "method": "public block metadata collection plus Phi-structured enrichment analysis",
+                "scope": "public-chain empirical evidence only",
+            },
+            indent=2,
+            sort_keys=True,
+        ),
+        encoding="utf-8",
+    )
     print(json.dumps(payload, indent=2, sort_keys=True))
     return 0
+
 
 if __name__ == "__main__":
     raise SystemExit(main())

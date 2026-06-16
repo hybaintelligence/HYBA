@@ -23,7 +23,6 @@ import argparse
 import asyncio
 import csv
 import json
-import os
 import sys
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
@@ -216,7 +215,9 @@ def _extract_shares(payload: dict[str, Any]) -> dict[str, int]:
     return {"submitted": 0, "accepted": 0, "rejected": 0}
 
 
-def check_first_share(status_path: Path, pool_side_evidence: Path | None, require_pool_side: bool) -> GateFinding:
+def check_first_share(
+    status_path: Path, pool_side_evidence: Path | None, require_pool_side: bool
+) -> GateFinding:
     try:
         if not status_path.exists():
             return GateFinding(
@@ -275,7 +276,9 @@ def check_first_share(status_path: Path, pool_side_evidence: Path | None, requir
 def decide(mode: str, findings: list[GateFinding]) -> GateResult:
     failed = [finding for finding in findings if finding.status == "fail"]
     held = [finding for finding in findings if finding.status == "hold"]
-    first_share = next((finding for finding in findings if finding.name == "first_share_gate"), None)
+    first_share = next(
+        (finding for finding in findings if finding.name == "first_share_gate"), None
+    )
     md_offers = first_share is not None and first_share.status == "pass"
 
     if failed:

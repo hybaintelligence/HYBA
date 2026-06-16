@@ -1,0 +1,4 @@
+# file: /Users/demouser/Desktop/HYBA_FULLSTACK/src/euclid/pythagoras/quantum/operators/omega_tda_audit.py
+# hypothesis_version: 6.155.2
+
+[0.0, 1e-12, 1e-07, 0.001, 0.1, 0.15, 0.45, 1.0, 2.0, 10.0, 512, 1000000, 'OmegaAuditError', 'OmegaAuditResult', 'OmegaSignature', 'PersistenceSummary', 'b0', 'b1', 'candidate', 'dgms', 'laplacian_proxy', 'persistence', 'reference', 'shape', 'spectral_gap_scaled']

@@ -27,7 +27,12 @@ def adjacency_map_digest(adjacency_map: dict) -> str:
 
 
 def _certificate_cache_path(map_hash: str) -> Path:
-    root = Path(os.getenv("PULVINI_CERTIFICATE_CACHE_DIR", Path(tempfile.gettempdir()) / "hyba_pulvini_certificates"))
+    root = Path(
+        os.getenv(
+            "PULVINI_CERTIFICATE_CACHE_DIR",
+            Path(tempfile.gettempdir()) / "hyba_pulvini_certificates",
+        )
+    )
     return root / f"automorphism-{map_hash}.json"
 
 
@@ -52,8 +57,7 @@ def _load_cached_automorphism_certificate(path: Path, map_hash: str) -> dict | N
     payload.setdefault("computation_ms", 0.0)
     if isinstance(payload.get("node_orbits_by_degree"), dict):
         payload["node_orbits_by_degree"] = {
-            int(degree): int(count)
-            for degree, count in payload["node_orbits_by_degree"].items()
+            int(degree): int(count) for degree, count in payload["node_orbits_by_degree"].items()
         }
     return payload
 
@@ -61,7 +65,10 @@ def _load_cached_automorphism_certificate(path: Path, map_hash: str) -> dict | N
 def _store_cached_automorphism_certificate(path: Path, certificate: dict) -> None:
     try:
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(json.dumps(certificate, sort_keys=True, separators=(",", ":")), encoding="utf-8")
+        path.write_text(
+            json.dumps(certificate, sort_keys=True, separators=(",", ":")),
+            encoding="utf-8",
+        )
     except OSError:
         return
 
@@ -93,7 +100,9 @@ def automorphism_runtime_certificate(adjacency_map: dict, *, use_cache: bool = T
         orbits.setdefault(deg, []).append(node)
 
     violations = 0
-    edges = {tuple(sorted((u, v))) for u, node_neighbors in neighbors.items() for v in node_neighbors}
+    edges = {
+        tuple(sorted((u, v))) for u, node_neighbors in neighbors.items() for v in node_neighbors
+    }
     for sigma in autos:
         for u, v in edges:
             left, right = sigma[u], sigma[v]
@@ -135,8 +144,8 @@ def phi_geometric_structure_certificate(
 
     ``sample_size`` now selects a reproducible, evenly spaced nonce lattice
     instead of a pseudo-random draw.  The ``seed`` value is kept as a deterministic
-    lattice phase so historical callers remain stable without introducing a
-    simulation source.
+    lattice phase so historical callers remain stable without introducing
+    non-deterministic behavior.
     """
     import numpy as np
 
@@ -147,7 +156,9 @@ def phi_geometric_structure_certificate(
     nonce_space = int(getattr(compressor, "nonce_space_size", 2**32))
     stride = max(1, nonce_space // sample_size)
     phase = int(seed) % stride
-    sample = (phase + np.arange(sample_size, dtype=np.uint64) * np.uint64(stride)) % np.uint64(nonce_space)
+    sample = (phase + np.arange(sample_size, dtype=np.uint64) * np.uint64(stride)) % np.uint64(
+        nonce_space
+    )
     phi_mask = np.fromiter(
         (compressor.phi_resonant(int(nonce)) for nonce in sample),
         dtype=bool,
@@ -166,15 +177,17 @@ def phi_geometric_structure_certificate(
         lane_hits = int(np.sum(phi_mask[lane_mask]))
         lane_ratio = float(lane_hits / lane_count)
         node_type = "D-node" if lane_id < 20 else "I-node"
-        lane_stats.append({
-            "lane_id": lane_id,
-            "node_type": node_type,
-            "start": int(start),
-            "end": int(end),
-            "sample_count": lane_count,
-            "phi_hits": lane_hits,
-            "phi_ratio": lane_ratio,
-        })
+        lane_stats.append(
+            {
+                "lane_id": lane_id,
+                "node_type": node_type,
+                "start": int(start),
+                "end": int(end),
+                "sample_count": lane_count,
+                "phi_hits": lane_hits,
+                "phi_ratio": lane_ratio,
+            }
+        )
         ratios.append(lane_ratio)
         counts.append(lane_count)
         hits.append(lane_hits)
@@ -196,14 +209,25 @@ def phi_geometric_structure_certificate(
     expected_misses = counts_array * (1.0 - overall_ratio)
     misses = counts_array - hits_array
     hit_only_chi_square = float(np.sum(((hits_array - expected_hits) ** 2) / expected_hits))
-    pearson_chi_square = float(np.sum(
-        ((hits_array - expected_hits) ** 2) / expected_hits
-        + ((misses - expected_misses) ** 2) / expected_misses
-    ))
+    pearson_chi_square = float(
+        np.sum(
+            ((hits_array - expected_hits) ** 2) / expected_hits
+            + ((misses - expected_misses) ** 2) / expected_misses
+        )
+    )
     degrees_of_freedom = max(1, len(lane_stats) - 1)
-    chi_square_critical_p_0_05 = 44.99 if degrees_of_freedom == 31 else float(
-        degrees_of_freedom
-        * (1.0 - 2.0 / (9.0 * degrees_of_freedom) + 1.6448536269514722 * (2.0 / (9.0 * degrees_of_freedom)) ** 0.5) ** 3
+    chi_square_critical_p_0_05 = (
+        44.99
+        if degrees_of_freedom == 31
+        else float(
+            degrees_of_freedom
+            * (
+                1.0
+                - 2.0 / (9.0 * degrees_of_freedom)
+                + 1.6448536269514722 * (2.0 / (9.0 * degrees_of_freedom)) ** 0.5
+            )
+            ** 3
+        )
     )
     reject_uniform_lane_null_p_0_05 = bool(pearson_chi_square > chi_square_critical_p_0_05)
 
@@ -223,16 +247,22 @@ def phi_geometric_structure_certificate(
     return {
         "source": "deterministic_evenly_spaced_nonce_lattice",
         "sample_size": sample_size,
+        "lane_count": len(lane_stats),
         "lattice_stride": int(stride),
         "lattice_phase": int(phase),
         "phi_acceptance_ratio": overall_ratio,
+        "overall_phi_ratio": overall_ratio,
+        "manifold_mean_phi_ratio": overall_ratio,
         "phi_rejection_ratio": float(1.0 - overall_ratio),
         "filter_advantage": float(1.0 / max(overall_ratio, np.finfo(float).eps)),
         "d_node_phi_ratio_avg": d_node_avg,
+        "d_node_avg_phi_ratio": d_node_avg,
         "i_node_phi_ratio_avg": i_node_avg,
+        "i_node_avg_phi_ratio": i_node_avg,
         "d_i_delta": d_i_delta,
         "lane_ratio_stddev": lane_stddev,
         "lane_ratio_variance": lane_variance,
+        "lane_variance": lane_variance,
         "expected_sampling_variance": expected_sampling_variance,
         "variance_to_sampling_ratio": variance_to_sampling_ratio,
         "lane_phi_ratio_min": float(np.min(ratios_array)),
@@ -257,4 +287,8 @@ def phi_geometric_structure_certificate(
     }
 
 
-__all__ = ["adjacency_map_digest", "automorphism_runtime_certificate", "phi_geometric_structure_certificate"]
+__all__ = [
+    "adjacency_map_digest",
+    "automorphism_runtime_certificate",
+    "phi_geometric_structure_certificate",
+]

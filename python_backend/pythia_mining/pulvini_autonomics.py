@@ -23,7 +23,18 @@ from collections import deque
 from dataclasses import asdict, dataclass, field
 from enum import Enum
 from threading import RLock
-from typing import Any, Dict, Iterable, List, Mapping, Optional, Protocol, Sequence, Set, Tuple
+from typing import (
+    Any,
+    Dict,
+    Iterable,
+    List,
+    Mapping,
+    Optional,
+    Protocol,
+    Sequence,
+    Set,
+    Tuple,
+)
 
 import numpy as np
 
@@ -74,7 +85,14 @@ class NodeTelemetry:
     def __post_init__(self) -> None:
         if not 0 <= int(self.node_id) < NUM_NODES:
             raise ValueError(f"node_id must be in [0, {NUM_NODES - 1}]")
-        for name in ("tres", "phi_eff", "chi_sync", "thermal_entropy", "hash_rate", "timestamp"):
+        for name in (
+            "tres",
+            "phi_eff",
+            "chi_sync",
+            "thermal_entropy",
+            "hash_rate",
+            "timestamp",
+        ):
             value = float(getattr(self, name))
             if not math.isfinite(value):
                 raise ValueError(f"{name} must be finite")
@@ -113,7 +131,9 @@ class NodeTelemetry:
 class DodecahedronIcosahedronCompound:
     """Bipartite D/I autonomic topology over the 32 PULVINI runtime nodes."""
 
-    def __init__(self, adjacency_map: Mapping[int, Mapping[str, Sequence[int]]] = ADJACENCY_MAP) -> None:
+    def __init__(
+        self, adjacency_map: Mapping[int, Mapping[str, Sequence[int]]] = ADJACENCY_MAP
+    ) -> None:
         self.adjacency_map = adjacency_map
         self.num_nodes = NUM_NODES
         self.node_types: Dict[int, NodeType] = {
@@ -144,7 +164,9 @@ class DodecahedronIcosahedronCompound:
         for node_id in range(NUM_NODES):
             cross_key = "i" if node_id < 20 else "d"
             adjacency_map[node_id] = {"d": [], "i": []}
-            adjacency_map[node_id][cross_key] = [int(value) for value in np.where(self.adjacency[node_id] == 1)[0]]
+            adjacency_map[node_id][cross_key] = [
+                int(value) for value in np.where(self.adjacency[node_id] == 1)[0]
+            ]
         return adjacency_map
 
     def _validate(self) -> None:
@@ -236,7 +258,9 @@ class DodecahedronIcosahedronCompound:
             "verified": bool(self.redundancy_factor >= 3.0),
             "automorphism_group_size": self.automorphism_group_size,
             "automorphism_verified": bool(self.automorphism_group_size == 120),
-            "bipartite": bool(np.sum(self.adjacency[:20, :20]) == 0 and np.sum(self.adjacency[20:, 20:]) == 0),
+            "bipartite": bool(
+                np.sum(self.adjacency[:20, :20]) == 0 and np.sum(self.adjacency[20:, 20:]) == 0
+            ),
         }
 
     def get_redundancy_proof(self) -> Dict[str, Any]:
@@ -254,7 +278,9 @@ class DodecahedronIcosahedronCompound:
 class ReducedDensityMatrix:
     """Positive-semidefinite, trace-one 32x32 density state."""
 
-    rho: np.ndarray = field(default_factory=lambda: np.eye(NUM_NODES, dtype=np.complex128) / NUM_NODES)
+    rho: np.ndarray = field(
+        default_factory=lambda: np.eye(NUM_NODES, dtype=np.complex128) / NUM_NODES
+    )
     timestamp: float = field(default_factory=time.time)
 
     def __post_init__(self) -> None:
@@ -279,8 +305,10 @@ class ReducedDensityMatrix:
         eigvecs_norm = np.linalg.norm(eigenvectors, axis=0, keepdims=True)
         eigenvectors = eigenvectors / (eigvecs_norm + 1e-300)
         # Use more stable matrix multiplication with error suppression
-        with np.errstate(divide='ignore', invalid='ignore', over='ignore'):
-            projected = eigenvectors @ np.diag(eigenvalues_safe / total_safe) @ eigenvectors.conj().T
+        with np.errstate(divide="ignore", invalid="ignore", over="ignore"):
+            projected = (
+                eigenvectors @ np.diag(eigenvalues_safe / total_safe) @ eigenvectors.conj().T
+            )
         return (projected + projected.conj().T) / 2.0
 
     def diagonal(self) -> np.ndarray:
@@ -381,9 +409,17 @@ class ThermalGovernor:
     CRITICAL_ZONE = "critical"
     SACRIFICE_ZONE = "sacrifice"
 
-    def __init__(self, *, warning_temp: float = 0.70, critical_temp: float = 0.95, critical_fade_start: float = 0.85) -> None:
+    def __init__(
+        self,
+        *,
+        warning_temp: float = 0.70,
+        critical_temp: float = 0.95,
+        critical_fade_start: float = 0.85,
+    ) -> None:
         if not 0.0 <= warning_temp < critical_fade_start < critical_temp <= 1.0:
-            raise ValueError("thermal thresholds must satisfy 0 <= warning < critical_fade_start < critical <= 1")
+            raise ValueError(
+                "thermal thresholds must satisfy 0 <= warning < critical_fade_start < critical <= 1"
+            )
         self.warning_temp = float(warning_temp)
         self.critical_fade_start = float(critical_fade_start)
         self.critical_temp = float(critical_temp)
@@ -414,7 +450,11 @@ class ThermalGovernor:
         rho: ReducedDensityMatrix | np.ndarray,
         telemetry: Sequence[NodeTelemetry] | Mapping[int, NodeTelemetry],
     ) -> Tuple[np.ndarray, ThermalGovernanceEvent]:
-        matrix = rho.rho if isinstance(rho, ReducedDensityMatrix) else np.asarray(rho, dtype=np.complex128)
+        matrix = (
+            rho.rho
+            if isinstance(rho, ReducedDensityMatrix)
+            else np.asarray(rho, dtype=np.complex128)
+        )
         if matrix.shape != (NUM_NODES, NUM_NODES):
             raise ValueError(f"rho must have shape ({NUM_NODES}, {NUM_NODES})")
         ordered = self._ordered_telemetry(telemetry)
@@ -442,15 +482,17 @@ class ThermalGovernor:
                 sacrificed.append(node_id)
             elif lost > EPSILON:
                 faded.append(node_id)
-            node_states.append(ThermalNodeState(
-                node_id=node_id,
-                thermal_entropy=self._normalized_entropy(item.thermal_entropy),
-                zone=zone,
-                fade_factor=fade,
-                amplitude_before=original,
-                amplitude_after=float(after[node_id]),
-                redistributed_amplitude=lost,
-            ))
+            node_states.append(
+                ThermalNodeState(
+                    node_id=node_id,
+                    thermal_entropy=self._normalized_entropy(item.thermal_entropy),
+                    zone=zone,
+                    fade_factor=fade,
+                    amplitude_before=original,
+                    amplitude_after=float(after[node_id]),
+                    redistributed_amplitude=lost,
+                )
+            )
 
         redistributed = float(np.sum(lost_by_node))
         if redistributed > EPSILON:
@@ -470,7 +512,9 @@ class ThermalGovernor:
         )
         return evolved, event
 
-    def redistribute_to_coolest(self, amplitudes: np.ndarray, telemetry: Sequence[NodeTelemetry], amount: float) -> np.ndarray:
+    def redistribute_to_coolest(
+        self, amplitudes: np.ndarray, telemetry: Sequence[NodeTelemetry], amount: float
+    ) -> np.ndarray:
         weights = np.zeros(NUM_NODES, dtype=np.float64)
         for item in telemetry:
             node_id = int(item.node_id)
@@ -519,7 +563,9 @@ class ThermalGovernor:
         return values / total
 
     @staticmethod
-    def _ordered_telemetry(telemetry: Sequence[NodeTelemetry] | Mapping[int, NodeTelemetry]) -> List[NodeTelemetry]:
+    def _ordered_telemetry(
+        telemetry: Sequence[NodeTelemetry] | Mapping[int, NodeTelemetry],
+    ) -> List[NodeTelemetry]:
         if isinstance(telemetry, Mapping):
             ordered = [telemetry[node_id] for node_id in range(NUM_NODES)]
         else:
@@ -578,7 +624,9 @@ class ManifoldHomeostasis:
 
     def live_nodes(self) -> Set[int]:
         health = self.health_matrix()
-        return {node_id for node_id in range(NUM_NODES) if health.get(node_id, 1.0) >= self.threshold}
+        return {
+            node_id for node_id in range(NUM_NODES) if health.get(node_id, 1.0) >= self.threshold
+        }
 
     def monitor_heartbeat(self) -> List[int]:
         health = self.health_matrix()
@@ -588,7 +636,13 @@ class ManifoldHomeostasis:
             if len(self.coherence_history) > 512:
                 del self.coherence_history[: len(self.coherence_history) - 512]
         if critical:
-            self._audit({"event_type": "autonomic_critical_nodes_detected", "critical_nodes": critical, "health": health})
+            self._audit(
+                {
+                    "event_type": "autonomic_critical_nodes_detected",
+                    "critical_nodes": critical,
+                    "health": health,
+                }
+            )
         return critical
 
     def log_failure(self, node_id: int, reason: str, cascade: Sequence[int]) -> Dict[str, Any]:
@@ -599,7 +653,9 @@ class ManifoldHomeostasis:
             "reason": reason,
             "secondary_at_risk": list(cascade),
             "rho_purity": self.rho.purity(),
-            "avg_coherence": float(np.mean(list(self.health_matrix().values()))) if self.telemetry else 1.0,
+            "avg_coherence": (
+                float(np.mean(list(self.health_matrix().values()))) if self.telemetry else 1.0
+            ),
         }
         with self._lock:
             self.failure_log.append(event)
@@ -637,14 +693,18 @@ class GeometricRebalancer:
         self.rebalance_log: List[RebalanceEvent] = []
         self._lock = RLock()
 
-    def redistribution_for(self, failed_node: int, failed_nodes: Iterable[int] = ()) -> Dict[int, float]:
+    def redistribution_for(
+        self, failed_node: int, failed_nodes: Iterable[int] = ()
+    ) -> Dict[int, float]:
         candidates = self.compound.healing_candidates(failed_node, failed_nodes)
         if not candidates:
             return {}
         fraction = 1.0 / float(len(candidates))
         return {candidate: fraction for candidate in candidates}
 
-    def rebalance_lattice_topology(self, failed_nodes: int | Iterable[int], *, reason: str = "decoherence") -> RebalanceEvent:
+    def rebalance_lattice_topology(
+        self, failed_nodes: int | Iterable[int], *, reason: str = "decoherence"
+    ) -> RebalanceEvent:
         failed = self._normalize_failed_nodes(failed_nodes)
         old_amplitudes = self.homeostasis.rho.diagonal()
         new_amplitudes = old_amplitudes.copy()
@@ -658,7 +718,9 @@ class GeometricRebalancer:
             redistribution[node_id] = transfer
             failed_amplitude = new_amplitudes[node_id]
             new_amplitudes[node_id] = 0.0
-            nonce_partitions = self._partition_nonce_range(self.compound.nonce_range(node_id), len(transfer))
+            nonce_partitions = self._partition_nonce_range(
+                self.compound.nonce_range(node_id), len(transfer)
+            )
             for partition_index, (neighbor, fraction) in enumerate(transfer.items()):
                 new_amplitudes[neighbor] += failed_amplitude * fraction
                 command = {
@@ -692,7 +754,9 @@ class GeometricRebalancer:
         return event
 
     @staticmethod
-    def _partition_nonce_range(nonce_range: Tuple[int, int], partitions: int) -> List[Tuple[int, int]]:
+    def _partition_nonce_range(
+        nonce_range: Tuple[int, int], partitions: int
+    ) -> List[Tuple[int, int]]:
         if partitions <= 0:
             return []
         start, end = int(nonce_range[0]), int(nonce_range[1])
@@ -735,7 +799,11 @@ class GeometricRebalancer:
 class BuresOptimizer:
     """Bures/Hellinger natural routing over diagonal density amplitudes."""
 
-    def __init__(self, compound: DodecahedronIcosahedronCompound, homeostasis: ManifoldHomeostasis) -> None:
+    def __init__(
+        self,
+        compound: DodecahedronIcosahedronCompound,
+        homeostasis: ManifoldHomeostasis,
+    ) -> None:
         self.compound = compound
         self.homeostasis = homeostasis
         self.optimization_log: List[Dict[str, Any]] = []
@@ -746,7 +814,9 @@ class BuresOptimizer:
         governor = ThermalGovernor()
         for node_id, telemetry in self.homeostasis.telemetry.items():
             thermal_fade = governor.calculate_fade_factor(telemetry.thermal_entropy)
-            if (not include_critical and health.get(node_id, 1.0) < self.homeostasis.threshold) or thermal_fade <= EPSILON:
+            if (
+                not include_critical and health.get(node_id, 1.0) < self.homeostasis.threshold
+            ) or thermal_fade <= EPSILON:
                 raw[node_id] = 0.0
                 continue
             denominator = max(float(telemetry.thermal_entropy), EPSILON)
@@ -785,10 +855,14 @@ class BuresOptimizer:
             return np.ones(NUM_NODES, dtype=np.float64) / NUM_NODES
         return stepped / total
 
-    def optimize_energy_envelope(self, target_watts: float, *, learning_rate: float = 0.05) -> Dict[str, Any]:
+    def optimize_energy_envelope(
+        self, target_watts: float, *, learning_rate: float = 0.05
+    ) -> Dict[str, Any]:
         if target_watts < 0 or not math.isfinite(float(target_watts)):
             raise ValueError("target_watts must be finite and non-negative")
-        total_thermal = float(sum(item.thermal_entropy for item in self.homeostasis.telemetry.values()))
+        total_thermal = float(
+            sum(item.thermal_entropy for item in self.homeostasis.telemetry.values())
+        )
         if total_thermal <= float(target_watts):
             event = {
                 "timestamp": time.time(),
@@ -850,7 +924,9 @@ class PulviniAutonomicsEngine:
             return None
         return self.rebalancer.rebalance_lattice_topology(critical, reason=reason)
 
-    def thermal_tick(self, telemetry: Optional[Iterable[NodeTelemetry]] = None) -> Tuple[ThermalGovernanceEvent, Optional[RebalanceEvent]]:
+    def thermal_tick(
+        self, telemetry: Optional[Iterable[NodeTelemetry]] = None
+    ) -> Tuple[ThermalGovernanceEvent, Optional[RebalanceEvent]]:
         if telemetry is not None:
             self.ingest_telemetry(telemetry)
         if len(self.homeostasis.telemetry) != NUM_NODES:
@@ -864,11 +940,15 @@ class PulviniAutonomicsEngine:
         self.thermal_log.append(event_payload)
         if len(self.thermal_log) > 512:
             del self.thermal_log[: len(self.thermal_log) - 512]
-        newly_sacrificed = [node_id for node_id in event.sacrificed_nodes if node_id not in self.sacrificed_nodes]
+        newly_sacrificed = [
+            node_id for node_id in event.sacrificed_nodes if node_id not in self.sacrificed_nodes
+        ]
         rebalance = None
         if newly_sacrificed:
             self.sacrificed_nodes.update(newly_sacrificed)
-            rebalance = self.rebalancer.rebalance_lattice_topology(newly_sacrificed, reason="thermal_sacrifice")
+            rebalance = self.rebalancer.rebalance_lattice_topology(
+                newly_sacrificed, reason="thermal_sacrifice"
+            )
         return event, rebalance
 
     def snapshot(self) -> Dict[str, Any]:
@@ -900,7 +980,9 @@ class AutonomicOrchestrator:
     def sacrificed_set(self) -> Set[int]:
         return self.engine.sacrificed_nodes
 
-    def tick(self, telemetry: Iterable[NodeTelemetry]) -> Tuple[ThermalGovernanceEvent, Optional[RebalanceEvent]]:
+    def tick(
+        self, telemetry: Iterable[NodeTelemetry]
+    ) -> Tuple[ThermalGovernanceEvent, Optional[RebalanceEvent]]:
         return self.engine.thermal_tick(telemetry)
 
     def initiate_silent_healing(self, node_id: int) -> RebalanceEvent:
@@ -909,7 +991,9 @@ class AutonomicOrchestrator:
             if existing and int(node_id) in existing[0].failed_nodes:
                 return existing[0]
         self.engine.sacrificed_nodes.add(int(node_id))
-        return self.engine.rebalancer.rebalance_lattice_topology(int(node_id), reason="orchestrator_silent_healing")
+        return self.engine.rebalancer.rebalance_lattice_topology(
+            int(node_id), reason="orchestrator_silent_healing"
+        )
 
     def get_manifold_purity(self) -> float:
         return self.engine.homeostasis.rho.purity()

@@ -25,6 +25,8 @@ jobs:
           python-version: '3.12'
       - name: Assert runtime paths do not contain fabricated telemetry
         run: python scripts/check_no_runtime_mocks.py
+      - name: Assert production entrypoint honors service commands
+        run: python scripts/check_runtime_entrypoint.py
 
   backend-regression:
     name: Backend regression, MIDAS, and mining validation

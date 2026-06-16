@@ -15,8 +15,29 @@ pythia_state.json
 build/
 # Runtime-only deployment secrets and telemetry artifacts
 config/mining.pools.env
+config/mining_pools.local.json
+config/mining_pools.*.local.json
+python_backend/mining_pools.local.json
+python_backend/mining_pools.*.local.json
 *.db
 *.db-shm
 *.db-wal
 artifacts/production_readiness/
 artifacts/funding_engine/
+
+# Local review and generated result artifacts
+%EVDIR%/
+changes.diff
+asic_comparison_results.json
+golden_ratio_scaling_results.json
+
+# Production local credentials — never commit
+.env.production.local
+
+# Firebase config (contains API keys — never commit)
+firebase-applet-config.json
+config/firebase-applet-config.json
+
+# Ignore local Python virtual environments
+venv/
+.venv/

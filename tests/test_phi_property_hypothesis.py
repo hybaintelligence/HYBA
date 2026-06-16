@@ -23,16 +23,6 @@ BACKEND = ROOT / "python_backend"
 if str(BACKEND) not in sys.path:
     sys.path.insert(0, str(BACKEND))
 
-from pythia_mining.phi_scaling_engine import (
-    PHI,
-    PHI_INV,
-    PhiOptimizedFeatures,
-    PhiResonanceAnalyzer,
-    PhiScaledEnsemble,
-    benchmark_vs_asic,
-    calculate_phi_performance,
-)
-
 from asic_comparison_framework import (
     ASICPerformanceData,
     ComprehensiveComparison,
@@ -40,28 +30,45 @@ from asic_comparison_framework import (
     PULVINIPerformanceEstimator,
 )
 
+from pythia_mining.phi_scaling_engine import (
+    PHI,
+    PhiOptimizedFeatures,
+    PhiResonanceAnalyzer,
+    PhiScaledEnsemble,
+    benchmark_vs_asic,
+    calculate_phi_performance,
+)
+
 # ============================================================================
 # CUSTOM STRATEGIES
 # ============================================================================
 
 phi_near_strategy = st.floats(
-    min_value=PHI - 0.1, max_value=PHI + 0.1,
-    allow_nan=False, allow_infinity=False,
+    min_value=PHI - 0.1,
+    max_value=PHI + 0.1,
+    allow_nan=False,
+    allow_infinity=False,
 )
 
 chaos_float_strategy = st.floats(
-    min_value=-1e12, max_value=1e12,
-    allow_nan=False, allow_infinity=False,
+    min_value=-1e12,
+    max_value=1e12,
+    allow_nan=False,
+    allow_infinity=False,
 )
 
 positive_scale_strategy = st.floats(
-    min_value=1e-6, max_value=1e25,
-    allow_nan=False, allow_infinity=False,
+    min_value=1e-6,
+    max_value=1e25,
+    allow_nan=False,
+    allow_infinity=False,
 )
 
 small_positive_strategy = st.floats(
-    min_value=0.0, max_value=1.0,
-    allow_nan=False, allow_infinity=False,
+    min_value=0.0,
+    max_value=1.0,
+    allow_nan=False,
+    allow_infinity=False,
 )
 
 
@@ -69,20 +76,17 @@ small_positive_strategy = st.floats(
 # PROPERTY 1: φ invariant across arbitrary feature extractions
 # ============================================================================
 
+
 class TestPhiIdentityInvariants:
     """φ² = φ + 1 must hold under all operations."""
 
-    @given(
-        st.floats(min_value=-1e6, max_value=1e6, allow_nan=False, allow_infinity=False)
-    )
+    @given(st.floats(min_value=-1e6, max_value=1e6, allow_nan=False, allow_infinity=False))
     @settings(max_examples=100)
     def test_phi_quadratic_identity_preserved(self, _unused: float) -> None:
         """φ² == φ + 1 — the defining quadratic — regardless of prior ops."""
         assert abs(PHI * PHI - (PHI + 1.0)) < 1e-15
 
-    @given(
-        st.floats(min_value=-1e6, max_value=1e6, allow_nan=False, allow_infinity=False)
-    )
+    @given(st.floats(min_value=-1e6, max_value=1e6, allow_nan=False, allow_infinity=False))
     @settings(max_examples=100)
     def test_phi_inverse_identity_preserved(self, _unused: float) -> None:
         """1/φ == φ - 1 — invariant across all operations."""
@@ -93,23 +97,31 @@ class TestPhiIdentityInvariants:
 # PROPERTY 2: PhiScaledEnsemble — weight normalization invariant
 # ============================================================================
 
+
 class TestPhiScaledEnsembleProperties:
     """phi_weights must always sum to 1 for any non-empty input."""
 
     @given(
         st.dictionaries(
-            st.text(min_size=1, max_size=8, alphabet=st.characters(whitelist_categories=('L', 'N'), whitelist_characters='_')),
+            st.text(
+                min_size=1,
+                max_size=8,
+                alphabet=st.characters(whitelist_categories=("L", "N"), whitelist_characters="_"),
+            ),
             st.fixed_dictionaries({"score": small_positive_strategy}),
-            min_size=1, max_size=10,
+            min_size=1,
+            max_size=10,
         ),
         st.dictionaries(
             st.text(min_size=1, max_size=8),
             st.dictionaries(
                 st.text(min_size=1, max_size=8),
                 chaos_float_strategy,
-                min_size=1, max_size=5,
+                min_size=1,
+                max_size=5,
             ),
-            min_size=0, max_size=5,
+            min_size=0,
+            max_size=5,
         ),
     )
     @settings(max_examples=200)
@@ -123,17 +135,25 @@ class TestPhiScaledEnsembleProperties:
         result = engine.predict_with_phi_scaling(predictions, indicators)
         weights = result["phi_weights"]
         if weights:
-            assert abs(sum(weights) - 1.0) < 1e-10, (
-                f"Weights sum to {sum(weights)}, expected 1.0"
-            )
+            assert abs(sum(weights) - 1.0) < 1e-10, f"Weights sum to {sum(weights)}, expected 1.0"
         assert 0.0 <= result["final_score"] <= 1.0 + 1e-12
         assert 0.0 <= result["coherence"] <= 1.0 + 1e-12
 
     @given(
         st.dictionaries(
             st.text(min_size=1, max_size=8),
-            st.fixed_dictionaries({"score": st.floats(min_value=-1.0, max_value=2.0, allow_nan=False, allow_infinity=False)}),
-            min_size=1, max_size=8,
+            st.fixed_dictionaries(
+                {
+                    "score": st.floats(
+                        min_value=-1.0,
+                        max_value=2.0,
+                        allow_nan=False,
+                        allow_infinity=False,
+                    )
+                }
+            ),
+            min_size=1,
+            max_size=8,
         ),
     )
     @settings(max_examples=100)
@@ -144,14 +164,13 @@ class TestPhiScaledEnsembleProperties:
         weights = result["phi_weights"]
         if weights:
             assert abs(sum(weights) - 1.0) < 1e-10
-        assert result["final_score"] == pytest.approx(
-            max(0.0, min(1.0, result["final_score"]))
-        )
+        assert result["final_score"] == pytest.approx(max(0.0, min(1.0, result["final_score"])))
 
 
 # ============================================================================
 # PROPERTY 3: PhiResonanceAnalyzer — must never crash on any input
 # ============================================================================
+
 
 class TestPhiResonanceRobustness:
     """Resonance analyzer must handle any list-of-float gracefully."""
@@ -159,7 +178,8 @@ class TestPhiResonanceRobustness:
     @given(
         st.lists(
             st.floats(allow_nan=False, allow_infinity=True),
-            min_size=0, max_size=200,
+            min_size=0,
+            max_size=200,
         )
     )
     @settings(max_examples=200)
@@ -175,9 +195,11 @@ class TestPhiResonanceRobustness:
             st.text(min_size=1, max_size=16),
             st.lists(
                 st.floats(allow_nan=False, allow_infinity=True),
-                min_size=0, max_size=100,
+                min_size=0,
+                max_size=100,
             ),
-            min_size=0, max_size=10,
+            min_size=0,
+            max_size=10,
         )
     )
     @settings(max_examples=100)
@@ -203,12 +225,11 @@ class TestPhiResonanceRobustness:
 # PROPERTY 4: PhiOptimizedFeatures — alignment bounded
 # ============================================================================
 
+
 class TestPhiAlignmentProperties:
     """Phi alignment must always be in [0, 1]."""
 
-    @given(
-        st.floats(min_value=-1e12, max_value=1e12, allow_nan=False, allow_infinity=False)
-    )
+    @given(st.floats(min_value=-1e12, max_value=1e12, allow_nan=False, allow_infinity=False))
     @settings(max_examples=200)
     def test_phi_alignment_bounded(self, value: float) -> None:
         """phi_alignment must always be in [0, 1] for any finite input."""
@@ -217,16 +238,12 @@ class TestPhiAlignmentProperties:
         result = features.extract_phi_optimized_features({"x": {"val": value}})
         if result:
             alignment = result["x"][0]["phi_alignment"]
-            assert 0.0 <= alignment <= 1.0, (
-                f"phi_alignment {alignment} outside [0,1] for value {value}"
-            )
-            assert alignment == pytest.approx(
-                max(0.0, min(1.0, alignment))
-            )
+            assert (
+                0.0 <= alignment <= 1.0
+            ), f"phi_alignment {alignment} outside [0,1] for value {value}"
+            assert alignment == pytest.approx(max(0.0, min(1.0, alignment)))
 
-    @given(
-        st.floats(min_value=-1e12, max_value=1e12, allow_nan=False, allow_infinity=False)
-    )
+    @given(st.floats(min_value=-1e12, max_value=1e12, allow_nan=False, allow_infinity=False))
     @settings(max_examples=100)
     def test_amplification_non_negative(self, value: float) -> None:
         """Amplification must be non-negative for any finite input."""
@@ -239,6 +256,7 @@ class TestPhiAlignmentProperties:
 # ============================================================================
 # PROPERTY 5: benchmark_vs_asic — deterministic & positive efficiency
 # ============================================================================
+
 
 class TestBenchmarkProperties:
     """Benchmark must be deterministic and produce positive results."""
@@ -288,6 +306,7 @@ class TestBenchmarkProperties:
 # PROPERTY 6: calculate_phi_performance — finite outputs
 # ============================================================================
 
+
 class TestPhiPerformanceProperties:
     """Performance calculation must never produce NaN or Inf."""
 
@@ -305,14 +324,20 @@ class TestPhiPerformanceProperties:
     ) -> None:
         """All outputs must be finite for any valid inputs."""
         result = calculate_phi_performance(traditional, phi_scaled, coherence)
-        for key in ["traditional_score", "phi_scaled_score", "improvement_percentage",
-                     "phi_coherence", "performance_multiplier"]:
+        for key in [
+            "traditional_score",
+            "phi_scaled_score",
+            "improvement_percentage",
+            "phi_coherence",
+            "performance_multiplier",
+        ]:
             assert math.isfinite(result[key]), f"{key} is not finite: {result[key]}"
 
 
 # ============================================================================
 # PROPERTY 7: ASIC scaling — monotonicity invariants
 # ============================================================================
+
 
 class TestASICScalingMonotonicity:
     """As scale increases, hashrate must increase and efficiency must improve."""
@@ -329,9 +354,9 @@ class TestASICScalingMonotonicity:
             pytest.skip("Need strict ascending pair")
         comparison = ComprehensiveComparison()
         results = comparison.compare_golden_ratio_scaling()
-        assert results[a]["effective_hashrate_ths"] < results[b]["effective_hashrate_ths"], (
-            f"Hashrate not monotonic: {a} < {b} failed"
-        )
+        assert (
+            results[a]["effective_hashrate_ths"] < results[b]["effective_hashrate_ths"]
+        ), f"Hashrate not monotonic: {a} < {b} failed"
 
     @given(
         st.sampled_from(["10^12", "10^15", "10^18", "10^20"]),
@@ -345,14 +370,15 @@ class TestASICScalingMonotonicity:
             pytest.skip("Need strict ascending pair")
         comparison = ComprehensiveComparison()
         results = comparison.compare_golden_ratio_scaling()
-        assert results[a]["hashrate_efficiency_j_th"] > results[b]["hashrate_efficiency_j_th"], (
-            f"Efficiency not monotonic: {a} < {b} failed (J/TH should decrease)"
-        )
+        assert (
+            results[a]["hashrate_efficiency_j_th"] > results[b]["hashrate_efficiency_j_th"]
+        ), f"Efficiency not monotonic: {a} < {b} failed (J/TH should decrease)"
 
 
 # ============================================================================
 # PROPERTY 8: Golden ratio self-similarity across scales
 # ============================================================================
+
 
 class TestGoldenRatioSelfSimilarity:
     """Golden ratio scaling must preserve self-similarity under exponentiation."""
@@ -371,13 +397,14 @@ class TestGoldenRatioSelfSimilarity:
             b,
         )
         # apply_scaling multiplies by 10^exponent, so composite of a then b = 10^a * 10^b
-        expected = GoldenRatioScaling.apply_scaling(base, a) * (10 ** b)
+        expected = GoldenRatioScaling.apply_scaling(base, a) * (10**b)
         assert abs(composite - expected) < 1e-12
 
 
 # ============================================================================
 # PROPERTY 9: Power consumption sub-linear scaling
 # ============================================================================
+
 
 class TestPowerScalingProperties:
     """Power must scale sub-linearly with golden ratio scale."""
@@ -407,6 +434,7 @@ class TestPowerScalingProperties:
 # ============================================================================
 # PROPERTY 10: ComprehensiveComparison — pulvini_beats_asic logic
 # ============================================================================
+
 
 class TestBeatsASICLogic:
     """pulvini_beats_asic must be True iff hashrate_ratio > 1 AND efficiency_ratio < 1."""

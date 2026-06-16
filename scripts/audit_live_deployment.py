@@ -20,19 +20,55 @@ TRACKED_FORBIDDEN = {
     "python_backend/data/metrics.db": "SQLite metrics artifact must not be tracked",
 }
 SECRET_PATTERNS = [
-    (re.compile(r"HYBA_AUTH_TOKEN\s*=\s*eyJ", re.IGNORECASE), "committed JWT bearer token"),
-    (re.compile(r"JWT_SECRET\s*=\s*(?!replace-with)[^\s#]{24,}", re.IGNORECASE), "committed JWT secret"),
-    (re.compile(r"HYBA_POOL_[A-Z0-9_]+_PASSWORD\s*=\s*(?:123|password|secret|changeme|todo)\b", re.IGNORECASE), "placeholder pool password"),
-    (re.compile(r"HYBA_OPERATOR_CREDENTIALS\s*=.*admin123", re.IGNORECASE), "documented raw operator password"),
+    (
+        re.compile(r"HYBA_AUTH_TOKEN\s*=\s*eyJ", re.IGNORECASE),
+        "committed JWT bearer token",
+    ),
+    (
+        re.compile(r"JWT_SECRET\s*=\s*(?!replace-with)[^\s#]{24,}", re.IGNORECASE),
+        "committed JWT secret",
+    ),
+    (
+        re.compile(
+            r"HYBA_POOL_[A-Z0-9_]+_PASSWORD\s*=\s*(?:123|password|secret|changeme|todo)\b",
+            re.IGNORECASE,
+        ),
+        "placeholder pool password",
+    ),
+    (
+        re.compile(r"HYBA_OPERATOR_CREDENTIALS\s*=.*admin123", re.IGNORECASE),
+        "documented raw operator password",
+    ),
 ]
-TEXT_SUFFIXES = {".env", ".example", ".json", ".md", ".py", ".ts", ".tsx", ".toml", ".yml", ".yaml"}
-EXCLUDED_PARTS = {".git", "node_modules", "venv", "dist", "__pycache__", ".pytest_cache"}
+TEXT_SUFFIXES = {
+    ".env",
+    ".example",
+    ".json",
+    ".md",
+    ".py",
+    ".ts",
+    ".tsx",
+    ".toml",
+    ".yml",
+    ".yaml",
+}
+EXCLUDED_PARTS = {
+    ".git",
+    "node_modules",
+    "venv",
+    "dist",
+    "coverage",
+    "__pycache__",
+    ".pytest_cache",
+}
 
 
 def tracked_files() -> set[str]:
     import subprocess
 
-    result = subprocess.run(["git", "ls-files"], cwd=ROOT, check=True, capture_output=True, text=True)
+    result = subprocess.run(
+        ["git", "ls-files"], cwd=ROOT, check=True, capture_output=True, text=True
+    )
     return {line.strip() for line in result.stdout.splitlines() if line.strip()}
 
 
@@ -54,6 +90,11 @@ def main() -> int:
             violations.append(f"{rel}: {reason}")
 
     for rel, path in iter_text_files(tracked):
+        if not path.exists():
+            violations.append(
+                f"{rel}: tracked text file missing from working tree (run gate from a clean checkout)"
+            )
+            continue
         text = path.read_text(encoding="utf-8", errors="ignore")
         for pattern, reason in SECRET_PATTERNS:
             for match in pattern.finditer(text):

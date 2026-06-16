@@ -13,7 +13,7 @@ from __future__ import annotations
 import hashlib
 import math
 from dataclasses import asdict, dataclass
-from typing import Any, Iterable, List, Sequence, Tuple
+from typing import Any, List, Sequence, Tuple
 
 import numpy as np
 
@@ -131,12 +131,14 @@ class PulviniNonceSpaceCompressor:
     @staticmethod
     def _overlap_free(segments: Sequence[NonceSegment]) -> bool:
         ordered = sorted(segments, key=lambda segment: segment.start)
-        return all(ordered[index - 1].end < ordered[index].start for index in range(1, len(ordered)))
+        return all(
+            ordered[index - 1].end < ordered[index].start for index in range(1, len(ordered))
+        )
 
     def phi_resonant(self, nonce: int, threshold: float = 0.5) -> bool:
         material = f"phi-search:{int(nonce) % self.nonce_space_size}".encode("utf-8")
         digest = hashlib.blake2b(material, digest_size=8).digest()
-        sample = int.from_bytes(digest, "big") / float(2 ** 64)
+        sample = int.from_bytes(digest, "big") / float(2**64)
         phi = (1.0 + math.sqrt(5.0)) / 2.0
         score = 1.0 - abs(0.5 - ((sample * phi) % 1.0)) * 2.0
         return bool(score >= float(threshold))
@@ -183,9 +185,21 @@ class PulviniNonceSpaceCompressor:
         return plan
 
 
+def build_pulvini_nonce_plan(
+    *, lanes: int = 32, nonce_space_size: int = NONCE_SPACE_SIZE
+) -> CompressedNonceSpacePlan:
+    """Build a PULVINI nonce compression plan.
+    
+    Convenience function that creates a compressor and builds the plan.
+    """
+    compressor = PulviniNonceSpaceCompressor(lanes=lanes, nonce_space_size=nonce_space_size)
+    return compressor.build_plan()
+
+
 __all__ = [
     "CompressedNonceCoordinate",
     "CompressedNonceSpacePlan",
     "NonceSegment",
     "PulviniNonceSpaceCompressor",
+    "build_pulvini_nonce_plan",
 ]

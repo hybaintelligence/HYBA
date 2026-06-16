@@ -1,0 +1,4 @@
+# file: /Users/demouser/Desktop/HYBA_FULLSTACK/scripts/pulvini_live_cut_readiness.py
+# hypothesis_version: 6.155.2
+
+[0.0, 1e-09, 0.9, 1.0, ',', '--json', '--min-purity', '--mode', '--state', '--tolerance', '<memory>', '__main__', 'active_job_id', 'active_job_locked', 'autonomics_available', 'blocked', 'checks', 'current_job', 'current_job_id', 'error', 'expected', 'failed_node', 'failed_nodes', 'healing_routes', 'missing_rebalance', 'missing_routes', 'ok', 'pool_identity_one', 'pool_visible_workers', 'postcut', 'postcut_verified', 'preflight', 'pulvini_autonomics', 'pulvini_overlay', 'purity', 'r', 'ready', 'rebalanced', 'rebalances', 'rho', 'rho_purity_minimum', 'rho_purity_present', 'rho_trace_present', 'rho_trace_unit', 'routed', 'sacrificed', 'sacrificed_nodes', 'state_load', 'status', 'store_true', 'trace', 'utf-8', '✅', '❌']

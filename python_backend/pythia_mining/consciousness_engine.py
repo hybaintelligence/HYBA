@@ -20,6 +20,11 @@ from numpy.typing import NDArray
 
 from .pulvini_operator import ManifoldOperator
 
+# Fundamental Golden Ratio constants for continuous scaling
+PHI = 1.618033988749895
+PHI_INV = 1.0 / PHI  # 0.618033...
+YANG_MILLS_GAP = 3.0 - PHI  # 1.381966...
+
 
 class IntegrationRegime(str, Enum):
     """Φ-proxy based runtime integration regimes."""
@@ -71,6 +76,11 @@ class ConsciousnessConfig:
     phi_critical_threshold: float = 0.20
     measurement_window: int = 100
     heal_trigger_threshold: float = 0.30
+    # Continuous scaling parameters
+    base_multiplier: float = 1.0
+    max_multiplier: float = 1.5
+    min_multiplier: float = 0.1
+    sigmoid_steepness: float = PHI ** 2  # 2.618... derived from golden ratio
 
 
 class ConsciousnessEngine:
@@ -124,7 +134,11 @@ class ConsciousnessEngine:
             "risk_tolerance": "low" if self.needs_healing else "nominal",
             "planning_horizon": decision_context.get("planning_horizon"),
             "adaptability": self.current_state.component_integration,
-            "strategy": "autonomic_review_required" if self.needs_healing else "continue_monitored_operation",
+            "strategy": (
+                "autonomic_review_required"
+                if self.needs_healing
+                else "continue_monitored_operation"
+            ),
             "source": "operational_proxy",
         }
 
@@ -143,15 +157,29 @@ class ConsciousnessEngine:
             self._record_metrics(metrics)
             return metrics
 
-        densities = np.asarray([self.operator.ensure_density_state(state) for state in window], dtype=np.complex128)
-        coherence_series = np.asarray([self.operator.compute_coherence(state) for state in densities], dtype=np.float64)
+        densities = np.asarray(
+            [self.operator.ensure_density_state(state) for state in window],
+            dtype=np.complex128,
+        )
+        coherence_series = np.asarray(
+            [self.operator.compute_coherence(state) for state in densities],
+            dtype=np.float64,
+        )
         effective_information = float(np.var(coherence_series))
         phi_causal = self._lag_one_correlation(coherence_series)
         entropy = self._density_entropy(densities[-1])
         entropy_scale = float(np.log2(max(self.operator.dim, 2)))
-        entropy_balance = 1.0 - min(1.0, abs(entropy - entropy_scale / 2.0) / max(entropy_scale / 2.0, 1e-12))
+        entropy_balance = 1.0 - min(
+            1.0, abs(entropy - entropy_scale / 2.0) / max(entropy_scale / 2.0, 1e-12)
+        )
         coherence_level = float(np.clip(coherence_series[-1], 0.0, 1.0))
-        phi_integrated = float(np.clip(0.55 * coherence_level + 0.25 * max(phi_causal, 0.0) + 0.20 * entropy_balance, 0.0, 1.0))
+        phi_integrated = float(
+            np.clip(
+                0.55 * coherence_level + 0.25 * max(phi_causal, 0.0) + 0.20 * entropy_balance,
+                0.0,
+                1.0,
+            )
+        )
         complexity = float(np.clip(phi_integrated * entropy_balance, 0.0, 1.0))
         phi_conscious = float(max(0.0, phi_causal - effective_information))
         metrics = PhiMetrics(
@@ -206,7 +234,9 @@ class ConsciousnessEngine:
         integration = active / len(known) if known else 0.0
         entropy = 0.0
         if known and 0.0 < integration < 1.0:
-            entropy = float(-(integration * np.log2(integration) + (1 - integration) * np.log2(1 - integration)))
+            entropy = float(
+                -(integration * np.log2(integration) + (1 - integration) * np.log2(1 - integration))
+            )
         phi = float(np.clip(integration * (1.0 - 0.25 * entropy), 0.0, 1.0))
         return PhiMetrics(
             phi_integrated=phi,
@@ -224,12 +254,107 @@ class ConsciousnessEngine:
         self.current_state.integrated_information = metrics.phi_integrated
         self.current_state.consciousness_level = metrics.phi_integrated
         known = [value for value in self.components.values() if value is not None]
-        self.current_state.component_integration = None if not known else sum(1 for value in known if value) / len(known)
+        self.current_state.component_integration = (
+            None if not known else sum(1 for value in known if value) / len(known)
+        )
         self.current_state.system_complexity = float(len(known)) if known else metrics.complexity
         self.current_state.timestamp = time.time()
         self.current_state.source = metrics.source
 
+    def calculate_continuous_multiplier(self, coherence_score: float) -> float:
+        """Calculate continuous hardware multiplier using Phi-Sigmoid function.
+
+        Replaces discrete threshold jumps with smooth golden-ratio centered scaling.
+        The sigmoid is centered at PHI_INV (0.618) to honor the mathematical sweet spot.
+
+        Args:
+            coherence_score: Current phi coherence score (0.0 to 1.0)
+
+        Returns:
+            Continuous multiplier between min_multiplier and max_multiplier
+        """
+        # Generalized Logistic Function (Sigmoid)
+        # Multiplier = L / (1 + e^-k(x - x0))
+        # Where x0 is the inflection point (PHI_INV)
+        range_diff = self.config.max_multiplier - self.config.min_multiplier
+        continuous_mult = self.config.min_multiplier + (
+            range_diff / (1 + np.exp(-self.config.sigmoid_steepness * (coherence_score - PHI_INV)))
+        )
+        return float(np.clip(continuous_mult, self.config.min_multiplier, self.config.max_multiplier))
+
+    def get_hardware_scaling_factor(self, telemetry_data: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+        """Get continuous hardware scaling factor with Mass Gap safety gate.
+
+        This method provides the thermal glide path for hardware by using
+        continuous scaling instead of discrete regime jumps, preventing
+        electrical spikes and regime chatter.
+
+        Args:
+            telemetry_data: Optional telemetry data for harmony calculation
+
+        Returns:
+            Dictionary containing coherence, regime, scaling factor, and status
+        """
+        # Use current coherence if no telemetry data provided
+        if telemetry_data is None:
+            coherence = self.coherence_meter
+        else:
+            # Calculate harmony from telemetry if provided
+            coherence = self._calculate_indicator_harmony(telemetry_data)
+
+        # Apply Continuous Sigmoid Multiplier
+        phi_multiplier = self.calculate_continuous_multiplier(coherence)
+
+        # Apply Mass Gap Safety Gate
+        # If the multiplier exceeds the Yang-Mills limit, apply damping factor
+        if phi_multiplier > YANG_MILLS_GAP:
+            damping = np.exp(-(phi_multiplier - YANG_MILLS_GAP))
+            phi_multiplier *= damping
+
+        # Determine regime label for governance (discrete)
+        regime = self._classify_integration(coherence)
+
+        # Determine stability status
+        status = "stable" if 0.4 <= coherence <= 0.8 else "oscillating"
+
+        return {
+            "coherence": coherence,
+            "regime": regime.value,
+            "scaling_factor": phi_multiplier,
+            "status": status,
+            "mass_gate_damping_applied": phi_multiplier != self.calculate_continuous_multiplier(coherence),
+            "source": "phi_continuous_scaling",
+        }
+
+    def _calculate_indicator_harmony(self, indicators: Dict[str, Any]) -> float:
+        """Calculate phi harmony from indicator data for scaling factor calculation.
+
+        This is a simplified harmony calculation used when telemetry data
+        is provided directly to get_hardware_scaling_factor.
+        """
+        if not indicators:
+            return 0.5
+
+        harmonic_scores = []
+        for metrics in indicators.values():
+            if not isinstance(metrics, dict) or not metrics:
+                continue
+            values = np.asarray([float(v) for v in metrics.values() if v is not None], dtype=np.float64)
+            values = values[np.isfinite(values)]
+            if values.size <= 1:
+                continue
+            ratios = values[1:] / (values[:-1] + 1e-12)
+            distances = np.abs(ratios - PHI) / PHI
+            harmonic_scores.append(float(np.clip(1.0 - np.mean(distances), 0.0, 1.0)))
+
+        return float(np.mean(harmonic_scores)) if harmonic_scores else 0.5
+
     def _classify_integration(self, phi: float) -> IntegrationRegime:
+        """Classify integration regime for governance labels (discrete).
+
+        The actual hardware scaling uses continuous multipliers via
+        calculate_continuous_multiplier to prevent regime chatter.
+        """
         if phi >= self.config.phi_singular_threshold:
             return IntegrationRegime.SINGULAR_AGENT_PROXY
         if phi >= self.config.phi_distributed_threshold:
@@ -278,7 +403,10 @@ class ConsciousnessEngine:
 
     @property
     def needs_healing(self) -> bool:
-        return self._integration_regime in (IntegrationRegime.FRAGMENTED, IntegrationRegime.CRITICAL)
+        return self._integration_regime in (
+            IntegrationRegime.FRAGMENTED,
+            IntegrationRegime.CRITICAL,
+        )
 
 
 __all__ = [

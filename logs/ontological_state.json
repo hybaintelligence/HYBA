@@ -1,0 +1,17 @@
+{
+  "persistence": "mathematical_artifact_no_source_write",
+  "phi": 1.0,
+  "seal": "PHI_CERTIFIED",
+  "weights": {
+    "adjustment": 0.00396165,
+    "event": {
+      "adjustment": 0.00396165,
+      "key": "entropy_threshold_delta",
+      "persistence": "in_memory_only",
+      "previous": 0.0,
+      "source": "recursive_closure",
+      "timestamp": "2026-06-16T16:44:54.689319+00:00",
+      "value": 0.00396165
+    }
+  }
+}

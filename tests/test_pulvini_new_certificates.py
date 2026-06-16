@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import sys
 import unittest
+from datetime import timedelta
 from pathlib import Path
 
 import numpy as np
@@ -18,39 +19,44 @@ BACKEND = ROOT / "python_backend"
 if str(BACKEND) not in sys.path:
     sys.path.insert(0, str(BACKEND))
 
-from pythia_mining.pulvini_grover_certificate import (
-    GroverScopeCertificate,
-    grover_efficiency_report,
-    grover_scope_certificate,
+from pythia_mining.pulvini_bures_variational import (
+    bures_metric_tangent_projection,
+    bures_variational_certificate,
+    verify_bures_variational_gate,
 )
 from pythia_mining.pulvini_coverage_certificate import (
-    CoverageCertificate,
     coverage_certificate,
     lane_coverage_report,
     verify_automorphism_preserves_coverage,
     verify_lane_coverages,
 )
-from pythia_mining.pulvini_structural_certificate import (
-    StructuralCertificate,
-    d_i_analysis,
-    structural_certificate,
-    verify_adjacency_preserved_for_all,
-    verify_graph_connectivity,
+from pythia_mining.pulvini_group import (
+    a5_representation_certificate,
+    compute_graph_automorphisms,
+    coxeter_group_certificate,
 )
-from pythia_mining.pulvini_bures_variational import (
-    BuresVariationalCertificate,
-    bures_metric_tangent_projection,
-    bures_variational_certificate,
-    verify_bures_variational_gate,
+from pythia_mining.pulvini_grover_certificate import (
+    grover_efficiency_report,
+    grover_scope_certificate,
 )
 from pythia_mining.pulvini_memory_compression_proof import (
-    MemoryCompressionProof,
     phi_folding_mathematical_proof,
     prove_lane_surface_coverage,
     prove_phi_folding_reversibility,
     verify_memory_compression_gate,
 )
-from pythia_mining.pulvini_group import compute_graph_automorphisms
+from pythia_mining.pulvini_observability import (
+    MetricType,
+    ObservabilityFramework,
+    SLOStatus,
+    verify_observability_framework,
+)
+from pythia_mining.pulvini_structural_certificate import (
+    d_i_analysis,
+    structural_certificate,
+    verify_adjacency_preserved_for_all,
+    verify_graph_connectivity,
+)
 from pythia_mining.pulvini_topology import ADJACENCY_MAP
 
 
@@ -113,6 +119,61 @@ class TestGroverScopeCertificate(unittest.TestCase):
         report = grover_efficiency_report()
         self.assertEqual(report["grover_theoretical_steps_for_basis"], 3)
         self.assertEqual(report["classical_brute_force_steps_for_full_2_32"], 2**32)
+
+
+class TestCoxeterGroupCertificate(unittest.TestCase):
+    """Tests for the Coxeter group certificate."""
+
+    def test_coxeter_group_is_h3(self):
+        cert = coxeter_group_certificate()
+        self.assertEqual(cert.coxeter_group, "H3 icosahedral Coxeter group")
+        self.assertEqual(cert.rank, 3)
+        self.assertEqual(cert.order, 120)
+
+    def test_coxeter_diagram_is_correct(self):
+        cert = coxeter_group_certificate()
+        self.assertEqual(cert.coxeter_diagram, "o-5-o-3-o")
+        self.assertEqual(cert.coxeter_matrix, [[1, 5, 3], [5, 1, 3], [3, 3, 1]])
+
+    def test_coxeter_root_system_type(self):
+        cert = coxeter_group_certificate()
+        self.assertEqual(cert.root_system_type, "H3")
+        self.assertIn("non-crystallographic", cert.weyl_group_type)
+
+    def test_coxeter_certificate_embedded_in_a5(self):
+        cert = a5_representation_certificate()
+        self.assertIn("coxeter_structure", cert.to_dict())
+        self.assertEqual(cert.coxeter_structure["coxeter_group"], "H3 icosahedral Coxeter group")
+
+
+class TestA5RepresentationCertificate(unittest.TestCase):
+    """Tests for the A5 representation-theory certificate."""
+
+    def test_a5_character_table_has_five_irreps(self):
+        cert = a5_representation_certificate()
+        self.assertEqual(cert.irreducible_dimensions, [1, 3, 3, 4, 5])
+        self.assertEqual(len(cert.character_table), 5)
+
+    def test_a5_regular_dimension_sum_and_orthogonality(self):
+        cert = a5_representation_certificate()
+        self.assertEqual(cert.regular_representation_dimension_sum, 60)
+        self.assertTrue(cert.character_orthogonality_verified)
+
+    def test_a5_certificate_is_honest_about_speedup(self):
+        cert = a5_representation_certificate()
+        self.assertFalse(cert.quantum_speedup_claimed)
+        self.assertAlmostEqual(cert.heuristic_dimension_reduction, 2.0)
+
+    def test_a5_certificate_includes_coxeter_structure(self):
+        cert = a5_representation_certificate()
+        self.assertIn("coxeter_structure", cert.to_dict())
+        self.assertEqual(cert.coxeter_structure["order"], 120)
+
+    def test_structural_certificate_embeds_representation_theory(self):
+        cert = structural_certificate()
+        self.assertEqual(cert.representation_theory["rotational_group_order"], 60)
+        self.assertEqual(cert.representation_theory["full_automorphism_order"], 120)
+        self.assertTrue(cert.representation_theory["character_orthogonality_verified"])
 
 
 class TestCoverageCertificate(unittest.TestCase):
@@ -267,6 +328,68 @@ class TestBuresVariationalCertificate(unittest.TestCase):
         self.assertIn("evolving_state", result["tests"])
         self.assertIn("trivial_diagonal_state", result["tests"])
         self.assertIn("near_eigenbasis_alignment", result["tests"])
+
+
+class TestObservabilityFramework(unittest.TestCase):
+    """Tests for observability framework (MIT requirements)."""
+
+    def test_metric_recording(self):
+        """Framework must record metrics correctly."""
+        framework = ObservabilityFramework()
+        metric = framework.record_metric("test_metric", 42.0, MetricType.GAUGE, "units")
+        self.assertEqual(metric.name, "test_metric")
+        self.assertEqual(metric.value, 42.0)
+        self.assertEqual(len(framework.metrics), 1)
+
+    def test_slo_definition(self):
+        """Framework must define SLO targets."""
+        framework = ObservabilityFramework()
+        slo = framework.define_slo("test_slo", 0.95, timedelta(hours=1), 0.97)
+        self.assertEqual(slo.name, "test_slo")
+        self.assertEqual(slo.slo_target, 0.95)
+        self.assertEqual(slo.status, SLOStatus.COMPLIANT)
+
+    def test_slo_violation_detection(self):
+        """Framework must detect SLO violations."""
+        framework = ObservabilityFramework()
+        slo = framework.define_slo("test_slo", 0.95, timedelta(hours=1), 0.85)
+        self.assertEqual(slo.status, SLOStatus.VIOLATED)
+        self.assertGreater(slo.burn_rate, 0.0)
+
+    def test_tracing_context(self):
+        """Framework must support distributed tracing."""
+        framework = ObservabilityFramework()
+        trace = framework.start_trace("test_operation", tags={"component": "test"})
+        self.assertIsNotNone(trace.trace_id)
+        self.assertIsNotNone(trace.span_id)
+
+        ended_trace = framework.end_trace(trace.span_id)
+        self.assertIsNotNone(ended_trace.duration_ms)
+        self.assertGreater(ended_trace.duration_ms, 0)
+
+    def test_observability_certificate_generation(self):
+        """Framework must generate compliance certificate."""
+        framework = ObservabilityFramework()
+        framework.record_metric("test", 1.0)
+        framework.define_slo("test_slo", 0.95, timedelta(hours=1), 0.97)
+        
+        # Create a trace to enable tracing
+        trace = framework.start_trace("test_span", tags={"op": "test"})
+        framework.end_trace(trace.span_id)
+
+        cert = framework.get_observability_certificate()
+        self.assertTrue(cert.tracing_enabled)
+        self.assertTrue(cert.structured_logging_enabled)
+        self.assertTrue(cert.chaos_engineering_hooks)
+        self.assertGreater(len(cert.slo_targets), 0)
+
+    def test_observability_verification_closes_gate(self):
+        """Observability verification must meet MIT requirements."""
+        result = verify_observability_framework()
+        self.assertEqual(result["status"], "CLOSED")
+        self.assertGreater(result["slo_count"], 0)
+        self.assertTrue(result["tracing_enabled"])
+        self.assertTrue(result["metrics_collected"])
 
 
 class TestMemoryCompressionProof(unittest.TestCase):

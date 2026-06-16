@@ -5,7 +5,7 @@ from __future__ import annotations
 import hashlib
 import hmac
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, List
 
 from argon2 import PasswordHasher
@@ -13,7 +13,11 @@ from argon2.exceptions import InvalidHashError, VerificationError, VerifyMismatc
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
 
-from hyba_genesis_api.auth.jwt_handler import TokenPayload, get_jwt_manager, get_token_payload
+from hyba_genesis_api.auth.jwt_handler import (
+    TokenPayload,
+    get_jwt_manager,
+    get_token_payload,
+)
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 _password_hasher = PasswordHasher()
@@ -99,7 +103,9 @@ def _verify_operator(username: str, password: str) -> List[str]:
     operator = operators.get(username)
     if not operator:
         if _is_production():
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials"
+            )
         # Development-only operator for local smoke testing; disabled in production.
         if username == "operator" and password == "operator":
             return ["operator"]
@@ -154,5 +160,5 @@ async def profile(payload: TokenPayload = Depends(get_token_payload)):
             "roles": payload.roles,
             "createdAt": None,
         },
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
     }

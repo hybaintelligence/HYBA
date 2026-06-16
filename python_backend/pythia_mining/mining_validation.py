@@ -109,12 +109,14 @@ def coinbase_transaction_hex(job: MiningJob, extranonce2: str) -> str:
         raise MiningValidationError(
             f"extranonce2 must be exactly {job.extranonce2_size} bytes for this job"
         )
-    return "".join([
-        require_hex(job.coinbase_parts[0], field="coinbase part 1"),
-        require_hex(job.extranonce1, field="extranonce1"),
-        extranonce2_hex,
-        require_hex(job.coinbase_parts[1], field="coinbase part 2"),
-    ])
+    return "".join(
+        [
+            require_hex(job.coinbase_parts[0], field="coinbase part 1"),
+            require_hex(job.extranonce1, field="extranonce1"),
+            extranonce2_hex,
+            require_hex(job.coinbase_parts[1], field="coinbase part 2"),
+        ]
+    )
 
 
 def coinbase_hash_hex(job: MiningJob, extranonce2: str) -> str:
@@ -131,23 +133,29 @@ def compute_merkle_root(coinbase_hash_internal_hex: str, merkle_branch: Iterable
     double-SHA256 hashed at each level. The returned value is internal byte order, ready
     to be inserted into the block header after byte reversal.
     """
-    current = bytes.fromhex(require_hex(coinbase_hash_internal_hex, field="coinbase hash", expected_bytes=32))
+    current = bytes.fromhex(
+        require_hex(coinbase_hash_internal_hex, field="coinbase hash", expected_bytes=32)
+    )
     for index, branch_hex in enumerate(merkle_branch):
-        branch = bytes.fromhex(require_hex(branch_hex, field=f"merkle branch {index}", expected_bytes=32))
+        branch = bytes.fromhex(
+            require_hex(branch_hex, field=f"merkle branch {index}", expected_bytes=32)
+        )
         current = hash256(current + branch)
     return current.hex()
 
 
 def build_block_header(job: MiningJob, merkle_root_internal_hex: str, nonce: int) -> bytes:
     """Build an 80-byte Bitcoin block header from a Stratum mining job."""
-    header_hex = "".join([
-        reverse_hex_bytes(job.version, field="version", expected_bytes=4),
-        reverse_hex_bytes(job.prevhash, field="previous block hash", expected_bytes=32),
-        reverse_hex_bytes(merkle_root_internal_hex, field="merkle root", expected_bytes=32),
-        reverse_hex_bytes(job.ntime, field="ntime", expected_bytes=4),
-        reverse_hex_bytes(job.nbits, field="nbits", expected_bytes=4),
-        uint32_little_endian_hex(nonce, field="nonce"),
-    ])
+    header_hex = "".join(
+        [
+            reverse_hex_bytes(job.version, field="version", expected_bytes=4),
+            reverse_hex_bytes(job.prevhash, field="previous block hash", expected_bytes=32),
+            require_hex(merkle_root_internal_hex, field="merkle root", expected_bytes=32),
+            reverse_hex_bytes(job.ntime, field="ntime", expected_bytes=4),
+            reverse_hex_bytes(job.nbits, field="nbits", expected_bytes=4),
+            uint32_little_endian_hex(nonce, field="nonce"),
+        ]
+    )
     header = bytes.fromhex(header_hex)
     if len(header) != 80:
         raise MiningValidationError("block header must be exactly 80 bytes")
@@ -196,4 +204,7 @@ def validate_share(job: MiningJob, nonce: int, extranonce2: str) -> ShareValidat
 
 def validate_merkle_branch_hex(merkle_branch: List[str]) -> List[str]:
     """Normalize and validate every merkle-branch element as a 32-byte hash."""
-    return [require_hex(value, field=f"merkle branch {index}", expected_bytes=32) for index, value in enumerate(merkle_branch)]
+    return [
+        require_hex(value, field=f"merkle branch {index}", expected_bytes=32)
+        for index, value in enumerate(merkle_branch)
+    ]
