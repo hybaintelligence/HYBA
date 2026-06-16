@@ -1183,6 +1183,21 @@ class StratumClient:
         submitted = self.shares_submitted
         accepted = self.shares_accepted
         current_job = self.current_jobs.get(self.active_job_id) if self.active_job_id else None
+
+        # Provide a precise reason when last_job is null instead of vague DEGRADED
+        last_job_null_reason: str | None = None
+        if current_job is None and self.active_job_id is None:
+            if not self.is_connected:
+                last_job_null_reason = "not_connected"
+            elif not self.is_authenticated:
+                last_job_null_reason = "not_authenticated"
+            elif self.jobs_received == 0:
+                last_job_null_reason = "no_job_received_since_connection"
+            elif self.active_job_id and self.active_job_id not in self.current_jobs:
+                last_job_null_reason = "active_job_id_not_in_current_jobs"
+            else:
+                last_job_null_reason = "unknown"
+
         return {
             "pool_name": self.pool_name,
             "pool_url": self.pool_url,
@@ -1198,8 +1213,18 @@ class StratumClient:
             "last_share_submit_at": self.last_share_submit_at,
             "last_share_error": self.last_share_error,
             "current_job": current_job.to_dict() if current_job else None,
+            "last_job_null_reason": last_job_null_reason,
             "health_score": self.get_health_score(),
             "circuit_breaker_state": self._circuit_breaker_state,
+            "production_state": (
+                "ready" if (
+                    self.is_connected
+                    and self.is_authenticated
+                    and current_job is not None
+                    and not current_job.is_stale
+                )
+                else "blocked"
+            ),
             "performance": {
                 "latency_ms": self.avg_latency,
                 "shares_submitted": submitted,
