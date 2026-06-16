@@ -246,9 +246,14 @@ class UnifiedMiner:
             )
 
     async def run_search_loop(self) -> None:
-        """Main loop: poll jobs, run structured traversal, verify, submit, adapt."""
+        """Main loop: poll jobs, run batched structured traversal, verify, submit, adapt."""
+        # Batch size: number of solver iterations per job cycle.
+        # Each iteration calls solve() which advances _solve_counter for a
+        # different nonce through coordinate collapse → quantum walk → tunnel anneal.
+        batch_size = int(os.getenv("HYBA_MINING_BATCH_SIZE", "50"))
         logger.info("=" * 72)
         logger.info("  HENDRIX-Φ + PULVINI Unified Miner — Deterministic Structured Traversal")
+        logger.info("  Batch size: %d solver iterations per job cycle", batch_size)
         logger.info("=" * 72)
 
         while RUNNING:
@@ -265,16 +270,31 @@ class UnifiedMiner:
                     await asyncio.sleep(0.5)
                     continue
 
-                result = await self.engine.search(job)
-                self._total_searches += 1
+                # Run a batch of solver iterations per job to maximize nonce throughput.
+                # The PULVINI compressed solver advances _solve_counter on each call,
+                # producing a different deterministic nonce through coordinate collapse,
+                # quantum walk, and tunnel anneal projection.
+                batch_start = time.time()
+                for _ in range(batch_size):
+                    if not RUNNING:
+                        break
+                    result = await self.engine.search(job)
+                    self._total_searches += 1
 
-                if result.nonce is not None:
-                    await self._handle_nonce_result(
-                        job,
-                        result.nonce,
-                        strategy_used=result.strategy_used,
-                        phi_resonance_score=result.phi_resonance_score,
-                        search_time=result.search_time,
+                    if result.nonce is not None:
+                        await self._handle_nonce_result(
+                            job,
+                            result.nonce,
+                            strategy_used=result.strategy_used,
+                            phi_resonance_score=result.phi_resonance_score,
+                            search_time=result.search_time,
+                        )
+                batch_elapsed = time.time() - batch_start
+                batch_rate = batch_size / max(0.001, batch_elapsed)
+                if self._total_searches % (batch_size * 10) == 0:
+                    logger.info(
+                        "Batch cycle: %d nonces in %.2fs (%.1f nonces/s), total searches: %d",
+                        batch_size, batch_elapsed, batch_rate, self._total_searches,
                     )
 
                 now = time.time()
