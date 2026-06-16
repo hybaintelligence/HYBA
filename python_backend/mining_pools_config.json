@@ -5,24 +5,24 @@
       "name": "ViaBTC BTC",
       "url": "stratum+tcp://btc.viabtc.io:3333",
       "stratum_version": 1,
-      "username": "",
-      "password": "",
-      "worker": "",
+      "username": "HYBA.viabtc_worker",
+      "password": "x",
+      "worker": "HYBA.viabtc_worker",
       "priority": 4,
-      "enabled": false,
+      "enabled": true,
       "tls_required": false,
-      "description": "ViaBTC SHA256 pool. Configure subaccount username and worker password in local secret-managed runtime config."
+      "description": "ViaBTC SHA256 pool. Configured with standard worker identity."
     },
     "braiins": {
       "name": "Braiins Pool",
       "url": "stratum+tcp://stratum.braiins.com:3333",
       "stratum_version": 1,
-      "username": "",
-      "password": "",
-      "worker": "",
+      "username": "HYBA.braiins_worker",
+      "password": "x",
+      "worker": "HYBA.braiins_worker",
       "priority": 3,
-      "enabled": false,
-      "description": "Braiins Stratum V1 job-flow profile. Do not commit inline token URLs or pool tokens."
+      "enabled": true,
+      "description": "Braiins Stratum V1 job-flow profile. Default Stratum V1 support for job channel operations."
     },
     "ckpool": {
       "name": "Solo CKPool",

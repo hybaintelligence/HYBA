@@ -411,21 +411,22 @@ def load_runtime_pool_configs(
             # Preserve env-configured credentials; runtime file only overrides if explicitly set
             # and only if not already configured via env (source == "env")
             if base.source == "env":
-                # Env var source takes precedence; env-configured profiles are always implicitly enabled
+                # Env var source takes precedence for all fields including URL and stratum_version.
+                # Runtime config file fields MUST NOT override env-configured values.
                 configs[pool_id] = PoolCredentialConfig(
                     pool_id=pool_id,
                     name=base.name,
-                    url=str(payload.get("url") or base.url),
-                    stratum_version=int(payload.get("stratum_version") or base.stratum_version),
+                    url=base.url,
+                    stratum_version=base.stratum_version,
                     tls_required=base.tls_required,
                     credential_mode=base.credential_mode,
-                    username=base.username,  # Keep env-configured username
-                    password=base.password,  # Keep env-configured password
-                    btc_address=base.btc_address,  # Keep env-configured btc_address
-                    worker=base.worker,  # Keep env-configured worker
-                    nicehash_pool_id=base.nicehash_pool_id,  # Keep env-configured nicehash_pool_id
-                    priority=int(payload.get("priority") or base.priority),
-                    enabled=True,  # Env-configured profiles are implicitly enabled
+                    username=base.username,
+                    password=base.password,
+                    btc_address=base.btc_address,
+                    worker=base.worker,
+                    nicehash_pool_id=base.nicehash_pool_id,
+                    priority=base.priority,
+                    enabled=True,
                     source="env",
                 )
             else:

@@ -85,6 +85,18 @@ def _compute_bond_entanglement(tensor_left: np.ndarray, tensor_right: np.ndarray
     return float(entropy)
 
 
+def _deterministic_complex_tensor(shape: Tuple[int, ...], scale: float = 0.01, phase_offset: float = 0.0) -> np.ndarray:
+    """Generate a deterministic complex tensor with bounded magnitude."""
+    idx = np.indices(shape, dtype=np.float64)
+    accumulator = np.zeros(shape, dtype=np.float64)
+    for axis, axis_idx in enumerate(idx):
+        accumulator += (axis + 1.0) * axis_idx
+    phase = accumulator + phase_offset
+    real = np.sin(phase)
+    imag = np.cos(phase * PHI)
+    return (scale * (real + 1j * imag)).astype(np.complex128)
+
+
 @dataclass
 class MPS:
     """Matrix Product State for efficient quantum state representation.
@@ -116,20 +128,17 @@ class MPS:
             if i == 0:
                 # First site: (1, phys_dim, bond_dim)
                 bond = min(max_bond_dim, physical_dim)
-                tensor = (np.random.randn(1, physical_dim, bond) +
-                          1j * np.random.randn(1, physical_dim, bond)) * 0.01
+                tensor = _deterministic_complex_tensor((1, physical_dim, bond), phase_offset=float(i))
             elif i == num_sites - 1:
                 # Last site: (bond_dim, phys_dim, 1)
                 bond = self.bond_dims[-1]
-                tensor = (np.random.randn(bond, physical_dim, 1) +
-                          1j * np.random.randn(bond, physical_dim, 1)) * 0.01
+                tensor = _deterministic_complex_tensor((bond, physical_dim, 1), phase_offset=float(i))
             else:
                 # Middle sites: (bond_dim, phys_dim, bond_dim)
                 bond_left = self.bond_dims[-1]
                 bond_right = min(max_bond_dim, bond_left * physical_dim)
                 bond_right = min(bond_right, max_bond_dim)
-                tensor = (np.random.randn(bond_left, physical_dim, bond_right) +
-                          1j * np.random.randn(bond_left, physical_dim, bond_right)) * 0.01
+                tensor = _deterministic_complex_tensor((bond_left, physical_dim, bond_right), phase_offset=float(i))
 
             self.tensors.append(tensor)
             self.bond_dims.append(tensor.shape[2])  # Right bond dimension
@@ -536,17 +545,16 @@ class DatasetBenchmark:
 
         For demonstration, generates synthetic data similar to MNIST.
         """
-        np.random.seed(42)
-        data = np.random.rand(sample_size)
+        data = np.zeros(sample_size, dtype=np.float64)
 
         # Add some structure (digit-like patterns)
         center = sample_size // 2
         for i in range(sample_size):
             dist = abs(i - center)
             if dist < 5:
-                data[i] = 0.8 + 0.2 * np.random.rand()
+                data[i] = 0.8 + 0.2 * (0.5 + 0.5 * math.sin(0.31 * i))
             else:
-                data[i] = 0.1 + 0.1 * np.random.rand()
+                data[i] = 0.1 + 0.1 * (0.5 + 0.5 * math.cos(0.17 * i))
 
         return data
 

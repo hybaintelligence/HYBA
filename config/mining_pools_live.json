@@ -1,17 +1,6 @@
 {
-  "default_pool": "viabtc",
+  "default_pool": "braiins",
   "pools": {
-    "viabtc": {
-      "name": "ViaBTC BTC",
-      "url": "stratum+tcp://btc.viabtc.io:3333",
-      "stratum_version": 1,
-      "username": "PYTHIA.001",
-      "password": "123",
-      "worker": "hendrix_phi",
-      "priority": 4,
-      "enabled": true,
-      "description": "ViaBTC SHA256 pool - selectable from frontend"
-    },
     "braiins": {
       "name": "Braiins Pool",
       "url": "stratum+tcp://stratum.braiins.com:3333",
@@ -19,21 +8,22 @@
       "username": "PYTHIA.001",
       "password": "9awtMD5KQgvRUh2yFbjVeT7b6hjipWcAsQHd6wEhgtDT9soosna",
       "worker": "hendrix_phi",
-      "priority": 2,
-      "enabled": false,
-      "description": "Braiins Pool - V1 Stratum, token-based auth (disabled until tested)"
+      "priority": 1,
+      "enabled": true,
+      "is_default": true,
+      "description": "Braiins Pool - Default mining pool (V1 Stratum)"
     },
-    "ckpool": {
-      "name": "Solo CKPool",
-      "url": "stratum+tcp://solo.ckpool.org:3333",
+    "viabtc": {
+      "name": "ViaBTC BTC",
+      "url": "stratum+tcp://btc.viabtc.io:3333",
       "stratum_version": 1,
-      "btc_address": "bc1qsyva7t00e0cwqzts54u7ffys7l76pp8a02x8r9",
-      "username": "",
-      "password": "x",
+      "username": "PYTHIA.001",
+      "password": "123",
       "worker": "hendrix_phi",
       "priority": 2,
       "enabled": true,
-      "description": "CKPool solo mining - selectable from frontend"
+      "is_default": false,
+      "description": "ViaBTC SHA256 pool - selectable from dropdown"
     },
     "nicehash": {
       "name": "NiceHash SHA256",
@@ -45,10 +35,33 @@
       "nicehash_pool_id": "NHbaCJGb1gM7MjgJ9QnnqbG2sLVW9w8hdPzK",
       "priority": 3,
       "enabled": true,
-      "description": "NiceHash auto-trading SHA256 - selectable from frontend"
+      "is_default": false,
+      "description": "NiceHash auto-trading SHA256 - selectable from dropdown"
+    },
+    "ckpool": {
+      "name": "Solo CKPool",
+      "url": "stratum+tcp://solo.ckpool.org:3333",
+      "stratum_version": 1,
+      "btc_address": "bc1qsyva7t00e0cwqzts54u7ffys7l76pp8a02x8r9",
+      "username": "",
+      "password": "x",
+      "worker": "hendrix_phi",
+      "priority": 4,
+      "enabled": true,
+      "is_default": false,
+      "description": "CKPool solo mining - selectable from dropdown"
     },
     "stratumv2": {
-      "enabled": false
+      "name": "Stratum V2 Pool",
+      "url": "stratum2+ssl://pool.example.com:3336",
+      "stratum_version": 2,
+      "username": "PYTHIA.001",
+      "password": "x",
+      "worker": "hendrix_phi",
+      "priority": 5,
+      "enabled": false,
+      "is_default": false,
+      "description": "Generic Stratum V2 pool - disabled by default, enable with valid endpoint"
     }
   }
 }

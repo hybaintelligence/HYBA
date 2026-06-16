@@ -1,8 +1,8 @@
 {
   "measurements": {
     "feedback_loops": {
-      "total": 1313,
-      "files": 110,
+      "total": 1345,
+      "files": 111,
       "top_files": [
         {
           "file": "mining.py",
@@ -1580,27 +1580,28 @@
       ]
     },
     "optimizations": {
-      "total": 364,
-      "files": 40
+      "total": 379,
+      "files": 42
     },
     "memory": {
-      "total": 989,
-      "files": 67,
+      "total": 1000,
+      "files": 69,
       "by_type": {
-        "memory_reference": 414,
-        "history_tracking": 275,
+        "caching": 50,
+        "memory_reference": 417,
+        "history_tracking": 278,
         "retention": 52,
         "ledger_state": 157,
-        "caching": 45,
         "manifest_state": 43,
         "memory_storage": 3
       }
     },
     "self_modification": {
-      "total": 5,
-      "files": 5,
+      "total": 6,
+      "files": 6,
       "dangerous_sites": 0,
       "by_severity": {
+        "LOW": 1,
         "MODERATE": 5
       },
       "dangerous_details": []

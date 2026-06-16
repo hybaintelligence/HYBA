@@ -726,8 +726,8 @@ def run_comprehensive_benchmark():
     # Test 2: adaptive_phi_truncation on synthetic spectrum
     print("\nB. adaptive_phi_truncation (Mass Gap fine-tuning):")
     from pythia_mining.quantum_axiom_helpers import adaptive_phi_truncation
-    np.random.seed(42)
-    s_synth = np.sort(np.random.exponential(scale=1.0, size=100))[::-1]
+    synth_axis = np.linspace(0.0, 4.0, 100)
+    s_synth = np.sort((1.0 + np.sin(3.0 * synth_axis) ** 2) * np.exp(-synth_axis))[::-1]
     # Embed a ratio near the mass gap
     s_synth[20] = s_synth[21] * (MASS_GAP + 0.001)
     u_synth = np.eye(100)
@@ -740,7 +740,10 @@ def run_comprehensive_benchmark():
     # Test 3: PULVINI irrational basis fold/unfold
     print("\nC. pulvini_phi_fold / pulvini_unfold (Lossless verification):")
     from pythia_mining.quantum_axiom_helpers import pulvini_phi_fold, pulvini_unfold
-    test_tensor = np.random.randn(32, 32).astype(np.complex128) + 1j * np.random.randn(32, 32)
+    fold_axis = np.linspace(-1.0, 1.0, 32)
+    fold_real = np.outer(np.sin(np.pi * (fold_axis + 1.0)), np.cos(np.pi * (fold_axis + 1.0)))
+    fold_imag = np.outer(np.cos(np.pi * (fold_axis + 1.0)), np.sin(2.0 * np.pi * (fold_axis + 1.0)))
+    test_tensor = (fold_real + 1j * fold_imag).astype(np.complex128)
     compressed, indices, shape = pulvini_phi_fold(test_tensor)
     restored = pulvini_unfold(compressed, indices, shape)
     fold_error = float(np.linalg.norm(test_tensor - restored))

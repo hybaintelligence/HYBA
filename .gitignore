@@ -31,6 +31,9 @@ changes.diff
 asic_comparison_results.json
 golden_ratio_scaling_results.json
 
+# Production local credentials — never commit
+.env.production.local
+
 # Firebase config (contains API keys — never commit)
 firebase-applet-config.json
 config/firebase-applet-config.json
