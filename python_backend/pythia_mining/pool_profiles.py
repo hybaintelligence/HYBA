@@ -13,7 +13,7 @@ import os
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any, Dict, Iterable
-from urllib.parse import urlparse
+from urllib.parse import unquote, urlparse, urlunparse
 
 
 class PoolProfileError(ValueError):
@@ -69,16 +69,18 @@ class PoolCredentialConfig:
     share_retry_backoff_max: float = 5.0
 
     def resolved_username(self) -> str:
+        _clean_url, inline_username, _inline_password = split_pool_url_credentials(self.url)
         if self.pool_id == "ckpool":
-            return self.btc_address or self.username
+            return self.btc_address or self.username or inline_username
         if self.pool_id == "nicehash":
-            return self.username or f"{self.nicehash_pool_id}.{self.worker}".strip(".")
-        return self.username
+            return self.username or inline_username or f"{self.nicehash_pool_id}.{self.worker}".strip(".")
+        return self.username or inline_username
 
     def resolved_password(self) -> str:
+        _clean_url, _inline_username, inline_password = split_pool_url_credentials(self.url)
         if self.pool_id in {"ckpool", "nicehash"}:
-            return self.password or "x"
-        return self.password
+            return self.password or inline_password or "x"
+        return self.password or inline_password
 
     def to_profile(self) -> PoolProfile:
         return build_profile(
@@ -107,6 +109,8 @@ class PoolCredentialConfig:
             else ("<configured>" if self.resolved_username() else "")
         )
         if not include_secret_fields:
+            clean_url, inline_username, inline_password = split_pool_url_credentials(self.url)
+            payload["url"] = clean_url if (inline_username or inline_password) else self.url
             if payload.get("username"):
                 payload["username"] = "<configured>"
             if payload.get("password"):
@@ -141,8 +145,8 @@ DEFAULT_POOL_SPECS: dict[str, dict[str, Any]] = {
     },
     "braiins": {
         "name": "Braiins Pool",
-        "url": "stratum2+tcp://stratum.braiins.com:3333",
-        "stratum_version": 2,
+        "url": "stratum+tcp://stratum.braiins.com:3333",
+        "stratum_version": 1,
         "tls_required": False,
         "credential_mode": "username_password",
         "required_fields": ["username", "password"],
@@ -188,8 +192,43 @@ def runtime_pool_config_path() -> Path:
     )
 
 
-def validate_pool_url(url: str, *, tls_required: bool = False) -> str:
+def split_pool_url_credentials(url: str) -> tuple[str, str, str]:
+    """Return ``(clean_url, username, password)`` for Stratum URLs.
+
+    Operators sometimes paste pool credentials in URL authority form, e.g.
+    ``stratum+tcp://worker:token@host:3333``. The live Stratum protocol still
+    requires username/password in the ``mining.authorize`` payload, while status
+    surfaces must never echo those credentials back. This helper extracts the
+    inline credentials and returns a credential-free URL for storage/status.
+    """
+
     parsed = urlparse(url)
+    username = unquote(parsed.username or "")
+    password = unquote(parsed.password or "")
+    if not username and not password:
+        return url, "", ""
+    hostname = parsed.hostname or ""
+    if ":" in hostname and not hostname.startswith("["):
+        hostname = f"[{hostname}]"
+    netloc = hostname
+    if parsed.port is not None:
+        netloc = f"{netloc}:{parsed.port}"
+    clean_url = urlunparse(
+        (
+            parsed.scheme,
+            netloc,
+            parsed.path,
+            parsed.params,
+            parsed.query,
+            parsed.fragment,
+        )
+    )
+    return clean_url, username, password
+
+
+def validate_pool_url(url: str, *, tls_required: bool = False) -> str:
+    clean_url, _username, _password = split_pool_url_credentials(url)
+    parsed = urlparse(clean_url)
     if parsed.scheme not in SUPPORTED_SCHEMES:
         raise PoolProfileError(f"unsupported pool URL scheme: {parsed.scheme}")
     if parsed.scheme.startswith("stratum+") and parsed.netloc.endswith(":3336"):
@@ -207,7 +246,7 @@ def validate_pool_url(url: str, *, tls_required: bool = False) -> str:
         "stratum2+tls",
     }:
         raise PoolProfileError("TLS is required for this pool profile")
-    return url
+    return clean_url
 
 
 def validate_profile(profile: PoolProfile) -> PoolProfile:
@@ -215,7 +254,7 @@ def validate_profile(profile: PoolProfile) -> PoolProfile:
         raise PoolProfileError("pool_id is required")
     if not profile.name:
         raise PoolProfileError("pool name is required")
-    validate_pool_url(profile.url, tls_required=profile.tls_required)
+    clean_url = validate_pool_url(profile.url, tls_required=profile.tls_required)
     if not profile.username:
         raise PoolProfileError(f"pool {profile.pool_id} requires username")
     if profile.password is None or profile.password == "":
@@ -224,6 +263,13 @@ def validate_profile(profile: PoolProfile) -> PoolProfile:
         raise PoolProfileError("stratum_version must be 1 or 2")
     if int(profile.priority) < 0:
         raise PoolProfileError("priority must be non-negative")
+    if clean_url != profile.url:
+        return PoolProfile(
+            **{
+                **asdict(profile),
+                "url": clean_url,
+            }
+        )
     return profile
 
 
@@ -244,13 +290,16 @@ def build_profile(
     share_retry_backoff_base: float = 0.5,
     share_retry_backoff_max: float = 5.0,
 ) -> PoolProfile:
+    clean_url, inline_username, inline_password = split_pool_url_credentials(url)
+    resolved_username = username or inline_username
+    resolved_password = password or inline_password
     return validate_profile(
         PoolProfile(
             pool_id=pool_id.lower(),
             name=name,
-            url=url,
-            username=username,
-            password=password,
+            url=clean_url,
+            username=resolved_username,
+            password=resolved_password,
             stratum_version=int(stratum_version),
             priority=int(priority),
             tls_required=bool(tls_required),
@@ -296,17 +345,19 @@ def validate_pool_config(config: PoolCredentialConfig) -> PoolCredentialConfig:
     validate_pool_url(config.url, tls_required=bool(spec["tls_required"]))
     if int(config.stratum_version) not in SUPPORTED_VERSIONS:
         raise PoolProfileError("stratum_version must be 1 or 2")
+    resolved_username = config.resolved_username()
+    resolved_password = config.resolved_password()
     if config.pool_id in {"viabtc", "braiins"}:
-        if not config.username or not config.password:
+        if not resolved_username or not resolved_password:
             raise PoolProfileError(f"{config.pool_id} requires username and password/auth value")
     elif config.pool_id == "ckpool":
-        if not config.btc_address and not config.username:
+        if not config.btc_address and not config.username and not resolved_username:
             raise PoolProfileError("ckpool requires a BTC address")
     elif config.pool_id == "nicehash":
-        if not config.worker or not config.nicehash_pool_id:
+        if not config.worker and not config.nicehash_pool_id and not resolved_username:
             raise PoolProfileError("nicehash requires worker and NH pool id")
     elif config.pool_id == "stratumv2":
-        if not config.username or not config.password:
+        if not resolved_username or not resolved_password:
             raise PoolProfileError("stratumv2 requires username and password/auth value")
     config.to_profile()
     return config
@@ -382,11 +433,12 @@ def save_runtime_pool_config(config: PoolCredentialConfig) -> PoolCredentialConf
             raw = json.loads(path.read_text(encoding="utf-8"))
         except (OSError, json.JSONDecodeError):
             raw = {"pools": {}}
+    profile = checked.to_profile()
     raw.setdefault("pools", {})[checked.pool_id] = {
-        "url": checked.url,
+        "url": profile.url,
         "stratum_version": checked.stratum_version,
-        "username": checked.username,
-        "password": checked.password,
+        "username": checked.resolved_username(),
+        "password": checked.resolved_password(),
         "btc_address": checked.btc_address,
         "worker": checked.worker,
         "nicehash_pool_id": checked.nicehash_pool_id,
@@ -424,6 +476,7 @@ __all__ = [
     "load_runtime_pool_configs",
     "runtime_pool_config_path",
     "save_runtime_pool_config",
+    "split_pool_url_credentials",
     "validate_pool_config",
     "validate_pool_url",
     "validate_profile",
