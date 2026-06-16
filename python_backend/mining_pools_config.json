@@ -1,15 +1,53 @@
 {
   "pools": {
-    "braiins": {
-      "btc_address": "",
+    "viabtc": {
+      "name": "ViaBTC BTC",
+      "url": "stratum+tcp://btc.viabtc.io:3333",
+      "stratum_version": 1,
+      "username": "PYTHIA",
+      "password": "x",
+      "worker": "hendrix_phi",
+      "priority": 4,
       "enabled": true,
-      "nicehash_pool_id": "",
-      "password": "anything123",
-      "priority": 20,
-      "stratum_version": 2,
+      "description": "ViaBTC SHA256 pool"
+    },
+    "braiins": {
+      "name": "Braiins Pool (Stratum V2)",
       "url": "stratum2+tcp://stratum.braiins.com:3333/9awtMD5KQgvRUh2yFbjVeT7b6hjipWcAsQHd6wEhgtDT9soosna",
-      "username": "PYTHAGOROS.workerName",
-      "worker": ""
+      "stratum_version": 2,
+      "username": "PYTHIA",
+      "password": "anything123",
+      "worker": "hendrix_phi",
+      "priority": 3,
+      "enabled": true,
+      "description": "Braiins Pool - Stratum V2 with token"
+    },
+    "ckpool": {
+      "name": "Solo CKPool",
+      "url": "stratum+tcp://solo.ckpool.org:3333",
+      "stratum_version": 1,
+      "btc_address": "bc1qsyva7t00e0cwqzts54u7ffys7l76pp8a02x8r9",
+      "username": "",
+      "password": "x",
+      "worker": "hendrix_phi",
+      "priority": 1,
+      "enabled": true,
+      "description": "CKPool solo mining - primary (BTC address auth)"
+    },
+    "nicehash": {
+      "name": "NiceHash SHA256",
+      "url": "stratum+ssl://sha256.auto.nicehash.com:443",
+      "stratum_version": 1,
+      "username": "NHbaCJGb1gM7MjgJ9QnnqbG2sLVW9w8hdPzK",
+      "password": "x",
+      "worker": "hendrix_phi",
+      "nicehash_pool_id": "NHbaCJGb1gM7MjgJ9QnnqbG2sLVW9w8hdPzK",
+      "priority": 2,
+      "enabled": true,
+      "description": "NiceHash auto-trading SHA256 - backup"
+    },
+    "stratumv2": {
+      "enabled": false
     }
   }
 }

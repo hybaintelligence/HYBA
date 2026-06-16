@@ -73,7 +73,11 @@ class PoolCredentialConfig:
         if self.pool_id == "ckpool":
             return self.btc_address or self.username or inline_username
         if self.pool_id == "nicehash":
-            return self.username or inline_username or f"{self.nicehash_pool_id}.{self.worker}".strip(".")
+            # NiceHash username format: NH_WALLET_ADDRESS.WORKER_NAME
+            base_username = self.username or inline_username or self.nicehash_pool_id
+            if base_username and self.worker:
+                return f"{base_username}.{self.worker}"
+            return base_username
         return self.username or inline_username
 
     def resolved_password(self) -> str:

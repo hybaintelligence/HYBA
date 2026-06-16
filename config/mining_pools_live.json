@@ -2,10 +2,26 @@
   "default_pool": "ckpool",
   "pools": {
     "viabtc": {
-      "enabled": false
+      "name": "ViaBTC BTC",
+      "url": "stratum+tcp://btc.viabtc.io:3333",
+      "stratum_version": 1,
+      "username": "PYTHIA",
+      "password": "x",
+      "worker": "hendrix_phi",
+      "priority": 4,
+      "enabled": true,
+      "description": "ViaBTC SHA256 pool"
     },
     "braiins": {
-      "enabled": false
+      "name": "Braiins Pool (Stratum V2)",
+      "url": "stratum2+tcp://stratum.braiins.com:3333/9awtMD5KQgvRUh2yFbjVeT7b6hjipWcAsQHd6wEhgtDT9soosna",
+      "stratum_version": 2,
+      "username": "PYTHIA",
+      "password": "anything123",
+      "worker": "hendrix_phi",
+      "priority": 3,
+      "enabled": true,
+      "description": "Braiins Pool - Stratum V2 with token"
     },
     "ckpool": {
       "name": "Solo CKPool",
@@ -17,10 +33,10 @@
       "worker": "hendrix_phi",
       "priority": 1,
       "enabled": true,
-      "description": "CKPool solo mining - primary"
+      "description": "CKPool solo mining - primary (BTC address auth)"
     },
     "nicehash": {
-      "name": "NiceHash",
+      "name": "NiceHash SHA256",
       "url": "stratum+ssl://sha256.auto.nicehash.com:443",
       "stratum_version": 1,
       "username": "NHbaCJGb1gM7MjgJ9QnnqbG2sLVW9w8hdPzK",
