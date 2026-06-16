@@ -2,13 +2,14 @@
   "pools": {
     "viabtc": {
       "name": "ViaBTC BTC",
-      "url": "stratum+tcp://btc.viabtc.io:3333",
+      "url": "stratum+ssl://btc.viabtc.io:3334",
       "stratum_version": 1,
       "username": "PYTHIA",
       "password": "x",
       "worker": "hendrix_phi",
       "priority": 4,
       "enabled": true,
+      "tls_required": true,
       "description": "ViaBTC SHA256 pool"
     },
     "braiins": {

@@ -1186,7 +1186,7 @@ class StratumClient:
 
         # Provide a precise reason when last_job is null instead of vague DEGRADED
         last_job_null_reason: str | None = None
-        if current_job is None and self.active_job_id is None:
+        if current_job is None:
             if not self.is_connected:
                 last_job_null_reason = "not_connected"
             elif not self.is_authenticated:
