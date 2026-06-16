@@ -2,8 +2,8 @@
 
 These tests keep the basics honest: nonce ranges stay inside the PULVINI
 coverage plan, telemetry formatting cannot crash search, the live miner consumes
-structured solver candidates, and the nonce handler feeds the unified engine for
-both local rejects and pool outcomes.
+structured solver candidates, production/live mode refuses dev fixtures, and the
+nonce handler feeds the unified engine for both local rejects and pool outcomes.
 """
 
 from __future__ import annotations
@@ -86,6 +86,24 @@ class DummyStratum:
         return self.result
 
 
+class FixtureStratum:
+    def __init__(self) -> None:
+        self.is_connected = True
+        self.live_session = None
+        self.current_difficulty = 1.0
+        self.injected = False
+
+    async def poll_live_event(self, timeout: float) -> None:
+        return None
+
+    async def get_active_job_copy(self) -> None:
+        return None
+
+    async def inject_dev_fixture_target_job(self, difficulty: float) -> DummyJob:
+        self.injected = True
+        return DummyJob(job_id="fixture-job")
+
+
 def _miner_with(engine: DummyEngine, stratum: Any | None = None) -> UnifiedMiner:
     miner = UnifiedMiner.__new__(UnifiedMiner)
     miner.engine = engine
@@ -94,6 +112,10 @@ def _miner_with(engine: DummyEngine, stratum: Any | None = None) -> UnifiedMiner
     miner._rejected = 0
     miner._locally_invalid = 0
     miner._total_searches = 0
+    miner._last_no_job_reason = None
+    miner._last_search_skip_reason = None
+    miner._last_submit_reason = None
+    miner._reason_log_cache = {}
     return miner
 
 
@@ -145,6 +167,39 @@ def test_nonce_plan_telemetry_uses_current_plan_field_names() -> None:
     ) == (2, True, True, 2)
 
 
+def test_production_live_mode_refuses_dev_fixture_jobs(monkeypatch: Any) -> None:
+    monkeypatch.setenv("HYBA_ENV", "production")
+    monkeypatch.setenv("NODE_ENV", "production")
+    monkeypatch.setenv("HYBA_ENABLE_LIVE_STRATUM", "true")
+    monkeypatch.delenv("HYBA_ALLOW_DEV_FIXTURES", raising=False)
+
+    stratum = FixtureStratum()
+    miner = _miner_with(DummyEngine(DummyLocalResult(valid=False)), stratum)
+
+    job = asyncio.run(miner._next_job(timeout=0.01))
+
+    assert job is None
+    assert stratum.injected is False
+    assert miner._last_no_job_reason == "live_session_missing_dev_fixture_refused"
+
+
+def test_dev_fixture_jobs_require_explicit_non_live_non_production_mode(monkeypatch: Any) -> None:
+    monkeypatch.setenv("HYBA_ALLOW_DEV_FIXTURES", "true")
+    monkeypatch.setenv("HYBA_ENV", "development")
+    monkeypatch.setenv("NODE_ENV", "development")
+    monkeypatch.setenv("HYBA_ENABLE_LIVE_STRATUM", "false")
+
+    stratum = FixtureStratum()
+    miner = _miner_with(DummyEngine(DummyLocalResult(valid=False)), stratum)
+
+    job = asyncio.run(miner._next_job(timeout=0.01))
+
+    assert job is not None
+    assert job.job_id == "fixture-job"
+    assert stratum.injected is True
+    assert miner._last_no_job_reason == "dev_fixture_injected_explicit_non_live_mode"
+
+
 def test_structured_search_batch_uses_engine_search_candidate_not_cursor() -> None:
     engine = DummyEngine(
         DummyLocalResult(valid=False, reason="hash_above_target"),
@@ -190,6 +245,7 @@ def test_structured_search_batch_does_not_submit_when_solver_returns_no_nonce() 
     assert len(engine.search_calls) == 1
     assert engine.submitted == []
     assert engine.feedback == []
+    assert miner._last_search_skip_reason == "structured_solver_returned_no_nonce"
 
 
 def test_local_reject_feeds_back_to_engine() -> None:
@@ -209,6 +265,7 @@ def test_local_reject_feeds_back_to_engine() -> None:
     assert result is False
     assert miner._locally_invalid == 1
     assert miner._rejected == 1
+    assert miner._last_submit_reason == "local_validation_rejected_before_pool_submit"
     assert len(engine.feedback) == 1
     share_info, accepted = engine.feedback[0]
     assert accepted is False
@@ -242,6 +299,7 @@ def test_pool_outcome_feeds_back_to_engine_after_local_pass() -> None:
     assert result is True
     assert stratum.submitted == [(engine.submitted[0][0], 99)]
     assert miner._rejected == 1
+    assert miner._last_submit_reason == "pool_or_submit_guard_rejected_share"
     assert len(engine.feedback) == 1
     share_info, accepted = engine.feedback[0]
     assert accepted is False
