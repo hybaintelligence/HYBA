@@ -11,7 +11,7 @@ const projectRoot = path.dirname(__filename);
 
 export default defineConfig(() => {
   return {
-    plugins: [react(), tailwindcss()],
+    plugins: [react({ babel: { configFile: false } }), tailwindcss()],
     resolve: {
       alias: {
         '@': projectRoot,
