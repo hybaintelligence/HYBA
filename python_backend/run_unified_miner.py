@@ -308,6 +308,8 @@ class UnifiedMiner:
 
                 batch_start = time.time()
                 batch_checked = 0
+                local_pass = 0
+                local_fail = 0
                 for _ in range(batch_size):
                     if not RUNNING:
                         break
@@ -339,9 +341,11 @@ class UnifiedMiner:
                     # Fast local SHA-256d validation via the engine verifier.
                     local = self.engine.submit_candidate(job, nonce)
                     if not local.valid:
+                        local_fail += 1
                         self._locally_invalid += 1
                         self._rejected += 1
                         continue
+                    local_pass += 1
 
                     # Candidate passed local validation — submit to pool.
                     logger.info(
@@ -385,8 +389,9 @@ class UnifiedMiner:
                 if self._total_searches % (batch_size * 5) == 0:
                     nonce_range_pct = (nonce_cursor / (2**32)) * 100
                     logger.info(
-                        "Scan: %d nonces in %.2fs (%.0f nonces/s), total=%d (%.4f%% of space)",
+                        "Scan: %d nonces in %.2fs (%.0f nonces/s) pass=%d fail=%d target=%s total=%d (%.4f%% of space)",
                         batch_checked, batch_elapsed, batch_rate,
+                        local_pass, local_fail, hex(int(job.target))[:20],
                         self._total_searches, nonce_range_pct,
                     )
 
