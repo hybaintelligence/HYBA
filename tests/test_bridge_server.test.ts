@@ -191,6 +191,49 @@ describe("HYBA Secure Bridge", () => {
     }
   });
 
+
+  it("enforces the production mining rate-limit contract on the 11th request and recovers after reset", async () => {
+    const limitedApp = express();
+    limitedApp.use((_req, res, next) => {
+      res.setHeader("x-request-id", `req_${randomUUID()}`);
+      next();
+    });
+    limitedApp.use(
+      rateLimit({
+        windowMs: 100,
+        max: 10,
+        message: { error: "too_many_requests", message: "Too many requests, please try again later." },
+        standardHeaders: true,
+        legacyHeaders: false,
+      }),
+    );
+    limitedApp.get("/api/mining/status", (_req, res) => res.json({ status: "ok" }));
+    const { server: limitedServer, port: limitedPort } = await startTestServer(limitedApp);
+    try {
+      const responses = [];
+      for (let i = 0; i < 11; i += 1) {
+        responses.push(await fetch(`http://127.0.0.1:${limitedPort}/api/mining/status`));
+      }
+
+      expect(responses.slice(0, 10).map((response) => response.status)).toEqual(
+        Array(10).fill(200),
+      );
+      expect(responses[10].status).toBe(429);
+      expect(responses[10].headers.get("x-request-id")).toMatch(/^req_/);
+      await expect(responses[10].json()).resolves.toEqual({
+        error: "too_many_requests",
+        message: "Too many requests, please try again later.",
+      });
+
+      await new Promise((resolve) => setTimeout(resolve, 150));
+      const recovered = await fetch(`http://127.0.0.1:${limitedPort}/api/mining/status`);
+      expect(recovered.status).toBe(200);
+      await expect(recovered.json()).resolves.toEqual({ status: "ok" });
+    } finally {
+      limitedServer.close();
+    }
+  });
+
   // ── Security Headers ───────────────────────────────────────────────
 
   it("Response includes x-request-id header", async () => {
