@@ -1,56 +1,67 @@
 {
-  "_note": "Tracked safe template only. Do not commit live pool credentials, payout addresses, worker tokens, or Stratum V2 token URLs here. For production, copy config/mining_pools_live.json to a local secret-managed file and set HYBA_POOL_CONFIG_PATH.",
+  "default_pool": "braiins",
   "pools": {
-    "viabtc": {
-      "name": "ViaBTC BTC",
-      "url": "stratum+tcp://btc.viabtc.io:3333",
-      "stratum_version": 1,
-      "username": "HYBA.viabtc_worker",
-      "password": "x",
-      "worker": "HYBA.viabtc_worker",
-      "priority": 4,
-      "enabled": true,
-      "tls_required": false,
-      "description": "ViaBTC SHA256 pool. Configured with standard worker identity."
-    },
     "braiins": {
       "name": "Braiins Pool",
       "url": "stratum+tcp://stratum.braiins.com:3333",
       "stratum_version": 1,
-      "username": "HYBA.braiins_worker",
-      "password": "x",
-      "worker": "HYBA.braiins_worker",
-      "priority": 3,
-      "enabled": true,
-      "description": "Braiins Stratum V1 job-flow profile. Default Stratum V1 support for job channel operations."
-    },
-    "ckpool": {
-      "name": "Solo CKPool",
-      "url": "stratum+tcp://solo.ckpool.org:3333",
-      "stratum_version": 1,
-      "btc_address": "",
-      "username": "",
-      "password": "x",
-      "worker": "",
+      "username": "PYTHIA.001",
+      "password": "9awtMD5KQgvRUh2yFbjVeT7b6hjipWcAsQHd6wEhgtDT9soosna",
+      "worker": "hendrix_phi",
       "priority": 1,
-      "enabled": false,
-      "description": "CKPool solo mining. Configure BTC address in local secret-managed runtime config."
+      "enabled": true,
+      "is_default": true,
+      "description": "Braiins Pool - Default mining pool (V1 Stratum)"
+    },
+    "viabtc": {
+      "name": "ViaBTC BTC",
+      "url": "stratum+tcp://btc.viabtc.io:3333",
+      "stratum_version": 1,
+      "username": "PYTHIA.001",
+      "password": "123",
+      "worker": "hendrix_phi",
+      "priority": 2,
+      "enabled": true,
+      "is_default": false,
+      "description": "ViaBTC SHA256 pool - selectable from dropdown"
     },
     "nicehash": {
       "name": "NiceHash SHA256",
       "url": "stratum+ssl://sha256.auto.nicehash.com:443",
       "stratum_version": 1,
+      "username": "NHbaCJGb1gM7MjgJ9QnnqbG2sLVW9w8hdPzK",
+      "password": "x",
+      "worker": "hendrix_phi",
+      "nicehash_pool_id": "NHbaCJGb1gM7MjgJ9QnnqbG2sLVW9w8hdPzK",
+      "priority": 3,
+      "enabled": true,
+      "is_default": false,
+      "description": "NiceHash auto-trading SHA256 - selectable from dropdown"
+    },
+    "ckpool": {
+      "name": "Solo CKPool",
+      "url": "stratum+tcp://solo.ckpool.org:3333",
+      "stratum_version": 1,
+      "btc_address": "bc1qsyva7t00e0cwqzts54u7ffys7l76pp8a02x8r9",
       "username": "",
       "password": "x",
-      "worker": "",
-      "nicehash_pool_id": "",
-      "priority": 2,
-      "enabled": false,
-      "description": "NiceHash SHA256. Configure pool id and worker in local secret-managed runtime config."
+      "worker": "hendrix_phi",
+      "priority": 4,
+      "enabled": true,
+      "is_default": false,
+      "description": "CKPool solo mining - selectable from dropdown"
     },
     "stratumv2": {
+      "name": "Stratum V2 Pool",
+      "url": "stratum2+ssl://pool.example.com:3336",
+      "stratum_version": 2,
+      "username": "PYTHIA.001",
+      "password": "x",
+      "worker": "hendrix_phi",
+      "priority": 5,
       "enabled": false,
-      "description": "Disabled until full Stratum V2 channel/job/share flow is implemented end-to-end."
+      "is_default": false,
+      "description": "Generic Stratum V2 pool - disabled by default, enable with valid endpoint"
     }
   }
 }
