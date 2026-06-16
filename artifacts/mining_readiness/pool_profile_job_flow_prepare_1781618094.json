@@ -1,0 +1,15 @@
+{
+  "findings": [
+    {
+      "detail": {},
+      "message": "no pool profiles loaded; acceptable for preparation, not for live cutover",
+      "pool_id": "all",
+      "severity": "advisory",
+      "status": "warn"
+    }
+  ],
+  "generated_at": 1781618094.830276,
+  "loaded_profile_count": 0,
+  "mode": "prepare",
+  "status": "ready"
+}
