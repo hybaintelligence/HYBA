@@ -20,6 +20,8 @@ def test_review_environment_pipeline_audits_pass_without_live_network() -> None:
         "stale_job_block_height_invalidation",
         "malformed_nonce_validation",
         "bridge_rate_limit_contract",
+        "operator_route_contracts",
+        "blockchain_it_from_bit_local_analysis",
     }
     assert all(result.status == "pass" for result in results)
     stale = next(result for result in results if result.name == "stale_job_block_height_invalidation")

@@ -10,11 +10,12 @@ responses.
 
 from __future__ import annotations
 
+import hashlib
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 from hyba_genesis_api.api.mining import require_mining_control, require_mining_read
 from hyba_genesis_api.auth.jwt_handler import TokenPayload
@@ -97,6 +98,42 @@ class ShareResultRequest(BaseModel):
     phi_resonance_score: float = Field(default=0.0, ge=0.0, le=1.0)
     error_code: Optional[int] = None
     error_msg: Optional[str] = None
+
+
+class BlockchainBlock(BaseModel):
+    """Deterministic block-tip snapshot element supplied by an operator/oracle."""
+
+    height: int = Field(..., ge=0)
+    block_hash: str = Field(..., min_length=64, max_length=64)
+    timestamp: Optional[str] = None
+
+    @field_validator("block_hash")
+    @classmethod
+    def validate_block_hash(cls, value: str) -> str:
+        if not all(char in "0123456789abcdefABCDEF" for char in value):
+            raise ValueError("block_hash must be 64 hexadecimal characters")
+        return value.lower()
+
+
+class BlockchainAnalysisRequest(BaseModel):
+    """Request to analyze a local blockchain snapshot without live network access."""
+
+    chain: str = Field(default="bitcoin", max_length=32)
+    blocks: List[BlockchainBlock] = Field(..., min_length=1, max_length=256)
+
+
+class ItFromBitRequest(BaseModel):
+    """Information-theoretic parsing request for Wheeler-style claims."""
+
+    bits: str = Field(..., min_length=1, max_length=8192)
+    word_size: int = Field(default=8, ge=1, le=32)
+
+    @field_validator("bits")
+    @classmethod
+    def validate_bits(cls, value: str) -> str:
+        if any(char not in "01" for char in value):
+            raise ValueError("bits must contain only 0 and 1")
+        return value
 
 
 class AIMetrics(BaseModel):
@@ -185,6 +222,78 @@ async def analyze_batch_resonance(req: BatchResonanceRequest) -> BatchResonanceR
         analysis=analysis,
         telemetry_source="hendrix_phi_solver_primitives",
     )
+
+
+@router.post("/analyze/blockchain", dependencies=[Depends(require_mining_read)])
+async def analyze_blockchain(req: BlockchainAnalysisRequest) -> Dict[str, Any]:
+    """Analyze a supplied chain snapshot for deterministic φ-resonance properties."""
+
+    block_scores: List[Dict[str, Any]] = []
+    for block in req.blocks:
+        nonce_seed = int(block.block_hash[-8:], 16)
+        resonance = phi_resonance(nonce_seed)
+        action = yang_mills_action(nonce_seed)
+        block_scores.append(
+            {
+                "height": block.height,
+                "block_hash": block.block_hash,
+                "nonce_seed": nonce_seed,
+                "phi_resonance_strength": resonance,
+                "yang_mills_action": action,
+                "mass_gate_passed": action >= YANG_MILLS_GAP,
+                "voronoi_domain": voronoi_domain(nonce_seed),
+            }
+        )
+    mean_resonance = sum(item["phi_resonance_strength"] for item in block_scores) / len(
+        block_scores
+    )
+    canonical = "|".join(f"{item.height}:{item.block_hash}" for item in req.blocks)
+    return {
+        "status": "analyzed",
+        "chain": req.chain,
+        "block_count": len(block_scores),
+        "tip_height": max(block.height for block in req.blocks),
+        "mean_phi_resonance": mean_resonance,
+        "mass_gate_pass_rate": sum(1 for item in block_scores if item["mass_gate_passed"])
+        / len(block_scores),
+        "snapshot_hash": hashlib.sha256(canonical.encode("utf-8")).hexdigest(),
+        "analysis": block_scores,
+        "telemetry_source": "operator_supplied_blockchain_snapshot",
+        "claim_boundary": (
+            "Deterministic structural analysis of supplied block metadata; no live pool, "
+            "revenue, or consciousness claim is made."
+        ),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+    }
+
+
+@router.post("/analyze/it-from-bit", dependencies=[Depends(require_mining_read)])
+async def analyze_it_from_bit(req: ItFromBitRequest) -> Dict[str, Any]:
+    """Parse bits into deterministic information metrics for claim-bounded audits."""
+
+    chunks = [req.bits[index : index + req.word_size] for index in range(0, len(req.bits), req.word_size)]
+    one_count = req.bits.count("1")
+    zero_count = len(req.bits) - one_count
+    transitions = sum(1 for left, right in zip(req.bits, req.bits[1:]) if left != right)
+    digest = hashlib.sha256(req.bits.encode("ascii")).hexdigest()
+    return {
+        "status": "parsed",
+        "bit_length": len(req.bits),
+        "word_size": req.word_size,
+        "word_count": len(chunks),
+        "ones": one_count,
+        "zeros": zero_count,
+        "transition_density": transitions / max(len(req.bits) - 1, 1),
+        "information_balance": abs(one_count - zero_count) / len(req.bits),
+        "digest": digest,
+        "words": chunks[:32],
+        "telemetry_source": "deterministic_information_parser",
+        "claim_boundary": (
+            "Wheeler It-from-Bit is represented only as deterministic bit parsing "
+            "and information metrics, not as an ontological or physical proof."
+        ),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+    }
 
 
 @router.post("/share-result", dependencies=[Depends(require_mining_control)])

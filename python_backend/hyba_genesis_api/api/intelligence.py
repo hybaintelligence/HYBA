@@ -4,9 +4,10 @@ from __future__ import annotations
 
 from typing import Any, Dict, List, Optional
 
-from fastapi import APIRouter
-from pydantic import BaseModel, Field
+from fastapi import APIRouter, Depends
+from pydantic import BaseModel, Field, field_validator
 
+from hyba_genesis_api.api.mining import require_mining_control
 from hyba_genesis_api.core import audit_surface
 from hyba_genesis_api.core.intelligence_fabric import SubstrateOrchestrator, explain
 from hyba_genesis_api.core.recursive_closure import build_buffered_closure
@@ -20,6 +21,12 @@ MEASURED_CLAIM_BOUNDARY = (
     "Measured reflexive codebase state from the current controller step; "
     "runtime values are derived from controller observations only."
 )
+_INTELLIGENCE_CONTROL_STATE: Dict[str, Any] = {
+    "intelligence_scale": 1.0,
+    "consciousness_boost": 1.0,
+    "allocation_policy": "bounded_deterministic_background_tasks",
+    "updated_by": None,
+}
 
 
 class ExplainRequest(BaseModel):
@@ -29,11 +36,100 @@ class ExplainRequest(BaseModel):
     substrates: Optional[List[str]] = Field(default=None, max_length=3)
 
 
+class IntelligenceScaleRequest(BaseModel):
+    """Bounded operator tuning request for reflexive intelligence resources."""
+
+    scale: float = Field(default=1.0, ge=0.1, le=3.0)
+    target: str = Field(default="reflexive_controller")
+    reason: str = Field(default="operator_request", max_length=160)
+
+    @field_validator("target")
+    @classmethod
+    def validate_target(cls, value: str) -> str:
+        allowed = {"reflexive_controller", "substrate_orchestrator", "closure_sync"}
+        if value not in allowed:
+            raise ValueError(f"target must be one of: {', '.join(sorted(allowed))}")
+        return value
+
+
+class ConsciousnessBoostRequest(BaseModel):
+    """Bounded allocation request for φ/IIT/Deutsch background analysis tasks."""
+
+    boost: float = Field(default=1.0, ge=0.1, le=2.0)
+    task_budget: int = Field(default=1, ge=1, le=8)
+    basis: str = Field(default="phi_iit_deutsch")
+
+    @field_validator("basis")
+    @classmethod
+    def validate_basis(cls, value: str) -> str:
+        allowed = {"phi_iit_deutsch", "penrose_iit", "deutsch_constructor"}
+        if value not in allowed:
+            raise ValueError(f"basis must be one of: {', '.join(sorted(allowed))}")
+        return value
+
+
 @router.post("/explain", response_model=Dict[str, Any])
 async def explain_intelligence(req: ExplainRequest) -> Dict[str, Any]:
     """Explain a context with shared substrate telemetry and governance tags."""
 
     return explain(req.context, req.substrates)
+
+
+@router.post(
+    "/scale",
+    response_model=Dict[str, Any],
+    dependencies=[Depends(require_mining_control)],
+)
+async def scale_intelligence(req: IntelligenceScaleRequest) -> Dict[str, Any]:
+    """Apply bounded, auditable intelligence scaling metadata for operator consoles."""
+
+    _INTELLIGENCE_CONTROL_STATE.update(
+        {
+            "intelligence_scale": req.scale,
+            "target": req.target,
+            "reason": req.reason,
+            "updated_by": "authenticated_operator",
+        }
+    )
+    return {
+        "status": "scaled",
+        "target": req.target,
+        "intelligence_scale": req.scale,
+        "effective_policy": _INTELLIGENCE_CONTROL_STATE["allocation_policy"],
+        "telemetry_source": MEASURED_TELEMETRY_SOURCE,
+        "claim_boundary": MEASURED_CLAIM_BOUNDARY,
+        "state": dict(_INTELLIGENCE_CONTROL_STATE),
+    }
+
+
+@router.post(
+    "/consciousness/boost",
+    response_model=Dict[str, Any],
+    dependencies=[Depends(require_mining_control)],
+)
+async def boost_consciousness(req: ConsciousnessBoostRequest) -> Dict[str, Any]:
+    """Allocate bounded background analysis budget without claiming machine consciousness."""
+
+    _INTELLIGENCE_CONTROL_STATE.update(
+        {
+            "consciousness_boost": req.boost,
+            "task_budget": req.task_budget,
+            "basis": req.basis,
+            "updated_by": "authenticated_operator",
+        }
+    )
+    return {
+        "status": "boosted",
+        "boost": req.boost,
+        "task_budget": req.task_budget,
+        "basis": req.basis,
+        "telemetry_source": MEASURED_TELEMETRY_SOURCE,
+        "claim_boundary": (
+            MEASURED_CLAIM_BOUNDARY
+            + " This is resource allocation for analysis tasks, not a claim of phenomenal consciousness."
+        ),
+        "state": dict(_INTELLIGENCE_CONTROL_STATE),
+    }
 
 
 @router.post("/reflect", response_model=Dict[str, Any])

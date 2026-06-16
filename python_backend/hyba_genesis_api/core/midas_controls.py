@@ -25,6 +25,7 @@ class MiningState(Enum):
     IDLE = "idle"
     STARTING = "starting"
     RUNNING = "running"
+    PAUSED = "paused"
     STOPPING = "stopping"
     STOPPED = "stopped"
 
@@ -56,7 +57,8 @@ class StateMachineConfig:
         default_factory=lambda: {
             MiningState.IDLE: {MiningState.STARTING},
             MiningState.STARTING: {MiningState.RUNNING},
-            MiningState.RUNNING: {MiningState.STOPPING},
+            MiningState.RUNNING: {MiningState.PAUSED, MiningState.STOPPING},
+            MiningState.PAUSED: {MiningState.RUNNING, MiningState.STOPPING},
             MiningState.STOPPING: {MiningState.STOPPED},
             MiningState.STOPPED: {MiningState.STARTING},
         }
@@ -151,6 +153,7 @@ class MIDASStateMachine:
             MiningState.IDLE,
             MiningState.STARTING,
             MiningState.RUNNING,
+            MiningState.PAUSED,
             MiningState.STOPPING,
             MiningState.STOPPED,
         ]

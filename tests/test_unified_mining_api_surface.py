@@ -89,3 +89,54 @@ async def test_unified_health_reports_measured_engine_surface() -> None:
     assert health["engine"] == "PYTHIA/PULVINI Unified Mining Engine"
     assert health["telemetry_source"] == "canonical_unified_engine_state"
     assert health["verifier_backend"]
+
+@pytest.mark.asyncio
+async def test_unified_blockchain_analysis_is_deterministic_and_bounded() -> None:
+    req = unified_mining.BlockchainAnalysisRequest(
+        chain="bitcoin",
+        blocks=[
+            unified_mining.BlockchainBlock(height=840000, block_hash="00" * 32),
+            unified_mining.BlockchainBlock(height=840001, block_hash="11" * 32),
+        ],
+    )
+
+    first = await unified_mining.analyze_blockchain(req)
+    second = await unified_mining.analyze_blockchain(req)
+
+    assert first["telemetry_source"] == "operator_supplied_blockchain_snapshot"
+    assert first["snapshot_hash"] == second["snapshot_hash"]
+    assert first["block_count"] == 2
+    assert 0.0 <= first["mean_phi_resonance"] <= 1.0
+    assert 0.0 <= first["mass_gate_pass_rate"] <= 1.0
+    assert all(0 <= item["voronoi_domain"] < 32 for item in first["analysis"])
+
+
+@pytest.mark.asyncio
+async def test_it_from_bit_parser_is_claim_bounded_and_deterministic() -> None:
+    req = unified_mining.ItFromBitRequest(bits="01001101", word_size=4)
+
+    response = await unified_mining.analyze_it_from_bit(req)
+
+    assert response["telemetry_source"] == "deterministic_information_parser"
+    assert "not as an ontological or physical proof" in response["claim_boundary"]
+    assert response["word_count"] == 2
+    assert response["words"] == ["0100", "1101"]
+    assert response["ones"] == 4
+    assert response["zeros"] == 4
+    assert response["digest"] == unified_mining.hashlib.sha256(b"01001101").hexdigest()
+
+from hypothesis import given, strategies as st
+
+
+@given(st.lists(st.integers(min_value=0, max_value=2**40), min_size=1, max_size=25))
+def test_resonance_request_property_accepts_bounded_nonce_lists(nonces: list[int]) -> None:
+    req = BatchResonanceRequest(nonces=nonces)
+    assert len(req.nonces) == len(nonces)
+    assert all(isinstance(nonce, int) for nonce in req.nonces)
+
+
+@given(st.text(alphabet="01", min_size=1, max_size=256), st.integers(min_value=1, max_value=32))
+def test_it_from_bit_request_property_preserves_binary_payload(bits: str, word_size: int) -> None:
+    req = unified_mining.ItFromBitRequest(bits=bits, word_size=word_size)
+    assert req.bits == bits
+    assert 1 <= req.word_size <= 32
