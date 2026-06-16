@@ -91,4 +91,3 @@ def test_default_pool_config_redacts_inline_credentials_in_public_dict(monkeypat
     assert public["url"] == "stratum+tcp://stratum.braiins.com:3333"
     assert public["resolved_username"] == "<configured>"
     assert "token" not in str(public)
-}
