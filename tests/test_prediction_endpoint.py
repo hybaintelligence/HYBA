@@ -8,6 +8,12 @@ from datetime import datetime, timezone
 class PredictionEndpointTests(unittest.TestCase):
     """Test the /api/predict endpoint integration with AI optimizer."""
 
+    def setUp(self):
+        """Clear the singleton registry before each test."""
+        from pythia_mining.genesis_ai_service import GenesisAIServiceRegistry
+        GenesisAIServiceRegistry._instance = None
+        GenesisAIServiceRegistry._genesis_ai = None
+
     def test_prediction_returns_503_when_optimizer_not_connected(self):
         """Prediction endpoint fails closed when optimizer is unavailable."""
         from hyba_genesis_api.api.misc import PredictRequest, predict_params
