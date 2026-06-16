@@ -263,10 +263,7 @@ class UnifiedMiner:
         logger.info("=" * 72)
 
         # Build the full-space nonce range from the engine's compressed plan.
-        from pythia_mining.nonce_tensor_precomputer import (
-            build_pulvini_nonce_plan,
-           NonceTensorPlan,
-        )
+        from pythia_mining.pulvini_nonce_compression import build_pulvini_nonce_plan
         try:
             nonce_plan = build_pulvini_nonce_plan()
             solver_ranges = nonce_plan.solver_ranges
