@@ -463,6 +463,52 @@ class IIT4Analyzer:
             subset2 = elements - subset1
             yield (subset1, subset2)
 
+    def _generate_all_partitions(self, elements: Set[int]) -> List[List[Set[int]]]:
+        """Generate deterministic two-block partitions covering all elements."""
+        if not elements:
+            return []
+        partitions: List[List[Set[int]]] = []
+        for subset1, subset2 in self._generate_bipartitions(set(elements)):
+            if subset1 and subset2:
+                partitions.append([set(subset1), set(subset2)])
+        return partitions
+
+    def _sample_partitions(self, elements: Set[int], max_partitions: int = 100) -> List[List[Set[int]]]:
+        """Return at most max_partitions deterministic partitions."""
+        partitions = self._generate_all_partitions(elements)
+        if max_partitions <= 0:
+            return []
+        return partitions[: int(max_partitions)]
+
+    def _get_transition_probability(
+        self,
+        from_state: Tuple[int, ...] | List[int] | np.ndarray,
+        to_state: Tuple[int, ...] | List[int] | np.ndarray,
+        transition_matrix: np.ndarray,
+        elements: Set[int],
+    ) -> float:
+        """Estimate transition probability on selected elements with bounded output."""
+        idx = sorted(int(e) for e in elements)
+        if not idx:
+            return 0.0
+        tm = np.asarray(transition_matrix, dtype=float)
+        from_arr = np.asarray(from_state, dtype=float)
+        to_arr = np.asarray(to_state, dtype=float)
+        if from_arr.size < len(idx) or to_arr.size < len(idx):
+            return 0.0
+        prob = 1.0
+        for local_i, element in enumerate(idx):
+            row = tm[element]
+            target_bit = 1.0 if to_arr[local_i] >= 0.5 else 0.0
+            if row.shape[0] > element:
+                stay_weight = float(np.clip(row[element], 0.0, 1.0))
+            else:
+                stay_weight = 0.5
+            source_bit = 1.0 if from_arr[local_i] >= 0.5 else 0.0
+            bit_prob = stay_weight if source_bit == target_bit else (1.0 - stay_weight)
+            prob *= float(np.clip(bit_prob, 0.0, 1.0))
+        return float(np.clip(prob, 0.0, 1.0))
+
     def _calculate_partition_phi(
         self,
         partition: Tuple[Set[int], Set[int]],

@@ -8,6 +8,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import os
+import inspect
 import time
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional
@@ -446,9 +447,10 @@ class GenesisAI:
                 "Creating dev fixture mining job because HYBA_ALLOW_DEV_FIXTURES=true"
             )
             self.jobs_received += 1
-            job = await active_pool.inject_dev_fixture_target_job(
+            maybe_job = active_pool.inject_dev_fixture_target_job(
                 difficulty=active_pool.current_difficulty
             )
+            job = await maybe_job if inspect.isawaitable(maybe_job) else maybe_job
             self.overlay.register_pool_job(job, pool_name=active_pool.pool_name)
             return job
         return None

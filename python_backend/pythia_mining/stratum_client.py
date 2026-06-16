@@ -1001,7 +1001,7 @@ class StratumClient:
         """Alias for disconnect() for compatibility with cleanup patterns."""
         await self.disconnect()
 
-    async def inject_dev_fixture_target_job(self, difficulty: float):
+    def inject_dev_fixture_target_job(self, difficulty: float):
         """Create a dev/test mining job fixture. Disabled in production."""
         if not _dev_fixtures_allowed():
             raise ProductionConfigurationError("Dev fixture mining jobs are disabled in production")
@@ -1026,7 +1026,12 @@ class StratumClient:
         self.jobs_received += 1
         self.last_job_received_at = job.received_timestamp
         self.active_job_id = job.job_id
-        await self._persist_metrics()
+        try:
+            loop = asyncio.get_running_loop()
+        except RuntimeError:
+            asyncio.run(self._persist_metrics())
+        else:
+            loop.create_task(self._persist_metrics())
         return job
 
     async def validate_and_record_share(

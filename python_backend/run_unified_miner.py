@@ -20,6 +20,7 @@ Environment:
 from __future__ import annotations
 
 import asyncio
+import inspect
 import logging
 import os
 import signal
@@ -299,9 +300,10 @@ class UnifiedMiner:
                         "dev_fixture_injected_explicit_non_live_mode",
                         level=logging.WARNING,
                     )
-                    return await self.stratum.inject_dev_fixture_target_job(
+                    maybe_job = self.stratum.inject_dev_fixture_target_job(
                         difficulty=self.stratum.current_difficulty
                     )
+                    return await maybe_job if inspect.isawaitable(maybe_job) else maybe_job
 
                 self._record_reason(
                     "no_job",

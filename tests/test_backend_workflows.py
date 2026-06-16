@@ -299,7 +299,7 @@ class MiningPropertyAndIntegrationTests(unittest.TestCase):
             await solver.configure_search(job.target, [(0, 2**32 - 1)])
             nonce = await solver.solve(max_iterations=25, timeout=5.0)
             assert nonce is not None
-            result = active_pool.validate_and_record_share(job, nonce, "00" * job.extranonce2_size)
+            result = await active_pool.validate_and_record_share(job, nonce, "00" * job.extranonce2_size)
             payload = {
                 "connected": active_pool.is_connected,
                 "authenticated": active_pool.is_authenticated,

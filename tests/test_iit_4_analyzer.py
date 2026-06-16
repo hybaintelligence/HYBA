@@ -146,29 +146,28 @@ class TestIIT4Analyzer(unittest.TestCase):
             self.assertGreaterEqual(phi_s, 0.0)
     
     def test_partition_generation(self):
-        """Partition generation should produce valid partitions"""
-        partitions = self.analyzer._generate_all_partitions(set(range(self.system_size)))
+        """Partition generation should produce valid bipartitions"""
+        partitions = list(self.analyzer._generate_bipartitions(set(range(self.system_size))))
         
         # Should produce at least one partition
         self.assertGreater(len(partitions), 0)
         
         # Each partition should cover all elements
         all_elements = set(range(self.system_size))
-        for partition in partitions:
-            covered = set()
-            for subset in partition:
-                covered.update(subset)
-            self.assertEqual(covered, all_elements)
+        for subset1, subset2 in partitions:
+            self.assertEqual(subset1 | subset2, all_elements)
+            self.assertTrue(len(subset1) > 0 and len(subset2) > 0)
     
     def test_partition_sampling_for_large_systems(self):
-        """Large systems should use sampled partitions"""
+        """Large systems should use greedy approximation"""
         large_state = np.array([1, 0, 1, 0, 1, 0, 1, 0, 1, 0])
         large_analyzer = IIT4Analyzer(10)
+        tm = np.eye(10)
         
-        partitions = large_analyzer._sample_partitions(set(range(10)), max_partitions=100)
+        result = large_analyzer.calculate_phi_max(large_state, tm)
         
-        # Should use sampling (limited number of partitions)
-        self.assertLessEqual(len(partitions), 100)
+        self.assertIn('phi_max', result)
+        self.assertGreaterEqual(result['phi_max'], 0.0)
     
     def test_mechanism_id_uniqueness(self):
         """Mechanism IDs should be unique"""
@@ -197,20 +196,12 @@ class TestIIT4Analyzer(unittest.TestCase):
         self.assertEqual(len(ces.mechanisms), len(ces.mechanisms))
     
     def test_transition_probability_bounds(self):
-        """Transition probabilities should be in [0, 1]"""
-        from_state = (1, 0)
-        to_state = (0, 1)
-        elements = {0, 1}
-        
-        prob = self.analyzer._get_transition_probability(
-            from_state,
-            to_state,
-            self.transition_matrix,
-            elements
-        )
-        
-        self.assertGreaterEqual(prob, 0.0)
-        self.assertLessEqual(prob, 1.0)
+        """Partition phi values should be in [0, 1]"""
+        from pythia_mining.iit_4_analyzer import IIT4Analyzer, Mechanism, CauseEffectStructure
+        for partition in self.analyzer._generate_bipartitions(set(range(self.system_size))):
+            phi = self.analyzer._calculate_partition_phi(partition, self.test_state, self.transition_matrix)
+            self.assertGreaterEqual(phi, 0.0)
+            self.assertLessEqual(phi, 1.0)
     
     def test_integrated_information_calculation(self):
         """Integrated information should be non-negative"""

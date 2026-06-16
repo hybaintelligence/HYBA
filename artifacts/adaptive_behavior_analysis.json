@@ -1,7 +1,7 @@
 {
   "measurements": {
     "feedback_loops": {
-      "total": 1345,
+      "total": 1346,
       "files": 111,
       "top_files": [
         {
@@ -1056,17 +1056,17 @@
             {
               "type": "accumulation",
               "pattern": "\\.append\\(",
-              "line": 1127
+              "line": 1132
             },
             {
               "type": "accumulation",
               "pattern": "\\.append\\(",
-              "line": 1335
+              "line": 1340
             },
             {
               "type": "accumulation",
               "pattern": "\\.append\\(",
-              "line": 1353
+              "line": 1358
             },
             {
               "type": "accumulation",
@@ -1181,27 +1181,27 @@
             {
               "type": "accumulation",
               "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
-              "line": 1278
+              "line": 1283
             },
             {
               "type": "accumulation",
               "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
-              "line": 1300
+              "line": 1305
             },
             {
               "type": "accumulation",
               "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
-              "line": 1330
+              "line": 1335
             },
             {
               "type": "accumulation",
               "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
-              "line": 1351
+              "line": 1356
             },
             {
               "type": "accumulation",
               "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
-              "line": 1352
+              "line": 1357
             },
             {
               "type": "accumulation",
@@ -1306,22 +1306,22 @@
             {
               "type": "accumulation",
               "pattern": "\\+=",
-              "line": 1038
+              "line": 1043
             },
             {
               "type": "accumulation",
               "pattern": "\\+=",
-              "line": 1041
+              "line": 1046
             },
             {
               "type": "accumulation",
               "pattern": "\\+=",
-              "line": 1058
+              "line": 1063
             },
             {
               "type": "accumulation",
               "pattern": "\\+=",
-              "line": 1178
+              "line": 1183
             }
           ],
           "count": 55

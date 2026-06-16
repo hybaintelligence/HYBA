@@ -1,0 +1,98 @@
+{
+  "artifact_sha256": "e492e360694aee0190b2d57285d6bd26aa29fb79c8005574941fb16ca7df1f8a",
+  "checks": [
+    {
+      "detail": "",
+      "duration_seconds": 7.479199848603457e-05,
+      "name": "required_mining_surfaces_present",
+      "severity": "critical",
+      "status": "pass",
+      "summary": "canonical mining files present"
+    },
+    {
+      "detail": "NODE_ENV=production is required in live mode\nHYBA_ENV=production is required in live mode\nHYBA_ENABLE_LIVE_STRATUM=true is required in live mode\nHYBA_ENABLE_AUDIT_LOGGING=true is required in live mode\nat least one HYBA_POOL_<ID>_* profile is required in live mode",
+      "duration_seconds": 0.00012191700079711154,
+      "name": "operator_environment_safety",
+      "severity": "critical",
+      "status": "fail",
+      "summary": "unsafe operator environment"
+    },
+    {
+      "detail": "",
+      "duration_seconds": 0.0001234580049640499,
+      "name": "operator_environment_advisories",
+      "severity": "advisory",
+      "status": "pass",
+      "summary": "no operator environment advisories"
+    },
+    {
+      "detail": "{\"metrics\": {\"compressed_working_set_size\": 19, \"last_solve_iterations\": 5}, \"nonce\": 4155892665}",
+      "duration_seconds": 0.10903904199949466,
+      "name": "unified_engine_pulvini_contract",
+      "severity": "critical",
+      "status": "pass",
+      "summary": "unified engine routes through compressed PULVINI search and SHA-256d verification boundary"
+    },
+    {
+      "detail": "",
+      "duration_seconds": 0.0009437500048079528,
+      "name": "bitcoin_and_stratum_pitfall_contracts",
+      "severity": "critical",
+      "status": "pass",
+      "summary": "byte order, compact target, local validation, stale jobs, pool ACK, and malformed response pitfalls are covered"
+    },
+    {
+      "detail": ".................                                                        [100%]\n=============================== warnings summary ===============================\npython_backend/hyba_genesis_api/api/mining.py:85\n  /Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/hyba_genesis_api/api/mining.py:85: PydanticDeprecatedSince20: Pydantic V1 style `@validator` validators are deprecated. You should migrate to Pydantic V2 style `@field_validator` validators, see the migration guide for more details. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.13/migration/\n    @validator(\"phi_tier\")\n\npython_backend/hyba_genesis_api/api/mining.py:103\n  /Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/hyba_genesis_api/api/mining.py:103: PydanticDeprecatedSince20: Pydantic V1 style `@validator` validators are deprecated. You should migrate to Pydantic V2 style `@field_validator` validators, see the migration guide for more details. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.13/migration/\n    @validator(\"pool_id\")\n\npython_backend/hyba_genesis_api/api/mining.py:110\n  /Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/hyba_genesis_api/api/mining.py:110: PydanticDeprecatedSince20: Pydantic V1 style `@validator` validators are deprecated. You should migrate to Pydantic V2 style `@field_validator` validators, see the migration guide for more details. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.13/migration/\n    @validator(\"username\", \"worker\", \"nicehash_pool_id\")\n\npython_backend/hyba_genesis_api/api/mining.py:123\n  /Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/hyba_genesis_api/api/mining.py:123: PydanticDeprecatedSince20: Pydantic V1 style `@validator` validators are deprecated. You should migrate to Pydantic V2 style `@field_validator` validators, see the migration guide for more details. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.13/migration/\n    @validator(\"btc_address\")\n\npython_backend/hyba_genesis_api/api/mining.py:154\n  /Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/hyba_genesis_api/api/mining.py:154: PydanticDeprecatedSince20: Pydantic V1 style `@validator` validators are deprecated. You should migrate to Pydantic V2 style `@field_validator` validators, see the migration guide for more details. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.13/migration/\n    @validator(\"pool_id\")\n\npython_backend/hyba_genesis_api/api/mining.py:170\n  /Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/hyba_genesis_api/api/mining.py:170: PydanticDeprecatedSince20: Pydantic V1 style `@validator` validators are deprecated. You should migrate to Pydantic V2 style `@field_validator` validators, see the migration guide for more details. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.13/migration/\n    @validator(\"nonce\")\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n17 passed, 6 warnings in 0.42s",
+      "duration_seconds": 0.5771017080041929,
+      "name": "focused_mining_regression_tests",
+      "severity": "critical",
+      "status": "pass",
+      "summary": "focused mining regression tests passed"
+    },
+    {
+      "detail": "> hyba-fullstack@1.0.0-rc.1 build\n> vite build --config vite.config.build.ts && esbuild ./src/server.ts --bundle --platform=node --format=esm --packages=external --sourcemap --outfile=dist/server.mjs\n\nvite v5.4.21 building for production...\ntransforming...\n\u2713 2658 modules transformed.\nrendering chunks...\ncomputing gzip size...\ndist/index.html                   0.41 kB \u2502 gzip:   0.28 kB\ndist/assets/index-HUA7TP5p.css   56.82 kB \u2502 gzip:  10.71 kB\ndist/assets/index-LCzkd2iY.js   705.31 kB \u2502 gzip: 218.94 kB\n\u2713 built in 1.46s\n\nNODE_ENV=production is not supported in the .env file. Only NODE_ENV=development is supported to create a development build of your project. If you need to set process.env.NODE_ENV, you can set it in the Vite config instead.\n\n(!) Some chunks are larger than 500 kB after minification. Consider:\n- Using dynamic import() to code-split the application\n- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks\n- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\n\n  dist/server.mjs       74.4kb\n  dist/server.mjs.map  137.2kb\n\n\u26a1 Done in 3ms",
+      "duration_seconds": 1.7027039589956985,
+      "name": "production_build",
+      "severity": "critical",
+      "status": "pass",
+      "summary": "production build passed"
+    },
+    {
+      "detail": "{\n  \"present\": [\n    \"artifacts/phi_resonance_100blocks/phi_resonance_summary.json\",\n    \"artifacts/phi_hash_validity/phi_hash_correlation_summary.json\",\n    \"artifacts/phi_structured_search/structured_search_comparison.json\",\n    \"artifacts/phi_stack/complete_stack_analysis.json\"\n  ],\n  \"missing\": []\n}",
+      "duration_seconds": 0.0,
+      "name": "empirical_evidence_artifacts",
+      "severity": "advisory",
+      "status": "pass",
+      "summary": "empirical evidence artifacts are present locally"
+    }
+  ],
+  "environment_summary": {
+    "HYBA_ALLOW_DEV_FIXTURES": "<unset>",
+    "HYBA_ENABLE_AUDIT_LOGGING": "<unset>",
+    "HYBA_ENABLE_LIVE_SHARE_SUBMIT": "<unset>",
+    "HYBA_ENABLE_LIVE_STRATUM": "<unset>",
+    "HYBA_ENABLE_MINING_AUTOCONNECT": "<unset>",
+    "HYBA_ENV": "<unset>",
+    "HYBA_LIVE_SHARE_APPROVAL_ID": "<unset>",
+    "HYBA_MINING_MAX_SOLVER_ITERATIONS": "<unset>",
+    "HYBA_MINING_SEARCH_TIMEOUT_CAP_SECONDS": "<unset>",
+    "NODE_ENV": "<unset>",
+    "PULVINI_BACKEND_URL": "<unset>",
+    "configured_pool_profiles": "<none>"
+  },
+  "generated_at_utc": "2026-06-16T16:22:09.714880+00:00",
+  "host": {
+    "machine": "arm64",
+    "platform": "macOS-26.5.1-arm64-arm-64bit",
+    "python": "3.12.7"
+  },
+  "mode": "live",
+  "next_operator_actions": [
+    "Fix the first CRITICAL failure in the readiness packet; advisory warnings can wait.",
+    "Rerun the same readiness doctor command from a clean terminal after the fix.",
+    "Do not enable live share submission while any CRITICAL failure remains."
+  ],
+  "passed": false,
+  "status": "blocked",
+  "version": "HYBA_MINING_OPERATIONAL_READINESS_V1"
+}
