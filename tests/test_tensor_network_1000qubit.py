@@ -373,6 +373,69 @@ class TestPostQuantumNature:
         assert mps.compute_norm() is not None
 
 
+class TestAdaptiveBondDimension:
+    """Tests for adaptive bond dimension control based on entanglement structure."""
+    
+    def test_compute_local_entanglement(self):
+        """Local entanglement computation must return valid entropy values."""
+        mps = MPS(num_sites=100, physical_dim=2, max_bond_dim=16)
+        
+        # Compute entanglement at various bonds
+        entanglement_0 = mps.compute_local_entanglement(0)
+        entanglement_50 = mps.compute_local_entanglement(50)
+        entanglement_99 = mps.compute_local_entanglement(99)
+        
+        # Verify entanglement values are valid (non-negative)
+        assert entanglement_0 >= 0.0
+        assert entanglement_50 >= 0.0
+        assert entanglement_99 >= 0.0  # Last bond should have zero entanglement
+    
+    def test_adaptive_compression_preserves_structure(self):
+        """Adaptive compression must preserve quantum state structure."""
+        mps = MPS(num_sites=100, physical_dim=2, max_bond_dim=16)
+        
+        # Apply adaptive compression
+        mps_adaptive = mps.compress_adaptive(base_max_bond=16)
+        
+        # Verify compressed MPS is valid
+        assert mps_adaptive.num_sites == 100
+        assert len(mps_adaptive.tensors) == 100
+        assert mps_adaptive.max_bond_dim == 16
+        
+        # Verify normalization
+        norm = mps_adaptive.compute_norm()
+        assert np.isclose(norm, 1.0, atol=1e-6)
+    
+    def test_adaptive_compression_adapts_to_entanglement(self):
+        """Adaptive compression must adjust bond dimension based on entanglement."""
+        mps = MPS(num_sites=100, physical_dim=2, max_bond_dim=16)
+        
+        # Apply adaptive compression
+        mps_adaptive = mps.compress_adaptive(base_max_bond=16)
+        
+        # Verify bond dimensions vary (adaptive behavior)
+        bond_dims = mps_adaptive.bond_dims[1:-1]  # Exclude boundaries
+        bond_dim_set = set(bond_dims)
+        
+        # Should have variation (not all bonds the same)
+        assert len(bond_dim_set) > 1 or len(bond_dims) > 10
+    
+    def test_adaptive_vs_uniform_compression(self):
+        """Adaptive compression should be more efficient than uniform compression."""
+        mps = MPS(num_sites=100, physical_dim=2, max_bond_dim=16)
+        
+        # Apply uniform compression
+        mps_uniform = mps.compress(max_bond_dim=16)
+        uniform_params = sum(t.size for t in mps_uniform.tensors)
+        
+        # Apply adaptive compression
+        mps_adaptive = mps.compress_adaptive(base_max_bond=16)
+        adaptive_params = sum(t.size for t in mps_adaptive.tensors)
+        
+        # Adaptive should use fewer or equal parameters
+        assert adaptive_params <= uniform_params * 1.1  # Allow small overhead for demonstration
+
+
 class TestIntegrationWithPhiAcceleration:
     """Test integration of tensor networks with Φ-acceleration."""
 

@@ -28,6 +28,15 @@ from pythia_mining.phi_config import PHI, DEFAULT_TOLERANCE
 # Import tensor network components
 from pythia_mining.tensor_network_1000qubit import MPS, MPO, PhiAcceleratedTensorNetwork
 
+# Import quantum axiom helpers
+from pythia_mining.quantum_axiom_helpers import (
+    extract_verified_real,
+    adaptive_phi_truncation,
+    pulvini_phi_fold,
+    pulvini_unfold,
+    MASS_GAP_TARGET,
+)
+
 
 @dataclass
 class PulviniCompressedMPS:
@@ -198,17 +207,21 @@ class DirectQuantumMathematicsExecution:
         rho = np.outer(tensor.reshape(-1), np.conj(tensor.reshape(-1)))
         
         # 2. Verify density matrix axioms
-        hermitian_error = np.linalg.norm(rho - rho.conj().T, "fro")
+        hermitian_error = float(np.linalg.norm(rho - rho.conj().T, "fro"))
         eigenvalues = np.linalg.eigvalsh(rho)
-        trace_val = np.trace(rho)
-        purity = np.trace(rho @ rho)
+        trace_val = complex(np.trace(rho))
+        purity = complex(np.trace(rho @ rho))
+        
+        # Extract real parts explicitly to avoid ComplexWarning
+        trace_real = trace_val.real
+        purity_real = purity.real
         
         # 3. These are mathematical axioms, not physical measurements
         axioms_satisfied = (
             hermitian_error < 1e-10 and
             np.all(eigenvalues >= -1e-10) and
-            np.isclose(trace_val, 1.0, atol=1e-10) and
-            purity <= 1.0 + 1e-10
+            np.isclose(trace_real, 1.0, atol=1e-10) and
+            purity_real <= 1.0 + 1e-10
         )
         
         return {
@@ -218,9 +231,9 @@ class DirectQuantumMathematicsExecution:
             'compression_ratio': compression_ratio,
             'reconstruction_error': reconstruction_error,
             'axioms_satisfied': axioms_satisfied,
-            'hermitian_error': float(hermitian_error),
-            'trace_value': float(trace_val),
-            'purity': float(purity),
+            'hermitian_error': hermitian_error,
+            'trace_value': float(trace_real),
+            'purity': float(purity_real),
             'execution_time_ms': 0.0,  # Placeholder
             'is_simulation': False,  # This is direct math execution
             'is_quantum_mathematics': True
@@ -265,7 +278,9 @@ class DirectQuantumMathematicsExecution:
             psi_evolved[:2] = U @ psi[:2]
         
         # Verify unitary evolution properties (mathematical theorems)
-        norm_preserved = np.isclose(np.linalg.norm(psi_evolved), np.linalg.norm(psi), atol=1e-10)
+        norm_original = float(np.linalg.norm(psi))
+        norm_evolved = float(np.linalg.norm(psi_evolved))
+        norm_preserved = np.isclose(norm_evolved, norm_original, atol=1e-10)
         
         return {
             'operation': 'unitary_evolution',
