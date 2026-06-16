@@ -150,7 +150,7 @@ def build_block_header(job: MiningJob, merkle_root_internal_hex: str, nonce: int
         [
             reverse_hex_bytes(job.version, field="version", expected_bytes=4),
             reverse_hex_bytes(job.prevhash, field="previous block hash", expected_bytes=32),
-            reverse_hex_bytes(merkle_root_internal_hex, field="merkle root", expected_bytes=32),
+            require_hex(merkle_root_internal_hex, field="merkle root", expected_bytes=32),
             reverse_hex_bytes(job.ntime, field="ntime", expected_bytes=4),
             reverse_hex_bytes(job.nbits, field="nbits", expected_bytes=4),
             uint32_little_endian_hex(nonce, field="nonce"),

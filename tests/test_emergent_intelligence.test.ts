@@ -273,6 +273,56 @@ describe('Emergent Intelligence System', () => {
         expect(phi).toBeGreaterThanOrEqual(0);
       }
     });
+
+
+    it('Property: Fast-check entropy injections preserve emergent intelligence state boundaries', () => {
+      fc.assert(
+        fc.property(
+          fc.array(fc.uint8Array({ minLength: 1, maxLength: 64 }), { minLength: 1, maxLength: 25 }),
+          (entropyBursts) => {
+            const substrate = new EmergentIntelligenceSubstrate(512);
+
+            for (const burst of entropyBursts) {
+              substrate.injectEntropy(burst);
+              const state = substrate.exportState();
+
+              expect(state.phi).toBeGreaterThanOrEqual(0);
+              expect(state.phi).toBeLessThanOrEqual(1);
+              expect(state.memoryFabric.length).toBeLessThanOrEqual(1000);
+              expect(state.memoryFabric.every((entry) => entry.phi_preserved >= 0 && entry.phi_preserved <= 1)).toBe(true);
+            }
+          },
+        ),
+      );
+    });
+
+    it('Property: Fast-check Hebbian reinforcement remains bounded across syndrome streams', () => {
+      fc.assert(
+        fc.property(
+          fc.array(
+            fc.record({
+              syndrome: fc.integer({ min: 0, max: 0xffffff }),
+              success: fc.boolean(),
+              phi: fc.double({ min: 0, max: 1, noNaN: true }),
+            }),
+            { minLength: 1, maxLength: 100 },
+          ),
+          (events) => {
+            const learner = new HebbianLearner();
+
+            for (const event of events) {
+              learner.updateWeightsFromOutcome(event.syndrome, event.success, event.phi);
+              const weight = learner.getStrategyWeight(event.syndrome);
+              expect(weight).toBeGreaterThanOrEqual(0.1);
+              expect(weight).toBeLessThanOrEqual(10.0);
+            }
+
+            expect(learner.getLearningStability()).toBeGreaterThanOrEqual(0);
+            expect(learner.getLearningStability()).toBeLessThanOrEqual(1);
+          },
+        ),
+      );
+    });
   });
 
   describe('Integration Tests', () => {

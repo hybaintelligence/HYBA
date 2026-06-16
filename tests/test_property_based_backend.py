@@ -356,3 +356,139 @@ def test_property_uniform_vector_always_unit_norm(dim: int) -> None:
     assert np.isclose(
         norm, 1.0, atol=1e-12
     ), f"Uniform vector of dimension {dim} has norm {norm}, expected 1.0"
+
+# =============================================================================
+# PROPERTY 7: Merkle-root determinism and byte sensitivity
+# =============================================================================
+
+
+@st.composite
+def mining_job_strategy(draw):
+    """Generate structurally valid, side-effect-free Stratum mining jobs."""
+    from pythia_mining.stratum_client import MiningJob
+
+    coinbase1 = draw(st.binary(min_size=1, max_size=32)).hex()
+    coinbase2 = draw(st.binary(min_size=1, max_size=32)).hex()
+    extranonce1 = draw(st.binary(min_size=0, max_size=8)).hex()
+    extranonce2_size = draw(st.integers(min_value=0, max_value=8))
+    merkle_branch = draw(
+        st.lists(st.binary(min_size=32, max_size=32).map(bytes.hex), min_size=0, max_size=6)
+    )
+    return MiningJob(
+        job_id=draw(
+            st.text(
+                min_size=1,
+                max_size=24,
+                alphabet=st.characters(whitelist_categories=("L", "N")),
+            )
+        ),
+        prevhash=draw(st.binary(min_size=32, max_size=32)).hex(),
+        coinbase_parts=(coinbase1, coinbase2),
+        merkle_branch=merkle_branch,
+        version=draw(st.binary(min_size=4, max_size=4)).hex(),
+        nbits="1d00ffff",
+        ntime=draw(st.binary(min_size=4, max_size=4)).hex(),
+        target=int("00000000ffff" + "0" * 52, 16),
+        extranonce1=extranonce1,
+        extranonce2_size=extranonce2_size,
+    )
+
+
+@given(job=mining_job_strategy(), extranonce_seed=st.binary(min_size=8, max_size=8))
+@settings(max_examples=100, deadline=None)
+def test_property_merkle_root_is_deterministic_and_byte_sensitive(
+    job, extranonce_seed: bytes
+) -> None:
+    """Property: identical coinbase/branch inputs produce one 32-byte root; any byte flip changes it."""
+    from pythia_mining.mining_validation import coinbase_hash_hex, compute_merkle_root
+
+    extranonce2 = extranonce_seed[: job.extranonce2_size].hex()
+    coinbase_hash = coinbase_hash_hex(job, extranonce2)
+    first_root = compute_merkle_root(coinbase_hash, job.merkle_branch)
+    second_root = compute_merkle_root(coinbase_hash, list(job.merkle_branch))
+
+    assert first_root == second_root
+    assert len(first_root) == 64
+    assert int(first_root, 16) >= 0
+
+    mutated = bytearray(bytes.fromhex(coinbase_hash))
+    mutated[0] ^= 0x01
+    assert compute_merkle_root(mutated.hex(), job.merkle_branch) != first_root
+
+# =============================================================================
+# PROPERTY 8: PULVINI phi-folding compression is reversible
+# =============================================================================
+
+
+@given(
+    values=st.lists(
+        st.floats(
+            min_value=-1_000.0,
+            max_value=1_000.0,
+            allow_nan=False,
+            allow_infinity=False,
+            width=32,
+        ),
+        min_size=2,
+        max_size=89,
+    )
+)
+@settings(max_examples=75, deadline=None)
+def test_property_phi_folding_compression_round_trips_generated_vectors(
+    values: list[float],
+) -> None:
+    """Property: retained phi-fold kernels reconstruct every generated dense vector."""
+    from pythia_mining.phi_folding import PhiFoldingOperator
+
+    operator = PhiFoldingOperator()
+    payload = np.asarray(values, dtype=np.float64)
+    folded, kernel, original_size = operator.fold(payload)
+    reconstructed = operator.unfold(folded, kernel, original_size)
+
+    assert original_size == payload.size
+    assert folded.size <= payload.size
+    assert kernel.size == folded.size
+    assert np.allclose(reconstructed, payload, rtol=1e-9, atol=1e-9)
+
+
+# =============================================================================
+# PROPERTY 9: Phi-scaled ensemble decisions remain bounded and auditable
+# =============================================================================
+
+
+@given(
+    scores=st.lists(
+        st.floats(min_value=0.0, max_value=1.0, allow_nan=False, allow_infinity=False),
+        min_size=1,
+        max_size=12,
+    ),
+    indicator_values=st.lists(
+        st.floats(min_value=-10.0, max_value=10.0, allow_nan=False, allow_infinity=False),
+        min_size=1,
+        max_size=12,
+    ),
+)
+@settings(max_examples=75, deadline=None)
+def test_property_phi_scaled_ensemble_outputs_stay_bounded(
+    scores: list[float], indicator_values: list[float]
+) -> None:
+    """Property: golden-ratio scaling cannot emit out-of-range decisions."""
+    from pythia_mining.phi_scaling_engine import PhiScaledEnsemble
+
+    engine = PhiScaledEnsemble({"memory_limit": 8})
+    predictions = {f"model_{index:02d}": {"score": score} for index, score in enumerate(scores)}
+    indicators = {
+        "quantum": {f"q_{index:02d}": value for index, value in enumerate(indicator_values)}
+    }
+
+    result = engine.predict_with_phi_scaling(predictions, indicators)
+    weights = result["phi_weights"]
+
+    assert result["method"] == "golden_ratio_scaling"
+    assert len(weights) == len(scores)
+    assert all(math.isfinite(float(weight)) and float(weight) > 0.0 for weight in weights)
+    assert 0.0 <= result["phi_score"] <= 1.0
+    assert 0.0 <= result["indicator_harmony"] <= 1.0
+    assert 0.0 <= result["final_score"] <= 1.0
+    assert 0.0 <= result["coherence"] <= 1.0
+    assert len(engine.memory) <= 8
