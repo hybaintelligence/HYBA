@@ -25,7 +25,7 @@ import signal
 import sys
 import time
 from pathlib import Path
-from typing import Any, List, Optional
+from typing import Any, List, Optional, Tuple
 
 # Add backend to path when this script is executed directly from the repository.
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -47,6 +47,7 @@ logging.basicConfig(
 logger = logging.getLogger("unified_miner")
 
 RUNNING = True
+UINT32_MAX = 2**32 - 1
 
 
 def signal_handler(signum: int, frame: Any) -> None:
@@ -68,11 +69,36 @@ class UnifiedMiner:
         self.active_pool_idx: int = 0
         self.stratum: Optional[StratumClient] = None
         self.stats_interval = 60
-        self._last_stats_time = time.time()
+        self._last_stats_time = time.monotonic()
         self._total_searches = 0
         self._accepted = 0
         self._rejected = 0
         self._locally_invalid = 0
+
+    @staticmethod
+    def _safe_target_hex(target: Any) -> str:
+        """Return a compact target string without allowing telemetry to crash search."""
+        if target is None:
+            return "unknown"
+        try:
+            return f"0x{int(target):064x}"[:20]
+        except (TypeError, ValueError, OverflowError):
+            return "unknown"
+
+    @staticmethod
+    def _normalise_solver_ranges(ranges: Any) -> List[Tuple[int, int]]:
+        """Clamp solver ranges to uint32 nonce space and discard invalid ranges."""
+        normalised: List[Tuple[int, int]] = []
+        for raw_range in ranges or []:
+            try:
+                start_raw, end_raw = raw_range
+                start = max(0, int(start_raw))
+                end = min(UINT32_MAX, int(end_raw))
+            except (TypeError, ValueError):
+                continue
+            if start <= end:
+                normalised.append((start, end))
+        return normalised or [(0, UINT32_MAX)]
 
     def load_pools(self) -> None:
         """Load enabled pool configurations from env/runtime config."""
@@ -185,8 +211,13 @@ class UnifiedMiner:
         strategy_used: str,
         phi_resonance_score: Optional[float],
         search_time: float,
-    ) -> None:
-        """Verify a candidate locally, optionally submit, then feed back to the engine."""
+    ) -> bool:
+        """Verify a candidate locally, optionally submit, then feed back to the engine.
+
+        Returns True when the candidate passed local SHA-256d target validation and
+        reached the pool-submission path. Returns False when the candidate was
+        rejected locally before any pool submission attempt.
+        """
         local = self.engine.submit_candidate(job, nonce)
         share_info: dict[str, Any] = {
             "nonce": nonce,
@@ -214,13 +245,13 @@ class UnifiedMiner:
                 job.job_id,
                 share_info["error_msg"],
             )
-            return
+            return False
 
         if self.stratum is None:
             self._rejected += 1
             share_info.update({"error_code": 503, "error_msg": "stratum_disconnected"})
             await self.engine.on_share_result(share_info, accepted=False)
-            return
+            return True
 
         share: ShareResult = await self.stratum.submit_validated_share(job, nonce)
         share_info.update(
@@ -235,7 +266,7 @@ class UnifiedMiner:
 
         if share.accepted:
             self._accepted += 1
-            logger.info("Share accepted — nonce=%s, job=%s", nonce, job.job_id)
+            logger.info("🎉 SHARE ACCEPTED — nonce=%s, job=%s", nonce, job.job_id)
         else:
             self._rejected += 1
             logger.info(
@@ -244,6 +275,7 @@ class UnifiedMiner:
                 job.job_id,
                 share.error_message,
             )
+        return True
 
     async def run_search_loop(self) -> None:
         """Main loop: poll jobs, verify nonces, submit, adapt.
@@ -266,23 +298,22 @@ class UnifiedMiner:
         from pythia_mining.pulvini_nonce_compression import build_pulvini_nonce_plan
         try:
             nonce_plan = build_pulvini_nonce_plan()
-            solver_ranges = nonce_plan.solver_ranges
+            solver_ranges = self._normalise_solver_ranges(nonce_plan.solver_ranges)
             logger.info(
-                "PULVINI nonce plan: %d regions, coverage=%s, overlap_free=%s",
+                "PULVINI nonce plan: %d regions, coverage=%s, overlap_free=%s, active_ranges=%d",
                 len(nonce_plan.regions),
                 nonce_plan.total_nonce_coverage,
                 nonce_plan.is_overlap_free,
+                len(solver_ranges),
             )
         except Exception as exc:
             logger.warning("Falling back to full 2^32 range: %s", exc)
-            solver_ranges = [(0, 2**32 - 1)]
+            solver_ranges = [(0, UINT32_MAX)]
 
-        # Flatten ranges into a sequential nonce cursor.
-        nonce_cursor = 0  # Current position across the full space
         range_start, range_end = 0, 0
         range_idx = 0
 
-        def _next_nonce_range():
+        def _next_nonce_range() -> Optional[Tuple[int, int]]:
             nonlocal range_idx, range_start, range_end
             if range_idx < len(solver_ranges):
                 range_start, range_end = solver_ranges[range_idx]
@@ -291,6 +322,7 @@ class UnifiedMiner:
             return None
 
         current_range = _next_nonce_range()
+        nonce_cursor = current_range[0] if current_range is not None else 0
 
         while RUNNING:
             if not self.stratum or not self.stratum.is_connected:
@@ -306,7 +338,7 @@ class UnifiedMiner:
                     await asyncio.sleep(0.01)
                     continue
 
-                batch_start = time.time()
+                batch_start = time.monotonic()
                 batch_checked = 0
                 local_pass = 0
                 local_fail = 0
@@ -321,10 +353,12 @@ class UnifiedMiner:
                             current_range = _next_nonce_range()
                             if current_range is None:
                                 break
+                            nonce_cursor = current_range[0]
+
                     rs, re = current_range
-                    nonce = nonce_cursor
-                    nonce_cursor += 1
-                    if nonce > re:
+                    if nonce_cursor < rs:
+                        nonce_cursor = rs
+                    if nonce_cursor > re:
                         current_range = _next_nonce_range()
                         if current_range is None:
                             range_idx = 0
@@ -332,70 +366,43 @@ class UnifiedMiner:
                         if current_range is None:
                             break
                         rs, re = current_range
-                        nonce = rs
-                        nonce_cursor = rs + 1
+                        nonce_cursor = rs
 
+                    nonce = nonce_cursor
+                    nonce_cursor += 1
                     self._total_searches += 1
                     batch_checked += 1
 
-                    # Fast local SHA-256d validation via the engine verifier.
-                    local = self.engine.submit_candidate(job, nonce)
-                    if not local.valid:
-                        local_fail += 1
-                        self._locally_invalid += 1
-                        self._rejected += 1
-                        continue
-                    local_pass += 1
-
-                    # Candidate passed local validation — submit to pool.
-                    logger.info(
-                        "Candidate passed local validation! nonce=%s, job=%s — submitting to pool",
-                        nonce, job.job_id,
+                    candidate_start = time.monotonic()
+                    locally_valid = await self._handle_nonce_result(
+                        job,
+                        nonce,
+                        strategy_used="pulvini_full_space_sequential",
+                        phi_resonance_score=None,
+                        search_time=time.monotonic() - candidate_start,
                     )
-                    share_info: dict[str, Any] = {
-                        "nonce": nonce,
-                        "job_id": job.job_id,
-                        "strategy_used": "full_space_sequential",
-                        "phi_resonance_score": None,
-                        "solve_time": 0.0,
-                        "block_hash": local.block_hash,
-                        "target": local.target,
-                    }
-                    if self.stratum is not None:
-                        share: ShareResult = await self.stratum.submit_validated_share(job, nonce)
-                        share_info.update({
-                            "error_code": share.error_code,
-                            "error_msg": share.error_message,
-                            "block_hash": share.block_hash or local.block_hash,
-                            "target": share.target or local.target,
-                        })
-                        await self.engine.on_share_result(share_info, accepted=share.accepted)
-                        if share.accepted:
-                            self._accepted += 1
-                            logger.info("🎉 SHARE ACCEPTED — nonce=%s, job=%s", nonce, job.job_id)
-                        else:
-                            self._rejected += 1
-                            logger.info(
-                                "Share rejected by pool — nonce=%s, job=%s, reason=%s",
-                                nonce, job.job_id, share.error_message,
-                            )
+                    if locally_valid:
+                        local_pass += 1
                     else:
-                        self._rejected += 1
-                        share_info.update({"error_code": 503, "error_msg": "stratum_disconnected"})
-                        await self.engine.on_share_result(share_info, accepted=False)
+                        local_fail += 1
 
-                batch_elapsed = time.time() - batch_start
+                batch_elapsed = time.monotonic() - batch_start
                 batch_rate = batch_checked / max(0.001, batch_elapsed)
-                if self._total_searches % (batch_size * 5) == 0:
+                if batch_checked and self._total_searches % (batch_size * 5) == 0:
                     nonce_range_pct = (nonce_cursor / (2**32)) * 100
                     logger.info(
-                        "Scan: %d nonces in %.2fs (%.0f nonces/s) pass=%d fail=%d target=%s total=%d (%.4f%% of space)",
-                        batch_checked, batch_elapsed, batch_rate,
-                        local_pass, local_fail, hex(int(job.target))[:20],
-                        self._total_searches, nonce_range_pct,
+                        "Scan batch: %d nonces in %.2fs (%.0f nonces/s) batch_pass=%d batch_fail=%d target=%s total=%d (%.4f%% of space)",
+                        batch_checked,
+                        batch_elapsed,
+                        batch_rate,
+                        local_pass,
+                        local_fail,
+                        self._safe_target_hex(getattr(job, "target", None)),
+                        self._total_searches,
+                        nonce_range_pct,
                     )
 
-                now = time.time()
+                now = time.monotonic()
                 if now - self._last_stats_time >= self.stats_interval:
                     await self.print_stats()
 
@@ -407,7 +414,7 @@ class UnifiedMiner:
 
     async def print_stats(self) -> None:
         """Print unified engine state and mining statistics."""
-        self._last_stats_time = time.time()
+        self._last_stats_time = time.monotonic()
         state = self.engine.get_unified_state()
 
         logger.info("-" * 72)
