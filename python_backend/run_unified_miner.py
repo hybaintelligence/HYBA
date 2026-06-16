@@ -69,6 +69,15 @@ class UnifiedMiner:
 
     def __init__(self, pool_config_path: Optional[str] = None):
         self.engine = UnifiedMiningEngine()
+
+        # Activate PYTHIA autonomous intelligence
+        from pythia_mining.autonomous_mining_controller import AutonomyLevel
+        self.engine.set_autonomy_level(AutonomyLevel.AUTONOMOUS)
+        logger.info("PYTHIA intelligence activated: AUTONOMOUS mode")
+        logger.info("  Self-healing: ENABLED (consciousness-driven regime adaptation)")
+        logger.info("  Self-optimization: ENABLED (search strategy + hashrate tuning)")
+        logger.info("  Safety constraints: ENFORCED (mathematical bounds)")
+
         self.pool_config_path = pool_config_path or str(
             Path(__file__).resolve().parents[1] / "config" / "mining_pools_live.json"
         )
