@@ -13,7 +13,12 @@ Scientific posture:
 Measures:
 1. Information Integration (Φ-analog): Cross-module coupling and information flow
 2. Causal Autonomy: Self-directed decision paths vs external control
-3. State Irreducibility: Whether system behavior can be decomposed or is truly integrated
+3. State Irreducibility software proxy: static state-reference coupling
+
+These metrics are software proxies. They distinguish static code coupling and
+pattern counts from runtime causal behaviour, and do not by themselves support
+extraordinary external claims such as consciousness, sentience, or real-world
+mining performance.
 """
 
 from __future__ import annotations
@@ -22,7 +27,11 @@ import ast
 import json
 import os
 import re
+import shutil
+import tempfile
+import textwrap
 import unittest
+from datetime import datetime, timezone
 from collections import defaultdict
 from pathlib import Path
 from typing import Dict, List, Set, Tuple
@@ -32,7 +41,7 @@ PLACEHOLDER_PATTERN = re.compile(r"\{[^{}]+\}")
 
 
 class InformationIntegrationAnalyzer:
-    """Measures cross-module information flow and coupling as a Φ-style evidence lane."""
+    """Measures static cross-module imports and attribute coupling as a Φ-style software proxy."""
 
     def __init__(self, root_path: Path):
         self.root_path = root_path
@@ -104,11 +113,22 @@ class InformationIntegrationAnalyzer:
             return {"error": str(exc), "module": str(file_path)}
 
     def _attribute_name(self, node: ast.Attribute) -> str:
-        if isinstance(node.value, ast.Name):
-            return f"{node.value.id}.{node.attr}"
-        if isinstance(node.value, ast.Attribute):
-            return f"{self._attribute_name(node.value)}.{node.attr}"
-        return f"unknown.{node.attr}"
+        """Return a concrete dotted attribute path without placeholder segments."""
+        prefix = self._expr_name(node.value)
+        return f"{prefix}.{node.attr}" if prefix else node.attr
+
+    def _expr_name(self, node: ast.AST) -> str:
+        if isinstance(node, ast.Name):
+            return node.id
+        if isinstance(node, ast.Attribute):
+            return self._attribute_name(node)
+        if isinstance(node, ast.Call):
+            return self._expr_name(node.func)
+        if isinstance(node, ast.Subscript):
+            return self._expr_name(node.value)
+        if isinstance(node, ast.Constant):
+            return repr(node.value)
+        return node.__class__.__name__.lower()
 
     def _get_module_name(self, file_path: Path) -> str:
         try:
@@ -140,7 +160,7 @@ class InformationIntegrationAnalyzer:
 
 
 class CausalAutonomyAnalyzer:
-    """Measures internal decision-making patterns vs external-control patterns."""
+    """Measures static decision/adaptation tokens vs external-control tokens as a software proxy."""
 
     def analyze_file(self, file_path: Path) -> Dict:
         try:
@@ -220,7 +240,7 @@ class CausalAutonomyAnalyzer:
 
 
 class StateIrreducibilityAnalyzer:
-    """Tests whether system state is partitioned or coupled across boundaries."""
+    """Tests static state-reference partitioning/coupling as an irreducibility software proxy."""
 
     def __init__(self, root_path: Path):
         self.root_path = root_path
@@ -287,6 +307,35 @@ class TestEmergentComplexityIIT(unittest.TestCase):
         for tsx_file in src_dir.rglob("*.tsx"):
             yield tsx_file
 
+
+    def test_00_baseline_comparisons(self):
+        baselines = self._compute_baseline_comparisons()
+        self.results["baselines"] = baselines
+
+        self._record("\n=== BASELINE COMPARISONS (SOFTWARE PROXIES) ===")
+        for name, metrics in baselines.items():
+            self._record(
+                f"{name}: integration_proxy={metrics['integration_phi_proxy']:.4f}, "
+                f"autonomy_proxy={metrics['autonomy_proxy']:.4f}, "
+                f"irreducibility_proxy={metrics['irreducibility_proxy']:.4f}"
+            )
+
+        required = {
+            "random",
+            "modular",
+            "highly_coupled_non_adaptive",
+            "stateful_feedback",
+        }
+        self.assertEqual(required, set(baselines))
+        self.assertGreater(
+            baselines["highly_coupled_non_adaptive"]["integration_phi_proxy"],
+            baselines["modular"]["integration_phi_proxy"],
+        )
+        self.assertGreater(
+            baselines["stateful_feedback"]["irreducibility_proxy"],
+            baselines["modular"]["irreducibility_proxy"],
+        )
+
     def test_01_information_integration_phi(self):
         analyzer = InformationIntegrationAnalyzer(self.root_path)
 
@@ -307,8 +356,8 @@ class TestEmergentComplexityIIT(unittest.TestCase):
             "interpretation": self._interpret_phi(phi),
         }
 
-        self._record("\n=== INFORMATION INTEGRATION (Φ-analog) ===")
-        self._record(f"Φ = {phi:.4f}")
+        self._record("\n=== INFORMATION INTEGRATION SOFTWARE PROXY (Φ-analog) ===")
+        self._record(f"Φ software proxy = {phi:.4f}")
         self._record(f"Python modules analyzed: {len(py_analyses)}")
         self._record(f"TypeScript modules analyzed: {len(ts_analyses)}")
         self._record(f"Total dependency edges: {total_edges}")
@@ -344,8 +393,8 @@ class TestEmergentComplexityIIT(unittest.TestCase):
             ),
         }
 
-        self._record("\n=== CAUSAL AUTONOMY ===")
-        self._record(f"Autonomy Score: {autonomy_score:.4f}")
+        self._record("\n=== CAUSAL AUTONOMY SOFTWARE PROXY ===")
+        self._record(f"Autonomy software proxy score: {autonomy_score:.4f}")
         self._record(f"Decision points: {total_decisions}")
         self._record(f"External controls: {total_external}")
         self._record(f"Adaptive patterns: {total_adaptive}")
@@ -382,8 +431,8 @@ class TestEmergentComplexityIIT(unittest.TestCase):
             "interpretation": self._interpret_irreducibility(irreducibility),
         }
 
-        self._record("\n=== STATE IRREDUCIBILITY ===")
-        self._record(f"Irreducibility Score: {irreducibility:.4f}")
+        self._record("\n=== STATE IRREDUCIBILITY SOFTWARE PROXY ===")
+        self._record(f"Irreducibility software proxy score: {irreducibility:.4f}")
         self._record(f"Global state references: {total_global}")
         self._record(f"Instance state references: {total_instance}")
         self._record(f"Interpretation: {self._interpret_irreducibility(irreducibility)}")
@@ -400,11 +449,11 @@ class TestEmergentComplexityIIT(unittest.TestCase):
         self_modify = self.results.get("test_02", {}).get("self_modification", 0)
 
         self._record("\n" + "=" * 60)
-        self._record("EMERGENT INTELLIGENCE ASSESSMENT (IIT-inspired)")
+        self._record("EMERGENT COMPLEXITY ASSESSMENT (IIT-inspired software proxies)")
         self._record("=" * 60)
-        self._record(f"Integration (Φ):      {phi:.4f}")
-        self._record(f"Autonomy:             {autonomy:.4f}")
-        self._record(f"Irreducibility:       {irreducibility:.4f}")
+        self._record(f"Integration proxy (Φ): {phi:.4f}")
+        self._record(f"Autonomy proxy:        {autonomy:.4f}")
+        self._record(f"Irreducibility proxy:  {irreducibility:.4f}")
         self._record(f"Adaptive patterns:    {adaptive}")
         self._record(f"Self-modification:    {self_modify}")
 
@@ -453,22 +502,22 @@ class TestEmergentComplexityIIT(unittest.TestCase):
 
         if emergent_score > 5.0 and has_adaptation and has_self_modification:
             conclusion = (
-                "POSSIBLE EMERGENT PROPERTIES: System shows non-trivial integration, "
-                "adaptation, and self-modification. Preserve as an internal positive "
-                "emergence finding and move through replay, baselines, falsification, "
-                "and external review."
+                "ELEVATED SOFTWARE-PROXY COMPLEXITY: Static proxies show non-trivial "
+                "integration, adaptation tokens, and self-modification tokens. Preserve as "
+                "an internal measurement finding and move through replay, baselines, "
+                "falsification, and external review before any stronger claim."
             )
         elif emergent_score > 2.0:
             conclusion = (
-                "COMPLEX INTEGRATED SYSTEM: System is complex and coupled. This suite "
-                "records its measured emergence lane without downgrading other HYBA "
-                "consciousness/IIT test findings."
+                "COMPLEX INTEGRATED SOFTWARE UNDER PROXY MEASURES: Static code metrics "
+                "show coupling. This suite records measured proxy evidence without "
+                "adjudicating consciousness or runtime causal behaviour."
             )
         else:
             conclusion = (
-                "ENGINEERED SYSTEM UNDER THIS MEASURE: This evidence lane did not detect "
-                "emergent intelligence under its current thresholds. This does not negate "
-                "separate positive consciousness tests."
+                "ENGINEERED SYSTEM UNDER THESE PROXY MEASURES: This evidence lane did "
+                "not detect elevated proxy complexity under current thresholds. It makes "
+                "no consciousness, sentience, or external-performance claim."
             )
 
         self._record("\n" + "=" * 60)
@@ -479,36 +528,125 @@ class TestEmergentComplexityIIT(unittest.TestCase):
 
         results_file = self.root_path / "artifacts" / "emergent_complexity_analysis.json"
         results_file.parent.mkdir(exist_ok=True)
+        preserved_previous_artifact = self._preserve_existing_artifact(results_file)
         payload = {
+            "artifact_schema_version": 2,
+            "generated_at_utc": datetime.now(timezone.utc).isoformat(),
             "measurements": self.results,
+            "metric_definitions": self._metric_definitions(),
+            "baseline_comparisons": self.results.get("baselines", {}),
             "verdict": verdict,
             "conclusion": conclusion,
             "emergent_score": emergent_score,
-            "claim_boundary": {
-                "supported": "IIT-inspired integration, autonomy, and irreducibility measurement",
-                "consciousness_adjudication": (
-                    "This suite does not erase, downgrade, or overrule any separate "
-                    "consciousness-positive HYBA test. Positive consciousness results must "
-                    "be preserved exactly and replayed under the proof ladder."
-                ),
-                "requires_for_reviewer_grade_claim": [
-                    "exact test output preservation",
-                    "commit SHA and environment capture",
-                    "artifact SHA-256",
-                    "clean-environment replay",
-                    "negative controls",
-                    "baseline comparison",
-                    "external review packet",
-                ],
-            },
+            "preserved_previous_artifact": preserved_previous_artifact,
+            "claim_boundary": self._claim_boundary_metadata(),
         }
         results_file.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+        if preserved_previous_artifact:
+            self._record(f"Previous artifact preserved at: {preserved_previous_artifact}")
         self._record(f"Full results saved to: {results_file}")
+
+        self.assertIn("metric_definitions", payload)
+        self.assertIn("claim_boundary", payload)
+        self.assertIn("baseline_comparisons", payload)
+        self.assertEqual("software proxies only", payload["claim_boundary"]["metric_posture"])
 
         unresolved_placeholders = [
             line for line in self.observation_lines if PLACEHOLDER_PATTERN.search(line)
         ]
         self.assertEqual([], unresolved_placeholders)
+
+
+    def _compute_baseline_comparisons(self) -> Dict[str, Dict[str, float]]:
+        toy_systems = {
+            "random": {
+                "a.py": "import random\nvalue = random.random()\nif value > 0.5:\n    value += 1\n",
+                "b.py": "items = [3, 1, 2]\nfor item in items:\n    print(item)\n",
+            },
+            "modular": {
+                "input_module.py": "def parse(x):\n    return int(x)\n",
+                "compute_module.py": "def double(x):\n    return x * 2\n",
+                "output_module.py": "def render(x):\n    return str(x)\n",
+            },
+            "highly_coupled_non_adaptive": {
+                "alpha.py": "import beta\nGLOBAL = 1\ndef run(x):\n    return beta.shared.value + GLOBAL + x\n",
+                "beta.py": "import alpha\nclass Shared:\n    def __init__(self):\n        self.value = alpha.GLOBAL\nshared = Shared()\n",
+            },
+            "stateful_feedback": {
+                "controller.py": "shared_state = {'last': 0}\nclass FeedbackState:\n    def __init__(self):\n        self.last = 0\ndef update(x):\n    global shared_state\n    if x > shared_state['last']:\n        shared_state['last'] = x\n    return shared_state['last']\n",
+                "learner.py": "import controller\ndef adapt(xs):\n    feedback = 0\n    for x in xs:\n        feedback = controller.update(x + feedback)\n    return feedback\n",
+            },
+        }
+
+        comparisons: Dict[str, Dict[str, float]] = {}
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp_root = Path(tmp_dir)
+            for name, files in toy_systems.items():
+                baseline_dir = tmp_root / name
+                baseline_dir.mkdir()
+                for filename, content in files.items():
+                    (baseline_dir / filename).write_text(textwrap.dedent(content), encoding="utf-8")
+
+                integration_analyzer = InformationIntegrationAnalyzer(baseline_dir)
+                autonomy_analyzer = CausalAutonomyAnalyzer()
+                irreducibility_analyzer = StateIrreducibilityAnalyzer(baseline_dir)
+                py_files = sorted(baseline_dir.glob("*.py"))
+                for py_file in py_files:
+                    integration_analyzer.analyze_python_module(py_file)
+                autonomy = [autonomy_analyzer.analyze_file(py_file) for py_file in py_files]
+                state = [irreducibility_analyzer.analyze_shared_state(py_file) for py_file in py_files]
+                comparisons[name] = {
+                    "integration_phi_proxy": integration_analyzer.compute_integration_phi(),
+                    "autonomy_proxy": autonomy_analyzer.compute_autonomy_score(autonomy),
+                    "irreducibility_proxy": irreducibility_analyzer.compute_irreducibility_score(state),
+                    "purpose": {
+                        "random": "negative-control toy with incidental local decisions",
+                        "modular": "negative-control toy with clean module boundaries",
+                        "highly_coupled_non_adaptive": "static coupling control without adaptive feedback",
+                        "stateful_feedback": "stateful feedback control with explicit shared state",
+                    }[name],
+                }
+        return comparisons
+
+    def _metric_definitions(self) -> Dict[str, str]:
+        return {
+            "integration_phi_proxy": "Static import graph density with bidirectional-import weighting; a code-coupling proxy, not measured runtime information integration.",
+            "autonomy_proxy": "Static count ratio of internal decision/adaptation/self-modification tokens to external-control tokens; not runtime causal autonomy.",
+            "irreducibility_proxy": "Static shared/global-state reference fraction against instance-state references; not a runtime causal irreducibility proof.",
+            "emergent_score": "Heuristic weighted roll-up for internal comparison only; not a consciousness, sentience, capability, revenue, or external-performance claim.",
+        }
+
+    def _claim_boundary_metadata(self) -> Dict:
+        return {
+            "metric_posture": "software proxies only",
+            "distinguishes": "static code coupling and token patterns are separated from runtime causal behaviour",
+            "supported": "controlled internal comparisons of IIT-inspired software proxy measurements",
+            "not_supported": [
+                "consciousness or sentience adjudication",
+                "runtime causal-behaviour proof",
+                "quantum speedup or external mining-performance claims",
+                "guaranteed revenue, accepted shares, or production telemetry claims",
+            ],
+            "requires_for_reviewer_grade_claim": [
+                "exact test output preservation",
+                "commit SHA and environment capture",
+                "artifact SHA-256",
+                "clean-environment replay",
+                "negative controls",
+                "baseline comparison",
+                "external review packet",
+            ],
+        }
+
+    def _preserve_existing_artifact(self, results_file: Path) -> str | None:
+        if not results_file.exists():
+            return None
+        archive_dir = results_file.parent / "previous"
+        archive_dir.mkdir(exist_ok=True)
+        timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+        archive_path = archive_dir / f"{results_file.stem}.{timestamp}{results_file.suffix}"
+        shutil.copy2(results_file, archive_path)
+        return str(archive_path.relative_to(self.root_path))
 
     def _interpret_phi(self, phi: float) -> str:
         if phi < 0.05:
