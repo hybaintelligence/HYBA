@@ -166,7 +166,12 @@ class MPS:
         # Use singular values as proxy for entanglement
         combined = np.concatenate([flat_left, flat_right])
         if combined.size > 1:
-            _, S, _ = np.linalg.svd(combined.reshape(-1, min(combined.size, 10)))
+            # Find a column count that evenly divides the total size for SVD
+            n = combined.size
+            cols = min(n, 10)
+            while n % cols != 0 and cols > 1:
+                cols -= 1
+            _, S, _ = np.linalg.svd(combined.reshape(-1, cols))
             S = S[S > 1e-15]
             if len(S) > 0:
                 S = S / np.sum(S)  # Normalize

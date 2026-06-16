@@ -1,5 +1,5 @@
 {
-  "default_pool": "braiins",
+  "default_pool": "viabtc",
   "pools": {
     "viabtc": {
       "name": "ViaBTC BTC",
@@ -13,15 +13,15 @@
       "description": "ViaBTC SHA256 pool - selectable from frontend"
     },
     "braiins": {
-      "name": "Braiins Pool (Stratum V2)",
-      "url": "stratum2+tcp://stratum.braiins.com:3333/9awtMD5KQgvRUh2yFbjVeT7b6hjipWcAsQHd6wEhgtDT9soosna",
-      "stratum_version": 2,
-      "username": "PYTHIA",
-      "password": "anything123",
+      "name": "Braiins Pool",
+      "url": "stratum+tcp://stratum.braiins.com:3333",
+      "stratum_version": 1,
+      "username": "PYTHIA.001",
+      "password": "9awtMD5KQgvRUh2yFbjVeT7b6hjipWcAsQHd6wEhgtDT9soosna",
       "worker": "hendrix_phi",
-      "priority": 1,
-      "enabled": true,
-      "description": "Braiins Pool - Default primary pool"
+      "priority": 2,
+      "enabled": false,
+      "description": "Braiins Pool - V1 Stratum, token-based auth (disabled until tested)"
     },
     "ckpool": {
       "name": "Solo CKPool",
