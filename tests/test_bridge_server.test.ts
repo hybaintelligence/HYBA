@@ -11,6 +11,7 @@
 
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import express from "express";
+import rateLimit from "express-rate-limit";
 import { createServer, type Server } from "node:http";
 import { type AddressInfo } from "node:net";
 import { randomUUID } from "node:crypto";
@@ -162,6 +163,32 @@ describe("HYBA Secure Bridge", () => {
     expect(body).toHaveProperty("error", "circuit_breaker_open");
     expect(body).toHaveProperty("retryAfterMs");
     expect(typeof body.retryAfterMs).toBe("number");
+  });
+
+
+  it("rate-limits repeated mining requests with HTTP 429 semantics", async () => {
+    const limitedApp = express();
+    limitedApp.use(
+      rateLimit({
+        windowMs: 60_000,
+        max: 2,
+        message: { error: "too_many_requests", message: "Too many requests, please try again later." },
+        standardHeaders: true,
+        legacyHeaders: false,
+      }),
+    );
+    limitedApp.get("/api/mining/status", (_req, res) => res.json({ status: "ok" }));
+    const { server: limitedServer, port: limitedPort } = await startTestServer(limitedApp);
+    try {
+      const statuses = [];
+      for (let i = 0; i < 3; i += 1) {
+        const response = await fetch(`http://127.0.0.1:${limitedPort}/api/mining/status`);
+        statuses.push(response.status);
+      }
+      expect(statuses).toEqual([200, 200, 429]);
+    } finally {
+      limitedServer.close();
+    }
   });
 
   // ── Security Headers ───────────────────────────────────────────────

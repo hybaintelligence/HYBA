@@ -75,7 +75,9 @@
     "test:deployment": "npm run test:deployment:e2e && npm run test:deployment:property",
     "test:go-live": "npm run python:env:check && PYTHONPATH=python_backend python -m pytest tests/test_go_live_final_coverage.py -q",
     "test:final": "npm run test:go-live && npm run test:all && npm run test:e2e:backend && npm run test:deployment",
-    "runtime:entrypoint:check": "python scripts/check_runtime_entrypoint.py"
+    "runtime:entrypoint:check": "python scripts/check_runtime_entrypoint.py",
+    "review:pipeline:audit": "PYTHONPATH=python_backend python scripts/review_environment_pipeline_audit.py",
+    "preflight:production": "bash scripts/preflight_production_readiness_check.sh"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",

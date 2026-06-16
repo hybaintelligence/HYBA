@@ -52,6 +52,7 @@ import { Sparkline } from "./components/Sparkline";
 import { ExecutiveSummary } from "./components/ExecutiveSummary";
 import { useApiRequest } from "./hooks/useApiRequest";
 import { useLatencyMetrics } from "./hooks/useLatencyMetrics";
+import { buildGovernanceSignals, type GovernanceSignal } from "./governance";
 
 type NullableNumber = number | null | undefined;
 
@@ -197,12 +198,46 @@ function AppContent() {
   const stabilizerMonitor = securityDefenseSystems.stabilizer_monitor || {};
   const ancillaTrapPool = securityDefenseSystems.preallocated_ancilla_trap_pool || {};
   const consciousness = telemetry?.consciousness || { status: "unavailable", source: "unavailable" };
+  const governanceTags = useMemo(
+    () => [
+      ...((health?.substrate?.governance_tags as string[] | undefined) || []),
+      ...((health?.telemetry?.governance_tags as string[] | undefined) || []),
+    ],
+    [health?.substrate, health?.telemetry],
+  );
 
   const runtimeStatus = useMemo(() => health?.status || "unavailable", [health]);
   const activePoolName = fmtText(systemMetrics.activePool || pools.find(p => p.is_active)?.name);
   const configuredPoolCount = Number(poolSummary.configured_pools ?? poolSummary.total_pools ?? 0);
   const activePoolCount = Number(poolSummary.active_pools ?? 0);
   const securityStatus = fmtText(security.status);
+  const governanceSignals = useMemo(
+    () =>
+      buildGovernanceSignals({
+        runtimeStatus,
+        telemetrySource: health?.telemetry_source,
+        backendConnected: isConnected,
+        activePoolCount,
+        configuredPoolCount,
+        activePoolName,
+        securityStatus,
+        threatLevel: security.threat_level,
+        phiResonance: health?.phiResonance,
+        governanceTags,
+      }),
+    [
+      activePoolCount,
+      activePoolName,
+      configuredPoolCount,
+      governanceTags,
+      health?.phiResonance,
+      health?.telemetry_source,
+      isConnected,
+      runtimeStatus,
+      security.threat_level,
+      securityStatus,
+    ],
+  );
 
   const readinessScore = useMemo(() => {
     let score = 0;
@@ -928,7 +963,8 @@ function AppContent() {
               icon={<Scale className="h-4 w-4" />}
               isLoading={false}
             >
-              <div className="space-y-3">
+              <GovernanceDashboard signals={governanceSignals} />
+              <div className="mt-4 space-y-3">
                 <EvidenceItem
                   icon={<Terminal className="h-4 w-4" />}
                   title="Bridge health"
@@ -1180,6 +1216,47 @@ function MetricRow({ label, value }: { label: string; value: string }) {
       <span className="max-w-[58%] truncate text-right font-mono text-xs font-bold text-slate-900">
         {value}
       </span>
+    </div>
+  );
+}
+
+function GovernanceDashboard({ signals }: { signals: GovernanceSignal[] }) {
+  const counts = signals.reduce(
+    (acc, signal) => {
+      acc[signal.status] += 1;
+      return acc;
+    },
+    { pass: 0, warn: 0, fail: 0 },
+  );
+  return (
+    <div className="rounded-2xl border border-slate-200 bg-white p-3">
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+        <p className="text-xs font-black uppercase tracking-[0.14em] text-slate-900">Governance dashboard</p>
+        <span className="rounded-full bg-slate-100 px-2 py-1 font-mono text-[10px] text-slate-600">
+          {counts.pass} pass · {counts.warn} warn · {counts.fail} fail
+        </span>
+      </div>
+      <div className="space-y-2">
+        {signals.map((signal) => (
+          <div key={signal.id} className="rounded-xl border border-slate-100 bg-slate-50 p-3">
+            <div className="flex items-center justify-between gap-3">
+              <span className="text-[11px] font-black uppercase tracking-[0.12em] text-slate-900">{signal.label}</span>
+              <span
+                className={`rounded-full px-2 py-0.5 font-mono text-[9px] font-bold uppercase ${
+                  signal.status === "pass"
+                    ? "bg-emerald-100 text-emerald-700"
+                    : signal.status === "fail"
+                      ? "bg-red-100 text-red-700"
+                      : "bg-amber-100 text-amber-700"
+                }`}
+              >
+                {signal.status}
+              </span>
+            </div>
+            <p className="mt-1 text-xs leading-5 text-slate-500">{signal.detail}</p>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
