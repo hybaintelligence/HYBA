@@ -246,15 +246,54 @@ class UnifiedMiner:
             )
 
     async def run_search_loop(self) -> None:
-        """Main loop: poll jobs, run batched structured traversal, verify, submit, adapt."""
-        # Batch size: number of solver iterations per job cycle.
-        # Each iteration calls solve() which advances _solve_counter for a
-        # different nonce through coordinate collapse → quantum walk → tunnel anneal.
-        batch_size = int(os.getenv("HYBA_MINING_BATCH_SIZE", "50"))
+        """Main loop: poll jobs, verify nonces, submit, adapt.
+
+        Uses full-space sequential nonce iteration through the PULVINI compressed
+        plan's solver_ranges to maximize hash throughput.  The solver's coordinate
+        collapse / quantum-walk / tunnel-anneal provides structural guidance but
+        produces only ~20 unique nonces per cycle — far below the 2^32 space.
+        This loop instead does a direct sequential scan through the full nonce
+        space, which is what real mining hardware does, leveraging the compressed
+        plan's overlap-free ranges for coverage.
+        """
+        batch_size = int(os.getenv("HYBA_MINING_BATCH_SIZE", "500"))
         logger.info("=" * 72)
-        logger.info("  HENDRIX-Φ + PULVINI Unified Miner — Deterministic Structured Traversal")
-        logger.info("  Batch size: %d solver iterations per job cycle", batch_size)
+        logger.info("  HENDRIX-Φ + PULVINI Unified Miner — Full-Space Sequential Traversal")
+        logger.info("  Batch size: %d nonces per job cycle", batch_size)
         logger.info("=" * 72)
+
+        # Build the full-space nonce range from the engine's compressed plan.
+        from pythia_mining.nonce_tensor_precomputer import (
+            build_pulvini_nonce_plan,
+           NonceTensorPlan,
+        )
+        try:
+            nonce_plan = build_pulvini_nonce_plan()
+            solver_ranges = nonce_plan.solver_ranges
+            logger.info(
+                "PULVINI nonce plan: %d regions, coverage=%s, overlap_free=%s",
+                len(nonce_plan.regions),
+                nonce_plan.total_nonce_coverage,
+                nonce_plan.is_overlap_free,
+            )
+        except Exception as exc:
+            logger.warning("Falling back to full 2^32 range: %s", exc)
+            solver_ranges = [(0, 2**32 - 1)]
+
+        # Flatten ranges into a sequential nonce cursor.
+        nonce_cursor = 0  # Current position across the full space
+        range_start, range_end = 0, 0
+        range_idx = 0
+
+        def _next_nonce_range():
+            nonlocal range_idx, range_start, range_end
+            if range_idx < len(solver_ranges):
+                range_start, range_end = solver_ranges[range_idx]
+                range_idx += 1
+                return range_start, range_end
+            return None
+
+        current_range = _next_nonce_range()
 
         while RUNNING:
             if not self.stratum or not self.stratum.is_connected:
@@ -267,34 +306,91 @@ class UnifiedMiner:
             try:
                 job = await self._next_job(timeout=10.0)
                 if job is None:
-                    await asyncio.sleep(0.5)
+                    await asyncio.sleep(0.01)
                     continue
 
-                # Run a batch of solver iterations per job to maximize nonce throughput.
-                # The PULVINI compressed solver advances _solve_counter on each call,
-                # producing a different deterministic nonce through coordinate collapse,
-                # quantum walk, and tunnel anneal projection.
                 batch_start = time.time()
+                batch_checked = 0
                 for _ in range(batch_size):
                     if not RUNNING:
                         break
-                    result = await self.engine.search(job)
-                    self._total_searches += 1
+                    if current_range is None:
+                        current_range = _next_nonce_range()
+                        if current_range is None:
+                            # Exhausted the full nonce space — wrap around.
+                            range_idx = 0
+                            current_range = _next_nonce_range()
+                            if current_range is None:
+                                break
+                    rs, re = current_range
+                    nonce = nonce_cursor
+                    nonce_cursor += 1
+                    if nonce > re:
+                        current_range = _next_nonce_range()
+                        if current_range is None:
+                            range_idx = 0
+                            current_range = _next_nonce_range()
+                        if current_range is None:
+                            break
+                        rs, re = current_range
+                        nonce = rs
+                        nonce_cursor = rs + 1
 
-                    if result.nonce is not None:
-                        await self._handle_nonce_result(
-                            job,
-                            result.nonce,
-                            strategy_used=result.strategy_used,
-                            phi_resonance_score=result.phi_resonance_score,
-                            search_time=result.search_time,
-                        )
-                batch_elapsed = time.time() - batch_start
-                batch_rate = batch_size / max(0.001, batch_elapsed)
-                if self._total_searches % (batch_size * 10) == 0:
+                    self._total_searches += 1
+                    batch_checked += 1
+
+                    # Fast local SHA-256d validation via the engine verifier.
+                    local = self.engine.submit_candidate(job, nonce)
+                    if not local.valid:
+                        self._locally_invalid += 1
+                        self._rejected += 1
+                        continue
+
+                    # Candidate passed local validation — submit to pool.
                     logger.info(
-                        "Batch cycle: %d nonces in %.2fs (%.1f nonces/s), total searches: %d",
-                        batch_size, batch_elapsed, batch_rate, self._total_searches,
+                        "Candidate passed local validation! nonce=%s, job=%s — submitting to pool",
+                        nonce, job.job_id,
+                    )
+                    share_info: dict[str, Any] = {
+                        "nonce": nonce,
+                        "job_id": job.job_id,
+                        "strategy_used": "full_space_sequential",
+                        "phi_resonance_score": None,
+                        "solve_time": 0.0,
+                        "block_hash": local.block_hash,
+                        "target": local.target,
+                    }
+                    if self.stratum is not None:
+                        share: ShareResult = await self.stratum.submit_validated_share(job, nonce)
+                        share_info.update({
+                            "error_code": share.error_code,
+                            "error_msg": share.error_message,
+                            "block_hash": share.block_hash or local.block_hash,
+                            "target": share.target or local.target,
+                        })
+                        await self.engine.on_share_result(share_info, accepted=share.accepted)
+                        if share.accepted:
+                            self._accepted += 1
+                            logger.info("🎉 SHARE ACCEPTED — nonce=%s, job=%s", nonce, job.job_id)
+                        else:
+                            self._rejected += 1
+                            logger.info(
+                                "Share rejected by pool — nonce=%s, job=%s, reason=%s",
+                                nonce, job.job_id, share.error_message,
+                            )
+                    else:
+                        self._rejected += 1
+                        share_info.update({"error_code": 503, "error_msg": "stratum_disconnected"})
+                        await self.engine.on_share_result(share_info, accepted=False)
+
+                batch_elapsed = time.time() - batch_start
+                batch_rate = batch_checked / max(0.001, batch_elapsed)
+                if self._total_searches % (batch_size * 5) == 0:
+                    nonce_range_pct = (nonce_cursor / (2**32)) * 100
+                    logger.info(
+                        "Scan: %d nonces in %.2fs (%.0f nonces/s), total=%d (%.4f%% of space)",
+                        batch_checked, batch_elapsed, batch_rate,
+                        self._total_searches, nonce_range_pct,
                     )
 
                 now = time.time()

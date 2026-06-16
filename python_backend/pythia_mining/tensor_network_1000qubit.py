@@ -138,24 +138,29 @@ class MPS:
         self.normalize()
 
     def normalize(self) -> float:
-        """Normalize the MPS to have unit norm.
+        """Normalize the MPS to have exact unit norm.
 
-        For numerical stability, normalize each tensor individually first,
-        then compute the exact norm and apply a single global scale factor.
+        Mathematical procedure:
+        1. Normalize each tensor individually for numerical stability
+        2. Compute the exact norm via tensor network contraction
+        3. Apply global scale factor distributed uniformly across all tensors
         """
-        # First, normalize each tensor individually for numerical stability
+        # Normalize each tensor individually for numerical stability
         for i, tensor in enumerate(self.tensors):
             tensor_norm = np.linalg.norm(tensor)
             if tensor_norm > 1e-15:
                 self.tensors[i] = tensor / tensor_norm
 
-        # Compute exact norm via tensor network contraction
+        # Compute exact norm
         exact_norm = self.compute_norm()
 
-        # Apply single global scale factor for exact unit norm
+        # Apply global scale: each tensor gets scaled by (1/exact_norm)^(1/N)
+        # so the total MPS norm becomes (exact_norm^(1/N))^N = exact_norm → 1.0
         if exact_norm > 1e-15 and abs(exact_norm - 1.0) > 1e-10:
-            scale = 1.0 / exact_norm
-            self.tensors[0] = self.tensors[0] * scale
+            global_scale = 1.0 / exact_norm
+            per_tensor_scale = global_scale ** (1.0 / self.num_sites)
+            for i in range(self.num_sites):
+                self.tensors[i] = self.tensors[i] * per_tensor_scale
 
         return 1.0
 
@@ -202,14 +207,22 @@ class MPS:
         for k in range(num_sites - 1, site, -1):
             t = tensors[k]
             tc = np.conj(t)
-            # t(i,k,l) * tc(j,k,m) * R(l,m) -> new(i,j)
             R = np.einsum('ikl,jkm,lm->ij', t, tc, R)
 
         # Contract at target site with observable
+        # Step 1: Contract L with t: L(i,j) * t(i,k,l) -> T(j,k,l)
         t = tensors[site]
         tc = np.conj(t)
-        # L(i,j) * t(i,k,l) * O(k,m) * tc(j,m,n) * R(l,n) -> scalar
-        result = np.einsum('ij,ikl,km,jmn,ln->', L, t, observable, tc, R)
+        T = np.einsum('ij,ikl->jkl', L, t)
+
+        # Step 2: Contract with observable: T(j,k,l) * O(k,m) -> T2(j,l,m)
+        T2 = np.einsum('jkl,km->jlm', T, observable)
+
+        # Step 3: Contract with conj(t): T2(j,l,m) * tc(j,m,n) -> T3(l,n)
+        T3 = np.einsum('jlm,jmn->ln', T2, tc)
+
+        # Step 4: Contract with R: T3(l,n) * R(l,n) -> scalar
+        result = np.einsum('ln,ln->', T3, R)
 
         return float(result.real)
 
@@ -328,31 +341,31 @@ class MPS:
         return new_mps
 
     def compress(self, max_bond_dim: int) -> 'MPS':
-        """Compress MPS using SVD truncation.
+        """Compress MPS using SVD truncation with proper bond propagation.
 
-        This is the key operation that allows efficient representation:
-        - Perform SVD on bond between sites
-        - Keep only largest singular values
-        - Truncate to max_bond_dim
+        Mathematical procedure:
+        1. Sweep left-to-right through the MPS
+        2. At each bond, merge two adjacent tensors and perform SVD
+        3. Truncate to max_bond_dim
+        4. Absorb S·Vh into the next tensor, propagating the truncated bond
+
+        This ensures bond dimensions remain consistent across all sites.
         """
-        new_tensors = []
+        # Work on a copy to avoid modifying the original
+        tensors = [t.copy() for t in self.tensors]
+
         new_bond_dims = [1]
 
         for i in range(self.num_sites - 1):
-            # Merge two consecutive tensors
-            A_left = self.tensors[i]
-            A_right = self.tensors[i + 1]
+            A_left = tensors[i]
+            A_right = tensors[i + 1]
 
             # Reshape for SVD
             dim_left = A_left.shape[0] * A_left.shape[1]
             dim_right = A_right.shape[1] * A_right.shape[2]
 
-            # Flatten and merge
-            A_left_flat = A_left.reshape(dim_left, -1)
-            A_right_flat = A_right.reshape(-1, dim_right)
-            merged = A_left_flat @ A_right_flat
-
-            # SVD — exact mathematical decomposition
+            # Merge and SVD
+            merged = A_left.reshape(dim_left, -1) @ A_right.reshape(-1, dim_right)
             U_svd, S, Vh = np.linalg.svd(merged, full_matrices=False)
 
             # Truncate to max_bond_dim
@@ -361,28 +374,25 @@ class MPS:
             S = S[:trunc]
             Vh = Vh[:trunc, :]
 
-            # Reshape back
-            new_A_left = U_svd.reshape(A_left.shape[0], A_left.shape[1], trunc)
-            new_A_right = np.diag(S) @ Vh
-            new_A_right = new_A_right.reshape(trunc, A_right.shape[1], A_right.shape[2])
-
-            new_tensors.append(new_A_left)
+            # Replace current tensor with left factor
+            tensors[i] = U_svd.reshape(A_left.shape[0], A_left.shape[1], trunc)
             new_bond_dims.append(trunc)
 
-        # Add last tensor
-        new_tensors.append(self.tensors[-1])
+            # Absorb S·Vh into next tensor to propagate truncation
+            SV = np.diag(S) @ Vh
+            tensors[i + 1] = SV.reshape(trunc, A_right.shape[1], A_right.shape[2])
+
         new_bond_dims.append(1)
 
         # Create new MPS
         new_mps = MPS.__new__(MPS)
-        new_mps.tensors = new_tensors
+        new_mps.tensors = tensors
         new_mps.physical_dims = [self.physical_dim] * self.num_sites
         new_mps.bond_dims = new_bond_dims
         new_mps.num_sites = self.num_sites
         new_mps.physical_dim = self.physical_dim
         new_mps.max_bond_dim = max_bond_dim
 
-        # Renormalize after compression
         new_mps.normalize()
 
         return new_mps
