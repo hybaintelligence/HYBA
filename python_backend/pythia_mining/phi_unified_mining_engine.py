@@ -49,14 +49,6 @@ from .pulvini_compressed_solver import PulviniCompressedQuantumSolver
 from .pulvini_memory_compression_proof import phi_folding_mathematical_proof
 from .stratum_client import MiningJob
 
-# Autonomous mining controller for PYTHIA self-governance
-from .autonomous_mining_controller import (
-    AutonomousConfig,
-    AutonomousMiningController,
-    AutonomyLevel,
-)
-
-
 @dataclass
 class UnifiedMiningState:
     """The complete state of the unified engine at any instant."""
@@ -115,6 +107,12 @@ class UnifiedMiningEngine:
         self.state = UnifiedMiningState()
         self._solve_count = 0
         # Initialize autonomous mining controller for PYTHIA self-governance
+        # (lazy import to break circular dependency with autonomous_mining_controller)
+        from .autonomous_mining_controller import (
+            AutonomousConfig,
+            AutonomousMiningController,
+            AutonomyLevel,
+        )
         self.autonomous_controller = AutonomousMiningController(
             unified_engine=self,
             config=AutonomousConfig(
