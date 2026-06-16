@@ -152,8 +152,10 @@ class MPS:
             dim_left = A_left.shape[0] * A_left.shape[1]
             dim_right = A_right.shape[1] * A_right.shape[2]
             
-            merged = np.einsum('aib,bjc->aijc', A_left, A_right)
-            merged = merged.reshape(dim_left, dim_right)
+            # Flatten and merge
+            A_left_flat = A_left.reshape(dim_left, -1)
+            A_right_flat = A_right.reshape(-1, dim_right)
+            merged = A_left_flat @ A_right_flat
             
             # SVD
             U_svd, S, Vh = np.linalg.svd(merged, full_matrices=False)
