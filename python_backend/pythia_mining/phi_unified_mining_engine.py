@@ -49,6 +49,13 @@ from .pulvini_compressed_solver import PulviniCompressedQuantumSolver
 from .pulvini_memory_compression_proof import phi_folding_mathematical_proof
 from .stratum_client import MiningJob
 
+# Autonomous mining controller for PYTHIA self-governance
+from .autonomous_mining_controller import (
+    AutonomousConfig,
+    AutonomousMiningController,
+    AutonomyLevel,
+)
+
 
 @dataclass
 class UnifiedMiningState:
@@ -107,6 +114,15 @@ class UnifiedMiningEngine:
         self.verifier = UnifiedBatchVerifier(configured_capacity_ehs=configured_capacity_ehs)
         self.state = UnifiedMiningState()
         self._solve_count = 0
+        # Initialize autonomous mining controller for PYTHIA self-governance
+        self.autonomous_controller = AutonomousMiningController(
+            unified_engine=self,
+            config=AutonomousConfig(
+                autonomy_level=AutonomyLevel.ADVISORY,
+                max_autonomous_hashrate_ehs=configured_capacity_ehs or 100.0,
+                phi_coherence_threshold=0.70,
+            ),
+        )
         self._sync_verifier_state()
 
     def _sync_verifier_state(self) -> None:
@@ -334,6 +350,73 @@ class UnifiedMiningEngine:
             measured_hashes_per_second=measured_hashes_per_second,
             asic_baseline_hashes_per_second=asic_baseline,
         )
+
+    # Autonomous mining control methods
+    async def autonomous_optimize_search(self) -> Dict[str, Any]:
+        """Run autonomous search strategy optimization."""
+        current_coherence = self.state.phi_coherence
+        current_hashrate_ehs = self.state.last_batch_hashrate_ehs
+        decision = await self.autonomous_controller.optimize_search_strategy(
+            current_coherence=current_coherence,
+            current_hashrate_ehs=current_hashrate_ehs,
+        )
+        return {
+            "decision_id": decision.decision_id,
+            "action_taken": decision.action_taken,
+            "expected_outcome": decision.expected_outcome,
+            "actual_outcome": decision.actual_outcome,
+            "operator_override": decision.operator_override,
+            "autonomy_level": decision.autonomy_level.value,
+        }
+
+    async def autonomous_optimize_hashrate(
+        self,
+        target_hashrate_ehs: float,
+    ) -> Dict[str, Any]:
+        """Run autonomous hashrate optimization."""
+        current_hashrate_ehs = self.state.last_batch_hashrate_ehs
+        decision = await self.autonomous_controller.optimize_hashrate_target(
+            current_hashrate_ehs=current_hashrate_ehs,
+            target_hashrate_ehs=target_hashrate_ehs,
+        )
+        return {
+            "decision_id": decision.decision_id,
+            "action_taken": decision.action_taken,
+            "expected_outcome": decision.expected_outcome,
+            "actual_outcome": decision.actual_outcome,
+            "operator_override": decision.operator_override,
+            "autonomy_level": decision.autonomy_level.value,
+        }
+
+    def set_autonomy_level(self, level: AutonomyLevel) -> None:
+        """Set the autonomy level for PYTHIA."""
+        self.autonomous_controller.set_autonomy_level(level)
+
+    def get_autonomy_status(self) -> Dict[str, Any]:
+        """Get current autonomous mining status."""
+        return self.autonomous_controller.get_autonomy_status()
+
+    def get_autonomous_decision_history(
+        self,
+        limit: Optional[int] = None,
+    ) -> List[Dict[str, Any]]:
+        """Get history of autonomous decisions."""
+        decisions = self.autonomous_controller.get_decision_history(limit=limit)
+        return [
+            {
+                "decision_id": d.decision_id,
+                "timestamp": d.timestamp,
+                "autonomy_level": d.autonomy_level.value,
+                "decision_type": d.decision_type,
+                "action_taken": d.action_taken,
+                "expected_outcome": d.expected_outcome,
+                "actual_outcome": d.actual_outcome,
+                "operator_override": d.operator_override,
+                "constraints_satisfied": [c.value for c in d.constraints_satisfied],
+                "constraints_violated": [c.value for c in d.constraints_violated],
+            }
+            for d in decisions
+        ]
 
 
 __all__ = [
