@@ -100,6 +100,20 @@ class UnifiedMiner:
                 normalised.append((start, end))
         return normalised or [(0, UINT32_MAX)]
 
+    @staticmethod
+    def _nonce_plan_telemetry(nonce_plan: Any) -> tuple[int, Any, Any, int]:
+        """Return stable telemetry from the current CompressedNonceSpacePlan API."""
+        coverage_segments = getattr(nonce_plan, "coverage_segments", ()) or ()
+        solver_ranges = UnifiedMiner._normalise_solver_ranges(
+            getattr(nonce_plan, "solver_ranges", [])
+        )
+        return (
+            len(coverage_segments),
+            getattr(nonce_plan, "complete_coverage", "unknown"),
+            getattr(nonce_plan, "overlap_free", "unknown"),
+            len(solver_ranges),
+        )
+
     def load_pools(self) -> None:
         """Load enabled pool configurations from env/runtime config."""
         os.environ["HYBA_POOL_CONFIG_PATH"] = self.pool_config_path
@@ -277,52 +291,89 @@ class UnifiedMiner:
             )
         return True
 
-    async def run_search_loop(self) -> None:
-        """Main loop: poll jobs, verify nonces, submit, adapt.
+    async def _run_structured_search_batch(
+        self,
+        job: MiningJob,
+        batch_size: int,
+    ) -> tuple[int, int, int]:
+        """Run actual AIOptimizer → PULVINI solver search cycles for a live job.
 
-        Uses full-space sequential nonce iteration through the PULVINI compressed
-        plan's solver_ranges to maximize hash throughput.  The solver's coordinate
-        collapse / quantum-walk / tunnel-anneal provides structural guidance but
-        produces only ~20 unique nonces per cycle — far below the 2^32 space.
-        This loop instead does a direct sequential scan through the full nonce
-        space, which is what real mining hardware does, leveraging the compressed
-        plan's overlap-free ranges for coverage.
+        Returns (candidates_checked, locally_or_pool_passed, local_or_solver_failed).
+        The live miner must consume engine.search(job); it must not silently revert
+        to nonce_cursor += 1 while claiming structured traversal.
         """
+        batch_checked = 0
+        local_pass = 0
+        local_fail = 0
+
+        for _ in range(max(1, int(batch_size))):
+            if not RUNNING:
+                break
+
+            search_start = time.monotonic()
+            result = await self.engine.search(job)
+            search_time = float(
+                getattr(result, "search_time", None) or (time.monotonic() - search_start)
+            )
+            raw_nonce = getattr(result, "nonce", None)
+            if raw_nonce is None:
+                local_fail += 1
+                logger.debug(
+                    "Structured solver returned no nonce for job=%s strategy=%s",
+                    job.job_id,
+                    getattr(result, "strategy_used", "unknown"),
+                )
+                continue
+
+            try:
+                nonce = int(raw_nonce) & UINT32_MAX
+            except (TypeError, ValueError, OverflowError):
+                local_fail += 1
+                logger.warning("Structured solver returned non-integer nonce: %r", raw_nonce)
+                continue
+
+            self._total_searches += 1
+            batch_checked += 1
+            locally_valid = await self._handle_nonce_result(
+                job,
+                nonce,
+                strategy_used=str(
+                    getattr(result, "strategy_used", "phi_scaled_compressed_solver_search")
+                ),
+                phi_resonance_score=getattr(result, "phi_resonance_score", None),
+                search_time=search_time,
+            )
+            if locally_valid:
+                local_pass += 1
+            else:
+                local_fail += 1
+
+        return batch_checked, local_pass, local_fail
+
+    async def run_search_loop(self) -> None:
+        """Main loop: poll live jobs, run structured solver search, verify, submit, adapt."""
         batch_size = int(os.getenv("HYBA_MINING_BATCH_SIZE", "500"))
         logger.info("=" * 72)
-        logger.info("  HENDRIX-Φ + PULVINI Unified Miner — Full-Space Sequential Traversal")
-        logger.info("  Batch size: %d nonces per job cycle", batch_size)
+        logger.info("  HENDRIX-Φ + PULVINI Unified Miner — Structured Solver Traversal")
+        logger.info("  Structured search cycles per job poll: %d", batch_size)
         logger.info("=" * 72)
 
-        # Build the full-space nonce range from the engine's compressed plan.
         from pythia_mining.pulvini_nonce_compression import build_pulvini_nonce_plan
+
         try:
             nonce_plan = build_pulvini_nonce_plan()
-            solver_ranges = self._normalise_solver_ranges(nonce_plan.solver_ranges)
+            segments, coverage, overlap_free, active_ranges = self._nonce_plan_telemetry(
+                nonce_plan
+            )
             logger.info(
-                "PULVINI nonce plan: %d regions, coverage=%s, overlap_free=%s, active_ranges=%d",
-                len(nonce_plan.regions),
-                nonce_plan.total_nonce_coverage,
-                nonce_plan.is_overlap_free,
-                len(solver_ranges),
+                "PULVINI nonce plan: %d coverage_segments, complete_coverage=%s, overlap_free=%s, active_ranges=%d",
+                segments,
+                coverage,
+                overlap_free,
+                active_ranges,
             )
         except Exception as exc:
-            logger.warning("Falling back to full 2^32 range: %s", exc)
-            solver_ranges = [(0, UINT32_MAX)]
-
-        range_start, range_end = 0, 0
-        range_idx = 0
-
-        def _next_nonce_range() -> Optional[Tuple[int, int]]:
-            nonlocal range_idx, range_start, range_end
-            if range_idx < len(solver_ranges):
-                range_start, range_end = solver_ranges[range_idx]
-                range_idx += 1
-                return range_start, range_end
-            return None
-
-        current_range = _next_nonce_range()
-        nonce_cursor = current_range[0] if current_range is not None else 0
+            logger.warning("Unable to build PULVINI nonce-plan telemetry: %s", exc)
 
         while RUNNING:
             if not self.stratum or not self.stratum.is_connected:
@@ -339,59 +390,16 @@ class UnifiedMiner:
                     continue
 
                 batch_start = time.monotonic()
-                batch_checked = 0
-                local_pass = 0
-                local_fail = 0
-                for _ in range(batch_size):
-                    if not RUNNING:
-                        break
-                    if current_range is None:
-                        current_range = _next_nonce_range()
-                        if current_range is None:
-                            # Exhausted the full nonce space — wrap around.
-                            range_idx = 0
-                            current_range = _next_nonce_range()
-                            if current_range is None:
-                                break
-                            nonce_cursor = current_range[0]
-
-                    rs, re = current_range
-                    if nonce_cursor < rs:
-                        nonce_cursor = rs
-                    if nonce_cursor > re:
-                        current_range = _next_nonce_range()
-                        if current_range is None:
-                            range_idx = 0
-                            current_range = _next_nonce_range()
-                        if current_range is None:
-                            break
-                        rs, re = current_range
-                        nonce_cursor = rs
-
-                    nonce = nonce_cursor
-                    nonce_cursor += 1
-                    self._total_searches += 1
-                    batch_checked += 1
-
-                    candidate_start = time.monotonic()
-                    locally_valid = await self._handle_nonce_result(
-                        job,
-                        nonce,
-                        strategy_used="pulvini_full_space_sequential",
-                        phi_resonance_score=None,
-                        search_time=time.monotonic() - candidate_start,
-                    )
-                    if locally_valid:
-                        local_pass += 1
-                    else:
-                        local_fail += 1
-
+                batch_checked, local_pass, local_fail = await self._run_structured_search_batch(
+                    job,
+                    batch_size,
+                )
                 batch_elapsed = time.monotonic() - batch_start
                 batch_rate = batch_checked / max(0.001, batch_elapsed)
+
                 if batch_checked and self._total_searches % (batch_size * 5) == 0:
-                    nonce_range_pct = (nonce_cursor / (2**32)) * 100
                     logger.info(
-                        "Scan batch: %d nonces in %.2fs (%.0f nonces/s) batch_pass=%d batch_fail=%d target=%s total=%d (%.4f%% of space)",
+                        "Structured search batch: %d candidates in %.2fs (%.0f candidates/s) batch_pass=%d batch_fail=%d target=%s total=%d",
                         batch_checked,
                         batch_elapsed,
                         batch_rate,
@@ -399,7 +407,12 @@ class UnifiedMiner:
                         local_fail,
                         self._safe_target_hex(getattr(job, "target", None)),
                         self._total_searches,
-                        nonce_range_pct,
+                    )
+                elif local_fail and not batch_checked:
+                    logger.info(
+                        "Structured search batch produced no candidate: failures=%d target=%s",
+                        local_fail,
+                        self._safe_target_hex(getattr(job, "target", None)),
                     )
 
                 now = time.monotonic()
