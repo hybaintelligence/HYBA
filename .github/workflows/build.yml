@@ -1,0 +1,34 @@
+name: Build verification
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - 'codex/**'
+
+jobs:
+  build:
+    name: npm run build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Verify Cloudflare Pages build config
+        run: node scripts/assert_cloudflare_pages_build_config.mjs
+
+      - name: Type-check
+        run: npm run lint
+
+      - name: Build
+        run: npm run build
