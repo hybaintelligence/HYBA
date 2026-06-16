@@ -12,15 +12,15 @@
       "description": "ViaBTC SHA256 pool"
     },
     "braiins": {
-      "name": "Braiins Pool (Stratum V2)",
-      "url": "stratum2+tcp://stratum.braiins.com:3333/9awtMD5KQgvRUh2yFbjVeT7b6hjipWcAsQHd6wEhgtDT9soosna",
-      "stratum_version": 2,
-      "username": "PYTHIA",
-      "password": "anything123",
+      "name": "Braiins Pool",
+      "url": "stratum+tcp://stratum.braiins.com:3333",
+      "stratum_version": 1,
+      "username": "hendrix_phi",
+      "password": "9awtMD5KQgvRUh2yFbjVeT7b6hjipWcAsQHd6wEhgtDT9soosna",
       "worker": "hendrix_phi",
       "priority": 3,
       "enabled": true,
-      "description": "Braiins Pool - Stratum V2 with token"
+      "description": "Braiins Pool - Stratum V1"
     },
     "ckpool": {
       "name": "Solo CKPool",

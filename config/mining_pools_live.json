@@ -2,15 +2,8 @@
   "default_pool": "ckpool",
   "pools": {
     "viabtc": {
-      "name": "ViaBTC BTC",
-      "url": "stratum+tcp://btc.viabtc.io:3333",
-      "stratum_version": 1,
-      "username": "PYTHIA",
-      "password": "x",
-      "worker": "hendrix_phi",
-      "priority": 4,
-      "enabled": true,
-      "description": "ViaBTC SHA256 pool"
+      "enabled": false,
+      "description": "ViaBTC - SSL port blocked from this network"
     },
     "braiins": {
       "name": "Braiins Pool (Stratum V2)",
