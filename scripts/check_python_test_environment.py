@@ -18,6 +18,7 @@ REQUIRED_IMPORTS: Dict[str, str] = {
     "fastapi": "fastapi",
     "numpy": "numpy",
     "pytest": "pytest",
+    "pytest_asyncio": "pytest-asyncio",
     "hypothesis": "hypothesis",
     "argon2": "argon2-cffi",
     "httpx": "httpx",
