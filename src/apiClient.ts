@@ -521,6 +521,45 @@ export async function disconnectFromPool(): Promise<{ status: string; previous_p
   );
 }
 
+export async function pauseMining(): Promise<{ status: string; midas_state?: string }> {
+  return post<{ status: string; midas_state?: string }>("/mining/pause", {}, { maxRetries: 0 });
+}
+
+export async function resumeMining(): Promise<{ status: string; midas_state?: string }> {
+  return post<{ status: string; midas_state?: string }>("/mining/resume", {}, { maxRetries: 0 });
+}
+
+export async function scaleIntelligence(
+  scale: number,
+  target = "reflexive_controller",
+): Promise<{ status: string; intelligence_scale: number }> {
+  return post<{ status: string; intelligence_scale: number }>("/v1/intelligence/scale", {
+    scale,
+    target,
+  });
+}
+
+export async function boostConsciousness(
+  boost: number,
+  taskBudget = 1,
+): Promise<{ status: string; boost: number; task_budget: number }> {
+  return post<{ status: string; boost: number; task_budget: number }>(
+    "/v1/intelligence/consciousness/boost",
+    { boost, task_budget: taskBudget },
+  );
+}
+
+export async function analyzeBlockchainSnapshot(blocks: Array<{ height: number; block_hash: string }>) {
+  return post<Record<string, unknown>>("/v1/unified/analyze/blockchain", { blocks });
+}
+
+export async function analyzeItFromBit(bits: string, wordSize = 8) {
+  return post<Record<string, unknown>>("/v1/unified/analyze/it-from-bit", {
+    bits,
+    word_size: wordSize,
+  });
+}
+
 export interface SubmitJobRequest {
   pool_id: string;
   worker: string;

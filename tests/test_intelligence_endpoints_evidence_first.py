@@ -67,3 +67,55 @@ class TestIntelligenceEndpointsEvidenceFirst(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+from hyba_genesis_api.api.intelligence import (  # noqa: E402
+    ConsciousnessBoostRequest,
+    IntelligenceScaleRequest,
+    boost_consciousness,
+    scale_intelligence,
+)
+
+
+class TestIntelligenceControlEndpoints(unittest.TestCase):
+    def test_scale_endpoint_is_bounded_and_claim_scoped(self) -> None:
+        payload = asyncio.run(
+            scale_intelligence(
+                IntelligenceScaleRequest(
+                    scale=1.5,
+                    target="reflexive_controller",
+                    reason="review_environment_control",
+                )
+            )
+        )
+        self.assertEqual(payload["status"], "scaled")
+        self.assertEqual(payload["intelligence_scale"], 1.5)
+        self.assertEqual(payload["telemetry_source"], "measured_reflexive_controller_runtime")
+        self.assertIn("runtime values are derived", payload["claim_boundary"])
+
+    def test_consciousness_boost_endpoint_does_not_claim_phenomenal_consciousness(self) -> None:
+        payload = asyncio.run(
+            boost_consciousness(
+                ConsciousnessBoostRequest(boost=1.25, task_budget=2, basis="phi_iit_deutsch")
+            )
+        )
+        self.assertEqual(payload["status"], "boosted")
+        self.assertEqual(payload["boost"], 1.25)
+        self.assertIn("not a claim of phenomenal consciousness", payload["claim_boundary"])
+
+from hypothesis import given, strategies as st  # noqa: E402
+
+
+class TestIntelligenceControlProperties(unittest.TestCase):
+    @given(st.floats(min_value=0.1, max_value=3.0, allow_nan=False, allow_infinity=False))
+    def test_intelligence_scale_property_is_bounded(self, scale: float) -> None:
+        req = IntelligenceScaleRequest(scale=scale, target="closure_sync")
+        self.assertGreaterEqual(req.scale, 0.1)
+        self.assertLessEqual(req.scale, 3.0)
+
+    @given(st.floats(min_value=0.1, max_value=2.0, allow_nan=False, allow_infinity=False), st.integers(min_value=1, max_value=8))
+    def test_consciousness_boost_property_is_bounded(self, boost: float, task_budget: int) -> None:
+        req = ConsciousnessBoostRequest(boost=boost, task_budget=task_budget)
+        self.assertGreaterEqual(req.boost, 0.1)
+        self.assertLessEqual(req.boost, 2.0)
+        self.assertGreaterEqual(req.task_budget, 1)
+        self.assertLessEqual(req.task_budget, 8)

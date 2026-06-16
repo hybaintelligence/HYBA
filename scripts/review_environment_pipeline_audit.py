@@ -28,6 +28,13 @@ if str(BACKEND) not in sys.path:
 warnings.filterwarnings("ignore", message="Using.*starlette.testclient.*")
 from fastapi.testclient import TestClient  # noqa: E402
 from hyba_genesis_api.api.mining import SubmitJobRequest  # noqa: E402
+from hyba_genesis_api.api.unified_mining import (  # noqa: E402
+    BlockchainAnalysisRequest,
+    ItFromBitRequest,
+    analyze_blockchain,
+    analyze_it_from_bit,
+)
+from hyba_genesis_api.main import app as hyba_app  # noqa: E402
 from pydantic import ValidationError  # noqa: E402
 from pythia_mining.stratum_client import MiningJob, PoolManager  # noqa: E402
 
@@ -194,6 +201,60 @@ def _audit_rate_limit_status() -> AuditResult:
     )
 
 
+def _audit_operator_route_contracts() -> AuditResult:
+    route_paths = {getattr(route, "path", "") for route in hyba_app.routes}
+    required = {
+        "/api/mining/pause",
+        "/api/mining/resume",
+        "/api/v1/intelligence/scale",
+        "/api/v1/intelligence/consciousness/boost",
+        "/api/v1/unified/analyze/blockchain",
+        "/api/v1/unified/analyze/it-from-bit",
+    }
+    missing = sorted(required - route_paths)
+    return AuditResult(
+        name="operator_route_contracts",
+        status="pass" if not missing else "fail",
+        detail="All production operator routes are mounted on the FastAPI app."
+        if not missing
+        else "Some production operator routes are missing.",
+        evidence={"required": sorted(required), "missing": missing},
+    )
+
+
+async def _audit_blockchain_and_it_from_bit_local_analysis() -> AuditResult:
+    blockchain = await analyze_blockchain(
+        BlockchainAnalysisRequest(
+            blocks=[
+                {"height": 840_000, "block_hash": "00" * 32},
+                {"height": 840_001, "block_hash": "11" * 32},
+            ]
+        )
+    )
+    information = await analyze_it_from_bit(ItFromBitRequest(bits="01001101", word_size=4))
+    passed = (
+        blockchain["block_count"] == 2
+        and 0.0 <= blockchain["mean_phi_resonance"] <= 1.0
+        and information["word_count"] == 2
+        and "not as an ontological or physical proof" in information["claim_boundary"]
+    )
+    return AuditResult(
+        name="blockchain_it_from_bit_local_analysis",
+        status="pass" if passed else "fail",
+        detail="Blockchain resonance and It-from-Bit analysis run deterministically without live network access."
+        if passed
+        else "Local deterministic analysis did not satisfy the production contract.",
+        evidence={
+            "blockchain_snapshot_hash": blockchain.get("snapshot_hash"),
+            "information_digest": information.get("digest"),
+            "telemetry_sources": [
+                blockchain.get("telemetry_source"),
+                information.get("telemetry_source"),
+            ],
+        },
+    )
+
+
 def _rate_limit_contract_module() -> None:
     """Install a tiny FastAPI module used only by the audit process.
 
@@ -242,6 +303,8 @@ async def run_audits() -> list[AuditResult]:
         await _audit_stale_job_invalidation(),
         _audit_malformed_nonce_validation(),
         _audit_rate_limit_status(),
+        _audit_operator_route_contracts(),
+        await _audit_blockchain_and_it_from_bit_local_analysis(),
     ]
 
 

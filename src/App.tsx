@@ -238,6 +238,32 @@ function AppContent() {
       securityStatus,
     ],
   );
+  const operatorCommandEvidence = useMemo(
+    () => [
+      {
+        icon: <Terminal className="h-4 w-4" />,
+        title: "Bridge health",
+        detail: "/bridge/health exposes backend reachability, circuit breaker state, and request telemetry.",
+      },
+      {
+        icon: <BarChart3 className="h-4 w-4" />,
+        title: "Prometheus metrics",
+        detail: "/bridge/metrics emits counters and gauges for operational monitoring.",
+      },
+      {
+        icon: <TrendingUp className="h-4 w-4" />,
+        title: "Production gates",
+        detail: "npm run prod:check validates type safety, build output, backend tests, and E2E smoke coverage.",
+      },
+      {
+        icon: <Cpu className="h-4 w-4" />,
+        title: "Operator command routes",
+        detail:
+          "Callable controls include /api/mining/pause, /api/mining/resume, /api/v1/intelligence/scale, /api/v1/intelligence/consciousness/boost, /api/v1/unified/analyze/blockchain, and /api/v1/unified/analyze/it-from-bit.",
+      },
+    ],
+    [],
+  );
 
   const readinessScore = useMemo(() => {
     let score = 0;
@@ -965,21 +991,14 @@ function AppContent() {
             >
               <GovernanceDashboard signals={governanceSignals} />
               <div className="mt-4 space-y-3">
-                <EvidenceItem
-                  icon={<Terminal className="h-4 w-4" />}
-                  title="Bridge health"
-                  detail="/bridge/health exposes backend reachability, circuit breaker state, and request telemetry."
-                />
-                <EvidenceItem
-                  icon={<BarChart3 className="h-4 w-4" />}
-                  title="Prometheus metrics"
-                  detail="/bridge/metrics emits counters and gauges for operational monitoring."
-                />
-                <EvidenceItem
-                  icon={<TrendingUp className="h-4 w-4" />}
-                  title="Production gates"
-                  detail="npm run prod:check validates type safety, build output, backend tests, and E2E smoke coverage."
-                />
+                {operatorCommandEvidence.map(item => (
+                  <EvidenceItem
+                    key={item.title}
+                    icon={item.icon}
+                    title={item.title}
+                    detail={item.detail}
+                  />
+                ))}
               </div>
             </Panel>
           </div>

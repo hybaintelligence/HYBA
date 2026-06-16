@@ -961,6 +961,143 @@ async def mining_status():
     }
 
 
+@router.post("/pause", dependencies=[Depends(require_mining_control)])
+async def pause_mining(
+    request: Request,
+    idempotency_key: Optional[str] = Header(None, alias="Idempotency-Key"),
+):
+    """Pause active hashing while preserving the authenticated pool connection."""
+
+    request_id = _request_id(request)
+    parameters = {"active_pool": _ACTIVE_CONNECTION.get("pool_id") if _ACTIVE_CONNECTION else None}
+    idem = _idempotency_key(request, idempotency_key, "pause", parameters)
+    tracked = mining_request_tracker.create_request("pause", parameters, idem)
+    if tracked.status == RequestStatus.COMPLETED and tracked.result:
+        return tracked.result
+    if tracked.status == RequestStatus.PROCESSING:
+        return {"status": "processing", "request_id": tracked.request_id, "idempotency_key": idem}
+    _admit_midas_control(request_id)
+    mining_request_tracker.update_request_status(tracked.request_id, RequestStatus.PROCESSING)
+    try:
+        if _ACTIVE_CONNECTION is None:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail={"error": "mining_not_connected", "message": "Connect mining before pausing."},
+            )
+        if midas_state_machine.get_state() != MiningState.RUNNING:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail={"error": "midas_not_running", "state": midas_state_machine.get_state().value},
+            )
+        daemon_status = stop_pythia_daemon()
+        state = get_pythia_state() or {}
+        state["midas_state"] = "paused"
+        state["hashing_paused"] = True
+        state["paused_at"] = datetime.now(timezone.utc).isoformat()
+        state["pause_request_id"] = request_id
+        _write_state(state)
+        midas_state_machine.transition(
+            MiningState.PAUSED,
+            request_id=request_id,
+            reason="operator requested mining pause",
+            metadata={"tracked_request_id": tracked.request_id, "pool_preserved": True},
+        )
+        result = {
+            "status": "paused",
+            "request_id": request_id,
+            "tracked_request_id": tracked.request_id,
+            "idempotency_key": idem,
+            "connection": _redacted_connection(_ACTIVE_CONNECTION),
+            "daemon": daemon_status,
+            "midas_state": midas_state_machine.get_state().value,
+            "telemetry_source": "live_api",
+        }
+        mining_request_tracker.update_request_status(
+            tracked.request_id, RequestStatus.COMPLETED, result=result
+        )
+        return result
+    except HTTPException as exc:
+        mining_request_tracker.update_request_status(
+            tracked.request_id, RequestStatus.FAILED, error=str(exc.detail)
+        )
+        raise
+    except StateTransitionError as exc:
+        mining_request_tracker.update_request_status(
+            tracked.request_id, RequestStatus.FAILED, error=str(exc)
+        )
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc)) from exc
+
+
+@router.post("/resume", dependencies=[Depends(require_mining_control)])
+async def resume_mining(
+    request: Request,
+    idempotency_key: Optional[str] = Header(None, alias="Idempotency-Key"),
+):
+    """Resume hashing from a paused state without rebuilding pool credentials."""
+
+    request_id = _request_id(request)
+    parameters = {"active_pool": _ACTIVE_CONNECTION.get("pool_id") if _ACTIVE_CONNECTION else None}
+    idem = _idempotency_key(request, idempotency_key, "resume", parameters)
+    tracked = mining_request_tracker.create_request("resume", parameters, idem)
+    if tracked.status == RequestStatus.COMPLETED and tracked.result:
+        return tracked.result
+    if tracked.status == RequestStatus.PROCESSING:
+        return {"status": "processing", "request_id": tracked.request_id, "idempotency_key": idem}
+    _admit_midas_control(request_id)
+    mining_request_tracker.update_request_status(tracked.request_id, RequestStatus.PROCESSING)
+    try:
+        if _ACTIVE_CONNECTION is None:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail={"error": "mining_not_connected", "message": "Connect mining before resuming."},
+            )
+        if midas_state_machine.get_state() != MiningState.PAUSED:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail={"error": "midas_not_paused", "state": midas_state_machine.get_state().value},
+            )
+        daemon_status = start_pythia_daemon(
+            capacity_ehs=_ACTIVE_CONNECTION.get("capacity_ehs")
+            or _ACTIVE_CONNECTION.get("base_capacity_ehs")
+        )
+        state = get_pythia_state() or {}
+        state["midas_state"] = "running"
+        state["hashing_paused"] = False
+        state["resumed_at"] = datetime.now(timezone.utc).isoformat()
+        state["resume_request_id"] = request_id
+        _write_state(state)
+        midas_state_machine.transition(
+            MiningState.RUNNING,
+            request_id=request_id,
+            reason="operator requested mining resume",
+            metadata={"tracked_request_id": tracked.request_id, "pool_preserved": True},
+        )
+        result = {
+            "status": "running",
+            "request_id": request_id,
+            "tracked_request_id": tracked.request_id,
+            "idempotency_key": idem,
+            "connection": _redacted_connection(_ACTIVE_CONNECTION),
+            "daemon": daemon_status,
+            "midas_state": midas_state_machine.get_state().value,
+            "telemetry_source": "live_api",
+        }
+        mining_request_tracker.update_request_status(
+            tracked.request_id, RequestStatus.COMPLETED, result=result
+        )
+        return result
+    except HTTPException as exc:
+        mining_request_tracker.update_request_status(
+            tracked.request_id, RequestStatus.FAILED, error=str(exc.detail)
+        )
+        raise
+    except StateTransitionError as exc:
+        mining_request_tracker.update_request_status(
+            tracked.request_id, RequestStatus.FAILED, error=str(exc)
+        )
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc)) from exc
+
+
 @router.get("/health", dependencies=[Depends(require_mining_read)])
 async def health_check():
     """Comprehensive health check for mining system with detailed status."""
