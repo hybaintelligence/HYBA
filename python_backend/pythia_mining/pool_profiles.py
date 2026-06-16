@@ -140,9 +140,9 @@ SUPPORTED_VERSIONS = {1, 2}
 DEFAULT_POOL_SPECS: dict[str, dict[str, Any]] = {
     "viabtc": {
         "name": "ViaBTC BTC",
-        "url": "stratum+ssl://btc.viabtc.io:3334",
+        "url": "stratum+tcp://btc.viabtc.io:3333",
         "stratum_version": 1,
-        "tls_required": True,
+        "tls_required": False,
         "credential_mode": "username_password",
         "required_fields": ["username", "password"],
         "priority": 10,

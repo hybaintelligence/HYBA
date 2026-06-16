@@ -3,15 +3,15 @@
   "pools": {
     "viabtc": {
       "name": "ViaBTC BTC",
-      "url": "stratum+ssl://btc.viabtc.io:3334",
+      "url": "stratum+tcp://btc.viabtc.io:3333",
       "stratum_version": 1,
       "username": "",
       "password": "",
       "worker": "",
       "priority": 4,
       "enabled": false,
-      "tls_required": true,
-      "description": "ViaBTC SHA256 pool. Configure credentials in local secret-managed runtime config."
+      "tls_required": false,
+      "description": "ViaBTC SHA256 pool. Configure subaccount username and worker password in local secret-managed runtime config."
     },
     "braiins": {
       "name": "Braiins Pool",

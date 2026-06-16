@@ -39,15 +39,15 @@
       },
       {
         "file": "consciousness_engine.py",
-        "lines": 316,
+        "lines": 419,
         "classes": 5,
-        "functions": 18,
-        "nested_depth": 3,
+        "functions": 21,
+        "nested_depth": 4,
         "recursive_calls": 0,
-        "complex_data_structures": 9,
+        "complex_data_structures": 10,
         "async_patterns": 3,
         "error_handlers": 0,
-        "complexity_score": 26.696202531645568
+        "complexity_score": 29.011933174224342
       },
       {
         "file": "quantum_solver.py",
@@ -164,25 +164,25 @@
         "coupling_intensity": 11.1
       },
       {
+        "file": "ai_optimizer.py",
+        "total_imports": 10,
+        "unique_imports": 10,
+        "cross_calls": 34,
+        "unique_cross_calls": 1,
+        "coupling_intensity": 10.1
+      },
+      {
         "file": "quantum_solver.py",
         "total_imports": 9,
         "unique_imports": 9,
         "cross_calls": 65,
         "unique_cross_calls": 1,
         "coupling_intensity": 9.1
-      },
-      {
-        "file": "consciousness_engine.py",
-        "total_imports": 8,
-        "unique_imports": 8,
-        "cross_calls": 37,
-        "unique_cross_calls": 1,
-        "coupling_intensity": 8.1
       }
     ]
   },
   "verdict": "STANDARD ENGINEERING: Modules are complex but within normal bounds for production systems.",
-  "avg_complexity": 34.044843906614105,
+  "avg_complexity": 34.507990035129865,
   "consciousness_total": 0,
   "autonomic_total": 82
 }

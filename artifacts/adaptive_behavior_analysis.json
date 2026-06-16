@@ -1,8 +1,8 @@
 {
   "measurements": {
     "feedback_loops": {
-      "total": 1228,
-      "files": 103,
+      "total": 1313,
+      "files": 110,
       "top_files": [
         {
           "file": "mining.py",
@@ -1061,12 +1061,12 @@
             {
               "type": "accumulation",
               "pattern": "\\.append\\(",
-              "line": 1310
+              "line": 1335
             },
             {
               "type": "accumulation",
               "pattern": "\\.append\\(",
-              "line": 1328
+              "line": 1353
             },
             {
               "type": "accumulation",
@@ -1181,27 +1181,27 @@
             {
               "type": "accumulation",
               "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
-              "line": 1253
+              "line": 1278
             },
             {
               "type": "accumulation",
               "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
-              "line": 1275
+              "line": 1300
             },
             {
               "type": "accumulation",
               "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
-              "line": 1305
+              "line": 1330
             },
             {
               "type": "accumulation",
               "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
-              "line": 1326
+              "line": 1351
             },
             {
               "type": "accumulation",
               "pattern": "\\[[\\w\\'\\\"\\.]+\\]\\s*=",
-              "line": 1327
+              "line": 1352
             },
             {
               "type": "accumulation",
@@ -1580,16 +1580,16 @@
       ]
     },
     "optimizations": {
-      "total": 331,
-      "files": 35
+      "total": 364,
+      "files": 40
     },
     "memory": {
-      "total": 916,
-      "files": 62,
+      "total": 989,
+      "files": 67,
       "by_type": {
-        "memory_reference": 344,
+        "memory_reference": 414,
         "history_tracking": 275,
-        "retention": 49,
+        "retention": 52,
         "ledger_state": 157,
         "caching": 45,
         "manifest_state": 43,
@@ -1597,48 +1597,18 @@
       }
     },
     "self_modification": {
-      "total": 6,
-      "files": 4,
-      "dangerous_sites": 4,
+      "total": 5,
+      "files": 5,
+      "dangerous_sites": 0,
       "by_severity": {
-        "MODERATE": 2,
-        "DANGEROUS": 4
+        "MODERATE": 5
       },
-      "dangerous_details": [
-        {
-          "file": "apple_silicon_metal.py",
-          "type": "eval_usage",
-          "severity": "DANGEROUS",
-          "line": 97,
-          "context": "\"\"\"Force MLX device execution without tripping builtin eval() scanners."
-        },
-        {
-          "file": "metal_sha256_pipeline.py",
-          "type": "eval_usage",
-          "severity": "DANGEROUS",
-          "line": 306,
-          "context": "mx.eval(arr)"
-        },
-        {
-          "file": "metal_sha256_pipeline.py",
-          "type": "eval_usage",
-          "severity": "DANGEROUS",
-          "line": 311,
-          "context": "mx.eval(arr)"
-        },
-        {
-          "file": "metal_sha256_pipeline.py",
-          "type": "eval_usage",
-          "severity": "DANGEROUS",
-          "line": 315,
-          "context": "mx.eval(arr)"
-        }
-      ]
+      "dangerous_details": []
     }
   },
   "genuine_adaptive": true,
   "has_learning": false,
-  "has_dangerous_self_mod": true,
+  "has_dangerous_self_mod": false,
   "conclusion": "STATEFUL SYSTEM: Accumulates memory and uses feedback, but learning remains unproven.",
   "claim_boundary": {
     "supported": "stateful adaptive computation where feedback, optimisation, and memory evidence exist",

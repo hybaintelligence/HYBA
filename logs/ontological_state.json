@@ -8,9 +8,9 @@
       "adjustment": 0.00396165,
       "key": "entropy_threshold_delta",
       "persistence": "in_memory_only",
-      "previous": 0.0079233,
+      "previous": 0.0,
       "source": "recursive_closure",
-      "timestamp": "2026-06-15T14:20:28.558620+00:00",
+      "timestamp": "2026-06-16T12:00:52.275158+00:00",
       "value": 0.00396165
     }
   }
