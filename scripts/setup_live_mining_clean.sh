@@ -14,14 +14,22 @@ sleep 2
 
 # Source production credentials into this shell
 echo "[*] Loading production credentials..."
-export $(grep -v "^#" config/production_credentials.env | grep -v "^$" | xargs)
+# Use static credentials file (with no shell substitutions)
+while IFS='=' read -r key value; do
+  # Skip comments and empty lines
+  [[ "$key" =~ ^#.*$ ]] && continue
+  [ -z "$key" ] && continue
+  
+  # Export the variable
+  export "$key=$value"
+done < config/production_credentials_static.env
 
 # Verify env vars are loaded
-if [ -z "$JWT_SECRET" ]; then
-    echo "ERROR: JWT_SECRET not loaded"
+if [ -z "$NODE_ENV" ]; then
+    echo "ERROR: NODE_ENV not loaded"
     exit 1
 fi
-echo "[✓] JWT_SECRET loaded: ${JWT_SECRET:0:20}..."
+echo "[✓] Environment loaded: NODE_ENV=$NODE_ENV, JWT_SECRET loaded"
 
 # Start backend with production env
 echo ""

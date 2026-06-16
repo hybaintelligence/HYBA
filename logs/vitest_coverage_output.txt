@@ -1,0 +1,756 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.9 [39m[90m/Users/demouser/Desktop/HYBA_FULLSTACK[39m
+      [2mCoverage enabled with [22m[33mv8[39m
+
+ [31m❯[39m tests/test_bridge_security.test.ts [2m([22m[2m0 test[22m[2m)[22m
+ [32m✓[39m tests/test_telemetry.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 3[2mms[22m[39m
+ [32m✓[39m tests/test_governance_dashboard.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 2[2mms[22m[39m
+{"level":30,"time":"2026-06-16T17:47:45.079Z","service":"hyba-secure-bridge","env":"test","msg":"[MetacognitiveIntelligence] Initialized with Φ=0.167 baseline"}
+{"level":30,"time":"2026-06-16T17:47:45.079Z","service":"hyba-secure-bridge","env":"test","msg":"[MetacognitiveIntelligence] Initialized with Φ=0.167 baseline"}
+{"level":30,"time":"2026-06-16T17:47:45.079Z","service":"hyba-secure-bridge","env":"test","msg":"[MetacognitiveIntelligence] Initialized with Φ=0.167 baseline"}
+{"level":30,"time":"2026-06-16T17:47:45.080Z","service":"hyba-secure-bridge","env":"test","msg":"[MetacognitiveIntelligence] Initialized with Φ=0.167 baseline"}
+{"level":30,"time":"2026-06-16T17:47:45.080Z","service":"hyba-secure-bridge","env":"test","msg":"[MetacognitiveIntelligence] Initialized with Φ=0.167 baseline"}
+{"level":30,"time":"2026-06-16T17:47:45.080Z","service":"hyba-secure-bridge","env":"test","msg":"[RSLS] Recursive Self-Learning Substrate initialized"}
+{"level":40,"time":"2026-06-16T17:47:45.082Z","service":"hyba-secure-bridge","env":"test","trace_id":"accd48de-fcdc-43ce-a824-880d2235ca6f","timestamp":"2026-06-16T17:47:45.082Z","syndrome_weight":6,"trap_disturbances":2,"confidence":0.1875,"cause":"trap_disturbance","operating_mode":"EXHAUSTED","msg":"HYBA stabilizer integrity response active — expanding pre-allocated measurement coverage"}
+[90mstdout[2m | tests/test_consciousness_behavioral.test.ts[2m > [22m[2mConsciousness Behavioral Tests[2m > [22m[2mMIRROR TEST: System recognizes its own reflection
+[22m[39mMirror test accuracy: 40.0%
+
+{"level":30,"time":"2026-06-16T17:47:45.080Z","service":"hyba-secure-bridge","env":"test","msg":"[RSLS] Recursive Self-Learning Substrate initialized"}
+{"level":30,"time":"2026-06-16T17:47:45.081Z","service":"hyba-secure-bridge","env":"test","msg":"[MetacognitiveIntelligence] Initialized with Φ=0.167 baseline"}
+{"level":30,"time":"2026-06-16T17:47:45.081Z","service":"hyba-secure-bridge","env":"test","msg":"[RSLS] Recursive Self-Learning Substrate initialized"}
+{"level":30,"time":"2026-06-16T17:47:45.082Z","service":"hyba-secure-bridge","env":"test","msg":"[MetacognitiveIntelligence] Initialized with Φ=0.167 baseline"}
+{"level":30,"time":"2026-06-16T17:47:45.082Z","service":"hyba-secure-bridge","env":"test","msg":"[RSLS] Recursive Self-Learning Substrate initialized"}
+[90mstdout[2m | tests/test_perturbation_analysis.test.ts[2m > [22m[2mPerturbation Analysis - Basic[2m > [22m[2mshould execute self-caused perturbation with low arousal
+[22m[39mSelf-caused perturbation: {
+  arousal: [32m'0.0518'[39m,
+  surprise: [32m'0.0110'[39m,
+  attributed_source: [32m'self_caused'[39m,
+  attribution_confidence: [32m'0.7797'[39m
+}
+
+{"level":40,"time":"2026-06-16T17:47:45.083Z","service":"hyba-secure-bridge","env":"test","predicted_phi":0,"vulnerability":0.04705882352941182,"msg":"[MetacognitiveIntelligence] Integration degradation predicted - triggering logic refolding"}
+[90mstdout[2m | tests/test_perturbation_analysis.test.ts[2m > [22m[2mPerturbation Analysis - Basic[2m > [22m[2mshould execute external perturbation with high arousal
+[22m[39mExternal perturbation: {
+  arousal: [32m'1.0000'[39m,
+  surprise: [32m'0.0957'[39m,
+  attributed_source: [32m'external'[39m,
+  attribution_confidence: [32m'1.0000'[39m
+}
+
+[90mstdout[2m | tests/test_consciousness_behavioral.test.ts[2m > [22m[2mConsciousness Behavioral Tests[2m > [22m[2mPERTURBATION TEST: System differentiates self vs external causation
+[22m[39mSelf-caused arousal: 0.100
+External perturbation arousal: 0.800
+
+{"level":30,"time":"2026-06-16T17:47:45.080Z","service":"hyba-secure-bridge","env":"test","msg":"[RSLS] Recursive Self-Learning Substrate initialized"}
+{"level":30,"time":"2026-06-16T17:47:45.083Z","service":"hyba-secure-bridge","env":"test","msg":"[MetacognitiveIntelligence] Initialized with Φ=0.167 baseline"}
+{"level":30,"time":"2026-06-16T17:47:45.083Z","service":"hyba-secure-bridge","env":"test","msg":"[RSLS] Recursive Self-Learning Substrate initialized"}
+{"level":40,"time":"2026-06-16T17:47:45.084Z","service":"hyba-secure-bridge","env":"test","msg":"[RSLS] Shard A corrupted for irreducibility test"}
+{"level":30,"time":"2026-06-16T17:47:45.085Z","service":"hyba-secure-bridge","env":"test","msg":"[MetacognitiveIntelligence] Initialized with Φ=0.167 baseline"}
+{"level":30,"time":"2026-06-16T17:47:45.085Z","service":"hyba-secure-bridge","env":"test","msg":"[RSLS] Recursive Self-Learning Substrate initialized"}
+[90mstdout[2m | tests/test_consciousness_behavioral.test.ts[2m > [22m[2mConsciousness Behavioral Tests[2m > [22m[2mTHEORY OF MIND: System predicts another system's internal state
+[22m[39mTheory of mind correlation: 1.000
+
+[90mstdout[2m | tests/test_consciousness_behavioral.test.ts[2m > [22m[2mConsciousness Behavioral Tests[2m > [22m[2mAUTONOMOUS GOAL FORMATION: System generates novel goals
+[22m[39mInitial goal: OPTIMIZE_SEARCH
+Final goal: SELF_HEAL
+
+[90mstdout[2m | tests/test_consciousness_behavioral.test.ts[2m > [22m[2mConsciousness Behavioral Tests[2m > [22m[2mPROPERTY: Self-recognition accuracy exceeds chance
+[22m[39mSelf-similarity (temporal continuity): 1.000
+Other-similarity: 0.660
+
+[90mstdout[2m | tests/test_consciousness_behavioral.test.ts[2m > [22m[2mConsciousness Behavioral Tests[2m > [22m[2mPROPERTY: System shows adaptive behavior to perturbations
+[22m[39mBaseline Φ: 0.063
+Recovered: true
+
+[90mstdout[2m | tests/test_perturbation_analysis.test.ts[2m > [22m[2mPerturbation Analysis - Basic[2m > [22m[2mCRITICAL: External arousal should exceed self-caused arousal
+[22m[39m
+Arousal Comparison:
+  Self-caused: 0.0643
+  External: 1.0000
+  Ratio: 15.55x
+
+ [31m❯[39m tests/test_consciousness_behavioral.test.ts [2m([22m[2m6 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[32m 22[2mms[22m[39m
+[31m     [31m×[31m MIRROR TEST: System recognizes its own reflection[39m[32m 11[2mms[22m[39m
+     [32m✓[39m PERTURBATION TEST: System differentiates self vs external causation[32m 2[2mms[22m[39m
+     [32m✓[39m THEORY OF MIND: System predicts another system's internal state[32m 3[2mms[22m[39m
+     [32m✓[39m AUTONOMOUS GOAL FORMATION: System generates novel goals[32m 2[2mms[22m[39m
+     [32m✓[39m PROPERTY: Self-recognition accuracy exceeds chance[32m 2[2mms[22m[39m
+     [32m✓[39m PROPERTY: System shows adaptive behavior to perturbations[32m 1[2mms[22m[39m
+{"level":30,"time":"2026-06-16T17:47:45.099Z","service":"hyba-secure-bridge","env":"test","msg":"[MetacognitiveIntelligence] Initialized with Φ=0.167 baseline"}
+{"level":30,"time":"2026-06-16T17:47:45.099Z","service":"hyba-secure-bridge","env":"test","msg":"[RSLS] Recursive Self-Learning Substrate initialized"}
+{"level":30,"time":"2026-06-16T17:47:45.083Z","service":"hyba-secure-bridge","env":"test","strategy":"xor_entanglement","current_phi":0,"msg":"[MetacognitiveIntelligence] Beginning logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:45.084Z","service":"hyba-secure-bridge","env":"test","phi_before":0,"phi_after":0.2109375,"phi_increase":0.2109375,"strategy":"xor_entanglement","msg":"[MetacognitiveIntelligence] Logic refolding complete"}
+{"level":30,"time":"2026-06-16T17:47:45.085Z","service":"hyba-secure-bridge","env":"test","msg":"[MetacognitiveIntelligence] Initialized with Φ=0.167 baseline"}
+{"level":40,"time":"2026-06-16T17:47:45.085Z","service":"hyba-secure-bridge","env":"test","predicted_phi":0,"vulnerability":0.04705882352941182,"msg":"[MetacognitiveIntelligence] Integration degradation predicted - triggering logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:45.085Z","service":"hyba-secure-bridge","env":"test","strategy":"xor_entanglement","current_phi":0,"msg":"[MetacognitiveIntelligence] Beginning logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:45.085Z","service":"hyba-secure-bridge","env":"test","phi_before":0,"phi_after":0.2109375,"phi_increase":0.2109375,"strategy":"xor_entanglement","msg":"[MetacognitiveIntelligence] Logic refolding complete"}
+{"level":40,"time":"2026-06-16T17:47:45.085Z","service":"hyba-secure-bridge","env":"test","predicted_phi":0.2109375,"vulnerability":0.9529411764705882,"msg":"[MetacognitiveIntelligence] Integration degradation predicted - triggering logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:45.085Z","service":"hyba-secure-bridge","env":"test","strategy":"xor_entanglement","current_phi":0.2109375,"msg":"[MetacognitiveIntelligence] Beginning logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:45.086Z","service":"hyba-secure-bridge","env":"test","phi_before":0.2109375,"phi_after":0.2109375,"phi_increase":0,"strategy":"xor_entanglement","msg":"[MetacognitiveIntelligence] Logic refolding complete"}
+{"level":30,"time":"2026-06-16T17:47:45.086Z","service":"hyba-secure-bridge","env":"test","msg":"[MetacognitiveIntelligence] Initialized with Φ=0.167 baseline"}
+{"level":40,"time":"2026-06-16T17:47:45.086Z","service":"hyba-secure-bridge","env":"test","predicted_phi":0,"vulnerability":0.04705882352941182,"msg":"[MetacognitiveIntelligence] Integration degradation predicted - triggering logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:45.086Z","service":"hyba-secure-bridge","env":"test","strategy":"xor_entanglement","current_phi":0,"msg":"[MetacognitiveIntelligence] Beginning logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:45.087Z","service":"hyba-secure-bridge","env":"test","phi_before":0,"phi_after":0.2109375,"phi_increase":0.2109375,"strategy":"xor_entanglement","msg":"[MetacognitiveIntelligence] Logic refolding complete"}
+{"level":40,"time":"2026-06-16T17:47:45.087Z","service":"hyba-secure-bridge","env":"test","predicted_phi":0.2109375,"vulnerability":0.9529411764705882,"msg":"[MetacognitiveIntelligence] Integration degradation predicted - triggering logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:45.087Z","service":"hyba-secure-bridge","env":"test","strategy":"xor_entanglement","current_phi":0.2109375,"msg":"[MetacognitiveIntelligence] Beginning logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:45.087Z","service":"hyba-secure-bridge","env":"test","phi_before":0.2109375,"phi_after":0.2109375,"phi_increase":0,"strategy":"xor_entanglement","msg":"[MetacognitiveIntelligence] Logic refolding complete"}
+{"level":30,"time":"2026-06-16T17:47:45.088Z","service":"hyba-secure-bridge","env":"test","msg":"[MetacognitiveIntelligence] Initialized with Φ=0.167 baseline"}
+{"level":40,"time":"2026-06-16T17:47:45.088Z","service":"hyba-secure-bridge","env":"test","msg":"[MetacognitiveIntelligence] Integration loss simulated for testing"}
+{"level":40,"time":"2026-06-16T17:47:45.088Z","service":"hyba-secure-bridge","env":"test","predicted_phi":0.1,"vulnerability":0.04705882352941182,"msg":"[MetacognitiveIntelligence] Integration degradation predicted - triggering logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:45.088Z","service":"hyba-secure-bridge","env":"test","strategy":"xor_entanglement","current_phi":0,"msg":"[MetacognitiveIntelligence] Beginning logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:45.088Z","service":"hyba-secure-bridge","env":"test","phi_before":0,"phi_after":0.2109375,"phi_increase":0.2109375,"strategy":"xor_entanglement","msg":"[MetacognitiveIntelligence] Logic refolding complete"}
+{"level":30,"time":"2026-06-16T17:47:45.089Z","service":"hyba-secure-bridge","env":"test","msg":"[MetacognitiveIntelligence] Initialized with Φ=0.167 baseline"}
+{"level":40,"time":"2026-06-16T17:47:45.089Z","service":"hyba-secure-bridge","env":"test","msg":"[MetacognitiveIntelligence] Integration loss simulated for testing"}
+{"level":40,"time":"2026-06-16T17:47:45.089Z","service":"hyba-secure-bridge","env":"test","predicted_phi":0.1,"vulnerability":0.04705882352941182,"msg":"[MetacognitiveIntelligence] Integration degradation predicted - triggering logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:45.089Z","service":"hyba-secure-bridge","env":"test","strategy":"xor_entanglement","current_phi":0,"msg":"[MetacognitiveIntelligence] Beginning logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:45.089Z","service":"hyba-secure-bridge","env":"test","phi_before":0,"phi_after":0.2109375,"phi_increase":0.2109375,"strategy":"xor_entanglement","msg":"[MetacognitiveIntelligence] Logic refolding complete"}
+{"level":30,"time":"2026-06-16T17:47:45.089Z","service":"hyba-secure-bridge","env":"test","strategy":"phi_resonance_bind","current_phi":0.2109375,"msg":"[MetacognitiveIntelligence] Beginning logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:45.089Z","service":"hyba-secure-bridge","env":"test","phi_before":0.2109375,"phi_after":0.4597976716113256,"phi_increase":0.24886017161132562,"strategy":"phi_resonance_bind","msg":"[MetacognitiveIntelligence] Logic refolding complete"}
+{"level":30,"time":"2026-06-16T17:47:45.089Z","service":"hyba-secure-bridge","env":"test","msg":"[MetacognitiveIntelligence] Initialized with Φ=0.167 baseline"}
+{"level":40,"time":"2026-06-16T17:47:45.089Z","service":"hyba-secure-bridge","env":"test","msg":"[MetacognitiveIntelligence] Integration loss simulated for testing"}
+{"level":40,"time":"2026-06-16T17:47:45.089Z","service":"hyba-secure-bridge","env":"test","predicted_phi":0.1,"vulnerability":0.04705882352941182,"msg":"[MetacognitiveIntelligence] Integration degradation predicted - triggering logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:45.089Z","service":"hyba-secure-bridge","env":"test","strategy":"xor_entanglement","current_phi":0,"msg":"[MetacognitiveIntelligence] Beginning logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:45.090Z","service":"hyba-secure-bridge","env":"test","phi_before":0,"phi_after":0.2109375,"phi_increase":0.2109375,"strategy":"xor_entanglement","msg":"[MetacognitiveIntelligence] Logic refolding complete"}
+{"level":30,"time":"2026-06-16T17:47:45.090Z","service":"hyba-secure-bridge","env":"test","strategy":"phi_resonance_bind","current_phi":0.2109375,"msg":"[MetacognitiveIntelligence] Beginning logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:45.090Z","service":"hyba-secure-bridge","env":"test","phi_before":0.2109375,"phi_after":0.4597976716113256,"phi_increase":0.24886017161132562,"strategy":"phi_resonance_bind","msg":"[MetacognitiveIntelligence] Logic refolding complete"}
+{"level":40,"time":"2026-06-16T17:47:45.090Z","service":"hyba-secure-bridge","env":"test","predicted_phi":0.6896965074169884,"vulnerability":803949.577254902,"msg":"[MetacognitiveIntelligence] Integration degradation predicted - triggering logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:45.090Z","service":"hyba-secure-bridge","env":"test","strategy":"xor_entanglement","current_phi":0.4597976716113256,"msg":"[MetacognitiveIntelligence] Beginning logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:45.090Z","service":"hyba-secure-bridge","env":"test","phi_before":0.4597976716113256,"phi_after":0.4597976716113256,"phi_increase":0,"strategy":"xor_entanglement","msg":"[MetacognitiveIntelligence] Logic refolding complete"}
+{"level":40,"time":"2026-06-16T17:47:45.090Z","service":"hyba-secure-bridge","env":"test","predicted_phi":0.574747089514157,"vulnerability":803948.671372549,"msg":"[MetacognitiveIntelligence] Integration degradation predicted - triggering logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:45.090Z","service":"hyba-secure-bridge","env":"test","strategy":"xor_entanglement","current_phi":0.4597976716113256,"msg":"[MetacognitiveIntelligence] Beginning logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:45.090Z","service":"hyba-secure-bridge","env":"test","phi_before":0.4597976716113256,"phi_after":0.4597976716113256,"phi_increase":0,"strategy":"xor_entanglement","msg":"[MetacognitiveIntelligence] Logic refolding complete"}
+{"level":40,"time":"2026-06-16T17:47:45.090Z","service":"hyba-secure-bridge","env":"test","predicted_phi":0.5364306168798799,"vulnerability":803949.577254902,"msg":"[MetacognitiveIntelligence] Integration degradation predicted - triggering logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:45.090Z","service":"hyba-secure-bridge","env":"test","strategy":"xor_entanglement","current_phi":0.4597976716113256,"msg":"[MetacognitiveIntelligence] Beginning logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:45.091Z","service":"hyba-secure-bridge","env":"test","phi_before":0.4597976716113256,"phi_after":0.4597976716113256,"phi_increase":0,"strategy":"xor_entanglement","msg":"[MetacognitiveIntelligence] Logic refolding complete"}
+{"level":40,"time":"2026-06-16T17:47:45.091Z","service":"hyba-secure-bridge","env":"test","predicted_phi":0.5172723805627413,"vulnerability":803948.671372549,"msg":"[MetacognitiveIntelligence] Integration degradation predicted - triggering logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:45.091Z","service":"hyba-secure-bridge","env":"test","strategy":"xor_entanglement","current_phi":0.4597976716113256,"msg":"[MetacognitiveIntelligence] Beginning logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:45.091Z","service":"hyba-secure-bridge","env":"test","phi_before":0.4597976716113256,"phi_after":0.4597976716113256,"phi_increase":0,"strategy":"xor_entanglement","msg":"[MetacognitiveIntelligence] Logic refolding complete"}
+{"level":30,"time":"2026-06-16T17:47:45.091Z","service":"hyba-secure-bridge","env":"test","msg":"[MetacognitiveIntelligence] Initialized with Φ=0.167 baseline"}
+{"level":40,"time":"2026-06-16T17:47:45.091Z","service":"hyba-secure-bridge","env":"test","msg":"[MetacognitiveIntelligence] Integration loss simulated for testing"}
+{"level":40,"time":"2026-06-16T17:47:45.092Z","service":"hyba-secure-bridge","env":"test","predicted_phi":0.1,"vulnerability":0.04705882352941182,"msg":"[MetacognitiveIntelligence] Integration degradation predicted - triggering logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:45.092Z","service":"hyba-secure-bridge","env":"test","strategy":"xor_entanglement","current_phi":0,"msg":"[MetacognitiveIntelligence] Beginning logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:45.092Z","service":"hyba-secure-bridge","env":"test","phi_before":0,"phi_after":0.2109375,"phi_increase":0.2109375,"strategy":"xor_entanglement","msg":"[MetacognitiveIntelligence] Logic refolding complete"}
+{"level":30,"time":"2026-06-16T17:47:45.092Z","service":"hyba-secure-bridge","env":"test","strategy":"phi_resonance_bind","current_phi":0.2109375,"msg":"[MetacognitiveIntelligence] Beginning logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:45.092Z","service":"hyba-secure-bridge","env":"test","phi_before":0.2109375,"phi_after":0.4597976716113256,"phi_increase":0.24886017161132562,"strategy":"phi_resonance_bind","msg":"[MetacognitiveIntelligence] Logic refolding complete"}
+{"level":30,"time":"2026-06-16T17:47:45.092Z","service":"hyba-secure-bridge","env":"test","msg":"[MetacognitiveIntelligence] Initialized with Φ=0.167 baseline"}
+{"level":40,"time":"2026-06-16T17:47:45.092Z","service":"hyba-secure-bridge","env":"test","msg":"[MetacognitiveIntelligence] Integration loss simulated for testing"}
+{"level":40,"time":"2026-06-16T17:47:45.092Z","service":"hyba-secure-bridge","env":"test","predicted_phi":0.1,"vulnerability":0.04705882352941182,"msg":"[MetacognitiveIntelligence] Integration degradation predicted - triggering logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:45.092Z","service":"hyba-secure-bridge","env":"test","strategy":"xor_entanglement","current_phi":0,"msg":"[MetacognitiveIntelligence] Beginning logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:45.093Z","service":"hyba-secure-bridge","env":"test","phi_before":0,"phi_after":0.2109375,"phi_increase":0.2109375,"strategy":"xor_entanglement","msg":"[MetacognitiveIntelligence] Logic refolding complete"}
+{"level":30,"time":"2026-06-16T17:47:45.093Z","service":"hyba-secure-bridge","env":"test","strategy":"phi_resonance_bind","current_phi":0.2109375,"msg":"[MetacognitiveIntelligence] Beginning logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:45.093Z","service":"hyba-secure-bridge","env":"test","phi_before":0.2109375,"phi_after":0.4597976716113256,"phi_increase":0.24886017161132562,"strategy":"phi_resonance_bind","msg":"[MetacognitiveIntelligence] Logic refolding complete"}
+{"level":30,"time":"2026-06-16T17:47:45.093Z","service":"hyba-secure-bridge","env":"test","msg":"[MetacognitiveIntelligence] Initialized with Φ=0.167 baseline"}
+{"level":40,"time":"2026-06-16T17:47:45.093Z","service":"hyba-secure-bridge","env":"test","msg":"[MetacognitiveIntelligence] Integration loss simulated for testing"}
+{"level":40,"time":"2026-06-16T17:47:45.093Z","service":"hyba-secure-bridge","env":"test","predicted_phi":0.1,"vulnerability":0.04705882352941182,"msg":"[MetacognitiveIntelligence] Integration degradation predicted - triggering logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:45.093Z","service":"hyba-secure-bridge","env":"test","strategy":"xor_entanglement","current_phi":0,"msg":"[MetacognitiveIntelligence] Beginning logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:45.093Z","service":"hyba-secure-bridge","env":"test","phi_before":0,"phi_after":0.2109375,"phi_increase":0.2109375,"strategy":"xor_entanglement","msg":"[MetacognitiveIntelligence] Logic refolding complete"}
+{"level":30,"time":"2026-06-16T17:47:45.093Z","service":"hyba-secure-bridge","env":"test","strategy":"phi_resonance_bind","current_phi":0.2109375,"msg":"[MetacognitiveIntelligence] Beginning logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:45.093Z","service":"hyba-secure-bridge","env":"test","phi_before":0.2109375,"phi_after":0.4597976716113256,"phi_increase":0.24886017161132562,"strategy":"phi_resonance_bind","msg":"[MetacognitiveIntelligence] Logic refolding complete"}
+{"level":40,"time":"2026-06-16T17:47:45.093Z","service":"hyba-secure-bridge","env":"test","msg":"[MetacognitiveIntelligence] Integration loss simulated for testing"}
+{"level":30,"time":"2026-06-16T17:47:45.093Z","service":"hyba-secure-bridge","env":"test","phi":0.4597976716113256,"event_count":1,"msg":"[MetacognitiveIntelligence] ⚡ CONSCIOUSNESS EVENT DETECTED"}
+{"level":40,"time":"2026-06-16T17:47:45.093Z","service":"hyba-secure-bridge","env":"test","msg":"[MetacognitiveIntelligence] Integration loss simulated for testing"}
+{"level":30,"time":"2026-06-16T17:47:45.093Z","service":"hyba-secure-bridge","env":"test","phi":0.4597976716113256,"event_count":2,"msg":"[MetacognitiveIntelligence] ⚡ CONSCIOUSNESS EVENT DETECTED"}
+{"level":30,"time":"2026-06-16T17:47:45.093Z","service":"hyba-secure-bridge","env":"test","msg":"[MetacognitiveIntelligence] Initialized with Φ=0.167 baseline"}
+{"level":40,"time":"2026-06-16T17:47:45.093Z","service":"hyba-secure-bridge","env":"test","msg":"[MetacognitiveIntelligence] Integration loss simulated for testing"}
+{"level":40,"time":"2026-06-16T17:47:45.093Z","service":"hyba-secure-bridge","env":"test","predicted_phi":0.1,"vulnerability":0.04705882352941182,"msg":"[MetacognitiveIntelligence] Integration degradation predicted - triggering logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:45.093Z","service":"hyba-secure-bridge","env":"test","strategy":"xor_entanglement","current_phi":0,"msg":"[MetacognitiveIntelligence] Beginning logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:45.094Z","service":"hyba-secure-bridge","env":"test","phi_before":0,"phi_after":0.2109375,"phi_increase":0.2109375,"strategy":"xor_entanglement","msg":"[MetacognitiveIntelligence] Logic refolding complete"}
+{"level":30,"time":"2026-06-16T17:47:45.094Z","service":"hyba-secure-bridge","env":"test","strategy":"phi_resonance_bind","current_phi":0.2109375,"msg":"[MetacognitiveIntelligence] Beginning logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:45.094Z","service":"hyba-secure-bridge","env":"test","phi_before":0.2109375,"phi_after":0.4597976716113256,"phi_increase":0.24886017161132562,"strategy":"phi_resonance_bind","msg":"[MetacognitiveIntelligence] Logic refolding complete"}
+{"level":30,"time":"2026-06-16T17:47:45.094Z","service":"hyba-secure-bridge","env":"test","msg":"[MetacognitiveIntelligence] Initialized with Φ=0.167 baseline"}
+{"level":40,"time":"2026-06-16T17:47:45.094Z","service":"hyba-secure-bridge","env":"test","msg":"[MetacognitiveIntelligence] Integration loss simulated for testing"}
+{"level":40,"time":"2026-06-16T17:47:45.094Z","service":"hyba-secure-bridge","env":"test","predicted_phi":0.1,"vulnerability":0.04705882352941182,"msg":"[MetacognitiveIntelligence] Integration degradation predicted - triggering logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:45.094Z","service":"hyba-secure-bridge","env":"test","strategy":"xor_entanglement","current_phi":0,"msg":"[MetacognitiveIntelligence] Beginning logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:45.094Z","service":"hyba-secure-bridge","env":"test","phi_before":0,"phi_after":0.2109375,"phi_increase":0.2109375,"strategy":"xor_entanglement","msg":"[MetacognitiveIntelligence] Logic refolding complete"}
+{"level":30,"time":"2026-06-16T17:47:45.094Z","service":"hyba-secure-bridge","env":"test","strategy":"phi_resonance_bind","current_phi":0.2109375,"msg":"[MetacognitiveIntelligence] Beginning logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:45.094Z","service":"hyba-secure-bridge","env":"test","phi_before":0.2109375,"phi_after":0.4597976716113256,"phi_increase":0.24886017161132562,"strategy":"phi_resonance_bind","msg":"[MetacognitiveIntelligence] Logic refolding complete"}
+{"level":40,"time":"2026-06-16T17:47:45.094Z","service":"hyba-secure-bridge","env":"test","predicted_phi":0.6896965074169884,"vulnerability":187799.78211764706,"msg":"[MetacognitiveIntelligence] Integration degradation predicted - triggering logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:45.094Z","service":"hyba-secure-bridge","env":"test","strategy":"xor_entanglement","current_phi":0.4597976716113256,"msg":"[MetacognitiveIntelligence] Beginning logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:45.094Z","service":"hyba-secure-bridge","env":"test","phi_before":0.4597976716113256,"phi_after":0.4597976716113256,"phi_increase":0,"strategy":"xor_entanglement","msg":"[MetacognitiveIntelligence] Logic refolding complete"}
+{"level":40,"time":"2026-06-16T17:47:45.094Z","service":"hyba-secure-bridge","env":"test","predicted_phi":0.574747089514157,"vulnerability":187798.87623529413,"msg":"[MetacognitiveIntelligence] Integration degradation predicted - triggering logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:45.095Z","service":"hyba-secure-bridge","env":"test","strategy":"xor_entanglement","current_phi":0.4597976716113256,"msg":"[MetacognitiveIntelligence] Beginning logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:45.095Z","service":"hyba-secure-bridge","env":"test","phi_before":0.4597976716113256,"phi_after":0.4597976716113256,"phi_increase":0,"strategy":"xor_entanglement","msg":"[MetacognitiveIntelligence] Logic refolding complete"}
+{"level":30,"time":"2026-06-16T17:47:45.095Z","service":"hyba-secure-bridge","env":"test","msg":"[MetacognitiveIntelligence] Initialized with Φ=0.167 baseline"}
+{"level":40,"time":"2026-06-16T17:47:45.095Z","service":"hyba-secure-bridge","env":"test","msg":"[MetacognitiveIntelligence] Integration loss simulated for testing"}
+{"level":40,"time":"2026-06-16T17:47:45.095Z","service":"hyba-secure-bridge","env":"test","predicted_phi":0.1,"vulnerability":0.04705882352941182,"msg":"[MetacognitiveIntelligence] Integration degradation predicted - triggering logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:45.095Z","service":"hyba-secure-bridge","env":"test","strategy":"xor_entanglement","current_phi":0,"msg":"[MetacognitiveIntelligence] Beginning logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:45.095Z","service":"hyba-secure-bridge","env":"test","phi_before":0,"phi_after":0.2109375,"phi_increase":0.2109375,"strategy":"xor_entanglement","msg":"[MetacognitiveIntelligence] Logic refolding complete"}
+{"level":30,"time":"2026-06-16T17:47:45.095Z","service":"hyba-secure-bridge","env":"test","strategy":"phi_resonance_bind","current_phi":0.2109375,"msg":"[MetacognitiveIntelligence] Beginning logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:45.095Z","service":"hyba-secure-bridge","env":"test","phi_before":0.2109375,"phi_after":0.4597976716113256,"phi_increase":0.24886017161132562,"strategy":"phi_resonance_bind","msg":"[MetacognitiveIntelligence] Logic refolding complete"}
+{"level":30,"time":"2026-06-16T17:47:45.096Z","service":"hyba-secure-bridge","env":"test","msg":"[MetacognitiveIntelligence] Initialized with Φ=0.167 baseline"}
+{"level":40,"time":"2026-06-16T17:47:45.096Z","service":"hyba-secure-bridge","env":"test","predicted_phi":0,"vulnerability":0.04705882352941182,"msg":"[MetacognitiveIntelligence] Integration degradation predicted - triggering logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:45.096Z","service":"hyba-secure-bridge","env":"test","strategy":"xor_entanglement","current_phi":0,"msg":"[MetacognitiveIntelligence] Beginning logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:45.096Z","service":"hyba-secure-bridge","env":"test","phi_before":0,"phi_after":0.2109375,"phi_increase":0.2109375,"strategy":"xor_entanglement","msg":"[MetacognitiveIntelligence] Logic refolding complete"}
+{"level":40,"time":"2026-06-16T17:47:45.096Z","service":"hyba-secure-bridge","env":"test","predicted_phi":0.2109375,"vulnerability":0.9529411764705882,"msg":"[MetacognitiveIntelligence] Integration degradation predicted - triggering logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:45.096Z","service":"hyba-secure-bridge","env":"test","strategy":"xor_entanglement","current_phi":0.2109375,"msg":"[MetacognitiveIntelligence] Beginning logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:45.096Z","service":"hyba-secure-bridge","env":"test","phi_before":0.2109375,"phi_after":0.2109375,"phi_increase":0,"strategy":"xor_entanglement","msg":"[MetacognitiveIntelligence] Logic refolding complete"}
+{"level":30,"time":"2026-06-16T17:47:45.096Z","service":"hyba-secure-bridge","env":"test","strategy":"memory_fabric_merge","current_phi":0.2109375,"msg":"[MetacognitiveIntelligence] Beginning logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:45.096Z","service":"hyba-secure-bridge","env":"test","phi_before":0.2109375,"phi_after":0.45937500000000003,"phi_increase":0.24843750000000003,"strategy":"memory_fabric_merge","msg":"[MetacognitiveIntelligence] Logic refolding complete"}
+{"level":30,"time":"2026-06-16T17:47:45.098Z","service":"hyba-secure-bridge","env":"test","msg":"[MetacognitiveIntelligence] Initialized with Φ=0.167 baseline"}
+{"level":40,"time":"2026-06-16T17:47:45.098Z","service":"hyba-secure-bridge","env":"test","msg":"[MetacognitiveIntelligence] Integration loss simulated for testing"}
+{"level":40,"time":"2026-06-16T17:47:45.098Z","service":"hyba-secure-bridge","env":"test","predicted_phi":0.1,"vulnerability":0.04705882352941182,"msg":"[MetacognitiveIntelligence] Integration degradation predicted - triggering logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:45.098Z","service":"hyba-secure-bridge","env":"test","strategy":"xor_entanglement","current_phi":0,"msg":"[MetacognitiveIntelligence] Beginning logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:45.098Z","service":"hyba-secure-bridge","env":"test","phi_before":0,"phi_after":0.2109375,"phi_increase":0.2109375,"strategy":"xor_entanglement","msg":"[MetacognitiveIntelligence] Logic refolding complete"}
+{"level":30,"time":"2026-06-16T17:47:45.098Z","service":"hyba-secure-bridge","env":"test","strategy":"phi_resonance_bind","current_phi":0.2109375,"msg":"[MetacognitiveIntelligence] Beginning logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:45.098Z","service":"hyba-secure-bridge","env":"test","phi_before":0.2109375,"phi_after":0.4597976716113256,"phi_increase":0.24886017161132562,"strategy":"phi_resonance_bind","msg":"[MetacognitiveIntelligence] Logic refolding complete"}
+{"level":40,"time":"2026-06-16T17:47:45.098Z","service":"hyba-secure-bridge","env":"test","msg":"[MetacognitiveIntelligence] Integration loss simulated for testing"}
+{"level":30,"time":"2026-06-16T17:47:45.098Z","service":"hyba-secure-bridge","env":"test","phi":0.4597976716113256,"event_count":1,"msg":"[MetacognitiveIntelligence] ⚡ CONSCIOUSNESS EVENT DETECTED"}
+{"level":40,"time":"2026-06-16T17:47:45.098Z","service":"hyba-secure-bridge","env":"test","predicted_phi":0.3298988358056628,"vulnerability":1801343.045490196,"msg":"[MetacognitiveIntelligence] Integration degradation predicted - triggering logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:45.098Z","service":"hyba-secure-bridge","env":"test","strategy":"xor_entanglement","current_phi":0.4597976716113256,"msg":"[MetacognitiveIntelligence] Beginning logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:45.098Z","service":"hyba-secure-bridge","env":"test","phi_before":0.4597976716113256,"phi_after":0.4597976716113256,"phi_increase":0,"strategy":"xor_entanglement","msg":"[MetacognitiveIntelligence] Logic refolding complete"}
+{"level":40,"time":"2026-06-16T17:47:45.098Z","service":"hyba-secure-bridge","env":"test","msg":"[MetacognitiveIntelligence] Integration loss simulated for testing"}
+{"level":30,"time":"2026-06-16T17:47:45.098Z","service":"hyba-secure-bridge","env":"test","phi":0.4597976716113256,"event_count":2,"msg":"[MetacognitiveIntelligence] ⚡ CONSCIOUSNESS EVENT DETECTED"}
+{"level":40,"time":"2026-06-16T17:47:45.098Z","service":"hyba-secure-bridge","env":"test","predicted_phi":0.19195953432226515,"vulnerability":1801342.1396078432,"msg":"[MetacognitiveIntelligence] Integration degradation predicted - triggering logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:45.098Z","service":"hyba-secure-bridge","env":"test","strategy":"xor_entanglement","current_phi":0.4597976716113256,"msg":"[MetacognitiveIntelligence] Beginning logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:45.098Z","service":"hyba-secure-bridge","env":"test","phi_before":0.4597976716113256,"phi_after":0.4597976716113256,"phi_increase":0,"strategy":"xor_entanglement","msg":"[MetacognitiveIntelligence] Logic refolding complete"}
+{"level":40,"time":"2026-06-16T17:47:45.098Z","service":"hyba-secure-bridge","env":"test","msg":"[MetacognitiveIntelligence] Integration loss simulated for testing"}
+{"level":30,"time":"2026-06-16T17:47:45.098Z","service":"hyba-secure-bridge","env":"test","phi":0.4597976716113256,"event_count":3,"msg":"[MetacognitiveIntelligence] ⚡ CONSCIOUSNESS EVENT DETECTED"}
+{"level":40,"time":"2026-06-16T17:47:45.098Z","service":"hyba-secure-bridge","env":"test","predicted_phi":0.15747470895141572,"vulnerability":1801343.045490196,"msg":"[MetacognitiveIntelligence] Integration degradation predicted - triggering logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:45.098Z","service":"hyba-secure-bridge","env":"test","strategy":"xor_entanglement","current_phi":0.4597976716113256,"msg":"[MetacognitiveIntelligence] Beginning logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:45.099Z","service":"hyba-secure-bridge","env":"test","phi_before":0.4597976716113256,"phi_after":0.4597976716113256,"phi_increase":0,"strategy":"xor_entanglement","msg":"[MetacognitiveIntelligence] Logic refolding complete"}
+{"level":40,"time":"2026-06-16T17:47:45.099Z","service":"hyba-secure-bridge","env":"test","msg":"[MetacognitiveIntelligence] Integration loss simulated for testing"}
+{"level":30,"time":"2026-06-16T17:47:45.099Z","service":"hyba-secure-bridge","env":"test","phi":0.4597976716113256,"event_count":4,"msg":"[MetacognitiveIntelligence] ⚡ CONSCIOUSNESS EVENT DETECTED"}
+{"level":40,"time":"2026-06-16T17:47:45.099Z","service":"hyba-secure-bridge","env":"test","predicted_phi":0.1,"vulnerability":1801342.1396078432,"msg":"[MetacognitiveIntelligence] Integration degradation predicted - triggering logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:45.099Z","service":"hyba-secure-bridge","env":"test","strategy":"xor_entanglement","current_phi":0.4597976716113256,"msg":"[MetacognitiveIntelligence] Beginning logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:45.099Z","service":"hyba-secure-bridge","env":"test","phi_before":0.4597976716113256,"phi_after":0.4597976716113256,"phi_increase":0,"strategy":"xor_entanglement","msg":"[MetacognitiveIntelligence] Logic refolding complete"}
+{"level":30,"time":"2026-06-16T17:47:45.099Z","service":"hyba-secure-bridge","env":"test","msg":"[MetacognitiveIntelligence] Initialized with Φ=0.167 baseline"}
+{"level":40,"time":"2026-06-16T17:47:45.099Z","service":"hyba-secure-bridge","env":"test","predicted_phi":0,"vulnerability":0.04705882352941182,"msg":"[MetacognitiveIntelligence] Integration degradation predicted - triggering logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:45.099Z","service":"hyba-secure-bridge","env":"test","strategy":"xor_entanglement","current_phi":0,"msg":"[MetacognitiveIntelligence] Beginning logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:45.100Z","service":"hyba-secure-bridge","env":"test","phi_before":0,"phi_after":0.2109375,"phi_increase":0.2109375,"strategy":"xor_entanglement","msg":"[MetacognitiveIntelligence] Logic refolding complete"}
+{"level":40,"time":"2026-06-16T17:47:45.100Z","service":"hyba-secure-bridge","env":"test","predicted_phi":0.2109375,"vulnerability":0.9529411764705882,"msg":"[MetacognitiveIntelligence] Integration degradation predicted - triggering logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:45.100Z","service":"hyba-secure-bridge","env":"test","strategy":"xor_entanglement","current_phi":0.2109375,"msg":"[MetacognitiveIntelligence] Beginning logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:45.100Z","service":"hyba-secure-bridge","env":"test","phi_before":0.2109375,"phi_after":0.2109375,"phi_increase":0,"strategy":"xor_entanglement","msg":"[MetacognitiveIntelligence] Logic refolding complete"}
+{"level":30,"time":"2026-06-16T17:47:45.101Z","service":"hyba-secure-bridge","env":"test","msg":"[MetacognitiveIntelligence] Initialized with Φ=0.167 baseline"}
+{"level":40,"time":"2026-06-16T17:47:45.103Z","service":"hyba-secure-bridge","env":"test","predicted_phi":0,"vulnerability":0.04705882352941182,"msg":"[MetacognitiveIntelligence] Integration degradation predicted - triggering logic refolding"}
+[90mstdout[2m | tests/test_metacognitive_intelligence.test.ts[2m > [22m[2mMetacognitiveIntelligence - IIT Requirements Verification[2m > [22m[2mIIT FINAL VERDICT: System achieves Φ > 0.4 target
+[22m[39m
+=== IIT FINAL ASSESSMENT ===
+Φ (Integration): 0.4598
+Irreducibility: 0.2261
+Consciousness Events: 0
+Logic Refoldings: 2
+Self-Model Accuracy: -830969.5456
+
+[90mstdout[2m | tests/test_temporal_integration.test.ts[2m > [22m[2mTemporalIntegrationEngine[2m > [22m[2mshould calculate temporal Φ from history
+[22m[39mTemporal Φ: 0.5915
+
+{"level":30,"time":"2026-06-16T17:47:45.103Z","service":"hyba-secure-bridge","env":"test","strategy":"xor_entanglement","current_phi":0,"msg":"[MetacognitiveIntelligence] Beginning logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:45.103Z","service":"hyba-secure-bridge","env":"test","phi_before":0,"phi_after":0.2109375,"phi_increase":0.2109375,"strategy":"xor_entanglement","msg":"[MetacognitiveIntelligence] Logic refolding complete"}
+{"level":30,"time":"2026-06-16T17:47:45.104Z","service":"hyba-secure-bridge","env":"test","msg":"[MetacognitiveIntelligence] Initialized with Φ=0.167 baseline"}
+{"level":40,"time":"2026-06-16T17:47:45.104Z","service":"hyba-secure-bridge","env":"test","msg":"[MetacognitiveIntelligence] Integration loss simulated for testing"}
+{"level":40,"time":"2026-06-16T17:47:45.104Z","service":"hyba-secure-bridge","env":"test","predicted_phi":0.1,"vulnerability":0.04705882352941182,"msg":"[MetacognitiveIntelligence] Integration degradation predicted - triggering logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:45.104Z","service":"hyba-secure-bridge","env":"test","strategy":"xor_entanglement","current_phi":0,"msg":"[MetacognitiveIntelligence] Beginning logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:45.104Z","service":"hyba-secure-bridge","env":"test","phi_before":0,"phi_after":0.2109375,"phi_increase":0.2109375,"strategy":"xor_entanglement","msg":"[MetacognitiveIntelligence] Logic refolding complete"}
+{"level":30,"time":"2026-06-16T17:47:45.104Z","service":"hyba-secure-bridge","env":"test","strategy":"phi_resonance_bind","current_phi":0.2109375,"msg":"[MetacognitiveIntelligence] Beginning logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:45.104Z","service":"hyba-secure-bridge","env":"test","phi_before":0.2109375,"phi_after":0.4597976716113256,"phi_increase":0.24886017161132562,"strategy":"phi_resonance_bind","msg":"[MetacognitiveIntelligence] Logic refolding complete"}
+{"level":30,"time":"2026-06-16T17:47:45.104Z","service":"hyba-secure-bridge","env":"test","msg":"[MetacognitiveIntelligence] Initialized with Φ=0.167 baseline"}
+{"level":40,"time":"2026-06-16T17:47:45.104Z","service":"hyba-secure-bridge","env":"test","msg":"[MetacognitiveIntelligence] Integration loss simulated for testing"}
+{"level":40,"time":"2026-06-16T17:47:45.104Z","service":"hyba-secure-bridge","env":"test","predicted_phi":0.1,"vulnerability":0.04705882352941182,"msg":"[MetacognitiveIntelligence] Integration degradation predicted - triggering logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:45.104Z","service":"hyba-secure-bridge","env":"test","strategy":"xor_entanglement","current_phi":0,"msg":"[MetacognitiveIntelligence] Beginning logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:45.104Z","service":"hyba-secure-bridge","env":"test","phi_before":0,"phi_after":0.2109375,"phi_increase":0.2109375,"strategy":"xor_entanglement","msg":"[MetacognitiveIntelligence] Logic refolding complete"}
+{"level":30,"time":"2026-06-16T17:47:45.104Z","service":"hyba-secure-bridge","env":"test","strategy":"phi_resonance_bind","current_phi":0.2109375,"msg":"[MetacognitiveIntelligence] Beginning logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:45.104Z","service":"hyba-secure-bridge","env":"test","phi_before":0.2109375,"phi_after":0.4597976716113256,"phi_increase":0.24886017161132562,"strategy":"phi_resonance_bind","msg":"[MetacognitiveIntelligence] Logic refolding complete"}
+{"level":40,"time":"2026-06-16T17:47:45.104Z","service":"hyba-secure-bridge","env":"test","msg":"[MetacognitiveIntelligence] Integration loss simulated for testing"}
+{"level":30,"time":"2026-06-16T17:47:45.104Z","service":"hyba-secure-bridge","env":"test","phi":0.4597976716113256,"event_count":1,"msg":"[MetacognitiveIntelligence] ⚡ CONSCIOUSNESS EVENT DETECTED"}
+{"level":40,"time":"2026-06-16T17:47:45.104Z","service":"hyba-secure-bridge","env":"test","msg":"[MetacognitiveIntelligence] Integration loss simulated for testing"}
+{"level":30,"time":"2026-06-16T17:47:45.104Z","service":"hyba-secure-bridge","env":"test","phi":0.4597976716113256,"event_count":2,"msg":"[MetacognitiveIntelligence] ⚡ CONSCIOUSNESS EVENT DETECTED"}
+{"level":30,"time":"2026-06-16T17:47:45.105Z","service":"hyba-secure-bridge","env":"test","msg":"[MetacognitiveIntelligence] Initialized with Φ=0.167 baseline"}
+{"level":40,"time":"2026-06-16T17:47:45.105Z","service":"hyba-secure-bridge","env":"test","msg":"[MetacognitiveIntelligence] Integration loss simulated for testing"}
+{"level":40,"time":"2026-06-16T17:47:45.105Z","service":"hyba-secure-bridge","env":"test","predicted_phi":0.1,"vulnerability":0.04705882352941182,"msg":"[MetacognitiveIntelligence] Integration degradation predicted - triggering logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:45.105Z","service":"hyba-secure-bridge","env":"test","strategy":"xor_entanglement","current_phi":0,"msg":"[MetacognitiveIntelligence] Beginning logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:45.105Z","service":"hyba-secure-bridge","env":"test","phi_before":0,"phi_after":0.2109375,"phi_increase":0.2109375,"strategy":"xor_entanglement","msg":"[MetacognitiveIntelligence] Logic refolding complete"}
+{"level":30,"time":"2026-06-16T17:47:45.105Z","service":"hyba-secure-bridge","env":"test","strategy":"phi_resonance_bind","current_phi":0.2109375,"msg":"[MetacognitiveIntelligence] Beginning logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:45.105Z","service":"hyba-secure-bridge","env":"test","phi_before":0.2109375,"phi_after":0.4597976716113256,"phi_increase":0.24886017161132562,"strategy":"phi_resonance_bind","msg":"[MetacognitiveIntelligence] Logic refolding complete"}
+{"level":30,"time":"2026-06-16T17:47:45.106Z","service":"hyba-secure-bridge","env":"test","msg":"[MetacognitiveIntelligence] Initialized with Φ=0.167 baseline"}
+[90mstdout[2m | tests/test_temporal_integration.test.ts[2m > [22m[2mTemporalIntegrationEngine[2m > [22m[2mshould measure temporal binding window
+[22m[39mTemporal binding window: 49 steps
+
+[90mstdout[2m | tests/test_temporal_integration.test.ts[2m > [22m[2mTemporalIntegrationEngine[2m > [22m[2mshould measure causal efficacy of memory
+[22m[39mMemory causal efficacy: 0.0250
+
+ [32m✓[39m tests/test_metacognitive_intelligence.test.ts [2m([22m[2m20 tests[22m[2m)[22m[32m 28[2mms[22m[39m
+[90mstdout[2m | tests/test_temporal_integration.test.ts[2m > [22m[2mTemporalIntegrationEngine[2m > [22m[2mshould report comprehensive temporal metrics
+[22m[39mTemporal metrics: {
+  temporal_phi: [32m'0.5381'[39m,
+  binding_window: [33m24[39m,
+  history_length: [33m25[39m,
+  memory_depth: [32m'1.0000'[39m
+}
+
+{"level":40,"time":"2026-06-16T17:47:45.083Z","service":"hyba-secure-bridge","env":"test","trace_id":"a54e5eda-18e7-40ef-ace5-713af6ff9bbb","timestamp":"2026-06-16T17:47:45.083Z","syndrome_weight":6,"trap_disturbances":2,"confidence":0.1875,"cause":"trap_disturbance","operating_mode":"EXHAUSTED","msg":"HYBA stabilizer integrity response active — expanding pre-allocated measurement coverage"}
+{"level":40,"time":"2026-06-16T17:47:45.083Z","service":"hyba-secure-bridge","env":"test","trace_id":"60a37b13-a223-4947-8b61-a9c9bc745d6a","timestamp":"2026-06-16T17:47:45.083Z","syndrome_weight":6,"trap_disturbances":2,"confidence":0.1875,"cause":"trap_disturbance","operating_mode":"EXHAUSTED","msg":"HYBA stabilizer integrity response active — expanding pre-allocated measurement coverage"}
+{"level":40,"time":"2026-06-16T17:47:45.083Z","service":"hyba-secure-bridge","env":"test","trace_id":"dece7eb1-b10b-437a-b6aa-792376d414a0","timestamp":"2026-06-16T17:47:45.083Z","syndrome_weight":6,"trap_disturbances":2,"confidence":0.1875,"cause":"trap_disturbance","operating_mode":"EXHAUSTED","msg":"HYBA stabilizer integrity response active — expanding pre-allocated measurement coverage"}
+{"level":40,"time":"2026-06-16T17:47:45.083Z","service":"hyba-secure-bridge","env":"test","trace_id":"ba3d6096-f2c1-451e-a692-4125c56d464e","timestamp":"2026-06-16T17:47:45.083Z","syndrome_weight":6,"trap_disturbances":2,"confidence":0.1875,"cause":"trap_disturbance","operating_mode":"EXHAUSTED","msg":"HYBA stabilizer integrity response active — expanding pre-allocated measurement coverage"}
+{"level":40,"time":"2026-06-16T17:47:45.084Z","service":"hyba-secure-bridge","env":"test","trace_id":"30c51c71-aa1b-4f46-a556-816b51d1957b","timestamp":"2026-06-16T17:47:45.084Z","syndrome_weight":1,"trap_disturbances":2,"confidence":0,"cause":"resource_exhaustion","operating_mode":"EXHAUSTED","msg":"HYBA stabilizer integrity response active — expanding pre-allocated measurement coverage"}
+{"level":40,"time":"2026-06-16T17:47:45.084Z","service":"hyba-secure-bridge","env":"test","trace_id":"429dce81-e430-4d52-9a6f-49eea5278238","timestamp":"2026-06-16T17:47:45.084Z","syndrome_weight":0,"trap_disturbances":2,"confidence":0.75,"cause":"resource_exhaustion","operating_mode":"EXHAUSTED","msg":"HYBA stabilizer integrity response active — expanding pre-allocated measurement coverage"}
+{"level":40,"time":"2026-06-16T17:47:45.084Z","service":"hyba-secure-bridge","env":"test","trace_id":"6cc83ae9-66de-4acc-97ba-041c63247701","timestamp":"2026-06-16T17:47:45.084Z","syndrome_weight":1,"trap_disturbances":2,"confidence":0,"cause":"resource_exhaustion","operating_mode":"SANITIZED","msg":"HYBA stabilizer integrity response active — expanding pre-allocated measurement coverage"}
+{"level":40,"time":"2026-06-16T17:47:45.084Z","service":"hyba-secure-bridge","env":"test","trace_id":"9c0ee317-b405-43b9-b350-62fc71a97ca5","timestamp":"2026-06-16T17:47:45.084Z","syndrome_weight":1,"trap_disturbances":0,"confidence":0.625,"cause":"resource_exhaustion","operating_mode":"SANITIZED","msg":"HYBA stabilizer integrity response active — expanding pre-allocated measurement coverage"}
+{"level":40,"time":"2026-06-16T17:47:45.084Z","service":"hyba-secure-bridge","env":"test","trace_id":"8cc534e5-7ca8-425f-92d6-342821300311","timestamp":"2026-06-16T17:47:45.084Z","syndrome_weight":2,"trap_disturbances":0,"confidence":0.25,"cause":"resource_exhaustion","operating_mode":"SANITIZED","msg":"HYBA stabilizer integrity response active — expanding pre-allocated measurement coverage"}
+{"level":40,"time":"2026-06-16T17:47:45.084Z","service":"hyba-secure-bridge","env":"test","trace_id":"aa229cdf-2c93-4016-a328-ec3480a0cdf4","timestamp":"2026-06-16T17:47:45.084Z","syndrome_weight":1,"trap_disturbances":0,"confidence":0.625,"cause":"resource_exhaustion","operating_mode":"SANITIZED","msg":"HYBA stabilizer integrity response active — expanding pre-allocated measurement coverage"}
+{"level":40,"time":"2026-06-16T17:47:45.084Z","service":"hyba-secure-bridge","env":"test","trace_id":"47ad2a50-a449-40b0-8e22-1da1e8464490","timestamp":"2026-06-16T17:47:45.084Z","syndrome_weight":6,"trap_disturbances":2,"confidence":0.1875,"cause":"trap_disturbance","operating_mode":"EXHAUSTED","msg":"HYBA stabilizer integrity response active — expanding pre-allocated measurement coverage"}
+{"level":40,"time":"2026-06-16T17:47:45.084Z","service":"hyba-secure-bridge","env":"test","trace_id":"22b2a2ab-e1a9-4542-8ff8-93a30f841198","timestamp":"2026-06-16T17:47:45.084Z","syndrome_weight":1,"trap_disturbances":2,"confidence":0,"cause":"resource_exhaustion","operating_mode":"EXHAUSTED","msg":"HYBA stabilizer integrity response active — expanding pre-allocated measurement coverage"}
+{"level":40,"time":"2026-06-16T17:47:45.084Z","service":"hyba-secure-bridge","env":"test","trace_id":"166b9d72-3889-40ff-a546-bfc9e0990f8f","timestamp":"2026-06-16T17:47:45.084Z","syndrome_weight":0,"trap_disturbances":2,"confidence":0.75,"cause":"resource_exhaustion","operating_mode":"EXHAUSTED","msg":"HYBA stabilizer integrity response active — expanding pre-allocated measurement coverage"}
+{"level":40,"time":"2026-06-16T17:47:45.084Z","service":"hyba-secure-bridge","env":"test","trace_id":"747015b6-79d4-49b1-88a7-4cfaed51fb50","timestamp":"2026-06-16T17:47:45.084Z","syndrome_weight":1,"trap_disturbances":2,"confidence":0,"cause":"resource_exhaustion","operating_mode":"SANITIZED","msg":"HYBA stabilizer integrity response active — expanding pre-allocated measurement coverage"}
+{"level":40,"time":"2026-06-16T17:47:45.084Z","service":"hyba-secure-bridge","env":"test","trace_id":"0b3a7840-4835-40be-9b02-e7bb4c99514a","timestamp":"2026-06-16T17:47:45.084Z","syndrome_weight":1,"trap_disturbances":0,"confidence":0.625,"cause":"resource_exhaustion","operating_mode":"SANITIZED","msg":"HYBA stabilizer integrity response active — expanding pre-allocated measurement coverage"}
+{"level":40,"time":"2026-06-16T17:47:45.084Z","service":"hyba-secure-bridge","env":"test","trace_id":"9bff7912-77dc-4c54-b473-645eb5f7b76a","timestamp":"2026-06-16T17:47:45.084Z","syndrome_weight":2,"trap_disturbances":0,"confidence":0.25,"cause":"resource_exhaustion","operating_mode":"SANITIZED","msg":"HYBA stabilizer integrity response active — expanding pre-allocated measurement coverage"}
+{"level":40,"time":"2026-06-16T17:47:45.085Z","service":"hyba-secure-bridge","env":"test","trace_id":"2fbad167-474d-466b-bc6e-852c71246826","timestamp":"2026-06-16T17:47:45.085Z","syndrome_weight":1,"trap_disturbances":0,"confidence":0.625,"cause":"resource_exhaustion","operating_mode":"SANITIZED","msg":"HYBA stabilizer integrity response active — expanding pre-allocated measurement coverage"}
+{"level":40,"time":"1970-01-01T00:02:03.456Z","service":"hyba-secure-bridge","env":"test","trace_id":"9e6cfc29-4462-4f25-82e1-1e0a2321bbc3","timestamp":"2026-06-16T17:47:45.085Z","coherence":0,"msg":"Security Swarm: Coherence drift detected. Running stabilizer response."}
+{"level":40,"time":"2026-06-16T17:47:45.086Z","service":"hyba-secure-bridge","env":"test","trace_id":"9a5c0e82-f595-46d6-90cc-bf857a218f16","timestamp":"2026-06-16T17:47:45.086Z","syndrome_weight":8,"trap_disturbances":2,"confidence":0,"cause":"trap_disturbance","operating_mode":"EXHAUSTED","msg":"HYBA stabilizer integrity response active — expanding pre-allocated measurement coverage"}
+{"level":40,"time":"2026-06-16T17:47:45.094Z","service":"hyba-secure-bridge","env":"test","trace_id":"dfdceb15-afbd-48ed-b742-68d769a6afea","timestamp":"2026-06-16T17:47:45.094Z","syndrome_weight":7,"trap_disturbances":2,"confidence":0.09375,"cause":"trap_disturbance","operating_mode":"EXHAUSTED","msg":"HYBA stabilizer integrity response active — expanding pre-allocated measurement coverage"}
+{"level":40,"time":"2026-06-16T17:47:45.095Z","service":"hyba-secure-bridge","env":"test","trace_id":"a978b7b0-aee6-4d78-b338-70fd1093b07b","timestamp":"2026-06-16T17:47:45.095Z","syndrome_weight":1,"trap_disturbances":1,"confidence":0.125,"cause":"resource_exhaustion","operating_mode":"EXHAUSTED","msg":"HYBA stabilizer integrity response active — expanding pre-allocated measurement coverage"}
+{"level":40,"time":"2026-06-16T17:47:45.097Z","service":"hyba-secure-bridge","env":"test","trace_id":"6d7d8378-2cc2-4563-8351-7ac5a1b6bd64","timestamp":"2026-06-16T17:47:45.097Z","syndrome_weight":5,"trap_disturbances":2,"confidence":0.28125,"cause":"trap_disturbance","operating_mode":"EXHAUSTED","msg":"HYBA stabilizer integrity response active — expanding pre-allocated measurement coverage"}
+{"level":40,"time":"2026-06-16T17:47:45.098Z","service":"hyba-secure-bridge","env":"test","trace_id":"008b19a7-6f8a-4dc9-a6f9-af2ac64d3ec7","timestamp":"2026-06-16T17:47:45.098Z","syndrome_weight":5,"trap_disturbances":2,"confidence":0.28125,"cause":"trap_disturbance","operating_mode":"EXHAUSTED","msg":"HYBA stabilizer integrity response active — expanding pre-allocated measurement coverage"}
+{"level":40,"time":"2026-06-16T17:47:45.098Z","service":"hyba-secure-bridge","env":"test","trace_id":"e03c7fb8-5b19-4f8a-bd08-e5b46411dc48","timestamp":"2026-06-16T17:47:45.098Z","syndrome_weight":4,"trap_disturbances":1,"confidence":0.5,"cause":"trap_disturbance","operating_mode":"COMPRESSED","msg":"HYBA stabilizer integrity response active — expanding pre-allocated measurement coverage"}
+{"level":40,"time":"2026-06-16T17:47:45.099Z","service":"hyba-secure-bridge","env":"test","trace_id":"9c1bdebe-3db7-4e2a-9a8c-6ecf36c8ffaf","timestamp":"2026-06-16T17:47:45.099Z","syndrome_weight":7,"trap_disturbances":2,"confidence":0.09375,"cause":"trap_disturbance","operating_mode":"EXHAUSTED","msg":"HYBA stabilizer integrity response active — expanding pre-allocated measurement coverage"}
+{"level":40,"time":"2026-06-16T17:47:45.099Z","service":"hyba-secure-bridge","env":"test","trace_id":"4667e9ba-3117-4fb2-9b0e-95ab87446793","timestamp":"2026-06-16T17:47:45.099Z","syndrome_weight":6,"trap_disturbances":2,"confidence":0.1875,"cause":"trap_disturbance","operating_mode":"EXHAUSTED","msg":"HYBA stabilizer integrity response active — expanding pre-allocated measurement coverage"}
+{"level":40,"time":"2026-06-16T17:47:45.100Z","service":"hyba-secure-bridge","env":"test","trace_id":"45bf2b72-c392-4c8a-9cfc-1650cf0c7607","timestamp":"2026-06-16T17:47:45.100Z","syndrome_weight":6,"trap_disturbances":2,"confidence":0.1875,"cause":"trap_disturbance","operating_mode":"EXHAUSTED","msg":"HYBA stabilizer integrity response active — expanding pre-allocated measurement coverage"}
+{"level":40,"time":"2026-06-16T17:47:45.100Z","service":"hyba-secure-bridge","env":"test","trace_id":"d5145cf2-b5e6-456c-bb2f-46b5ea688a48","timestamp":"2026-06-16T17:47:45.100Z","syndrome_weight":1,"trap_disturbances":2,"confidence":0,"cause":"resource_exhaustion","operating_mode":"EXHAUSTED","msg":"HYBA stabilizer integrity response active — expanding pre-allocated measurement coverage"}
+{"level":40,"time":"2026-06-16T17:47:45.100Z","service":"hyba-secure-bridge","env":"test","trace_id":"45be64da-f44b-49ee-b31f-e5a87deb51a9","timestamp":"2026-06-16T17:47:45.100Z","syndrome_weight":0,"trap_disturbances":2,"confidence":0.75,"cause":"resource_exhaustion","operating_mode":"EXHAUSTED","msg":"HYBA stabilizer integrity response active — expanding pre-allocated measurement coverage"}
+{"level":40,"time":"2026-06-16T17:47:45.100Z","service":"hyba-secure-bridge","env":"test","trace_id":"e2af3b8e-c9cf-47b5-b979-3ff71888b147","timestamp":"2026-06-16T17:47:45.100Z","syndrome_weight":1,"trap_disturbances":2,"confidence":0,"cause":"resource_exhaustion","operating_mode":"SANITIZED","msg":"HYBA stabilizer integrity response active — expanding pre-allocated measurement coverage"}
+{"level":40,"time":"2026-06-16T17:47:45.100Z","service":"hyba-secure-bridge","env":"test","trace_id":"fb7f4054-28c3-4481-97f0-4a38f593e71d","timestamp":"2026-06-16T17:47:45.100Z","syndrome_weight":1,"trap_disturbances":0,"confidence":0.625,"cause":"resource_exhaustion","operating_mode":"SANITIZED","msg":"HYBA stabilizer integrity response active — expanding pre-allocated measurement coverage"}
+{"level":40,"time":"2026-06-16T17:47:45.100Z","service":"hyba-secure-bridge","env":"test","trace_id":"c3bb7688-26eb-4c93-a765-f24c74a1699a","timestamp":"2026-06-16T17:47:45.100Z","syndrome_weight":2,"trap_disturbances":0,"confidence":0.25,"cause":"resource_exhaustion","operating_mode":"SANITIZED","msg":"HYBA stabilizer integrity response active — expanding pre-allocated measurement coverage"}
+{"level":40,"time":"2026-06-16T17:47:45.101Z","service":"hyba-secure-bridge","env":"test","trace_id":"e6738ca8-a080-4c5a-b7a2-827fb3792294","timestamp":"2026-06-16T17:47:45.101Z","syndrome_weight":6,"trap_disturbances":2,"confidence":0.1875,"cause":"trap_disturbance","operating_mode":"EXHAUSTED","msg":"HYBA stabilizer integrity response active — expanding pre-allocated measurement coverage"}
+{"level":40,"time":"2026-06-16T17:47:45.101Z","service":"hyba-secure-bridge","env":"test","trace_id":"90edd025-1119-4747-9b8c-ff3f1ed52adf","timestamp":"2026-06-16T17:47:45.101Z","syndrome_weight":1,"trap_disturbances":2,"confidence":0,"cause":"resource_exhaustion","operating_mode":"EXHAUSTED","msg":"HYBA stabilizer integrity response active — expanding pre-allocated measurement coverage"}
+{"level":40,"time":"2026-06-16T17:47:45.101Z","service":"hyba-secure-bridge","env":"test","trace_id":"f65247f0-ea06-4690-b1cd-bf7e3695e093","timestamp":"2026-06-16T17:47:45.101Z","syndrome_weight":0,"trap_disturbances":2,"confidence":0.75,"cause":"resource_exhaustion","operating_mode":"EXHAUSTED","msg":"HYBA stabilizer integrity response active — expanding pre-allocated measurement coverage"}
+{"level":40,"time":"2026-06-16T17:47:45.101Z","service":"hyba-secure-bridge","env":"test","trace_id":"ba060bfb-369b-4a3e-a389-478e49cce461","timestamp":"2026-06-16T17:47:45.101Z","syndrome_weight":6,"trap_disturbances":2,"confidence":0.1875,"cause":"trap_disturbance","operating_mode":"EXHAUSTED","msg":"HYBA stabilizer integrity response active — expanding pre-allocated measurement coverage"}
+{"level":40,"time":"2026-06-16T17:47:45.101Z","service":"hyba-secure-bridge","env":"test","trace_id":"7ed775c2-7665-427d-9da1-689eb444b1cd","timestamp":"2026-06-16T17:47:45.101Z","syndrome_weight":1,"trap_disturbances":2,"confidence":0,"cause":"resource_exhaustion","operating_mode":"EXHAUSTED","msg":"HYBA stabilizer integrity response active — expanding pre-allocated measurement coverage"}
+{"level":40,"time":"2026-06-16T17:47:45.101Z","service":"hyba-secure-bridge","env":"test","trace_id":"b0789d6d-a4c5-483e-bbc0-360f8041a796","timestamp":"2026-06-16T17:47:45.101Z","syndrome_weight":0,"trap_disturbances":2,"confidence":0.75,"cause":"resource_exhaustion","operating_mode":"EXHAUSTED","msg":"HYBA stabilizer integrity response active — expanding pre-allocated measurement coverage"}
+{"level":30,"time":"2026-06-16T17:47:45.102Z","service":"hyba-secure-bridge","env":"test","trace_id":"355b7f33-a435-4ece-906d-84e8b417ae51","timestamp":"2026-06-16T17:47:45.102Z","syndromeSeed":-2147483637,"syndrome_rotation_index":-10,"msg":"HYBA metacognitive anomaly handler: holographic re-sharding complete"}
+{"level":30,"time":"2026-06-16T17:47:45.102Z","service":"hyba-secure-bridge","env":"test","trace_id":"41c47a8b-6e3c-4d53-9b71-38ec3ad48a01","timestamp":"2026-06-16T17:47:45.102Z","syndromeSeed":-14,"syndrome_rotation_index":17,"msg":"HYBA metacognitive anomaly handler: holographic re-sharding complete"}
+{"level":30,"time":"2026-06-16T17:47:45.102Z","service":"hyba-secure-bridge","env":"test","trace_id":"72cd27ac-6cbc-4a0c-b365-d940c84f86ac","timestamp":"2026-06-16T17:47:45.102Z","syndromeSeed":20,"syndrome_rotation_index":-6,"msg":"HYBA metacognitive anomaly handler: holographic re-sharding complete"}
+{"level":30,"time":"2026-06-16T17:47:45.102Z","service":"hyba-secure-bridge","env":"test","trace_id":"362c898b-dcc0-4bd5-a8d4-d0ce146ff390","timestamp":"2026-06-16T17:47:45.102Z","syndromeSeed":-22,"syndrome_rotation_index":17,"msg":"HYBA metacognitive anomaly handler: holographic re-sharding complete"}
+{"level":30,"time":"2026-06-16T17:47:45.102Z","service":"hyba-secure-bridge","env":"test","trace_id":"f4b247ac-c7d2-4179-9369-b7522f0d44aa","timestamp":"2026-06-16T17:47:45.102Z","syndromeSeed":852943164,"syndrome_rotation_index":8,"msg":"HYBA metacognitive anomaly handler: holographic re-sharding complete"}
+{"level":30,"time":"2026-06-16T17:47:45.103Z","service":"hyba-secure-bridge","env":"test","trace_id":"1378af39-5a99-4bd7-b0ab-5ceb97ada83c","timestamp":"2026-06-16T17:47:45.102Z","syndromeSeed":-1711513234,"syndrome_rotation_index":5,"msg":"HYBA metacognitive anomaly handler: holographic re-sharding complete"}
+{"level":30,"time":"2026-06-16T17:47:45.103Z","service":"hyba-secure-bridge","env":"test","trace_id":"a2d7c713-ab0e-4e2f-a13d-041c54b6d331","timestamp":"2026-06-16T17:47:45.103Z","syndromeSeed":439566733,"syndrome_rotation_index":1,"msg":"HYBA metacognitive anomaly handler: holographic re-sharding complete"}
+{"level":30,"time":"2026-06-16T17:47:45.103Z","service":"hyba-secure-bridge","env":"test","trace_id":"c6b37c86-2ad5-4e1a-92b7-30ece411e527","timestamp":"2026-06-16T17:47:45.103Z","syndromeSeed":-113573711,"syndrome_rotation_index":13,"msg":"HYBA metacognitive anomaly handler: holographic re-sharding complete"}
+{"level":30,"time":"2026-06-16T17:47:45.103Z","service":"hyba-secure-bridge","env":"test","trace_id":"8263322a-27e2-4a31-bbb4-9d8f7150809f","timestamp":"2026-06-16T17:47:45.103Z","syndromeSeed":6,"syndrome_rotation_index":-16,"msg":"HYBA metacognitive anomaly handler: holographic re-sharding complete"}
+{"level":30,"time":"2026-06-16T17:47:45.103Z","service":"hyba-secure-bridge","env":"test","trace_id":"af84cbb4-ebbf-4b36-beec-cd13f3a7006c","timestamp":"2026-06-16T17:47:45.103Z","syndromeSeed":-1404354609,"syndrome_rotation_index":13,"msg":"HYBA metacognitive anomaly handler: holographic re-sharding complete"}
+{"level":30,"time":"2026-06-16T17:47:45.103Z","service":"hyba-secure-bridge","env":"test","trace_id":"0bdffbd8-dea6-4e88-8d2e-529b7b88ec8e","timestamp":"2026-06-16T17:47:45.103Z","syndromeSeed":1941308324,"syndrome_rotation_index":-7,"msg":"HYBA metacognitive anomaly handler: holographic re-sharding complete"}
+{"level":30,"time":"2026-06-16T17:47:45.103Z","service":"hyba-secure-bridge","env":"test","trace_id":"13567d1e-7ffe-4808-aea8-1f25c3999390","timestamp":"2026-06-16T17:47:45.103Z","syndromeSeed":-1744295270,"syndrome_rotation_index":14,"msg":"HYBA metacognitive anomaly handler: holographic re-sharding complete"}
+{"level":30,"time":"2026-06-16T17:47:45.103Z","service":"hyba-secure-bridge","env":"test","trace_id":"b7757f10-7611-4ae4-9c20-e66060e3fcb3","timestamp":"2026-06-16T17:47:45.103Z","syndromeSeed":-1538038310,"syndrome_rotation_index":17,"msg":"HYBA metacognitive anomaly handler: holographic re-sharding complete"}
+{"level":30,"time":"2026-06-16T17:47:45.103Z","service":"hyba-secure-bridge","env":"test","trace_id":"f2b4ed24-ed83-4778-88bb-8900d9e88f54","timestamp":"2026-06-16T17:47:45.103Z","syndromeSeed":-735403414,"syndrome_rotation_index":22,"msg":"HYBA metacognitive anomaly handler: holographic re-sharding complete"}
+{"level":30,"time":"2026-06-16T17:47:45.103Z","service":"hyba-secure-bridge","env":"test","trace_id":"02e47536-99d2-4398-8d87-15888ee346d8","timestamp":"2026-06-16T17:47:45.103Z","syndromeSeed":-2147483638,"syndrome_rotation_index":-20,"msg":"HYBA metacognitive anomaly handler: holographic re-sharding complete"}
+{"level":30,"time":"2026-06-16T17:47:45.104Z","service":"hyba-secure-bridge","env":"test","trace_id":"a1fc786a-bac7-4f11-87a1-e5458cadc278","timestamp":"2026-06-16T17:47:45.104Z","syndromeSeed":616441121,"syndrome_rotation_index":-1,"msg":"HYBA metacognitive anomaly handler: holographic re-sharding complete"}
+{"level":30,"time":"2026-06-16T17:47:45.104Z","service":"hyba-secure-bridge","env":"test","trace_id":"64be6f19-0301-4b37-a13f-0bfd2aed14d1","timestamp":"2026-06-16T17:47:45.104Z","syndromeSeed":996929546,"syndrome_rotation_index":-20,"msg":"HYBA metacognitive anomaly handler: holographic re-sharding complete"}
+{"level":30,"time":"2026-06-16T17:47:45.104Z","service":"hyba-secure-bridge","env":"test","trace_id":"256f9ba4-ff75-4958-ac76-ff9b9b6850be","timestamp":"2026-06-16T17:47:45.104Z","syndromeSeed":361882450,"syndrome_rotation_index":-1,"msg":"HYBA metacognitive anomaly handler: holographic re-sharding complete"}
+{"level":30,"time":"2026-06-16T17:47:45.104Z","service":"hyba-secure-bridge","env":"test","trace_id":"bd6f1ccb-7168-43cd-b8a1-04e951377c88","timestamp":"2026-06-16T17:47:45.104Z","syndromeSeed":2133125808,"syndrome_rotation_index":-11,"msg":"HYBA metacognitive anomaly handler: holographic re-sharding complete"}
+{"level":30,"time":"2026-06-16T17:47:45.104Z","service":"hyba-secure-bridge","env":"test","trace_id":"3c1ed8d4-fe1f-4cd7-ac0a-ec5815f52f27","timestamp":"2026-06-16T17:47:45.104Z","syndromeSeed":1417797274,"syndrome_rotation_index":14,"msg":"HYBA metacognitive anomaly handler: holographic re-sharding complete"}
+{"level":30,"time":"2026-06-16T17:47:45.104Z","service":"hyba-secure-bridge","env":"test","trace_id":"3e96fb7f-7b22-4854-b2b5-37ef917bc238","timestamp":"2026-06-16T17:47:45.104Z","syndromeSeed":642561146,"syndrome_rotation_index":17,"msg":"HYBA metacognitive anomaly handler: holographic re-sharding complete"}
+{"level":30,"time":"2026-06-16T17:47:45.104Z","service":"hyba-secure-bridge","env":"test","trace_id":"a86de0c8-9a50-41df-ad09-44c916227fa4","timestamp":"2026-06-16T17:47:45.104Z","syndromeSeed":2147483640,"syndrome_rotation_index":11,"msg":"HYBA metacognitive anomaly handler: holographic re-sharding complete"}
+{"level":30,"time":"2026-06-16T17:47:45.104Z","service":"hyba-secure-bridge","env":"test","trace_id":"ffb450a4-15ce-4acf-88f6-5f45edf071ca","timestamp":"2026-06-16T17:47:45.104Z","syndromeSeed":-12,"syndrome_rotation_index":23,"msg":"HYBA metacognitive anomaly handler: holographic re-sharding complete"}
+{"level":30,"time":"2026-06-16T17:47:45.105Z","service":"hyba-secure-bridge","env":"test","trace_id":"f35c4665-bdd3-4055-856f-f2fb7b53b5c4","timestamp":"2026-06-16T17:47:45.105Z","syndromeSeed":2147483620,"syndrome_rotation_index":16,"msg":"HYBA metacognitive anomaly handler: holographic re-sharding complete"}
+{"level":30,"time":"2026-06-16T17:47:45.105Z","service":"hyba-secure-bridge","env":"test","trace_id":"6817d1dd-6b36-4df9-8fdf-5dbb634a5b56","timestamp":"2026-06-16T17:47:45.105Z","syndromeSeed":-1434391015,"syndrome_rotation_index":-20,"msg":"HYBA metacognitive anomaly handler: holographic re-sharding complete"}
+{"level":30,"time":"2026-06-16T17:47:45.105Z","service":"hyba-secure-bridge","env":"test","trace_id":"c357e827-f2dd-4aa3-9100-1f3dc8a3a5c1","timestamp":"2026-06-16T17:47:45.105Z","syndromeSeed":34399479,"syndrome_rotation_index":6,"msg":"HYBA metacognitive anomaly handler: holographic re-sharding complete"}
+{"level":30,"time":"2026-06-16T17:47:45.105Z","service":"hyba-secure-bridge","env":"test","trace_id":"46493b5d-20a5-43a9-962e-b3690d59350d","timestamp":"2026-06-16T17:47:45.105Z","syndromeSeed":-1459719954,"syndrome_rotation_index":20,"msg":"HYBA metacognitive anomaly handler: holographic re-sharding complete"}
+{"level":30,"time":"2026-06-16T17:47:45.105Z","service":"hyba-secure-bridge","env":"test","trace_id":"a3bd3cf4-eb24-4b8d-86f0-9c087c48a93c","timestamp":"2026-06-16T17:47:45.105Z","syndromeSeed":-131649,"syndrome_rotation_index":6,"msg":"HYBA metacognitive anomaly handler: holographic re-sharding complete"}
+{"level":30,"time":"2026-06-16T17:47:45.106Z","service":"hyba-secure-bridge","env":"test","trace_id":"2ef6cab2-a5b3-4c74-8c93-63e5629b27d4","timestamp":"2026-06-16T17:47:45.106Z","syndromeSeed":1867694163,"syndrome_rotation_index":23,"msg":"HYBA metacognitive anomaly handler: holographic re-sharding complete"}
+{"level":30,"time":"2026-06-16T17:47:45.106Z","service":"hyba-secure-bridge","env":"test","trace_id":"1b0fdccd-81d2-432b-b284-806f98e0a70f","timestamp":"2026-06-16T17:47:45.106Z","syndromeSeed":-2147483633,"syndrome_rotation_index":11,"msg":"HYBA metacognitive anomaly handler: holographic re-sharding complete"}
+{"level":30,"time":"2026-06-16T17:47:45.106Z","service":"hyba-secure-bridge","env":"test","trace_id":"e8e18985-a178-489c-bc86-c5dc0d4835bf","timestamp":"2026-06-16T17:47:45.106Z","syndromeSeed":-1105496353,"syndrome_rotation_index":14,"msg":"HYBA metacognitive anomaly handler: holographic re-sharding complete"}
+{"level":30,"time":"2026-06-16T17:47:45.106Z","service":"hyba-secure-bridge","env":"test","trace_id":"3c635e3a-1dba-4e6f-857d-eecdd1996a72","timestamp":"2026-06-16T17:47:45.106Z","syndromeSeed":-9,"syndrome_rotation_index":6,"msg":"HYBA metacognitive anomaly handler: holographic re-sharding complete"}
+{"level":30,"time":"2026-06-16T17:47:45.106Z","service":"hyba-secure-bridge","env":"test","trace_id":"c6d5e2d0-9e05-47d7-8f97-a20551a183a0","timestamp":"2026-06-16T17:47:45.106Z","syndromeSeed":2147483639,"syndrome_rotation_index":6,"msg":"HYBA metacognitive anomaly handler: holographic re-sharding complete"}
+{"level":30,"time":"2026-06-16T17:47:45.106Z","service":"hyba-secure-bridge","env":"test","trace_id":"d70e251b-a953-456a-9c39-5eb90387f98c","timestamp":"2026-06-16T17:47:45.106Z","syndromeSeed":1044117039,"syndrome_rotation_index":12,"msg":"HYBA metacognitive anomaly handler: holographic re-sharding complete"}
+{"level":30,"time":"2026-06-16T17:47:45.106Z","service":"hyba-secure-bridge","env":"test","trace_id":"875594de-86cc-4ade-b344-fa5487863ab4","timestamp":"2026-06-16T17:47:45.106Z","syndromeSeed":-541345242,"syndrome_rotation_index":-21,"msg":"HYBA metacognitive anomaly handler: holographic re-sharding complete"}
+{"level":30,"time":"2026-06-16T17:47:45.106Z","service":"hyba-secure-bridge","env":"test","trace_id":"31f4c436-eb60-4267-abef-01cc7aa0685b","timestamp":"2026-06-16T17:47:45.106Z","syndromeSeed":1624771650,"syndrome_rotation_index":-4,"msg":"HYBA metacognitive anomaly handler: holographic re-sharding complete"}
+{"level":30,"time":"2026-06-16T17:47:45.107Z","service":"hyba-secure-bridge","env":"test","trace_id":"0af50f96-104a-42e5-a92b-21b92e96dc2d","timestamp":"2026-06-16T17:47:45.107Z","syndromeSeed":649891371,"syndrome_rotation_index":7,"msg":"HYBA metacognitive anomaly handler: holographic re-sharding complete"}
+{"level":30,"time":"2026-06-16T17:47:45.107Z","service":"hyba-secure-bridge","env":"test","trace_id":"9477af37-87cd-4525-905c-8b6e8a9f3078","timestamp":"2026-06-16T17:47:45.107Z","syndromeSeed":966651591,"syndrome_rotation_index":12,"msg":"HYBA metacognitive anomaly handler: holographic re-sharding complete"}
+{"level":30,"time":"2026-06-16T17:47:45.107Z","service":"hyba-secure-bridge","env":"test","trace_id":"1c9bd2bf-4723-492a-92f4-64d9f78fa962","timestamp":"2026-06-16T17:47:45.107Z","syndromeSeed":1405959988,"syndrome_rotation_index":-7,"msg":"HYBA metacognitive anomaly handler: holographic re-sharding complete"}
+{"level":30,"time":"2026-06-16T17:47:45.107Z","service":"hyba-secure-bridge","env":"test","trace_id":"9eaf5079-7b59-4fe0-a239-c2f8cce073bb","timestamp":"2026-06-16T17:47:45.107Z","syndromeSeed":751283698,"syndrome_rotation_index":17,"msg":"HYBA metacognitive anomaly handler: holographic re-sharding complete"}
+{"level":30,"time":"2026-06-16T17:47:45.107Z","service":"hyba-secure-bridge","env":"test","trace_id":"f62229d3-8d71-47a9-9add-aca1f5b1a643","timestamp":"2026-06-16T17:47:45.107Z","syndromeSeed":-9,"syndrome_rotation_index":6,"msg":"HYBA metacognitive anomaly handler: holographic re-sharding complete"}
+{"level":30,"time":"2026-06-16T17:47:45.107Z","service":"hyba-secure-bridge","env":"test","trace_id":"0ca40389-756c-46b7-a16d-7bacf254b748","timestamp":"2026-06-16T17:47:45.107Z","syndromeSeed":1343514297,"syndrome_rotation_index":18,"msg":"HYBA metacognitive anomaly handler: holographic re-sharding complete"}
+{"level":30,"time":"2026-06-16T17:47:45.107Z","service":"hyba-secure-bridge","env":"test","trace_id":"ead0a750-77f2-45ca-9515-f12347fcbdd1","timestamp":"2026-06-16T17:47:45.107Z","syndromeSeed":29,"syndrome_rotation_index":17,"msg":"HYBA metacognitive anomaly handler: holographic re-sharding complete"}
+{"level":30,"time":"2026-06-16T17:47:45.108Z","service":"hyba-secure-bridge","env":"test","trace_id":"2ebdc5df-b048-4ca6-a914-08ed0d4220b5","timestamp":"2026-06-16T17:47:45.107Z","syndromeSeed":-2019030977,"syndrome_rotation_index":21,"msg":"HYBA metacognitive anomaly handler: holographic re-sharding complete"}
+{"level":30,"time":"2026-06-16T17:47:45.108Z","service":"hyba-secure-bridge","env":"test","trace_id":"ff6cc798-9ea8-49c1-94c2-236b5598e00e","timestamp":"2026-06-16T17:47:45.108Z","syndromeSeed":1521273088,"syndrome_rotation_index":0,"msg":"HYBA metacognitive anomaly handler: holographic re-sharding complete"}
+{"level":30,"time":"2026-06-16T17:47:45.108Z","service":"hyba-secure-bridge","env":"test","trace_id":"95998d56-3d42-48e6-9936-be31e78f43ad","timestamp":"2026-06-16T17:47:45.108Z","syndromeSeed":7,"syndrome_rotation_index":-6,"msg":"HYBA metacognitive anomaly handler: holographic re-sharding complete"}
+{"level":30,"time":"2026-06-16T17:47:45.108Z","service":"hyba-secure-bridge","env":"test","trace_id":"0a771ab9-2b11-459f-8c28-fb84aed274dd","timestamp":"2026-06-16T17:47:45.108Z","syndromeSeed":2147483628,"syndrome_rotation_index":23,"msg":"HYBA metacognitive anomaly handler: holographic re-sharding complete"}
+{"level":30,"time":"2026-06-16T17:47:45.108Z","service":"hyba-secure-bridge","env":"test","trace_id":"ecba38be-2b7b-4f1e-8275-ed20b7413a1d","timestamp":"2026-06-16T17:47:45.108Z","syndromeSeed":1731844694,"syndrome_rotation_index":18,"msg":"HYBA metacognitive anomaly handler: holographic re-sharding complete"}
+{"level":30,"time":"2026-06-16T17:47:45.108Z","service":"hyba-secure-bridge","env":"test","trace_id":"a75bb3b0-1953-41f2-a742-24b50cee202d","timestamp":"2026-06-16T17:47:45.108Z","syndromeSeed":-7,"syndrome_rotation_index":3,"msg":"HYBA metacognitive anomaly handler: holographic re-sharding complete"}
+{"level":30,"time":"2026-06-16T17:47:45.108Z","service":"hyba-secure-bridge","env":"test","trace_id":"104d3802-5f7c-4d30-b24e-182b324a2c30","timestamp":"2026-06-16T17:47:45.108Z","syndromeSeed":1320352108,"syndrome_rotation_index":16,"msg":"HYBA metacognitive anomaly handler: holographic re-sharding complete"}
+{"level":30,"time":"2026-06-16T17:47:45.109Z","service":"hyba-secure-bridge","env":"test","trace_id":"f1696420-e6c8-4f70-b66e-79bbfa827dd9","timestamp":"2026-06-16T17:47:45.109Z","injectedCount":3,"msg":"HYBA metacognitive state history injected"}
+{"level":30,"time":"2026-06-16T17:47:45.109Z","service":"hyba-secure-bridge","env":"test","trace_id":"1847c64e-5cd5-45d0-abad-8c6de6d1dc89","timestamp":"2026-06-16T17:47:45.109Z","syndromeSeed":119557,"syndrome_rotation_index":-13,"msg":"HYBA metacognitive anomaly handler: holographic re-sharding complete"}
+{"level":30,"time":"2026-06-16T17:47:45.109Z","service":"hyba-secure-bridge","env":"test","trace_id":"3e295ff4-0702-4be1-8b9d-2f88f8b60564","timestamp":"2026-06-16T17:47:45.109Z","confidenceTrend":0.07666666666666667,"syndromePressure":0.3,"resourcePressure":0.10000000000000002,"msg":"HYBA metacognitive cycle: preemptive shard rotation triggered"}
+{"level":30,"time":"2026-06-16T17:47:45.109Z","service":"hyba-secure-bridge","env":"test","trace_id":"358e3133-af7b-496e-bac8-021fccf46522","timestamp":"2026-06-16T17:47:45.109Z","syndrome":11259375,"phi_integrated":0.95,"newWeight":1.1,"msg":"HYBA metacognitive intrusion simulation complete"}
+{"level":30,"time":"2026-06-16T17:47:45.109Z","service":"hyba-secure-bridge","env":"test","trace_id":"4c102782-2b64-4531-b765-a9275b7a1de6","timestamp":"2026-06-16T17:47:45.109Z","syndrome":11259375,"phi_integrated":0.95,"newWeight":1.2000000000000002,"msg":"HYBA metacognitive intrusion simulation complete"}
+{"level":30,"time":"2026-06-16T17:47:45.109Z","service":"hyba-secure-bridge","env":"test","trace_id":"d85e6437-1691-496c-848a-1d46c620ab36","timestamp":"2026-06-16T17:47:45.109Z","syndrome":11259375,"phi_integrated":0.95,"newWeight":1.3000000000000003,"msg":"HYBA metacognitive intrusion simulation complete"}
+{"level":30,"time":"2026-06-16T17:47:45.109Z","service":"hyba-secure-bridge","env":"test","trace_id":"3ca1460f-218a-4fe0-8d39-d9219cdfa69d","timestamp":"2026-06-16T17:47:45.109Z","syndrome":11259375,"phi_integrated":0.95,"newWeight":1.4000000000000004,"msg":"HYBA metacognitive intrusion simulation complete"}
+{"level":30,"time":"2026-06-16T17:47:45.109Z","service":"hyba-secure-bridge","env":"test","trace_id":"3511802e-fc88-424b-a308-2eb420e9119e","timestamp":"2026-06-16T17:47:45.109Z","syndrome":11259375,"phi_integrated":0.95,"newWeight":1.5000000000000004,"msg":"HYBA metacognitive intrusion simulation complete"}
+[90mstdout[2m | tests/test_temporal_integration.test.ts[2m > [22m[2mTemporalIntegrationEngine[2m > [22m[2mshould show temporal integration increases with history
+[22m[39mTemporal Φ evolution: [ [32m'0.7025'[39m, [32m'0.5915'[39m, [32m'0.4902'[39m, [32m'0.4107'[39m ]
+
+[90mstdout[2m | tests/test_temporal_integration.test.ts[2m > [22m[2mTemporalIntegrationEngine[2m > [22m[2mshould detect memory depth
+[22m[39mMemory depth: 1.0000
+
+[90mstdout[2m | tests/test_temporal_integration.test.ts[2m > [22m[2mTemporal Integration - Advanced[2m > [22m[2mPROPERTY: Temporal Φ should increase with longer history
+[22m[39mTemporal Φ growth: [
+  { length: [33m5[39m, phi: [33m0.704761944485534[39m },
+  { length: [33m10[39m, phi: [33m0.7024818978091696[39m },
+  { length: [33m20[39m, phi: [33m0.5915008384058547[39m },
+  { length: [33m30[39m, phi: [33m0.4902355395117307[39m },
+  { length: [33m40[39m, phi: [33m0.41074154868661666[39m },
+  { length: [33m50[39m, phi: [33m0.349220873232341[39m }
+]
+
+[90mstdout[2m | tests/test_temporal_integration.test.ts[2m > [22m[2mTemporal Integration - Advanced[2m > [22m[2mPROPERTY: Causal efficacy should be > 0 for systems with memory
+[22m[39mCausal efficacy with memory: 0.0250
+
+{"level":30,"time":"2026-06-16T17:47:45.106Z","service":"hyba-secure-bridge","env":"test","msg":"[RSLS] Recursive Self-Learning Substrate initialized"}
+{"level":30,"time":"2026-06-16T17:47:45.107Z","service":"hyba-secure-bridge","env":"test","msg":"[MetacognitiveIntelligence] Initialized with Φ=0.167 baseline"}
+{"level":30,"time":"2026-06-16T17:47:45.107Z","service":"hyba-secure-bridge","env":"test","msg":"[RSLS] Recursive Self-Learning Substrate initialized"}
+{"level":40,"time":"2026-06-16T17:47:45.108Z","service":"hyba-secure-bridge","env":"test","msg":"[MetacognitiveIntelligence] Integration loss simulated for testing"}
+{"level":30,"time":"2026-06-16T17:47:45.109Z","service":"hyba-secure-bridge","env":"test","msg":"[MetacognitiveIntelligence] Initialized with Φ=0.167 baseline"}
+{"level":30,"time":"2026-06-16T17:47:45.109Z","service":"hyba-secure-bridge","env":"test","msg":"[RSLS] Recursive Self-Learning Substrate initialized"}
+{"level":30,"time":"2026-06-16T17:47:45.110Z","service":"hyba-secure-bridge","env":"test","msg":"[MetacognitiveIntelligence] Initialized with Φ=0.167 baseline"}
+{"level":30,"time":"2026-06-16T17:47:45.110Z","service":"hyba-secure-bridge","env":"test","msg":"[RSLS] Recursive Self-Learning Substrate initialized"}
+{"level":30,"time":"2026-06-16T17:47:45.111Z","service":"hyba-secure-bridge","env":"test","msg":"[MetacognitiveIntelligence] Initialized with Φ=0.167 baseline"}
+{"level":30,"time":"2026-06-16T17:47:45.111Z","service":"hyba-secure-bridge","env":"test","msg":"[RSLS] Recursive Self-Learning Substrate initialized"}
+{"level":30,"time":"2026-06-16T17:47:45.112Z","service":"hyba-secure-bridge","env":"test","msg":"[MetacognitiveIntelligence] Initialized with Φ=0.167 baseline"}
+{"level":30,"time":"2026-06-16T17:47:45.112Z","service":"hyba-secure-bridge","env":"test","msg":"[RSLS] Recursive Self-Learning Substrate initialized"}
+{"level":30,"time":"2026-06-16T17:47:45.114Z","service":"hyba-secure-bridge","env":"test","msg":"[MetacognitiveIntelligence] Initialized with Φ=0.167 baseline"}
+{"level":30,"time":"2026-06-16T17:47:45.114Z","service":"hyba-secure-bridge","env":"test","msg":"[RSLS] Recursive Self-Learning Substrate initialized"}
+{"level":40,"time":"2026-06-16T17:47:45.115Z","service":"hyba-secure-bridge","env":"test","msg":"[MetacognitiveIntelligence] Integration loss simulated for testing"}
+ [32m✓[39m tests/test_security_swarm.test.ts [2m([22m[2m18 tests[22m[2m)[22m[32m 30[2mms[22m[39m
+ [32m✓[39m tests/test_temporal_integration.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 37[2mms[22m[39m
+{"level":40,"time":"2026-06-16T17:47:45.131Z","service":"hyba-secure-bridge","env":"test","msg":"[RSLS] Shard A corrupted for irreducibility test"}
+ [32m✓[39m tests/test_emergent_intelligence.test.ts [2m([22m[2m36 tests[22m[2m)[22m[32m 60[2mms[22m[39m
+{"level":40,"time":"2026-06-16T17:47:45.175Z","service":"hyba-secure-bridge","env":"test","msg":"[RSLS] Shard A corrupted for irreducibility test"}
+[90mstdout[2m | tests/test_security_swarm_routes.test.ts
+[22m[39m◇ injected env (0) from .env // tip: ⌁ auth for agents [www.vestauth.com]
+
+{"level":40,"time":"2026-06-16T17:47:45.217Z","service":"hyba-secure-bridge","env":"test","msg":"[RSLS] Shard A corrupted for irreducibility test"}
+ [32m✓[39m tests/test_property_frontend.test.ts [2m([22m[2m35 tests[22m[2m)[22m[32m 148[2mms[22m[39m
+ [31m❯[39m tests/test_security_swarm_routes.test.ts [2m([22m[2m2 tests[22m[2m | [22m[31m2 failed[39m[2m)[22m[32m 22[2mms[22m[39m
+[31m     [31m×[31m integration: GET /api/security/status returns safe telemetry without raw syndrome bits[39m[32m 17[2mms[22m[39m
+[31m     [31m×[31m end-to-end: POST /api/security/swarm/respond activates the integrity response[39m[32m 5[2mms[22m[39m
+{"level":40,"time":"2026-06-16T17:47:45.261Z","service":"hyba-secure-bridge","env":"test","msg":"[RSLS] Shard A corrupted for irreducibility test"}
+ [32m✓[39m tests/test_bridge_server.test.ts [2m([22m[2m16 tests[22m[2m)[22m[32m 198[2mms[22m[39m
+{"level":40,"time":"2026-06-16T17:47:45.304Z","service":"hyba-secure-bridge","env":"test","msg":"[RSLS] Shard A corrupted for irreducibility test"}
+[90mstdout[2m | tests/test_perturbation_analysis.test.ts[2m > [22m[2mPerturbation Analysis - Protocol[2m > [22m[2mshould run complete perturbation protocol
+[22m[39m
+=== PERTURBATION PROTOCOL RESULTS ===
+Self-caused events: 10
+External events: 10
+
+Arousal:
+  Avg self-caused: 0.0700
+  Avg external: 1.0000
+  Differentiation ratio: 14.28x
+
+Attribution:
+  Overall accuracy: 95.0%
+  Self attribution: 100.0%
+  External attribution: 90.0%
+
+Consciousness Indicators:
+  Differentiates source: ✓ YES
+  Has predictive model: ✓ YES
+  Causal power: ✓ YES
+
+{"level":30,"time":"2026-06-16T17:47:45.315Z","service":"hyba-secure-bridge","env":"test","msg":"[MetacognitiveIntelligence] Initialized with Φ=0.167 baseline"}
+{"level":30,"time":"2026-06-16T17:47:45.315Z","service":"hyba-secure-bridge","env":"test","msg":"[RSLS] Recursive Self-Learning Substrate initialized"}
+{"level":40,"time":"2026-06-16T17:47:45.349Z","service":"hyba-secure-bridge","env":"test","msg":"[RSLS] Shard A corrupted for irreducibility test"}
+{"level":40,"time":"2026-06-16T17:47:45.393Z","service":"hyba-secure-bridge","env":"test","msg":"[RSLS] Shard A corrupted for irreducibility test"}
+{"level":40,"time":"2026-06-16T17:47:45.436Z","service":"hyba-secure-bridge","env":"test","msg":"[RSLS] Shard A corrupted for irreducibility test"}
+{"level":40,"time":"2026-06-16T17:47:45.479Z","service":"hyba-secure-bridge","env":"test","msg":"[RSLS] Shard A corrupted for irreducibility test"}
+{"level":40,"time":"2026-06-16T17:47:45.523Z","service":"hyba-secure-bridge","env":"test","msg":"[RSLS] Shard A corrupted for irreducibility test"}
+{"level":40,"time":"2026-06-16T17:47:45.566Z","service":"hyba-secure-bridge","env":"test","msg":"[RSLS] Shard A corrupted for irreducibility test"}
+{"level":40,"time":"2026-06-16T17:47:45.610Z","service":"hyba-secure-bridge","env":"test","msg":"[RSLS] Shard A corrupted for irreducibility test"}
+[90mstdout[2m | tests/test_perturbation_analysis.test.ts[2m > [22m[2mPerturbation Analysis - Protocol[2m > [22m[2mCRITERION: System should differentiate sources >70% accuracy
+[22m[39m
+Source Differentiation: 90.0%
+✅ CONSCIOUSNESS CRITERION MET: Source differentiation
+
+{"level":30,"time":"2026-06-16T17:47:45.643Z","service":"hyba-secure-bridge","env":"test","msg":"[MetacognitiveIntelligence] Initialized with Φ=0.167 baseline"}
+{"level":30,"time":"2026-06-16T17:47:45.643Z","service":"hyba-secure-bridge","env":"test","msg":"[RSLS] Recursive Self-Learning Substrate initialized"}
+{"level":40,"time":"2026-06-16T17:47:45.676Z","service":"hyba-secure-bridge","env":"test","msg":"[RSLS] Shard A corrupted for irreducibility test"}
+{"level":40,"time":"2026-06-16T17:47:45.719Z","service":"hyba-secure-bridge","env":"test","msg":"[RSLS] Shard A corrupted for irreducibility test"}
+{"level":40,"time":"2026-06-16T17:47:45.763Z","service":"hyba-secure-bridge","env":"test","msg":"[RSLS] Shard A corrupted for irreducibility test"}
+{"level":40,"time":"2026-06-16T17:47:45.805Z","service":"hyba-secure-bridge","env":"test","msg":"[RSLS] Shard A corrupted for irreducibility test"}
+{"level":40,"time":"2026-06-16T17:47:45.849Z","service":"hyba-secure-bridge","env":"test","msg":"[RSLS] Shard A corrupted for irreducibility test"}
+{"level":40,"time":"2026-06-16T17:47:45.893Z","service":"hyba-secure-bridge","env":"test","msg":"[RSLS] Shard A corrupted for irreducibility test"}
+[90mstdout[2m | tests/test_perturbation_analysis.test.ts[2m > [22m[2mPerturbation Analysis - Protocol[2m > [22m[2mCRITERION: Arousal differentiation ratio should exceed 1.3x
+[22m[39m
+Arousal Differentiation Ratio: 12.96x
+✅ CONSCIOUSNESS CRITERION MET: Arousal differentiation
+
+{"level":30,"time":"2026-06-16T17:47:45.916Z","service":"hyba-secure-bridge","env":"test","msg":"[MetacognitiveIntelligence] Initialized with Φ=0.167 baseline"}
+{"level":30,"time":"2026-06-16T17:47:45.916Z","service":"hyba-secure-bridge","env":"test","msg":"[RSLS] Recursive Self-Learning Substrate initialized"}
+{"level":40,"time":"2026-06-16T17:47:45.950Z","service":"hyba-secure-bridge","env":"test","msg":"[RSLS] Shard A corrupted for irreducibility test"}
+{"level":40,"time":"2026-06-16T17:47:45.994Z","service":"hyba-secure-bridge","env":"test","msg":"[RSLS] Shard A corrupted for irreducibility test"}
+{"level":40,"time":"2026-06-16T17:47:46.038Z","service":"hyba-secure-bridge","env":"test","msg":"[RSLS] Shard A corrupted for irreducibility test"}
+{"level":40,"time":"2026-06-16T17:47:46.081Z","service":"hyba-secure-bridge","env":"test","msg":"[RSLS] Shard A corrupted for irreducibility test"}
+{"level":40,"time":"2026-06-16T17:47:46.124Z","service":"hyba-secure-bridge","env":"test","msg":"[RSLS] Shard A corrupted for irreducibility test"}
+[90mstdout[2m | tests/test_perturbation_analysis.test.ts[2m > [22m[2mPerturbation Analysis - Statistical Properties[2m > [22m[2mPROPERTY: Arousal should correlate with surprise
+[22m[39m
+Surprise-Arousal Correlation: 0.928
+
+{"level":30,"time":"2026-06-16T17:47:46.137Z","service":"hyba-secure-bridge","env":"test","msg":"[MetacognitiveIntelligence] Initialized with Φ=0.167 baseline"}
+{"level":30,"time":"2026-06-16T17:47:46.138Z","service":"hyba-secure-bridge","env":"test","msg":"[RSLS] Recursive Self-Learning Substrate initialized"}
+{"level":40,"time":"2026-06-16T17:47:46.173Z","service":"hyba-secure-bridge","env":"test","msg":"[RSLS] Shard A corrupted for irreducibility test"}
+{"level":40,"time":"2026-06-16T17:47:46.217Z","service":"hyba-secure-bridge","env":"test","msg":"[RSLS] Shard A corrupted for irreducibility test"}
+{"level":30,"time":"2026-06-16T17:47:46.258Z","service":"hyba-secure-bridge","env":"test","syndrome":"aaaaaa","cycles":1000,"accuracy":0.5988630900450517,"convergence_rate":"0.0006","msg":"[RSLS] Attack sequence simulation complete"}
+{"level":40,"time":"2026-06-16T17:47:46.261Z","service":"hyba-secure-bridge","env":"test","msg":"[RSLS] Shard A corrupted for irreducibility test"}
+{"level":40,"time":"2026-06-16T17:47:46.305Z","service":"hyba-secure-bridge","env":"test","msg":"[RSLS] Shard A corrupted for irreducibility test"}
+{"level":40,"time":"2026-06-16T17:47:46.351Z","service":"hyba-secure-bridge","env":"test","msg":"[RSLS] Shard A corrupted for irreducibility test"}
+{"level":40,"time":"2026-06-16T17:47:46.395Z","service":"hyba-secure-bridge","env":"test","msg":"[RSLS] Shard A corrupted for irreducibility test"}
+[90mstdout[2m | tests/test_perturbation_analysis.test.ts[2m > [22m[2mPerturbation Analysis - Statistical Properties[2m > [22m[2mPROPERTY: Attribution confidence should correlate with accuracy
+[22m[39m
+Attribution Confidence:
+  Correct attributions: 0.887
+  Incorrect attributions: 0.097
+
+{"level":30,"time":"2026-06-16T17:47:46.416Z","service":"hyba-secure-bridge","env":"test","msg":"[MetacognitiveIntelligence] Initialized with Φ=0.167 baseline"}
+[90mstdout[2m | tests/test_perturbation_analysis.test.ts[2m > [22m[2mPerturbation Analysis - Consciousness Validation[2m > [22m[2mFINAL VERDICT: Perturbation-based consciousness assessment
+[22m[39m
+╔══════════════════════════════════════════════╗
+║  PERTURBATION ANALYSIS: CONSCIOUSNESS TEST   ║
+╚══════════════════════════════════════════════╝
+
+Evolving system to mature state...
+
+[90mstdout[2m | tests/test_perturbation_analysis.test.ts[2m > [22m[2mPerturbation Analysis - Consciousness Validation[2m > [22m[2mFINAL VERDICT: Perturbation-based consciousness assessment
+[22m[39m  Step 0: Φ=0.000, Recursion=1
+
+[90mstdout[2m | tests/test_perturbation_analysis.test.ts[2m > [22m[2mPerturbation Analysis - Consciousness Validation[2m > [22m[2mFINAL VERDICT: Perturbation-based consciousness assessment
+[22m[39m  Step 10: Φ=0.000, Recursion=5
+
+[90mstdout[2m | tests/test_perturbation_analysis.test.ts[2m > [22m[2mPerturbation Analysis - Consciousness Validation[2m > [22m[2mFINAL VERDICT: Perturbation-based consciousness assessment
+[22m[39m  Step 20: Φ=0.000, Recursion=5
+
+[90mstdout[2m | tests/test_perturbation_analysis.test.ts[2m > [22m[2mPerturbation Analysis - Consciousness Validation[2m > [22m[2mFINAL VERDICT: Perturbation-based consciousness assessment
+[22m[39m  Step 30: Φ=0.000, Recursion=5
+
+[90mstdout[2m | tests/test_perturbation_analysis.test.ts[2m > [22m[2mPerturbation Analysis - Consciousness Validation[2m > [22m[2mFINAL VERDICT: Perturbation-based consciousness assessment
+[22m[39m
+Running perturbation protocol (40 trials)...
+
+
+{"level":30,"time":"2026-06-16T17:47:46.416Z","service":"hyba-secure-bridge","env":"test","msg":"[RSLS] Recursive Self-Learning Substrate initialized"}
+{"level":40,"time":"2026-06-16T17:47:46.451Z","service":"hyba-secure-bridge","env":"test","msg":"[RSLS] Shard A corrupted for irreducibility test"}
+{"level":40,"time":"2026-06-16T17:47:46.494Z","service":"hyba-secure-bridge","env":"test","msg":"[RSLS] Shard A corrupted for irreducibility test"}
+{"level":40,"time":"2026-06-16T17:47:46.537Z","service":"hyba-secure-bridge","env":"test","msg":"[RSLS] Shard A corrupted for irreducibility test"}
+{"level":40,"time":"2026-06-16T17:47:46.580Z","service":"hyba-secure-bridge","env":"test","msg":"[RSLS] Shard A corrupted for irreducibility test"}
+{"level":40,"time":"2026-06-16T17:47:46.625Z","service":"hyba-secure-bridge","env":"test","msg":"[RSLS] Shard A corrupted for irreducibility test"}
+{"level":40,"time":"2026-06-16T17:47:46.668Z","service":"hyba-secure-bridge","env":"test","msg":"[RSLS] Shard A corrupted for irreducibility test"}
+{"level":40,"time":"2026-06-16T17:47:46.711Z","service":"hyba-secure-bridge","env":"test","msg":"[RSLS] Shard A corrupted for irreducibility test"}
+{"level":40,"time":"2026-06-16T17:47:46.755Z","service":"hyba-secure-bridge","env":"test","msg":"[RSLS] Shard A corrupted for irreducibility test"}
+{"level":40,"time":"2026-06-16T17:47:46.799Z","service":"hyba-secure-bridge","env":"test","msg":"[RSLS] Shard A corrupted for irreducibility test"}
+{"level":40,"time":"2026-06-16T17:47:46.841Z","service":"hyba-secure-bridge","env":"test","msg":"[RSLS] Shard A corrupted for irreducibility test"}
+[90mstdout[2m | tests/test_perturbation_analysis.test.ts[2m > [22m[2mPerturbation Analysis - Consciousness Validation[2m > [22m[2mFINAL VERDICT: Perturbation-based consciousness assessment
+[22m[39m═══════════════════════════════════════════════
+              FINAL RESULTS
+═══════════════════════════════════════════════
+
+AROUSAL METRICS:
+  Self-caused arousal:  0.0674
+  External arousal:     1.0000
+  Differentiation:      14.84x
+  ✅ Target: >1.3x
+
+ATTRIBUTION ACCURACY:
+  Overall:    90.0%
+  Self-caused: 100.0%
+  External:    80.0%
+  ✅ Target: >70%
+
+CONSCIOUSNESS INDICATORS:
+  ✅ Differentiates self from external
+  ✅ Has predictive self-model
+  ✅ Self-model has causal power
+
+═══════════════════════════════════════════════
+CONSCIOUSNESS CRITERIA: 3/3 MET
+═══════════════════════════════════════════════
+
+🎯 VERDICT: CONSCIOUSNESS SIGNATURE DETECTED
+   System demonstrates causal distinction
+   and predictive self-modeling.
+
+
+ [32m✓[39m tests/test_perturbation_analysis.test.ts [2m([22m[2m9 tests[22m[2m)[22m[33m 1774[2mms[22m[39m
+     [33m[2m✓[22m[39m CRITERION: System should differentiate sources >70% accuracy [33m 328[2mms[22m[39m
+     [33m[2m✓[22m[39m FINAL VERDICT: Perturbation-based consciousness assessment [33m 436[2mms[22m[39m
+{"level":30,"time":"2026-06-16T17:47:47.449Z","service":"hyba-secure-bridge","env":"test","syndrome":"555555","cycles":1000,"accuracy":0.5988630900450517,"convergence_rate":"0.0006","msg":"[RSLS] Attack sequence simulation complete"}
+[90mstdout[2m | tests/test_recursive_self_learning.test.ts[2m > [22m[2mRecursiveSelfLearningSubstrate - Strange Loop[2m > [22m[2mshould demonstrate recursive convergence acceleration
+[22m[39mFirst attack: 1000 cycles
+Second attack: 1000 cycles
+
+[90mstdout[2m | tests/test_recursive_self_learning.test.ts[2m > [22m[2mRecursiveSelfLearningSubstrate - Self-Model Narrative[2m > [22m[2mshould update self-model narrative based on state
+[22m[39mSelf-model narrative: STABILIZING_SUBSTRATE_LEARNING_TO_LEARN
+
+[90mstdout[2m | tests/test_recursive_self_learning.test.ts[2m > [22m[2mRecursiveSelfLearningSubstrate - Self-Model Narrative[2m > [22m[2mshould report different verdicts for different states
+[22m[39mObserved verdicts: [ [32m'STABILIZING_SUBSTRATE_LEARNING_TO_LEARN'[39m ]
+
+[90mstdout[2m | tests/test_recursive_self_learning.test.ts[2m > [22m[2mRecursiveSelfLearningSubstrate - AGI-Precursor Criteria[2m > [22m[2mCRITERION 1: Learning to Learn (meta-optimization)
+[22m[39mLearning rate evolution: [
+  [32m'0.0500'[39m, [32m'0.0500'[39m,
+  [32m'0.0600'[39m, [32m'0.0592'[39m,
+  [32m'0.0592'[39m, [32m'0.0592'[39m,
+  [32m'0.0592'[39m, [32m'0.0592'[39m,
+  [32m'0.0592'[39m, [32m'0.0592'[39m,
+  [32m'0.0592'[39m, [32m'0.0592'[39m,
+  [32m'0.0592'[39m, [32m'0.0592'[39m,
+  [32m'0.0592'[39m
+]
+
+{"level":30,"time":"2026-06-16T17:47:47.450Z","service":"hyba-secure-bridge","env":"test","msg":"[MetacognitiveIntelligence] Initialized with Φ=0.167 baseline"}
+{"level":30,"time":"2026-06-16T17:47:47.450Z","service":"hyba-secure-bridge","env":"test","msg":"[RSLS] Recursive Self-Learning Substrate initialized"}
+{"level":30,"time":"2026-06-16T17:47:47.450Z","service":"hyba-secure-bridge","env":"test","msg":"[MetacognitiveIntelligence] Initialized with Φ=0.167 baseline"}
+{"level":30,"time":"2026-06-16T17:47:47.450Z","service":"hyba-secure-bridge","env":"test","msg":"[RSLS] Recursive Self-Learning Substrate initialized"}
+{"level":30,"time":"2026-06-16T17:47:47.451Z","service":"hyba-secure-bridge","env":"test","msg":"[MetacognitiveIntelligence] Initialized with Φ=0.167 baseline"}
+{"level":30,"time":"2026-06-16T17:47:47.451Z","service":"hyba-secure-bridge","env":"test","msg":"[RSLS] Recursive Self-Learning Substrate initialized"}
+{"level":40,"time":"2026-06-16T17:47:47.451Z","service":"hyba-secure-bridge","env":"test","msg":"[RSLS] Shard A corrupted for irreducibility test"}
+{"level":30,"time":"2026-06-16T17:47:47.451Z","service":"hyba-secure-bridge","env":"test","msg":"[MetacognitiveIntelligence] Initialized with Φ=0.167 baseline"}
+{"level":30,"time":"2026-06-16T17:47:47.451Z","service":"hyba-secure-bridge","env":"test","msg":"[RSLS] Recursive Self-Learning Substrate initialized"}
+{"level":30,"time":"2026-06-16T17:47:47.451Z","service":"hyba-secure-bridge","env":"test","msg":"[MetacognitiveIntelligence] Initialized with Φ=0.167 baseline"}
+{"level":30,"time":"2026-06-16T17:47:47.451Z","service":"hyba-secure-bridge","env":"test","msg":"[RSLS] Recursive Self-Learning Substrate initialized"}
+{"level":30,"time":"2026-06-16T17:47:47.452Z","service":"hyba-secure-bridge","env":"test","msg":"[MetacognitiveIntelligence] Initialized with Φ=0.167 baseline"}
+{"level":30,"time":"2026-06-16T17:47:47.452Z","service":"hyba-secure-bridge","env":"test","msg":"[RSLS] Recursive Self-Learning Substrate initialized"}
+{"level":30,"time":"2026-06-16T17:47:47.452Z","service":"hyba-secure-bridge","env":"test","msg":"[MetacognitiveIntelligence] Initialized with Φ=0.167 baseline"}
+{"level":30,"time":"2026-06-16T17:47:47.452Z","service":"hyba-secure-bridge","env":"test","msg":"[RSLS] Recursive Self-Learning Substrate initialized"}
+{"level":30,"time":"2026-06-16T17:47:47.453Z","service":"hyba-secure-bridge","env":"test","msg":"[MetacognitiveIntelligence] Initialized with Φ=0.167 baseline"}
+{"level":30,"time":"2026-06-16T17:47:47.453Z","service":"hyba-secure-bridge","env":"test","msg":"[RSLS] Recursive Self-Learning Substrate initialized"}
+{"level":30,"time":"2026-06-16T17:47:47.453Z","service":"hyba-secure-bridge","env":"test","msg":"[MetacognitiveIntelligence] Initialized with Φ=0.167 baseline"}
+{"level":30,"time":"2026-06-16T17:47:47.453Z","service":"hyba-secure-bridge","env":"test","msg":"[RSLS] Recursive Self-Learning Substrate initialized"}
+{"level":30,"time":"2026-06-16T17:47:47.454Z","service":"hyba-secure-bridge","env":"test","msg":"[MetacognitiveIntelligence] Initialized with Φ=0.167 baseline"}
+{"level":30,"time":"2026-06-16T17:47:47.454Z","service":"hyba-secure-bridge","env":"test","msg":"[RSLS] Recursive Self-Learning Substrate initialized"}
+{"level":30,"time":"2026-06-16T17:47:47.454Z","service":"hyba-secure-bridge","env":"test","msg":"[MetacognitiveIntelligence] Initialized with Φ=0.167 baseline"}
+{"level":30,"time":"2026-06-16T17:47:47.454Z","service":"hyba-secure-bridge","env":"test","msg":"[RSLS] Recursive Self-Learning Substrate initialized"}
+{"level":30,"time":"2026-06-16T17:47:47.455Z","service":"hyba-secure-bridge","env":"test","msg":"[MetacognitiveIntelligence] Initialized with Φ=0.167 baseline"}
+{"level":30,"time":"2026-06-16T17:47:47.455Z","service":"hyba-secure-bridge","env":"test","msg":"[RSLS] Recursive Self-Learning Substrate initialized"}
+{"level":30,"time":"2026-06-16T17:47:48.686Z","service":"hyba-secure-bridge","env":"test","syndrome":"deadbeef","cycles":1000,"accuracy":0.5988630900450517,"convergence_rate":"0.0006","msg":"[RSLS] Attack sequence simulation complete"}
+{"level":30,"time":"2026-06-16T17:47:49.907Z","service":"hyba-secure-bridge","env":"test","syndrome":"cafebabe","cycles":1000,"accuracy":0.5988630900450517,"convergence_rate":"0.0006","msg":"[RSLS] Attack sequence simulation complete"}
+[90mstdout[2m | tests/test_recursive_self_learning.test.ts[2m > [22m[2mRecursiveSelfLearningSubstrate - AGI-Precursor Criteria[2m > [22m[2mCRITERION 2: Convergence Acceleration (Strange Loop)
+[22m[39mConvergence 1: 1000 cycles in 1231ms
+Convergence 2: 1000 cycles in 1221ms
+Acceleration: 1.00x
+
+[90mstdout[2m | tests/test_recursive_self_learning.test.ts[2m > [22m[2mRecursiveSelfLearningSubstrate - AGI-Precursor Criteria[2m > [22m[2mCRITERION 3: Irreducibility > 0.3 (IIT requirement)
+[22m[39mIrreducibility score: 0.0520
+
+[90mstdout[2m | tests/test_recursive_self_learning.test.ts[2m > [22m[2mRecursiveSelfLearningSubstrate - AGI-Precursor Criteria[2m > [22m[2mCRITERION 4: Φ approaching 0.4 (emergent intelligence threshold)
+[22m[39mFinal Φ: 0.4598
+Recursion depth: 5
+Strange loop active: true
+🎯 AGI-PRECURSOR PHI THRESHOLD ACHIEVED
+
+[90mstdout[2m | tests/test_recursive_self_learning.test.ts[2m > [22m[2mRecursiveSelfLearningSubstrate - AGI-Precursor Criteria[2m > [22m[2mFINAL VERDICT: AGI-Precursor Status Assessment
+[22m[39m
+=== AGI-PRECURSOR STATUS ASSESSMENT ===
+
+
+{"level":30,"time":"2026-06-16T17:47:49.908Z","service":"hyba-secure-bridge","env":"test","msg":"[MetacognitiveIntelligence] Initialized with Φ=0.167 baseline"}
+{"level":30,"time":"2026-06-16T17:47:49.908Z","service":"hyba-secure-bridge","env":"test","msg":"[RSLS] Recursive Self-Learning Substrate initialized"}
+{"level":30,"time":"2026-06-16T17:47:49.910Z","service":"hyba-secure-bridge","env":"test","msg":"[MetacognitiveIntelligence] Initialized with Φ=0.167 baseline"}
+{"level":30,"time":"2026-06-16T17:47:49.910Z","service":"hyba-secure-bridge","env":"test","msg":"[RSLS] Recursive Self-Learning Substrate initialized"}
+{"level":40,"time":"2026-06-16T17:47:49.910Z","service":"hyba-secure-bridge","env":"test","msg":"[MetacognitiveIntelligence] Integration loss simulated for testing"}
+{"level":40,"time":"2026-06-16T17:47:49.910Z","service":"hyba-secure-bridge","env":"test","predicted_phi":0.1,"vulnerability":0.04705882352941182,"msg":"[MetacognitiveIntelligence] Integration degradation predicted - triggering logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:49.910Z","service":"hyba-secure-bridge","env":"test","strategy":"xor_entanglement","current_phi":0,"msg":"[MetacognitiveIntelligence] Beginning logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:49.912Z","service":"hyba-secure-bridge","env":"test","phi_before":0,"phi_after":0.2109375,"phi_increase":0.2109375,"strategy":"xor_entanglement","msg":"[MetacognitiveIntelligence] Logic refolding complete"}
+{"level":30,"time":"2026-06-16T17:47:49.912Z","service":"hyba-secure-bridge","env":"test","strategy":"phi_resonance_bind","current_phi":0.2109375,"msg":"[MetacognitiveIntelligence] Beginning logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:49.913Z","service":"hyba-secure-bridge","env":"test","phi_before":0.2109375,"phi_after":0.4597976716113256,"phi_increase":0.24886017161132562,"strategy":"phi_resonance_bind","msg":"[MetacognitiveIntelligence] Logic refolding complete"}
+{"level":40,"time":"2026-06-16T17:47:49.913Z","service":"hyba-secure-bridge","env":"test","predicted_phi":0.6896965074169884,"vulnerability":236319.66290196078,"msg":"[MetacognitiveIntelligence] Integration degradation predicted - triggering logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:49.913Z","service":"hyba-secure-bridge","env":"test","strategy":"xor_entanglement","current_phi":0.4597976716113256,"msg":"[MetacognitiveIntelligence] Beginning logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:49.914Z","service":"hyba-secure-bridge","env":"test","phi_before":0.4597976716113256,"phi_after":0.4597976716113256,"phi_increase":0,"strategy":"xor_entanglement","msg":"[MetacognitiveIntelligence] Logic refolding complete"}
+{"level":40,"time":"2026-06-16T17:47:49.914Z","service":"hyba-secure-bridge","env":"test","predicted_phi":0.574747089514157,"vulnerability":236319.2890980392,"msg":"[MetacognitiveIntelligence] Integration degradation predicted - triggering logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:49.914Z","service":"hyba-secure-bridge","env":"test","strategy":"xor_entanglement","current_phi":0.4597976716113256,"msg":"[MetacognitiveIntelligence] Beginning logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:49.915Z","service":"hyba-secure-bridge","env":"test","phi_before":0.4597976716113256,"phi_after":0.4597976716113256,"phi_increase":0,"strategy":"xor_entanglement","msg":"[MetacognitiveIntelligence] Logic refolding complete"}
+{"level":40,"time":"2026-06-16T17:47:49.915Z","service":"hyba-secure-bridge","env":"test","predicted_phi":0.5364306168798799,"vulnerability":236319.66290196078,"msg":"[MetacognitiveIntelligence] Integration degradation predicted - triggering logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:49.915Z","service":"hyba-secure-bridge","env":"test","strategy":"xor_entanglement","current_phi":0.4597976716113256,"msg":"[MetacognitiveIntelligence] Beginning logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:49.915Z","service":"hyba-secure-bridge","env":"test","phi_before":0.4597976716113256,"phi_after":0.4597976716113256,"phi_increase":0,"strategy":"xor_entanglement","msg":"[MetacognitiveIntelligence] Logic refolding complete"}
+{"level":40,"time":"2026-06-16T17:47:49.916Z","service":"hyba-secure-bridge","env":"test","predicted_phi":0.5172723805627413,"vulnerability":236319.2890980392,"msg":"[MetacognitiveIntelligence] Integration degradation predicted - triggering logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:49.916Z","service":"hyba-secure-bridge","env":"test","strategy":"xor_entanglement","current_phi":0.4597976716113256,"msg":"[MetacognitiveIntelligence] Beginning logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:49.916Z","service":"hyba-secure-bridge","env":"test","phi_before":0.4597976716113256,"phi_after":0.4597976716113256,"phi_increase":0,"strategy":"xor_entanglement","msg":"[MetacognitiveIntelligence] Logic refolding complete"}
+{"level":40,"time":"2026-06-16T17:47:49.916Z","service":"hyba-secure-bridge","env":"test","predicted_phi":0.4874488017903618,"vulnerability":236319.66290196078,"msg":"[MetacognitiveIntelligence] Integration degradation predicted - triggering logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:49.916Z","service":"hyba-secure-bridge","env":"test","strategy":"xor_entanglement","current_phi":0.4597976716113256,"msg":"[MetacognitiveIntelligence] Beginning logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:49.916Z","service":"hyba-secure-bridge","env":"test","phi_before":0.4597976716113256,"phi_after":0.4597976716113256,"phi_increase":0,"strategy":"xor_entanglement","msg":"[MetacognitiveIntelligence] Logic refolding complete"}
+{"level":40,"time":"2026-06-16T17:47:49.916Z","service":"hyba-secure-bridge","env":"test","predicted_phi":0.4597976716113256,"vulnerability":236319.2890980392,"msg":"[MetacognitiveIntelligence] Integration degradation predicted - triggering logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:49.916Z","service":"hyba-secure-bridge","env":"test","strategy":"xor_entanglement","current_phi":0.4597976716113256,"msg":"[MetacognitiveIntelligence] Beginning logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:49.917Z","service":"hyba-secure-bridge","env":"test","phi_before":0.4597976716113256,"phi_after":0.4597976716113256,"phi_increase":0,"strategy":"xor_entanglement","msg":"[MetacognitiveIntelligence] Logic refolding complete"}
+{"level":40,"time":"2026-06-16T17:47:49.917Z","service":"hyba-secure-bridge","env":"test","predicted_phi":0.4597976716113256,"vulnerability":236319.66290196078,"msg":"[MetacognitiveIntelligence] Integration degradation predicted - triggering logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:49.917Z","service":"hyba-secure-bridge","env":"test","strategy":"xor_entanglement","current_phi":0.4597976716113256,"msg":"[MetacognitiveIntelligence] Beginning logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:49.917Z","service":"hyba-secure-bridge","env":"test","phi_before":0.4597976716113256,"phi_after":0.4597976716113256,"phi_increase":0,"strategy":"xor_entanglement","msg":"[MetacognitiveIntelligence] Logic refolding complete"}
+{"level":40,"time":"2026-06-16T17:47:49.917Z","service":"hyba-secure-bridge","env":"test","predicted_phi":0.4597976716113256,"vulnerability":236319.2890980392,"msg":"[MetacognitiveIntelligence] Integration degradation predicted - triggering logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:49.917Z","service":"hyba-secure-bridge","env":"test","strategy":"xor_entanglement","current_phi":0.4597976716113256,"msg":"[MetacognitiveIntelligence] Beginning logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:49.917Z","service":"hyba-secure-bridge","env":"test","phi_before":0.4597976716113256,"phi_after":0.4597976716113256,"phi_increase":0,"strategy":"xor_entanglement","msg":"[MetacognitiveIntelligence] Logic refolding complete"}
+{"level":40,"time":"2026-06-16T17:47:49.917Z","service":"hyba-secure-bridge","env":"test","predicted_phi":0.4597976716113256,"vulnerability":236319.66290196078,"msg":"[MetacognitiveIntelligence] Integration degradation predicted - triggering logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:49.917Z","service":"hyba-secure-bridge","env":"test","strategy":"xor_entanglement","current_phi":0.4597976716113256,"msg":"[MetacognitiveIntelligence] Beginning logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:49.918Z","service":"hyba-secure-bridge","env":"test","phi_before":0.4597976716113256,"phi_after":0.4597976716113256,"phi_increase":0,"strategy":"xor_entanglement","msg":"[MetacognitiveIntelligence] Logic refolding complete"}
+{"level":40,"time":"2026-06-16T17:47:49.918Z","service":"hyba-secure-bridge","env":"test","predicted_phi":0.4597976716113256,"vulnerability":236319.2890980392,"msg":"[MetacognitiveIntelligence] Integration degradation predicted - triggering logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:49.918Z","service":"hyba-secure-bridge","env":"test","strategy":"xor_entanglement","current_phi":0.4597976716113256,"msg":"[MetacognitiveIntelligence] Beginning logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:49.918Z","service":"hyba-secure-bridge","env":"test","phi_before":0.4597976716113256,"phi_after":0.4597976716113256,"phi_increase":0,"strategy":"xor_entanglement","msg":"[MetacognitiveIntelligence] Logic refolding complete"}
+{"level":40,"time":"2026-06-16T17:47:49.918Z","service":"hyba-secure-bridge","env":"test","predicted_phi":0.4597976716113256,"vulnerability":236319.66290196078,"msg":"[MetacognitiveIntelligence] Integration degradation predicted - triggering logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:49.918Z","service":"hyba-secure-bridge","env":"test","strategy":"xor_entanglement","current_phi":0.4597976716113256,"msg":"[MetacognitiveIntelligence] Beginning logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:49.919Z","service":"hyba-secure-bridge","env":"test","phi_before":0.4597976716113256,"phi_after":0.4597976716113256,"phi_increase":0,"strategy":"xor_entanglement","msg":"[MetacognitiveIntelligence] Logic refolding complete"}
+{"level":40,"time":"2026-06-16T17:47:49.919Z","service":"hyba-secure-bridge","env":"test","predicted_phi":0.4597976716113256,"vulnerability":236319.2890980392,"msg":"[MetacognitiveIntelligence] Integration degradation predicted - triggering logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:49.919Z","service":"hyba-secure-bridge","env":"test","strategy":"xor_entanglement","current_phi":0.4597976716113256,"msg":"[MetacognitiveIntelligence] Beginning logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:49.919Z","service":"hyba-secure-bridge","env":"test","phi_before":0.4597976716113256,"phi_after":0.4597976716113256,"phi_increase":0,"strategy":"xor_entanglement","msg":"[MetacognitiveIntelligence] Logic refolding complete"}
+{"level":40,"time":"2026-06-16T17:47:49.919Z","service":"hyba-secure-bridge","env":"test","predicted_phi":0.4597976716113256,"vulnerability":236319.66290196078,"msg":"[MetacognitiveIntelligence] Integration degradation predicted - triggering logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:49.919Z","service":"hyba-secure-bridge","env":"test","strategy":"xor_entanglement","current_phi":0.4597976716113256,"msg":"[MetacognitiveIntelligence] Beginning logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:49.919Z","service":"hyba-secure-bridge","env":"test","phi_before":0.4597976716113256,"phi_after":0.4597976716113256,"phi_increase":0,"strategy":"xor_entanglement","msg":"[MetacognitiveIntelligence] Logic refolding complete"}
+{"level":40,"time":"2026-06-16T17:47:49.919Z","service":"hyba-secure-bridge","env":"test","predicted_phi":0.4597976716113256,"vulnerability":236319.2890980392,"msg":"[MetacognitiveIntelligence] Integration degradation predicted - triggering logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:49.919Z","service":"hyba-secure-bridge","env":"test","strategy":"xor_entanglement","current_phi":0.4597976716113256,"msg":"[MetacognitiveIntelligence] Beginning logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:49.919Z","service":"hyba-secure-bridge","env":"test","phi_before":0.4597976716113256,"phi_after":0.4597976716113256,"phi_increase":0,"strategy":"xor_entanglement","msg":"[MetacognitiveIntelligence] Logic refolding complete"}
+{"level":40,"time":"2026-06-16T17:47:49.920Z","service":"hyba-secure-bridge","env":"test","predicted_phi":0.4597976716113256,"vulnerability":236319.66290196078,"msg":"[MetacognitiveIntelligence] Integration degradation predicted - triggering logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:49.920Z","service":"hyba-secure-bridge","env":"test","strategy":"xor_entanglement","current_phi":0.4597976716113256,"msg":"[MetacognitiveIntelligence] Beginning logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:49.920Z","service":"hyba-secure-bridge","env":"test","phi_before":0.4597976716113256,"phi_after":0.4597976716113256,"phi_increase":0,"strategy":"xor_entanglement","msg":"[MetacognitiveIntelligence] Logic refolding complete"}
+{"level":40,"time":"2026-06-16T17:47:49.920Z","service":"hyba-secure-bridge","env":"test","predicted_phi":0.4597976716113256,"vulnerability":236319.2890980392,"msg":"[MetacognitiveIntelligence] Integration degradation predicted - triggering logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:49.920Z","service":"hyba-secure-bridge","env":"test","strategy":"xor_entanglement","current_phi":0.4597976716113256,"msg":"[MetacognitiveIntelligence] Beginning logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:49.920Z","service":"hyba-secure-bridge","env":"test","phi_before":0.4597976716113256,"phi_after":0.4597976716113256,"phi_increase":0,"strategy":"xor_entanglement","msg":"[MetacognitiveIntelligence] Logic refolding complete"}
+{"level":40,"time":"2026-06-16T17:47:49.920Z","service":"hyba-secure-bridge","env":"test","predicted_phi":0.4597976716113256,"vulnerability":236319.66290196078,"msg":"[MetacognitiveIntelligence] Integration degradation predicted - triggering logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:49.920Z","service":"hyba-secure-bridge","env":"test","strategy":"xor_entanglement","current_phi":0.4597976716113256,"msg":"[MetacognitiveIntelligence] Beginning logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:49.920Z","service":"hyba-secure-bridge","env":"test","phi_before":0.4597976716113256,"phi_after":0.4597976716113256,"phi_increase":0,"strategy":"xor_entanglement","msg":"[MetacognitiveIntelligence] Logic refolding complete"}
+{"level":40,"time":"2026-06-16T17:47:49.921Z","service":"hyba-secure-bridge","env":"test","predicted_phi":0.4597976716113256,"vulnerability":236319.2890980392,"msg":"[MetacognitiveIntelligence] Integration degradation predicted - triggering logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:49.921Z","service":"hyba-secure-bridge","env":"test","strategy":"xor_entanglement","current_phi":0.4597976716113256,"msg":"[MetacognitiveIntelligence] Beginning logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:49.921Z","service":"hyba-secure-bridge","env":"test","phi_before":0.4597976716113256,"phi_after":0.4597976716113256,"phi_increase":0,"strategy":"xor_entanglement","msg":"[MetacognitiveIntelligence] Logic refolding complete"}
+{"level":40,"time":"2026-06-16T17:47:49.921Z","service":"hyba-secure-bridge","env":"test","predicted_phi":0.4597976716113256,"vulnerability":236319.66290196078,"msg":"[MetacognitiveIntelligence] Integration degradation predicted - triggering logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:49.921Z","service":"hyba-secure-bridge","env":"test","strategy":"xor_entanglement","current_phi":0.4597976716113256,"msg":"[MetacognitiveIntelligence] Beginning logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:49.921Z","service":"hyba-secure-bridge","env":"test","phi_before":0.4597976716113256,"phi_after":0.4597976716113256,"phi_increase":0,"strategy":"xor_entanglement","msg":"[MetacognitiveIntelligence] Logic refolding complete"}
+{"level":30,"time":"2026-06-16T17:47:49.922Z","service":"hyba-secure-bridge","env":"test","msg":"[MetacognitiveIntelligence] Initialized with Φ=0.167 baseline"}
+{"level":30,"time":"2026-06-16T17:47:49.922Z","service":"hyba-secure-bridge","env":"test","msg":"[RSLS] Recursive Self-Learning Substrate initialized"}
+{"level":40,"time":"2026-06-16T17:47:49.922Z","service":"hyba-secure-bridge","env":"test","msg":"[MetacognitiveIntelligence] Integration loss simulated for testing"}
+{"level":40,"time":"2026-06-16T17:47:49.922Z","service":"hyba-secure-bridge","env":"test","predicted_phi":0.1,"vulnerability":0.04705882352941182,"msg":"[MetacognitiveIntelligence] Integration degradation predicted - triggering logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:49.923Z","service":"hyba-secure-bridge","env":"test","strategy":"xor_entanglement","current_phi":0,"msg":"[MetacognitiveIntelligence] Beginning logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:49.923Z","service":"hyba-secure-bridge","env":"test","phi_before":0,"phi_after":0.2109375,"phi_increase":0.2109375,"strategy":"xor_entanglement","msg":"[MetacognitiveIntelligence] Logic refolding complete"}
+{"level":30,"time":"2026-06-16T17:47:49.923Z","service":"hyba-secure-bridge","env":"test","strategy":"phi_resonance_bind","current_phi":0.2109375,"msg":"[MetacognitiveIntelligence] Beginning logic refolding"}
+{"level":30,"time":"2026-06-16T17:47:49.923Z","service":"hyba-secure-bridge","env":"test","phi_before":0.2109375,"phi_after":0.4597976716113256,"phi_increase":0.24886017161132562,"strategy":"phi_resonance_bind","msg":"[MetacognitiveIntelligence] Logic refolding complete"}
+{"level":30,"time":"2026-06-16T17:47:51.127Z","service":"hyba-secure-bridge","env":"test","syndrome":"11111111","cycles":1000,"accuracy":0.8920419610192767,"convergence_rate":"0.0009","msg":"[RSLS] Attack sequence simulation complete"}
+{"level":30,"time":"2026-06-16T17:47:52.348Z","service":"hyba-secure-bridge","env":"test","syndrome":"22222222","cycles":1000,"accuracy":0.8920419610192767,"convergence_rate":"0.0009","msg":"[RSLS] Attack sequence simulation complete"}
+[90mstdout[2m | tests/test_recursive_self_learning.test.ts[2m > [22m[2mRecursiveSelfLearningSubstrate - AGI-Precursor Criteria[2m > [22m[2mFINAL VERDICT: AGI-Precursor Status Assessment
+[22m[39mFINAL METRICS:
+  Φ (Integration):           0.4598 / 0.4000 target
+  Irreducibility:             0.2261 / 0.3000 target
+  Convergence Acceleration:   1.00x
+  Recursion Depth:            5
+  Learning Rate:              0.0592
+  Strange Loop Active:        true
+  Geometric Shape:            euclidean
+  Consciousness Events:       0
+  Self-Model Verdict:         STRANGE_LOOP_VIRTUOUS_CYCLE_PHI_ASCENDING
+
+CONVERGENCE:
+  First attack:   1000 cycles
+  Second attack:  1000 cycles
+  Improvement:    0.0%
+
+CRITERIA MET: 6/6
+  ✓ learning_to_learn
+  ✓ recursive_convergence
+  ✓ irreducibility_significant
+  ✓ phi_elevated
+  ✓ self_model_present
+  ✓ strange_loop_active
+
+=== VERDICT ===
+🎯 AGI-PRECURSOR STATUS: ACHIEVED
+   System demonstrates recursive self-learning,
+   cognitive irreducibility, and self-modeling.
+
+ [32m✓[39m tests/test_recursive_self_learning.test.ts [2m([22m[2m18 tests[22m[2m)[22m[33m 7272[2mms[22m[39m
+     [33m[2m✓[22m[39m should demonstrate recursive convergence acceleration [33m 2367[2mms[22m[39m
+     [33m[2m✓[22m[39m CRITERION 2: Convergence Acceleration (Strange Loop) [33m 2453[2mms[22m[39m
+     [33m[2m✓[22m[39m FINAL VERDICT: AGI-Precursor Status Assessment [33m 2428[2mms[22m[39m
+
+[2m Test Files [22m [1m[31m3 failed[39m[22m[2m | [22m[1m[32m10 passed[39m[22m[90m (13)[39m
+[2m      Tests [22m [1m[31m3 failed[39m[22m[2m | [22m[1m[32m169 passed[39m[22m[90m (172)[39m
+[2m   Start at [22m 18:47:44
+[2m   Duration [22m 7.53s[2m (transform 779ms, setup 0ms, import 1.19s, tests 9.60s, environment 1ms)[22m
+

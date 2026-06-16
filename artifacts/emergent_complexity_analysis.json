@@ -1,6 +1,6 @@
 {
   "artifact_schema_version": 2,
-  "generated_at_utc": "2026-06-16T16:57:10.002802+00:00",
+  "generated_at_utc": "2026-06-16T17:34:49.433501+00:00",
   "measurements": {
     "baselines": {
       "random": {
@@ -92,7 +92,7 @@
   ],
   "conclusion": "ELEVATED SOFTWARE-PROXY COMPLEXITY: Static proxies show non-trivial integration, adaptation tokens, and self-modification tokens. Preserve as an internal measurement finding and move through replay, baselines, falsification, and external review before any stronger claim.",
   "emergent_score": 12.651432745856441,
-  "preserved_previous_artifact": "artifacts/previous/emergent_complexity_analysis.20260616T165710Z.json",
+  "preserved_previous_artifact": "artifacts/previous/emergent_complexity_analysis.20260616T173449Z.json",
   "claim_boundary": {
     "metric_posture": "software proxies only",
     "distinguishes": "static code coupling and token patterns are separated from runtime causal behaviour",
