@@ -18,6 +18,7 @@ from pythia_mining.autonomous_mining_controller import (
     AutonomousConfig,
     AutonomousDecision,
     AutonomousMiningController,
+    OperatorApprovalDecision,
     AutonomyLevel,
     SafetyConstraint,
     SelfOptimizationProposal,
@@ -923,6 +924,7 @@ class TestAutonomousMiningControllerIntegration(unittest.TestCase):
                 autonomy_level=AutonomyLevel.ADVISORY,
                 max_autonomous_hashrate_ehs=1.0,  # Mission-memory 1 EH/s hard limit
                 reflexive_loop_enabled=True,
+                persistence_enabled=False,
             ),
         )
 
@@ -962,6 +964,171 @@ class TestAutonomousMiningControllerIntegration(unittest.TestCase):
         self.assertGreaterEqual(result["epoch"], 0)
         # With reflexive loop enabled, should generate proposals
         self.assertGreaterEqual(result["proposals_generated"], 0)
+
+
+class TestAutonomousMiningControllerOperationalHardening(unittest.TestCase):
+    """Production hardening tests for approval, audit, and state recovery."""
+
+    def setUp(self):
+        self.unified_engine = MagicMock(spec=UnifiedMiningEngine)
+        self.unified_engine.optimizer = MagicMock()
+        self.unified_engine.optimizer.current_strategy = MagicMock()
+
+    def test_guarded_decision_fails_closed_without_approval_callback(self):
+        controller = AutonomousMiningController(
+            self.unified_engine,
+            AutonomousConfig(
+                autonomy_level=AutonomyLevel.AUTONOMOUS,
+                persistence_enabled=False,
+            ),
+        )
+        decision = AutonomousDecision(
+            decision_id="guarded-1",
+            timestamp=0.0,
+            autonomy_level=AutonomyLevel.AUTONOMOUS,
+            decision_type="pool_connection_change",
+            mathematical_justification={},
+            constraints_satisfied=[SafetyConstraint.ENERGY_CONSERVATION],
+            constraints_violated=[],
+            action_taken="change_pool",
+            expected_outcome="pool_updated",
+        )
+
+        self.assertFalse(controller._can_execute_autonomously(decision))
+        self.assertEqual(controller.operator_approval_requests[-1].status, "rejected")
+        self.assertEqual(controller.operator_approval_requests[-1].reason, "approval_callback_missing")
+
+    def test_operator_approval_timeout_rejects(self):
+        controller = AutonomousMiningController(
+            self.unified_engine,
+            AutonomousConfig(
+                autonomy_level=AutonomyLevel.AUTONOMOUS,
+                operator_approval_timeout_seconds=0.0,
+                persistence_enabled=False,
+            ),
+        )
+        controller.set_operator_approval_callback(lambda _decision: True)
+        decision = AutonomousDecision(
+            decision_id="guarded-timeout",
+            timestamp=0.0,
+            autonomy_level=AutonomyLevel.AUTONOMOUS,
+            decision_type="wallet_address_change",
+            mathematical_justification={},
+            constraints_satisfied=[SafetyConstraint.ENERGY_CONSERVATION],
+            constraints_violated=[],
+            action_taken="change_wallet",
+            expected_outcome="wallet_updated",
+        )
+
+        self.assertFalse(controller._can_execute_autonomously(decision))
+        self.assertEqual(controller.operator_approval_requests[-1].status, "rejected")
+        self.assertEqual(controller.operator_approval_requests[-1].reason, "approval_timeout")
+
+    def test_operator_approval_structured_response_is_audited(self):
+        controller = AutonomousMiningController(
+            self.unified_engine,
+            AutonomousConfig(
+                autonomy_level=AutonomyLevel.AUTONOMOUS,
+                persistence_enabled=False,
+            ),
+        )
+        controller.set_operator_approval_callback(
+            lambda _decision: OperatorApprovalDecision(
+                approved=True,
+                operator_id="operator-7",
+                reason="bounded observed run",
+            )
+        )
+        decision = AutonomousDecision(
+            decision_id="guarded-structured",
+            timestamp=0.0,
+            autonomy_level=AutonomyLevel.AUTONOMOUS,
+            decision_type="wallet_address_change",
+            mathematical_justification={},
+            constraints_satisfied=[SafetyConstraint.ENERGY_CONSERVATION],
+            constraints_violated=[],
+            action_taken="change_wallet",
+            expected_outcome="wallet_updated",
+        )
+
+        self.assertTrue(controller._can_execute_autonomously(decision))
+        request = controller.operator_approval_requests[-1]
+        self.assertEqual(request.status, "approved")
+        self.assertEqual(request.operator_id, "operator-7")
+        self.assertEqual(request.reason, "bounded observed run")
+        self.assertEqual(controller.get_audit_log()[-1].operator_id, "operator-7")
+
+    def test_prometheus_metrics_include_alerting_series(self):
+        controller = AutonomousMiningController(
+            self.unified_engine,
+            AutonomousConfig(
+                autonomy_level=AutonomyLevel.SUPERVISED,
+                persistence_enabled=False,
+            ),
+        )
+        decision = AutonomousDecision(
+            decision_id="violation-1",
+            timestamp=0.0,
+            autonomy_level=AutonomyLevel.SUPERVISED,
+            decision_type="compression_optimization",
+            mathematical_justification={},
+            constraints_satisfied=[SafetyConstraint.HERMITICITY],
+            constraints_violated=[SafetyConstraint.INFORMATION_INTEGRITY],
+            action_taken="adjust_compression",
+            expected_outcome="blocked",
+        )
+        controller._log_decision(decision)
+
+        metrics = controller.get_metrics_snapshot()
+        prometheus_text = controller.get_prometheus_metrics_text()
+
+        self.assertEqual(
+            metrics["constraint_violations_by_type"]["information_integrity"], 1
+        )
+        self.assertIn("hyba_phi_density", prometheus_text)
+        self.assertIn("hyba_constraint_violations_total 1", prometheus_text)
+        self.assertIn(
+            'hyba_constraint_violations_by_type_total{constraint="information_integrity"} 1',
+            prometheus_text,
+        )
+
+    def test_reflexive_state_is_atomic_checksumed_and_restorable(self):
+        import hashlib
+        import json
+        import tempfile
+        from pathlib import Path
+
+        with tempfile.TemporaryDirectory() as tmp:
+            controller = AutonomousMiningController(
+                self.unified_engine,
+                AutonomousConfig(
+                    autonomy_level=AutonomyLevel.ADVISORY,
+                    persistence_enabled=True,
+                    persistence_dir=tmp,
+                ),
+            )
+            controller._self_optimization_epochs = 7
+            controller._phi_density_history = [0.5, 0.6]
+            controller._save_reflexive_state()
+
+            state_file = Path(tmp) / "reflexive_state.json"
+            checksum_file = Path(tmp) / "reflexive_state.json.sha256"
+            self.assertTrue(state_file.exists())
+            self.assertTrue(checksum_file.exists())
+            self.assertEqual(
+                checksum_file.read_text(encoding="utf-8"),
+                hashlib.sha256(state_file.read_bytes()).hexdigest(),
+            )
+            state = json.loads(state_file.read_text(encoding="utf-8"))
+            self.assertEqual(state["schema_version"], 1)
+            self.assertTrue((Path(tmp) / "backups").exists())
+
+            restored = AutonomousMiningController(
+                self.unified_engine,
+                AutonomousConfig(persistence_enabled=True, persistence_dir=tmp),
+            )
+            self.assertEqual(restored._self_optimization_epochs, 7)
+            self.assertEqual(restored._phi_density_history, [0.5, 0.6])
 
 
 if __name__ == "__main__":
