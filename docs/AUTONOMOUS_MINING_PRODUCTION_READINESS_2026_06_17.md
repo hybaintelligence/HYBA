@@ -30,6 +30,16 @@
 3. Enter supervised mode only after approval handling, dashboard alerts, and rollback have been exercised.
 4. Enter autonomous mode only after chaos scenarios have passed and operator escalation is staffed.
 
+## Command-Room Game Day Gate
+
+Before moving from observed command-room operation to unattended autonomous operation, run:
+
+```bash
+npm run prod:game-day
+```
+
+The rehearsal is deterministic and local-only: it does not connect to pools and submits zero shares. It intentionally triggers three circuit-breaker cascades against the autonomous controller, verifies that Prometheus text includes the degradation metrics, and confirms the autonomy level degrades to `manual` for operator escalation. Archive the JSON evidence with the incident-response notes and follow `docs/runbooks/AUTONOMOUS_MINING_INCIDENTS.md` if any assertion fails.
+
 ## Incident Response
 
 See `docs/runbooks/AUTONOMOUS_MINING_INCIDENTS.md` for constraint-violation, degradation, approval-timeout, and rollback procedures.
