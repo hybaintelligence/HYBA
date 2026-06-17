@@ -402,7 +402,7 @@ import AIAssistant from "./components/AIAssistant";
 2. Validate: `python3 scripts/validate_production_hardening.py`
 3. Configure secrets:
    ```bash
-   export JWT_SECRET="<32-char-secure-token>"
+   export JWT_SECRET="$JWT_SECRET"
    export HYBA_OPERATOR_CREDENTIALS="<operator-auth>"
    export POOL_PRIMARY_CREDENTIALS="<pool-auth>"
    ```

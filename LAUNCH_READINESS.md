@@ -157,7 +157,7 @@ export HYBA_PULVINI_HASHRATE_CAP_EHS=1.0
 # Configure at least one real pool profile
 # Use credentials from your pool account
 export HYBA_POOL_BRAIINS_USERNAME=your-username
-export HYBA_POOL_BRAIINS_PASSWORD=your-password
+export HYBA_POOL_BRAIINS_PASSWORD=$HYBA_POOL_BRAIINS_PASSWORD
 # OR use .env file with actual credentials (keep secure!)
 ```
 

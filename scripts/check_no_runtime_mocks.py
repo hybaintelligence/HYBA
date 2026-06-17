@@ -77,6 +77,11 @@ ALLOWED_PATTERN_FILES = {
         "src/core/security_swarm.ts",
         # Mathematical algorithms: sketch-based error estimation uses random sampling
         "python_backend/pythia_mining/phi_folding.py",
+        # Frontier experiments: research validation code, not production runtime
+        "python_backend/pythia_mining/frontier_experiment_1_qmc_convergence.py",
+        "python_backend/pythia_mining/frontier_experiment_2_qfi_truncation.py",
+        "python_backend/pythia_mining/frontier_experiment_3_topological_correlation.py",
+        "python_backend/pythia_mining/frontier_experiment_4_golden_sld.py",
     },
 }
 

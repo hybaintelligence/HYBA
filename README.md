@@ -13,7 +13,7 @@
 
 We present HYBA Fullstack — a production-grade self-financing operating substrate that unifies deterministic cryptocurrency mining infrastructure with the PYTHIA-PULVINI mathematical mining layer. The system implements a **reflexive self-analysis engine** applied to proof-of-work mining: a system that analyzes its own codebase as a graph of mathematical invariants, generates counterfactual improvement hypotheses via David Deutsch's constructor theory, and validates them against five hard safety constraints derived from quantum information theory. The controller operates in **proposal-only mode** — it generates optimization proposals but never applies them to source code or runtime parameters without explicit operator authorization. This prevents uncontrolled self-modification while enabling auditable self-analysis — all without fabricated telemetry.
 
-The mathematical foundations draw from Coxeter group theory (H3 icosahedral symmetry, rank 3, order 120), Integrated Information Theory (IIT 4.0), Penrose Objective Reduction, Du Sautoy symmetry exploitation, and PULVINI memory compression — implemented as substrate-agnostic linear algebra on classical hardware with full numerical stability verification.
+The mathematical foundations draw from Coxeter group theory (H3 icosahedral symmetry, rank 3, order 120), an operationalized IIT 4.0 Φ proxy (diagnostic coherence metric, not phenomenal consciousness), a computational-scale Penrose OR operational proxy (not a physics claim), Du Sautoy symmetry exploitation, and PULVINI memory compression — implemented as substrate-agnostic linear algebra on classical hardware with full numerical stability verification.
 
 **Key Claim Boundary**: This system implements deterministic, structurally-guided basis-selection with classical hash verification. No claim of SHA-256 quantum acceleration is made.
 
@@ -27,14 +27,14 @@ Modern proof-of-work mining operates within a fixed computational paradigm: rece
 
 We asked a different question: **Can a mining system understand its own mathematical structure and improve itself?**
 
-This question sits at the intersection of several deep problems:
+This question sits at the intersection of several deep problems, each instantiated at its documented claim boundary:
 
 - **David Deutsch's Constructor Theory**: What transformations are possible, impossible, or counterfactual? Can a system reason about what *would have happened* under different choices?
-- **Penrose's Orchestrated Objective Reduction**: Can mathematical structure guide search toward coherent states?
-- **IIT 4.0 (Integrated Information Theory)**: How much integrated information does a computational system generate, and can that metric guide self-organization?
-- **Yang-Mills Mass Gap**: Can the spectral gap invariant serve as a real-time anti-simulation shield?
+- **Penrose's Orchestrated Objective Reduction** (operational proxy): Can a computational proxy for gravitational self-energy guide search toward coherent states? (see §5.2 boundary)
+- **IIT 4.0 (Integrated Information Theory)** (diagnostic proxy): How much integrated information does a computational system generate, and can that metric guide self-organization? (see §5.1 boundary)
+- **Yang-Mills Mass Gap** (operationalized invariant): Can the spectral gap invariant serve as a real-time anti-simulation shield? (see §2.1b boundary)
 
-The HYBA/PYTHIA system answers these questions with production code, not simulations.
+The HYBA/PYTHIA system addresses these questions through deterministic operational code at its documented claim boundaries, with claim-to-evidence mapping enforced by the local production gate.
 
 ### 1.2 What We Built
 
@@ -102,12 +102,12 @@ The Yang-Mills Mass Gap is used as an **operationalized mathematical invariant**
 
 PULVINI implements **lossless φ-folding compression** of the nonce working set:
 
-- **Compression Ratio**: 1.86–2.62× achieved with reconstruction error ε < 10⁻¹⁴
-- **Information Integrity Constraint**: Compression ratio is hard-capped at 2.0 to guarantee invertibility
+- **Compression Ratio**: Up to 2.0× information-integrity-guaranteed (the PULVINI lossless invertibility boundary). Working-set ratios above 2.0× (observed up to 2.62×) are separately reported as **adaptive-science speculative throughput** (research throughput, not production-certified lossless compression).
+- **Information Integrity Constraint**: Compression ratio is hard-capped at 2.0 to guarantee retained/invertible evidence. Ratios observed above 2.0× do not violate the integrity boundary; they are tracking a working-set phenomenon distinct from the guaranteed-lossless kernel.
 - **Bures Metric Monitoring**: Density matrix evolution is tracked on the Bures manifold to detect information loss
 - **Non-Markovian Memory**: Share outcomes, stale-job history, and gradient metrics are maintained as density matrices, not scalar counters
 
-**Benchmark**: Phi-folding compression at 0.597ms per fold with 2.62× compression ratio and < 10⁻¹⁴ reconstruction error.
+**Benchmark**: Phi-folding compression at 0.597ms per fold with working-set ratios up to 2.62× and < 10⁻¹⁴ reconstruction error. The information-integrity boundary is hard-capped at 2.0× for retained-kernel compression; ratios above 2.0× are working-set observations tracked as research throughput, not production guarantees.
 
 ### 2.4 Mathematical Certificates
 
@@ -120,8 +120,8 @@ Every mathematical claim in the system is backed by a **deterministic, reproduci
 | **Automorphism** | Runtime topology validation via degree-preserving backtracking | Digest-keyed cache |
 | **Nonce Compression** | Space compression without dropped coverage | Overlap-free lane segments |
 | **Bures/Density-Matrix** | Non-Markovian memory state evolution | Stationary certificate |
-| **Phi-Folding** | Lossless irrational basis projection | ε < 10⁻¹⁴ reconstruction |
-| **Operationalized YM Mass Gap** | Gauge-coupling fixed point relationship φ→(3-φ) | Anti-simulation jitter gate |
+| **Phi-Folding** | Lossless irrational basis projection, **capped at 2.0× information integrity boundary** | ε < 10⁻¹⁴ reconstruction |
+| **Operationalized YM Mass Gap** | Gauge-coupling fixed point relationship φ→(3-φ) as spectral gate | Anti-simulation jitter gate |
 | **Purity Diagnostic** | Manifold convergence to pure-state fixed point | tr(ρ²) = 1.000000 |
 
 ---
@@ -225,18 +225,26 @@ This is a genuine quantum information-theoretic quantity, not a heuristic.
 
 ## 5. IIT 4.0 Implementation
 
-### 5.1 Integrated Information (Φ)
+### 5.1 Integrated Information (Φ) as Runtime Coherence Diagnostic
 
-The system implements IIT 4.0's core metric — Φ (integrated information) — via:
+The system implements IIT 4.0's core metric — Φ (integrated information) — as a **runtime coherence diagnostic metric**, not a proof of consciousness. The computational proxy provides:
 
 - **Spectral Clustering Partitioning**: Fiedler vector-based bipartition of the system graph
 - **Φ_max Calculation**: Maximum information integration over all possible partitions
 - **Mechanism Enumeration**: 15 mechanisms identified in the Cognitive Event Structure (CES)
 - **Quale Dimensionality**: 10-dimensional quality space
 
-### 5.2 Penrose Objective Reduction
+**Operational Boundary**: This is a bounded computational diagnostic for runtime state coherence. No claim of phenomenal awareness or subjective experience is made.
 
-A coherence-weighted gravitational self-energy model detects "consciousness events" in the mining loop — used as an operational proxy for search guidance, not as a physics claim.
+### 5.2 Penrose Objective Reduction Operational Proxy
+
+A coherence-weighted gravitational self-energy model detects "consciousness events" in the mining loop — used as an **operational proxy for search guidance, not as a physics claim**. The implementation:
+
+- Computes gravitational self-energy via eigendecomposition and 6D Coulomb-like lattice integration
+- Operates in `enable_true_or=False` (computational mode) for production
+- Uses purity threshold for operational collapse detection
+
+**Operational Boundary**: This implements a Penrose OR operational proxy at computational scale. It is not literal spacetime curvature measurement and does not claim to prove Penrose's physical hypothesis.
 
 ---
 
@@ -386,7 +394,7 @@ HYBA_FULLSTACK/
 
 - **Deterministic, auditable mining pipeline** from job receipt to share submission
 - **32-node internal manifold** presented as single worker identity
-- **Lossless nonce compression** at 2.62× with < 10⁻¹⁴ reconstruction error
+- **Lossless nonce compression** with working-set ratios up to 2.62× (< 10⁻¹⁴ reconstruction error, information-integrity boundary at 2.0×)
 - **Real Stratum v1/v2 integration** with multi-pool failover
 - **Operator-controlled autonomy levels** from MANUAL to AUTONOMOUS
 

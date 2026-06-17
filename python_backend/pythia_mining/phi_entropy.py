@@ -252,9 +252,12 @@ def van_der_corput_discrepancy(n_samples: int, base_state: float = 0.0) -> dict:
     # Theoretical upper bound for golden irrational rotation
     theoretical_bound = (1.0 + 1.0 / PHI) / n
 
-    # Three-distance theorem: gaps between consecutive sorted points
+    # Three-distance theorem: gaps between consecutive sorted points.
+    # Round to 6 decimal places to absorb float64 accumulation noise
+    # (the theorem holds in exact arithmetic; rounding at 8+ d.p. can
+    # split a single gap into two due to accumulated modular arithmetic error).
     gaps = np.diff(np.concatenate([[0.0], states_sorted, [1.0]]))
-    unique_gaps = np.unique(np.round(gaps, 8))
+    unique_gaps = np.unique(np.round(gaps, 6))
     three_distance_satisfied = bool(len(unique_gaps) <= 3)
 
     # Monte Carlo baseline: expected D*_N for uniform random ~ sqrt(log(N)/N)

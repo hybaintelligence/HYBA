@@ -1,6 +1,6 @@
 {
   "artifact_schema_version": 2,
-  "generated_at_utc": "2026-06-17T19:31:46.102653+00:00",
+  "generated_at_utc": "2026-06-17T19:14:49.838400+00:00",
   "measurements": {
     "baselines": {
       "random": {
@@ -29,25 +29,25 @@
       }
     },
     "test_01": {
-      "phi": 0.07076176250933533,
-      "python_modules": 104,
+      "phi": 0.07176851323053493,
+      "python_modules": 103,
       "typescript_modules": 51,
-      "total_dependencies": 104,
-      "total_dependency_edges": 758,
+      "total_dependencies": 103,
+      "total_dependency_edges": 754,
       "interpretation": "Low-moderate integration - some cross-module coupling"
     },
     "test_02": {
       "autonomy_score": 10.0,
-      "total_decisions": 5145,
-      "total_external": 1595,
+      "total_decisions": 5084,
+      "total_external": 1593,
       "adaptive_patterns": 814,
       "self_modification": 13,
       "interpretation": "Highly autonomous - extensive internal control flow with 814 adaptive patterns and 13 self-modification sites"
     },
     "test_03": {
-      "irreducibility_score": 0.04484096198603569,
+      "irreducibility_score": 0.04500856564398069,
       "global_state_refs": 289,
-      "instance_state_refs": 6156,
+      "instance_state_refs": 6132,
       "interpretation": "Highly reducible - clean state partitions"
     }
   },
@@ -91,8 +91,8 @@
     "\u26a0 Contains 13 self-modification patterns"
   ],
   "conclusion": "ELEVATED SOFTWARE-PROXY COMPLEXITY: Static proxies show non-trivial integration, adaptation tokens, and self-modification tokens. Preserve as an internal measurement finding and move through replay, baselines, falsification, and external review before any stronger claim.",
-  "emergent_score": 15.371822435023532,
-  "preserved_previous_artifact": "artifacts/previous/emergent_complexity_analysis.20260617T193146Z.json",
+  "emergent_score": 15.382727960525255,
+  "preserved_previous_artifact": "artifacts/previous/emergent_complexity_analysis.20260617T191449Z.json",
   "claim_boundary": {
     "metric_posture": "software proxies only",
     "distinguishes": "static code coupling and token patterns are separated from runtime causal behaviour",

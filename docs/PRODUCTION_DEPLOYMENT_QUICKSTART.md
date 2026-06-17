@@ -6,7 +6,7 @@
 
 ```bash
 # Required secrets (minimum 16 characters each)
-export JWT_SECRET="your-jwt-secret-min-32-chars-recommended"
+export JWT_SECRET="$JWT_SECRET"
 export HYBA_OPERATOR_CREDENTIALS="your-operator-auth-credentials"
 export POOL_PRIMARY_CREDENTIALS="your-pool-auth-credentials"
 

@@ -243,7 +243,7 @@ async def main_mining_loop(override_profiles: Optional[list[PoolProfile]] = None
 
 1. **Environment Configuration**
    ```bash
-   export JWT_SECRET="<32-char-secure-token>"
+   export JWT_SECRET="$JWT_SECRET"
    export HYBA_OPERATOR_CREDENTIALS="<operator-auth-string>"
    export POOL_PRIMARY_CREDENTIALS="<pool-auth-string>"
    ```

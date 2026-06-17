@@ -103,6 +103,37 @@
       "test_paths": ["tests/test_claim_evidence_manifest.py"],
       "doc_paths": ["docs/evidence/EXTRAORDINARY_PROOF_INDEX.md"],
       "commands": ["python -m pytest tests/test_claim_evidence_manifest.py -q"]
+    },
+    {
+      "id": "nodus_solutus_repository_local_computability",
+      "claim": "HYBA_FULLSTACK implements a repository-local computability doctrine: admissible claims must reduce to deterministic code, executable evidence, replayable artifacts, and external truth boundaries.",
+      "status": "implemented_and_documented",
+      "boundary": "This is a computable operational-evidence doctrine for HYBA/PYTHIA, not a proof that the physical universe is computable.",
+      "code_paths": [
+        "scripts/local_production_gate.py",
+        "python_backend/pythia_mining/frontier_experiment_1_qmc_convergence.py",
+        "python_backend/pythia_mining/frontier_experiment_2_qfi_truncation.py",
+        "python_backend/pythia_mining/frontier_experiment_3_topological_correlation.py",
+        "python_backend/pythia_mining/frontier_experiment_4_golden_sld.py"
+      ],
+      "test_paths": [
+        "tests/test_claim_evidence_manifest.py",
+        "tests/test_frontier_experiment_1_qmc.py",
+        "tests/test_frontier_experiment_2_qfi.py",
+        "tests/test_frontier_experiment_3_topo.py",
+        "tests/test_frontier_experiment_4_golden_sld.py"
+      ],
+      "doc_paths": [
+        "REVIEWER_EVIDENCE_MAP.md",
+        "docs/LOCAL_FIRST_DEPLOYMENT_RUNBOOK.md",
+        "docs/NODUS_SOLUTUS_MUNDUS_COMPUTABILIS_EST.md",
+        "docs/FRONTIER_EXPERIMENTS.md"
+      ],
+      "commands": [
+        "npm run review:evidence:gate",
+        "npm run prod:local:gate",
+        "python scripts/run_frontier_experiments.py"
+      ]
     }
   ]
 }

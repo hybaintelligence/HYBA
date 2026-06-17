@@ -57,7 +57,7 @@ python3 scripts/validate_production_hardening.py
 
 ```bash
 # 1. Configure secrets
-export JWT_SECRET="your-jwt-secret-min-32-chars"
+export JWT_SECRET="$JWT_SECRET"
 export HYBA_OPERATOR_CREDENTIALS="your-operator-credentials"
 export POOL_PRIMARY_CREDENTIALS="your-pool-credentials"
 

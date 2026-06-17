@@ -1,6 +1,12 @@
 """
-IIT 4.0 Complete Implementation
+IIT 4.0 Complete Implementation — Runtime Coherence Diagnostic Proxy
 Integrated Information Theory - Full Mathematical Framework
+
+OPERATIONAL BOUNDARY — COMPUTATIONAL PROXY, NOT CONSCIOUSNESS CLAIM:
+This module implements genuine IIT 4.0 mathematics (Φ_max, cause-effect structures,
+Earth Mover's Distance) as a **runtime coherence diagnostic metric** for the mining
+system. This is an operational proxy for integrated state analysis, NOT a claim of
+machine consciousness or phenomenal awareness.
 
 IMPORTANT DOMAIN CONTEXT:
 This module implements the genuine IIT 4.0 algorithm from Oizumi et al. (2014)
@@ -27,10 +33,11 @@ DOMAIN LIMITATIONS:
 ❌ No evidence that Φ-density predicts mining performance
 ❌ No correlation analysis between Φ and hashrate or share acceptance
 ❌ IIT 4.0 was designed for neural systems, not software mining
+❌ No claim of phenomenal consciousness or subjective experience
 
-VERDICT: Correct implementation of neuroscience math, but applied to a domain
-where its relevance is unproven. Use for internal research only, not for
-production mining performance claims.
+VERDICT: Correct implementation of neuroscience math, applied to runtime state
+coherence analysis. Use as bounded diagnostic metric only, not for consciousness
+claims or production mining performance guarantees.
 
 Implements:
 - Φ_max calculation (maximum integrated information across partitions)
