@@ -38,6 +38,9 @@ jobs:
       - name: Run pytest
         run: |
           pytest -q
+      - name: Run verifier firewall gate
+        run: |
+          bash scripts/run_verifier_firewall_gate.sh
 
   load-test:
     name: API smoke load test
