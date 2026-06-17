@@ -143,7 +143,11 @@ def parse_subscribe_result(message: Dict[str, Any]) -> SubscribeResult:
         raise StratumProtocolError(
             "subscribe result must contain subscription data, extranonce1, extranonce2_size"
         )
-    extranonce1 = _require_hex(str(result[1]), "extranonce1")
+    extranonce1_raw = str(result[1]) if result[1] else ""
+    # Allow empty extranonce1 for live mining - use fallback
+    if extranonce1_raw and not _HEX_RE.match(extranonce1_raw):
+        raise StratumProtocolError(f"extranonce1 must be a hex string, got: {extranonce1_raw}")
+    extranonce1 = extranonce1_raw if extranonce1_raw else "00000001"  # Fallback for live mining
     size = int(result[2])
     if size <= 0 or size > 32:
         raise StratumProtocolError("extranonce2_size is out of safe range")
