@@ -11,7 +11,6 @@ from __future__ import annotations
 import functools
 from typing import Any, Optional
 
-from .mining_validation import MiningValidationError, validate_share
 from .mining_verification_firewall import (
     CandidateVerificationPrecondition,
     VerificationFirewallError,
@@ -32,6 +31,8 @@ class StratumSubmissionFirewallError(RuntimeError):
 
 def build_stratum_firewall_precondition(job: Any, nonce: int, extranonce2: Optional[str] = None) -> CandidateVerificationPrecondition:
     """Validate and bind a Stratum candidate immediately before submission."""
+
+    from .mining_validation import validate_share
 
     extranonce2_value = extranonce2 or ("00" * int(getattr(job, "extranonce2_size", 4)))
     validation = validate_share(job, int(nonce), extranonce2_value)
@@ -92,6 +93,7 @@ def install_stratum_submit_firewall() -> bool:
     never calling the original submit method if the firewall raises.
     """
 
+    from .mining_validation import MiningValidationError
     from .stratum_client import ShareResult, StratumClient
 
     if getattr(StratumClient.submit_validated_share, PATCH_MARKER, False):
