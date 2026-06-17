@@ -1,6 +1,6 @@
 {
   "artifact_schema_version": 2,
-  "generated_at_utc": "2026-06-17T18:36:28.263835+00:00",
+  "generated_at_utc": "2026-06-17T18:00:33.879994+00:00",
   "measurements": {
     "baselines": {
       "random": {
@@ -29,25 +29,25 @@
       }
     },
     "test_01": {
-      "phi": 0.0741084312512884,
+      "phi": 0.07379921665635951,
       "python_modules": 99,
       "typescript_modules": 51,
       "total_dependencies": 99,
-      "total_dependency_edges": 719,
+      "total_dependency_edges": 716,
       "interpretation": "Low-moderate integration - some cross-module coupling"
     },
     "test_02": {
       "autonomy_score": 10.0,
-      "total_decisions": 4907,
-      "total_external": 1571,
-      "adaptive_patterns": 804,
+      "total_decisions": 4871,
+      "total_external": 1564,
+      "adaptive_patterns": 805,
       "self_modification": 13,
-      "interpretation": "Highly autonomous - extensive internal control flow with 804 adaptive patterns and 13 self-modification sites"
+      "interpretation": "Highly autonomous - extensive internal control flow with 805 adaptive patterns and 13 self-modification sites"
     },
     "test_03": {
-      "irreducibility_score": 0.0436078431372549,
-      "global_state_refs": 278,
-      "instance_state_refs": 6097,
+      "irreducibility_score": 0.043409629044988164,
+      "global_state_refs": 275,
+      "instance_state_refs": 6060,
       "interpretation": "Highly reducible - clean state partitions"
     }
   },
@@ -87,12 +87,12 @@
     "\u2717 Low integration - modular architecture",
     "\u2713 Has internal decision-making",
     "\u2717 Clean state boundaries",
-    "\u2713 Contains 804 adaptive patterns",
+    "\u2713 Contains 805 adaptive patterns",
     "\u26a0 Contains 13 self-modification patterns"
   ],
   "conclusion": "ELEVATED SOFTWARE-PROXY COMPLEXITY: Static proxies show non-trivial integration, adaptation tokens, and self-modification tokens. Preserve as an internal measurement finding and move through replay, baselines, falsification, and external review before any stronger claim.",
-  "emergent_score": 15.29912352819916,
-  "preserved_previous_artifact": "artifacts/previous/emergent_complexity_analysis.20260617T183628Z.json",
+  "emergent_score": 15.305040311788538,
+  "preserved_previous_artifact": "artifacts/previous/emergent_complexity_analysis.20260617T180033Z.json",
   "claim_boundary": {
     "metric_posture": "software proxies only",
     "distinguishes": "static code coupling and token patterns are separated from runtime causal behaviour",
