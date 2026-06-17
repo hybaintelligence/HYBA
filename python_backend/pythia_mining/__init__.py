@@ -12,6 +12,7 @@ verifier firewall owns the final pre-submit boundary.
 
 from __future__ import annotations
 
+import os
 from importlib import import_module
 from typing import Any
 
@@ -99,6 +100,14 @@ _AUTONOMICS_EXPORTS = {
 }
 
 
+def _live_or_production_mode() -> bool:
+    return (
+        os.getenv("HYBA_ENV", "").strip().lower() == "production"
+        or os.getenv("NODE_ENV", "").strip().lower() == "production"
+        or os.getenv("HYBA_ENABLE_LIVE_STRATUM", "").strip().lower() in {"1", "true", "yes", "on"}
+    )
+
+
 def _install_runtime_firewalls() -> None:
     """Install small runtime invariants that must sit outside optimisation."""
 
@@ -107,9 +116,11 @@ def _install_runtime_firewalls() -> None:
 
         install_stratum_submit_firewall()
     except Exception:
-        # Importing pythia_mining metadata must not mask the original exception in
-        # unrelated tooling. Production readiness tests assert the patch explicitly.
-        pass
+        # General metadata tooling should not crash on optional import shape, but
+        # live/prod mining must fail closed rather than continue without the
+        # pre-submit verification firewall.
+        if _live_or_production_mode():
+            raise
 
 
 _install_runtime_firewalls()
@@ -151,17 +162,15 @@ def __getattr__(name: str) -> Any:
         return getattr(module, name)
     if name in _ORACLE_EXPORTS:
         module = import_module(".phi_oracle", __name__)
-        return getattr(module, name)
-    if name in _VM_EXPORTS:
+    elif name in _VM_EXPORTS:
         module = import_module(".phi_vm", __name__)
-        return getattr(module, name)
-    if name in _JIT_EXPORTS:
+    elif name in _JIT_EXPORTS:
         module = import_module(".phi_jit", __name__)
-        return getattr(module, name)
-    if name in _MALLOC_EXPORTS:
+    elif name in _MALLOC_EXPORTS:
         module = import_module(".phi_malloc", __name__)
-        return getattr(module, name)
-    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+    else:
+        raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+    return getattr(module, name)
 
 
 __all__ = sorted(
