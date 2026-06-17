@@ -3,11 +3,12 @@
 This module turns the policy phrase "replayable sealed evidence required" into a
 concrete engineering constraint. A sealed bundle commits to the pool job context,
 local verifier result, verifier-firewall decision, learning correction, pool
-response, redacted runtime configuration hash, and curriculum/protocol tags.
+response, redacted runtime configuration hash, curriculum/protocol tags, and a
+Bitcoin job anchor.
 
 The schema does not submit shares and does not mutate mining state. It exists so
-PYTHIA can prove what happened after the fact without leaking credentials or
-claiming success beyond the evidence.
+PYTHIA can prove what happened after the fact without leaking private runtime
+values or claiming success beyond the evidence.
 """
 
 from __future__ import annotations
@@ -23,6 +24,7 @@ from .mining_verification_firewall import VERIFICATION_FIREWALL_PROTOCOL, stable
 from .pythia_mining_pitfalls_curriculum import CURRICULUM_PROTOCOL
 
 MINING_EVIDENCE_SEAL_PROTOCOL = "PYTHIA_MINING_EVIDENCE_SEAL_V1"
+TIMESTAMP_AUTHORITY = "bitcoin_job_anchor"
 
 
 class EvidenceSealError(ValueError):
@@ -31,19 +33,33 @@ class EvidenceSealError(ValueError):
 
 @dataclass(frozen=True)
 class TimestampAuthority:
-    """Timestamp authority for a sealed mining bundle.
+    """Externally anchored timestamp authority for a sealed mining bundle.
 
-    The default is local monotonic/wall-clock evidence. A future production
-    adapter may add RFC3161, ledger, object-store, or notarisation proofs without
-    changing the core bundle hash semantics.
+    The authority is the Bitcoin job context, not PYTHIA's local clock. Local
+    wall-clock time is retained only as auxiliary evidence; the replay anchor is
+    ``bitcoin_block_height + stratum_job_id + prevhash``.
     """
 
-    authority: str = "local_system_clock"
+    authority: str = TIMESTAMP_AUTHORITY
+    bitcoin_block_height: int = 0
+    stratum_job_id: str = ""
+    job_prevhash: str = ""
     unix_seconds: float = field(default_factory=time.time)
+    anchor_hash: str = ""
     external_timestamp_token_hash: Optional[str] = None
 
     def to_dict(self) -> Dict[str, Any]:
-        return asdict(self)
+        payload = asdict(self)
+        if not payload["anchor_hash"]:
+            payload["anchor_hash"] = stable_hash(
+                {
+                    "authority": payload["authority"],
+                    "bitcoin_block_height": payload["bitcoin_block_height"],
+                    "stratum_job_id": payload["stratum_job_id"],
+                    "job_prevhash": payload["job_prevhash"],
+                }
+            )
+        return payload
 
 
 @dataclass(frozen=True)
@@ -77,17 +93,49 @@ class SealedMiningEvidenceBundle:
 
 
 def redact_and_hash_runtime_config(config: Mapping[str, Any]) -> str:
-    """Hash runtime config after dropping obvious secret-bearing values."""
+    """Hash runtime config after dropping private-bearing values."""
 
     redacted: Dict[str, Any] = {}
-    secret_terms = ("password", "secret", "token", "key", "wallet", "credential")
+    private_terms = ("password", "secret", "token", "key", "wallet", "credential")
     for key, value in sorted(config.items(), key=lambda item: str(item[0])):
         key_text = str(key)
-        if any(term in key_text.lower() for term in secret_terms):
+        if any(term in key_text.lower() for term in private_terms):
             redacted[key_text] = "<redacted>"
         else:
             redacted[key_text] = value
     return stable_hash(redacted)
+
+
+def bitcoin_job_timestamp_authority(job_context: Mapping[str, Any], *, unix_seconds: Optional[float] = None) -> TimestampAuthority:
+    """Build the minimum viable external timestamp anchor from Bitcoin job context."""
+
+    job_id = str(job_context.get("job_id") or job_context.get("stratum_job_id") or "")
+    prevhash = str(job_context.get("prevhash") or job_context.get("job_prevhash") or "")
+    block_height = job_context.get("bitcoin_block_height", job_context.get("block_height", job_context.get("height", 0)))
+    try:
+        height_int = int(block_height)
+    except (TypeError, ValueError):
+        raise EvidenceSealError("invalid_bitcoin_block_height")
+    if not job_id:
+        raise EvidenceSealError("missing_stratum_job_id_anchor")
+    if height_int <= 0:
+        raise EvidenceSealError("missing_bitcoin_block_height_anchor")
+    if not prevhash:
+        raise EvidenceSealError("missing_prevhash_anchor")
+    anchor_payload = {
+        "authority": TIMESTAMP_AUTHORITY,
+        "bitcoin_block_height": height_int,
+        "stratum_job_id": job_id,
+        "job_prevhash": prevhash,
+    }
+    return TimestampAuthority(
+        authority=TIMESTAMP_AUTHORITY,
+        bitcoin_block_height=height_int,
+        stratum_job_id=job_id,
+        job_prevhash=prevhash,
+        unix_seconds=time.time() if unix_seconds is None else float(unix_seconds),
+        anchor_hash=stable_hash(anchor_payload),
+    )
 
 
 def build_sealed_mining_evidence_bundle(
@@ -107,7 +155,7 @@ def build_sealed_mining_evidence_bundle(
 ) -> SealedMiningEvidenceBundle:
     """Create a replayable sealed mining evidence bundle."""
 
-    timestamp = timestamp_authority or TimestampAuthority()
+    timestamp = timestamp_authority or bitcoin_job_timestamp_authority(job_context)
     bundle = SealedMiningEvidenceBundle(
         protocol=MINING_EVIDENCE_SEAL_PROTOCOL,
         mission_id=mission_id,
@@ -162,6 +210,27 @@ def validate_sealed_mining_evidence_bundle(bundle: Mapping[str, Any]) -> bool:
     if not str(bundle.get("redacted_runtime_config_hash") or ""):
         raise EvidenceSealError("missing_redacted_runtime_config_hash")
 
+    job_context = bundle.get("job_context") or {}
+    timestamp = bundle.get("timestamp_authority") or {}
+    if timestamp.get("authority") != TIMESTAMP_AUTHORITY:
+        raise EvidenceSealError("timestamp_authority_not_bitcoin_anchored")
+    if str(timestamp.get("stratum_job_id")) != str(job_context.get("job_id") or job_context.get("stratum_job_id") or ""):
+        raise EvidenceSealError("timestamp_job_id_anchor_mismatch")
+    if int(timestamp.get("bitcoin_block_height") or 0) <= 0:
+        raise EvidenceSealError("timestamp_missing_bitcoin_block_height")
+    if not str(timestamp.get("job_prevhash") or ""):
+        raise EvidenceSealError("timestamp_missing_prevhash")
+    expected_anchor = stable_hash(
+        {
+            "authority": TIMESTAMP_AUTHORITY,
+            "bitcoin_block_height": int(timestamp.get("bitcoin_block_height")),
+            "stratum_job_id": str(timestamp.get("stratum_job_id")),
+            "job_prevhash": str(timestamp.get("job_prevhash")),
+        }
+    )
+    if timestamp.get("anchor_hash") != expected_anchor:
+        raise EvidenceSealError("timestamp_anchor_hash_mismatch")
+
     unsigned = dict(bundle)
     expected_hash = unsigned.pop("bundle_hash")
     if stable_hash(unsigned) != expected_hash:
@@ -174,6 +243,7 @@ def seal_schema_summary() -> Dict[str, Any]:
 
     return {
         "protocol": MINING_EVIDENCE_SEAL_PROTOCOL,
+        "timestamp_authority": TIMESTAMP_AUTHORITY,
         "depends_on": [
             VERIFICATION_FIREWALL_PROTOCOL,
             LEARNING_SIGNAL_PROTOCOL,
@@ -188,6 +258,9 @@ def seal_schema_summary() -> Dict[str, Any]:
             "pool_response",
             "redacted_runtime_config_hash",
             "timestamp_authority",
+            "bitcoin_block_height",
+            "stratum_job_id",
+            "job_prevhash",
             "bundle_hash",
         ],
         "success_boundary": "accepted shares are learning events; pool-confirmed accepted block is mission completion",
@@ -197,8 +270,10 @@ def seal_schema_summary() -> Dict[str, Any]:
 __all__ = [
     "EvidenceSealError",
     "MINING_EVIDENCE_SEAL_PROTOCOL",
+    "TIMESTAMP_AUTHORITY",
     "SealedMiningEvidenceBundle",
     "TimestampAuthority",
+    "bitcoin_job_timestamp_authority",
     "build_sealed_mining_evidence_bundle",
     "redact_and_hash_runtime_config",
     "seal_schema_summary",
