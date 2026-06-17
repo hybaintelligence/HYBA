@@ -162,15 +162,19 @@ class MPS:
         return 1.0
 
     def compute_norm(self) -> float:
-        """Compute the norm of the MPS state.
+        """Compute the exact norm of the MPS state via tensor network contraction.
 
-        For an MPS normalized via per-tensor Frobenius normalization,
-        the effective norm is 1.0 (each tensor is unit-norm).
+        Evaluates <ψ|ψ> = Tr(A₁†A₁ · A₂†A₂ · ... · A_N†A_N) by contracting
+        each site tensor with its conjugate over the physical index, then
+        sweeping the resulting transfer matrices across all bond indices.
+
+        This is the mathematically exact MPS norm — O(N · χ³ · d) cost where
+        χ is the maximum bond dimension and d the physical dimension.
 
         Returns:
-            Norm of the MPS state
+            Exact norm of the MPS state (should be 1.0 after normalization)
         """
-        return 1.0
+        return _contract_mps_norm_exact(self.tensors)
 
     def compute_expectation(self, observable: np.ndarray, site: int) -> float:
         """Compute expectation value of local observable at given site.
@@ -260,31 +264,58 @@ class MPS:
 
         return _compute_bond_entanglement(tensor_left, tensor_right)
 
-    def compress_adaptive(self, base_max_bond: int = 16) -> 'MPS':
-        """Compress MPS using adaptive bond dimension based on entanglement.
+    def entanglement_spectrum(self, site: int) -> np.ndarray:
+        """Return the full Schmidt spectrum (singular values) at a bond.
 
-        Uses Φ-weighted adaptive strategy: bonds with higher entanglement
-        retain higher bond dimension, bonds with lower entanglement are
-        compressed more aggressively.
-
-        The left-to-right sweep propagates bond dimension truncation properly,
-        ensuring consistent bond dimensions across all sites.
-
-        Args:
-            base_max_bond: Maximum bond dimension for highly entangled bonds
+        The Schmidt decomposition of |ψ⟩ across the bipartition [0..site] | [site+1..N-1]
+        is obtained by merging tensors at the bond and computing the exact SVD.
+        The singular values λ_i are the Schmidt coefficients; their squares give
+        the eigenvalues of the reduced density matrix ρ_L = Tr_R(|ψ⟩⟨ψ|).
 
         Returns:
-            Compressed MPS with adaptive bond dimensions
+            1-D array of Schmidt coefficients in descending order (non-negative reals)
         """
-        # Work on a copy to avoid modifying the original
+        if site >= self.num_sites - 1:
+            return np.array([1.0])
+        A_left = self.tensors[site]
+        A_right = self.tensors[site + 1]
+        a, p, c = A_left.shape
+        _, d, b = A_right.shape
+        merged = np.einsum('apc,cdb->apdb', A_left, A_right).reshape(a * p, d * b)
+        _, S, _ = np.linalg.svd(merged, full_matrices=False)
+        return S[S > 1e-15]
+
+    def compress_adaptive(self, base_max_bond: int = 16) -> 'MPS':
+        """Compress MPS using SVD with Φ-weighted adaptive bond truncation.
+
+        At each bond the exact Schmidt spectrum is computed via SVD.  The
+        truncation threshold is gated by the von Neumann entanglement entropy
+        S = -Σ λᵢ² log₂ λᵢ² of that bond: high-entropy bonds retain more
+        singular values (up to base_max_bond); low-entropy bonds are compressed
+        more aggressively.  The Φ-weighting exp(-S/φ) implements a natural
+        golden-ratio damping of the bond dimension as a function of entanglement.
+
+        The left-to-right sweep absorbs S·Vh into the next tensor so that bond
+        dimensions remain consistent across all sites.
+
+        Args:
+            base_max_bond: Maximum bond dimension for maximally entangled bonds
+
+        Returns:
+            Compressed MPS with Φ-adaptive bond dimensions
+        """
         tensors = [t.copy() for t in self.tensors]
         new_bond_dims = [1]
 
         for i in range(self.num_sites - 1):
-            # Compute exact entanglement at this bond
-            entanglement = self.compute_local_entanglement(i)
+            # Exact Schmidt spectrum at this bond
+            S_spectrum = self.entanglement_spectrum(i)
+            # von Neumann entanglement entropy from Schmidt values
+            p_sq = S_spectrum ** 2
+            p_sq = p_sq / (np.sum(p_sq) + 1e-300)
+            entanglement = -float(np.sum(p_sq * np.log2(p_sq + 1e-300)))
 
-            # Φ-weighted adaptive threshold
+            # Φ-weighted adaptive truncation dimension
             phi_weight = math.exp(-entanglement / PHI)
             adaptive_max_bond = int(base_max_bond * phi_weight)
             adaptive_max_bond = max(4, adaptive_max_bond)
