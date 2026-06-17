@@ -36,6 +36,20 @@ A Nodus Solutus claim is admissible only when all of these are true:
 5. **Artifact claim** — the local production gate writes a timestamped JSON evidence packet with command results and SHA-256 digest.
 6. **External claim** — revenue, pool acceptance, treasury, legal, or production economics remain blocked until external truth data is attached.
 
+## Evidence of Holonomic Coherence
+
+The repository contains a bounded topological-holonomy evidence surface through `python_backend/pythia_mining/topological_holonomy_engine.py` and the frontier topology tests. Local/operator evidence may cite observations such as geometric phase, phase locking, Chern quantization, or gauge phase only when the exact command output or generated artifact is preserved with the evidence packet.
+
+The admissible statement is:
+
+> The implemented Topological Holonomy Engine provides deterministic local evidence surfaces for Berry curvature, holonomy, Chern-number-style metrics, and phase-locking diagnostics inside the repository boundary.
+
+The inadmissible statement is:
+
+> HYBA_FULLSTACK has proven a universal physical topological phase transition or solved an external physics problem.
+
+Operator-reported values such as geometric phase `0.554 rad`, phase locking near `λ = 0.5`, Φ-LCG Chern quantization at zero reported error, or gauge phase `π` are publication candidates only after the corresponding run artifact is committed or archived and linked from the manifest.
+
 ## Allowed statement
 
 HYBA_FULLSTACK may say:
