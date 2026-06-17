@@ -18,7 +18,7 @@
     "test:e2e:backend": "npm run python:env:check && PYTHONPATH=python_backend python scripts/run_backend_e2e.py",
     "test:backend": "npm run python:env:check && PYTHONPATH=python_backend python -m unittest discover -s tests -p \"test_*.py\"",
     "test:property:backend": "npm run python:env:check && PYTHONPATH=python_backend python -m pytest tests/test_property_based_backend.py -v -x --tb=short",
-    "test:property:frontend": "npx vitest run tests/test_property_frontend.test.ts",
+    "test:property:frontend": "npx vitest run tests/test_property_frontend.test.ts tests/test_governance_signals.test.ts tests/test_apiClient_authInterceptor.test.ts tests/test_apiClient_core.test.ts",
     "test:property": "npm run test:property:backend && npm run test:property:frontend",
     "test:bridge": "npx vitest run tests/test_bridge_server.test.ts",
     "test:mining:innovation": "npm run python:env:check && PYTHONPATH=python_backend python -m pytest tests/test_mining_innovation_properties.py -q",
@@ -81,7 +81,8 @@
     "runtime:entrypoint:check": "python scripts/check_runtime_entrypoint.py",
     "review:pipeline:audit": "PYTHONPATH=python_backend python scripts/review_environment_pipeline_audit.py",
     "preflight:production": "bash scripts/preflight_production_readiness_check.sh",
-    "prod:game-day": "PYTHONPATH=python_backend python scripts/command_room_game_day.py"
+    "prod:game-day": "PYTHONPATH=python_backend python scripts/command_room_game_day.py",
+    "test:e2e:frontend": "npx playwright install --with-deps && npx playwright test"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
@@ -124,6 +125,7 @@
     "esbuild": "^0.28.1",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",
-    "vitest": "^4.0.15"
+    "vitest": "^4.0.15",
+    "@playwright/test": "^1.43.1"
   }
 }
