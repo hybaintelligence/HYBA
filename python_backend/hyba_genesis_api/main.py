@@ -38,6 +38,7 @@ from hyba_genesis_api.api import (  # noqa: E402
     security,
     unified_mining,
 )
+from hyba_genesis_api.core.api_posture import install_enterprise_api_posture  # noqa: E402
 from hyba_genesis_api.core.recursive_closure import build_buffered_closure  # noqa: E402
 from hyba_genesis_api.core.reflexive_controller import (  # noqa: E402
     ReflexiveController,
@@ -129,6 +130,7 @@ app.add_middleware(
     ],
 )
 app.middleware("http")(telemetry_middleware)
+install_enterprise_api_posture(app)
 
 app.include_router(health.router)
 app.include_router(intelligence.router)
