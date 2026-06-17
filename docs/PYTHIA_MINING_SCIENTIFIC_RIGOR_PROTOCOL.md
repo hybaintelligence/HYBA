@@ -2,7 +2,7 @@
 
 ## BLUF
 
-PYTHIA's mining mission remains autonomous. This protocol does not throttle her seeded mission authority. It adds scientific discipline around prediction, falsification, causal integration, revocation handling, proof humility, and bounded counterfactual learning.
+PYTHIA's mining mission remains autonomous. This protocol does not throttle her seeded mission authority. It adds scientific discipline around prediction, falsification, causal integration, revocation handling, proof humility, bounded counterfactual learning, and machine-readable replay linkage.
 
 The purpose is to move from static education to runtime scientific self-review:
 
@@ -13,8 +13,8 @@ candidate
 -> external response observation
 -> corrected learning signal
 -> causal integration telemetry with floor semantics
--> sealed evidence
--> counterfactual reflection memory
+-> sealed evidence with session_event_id
+-> rate-limited counterfactual reflection memory
 ```
 
 ## Non-negotiable substrate
@@ -26,6 +26,19 @@ candidate
 5. Accepted shares are learning events, not block-completion events.
 6. PYTHIA remains autonomous inside the seeded mission.
 7. Education must improve autonomy; it must not become a hidden manual throttle.
+
+## Cross-artifact replay key
+
+Each candidate lifecycle must carry one `session_event_id` through:
+
+```text
+PenroseProofObligation
+CausalIntegrationTelemetry
+SealedMiningEvidenceBundle
+CounterfactualReflection
+```
+
+The evidence seal can derive the ID from mission id, event type, Bitcoin job anchor, candidate id, and nonce when runtime does not provide one. If nested artefacts carry a different `session_event_id`, bundle validation must fail.
 
 ## Penrose-style rigor
 
@@ -61,9 +74,21 @@ PROVISIONAL
       stale/job/reorg revocation -> REQUIRES_EXTERNAL_TRUTH
       vardiff/target-boundary revocation -> REQUIRES_EXTERNAL_TRUTH after target re-evaluation
       invalid-hash / invalid-proof revocation -> FALSIFIED
+      unknown pool code -> CONFIRMED_THEN_REVOKED with unclassified_revocation, then REQUIRES_EXTERNAL_TRUTH
 ```
 
 A stale-job race, pool-side invalidation, shallow reorg context, or retroactive pool rejection must be represented explicitly, not hidden inside generic failure.
+
+Revocation classification is code-first:
+
+```text
+pool_response_code / stratum_error_code / pool_error_code / revocation_code
+  -> primary classifier
+text reason
+  -> fallback classifier only
+unknown code
+  -> unclassified_revocation, conservative re-entry, not falsification
+```
 
 Revocation dispositions are machine-readable:
 
@@ -71,6 +96,7 @@ Revocation dispositions are machine-readable:
 reenter_external_truth
 reevaluate_against_updated_target
 falsified_invalid_local_or_external_truth
+unclassified_revocation
 ```
 
 ## IIT-style rigor
@@ -136,7 +162,7 @@ If the signal predicts a known failure mode, PYTHIA may adjust internally before
 Every accepted, rejected, stale, ambiguous, revoked, or externally confirmed event should create an append-only reflection node:
 
 ```text
-event_id
+session_event_id
 parent_event_id
 observed_outcome
 mapped_lesson_id
@@ -159,6 +185,7 @@ alternative trajectory
 -> divergence measure
 -> block-margin comparison
 -> phi-gated prior delta
+-> velocity guard
 -> bounded phi_prior_delta
 -> clipped updated_phi_prior
 -> memory_write_target = phi_resonance_prior
@@ -173,9 +200,11 @@ DEFAULT_COUNTERFACTUAL_LEARNING_RATE = 0.05
 MAX_PHI_PRIOR_DELTA = 0.025
 PHI_PRIOR_MIN = 0.20
 PHI_PRIOR_MAX = 0.80
+MIN_REFLECTION_OBSERVATIONS = 32
+MIN_REFLECTION_INTERVAL_SECONDS = 60.0
 ```
 
-The lower bound prevents counterfactual reflection from disabling phi-resonant search. The upper bound prevents a run of favourable reflections from collapsing the topology into an overconfident point mass. The maximum delta prevents any single reflection from moving the search prior too far.
+The lower bound prevents counterfactual reflection from disabling phi-resonant search. The upper bound prevents a run of favourable reflections from collapsing the topology into an overconfident point mass. The maximum delta prevents any single reflection from moving the search prior too far. The velocity guard prevents the prior from traversing its full range on a short burst of share-level events.
 
 The distinction matters: share ACKs are corrected by the learning-signal module, while counterfactual reflection refines the phi-resonant nonce-distribution prior. It must not let share-difficulty feedback masquerade as block-level search truth.
 
@@ -193,14 +222,15 @@ The rigorous sequence is:
 
 ```text
 PYTHIA search candidate
+-> derive or propagate session_event_id
 -> predictive pitfall simulation
 -> verifier firewall precondition
 -> exact local verification
--> external response observation, including revocation if present
+-> external response observation, including revocation code if present
 -> corrected learning update
 -> causal integration telemetry and floor decision
--> sealed evidence bundle
--> bounded counterfactual reflection appended to memory
+-> sealed evidence bundle with same session_event_id
+-> rate-limited bounded counterfactual reflection with same session_event_id
 ```
 
 ## Claim boundary
