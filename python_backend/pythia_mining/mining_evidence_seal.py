@@ -3,8 +3,8 @@
 This module turns the policy phrase "replayable sealed evidence required" into a
 concrete engineering constraint. A sealed bundle commits to the pool job context,
 local verifier result, verifier-firewall decision, learning correction, pool
-response, redacted runtime configuration hash, curriculum/protocol tags, and a
-Bitcoin job anchor.
+response, redacted runtime configuration hash, curriculum/protocol tags, a shared
+session event id, and a Bitcoin job anchor.
 
 The schema does not submit shares and does not mutate mining state. It exists so
 PYTHIA can prove what happened after the fact without leaking private runtime
@@ -13,8 +13,6 @@ values or claiming success beyond the evidence.
 
 from __future__ import annotations
 
-import hashlib
-import json
 import time
 from dataclasses import asdict, dataclass, field
 from typing import Any, Dict, List, Mapping, Optional
@@ -23,7 +21,7 @@ from .mining_learning_signal import LEARNING_SIGNAL_PROTOCOL
 from .mining_verification_firewall import VERIFICATION_FIREWALL_PROTOCOL, stable_hash
 from .pythia_mining_pitfalls_curriculum import CURRICULUM_PROTOCOL
 
-MINING_EVIDENCE_SEAL_PROTOCOL = "PYTHIA_MINING_EVIDENCE_SEAL_V1"
+MINING_EVIDENCE_SEAL_PROTOCOL = "PYTHIA_MINING_EVIDENCE_SEAL_V2"
 TIMESTAMP_AUTHORITY = "bitcoin_job_anchor"
 
 
@@ -33,12 +31,7 @@ class EvidenceSealError(ValueError):
 
 @dataclass(frozen=True)
 class TimestampAuthority:
-    """Externally anchored timestamp authority for a sealed mining bundle.
-
-    The authority is the Bitcoin job context, not PYTHIA's local clock. Local
-    wall-clock time is retained only as auxiliary evidence; the replay anchor is
-    ``bitcoin_block_height + stratum_job_id + prevhash``.
-    """
+    """Externally anchored timestamp authority for a sealed mining bundle."""
 
     authority: str = TIMESTAMP_AUTHORITY
     bitcoin_block_height: int = 0
@@ -68,6 +61,7 @@ class SealedMiningEvidenceBundle:
 
     protocol: str
     mission_id: str
+    session_event_id: str
     event_type: str
     job_context: Mapping[str, Any]
     candidate: Mapping[str, Any]
@@ -138,6 +132,32 @@ def bitcoin_job_timestamp_authority(job_context: Mapping[str, Any], *, unix_seco
     )
 
 
+def derive_session_event_id(
+    *,
+    mission_id: str,
+    event_type: str,
+    job_context: Mapping[str, Any],
+    candidate: Mapping[str, Any],
+) -> str:
+    """Derive a deterministic join key for all artefacts in a candidate lifecycle."""
+
+    job_id = str(job_context.get("job_id") or job_context.get("stratum_job_id") or "")
+    height = job_context.get("bitcoin_block_height", job_context.get("block_height", job_context.get("height", 0)))
+    prevhash = str(job_context.get("prevhash") or job_context.get("job_prevhash") or "")
+    nonce = str(candidate.get("nonce", candidate.get("nonce_hex", candidate.get("candidate_nonce", ""))))
+    candidate_id = str(candidate.get("candidate_id") or candidate.get("id") or "")
+    payload = {
+        "mission_id": mission_id,
+        "event_type": event_type,
+        "job_id": job_id,
+        "bitcoin_block_height": height,
+        "job_prevhash": prevhash,
+        "candidate_id": candidate_id,
+        "nonce": nonce,
+    }
+    return stable_hash(payload)
+
+
 def build_sealed_mining_evidence_bundle(
     *,
     mission_id: str,
@@ -152,13 +172,21 @@ def build_sealed_mining_evidence_bundle(
     lesson_ids: List[str],
     timestamp_authority: Optional[TimestampAuthority] = None,
     prior_bundle_hash: Optional[str] = None,
+    session_event_id: Optional[str] = None,
 ) -> SealedMiningEvidenceBundle:
     """Create a replayable sealed mining evidence bundle."""
 
     timestamp = timestamp_authority or bitcoin_job_timestamp_authority(job_context)
+    event_id = session_event_id or derive_session_event_id(
+        mission_id=mission_id,
+        event_type=event_type,
+        job_context=job_context,
+        candidate=candidate,
+    )
     bundle = SealedMiningEvidenceBundle(
         protocol=MINING_EVIDENCE_SEAL_PROTOCOL,
         mission_id=mission_id,
+        session_event_id=event_id,
         event_type=event_type,
         job_context=dict(job_context),
         candidate=dict(candidate),
@@ -176,12 +204,21 @@ def build_sealed_mining_evidence_bundle(
     return sealed
 
 
+def _validate_nested_session_event_id(bundle: Mapping[str, Any], key: str, expected: str) -> None:
+    payload = bundle.get(key) or {}
+    if isinstance(payload, Mapping):
+        nested = str(payload.get("session_event_id") or "")
+        if nested and nested != expected:
+            raise EvidenceSealError(f"session_event_id_mismatch:{key}")
+
+
 def validate_sealed_mining_evidence_bundle(bundle: Mapping[str, Any]) -> bool:
     """Validate the sealed bundle schema and hash commitment."""
 
     required = (
         "protocol",
         "mission_id",
+        "session_event_id",
         "event_type",
         "job_context",
         "candidate",
@@ -199,6 +236,12 @@ def validate_sealed_mining_evidence_bundle(bundle: Mapping[str, Any]) -> bool:
         raise EvidenceSealError(f"missing_fields:{','.join(missing)}")
     if bundle.get("protocol") != MINING_EVIDENCE_SEAL_PROTOCOL:
         raise EvidenceSealError("wrong_evidence_protocol")
+    session_event_id = str(bundle.get("session_event_id") or "")
+    if not session_event_id:
+        raise EvidenceSealError("missing_session_event_id")
+    for nested_key in ("verifier_result", "firewall_decision", "learning_correction", "pool_response"):
+        _validate_nested_session_event_id(bundle, nested_key, session_event_id)
+
     firewall = bundle.get("firewall_decision") or {}
     learning = bundle.get("learning_correction") or {}
     if firewall.get("protocol") != VERIFICATION_FIREWALL_PROTOCOL:
@@ -250,6 +293,7 @@ def seal_schema_summary() -> Dict[str, Any]:
             CURRICULUM_PROTOCOL,
         ],
         "required_bundle_parts": [
+            "session_event_id",
             "job_context",
             "candidate",
             "verifier_result",
@@ -275,6 +319,7 @@ __all__ = [
     "TimestampAuthority",
     "bitcoin_job_timestamp_authority",
     "build_sealed_mining_evidence_bundle",
+    "derive_session_event_id",
     "redact_and_hash_runtime_config",
     "seal_schema_summary",
     "validate_sealed_mining_evidence_bundle",
