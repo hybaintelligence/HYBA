@@ -6,6 +6,9 @@
   "scripts": {
     "dev": "node dev-server.mjs",
     "build": "vite build --config vite.config.build.ts && esbuild ./src/server.ts --bundle --platform=node --format=esm --packages=external --sourcemap --outfile=dist/server.mjs",
+    "build:ci": "npm run build",
+    "cloudflare:build": "npm run build",
+    "pages:build": "npm run build",
     "start": "node -e \"process.env.NODE_ENV='production'; import('./dist/server.mjs').catch(err => { console.error(err); process.exit(1); })\"",
     "start:dev": "node dist/server.mjs",
     "clean": "node -e \"import('node:fs').then(fs => fs.rmSync('dist', { recursive: true, force: true }))\"",
