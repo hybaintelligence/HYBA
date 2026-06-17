@@ -4,17 +4,25 @@
 
 `Nodus Solutus: Mundus Computabilis Est` is the bounded proof doctrine for this release posture: repository claims are accepted only when they reduce to deterministic source paths, executable tests, replayable local evidence packets, and explicit external truth boundaries. This is not a metaphysical proof that the physical universe is computable.
 
-## Source of truth
+## Source of truth for Bitcoin deployment readiness
 
-Run the local RC gate from a clean checkout and a clean terminal session:
+Run the Bitcoin RC gate from a clean checkout and a clean terminal session:
 
 ```bash
 npm ci
 python -m pip install -r python_backend/requirements.txt
-npm run prod:local:gate
+npm run prod:bitcoin:gate
 ```
 
+`npm run prod:local:gate` is kept as the local release-candidate command and follows the same Bitcoin deployment path.
+
 This writes a timestamped packet under:
+
+```text
+artifacts/production_readiness/local_production_gate_bitcoin_<timestamp>.json
+```
+
+or, through the compatibility command:
 
 ```text
 artifacts/production_readiness/local_production_gate_rc_<timestamp>.json
@@ -50,23 +58,40 @@ This validates:
 - the no-merge-conflict-marker guard;
 - the focused HYBA intelligence/PULVINI/phi-scaling evidence pack.
 
-## Local gate includes
+## Bitcoin RC gate includes
 
-The RC gate includes, in order:
+The Bitcoin RC gate includes, in order:
 
 1. Nodus Solutus repository-local computability doctrine;
 2. reviewer evidence manifest and conflict guard;
 3. runtime entrypoint and live-miner API check;
 4. live deployment forensic audit;
 5. runtime mock/static telemetry guard;
-6. focused evidence-first endpoint and mining tests;
-7. adaptive-science/elevation/funding gates;
-8. TypeScript typecheck and production build;
-9. backend, e2e, and deployment tests.
+6. evidence-first intelligence endpoint tests;
+7. HENDRIX-Φ core, Stratum share E2E, unified mining engine, and unified API tests;
+8. pool-profile readiness and mining production doctor tests;
+9. φ golden-flow and PULVINI production invariant tests;
+10. funding gate without live accepted-share/revenue overclaim;
+11. TypeScript typecheck and production build;
+12. backend, e2e, and deployment tests.
+
+## Research/elevation gate is separate
+
+Adaptive-science and frontier/elevation suites are important evidence, but they are not Bitcoin deployment blockers. Run them separately:
+
+```bash
+npm run prod:research:gate
+```
+
+The command-room forensic gate includes both Bitcoin and research checks:
+
+```bash
+npm run prod:command-room:gate:full-forensic
+```
 
 ## Live activation boundary
 
-Passing `npm run prod:local:gate` is a release-candidate evidence packet. It does **not** by itself authorize live share submission.
+Passing `npm run prod:bitcoin:gate` or `npm run prod:local:gate` is a release-candidate evidence packet. It does **not** by itself authorize live share submission.
 
 Live-pool activation still requires:
 
@@ -80,12 +105,13 @@ and operator-provided production environment values:
 - `JWT_SECRET`;
 - `HYBA_OPERATOR_CREDENTIALS`;
 - `HYBA_ENABLE_LIVE_STRATUM=true` only when intentionally testing live pool IO;
+- `HYBA_ENABLE_MINING_AUTOCONNECT=false` unless intentionally enabled;
 - `HYBA_ENABLE_LIVE_SHARE_SUBMIT=false` until explicit approval;
 - `HYBA_LIVE_SHARE_APPROVAL_ID` attached before live share submission.
 
 ## Claims that remain blocked without external evidence
 
-Even after the local gate passes, do not claim:
+Even after the local Bitcoin gate passes, do not claim:
 
 - that the physical universe is proven computable;
 - guaranteed revenue;
