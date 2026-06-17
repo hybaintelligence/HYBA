@@ -30,12 +30,13 @@ import hashlib
 import inspect
 import json
 import os
+import shutil
 import time
 import uuid
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Set, Tuple
+from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Union
 
 from .ai_optimizer import AIOptimizer, SearchStrategy
 from .consciousness_engine import ConsciousnessConfig, ConsciousnessEngine, PhiMetrics
@@ -80,6 +81,19 @@ class SafetyConstraint(Enum):
     INFORMATION_INTEGRITY = "information_integrity"  # Must preserve informational structure
 
 
+@dataclass(frozen=True)
+class OperatorApprovalDecision:
+    """Normalized operator approval response for audit consistency."""
+
+    approved: bool
+    operator_id: Optional[str] = None
+    reason: str = "operator_callback"
+    source: str = "structured_callback"
+
+
+OperatorApprovalCallbackResult = Union[bool, OperatorApprovalDecision]
+
+
 @dataclass
 class AutonomousDecision:
     """Record of an autonomous decision with mathematical justification."""
@@ -94,7 +108,9 @@ class AutonomousDecision:
     expected_outcome: str
     actual_outcome: Optional[str] = None
     operator_override: bool = False
+    operator_id: Optional[str] = None
     operator_reason: Optional[str] = None
+    operator_approval_source: Optional[str] = None
 
 
 @dataclass
@@ -151,20 +167,31 @@ def _env_autonomy_level() -> AutonomyLevel:
         return AutonomyLevel.ADVISORY
 
 
+def _env_float(name: str, default: float) -> float:
+    """Read a float from the environment without letting bad config crash startup."""
+    raw = os.getenv(name)
+    if raw is None or raw.strip() == "":
+        return default
+    try:
+        return float(raw)
+    except ValueError:
+        return default
+
+
 def _env_max_hashrate() -> float:
     """Read max autonomous hashrate from env, clamped by mission memory hard limit."""
-    configured = float(os.getenv("HYBA_AUTONOMOUS_MAX_HASHRATE_EHS", "0.5"))
+    configured = _env_float("HYBA_AUTONOMOUS_MAX_HASHRATE_EHS", 0.5)
     return min(configured, MAX_AUTONOMOUS_HASHRATE_EHS)
 
 
 def _env_max_power() -> float:
     """Read max autonomous power from env."""
-    return float(os.getenv("HYBA_AUTONOMOUS_MAX_POWER_WATTS", "500.0"))
+    return _env_float("HYBA_AUTONOMOUS_MAX_POWER_WATTS", 500.0)
 
 
 def _env_phi_threshold() -> float:
     """Read φ-coherence threshold from env."""
-    return float(os.getenv("HYBA_PHI_COHERENCE_THRESHOLD", "0.70"))
+    return _env_float("HYBA_PHI_COHERENCE_THRESHOLD", 0.70)
 
 
 def _env_reflexive_enabled() -> bool:
@@ -175,7 +202,7 @@ def _env_reflexive_enabled() -> bool:
 
 def _env_reflexive_interval() -> float:
     """Interval between reflexive cycles in seconds."""
-    return float(os.getenv("HYBA_REFLEXIVE_LOOP_INTERVAL", "60.0"))
+    return _env_float("HYBA_REFLEXIVE_LOOP_INTERVAL", 60.0)
 
 
 def _env_compression_drive() -> bool:
@@ -206,6 +233,8 @@ class AutonomyMetrics:
     phi_density: float = 0.0
     reflexive_cycle_count: int = 0
     degradation_events: int = 0
+    circuit_open: bool = False
+    circuit_open_until: float = 0.0
 
 
 @dataclass
@@ -241,6 +270,14 @@ class AutonomousConfig:
     persistence_dir: str = field(
         default_factory=lambda: os.getenv("HYBA_AUTONOMY_STATE_DIR", "artifacts/autonomous_mining")
     )
+    circuit_breaker_failure_threshold: int = 3
+    circuit_breaker_cooldown_seconds: float = field(
+        default_factory=lambda: _env_float("HYBA_AUTONOMY_CIRCUIT_BREAKER_COOLDOWN_SECONDS", 60.0)
+    )
+    state_lock_stale_seconds: float = field(
+        default_factory=lambda: _env_float("HYBA_AUTONOMY_STATE_LOCK_STALE_SECONDS", 300.0)
+    )
+    state_backup_retention_count: int = 5
 
     def __post_init__(self) -> None:
         """Validate config at construction time."""
@@ -253,6 +290,10 @@ class AutonomousConfig:
             self.max_autonomous_power_watts = 0
         # Clamp coherence threshold
         self.phi_coherence_threshold = max(0.0, min(self.phi_coherence_threshold, 1.0))
+        self.circuit_breaker_failure_threshold = max(1, int(self.circuit_breaker_failure_threshold))
+        self.circuit_breaker_cooldown_seconds = max(0.0, float(self.circuit_breaker_cooldown_seconds))
+        self.state_lock_stale_seconds = max(1.0, float(self.state_lock_stale_seconds))
+        self.state_backup_retention_count = max(0, int(self.state_backup_retention_count))
 
 
 class AutonomousMiningController:
@@ -271,7 +312,10 @@ class AutonomousMiningController:
         self.current_autonomy_level = self.config.autonomy_level
         self._consecutive_failures: int = 0
         self._degradation_events: int = 0
-        self.operator_approval_callback: Optional[Callable[[AutonomousDecision], bool]] = None
+        self._circuit_open_until: float = 0.0
+        self.operator_approval_callback: Optional[
+            Callable[[AutonomousDecision], OperatorApprovalCallbackResult]
+        ] = None
 
         # --- Reflexive Knowledge Loop state ---
         self.knowledge_substrate = KnowledgeSubstrate()
@@ -314,6 +358,8 @@ class AutonomousMiningController:
             phi_density=self.get_phi_density(),
             reflexive_cycle_count=self._self_optimization_epochs,
             degradation_events=self._degradation_events,
+            circuit_open=self.is_circuit_open(),
+            circuit_open_until=self._circuit_open_until,
         )
 
     def get_metrics_snapshot(self) -> Dict[str, Any]:
@@ -329,11 +375,68 @@ class AutonomousMiningController:
             "phi_density": m.phi_density,
             "reflexive_cycle_count": m.reflexive_cycle_count,
             "degradation_events": m.degradation_events,
+            "circuit_open": m.circuit_open,
+            "circuit_open_until": m.circuit_open_until,
         }
 
     # ----------------------------------------------------------------
     # ERROR / DEGRADATION
     # ----------------------------------------------------------------
+
+    def is_circuit_open(self, now: Optional[float] = None) -> bool:
+        """Return whether autonomous optimization is temporarily disabled."""
+        current_time = time.time() if now is None else now
+        if self._circuit_open_until <= 0:
+            return False
+        if current_time >= self._circuit_open_until:
+            self._circuit_open_until = 0.0
+            self._consecutive_failures = 0
+            self._log_event("circuit_breaker_closed", {"timestamp": current_time})
+            return False
+        return True
+
+    def record_autonomy_success(self) -> None:
+        """Reset transient failure state after a successful autonomous hook."""
+        self._consecutive_failures = 0
+        self._circuit_open_until = 0.0
+
+    def reset_circuit_breaker(self, operator_reason: str) -> None:
+        """Manually close the autonomy circuit breaker after operator review."""
+        previous_open_until = self._circuit_open_until
+        self._consecutive_failures = 0
+        self._circuit_open_until = 0.0
+        self._log_event(
+            "circuit_breaker_manual_reset",
+            {
+                "reason": operator_reason,
+                "previous_open_until": previous_open_until,
+                "autonomy_level": self.current_autonomy_level.value,
+            },
+        )
+
+    def record_autonomy_failure(self, reason: str) -> AutonomyLevel:
+        """Record a failed autonomous hook and open/degrade when threshold is met."""
+        self._consecutive_failures += 1
+        threshold = max(1, int(self.config.circuit_breaker_failure_threshold))
+        if self._consecutive_failures < threshold:
+            self._log_event(
+                "autonomy_failure",
+                {
+                    "reason": reason,
+                    "consecutive_failures": self._consecutive_failures,
+                },
+            )
+            return self.current_autonomy_level
+
+        cooldown = max(0.0, float(self.config.circuit_breaker_cooldown_seconds))
+        self._circuit_open_until = time.time() + cooldown
+        self._log_event(
+            "circuit_breaker_opened",
+            {"reason": reason, "cooldown_seconds": cooldown},
+        )
+        return self.degrade_autonomy_level(
+            reason=f"{reason}_consecutive_failures_{self._consecutive_failures}"
+        )
 
     def degrade_autonomy_level(self, reason: str) -> AutonomyLevel:
         """Degrade one level when the current level experiences repeated failures.
@@ -348,13 +451,14 @@ class AutonomousMiningController:
             AutonomyLevel.EMERGENCY: AutonomyLevel.MANUAL,
         }
         new_level = deg_map.get(self.current_autonomy_level, AutonomyLevel.MANUAL)
+        previous_level = self.current_autonomy_level
         self.current_autonomy_level = new_level
         self._degradation_events += 1
         self._consecutive_failures = 0  # reset after degradation
 
         # structured log
-        self._log_event("degradation", {"from": str(self.current_autonomy_level),
-                                         "to": str(new_level),
+        self._log_event("degradation", {"from": previous_level.value,
+                                         "to": new_level.value,
                                          "reason": reason})
 
         return new_level
@@ -1085,6 +1189,66 @@ class AutonomousMiningController:
         """Return the full path to the reflexive state JSON file."""
         return Path(self.config.persistence_dir) / "reflexive_state.json"
 
+    def _state_lock_path(self) -> Path:
+        """Return the lock-file path that guards state replacement."""
+        return Path(self.config.persistence_dir) / "reflexive_state.lock"
+
+    def _state_backup_glob(self) -> str:
+        """Return the glob pattern for rotated state backups."""
+        return "reflexive_state.json.backup.*"
+
+    def _acquire_state_lock(self) -> Path:
+        """Create the persistence lock file, reclaiming it only after stale timeout."""
+        lock_path = self._state_lock_path()
+        now = time.time()
+        try:
+            fd = os.open(str(lock_path), os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+            with os.fdopen(fd, "w") as handle:
+                json.dump({"pid": os.getpid(), "created_at": now}, handle)
+            return lock_path
+        except FileExistsError:
+            try:
+                age = now - lock_path.stat().st_mtime
+            except OSError as exc:
+                raise TimeoutError(f"state lock unavailable: {exc}") from exc
+            if age <= self.config.state_lock_stale_seconds:
+                raise TimeoutError(
+                    "state lock is active; "
+                    f"age={age:.3f}s stale_after={self.config.state_lock_stale_seconds:.3f}s"
+                )
+            lock_path.unlink(missing_ok=True)
+            self._log_event(
+                "stale_state_lock_reclaimed",
+                {"lock_path": str(lock_path), "age_seconds": round(age, 3)},
+            )
+            return self._acquire_state_lock()
+
+    def _release_state_lock(self, lock_path: Path) -> None:
+        """Release the persistence lock file if this process owns the critical section."""
+        try:
+            lock_path.unlink(missing_ok=True)
+        except OSError as exc:
+            self._log_event("state_lock_release_error", {"error": str(exc)})
+
+    def _rotate_state_backups(self) -> None:
+        """Keep only the configured number of state backups."""
+        retention = self.config.state_backup_retention_count
+        backup_files = sorted(
+            Path(self.config.persistence_dir).glob(self._state_backup_glob()),
+            key=lambda path: path.stat().st_mtime,
+            reverse=True,
+        )
+        for stale_backup in backup_files[retention:]:
+            stale_backup.unlink(missing_ok=True)
+
+    def _backup_existing_state(self, state_file: Path) -> None:
+        """Create a bounded backup before replacing the state file."""
+        if self.config.state_backup_retention_count <= 0 or not state_file.exists():
+            return
+        backup_name = f"{state_file.name}.backup.{int(time.time() * 1000)}.{uuid.uuid4().hex[:8]}"
+        shutil.copy2(state_file, state_file.with_name(backup_name))
+        self._rotate_state_backups()
+
     def _save_reflexive_state(self) -> None:
         """Persist reflexive learning state to disk.
         
@@ -1126,11 +1290,22 @@ class AutonomousMiningController:
             "autonomy_level": self.current_autonomy_level.value,
             "phi_coherence_threshold": self.config.phi_coherence_threshold,
         }
+        lock_path: Optional[Path] = None
+        state_file = self._state_file_path()
+        temp_file = state_file.with_name(f".{state_file.name}.{uuid.uuid4().hex}.tmp")
         try:
-            with open(self._state_file_path(), "w") as f:
+            lock_path = self._acquire_state_lock()
+            self._backup_existing_state(state_file)
+            with open(temp_file, "w") as f:
                 json.dump(state, f, indent=2)
-        except OSError as exc:
+                f.write("\n")
+            os.replace(temp_file, state_file)
+        except (OSError, TimeoutError) as exc:
             self._log_event("persist_error", {"error": str(exc)})
+        finally:
+            temp_file.unlink(missing_ok=True)
+            if lock_path is not None:
+                self._release_state_lock(lock_path)
 
     def _load_reflexive_state(self) -> None:
         """Restore previously-persisted reflexive learning state."""
@@ -1197,6 +1372,9 @@ class AutonomousMiningController:
             "decision_type": decision.decision_type,
             "constraints_violated": len(decision.constraints_violated),
             "operator_override": decision.operator_override,
+            "operator_id": decision.operator_id,
+            "operator_reason": decision.operator_reason,
+            "operator_approval_source": decision.operator_approval_source,
             "action_taken": decision.action_taken,
         })
 
@@ -1332,8 +1510,53 @@ class AutonomousMiningController:
         """Check if decision type requires operator approval."""
         return decision_type in self.config.operator_approval_required_for
 
+    def _normalize_operator_approval(
+        self,
+        response: OperatorApprovalCallbackResult,
+    ) -> OperatorApprovalDecision:
+        """Normalize legacy booleans and structured approvals into one audit shape."""
+        if isinstance(response, OperatorApprovalDecision):
+            return response
+        return OperatorApprovalDecision(
+            approved=bool(response),
+            operator_id=None,
+            reason="legacy_boolean_callback",
+            source="legacy_boolean_callback",
+        )
+
+    def _request_operator_approval(self, decision: AutonomousDecision) -> OperatorApprovalDecision:
+        """Invoke the approval callback and attach normalized audit metadata."""
+        if self.operator_approval_callback is None:
+            approval = OperatorApprovalDecision(
+                approved=False,
+                operator_id=None,
+                reason="operator_approval_callback_missing",
+                source="missing_callback",
+            )
+        else:
+            approval = self._normalize_operator_approval(
+                self.operator_approval_callback(decision)
+            )
+
+        decision.operator_id = approval.operator_id
+        decision.operator_reason = approval.reason
+        decision.operator_approval_source = approval.source
+        if not approval.approved:
+            decision.operator_override = True
+        self._log_event(
+            "operator_approval",
+            {
+                "decision_id": decision.decision_id,
+                "approved": approval.approved,
+                "operator_id": approval.operator_id,
+                "reason": approval.reason,
+                "source": approval.source,
+            },
+        )
+        return approval
+
     def _can_execute_autonomously(self, decision: AutonomousDecision) -> bool:
-        """Determine if decision can be executed without operator approval."""
+        """Determine if decision can execute without an operator approval callback."""
         if decision.operator_override:
             return False
 
@@ -1341,8 +1564,6 @@ class AutonomousMiningController:
             return False
 
         if self._requires_operator_approval(decision.decision_type):
-            if self.operator_approval_callback:
-                return self.operator_approval_callback(decision)
             return False
 
         if decision.constraints_violated:
@@ -1447,14 +1668,12 @@ class AutonomousMiningController:
             self.engine.optimizer.current_strategy = proposed_strategy
             decision.actual_outcome = "strategy_updated_successfully"
         else:
-            # Request operator approval
-            if self.operator_approval_callback:
-                approved = self.operator_approval_callback(decision)
-                if approved:
+            if self.operator_approval_callback or self._requires_operator_approval(decision.decision_type):
+                approval = self._request_operator_approval(decision)
+                if approval.approved:
                     self.engine.optimizer.current_strategy = proposed_strategy
                     decision.actual_outcome = "strategy_updated_after_approval"
                 else:
-                    decision.operator_override = True
                     decision.actual_outcome = "operator_rejected_strategy_change"
 
         return decision
@@ -1525,13 +1744,11 @@ class AutonomousMiningController:
             # Execute the decision (would update solver configuration)
             decision.actual_outcome = "hashrate_target_updated"
         else:
-            # Request operator approval
-            if self.operator_approval_callback:
-                approved = self.operator_approval_callback(decision)
-                if approved:
+            if self.operator_approval_callback or self._requires_operator_approval(decision.decision_type):
+                approval = self._request_operator_approval(decision)
+                if approval.approved:
                     decision.actual_outcome = "hashrate_target_updated_after_approval"
                 else:
-                    decision.operator_override = True
                     decision.actual_outcome = "operator_rejected_hashrate_change"
 
         return decision
@@ -1579,13 +1796,11 @@ class AutonomousMiningController:
             # Execute the decision (would update compression configuration)
             decision.actual_outcome = "compression_ratio_updated"
         else:
-            # Request operator approval
-            if self.operator_approval_callback:
-                approved = self.operator_approval_callback(decision)
-                if approved:
+            if self.operator_approval_callback or self._requires_operator_approval(decision.decision_type):
+                approval = self._request_operator_approval(decision)
+                if approval.approved:
                     decision.actual_outcome = "compression_ratio_updated_after_approval"
                 else:
-                    decision.operator_override = True
                     decision.actual_outcome = "operator_rejected_compression_change"
 
         return decision
@@ -1625,8 +1840,9 @@ class AutonomousMiningController:
     def set_autonomy_level(self, level: AutonomyLevel) -> None:
         """Set the current autonomy level."""
         self.current_autonomy_level = level
-        # Reset failure counter on explicit operator level change
+        # Reset failure/circuit state on explicit operator level change
         self._consecutive_failures = 0
+        self._circuit_open_until = 0.0
 
     def get_decision_history(
         self,
@@ -1653,6 +1869,12 @@ class AutonomousMiningController:
             ),
             "consecutive_failures": self._consecutive_failures,
             "degradation_events": self._degradation_events,
+            "circuit_breaker": {
+                "open": self.is_circuit_open(),
+                "open_until": self._circuit_open_until,
+                "failure_threshold": self.config.circuit_breaker_failure_threshold,
+                "cooldown_seconds": self.config.circuit_breaker_cooldown_seconds,
+            },
             "recent_decisions": [
                 {
                     "decision_id": d.decision_id,
@@ -1683,7 +1905,7 @@ class AutonomousMiningController:
 
     def set_operator_approval_callback(
         self,
-        callback: Callable[[AutonomousDecision], bool],
+        callback: Callable[[AutonomousDecision], OperatorApprovalCallbackResult],
     ) -> None:
         """Set callback for operator approval decisions."""
         self.operator_approval_callback = callback
@@ -1704,6 +1926,7 @@ class AutonomousMiningController:
 __all__ = [
     "AutonomousMiningController",
     "AutonomousConfig",
+    "OperatorApprovalDecision",
     "AutonomousDecision",
     "AutonomyLevel",
     "SafetyConstraint",

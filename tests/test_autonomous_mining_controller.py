@@ -5,11 +5,14 @@ including the Reflexive Knowledge Loop for recursive self-learning.
 """
 
 import asyncio
+import tempfile
+import time
 import unittest
 from unittest.mock import MagicMock, patch
 
 import sys
 import os
+from pathlib import Path
 
 # Add python_backend to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'python_backend'))
@@ -19,6 +22,7 @@ from pythia_mining.autonomous_mining_controller import (
     AutonomousDecision,
     AutonomousMiningController,
     AutonomyLevel,
+    OperatorApprovalDecision,
     SafetyConstraint,
     SelfOptimizationProposal,
     CodebaseSurroundings,
@@ -59,6 +63,163 @@ class TestAutonomousMiningController(unittest.TestCase):
         self.assertIsNotNone(self.controller.surroundings)
         self.assertEqual(len(self.controller.proposal_history), 0)
         self.assertEqual(self.controller._self_optimization_epochs, 0)
+
+
+    def test_invalid_environment_values_fall_back_to_safe_defaults(self):
+        """Bad environment config should not crash autonomous controller startup."""
+        with patch.dict(os.environ, {
+            "HYBA_AUTONOMOUS_MAX_HASHRATE_EHS": "not-a-float",
+            "HYBA_AUTONOMOUS_MAX_POWER_WATTS": "bad",
+            "HYBA_PHI_COHERENCE_THRESHOLD": "bad",
+            "HYBA_REFLEXIVE_LOOP_INTERVAL": "bad",
+        }):
+            config = AutonomousConfig(persistence_enabled=False)
+
+        self.assertEqual(config.max_autonomous_hashrate_ehs, 0.5)
+        self.assertEqual(config.max_autonomous_power_watts, 500.0)
+        self.assertEqual(config.phi_coherence_threshold, 0.70)
+        self.assertEqual(config.reflexive_loop_interval, 60.0)
+
+    def test_circuit_breaker_opens_and_degrades_after_repeated_failures(self):
+        """Repeated autonomous-hook failures should degrade and pause optimization."""
+        self.controller.set_autonomy_level(AutonomyLevel.AUTONOMOUS)
+        self.controller.config.circuit_breaker_failure_threshold = 2
+        self.controller.config.circuit_breaker_cooldown_seconds = 30.0
+
+        first_level = self.controller.record_autonomy_failure("unit_test")
+        self.assertEqual(first_level, AutonomyLevel.AUTONOMOUS)
+        self.assertFalse(self.controller.is_circuit_open())
+
+        degraded_level = self.controller.record_autonomy_failure("unit_test")
+        self.assertEqual(degraded_level, AutonomyLevel.SUPERVISED)
+        self.assertTrue(self.controller.is_circuit_open())
+        status = self.controller.get_autonomy_status()
+        self.assertTrue(status["circuit_breaker"]["open"])
+        self.assertEqual(status["circuit_breaker"]["failure_threshold"], 2)
+
+        self.controller.record_autonomy_success()
+        self.assertFalse(self.controller.is_circuit_open())
+
+
+
+    def test_manual_circuit_breaker_reset_clears_open_state(self):
+        """Operator reset should clear circuit state after review."""
+        self.controller.set_autonomy_level(AutonomyLevel.AUTONOMOUS)
+        self.controller.config.circuit_breaker_failure_threshold = 1
+        self.controller.record_autonomy_failure("unit_test")
+        self.assertTrue(self.controller.is_circuit_open())
+
+        self.controller.reset_circuit_breaker("operator_reviewed_failure")
+
+        self.assertFalse(self.controller.is_circuit_open())
+        self.assertEqual(self.controller.get_metrics_snapshot()["consecutive_failures"], 0)
+
+    def test_legacy_boolean_operator_approval_is_normalized_for_audit(self):
+        """Legacy boolean approvals should produce the same audit shape."""
+        decision = AutonomousDecision(
+            decision_id="approval-legacy",
+            timestamp=time.time(),
+            autonomy_level=AutonomyLevel.SUPERVISED,
+            decision_type="wallet_address_change",
+            mathematical_justification={},
+            constraints_satisfied=[],
+            constraints_violated=[],
+            action_taken="change_wallet",
+            expected_outcome="requires approval",
+        )
+        self.controller.set_operator_approval_callback(MagicMock(return_value=True))
+
+        approval = self.controller._request_operator_approval(decision)
+
+        self.assertTrue(approval.approved)
+        self.assertIsNone(decision.operator_id)
+        self.assertEqual(decision.operator_reason, "legacy_boolean_callback")
+        self.assertEqual(decision.operator_approval_source, "legacy_boolean_callback")
+
+    def test_structured_operator_approval_is_written_to_decision_audit_shape(self):
+        """Structured approvals should populate normalized audit fields."""
+        decision = AutonomousDecision(
+            decision_id="approval-structured",
+            timestamp=time.time(),
+            autonomy_level=AutonomyLevel.SUPERVISED,
+            decision_type="wallet_address_change",
+            mathematical_justification={},
+            constraints_satisfied=[],
+            constraints_violated=[],
+            action_taken="change_wallet",
+            expected_outcome="requires approval",
+        )
+        self.controller.set_operator_approval_callback(
+            MagicMock(
+                return_value=OperatorApprovalDecision(
+                    approved=False,
+                    operator_id="ops-1",
+                    reason="maintenance_window_closed",
+                )
+            )
+        )
+
+        approval = self.controller._request_operator_approval(decision)
+
+        self.assertFalse(approval.approved)
+        self.assertTrue(decision.operator_override)
+        self.assertEqual(decision.operator_id, "ops-1")
+        self.assertEqual(decision.operator_reason, "maintenance_window_closed")
+        self.assertEqual(decision.operator_approval_source, "structured_callback")
+
+    def test_stale_state_lock_is_reclaimed_before_persisting(self):
+        """Crash-left lock files older than the stale threshold should be reclaimed."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            config = AutonomousConfig(
+                persistence_enabled=False,
+                persistence_dir=tmpdir,
+                state_lock_stale_seconds=1.0,
+            )
+            controller = AutonomousMiningController(self.unified_engine, config=config)
+            lock_path = controller._state_lock_path()
+            lock_path.write_text("stale", encoding="utf-8")
+            old_time = time.time() - 5.0
+            os.utime(lock_path, (old_time, old_time))
+
+            acquired = controller._acquire_state_lock()
+
+            self.assertEqual(acquired, lock_path)
+            controller._release_state_lock(acquired)
+            self.assertFalse(lock_path.exists())
+
+    def test_recent_state_lock_blocks_persist_without_deadlock(self):
+        """Fresh lock files should fail fast instead of blocking startup forever."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            config = AutonomousConfig(
+                persistence_enabled=False,
+                persistence_dir=tmpdir,
+                state_lock_stale_seconds=60.0,
+            )
+            controller = AutonomousMiningController(self.unified_engine, config=config)
+            controller._state_lock_path().write_text("active", encoding="utf-8")
+
+            with self.assertRaises(TimeoutError):
+                controller._acquire_state_lock()
+
+    def test_state_backup_rotation_is_bounded(self):
+        """State backups should not grow beyond configured retention."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            config = AutonomousConfig(
+                persistence_enabled=False,
+                persistence_dir=tmpdir,
+                state_backup_retention_count=2,
+            )
+            controller = AutonomousMiningController(self.unified_engine, config=config)
+            state_file = controller._state_file_path()
+            state_file.write_text('{"epochs": 0}', encoding="utf-8")
+
+            for idx in range(4):
+                state_file.write_text(f'{{"epochs": {idx}}}', encoding="utf-8")
+                controller._backup_existing_state(state_file)
+                time.sleep(0.002)
+
+            backups = list(Path(tmpdir).glob("reflexive_state.json.backup.*"))
+            self.assertLessEqual(len(backups), 2)
 
     def test_decision_id_generation(self):
         """Test that decision IDs are generated uniquely."""
@@ -913,6 +1074,11 @@ class TestAutonomousMiningControllerIntegration(unittest.TestCase):
 
     def setUp(self):
         """Set up test fixtures with real unified engine."""
+        self._tmpdir = tempfile.TemporaryDirectory()
+        self._env_patch = patch.dict(os.environ, {"HYBA_AUTONOMY_STATE_DIR": self._tmpdir.name})
+        self._env_patch.start()
+        self.addCleanup(self._env_patch.stop)
+        self.addCleanup(self._tmpdir.cleanup)
         # Create a minimal unified engine for testing
         self.unified_engine = UnifiedMiningEngine(
             configured_capacity_ehs=100.0,
