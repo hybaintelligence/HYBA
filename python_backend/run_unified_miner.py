@@ -377,15 +377,6 @@ class UnifiedMiner:
         """
         local = self.engine.submit_candidate(job, nonce)
         
-        # Check for duplicate nonce submission to prevent pool rejections
-        nonce_key = (job.job_id, nonce)
-        if nonce_key in self._submitted_nonces:
-            logger.info("Skipping duplicate nonce submission: job=%s nonce=%s", job.job_id, nonce)
-            self._rejected += 1
-            return False
-        
-        self._submitted_nonces.add(nonce_key)
-        
         share_info: dict[str, Any] = {
             "nonce": nonce,
             "job_id": job.job_id,

@@ -82,17 +82,21 @@ class SafetyConstraint(Enum):
     INFORMATION_INTEGRITY = "information_integrity"  # Must preserve informational structure
 
 
+OperatorApprovalCallbackResult = Union[bool, "OperatorApprovalDecision"]
+
+
 @dataclass(frozen=True)
 class OperatorApprovalDecision:
-    """Normalized operator approval response for audit consistency."""
+    """Structured response returned by an operator approval service.
 
+    Carries the approval decision plus audit metadata. All callers must
+    produce this type; legacy boolean paths are normalised by
+    ``_normalise_operator_approval``.
+    """
     approved: bool
     operator_id: Optional[str] = None
-    reason: str = "operator_callback"
+    reason: Optional[str] = "operator_callback"
     source: str = "structured_callback"
-
-
-OperatorApprovalCallbackResult = Union[bool, OperatorApprovalDecision]
 
 
 @dataclass
@@ -139,14 +143,6 @@ class OperatorApprovalRequest:
     requested_at: float
     expires_at: float
     status: str = "pending"
-    operator_id: Optional[str] = None
-    reason: Optional[str] = None
-
-
-@dataclass
-class OperatorApprovalDecision:
-    """Structured response returned by an operator approval service."""
-    approved: bool
     operator_id: Optional[str] = None
     reason: Optional[str] = None
 
@@ -298,6 +294,12 @@ class AutonomyMetrics:
     last_reflexive_cycle_duration_ms: float = 0.0
 
 
+# Maximum length for sliding-window history arrays to guarantee O(1) heap usage
+_MAX_PHI_DENSITY_HISTORY_LEN: int = 200
+_MAX_COMPRESSION_SEEKING_HISTORY_LEN: int = 100
+_MAX_LOGICAL_CONSISTENCY_HISTORY_LEN: int = 100
+
+
 @dataclass
 class AutonomousConfig:
     """Configuration for autonomous mining controller.
@@ -360,13 +362,6 @@ class AutonomousConfig:
     )
     persistence_dir: str = field(
         default_factory=lambda: os.getenv("HYBA_AUTONOMY_STATE_DIR", "artifacts/autonomous_mining")
-    )
-    circuit_breaker_failure_threshold: int = 3
-    circuit_breaker_cooldown_seconds: float = field(
-        default_factory=lambda: _env_float("HYBA_AUTONOMY_CIRCUIT_BREAKER_COOLDOWN_SECONDS", 60.0)
-    )
-    state_lock_stale_seconds: float = field(
-        default_factory=lambda: _env_float("HYBA_AUTONOMY_STATE_LOCK_STALE_SECONDS", 300.0)
     )
     state_backup_retention_count: int = 5
 
@@ -433,10 +428,48 @@ class AutonomousMiningController:
         # Reentrancy guard for get_phi_density
         self._computing_phi_density: bool = False
 
+        # PID-verified stale lockfile cleanup on boot — removes stale .lock
+        # only when no competing engine process is running.
+        self._clean_stale_lock_on_boot()
+
         # Persistence: load previously-learned state
         if self.config.persistence_enabled:
             self._ensure_persistence_dir()
             self._load_reflexive_state()
+
+    # ----------------------------------------------------------------
+    # BOOT-TIME STALE LOCK RECOVERY
+    # ----------------------------------------------------------------
+
+    def _clean_stale_lock_on_boot(self) -> None:
+        """Remove a stale state-lock file only after confirming no competing PID owns it.
+
+        On clean boot, any leftover .lock anchor from a previous crash is
+        removed. If the lock's embedded PID still references a live process
+        the lock is left intact to avoid corrupting the active writer.
+        """
+        lock_path = self._state_lock_path()
+        if not lock_path.exists():
+            return
+        try:
+            content = lock_path.read_text(encoding="utf-8", errors="replace")
+            meta = json.loads(content) if content.strip() else {}
+            pid = int(meta.get("pid", 0))
+        except (json.JSONDecodeError, ValueError, OSError):
+            pid = 0
+        if pid > 0:
+            try:
+                os.kill(pid, 0)  # signal 0 probes whether the PID exists
+                # The competing process is alive — keep the lock
+                return
+            except OSError:
+                pass  # PID does not exist, safe to remove
+        lock_path.unlink(missing_ok=True)
+        self._stale_state_lock_recoveries += 1
+        self._log_event(
+            "boot_stale_lock_cleaned",
+            {"lock_path": str(lock_path), "pid": pid},
+        )
 
     # ----------------------------------------------------------------
     # PUBLIC METRICS — consumed by monitoring / logging
@@ -1308,10 +1341,10 @@ class AutonomousMiningController:
         current_density = self.get_phi_density()
         current_efficiency = self.get_current_efficiency()
 
-        # Record historical metrics
+        # Record historical metrics — bounded sliding window for O(1) heap
         self._phi_density_history.append(current_density)
-        if len(self._phi_density_history) > 100:
-            self._phi_density_history = self._phi_density_history[-100:]
+        if len(self._phi_density_history) > _MAX_PHI_DENSITY_HISTORY_LEN:
+            self._phi_density_history = self._phi_density_history[-_MAX_PHI_DENSITY_HISTORY_LEN:]
 
         # Step 1: Analyze surroundings — which entropy source to explore?
         # Rotate through improvement targets based on knowledge gaps
@@ -1349,22 +1382,22 @@ class AutonomousMiningController:
         for proposal in valid_proposals:
             self.apply_self_optimization(proposal)
 
-        # Record logical consistency
+        # Record logical consistency — bounded sliding window
         avg_consistency = (
             sum(p.logical_consistency_score for p in proposals) / max(len(proposals), 1)
         )
         self._logical_consistency_history.append(avg_consistency)
-        if len(self._logical_consistency_history) > 50:
-            self._logical_consistency_history = self._logical_consistency_history[-50:]
+        if len(self._logical_consistency_history) > _MAX_LOGICAL_CONSISTENCY_HISTORY_LEN:
+            self._logical_consistency_history = self._logical_consistency_history[-_MAX_LOGICAL_CONSISTENCY_HISTORY_LEN:]
 
-        # Record compression seeking
+        # Record compression seeking — bounded sliding window
         if self.config.compression_drive_enabled:
             compression_proposals = [p for p in proposals if p.improvement_type == "compression_target"]
             if compression_proposals:
                 avg_compression = sum(p.proposed_value for p in compression_proposals) / len(compression_proposals)
                 self._compression_seeking_history.append(avg_compression)
-                if len(self._compression_seeking_history) > 50:
-                    self._compression_seeking_history = self._compression_seeking_history[-50:]
+                if len(self._compression_seeking_history) > _MAX_COMPRESSION_SEEKING_HISTORY_LEN:
+                    self._compression_seeking_history = self._compression_seeking_history[-_MAX_COMPRESSION_SEEKING_HISTORY_LEN:]
 
         return proposals
 
@@ -1693,8 +1726,15 @@ class AutonomousMiningController:
                 )
             self._self_optimization_epochs = state.get("epochs", 0)
             self._phi_density_history = state.get("phi_density_history", [])
+            # Enforce maximum bounds on restored history
+            if len(self._phi_density_history) > _MAX_PHI_DENSITY_HISTORY_LEN:
+                self._phi_density_history = self._phi_density_history[-_MAX_PHI_DENSITY_HISTORY_LEN:]
             self._compression_seeking_history = state.get("compression_seeking_history", [])
+            if len(self._compression_seeking_history) > _MAX_COMPRESSION_SEEKING_HISTORY_LEN:
+                self._compression_seeking_history = self._compression_seeking_history[-_MAX_COMPRESSION_SEEKING_HISTORY_LEN:]
             self._logical_consistency_history = state.get("logical_consistency_history", [])
+            if len(self._logical_consistency_history) > _MAX_LOGICAL_CONSISTENCY_HISTORY_LEN:
+                self._logical_consistency_history = self._logical_consistency_history[-_MAX_LOGICAL_CONSISTENCY_HISTORY_LEN:]
             self.config.phi_coherence_threshold = state.get(
                 "phi_coherence_threshold", self.config.phi_coherence_threshold
             )
@@ -1891,412 +1931,6 @@ class AutonomousMiningController:
         """Check if decision type requires operator approval."""
         return decision_type in self.config.operator_approval_required_for
 
-    def _normalize_operator_approval(
-        self,
-        response: OperatorApprovalCallbackResult,
-    ) -> OperatorApprovalDecision:
-        """Normalize legacy booleans and structured approvals into one audit shape."""
-        if isinstance(response, OperatorApprovalDecision):
-            return response
-        return OperatorApprovalDecision(
-            approved=bool(response),
-            operator_id=None,
-            reason="legacy_boolean_callback",
-            source="legacy_boolean_callback",
-        )
-
-    def _request_operator_approval(self, decision: AutonomousDecision) -> OperatorApprovalDecision:
-        """Invoke the approval callback and attach normalized audit metadata."""
-        if self.operator_approval_callback is None:
-            approval = OperatorApprovalDecision(
-                approved=False,
-                operator_id=None,
-                reason="operator_approval_callback_missing",
-                source="missing_callback",
-            )
-        else:
-            approval = self._normalize_operator_approval(
-                self.operator_approval_callback(decision)
-            )
-
-        decision.operator_id = approval.operator_id
-        decision.operator_reason = approval.reason
-        decision.operator_approval_source = approval.source
-        if not approval.approved:
-            decision.operator_override = True
-        self._log_event(
-            "operator_approval",
-            {
-                "decision_id": decision.decision_id,
-                "approved": approval.approved,
-                "operator_id": approval.operator_id,
-                "reason": approval.reason,
-                "source": approval.source,
-            },
-        )
-        return approval
-
-    def _can_execute_autonomously(self, decision: AutonomousDecision) -> bool:
-        """Determine if decision can execute without an operator approval callback."""
-        if decision.operator_override:
-            return False
-
-        if self.current_autonomy_level == AutonomyLevel.MANUAL:
-            return False
-
-        if self._requires_operator_approval(decision.decision_type):
-            return self._request_operator_approval(decision)
-
-        if decision.constraints_violated:
-            return False
-
-        if self.current_autonomy_level == AutonomyLevel.ADVISORY:
-            return False
-
-        if self.current_autonomy_level in (AutonomyLevel.SUPERVISED, AutonomyLevel.AUTONOMOUS):
-            return len(decision.constraints_violated) == 0
-
-        if self.current_autonomy_level == AutonomyLevel.EMERGENCY:
-            return True  # Emergency actions can override
-
-        return False
-
-    async def optimize_search_strategy(
-        self,
-        current_coherence: float,
-        current_hashrate_ehs: float,
-    ) -> AutonomousDecision:
-        """Autonomously optimize search strategy based on current conditions."""
-        decision_id = self._generate_decision_id()
-        timestamp = time.time()
-
-        # Incorporate knowledge from Reflexive Learning
-        knowledge_metrics = self.knowledge_substrate.get_knowledge_metrics()
-        avg_accuracy = knowledge_metrics.get("avg_predictive_accuracy", 0.5)
-        knowledge_bonus = 0.05 * avg_accuracy  # Refined search from knowledge
-
-        # Mathematical justification based on phi coherence
-        if current_coherence >= 0.80:
-            # High coherence: aggressive optimization
-            proposed_strategy = SearchStrategy(
-                phi_resonance_enabled=True,
-                adaptive_difficulty=True,
-                max_search_time=30.0,
-            )
-            justification = {
-                "reason": "high_phi_coherence_aggressive_optimization",
-                "coherence": current_coherence,
-                "phi_threshold": 0.80,
-                "expected_improvement": "faster_search_with_high_confidence",
-                "knowledge_accuracy": avg_accuracy,
-                "self_optimization_epochs": self._self_optimization_epochs,
-            }
-        elif current_coherence >= 0.70:
-            # Good coherence: balanced optimization
-            proposed_strategy = SearchStrategy(
-                phi_resonance_enabled=True,
-                adaptive_difficulty=True,
-                max_search_time=60.0,
-            )
-            justification = {
-                "reason": "good_phi_coherence_balanced_optimization",
-                "coherence": current_coherence,
-                "phi_threshold": 0.70,
-                "expected_improvement": "balanced_speed_and_reliability",
-                "knowledge_accuracy": avg_accuracy,
-                "self_optimization_epochs": self._self_optimization_epochs,
-            }
-        else:
-            # Low coherence: conservative optimization
-            proposed_strategy = SearchStrategy(
-                phi_resonance_enabled=True,
-                adaptive_difficulty=False,
-                max_search_time=120.0,
-            )
-            justification = {
-                "reason": "low_phi_coherence_conservative_optimization",
-                "coherence": current_coherence,
-                "phi_threshold": 0.70,
-                "expected_improvement": "prioritize_reliability_over_speed",
-                "knowledge_accuracy": avg_accuracy,
-                "self_optimization_epochs": self._self_optimization_epochs,
-            }
-
-        proposed_action = {
-            "strategy_change": "search_strategy",
-            "max_search_time": proposed_strategy.max_search_time,
-            "adaptive_difficulty": proposed_strategy.adaptive_difficulty,
-        }
-
-        satisfied, violated = self._check_safety_constraints(proposed_action)
-
-        decision = AutonomousDecision(
-            decision_id=decision_id,
-            timestamp=timestamp,
-            autonomy_level=self.current_autonomy_level,
-            decision_type="search_strategy_optimization",
-            mathematical_justification=justification,
-            constraints_satisfied=satisfied,
-            constraints_violated=violated,
-            action_taken=f"set_search_strategy_{proposed_strategy.max_search_time}s",
-            expected_outcome=justification["expected_improvement"],
-        )
-
-        self._log_decision(decision)
-
-        if self._can_execute_autonomously(decision):
-            # Execute the decision
-            self.engine.optimizer.current_strategy = proposed_strategy
-            decision.actual_outcome = "strategy_updated_successfully"
-        else:
-            # Request operator approval for advisory/manual paths; guarded decisions fail closed.
-            approved = self._request_operator_approval(decision)
-            if approved:
-                self.engine.optimizer.current_strategy = proposed_strategy
-                decision.actual_outcome = "strategy_updated_after_approval"
-            else:
-                decision.operator_override = True
-                decision.actual_outcome = "operator_rejected_strategy_change"
-
-        return decision
-
-    async def optimize_hashrate_target(
-        self,
-        current_hashrate_ehs: float,
-        target_hashrate_ehs: float,
-    ) -> AutonomousDecision:
-        """Autonomously adjust hashrate target within safety limits."""
-        decision_id = self._generate_decision_id()
-        timestamp = time.time()
-
-        # Enforce mission memory hard limit
-        target_hashrate_ehs = min(target_hashrate_ehs, MAX_AUTONOMOUS_HASHRATE_EHS)
-
-        # Mathematical justification for hashrate adjustment
-        if current_hashrate_ehs < target_hashrate_ehs:
-            # Increase hashrate
-            proposed_increase = min(
-                target_hashrate_ehs - current_hashrate_ehs,
-                self.config.max_autonomous_hashrate_ehs - current_hashrate_ehs,
-            )
-            justification = {
-                "reason": "increase_hashrate_to_meet_target",
-                "current_hashrate_ehs": current_hashrate_ehs,
-                "target_hashrate_ehs": target_hashrate_ehs,
-                "proposed_increase_ehs": proposed_increase,
-                "expected_improvement": "higher_mining_efficiency",
-            }
-            action_taken = f"increase_hashrate_by_{proposed_increase}_ehs"
-            hashrate_change = proposed_increase
-        else:
-            # Decrease hashrate (energy saving)
-            proposed_decrease = current_hashrate_ehs - target_hashrate_ehs
-            justification = {
-                "reason": "decrease_hashrate_to_save_energy",
-                "current_hashrate_ehs": current_hashrate_ehs,
-                "target_hashrate_ehs": target_hashrate_ehs,
-                "proposed_decrease_ehs": proposed_decrease,
-                "expected_improvement": "reduced_energy_consumption",
-            }
-            action_taken = f"decrease_hashrate_by_{proposed_decrease}_ehs"
-            hashrate_change = -proposed_decrease
-
-        proposed_action = {
-            "hashrate_change": hashrate_change,
-            "target_hashrate_ehs": target_hashrate_ehs,
-        }
-
-        satisfied, violated = self._check_safety_constraints(proposed_action)
-
-        decision = AutonomousDecision(
-            decision_id=decision_id,
-            timestamp=timestamp,
-            autonomy_level=self.current_autonomy_level,
-            decision_type="hashrate_optimization",
-            mathematical_justification=justification,
-            constraints_satisfied=satisfied,
-            constraints_violated=violated,
-            action_taken=action_taken,
-            expected_outcome=justification["expected_improvement"],
-        )
-
-        self._log_decision(decision)
-
-        if self._can_execute_autonomously(decision):
-            # Execute the decision (would update solver configuration)
-            decision.actual_outcome = "hashrate_target_updated"
-        else:
-            # Request operator approval for advisory/manual paths; guarded decisions fail closed.
-            approved = self._request_operator_approval(decision)
-            if approved:
-                decision.actual_outcome = "hashrate_target_updated_after_approval"
-            else:
-                decision.operator_override = True
-                decision.actual_outcome = "operator_rejected_hashrate_change"
-
-        return decision
-
-    async def optimize_compression_ratio(
-        self,
-        current_compression: float,
-        target_compression: float,
-    ) -> AutonomousDecision:
-        """Autonomously adjust memory compression ratio."""
-        decision_id = self._generate_decision_id()
-        timestamp = time.time()
-
-        # Mathematical justification for compression adjustment
-        justification = {
-            "reason": "optimize_memory_compression_for_efficiency",
-            "current_compression": current_compression,
-            "target_compression": target_compression,
-            "phi_optimal_range": (1.5, 2.0),  # Golden ratio based optimal range
-            "expected_improvement": "better_memory_utilization",
-        }
-
-        proposed_action = {
-            "compression_ratio": target_compression,
-            "current_compression": current_compression,
-        }
-
-        satisfied, violated = self._check_safety_constraints(proposed_action)
-
-        decision = AutonomousDecision(
-            decision_id=decision_id,
-            timestamp=timestamp,
-            autonomy_level=self.current_autonomy_level,
-            decision_type="compression_optimization",
-            mathematical_justification=justification,
-            constraints_satisfied=satisfied,
-            constraints_violated=violated,
-            action_taken=f"adjust_compression_to_{target_compression}",
-            expected_outcome=justification["expected_improvement"],
-        )
-
-        self._log_decision(decision)
-
-        if self._can_execute_autonomously(decision):
-            # Execute the decision (would update compression configuration)
-            decision.actual_outcome = "compression_ratio_updated"
-        else:
-            # Request operator approval for advisory/manual paths; guarded decisions fail closed.
-            approved = self._request_operator_approval(decision)
-            if approved:
-                decision.actual_outcome = "compression_ratio_updated_after_approval"
-            else:
-                decision.operator_override = True
-                decision.actual_outcome = "operator_rejected_compression_change"
-
-        return decision
-
-    async def emergency_shutdown(
-        self,
-        reason: str,
-        mathematical_justification: Dict[str, Any],
-    ) -> AutonomousDecision:
-        """Execute emergency shutdown with mathematical justification."""
-        decision_id = self._generate_decision_id()
-        timestamp = time.time()
-
-        # Emergency decisions can override normal autonomy levels
-        previous_level = self.current_autonomy_level
-        self.current_autonomy_level = AutonomyLevel.EMERGENCY
-
-        decision = AutonomousDecision(
-            decision_id=decision_id,
-            timestamp=timestamp,
-            autonomy_level=AutonomyLevel.EMERGENCY,
-            decision_type="emergency_shutdown",
-            mathematical_justification=mathematical_justification,
-            constraints_satisfied=[SafetyConstraint.ENERGY_CONSERVATION],
-            constraints_violated=[],
-            action_taken="emergency_shutdown_initiated",
-            expected_outcome="safe_system_shutdown",
-        )
-
-        self._log_decision(decision)
-
-        # Restore previous autonomy level after emergency action
-        self.current_autonomy_level = previous_level
-
-        return decision
-
-    def set_autonomy_level(self, level: AutonomyLevel) -> None:
-        """Set the current autonomy level."""
-        self.current_autonomy_level = level
-        # Reset failure/circuit state on explicit operator level change
-        self._consecutive_failures = 0
-        self._circuit_open_until = 0.0
-
-    def get_decision_history(
-        self,
-        limit: Optional[int] = None,
-    ) -> List[AutonomousDecision]:
-        """Get history of autonomous decisions."""
-        if limit:
-            return self.decision_log[-limit:]
-        return self.decision_log.copy()
-
-    def get_autonomy_status(self) -> Dict[str, Any]:
-        """Get current autonomy status and metrics, including Reflexive Learning state."""
-        return {
-            "autonomy_level": self.current_autonomy_level.value,
-            "total_decisions": len(self.decision_log),
-            "autonomous_decisions": sum(
-                1 for d in self.decision_log if not d.operator_override
-            ),
-            "operator_overrides": sum(
-                1 for d in self.decision_log if d.operator_override
-            ),
-            "constraint_violations": sum(
-                1 for d in self.decision_log if d.constraints_violated
-            ),
-            "consecutive_failures": self._consecutive_failures,
-            "degradation_events": self._degradation_events,
-            "circuit_breaker": {
-                "open": self.is_circuit_open(),
-                "open_until": self._circuit_open_until,
-                "failure_threshold": self.config.circuit_breaker_failure_threshold,
-                "cooldown_seconds": self.config.circuit_breaker_cooldown_seconds,
-            },
-            "recent_decisions": [
-                {
-                    "decision_id": d.decision_id,
-                    "timestamp": d.timestamp,
-                    "decision_type": d.decision_type,
-                    "action_taken": d.action_taken,
-                    "operator_override": d.operator_override,
-                }
-                for d in self.decision_log[-10:]
-            ],
-            # Reflexive Knowledge Loop metrics
-            "reflexive_learning": {
-                "enabled": self.config.reflexive_loop_enabled,
-                "self_optimization_epochs": self._self_optimization_epochs,
-                "phi_density": self.get_phi_density(),
-                "compression_drive_enabled": self.config.compression_drive_enabled,
-                "knowledge_explanations": len(self.knowledge_substrate.explanations),
-                "knowledge_counterfactuals": len(self.knowledge_substrate.counterfactuals),
-                "knowledge_criticisms": len(self.knowledge_substrate.criticism_history),
-                "proposals_generated": len(self.proposal_history),
-                "proposals_applied": sum(1 for p in self.proposal_history if p.applied),
-                "latest_phi_density": (
-                    self._phi_density_history[-1] if self._phi_density_history else None
-                ),
-                "logical_consistency_history_length": len(self._logical_consistency_history),
-            },
-        }
-
-    def set_operator_approval_callback(
-        self,
-        callback: Callable[
-            [AutonomousDecision],
-            Union[bool, OperatorApprovalDecision, Dict[str, Any]],
-        ],
-    ) -> None:
-        """Set callback for operator approval decisions."""
-        self.operator_approval_callback = callback
-
     def _normalise_operator_approval(
         self,
         raw_response: Union[bool, OperatorApprovalDecision, Dict[str, Any]],
@@ -2309,8 +1943,13 @@ class AutonomousMiningController:
                 approved=bool(raw_response.get("approved", False)),
                 operator_id=raw_response.get("operator_id"),
                 reason=raw_response.get("reason"),
+                source=raw_response.get("source", "dict_callback"),
             )
-        return OperatorApprovalDecision(approved=bool(raw_response))
+        return OperatorApprovalDecision(
+            approved=bool(raw_response),
+            reason="legacy_boolean_callback",
+            source="legacy_boolean_callback",
+        )
 
     def _request_operator_approval(self, decision: AutonomousDecision) -> bool:
         """Request bounded human approval for guarded decisions.
@@ -2406,7 +2045,8 @@ class AutonomousMiningController:
                 operator_action="emergency_bypass_rejected",
             )
             return OperatorApprovalDecision(
-                approved=False, operator_id=operator_id, reason="operator_not_authorized"
+                approved=False, operator_id=operator_id, reason="operator_not_authorized",
+                source="emergency_bypass",
             )
         if not emergency_reason.strip():
             self._log_audit_event(
@@ -2419,7 +2059,8 @@ class AutonomousMiningController:
                 operator_action="emergency_bypass_rejected",
             )
             return OperatorApprovalDecision(
-                approved=False, operator_id=operator_id, reason="missing_emergency_reason"
+                approved=False, operator_id=operator_id, reason="missing_emergency_reason",
+                source="emergency_bypass",
             )
         decision.operator_reason = f"EMERGENCY_BYPASS_AUTONOMY_LAYER_ONLY: {emergency_reason.strip()}"
         self._log_audit_event(
@@ -2432,7 +2073,8 @@ class AutonomousMiningController:
             operator_action="emergency_bypass",
         )
         return OperatorApprovalDecision(
-            approved=True, operator_id=operator_id, reason=decision.operator_reason
+            approved=True, operator_id=operator_id, reason=decision.operator_reason,
+            source="emergency_bypass",
         )
 
     def get_audit_log(self, limit: Optional[int] = None) -> List[AuditLogEntry]:
@@ -2510,7 +2152,6 @@ __all__ = [
     "AutonomousDecision",
     "AuditLogEntry",
     "OperatorApprovalRequest",
-    "OperatorApprovalDecision",
     "AutonomyLevel",
     "SafetyConstraint",
     "OptimizationTarget",
