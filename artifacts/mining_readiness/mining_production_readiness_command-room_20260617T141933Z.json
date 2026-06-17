@@ -1,0 +1,98 @@
+{
+  "artifact_sha256": "f1476eaf83568177fbbaf42c53fe63533369574c66346c4fed97968dea4e36fb",
+  "checks": [
+    {
+      "detail": "",
+      "duration_seconds": 6.529199999999458e-05,
+      "name": "required_mining_surfaces_present",
+      "severity": "critical",
+      "status": "pass",
+      "summary": "canonical mining files present"
+    },
+    {
+      "detail": "",
+      "duration_seconds": 0.00010404200000000557,
+      "name": "operator_environment_safety",
+      "severity": "critical",
+      "status": "pass",
+      "summary": "no critical unsafe live-mining flags detected"
+    },
+    {
+      "detail": "production env flags are not both set; acceptable for code preparation, not for live cutover\nno pool profile configured; acceptable for preparation, blocks actual live mining",
+      "duration_seconds": 0.00010545800000000272,
+      "name": "operator_environment_advisories",
+      "severity": "advisory",
+      "status": "warn",
+      "summary": "operator environment has live-readiness advisories"
+    },
+    {
+      "detail": "optimizer did not configure PULVINI compressed search\nPULVINI nonce plan does not report complete coverage\nPULVINI nonce plan does not report overlap-free coverage\nPULVINI compressed working set is not configured",
+      "duration_seconds": 0.05098225000000001,
+      "name": "unified_engine_pulvini_contract",
+      "severity": "critical",
+      "status": "fail",
+      "summary": "unified engine contract failed"
+    },
+    {
+      "detail": "",
+      "duration_seconds": 0.0041389159999999925,
+      "name": "bitcoin_and_stratum_pitfall_contracts",
+      "severity": "critical",
+      "status": "pass",
+      "summary": "byte order, compact target, local validation, stale jobs, pool ACK, and malformed response pitfalls are covered"
+    },
+    {
+      "detail": "==================================== ERRORS ====================================\n__________ ERROR collecting tests/test_unified_mining_api_surface.py ___________\nImportError while importing test module '/Users/demouser/Desktop/HYBA_FULLSTACK/tests/test_unified_mining_api_surface.py'.\nHint: make sure your test modules/packages have valid Python names.\nTraceback:\n/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/importlib/__init__.py:127: in import_module\n    return _bootstrap._gcd_import(name[level:], package, level)\ntests/test_unified_mining_api_surface.py:5: in <module>\n    from hyba_genesis_api.api import unified_mining\npython_backend/hyba_genesis_api/api/unified_mining.py:20: in <module>\n    from hyba_genesis_api.api.mining import require_mining_control, require_mining_read\npython_backend/hyba_genesis_api/api/mining.py:17: in <module>\n    from hyba_genesis_api.auth.jwt_handler import TokenPayload, get_token_payload\npython_backend/hyba_genesis_api/auth/jwt_handler.py:17: in <module>\n    import jwt\nE   ModuleNotFoundError: No module named 'jwt'\n=========================== short test summary info ============================\nERROR tests/test_unified_mining_api_surface.py\n!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!\n1 error in 0.27s",
+      "duration_seconds": 0.417981875,
+      "name": "focused_mining_regression_tests",
+      "severity": "critical",
+      "status": "fail",
+      "summary": "focused mining regression tests failed"
+    },
+    {
+      "detail": "run npm run build before deployment",
+      "duration_seconds": 0.0,
+      "name": "production_build",
+      "severity": "advisory",
+      "status": "skip",
+      "summary": "production build skipped by operator flag"
+    },
+    {
+      "detail": "{\n  \"present\": [\n    \"artifacts/phi_resonance_100blocks/phi_resonance_summary.json\",\n    \"artifacts/phi_hash_validity/phi_hash_correlation_summary.json\",\n    \"artifacts/phi_structured_search/structured_search_comparison.json\",\n    \"artifacts/phi_stack/complete_stack_analysis.json\"\n  ],\n  \"missing\": []\n}",
+      "duration_seconds": 0.0,
+      "name": "empirical_evidence_artifacts",
+      "severity": "advisory",
+      "status": "pass",
+      "summary": "empirical evidence artifacts are present locally"
+    }
+  ],
+  "environment_summary": {
+    "HYBA_ALLOW_DEV_FIXTURES": "<unset>",
+    "HYBA_ENABLE_AUDIT_LOGGING": "<unset>",
+    "HYBA_ENABLE_LIVE_SHARE_SUBMIT": "<unset>",
+    "HYBA_ENABLE_LIVE_STRATUM": "<unset>",
+    "HYBA_ENABLE_MINING_AUTOCONNECT": "<unset>",
+    "HYBA_ENV": "<unset>",
+    "HYBA_LIVE_SHARE_APPROVAL_ID": "<unset>",
+    "HYBA_MINING_MAX_SOLVER_ITERATIONS": "<unset>",
+    "HYBA_MINING_SEARCH_TIMEOUT_CAP_SECONDS": "<unset>",
+    "NODE_ENV": "<unset>",
+    "PULVINI_BACKEND_URL": "<unset>",
+    "configured_pool_profiles": "<none>"
+  },
+  "generated_at_utc": "2026-06-17T14:19:33.680789+00:00",
+  "host": {
+    "machine": "arm64",
+    "platform": "macOS-26.5.1-arm64-arm-64bit",
+    "python": "3.9.6"
+  },
+  "mode": "command-room",
+  "next_operator_actions": [
+    "Fix the first CRITICAL failure in the readiness packet; advisory warnings can wait.",
+    "Rerun the same readiness doctor command from a clean terminal after the fix.",
+    "Do not enable live share submission while any CRITICAL failure remains."
+  ],
+  "passed": false,
+  "status": "blocked",
+  "version": "HYBA_MINING_OPERATIONAL_READINESS_V1"
+}

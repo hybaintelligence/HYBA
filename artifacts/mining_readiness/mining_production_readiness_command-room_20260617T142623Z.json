@@ -1,0 +1,98 @@
+{
+  "artifact_sha256": "58c063846e841b8849b1865f2e59026cffa402efe71e951cb77d819bbd3e132e",
+  "checks": [
+    {
+      "detail": "",
+      "duration_seconds": 6.924999979673885e-05,
+      "name": "required_mining_surfaces_present",
+      "severity": "critical",
+      "status": "pass",
+      "summary": "canonical mining files present"
+    },
+    {
+      "detail": "",
+      "duration_seconds": 0.00010299999848939478,
+      "name": "operator_environment_safety",
+      "severity": "critical",
+      "status": "pass",
+      "summary": "no critical unsafe live-mining flags detected"
+    },
+    {
+      "detail": "",
+      "duration_seconds": 0.00010466700041433796,
+      "name": "operator_environment_advisories",
+      "severity": "advisory",
+      "status": "pass",
+      "summary": "no operator environment advisories"
+    },
+    {
+      "detail": "optimizer did not configure PULVINI compressed search\nPULVINI nonce plan does not report complete coverage\nPULVINI nonce plan does not report overlap-free coverage\nPULVINI compressed working set is not configured",
+      "duration_seconds": 1.532574332999502,
+      "name": "unified_engine_pulvini_contract",
+      "severity": "critical",
+      "status": "fail",
+      "summary": "unified engine contract failed"
+    },
+    {
+      "detail": "",
+      "duration_seconds": 0.001074040999810677,
+      "name": "bitcoin_and_stratum_pitfall_contracts",
+      "severity": "critical",
+      "status": "pass",
+      "summary": "byte order, compact target, local validation, stale jobs, pool ACK, and malformed response pitfalls are covered"
+    },
+    {
+      "detail": "..F..................                                                    [100%]\n=================================== FAILURES ===================================\n_______ test_unified_search_uses_pulvini_compressed_plan_not_base_solver _______\n\n    @pytest.mark.asyncio\n    async def test_unified_search_uses_pulvini_compressed_plan_not_base_solver() -> None:\n        engine = UnifiedMiningEngine()\n    \n        result = await engine.search(_job())\n        metrics = engine.solver.get_metrics()\n    \n        assert result.nonce is not None\n>       assert metrics[\"nonce_space_contract\"] == \"pulvini_phi_compressed_pre_search\"\nE       AssertionError: assert None == 'pulvini_phi_compressed_pre_search'\n\ntests/test_phi_unified_mining_engine.py:90: AssertionError\n=============================== warnings summary ===============================\npython_backend/hyba_genesis_api/api/mining.py:85\n  /Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/hyba_genesis_api/api/mining.py:85: PydanticDeprecatedSince20: Pydantic V1 style `@validator` validators are deprecated. You should migrate to Pydantic V2 style `@field_validator` validators, see the migration guide for more details. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.13/migration/\n    @validator(\"phi_tier\")\n\npython_backend/hyba_genesis_api/api/mining.py:103\n  /Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/hyba_genesis_api/api/mining.py:103: PydanticDeprecatedSince20: Pydantic V1 style `@validator` validators are deprecated. You should migrate to Pydantic V2 style `@field_validator` validators, see the migration guide for more details. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.13/migration/\n    @validator(\"pool_id\")\n\npython_backend/hyba_genesis_api/api/mining.py:110\n  /Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/hyba_genesis_api/api/mining.py:110: PydanticDeprecatedSince20: Pydantic V1 style `@validator` validators are deprecated. You should migrate to Pydantic V2 style `@field_validator` validators, see the migration guide for more details. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.13/migration/\n    @validator(\"username\", \"worker\", \"nicehash_pool_id\")\n\npython_backend/hyba_genesis_api/api/mining.py:123\n  /Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/hyba_genesis_api/api/mining.py:123: PydanticDeprecatedSince20: Pydantic V1 style `@validator` validators are deprecated. You should migrate to Pydantic V2 style `@field_validator` validators, see the migration guide for more details. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.13/migration/\n    @validator(\"btc_address\")\n\npython_backend/hyba_genesis_api/api/mining.py:154\n  /Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/hyba_genesis_api/api/mining.py:154: PydanticDeprecatedSince20: Pydantic V1 style `@validator` validators are deprecated. You should migrate to Pydantic V2 style `@field_validator` validators, see the migration guide for more details. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.13/migration/\n    @validator(\"pool_id\")\n\npython_backend/hyba_genesis_api/api/mining.py:170\n  /Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/hyba_genesis_api/api/mining.py:170: PydanticDeprecatedSince20: Pydantic V1 style `@validator` validators are deprecated. You should migrate to Pydantic V2 style `@field_validator` validators, see the migration guide for more details. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.13/migration/\n    @validator(\"nonce\")\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n=========================== short test summary info ============================\nFAILED tests/test_phi_unified_mining_engine.py::test_unified_search_uses_pulvini_compressed_plan_not_base_solver\n1 failed, 20 passed, 6 warnings in 2.41s",
+      "duration_seconds": 2.945650541998475,
+      "name": "focused_mining_regression_tests",
+      "severity": "critical",
+      "status": "fail",
+      "summary": "focused mining regression tests failed"
+    },
+    {
+      "detail": "run npm run build before deployment",
+      "duration_seconds": 0.0,
+      "name": "production_build",
+      "severity": "advisory",
+      "status": "skip",
+      "summary": "production build skipped by operator flag"
+    },
+    {
+      "detail": "{\n  \"present\": [\n    \"artifacts/phi_resonance_100blocks/phi_resonance_summary.json\",\n    \"artifacts/phi_hash_validity/phi_hash_correlation_summary.json\",\n    \"artifacts/phi_structured_search/structured_search_comparison.json\",\n    \"artifacts/phi_stack/complete_stack_analysis.json\"\n  ],\n  \"missing\": []\n}",
+      "duration_seconds": 0.0,
+      "name": "empirical_evidence_artifacts",
+      "severity": "advisory",
+      "status": "pass",
+      "summary": "empirical evidence artifacts are present locally"
+    }
+  ],
+  "environment_summary": {
+    "HYBA_ALLOW_DEV_FIXTURES": "<unset>",
+    "HYBA_ENABLE_AUDIT_LOGGING": "true",
+    "HYBA_ENABLE_LIVE_SHARE_SUBMIT": "<unset>",
+    "HYBA_ENABLE_LIVE_STRATUM": "true",
+    "HYBA_ENABLE_MINING_AUTOCONNECT": "<unset>",
+    "HYBA_ENV": "production",
+    "HYBA_LIVE_SHARE_APPROVAL_ID": "<unset>",
+    "HYBA_MINING_MAX_SOLVER_ITERATIONS": "<unset>",
+    "HYBA_MINING_SEARCH_TIMEOUT_CAP_SECONDS": "<unset>",
+    "NODE_ENV": "production",
+    "PULVINI_BACKEND_URL": "http://127.0.0.1:3001",
+    "configured_pool_profiles": "VIABTC"
+  },
+  "generated_at_utc": "2026-06-17T14:26:23.387150+00:00",
+  "host": {
+    "machine": "arm64",
+    "platform": "macOS-26.5.1-arm64-arm-64bit",
+    "python": "3.12.7"
+  },
+  "mode": "command-room",
+  "next_operator_actions": [
+    "Fix the first CRITICAL failure in the readiness packet; advisory warnings can wait.",
+    "Rerun the same readiness doctor command from a clean terminal after the fix.",
+    "Do not enable live share submission while any CRITICAL failure remains."
+  ],
+  "passed": false,
+  "status": "blocked",
+  "version": "HYBA_MINING_OPERATIONAL_READINESS_V1"
+}

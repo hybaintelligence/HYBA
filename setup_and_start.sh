@@ -6,6 +6,19 @@ set -e
 
 cd "$(dirname "$0")"
 
+# Check Python version - use pyenv if available
+if [ -d ~/.pyenv ]; then
+    export PATH="$HOME/.pyenv/bin:$PATH"
+    eval "$(pyenv init -)"
+fi
+python_version=$(python3 --version 2>&1 | awk '{print $2}')
+required_version="3.12"
+if ! python3 -c "import sys; exit(0 if sys.version_info >= (3, 12) else 1)"; then
+    echo "Error: Python 3.12+ required. Current version: $python_version"
+    exit 1
+fi
+echo "✓ Python version check passed: $python_version"
+
 echo "╔════════════════════════════════════════════════════════════════╗"
 echo "║     HYBA FULLSTACK SETUP AND AUTONOMOUS MINING STARTUP         ║"
 echo "╚════════════════════════════════════════════════════════════════╝"
@@ -73,19 +86,43 @@ echo "✓ npm audit fix completed"
 # Step 8: Setup environment variables
 echo ""
 echo "Step 8: Setting up environment variables..."
-export NODE_ENV=development
-export HYBA_ENV=development
-export HYBA_ALLOW_DEV_FIXTURES=true
-export HYBA_ENABLE_LIVE_STRATUM=false
-export HYBA_ENABLE_AUDIT_LOGGING=true
-export HYBA_ENABLE_MINING_AUTOCONNECT=true
-export HYBA_POOL_BRAIINS_USERNAME=dev_worker
-export HYBA_POOL_BRAIINS_PASSWORD=x
+
+# Load .env.local if it exists
+if [ -f ".env.local" ]; then
+    echo "Loading environment from .env.local..."
+    export $(cat .env.local | grep -v '^#' | xargs)
+    echo "✓ Loaded .env.local"
+else
+    echo "Warning: .env.local not found. Using default development settings."
+    echo "Run 'python scripts/setup_local_config.py' to create configuration file."
+    export NODE_ENV=development
+    export HYBA_ENV=development
+    export HYBA_ALLOW_DEV_FIXTURES=true
+    export HYBA_ENABLE_LIVE_STRATUM=false
+    export HYBA_ENABLE_AUDIT_LOGGING=true
+    export HYBA_ENABLE_MINING_AUTOCONNECT=true
+fi
+
 echo "✓ Environment variables configured"
 
-# Step 9: Start backend
+# Step 9: Check ports and start backend
 echo ""
-echo "Step 9: Starting backend on http://127.0.0.1:3001..."
+echo "Step 9: Checking port availability..."
+
+# Check if ports are already in use
+if lsof -Pi :3001 -sTCP:LISTEN -t >/dev/null 2>&1; then
+    echo "Error: Port 3001 is already in use. Please stop the existing service or use a different port."
+    exit 1
+fi
+
+if lsof -Pi :3000 -sTCP:LISTEN -t >/dev/null 2>&1; then
+    echo "Error: Port 3000 is already in use. Please stop the existing service or use a different port."
+    exit 1
+fi
+
+echo "✓ Ports 3000 and 3001 are available"
+
+echo "Starting backend on http://127.0.0.1:3001..."
 python -m uvicorn hyba_genesis_api.main:app \
   --app-dir python_backend \
   --host 127.0.0.1 \
@@ -99,7 +136,14 @@ echo "✓ Backend started (PID: $BACKEND_PID)"
 echo "Waiting for backend to be ready..."
 sleep 5
 
-# Check if backend is running
+# Check if backend process is still running
+if ! ps -p $BACKEND_PID > /dev/null; then
+    echo "✗ Error: Backend process died. Check /tmp/hyba_backend.log for details."
+    cat /tmp/hyba_backend.log
+    exit 1
+fi
+
+# Check if backend is responding
 if curl -s http://127.0.0.1:3001/health > /dev/null 2>&1 || curl -s http://127.0.0.1:3001/api/health > /dev/null 2>&1; then
     echo "✓ Backend is responding"
 else
@@ -116,6 +160,14 @@ echo "✓ Frontend started (PID: $FRONTEND_PID)"
 # Wait for frontend to be ready
 echo "Waiting for frontend to be ready..."
 sleep 5
+
+# Check if frontend process is still running
+if ! ps -p $FRONTEND_PID > /dev/null; then
+    echo "✗ Error: Frontend process died. Check /tmp/hyba_frontend.log for details."
+    cat /tmp/hyba_frontend.log
+    kill $BACKEND_PID 2>/dev/null || true
+    exit 1
+fi
 
 # Step 11: Verify backend-frontend connection
 echo ""
@@ -164,7 +216,7 @@ tail -f /tmp/hyba_backend.log /tmp/hyba_frontend.log 2>/dev/null &
 LOG_PID=$!
 
 # Wait for user interrupt
-trap "echo ''; echo 'Stopping log monitoring...'; kill $LOG_PID 2>/dev/null || true; echo 'Services still running. To stop: kill $BACKEND_PID $FRONTEND_PID'; exit 0" INT
+trap "echo ''; echo 'Stopping log monitoring...'; kill $LOG_PID 2>/dev/null || true; echo 'Services still running. To stop: kill $BACKEND_PID $FRONTEND_PID'; exit 0" INT TERM
 
 # Keep script running
 wait $LOG_PID 2>/dev/null || true

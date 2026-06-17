@@ -9,21 +9,55 @@ import os
 import sys
 from pathlib import Path
 
-def get_input(prompt, default=None, required=False):
-    """Helper function to get user input with optional default"""
+def get_input(prompt, default=None, required=False, validator=None):
+    """Helper function to get user input with optional default and validation"""
     if default:
         prompt = f"{prompt} [{default}]: "
     else:
         prompt = f"{prompt}: "
     
-    value = input(prompt).strip()
+    while True:
+        value = input(prompt).strip()
+        
+        if not value and default:
+            value = default
+        
+        if not value and required:
+            print(f"  ⚠️  This field is required.")
+            continue
+        
+        if validator and value:
+            try:
+                if validator(value):
+                    break
+                else:
+                    print(f"  ⚠️  Invalid input format. Please try again.")
+                    continue
+            except Exception as e:
+                print(f"  ⚠️  Validation error: {e}")
+                continue
+        
+        break
     
-    if not value and default:
-        return default
-    if not value and required:
-        print(f"  ⚠️  This field is required. Using default: {default}")
-        return default
     return value
+
+def validate_url(url):
+    """Validate URL format"""
+    if not url:
+        return True
+    import re
+    url_pattern = re.compile(
+        r'^(https?|stratum\+tcp|stratum2\+ssl)://[^:/]+(:\d+)?(/.*)?$'
+    )
+    return bool(url_pattern.match(url))
+
+def validate_username(username):
+    """Validate username format"""
+    if not username:
+        return True
+    import re
+    # Allow alphanumeric, dots, underscores, and hyphens
+    return bool(re.match(r'^[a-zA-Z0-9._-]+$', username))
 
 def generate_jwt_secret():
     """Generate a random JWT secret"""
@@ -37,8 +71,9 @@ def generate_argon2_hash(password):
         ph = PasswordHasher()
         return ph.hash(password)
     except ImportError:
-        print("  ⚠️  argon2-cffi not installed, using placeholder hash")
-        return "$argon2id$v=19$m=65536,t=3,p=4$placeholder$hash"
+        print("  ❌ Error: argon2-cffi not installed. Please install it first:")
+        print("     pip install argon2-cffi")
+        sys.exit(1)
 
 def setup_pool_config():
     """Interactive pool configuration setup"""
@@ -54,11 +89,13 @@ def setup_pool_config():
     print("📡 ViaBTC Pool Configuration (Stratum V2)")
     config['HYBA_POOL_VIABTC_URL'] = get_input(
         "Stratum URL", 
-        "stratum2+ssl://btc.viabtc.com:443"
+        "stratum2+ssl://btc.viabtc.com:443",
+        validator=validate_url
     )
     config['HYBA_POOL_VIABTC_USERNAME'] = get_input(
         "Username", 
-        "PYTHIA.001"
+        "PYTHIA.001",
+        validator=validate_username
     )
     config['HYBA_POOL_VIABTC_PASSWORD'] = get_input(
         "Password", 
@@ -74,11 +111,13 @@ def setup_pool_config():
     print("📡 NiceHash SHA256 Configuration (Stratum V2)")
     config['HYBA_POOL_NICEHASH_URL'] = get_input(
         "Stratum URL", 
-        "stratum2+ssl://sha256.eu.nicehash.com:33334"
+        "stratum2+ssl://sha256.eu.nicehash.com:33334",
+        validator=validate_url
     )
     config['HYBA_POOL_NICEHASH_USERNAME'] = get_input(
         "Username", 
-        "PYTHIA.001"
+        "PYTHIA.001",
+        validator=validate_username
     )
     config['HYBA_POOL_NICEHASH_PASSWORD'] = get_input(
         "Password", 
@@ -94,11 +133,13 @@ def setup_pool_config():
     print("📡 Braiins Pool Configuration (Stratum V2)")
     config['HYBA_POOL_BRAIINS_URL'] = get_input(
         "Stratum URL", 
-        "stratum2+ssl://eu.braiins-pool.com:3336"
+        "stratum2+ssl://eu.braiins-pool.com:3336",
+        validator=validate_url
     )
     config['HYBA_POOL_BRAIINS_USERNAME'] = get_input(
         "Username", 
-        "PYTHIA.001"
+        "PYTHIA.001",
+        validator=validate_username
     )
     config['HYBA_POOL_BRAIINS_PASSWORD'] = get_input(
         "Password", 
@@ -114,11 +155,13 @@ def setup_pool_config():
     print("📡 Solo CKPool Configuration (Stratum V1)")
     config['HYBA_POOL_CKPOOL_URL'] = get_input(
         "Stratum URL", 
-        "stratum+tcp://solo.ckpool.org:3333"
+        "stratum+tcp://solo.ckpool.org:3333",
+        validator=validate_url
     )
     config['HYBA_POOL_CKPOOL_USERNAME'] = get_input(
         "Username", 
-        "PYTHIA.001"
+        "PYTHIA.001",
+        validator=validate_username
     )
     config['HYBA_POOL_CKPOOL_PASSWORD'] = get_input(
         "Password", 
@@ -191,22 +234,58 @@ def setup_basic_config():
     
     return config
 
+def check_gitignore(env_file):
+    """Check if .env.local is in .gitignore"""
+    gitignore_path = Path(__file__).parent.parent / ".gitignore"
+    if not gitignore_path.exists():
+        print("  ⚠️  Warning: .gitignore not found")
+        return False
+    
+    with open(gitignore_path, 'r') as f:
+        gitignore_content = f.read()
+    
+    if ".env.local" in gitignore_content or ".env*" in gitignore_content:
+        return True
+    
+    print("  ⚠️  Warning: .env.local is not in .gitignore")
+    print("  Consider adding it to prevent accidental commits")
+    return False
+
 def write_env_file(config, filename):
     """Write configuration to .env file"""
     env_path = Path(filename)
     
+    # Check if file already exists
+    if env_path.exists():
+        print(f"\n⚠️  File {filename} already exists.")
+        overwrite = input("Overwrite existing configuration? (y/n): ").strip().lower()
+        if overwrite != 'y':
+            print("  Configuration setup cancelled.")
+            sys.exit(0)
+    
     print(f"\n📝 Writing configuration to {filename}...")
     
-    with open(env_path, 'w') as f:
-        f.write("# HYBA Local Configuration\n")
-        f.write("# Generated by setup_local_config.py\n")
-        f.write("# Blockchain pool credentials are open book routing parameters\n\n")
+    try:
+        with open(env_path, 'w') as f:
+            f.write("# HYBA Local Configuration\n")
+            f.write("# Generated by setup_local_config.py\n")
+            f.write("# Blockchain pool credentials are open book routing parameters\n\n")
+            
+            for key, value in sorted(config.items()):
+                f.write(f"{key}={value}\n")
         
-        for key, value in sorted(config.items()):
-            f.write(f"{key}={value}\n")
-    
-    print(f"  ✓ Configuration written to {filename}")
-    print(f"  ✓ File permissions: restricted to user")
+        print(f"  ✓ Configuration written to {filename}")
+        
+        # Set file permissions
+        os.chmod(env_path, 0o600)
+        print(f"  ✓ File permissions: restricted to user (0600)")
+        
+        # Check .gitignore
+        check_gitignore(env_file)
+        
+    except IOError as e:
+        print(f"  ❌ Error writing configuration file: {e}")
+        sys.exit(1)
 
 def main():
     """Main entry point"""
@@ -232,13 +311,15 @@ def main():
     env_file = script_dir / ".env.local"
     write_env_file(full_config, env_file)
     
-    # Set file permissions
-    os.chmod(env_file, 0o600)
-    
     print("\n" + "="*60)
     print("✓ CONFIGURATION SETUP COMPLETE")
     print("="*60)
     print(f"Configuration file: {env_file}")
+    print("\nSecurity reminders:")
+    print("  • .env.local contains sensitive configuration")
+    print("  • File permissions are set to 0600 (owner read/write only)")
+    print("  • Never commit .env.local to version control")
+    print("  • Use different credentials for production")
     print("\nYou can now run:")
     print("  ./setup_and_start.sh")
     print("\nOr manually start services:")

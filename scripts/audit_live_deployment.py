@@ -25,12 +25,12 @@ SECRET_PATTERNS = [
         "committed JWT bearer token",
     ),
     (
-        re.compile(r"JWT_SECRET\s*=\s*(?!replace-with)[^\s#]{24,}", re.IGNORECASE),
+        re.compile(r"JWT_SECRET\s*=\s*(?!(?:replace-with|your-|<))[^\s#]{24,}", re.IGNORECASE),
         "committed JWT secret",
     ),
     (
         re.compile(
-            r"HYBA_POOL_[A-Z0-9_]+_PASSWORD\s*=\s*(?:123|password|secret|changeme|todo)\b",
+            r"HYBA_POOL_[A-Z0-9_]+_PASSWORD\s*=\s*(?:123|password|secret|changeme|todo|your-)\b",
             re.IGNORECASE,
         ),
         "placeholder pool password",
