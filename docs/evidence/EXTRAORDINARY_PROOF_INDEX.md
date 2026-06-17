@@ -13,10 +13,25 @@ A reviewer should reject any HYBA_FULLSTACK claim that does not have all four of
 
 The machine-readable version is `docs/evidence/claim_evidence_manifest.json`, validated by `tests/test_claim_evidence_manifest.py`.
 
+## Nodus Solutus: Mundus Computabilis Est
+
+`docs/NODUS_SOLUTUS_MUNDUS_COMPUTABILIS_EST.md` is now the named proof doctrine for the repository.
+
+The allowed claim is narrow and operational: HYBA_FULLSTACK treats its repository-local operational world as computable only where claims reduce to deterministic source paths, executable tests, replayable local evidence packets, and explicit external truth boundaries.
+
+The blocked claim is broad and metaphysical: this repository does **not** prove that the physical universe is computable.
+
+Run the doctrine verifier:
+
+```bash
+npm run review:nodus:gate
+```
+
 ## Read this first
 
 | Claim surface | Evidence status | Proof path | Boundary |
 | --- | --- | --- | --- |
+| Nodus Solutus / Mundus Computabilis Est | Executable doctrine verifier + manifest claim | `docs/NODUS_SOLUTUS_MUNDUS_COMPUTABILIS_EST.md`, `tests/test_nodus_solutus_proof_structure.py` | Repository-local computability doctrine only; not a metaphysical proof that the physical universe is computable. |
 | PULVINI φ-folding memory | Executable invariant tests | `hyba_intelligence_tests/test_memory_compression.py` | Software reversibility and auditability, not a universal compression theorem. |
 | φ-scaled ensemble / resonance features | Property tests | `hyba_intelligence_tests/test_phi_scaling_engine.py` | Bounded deterministic scoring, not guaranteed revenue. |
 | ConsciousnessEngine | Runtime integration proxy tests | `hyba_intelligence_tests/test_consciousness_engine_scaling.py` | Operational Φ proxy only; no phenomenal-consciousness claim. |
@@ -28,7 +43,13 @@ The machine-readable version is `docs/evidence/claim_evidence_manifest.json`, va
 
 ## Acceptance commands
 
-Run the evidence map and merge-conflict guard first:
+Run the Nodus doctrine verifier first:
+
+```bash
+npm run review:nodus:gate
+```
+
+Run the evidence map and merge-conflict guard:
 
 ```bash
 python -m pytest tests/test_claim_evidence_manifest.py tests/test_no_merge_conflict_markers.py -q
@@ -60,6 +81,7 @@ python benchmark_portfolio/run_benchmarks.py --quick
 
 HYBA_FULLSTACK may claim:
 
+- repository-local computability doctrine under Nodus Solutus;
 - deterministic protocol handling and deterministic mathematical transforms;
 - executable PULVINI memory-compression invariants;
 - bounded φ-scaling and runtime integration proxy behavior;
@@ -69,6 +91,7 @@ HYBA_FULLSTACK may claim:
 
 HYBA_FULLSTACK must not claim from this evidence alone:
 
+- that the physical universe is proven computable;
 - guaranteed mining revenue;
 - pool-confirmed hashrate or accepted-share economics without external pool telemetry;
 - SHA-256 quantum acceleration;
@@ -78,6 +101,8 @@ HYBA_FULLSTACK must not claim from this evidence alone:
 
 ## Reviewer anti-miss controls added in this patch
 
+- `docs/NODUS_SOLUTUS_MUNDUS_COMPUTABILIS_EST.md` defines the computability doctrine and its blocked metaphysical boundary.
+- `tests/test_nodus_solutus_proof_structure.py` fails if Nodus Solutus is not visible from the manifest, proof index, reviewer map, package scripts, and local release gate.
 - The previous merge-conflict markers in the evidence/test surfaces are removed.
 - `tests/test_no_merge_conflict_markers.py` fails if conflict markers reappear in source, docs, tests, scripts, or benchmark evidence files.
 - `tests/test_claim_evidence_manifest.py` fails if a claim lacks boundaries, paths, commands, or existing evidence files.
