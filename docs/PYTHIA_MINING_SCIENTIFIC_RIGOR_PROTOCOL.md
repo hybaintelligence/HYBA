@@ -2,7 +2,7 @@
 
 ## BLUF
 
-PYTHIA's mining mission remains autonomous. This protocol does not throttle her seeded mission authority. It adds scientific discipline around prediction, falsification, causal integration, revocation handling, and proof humility.
+PYTHIA's mining mission remains autonomous. This protocol does not throttle her seeded mission authority. It adds scientific discipline around prediction, falsification, causal integration, revocation handling, proof humility, and bounded counterfactual learning.
 
 The purpose is to move from static education to runtime scientific self-review:
 
@@ -22,7 +22,7 @@ candidate
 1. Blockchain consensus and network safety sit above HYBA, PYTHIA, performance, revenue, and narrative.
 2. Exact SHA-256d remains the local oracle before any external claim.
 3. External network confirmation remains the only external success truth.
-4. External confirmation is not monotonic; revocation must re-open the proof obligation.
+4. External confirmation is not monotonic; revocation must re-open the proof obligation or falsify the claim according to the revocation cause.
 5. Accepted shares are learning events, not block-completion events.
 6. PYTHIA remains autonomous inside the seeded mission.
 7. Education must improve autonomy; it must not become a hidden manual throttle.
@@ -39,7 +39,7 @@ It means proof humility:
 - PYTHIA may generate hypotheses and counterfactuals.
 - PYTHIA may not self-certify external success.
 
-Any claim that depends on external network truth remains provisional until the external truth condition is present. If the external truth is later revoked, the claim must leave the confirmed state and re-enter the proof-obligation path.
+Any claim that depends on external network truth remains provisional until the external truth condition is present. If the external truth is later revoked, the claim must leave the confirmed state and follow explicit transition conditions.
 
 Claim statuses:
 
@@ -58,10 +58,20 @@ PROVISIONAL
   -> REQUIRES_EXTERNAL_TRUTH
   -> EXTERNALLY_CONFIRMED
   -> CONFIRMED_THEN_REVOKED
-  -> REQUIRES_EXTERNAL_TRUTH or FALSIFIED after re-evaluation
+      stale/job/reorg revocation -> REQUIRES_EXTERNAL_TRUTH
+      vardiff/target-boundary revocation -> REQUIRES_EXTERNAL_TRUTH after target re-evaluation
+      invalid-hash / invalid-proof revocation -> FALSIFIED
 ```
 
-A stale-job race, pool-side invalidation, shallow reorg context, or retroactive pool rejection must be represented as `CONFIRMED_THEN_REVOKED`, not hidden inside generic failure.
+A stale-job race, pool-side invalidation, shallow reorg context, or retroactive pool rejection must be represented explicitly, not hidden inside generic failure.
+
+Revocation dispositions are machine-readable:
+
+```text
+reenter_external_truth
+reevaluate_against_updated_target
+falsified_invalid_local_or_external_truth
+```
 
 ## IIT-style rigor
 
@@ -92,6 +102,15 @@ operational_phi_floor_score < theta_floor => escalation_allowed = false
 ```
 
 The default floor is implemented in `scientific_rigor_kernel.DEFAULT_CAUSAL_INTEGRATION_FLOOR`. This turns telemetry into an instrument with an action boundary: a collapsed verifier, job-binding, external-truth, learning, evidence-seal, or curriculum channel blocks escalation.
+
+Score-domain policy:
+
+```text
+channel_score in [0, 1]
+negative / missing / error-like / unrecognised input -> 0 before floor product
+```
+
+This prevents negative or malformed channel values from creating undefined sign semantics in the escalation gate.
 
 ## Active-inference rigor
 
@@ -140,9 +159,23 @@ alternative trajectory
 -> divergence measure
 -> block-margin comparison
 -> phi-gated prior delta
+-> bounded phi_prior_delta
+-> clipped updated_phi_prior
 -> memory_write_target = phi_resonance_prior
 -> share_difficulty_prior_unchanged = true
 ```
+
+Declared defaults and bounds:
+
+```text
+DEFAULT_PHI_PRIOR = 0.50
+DEFAULT_COUNTERFACTUAL_LEARNING_RATE = 0.05
+MAX_PHI_PRIOR_DELTA = 0.025
+PHI_PRIOR_MIN = 0.20
+PHI_PRIOR_MAX = 0.80
+```
+
+The lower bound prevents counterfactual reflection from disabling phi-resonant search. The upper bound prevents a run of favourable reflections from collapsing the topology into an overconfident point mass. The maximum delta prevents any single reflection from moving the search prior too far.
 
 The distinction matters: share ACKs are corrected by the learning-signal module, while counterfactual reflection refines the phi-resonant nonce-distribution prior. It must not let share-difficulty feedback masquerade as block-level search truth.
 
@@ -167,7 +200,7 @@ PYTHIA search candidate
 -> corrected learning update
 -> causal integration telemetry and floor decision
 -> sealed evidence bundle
--> counterfactual reflection appended to memory
+-> bounded counterfactual reflection appended to memory
 ```
 
 ## Claim boundary
