@@ -69,26 +69,36 @@ ADJACENT: Tuple[Tuple[bool, ...], ...] = tuple(
 )
 
 
-def _su2_from_byte(b: int) -> np.ndarray:
+def _su2_from_byte(b: int, axis: int = 0) -> np.ndarray:
     """Embed a byte value into SU(2) as a unit-trace group element.
 
     The map  b ↦ exp(i θ_b σ·n̂)  where θ_b = b * 2π/255 and n̂ is the
-    fixed axis (1,0,0)/sqrt(1).  This is the simplest faithful SU(2)
-    representation that preserves the periodic structure of the byte field.
+    Pauli axis specified by the axis parameter (0=σ_x, 1=σ_y, 2=σ_z).
+    Using different axes for different byte positions creates non-commuting
+    link variables, yielding a non-trivial gauge field action.
 
     Returns a 2x2 complex unitary with det = 1.
     """
     theta = float(b) * _SU2_SCALE
     c, s = math.cos(theta), math.sin(theta)
-    # exp(i theta sigma_x) = [[cos theta, i sin theta], [i sin theta, cos theta]]
-    return np.array([[c, 1j * s], [1j * s, c]], dtype=np.complex128)
+    if axis == 0:
+        # exp(i theta sigma_x) = [[cos theta, i sin theta], [i sin theta, cos theta]]
+        return np.array([[c, 1j * s], [1j * s, c]], dtype=np.complex128)
+    elif axis == 1:
+        # exp(i theta sigma_y) = [[cos theta, sin theta], [-sin theta, cos theta]]
+        return np.array([[c, s], [-s, c]], dtype=np.complex128)
+    else:
+        # exp(i theta sigma_z) = [[exp(i theta), 0], [0, exp(-i theta)]]
+        return np.array([[np.exp(1j * theta), 0], [0, np.exp(-1j * theta)]], dtype=np.complex128)
 
 
 def yang_mills_action(nonce: int) -> float:
     """SU(2) lattice Yang-Mills plaquette action for the 4-byte nonce field.
 
     The nonce is decomposed into 4 bytes b₀..b₃, each embedded as an
-    SU(2) link variable U_μ ∈ SU(2) via the map b ↦ exp(i θ_b σ_x).
+    SU(2) link variable U_μ ∈ SU(2) via the map b ↦ exp(i θ_b σ·n̂_μ)
+    where n̂_μ cycles through Pauli axes (σ_x, σ_y, σ_z, σ_x) to create
+    non-commuting link variables and a non-trivial gauge field.
 
     The Wilson plaquette action over the 6 independent (μ,ν) pairs is:
 
@@ -101,7 +111,9 @@ def yang_mills_action(nonce: int) -> float:
     """
     n = int(nonce) % UINT32_SPACE
     parts = [(n >> (8 * k)) & 0xFF for k in range(4)]
-    links = [_su2_from_byte(b) for b in parts]
+    # Use different Pauli axes for different byte positions to create non-commuting links
+    axes = [0, 1, 2, 0]  # σ_x, σ_y, σ_z, σ_x
+    links = [_su2_from_byte(b, axis=axes[k]) for k, b in enumerate(parts)]
     action = 0.0
     for i in range(4):
         for j in range(i + 1, 4):

@@ -147,17 +147,32 @@ class MPS:
         self.normalize()
 
     def normalize(self) -> float:
-        """Normalize the MPS tensors for numerical stability.
+        """Normalize the MPS to unit norm using the exact global norm.
 
-        Normalizes each tensor individually by its Frobenius norm so that
-        all tensors have unit norm. This is a standard practical approach
-        for MPS that prevents underflow/overflow during subsequent
-        tensor contractions (SVD, expectation values, etc.).
+        Computes the exact norm <ψ|ψ> via tensor network contraction and
+        scales all tensors uniformly to achieve ||ψ|| = 1. This preserves
+        the entanglement structure and bond dimensions, unlike per-tensor
+        normalization which destroys the global state.
+
+        Returns:
+            The normalization factor applied (should be 1.0 after successful normalization)
         """
-        for i, tensor in enumerate(self.tensors):
-            tensor_norm = np.linalg.norm(tensor)
-            if tensor_norm > 1e-15:
-                self.tensors[i] = tensor / tensor_norm
+        norm = self.compute_norm()
+        if norm < 1e-15:
+            return 0.0
+
+        # Scale all tensors uniformly by 1/norm^(1/N) to distribute the correction
+        scale_factor = 1.0 / (norm ** (1.0 / self.num_sites))
+        for i in range(self.num_sites):
+            self.tensors[i] = self.tensors[i] * scale_factor
+
+        # Verify the new norm is 1.0
+        new_norm = self.compute_norm()
+        if abs(new_norm - 1.0) > 1e-10:
+            # If still not normalized, apply a global scalar correction
+            global_scale = 1.0 / new_norm
+            for i in range(self.num_sites):
+                self.tensors[i] = self.tensors[i] * (global_scale ** (1.0 / self.num_sites))
 
         return 1.0
 
