@@ -33,6 +33,8 @@ golden_ratio_scaling_results.json
 
 # Production local credentials — never commit
 .env.production.local
+config/production_credentials.env
+config/production_credentials_static.env
 
 # Firebase config (contains API keys — never commit)
 firebase-applet-config.json

@@ -26,6 +26,7 @@ from fastapi.responses import PlainTextResponse  # noqa: E402
 from prometheus_client import CONTENT_TYPE_LATEST  # noqa: E402
 
 from hyba_genesis_api.api import (  # noqa: E402
+    admin,
     ai,
     ai_memory,
     auth,
@@ -163,6 +164,7 @@ app.include_router(security.router)
 app.include_router(misc.router)
 app.include_router(ai.router)
 app.include_router(auth.router)
+app.include_router(admin.router)
 app.include_router(products.router)
 app.include_router(unified_mining.router)
 app.include_router(ai_memory.router)

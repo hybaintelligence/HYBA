@@ -26,11 +26,53 @@ from sqlalchemy import (
     String,
     JSON,
     ForeignKey,
+    Enum as SQLEnum,
 )
 from sqlalchemy.orm import declarative_base, relationship
 from sqlalchemy.sql import func
+import enum
 
 Base = declarative_base()
+
+
+class UserRole(str, enum.Enum):
+    ADMIN = "admin"
+    OPERATOR = "operator"
+    ANALYST = "analyst"
+    MINER = "miner"
+
+
+class User(Base):
+    """User account for HYBA platform with role-based access control."""
+    
+    __tablename__ = "users"
+    
+    id: int | None = Column(BigInteger, primary_key=True, index=True)
+    username = Column(String(100), unique=True, nullable=False, index=True)
+    email = Column(String(255), unique=True, nullable=True, index=True)
+    password_hash = Column(String(255), nullable=False)
+    role = Column(SQLEnum(UserRole), nullable=False, default=UserRole.OPERATOR)
+    is_active = Column(Boolean, default=True, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
+    last_login = Column(DateTime(timezone=True), nullable=True)
+    created_by = Column(String(100), nullable=True)  # Username of admin who created this user
+
+
+class AuditLog(Base):
+    """Audit trail for all administrative actions."""
+    
+    __tablename__ = "audit_logs"
+    
+    id: int | None = Column(BigInteger, primary_key=True, index=True)
+    timestamp = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    actor_username = Column(String(100), nullable=False)
+    action = Column(String(100), nullable=False)
+    target_type = Column(String(50), nullable=False)  # e.g., "user", "pool", "config"
+    target_id = Column(String(255), nullable=True)
+    details = Column(JSON, nullable=True)
+    ip_address = Column(String(45), nullable=True)
+
 
 class ConsciousnessSnapshot(Base):
     """A single measurement of consciousness metrics for a given experiment.

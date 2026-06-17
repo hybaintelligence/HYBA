@@ -50,6 +50,7 @@ import { SovereignGenesisPanel } from "./components/SovereignGenesisPanel";
 import { SovereignCommandPost } from "./components/SovereignCommandPost";
 import { Sparkline } from "./components/Sparkline";
 import { ExecutiveSummary } from "./components/ExecutiveSummary";
+import AdminPanel from "./components/AdminPanel";
 import { useApiRequest } from "./hooks/useApiRequest";
 import { useLatencyMetrics } from "./hooks/useLatencyMetrics";
 import { buildGovernanceSignals, type GovernanceSignal } from "./governance";
@@ -178,6 +179,7 @@ function AppContent() {
   } | null>(null);
   const [selectedPoolForConfig, setSelectedPoolForConfig] = useState<PoolInfo | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [currentView, setCurrentView] = useState<"dashboard" | "admin">("dashboard");
 
   const { execute: fetchTelemetryExecute } = useApiRequest(fetchTelemetryData, { maxRetries: 3 });
   const {
@@ -575,6 +577,15 @@ function AppContent() {
               <RefreshCw className={`h-3.5 w-3.5 ${isSyncing ? "animate-spin" : ""}`} /> Refresh
             </button>
             <Sparkline data={latencyHistory} />
+            {currentUser?.role === "admin" && (
+              <button
+                onClick={() => setCurrentView(currentView === "dashboard" ? "admin" : "dashboard")}
+                className={`status-pill border ${currentView === "admin" ? "border-emerald-300/30 bg-emerald-400/15 text-emerald-100" : "border-white/30 bg-white/10 text-white"}`}
+              >
+                <ShieldCheck className="h-3.5 w-3.5" />
+                <span>{currentView === "admin" ? "Dashboard" : "Admin"}</span>
+              </button>
+            )}
             <button
               onClick={toggleTheme}
               className="rounded-full bg-white/10 p-2 text-white transition hover:bg-white/20"
@@ -587,14 +598,18 @@ function AppContent() {
       </header>
 
       <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-6 px-6 py-6">
-        <ExecutiveSummary
-          readinessScore={readinessScore}
-          runtimeStatus={runtimeStatus}
-          securityStatus={securityStatus}
-          activePoolCount={activePoolCount}
-          latencyMs={latencyMs}
-        />
-        <section className="executive-hero overflow-hidden rounded-[2rem] border border-white/30 bg-white/80 p-6 shadow-2xl shadow-slate-900/10 backdrop-blur md:p-8">
+        {currentView === "admin" ? (
+          <AdminPanel token={token} currentUser={currentUser} />
+        ) : (
+          <>
+            <ExecutiveSummary
+              readinessScore={readinessScore}
+              runtimeStatus={runtimeStatus}
+              securityStatus={securityStatus}
+              activePoolCount={activePoolCount}
+              latencyMs={latencyMs}
+            />
+            <section className="executive-hero overflow-hidden rounded-[2rem] border border-white/30 bg-white/80 p-6 shadow-2xl shadow-slate-900/10 backdrop-blur md:p-8">
           <div className="grid gap-8 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
             <div className="relative z-10">
               <div className="mb-5 flex flex-wrap items-center gap-2">
@@ -1033,6 +1048,8 @@ function AppContent() {
             </div>
           )}
         </Panel>
+          </>
+        )}
       </main>
 
       <footer className="mt-8 shrink-0 border-t border-white/10 bg-[#06162D] px-6 py-6 text-white/70">

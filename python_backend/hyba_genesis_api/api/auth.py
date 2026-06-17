@@ -12,12 +12,15 @@ from argon2 import PasswordHasher
 from argon2.exceptions import InvalidHashError, VerificationError, VerifyMismatchError
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
+from sqlalchemy.orm import Session
 
 from hyba_genesis_api.auth.jwt_handler import (
     TokenPayload,
     get_jwt_manager,
     get_token_payload,
 )
+from hyba_genesis_api.database import SessionLocal
+from consciousness_db.models import User
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 _password_hasher = PasswordHasher()
@@ -99,6 +102,26 @@ def _verify_password(password: str, expected_hash: str) -> bool:
 
 
 def _verify_operator(username: str, password: str) -> List[str]:
+    # First try database authentication
+    try:
+        db = SessionLocal()
+        user = db.query(User).filter(User.username == username).first()
+        if user and user.is_active:
+            try:
+                if _password_hasher.verify(user.password_hash, password):
+                    # Update last login
+                    user.last_login = datetime.now(timezone.utc)
+                    db.commit()
+                    db.close()
+                    return [user.role.value]
+            except (VerifyMismatchError, VerificationError, InvalidHashError):
+                pass
+        db.close()
+    except Exception:
+        # Fall back to env var auth if database fails
+        pass
+    
+    # Fall back to environment variable authentication
     operators = _allowed_operator_hashes()
     operator = operators.get(username)
     if not operator:
