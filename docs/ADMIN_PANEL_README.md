@@ -375,7 +375,7 @@ npm run dev
 export HYBA_DATABASE_URL="postgresql://user:pass@host:5432/hyba"
 
 # Set secure JWT secret (minimum 32 random bytes)
-export JWT_SECRET="your-secure-jwt-secret-minimum-32-characters"
+export JWT_SECRET="$JWT_SECRET"
 
 # Configure CORS (no wildcards in production)
 export HYBA_CORS_ORIGINS="https://app.hyba.ai,https://console.hyba.ai"

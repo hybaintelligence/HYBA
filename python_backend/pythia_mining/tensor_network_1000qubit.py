@@ -147,33 +147,40 @@ class MPS:
         self.normalize()
 
     def normalize(self) -> float:
-        """Normalize the MPS to unit norm using the exact global norm.
+        """Normalize the MPS to unit norm.
 
-        Computes the exact norm <ψ|ψ> via tensor network contraction and
-        scales all tensors uniformly to achieve ||ψ|| = 1. This preserves
-        the entanglement structure and bond dimensions, unlike per-tensor
-        normalization which destroys the global state.
+        Strategy (two-pass, overflow-safe):
+          1. Per-tensor Frobenius normalization: divide each tensor by its own
+             Frobenius norm.  This brings every tensor to O(1) magnitude and
+             prevents the product of N small norms from underflowing to zero
+             in the global contraction (which would happen for N≥300 at
+             scale=0.01).
+          2. Exact global correction: compute the precise global norm via
+             _contract_mps_norm_exact and distribute the residual correction
+             uniformly as norm^(-1/N) per tensor.
+
+        This matches the pre-elevation per-tensor behaviour for large N while
+        using the exact contraction for the final pass.
 
         Returns:
-            The normalization factor applied (should be 1.0 after successful normalization)
+            1.0 on success, 0.0 if the state is numerically zero.
         """
-        norm = self.compute_norm()
-        if norm < 1e-15:
+        import numpy as _np
+
+        # Pass 1: per-tensor Frobenius normalization (overflow-safe for large N)
+        for i in range(self.num_sites):
+            t_norm = _np.linalg.norm(self.tensors[i])
+            if t_norm > 1e-300:
+                self.tensors[i] = self.tensors[i] / t_norm
+
+        # Pass 2: exact global norm correction
+        norm = _contract_mps_norm_exact(self.tensors)
+        if norm < 1e-300:
             return 0.0
 
-        # Scale all tensors uniformly by 1/norm^(1/N) to distribute the correction
-        scale_factor = 1.0 / (norm ** (1.0 / self.num_sites))
+        scale = norm ** (-1.0 / self.num_sites)
         for i in range(self.num_sites):
-            self.tensors[i] = self.tensors[i] * scale_factor
-
-        # Verify the new norm is 1.0
-        new_norm = self.compute_norm()
-        if abs(new_norm - 1.0) > 1e-10:
-            # If still not normalized, apply a global scalar correction
-            global_scale = 1.0 / new_norm
-            for i in range(self.num_sites):
-                self.tensors[i] = self.tensors[i] * (global_scale ** (1.0 / self.num_sites))
-
+            self.tensors[i] = self.tensors[i] * scale
         return 1.0
 
     def compute_norm(self) -> float:
@@ -323,10 +330,17 @@ class MPS:
         new_bond_dims = [1]
 
         for i in range(self.num_sites - 1):
-            # Exact Schmidt spectrum at this bond
-            S_spectrum = self.entanglement_spectrum(i)
+            # Exact Schmidt spectrum from the current (possibly already-truncated) tensors
+            A_left = tensors[i]
+            A_right = tensors[i + 1]
+            a, p, c = A_left.shape
+            _, d, b = A_right.shape
+            merged_spec = np.einsum('apc,cdb->apdb', A_left, A_right).reshape(a * p, d * b)
+            _, S_spectrum, _ = np.linalg.svd(merged_spec, full_matrices=False)
+            S_spectrum = S_spectrum[S_spectrum > 1e-15]
+
             # von Neumann entanglement entropy from Schmidt values
-            p_sq = S_spectrum ** 2
+            p_sq = S_spectrum ** 2 if len(S_spectrum) else np.array([1.0])
             p_sq = p_sq / (np.sum(p_sq) + 1e-300)
             entanglement = -float(np.sum(p_sq * np.log2(p_sq + 1e-300)))
 
