@@ -224,31 +224,24 @@ class UnifiedMiningEngine:
             )
 
         # --- Autonomous optimisation step (wired into the live loop) ---
-        # Autonomous governance failures are isolated to optimisation/reflexive
-        # control. They may degrade autonomy, but they must never relax the
-        # SHA-256d verifier, verification firewall, live-share gate, or nonce
-        # coverage/search submission path below.
+        # The circuit breaker gates only the autonomous hooks below. The actual
+        # nonce search still runs after this block, and local verifier/submission
+        # call sites remain outside circuit-breaker control.
         ac = self.autonomous_controller
-        if ac.current_autonomy_level.should_optimize:
-            import logging
-            logger = logging.getLogger("pythia.engine")
-            if not ac.is_circuit_open():
-                try:
-                    await ac.optimize_search_strategy(
-                        current_coherence=coherence,
-                        current_hashrate_ehs=self.state.last_batch_hashrate_ehs,
-                    )
-                    ac.record_circuit_success()
-                except Exception as exc:
-                    ac.record_circuit_failure(
-                        reason=f"autonomous_optimize_search_failed:{exc}"
-                    )
-                    logger.error("autonomous_optimize_search failed: %s", exc)
-                    if ac._consecutive_failures >= ac.config.circuit_breaker_failure_threshold:
-                        degraded_to = ac.degrade_autonomy_level(
-                            reason=f"search_optimisation_consecutive_failures_{ac._consecutive_failures}"
-                        )
-                        logger.warning("autonomy degraded to %s", degraded_to.value)
+        if ac.current_autonomy_level.should_optimize and not ac.is_circuit_open():
+            try:
+                await ac.optimize_search_strategy(
+                    current_coherence=coherence,
+                    current_hashrate_ehs=self.state.last_batch_hashrate_ehs,
+                )
+                ac.record_autonomy_success()
+            except Exception as exc:
+                import logging
+                logger = logging.getLogger("pythia.engine")
+                logger.error("autonomous_optimize_search failed: %s", exc)
+                degraded_to = ac.record_autonomy_failure("search_optimisation")
+                if ac.is_circuit_open():
+                    logger.warning("autonomy circuit breaker open; level=%s", degraded_to.value)
 
             # Periodically trigger reflexive learning when the autonomous hook circuit is closed.
             interval = ac.config.reflexive_loop_interval
@@ -263,11 +256,7 @@ class UnifiedMiningEngine:
                     ac.record_circuit_success()
                 except Exception as exc:
                     logger.error("reflexive_cycle failed: %s", exc)
-                    ac.record_circuit_failure(reason=f"reflexive_cycle_failed:{exc}")
-                    if ac._consecutive_failures >= ac.config.circuit_breaker_failure_threshold:
-                        ac.degrade_autonomy_level(
-                            reason=f"reflexive_cycle_consecutive_failures_{ac._consecutive_failures}"
-                        )
+                    ac.record_autonomy_failure("reflexive_cycle")
 
         # --- Run the actual nonce search ---
         result = await self.optimizer.optimize_nonce_search(job)
@@ -431,6 +420,10 @@ class UnifiedMiningEngine:
     def set_autonomy_level(self, level: AutonomyLevel) -> None:
         """Set the autonomy level for PYTHIA."""
         self.autonomous_controller.set_autonomy_level(level)
+
+    def reset_autonomy_circuit_breaker(self, operator_reason: str) -> None:
+        """Manually close the autonomy circuit breaker after operator review."""
+        self.autonomous_controller.reset_circuit_breaker(operator_reason)
 
     def get_autonomy_status(self) -> Dict[str, Any]:
         """Get current autonomous mining status."""

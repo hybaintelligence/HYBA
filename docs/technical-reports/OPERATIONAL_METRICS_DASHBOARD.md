@@ -440,6 +440,42 @@ groups:
         annotations:
           summary: "Low share acceptance rate"
           description: "Acceptance rate is {{ $value | humanizePercentage }}"
+
+      - alert: PythiaPendingApprovalsStuck
+        expr: hyba_pythia_pending_approvals > 0
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: "PYTHIA operator approvals pending too long"
+          description: "Pending operator approvals have exceeded the approval timeout window."
+
+      - alert: PythiaConstraintViolationSpike
+        expr: sum by (constraint_type) (rate(hyba_pythia_constraint_violations_by_type_total[5m])) > 0.1
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "PYTHIA constraint violation spike"
+          description: "Constraint {{ $labels.constraint_type }} is violating at {{ $value }} events/sec."
+
+      - alert: PythiaReflexiveCycleP99High
+        expr: histogram_quantile(0.99, sum(rate(hyba_pythia_reflexive_cycle_duration_seconds_bucket[5m])) by (le)) > 10
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "PYTHIA reflexive cycle p99 latency high"
+          description: "p99 reflexive cycle latency is {{ $value }}s; check CPU/memory pressure before exhaustion."
+
+      - alert: PythiaProposalAcceptanceRateLow
+        expr: hyba_pythia_proposal_acceptance_rate < 0.2
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: "PYTHIA proposal acceptance rate low"
+          description: "Proposal acceptance rate is {{ $value | humanizePercentage }}; investigate search topology degradation."
 ```
 
 ## Mobile Dashboard Considerations

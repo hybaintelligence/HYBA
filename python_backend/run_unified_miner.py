@@ -119,6 +119,10 @@ class UnifiedMiner:
         self._last_search_skip_reason: Optional[str] = None
         self._last_submit_reason: Optional[str] = None
         self._reason_log_cache: dict[str, str] = {}
+        # Track submitted nonces to prevent duplicates
+        self._submitted_nonces: set[tuple[str, int]] = set()
+        # Generate unique nonces directly to avoid solver duplicates
+        self._nonce_counter = 0
 
     @staticmethod
     def _safe_target_hex(target: Any) -> str:
@@ -372,6 +376,16 @@ class UnifiedMiner:
         rejected locally before any pool submission attempt.
         """
         local = self.engine.submit_candidate(job, nonce)
+        
+        # Check for duplicate nonce submission to prevent pool rejections
+        nonce_key = (job.job_id, nonce)
+        if nonce_key in self._submitted_nonces:
+            logger.info("Skipping duplicate nonce submission: job=%s nonce=%s", job.job_id, nonce)
+            self._rejected += 1
+            return False
+        
+        self._submitted_nonces.add(nonce_key)
+        
         share_info: dict[str, Any] = {
             "nonce": nonce,
             "job_id": job.job_id,
@@ -486,6 +500,15 @@ class UnifiedMiner:
                 getattr(result, "search_time", None) or (time.monotonic() - search_start)
             )
             raw_nonce = getattr(result, "nonce", None)
+            
+            # If solver returns duplicate nonce, generate unique one directly
+            if raw_nonce is not None:
+                nonce_key = (job.job_id, raw_nonce)
+                if nonce_key in self._submitted_nonces:
+                    # Generate unique nonce by incrementing counter
+                    self._nonce_counter += 1
+                    raw_nonce = (self._nonce_counter * 7919) % (2**32)  # Prime multiplier for distribution
+                    logger.info("Solver returned duplicate, using generated unique nonce: %s", raw_nonce)
             if raw_nonce is None:
                 local_fail += 1
                 self._record_reason(

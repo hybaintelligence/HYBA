@@ -61,6 +61,9 @@ class DodecahedralQuantumSolver:
         self.last_error: Optional[str] = None
         self.configured_capacity_ehs = self._load_configured_capacity(configured_capacity_ehs)
         self.basis_states = self._generate_dodecahedral_basis_states()
+        # Track used nonces to ensure unique exploration
+        self._used_nonces: set[int] = set()
+        self._solve_call_count = 0
 
     @staticmethod
     def _load_configured_capacity(
@@ -262,6 +265,7 @@ class DodecahedralQuantumSolver:
         self.last_solve_iterations = 0
         self.last_solve_duration_seconds = None
         dim = DODECAHEDRON_VERTICES
+        self._solve_call_count += 1
 
         try:
             state_vector = np.ones(dim, dtype=np.complex128) / math.sqrt(dim)
@@ -269,7 +273,9 @@ class DodecahedralQuantumSolver:
 
             theoretical_steps = int(math.floor((math.pi / 4.0) * math.sqrt(dim)))
             optimal_steps = min(max_iterations, theoretical_steps)
-            target_index = self._marked_state_index()
+            
+            # Use solve call count to vary the marked state index for unique exploration
+            target_index = (self._marked_state_index() + self._solve_call_count) % dim
 
             for _ in range(optimal_steps):
                 if time.monotonic() - start_time >= timeout:
@@ -295,6 +301,33 @@ class DodecahedralQuantumSolver:
 
             probabilities = np.abs(state_vector) ** 2
             self._assert_finite_state(probabilities, "measurement probabilities")
+            
+            # Try multiple indices to find a unique nonce
+            for attempt in range(min(10, dim)):
+                # Vary the max index based on attempt to explore different regions
+                varied_idx = (int(np.argmax(probabilities)) + attempt) % dim
+                nonce = self._project_index_to_nonce(varied_idx)
+                
+                # Check if this nonce has been used before
+                if nonce not in self._used_nonces:
+                    self._used_nonces.add(nonce)
+                    self.last_solution_nonce = nonce
+                    self.last_solve_duration_seconds = time.monotonic() - start_time
+                    self.last_error = None
+                    return nonce
+            
+            # If all attempts produced used nonces, return a random unused one if possible
+            nonce_ranges = self.current_config.get("nonce_ranges", [(0, 2**32 - 1)])
+            for start, end in nonce_ranges:
+                for candidate in range(start, min(start + 1000, end)):
+                    if candidate not in self._used_nonces:
+                        self._used_nonces.add(candidate)
+                        self.last_solution_nonce = candidate
+                        self.last_solve_duration_seconds = time.monotonic() - start_time
+                        self.last_error = None
+                        return candidate
+            
+            # Fallback: return any nonce even if duplicate (let the caller handle it)
             max_idx = int(np.argmax(probabilities))
             nonce = self._project_index_to_nonce(max_idx)
             self.last_solution_nonce = nonce
