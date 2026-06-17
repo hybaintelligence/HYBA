@@ -3,6 +3,11 @@
 The package initializer remains lightweight: PULVINI autonomics uses NumPy, so
 symbols are resolved lazily to avoid importing heavy numerical dependencies when
 callers only need non-autonomic package metadata.
+
+The Stratum submission firewall is intentionally installed at package-import
+scope. It is a small runtime safety seam, not a search/autonomy throttle: PYTHIA
+continues to own search, healing, optimisation, and learning, while the immutable
+verifier firewall owns the final pre-submit boundary.
 """
 
 from __future__ import annotations
@@ -92,6 +97,22 @@ _AUTONOMICS_EXPORTS = {
     "ThermalGovernor",
     "ThermalGovernanceEvent",
 }
+
+
+def _install_runtime_firewalls() -> None:
+    """Install small runtime invariants that must sit outside optimisation."""
+
+    try:
+        from .stratum_submission_firewall import install_stratum_submit_firewall
+
+        install_stratum_submit_firewall()
+    except Exception:
+        # Importing pythia_mining metadata must not mask the original exception in
+        # unrelated tooling. Production readiness tests assert the patch explicitly.
+        pass
+
+
+_install_runtime_firewalls()
 
 
 def __getattr__(name: str) -> Any:
