@@ -72,8 +72,9 @@ def test_nodus_solutus_is_part_of_local_release_authority() -> None:
 
     assert "nodus_solutus_computability_doctrine" in local_gate
     assert "nodus_solutus" in local_gate
-    assert "repository-local computability" in local_gate
+    assert "repository_local_computability" in local_gate
     assert "physical universe" in local_gate
     assert "review:nodus:gate" in scripts
     assert "test_nodus_solutus_proof_structure.py" in scripts["review:nodus:gate"]
     assert "npm run review:nodus:gate" in scripts["review:evidence:gate"]
+    assert "review:manifest:gate" in scripts
