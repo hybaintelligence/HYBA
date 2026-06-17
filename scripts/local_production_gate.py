@@ -26,9 +26,9 @@ from typing import Literal
 ROOT = Path(__file__).resolve().parents[1]
 ARTIFACT_DIR = ROOT / "artifacts" / "production_readiness"
 
-Mode = Literal["rc", "live", "command-room"]
+Mode = Literal["rc", "bitcoin", "research", "live", "command-room"]
 
-RC_STEPS = [
+BITCOIN_RC_STEPS = [
     ("nodus_solutus_computability_doctrine", ["npm", "run", "review:nodus:gate"]),
     ("reviewer_evidence_map_and_conflict_guard", ["npm", "run", "review:manifest:gate"]),
     ("runtime_entrypoint_and_live_miner_api", ["npm", "run", "runtime:entrypoint:check"]),
@@ -39,18 +39,28 @@ RC_STEPS = [
     ("stratum_share_acceptance_e2e", ["npm", "run", "test:share:e2e"]),
     ("unified_mining_engine_control_loop", ["npm", "run", "test:unified:engine"]),
     ("unified_mining_api_surface", ["npm", "run", "test:unified:api"]),
+    ("pool_profile_readiness", ["npm", "run", "test:pool:profiles"]),
+    ("mining_production_doctor", ["npm", "run", "test:mining:doctor"]),
     ("phi_architecture_golden_flow", ["npm", "run", "test:phi:golden-flow"]),
     ("pulvini_phi_memory_folding", ["npm", "run", "test:pulvini:folding"]),
-    ("post_quantum_benchmark_contracts", ["npm", "run", "test:post-quantum"]),
-    ("adaptive_science_bundle", ["npm", "run", "test:adaptive:science"]),
     ("funding_gate_without_live_share_claim", ["npm", "run", "funding:gate"]),
-    ("elevation_packet_bundle", ["npm", "run", "elevation:full"]),
     ("typescript_lint", ["npm", "run", "lint"]),
     ("production_build", ["npm", "run", "build"]),
     ("backend_unit_tests", ["npm", "run", "test:backend"]),
     ("backend_e2e_tests", ["npm", "run", "test:e2e:backend"]),
     ("deployment_e2e_tests", ["npm", "run", "test:deployment:e2e"]),
     ("deployment_property_tests", ["npm", "run", "test:deployment:property"]),
+]
+
+# Backwards-compatible name: RC now means Bitcoin release-candidate readiness.
+RC_STEPS = BITCOIN_RC_STEPS
+
+RESEARCH_STEPS = [
+    ("elevation_suite_local_mathematical_invariants", ["npm", "run", "test:elevation:suite"]),
+    ("frontier_experiment_bundle", ["npm", "run", "test:frontier:experiments"]),
+    ("post_quantum_benchmark_contracts", ["npm", "run", "test:post-quantum"]),
+    ("adaptive_science_bundle", ["npm", "run", "test:adaptive:science"]),
+    ("elevation_packet_bundle", ["npm", "run", "elevation:full"]),
 ]
 
 LIVE_STEPS = [
@@ -168,11 +178,13 @@ def _run_step(name: str, command: list[str]) -> StepResult:
 
 
 def _steps_for_mode(mode: Mode) -> list[tuple[str, list[str]]]:
-    if mode == "rc":
-        return RC_STEPS
+    if mode in {"rc", "bitcoin"}:
+        return BITCOIN_RC_STEPS
+    if mode == "research":
+        return RESEARCH_STEPS
     if mode == "live":
         return LIVE_STEPS
-    return RC_STEPS + LIVE_STEPS
+    return BITCOIN_RC_STEPS + RESEARCH_STEPS + LIVE_STEPS
 
 
 def _doctrine(mode: Mode) -> dict[str, object]:
@@ -181,6 +193,13 @@ def _doctrine(mode: Mode) -> dict[str, object]:
         "github_actions_required": False,
         "evidence_first": True,
         "simulated_runtime_claims_allowed": False,
+        "bitcoin_deployment_gate": {
+            "release_command": "npm run prod:bitcoin:gate",
+            "prod_local_gate_alias": "npm run prod:local:gate",
+            "research_blocks_deploy": False,
+            "live_share_submit_default": False,
+            "accepted_share_claim_requires_pool_evidence": True,
+        },
         "nodus_solutus": {
             "name": "Nodus Solutus: Mundus Computabilis Est",
             "repository_local_computability": True,
@@ -233,10 +252,16 @@ def _next_actions(mode: Mode, passed: bool) -> list[str]:
             "Fix the first failed step in the evidence packet.",
             "Rerun the same local gate from a clean checkout or clean terminal session.",
         ]
-    if mode == "rc":
+    if mode in {"rc", "bitcoin"}:
         return [
-            "Preserve this local evidence JSON with the release ticket.",
+            "Preserve this local Bitcoin RC evidence JSON with the release ticket.",
             "Run npm run prod:live:gate with private HYBA app credentials and open Bitcoin pool profiles injected.",
+            "Keep HYBA_ENABLE_LIVE_SHARE_SUBMIT=false until explicit approval and pool-side evidence capture are attached.",
+        ]
+    if mode == "research":
+        return [
+            "Preserve this research/elevation evidence JSON with the review packet.",
+            "Do not treat research evidence as authorization for live share submission or revenue claims.",
         ]
     return [
         "Start production with HYBA_ENABLE_LIVE_SHARE_SUBMIT=false and HYBA_ENABLE_MINING_AUTOCONNECT=false.",
@@ -260,7 +285,11 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         description="Run local HYBA_FULLSTACK production evidence gate"
     )
-    parser.add_argument("--mode", choices=("rc", "live", "command-room"), default="command-room")
+    parser.add_argument(
+        "--mode",
+        choices=("rc", "bitcoin", "research", "live", "command-room"),
+        default="command-room",
+    )
     parser.add_argument(
         "--continue-on-failure",
         action="store_true",
@@ -282,7 +311,7 @@ def main(argv: list[str] | None = None) -> int:
     status = "passed" if passed else "blocked"
     now = datetime.now(timezone.utc)
     report = GateReport(
-        version="HYBA_FULLSTACK_LOCAL_PRODUCTION_GATE_V7_NODUS_SOLUTUS",
+        version="HYBA_FULLSTACK_LOCAL_PRODUCTION_GATE_V8_BITCOIN_DEPLOYMENT",
         mode=args.mode,
         status=status,
         passed=passed,
