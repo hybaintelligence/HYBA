@@ -31,7 +31,22 @@ class EvidenceSealError(ValueError):
 
 @dataclass(frozen=True)
 class TimestampAuthority:
+<<<<<<< Updated upstream
     """Externally anchored timestamp authority for a sealed mining bundle."""
+=======
+    """Externally anchored timestamp authority for a sealed mining bundle.
+
+    The authority is the Bitcoin job context, not PYTHIA's local clock. Local
+    wall-clock time is retained only as auxiliary evidence; the replay anchor is
+    ``bitcoin_block_height + stratum_job_id + prevhash``.
+
+    ``chain_validity_at_seal`` records whether the anchored ``job_prevhash``
+    matched the canonical chain tip at seal time. Under a shallow reorg the
+    prevhash at height ``h`` can change, turning a previously-canonical anchor
+    into an orphaned-branch record. This field makes the chain context
+    machine-readable without invalidating historical bundles.
+    """
+>>>>>>> Stashed changes
 
     authority: str = TIMESTAMP_AUTHORITY
     bitcoin_block_height: int = 0
@@ -40,6 +55,7 @@ class TimestampAuthority:
     unix_seconds: float = field(default_factory=time.time)
     anchor_hash: str = ""
     external_timestamp_token_hash: Optional[str] = None
+    chain_validity_at_seal: str = "canonical"
 
     def to_dict(self) -> Dict[str, Any]:
         payload = asdict(self)
@@ -100,6 +116,36 @@ def redact_and_hash_runtime_config(config: Mapping[str, Any]) -> str:
     return stable_hash(redacted)
 
 
+def _check_chain_validity(prevhash: str, block_height: int) -> str:
+    """Check whether a job prevhash is still anchored to the canonical chain tip.
+
+    Returns ``canonical`` when the prevhash matches the current tip at the same
+    height, and ``orphan_risk`` when it does not match (shallow reorg or tip
+    change). Failures to reach the chain oracle are recorded as ``unverified``
+    so the seal is not incorrectly flagged canonical without evidence.
+    """
+
+    try:
+        from .blockchain_oracle import BlockchainOracle
+
+        oracle = BlockchainOracle()
+        import asyncio
+
+        try:
+            loop = asyncio.get_running_loop()
+        except RuntimeError:
+            tip = asyncio.run(oracle.get_current_block_tip(force_refresh=True))
+        else:
+            tip = loop.run_until_complete(oracle.get_current_block_tip(force_refresh=True))
+        if tip is None:
+            return "unverified"
+        if tip.hash.lower() == prevhash.lower():
+            return "canonical"
+        return "orphan_risk"
+    except Exception:
+        return "unverified"
+
+
 def bitcoin_job_timestamp_authority(job_context: Mapping[str, Any], *, unix_seconds: Optional[float] = None) -> TimestampAuthority:
     """Build the minimum viable external timestamp anchor from Bitcoin job context."""
 
@@ -122,6 +168,7 @@ def bitcoin_job_timestamp_authority(job_context: Mapping[str, Any], *, unix_seco
         "stratum_job_id": job_id,
         "job_prevhash": prevhash,
     }
+    chain_validity = _check_chain_validity(prevhash, height_int)
     return TimestampAuthority(
         authority=TIMESTAMP_AUTHORITY,
         bitcoin_block_height=height_int,
@@ -129,6 +176,7 @@ def bitcoin_job_timestamp_authority(job_context: Mapping[str, Any], *, unix_seco
         job_prevhash=prevhash,
         unix_seconds=time.time() if unix_seconds is None else float(unix_seconds),
         anchor_hash=stable_hash(anchor_payload),
+        chain_validity_at_seal=chain_validity,
     )
 
 
@@ -263,6 +311,8 @@ def validate_sealed_mining_evidence_bundle(bundle: Mapping[str, Any]) -> bool:
         raise EvidenceSealError("timestamp_missing_bitcoin_block_height")
     if not str(timestamp.get("job_prevhash") or ""):
         raise EvidenceSealError("timestamp_missing_prevhash")
+    if not str(timestamp.get("chain_validity_at_seal") or ""):
+        raise EvidenceSealError("timestamp_missing_chain_validity_at_seal")
     expected_anchor = stable_hash(
         {
             "authority": TIMESTAMP_AUTHORITY,
@@ -305,6 +355,7 @@ def seal_schema_summary() -> Dict[str, Any]:
             "bitcoin_block_height",
             "stratum_job_id",
             "job_prevhash",
+            "chain_validity_at_seal",
             "bundle_hash",
         ],
         "success_boundary": "accepted shares are learning events; pool-confirmed accepted block is mission completion",

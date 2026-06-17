@@ -646,9 +646,21 @@ class StratumClient:
         return True
 
     async def submit_validated_share(
-        self, job: MiningJob, nonce: int, extranonce2: Optional[str] = None
+        self,
+        job: MiningJob,
+        nonce: int,
+        extranonce2: Optional[str] = None,
+        *,
+        _firewall_validated: bool = False,
     ) -> ShareResult:
-        """Validate locally, then submit to the pool before recording accepted/rejected counters."""
+        """Validate locally, then submit to the pool before recording accepted/rejected counters.
+
+        The ``_firewall_validated`` flag is set by the installed firewall wrapper
+        to suppress the redundant second ``validate_share`` call. When True, the
+        caller (the firewall) is the sole pre-submit oracle for local SHA-256d
+        verification and this method must not re-validate against a potentially
+        changed job state.
+        """
         from pythia_mining.mining_validation import (
             MiningValidationError,
             validate_share,
@@ -679,6 +691,87 @@ class StratumClient:
             return ShareResult(False, 410, "stale_job", job.job_id, nonce)
 
         extranonce2_value = extranonce2 or ("00" * job.extranonce2_size)
+
+        # The installed firewall wrapper is the authoritative pre-submit
+        # validation oracle. Skip the second validate_share call to eliminate
+        # the double-validation race where a new Stratum job could arrive
+        # between the two validation calls and produce inconsistent results.
+        validation = None
+        if not _firewall_validated:
+            try:
+                validation = validate_share(job, nonce, extranonce2_value)
+            except MiningValidationError as exc:
+                self.audit_logger.log_share_validation_error(
+                    pool_name=self.pool_name,
+                    pool_url=self.pool_url,
+                    job_id=job.job_id,
+                    nonce=nonce,
+                    error=str(exc),
+                )
+                self.shares_submitted += 1
+                self.shares_rejected += 1
+                self.last_share_error = str(exc)
+                self.metrics_store.record_share_submission(
+                    pool_name=self.pool_name,
+                    pool_url=self.pool_url,
+                    job_id=job.job_id,
+                    nonce=nonce,
+                    accepted=False,
+                    error_code=400,
+                    error_message=str(exc),
+                )
+                await self._persist_metrics()
+                return ShareResult(False, 400, str(exc), job.job_id, nonce)
+
+            if not validation.valid:
+                self.audit_logger.log_share_rejected(
+                    pool_name=self.pool_name,
+                    pool_url=self.pool_url,
+                    job_id=job.job_id,
+                    nonce=nonce,
+                    reason=validation.reason,
+                    error_code=1,
+                )
+                self.shares_submitted += 1
+                self.shares_rejected += 1
+                self.last_share_error = validation.reason
+                self.metrics_store.record_share_submission(
+                    pool_name=self.pool_name,
+                    pool_url=self.pool_url,
+                    job_id=job.job_id,
+                    nonce=nonce,
+                    accepted=False,
+                    error_code=1,
+                    error_message=validation.reason,
+                    block_hash=validation.block_hash,
+                    target=validation.target,
+                )
+                await self._persist_metrics()
+                return ShareResult(
+                    False,
+                    1,
+                    validation.reason,
+                    job.job_id,
+                    nonce,
+                    validation.block_hash,
+                    validation.target,
+                )
+        else:
+            # Reconstruct validation result from the firewall decision stored
+            # on the client. The firewall already performed local validation;
+            # we just need the block_hash and target for bookkeeping.
+            decision = getattr(self, "last_verification_firewall_decision", {})
+            candidate = decision.get("candidate", {})
+            validation = type(
+                "ValidationResult",
+                (),
+                {
+                    "valid": bool(decision.get("submission_allowed")),
+                    "block_hash": candidate.get("block_hash", ""),
+                    "target": candidate.get("effective_target", 0),
+                },
+            )()
+
         if self.live_session is not None and not _live_share_submit_enabled():
             self.audit_logger.log_share_rejected(
                 pool_name=self.pool_name,
@@ -702,65 +795,6 @@ class StratumClient:
             )
             await self._persist_metrics()
             return ShareResult(False, 423, "live_share_submit_disabled", job.job_id, nonce)
-
-        try:
-            validation = validate_share(job, nonce, extranonce2_value)
-        except MiningValidationError as exc:
-            self.audit_logger.log_share_validation_error(
-                pool_name=self.pool_name,
-                pool_url=self.pool_url,
-                job_id=job.job_id,
-                nonce=nonce,
-                error=str(exc),
-            )
-            self.shares_submitted += 1
-            self.shares_rejected += 1
-            self.last_share_error = str(exc)
-            self.metrics_store.record_share_submission(
-                pool_name=self.pool_name,
-                pool_url=self.pool_url,
-                job_id=job.job_id,
-                nonce=nonce,
-                accepted=False,
-                error_code=400,
-                error_message=str(exc),
-            )
-            await self._persist_metrics()
-            return ShareResult(False, 400, str(exc), job.job_id, nonce)
-
-        if not validation.valid:
-            self.audit_logger.log_share_rejected(
-                pool_name=self.pool_name,
-                pool_url=self.pool_url,
-                job_id=job.job_id,
-                nonce=nonce,
-                reason=validation.reason,
-                error_code=1,
-            )
-            self.shares_submitted += 1
-            self.shares_rejected += 1
-            self.last_share_error = validation.reason
-            self.metrics_store.record_share_submission(
-                pool_name=self.pool_name,
-                pool_url=self.pool_url,
-                job_id=job.job_id,
-                nonce=nonce,
-                accepted=False,
-                error_code=1,
-                error_message=validation.reason,
-                block_hash=validation.block_hash,
-                target=validation.target,
-            )
-            await self._persist_metrics()
-            return ShareResult(
-                False,
-                1,
-                validation.reason,
-                job.job_id,
-                nonce,
-                validation.block_hash,
-                validation.target,
-            )
 
         if self.live_session is None:
             return await self.validate_and_record_share(job, nonce, extranonce2_value)

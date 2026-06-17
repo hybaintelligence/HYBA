@@ -122,6 +122,22 @@ def _install_runtime_firewalls() -> None:
         if _live_or_production_mode():
             raise
 
+    # Post-install integrity assertion: the firewall must be the active submit
+    # path. If the install succeeded but the wrapper was subsequently replaced
+    # (monkey-patch, mock leak, dynamic reassignment), refuse to continue in
+    # production/live mode.
+    try:
+        from .stratum_submission_firewall import verify_stratum_firewall_integrity
+
+        if _live_or_production_mode() and not verify_stratum_firewall_integrity():
+            raise RuntimeError(
+                "post_install_firewall_integrity_check_failed: "
+                "submit_validated_share is not wrapped"
+            )
+    except Exception:
+        if _live_or_production_mode():
+            raise
+
 
 _install_runtime_firewalls()
 

@@ -85,12 +85,33 @@ def assert_stratum_submission_firewall(job: Any, nonce: int, extranonce2: Option
     return assert_verification_firewall_precondition(precondition).to_dict()
 
 
+def verify_stratum_firewall_integrity() -> bool:
+    """Verify that the Stratum submission firewall is currently installed.
+
+    Returns True when the firewall wrapper is the active submit method, False
+    if the original unwrapped method is in place or the method has been
+    replaced. This check should be called after installation and as part of
+    production readiness gates.
+    """
+
+    from .stratum_client import StratumClient
+
+    submit_method = getattr(StratumClient, "submit_validated_share", None)
+    if submit_method is None:
+        return False
+    return bool(getattr(submit_method, PATCH_MARKER, False))
+
+
 def install_stratum_submit_firewall() -> bool:
     """Wrap ``StratumClient.submit_validated_share`` with the verifier firewall.
 
     Returns True when the wrapper is installed and False when it was already
     present. The wrapper fails closed by returning a rejected ``ShareResult`` and
     never calling the original submit method if the firewall raises.
+
+    Post-install integrity is verified immediately; a mismatch raises
+    ``StratumSubmissionFirewallError`` so production mode cannot continue with
+    an unwrapped or tampered submit path.
     """
 
     from .mining_validation import MiningValidationError
@@ -103,6 +124,29 @@ def install_stratum_submit_firewall() -> bool:
 
     @functools.wraps(original)
     async def guarded_submit(self: Any, job: Any, nonce: int, extranonce2: Optional[str] = None) -> ShareResult:
+        # Pre-submit integrity assertion: if this wrapper has been replaced
+        # at runtime by a monkey-patch, mock leak, or dynamic reassignment,
+        # refuse to submit rather than silently bypass the firewall.
+        if not verify_stratum_firewall_integrity():
+            reason = "stratum_firewall_integrity_check_failed"
+            try:
+                self.shares_submitted += 1
+                self.shares_rejected += 1
+                self.last_share_error = reason
+                self.metrics_store.record_share_submission(
+                    pool_name=self.pool_name,
+                    pool_url=self.pool_url,
+                    job_id=getattr(job, "job_id", ""),
+                    nonce=int(nonce),
+                    accepted=False,
+                    error_code=428,
+                    error_message=reason,
+                )
+                await self._persist_metrics()
+            except Exception:
+                pass
+            return ShareResult(False, 428, reason, getattr(job, "job_id", ""), int(nonce))
+
         try:
             decision = assert_stratum_submission_firewall(job, nonce, extranonce2)
         except (MiningValidationError, VerificationFirewallError, ValueError) as exc:
@@ -126,19 +170,30 @@ def install_stratum_submit_firewall() -> bool:
             return ShareResult(False, 428, reason, getattr(job, "job_id", ""), int(nonce))
 
         self.last_verification_firewall_decision = decision
-        return await original(self, job, nonce, extranonce2)
+        # Pass _firewall_validated=True to eliminate the redundant second
+        # validate_share call. The firewall is the sole pre-submit oracle for
+        # local SHA-256d verification; the original method must trust this
+        # result rather than re-validating against the same job state.
+        return await original(self, job, nonce, extranonce2, _firewall_validated=True)
 
     setattr(guarded_submit, PATCH_MARKER, True)
     setattr(guarded_submit, ORIGINAL_MARKER, original)
     StratumClient.submit_validated_share = guarded_submit
+
+    if not verify_stratum_firewall_integrity():
+        raise StratumSubmissionFirewallError(
+            "post_install_firewall_integrity_check_failed: submit_validated_share is not wrapped"
+        )
     return True
 
 
 __all__ = [
     "PATCH_MARKER",
+    "ORIGINAL_MARKER",
     "StratumSubmissionFirewallError",
     "VERIFIER_BACKEND",
     "assert_stratum_submission_firewall",
     "build_stratum_firewall_precondition",
     "install_stratum_submit_firewall",
+    "verify_stratum_firewall_integrity",
 ]
