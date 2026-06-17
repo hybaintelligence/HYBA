@@ -11,12 +11,14 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass
 from typing import Any, Dict
 
-COUNTERFACTUAL_REFLECTION_PROTOCOL = "PYTHIA_MINING_COUNTERFACTUAL_REFLECTION_V2"
+COUNTERFACTUAL_REFLECTION_PROTOCOL = "PYTHIA_MINING_COUNTERFACTUAL_REFLECTION_V3"
 DEFAULT_PHI_PRIOR = 0.50
 DEFAULT_COUNTERFACTUAL_LEARNING_RATE = 0.05
 PHI_PRIOR_MIN = 0.20
 PHI_PRIOR_MAX = 0.80
 MAX_PHI_PRIOR_DELTA = 0.025
+MIN_REFLECTION_OBSERVATIONS = 32
+MIN_REFLECTION_INTERVAL_SECONDS = 60.0
 
 
 @dataclass(frozen=True)
@@ -46,6 +48,13 @@ class CounterfactualReflection:
     phi_prior_min: float
     phi_prior_max: float
     max_phi_prior_delta: float
+    observations_supporting_update: int
+    min_reflection_observations: int
+    seconds_since_last_update: float
+    min_reflection_interval_seconds: float
+    velocity_guard_satisfied: bool
+    confidence_weight: float
+    session_event_id: str
     memory_write_target: str
     share_difficulty_prior_unchanged: bool
     reflection_reason: str
@@ -95,23 +104,37 @@ def reflect_counterfactual_phi_prior(
     phi_prior_min: float = PHI_PRIOR_MIN,
     phi_prior_max: float = PHI_PRIOR_MAX,
     max_phi_prior_delta: float = MAX_PHI_PRIOR_DELTA,
+    observations_supporting_update: int = MIN_REFLECTION_OBSERVATIONS,
+    seconds_since_last_update: float = MIN_REFLECTION_INTERVAL_SECONDS,
+    min_reflection_observations: int = MIN_REFLECTION_OBSERVATIONS,
+    min_reflection_interval_seconds: float = MIN_REFLECTION_INTERVAL_SECONDS,
+    session_event_id: str = "",
 ) -> CounterfactualReflection:
-    """Compare trajectories and propose a bounded phi-prior update.
+    """Compare trajectories and propose a bounded, rate-limited phi-prior update.
 
     ``block_margin`` is the block-level signal. ``share_margin`` is retained as
     context but does not drive the prior update. This prevents share-difficulty
     feedback from becoming a phi-resonance prior.
 
-    The prior is clipped into a strict sub-interval of (0, 1). The lower bound
-    prevents disabling phi-resonant search; the upper bound prevents a run of
-    favourable counterfactuals from collapsing the search topology into an
-    overconfident point mass.
+    The prior is clipped into a strict sub-interval of (0, 1), and prior velocity
+    is constrained by minimum observation and elapsed-time guards. A reflection
+    may still be recorded when the guard is not satisfied, but prior movement is
+    zero until enough evidence has accumulated.
     """
 
     lower = _strict_unit_bound(phi_prior_min, "phi_prior_min")
     upper = _strict_unit_bound(phi_prior_max, "phi_prior_max")
     if not lower < upper:
         raise ValueError("phi_prior_bounds_must_be_ordered")
+    if int(min_reflection_observations) <= 0:
+        raise ValueError("min_reflection_observations_must_be_positive")
+    if float(min_reflection_interval_seconds) < 0.0:
+        raise ValueError("min_reflection_interval_seconds_must_be_non_negative")
+    if int(observations_supporting_update) < 0:
+        raise ValueError("observations_supporting_update_must_be_non_negative")
+    if float(seconds_since_last_update) < 0.0:
+        raise ValueError("seconds_since_last_update_must_be_non_negative")
+
     limit = _unit(max_phi_prior_delta, "max_phi_prior_delta")
     prior = _clamp(_unit(current_phi_prior, "current_phi_prior"), lower, upper)
     rate = _unit(learning_rate, "learning_rate")
@@ -132,17 +155,25 @@ def reflect_counterfactual_phi_prior(
         1.0,
     )
 
+    velocity_guard_satisfied = (
+        int(observations_supporting_update) >= int(min_reflection_observations)
+        and float(seconds_since_last_update) >= float(min_reflection_interval_seconds)
+    )
+    confidence_weight = min(1.0, int(observations_supporting_update) / float(min_reflection_observations))
+
     reference_signal = reference.block_margin if reference.locally_valid else -1.0
     alternative_signal = alternative.block_margin if alternative.locally_valid else -1.0
     evidence_delta = alternative_signal - reference_signal
     phi_gate = 1.0 if alternative.phi_score >= alternative.phi_threshold else -0.5
-    raw_delta = rate * evidence_delta * phi_gate
+    raw_delta = rate * evidence_delta * phi_gate * confidence_weight if velocity_guard_satisfied else 0.0
     phi_prior_delta = _bounded_delta(raw_delta, limit)
     unclipped_prior = prior + phi_prior_delta
     updated_prior = _clamp(unclipped_prior, lower, upper)
     effective_delta = updated_prior - prior
 
-    if effective_delta > 0:
+    if not velocity_guard_satisfied:
+        reason = "reflection_velocity_guard_wait_for_more_evidence"
+    elif effective_delta > 0:
         reason = "alternative_phi_trajectory_improves_block_margin_with_bounded_prior_update"
     elif effective_delta < 0:
         reason = "alternative_phi_trajectory_weakens_block_margin_with_bounded_prior_update"
@@ -160,11 +191,18 @@ def reflect_counterfactual_phi_prior(
         phi_prior_min=lower,
         phi_prior_max=upper,
         max_phi_prior_delta=limit,
+        observations_supporting_update=int(observations_supporting_update),
+        min_reflection_observations=int(min_reflection_observations),
+        seconds_since_last_update=float(seconds_since_last_update),
+        min_reflection_interval_seconds=float(min_reflection_interval_seconds),
+        velocity_guard_satisfied=velocity_guard_satisfied,
+        confidence_weight=confidence_weight,
+        session_event_id=session_event_id,
         memory_write_target="phi_resonance_prior",
         share_difficulty_prior_unchanged=True,
         reflection_reason=reason,
         claim_boundary=(
-            "Counterfactual reflection updates bounded phi-resonance priors only; it does not certify external truth, "
+            "Counterfactual reflection updates bounded, rate-limited phi-resonance priors only; it does not certify external truth, "
             "does not use share difficulty as block truth, and does not mutate the live runtime."
         ),
     )
@@ -175,6 +213,8 @@ __all__ = [
     "DEFAULT_COUNTERFACTUAL_LEARNING_RATE",
     "DEFAULT_PHI_PRIOR",
     "MAX_PHI_PRIOR_DELTA",
+    "MIN_REFLECTION_INTERVAL_SECONDS",
+    "MIN_REFLECTION_OBSERVATIONS",
     "PHI_PRIOR_MAX",
     "PHI_PRIOR_MIN",
     "CounterfactualReflection",
