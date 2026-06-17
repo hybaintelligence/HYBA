@@ -195,9 +195,9 @@ def validate_share(job: MiningJob, nonce: int, extranonce2: str) -> ShareValidat
     digest = block_hash(header)
     hash_int = int.from_bytes(digest, byteorder="little", signed=False)
     target = effective_target(job)
-    # For live mining, accept all candidates and let pool validate
-    valid = True
-    reason = None
+    # Locally reject candidates whose exact double-SHA256 hash is above target.
+    valid = hash_int <= target
+    reason = None if valid else "hash_above_target"
     return ShareValidationResult(
         valid=valid,
         block_hash=display_hash(digest),
