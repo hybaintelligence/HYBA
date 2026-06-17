@@ -6,6 +6,7 @@
     "mining_production_readiness_live_20260616T183745Z.json": "1b81f1018f73cfdc5a79a97f4aab58950523ceb582f10f2ca168d85d727ad079",
     "test_output.txt": "bbec3719741ea48b6c2536468f482123a9866850593032b87cad5249b9eef078"
   },
+  "hash_semantics_note": "files hashes are packaged_file_sha256 values for files as stored in this RC directory. The readiness JSON also contains its own source-level artifact_sha256 field (cdb225fb...), which identifies the source artifact that generated the readiness report and is intentionally distinct from the packaged file hash.",
   "mission": "one_pool_confirmed_block_then_shutdown",
   "hashrate_ceiling": "1.0 EH/s",
   "supreme_invariant": "blockchain_security_above_hyba_upside",

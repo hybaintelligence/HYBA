@@ -83,7 +83,7 @@ class GateReport:
     doctrine: dict[str, object]
     steps: list[StepResult] = field(default_factory=list)
     next_operator_actions: list[str] = field(default_factory=list)
-    artifact_sha256: str | None = None
+    source_artifact_sha256: str | None = None
 
     def to_dict(self) -> dict[str, object]:
         payload = asdict(self)
@@ -232,10 +232,10 @@ def _next_actions(mode: Mode, passed: bool) -> list[str]:
 
 def _write_report(report: GateReport, artifact: Path) -> str:
     payload = report.to_dict()
-    payload["artifact_sha256"] = None
+    payload["source_artifact_sha256"] = None
     raw = json.dumps(payload, indent=2, sort_keys=True)
     digest = hashlib.sha256(raw.encode("utf-8")).hexdigest()
-    payload["artifact_sha256"] = digest
+    payload["source_artifact_sha256"] = digest
     artifact.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
     return digest
 

@@ -1,5 +1,5 @@
 {
-  "artifact_sha256": "cdb225fbd6d7f01ccf2bb87d7f15a423ee1f1f42b4a508ed8e7cef05af23f436",
+  "source_artifact_sha256": "cdb225fbd6d7f01ccf2bb87d7f15a423ee1f1f42b4a508ed8e7cef05af23f436",
   "checks": [
     {
       "detail": "",
