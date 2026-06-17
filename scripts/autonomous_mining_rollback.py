@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import sys
 from pathlib import Path
@@ -28,13 +29,53 @@ def main() -> int:
         default="artifacts/autonomous_mining",
         help="Autonomy state directory to update",
     )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Validate the rollback state and report what would be restored without writing it",
+    )
     args = parser.parse_args()
 
     controller = AutonomousMiningController(
         RollbackEngineStub(),
         AutonomousConfig(persistence_enabled=True, persistence_dir=args.state_dir),
     )
-    result = controller.rollback_to_state(args.state, args.reason, operator_id=args.operator)
+    if args.dry_run:
+        checksum_file = args.state.with_suffix(args.state.suffix + ".sha256")
+        if checksum_file.exists():
+            expected = checksum_file.read_text(encoding="utf-8").strip()
+            actual = hashlib.sha256(args.state.read_bytes()).hexdigest()
+            if expected != actual:
+                raise ValueError("rollback state checksum mismatch")
+        state = json.loads(args.state.read_text(encoding="utf-8"))
+        schema_version = int(state.get("schema_version", 1))
+        target_schema_version = controller.config.state_schema_version
+        if schema_version > target_schema_version:
+            raise ValueError(
+                f"unsupported rollback state schema {schema_version}; "
+                f"controller supports {target_schema_version}"
+            )
+        controller._load_reflexive_state_locked(args.state)
+        result = {
+            "dry_run": True,
+            "validated": True,
+            "state_file": str(args.state),
+            "operator_id": args.operator,
+            "reason": args.reason,
+            "target_state_dir": args.state_dir,
+            "schema_version": schema_version,
+            "target_schema_version": target_schema_version,
+            "schema_migration": (
+                "v1_to_v2_in_memory"
+                if schema_version == 1 and target_schema_version == 2
+                else "not_required"
+            ),
+            "epochs": controller._self_optimization_epochs,
+            "phi_density_history_len": len(controller._phi_density_history),
+            "proposals_loaded": len(state.get("proposals", [])),
+        }
+    else:
+        result = controller.rollback_to_state(args.state, args.reason, operator_id=args.operator)
     print(json.dumps(result, indent=2, sort_keys=True))
     return 0
 

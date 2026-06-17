@@ -229,6 +229,24 @@ def _env_operator_approval_required() -> bool:
     return val in ("true", "1", "yes")
 
 
+def _env_circuit_breaker_cooldown() -> float:
+    """Read autonomous hook circuit-breaker cooldown with safe minimum."""
+    try:
+        configured = float(os.getenv("HYBA_AUTONOMY_CIRCUIT_BREAKER_COOLDOWN_SECONDS", "300.0"))
+    except ValueError:
+        configured = 300.0
+    return max(configured, 10.0)
+
+
+def _env_circuit_breaker_failure_threshold() -> int:
+    """Read autonomous hook circuit-breaker threshold with safe minimum."""
+    try:
+        configured = int(os.getenv("HYBA_AUTONOMY_CIRCUIT_BREAKER_FAILURE_THRESHOLD", "3"))
+    except ValueError:
+        configured = 3
+    return max(configured, 1)
+
+
 # ---------------------------------------------------------------------------
 # Metrics helper — simple counters / gauges that can be consumed externally
 # ---------------------------------------------------------------------------
@@ -241,10 +259,14 @@ class AutonomyMetrics:
     operator_overrides: int = 0
     constraint_violations: int = 0
     consecutive_failures: int = 0
+    autonomous_circuit_open: bool = False
+    autonomous_circuit_open_until: Optional[float] = None
+    autonomous_circuit_breaker_trips: int = 0
     current_autonomy_level: str = "advisory"
     phi_density: float = 0.0
     reflexive_cycle_count: int = 0
     degradation_events: int = 0
+    stale_state_lock_recoveries: int = 0
     pending_operator_approvals: int = 0
     proposal_acceptance_rate: float = 0.0
     last_reflexive_cycle_duration_ms: float = 0.0
@@ -280,9 +302,28 @@ class AutonomousConfig:
     knowledge_growth_rate_target: float = 0.01  # Minimum knowledge growth per cycle
     # Persistence
     persistence_enabled: bool = True
-    state_schema_version: int = 1
+    state_schema_version: int = 2
     state_backup_count: int = 10
     restore_autonomy_level_from_state: bool = False
+    state_lock_stale_seconds: float = field(
+        default_factory=lambda: float(os.getenv("HYBA_AUTONOMY_STATE_LOCK_STALE_SECONDS", "300.0"))
+    )
+    metrics_cache_ttl_seconds: float = field(
+        default_factory=lambda: float(os.getenv("HYBA_AUTONOMY_METRICS_CACHE_TTL_SECONDS", "5.0"))
+    )
+    emergency_operator_ids: List[str] = field(
+        default_factory=lambda: [
+            item.strip()
+            for item in os.getenv("HYBA_EMERGENCY_OPERATOR_IDS", "").split(",")
+            if item.strip()
+        ]
+    )
+    circuit_breaker_failure_threshold: int = field(
+        default_factory=_env_circuit_breaker_failure_threshold
+    )
+    circuit_breaker_cooldown_seconds: float = field(
+        default_factory=_env_circuit_breaker_cooldown
+    )
     operator_approval_timeout_seconds: float = field(
         default_factory=lambda: float(os.getenv("HYBA_OPERATOR_APPROVAL_TIMEOUT_SECONDS", "300.0"))
     )
@@ -323,7 +364,10 @@ class AutonomousMiningController:
         self.decision_log: List[AutonomousDecision] = []
         self.current_autonomy_level = self.config.autonomy_level
         self._consecutive_failures: int = 0
+        self._circuit_open_until: Optional[float] = None
+        self._circuit_breaker_trips: int = 0
         self._degradation_events: int = 0
+        self._stale_state_lock_recoveries: int = 0
         self.operator_approval_callback: Optional[
             Callable[[AutonomousDecision], Union[bool, OperatorApprovalDecision, Dict[str, Any]]]
         ] = None
@@ -333,6 +377,9 @@ class AutonomousMiningController:
         self._state_lock = threading.RLock()
         self._audit_lock = threading.RLock()
         self._approval_lock = threading.RLock()
+        self._metrics_cache_lock = threading.RLock()
+        self._metrics_cache_expires_at: float = 0.0
+        self._metrics_cache_text: Optional[str] = None
 
         # --- Reflexive Knowledge Loop state ---
         self.knowledge_substrate = KnowledgeSubstrate()
@@ -372,10 +419,14 @@ class AutonomousMiningController:
                 1 for d in self.decision_log if d.constraints_violated
             ),
             consecutive_failures=self._consecutive_failures,
+            autonomous_circuit_open=self.is_circuit_open(),
+            autonomous_circuit_open_until=self._circuit_open_until,
+            autonomous_circuit_breaker_trips=self._circuit_breaker_trips,
             current_autonomy_level=self.current_autonomy_level.value,
             phi_density=self.get_phi_density(),
             reflexive_cycle_count=self._self_optimization_epochs,
             degradation_events=self._degradation_events,
+            stale_state_lock_recoveries=self._stale_state_lock_recoveries,
             pending_operator_approvals=sum(
                 1 for r in self.operator_approval_requests if r.status == "pending"
             ),
@@ -392,10 +443,14 @@ class AutonomousMiningController:
             "operator_overrides": m.operator_overrides,
             "constraint_violations": m.constraint_violations,
             "consecutive_failures": m.consecutive_failures,
+            "autonomous_circuit_open": m.autonomous_circuit_open,
+            "autonomous_circuit_open_until": m.autonomous_circuit_open_until,
+            "autonomous_circuit_breaker_trips": m.autonomous_circuit_breaker_trips,
             "current_autonomy_level": m.current_autonomy_level,
             "phi_density": m.phi_density,
             "reflexive_cycle_count": m.reflexive_cycle_count,
             "degradation_events": m.degradation_events,
+            "stale_state_lock_recoveries": m.stale_state_lock_recoveries,
             "pending_operator_approvals": m.pending_operator_approvals,
             "proposal_acceptance_rate": m.proposal_acceptance_rate,
             "last_reflexive_cycle_duration_ms": m.last_reflexive_cycle_duration_ms,
@@ -436,9 +491,21 @@ class AutonomousMiningController:
             "# HELP hyba_consecutive_failures Current circuit-breaker failure count.",
             "# TYPE hyba_consecutive_failures gauge",
             f"hyba_consecutive_failures {snapshot['consecutive_failures']}",
+            "# HELP hyba_autonomous_consecutive_failures Current autonomous hook failure count.",
+            "# TYPE hyba_autonomous_consecutive_failures gauge",
+            f"hyba_autonomous_consecutive_failures {snapshot['consecutive_failures']}",
+            "# HELP hyba_autonomous_circuit_open Autonomous hook circuit-breaker state.",
+            "# TYPE hyba_autonomous_circuit_open gauge",
+            f"hyba_autonomous_circuit_open {1 if snapshot['autonomous_circuit_open'] else 0}",
+            "# HELP hyba_autonomous_circuit_breaker_trips_total Autonomous hook circuit-breaker trips.",
+            "# TYPE hyba_autonomous_circuit_breaker_trips_total counter",
+            f"hyba_autonomous_circuit_breaker_trips_total {snapshot['autonomous_circuit_breaker_trips']}",
             "# HELP hyba_degradation_events_total Autonomy degradation events.",
             "# TYPE hyba_degradation_events_total counter",
             f"hyba_degradation_events_total {snapshot['degradation_events']}",
+            "# HELP hyba_stale_state_lock_recoveries_total Stale state lock files auto-recovered.",
+            "# TYPE hyba_stale_state_lock_recoveries_total counter",
+            f"hyba_stale_state_lock_recoveries_total {snapshot['stale_state_lock_recoveries']}",
             "# HELP hyba_reflexive_cycle_duration_ms Last reflexive cycle duration.",
             "# TYPE hyba_reflexive_cycle_duration_ms gauge",
             f"hyba_reflexive_cycle_duration_ms {snapshot['last_reflexive_cycle_duration_ms']}",
@@ -457,9 +524,118 @@ class AutonomousMiningController:
         ])
         return "\n".join(lines) + "\n"
 
+    def invalidate_prometheus_metrics_cache(self) -> None:
+        """Invalidate cached metrics after state changes that operators must see immediately."""
+        with self._metrics_cache_lock:
+            self._metrics_cache_text = None
+            self._metrics_cache_expires_at = 0.0
+
+    def get_prometheus_metrics_text_cached(self, cache_ttl_seconds: Optional[float] = None) -> str:
+        """Return Prometheus text with a short TTL to protect scrape endpoints.
+
+        The uncached exporter remains available for tests and direct diagnostics; web
+        endpoints should prefer this method so an accidentally aggressive scraper
+        does not repeatedly force expensive phi-density recomputation.
+        """
+        ttl = self.config.metrics_cache_ttl_seconds if cache_ttl_seconds is None else cache_ttl_seconds
+        if ttl <= 0:
+            return self.get_prometheus_metrics_text()
+        now = time.monotonic()
+        with self._metrics_cache_lock:
+            if self._metrics_cache_text is not None and now < self._metrics_cache_expires_at:
+                return self._metrics_cache_text
+            text = self.get_prometheus_metrics_text()
+            self._metrics_cache_text = text
+            self._metrics_cache_expires_at = now + ttl
+            return text
+
     # ----------------------------------------------------------------
     # ERROR / DEGRADATION
     # ----------------------------------------------------------------
+
+    def is_circuit_open(self, now: Optional[float] = None) -> bool:
+        """Return whether autonomous hooks are currently circuit-open.
+
+        Expired circuits re-close automatically on observation. The circuit gates
+        only autonomous optimisation/reflexive hooks; mining search and verifier
+        paths remain outside this state.
+        """
+        current = time.time() if now is None else now
+        if self._circuit_open_until is None:
+            return False
+        if current < self._circuit_open_until:
+            return True
+        previous_until = self._circuit_open_until
+        self._circuit_open_until = None
+        self._consecutive_failures = 0
+        self._log_audit_event(
+            "autonomous_circuit_reclosed",
+            {"previous_open_until": previous_until},
+            action="autonomous_circuit_breaker",
+            outcome="closed_after_cooldown",
+        )
+        return False
+
+    def record_circuit_success(self) -> None:
+        """Record successful autonomous hook execution and close half-open state."""
+        self._consecutive_failures = 0
+        self._circuit_open_until = None
+        self.invalidate_prometheus_metrics_cache()
+
+    def record_circuit_failure(self, reason: str = "autonomous_hook_failure") -> None:
+        """Record autonomous hook failure and open circuit after threshold."""
+        self._consecutive_failures += 1
+        if self._consecutive_failures < self.config.circuit_breaker_failure_threshold:
+            self.invalidate_prometheus_metrics_cache()
+            return
+        if self._circuit_open_until is None:
+            self._circuit_open_until = time.time() + self.config.circuit_breaker_cooldown_seconds
+            self._circuit_breaker_trips += 1
+            self._log_audit_event(
+                "autonomous_circuit_opened",
+                {
+                    "reason": reason,
+                    "consecutive_failures": self._consecutive_failures,
+                    "threshold": self.config.circuit_breaker_failure_threshold,
+                    "open_until": self._circuit_open_until,
+                    "cooldown_seconds": self.config.circuit_breaker_cooldown_seconds,
+                },
+                action="autonomous_circuit_breaker",
+                outcome="opened",
+            )
+        else:
+            self.invalidate_prometheus_metrics_cache()
+
+    def reset_circuit_breaker(self, operator_id: str, reason: str) -> Dict[str, Any]:
+        """Manually close the autonomous hook circuit with before/after audit state."""
+        before_state = {
+            "consecutive_failures": self._consecutive_failures,
+            "circuit_open": self.is_circuit_open(),
+            "circuit_open_until": self._circuit_open_until,
+            "circuit_breaker_trips": self._circuit_breaker_trips,
+        }
+        self._consecutive_failures = 0
+        self._circuit_open_until = None
+        after_state = {
+            "consecutive_failures": self._consecutive_failures,
+            "circuit_open": self.is_circuit_open(),
+            "circuit_open_until": self._circuit_open_until,
+            "circuit_breaker_trips": self._circuit_breaker_trips,
+        }
+        self._log_audit_event(
+            "manual_autonomous_circuit_reset",
+            {
+                "operator_id": operator_id,
+                "reason": reason,
+                "before_state": before_state,
+                "after_state": after_state,
+            },
+            action="reset_autonomous_circuit",
+            outcome="reset",
+            operator_id=operator_id,
+            operator_action="reset_autonomous_circuit",
+        )
+        return {"before_state": before_state, "after_state": after_state}
 
     def degrade_autonomy_level(self, reason: str) -> AutonomyLevel:
         """Degrade one level when the current level experiences repeated failures.
@@ -538,6 +714,20 @@ class AutonomousMiningController:
             if len(self.audit_log) > self.config.decision_audit_log_size:
                 self.audit_log = self.audit_log[-self.config.decision_audit_log_size:]
         self._log_event(event_type, {**data, **entry.__dict__})
+        if event_type in {
+            "decision",
+            "degradation",
+            "operator_approval_completed",
+            "operator_approval_rejected",
+            "stale_state_lock_removed",
+            "emergency_operator_bypass_approved",
+            "emergency_operator_bypass_rejected",
+            "state_rollback",
+            "autonomous_circuit_opened",
+            "autonomous_circuit_reclosed",
+            "manual_autonomous_circuit_reset",
+        }:
+            self.invalidate_prometheus_metrics_cache()
         return entry
 
     # ================================================================
@@ -1303,6 +1493,11 @@ class AutonomousMiningController:
             ],
             "autonomy_level": self.current_autonomy_level.value,
             "phi_coherence_threshold": self.config.phi_coherence_threshold,
+            "capacity_limits": {
+                "max_proposals_per_cycle": self.config.max_proposals_per_cycle,
+                "max_autonomous_hashrate_ehs": self.config.max_autonomous_hashrate_ehs,
+                "max_autonomous_power_watts": self.config.max_autonomous_power_watts,
+            },
         }
         state["schema_version"] = self.config.state_schema_version
         try:
@@ -1327,27 +1522,56 @@ class AutonomousMiningController:
             )
 
     def _state_file_lock(self, state_file: Path) -> Any:
-        """Return a simple cross-process lock context for state file writes."""
+        """Return a cross-process lock context with stale-lock recovery."""
+        stale_seconds = max(0.0, self.config.state_lock_stale_seconds)
+        log_audit_event = self._log_audit_event
+        self_controller = self
 
         class _StateFileLock:
             def __init__(self) -> None:
                 self.lock_path = state_file.with_suffix(state_file.suffix + ".lock")
+                self.acquired = False
+
+            def _remove_stale_lock_if_needed(self) -> bool:
+                if stale_seconds <= 0 or not self.lock_path.exists():
+                    return False
+                lock_age = time.time() - self.lock_path.stat().st_mtime
+                if lock_age < stale_seconds:
+                    return False
+                stale_payload = self.lock_path.read_text(encoding="utf-8", errors="replace")
+                self.lock_path.unlink(missing_ok=True)
+                self_controller._stale_state_lock_recoveries += 1
+                log_audit_event(
+                    "stale_state_lock_removed",
+                    {
+                        "lock_path": str(self.lock_path),
+                        "lock_age_seconds": round(lock_age, 3),
+                        "stale_payload": stale_payload,
+                    },
+                    action="acquire_state_file_lock",
+                    outcome="stale_lock_removed",
+                )
+                return True
 
             def __enter__(self) -> None:
                 deadline = time.monotonic() + 5.0
                 while True:
                     try:
                         fd = os.open(self.lock_path, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
-                        os.write(fd, str(os.getpid()).encode("utf-8"))
+                        payload = json.dumps({"pid": os.getpid(), "created_at": time.time()})
+                        os.write(fd, payload.encode("utf-8"))
                         os.close(fd)
+                        self.acquired = True
                         return None
                     except FileExistsError:
+                        self._remove_stale_lock_if_needed()
                         if time.monotonic() >= deadline:
                             raise TimeoutError(f"state lock contention: {self.lock_path}")
                         time.sleep(0.05)
 
             def __exit__(self, exc_type: Any, exc: Any, tb: Any) -> None:
-                self.lock_path.unlink(missing_ok=True)
+                if self.acquired:
+                    self.lock_path.unlink(missing_ok=True)
 
         return _StateFileLock()
 
@@ -1382,6 +1606,22 @@ class AutonomousMiningController:
                     raise ValueError("reflexive state checksum mismatch")
             with open(state_file, "r") as f:
                 state = json.load(f)
+            schema_version = int(state.get("schema_version", 1))
+            if schema_version > self.config.state_schema_version:
+                raise ValueError(
+                    f"unsupported reflexive state schema {schema_version}; "
+                    f"controller supports {self.config.state_schema_version}"
+                )
+            if schema_version < self.config.state_schema_version:
+                self._log_audit_event(
+                    "state_schema_migration",
+                    {
+                        "from_schema_version": schema_version,
+                        "to_schema_version": self.config.state_schema_version,
+                    },
+                    action="load_reflexive_state",
+                    outcome="migrated_in_memory",
+                )
             self._self_optimization_epochs = state.get("epochs", 0)
             self._phi_density_history = state.get("phi_density_history", [])
             self._compression_seeking_history = state.get("compression_seeking_history", [])
@@ -2015,6 +2255,61 @@ class AutonomousMiningController:
             operator_action=request.status,
         )
         return approved
+
+    def authorize_emergency_operator_bypass(
+        self,
+        decision: AutonomousDecision,
+        operator_id: str,
+        emergency_reason: str,
+    ) -> OperatorApprovalDecision:
+        """Record a deliberate emergency approval by a configured operator.
+
+        Scope is intentionally limited to the autonomous optimisation/reflexive
+        layer. This method does not call, configure, or relax mining verification,
+        pool submission, or nonce-search paths; those remain governed by the
+        verifier/firewall and live-share gates. Callers must provide a non-empty
+        incident reason and the operator must be present in
+        ``HYBA_EMERGENCY_OPERATOR_IDS``/``AutonomousConfig.emergency_operator_ids``.
+        """
+        if not operator_id or operator_id not in self.config.emergency_operator_ids:
+            self._log_audit_event(
+                "emergency_operator_bypass_rejected",
+                {"operator_id": operator_id, "reason": "operator_not_authorized"},
+                decision=decision,
+                action="emergency_operator_bypass",
+                outcome="rejected",
+                operator_id=operator_id,
+                operator_action="emergency_bypass_rejected",
+            )
+            return OperatorApprovalDecision(
+                approved=False, operator_id=operator_id, reason="operator_not_authorized"
+            )
+        if not emergency_reason.strip():
+            self._log_audit_event(
+                "emergency_operator_bypass_rejected",
+                {"operator_id": operator_id, "reason": "missing_emergency_reason"},
+                decision=decision,
+                action="emergency_operator_bypass",
+                outcome="rejected",
+                operator_id=operator_id,
+                operator_action="emergency_bypass_rejected",
+            )
+            return OperatorApprovalDecision(
+                approved=False, operator_id=operator_id, reason="missing_emergency_reason"
+            )
+        decision.operator_reason = f"EMERGENCY_BYPASS_AUTONOMY_LAYER_ONLY: {emergency_reason.strip()}"
+        self._log_audit_event(
+            "emergency_operator_bypass_approved",
+            {"operator_id": operator_id, "reason": decision.operator_reason},
+            decision=decision,
+            action="emergency_operator_bypass",
+            outcome="approved",
+            operator_id=operator_id,
+            operator_action="emergency_bypass",
+        )
+        return OperatorApprovalDecision(
+            approved=True, operator_id=operator_id, reason=decision.operator_reason
+        )
 
     def get_audit_log(self, limit: Optional[int] = None) -> List[AuditLogEntry]:
         """Return structured autonomy audit entries."""
