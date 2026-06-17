@@ -18,6 +18,9 @@ PYTHONPATH=python_backend python scripts/review_environment_pipeline_audit.py
 printf '🧱 Verifying local proof-of-work validation and Stratum share guardrails...\n'
 PYTHONPATH=python_backend python -m pytest tests/test_metal_sha256_pipeline.py tests/test_stratum_share_acceptance_e2e.py -q
 
+printf '🛡️ Running exact SHA256d verifier/firewall deployment gate...\n'
+bash scripts/run_verifier_firewall_gate.sh
+
 if [[ "${HYBA_ENABLE_LIVE_SHARE_SUBMIT}" != "true" ]]; then
   printf '🛡️ Guardrail active: HYBA_ENABLE_LIVE_SHARE_SUBMIT is not true. Shares can be locally validated but will not be submitted live.\n'
 fi
