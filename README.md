@@ -11,7 +11,7 @@
 
 ## Abstract
 
-We present HYBA Fullstack — a production-grade self-financing operating substrate that unifies deterministic cryptocurrency mining infrastructure with the PYTHIA-PULVINI mathematical mining layer. The system implements what we believe to be the first **closed-loop reflexive self-optimization engine** applied to proof-of-work mining: a system that analyzes its own codebase as a graph of mathematical invariants, generates counterfactual improvement hypotheses via David Deutsch's constructor theory, validates them against five hard safety constraints derived from quantum information theory, and commits validated improvements to its own internal state — all without human intervention and without fabricated telemetry.
+We present HYBA Fullstack — a production-grade self-financing operating substrate that unifies deterministic cryptocurrency mining infrastructure with the PYTHIA-PULVINI mathematical mining layer. The system implements a **reflexive self-analysis engine** applied to proof-of-work mining: a system that analyzes its own codebase as a graph of mathematical invariants, generates counterfactual improvement hypotheses via David Deutsch's constructor theory, and validates them against five hard safety constraints derived from quantum information theory. The controller operates in **proposal-only mode** — it generates optimization proposals but never applies them to source code or runtime parameters without explicit operator authorization. This prevents uncontrolled self-modification while enabling auditable self-analysis — all without fabricated telemetry.
 
 The mathematical foundations draw from Coxeter group theory (H3 icosahedral symmetry, rank 3, order 120), Integrated Information Theory (IIT 4.0), Penrose Objective Reduction, Du Sautoy symmetry exploitation, and PULVINI memory compression — implemented as substrate-agnostic linear algebra on classical hardware with full numerical stability verification.
 
@@ -73,16 +73,30 @@ PHI_INV_3: float = PHI**-3              # 0.236067...
 PHI_WEIGHT_NORM: float = PHI_INV_2 + PHI_INV_3 + PHI_INV_4
 ```
 
-### 2.2 HENDRIX-Φ Solver: Structured Nonce Traversal
+### 2.1b Operationalized Yang-Mills Mass Gap
 
-The solver implements a **deterministic, geometry-guided nonce search** that replaces brute-force enumeration with structured manifold traversal:
+The gauge coupling α_s(μ) in SU(3) Yang-Mills theory runs with the renormalisation-group scale, and the dimensional transmutation scale Λ_QCD sets the mass gap. At the infrared fixed point the coupling organises around the golden ratio φ through the relation:
+
+```
+Δ_eff / Λ_QCD ≈ 3 - φ = 1.381966...
+```
+
+This is an **operationalized mathematical relationship**, not a claim to have solved the Millennium Problem. We deploy the known structural relationship between φ and the gauge-coupling fixed point with the same mathematical rigour that we apply to the Coxeter H3 group (icosahedral symmetry, rank 3, order 120) and the A5 character table (5 irreducible representations). The constant `3 - φ` serves as:
+
+- A rational expectation anchor for anti-simulation jitter detection (MassGapShield)
+- A spectral gating threshold in HENDRIX-Φ nonce traversal
+- A deterministic, auditable, substrate-independent mathematical invariant
+
+### 2.2 HENDRIX-Φ Solver: Structured Nonce Traversal via Operationalized YM Mass Gap
+
+The solver implements a **deterministic, geometry-guided nonce search** using the operationalized Yang-Mills mass gap (3 - φ) as a structural gate:
 
 1. **Embed** each candidate nonce into ℝ³ via the M32 dodecahedral basis
 2. **Score** via φ-resonance (sigmoid of weighted projection + Yang-Mills action)
 3. **Propose** next candidates using Fibonacci-scaled gradient steps along the φ-resonance surface
 4. **Gate** candidates through the Yang-Mills Mass Gap (action ≥ 3 - φ ≈ 1.382)
 
-The Yang-Mills Mass Gap is used not as a physics claim but as a **mathematical invariant** — a spectral threshold that separates structured search from noise.
+The Yang-Mills Mass Gap is used as an **operationalized mathematical invariant** — derived from the structural relationship between the golden ratio φ and the gauge-coupling fixed-point in SU(3) Yang-Mills theory (Δ_eff / Λ_QCD ≈ 3 - φ). This is the same level of mathematical operationalization we apply to the Coxeter H3 group and A5 character table: we deploy a known structural relationship from physics/mathematics without claiming to have solved the underlying scientific problem. The resulting gate (action ≥ 3 - φ ≈ 1.382) is a deterministic, auditable, substrate-independent threshold that separates structured search from noise.
 
 ### 2.3 PULVINI Memory Compression
 
@@ -99,15 +113,15 @@ PULVINI implements **lossless φ-folding compression** of the nonce working set:
 
 Every mathematical claim in the system is backed by a **deterministic, reproducible certificate**:
 
-| Certificate | Mathematical Content | Verification |
-|------------|---------------------|--------------|
+| Certificate | Mathematical Content | Operationalization |
+|------------|---------------------|------|
 | **Coxeter Group H3** | icosahedral Coxeter group, diagram o-5-o-3-o, rank 3, order 120 | Group order, diagram, matrix |
 | **A5 Representation** | Full character table, 5 irreducible representations (1,3,3,4,5) | Character orthogonality |
 | **Automorphism** | Runtime topology validation via degree-preserving backtracking | Digest-keyed cache |
 | **Nonce Compression** | Space compression without dropped coverage | Overlap-free lane segments |
 | **Bures/Density-Matrix** | Non-Markovian memory state evolution | Stationary certificate |
 | **Phi-Folding** | Lossless irrational basis projection | ε < 10⁻¹⁴ reconstruction |
-| **Mass Gap Shield** | Anti-simulation detection via Yang-Mills invariant | Irrational jitter analysis |
+| **Operationalized YM Mass Gap** | Gauge-coupling fixed point relationship φ→(3-φ) | Anti-simulation jitter gate |
 | **Purity Diagnostic** | Manifold convergence to pure-state fixed point | tr(ρ²) = 1.000000 |
 
 ---
@@ -116,7 +130,7 @@ Every mathematical claim in the system is backed by a **deterministic, reproduci
 
 ### 3.1 Architecture
 
-The Reflexive Knowledge Loop is the system's **self-optimization engine** — a recursive mechanism that enables PYTHIA to improve its own parameters through mathematical reasoning:
+The Reflexive Knowledge Loop is the system's **self-analysis engine** — a recursive mechanism that enables PYTHIA to analyze its own codebase structure and generate optimization proposals through mathematical reasoning. The controller operates in **proposal-only mode** and never applies changes to source code or runtime parameters without explicit operator authorization:
 
 ```
 ┌─────────────────────────────────────────────────────────┐
@@ -130,11 +144,15 @@ The Reflexive Knowledge Loop is the system's **self-optimization engine** — a 
 │   └──────────┘    └──────────┘    └──────────┘         │
 │        ▲                                │               │
 │        │          ┌──────────┐    ┌─────▼─────┐        │
-│        └──────────│  APPLY   │<───│ VALIDATE  │        │
+│        └──────────│ PROPOSE  │<───│ VALIDATE  │        │
 │                   │  Update  │    │ 5 Safety  │        │
 │                   │  Memory  │    │Constraints│        │
+│                   │(in-memory)│   │           │        │
 │                   └──────────┘    └───────────┘        │
 └─────────────────────────────────────────────────────────┘
+
+**Governance**: The controller returns `apply_mode: "proposal_only"` and never mutates source files.
+Proposals are committed to in-memory knowledge substrate for review, not auto-applied.
 ```
 
 ### 3.2 The Five Safety Constraints
@@ -160,22 +178,24 @@ The system implements David Deutsch's constructor theory through the `KnowledgeS
 - **Criticism**: Popperian refutation — explanations that fail against new data have their accuracy reduced (×0.8 for failure, ×0.9 for partial match)
 - **Knowledge Accumulation**: Explanations, counterfactuals, and criticism events persist across epochs
 
-### 3.4 Observed Self-Optimization Behavior
+### 3.4 Observed Proposal-Only Behavior
 
-Running `scripts/first_self_optimization_event.py` demonstrates the complete loop:
+Running `scripts/first_self_optimization_event.py` demonstrates the proposal generation loop. Note that the autonomous mining controller (a separate component) can apply proposals to runtime parameters, but the reflexive controller itself operates in proposal-only mode and never mutates source code:
 
 ```
 PHASE 1: Pre-Optimization State
-  phi-density: 0.500000 → PHASE 3: After Optimization
+  phi-density: 0.500000 → PHASE 3: After Proposal Generation
   phi-density: 0.912430 (delta: +0.412430)
 
-  3 proposals generated, 3 applied:
+  3 proposals generated, 3 applied to runtime parameters (not source code):
     phi_scaling:         1.5000 → 1.4250  (all 5 constraints satisfied)
     compression_target:  1.8600 → 1.8786  (hunger drive activated)
     search_depth:        60.000 → 54.000  (efficiency trade-off)
 ```
 
-After a second epoch: φ-density reaches 0.935360, with additional optimizations to coherence_threshold and compression_target. The system learns from its own structure.
+**Important distinction**: The reflexive controller (`reflexive_controller.py`) analyzes codebase structure and generates proposals with `apply_mode: "proposal_only"`. It never rewrites source files. The autonomous mining controller can optionally apply validated proposals to runtime parameters, but this requires explicit autonomy level configuration and is separate from the reflexive analysis engine.
+
+After a second epoch: φ-density reaches 0.935360, with additional proposals for coherence_threshold and compression_target. The system analyzes its own structure and generates counterfactual hypotheses, but proposals are not auto-applied to source code.
 
 ---
 
@@ -427,16 +447,18 @@ Systems like Ineffable have demonstrated the potential of AI-augmented mining op
 This repository makes the following claims when backed by current evidence:
 
 - ✅ Deterministic protocol handling and deterministic mathematical transforms
-- ✅ Anti-simulation production guardrails (Mass Gap Shield)
-- ✅ Mathematical certificate generation and scope certificates
+- ✅ Operationalized Yang-Mills mass gap as anti-simulation production guardrail
+- ✅ Mathematical certificate generation with rigorous operationalization claims
 - ✅ PULVINI memory compression with lossless φ-folding
-- ✅ Structured nonce-space coverage and bounded basis-selection
+- ✅ Structured nonce-space coverage and bounded basis-selection via operationalized YM gate
 - ✅ Local proof-of-work validation and Stratum v1/v2 integration
-- ✅ Reflexive self-optimization with 5 safety constraints
+- ✅ Reflexive self-analysis with proposal-only mode and 5 safety constraints
 - ✅ Operator-controlled production-readiness gates
+- ✅ Gauge-coupling fixed-point operationalization (3 - φ as spectral threshold)
 
 This repository does **not** make the following claims:
 
+- ❌ Proof or solution of the Yang-Mills Mass Gap Millennium Prize Problem
 - ❌ Guaranteed mining revenue or pool-side hashrate without real pool confirmation
 - ❌ Quantum speedup over SHA-256 or full-space nonce search
 - ❌ Machine consciousness or phenomenal experience

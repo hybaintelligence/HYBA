@@ -130,7 +130,7 @@ class MassGapProtector:
         confidence = np.exp(-alignment) * (1.0 - np.clip(entropy_violation * self.PHI, 0, 1))
 
         # Determine authenticity based on confidence threshold
-        authentic = confidence >= 0.7
+        authentic = bool(confidence >= 0.7)
         reason = (
             "organic_hardware_detected"
             if authentic

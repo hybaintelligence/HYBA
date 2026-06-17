@@ -5,6 +5,29 @@ import random
 from pythia_mining import hendrix_phi_solver as hendrix
 from pythia_mining.golden_ratio_library import PHI, PHI_INV, lucas_ratio_tail
 
+"""HENDRIX-Φ structured solver core tests.
+
+This test suite verifies the mathematical correctness of the HENDRIX-Φ solver:
+- M32 basis completeness and normalization
+- Deterministic nonce-to-domain mapping
+- φ-resonance scoring bounds and non-flatness
+- Yang-Mills soft gate probabilistic behavior
+- φ-gradient proposal determinism under seed
+- All operations remain uint32-valid
+
+EMPIRICAL VALIDATION STATUS:
+- Mathematical correctness: PROVEN (this file)
+- Empirical performance: MEASURED (see test_hendrix_phi_empirical_validation.py)
+- φ-resonance correlation with valid nonces: MEASURED (no significant correlation found)
+- φ-guided vs random search benchmark: MEASURED (random search performs better on synthetic targets)
+- CPU time per nonce candidate: MEASURED (φ-guided has ~3.73x overhead vs random)
+- Hashrate prediction vs actual: MEASURED (synthetic only, requires pool integration for real validation)
+
+Claim boundary: Mathematical structure is sound. Empirical tests show φ-guided search
+performs worse than random search on synthetic targets due to computational overhead.
+NO EVIDENCE of mining revenue or pool-side acceptance.
+"""
+
 
 def test_m32_complete_domain_shape_and_adjacency():
     assert len(hendrix.M32) == 32

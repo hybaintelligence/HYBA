@@ -90,7 +90,7 @@ def bures_certificate(
     natural_e = np.zeros_like(first_e, dtype=np.complex128)
     for row, left in enumerate(eigvals_safe.real):
         for col, right in enumerate(eigvals_safe.real):
-            natural_e[row, col] = 2.0 * (max(left, _EPS) + max(right, _EPS)) * first_e[row, col]
+            natural_e[row, col] = 2.0 * first_e[row, col] / (max(left, _EPS) + max(right, _EPS))
     # Use more stable matrix multiplication with error suppression
     with np.errstate(divide="ignore", invalid="ignore", over="ignore"):
         natural = trace_zero_hermitian(eigvecs @ natural_e @ eigvecs.conj().T)
@@ -99,7 +99,7 @@ def bures_certificate(
     return BuresCertificate(
         metric="Bures",
         tangent_space="trace_zero_hermitian_density_tangent",
-        natural_gradient_rule="grad_ij=2*(lambda_i+lambda_j)*first_variation_ij",
+        natural_gradient_rule="grad_ij=2*first_variation_ij/(lambda_i+lambda_j)",
         tangent_norm=t_norm,
         bures_norm=b_norm,
         stationary=bool(b_norm <= float(tolerance)),

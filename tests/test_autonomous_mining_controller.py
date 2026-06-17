@@ -2,6 +2,11 @@
 
 Tests the autonomous decision-making capabilities with mathematical safety constraints,
 including the Reflexive Knowledge Loop for recursive self-learning.
+
+NOTE: This controller uses Φ (phi) coherence metrics as operational diagnostic signals
+for decision support. It does NOT use consciousness-based decision making. The coherence
+metrics are information-theoretic integration proxies for system monitoring, similar
+to how neuroscientists use Φ in neural recordings.
 """
 
 import asyncio

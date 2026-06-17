@@ -159,10 +159,17 @@ def _check_required_files() -> CheckResult:
         "python_backend/pythia_mining/pulvini_nonce_compression.py",
         "python_backend/pythia_mining/mining_validation.py",
         "python_backend/pythia_mining/stratum_client.py",
+        "python_backend/pythia_mining/mass_gap_protector.py",
         "tests/test_phi_unified_mining_engine.py",
         "tests/test_unified_mining_api_surface.py",
         "tests/test_stratum_share_acceptance_e2e.py",
         "tests/test_pulvini_nonce_compression.py",
+        # gap-closure test surfaces — absence blocks deployment preparation
+        "tests/test_gap_phi_search_vs_random.py",
+        "tests/test_gap_reflexive_loop_live_application.py",
+        "tests/test_gap_local_pow_validation.py",
+        "tests/test_gap_pool_acceptance_rate.py",
+        "tests/test_gap_anti_simulation_adversarial.py",
     ]
     missing = [path for path in required if not (ROOT / path).exists()]
     return CheckResult(
@@ -346,6 +353,171 @@ def _check_environment(mode: Mode) -> list[CheckResult]:
     ]
 
 
+def _check_claim_boundary_contract() -> CheckResult:
+    """Verify source-level claim boundaries are in place.
+
+    The deployment contract requires that:
+    - hashrate telemetry is never fabricated (capacity_source guard present)
+    - benchmark results are labelled projection_only when no measured input exists
+    - the anti-simulation MassGapProtector is importable and exercisable
+    - no revenue or financial outcome is asserted in telemetry paths
+    """
+    start = time.monotonic()
+    failures: list[str] = []
+    try:
+        from pythia_mining.quantum_solver import DodecahedralQuantumSolver
+        solver = DodecahedralQuantumSolver()
+        metrics = solver.get_metrics()
+        if metrics.get("telemetry_source") != "derived_runtime_state":
+            failures.append("solver telemetry_source must be 'derived_runtime_state', not a fabricated label")
+        if metrics.get("capacity_source") not in ("not_configured", "configured_estimate"):
+            failures.append("solver capacity_source must be 'not_configured' or 'configured_estimate'")
+        if metrics.get("hashrate_ehs") is not None:
+            failures.append("unconfigured solver must not report a non-None hashrate_ehs")
+    except Exception as exc:
+        failures.append(f"solver import/metrics raised: {exc}")
+
+    try:
+        from pythia_mining.phi_scaling_engine import benchmark_vs_asic
+        proj = benchmark_vs_asic(measured_hashes_per_second=None)
+        if proj.get("benchmark_mode") != "projection_only":
+            failures.append("benchmark without measured input must be labelled 'projection_only'")
+        if proj.get("effective_hashes_per_second") is not None:
+            failures.append("projection_only benchmark must not report effective_hashes_per_second")
+        if proj.get("projected_vs_asic_ratio") is not None:
+            failures.append("projection_only benchmark must not report projected_vs_asic_ratio")
+    except Exception as exc:
+        failures.append(f"benchmark_vs_asic import/call raised: {exc}")
+
+    try:
+        from pythia_mining.mass_gap_protector import MassGapProtector
+        protector = MassGapProtector()
+        # Insufficient data must return 0.0 — the safe default
+        score = protector.get_authenticity_score([0.1] * 10)
+        if score != 0.0:
+            failures.append("MassGapProtector must return 0.0 for < 32 samples")
+        result = protector.verify_telemetry([0.1] * 10)
+        if result.get("authentic") is not False:
+            failures.append("MassGapProtector.verify_telemetry must return authentic=False for < 32 samples")
+    except Exception as exc:
+        failures.append(f"MassGapProtector import/exercise raised: {exc}")
+
+    return CheckResult(
+        name="claim_boundary_contract",
+        severity="critical",
+        status="fail" if failures else "pass",
+        summary="claim boundary violations found" if failures else "telemetry, benchmark, and anti-simulation claim boundaries enforced",
+        detail="\n".join(failures),
+        duration_seconds=time.monotonic() - start,
+    )
+
+
+def _check_multi_pool_failover_contract() -> CheckResult:
+    """Verify pool profile priority ordering and failover preconditions.
+
+    The deployment contract requires that:
+    - DEFAULT_POOL_SPECS defines a deterministic priority ordering
+    - higher-priority pools sort before lower-priority ones in order_profiles
+    - TLS-required pools reject non-TLS scheme URLs at build time
+    - PoolProfile.to_dict redacts credentials in the public (include_secret_fields=False) path
+    - validate_profile rejects profiles without username or password
+    """
+    start = time.monotonic()
+    failures: list[str] = []
+    try:
+        from pythia_mining.pool_profiles import (
+            DEFAULT_POOL_SPECS,
+            PoolProfile,
+            PoolProfileError,
+            build_profile,
+            order_profiles,
+            validate_pool_url,
+            validate_profile,
+        )
+
+        # 1. Priority ordering is deterministic
+        profiles = []
+        for pid, spec in DEFAULT_POOL_SPECS.items():
+            try:
+                profiles.append(
+                    build_profile(
+                        pid,
+                        name=spec["name"],
+                        url=spec["url"],
+                        username="worker",
+                        password="x",
+                        stratum_version=spec["stratum_version"],
+                        priority=spec["priority"],
+                        tls_required=spec["tls_required"],
+                    )
+                )
+            except PoolProfileError:
+                pass  # TLS mismatch on some specs is expected with dummy credentials
+
+        ordered = order_profiles(profiles)
+        priorities = [p.priority for p in ordered]
+        if priorities != sorted(priorities):
+            failures.append(f"order_profiles does not produce ascending priority order: {priorities}")
+
+        # 2. NiceHash spec requires TLS scheme
+        nh_spec = DEFAULT_POOL_SPECS["nicehash"]
+        if not nh_spec["tls_required"]:
+            failures.append("nicehash spec must require TLS")
+        try:
+            validate_pool_url("stratum+tcp://sha256.auto.nicehash.com:443", tls_required=True)
+            failures.append("non-TLS URL must be rejected when tls_required=True")
+        except PoolProfileError:
+            pass  # expected
+
+        # 3. to_dict redacts credentials
+        p = PoolProfile(
+            pool_id="test",
+            name="Test",
+            url="stratum+tcp://test.example.com:3333",
+            username="secret_worker",
+            password="secret_pass",
+        )
+        public = p.to_dict(include_secret_fields=False)
+        if "secret_worker" in str(public):
+            failures.append("to_dict(include_secret_fields=False) must redact username")
+        if "secret_pass" in str(public):
+            failures.append("to_dict(include_secret_fields=False) must redact password")
+
+        # 4. validate_profile rejects missing credentials
+        try:
+            validate_profile(
+                PoolProfile(
+                    pool_id="noauth",
+                    name="No Auth",
+                    url="stratum+tcp://test.example.com:3333",
+                    username="",
+                    password="",
+                )
+            )
+            failures.append("validate_profile must reject profiles without username")
+        except PoolProfileError:
+            pass  # expected
+
+        # 5. Stratum V2 spec uses stratum2+ scheme
+        sv2_spec = DEFAULT_POOL_SPECS["stratumv2"]
+        if not sv2_spec["url"].startswith("stratum2+"):
+            failures.append("stratumv2 spec URL must use stratum2+ scheme")
+        if sv2_spec["stratum_version"] != 2:
+            failures.append("stratumv2 spec must declare stratum_version=2")
+
+    except Exception as exc:
+        failures.append(f"multi-pool failover contract check raised: {exc}")
+
+    return CheckResult(
+        name="multi_pool_failover_contract",
+        severity="critical",
+        status="fail" if failures else "pass",
+        summary="multi-pool failover contract violations found" if failures else "pool priority ordering, TLS enforcement, credential redaction, and Stratum V2 scheme verified",
+        detail="\n".join(failures),
+        duration_seconds=time.monotonic() - start,
+    )
+
+
 def _check_focused_tests() -> CheckResult:
     command = [
         sys.executable,
@@ -442,6 +614,8 @@ def run_doctor(mode: Mode, *, skip_build: bool = False) -> ReadinessReport:
     checks.extend(_check_environment(mode))
     checks.append(_check_unified_engine_contract())
     checks.append(_check_bitcoin_mining_contracts())
+    checks.append(_check_claim_boundary_contract())
+    checks.append(_check_multi_pool_failover_contract())
     checks.append(_check_focused_tests())
     checks.append(_check_build(skip_build=skip_build))
     checks.append(_check_advisory_science_packets())

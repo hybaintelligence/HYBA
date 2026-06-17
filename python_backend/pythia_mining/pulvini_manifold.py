@@ -429,53 +429,85 @@ class PulviniManifold:
         self, rho: np.ndarray, entropy_gradient: float
     ) -> dict:
         """
-        Computes the Bures-metric gradient of the collapse functional C[rho].
+        Quantum-geometric (Bures / SLD) natural gradient of the collapse
+        functional C[ρ] = |dS_vN/dt| · ||ρ_off||_F.
 
-        C[rho] = |dS_vN/dt| * ||OffDiag(rho)||_F
+        The Symmetric Logarithmic Derivative (SLD) metric
+        -----------------------------------------------
+        The Bures metric on the manifold of density operators is induced by
+        the SLD operator L satisfying the Lyapunov equation:
 
-        Flat gradient (wrt rho as unconstrained matrix):
-        dC/d(rho_ij) = |dS_vN/dt| * OffDiag(rho)_ij / ||OffDiag(rho)||_F
+            ρ L + L ρ = 2 A
 
-        Bures gradient (on the manifold of density matrices):
-        grad_Bures C = 2 * (rho @ flat_grad + flat_grad @ rho)
+        where A is the flat gradient of the functional.  In the eigenbasis of
+        ρ = Σ_i λ_i |i⟩⟨i| the solution is:
 
-        Stationary condition on Bloch manifold:
-        grad_Bures C = 0
-        iff flat_grad commutes with rho AND projects to zero on tangent space
-        iff |dS_vN/dt| = 0 (system not evolving)
-           OR OffDiag(rho) = 0 (already diagonal = classical state)
-           OR OffDiag(rho) in null space of Bures metric at rho
+            L_ij = 2 A_ij / (λ_i + λ_j)   when λ_i + λ_j > ε
 
-        The third condition is the non-trivial stationary point:
-        it occurs when off-diagonal coherence aligns with rho's eigenbasis,
-        meaning the system has reached maximal coherence in its own energy basis.
-        THIS is the collapse criterion: not a reset, but eigenbasis alignment.
+        The Quantum Fisher Information matrix element is:
+
+            g_ij = (1/2) Tr[ρ {L_i, L_j}]  (SLD metric tensor)
+
+        The QGT natural gradient is L itself (the SLD), which lies in the
+        tangent space of the density manifold at ρ.
+
+        Stationary condition (non-trivial):
+        The SLD natural gradient vanishes at ρ when A_ij = 0 for all
+        (λ_i + λ_j) > 0, i.e., when the flat gradient is supported only on
+        the kernel of ρ.  For a full-rank state this is equivalent to A = 0,
+        recovering eigenbasis alignment as the collapse criterion.
         """
         off_diag = rho - np.diag(np.diag(rho))
-        off_diag_norm = np.linalg.norm(off_diag, "fro")
+        off_diag_norm = float(np.linalg.norm(off_diag, "fro"))
 
-        if off_diag_norm < 1e-12 or abs(entropy_gradient) < 1e-12:
+        if off_diag_norm < EPSILON or abs(entropy_gradient) < EPSILON:
             return {
                 "bures_gradient_norm": 0.0,
+                "qgt_norm": 0.0,
+                "quantum_fisher_trace": 0.0,
                 "stationary": True,
                 "stationary_reason": "trivial_zero_product",
                 "collapse_criterion_met": False,
             }
 
-        flat_grad = entropy_gradient * off_diag / off_diag_norm
-        bures_grad = 2 * (rho @ flat_grad + flat_grad @ rho)
-        bures_grad_norm = np.linalg.norm(bures_grad, "fro")
+        # Flat gradient A in the computational basis
+        flat_grad = float(entropy_gradient) * off_diag / off_diag_norm
 
-        bures_grad_hermitian = (bures_grad + bures_grad.conj().T) / 2
-        traceless_component = bures_grad_hermitian - (np.trace(bures_grad_hermitian) / 32) * np.eye(
-            32
-        )
-        tangent_norm = np.linalg.norm(traceless_component, "fro")
+        # SLD Lyapunov equation in the eigenbasis of rho
+        eigvals, eigvecs = np.linalg.eigh(rho)
+        eigvals = np.maximum(eigvals.real, EPSILON)
+
+        # Rotate flat gradient into eigenbasis
+        A_eig = eigvecs.conj().T @ flat_grad @ eigvecs
+
+        # Solve L_ij = 2 A_ij / (lambda_i + lambda_j)
+        lam_sum = eigvals[:, None] + eigvals[None, :]  # (N, N)
+        # Zero out pairs where both eigenvalues are negligible
+        valid = lam_sum > EPSILON
+        L_eig = np.where(valid, 2.0 * A_eig / np.where(valid, lam_sum, 1.0), 0.0)
+
+        # Rotate SLD back to computational basis
+        L = eigvecs @ L_eig @ eigvecs.conj().T
+        # Enforce Hermiticity (SLD is Hermitian by construction)
+        L = (L + L.conj().T) / 2.0
+
+        # Natural gradient norm (SLD Frobenius norm)
+        bures_grad_norm = float(np.linalg.norm(L, "fro"))
+
+        # Quantum Fisher Information trace: Tr[rho L^2]
+        # = sum_{i,j} lambda_i |L_ij_eig|^2 * (lambda_i + lambda_j)
+        qfi_trace = float(np.real(np.trace(rho @ L @ L)))
+
+        # Tangent-space projection: traceless Hermitian component of L
+        traceless_L = L - (np.trace(L) / self.num_nodes) * np.eye(self.num_nodes, dtype=complex)
+        tangent_norm = float(np.linalg.norm(traceless_L, "fro"))
 
         non_trivial_stationary = tangent_norm < 1e-6
 
         return {
-            "bures_gradient_norm": float(bures_grad_norm),
+            "bures_gradient_norm": bures_grad_norm,
+            "qgt_norm": bures_grad_norm,
+            "quantum_fisher_trace": qfi_trace,
             "tangent_projection_norm": float(tangent_norm),
             "stationary": non_trivial_stationary,
             "stationary_reason": (
@@ -483,9 +515,9 @@ class PulviniManifold:
             ),
             "collapse_criterion_met": non_trivial_stationary,
             "physical_meaning": (
-                "Coherence aligned with energy eigenbasis: " "collapse to classical search state"
+                "SLD natural gradient zero: coherence aligned with energy eigenbasis"
                 if non_trivial_stationary
-                else "System still evolving"
+                else "System still evolving on Bures manifold"
             ),
         }
 

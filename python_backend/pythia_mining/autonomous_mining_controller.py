@@ -641,6 +641,9 @@ class AutonomousMiningController:
         self._consecutive_failures = 0
         self._circuit_open_until = 0.0
 
+    # Alias used by the unified engine for the reflexive cycle success path
+    record_circuit_success = record_autonomy_success
+
     def reset_circuit_breaker(self, operator_id: str, operator_reason: str = "") -> Dict[str, Any]:
         """Manually close the autonomy circuit breaker after operator review.
 
@@ -1237,11 +1240,11 @@ class AutonomousMiningController:
         return True
 
     def apply_self_optimization(self, proposal: SelfOptimizationProposal) -> None:
-        """Commit a validated self-optimization to internal memory.
+        """Commit a validated self-optimization to internal memory AND apply to engine.
         
         This is the "learning" step — the AI updates its internal configuration
-        to reflect the discovered improvement, which will take effect in the
-        next mining epoch.
+        to reflect the discovered improvement, which takes effect immediately
+        in the next mining epoch.
         """
         if proposal.applied:
             return
@@ -1252,9 +1255,14 @@ class AutonomousMiningController:
         # Record outcome density (will be updated in the next cycle)
         proposal.outcome_phi_density = self.get_phi_density()
 
-        # Apply the proposal to internal configuration
+        # Apply the proposal to internal configuration AND engine runtime
         if proposal.improvement_type == "phi_scaling":
-            # Update the working φ-scaling factor (used in future epochs)
+            # Update the φ-scaling power in the ensemble (immediate effect)
+            proposed_phi_scaling = proposal.proposed_value
+            if self.engine is not None:
+                if self.engine.phi_ensemble is not None:
+                    self.engine.phi_ensemble.config["phi_scaling_power"] = proposed_phi_scaling
+            
             self.config.optimization_targets.append(
                 OptimizationTarget(
                     target_name="phi_scaling",
@@ -1272,6 +1280,13 @@ class AutonomousMiningController:
             )
 
         elif proposal.improvement_type == "search_depth":
+            # Update max search iterations in AI optimizer (immediate effect)
+            proposed_depth = proposal.proposed_value
+            if self.engine is not None and self.engine.optimizer is not None:
+                # Clamp search depth within safe bounds (10–1000 iterations)
+                clamped_depth = max(10, min(1000, int(proposed_depth)))
+                self.engine.optimizer.max_search_iterations = clamped_depth
+            
             self.config.optimization_targets.append(
                 OptimizationTarget(
                     target_name="search_depth",
@@ -1288,6 +1303,13 @@ class AutonomousMiningController:
             )
 
         elif proposal.improvement_type == "compression_target":
+            # Update compression target in PULVINI solver (immediate effect)
+            proposed_compression = proposal.proposed_value
+            if self.engine is not None and self.engine.solver is not None:
+                # Clamp compression within safe bounds (1.0–2.0 ratio)
+                clamped_compression = max(1.0, min(2.0, proposed_compression))
+                self.engine.solver.compression_target_ratio = clamped_compression
+            
             self.config.optimization_targets.append(
                 OptimizationTarget(
                     target_name="compression_target",
@@ -1304,7 +1326,17 @@ class AutonomousMiningController:
             )
 
         elif proposal.improvement_type == "coherence_threshold":
-            self.config.phi_coherence_threshold = proposal.proposed_value
+            # Update coherence threshold in consciousness engine (immediate effect)
+            proposed_coherence = proposal.proposed_value
+            self.config.phi_coherence_threshold = proposed_coherence
+
+            if self.engine is not None and self.engine.consciousness is not None:
+                # Update all three thresholds proportionally
+                ratio = proposed_coherence / 0.70  # Scale from default SINGULAR threshold
+                self.engine.consciousness.config.phi_singular_threshold = max(0.0, min(1.0, 0.70 * ratio))
+                self.engine.consciousness.config.phi_distributed_threshold = max(0.0, min(1.0, 0.40 * ratio))
+                self.engine.consciousness.config.phi_critical_threshold = max(0.0, min(1.0, 0.20 * ratio))
+            
             self.config.optimization_targets.append(
                 OptimizationTarget(
                     target_name="coherence_threshold",

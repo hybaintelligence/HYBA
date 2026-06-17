@@ -1,6 +1,6 @@
 {
   "artifact_schema_version": 2,
-  "generated_at_utc": "2026-06-16T17:34:49.433501+00:00",
+  "generated_at_utc": "2026-06-17T18:36:28.263835+00:00",
   "measurements": {
     "baselines": {
       "random": {
@@ -29,25 +29,25 @@
       }
     },
     "test_01": {
-      "phi": 0.09066455696202531,
-      "python_modules": 80,
-      "typescript_modules": 49,
-      "total_dependencies": 80,
-      "total_dependency_edges": 573,
+      "phi": 0.0741084312512884,
+      "python_modules": 99,
+      "typescript_modules": 51,
+      "total_dependencies": 99,
+      "total_dependency_edges": 719,
       "interpretation": "Low-moderate integration - some cross-module coupling"
     },
     "test_02": {
       "autonomy_score": 10.0,
-      "total_decisions": 3947,
-      "total_external": 1242,
-      "adaptive_patterns": 597,
-      "self_modification": 6,
-      "interpretation": "Highly autonomous - extensive internal control flow with 597 adaptive patterns and 6 self-modification sites"
+      "total_decisions": 4907,
+      "total_external": 1571,
+      "adaptive_patterns": 804,
+      "self_modification": 13,
+      "interpretation": "Highly autonomous - extensive internal control flow with 804 adaptive patterns and 13 self-modification sites"
     },
     "test_03": {
-      "irreducibility_score": 0.03495743524723782,
-      "global_state_refs": 193,
-      "instance_state_refs": 5328,
+      "irreducibility_score": 0.0436078431372549,
+      "global_state_refs": 278,
+      "instance_state_refs": 6097,
       "interpretation": "Highly reducible - clean state partitions"
     }
   },
@@ -87,12 +87,12 @@
     "\u2717 Low integration - modular architecture",
     "\u2713 Has internal decision-making",
     "\u2717 Clean state boundaries",
-    "\u2713 Contains 597 adaptive patterns",
-    "\u26a0 Contains 6 self-modification patterns"
+    "\u2713 Contains 804 adaptive patterns",
+    "\u26a0 Contains 13 self-modification patterns"
   ],
   "conclusion": "ELEVATED SOFTWARE-PROXY COMPLEXITY: Static proxies show non-trivial integration, adaptation tokens, and self-modification tokens. Preserve as an internal measurement finding and move through replay, baselines, falsification, and external review before any stronger claim.",
-  "emergent_score": 12.651432745856441,
-  "preserved_previous_artifact": "artifacts/previous/emergent_complexity_analysis.20260616T173449Z.json",
+  "emergent_score": 15.29912352819916,
+  "preserved_previous_artifact": "artifacts/previous/emergent_complexity_analysis.20260617T183628Z.json",
   "claim_boundary": {
     "metric_posture": "software proxies only",
     "distinguishes": "static code coupling and token patterns are separated from runtime causal behaviour",
@@ -101,7 +101,18 @@
       "consciousness or sentience adjudication",
       "runtime causal-behaviour proof",
       "quantum speedup or external mining-performance claims",
-      "guaranteed revenue, accepted shares, or production telemetry claims"
+      "guaranteed revenue, accepted shares, or production telemetry claims",
+      "IIT 4.0 \u03a6 correlation with mining hashrate or share acceptance",
+      "mining performance prediction based on \u03a6 calculations",
+      "production mining decisions based on IIT metrics"
+    ],
+    "mining_performance_validation_status": "UNVALIDATED",
+    "mining_performance_validation_requirements": [
+      "historical hashrate data collection",
+      "share acceptance rate tracking",
+      "pool-side performance metrics",
+      "statistical correlation analysis between \u03a6 and mining performance",
+      "controlled A/B testing with different \u03a6 configurations"
     ],
     "requires_for_reviewer_grade_claim": [
       "exact test output preservation",
