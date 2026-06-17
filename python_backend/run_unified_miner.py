@@ -38,10 +38,12 @@ default_config = str(Path(__file__).resolve().parents[1] / "config" / "mining_po
 os.environ.setdefault("HYBA_POOL_CONFIG_PATH", 
                       os.getenv("HYBA_POOL_CONFIG_PATH", default_config))
 
+from pythia_mining.phi_config import initialize_production_secrets
 from pythia_mining.phi_unified_mining_engine import UnifiedMiningEngine
 from pythia_mining.pool_profiles import (
     PoolCredentialConfig,
     PoolProfileError,
+    load_pool_profiles,
     load_runtime_pool_configs,
 )
 from pythia_mining.stratum_client import MiningJob, ShareResult, StratumClient
@@ -216,31 +218,39 @@ class UnifiedMiner:
             )
 
     def load_pools(self) -> None:
-        """Load enabled pool configurations from env/runtime config."""
+        """Load pre-validated pool profiles from env/runtime config."""
         # Config path already set in __init__ to ensure pool_profiles respects it
-        configs = load_runtime_pool_configs()
-        valid_configs: list[PoolCredentialConfig] = []
-        skipped: list[str] = []
-        for cfg in configs.values():
-            if not cfg.enabled:
-                continue
-            try:
-                cfg.to_profile()
-            except PoolProfileError as exc:
-                skipped.append(f"{cfg.pool_id}: {exc}")
-                continue
-            valid_configs.append(cfg)
+        verified_profiles = load_pool_profiles()
 
-        self.pool_configs = valid_configs
-        if not self.pool_configs:
-            logger.error("No enabled, valid pool configurations found")
-            if skipped:
-                logger.error("Skipped invalid pool profiles: %s", "; ".join(skipped))
-            sys.exit(1)
+        if len(verified_profiles) < 1:
+            raise RuntimeError("Initialization blocked: No verified stratum pool profiles available.")
 
-        logger.info("Loaded %s valid pool(s):", len(self.pool_configs))
-        if skipped:
-            logger.info("Skipped incomplete default pool profiles: %s", "; ".join(skipped))
+        # Convert PoolProfile objects back to PoolCredentialConfig for internal use
+        self.pool_configs = []
+        for profile in verified_profiles:
+            # Reconstruct PoolCredentialConfig from validated profile
+            cfg = PoolCredentialConfig(
+                pool_id=profile.pool_id,
+                name=profile.name,
+                url=profile.url,
+                stratum_version=profile.stratum_version,
+                tls_required=profile.tls_required,
+                credential_mode="username_password",  # Default mode
+                username=profile.username,
+                password=profile.password,
+                priority=profile.priority,
+                enabled=True,
+                source="verified_profile",
+                max_reconnect_attempts=profile.max_reconnect_attempts,
+                max_share_retry_attempts=profile.max_share_retry_attempts,
+                reconnect_backoff_base=profile.reconnect_backoff_base,
+                reconnect_backoff_max=profile.reconnect_backoff_max,
+                share_retry_backoff_base=profile.share_retry_backoff_base,
+                share_retry_backoff_max=profile.share_retry_backoff_max,
+            )
+            self.pool_configs.append(cfg)
+
+        logger.info("Loaded %s verified pool profile(s):", len(self.pool_configs))
         for i, cfg in enumerate(self.pool_configs):
             username = cfg.btc_address or cfg.username or cfg.worker or "(not set)"
             logger.info("  [%s] %-20s -> %-45s user: %s", i, cfg.name, cfg.url, username)
@@ -731,6 +741,13 @@ class UnifiedMiner:
 async def main() -> None:
     signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGTERM, signal_handler)
+
+    # Enforce production environmental validation gates
+    secrets_status = initialize_production_secrets()
+    assert secrets_status["status"] in ["SEC_SECURE", "DEV_PASS"], (
+        f"Production secrets validation failed: {secrets_status['status']}"
+    )
+    logger.info("Production secrets validation passed: %s", secrets_status["status"])
 
     miner = UnifiedMiner()
     await miner.run()
