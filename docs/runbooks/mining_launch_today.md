@@ -149,3 +149,22 @@ Launch only if:
 - the configured hashrate is capped at 1 EH/s.
 
 If any of these fails, enter `REVIEW_REQUIRED` and do not run unattended.
+
+## Autonomy Circuit-Breaker Reset Path
+
+The autonomy circuit breaker gates only autonomous optimisation hooks and reflexive cycles. It must not gate exact SHA-256d local verification, verifier firewall checks, or live share submission paths. When the breaker is open, `UnifiedMiningEngine.search()` still proceeds to the nonce search after the autonomous-hook block.
+
+Automatic reset:
+
+- The breaker closes automatically after `HYBA_AUTONOMY_CIRCUIT_BREAKER_COOLDOWN_SECONDS` elapses.
+- The default cooldown is 60 seconds and is parsed with the same safe numeric fallback used by the rest of `AutonomousConfig`.
+- On the next `is_circuit_open()` check after cooldown expiry, the controller clears the open-until timestamp and resets consecutive failures.
+
+Manual reset:
+
+```bash
+PYTHONPATH=python_backend python scripts/autonomous_mining_operator_control.py reset-circuit \
+  --reason "operator reviewed hook failure and cleared remediation"
+```
+
+Manual reset clears the circuit-open timestamp and consecutive failure count and writes an operator audit entry. Use it only after confirming the failed autonomous hook is remediated; if the underlying failure persists, the breaker will reopen after the configured failure threshold.
