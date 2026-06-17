@@ -29,7 +29,8 @@ ARTIFACT_DIR = ROOT / "artifacts" / "production_readiness"
 Mode = Literal["rc", "live", "command-room"]
 
 RC_STEPS = [
-    ("reviewer_evidence_map_and_conflict_guard", ["npm", "run", "review:evidence:gate"]),
+    ("nodus_solutus_computability_doctrine", ["npm", "run", "review:nodus:gate"]),
+    ("reviewer_evidence_map_and_conflict_guard", ["npm", "run", "review:manifest:gate"]),
     ("runtime_entrypoint_and_live_miner_api", ["npm", "run", "runtime:entrypoint:check"]),
     ("live_deployment_forensic_audit", ["npm", "run", "live:audit"]),
     ("runtime_mock_guard", ["npm", "run", "runtime:guard"]),
@@ -180,6 +181,16 @@ def _doctrine(mode: Mode) -> dict[str, object]:
         "github_actions_required": False,
         "evidence_first": True,
         "simulated_runtime_claims_allowed": False,
+        "nodus_solutus": {
+            "name": "Nodus Solutus: Mundus Computabilis Est",
+            "repository_local_computability": True,
+            "doctrine": (
+                "HYBA/PYTHIA claims are admissible only when reduced to deterministic source paths, "
+                "executable tests, replayable local evidence packets, and explicit external truth boundaries."
+            ),
+            "blocked_boundary": "This is not a metaphysical proof that the physical universe is computable.",
+            "verifier": "npm run review:nodus:gate",
+        },
         "deterministic_solving_posture": (
             "HENDRIX-Φ treats nonce discovery as structured deterministic solving "
             "over a phi-resonant manifold, while external funding/revenue claims "
@@ -271,7 +282,7 @@ def main(argv: list[str] | None = None) -> int:
     status = "passed" if passed else "blocked"
     now = datetime.now(timezone.utc)
     report = GateReport(
-        version="HYBA_FULLSTACK_LOCAL_PRODUCTION_GATE_V6_LOCAL_FIRST",
+        version="HYBA_FULLSTACK_LOCAL_PRODUCTION_GATE_V7_NODUS_SOLUTUS",
         mode=args.mode,
         status=status,
         passed=passed,
