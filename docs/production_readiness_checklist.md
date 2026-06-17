@@ -34,6 +34,7 @@ This document provides a structured checklist that teams should complete before 
 - [ ] **Resource limits** – Set CPU/memory limits on container deployments and tune concurrency settings.
 - [ ] **Async and background tasks** – Offload CPU‑intensive operations to background workers or separate services to prevent blocking the API.
 - [ ] **Database resilience** – Use a production‑grade database (e.g., PostgreSQL) with backups and automated migrations.
+- [ ] **Autonomy state storage bound** – PYTHIA reflexive-state writes retain at most `state_backup_retention_count=5` backups by default in `HYBA_AUTONOMY_STATE_DIR`; each backup is one prior `reflexive_state.json` snapshot, so provision at least 6x the observed state-file size plus temporary-write headroom. Stale persistence locks are reclaimed only after `HYBA_AUTONOMY_STATE_LOCK_STALE_SECONDS` (default 300s).
 
 ## 5. Documentation and deployment
 

@@ -12,6 +12,7 @@ Usage:
     python scripts/autonomous_mining_operator_control.py --history
     python scripts/autonomous_mining_operator_control.py --approve <decision_id>
     python scripts/autonomous_mining_operator_control.py --reject <decision_id> <reason>
+    python scripts/autonomous_mining_operator_control.py reset-circuit --reason <reason>
 """
 
 import argparse
@@ -97,6 +98,26 @@ class OperatorControlInterface:
             "success": True,
             "previous_level": previous_level.value,
             "new_level": autonomy_level.value,
+            "reason": operator_reason,
+        }
+
+    def reset_circuit_breaker(self, operator_reason: str) -> Dict[str, Any]:
+        """Manually close the autonomy circuit breaker with audit logging."""
+        status_before = self.controller.get_autonomy_status().get("circuit_breaker", {})
+        self.controller.reset_circuit_breaker(operator_reason)
+        status_after = self.controller.get_autonomy_status().get("circuit_breaker", {})
+
+        self._log_audit_entry({
+            "action": "reset_circuit_breaker",
+            "previous_state": status_before,
+            "new_state": status_after,
+            "reason": operator_reason,
+        })
+
+        return {
+            "success": True,
+            "previous_state": status_before,
+            "new_state": status_after,
             "reason": operator_reason,
         }
 
@@ -302,6 +323,10 @@ def main():
     level_parser.add_argument("level", help="Autonomy level (MANUAL, ADVISORY, SUPERVISED, AUTONOMOUS, EMERGENCY)")
     level_parser.add_argument("--reason", default="operator_directive", help="Reason for level change")
 
+    # Manual circuit-breaker reset command
+    reset_parser = subparsers.add_parser("reset-circuit", help="Manually reset the autonomy circuit breaker")
+    reset_parser.add_argument("--reason", required=True, help="Reason for manual circuit-breaker reset")
+
     # Decision history command
     history_parser = subparsers.add_parser("history", help="Get autonomous decision history")
     history_parser.add_argument("--limit", type=int, default=20, help="Number of decisions to show")
@@ -347,6 +372,8 @@ def main():
         result = interface.get_status()
     elif args.command == "set-level":
         result = interface.set_autonomy_level(args.level, args.reason)
+    elif args.command == "reset-circuit":
+        result = interface.reset_circuit_breaker(args.reason)
     elif args.command == "history":
         result = interface.get_decision_history(limit=args.limit)
     elif args.command == "approve":
