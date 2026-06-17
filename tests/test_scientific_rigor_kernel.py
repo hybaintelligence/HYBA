@@ -15,9 +15,11 @@ def test_penrose_obligation_requires_external_truth_after_local_truth() -> None:
         "candidate is externally successful",
         {"exact_local_truth": True, "external_truth": False},
         evidence_ids=("EV-LOCAL-001",),
+        session_event_id="event-1",
     )
 
     assert obligation.protocol == SCIENTIFIC_RIGOR_PROTOCOL
+    assert obligation.session_event_id == "event-1"
     assert obligation.status == ScientificClaimStatus.REQUIRES_EXTERNAL_TRUTH.value
     assert obligation.reentry_required is True
     assert obligation.next_required_status == ScientificClaimStatus.REQUIRES_EXTERNAL_TRUTH.value
@@ -62,24 +64,44 @@ def test_penrose_obligation_reenters_after_stale_job_revocation() -> None:
     assert obligation.reentry_required is True
     assert obligation.next_required_status == ScientificClaimStatus.REQUIRES_EXTERNAL_TRUTH.value
     assert obligation.revocation_disposition == RevocationDisposition.REENTER_EXTERNAL_TRUTH.value
+    assert obligation.revocation_classifier_source == "text_fallback"
     assert "stale job" in obligation.revocation_reason
-    assert "revocation" in obligation.falsification_route
 
 
-def test_penrose_obligation_falsifies_invalid_hash_revocation() -> None:
+def test_penrose_obligation_uses_pool_code_before_text() -> None:
     obligation = assess_penrose_obligation(
         "candidate is externally successful",
         {
             "exact_local_truth": True,
             "external_truth": True,
             "pool_confirmation_revoked": True,
-            "revocation_reason": "invalid hash does not meet target",
+            "pool_response_code": "23",
+            "revocation_reason": "message says try again later",
         },
     )
 
     assert obligation.status == ScientificClaimStatus.FALSIFIED.value
     assert obligation.reentry_required is False
     assert obligation.revocation_disposition == RevocationDisposition.FALSIFIED_INVALID_LOCAL_OR_EXTERNAL_TRUTH.value
+    assert obligation.revocation_classifier_source == "pool_response_code"
+
+
+def test_penrose_obligation_unclassified_pool_code_reenters_conservatively() -> None:
+    obligation = assess_penrose_obligation(
+        "candidate is externally successful",
+        {
+            "exact_local_truth": True,
+            "external_truth": True,
+            "pool_confirmation_revoked": True,
+            "pool_response_code": "novel-extension-777",
+            "revocation_reason": "unrecognised pool extension response",
+        },
+    )
+
+    assert obligation.status == ScientificClaimStatus.CONFIRMED_THEN_REVOKED.value
+    assert obligation.reentry_required is True
+    assert obligation.revocation_disposition == RevocationDisposition.UNCLASSIFIED_REVOCATION.value
+    assert obligation.next_required_status == ScientificClaimStatus.REQUIRES_EXTERNAL_TRUTH.value
 
 
 def test_penrose_obligation_re_evaluates_vardiff_revocation() -> None:
@@ -89,7 +111,8 @@ def test_penrose_obligation_re_evaluates_vardiff_revocation() -> None:
             "exact_local_truth": True,
             "external_truth": True,
             "pool_confirmation_revoked": True,
-            "revocation_reason": "vardiff target changed and difficulty boundary crossed",
+            "pool_response_code": "vardiff_target_changed",
+            "revocation_reason": "target changed and difficulty boundary crossed",
         },
     )
 
@@ -108,10 +131,12 @@ def test_causal_integration_telemetry_covers_required_evidence_channels() -> Non
             "learning_correction": 0.8,
             "evidence_seal": True,
             "pitfalls_curriculum": True,
-        }
+        },
+        session_event_id="event-1",
     )
 
     assert telemetry.protocol == SCIENTIFIC_RIGOR_PROTOCOL
+    assert telemetry.session_event_id == "event-1"
     assert set(telemetry.channels) == {
         "verifier_firewall",
         "job_binding",
