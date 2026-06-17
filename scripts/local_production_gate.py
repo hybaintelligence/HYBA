@@ -29,6 +29,8 @@ ARTIFACT_DIR = ROOT / "artifacts" / "production_readiness"
 Mode = Literal["rc", "live", "command-room"]
 
 RC_STEPS = [
+    ("reviewer_evidence_map_and_conflict_guard", ["npm", "run", "review:evidence:gate"]),
+    ("runtime_entrypoint_and_live_miner_api", ["npm", "run", "runtime:entrypoint:check"]),
     ("live_deployment_forensic_audit", ["npm", "run", "live:audit"]),
     ("runtime_mock_guard", ["npm", "run", "runtime:guard"]),
     ("evidence_first_intelligence_endpoints", ["npm", "run", "test:evidence:first"]),
@@ -174,6 +176,8 @@ def _steps_for_mode(mode: Mode) -> list[tuple[str, list[str]]]:
 
 def _doctrine(mode: Mode) -> dict[str, object]:
     return {
+        "local_testing_is_source_of_truth": True,
+        "github_actions_required": False,
         "evidence_first": True,
         "simulated_runtime_claims_allowed": False,
         "deterministic_solving_posture": (
@@ -191,8 +195,9 @@ def _doctrine(mode: Mode) -> dict[str, object]:
             "PhiJIT, PhiVM, and PhiBackpropTuner are tested as one golden-flow surface."
         ),
         "memory_compression": (
-            "PULVINI memory compression now includes dense fold/unfold, in-place buffers, "
-            "sparse_fib_packed strategy, large-array replay, and sketch telemetry gates."
+            "PULVINI memory compression includes dense fold/unfold, in-place buffers, "
+            "sparse_fib_packed strategy, large-array replay, sketch telemetry gates, "
+            "and reviewer-facing proof-map evidence."
         ),
         "post_quantum_benchmark": (
             "The post-quantum benchmark covers deterministic passports, exact M32/A5 group "
@@ -219,8 +224,8 @@ def _next_actions(mode: Mode, passed: bool) -> list[str]:
         ]
     if mode == "rc":
         return [
+            "Preserve this local evidence JSON with the release ticket.",
             "Run npm run prod:live:gate with private HYBA app credentials and open Bitcoin pool profiles injected.",
-            "Preserve this evidence JSON with the release ticket.",
         ]
     return [
         "Start production with HYBA_ENABLE_LIVE_SHARE_SUBMIT=false and HYBA_ENABLE_MINING_AUTOCONNECT=false.",
@@ -266,7 +271,7 @@ def main(argv: list[str] | None = None) -> int:
     status = "passed" if passed else "blocked"
     now = datetime.now(timezone.utc)
     report = GateReport(
-        version="HYBA_FULLSTACK_LOCAL_PRODUCTION_GATE_V5",
+        version="HYBA_FULLSTACK_LOCAL_PRODUCTION_GATE_V6_LOCAL_FIRST",
         mode=args.mode,
         status=status,
         passed=passed,
