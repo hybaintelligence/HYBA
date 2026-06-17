@@ -4,8 +4,9 @@ import pytest
 
 from pythia_mining.mining_evidence_seal import (
     MINING_EVIDENCE_SEAL_PROTOCOL,
+    TIMESTAMP_AUTHORITY,
     EvidenceSealError,
-    TimestampAuthority,
+    bitcoin_job_timestamp_authority,
     build_sealed_mining_evidence_bundle,
     redact_and_hash_runtime_config,
     seal_schema_summary,
@@ -70,20 +71,29 @@ def _learning_correction() -> dict:
     return correction_summary(compute_learning_signal_correction(event))
 
 
+def _job_context() -> dict:
+    return {
+        "job_id": "job-1",
+        "nbits": "1d00ffff",
+        "pool_target": 1000,
+        "bitcoin_block_height": 840_000,
+        "prevhash": "11" * 32,
+    }
+
+
 def _bundle() -> dict:
     curriculum = seed_mining_pitfalls_curriculum()
     bundle = build_sealed_mining_evidence_bundle(
         mission_id="PYTHIA-ONE-BLOCK-MISSION",
         event_type="accepted_share_learning_event",
-        job_context={"job_id": "job-1", "nbits": "1d00ffff", "pool_target": 1000},
+        job_context=_job_context(),
         candidate={"nonce": 42, "phi_score": 0.91},
         verifier_result={"valid": True, "block_hash": "0" * 64, "backend": "cpu_parallel_exact_sha256d"},
         firewall_decision=_firewall_decision(),
         learning_correction=_learning_correction(),
         pool_response={"accepted": True, "jsonrpc_id": 7, "error": None},
-        runtime_config={"pool_url": "stratum+tcp://pool.example:3333", "password": "secret", "wallet": "bc1q..."},
+        runtime_config={"pool_url": "stratum+tcp://pool.example:3333", "password": "private", "wallet": "bc1q..."},
         lesson_ids=list(lesson_ids(curriculum)),
-        timestamp_authority=TimestampAuthority(authority="unit_test_clock", unix_seconds=1_700_000_000.0),
     )
     return bundle.to_dict()
 
@@ -95,7 +105,23 @@ def test_sealed_mining_evidence_bundle_is_hash_committed_and_replayable() -> Non
     assert validate_sealed_mining_evidence_bundle(bundle) is True
     assert bundle["firewall_decision"]["submission_allowed"] is True
     assert bundle["learning_correction"]["correction_reason"] == "share_ack_discounted_by_block_share_difficulty_gap"
+    assert bundle["timestamp_authority"]["authority"] == TIMESTAMP_AUTHORITY
+    assert bundle["timestamp_authority"]["bitcoin_block_height"] == 840_000
+    assert bundle["timestamp_authority"]["stratum_job_id"] == "job-1"
+    assert bundle["timestamp_authority"]["anchor_hash"]
     assert bundle["bundle_hash"]
+
+
+def test_bitcoin_job_timestamp_authority_requires_height_job_and_prevhash() -> None:
+    authority = bitcoin_job_timestamp_authority(_job_context(), unix_seconds=1_700_000_000.0)
+
+    assert authority.authority == TIMESTAMP_AUTHORITY
+    assert authority.bitcoin_block_height == 840_000
+    assert authority.stratum_job_id == "job-1"
+    assert authority.job_prevhash == "11" * 32
+
+    with pytest.raises(EvidenceSealError, match="missing_bitcoin_block_height_anchor"):
+        bitcoin_job_timestamp_authority({"job_id": "job-1", "prevhash": "11" * 32})
 
 
 def test_sealed_mining_evidence_bundle_detects_tampering() -> None:
@@ -106,7 +132,15 @@ def test_sealed_mining_evidence_bundle_detects_tampering() -> None:
         validate_sealed_mining_evidence_bundle(bundle)
 
 
-def test_runtime_config_hash_redacts_secret_material() -> None:
+def test_sealed_mining_evidence_bundle_detects_timestamp_anchor_tampering() -> None:
+    bundle = _bundle()
+    bundle["timestamp_authority"]["bitcoin_block_height"] = 840_001
+
+    with pytest.raises(EvidenceSealError, match="timestamp_anchor_hash_mismatch|bundle_hash_mismatch"):
+        validate_sealed_mining_evidence_bundle(bundle)
+
+
+def test_runtime_config_hash_redacts_private_material() -> None:
     first = redact_and_hash_runtime_config({"pool_url": "x", "password": "one", "wallet": "abc"})
     second = redact_and_hash_runtime_config({"pool_url": "x", "password": "two", "wallet": "def"})
     third = redact_and_hash_runtime_config({"pool_url": "y", "password": "two", "wallet": "def"})
@@ -119,7 +153,9 @@ def test_seal_schema_summary_names_all_dependency_protocols() -> None:
     summary = seal_schema_summary()
 
     assert summary["protocol"] == MINING_EVIDENCE_SEAL_PROTOCOL
+    assert summary["timestamp_authority"] == TIMESTAMP_AUTHORITY
     assert "PYTHIA_MINING_VERIFICATION_FIREWALL_V1" in summary["depends_on"]
     assert "PYTHIA_MINING_LEARNING_SIGNAL_V1" in summary["depends_on"]
     assert "PYTHIA_MINING_PITFALLS_CURRICULUM_V1" in summary["depends_on"]
+    assert "bitcoin_block_height" in summary["required_bundle_parts"]
     assert "accepted shares are learning events" in summary["success_boundary"]
