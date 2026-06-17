@@ -32,6 +32,7 @@ npm run review:nodus:gate
 | Claim surface | Evidence status | Proof path | Boundary |
 | --- | --- | --- | --- |
 | Nodus Solutus / Mundus Computabilis Est | Executable doctrine verifier + manifest claim | `docs/NODUS_SOLUTUS_MUNDUS_COMPUTABILIS_EST.md`, `tests/test_nodus_solutus_proof_structure.py` | Repository-local computability doctrine only; not a metaphysical proof that the physical universe is computable. |
+| Elevation suite mathematical invariants | Local evidence run: 40 passed, 2 expected skips, 0 failed | `tests/test_elevation_suite.py`, `docs/evidence/ELEVATION_SUITE_LOCAL_VALIDATION_2026-06-17.md` | SU(2), φ-discrepancy, MPS, adaptive compression, and SLD/QFI runtime invariants only; no physics/metaphysics/revenue proof. |
 | PULVINI φ-folding memory | Executable invariant tests | `hyba_intelligence_tests/test_memory_compression.py` | Software reversibility and auditability, not a universal compression theorem. |
 | φ-scaled ensemble / resonance features | Property tests | `hyba_intelligence_tests/test_phi_scaling_engine.py` | Bounded deterministic scoring, not guaranteed revenue. |
 | ConsciousnessEngine | Runtime integration proxy tests | `hyba_intelligence_tests/test_consciousness_engine_scaling.py` | Operational Φ proxy only; no phenomenal-consciousness claim. |
@@ -47,6 +48,12 @@ Run the Nodus doctrine verifier first:
 
 ```bash
 npm run review:nodus:gate
+```
+
+Run the elevation suite local evidence surface:
+
+```bash
+.venv/bin/python3 -m pytest tests/test_elevation_suite.py -v --tb=short
 ```
 
 Run the evidence map and merge-conflict guard:
@@ -82,6 +89,7 @@ python benchmark_portfolio/run_benchmarks.py --quick
 HYBA_FULLSTACK may claim:
 
 - repository-local computability doctrine under Nodus Solutus;
+- bounded elevation-suite mathematical runtime invariants for SU(2), φ-discrepancy, MPS, adaptive compression, and SLD/QFI surfaces;
 - deterministic protocol handling and deterministic mathematical transforms;
 - executable PULVINI memory-compression invariants;
 - bounded φ-scaling and runtime integration proxy behavior;
@@ -102,6 +110,7 @@ HYBA_FULLSTACK must not claim from this evidence alone:
 ## Reviewer anti-miss controls added in this patch
 
 - `docs/NODUS_SOLUTUS_MUNDUS_COMPUTABILIS_EST.md` defines the computability doctrine and its blocked metaphysical boundary.
+- `docs/evidence/ELEVATION_SUITE_LOCAL_VALIDATION_2026-06-17.md` records the local elevation-suite run as bounded evidence: 40 passed, 2 expected skips, 0 failed.
 - `tests/test_nodus_solutus_proof_structure.py` fails if Nodus Solutus is not visible from the manifest, proof index, reviewer map, package scripts, and local release gate.
 - The previous merge-conflict markers in the evidence/test surfaces are removed.
 - `tests/test_no_merge_conflict_markers.py` fails if conflict markers reappear in source, docs, tests, scripts, or benchmark evidence files.
