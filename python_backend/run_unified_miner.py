@@ -78,6 +78,20 @@ class UnifiedMiner:
         logger.info("  Self-optimization: ENABLED (search strategy + hashrate tuning)")
         logger.info("  Safety constraints: ENFORCED (mathematical bounds)")
 
+        # Seed PYTHIA mission memory — one block, then shutdown
+        from pythia_mining.pythia_one_block_mission import (
+            ShareOutcome,
+            seed_mission_memory,
+            validate_mission_memory,
+        )
+        self.mission = seed_mission_memory()
+        assert validate_mission_memory(self.mission), "Mission memory validation failed"
+        logger.info("PYTHIA mission memory seeded: %s", self.mission.mission)
+        logger.info("  Mission target: %d pool-confirmed accepted block(s)", self.mission.mission_target.accepted_blocks)
+        logger.info("  Shutdown after completion: %s", self.mission.mission_target.shutdown_after_completion)
+        logger.info("  Max hashrate: %.1f EH/s (hard limit)", self.mission.hashrate_limit.max_autonomous_hashrate_ehs)
+        logger.info("  Supreme invariants: %s", "; ".join(self.mission.supreme_invariants.invariants))
+
         self.pool_config_path = pool_config_path or str(
             Path(__file__).resolve().parents[1] / "config" / "mining_pools_live.json"
         )
@@ -404,6 +418,8 @@ class UnifiedMiner:
             self._accepted += 1
             self._record_reason("submit", "pool_accepted_share")
             logger.info("🎉 SHARE ACCEPTED — nonce=%s, job=%s", nonce, job.job_id)
+            if hasattr(self, "mission"):
+                self.mission.record_share_outcome(ShareOutcome.ACCEPTED_SHARE)
         else:
             self._rejected += 1
             self._record_reason(
@@ -418,6 +434,9 @@ class UnifiedMiner:
                 job.job_id,
                 share.error_message,
             )
+            if hasattr(self, "mission"):
+                self.mission.record_share_outcome(ShareOutcome.REJECTED)
+
         return True
 
     async def _run_structured_search_batch(
@@ -574,6 +593,16 @@ class UnifiedMiner:
                         detail=f"failures={local_fail} target={self._safe_target_hex(getattr(job, 'target', None))}",
                     )
 
+                # Check mission memory for shutdown after accepted block
+                if hasattr(self, "mission") and self.mission.should_shutdown():
+                    logger.info("=" * 72)
+                    logger.info("  PYTHIA MISSION COMPLETE")
+                    logger.info("  One pool-confirmed accepted block detected.")
+                    logger.info("  Shutting down per mission memory.")
+                    logger.info("=" * 72)
+                    signal_handler(signal.SIGTERM, None)
+                    break
+
                 now = time.monotonic()
                 if now - self._last_stats_time >= self.stats_interval:
                     await self.print_stats()
@@ -592,14 +621,18 @@ class UnifiedMiner:
 
         logger.info("-" * 72)
         logger.info("  MINING STATISTICS")
-        logger.info("  Searches:          %s", self._total_searches)
-        logger.info("  Accepted:          %s", self._accepted)
-        logger.info("  Rejected:          %s", self._rejected)
-        logger.info("  Locally invalid:   %s", self._locally_invalid)
+        logger.info("  SEARCHES:          %s", self._total_searches)
+        logger.info("  ACCEPTED:          %s", self._accepted)
+        logger.info("  REJECTED:          %s", self._rejected)
+        logger.info("  LOCALLY INVALID:   %s", self._locally_invalid)
         logger.info(
-            "  Accept rate:       %.1f%%",
+            "  ACCEPT RATE:       %.1f%%",
             self._accepted / max(1, self._accepted + self._rejected) * 100,
         )
+        if hasattr(self, "mission"):
+            logger.info("  MISSION:           %s", self.mission.status.value)
+            logger.info("  MISSION ACCEPTED SHARES:  %s", self.mission.accepted_shares)
+            logger.info("  MISSION ACCEPTED BLOCKS:  %s", self.mission.accepted_blocks)
         logger.info("  Last no-job reason:      %s", self._last_no_job_reason)
         logger.info("  Last no-search reason:   %s", self._last_search_skip_reason)
         logger.info("  Last no-submit reason:   %s", self._last_submit_reason)
