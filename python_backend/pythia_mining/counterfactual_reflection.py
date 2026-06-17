@@ -8,6 +8,7 @@ or mutate the live mining runtime.
 
 from __future__ import annotations
 
+import hashlib
 from dataclasses import asdict, dataclass
 from typing import Any, Dict
 
@@ -19,6 +20,10 @@ PHI_PRIOR_MAX = 0.80
 MAX_PHI_PRIOR_DELTA = 0.025
 MIN_REFLECTION_OBSERVATIONS = 32
 MIN_REFLECTION_INTERVAL_SECONDS = 60.0
+
+# Stable domain tag for episode id derivation — changing this would invalidate
+# all existing episode ids in the audit trail. Do not modify without a migration.
+_EPISODE_ID_DOMAIN_TAG = "pythia_counterfactual_reflection_episode_v1"
 
 
 @dataclass(frozen=True)
@@ -34,6 +39,17 @@ class SearchTrajectory:
 
     def to_dict(self) -> Dict[str, Any]:
         return asdict(self)
+
+
+def _derive_reflection_episode_id(reference_id: str, alternative_id: str) -> str:
+    """Derive a deterministic episode id from the trajectory pair.
+
+    The episode id encodes the two trajectory ids plus a stable domain tag so
+    that the same pair always yields the same episode id (replayable /
+    reproducible), while the domain tag prevents collision with other id spaces.
+    """
+    raw = f"{_EPISODE_ID_DOMAIN_TAG}|{reference_id}|{alternative_id}"
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()[:32]
 
 
 @dataclass(frozen=True)
@@ -55,6 +71,7 @@ class CounterfactualReflection:
     velocity_guard_satisfied: bool
     confidence_weight: float
     session_event_id: str
+    reflection_episode_id: str
     memory_write_target: str
     share_difficulty_prior_unchanged: bool
     reflection_reason: str
@@ -109,6 +126,7 @@ def reflect_counterfactual_phi_prior(
     min_reflection_observations: int = MIN_REFLECTION_OBSERVATIONS,
     min_reflection_interval_seconds: float = MIN_REFLECTION_INTERVAL_SECONDS,
     session_event_id: str = "",
+    reflection_episode_id: str = "",
 ) -> CounterfactualReflection:
     """Compare trajectories and propose a bounded, rate-limited phi-prior update.
 
@@ -120,6 +138,12 @@ def reflect_counterfactual_phi_prior(
     is constrained by minimum observation and elapsed-time guards. A reflection
     may still be recorded when the guard is not satisfied, but prior movement is
     zero until enough evidence has accumulated.
+
+    ``reflection_episode_id`` identifies the trajectory-pair search episode for
+    audit-trail integrity. If not provided it is derived deterministically from
+    the two trajectory ids. ``session_event_id`` remains the per-candidate join
+    key for the candidate that triggered the reflection; these two ids are
+    semantically distinct and both preserved.
     """
 
     lower = _strict_unit_bound(phi_prior_min, "phi_prior_min")
@@ -180,6 +204,12 @@ def reflect_counterfactual_phi_prior(
     else:
         reason = "counterfactual_phi_prior_unchanged_or_clipped_at_bound"
 
+    # Derive episode id deterministically from trajectory pair if not provided.
+    episode_id = reflection_episode_id or _derive_reflection_episode_id(
+        reference.trajectory_id,
+        alternative.trajectory_id,
+    )
+
     return CounterfactualReflection(
         protocol=COUNTERFACTUAL_REFLECTION_PROTOCOL,
         reference=reference,
@@ -198,6 +228,7 @@ def reflect_counterfactual_phi_prior(
         velocity_guard_satisfied=velocity_guard_satisfied,
         confidence_weight=confidence_weight,
         session_event_id=session_event_id,
+        reflection_episode_id=episode_id,
         memory_write_target="phi_resonance_prior",
         share_difficulty_prior_unchanged=True,
         reflection_reason=reason,
@@ -219,5 +250,6 @@ __all__ = [
     "PHI_PRIOR_MIN",
     "CounterfactualReflection",
     "SearchTrajectory",
+    "_derive_reflection_episode_id",
     "reflect_counterfactual_phi_prior",
 ]

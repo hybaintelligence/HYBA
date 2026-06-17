@@ -1,0 +1,18 @@
+{
+  "default_pool": "viabtc",
+  "pools": {
+    "viabtc": {
+      "name": "Local Test Simulator",
+      "url": "stratum+tcp://127.0.0.1:3333",
+      "stratum_version": 1,
+      "username": "PYTHIA_TEST.001",
+      "password": "test",
+      "worker": "hendrix_phi_test",
+      "priority": 1,
+      "enabled": true,
+      "is_default": true,
+      "description": "TEST-ONLY local Stratum simulator - NEVER use in production"
+    }
+  },
+  "_WARNING": "This config is for testing only. Never use in production."
+}

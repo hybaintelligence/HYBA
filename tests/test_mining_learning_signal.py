@@ -21,7 +21,7 @@ def _event(**overrides: object) -> MiningLearningEvent:
         "pool_accepted_share": True,
         "pool_confirmed_block": False,
         "share_target": 10_000,
-        "block_target": 100,
+        "block_target": 100,  # block_target must be <= share_target
         "block_hash_int": 50,
         "strategy_id": "phi_scaled_compressed_solver_search",
     }

@@ -74,7 +74,7 @@ def _target_probability(target: int) -> float:
     if int(target) <= 0:
         raise LearningSignalError("target_must_be_positive")
     # Probability a uniformly sampled 256-bit hash is below target.
-    return _clamp_probability(int(target) / float(2**256))
+    return int(target) / float(2**256)
 
 
 def compute_learning_signal_correction(event: MiningLearningEvent) -> LearningSignalCorrection:

@@ -11,7 +11,7 @@ Production invariants:
   - live submission remains guarded by StratumClient.submit_validated_share()
 
 Environment:
-  HYBA_POOL_CONFIG_PATH=config/mining_pools_live.json
+  HYBA_POOL_CONFIG_PATH=config/mining_pools_test.json (testnet) or config/mining_pools_live.json (mainnet)
   HYBA_ENABLE_LIVE_STRATUM=true for real pool IO
   HYBA_ENABLE_LIVE_SHARE_SUBMIT=true only when intentionally submitting live shares
   HYBA_ALLOW_DEV_FIXTURES=true only for non-production, non-live development runs
@@ -31,6 +31,12 @@ from typing import Any, List, Optional, Tuple
 
 # Add backend to path when this script is executed directly from the repository.
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+# Set pool config path BEFORE importing pythia_mining modules to ensure it's respected
+# For mainnet mission, use live config; for testing, use test config via env override
+default_config = str(Path(__file__).resolve().parents[1] / "config" / "mining_pools_live.json")
+os.environ.setdefault("HYBA_POOL_CONFIG_PATH", 
+                      os.getenv("HYBA_POOL_CONFIG_PATH", default_config))
 
 from pythia_mining.phi_unified_mining_engine import UnifiedMiningEngine
 from pythia_mining.pool_profiles import (
@@ -68,6 +74,13 @@ class UnifiedMiner:
     """Connect the UnifiedMiningEngine to validated Stratum pool profiles."""
 
     def __init__(self, pool_config_path: Optional[str] = None):
+        # Set pool config path BEFORE importing pool_profiles to ensure it's respected
+        default_config = str(
+            Path(__file__).resolve().parents[1] / "config" / "mining_pools_test.json"
+        )
+        self.pool_config_path = pool_config_path or os.getenv("HYBA_POOL_CONFIG_PATH", default_config)
+        os.environ["HYBA_POOL_CONFIG_PATH"] = self.pool_config_path
+
         self.engine = UnifiedMiningEngine()
 
         # Activate PYTHIA autonomous intelligence
@@ -84,6 +97,8 @@ class UnifiedMiner:
             seed_mission_memory,
             validate_mission_memory,
         )
+        # Make ShareOutcome available for mission recording
+        self.ShareOutcome = ShareOutcome
         self.mission = seed_mission_memory()
         assert validate_mission_memory(self.mission), "Mission memory validation failed"
         logger.info("PYTHIA mission memory seeded: %s", self.mission.mission)
@@ -91,10 +106,6 @@ class UnifiedMiner:
         logger.info("  Shutdown after completion: %s", self.mission.mission_target.shutdown_after_completion)
         logger.info("  Max hashrate: %.1f EH/s (hard limit)", self.mission.hashrate_limit.max_autonomous_hashrate_ehs)
         logger.info("  Supreme invariants: %s", "; ".join(self.mission.supreme_invariants.invariants))
-
-        self.pool_config_path = pool_config_path or str(
-            Path(__file__).resolve().parents[1] / "config" / "mining_pools_live.json"
-        )
         self.pool_configs: List[PoolCredentialConfig] = []
         self.active_pool_idx: int = 0
         self.stratum: Optional[StratumClient] = None
@@ -202,8 +213,7 @@ class UnifiedMiner:
 
     def load_pools(self) -> None:
         """Load enabled pool configurations from env/runtime config."""
-        os.environ["HYBA_POOL_CONFIG_PATH"] = self.pool_config_path
-
+        # Config path already set in __init__ to ensure pool_profiles respects it
         configs = load_runtime_pool_configs()
         valid_configs: list[PoolCredentialConfig] = []
         skipped: list[str] = []
@@ -435,7 +445,7 @@ class UnifiedMiner:
                 share.error_message,
             )
             if hasattr(self, "mission"):
-                self.mission.record_share_outcome(ShareOutcome.REJECTED)
+                self.mission.record_share_outcome(self.ShareOutcome.REJECTED)
 
         return True
 

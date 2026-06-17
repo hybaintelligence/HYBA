@@ -31,9 +31,6 @@ class EvidenceSealError(ValueError):
 
 @dataclass(frozen=True)
 class TimestampAuthority:
-<<<<<<< Updated upstream
-    """Externally anchored timestamp authority for a sealed mining bundle."""
-=======
     """Externally anchored timestamp authority for a sealed mining bundle.
 
     The authority is the Bitcoin job context, not PYTHIA's local clock. Local
@@ -46,7 +43,6 @@ class TimestampAuthority:
     into an orphaned-branch record. This field makes the chain context
     machine-readable without invalidating historical bundles.
     """
->>>>>>> Stashed changes
 
     authority: str = TIMESTAMP_AUTHORITY
     bitcoin_block_height: int = 0

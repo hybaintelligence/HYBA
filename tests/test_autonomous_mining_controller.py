@@ -32,12 +32,16 @@ class TestAutonomousMiningController(unittest.TestCase):
     def setUp(self):
         """Set up test fixtures."""
         self.unified_engine = MagicMock(spec=UnifiedMiningEngine)
+        # Add optimizer mock to prevent AttributeError
+        self.unified_engine.optimizer = MagicMock()
+        self.unified_engine.optimizer.current_strategy = MagicMock()
         self.config = AutonomousConfig(
             autonomy_level=AutonomyLevel.ADVISORY,
-            max_autonomous_hashrate_ehs=100.0,
+            max_autonomous_hashrate_ehs=0.5,  # Within mission-memory hard limit of 1.0
             phi_coherence_threshold=0.70,
             reflexive_loop_enabled=True,
             compression_drive_enabled=True,
+            persistence_enabled=False,  # Disable persistence for clean test state
         )
         self.controller = AutonomousMiningController(
             unified_engine=self.unified_engine,
@@ -47,7 +51,7 @@ class TestAutonomousMiningController(unittest.TestCase):
     def test_controller_initialization(self):
         """Test that controller initializes with correct configuration."""
         self.assertEqual(self.controller.current_autonomy_level, AutonomyLevel.ADVISORY)
-        self.assertEqual(self.controller.config.max_autonomous_hashrate_ehs, 100.0)
+        self.assertEqual(self.controller.config.max_autonomous_hashrate_ehs, 0.5)
         self.assertEqual(self.controller.config.phi_coherence_threshold, 0.70)
         self.assertEqual(len(self.controller.decision_log), 0)
         # Reflexive learning initialization
@@ -636,9 +640,9 @@ class TestAutonomousMiningController(unittest.TestCase):
             initial_targets + 1,  # Only one target added
         )
 
-    async def test_seek_improvement_cycle(self):
+    def test_seek_improvement_cycle(self):
         """Test the full Reflexive Knowledge Loop improvement cycle."""
-        result = await self.controller.seek_improvement()
+        result = asyncio.run(self.controller.seek_improvement())
         self.assertIn("reflexive_cycle_executed", result)
         self.assertTrue(result["reflexive_cycle_executed"])
         self.assertIn("epoch", result)
@@ -651,12 +655,12 @@ class TestAutonomousMiningController(unittest.TestCase):
         self.assertIn("compression_drive", result)
         self.assertGreaterEqual(result["epoch"], 0)
 
-    async def test_seek_improvement_multiple_epochs(self):
+    def test_seek_improvement_multiple_epochs(self):
         """Test multiple Reflexive Knowledge Loop epochs."""
         # Run first epoch
-        result1 = await self.controller.seek_improvement()
+        result1 = asyncio.run(self.controller.seek_improvement())
         # Run second epoch
-        result2 = await self.controller.seek_improvement()
+        result2 = asyncio.run(self.controller.seek_improvement())
         # Epoch counter should increment
         self.assertGreater(
             result2["epoch"],
@@ -668,10 +672,10 @@ class TestAutonomousMiningController(unittest.TestCase):
             result1["proposals_generated"],
         )
 
-    async def test_seek_improvement_disabled(self):
+    def test_seek_improvement_disabled(self):
         """Test that reflexive loop is disabled when configured."""
         self.controller.config.reflexive_loop_enabled = False
-        result = await self.controller.seek_improvement()
+        result = asyncio.run(self.controller.seek_improvement())
         self.assertEqual(result["proposals_generated"], 0)
         self.assertEqual(result["proposals_applied"], 0)
 
@@ -729,72 +733,72 @@ class TestAutonomousMiningController(unittest.TestCase):
     # ORIGINAL TESTS (preserved)
     # ================================================================
 
-    async def test_optimize_search_strategy_high_coherence(self):
+    def test_optimize_search_strategy_high_coherence(self):
         """Test search strategy optimization with high phi coherence."""
-        decision = await self.controller.optimize_search_strategy(
+        decision = asyncio.run(self.controller.optimize_search_strategy(
             current_coherence=0.85,
             current_hashrate_ehs=50.0,
-        )
+        ))
         self.assertEqual(decision.decision_type, "search_strategy_optimization")
         self.assertIn("aggressive", decision.mathematical_justification["reason"])
         self.assertEqual(decision.expected_outcome, "faster_search_with_high_confidence")
 
-    async def test_optimize_search_strategy_medium_coherence(self):
+    def test_optimize_search_strategy_medium_coherence(self):
         """Test search strategy optimization with medium phi coherence."""
-        decision = await self.controller.optimize_search_strategy(
+        decision = asyncio.run(self.controller.optimize_search_strategy(
             current_coherence=0.75,
             current_hashrate_ehs=50.0,
-        )
+        ))
         self.assertEqual(decision.decision_type, "search_strategy_optimization")
         self.assertIn("balanced", decision.mathematical_justification["reason"])
         self.assertEqual(decision.expected_outcome, "balanced_speed_and_reliability")
 
-    async def test_optimize_search_strategy_low_coherence(self):
+    def test_optimize_search_strategy_low_coherence(self):
         """Test search strategy optimization with low phi coherence."""
-        decision = await self.controller.optimize_search_strategy(
+        decision = asyncio.run(self.controller.optimize_search_strategy(
             current_coherence=0.50,
             current_hashrate_ehs=50.0,
-        )
+        ))
         self.assertEqual(decision.decision_type, "search_strategy_optimization")
         self.assertIn("conservative", decision.mathematical_justification["reason"])
         self.assertEqual(decision.expected_outcome, "prioritize_reliability_over_speed")
 
-    async def test_optimize_hashrate_increase(self):
+    def test_optimize_hashrate_increase(self):
         """Test hashrate optimization for increase."""
-        decision = await self.controller.optimize_hashrate_target(
-            current_hashrate_ehs=50.0,
-            target_hashrate_ehs=80.0,
-        )
+        decision = asyncio.run(self.controller.optimize_hashrate_target(
+            current_hashrate_ehs=0.2,
+            target_hashrate_ehs=0.4,
+        ))
         self.assertEqual(decision.decision_type, "hashrate_optimization")
         self.assertIn("increase", decision.action_taken)
         self.assertEqual(decision.expected_outcome, "higher_mining_efficiency")
 
-    async def test_optimize_hashrate_decrease(self):
+    def test_optimize_hashrate_decrease(self):
         """Test hashrate optimization for decrease (energy saving)."""
-        decision = await self.controller.optimize_hashrate_target(
-            current_hashrate_ehs=80.0,
-            target_hashrate_ehs=50.0,
-        )
+        decision = asyncio.run(self.controller.optimize_hashrate_target(
+            current_hashrate_ehs=0.4,
+            target_hashrate_ehs=0.2,
+        ))
         self.assertEqual(decision.decision_type, "hashrate_optimization")
         self.assertIn("decrease", decision.action_taken)
         self.assertEqual(decision.expected_outcome, "reduced_energy_consumption")
 
-    async def test_optimize_compression_ratio(self):
+    def test_optimize_compression_ratio(self):
         """Test memory compression ratio optimization."""
-        decision = await self.controller.optimize_compression_ratio(
+        decision = asyncio.run(self.controller.optimize_compression_ratio(
             current_compression=1.5,
             target_compression=1.8,
-        )
+        ))
         self.assertEqual(decision.decision_type, "compression_optimization")
         self.assertIn("adjust_compression", decision.action_taken)
         self.assertEqual(decision.expected_outcome, "better_memory_utilization")
 
-    async def test_emergency_shutdown(self):
+    def test_emergency_shutdown(self):
         """Test emergency shutdown capability."""
-        decision = await self.controller.emergency_shutdown(
+        decision = asyncio.run(self.controller.emergency_shutdown(
             reason="test_emergency",
             mathematical_justification={"emergency": True},
-        )
+        ))
         self.assertEqual(decision.decision_type, "emergency_shutdown")
         self.assertEqual(decision.autonomy_level, AutonomyLevel.EMERGENCY)
         self.assertEqual(decision.action_taken, "emergency_shutdown_initiated")
@@ -889,17 +893,17 @@ class TestAutonomousMiningController(unittest.TestCase):
         self.controller.set_operator_approval_callback(callback)
         self.assertEqual(self.controller.operator_approval_callback, callback)
 
-    async def test_operator_approval_callback_invocation(self):
+    def test_operator_approval_callback_invocation(self):
         """Test that operator approval callback is invoked when needed."""
         callback = MagicMock(return_value=True)
         self.controller.set_operator_approval_callback(callback)
         self.controller.set_autonomy_level(AutonomyLevel.SUPERVISED)
 
         # This should trigger callback in real scenario
-        decision = await self.controller.optimize_search_strategy(
+        decision = asyncio.run(self.controller.optimize_search_strategy(
             current_coherence=0.75,
             current_hashrate_ehs=50.0,
-        )
+        ))
         # In supervised mode with no violations, it should execute autonomously
         # without callback invocation
 
@@ -917,7 +921,7 @@ class TestAutonomousMiningControllerIntegration(unittest.TestCase):
             unified_engine=self.unified_engine,
             config=AutonomousConfig(
                 autonomy_level=AutonomyLevel.ADVISORY,
-                max_autonomous_hashrate_ehs=100.0,
+                max_autonomous_hashrate_ehs=1.0,  # Mission-memory 1 EH/s hard limit
                 reflexive_loop_enabled=True,
             ),
         )
@@ -951,9 +955,9 @@ class TestAutonomousMiningControllerIntegration(unittest.TestCase):
         history = self.unified_engine.get_autonomous_decision_history()
         self.assertIsInstance(history, list)
 
-    async def test_seek_improvement_via_controller(self):
+    def test_seek_improvement_via_controller(self):
         """Test seek_improvement through the real controller."""
-        result = await self.controller.seek_improvement()
+        result = asyncio.run(self.controller.seek_improvement())
         self.assertTrue(result["reflexive_cycle_executed"])
         self.assertGreaterEqual(result["epoch"], 0)
         # With reflexive loop enabled, should generate proposals

@@ -5,13 +5,13 @@
       "name": "Braiins Pool",
       "url": "stratum+tcp://stratum.braiins.com:3333",
       "stratum_version": 1,
-      "username": "PYTHIA.001",
-      "password": "9awtMD5KQgvRUh2yFbjVeT7b6hjipWcAsQHd6wEhgtDT9soosna",
+      "username": "PYTHIA.hendrix_phi",
+      "password": "anything123",
       "worker": "hendrix_phi",
       "priority": 1,
       "enabled": true,
       "is_default": true,
-      "description": "Braiins Pool - Default mining pool (V1 Stratum)"
+      "description": "Braiins Pool - Primary pool for 20-min local run"
     },
     "viabtc": {
       "name": "ViaBTC BTC",
@@ -21,22 +21,22 @@
       "password": "123",
       "worker": "hendrix_phi",
       "priority": 2,
-      "enabled": true,
+      "enabled": false,
       "is_default": false,
-      "description": "ViaBTC SHA256 pool - selectable from dropdown"
+      "description": "ViaBTC SHA256 pool - disabled for Braiins live run"
     },
     "nicehash": {
       "name": "NiceHash SHA256",
-      "url": "stratum+ssl://sha256.auto.nicehash.com:443",
+      "url": "stratum+tcp://sha256.auto.nicehash.com:9200",
       "stratum_version": 1,
       "username": "NHbaCJGb1gM7MjgJ9QnnqbG2sLVW9w8hdPzK",
       "password": "x",
       "worker": "hendrix_phi",
       "nicehash_pool_id": "NHbaCJGb1gM7MjgJ9QnnqbG2sLVW9w8hdPzK",
       "priority": 3,
-      "enabled": true,
+      "enabled": false,
       "is_default": false,
-      "description": "NiceHash auto-trading SHA256 - selectable from dropdown"
+      "description": "NiceHash auto-trading SHA256 - disabled for Braiins live run"
     },
     "ckpool": {
       "name": "Solo CKPool",
@@ -47,9 +47,9 @@
       "password": "x",
       "worker": "hendrix_phi",
       "priority": 4,
-      "enabled": true,
+      "enabled": false,
       "is_default": false,
-      "description": "CKPool solo mining - selectable from dropdown"
+      "description": "CKPool solo mining - disabled for Braiins live run"
     },
     "stratumv2": {
       "name": "Stratum V2 Pool",

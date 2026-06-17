@@ -3,6 +3,7 @@ from __future__ import annotations
 from pythia_mining.counterfactual_reflection import (
     COUNTERFACTUAL_REFLECTION_PROTOCOL,
     SearchTrajectory,
+    _derive_reflection_episode_id,
     reflect_counterfactual_phi_prior,
 )
 
@@ -76,3 +77,56 @@ def test_counterfactual_reflection_rejects_share_margin_update():
 
     assert result.reflection_reason == "counterfactual_phi_prior_unchanged_or_clipped_at_bound"
     assert result.updated_phi_prior == 0.5
+
+
+def test_reflection_episode_id_is_present_and_deterministic():
+    reference = _trajectory(trajectory_id="traj-ref")
+    alternative = _trajectory(trajectory_id="traj-alt")
+
+    result = reflect_counterfactual_phi_prior(reference, alternative, current_phi_prior=0.5)
+
+    assert result.reflection_episode_id is not None
+    assert len(result.reflection_episode_id) == 32
+    expected = _derive_reflection_episode_id("traj-ref", "traj-alt")
+    assert result.reflection_episode_id == expected
+
+
+def test_reflection_episode_id_differs_from_session_event_id():
+    reference = _trajectory(trajectory_id="traj-ref")
+    alternative = _trajectory(trajectory_id="traj-alt")
+
+    result = reflect_counterfactual_phi_prior(
+        reference, alternative, current_phi_prior=0.5, session_event_id="session-xyz"
+    )
+
+    assert result.session_event_id == "session-xyz"
+    assert result.reflection_episode_id != result.session_event_id
+    expected = _derive_reflection_episode_id("traj-ref", "traj-alt")
+    assert result.reflection_episode_id == expected
+
+
+def test_reflection_episode_id_can_be_overridden():
+    reference = _trajectory(trajectory_id="traj-ref")
+    alternative = _trajectory(trajectory_id="traj-alt")
+
+    result = reflect_counterfactual_phi_prior(
+        reference, alternative, current_phi_prior=0.5, reflection_episode_id="explicit-episode-001"
+    )
+
+    assert result.reflection_episode_id == "explicit-episode-001"
+
+
+def test_reflection_episode_id_reproducible_from_pair():
+    """Different callers with same trajectory ids produce same episode id."""
+    reference_a = _trajectory(trajectory_id="t1")
+    alternative_a = _trajectory(trajectory_id="t2")
+    reference_b = _trajectory(trajectory_id="t1")
+    alternative_b = _trajectory(trajectory_id="t2")
+
+    result_a = reflect_counterfactual_phi_prior(reference_a, alternative_a, current_phi_prior=0.5)
+    result_b = reflect_counterfactual_phi_prior(reference_b, alternative_b, current_phi_prior=0.5, session_event_id="different-session")
+
+    assert result_a.reflection_episode_id == result_b.reflection_episode_id
+    assert result_a.session_event_id == ""
+    assert result_b.session_event_id == "different-session"
+    assert result_a.reflection_episode_id != result_b.session_event_id

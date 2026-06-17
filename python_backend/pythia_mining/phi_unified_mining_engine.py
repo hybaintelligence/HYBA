@@ -48,6 +48,11 @@ from .phi_scaling_engine import PhiResonanceAnalyzer, PhiScaledEnsemble, benchma
 from .pulvini_compressed_solver import PulviniCompressedQuantumSolver
 from .pulvini_memory_compression_proof import phi_folding_mathematical_proof
 from .stratum_client import MiningJob
+from .autonomous_mining_controller import (
+    AutonomousMiningController,
+    AutonomyLevel,
+    AutonomousDecision,
+)
 
 @dataclass
 class UnifiedMiningState:
@@ -107,19 +112,9 @@ class UnifiedMiningEngine:
         self.state = UnifiedMiningState()
         self._solve_count = 0
         # Initialize autonomous mining controller for PYTHIA self-governance
-        # (lazy import to break circular dependency with autonomous_mining_controller)
-        from .autonomous_mining_controller import (
-            AutonomousConfig,
-            AutonomousMiningController,
-            AutonomyLevel,
-        )
+        # (config read from env automatically via AutonomousConfig factory defaults)
         self.autonomous_controller = AutonomousMiningController(
             unified_engine=self,
-            config=AutonomousConfig(
-                autonomy_level=AutonomyLevel.ADVISORY,
-                max_autonomous_hashrate_ehs=configured_capacity_ehs or 100.0,
-                phi_coherence_threshold=0.70,
-            ),
         )
         self._sync_verifier_state()
 
@@ -202,7 +197,7 @@ class UnifiedMiningEngine:
         )
 
     async def search(self, job: MiningJob) -> OptimizationResult:
-        """Run one complete mining search cycle."""
+        """Run one complete mining search cycle with autonomous optimisation."""
         self._solve_count += 1
 
         phi_metrics = self._coherence_for_next_search()
@@ -228,6 +223,48 @@ class UnifiedMiningEngine:
                 max_search_time=120.0,
             )
 
+        # --- Autonomous optimisation step (wired into the live loop) ---
+        ac = self.autonomous_controller
+        if ac.current_autonomy_level.should_optimize:
+            try:
+                await ac.optimize_search_strategy(
+                    current_coherence=coherence,
+                    current_hashrate_ehs=self.state.last_batch_hashrate_ehs,
+                )
+                # Reset failure counter on success
+                ac._consecutive_failures = 0
+            except Exception as exc:
+                # Circuit breaker: degrade on repeated failures
+                ac._consecutive_failures += 1
+                import logging
+                logger = logging.getLogger("pythia.engine")
+                logger.error("autonomous_optimize_search failed: %s", exc)
+                if ac._consecutive_failures >= 3:
+                    degraded_to = ac.degrade_autonomy_level(
+                        reason=f"search_optimisation_consecutive_failures_{ac._consecutive_failures}"
+                    )
+                    logger.warning("autonomy degraded to %s", degraded_to.value)
+
+            # Periodically trigger reflexive learning
+            interval = ac.config.reflexive_loop_interval
+            now = time.time()
+            if (ac.config.reflexive_loop_enabled
+                    and ac.current_autonomy_level.should_optimize
+                    and (now - ac._last_reflexive_cycle) > interval):
+                try:
+                    await ac.seek_improvement()
+                    ac._last_reflexive_cycle = now
+                except Exception as exc:
+                    import logging
+                    logger = logging.getLogger("pythia.engine")
+                    logger.error("reflexive_cycle failed: %s", exc)
+                    ac._consecutive_failures += 1
+                    if ac._consecutive_failures >= 3:
+                        ac.degrade_autonomy_level(
+                            reason=f"reflexive_cycle_consecutive_failures_{ac._consecutive_failures}"
+                        )
+
+        # --- Run the actual nonce search ---
         result = await self.optimizer.optimize_nonce_search(job)
 
         metrics = self.solver.get_metrics()
