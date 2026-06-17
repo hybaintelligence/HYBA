@@ -115,17 +115,24 @@ class AIOptimizer:
             self._configured_timeout_cap_seconds(),
         )
         
-        # Add randomness to search ranges for unique nonce generation
-        current_ranges = self.quantum_solver.current_config.get("nonce_ranges", [(0, 2**32 - 1)])
-        if current_ranges:
-            # Shift ranges slightly based on time to ensure unique exploration
-            time_offset = int(time.time() * 1000) % 10000
-            new_ranges = []
-            for start, end in current_ranges:
-                shifted_start = (start + time_offset) % (2**32)
-                shifted_end = min(shifted_start + (end - start), 2**32 - 1)
-                new_ranges.append((shifted_start, shifted_end))
-            await self.quantum_solver.configure_search(int(job.target), new_ranges)
+        compressed_contract_active = (
+            initial_metrics.get("nonce_space_contract")
+            == "pulvini_phi_compressed_pre_search"
+        )
+        if not compressed_contract_active:
+            # Shift ranges slightly based on time to diversify exploration for
+            # base solvers that do not expose compressed-plan traversal.
+            current_ranges = self.quantum_solver.current_config.get(
+                "nonce_ranges", [(0, 2**32 - 1)]
+            )
+            if current_ranges:
+                time_offset = int(time.time() * 1000) % 10000
+                new_ranges = []
+                for start, end in current_ranges:
+                    shifted_start = (start + time_offset) % (2**32)
+                    shifted_end = min(shifted_start + (end - start), 2**32 - 1)
+                    new_ranges.append((shifted_start, shifted_end))
+                await self.quantum_solver.configure_search(int(job.target), new_ranges)
         
         nonce = await self.quantum_solver.solve(
             max_iterations=self._configured_max_iterations(),
