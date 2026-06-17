@@ -88,6 +88,11 @@ def compute_learning_signal_correction(event: MiningLearningEvent) -> LearningSi
     A pool share ACK may update operational/search-context confidence, but the
     phi amplitude update is discounted by the block/share gap unless a true
     pool-confirmed block is present.
+
+    The correction is only valid when ``difficulty_gap_ratio <= 1``. If a pool
+    or vardiff event presents a share target stricter than the block target or
+    otherwise inverts this ratio, PYTHIA must halt learning for that event rather
+    than overweighting share ACKs as block evidence.
     """
 
     if not (0.0 <= float(event.phi_score) <= 1.0):
@@ -101,7 +106,10 @@ def compute_learning_signal_correction(event: MiningLearningEvent) -> LearningSi
 
     share_likelihood = _target_probability(event.share_target)
     block_likelihood = _target_probability(event.block_target)
-    difficulty_gap_ratio = _clamp_probability(block_likelihood / share_likelihood)
+    raw_difficulty_gap_ratio = block_likelihood / share_likelihood
+    if raw_difficulty_gap_ratio > 1.0:
+        raise LearningSignalError("difficulty_gap_ratio_inversion")
+    difficulty_gap_ratio = _clamp_probability(raw_difficulty_gap_ratio)
 
     phi_mass = 1.0 if event.phi_score >= PHI_THRESHOLD else 0.25
     share_update = phi_mass if event.pool_accepted_share and event.local_valid else 0.0
