@@ -516,45 +516,6 @@ class MetricsStore:
 
             return share_deleted + conn_deleted
 
-    def close(self) -> None:
-        """Close the database connection."""
-        if hasattr(self._local, "conn") and self._local.conn is not None:
-            self._local.conn.close()
-            self._local.conn = None
-
-
-# Global metrics store instance
-_metrics_store: Optional[MetricsStore] = None
-
-
-def get_metrics_store() -> MetricsStore:
-    """Get or create the global metrics store instance for the active DB path."""
-    global _metrics_store
-    configured_path = Path(os.getenv("HYBA_METRICS_DB_PATH", "data/metrics.db"))
-    if _metrics_store is not None and _metrics_store.db_path != configured_path:
-        _metrics_store.close()
-        _metrics_store = None
-    if _metrics_store is None:
-        _metrics_store = MetricsStore(str(configured_path))
-    return _metrics_store
-
-
-def set_metrics_store(store: MetricsStore) -> None:
-    """Set the global metrics store instance."""
-    global _metrics_store
-    if _metrics_store is not None and _metrics_store is not store:
-        _metrics_store.close()
-    _metrics_store = store
-
-
-def reset_metrics_store() -> None:
-    """Close and clear the global metrics store so env-scoped tests cannot leak state."""
-    global _metrics_store
-    if _metrics_store is not None:
-        _metrics_store.close()
-    _metrics_store = None
-
-
     def evaluate_boundary_proximity(self, proposal: dict, config_limits: dict) -> float:
         """
         Computes the normalized proximity ε of proposed parameters to hard constraints.
@@ -601,6 +562,44 @@ def reset_metrics_store() -> None:
             )
 
         return min_epsilon
+
+    def close(self) -> None:
+        """Close the database connection."""
+        if hasattr(self._local, "conn") and self._local.conn is not None:
+            self._local.conn.close()
+            self._local.conn = None
+
+
+# Global metrics store instance
+_metrics_store: Optional[MetricsStore] = None
+
+
+def get_metrics_store() -> MetricsStore:
+    """Get or create the global metrics store instance for the active DB path."""
+    global _metrics_store
+    configured_path = Path(os.getenv("HYBA_METRICS_DB_PATH", "data/metrics.db"))
+    if _metrics_store is not None and _metrics_store.db_path != configured_path:
+        _metrics_store.close()
+        _metrics_store = None
+    if _metrics_store is None:
+        _metrics_store = MetricsStore(str(configured_path))
+    return _metrics_store
+
+
+def set_metrics_store(store: MetricsStore) -> None:
+    """Set the global metrics store instance."""
+    global _metrics_store
+    if _metrics_store is not None and _metrics_store is not store:
+        _metrics_store.close()
+    _metrics_store = store
+
+
+def reset_metrics_store() -> None:
+    """Close and clear the global metrics store so env-scoped tests cannot leak state."""
+    global _metrics_store
+    if _metrics_store is not None:
+        _metrics_store.close()
+    _metrics_store = None
 
 
 __all__ = [
