@@ -119,6 +119,8 @@ class UnifiedMiner:
         self._last_search_skip_reason: Optional[str] = None
         self._last_submit_reason: Optional[str] = None
         self._reason_log_cache: dict[str, str] = {}
+        # Track submitted nonces to prevent duplicates
+        self._submitted_nonces: set[tuple[str, int]] = set()
 
     @staticmethod
     def _safe_target_hex(target: Any) -> str:
@@ -372,6 +374,16 @@ class UnifiedMiner:
         rejected locally before any pool submission attempt.
         """
         local = self.engine.submit_candidate(job, nonce)
+        
+        # Check for duplicate nonce submission to prevent pool rejections
+        nonce_key = (job.job_id, nonce)
+        if nonce_key in self._submitted_nonces:
+            logger.info("Skipping duplicate nonce submission: job=%s nonce=%s", job.job_id, nonce)
+            self._rejected += 1
+            return False
+        
+        self._submitted_nonces.add(nonce_key)
+        
         share_info: dict[str, Any] = {
             "nonce": nonce,
             "job_id": job.job_id,

@@ -36,11 +36,9 @@
     1.897178403414867,
     1.8971790570725144,
     1.8971796723257912,
-    1.897180252462557,
-    1.8971808004057888,
-    1.8971813187628355
+    1.897180252462557
   ],
-  "epochs": 100,
+  "epochs": 95,
   "logical_consistency_history": [
     0.77,
     0.7533333333333333,
@@ -77,8 +75,6 @@
     0.77,
     0.85,
     0.77,
-    0.77,
-    0.85,
     0.77
   ],
   "optimization_targets": [
@@ -841,49 +837,9 @@
       "target_name": "search_depth",
       "target_value": 66.0,
       "tolerance": 5.0
-    },
-    {
-      "current_value": 0.6912936407616503,
-      "objective_function": "minimize_energy",
-      "priority": 2,
-      "target_name": "coherence_threshold",
-      "target_value": 0.6567289587235678,
-      "tolerance": 0.02
-    },
-    {
-      "current_value": 1.86,
-      "objective_function": "maximize_phi_coherence",
-      "priority": 3,
-      "target_name": "compression_target",
-      "target_value": 1.8971808004057888,
-      "tolerance": 0.05
-    },
-    {
-      "current_value": 60.0,
-      "objective_function": "maximize_hashrate",
-      "priority": 4,
-      "target_name": "search_depth",
-      "target_value": 66.0,
-      "tolerance": 5.0
-    },
-    {
-      "current_value": 1.86,
-      "objective_function": "maximize_phi_coherence",
-      "priority": 3,
-      "target_name": "compression_target",
-      "target_value": 1.8971813187628355,
-      "tolerance": 0.05
-    },
-    {
-      "current_value": 1.5,
-      "objective_function": "maximize_phi_coherence",
-      "priority": 5,
-      "target_name": "phi_scaling",
-      "target_value": 1.4249999999999998,
-      "tolerance": 0.05
     }
   ],
-  "phi_coherence_threshold": 0.6567289587235678,
+  "phi_coherence_threshold": 0.6912936407616503,
   "phi_density_history": [
     0.5,
     0.6624300000000001,
@@ -920,33 +876,9 @@
     0.9340151353820672,
     1.0,
     0.9340942469712726,
-    0.9340732693305752,
-    1.0,
-    0.9341428238040732
+    0.9340732693305752
   ],
   "proposals": [
-    {
-      "applied": true,
-      "codebase_source_module": "ai_optimizer",
-      "counterfactual_confidence": 0.3,
-      "current_value": 60.0,
-      "expected_phi_density_gain": 0.004738781250000046,
-      "improvement_type": "search_depth",
-      "logical_consistency_score": 0.75,
-      "proposal_id": "self_opt_97_1781699816",
-      "proposed_value": 66.0
-    },
-    {
-      "applied": true,
-      "codebase_source_module": "pulvini_memory_compression_proof",
-      "counterfactual_confidence": 0.8998995632410498,
-      "current_value": 1.86,
-      "expected_phi_density_gain": 0.0006517494039378624,
-      "improvement_type": "compression_target",
-      "logical_consistency_score": 0.8,
-      "proposal_id": "self_opt_97_1781699816",
-      "proposed_value": 1.8971813187628355
-    },
     {
       "applied": true,
       "codebase_source_module": "phi_scaling_engine",
@@ -955,8 +887,30 @@
       "expected_phi_density_gain": 0.006321420000000022,
       "improvement_type": "phi_scaling",
       "logical_consistency_score": 0.76,
-      "proposal_id": "self_opt_97_1781699816",
+      "proposal_id": "self_opt_92_1781699685",
       "proposed_value": 1.4249999999999998
+    },
+    {
+      "applied": true,
+      "codebase_source_module": "pulvini_memory_compression_proof",
+      "counterfactual_confidence": 0.8998938304438526,
+      "current_value": 1.86,
+      "expected_phi_density_gain": 0.0006517305340474344,
+      "improvement_type": "compression_target",
+      "logical_consistency_score": 0.8,
+      "proposal_id": "self_opt_92_1781699685",
+      "proposed_value": 1.897180252462557
+    },
+    {
+      "applied": true,
+      "codebase_source_module": "ai_optimizer",
+      "counterfactual_confidence": 0.3,
+      "current_value": 60.0,
+      "expected_phi_density_gain": 0.004738781250000046,
+      "improvement_type": "search_depth",
+      "logical_consistency_score": 0.75,
+      "proposal_id": "self_opt_92_1781699685",
+      "proposed_value": 66.0
     }
   ],
   "schema_version": 1
