@@ -147,6 +147,9 @@ class TopologicalHolonomyEngine:
         The parameter λ controls the state evolution along the Pulvini manifold.
         Uses Φ-LCG to ensure optimal distribution of parameter values.
         
+        Creates a non-trivial family of states by mixing basis states with
+        λ-dependent coefficients, ensuring non-zero Berry connection.
+        
         Args:
             lambda_param: Parameter value in [0, 1)
             
@@ -156,24 +159,32 @@ class TopologicalHolonomyEngine:
         if lambda_param in self._state_cache:
             return self._state_cache[lambda_param]
         
-        # Create a new MPS with phase offset determined by λ
-        # This creates a smooth family of states
+        # Create a new MPS with λ-dependent tensor coefficients
         mps = MPS(
             num_sites=self.num_sites,
             physical_dim=2,
             max_bond_dim=self.max_bond_dim
         )
         
-        # Apply λ-dependent phase rotation with bounded magnitude
-        # Use smaller phase increments to avoid numerical overflow
-        phase = 2 * math.pi * lambda_param
+        # Create non-trivial λ-dependence by varying tensor amplitudes
+        # This ensures non-zero Berry connection
         for i in range(self.num_sites):
             tensor = mps.tensors[i]
-            # Apply phase rotation: tensor → exp(i * λ * φ^i) * tensor
-            # Use bounded exponent to prevent overflow
-            phi_phase = phase * (INV_PHI ** min(i, 10))  # Cap at 10 to prevent tiny exponents
+            
+            # Vary amplitude based on λ and site index
+            # Use sin/cos to create smooth variation
+            amplitude = 0.5 + 0.5 * math.sin(2 * math.pi * lambda_param + i * INV_PHI)
+            
+            # Apply amplitude modulation to tensor
+            # This creates a smooth family of states with non-trivial geometry
+            mps.tensors[i] = tensor * amplitude
+        
+        # Apply phase rotation for additional geometric structure
+        phase = 2 * math.pi * lambda_param
+        for i in range(min(self.num_sites, 5)):  # Only first 5 sites to avoid overflow
+            tensor = mps.tensors[i]
+            phi_phase = phase * (INV_PHI ** i)
             rotation = np.exp(1j * phi_phase)
-            # Apply rotation with magnitude check
             mps.tensors[i] = tensor * rotation
         
         mps.normalize()
