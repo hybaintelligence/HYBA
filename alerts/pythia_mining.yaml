@@ -1,0 +1,79 @@
+groups:
+  - name: pythia-autonomous-mining
+    interval: 30s
+    rules:
+      - alert: PythiaPendingApprovalStuck
+        expr: hyba_pending_operator_approvals > 0
+        for: 10m
+        labels:
+          severity: warning
+          service: pythia-autonomous-mining
+        annotations:
+          summary: "PYTHIA autonomous approval request has been pending too long"
+          description: "At least one bounded operator approval has remained pending for more than 10 minutes. Check the approval service and operator queue."
+
+      - alert: PythiaConstraintViolationSpike
+        expr: increase(hyba_constraint_violations_total[5m]) > 3
+        for: 2m
+        labels:
+          severity: critical
+          service: pythia-autonomous-mining
+        annotations:
+          summary: "PYTHIA autonomous constraint violations spiking"
+          description: "More than three autonomous constraint violations occurred in five minutes. Degrade autonomy and inspect recent decision/audit events."
+
+      - alert: PythiaReflexiveCycleP99Slow
+        expr: |
+          (
+            histogram_quantile(0.99, rate(hyba_reflexive_cycle_duration_seconds_bucket[5m])) > 5
+          ) or (
+            hyba_reflexive_cycle_duration_ms > 5000
+          )
+        for: 5m
+        labels:
+          severity: warning
+          service: pythia-autonomous-mining
+        annotations:
+          summary: "PYTHIA reflexive cycle latency is above the production threshold"
+          description: "Reflexive cycle p99 exceeded 5 seconds, or the current gauge fallback is above 5000 ms. Check proposal generation and persistence latency."
+
+      - alert: PythiaProposalAcceptanceRateLow
+        expr: hyba_proposal_acceptance_rate < 0.3
+        for: 15m
+        labels:
+          severity: warning
+          service: pythia-autonomous-mining
+        annotations:
+          summary: "PYTHIA proposal acceptance rate is low"
+          description: "Applied proposal ratio has stayed below 0.3 for 15 minutes. Review reflexive learning quality before increasing autonomy."
+
+      - alert: PythiaStaleStateLockRecovered
+        expr: increase(hyba_stale_state_lock_recoveries_total[5m]) > 0
+        for: 0m
+        labels:
+          severity: critical
+          service: pythia-autonomous-mining
+        annotations:
+          summary: "PYTHIA recovered a stale reflexive-state lock"
+          description: "A stale state lock was automatically removed. Treat this as an incident because a writer may have crashed or been killed."
+
+
+      - alert: PythiaAutonomousCircuitOpen
+        expr: hyba_autonomous_circuit_open == 1
+        for: 0m
+        labels:
+          severity: critical
+          service: pythia-autonomous-mining
+        annotations:
+          summary: "PYTHIA autonomous hook circuit breaker is open"
+          description: "Autonomous optimisation/reflexive hooks are circuit-open. Mining search should continue, but operators must investigate before manual reset."
+
+      - alert: PythiaRepeatedAutonomousCircuitTrips
+        expr: increase(hyba_autonomous_circuit_breaker_trips_total[1h]) > 3
+        for: 0m
+        labels:
+          severity: critical
+          service: pythia-autonomous-mining
+        annotations:
+          summary: "PYTHIA autonomous circuit breaker is tripping repeatedly"
+          description: "More than three autonomous hook circuit trips occurred in one hour. Do not repeatedly reset without root-cause review."

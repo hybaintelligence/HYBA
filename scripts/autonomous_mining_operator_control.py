@@ -20,7 +20,8 @@ import asyncio
 import json
 import os
 import sys
-from datetime import datetime
+import time
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, Optional
 
@@ -47,13 +48,34 @@ class OperatorControlInterface:
 
     def _log_audit_entry(self, entry: Dict[str, Any]) -> None:
         """Log operator action to audit file."""
-        timestamp = datetime.utcnow().isoformat()
+        now = time.time()
+        timestamp = datetime.fromtimestamp(now, timezone.utc).isoformat()
         log_entry = {
             "timestamp": timestamp,
+            "timestamp_epoch": now,
             "operator_action": entry,
         }
         with open(self.audit_log_path, "a") as f:
-            f.write(json.dumps(log_entry) + "\n")
+            f.write(json.dumps(log_entry, sort_keys=True) + "\n")
+
+    def _last_manual_circuit_reset_at(self) -> Optional[float]:
+        """Return the latest manual autonomous-circuit reset timestamp from audit history."""
+        if not self.audit_log_path.exists():
+            return None
+        latest: Optional[float] = None
+        with open(self.audit_log_path, "r") as f:
+            for line in f:
+                try:
+                    entry = json.loads(line.strip())
+                except json.JSONDecodeError:
+                    continue
+                action = entry.get("operator_action", {})
+                if action.get("action") != "reset_autonomous_circuit":
+                    continue
+                ts = entry.get("timestamp_epoch")
+                if isinstance(ts, (int, float)):
+                    latest = float(ts) if latest is None else max(latest, float(ts))
+        return latest
 
     def get_status(self) -> Dict[str, Any]:
         """Get current autonomous mining status."""
@@ -281,6 +303,49 @@ class OperatorControlInterface:
             "result": result,
         }
 
+
+    def reset_autonomous_circuit(
+        self,
+        operator_id: str,
+        operator_reason: str,
+        cooldown_seconds: float = 300.0,
+    ) -> Dict[str, Any]:
+        """Manually reset the autonomous hook failure counter with cooldown auditing.
+
+        The cooldown is intentionally a warning, not a block: incident commanders
+        can still proceed, but post-incident review can identify tight-loop resets
+        that may have papered over real autonomous hook failures.
+        """
+        now = time.time()
+        last_reset_at = self._last_manual_circuit_reset_at()
+        seconds_since_last_reset = (
+            None if last_reset_at is None else max(0.0, now - last_reset_at)
+        )
+        manual_reset_within_cooldown = (
+            seconds_since_last_reset is not None
+            and cooldown_seconds > 0
+            and seconds_since_last_reset < cooldown_seconds
+        )
+        reset_result = self.controller.reset_circuit_breaker(operator_id, operator_reason)
+
+        audit_entry = {
+            "action": "reset_autonomous_circuit",
+            "operator_id": operator_id,
+            "reason": operator_reason,
+            "before_state": reset_result["before_state"],
+            "after_state": reset_result["after_state"],
+            "cooldown_seconds": cooldown_seconds,
+            "last_manual_reset_at": last_reset_at,
+            "seconds_since_last_reset": seconds_since_last_reset,
+            "manual_reset_within_cooldown": manual_reset_within_cooldown,
+        }
+        self._log_audit_entry(audit_entry)
+
+        return {
+            "success": True,
+            **audit_entry,
+        }
+
     def get_audit_log(self, limit: Optional[int] = None) -> Dict[str, Any]:
         """Get operator audit log."""
         if not self.audit_log_path.exists():
@@ -353,6 +418,20 @@ def main():
     opt_parser.add_argument("type", choices=["search_strategy", "hashrate"], help="Optimization type")
     opt_parser.add_argument("--target", type=float, help="Target value for optimization")
 
+    # Manual autonomous circuit reset command
+    reset_parser = subparsers.add_parser(
+        "reset-circuit",
+        help="Manually reset autonomous hook failure counter with cooldown audit warning",
+    )
+    reset_parser.add_argument("--operator", required=True, help="Operator ID requesting reset")
+    reset_parser.add_argument("--reason", required=True, help="Auditable reason for manual reset")
+    reset_parser.add_argument(
+        "--cooldown-seconds",
+        type=float,
+        default=float(os.getenv("HYBA_AUTONOMY_MANUAL_RESET_COOLDOWN_SECONDS", "300.0")),
+        help="Cooldown window that flags repeated manual resets without blocking them",
+    )
+
     # Audit log command
     audit_parser = subparsers.add_parser("audit", help="Get operator audit log")
     audit_parser.add_argument("--limit", type=int, default=50, help="Number of audit entries to show")
@@ -392,6 +471,12 @@ def main():
             args.type,
             args.target,
         ))
+    elif args.command == "reset-circuit":
+        result = interface.reset_autonomous_circuit(
+            operator_id=args.operator,
+            operator_reason=args.reason,
+            cooldown_seconds=args.cooldown_seconds,
+        )
     elif args.command == "audit":
         result = interface.get_audit_log(limit=args.limit)
     else:

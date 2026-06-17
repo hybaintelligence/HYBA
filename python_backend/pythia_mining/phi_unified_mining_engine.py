@@ -243,18 +243,18 @@ class UnifiedMiningEngine:
                 if ac.is_circuit_open():
                     logger.warning("autonomy circuit breaker open; level=%s", degraded_to.value)
 
-            # Periodically trigger reflexive learning
+            # Periodically trigger reflexive learning when the autonomous hook circuit is closed.
             interval = ac.config.reflexive_loop_interval
             now = time.time()
-            if (ac.config.reflexive_loop_enabled
+            if (not ac.is_circuit_open()
+                    and ac.config.reflexive_loop_enabled
                     and ac.current_autonomy_level.should_optimize
                     and (now - ac._last_reflexive_cycle) > interval):
                 try:
                     await ac.seek_improvement()
                     ac._last_reflexive_cycle = now
+                    ac.record_circuit_success()
                 except Exception as exc:
-                    import logging
-                    logger = logging.getLogger("pythia.engine")
                     logger.error("reflexive_cycle failed: %s", exc)
                     ac.record_autonomy_failure("reflexive_cycle")
 
