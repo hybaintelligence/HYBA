@@ -38,8 +38,11 @@ class _GameDayEngine:
     phi_resonance = 0.8
 
 
-def run_game_day(*, cascades: int = 3, threshold: int = 3) -> dict[str, Any]:
+def run_game_day(*, cascades: int = 3, threshold: int = 3, scenario: str = "cascade_failure") -> dict[str, Any]:
     """Run a deterministic cascade-failure rehearsal and return evidence."""
+    if scenario == "boundary_chaos":
+        return run_boundary_chaos_scenario()
+    
     if AutonomousMiningController is None:
         return _run_dependency_light_game_day(cascades=cascades, threshold=threshold)
 
