@@ -2,6 +2,11 @@ from __future__ import annotations
 
 from pythia_mining.counterfactual_reflection import (
     COUNTERFACTUAL_REFLECTION_PROTOCOL,
+    DEFAULT_COUNTERFACTUAL_LEARNING_RATE,
+    DEFAULT_PHI_PRIOR,
+    MAX_PHI_PRIOR_DELTA,
+    PHI_PRIOR_MAX,
+    PHI_PRIOR_MIN,
     SearchTrajectory,
     reflect_counterfactual_phi_prior,
 )
@@ -28,7 +33,7 @@ def test_reflection_updates_phi_prior_only() -> None:
 
     assert result.protocol == COUNTERFACTUAL_REFLECTION_PROTOCOL
     assert result.divergence > 0.0
-    assert result.phi_prior_delta > 0.0
+    assert 0.0 < result.phi_prior_delta <= MAX_PHI_PRIOR_DELTA
     assert result.updated_phi_prior > 0.50
     assert result.memory_write_target == "phi_resonance_prior"
     assert result.share_difficulty_prior_unchanged is True
@@ -40,9 +45,9 @@ def test_reflection_reduces_phi_prior_when_block_margin_is_weaker() -> None:
 
     result = reflect_counterfactual_phi_prior(reference, alternative, current_phi_prior=0.60, learning_rate=0.10)
 
-    assert result.phi_prior_delta < 0.0
+    assert -MAX_PHI_PRIOR_DELTA <= result.phi_prior_delta < 0.0
     assert result.updated_phi_prior < 0.60
-    assert result.reflection_reason == "alternative_phi_trajectory_weakens_block_margin"
+    assert result.reflection_reason == "alternative_phi_trajectory_weakens_block_margin_with_bounded_prior_update"
 
 
 def test_reflection_does_not_update_share_difficulty_prior() -> None:
@@ -54,3 +59,52 @@ def test_reflection_does_not_update_share_difficulty_prior() -> None:
     assert result.memory_write_target == "phi_resonance_prior"
     assert result.share_difficulty_prior_unchanged is True
     assert "does not use share difficulty as block truth" in result.claim_boundary
+
+
+def test_reflection_uses_declared_default_prior_and_learning_rate() -> None:
+    reference = make_path("reference", 0.52, -0.10)
+    alternative = make_path("alternative", 0.72, 0.20)
+
+    result = reflect_counterfactual_phi_prior(reference, alternative)
+
+    assert DEFAULT_PHI_PRIOR == 0.50
+    assert DEFAULT_COUNTERFACTUAL_LEARNING_RATE == 0.05
+    assert result.updated_phi_prior > DEFAULT_PHI_PRIOR
+    assert abs(result.phi_prior_delta) <= MAX_PHI_PRIOR_DELTA
+
+
+def test_reflection_clips_phi_prior_to_non_degenerate_bounds() -> None:
+    strong_reference = make_path("reference", 0.60, -1.00)
+    strong_alternative = make_path("alternative", 1.00, 1.00)
+    upper = reflect_counterfactual_phi_prior(
+        strong_reference,
+        strong_alternative,
+        current_phi_prior=0.99,
+        learning_rate=1.00,
+    )
+
+    weak_reference = make_path("reference", 0.90, 1.00)
+    weak_alternative = make_path("alternative", 0.90, -1.00)
+    lower = reflect_counterfactual_phi_prior(
+        weak_reference,
+        weak_alternative,
+        current_phi_prior=0.01,
+        learning_rate=1.00,
+    )
+
+    assert upper.updated_phi_prior == PHI_PRIOR_MAX
+    assert upper.phi_prior_delta == 0.0
+    assert lower.updated_phi_prior == PHI_PRIOR_MIN
+    assert lower.phi_prior_delta == 0.0
+    assert PHI_PRIOR_MIN < DEFAULT_PHI_PRIOR < PHI_PRIOR_MAX
+
+
+def test_reflection_limits_single_step_prior_delta() -> None:
+    reference = make_path("reference", 0.60, -1.00)
+    alternative = make_path("alternative", 1.00, 1.00)
+
+    result = reflect_counterfactual_phi_prior(reference, alternative, current_phi_prior=0.50, learning_rate=1.00)
+
+    assert result.unclipped_phi_prior == 0.50 + MAX_PHI_PRIOR_DELTA
+    assert result.phi_prior_delta == MAX_PHI_PRIOR_DELTA
+    assert result.updated_phi_prior == 0.50 + MAX_PHI_PRIOR_DELTA
