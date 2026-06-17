@@ -30,12 +30,14 @@ import hashlib
 import inspect
 import json
 import os
+import shutil
+import threading
 import time
 import uuid
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Set, Tuple
+from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Union
 
 from .ai_optimizer import AIOptimizer, SearchStrategy
 from .consciousness_engine import ConsciousnessConfig, ConsciousnessEngine, PhiMetrics
@@ -95,6 +97,43 @@ class AutonomousDecision:
     actual_outcome: Optional[str] = None
     operator_override: bool = False
     operator_reason: Optional[str] = None
+
+
+@dataclass
+class AuditLogEntry:
+    """Structured autonomy audit event with chain correlation metadata."""
+    correlation_id: str
+    timestamp: float
+    event_type: str
+    autonomy_level: str
+    decision_id: Optional[str] = None
+    action: str = ""
+    outcome: str = ""
+    constraints_checked: List[str] = field(default_factory=list)
+    constraints_violated: List[str] = field(default_factory=list)
+    operator_id: Optional[str] = None
+    operator_action: Optional[str] = None
+    state_diff: Dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass
+class OperatorApprovalRequest:
+    """Durable record for a human approval request."""
+    request_id: str
+    decision_id: str
+    requested_at: float
+    expires_at: float
+    status: str = "pending"
+    operator_id: Optional[str] = None
+    reason: Optional[str] = None
+
+
+@dataclass
+class OperatorApprovalDecision:
+    """Structured response returned by an operator approval service."""
+    approved: bool
+    operator_id: Optional[str] = None
+    reason: Optional[str] = None
 
 
 @dataclass
@@ -186,7 +225,7 @@ def _env_compression_drive() -> bool:
 
 def _env_operator_approval_required() -> bool:
     """Whether operator approval is required for guarded decisions."""
-    val = os.getenv("HYBA_OPERATOR_APPROVAL_REQUIRED", "false").strip().lower()
+    val = os.getenv("HYBA_OPERATOR_APPROVAL_REQUIRED", "true").strip().lower()
     return val in ("true", "1", "yes")
 
 
@@ -206,6 +245,9 @@ class AutonomyMetrics:
     phi_density: float = 0.0
     reflexive_cycle_count: int = 0
     degradation_events: int = 0
+    pending_operator_approvals: int = 0
+    proposal_acceptance_rate: float = 0.0
+    last_reflexive_cycle_duration_ms: float = 0.0
 
 
 @dataclass
@@ -238,6 +280,17 @@ class AutonomousConfig:
     knowledge_growth_rate_target: float = 0.01  # Minimum knowledge growth per cycle
     # Persistence
     persistence_enabled: bool = True
+    state_schema_version: int = 1
+    state_backup_count: int = 10
+    restore_autonomy_level_from_state: bool = False
+    operator_approval_timeout_seconds: float = field(
+        default_factory=lambda: float(os.getenv("HYBA_OPERATOR_APPROVAL_TIMEOUT_SECONDS", "300.0"))
+    )
+    audit_log_retention_policy: str = field(
+        default_factory=lambda: os.getenv(
+            "HYBA_AUTONOMY_AUDIT_RETENTION", "7d hot / 90d warm / 365d cold"
+        )
+    )
     persistence_dir: str = field(
         default_factory=lambda: os.getenv("HYBA_AUTONOMY_STATE_DIR", "artifacts/autonomous_mining")
     )
@@ -271,7 +324,15 @@ class AutonomousMiningController:
         self.current_autonomy_level = self.config.autonomy_level
         self._consecutive_failures: int = 0
         self._degradation_events: int = 0
-        self.operator_approval_callback: Optional[Callable[[AutonomousDecision], bool]] = None
+        self.operator_approval_callback: Optional[
+            Callable[[AutonomousDecision], Union[bool, OperatorApprovalDecision, Dict[str, Any]]]
+        ] = None
+        self.audit_log: List[AuditLogEntry] = []
+        self.operator_approval_requests: List[OperatorApprovalRequest] = []
+        self._active_approval_requests: Dict[str, OperatorApprovalRequest] = {}
+        self._state_lock = threading.RLock()
+        self._audit_lock = threading.RLock()
+        self._approval_lock = threading.RLock()
 
         # --- Reflexive Knowledge Loop state ---
         self.knowledge_substrate = KnowledgeSubstrate()
@@ -282,6 +343,7 @@ class AutonomousMiningController:
         self._phi_density_history: List[float] = []
         self._compression_seeking_history: List[float] = []
         self._logical_consistency_history: List[float] = []
+        self._last_reflexive_cycle_duration_ms: float = 0.0
 
         # Reentrancy guard for get_phi_density
         self._computing_phi_density: bool = False
@@ -314,6 +376,11 @@ class AutonomousMiningController:
             phi_density=self.get_phi_density(),
             reflexive_cycle_count=self._self_optimization_epochs,
             degradation_events=self._degradation_events,
+            pending_operator_approvals=sum(
+                1 for r in self.operator_approval_requests if r.status == "pending"
+            ),
+            proposal_acceptance_rate=self._proposal_acceptance_rate(),
+            last_reflexive_cycle_duration_ms=self._last_reflexive_cycle_duration_ms,
         )
 
     def get_metrics_snapshot(self) -> Dict[str, Any]:
@@ -329,7 +396,66 @@ class AutonomousMiningController:
             "phi_density": m.phi_density,
             "reflexive_cycle_count": m.reflexive_cycle_count,
             "degradation_events": m.degradation_events,
+            "pending_operator_approvals": m.pending_operator_approvals,
+            "proposal_acceptance_rate": m.proposal_acceptance_rate,
+            "last_reflexive_cycle_duration_ms": m.last_reflexive_cycle_duration_ms,
+            "constraint_violations_by_type": self._constraint_violations_by_type(),
         }
+
+    def _proposal_acceptance_rate(self) -> float:
+        """Return applied proposal ratio without fabricating proposals."""
+        if not self.proposal_history:
+            return 0.0
+        return sum(1 for p in self.proposal_history if p.applied) / len(self.proposal_history)
+
+    def _constraint_violations_by_type(self) -> Dict[str, int]:
+        """Group observed decision constraint violations by constraint name."""
+        counts: Dict[str, int] = {constraint.value: 0 for constraint in SafetyConstraint}
+        for decision in self.decision_log:
+            for constraint in decision.constraints_violated:
+                counts[constraint.value] += 1
+        return counts
+
+    def get_prometheus_metrics_text(self) -> str:
+        """Export low-cardinality Prometheus text-format metrics."""
+        snapshot = self.get_metrics_snapshot()
+        level_values = {level.value: index for index, level in enumerate(AutonomyLevel)}
+        lines = [
+            "# HELP hyba_phi_density Current reflexive phi-density.",
+            "# TYPE hyba_phi_density gauge",
+            f"hyba_phi_density {snapshot['phi_density']}",
+            "# HELP hyba_constraint_violations_total Autonomous decisions with constraint violations.",
+            "# TYPE hyba_constraint_violations_total counter",
+            f"hyba_constraint_violations_total {snapshot['constraint_violations']}",
+        ]
+        for name, count in snapshot["constraint_violations_by_type"].items():
+            lines.append(
+                f'hyba_constraint_violations_by_type_total{{constraint="{name}"}} {count}'
+            )
+        lines.extend([
+            "# HELP hyba_consecutive_failures Current circuit-breaker failure count.",
+            "# TYPE hyba_consecutive_failures gauge",
+            f"hyba_consecutive_failures {snapshot['consecutive_failures']}",
+            "# HELP hyba_degradation_events_total Autonomy degradation events.",
+            "# TYPE hyba_degradation_events_total counter",
+            f"hyba_degradation_events_total {snapshot['degradation_events']}",
+            "# HELP hyba_reflexive_cycle_duration_ms Last reflexive cycle duration.",
+            "# TYPE hyba_reflexive_cycle_duration_ms gauge",
+            f"hyba_reflexive_cycle_duration_ms {snapshot['last_reflexive_cycle_duration_ms']}",
+            "# HELP hyba_proposal_acceptance_rate Applied proposal ratio.",
+            "# TYPE hyba_proposal_acceptance_rate gauge",
+            f"hyba_proposal_acceptance_rate {snapshot['proposal_acceptance_rate']}",
+            "# HELP hyba_autonomy_level Numeric autonomy level.",
+            "# TYPE hyba_autonomy_level gauge",
+            f"hyba_autonomy_level {level_values.get(snapshot['current_autonomy_level'], -1)}",
+            "# HELP hyba_operator_overrides_total Operator override count.",
+            "# TYPE hyba_operator_overrides_total counter",
+            f"hyba_operator_overrides_total {snapshot['operator_overrides']}",
+            "# HELP hyba_pending_operator_approvals Pending bounded approval requests.",
+            "# TYPE hyba_pending_operator_approvals gauge",
+            f"hyba_pending_operator_approvals {snapshot['pending_operator_approvals']}",
+        ])
+        return "\n".join(lines) + "\n"
 
     # ----------------------------------------------------------------
     # ERROR / DEGRADATION
@@ -347,15 +473,17 @@ class AutonomousMiningController:
             AutonomyLevel.MANUAL: AutonomyLevel.MANUAL,  # no further
             AutonomyLevel.EMERGENCY: AutonomyLevel.MANUAL,
         }
-        new_level = deg_map.get(self.current_autonomy_level, AutonomyLevel.MANUAL)
+        previous_level = self.current_autonomy_level
+        new_level = deg_map.get(previous_level, AutonomyLevel.MANUAL)
         self.current_autonomy_level = new_level
         self._degradation_events += 1
         self._consecutive_failures = 0  # reset after degradation
 
         # structured log
-        self._log_event("degradation", {"from": str(self.current_autonomy_level),
-                                         "to": str(new_level),
-                                         "reason": reason})
+        self._log_audit_event("degradation", {"from": previous_level.value,
+                                                "to": new_level.value,
+                                                "reason": reason},
+                              action="degrade_autonomy_level", outcome=new_level.value)
 
         return new_level
 
@@ -368,6 +496,49 @@ class AutonomousMiningController:
         import logging
         logger = logging.getLogger("pythia.autonomy")
         logger.info("autonomy_event", extra={"event_type": event_type, **data})
+
+    def _log_audit_event(
+        self,
+        event_type: str,
+        data: Dict[str, Any],
+        *,
+        decision: Optional[AutonomousDecision] = None,
+        action: str = "",
+        outcome: str = "",
+        operator_id: Optional[str] = None,
+        operator_action: Optional[str] = None,
+        state_diff: Optional[Dict[str, Any]] = None,
+    ) -> AuditLogEntry:
+        """Record a correlated audit event and mirror it to structured logging."""
+        correlation_id = data.get("correlation_id") or (
+            decision.decision_id if decision else f"autonomy_{uuid.uuid4().hex}"
+        )
+        entry = AuditLogEntry(
+            correlation_id=correlation_id,
+            timestamp=time.time(),
+            event_type=event_type,
+            autonomy_level=self.current_autonomy_level.value,
+            decision_id=decision.decision_id if decision else data.get("decision_id"),
+            action=action or data.get("action", ""),
+            outcome=outcome or data.get("outcome", ""),
+            constraints_checked=(
+                [c.value for c in decision.constraints_satisfied + decision.constraints_violated]
+                if decision else data.get("constraints_checked", [])
+            ),
+            constraints_violated=(
+                [c.value for c in decision.constraints_violated]
+                if decision else data.get("constraints_violated", [])
+            ),
+            operator_id=operator_id or data.get("operator_id"),
+            operator_action=operator_action or data.get("operator_action"),
+            state_diff=state_diff or data.get("state_diff", {}),
+        )
+        with self._audit_lock:
+            self.audit_log.append(entry)
+            if len(self.audit_log) > self.config.decision_audit_log_size:
+                self.audit_log = self.audit_log[-self.config.decision_audit_log_size:]
+        self._log_event(event_type, {**data, **entry.__dict__})
+        return entry
 
     # ================================================================
     # REFLEXIVE KNOWLEDGE LOOP — Recursive Self-Learning
@@ -1013,6 +1184,7 @@ class AutonomousMiningController:
         proposals = await self._run_reflexive_cycle()
 
         cycle_duration = time.time() - cycle_start
+        self._last_reflexive_cycle_duration_ms = round(cycle_duration * 1000.0, 3)
 
         # Build the improvement report
         if proposals:
@@ -1044,6 +1216,7 @@ class AutonomousMiningController:
         return {
             "reflexive_cycle_executed": True,
             "cycle_duration_seconds": round(cycle_duration, 4),
+            "cycle_duration_ms": self._last_reflexive_cycle_duration_ms,
             "epoch": self._self_optimization_epochs,
             "current_phi_density": self.get_phi_density(),
             "proposals_generated": len(proposals),
@@ -1093,6 +1266,11 @@ class AutonomousMiningController:
         """
         if not self.config.persistence_enabled:
             return
+        with self._state_lock:
+            self._save_reflexive_state_locked()
+
+    def _save_reflexive_state_locked(self) -> None:
+        """Persist reflexive learning state while the in-process lock is held."""
         state = {
             "epochs": self._self_optimization_epochs,
             "phi_density_history": self._phi_density_history,
@@ -1126,18 +1304,82 @@ class AutonomousMiningController:
             "autonomy_level": self.current_autonomy_level.value,
             "phi_coherence_threshold": self.config.phi_coherence_threshold,
         }
+        state["schema_version"] = self.config.state_schema_version
         try:
-            with open(self._state_file_path(), "w") as f:
-                json.dump(state, f, indent=2)
-        except OSError as exc:
-            self._log_event("persist_error", {"error": str(exc)})
+            state_file = self._state_file_path()
+            state_file.parent.mkdir(parents=True, exist_ok=True)
+            payload = json.dumps(state, indent=2, sort_keys=True)
+            checksum = hashlib.sha256(payload.encode("utf-8")).hexdigest()
+            with self._state_file_lock(state_file):
+                tmp_file = state_file.with_name(f"{state_file.name}.{uuid.uuid4().hex}.tmp")
+                tmp_file.write_text(payload, encoding="utf-8")
+                tmp_file.replace(state_file)
+                state_file.with_suffix(state_file.suffix + ".sha256").write_text(
+                    checksum, encoding="utf-8"
+                )
+                self._rotate_state_backups(state_file)
+        except (OSError, TimeoutError) as exc:
+            self._log_audit_event(
+                "persist_error",
+                {"error": str(exc)},
+                action="save_reflexive_state",
+                outcome="error",
+            )
+
+    def _state_file_lock(self, state_file: Path) -> Any:
+        """Return a simple cross-process lock context for state file writes."""
+
+        class _StateFileLock:
+            def __init__(self) -> None:
+                self.lock_path = state_file.with_suffix(state_file.suffix + ".lock")
+
+            def __enter__(self) -> None:
+                deadline = time.monotonic() + 5.0
+                while True:
+                    try:
+                        fd = os.open(self.lock_path, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+                        os.write(fd, str(os.getpid()).encode("utf-8"))
+                        os.close(fd)
+                        return None
+                    except FileExistsError:
+                        if time.monotonic() >= deadline:
+                            raise TimeoutError(f"state lock contention: {self.lock_path}")
+                        time.sleep(0.05)
+
+            def __exit__(self, exc_type: Any, exc: Any, tb: Any) -> None:
+                self.lock_path.unlink(missing_ok=True)
+
+        return _StateFileLock()
+
+    def _rotate_state_backups(self, state_file: Path) -> None:
+        """Keep a bounded set of recoverable reflexive state snapshots."""
+        backup_dir = state_file.parent / "backups"
+        backup_dir.mkdir(parents=True, exist_ok=True)
+        backup = backup_dir / f"reflexive_state_{int(time.time())}_{uuid.uuid4().hex[:8]}.json"
+        shutil.copy2(state_file, backup)
+        backups = sorted(
+            backup_dir.glob("reflexive_state_*.json"), key=lambda p: p.stat().st_mtime
+        )
+        for stale in backups[:-self.config.state_backup_count]:
+            stale.unlink(missing_ok=True)
 
     def _load_reflexive_state(self) -> None:
         """Restore previously-persisted reflexive learning state."""
         state_file = self._state_file_path()
         if not state_file.exists():
             return
+        with self._state_lock:
+            self._load_reflexive_state_locked(state_file)
+
+    def _load_reflexive_state_locked(self, state_file: Path) -> None:
+        """Restore previously-persisted state while the in-process lock is held."""
         try:
+            checksum_file = state_file.with_suffix(state_file.suffix + ".sha256")
+            if checksum_file.exists():
+                expected = checksum_file.read_text(encoding="utf-8").strip()
+                actual = hashlib.sha256(state_file.read_bytes()).hexdigest()
+                if expected != actual:
+                    raise ValueError("reflexive state checksum mismatch")
             with open(state_file, "r") as f:
                 state = json.load(f)
             self._self_optimization_epochs = state.get("epochs", 0)
@@ -1147,10 +1389,9 @@ class AutonomousMiningController:
             self.config.phi_coherence_threshold = state.get(
                 "phi_coherence_threshold", self.config.phi_coherence_threshold
             )
-            # Restore autonomy level from persistence only if not overridden by env
-            env_level = _env_autonomy_level()
-            if env_level == AutonomyLevel.ADVISORY:
-                # No explicit env override → honour persisted level
+            # Restore autonomy level only when explicitly enabled; runtime authority
+            # should otherwise come from deployment config, not stale state.
+            if self.config.restore_autonomy_level_from_state:
                 persisted_level = state.get("autonomy_level", "advisory")
                 try:
                     self.current_autonomy_level = AutonomyLevel(persisted_level)
@@ -1167,13 +1408,18 @@ class AutonomousMiningController:
                     constraints=[],
                     priority=t_data.get("priority", 1),
                 ))
-            self._log_event("state_restored", {
+            self._log_audit_event("state_restored", {
                 "epochs": self._self_optimization_epochs,
                 "phi_density_history_len": len(self._phi_density_history),
                 "proposals_restored": len(state.get("proposals", [])),
             })
-        except (OSError, json.JSONDecodeError, KeyError) as exc:
-            self._log_event("load_state_error", {"error": str(exc)})
+        except (OSError, json.JSONDecodeError, KeyError, ValueError) as exc:
+            self._log_audit_event(
+                "load_state_error",
+                {"error": str(exc)},
+                action="load_reflexive_state",
+                outcome="error",
+            )
 
     # ================================================================
     # EXISTING FUNCTIONALITY (preserved and extended)
@@ -1191,14 +1437,15 @@ class AutonomousMiningController:
             self.decision_log = self.decision_log[-self.config.decision_audit_log_size:]
 
         # Structured logging for monitoring
-        self._log_event("decision", {
+        self._log_audit_event("decision", {
             "decision_id": decision.decision_id,
             "autonomy_level": decision.autonomy_level.value,
             "decision_type": decision.decision_type,
             "constraints_violated": len(decision.constraints_violated),
             "operator_override": decision.operator_override,
             "action_taken": decision.action_taken,
-        })
+        }, decision=decision, action=decision.action_taken,
+                              outcome=decision.actual_outcome or "pending")
 
     def _check_safety_constraints(
         self,
@@ -1341,9 +1588,7 @@ class AutonomousMiningController:
             return False
 
         if self._requires_operator_approval(decision.decision_type):
-            if self.operator_approval_callback:
-                return self.operator_approval_callback(decision)
-            return False
+            return self._request_operator_approval(decision)
 
         if decision.constraints_violated:
             return False
@@ -1447,15 +1692,14 @@ class AutonomousMiningController:
             self.engine.optimizer.current_strategy = proposed_strategy
             decision.actual_outcome = "strategy_updated_successfully"
         else:
-            # Request operator approval
-            if self.operator_approval_callback:
-                approved = self.operator_approval_callback(decision)
-                if approved:
-                    self.engine.optimizer.current_strategy = proposed_strategy
-                    decision.actual_outcome = "strategy_updated_after_approval"
-                else:
-                    decision.operator_override = True
-                    decision.actual_outcome = "operator_rejected_strategy_change"
+            # Request operator approval for advisory/manual paths; guarded decisions fail closed.
+            approved = self._request_operator_approval(decision)
+            if approved:
+                self.engine.optimizer.current_strategy = proposed_strategy
+                decision.actual_outcome = "strategy_updated_after_approval"
+            else:
+                decision.operator_override = True
+                decision.actual_outcome = "operator_rejected_strategy_change"
 
         return decision
 
@@ -1525,14 +1769,13 @@ class AutonomousMiningController:
             # Execute the decision (would update solver configuration)
             decision.actual_outcome = "hashrate_target_updated"
         else:
-            # Request operator approval
-            if self.operator_approval_callback:
-                approved = self.operator_approval_callback(decision)
-                if approved:
-                    decision.actual_outcome = "hashrate_target_updated_after_approval"
-                else:
-                    decision.operator_override = True
-                    decision.actual_outcome = "operator_rejected_hashrate_change"
+            # Request operator approval for advisory/manual paths; guarded decisions fail closed.
+            approved = self._request_operator_approval(decision)
+            if approved:
+                decision.actual_outcome = "hashrate_target_updated_after_approval"
+            else:
+                decision.operator_override = True
+                decision.actual_outcome = "operator_rejected_hashrate_change"
 
         return decision
 
@@ -1579,14 +1822,13 @@ class AutonomousMiningController:
             # Execute the decision (would update compression configuration)
             decision.actual_outcome = "compression_ratio_updated"
         else:
-            # Request operator approval
-            if self.operator_approval_callback:
-                approved = self.operator_approval_callback(decision)
-                if approved:
-                    decision.actual_outcome = "compression_ratio_updated_after_approval"
-                else:
-                    decision.operator_override = True
-                    decision.actual_outcome = "operator_rejected_compression_change"
+            # Request operator approval for advisory/manual paths; guarded decisions fail closed.
+            approved = self._request_operator_approval(decision)
+            if approved:
+                decision.actual_outcome = "compression_ratio_updated_after_approval"
+            else:
+                decision.operator_override = True
+                decision.actual_outcome = "operator_rejected_compression_change"
 
         return decision
 
@@ -1683,10 +1925,151 @@ class AutonomousMiningController:
 
     def set_operator_approval_callback(
         self,
-        callback: Callable[[AutonomousDecision], bool],
+        callback: Callable[
+            [AutonomousDecision],
+            Union[bool, OperatorApprovalDecision, Dict[str, Any]],
+        ],
     ) -> None:
         """Set callback for operator approval decisions."""
         self.operator_approval_callback = callback
+
+    def _normalise_operator_approval(
+        self,
+        raw_response: Union[bool, OperatorApprovalDecision, Dict[str, Any]],
+    ) -> OperatorApprovalDecision:
+        """Normalize bool or structured operator-service responses."""
+        if isinstance(raw_response, OperatorApprovalDecision):
+            return raw_response
+        if isinstance(raw_response, dict):
+            return OperatorApprovalDecision(
+                approved=bool(raw_response.get("approved", False)),
+                operator_id=raw_response.get("operator_id"),
+                reason=raw_response.get("reason"),
+            )
+        return OperatorApprovalDecision(approved=bool(raw_response))
+
+    def _request_operator_approval(self, decision: AutonomousDecision) -> bool:
+        """Request bounded human approval for guarded decisions.
+
+        Missing callbacks fail closed. Callback exceptions or elapsed waits beyond
+        the configured timeout are treated as automatic rejection.
+        """
+        request = OperatorApprovalRequest(
+            request_id=f"approval_{uuid.uuid4().hex[:12]}",
+            decision_id=decision.decision_id,
+            requested_at=time.time(),
+            expires_at=time.time() + self.config.operator_approval_timeout_seconds,
+        )
+        with self._approval_lock:
+            self.operator_approval_requests.append(request)
+            self._active_approval_requests[request.request_id] = request
+        self._log_audit_event(
+            "operator_approval_requested",
+            {"request_id": request.request_id, "decision_type": decision.decision_type},
+            decision=decision,
+            action="request_operator_approval",
+            outcome="pending",
+        )
+        if not self.operator_approval_callback:
+            with self._approval_lock:
+                request.status = "rejected"
+                request.reason = "approval_callback_missing"
+                self._active_approval_requests.pop(request.request_id, None)
+            self._log_audit_event(
+                "operator_approval_rejected",
+                {"request_id": request.request_id, "reason": request.reason},
+                decision=decision,
+                action="request_operator_approval",
+                outcome="rejected",
+                operator_action="missing_callback",
+            )
+            return False
+        started = time.monotonic()
+        try:
+            approval = self._normalise_operator_approval(self.operator_approval_callback(decision))
+            approved = approval.approved
+            request.operator_id = approval.operator_id
+            request.reason = approval.reason
+        except Exception as exc:
+            approved = False
+            request.reason = f"callback_error:{exc}"
+        elapsed = time.monotonic() - started
+        if elapsed > self.config.operator_approval_timeout_seconds:
+            approved = False
+            request.reason = "approval_timeout"
+        with self._approval_lock:
+            request.status = "approved" if approved else "rejected"
+            self._active_approval_requests.pop(request.request_id, None)
+        self._log_audit_event(
+            "operator_approval_completed",
+            {
+                "request_id": request.request_id,
+                "elapsed_seconds": round(elapsed, 3),
+                "reason": request.reason,
+                "operator_id": request.operator_id,
+            },
+            decision=decision,
+            action="request_operator_approval",
+            outcome=request.status,
+            operator_id=request.operator_id,
+            operator_action=request.status,
+        )
+        return approved
+
+    def get_audit_log(self, limit: Optional[int] = None) -> List[AuditLogEntry]:
+        """Return structured autonomy audit entries."""
+        if limit:
+            return self.audit_log[-limit:]
+        return self.audit_log.copy()
+
+    def rollback_to_state(
+        self,
+        state_file: Path,
+        operator_reason: str,
+        operator_id: str = "operator",
+    ) -> Dict[str, Any]:
+        """Rollback reflexive learning to a checksum-validated state file."""
+        if not state_file.exists():
+            raise FileNotFoundError(state_file)
+        with self._state_lock:
+            return self._rollback_to_state_locked(state_file, operator_reason, operator_id)
+
+    def _rollback_to_state_locked(
+        self,
+        state_file: Path,
+        operator_reason: str,
+        operator_id: str,
+    ) -> Dict[str, Any]:
+        """Rollback while the in-process state lock is held."""
+        checksum_file = state_file.with_suffix(state_file.suffix + ".sha256")
+        if checksum_file.exists():
+            expected = checksum_file.read_text(encoding="utf-8").strip()
+            actual = hashlib.sha256(state_file.read_bytes()).hexdigest()
+            if expected != actual:
+                raise ValueError("rollback state checksum mismatch")
+        target = self._state_file_path()
+        target.parent.mkdir(parents=True, exist_ok=True)
+        with self._state_file_lock(target):
+            target.write_bytes(state_file.read_bytes())
+            if checksum_file.exists():
+                target.with_suffix(target.suffix + ".sha256").write_text(
+                    checksum_file.read_text(encoding="utf-8"), encoding="utf-8"
+                )
+        self._load_reflexive_state_locked(target)
+        self.proposal_history = []
+        self._log_audit_event(
+            "state_rollback",
+            {"source_state": str(state_file), "reason": operator_reason},
+            action="rollback_to_state",
+            outcome="restored",
+            operator_id=operator_id,
+            operator_action="rollback",
+        )
+        return {
+            "restored": True,
+            "state_file": str(state_file),
+            "operator_id": operator_id,
+        }
 
     def get_knowledge_substrate(self) -> Any:
         """Get the Deutsch Knowledge Substrate used for reflexive learning."""
@@ -1705,6 +2088,9 @@ __all__ = [
     "AutonomousMiningController",
     "AutonomousConfig",
     "AutonomousDecision",
+    "AuditLogEntry",
+    "OperatorApprovalRequest",
+    "OperatorApprovalDecision",
     "AutonomyLevel",
     "SafetyConstraint",
     "OptimizationTarget",
