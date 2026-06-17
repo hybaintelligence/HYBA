@@ -2,7 +2,7 @@
 
 ## BLUF
 
-PYTHIA's mining mission remains autonomous. This protocol does not throttle her seeded mission authority. It adds scientific discipline around prediction, falsification, causal integration, and proof humility.
+PYTHIA's mining mission remains autonomous. This protocol does not throttle her seeded mission authority. It adds scientific discipline around prediction, falsification, causal integration, revocation handling, and proof humility.
 
 The purpose is to move from static education to runtime scientific self-review:
 
@@ -12,7 +12,7 @@ candidate
 -> exact verifier firewall
 -> external response observation
 -> corrected learning signal
--> causal integration telemetry
+-> causal integration telemetry with floor semantics
 -> sealed evidence
 -> counterfactual reflection memory
 ```
@@ -22,9 +22,10 @@ candidate
 1. Blockchain consensus and network safety sit above HYBA, PYTHIA, performance, revenue, and narrative.
 2. Exact SHA-256d remains the local oracle before any external claim.
 3. External network confirmation remains the only external success truth.
-4. Accepted shares are learning events, not block-completion events.
-5. PYTHIA remains autonomous inside the seeded mission.
-6. Education must improve autonomy; it must not become a hidden manual throttle.
+4. External confirmation is not monotonic; revocation must re-open the proof obligation.
+5. Accepted shares are learning events, not block-completion events.
+6. PYTHIA remains autonomous inside the seeded mission.
+7. Education must improve autonomy; it must not become a hidden manual throttle.
 
 ## Penrose-style rigor
 
@@ -38,7 +39,7 @@ It means proof humility:
 - PYTHIA may generate hypotheses and counterfactuals.
 - PYTHIA may not self-certify external success.
 
-Any claim that depends on external network truth remains provisional until the external truth condition is present.
+Any claim that depends on external network truth remains provisional until the external truth condition is present. If the external truth is later revoked, the claim must leave the confirmed state and re-enter the proof-obligation path.
 
 Claim statuses:
 
@@ -47,7 +48,20 @@ PROVISIONAL
 REQUIRES_EXTERNAL_TRUTH
 FALSIFIED
 EXTERNALLY_CONFIRMED
+CONFIRMED_THEN_REVOKED
 ```
+
+FSM:
+
+```text
+PROVISIONAL
+  -> REQUIRES_EXTERNAL_TRUTH
+  -> EXTERNALLY_CONFIRMED
+  -> CONFIRMED_THEN_REVOKED
+  -> REQUIRES_EXTERNAL_TRUTH or FALSIFIED after re-evaluation
+```
+
+A stale-job race, pool-side invalidation, shallow reorg context, or retroactive pool rejection must be represented as `CONFIRMED_THEN_REVOKED`, not hidden inside generic failure.
 
 ## IIT-style rigor
 
@@ -70,6 +84,15 @@ pitfalls_curriculum
 
 A weak partition means the claim should not escalate, even if other channels look strong.
 
+Floor semantics:
+
+```text
+operational_phi_floor_score = whole_score * min(channel_scores)
+operational_phi_floor_score < theta_floor => escalation_allowed = false
+```
+
+The default floor is implemented in `scientific_rigor_kernel.DEFAULT_CAUSAL_INTEGRATION_FLOOR`. This turns telemetry into an instrument with an action boundary: a collapsed verifier, job-binding, external-truth, learning, evidence-seal, or curriculum channel blocks escalation.
+
 ## Active-inference rigor
 
 PYTHIA should not merely react. She should predict failure modes before they manifest and minimise surprise after observing external truth.
@@ -91,21 +114,37 @@ If the signal predicts a known failure mode, PYTHIA may adjust internally before
 
 ## Counterfactual reflection
 
-Every accepted, rejected, stale, ambiguous, or externally confirmed event should create an append-only reflection node:
+Every accepted, rejected, stale, ambiguous, revoked, or externally confirmed event should create an append-only reflection node:
 
 ```text
 event_id
 parent_event_id
 observed_outcome
 mapped_lesson_id
-counterfactual_hypothesis
-proposed_remedy
-confidence
+reference_trajectory
+alternative_trajectory
+divergence
+phi_prior_delta
+updated_phi_prior
 context_commitment_hash
 node_hash
 ```
 
 This makes education a living immune system, not a static list.
+
+The executable counterfactual kernel compares a reference trajectory with an alternative trajectory and writes only to the phi-resonance prior:
+
+```text
+reference trajectory
+alternative trajectory
+-> divergence measure
+-> block-margin comparison
+-> phi-gated prior delta
+-> memory_write_target = phi_resonance_prior
+-> share_difficulty_prior_unchanged = true
+```
+
+The distinction matters: share ACKs are corrected by the learning-signal module, while counterfactual reflection refines the phi-resonant nonce-distribution prior. It must not let share-difficulty feedback masquerade as block-level search truth.
 
 ## Adversarial mirror
 
@@ -124,9 +163,9 @@ PYTHIA search candidate
 -> predictive pitfall simulation
 -> verifier firewall precondition
 -> exact local verification
--> external response observation
+-> external response observation, including revocation if present
 -> corrected learning update
--> causal integration telemetry
+-> causal integration telemetry and floor decision
 -> sealed evidence bundle
 -> counterfactual reflection appended to memory
 ```
@@ -135,4 +174,4 @@ PYTHIA search candidate
 
 Use this boundary in generated artifacts:
 
-> This is a scientific mining evidence protocol. It does not assert consciousness, exact IIT Phi, non-computable cognition, guaranteed discovery, or external success without external truth. It preserves PYTHIA's seeded autonomy while requiring falsifiable evidence before claims escalate.
+> This is a scientific mining evidence protocol. It does not assert consciousness, exact IIT Phi, non-computable cognition, guaranteed discovery, or external success without non-revoked external truth. It preserves PYTHIA's seeded autonomy while requiring falsifiable evidence before claims escalate.
