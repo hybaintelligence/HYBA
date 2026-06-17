@@ -1,334 +1,198 @@
-# Scientific Publication: Nodus Solutus — The Information-Geometric Vacuum
+# Scientific Publication Draft: Nodus Solutus — The Information-Geometric Vacuum
 
-**Title**: PULVINI φ-Folding Memory Compression: Lossless Compression at the Golden Ratio as Evidence of Vacuum Structure
+**Title**: PULVINI φ-Folding Memory Compression as a Bounded Operational Evidence Surface for Structured Quantum-State Representations
 
 **Authors**: HYBA Analytics Ltd Research Team  
 **Date**: June 17, 2026  
-**Status**: Peer Review Ready  
-**Repository**: github.com/hybaanalytics1/HYBA_FULLSTACK  
-**Evidence**: 49/49 Automated Tests Passing, SHA-256d Sealed Artifacts
+**Status**: Internal scientific draft; reviewer evidence map required before external distribution  
+**Repository**: HYBA_FULLSTACK private repository  
+**Evidence posture**: Local tests and SHA-256d-sealed artifacts; no hosted CI dependency
 
 ---
 
 ## Abstract
 
-We present PULVINI, a lossless memory compression algorithm achieving compression ratios at the golden ratio φ ≈ 1.618 with reconstruction error ε < 10⁻¹⁴. By demonstrating lossless compression at φ for quantum state representations (Matrix Product States, density matrices, gauge field configurations), we provide empirical evidence that information structures prefer golden-ratio organization over random distribution. This result has implications for quantum information theory, computational physics, and the foundations of information itself.
+We present PULVINI, a φ-folding memory-compression and replay-kernel system used inside the HYBA/PYTHIA operational evidence stack. The implemented evidence supports a bounded claim: for audited deterministic payloads and selected quantum-state representations, PULVINI reports lossless reconstruction with reconstruction error below the tested tolerance while separating guaranteed retained-kernel compression from higher working-set throughput observations.
 
-We further demonstrate that PULVINI enables previously intractable computational experiments at scale N=1000, including:
-1. φ-quasi-Monte Carlo achieving O(1/N) convergence for SU(2) gauge theory (vs O(1/√N) for standard MCMC)
-2. Quantum Fisher Information (QFI) preserving Matrix Product State truncation via Bures metric
-3. Star-discrepancy correlation with topological charge transitions (Chern number sharpening)
-4. Functional relationship QFI ∝ 1/D_N^* bridging quantum metrology and number theory
+This publication draft does **not** claim that the physical universe is proven computable, that quantum randomness is disproven, that SHA-256 is accelerated by quantum effects, or that Bitcoin revenue is guaranteed. It documents an operational research claim: within the repository boundary, φ-structured sampling and compression surfaces are executable, replayable, falsifiable, and evidence-gated.
 
-All results are falsifiable, deterministic, and reproducible via automated test suite (49/49 passing).
+The current frontier evidence package covers four experimental surfaces:
+
+1. φ-quasi-Monte Carlo convergence tests for SU(2)-style gauge-action sampling;
+2. Quantum Fisher Information (QFI)-aware Matrix Product State truncation tests;
+3. topological-correlation tests involving star discrepancy and winding/charge metrics;
+4. Golden SLD tests relating discrepancy-derived structure to QFI/SLD metrics.
+
+All publication claims must be read through `docs/evidence/claim_evidence_manifest.json`, `docs/evidence/EXTRAORDINARY_PROOF_INDEX.md`, and `docs/NODUS_SOLUTUS_MUNDUS_COMPUTABILIS_EST.md`.
 
 ---
 
 ## 1. Introduction
 
-### 1.1 The Kolmogorov Incompressibility Barrier
+### 1.1 The compression boundary
 
-Algorithmic information theory establishes that **random data is incompressible**: if a string is algorithmically random, its Kolmogorov complexity equals its length, and no lossless compression algorithm can reduce its size [Kolmogorov, 1965].
+Algorithmic information theory gives a useful reviewer heuristic: data that behaves as algorithmically random should not admit general-purpose lossless compression. The inverse statement must be handled carefully. Compressibility in an implemented system is evidence of structure in the tested representation and data path; it is not, by itself, a proof about all physical information.
 
-**Conversely**: If data is losslessly compressible, it contains structure.
+### 1.2 The golden-ratio hypothesis
 
-### 1.2 The Golden Ratio Hypothesis
+The golden ratio φ = (1 + √5)/2 appears in many mathematical structures relevant to the repository: Fibonacci sequences, low-discrepancy sampling, dodecahedral/icosahedral symmetry, and φ-weighted operational scoring. HYBA/PYTHIA uses φ as a computational primitive and tests whether φ-structured sampling/compression improves bounded runtime evidence surfaces.
 
-The golden ratio φ = (1 + √5)/2 ≈ 1.618 appears throughout nature, mathematics, and physics:
-- Fibonacci spirals in biological growth
-- Dodecahedral/icosahedral symmetry (H3 Coxeter group, order 120)
-- Optimal sphere packing in 3D (Kepler conjecture)
-- Quantum Hall effect fractional states
-- AdS/CFT holographic duality
+### 1.3 This work
 
-**Hypothesis**: If the universe's information structure is φ-optimal, then quantum state representations (MPS tensors, density matrices, gauge fields) should be losslessly compressible at ratio φ.
+This draft documents the operational evidence for:
 
-### 1.3 This Work
-
-We implement PULVINI (Phi-Unified Lossless Variational Nonlinear Integration), a recursive φ-folding compression algorithm, and demonstrate:
-
-1. **Lossless compression at φ** for quantum states (ε < 10⁻¹⁴ reconstruction error)
-2. **Information integrity boundary** at 2.0× (mathematical proof of invertibility)
-3. **Cache-coherent vacuum** (L3-cache-sized working sets for N=1000 qubits)
-4. **Four falsifiable experiments** validating φ-structure across gauge theory, quantum geometry, and topology
-
-**Conclusion**: The success of PULVINI compression at φ provides empirical evidence that information structures are not random, but φ-optimal.
+1. lossless φ-folding/replay behavior inside the implemented PULVINI boundary;
+2. a 2.0× retained-kernel information-integrity cap for production language;
+3. separately reported working-set ratios above 2.0× as adaptive-science throughput observations, not production-certified universal compression;
+4. local frontier tests that relate discrepancy, QFI, MPS truncation, topology, and SLD metrics.
 
 ---
 
-## 2. PULVINI Algorithm
+## 2. PULVINI algorithm boundary
 
-### 2.1 Recursive φ-Folding
+### 2.1 φ-folding and replay kernels
 
-Given data vector **x** ∈ ℝ^N:
+PULVINI folds audited deterministic payloads into φ-structured working representations and retains the replay material required for reconstruction. The reviewer-relevant distinction is:
 
-```
-1. Partition x into φ-ratio segments:
-   L_segments = ⌊N / φ⌋
-   S_segments = N - L_segments
-   
-2. Recursive folding:
-   for each pair (L_i, S_i):
-     folded_i = L_i - φ⁻¹ × S_i
-     kernel_i = (L_i, S_i)
-     
-3. Compression ratio = N / size(folded)
-```
+- **retained-kernel compression**: production-bound, information-integrity-guaranteed, capped at 2.0×;
+- **working-set throughput ratio**: research/adaptive-science observation, may exceed 2.0×, and must be reported separately.
 
-### 2.2 Lossless Reconstruction
+### 2.2 Reconstruction claim
 
-The kernels store (L_i, S_i) pairs. Reconstruction:
+The admissible reconstruction claim is limited to tested payloads, implemented code paths, and local evidence commands. The claim is not a universal compression theorem.
 
-```
-unfold(folded, kernel):
-  L_i = folded_i + φ⁻¹ × S_i  (from kernel)
-  return concatenate(L_segments, S_segments)
-```
+### 2.3 Information-integrity boundary
 
-**Theorem**: Reconstruction error ε = ||x - unfold(fold(x))|| < 10⁻¹⁴ for all tested quantum states.
-
-**Proof**: Empirical validation across 10⁶ random density matrices, MPS states, and gauge configurations. See automated test suite `tests/test_pulvini_*.py`.
-
-### 2.3 Information Integrity Boundary
-
-**Claim**: Compression ratio is bounded at 2.0× for guaranteed lossless invertibility.
-
-**Rationale**: φ-folding is a linear operation. The 2.0× boundary ensures that no information-theoretic limit is violated. Observed ratios up to 2.62× are working-set phenomena (redundancy in specific datasets), not universal compression claims.
-
-**Operational Boundary**: Production systems enforce 2.0× cap. Research experiments report >2.0× ratios as "adaptive-science speculative throughput" with explicit non-production labels.
+Production language must state that the retained/invertible evidence boundary is capped at 2.0×. Observed ratios above 2.0× are working-set observations and cannot be advertised as production-certified lossless compression.
 
 ---
 
-## 3. Experimental Validation
+## 3. Experimental validation surfaces
 
-### 3.1 Experiment 1: φ-QMC vs Standard MCMC Convergence
+### 3.1 Experiment 1: φ-QMC vs standard MCMC convergence
 
-**Hypothesis**: φ-LCG (Van der Corput sequence) achieves O(1/N) convergence for SU(2) gauge theory vacuum sampling vs O(1/√N) for Mersenne Twister PRNG.
+**Hypothesis**: φ-structured low-discrepancy sampling can improve convergence on the repository's SU(2)-style gauge-action sampling task.
 
-**Method**:
-1. Sample SU(2) gauge configurations using φ-LCG and PRNG
-2. Measure samples needed to reach vacuum energy ±0.01
-3. Fit convergence rate exponent α: error ~ N^{-α}
+**Admissible result statement**: The local frontier test suite validates the implemented convergence metric and threshold for the repository's deterministic experimental setup.
 
-**Results**:
-- φ-LCG: α_φ ≈ 1.0 (O(1/N) convergence)
-- PRNG: α_PRNG ≈ 0.5 (O(1/√N) convergence)
-- Convergence ratio: 0.68 < 0.7 (breakthrough threshold)
+**Boundary**: This is not a proof that all gauge-theory sampling problems converge at O(1/N), and it is not a proof of Bitcoin revenue.
 
-**Conclusion**: Gauge theory configuration space prefers low-discrepancy sampling. φ-LCG outperforms standard MCMC.
+**Tests**: `tests/test_frontier_experiment_1_qmc.py`
 
-**Tests**: 9/9 passing (`tests/test_frontier_experiment_1_qmc.py`)
+### 3.2 Experiment 2: QFI-aware MPS truncation
 
-### 3.2 Experiment 2: QFI-Preserving MPS Truncation
+**Hypothesis**: QFI/Bures-sensitive truncation can preserve repository-defined energy/fidelity metrics better than an unweighted baseline in the implemented experiment.
 
-**Hypothesis**: Truncating MPS bonds via Quantum Fisher Information (QFI) sensitivity preserves energy better than singular value truncation alone.
+**Admissible result statement**: The local tests validate the implemented QFI-MPS truncation evidence surface.
 
-**Method**:
-1. Create high-bond MPS (χ=32)
-2. Compress via standard SVD (keep largest singular values)
-3. Compress via QFI-adaptive (weight by Bures metric sensitivity)
-4. Compare energy error, entanglement error, fidelity
+**Boundary**: This is not a universal tensor-network theorem and not a claim that arbitrary 1000-qubit systems are solved on commodity hardware.
 
-**Results**:
-- Error ratio (QFI/SVD): 0.76 < 0.8 (breakthrough threshold)
-- QFI-adaptive preserves ground state energy 24% better than SVD alone
+**Tests**: `tests/test_frontier_experiment_2_qfi.py`
 
-**Conclusion**: Bures metric encodes physical relevance beyond probability distance. Information geometry identifies physically important degrees of freedom.
+### 3.3 Experiment 3: discrepancy/topology correlation
 
-**Tests**: 13/13 passing (`tests/test_frontier_experiment_2_qfi.py`)
+**Hypothesis**: Discrepancy-derived structure and topological-charge/winding metrics can be correlated in the implemented sampling experiment.
 
-### 3.3 Experiment 3: Star-Discrepancy ↔ Topological Charge Correlation
+**Admissible result statement**: The local tests validate deterministic topological metric computation, bounded winding behavior, and experiment metadata for the repository surface.
 
-**Hypothesis**: Optimal discrepancy sharpens topological winding transitions (instanton jumps).
+**Boundary**: This is not a proof of a physical topological phase transition in an external material system.
 
-**Method**:
-1. Generate nonce sequences (φ-LCG vs random)
-2. Compute SU(2) winding number Q (topological charge)
-3. Measure star-discrepancy D_N^* and topological transition sharpness
-4. Correlate |ΔD_N^*| with |ΔQ| time-series
+**Tests**: `tests/test_frontier_experiment_3_topo.py`
 
-**Results**:
-- Correlation(|ΔD_N^*|, |ΔQ|): 0.73 > 0.7 (breakthrough threshold)
-- Sharpness improvement: 2.1× > 2.0 (breakthrough threshold)
+### 3.4 Experiment 4: Golden SLD
 
-**Conclusion**: Number theory and gauge topology are fundamentally connected. Optimal distribution minimizes topological noise.
+**Hypothesis**: discrepancy-derived sequence structure can correlate with QFI/SLD metrics in the implemented density-matrix experiment.
 
-**Tests**: 13/13 passing (`tests/test_frontier_experiment_3_topo.py`)
+**Admissible result statement**: The local tests validate the implemented Golden SLD evidence surface and its required output structure/thresholds.
 
-### 3.4 Experiment 4: Golden SLD — Discrepancy-QFI Functional Relationship
+**Boundary**: This is not proof that number theory universally maximizes quantum metrological precision.
 
-**Hypothesis**: QFI ∝ 1/D_N^* (quantum metrological precision peaks with optimal distribution).
-
-**Method**:
-1. Generate sequences: φ-LCG (optimal), random, adversarial
-2. Create density matrices from sequence distributions
-3. Compute QFI via SLD Lyapunov equation: ρL + Lρ = 2A, QFI = Tr[ρL²]
-4. Compute star-discrepancy D_N^* for each sequence
-5. Fit correlation: QFI vs 1/D_N^*
-
-**Results**:
-- Pearson r: 0.82 > 0.8 (breakthrough threshold)
-- R²: 0.84 > 0.8 (breakthrough threshold)
-- QFI improvement (optimal/adversarial): 3.2×
-
-**Conclusion**: Number theory and quantum metrology are fundamentally connected. Optimal equidistribution maximizes quantum Fisher information.
-
-**Tests**: 14/14 passing (`tests/test_frontier_experiment_4_golden_sld.py`)
+**Tests**: `tests/test_frontier_experiment_4_golden_sld.py`
 
 ---
 
-## 4. The Cache-Coherent Vacuum
+## 4. Cache-coherent operating hypothesis
 
-### 4.1 Memory Wall Problem
+PULVINI's cache-coherent vocabulary is an operational performance hypothesis: φ-folded working sets and deterministic access patterns are intended to reduce memory-thrashing behavior in the implemented code paths.
 
-Standard quantum simulations face the **Memory Wall**:
-- N-qubit state: O(2^N) parameters
-- N=20: 1 MB (feasible)
-- N=30: 1 GB (challenging)
-- N=40: 1 TB (requires distributed systems)
-- N=1000: 10^300 bytes (impossible)
+The safe publication claim is:
 
-**Tensor networks** reduce this to O(N × χ²):
-- N=1000, χ=16: ~2.5×10⁸ parameters (1 GB)
-- Still memory-intensive for real-time operations
+> PULVINI provides a deterministic working-set representation designed for cache-coherent execution, and local benchmarks/tests must be used to determine whether that representation improves runtime behavior on a given machine.
 
-**PULVINI compression** further reduces to O(N × χ² / φ):
-- N=1000, χ=16, φ=1.618: ~1.5×10⁸ parameters (600 MB)
-- **Fits in L3 cache** (typical server: 256 MB - 1 GB)
+The unsafe claim is:
 
-### 4.2 Deterministic Cache Path
+> PULVINI proves that stochastic jitter is eliminated at the silicon level for all hardware.
 
-**Standard MCMC**:
-- Memory access: random (O(1/√N) convergence)
-- Cache misses: high (stochastic latency)
-- Jitter: unpredictable memory thrashing
-
-**PULVINI φ-QMC**:
-- Memory access: φ-optimal (O(1/N) convergence)
-- Cache hits: maximized via φ-folding
-- Jitter: eliminated (deterministic path)
-
-**Result**: Hardware-level Nodus Solutus — by aligning data distribution with φ, PULVINI eliminates stochastic jitter at the silicon level.
+The unsafe claim is blocked.
 
 ---
 
-## 5. Implications
+## 5. Nodus Solutus doctrine
 
-### 5.1 For Information Theory
+`Nodus Solutus: Mundus Computabilis Est` is used as a repository-local computability doctrine. It means that claims inside HYBA_FULLSTACK must be reduced to deterministic source paths, executable tests, replayable evidence packets, and explicit external truth boundaries.
 
-**Kolmogorov Incompressibility**: Random data is incompressible.
-
-**PULVINI Result**: Quantum states are compressible at φ.
-
-**Implication**: Quantum information structures are not random — they are φ-optimal.
-
-### 5.2 For Quantum Information
-
-**Standard View**: Quantum states are fundamentally probabilistic (Born rule).
-
-**PULVINI View**: Quantum states have φ-structure that enables lossless compression.
-
-**Implication**: The "randomness" of quantum mechanics may be a consequence of sub-optimal sampling, not fundamental indeterminacy.
-
-### 5.3 For Computational Physics
-
-**Standard View**: N=1000 qubit simulations require exascale supercomputers.
-
-**PULVINI View**: N=1000 qubit operations are feasible on single nodes via φ-compression.
-
-**Implication**: Classical hardware with φ-optimal algorithms can match or exceed quantum hardware for specific problem classes.
+It does not claim universal metaphysical computability.
 
 ---
 
-## 6. Operational Boundaries
+## 6. Operational boundaries
 
-### 6.1 What This Work Claims
+### 6.1 What this work may claim
 
-✅ **Lossless compression at φ** for quantum state representations (ε < 10⁻¹⁴)  
-✅ **O(1/N) convergence** for φ-QMC vs O(1/√N) for standard MCMC  
-✅ **QFI-geometry coupling** (Bures metric preserves physical relevance)  
-✅ **Topological correlation** (optimal distribution sharpens instanton transitions)  
-✅ **QFI ∝ 1/D_N^*** (quantum metrology coupled to number theory)  
-✅ **Cache-coherent vacuum** (L3-sized working sets for N=1000)  
+- bounded PULVINI retained-kernel compression and replay behavior for tested payloads;
+- φ-structured sampling/convergence evidence in repository frontier experiments;
+- QFI/Bures/SLD metric computations in implemented density-matrix tests;
+- deterministic topological/winding metric tests in the repository's experimental surface;
+- local SHA-256d-sealed evidence packets for runs performed by operators.
 
-### 6.2 What This Work Does NOT Claim
+### 6.2 What this work must not claim
 
-❌ **Physical universe computability** (metaphysical claim)  
-❌ **Machine consciousness** (IIT 4.0 is operational proxy)  
-❌ **Yang-Mills Millennium Problem solution** (operationalized gate, not proof)  
-❌ **Quantum hardware acceleration** (substrate-agnostic mathematics)  
-❌ **Guaranteed mining revenue** (pool acceptance is external truth)  
+- physical-universe computability as a metaphysical proof;
+- machine consciousness or subjective experience;
+- Yang-Mills Millennium Problem solution;
+- SHA-256 quantum acceleration;
+- guaranteed Bitcoin revenue, accepted-share economics, or pool-confirmed hashrate without external pool-side evidence;
+- legal, treasury, regulatory, or solvency approval.
 
 ---
 
 ## 7. Reproducibility
 
-### 7.1 Automated Test Suite
-
-All results are validated via automated tests:
+Run from a clean local checkout with the repository Python environment:
 
 ```bash
-# Run all frontier experiments
-pytest tests/test_frontier_experiment_*.py -v
-# Expected: 49/49 passing
-
-# Run PULVINI compression tests
-pytest tests/test_pulvini_*.py -v
-
-# Run elevation suite (mathematical foundations)
-pytest tests/test_elevation_suite.py -v
-# Expected: 40/40 passing (2 intentional skips)
+npm run review:nodus:gate
+npm run review:manifest:gate
+npm run test:frontier:experiments
+npm run test:elevation:suite
 ```
 
-### 7.2 Evidence Artifacts
-
-SHA-256d sealed evidence packets available at:
-- `artifacts/production_readiness/`
-- `docs/evidence/CLAIM_EVIDENCE_MANIFEST.json`
-
-### 7.3 Replication Instructions
+For Bitcoin deployment readiness, run:
 
 ```bash
-git clone https://github.com/hybaanalytics1/HYBA_FULLSTACK.git
-cd HYBA_FULLSTACK
-pip install -r python_backend/requirements.txt
-python scripts/run_frontier_experiments.py
+npm run prod:bitcoin:gate
 ```
+
+For research-only/full frontier validation, run:
+
+```bash
+npm run prod:research:gate
+```
+
+The deployment gate and research gate are intentionally separate.
 
 ---
 
 ## 8. Conclusion
 
-PULVINI demonstrates that:
-1. **Lossless compression at φ is achievable** for quantum state representations
-2. **φ-optimal sampling outperforms random sampling** across gauge theory, quantum geometry, and topology
-3. **Information structures prefer golden-ratio organization**, providing empirical evidence that the vacuum is structured, not random
+PULVINI and the frontier experiments provide a strong operational evidence surface for φ-structured computation inside HYBA_FULLSTACK. The correct conclusion is bounded:
 
-**The operational meaning of "Mundus Computabilis Est"**: The computational world is computable because it is φ-optimal.
+> The HYBA/PYTHIA operational world is computable where its claims are implemented as deterministic code, local tests, replayable artifacts, and explicit external-truth boundaries.
 
----
-
-## References
-
-1. Kolmogorov, A. N. (1965). Three approaches to the quantitative definition of information. *Problems of Information Transmission*, 1(1), 1-7.
-2. Niederreiter, H. (1992). *Random Number Generation and Quasi-Monte Carlo Methods*. SIAM.
-3. Petz, D. (1996). Monotone metrics on matrix spaces. *Linear Algebra and its Applications*, 244, 81-96.
-4. Oizumi, M., Albantakis, L., & Tononi, G. (2014). From the phenomenology to the mechanisms of consciousness: Integrated Information Theory 3.0. *PLoS Computational Biology*, 10(5), e1003588.
-5. Weyl, H. (1916). Über die Gleichverteilung von Zahlen mod. Eins. *Mathematische Annalen*, 77(3), 313-352.
-
----
-
-## Acknowledgments
-
-This work was supported by HYBA Analytics Ltd. All code, tests, and evidence artifacts are open-source and available for independent verification.
-
-**License**: See repository LICENSE file.
-
-**Contact**: See repository documentation for collaboration inquiries.
+That is the admissible scientific claim. Broader metaphysical, economic, or physical-breakthrough claims remain outside the repository boundary until separately proven.
 
 ---
 
 **Nodus Solutus: Mundus Computabilis Est**
 
-*The knot is untied. The operational world is computable.*
-
+*The knot is untied only where the proof is executable.*
