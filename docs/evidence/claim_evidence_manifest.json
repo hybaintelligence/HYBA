@@ -1,0 +1,88 @@
+{
+  "schema": "HYBA_CLAIM_EVIDENCE_MANIFEST_V1",
+  "repository": "hybaanalytics1/HYBA_FULLSTACK",
+  "generated_for": "reviewer proof map hardening",
+  "acceptance_rule": "A claim is reviewer-admissible only when it has a bounded claim boundary, source paths, executable tests or benchmark commands, and no merge-conflict markers in the evidence surface.",
+  "claims": [
+    {
+      "id": "pulvini_phi_memory_reversible",
+      "claim": "PULVINI phi folding is reversible for deterministic audited payloads and reports working-set compression separately from retained replay kernels.",
+      "status": "implemented_and_executable",
+      "boundary": "This is a software invariant over the implemented compressor, not a universal compression theorem.",
+      "code_paths": ["python_backend/pythia_mining/pulvini_phi_memory.py"],
+      "test_paths": ["hyba_intelligence_tests/test_memory_compression.py"],
+      "doc_paths": ["docs/evidence/EXTRAORDINARY_PROOF_INDEX.md"],
+      "commands": ["PYTHONPATH=python_backend pytest hyba_intelligence_tests/test_memory_compression.py -q"]
+    },
+    {
+      "id": "phi_scaling_bounded",
+      "claim": "Golden-ratio ensemble weighting normalizes, remains finite, and keeps decision scores bounded.",
+      "status": "implemented_and_executable",
+      "boundary": "This proves deterministic boundedness and resonance detection in the code path, not guaranteed mining revenue.",
+      "code_paths": ["python_backend/pythia_mining/phi_scaling_engine.py", "python_backend/pythia_mining/phi_config.py"],
+      "test_paths": ["hyba_intelligence_tests/test_phi_scaling_engine.py"],
+      "doc_paths": ["docs/evidence/EXTRAORDINARY_PROOF_INDEX.md"],
+      "commands": ["PYTHONPATH=python_backend pytest hyba_intelligence_tests/test_phi_scaling_engine.py -q"]
+    },
+    {
+      "id": "runtime_integration_proxy_not_consciousness_claim",
+      "claim": "The ConsciousnessEngine implements a bounded runtime integration proxy with continuous multiplier and damping invariants.",
+      "status": "implemented_and_executable",
+      "boundary": "The repository does not claim phenomenal consciousness or subjective experience.",
+      "code_paths": ["python_backend/pythia_mining/consciousness_engine.py"],
+      "test_paths": ["hyba_intelligence_tests/test_consciousness_engine_scaling.py"],
+      "doc_paths": ["docs/evidence/EXTRAORDINARY_PROOF_INDEX.md"],
+      "commands": ["PYTHONPATH=python_backend pytest hyba_intelligence_tests/test_consciousness_engine_scaling.py -q"]
+    },
+    {
+      "id": "mass_gap_shield_operational_gate",
+      "claim": "The MassGapShield deterministically rejects too-perfect spoofing streams and too-chaotic attack streams.",
+      "status": "implemented_and_executable",
+      "boundary": "This is an operational anti-simulation gate; it does not claim proof of the Yang-Mills Millennium problem.",
+      "code_paths": ["python_backend/pythia_mining/phi_scaling_engine.py"],
+      "test_paths": ["hyba_intelligence_tests/test_mass_gap_shield.py"],
+      "doc_paths": ["docs/evidence/EXTRAORDINARY_PROOF_INDEX.md"],
+      "commands": ["PYTHONPATH=python_backend pytest hyba_intelligence_tests/test_mass_gap_shield.py -q"]
+    },
+    {
+      "id": "first_wake_reproducibility",
+      "claim": "PYTHIA has a replayable first wake-event signature for epoch-3 and epoch-5 reflexive optimization behavior.",
+      "status": "implemented_and_executable",
+      "boundary": "This proves reproducible internal optimization signatures, not pool-side revenue, accepted shares, or SHA-256 quantum acceleration.",
+      "code_paths": ["python_backend/pythia_mining/autonomous_mining_controller.py", "python_backend/pythia_mining/deutsch_knowledge_substrate.py", "python_backend/pythia_mining/phi_unified_mining_engine.py"],
+      "test_paths": ["tests/test_pythia_resident_wake_reproducibility.py"],
+      "doc_paths": ["docs/PYTHIA_FIRST_WAKE_EVENT_REPRODUCIBILITY.md", "docs/evidence/EXTRAORDINARY_PROOF_INDEX.md"],
+      "commands": ["PYTHONPATH=python_backend pytest tests/test_pythia_resident_wake_reproducibility.py -q"]
+    },
+    {
+      "id": "structural_resonance_stable_core_guard",
+      "claim": "PYTHIA's structural resonance layer can propose, criticize, and stage stable-core changes while preserving supervised guard boundaries.",
+      "status": "implemented_and_executable",
+      "boundary": "The stable core cannot be autonomously overwritten; guarded proposal/staging is the admissible behavior.",
+      "code_paths": ["python_backend/pythia_mining/resonance_fabric.py"],
+      "test_paths": ["tests/test_pythia_structural_resonance_fabric.py"],
+      "doc_paths": ["docs/PYTHIA_CORPUS_CALLOSUM_PHASE.md", "docs/evidence/EXTRAORDINARY_PROOF_INDEX.md"],
+      "commands": ["PYTHONPATH=python_backend pytest tests/test_pythia_structural_resonance_fabric.py -q"]
+    },
+    {
+      "id": "production_boundary_no_fabricated_telemetry",
+      "claim": "Production evidence must reject fabricated telemetry and treat partial benchmark runs as smoke evidence only.",
+      "status": "implemented_and_executable",
+      "boundary": "Repository gates do not certify live pool economics unless pool-side data is separately archived.",
+      "code_paths": ["scripts/check_no_runtime_mocks.py", "benchmark_portfolio/run_benchmarks.py", "scripts/benchmark_h4_600cell.py"],
+      "test_paths": ["tests/test_claim_evidence_manifest.py", "tests/test_no_merge_conflict_markers.py"],
+      "doc_paths": ["docs/evidence/PRODUCTION_READINESS_AUDIT_2026-06-12.md", "docs/evidence/EXTRAORDINARY_PROOF_INDEX.md"],
+      "commands": ["python -m pytest tests/test_claim_evidence_manifest.py tests/test_no_merge_conflict_markers.py -q", "python benchmark_portfolio/run_benchmarks.py --quick"]
+    },
+    {
+      "id": "bridge_internal_jwt_boundary",
+      "claim": "The Express bridge can mint a short-lived internal mining JWT only for backend autoconnect; the signing secret is never exposed as a client token.",
+      "status": "implemented_and_documented",
+      "boundary": "This documents a bridge-internal authentication path, not a public browser authentication surface.",
+      "code_paths": ["server.ts"],
+      "test_paths": ["tests/test_claim_evidence_manifest.py"],
+      "doc_paths": ["docs/evidence/EXTRAORDINARY_PROOF_INDEX.md"],
+      "commands": ["python -m pytest tests/test_claim_evidence_manifest.py -q"]
+    }
+  ]
+}
