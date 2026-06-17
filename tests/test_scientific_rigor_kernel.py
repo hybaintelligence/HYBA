@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pythia_mining.scientific_rigor_kernel import (
+    DEFAULT_CAUSAL_INTEGRATION_FLOOR,
     SCIENTIFIC_RIGOR_PROTOCOL,
     ScientificClaimStatus,
     assess_penrose_obligation,
@@ -17,6 +18,7 @@ def test_penrose_obligation_requires_external_truth_after_local_truth() -> None:
 
     assert obligation.protocol == SCIENTIFIC_RIGOR_PROTOCOL
     assert obligation.status == ScientificClaimStatus.REQUIRES_EXTERNAL_TRUTH.value
+    assert obligation.reentry_required is True
     assert obligation.cannot_self_certify is True
     assert "cannot self-certify" in obligation.claim_boundary
 
@@ -28,6 +30,7 @@ def test_penrose_obligation_marks_falsified_evidence() -> None:
     )
 
     assert obligation.status == ScientificClaimStatus.FALSIFIED.value
+    assert obligation.reentry_required is False
     assert "prevents escalation" in obligation.falsification_route
 
 
@@ -38,6 +41,25 @@ def test_penrose_obligation_allows_externally_confirmed_claim_only_with_both_tru
     )
 
     assert obligation.status == ScientificClaimStatus.EXTERNALLY_CONFIRMED.value
+    assert obligation.reentry_required is False
+
+
+def test_penrose_obligation_handles_confirmed_then_revoked_claim() -> None:
+    obligation = assess_penrose_obligation(
+        "candidate is externally successful",
+        {
+            "exact_local_truth": True,
+            "external_truth": True,
+            "pool_confirmation_revoked": True,
+            "revocation_reason": "stale job race after pool invalidation",
+        },
+        evidence_ids=("EV-POOL-ACK-001", "EV-POOL-REVOKE-001"),
+    )
+
+    assert obligation.status == ScientificClaimStatus.CONFIRMED_THEN_REVOKED.value
+    assert obligation.reentry_required is True
+    assert "stale job" in obligation.revocation_reason
+    assert "revocation" in obligation.falsification_route
 
 
 def test_causal_integration_telemetry_covers_required_evidence_channels() -> None:
@@ -63,6 +85,10 @@ def test_causal_integration_telemetry_covers_required_evidence_channels() -> Non
     }
     assert telemetry.channel_scores["external_truth"] == 0.0
     assert telemetry.whole_score < 1.0
+    assert telemetry.operational_phi_floor_score == 0.0
+    assert telemetry.floor_threshold == DEFAULT_CAUSAL_INTEGRATION_FLOOR
+    assert telemetry.escalation_allowed is False
+    assert "floor_failed" in telemetry.escalation_reason
     assert "not exact IIT Phi" in telemetry.claim_boundary
     assert "not a consciousness claim" in telemetry.claim_boundary
 
@@ -90,5 +116,26 @@ def test_causal_integration_telemetry_penalises_missing_partition() -> None:
     )
 
     assert complete.whole_score == 1.0
+    assert complete.operational_phi_floor_score == 1.0
+    assert complete.escalation_allowed is True
     assert incomplete.whole_score < complete.whole_score
     assert incomplete.phi_proxy <= complete.phi_proxy
+    assert incomplete.escalation_allowed is False
+
+
+def test_causal_integration_floor_threshold_blocks_weak_chain() -> None:
+    telemetry = compute_causal_integration_telemetry(
+        {
+            "verifier_firewall": True,
+            "job_binding": True,
+            "external_truth": True,
+            "learning_correction": 0.50,
+            "evidence_seal": True,
+            "pitfalls_curriculum": True,
+        },
+        floor_threshold=0.75,
+    )
+
+    assert telemetry.operational_phi_floor_score < telemetry.floor_threshold
+    assert telemetry.escalation_allowed is False
+    assert telemetry.escalation_reason == "causal_integration_floor_failed_escalation_blocked"
