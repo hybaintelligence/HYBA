@@ -5,25 +5,25 @@
       "name": "Braiins Pool",
       "url": "stratum+tcp://stratum.braiins.com:3333",
       "stratum_version": 1,
-      "username": "PYTHIA.hendrix_phi",
+      "username": "PYTHAGORAS",
       "password": "anything123",
       "worker": "hendrix_phi",
-      "priority": 2,
-      "enabled": false,
-      "is_default": false,
-      "description": "Braiins Pool - disabled due to high minimum difficulty requirement"
+      "priority": 1,
+      "enabled": true,
+      "is_default": true,
+      "description": "Braiins Pool - V1 Stratum configuration"
     },
     "viabtc": {
       "name": "ViaBTC BTC",
       "url": "stratum+tcp://btc.viabtc.io:3333",
       "stratum_version": 1,
-      "username": "PYTHIA.001",
+      "username": "PYTHIA.101",
       "password": "123",
       "worker": "hendrix_phi",
-      "priority": 1,
+      "priority": 2,
       "enabled": true,
-      "is_default": true,
-      "description": "ViaBTC SHA256 pool - enabled for live mining test"
+      "is_default": false,
+      "description": "ViaBTC SHA256 pool - V1 Stratum configuration"
     },
     "nicehash": {
       "name": "NiceHash SHA256",
@@ -52,16 +52,16 @@
       "description": "CKPool solo mining - disabled for Braiins live run"
     },
     "stratumv2": {
-      "name": "Stratum V2 Pool",
-      "url": "stratum2+ssl://pool.example.com:3336",
+      "name": "Braiins Stratum V2",
+      "url": "stratum2+ssl://stratum.braiins.com:3336",
       "stratum_version": 2,
-      "username": "PYTHIA.001",
-      "password": "x",
+      "username": "PYTHAGORAS",
+      "password": "anything123",
       "worker": "hendrix_phi",
       "priority": 5,
-      "enabled": false,
+      "enabled": true,
       "is_default": false,
-      "description": "Generic Stratum V2 pool - disabled by default, enable with valid endpoint"
+      "description": "Braiins Pool - Stratum V2 configuration"
     }
   }
 }

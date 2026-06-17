@@ -150,4 +150,13 @@ def algorithm_metadata() -> dict:
         "icosahedral_overlay_domains": 20,
         "golden_ratio_library": "pythia_mining.golden_ratio_library",
         "live_io": False,
+        "empirical_validation_status": {
+            "mathematical_correctness": "PROVEN",
+            "empirical_performance": "MEASURED",
+            "phi_resonance_correlation": "NO_SIGNIFICANT_CORRELATION",
+            "phi_vs_random_benchmark": "RANDOM_PERFORMS_BETTER_ON_SYNTHETIC",
+            "cpu_overhead_vs_random": "3.73x",
+            "hashrate_validation": "SYNTHETIC_ONLY",
+            "claim_boundary": "Mathematical structure is sound. Empirical tests show φ-guided search performs worse than random search on synthetic targets due to computational overhead. NO EVIDENCE of mining revenue or pool-side acceptance."
+        }
     }

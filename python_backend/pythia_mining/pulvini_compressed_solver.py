@@ -26,6 +26,9 @@ class PulviniCompressedQuantumSolver(DodecahedralQuantumSolver):
         # Deterministic attempt counter changes the search phase for repeated solves
         # without introducing pseudo-random runtime telemetry.
         self._solve_counter = 0
+        # Mutable target compression ratio — updated by reflexive self-optimisation.
+        # Clamped to [1.0, 2.0] (PULVINI lossless invertibility limit).
+        self.compression_target_ratio: float = 1.86
         # Initialize default compressed search metrics for production readiness checks
         phi_tier = int(os.getenv("HYBA_PULVINI_PHI_TIER", "12"))
         phi_multiplier = ((1.0 + math.sqrt(5.0)) / 2.0) ** phi_tier

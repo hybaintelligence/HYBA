@@ -140,7 +140,7 @@ The system will automatically halt and refuse to start if:
 
 ### Five Quantum Safety Constraints
 
-All reflexive self-optimization proposals must satisfy:
+All reflexive self-analysis proposals must satisfy (note: the controller operates in proposal-only mode and never applies changes to source code or runtime parameters without explicit operator authorization):
 1. **Hermiticity**: Density matrix remains Hermitian
 2. **PSD**: All eigenvalues non-negative
 3. **Natural Scaling**: φ-resonant scaling laws enforced

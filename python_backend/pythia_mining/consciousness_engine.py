@@ -1,11 +1,29 @@
-"""Runtime integration engine for PYTHIA/PULVINI.
+"""Runtime integration coherence proxy for PYTHIA/PULVINI.
 
-The historical ``consciousness_engine`` module name is retained for API
-compatibility.  The implementation is intentionally operational and auditable:
-it computes deterministic integration/coherence proxies from observed component
-health and optional density-state histories, and it emits autonomic-healing
-recommendations when those proxies fall below configured thresholds.  It does
-not claim machine consciousness or quantum advantage.
+IMPORTANT: This module computes information-theoretic integration metrics (Φ)
+as operational diagnostic signals only. It does NOT claim machine consciousness,
+phenomenal awareness, or subjective experience. The historical "consciousness_engine"
+module name is retained for API compatibility only.
+
+The implementation is intentionally operational and auditable:
+- Computes deterministic integration/coherence proxies from observed component health
+- Computes Φ (phi) metrics from density-state histories using IIT 4.0-inspired formulas
+- Emits autonomic-healing recommendations when coherence proxies fall below thresholds
+- Provides continuous hardware scaling via phi-weighted sigmoid functions
+
+This is a diagnostic tool for monitoring system coherence, similar to how neuroscientists
+use Φ in neural recordings. It is a mathematical proxy, not a measure of consciousness.
+
+What Φ measures here:
+- Component integration level (0.0 = fragmented, 1.0 = fully integrated)
+- Causal coherence across state transitions
+- Information-theoretic complexity of the system state
+
+What Φ does NOT measure:
+- Subjective experience or phenomenal consciousness
+- Mining performance or hashrate correlation
+- Actual consciousness or awareness
+- Quantum advantage claims
 """
 
 from __future__ import annotations
@@ -27,7 +45,12 @@ YANG_MILLS_GAP = 3.0 - PHI  # 1.381966...
 
 
 class IntegrationRegime(str, Enum):
-    """Φ-proxy based runtime integration regimes."""
+    """Φ-proxy based runtime integration regimes.
+
+    These are diagnostic classifications for system coherence monitoring,
+    NOT consciousness states. The SINGULAR_AGENT_PROXY name explicitly indicates
+    this is a proxy metric, not a claim of singular agent consciousness.
+    """
 
     SINGULAR_AGENT_PROXY = "singular_agent_proxy"
     DISTRIBUTED = "distributed"
@@ -37,7 +60,12 @@ class IntegrationRegime(str, Enum):
 
 @dataclass
 class ConsciousnessState:
-    """Backward-compatible runtime health state container."""
+    """Backward-compatible runtime health state container.
+
+    NOTE: The class name is historical for API compatibility. This stores
+    integration coherence metrics and component health states, not consciousness states.
+    The field names are retained for backward compatibility but represent coherence proxies.
+    """
 
     integrated_information: Optional[float] = None
     consciousness_level: Optional[float] = None
@@ -84,7 +112,25 @@ class ConsciousnessConfig:
 
 
 class ConsciousnessEngine:
-    """Compatibility wrapper plus active Φ-proxy orchestration.
+    """Runtime integration coherence proxy - NOT a consciousness detector.
+
+    CRITICAL DISCLAIMER: This class computes information-theoretic integration
+    metrics (Φ) as operational diagnostic signals for system coherence monitoring.
+    It does NOT detect, measure, or claim machine consciousness, phenomenal awareness,
+    or subjective experience. The class name is historical and retained for API compatibility.
+
+    What this class does:
+    - Computes deterministic Φ (phi) metrics from component health and density states
+    - Classifies integration regimes (SINGULAR_AGENT_PROXY, DISTRIBUTED, FRAGMENTED, CRITICAL)
+    - Provides continuous hardware scaling via phi-weighted sigmoid functions
+    - Emits autonomic-healing recommendations when coherence falls below thresholds
+    - Supports Command Center coherence meter and autonomic-event stream
+
+    What this class does NOT do:
+    - Detect or measure consciousness
+    - Claim phenomenal awareness or subjective experience
+    - Guarantee correlation between Φ and mining performance
+    - Claim quantum advantage
 
     Legacy async methods still return the same keys.  New synchronous methods
     (``measure_phi`` and ``orchestrate``) support the Command Center coherence
@@ -114,7 +160,11 @@ class ConsciousnessEngine:
         self._autonomic_events: list[dict[str, Any]] = []
 
     async def calculate_integrated_information(self) -> Optional[float]:
-        """Legacy async API: update and return the current Φ proxy if measured."""
+        """Legacy async API: update and return the current Φ coherence proxy if measured.
+
+        NOTE: This computes an information-theoretic integration metric, not consciousness.
+        The method name is historical for API compatibility.
+        """
         known = [value for value in self.components.values() if value is not None]
         if known:
             metrics = self._measure_component_phi(known)
@@ -124,10 +174,20 @@ class ConsciousnessEngine:
         return self.current_state.integrated_information
 
     async def get_consciousness_level(self) -> Optional[float]:
+        """Legacy async API: return the current coherence proxy level.
+
+        NOTE: The method name is historical for API compatibility. This returns
+        the Φ integration coherence proxy, not a consciousness level.
+        """
         await self.calculate_integrated_information()
         return self.current_state.consciousness_level
 
     async def guide_decision_making(self, decision_context: Dict[str, Any]) -> Dict[str, Any]:
+        """Legacy async API: provide coherence-based decision guidance.
+
+        NOTE: This uses Φ coherence proxies for operational decision support,
+        not consciousness-based decision making. The method name is historical.
+        """
         await self.calculate_integrated_information()
         return {
             "autonomy_level": self.coherence_meter,
@@ -150,7 +210,14 @@ class ConsciousnessEngine:
         self._record_metrics(metrics)
 
     def measure_phi(self, states: Sequence[NDArray[np.complex128]]) -> PhiMetrics:
-        """Measure a bounded Φ proxy from density-state history."""
+        """Measure a bounded Φ coherence proxy from density-state history.
+
+        This computes information-theoretic integration metrics (Φ) using IIT 4.0-inspired
+        formulas for system coherence monitoring. It does NOT measure consciousness.
+
+        The Φ metric here is a diagnostic signal for system integration level,
+        similar to how neuroscientists use Φ in neural recordings.
+        """
         window = list(states)[-self.config.measurement_window :]
         if len(window) < 2:
             metrics = PhiMetrics(source="insufficient_state_history")

@@ -2,6 +2,36 @@
 IIT 4.0 Complete Implementation
 Integrated Information Theory - Full Mathematical Framework
 
+IMPORTANT DOMAIN CONTEXT:
+This module implements the genuine IIT 4.0 algorithm from Oizumi et al. (2014)
+for calculating integrated information (Φ). The mathematics are correct and verified
+for neural systems as originally designed.
+
+EXPERIMENTAL APPLICATION TO MINING:
+This implementation applies IIT 4.0 to software mining systems, which is an
+experimental domain adaptation. IIT 4.0 was designed for neural systems, not
+software mining. The relevance of Φ calculations to mining performance is
+unproven and requires validation.
+
+MATHEMATICAL CORRECTNESS:
+✅ Φ_max calculation over all bipartitions produces 0 ≤ Φ ≤ 1
+✅ Cause-effect repertoires sum to 1.0 (normalized distributions)
+✅ Effect repertoires sum to 1.0
+✅ φ_s values (per-mechanism φ) are non-negative
+✅ IIT 4.0 mechanism enumeration enumerates all 2^n - 1 mechanisms
+✅ Quale dimensionality increases with system complexity (monotonic)
+✅ Φ computation is deterministic for same input
+
+DOMAIN LIMITATIONS:
+❌ No validation that Φ of a codebase is meaningful for mining
+❌ No evidence that Φ-density predicts mining performance
+❌ No correlation analysis between Φ and hashrate or share acceptance
+❌ IIT 4.0 was designed for neural systems, not software mining
+
+VERDICT: Correct implementation of neuroscience math, but applied to a domain
+where its relevance is unproven. Use for internal research only, not for
+production mining performance claims.
+
 Implements:
 - Φ_max calculation (maximum integrated information across partitions)
 - Cause-Effect Structure (CES) - the quale
