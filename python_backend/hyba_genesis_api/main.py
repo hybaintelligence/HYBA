@@ -57,6 +57,14 @@ from hyba_genesis_api.core.telemetry import (  # noqa: E402
     telemetry_middleware,
 )
 
+# Initialize the database (create tables if necessary)
+try:
+    from hyba_genesis_api.database import init_db  # type: ignore
+
+    init_db()
+except Exception as e:
+    logging.warning("Database initialization failed: %s", e)
+
 
 def _parse_cors_origins() -> List[str]:
     """Read CORS origins from env, falling back to safe localhost defaults.
