@@ -5,6 +5,16 @@
   "acceptance_rule": "A claim is reviewer-admissible only when it has a bounded claim boundary, source paths, executable tests or benchmark commands, and no merge-conflict markers in the evidence surface.",
   "claims": [
     {
+      "id": "nodus_solutus_repository_local_computability",
+      "claim": "Nodus Solutus: HYBA_FULLSTACK implements a repository-local computability doctrine in which admissible claims must reduce to deterministic source paths, executable tests, replayable local evidence packets, and external truth boundaries.",
+      "status": "implemented_and_executable",
+      "boundary": "This is a computable operational-evidence doctrine for the HYBA/PYTHIA repository; it is not a metaphysical proof that the physical universe is computable.",
+      "code_paths": ["scripts/local_production_gate.py", "docs/evidence/claim_evidence_manifest.json"],
+      "test_paths": ["tests/test_nodus_solutus_proof_structure.py", "tests/test_claim_evidence_manifest.py"],
+      "doc_paths": ["docs/NODUS_SOLUTUS_MUNDUS_COMPUTABILIS_EST.md", "REVIEWER_EVIDENCE_MAP.md", "docs/evidence/EXTRAORDINARY_PROOF_INDEX.md", "docs/LOCAL_FIRST_DEPLOYMENT_RUNBOOK.md"],
+      "commands": ["npm run review:nodus:gate", "npm run review:evidence:gate", "npm run prod:local:gate"]
+    },
+    {
       "id": "pulvini_phi_memory_reversible",
       "claim": "PULVINI phi folding is reversible for deterministic audited payloads and reports working-set compression separately from retained replay kernels.",
       "status": "implemented_and_executable",
