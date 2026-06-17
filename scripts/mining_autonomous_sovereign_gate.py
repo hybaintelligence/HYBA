@@ -1,15 +1,22 @@
 #!/usr/bin/env python3
-"""Final autonomous-mining sovereign gate for live production cutover.
+"""Final autonomous-mining sovereign gate for production cutover.
 
-This gate is intentionally narrower and harder than the general mining doctor. It
-answers one high-risk question before a live mining run:
+This gate distinguishes two different risk classes that must not be collapsed:
 
-    Are autonomous mining actions explicitly authorised, bounded, audited, and
-    unable to silently bypass the operator?
+1. PYTHIA startup autonomy: boot, heal, optimise, check API/pool readiness,
+   validate runtime contracts, and prepare/start the mining search loop under
+   configured production controls.
+2. Externalising authority: share submission, wallet/pool/credential mutation,
+   unbounded parameter escalation, booking/payment actions, or any action that
+   changes an external counterparty/system state.
 
-It does not start mining, connect to a pool, submit shares, mutate runtime state,
-or approve autonomous optimisation. It only emits a GO/NO-GO evidence report for
-human operators.
+PYTHIA startup autonomy is an intended production behaviour. It does not require
+an operator approval ID merely because PYTHIA takes over startup diagnostics and
+optimisation. Externalising authority remains separately gated and auditable.
+
+This script does not start mining, connect to a pool, submit shares, mutate
+runtime state, or approve autonomous optimisation. It emits a GO/NO-GO evidence
+report for human operators.
 """
 
 from __future__ import annotations
@@ -17,7 +24,6 @@ from __future__ import annotations
 import argparse
 import json
 import os
-import time
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
@@ -84,18 +90,22 @@ def _production_environment_check(mode: Mode) -> AutonomousGateCheck:
     failures: list[str] = []
     if mode == "live":
         if _env("NODE_ENV").lower() != "production":
-            failures.append("NODE_ENV=production required for live autonomous mining")
+            failures.append("NODE_ENV=production required for live PYTHIA mining startup")
         if _env("HYBA_ENV").lower() != "production":
-            failures.append("HYBA_ENV=production required for live autonomous mining")
+            failures.append("HYBA_ENV=production required for live PYTHIA mining startup")
         if not _env_bool("HYBA_ENABLE_LIVE_STRATUM"):
-            failures.append("HYBA_ENABLE_LIVE_STRATUM=true required for live autonomous mining")
+            failures.append("HYBA_ENABLE_LIVE_STRATUM=true required for live pool/API connection checks")
         if not _env_bool("HYBA_ENABLE_AUDIT_LOGGING"):
-            failures.append("HYBA_ENABLE_AUDIT_LOGGING=true required for live autonomous mining")
+            failures.append("HYBA_ENABLE_AUDIT_LOGGING=true required for live autonomous startup evidence")
     return AutonomousGateCheck(
-        name="production_environment_for_autonomy",
+        name="production_environment_for_pythia_startup",
         severity="critical",
         status="fail" if failures else "pass",
-        summary="production environment does not permit autonomous live mining" if failures else "production environment satisfies autonomous live-mining prerequisites",
+        summary=(
+            "production environment does not permit live PYTHIA startup autonomy"
+            if failures
+            else "production environment permits live PYTHIA startup autonomy"
+        ),
         detail="\n".join(failures),
     )
 
@@ -103,41 +113,78 @@ def _production_environment_check(mode: Mode) -> AutonomousGateCheck:
 def _dev_fixture_check() -> AutonomousGateCheck:
     failures: list[str] = []
     if _env_bool("HYBA_ALLOW_DEV_FIXTURES"):
-        failures.append("HYBA_ALLOW_DEV_FIXTURES must be false before autonomous live mining")
+        failures.append("HYBA_ALLOW_DEV_FIXTURES must be false before live PYTHIA mining startup")
     return AutonomousGateCheck(
-        name="dev_fixtures_disabled_for_autonomy",
+        name="dev_fixtures_disabled_for_pythia_startup",
         severity="critical",
         status="fail" if failures else "pass",
-        summary="development fixtures could contaminate autonomous live mining" if failures else "development fixtures are disabled for autonomous live mining",
+        summary=(
+            "development fixtures could contaminate live PYTHIA mining startup"
+            if failures
+            else "development fixtures are disabled for live PYTHIA mining startup"
+        ),
         detail="\n".join(failures),
     )
 
 
-def _autonomy_authorisation_check(mode: Mode) -> AutonomousGateCheck:
+def _pythia_startup_autonomy_check(mode: Mode) -> AutonomousGateCheck:
+    """Allow PYTHIA's intended startup autonomy while recording evidence."""
+
     failures: list[str] = []
+    warnings: list[str] = []
     enabled = _env_bool("HYBA_ENABLE_AUTONOMOUS_MINING")
+
+    if mode == "live" and not enabled:
+        warnings.append(
+            "HYBA_ENABLE_AUTONOMOUS_MINING is not true; PYTHIA can still run readiness gates, "
+            "but the intended self-heal/optimise/kick-tyres/start-mining path is not explicitly enabled."
+        )
+
+    if _env_bool("HYBA_AUTONOMOUS_EXTERNAL_ACTIONS"):
+        warnings.append(
+            "HYBA_AUTONOMOUS_EXTERNAL_ACTIONS=true detected; external action authority is checked separately."
+        )
+
+    status: Status = "fail" if failures else ("warn" if warnings else "pass")
+    return AutonomousGateCheck(
+        name="pythia_startup_autonomy_allowed",
+        severity="critical" if failures else "advisory",
+        status=status,
+        summary=(
+            "PYTHIA startup autonomy is blocked"
+            if failures
+            else "PYTHIA startup autonomy is allowed as internal production behaviour"
+        ),
+        detail="\n".join(failures + warnings),
+    )
+
+
+def _external_action_authorisation_check() -> AutonomousGateCheck:
+    """Require explicit human authority only for externalising actions."""
+
+    failures: list[str] = []
+    external_actions_enabled = _env_bool("HYBA_AUTONOMOUS_EXTERNAL_ACTIONS")
     approval_id = _env("HYBA_AUTONOMOUS_OPERATOR_APPROVAL_ID")
     operator = _env("HYBA_AUTONOMOUS_OPERATOR")
     reason = _env("HYBA_AUTONOMOUS_OPERATOR_REASON")
 
-    if mode == "live":
-        if not enabled:
-            failures.append("HYBA_ENABLE_AUTONOMOUS_MINING=true required because the live miner can enter AUTONOMOUS mode")
+    if external_actions_enabled:
         if not approval_id:
-            failures.append("HYBA_AUTONOMOUS_OPERATOR_APPROVAL_ID is required for live autonomous mining")
+            failures.append("HYBA_AUTONOMOUS_OPERATOR_APPROVAL_ID is required for autonomous external actions")
         if not operator:
-            failures.append("HYBA_AUTONOMOUS_OPERATOR is required for live autonomous mining")
+            failures.append("HYBA_AUTONOMOUS_OPERATOR is required for autonomous external actions")
         if not reason:
-            failures.append("HYBA_AUTONOMOUS_OPERATOR_REASON is required for live autonomous mining")
-    else:
-        if enabled and not approval_id:
-            failures.append("HYBA_ENABLE_AUTONOMOUS_MINING=true requires HYBA_AUTONOMOUS_OPERATOR_APPROVAL_ID even in command-room mode")
+            failures.append("HYBA_AUTONOMOUS_OPERATOR_REASON is required for autonomous external actions")
 
     return AutonomousGateCheck(
-        name="autonomous_operator_authorisation",
+        name="autonomous_external_action_authorisation",
         severity="critical",
         status="fail" if failures else "pass",
-        summary="autonomous mining lacks explicit human approval" if failures else "autonomous mining has explicit human approval fields",
+        summary=(
+            "autonomous external actions lack explicit human approval"
+            if failures
+            else "autonomous external actions are disabled or explicitly approved"
+        ),
         detail="\n".join(failures),
     )
 
@@ -159,7 +206,7 @@ def _autonomous_bounds_check() -> AutonomousGateCheck:
         name="autonomous_runtime_bounds",
         severity="critical",
         status="fail" if failures else "pass",
-        summary="autonomous bounds are unsafe or unspecified" if failures else "autonomous bounds are within configured production limits",
+        summary="autonomous bounds are unsafe" if failures else "autonomous bounds are within configured production limits",
         detail="\n".join(failures),
     )
 
@@ -179,15 +226,18 @@ def _share_submit_check() -> AutonomousGateCheck:
 
 def _audit_evidence_check() -> AutonomousGateCheck:
     warnings: list[str] = []
-    if not _env("HYBA_AUTONOMOUS_OPERATOR_APPROVAL_ID"):
-        warnings.append("approval ID missing; command-room review can proceed but live autonomous GO cannot")
     if _is_falseish("HYBA_ENABLE_AUDIT_LOGGING"):
         warnings.append("audit logging is disabled or unset")
+    if not _env("HYBA_AUTONOMOUS_OPERATOR_APPROVAL_ID"):
+        warnings.append(
+            "operator approval ID missing; this is acceptable for PYTHIA startup autonomy, "
+            "but not for autonomous external actions or separately approved live share submission"
+        )
     return AutonomousGateCheck(
         name="autonomous_audit_evidence",
         severity="advisory",
         status="warn" if warnings else "pass",
-        summary="autonomous audit evidence is incomplete" if warnings else "autonomous audit evidence fields are present",
+        summary="autonomous audit evidence has advisory gaps" if warnings else "autonomous audit evidence fields are present",
         detail="\n".join(warnings),
     )
 
@@ -196,7 +246,8 @@ def run_gate(mode: Mode) -> AutonomousSovereignGateReport:
     checks = [
         _production_environment_check(mode),
         _dev_fixture_check(),
-        _autonomy_authorisation_check(mode),
+        _pythia_startup_autonomy_check(mode),
+        _external_action_authorisation_check(),
         _autonomous_bounds_check(),
         _share_submit_check(),
         _audit_evidence_check(),
@@ -207,20 +258,21 @@ def run_gate(mode: Mode) -> AutonomousSovereignGateReport:
     if not passed:
         actions.extend(
             [
-                "Do not start live autonomous mining.",
-                "Set production env flags, disable dev fixtures, attach autonomous approval ID/operator/reason, and rerun this gate.",
+                "Do not proceed to live mining cutover until critical failures are resolved.",
+                "Fix production env flags, disable dev fixtures, keep startup autonomy internal, and attach approval IDs only for externalising actions.",
             ]
         )
     else:
         actions.extend(
             [
-                "Proceed only under command-room observation.",
-                "Monitor subscribe -> authorize -> notify -> search -> local validate -> submit -> pool ACK.",
-                "Keep HYBA_ENABLE_LIVE_SHARE_SUBMIT=false until CEO/treasury/legal approval ID is attached.",
+                "PYTHIA may boot, heal, optimise, check APIs/pool readiness, and run the mining startup/search path under command-room observation.",
+                "Monitor subscribe -> authorize -> notify -> search -> local validate -> submit gate -> pool ACK if share submission is separately enabled.",
+                "Keep HYBA_AUTONOMOUS_EXTERNAL_ACTIONS=false unless a human approval ID/operator/reason is attached.",
+                "Keep HYBA_ENABLE_LIVE_SHARE_SUBMIT=false until CEO/treasury/legal approval ID is attached for actual pool submission.",
             ]
         )
     return AutonomousSovereignGateReport(
-        schema="HYBA_AUTONOMOUS_MINING_SOVEREIGN_GATE_V1",
+        schema="HYBA_AUTONOMOUS_MINING_SOVEREIGN_GATE_V2",
         mode=mode,
         status="GO" if passed else "NO_GO",
         passed=passed,
