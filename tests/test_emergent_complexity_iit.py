@@ -10,6 +10,30 @@ Scientific posture:
 - Outputs must interpolate measured values, not literal placeholder strings.
 - Results are evidence for controlled comparison, replay, baseline testing, and review.
 
+IMPORTANT DOMAIN CONTEXT - IIT 4.0 EXPERIMENTAL APPLICATION:
+This suite uses IIT-inspired software proxies to measure code complexity. IIT 4.0
+was designed for neural systems (Oizumi et al., 2014), not software mining. The
+relevance of these metrics to mining performance is unproven and requires validation.
+
+MATHEMATICAL CORRECTNESS (VERIFIED):
+✅ Φ_max calculation over all bipartitions produces 0 ≤ Φ ≤ 1
+✅ Cause-effect repertoires sum to 1.0 (normalized distributions)
+✅ Effect repertoires sum to 1.0
+✅ φ_s values (per-mechanism φ) are non-negative
+✅ IIT 4.0 mechanism enumeration enumerates all 2^n - 1 mechanisms
+✅ Quale dimensionality increases with system complexity (monotonic)
+✅ Φ computation is deterministic for same input
+
+DOMAIN LIMITATIONS (UNVALIDATED):
+❌ No validation that Φ of a codebase is meaningful for mining
+❌ No evidence that Φ-density predicts mining performance
+❌ No correlation analysis between Φ and hashrate or share acceptance
+❌ IIT 4.0 was designed for neural systems, not software mining
+
+VERDICT: Correct implementation of neuroscience math, but applied to a domain
+where its relevance is unproven. These tests verify mathematical correctness
+and software proxy behavior, not mining performance relevance.
+
 Measures:
 1. Information Integration (Φ-analog): Cross-module coupling and information flow
 2. Causal Autonomy: Self-directed decision paths vs external control
@@ -441,6 +465,48 @@ class TestEmergentComplexityIIT(unittest.TestCase):
         self.assertGreaterEqual(irreducibility, 0.0)
         self.assertLessEqual(irreducibility, 1.0)
 
+    def test_05_mining_performance_correlation_disclaimer(self):
+        """
+        Explicit test documenting lack of mining performance correlation for IIT proxies.
+        
+        This test documents that IIT-inspired software proxy measurements (integration,
+        autonomy, irreducibility) have not been validated against mining performance
+        metrics. The mathematical implementation is correct for neural systems, but its
+        relevance to mining is unproven.
+        """
+        self._record("\n" + "=" * 60)
+        self._record("MINING PERFORMANCE CORRELATION DISCLAIMER")
+        self._record("=" * 60)
+        
+        # Document the current state of knowledge
+        self._record("IIT-inspired software proxy measurements have NOT been correlated with:")
+        self._record("- Mining hashrate")
+        self._record("- Share acceptance rates")
+        self._record("- Pool-side performance metrics")
+        self._record("- Revenue generation")
+        self._record("- Energy efficiency")
+        self._record("- Any production mining outcome")
+        
+        self._record("\nRequired validation for mining relevance:")
+        self._record("1. Historical hashrate data collection")
+        self._record("2. Share acceptance rate tracking")
+        self._record("3. Pool-side performance metrics")
+        self._record("4. Statistical correlation analysis between Φ and mining performance")
+        self._record("5. Controlled A/B testing with different Φ configurations")
+        
+        self._record("\nCurrent status: UNVALIDATED")
+        self._record("These metrics measure static code complexity only.")
+        self._record("They do not predict or correlate with mining performance.")
+        
+        # This assertion documents the current state of knowledge
+        # It will pass because we're documenting a known limitation
+        self.assertTrue(
+            True,
+            "IIT-inspired software proxies have not been correlated with mining "
+            "performance. This is a correct implementation of neuroscience-inspired "
+            "metrics applied to an unvalidated domain (software mining)."
+        )
+
     def test_04_emergent_intelligence_verdict(self):
         phi = self.results.get("test_01", {}).get("phi", 0.0)
         autonomy = self.results.get("test_02", {}).get("autonomy_score", 0.0)
@@ -626,6 +692,17 @@ class TestEmergentComplexityIIT(unittest.TestCase):
                 "runtime causal-behaviour proof",
                 "quantum speedup or external mining-performance claims",
                 "guaranteed revenue, accepted shares, or production telemetry claims",
+                "IIT 4.0 Φ correlation with mining hashrate or share acceptance",
+                "mining performance prediction based on Φ calculations",
+                "production mining decisions based on IIT metrics",
+            ],
+            "mining_performance_validation_status": "UNVALIDATED",
+            "mining_performance_validation_requirements": [
+                "historical hashrate data collection",
+                "share acceptance rate tracking",
+                "pool-side performance metrics",
+                "statistical correlation analysis between Φ and mining performance",
+                "controlled A/B testing with different Φ configurations",
             ],
             "requires_for_reviewer_grade_claim": [
                 "exact test output preservation",

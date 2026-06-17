@@ -203,7 +203,78 @@ class PhiEntropyGenerator:
         self._spiral_angle = 0.0
 
 
-# ── Convenience factory ────────────────────────────────────────────────────
+def van_der_corput_discrepancy(n_samples: int, base_state: float = 0.0) -> dict:
+    """Compute the star-discrepancy D*_N of the Φ-LCG sequence.
+
+    The star discrepancy of a sequence x_1, ..., x_N in [0,1) is:
+
+        D*_N = sup_{[0,u)} | A([0,u), N)/N - u |
+
+    where A([0,u), N) counts points falling in [0,u).
+
+    For the golden-ratio irrational rotation x_n = (x_0 + n/φ) mod 1,
+    the three-distance theorem guarantees that consecutive points occupy
+    at most 3 distinct gap sizes, and the discrepancy satisfies:
+
+        D*_N ≤ 1/N + 1/φ ⋅ 1/N  =  O(log N / N)
+
+    which is asymptotically optimal for 1D sequences (Weyl equidistribution).
+    This function computes the exact empirical D*_N and compares it against
+    the theoretical upper bound and against a uniform-random baseline.
+
+    Args:
+        n_samples: Number of sequence points to evaluate
+        base_state: Initial state x_0 in [0,1)
+
+    Returns:
+        Dictionary with empirical D*_N, theoretical bound, efficiency ratio,
+        and three-distance gap certificate.
+    """
+    if n_samples < 2:
+        return {"error": "need at least 2 samples"}
+
+    # Generate the phi-LCG sequence
+    states = np.empty(n_samples, dtype=np.float64)
+    x = float(base_state)
+    for k in range(n_samples):
+        x = (x + INV_PHI) % 1.0
+        states[k] = x
+    states_sorted = np.sort(states)
+
+    # Exact star discrepancy: O(N log N)
+    n = n_samples
+    idx = np.arange(1, n + 1, dtype=np.float64)
+    # Supremum over all intervals [0, u) using sorted points as candidates
+    d_plus = np.max(idx / n - states_sorted)          # sup of F_N(u) - u
+    d_minus = np.max(states_sorted - (idx - 1) / n)   # sup of u - F_N(u-)
+    empirical_discrepancy = float(max(d_plus, d_minus))
+
+    # Theoretical upper bound for golden irrational rotation
+    theoretical_bound = (1.0 + 1.0 / PHI) / n
+
+    # Three-distance theorem: gaps between consecutive sorted points
+    gaps = np.diff(np.concatenate([[0.0], states_sorted, [1.0]]))
+    unique_gaps = np.unique(np.round(gaps, 8))
+    three_distance_satisfied = bool(len(unique_gaps) <= 3)
+
+    # Monte Carlo baseline: expected D*_N for uniform random ~ sqrt(log(N)/N)
+    mc_baseline = float(np.sqrt(np.log(n) / n))
+
+    return {
+        "n_samples": n_samples,
+        "empirical_discrepancy": empirical_discrepancy,
+        "theoretical_bound": theoretical_bound,
+        "within_bound": bool(empirical_discrepancy <= theoretical_bound + 1e-12),
+        "efficiency_vs_random": float(mc_baseline / (empirical_discrepancy + 1e-300)),
+        "three_distance_gap_count": int(len(unique_gaps)),
+        "three_distance_satisfied": three_distance_satisfied,
+        "certificate": (
+            "GOLDEN_OPTIMAL"
+            if empirical_discrepancy <= theoretical_bound + 1e-12 and three_distance_satisfied
+            else "SUBOPTIMAL"
+        ),
+    }
+
 
 def create_phi_entropy_generator(
     seed: Optional[int] = None,
@@ -264,4 +335,5 @@ __all__ = [
     "GOLDEN_ANGLE",
     "PhiEntropyGenerator",
     "create_phi_entropy_generator",
+    "van_der_corput_discrepancy",
 ]

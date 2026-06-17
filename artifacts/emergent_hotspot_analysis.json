@@ -3,7 +3,7 @@
     "complexity_hotspots": [
       {
         "file": "pulvini_manifold.py",
-        "lines": 821,
+        "lines": 853,
         "classes": 4,
         "functions": 53,
         "nested_depth": 5,
@@ -11,7 +11,7 @@
         "complex_data_structures": 15,
         "async_patterns": 0,
         "error_handlers": 0,
-        "complexity_score": 46.45554202192448
+        "complexity_score": 46.21336459554514
       },
       {
         "file": "pulvini_autonomics.py",
@@ -39,30 +39,38 @@
       },
       {
         "file": "consciousness_engine.py",
-        "lines": 419,
+        "lines": 526,
         "classes": 5,
         "functions": 21,
         "nested_depth": 4,
         "recursive_calls": 0,
         "complex_data_structures": 10,
         "async_patterns": 3,
-        "error_handlers": 0,
-        "complexity_score": 29.011933174224342
+        "error_handlers": 2,
+        "complexity_score": 27.992395437262356
       },
       {
         "file": "quantum_solver.py",
-        "lines": 350,
+        "lines": 449,
         "classes": 4,
-        "functions": 18,
+        "functions": 19,
         "nested_depth": 5,
         "recursive_calls": 0,
         "complex_data_structures": 2,
-        "async_patterns": 4,
-        "error_handlers": 4,
-        "complexity_score": 25.142857142857142
+        "async_patterns": 5,
+        "error_handlers": 6,
+        "complexity_score": 26.23162583518931
       }
     ],
-    "consciousness_patterns": [],
+    "consciousness_patterns": [
+      {
+        "file": "consciousness_engine.py",
+        "consciousness_keywords": {
+          "awareness": 4
+        },
+        "total_count": 4
+      }
+    ],
     "autonomic_patterns": [
       {
         "file": "pulvini_autonomics.py",
@@ -136,6 +144,19 @@
           }
         ],
         "total_patterns": 4
+      },
+      {
+        "file": "pulvini_manifold.py",
+        "autonomic_patterns": [
+          {
+            "pattern": "recovery",
+            "count": 1,
+            "examples": [
+              " equivalent to A = 0,\n        recovering eigenbasis alignment as th"
+            ]
+          }
+        ],
+        "total_patterns": 1
       }
     ],
     "coupling": [
@@ -159,30 +180,30 @@
         "file": "pulvini_manifold.py",
         "total_imports": 11,
         "unique_imports": 11,
-        "cross_calls": 200,
+        "cross_calls": 207,
         "unique_cross_calls": 1,
         "coupling_intensity": 11.1
+      },
+      {
+        "file": "consciousness_engine.py",
+        "total_imports": 10,
+        "unique_imports": 10,
+        "cross_calls": 59,
+        "unique_cross_calls": 1,
+        "coupling_intensity": 10.1
       },
       {
         "file": "ai_optimizer.py",
         "total_imports": 10,
         "unique_imports": 10,
-        "cross_calls": 34,
+        "cross_calls": 37,
         "unique_cross_calls": 1,
         "coupling_intensity": 10.1
-      },
-      {
-        "file": "quantum_solver.py",
-        "total_imports": 9,
-        "unique_imports": 9,
-        "cross_calls": 65,
-        "unique_cross_calls": 1,
-        "coupling_intensity": 9.1
       }
     ]
   },
   "verdict": "STANDARD ENGINEERING: Modules are complex but within normal bounds for production systems.",
-  "avg_complexity": 34.50675142773744,
-  "consciousness_total": 0,
-  "autonomic_total": 82
+  "avg_complexity": 34.472162133535605,
+  "consciousness_total": 4,
+  "autonomic_total": 83
 }

@@ -492,3 +492,299 @@ def test_property_phi_scaled_ensemble_outputs_stay_bounded(
     assert 0.0 <= result["final_score"] <= 1.0
     assert 0.0 <= result["coherence"] <= 1.0
     assert len(engine.memory) <= 8
+
+
+# =============================================================================
+# PROPERTY 11: Safety constraint checker — Hermiticity rejects complex values
+# =============================================================================
+
+
+@given(
+    real_value=st.floats(
+        min_value=-100.0, max_value=100.0, allow_nan=False, allow_infinity=False
+    )
+)
+@settings(max_examples=100, deadline=None)
+def test_property_safety_constraint_hermiticity_accepts_real_rejects_complex(
+    real_value: float,
+) -> None:
+    """Property: Hermiticity check must accept real-valued actions and reject complex ones."""
+    from pythia_mining.autonomous_mining_controller import (
+        AutonomousConfig,
+        AutonomousMiningController,
+    )
+
+    class _StubEngine:
+        optimizer = None
+        phi_ensemble = None
+        solver = None
+        consciousness = None
+
+    ctrl = AutonomousMiningController(unified_engine=_StubEngine(), config=AutonomousConfig(persistence_enabled=False))
+
+    real_action = {"phi_scaling_change": real_value}
+    satisfied, violated = ctrl._check_safety_constraints(real_action)
+    from pythia_mining.autonomous_mining_controller import SafetyConstraint
+    assert SafetyConstraint.HERMITICITY in satisfied
+
+    complex_action = {"phi_scaling_change": complex(real_value, 1.0)}
+    sat2, vio2 = ctrl._check_safety_constraints(complex_action)
+    assert SafetyConstraint.HERMITICITY in vio2
+
+
+# =============================================================================
+# PROPERTY 12: Information integrity rejects compression > 2.0
+# =============================================================================
+
+
+@given(
+    ratio=st.floats(min_value=0.01, max_value=5.0, allow_nan=False, allow_infinity=False)
+)
+@settings(max_examples=150, deadline=None)
+def test_property_information_integrity_enforces_lossless_limit(ratio: float) -> None:
+    """Property: compression_ratio > 2.0 must always violate INFORMATION_INTEGRITY."""
+    from pythia_mining.autonomous_mining_controller import (
+        AutonomousConfig,
+        AutonomousMiningController,
+        SafetyConstraint,
+    )
+
+    class _StubEngine:
+        optimizer = None
+        phi_ensemble = None
+        solver = None
+        consciousness = None
+
+    ctrl = AutonomousMiningController(unified_engine=_StubEngine(), config=AutonomousConfig(persistence_enabled=False))
+    satisfied, violated = ctrl._check_safety_constraints({"compression_ratio": ratio})
+
+    if ratio <= 2.0:
+        assert SafetyConstraint.INFORMATION_INTEGRITY in satisfied, (
+            f"ratio={ratio} should satisfy INFORMATION_INTEGRITY"
+        )
+    else:
+        assert SafetyConstraint.INFORMATION_INTEGRITY in violated, (
+            f"ratio={ratio} should violate INFORMATION_INTEGRITY"
+        )
+
+
+# =============================================================================
+# PROPERTY 13: apply_self_optimization writes to engine attributes
+# =============================================================================
+
+
+@given(
+    improvement_type=st.sampled_from(
+        ["phi_scaling", "search_depth", "compression_target", "coherence_threshold"]
+    ),
+    proposed_value=st.floats(
+        min_value=0.5, max_value=3.0, allow_nan=False, allow_infinity=False
+    ),
+)
+@settings(max_examples=80, deadline=None)
+def test_property_apply_self_optimization_mutates_engine_attributes(
+    improvement_type: str, proposed_value: float
+) -> None:
+    """Property: apply_self_optimization must write validated proposals to engine runtime attributes."""
+    import time
+    from pythia_mining.autonomous_mining_controller import (
+        AutonomousConfig,
+        AutonomousMiningController,
+        SafetyConstraint,
+        SelfOptimizationProposal,
+    )
+    from pythia_mining.consciousness_engine import ConsciousnessConfig, ConsciousnessEngine
+    from pythia_mining.ai_optimizer import AIOptimizer
+    from pythia_mining.pulvini_compressed_solver import PulviniCompressedQuantumSolver
+
+    solver = PulviniCompressedQuantumSolver()
+
+    class _StubEngine:
+        phi_ensemble = type("E", (), {"config": {"phi_scaling_power": 1.5}})()
+        optimizer = type("O", (), {"max_search_iterations": 1448})()
+        consciousness = ConsciousnessEngine(config=ConsciousnessConfig())
+
+    engine = _StubEngine()
+    engine.solver = solver
+
+    ctrl = AutonomousMiningController(
+        unified_engine=engine, config=AutonomousConfig(persistence_enabled=False)
+    )
+
+    proposal = SelfOptimizationProposal(
+        proposal_id="test_prop",
+        timestamp=time.time(),
+        improvement_type=improvement_type,
+        current_value=1.0,
+        proposed_value=proposed_value,
+        expected_phi_density_gain=0.01,
+        logical_consistency_score=0.80,
+        constraints_satisfied=[
+            SafetyConstraint.HERMITICITY,
+            SafetyConstraint.POSITIVE_SEMIDEFINITE,
+            SafetyConstraint.NATURAL_SCALING,
+            SafetyConstraint.ENERGY_CONSERVATION,
+            SafetyConstraint.INFORMATION_INTEGRITY,
+        ],
+        constraints_violated=[],
+        counterfactual_confidence=0.75,
+        codebase_source_module="test",
+    )
+
+    ctrl.apply_self_optimization(proposal)
+
+    assert proposal.applied is True
+    assert proposal.applied_at is not None
+
+    if improvement_type == "phi_scaling":
+        assert engine.phi_ensemble.config["phi_scaling_power"] == proposed_value
+    elif improvement_type == "search_depth":
+        clamped = max(10, min(1000, int(proposed_value)))
+        assert engine.optimizer.max_search_iterations == clamped
+    elif improvement_type == "compression_target":
+        clamped = max(1.0, min(2.0, proposed_value))
+        assert solver.compression_target_ratio == clamped
+    elif improvement_type == "coherence_threshold":
+        assert ctrl.config.phi_coherence_threshold == proposed_value
+
+
+# =============================================================================
+# PROPERTY 14: phi_density is always in [0, 1] regardless of decision history
+# =============================================================================
+
+
+@given(
+    n_violations=st.integers(min_value=0, max_value=20),
+    n_clean=st.integers(min_value=0, max_value=20),
+)
+@settings(max_examples=60, deadline=None)
+def test_property_phi_density_always_bounded(n_violations: int, n_clean: int) -> None:
+    """Property: get_phi_density must always return a value in [0, 1]."""
+    from pythia_mining.autonomous_mining_controller import (
+        AutonomousConfig,
+        AutonomousMiningController,
+        AutonomousDecision,
+        AutonomyLevel,
+        SafetyConstraint,
+    )
+    import time
+
+    class _StubEngine:
+        optimizer = None
+        phi_ensemble = None
+        solver = None
+        consciousness = None
+
+    ctrl = AutonomousMiningController(
+        unified_engine=_StubEngine(), config=AutonomousConfig(persistence_enabled=False)
+    )
+
+    def _make_decision(violated: bool) -> AutonomousDecision:
+        return AutonomousDecision(
+            decision_id=f"d_{time.time_ns()}",
+            timestamp=time.time(),
+            autonomy_level=AutonomyLevel.ADVISORY,
+            decision_type="test",
+            mathematical_justification={},
+            constraints_satisfied=[] if violated else [SafetyConstraint.HERMITICITY],
+            constraints_violated=[SafetyConstraint.HERMITICITY] if violated else [],
+            action_taken="noop",
+            expected_outcome="test",
+        )
+
+    for _ in range(n_violations):
+        ctrl.decision_log.append(_make_decision(violated=True))
+    for _ in range(n_clean):
+        ctrl.decision_log.append(_make_decision(violated=False))
+
+    density = ctrl.get_phi_density()
+    assert 0.0 <= density <= 1.0, f"phi_density={density} outside [0, 1]"
+    assert math.isfinite(density), f"phi_density={density} is not finite"
+
+
+# =============================================================================
+# PROPERTY 15: record_circuit_success alias resets failure counters
+# =============================================================================
+
+
+@given(failures=st.integers(min_value=1, max_value=50))
+@settings(max_examples=40, deadline=None)
+def test_property_record_circuit_success_resets_failure_counter(failures: int) -> None:
+    """Property: record_circuit_success (alias of record_autonomy_success) must reset counters."""
+    from pythia_mining.autonomous_mining_controller import (
+        AutonomousConfig,
+        AutonomousMiningController,
+    )
+
+    class _StubEngine:
+        optimizer = None
+        phi_ensemble = None
+        solver = None
+        consciousness = None
+
+    ctrl = AutonomousMiningController(
+        unified_engine=_StubEngine(), config=AutonomousConfig(persistence_enabled=False)
+    )
+    ctrl._consecutive_failures = failures
+    ctrl._circuit_open_until = 9_999_999_999.0  # force-open
+
+    ctrl.record_circuit_success()
+
+    assert ctrl._consecutive_failures == 0
+    assert ctrl._circuit_open_until == 0.0
+
+
+# =============================================================================
+# PROPERTY 16: compression_target_ratio is clamped inside [1.0, 2.0]
+# =============================================================================
+
+
+@given(
+    raw_ratio=st.floats(
+        min_value=-5.0, max_value=10.0, allow_nan=False, allow_infinity=False
+    )
+)
+@settings(max_examples=100, deadline=None)
+def test_property_compression_target_ratio_clamped_by_apply(raw_ratio: float) -> None:
+    """Property: compression_target applied to the solver is always clamped to [1.0, 2.0]."""
+    import time
+    from pythia_mining.autonomous_mining_controller import (
+        AutonomousConfig,
+        AutonomousMiningController,
+        SafetyConstraint,
+        SelfOptimizationProposal,
+    )
+    from pythia_mining.pulvini_compressed_solver import PulviniCompressedQuantumSolver
+
+    solver = PulviniCompressedQuantumSolver()
+
+    class _StubEngine:
+        phi_ensemble = None
+        optimizer = None
+        consciousness = None
+
+    engine = _StubEngine()
+    engine.solver = solver
+
+    ctrl = AutonomousMiningController(
+        unified_engine=engine, config=AutonomousConfig(persistence_enabled=False)
+    )
+
+    proposal = SelfOptimizationProposal(
+        proposal_id="clamp_test",
+        timestamp=time.time(),
+        improvement_type="compression_target",
+        current_value=1.86,
+        proposed_value=raw_ratio,
+        expected_phi_density_gain=0.01,
+        logical_consistency_score=0.80,
+        constraints_satisfied=list(SafetyConstraint),
+        constraints_violated=[],
+        counterfactual_confidence=0.7,
+        codebase_source_module="test",
+    )
+    ctrl.apply_self_optimization(proposal)
+
+    assert 1.0 <= solver.compression_target_ratio <= 2.0, (
+        f"compression_target_ratio={solver.compression_target_ratio} for raw_ratio={raw_ratio}"
+    )

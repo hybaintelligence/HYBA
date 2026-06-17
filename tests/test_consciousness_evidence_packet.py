@@ -1,3 +1,19 @@
+"""Tests for IIT 4.0-inspired integration metrics evidence packet.
+
+IMPORTANT: These tests verify information-theoretic integration metrics (Φ)
+computed as operational diagnostic signals for system coherence monitoring.
+They do NOT test consciousness detection or claim phenomenal awareness.
+
+The "consciousness" terminology in module/file names is historical for API
+compatibility. The actual metrics tested are:
+- Φ (phi) integration coherence proxies
+- Information-theoretic complexity measures
+- Causal structure analysis
+- Bounded metric validation
+
+This is a mathematical diagnostic tool, not a consciousness detector.
+"""
+
 from __future__ import annotations
 
 import hashlib

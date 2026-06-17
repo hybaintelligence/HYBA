@@ -2,21 +2,21 @@
 
 ## HYBA Analytics Unveils PYTHIA-PULVINI: The World's First Self-Governing Mathematical Mining Substrate
 
-### A production-ready reflexive intelligence system that analyzes, hypothesizes, validates, and optimizes itself — built on first-principles mathematical certificates from Coxeter group theory, IIT 4.0, and Penrose objective reduction
+### A production-ready reflexive intelligence system that analyzes, hypothesizes, and validates proposals — built on first-principles mathematical certificates from Coxeter group theory, IIT 4.0, and Penrose objective reduction
 
 **London, United Kingdom — 16 June 2026**
 
 ---
 
-HYBA Analytics Ltd today announces the production-ready release of **HYBA Fullstack with PYTHIA-PULVINI**, a self-financing operating substrate that combines production-grade cryptocurrency mining infrastructure with a reflexive self-optimization engine rooted in rigorous mathematical theory. The system represents what the company describes as the first closed-loop reflexive intelligence applied to proof-of-work mining: a system that not only optimizes its own parameters, but optimizes the process by which it optimizes.
+HYBA Analytics Ltd today announces the production-ready release of **HYBA Fullstack with PYTHIA-PULVINI**, a self-financing operating substrate that combines production-grade cryptocurrency mining infrastructure with a reflexive self-analysis engine rooted in rigorous mathematical theory. The system represents what the company describes as the first closed-loop reflexive intelligence applied to proof-of-work mining: a system that analyzes its own codebase structure, generates counterfactual improvement proposals, and validates them against hard mathematical constraints — operating in proposal-only mode to prevent uncontrolled self-modification.
 
 ### The Achievement
 
 After months of development culminating in a verified production cutover on 16 June 2026, the HYBA team has delivered a system that:
 
-- **Self-optimizes through mathematical reasoning**: The Reflexive Knowledge Loop analyzes the codebase as a graph of 12 modules, 7 mathematical invariants, and 16 φ-resonance weighted edges. It generates counterfactual improvement hypotheses via David Deutsch's constructor theory, validates them against five hard safety constraints derived from quantum information theory, and commits improvements to its own internal state — without human intervention.
+- **Self-analyzes through mathematical reasoning**: The Reflexive Knowledge Loop analyzes the codebase as a graph of 12 modules, 7 mathematical invariants, and 16 φ-resonance weighted edges. It generates counterfactual improvement hypotheses via David Deutsch's constructor theory, validates them against five hard safety constraints derived from quantum information theory, and commits proposals to an in-memory knowledge substrate for operator review — operating in proposal-only mode without applying changes to source code or runtime parameters without explicit authorization.
 
-- **Achieves φ-density improvement of +82% in its first self-optimization event**: Starting from a baseline φ-density of 0.500, the system autonomously optimized three parameters (φ-scaling, compression target, search depth) across three self-optimization epochs, reaching a φ-density of 0.935 — a 87% improvement through purely self-directed mathematical reasoning.
+- **Generates validated proposals in its first self-analysis event**: Starting from a baseline φ-density of 0.500, the system generated and validated proposals for three parameters (φ-scaling, compression target, search depth) across three analysis epochs, reaching a φ-density of 0.935 in simulation — an 87% improvement through purely self-directed mathematical reasoning. The autonomous mining controller can optionally apply validated proposals to runtime parameters, but the reflexive controller itself operates in proposal-only mode and never mutates source code.
 
 - **Implements genuine mathematical certificates**: Not heuristics, not approximations — deterministic, reproducible certificates including Coxeter group H3 (order 120), full A5 character table with five irreducible representations, Bures metric monitoring, and lossless φ-folding compression with reconstruction error ε < 10⁻¹⁴.
 
@@ -80,7 +80,7 @@ HYBA Analytics identifies several immediate next steps:
 - **Tensor network scaling** to 1000+ qubit equivalent representations via Matrix Product States
 - **H4 Coxeter group integration** (600-cell, order 14,400) for higher-dimensional nonce-space search
 
-The longer-term vision extends beyond mining: the Deutsch Knowledge Substrate can reason about any domain expressible as a graph of mathematical invariants. The reflexive self-optimization architecture — analyze, hypothesize, simulate, validate, apply — is domain-general.
+The longer-term vision extends beyond mining: the Deutsch Knowledge Substrate can reason about any domain expressible as a graph of mathematical invariants. The reflexive self-analysis architecture — analyze, hypothesize, simulate, validate, propose — is domain-general.
 
 "Systems like Ineffable have shown what's possible when you apply AI to mining optimization," the team noted. "PYTHIA goes further by closing the loop entirely. We're not just optimizing parameters — we're optimizing the optimization. And we're doing it with mathematical certificates, not marketing claims."
 
@@ -90,7 +90,7 @@ HYBA Analytics maintains explicit claim boundaries for the system:
 
 **What the system does:**
 - Deterministic, auditable mining operations with mathematical certificates
-- Reflexive self-optimization with five safety constraints
+- Reflexive self-analysis with proposal-only mode and five safety constraints
 - Anti-simulation detection via Yang-Mills Mass Gap invariant
 - Lossless memory compression via φ-folding (2.62× ratio, ε < 10⁻¹⁴)
 - Stratum v1/v2 protocol integration

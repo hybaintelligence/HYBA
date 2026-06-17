@@ -6,6 +6,31 @@ Tests the complete IIT 4.0 implementation including:
 - Cause-effect structure computation
 - Quale dimensionality
 - Main complex identification
+
+IMPORTANT DOMAIN CONTEXT:
+These tests verify the mathematical correctness of the IIT 4.0 implementation
+as designed for neural systems (Oizumi et al., 2014). However, IIT 4.0 was
+designed for neural systems, not software mining. The relevance of Φ
+calculations to mining performance is unproven and requires validation.
+
+MATHEMATICAL CORRECTNESS (VERIFIED):
+✅ Φ_max calculation over all bipartitions produces 0 ≤ Φ ≤ 1
+✅ Cause-effect repertoires sum to 1.0 (normalized distributions)
+✅ Effect repertoires sum to 1.0
+✅ φ_s values (per-mechanism φ) are non-negative
+✅ IIT 4.0 mechanism enumeration enumerates all 2^n - 1 mechanisms
+✅ Quale dimensionality increases with system complexity (monotonic)
+✅ Φ computation is deterministic for same input
+
+DOMAIN LIMITATIONS (UNVALIDATED):
+❌ No validation that Φ of a codebase is meaningful for mining
+❌ No evidence that Φ-density predicts mining performance
+❌ No correlation analysis between Φ and hashrate or share acceptance
+❌ IIT 4.0 was designed for neural systems, not software mining
+
+VERDICT: Correct implementation of neuroscience math, but applied to a domain
+where its relevance is unproven. These tests verify mathematical correctness,
+not mining performance relevance.
 """
 
 import unittest
@@ -267,6 +292,52 @@ class TestIIT4AnalyzerEdgeCases(unittest.TestCase):
         
         ces = analyzer.compute_cause_effect_structure(state, tm)
         self.assertIsNotNone(ces)
+
+    def test_mining_performance_correlation_disclaimer(self):
+        """
+        Explicit test documenting lack of mining performance correlation.
+        
+        This test documents that IIT 4.0 Φ calculations have not been validated
+        against mining performance metrics. The mathematical implementation is
+        correct for neural systems, but its relevance to mining is unproven.
+        """
+        analyzer = IIT4Analyzer(4)
+        state = np.array([1, 0, 1, 0])
+        tm = np.array([
+            [0.7, 0.3, 0.0, 0.0],
+            [0.2, 0.8, 0.0, 0.0],
+            [0.0, 0.0, 0.6, 0.4],
+            [0.0, 0.0, 0.3, 0.7]
+        ])
+        
+        # Calculate Φ for this configuration
+        result = analyzer.calculate_phi_max(state, tm)
+        phi_value = result['phi_max']
+        
+        # This test documents the lack of correlation data
+        # In a production mining context, we would need:
+        # 1. Historical hashrate data
+        # 2. Share acceptance rates
+        # 3. Pool-side performance metrics
+        # 4. Statistical correlation analysis between Φ and mining performance
+        
+        # Since no such correlation data exists, we document this limitation
+        self.assertIsNotNone(phi_value)
+        
+        # Document that this Φ value has no validated relationship to:
+        # - Mining hashrate
+        # - Share acceptance rate
+        # - Pool performance
+        # - Revenue generation
+        
+        # This assertion documents the current state of knowledge
+        # It will pass because we're documenting a known limitation
+        self.assertTrue(
+            True,
+            "IIT 4.0 Φ calculations have not been correlated with mining performance. "
+            "This is a correct implementation of neuroscience math applied to an "
+            "unvalidated domain (software mining)."
+        )
 
 
 if __name__ == '__main__':
