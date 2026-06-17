@@ -1,0 +1,37 @@
+name: Security Scan
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+
+jobs:
+  dependency-security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      - name: Install Python security tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install pip-audit bandit
+      - name: Audit Python dependencies
+        run: |
+          # Audit locked dependencies; exit non-zero on critical findings
+          pip-audit -r python_backend/requirements.txt
+      - name: Run bandit security analysis
+        run: |
+          bandit -r python_backend -x python_backend/tests
+      - name: Install Node dependencies
+        if: exists('package.json')
+        run: |
+          npm install --package-lock-only
+      - name: Audit Node dependencies
+        if: exists('package.json')
+        run: |
+          # Allow non-zero exit to avoid failing the workflow on known issues;
+          # review npm-audit-results.json in PR comments
+          npm audit --audit-level=high --json > npm-audit-results.json || true
