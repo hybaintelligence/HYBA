@@ -28,6 +28,7 @@ def test_claim_evidence_manifest_is_complete_and_points_to_existing_files() -> N
                 assert path.exists(), f"{claim['id']} references missing {key}: {rel_path}"
 
     assert len(claim_ids) == len(manifest["claims"]), "claim ids must be unique"
+    assert "nodus_solutus_repository_local_computability" in claim_ids
 
 
 def test_claim_manifest_keeps_extraordinary_claim_boundaries_explicit() -> None:
@@ -37,6 +38,8 @@ def test_claim_manifest_keeps_extraordinary_claim_boundaries_explicit() -> None:
         "sha-256 quantum acceleration",
         "phenomenal consciousness",
         "proof of the yang-mills millennium problem",
+        "physical universe",
+        "not a metaphysical proof",
     ]
     for phrase in boundary_phrases:
         assert phrase in manifest_text, f"boundary phrase missing from manifest: {phrase}"

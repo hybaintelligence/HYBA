@@ -5,6 +5,26 @@
   "acceptance_rule": "A claim is reviewer-admissible only when it has a bounded claim boundary, source paths, executable tests or benchmark commands, and no merge-conflict markers in the evidence surface.",
   "claims": [
     {
+      "id": "nodus_solutus_repository_local_computability",
+      "claim": "Nodus Solutus: HYBA_FULLSTACK implements a repository-local computability doctrine in which admissible claims must reduce to deterministic source paths, executable tests, replayable local evidence packets, and external truth boundaries.",
+      "status": "implemented_and_executable",
+      "boundary": "This is a computable operational-evidence doctrine for the HYBA/PYTHIA repository; it is not a metaphysical proof that the physical universe is computable.",
+      "code_paths": ["scripts/local_production_gate.py", "docs/evidence/claim_evidence_manifest.json"],
+      "test_paths": ["tests/test_nodus_solutus_proof_structure.py", "tests/test_claim_evidence_manifest.py"],
+      "doc_paths": ["docs/NODUS_SOLUTUS_MUNDUS_COMPUTABILIS_EST.md", "REVIEWER_EVIDENCE_MAP.md", "docs/evidence/EXTRAORDINARY_PROOF_INDEX.md", "docs/LOCAL_FIRST_DEPLOYMENT_RUNBOOK.md"],
+      "commands": ["npm run review:nodus:gate", "npm run review:evidence:gate", "npm run prod:local:gate"]
+    },
+    {
+      "id": "elevation_suite_local_mathematical_invariants",
+      "claim": "The elevation suite locally validates bounded SU(2) plaquette, golden-discrepancy, exact MPS norm/entanglement, adaptive compression, and SLD/QFI runtime invariants with 40 passed, 2 expected skips, and 0 failed in the recorded local run.",
+      "status": "implemented_and_executable",
+      "boundary": "This certifies tested mathematical-runtime invariants and expected skip semantics for the local evidence run; it does not prove the physical universe is computable, guaranteed mining revenue, live-pool accepted-share economics, SHA-256 quantum acceleration, phenomenal consciousness, or proof of the Yang-Mills Millennium problem.",
+      "code_paths": ["python_backend/pythia_mining/hendrix_phi_solver.py", "python_backend/pythia_mining/phi_entropy.py", "python_backend/pythia_mining/tensor_network_1000qubit.py", "python_backend/pythia_mining/pulvini_manifold.py"],
+      "test_paths": ["tests/test_elevation_suite.py"],
+      "doc_paths": ["docs/evidence/ELEVATION_SUITE_LOCAL_VALIDATION_2026-06-17.md", "docs/evidence/EXTRAORDINARY_PROOF_INDEX.md"],
+      "commands": [".venv/bin/python3 -m pytest tests/test_elevation_suite.py -v --tb=short"]
+    },
+    {
       "id": "pulvini_phi_memory_reversible",
       "claim": "PULVINI phi folding is reversible for deterministic audited payloads and reports working-set compression separately from retained replay kernels.",
       "status": "implemented_and_executable",
