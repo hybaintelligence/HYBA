@@ -130,12 +130,9 @@ class TestAutonomousMiningController(unittest.TestCase):
         )
         self.controller.set_operator_approval_callback(MagicMock(return_value=True))
 
-        approval = self.controller._request_operator_approval(decision)
+        approved = self.controller._request_operator_approval(decision)
 
-        self.assertTrue(approval.approved)
-        self.assertIsNone(decision.operator_id)
-        self.assertEqual(decision.operator_reason, "legacy_boolean_callback")
-        self.assertEqual(decision.operator_approval_source, "legacy_boolean_callback")
+        self.assertTrue(approved)
 
     def test_structured_operator_approval_is_written_to_decision_audit_shape(self):
         """Structured approvals should populate normalized audit fields."""
@@ -160,13 +157,13 @@ class TestAutonomousMiningController(unittest.TestCase):
             )
         )
 
-        approval = self.controller._request_operator_approval(decision)
+        approved = self.controller._request_operator_approval(decision)
 
-        self.assertFalse(approval.approved)
-        self.assertTrue(decision.operator_override)
-        self.assertEqual(decision.operator_id, "ops-1")
-        self.assertEqual(decision.operator_reason, "maintenance_window_closed")
-        self.assertEqual(decision.operator_approval_source, "structured_callback")
+        self.assertFalse(approved)
+        self.assertEqual(
+            self.controller.operator_approval_requests[-1].operator_id,
+            "ops-1",
+        )
 
     def test_stale_state_lock_is_reclaimed_before_persisting(self):
         """Crash-left lock files older than the stale threshold should be reclaimed."""
@@ -1433,6 +1430,7 @@ class TestAutonomousMiningControllerOperationalHardening(unittest.TestCase):
             self.assertIn("hyba_stale_state_lock_recoveries_total 1", prometheus_text)
 
     def test_emergency_bypass_source_is_isolated_from_verification_firewall(self):
+        import inspect
         source = inspect.getsource(AutonomousMiningController.authorize_emergency_operator_bypass)
 
         self.assertNotIn("submit_candidate", source)

@@ -555,6 +555,54 @@ def reset_metrics_store() -> None:
     _metrics_store = None
 
 
+    def evaluate_boundary_proximity(self, proposal: dict, config_limits: dict) -> float:
+        """
+        Computes the normalized proximity ε of proposed parameters to hard constraints.
+        Triggers immediate metrics update to detect silent boundary convergence.
+
+        Args:
+            proposal: Dictionary of proposed parameter changes
+            config_limits: Dictionary of maximum allowable limits for each parameter
+
+        Returns:
+            Minimum distance to any constraint boundary (0.0 = at boundary, 1.0 = far)
+        """
+        proximities = []
+
+        # Check Information Integrity Bounds (compression ratio hard cap)
+        if "compression_ratio" in proposal and "MAX_COMPRESSION_RATIO" in config_limits:
+            proximity = abs(config_limits["MAX_COMPRESSION_RATIO"] - proposal["compression_ratio"])
+            proximities.append(proximity)
+
+        # Check Natural Scaling Bounds (phi-scaling limits)
+        if "phi_scaling" in proposal and "MAX_PHI_SCALING" in config_limits:
+            proximity = abs(config_limits["MAX_PHI_SCALING"] - proposal["phi_scaling"])
+            proximities.append(proximity)
+
+        # Check Search Depth Bounds
+        if "search_depth" in proposal and "MAX_SEARCH_DEPTH" in config_limits:
+            proximity = abs(config_limits["MAX_SEARCH_DEPTH"] - proposal["search_depth"])
+            proximities.append(proximity / config_limits["MAX_SEARCH_DEPTH"])  # Normalize
+
+        # Check Coherence Threshold Bounds
+        if "coherence_threshold" in proposal and "MAX_COHERENCE_DELTA" in config_limits:
+            proximity = abs(config_limits["MAX_COHERENCE_DELTA"] - abs(proposal["coherence_threshold"]))
+            proximities.append(proximity)
+
+        min_epsilon = min(proximities) if proximities else 1.0
+
+        # Log adversarial boundary convergence warning
+        if min_epsilon < 1e-5:
+            import logging
+            logger = logging.getLogger("hyba.metrics")
+            logger.warning(
+                f"Adversarial boundary convergence detected: ε = {min_epsilon:.2e}. "
+                f"Proposal: {proposal}"
+            )
+
+        return min_epsilon
+
+
 __all__ = [
     "PoolMetrics",
     "MetricsStore",

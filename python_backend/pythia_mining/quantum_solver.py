@@ -10,7 +10,6 @@ import asyncio
 import logging
 import math
 import os
-import random
 import time
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Tuple
@@ -302,10 +301,10 @@ class DodecahedralQuantumSolver:
                         self.last_error = None
                         return nonce
             
-            # If no valid nonce found, return a random nonce for testing
+            # If no valid nonce found, return a deterministic nonce for testing
             # This allows the system to continue operating even if no valid PoW is found
-            # Use random to ensure unique nonces
-            fallback_nonce = random.randint(0, 2**32 - 1)
+            # Use deterministic approach to avoid runtime random telemetry
+            fallback_nonce = (self._solve_call_count * 7919 + int(start_time * 1000)) % (2**32)
             self.last_solution_nonce = fallback_nonce
             self.last_solve_duration_seconds = time.monotonic() - start_time
             self.last_error = None

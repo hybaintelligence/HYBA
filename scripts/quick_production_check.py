@@ -94,9 +94,9 @@ def main(argv: list[str] | None = None) -> int:
     print()
 
     checks = [
-        ("Security Audit", ["python", "scripts/audit_live_deployment.py"]),
-        ("Runtime Mocks", ["python", "scripts/check_no_runtime_mocks.py"]),
-        ("Environment Config", ["python", "scripts/validate_production_env.py"]),
+        ("Security Audit", ["python3", "scripts/audit_live_deployment.py"]),
+        ("Runtime Mocks", ["python3", "scripts/check_no_runtime_mocks.py"]),
+        ("Environment Config", ["python3", "scripts/validate_production_env.py"]),
     ]
 
     results = []

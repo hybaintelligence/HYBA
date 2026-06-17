@@ -397,7 +397,7 @@ class AutonomousMiningController:
         self.decision_log: List[AutonomousDecision] = []
         self.current_autonomy_level = self.config.autonomy_level
         self._consecutive_failures: int = 0
-        self._circuit_open_until: Optional[float] = None
+        self._circuit_open_until: float = 0.0
         self._circuit_breaker_trips: int = 0
         self._degradation_events: int = 0
         self._stale_state_lock_recoveries: int = 0
@@ -641,19 +641,32 @@ class AutonomousMiningController:
         self._consecutive_failures = 0
         self._circuit_open_until = 0.0
 
-    def reset_circuit_breaker(self, operator_reason: str) -> None:
-        """Manually close the autonomy circuit breaker after operator review."""
+    def reset_circuit_breaker(self, operator_id: str, operator_reason: str = "") -> Dict[str, Any]:
+        """Manually close the autonomy circuit breaker after operator review.
+
+        Returns a dict with before/after state for audit logging.
+        """
+        before = {
+            "circuit_open": self._circuit_open_until > 0,
+            "consecutive_failures": self._consecutive_failures,
+        }
         previous_open_until = self._circuit_open_until
         self._consecutive_failures = 0
         self._circuit_open_until = 0.0
         self._log_event(
             "circuit_breaker_manual_reset",
             {
+                "operator_id": operator_id,
                 "reason": operator_reason,
                 "previous_open_until": previous_open_until,
                 "autonomy_level": self.current_autonomy_level.value,
             },
         )
+        after = {
+            "circuit_open": False,
+            "consecutive_failures": 0,
+        }
+        return {"before_state": before, "after_state": after}
 
     def record_autonomy_failure(self, reason: str) -> AutonomyLevel:
         """Record a failed autonomous hook and open/degrade when threshold is met."""
@@ -1531,11 +1544,27 @@ class AutonomousMiningController:
         except OSError as exc:
             self._log_event("state_lock_release_error", {"error": str(exc)})
 
-    def _rotate_state_backups(self) -> None:
-        """Keep only the configured number of state backups."""
+    def _rotate_state_backups(self, state_file: Optional[Path] = None) -> None:
+        """Keep only the configured number of state backups.
+        
+        When called with a state_file path, snapshots the current state into
+        a timestamped backup under a 'backups/' subdirectory before rotating.
+        When called without arguments, rotates the legacy .backup.* files.
+        """
+        if state_file is not None and state_file.exists():
+            backup_dir = state_file.parent / "backups"
+            backup_dir.mkdir(parents=True, exist_ok=True)
+            backup = backup_dir / f"reflexive_state_{int(time.time())}_{uuid.uuid4().hex[:8]}.json"
+            shutil.copy2(state_file, backup)
+            backups = sorted(
+                backup_dir.glob("reflexive_state_*.json"), key=lambda p: p.stat().st_mtime
+            )
+            for stale in backups[:-self.config.state_backup_count]:
+                stale.unlink(missing_ok=True)
         retention = self.config.state_backup_retention_count
+        glob_pattern = self._state_backup_glob()
         backup_files = sorted(
-            Path(self.config.persistence_dir).glob(self._state_backup_glob()),
+            Path(self.config.persistence_dir).glob(glob_pattern),
             key=lambda path: path.stat().st_mtime,
             reverse=True,
         )
@@ -1548,7 +1577,7 @@ class AutonomousMiningController:
             return
         backup_name = f"{state_file.name}.backup.{int(time.time() * 1000)}.{uuid.uuid4().hex[:8]}"
         shutil.copy2(state_file, state_file.with_name(backup_name))
-        self._rotate_state_backups()
+        self._rotate_state_backups(state_file)
 
     def _save_reflexive_state(self) -> None:
         """Persist reflexive learning state to disk.
@@ -1677,17 +1706,6 @@ class AutonomousMiningController:
 
         return _StateFileLock()
 
-    def _rotate_state_backups(self, state_file: Path) -> None:
-        """Keep a bounded set of recoverable reflexive state snapshots."""
-        backup_dir = state_file.parent / "backups"
-        backup_dir.mkdir(parents=True, exist_ok=True)
-        backup = backup_dir / f"reflexive_state_{int(time.time())}_{uuid.uuid4().hex[:8]}.json"
-        shutil.copy2(state_file, backup)
-        backups = sorted(
-            backup_dir.glob("reflexive_state_*.json"), key=lambda p: p.stat().st_mtime
-        )
-        for stale in backups[:-self.config.state_backup_count]:
-            stale.unlink(missing_ok=True)
 
     def _load_reflexive_state(self) -> None:
         """Restore previously-persisted reflexive learning state."""
@@ -1798,6 +1816,309 @@ class AutonomousMiningController:
             "action_taken": decision.action_taken,
         }, decision=decision, action=decision.action_taken,
                               outcome=decision.actual_outcome or "pending")
+
+    def set_operator_approval_callback(
+        self,
+        callback: Callable[
+            [AutonomousDecision],
+            Union[bool, OperatorApprovalDecision, Dict[str, Any]],
+        ],
+    ) -> None:
+        """Set callback for operator approval decisions."""
+        self.operator_approval_callback = callback
+
+    def set_autonomy_level(self, level: AutonomyLevel) -> None:
+        """Set the current autonomy level."""
+        self.current_autonomy_level = level
+        self._consecutive_failures = 0
+        self._circuit_open_until = 0.0
+
+    def get_decision_history(
+        self,
+        limit: Optional[int] = None,
+    ) -> List[AutonomousDecision]:
+        """Get history of autonomous decisions."""
+        if limit:
+            return self.decision_log[-limit:]
+        return self.decision_log.copy()
+
+    def get_autonomy_status(self) -> Dict[str, Any]:
+        """Get current autonomy status and metrics, including Reflexive Learning state."""
+        return {
+            "autonomy_level": self.current_autonomy_level.value,
+            "total_decisions": len(self.decision_log),
+            "autonomous_decisions": sum(
+                1 for d in self.decision_log if not d.operator_override
+            ),
+            "operator_overrides": sum(
+                1 for d in self.decision_log if d.operator_override
+            ),
+            "constraint_violations": sum(
+                1 for d in self.decision_log if d.constraints_violated
+            ),
+            "consecutive_failures": self._consecutive_failures,
+            "degradation_events": self._degradation_events,
+            "circuit_breaker": {
+                "open": self.is_circuit_open(),
+                "open_until": self._circuit_open_until,
+                "failure_threshold": self.config.circuit_breaker_failure_threshold,
+                "cooldown_seconds": self.config.circuit_breaker_cooldown_seconds,
+            },
+            "recent_decisions": [
+                {
+                    "decision_id": d.decision_id,
+                    "timestamp": d.timestamp,
+                    "decision_type": d.decision_type,
+                    "action_taken": d.action_taken,
+                    "operator_override": d.operator_override,
+                }
+                for d in self.decision_log[-10:]
+            ],
+            "reflexive_learning": {
+                "enabled": self.config.reflexive_loop_enabled,
+                "self_optimization_epochs": self._self_optimization_epochs,
+                "phi_density": self.get_phi_density(),
+                "compression_drive_enabled": self.config.compression_drive_enabled,
+                "knowledge_explanations": len(self.knowledge_substrate.explanations),
+                "knowledge_counterfactuals": len(self.knowledge_substrate.counterfactuals),
+                "knowledge_criticisms": len(self.knowledge_substrate.criticism_history),
+                "proposals_generated": len(self.proposal_history),
+                "proposals_applied": sum(1 for p in self.proposal_history if p.applied),
+                "latest_phi_density": (
+                    self._phi_density_history[-1] if self._phi_density_history else None
+                ),
+                "logical_consistency_history_length": len(self._logical_consistency_history),
+            },
+        }
+
+    def record_circuit_failure(self, reason: str) -> None:
+        """Record an autonomous failure for circuit breaker tracking (alias for backward compat)."""
+        self.record_autonomy_failure(reason)
+
+    def _can_execute_autonomously(self, decision: AutonomousDecision) -> bool:
+        """Determine if decision can execute without an operator approval callback."""
+        if decision.operator_override:
+            return False
+        if self.current_autonomy_level == AutonomyLevel.MANUAL:
+            return False
+        if self._requires_operator_approval(decision.decision_type):
+            return self._request_operator_approval(decision)
+        if decision.constraints_violated:
+            return False
+        if self.current_autonomy_level == AutonomyLevel.ADVISORY:
+            return False
+        if self.current_autonomy_level in (AutonomyLevel.SUPERVISED, AutonomyLevel.AUTONOMOUS):
+            return len(decision.constraints_violated) == 0
+        if self.current_autonomy_level == AutonomyLevel.EMERGENCY:
+            return True
+        return False
+
+    async def optimize_search_strategy(
+        self,
+        current_coherence: float,
+        current_hashrate_ehs: float,
+    ) -> AutonomousDecision:
+        """Autonomously optimize search strategy based on current conditions."""
+        decision_id = self._generate_decision_id()
+        timestamp = time.time()
+        knowledge_metrics = self.knowledge_substrate.get_knowledge_metrics()
+        avg_accuracy = knowledge_metrics.get("avg_predictive_accuracy", 0.5)
+        if current_coherence >= 0.80:
+            proposed_strategy = SearchStrategy(
+                phi_resonance_enabled=True,
+                adaptive_difficulty=True,
+                max_search_time=30.0,
+            )
+            justification = {
+                "reason": "high_phi_coherence_aggressive_optimization",
+                "coherence": current_coherence,
+                "phi_threshold": 0.80,
+                "expected_improvement": "faster_search_with_high_confidence",
+                "knowledge_accuracy": avg_accuracy,
+                "self_optimization_epochs": self._self_optimization_epochs,
+            }
+        elif current_coherence >= 0.70:
+            proposed_strategy = SearchStrategy(
+                phi_resonance_enabled=True,
+                adaptive_difficulty=True,
+                max_search_time=60.0,
+            )
+            justification = {
+                "reason": "good_phi_coherence_balanced_optimization",
+                "coherence": current_coherence,
+                "phi_threshold": 0.70,
+                "expected_improvement": "balanced_speed_and_reliability",
+                "knowledge_accuracy": avg_accuracy,
+                "self_optimization_epochs": self._self_optimization_epochs,
+            }
+        else:
+            proposed_strategy = SearchStrategy(
+                phi_resonance_enabled=True,
+                adaptive_difficulty=False,
+                max_search_time=120.0,
+            )
+            justification = {
+                "reason": "low_phi_coherence_conservative_optimization",
+                "coherence": current_coherence,
+                "phi_threshold": 0.70,
+                "expected_improvement": "prioritize_reliability_over_speed",
+                "knowledge_accuracy": avg_accuracy,
+                "self_optimization_epochs": self._self_optimization_epochs,
+            }
+        proposed_action = {
+            "strategy_change": "search_strategy",
+            "max_search_time": proposed_strategy.max_search_time,
+            "adaptive_difficulty": proposed_strategy.adaptive_difficulty,
+        }
+        satisfied, violated = self._check_safety_constraints(proposed_action)
+        decision = AutonomousDecision(
+            decision_id=decision_id,
+            timestamp=timestamp,
+            autonomy_level=self.current_autonomy_level,
+            decision_type="search_strategy_optimization",
+            mathematical_justification=justification,
+            constraints_satisfied=satisfied,
+            constraints_violated=violated,
+            action_taken=f"set_search_strategy_{proposed_strategy.max_search_time}s",
+            expected_outcome=justification["expected_improvement"],
+        )
+        self._log_decision(decision)
+        if self._can_execute_autonomously(decision):
+            self.engine.optimizer.current_strategy = proposed_strategy
+            decision.actual_outcome = "strategy_updated_successfully"
+        else:
+            approved = self._request_operator_approval(decision)
+            if approved:
+                self.engine.optimizer.current_strategy = proposed_strategy
+                decision.actual_outcome = "strategy_updated_after_approval"
+            else:
+                decision.operator_override = True
+                decision.actual_outcome = "operator_rejected_strategy_change"
+        return decision
+
+    async def optimize_hashrate_target(
+        self,
+        current_hashrate_ehs: float,
+        target_hashrate_ehs: float,
+    ) -> AutonomousDecision:
+        """Autonomously adjust hashrate target within safety limits."""
+        decision_id = self._generate_decision_id()
+        timestamp = time.time()
+        target_hashrate_ehs = min(target_hashrate_ehs, MAX_AUTONOMOUS_HASHRATE_EHS)
+        if current_hashrate_ehs < target_hashrate_ehs:
+            proposed_increase = min(
+                target_hashrate_ehs - current_hashrate_ehs,
+                self.config.max_autonomous_hashrate_ehs - current_hashrate_ehs,
+            )
+            justification = {
+                "reason": "increase_hashrate_to_meet_target",
+                "current_hashrate_ehs": current_hashrate_ehs,
+                "target_hashrate_ehs": target_hashrate_ehs,
+                "proposed_increase_ehs": proposed_increase,
+                "expected_improvement": "higher_mining_efficiency",
+            }
+            action_taken = f"increase_hashrate_by_{proposed_increase}_ehs"
+            hashrate_change = proposed_increase
+        else:
+            proposed_decrease = current_hashrate_ehs - target_hashrate_ehs
+            justification = {
+                "reason": "decrease_hashrate_to_save_energy",
+                "current_hashrate_ehs": current_hashrate_ehs,
+                "target_hashrate_ehs": target_hashrate_ehs,
+                "proposed_decrease_ehs": proposed_decrease,
+                "expected_improvement": "reduced_energy_consumption",
+            }
+            action_taken = f"decrease_hashrate_by_{proposed_decrease}_ehs"
+            hashrate_change = -proposed_decrease
+        proposed_action = {"hashrate_change": hashrate_change, "target_hashrate_ehs": target_hashrate_ehs}
+        satisfied, violated = self._check_safety_constraints(proposed_action)
+        decision = AutonomousDecision(
+            decision_id=decision_id,
+            timestamp=timestamp,
+            autonomy_level=self.current_autonomy_level,
+            decision_type="hashrate_optimization",
+            mathematical_justification=justification,
+            constraints_satisfied=satisfied,
+            constraints_violated=violated,
+            action_taken=action_taken,
+            expected_outcome=justification["expected_improvement"],
+        )
+        self._log_decision(decision)
+        if self._can_execute_autonomously(decision):
+            decision.actual_outcome = "hashrate_target_updated"
+        else:
+            approved = self._request_operator_approval(decision)
+            if approved:
+                decision.actual_outcome = "hashrate_target_updated_after_approval"
+            else:
+                decision.operator_override = True
+                decision.actual_outcome = "operator_rejected_hashrate_change"
+        return decision
+
+    async def optimize_compression_ratio(
+        self,
+        current_compression: float,
+        target_compression: float,
+    ) -> AutonomousDecision:
+        """Autonomously adjust memory compression ratio."""
+        decision_id = self._generate_decision_id()
+        timestamp = time.time()
+        justification = {
+            "reason": "optimize_memory_compression_for_efficiency",
+            "current_compression": current_compression,
+            "target_compression": target_compression,
+            "phi_optimal_range": (1.5, 2.0),
+            "expected_improvement": "better_memory_utilization",
+        }
+        proposed_action = {"compression_ratio": target_compression, "current_compression": current_compression}
+        satisfied, violated = self._check_safety_constraints(proposed_action)
+        decision = AutonomousDecision(
+            decision_id=decision_id,
+            timestamp=timestamp,
+            autonomy_level=self.current_autonomy_level,
+            decision_type="compression_optimization",
+            mathematical_justification=justification,
+            constraints_satisfied=satisfied,
+            constraints_violated=violated,
+            action_taken=f"adjust_compression_to_{target_compression}",
+            expected_outcome=justification["expected_improvement"],
+        )
+        self._log_decision(decision)
+        if self._can_execute_autonomously(decision):
+            decision.actual_outcome = "compression_ratio_updated"
+        else:
+            approved = self._request_operator_approval(decision)
+            if approved:
+                decision.actual_outcome = "compression_ratio_updated_after_approval"
+            else:
+                decision.operator_override = True
+                decision.actual_outcome = "operator_rejected_compression_change"
+        return decision
+
+    async def emergency_shutdown(
+        self,
+        reason: str,
+        mathematical_justification: Dict[str, Any],
+    ) -> AutonomousDecision:
+        """Execute emergency shutdown with mathematical justification."""
+        decision_id = self._generate_decision_id()
+        timestamp = time.time()
+        previous_level = self.current_autonomy_level
+        self.current_autonomy_level = AutonomyLevel.EMERGENCY
+        decision = AutonomousDecision(
+            decision_id=decision_id,
+            timestamp=timestamp,
+            autonomy_level=AutonomyLevel.EMERGENCY,
+            decision_type="emergency_shutdown",
+            mathematical_justification=mathematical_justification,
+            constraints_satisfied=[SafetyConstraint.ENERGY_CONSERVATION],
+            constraints_violated=[],
+            action_taken="emergency_shutdown_initiated",
+            expected_outcome="safe_system_shutdown",
+        )
+        self._log_decision(decision)
+        self.current_autonomy_level = previous_level
+        return decision
 
     def _check_safety_constraints(
         self,

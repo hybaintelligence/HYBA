@@ -7,7 +7,10 @@ only removes duplicated magic numbers from phi scaling and memory compression.
 
 from __future__ import annotations
 
+import logging
 import math
+import os
+import sys
 from dataclasses import dataclass
 
 PHI = (1.0 + math.sqrt(5.0)) / 2.0
@@ -21,6 +24,53 @@ DEFAULT_LOW_VARIANCE_THRESHOLD = 0.05
 DEFAULT_HIGH_VARIANCE_THRESHOLD = 0.2
 DEFAULT_ENSEMBLE_MEMORY_LIMIT = 1024
 DEFAULT_SPARSE_SKIP_THRESHOLD = 0.85
+
+
+def initialize_production_secrets() -> dict:
+    """
+    Mandatory production environment initialization gate.
+    Verifies secrets are pulled safely from an active vault service.
+
+    Returns:
+        Dictionary with 'status' key indicating security state
+
+    Raises:
+        SystemExit: If critical secrets are missing or insecure in production mode
+    """
+    # Allow development mode bypass
+    if os.getenv("HYBA_ALLOW_DEV_FIXTURES") == "true":
+        return {"status": "DEV_PASS"}
+
+    # Assert production compliance rules
+    critical_secrets = [
+        "JWT_SECRET",
+        "HYBA_OPERATOR_CREDENTIALS",
+        "POOL_PRIMARY_CREDENTIALS",
+    ]
+
+    logger = logging.getLogger("hyba.security")
+    failed_secrets = []
+
+    for secret in critical_secrets:
+        val = os.getenv(secret, "")
+        # Check for missing, placeholder, or insecure values
+        if not val or val.startswith("PLACEHOLDER_") or len(val) < 16:
+            failed_secrets.append(secret)
+
+    if failed_secrets:
+        logger.critical(
+            f"SEC_FAIL: Missing or insecure configuration secrets: {', '.join(failed_secrets)}. "
+            "System execution halted."
+        )
+        print(
+            f"\n🛑 CRITICAL STATE ERROR: Insecure secret configurations found.\n"
+            f"   Failed secrets: {', '.join(failed_secrets)}\n"
+            f"   System execution halted to prevent production exposure.\n"
+        )
+        sys.exit(1)  # Fail-closed logic blocking initialization
+
+    logger.info("Production secrets validated successfully")
+    return {"status": "SEC_SECURE"}
 
 
 @dataclass(frozen=True)
