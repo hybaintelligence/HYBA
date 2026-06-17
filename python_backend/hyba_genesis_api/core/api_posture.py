@@ -19,9 +19,10 @@ from dataclasses import dataclass
 from threading import Lock
 from typing import Any, Callable, Dict, Tuple
 
-from fastapi import FastAPI, HTTPException, Request, status
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+from starlette import status
 from starlette.responses import Response
 
 
@@ -131,12 +132,12 @@ def install_enterprise_api_posture(app: FastAPI, config: EnterpriseAPIConfig | N
         content_length = request.headers.get("content-length")
         if content_length and int(content_length) > config.max_body_bytes:
             response = JSONResponse(
-                status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                status_code=status.HTTP_413_CONTENT_TOO_LARGE,
                 content=enterprise_error_payload(
                     code="request_body_too_large",
                     message="Request body exceeds HYBA_API_MAX_BODY_BYTES.",
                     request_id=request_id,
-                    status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                    status_code=status.HTTP_413_CONTENT_TOO_LARGE,
                 ),
             )
             apply_enterprise_security_headers(response, request_id, config)
