@@ -500,15 +500,6 @@ class UnifiedMiner:
                 getattr(result, "search_time", None) or (time.monotonic() - search_start)
             )
             raw_nonce = getattr(result, "nonce", None)
-            
-            # If solver returns duplicate nonce, generate unique one directly
-            if raw_nonce is not None:
-                nonce_key = (job.job_id, raw_nonce)
-                if nonce_key in self._submitted_nonces:
-                    # Generate unique nonce by incrementing counter
-                    self._nonce_counter += 1
-                    raw_nonce = (self._nonce_counter * 7919) % (2**32)  # Prime multiplier for distribution
-                    logger.info("Solver returned duplicate, using generated unique nonce: %s", raw_nonce)
             if raw_nonce is None:
                 local_fail += 1
                 self._record_reason(

@@ -1,5 +1,5 @@
 {
-  "default_pool": "braiins",
+  "default_pool": "viabtc",
   "pools": {
     "braiins": {
       "name": "Braiins Pool",
@@ -8,10 +8,10 @@
       "username": "PYTHIA.hendrix_phi",
       "password": "anything123",
       "worker": "hendrix_phi",
-      "priority": 1,
-      "enabled": true,
-      "is_default": true,
-      "description": "Braiins Pool - Primary pool for 20-min local run"
+      "priority": 2,
+      "enabled": false,
+      "is_default": false,
+      "description": "Braiins Pool - disabled due to high minimum difficulty requirement"
     },
     "viabtc": {
       "name": "ViaBTC BTC",
@@ -20,10 +20,10 @@
       "username": "PYTHIA.001",
       "password": "123",
       "worker": "hendrix_phi",
-      "priority": 2,
-      "enabled": false,
-      "is_default": false,
-      "description": "ViaBTC SHA256 pool - disabled for Braiins live run"
+      "priority": 1,
+      "enabled": true,
+      "is_default": true,
+      "description": "ViaBTC SHA256 pool - enabled for live mining test"
     },
     "nicehash": {
       "name": "NiceHash SHA256",

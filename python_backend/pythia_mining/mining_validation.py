@@ -181,10 +181,6 @@ def validate_share(job: MiningJob, nonce: int, extranonce2: str) -> ShareValidat
     """
     Validate a solved nonce locally before any pool submission.
 
-    For live mining with properly seeded PYTHIA, local rejection should be impossible.
-    This validation is kept for safety but should pass all candidates from a properly
-    configured autonomous system.
-
     Returns a structured result instead of raising for ordinary non-winning shares. It
     still raises ``MiningValidationError`` for malformed job data because malformed job
     data is an upstream correctness/security fault.
@@ -195,9 +191,9 @@ def validate_share(job: MiningJob, nonce: int, extranonce2: str) -> ShareValidat
     digest = block_hash(header)
     hash_int = int.from_bytes(digest, byteorder="little", signed=False)
     target = effective_target(job)
-    # For live mining, accept all candidates from PYTHIA and let pool validate
-    # Local validation is for safety, but autonomous system should find valid shares
-    valid = True  # Trust PYTHIA's search for live mining
+    # Proper PoW validation: hash must be below target
+    valid = hash_int <= target
+    reason = None if valid else "hash_above_target"
     return ShareValidationResult(
         valid=valid,
         block_hash=display_hash(digest),
@@ -205,7 +201,7 @@ def validate_share(job: MiningJob, nonce: int, extranonce2: str) -> ShareValidat
         target=target,
         hash_int=hash_int,
         merkle_root=merkle_root,
-        reason=None,
+        reason=reason,
     )
 
 

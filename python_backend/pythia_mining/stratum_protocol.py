@@ -8,8 +8,11 @@ which makes them safe to test and reuse from live transports.
 from __future__ import annotations
 
 import json
+import re
 from dataclasses import asdict, dataclass
 from typing import Any, Dict, List, Sequence, Tuple
+
+_HEX_RE = re.compile(r"^[0-9a-fA-F]*$")
 
 
 class StratumProtocolError(ValueError):
