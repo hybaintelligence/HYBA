@@ -63,7 +63,7 @@
     "funding:elevation:gate": "npm run funding:gate && npm run elevation:full",
     "pulvini:live-cut:check": "python scripts/pulvini_live_cut_readiness.py",
     "pulvini:live-cut:simulate": "PYTHONPATH=python_backend python scripts/pulvini_simulate_live_cut.py",
-    "prod:check": "npm run live:audit && npm run cloudflare:check && npm run runtime:guard && npm run runtime:entrypoint:check && npm run lint && npm run build && npm run test:unified:engine && npm run test:unified:api && npm run test:mining:doctor && npm run test:pool:profiles && npm run test:metal:sha256 && npm run test:phi:golden-flow && npm run test:pulvini:folding && npm run test:post-quantum && npm run test:backend && npm run test:e2e:backend",
+    "prod:check": "npm run prod:env:check && npm run live:audit && npm run cloudflare:check && npm run runtime:guard && npm run runtime:entrypoint:check && npm run lint && npm run build && npm run test:unified:engine && npm run test:unified:api && npm run test:mining:doctor && npm run test:pool:profiles && npm run test:metal:sha256 && npm run test:phi:golden-flow && npm run test:pulvini:folding && npm run test:post-quantum && npm run test:backend && npm run test:e2e:backend",
     "docker:build": "docker build -t hyba-fullstack:local .",
     "cloudflare:check": "python scripts/check_cloudflare_deploy.py",
     "runtime:guard": "python scripts/check_no_runtime_mocks.py",
@@ -77,7 +77,8 @@
     "test:final": "npm run test:go-live && npm run test:all && npm run test:e2e:backend && npm run test:deployment",
     "runtime:entrypoint:check": "python scripts/check_runtime_entrypoint.py",
     "review:pipeline:audit": "PYTHONPATH=python_backend python scripts/review_environment_pipeline_audit.py",
-    "preflight:production": "bash scripts/preflight_production_readiness_check.sh"
+    "preflight:production": "bash scripts/preflight_production_readiness_check.sh",
+    "prod:game-day": "PYTHONPATH=python_backend python scripts/command_room_game_day.py"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",

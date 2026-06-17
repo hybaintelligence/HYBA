@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import json
 import os
 import sys
 import tempfile
@@ -232,6 +233,25 @@ class OperatorAuthenticationTests(unittest.TestCase):
                 "operator_credentials_not_production_safe",
                 exc_info.exception.detail["error"],
             )
+
+
+class CommandRoomGateTests(unittest.TestCase):
+    def test_prod_check_runs_environment_validation_first(self) -> None:
+        package = json.loads((ROOT / "package.json").read_text(encoding="utf-8"))
+        self.assertTrue(package["scripts"]["prod:check"].startswith("npm run prod:env:check &&"))
+        self.assertIn("prod:game-day", package["scripts"])
+
+    def test_game_day_cascade_degrades_to_manual_and_exports_metrics(self) -> None:
+        from scripts.command_room_game_day import run_game_day
+
+        evidence = run_game_day(cascades=3, threshold=3)
+        self.assertTrue(evidence["passed"])
+        self.assertFalse(evidence["pool_network_used"])
+        self.assertEqual(0, evidence["shares_submitted"])
+        self.assertEqual("manual", evidence["final_autonomy_level"])
+        self.assertEqual(3, evidence["metrics"]["degradation_events"])
+        self.assertIn("hyba_degradation_events_total 3", evidence["prometheus_metrics"])
+        self.assertTrue(all(item["circuit_open"] for item in evidence["transitions"]))
 
 
 class BridgeRuntimeHardeningTests(unittest.TestCase):
