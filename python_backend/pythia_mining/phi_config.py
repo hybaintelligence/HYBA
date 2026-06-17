@@ -63,7 +63,7 @@ def initialize_production_secrets() -> dict:
             "System execution halted."
         )
         print(
-            f"\n🛑 CRITICAL STATE ERROR: Insecure secret configurations found.\n"
+            f"\n[CRITICAL] Insecure secret configurations found.\n"
             f"   Failed secrets: {', '.join(failed_secrets)}\n"
             f"   System execution halted to prevent production exposure.\n"
         )
