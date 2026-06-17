@@ -22,6 +22,8 @@ if str(_BACKEND_ROOT) not in sys.path:
 import uvicorn  # noqa: E402
 from fastapi import FastAPI  # noqa: E402
 from fastapi.middleware.cors import CORSMiddleware  # noqa: E402
+from fastapi.responses import PlainTextResponse  # noqa: E402
+from prometheus_client import CONTENT_TYPE_LATEST  # noqa: E402
 
 from hyba_genesis_api.api import (  # noqa: E402
     ai,
@@ -55,7 +57,9 @@ from hyba_genesis_api.core.telemetry import (  # noqa: E402
     init_logging,
     init_metrics,
     telemetry_middleware,
+    get_prometheus_metrics,
 )
+from hyba_genesis_api.core.rate_limiter import RateLimiter  # noqa: E402
 
 # Initialize the database (create tables if necessary)
 try:
@@ -137,9 +141,19 @@ app.add_middleware(
         "Idempotency-Key",
     ],
 )
+
+# Rate limiting: derived from environment variables or defaults
+_rate_limit = int(os.getenv("HYBA_RATE_LIMIT_REQUESTS_PER_MINUTE", "120"))
+_rate_window = int(os.getenv("HYBA_RATE_LIMIT_WINDOW_SECONDS", "60"))
+app.add_middleware(RateLimiter, max_requests=_rate_limit, window_seconds=_rate_window)
+
+# Telemetry middleware for structured logging and metrics
 app.middleware("http")(telemetry_middleware)
+
+# Install enterprise posture middleware
 install_enterprise_api_posture(app)
 
+# Include routers
 app.include_router(health.router)
 app.include_router(intelligence.router)
 app.include_router(mining.router)
@@ -164,6 +178,15 @@ async def root_health_check():
         "substrate": get_substrate_state(),
         "telemetry": get_metrics(),
     }
+
+
+@app.get("/metrics", include_in_schema=False)
+async def metrics_endpoint():
+    """Expose Prometheus metrics for scraping."""
+    return PlainTextResponse(
+        get_prometheus_metrics(),
+        media_type=CONTENT_TYPE_LATEST,
+    )
 
 
 @app.get("/api/substrate", response_model=Dict[str, Any], tags=["substrate"])
