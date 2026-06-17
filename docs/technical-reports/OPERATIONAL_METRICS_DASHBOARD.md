@@ -556,3 +556,7 @@ This operational metrics dashboard provides comprehensive visibility into HYBA_F
 - **Mobile support** for on-the-go monitoring
 
 Regular review and optimization of the dashboard ensures it continues to meet operational needs as the system evolves.
+
+## Loadable Alert Rules
+
+The production Prometheus alerting rules are maintained as a loadable file at `alerts/pythia_mining.yaml`, and a Grafana import template is maintained at `dashboards/pythia_mining.json`. Those files include operational rules and panels for stuck approvals, autonomous circuit state, consecutive failures, constraint-violation spikes, reflexive-cycle latency, low proposal acceptance rate, and stale state-lock recovery. This document remains explanatory; the YAML and JSON files are the monitoring artifacts operators should load.

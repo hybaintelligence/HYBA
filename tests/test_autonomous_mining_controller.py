@@ -1286,7 +1286,7 @@ class TestAutonomousMiningControllerOperationalHardening(unittest.TestCase):
                 hashlib.sha256(state_file.read_bytes()).hexdigest(),
             )
             state = json.loads(state_file.read_text(encoding="utf-8"))
-            self.assertEqual(state["schema_version"], 1)
+            self.assertEqual(state["schema_version"], 2)
             self.assertTrue((Path(tmp) / "backups").exists())
 
             restored = AutonomousMiningController(
@@ -1295,6 +1295,186 @@ class TestAutonomousMiningControllerOperationalHardening(unittest.TestCase):
             )
             self.assertEqual(restored._self_optimization_epochs, 7)
             self.assertEqual(restored._phi_density_history, [0.5, 0.6])
+
+    def test_stale_state_lock_is_removed_before_save(self):
+        import tempfile
+        import time
+        from pathlib import Path
+
+        with tempfile.TemporaryDirectory() as tmp:
+            controller = AutonomousMiningController(
+                self.unified_engine,
+                AutonomousConfig(
+                    persistence_enabled=True,
+                    persistence_dir=tmp,
+                    state_lock_stale_seconds=0.01,
+                ),
+            )
+            state_file = Path(tmp) / "reflexive_state.json"
+            lock_file = Path(tmp) / "reflexive_state.json.lock"
+            lock_file.write_text("stale-pid", encoding="utf-8")
+            old_time = time.time() - 30
+            os.utime(lock_file, (old_time, old_time))
+
+            controller._self_optimization_epochs = 3
+            controller._save_reflexive_state()
+
+            self.assertTrue(state_file.exists())
+            self.assertFalse(lock_file.exists())
+            self.assertTrue(
+                any(entry.event_type == "stale_state_lock_removed" for entry in controller.get_audit_log())
+            )
+
+    def test_cached_prometheus_metrics_reuses_snapshot_until_ttl_expires(self):
+        controller = AutonomousMiningController(
+            self.unified_engine,
+            AutonomousConfig(
+                autonomy_level=AutonomyLevel.SUPERVISED,
+                persistence_enabled=False,
+                metrics_cache_ttl_seconds=60.0,
+            ),
+        )
+        first = controller.get_prometheus_metrics_text_cached()
+        controller._degradation_events += 1
+        second = controller.get_prometheus_metrics_text_cached()
+        fresh = controller.get_prometheus_metrics_text_cached(cache_ttl_seconds=0)
+
+        self.assertEqual(first, second)
+        self.assertIn("hyba_degradation_events_total 1", fresh)
+
+
+
+    def test_autonomous_circuit_breaker_opens_and_cools_down(self):
+        controller = AutonomousMiningController(
+            self.unified_engine,
+            AutonomousConfig(
+                autonomy_level=AutonomyLevel.SUPERVISED,
+                persistence_enabled=False,
+                circuit_breaker_failure_threshold=2,
+                circuit_breaker_cooldown_seconds=10.0,
+            ),
+        )
+
+        controller.record_circuit_failure("first")
+        self.assertFalse(controller.is_circuit_open())
+        controller.record_circuit_failure("second")
+        self.assertTrue(controller.is_circuit_open())
+        self.assertIn("hyba_autonomous_circuit_open 1", controller.get_prometheus_metrics_text())
+        controller._circuit_open_until = time.time() - 1
+        self.assertFalse(controller.is_circuit_open())
+
+    def test_manual_circuit_reset_captures_before_after_state(self):
+        controller = AutonomousMiningController(
+            self.unified_engine,
+            AutonomousConfig(
+                autonomy_level=AutonomyLevel.SUPERVISED,
+                persistence_enabled=False,
+                circuit_breaker_failure_threshold=1,
+            ),
+        )
+        controller.record_circuit_failure("boom")
+
+        result = controller.reset_circuit_breaker("ops", "root cause fixed")
+
+        self.assertTrue(result["before_state"]["circuit_open"])
+        self.assertFalse(result["after_state"]["circuit_open"])
+        self.assertEqual(result["after_state"]["consecutive_failures"], 0)
+
+    def test_constraint_violation_invalidates_cached_prometheus_metrics(self):
+        controller = AutonomousMiningController(
+            self.unified_engine,
+            AutonomousConfig(
+                autonomy_level=AutonomyLevel.SUPERVISED,
+                persistence_enabled=False,
+                metrics_cache_ttl_seconds=60.0,
+            ),
+        )
+        first = controller.get_prometheus_metrics_text_cached()
+        self.assertIn("hyba_constraint_violations_total 0", first)
+        decision = AutonomousDecision(
+            decision_id="violation-cache-1",
+            timestamp=0.0,
+            autonomy_level=AutonomyLevel.SUPERVISED,
+            decision_type="compression_optimization",
+            mathematical_justification={},
+            constraints_satisfied=[SafetyConstraint.HERMITICITY],
+            constraints_violated=[SafetyConstraint.INFORMATION_INTEGRITY],
+            action_taken="adjust_compression",
+            expected_outcome="blocked",
+        )
+
+        controller._log_decision(decision)
+        refreshed = controller.get_prometheus_metrics_text_cached()
+
+        self.assertIn("hyba_constraint_violations_total 1", refreshed)
+
+    def test_stale_state_lock_recovery_is_exported_as_prometheus_counter(self):
+        import tempfile
+        import time
+        from pathlib import Path
+
+        with tempfile.TemporaryDirectory() as tmp:
+            controller = AutonomousMiningController(
+                self.unified_engine,
+                AutonomousConfig(
+                    persistence_enabled=True,
+                    persistence_dir=tmp,
+                    state_lock_stale_seconds=0.01,
+                ),
+            )
+            lock_file = Path(tmp) / "reflexive_state.json.lock"
+            lock_file.write_text("stale-pid", encoding="utf-8")
+            old_time = time.time() - 30
+            os.utime(lock_file, (old_time, old_time))
+
+            controller._save_reflexive_state()
+
+            prometheus_text = controller.get_prometheus_metrics_text()
+            self.assertIn("hyba_stale_state_lock_recoveries_total 1", prometheus_text)
+
+    def test_emergency_bypass_source_is_isolated_from_verification_firewall(self):
+        source = inspect.getsource(AutonomousMiningController.authorize_emergency_operator_bypass)
+
+        self.assertNotIn("submit_candidate", source)
+        self.assertNotIn("submit_validated_share", source)
+        self.assertNotIn("optimize_nonce_search", source)
+        self.assertNotIn("verify_batch", source)
+
+    def test_emergency_operator_bypass_requires_configured_operator_and_reason(self):
+        controller = AutonomousMiningController(
+            self.unified_engine,
+            AutonomousConfig(
+                autonomy_level=AutonomyLevel.AUTONOMOUS,
+                persistence_enabled=False,
+                emergency_operator_ids=["incident-commander"],
+            ),
+        )
+        decision = AutonomousDecision(
+            decision_id="emergency-1",
+            timestamp=0.0,
+            autonomy_level=AutonomyLevel.AUTONOMOUS,
+            decision_type="emergency_shutdown",
+            mathematical_justification={},
+            constraints_satisfied=[SafetyConstraint.ENERGY_CONSERVATION],
+            constraints_violated=[],
+            action_taken="protective_shutdown",
+            expected_outcome="shutdown",
+        )
+
+        rejected = controller.authorize_emergency_operator_bypass(
+            decision, "unknown", "approval service outage INC-1"
+        )
+        approved = controller.authorize_emergency_operator_bypass(
+            decision, "incident-commander", "approval service outage INC-1"
+        )
+
+        self.assertFalse(rejected.approved)
+        self.assertTrue(approved.approved)
+        self.assertEqual(approved.operator_id, "incident-commander")
+        self.assertIn("EMERGENCY_BYPASS", approved.reason)
+        self.assertTrue(
+            any(entry.event_type == "emergency_operator_bypass_approved" for entry in controller.get_audit_log())
+        )
 
 
 if __name__ == "__main__":
