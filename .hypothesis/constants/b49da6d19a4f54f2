@@ -1,0 +1,4 @@
+# file: /Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/pythia_mining/live_stratum_v2_session.py
+# hypothesis_version: 6.141.1
+
+[5.0, 'LiveStratumV2Session', 'StratumV2Handshake', 'encrypted', 'noise_handshake', 'read_frame', 'reader', 'remote_static_public', 'send_frame', 'writer']

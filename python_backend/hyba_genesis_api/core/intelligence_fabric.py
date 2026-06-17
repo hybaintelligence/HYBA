@@ -14,7 +14,13 @@ import hashlib
 import json
 import math
 from dataclasses import asdict, dataclass
-from enum import StrEnum
+try:
+    from enum import StrEnum
+except ImportError:
+    # Python 3.9 compatibility
+    from enum import Enum
+    class StrEnum(str, Enum):
+        pass
 from typing import Any, Dict, Iterable, List, Mapping, Sequence
 
 from hyba_genesis_api.core.substrate_interface import SubstrateContract

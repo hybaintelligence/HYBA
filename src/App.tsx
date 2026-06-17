@@ -51,6 +51,7 @@ import { SovereignCommandPost } from "./components/SovereignCommandPost";
 import { Sparkline } from "./components/Sparkline";
 import { ExecutiveSummary } from "./components/ExecutiveSummary";
 import AdminPanel from "./components/AdminPanel";
+import AIAssistant from "./components/AIAssistant";
 import { useApiRequest } from "./hooks/useApiRequest";
 import { useLatencyMetrics } from "./hooks/useLatencyMetrics";
 import { buildGovernanceSignals, type GovernanceSignal } from "./governance";
@@ -1067,6 +1068,22 @@ function AppContent() {
           pool={selectedPoolForConfig}
           onClose={() => setSelectedPoolForConfig(null)}
           onSave={handlePoolSave}
+        />
+      )}
+
+      {/* AI Assistant - Always available when authenticated */}
+      {token && currentUser && (
+        <AIAssistant
+          token={token}
+          telemetry={telemetry}
+          currentUser={currentUser}
+          onAction={(action, params) => {
+            console.log("AI Action:", action, params);
+            // Handle AI-triggered actions
+            if (action === "refresh_telemetry") {
+              getLiveTelemetry();
+            }
+          }}
         />
       )}
     </div>
