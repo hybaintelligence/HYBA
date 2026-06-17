@@ -15,7 +15,8 @@
         "python_backend/pythia_mining/frontier_experiment_1_qmc_convergence.py",
         "python_backend/pythia_mining/frontier_experiment_2_qfi_truncation.py",
         "python_backend/pythia_mining/frontier_experiment_3_topological_correlation.py",
-        "python_backend/pythia_mining/frontier_experiment_4_golden_sld.py"
+        "python_backend/pythia_mining/frontier_experiment_4_golden_sld.py",
+        "python_backend/pythia_mining/topological_holonomy_engine.py"
       ],
       "test_paths": [
         "tests/test_nodus_solutus_proof_structure.py",
@@ -27,6 +28,8 @@
       ],
       "doc_paths": [
         "docs/NODUS_SOLUTUS_MUNDUS_COMPUTABILIS_EST.md",
+        "docs/SCIENTIFIC_PUBLICATION_NODUS_SOLUTUS.md",
+        "docs/PRESS_RELEASE_NODUS_SOLUTUS.md",
         "REVIEWER_EVIDENCE_MAP.md",
         "docs/evidence/EXTRAORDINARY_PROOF_INDEX.md",
         "docs/LOCAL_FIRST_DEPLOYMENT_RUNBOOK.md",
