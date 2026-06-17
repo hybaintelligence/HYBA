@@ -15,6 +15,7 @@ The mission memory is seeded at startup and governs:
 
 from __future__ import annotations
 
+import hashlib
 import json
 import time
 from dataclasses import asdict, dataclass, field
@@ -24,6 +25,7 @@ from typing import Any, Dict, List, Optional, Tuple
 # Mission constants
 MAX_AUTONOMOUS_HASHRATE_EHS = 1.0  # Hard limit: 1 EH/s
 MISSION_PROTOCOL = "PYTHIA_ONE_BLOCK_MISSION_MEMORY_V1"
+PHI_CONTRACT_VERSION = "PHI_CONTRACT_V1"
 
 
 class MissionStatus(str, Enum):
@@ -34,6 +36,49 @@ class MissionStatus(str, Enum):
     LEARNING = "learning"  # Accepted share received, continue mining
     COMPLETED = "completed"  # Pool-confirmed accepted block, shutdown
     ABORTED = "aborted"  # Mission aborted due to error or limit violation
+
+
+@dataclass(frozen=True)
+class SessionIntention:
+    """Operator-declared search intention that locks PYTHIA onto a deterministic manifold."""
+
+    mode: str = "AUTONOMOUS"
+    pool: str = "ViaBTC"
+    eh_limit: float = MAX_AUTONOMOUS_HASHRATE_EHS
+    objective: str = "phi_dense_candidate_clusters"
+    constraints: Dict[str, Any] = field(default_factory=lambda: {
+        "governance": True,
+        "operator_approval_required": True,
+        "max_entropy_sources": ["job_stream", "local_prng"],
+    })
+    telemetry_contract: Dict[str, Any] = field(default_factory=lambda: {
+        "min_phi_density": 0.70,
+        "max_entropy_drift": 0.25,
+        "expected_rejection_profile": "hash_above_target-dominant",
+    })
+
+
+@dataclass(frozen=True)
+class PhiContract:
+    """Active phi-contract that governs search behaviour."""
+
+    status: str = "ACTIVE"
+    phi_density_floor: float = 0.70
+    entropy_drift_limit: float = 0.25
+    coverage_envelope: str = "stratified"
+    solver_heuristics_required: Tuple[str, ...] = (
+        "pulvini_compression",
+        "hendrix_structured_traversal",
+        "sha256d_final_oracle",
+    )
+
+    def check_telemetry(self, phi_density: float, entropy_drift: float) -> str:
+        """Return CONTINUE, RESEED_MANIFOLD, or PAUSE_AND_REPORT."""
+        if phi_density < self.phi_density_floor:
+            return "RESEED_MANIFOLD"
+        if entropy_drift > self.entropy_drift_limit:
+            return "PAUSE_AND_REPORT"
+        return "CONTINUE"
 
 
 class ShareOutcome(str, Enum):
@@ -161,6 +206,10 @@ class MissionMemory:
     supreme_invariants: SupremeInvariants = field(default_factory=SupremeInvariants)
     pool_selection_policy: PoolSelectionPolicy = field(default_factory=PoolSelectionPolicy)
     hashrate_limit: HashrateLimit = field(default_factory=HashrateLimit)
+    intention: SessionIntention = field(default_factory=SessionIntention)
+    phi_contract: PhiContract = field(default_factory=PhiContract)
+    seed_vector: Optional[str] = None
+    operator_session_id: Optional[str] = None
 
     # Runtime state (not frozen)
     status: MissionStatus = MissionStatus.SEEDED
@@ -201,6 +250,22 @@ class MissionMemory:
             and self.mission_target.shutdown_after_completion
         )
 
+    def compute_deterministic_seed(self, operator_session_id: str, initial_job_id: str) -> str:
+        """Compute a deterministic seed vector from governance-relevant inputs."""
+        seed_material = (
+            self.intention.mode
+            + self.intention.pool
+            + str(self.intention.eh_limit)
+            + PHI_CONTRACT_VERSION
+            + operator_session_id
+            + initial_job_id
+            + str(self.mission_start_time)
+        )
+        digest = hashlib.sha256(seed_material.encode("utf-8")).hexdigest()
+        self.seed_vector = digest
+        self.operator_session_id = operator_session_id
+        return digest
+
     def enforce_hashrate_limit(self, current_hashrate_ehs: float) -> float:
         """Enforce hashrate limit and return safe hashrate."""
         if self.hashrate_limit.is_violated(current_hashrate_ehs):
@@ -221,6 +286,10 @@ class MissionMemory:
             "supreme_invariants": list(self.supreme_invariants.invariants),
             "pool_selection_policy": asdict(self.pool_selection_policy),
             "hashrate_limit": asdict(self.hashrate_limit),
+            "intention": asdict(self.intention),
+            "phi_contract": asdict(self.phi_contract),
+            "seed_vector": self.seed_vector,
+            "operator_session_id": self.operator_session_id,
             "runtime_state": {
                 "status": self.status.value,
                 "accepted_shares": self.accepted_shares,
@@ -240,14 +309,19 @@ class MissionMemory:
         return json.dumps(self.to_dict(), indent=2, sort_keys=True, default=str)
 
 
-def seed_mission_memory() -> MissionMemory:
-    """Seed PYTHIA with the canonical one-block mission memory."""
-    return MissionMemory()
+def seed_mission_memory(operator_session_id: str = "operator-live-default", initial_job_id: str = "genesis") -> MissionMemory:
+    """Seed PYTHIA with the canonical one-block mission memory and deterministic state."""
+    memory = MissionMemory()
+    memory.compute_deterministic_seed(
+        operator_session_id=operator_session_id,
+        initial_job_id=initial_job_id,
+    )
+    return memory
 
 
 def validate_mission_memory(memory: MissionMemory) -> bool:
-    """Validate that mission memory is correctly seeded."""
-    checks = [
+    """Validate that mission memory is correctly seeded with deterministic constraints."""
+    base_checks = [
         memory.protocol == MISSION_PROTOCOL,
         memory.mission == "one_pool_confirmed_block_then_shutdown",
         memory.autonomy_from_startup is True,
@@ -259,13 +333,18 @@ def validate_mission_memory(memory: MissionMemory) -> bool:
         len(memory.knowledge_seed.structure_targets) > 0,
         len(memory.knowledge_seed.search_workflow) > 0,
         len(memory.supreme_invariants.invariants) > 0,
+        memory.seed_vector is not None,
+        memory.operator_session_id is not None,
+        memory.intention is not None,
+        memory.phi_contract.status == "ACTIVE",
     ]
-    return all(checks)
+    return all(base_checks)
 
 
 __all__ = [
     "MISSION_PROTOCOL",
     "MAX_AUTONOMOUS_HASHRATE_EHS",
+    "PHI_CONTRACT_VERSION",
     "MissionMemory",
     "MissionStatus",
     "MissionTarget",
@@ -274,6 +353,8 @@ __all__ = [
     "QuantumDoctrine",
     "SupremeInvariants",
     "PoolSelectionPolicy",
+    "SessionIntention",
+    "PhiContract",
     "seed_mission_memory",
     "validate_mission_memory",
 ]
