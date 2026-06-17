@@ -5,6 +5,8 @@ from pythia_mining.counterfactual_reflection import (
     DEFAULT_COUNTERFACTUAL_LEARNING_RATE,
     DEFAULT_PHI_PRIOR,
     MAX_PHI_PRIOR_DELTA,
+    MIN_REFLECTION_INTERVAL_SECONDS,
+    MIN_REFLECTION_OBSERVATIONS,
     PHI_PRIOR_MAX,
     PHI_PRIOR_MIN,
     SearchTrajectory,
@@ -25,18 +27,39 @@ def make_path(name: str, phi: float, block_margin: float, share_margin: float = 
     )
 
 
-def test_reflection_updates_phi_prior_only() -> None:
+def test_reflection_updates_phi_prior_only_after_velocity_guard_is_satisfied() -> None:
     reference = make_path("reference", 0.52, -0.20, 0.70)
     alternative = make_path("alternative", 0.68, 0.30, -0.10)
 
     result = reflect_counterfactual_phi_prior(reference, alternative, current_phi_prior=0.50, learning_rate=0.10)
 
     assert result.protocol == COUNTERFACTUAL_REFLECTION_PROTOCOL
+    assert result.velocity_guard_satisfied is True
     assert result.divergence > 0.0
     assert 0.0 < result.phi_prior_delta <= MAX_PHI_PRIOR_DELTA
     assert result.updated_phi_prior > 0.50
     assert result.memory_write_target == "phi_resonance_prior"
     assert result.share_difficulty_prior_unchanged is True
+
+
+def test_reflection_velocity_guard_blocks_too_frequent_updates() -> None:
+    reference = make_path("reference", 0.52, -0.20)
+    alternative = make_path("alternative", 0.80, 0.80)
+
+    result = reflect_counterfactual_phi_prior(
+        reference,
+        alternative,
+        current_phi_prior=0.50,
+        observations_supporting_update=1,
+        seconds_since_last_update=1.0,
+        session_event_id="event-velocity",
+    )
+
+    assert result.session_event_id == "event-velocity"
+    assert result.velocity_guard_satisfied is False
+    assert result.phi_prior_delta == 0.0
+    assert result.updated_phi_prior == 0.50
+    assert result.reflection_reason == "reflection_velocity_guard_wait_for_more_evidence"
 
 
 def test_reflection_reduces_phi_prior_when_block_margin_is_weaker() -> None:
@@ -61,7 +84,7 @@ def test_reflection_does_not_update_share_difficulty_prior() -> None:
     assert "does not use share difficulty as block truth" in result.claim_boundary
 
 
-def test_reflection_uses_declared_default_prior_and_learning_rate() -> None:
+def test_reflection_uses_declared_default_prior_learning_rate_and_frequency_guard() -> None:
     reference = make_path("reference", 0.52, -0.10)
     alternative = make_path("alternative", 0.72, 0.20)
 
@@ -69,6 +92,8 @@ def test_reflection_uses_declared_default_prior_and_learning_rate() -> None:
 
     assert DEFAULT_PHI_PRIOR == 0.50
     assert DEFAULT_COUNTERFACTUAL_LEARNING_RATE == 0.05
+    assert MIN_REFLECTION_OBSERVATIONS == 32
+    assert MIN_REFLECTION_INTERVAL_SECONDS == 60.0
     assert result.updated_phi_prior > DEFAULT_PHI_PRIOR
     assert abs(result.phi_prior_delta) <= MAX_PHI_PRIOR_DELTA
 
