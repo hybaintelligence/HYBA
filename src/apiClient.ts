@@ -203,13 +203,13 @@ export interface ApiError {
 // ── Constants ──────────────────────────────────────────────────────────────
 
 const BACKEND_URL = "/api";
-const AUTH_URL = "";
+const AUTH_URL = "/api";
 const DEFAULT_MAX_RETRIES = 3;
 const DEFAULT_BASE_DELAY_MS = 1000;
 const TOKEN_KEY = "hyba_auth_token";
 export const PULVINI_HASHRATE_CAP_EHS = 1;
 
-function assertPulviniHashrateCap(value: number | undefined, field: string): void {
+export function assertPulviniHashrateCap(value: number | undefined, field: string): void {
   if (value === undefined) return;
   if (!Number.isFinite(value) || value < 0 || value > PULVINI_HASHRATE_CAP_EHS) {
     throw new Error(`${field} must be between 0 and ${PULVINI_HASHRATE_CAP_EHS} EH/s`);

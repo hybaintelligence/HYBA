@@ -83,10 +83,10 @@ def _get_it_from_bit() -> ItFromBitArcheologist:
     return _it_from_bit
 
 
-def _get_autogenous_coding() -> AutogenousSelfCoding:
+def _get_autogenous_coding() -> AutogenousSelfCodingEngine:
     global _autogenous_coding
     if _autogenous_coding is None:
-        _autogenous_coding = AutogenousSelfCoding()
+        _autogenous_coding = AutogenousSelfCodingEngine()
     return _autogenous_coding
 
 

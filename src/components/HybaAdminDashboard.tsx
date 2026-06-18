@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import AIAssistant from "./AIAssistant";
 import { HilbertSpaceVisualizer } from "./HilbertSpaceVisualizer";
+import { useAuth } from "./AuthProvider";
 import {
   Users,
   UserPlus,
@@ -138,7 +139,7 @@ const STATUS_COLORS: Record<string, string> = {
 
 interface HybaAdminDashboardProps {
   token: string | null;
-  currentUser: any;
+  currentUser?: { id?: string; username: string; role: string; createdAt?: string } | null;
   telemetry?: any;
   pools?: any[];
   activePoolName?: string;
@@ -167,6 +168,8 @@ function HybaAdminDashboard({
   isConnected = false,
   latencyMs = 0,
 }: HybaAdminDashboardProps) {
+  const { backendUser, isExecutive } = useAuth();
+  const user = currentUser || backendUser;
   const [currentView, setCurrentView] = useState<AdminView>("dashboard");
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -182,16 +185,13 @@ function HybaAdminDashboard({
   const [hashrateSales, setHashrateSales] = useState<any>(null);
   const [securityData, setSecurityData] = useState<any>(null);
 
-  // Check if user is executive
-  const isExecutive = EXECUTIVE_ROLES.includes(currentUser?.role || "");
-
   useEffect(() => {
-    if (token && (currentUser?.role === "admin" || isExecutive)) {
+    if (token && (user?.role === "admin" || isExecutive)) {
       fetchStats();
       // fetchWeather(); // Disabled until real weather API is integrated
       fetchIntelligenceData();
     }
-  }, [token, currentUser, isExecutive]);
+  }, [token, user, isExecutive]);
 
   const fetchIntelligenceData = async () => {
     try {
@@ -338,7 +338,7 @@ function HybaAdminDashboard({
     setTimeout(() => setFeedback(null), 3000);
   };
 
-  if (!token || (currentUser?.role !== "admin" && !isExecutive)) {
+  if (!token || (backendUser?.role !== "admin" && !isExecutive)) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-slate-50">
         <div className="text-center">
@@ -513,7 +513,7 @@ function HybaAdminDashboard({
         {currentView === "users" && (
           <UsersView
             token={token}
-            currentUser={currentUser}
+            currentUser={backendUser}
             isExecutive={isExecutive}
             onFeedback={showFeedback}
             onRefresh={fetchStats}
@@ -523,7 +523,7 @@ function HybaAdminDashboard({
         {currentView === "funding" && isExecutive && (
           <FundingView
             token={token}
-            currentUser={currentUser}
+            currentUser={user}
             onFeedback={showFeedback}
             onRefresh={fetchStats}
             aiInsights={aiInsights}
@@ -532,7 +532,7 @@ function HybaAdminDashboard({
         {currentView === "allocations" && isExecutive && (
           <AllocationsView
             token={token}
-            currentUser={currentUser}
+            currentUser={user}
             onFeedback={showFeedback}
             onRefresh={fetchStats}
           />
@@ -540,13 +540,13 @@ function HybaAdminDashboard({
         {currentView === "requests" && isExecutive && (
           <RequestsView
             token={token}
-            currentUser={currentUser}
+            currentUser={user}
             onFeedback={showFeedback}
             onRefresh={fetchStats}
           />
         )}
         {currentView === "audit" && (
-          <AuditView token={token} currentUser={currentUser} onFeedback={showFeedback} />
+          <AuditView token={token} currentUser={user} onFeedback={showFeedback} />
         )}
         {currentView === "network" && isExecutive && (
           <NetworkView

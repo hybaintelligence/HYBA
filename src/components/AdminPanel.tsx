@@ -11,7 +11,9 @@ import {
   Check,
   AlertCircle,
   RefreshCw,
+  Lock,
 } from "lucide-react";
+import { useAuth } from "./AuthProvider";
 
 interface User {
   id: number;
@@ -65,7 +67,8 @@ const THEME = {
 
 const ROLES = ["admin", "operator", "analyst", "miner"];
 
-function AdminPanel({ token, currentUser }: { token: string | null; currentUser: any }) {
+function AdminPanel({ token }: { token: string | null }) {
+  const { backendUser, isAdmin, loading: authLoading } = useAuth();
   const [users, setUsers] = useState<User[]>([]);
   const [totalUsers, setTotalUsers] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -135,11 +138,11 @@ function AdminPanel({ token, currentUser }: { token: string | null; currentUser:
   };
 
   useEffect(() => {
-    if (token && currentUser?.role === "admin") {
+    if (token && isAdmin) {
       fetchUsers();
       fetchStats();
     }
-  }, [token, currentUser, searchQuery]);
+  }, [token, isAdmin, searchQuery]);
 
   const handleCreateUser = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -251,13 +254,40 @@ function AdminPanel({ token, currentUser }: { token: string | null; currentUser:
     setShowEditModal(true);
   };
 
-  if (!token || currentUser?.role !== "admin") {
+  if (authLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-slate-50">
         <div className="text-center">
-          <Shield className="h-16 w-16 mx-auto mb-4 text-slate-400" />
-          <h2 className="text-2xl font-bold text-slate-900 mb-2">Access Denied</h2>
-          <p className="text-slate-600">Admin access required</p>
+          <div className="animate-spin h-8 w-8 border-4 border-[#003666] border-t-transparent rounded-full mx-auto mb-4" />
+          <p className="text-slate-600">Verifying admin privileges...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!token || !isAdmin) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-slate-50">
+        <div className="text-center max-w-md">
+          <Lock className="h-16 w-16 mx-auto mb-4 text-slate-400" />
+          <h2 className="text-2xl font-bold text-slate-900 mb-2">Admin Access Required</h2>
+          <p className="text-slate-600 mb-4">
+            {backendUser
+              ? `Your current role is "${backendUser.role}". Only users with admin privileges can access this panel.`
+              : "Please log in to access the admin panel."}
+          </p>
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm text-blue-800">
+            <p className="font-semibold mb-1">Available admin roles:</p>
+            <ul className="list-disc list-inside space-y-1">
+              <li>admin - Full system administration</li>
+              <li>ceo_heir_apparent - Executive access</li>
+              <li>chairman - Executive access</li>
+              <li>cto - Executive access</li>
+              <li>cfo - Executive access</li>
+              <li>legal - Executive access</li>
+              <li>chief_of_staff - Executive access</li>
+            </ul>
+          </div>
         </div>
       </div>
     );
@@ -455,7 +485,7 @@ function AdminPanel({ token, currentUser }: { token: string | null; currentUser:
                         >
                           <Edit className="h-4 w-4" />
                         </button>
-                        {user.username !== currentUser?.username && (
+                        {user.username !== backendUser?.username && (
                           <button
                             onClick={() => handleDeleteUser(user)}
                             className="p-2 text-slate-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
@@ -606,7 +636,7 @@ function AdminPanel({ token, currentUser }: { token: string | null; currentUser:
                 <select
                   value={formData.role}
                   onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                  disabled={selectedUser.username === currentUser?.username}
+                  disabled={selectedUser.username === backendUser?.username}
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#003666] focus:border-transparent disabled:bg-slate-50 disabled:text-slate-500"
                 >
                   {ROLES.map((role) => (
@@ -622,7 +652,7 @@ function AdminPanel({ token, currentUser }: { token: string | null; currentUser:
                   id="isActive"
                   checked={formData.is_active}
                   onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
-                  disabled={selectedUser.username === currentUser?.username}
+                  disabled={selectedUser.username === backendUser?.username}
                   className="h-4 w-4 text-[#003666] focus:ring-[#003666] border-slate-300 rounded disabled:bg-slate-50"
                 />
                 <label htmlFor="isActive" className="text-sm font-medium text-slate-700">

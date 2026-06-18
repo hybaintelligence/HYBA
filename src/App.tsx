@@ -4,11 +4,13 @@ import {
   AlertCircle,
   BarChart3,
   CheckCircle2,
+  Clock,
   Cpu,
   Crown,
   Database,
   FileWarning,
   Gauge,
+  History,
   Landmark,
   LogIn,
   LogOut,
@@ -54,9 +56,13 @@ import { ExecutiveSummary } from "./components/ExecutiveSummary";
 import AdminPanel from "./components/AdminPanel";
 import HybaAdminDashboard from "./components/HybaAdminDashboard";
 import AIAssistant from "./components/AIAssistant";
+import MiningJobsSection from "./components/MiningJobsSection";
+import HistoricalDataSection from "./components/HistoricalDataSection";
+import AnalyticsSection from "./components/AnalyticsSection";
 import { useApiRequest } from "./hooks/useApiRequest";
 import { useLatencyMetrics } from "./hooks/useLatencyMetrics";
 import { buildGovernanceSignals, type GovernanceSignal } from "./governance";
+import { useAuth } from "./components/AuthProvider";
 
 type NullableNumber = number | null | undefined;
 
@@ -150,6 +156,7 @@ export default function App() {
 }
 
 function AppContent() {
+  const { isAdmin, isExecutive } = useAuth();
   const [token, setToken] = useState<string | null>(() => {
     try {
       return localStorage.getItem("hyba_auth_token") || localStorage.getItem("quantum_token");
@@ -184,7 +191,7 @@ function AppContent() {
   } | null>(null);
   const [selectedPoolForConfig, setSelectedPoolForConfig] = useState<PoolInfo | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [currentView, setCurrentView] = useState<"dashboard" | "admin" | "executive">("dashboard");
+  const [currentView, setCurrentView] = useState<"dashboard" | "admin" | "executive" | "jobs" | "history" | "analytics">("dashboard");
 
   const { execute: fetchTelemetryExecute } = useApiRequest(fetchTelemetryData, { maxRetries: 3 });
   const {
@@ -603,8 +610,32 @@ function AppContent() {
               <RefreshCw className={`h-3.5 w-3.5 ${isSyncing ? "animate-spin" : ""}`} /> Refresh
             </button>
             <Sparkline data={latencyHistory} />
-            {(currentUser?.role === "admin" ||
-              EXECUTIVE_ROLES.includes(currentUser?.role || "")) && (
+            <div className="h-6 w-px bg-white/20" />
+            <button
+              onClick={() => setCurrentView(currentView === "jobs" ? "dashboard" : "jobs")}
+              className={`status-pill border ${currentView === "jobs" ? "border-blue-300/30 bg-blue-400/15 text-blue-100" : "border-white/30 bg-white/10 text-white"}`}
+              title={currentView === "jobs" ? "Return to Dashboard" : "View Mining Jobs"}
+            >
+              <Clock className="h-3.5 w-3.5" />
+              <span>{currentView === "jobs" ? "Dashboard" : "Jobs"}</span>
+            </button>
+            <button
+              onClick={() => setCurrentView(currentView === "history" ? "dashboard" : "history")}
+              className={`status-pill border ${currentView === "history" ? "border-purple-300/30 bg-purple-400/15 text-purple-100" : "border-white/30 bg-white/10 text-white"}`}
+              title={currentView === "history" ? "Return to Dashboard" : "View Historical Data"}
+            >
+              <History className="h-3.5 w-3.5" />
+              <span>{currentView === "history" ? "Dashboard" : "History"}</span>
+            </button>
+            <button
+              onClick={() => setCurrentView(currentView === "analytics" ? "dashboard" : "analytics")}
+              className={`status-pill border ${currentView === "analytics" ? "border-cyan-300/30 bg-cyan-400/15 text-cyan-100" : "border-white/30 bg-white/10 text-white"}`}
+              title={currentView === "analytics" ? "Return to Dashboard" : "View Analytics"}
+            >
+              <BarChart3 className="h-3.5 w-3.5" />
+              <span>{currentView === "analytics" ? "Dashboard" : "Analytics"}</span>
+            </button>
+            {(isAdmin || isExecutive) && (
               <>
                 <div className="h-6 w-px bg-white/20" />
                 <button
@@ -617,7 +648,7 @@ function AppContent() {
                   <ShieldCheck className="h-3.5 w-3.5" />
                   <span>{currentView === "admin" ? "Dashboard" : "Admin"}</span>
                 </button>
-                {EXECUTIVE_ROLES.includes(currentUser?.role || "") && (
+                {isExecutive && (
                   <button
                     onClick={() =>
                       setCurrentView(currentView === "executive" ? "dashboard" : "executive")
@@ -648,17 +679,22 @@ function AppContent() {
 
       <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-6 px-6 py-6">
         {currentView === "admin" ? (
-          <AdminPanel token={token} currentUser={currentUser} />
+          <AdminPanel token={token} />
         ) : currentView === "executive" ? (
           <HybaAdminDashboard
             token={token}
-            currentUser={currentUser}
             telemetry={telemetry}
             pools={pools}
             activePoolName={activePoolName}
             isConnected={isConnected}
             latencyMs={latencyMs}
           />
+        ) : currentView === "jobs" ? (
+          <MiningJobsSection />
+        ) : currentView === "history" ? (
+          <HistoricalDataSection />
+        ) : currentView === "analytics" ? (
+          <AnalyticsSection />
         ) : (
           <>
             <ExecutiveSummary
