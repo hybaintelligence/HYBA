@@ -137,6 +137,9 @@ class AIOptimizer:
         nonce = await self.quantum_solver.solve(
             max_iterations=self._configured_max_iterations(),
             timeout=max(0.001, solve_timeout),
+            target=int(job.target),
+            job=job,
+            extranonce2=getattr(self, '_current_extranonce2', '00000000'),
         )
         metrics = self.quantum_solver.get_metrics()
 

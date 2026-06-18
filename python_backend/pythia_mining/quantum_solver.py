@@ -11,6 +11,7 @@ import logging
 import math
 import os
 import time
+from .bitcoin_header import build_header, sha256d_hash
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -250,7 +251,7 @@ class DodecahedralQuantumSolver:
             "Measured state could not be projected to a nonce range"
         )
 
-    async def solve(self, max_iterations: int = 100, timeout: float = 30.0) -> Optional[int]:
+    async def solve(self, max_iterations: int = 100, timeout: float = 30.0, target: int = 0, job=None, extranonce2: str = "00000000") -> Optional[int]:
         """
         Hybrid quantum-classical nonce search combining Grover amplitude amplification
         with honest classical fallback.
@@ -295,13 +296,12 @@ class DodecahedralQuantumSolver:
             marked_indices = set()
             for idx in range(DODECAHEDRON_VERTICES):
                 nonce = self._project_index_to_nonce(idx)
-                # Oracle: check if nonce meets target via real SHA-256d
-                import hashlib
-                import struct
-                # Simulate block header with nonce (in production, comes from pool job)
-                block_header = struct.pack('<I', nonce) + b'\x00' * 76
-                hash1 = hashlib.sha256(block_header).digest()
-                hash_value = int.from_bytes(hashlib.sha256(hash1).digest(), 'little')
+                # Oracle: real SHA-256d against actual pool job header
+                if job is not None:
+                    header = build_header(job, nonce, extranonce2 or "00000000")
+                    hash_value = sha256d_hash(header)
+                else:
+                    hash_value = (2**256) - 1  # never marks
                 if hash_value <= target:
                     marked_indices.add(idx)
             
@@ -400,10 +400,12 @@ class DodecahedralQuantumSolver:
                 
                 self.last_solve_iterations += 1
                 
-                # Real SHA-256d: SHA256(SHA256(block_header_with_nonce))
-                block_header = struct.pack('<I', nonce) + b'\x00' * 76
-                hash1 = hashlib.sha256(block_header).digest()
-                hash_value = int.from_bytes(hashlib.sha256(hash1).digest(), 'little')
+                # Real SHA-256d using actual pool job header
+                if job is not None:
+                    header = build_header(job, nonce, extranonce2 or "00000000")
+                    hash_value = sha256d_hash(header)
+                else:
+                    hash_value = (2**256) - 1  # never matches
                 
                 if hash_value <= target:
                     self.last_solution_nonce = nonce
