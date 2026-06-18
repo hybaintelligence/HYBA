@@ -295,9 +295,14 @@ class DodecahedralQuantumSolver:
             marked_indices = set()
             for idx in range(DODECAHEDRON_VERTICES):
                 nonce = self._project_index_to_nonce(idx)
-                # Oracle: check if nonce meets target (via hash proxy)
-                hash_value = (nonce * 7919 + target) % (2**256)
-                if hash_value <= max(target, 2**200):
+                # Oracle: check if nonce meets target via real SHA-256d
+                import hashlib
+                import struct
+                # Simulate block header with nonce (in production, comes from pool job)
+                block_header = struct.pack('<I', nonce) + b'\x00' * 76
+                hash1 = hashlib.sha256(block_header).digest()
+                hash_value = int.from_bytes(hashlib.sha256(hash1).digest(), 'little')
+                if hash_value <= target:
                     marked_indices.add(idx)
             
             if not marked_indices:
@@ -380,34 +385,37 @@ class DodecahedralQuantumSolver:
         timeout: float,
         start_time: float,
     ) -> Optional[int]:
-        """Deterministic brute-force PoW search fallback."""
+        """Deterministic brute-force PoW search fallback using real SHA-256d."""
+        import hashlib
+        import struct
+        
         for start, end in nonce_ranges:
-            offset = (self._solve_call_count * 7919) % max(1, (end - start))
-            search_start = (start + offset) % (2**32)
-            
-            for nonce in range(search_start, min(search_start + max_iterations, end)):
+            # Search linearly through nonce space (not pseudo-random offsets)
+            for i, nonce in enumerate(range(start, min(start + max_iterations, end))):
                 if time.monotonic() - start_time >= timeout:
                     self.last_error = "timeout"
                     self.last_solve_duration_seconds = time.monotonic() - start_time
-                    self.logger.warning("Classical PoW search timed out")
+                    self.logger.warning("Classical PoW search timed out after %d iterations", i)
                     return None
                 
                 self.last_solve_iterations += 1
                 
-                # Hash check
-                hash_value = (nonce * 7919 + self._solve_call_count) % (2**256)
-                effective_target = max(target, 2**200)
+                # Real SHA-256d: SHA256(SHA256(block_header_with_nonce))
+                block_header = struct.pack('<I', nonce) + b'\x00' * 76
+                hash1 = hashlib.sha256(block_header).digest()
+                hash_value = int.from_bytes(hashlib.sha256(hash1).digest(), 'little')
                 
-                if hash_value <= effective_target:
+                if hash_value <= target:
                     self.last_solution_nonce = nonce
                     self.last_solve_duration_seconds = time.monotonic() - start_time
                     self.last_error = None
-                    self.logger.info("Classical search found nonce %d", nonce)
+                    self.logger.info("Classical PoW found valid nonce %d", nonce)
                     return nonce
         
-        # No solution found
+        # No solution found (expected - very low hashrate on CPU)
         self.last_error = "no_solution_found"
         self.last_solve_duration_seconds = time.monotonic() - start_time
+        self.logger.debug("Classical PoW search completed: no solution found (expected at this hashrate)")
         return None
 
     def is_available(self) -> bool:
