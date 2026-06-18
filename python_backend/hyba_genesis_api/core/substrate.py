@@ -7,6 +7,13 @@ from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
 from typing import Dict, List, Optional
 
+from pythia_mining.sensory_protocol import SensoryProtocol
+from pythia_mining.immune_system import ImmuneSystem
+from pythia_mining.reflexive_controller import ReflexiveController
+from pythia_mining.metabolism import Metabolism
+from pythia_mining.consciousness_engine import ConsciousnessEngine
+from pythia_mining.mining_executive_controller import MiningExecutiveController
+
 LOGGER = logging.getLogger(__name__)
 
 
@@ -42,6 +49,13 @@ class SubstrateState:
         }
     )
     shutdown_at: Optional[str] = None
+    # Organism CNS components
+    consciousness_engine: Optional[ConsciousnessEngine] = None
+    sensory_protocol: Optional[SensoryProtocol] = None
+    immune_system: Optional[ImmuneSystem] = None
+    reflexive_controller: Optional[ReflexiveController] = None
+    metabolism: Optional[Metabolism] = None
+    executive: Optional[MiningExecutiveController] = None
 
 
 _STATE = SubstrateState()
@@ -104,12 +118,52 @@ def init_mining_engine() -> Dict[str, object]:
     return get_substrate_state()
 
 
+def init_organism_cns() -> Dict[str, object]:
+    """Initialize the Organism CNS components (Sensory, Immune, Cognitive, Metabolic)."""
+
+    LOGGER.info("Substrate: Initializing Organism CNS...")
+    
+    # Initialize Consciousness Engine
+    _STATE.consciousness_engine = ConsciousnessEngine()
+    LOGGER.info("Substrate: Consciousness Engine initialized")
+    
+    # Initialize Sensory Protocol
+    _STATE.sensory_protocol = SensoryProtocol()
+    LOGGER.info("Substrate: Sensory Protocol initialized")
+    
+    # Initialize Immune System
+    _STATE.immune_system = ImmuneSystem(_STATE.consciousness_engine)
+    LOGGER.info("Substrate: Immune System initialized")
+    
+    # Initialize Reflexive Controller
+    _STATE.reflexive_controller = ReflexiveController()
+    LOGGER.info("Substrate: Reflexive Controller initialized")
+    
+    # Initialize Metabolism
+    _STATE.metabolism = Metabolism()
+    LOGGER.info("Substrate: Metabolism initialized")
+    
+    # Initialize Executive Lobe
+    _STATE.executive = MiningExecutiveController(
+        consciousness_engine=_STATE.consciousness_engine,
+    )
+    LOGGER.info("Substrate: Executive Lobe initialized")
+    
+    _mark_ready(
+        "organism_cns",
+        "Organism CNS (Sensory, Immune, Cognitive, Metabolic, Executive) fully initialized",
+    )
+    LOGGER.info("Substrate: Organism CNS ready.")
+    return get_substrate_state()
+
+
 def initialize_substrate() -> Dict[str, object]:
     """Run the full substrate boot sequence in dependency order."""
 
     init_pulvini_runtime()
     init_quantum_path()
     init_mining_engine()
+    init_organism_cns()
     return get_substrate_state()
 
 
@@ -137,4 +191,10 @@ def get_substrate_state() -> Dict[str, object]:
         "initialization_order": list(_STATE.initialization_order),
         "shutdown_at": _STATE.shutdown_at,
         "subsystems": {name: asdict(status) for name, status in _STATE.subsystems.items()},
+        "organism_cns_active": _STATE.consciousness_engine is not None,
     }
+
+
+def get_substrate() -> SubstrateState:
+    """Return the substrate state object for dependency injection."""
+    return _STATE

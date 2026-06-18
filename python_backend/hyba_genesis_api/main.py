@@ -32,11 +32,13 @@ from hyba_genesis_api.api import (  # noqa: E402
     auth,
     health,
     intelligence,
+    metabolic_router,
     mining,
     mining_jobs,
     mining_ops,
     mining_production,
     misc,
+    organism_router,
     pool_management,
     products,
     regeneration_router,
@@ -173,11 +175,10 @@ app.include_router(products.router)
 app.include_router(unified_mining.router)
 app.include_router(ai_memory.router)
 app.include_router(pool_management.router)
-<<<<<<< Updated upstream
 app.include_router(regeneration_router.router)
-=======
 app.include_router(streaming_sense.router)
->>>>>>> Stashed changes
+app.include_router(metabolic_router.router)
+app.include_router(organism_router.router)
 
 
 @app.get("/health", response_model=Dict[str, Any], tags=["health"])

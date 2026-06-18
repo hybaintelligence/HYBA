@@ -1,6 +1,6 @@
 {
   "artifact_schema_version": 2,
-  "generated_at_utc": "2026-06-18T13:44:36.304112+00:00",
+  "generated_at_utc": "2026-06-18T12:50:50.543626+00:00",
   "measurements": {
     "baselines": {
       "random": {
@@ -29,25 +29,25 @@
       }
     },
     "test_01": {
-      "phi": 0.05742806811509102,
-      "python_modules": 131,
-      "typescript_modules": 55,
-      "total_dependencies": 131,
-      "total_dependency_edges": 978,
+      "phi": 0.06090322580645161,
+      "python_modules": 125,
+      "typescript_modules": 52,
+      "total_dependencies": 125,
+      "total_dependency_edges": 944,
       "interpretation": "Low-moderate integration - some cross-module coupling"
     },
     "test_02": {
       "autonomy_score": 10.0,
-      "total_decisions": 6876,
-      "total_external": 2114,
-      "adaptive_patterns": 1123,
+      "total_decisions": 6586,
+      "total_external": 2016,
+      "adaptive_patterns": 1113,
       "self_modification": 16,
-      "interpretation": "Highly autonomous - extensive internal control flow with 1123 adaptive patterns and 16 self-modification sites"
+      "interpretation": "Highly autonomous - extensive internal control flow with 1113 adaptive patterns and 16 self-modification sites"
     },
     "test_03": {
-      "irreducibility_score": 0.04206957176943363,
-      "global_state_refs": 335,
-      "instance_state_refs": 7628,
+      "irreducibility_score": 0.04194004888717355,
+      "global_state_refs": 326,
+      "instance_state_refs": 7447,
       "interpretation": "Highly reducible - clean state partitions"
     }
   },
@@ -87,12 +87,12 @@
     "\u2717 Low integration - modular architecture",
     "\u2713 Has internal decision-making",
     "\u2717 Clean state boundaries",
-    "\u2713 Contains 1123 adaptive patterns",
+    "\u2713 Contains 1113 adaptive patterns",
     "\u26a0 Contains 16 self-modification patterns"
   ],
   "conclusion": "ELEVATED SOFTWARE-PROXY COMPLEXITY: Static proxies show non-trivial integration, adaptation tokens, and self-modification tokens. Preserve as an internal measurement finding and move through replay, baselines, falsification, and external review before any stronger claim.",
-  "emergent_score": 18.61462853999808,
-  "preserved_previous_artifact": "artifacts/previous/emergent_complexity_analysis.20260618T134436Z.json",
+  "emergent_score": 18.548732502500386,
+  "preserved_previous_artifact": "artifacts/previous/emergent_complexity_analysis.20260618T125050Z.json",
   "claim_boundary": {
     "metric_posture": "software proxies only",
     "distinguishes": "static code coupling and token patterns are separated from runtime causal behaviour",

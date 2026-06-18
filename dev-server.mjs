@@ -17,6 +17,7 @@ const BACKEND_PORT = 3001;
 app.use('/api', createProxyMiddleware({
   target: `http://127.0.0.1:${BACKEND_PORT}`,
   changeOrigin: true,
+  pathRewrite: { '^/api': '/api' },
   logLevel: 'warn',
   onError: (err, req, res) => {
     console.error('Proxy error:', err.message);

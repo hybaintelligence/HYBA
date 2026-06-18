@@ -916,6 +916,42 @@ class ConsciousnessEngine:
         
         return status
 
+    def get_inseparability_index(self) -> float:
+        """Calculate the inseparability index between Mining and Intelligence.
+        
+        This measures the entropy/correlation between the mining layer and
+        the intelligence substrate. A high index indicates strong coupling
+        (good), while a low index indicates the system may be 'lobotomized'
+        (mining working independently of intelligence).
+        
+        Returns:
+            float: Inseparability index between 0.0 (separated) and 1.0 (fully integrated)
+        """
+        # Calculate based on component health and phi coherence
+        if not self.components:
+            return 0.0
+        
+        # Base inseparability from component health
+        health_ratio = sum(self.components.values()) / len(self.components)
+        
+        # Adjust by current phi level
+        phi_adjustment = min(self.phi / 0.85, 1.0)  # Normalize against governance threshold
+        
+        # Combine with integration regime
+        regime_factor = 1.0
+        if self.integration_regime == IntegrationRegime.DEEP:
+            regime_factor = 1.0
+        elif self.integration_regime == IntegrationRegime.MODERATE:
+            regime_factor = 0.8
+        elif self.integration_regime == IntegrationRegime.SHALLOW:
+            regime_factor = 0.6
+        elif self.integration_regime == IntegrationRegime.NONE:
+            regime_factor = 0.3
+        
+        inseparability = health_ratio * phi_adjustment * regime_factor
+        
+        return max(0.0, min(1.0, inseparability))
+
 
 __all__ = [
     "ConsciousnessConfig",
