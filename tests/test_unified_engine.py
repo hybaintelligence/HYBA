@@ -5,7 +5,7 @@ import asyncio
 import sys
 import os
 
-sys.path.insert(0, 'python_backend')
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'python_backend'))
 
 from pythia_mining.phi_unified_mining_engine import UnifiedMiningEngine
 from pythia_mining.stratum_client import MiningJob

@@ -204,7 +204,12 @@ class DirectQuantumMathematicsExecution:
         # 1. Construct density matrix (from MPS)
         # This is direct execution of quantum math, not simulation
         tensor = mps.tensors[0]
-        rho = np.outer(tensor.reshape(-1), np.conj(tensor.reshape(-1)))
+        psi = tensor.reshape(-1)
+        # Normalize the state vector
+        norm = np.linalg.norm(psi)
+        if norm > 0:
+            psi = psi / norm
+        rho = np.outer(psi, np.conj(psi))
         
         # 2. Verify density matrix axioms
         hermitian_error = float(np.linalg.norm(rho - rho.conj().T, "fro"))

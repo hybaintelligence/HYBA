@@ -2,8 +2,9 @@ import sys
 import os
 
 # Add the project root and python_backend to the Python path
-sys.path.insert(0, os.path.abspath('/Users/demouser/Desktop/HYBA_FULLSTACK'))
-sys.path.insert(0, os.path.abspath('/Users/demouser/Desktop/HYBA_FULLSTACK/python_backend'))
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.insert(0, project_root)
+sys.path.insert(0, os.path.join(project_root, 'python_backend'))
 
 import pytest
 
