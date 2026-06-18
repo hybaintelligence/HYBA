@@ -169,8 +169,60 @@ This packet, when sealed and compartmented, becomes the next proof record.
 
 ---
 
+## Operational Setup for 20-Minute Live Run
+
+### Prerequisites Verified
+
+✓ Integration fence: 25/25 passing  
+✓ Pool configuration: ViaBTC (primary) + Braiins (fallback) both ready  
+✓ JWT secret: Generated and active in .env.local  
+✓ Live mining flags: Enabled (HYBA_ENABLE_LIVE_STRATUM=true, HYBA_ENABLE_LIVE_SHARE_SUBMIT=true)  
+✓ Backend FastAPI: Imports successfully, ready to run on localhost:3001  
+✓ Unified miner: Ready to connect to pools and submit shares  
+✓ All scripts: START_LIVE_MINING_20MIN.sh and evidence_collection_live_mining.py present  
+
+### Execution Checklist
+
+1. **Terminal 1** — Start backend API server:
+   ```bash
+   npm run backend:start
+   # Expects: FastAPI running on http://127.0.0.1:3001
+   ```
+
+2. **Terminal 2** — Execute 20-minute mining session:
+   ```bash
+   bash scripts/START_LIVE_MINING_20MIN.sh
+   # Output: /tmp/hyba_live_miner_20min.log
+   # Duration: 20 minutes, real pool I/O, live share submission
+   ```
+
+3. **After session completes** — Collect sealed evidence:
+   ```bash
+   python3 scripts/evidence_collection_live_mining.py \
+     --log-file /tmp/hyba_live_miner_20min.log
+   # Output: Compartmented evidence report
+   ```
+
+### Evidence Boundary
+
+**VERIFIED (Local, Integration Fence):**
+- ✓ System architecture integrity (14 contracts)
+- ✓ Pool protocol correctness (5 contracts)
+- ✓ Runtime mining path (6 E2E tests)
+- ✓ Production safety (no fixtures)
+
+**PENDING (Live Telemetry):**
+- Subscribe success (Stratum initial handshake)
+- Authorize success (Worker authentication)
+- Job received (Mining.notify from pool)
+- Share submitted (Candidate to pool)
+- Pool accepted/rejected feedback
+
+---
+
 **Record Status: SEALED**  
 **Governance Status: ACTIVE**  
-**Proof Status: BOUNDARY VERIFIED, EXTERNAL PROOF PENDING**
+**Proof Status: BOUNDARY VERIFIED, EXTERNAL PROOF PENDING**  
+**LIVE RUN STATE: CONFIGURED AND READY**
 
 This is the correct precision posture. The system is ready. The evidence boundary is clear. The next move is the 20-minute live run.
