@@ -297,14 +297,14 @@ class SwarmCoherenceEngine:
             else:
                 abstain.append(node_id)
         
-        passed = len(votes_for) > len(votes_against) + len(abst)
+        passed = len(votes_for) > len(votes_against) + len(abstain)
         
         consensus = SwarmConsensus(
             decision_id=decision_id,
             proposal=proposal,
             votes_for=votes_for,
             votes_against=votes_against,
-            abstain=abst,
+            abstain=abstain,
             passed=passed,
             timestamp=time.time(),
         )

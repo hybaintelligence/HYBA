@@ -44,7 +44,7 @@ from __future__ import annotations
 import math
 import hashlib
 from dataclasses import dataclass, field
-from typing import Dict, List, Set, Tuple, Optional, Any, Callable, Union
+from typing import Dict, List, Set, Tuple, Optional, Any, Callable, Union, Type
 from functools import wraps
 from abc import ABC, abstractmethod
 

@@ -192,7 +192,7 @@ class TopologicalHolonomyEngine:
             
             # Create λ-dependent rotation angle
             # Use different frequencies for different sites to create variation
-            theta = 2 * math.pi * lambda_param * (1 + i * INV_PHI)
+            theta = 2 * math.pi * lambda_param * (1 + i * PHI_INV)
             
             # Integrate SU(2) Yang-Mills action for topological sensitivity
             # Map λ to a "nonce" for Yang-Mills action computation
