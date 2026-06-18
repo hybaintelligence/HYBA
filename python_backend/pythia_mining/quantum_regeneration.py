@@ -207,9 +207,31 @@ def fault_perturbation_operator(severity: float) -> np.ndarray:
 
 
 def apply_fault(state: ModuleState, severity: float) -> ModuleState:
+    """Apply a fault perturbation, respecting any active refractory period.
+
+    If the module is in its refractory period (post-recovery stabilization),
+    the fault perturbation is attenuated by the remaining refractory fraction.
+    A module at the start of a 60-second window is effectively immune;
+    one at the end has full susceptibility restored.
+    """
+    if state.is_in_refractory_period():
+        import time
+        now = time.time()
+        remaining = max(0.0, state.refractory_period_end - now)
+        # refractory_period_end was set at recovery + duration
+        # recover recovery start from recovery_timestamp
+        total = max(1e-9, state.refractory_period_end - state.recovery_timestamp)
+        # attenuation: full protection at start, zero at end
+        attenuation = remaining / total
+        severity = severity * (1.0 - attenuation)
     U = fault_perturbation_operator(severity)
     new_rho = U @ state.rho @ U.conj().T
-    new_state = ModuleState(rho=new_rho, module_id=state.module_id)
+    new_state = ModuleState(
+        rho=new_rho,
+        module_id=state.module_id,
+        refractory_period_end=state.refractory_period_end,
+        recovery_timestamp=state.recovery_timestamp,
+    )
     new_state.validate()
     return new_state
 

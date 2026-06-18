@@ -1,4 +1,4 @@
-#!/Users/demouser/Desktop/HYBA_FULLSTACK/venv/bin/python
+#!/Users/demouser/Desktop/HYBA_FULLSTACK/venv/bin/python3
 # -*- coding: utf-8 -*-
 import re
 import sys
