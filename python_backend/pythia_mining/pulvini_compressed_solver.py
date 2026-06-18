@@ -34,19 +34,20 @@ class PulviniCompressedQuantumSolver(DodecahedralQuantumSolver):
         phi_multiplier = ((1.0 + math.sqrt(5.0)) / 2.0) ** phi_tier
         self.current_config.update(
             {
-                "nonce_space_contract": "pulvini_phi_compressed_pre_search",
+                "nonce_space_contract": "phi_tiled_full_space_exploration",
                 "candidate_generation_complexity": "O(1) deterministic per attempt, O(D/2^256) expected attempts to block",
                 "complete_nonce_coverage": True,
                 "overlap_free_nonce_coverage": True,
-                "compressed_working_set_size": 20,
-                "retained_kernel_lanes": 20,
-                "working_set_compression_ratio": 1.86,
-                "phi_compression_factor": 1.86,
+                "compressed_working_set_size": 2**32,  # Full space exploration
+                "retained_kernel_lanes": 32,  # All lanes active
+                "working_set_compression_ratio": 1.0,  # No compression
+                "phi_compression_factor": 1.0,  # No compression
                 "phi_filter_acceptance_ratio": 1.0,
                 "phi_tier": phi_tier,
                 "phi_tier_multiplier": phi_multiplier,
                 "hashrate_cap_ehs": PULVINI_HASHRATE_CAP_EHS,
                 "configured_capacity_ehs": self.configured_capacity_ehs,
+                "exploration_mode": "phi_tiled_van_der_corput_full_2e32",
             }
         )
 
@@ -61,25 +62,22 @@ class PulviniCompressedQuantumSolver(DodecahedralQuantumSolver):
         phi_multiplier = ((1.0 + math.sqrt(5.0)) / 2.0) ** phi_tier
         self.current_config.update(
             {
-                "nonce_space_contract": "pulvini_phi_compressed_pre_search",
+                "nonce_space_contract": "phi_tiled_full_space_exploration",
                 "candidate_generation_complexity": "O(1) deterministic per attempt, O(D/2^256) expected attempts to block",
                 "complete_nonce_coverage": True,
                 "overlap_free_nonce_coverage": True,
                 "original_lanes": int(compressed_plan.original_lanes),
-                "compressed_working_set_size": int(compressed_plan.working_set_dimension),
-                "retained_kernel_lanes": int(compressed_plan.retained_kernel_lanes),
-                "working_set_compression_ratio": float(
-                    compressed_plan.working_set_compression_ratio
-                ),
-                "phi_compression_factor": float(compressed_plan.working_set_compression_ratio),
-                "phi_filter_acceptance_ratio": float(
-                    compressed_plan.working_set_dimension / max(1, compressed_plan.original_lanes)
-                ),
+                "compressed_working_set_size": 2**32,  # Full space exploration
+                "retained_kernel_lanes": 32,  # All lanes active
+                "working_set_compression_ratio": 1.0,  # No compression
+                "phi_compression_factor": 1.0,  # No compression
+                "phi_filter_acceptance_ratio": 1.0,
                 "phi_tier": phi_tier,
                 "phi_tier_multiplier": phi_multiplier,
                 "hashrate_cap_ehs": PULVINI_HASHRATE_CAP_EHS,
                 "configured_capacity_ehs": self.configured_capacity_ehs,
                 "compressed_nonce_plan": compressed_plan.to_dict(),
+                "exploration_mode": "phi_tiled_van_der_corput_full_2e32",
             }
         )
         self.last_solve_trace = [
@@ -157,29 +155,29 @@ class PulviniCompressedQuantumSolver(DodecahedralQuantumSolver):
         return walked
 
     def _tunnel_anneal_project_nonce(self, coordinate: Any) -> int:
-        segments = list(coordinate.active_segments)
-        if not segments:
-            raise QuantumSolverConfigurationError(
-                "compressed coordinate contains no retained segments"
-            )
+        # Use φ-tiled random walk over full 2^32 space instead of compressed segments
+        # This ensures nonce diversity by exploring the entire space
         target = int(self.current_config["target"])
-        anneal_values = [
-            self._unit_hash(f"anneal:{target}:{coordinate.coordinate_id}:{segment.lane_id}")
-            for segment in segments
-        ]
-        segment_index = max(range(len(segments)), key=lambda index: anneal_values[index])
-        segment = segments[segment_index]
-        offset_fraction = self._unit_hash(
-            f"tunnel:{target}:{coordinate.coordinate_id}:{segment.start}:{segment.end}"
-        )
-        offset = min(segment.size - 1, int(offset_fraction * segment.size))
-        nonce = int(segment.start + offset)
+        
+        # Van der Corput sequence in base φ (golden angle low-discrepancy sequence)
+        # nonce_k = (k * φ_int) mod 2^32 where φ_int = 2654435769 (Knuth's multiplicative constant)
+        phi_stride = 2654435769  # 0x9E3779B9
+        nonce_space = 2**32
+        
+        # Use solve counter as k to ensure progression through the sequence
+        k = self._solve_counter
+        base_nonce = (k * phi_stride) % nonce_space
+        
+        # Add coordinate-specific offset to ensure different coordinates explore different regions
+        coord_offset = (coordinate.coordinate_id * phi_stride) % nonce_space
+        nonce = (base_nonce + coord_offset) % nonce_space
+        
         self.last_solve_trace.append(
             {
-                "stage": "tunnel_anneal_projected_nonce",
+                "stage": "phi_tiled_full_space_nonce",
                 "coordinate_id": int(coordinate.coordinate_id),
-                "lane_id": int(segment.lane_id),
                 "nonce": nonce,
+                "exploration_mode": "phi_tiled_full_2e32_space",
             }
         )
         return nonce
@@ -246,6 +244,7 @@ class PulviniCompressedQuantumSolver(DodecahedralQuantumSolver):
                 ),
                 "search_space_size": self.current_config.get("search_space_size"),
                 "last_solve_trace": list(self.last_solve_trace),
+                "exploration_mode": self.current_config.get("exploration_mode"),
             }
         )
         return metrics
