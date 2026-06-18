@@ -21,8 +21,10 @@ from hypothesis import strategies as st
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 PYTHON_BACKEND = str(REPO_ROOT / "python_backend")
-if PYTHON_BACKEND not in sys.path:
-    sys.path.insert(0, PYTHON_BACKEND)
+SRC_ROOT = str(REPO_ROOT / "src")
+for import_root in (PYTHON_BACKEND, SRC_ROOT):
+    if import_root not in sys.path:
+        sys.path.insert(0, import_root)
 
 
 # =============================================================================

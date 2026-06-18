@@ -34,7 +34,7 @@ import shutil
 import threading
 import time
 import uuid
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from enum import Enum
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Union
@@ -1333,11 +1333,15 @@ class AutonomousMiningController:
             self.config.phi_coherence_threshold = proposed_coherence
 
             if self.engine is not None and self.engine.consciousness is not None:
-                # Update all three thresholds proportionally
+                # Update all three thresholds proportionally. ConsciousnessConfig is
+                # immutable so runtime tuning replaces the config atomically.
                 ratio = proposed_coherence / 0.70  # Scale from default SINGULAR threshold
-                self.engine.consciousness.config.phi_singular_threshold = max(0.0, min(1.0, 0.70 * ratio))
-                self.engine.consciousness.config.phi_distributed_threshold = max(0.0, min(1.0, 0.40 * ratio))
-                self.engine.consciousness.config.phi_critical_threshold = max(0.0, min(1.0, 0.20 * ratio))
+                self.engine.consciousness.config = replace(
+                    self.engine.consciousness.config,
+                    phi_singular_threshold=max(0.0, min(1.0, 0.70 * ratio)),
+                    phi_distributed_threshold=max(0.0, min(1.0, 0.40 * ratio)),
+                    phi_critical_threshold=max(0.0, min(1.0, 0.20 * ratio)),
+                )
             
             self.config.optimization_targets.append(
                 OptimizationTarget(
