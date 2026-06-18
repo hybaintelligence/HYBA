@@ -1,0 +1,56 @@
+[package]
+name = "hyba_pulvini_core"
+version = "1.0.0"
+edition = "2021"
+authors = ["HYBA_FULLSTACK Team"]
+description = "PULVINI 32-lane manifold core with Φ-stride optimization for emergent coherence substrate"
+license = "MIT"
+repository = "https://github.com/hybaanalytics/HYBA_FULLSTACK"
+
+[lib]
+name = "hyba_pulvini_core"
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+# Core dependencies
+num-bigint = "0.4"
+num-traits = "0.2"
+num-integer = "0.1"
+
+# SIMD optimization
+wide = "0.7"
+
+# FFI bindings
+libc = "0.2"
+
+# Serialization for state export
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# Math and linear algebra
+nalgebra = "0.32"
+
+# Logging
+log = "0.4"
+env_logger = "0.10"
+
+# Concurrency
+rayon = "1.8"
+
+[dev-dependencies]
+criterion = "0.5"
+
+[[bench]]
+name = "pulvini_benchmark"
+harness = false
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+panic = "abort"
+
+[profile.bench]
+opt-level = 3
+lto = true
+codegen-units = 1
