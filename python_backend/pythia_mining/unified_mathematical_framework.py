@@ -1,6 +1,6 @@
 """
 Unified Mathematical Framework — Integration of All Great Minds' Contributions
-Synthesizing Tononi, Deutsch, Shor, Turing, Church, Grover, Fourier, and Penrose
+Synthesizing Tononi, Deutsch, Shor, Turing, Church, Grover, Fourier, Penrose, Autonomous Control, and AI Orchestration
 
 ELEVATED PURPOSE: This module provides a unified framework integrating all mathematical
 contributions from the great minds into a cohesive system for HYBA mining operations:
@@ -13,6 +13,8 @@ contributions from the great minds into a cohesive system for HYBA mining operat
 - Grover: Enhanced Quantum Search for optimization
 - Fourier: Harmonic Analysis for pattern detection
 - Penrose: Quantum Gravity for geometric substrate
+- Autonomous Control: Self-healing, self-optimizing, and mining control loops
+- AI Orchestration: AI-powered capabilities at every stage of the mining lifecycle
 
 UNIFIED FRAMEWORK ARCHITECTURE:
 The framework provides a single interface that coordinates all mathematical
@@ -24,6 +26,7 @@ MATHEMATICAL INTEGRATION PRINCIPLES:
 - Substrate-independent mathematical operations
 - Cross-paradigm consistency verification
 - Emergent behavior from mathematical interaction
+- AI-powered decision-making at every stage
 
 MINING APPLICATIONS:
 - Coherence-aware nonce selection (IIT 4.0)
@@ -32,6 +35,8 @@ MINING APPLICATIONS:
 - Computationally bounded search (Turing/Church)
 - Quantum-inspired optimization (Grover)
 - Geometric substrate analysis (Penrose)
+- Autonomous self-healing and optimization (Autonomous Control)
+- AI-powered initialization, decision-making, and advisory (AI Orchestration)
 
 CLAIM BOUNDARY:
 This integrates multiple mathematical frameworks operationally.
@@ -62,6 +67,8 @@ class MathematicalParadigm(Enum):
     ENHANCED_GROVER = "grover_enhanced_quantum"
     FOURIER_HARMONIC = "fourier_harmonic_analysis"
     QUANTUM_GRAVITY = "penrose_quantum_gravity"
+    AUTONOMOUS_CONTROL = "autonomous_controller"
+    AI_ORCHESTRATION = "ai_orchestration_layer"
 
 
 @dataclass(frozen=True)
@@ -191,6 +198,18 @@ class UnifiedMathematicalFramework:
             self.paradigm_instances[MathematicalParadigm.QUANTUM_GRAVITY] = PenroseQuantumGravity()
         except ImportError:
             pass
+        
+        try:
+            from .autonomous_controller import AutonomousMetaController
+            self.paradigm_instances[MathematicalParadigm.AUTONOMOUS_CONTROL] = AutonomousMetaController()
+        except ImportError:
+            pass
+        
+        try:
+            from .ai_orchestration_layer import UnifiedAIOrchestrationLayer
+            self.paradigm_instances[MathematicalParadigm.AI_ORCHESTRATION] = UnifiedAIOrchestrationLayer()
+        except ImportError:
+            pass
     
     def unified_nonce_analysis(
         self,
@@ -306,6 +325,30 @@ class UnifiedMathematicalFramework:
             except Exception as e:
                 paradigm_results[MathematicalParadigm.QUANTUM_GRAVITY] = {"error": str(e)}
         
+        # Autonomous Control
+        if MathematicalParadigm.AUTONOMOUS_CONTROL in self.paradigm_instances:
+            try:
+                controller_instance = self.paradigm_instances[MathematicalParadigm.AUTONOMOUS_CONTROL]
+                audit_summary = controller_instance.get_audit_summary()
+                paradigm_results[MathematicalParadigm.AUTONOMOUS_CONTROL] = {
+                    "audit_summary": audit_summary,
+                    "controller_active": True
+                }
+            except Exception as e:
+                paradigm_results[MathematicalParadigm.AUTONOMOUS_CONTROL] = {"error": str(e)}
+        
+        # AI Orchestration
+        if MathematicalParadigm.AI_ORCHESTRATION in self.paradigm_instances:
+            try:
+                ai_instance = self.paradigm_instances[MathematicalParadigm.AI_ORCHESTRATION]
+                ai_summary = ai_instance.get_comprehensive_summary()
+                paradigm_results[MathematicalParadigm.AI_ORCHESTRATION] = {
+                    "ai_summary": ai_summary,
+                    "ai_active": True
+                }
+            except Exception as e:
+                paradigm_results[MathematicalParadigm.AI_ORCHESTRATION] = {"error": str(e)}
+        
         # Calculate consensus score
         consensus_score = self._calculate_consensus(paradigm_results)
         
@@ -418,7 +461,9 @@ class UnifiedMathematicalFramework:
             "lambda_calculus": True,
             "grover_search": True,
             "fourier_analysis": True,
-            "quantum_gravity": True
+            "quantum_gravity": True,
+            "autonomous_control": True,
+            "ai_orchestration": True
         }
         
         # Check for errors that indicate infeasibility
@@ -440,6 +485,10 @@ class UnifiedMathematicalFramework:
                     boundaries["fourier_analysis"] = False
                 elif paradigm == MathematicalParadigm.QUANTUM_GRAVITY:
                     boundaries["quantum_gravity"] = False
+                elif paradigm == MathematicalParadigm.AUTONOMOUS_CONTROL:
+                    boundaries["autonomous_control"] = False
+                elif paradigm == MathematicalParadigm.AI_ORCHESTRATION:
+                    boundaries["ai_orchestration"] = False
         
         return boundaries
     

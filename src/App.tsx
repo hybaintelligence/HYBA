@@ -5,6 +5,7 @@ import {
   BarChart3,
   CheckCircle2,
   Cpu,
+  Crown,
   Database,
   FileWarning,
   Gauge,
@@ -51,6 +52,7 @@ import { SovereignCommandPost } from "./components/SovereignCommandPost";
 import { Sparkline } from "./components/Sparkline";
 import { ExecutiveSummary } from "./components/ExecutiveSummary";
 import AdminPanel from "./components/AdminPanel";
+import HybaAdminDashboard from "./components/HybaAdminDashboard";
 import AIAssistant from "./components/AIAssistant";
 import { useApiRequest } from "./hooks/useApiRequest";
 import { useLatencyMetrics } from "./hooks/useLatencyMetrics";
@@ -79,6 +81,15 @@ const THEME = {
 const UNAVAILABLE = "—";
 
 const PHI_TIERS = [7, 10, 12, 15, 18, 20, 31, 76];
+
+const EXECUTIVE_ROLES = [
+  "ceo_heir_apparent",
+  "chairman",
+  "cto",
+  "cfo",
+  "legal",
+  "chief_of_staff",
+];
 
 function fmtNum(value: NullableNumber, digits = 2): string {
   return typeof value === "number" && Number.isFinite(value)
@@ -180,7 +191,7 @@ function AppContent() {
   } | null>(null);
   const [selectedPoolForConfig, setSelectedPoolForConfig] = useState<PoolInfo | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [currentView, setCurrentView] = useState<"dashboard" | "admin">("dashboard");
+  const [currentView, setCurrentView] = useState<"dashboard" | "admin" | "executive">("dashboard");
 
   const { execute: fetchTelemetryExecute } = useApiRequest(fetchTelemetryData, { maxRetries: 3 });
   const {
@@ -578,14 +589,25 @@ function AppContent() {
               <RefreshCw className={`h-3.5 w-3.5 ${isSyncing ? "animate-spin" : ""}`} /> Refresh
             </button>
             <Sparkline data={latencyHistory} />
-            {currentUser?.role === "admin" && (
-              <button
-                onClick={() => setCurrentView(currentView === "dashboard" ? "admin" : "dashboard")}
-                className={`status-pill border ${currentView === "admin" ? "border-emerald-300/30 bg-emerald-400/15 text-emerald-100" : "border-white/30 bg-white/10 text-white"}`}
-              >
-                <ShieldCheck className="h-3.5 w-3.5" />
-                <span>{currentView === "admin" ? "Dashboard" : "Admin"}</span>
-              </button>
+            {(currentUser?.role === "admin" || EXECUTIVE_ROLES.includes(currentUser?.role || "")) && (
+              <>
+                <button
+                  onClick={() => setCurrentView(currentView === "dashboard" ? "admin" : "dashboard")}
+                  className={`status-pill border ${currentView === "admin" ? "border-emerald-300/30 bg-emerald-400/15 text-emerald-100" : "border-white/30 bg-white/10 text-white"}`}
+                >
+                  <ShieldCheck className="h-3.5 w-3.5" />
+                  <span>{currentView === "admin" ? "Dashboard" : "Admin"}</span>
+                </button>
+                {EXECUTIVE_ROLES.includes(currentUser?.role || "") && (
+                  <button
+                    onClick={() => setCurrentView(currentView === "executive" ? "dashboard" : "executive")}
+                    className={`status-pill border ${currentView === "executive" ? "border-amber-300/30 bg-amber-400/15 text-amber-100" : "border-white/30 bg-white/10 text-white"}`}
+                  >
+                    <Crown className="h-3.5 w-3.5" />
+                    <span>{currentView === "executive" ? "Dashboard" : "Executive"}</span>
+                  </button>
+                )}
+              </>
             )}
             <button
               onClick={toggleTheme}
@@ -601,6 +623,16 @@ function AppContent() {
       <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-6 px-6 py-6">
         {currentView === "admin" ? (
           <AdminPanel token={token} currentUser={currentUser} />
+        ) : currentView === "executive" ? (
+          <HybaAdminDashboard 
+            token={token} 
+            currentUser={currentUser}
+            telemetry={telemetry}
+            pools={pools}
+            activePoolName={activePoolName}
+            isConnected={isConnected}
+            latencyMs={latencyMs}
+          />
         ) : (
           <>
             <ExecutiveSummary
@@ -1075,12 +1107,11 @@ function AppContent() {
       {token && currentUser && (
         <AIAssistant
           token={token}
-          telemetry={telemetry}
-          currentUser={currentUser}
-          onAction={(action, params) => {
-            console.log("AI Action:", action, params);
+          telemetryData={telemetry}
+          onCommand={(command) => {
+            console.log("AI Command:", command);
             // Handle AI-triggered actions
-            if (action === "refresh_telemetry") {
+            if (command === "refresh_telemetry") {
               getLiveTelemetry();
             }
           }}

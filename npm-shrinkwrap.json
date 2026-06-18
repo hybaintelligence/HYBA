@@ -32,6 +32,7 @@
         "pino-http": "^11.0.0",
         "react": "^19.2.1",
         "react-dom": "^19.2.1",
+        "react-is": "^19.2.7",
         "recharts": "^3.8.1",
         "vite": "^8.0.16",
         "zod": "^4.2.1"
@@ -5873,6 +5874,12 @@
       "peerDependencies": {
         "react": "^19.2.7"
       }
+    },
+    "node_modules/react-is": {
+      "version": "19.2.7",
+      "resolved": "https://registry.npmjs.org/react-is/-/react-is-19.2.7.tgz",
+      "integrity": "sha512-kZFnouyVv7eP/Phmrlo9FK+zcAdriZJvzxXHF1Sl1P377WSGe2G/JxVolhTrB/jeV47lKImhNUsijjHAAbcl/A==",
+      "license": "MIT"
     },
     "node_modules/react-redux": {
       "version": "9.3.0",

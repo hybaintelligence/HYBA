@@ -699,3 +699,311 @@ export async function startIntelligence(): Promise<{ status: string }> {
 export async function stopIntelligence(): Promise<{ status: string }> {
   return post<{ status: string }>("/intelligence/stop", {});
 }
+
+// ── Admin API Endpoints ────────────────────────────────────────────────────
+
+export interface AdminStats {
+  total_users: number;
+  active_users: number;
+  admin_users: number;
+  executive_users: number;
+  total_allocations: number;
+  pending_allocations: number;
+  approved_allocations: number;
+  total_funding_allocated: number;
+  timestamp: string;
+}
+
+export interface AdminUser {
+  id: number;
+  username: string;
+  email: string | null;
+  role: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+  last_login: string | null;
+  created_by: string | null;
+}
+
+export interface AdminUserListResponse {
+  users: AdminUser[];
+  total: number;
+}
+
+export interface AuditLog {
+  id: number;
+  timestamp: string;
+  actor_username: string;
+  actor_role: string | null;
+  action: string;
+  target_type: string;
+  target_id: string | null;
+  details: Record<string, unknown> | null;
+  ip_address: string | null;
+}
+
+export interface AuditLogListResponse {
+  logs: AuditLog[];
+  total: number;
+}
+
+export interface FundingAllocation {
+  id: number;
+  entity_name: string;
+  entity_type: string;
+  allocation_amount: number;
+  currency: string;
+  fiscal_year: number;
+  fiscal_quarter: number | null;
+  status: string;
+  allocated_by: string;
+  allocated_at: string;
+  disbursed_at: string | null;
+  purpose: string | null;
+  restrictions: Record<string, unknown> | null;
+  metadata: Record<string, unknown> | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface FundingAllocationListResponse {
+  allocations: FundingAllocation[];
+  total: number;
+}
+
+export interface FundingRequest {
+  id: number;
+  request_id: string;
+  entity_name: string;
+  entity_type: string;
+  requested_amount: number;
+  currency: string;
+  fiscal_year: number;
+  fiscal_quarter: number | null;
+  purpose: string;
+  justification: string | null;
+  status: string;
+  requested_by: string;
+  requested_at: string;
+  reviewed_by: string | null;
+  reviewed_at: string | null;
+  approval_notes: string | null;
+  metadata: Record<string, unknown> | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface FundingRequestListResponse {
+  requests: FundingRequest[];
+  total: number;
+}
+
+export interface FundingSummary {
+  entity_summary: Array<{
+    entity_name: string;
+    entity_type: string;
+    total_allocated: number;
+    total_disbursed: number;
+    allocation_count: number;
+  }>;
+  total_by_status: {
+    pending: number;
+    approved: number;
+    disbursed: number;
+    rejected: number;
+  };
+  fiscal_year: number | null;
+  timestamp: string;
+}
+
+export async function getAdminStats(): Promise<AdminStats> {
+  return get<AdminStats>("/admin/stats");
+}
+
+export async function getAdminUsers(
+  skip = 0,
+  limit = 50,
+  search?: string,
+): Promise<AdminUserListResponse> {
+  const params = new URLSearchParams({
+    skip: skip.toString(),
+    limit: limit.toString(),
+  });
+  if (search) params.append("search", search);
+  return get<AdminUserListResponse>(`/admin/users?${params.toString()}`);
+}
+
+export async function createAdminUser(userData: {
+  username: string;
+  email?: string;
+  password: string;
+  role: string;
+}): Promise<AdminUser> {
+  return post<AdminUser>("/admin/users", userData, { maxRetries: 0 });
+}
+
+export async function updateAdminUser(
+  userId: number,
+  userData: {
+    email?: string;
+    role?: string;
+    is_active?: boolean;
+    password?: string;
+  },
+): Promise<AdminUser> {
+  return put<AdminUser>(`/admin/users/${userId}`, userData, { maxRetries: 0 });
+}
+
+export async function deleteAdminUser(userId: number): Promise<void> {
+  await fetchWithRetry(`${BACKEND_URL}/admin/users/${userId}`, {
+    method: "DELETE",
+  }, { maxRetries: 0 });
+}
+
+export async function getAuditLogs(
+  skip = 0,
+  limit = 100,
+  action?: string,
+  target_type?: string,
+  actor_username?: string,
+): Promise<AuditLogListResponse> {
+  const params = new URLSearchParams({
+    skip: skip.toString(),
+    limit: limit.toString(),
+  });
+  if (action) params.append("action", action);
+  if (target_type) params.append("target_type", target_type);
+  if (actor_username) params.append("actor_username", actor_username);
+  return get<AuditLogListResponse>(`/admin/audit-logs?${params.toString()}`);
+}
+
+export async function getFundingAllocations(
+  skip = 0,
+  limit = 50,
+  entity_name?: string,
+  entity_type?: string,
+  status?: string,
+  fiscal_year?: number,
+): Promise<FundingAllocationListResponse> {
+  const params = new URLSearchParams({
+    skip: skip.toString(),
+    limit: limit.toString(),
+  });
+  if (entity_name) params.append("entity_name", entity_name);
+  if (entity_type) params.append("entity_type", entity_type);
+  if (status) params.append("status", status);
+  if (fiscal_year) params.append("fiscal_year", fiscal_year.toString());
+  return get<FundingAllocationListResponse>(`/admin/funding/allocations?${params.toString()}`);
+}
+
+export async function createFundingAllocation(allocation: {
+  entity_name: string;
+  entity_type: string;
+  allocation_amount: number;
+  currency?: string;
+  fiscal_year: number;
+  fiscal_quarter?: number;
+  purpose?: string;
+  restrictions?: Record<string, unknown>;
+  metadata?: Record<string, unknown>;
+}): Promise<FundingAllocation> {
+  return post<FundingAllocation>("/admin/funding/allocations", allocation, { maxRetries: 0 });
+}
+
+export async function updateFundingAllocation(
+  allocationId: number,
+  allocation: {
+    entity_name?: string;
+    entity_type?: string;
+    allocation_amount?: number;
+    currency?: string;
+    fiscal_year?: number;
+    fiscal_quarter?: number;
+    purpose?: string;
+    restrictions?: Record<string, unknown>;
+    metadata?: Record<string, unknown>;
+  },
+): Promise<FundingAllocation> {
+  return put<FundingAllocation>(
+    `/admin/funding/allocations/${allocationId}`,
+    allocation,
+    { maxRetries: 0 },
+  );
+}
+
+export async function disburseFunding(allocationId: number): Promise<FundingAllocation> {
+  return post<FundingAllocation>(
+    `/admin/funding/allocations/${allocationId}/disburse`,
+    {},
+    { maxRetries: 0 },
+  );
+}
+
+export async function getFundingRequests(
+  skip = 0,
+  limit = 50,
+  entity_name?: string,
+  entity_type?: string,
+  status?: string,
+  fiscal_year?: number,
+): Promise<FundingRequestListResponse> {
+  const params = new URLSearchParams({
+    skip: skip.toString(),
+    limit: limit.toString(),
+  });
+  if (entity_name) params.append("entity_name", entity_name);
+  if (entity_type) params.append("entity_type", entity_type);
+  if (status) params.append("status", status);
+  if (fiscal_year) params.append("fiscal_year", fiscal_year.toString());
+  return get<FundingRequestListResponse>(`/admin/funding/requests?${params.toString()}`);
+}
+
+export async function createFundingRequest(request: {
+  entity_name: string;
+  entity_type: string;
+  requested_amount: number;
+  currency?: string;
+  fiscal_year: number;
+  fiscal_quarter?: number;
+  purpose: string;
+  justification?: string;
+  metadata?: Record<string, unknown>;
+}): Promise<FundingRequest> {
+  return post<FundingRequest>("/admin/funding/requests", request, { maxRetries: 0 });
+}
+
+export async function reviewFundingRequest(
+  requestId: string,
+  review: {
+    status: string;
+    approval_notes?: string;
+    allocated_amount?: number;
+  },
+): Promise<FundingRequest> {
+  return put<FundingRequest>(
+    `/admin/funding/requests/${requestId}/review`,
+    review,
+    { maxRetries: 0 },
+  );
+}
+
+export async function getFundingSummary(fiscal_year?: number): Promise<FundingSummary> {
+  const params = new URLSearchParams();
+  if (fiscal_year) params.append("fiscal_year", fiscal_year.toString());
+  return get<FundingSummary>(`/admin/funding/summary?${params.toString()}`);
+}
+
+async function put<T>(
+  path: string,
+  body: unknown,
+  retryOptions?: Partial<RetryOptions>,
+): Promise<T> {
+  const response = await fetchWithRetry(
+    `${BACKEND_URL}${path}`,
+    { method: "PUT", body: JSON.stringify(body) },
+    retryOptions,
+  );
+  if (!response.ok) throw await parseApiError(response);
+  return response.json() as Promise<T>;
+}

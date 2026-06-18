@@ -36,6 +36,15 @@ Base = declarative_base()
 
 
 class UserRole(str, enum.Enum):
+    # Executive roles (HYBA Group Leadership)
+    CEO_HEIR_APPARENT = "ceo_heir_apparent"
+    CHAIRMAN = "chairman"
+    CTO = "cto"
+    CFO = "cfo"
+    LEGAL = "legal"
+    CHIEF_OF_STAFF = "chief_of_staff"
+    
+    # Operational roles
     ADMIN = "admin"
     OPERATOR = "operator"
     ANALYST = "analyst"
@@ -67,8 +76,9 @@ class AuditLog(Base):
     id: int | None = Column(BigInteger, primary_key=True, index=True)
     timestamp = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     actor_username = Column(String(100), nullable=False)
+    actor_role = Column(String(50), nullable=True)
     action = Column(String(100), nullable=False)
-    target_type = Column(String(50), nullable=False)  # e.g., "user", "pool", "config"
+    target_type = Column(String(50), nullable=False)  # e.g., "user", "pool", "config", "funding"
     target_id = Column(String(255), nullable=True)
     details = Column(JSON, nullable=True)
     ip_address = Column(String(45), nullable=True)
@@ -125,3 +135,52 @@ class Experiment(Base):
         cascade="all, delete-orphan",
         passive_deletes=True,
     )
+
+
+class FundingAllocation(Base):
+    """Funding allocation for HYBA Group entities (Research, Analytics, Foundation, etc.)."""
+    
+    __tablename__ = "funding_allocations"
+    
+    id: int | None = Column(BigInteger, primary_key=True, index=True)
+    entity_name = Column(String(100), nullable=False, index=True)  # e.g., "HYBA Research", "HYBA Analytics", "HYBA Foundation"
+    entity_type = Column(String(50), nullable=False)  # e.g., "research", "analytics", "foundation", "vertical"
+    allocation_amount = Column(Float, nullable=False)  # In USD
+    currency = Column(String(10), default="USD", nullable=False)
+    fiscal_year = Column(Integer, nullable=False, index=True)
+    fiscal_quarter = Column(Integer, nullable=True)
+    status = Column(String(50), default="pending", nullable=False)  # pending, approved, disbursed, rejected
+    allocated_by = Column(String(100), nullable=False)  # Username of executive who approved
+    allocated_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    disbursed_at = Column(DateTime(timezone=True), nullable=True)
+    purpose = Column(String(500), nullable=True)
+    restrictions = Column(JSON, nullable=True)
+    allocation_metadata = Column(JSON, nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
+
+
+class FundingRequest(Base):
+    """Funding requests from HYBA Group entities."""
+    
+    __tablename__ = "funding_requests"
+    
+    id: int | None = Column(BigInteger, primary_key=True, index=True)
+    request_id = Column(String(100), unique=True, nullable=False, index=True)
+    entity_name = Column(String(100), nullable=False, index=True)
+    entity_type = Column(String(50), nullable=False)
+    requested_amount = Column(Float, nullable=False)
+    currency = Column(String(10), default="USD", nullable=False)
+    fiscal_year = Column(Integer, nullable=False)
+    fiscal_quarter = Column(Integer, nullable=True)
+    purpose = Column(String(1000), nullable=False)
+    justification = Column(String(2000), nullable=True)
+    status = Column(String(50), default="pending_review", nullable=False)  # pending_review, under_review, approved, rejected, disbursed
+    requested_by = Column(String(100), nullable=False)
+    requested_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    reviewed_by = Column(String(100), nullable=True)
+    reviewed_at = Column(DateTime(timezone=True), nullable=True)
+    approval_notes = Column(String(1000), nullable=True)
+    request_metadata = Column(JSON, nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)

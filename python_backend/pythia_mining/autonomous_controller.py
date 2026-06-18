@@ -90,6 +90,12 @@ from .quantum_regeneration import (
     measure_role, validate_collapse_or_quarantine,
     regeneration_pipeline, Role,
 )
+from .ai_orchestration_layer import (
+    UnifiedAIOrchestrationLayer,
+    AIStage,
+    AIDecision,
+    AIRecommendation,
+)
 
 PHI = (1.0 + 5.0 ** 0.5) / 2.0
 
@@ -488,17 +494,47 @@ class AutonomousMetaController:
     separable failures discussed earlier -- this is where that
     diagnostic claim could actually be tested against real data,
     rather than asserted.
+    
+    ELEVATED: Now includes AI orchestration layer for AI-powered
+    capabilities at every stage of the mining lifecycle.
     """
-    def __init__(self):
+    def __init__(self, enable_ai: bool = True):
         self.audit = AuditLog()
         self.healer = AutonomousHealer(self.audit)
         self.optimizer = AutonomousOptimizer(self.audit)
         self.breaker = MiningCircuitBreaker()
         self.miner: Optional[AutonomousMiner] = None  # set via attach_miner()
+        self.ai_orchestration: Optional[UnifiedAIOrchestrationLayer] = (
+            UnifiedAIOrchestrationLayer() if enable_ai else None
+        )
 
     def attach_miner(self, decision_policy: Callable[[Dict[str, Any]], MiningDecision]) -> None:
         """Attach mining subsystem with custom decision policy."""
         self.miner = AutonomousMiner(self.audit, self.breaker, decision_policy)
+    
+    def ai_initialize_system(self, system_info: Dict[str, Any]) -> Optional[AIDecision]:
+        """AI-powered system initialization."""
+        if self.ai_orchestration is None:
+            return None
+        return self.ai_orchestration.initialize_system(system_info)
+    
+    def ai_make_pipeline_decisions(self, metrics: Dict[str, float], context: Dict[str, Any]) -> Optional[Dict[str, AIDecision]]:
+        """AI decision-making throughout mining pipeline."""
+        if self.ai_orchestration is None:
+            return None
+        return self.ai_orchestration.make_pipeline_decision(metrics, context)
+    
+    def ai_optimize_submission(self, shares: List[Dict[str, Any]], pool_info: Dict[str, Any]) -> Optional[AIDecision]:
+        """AI-optimized share submission."""
+        if self.ai_orchestration is None:
+            return None
+        return self.ai_orchestration.optimize_share_submission(shares, pool_info)
+    
+    def ai_generate_advisory(self, system_state: Dict[str, Any]) -> Optional[AIRecommendation]:
+        """Generate AI advisory."""
+        if self.ai_orchestration is None:
+            return None
+        return self.ai_orchestration.generate_advisory(system_state)
 
     def tick_all(self, healing_inputs: List[Dict[str, Any]],
                  optimization_targets: List[str],
@@ -529,13 +565,19 @@ class AutonomousMetaController:
 
     def get_audit_summary(self) -> Dict[str, Any]:
         """Get summary of audit log for monitoring."""
-        return {
+        summary = {
             "total_entries": len(self.audit._entries),
             "by_subsystem": self.audit.count_by_subsystem(),
             "recent_healing": len(self.audit.recent("healing", 10)),
             "recent_optimizing": len(self.audit.recent("optimizing", 10)),
             "recent_mining": len(self.audit.recent("mining", 10)),
         }
+        
+        # Add AI orchestration summary if available
+        if self.ai_orchestration is not None:
+            summary["ai_orchestration"] = self.ai_orchestration.get_comprehensive_summary()
+        
+        return summary
 
     def get_breaker_status(self) -> Dict[str, Dict[str, Any]]:
         """Get status of all circuit breakers."""
@@ -558,4 +600,9 @@ __all__ = [
     "OptimizationTarget",
     "CircuitBreakerTripped",
     "BreakerState",
+    # AI orchestration layer exports
+    "UnifiedAIOrchestrationLayer",
+    "AIStage",
+    "AIDecision",
+    "AIRecommendation",
 ]

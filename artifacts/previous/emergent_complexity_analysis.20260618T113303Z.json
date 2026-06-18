@@ -1,6 +1,6 @@
 {
   "artifact_schema_version": 2,
-  "generated_at_utc": "2026-06-18T11:33:03.563761+00:00",
+  "generated_at_utc": "2026-06-18T10:43:40.056543+00:00",
   "measurements": {
     "baselines": {
       "random": {
@@ -29,25 +29,25 @@
       }
     },
     "test_01": {
-      "phi": 0.06177528988404638,
-      "python_modules": 123,
-      "typescript_modules": 52,
-      "total_dependencies": 123,
-      "total_dependency_edges": 927,
+      "phi": 0.06381283499927567,
+      "python_modules": 118,
+      "typescript_modules": 51,
+      "total_dependencies": 118,
+      "total_dependency_edges": 881,
       "interpretation": "Low-moderate integration - some cross-module coupling"
     },
     "test_02": {
       "autonomy_score": 10.0,
-      "total_decisions": 6362,
-      "total_external": 1914,
-      "adaptive_patterns": 1055,
-      "self_modification": 16,
-      "interpretation": "Highly autonomous - extensive internal control flow with 1055 adaptive patterns and 16 self-modification sites"
+      "total_decisions": 5902,
+      "total_external": 1733,
+      "adaptive_patterns": 1013,
+      "self_modification": 15,
+      "interpretation": "Highly autonomous - extensive internal control flow with 1013 adaptive patterns and 15 self-modification sites"
     },
     "test_03": {
-      "irreducibility_score": 0.041836065573770495,
-      "global_state_refs": 319,
-      "instance_state_refs": 7306,
+      "irreducibility_score": 0.042968217160005456,
+      "global_state_refs": 315,
+      "instance_state_refs": 7016,
       "interpretation": "Highly reducible - clean state partitions"
     }
   },
@@ -87,12 +87,12 @@
     "\u2717 Low integration - modular architecture",
     "\u2713 Has internal decision-making",
     "\u2717 Clean state boundaries",
-    "\u2713 Contains 1055 adaptive patterns",
-    "\u26a0 Contains 16 self-modification patterns"
+    "\u2713 Contains 1013 adaptive patterns",
+    "\u26a0 Contains 15 self-modification patterns"
   ],
   "conclusion": "ELEVATED SOFTWARE-PROXY COMPLEXITY: Static proxies show non-trivial integration, adaptation tokens, and self-modification tokens. Preserve as an internal measurement finding and move through replay, baselines, falsification, and external review before any stronger claim.",
-  "emergent_score": 17.97693322670932,
-  "preserved_previous_artifact": "artifacts/previous/emergent_complexity_analysis.20260618T113303Z.json",
+  "emergent_score": 17.482969435792786,
+  "preserved_previous_artifact": "artifacts/previous/emergent_complexity_analysis.20260618T104340Z.json",
   "claim_boundary": {
     "metric_posture": "software proxies only",
     "distinguishes": "static code coupling and token patterns are separated from runtime causal behaviour",

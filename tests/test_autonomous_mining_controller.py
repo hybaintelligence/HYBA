@@ -45,6 +45,10 @@ class TestAutonomousMiningController(unittest.TestCase):
         # Add optimizer mock to prevent AttributeError
         self.unified_engine.optimizer = MagicMock()
         self.unified_engine.optimizer.current_strategy = MagicMock()
+        # Add engine attributes that apply_self_optimization() checks
+        self.unified_engine.phi_ensemble = MagicMock()
+        self.unified_engine.solver = MagicMock()
+        self.unified_engine.consciousness = MagicMock()
         self.config = AutonomousConfig(
             autonomy_level=AutonomyLevel.ADVISORY,
             max_autonomous_hashrate_ehs=0.5,  # Within mission-memory hard limit of 1.0

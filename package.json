@@ -116,6 +116,7 @@
     "pino-http": "^11.0.0",
     "react": "^19.2.1",
     "react-dom": "^19.2.1",
+    "react-is": "^19.2.7",
     "recharts": "^3.8.1",
     "vite": "^8.0.16",
     "zod": "^4.2.1"
@@ -124,6 +125,7 @@
     "node": ">=20.18.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.43.1",
     "@types/node": "^25.0.1",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
@@ -132,7 +134,6 @@
     "esbuild": "^0.28.1",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",
-    "vitest": "^4.0.15",
-    "@playwright/test": "^1.43.1"
+    "vitest": "^4.0.15"
   }
 }

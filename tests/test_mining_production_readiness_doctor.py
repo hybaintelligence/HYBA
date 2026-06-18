@@ -9,7 +9,9 @@ if str(ROOT / "scripts") not in sys.path:
 
 from mining_production_readiness_doctor import (  # noqa: E402
     _check_bitcoin_mining_contracts,
+    _check_claim_boundary_contract,
     _check_environment,
+    _check_multi_pool_failover_contract,
     _check_required_files,
     _check_unified_engine_contract,
     run_doctor,
