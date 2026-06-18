@@ -1,0 +1,345 @@
+================================================================================
+                    4-AGENT TEST COVERAGE PUSH
+                      30% Coverage → 80%+ Coverage
+================================================================================
+
+YOUR MISSION:
+  Write 40-50 high-quality unit tests for your assigned modules
+  Target: 80%+ code coverage on your module group
+  Timeline: 3-4 hours per agent
+  Deadline: End of sprint
+
+================================================================================
+                           AGENT ASSIGNMENTS
+================================================================================
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ AGENT 1: CORE MINING ENGINE                                                 │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ Tests to Write: 45-50                                                       │
+│ Test Files: tests/test_agent1_*.py                                          │
+│                                                                              │
+│ Target Modules (80%+ coverage needed):                                       │
+│  • phi_unified_mining_engine.py      (main engine orchestration)            │
+│  • mining_orchestrator.py             (job dispatch & collection)           │
+│  • phi_config.py                      (configuration management)            │
+│                                                                              │
+│ Test Categories:                                                             │
+│  1. Engine Initialization (5 tests)                                         │
+│  2. Mining Orchestration (5 tests)                                          │
+│  3. Strategy Selection (5 tests)                                            │
+│  4. Metrics & Reporting (5 tests)                                           │
+│  5. Configuration Validation (4 tests)                                      │
+│  6. Engine Health & Recovery (4 tests)                                      │
+│  7. Async Operations (4 tests)                                              │
+│  8. Edge Cases (4 tests)                                                    │
+│  9. Performance Profiling (3 tests)                                         │
+│  10. Autonomous Integration (3 tests)                                       │
+│  11. Fallback & Contingency (3 tests)                                       │
+│  12. Documentation & Types (2 tests)                                        │
+│                                                                              │
+│ Effort: 4-5 hours                                                            │
+│ Start: Day 2, 9:00 AM                                                        │
+│ Estimated Completion: Day 2, 2:00 PM                                        │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ AGENT 2: POOL & STRATUM INTEGRATION                                         │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ Tests to Write: 40-45                                                       │
+│ Test Files: tests/test_agent2_*.py                                          │
+│                                                                              │
+│ Target Modules (80%+ coverage needed):                                       │
+│  • live_stratum_session.py            (stratum protocol client)             │
+│  • pool_profiles.py                   (pool configuration)                  │
+│  • stratum_client.py                  (JSON-RPC communication)              │
+│  • stratum_transport.py               (TCP/SSL transport)                   │
+│                                                                              │
+│ Test Categories:                                                             │
+│  1. Stratum Session Lifecycle (5 tests)                                     │
+│  2. Job Management (5 tests)                                                │
+│  3. Share Submission (5 tests)                                              │
+│  4. Pool Profile Management (5 tests)                                       │
+│  5. Multi-Pool Failover (4 tests)                                           │
+│  6. Protocol Compliance (4 tests)                                           │
+│  7. Transport & Networking (4 tests)                                        │
+│  8. Error Handling & Recovery (4 tests)                                     │
+│  9. Performance & Throughput (3 tests)                                      │
+│  10. Edge Cases & Boundaries (4 tests)                                      │
+│                                                                              │
+│ Effort: 4-5 hours                                                            │
+│ Start: Day 2, 9:00 AM (PARALLEL with Agent 1)                               │
+│ Estimated Completion: Day 2, 2:00 PM                                        │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ AGENT 3: QUANTUM & SOLVERS                                                  │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ Tests to Write: 35-40                                                       │
+│ Test Files: tests/test_agent3_*.py                                          │
+│                                                                              │
+│ Target Modules (80%+ coverage needed):                                       │
+│  • quantum_solver.py                  (dodecahedral basis solver)           │
+│  • quantum_regeneration.py            (module recovery)                     │
+│  • grover_quantum_solver.py           (grover amplitude amplification)      │
+│  • enhanced_grover.py                 (advanced grover variants)            │
+│                                                                              │
+│ Test Categories:                                                             │
+│  1. Quantum Solver Initialization (4 tests)                                 │
+│  2. Grover Algorithm (5 tests)                                              │
+│  3. Nonce Generation & Search (5 tests)                                     │
+│  4. Quantum Regeneration (4 tests)                                          │
+│  5. Classical Fallback (4 tests)                                            │
+│  6. Solver Metrics & Diagnostics (4 tests)                                  │
+│  7. Performance Benchmarking (4 tests)                                      │
+│  8. Numerical Stability (4 tests)                                           │
+│  9. Error Handling & Edge Cases (3 tests)                                   │
+│                                                                              │
+│ Effort: 3-4 hours                                                            │
+│ Start: Day 3, 9:00 AM                                                        │
+│ Estimated Completion: Day 3, 1:00 PM                                        │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ AGENT 4: DATA & STORAGE                                                     │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ Tests to Write: 30-35                                                       │
+│ Test Files: tests/test_agent4_*.py                                          │
+│                                                                              │
+│ Target Modules (80%+ coverage needed):                                       │
+│  • pulvini_phi_memory.py              (phi-folding compression)             │
+│  • pulvini_memory_compression_proof.py (compression proofs)                 │
+│  • mining_knowledge_base.py           (domain knowledge)                    │
+│  • phi_scaling_engine.py              (golden ratio scaling)                │
+│                                                                              │
+│ Test Categories:                                                             │
+│  1. Phi-Folding Compression (5 tests)                                       │
+│  2. Memory Compression Engine (5 tests)                                     │
+│  3. Proof Generation & Verification (4 tests)                               │
+│  4. Phi-Scaling Engine (5 tests)                                            │
+│  5. Knowledge Base Integration (5 tests)                                    │
+│  6. Data Persistence (4 tests)                                              │
+│  7. Performance & Optimization (4 tests)                                    │
+│  8. Integration & Cross-Module (3 tests)                                    │
+│                                                                              │
+│ Effort: 3-4 hours                                                            │
+│ Start: Day 3, 9:00 AM (PARALLEL with Agent 3)                               │
+│ Estimated Completion: Day 3, 1:00 PM                                        │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+================================================================================
+                              EXECUTION STEPS
+================================================================================
+
+STEP 1: Setup (5 minutes)
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ cd /Users/demouser/Desktop/HYBA_FULLSTACK                                    │
+│ python --version                          # Check: should be 3.12+          │
+│ pip install pytest pytest-asyncio -q      # Install deps                    │
+│ ls tests/test_agent*_*.py                 # Check existing (should be empty) │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+STEP 2: Plan (10 minutes)
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ Read: TEST_COVERAGE_PLAN_4_AGENTS.md (your agent section)                   │
+│ Read: AGENT_QUICK_START.md (essential patterns)                             │
+│ Read: TEST_TEMPLATES_FOR_AGENTS.md (code examples)                          │
+│                                                                              │
+│ Note down:                                                                   │
+│ • Which test groups you'll write (e.g., Groups 1-3)                         │
+│ • Which modules you're targeting (3-4 modules)                              │
+│ • How many tests per group (4-5 tests)                                      │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+STEP 3: Create Test Files (30 minutes)
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ Create: tests/test_agent{N}_group1.py                                        │
+│ Copy template from TEST_TEMPLATES_FOR_AGENTS.md                              │
+│ Adapt template for your module                                               │
+│ Add docstrings and clear assertions                                          │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+STEP 4: Write Tests (2-3 hours)
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ For each test group:                                                         │
+│   1. Read template for that group                                           │
+│   2. Copy-paste template code                                               │
+│   3. Modify for your actual module                                          │
+│   4. Write 4-5 tests following pattern                                      │
+│   5. Run: pytest tests/test_agent{N}_group{X}.py -v                         │
+│   6. Verify all tests pass ✓                                                │
+│   7. Move to next group                                                     │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+STEP 5: Verify Coverage (30 minutes)
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ Run full coverage for your modules:                                          │
+│   pytest tests/test_agent{N}_*.py --cov --cov-report=term-missing           │
+│                                                                              │
+│ Check:                                                                       │
+│ • Coverage >= 80% for ALL target modules? ✓ If NO, write more tests        │
+│ • All tests pass? ✓ If NO, fix failures                                     │
+│ • No test takes >2 seconds? ✓ If NO, optimize/mock                          │
+│ • Tests are not flaky? ✓ Run 2x to verify                                   │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+STEP 6: Submit (5 minutes)
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ Verify file naming: tests/test_agent{N}_*.py                                │
+│ Commit:                                                                      │
+│   git add tests/test_agent{N}_*.py                                          │
+│   git commit -m "Agent {N}: Add {X} tests for {Module}"                      │
+│   git push origin your_branch                                               │
+│                                                                              │
+│ Create Pull Request with:                                                   │
+│ • Coverage report (--cov output)                                            │
+│ • List of modules covered                                                   │
+│ • Number of tests written                                                   │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+================================================================================
+                           ESSENTIAL CHECKLISTS
+================================================================================
+
+BEFORE EACH TEST SESSION:
+  □ Python 3.12+ installed (python --version)
+  □ pytest installed (python -m pytest --version)
+  □ PYTHONPATH set correctly
+  □ Current directory: /Users/demouser/Desktop/HYBA_FULLSTACK
+  □ No stale .pyc files (rm -rf __pycache__)
+
+FOR EACH TEST FILE:
+  □ File named: tests/test_agent{N}_{topic}.py
+  □ Docstrings on all test methods
+  □ All tests pass locally
+  □ No test takes >2 seconds
+  □ Error cases tested
+  □ Edge cases tested
+  □ Mocks used appropriately
+
+FOR COVERAGE:
+  □ Coverage >= 80% on all target modules
+  □ No red lines in coverage report (--cov-report=html)
+  □ All functions/methods tested
+  □ Both success and error paths covered
+  □ Parameterized tests for multiple scenarios
+
+BEFORE SUBMISSION:
+  □ All tests pass: pytest tests/test_agent{N}_*.py -v
+  □ Coverage verified: pytest tests/test_agent{N}_*.py --cov
+  □ No flaky tests: Run tests 2x, results identical
+  □ Tests are isolated (no dependencies between tests)
+  □ Git commits clear and descriptive
+  □ PR description includes test count and coverage %
+
+================================================================================
+                         COMMON TEST PATTERNS
+================================================================================
+
+PATTERN 1: Basic Unit Test
+```python
+def test_method_does_something(self):
+    """Test that method does X."""
+    obj = MyClass()
+    result = obj.method()
+    assert result == expected_value
+```
+
+PATTERN 2: Error Handling
+```python
+def test_method_raises_on_error(self):
+    """Test that method raises on error."""
+    with pytest.raises(ValueError):
+        obj.method(invalid=True)
+```
+
+PATTERN 3: Parameterized
+```python
+@pytest.mark.parametrize("input,expected", [(1, 2), (2, 4)])
+def test_multiple_inputs(self, input, expected):
+    assert obj.double(input) == expected
+```
+
+PATTERN 4: Mocking
+```python
+@patch('module.external_func')
+def test_with_mock(self, mock_func):
+    mock_func.return_value = "mocked"
+    result = obj.method()
+    assert result == "expected"
+```
+
+PATTERN 5: Async
+```python
+@pytest.mark.asyncio
+async def test_async_method(self):
+    result = await obj.async_method()
+    assert result is not None
+```
+
+================================================================================
+                           QUICK REFERENCE
+================================================================================
+
+Run your tests:
+  pytest tests/test_agent{N}_*.py -v
+
+Show coverage:
+  pytest tests/test_agent{N}_*.py --cov --cov-report=term-missing
+
+Run 10x to check for flakiness:
+  pytest tests/test_agent{N}_*.py --count=10
+
+Show slowest tests:
+  pytest tests/test_agent{N}_*.py --durations=10
+
+Run with detailed output:
+  pytest tests/test_agent{N}_*.py -vv -s
+
+Run specific test:
+  pytest tests/test_agent{N}_group1.py::TestClassName::test_method_name -v
+
+Generate HTML coverage report:
+  pytest tests/test_agent{N}_*.py --cov --cov-report=html
+  open htmlcov/index.html
+
+================================================================================
+                         SUCCESS CRITERIA (PER AGENT)
+================================================================================
+
+  ✓ 40-50 tests written
+  ✓ 80%+ coverage on target modules
+  ✓ 100% test pass rate
+  ✓ Average test time: < 1 second
+  ✓ Zero flaky tests
+  ✓ All tests have docstrings
+  ✓ Error paths explicitly tested
+  ✓ Edge cases covered
+
+OVERALL GOAL:
+  302 → 450+ total tests
+  30% → 80%+ coverage
+  ~16 second execution time
+  Production-ready codebase
+
+================================================================================
+                              CONTACT INFO
+================================================================================
+
+Questions? Review in this order:
+  1. AGENT_QUICK_START.md (answers most questions)
+  2. TEST_TEMPLATES_FOR_AGENTS.md (code examples)
+  3. TEST_COVERAGE_PLAN_4_AGENTS.md (detailed specs)
+  4. Ask team lead if blocked
+
+================================================================================
+                         YOU'RE READY TO GO! 🚀
+================================================================================
+
+Start time: ________
+End time: ________
+Tests written: _____/50
+Coverage achieved: _____%
+
+Good luck!
+================================================================================

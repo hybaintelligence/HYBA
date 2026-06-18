@@ -3,102 +3,35 @@
  * ========================
  * 
  * Manages mining pool selection from frontend.
- * Default: Brains Pool
- * Selectable: All enabled pools
+ * Uses consistent Tailwind CSS styling.
+ * Integrates with main API client.
  */
 
 import React, { useEffect, useState } from 'react';
+import { Server, Check, X, AlertCircle, Loader2, Star } from 'lucide-react';
+import { switchPool as apiSwitchPool, type PoolInfo } from '../apiClient';
 
-interface PoolConfig {
-  name: string;
-  url: string;
-  stratum_version: number;
-  username?: string;
-  password?: string;
-  worker: string;
-  priority: number;
-  enabled: boolean;
-  is_default: boolean;
-  description?: string;
-  btc_address?: string;
+interface PoolSelectorProps {
+  pools: PoolInfo[];
+  activePoolName: string;
+  onPoolSwitch: (pool: PoolInfo) => Promise<void>;
+  isProcessing?: boolean;
 }
 
-interface PoolListResponse {
-  default_pool: string;
-  pools: Record<string, PoolConfig>;
-  timestamp: string;
-}
-
-interface PoolStatus {
-  active_pool: string;
-  connected: boolean;
-  shares_submitted: number;
-  last_share_time?: string;
-  uptime_seconds: number;
-}
-
-export const PoolSelector: React.FC = () => {
-  const [pools, setPools] = useState<Record<string, PoolConfig>>({});
-  const [activePool, setActivePool] = useState<string>('brains');
-  const [defaultPool, setDefaultPool] = useState<string>('brains');
-  const [status, setStatus] = useState<PoolStatus | null>(null);
+export const PoolSelector: React.FC<PoolSelectorProps> = ({ 
+  pools, 
+  activePoolName, 
+  onPoolSwitch,
+  isProcessing = false 
+}) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Load pools on mount
-  useEffect(() => {
-    fetchPools();
-    fetchStatus();
-    
-    // Poll status every 5 seconds
-    const interval = setInterval(fetchStatus, 5000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const fetchPools = async () => {
+  const handleSwitchPool = async (pool: PoolInfo) => {
     try {
       setLoading(true);
-      const response = await fetch('/api/v1/pools/list');
-      if (!response.ok) throw new Error('Failed to fetch pools');
-      
-      const data: PoolListResponse = await response.json();
-      setPools(data.pools);
-      setDefaultPool(data.default_pool);
-      setActivePool(data.default_pool);
       setError(null);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchStatus = async () => {
-    try {
-      const response = await fetch('/api/v1/pools/status');
-      if (response.ok) {
-        const data: PoolStatus = await response.json();
-        setStatus(data);
-      }
-    } catch (err) {
-      // Silently fail on status fetch
-    }
-  };
-
-  const switchPool = async (poolName: string) => {
-    try {
-      setLoading(true);
-      const response = await fetch('/api/v1/pools/switch', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ pool_name: poolName }),
-      });
-      
-      if (!response.ok) throw new Error('Failed to switch pool');
-      
-      setActivePool(poolName);
-      setError(null);
-      fetchStatus();
+      await onPoolSwitch(pool);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to switch pool');
     } finally {
@@ -106,262 +39,113 @@ export const PoolSelector: React.FC = () => {
     }
   };
 
-  const enabledPools = Object.entries(pools).filter(([_, config]) => config.enabled);
+  const enabledPools = pools.filter(p => p.enabled !== false);
 
   return (
-    <div className="pool-selector">
-      <div className="pool-header">
-        <h2>Mining Pool Selection</h2>
-        <span className="default-badge">Default: {defaultPool.toUpperCase()}</span>
+    <div className="rounded-2xl border border-white/30 bg-white/80 p-6 shadow-2xl shadow-slate-900/10 backdrop-blur">
+      <div className="mb-6 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <Server className="h-6 w-6 text-[#003666]" />
+          <h2 className="text-xl font-bold text-slate-900">Mining Pool Selection</h2>
+        </div>
+        <span className="rounded-full bg-[#003666] px-3 py-1 text-xs font-bold text-white">
+          Active: {activePoolName.toUpperCase()}
+        </span>
       </div>
 
       {error && (
-        <div className="error-message">
-          <span className="error-icon">⚠️</span>
-          {error}
+        <div className="mb-4 flex items-center gap-2 rounded-lg bg-red-50 p-3 text-red-900">
+          <AlertCircle className="h-5 w-5" />
+          <span className="text-sm">{error}</span>
         </div>
       )}
 
-      {loading && <div className="loading">Loading pools...</div>}
-
-      <div className="pools-grid">
-        {enabledPools.map(([poolName, config]) => (
-          <div
-            key={poolName}
-            className={`pool-card ${activePool === poolName ? 'active' : ''} ${
-              poolName === defaultPool ? 'default' : ''
-            }`}
-            onClick={() => switchPool(poolName)}
-          >
-            <div className="pool-name">{config.name}</div>
-            <div className="pool-description">{config.description || ''}</div>
-            
-            <div className="pool-details">
-              <div className="detail-row">
-                <span className="label">URL:</span>
-                <span className="value">{config.url}</span>
-              </div>
-              <div className="detail-row">
-                <span className="label">Worker:</span>
-                <span className="value">{config.worker}</span>
-              </div>
-              <div className="detail-row">
-                <span className="label">Priority:</span>
-                <span className="value">{config.priority}</span>
-              </div>
-            </div>
-
-            <div className="pool-status">
-              {activePool === poolName && status && (
-                <>
-                  <div className="status-item">
-                    <span className="status-label">Shares:</span>
-                    <span className="status-value">{status.shares_submitted}</span>
+      {enabledPools.length === 0 ? (
+        <div className="text-center py-8 text-slate-600">
+          <Server className="mx-auto mb-2 h-12 w-12 opacity-50" />
+          <p>No pools configured</p>
+        </div>
+      ) : (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {enabledPools.map((pool) => {
+            const isActive = pool.name === activePoolName || pool.is_active;
+            return (
+              <div
+                key={pool.pool_id || pool.name}
+                className={`relative rounded-xl border-2 p-4 transition-all ${
+                  isActive 
+                    ? 'border-[#16A34A] bg-green-50/50' 
+                    : 'border-slate-200 bg-white hover:border-[#003666] hover:shadow-lg'
+                }`}
+              >
+                {pool.is_active && (
+                  <div className="absolute right-2 top-2">
+                    <Star className="h-4 w-4 text-amber-500" />
                   </div>
-                  <div className="status-item">
-                    <span className="status-label">Connected:</span>
-                    <span className={`status-value ${status.connected ? 'connected' : 'disconnected'}`}>
-                      {status.connected ? '✓ Yes' : '✗ No'}
+                )}
+                
+                <div className="mb-3">
+                  <h3 className="font-bold text-slate-900">{pool.name || pool.pool_id}</h3>
+                  <p className="text-xs font-mono text-slate-600">{pool.url}</p>
+                </div>
+
+                <div className="mb-4 grid grid-cols-2 gap-2 rounded-lg bg-slate-50 p-2 text-xs">
+                  <div>
+                    <span className="block text-slate-600">Mode</span>
+                    <span className="font-mono font-bold text-slate-900">{pool.credential_mode}</span>
+                  </div>
+                  <div>
+                    <span className="block text-slate-600">Configured</span>
+                    <span className={`font-bold ${pool.configured ? 'text-green-600' : 'text-amber-600'}`}>
+                      {pool.configured ? 'YES' : 'NO'}
                     </span>
                   </div>
-                </>
-              )}
-            </div>
+                  {pool.performance && (
+                    <>
+                      <div>
+                        <span className="block text-slate-600">Latency</span>
+                        <span className="font-mono font-bold text-slate-900">
+                          {pool.performance.latency_ms}ms
+                        </span>
+                      </div>
+                      <div>
+                        <span className="block text-slate-600">Shares</span>
+                        <span className="font-mono font-bold text-slate-900">
+                          {pool.performance.shares_submitted}
+                        </span>
+                      </div>
+                    </>
+                  )}
+                </div>
 
-            <button
-              className={`select-button ${activePool === poolName ? 'selected' : ''}`}
-              disabled={loading || activePool === poolName}
-            >
-              {activePool === poolName ? '✓ Active' : 'Select'}
-              {poolName === defaultPool && <span className="default-star">★</span>}
-            </button>
-          </div>
-        ))}
-      </div>
-
-      <style>{`
-        .pool-selector {
-          padding: 20px;
-          background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-          border-radius: 8px;
-          color: #fff;
-        }
-
-        .pool-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 20px;
-          padding-bottom: 10px;
-          border-bottom: 2px solid #0f3460;
-        }
-
-        .pool-header h2 {
-          margin: 0;
-          font-size: 24px;
-          color: #00d4ff;
-        }
-
-        .default-badge {
-          background: #00d4ff;
-          color: #1a1a2e;
-          padding: 4px 12px;
-          border-radius: 12px;
-          font-size: 12px;
-          font-weight: bold;
-        }
-
-        .error-message {
-          background: #ff3333;
-          color: #fff;
-          padding: 12px;
-          border-radius: 4px;
-          margin-bottom: 15px;
-          display: flex;
-          align-items: center;
-          gap: 8px;
-        }
-
-        .error-icon {
-          font-size: 16px;
-        }
-
-        .loading {
-          text-align: center;
-          padding: 20px;
-          color: #00d4ff;
-        }
-
-        .pools-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-          gap: 15px;
-        }
-
-        .pool-card {
-          background: linear-gradient(135deg, #0f3460 0%, #16213e 100%);
-          border: 2px solid #00d4ff;
-          border-radius: 8px;
-          padding: 16px;
-          cursor: pointer;
-          transition: all 0.3s ease;
-          display: flex;
-          flex-direction: column;
-          gap: 12px;
-        }
-
-        .pool-card:hover {
-          transform: translateY(-4px);
-          box-shadow: 0 8px 20px rgba(0, 212, 255, 0.2);
-        }
-
-        .pool-card.active {
-          border-color: #00ff88;
-          background: linear-gradient(135deg, #1a3a2e 0%, #0f3460 100%);
-          box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
-        }
-
-        .pool-card.default {
-          border-width: 3px;
-        }
-
-        .pool-name {
-          font-size: 18px;
-          font-weight: bold;
-          color: #00d4ff;
-        }
-
-        .pool-description {
-          font-size: 12px;
-          color: #aaa;
-          min-height: 24px;
-        }
-
-        .pool-details {
-          background: rgba(0, 0, 0, 0.3);
-          padding: 8px;
-          border-radius: 4px;
-          font-size: 12px;
-        }
-
-        .detail-row {
-          display: flex;
-          justify-content: space-between;
-          margin: 4px 0;
-          gap: 8px;
-        }
-
-        .detail-row .label {
-          color: #888;
-          min-width: 60px;
-        }
-
-        .detail-row .value {
-          color: #00d4ff;
-          word-break: break-all;
-          text-align: right;
-        }
-
-        .pool-status {
-          display: flex;
-          gap: 12px;
-          font-size: 12px;
-        }
-
-        .status-item {
-          display: flex;
-          gap: 4px;
-        }
-
-        .status-label {
-          color: #888;
-        }
-
-        .status-value {
-          color: #00ff88;
-          font-weight: bold;
-        }
-
-        .status-value.disconnected {
-          color: #ff3333;
-        }
-
-        .select-button {
-          background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
-          color: #1a1a2e;
-          border: none;
-          padding: 10px 16px;
-          border-radius: 4px;
-          font-weight: bold;
-          cursor: pointer;
-          transition: all 0.3s ease;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 8px;
-          font-size: 14px;
-        }
-
-        .select-button:hover:not(:disabled) {
-          background: linear-gradient(135deg, #00ff88 0%, #00cc66 100%);
-          transform: scale(1.05);
-        }
-
-        .select-button:disabled {
-          opacity: 0.6;
-          cursor: not-allowed;
-        }
-
-        .select-button.selected {
-          background: linear-gradient(135deg, #00ff88 0%, #00cc66 100%);
-          color: #1a1a2e;
-        }
-
-        .default-star {
-          color: #ffaa00;
-          font-size: 16px;
-        }
-      `}</style>
+                <button
+                  onClick={() => handleSwitchPool(pool)}
+                  disabled={loading || isProcessing || isActive}
+                  className={`w-full rounded-lg px-4 py-2 font-medium transition-colors ${
+                    isActive
+                      ? 'bg-green-600 text-white'
+                      : 'bg-[#003666] text-white hover:bg-[#002147]'
+                  } disabled:cursor-not-allowed disabled:opacity-50`}
+                >
+                  {loading || isProcessing ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Processing...
+                    </span>
+                  ) : isActive ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <Check className="h-4 w-4" />
+                      Active
+                    </span>
+                  ) : (
+                    pool.configured ? 'Switch Pool' : 'Setup Pool'
+                  )}
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 };
