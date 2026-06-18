@@ -7,14 +7,12 @@
   },
   "compression_seeking_history": [
     1.8786,
-    1.8972000000000002,
-    1.89685404
+    1.8972000000000002
   ],
-  "epochs": 8,
+  "epochs": 6,
   "logical_consistency_history": [
     0.77,
-    0.7533333333333333,
-    0.8
+    0.7533333333333333
   ],
   "optimization_targets": [
     {
@@ -64,29 +62,12 @@
       "target_name": "phi_scaling",
       "target_value": 1.4249999999999998,
       "tolerance": 0.05
-    },
-    {
-      "current_value": 1.86,
-      "objective_function": "maximize_phi_coherence",
-      "priority": 3,
-      "target_name": "compression_target",
-      "target_value": 1.89685404,
-      "tolerance": 0.05
-    },
-    {
-      "current_value": 1.86,
-      "objective_function": "maximize_phi_coherence",
-      "priority": 3,
-      "target_name": "compression_target",
-      "target_value": 1.89685404,
-      "tolerance": 0.05
     }
   ],
   "phi_coherence_threshold": 0.735,
   "phi_density_history": [
     0.5,
-    0.86243,
-    1.0
+    0.86243
   ],
   "proposals": [
     {
@@ -121,28 +102,6 @@
       "logical_consistency_score": 0.76,
       "proposal_id": "self_opt_3_1781807674",
       "proposed_value": 1.4249999999999998
-    },
-    {
-      "applied": true,
-      "codebase_source_module": "pulvini_memory_compression_proof",
-      "counterfactual_confidence": 0.8981399999999999,
-      "current_value": 1.86,
-      "expected_phi_density_gain": 0.0,
-      "improvement_type": "compression_target",
-      "logical_consistency_score": 0.8,
-      "proposal_id": "self_opt_6_1781807735",
-      "proposed_value": 1.89685404
-    },
-    {
-      "applied": true,
-      "codebase_source_module": "pulvini_memory_compression_proof",
-      "counterfactual_confidence": 0.8981399999999999,
-      "current_value": 1.86,
-      "expected_phi_density_gain": 0.0,
-      "improvement_type": "compression_target",
-      "logical_consistency_score": 0.8,
-      "proposal_id": "self_opt_6_1781807735",
-      "proposed_value": 1.89685404
     }
   ],
   "schema_version": 2
