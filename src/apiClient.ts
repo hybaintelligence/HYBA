@@ -216,7 +216,7 @@ export function assertPulviniHashrateCap(value: number | undefined, field: strin
   }
 }
 
-function getToken(): string | null {
+export function getToken(): string | null {
   try {
     return localStorage.getItem(TOKEN_KEY);
   } catch {
@@ -224,7 +224,7 @@ function getToken(): string | null {
   }
 }
 
-function setToken(token: string): void {
+export function setToken(token: string): void {
   try {
     localStorage.setItem(TOKEN_KEY, token);
   } catch {
@@ -232,7 +232,7 @@ function setToken(token: string): void {
   }
 }
 
-function clearToken(): void {
+export function clearToken(): void {
   try {
     localStorage.removeItem(TOKEN_KEY);
   } catch {
