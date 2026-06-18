@@ -24,6 +24,21 @@ DEFAULT_LOW_VARIANCE_THRESHOLD = 0.05
 DEFAULT_HIGH_VARIANCE_THRESHOLD = 0.2
 DEFAULT_ENSEMBLE_MEMORY_LIMIT = 1024
 DEFAULT_SPARSE_SKIP_THRESHOLD = 0.85
+TRUTHY = {"1", "true", "yes", "on"}
+
+
+def _env_true(name: str) -> bool:
+    return os.getenv(name, "").strip().lower() in TRUTHY
+
+
+def _live_or_production_mode() -> bool:
+    """Return True when runtime is live, production, or live-submit capable."""
+    return (
+        os.getenv("HYBA_ENV", "").strip().lower() == "production"
+        or os.getenv("NODE_ENV", "").strip().lower() == "production"
+        or _env_true("HYBA_ENABLE_LIVE_STRATUM")
+        or _env_true("HYBA_ENABLE_LIVE_SHARE_SUBMIT")
+    )
 
 
 def initialize_production_secrets() -> dict:
@@ -37,8 +52,21 @@ def initialize_production_secrets() -> dict:
     Raises:
         SystemExit: If critical secrets are missing or insecure in production mode
     """
-    # Allow development mode bypass
-    if os.getenv("HYBA_ALLOW_DEV_FIXTURES") == "true":
+    logger = logging.getLogger("hyba.security")
+
+    # Development fixtures may never bypass the live/prod secret gate.
+    if _env_true("HYBA_ALLOW_DEV_FIXTURES"):
+        if _live_or_production_mode():
+            logger.critical(
+                "SEC_FAIL: HYBA_ALLOW_DEV_FIXTURES cannot be used with production/live mining flags. "
+                "Unset fixtures or disable live/prod mode before launching."
+            )
+            print(
+                "\n[CRITICAL] Development fixtures are forbidden in production/live mining mode.\n"
+                "   HYBA_ALLOW_DEV_FIXTURES=true was supplied alongside production/live flags.\n"
+                "   System execution halted to prevent fixture-backed live execution.\n"
+            )
+            sys.exit(1)
         return {"status": "DEV_PASS"}
 
     # Assert production compliance rules
@@ -48,7 +76,6 @@ def initialize_production_secrets() -> dict:
         "POOL_PRIMARY_CREDENTIALS",
     ]
 
-    logger = logging.getLogger("hyba.security")
     failed_secrets = []
 
     for secret in critical_secrets:
@@ -104,5 +131,5 @@ class PhiCompressionPolicy:
             raise ValueError("tolerance must be positive")
         if self.fold_depth < 1:
             raise ValueError("fold_depth must be >= 1")
-        if not 0.0 <= self.sparse_skip_threshold <= 1.0:
+        if not 0.0 <= self.sparse_skip_threshold <= 1:
             raise ValueError("sparse_skip_threshold must be between 0.0 and 1.0")
