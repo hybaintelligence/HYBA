@@ -17,10 +17,9 @@
     1.8971139668038568,
     1.8971234756038775,
     1.8971310926707534,
-    1.8971373312138773,
-    1.897142534273237
+    1.8971373312138773
   ],
-  "epochs": 29,
+  "epochs": 27,
   "logical_consistency_history": [
     0.77,
     0.7533333333333333,
@@ -33,8 +32,7 @@
     0.8,
     0.78,
     0.8,
-    0.77,
-    0.85
+    0.77
   ],
   "optimization_targets": [
     {
@@ -252,25 +250,9 @@
       "target_name": "search_depth",
       "target_value": 66.0,
       "tolerance": 5.0
-    },
-    {
-      "current_value": 0.735,
-      "objective_function": "minimize_energy",
-      "priority": 2,
-      "target_name": "coherence_threshold",
-      "target_value": 0.6982499999999999,
-      "tolerance": 0.02
-    },
-    {
-      "current_value": 1.86,
-      "objective_function": "maximize_phi_coherence",
-      "priority": 3,
-      "target_name": "compression_target",
-      "target_value": 1.897142534273237,
-      "tolerance": 0.05
     }
   ],
-  "phi_coherence_threshold": 0.6982499999999999,
+  "phi_coherence_threshold": 0.735,
   "phi_density_history": [
     0.5,
     0.86243,
@@ -283,8 +265,7 @@
     1.0,
     1.0,
     1.0,
-    0.9341444334214164,
-    1.0
+    0.9341444334214164
   ],
   "proposals": [
     {
@@ -319,28 +300,6 @@
       "logical_consistency_score": 0.75,
       "proposal_id": "self_opt_24_1781809733",
       "proposed_value": 66.0
-    },
-    {
-      "applied": true,
-      "codebase_source_module": "consciousness_engine",
-      "counterfactual_confidence": 0.8,
-      "current_value": 0.735,
-      "expected_phi_density_gain": 0.0,
-      "improvement_type": "coherence_threshold",
-      "logical_consistency_score": 0.8999999999999999,
-      "proposal_id": "self_opt_27_1781809793",
-      "proposed_value": 0.6982499999999999
-    },
-    {
-      "applied": true,
-      "codebase_source_module": "pulvini_memory_compression_proof",
-      "counterfactual_confidence": 0.8996910444797687,
-      "current_value": 1.86,
-      "expected_phi_density_gain": 0.0,
-      "improvement_type": "compression_target",
-      "logical_consistency_score": 0.8,
-      "proposal_id": "self_opt_27_1781809793",
-      "proposed_value": 1.897142534273237
     }
   ],
   "schema_version": 2
