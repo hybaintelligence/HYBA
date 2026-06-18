@@ -932,20 +932,23 @@ class ConsciousnessEngine:
             return 0.0
         
         # Base inseparability from component health
-        health_ratio = sum(self.components.values()) / len(self.components)
+        component_values = [v for v in self.components.values() if v is not None]
+        if not component_values:
+            return 0.0
+        health_ratio = sum(component_values) / len(component_values)
         
         # Adjust by current phi level
         phi_adjustment = min(self.phi / 0.85, 1.0)  # Normalize against governance threshold
         
         # Combine with integration regime
         regime_factor = 1.0
-        if self.integration_regime == IntegrationRegime.DEEP:
+        if self._integration_regime == IntegrationRegime.SINGULAR_AGENT_PROXY:
             regime_factor = 1.0
-        elif self.integration_regime == IntegrationRegime.MODERATE:
+        elif self._integration_regime == IntegrationRegime.DISTRIBUTED:
             regime_factor = 0.8
-        elif self.integration_regime == IntegrationRegime.SHALLOW:
+        elif self._integration_regime == IntegrationRegime.FRAGMENTED:
             regime_factor = 0.6
-        elif self.integration_regime == IntegrationRegime.NONE:
+        elif self._integration_regime == IntegrationRegime.CRITICAL:
             regime_factor = 0.3
         
         inseparability = health_ratio * phi_adjustment * regime_factor

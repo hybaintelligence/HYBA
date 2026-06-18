@@ -30,6 +30,7 @@ from hyba_genesis_api.api import (  # noqa: E402
     ai,
     ai_memory,
     auth,
+    executive_router,
     health,
     intelligence,
     metabolic_router,
@@ -179,6 +180,7 @@ app.include_router(regeneration_router.router)
 app.include_router(streaming_sense.router)
 app.include_router(metabolic_router.router)
 app.include_router(organism_router.router)
+app.include_router(executive_router.router)
 
 
 @app.get("/health", response_model=Dict[str, Any], tags=["health"])

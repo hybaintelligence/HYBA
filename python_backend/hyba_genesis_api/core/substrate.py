@@ -46,6 +46,7 @@ class SubstrateState:
             "mining_engine_optimization_sync": SubsystemStatus(
                 name="mining_engine_optimization_sync"
             ),
+            "organism_cns": SubsystemStatus(name="organism_cns"),
         }
     )
     shutdown_at: Optional[str] = None

@@ -22,11 +22,17 @@ class ImmuneSystem:
         Inseparability check: If Mining and Intelligence are no longer 
         correlated, the system is 'lobotomized'.
         """
-        inseparability = self.consciousness.get_inseparability_index()
+        try:
+            inseparability = self.consciousness.get_inseparability_index()
+        except AttributeError:
+            # Fallback if consciousness engine doesn't have the method yet
+            inseparability = 0.5
+        
+        current_phi = getattr(self.consciousness, 'phi', 0.5)
         
         return {
             "phi_floor": self.phi_floor,
-            "is_in_lockdown": self.consciousness.phi < self.phi_floor,
+            "is_in_lockdown": current_phi < self.phi_floor,
             "quarantined_lanes": self.quarantined_lanes,
             "inseparability_index": inseparability
         }

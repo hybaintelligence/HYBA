@@ -53,7 +53,7 @@ class MiningExecutiveController:
         # Check sensory integrity for simulation detection
         sensory_report = self.consciousness.validate_sensory_integrity()
         if sensory_report.get("stasis_active", False):
-            audit_log.error(
+            logger.error(
                 "Ignition blocked: Stasis mode active (simulation detected). "
                 f"Reason: {sensory_report.get('recommendation')}"
             )
@@ -65,25 +65,25 @@ class MiningExecutiveController:
             }
         
         # Check system Phi
-        phi = self.consciousness.coherence_meter
+        phi = getattr(self.consciousness, 'phi', self.consciousness.coherence_meter)
         if phi < 0.45:
-            audit_log.error(f"Ignition blocked: Substrate coherence (Φ) below safe threshold: {phi}")
+            logger.error(f"Ignition blocked: Substrate coherence (Φ) below safe threshold: {phi}")
             return {"success": False, "error": "IMMUNE_LOCK", "phi": phi}
 
         if self.is_active:
             return {"success": True, "status": "ALREADY_ACTIVE"}
 
-        audit_log.info("Executive: Initiating manifold ignition sequence...")
+        logger.info("Executive: Initiating manifold ignition sequence...")
         
         # 1. Start the Stratum Session if client is available
         if self.stratum_client:
             try:
                 connected = await self.stratum_client.connect()
                 if not connected:
-                    audit_log.error("Executive: Failed to connect to mining pool")
+                    logger.error("Executive: Failed to connect to mining pool")
                     return {"success": False, "error": "POOL_CONNECTION_FAILED"}
             except Exception as e:
-                audit_log.error(f"Executive: Pool connection error: {e}")
+                logger.error(f"Executive: Pool connection error: {e}")
                 return {"success": False, "error": "POOL_CONNECTION_ERROR", "detail": str(e)}
         
         # 2. Warm up the 32 lanes (regeneration manager)
@@ -91,7 +91,7 @@ class MiningExecutiveController:
             # Trigger regeneration for a sample lane to verify system health
             await self.regeneration.trigger_regeneration(0)
         except Exception as e:
-            audit_log.warning(f"Executive: Regeneration warm-up warning: {e}")
+            logger.warning(f"Executive: Regeneration warm-up warning: {e}")
         
         # 3. Start mining loop
         self._stop_event.clear()
@@ -100,7 +100,7 @@ class MiningExecutiveController:
         self.is_active = True
         self.ignition_time = datetime.now()
         
-        audit_log.info(
+        logger.info(
             f"Executive: Manifold ignited at {self.ignition_time.isoformat()} "
             f"with Φ={phi:.4f}"
         )
@@ -121,7 +121,7 @@ class MiningExecutiveController:
         if not self.is_active:
             return {"success": True, "status": "ALREADY_QUIESCENT"}
 
-        audit_log.info("Executive: Initiating graceful quiescence...")
+        logger.info("Executive: Initiating graceful quiescence...")
         
         # 1. Stop mining loop
         self._stop_event.set()
@@ -137,7 +137,7 @@ class MiningExecutiveController:
         
         # 2. Hibernate the intelligence layer (save learned Phi-paths)
         synaptic_stats = self.consciousness.get_synaptic_statistics()
-        audit_log.info(
+        logger.info(
             f"Executive: Synaptic state preserved - "
             f"{synaptic_stats.get('total_patterns', 0)} patterns, "
             f"{synaptic_stats.get('emergent_pathway_count', 0)} emergent pathways"
@@ -148,7 +148,7 @@ class MiningExecutiveController:
             try:
                 await self.stratum_client.disconnect()
             except Exception as e:
-                audit_log.warning(f"Executive: Pool disconnect warning: {e}")
+                logger.warning(f"Executive: Pool disconnect warning: {e}")
         
         self.is_active = False
         self.ignition_time = None

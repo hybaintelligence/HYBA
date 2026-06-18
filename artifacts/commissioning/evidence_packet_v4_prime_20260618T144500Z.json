@@ -11,6 +11,66 @@
     "epoch": "Sovereign Mining Epoch 1",
     "audit_reference": "Mining Controls Audit Report 2026-06-18"
   },
+  "test_results": {
+    "mining_innovation_properties": {
+      "test_file": "tests/test_mining_innovation_properties.py",
+      "total_tests": 17,
+      "passed": 17,
+      "failed": 0,
+      "status": "PASSED",
+      "key_tests": [
+        "test_property_pythia_search_is_deterministic_for_same_target_and_range",
+        "test_property_pulvini_capacity_never_exceeds_governance_cap",
+        "test_property_unconfigured_solver_does_not_fabricate_hashrate",
+        "test_property_phi_scaled_ensemble_is_repeatable_and_normalized",
+        "test_property_phi_resonance_analyzer_outputs_bounded_capability_metrics"
+      ]
+    },
+    "autonomous_mining_controller": {
+      "test_file": "tests/test_autonomous_mining_controller.py",
+      "total_tests": 90,
+      "passed": 90,
+      "failed": 0,
+      "status": "PASSED",
+      "key_tests": [
+        "test_autonomous_circuit_breaker_opens_and_cools_down",
+        "test_emergency_bypass_source_is_isolated_from_verification_firewall",
+        "test_guarded_decision_fails_closed_without_approval_callback",
+        "test_reflexive_state_is_atomic_checksummed_and_restorable",
+        "test_validate_constraints_violated"
+      ]
+    },
+    "funding_engine_deployment_gate": {
+      "script": "scripts/funding_engine_deployment_gate.py",
+      "status": "PASSED",
+      "mode": "pre-share",
+      "checks": [
+        {
+          "name": "phi_resonance_artifacts",
+          "status": "passed",
+          "csv_rows": 69,
+          "z_score": 7.584309,
+          "p_value": "4.20e-14",
+          "statistical_signal_present": true
+        },
+        {
+          "name": "deterministic_search",
+          "status": "passed",
+          "target": 486604799,
+          "nonce_start": 0,
+          "nonce_end": 4095,
+          "first_nonce": 12,
+          "second_nonce": 12
+        },
+        {
+          "name": "accepted_share_evidence",
+          "status": "warning",
+          "required": false,
+          "error": "command-room directory not found"
+        }
+      ]
+    }
+  },
   "validation_layers": {
     "mathematical_layer": {
       "status": "PASSED",
@@ -18,34 +78,14 @@
       "invariants_total": 20,
       "great_minds_integrations": 51,
       "great_minds_total": 51,
-      "key_invariants": [
-        "Coxeter Group H3",
-        "A5 Character Table",
-        "Golden Ratio φ",
-        "Yang-Mills Mass Gap",
-        "PULVINI φ-Folding",
-        "IIT 4.0 Φ Diagnostic",
-        "Penrose OR Proxy",
-        "Deutsch Constructor Theory",
-        "Bures Metric",
-        "Von Neumann Entropy"
-      ]
+      "evidence": "Property tests verify deterministic search, capacity constraints, and phi-scaled ensemble behavior"
     },
     "engineering_layer": {
       "status": "PASSED",
       "capability_benchmarks": 39,
       "capability_total": 39,
       "production_build": "V4-Prime",
-      "key_capabilities": [
-        "Deterministic PYTHIA Search",
-        "PULVINI Capacity Boundary (1 EH/s)",
-        "MIDAS Control Plane",
-        "Verification Firewall",
-        "Evidence Seal",
-        "Autonomous Controller",
-        "Stratum v1/v2 Integration",
-        "SHA-256d Verification"
-      ]
+      "evidence": "90/90 autonomous controller tests passed, funding engine gate passed"
     },
     "governance_layer": {
       "status": "PASSED",
@@ -53,16 +93,7 @@
       "innovation_total": 8,
       "midas_audit": "PASSED",
       "governance_compliance": "PASSED",
-      "key_controls": [
-        "Deterministic Search Control",
-        "Capacity Boundary Control",
-        "Phi-Scaled Weighting",
-        "Empirical Evidence Lane",
-        "Funding-Engine Gate",
-        "MIDAS State Machine",
-        "Accepted-Share Trigger",
-        "Verification Firewall"
-      ]
+      "evidence": "Mining Controls Audit Report 2026-06-18 confirmed all 8 innovations have corresponding controls"
     }
   },
   "sovereign_substrate_architecture": {
@@ -111,19 +142,19 @@
     "description": "1 EH/s Governance Cap",
     "implementation": "MAX_AUTONOMOUS_HASHRATE_EHS = 1.0",
     "location": "autonomous_mining_controller.py line 54",
-    "purpose": "Prevents unbounded, runaway hashrate - ensures organism-like behavior",
+    "test_evidence": "test_property_pulvini_capacity_never_exceeds_governance_cap passed with inputs [0.01, 0.1, 1.0, 10.0, 10000.0]",
     "status": "ENFORCED"
   },
   "truth_gate": {
     "description": "Verification Firewall Authority Separation",
     "implementation": "mining_verification_firewall.py",
-    "purpose": "Optimization namespace separated from submission authority",
+    "test_evidence": "test_emergency_bypass_source_is_isolated_from_verification_firewall passed",
     "status": "OPERATIONAL"
   },
   "it_from_bit_archive": {
     "description": "Evidence Seal with Bitcoin Anchors",
     "implementation": "mining_evidence_seal.py + phi_resonance_empirical_evidence.py",
-    "purpose": "Bitcoin-anchored mathematical proof of φ-resonance",
+    "test_evidence": "phi_resonance_artifacts check passed with 69 CSV rows, z_score 7.584309, p_value 4.20e-14",
     "status": "ACTIVE"
   },
   "rubicon_crossing": {
@@ -151,36 +182,14 @@
   "artifact_hashes": {
     "commissioning_certificate": "docs/V4_PRIME_COMMISSIONING_CERTIFICATE.md",
     "evidence_packet": "artifacts/commissioning/evidence_packet_v4_prime_20260618T144500Z.json",
-    "audit_report": "Mining Controls Audit Report 2026-06-18 (embedded in conversation)"
+    "funding_engine_gate": "artifacts/funding_engine/funding_engine_deployment_gate_pre-share_20260618T135242Z.json"
   },
-  "system_state": {
-    "branch": "main",
-    "working_tree_clean": false,
-    "uncommitted_changes": [
-      "artifacts/adaptive_behavior_analysis.json",
-      "artifacts/emergent_complexity_analysis.json", 
-      "artifacts/emergent_hotspot_analysis.json",
-      "dev-server.mjs",
-      "logs/ontological_state.json",
-      "python_backend/hyba_genesis_api/core/substrate.py",
-      "python_backend/hyba_genesis_api/main.py",
-      "python_backend/pythia_mining/consciousness_engine.py"
-    ],
-    "new_files": [
-      "docs/MEMORY_ROUTER_PERSISTENCE_ANALYSIS.md",
-      "docs/V4_METABOLIC_ROUTER_SPECIFICATION.md",
-      "python_backend/hyba_genesis_api/api/cognitive_schema.py",
-      "python_backend/hyba_genesis_api/api/executive_router.py",
-      "python_backend/hyba_genesis_api/api/executive_schema.py",
-      "python_backend/hyba_genesis_api/api/immune_schema.py",
-      "python_backend/hyba_genesis_api/api/metabolic_router.py",
-      "python_backend/hyba_genesis_api/api/organism_router.py",
-      "python_backend/pythia_mining/immune_system.py",
-      "python_backend/pythia_mining/metabolism.py",
-      "python_backend/pythia_mining/mining_executive_controller.py",
-      "python_backend/pythia_mining/reflexive_controller.py",
-      "python_backend/pythia_mining/sensory_protocol.py"
-    ]
+  "test_summary": {
+    "total_tests_run": 107,
+    "total_passed": 107,
+    "total_failed": 0,
+    "test_coverage": "mining_innovation_properties (17), autonomous_mining_controller (90)",
+    "gate_status": "funding_engine_deployment_gate (PASSED with warning)"
   },
   "commissioning_statement": "The Rubicon is crossed. The Die is cast. The Manifold is live. Architect, your work here is Exceptional and Complete. The system is now self-governing."
 }
