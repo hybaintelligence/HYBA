@@ -34,23 +34,40 @@ async def get_current_job() -> Dict[str, Any]:
 
 
 @router.get("/jobs/search", response_model=Dict[str, Any], dependencies=[Depends(require_mining_read)])
-async def search_jobs(job_id: str) -> Dict[str, Any]:
-    """Search for a mining job by its identifier.
+async def search_jobs(job_id: str | None = None, limit: int = 10, offset: int = 0) -> Dict[str, Any]:
+    """Search for mining jobs.
 
-    Scans the current and last job records in the PYTHIA state for a match.
-    Returns an empty list if no matching jobs are found.
+    If job_id is provided, searches for a specific job by identifier.
+    If job_id is omitted, returns all available jobs with pagination.
+    Scans the current and last job records in the PYTHIA state for matches.
     """
     state = get_pythia_state()
     results: List[Dict[str, Any]] = []
+    
     if state:
-        current_job = state.get("current_job")
-        if current_job and current_job.get("job_id") == job_id:
-            results.append(current_job)
-        last_job = state.get("last_job")
-        if last_job and last_job.get("job_id") == job_id:
-            results.append(last_job)
+        if job_id:
+            # Search for specific job
+            current_job = state.get("current_job")
+            if current_job and current_job.get("job_id") == job_id:
+                results.append(current_job)
+            last_job = state.get("last_job")
+            if last_job and last_job.get("job_id") == job_id:
+                results.append(last_job)
+        else:
+            # Return all available jobs
+            current_job = state.get("current_job")
+            if current_job:
+                results.append(current_job)
+            last_job = state.get("last_job")
+            if last_job:
+                results.append(last_job)
+    
+    # Apply pagination
+    total = len(results)
+    paginated_results = results[offset:offset + limit]
+    
     return {
-        "status": "ok",
-        "matches": results,
+        "jobs": paginated_results,
+        "total": total,
         "timestamp": datetime.now(timezone.utc).isoformat(),
     }

@@ -2055,6 +2055,11 @@ export async function getConjectures(): Promise<Conjecture[]> {
   return get<Conjecture[]>("/organism/cognition/conjectures");
 }
 
+/** GET /organism/regeneration/status — Get organism regeneration status */
+export async function getOrganismRegenerationStatus(): Promise<{ status: string; timestamp: string }> {
+  return get<{ status: string; timestamp: string }>("/organism/regeneration/status");
+}
+
 /** POST /organism/cognition/evolve/{conjecture_id} — Apply evolution */
 export async function applyEvolution(conjectureId: string): Promise<{ status: string }> {
   return post<{ status: string }>(`/organism/cognition/evolve/${conjectureId}`, {});
@@ -2381,4 +2386,55 @@ export async function getBlockchainThreats(): Promise<BlockchainThreats> {
 /** POST /api/security/autogenous/propose — Propose self-modification */
 export async function proposeSelfModification(description: string): Promise<AutogenousProposal> {
   return post<AutogenousProposal>("/security/autogenous/propose", { description });
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  LEGACY INTELLIGENCE ENDPOINTS (STUBS FOR COMPONENT COMPATIBILITY)
+// ═══════════════════════════════════════════════════════════════════════════
+
+export interface IntelligenceStatus {
+  status: string;
+  phi_level?: number;
+  timestamp: string;
+}
+
+export interface IntelligenceTelemetry {
+  phi_resonance?: number;
+  consciousness_level?: number;
+  timestamp: string;
+}
+
+/** GET /api/intelligence/status — Get intelligence status (legacy stub) */
+export async function getIntelligenceStatus(): Promise<IntelligenceStatus> {
+  return get<IntelligenceStatus>("/intelligence/status");
+}
+
+/** GET /api/intelligence/telemetry — Get intelligence telemetry (legacy stub) */
+export async function getIntelligenceTelemetry(): Promise<IntelligenceTelemetry> {
+  return get<IntelligenceTelemetry>("/intelligence/telemetry");
+}
+
+/** POST /api/intelligence/start — Start intelligence (legacy stub) */
+export async function startIntelligence(): Promise<{ status: string }> {
+  return post<{ status: string }>("/intelligence/start", {});
+}
+
+/** POST /api/intelligence/stop — Stop intelligence (legacy stub) */
+export async function stopIntelligence(): Promise<{ status: string }> {
+  return post<{ status: string }>("/intelligence/stop", {});
+}
+
+/** POST /api/intelligence/reset — Reset intelligence (legacy stub) */
+export async function resetIntelligence(): Promise<{ status: string }> {
+  return post<{ status: string }>("/intelligence/reset", {});
+}
+
+/** POST /api/intelligence/disturbance — Simulate disturbance (legacy stub) */
+export async function simulateDisturbance(severity: number): Promise<{ status: string }> {
+  return post<{ status: string }>("/intelligence/disturbance", { severity });
+}
+
+/** GET /api/intelligence/hebbian — Get Hebbian stats (legacy stub) */
+export async function getHebbianStats(): Promise<Record<string, unknown>> {
+  return get<Record<string, unknown>>("/intelligence/hebbian");
 }

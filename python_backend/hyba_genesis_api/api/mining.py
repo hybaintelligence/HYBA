@@ -82,7 +82,8 @@ class PowerScaleRequest(BaseModel):
         description="Dynamic φ tier exponent for memory-compression scaling metadata",
     )
 
-    @validator("phi_tier")
+    @field_validator("phi_tier")
+    @classmethod
     def validate_phi_tier(cls, value: int) -> int:
         if int(value) not in PHI_TIERS:
             raise ValueError(f"phi_tier must be one of: {PHI_TIERS}")
@@ -939,6 +940,7 @@ async def mining_status():
     )
     hashrate = _capped_hashrate_ehs(raw_hashrate)
     return {
+        "status": "running" if _ACTIVE_CONNECTION is not None else "stopped",
         "active": _ACTIVE_CONNECTION is not None,
         "daemon_running": _DAEMON_STARTED
         and _PYTHIA_PROCESS is not None

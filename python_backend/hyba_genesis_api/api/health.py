@@ -165,10 +165,14 @@ async def get_health_status():
 async def get_substrate_readiness():
     """Detailed readiness check without fabricated governance thresholds."""
     state = get_pythia_state()
+    substrate_state = get_substrate_state()
     return {
         "status": "ready" if is_ready() else "initializing",
+        "ready": is_ready(),
         "timestamp": datetime.now(timezone.utc).isoformat(),
-        "substrate": get_substrate_state(),
+        "boot_id": substrate_state.get("boot_id", "unknown"),
+        "subsystems": substrate_state.get("subsystems", {}),
+        "substrate": substrate_state,
         "pythia": {
             "available": state is not None,
             "system_health": state.get("system_health") if state else "unavailable",

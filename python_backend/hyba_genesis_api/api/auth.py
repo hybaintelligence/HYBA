@@ -185,3 +185,8 @@ async def profile(payload: TokenPayload = Depends(get_token_payload)):
         },
         "timestamp": datetime.now(timezone.utc).isoformat(),
     }
+
+
+def get_current_user(payload: TokenPayload = Depends(get_token_payload)) -> TokenPayload:
+    """FastAPI dependency to get the current authenticated user from JWT token."""
+    return payload
