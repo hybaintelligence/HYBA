@@ -158,7 +158,6 @@ def test_property_solver_basis_has_correct_dimensions(seed: int) -> None:
 # =============================================================================
 
 
-@settings(max_examples=5)
 def test_property_substrate_initialization_deterministic() -> None:
     """Property: Substrate initialization must produce identical results on repeated calls."""
     from hyba_genesis_api.core.substrate import (
