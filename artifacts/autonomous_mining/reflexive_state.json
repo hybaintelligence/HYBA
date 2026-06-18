@@ -62,9 +62,13 @@
     1.8971869542382669,
     1.8971871956537472,
     1.897187428296758,
-    1.8971876526369174
+    1.8971876526369174,
+    1.8971878691109108,
+    1.897188078125329,
+    1.897188280059216,
+    1.8971884752663635
   ],
-  "epochs": 120,
+  "epochs": 128,
   "logical_consistency_history": [
     0.77,
     0.7533333333333333,
@@ -122,6 +126,10 @@
     0.85,
     0.775,
     0.7533333333333333,
+    0.8,
+    0.78,
+    0.8,
+    0.78,
     0.8
   ],
   "optimization_targets": [
@@ -1084,6 +1092,70 @@
       "target_name": "compression_target",
       "target_value": 1.8971876526369174,
       "tolerance": 0.05
+    },
+    {
+      "current_value": 1.5,
+      "objective_function": "maximize_phi_coherence",
+      "priority": 5,
+      "target_name": "phi_scaling",
+      "target_value": 1.4249999999999998,
+      "tolerance": 0.05
+    },
+    {
+      "current_value": 1.86,
+      "objective_function": "maximize_phi_coherence",
+      "priority": 3,
+      "target_name": "compression_target",
+      "target_value": 1.8971878691109108,
+      "tolerance": 0.05
+    },
+    {
+      "current_value": 1.86,
+      "objective_function": "maximize_phi_coherence",
+      "priority": 3,
+      "target_name": "compression_target",
+      "target_value": 1.897188078125329,
+      "tolerance": 0.05
+    },
+    {
+      "current_value": 1.86,
+      "objective_function": "maximize_phi_coherence",
+      "priority": 3,
+      "target_name": "compression_target",
+      "target_value": 1.897188078125329,
+      "tolerance": 0.05
+    },
+    {
+      "current_value": 1.5,
+      "objective_function": "maximize_phi_coherence",
+      "priority": 5,
+      "target_name": "phi_scaling",
+      "target_value": 1.4249999999999998,
+      "tolerance": 0.05
+    },
+    {
+      "current_value": 1.86,
+      "objective_function": "maximize_phi_coherence",
+      "priority": 3,
+      "target_name": "compression_target",
+      "target_value": 1.897188280059216,
+      "tolerance": 0.05
+    },
+    {
+      "current_value": 1.86,
+      "objective_function": "maximize_phi_coherence",
+      "priority": 3,
+      "target_name": "compression_target",
+      "target_value": 1.8971884752663635,
+      "tolerance": 0.05
+    },
+    {
+      "current_value": 1.86,
+      "objective_function": "maximize_phi_coherence",
+      "priority": 3,
+      "target_name": "compression_target",
+      "target_value": 1.8971884752663635,
+      "tolerance": 0.05
     }
   ],
   "phi_coherence_threshold": 0.6600249583593748,
@@ -1144,6 +1216,10 @@
     1.0,
     1.0,
     0.9344123900857175,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
     1.0
   ],
   "proposals": [
@@ -1201,6 +1277,94 @@
       "logical_consistency_score": 0.8,
       "proposal_id": "self_opt_118_1781812379",
       "proposed_value": 1.8971876526369174
+    },
+    {
+      "applied": true,
+      "codebase_source_module": "phi_scaling_engine",
+      "counterfactual_confidence": 0.3,
+      "current_value": 1.5,
+      "expected_phi_density_gain": 0.0,
+      "improvement_type": "phi_scaling",
+      "logical_consistency_score": 0.76,
+      "proposal_id": "self_opt_120_1781812439",
+      "proposed_value": 1.4249999999999998
+    },
+    {
+      "applied": true,
+      "codebase_source_module": "pulvini_memory_compression_proof",
+      "counterfactual_confidence": 0.8999347801661862,
+      "current_value": 1.86,
+      "expected_phi_density_gain": 0.0,
+      "improvement_type": "compression_target",
+      "logical_consistency_score": 0.8,
+      "proposal_id": "self_opt_120_1781812439",
+      "proposed_value": 1.8971878691109108
+    },
+    {
+      "applied": true,
+      "codebase_source_module": "pulvini_memory_compression_proof",
+      "counterfactual_confidence": 0.8999359038996175,
+      "current_value": 1.86,
+      "expected_phi_density_gain": 0.0,
+      "improvement_type": "compression_target",
+      "logical_consistency_score": 0.8,
+      "proposal_id": "self_opt_122_1781812499",
+      "proposed_value": 1.897188078125329
+    },
+    {
+      "applied": true,
+      "codebase_source_module": "pulvini_memory_compression_proof",
+      "counterfactual_confidence": 0.8999359038996175,
+      "current_value": 1.86,
+      "expected_phi_density_gain": 0.0,
+      "improvement_type": "compression_target",
+      "logical_consistency_score": 0.8,
+      "proposal_id": "self_opt_122_1781812499",
+      "proposed_value": 1.897188078125329
+    },
+    {
+      "applied": true,
+      "codebase_source_module": "phi_scaling_engine",
+      "counterfactual_confidence": 0.3,
+      "current_value": 1.5,
+      "expected_phi_density_gain": 0.0,
+      "improvement_type": "phi_scaling",
+      "logical_consistency_score": 0.76,
+      "proposal_id": "self_opt_124_1781812559",
+      "proposed_value": 1.4249999999999998
+    },
+    {
+      "applied": true,
+      "codebase_source_module": "pulvini_memory_compression_proof",
+      "counterfactual_confidence": 0.8999369895656768,
+      "current_value": 1.86,
+      "expected_phi_density_gain": 0.0,
+      "improvement_type": "compression_target",
+      "logical_consistency_score": 0.8,
+      "proposal_id": "self_opt_124_1781812559",
+      "proposed_value": 1.897188280059216
+    },
+    {
+      "applied": true,
+      "codebase_source_module": "pulvini_memory_compression_proof",
+      "counterfactual_confidence": 0.8999380390664693,
+      "current_value": 1.86,
+      "expected_phi_density_gain": 0.0,
+      "improvement_type": "compression_target",
+      "logical_consistency_score": 0.8,
+      "proposal_id": "self_opt_126_1781812619",
+      "proposed_value": 1.8971884752663635
+    },
+    {
+      "applied": true,
+      "codebase_source_module": "pulvini_memory_compression_proof",
+      "counterfactual_confidence": 0.8999380390664693,
+      "current_value": 1.86,
+      "expected_phi_density_gain": 0.0,
+      "improvement_type": "compression_target",
+      "logical_consistency_score": 0.8,
+      "proposal_id": "self_opt_126_1781812619",
+      "proposed_value": 1.8971884752663635
     }
   ],
   "schema_version": 2
