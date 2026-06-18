@@ -102,6 +102,11 @@ SESSION_DURATION_SEC=$((20 * 60))
 pkill -f "run_unified_miner.py" 2>/dev/null || true
 sleep 1
 
+# Load .env.local credentials before launching
+if [ -f ".env.local" ]; then
+  export $(grep -v '^#' .env.local | xargs)
+fi
+
 # Run the miner in the background with env vars
 python3 python_backend/run_unified_miner.py > "$MINER_LOG" 2>&1 &
 MINER_PID=$!
