@@ -209,14 +209,14 @@ const DEFAULT_BASE_DELAY_MS = 1000;
 const TOKEN_KEY = "hyba_auth_token";
 export const PULVINI_HASHRATE_CAP_EHS = 1;
 
-function assertPulviniHashrateCap(value: number | undefined, field: string): void {
+export function assertPulviniHashrateCap(value: number | undefined, field: string): void {
   if (value === undefined) return;
   if (!Number.isFinite(value) || value < 0 || value > PULVINI_HASHRATE_CAP_EHS) {
     throw new Error(`${field} must be between 0 and ${PULVINI_HASHRATE_CAP_EHS} EH/s`);
   }
 }
 
-function getToken(): string | null {
+export function getToken(): string | null {
   try {
     return localStorage.getItem(TOKEN_KEY);
   } catch {
@@ -224,7 +224,7 @@ function getToken(): string | null {
   }
 }
 
-function setToken(token: string): void {
+export function setToken(token: string): void {
   try {
     localStorage.setItem(TOKEN_KEY, token);
   } catch {
@@ -232,7 +232,7 @@ function setToken(token: string): void {
   }
 }
 
-function clearToken(): void {
+export function clearToken(): void {
   try {
     localStorage.removeItem(TOKEN_KEY);
   } catch {
