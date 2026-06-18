@@ -12,7 +12,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, Optional
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Request, status
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator
 
 from hyba_genesis_api.auth.jwt_handler import TokenPayload, get_token_payload
 from hyba_genesis_api.core.midas_controls import (
@@ -100,14 +100,16 @@ class PoolCredentialRequest(BaseModel):
     priority: int | None = Field(default=None, ge=0)
     enabled: bool = True
 
-    @validator("pool_id")
+    @field_validator("pool_id")
+    @classmethod
     def validate_pool(cls, value: str) -> str:
         pool_id = value.lower()
         if pool_id not in DEFAULT_POOL_SPECS:
             raise ValueError(f"pool_id must be one of: {', '.join(sorted(DEFAULT_POOL_SPECS))}")
         return pool_id
 
-    @validator("username", "worker", "nicehash_pool_id")
+    @field_validator("username", "worker", "nicehash_pool_id")
+    @classmethod
     def validate_plain_identifier(cls, value: Optional[str]) -> Optional[str]:
         if value is None:
             return value
@@ -120,7 +122,8 @@ class PoolCredentialRequest(BaseModel):
             )
         return value
 
-    @validator("btc_address")
+    @field_validator("btc_address")
+    @classmethod
     def validate_btc_address(cls, value: Optional[str]) -> Optional[str]:
         if value is None:
             return value
@@ -151,7 +154,8 @@ class ConnectRequest(BaseModel):
         description="Disconnect active pool before connecting selected pool",
     )
 
-    @validator("pool_id")
+    @field_validator("pool_id")
+    @classmethod
     def validate_pool(cls, value: str) -> str:
         pool_id = value.lower()
         if pool_id not in DEFAULT_POOL_SPECS:
@@ -167,7 +171,8 @@ class SubmitJobRequest(BaseModel):
     hashrate_ehs: float = Field(default=0.0, ge=0.0, le=PULVINI_HASHRATE_CAP_EHS)
     extranonce2: Optional[str] = Field(None, description="Extranonce2 value (hex)")
 
-    @validator("nonce")
+    @field_validator("nonce")
+    @classmethod
     def validate_nonce(cls, value: str) -> str:
         if not value.startswith("0x"):
             raise ValueError("Nonce must start with 0x")

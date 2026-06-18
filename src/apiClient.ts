@@ -166,9 +166,47 @@ export interface SecurityDefenseSystems extends Record<string, unknown> {
 
 export interface SecurityStatus {
   status: string;
+  timestamp: string;
+  intelligence_integration?: {
+    consciousness_engine?: {
+      phi_integrated?: number;
+      integration_regime?: string;
+      component_integration?: Record<string, number>;
+    };
+    synaptic_persistence?: {
+      total_patterns?: number;
+      total_weight?: number;
+      learning_rate?: number;
+    };
+    swarm_coherence?: {
+      coherence_level?: number;
+      active_nodes?: number;
+      structural_coupling?: number;
+    };
+    it_from_bit_archeology?: {
+      phi_structure_detected?: boolean;
+      nonce_patterns?: unknown[];
+    };
+    autogenous_self_coding?: {
+      self_modification_enabled?: boolean;
+      structural_coupling?: number;
+      last_proposal?: unknown;
+    };
+    sensory_integrity?: {
+      environment_mode?: string;
+      stasis_active?: boolean;
+      reality_anchors?: unknown[];
+    };
+    quantum_regeneration?: {
+      total_modules?: number;
+      modules_in_blastema?: number;
+      modules_with_positional_memory?: number;
+    };
+  };
   threat_level?: string | null;
   defense_systems?: SecurityDefenseSystems;
   recent_threats?: unknown[];
+  source?: string;
 }
 
 export interface TelemetryData {
@@ -210,22 +248,40 @@ export interface ApiError {
 // ── Mining Specific Types ──────────────────────────────────────────────────
 
 export interface MiningStatusResponse {
-  status: string;
-  pool_id?: string;
-  worker?: string;
+  active: boolean;
+  daemon_running: boolean;
+  connection: {
+    pool_id?: string;
+    worker?: string;
+    url?: string;
+    connected_at?: string;
+  } | null;
+  shares: {
+    submitted: number;
+    accepted: number;
+    rejected: number;
+  };
+  acceptance_rate: number;
   hashrate_ehs?: number;
-  hashrate_cap_ehs?: number;
-  uptime_seconds?: number;
-  shares_submitted?: number;
-  shares_accepted?: number;
-  shares_rejected?: number;
-  acceptance_rate?: number;
-  active_job?: string;
-  connected_at?: string;
-  mining_mode?: string;
-  phi_tier?: number;
-  power_scale?: number;
-  midas_state?: string;
+  hashrate_cap_ehs: number;
+  capacity_source: string;
+  last_job?: {
+    job_id: string;
+    nonce: string;
+    timestamp: string;
+    status: string;
+    reason?: string;
+  };
+  system_health: string;
+  telemetry_source: string;
+  midas: {
+    state: string;
+    validation: Record<string, unknown>;
+    rate_limiter: Record<string, unknown>;
+    backpressure: Record<string, unknown>;
+    requests: Record<string, unknown>;
+  };
+  timestamp: string;
 }
 
 export interface MiningHealthResponse {
@@ -275,8 +331,9 @@ export interface MiningJobResponse {
 }
 
 export interface MiningJobsSearchResponse {
-  jobs: MiningJobResponse[];
-  total: number;
+  status: string;
+  matches: MiningJobResponse[];
+  timestamp: string;
 }
 
 export interface MiningOpsAuditResponse {
@@ -607,9 +664,13 @@ export interface HealthLivenessResponse {
 
 export interface HealthReadinessResponse {
   status: string;
-  ready: boolean;
-  subsystems: Record<string, { name: string; ready: boolean; detail: string }>;
-  boot_id: string;
+  timestamp: string;
+  substrate: Record<string, unknown>;
+  pythia: {
+    available: boolean;
+    system_health: string;
+    telemetry_source: string;
+  };
 }
 
 // ── Unified Types ──────────────────────────────────────────────────────────
@@ -1782,9 +1843,11 @@ export async function fetchTelemetryData(): Promise<TelemetryData> {
     }),
     getOptional<SecurityStatus>("/security/status", {
       status: "unavailable",
+      timestamp: new Date().toISOString(),
       threat_level: null,
       defense_systems: {},
       recent_threats: [],
+      source: "fallback",
     }),
   ]);
   return {
@@ -1939,4 +2002,383 @@ export async function getFundingSummary(fiscal_year?: number): Promise<FundingSu
   const params = new URLSearchParams();
   if (fiscal_year) params.append("fiscal_year", String(fiscal_year));
   return get<FundingSummary>(`/admin/funding/summary?${params.toString()}`);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  ORGANISM CNS ENDPOINTS
+// ═══════════════════════════════════════════════════════════════════════════
+
+export interface RealityAnchorReport {
+  is_simulation: boolean;
+  confidence: number;
+  mass_gap_jitter: number;
+  timestamp: string;
+}
+
+export interface ImmuneStatus {
+  phi_floor: number;
+  module_inseparability: number;
+  immune_lock: boolean;
+  timestamp: string;
+}
+
+export interface Conjecture {
+  id: string;
+  hypothesis: string;
+  confidence: number;
+  created_at: string;
+}
+
+export interface MetabolicFlux {
+  energy_to_intelligence_ratio: number;
+  knowledge_acquisition_rate: number;
+  timestamp: string;
+}
+
+/** GET /organism/senses/reality — Get reality anchor detection */
+export async function getRealityAnchor(): Promise<RealityAnchorReport> {
+  return get<RealityAnchorReport>("/organism/senses/reality");
+}
+
+/** GET /organism/immune/status — Get immune system status */
+export async function getImmuneStatus(): Promise<ImmuneStatus> {
+  return get<ImmuneStatus>("/organism/immune/status");
+}
+
+/** POST /organism/immune/quarantine/{lane_id} — Quarantine a lane */
+export async function quarantineLane(laneId: number): Promise<{ status: string }> {
+  return post<{ status: string }>(`/organism/immune/quarantine/${laneId}`, {});
+}
+
+/** GET /organism/cognition/conjectures — Get active conjectures */
+export async function getConjectures(): Promise<Conjecture[]> {
+  return get<Conjecture[]>("/organism/cognition/conjectures");
+}
+
+/** POST /organism/cognition/evolve/{conjecture_id} — Apply evolution */
+export async function applyEvolution(conjectureId: string): Promise<{ status: string }> {
+  return post<{ status: string }>(`/organism/cognition/evolve/${conjectureId}`, {});
+}
+
+/** GET /organism/metabolism/flux — Get metabolic flux */
+export async function getMetabolicFlux(): Promise<MetabolicFlux> {
+  return get<MetabolicFlux>("/organism/metabolism/flux");
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  EXECUTIVE LOBE ENDPOINTS
+// ═══════════════════════════════════════════════════════════════════════════
+
+export type MiningIntent = "ACTIVATE" | "QUIESCE" | "STASIS";
+
+export interface MiningIntentRequest {
+  intent: MiningIntent;
+}
+
+export interface IgnitionResponse {
+  success: boolean;
+  status: string;
+  timestamp: string;
+}
+
+export interface QuiescenceResponse {
+  status: string;
+  timestamp: string;
+}
+
+export interface StasisResponse {
+  status: string;
+  stasis_active: boolean;
+  timestamp: string;
+}
+
+export interface MigrationResponse {
+  status: string;
+  target: string;
+  timestamp: string;
+}
+
+export interface TelemetryResponse {
+  phi: number;
+  hashrate_ehs: number;
+  shares_accepted: number;
+  timestamp: string;
+}
+
+export interface PoolHabitat {
+  name: string;
+  url: string;
+  stratum_version: number;
+  enabled: boolean;
+  priority: number;
+  is_default: boolean;
+  description?: string;
+}
+
+export interface PoolHabitatList {
+  habitats: PoolHabitat[];
+  default_pool?: string;
+}
+
+/** POST /organism/executive/intent — Set mining intent */
+export async function setMiningIntent(data: MiningIntentRequest): Promise<IgnitionResponse | QuiescenceResponse | StasisResponse> {
+  return post<IgnitionResponse | QuiescenceResponse | StasisResponse>("/organism/executive/intent", data);
+}
+
+/** GET /organism/executive/habitats — List pool habitats */
+export async function getPoolHabitats(): Promise<PoolHabitatList> {
+  return get<PoolHabitatList>("/organism/executive/habitats");
+}
+
+/** PUT /organism/executive/habitats/migrate/{pool_name} — Migrate to habitat */
+export async function migrateToHabitat(poolName: string): Promise<MigrationResponse> {
+  return put<MigrationResponse>(`/organism/executive/habitats/migrate/${poolName}`, {});
+}
+
+/** GET /organism/executive/telemetry — Get executive telemetry */
+export async function getExecutiveTelemetry(): Promise<TelemetryResponse> {
+  return get<TelemetryResponse>("/organism/executive/telemetry");
+}
+
+/** GET /organism/executive/status — Get executive status */
+export async function getExecutiveStatus(): Promise<{
+  is_active: boolean;
+  stasis_mode: boolean;
+  ignition_time?: string;
+  phi: number;
+  sensory_integrity: boolean;
+}> {
+  return get<{
+    is_active: boolean;
+    stasis_mode: boolean;
+    ignition_time?: string;
+    phi: number;
+    sensory_integrity: boolean;
+  }>("/organism/executive/status");
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  METABOLIC ROUTER ENDPOINTS (V4)
+// ═══════════════════════════════════════════════════════════════════════════
+
+export type MetabolicRegime = "homeostasis" | "catabolic" | "anabolic" | "critical";
+export type HungerLevel = "satisfied" | "nominal" | "elevated" | "starving";
+
+export interface EntropyState {
+  von_neumann_entropy: number;
+  energy_per_phi: number;
+  thermal_efficiency: number;
+  heat_dissipation: number;
+  metabolic_regime: MetabolicRegime;
+  timestamp: number;
+}
+
+export interface HungerDrive {
+  hunger_level: HungerLevel;
+  pool_reject_rate: number;
+  knowledge_acquisition_rate: number;
+  search_depth_pressure: number;
+  pattern_saturation: number;
+  last_feeding_time: number;
+  timestamp: number;
+}
+
+export interface MetabolicCertificate {
+  module_id: string;
+  integrated_information: Record<string, unknown>;
+  metabolic_state: Record<string, unknown>;
+  regeneration_metrics: Record<string, unknown>;
+  constructor_conjecture: string;
+  timestamp: number;
+}
+
+/** GET /api/v4/metabolism/entropy — Get entropy monitor */
+export async function getMetabolicEntropy(): Promise<EntropyState> {
+  return get<EntropyState>("/v4/metabolism/entropy");
+}
+
+/** GET /api/v4/metabolism/drive — Get hunger drive */
+export async function getHungerDrive(): Promise<HungerDrive> {
+  return get<HungerDrive>("/v4/metabolism/drive");
+}
+
+/** GET /api/v4/metabolism/certificate — Get metabolic certificate */
+export async function getMetabolicCertificate(): Promise<MetabolicCertificate> {
+  return get<MetabolicCertificate>("/v4/metabolism/certificate");
+}
+
+/** GET /api/v4/metabolism/health — Get metabolic health */
+export async function getMetabolicHealth(): Promise<{
+  status: string;
+  timestamp: string;
+  engine_active: boolean;
+  entropy_history_length: number;
+  hunger_history_length: number;
+}> {
+  return get<{
+    status: string;
+    timestamp: string;
+    engine_active: boolean;
+    entropy_history_length: number;
+    hunger_history_length: number;
+  }>("/v4/metabolism/health");
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  STREAMING SENSE ENDPOINTS (V1)
+// ═══════════════════════════════════════════════════════════════════════════
+
+export type StreamingChannel = "phi_resonance" | "autonomy_metrics" | "mining_pulse" | "structural_coupling" | "system_health";
+
+export interface StreamingStats {
+  total_connections: number;
+  channel_subscribers: Record<string, number>;
+  connections: Array<{
+    connected_at: number;
+    messages_sent: number;
+    last_activity: number;
+  }>;
+}
+
+export interface StreamingChannelInfo {
+  name: string;
+  description: string;
+  update_frequency: string;
+}
+
+/** GET /api/v1/streaming/stats — Get streaming stats */
+export async function getStreamingStats(): Promise<StreamingStats> {
+  return get<StreamingStats>("/v1/streaming/stats");
+}
+
+/** GET /api/v1/streaming/channels — List streaming channels */
+export async function listStreamingChannels(): Promise<{ channels: StreamingChannelInfo[] }> {
+  return get<{ channels: StreamingChannelInfo[] }>("/v1/streaming/channels");
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  EXTENDED SECURITY ENDPOINTS
+// ═══════════════════════════════════════════════════════════════════════════
+
+export interface SecurityEvent {
+  event_type: string;
+  severity: number;
+  module_id?: string;
+  nonce?: number;
+  phi_resonance?: number;
+  dodecahedral_sector?: number;
+}
+
+export interface SecurityEventResponse {
+  success: boolean;
+  status: string;
+  timestamp: string;
+  event_type: string;
+  severity: number;
+  pattern_learning?: {
+    pattern_id?: string;
+    reinforcement_count: number;
+    new_weight: number;
+  };
+  regeneration?: Record<string, unknown>;
+  phi_integrated?: number;
+  sensory_integrity?: Record<string, unknown>;
+  source: string;
+}
+
+export interface RegenerationStatus {
+  total_modules: number;
+  modules_in_blastema: number;
+  modules_with_positional_memory: number;
+  modules: Record<string, {
+    blastema_metric: number;
+    is_in_blastema: boolean;
+    role_probabilities: Record<string, number>;
+    has_positional_memory: boolean;
+    clifford_index?: number;
+    is_in_refractory_period: boolean;
+  }>;
+}
+
+export interface RegenerationResponse {
+  status: string;
+  timestamp: string;
+  regeneration: RegenerationStatus;
+  source: string;
+}
+
+export interface SwarmStatus {
+  status: string;
+  timestamp: string;
+  swarm_coherence: {
+    coherence_level: number;
+    active_nodes: number;
+    structural_coupling: number;
+  };
+  source: string;
+}
+
+export interface BlockchainThreats {
+  status: string;
+  timestamp: string;
+  blockchain_threats: {
+    phi_structure_detected: boolean;
+    nonce_patterns: unknown[];
+  };
+  source: string;
+}
+
+export interface AutogenousProposal {
+  success: boolean;
+  status: string;
+  timestamp: string;
+  proposal?: Record<string, unknown>;
+  structural_coupling: number;
+  source: string;
+}
+
+/** POST /api/security/event — Process security event */
+export async function postSecurityEvent(event: SecurityEvent): Promise<SecurityEventResponse> {
+  return post<SecurityEventResponse>("/security/event", event);
+}
+
+/** GET /api/security/regeneration/status — Get regeneration status */
+export async function getRegenerationStatus(): Promise<RegenerationResponse> {
+  return get<RegenerationResponse>("/security/regeneration/status");
+}
+
+/** POST /api/security/regeneration/trigger — Trigger regeneration */
+export async function triggerRegeneration(moduleId: string, cliffordIndex?: number): Promise<{
+  success: boolean;
+  status: string;
+  timestamp: string;
+  module_id: string;
+  regeneration_trace?: Record<string, unknown>;
+  source: string;
+}> {
+  const params = new URLSearchParams();
+  if (cliffordIndex !== undefined) params.append("clifford_index", String(cliffordIndex));
+  return post<{
+    success: boolean;
+    status: string;
+    timestamp: string;
+    module_id: string;
+    regeneration_trace?: Record<string, unknown>;
+    source: string;
+  }>(`/security/regeneration/trigger?${params.toString()}`, {});
+}
+
+/** GET /api/security/swarm/status — Get swarm status */
+export async function getSwarmStatus(): Promise<SwarmStatus> {
+  return get<SwarmStatus>("/security/swarm/status");
+}
+
+/** GET /api/security/blockchain/threats — Get blockchain threats */
+export async function getBlockchainThreats(): Promise<BlockchainThreats> {
+  return get<BlockchainThreats>("/security/blockchain/threats");
+}
+
+/** POST /api/security/autogenous/propose — Propose self-modification */
+export async function proposeSelfModification(description: string): Promise<AutogenousProposal> {
+  return post<AutogenousProposal>("/security/autogenous/propose", { description });
 }
