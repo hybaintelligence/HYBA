@@ -44,6 +44,22 @@ describe("HYBA security swarm HTTP routes", () => {
     expect(body.defense_systems.preallocated_ancilla_trap_pool.logical_agents).toBe(1);
   });
 
+  it("adversarial: elevated observer pressure reports anomalies without exposing syndrome bits", async () => {
+    const started = await startSecurityRoutesServer();
+    server = started.server;
+
+    const response = await fetch(
+      `${started.baseUrl}/api/security/status?observer_pressure=1`,
+    );
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body.threat_level).toBe("elevated");
+    expect(body.recent_threats.length).toBeGreaterThan(0);
+    expect(body.defense_systems.stabilizer_monitor).toHaveProperty("syndrome_weight");
+    expect(body.defense_systems.stabilizer_monitor).not.toHaveProperty("syndrome");
+  });
+
   it("end-to-end: POST /api/security/swarm/respond activates the integrity response", async () => {
     const started = await startSecurityRoutesServer();
     server = started.server;
@@ -59,5 +75,29 @@ describe("HYBA security swarm HTTP routes", () => {
     expect(body.activated_ancillas + body.activated_traps).toBeGreaterThan(0);
     expect(body.syndrome_rotation_index).toBeGreaterThanOrEqual(0);
     expect(body.syndrome_rotation_index).toBeLessThan(24);
+  });
+
+  it("adversarial: repeated full-pressure responses sanitize depleted traps and preserve sovereign boundaries", () => {
+    const swarm = new SecuritySwarmAgent();
+    const checksums = new Set<number>();
+    let latest = swarm.trigger_response(1);
+
+    checksums.add(latest.pool_permutation_checksum);
+    for (let attempt = 0; attempt < 12 && !latest.sanitized; attempt += 1) {
+      latest = swarm.trigger_response(1);
+      checksums.add(latest.pool_permutation_checksum);
+    }
+
+    const status = swarm.get_swarm_status();
+    expect(latest.status).toBe("integrity_response_active");
+    expect(latest.note).toContain("no logical quantum state is cloned");
+    expect(latest.sanitized).toBe(true);
+    expect(status.operating_mode).toBe("SANITIZED");
+    expect(status.active_traps + status.reserved_traps).toBe(0);
+    expect(status.retired_traps).toBeGreaterThan(0);
+    expect(status.pool_permutation_checksum).toBe(0);
+    expect(checksums.size).toBeGreaterThan(1);
+    expect(swarm.get_resource_index(-1)).toBe(0);
+    expect(swarm.get_resource_index(status.agents_total + 1)).toBe(0);
   });
 });
