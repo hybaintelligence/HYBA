@@ -11,7 +11,6 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
-from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, Iterable
 
@@ -38,7 +37,7 @@ def baseline_header(system_type: str) -> Dict[str, Any]:
     return {
         "schema_version": SCHEMA_VERSION,
         "system_type": system_type,
-        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "generated_at": "2026-06-18T00:00:00+00:00",
         "claim_boundary": {
             "supported": "deterministic baseline artifact for comparison only",
             "not_supported": [
@@ -154,7 +153,7 @@ def generate_artifacts(output_dir: Path) -> Dict[str, Any]:
     manifest = attach_forensic_hash(
         {
             "schema_version": f"{SCHEMA_VERSION}.manifest",
-            "generated_at": datetime.now(timezone.utc).isoformat(),
+            "generated_at": "2026-06-18T00:00:00+00:00",
             "artifact_count": len(written),
             "artifacts": written,
             "claim_boundary": {

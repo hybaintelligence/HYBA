@@ -158,7 +158,6 @@ def test_property_solver_basis_has_correct_dimensions(seed: int) -> None:
 # =============================================================================
 
 
-@settings(max_examples=5)
 def test_property_substrate_initialization_deterministic() -> None:
     """Property: Substrate initialization must produce identical results on repeated calls."""
     from hyba_genesis_api.core.substrate import (
@@ -341,9 +340,12 @@ def test_property_uniform_vector_always_unit_norm(dim: int) -> None:
     # Import the module directly - it's the most isolated
     import importlib.util
 
-    spec = importlib.util.find_spec(
-        "euclid.pythagoras.quantum.operators.folded_probability_amplifier"
-    )
+    try:
+        spec = importlib.util.find_spec(
+            "euclid.pythagoras.quantum.operators.folded_probability_amplifier"
+        )
+    except ModuleNotFoundError:
+        spec = None
     if spec is None:
         pytest.skip("pythagoras module not available")
 

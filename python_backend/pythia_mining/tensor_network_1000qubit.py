@@ -210,25 +210,15 @@ class MPS:
             # Absorb normalized R into next tensor
             self.tensors[i + 1] = _np.einsum('ij,jkl->ikl', R_normalized, self.tensors[i + 1])
 
-        # Compute total norm: exp(log_scale) * ||last_tensor||
+        # The sweep absorbs *normalized* R factors into the next tensor, so the
+        # active MPS norm is carried by the final tensor after the sweep.
+        # Dividing only that tensor preserves every left-isometry and yields a
+        # unit-norm state without reintroducing the discarded QR scale.
         last_norm = float(_np.linalg.norm(self.tensors[-1]))
         if last_norm < 1e-300 or not _np.isfinite(last_norm):
             return 0.0
-        
-        total_log_norm = log_scale + _np.log(last_norm)
-        
-        # Redistribute total scale across all tensors to prevent overflow
-        # Each tensor gets scaled by exp(total_log_norm / N)
-        scale_per_tensor = _np.exp(total_log_norm / self.num_sites)
-        for i in range(self.num_sites):
-            self.tensors[i] = self.tensors[i] * scale_per_tensor
-        
-        # Final normalization of last tensor
-        final_norm = float(_np.linalg.norm(self.tensors[-1]))
-        if final_norm < 1e-300 or not _np.isfinite(final_norm):
-            return 0.0
-        self.tensors[-1] = self.tensors[-1] / final_norm
-        
+        self.tensors[-1] = self.tensors[-1] / last_norm
+
         return 1.0
 
     def compute_norm(self) -> float:
