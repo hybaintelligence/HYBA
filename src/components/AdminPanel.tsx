@@ -74,7 +74,11 @@ function AdminPanel({ token, currentUser }: { token: string | null; currentUser:
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [stats, setStats] = useState<{ total_users: number; active_users: number; admin_users: number } | null>(null);
+  const [stats, setStats] = useState<{
+    total_users: number;
+    active_users: number;
+    admin_users: number;
+  } | null>(null);
 
   // Form state
   const [formData, setFormData] = useState<CreateUserRequest>({
@@ -90,11 +94,14 @@ function AdminPanel({ token, currentUser }: { token: string | null; currentUser:
     try {
       setLoading(true);
       setError(null);
-      const response = await fetch(`/api/admin/users?skip=0&limit=50${searchQuery ? `&search=${searchQuery}` : ""}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
+      const response = await fetch(
+        `/api/admin/users?skip=0&limit=50${searchQuery ? `&search=${searchQuery}` : ""}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         },
-      });
+      );
 
       if (!response.ok) {
         throw new Error(`Failed to fetch users: ${response.status}`);
@@ -158,7 +165,10 @@ function AdminPanel({ token, currentUser }: { token: string | null; currentUser:
       fetchStats();
       setTimeout(() => setFeedback(null), 3000);
     } catch (err) {
-      setFeedback({ text: err instanceof Error ? err.message : "Failed to create user", error: true });
+      setFeedback({
+        text: err instanceof Error ? err.message : "Failed to create user",
+        error: true,
+      });
     }
   };
 
@@ -195,7 +205,10 @@ function AdminPanel({ token, currentUser }: { token: string | null; currentUser:
       fetchStats();
       setTimeout(() => setFeedback(null), 3000);
     } catch (err) {
-      setFeedback({ text: err instanceof Error ? err.message : "Failed to update user", error: true });
+      setFeedback({
+        text: err instanceof Error ? err.message : "Failed to update user",
+        error: true,
+      });
     }
   };
 
@@ -219,7 +232,10 @@ function AdminPanel({ token, currentUser }: { token: string | null; currentUser:
       fetchStats();
       setTimeout(() => setFeedback(null), 3000);
     } catch (err) {
-      setFeedback({ text: err instanceof Error ? err.message : "Failed to delete user", error: true });
+      setFeedback({
+        text: err instanceof Error ? err.message : "Failed to delete user",
+        error: true,
+      });
     }
   };
 
@@ -334,7 +350,9 @@ function AdminPanel({ token, currentUser }: { token: string | null; currentUser:
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
           <div
             className={`flex items-center gap-2 px-4 py-3 rounded-lg ${
-              feedback.error ? "bg-red-50 text-red-900 border border-red-200" : "bg-green-50 text-green-900 border border-green-200"
+              feedback.error
+                ? "bg-red-50 text-red-900 border border-red-200"
+                : "bg-green-50 text-green-900 border border-green-200"
             }`}
           >
             {feedback.error ? <AlertCircle className="h-5 w-5" /> : <Check className="h-5 w-5" />}
@@ -370,12 +388,24 @@ function AdminPanel({ token, currentUser }: { token: string | null; currentUser:
             <table className="w-full">
               <thead className="bg-slate-50 border-b border-slate-200">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">User</th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Role</th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Status</th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Created</th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Last Login</th>
-                  <th className="px-6 py-3 text-right text-xs font-semibold text-slate-600 uppercase tracking-wider">Actions</th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                    User
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                    Role
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                    Created
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                    Last Login
+                  </th>
+                  <th className="px-6 py-3 text-right text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-200">
@@ -393,8 +423,8 @@ function AdminPanel({ token, currentUser }: { token: string | null; currentUser:
                           user.role === "admin"
                             ? "bg-red-100 text-red-800"
                             : user.role === "operator"
-                            ? "bg-blue-100 text-blue-800"
-                            : "bg-slate-100 text-slate-800"
+                              ? "bg-blue-100 text-blue-800"
+                              : "bg-slate-100 text-slate-800"
                         }`}
                       >
                         {user.role}
@@ -470,7 +500,9 @@ function AdminPanel({ token, currentUser }: { token: string | null; currentUser:
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Email (optional)</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1">
+                  Email (optional)
+                </label>
                 <input
                   type="email"
                   value={formData.email}
@@ -528,7 +560,9 @@ function AdminPanel({ token, currentUser }: { token: string | null; currentUser:
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-xl shadow-xl max-w-md w-full">
             <div className="flex items-center justify-between p-6 border-b border-slate-200">
-              <h2 className="text-xl font-bold text-slate-900">Edit User: {selectedUser.username}</h2>
+              <h2 className="text-xl font-bold text-slate-900">
+                Edit User: {selectedUser.username}
+              </h2>
               <button
                 onClick={() => setShowEditModal(false)}
                 className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
@@ -556,7 +590,9 @@ function AdminPanel({ token, currentUser }: { token: string | null; currentUser:
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">New Password (leave blank to keep current)</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1">
+                  New Password (leave blank to keep current)
+                </label>
                 <input
                   type="password"
                   minLength={8}

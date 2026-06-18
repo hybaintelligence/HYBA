@@ -4,7 +4,7 @@
  * Strengthens patterns that successfully preserve system integrity
  */
 
-import { StrategyWeight } from './intelligence_types';
+import { StrategyWeight } from "./intelligence_types";
 
 export class HebbianLearner {
   private strategyWeights: Map<number, StrategyWeight> = new Map();
@@ -32,11 +32,11 @@ export class HebbianLearner {
 
     // Reward function: Higher phi = stronger reinforcement
     const phiBonus = phiValue * 0.2; // Bonus for high phi
-    const reward = phiPreserved ? (1 + this.learningRate + phiBonus) : (1 - this.learningRate);
-    
+    const reward = phiPreserved ? 1 + this.learningRate + phiBonus : 1 - this.learningRate;
+
     currentWeight.weight = Math.max(
       this.minWeight,
-      Math.min(this.maxWeight, currentWeight.weight * reward)
+      Math.min(this.maxWeight, currentWeight.weight * reward),
     );
     currentWeight.last_updated = Date.now();
 
@@ -56,7 +56,7 @@ export class HebbianLearner {
   public getOptimizedStrategy(syndrome: number): number {
     const learnedWeight = this.strategyWeights.get(syndrome);
     const baseWeight = learnedWeight ? learnedWeight.weight : 1.0;
-    
+
     // Apply learned bias to the syndrome
     return this.deriveDeterministicStrategy(syndrome * baseWeight);
   }
@@ -95,10 +95,7 @@ export class HebbianLearner {
    */
   public applyDecay(): void {
     for (const [syndrome, weight] of this.strategyWeights) {
-      weight.weight = Math.max(
-        this.minWeight,
-        weight.weight * (1 - this.decayRate)
-      );
+      weight.weight = Math.max(this.minWeight, weight.weight * (1 - this.decayRate));
       weight.last_updated = Date.now();
       this.strategyWeights.set(syndrome, weight);
     }
@@ -123,9 +120,7 @@ export class HebbianLearner {
    */
   public getTopStrategies(limit: number = 10): StrategyWeight[] {
     const strategies = Array.from(this.strategyWeights.values());
-    return strategies
-      .sort((a, b) => b.weight - a.weight)
-      .slice(0, limit);
+    return strategies.sort((a, b) => b.weight - a.weight).slice(0, limit);
   }
 
   /**
@@ -137,7 +132,8 @@ export class HebbianLearner {
     if (weights.length === 0) return 1.0;
 
     const mean = weights.reduce((sum, w) => sum + w.weight, 0) / weights.length;
-    const variance = weights.reduce((sum, w) => sum + Math.pow(w.weight - mean, 2), 0) / weights.length;
+    const variance =
+      weights.reduce((sum, w) => sum + Math.pow(w.weight - mean, 2), 0) / weights.length;
     const stdDev = Math.sqrt(variance);
 
     // Lower coefficient of variation = higher stability

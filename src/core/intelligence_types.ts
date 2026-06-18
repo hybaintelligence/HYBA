@@ -8,11 +8,11 @@
  * Mathematical self-model for the intelligence substrate
  */
 export interface StateVector {
-  phi: number;              // Integrated Information (Φ) - system integration level
-  pressure: number;         // Rate of disturbances/syndrome weight trend
-  exhaustion: number;       // Resource depletion rate (0-1)
-  confidence: number;       // Parity/confidence level (0-1)
-  timestamp: number;        // Unix timestamp for this state
+  phi: number; // Integrated Information (Φ) - system integration level
+  pressure: number; // Rate of disturbances/syndrome weight trend
+  exhaustion: number; // Resource depletion rate (0-1)
+  confidence: number; // Parity/confidence level (0-1)
+  timestamp: number; // Unix timestamp for this state
 }
 
 /**
@@ -20,10 +20,10 @@ export interface StateVector {
  * System's self-awareness analysis
  */
 export interface IntrospectionReport {
-  self_awareness: number;      // How well system predicts its own state (0-1)
-  metacognitive_depth: number;  // Depth of state history
+  self_awareness: number; // How well system predicts its own state (0-1)
+  metacognitive_depth: number; // Depth of state history
   is_predicting_disturbance: boolean;
-  prediction_error: number;     // Difference between predicted vs actual state
+  prediction_error: number; // Difference between predicted vs actual state
 }
 
 /**
@@ -51,7 +51,7 @@ export interface IntelligenceTelemetry {
   active_ancillas: number;
   pool_max: number;
   exhaustion: number;
-  mode: 'NOMINAL' | 'COMPRESSED' | 'RECOVERY';
+  mode: "NOMINAL" | "COMPRESSED" | "RECOVERY";
   metacognitive_events: string[];
   healing_events: number;
 }
@@ -60,7 +60,7 @@ export interface IntelligenceTelemetry {
  * Goal State
  * Emergent goal the system pursues
  */
-export type GoalState = 'SELF_HEAL' | 'OPTIMIZE_SEARCH' | 'MAINTAIN_INTEGRATION';
+export type GoalState = "SELF_HEAL" | "OPTIMIZE_SEARCH" | "MAINTAIN_INTEGRATION";
 
 /**
  * Holographic Shard

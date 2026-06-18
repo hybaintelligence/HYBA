@@ -165,14 +165,16 @@ describe("HYBA Secure Bridge", () => {
     expect(typeof body.retryAfterMs).toBe("number");
   });
 
-
   it("rate-limits repeated mining requests with HTTP 429 semantics", async () => {
     const limitedApp = express();
     limitedApp.use(
       rateLimit({
         windowMs: 60_000,
         max: 2,
-        message: { error: "too_many_requests", message: "Too many requests, please try again later." },
+        message: {
+          error: "too_many_requests",
+          message: "Too many requests, please try again later.",
+        },
         standardHeaders: true,
         legacyHeaders: false,
       }),
@@ -191,7 +193,6 @@ describe("HYBA Secure Bridge", () => {
     }
   });
 
-
   it("enforces the production mining rate-limit contract on the 11th request and recovers after reset", async () => {
     const limitedApp = express();
     limitedApp.use((_req, res, next) => {
@@ -202,7 +203,10 @@ describe("HYBA Secure Bridge", () => {
       rateLimit({
         windowMs: 100,
         max: 10,
-        message: { error: "too_many_requests", message: "Too many requests, please try again later." },
+        message: {
+          error: "too_many_requests",
+          message: "Too many requests, please try again later.",
+        },
         standardHeaders: true,
         legacyHeaders: false,
       }),

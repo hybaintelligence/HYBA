@@ -4,13 +4,13 @@
  * Provides state capture, prediction, and introspection capabilities
  */
 
-import { createHash, randomBytes } from 'crypto';
+import { createHash, randomBytes } from "crypto";
 import {
   StateVector,
   IntrospectionReport,
   StrategyWeight,
   IntelligenceTelemetry,
-} from './intelligence_types';
+} from "./intelligence_types";
 
 const PHI_THRESHOLD = 0.6;
 const PRESSURE_LIMIT = 0.7;
@@ -23,13 +23,13 @@ export class MetacognitiveShield {
   protected predictionAccuracy: number = 1.0;
   protected telemetryEvents: string[] = [];
   protected healingEvents: number = 0;
-  protected currentMode: 'NOMINAL' | 'COMPRESSED' | 'RECOVERY' = 'NOMINAL';
-  
+  protected currentMode: "NOMINAL" | "COMPRESSED" | "RECOVERY" = "NOMINAL";
+
   // Resource pool management
   protected poolSize: number;
   protected activeAncillas: number = 0;
   protected rotationIndex: number = 0;
-  
+
   constructor(poolSize: number = 512) {
     this.poolSize = poolSize;
   }
@@ -42,7 +42,7 @@ export class MetacognitiveShield {
     const exhaustion = this.activeAncillas / this.poolSize;
     const confidence = this.calculateConfidence();
     const pressure = this.calculateSyndromePressure();
-    
+
     return {
       phi: this.calculatePhi(),
       pressure,
@@ -59,13 +59,14 @@ export class MetacognitiveShield {
   public introspect(): IntrospectionReport {
     const currentState = this.captureStateVector();
     const predictedState = this.predictNextState();
-    
+
     // Measure "Self-Awareness": How well did we predict the state?
     const accuracy = this.calculatePredictionAccuracy(predictedState, currentState);
-    this.predictionAccuracy = (this.predictionAccuracy * 0.9) + (accuracy * 0.1);
+    this.predictionAccuracy = this.predictionAccuracy * 0.9 + accuracy * 0.1;
 
     const predictionError = Math.abs(predictedState.phi - currentState.phi);
-    const isPredictingDisturbance = predictedState.pressure > PRESSURE_LIMIT || predictedState.phi < PHI_THRESHOLD;
+    const isPredictingDisturbance =
+      predictedState.pressure > PRESSURE_LIMIT || predictedState.phi < PHI_THRESHOLD;
 
     return {
       self_awareness: this.predictionAccuracy,
@@ -86,36 +87,42 @@ export class MetacognitiveShield {
 
     const recent = this.stateHistory.slice(-10);
     const n = recent.length;
-    
+
     // Simple linear regression for phi trend
-    let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
+    let sumX = 0,
+      sumY = 0,
+      sumXY = 0,
+      sumX2 = 0;
     for (let i = 0; i < n; i++) {
       sumX += i;
       sumY += recent[i].phi;
       sumXY += i * recent[i].phi;
       sumX2 += i * i;
     }
-    
+
     const slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
     const intercept = (sumY - slope * sumX) / n;
-    
+
     const predictedPhi = slope * n + intercept;
-    
+
     // Similar regression for pressure
-    sumX = 0; sumY = 0; sumXY = 0; sumX2 = 0;
+    sumX = 0;
+    sumY = 0;
+    sumXY = 0;
+    sumX2 = 0;
     for (let i = 0; i < n; i++) {
       sumX += i;
       sumY += recent[i].pressure;
       sumXY += i * recent[i].pressure;
       sumX2 += i * i;
     }
-    
+
     const pressureSlope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
     const pressureIntercept = (sumY - pressureSlope * sumX) / n;
     const predictedPressure = Math.max(0, Math.min(1, pressureSlope * n + pressureIntercept));
 
     const lastState = recent[recent.length - 1];
-    
+
     return {
       phi: Math.max(0, Math.min(1, predictedPhi)),
       pressure: predictedPressure,
@@ -132,10 +139,10 @@ export class MetacognitiveShield {
   protected calculatePredictionAccuracy(predicted: StateVector, actual: StateVector): number {
     const phiError = Math.abs(predicted.phi - actual.phi);
     const pressureError = Math.abs(predicted.pressure - actual.pressure);
-    
+
     // Combined error metric (lower is better)
     const totalError = (phiError + pressureError) / 2;
-    
+
     // Convert to accuracy (0-1)
     return Math.max(0, 1 - totalError);
   }
@@ -184,7 +191,7 @@ export class MetacognitiveShield {
   protected handleAnomaly(seed: number): void {
     // Derive deterministic rotation from seed
     this.rotationIndex = (this.rotationIndex + seed) % 24;
-    
+
     // Update ancilla usage
     this.activeAncillas = Math.min(this.poolSize, this.activeAncillas + 1);
   }
@@ -204,18 +211,18 @@ export class MetacognitiveShield {
     };
 
     // Reward function: High Phi + High Confidence = Success
-    const success = (state.phi * state.confidence) > 0.8;
-    const multiplier = success ? (1 + LEARNING_RATE) : (1 - LEARNING_RATE);
-    
+    const success = state.phi * state.confidence > 0.8;
+    const multiplier = success ? 1 + LEARNING_RATE : 1 - LEARNING_RATE;
+
     currentWeight.weight = currentWeight.weight * multiplier;
     currentWeight.last_updated = Date.now();
-    
+
     if (success) {
       currentWeight.success_count++;
     } else {
       currentWeight.failure_count++;
     }
-    
+
     this.strategyWeights.set(lastSyndrome, currentWeight);
   }
 
@@ -225,11 +232,11 @@ export class MetacognitiveShield {
    */
   protected adjustMode(state: StateVector): void {
     if (state.phi < 0.3) {
-      this.currentMode = 'RECOVERY';
+      this.currentMode = "RECOVERY";
     } else if (state.phi < 0.6 || state.exhaustion > 0.8) {
-      this.currentMode = 'COMPRESSED';
+      this.currentMode = "COMPRESSED";
     } else {
-      this.currentMode = 'NOMINAL';
+      this.currentMode = "NOMINAL";
     }
   }
 
@@ -239,11 +246,12 @@ export class MetacognitiveShield {
    */
   protected calculatePhi(): number {
     if (this.stateHistory.length < 2) return 0.8;
-    
+
     const recent = this.stateHistory.slice(-5);
     const avgPhi = recent.reduce((sum, s) => sum + s.phi, 0) / recent.length;
-    const variance = recent.reduce((sum, s) => sum + Math.pow(s.phi - avgPhi, 2), 0) / recent.length;
-    
+    const variance =
+      recent.reduce((sum, s) => sum + Math.pow(s.phi - avgPhi, 2), 0) / recent.length;
+
     // Higher stability = higher phi
     return Math.max(0, Math.min(1, avgPhi - variance));
   }
@@ -254,10 +262,10 @@ export class MetacognitiveShield {
    */
   protected calculateConfidence(): number {
     if (this.stateHistory.length === 0) return 0.5;
-    
+
     const recent = this.stateHistory.slice(-10);
     const avgPressure = recent.reduce((sum, s) => sum + s.pressure, 0) / recent.length;
-    
+
     return Math.max(0, Math.min(1, 1 - avgPressure));
   }
 
@@ -267,10 +275,10 @@ export class MetacognitiveShield {
    */
   protected calculateSyndromePressure(): number {
     if (this.stateHistory.length < 2) return 0.1;
-    
+
     const recent = this.stateHistory.slice(-5);
     const pressureTrend = recent[recent.length - 1].pressure - recent[0].pressure;
-    
+
     return Math.max(0, Math.min(1, 0.1 + pressureTrend));
   }
 
@@ -279,12 +287,12 @@ export class MetacognitiveShield {
    * Derive entropy seed from prediction error
    */
   protected calculateMetacognitiveEntropy(): number {
-    const hash = createHash('sha256');
+    const hash = createHash("sha256");
     hash.update(Date.now().toString());
     hash.update(this.predictionAccuracy.toString());
     hash.update(this.rotationIndex.toString());
-    const digest = hash.digest('hex');
-    
+    const digest = hash.digest("hex");
+
     // Convert first 8 chars to number
     return parseInt(digest.substring(0, 8), 16);
   }
@@ -313,7 +321,7 @@ export class MetacognitiveShield {
    */
   public getTelemetry(): IntelligenceTelemetry {
     const currentState = this.captureStateVector();
-    
+
     return {
       phi_integrated: currentState.phi,
       self_awareness: this.predictionAccuracy,
@@ -356,7 +364,7 @@ export class MetacognitiveShield {
     this.predictionAccuracy = 1.0;
     this.telemetryEvents = [];
     this.healingEvents = 0;
-    this.currentMode = 'NOMINAL';
+    this.currentMode = "NOMINAL";
     this.activeAncillas = 0;
     this.rotationIndex = 0;
   }

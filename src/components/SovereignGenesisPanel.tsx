@@ -216,10 +216,7 @@ export function SovereignGenesisPanel() {
               .slice(0, 6)
               .map(([capabilityKey, enabled]) => (
                 <React.Fragment key={capabilityKey}>
-                  <CapabilityBadge
-                    name={capabilityKey}
-                    enabled={Boolean(enabled)}
-                  />
+                  <CapabilityBadge name={capabilityKey} enabled={Boolean(enabled)} />
                 </React.Fragment>
               ))}
           </div>

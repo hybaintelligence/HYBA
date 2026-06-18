@@ -1,6 +1,6 @@
 /**
  * AI-Powered Adaptive Assistant
- * 
+ *
  * Provides intelligent assistance for mining operations, diagnostics,
  * and system optimization using the intelligence fabric backend.
  */
@@ -26,20 +26,21 @@ interface AIAssistantProps {
   onCommand?: (command: string) => void;
 }
 
-const AIAssistant: React.FC<AIAssistantProps> = ({ 
-  token, 
-  miningStatus, 
+const AIAssistant: React.FC<AIAssistantProps> = ({
+  token,
+  miningStatus,
   telemetryData,
-  onCommand 
+  onCommand,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "system",
-      content: "AI Assistant ready. I can help with mining optimization, diagnostics, and operational guidance.",
-      timestamp: Date.now()
-    }
+      content:
+        "AI Assistant ready. I can help with mining optimization, diagnostics, and operational guidance.",
+      timestamp: Date.now(),
+    },
   ]);
   const [input, setInput] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
@@ -54,74 +55,74 @@ const AIAssistant: React.FC<AIAssistantProps> = ({
   // Generate contextual suggestions based on system state
   useEffect(() => {
     const newSuggestions: string[] = [];
-    
+
     if (miningStatus?.hashrate && miningStatus.hashrate < 100000) {
       newSuggestions.push("How can I improve my hashrate?");
     }
-    
+
     if (telemetryData?.consciousness_events > 100) {
       newSuggestions.push("What do consciousness events mean?");
     }
-    
+
     if (miningStatus?.pool?.status === "disconnected") {
       newSuggestions.push("Help me diagnose pool connection issues");
     }
-    
+
     if (!miningStatus?.active) {
       newSuggestions.push("Guide me through starting mining");
     }
-    
+
     // Always offer general assistance
     if (newSuggestions.length === 0) {
       newSuggestions.push(
         "Optimize my mining configuration",
         "Explain current telemetry metrics",
-        "Run system diagnostics"
+        "Run system diagnostics",
       );
     }
-    
+
     setSuggestions(newSuggestions);
   }, [miningStatus, telemetryData]);
 
   const processMessage = async (userMessage: string) => {
     setIsProcessing(true);
-    
+
     // Add user message
     const userMsg: Message = {
       role: "user",
       content: userMessage,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
-    setMessages(prev => [...prev, userMsg]);
-    
+    setMessages((prev) => [...prev, userMsg]);
+
     try {
       // Build context for the AI
       const context = {
         miningStatus: miningStatus || {},
         telemetry: telemetryData || {},
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       };
-      
+
       // Call intelligence fabric endpoint
       const response = await fetch("/api/intelligence/query", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           query: userMessage,
           context: JSON.stringify(context),
-          substrates: ["manifold", "consciousness", "quantum"]
-        })
+          substrates: ["manifold", "consciousness", "quantum"],
+        }),
       });
-      
+
       if (!response.ok) {
         throw new Error(`AI service error: ${response.status}`);
       }
-      
+
       const result = await response.json();
-      
+
       // Add assistant response
       const assistantMsg: Message = {
         role: "assistant",
@@ -130,80 +131,75 @@ const AIAssistant: React.FC<AIAssistantProps> = ({
         metadata: {
           phiScore: result.phi_score,
           resonance: result.resonance,
-          governance: result.governance_tags
-        }
+          governance: result.governance_tags,
+        },
       };
-      setMessages(prev => [...prev, assistantMsg]);
-      
+      setMessages((prev) => [...prev, assistantMsg]);
+
       // Execute any commands if suggested
       if (result.suggested_action && onCommand) {
         onCommand(result.suggested_action);
       }
-      
     } catch (error) {
       console.error("AI Assistant error:", error);
-      
+
       // Fallback to local heuristic assistance
       const fallbackResponse = generateFallbackResponse(userMessage, miningStatus, telemetryData);
-      
+
       const assistantMsg: Message = {
         role: "assistant",
         content: fallbackResponse,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       };
-      setMessages(prev => [...prev, assistantMsg]);
+      setMessages((prev) => [...prev, assistantMsg]);
     }
-    
+
     setIsProcessing(false);
     setInput("");
   };
 
-  const generateFallbackResponse = (
-    query: string, 
-    status: any, 
-    telemetry: any
-  ): string => {
+  const generateFallbackResponse = (query: string, status: any, telemetry: any): string => {
     const q = query.toLowerCase();
-    
+
     // Mining status queries
     if (q.includes("hashrate") || q.includes("hash rate")) {
       const hashrate = status?.hashrate || 0;
       const formatted = (hashrate / 1e6).toFixed(2);
       return `Your current hashrate is ${formatted} MH/s. ${
-        hashrate < 100000 
-          ? "This is relatively low. Consider increasing PHI_SCALING_FACTOR or SEARCH_DEPTH for better performance." 
+        hashrate < 100000
+          ? "This is relatively low. Consider increasing PHI_SCALING_FACTOR or SEARCH_DEPTH for better performance."
           : "Your hashrate is performing well."
       }`;
     }
-    
+
     if (q.includes("pool") && (q.includes("connect") || q.includes("disconnect"))) {
       return `Pool status: ${status?.pool?.status || "unknown"}. ${
-        status?.pool?.status === "connected" 
-          ? "Pool connection is healthy." 
+        status?.pool?.status === "connected"
+          ? "Pool connection is healthy."
           : "Check your pool URL and credentials in the pool configuration panel."
       }`;
     }
-    
+
     // Telemetry queries
     if (q.includes("consciousness") || q.includes("phi")) {
       const events = telemetry?.consciousness_events || 0;
       const phi = telemetry?.phi_resonance || 0;
       return `Consciousness events: ${events.toLocaleString()}, φ-resonance: ${phi.toFixed(4)}. ${
-        events > 1000 
-          ? "Your system is showing strong structural coherence." 
+        events > 1000
+          ? "Your system is showing strong structural coherence."
           : "Consider adjusting coherence thresholds for better resonance."
       }`;
     }
-    
+
     if (q.includes("compression") || q.includes("memory")) {
       const ratio = telemetry?.compression_ratio || 1.0;
       return `Current compression ratio: ${ratio.toFixed(2)}x. ${
-        ratio > 2.0 
-          ? "Excellent memory efficiency!" 
+        ratio > 2.0
+          ? "Excellent memory efficiency!"
           : "Memory compression is active but could be improved."
       }`;
     }
-    
+
     // Configuration queries
     if (q.includes("optimize") || q.includes("improve")) {
       return `To optimize performance:
@@ -212,26 +208,26 @@ const AIAssistant: React.FC<AIAssistantProps> = ({
 3. Monitor consciousness events for coherence feedback
 4. Enable autonomous mode for self-optimization`;
     }
-    
+
     // Start/stop queries
     if (q.includes("start") && q.includes("mining")) {
-      return status?.active 
+      return status?.active
         ? "Mining is already active. Check the dashboard for real-time metrics."
         : "To start mining: configure your pool in the Pool Management panel, then click 'Start Mining' in the dashboard.";
     }
-    
+
     // Diagnostics
     if (q.includes("diagnose") || q.includes("problem") || q.includes("issue")) {
       const issues: string[] = [];
       if (!status?.active) issues.push("Mining is not active");
       if (status?.pool?.status !== "connected") issues.push("Pool not connected");
       if ((status?.hashrate || 0) < 10000) issues.push("Very low hashrate");
-      
+
       return issues.length > 0
         ? `Detected issues:\n${issues.map((i, idx) => `${idx + 1}. ${i}`).join("\n")}\n\nRecommendation: Check pool configuration and ensure mining is started.`
         : "All systems appear operational. No issues detected.";
     }
-    
+
     // Default
     return `I understand you're asking about: "${query}". Try these specific queries:
 - "What's my current hashrate?"
@@ -260,7 +256,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({
   }
 
   return (
-    <div 
+    <div
       className={`fixed bottom-6 right-6 bg-gradient-to-br from-slate-900 to-slate-800 border border-white/10 rounded-2xl shadow-2xl z-50 transition-all duration-300 ${
         isMinimized ? "w-80 h-16" : "w-96 h-[600px]"
       }`}
@@ -303,9 +299,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({
             {messages.map((msg, idx) => (
               <div
                 key={idx}
-                className={`flex gap-3 ${
-                  msg.role === "user" ? "justify-end" : "justify-start"
-                }`}
+                className={`flex gap-3 ${msg.role === "user" ? "justify-end" : "justify-start"}`}
               >
                 {msg.role !== "user" && (
                   <div className="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center flex-shrink-0">
@@ -317,8 +311,8 @@ const AIAssistant: React.FC<AIAssistantProps> = ({
                     msg.role === "user"
                       ? "bg-blue-500/20 text-blue-100"
                       : msg.role === "system"
-                      ? "bg-slate-700/50 text-slate-300 text-sm"
-                      : "bg-purple-500/20 text-purple-100"
+                        ? "bg-slate-700/50 text-slate-300 text-sm"
+                        : "bg-purple-500/20 text-purple-100"
                   }`}
                 >
                   <p className="whitespace-pre-wrap text-sm">{msg.content}</p>
@@ -337,9 +331,18 @@ const AIAssistant: React.FC<AIAssistantProps> = ({
                 </div>
                 <div className="bg-purple-500/20 text-purple-100 rounded-lg p-3">
                   <div className="flex gap-1">
-                    <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
-                    <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-                    <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+                    <div
+                      className="w-2 h-2 bg-purple-400 rounded-full animate-bounce"
+                      style={{ animationDelay: "0ms" }}
+                    />
+                    <div
+                      className="w-2 h-2 bg-purple-400 rounded-full animate-bounce"
+                      style={{ animationDelay: "150ms" }}
+                    />
+                    <div
+                      className="w-2 h-2 bg-purple-400 rounded-full animate-bounce"
+                      style={{ animationDelay: "300ms" }}
+                    />
                   </div>
                 </div>
               </div>

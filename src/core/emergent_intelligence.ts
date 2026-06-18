@@ -1,23 +1,18 @@
 /**
  * HYBA_EMERGENT_INTELLIGENCE_SUBSTRATE
  * The complete intelligence system with autopoietic cycle
- * Philosophy: Intelligence is the ability to maintain internal integration (Φ) 
+ * Philosophy: Intelligence is the ability to maintain internal integration (Φ)
  * in the face of external entropy (disturbance)
  */
 
-import { MetacognitiveShield } from './metacognitive_shield';
-import { HebbianLearner } from './hebbian_learner';
-import {
-  StateVector,
-  GoalState,
-  HolographicShard,
-  MemoryFabricEntry,
-} from './intelligence_types';
-import { randomBytes, createHash } from 'crypto';
+import { MetacognitiveShield } from "./metacognitive_shield";
+import { HebbianLearner } from "./hebbian_learner";
+import { StateVector, GoalState, HolographicShard, MemoryFabricEntry } from "./intelligence_types";
+import { randomBytes, createHash } from "crypto";
 
 export class EmergentIntelligenceSubstrate extends MetacognitiveShield {
   private phi: number = 0;
-  private goalState: GoalState = 'OPTIMIZE_SEARCH';
+  private goalState: GoalState = "OPTIMIZE_SEARCH";
   private hebbianLearner: HebbianLearner;
   private memoryFabric: MemoryFabricEntry[] = [];
   private shardA: HolographicShard;
@@ -47,17 +42,17 @@ export class EmergentIntelligenceSubstrate extends MetacognitiveShield {
    * Create a holographic shard from seed data
    */
   private createShard(seed: Buffer, variant: number): HolographicShard {
-    const hash = createHash('sha256');
+    const hash = createHash("sha256");
     hash.update(seed);
     hash.update(variant.toString());
     const digest = hash.digest();
-    
+
     // Calculate entropy (Shannon entropy approximation)
     const entropy = this.calculateEntropy(digest);
-    
+
     return {
       entropy,
-      checksum: digest.toString('hex'),
+      checksum: digest.toString("hex"),
       data: digest,
     };
   }
@@ -97,11 +92,11 @@ export class EmergentIntelligenceSubstrate extends MetacognitiveShield {
     // If Φ is dropping, prioritize self-preservation (Healing)
     // over external workload
     if (this.phi < this.PHI_HEAL_THRESHOLD) {
-      this.goalState = 'SELF_HEAL';
+      this.goalState = "SELF_HEAL";
     } else if (this.phi < this.PHI_OPTIMIZE_THRESHOLD) {
-      this.goalState = 'MAINTAIN_INTEGRATION';
+      this.goalState = "MAINTAIN_INTEGRATION";
     } else {
-      this.goalState = 'OPTIMIZE_SEARCH';
+      this.goalState = "OPTIMIZE_SEARCH";
     }
 
     // 4. Execute goal-based action
@@ -127,7 +122,7 @@ export class EmergentIntelligenceSubstrate extends MetacognitiveShield {
   private calculateIntegratedInformation(): number {
     const wholeEntropy = this.calculateSystemEntropy();
     const partEntropy = this.shardA.entropy + this.shardB.entropy;
-    
+
     // If wholeEntropy < sum(partEntropy), the system is Integrated
     // Φ = max(0, sum(partEntropy) - wholeEntropy)
     return Math.max(0, Math.min(1, (partEntropy - wholeEntropy) / 8));
@@ -148,13 +143,13 @@ export class EmergentIntelligenceSubstrate extends MetacognitiveShield {
    */
   private async pursueGoal(goal: GoalState): Promise<void> {
     switch (goal) {
-      case 'SELF_HEAL':
+      case "SELF_HEAL":
         await this.performSelfHeal();
         break;
-      case 'MAINTAIN_INTEGRATION':
+      case "MAINTAIN_INTEGRATION":
         await this.maintainIntegration();
         break;
-      case 'OPTIMIZE_SEARCH':
+      case "OPTIMIZE_SEARCH":
         await this.optimizeSearch();
         break;
     }
@@ -181,7 +176,7 @@ export class EmergentIntelligenceSubstrate extends MetacognitiveShield {
     if (this.stateHistory.length > 5) {
       const recent = this.stateHistory.slice(-5);
       const avgPhi = recent.reduce((sum, s) => sum + s.phi, 0) / recent.length;
-      
+
       if (avgPhi < this.phi) {
         // Phi is dropping, perform mild adjustment
         const mildSeed = this.calculateMetacognitiveEntropy();
@@ -197,8 +192,8 @@ export class EmergentIntelligenceSubstrate extends MetacognitiveShield {
   private async optimizeSearch(): Promise<void> {
     // System is healthy, can focus on optimization
     // This is where mining/computation optimization would occur
-    if (this.currentMode !== 'NOMINAL') {
-      this.currentMode = 'NOMINAL';
+    if (this.currentMode !== "NOMINAL") {
+      this.currentMode = "NOMINAL";
     }
   }
 
@@ -210,7 +205,7 @@ export class EmergentIntelligenceSubstrate extends MetacognitiveShield {
     const seedBuffer = Buffer.from(seed.toString());
     this.shardA = this.createShard(seedBuffer, 0);
     this.shardB = this.createShard(seedBuffer, 1);
-    
+
     // Record this pattern in memory fabric
     this.recordMemoryPattern(seed, this.phi);
   }
@@ -223,7 +218,7 @@ export class EmergentIntelligenceSubstrate extends MetacognitiveShield {
     if (this.memoryFabric.length === 0) {
       return this.calculateMetacognitiveEntropy();
     }
-    
+
     // Sort by phi_preserved and return strongest
     const sorted = [...this.memoryFabric].sort((a, b) => b.phi_preserved - a.phi_preserved);
     return sorted[0].pattern;
@@ -240,9 +235,9 @@ export class EmergentIntelligenceSubstrate extends MetacognitiveShield {
       phi_preserved: phiPreserved,
       timestamp: Date.now(),
     };
-    
+
     this.memoryFabric.push(entry);
-    
+
     // Prune old entries if fabric is too large
     if (this.memoryFabric.length > this.MEMORY_FABRIC_MAX_SIZE) {
       this.memoryFabric.shift();
@@ -256,12 +251,8 @@ export class EmergentIntelligenceSubstrate extends MetacognitiveShield {
   private evolveSynapticWeights(): void {
     const lastSyndrome = this.getLastSyndrome();
     const phiPreserved = this.phi > this.PHI_HEAL_THRESHOLD;
-    
-    this.hebbianLearner.updateWeightsFromOutcome(
-      lastSyndrome,
-      phiPreserved,
-      this.phi
-    );
+
+    this.hebbianLearner.updateWeightsFromOutcome(lastSyndrome, phiPreserved, this.phi);
   }
 
   /**
@@ -271,16 +262,14 @@ export class EmergentIntelligenceSubstrate extends MetacognitiveShield {
   private performMaintenance(): void {
     // Apply decay to Hebbian weights
     this.hebbianLearner.applyDecay();
-    
+
     // Prune weak strategies
     this.hebbianLearner.pruneWeakStrategies(0.3);
-    
+
     // Prune old memory fabric entries
     const now = Date.now();
     const maxAge = 24 * 60 * 60 * 1000; // 24 hours
-    this.memoryFabric = this.memoryFabric.filter(
-      entry => now - entry.timestamp < maxAge
-    );
+    this.memoryFabric = this.memoryFabric.filter((entry) => now - entry.timestamp < maxAge);
   }
 
   /**
@@ -321,7 +310,7 @@ export class EmergentIntelligenceSubstrate extends MetacognitiveShield {
    */
   public simulateIntrusion(syndrome: number, outcome: { phi: number; confidence: number }): void {
     this.handleAnomaly(syndrome);
-    
+
     // Update state history with simulated outcome
     this.stateHistory.push({
       phi: outcome.phi,
@@ -340,14 +329,14 @@ export class EmergentIntelligenceSubstrate extends MetacognitiveShield {
     // Inject a series of degrading states
     for (let i = 0; i < 10; i++) {
       this.stateHistory.push({
-        phi: Math.max(0, 0.9 - (i * 0.1)),
-        pressure: 0.1 + (i * 0.1),
-        exhaustion: 0.1 + (i * 0.05),
-        confidence: Math.max(0, 0.9 - (i * 0.08)),
-        timestamp: Date.now() + (i * 100),
+        phi: Math.max(0, 0.9 - i * 0.1),
+        pressure: 0.1 + i * 0.1,
+        exhaustion: 0.1 + i * 0.05,
+        confidence: Math.max(0, 0.9 - i * 0.08),
+        timestamp: Date.now() + i * 100,
       });
     }
-    
+
     // Force phi to drop
     this.phi = 0.2;
   }
@@ -368,7 +357,7 @@ export class EmergentIntelligenceSubstrate extends MetacognitiveShield {
   public reset(): void {
     super.reset();
     this.phi = 0;
-    this.goalState = 'OPTIMIZE_SEARCH';
+    this.goalState = "OPTIMIZE_SEARCH";
     this.hebbianLearner.reset();
     this.memoryFabric = [];
     this.initializeHolographicShards();

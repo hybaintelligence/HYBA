@@ -1,15 +1,15 @@
 /**
  * Pool Selector Component
  * ========================
- * 
+ *
  * Manages mining pool selection from frontend.
  * Uses consistent Tailwind CSS styling.
  * Integrates with main API client.
  */
 
-import React, { useEffect, useState } from 'react';
-import { Server, Check, X, AlertCircle, Loader2, Star } from 'lucide-react';
-import { switchPool as apiSwitchPool, type PoolInfo } from '../apiClient';
+import React, { useEffect, useState } from "react";
+import { Server, Check, X, AlertCircle, Loader2, Star } from "lucide-react";
+import { switchPool as apiSwitchPool, type PoolInfo } from "../apiClient";
 
 interface PoolSelectorProps {
   pools: PoolInfo[];
@@ -18,11 +18,11 @@ interface PoolSelectorProps {
   isProcessing?: boolean;
 }
 
-export const PoolSelector: React.FC<PoolSelectorProps> = ({ 
-  pools, 
-  activePoolName, 
+export const PoolSelector: React.FC<PoolSelectorProps> = ({
+  pools,
+  activePoolName,
   onPoolSwitch,
-  isProcessing = false 
+  isProcessing = false,
 }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -33,13 +33,13 @@ export const PoolSelector: React.FC<PoolSelectorProps> = ({
       setError(null);
       await onPoolSwitch(pool);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to switch pool');
+      setError(err instanceof Error ? err.message : "Failed to switch pool");
     } finally {
       setLoading(false);
     }
   };
 
-  const enabledPools = pools.filter(p => p.enabled !== false);
+  const enabledPools = pools.filter((p) => p.enabled !== false);
 
   return (
     <div className="rounded-2xl border border-white/30 bg-white/80 p-6 shadow-2xl shadow-slate-900/10 backdrop-blur">
@@ -73,9 +73,9 @@ export const PoolSelector: React.FC<PoolSelectorProps> = ({
               <div
                 key={pool.pool_id || pool.name}
                 className={`relative rounded-xl border-2 p-4 transition-all ${
-                  isActive 
-                    ? 'border-[#16A34A] bg-green-50/50' 
-                    : 'border-slate-200 bg-white hover:border-[#003666] hover:shadow-lg'
+                  isActive
+                    ? "border-[#16A34A] bg-green-50/50"
+                    : "border-slate-200 bg-white hover:border-[#003666] hover:shadow-lg"
                 }`}
               >
                 {pool.is_active && (
@@ -83,7 +83,7 @@ export const PoolSelector: React.FC<PoolSelectorProps> = ({
                     <Star className="h-4 w-4 text-amber-500" />
                   </div>
                 )}
-                
+
                 <div className="mb-3">
                   <h3 className="font-bold text-slate-900">{pool.name || pool.pool_id}</h3>
                   <p className="text-xs font-mono text-slate-600">{pool.url}</p>
@@ -92,12 +92,16 @@ export const PoolSelector: React.FC<PoolSelectorProps> = ({
                 <div className="mb-4 grid grid-cols-2 gap-2 rounded-lg bg-slate-50 p-2 text-xs">
                   <div>
                     <span className="block text-slate-600">Mode</span>
-                    <span className="font-mono font-bold text-slate-900">{pool.credential_mode}</span>
+                    <span className="font-mono font-bold text-slate-900">
+                      {pool.credential_mode}
+                    </span>
                   </div>
                   <div>
                     <span className="block text-slate-600">Configured</span>
-                    <span className={`font-bold ${pool.configured ? 'text-green-600' : 'text-amber-600'}`}>
-                      {pool.configured ? 'YES' : 'NO'}
+                    <span
+                      className={`font-bold ${pool.configured ? "text-green-600" : "text-amber-600"}`}
+                    >
+                      {pool.configured ? "YES" : "NO"}
                     </span>
                   </div>
                   {pool.performance && (
@@ -123,8 +127,8 @@ export const PoolSelector: React.FC<PoolSelectorProps> = ({
                   disabled={loading || isProcessing || isActive}
                   className={`w-full rounded-lg px-4 py-2 font-medium transition-colors ${
                     isActive
-                      ? 'bg-green-600 text-white'
-                      : 'bg-[#003666] text-white hover:bg-[#002147]'
+                      ? "bg-green-600 text-white"
+                      : "bg-[#003666] text-white hover:bg-[#002147]"
                   } disabled:cursor-not-allowed disabled:opacity-50`}
                 >
                   {loading || isProcessing ? (
@@ -137,8 +141,10 @@ export const PoolSelector: React.FC<PoolSelectorProps> = ({
                       <Check className="h-4 w-4" />
                       Active
                     </span>
+                  ) : pool.configured ? (
+                    "Switch Pool"
                   ) : (
-                    pool.configured ? 'Switch Pool' : 'Setup Pool'
+                    "Setup Pool"
                   )}
                 </button>
               </div>

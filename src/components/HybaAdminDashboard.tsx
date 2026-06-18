@@ -108,14 +108,7 @@ const THEME = {
   },
 } as const;
 
-const EXECUTIVE_ROLES = [
-  "ceo_heir_apparent",
-  "chairman",
-  "cto",
-  "cfo",
-  "legal",
-  "chief_of_staff",
-];
+const EXECUTIVE_ROLES = ["ceo_heir_apparent", "chairman", "cto", "cfo", "legal", "chief_of_staff"];
 
 const OPERATIONAL_ROLES = ["admin", "operator", "analyst", "miner"];
 
@@ -165,8 +158,8 @@ type AdminView =
   | "mining"
   | "security";
 
-function HybaAdminDashboard({ 
-  token, 
+function HybaAdminDashboard({
+  token,
   currentUser,
   telemetry,
   pools = [],
@@ -216,7 +209,11 @@ function HybaAdminDashboard({
     }
   };
 
-  const generateAiInsights = (intelStatus: any, intelTelemetry: any, adminStats: AdminStats | null) => {
+  const generateAiInsights = (
+    intelStatus: any,
+    intelTelemetry: any,
+    adminStats: AdminStats | null,
+  ) => {
     const insights = {
       funding: [],
       users: [],
@@ -280,11 +277,13 @@ function HybaAdminDashboard({
     // Mining insights
     if (intelTelemetry && intelTelemetry.phi_integrated) {
       if (intelTelemetry.phi_integrated > 0.8) {
-        insights.mining = [{
-          type: "success",
-          message: "High phi integration indicates optimal mining conditions",
-          action: "Consider increasing hashrate allocation",
-        }];
+        insights.mining = [
+          {
+            type: "success",
+            message: "High phi integration indicates optimal mining conditions",
+            action: "Consider increasing hashrate allocation",
+          },
+        ];
       }
       if (intelTelemetry.healing_events < 5) {
         insights.mining = insights.mining || [];
@@ -297,11 +296,13 @@ function HybaAdminDashboard({
     }
 
     // Security insights
-    insights.security = [{
-      type: "success",
-      message: "All defense systems operational and monitoring active",
-      action: "Continue normal security operations",
-    }];
+    insights.security = [
+      {
+        type: "success",
+        message: "All defense systems operational and monitoring active",
+        action: "Continue normal security operations",
+      },
+    ];
 
     setAiInsights(insights);
   };
@@ -360,18 +361,25 @@ function HybaAdminDashboard({
                 <Crown className="h-6 w-6 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-slate-900 tracking-tight">HYBA Group Executive Console</h1>
+                <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
+                  HYBA Group Executive Console
+                </h1>
                 <p className="text-sm text-slate-600 font-medium">
-                  Enterprise Operations Platform • {isExecutive ? "Executive Access" : "Admin Access"}
+                  Enterprise Operations Platform •{" "}
+                  {isExecutive ? "Executive Access" : "Admin Access"}
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-4">
               {/* Connection Status */}
               <div className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg shadow-sm">
-                <RadioTower className={`h-4 w-4 ${isConnected ? "text-green-600" : "text-red-600"}`} />
+                <RadioTower
+                  className={`h-4 w-4 ${isConnected ? "text-green-600" : "text-red-600"}`}
+                />
                 <div className="text-sm">
-                  <div className="font-semibold text-slate-900">{isConnected ? "Connected" : "Disconnected"}</div>
+                  <div className="font-semibold text-slate-900">
+                    {isConnected ? "Connected" : "Disconnected"}
+                  </div>
                   <div className="text-slate-600">{latencyMs.toFixed(0)}ms latency</div>
                 </div>
               </div>
@@ -471,7 +479,9 @@ function HybaAdminDashboard({
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
           <div
             className={`flex items-center gap-2 px-4 py-3 rounded-lg ${
-              feedback.error ? "bg-red-50 text-red-900 border border-red-200" : "bg-green-50 text-green-900 border border-green-200"
+              feedback.error
+                ? "bg-red-50 text-red-900 border border-red-200"
+                : "bg-green-50 text-green-900 border border-green-200"
             }`}
           >
             {feedback.error ? <AlertCircle className="h-5 w-5" /> : <Check className="h-5 w-5" />}
@@ -493,10 +503,10 @@ function HybaAdminDashboard({
       {/* Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {currentView === "dashboard" && (
-          <DashboardView 
-            stats={stats} 
-            loading={loading} 
-            isExecutive={isExecutive} 
+          <DashboardView
+            stats={stats}
+            loading={loading}
+            isExecutive={isExecutive}
             aiInsights={aiInsights}
           />
         )}
@@ -536,11 +546,7 @@ function HybaAdminDashboard({
           />
         )}
         {currentView === "audit" && (
-          <AuditView
-            token={token}
-            currentUser={currentUser}
-            onFeedback={showFeedback}
-          />
+          <AuditView token={token} currentUser={currentUser} onFeedback={showFeedback} />
         )}
         {currentView === "network" && isExecutive && (
           <NetworkView
@@ -576,10 +582,7 @@ function HybaAdminDashboard({
           />
         )}
         {currentView === "security" && isExecutive && (
-          <SecurityView
-            onFeedback={showFeedback}
-            aiInsights={aiInsights}
-          />
+          <SecurityView onFeedback={showFeedback} aiInsights={aiInsights} />
         )}
 
         {/* AI Assistant Panel */}
@@ -778,9 +781,7 @@ function StatCard({
       <div className="flex items-center justify-between">
         <div>
           <p className="text-sm text-slate-600 mb-1">{title}</p>
-          <p className="text-3xl font-bold text-slate-900">
-            {loading ? "—" : value}
-          </p>
+          <p className="text-3xl font-bold text-slate-900">{loading ? "—" : value}</p>
         </div>
         <div className={`p-3 rounded-lg ${colors.bg}`}>
           <div className={colors.text}>{icon}</div>
@@ -804,9 +805,7 @@ function EntityCard({
   return (
     <div className="border border-slate-200 rounded-lg p-4 hover:border-[#003666] transition-colors cursor-pointer">
       <div className="flex items-start gap-3">
-        <div className="p-2 bg-[#003666] rounded-lg text-white">
-          {icon}
-        </div>
+        <div className="p-2 bg-[#003666] rounded-lg text-white">{icon}</div>
         <div className="flex-1">
           <h4 className="font-semibold text-slate-900">{name}</h4>
           <p className="text-sm text-slate-600 mt-1">{description}</p>
@@ -975,11 +974,21 @@ function UsersView({
           <table className="w-full">
             <thead className="bg-slate-50 border-b border-slate-200">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">User</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Role</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Created</th>
-                <th className="px-6 py-3 text-right text-xs font-semibold text-slate-600 uppercase tracking-wider">Actions</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                  User
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                  Role
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                  Status
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                  Created
+                </th>
+                <th className="px-6 py-3 text-right text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200">
@@ -997,8 +1006,8 @@ function UsersView({
                         EXECUTIVE_ROLES.includes(user.role)
                           ? "bg-amber-100 text-amber-800"
                           : user.role === "admin"
-                          ? "bg-red-100 text-red-800"
-                          : "bg-slate-100 text-slate-800"
+                            ? "bg-red-100 text-red-800"
+                            : "bg-slate-100 text-slate-800"
                       }`}
                     >
                       {EXECUTIVE_ROLES.includes(user.role) && <Crown className="h-3 w-3" />}
@@ -1047,10 +1056,7 @@ function UsersView({
 
       {/* Create User Modal */}
       {showCreateModal && (
-        <Modal
-          title="Create New User"
-          onClose={() => setShowCreateModal(false)}
-        >
+        <Modal title="Create New User" onClose={() => setShowCreateModal(false)}>
           <form onSubmit={handleCreateUser} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">Username</label>
@@ -1064,7 +1070,9 @@ function UsersView({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Email (optional)</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1">
+                Email (optional)
+              </label>
               <input
                 type="email"
                 value={formData.email}
@@ -1142,7 +1150,9 @@ function UsersView({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">New Password (leave blank to keep current)</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1">
+                New Password (leave blank to keep current)
+              </label>
               <input
                 type="password"
                 minLength={8}
@@ -1288,7 +1298,9 @@ function FundingView({
                 <div key={entity.entity_name} className="border border-slate-200 rounded-lg p-4">
                   <div className="flex items-center justify-between mb-2">
                     <h4 className="font-semibold text-slate-900">{entity.entity_name}</h4>
-                    <span className="text-sm text-slate-600">{entity.allocation_count} allocations</span>
+                    <span className="text-sm text-slate-600">
+                      {entity.allocation_count} allocations
+                    </span>
                   </div>
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>
@@ -1413,7 +1425,12 @@ function AllocationsView({
   };
 
   const handleDisburse = async (allocation: FundingAllocation) => {
-    if (!confirm(`Are you sure you want to disburse $${allocation.allocation_amount.toLocaleString()} to ${allocation.entity_name}?`)) return;
+    if (
+      !confirm(
+        `Are you sure you want to disburse $${allocation.allocation_amount.toLocaleString()} to ${allocation.entity_name}?`,
+      )
+    )
+      return;
 
     try {
       await disburseFunding(allocation.id);
@@ -1504,12 +1521,24 @@ function AllocationsView({
           <table className="w-full">
             <thead className="bg-slate-50 border-b border-slate-200">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Entity</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Amount</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Fiscal Year</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Allocated By</th>
-                <th className="px-6 py-3 text-right text-xs font-semibold text-slate-600 uppercase tracking-wider">Actions</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                  Entity
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                  Amount
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                  Fiscal Year
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                  Status
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                  Allocated By
+                </th>
+                <th className="px-6 py-3 text-right text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200">
@@ -1560,10 +1589,7 @@ function AllocationsView({
 
       {/* Create Allocation Modal */}
       {showCreateModal && (
-        <Modal
-          title="Create New Allocation"
-          onClose={() => setShowCreateModal(false)}
-        >
+        <Modal title="Create New Allocation" onClose={() => setShowCreateModal(false)}>
           <form onSubmit={handleCreateAllocation} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">Entity Name</label>
@@ -1590,7 +1616,9 @@ function AllocationsView({
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Allocation Amount (USD)</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1">
+                Allocation Amount (USD)
+              </label>
               <input
                 type="number"
                 required
@@ -1606,7 +1634,9 @@ function AllocationsView({
                 <label className="block text-sm font-medium text-slate-700 mb-1">Fiscal Year</label>
                 <select
                   value={formData.fiscal_year}
-                  onChange={(e) => setFormData({ ...formData, fiscal_year: parseInt(e.target.value) })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, fiscal_year: parseInt(e.target.value) })
+                  }
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#003666] focus:border-transparent"
                 >
                   {[2024, 2025, 2026, 2027].map((year) => (
@@ -1617,7 +1647,9 @@ function AllocationsView({
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Quarter (optional)</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1">
+                  Quarter (optional)
+                </label>
                 <select
                   value={formData.fiscal_quarter}
                   onChange={(e) => setFormData({ ...formData, fiscal_quarter: e.target.value })}
@@ -1765,7 +1797,9 @@ function RequestsView({
       await reviewFundingRequest(selectedRequest.request_id, {
         status: reviewData.status,
         approval_notes: reviewData.approval_notes,
-        allocated_amount: reviewData.allocated_amount ? parseFloat(reviewData.allocated_amount) : undefined,
+        allocated_amount: reviewData.allocated_amount
+          ? parseFloat(reviewData.allocated_amount)
+          : undefined,
       });
       onFeedback(`Request ${reviewData.status} successfully`);
       setShowReviewModal(false);
@@ -1867,13 +1901,27 @@ function RequestsView({
           <table className="w-full">
             <thead className="bg-slate-50 border-b border-slate-200">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Request ID</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Entity</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Requested</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Purpose</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Requested By</th>
-                <th className="px-6 py-3 text-right text-xs font-semibold text-slate-600 uppercase tracking-wider">Actions</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                  Request ID
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                  Entity
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                  Requested
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                  Purpose
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                  Status
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                  Requested By
+                </th>
+                <th className="px-6 py-3 text-right text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200">
@@ -1894,7 +1942,9 @@ function RequestsView({
                     </div>
                   </td>
                   <td className="px-6 py-4">
-                    <div className="text-sm text-slate-600 max-w-xs truncate">{request.purpose}</div>
+                    <div className="text-sm text-slate-600 max-w-xs truncate">
+                      {request.purpose}
+                    </div>
                   </td>
                   <td className="px-6 py-4">
                     <span
@@ -1926,10 +1976,7 @@ function RequestsView({
 
       {/* Create Request Modal */}
       {showCreateModal && (
-        <Modal
-          title="Create Funding Request"
-          onClose={() => setShowCreateModal(false)}
-        >
+        <Modal title="Create Funding Request" onClose={() => setShowCreateModal(false)}>
           <form onSubmit={handleCreateRequest} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">Entity Name</label>
@@ -1956,7 +2003,9 @@ function RequestsView({
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Requested Amount (USD)</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1">
+                Requested Amount (USD)
+              </label>
               <input
                 type="number"
                 required
@@ -1972,7 +2021,9 @@ function RequestsView({
                 <label className="block text-sm font-medium text-slate-700 mb-1">Fiscal Year</label>
                 <select
                   value={formData.fiscal_year}
-                  onChange={(e) => setFormData({ ...formData, fiscal_year: parseInt(e.target.value) })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, fiscal_year: parseInt(e.target.value) })
+                  }
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#003666] focus:border-transparent"
                 >
                   {[2024, 2025, 2026, 2027].map((year) => (
@@ -1983,7 +2034,9 @@ function RequestsView({
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Quarter (optional)</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1">
+                  Quarter (optional)
+                </label>
                 <select
                   value={formData.fiscal_quarter}
                   onChange={(e) => setFormData({ ...formData, fiscal_quarter: e.target.value })}
@@ -2008,7 +2061,9 @@ function RequestsView({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Justification (optional)</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1">
+                Justification (optional)
+              </label>
               <textarea
                 value={formData.justification}
                 onChange={(e) => setFormData({ ...formData, justification: e.target.value })}
@@ -2046,7 +2101,9 @@ function RequestsView({
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
                   <span className="text-slate-600">Entity:</span>
-                  <span className="ml-2 font-medium text-slate-900">{selectedRequest.entity_name}</span>
+                  <span className="ml-2 font-medium text-slate-900">
+                    {selectedRequest.entity_name}
+                  </span>
                 </div>
                 <div>
                   <span className="text-slate-600">Requested:</span>
@@ -2080,19 +2137,25 @@ function RequestsView({
               </div>
               {reviewData.status === "approved" && (
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Allocated Amount (USD)</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">
+                    Allocated Amount (USD)
+                  </label>
                   <input
                     type="number"
                     min="0"
                     step="0.01"
                     value={reviewData.allocated_amount}
-                    onChange={(e) => setReviewData({ ...reviewData, allocated_amount: e.target.value })}
+                    onChange={(e) =>
+                      setReviewData({ ...reviewData, allocated_amount: e.target.value })
+                    }
                     className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#003666] focus:border-transparent"
                   />
                 </div>
               )}
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Approval Notes</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1">
+                  Approval Notes
+                </label>
                 <textarea
                   value={reviewData.approval_notes}
                   onChange={(e) => setReviewData({ ...reviewData, approval_notes: e.target.value })}
@@ -2218,11 +2281,21 @@ function AuditView({
           <table className="w-full">
             <thead className="bg-slate-50 border-b border-slate-200">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Timestamp</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Actor</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Action</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Target</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Details</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                  Timestamp
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                  Actor
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                  Action
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                  Target
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                  Details
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200">
@@ -2235,7 +2308,9 @@ function AuditView({
                     <div>
                       <div className="font-medium text-slate-900">{log.actor_username}</div>
                       {log.actor_role && (
-                        <div className="text-xs text-slate-600">{ROLE_LABELS[log.actor_role] || log.actor_role}</div>
+                        <div className="text-xs text-slate-600">
+                          {ROLE_LABELS[log.actor_role] || log.actor_role}
+                        </div>
                       )}
                     </div>
                   </td>
@@ -2307,9 +2382,7 @@ function NetworkView({
                   <div className="font-medium text-slate-900">{pool.name || pool.pool_id}</div>
                   <div className="text-sm text-slate-600">{pool.status || "Unknown"}</div>
                 </div>
-                {activePoolName === pool.name && (
-                  <CheckCircle className="h-5 w-5 text-green-600" />
-                )}
+                {activePoolName === pool.name && <CheckCircle className="h-5 w-5 text-green-600" />}
               </div>
             ))}
           </div>
@@ -2319,10 +2392,14 @@ function NetworkView({
           <h3 className="text-lg font-semibold text-slate-900 mb-4">Telemetry Network</h3>
           <div className="space-y-3">
             <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg">
-              <RadioTower className={`h-5 w-5 ${isConnected ? "text-green-600" : "text-red-600"}`} />
+              <RadioTower
+                className={`h-5 w-5 ${isConnected ? "text-green-600" : "text-red-600"}`}
+              />
               <div className="flex-1">
                 <div className="font-medium text-slate-900">Backend Connection</div>
-                <div className="text-sm text-slate-600">{isConnected ? "Connected" : "Disconnected"}</div>
+                <div className="text-sm text-slate-600">
+                  {isConnected ? "Connected" : "Disconnected"}
+                </div>
               </div>
             </div>
             <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg">
@@ -2497,14 +2574,22 @@ function QuantumView({
           <div className="space-y-2">
             {aiInsights.quantum.map((insight: any, idx: number) => (
               <div key={idx} className="flex items-start gap-3 bg-white/10 rounded-lg p-3">
-                <div className={`mt-0.5 ${
-                  insight.type === 'warning' ? 'text-amber-300' :
-                  insight.type === 'error' ? 'text-red-300' :
-                  'text-green-300'
-                }`}>
-                  {insight.type === 'warning' ? <AlertCircle className="h-4 w-4" /> :
-                   insight.type === 'error' ? <XCircle className="h-4 w-4" /> :
-                   <CheckCircle className="h-4 w-4" />}
+                <div
+                  className={`mt-0.5 ${
+                    insight.type === "warning"
+                      ? "text-amber-300"
+                      : insight.type === "error"
+                        ? "text-red-300"
+                        : "text-green-300"
+                  }`}
+                >
+                  {insight.type === "warning" ? (
+                    <AlertCircle className="h-4 w-4" />
+                  ) : insight.type === "error" ? (
+                    <XCircle className="h-4 w-4" />
+                  ) : (
+                    <CheckCircle className="h-4 w-4" />
+                  )}
                 </div>
                 <div className="flex-1">
                   <p className="text-sm font-medium">{insight.message}</p>
@@ -2524,7 +2609,9 @@ function QuantumView({
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="p-4 bg-slate-50 rounded-lg">
             <div className="text-sm text-slate-600">Status</div>
-            <div className={`text-lg font-bold ${intelligenceStatus?.active ? "text-green-600" : "text-red-600"}`}>
+            <div
+              className={`text-lg font-bold ${intelligenceStatus?.active ? "text-green-600" : "text-red-600"}`}
+            >
               {intelligenceStatus?.active ? "Active" : "Inactive"}
             </div>
           </div>
@@ -2581,7 +2668,9 @@ function QuantumView({
           {/* Scale Intelligence */}
           <div className="flex items-center gap-4">
             <div className="flex-1">
-              <label className="block text-sm font-medium text-slate-700 mb-1">Intelligence Scale</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1">
+                Intelligence Scale
+              </label>
               <input
                 type="range"
                 min="0.1"
@@ -2605,7 +2694,9 @@ function QuantumView({
           {/* Boost Consciousness */}
           <div className="flex items-center gap-4">
             <div className="flex-1">
-              <label className="block text-sm font-medium text-slate-700 mb-1">Consciousness Boost</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1">
+                Consciousness Boost
+              </label>
               <input
                 type="range"
                 min="1"
@@ -2659,7 +2750,7 @@ function QuantumView({
       {/* Pool Switching */}
       <div className="bg-white rounded-xl border border-slate-200 p-6">
         <h3 className="text-lg font-semibold text-slate-900 mb-4">Pool Switching</h3>
-        
+
         {/* AI Pool Recommendation */}
         {aiInsights && aiInsights.network && aiInsights.network.length > 0 && (
           <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
@@ -2668,13 +2759,14 @@ function QuantumView({
               <div>
                 <p className="text-sm font-medium text-blue-900">AI Recommendation</p>
                 <p className="text-xs text-blue-700 mt-1">
-                  {aiInsights.network[0]?.message || "Optimize pool selection based on current network conditions"}
+                  {aiInsights.network[0]?.message ||
+                    "Optimize pool selection based on current network conditions"}
                 </p>
               </div>
             </div>
           </div>
         )}
-        
+
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">Select Pool</label>
@@ -2784,7 +2876,7 @@ function MiningView({
       // For now, we'll update the local state to reflect the sale
       // In production, this would be: await sellHashrateToPool(selectedPoolForSale, parseFloat(sellHashrateAmount));
       const amount = parseFloat(sellHashrateAmount);
-      setHashrateRevenue(prev => prev + (amount * 0.05)); // This should come from real pool pricing API
+      setHashrateRevenue((prev) => prev + amount * 0.05); // This should come from real pool pricing API
       onFeedback("Hashrate sale completed successfully", false);
     } catch (err) {
       onFeedback("Failed to sell hashrate", true);
@@ -2808,14 +2900,22 @@ function MiningView({
           <div className="space-y-2">
             {aiInsights.mining.map((insight: any, idx: number) => (
               <div key={idx} className="flex items-start gap-3 bg-white/10 rounded-lg p-3">
-                <div className={`mt-0.5 ${
-                  insight.type === 'warning' ? 'text-amber-300' :
-                  insight.type === 'error' ? 'text-red-300' :
-                  'text-green-300'
-                }`}>
-                  {insight.type === 'warning' ? <AlertCircle className="h-4 w-4" /> :
-                   insight.type === 'error' ? <XCircle className="h-4 w-4" /> :
-                   <CheckCircle className="h-4 w-4" />}
+                <div
+                  className={`mt-0.5 ${
+                    insight.type === "warning"
+                      ? "text-amber-300"
+                      : insight.type === "error"
+                        ? "text-red-300"
+                        : "text-green-300"
+                  }`}
+                >
+                  {insight.type === "warning" ? (
+                    <AlertCircle className="h-4 w-4" />
+                  ) : insight.type === "error" ? (
+                    <XCircle className="h-4 w-4" />
+                  ) : (
+                    <CheckCircle className="h-4 w-4" />
+                  )}
                 </div>
                 <div className="flex-1">
                   <p className="text-sm font-medium">{insight.message}</p>
@@ -2831,7 +2931,9 @@ function MiningView({
 
       {/* Hilbert Space Visualization */}
       <div className="bg-white rounded-xl border border-slate-200 p-6">
-        <h3 className="text-lg font-semibold text-slate-900 mb-4">Hilbert Space Mining Telemetry</h3>
+        <h3 className="text-lg font-semibold text-slate-900 mb-4">
+          Hilbert Space Mining Telemetry
+        </h3>
         <div className="flex flex-col lg:flex-row gap-6">
           <HilbertSpaceVisualizer
             hashrate={hashrate}
@@ -2843,27 +2945,19 @@ function MiningView({
             <div className="grid grid-cols-2 gap-4">
               <div className="p-4 bg-slate-50 rounded-lg">
                 <div className="text-sm text-slate-600">Current Hashrate</div>
-                <div className="text-2xl font-bold text-slate-900">
-                  {hashrate.toFixed(2)} EH/s
-                </div>
+                <div className="text-2xl font-bold text-slate-900">{hashrate.toFixed(2)} EH/s</div>
               </div>
               <div className="p-4 bg-slate-50 rounded-lg">
                 <div className="text-sm text-slate-600">Power Scale</div>
-                <div className="text-2xl font-bold text-slate-900">
-                  {powerScale.toFixed(2)}x
-                </div>
+                <div className="text-2xl font-bold text-slate-900">{powerScale.toFixed(2)}x</div>
               </div>
               <div className="p-4 bg-slate-50 rounded-lg">
                 <div className="text-sm text-slate-600">Phi Resonance</div>
-                <div className="text-2xl font-bold text-slate-900">
-                  {phiResonance.toFixed(4)}
-                </div>
+                <div className="text-2xl font-bold text-slate-900">{phiResonance.toFixed(4)}</div>
               </div>
               <div className="p-4 bg-slate-50 rounded-lg">
                 <div className="text-sm text-slate-600">Time to Next Share</div>
-                <div className="text-2xl font-bold text-slate-900">
-                  {timeToNextShare}s
-                </div>
+                <div className="text-2xl font-bold text-slate-900">{timeToNextShare}s</div>
               </div>
             </div>
             <div className="p-4 bg-gradient-to-r from-[#003666] to-[#C5A55A] rounded-lg text-white">
@@ -2905,9 +2999,7 @@ function MiningView({
             </div>
             <div className="p-4 bg-slate-100 rounded-lg">
               <div className="text-sm text-slate-600">Total Mining Revenue</div>
-              <div className="text-3xl font-bold text-slate-900">
-                ${miningRevenue.toFixed(2)}
-              </div>
+              <div className="text-3xl font-bold text-slate-900">${miningRevenue.toFixed(2)}</div>
             </div>
           </div>
         </div>
@@ -2939,9 +3031,7 @@ function MiningView({
             </div>
             <div className="p-4 bg-slate-100 rounded-lg">
               <div className="text-sm text-slate-600">Total Hashrate Revenue</div>
-              <div className="text-3xl font-bold text-slate-900">
-                ${hashrateRevenue.toFixed(2)}
-              </div>
+              <div className="text-3xl font-bold text-slate-900">${hashrateRevenue.toFixed(2)}</div>
             </div>
           </div>
         </div>
@@ -2952,7 +3042,9 @@ function MiningView({
         <h3 className="text-lg font-semibold text-slate-900 mb-4">Sell Hashrate</h3>
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Hashrate Amount (EH/s)</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">
+              Hashrate Amount (EH/s)
+            </label>
             <input
               type="number"
               value={sellHashrateAmount}
@@ -2992,8 +3084,9 @@ function MiningView({
             <div>
               <p className="text-sm font-medium text-blue-900">Hashrate Payment Pools</p>
               <p className="text-xs text-blue-700 mt-1">
-                Some pools pay directly for hashrate regardless of mining success. This provides steady revenue 
-                alongside traditional mining rewards. Select pools that offer hashrate payments above.
+                Some pools pay directly for hashrate regardless of mining success. This provides
+                steady revenue alongside traditional mining rewards. Select pools that offer
+                hashrate payments above.
               </p>
             </div>
           </div>
@@ -3014,7 +3107,9 @@ function MiningView({
           </div>
           <div className="p-4 bg-white/10 rounded-lg">
             <div className="text-sm text-white/70">Combined Total</div>
-            <div className="text-2xl font-bold">${(miningRevenue + hashrateRevenue).toFixed(2)}</div>
+            <div className="text-2xl font-bold">
+              ${(miningRevenue + hashrateRevenue).toFixed(2)}
+            </div>
           </div>
         </div>
       </div>
@@ -3039,7 +3134,9 @@ function SecurityView({
     <div className="space-y-8">
       <div className="flex items-center gap-3">
         <Shield className="h-7 w-7 text-[#003666]" />
-        <h2 className="text-3xl font-bold text-slate-900 tracking-tight">Security Operations Center</h2>
+        <h2 className="text-3xl font-bold text-slate-900 tracking-tight">
+          Security Operations Center
+        </h2>
       </div>
 
       {/* AI Security Insights */}
@@ -3051,15 +3148,26 @@ function SecurityView({
           </div>
           <div className="space-y-3">
             {aiInsights.security.map((insight: any, idx: number) => (
-              <div key={idx} className="flex items-start gap-4 bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
-                <div className={`mt-0.5 ${
-                  insight.type === 'critical' ? 'text-red-300' :
-                  insight.type === 'warning' ? 'text-amber-300' :
-                  'text-green-300'
-                }`}>
-                  {insight.type === 'critical' ? <AlertCircle className="h-5 w-5" /> :
-                   insight.type === 'warning' ? <AlertTriangle className="h-5 w-5" /> :
-                   <CheckCircle className="h-5 w-5" />}
+              <div
+                key={idx}
+                className="flex items-start gap-4 bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20"
+              >
+                <div
+                  className={`mt-0.5 ${
+                    insight.type === "critical"
+                      ? "text-red-300"
+                      : insight.type === "warning"
+                        ? "text-amber-300"
+                        : "text-green-300"
+                  }`}
+                >
+                  {insight.type === "critical" ? (
+                    <AlertCircle className="h-5 w-5" />
+                  ) : insight.type === "warning" ? (
+                    <AlertTriangle className="h-5 w-5" />
+                  ) : (
+                    <CheckCircle className="h-5 w-5" />
+                  )}
                 </div>
                 <div className="flex-1">
                   <p className="text-base font-semibold">{insight.message}</p>
@@ -3078,7 +3186,9 @@ function SecurityView({
         <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between mb-4">
             <Shield className="h-6 w-6 text-green-600" />
-            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Security Score</span>
+            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+              Security Score
+            </span>
           </div>
           <div className="text-3xl font-bold text-green-600 mb-1">{securityScore}%</div>
           <div className="text-sm text-slate-600">Excellent</div>
@@ -3087,7 +3197,9 @@ function SecurityView({
         <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between mb-4">
             <AlertCircle className="h-6 w-6 text-red-600" />
-            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Threat Level</span>
+            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+              Threat Level
+            </span>
           </div>
           <div className="text-3xl font-bold text-green-600 mb-1 capitalize">{threatLevel}</div>
           <div className="text-sm text-slate-600">{activeThreats} active threats</div>
@@ -3096,7 +3208,9 @@ function SecurityView({
         <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between mb-4">
             <Lock className="h-6 w-6 text-blue-600" />
-            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Defense Systems</span>
+            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+              Defense Systems
+            </span>
           </div>
           <div className="text-3xl font-bold text-blue-600 mb-1">6/6</div>
           <div className="text-sm text-slate-600">All operational</div>
@@ -3105,7 +3219,9 @@ function SecurityView({
         <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between mb-4">
             <Activity className="h-6 w-6 text-purple-600" />
-            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Events (24h)</span>
+            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+              Events (24h)
+            </span>
           </div>
           <div className="text-3xl font-bold text-purple-600 mb-1">1,247</div>
           <div className="text-sm text-slate-600">+12% from yesterday</div>
@@ -3186,7 +3302,9 @@ function SecurityView({
                 <span className="font-semibold text-slate-900">Authentication Success</span>
                 <span className="text-xs text-slate-500">2 minutes ago</span>
               </div>
-              <p className="text-sm text-slate-600">Executive user authenticated via secure token</p>
+              <p className="text-sm text-slate-600">
+                Executive user authenticated via secure token
+              </p>
             </div>
           </div>
           <div className="flex items-start gap-4 p-4 bg-slate-50 rounded-xl">
@@ -3198,7 +3316,9 @@ function SecurityView({
                 <span className="font-semibold text-slate-900">Defense System Update</span>
                 <span className="text-xs text-slate-500">15 minutes ago</span>
               </div>
-              <p className="text-sm text-slate-600">Quantum regeneration module self-healing completed</p>
+              <p className="text-sm text-slate-600">
+                Quantum regeneration module self-healing completed
+              </p>
             </div>
           </div>
           <div className="flex items-start gap-4 p-4 bg-slate-50 rounded-xl">
@@ -3210,7 +3330,9 @@ function SecurityView({
                 <span className="font-semibold text-slate-900">Swarm Coherence Check</span>
                 <span className="text-xs text-slate-500">1 hour ago</span>
               </div>
-              <p className="text-sm text-slate-600">Multi-node security coordination verified - all nodes operational</p>
+              <p className="text-sm text-slate-600">
+                Multi-node security coordination verified - all nodes operational
+              </p>
             </div>
           </div>
         </div>
@@ -3224,7 +3346,7 @@ function SecurityView({
             <div className="text-sm text-white/70 mb-2">Threat Detection Rate</div>
             <div className="text-4xl font-bold">99.8%</div>
             <div className="w-full bg-white/20 rounded-full h-2 mt-2">
-              <div className="bg-green-400 h-2 rounded-full" style={{ width: '99.8%' }}></div>
+              <div className="bg-green-400 h-2 rounded-full" style={{ width: "99.8%" }}></div>
             </div>
           </div>
           <div>
@@ -3257,10 +3379,7 @@ function Modal({
       <div className="bg-white rounded-xl shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-6 border-b border-slate-200">
           <h2 className="text-xl font-bold text-slate-900">{title}</h2>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
-          >
+          <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-lg transition-colors">
             <X className="h-5 w-5 text-slate-600" />
           </button>
         </div>

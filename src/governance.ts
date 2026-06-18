@@ -24,7 +24,9 @@ const GOOD_RUNTIME = new Set(["ok", "healthy", "ready"]);
 const BAD_SECURITY = new Set(["critical", "high", "error", "degraded"]);
 
 function normalized(value: string | null | undefined): string {
-  return String(value || "").trim().toLowerCase();
+  return String(value || "")
+    .trim()
+    .toLowerCase();
 }
 
 function hasFiniteNumber(value: unknown): value is number {
@@ -53,16 +55,28 @@ export function buildGovernanceSignals(input: GovernanceTelemetryInput): Governa
     {
       id: "real-telemetry",
       label: "Real telemetry only",
-      status: telemetrySource && !telemetrySource.includes("synthetic") && !telemetrySource.includes("mock") ? "pass" : "fail",
+      status:
+        telemetrySource &&
+        !telemetrySource.includes("synthetic") &&
+        !telemetrySource.includes("mock")
+          ? "pass"
+          : "fail",
       detail:
-        telemetrySource && !telemetrySource.includes("synthetic") && !telemetrySource.includes("mock")
+        telemetrySource &&
+        !telemetrySource.includes("synthetic") &&
+        !telemetrySource.includes("mock")
           ? `Telemetry source reported as ${input.telemetrySource}.`
           : "Telemetry source is missing or indicates a fixture/synthetic path.",
     },
     {
       id: "pool-operator-gate",
       label: "Pool operator gate",
-      status: activePoolCount > 0 || input.activePoolName ? "pass" : configuredPoolCount > 0 ? "warn" : "fail",
+      status:
+        activePoolCount > 0 || input.activePoolName
+          ? "pass"
+          : configuredPoolCount > 0
+            ? "warn"
+            : "fail",
       detail:
         activePoolCount > 0 || input.activePoolName
           ? "At least one operator-configured pool is active."
@@ -73,12 +87,18 @@ export function buildGovernanceSignals(input: GovernanceTelemetryInput): Governa
     {
       id: "security-posture",
       label: "Security posture",
-      status: BAD_SECURITY.has(threat) || BAD_SECURITY.has(security) ? "fail" : security ? "pass" : "warn",
-      detail: BAD_SECURITY.has(threat) || BAD_SECURITY.has(security)
-        ? "Security telemetry reports a blocking threat state."
-        : security
-          ? `Security status is ${input.securityStatus}.`
-          : "Security status is unavailable; review bridge/internal health before cutover.",
+      status:
+        BAD_SECURITY.has(threat) || BAD_SECURITY.has(security)
+          ? "fail"
+          : security
+            ? "pass"
+            : "warn",
+      detail:
+        BAD_SECURITY.has(threat) || BAD_SECURITY.has(security)
+          ? "Security telemetry reports a blocking threat state."
+          : security
+            ? `Security status is ${input.securityStatus}.`
+            : "Security status is unavailable; review bridge/internal health before cutover.",
     },
     {
       id: "claim-boundary",

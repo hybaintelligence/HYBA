@@ -27,12 +27,15 @@ authorized actuator.
 from __future__ import annotations
 
 import ast
+import logging
 import math
 import time
 import zlib
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Sequence, Set, Tuple
+
+logger = logging.getLogger(__name__)
 
 from hyba_genesis_api.core.intelligence_fabric import PHI, PhiResonanceFabric, explain
 from hyba_genesis_api.core.intelligence_manifold import IntelligenceManifold

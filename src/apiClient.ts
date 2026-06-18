@@ -549,7 +549,9 @@ export async function boostConsciousness(
   );
 }
 
-export async function analyzeBlockchainSnapshot(blocks: Array<{ height: number; block_hash: string }>) {
+export async function analyzeBlockchainSnapshot(
+  blocks: Array<{ height: number; block_hash: string }>,
+) {
   return post<Record<string, unknown>>("/v1/unified/analyze/blockchain", { blocks });
 }
 
@@ -649,7 +651,7 @@ export interface IntelligenceTelemetryResponse {
   active_ancillas: number;
   pool_max: number;
   exhaustion: number;
-  mode: 'NOMINAL' | 'COMPRESSED' | 'RECOVERY';
+  mode: "NOMINAL" | "COMPRESSED" | "RECOVERY";
   metacognitive_events: string[];
   healing_events: number;
 }
@@ -856,9 +858,13 @@ export async function updateAdminUser(
 }
 
 export async function deleteAdminUser(userId: number): Promise<void> {
-  await fetchWithRetry(`${BACKEND_URL}/admin/users/${userId}`, {
-    method: "DELETE",
-  }, { maxRetries: 0 });
+  await fetchWithRetry(
+    `${BACKEND_URL}/admin/users/${userId}`,
+    {
+      method: "DELETE",
+    },
+    { maxRetries: 0 },
+  );
 }
 
 export async function getAuditLogs(
@@ -925,11 +931,9 @@ export async function updateFundingAllocation(
     metadata?: Record<string, unknown>;
   },
 ): Promise<FundingAllocation> {
-  return put<FundingAllocation>(
-    `/admin/funding/allocations/${allocationId}`,
-    allocation,
-    { maxRetries: 0 },
-  );
+  return put<FundingAllocation>(`/admin/funding/allocations/${allocationId}`, allocation, {
+    maxRetries: 0,
+  });
 }
 
 export async function disburseFunding(allocationId: number): Promise<FundingAllocation> {
@@ -981,11 +985,9 @@ export async function reviewFundingRequest(
     allocated_amount?: number;
   },
 ): Promise<FundingRequest> {
-  return put<FundingRequest>(
-    `/admin/funding/requests/${requestId}/review`,
-    review,
-    { maxRetries: 0 },
-  );
+  return put<FundingRequest>(`/admin/funding/requests/${requestId}/review`, review, {
+    maxRetries: 0,
+  });
 }
 
 export async function getFundingSummary(fiscal_year?: number): Promise<FundingSummary> {

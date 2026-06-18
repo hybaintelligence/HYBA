@@ -263,9 +263,27 @@ describe("HYBA metacognitive stabilizer monitor", () => {
   it("predicts degradation and triggers a preemptive shard rotation", () => {
     const monitor = new SecuritySwarmAgent();
     monitor.inject_state_history_for_test([
-      { phi_integrated: 0.9, syndrome_pressure: 0.1, shard_entropy: 0.8, confidence_delta: 0.02, resource_exhaustion: 0.1 },
-      { phi_integrated: 0.8, syndrome_pressure: 0.3, shard_entropy: 0.8, confidence_delta: 0.08, resource_exhaustion: 0.1 },
-      { phi_integrated: 0.7, syndrome_pressure: 0.5, shard_entropy: 0.8, confidence_delta: 0.13, resource_exhaustion: 0.1 },
+      {
+        phi_integrated: 0.9,
+        syndrome_pressure: 0.1,
+        shard_entropy: 0.8,
+        confidence_delta: 0.02,
+        resource_exhaustion: 0.1,
+      },
+      {
+        phi_integrated: 0.8,
+        syndrome_pressure: 0.3,
+        shard_entropy: 0.8,
+        confidence_delta: 0.08,
+        resource_exhaustion: 0.1,
+      },
+      {
+        phi_integrated: 0.7,
+        syndrome_pressure: 0.5,
+        shard_entropy: 0.8,
+        confidence_delta: 0.13,
+        resource_exhaustion: 0.1,
+      },
     ]);
 
     const report = monitor.run_metacognitive_cycle();
@@ -290,6 +308,8 @@ describe("HYBA metacognitive stabilizer monitor", () => {
     }
 
     expect(monitor.get_strategy_weight(syndrome)).toBeGreaterThan(1.0);
-    expect(monitor.get_swarm_status().metacognitive.strategy_weights[String(syndrome)]).toBeGreaterThan(1.0);
+    expect(
+      monitor.get_swarm_status().metacognitive.strategy_weights[String(syndrome)],
+    ).toBeGreaterThan(1.0);
   });
 });

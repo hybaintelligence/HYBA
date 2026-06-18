@@ -82,14 +82,7 @@ const UNAVAILABLE = "—";
 
 const PHI_TIERS = [7, 10, 12, 15, 18, 20, 31, 76];
 
-const EXECUTIVE_ROLES = [
-  "ceo_heir_apparent",
-  "chairman",
-  "cto",
-  "cfo",
-  "legal",
-  "chief_of_staff",
-];
+const EXECUTIVE_ROLES = ["ceo_heir_apparent", "chairman", "cto", "cfo", "legal", "chief_of_staff"];
 
 function fmtNum(value: NullableNumber, digits = 2): string {
   return typeof value === "number" && Number.isFinite(value)
@@ -206,12 +199,19 @@ function AppContent() {
   const health = telemetry?.health;
   const systemMetrics = health?.systemMetrics || {};
   const pools: PoolInfo[] = telemetry?.pools?.pools || [];
-  const poolSummary = telemetry?.pools?.summary || { total_pools: 0, active_pools: 0, telemetry_source: "unavailable" };
+  const poolSummary = telemetry?.pools?.summary || {
+    total_pools: 0,
+    active_pools: 0,
+    telemetry_source: "unavailable",
+  };
   const security: Partial<SecurityStatus> = telemetry?.security || {};
   const securityDefenseSystems = security.defense_systems || {};
   const stabilizerMonitor = securityDefenseSystems.stabilizer_monitor || {};
   const ancillaTrapPool = securityDefenseSystems.preallocated_ancilla_trap_pool || {};
-  const consciousness = telemetry?.consciousness || { status: "unavailable", source: "unavailable" };
+  const consciousness = telemetry?.consciousness || {
+    status: "unavailable",
+    source: "unavailable",
+  };
   const governanceTags = useMemo(
     () => [
       ...((health?.substrate?.governance_tags as string[] | undefined) || []),
@@ -221,7 +221,7 @@ function AppContent() {
   );
 
   const runtimeStatus = useMemo(() => health?.status || "unavailable", [health]);
-  const activePoolName = fmtText(systemMetrics.activePool || pools.find(p => p.is_active)?.name);
+  const activePoolName = fmtText(systemMetrics.activePool || pools.find((p) => p.is_active)?.name);
   const configuredPoolCount = Number(poolSummary.configured_pools ?? poolSummary.total_pools ?? 0);
   const activePoolCount = Number(poolSummary.active_pools ?? 0);
   const securityStatus = fmtText(security.status);
@@ -257,7 +257,8 @@ function AppContent() {
       {
         icon: <Terminal className="h-4 w-4" />,
         title: "Bridge health",
-        detail: "/bridge/health exposes backend reachability, circuit breaker state, and request telemetry.",
+        detail:
+          "/bridge/health exposes backend reachability, circuit breaker state, and request telemetry.",
       },
       {
         icon: <BarChart3 className="h-4 w-4" />,
@@ -267,7 +268,8 @@ function AppContent() {
       {
         icon: <TrendingUp className="h-4 w-4" />,
         title: "Production gates",
-        detail: "npm run prod:check validates type safety, build output, backend tests, and E2E smoke coverage.",
+        detail:
+          "npm run prod:check validates type safety, build output, backend tests, and E2E smoke coverage.",
       },
       {
         icon: <Cpu className="h-4 w-4" />,
@@ -396,6 +398,7 @@ function AppContent() {
       setAuthFeedback({ text: "Please enter all credentials", error: true });
       return;
     }
+    setAuthFeedback({ text: "Authenticating...", error: false });
     try {
       const data = await loginApi({ username: usernameInput, password: passwordInput });
       if (!data.success) {
@@ -425,6 +428,7 @@ function AppContent() {
       setAuthFeedback({ text: "Please enter all fields", error: true });
       return;
     }
+    setAuthFeedback({ text: "Creating account...", error: false });
     try {
       const data = await registerApi({ username: usernameInput, password: passwordInput });
       if (data.success) {
@@ -473,9 +477,17 @@ function AppContent() {
   const handlePoolSave = async (payload: ConfigurePoolRequest, connectAfterSave: boolean) => {
     if (!payload.pool_id) return;
     setIsProcessing(true);
+    setAuthFeedback({
+      text: `Configuring ${selectedPoolForConfig?.name || payload.pool_id}...`,
+      error: false,
+    });
     try {
       await configurePool(payload);
       if (connectAfterSave) {
+        setAuthFeedback({
+          text: `Connecting to ${selectedPoolForConfig?.name || payload.pool_id}...`,
+          error: false,
+        });
         await switchPool({ pool_id: payload.pool_id, capacity_ehs: powerScale, switch: true });
         setAuthFeedback({
           text: `Configured and switched to ${selectedPoolForConfig?.name || payload.pool_id}`,
@@ -507,6 +519,7 @@ function AppContent() {
       return;
     }
     setIsProcessing(true);
+    setAuthFeedback({ text: `Switching to ${pool.name || pool.pool_id}...`, error: false });
     try {
       await switchPool({ pool_id: pool.pool_id, capacity_ehs: powerScale, switch: true });
       setAuthFeedback({ text: `Switched to ${pool.name || pool.pool_id}`, error: false });
@@ -523,6 +536,7 @@ function AppContent() {
 
   const handlePoolDisconnect = async () => {
     setIsProcessing(true);
+    setAuthFeedback({ text: "Disconnecting from pool...", error: false });
     try {
       await disconnectFromPool();
       setAuthFeedback({ text: "Disconnected from pool", error: false });
@@ -589,19 +603,31 @@ function AppContent() {
               <RefreshCw className={`h-3.5 w-3.5 ${isSyncing ? "animate-spin" : ""}`} /> Refresh
             </button>
             <Sparkline data={latencyHistory} />
-            {(currentUser?.role === "admin" || EXECUTIVE_ROLES.includes(currentUser?.role || "")) && (
+            {(currentUser?.role === "admin" ||
+              EXECUTIVE_ROLES.includes(currentUser?.role || "")) && (
               <>
+                <div className="h-6 w-px bg-white/20" />
                 <button
-                  onClick={() => setCurrentView(currentView === "dashboard" ? "admin" : "dashboard")}
+                  onClick={() =>
+                    setCurrentView(currentView === "dashboard" ? "admin" : "dashboard")
+                  }
                   className={`status-pill border ${currentView === "admin" ? "border-emerald-300/30 bg-emerald-400/15 text-emerald-100" : "border-white/30 bg-white/10 text-white"}`}
+                  title={currentView === "admin" ? "Return to Dashboard" : "Access Admin Panel"}
                 >
                   <ShieldCheck className="h-3.5 w-3.5" />
                   <span>{currentView === "admin" ? "Dashboard" : "Admin"}</span>
                 </button>
                 {EXECUTIVE_ROLES.includes(currentUser?.role || "") && (
                   <button
-                    onClick={() => setCurrentView(currentView === "executive" ? "dashboard" : "executive")}
+                    onClick={() =>
+                      setCurrentView(currentView === "executive" ? "dashboard" : "executive")
+                    }
                     className={`status-pill border ${currentView === "executive" ? "border-amber-300/30 bg-amber-400/15 text-amber-100" : "border-white/30 bg-white/10 text-white"}`}
+                    title={
+                      currentView === "executive"
+                        ? "Return to Dashboard"
+                        : "Access Executive Dashboard"
+                    }
                   >
                     <Crown className="h-3.5 w-3.5" />
                     <span>{currentView === "executive" ? "Dashboard" : "Executive"}</span>
@@ -624,8 +650,8 @@ function AppContent() {
         {currentView === "admin" ? (
           <AdminPanel token={token} currentUser={currentUser} />
         ) : currentView === "executive" ? (
-          <HybaAdminDashboard 
-            token={token} 
+          <HybaAdminDashboard
+            token={token}
             currentUser={currentUser}
             telemetry={telemetry}
             pools={pools}
@@ -643,444 +669,463 @@ function AppContent() {
               latencyMs={latencyMs}
             />
             <section className="executive-hero overflow-hidden rounded-[2rem] border border-white/30 bg-white/80 p-6 shadow-2xl shadow-slate-900/10 backdrop-blur md:p-8">
-          <div className="grid gap-8 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
-            <div className="relative z-10">
-              <div className="mb-5 flex flex-wrap items-center gap-2">
-                <span className="eyebrow">
-                  <Landmark className="h-3.5 w-3.5" /> Executive Dashboard
-                </span>
-                <span className="eyebrow">
-                  <Rocket className="h-3.5 w-3.5" /> Production-Ready
-                </span>
-              </div>
-              <h2 className="max-w-3xl text-4xl font-black tracking-[-0.04em] text-slate-950 md:text-6xl executive-typography">
-                Enterprise-Grade Mining Operations
-              </h2>
-              <p className="mt-5 max-w-2xl text-base leading-8 text-slate-600 md:text-lg">
-                Institutional-caliber control surface for HYBA operators: real-time telemetry,
-                authenticated pool management, risk monitoring, and executive reporting with zero
-                synthetic metrics.
-              </p>
-              <div className="mt-8 grid gap-3 sm:grid-cols-3">
-                {operatingPrinciples.map((item) => (
-                  <div key={item.label} className="kpi-card rounded-xl p-4">
-                    <p className="text-xs font-black uppercase tracking-[0.18em] text-slate-900">
-                      {item.label}
-                    </p>
-                    <p className="mt-2 text-xs leading-5 text-slate-500">{item.detail}</p>
+              <div className="grid gap-8 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
+                <div className="relative z-10">
+                  <div className="mb-5 flex flex-wrap items-center gap-2">
+                    <span className="eyebrow">
+                      <Landmark className="h-3.5 w-3.5" /> Executive Dashboard
+                    </span>
+                    <span className="eyebrow">
+                      <Rocket className="h-3.5 w-3.5" /> Production-Ready
+                    </span>
                   </div>
-                ))}
-              </div>
-            </div>
-            <div className="relative z-10 rounded-[1.5rem] border border-slate-200 mckinsey-blue-bg p-5 text-white shadow-2xl">
-              <div className="flex items-center justify-between border-b border-white/10 pb-4">
-                <div>
-                  <p className="text-[10px] uppercase tracking-[0.3em] text-blue-200/70">
-                    Executive Readiness Score
+                  <h2 className="max-w-3xl text-4xl font-black tracking-[-0.04em] text-slate-950 md:text-6xl executive-typography">
+                    Enterprise-Grade Mining Operations
+                  </h2>
+                  <p className="mt-5 max-w-2xl text-base leading-8 text-slate-600 md:text-lg">
+                    Institutional-caliber control surface for HYBA operators: real-time telemetry,
+                    authenticated pool management, risk monitoring, and executive reporting with
+                    zero synthetic metrics.
                   </p>
-                  <p className="mt-1 text-3xl font-black executive-typography">
-                    {readinessScore}
-                    <span className="text-base text-white/50">/100</span>
-                  </p>
+                  <div className="mt-8 grid gap-3 sm:grid-cols-3">
+                    {operatingPrinciples.map((item) => (
+                      <div key={item.label} className="kpi-card rounded-xl p-4">
+                        <p className="text-xs font-black uppercase tracking-[0.18em] text-slate-900">
+                          {item.label}
+                        </p>
+                        <p className="mt-2 text-xs leading-5 text-slate-500">{item.detail}</p>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-                <Gauge className="h-10 w-10 text-[#C5A55A]" />
-              </div>
-              <div className="mt-5 h-3 rounded-full bg-white/10">
-                <div
-                  className="h-3 rounded-full bg-gradient-to-r from-[#003666] via-[#C5A55A] to-[#16A34A]"
-                  style={{ width: `${readinessScore}%` }}
-                />
-              </div>
-              <div className="mt-5 grid gap-3 text-xs">
-                <ReadinessLine
-                  label="Runtime"
-                  value={runtimeStatus.toUpperCase()}
-                  positive={["OK", "HEALTHY"].includes(runtimeStatus.toUpperCase())}
-                />
-                <ReadinessLine
-                  label="Security"
-                  value={securityStatus.toUpperCase()}
-                  positive={!securityStatus.toLowerCase().includes("error")}
-                />
-                <ReadinessLine
-                  label="Active pool"
-                  value={activePoolName}
-                  positive={activePoolName !== UNAVAILABLE}
-                />
-                <ReadinessLine
-                  label="Telemetry"
-                  value={isConnected ? `${latencyMs.toFixed(0)}ms latency` : "Disconnected"}
-                  positive={isConnected}
-                />
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section className="grid grid-cols-1 gap-4 md:grid-cols-4">
-          {isLoading ? (
-            [1, 2, 3, 4].map((i) => (
-              <div key={i} className="kpi-card rounded-xl p-5">
-                <Skeleton width="80px" height="12px" />
-                <div className="mt-3">
-                  <Skeleton width="60%" height="28px" />
-                </div>
-              </div>
-            ))
-          ) : (
-            <>
-              <MetricCard
-                label="Runtime status"
-                value={runtimeStatus.toUpperCase()}
-                icon={<Activity className="h-4 w-4" />}
-                status={runtimeStatus}
-              />
-              <MetricCard
-                label="Telemetry source"
-                value={fmtText(health?.telemetry_source)}
-                icon={<Database className="h-4 w-4" />}
-              />
-              <MetricCard
-                label="Active pool"
-                value={activePoolName}
-                icon={<RadioTower className="h-4 w-4" />}
-              />
-              <MetricCard
-                label="Backend latency"
-                value={isConnected ? `${latencyMs.toFixed(0)} ms` : UNAVAILABLE}
-                icon={isConnected ? <Wifi className="h-4 w-4" /> : <WifiOff className="h-4 w-4" />}
-              />
-            </>
-          )}
-        </section>
-
-        {telemetryError && !isLoading && (
-          <ErrorState message={telemetryError} onRetry={getLiveTelemetry} />
-        )}
-
-        <section className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-          <Panel
-            title="Mining telemetry"
-            eyebrow="Network operations"
-            icon={<Database className="h-4 w-4" />}
-            isLoading={isLoading}
-            rows={6}
-          >
-            <MetricRow label="Block height" value={fmtNum(systemMetrics.blockHeight, 0)} />
-            <MetricRow label="Hashrate (EH/s)" value={fmtNum(systemMetrics.currentHashrate)} />
-            <MetricRow label="Power consumption" value={fmtNum(systemMetrics.powerConsumption)} />
-            <MetricRow label="Network difficulty" value={fmtNum(systemMetrics.networkDifficulty)} />
-            <MetricRow label="Difficulty target" value={fmtText(systemMetrics.difficultyTarget)} />
-            <MetricRow label="System health" value={fmtText(systemMetrics.system_health)} />
-          </Panel>
-          <Panel
-            title="Quantum runtime"
-            eyebrow="Optimization substrate"
-            icon={<Cpu className="h-4 w-4" />}
-            isLoading={isLoading}
-            rows={6}
-          >
-            <MetricRow label="Basis coherence" value={fmtPct(health?.quantumCoherence)} />
-            <MetricRow label="Phi phase alignment" value={fmtPct(health?.phiResonance)} />
-            <MetricRow label="Modeled basis factor" value={fmtNum(health?.quantumSpeedupFactor)} />
-            <MetricRow label="Actual speedup" value={fmtNum(health?.actualSpeedupFactor)} />
-            <MetricRow label="Power scale" value={`${powerScale.toFixed(1)}x`} />
-            <MetricRow label="φ-tier" value={`10^${phiTier}`} />
-            <MetricRow label="EH/s cap" value="1.0" />
-            <input
-              type="range"
-              min="0.1"
-              max="10.0"
-              step="0.1"
-              value={powerScale}
-              onChange={(e) => handlePowerScaleChange(parseFloat(e.target.value))}
-              className="mt-3 h-2 w-full cursor-pointer appearance-none rounded-lg"
-              style={{ accentColor: THEME.colors.clicquotGold }}
-              aria-label="Power scale control"
-            />
-            <select
-              value={phiTier}
-              onChange={(e) => handlePowerScaleChange(powerScale, parseInt(e.target.value, 10))}
-              className="mt-3 w-full rounded-lg border border-[#E2E4E9] bg-white px-3 py-2 text-xs font-mono text-[#1A1A1E]"
-              aria-label="Phi tier control"
-            >
-              {PHI_TIERS.map((tier) => (
-                <option key={tier} value={tier}>{`10^${tier} φ-tier`}</option>
-              ))}
-            </select>
-          </Panel>
-          <Panel
-            title="Runtime integration"
-            eyebrow="Risk and control"
-            icon={<ShieldCheck className="h-4 w-4" />}
-            isLoading={isLoading}
-            rows={6}
-          >
-            <MetricRow label="AI state" value={fmtText(consciousness.status)} />
-            <MetricRow
-              label="Integrated information"
-              value={fmtNum(consciousness.integrated_information as NullableNumber)}
-            />
-            <MetricRow label="Security status" value={securityStatus} />
-            <MetricRow label="Threat level" value={fmtText(security.threat_level)} />
-            <MetricRow label="Pools configured" value={fmtNum(configuredPoolCount, 0)} />
-            <MetricRow label="Active pools" value={fmtNum(activePoolCount, 0)} />
-          </Panel>
-          <Panel
-            title="Unitary shield"
-            eyebrow="Stabilizer integrity"
-            icon={<ShieldCheck className="h-4 w-4" />}
-            isLoading={isLoading}
-            rows={8}
-          >
-            <MetricRow label="Operating mode" value={fmtText(stabilizerMonitor.operating_mode)} />
-            <MetricRow
-              label="Confidence"
-              value={fmtPct(stabilizerMonitor.confidence as NullableNumber)}
-            />
-            <MetricRow
-              label="Check frequency"
-              value={fmtPct(stabilizerMonitor.check_frequency as NullableNumber)}
-            />
-            <MetricRow
-              label="Syndrome weight"
-              value={fmtNum(stabilizerMonitor.syndrome_weight as NullableNumber, 0)}
-            />
-            <MetricRow
-              label="Ancillas active/max"
-              value={`${fmtNum(ancillaTrapPool.active_ancillas as NullableNumber, 0)} / ${fmtNum(ancillaTrapPool.max_ancilla_pool as NullableNumber, 0)}`}
-            />
-            <MetricRow
-              label="Traps active/retired"
-              value={`${fmtNum(ancillaTrapPool.active_traps as NullableNumber, 0)} / ${fmtNum(ancillaTrapPool.retired_traps as NullableNumber, 0)}`}
-            />
-            <MetricRow
-              label="Permutation checksum"
-              value={fmtNum(stabilizerMonitor.pool_permutation_checksum as NullableNumber, 0)}
-            />
-            <MetricRow label="Sanitized" value={stabilizerMonitor.sanitized ? "YES" : "NO"} />
-          </Panel>
-        </section>
-
-        <section className="grid grid-cols-1 gap-6">
-          <SovereignCommandPost />
-          <SovereignGenesisPanel />
-        </section>
-
-        <section className="grid grid-cols-1 gap-6 lg:grid-cols-[1.2fr_0.8fr]">
-          <Panel
-            title="Stratum mining pools"
-            eyebrow="Authenticated execution"
-            icon={<Server className="h-4 w-4" />}
-            isLoading={isLoading && pools.length === 0}
-            rows={4}
-          >
-            {!isLoading && pools.length === 0 ? (
-              <EmptyState
-                message="No pool telemetry available from backend."
-                icon={<Server className="h-8 w-8" />}
-              />
-            ) : (
-              <div className="grid gap-3 xl:grid-cols-2">
-                {pools.map((pool, idx) => {
-                  const isActive = Boolean(
-                    pool.is_active ||
-                    pool.connection_state?.toLowerCase() === "connected" ||
-                    pool.status?.toLowerCase() === "connected",
-                  );
-                  return (
+                <div className="relative z-10 rounded-[1.5rem] border border-slate-200 mckinsey-blue-bg p-5 text-white shadow-2xl">
+                  <div className="flex items-center justify-between border-b border-white/10 pb-4">
+                    <div>
+                      <p className="text-[10px] uppercase tracking-[0.3em] text-blue-200/70">
+                        Executive Readiness Score
+                      </p>
+                      <p className="mt-1 text-3xl font-black executive-typography">
+                        {readinessScore}
+                        <span className="text-base text-white/50">/100</span>
+                      </p>
+                    </div>
+                    <Gauge className="h-10 w-10 text-[#C5A55A]" />
+                  </div>
+                  <div className="mt-5 h-3 rounded-full bg-white/10">
                     <div
-                      key={pool.pool_id || pool.name || idx}
-                      className="rounded-2xl border border-slate-200 bg-white/80 p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg"
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="min-w-0">
-                          <span className="block truncate text-sm font-black text-slate-950">
-                            {fmtText(pool.name)}
-                          </span>
-                          <span className="mt-1 block truncate font-mono text-[10px] text-slate-500">
-                            {fmtText(pool.url)}
+                      className="h-3 rounded-full bg-gradient-to-r from-[#003666] via-[#C5A55A] to-[#16A34A]"
+                      style={{ width: `${readinessScore}%` }}
+                    />
+                  </div>
+                  <div className="mt-5 grid gap-3 text-xs">
+                    <ReadinessLine
+                      label="Runtime"
+                      value={runtimeStatus.toUpperCase()}
+                      positive={["OK", "HEALTHY"].includes(runtimeStatus.toUpperCase())}
+                    />
+                    <ReadinessLine
+                      label="Security"
+                      value={securityStatus.toUpperCase()}
+                      positive={!securityStatus.toLowerCase().includes("error")}
+                    />
+                    <ReadinessLine
+                      label="Active pool"
+                      value={activePoolName}
+                      positive={activePoolName !== UNAVAILABLE}
+                    />
+                    <ReadinessLine
+                      label="Telemetry"
+                      value={isConnected ? `${latencyMs.toFixed(0)}ms latency` : "Disconnected"}
+                      positive={isConnected}
+                    />
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section className="grid grid-cols-1 gap-4 md:grid-cols-4">
+              {isLoading ? (
+                [1, 2, 3, 4].map((i) => (
+                  <div key={i} className="kpi-card rounded-xl p-5">
+                    <Skeleton width="80px" height="12px" />
+                    <div className="mt-3">
+                      <Skeleton width="60%" height="28px" />
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <>
+                  <MetricCard
+                    label="Runtime status"
+                    value={runtimeStatus.toUpperCase()}
+                    icon={<Activity className="h-4 w-4" />}
+                    status={runtimeStatus}
+                  />
+                  <MetricCard
+                    label="Telemetry source"
+                    value={fmtText(health?.telemetry_source)}
+                    icon={<Database className="h-4 w-4" />}
+                  />
+                  <MetricCard
+                    label="Active pool"
+                    value={activePoolName}
+                    icon={<RadioTower className="h-4 w-4" />}
+                  />
+                  <MetricCard
+                    label="Backend latency"
+                    value={isConnected ? `${latencyMs.toFixed(0)} ms` : UNAVAILABLE}
+                    icon={
+                      isConnected ? <Wifi className="h-4 w-4" /> : <WifiOff className="h-4 w-4" />
+                    }
+                  />
+                </>
+              )}
+            </section>
+
+            {telemetryError && !isLoading && (
+              <ErrorState message={telemetryError} onRetry={getLiveTelemetry} />
+            )}
+
+            <section className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+              <Panel
+                title="Mining telemetry"
+                eyebrow="Network operations"
+                icon={<Database className="h-4 w-4" />}
+                isLoading={isLoading}
+                rows={6}
+              >
+                <MetricRow label="Block height" value={fmtNum(systemMetrics.blockHeight, 0)} />
+                <MetricRow label="Hashrate (EH/s)" value={fmtNum(systemMetrics.currentHashrate)} />
+                <MetricRow
+                  label="Power consumption"
+                  value={fmtNum(systemMetrics.powerConsumption)}
+                />
+                <MetricRow
+                  label="Network difficulty"
+                  value={fmtNum(systemMetrics.networkDifficulty)}
+                />
+                <MetricRow
+                  label="Difficulty target"
+                  value={fmtText(systemMetrics.difficultyTarget)}
+                />
+                <MetricRow label="System health" value={fmtText(systemMetrics.system_health)} />
+              </Panel>
+              <Panel
+                title="Quantum runtime"
+                eyebrow="Optimization substrate"
+                icon={<Cpu className="h-4 w-4" />}
+                isLoading={isLoading}
+                rows={6}
+              >
+                <MetricRow label="Basis coherence" value={fmtPct(health?.quantumCoherence)} />
+                <MetricRow label="Phi phase alignment" value={fmtPct(health?.phiResonance)} />
+                <MetricRow
+                  label="Modeled basis factor"
+                  value={fmtNum(health?.quantumSpeedupFactor)}
+                />
+                <MetricRow label="Actual speedup" value={fmtNum(health?.actualSpeedupFactor)} />
+                <MetricRow label="Power scale" value={`${powerScale.toFixed(1)}x`} />
+                <MetricRow label="φ-tier" value={`10^${phiTier}`} />
+                <MetricRow label="EH/s cap" value="1.0" />
+                <input
+                  type="range"
+                  min="0.1"
+                  max="10.0"
+                  step="0.1"
+                  value={powerScale}
+                  onChange={(e) => handlePowerScaleChange(parseFloat(e.target.value))}
+                  className="mt-3 h-2 w-full cursor-pointer appearance-none rounded-lg"
+                  style={{ accentColor: THEME.colors.clicquotGold }}
+                  aria-label="Power scale control"
+                />
+                <select
+                  value={phiTier}
+                  onChange={(e) => handlePowerScaleChange(powerScale, parseInt(e.target.value, 10))}
+                  className="mt-3 w-full rounded-lg border border-[#E2E4E9] bg-white px-3 py-2 text-xs font-mono text-[#1A1A1E]"
+                  aria-label="Phi tier control"
+                >
+                  {PHI_TIERS.map((tier) => (
+                    <option key={tier} value={tier}>{`10^${tier} φ-tier`}</option>
+                  ))}
+                </select>
+              </Panel>
+              <Panel
+                title="Runtime integration"
+                eyebrow="Risk and control"
+                icon={<ShieldCheck className="h-4 w-4" />}
+                isLoading={isLoading}
+                rows={6}
+              >
+                <MetricRow label="AI state" value={fmtText(consciousness.status)} />
+                <MetricRow
+                  label="Integrated information"
+                  value={fmtNum(consciousness.integrated_information as NullableNumber)}
+                />
+                <MetricRow label="Security status" value={securityStatus} />
+                <MetricRow label="Threat level" value={fmtText(security.threat_level)} />
+                <MetricRow label="Pools configured" value={fmtNum(configuredPoolCount, 0)} />
+                <MetricRow label="Active pools" value={fmtNum(activePoolCount, 0)} />
+              </Panel>
+              <Panel
+                title="Unitary shield"
+                eyebrow="Stabilizer integrity"
+                icon={<ShieldCheck className="h-4 w-4" />}
+                isLoading={isLoading}
+                rows={8}
+              >
+                <MetricRow
+                  label="Operating mode"
+                  value={fmtText(stabilizerMonitor.operating_mode)}
+                />
+                <MetricRow
+                  label="Confidence"
+                  value={fmtPct(stabilizerMonitor.confidence as NullableNumber)}
+                />
+                <MetricRow
+                  label="Check frequency"
+                  value={fmtPct(stabilizerMonitor.check_frequency as NullableNumber)}
+                />
+                <MetricRow
+                  label="Syndrome weight"
+                  value={fmtNum(stabilizerMonitor.syndrome_weight as NullableNumber, 0)}
+                />
+                <MetricRow
+                  label="Ancillas active/max"
+                  value={`${fmtNum(ancillaTrapPool.active_ancillas as NullableNumber, 0)} / ${fmtNum(ancillaTrapPool.max_ancilla_pool as NullableNumber, 0)}`}
+                />
+                <MetricRow
+                  label="Traps active/retired"
+                  value={`${fmtNum(ancillaTrapPool.active_traps as NullableNumber, 0)} / ${fmtNum(ancillaTrapPool.retired_traps as NullableNumber, 0)}`}
+                />
+                <MetricRow
+                  label="Permutation checksum"
+                  value={fmtNum(stabilizerMonitor.pool_permutation_checksum as NullableNumber, 0)}
+                />
+                <MetricRow label="Sanitized" value={stabilizerMonitor.sanitized ? "YES" : "NO"} />
+              </Panel>
+            </section>
+
+            <section className="grid grid-cols-1 gap-6">
+              <SovereignCommandPost />
+              <SovereignGenesisPanel />
+            </section>
+
+            <section className="grid grid-cols-1 gap-6 lg:grid-cols-[1.2fr_0.8fr]">
+              <Panel
+                title="Stratum mining pools"
+                eyebrow="Authenticated execution"
+                icon={<Server className="h-4 w-4" />}
+                isLoading={isLoading && pools.length === 0}
+                rows={4}
+              >
+                {!isLoading && pools.length === 0 ? (
+                  <EmptyState
+                    message="No pool telemetry available from backend."
+                    icon={<Server className="h-8 w-8" />}
+                  />
+                ) : (
+                  <div className="grid gap-3 xl:grid-cols-2">
+                    {pools.map((pool, idx) => {
+                      const isActive = Boolean(
+                        pool.is_active ||
+                        pool.connection_state?.toLowerCase() === "connected" ||
+                        pool.status?.toLowerCase() === "connected",
+                      );
+                      return (
+                        <div
+                          key={pool.pool_id || pool.name || idx}
+                          className="rounded-2xl border border-slate-200 bg-white/80 p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg"
+                        >
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0">
+                              <span className="block truncate text-sm font-black text-slate-950">
+                                {fmtText(pool.name)}
+                              </span>
+                              <span className="mt-1 block truncate font-mono text-[10px] text-slate-500">
+                                {fmtText(pool.url)}
+                              </span>
+                            </div>
+                            <PoolStatusBadge status={pool.status || pool.connection_state} />
+                          </div>
+                          <div className="mt-4 grid grid-cols-2 gap-2 rounded-xl border border-slate-100 bg-slate-50 p-3 text-[10px] text-slate-600">
+                            <span>
+                              Mode{" "}
+                              <strong className="block truncate text-slate-900">
+                                {fmtText(pool.credential_mode)}
+                              </strong>
+                            </span>
+                            <span>
+                              Configured{" "}
+                              <strong className="block text-slate-900">
+                                {pool.configured ? "YES" : "NO"}
+                              </strong>
+                            </span>
+                            <span>
+                              Latency{" "}
+                              <strong className="block text-slate-900">
+                                {fmtNum(pool.performance?.latency_ms)} ms
+                              </strong>
+                            </span>
+                            <span>
+                              Shares{" "}
+                              <strong className="block text-slate-900">
+                                {fmtNum(pool.performance?.shares_submitted, 0)}
+                              </strong>
+                            </span>
+                          </div>
+                          <div className="mt-4 grid grid-cols-2 gap-2">
+                            <button
+                              onClick={() => setSelectedPoolForConfig(pool)}
+                              disabled={isProcessing}
+                              className="control-button bg-slate-950 text-white"
+                            >
+                              Configure
+                            </button>
+                            {isActive ? (
+                              <button
+                                onClick={handlePoolDisconnect}
+                                disabled={isProcessing}
+                                className="control-button bg-red-600 text-white"
+                              >
+                                Disconnect
+                              </button>
+                            ) : (
+                              <button
+                                onClick={() => handlePoolSwitch(pool)}
+                                disabled={isProcessing}
+                                className={`control-button text-white ${pool.configured ? "bg-[#002147]" : "bg-amber-600"}`}
+                              >
+                                {pool.configured ? "Switch" : "Setup"}
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </Panel>
+
+              <div className="grid gap-6">
+                <Panel
+                  title="Operator identity"
+                  eyebrow="Access control"
+                  icon={<UserCheck className="h-4 w-4" />}
+                  isLoading={false}
+                >
+                  {currentUser ? (
+                    <div className="space-y-4 font-mono text-xs">
+                      <div className="rounded-2xl border border-green-200 bg-green-50 p-4">
+                        <div className="mb-3 flex items-center gap-2 text-green-800">
+                          <CheckCircle2 className="h-4 w-4" />
+                          <span className="font-bold uppercase tracking-[0.18em]">
+                            Authenticated
                           </span>
                         </div>
-                        <PoolStatusBadge status={pool.status || pool.connection_state} />
+                        <MetricRow label="Identity" value={currentUser.username} />
+                        <MetricRow label="Role" value={currentUser.role} />
                       </div>
-                      <div className="mt-4 grid grid-cols-2 gap-2 rounded-xl border border-slate-100 bg-slate-50 p-3 text-[10px] text-slate-600">
-                        <span>
-                          Mode{" "}
-                          <strong className="block truncate text-slate-900">
-                            {fmtText(pool.credential_mode)}
-                          </strong>
-                        </span>
-                        <span>
-                          Configured{" "}
-                          <strong className="block text-slate-900">
-                            {pool.configured ? "YES" : "NO"}
-                          </strong>
-                        </span>
-                        <span>
-                          Latency{" "}
-                          <strong className="block text-slate-900">
-                            {fmtNum(pool.performance?.latency_ms)} ms
-                          </strong>
-                        </span>
-                        <span>
-                          Shares{" "}
-                          <strong className="block text-slate-900">
-                            {fmtNum(pool.performance?.shares_submitted, 0)}
-                          </strong>
-                        </span>
-                      </div>
-                      <div className="mt-4 grid grid-cols-2 gap-2">
-                        <button
-                          onClick={() => setSelectedPoolForConfig(pool)}
-                          disabled={isProcessing}
-                          className="control-button bg-slate-950 text-white"
-                        >
-                          Configure
-                        </button>
-                        {isActive ? (
-                          <button
-                            onClick={handlePoolDisconnect}
-                            disabled={isProcessing}
-                            className="control-button bg-red-600 text-white"
-                          >
-                            Disconnect
-                          </button>
-                        ) : (
-                          <button
-                            onClick={() => handlePoolSwitch(pool)}
-                            disabled={isProcessing}
-                            className={`control-button text-white ${pool.configured ? "bg-[#002147]" : "bg-amber-600"}`}
-                          >
-                            {pool.configured ? "Switch" : "Setup"}
-                          </button>
-                        )}
-                      </div>
+                      <button
+                        onClick={handleLogout}
+                        className="control-button w-full bg-red-600 text-white"
+                      >
+                        <LogOut className="h-3.5 w-3.5" /> Log out
+                      </button>
                     </div>
-                  );
-                })}
-              </div>
-            )}
-          </Panel>
-
-          <div className="grid gap-6">
-            <Panel
-              title="Operator identity"
-              eyebrow="Access control"
-              icon={<UserCheck className="h-4 w-4" />}
-              isLoading={false}
-            >
-              {currentUser ? (
-                <div className="space-y-4 font-mono text-xs">
-                  <div className="rounded-2xl border border-green-200 bg-green-50 p-4">
-                    <div className="mb-3 flex items-center gap-2 text-green-800">
-                      <CheckCircle2 className="h-4 w-4" />
-                      <span className="font-bold uppercase tracking-[0.18em]">Authenticated</span>
-                    </div>
-                    <MetricRow label="Identity" value={currentUser.username} />
-                    <MetricRow label="Role" value={currentUser.role} />
-                  </div>
-                  <button
-                    onClick={handleLogout}
-                    className="control-button w-full bg-red-600 text-white"
-                  >
-                    <LogOut className="h-3.5 w-3.5" /> Log out
-                  </button>
-                </div>
-              ) : (
-                <form
-                  onSubmit={isRegisterMode ? handleRegister : handleLogin}
-                  className="space-y-3"
-                >
-                  <AuthInput
-                    label="Operator Handle"
-                    value={usernameInput}
-                    setValue={setUsernameInput}
-                    type="text"
-                    placeholder="Enter your operator handle"
-                  />
-                  <AuthInput
-                    label="Password"
-                    value={passwordInput}
-                    setValue={setPasswordInput}
-                    type="password"
-                    placeholder="Enter your password"
-                  />
-                  <div className="grid grid-cols-2 gap-2 pt-1">
-                    <button type="submit" className="control-button bg-[#002147] text-white">
-                      {isRegisterMode ? (
-                        <UserPlus className="h-3.5 w-3.5" />
-                      ) : (
-                        <LogIn className="h-3.5 w-3.5" />
-                      )}
-                      {isRegisterMode ? "Register" : "Log in"}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setIsRegisterMode(!isRegisterMode);
-                        clearAuthFeedback();
-                      }}
-                      className="control-button border border-slate-200 bg-white text-slate-900"
+                  ) : (
+                    <form
+                      onSubmit={isRegisterMode ? handleRegister : handleLogin}
+                      className="space-y-3"
                     >
-                      {isRegisterMode ? "← Log in" : "Sign up →"}
-                    </button>
+                      <AuthInput
+                        label="Operator Handle"
+                        value={usernameInput}
+                        setValue={setUsernameInput}
+                        type="text"
+                        placeholder="Enter your operator handle"
+                      />
+                      <AuthInput
+                        label="Password"
+                        value={passwordInput}
+                        setValue={setPasswordInput}
+                        type="password"
+                        placeholder="Enter your password"
+                      />
+                      <div className="grid grid-cols-2 gap-2 pt-1">
+                        <button type="submit" className="control-button bg-[#002147] text-white">
+                          {isRegisterMode ? (
+                            <UserPlus className="h-3.5 w-3.5" />
+                          ) : (
+                            <LogIn className="h-3.5 w-3.5" />
+                          )}
+                          {isRegisterMode ? "Register" : "Log in"}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setIsRegisterMode(!isRegisterMode);
+                            clearAuthFeedback();
+                          }}
+                          className="control-button border border-slate-200 bg-white text-slate-900"
+                        >
+                          {isRegisterMode ? "← Log in" : "Sign up →"}
+                        </button>
+                      </div>
+                    </form>
+                  )}
+                  {authFeedback && <Feedback feedback={authFeedback} />}
+                </Panel>
+
+                <Panel
+                  title="Forensic evidence"
+                  eyebrow="Deployment controls"
+                  icon={<Scale className="h-4 w-4" />}
+                  isLoading={false}
+                >
+                  <GovernanceDashboard signals={governanceSignals} />
+                  <div className="mt-4 space-y-3">
+                    {operatorCommandEvidence.map((item) => (
+                      <EvidenceItem
+                        key={item.title}
+                        icon={item.icon}
+                        title={item.title}
+                        detail={item.detail}
+                      />
+                    ))}
                   </div>
-                </form>
-              )}
-              {authFeedback && <Feedback feedback={authFeedback} />}
-            </Panel>
+                </Panel>
+              </div>
+            </section>
 
             <Panel
-              title="Forensic evidence"
-              eyebrow="Deployment controls"
-              icon={<Scale className="h-4 w-4" />}
+              title="Product catalog"
+              eyebrow="Commercial surface"
+              icon={<Database className="h-4 w-4" />}
               isLoading={false}
             >
-              <GovernanceDashboard signals={governanceSignals} />
-              <div className="mt-4 space-y-3">
-                {operatorCommandEvidence.map(item => (
-                  <EvidenceItem
-                    key={item.title}
-                    icon={item.icon}
-                    title={item.title}
-                    detail={item.detail}
-                  />
-                ))}
-              </div>
-            </Panel>
-          </div>
-        </section>
-
-        <Panel
-          title="Product catalog"
-          eyebrow="Commercial surface"
-          icon={<Database className="h-4 w-4" />}
-          isLoading={false}
-        >
-          {products.length === 0 ? (
-            <EmptyState
-              message="No catalog records available from backend."
-              icon={<Database className="h-8 w-8" />}
-            />
-          ) : (
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-              {products.map((product) => (
-                <div
-                  key={product.id || product.name}
-                  className="rounded-2xl border border-slate-200 bg-white/80 p-4 shadow-sm"
-                >
-                  <h5 className="truncate text-sm font-black text-slate-950">
-                    {fmtText(product.name)}
-                  </h5>
-                  <p className="mt-2 text-xs leading-6 text-slate-500">
-                    {fmtText(product.description)}
-                  </p>
+              {products.length === 0 ? (
+                <EmptyState
+                  message="No catalog records available from backend."
+                  icon={<Database className="h-8 w-8" />}
+                />
+              ) : (
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                  {products.map((product) => (
+                    <div
+                      key={product.id || product.name}
+                      className="rounded-2xl border border-slate-200 bg-white/80 p-4 shadow-sm"
+                    >
+                      <h5 className="truncate text-sm font-black text-slate-950">
+                        {fmtText(product.name)}
+                      </h5>
+                      <p className="mt-2 text-xs leading-6 text-slate-500">
+                        {fmtText(product.description)}
+                      </p>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          )}
-        </Panel>
+              )}
+            </Panel>
           </>
         )}
       </main>
@@ -1315,7 +1360,9 @@ function GovernanceDashboard({ signals }: { signals: GovernanceSignal[] }) {
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-3">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-        <p className="text-xs font-black uppercase tracking-[0.14em] text-slate-900">Governance dashboard</p>
+        <p className="text-xs font-black uppercase tracking-[0.14em] text-slate-900">
+          Governance dashboard
+        </p>
         <span className="rounded-full bg-slate-100 px-2 py-1 font-mono text-[10px] text-slate-600">
           {counts.pass} pass · {counts.warn} warn · {counts.fail} fail
         </span>
@@ -1324,7 +1371,9 @@ function GovernanceDashboard({ signals }: { signals: GovernanceSignal[] }) {
         {signals.map((signal) => (
           <div key={signal.id} className="rounded-xl border border-slate-100 bg-slate-50 p-3">
             <div className="flex items-center justify-between gap-3">
-              <span className="text-[11px] font-black uppercase tracking-[0.12em] text-slate-900">{signal.label}</span>
+              <span className="text-[11px] font-black uppercase tracking-[0.12em] text-slate-900">
+                {signal.label}
+              </span>
               <span
                 className={`rounded-full px-2 py-0.5 font-mono text-[9px] font-bold uppercase ${
                   signal.status === "pass"
@@ -1364,7 +1413,6 @@ function EvidenceItem({
     </div>
   );
 }
-
 
 // ================ AI ASSISTANT INTEGRATION ================
 // This should be rendered inside the main return of AppContent, right before the closing div.

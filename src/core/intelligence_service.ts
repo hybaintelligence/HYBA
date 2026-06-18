@@ -4,8 +4,8 @@
  * Manages the intelligence substrate lifecycle and provides API interface
  */
 
-import { EmergentIntelligenceSubstrate } from './emergent_intelligence';
-import { IntelligenceTelemetry } from './intelligence_types';
+import { EmergentIntelligenceSubstrate } from "./emergent_intelligence";
+import { IntelligenceTelemetry } from "./intelligence_types";
 
 export class IntelligenceService {
   private static instance: IntelligenceService;
@@ -33,25 +33,27 @@ export class IntelligenceService {
    */
   public start(): void {
     if (this.isRunning) {
-      console.warn('[IntelligenceService] Already running');
+      console.warn("[IntelligenceService] Already running");
       return;
     }
 
     this.isRunning = true;
-    console.log('[IntelligenceService] Starting autopoietic pulse...');
+    console.log("[IntelligenceService] Starting autopoietic pulse...");
 
     this.pulseInterval = setInterval(async () => {
       try {
         await this.substrate.processAutopoieticPulse();
-        
+
         const telemetry = this.getTelemetry();
-        if (telemetry.mode !== 'NOMINAL') {
-          console.warn(`[IntelligenceService] System in ${telemetry.mode} mode. Phi: ${telemetry.phi_integrated.toFixed(4)}`);
+        if (telemetry.mode !== "NOMINAL") {
+          console.warn(
+            `[IntelligenceService] System in ${telemetry.mode} mode. Phi: ${telemetry.phi_integrated.toFixed(4)}`,
+          );
         }
       } catch (error) {
-        console.error('[IntelligenceService] Autopoietic pulse failure:', error);
+        console.error("[IntelligenceService] Autopoietic pulse failure:", error);
         // Emergency recovery
-        this.substrate['handleAnomaly'](0xDEADBEEF);
+        this.substrate["handleAnomaly"](0xdeadbeef);
       }
     }, this.PULSE_INTERVAL_MS);
   }
@@ -70,7 +72,7 @@ export class IntelligenceService {
       this.pulseInterval = null;
     }
 
-    console.log('[IntelligenceService] Stopping autopoietic pulse...');
+    console.log("[IntelligenceService] Stopping autopoietic pulse...");
   }
 
   /**
@@ -122,7 +124,7 @@ export class IntelligenceService {
    */
   public reset(): void {
     this.substrate.reset();
-    console.log('[IntelligenceService] System reset');
+    console.log("[IntelligenceService] System reset");
   }
 
   /**
