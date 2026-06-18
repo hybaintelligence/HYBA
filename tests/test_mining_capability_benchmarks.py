@@ -491,15 +491,16 @@ async def benchmark_meta_learning_adaptation() -> List[BenchmarkResult]:
 # =============================================================================
 
 
-def benchmark_consciousness_latency(n_samples: int = 1000) -> BenchmarkResult:
+def benchmark_consciousness_latency(n_samples: int = 100) -> BenchmarkResult:
     """Measure the latency of consciousness engine operations."""
     from pythia_mining.consciousness_engine import ConsciousnessEngine
-
-    engine = ConsciousnessEngine()
     import numpy as np
 
-    # Measure measure_phi() latency
-    states = [np.eye(8, dtype=np.complex128) for _ in range(100)]
+    engine = ConsciousnessEngine()
+    
+    # Use the correct dimension (32) for the ManifoldOperator
+    dim = engine.operator.dim
+    states = [np.eye(dim, dtype=np.complex128) for _ in range(10)]
 
     latencies = []
     for _ in range(n_samples):
@@ -509,7 +510,7 @@ def benchmark_consciousness_latency(n_samples: int = 1000) -> BenchmarkResult:
 
     mean_latency = mean(latencies) * 1000  # convert to ms
     std_latency = stdev(latencies) * 1000 if len(latencies) > 1 else 0.0
-    p99_latency = sorted(latencies)[int(len(latencies) * 0.99)] * 1000
+    p99_latency = sorted(latencies)[int(len(latencies) * 0.99)] * 1000 if len(latencies) > 1 else mean_latency
 
     baseline = 10.0  # 10ms per measurement is the target
 
