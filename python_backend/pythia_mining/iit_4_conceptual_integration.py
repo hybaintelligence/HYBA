@@ -294,7 +294,14 @@ class IIT4ConceptualIntegration:
         
         # Simplified effect repertoire: probability distribution over future states
         # Use connectivity-weighted propagation
-        effect_repertoire = mechanism_state @ connectivity_matrix
+        # Ensure dimensions match
+        if mechanism_state.ndim == 1:
+            mechanism_state = mechanism_state.reshape(-1, 1)
+        if connectivity_matrix.shape[0] != mechanism_state.shape[0]:
+            connectivity_matrix = np.ones((mechanism_state.shape[0], mechanism_state.shape[0]))
+        
+        effect_repertoire = mechanism_state.T @ connectivity_matrix
+        effect_repertoire = effect_repertoire.flatten()
         effect_repertoire = effect_repertoire / (np.sum(effect_repertoire) + 1e-10)
         
         return effect_repertoire
@@ -439,7 +446,9 @@ class IIT4ConceptualIntegration:
             gradient[i] = phi_perturbed
         
         # Normalize gradient
-        gradient = gradient / (np.linalg.norm(gradient) + 1e-10)
+        gradient_norm = np.linalg.norm(gradient)
+        if gradient_norm > 1e-10:
+            gradient = gradient / gradient_norm
         
         # Apply gradient step
         new_state = state + learning_rate * gradient

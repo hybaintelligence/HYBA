@@ -45,6 +45,23 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "python_backend"))
 from pythia_mining.synaptic_persistence_layer import SynapticPersistenceLayer
 
+# Import quantum_regeneration for salamander-inspired self-healing
+from pythia_mining.quantum_regeneration import (
+    ModuleState,
+    Role,
+    ContextSignal,
+    InnervationFailure,
+    apply_fault,
+    quarantine_channel,
+    redifferentiate,
+    measure_role,
+    regeneration_fidelity,
+    validate_collapse_or_quarantine,
+    regeneration_pipeline,
+    joint_state,
+    is_separable_approx,
+)
+
 _ALLOWED_ROOT_NAME = "pythia_mining"
 
 
@@ -425,6 +442,11 @@ class ReflexiveController:
         self.module_lock_active: bool = False
         # ELEVATED: Connect to SynapticPersistenceLayer for autopoiesis-driven learning rate adjustment
         self.synaptic_layer = synaptic_layer or SynapticPersistenceLayer()
+        
+        # ELEVATED: Salamander-inspired self-healing via quantum_regeneration
+        self.module_states: Dict[str, ModuleState] = {}  # Track regeneration states
+        self.regeneration_history: List[dict] = []  # Track regeneration events
+        self.clifford_index_map: Dict[str, int] = {}  # Positional memory mapping
 
     def observe_codebase(self) -> str:
         """Return deterministic AST topology text for dashboard and CIaaS routes."""
@@ -711,6 +733,173 @@ class ReflexiveController:
         
         # Apply the adjustment
         self.synaptic_layer.adjust_decay_rate(new_rate, reason)
+    
+    def detect_module_fault(self, module_id: str, severity: float) -> bool:
+        """Detect fault in a module and apply fault perturbation.
+        
+        ELEVATED: This implements the "wound detection" phase of salamander
+        regeneration. Faults are modeled as perturbations that rotate the
+        module's state away from HEALTHY_SPECIALIZED toward BLASTEMA.
+        
+        Args:
+            module_id: Identifier for the module
+            severity: Fault severity in [0, 1]
+            
+        Returns:
+            True if fault was detected and applied, False otherwise
+        """
+        if module_id not in self.module_states:
+            # Initialize module in healthy state
+            self.module_states[module_id] = ModuleState.healthy(module_id)
+        
+        try:
+            self.module_states[module_id] = apply_fault(
+                self.module_states[module_id], severity
+            )
+            return True
+        except Exception as e:
+            logger.error(f"Failed to apply fault to module {module_id}: {e}")
+            return False
+    
+    def quarantine_module(self, module_id: str) -> bool:
+        """Apply quarantine channel to isolate fault.
+        
+        ELEVATED: This implements the "wound epidermis" phase - suppressing
+        off-diagonal coherences to prevent fault propagation while allowing
+        the module to enter blastema state.
+        
+        Args:
+            module_id: Identifier for the module
+            
+        Returns:
+            True if quarantine was applied, False otherwise
+        """
+        if module_id not in self.module_states:
+            return False
+        
+        try:
+            self.module_states[module_id] = quarantine_channel(
+                self.module_states[module_id]
+            )
+            return True
+        except Exception as e:
+            logger.error(f"Failed to quarantine module {module_id}: {e}")
+            return False
+    
+    def trigger_regeneration(
+        self,
+        module_id: str,
+        clifford_index: Optional[int] = None,
+        target_role: Role = Role.HEALTHY_SPECIALIZED,
+    ) -> dict:
+        """Trigger full regeneration pipeline for a module.
+        
+        ELEVATED: This implements the complete salamander regeneration
+        process: fault detection → quarantine → blastema formation →
+        redifferentiation → measurement → validation.
+        
+        Args:
+            module_id: Identifier for the module
+            clifford_index: Positional memory index (Clifford rotation)
+            target_role: Target role for redifferentiation
+            
+        Returns:
+            Regeneration trace dictionary
+        """
+        import numpy as np
+        
+        # Store positional memory
+        if clifford_index is not None:
+            self.clifford_index_map[module_id] = clifford_index
+        
+        # Create context signal from positional memory
+        context = None
+        if module_id in self.clifford_index_map:
+            context = ContextSignal(
+                clifford_index=self.clifford_index_map[module_id],
+                target_role=target_role,
+                confidence=0.8,  # Default confidence
+            )
+        
+        # Run regeneration pipeline
+        rng = np.random.default_rng()
+        trace = regeneration_pipeline(
+            module_id=module_id,
+            fault_severity=0.7,  # Default severity
+            context=context,
+            rng=rng,
+        )
+        
+        # Update module state
+        if module_id in self.module_states:
+            # Re-initialize based on regeneration result
+            if trace.get("status") == "success":
+                self.module_states[module_id] = ModuleState.healthy(module_id)
+            elif trace.get("status") == "malformed_quarantined":
+                # Module is in malformed state, keep quarantined
+                pass
+        
+        # Track regeneration history
+        self.regeneration_history.append(trace)
+        
+        return trace
+    
+    def check_innervation_failure(self, module_id: str) -> bool:
+        """Check if module has innervation failure (no positional memory).
+        
+        ELEVATED: This implements the "denervated limb" failure mode - even
+        with healthy blastema tissue, regeneration cannot proceed without
+        the orchestrating signal (positional memory).
+        
+        Args:
+            module_id: Identifier for the module
+            
+        Returns:
+            True if innervation failure detected, False otherwise
+        """
+        return module_id not in self.clifford_index_map
+    
+    def get_module_blastema_metric(self, module_id: str) -> Optional[float]:
+        """Get von Neumann entropy as blastema metric.
+        
+        ELEVATED: This provides a continuous, information-theoretically
+        grounded measure of dedifferentiation. 0 = fully specialized,
+        log(DIM) = maximally mixed (full blastema).
+        
+        Args:
+            module_id: Identifier for the module
+            
+        Returns:
+            Von Neumann entropy, or None if module not found
+        """
+        if module_id not in self.module_states:
+            return None
+        
+        return self.module_states[module_id].von_neumann_entropy()
+    
+    def get_regeneration_status(self) -> dict:
+        """Get comprehensive regeneration status across all modules.
+        
+        ELEVATED: This provides a system-wide view of the regeneration
+        process, including blastema metrics, innervation status, and
+        recovery fidelity.
+        """
+        status = {
+            "total_modules": len(self.module_states),
+            "regeneration_events": len(self.regeneration_history),
+            "modules_with_innervation": len(self.clifford_index_map),
+            "modules": {},
+        }
+        
+        for module_id, state in self.module_states.items():
+            status["modules"][module_id] = {
+                "blastema_metric": state.von_neumann_entropy(),
+                "role_probabilities": state.role_probabilities(),
+                "has_innervation": module_id in self.clifford_index_map,
+                "clifford_index": self.clifford_index_map.get(module_id),
+            }
+        
+        return status
 
     def step(self) -> Dict[str, Any]:
         """ELEVATED: Now includes emergence detection and structural coupling monitoring."""

@@ -1,6 +1,6 @@
 {
   "artifact_schema_version": 2,
-  "generated_at_utc": "2026-06-18T10:43:40.056543+00:00",
+  "generated_at_utc": "2026-06-17T19:31:46.102653+00:00",
   "measurements": {
     "baselines": {
       "random": {
@@ -29,25 +29,25 @@
       }
     },
     "test_01": {
-      "phi": 0.06381283499927567,
-      "python_modules": 118,
+      "phi": 0.07076176250933533,
+      "python_modules": 104,
       "typescript_modules": 51,
-      "total_dependencies": 118,
-      "total_dependency_edges": 881,
+      "total_dependencies": 104,
+      "total_dependency_edges": 758,
       "interpretation": "Low-moderate integration - some cross-module coupling"
     },
     "test_02": {
       "autonomy_score": 10.0,
-      "total_decisions": 5902,
-      "total_external": 1733,
-      "adaptive_patterns": 1013,
-      "self_modification": 15,
-      "interpretation": "Highly autonomous - extensive internal control flow with 1013 adaptive patterns and 15 self-modification sites"
+      "total_decisions": 5145,
+      "total_external": 1595,
+      "adaptive_patterns": 814,
+      "self_modification": 13,
+      "interpretation": "Highly autonomous - extensive internal control flow with 814 adaptive patterns and 13 self-modification sites"
     },
     "test_03": {
-      "irreducibility_score": 0.042968217160005456,
-      "global_state_refs": 315,
-      "instance_state_refs": 7016,
+      "irreducibility_score": 0.04484096198603569,
+      "global_state_refs": 289,
+      "instance_state_refs": 6156,
       "interpretation": "Highly reducible - clean state partitions"
     }
   },
@@ -87,12 +87,12 @@
     "\u2717 Low integration - modular architecture",
     "\u2713 Has internal decision-making",
     "\u2717 Clean state boundaries",
-    "\u2713 Contains 1013 adaptive patterns",
-    "\u26a0 Contains 15 self-modification patterns"
+    "\u2713 Contains 814 adaptive patterns",
+    "\u26a0 Contains 13 self-modification patterns"
   ],
   "conclusion": "ELEVATED SOFTWARE-PROXY COMPLEXITY: Static proxies show non-trivial integration, adaptation tokens, and self-modification tokens. Preserve as an internal measurement finding and move through replay, baselines, falsification, and external review before any stronger claim.",
-  "emergent_score": 17.482969435792786,
-  "preserved_previous_artifact": "artifacts/previous/emergent_complexity_analysis.20260618T104340Z.json",
+  "emergent_score": 15.371822435023532,
+  "preserved_previous_artifact": "artifacts/previous/emergent_complexity_analysis.20260617T193146Z.json",
   "claim_boundary": {
     "metric_posture": "software proxies only",
     "distinguishes": "static code coupling and token patterns are separated from runtime causal behaviour",

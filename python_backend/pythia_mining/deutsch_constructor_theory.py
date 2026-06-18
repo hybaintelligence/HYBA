@@ -500,11 +500,12 @@ class DeutschConstructorTheory:
         
         # Select path based on measurement (probabilistic)
         probabilities = np.abs(evolved_weights) ** 2
+        probabilities = probabilities / (np.sum(probabilities) + 1e-10)  # Ensure sum to 1
         selected_path = int(np.random.choice(num_paths, p=probabilities))
         
         # Compute multiverse entropy
         multiverse_entropy = -np.sum(
-            probabilities * np.log(probabilities + 1e-10)
+            np.real(probabilities) * np.log(np.real(probabilities) + 1e-10)
         )
         
         # Compute coherence measure
@@ -522,13 +523,13 @@ class DeutschConstructorTheory:
     def _build_interference_matrix(self, num_paths: int) -> np.ndarray:
         """Build quantum interference matrix for path superposition."""
         # Simplified interference matrix using phi
-        matrix = np.zeros((num_paths, num_paths))
+        matrix = np.zeros((num_paths, num_paths), dtype=complex)
         
         for i in range(num_paths):
             for j in range(num_paths):
                 # Phi-weighted interference
                 phase = 2 * math.pi * PHI * (i - j) / num_paths
-                matrix[i, j] = math.cos(phase) + 1j * math.sin(phase)
+                matrix[i, j] = complex(math.cos(phase), math.sin(phase))
         
         return matrix / math.sqrt(num_paths)  # Normalize
     

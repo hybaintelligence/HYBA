@@ -42,6 +42,24 @@ DEFAULT_LEARNING_RATE = 0.1
 DEFAULT_DECAY_RATE = 0.01
 SYNAPTIC_THRESHOLD = 0.5
 
+# Sector-level binning: 32 dodecahedral sectors × 8 phi-resonance bins = 256 pattern keys.
+# This is the correct granularity for Hebbian learning: coarse enough that the same
+# structural pattern recurs across different nonces, fine enough to be informative.
+_PHI_BINS = 8
+_N_SECTORS = 32
+
+
+def _sector_pattern_key(dodecahedral_sector: int, phi_resonance: float) -> str:
+    """Map a nonce's sector + phi-resonance to a stable pattern key.
+
+    This is the fix for the ablation null result: instead of keying on the
+    exact nonce (which never repeats), we key on the structural region.
+    Multiple nonces in the same sector with similar phi-resonance reinforce
+    the same synaptic trace, allowing weights to accumulate across epochs.
+    """
+    phi_bin = min(int(phi_resonance * _PHI_BINS), _PHI_BINS - 1)
+    return f"s{dodecahedral_sector % _N_SECTORS}_p{phi_bin}"
+
 
 @dataclass(frozen=True)
 class NoncePattern:
@@ -166,6 +184,51 @@ class SynapticPersistenceLayer:
             golden_angle_alignment=golden_angle_alignment,
         )
     
+    def register_or_reinforce(
+        self,
+        nonce: int,
+        phi_resonance: float,
+        dodecahedral_sector: int,
+        icosahedral_face: int = 0,
+        golden_angle_alignment: float = 0.0,
+    ) -> Tuple[int, HebbianLearningEvent]:
+        """Register-or-reinforce using sector-level pattern key.
+
+        This is the correct Hebbian interface. Instead of creating a unique
+        pattern ID for every nonce (which prevents weight accumulation), we
+        map all nonces in the same structural region to the same trace.
+
+        Multiple accepted nonces in sector S with phi-resonance bin P will
+        reinforce the same synaptic trace, allowing weights to cross the
+        emergence threshold across epochs.
+
+        Returns (pattern_id, learning_event).
+        """
+        key = _sector_pattern_key(dodecahedral_sector, phi_resonance)
+        # Use key hash as stable integer ID
+        pattern_id = hash(key) % (2 ** 31)
+
+        if pattern_id not in self.synaptic_memory:
+            pattern = self.extract_pattern(
+                nonce=nonce,
+                phi_resonance=phi_resonance,
+                dodecahedral_sector=dodecahedral_sector,
+                icosahedral_face=icosahedral_face,
+                golden_angle_alignment=golden_angle_alignment,
+            )
+            trace = SynapticTrace(
+                pattern=pattern,
+                synaptic_weight=0.0,
+                co_activation_patterns=set(),
+                reinforcement_count=0,
+                last_reinforced=0.0,
+            )
+            self.synaptic_memory[pattern_id] = trace
+            self.co_activation_matrix[pattern_id] = {}
+
+        event = self.reinforce_pattern(pattern_id, phi_correlation=phi_resonance)
+        return pattern_id, event
+
     def register_pattern(self, pattern: NoncePattern) -> int:
         """Register a new pattern and return its ID."""
         pattern_id = self._pattern_counter
@@ -441,4 +504,5 @@ __all__ = [
     "SYNAPTIC_THRESHOLD",
     "SynapticPersistenceLayer",
     "SynapticTrace",
+    "_sector_pattern_key",
 ]

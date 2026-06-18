@@ -53,6 +53,16 @@ from .iit_4_analyzer import IIT4Analyzer  # Phase 5: Genuine IIT integration
 from .synaptic_persistence_layer import SynapticPersistenceLayer, NoncePattern
 from .sensory_integrity_protocol import SensoryIntegrityProtocol, EnvironmentMode
 
+# Import quantum_regeneration for salamander-inspired blastema formation
+from .quantum_regeneration import (
+    ModuleState,
+    Role,
+    ContextSignal,
+    InnervationFailure,
+    regeneration_pipeline,
+    regeneration_fidelity,
+)
+
 # Fundamental Golden Ratio constants for continuous scaling
 PHI = 1.618033988749895
 PHI_INV = 1.0 / PHI  # 0.618033...
@@ -191,6 +201,10 @@ class ConsciousnessEngine:
         self._phi_history: list[PhiMetrics] = []
         self._integration_regime = IntegrationRegime.DISTRIBUTED
         self._autonomic_events: list[dict[str, Any]] = []
+        
+        # ELEVATED: Salamander-inspired regeneration for blastema formation
+        self.regeneration_module_states: Dict[str, ModuleState] = {}
+        self.clifford_positional_memory: Dict[str, int] = {}
 
     async def calculate_integrated_information(self) -> Optional[float]:
         """Legacy async API: update and return the current Φ coherence proxy if measured.
@@ -790,6 +804,117 @@ class ConsciousnessEngine:
         in a real environment, which is necessary for legitimate emergence claims.
         """
         return self.sensory_protocol.get_stasis_status()
+    
+    def trigger_blastema_formation(self, component_id: str, clifford_index: Optional[int] = None) -> dict:
+        """Trigger blastema formation for a component using salamander regeneration.
+        
+        ELEVATED: This integrates the quantum_regeneration module with the
+        ConsciousnessEngine, allowing components to undergo dedifferentiation
+        (blastema formation) when coherence drops, followed by redifferentiation
+        guided by positional memory (Clifford rotation indexing).
+        
+        Args:
+            component_id: Identifier for the component (e.g., "quantum_solver")
+            clifford_index: Positional memory index for redifferentiation guidance
+            
+        Returns:
+            Regeneration trace dictionary
+        """
+        import numpy as np
+        
+        # Store positional memory
+        if clifford_index is not None:
+            self.clifford_positional_memory[component_id] = clifford_index
+        
+        # Initialize module state if not exists
+        if component_id not in self.regeneration_module_states:
+            self.regeneration_module_states[component_id] = ModuleState.healthy(component_id)
+        
+        # Create context signal from positional memory
+        context = None
+        if component_id in self.clifford_positional_memory:
+            context = ContextSignal(
+                clifford_index=self.clifford_positional_memory[component_id],
+                target_role=Role.HEALTHY_SPECIALIZED,
+                confidence=0.8,
+            )
+        
+        # Run regeneration pipeline
+        rng = np.random.default_rng()
+        trace = regeneration_pipeline(
+            module_id=component_id,
+            fault_severity=0.7,  # Default severity for blastema formation
+            context=context,
+            rng=rng,
+        )
+        
+        # Update module state based on regeneration result
+        if trace.get("status") == "success":
+            self.regeneration_module_states[component_id] = ModuleState.healthy(component_id)
+            # Update component health to reflect successful regeneration
+            self.components[component_id] = True
+        elif trace.get("status") == "innervation_failure":
+            # Component lacks positional memory - cannot regenerate
+            self.logger.warning(f"Innervation failure for component {component_id}: no positional memory")
+        
+        return trace
+    
+    def get_blastema_metrics(self, component_id: str) -> Optional[dict]:
+        """Get blastema metrics for a component.
+        
+        ELEVATED: This provides the von Neumann entropy as a continuous
+        measure of dedifferentiation (blastema formation), along with
+        role probabilities and positional memory status.
+        
+        Args:
+            component_id: Identifier for the component
+            
+        Returns:
+            Dictionary with blastema metrics, or None if component not found
+        """
+        if component_id not in self.regeneration_module_states:
+            return None
+        
+        state = self.regeneration_module_states[component_id]
+        
+        return {
+            "blastema_metric": state.von_neumann_entropy(),
+            "role_probabilities": state.role_probabilities(),
+            "has_positional_memory": component_id in self.clifford_positional_memory,
+            "clifford_index": self.clifford_positional_memory.get(component_id),
+            "current_role": max(state.role_probabilities().items(), key=lambda x: x[1])[0].value,
+        }
+    
+    def get_regeneration_status(self) -> dict:
+        """Get comprehensive regeneration status across all components.
+        
+        ELEVATED: This provides a system-wide view of the regeneration
+        process, including which components are in blastema state, which
+        have positional memory, and overall regeneration health.
+        """
+        status = {
+            "total_components": len(self.regeneration_module_states),
+            "components_in_blastema": 0,
+            "components_with_positional_memory": len(self.clifford_positional_memory),
+            "components": {},
+        }
+        
+        for component_id, state in self.regeneration_module_states.items():
+            blastema_metric = state.von_neumann_entropy()
+            is_in_blastema = blastema_metric > 0.5  # Threshold for blastema state
+            
+            if is_in_blastema:
+                status["components_in_blastema"] += 1
+            
+            status["components"][component_id] = {
+                "blastema_metric": blastema_metric,
+                "is_in_blastema": is_in_blastema,
+                "role_probabilities": state.role_probabilities(),
+                "has_positional_memory": component_id in self.clifford_positional_memory,
+                "clifford_index": self.clifford_positional_memory.get(component_id),
+            }
+        
+        return status
 
 
 __all__ = [

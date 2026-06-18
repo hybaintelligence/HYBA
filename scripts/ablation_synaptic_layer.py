@@ -186,15 +186,14 @@ def run_epoch(
                 if condition == "synaptic" and synaptic is not None:
                     phi_res = cheap_phi_resonance(nonce)
                     sector = voronoi_domain(nonce)
-                    pattern = synaptic.extract_pattern(
+                    # Use register_or_reinforce for sector-level accumulation
+                    synaptic.register_or_reinforce(
                         nonce=nonce,
                         phi_resonance=phi_res,
                         dodecahedral_sector=sector % 32,
                         icosahedral_face=sector % 20,
                         golden_angle_alignment=phi_res,
                     )
-                    pid = synaptic.register_pattern(pattern)
-                    synaptic.reinforce_pattern(pid, phi_correlation=phi_res)
 
             total_iters += 1
 
