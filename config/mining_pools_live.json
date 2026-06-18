@@ -8,22 +8,22 @@
       "username": "PYTHAGORAS",
       "password": "anything123",
       "worker": "hendrix_phi",
-      "priority": 1,
+      "priority": 2,
       "enabled": true,
-      "is_default": true,
-      "description": "Braiins Pool - V1 Stratum configuration"
+      "is_default": false,
+      "description": "Braiins Pool - V1 Stratum (fallback)"
     },
     "viabtc": {
       "name": "ViaBTC BTC",
       "url": "stratum+tcp://btc.viabtc.io:3333",
       "stratum_version": 1,
-      "username": "PYTHIA.101",
+      "username": "PYTHIA.001",
       "password": "123",
       "worker": "hendrix_phi",
-      "priority": 2,
+      "priority": 1,
       "enabled": true,
-      "is_default": false,
-      "description": "ViaBTC SHA256 pool - V1 Stratum configuration"
+      "is_default": true,
+      "description": "ViaBTC SHA256 pool - V1 Stratum (primary)"
     },
     "nicehash": {
       "name": "NiceHash SHA256",
