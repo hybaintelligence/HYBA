@@ -41,6 +41,7 @@ from hyba_genesis_api.api import (  # noqa: E402
     products,
     regeneration_router,
     security,
+    streaming_sense,
     unified_mining,
 )
 from hyba_genesis_api.core.api_posture import install_enterprise_api_posture  # noqa: E402
@@ -172,7 +173,11 @@ app.include_router(products.router)
 app.include_router(unified_mining.router)
 app.include_router(ai_memory.router)
 app.include_router(pool_management.router)
+<<<<<<< Updated upstream
 app.include_router(regeneration_router.router)
+=======
+app.include_router(streaming_sense.router)
+>>>>>>> Stashed changes
 
 
 @app.get("/health", response_model=Dict[str, Any], tags=["health"])
