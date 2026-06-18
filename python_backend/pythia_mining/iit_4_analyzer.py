@@ -267,11 +267,11 @@ class IIT4Analyzer:
             mech_id = self._mechanism_id(mechanism)
 
             # PAST: What caused this mechanism's current state?
-            cause_rep = self._compute_cause_repertoire(mechanism, system_state, connectivity_matrix)
+            cause_rep = self._compute_mechanism_cause_repertoire(mechanism, system_state, connectivity_matrix)
             cause_repertoires[mech_id] = cause_rep
 
             # FUTURE: What will this mechanism cause?
-            effect_rep = self._compute_effect_repertoire(
+            effect_rep = self._compute_mechanism_effect_repertoire(
                 mechanism, system_state, connectivity_matrix
             )
             effect_repertoires[mech_id] = effect_rep
@@ -349,7 +349,7 @@ class IIT4Analyzer:
 
         return mechanisms
 
-    def _compute_cause_repertoire(
+    def _compute_mechanism_cause_repertoire(
         self, mechanism: Mechanism, current_state: np.ndarray, connectivity_matrix: np.ndarray
     ) -> np.ndarray:
         """
@@ -384,7 +384,7 @@ class IIT4Analyzer:
 
         return likelihoods
 
-    def _compute_effect_repertoire(
+    def _compute_mechanism_effect_repertoire(
         self, mechanism: Mechanism, current_state: np.ndarray, connectivity_matrix: np.ndarray
     ) -> np.ndarray:
         """
