@@ -184,11 +184,11 @@ class PulviniCompressedQuantumSolver(DodecahedralQuantumSolver):
         )
         return nonce
 
-    async def solve(self, max_iterations: int = 100, timeout: float = 30.0) -> Optional[int]:
+    async def solve(self, max_iterations: int = 100, timeout: float = 30.0, target: int = 0, job=None, extranonce2: str = "00000000") -> Optional[int]:
         if max_iterations <= 0 or timeout <= 0:
             raise QuantumSolverConfigurationError("max_iterations and timeout must be positive")
         if self.compressed_plan is None:
-            return await super().solve(max_iterations=max_iterations, timeout=timeout)
+            return await super().solve(max_iterations=max_iterations, timeout=timeout, target=target, job=job, extranonce2=extranonce2)
 
         # Advance the deterministic phase so repeated solve attempts traverse the
         # compressed plan instead of replaying the same nonce.
