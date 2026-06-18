@@ -46,9 +46,9 @@ import rateLimit from "express-rate-limit";
 import { createServer as createViteServer, type InlineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
-import { validateProductionJwtSecret } from "./src/bridge_security";
-import { securitySwarms } from "./src/core/security_swarm";
-import { IntelligenceService } from "./src/core/intelligence_service";
+import { validateProductionJwtSecret } from "./bridge_security";
+import { securitySwarms } from "./core/security_swarm";
+import { IntelligenceService } from "./core/intelligence_service";
 
 dotenv.config();
 
