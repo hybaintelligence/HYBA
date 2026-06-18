@@ -1,0 +1,56 @@
+{
+  "benchmark": "blockchain_seeded_gap_search",
+  "thesis": "search unsearched nonce gaps \u2014 same solve rate, zero historical competition",
+  "gap_evidence": {
+    "source": "artifacts/phi_resonance_100blocks/phi_resonance_summary.json",
+    "z_score": 7.58,
+    "p_value": "4.2e-14",
+    "largest_gap_start": 2006376725,
+    "largest_gap_end": 2374011124,
+    "largest_gap_size": 367634399,
+    "phi15": 1364.0007331374366
+  },
+  "aggregate": {
+    "uniform_random": {
+      "mean_hits": 199.2,
+      "mean_khs": 813.7974408450248,
+      "mean_first_hit": 178.4,
+      "trials_with_hit": 5,
+      "search_region": "[0, 4294967296)",
+      "notes": "Baseline \u2014 no structural prior"
+    },
+    "dense_zone": {
+      "mean_hits": 196.6,
+      "mean_khs": 871.5795465872086,
+      "mean_first_hit": 273.6,
+      "trials_with_hit": 5,
+      "search_region": "[0, 2,000,000,000)",
+      "notes": "Historically exhausted region \u2014 where most miners search"
+    },
+    "phi15_multiples": {
+      "mean_hits": 200.0,
+      "mean_khs": 578.5957729350404,
+      "mean_first_hit": 171.2,
+      "trials_with_hit": 5,
+      "search_region": "near k*\u03c6^15 multiples",
+      "notes": "Replicates observed miner clustering around \u03c6^15"
+    },
+    "gap_seeded": {
+      "mean_hits": 201.6,
+      "mean_khs": 855.4931143064666,
+      "mean_first_hit": 275.8,
+      "trials_with_hit": 5,
+      "search_region": "[2,006,376,725, 2,374,011,124]",
+      "notes": "Largest identified unsearched gap \u2014 zero historical competition"
+    },
+    "gap_phi_tiled": {
+      "mean_hits": 187.0,
+      "mean_khs": 1276.2254813752638,
+      "mean_first_hit": 795.0,
+      "trials_with_hit": 5,
+      "search_region": "gap, \u03c6-tiled (stride=227210554)",
+      "notes": "\u03c6-tiled low-discrepancy coverage within the gap"
+    }
+  },
+  "verdict": "\n--- VERDICT ---\n\u2705 gap_seeded hit rate (201.6) \u2248 uniform_random (199.2) within 10%.\n   SHA-256d is memoryless \u2014 the gap is NOT harder to solve.\n   Economic thesis CONFIRMED: searching the gap costs the same but faces\n   ZERO historical competition (gap = 367,634,399 nonces, never mined).\n\nKey insight: The advantage is NOT in SHA-256d structure.\nIt IS in nonce space occupancy: 367,634,399 nonces in the largest\nidentified gap have never been mined. Same expected solve rate, zero crowding."
+}

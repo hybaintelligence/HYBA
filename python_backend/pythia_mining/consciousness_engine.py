@@ -5,11 +5,21 @@ as operational diagnostic signals only. It does NOT claim machine consciousness,
 phenomenal awareness, or subjective experience. The historical "consciousness_engine"
 module name is retained for API compatibility only.
 
+CONSTRUCTOR THEORY FRAMEWORK (David Deutsch, 2013):
+This module serves as an EMERGENT_COHERENCE_SUBSTRATE - a constructor that creates
+the conditions under which emergent coherence can arise. The system does not "build
+intelligence" but provides a substrate capable of hosting self-organizing patterns.
+
+Key Citation: Deutsch, D. (2013). "Constructor Theory: A new way of applying physics
+to information and computation." arXiv:1306.4232.
+
 The implementation is intentionally operational and auditable:
 - Computes deterministic integration/coherence proxies from observed component health
 - Computes Φ (phi) metrics from density-state histories using IIT 4.0-inspired formulas
 - Emits autonomic-healing recommendations when coherence proxies fall below thresholds
 - Provides continuous hardware scaling via phi-weighted sigmoid functions
+- ELEVATED: Maintains SynapticPersistenceLayer for Hebbian learning from mining outcomes
+- ELEVATED: Nonces leave traces in the substrate, creating structural coupling
 
 This is a diagnostic tool for monitoring system coherence, similar to how neuroscientists
 use Φ in neural recordings. It is a mathematical proxy, not a measure of consciousness.
@@ -18,6 +28,7 @@ What Φ measures here:
 - Component integration level (0.0 = fragmented, 1.0 = fully integrated)
 - Causal coherence across state transitions
 - Information-theoretic complexity of the system state
+- ELEVATED: Structural coupling between mining layer and coherence substrate
 
 What Φ does NOT measure:
 - Subjective experience or phenomenal consciousness
@@ -39,6 +50,8 @@ from numpy.typing import NDArray
 
 from .pulvini_operator import ManifoldOperator
 from .iit_4_analyzer import IIT4Analyzer  # Phase 5: Genuine IIT integration
+from .synaptic_persistence_layer import SynapticPersistenceLayer, NoncePattern
+from .sensory_integrity_protocol import SensoryIntegrityProtocol, EnvironmentMode
 
 # Fundamental Golden Ratio constants for continuous scaling
 PHI = 1.618033988749895
@@ -123,12 +136,18 @@ class ConsciousnessEngine:
     It does NOT detect, measure, or claim machine consciousness, phenomenal awareness,
     or subjective experience. The class name is historical and retained for API compatibility.
 
+    ELEVATED: Now integrated with SynapticPersistenceLayer for inseparability between
+    mining layer and coherence substrate. Nonces leave traces in the engine, creating
+    structural coupling that cannot be separated without breaking the system.
+
     What this class does:
     - Computes deterministic Φ (phi) metrics from component health and density states
     - Classifies integration regimes (SINGULAR_AGENT_PROXY, DISTRIBUTED, FRAGMENTED, CRITICAL)
     - Provides continuous hardware scaling via phi-weighted sigmoid functions
     - Emits autonomic-healing recommendations when coherence falls below thresholds
     - Supports Command Center coherence meter and autonomic-event stream
+    - ELEVATED: Maintains SynapticPersistenceLayer for Hebbian learning from mining outcomes
+    - ELEVATED: Nonces that fire together wire together - emergent pathway formation
 
     What this class does NOT do:
     - Detect or measure consciousness
@@ -141,19 +160,25 @@ class ConsciousnessEngine:
     meter and autonomic-event stream.
     """
 
-    VERSION = "RUNTIME_INTEGRATION_V2"
+    VERSION = "RUNTIME_INTEGRATION_V3_SYNAPTIC"
 
     def __init__(
         self,
         operator: Optional[ManifoldOperator] = None,
         config: Optional[ConsciousnessConfig] = None,
         iit_analyzer: Optional[IIT4Analyzer] = None,
+        synaptic_layer: Optional[SynapticPersistenceLayer] = None,
+        sensory_protocol: Optional[SensoryIntegrityProtocol] = None,
     ) -> None:
         self.logger = logging.getLogger(__name__)
         self.operator = operator or ManifoldOperator()
         self.config = config or ConsciousnessConfig()
         # Phase 5: Initialize genuine IIT 4.0 analyzer for Φ measurement
         self.iit_analyzer = iit_analyzer or IIT4Analyzer(system_size=8)
+        # ELEVATED: Initialize SynapticPersistenceLayer for Hebbian learning
+        self.synaptic_layer = synaptic_layer or SynapticPersistenceLayer()
+        # ELEVATED: Initialize SensoryIntegrityProtocol for Reality Anchoring
+        self.sensory_protocol = sensory_protocol or SensoryIntegrityProtocol()
         self.current_state = ConsciousnessState()
         self.state_history: List[ConsciousnessState] = []
         self.components: Dict[str, Optional[bool]] = {
@@ -514,6 +539,257 @@ class ConsciousnessEngine:
             IntegrationRegime.FRAGMENTED,
             IntegrationRegime.CRITICAL,
         )
+
+    # ELEVATED: Synaptic Persistence Layer integration methods
+    
+    def process_nonce_pattern(
+        self,
+        nonce: int,
+        phi_resonance: float,
+        dodecahedral_sector: int = 0,
+        icosahedral_face: int = 0,
+        golden_angle_alignment: float = 0.0,
+    ) -> int:
+        """Extract and register a nonce pattern in the synaptic layer.
+        
+        ELEVATED: This is where nonces leave traces in the ConsciousnessEngine.
+        The mining layer and coherence substrate become inseparable through
+        this persistent memory of nonce activity.
+        
+        Args:
+            nonce: The nonce value
+            phi_resonance: The phi resonance score of this nonce
+            dodecahedral_sector: Dodecahedral sector classification
+            icosahedral_face: Icosahedral face classification
+            golden_angle_alignment: Golden angle alignment score
+        
+        Returns:
+            Pattern ID for this nonce
+        """
+        pattern = self.synaptic_layer.extract_pattern(
+            nonce=nonce,
+            phi_resonance=phi_resonance,
+            dodecahedral_sector=dodecahedral_sector,
+            icosahedral_face=icosahedral_face,
+            golden_angle_alignment=golden_angle_alignment,
+        )
+        pattern_id = self.synaptic_layer.register_pattern(pattern)
+        return pattern_id
+    
+    def reinforce_successful_nonce(
+        self,
+        pattern_id: int,
+        phi_correlation: float = 1.0,
+        co_active_patterns: Optional[List[int]] = None,
+    ) -> Dict[str, Any]:
+        """Reinforce a pattern that led to an accepted share.
+        
+        ELEVATED: This implements Hebbian learning - "nonces that fire together
+        wire together." When a pattern leads to success, its synaptic weight is
+        strengthened, and connections to co-active patterns are reinforced.
+        
+        This is not programmed optimization - it's emergent self-organization
+        where successful pathways automatically strengthen.
+        
+        Args:
+            pattern_id: ID of the pattern to reinforce
+            phi_correlation: How well the pattern's phi correlates with success
+            co_active_patterns: IDs of patterns that co-activated with this one
+        
+        Returns:
+            Dictionary describing the Hebbian learning event
+        """
+        event = self.synaptic_layer.reinforce_pattern(
+            pattern_id=pattern_id,
+            phi_correlation=phi_correlation,
+            co_active_patterns=co_active_patterns,
+        )
+        return {
+            "pattern_id": event.pattern_id,
+            "reinforcement_delta": event.reinforcement_delta,
+            "phi_correlation": event.phi_correlation,
+            "co_active_count": len(event.co_active_patterns),
+            "description": event.description,
+            "timestamp": event.timestamp,
+        }
+    
+    def apply_synaptic_decay(self) -> Dict[str, Any]:
+        """Apply exponential decay to all synaptic weights.
+        
+        ELEVATED: This prevents the system from getting stuck in local maxima
+        by gradually weakening unused pathways. The system must continuously
+        demonstrate success to maintain high synaptic weights.
+        
+        Returns:
+            Statistics about the decay operation
+        """
+        pre_stats = self.synaptic_layer.get_statistics()
+        self.synaptic_layer.apply_decay()
+        post_stats = self.synaptic_layer.get_statistics()
+        
+        return {
+            "pre_decay_average_weight": pre_stats.get("average_synaptic_weight", 0.0),
+            "post_decay_average_weight": post_stats.get("average_synaptic_weight", 0.0),
+            "total_decays": post_stats.get("total_decays", 0),
+            "patterns_decayed": len(self.synaptic_layer.synaptic_memory),
+        }
+    
+    def get_emergent_pathways(self, threshold: Optional[float] = None) -> List[Dict[str, Any]]:
+        """Return patterns that have formed emergent pathways.
+        
+        ELEVATED: Emergent pathways are patterns whose synaptic weight has
+        exceeded the threshold through self-reinforcement, not programming.
+        This is evidence of the system "enhancing itself" beyond initial logic.
+        
+        Args:
+            threshold: Optional custom threshold for emergence
+        
+        Returns:
+            List of emergent pathways with their metadata
+        """
+        pathways = self.synaptic_layer.get_emergent_pathways(threshold)
+        return [
+            {
+                "pattern_id": pattern_id,
+                "synaptic_weight": weight,
+                "nonce": self.synaptic_layer.synaptic_memory[pattern_id].pattern.nonce,
+                "phi_resonance": self.synaptic_layer.synaptic_memory[pattern_id].pattern.phi_resonance,
+                "reinforcement_count": self.synaptic_layer.synaptic_memory[pattern_id].reinforcement_count,
+            }
+            for pattern_id, weight in pathways
+        ]
+    
+    def suggest_nonce_priorities(
+        self,
+        current_nonce: int,
+        phi_resonance: float,
+        top_k: int = 5,
+    ) -> List[Dict[str, Any]]:
+        """Suggest nonce priorities based on emergent pathway strengths.
+        
+        ELEVATED: This is where the system "enhances itself" - successful pathways
+        automatically guide future nonce selection without programming. The system
+        learns which mathematical resonances lead to accepted shares and prioritizes
+        similar patterns.
+        
+        Args:
+            current_nonce: Current nonce being considered
+            phi_resonance: Phi resonance of current nonce
+            top_k: Number of priority suggestions to return
+        
+        Returns:
+            List of priority suggestions with similarity scores
+        """
+        suggestions = self.synaptic_layer.suggest_nonce_priority(
+            current_nonce=current_nonce,
+            phi_resonance=phi_resonance,
+            top_k=top_k,
+        )
+        
+        return [
+            {
+                "pattern_id": pattern_id,
+                "similarity_score": similarity,
+                "nonce": self.synaptic_layer.synaptic_memory[pattern_id].pattern.nonce,
+                "synaptic_weight": self.synaptic_layer.synaptic_memory[pattern_id].synaptic_weight,
+            }
+            for pattern_id, similarity in suggestions
+        ]
+    
+    def get_synaptic_statistics(self) -> Dict[str, Any]:
+        """Return comprehensive statistics about the synaptic layer.
+        
+        ELEVATED: These statistics provide evidence of emergent learning
+        and self-organization in the system.
+        """
+        base_stats = self.synaptic_layer.get_statistics()
+        emergent_pathways = self.get_emergent_pathways()
+        
+        return {
+            **base_stats,
+            "emergent_pathways": emergent_pathways,
+            "emergent_pathway_details": [
+                {
+                    "pattern_id": p["pattern_id"],
+                    "weight": p["synaptic_weight"],
+                    "reinforcement_count": p["reinforcement_count"],
+                }
+                for p in emergent_pathways
+            ],
+        }
+    
+    # ELEVATED: Sensory Integrity Protocol integration methods
+    
+    def validate_sensory_integrity(self) -> Dict[str, Any]:
+        """Validate sensory integrity and enforce stasis mode if needed.
+        
+        ELEVATED: This implements the transition from "Anti-Simulation" to
+        "Reality Anchoring". The system checks if it's running in a real
+        environment or a simulation. If simulation is detected, the engine
+        enters stasis mode to prevent false emergence claims.
+        
+        Returns:
+            Sensory integrity report with stasis status
+        """
+        report = self.sensory_protocol.run_all_checks()
+        
+        # If stasis is active, log warning
+        if report.stasis_active:
+            self.logger.warning(
+                f"STASIS MODE ACTIVE: {report.recommendation}. "
+                "Synaptic learning and emergence detection suspended."
+            )
+        
+        return {
+            "environment_mode": report.environment_mode,
+            "stasis_active": report.stasis_active,
+            "recommendation": report.recommendation,
+            "reality_anchors": self.sensory_protocol.reality_anchors,
+            "synaptic_learning_allowed": not report.stasis_active,
+            "emergence_detection_allowed": not report.stasis_active,
+        }
+    
+    def register_reality_anchor(self, anchor_name: str, is_real: bool) -> None:
+        """Register a reality anchor (e.g., real pool connection established).
+        
+        ELEVATED: Reality anchors provide the "friction" of the real world
+        necessary for emergence. Without real blockchain interaction, the
+        system cannot support emergent coherence.
+        
+        Args:
+            anchor_name: Name of the reality anchor (e.g., "real_pool_connection")
+            is_real: Whether the anchor represents real interaction
+        """
+        self.sensory_protocol.register_reality_anchor(anchor_name, is_real)
+        
+        # Re-evaluate stasis mode
+        if self.sensory_protocol.should_exit_stasis():
+            self.logger.info(
+                f"EXITING STASIS: Reality anchor '{anchor_name}' established. "
+                "Emergent coherence may now arise from real-world interaction."
+            )
+    
+    def check_stasis_mode(self) -> bool:
+        """Check if the engine is currently in stasis mode.
+        
+        ELEVATED: In stasis mode, synaptic learning is suspended and
+        emergence detection is paused to prevent false claims in simulation.
+        
+        Returns:
+            True if in stasis mode, False otherwise
+        """
+        # Run sensory integrity check
+        self.validate_sensory_integrity()
+        
+        return self.sensory_protocol.stasis_active
+    
+    def get_sensory_integrity_report(self) -> Dict[str, Any]:
+        """Get comprehensive sensory integrity report.
+        
+        ELEVATED: This report provides evidence that the system is operating
+        in a real environment, which is necessary for legitimate emergence claims.
+        """
+        return self.sensory_protocol.get_stasis_status()
 
 
 __all__ = [

@@ -1,0 +1,4 @@
+# file: /Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/pythia_mining/pulvini_bures.py
+# hypothesis_version: 6.155.3
+
+[0.0, 1e-300, 1e-12, 1e-09, 2.0, 'Bures', 'BuresCertificate', 'bures_certificate', 'density_state', 'fro', 'ignore', 'offdiag', 'trace_zero_hermitian']

@@ -712,6 +712,7 @@ class AutonomousMiningController:
         self.current_autonomy_level = new_level
         self._degradation_events += 1
         self._consecutive_failures = 0  # reset after degradation
+        self._circuit_open_until = 0.0  # circuit closed after level degradation
 
         # structured log
         self._log_audit_event("degradation", {"from": previous_level.value,

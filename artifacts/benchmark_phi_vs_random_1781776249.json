@@ -1,0 +1,304 @@
+{
+  "benchmark": "phi_vs_random_nonce_search",
+  "timestamp": 1781776249,
+  "parameters": {
+    "iterations": 50000,
+    "trials": 5,
+    "difficulty": 0.001,
+    "target_hex": "00ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+    "base_seed": 42
+  },
+  "aggregate": {
+    "uniform_random": {
+      "mean_hits_per_trial": 199.2,
+      "mean_hashes_per_second": 769339.4223071022,
+      "mean_overhead_ratio_vs_random": 1.0,
+      "mean_first_hit_iteration": 178.4,
+      "trials_with_hit": 5,
+      "total_trials": 5
+    },
+    "sequential": {
+      "mean_hits_per_trial": 203.2,
+      "mean_hashes_per_second": 1303609.0292388832,
+      "mean_overhead_ratio_vs_random": 0.5898488318624077,
+      "mean_first_hit_iteration": 197.6,
+      "trials_with_hit": 5,
+      "total_trials": 5
+    },
+    "phi_guided": {
+      "mean_hits_per_trial": 200.0,
+      "mean_hashes_per_second": 549063.3540044263,
+      "mean_overhead_ratio_vs_random": 1.4016678046856685,
+      "mean_first_hit_iteration": 235.8,
+      "trials_with_hit": 5,
+      "total_trials": 5
+    },
+    "phi_sorted": {
+      "mean_hits_per_trial": 193.0,
+      "mean_hashes_per_second": 497689.1706847934,
+      "mean_overhead_ratio_vs_random": 1.546333216097207,
+      "mean_first_hit_iteration": 77.6,
+      "trials_with_hit": 5,
+      "total_trials": 5
+    }
+  },
+  "verdict": "--- VERDICT ---\nphi_guided overhead: 1.40x slower than uniform_random (null hypothesis NOT rejected for throughput)\nphi_sorted overhead: 1.55x slower (sort cost dominates)\nphi_guided hit rate ratio vs random: 1.004 \u2014 no significant advantage (null hypothesis stands)",
+  "trials": [
+    {
+      "trial": 1,
+      "seed": 42,
+      "strategies": [
+        {
+          "name": "uniform_random",
+          "iterations": 50000,
+          "hits": 189,
+          "time_s": 0.07849033300000002,
+          "first_hit_iteration": 262,
+          "first_hit_time_s": 0.0006773749999999801,
+          "hashes_per_second": 637021.1220788169,
+          "overhead_ratio": 1.0,
+          "notes": ""
+        },
+        {
+          "name": "sequential",
+          "iterations": 50000,
+          "hits": 189,
+          "time_s": 0.038925665999999914,
+          "first_hit_iteration": 145,
+          "first_hit_time_s": 0.00011895799999994683,
+          "hashes_per_second": 1284499.538171039,
+          "overhead_ratio": 0.4959294286597039,
+          "notes": ""
+        },
+        {
+          "name": "phi_guided",
+          "iterations": 50000,
+          "hits": 180,
+          "time_s": 0.09044033299999998,
+          "first_hit_iteration": 109,
+          "first_hit_time_s": 0.00023762499999990805,
+          "hashes_per_second": 552850.6844396516,
+          "overhead_ratio": 1.152248048176837,
+          "notes": "HENDRIX-Phi gradient traversal via cheap_phi_resonance Fibonacci steps"
+        },
+        {
+          "name": "phi_sorted",
+          "iterations": 50000,
+          "hits": 174,
+          "time_s": 0.09997254199999994,
+          "first_hit_iteration": 57,
+          "first_hit_time_s": 6.03750000000014e-05,
+          "hashes_per_second": 500137.3277074422,
+          "overhead_ratio": 1.273692417638232,
+          "notes": "sort_overhead_s=0.0593 pool_size=200000"
+        }
+      ]
+    },
+    {
+      "trial": 2,
+      "seed": 43,
+      "strategies": [
+        {
+          "name": "uniform_random",
+          "iterations": 50000,
+          "hits": 207,
+          "time_s": 0.062498874999999954,
+          "first_hit_iteration": 33,
+          "first_hit_time_s": 4.7499999999978115e-05,
+          "hashes_per_second": 800014.4002592053,
+          "overhead_ratio": 1.0,
+          "notes": ""
+        },
+        {
+          "name": "sequential",
+          "iterations": 50000,
+          "hits": 215,
+          "time_s": 0.03799016700000002,
+          "first_hit_iteration": 431,
+          "first_hit_time_s": 0.00032454199999998323,
+          "hashes_per_second": 1316130.0396494698,
+          "overhead_ratio": 0.6078536133650413,
+          "notes": ""
+        },
+        {
+          "name": "phi_guided",
+          "iterations": 50000,
+          "hits": 167,
+          "time_s": 0.09101049999999988,
+          "first_hit_iteration": 251,
+          "first_hit_time_s": 0.0005265829999999694,
+          "hashes_per_second": 549387.158624555,
+          "overhead_ratio": 1.4561942114958062,
+          "notes": "HENDRIX-Phi gradient traversal via cheap_phi_resonance Fibonacci steps"
+        },
+        {
+          "name": "phi_sorted",
+          "iterations": 50000,
+          "hits": 198,
+          "time_s": 0.10052604200000026,
+          "first_hit_iteration": 81,
+          "first_hit_time_s": 7.424999999994242e-05,
+          "hashes_per_second": 497383.55360693374,
+          "overhead_ratio": 1.6084456240212377,
+          "notes": "sort_overhead_s=0.0591 pool_size=200000"
+        }
+      ]
+    },
+    {
+      "trial": 3,
+      "seed": 44,
+      "strategies": [
+        {
+          "name": "uniform_random",
+          "iterations": 50000,
+          "hits": 211,
+          "time_s": 0.06256366599999996,
+          "first_hit_iteration": 83,
+          "first_hit_time_s": 0.00010675000000004431,
+          "hashes_per_second": 799185.9044832832,
+          "overhead_ratio": 1.0,
+          "notes": ""
+        },
+        {
+          "name": "sequential",
+          "iterations": 50000,
+          "hits": 178,
+          "time_s": 0.038485415999999883,
+          "first_hit_iteration": 82,
+          "first_hit_time_s": 6.220799999989701e-05,
+          "hashes_per_second": 1299193.439925403,
+          "overhead_ratio": 0.6151400399075065,
+          "notes": ""
+        },
+        {
+          "name": "phi_guided",
+          "iterations": 50000,
+          "hits": 201,
+          "time_s": 0.0906411250000001,
+          "first_hit_iteration": 152,
+          "first_hit_time_s": 0.0002802500000000929,
+          "hashes_per_second": 551625.9865485997,
+          "overhead_ratio": 1.4487821893301482,
+          "notes": "HENDRIX-Phi gradient traversal via cheap_phi_resonance Fibonacci steps"
+        },
+        {
+          "name": "phi_sorted",
+          "iterations": 50000,
+          "hits": 185,
+          "time_s": 0.09895320899999982,
+          "first_hit_iteration": 63,
+          "first_hit_time_s": 5.566699999981495e-05,
+          "hashes_per_second": 505289.32315878803,
+          "overhead_ratio": 1.5816401967237643,
+          "notes": "sort_overhead_s=0.0597 pool_size=200000"
+        }
+      ]
+    },
+    {
+      "trial": 4,
+      "seed": 45,
+      "strategies": [
+        {
+          "name": "uniform_random",
+          "iterations": 50000,
+          "hits": 199,
+          "time_s": 0.06229804200000011,
+          "first_hit_iteration": 499,
+          "first_hit_time_s": 0.0005961670000000918,
+          "hashes_per_second": 802593.4426638948,
+          "overhead_ratio": 1.0,
+          "notes": ""
+        },
+        {
+          "name": "sequential",
+          "iterations": 50000,
+          "hits": 218,
+          "time_s": 0.03788370799999985,
+          "first_hit_iteration": 60,
+          "first_hit_time_s": 4.67079999999509e-05,
+          "hashes_per_second": 1319828.5658837883,
+          "overhead_ratio": 0.6081043124918722,
+          "notes": ""
+        },
+        {
+          "name": "phi_guided",
+          "iterations": 50000,
+          "hits": 226,
+          "time_s": 0.09137666700000002,
+          "first_hit_iteration": 614,
+          "first_hit_time_s": 0.0010885000000000478,
+          "hashes_per_second": 547185.6398526769,
+          "overhead_ratio": 1.4667662749336468,
+          "notes": "HENDRIX-Phi gradient traversal via cheap_phi_resonance Fibonacci steps"
+        },
+        {
+          "name": "phi_sorted",
+          "iterations": 50000,
+          "hits": 204,
+          "time_s": 0.1015099589999997,
+          "first_hit_iteration": 95,
+          "first_hit_time_s": 0.00010624999999997442,
+          "hashes_per_second": 492562.50807864225,
+          "overhead_ratio": 1.6294245491696118,
+          "notes": "sort_overhead_s=0.0596 pool_size=200000"
+        }
+      ]
+    },
+    {
+      "trial": 5,
+      "seed": 46,
+      "strategies": [
+        {
+          "name": "uniform_random",
+          "iterations": 50000,
+          "hits": 190,
+          "time_s": 0.06189020799999989,
+          "first_hit_iteration": 15,
+          "first_hit_time_s": 2.300000000010627e-05,
+          "hashes_per_second": 807882.242050311,
+          "overhead_ratio": 1.0,
+          "notes": ""
+        },
+        {
+          "name": "sequential",
+          "iterations": 50000,
+          "hits": 216,
+          "time_s": 0.03850912500000003,
+          "first_hit_iteration": 270,
+          "first_hit_time_s": 0.00020808400000005278,
+          "hashes_per_second": 1298393.5625647157,
+          "overhead_ratio": 0.6222167648879141,
+          "notes": ""
+        },
+        {
+          "name": "phi_guided",
+          "iterations": 50000,
+          "hits": 226,
+          "time_s": 0.0918666250000002,
+          "first_hit_iteration": 53,
+          "first_hit_time_s": 9.929100000016788e-05,
+          "hashes_per_second": 544267.3005566482,
+          "overhead_ratio": 1.4843482994919062,
+          "notes": "HENDRIX-Phi gradient traversal via cheap_phi_resonance Fibonacci steps"
+        },
+        {
+          "name": "phi_sorted",
+          "iterations": 50000,
+          "hits": 204,
+          "time_s": 0.10140483399999978,
+          "first_hit_iteration": 92,
+          "first_hit_time_s": 8.341699999991903e-05,
+          "hashes_per_second": 493073.1408721611,
+          "overhead_ratio": 1.6384632929331884,
+          "notes": "sort_overhead_s=0.0606 pool_size=200000"
+        }
+      ]
+    }
+  ],
+  "known_baseline": {
+    "source": "hendrix_phi_solver.algorithm_metadata()",
+    "phi_vs_random_benchmark": "RANDOM_PERFORMS_BETTER_ON_SYNTHETIC",
+    "cpu_overhead_vs_random": "3.73x",
+    "note": "Prior result on synthetic targets. This benchmark uses real SHA-256d headers."
+  }
+}

@@ -35,6 +35,7 @@ from hyba_genesis_api.api import (  # noqa: E402
     mining,
     mining_jobs,
     mining_ops,
+    mining_production,
     misc,
     pool_management,
     products,
@@ -160,6 +161,7 @@ app.include_router(intelligence.router)
 app.include_router(mining.router)
 app.include_router(mining_jobs.router)
 app.include_router(mining_ops.router)
+app.include_router(mining_production.router)
 app.include_router(security.router)
 app.include_router(misc.router)
 app.include_router(ai.router)

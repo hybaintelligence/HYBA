@@ -1,0 +1,42 @@
+{
+  "aggregate": {
+    "uniform_random": {
+      "mean_hits": 199.2,
+      "mean_khs": 789.1836275960684,
+      "mean_overhead": 1.0,
+      "mean_first_hit": 177.4,
+      "trials_with_hit": 5
+    },
+    "sequential": {
+      "mean_hits": 203.2,
+      "mean_khs": 1395.6521579973466,
+      "mean_overhead": 0.5654853685377159,
+      "mean_first_hit": 197.6,
+      "trials_with_hit": 5
+    },
+    "phi_tiled": {
+      "mean_hits": 192.2,
+      "mean_khs": 1265.1658116440647,
+      "mean_overhead": 0.6238038746270769,
+      "mean_first_hit": 328.6,
+      "trials_with_hit": 5
+    },
+    "fibonacci_tiled": {
+      "mean_hits": 192.8,
+      "mean_khs": 1321.6070262855783,
+      "mean_overhead": 0.5972782179856899,
+      "mean_first_hit": 214.8,
+      "trials_with_hit": 5
+    },
+    "phi_tiled_filtered": {
+      "mean_hits": 203.2,
+      "mean_khs": 692.3949024644528,
+      "mean_overhead": 1.1402670551729424,
+      "mean_first_hit": 199.2,
+      "trials_with_hit": 5
+    }
+  },
+  "target_hex": "00ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+  "iterations": 50000,
+  "trials": 5
+}

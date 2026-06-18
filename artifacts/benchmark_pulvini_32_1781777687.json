@@ -1,0 +1,28 @@
+{
+  "benchmark": "pulvini_32_solvers_vs_brute_force",
+  "config": {
+    "n_solvers": 32,
+    "sector_size": 134217728,
+    "phi_compression": 1.86,
+    "cache_bytes_per_solver": 80,
+    "compression_ratio": 134217728.0,
+    "fits_l3": true
+  },
+  "summary": {
+    "brute_force_sequential": {
+      "mean_hits": 1286.0,
+      "mean_khs": 1418.3526895764483,
+      "vs_brute_force": 1.0
+    },
+    "pulvini_32_serial": {
+      "mean_hits": 1217.0,
+      "mean_khs": 1331.3558876285217,
+      "vs_brute_force": 0.938663491395849
+    },
+    "pulvini_32_solvers": {
+      "mean_hits": 1217.0,
+      "mean_khs": 1329.0970018187695,
+      "vs_brute_force": 0.9370708791870854
+    }
+  }
+}
