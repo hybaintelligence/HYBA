@@ -6,6 +6,7 @@ from pythia_mining.pool_profiles import (
     build_profile,
     default_pool_config,
     load_pool_profiles,
+    order_profiles,
     split_pool_url_credentials,
     validate_pool_config,
 )

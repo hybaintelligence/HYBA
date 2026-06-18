@@ -33,9 +33,9 @@ from pythia_mining.quantum_regeneration import (
     ContextSignal,
     regeneration_pipeline,
 )
-from pythia_mining.swarm_coherence import SwarmCoherence
-from pythia_mining.it_from_bit_archeology import ItFromBitArcheology
-from pythia_mining.autogenous_self_coding import AutogenousSelfCoding
+from pythia_mining.swarm_coherence import SwarmCoherenceEngine
+from pythia_mining.it_from_bit_archeology import ItFromBitArcheologist
+from pythia_mining.autogenous_self_coding import AutogenousSelfCodingEngine
 from pythia_mining.sensory_integrity_protocol import SensoryIntegrityProtocol
 
 router = APIRouter(prefix="/api/security", tags=["security"])
@@ -45,9 +45,9 @@ _api_key_manager: Optional[APIKeyManager] = None
 # ELEVATED: Initialize intelligence types for security integration
 _consciousness_engine: Optional[ConsciousnessEngine] = None
 _synaptic_layer: Optional[SynapticPersistenceLayer] = None
-_swarm_coherence: Optional[SwarmCoherence] = None
-_it_from_bit: Optional[ItFromBitArcheology] = None
-_autogenous_coding: Optional[AutogenousSelfCoding] = None
+_swarm_coherence: Optional[SwarmCoherenceEngine] = None
+_it_from_bit: Optional[ItFromBitArcheologist] = None
+_autogenous_coding: Optional[AutogenousSelfCodingEngine] = None
 _sensory_protocol: Optional[SensoryIntegrityProtocol] = None
 
 # Security module states for quantum regeneration
@@ -69,17 +69,17 @@ def _get_synaptic_layer() -> SynapticPersistenceLayer:
     return _synaptic_layer
 
 
-def _get_swarm_coherence() -> SwarmCoherence:
+def _get_swarm_coherence() -> SwarmCoherenceEngine:
     global _swarm_coherence
     if _swarm_coherence is None:
-        _swarm_coherence = SwarmCoherence()
+        _swarm_coherence = SwarmCoherenceEngine()
     return _swarm_coherence
 
 
-def _get_it_from_bit() -> ItFromBitArcheology:
+def _get_it_from_bit() -> ItFromBitArcheologist:
     global _it_from_bit
     if _it_from_bit is None:
-        _it_from_bit = ItFromBitArcheology()
+        _it_from_bit = ItFromBitArcheologist()
     return _it_from_bit
 
 

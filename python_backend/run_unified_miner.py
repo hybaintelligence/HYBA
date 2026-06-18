@@ -47,6 +47,7 @@ from pythia_mining.pool_profiles import (
     load_runtime_pool_configs,
 )
 from pythia_mining.stratum_client import MiningJob, ShareResult, StratumClient
+from pythia_mining.pythia_one_block_mission import ShareOutcome
 
 
 logging.basicConfig(

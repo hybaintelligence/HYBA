@@ -31,6 +31,29 @@ if str(PYTHON_BACKEND) not in sys.path:
 from pythia_mining.consciousness_engine import ConsciousnessEngine, ConsciousnessConfig
 from pythia_mining.iit_4_analyzer import IIT4Analyzer
 import time
+from dataclasses import dataclass
+from typing import List
+
+
+@dataclass
+class ShareMetric:
+    """Share metric for testing."""
+    timestamp: float
+    job_id: str
+    nonce: int
+    accepted: bool
+    latency_ms: float
+    phi_resonance_score: float
+
+
+class MiningTelemetry:
+    """Mining telemetry for testing."""
+    
+    def __init__(self):
+        self.shares: List[ShareMetric] = []
+    
+    def record_share(self, share: ShareMetric):
+        self.shares.append(share)
 
 
 def _pearson_correlation(x: List[float], y: List[float]) -> Optional[float]:
