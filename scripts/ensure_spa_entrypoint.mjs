@@ -4,7 +4,7 @@ import { resolve } from 'node:path';
 
 const distServerPath = resolve(process.cwd(), 'dist/server.mjs');
 
-const productionRootRoutePattern = /app\.get\("\/",\s*async\s*\([^)]*\)\s*=>\s*\{\s*if\s*\(!CONFIG\.isProduction\)\s*return\s*next\(\);\s*noStore\(res\);\s*res\.json\(\{\s*status:\s*"online",\s*service:\s*"HYBA Secure Bridge",\s*version:\s*"2\.1\.0",\s*backendReachable:\s*await isBackendReachable\(\),\s*timestamp:\s*new Date\(\)\.toISOString\(\)\s*\}\);\s*\}\);/s;
+const productionRootRoutePattern = /app\.get\("\/",\s*async\s*\([^)]*\)\s*=>\s*\{\s*if\s*\(!CONFIG\.isProduction\)\s*return\s*next\(\);\s*noStore\(res\);\s*res\.json\(\{\s*status:\s*"online",\s*service:\s*"HYBA Secure Bridge",\s*version:\s*"2\.1\.0",\s*backendReachable:\s*await isBackendReachable\(\),\s*timestamp:\s*(?:\/\*[^*]*\*\/\s*)?new Date\(\)\.toISOString\(\)\s*\}\);\s*\}\);/s;
 
 const replacement = `app.get("/bridge/status", async (_req, res) => {
     noStore(res);
