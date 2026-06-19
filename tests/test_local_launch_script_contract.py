@@ -15,14 +15,17 @@ def test_setup_and_start_is_root_anchored_and_strict() -> None:
     assert 'if [[ ! -f "requirements.txt" || ! -f "package.json" || ! -d "python_backend" ]]' in script
 
 
-def test_setup_and_start_runs_gate_before_runtime_processes() -> None:
+def test_setup_and_start_runs_bootstrap_and_gate_before_runtime_processes() -> None:
     script = (ROOT / "scripts" / "setup_and_start.sh").read_text(encoding="utf-8")
 
-    gate_index = script.index("run_sovereign_gate")
+    bootstrap_call_index = script.index("run_pythia_bootstrap", script.index("main()"))
+    gate_call_index = script.index("run_sovereign_gate", script.index("main()"))
     backend_index = script.index("Starting FastAPI backend")
     frontend_index = script.index("Starting frontend/bridge")
 
-    assert gate_index < backend_index < frontend_index
+    assert bootstrap_call_index < gate_call_index < backend_index < frontend_index
+    assert "python scripts/pythia_autonomous_bootstrap.py" in script
+    assert "pythia_autonomous_bootstrap.json" in script
     assert "python scripts/mining_autonomous_sovereign_gate.py --mode" in script
     assert "Autonomous sovereign gate returned NO-GO" in script
     assert "Autonomous sovereign gate returned GO" in script
@@ -55,3 +58,15 @@ def test_dev_server_uses_repository_root_and_backend_url_contract() -> None:
     assert "app.use('/api'" in script
     assert "app.use('/health'" in script
     assert "fs: { strict: false, allow: [projectRoot] }" in script
+
+
+def test_pythia_bootstrap_script_records_self_healing_and_self_optimising_evidence() -> None:
+    script = (ROOT / "scripts" / "pythia_autonomous_bootstrap.py").read_text(encoding="utf-8")
+
+    assert "HYBA_PYTHIA_AUTONOMOUS_BOOTSTRAP_V1" in script
+    assert "controller.set_autonomy_level(level)" in script
+    assert "await controller.seek_improvement()" in script
+    assert "stale_state_lock_recoveries" in script
+    assert "degradation_events" in script
+    assert "reflexive_cycle_count" in script
+    assert "proposal_acceptance_rate" in script
