@@ -4,8 +4,13 @@ tier: HYPOTHETICAL
 evidence_file: docs/evidence/claim_evidence_manifest.json
 evidence_claim_id: pythia_validation_tier_guardrail
 audience: internal_review_only
+channel: repository_markdown_source
 owner: HYBA evidence governance
 last_reviewed: 2026-06-19
+review_status: internal_template_only
+approved_by: HYBA evidence governance
+external_distribution: false
+distribution_boundary: "Template only. Not approved for external distribution."
 ---
 
 # External Claim Material Template
@@ -18,7 +23,17 @@ Every investor, sovereign, partner, media, recruitment, or public-positioning do
 - `PROTOTYPE_VALIDATED` — code runs on disclosed data with dependency/skipped-test status, but no production-comparable claim is made.
 - `HYPOTHETICAL` — research candidate, roadmap, or unvalidated product idea.
 
-`evidence_claim_id` must refer to a claim in `docs/evidence/claim_evidence_manifest.json` or the document remains internal-only.
+`evidence_claim_id` must refer to a claim in `docs/evidence/claim_evidence_manifest.json` or another declared manifest in `evidence_file`. The declared tier must exactly match the manifest tier.
+
+## Required approval fields
+
+Before a markdown source is exported to PPTX, PDF, email, HTML, or DOCX, set:
+
+- `channel` — where the communication will be used, such as `investor_email`, `sovereign_pitch`, `partner_deck`, or `public_post`.
+- `review_status` — must be `approved_for_external_use` for anything under `docs/external_materials/`.
+- `approved_by` — the accountable human reviewer or governance role.
+- `external_distribution` — must be `true` only after approval.
+- `distribution_boundary` — the exact audience, channel, and limit of the approved communication.
 
 ## Required claim boundary
 
