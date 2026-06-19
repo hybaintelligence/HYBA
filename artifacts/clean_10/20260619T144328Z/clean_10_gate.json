@@ -1,5 +1,5 @@
 {
-  "generated_at_utc": "2026-06-19T14:49:06.067691+00:00",
+  "generated_at_utc": "2026-06-19T14:46:13.532030+00:00",
   "next_actions": [
     "Do not describe the repository as clean until required failures are zero.",
     "Open the referenced per-command logs, fix the first failing command, and rerun this gate."
@@ -20,8 +20,8 @@
         "run",
         "python:env:check"
       ],
-      "duration_seconds": 0.304667,
-      "log_path": "artifacts/clean_10/20260619T144620Z/python_backend_environment.log",
+      "duration_seconds": 0.312458,
+      "log_path": "artifacts/clean_10/20260619T144328Z/python_backend_environment.log",
       "name": "python_backend_environment",
       "passed": true,
       "returncode": 0
@@ -34,8 +34,8 @@
         "tests/test_review_gap_closure_matrix.py",
         "-q"
       ],
-      "duration_seconds": 0.24,
-      "log_path": "artifacts/clean_10/20260619T144620Z/review_gap_closure_matrix.log",
+      "duration_seconds": 0.240601,
+      "log_path": "artifacts/clean_10/20260619T144328Z/review_gap_closure_matrix.log",
       "name": "review_gap_closure_matrix",
       "passed": true,
       "returncode": 0
@@ -48,8 +48,8 @@
         "tests/test_agent3_quantum_solvers.py",
         "-q"
       ],
-      "duration_seconds": 0.390312,
-      "log_path": "artifacts/clean_10/20260619T144620Z/quantum_solver_job_plumbing.log",
+      "duration_seconds": 0.433846,
+      "log_path": "artifacts/clean_10/20260619T144328Z/quantum_solver_job_plumbing.log",
       "name": "quantum_solver_job_plumbing",
       "passed": true,
       "returncode": 0
@@ -62,8 +62,8 @@
         "tests/test_hendrix_phi_solver_contracts.py",
         "-q"
       ],
-      "duration_seconds": 0.381226,
-      "log_path": "artifacts/clean_10/20260619T144620Z/hendrix_phi_solver_contracts.log",
+      "duration_seconds": 0.362245,
+      "log_path": "artifacts/clean_10/20260619T144328Z/hendrix_phi_solver_contracts.log",
       "name": "hendrix_phi_solver_contracts",
       "passed": true,
       "returncode": 0
@@ -76,8 +76,8 @@
         "tests/test_hendrix_phi_performance_benchmark.py",
         "-q"
       ],
-      "duration_seconds": 1.836462,
-      "log_path": "artifacts/clean_10/20260619T144620Z/hendrix_job_backed_benchmarks.log",
+      "duration_seconds": 1.88365,
+      "log_path": "artifacts/clean_10/20260619T144328Z/hendrix_job_backed_benchmarks.log",
       "name": "hendrix_job_backed_benchmarks",
       "passed": true,
       "returncode": 0
@@ -92,11 +92,11 @@
         "tests/test_iit_phi_mining_correlation.py",
         "-q"
       ],
-      "duration_seconds": 0.489835,
-      "log_path": "artifacts/clean_10/20260619T144620Z/iit_phi_proxy_contracts.log",
+      "duration_seconds": 0.467691,
+      "log_path": "artifacts/clean_10/20260619T144328Z/iit_phi_proxy_contracts.log",
       "name": "iit_phi_proxy_contracts",
       "passed": false,
-      "returncode": 1
+      "returncode": 2
     },
     {
       "command": [
@@ -106,8 +106,8 @@
         "tests/test_api_posture_serialization.py",
         "-q"
       ],
-      "duration_seconds": 0.386158,
-      "log_path": "artifacts/clean_10/20260619T144620Z/api_posture_serialization.log",
+      "duration_seconds": 0.407413,
+      "log_path": "artifacts/clean_10/20260619T144328Z/api_posture_serialization.log",
       "name": "api_posture_serialization",
       "passed": true,
       "returncode": 0
@@ -120,8 +120,8 @@
         "tests/test_backend_mining_api.py",
         "-q"
       ],
-      "duration_seconds": 0.874172,
-      "log_path": "artifacts/clean_10/20260619T144620Z/backend_mining_api_contracts.log",
+      "duration_seconds": 0.819922,
+      "log_path": "artifacts/clean_10/20260619T144328Z/backend_mining_api_contracts.log",
       "name": "backend_mining_api_contracts",
       "passed": false,
       "returncode": 2
@@ -134,8 +134,8 @@
         "tests/test_auth_jwt_contracts.py",
         "-q"
       ],
-      "duration_seconds": 0.518913,
-      "log_path": "artifacts/clean_10/20260619T144620Z/auth_jwt_contracts.log",
+      "duration_seconds": 0.543727,
+      "log_path": "artifacts/clean_10/20260619T144328Z/auth_jwt_contracts.log",
       "name": "auth_jwt_contracts",
       "passed": true,
       "returncode": 0
@@ -148,8 +148,8 @@
         "tests/test_runtime_reflexive_introspection.py",
         "-q"
       ],
-      "duration_seconds": 0.849792,
-      "log_path": "artifacts/clean_10/20260619T144620Z/runtime_reflexive_introspection.log",
+      "duration_seconds": 0.89344,
+      "log_path": "artifacts/clean_10/20260619T144328Z/runtime_reflexive_introspection.log",
       "name": "runtime_reflexive_introspection",
       "passed": false,
       "returncode": 1
@@ -162,8 +162,8 @@
         "tests/test_evidence_boundary_report.py",
         "-q"
       ],
-      "duration_seconds": 0.248047,
-      "log_path": "artifacts/clean_10/20260619T144620Z/evidence_boundary_report.log",
+      "duration_seconds": 0.254337,
+      "log_path": "artifacts/clean_10/20260619T144328Z/evidence_boundary_report.log",
       "name": "evidence_boundary_report",
       "passed": true,
       "returncode": 0
@@ -176,8 +176,8 @@
         "tests/test_adaptive_capability_registry.py",
         "-q"
       ],
-      "duration_seconds": 0.233357,
-      "log_path": "artifacts/clean_10/20260619T144620Z/adaptive_capability_registry.log",
+      "duration_seconds": 0.236089,
+      "log_path": "artifacts/clean_10/20260619T144328Z/adaptive_capability_registry.log",
       "name": "adaptive_capability_registry",
       "passed": true,
       "returncode": 0
@@ -190,8 +190,8 @@
         "tests/test_claim_evidence_manifest.py",
         "-q"
       ],
-      "duration_seconds": 0.233461,
-      "log_path": "artifacts/clean_10/20260619T144620Z/claim_evidence_manifest.log",
+      "duration_seconds": 0.226479,
+      "log_path": "artifacts/clean_10/20260619T144328Z/claim_evidence_manifest.log",
       "name": "claim_evidence_manifest",
       "passed": true,
       "returncode": 0
@@ -204,8 +204,8 @@
         "tests/test_prediction_endpoint.py",
         "-q"
       ],
-      "duration_seconds": 0.505971,
-      "log_path": "artifacts/clean_10/20260619T144620Z/prediction_endpoint_contracts.log",
+      "duration_seconds": 0.48776,
+      "log_path": "artifacts/clean_10/20260619T144328Z/prediction_endpoint_contracts.log",
       "name": "prediction_endpoint_contracts",
       "passed": true,
       "returncode": 0
@@ -218,8 +218,8 @@
         "tests/test_pool_profile_primitives.py",
         "-q"
       ],
-      "duration_seconds": 0.323127,
-      "log_path": "artifacts/clean_10/20260619T144620Z/pool_profile_primitives.log",
+      "duration_seconds": 0.317258,
+      "log_path": "artifacts/clean_10/20260619T144328Z/pool_profile_primitives.log",
       "name": "pool_profile_primitives",
       "passed": true,
       "returncode": 0
@@ -232,8 +232,8 @@
         "tests/test_mining_autonomous_sovereign_gate.py",
         "-q"
       ],
-      "duration_seconds": 0.234235,
-      "log_path": "artifacts/clean_10/20260619T144620Z/autonomous_sovereign_gate_contracts.log",
+      "duration_seconds": 0.224646,
+      "log_path": "artifacts/clean_10/20260619T144328Z/autonomous_sovereign_gate_contracts.log",
       "name": "autonomous_sovereign_gate_contracts",
       "passed": true,
       "returncode": 0
@@ -246,8 +246,8 @@
         "tests/test_local_launch_script_contract.py",
         "-q"
       ],
-      "duration_seconds": 0.240745,
-      "log_path": "artifacts/clean_10/20260619T144620Z/local_launch_contracts.log",
+      "duration_seconds": 0.223138,
+      "log_path": "artifacts/clean_10/20260619T144328Z/local_launch_contracts.log",
       "name": "local_launch_contracts",
       "passed": true,
       "returncode": 0
@@ -261,8 +261,8 @@
         "tests/test_security_swarm_routes.test.ts",
         "tests/test_consciousness_behavioral.test.ts"
       ],
-      "duration_seconds": 0.769115,
-      "log_path": "artifacts/clean_10/20260619T144620Z/frontend_bridge_and_security_contracts.log",
+      "duration_seconds": 0.732827,
+      "log_path": "artifacts/clean_10/20260619T144328Z/frontend_bridge_and_security_contracts.log",
       "name": "frontend_bridge_and_security_contracts",
       "passed": true,
       "returncode": 0
@@ -273,8 +273,8 @@
         "run",
         "test:frontend:unit"
       ],
-      "duration_seconds": 7.972573,
-      "log_path": "artifacts/clean_10/20260619T144620Z/frontend_unit_gate.log",
+      "duration_seconds": 7.982541,
+      "log_path": "artifacts/clean_10/20260619T144328Z/frontend_unit_gate.log",
       "name": "frontend_unit_gate",
       "passed": false,
       "returncode": 1
@@ -285,8 +285,8 @@
         "run",
         "test:backend"
       ],
-      "duration_seconds": 146.450754,
-      "log_path": "artifacts/clean_10/20260619T144620Z/backend_gate.log",
+      "duration_seconds": 145.892066,
+      "log_path": "artifacts/clean_10/20260619T144328Z/backend_gate.log",
       "name": "backend_gate",
       "passed": false,
       "returncode": 1
@@ -297,8 +297,8 @@
         "run",
         "build"
       ],
-      "duration_seconds": 1.756559,
-      "log_path": "artifacts/clean_10/20260619T144620Z/build_gate.log",
+      "duration_seconds": 1.68084,
+      "log_path": "artifacts/clean_10/20260619T144328Z/build_gate.log",
       "name": "build_gate",
       "passed": true,
       "returncode": 0

@@ -237,4 +237,56 @@ class CoxeterTopology:
         self._group_order = self._compute_perturbed_group_order()
 
 
-__all__ = ['CoxeterTopology']
+# PULVINI Operator Topology Constants
+# -----------------------------------------------------------------
+# These constants define the adjacency structure for the 32-lane PULVINI
+# manifold, following the Coxeter A5 group theory and dodecahedral
+# vertex configuration. The adjacency map encodes which lanes can
+# communicate directly based on geometric proximity in the dodecahedron.
+
+# Number of nodes in the PULVINI manifold (32 lanes)
+NUM_NODES = 32
+
+# Adjacency map: dictionary mapping node index to dict with "d" (direct) and "i" (indirect) neighbor lists
+# Constructed from dodecahedral vertex connectivity extended to 32 nodes
+# using the golden ratio (φ) scaling pattern
+# Format: Dict[int, Dict[str, List[int]]] where "d" = direct neighbors, "i" = indirect neighbors
+ADJACENCY_MAP = {
+    # Core dodecahedron vertices (20 nodes) - pentagonal connectivity
+    0: {"d": [1, 4, 5, 9, 14], "i": []},
+    1: {"d": [0, 2, 6, 10, 15], "i": []},
+    2: {"d": [1, 3, 7, 11, 16], "i": []},
+    3: {"d": [2, 4, 8, 12, 17], "i": []},
+    4: {"d": [0, 3, 9, 13, 18], "i": []},
+    5: {"d": [0, 6, 10, 14, 19], "i": []},
+    6: {"d": [1, 5, 7, 15, 20], "i": []},
+    7: {"d": [2, 6, 8, 16, 21], "i": []},
+    8: {"d": [3, 7, 9, 17, 22], "i": []},
+    9: {"d": [0, 4, 8, 18, 23], "i": []},
+    10: {"d": [1, 5, 11, 15, 24], "i": []},
+    11: {"d": [2, 10, 12, 16, 25], "i": []},
+    12: {"d": [3, 11, 13, 17, 26], "i": []},
+    13: {"d": [4, 9, 12, 18, 27], "i": []},
+    14: {"d": [0, 5, 15, 19, 24], "i": []},
+    15: {"d": [1, 6, 10, 14, 20], "i": []},
+    16: {"d": [2, 7, 11, 17, 21], "i": []},
+    17: {"d": [3, 8, 12, 16, 22], "i": []},
+    18: {"d": [4, 9, 13, 19, 23], "i": []},
+    19: {"d": [5, 14, 18, 20, 24], "i": []},
+    # Extended nodes (20-31) - φ-scaled connectivity
+    20: {"d": [6, 15, 19, 21, 25], "i": []},
+    21: {"d": [7, 16, 20, 22, 26], "i": []},
+    22: {"d": [8, 17, 21, 23, 27], "i": []},
+    23: {"d": [9, 13, 18, 22, 28], "i": []},
+    24: {"d": [10, 14, 19, 25, 29], "i": []},
+    25: {"d": [11, 16, 20, 24, 30], "i": []},
+    26: {"d": [12, 17, 21, 27, 31], "i": []},
+    27: {"d": [13, 18, 22, 26, 28], "i": []},
+    28: {"d": [14, 23, 27, 29, 31], "i": []},
+    29: {"d": [15, 19, 24, 28, 30], "i": []},
+    30: {"d": [16, 20, 25, 29, 31], "i": []},
+    31: {"d": [17, 21, 26, 28, 30], "i": []},
+}
+
+
+__all__ = ['CoxeterTopology', 'ADJACENCY_MAP', 'NUM_NODES']

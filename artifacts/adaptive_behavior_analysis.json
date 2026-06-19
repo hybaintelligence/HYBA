@@ -1,8 +1,8 @@
 {
   "measurements": {
     "feedback_loops": {
-      "total": 2311,
-      "files": 179,
+      "total": 2388,
+      "files": 185,
       "top_files": [
         {
           "file": "autonomous_mining_controller.py",
@@ -1913,21 +1913,21 @@
       ]
     },
     "optimizations": {
-      "total": 601,
-      "files": 64
+      "total": 609,
+      "files": 66
     },
     "memory": {
-      "total": 1567,
-      "files": 109,
+      "total": 1657,
+      "files": 113,
       "by_type": {
-        "memory_reference": 620,
-        "caching": 114,
-        "history_tracking": 507,
+        "memory_reference": 662,
+        "caching": 146,
+        "history_tracking": 524,
         "retention": 71,
         "ledger_state": 196,
         "memory_storage": 6,
         "manifest_state": 46,
-        "experience_accumulation": 7
+        "experience_accumulation": 6
       }
     },
     "self_modification": {

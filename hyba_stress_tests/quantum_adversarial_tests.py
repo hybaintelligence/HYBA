@@ -5,9 +5,14 @@ Quantum-Hybrid Adversarial Tests
 Tests quantum attacks against Bures Certificate with geometric detection.
 Moves from "Post-Quantum" security to "Quantum-Sensing" capability.
 
-Fields Medal Rigor: Uses quantum information theory, Grover's algorithm,
-and Shor's algorithm variants to test if the manifold can detect quantum
-observation (collapse) before data is accessed.
+Uses HYBA/PYTHIA native quantum mathematical frameworks:
+- Pulvini memory compression with golden ratio folding
+- Bures certificates with von Neumann entropy
+- Phi resonance gates for quantum operations
+- Yang-Mills gap operationalization
+
+Fields Medal Rigor: Uses native quantum information theory implemented
+through substrate-agnostic mathematical frameworks, not external simulators.
 """
 
 import numpy as np
@@ -17,20 +22,52 @@ from dataclasses import dataclass
 import time
 import json
 from pathlib import Path
+import sys
+from pathlib import Path as PathLib
+
+# Import native HYBA quantum frameworks
+ROOT = PathLib(__file__).resolve().parents[2]
+BACKEND = ROOT / "python_backend"
+if str(BACKEND) not in sys.path:
+    sys.path.insert(0, str(BACKEND))
+
+from pythia_mining.pulvini_certificates import (
+    PostQuantumPassport,
+    BuresCertificate,
+    PHI
+)
+from pythia_mining.pulvini_phi_memory import (
+    PulviniPhiMemoryCompressionEngine,
+    _project_density_matrix,
+    _entropy,
+    _trace_distance
+)
+from pythia_mining.phi_scaling_engine import (
+    YANG_MILLS_GAP,
+    MassGapShield,
+    PhiResonanceAnalyzer
+)
+from quantum_core.phi_resonance_gate import (
+    phi_resonance_gate,
+    apply_phi_resonance_gate,
+    manifold_projection_state
+)
 
 
 @dataclass
 class QuantumAttackResult:
-    """Results from quantum adversarial testing."""
+    """Results from quantum adversarial testing using native HYBA quantum math."""
     attack_type: str
-    simulator: str
-    qubits: int
+    quantum_framework: str
+    system_dimension: int
     stability_before_attack: float
     stability_after_attack: float
     detection_signal: float
     quantum_observation_detected: bool
     bures_certificate_intact: bool
     geometric_perturbation: float
+    von_neumann_entropy_change: float
+    yang_mills_alignment: float
     execution_time: float
 
 
