@@ -1,4 +1,4 @@
-from __future__ import annotations
+nect backend and frintefrom __future__ import annotations
 
 from pathlib import Path
 
@@ -63,10 +63,7 @@ def test_dev_server_uses_repository_root_and_backend_url_contract() -> None:
 def test_pythia_bootstrap_script_records_self_healing_and_self_optimising_evidence() -> None:
     script = (ROOT / "scripts" / "pythia_autonomous_bootstrap.py").read_text(encoding="utf-8")
 
-    assert any(
-        tag in script
-        for tag in ["HYBA_PYTHIA_AUTONOMOUS_BOOTSTRAP_V1", "HYBA_PYTHIA_AUTONOMOUS_BOOTSTRAP_V2"]
-    )
+    assert "HYBA_PYTHIA_AUTONOMOUS_BOOTSTRAP_V2" in script
     assert "controller.set_autonomy_level(level)" in script
     assert "await controller.seek_improvement()" in script
     assert "stale_state_lock_recoveries" in script

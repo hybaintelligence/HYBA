@@ -1,0 +1,23 @@
+{
+  "evidence_type": "live_session_authenticated_job_received",
+  "timestamp": "2026-06-19T15:58:49Z",
+  "pool": "btc.viabtc.io:3333",
+  "worker": "PYTHIA.001",
+  "authorized": true,
+  "extranonce1": "75c5fae5",
+  "extranonce2_size": 8,
+  "job_id": "7d4e",
+  "job_prevhash": "6288b28c379c7c1cf39b5242e975610d5be40d0f0000ff270000000000000000",
+  "job_nbits": "170240c3",
+  "job_ntime": "6a35671f",
+  "job_merkle_branch_count": 2,
+  "difficulty": 16384.0,
+  "pool_target_hex": "0x3fffc000000000000000000000000000000000000000000000000",
+  "connect_ms": 107.4,
+  "nonces_searched": 4000000,
+  "elapsed_seconds": 12.972,
+  "hashrate_hps": 308362.0,
+  "workers": 8,
+  "share_found": false,
+  "audit_note": "Authenticated + job received. Share requires ~70,368,744,177,664 hashes on average. Python CPU at 308.4kH/s \u2014 ASIC required for practical share finding at this difficulty."
+}

@@ -1,0 +1,73 @@
+{
+  "benchmark_suite": "Integration",
+  "timestamp": 1781884912.817009,
+  "iterations": 10,
+  "results": [
+    {
+      "operation": "passport_to_audit_log",
+      "iterations": 10,
+      "total_time_ms": 0.20533401402644813,
+      "avg_time_ms": 0.020533401402644813,
+      "min_time_ms": 0.014582998119294643,
+      "max_time_ms": 0.059042002249043435,
+      "throughput_ops_per_sec": 48701.137253918125,
+      "metadata": {
+        "final_log_size": 10
+      }
+    },
+    {
+      "operation": "search_to_causal",
+      "iterations": 10,
+      "total_time_ms": 0.16437500016763806,
+      "avg_time_ms": 0.016437500016763806,
+      "min_time_ms": 0.011791998986154795,
+      "max_time_ms": 0.037165998946875334,
+      "throughput_ops_per_sec": 60836.5018390965,
+      "metadata": {
+        "explanation_quality": "high"
+      }
+    },
+    {
+      "operation": "memory_routing",
+      "iterations": 10,
+      "total_time_ms": 0.28625000413740054,
+      "avg_time_ms": 0.028625000413740054,
+      "min_time_ms": 0.02141699951607734,
+      "max_time_ms": 0.06454200047301129,
+      "throughput_ops_per_sec": 34934.497311657615,
+      "metadata": {
+        "final_weight": 3.0000000000000018
+      }
+    },
+    {
+      "operation": "end_to_end_workflow",
+      "iterations": 10,
+      "total_time_ms": 0.5626260171993636,
+      "avg_time_ms": 0.056262601719936356,
+      "min_time_ms": 0.04666599852498621,
+      "max_time_ms": 0.10245799785479903,
+      "throughput_ops_per_sec": 17773.795904032202,
+      "metadata": {
+        "workflow_steps": 5,
+        "log_size": 20
+      }
+    },
+    {
+      "operation": "module_interoperability",
+      "iterations": 10,
+      "total_time_ms": 0.6096669967519119,
+      "avg_time_ms": 0.060966699675191194,
+      "min_time_ms": 0.03995899896835908,
+      "max_time_ms": 0.19016699661733583,
+      "throughput_ops_per_sec": 16402.396805594577,
+      "metadata": {
+        "modules_used": 3
+      }
+    }
+  ],
+  "summary": {
+    "total_operations": 5,
+    "total_time_ms": 1.8282520322827622,
+    "avg_throughput": 35729.6658228598
+  }
+}

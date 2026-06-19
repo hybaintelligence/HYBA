@@ -1,0 +1,76 @@
+{
+  "benchmark_suite": "CausalAttributionEngine",
+  "timestamp": 1781884773.546242,
+  "iterations": 10,
+  "results": [
+    {
+      "operation": "hotspot_ranking",
+      "iterations": 10,
+      "total_time_ms": 0.01087499549612403,
+      "avg_time_ms": 0.001087499549612403,
+      "min_time_ms": 0.0004999965312890708,
+      "max_time_ms": 0.004082998202648014,
+      "throughput_ops_per_sec": 919540.610712355,
+      "metadata": {
+        "graph_type": "mining",
+        "num_hotspots": 0
+      }
+    },
+    {
+      "operation": "counterfactual_coverage",
+      "iterations": 10,
+      "total_time_ms": 0.01620799594093114,
+      "avg_time_ms": 0.0016207995940931141,
+      "min_time_ms": 0.0011660013115033507,
+      "max_time_ms": 0.003749999450519681,
+      "throughput_ops_per_sec": 616979.4240104866,
+      "metadata": {
+        "coverage_ratio": 1.0
+      }
+    },
+    {
+      "operation": "explanation_generation",
+      "iterations": 10,
+      "total_time_ms": 0.029127011657692492,
+      "avg_time_ms": 0.002912701165769249,
+      "min_time_ms": 0.002458000381011516,
+      "max_time_ms": 0.005083005817141384,
+      "throughput_ops_per_sec": 343323.9261728034,
+      "metadata": {
+        "explanation_quality": "high",
+        "num_hotspots": 0
+      }
+    },
+    {
+      "operation": "graph_traversal",
+      "iterations": 10,
+      "total_time_ms": 0.002916007360909134,
+      "avg_time_ms": 0.0002916007360909134,
+      "min_time_ms": 0.00020800507627427578,
+      "max_time_ms": 0.0004579997039400041,
+      "throughput_ops_per_sec": 3429346.624448254,
+      "metadata": {
+        "graph_type": "mining",
+        "num_nodes": 3
+      }
+    },
+    {
+      "operation": "domain_specific_graphs",
+      "iterations": 10,
+      "total_time_ms": 0.006416004907805473,
+      "avg_time_ms": 0.0006416004907805473,
+      "min_time_ms": 0.0004590037860907614,
+      "max_time_ms": 0.00145800004247576,
+      "throughput_ops_per_sec": 1558602.2990466189,
+      "metadata": {
+        "graph_type": "security_swarm",
+        "num_hotspots": 0
+      }
+    }
+  ],
+  "summary": {
+    "total_operations": 5,
+    "total_time_ms": 0.06554201536346227,
+    "avg_throughput": 1373558.5768781037
+  }
+}

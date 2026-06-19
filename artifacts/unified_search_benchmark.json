@@ -1,0 +1,85 @@
+{
+  "benchmark_suite": "UnifiedSearchKernel",
+  "timestamp": 1781884815.706988,
+  "iterations": 10,
+  "results": [
+    {
+      "operation": "search_performance",
+      "iterations": 10,
+      "total_time_ms": 0.10266800381941721,
+      "avg_time_ms": 0.01026680038194172,
+      "min_time_ms": 0.007791997632011771,
+      "max_time_ms": 0.02437500370433554,
+      "throughput_ops_per_sec": 97401.32882673948,
+      "metadata": {
+        "budget": 10,
+        "domain": "mining"
+      }
+    },
+    {
+      "operation": "warm_cache",
+      "iterations": 10,
+      "total_time_ms": 0.0264570044237189,
+      "avg_time_ms": 0.00264570044237189,
+      "min_time_ms": 0.0022079984773881733,
+      "max_time_ms": 0.004292000085115433,
+      "throughput_ops_per_sec": 377971.7401050486,
+      "metadata": {
+        "cache_hit": "warm"
+      }
+    },
+    {
+      "operation": "cold_cache",
+      "iterations": 10,
+      "total_time_ms": 0.07950000872369856,
+      "avg_time_ms": 0.007950000872369856,
+      "min_time_ms": 0.0077079967013560236,
+      "max_time_ms": 0.008875002095010132,
+      "throughput_ops_per_sec": 125786.14971923959,
+      "metadata": {
+        "cache_hit": "cold"
+      }
+    },
+    {
+      "operation": "domain_specific_search",
+      "iterations": 10,
+      "total_time_ms": 0.1808760134736076,
+      "avg_time_ms": 0.01808760134736076,
+      "min_time_ms": 0.015832993085496128,
+      "max_time_ms": 0.027250003768131137,
+      "throughput_ops_per_sec": 55286.490496757564,
+      "metadata": {
+        "domain": "sat_geodesic"
+      }
+    },
+    {
+      "operation": "resonance_score",
+      "iterations": 10,
+      "total_time_ms": 0.0032069801818579435,
+      "avg_time_ms": 0.00032069801818579435,
+      "min_time_ms": 0.0002079978003166616,
+      "max_time_ms": 0.0007499984349124134,
+      "throughput_ops_per_sec": 3118198.252851866,
+      "metadata": {
+        "score": 0.9999660112501051
+      }
+    },
+    {
+      "operation": "neighbor_generation",
+      "iterations": 10,
+      "total_time_ms": 0.00329197064274922,
+      "avg_time_ms": 0.000329197064274922,
+      "min_time_ms": 0.0002079978003166616,
+      "max_time_ms": 0.0006669943104498088,
+      "throughput_ops_per_sec": 3037694.1611024546,
+      "metadata": {
+        "num_neighbors": 4
+      }
+    }
+  ],
+  "summary": {
+    "total_operations": 6,
+    "total_time_ms": 0.3959999812650494,
+    "avg_throughput": 1135389.6871836844
+  }
+}

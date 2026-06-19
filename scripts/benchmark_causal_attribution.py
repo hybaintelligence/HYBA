@@ -139,7 +139,7 @@ class CausalAttributionBenchmark:
             event = {"type": "nonce_found", "nonce": 12345}
             claim = {"route": "solver", "type": "routing_decision"}
             start = time.perf_counter()
-            counterfactual = self.mining_engine.compute_counterfactual(event, claim)
+            counterfactual = self.mining_engine.counterfactual_coverage(event, claim)
             end = time.perf_counter()
             times.append((end - start) * 1000)
 
@@ -199,7 +199,7 @@ class CausalAttributionBenchmark:
         for _ in range(self.iterations):
             event = {"type": "nonce_found", "nonce": 12345}
             start = time.perf_counter()
-            self.mining_graph.participating_nodes(event)
+            self.mining_graph.nodes_touched_by_event(event)
             end = time.perf_counter()
             times.append((end - start) * 1000)
 
