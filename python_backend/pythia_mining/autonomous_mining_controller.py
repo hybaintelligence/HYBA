@@ -1548,6 +1548,63 @@ class AutonomousMiningController:
             },
         }
 
+    async def boot_self_heal_and_optimize(self) -> Dict[str, Any]:
+        """Run the startup autonomic healing and optimisation cycle immediately.
+
+        This is the backend-boot path for PYTHIA's resident autonomy: clean any
+        stale self-state locks, evaluate the system's own phi-density, generate
+        and apply safe self-optimisation proposals, and persist the learned state
+        before the first external mining request arrives.
+        """
+        boot_started = time.time()
+        self._clean_stale_lock_on_boot()
+        before = self.get_metrics_snapshot()
+        self._log_audit_event(
+            "startup_self_healing_started",
+            {
+                "autonomy_level": self.current_autonomy_level.value,
+                "reflexive_loop_enabled": self.config.reflexive_loop_enabled,
+                "compression_drive_enabled": self.config.compression_drive_enabled,
+                "phi_density_before": before.get("phi_density"),
+            },
+            action="boot_self_heal_and_optimize",
+            outcome="started",
+        )
+        report = await self.seek_improvement()
+        self._last_reflexive_cycle = time.time()
+        after = self.get_metrics_snapshot()
+        duration_ms = round((time.time() - boot_started) * 1000.0, 3)
+        self._log_audit_event(
+            "startup_self_healing_completed",
+            {
+                "duration_ms": duration_ms,
+                "proposals_generated": report.get("proposals_generated", 0),
+                "proposals_applied": report.get("proposals_applied", 0),
+                "phi_density_after": after.get("phi_density"),
+                "stale_state_lock_recoveries": after.get("stale_state_lock_recoveries", 0),
+            },
+            action="boot_self_heal_and_optimize",
+            outcome="completed",
+            state_diff={
+                "reflexive_cycle_count": [
+                    before.get("reflexive_cycle_count"),
+                    after.get("reflexive_cycle_count"),
+                ],
+                "proposal_acceptance_rate": [
+                    before.get("proposal_acceptance_rate"),
+                    after.get("proposal_acceptance_rate"),
+                ],
+            },
+        )
+        self.record_autonomy_success()
+        return {
+            "startup_self_healing_executed": True,
+            "duration_ms": duration_ms,
+            "before": before,
+            "after": after,
+            "reflexive_report": report,
+        }
+
     # ================================================================
     # PERSISTENCE — Reflexive state survives restart
     # ================================================================

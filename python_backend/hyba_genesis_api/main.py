@@ -88,6 +88,43 @@ def _parse_cors_origins() -> List[str]:
     return origins
 
 
+async def _activate_startup_self_healing(app: FastAPI) -> None:
+    """Activate PYTHIA self-healing/self-optimising autonomy during backend boot."""
+    if os.getenv("HYBA_STARTUP_SELF_HEALING_ENABLED", "true").strip().lower() in {
+        "false",
+        "0",
+        "no",
+    }:
+        logging.info("HYBA startup self-healing disabled by HYBA_STARTUP_SELF_HEALING_ENABLED")
+        return
+
+    from hyba_genesis_api.api.unified_mining import get_engine
+
+    engine = get_engine()
+    controller = engine.autonomous_controller
+    timeout_seconds = float(os.getenv("HYBA_STARTUP_SELF_HEALING_TIMEOUT_SECONDS", "15.0"))
+    logging.info(
+        "HYBA API startup: activating PYTHIA self-healing/self-optimising cycle",
+        extra={
+            "autonomy_level": controller.current_autonomy_level.value,
+            "timeout_seconds": timeout_seconds,
+        },
+    )
+    report = await asyncio.wait_for(
+        controller.boot_self_heal_and_optimize(),
+        timeout=max(0.1, timeout_seconds),
+    )
+    app.state.startup_self_healing_report = report
+    logging.info(
+        "HYBA API startup: PYTHIA self-healing/self-optimising cycle complete",
+        extra={
+            "duration_ms": report.get("duration_ms"),
+            "proposals_applied": report.get("reflexive_report", {}).get("proposals_applied"),
+            "reflexive_cycle_count": report.get("after", {}).get("reflexive_cycle_count"),
+        },
+    )
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application startup/shutdown lifecycle."""
@@ -97,6 +134,13 @@ async def lifespan(app: FastAPI):
     logging.info("HYBA API startup: initializing substrate lifecycle")
     initialize_substrate()
     logging.info("HYBA API startup: substrate READY", extra={"substrate": get_substrate_state()})
+    try:
+        await _activate_startup_self_healing(app)
+    except Exception as exc:
+        logging.warning(
+            "HYBA startup self-healing cycle failed; backend continuing",
+            extra={"error": str(exc)},
+        )
     heartbeat = None
     heartbeat_task = None
     if os.getenv("HYBA_ENABLE_REFLEXIVE_DAEMON", "false").lower() == "true":
