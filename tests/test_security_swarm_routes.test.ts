@@ -3,9 +3,11 @@ import express from "express";
 import { createServer, type Server } from "node:http";
 import { type AddressInfo } from "node:net";
 import { SecuritySwarmAgent } from "../src/core/security_swarm";
-import { registerSecuritySwarmRoutes } from "../src/server";
 
 async function startSecurityRoutesServer(): Promise<{ server: Server; baseUrl: string }> {
+  process.env.HYBA_INTERNAL_HEALTH_TOKEN = "test-swarm-internal-token";
+  const { registerSecuritySwarmRoutes } = await import("../src/server");
+
   const app = express();
   app.use(express.json());
   registerSecuritySwarmRoutes(app, new SecuritySwarmAgent());
@@ -64,7 +66,10 @@ describe("HYBA security swarm HTTP routes", () => {
 
     const response = await fetch(
       `${started.baseUrl}/api/security/swarm/respond?observer_pressure=1`,
-      { method: "POST" },
+      {
+        method: "POST",
+        headers: { "x-hyba-internal-token": "test-swarm-internal-token" },
+      },
     );
     const body = await response.json();
 
