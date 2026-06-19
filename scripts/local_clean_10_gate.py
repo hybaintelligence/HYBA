@@ -89,6 +89,22 @@ def _commands() -> list[GateCommand]:
             command=[python, "-m", "pytest", "tests/test_evidence_boundary_report.py", "-q"],
         ),
         GateCommand(
+            name="adaptive_capability_registry",
+            command=[python, "-m", "pytest", "tests/test_adaptive_capability_registry.py", "-q"],
+        ),
+        GateCommand(
+            name="prediction_endpoint_contracts",
+            command=[python, "-m", "pytest", "tests/test_prediction_endpoint.py", "-q"],
+        ),
+        GateCommand(
+            name="pool_profile_primitives",
+            command=[python, "-m", "pytest", "tests/test_pool_profile_primitives.py", "-q"],
+        ),
+        GateCommand(
+            name="hendrix_job_backed_benchmarks",
+            command=[python, "-m", "pytest", "tests/test_hendrix_phi_performance_benchmark.py", "-q"],
+        ),
+        GateCommand(
             name="autonomous_sovereign_gate_contracts",
             command=[python, "-m", "pytest", "tests/test_mining_autonomous_sovereign_gate.py", "-q"],
         ),
