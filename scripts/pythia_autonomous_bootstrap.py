@@ -3,9 +3,11 @@
 
 Runs PYTHIA's internal self-heal/self-optimise bootstrap before the local stack
 is declared ready. This does not edit source code, mutate credentials, or submit
-network shares directly. It wakes the autonomous controller, sets the configured
-autonomy level, performs reflexive optimisation epochs, persists learned state,
-and writes a boot evidence packet for the command-room/runtime surface.
+network shares directly. It wakes the autonomous controller, refreshes the live
+repository surroundings graph, binds a deterministic virtual mining simulator,
+sets the configured autonomy level, performs reflexive optimisation epochs,
+persists learned state, and writes a boot evidence packet for the
+command-room/runtime surface.
 """
 
 from __future__ import annotations
@@ -26,6 +28,9 @@ if str(PYTHON_BACKEND) not in sys.path:
 
 from pythia_mining.autonomous_mining_controller import AutonomyLevel  # noqa: E402
 from pythia_mining.phi_unified_mining_engine import UnifiedMiningEngine  # noqa: E402
+from pythia_mining.runtime_reflexive_introspection import (  # noqa: E402
+    bind_runtime_reflexive_adapters,
+)
 
 TRUE_VALUES = {"1", "true", "yes", "on"}
 ARTIFACT_DIR = ROOT / "artifacts" / "autonomous_mining"
@@ -73,6 +78,10 @@ def _serialise_report(report: dict[str, Any]) -> dict[str, Any]:
 async def run_bootstrap(epochs: int, capacity_ehs: float) -> dict[str, Any]:
     engine = UnifiedMiningEngine(configured_capacity_ehs=capacity_ehs)
     controller = engine.autonomous_controller
+    runtime_introspection = bind_runtime_reflexive_adapters(
+        controller,
+        package_root=PYTHON_BACKEND / "pythia_mining",
+    )
     level = _autonomy_level()
     controller.set_autonomy_level(level)
 
@@ -81,6 +90,13 @@ async def run_bootstrap(epochs: int, capacity_ehs: float) -> dict[str, Any]:
         "efficiency": controller.get_current_efficiency(),
         "autonomy_level": controller.current_autonomy_level.value,
         "metrics": controller.get_metrics_snapshot(),
+        "surroundings": {
+            "module_count": len(controller.surroundings.module_names),
+            "edge_count": len(controller.surroundings.codebase_graph_edges),
+            "invariant_count": len(controller.surroundings.mathematical_invariants),
+            "entropy_source_count": len(controller.surroundings.entropy_sources),
+            "stable_core_count": len(controller.surroundings.stable_core),
+        },
     }
 
     epoch_reports: list[dict[str, Any]] = []
@@ -93,16 +109,24 @@ async def run_bootstrap(epochs: int, capacity_ehs: float) -> dict[str, Any]:
         "autonomy_level": controller.current_autonomy_level.value,
         "metrics": controller.get_metrics_snapshot(),
         "status": _serialise_report(controller.get_autonomy_status()),
+        "surroundings": {
+            "module_count": len(controller.surroundings.module_names),
+            "edge_count": len(controller.surroundings.codebase_graph_edges),
+            "invariant_count": len(controller.surroundings.mathematical_invariants),
+            "entropy_source_count": len(controller.surroundings.entropy_sources),
+            "stable_core_count": len(controller.surroundings.stable_core),
+        },
     }
 
     return {
-        "schema": "HYBA_PYTHIA_AUTONOMOUS_BOOTSTRAP_V1",
+        "schema": "HYBA_PYTHIA_AUTONOMOUS_BOOTSTRAP_V2",
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
         "enabled": _env_bool("HYBA_ENABLE_AUTONOMOUS_MINING", True),
         "capacity_ehs_requested": capacity_ehs,
         "autonomy_level": level.value,
         "epochs_requested": epochs,
         "epochs_executed": len(epoch_reports),
+        "runtime_introspection": runtime_introspection,
         "before": before,
         "epochs": epoch_reports,
         "after": after,
@@ -117,6 +141,7 @@ async def run_bootstrap(epochs: int, capacity_ehs: float) -> dict[str, Any]:
             "last_reflexive_cycle_duration_ms": after["metrics"].get(
                 "last_reflexive_cycle_duration_ms"
             ),
+            "virtual_mining_simulation": runtime_introspection.get("virtual_mining_simulation"),
         },
     }
 
@@ -154,7 +179,7 @@ def main() -> int:
 
     if not _env_bool("HYBA_ENABLE_AUTONOMOUS_MINING", True):
         report = {
-            "schema": "HYBA_PYTHIA_AUTONOMOUS_BOOTSTRAP_V1",
+            "schema": "HYBA_PYTHIA_AUTONOMOUS_BOOTSTRAP_V2",
             "generated_at_utc": datetime.now(timezone.utc).isoformat(),
             "enabled": False,
             "status": "skipped_by_env",
