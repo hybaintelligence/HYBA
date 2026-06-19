@@ -1,0 +1,1132 @@
+[
+  {
+    "function": "aiChat",
+    "method": "POST",
+    "path": "/api/ai/chat",
+    "sideEffect": "mutation",
+    "role": "any_authenticated_or_public",
+    "idempotent": false,
+    "helper": "post",
+    "tested": false
+  },
+  {
+    "function": "applyEvolution",
+    "method": "POST",
+    "path": "/api/organism/cognition/evolve/${conjectureId}",
+    "sideEffect": "autonomous_control",
+    "role": "executive",
+    "idempotent": false,
+    "helper": "post",
+    "tested": false
+  },
+  {
+    "function": "boostConsciousness",
+    "method": "POST",
+    "path": "/api/v1/intelligence/consciousness/boost",
+    "sideEffect": "autonomous_control",
+    "role": "executive",
+    "idempotent": false,
+    "helper": "post",
+    "tested": false
+  },
+  {
+    "function": "configurePool",
+    "method": "POST",
+    "path": "/api/mining/pool-config",
+    "sideEffect": "mutation",
+    "role": "operator_or_admin",
+    "idempotent": false,
+    "helper": "post",
+    "tested": false
+  },
+  {
+    "function": "connectToPool",
+    "method": "POST",
+    "path": "/api/mining/connect",
+    "sideEffect": "destructive",
+    "role": "operator_or_admin",
+    "idempotent": false,
+    "helper": "post",
+    "tested": false
+  },
+  {
+    "function": "createAdminUser",
+    "method": "POST",
+    "path": "/api/admin/users",
+    "sideEffect": "mutation",
+    "role": "admin",
+    "idempotent": false,
+    "helper": "post",
+    "tested": false
+  },
+  {
+    "function": "createFundingAllocation",
+    "method": "POST",
+    "path": "/api/admin/funding/allocations",
+    "sideEffect": "mutation",
+    "role": "admin",
+    "idempotent": false,
+    "helper": "post",
+    "tested": false
+  },
+  {
+    "function": "createFundingRequest",
+    "method": "POST",
+    "path": "/api/admin/funding/requests",
+    "sideEffect": "mutation",
+    "role": "admin",
+    "idempotent": false,
+    "helper": "post",
+    "tested": false
+  },
+  {
+    "function": "deleteAdminUser",
+    "method": "DELETE",
+    "path": "/api/admin/users/${userId}",
+    "sideEffect": "destructive",
+    "role": "admin",
+    "idempotent": false,
+    "helper": "del",
+    "tested": false
+  },
+  {
+    "function": "disburseFunding",
+    "method": "POST",
+    "path": "/api/admin/funding/allocations/${allocationId}/disburse",
+    "sideEffect": "destructive",
+    "role": "admin",
+    "idempotent": false,
+    "helper": "post",
+    "tested": false
+  },
+  {
+    "function": "disconnectFromPool",
+    "method": "POST",
+    "path": "/api/mining/disconnect",
+    "sideEffect": "destructive",
+    "role": "operator_or_admin",
+    "idempotent": false,
+    "helper": "post",
+    "tested": false
+  },
+  {
+    "function": "executePulvini",
+    "method": "POST",
+    "path": "/api/pulvini/execute",
+    "sideEffect": "mutation",
+    "role": "any_authenticated_or_public",
+    "idempotent": false,
+    "helper": "post",
+    "tested": false
+  },
+  {
+    "function": "fetchPoolConfig",
+    "method": "GET",
+    "path": "/api/mining/pool-config",
+    "sideEffect": "read",
+    "role": "operator_or_admin",
+    "idempotent": true,
+    "helper": "get",
+    "tested": false
+  },
+  {
+    "function": "fetchProductsApi",
+    "method": "GET",
+    "path": "/api/products",
+    "sideEffect": "read",
+    "role": "any_authenticated_or_public",
+    "idempotent": true,
+    "helper": "fetch",
+    "tested": false
+  },
+  {
+    "function": "fetchProfileApi",
+    "method": "GET",
+    "path": "/api/auth/profile",
+    "sideEffect": "read",
+    "role": "any_authenticated_or_public",
+    "idempotent": true,
+    "helper": "fetch",
+    "tested": false
+  },
+  {
+    "function": "fetchTelemetryData",
+    "method": "GET",
+    "path": "/api/ai/consciousness",
+    "sideEffect": "read",
+    "role": "any_authenticated_or_public",
+    "idempotent": true,
+    "helper": "getOptional",
+    "tested": false
+  },
+  {
+    "function": "getAdminStats",
+    "method": "GET",
+    "path": "/api/admin/stats",
+    "sideEffect": "read",
+    "role": "admin",
+    "idempotent": true,
+    "helper": "get",
+    "tested": false
+  },
+  {
+    "function": "getAdminUser",
+    "method": "GET",
+    "path": "/api/admin/users/${userId}",
+    "sideEffect": "read",
+    "role": "admin",
+    "idempotent": true,
+    "helper": "get",
+    "tested": false
+  },
+  {
+    "function": "getAdminUsers",
+    "method": "GET",
+    "path": "/api/admin/users?${params.toString()}",
+    "sideEffect": "read",
+    "role": "admin",
+    "idempotent": true,
+    "helper": "get",
+    "tested": false
+  },
+  {
+    "function": "getAuditLogs",
+    "method": "GET",
+    "path": "/api/admin/audit-logs?${params.toString()}",
+    "sideEffect": "read",
+    "role": "admin",
+    "idempotent": true,
+    "helper": "get",
+    "tested": false
+  },
+  {
+    "function": "getBlockchainThreats",
+    "method": "GET",
+    "path": "/api/security/blockchain/threats",
+    "sideEffect": "read",
+    "role": "operator_or_admin",
+    "idempotent": true,
+    "helper": "get",
+    "tested": false
+  },
+  {
+    "function": "getConjectures",
+    "method": "GET",
+    "path": "/api/organism/cognition/conjectures",
+    "sideEffect": "read",
+    "role": "executive",
+    "idempotent": true,
+    "helper": "get",
+    "tested": false
+  },
+  {
+    "function": "getConsciousness",
+    "method": "GET",
+    "path": "/api/ai/consciousness",
+    "sideEffect": "read",
+    "role": "any_authenticated_or_public",
+    "idempotent": true,
+    "helper": "get",
+    "tested": false
+  },
+  {
+    "function": "getExecutiveTelemetry",
+    "method": "GET",
+    "path": "/api/organism/executive/telemetry",
+    "sideEffect": "read",
+    "role": "executive",
+    "idempotent": true,
+    "helper": "get",
+    "tested": false
+  },
+  {
+    "function": "getFundingAllocations",
+    "method": "GET",
+    "path": "/api/admin/funding/allocations?${params.toString()}",
+    "sideEffect": "read",
+    "role": "admin",
+    "idempotent": true,
+    "helper": "get",
+    "tested": false
+  },
+  {
+    "function": "getFundingRequests",
+    "method": "GET",
+    "path": "/api/admin/funding/requests?${params.toString()}",
+    "sideEffect": "read",
+    "role": "admin",
+    "idempotent": true,
+    "helper": "get",
+    "tested": false
+  },
+  {
+    "function": "getFundingSummary",
+    "method": "GET",
+    "path": "/api/admin/funding/summary?${params.toString()}",
+    "sideEffect": "read",
+    "role": "admin",
+    "idempotent": true,
+    "helper": "get",
+    "tested": false
+  },
+  {
+    "function": "getHealth",
+    "method": "GET",
+    "path": "/api/health",
+    "sideEffect": "read",
+    "role": "any_authenticated_or_public",
+    "idempotent": true,
+    "helper": "get",
+    "tested": false
+  },
+  {
+    "function": "getHealthLiveness",
+    "method": "GET",
+    "path": "/api/health/live",
+    "sideEffect": "read",
+    "role": "any_authenticated_or_public",
+    "idempotent": true,
+    "helper": "get",
+    "tested": false
+  },
+  {
+    "function": "getHealthReadiness",
+    "method": "GET",
+    "path": "/api/health/readiness",
+    "sideEffect": "read",
+    "role": "any_authenticated_or_public",
+    "idempotent": true,
+    "helper": "get",
+    "tested": false
+  },
+  {
+    "function": "getHealthReady",
+    "method": "GET",
+    "path": "/api/health/ready",
+    "sideEffect": "read",
+    "role": "any_authenticated_or_public",
+    "idempotent": true,
+    "helper": "get",
+    "tested": false
+  },
+  {
+    "function": "getHungerDrive",
+    "method": "GET",
+    "path": "/api/v4/metabolism/drive",
+    "sideEffect": "read",
+    "role": "any_authenticated_or_public",
+    "idempotent": true,
+    "helper": "get",
+    "tested": false
+  },
+  {
+    "function": "getImmuneStatus",
+    "method": "GET",
+    "path": "/api/organism/immune/status",
+    "sideEffect": "read",
+    "role": "executive",
+    "idempotent": true,
+    "helper": "get",
+    "tested": false
+  },
+  {
+    "function": "getIntelligenceStatus",
+    "method": "GET",
+    "path": "/api/intelligence/status",
+    "sideEffect": "read",
+    "role": "any_authenticated_or_public",
+    "idempotent": true,
+    "helper": "get",
+    "tested": false
+  },
+  {
+    "function": "getIntelligenceTelemetry",
+    "method": "GET",
+    "path": "/api/intelligence/telemetry",
+    "sideEffect": "read",
+    "role": "any_authenticated_or_public",
+    "idempotent": true,
+    "helper": "get",
+    "tested": false
+  },
+  {
+    "function": "getIntelligenceV1AbsoluteAudit",
+    "method": "GET",
+    "path": "/api/v1/intelligence/absolute-audit",
+    "sideEffect": "read",
+    "role": "executive",
+    "idempotent": true,
+    "helper": "get",
+    "tested": false
+  },
+  {
+    "function": "getIntelligenceV1Audit",
+    "method": "GET",
+    "path": "/api/v1/intelligence/audit",
+    "sideEffect": "read",
+    "role": "executive",
+    "idempotent": true,
+    "helper": "get",
+    "tested": false
+  },
+  {
+    "function": "getIntelligenceV1Health",
+    "method": "GET",
+    "path": "/api/v1/intelligence/health",
+    "sideEffect": "read",
+    "role": "executive",
+    "idempotent": true,
+    "helper": "get",
+    "tested": false
+  },
+  {
+    "function": "getMemoryByKey",
+    "method": "GET",
+    "path": "/api/v1/memory/memory/${encodeURIComponent(memoryKey)}",
+    "sideEffect": "read",
+    "role": "any_authenticated_or_public",
+    "idempotent": true,
+    "helper": "get",
+    "tested": false
+  },
+  {
+    "function": "getMemoryHealth",
+    "method": "GET",
+    "path": "/api/v1/memory/health",
+    "sideEffect": "read",
+    "role": "any_authenticated_or_public",
+    "idempotent": true,
+    "helper": "get",
+    "tested": false
+  },
+  {
+    "function": "getMemorySnapshots",
+    "method": "GET",
+    "path": "/api/v1/memory/snapshots",
+    "sideEffect": "read",
+    "role": "any_authenticated_or_public",
+    "idempotent": true,
+    "helper": "get",
+    "tested": false
+  },
+  {
+    "function": "getMetabolicCertificate",
+    "method": "GET",
+    "path": "/api/v4/metabolism/certificate",
+    "sideEffect": "read",
+    "role": "any_authenticated_or_public",
+    "idempotent": true,
+    "helper": "get",
+    "tested": false
+  },
+  {
+    "function": "getMetabolicEntropy",
+    "method": "GET",
+    "path": "/api/v4/metabolism/entropy",
+    "sideEffect": "read",
+    "role": "any_authenticated_or_public",
+    "idempotent": true,
+    "helper": "get",
+    "tested": false
+  },
+  {
+    "function": "getMetabolicFlux",
+    "method": "GET",
+    "path": "/api/organism/metabolism/flux",
+    "sideEffect": "read",
+    "role": "executive",
+    "idempotent": true,
+    "helper": "get",
+    "tested": false
+  },
+  {
+    "function": "getMiningDaemon",
+    "method": "GET",
+    "path": "/api/mining/daemon",
+    "sideEffect": "read",
+    "role": "operator_or_admin",
+    "idempotent": true,
+    "helper": "get",
+    "tested": false
+  },
+  {
+    "function": "getMiningHealth",
+    "method": "GET",
+    "path": "/api/mining/health",
+    "sideEffect": "read",
+    "role": "operator_or_admin",
+    "idempotent": true,
+    "helper": "get",
+    "tested": false
+  },
+  {
+    "function": "getMiningJob",
+    "method": "GET",
+    "path": "/api/mining/job",
+    "sideEffect": "read",
+    "role": "operator_or_admin",
+    "idempotent": true,
+    "helper": "get",
+    "tested": false
+  },
+  {
+    "function": "getMiningOpsAutonomics",
+    "method": "GET",
+    "path": "/api/mining/ops/autonomics",
+    "sideEffect": "read",
+    "role": "operator_or_admin",
+    "idempotent": true,
+    "helper": "get",
+    "tested": false
+  },
+  {
+    "function": "getMiningOpsMetrics",
+    "method": "GET",
+    "path": "/api/mining/ops/metrics",
+    "sideEffect": "read",
+    "role": "operator_or_admin",
+    "idempotent": true,
+    "helper": "get",
+    "tested": false
+  },
+  {
+    "function": "getMiningOpsProfitability",
+    "method": "GET",
+    "path": "/api/mining/ops/profitability",
+    "sideEffect": "read",
+    "role": "operator_or_admin",
+    "idempotent": true,
+    "helper": "get",
+    "tested": false
+  },
+  {
+    "function": "getMiningPools",
+    "method": "GET",
+    "path": "/api/mining/pools",
+    "sideEffect": "read",
+    "role": "operator_or_admin",
+    "idempotent": true,
+    "helper": "get",
+    "tested": false
+  },
+  {
+    "function": "getMiningProductionHealth",
+    "method": "GET",
+    "path": "/api/v1/mining-production/health",
+    "sideEffect": "read",
+    "role": "operator_or_admin",
+    "idempotent": true,
+    "helper": "get",
+    "tested": false
+  },
+  {
+    "function": "getMiningProductionMetrics",
+    "method": "GET",
+    "path": "/api/v1/mining-production/metrics",
+    "sideEffect": "read",
+    "role": "operator_or_admin",
+    "idempotent": true,
+    "helper": "get",
+    "tested": false
+  },
+  {
+    "function": "getMiningProductionNextJob",
+    "method": "GET",
+    "path": "/api/v1/mining-production/next-job",
+    "sideEffect": "read",
+    "role": "operator_or_admin",
+    "idempotent": true,
+    "helper": "get",
+    "tested": false
+  },
+  {
+    "function": "getMiningProductionStatus",
+    "method": "GET",
+    "path": "/api/v1/mining-production/status",
+    "sideEffect": "read",
+    "role": "operator_or_admin",
+    "idempotent": true,
+    "helper": "get",
+    "tested": false
+  },
+  {
+    "function": "getMiningStats",
+    "method": "GET",
+    "path": "/api/mining/stats",
+    "sideEffect": "read",
+    "role": "operator_or_admin",
+    "idempotent": true,
+    "helper": "get",
+    "tested": false
+  },
+  {
+    "function": "getMiningStatus",
+    "method": "GET",
+    "path": "/api/mining/status",
+    "sideEffect": "read",
+    "role": "operator_or_admin",
+    "idempotent": true,
+    "helper": "get",
+    "tested": false
+  },
+  {
+    "function": "getOrganismRegenerationStatus",
+    "method": "GET",
+    "path": "/api/organism/regeneration/status",
+    "sideEffect": "read",
+    "role": "executive",
+    "idempotent": true,
+    "helper": "get",
+    "tested": false
+  },
+  {
+    "function": "getPitfalls",
+    "method": "GET",
+    "path": "/api/pitfalls",
+    "sideEffect": "read",
+    "role": "any_authenticated_or_public",
+    "idempotent": true,
+    "helper": "get",
+    "tested": false
+  },
+  {
+    "function": "getPoolHabitats",
+    "method": "GET",
+    "path": "/api/organism/executive/habitats",
+    "sideEffect": "read",
+    "role": "executive",
+    "idempotent": true,
+    "helper": "get",
+    "tested": false
+  },
+  {
+    "function": "getRealityAnchor",
+    "method": "GET",
+    "path": "/api/organism/senses/reality",
+    "sideEffect": "read",
+    "role": "executive",
+    "idempotent": true,
+    "helper": "get",
+    "tested": false
+  },
+  {
+    "function": "getRegenerationStatus",
+    "method": "GET",
+    "path": "/api/security/regeneration/status",
+    "sideEffect": "read",
+    "role": "operator_or_admin",
+    "idempotent": true,
+    "helper": "get",
+    "tested": false
+  },
+  {
+    "function": "getSecurityStatus",
+    "method": "GET",
+    "path": "/api/security/status",
+    "sideEffect": "read",
+    "role": "operator_or_admin",
+    "idempotent": true,
+    "helper": "get",
+    "tested": false
+  },
+  {
+    "function": "getStreamingStats",
+    "method": "GET",
+    "path": "/api/v1/streaming/stats",
+    "sideEffect": "read",
+    "role": "any_authenticated_or_public",
+    "idempotent": true,
+    "helper": "get",
+    "tested": false
+  },
+  {
+    "function": "getSubstrate",
+    "method": "GET",
+    "path": "/api/substrate",
+    "sideEffect": "read",
+    "role": "any_authenticated_or_public",
+    "idempotent": true,
+    "helper": "get",
+    "tested": false
+  },
+  {
+    "function": "getSwarmStatus",
+    "method": "GET",
+    "path": "/api/security/swarm/status",
+    "sideEffect": "read",
+    "role": "operator_or_admin",
+    "idempotent": true,
+    "helper": "get",
+    "tested": false
+  },
+  {
+    "function": "getUnifiedHealth",
+    "method": "GET",
+    "path": "/api/v1/unified/health",
+    "sideEffect": "read",
+    "role": "any_authenticated_or_public",
+    "idempotent": true,
+    "helper": "get",
+    "tested": false
+  },
+  {
+    "function": "getUnifiedMetrics",
+    "method": "GET",
+    "path": "/api/v1/unified/metrics",
+    "sideEffect": "read",
+    "role": "any_authenticated_or_public",
+    "idempotent": true,
+    "helper": "get",
+    "tested": false
+  },
+  {
+    "function": "getUnifiedStatus",
+    "method": "GET",
+    "path": "/api/v1/unified/status",
+    "sideEffect": "read",
+    "role": "any_authenticated_or_public",
+    "idempotent": true,
+    "helper": "get",
+    "tested": false
+  },
+  {
+    "function": "getV1PoolsCurrent",
+    "method": "GET",
+    "path": "/api/v1/pools/current",
+    "sideEffect": "read",
+    "role": "operator_or_admin",
+    "idempotent": true,
+    "helper": "get",
+    "tested": false
+  },
+  {
+    "function": "getV1PoolsDefault",
+    "method": "GET",
+    "path": "/api/v1/pools/default",
+    "sideEffect": "read",
+    "role": "operator_or_admin",
+    "idempotent": true,
+    "helper": "get",
+    "tested": false
+  },
+  {
+    "function": "getV1PoolsEnabled",
+    "method": "GET",
+    "path": "/api/v1/pools/enabled",
+    "sideEffect": "read",
+    "role": "operator_or_admin",
+    "idempotent": true,
+    "helper": "get",
+    "tested": false
+  },
+  {
+    "function": "getV1PoolsHealth",
+    "method": "GET",
+    "path": "/api/v1/pools/health",
+    "sideEffect": "read",
+    "role": "operator_or_admin",
+    "idempotent": true,
+    "helper": "get",
+    "tested": false
+  },
+  {
+    "function": "getV1PoolsList",
+    "method": "GET",
+    "path": "/api/v1/pools/list",
+    "sideEffect": "read",
+    "role": "operator_or_admin",
+    "idempotent": true,
+    "helper": "get",
+    "tested": false
+  },
+  {
+    "function": "getV1PoolsStatus",
+    "method": "GET",
+    "path": "/api/v1/pools/status",
+    "sideEffect": "read",
+    "role": "operator_or_admin",
+    "idempotent": true,
+    "helper": "get",
+    "tested": false
+  },
+  {
+    "function": "initializeMiningProduction",
+    "method": "POST",
+    "path": "/api/v1/mining-production/initialize",
+    "sideEffect": "mutation",
+    "role": "operator_or_admin",
+    "idempotent": false,
+    "helper": "post",
+    "tested": false
+  },
+  {
+    "function": "intelligenceClosureSync",
+    "method": "POST",
+    "path": "/api/v1/intelligence/closure/sync",
+    "sideEffect": "mutation",
+    "role": "executive",
+    "idempotent": false,
+    "helper": "post",
+    "tested": false
+  },
+  {
+    "function": "intelligenceExplain",
+    "method": "POST",
+    "path": "/api/v1/intelligence/explain",
+    "sideEffect": "mutation",
+    "role": "executive",
+    "idempotent": false,
+    "helper": "post",
+    "tested": false
+  },
+  {
+    "function": "intelligenceHeartbeatPulse",
+    "method": "POST",
+    "path": "/api/v1/intelligence/heartbeat/pulse",
+    "sideEffect": "mutation",
+    "role": "executive",
+    "idempotent": false,
+    "helper": "post",
+    "tested": false
+  },
+  {
+    "function": "intelligenceOrchestrate",
+    "method": "POST",
+    "path": "/api/v1/intelligence/orchestrate",
+    "sideEffect": "autonomous_control",
+    "role": "executive",
+    "idempotent": false,
+    "helper": "post",
+    "tested": false
+  },
+  {
+    "function": "intelligenceReflect",
+    "method": "POST",
+    "path": "/api/v1/intelligence/reflect",
+    "sideEffect": "mutation",
+    "role": "executive",
+    "idempotent": false,
+    "helper": "post",
+    "tested": false
+  },
+  {
+    "function": "listStreamingChannels",
+    "method": "GET",
+    "path": "/api/v1/streaming/channels",
+    "sideEffect": "read",
+    "role": "any_authenticated_or_public",
+    "idempotent": true,
+    "helper": "get",
+    "tested": false
+  },
+  {
+    "function": "loginApi",
+    "method": "POST",
+    "path": "/api/auth/login",
+    "sideEffect": "mutation",
+    "role": "any_authenticated_or_public",
+    "idempotent": false,
+    "helper": "fetch",
+    "tested": false
+  },
+  {
+    "function": "migrateToHabitat",
+    "method": "PUT",
+    "path": "/api/organism/executive/habitats/migrate/${poolName}",
+    "sideEffect": "autonomous_control",
+    "role": "executive",
+    "idempotent": false,
+    "helper": "put",
+    "tested": false
+  },
+  {
+    "function": "pauseMining",
+    "method": "POST",
+    "path": "/api/mining/pause",
+    "sideEffect": "destructive",
+    "role": "operator_or_admin",
+    "idempotent": false,
+    "helper": "post",
+    "tested": false
+  },
+  {
+    "function": "postSecurityEvent",
+    "method": "POST",
+    "path": "/api/security/event",
+    "sideEffect": "mutation",
+    "role": "operator_or_admin",
+    "idempotent": false,
+    "helper": "post",
+    "tested": false
+  },
+  {
+    "function": "proposeSelfModification",
+    "method": "POST",
+    "path": "/api/security/autogenous/propose",
+    "sideEffect": "mutation",
+    "role": "operator_or_admin",
+    "idempotent": false,
+    "helper": "post",
+    "tested": false
+  },
+  {
+    "function": "quarantineLane",
+    "method": "POST",
+    "path": "/api/organism/immune/quarantine/${laneId}",
+    "sideEffect": "autonomous_control",
+    "role": "executive",
+    "idempotent": false,
+    "helper": "post",
+    "tested": false
+  },
+  {
+    "function": "registerApi",
+    "method": "POST",
+    "path": "/api/auth/register",
+    "sideEffect": "mutation",
+    "role": "any_authenticated_or_public",
+    "idempotent": false,
+    "helper": "fetch",
+    "tested": false
+  },
+  {
+    "function": "reportV1PoolShare",
+    "method": "POST",
+    "path": "/api/v1/pools/report-share",
+    "sideEffect": "mutation",
+    "role": "operator_or_admin",
+    "idempotent": false,
+    "helper": "post",
+    "tested": false
+  },
+  {
+    "function": "requestPrediction",
+    "method": "POST",
+    "path": "/api/predict",
+    "sideEffect": "mutation",
+    "role": "any_authenticated_or_public",
+    "idempotent": false,
+    "helper": "post",
+    "tested": false
+  },
+  {
+    "function": "resetIntelligence",
+    "method": "POST",
+    "path": "/api/intelligence/reset",
+    "sideEffect": "mutation",
+    "role": "any_authenticated_or_public",
+    "idempotent": false,
+    "helper": "post",
+    "tested": false
+  },
+  {
+    "function": "resumeMining",
+    "method": "POST",
+    "path": "/api/mining/resume",
+    "sideEffect": "destructive",
+    "role": "operator_or_admin",
+    "idempotent": false,
+    "helper": "post",
+    "tested": false
+  },
+  {
+    "function": "reviewFundingRequest",
+    "method": "PUT",
+    "path": "/api/admin/funding/requests/${requestId}/review",
+    "sideEffect": "mutation",
+    "role": "admin",
+    "idempotent": false,
+    "helper": "put",
+    "tested": false
+  },
+  {
+    "function": "runToeExperiment",
+    "method": "POST",
+    "path": "/api/toe/experiments",
+    "sideEffect": "mutation",
+    "role": "any_authenticated_or_public",
+    "idempotent": false,
+    "helper": "post",
+    "tested": false
+  },
+  {
+    "function": "scaleIntelligence",
+    "method": "POST",
+    "path": "/api/v1/intelligence/scale",
+    "sideEffect": "autonomous_control",
+    "role": "executive",
+    "idempotent": false,
+    "helper": "post",
+    "tested": false
+  },
+  {
+    "function": "securityShield",
+    "method": "POST",
+    "path": "/api/security/shield",
+    "sideEffect": "autonomous_control",
+    "role": "operator_or_admin",
+    "idempotent": false,
+    "helper": "post",
+    "tested": false
+  },
+  {
+    "function": "setMiningIntent",
+    "method": "POST",
+    "path": "/api/organism/executive/intent",
+    "sideEffect": "autonomous_control",
+    "role": "executive",
+    "idempotent": false,
+    "helper": "post",
+    "tested": false
+  },
+  {
+    "function": "simulateDisturbance",
+    "method": "POST",
+    "path": "/api/intelligence/disturbance",
+    "sideEffect": "autonomous_control",
+    "role": "any_authenticated_or_public",
+    "idempotent": false,
+    "helper": "post",
+    "tested": false
+  },
+  {
+    "function": "startIntelligence",
+    "method": "POST",
+    "path": "/api/intelligence/start",
+    "sideEffect": "destructive",
+    "role": "any_authenticated_or_public",
+    "idempotent": false,
+    "helper": "post",
+    "tested": false
+  },
+  {
+    "function": "startKeepAlivePing",
+    "method": "GET",
+    "path": "/api/health",
+    "sideEffect": "read",
+    "role": "any_authenticated_or_public",
+    "idempotent": true,
+    "helper": "fetch",
+    "tested": false
+  },
+  {
+    "function": "startMiningProduction",
+    "method": "POST",
+    "path": "/api/v1/mining-production/start",
+    "sideEffect": "destructive",
+    "role": "operator_or_admin",
+    "idempotent": false,
+    "helper": "post",
+    "tested": false
+  },
+  {
+    "function": "stimulateConsciousness",
+    "method": "POST",
+    "path": "/api/ai/consciousness/stimulate",
+    "sideEffect": "mutation",
+    "role": "any_authenticated_or_public",
+    "idempotent": false,
+    "helper": "post",
+    "tested": false
+  },
+  {
+    "function": "stopIntelligence",
+    "method": "POST",
+    "path": "/api/intelligence/stop",
+    "sideEffect": "destructive",
+    "role": "any_authenticated_or_public",
+    "idempotent": false,
+    "helper": "post",
+    "tested": false
+  },
+  {
+    "function": "stopMiningProduction",
+    "method": "POST",
+    "path": "/api/v1/mining-production/stop",
+    "sideEffect": "destructive",
+    "role": "operator_or_admin",
+    "idempotent": false,
+    "helper": "post",
+    "tested": false
+  },
+  {
+    "function": "submitJob",
+    "method": "POST",
+    "path": "/api/mining/submit",
+    "sideEffect": "destructive",
+    "role": "operator_or_admin",
+    "idempotent": false,
+    "helper": "post",
+    "tested": false
+  },
+  {
+    "function": "submitMiningProductionShare",
+    "method": "POST",
+    "path": "/api/v1/mining-production/submit-share",
+    "sideEffect": "destructive",
+    "role": "operator_or_admin",
+    "idempotent": false,
+    "helper": "post",
+    "tested": false
+  },
+  {
+    "function": "switchPool",
+    "method": "POST",
+    "path": "/api/mining/switch",
+    "sideEffect": "destructive",
+    "role": "operator_or_admin",
+    "idempotent": false,
+    "helper": "post",
+    "tested": false
+  },
+  {
+    "function": "switchV1Pool",
+    "method": "POST",
+    "path": "/api/v1/pools/switch",
+    "sideEffect": "destructive",
+    "role": "operator_or_admin",
+    "idempotent": false,
+    "helper": "post",
+    "tested": false
+  },
+  {
+    "function": "unifiedShareResult",
+    "method": "POST",
+    "path": "/api/v1/unified/share-result",
+    "sideEffect": "mutation",
+    "role": "any_authenticated_or_public",
+    "idempotent": false,
+    "helper": "post",
+    "tested": false
+  },
+  {
+    "function": "updateAdminUser",
+    "method": "PUT",
+    "path": "/api/admin/users/${userId}",
+    "sideEffect": "mutation",
+    "role": "admin",
+    "idempotent": false,
+    "helper": "put",
+    "tested": false
+  },
+  {
+    "function": "updateFundingAllocation",
+    "method": "PUT",
+    "path": "/api/admin/funding/allocations/${allocationId}",
+    "sideEffect": "mutation",
+    "role": "admin",
+    "idempotent": false,
+    "helper": "put",
+    "tested": false
+  },
+  {
+    "function": "updatePowerScale",
+    "method": "POST",
+    "path": "/api/mining/power",
+    "sideEffect": "autonomous_control",
+    "role": "operator_or_admin",
+    "idempotent": false,
+    "helper": "post",
+    "tested": false
+  }
+]
