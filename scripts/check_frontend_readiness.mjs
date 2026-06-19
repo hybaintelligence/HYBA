@@ -46,6 +46,11 @@ pass(
   dockerfile.indexOf('RUN node scripts/ensure_spa_entrypoint.mjs') > dockerfile.indexOf('RUN npm run build'),
   'SPA entrypoint hardening must run after npm run build',
 );
+pass(dockerfile.includes('FROM node:22.15.0-bookworm-slim AS runtime'), 'Docker runtime must include Node/npm for the bridge');
+pass(
+  dockerfile.indexOf('FROM node:22.15.0-bookworm-slim AS runtime') < dockerfile.indexOf('RUN npm install --omit=dev'),
+  'Docker runtime must be Node-capable before production npm install runs',
+);
 pass(spaEntrypointHardener.includes('app.get("/bridge/status"'), 'SPA entrypoint hardener must preserve bridge status on /bridge/status');
 pass(spaEntrypointHardener.includes('production root route still intercepts the SPA'), 'SPA entrypoint hardener must fail closed when / still intercepts the SPA');
 
