@@ -81,6 +81,14 @@ def _commands() -> list[GateCommand]:
             command=[python, "-m", "pytest", "tests/test_auth_jwt_contracts.py", "-q"],
         ),
         GateCommand(
+            name="runtime_reflexive_introspection",
+            command=[python, "-m", "pytest", "tests/test_runtime_reflexive_introspection.py", "-q"],
+        ),
+        GateCommand(
+            name="evidence_boundary_report",
+            command=[python, "-m", "pytest", "tests/test_evidence_boundary_report.py", "-q"],
+        ),
+        GateCommand(
             name="autonomous_sovereign_gate_contracts",
             command=[python, "-m", "pytest", "tests/test_mining_autonomous_sovereign_gate.py", "-q"],
         ),
