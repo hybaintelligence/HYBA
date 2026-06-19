@@ -1,0 +1,64 @@
+name: Frontend E2E Hardening
+
+on:
+  pull_request:
+    paths:
+      - "src/**"
+      - "tests/e2e/**"
+      - "tests/e2e-live/**"
+      - "playwright.config.ts"
+      - "package*.json"
+      - ".github/workflows/frontend-e2e.yml"
+  push:
+    branches: [main]
+    paths:
+      - "src/**"
+      - "tests/e2e/**"
+      - "tests/e2e-live/**"
+      - "playwright.config.ts"
+      - "package*.json"
+      - ".github/workflows/frontend-e2e.yml"
+
+jobs:
+  frontend-e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: npx playwright install --with-deps
+      - run: npx playwright test
+        env:
+          CI: true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-artifacts
+          path: |
+            artifacts/playwright-report
+            artifacts/playwright-results.xml
+            test-results
+
+  frontend-e2e-live-sandbox:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    if: ${{ vars.LIVE_E2E_SANDBOX == 'true' && vars.PLAYWRIGHT_BASE_URL != '' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps
+      - run: npx playwright test tests/e2e-live/live-stack.spec.ts
+        env:
+          CI: true
+          LIVE_E2E_SANDBOX: "true"
+          PLAYWRIGHT_BASE_URL: ${{ vars.PLAYWRIGHT_BASE_URL }}
+          PLAYWRIGHT_SKIP_WEBSERVER: "true"

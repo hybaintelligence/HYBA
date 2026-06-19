@@ -107,10 +107,14 @@ export const PoolSecretsConfig: React.FC<PoolSecretsConfigProps> = ({ pool, onCl
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-1.5">
-              <label className="text-[10px] font-mono text-[#64748B] uppercase font-bold">
+              <label
+                htmlFor="pool-config-url"
+                className="text-[10px] font-mono text-[#64748B] uppercase font-bold"
+              >
                 Pool URL
               </label>
               <input
+                id="pool-config-url"
                 type="text"
                 required
                 value={url}
@@ -230,8 +234,9 @@ function TextInput({
 }) {
   return (
     <div className="space-y-1.5">
-      <label className="text-[10px] font-mono text-[#64748B] uppercase font-bold">{label}</label>
+      <label htmlFor={`pool-config-${label.toLowerCase().replaceAll(" ", "-")}`} className="text-[10px] font-mono text-[#64748B] uppercase font-bold">{label}</label>
       <input
+        id={`pool-config-${label.toLowerCase().replaceAll(" ", "-")}`}
         type={type}
         required={required}
         placeholder={placeholder}

@@ -1074,6 +1074,7 @@ function AppContent() {
                       className="space-y-3"
                     >
                       <AuthInput
+                        id="operator-handle"
                         label="Operator Handle"
                         value={usernameInput}
                         setValue={setUsernameInput}
@@ -1081,6 +1082,7 @@ function AppContent() {
                         placeholder="Enter your operator handle"
                       />
                       <AuthInput
+                        id="operator-password"
                         label="Password"
                         value={passwordInput}
                         setValue={setPasswordInput}
@@ -1203,12 +1205,14 @@ function AppContent() {
 }
 
 function AuthInput({
+  id,
   label,
   value,
   setValue,
   type,
   placeholder,
 }: {
+  id: string;
   label: string;
   value: string;
   setValue: (value: string) => void;
@@ -1217,10 +1221,14 @@ function AuthInput({
 }) {
   return (
     <div className="space-y-2">
-      <label className="text-[10px] font-mono font-bold uppercase tracking-[0.18em] text-slate-500">
+      <label
+        htmlFor={id}
+        className="text-[10px] font-mono font-bold uppercase tracking-[0.18em] text-slate-500"
+      >
         {label}
       </label>
       <input
+        id={id}
         type={type}
         required
         placeholder={placeholder}
