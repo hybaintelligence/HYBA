@@ -73,42 +73,45 @@ class QuantumAttackResult:
 
 class QuantumAdversarialTestSuite:
     """
-    Quantum-hybrid adversarial testing suite.
+    Quantum-hybrid adversarial testing suite using native HYBA quantum math.
     
-    Tests quantum attacks against the system and measures geometric
-    stability changes to detect quantum observation effects.
+    Tests quantum attacks against the system using Pulvini memory compression,
+    Bures certificates, phi resonance gates, and Yang-Mills gap operationalization.
     """
     
-    def __init__(self, phi: float = (1 + np.sqrt(5)) / 2):
-        self.phi = phi
-        self.phi_squared = phi ** 2
+    def __init__(self):
+        self.phi = PHI
+        self.phi_squared = PHI ** 2
+        self.pulvini_engine = PulviniPhiMemoryCompressionEngine()
+        self.mass_gap_shield = MassGapShield()
+        self.phi_analyzer = PhiResonanceAnalyzer()
         
     def run_quantum_adversarial_suite(self,
-                                     simulator: str = "qiskit",
                                      attack_types: List[str] = None) -> List[QuantumAttackResult]:
         """
-        Run comprehensive quantum adversarial test suite.
+        Run comprehensive quantum adversarial test suite using native quantum math.
         
         Args:
-            simulator: Quantum simulator to use (qiskit, cirq, classical)
             attack_types: List of attack types to test
             
         Returns:
             List of quantum attack results
         """
         if attack_types is None:
-            attack_types = ["grover", "shor_variant", "quantum_observation", "entanglement_attack"]
+            attack_types = ["bures_perturbation", "phi_resonance_disruption", 
+                          "yang_mills_interference", "pulvini_compression_attack"]
         
         results = []
         
         for attack_type in attack_types:
             print(f"\nTesting quantum attack: {attack_type}")
             
-            result = self._test_quantum_attack(attack_type, simulator)
+            result = self._test_quantum_attack(attack_type)
             results.append(result)
             
             print(f"  Detection signal: {result.detection_signal:.6f}")
             print(f"  Quantum observation detected: {result.quantum_observation_detected}")
+            print(f"  Yang-Mills alignment: {result.yang_mills_alignment:.6f}")
         
         return results
     
