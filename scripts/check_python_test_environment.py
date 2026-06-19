@@ -23,6 +23,9 @@ REQUIRED_IMPORTS: Dict[str, str] = {
     "argon2": "argon2-cffi",
     "httpx": "httpx",
     "pydantic": "pydantic",
+    "email_validator": "email-validator",
+    "sqlalchemy": "SQLAlchemy",
+    "alembic": "alembic",
 }
 
 
