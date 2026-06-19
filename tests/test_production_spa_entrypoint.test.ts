@@ -14,6 +14,14 @@ describe('production SPA entrypoint', () => {
     );
   });
 
+  it('uses a Node-capable runtime before installing production npm dependencies', () => {
+    expect(dockerfile).toContain('FROM node:22.15.0-bookworm-slim AS runtime');
+    expect(dockerfile).toContain('RUN npm install --omit=dev');
+    expect(dockerfile.indexOf('FROM node:22.15.0-bookworm-slim AS runtime')).toBeLessThan(
+      dockerfile.indexOf('RUN npm install --omit=dev'),
+    );
+  });
+
   it('moves public bridge status away from the SPA root in the bundled server', () => {
     expect(hardener).toContain('app.get("/bridge/status"');
     expect(hardener).toContain('productionRootRoutePattern');
