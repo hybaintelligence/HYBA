@@ -7,13 +7,22 @@ import numpy as np
 from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel, Field
 
+try:  # Module-level import keeps the optimizer registry patchable in tests.
+    from pythia_mining.genesis_ai_service import GenesisAIServiceRegistry
+except ImportError:  # pragma: no cover - exercised by unavailable-runtime deployments
+    GenesisAIServiceRegistry = None  # type: ignore[assignment]
+
 router = APIRouter(prefix="/api", tags=["misc"])
+
+
+def _utc_timestamp() -> str:
+    return datetime.now(timezone.utc).isoformat()
 
 
 @router.get("/pitfalls", response_model=Dict[str, Any])
 async def get_pitfalls():
     return {
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp": _utc_timestamp(),
         "monitoring_status": {
             "enabled": False,
             "source": "pitfall_monitor_not_connected",
@@ -32,7 +41,7 @@ async def start_experiment(config: ExperimentConfig):
     return {
         "success": True,
         "status": "accepted_degraded",
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp": _utc_timestamp(),
         "experiment_type": config.experiment_type,
         "source": "experiment_runtime_not_connected",
         "message": "Experiment request accepted in degraded mode; execution runtime is not attached.",
@@ -60,7 +69,7 @@ async def execute_pulvini():
     return {
         "status": "success",
         "message": "PULVINI Memory Engine Executed",
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp": _utc_timestamp(),
         "source": "measured_linear_algebra_runtime",
         "operations": [
             {
@@ -92,6 +101,47 @@ class PredictRequest(BaseModel):
     state: PredictState
 
 
+def _optimizer_unavailable(error: str, message: str, req: PredictRequest) -> HTTPException:
+    return HTTPException(
+        status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+        detail={
+            "error": error,
+            "message": message,
+            "networkDifficulty": req.state.networkDifficulty,
+            "timestamp": _utc_timestamp(),
+        },
+    )
+
+
+def _acceptance_rate(recent_performance: list[dict[str, Any]]) -> float:
+    window = recent_performance[-10:]
+    if not window:
+        return 0.0
+    accepted = sum(1 for sample in window if sample.get("accepted", False))
+    return accepted / len(window)
+
+
+def _recommended_power_scale(acceptance_rate: float) -> float:
+    if acceptance_rate > 0.7:
+        return 1.0
+    if acceptance_rate > 0.4:
+        return 1.1
+    return 1.2
+
+
+def _strategy_confidence(strategy_probs: dict[str, float]) -> float:
+    if not strategy_probs:
+        return 0.0
+    values = np.array([max(0.0, float(p)) for p in strategy_probs.values()], dtype=float)
+    total = float(values.sum())
+    if total <= 0.0:
+        return 0.0
+    values = values / total
+    entropy = -float(np.sum([p * np.log(p + 1e-12) for p in values if p > 0]))
+    max_entropy = float(np.log(len(values))) if len(values) > 1 else 1.0
+    return float(max(0.0, min(1.0, 1.0 - (entropy / max(max_entropy, 1e-12)))))
+
+
 @router.post("/predict", response_model=Dict[str, Any])
 async def predict_params(req: PredictRequest):
     """Generate power and strategy predictions from live optimizer measurements.
@@ -101,79 +151,47 @@ async def predict_params(req: PredictRequest):
     the missing dependency explicitly rather than fabricating confidence or power scale.
     """
 
-    try:
-        from pythia_mining.genesis_ai_service import GenesisAIServiceRegistry
-
-        optimizer = GenesisAIServiceRegistry.get_ai_optimizer()
-
-        if optimizer is None:
-            raise HTTPException(
-                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-                detail={
-                    "error": "optimizer_runtime_not_connected",
-                    "message": "No measured optimizer runtime is connected; prediction was not generated.",
-                    "networkDifficulty": req.state.networkDifficulty,
-                    "timestamp": datetime.now(timezone.utc).isoformat(),
-                },
-            )
-
-        # Get current optimizer state and meta-learning snapshot
-        meta_snapshot = optimizer.meta_learning_snapshot()
-        strategy_probs = meta_snapshot.get("strategy_probabilities", {})
-        recent_performance = meta_snapshot.get("recent_performance", [])
-
-        # Calculate recommendation based on measured optimizer state
-        recommended_strategy = (
-            max(strategy_probs.items(), key=lambda x: x[1])[0]
-            if strategy_probs
-            else "phi_scaled_compressed_solver_search"
+    if GenesisAIServiceRegistry is None:
+        raise _optimizer_unavailable(
+            "optimizer_module_not_available",
+            "Optimizer module is not available in this environment.",
+            req,
         )
 
-        # Derive power scale recommendation from recent performance
-        recent_accepted = [p for p in recent_performance[-10:] if p.get("accepted", False)]
-        acceptance_rate = len(recent_accepted) / max(1, len(recent_performance[-10:]))
-
-        # Conservative power scaling based on acceptance rate
-        if acceptance_rate > 0.7:
-            recommended_power_scale = 1.0  # Stable
-        elif acceptance_rate > 0.4:
-            recommended_power_scale = 1.1  # Slight increase
-        else:
-            recommended_power_scale = 1.2  # Increase exploration
-
-        # Calculate confidence from strategy entropy
-        if strategy_probs:
-            strategy_values = list(strategy_probs.values())
-            entropy = -sum(p * np.log(p + 1e-12) for p in strategy_values if p > 0)
-            max_entropy = np.log(len(strategy_probs))
-            confidence = 1.0 - (entropy / max(max_entropy, 1e-12))
-        else:
-            confidence = 0.0
-
-        return {
-            "success": True,
-            "status": "predicted",
-            "timestamp": datetime.now(timezone.utc).isoformat(),
-            "source": "measured_optimizer_runtime",
-            "networkDifficulty": req.state.networkDifficulty,
-            "recommendation": {
-                "strategy": recommended_strategy,
-                "power_scale": recommended_power_scale,
-                "confidence": float(confidence),
-            },
-            "optimizer_state": {
-                "acceptance_rate": float(acceptance_rate),
-                "strategy_probabilities": strategy_probs,
-                "recent_performance_samples": len(recent_performance),
-            },
-        }
-
-    except ImportError:
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail={
-                "error": "optimizer_module_not_available",
-                "message": "Optimizer module is not available in this environment.",
-                "timestamp": datetime.now(timezone.utc).isoformat(),
-            },
+    optimizer = GenesisAIServiceRegistry.get_ai_optimizer()
+    if optimizer is None:
+        raise _optimizer_unavailable(
+            "optimizer_runtime_not_connected",
+            "No measured optimizer runtime is connected; prediction was not generated.",
+            req,
         )
+
+    meta_snapshot = optimizer.meta_learning_snapshot()
+    strategy_probs = meta_snapshot.get("strategy_probabilities", {}) or {}
+    recent_performance = meta_snapshot.get("recent_performance", []) or []
+
+    recommended_strategy = (
+        max(strategy_probs.items(), key=lambda item: item[1])[0]
+        if strategy_probs
+        else "phi_scaled_compressed_solver_search"
+    )
+    acceptance_rate = _acceptance_rate(recent_performance)
+    confidence = _strategy_confidence(strategy_probs)
+
+    return {
+        "success": True,
+        "status": "predicted",
+        "timestamp": _utc_timestamp(),
+        "source": "measured_optimizer_runtime",
+        "networkDifficulty": req.state.networkDifficulty,
+        "recommendation": {
+            "strategy": recommended_strategy,
+            "power_scale": _recommended_power_scale(acceptance_rate),
+            "confidence": confidence,
+        },
+        "optimizer_state": {
+            "acceptance_rate": float(acceptance_rate),
+            "strategy_probabilities": strategy_probs,
+            "recent_performance_samples": len(recent_performance),
+        },
+    }
