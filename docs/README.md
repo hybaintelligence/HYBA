@@ -51,6 +51,11 @@ Supporting artifacts, implementation patches, and reference materials.
 ### Special Projects
 - `al_haras/` - Specialized project documentation
 
+
+### Canonical Documentation Map
+
+Start with [`CANONICAL_DOCUMENTS.md`](CANONICAL_DOCUMENTS.md) before adding or restoring documentation. It identifies the maintained source of truth for production readiness, deployment, governance, scientific, testing, and operations material, and it records legacy root-level documents that were removed during documentation cleanup.
+
 ## Navigation
 
 For production readiness gates and deployment procedures, refer to the `deployment/` and `evidence/` directories.
