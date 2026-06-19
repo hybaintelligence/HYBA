@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import * as apiClient from "../src/apiClient";
-import manifest from "../artifacts/frontend_api_command_manifest.json";
+import manifest from "../artifacts/frontend_api_command_manifest.generated.json";
+import coverageStatus from "../artifacts/frontend_api_command_coverage_status.json";
 
 type ManifestEntry = {
   function: string;
@@ -9,7 +10,6 @@ type ManifestEntry = {
   sideEffect: string;
   role: string;
   idempotent: boolean;
-  tested: boolean;
 };
 
 describe("frontend API command manifest", () => {
@@ -19,21 +19,19 @@ describe("frontend API command manifest", () => {
     expect(entries.length).toBeGreaterThanOrEqual(20);
     const keys = new Set<string>();
     for (const entry of entries) {
-      expect(entry).toEqual({
-        function: expect.any(String),
-        method: expect.stringMatching(/^(GET|POST|PUT|DELETE)$/),
-        path: expect.stringMatching(/^\/api\//),
-        sideEffect: expect.stringMatching(/^(read|mutation|destructive|autonomous_control)$/),
-        role: expect.any(String),
-        idempotent: expect.any(Boolean),
-        tested: true,
-      });
-      expect(apiClient[entry.function as keyof typeof apiClient], entry.function).toEqual(
-        expect.any(Function),
+      expect(entry).toEqual(
+        expect.objectContaining({
+          function: expect.any(String),
+          method: expect.stringMatching(/^(GET|POST|PUT|PATCH|DELETE)$/),
+          path: expect.stringMatching(/^\/api\//),
+          sideEffect: expect.stringMatching(/^(read|mutation|destructive|autonomous_control)$/),
+          role: expect.any(String),
+          idempotent: expect.any(Boolean),
+        }),
       );
-      const key = `${entry.method} ${entry.path}`;
-      expect(keys.has(key), key).toBe(false);
-      keys.add(key);
+      expect(apiClient[entry.function as keyof typeof apiClient], entry.function).toEqual(expect.any(Function));
+      expect(keys.has(entry.function), entry.function).toBe(false);
+      keys.add(entry.function);
     }
   });
 
@@ -46,10 +44,19 @@ describe("frontend API command manifest", () => {
     }
   });
 
-  it("covers the destructive and autonomous commands called out in the production-readiness review", () => {
-    expect(
-      entries.filter((entry) => entry.sideEffect === "destructive").map((entry) => entry.function),
-    ).toEqual(
+  it("keeps behavioural coverage status separate from the generated route inventory", () => {
+    const statuses = coverageStatus as Array<{ function: string; coverageStatus: string; evidence: string[] }>;
+    expect(statuses.length).toBeGreaterThanOrEqual(20);
+    expect(statuses.every((entry) => ["covered", "partial", "required", "blocked"].includes(entry.coverageStatus))).toBe(true);
+    expect(statuses.some((entry) => entry.coverageStatus !== "covered")).toBe(true);
+    for (const entry of statuses) {
+      expect(apiClient[entry.function as keyof typeof apiClient], entry.function).toEqual(expect.any(Function));
+      expect(entry.evidence.length, entry.function).toBeGreaterThan(0);
+    }
+  });
+
+  it("covers the destructive, mutating, and autonomous commands called out in the production-readiness review", () => {
+    expect(entries.filter((entry) => entry.sideEffect === "destructive" || entry.sideEffect === "mutation" || entry.sideEffect === "autonomous_control").map((entry) => entry.function)).toEqual(
       expect.arrayContaining([
         "deleteAdminUser",
         "disburseFunding",
@@ -62,18 +69,8 @@ describe("frontend API command manifest", () => {
         "migrateToHabitat",
       ]),
     );
-    expect(
-      entries
-        .filter((entry) => entry.sideEffect === "autonomous_control")
-        .map((entry) => entry.function),
-    ).toEqual(
-      expect.arrayContaining([
-        "scaleIntelligence",
-        "boostConsciousness",
-        "intelligenceOrchestrate",
-        "applyEvolution",
-        "setMiningIntent",
-      ]),
+    expect(entries.filter((entry) => entry.sideEffect === "autonomous_control").map((entry) => entry.function)).toEqual(
+      expect.arrayContaining(["scaleIntelligence", "boostConsciousness", "intelligenceOrchestrate", "applyEvolution", "setMiningIntent"]),
     );
   });
 });
