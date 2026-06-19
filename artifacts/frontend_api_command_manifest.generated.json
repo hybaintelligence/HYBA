@@ -6,8 +6,7 @@
     "sideEffect": "mutation",
     "role": "any_authenticated_or_public",
     "idempotent": false,
-    "helper": "post",
-    "tested": false
+    "helper": "post"
   },
   {
     "function": "applyEvolution",
@@ -16,8 +15,7 @@
     "sideEffect": "autonomous_control",
     "role": "executive",
     "idempotent": false,
-    "helper": "post",
-    "tested": false
+    "helper": "post"
   },
   {
     "function": "boostConsciousness",
@@ -26,8 +24,7 @@
     "sideEffect": "autonomous_control",
     "role": "executive",
     "idempotent": false,
-    "helper": "post",
-    "tested": false
+    "helper": "post"
   },
   {
     "function": "configurePool",
@@ -36,8 +33,7 @@
     "sideEffect": "mutation",
     "role": "operator_or_admin",
     "idempotent": false,
-    "helper": "post",
-    "tested": false
+    "helper": "post"
   },
   {
     "function": "connectToPool",
@@ -46,8 +42,7 @@
     "sideEffect": "destructive",
     "role": "operator_or_admin",
     "idempotent": false,
-    "helper": "post",
-    "tested": false
+    "helper": "post"
   },
   {
     "function": "createAdminUser",
@@ -56,8 +51,7 @@
     "sideEffect": "mutation",
     "role": "admin",
     "idempotent": false,
-    "helper": "post",
-    "tested": false
+    "helper": "post"
   },
   {
     "function": "createFundingAllocation",
@@ -66,8 +60,7 @@
     "sideEffect": "mutation",
     "role": "admin",
     "idempotent": false,
-    "helper": "post",
-    "tested": false
+    "helper": "post"
   },
   {
     "function": "createFundingRequest",
@@ -76,8 +69,7 @@
     "sideEffect": "mutation",
     "role": "admin",
     "idempotent": false,
-    "helper": "post",
-    "tested": false
+    "helper": "post"
   },
   {
     "function": "deleteAdminUser",
@@ -86,8 +78,7 @@
     "sideEffect": "destructive",
     "role": "admin",
     "idempotent": false,
-    "helper": "del",
-    "tested": false
+    "helper": "del"
   },
   {
     "function": "disburseFunding",
@@ -96,8 +87,7 @@
     "sideEffect": "destructive",
     "role": "admin",
     "idempotent": false,
-    "helper": "post",
-    "tested": false
+    "helper": "post"
   },
   {
     "function": "disconnectFromPool",
@@ -106,8 +96,7 @@
     "sideEffect": "destructive",
     "role": "operator_or_admin",
     "idempotent": false,
-    "helper": "post",
-    "tested": false
+    "helper": "post"
   },
   {
     "function": "executePulvini",
@@ -116,8 +105,7 @@
     "sideEffect": "mutation",
     "role": "any_authenticated_or_public",
     "idempotent": false,
-    "helper": "post",
-    "tested": false
+    "helper": "post"
   },
   {
     "function": "fetchPoolConfig",
@@ -126,8 +114,7 @@
     "sideEffect": "read",
     "role": "operator_or_admin",
     "idempotent": true,
-    "helper": "get",
-    "tested": false
+    "helper": "get"
   },
   {
     "function": "fetchProductsApi",
@@ -136,8 +123,7 @@
     "sideEffect": "read",
     "role": "any_authenticated_or_public",
     "idempotent": true,
-    "helper": "fetch",
-    "tested": false
+    "helper": "fetch"
   },
   {
     "function": "fetchProfileApi",
@@ -146,8 +132,7 @@
     "sideEffect": "read",
     "role": "any_authenticated_or_public",
     "idempotent": true,
-    "helper": "fetch",
-    "tested": false
+    "helper": "fetch"
   },
   {
     "function": "fetchTelemetryData",
@@ -156,8 +141,7 @@
     "sideEffect": "read",
     "role": "any_authenticated_or_public",
     "idempotent": true,
-    "helper": "getOptional",
-    "tested": false
+    "helper": "getOptional"
   },
   {
     "function": "getAdminStats",
@@ -166,8 +150,7 @@
     "sideEffect": "read",
     "role": "admin",
     "idempotent": true,
-    "helper": "get",
-    "tested": false
+    "helper": "get"
   },
   {
     "function": "getAdminUser",
@@ -176,8 +159,7 @@
     "sideEffect": "read",
     "role": "admin",
     "idempotent": true,
-    "helper": "get",
-    "tested": false
+    "helper": "get"
   },
   {
     "function": "getAdminUsers",
@@ -186,8 +168,7 @@
     "sideEffect": "read",
     "role": "admin",
     "idempotent": true,
-    "helper": "get",
-    "tested": false
+    "helper": "get"
   },
   {
     "function": "getAuditLogs",
@@ -196,8 +177,7 @@
     "sideEffect": "read",
     "role": "admin",
     "idempotent": true,
-    "helper": "get",
-    "tested": false
+    "helper": "get"
   },
   {
     "function": "getBlockchainThreats",
@@ -206,8 +186,7 @@
     "sideEffect": "read",
     "role": "operator_or_admin",
     "idempotent": true,
-    "helper": "get",
-    "tested": false
+    "helper": "get"
   },
   {
     "function": "getConjectures",
@@ -216,8 +195,7 @@
     "sideEffect": "read",
     "role": "executive",
     "idempotent": true,
-    "helper": "get",
-    "tested": false
+    "helper": "get"
   },
   {
     "function": "getConsciousness",
@@ -226,8 +204,7 @@
     "sideEffect": "read",
     "role": "any_authenticated_or_public",
     "idempotent": true,
-    "helper": "get",
-    "tested": false
+    "helper": "get"
   },
   {
     "function": "getExecutiveTelemetry",
@@ -236,8 +213,7 @@
     "sideEffect": "read",
     "role": "executive",
     "idempotent": true,
-    "helper": "get",
-    "tested": false
+    "helper": "get"
   },
   {
     "function": "getFundingAllocations",
@@ -246,8 +222,7 @@
     "sideEffect": "read",
     "role": "admin",
     "idempotent": true,
-    "helper": "get",
-    "tested": false
+    "helper": "get"
   },
   {
     "function": "getFundingRequests",
@@ -256,8 +231,7 @@
     "sideEffect": "read",
     "role": "admin",
     "idempotent": true,
-    "helper": "get",
-    "tested": false
+    "helper": "get"
   },
   {
     "function": "getFundingSummary",
@@ -266,8 +240,7 @@
     "sideEffect": "read",
     "role": "admin",
     "idempotent": true,
-    "helper": "get",
-    "tested": false
+    "helper": "get"
   },
   {
     "function": "getHealth",
@@ -276,8 +249,7 @@
     "sideEffect": "read",
     "role": "any_authenticated_or_public",
     "idempotent": true,
-    "helper": "get",
-    "tested": false
+    "helper": "get"
   },
   {
     "function": "getHealthLiveness",
@@ -286,8 +258,7 @@
     "sideEffect": "read",
     "role": "any_authenticated_or_public",
     "idempotent": true,
-    "helper": "get",
-    "tested": false
+    "helper": "get"
   },
   {
     "function": "getHealthReadiness",
@@ -296,8 +267,7 @@
     "sideEffect": "read",
     "role": "any_authenticated_or_public",
     "idempotent": true,
-    "helper": "get",
-    "tested": false
+    "helper": "get"
   },
   {
     "function": "getHealthReady",
@@ -306,8 +276,7 @@
     "sideEffect": "read",
     "role": "any_authenticated_or_public",
     "idempotent": true,
-    "helper": "get",
-    "tested": false
+    "helper": "get"
   },
   {
     "function": "getHungerDrive",
@@ -316,8 +285,7 @@
     "sideEffect": "read",
     "role": "any_authenticated_or_public",
     "idempotent": true,
-    "helper": "get",
-    "tested": false
+    "helper": "get"
   },
   {
     "function": "getImmuneStatus",
@@ -326,8 +294,7 @@
     "sideEffect": "read",
     "role": "executive",
     "idempotent": true,
-    "helper": "get",
-    "tested": false
+    "helper": "get"
   },
   {
     "function": "getIntelligenceStatus",
@@ -336,8 +303,7 @@
     "sideEffect": "read",
     "role": "any_authenticated_or_public",
     "idempotent": true,
-    "helper": "get",
-    "tested": false
+    "helper": "get"
   },
   {
     "function": "getIntelligenceTelemetry",
@@ -346,8 +312,7 @@
     "sideEffect": "read",
     "role": "any_authenticated_or_public",
     "idempotent": true,
-    "helper": "get",
-    "tested": false
+    "helper": "get"
   },
   {
     "function": "getIntelligenceV1AbsoluteAudit",
@@ -356,8 +321,7 @@
     "sideEffect": "read",
     "role": "executive",
     "idempotent": true,
-    "helper": "get",
-    "tested": false
+    "helper": "get"
   },
   {
     "function": "getIntelligenceV1Audit",
@@ -366,8 +330,7 @@
     "sideEffect": "read",
     "role": "executive",
     "idempotent": true,
-    "helper": "get",
-    "tested": false
+    "helper": "get"
   },
   {
     "function": "getIntelligenceV1Health",
@@ -376,8 +339,7 @@
     "sideEffect": "read",
     "role": "executive",
     "idempotent": true,
-    "helper": "get",
-    "tested": false
+    "helper": "get"
   },
   {
     "function": "getMemoryByKey",
@@ -386,8 +348,7 @@
     "sideEffect": "read",
     "role": "any_authenticated_or_public",
     "idempotent": true,
-    "helper": "get",
-    "tested": false
+    "helper": "get"
   },
   {
     "function": "getMemoryHealth",
@@ -396,8 +357,7 @@
     "sideEffect": "read",
     "role": "any_authenticated_or_public",
     "idempotent": true,
-    "helper": "get",
-    "tested": false
+    "helper": "get"
   },
   {
     "function": "getMemorySnapshots",
@@ -406,8 +366,7 @@
     "sideEffect": "read",
     "role": "any_authenticated_or_public",
     "idempotent": true,
-    "helper": "get",
-    "tested": false
+    "helper": "get"
   },
   {
     "function": "getMetabolicCertificate",
@@ -416,8 +375,7 @@
     "sideEffect": "read",
     "role": "any_authenticated_or_public",
     "idempotent": true,
-    "helper": "get",
-    "tested": false
+    "helper": "get"
   },
   {
     "function": "getMetabolicEntropy",
@@ -426,8 +384,7 @@
     "sideEffect": "read",
     "role": "any_authenticated_or_public",
     "idempotent": true,
-    "helper": "get",
-    "tested": false
+    "helper": "get"
   },
   {
     "function": "getMetabolicFlux",
@@ -436,8 +393,7 @@
     "sideEffect": "read",
     "role": "executive",
     "idempotent": true,
-    "helper": "get",
-    "tested": false
+    "helper": "get"
   },
   {
     "function": "getMiningDaemon",
@@ -446,8 +402,7 @@
     "sideEffect": "read",
     "role": "operator_or_admin",
     "idempotent": true,
-    "helper": "get",
-    "tested": false
+    "helper": "get"
   },
   {
     "function": "getMiningHealth",
@@ -456,8 +411,7 @@
     "sideEffect": "read",
     "role": "operator_or_admin",
     "idempotent": true,
-    "helper": "get",
-    "tested": false
+    "helper": "get"
   },
   {
     "function": "getMiningJob",
@@ -466,8 +420,7 @@
     "sideEffect": "read",
     "role": "operator_or_admin",
     "idempotent": true,
-    "helper": "get",
-    "tested": false
+    "helper": "get"
   },
   {
     "function": "getMiningOpsAutonomics",
@@ -476,8 +429,7 @@
     "sideEffect": "read",
     "role": "operator_or_admin",
     "idempotent": true,
-    "helper": "get",
-    "tested": false
+    "helper": "get"
   },
   {
     "function": "getMiningOpsMetrics",
@@ -486,8 +438,7 @@
     "sideEffect": "read",
     "role": "operator_or_admin",
     "idempotent": true,
-    "helper": "get",
-    "tested": false
+    "helper": "get"
   },
   {
     "function": "getMiningOpsProfitability",
@@ -496,8 +447,7 @@
     "sideEffect": "read",
     "role": "operator_or_admin",
     "idempotent": true,
-    "helper": "get",
-    "tested": false
+    "helper": "get"
   },
   {
     "function": "getMiningPools",
@@ -506,8 +456,7 @@
     "sideEffect": "read",
     "role": "operator_or_admin",
     "idempotent": true,
-    "helper": "get",
-    "tested": false
+    "helper": "get"
   },
   {
     "function": "getMiningProductionHealth",
@@ -516,8 +465,7 @@
     "sideEffect": "read",
     "role": "operator_or_admin",
     "idempotent": true,
-    "helper": "get",
-    "tested": false
+    "helper": "get"
   },
   {
     "function": "getMiningProductionMetrics",
@@ -526,8 +474,7 @@
     "sideEffect": "read",
     "role": "operator_or_admin",
     "idempotent": true,
-    "helper": "get",
-    "tested": false
+    "helper": "get"
   },
   {
     "function": "getMiningProductionNextJob",
@@ -536,8 +483,7 @@
     "sideEffect": "read",
     "role": "operator_or_admin",
     "idempotent": true,
-    "helper": "get",
-    "tested": false
+    "helper": "get"
   },
   {
     "function": "getMiningProductionStatus",
@@ -546,8 +492,7 @@
     "sideEffect": "read",
     "role": "operator_or_admin",
     "idempotent": true,
-    "helper": "get",
-    "tested": false
+    "helper": "get"
   },
   {
     "function": "getMiningStats",
@@ -556,8 +501,7 @@
     "sideEffect": "read",
     "role": "operator_or_admin",
     "idempotent": true,
-    "helper": "get",
-    "tested": false
+    "helper": "get"
   },
   {
     "function": "getMiningStatus",
@@ -566,8 +510,16 @@
     "sideEffect": "read",
     "role": "operator_or_admin",
     "idempotent": true,
-    "helper": "get",
-    "tested": false
+    "helper": "get"
+  },
+  {
+    "function": "getOrganismRegenerationStatus",
+    "method": "GET",
+    "path": "/api/organism/regeneration/status",
+    "sideEffect": "read",
+    "role": "executive",
+    "idempotent": true,
+    "helper": "get"
   },
   {
     "function": "getPitfalls",
@@ -576,8 +528,7 @@
     "sideEffect": "read",
     "role": "any_authenticated_or_public",
     "idempotent": true,
-    "helper": "get",
-    "tested": false
+    "helper": "get"
   },
   {
     "function": "getPoolHabitats",
@@ -586,8 +537,7 @@
     "sideEffect": "read",
     "role": "executive",
     "idempotent": true,
-    "helper": "get",
-    "tested": false
+    "helper": "get"
   },
   {
     "function": "getRealityAnchor",
@@ -596,8 +546,7 @@
     "sideEffect": "read",
     "role": "executive",
     "idempotent": true,
-    "helper": "get",
-    "tested": false
+    "helper": "get"
   },
   {
     "function": "getRegenerationStatus",
@@ -606,8 +555,7 @@
     "sideEffect": "read",
     "role": "operator_or_admin",
     "idempotent": true,
-    "helper": "get",
-    "tested": false
+    "helper": "get"
   },
   {
     "function": "getSecurityStatus",
@@ -616,8 +564,7 @@
     "sideEffect": "read",
     "role": "operator_or_admin",
     "idempotent": true,
-    "helper": "get",
-    "tested": false
+    "helper": "get"
   },
   {
     "function": "getStreamingStats",
@@ -626,8 +573,7 @@
     "sideEffect": "read",
     "role": "any_authenticated_or_public",
     "idempotent": true,
-    "helper": "get",
-    "tested": false
+    "helper": "get"
   },
   {
     "function": "getSubstrate",
@@ -636,8 +582,7 @@
     "sideEffect": "read",
     "role": "any_authenticated_or_public",
     "idempotent": true,
-    "helper": "get",
-    "tested": false
+    "helper": "get"
   },
   {
     "function": "getSwarmStatus",
@@ -646,8 +591,7 @@
     "sideEffect": "read",
     "role": "operator_or_admin",
     "idempotent": true,
-    "helper": "get",
-    "tested": false
+    "helper": "get"
   },
   {
     "function": "getUnifiedHealth",
@@ -656,8 +600,7 @@
     "sideEffect": "read",
     "role": "any_authenticated_or_public",
     "idempotent": true,
-    "helper": "get",
-    "tested": false
+    "helper": "get"
   },
   {
     "function": "getUnifiedMetrics",
@@ -666,8 +609,7 @@
     "sideEffect": "read",
     "role": "any_authenticated_or_public",
     "idempotent": true,
-    "helper": "get",
-    "tested": false
+    "helper": "get"
   },
   {
     "function": "getUnifiedStatus",
@@ -676,8 +618,7 @@
     "sideEffect": "read",
     "role": "any_authenticated_or_public",
     "idempotent": true,
-    "helper": "get",
-    "tested": false
+    "helper": "get"
   },
   {
     "function": "getV1PoolsCurrent",
@@ -686,8 +627,7 @@
     "sideEffect": "read",
     "role": "operator_or_admin",
     "idempotent": true,
-    "helper": "get",
-    "tested": false
+    "helper": "get"
   },
   {
     "function": "getV1PoolsDefault",
@@ -696,8 +636,7 @@
     "sideEffect": "read",
     "role": "operator_or_admin",
     "idempotent": true,
-    "helper": "get",
-    "tested": false
+    "helper": "get"
   },
   {
     "function": "getV1PoolsEnabled",
@@ -706,8 +645,7 @@
     "sideEffect": "read",
     "role": "operator_or_admin",
     "idempotent": true,
-    "helper": "get",
-    "tested": false
+    "helper": "get"
   },
   {
     "function": "getV1PoolsHealth",
@@ -716,8 +654,7 @@
     "sideEffect": "read",
     "role": "operator_or_admin",
     "idempotent": true,
-    "helper": "get",
-    "tested": false
+    "helper": "get"
   },
   {
     "function": "getV1PoolsList",
@@ -726,8 +663,7 @@
     "sideEffect": "read",
     "role": "operator_or_admin",
     "idempotent": true,
-    "helper": "get",
-    "tested": false
+    "helper": "get"
   },
   {
     "function": "getV1PoolsStatus",
@@ -736,8 +672,7 @@
     "sideEffect": "read",
     "role": "operator_or_admin",
     "idempotent": true,
-    "helper": "get",
-    "tested": false
+    "helper": "get"
   },
   {
     "function": "initializeMiningProduction",
@@ -746,8 +681,7 @@
     "sideEffect": "mutation",
     "role": "operator_or_admin",
     "idempotent": false,
-    "helper": "post",
-    "tested": false
+    "helper": "post"
   },
   {
     "function": "intelligenceClosureSync",
@@ -756,8 +690,7 @@
     "sideEffect": "mutation",
     "role": "executive",
     "idempotent": false,
-    "helper": "post",
-    "tested": false
+    "helper": "post"
   },
   {
     "function": "intelligenceExplain",
@@ -766,8 +699,7 @@
     "sideEffect": "mutation",
     "role": "executive",
     "idempotent": false,
-    "helper": "post",
-    "tested": false
+    "helper": "post"
   },
   {
     "function": "intelligenceHeartbeatPulse",
@@ -776,8 +708,7 @@
     "sideEffect": "mutation",
     "role": "executive",
     "idempotent": false,
-    "helper": "post",
-    "tested": false
+    "helper": "post"
   },
   {
     "function": "intelligenceOrchestrate",
@@ -786,8 +717,7 @@
     "sideEffect": "autonomous_control",
     "role": "executive",
     "idempotent": false,
-    "helper": "post",
-    "tested": false
+    "helper": "post"
   },
   {
     "function": "intelligenceReflect",
@@ -796,8 +726,7 @@
     "sideEffect": "mutation",
     "role": "executive",
     "idempotent": false,
-    "helper": "post",
-    "tested": false
+    "helper": "post"
   },
   {
     "function": "listStreamingChannels",
@@ -806,8 +735,7 @@
     "sideEffect": "read",
     "role": "any_authenticated_or_public",
     "idempotent": true,
-    "helper": "get",
-    "tested": false
+    "helper": "get"
   },
   {
     "function": "loginApi",
@@ -816,8 +744,7 @@
     "sideEffect": "mutation",
     "role": "any_authenticated_or_public",
     "idempotent": false,
-    "helper": "fetch",
-    "tested": false
+    "helper": "fetch"
   },
   {
     "function": "migrateToHabitat",
@@ -826,8 +753,7 @@
     "sideEffect": "autonomous_control",
     "role": "executive",
     "idempotent": false,
-    "helper": "put",
-    "tested": false
+    "helper": "put"
   },
   {
     "function": "pauseMining",
@@ -836,8 +762,7 @@
     "sideEffect": "destructive",
     "role": "operator_or_admin",
     "idempotent": false,
-    "helper": "post",
-    "tested": false
+    "helper": "post"
   },
   {
     "function": "postSecurityEvent",
@@ -846,8 +771,7 @@
     "sideEffect": "mutation",
     "role": "operator_or_admin",
     "idempotent": false,
-    "helper": "post",
-    "tested": false
+    "helper": "post"
   },
   {
     "function": "proposeSelfModification",
@@ -856,8 +780,7 @@
     "sideEffect": "mutation",
     "role": "operator_or_admin",
     "idempotent": false,
-    "helper": "post",
-    "tested": false
+    "helper": "post"
   },
   {
     "function": "quarantineLane",
@@ -866,8 +789,7 @@
     "sideEffect": "autonomous_control",
     "role": "executive",
     "idempotent": false,
-    "helper": "post",
-    "tested": false
+    "helper": "post"
   },
   {
     "function": "registerApi",
@@ -876,8 +798,7 @@
     "sideEffect": "mutation",
     "role": "any_authenticated_or_public",
     "idempotent": false,
-    "helper": "fetch",
-    "tested": false
+    "helper": "fetch"
   },
   {
     "function": "reportV1PoolShare",
@@ -886,8 +807,7 @@
     "sideEffect": "mutation",
     "role": "operator_or_admin",
     "idempotent": false,
-    "helper": "post",
-    "tested": false
+    "helper": "post"
   },
   {
     "function": "requestPrediction",
@@ -896,8 +816,7 @@
     "sideEffect": "mutation",
     "role": "any_authenticated_or_public",
     "idempotent": false,
-    "helper": "post",
-    "tested": false
+    "helper": "post"
   },
   {
     "function": "resetIntelligence",
@@ -906,8 +825,7 @@
     "sideEffect": "mutation",
     "role": "any_authenticated_or_public",
     "idempotent": false,
-    "helper": "post",
-    "tested": false
+    "helper": "post"
   },
   {
     "function": "resumeMining",
@@ -916,8 +834,7 @@
     "sideEffect": "destructive",
     "role": "operator_or_admin",
     "idempotent": false,
-    "helper": "post",
-    "tested": false
+    "helper": "post"
   },
   {
     "function": "reviewFundingRequest",
@@ -926,8 +843,7 @@
     "sideEffect": "mutation",
     "role": "admin",
     "idempotent": false,
-    "helper": "put",
-    "tested": false
+    "helper": "put"
   },
   {
     "function": "runToeExperiment",
@@ -936,8 +852,7 @@
     "sideEffect": "mutation",
     "role": "any_authenticated_or_public",
     "idempotent": false,
-    "helper": "post",
-    "tested": false
+    "helper": "post"
   },
   {
     "function": "scaleIntelligence",
@@ -946,8 +861,7 @@
     "sideEffect": "autonomous_control",
     "role": "executive",
     "idempotent": false,
-    "helper": "post",
-    "tested": false
+    "helper": "post"
   },
   {
     "function": "securityShield",
@@ -956,8 +870,7 @@
     "sideEffect": "autonomous_control",
     "role": "operator_or_admin",
     "idempotent": false,
-    "helper": "post",
-    "tested": false
+    "helper": "post"
   },
   {
     "function": "setMiningIntent",
@@ -966,8 +879,7 @@
     "sideEffect": "autonomous_control",
     "role": "executive",
     "idempotent": false,
-    "helper": "post",
-    "tested": false
+    "helper": "post"
   },
   {
     "function": "simulateDisturbance",
@@ -976,8 +888,7 @@
     "sideEffect": "autonomous_control",
     "role": "any_authenticated_or_public",
     "idempotent": false,
-    "helper": "post",
-    "tested": false
+    "helper": "post"
   },
   {
     "function": "startIntelligence",
@@ -986,8 +897,7 @@
     "sideEffect": "destructive",
     "role": "any_authenticated_or_public",
     "idempotent": false,
-    "helper": "post",
-    "tested": false
+    "helper": "post"
   },
   {
     "function": "startKeepAlivePing",
@@ -996,8 +906,7 @@
     "sideEffect": "read",
     "role": "any_authenticated_or_public",
     "idempotent": true,
-    "helper": "fetch",
-    "tested": false
+    "helper": "fetch"
   },
   {
     "function": "startMiningProduction",
@@ -1006,8 +915,7 @@
     "sideEffect": "destructive",
     "role": "operator_or_admin",
     "idempotent": false,
-    "helper": "post",
-    "tested": false
+    "helper": "post"
   },
   {
     "function": "stimulateConsciousness",
@@ -1016,8 +924,7 @@
     "sideEffect": "mutation",
     "role": "any_authenticated_or_public",
     "idempotent": false,
-    "helper": "post",
-    "tested": false
+    "helper": "post"
   },
   {
     "function": "stopIntelligence",
@@ -1026,8 +933,7 @@
     "sideEffect": "destructive",
     "role": "any_authenticated_or_public",
     "idempotent": false,
-    "helper": "post",
-    "tested": false
+    "helper": "post"
   },
   {
     "function": "stopMiningProduction",
@@ -1036,8 +942,7 @@
     "sideEffect": "destructive",
     "role": "operator_or_admin",
     "idempotent": false,
-    "helper": "post",
-    "tested": false
+    "helper": "post"
   },
   {
     "function": "submitJob",
@@ -1046,8 +951,7 @@
     "sideEffect": "destructive",
     "role": "operator_or_admin",
     "idempotent": false,
-    "helper": "post",
-    "tested": false
+    "helper": "post"
   },
   {
     "function": "submitMiningProductionShare",
@@ -1056,8 +960,7 @@
     "sideEffect": "destructive",
     "role": "operator_or_admin",
     "idempotent": false,
-    "helper": "post",
-    "tested": false
+    "helper": "post"
   },
   {
     "function": "switchPool",
@@ -1066,8 +969,7 @@
     "sideEffect": "destructive",
     "role": "operator_or_admin",
     "idempotent": false,
-    "helper": "post",
-    "tested": false
+    "helper": "post"
   },
   {
     "function": "switchV1Pool",
@@ -1076,8 +978,7 @@
     "sideEffect": "destructive",
     "role": "operator_or_admin",
     "idempotent": false,
-    "helper": "post",
-    "tested": false
+    "helper": "post"
   },
   {
     "function": "unifiedShareResult",
@@ -1086,8 +987,7 @@
     "sideEffect": "mutation",
     "role": "any_authenticated_or_public",
     "idempotent": false,
-    "helper": "post",
-    "tested": false
+    "helper": "post"
   },
   {
     "function": "updateAdminUser",
@@ -1096,8 +996,7 @@
     "sideEffect": "mutation",
     "role": "admin",
     "idempotent": false,
-    "helper": "put",
-    "tested": false
+    "helper": "put"
   },
   {
     "function": "updateFundingAllocation",
@@ -1106,8 +1005,7 @@
     "sideEffect": "mutation",
     "role": "admin",
     "idempotent": false,
-    "helper": "put",
-    "tested": false
+    "helper": "put"
   },
   {
     "function": "updatePowerScale",
@@ -1116,7 +1014,6 @@
     "sideEffect": "autonomous_control",
     "role": "operator_or_admin",
     "idempotent": false,
-    "helper": "post",
-    "tested": false
+    "helper": "post"
   }
 ]

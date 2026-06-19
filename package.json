@@ -95,10 +95,12 @@
     "benchmark:ai-capabilities": "npm run python:env:check && cross-env PYTHONPATH=python_backend python -m pytest tests/test_ai_capability_benchmarks.py -q -s",
     "test:frontend:unit": "vitest run tests/**/*.test.ts --config vitest.config.ts",
     "test:frontend:components": "vitest run tests/**/*.test.tsx --config vitest.component.config.ts",
-    "test:frontend:coverage": "vitest run --coverage",
+    "test:frontend:coverage": "npm run test:frontend:unit:coverage && npm run test:frontend:components:coverage",
     "test:frontend:e2e": "playwright install --with-deps && playwright test",
     "test:frontend:all": "npm run lint && npm run test:frontend:unit && npm run test:frontend:components && npm run test:frontend:e2e",
-    "test:frontend:gate": "npm run test:frontend:all && npm run build"
+    "test:frontend:gate": "npm run test:frontend:all && npm run build",
+    "test:frontend:unit:coverage": "vitest run tests/**/*.test.ts --config vitest.config.ts --coverage",
+    "test:frontend:components:coverage": "vitest run tests/**/*.test.tsx --config vitest.component.config.ts --coverage"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
