@@ -25,3 +25,4 @@ skip = [".git", ".venv", "venv", "node_modules", "dist", "artifacts", "logs"]
 markers = [
     "benchmark: performance/capability benchmark tests with explicit thresholds",
 ]
+timeout = 10
