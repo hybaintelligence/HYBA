@@ -6,9 +6,9 @@
 #
 # This script is intentionally local-first. It creates/uses a Python venv,
 # upgrades pip, installs the backend requirements, installs npm dependencies,
-# runs the autonomous sovereign gate, starts the FastAPI backend, starts the
-# frontend bridge, and proves the frontend can reach backend health through the
-# bridge.
+# runs PYTHIA's autonomous bootstrap, runs the autonomous sovereign gate, starts
+# the FastAPI backend, starts the frontend bridge, and proves the frontend can
+# reach backend health through the bridge.
 
 set -Eeuo pipefail
 
@@ -22,6 +22,7 @@ BACKEND_LOG="${RUNTIME_DIR}/backend.log"
 FRONTEND_LOG="${RUNTIME_DIR}/frontend.log"
 BOOT_LOG="${RUNTIME_DIR}/launch.log"
 SOVEREIGN_GATE_LOG="${RUNTIME_DIR}/autonomous_sovereign_gate.json"
+PYTHIA_BOOTSTRAP_LOG="${RUNTIME_DIR}/pythia_autonomous_bootstrap.json"
 : >"${BACKEND_LOG}"
 : >"${FRONTEND_LOG}"
 : >"${BOOT_LOG}"
@@ -36,6 +37,8 @@ log() {
 
 show_recent_logs() {
   echo ""
+  echo "--- pythia autonomous bootstrap ---"
+  cat "${PYTHIA_BOOTSTRAP_LOG}" 2>/dev/null || true
   echo "--- autonomous gate output ---"
   cat "${SOVEREIGN_GATE_LOG}" 2>/dev/null || true
   echo "--- backend log tail ---"
@@ -114,6 +117,14 @@ HYBA_ALLOW_DEV_FIXTURES=false
 HYBA_ENABLE_LIVE_STRATUM=true
 HYBA_ENABLE_MINING_AUTOCONNECT=false
 HYBA_ENABLE_AUDIT_LOGGING=true
+HYBA_ENABLE_AUTONOMOUS_MINING=true
+HYBA_AUTONOMY_LEVEL=autonomous
+HYBA_REFLEXIVE_LOOP_ENABLED=true
+HYBA_COMPRESSION_DRIVE_ENABLED=true
+HYBA_BOOTSTRAP_REFLEXIVE_EPOCHS=2
+HYBA_AUTONOMOUS_MAX_HASHRATE_EHS=1.0
+HYBA_AUTONOMOUS_MAX_POWER_WATTS=500
+HYBA_AUTONOMOUS_MIN_PHI_COHERENCE=0.70
 BACKEND_PROXY_TIMEOUT_MS=30000
 EOF
   fi
@@ -132,7 +143,31 @@ EOF
   export HYBA_ENABLE_LIVE_STRATUM="${HYBA_ENABLE_LIVE_STRATUM:-true}"
   export HYBA_ENABLE_MINING_AUTOCONNECT="${HYBA_ENABLE_MINING_AUTOCONNECT:-false}"
   export HYBA_ENABLE_AUDIT_LOGGING="${HYBA_ENABLE_AUDIT_LOGGING:-true}"
+  export HYBA_ENABLE_AUTONOMOUS_MINING="${HYBA_ENABLE_AUTONOMOUS_MINING:-true}"
+  export HYBA_AUTONOMY_LEVEL="${HYBA_AUTONOMY_LEVEL:-autonomous}"
+  export HYBA_REFLEXIVE_LOOP_ENABLED="${HYBA_REFLEXIVE_LOOP_ENABLED:-true}"
+  export HYBA_COMPRESSION_DRIVE_ENABLED="${HYBA_COMPRESSION_DRIVE_ENABLED:-true}"
+  export HYBA_BOOTSTRAP_REFLEXIVE_EPOCHS="${HYBA_BOOTSTRAP_REFLEXIVE_EPOCHS:-2}"
+  export HYBA_AUTONOMOUS_MAX_HASHRATE_EHS="${HYBA_AUTONOMOUS_MAX_HASHRATE_EHS:-1.0}"
+  export HYBA_AUTONOMOUS_MAX_POWER_WATTS="${HYBA_AUTONOMOUS_MAX_POWER_WATTS:-500}"
+  export HYBA_AUTONOMOUS_MIN_PHI_COHERENCE="${HYBA_AUTONOMOUS_MIN_PHI_COHERENCE:-0.70}"
   export PYTHONPATH="${REPO_ROOT}/python_backend${PYTHONPATH:+:${PYTHONPATH}}"
+}
+
+run_pythia_bootstrap() {
+  if [[ "${HYBA_ENABLE_AUTONOMOUS_MINING}" != "true" ]]; then
+    log "PYTHIA autonomous bootstrap skipped by HYBA_ENABLE_AUTONOMOUS_MINING=${HYBA_ENABLE_AUTONOMOUS_MINING}"
+    return 0
+  fi
+  log "Bootstrapping PYTHIA self-healing/self-optimising autonomy"
+  if ! python scripts/pythia_autonomous_bootstrap.py \
+    --epochs "${HYBA_BOOTSTRAP_REFLEXIVE_EPOCHS}" \
+    --capacity-ehs "${HYBA_AUTONOMOUS_MAX_HASHRATE_EHS}" \
+    --output "${PYTHIA_BOOTSTRAP_LOG}" \
+    >"${RUNTIME_DIR}/pythia_autonomous_bootstrap.stdout.json"; then
+    fail "PYTHIA autonomous bootstrap failed"
+  fi
+  log "✓ PYTHIA autonomous bootstrap complete"
 }
 
 run_sovereign_gate() {
@@ -192,6 +227,8 @@ import hyba_genesis_api.main  # noqa: F401
 print('backend import ok')
 PY
 
+  run_pythia_bootstrap
+
   if [[ "${HYBA_SKIP_NPM_INSTALL:-false}" != "true" ]]; then
     if [[ -f "package-lock.json" ]]; then
       log "Installing npm dependencies with npm ci"
@@ -241,12 +278,13 @@ PY
   log "╔════════════════════════════════════════════════════════════════╗"
   log "║                    HYBA STACK IS RUNNING                       ║"
   log "╠════════════════════════════════════════════════════════════════╣"
-  log "║ Frontend:      http://127.0.0.1:${PORT}"
-  log "║ Backend API:   http://127.0.0.1:${BACKEND_PORT}"
-  log "║ Backend PID:   ${BACKEND_PID}"
-  log "║ Frontend PID:  ${FRONTEND_PID}"
-  log "║ Logs:          ${RUNTIME_DIR}"
-  log "║ Gate evidence: ${SOVEREIGN_GATE_LOG}"
+  log "║ Frontend:        http://127.0.0.1:${PORT}"
+  log "║ Backend API:     http://127.0.0.1:${BACKEND_PORT}"
+  log "║ Backend PID:     ${BACKEND_PID}"
+  log "║ Frontend PID:    ${FRONTEND_PID}"
+  log "║ Logs:            ${RUNTIME_DIR}"
+  log "║ PYTHIA evidence: ${PYTHIA_BOOTSTRAP_LOG}"
+  log "║ Gate evidence:   ${SOVEREIGN_GATE_LOG}"
   log "╚════════════════════════════════════════════════════════════════╝"
 
   tail -f "${BACKEND_LOG}" "${FRONTEND_LOG}" &
