@@ -81,6 +81,14 @@ def _commands() -> list[GateCommand]:
             command=[python, "-m", "pytest", "tests/test_review_gap_closure_matrix.py", "-q"],
         ),
         GateCommand(
+            name="simulation_vs_instantiation_boundary",
+            command=[python, "-m", "pytest", "tests/test_simulation_vs_instantiation.py", "-q"],
+        ),
+        GateCommand(
+            name="deutsch_pulvini_claim_boundary",
+            command=[python, "-m", "pytest", "tests/test_deutsch_pulvini_claim_boundary.py", "-q"],
+        ),
+        GateCommand(
             name="quantum_solver_job_plumbing",
             command=[python, "-m", "pytest", "tests/test_agent3_quantum_solvers.py", "-q"],
         ),
