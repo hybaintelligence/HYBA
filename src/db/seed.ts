@@ -36,31 +36,31 @@ export async function seed() {
   // 2. Seed Quantum Products
   const defaultProducts: QuantumProduct[] = [
     {
-      id: "prod-dodeca",
-      name: "Dodecahedral Quantum State Accelerator v2",
+      id: "prod-pulvini-evidence-console",
+      name: "PULVINI Evidence Console",
       description:
-        "Generates twenty golden-ratio phase shifts in 1024-dimensional Hilbert space dynamically.",
-      category: "Coprocessors",
-      difficultyScale: 9.8,
-      qubitDimension: 1024,
-    },
-    {
-      id: "prod-hilbert",
-      name: "Hilbert Room Defibrillator Suite",
-      description:
-        "Applies multi-stage Kron tensor products with zero phase resonance interference.",
-      category: "Hardware Symmetries",
-      difficultyScale: 7.2,
+        "Operator-facing catalog record for deterministic certificate review, runtime evidence packets, and no-claim production handover controls.",
+      category: "Operator Evidence",
+      difficultyScale: 8.4,
       qubitDimension: 512,
     },
     {
-      id: "prod-annihilator",
-      name: "ASIC Annihilator Node v77",
+      id: "prod-stratum-v1-command-room",
+      name: "Stratum v1 Command-Room Adapter",
       description:
-        "Utilizes sub-space quantum state vector rotation to completely defeat linear brute-force mining ASIC loops.",
-      category: "Annihilators",
-      difficultyScale: 10.0,
-      qubitDimension: 2048,
+        "ViaBTC-ready Stratum v1 profile, handshake, job-flow, and share-acceptance evidence surface for controlled mining cutover.",
+      category: "Mining Operations",
+      difficultyScale: 7.8,
+      qubitDimension: 256,
+    },
+    {
+      id: "prod-phi-memory-folding",
+      name: "Phi Memory Folding Workbench",
+      description:
+        "PULVINI memory-folding workbench for retained-kernel replay, deterministic reconstruction checks, and bounded compression evidence.",
+      category: "Mathematical Runtime",
+      difficultyScale: 9.1,
+      qubitDimension: 1024,
     },
   ];
 
