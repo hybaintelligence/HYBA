@@ -1,6 +1,9 @@
 node_modules/
 dist/
 .env
+.env.*
+!.env.example
+!config/.env.example
 *.pyc
 __pycache__/
 .pytest_cache/
@@ -13,10 +16,11 @@ pythia_state.json
 .idea/
 *.egg-info/
 build/
-# Runtime-only deployment secrets and telemetry artifacts
 config/mining.pools.env
 config/mining_pools.local.json
 config/mining_pools.*.local.json
+config/mining_pools_live.local.json
+config/mining_pools_live.*.local.json
 python_backend/mining_pools.local.json
 python_backend/mining_pools.*.local.json
 *.db
@@ -24,29 +28,19 @@ python_backend/mining_pools.*.local.json
 *.db-wal
 artifacts/production_readiness/
 artifacts/funding_engine/
-
-# Autonomous mining runtime artifacts — large, high-churn, runtime-generated
 artifacts/autonomous_mining/
 runtime/
 python_backend/pythia_mining/mining_pools_config.json
 python_backend/pythia_mining/quantum_healing_swarm.py
 config/mining_pools_live.json
-
-# Local review and generated result artifacts
 %EVDIR%/
 changes.diff
 asic_comparison_results.json
 golden_ratio_scaling_results.json
-
-# Production local credentials — never commit
 .env.production.local
 config/production_credentials.env
 config/production_credentials_static.env
-
-# Firebase config (contains API keys — never commit)
 firebase-applet-config.json
 config/firebase-applet-config.json
-
-# Ignore local Python virtual environments
 venv/
 .venv/
