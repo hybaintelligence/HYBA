@@ -1,5 +1,7 @@
 import { expect, test } from "@playwright/test";
-import { installBackendMocks, OPERATIONAL_ROLES, seedAuth, type MockRole } from "./fixtures";
+import { installBackendMocks, seedAuth, type MockRole } from "./fixtures";
+
+const operationalRoles: MockRole[] = ["operator", "analyst", "miner"];
 
 const HIGH_RISK_PATH_PATTERNS = [
   /^\/api\/v1\/mining-production\/(start|stop|submit-share)$/,
@@ -17,7 +19,7 @@ function isHighRiskPath(pathname: string) {
 }
 
 test.describe("destructive and autonomous frontend safety", () => {
-  for (const role of OPERATIONAL_ROLES) {
+  for (const role of operationalRoles) {
     test(`${role} dashboard actions do not dispatch autonomous or destructive control calls`, async ({ page }) => {
       await seedAuth(page, role);
       await installBackendMocks(page, { role });
