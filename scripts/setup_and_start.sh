@@ -6,8 +6,9 @@
 #
 # This script is intentionally local-first. It creates/uses a Python venv,
 # upgrades pip, installs the backend requirements, installs npm dependencies,
-# starts the FastAPI backend, starts the frontend bridge, and proves the
-# frontend can reach backend health through the bridge.
+# runs the autonomous sovereign gate, starts the FastAPI backend, starts the
+# frontend bridge, and proves the frontend can reach backend health through the
+# bridge.
 
 set -Eeuo pipefail
 
@@ -20,6 +21,7 @@ mkdir -p "${RUNTIME_DIR}"
 BACKEND_LOG="${RUNTIME_DIR}/backend.log"
 FRONTEND_LOG="${RUNTIME_DIR}/frontend.log"
 BOOT_LOG="${RUNTIME_DIR}/launch.log"
+SOVEREIGN_GATE_LOG="${RUNTIME_DIR}/autonomous_sovereign_gate.json"
 : >"${BACKEND_LOG}"
 : >"${FRONTEND_LOG}"
 : >"${BOOT_LOG}"
@@ -34,6 +36,8 @@ log() {
 
 show_recent_logs() {
   echo ""
+  echo "--- autonomous gate output ---"
+  cat "${SOVEREIGN_GATE_LOG}" 2>/dev/null || true
   echo "--- backend log tail ---"
   tail -n 80 "${BACKEND_LOG}" 2>/dev/null || true
   echo "--- frontend log tail ---"
@@ -109,7 +113,6 @@ HYBA_SPAWN_BACKEND=false
 HYBA_ALLOW_DEV_FIXTURES=false
 HYBA_ENABLE_LIVE_STRATUM=true
 HYBA_ENABLE_MINING_AUTOCONNECT=false
-HYBA_ENABLE_LIVE_SHARE_SUBMIT=false
 HYBA_ENABLE_AUDIT_LOGGING=true
 BACKEND_PROXY_TIMEOUT_MS=30000
 EOF
@@ -128,9 +131,20 @@ EOF
   export HYBA_ALLOW_DEV_FIXTURES="${HYBA_ALLOW_DEV_FIXTURES:-false}"
   export HYBA_ENABLE_LIVE_STRATUM="${HYBA_ENABLE_LIVE_STRATUM:-true}"
   export HYBA_ENABLE_MINING_AUTOCONNECT="${HYBA_ENABLE_MINING_AUTOCONNECT:-false}"
-  export HYBA_ENABLE_LIVE_SHARE_SUBMIT="${HYBA_ENABLE_LIVE_SHARE_SUBMIT:-false}"
   export HYBA_ENABLE_AUDIT_LOGGING="${HYBA_ENABLE_AUDIT_LOGGING:-true}"
   export PYTHONPATH="${REPO_ROOT}/python_backend${PYTHONPATH:+:${PYTHONPATH}}"
+}
+
+run_sovereign_gate() {
+  local mode="command-room"
+  if [[ "${NODE_ENV}" == "production" || "${HYBA_ENV}" == "production" ]]; then
+    mode="live"
+  fi
+  log "Running autonomous sovereign gate in ${mode} mode"
+  if ! python scripts/mining_autonomous_sovereign_gate.py --mode "${mode}" --write >"${SOVEREIGN_GATE_LOG}"; then
+    fail "Autonomous sovereign gate returned NO-GO"
+  fi
+  log "✓ Autonomous sovereign gate returned GO"
 }
 
 main() {
@@ -190,10 +204,12 @@ PY
     log "Skipping npm dependency install"
   fi
 
-  if [[ "${HYBA_RUN_FRONTEND_BUILD:-false}" == "true" ]]; then
+  if [[ "${NODE_ENV}" == "production" || "${HYBA_RUN_FRONTEND_BUILD:-false}" == "true" ]]; then
     log "Running frontend/server build"
     npm run build
   fi
+
+  run_sovereign_gate
 
   log "Starting FastAPI backend on http://127.0.0.1:${BACKEND_PORT}"
   python -m uvicorn hyba_genesis_api.main:app \
@@ -230,8 +246,8 @@ PY
   log "║ Backend PID:   ${BACKEND_PID}"
   log "║ Frontend PID:  ${FRONTEND_PID}"
   log "║ Logs:          ${RUNTIME_DIR}"
+  log "║ Gate evidence: ${SOVEREIGN_GATE_LOG}"
   log "╚════════════════════════════════════════════════════════════════╝"
-  log "Operator mining gate remains explicit: configure .env.mining.local, then use the Treasury/MIDAS UI or backend mining API once the stack is healthy."
 
   tail -f "${BACKEND_LOG}" "${FRONTEND_LOG}" &
   TAIL_PID=$!
