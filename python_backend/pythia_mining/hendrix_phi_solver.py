@@ -70,58 +70,28 @@ ADJACENT: Tuple[Tuple[bool, ...], ...] = tuple(
 
 
 def _su2_from_byte(b: int, axis: int = 0) -> np.ndarray:
-    """Embed a byte value into SU(2) as a unit-trace group element.
-
-    The map  b ↦ exp(i θ_b σ·n̂)  where θ_b = b * 2π/255 and n̂ is the
-    Pauli axis specified by the axis parameter (0=σ_x, 1=σ_y, 2=σ_z).
-    Using different axes for different byte positions creates non-commuting
-    link variables, yielding a non-trivial gauge field action.
-
-    Returns a 2x2 complex unitary with det = 1.
-    """
+    """Embed a byte value into SU(2) as a unit-trace group element."""
     theta = float(b) * _SU2_SCALE
     c, s = math.cos(theta), math.sin(theta)
     if axis == 0:
-        # exp(i theta sigma_x) = [[cos theta, i sin theta], [i sin theta, cos theta]]
         return np.array([[c, 1j * s], [1j * s, c]], dtype=np.complex128)
-    elif axis == 1:
-        # exp(i theta sigma_y) = [[cos theta, sin theta], [-sin theta, cos theta]]
+    if axis == 1:
         return np.array([[c, s], [-s, c]], dtype=np.complex128)
-    else:
-        # exp(i theta sigma_z) = [[exp(i theta), 0], [0, exp(-i theta)]]
-        return np.array([[np.exp(1j * theta), 0], [0, np.exp(-1j * theta)]], dtype=np.complex128)
+    return np.array([[np.exp(1j * theta), 0], [0, np.exp(-1j * theta)]], dtype=np.complex128)
 
 
 def yang_mills_action(nonce: int) -> float:
-    """SU(2) lattice Yang-Mills plaquette action for the 4-byte nonce field.
-
-    The nonce is decomposed into 4 bytes b₀..b₃, each embedded as an
-    SU(2) link variable U_μ ∈ SU(2) via the map b ↦ exp(i θ_b σ·n̂_μ)
-    where n̂_μ cycles through Pauli axes (σ_x, σ_y, σ_z, σ_x) to create
-    non-commuting link variables and a non-trivial gauge field.
-
-    The Wilson plaquette action over the 6 independent (μ,ν) pairs is:
-
-        S = Σ_{μ<ν}  [ 1 - Re Tr(U_μ U_ν U_μ† U_ν†) / 2 ]
-
-    At the continuum limit S → (g²/2) Tr(F_{μν}²), recovering the
-    Yang-Mills kinetic term.  The normalization by 6 keeps S ∈ [0, 2],
-    consistent with the Yang-Mills gate threshold 3-φ ≈ 1.382 used
-    by the HENDRIX-Φ solver.
-    """
+    """SU(2) lattice Yang-Mills plaquette action for the 4-byte nonce field."""
     n = int(nonce) % UINT32_SPACE
     parts = [(n >> (8 * k)) & 0xFF for k in range(4)]
-    # Use different Pauli axes for different byte positions to create non-commuting links
-    axes = [0, 1, 2, 0]  # σ_x, σ_y, σ_z, σ_x
+    axes = [0, 1, 2, 0]
     links = [_su2_from_byte(b, axis=axes[k]) for k, b in enumerate(parts)]
     action = 0.0
     for i in range(4):
         for j in range(i + 1, 4):
-            # Wilson plaquette: U_i U_j U_i† U_j†
             plaquette = links[i] @ links[j] @ links[i].conj().T @ links[j].conj().T
-            # 1 - Re Tr(plaquette) / N  (N=2 for SU(2))
             action += 1.0 - float(np.real(np.trace(plaquette))) / 2.0
-    return max(0.0, action / 6.0)  # normalize over 6 plaquette pairs
+    return max(0.0, action / 6.0)
 
 
 @lru_cache(maxsize=200_000)
@@ -171,33 +141,40 @@ def soft_mass_gap_gate(action: float, rng: random.Random) -> bool:
     return rng.random() < math.exp(-(YANG_MILLS_GAP - action))
 
 
-# Precomputed at import time — zero allocation in the hot loop
 _FIB14: Tuple[int, ...] = FIBONACCI[:14]
 _FIB14_LEN: int = len(_FIB14)
 
 
-def phi_gradient_proposal(nonce: int, rng: random.Random, scale: int = 1) -> int:
-    """φ-gradient nonce proposal.
+def phi_gradient_proposal(
+    nonce: int | None = None,
+    rng: random.Random | None = None,
+    scale: int = 1,
+    *,
+    start_nonce: int | None = None,
+) -> int:
+    """φ-gradient nonce proposal with backward-compatible ``start_nonce`` alias.
 
-    Original: calls rng.choice(FIBONACCI[:14]) + rng.choice((-1,1)) per step
-              — two Python-level random calls + list slice = ~0.94M/s
-
-    Optimised: uses nonce's own upper bits to select Fibonacci step index
-               and sign, eliminating both rng.choice() calls from the hot path.
-               The nonce itself carries enough entropy; we only call rng.random()
-               once for the 70/30 gradient-follow vs explore split.
-               Result: ~3.5M/s  (~3.7x improvement, matching sequential overhead target)
+    Older tests and agents used ``start_nonce``. The canonical public parameter is
+    now ``nonce``, but preserving the alias avoids needless breakage while keeping
+    one deterministic implementation path.
     """
+    if nonce is None:
+        if start_nonce is None:
+            raise TypeError("phi_gradient_proposal requires nonce or start_nonce")
+        nonce = start_nonce
+    elif start_nonce is not None and int(start_nonce) != int(nonce):
+        raise ValueError("nonce and start_nonce must match when both are provided")
+    if rng is None:
+        rng = random.Random(0)
+
     n = int(nonce) % UINT32_SPACE
     step_scale = max(1, int(scale))
-    # Use upper bits of nonce as a cheap index — no allocation, no list lookup
     fib_idx = (n >> 18) % _FIB14_LEN
     step = _FIB14[fib_idx] * step_scale
     gradient = cheap_phi_resonance(n + 1) - cheap_phi_resonance(n - 1)
     if rng.random() < 0.70:
         sign = 1 if gradient >= 0.0 else -1
     else:
-        # Use a different nonce bit range for the explore sign — still no rng.choice()
         sign = 1 if (n >> 11) & 1 else -1
     return (n + sign * step) % UINT32_SPACE
 
