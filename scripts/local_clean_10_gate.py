@@ -3,7 +3,9 @@
 
 This gate is intentionally local-first. It does not assert the system is clean by
 inspection. It executes the release-critical command set, writes a structured
-JSON evidence packet, and exits non-zero unless every command passes.
+JSON evidence packet, and exits non-zero unless every command passes. The report
+also embeds a bounded tail from each command log so NO_GO artifacts are directly
+actionable even when the per-command log files are not separately archived.
 """
 
 from __future__ import annotations
@@ -19,6 +21,7 @@ from typing import Iterable
 
 ROOT = Path(__file__).resolve().parents[1]
 ARTIFACT_DIR = ROOT / "artifacts" / "clean_10"
+LOG_TAIL_LINES = 80
 
 
 @dataclass(frozen=True)
@@ -36,6 +39,7 @@ class GateResult:
     passed: bool
     duration_seconds: float
     log_path: str
+    log_tail: list[str]
 
 
 @dataclass(frozen=True)
@@ -79,6 +83,14 @@ def _commands() -> list[GateCommand]:
         GateCommand(
             name="review_gap_closure_matrix",
             command=[python, "-m", "pytest", "tests/test_review_gap_closure_matrix.py", "-q"],
+        ),
+        GateCommand(
+            name="simulation_vs_instantiation_boundary",
+            command=[python, "-m", "pytest", "tests/test_simulation_vs_instantiation.py", "-q"],
+        ),
+        GateCommand(
+            name="deutsch_pulvini_claim_boundary",
+            command=[python, "-m", "pytest", "tests/test_deutsch_pulvini_claim_boundary.py", "-q"],
         ),
         GateCommand(
             name="quantum_solver_job_plumbing",
@@ -174,6 +186,16 @@ def _commands() -> list[GateCommand]:
     ]
 
 
+def _read_log_tail(log_path: Path, line_limit: int = LOG_TAIL_LINES) -> list[str]:
+    if not log_path.exists():
+        return []
+    try:
+        lines = log_path.read_text(encoding="utf-8", errors="replace").splitlines()
+    except OSError:
+        return ["<log tail unavailable>"]
+    return lines[-line_limit:]
+
+
 def _run_command(command: GateCommand, env: dict[str, str], log_dir: Path) -> GateResult:
     started = datetime.now(timezone.utc)
     log_path = log_dir / f"{command.name}.log"
@@ -197,6 +219,7 @@ def _run_command(command: GateCommand, env: dict[str, str], log_dir: Path) -> Ga
         passed=process.returncode == 0,
         duration_seconds=duration,
         log_path=str(log_path.relative_to(ROOT)),
+        log_tail=[] if process.returncode == 0 else _read_log_tail(log_path),
     )
 
 
@@ -218,7 +241,8 @@ def run_gate(commands: Iterable[GateCommand] | None = None) -> CleanGateReport:
         if passed
         else [
             "Do not describe the repository as clean until required failures are zero.",
-            "Open the referenced per-command logs, fix the first failing command, and rerun this gate.",
+            "Use each failed result's embedded log_tail first, then open the referenced full log if needed.",
+            "Fix the first failing command group and rerun this gate.",
         ]
     )
     report = CleanGateReport(

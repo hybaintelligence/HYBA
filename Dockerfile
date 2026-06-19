@@ -14,8 +14,9 @@ COPY package*.json ./
 COPY . .
 RUN npm run lint
 RUN npm run build
+RUN node scripts/ensure_spa_entrypoint.mjs
 
-FROM python:3.12.13-slim AS runtime
+FROM node:22.15.0-bookworm-slim AS runtime
 ENV NODE_ENV=production \
     HYBA_ENV=production \
     HYBA_PHASE_TRANSITION_CONTAINER=1 \

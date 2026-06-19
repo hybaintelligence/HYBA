@@ -1,0 +1,44 @@
+{
+  "schema": "HYBA_MINING_VALIDATION_MANIFEST_V1",
+  "status": "pre_validation",
+  "current_repository_state": "entangled_with_hyba_fullstack",
+  "independent_ci": false,
+  "standalone_repository": false,
+  "commercialization_stage": "stage_0_pre_validation_research_only",
+  "commercialization_gates_file": "docs/mining/commercialization_gates.json",
+  "claims": [
+    {
+      "id": "pulvini_hendrix_mining_external_performance",
+      "claim": "PULVINI/HENDRIX-Φ mining performance, ASIC-efficiency, accepted-share, and revenue claims are not externally validated yet.",
+      "tier": "HYPOTHETICAL",
+      "evidence_status": "real_double_sha256_loop_pending",
+      "reproduction_command": "npm run review:claim-tiers && python scripts/check_commercialization_gates.py",
+      "required_to_promote": [
+        "independent_package_or_repository_boundary",
+        "standalone_ci_not_hyba_fullstack_ci",
+        "real_or_testnet_header_fixture",
+        "actual_double_sha256_nonce_loop",
+        "classical_enumeration_baseline",
+        "phi_guided_ordering_baseline",
+        "minimum_100_repeated_runs_with_variance",
+        "host_power_and_hashrate_measurement",
+        "published_asic_specs_comparison_with_no_replacement_claim",
+        "pool_side_accepted_share_evidence_before_hashrate_or_revenue_claims"
+      ],
+      "boundaries": [
+        "No guaranteed mining revenue claim",
+        "No accepted-share or pool-side hashrate claim without pool evidence",
+        "No SHA-256 quantum acceleration claim",
+        "No Antminer S21 superiority claim without comparable measured evidence",
+        "No universal random-search speedup claim; high-entropy SHA-256 search remains bounded by the Deutsch/exponential-wall framing",
+        "No commercialization before Stage 2 firmware/hardware integration evidence is present",
+        "No production SLA, warranty, or sovereign mining claim before Stage 3 field-trial evidence is present"
+      ],
+      "evidence_files": [
+        "docs/MINING_STANDALONE_VALIDATION_ROADMAP.md",
+        "docs/PYTHIA_HYBA_VALIDATION_REMEDIATION.md",
+        "docs/mining/commercialization_gates.json"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,271 @@
+{
+  "test_config": {
+    "start_dimension": 100,
+    "max_dimension": 10000,
+    "dimension_step": 500,
+    "stability_threshold": 0.606
+  },
+  "results": [
+    {
+      "dimension": 100,
+      "phi_folding_efficiency": 0.8901861522622699,
+      "geometric_stability_ratio": 0.9999999999999976,
+      "computation_time_ms": 10.956416997942142,
+      "memory_usage_mb": 0.484375,
+      "stability_state": "functional",
+      "collapse_detected": false,
+      "metadata": {
+        "dimension_step": 500,
+        "stability_threshold": 0.606
+      }
+    },
+    {
+      "dimension": 600,
+      "phi_folding_efficiency": 0.9214640124621664,
+      "geometric_stability_ratio": 1.0,
+      "computation_time_ms": 456.1901669985673,
+      "memory_usage_mb": 44.140625,
+      "stability_state": "functional",
+      "collapse_detected": false,
+      "metadata": {
+        "dimension_step": 500,
+        "stability_threshold": 0.606
+      }
+    },
+    {
+      "dimension": 1100,
+      "phi_folding_efficiency": 0.9285843047154471,
+      "geometric_stability_ratio": 1.0,
+      "computation_time_ms": 1957.5724589994934,
+      "memory_usage_mb": 146.28125,
+      "stability_state": "functional",
+      "collapse_detected": false,
+      "metadata": {
+        "dimension_step": 500,
+        "stability_threshold": 0.606
+      }
+    },
+    {
+      "dimension": 1600,
+      "phi_folding_efficiency": 0.9323087355491563,
+      "geometric_stability_ratio": 1.0,
+      "computation_time_ms": 4768.683750000491,
+      "memory_usage_mb": 312.40625,
+      "stability_state": "functional",
+      "collapse_detected": false,
+      "metadata": {
+        "dimension_step": 500,
+        "stability_threshold": 0.606
+      }
+    },
+    {
+      "dimension": 2100,
+      "phi_folding_efficiency": 0.9346607648198882,
+      "geometric_stability_ratio": 1.0,
+      "computation_time_ms": 7695.19420800134,
+      "memory_usage_mb": 340.75,
+      "stability_state": "functional",
+      "collapse_detected": false,
+      "metadata": {
+        "dimension_step": 500,
+        "stability_threshold": 0.606
+      }
+    },
+    {
+      "dimension": 2600,
+      "phi_folding_efficiency": 0.9364872489048051,
+      "geometric_stability_ratio": 1.0,
+      "computation_time_ms": 13251.679249999142,
+      "memory_usage_mb": 365.765625,
+      "stability_state": "functional",
+      "collapse_detected": false,
+      "metadata": {
+        "dimension_step": 500,
+        "stability_threshold": 0.606
+      }
+    },
+    {
+      "dimension": 3100,
+      "phi_folding_efficiency": 0.9378188427177906,
+      "geometric_stability_ratio": 1.0,
+      "computation_time_ms": 23092.727000002924,
+      "memory_usage_mb": -155.921875,
+      "stability_state": "functional",
+      "collapse_detected": false,
+      "metadata": {
+        "dimension_step": 500,
+        "stability_threshold": 0.606
+      }
+    },
+    {
+      "dimension": 3600,
+      "phi_folding_efficiency": 0.9389215928337761,
+      "geometric_stability_ratio": 1.0,
+      "computation_time_ms": 35816.08904099994,
+      "memory_usage_mb": 129.84375,
+      "stability_state": "functional",
+      "collapse_detected": false,
+      "metadata": {
+        "dimension_step": 500,
+        "stability_threshold": 0.606
+      }
+    },
+    {
+      "dimension": 4100,
+      "phi_folding_efficiency": 0.9398873326243764,
+      "geometric_stability_ratio": 1.0,
+      "computation_time_ms": 61579.15658300044,
+      "memory_usage_mb": 194.390625,
+      "stability_state": "functional",
+      "collapse_detected": false,
+      "metadata": {
+        "dimension_step": 500,
+        "stability_threshold": 0.606
+      }
+    },
+    {
+      "dimension": 4600,
+      "phi_folding_efficiency": 0.940728073128391,
+      "geometric_stability_ratio": 1.0,
+      "computation_time_ms": 77896.4416250019,
+      "memory_usage_mb": 344.125,
+      "stability_state": "functional",
+      "collapse_detected": false,
+      "metadata": {
+        "dimension_step": 500,
+        "stability_threshold": 0.606
+      }
+    },
+    {
+      "dimension": 5100,
+      "phi_folding_efficiency": 0.941409320607378,
+      "geometric_stability_ratio": 1.0,
+      "computation_time_ms": 113198.77933399766,
+      "memory_usage_mb": 373.5,
+      "stability_state": "functional",
+      "collapse_detected": false,
+      "metadata": {
+        "dimension_step": 500,
+        "stability_threshold": 0.606
+      }
+    },
+    {
+      "dimension": 5600,
+      "phi_folding_efficiency": 0.9420630781222539,
+      "geometric_stability_ratio": 1.0,
+      "computation_time_ms": 137271.31770900087,
+      "memory_usage_mb": 418.578125,
+      "stability_state": "functional",
+      "collapse_detected": false,
+      "metadata": {
+        "dimension_step": 500,
+        "stability_threshold": 0.606
+      }
+    },
+    {
+      "dimension": 6100,
+      "phi_folding_efficiency": 0.9426239952678092,
+      "geometric_stability_ratio": 1.0,
+      "computation_time_ms": 177101.24741599793,
+      "memory_usage_mb": 482.765625,
+      "stability_state": "functional",
+      "collapse_detected": false,
+      "metadata": {
+        "dimension_step": 500,
+        "stability_threshold": 0.606
+      }
+    },
+    {
+      "dimension": 6600,
+      "phi_folding_efficiency": 0.9431615545169899,
+      "geometric_stability_ratio": 1.0,
+      "computation_time_ms": 245752.81091700163,
+      "memory_usage_mb": 521.140625,
+      "stability_state": "functional",
+      "collapse_detected": false,
+      "metadata": {
+        "dimension_step": 500,
+        "stability_threshold": 0.606
+      }
+    },
+    {
+      "dimension": 7100,
+      "phi_folding_efficiency": 0.9436166746200032,
+      "geometric_stability_ratio": 1.0,
+      "computation_time_ms": 297755.76424999966,
+      "memory_usage_mb": 530.484375,
+      "stability_state": "functional",
+      "collapse_detected": false,
+      "metadata": {
+        "dimension_step": 500,
+        "stability_threshold": 0.606
+      }
+    },
+    {
+      "dimension": 7600,
+      "phi_folding_efficiency": 0.9440505863460752,
+      "geometric_stability_ratio": 1.0,
+      "computation_time_ms": 347816.1927910005,
+      "memory_usage_mb": 597.65625,
+      "stability_state": "functional",
+      "collapse_detected": false,
+      "metadata": {
+        "dimension_step": 500,
+        "stability_threshold": 0.606
+      }
+    },
+    {
+      "dimension": 8100,
+      "phi_folding_efficiency": 0.9444430278325526,
+      "geometric_stability_ratio": 1.0,
+      "computation_time_ms": 406077.8933750007,
+      "memory_usage_mb": 561.875,
+      "stability_state": "functional",
+      "collapse_detected": false,
+      "metadata": {
+        "dimension_step": 500,
+        "stability_threshold": 0.606
+      }
+    },
+    {
+      "dimension": 8600,
+      "phi_folding_efficiency": 0.9447973449604571,
+      "geometric_stability_ratio": 1.0,
+      "computation_time_ms": 483014.6276669984,
+      "memory_usage_mb": 695.28125,
+      "stability_state": "functional",
+      "collapse_detected": false,
+      "metadata": {
+        "dimension_step": 500,
+        "stability_threshold": 0.606
+      }
+    },
+    {
+      "dimension": 9100,
+      "phi_folding_efficiency": 0.9451486060249602,
+      "geometric_stability_ratio": 1.0,
+      "computation_time_ms": 560484.2559169992,
+      "memory_usage_mb": 603.78125,
+      "stability_state": "functional",
+      "collapse_detected": false,
+      "metadata": {
+        "dimension_step": 500,
+        "stability_threshold": 0.606
+      }
+    },
+    {
+      "dimension": 9600,
+      "phi_folding_efficiency": 0.9454641324963396,
+      "geometric_stability_ratio": 1.0,
+      "computation_time_ms": 636575.4971670031,
+      "memory_usage_mb": 721.84375,
+      "stability_state": "functional",
+      "collapse_detected": false,
+      "metadata": {
+        "dimension_step": 500,
+        "stability_threshold": 0.606
+      }
+    }
+  ],
+  "cognitive_horizon": null
+}

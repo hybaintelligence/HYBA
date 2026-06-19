@@ -1,0 +1,72 @@
+{
+  "benchmark_suite": "UniversalPassport",
+  "timestamp": 1781884433.3047879,
+  "iterations": 10,
+  "results": [
+    {
+      "operation": "passport_creation",
+      "iterations": 10,
+      "total_time_ms": 0.17787400065572,
+      "avg_time_ms": 0.017787400065572,
+      "min_time_ms": 0.00645900217932649,
+      "max_time_ms": 0.09349999891128391,
+      "throughput_ops_per_sec": 56219.570949861714,
+      "metadata": {
+        "passport_type": "standard"
+      }
+    },
+    {
+      "operation": "hash_computation",
+      "iterations": 10,
+      "total_time_ms": 0.08291599806398153,
+      "avg_time_ms": 0.008291599806398153,
+      "min_time_ms": 0.006374997610691935,
+      "max_time_ms": 0.014624998584622517,
+      "throughput_ops_per_sec": 120603.98757165743,
+      "metadata": {
+        "hash_algorithm": "SHA-256"
+      }
+    },
+    {
+      "operation": "verification",
+      "iterations": 10,
+      "total_time_ms": 0.04391699258121662,
+      "avg_time_ms": 0.004391699258121662,
+      "min_time_ms": 0.003749999450519681,
+      "max_time_ms": 0.005874997441424057,
+      "throughput_ops_per_sec": 227702.29499451243,
+      "metadata": {
+        "verification_result": true
+      }
+    },
+    {
+      "operation": "audit_log_append",
+      "iterations": 10,
+      "total_time_ms": 0.07004199869697914,
+      "avg_time_ms": 0.0070041998696979135,
+      "min_time_ms": 0.005374997272156179,
+      "max_time_ms": 0.014417000784305856,
+      "throughput_ops_per_sec": 142771.48262519945,
+      "metadata": {
+        "final_log_size": 10
+      }
+    },
+    {
+      "operation": "serialization",
+      "iterations": 10,
+      "total_time_ms": 0.18591599655337632,
+      "avg_time_ms": 0.01859159965533763,
+      "min_time_ms": 0.008041999535635114,
+      "max_time_ms": 0.043832998926518485,
+      "throughput_ops_per_sec": 53787.73309121364,
+      "metadata": {
+        "serialization_format": "JSON"
+      }
+    }
+  ],
+  "summary": {
+    "total_operations": 5,
+    "total_time_ms": 0.5606649865512736,
+    "avg_throughput": 120217.01384648893
+  }
+}

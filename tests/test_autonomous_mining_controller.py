@@ -105,6 +105,43 @@ class TestAutonomousMiningController(unittest.TestCase):
         self.assertEqual(config.phi_coherence_threshold, 0.70)
         self.assertEqual(config.reflexive_loop_interval, 60.0)
 
+
+    def test_autonomous_mining_enabled_defaults_startup_to_autonomous(self):
+        """Startup autonomy flag should put PYTHIA in charge when level is unset."""
+        with patch.dict(
+            os.environ,
+            {"HYBA_ENABLE_AUTONOMOUS_MINING": "true"},
+            clear=True,
+        ):
+            config = AutonomousConfig(persistence_enabled=False)
+
+        self.assertEqual(config.autonomy_level, AutonomyLevel.AUTONOMOUS)
+
+    def test_autonomous_mining_disabled_defaults_startup_to_advisory(self):
+        """Operators can disable autonomous startup and keep proposal-only posture."""
+        with patch.dict(
+            os.environ,
+            {"HYBA_ENABLE_AUTONOMOUS_MINING": "false"},
+            clear=True,
+        ):
+            config = AutonomousConfig(persistence_enabled=False)
+
+        self.assertEqual(config.autonomy_level, AutonomyLevel.ADVISORY)
+
+    def test_explicit_autonomy_level_overrides_startup_default(self):
+        """Explicit launch posture still wins over the autonomous-mining default."""
+        with patch.dict(
+            os.environ,
+            {
+                "HYBA_ENABLE_AUTONOMOUS_MINING": "true",
+                "HYBA_AUTONOMY_LEVEL": "supervised",
+            },
+            clear=True,
+        ):
+            config = AutonomousConfig(persistence_enabled=False)
+
+        self.assertEqual(config.autonomy_level, AutonomyLevel.SUPERVISED)
+
     def test_circuit_breaker_opens_and_degrades_after_repeated_failures(self):
         """Repeated autonomous-hook failures should degrade and pause optimization."""
         self.controller.set_autonomy_level(AutonomyLevel.AUTONOMOUS)

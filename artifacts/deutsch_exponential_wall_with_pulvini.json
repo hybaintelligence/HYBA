@@ -1,0 +1,161 @@
+{
+  "pulvini_compression": [
+    {
+      "num_qubits": 50,
+      "original_size": 23412,
+      "compressed_size": 23412,
+      "original_bytes": 374592,
+      "compressed_bytes": 374592,
+      "compression_ratio": 1.0,
+      "reconstruction_error": 0.0,
+      "lossless": true
+    },
+    {
+      "num_qubits": 100,
+      "original_size": 49012,
+      "compressed_size": 49012,
+      "original_bytes": 784192,
+      "compressed_bytes": 784192,
+      "compression_ratio": 1.0,
+      "reconstruction_error": 0.0,
+      "lossless": true
+    },
+    {
+      "num_qubits": 200,
+      "original_size": 100212,
+      "compressed_size": 100212,
+      "original_bytes": 1603392,
+      "compressed_bytes": 1603392,
+      "compression_ratio": 1.0,
+      "reconstruction_error": 0.0,
+      "lossless": true
+    },
+    {
+      "num_qubits": 500,
+      "original_size": 253812,
+      "compressed_size": 253812,
+      "original_bytes": 4060992,
+      "compressed_bytes": 4060992,
+      "compression_ratio": 1.0,
+      "reconstruction_error": 0.0,
+      "lossless": true
+    },
+    {
+      "num_qubits": 1000,
+      "original_size": 509812,
+      "compressed_size": 509812,
+      "original_bytes": 8156992,
+      "compressed_bytes": 8156992,
+      "compression_ratio": 1.0,
+      "reconstruction_error": 0.0,
+      "lossless": true
+    }
+  ],
+  "golden_ratio_scaling": [
+    {
+      "num_qubits": 50,
+      "phi_scaled_bond": 19,
+      "num_params": 32754,
+      "memory_mb": 0.499786376953125,
+      "compression_ratio": 32.01367771875191
+    },
+    {
+      "num_qubits": 100,
+      "phi_scaled_bond": 27,
+      "num_params": 138310,
+      "memory_mb": 2.110443115234375,
+      "compression_ratio": 8535837037939493.0
+    },
+    {
+      "num_qubits": 200,
+      "phi_scaled_bond": 38,
+      "num_params": 561256,
+      "memory_mb": 8.5640869140625,
+      "compression_ratio": 2.66647960400752e+45
+    },
+    {
+      "num_qubits": 500,
+      "phi_scaled_bond": 59,
+      "num_params": 3437524,
+      "memory_mb": 52.45245361328125,
+      "compression_ratio": 8.868541917577772e+134
+    },
+    {
+      "num_qubits": 1000,
+      "phi_scaled_bond": 64,
+      "num_params": 8140244,
+      "memory_mb": 124.21026611328125,
+      "compression_ratio": 1.225909388916794e+285
+    }
+  ],
+  "mass_gap_truncation": [
+    {
+      "num_qubits": 50,
+      "original_bond": 64,
+      "truncated_bond": 16,
+      "compression_ratio": 4.0,
+      "mass_gap_error": 0.3819660112501051,
+      "mass_gap_target": 1.381966011250105
+    },
+    {
+      "num_qubits": 100,
+      "original_bond": 64,
+      "truncated_bond": 16,
+      "compression_ratio": 4.0,
+      "mass_gap_error": 0.3819660112501051,
+      "mass_gap_target": 1.381966011250105
+    },
+    {
+      "num_qubits": 200,
+      "original_bond": 64,
+      "truncated_bond": 16,
+      "compression_ratio": 4.0,
+      "mass_gap_error": 0.3819660112501049,
+      "mass_gap_target": 1.381966011250105
+    }
+  ],
+  "pulvini_integration": [
+    {
+      "num_qubits": 100,
+      "full_state_bytes": 20282409603651670423947251286016,
+      "mps_bytes": 784192,
+      "integrated_bytes": 752608,
+      "total_compression_ratio": 2.694950040878076e+25,
+      "pulvini_compression_ratio": 1.0419660699859687,
+      "reconstruction_error": 6.833119240526339e-15,
+      "reversible": true
+    },
+    {
+      "num_qubits": 500,
+      "full_state_bytes": 52374249726338269920211035149241586435466272736689036631732661889538140742474792878132321477214466514414186946040961136147476104734166288853256441430016,
+      "mps_bytes": 4060992,
+      "integrated_bytes": 4029408,
+      "total_compression_ratio": 1.2998001127296682e+145,
+      "pulvini_compression_ratio": 1.0078383722869464,
+      "reconstruction_error": 1.5351375672550405e-14,
+      "reversible": true
+    },
+    {
+      "num_qubits": 1000,
+      "full_state_bytes": 171441377149802771351748007849600289689824769872885377191000062139256168179989779598911740610511337300415147666808503492029943245710770246975753241195177196862953084397187695766737193680997938270047266914448743599737311060278380280946648703137233006633139143642984674682566877306441990189395290689110016,
+      "mps_bytes": 8156992,
+      "integrated_bytes": 8125408,
+      "total_compression_ratio": 2.109941767229446e+295,
+      "pulvini_compression_ratio": 1.0038870663479298,
+      "reconstruction_error": 2.1633980529063877e-14,
+      "reversible": true
+    }
+  ],
+  "deutsch_prediction_pulvini": [
+    {
+      "structured_params": 892,
+      "structured_entropy": 1.6922514775363358,
+      "structured_pulvini_ratio": 3.1631205673758864,
+      "unstructured_params": 194004,
+      "unstructured_entropy": 5.000000000011659,
+      "unstructured_pulvini_ratio": 1.0102796438056554,
+      "param_ratio": 217.4932735426009,
+      "entropy_ratio": 2.9546436013699977
+    }
+  ]
+}

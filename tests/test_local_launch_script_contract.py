@@ -63,13 +63,24 @@ def test_dev_server_uses_repository_root_and_backend_url_contract() -> None:
 def test_pythia_bootstrap_script_records_self_healing_and_self_optimising_evidence() -> None:
     script = (ROOT / "scripts" / "pythia_autonomous_bootstrap.py").read_text(encoding="utf-8")
 
-    assert any(
-        tag in script
-        for tag in ["HYBA_PYTHIA_AUTONOMOUS_BOOTSTRAP_V1", "HYBA_PYTHIA_AUTONOMOUS_BOOTSTRAP_V2"]
-    )
+    assert "HYBA_PYTHIA_AUTONOMOUS_BOOTSTRAP_V2" in script
     assert "controller.set_autonomy_level(level)" in script
     assert "await controller.seek_improvement()" in script
     assert "stale_state_lock_recoveries" in script
     assert "degradation_events" in script
     assert "reflexive_cycle_count" in script
     assert "proposal_acceptance_rate" in script
+
+
+def test_backend_lifespan_activates_pythia_self_healing_on_startup() -> None:
+    main = (ROOT / "python_backend" / "hyba_genesis_api" / "main.py").read_text(encoding="utf-8")
+    controller = (
+        ROOT / "python_backend" / "pythia_mining" / "autonomous_mining_controller.py"
+    ).read_text(encoding="utf-8")
+
+    assert "await _activate_startup_self_healing(app)" in main
+    assert "HYBA_STARTUP_SELF_HEALING_ENABLED" in main
+    assert "controller.boot_self_heal_and_optimize()" in main
+    assert "async def boot_self_heal_and_optimize" in controller
+    assert "await self.seek_improvement()" in controller
+    assert "startup_self_healing_completed" in controller

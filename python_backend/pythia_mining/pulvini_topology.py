@@ -247,6 +247,12 @@ class CoxeterTopology:
 # Number of nodes in the PULVINI manifold (32 lanes)
 NUM_NODES = 32
 
+# Maximum uint32 nonce value (2^32 - 1)
+MAX_UINT32_NONCE = 2**32 - 1
+
+# Slice size for PULVINI memory compression (aligned with golden ratio)
+SLICE_SIZE = 32
+
 # Adjacency map: dictionary mapping node index to dict with "d" (direct) and "i" (indirect) neighbor lists
 # Constructed from dodecahedral vertex connectivity extended to 32 nodes
 # using the golden ratio (φ) scaling pattern
@@ -289,4 +295,4 @@ ADJACENCY_MAP = {
 }
 
 
-__all__ = ['CoxeterTopology', 'ADJACENCY_MAP', 'NUM_NODES']
+__all__ = ['CoxeterTopology', 'ADJACENCY_MAP', 'NUM_NODES', 'MAX_UINT32_NONCE', 'SLICE_SIZE']

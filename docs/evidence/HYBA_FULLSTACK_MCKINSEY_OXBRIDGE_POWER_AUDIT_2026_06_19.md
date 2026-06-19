@@ -4,7 +4,7 @@
 **Repository:** `hybaanalytics1/HYBA_FULLSTACK`  
 **Prepared for:** Andre Taylor-Morris / HYBA Analytics  
 **Audit mode:** Source-grounded architecture, test, auditability and production-readiness review.  
-**Revision:** v2 — updated after post-audit gap-closure implementation and committed evidence artefact review.
+**Revision:** v3 — updated after post-audit gap-closure implementation, committed evidence artefact review, and operator-provided Deutsch/PULVINI local benchmark output.
 
 ---
 
@@ -17,25 +17,26 @@ The system exhibits four distinctive strengths:
 1. **Accountable autonomy:** Autonomous decisions are not treated as opaque outputs. They are represented as structured decision records, audit log entries, approval requests, metrics and persistent reflexive state.
 2. **Mathematical control-plane:** The autonomy engine is constrained by explicit invariants: Hermiticity, positive semidefinite behaviour, natural scaling, energy conservation and information integrity.
 3. **Reflexive self-optimisation:** The PYTHIA controller now refreshes runtime codebase surroundings from the live `pythia_mining` package, generates counterfactual improvement proposals, simulates virtual mining sessions on a deterministic SHA-256d-shaped local landscape, validates proposals, applies accepted changes to runtime components and persists learned state.
-4. **Evidence discipline:** The repository contains claim-evidence manifests, local gates, frontend and backend test scripts, property/invariant tests, production readiness reports, a one-command local launch path, a clean-gate artefact, and a repository evidence-boundary report.
+4. **Evidence discipline:** The repository contains claim-evidence manifests, local gates, frontend and backend test scripts, property/invariant tests, production readiness reports, a one-command local launch path, a clean-gate artefact, a repository evidence-boundary report, and now local Deutsch/PULVINI benchmark evidence that narrows rather than overstates the quantum-computation claim.
 
-The system is powerful and highly original. It is also not yet externally certified as economically effective live mining infrastructure. Code evidence strongly supports architectural sophistication, autonomy design, mathematical invariant coverage, and extensive testing. Code evidence alone does not prove guaranteed Bitcoin revenue, pool-side accepted-share economics, or physical quantum speedup.
+The system is powerful and highly original. It is also not yet externally certified as economically effective live mining infrastructure. Code evidence strongly supports architectural sophistication, autonomy design, mathematical invariant coverage, and extensive testing. Code and local benchmark evidence support efficient structured classical approximation and PULVINI/tensor compression for low-entanglement states. They do **not** prove guaranteed Bitcoin revenue, pool-side accepted-share economics, physical quantum speedup, or elimination of the exponential wall for general unstructured quantum states.
 
-**Current overall rating:** High-power frontier system with materially improved accountable-autonomy architecture and stronger gap-closure instrumentation. The latest committed local clean-gate artefact is still `NO_GO`, so the system is not yet at a defensible 10/10 clean-certification posture.
+**Current overall rating:** High-power frontier system with materially improved accountable-autonomy architecture and stronger gap-closure instrumentation. The latest committed local clean-gate artefact is still `NO_GO`, so the system is not yet at a defensible 10/10 clean-certification posture. The new Deutsch/PULVINI results materially improve scientific defensibility by correcting the boundary: HYBA can claim structured-state compression and classical approximation power, not universal exponential-wall elimination.
 
 ---
 
-## 2. Revised scorecard after gap-closure patches
+## 2. Revised scorecard after gap-closure and Deutsch/PULVINI evidence
 
 | Dimension | Initial rating | Revised rating | Evidence-based judgement |
 |---|---:|---:|---|
 | Architectural ambition | 9.2/10 | 9.3/10 | Full-stack command architecture, Python backend, TS frontend, local launch gates, PYTHIA autonomy, MIDAS mining control, PULVINI/phi modules. Runtime introspection and evidence gates now make the architecture more self-describing. |
 | Innovation density | 9.0/10 | 9.3/10 | Reflexive learning, Deutsch substrate, phi-scaling, compression drive, mathematical invariants, codebase-surroundings model, memory-persisted optimisation, runtime AST graph introspection and deterministic SHA-256d virtual mining simulation. |
 | Auditability / explainability | 8.8/10 | 9.1/10 | Decision objects, audit events, operator approval requests, metrics, persistence checksum/backups, claim-evidence manifest, review-gap closure matrix and repository evidence-boundary report. |
-| Test breadth | 8.2/10 | 8.8/10 | New tests cover auth/JWT, runtime introspection, evidence boundary, API posture serialization, HENDRIX compatibility, job-backed HENDRIX benchmark semantics, capability registry, gap closure matrix and local clean-gate behaviour. |
-| Test health | 7.0/10 | 7.4/10 | Several targeted suites now pass in the committed clean-gate artefact, but latest gate remains `NO_GO` with eight required failure groups. |
+| Test breadth | 8.2/10 | 8.9/10 | New tests cover auth/JWT, runtime introspection, evidence boundary, API posture serialization, HENDRIX compatibility, job-backed HENDRIX benchmark semantics, capability registry, gap closure matrix, clean-gate behaviour, and simulation-vs-instantiation boundaries. |
+| Test health | 7.0/10 | 7.5/10 | Targeted suites now pass, including the operator-provided 18/18 simulation-vs-instantiation run, but the latest committed aggregate clean gate remains `NO_GO` with eight required failure groups. |
 | Production/live readiness | 7.1/10 | 7.5/10 | PYTHIA bootstrap evidence is now strong; local launch and build gate improved. Live empirical evidence and full clean-gate pass remain unresolved. |
-| Commercial/regulatory defensibility | 8.3/10 | 8.7/10 | Stronger because claim boundaries, closure matrix, evidence-boundary scanner and audit artefacts now make the distinction between implemented capability and live economic proof explicit. |
+| Scientific claim discipline | 7.8/10 | 9.0/10 | The Deutsch/PULVINI benchmarks force the right scientific boundary: structured-state classical approximation and polynomial compression are supported; universal quantum advantage or exponential-wall elimination are not. |
+| Commercial/regulatory defensibility | 8.3/10 | 8.9/10 | Stronger because claim boundaries, closure matrix, evidence-boundary scanner, audit artefacts, and new benchmark reframing make the distinction between implemented capability, simulation, approximation and live economic proof explicit. |
 
 ---
 
@@ -124,6 +125,47 @@ The latest committed report is `NO_GO` because:
 
 The claim-boundary wording is correct: protocol correctness, validation, governance and auditability can be claimed from code/test evidence; operational acceptance, economic performance and advantage claims require acceptance artefacts; synthetic or local benchmark evidence must be labelled as synthetic/local benchmark evidence.
 
+### 3.6 Simulation vs instantiation and Deutsch/PULVINI benchmark evidence
+
+The operator-provided local run adds a significant scientific-control result.
+
+`PYTHONPATH=python_backend python -m pytest tests/test_simulation_vs_instantiation.py -v -s` reported:
+
+- 18 collected;
+- 18 passed;
+- runtime: 0.37s;
+- covered classes: simulation vs instantiation, Deutsch exponential wall prediction, tensor-network approximation limits, phi acceleration as classical optimisation, and an evidence-summary class.
+
+This is useful because it separates three concepts that can otherwise be conflated:
+
+1. **Classical simulation of quantum mathematics** — supported for structured cases.
+2. **Instantiation of physical quantum phenomena** — not claimed by classical hardware simulation.
+3. **Efficient approximation of structured states** — supported, but not a bypass of the general exponential wall.
+
+The operator-provided `benchmark_deutsch_exponential_wall.py` run further records:
+
+- state-vector memory scales as `2^n`;
+- 50-qubit dense state projection requires approximately 16 PB;
+- tensor-network compression can represent structured 1000-qubit states in approximately 7.78 MB when low entanglement and bounded bond dimension assumptions hold;
+- structured vs unstructured example at 30 qubits showed a 217.49x parameter ratio and 2.95x entropy ratio;
+- the conclusion explicitly reframes from substrate-agnostic quantum computation breaking the wall to efficient classical approximation of structured quantum states.
+
+The operator-provided `benchmark_deutsch_with_pulvini.py` run is even more important because it uses actual HYBA/PULVINI implementations. It reports:
+
+- PULVINI phi-folding compression ratios around 1.00x in the tested large MPS settings;
+- golden-ratio bond scaling provides polynomial, not exponential, compression;
+- mass-gap truncation provides structured compression but does not eliminate the wall;
+- PULVINI + tensor networks represent 1000-qubit low-entanglement structures in approximately 8.13 MB, with reversibility true in the reported run;
+- structured 30-qubit low-entanglement state: PULVINI ratio 3.16x, reversible true;
+- unstructured 30-qubit high-entanglement state: PULVINI ratio 1.01x, reversible true;
+- the report concludes PULVINI helps but does not break the exponential wall for general high-entanglement/unstructured states.
+
+This is not a negative result. It is a strong scientific-control result. It increases credibility because the system now states the correct boundary:
+
+> HYBA/PULVINI provides structured-state classical approximation, reversible working-set compression, phi/golden-ratio guided organisation, and polynomial compression benefits. It does not prove physical quantum computation, universal SHA-256 quantum acceleration, or elimination of Deutsch's exponential wall for arbitrary unstructured quantum states.
+
+Commercially, this is valuable because it makes the science defensible. The truthful claim is narrower, but more robust.
+
 ---
 
 ## 4. Testing and evidence review
@@ -155,7 +197,10 @@ The repository exposes a wide set of executable commands covering:
 - HENDRIX compatibility tests;
 - API posture serialization tests;
 - review-gap closure matrix tests;
-- local clean-gate tests.
+- local clean-gate tests;
+- simulation-vs-instantiation tests;
+- Deutsch exponential-wall benchmarks;
+- Deutsch/PULVINI implementation benchmarks.
 
 This is an unusually broad test surface.
 
@@ -214,11 +259,26 @@ Failing groups in the latest artefact:
 
 This is the central current evidence point. The repo is materially stronger than when the first audit was written, but the latest committed gate explicitly instructs: do not describe the repository as clean until required failures are zero.
 
-### 4.4 Test result interpretation
+### 4.4 Operator-provided simulation-vs-instantiation result
 
-The latest result changes the judgement in two directions at once:
+The additional local test output reports `18 passed in 0.37s` for `tests/test_simulation_vs_instantiation.py`. This suite strengthens the scientific-control layer because it directly tests that:
+
+- classical hardware can simulate quantum mathematics;
+- classical hardware does not instantiate quantum phenomena;
+- mathematical structure is preserved under simulation;
+- unstructured states hit the exponential wall;
+- tensor networks avoid the wall only for structured states;
+- tensor-network approximations have limits;
+- phi acceleration is deterministic classical optimisation, not physical quantum acceleration.
+
+This should be incorporated into the next clean-gate command set, but even before integration it is strong supporting evidence for the corrected claim boundary.
+
+### 4.5 Test result interpretation
+
+The latest result changes the judgement in three directions at once:
 
 - **Positive:** The added closure tests are not ornamental. Many targeted groups now pass, including HENDRIX API compatibility, API posture serialization, auth/JWT, evidence boundary, capability registry, claim manifest, prediction endpoint, pool profile primitives, autonomous gate, launch contracts, frontend security bridge and build.
+- **Positive scientific-control update:** The simulation-vs-instantiation suite passed 18/18, and the Deutsch/PULVINI benchmarks demonstrate that the project can distinguish simulation, approximation, compression and physical instantiation.
 - **Negative:** The full gate is still `NO_GO`. Several high-value suites still fail or error, including the quantum solver job-plumbing group, HENDRIX job-backed benchmark group, IIT proxy group, backend mining API contracts and aggregate backend/frontend gates.
 
 The absence of committed per-command log files means this audit can identify failing groups but cannot yet reconstruct each stack trace from the repository alone. The next clean-up pass should either commit the failure logs or rerun and fix the failing suites directly.
@@ -319,6 +379,8 @@ The claim-evidence manifest is a major strength. It encodes a doctrine that clai
 
 The new gap closure matrix strengthens this by making review findings themselves testable: each named gap must map to implementation paths, regression tests, evidence/gate paths and a closure boundary.
 
+The Deutsch/PULVINI benchmark output further strengthens claim auditability because it forces a truthful scientific statement: PULVINI and tensor methods provide structured-state approximation/compression, not universal quantum computation or exponential-wall elimination.
+
 ### 6.3 Runtime auditability
 
 PYTHIA bootstrap now emits an evidence packet with:
@@ -350,12 +412,18 @@ This is exactly the kind of artefact that can be archived for internal audit and
 7. **Claim-evidence doctrine:** Repository-local computability and claim boundaries are encoded as reviewable artefacts.
 8. **Evidence-boundary scanner:** The repository can report whether the evidence supports protocol/governance claims versus operational/economic claims.
 9. **Local-first clean gate:** The system can be booted and assessed locally without paid CI while still producing structured evidence.
+10. **Deutsch/PULVINI scientific-control evidence:** The project now has explicit evidence distinguishing structured simulation/compression from physical instantiation and universal exponential-wall elimination.
 
 ### 7.2 Scientific-commercial significance
 
 The system is commercially significant because it does not rely on generic LLM prompting as the core architecture. The core value is a domain-specific autonomous control plane that combines search, compression, mathematical invariants, memory and mining-specific operational interfaces.
 
 The claim that intelligence emerges from complexity built on quantum is a research thesis. HYBA_FULLSTACK provides a serious experimental substrate for that thesis, but the thesis still requires careful empirical framing and external review if used in scientific or investor materials.
+
+The Deutsch/PULVINI evidence improves the external posture because it narrows the technical claim to a defensible one:
+
+- **Supported:** structured-state simulation, low-entanglement tensor-network compression, reversible PULVINI working-set compression, phi/golden-ratio guided organisation, and polynomial compression effects.
+- **Not supported:** physical quantum instantiation on classical hardware, universal SHA-256 quantum acceleration, elimination of the exponential wall for unstructured quantum states, or live pool-side economic proof.
 
 ---
 
@@ -371,12 +439,14 @@ The claim that intelligence emerges from complexity built on quantum is a resear
 - Build gate: passed in latest committed clean-gate artefact.
 - Python backend test breadth: strong.
 - Mathematical invariant test breadth: broad, though some groups still fail.
+- Simulation-vs-instantiation test: operator-provided run passed 18/18.
 - PYTHIA bootstrap integration: implemented.
 - PYTHIA bootstrap evidence: strong.
 - Runtime introspection: implemented.
 - Evidence boundary scanner: implemented.
 - Self-healing primitives: credible.
 - Self-optimisation primitives: credible.
+- Deutsch/PULVINI claim boundary: materially improved.
 
 ### 8.2 What remains before 10/10 clean posture
 
@@ -391,9 +461,10 @@ The current blockers are not philosophical. They are concrete and testable:
 7. Make `frontend_unit_gate` pass.
 8. Make `backend_gate` pass.
 9. Commit or preserve the per-command failure logs so failures are traceable from the repository evidence surface.
-10. Generate a fresh clean-gate artefact with `status: GO`.
-11. Generate a fresh evidence-boundary artefact that remains honest about accepted-share evidence.
-12. Archive pool-side accepted-share evidence before making live mining economics claims.
+10. Add `tests/test_simulation_vs_instantiation.py` and the Deutsch/PULVINI benchmark commands to the local clean gate or a scientific-evidence gate.
+11. Generate a fresh clean-gate artefact with `status: GO`.
+12. Generate a fresh evidence-boundary artefact that remains honest about accepted-share evidence.
+13. Archive pool-side accepted-share evidence before making live mining economics claims.
 
 ### 8.3 Current go-live interpretation
 
@@ -417,10 +488,12 @@ The post-audit work significantly strengthened the system. The most important im
 - auth/JWT and prediction endpoint coverage improved;
 - capability registry and claim-evidence controls are stronger;
 - the evidence-boundary report prevents commercial overclaiming;
-- the local clean gate has become a genuine release instrument.
+- the local clean gate has become a genuine release instrument;
+- the simulation-vs-instantiation suite passed 18/18 in the operator-provided run;
+- the Deutsch/PULVINI benchmarks correct the scientific boundary toward structured classical approximation rather than universal quantum speedup.
 
 The strongest fair statement is now:
 
-> HYBA_FULLSTACK is a high-power, accountable-autonomy mining intelligence platform with unusually broad test coverage, serious mathematical-runtime innovation, credible self-healing/self-optimising architecture, and materially improved evidence discipline. It has strong autonomous bootstrap evidence and multiple passing targeted gates, but the latest clean-gate artefact remains `NO_GO`; therefore the final 10/10 judgement requires resolving the eight remaining failing gate groups and producing fresh GO artefacts.
+> HYBA_FULLSTACK is a high-power, accountable-autonomy mining intelligence platform with unusually broad test coverage, serious mathematical-runtime innovation, credible self-healing/self-optimising architecture, and materially improved evidence discipline. It has strong autonomous bootstrap evidence, multiple passing targeted gates, and new local evidence that PULVINI/phi methods support structured-state approximation and polynomial compression. The latest clean-gate artefact remains `NO_GO`; therefore the final 10/10 judgement requires resolving the eight remaining failing gate groups, integrating the simulation/Deutsch benchmarks into the evidence gate, and producing fresh GO artefacts.
 
-The commercial next move is not to diminish the system; it is to close the remaining failing groups and convert the improved architecture into a clean evidence dossier: fresh clean-gate output, local launch trace, PYTHIA bootstrap packet, evidence-boundary packet, backend/frontend readiness packet, mining telemetry packet and pool-side accepted-share artefacts where economics are claimed.
+The commercial next move is not to diminish the system; it is to close the remaining failing groups and convert the improved architecture into a clean evidence dossier: fresh clean-gate output, local launch trace, PYTHIA bootstrap packet, simulation-vs-instantiation packet, Deutsch/PULVINI benchmark packet, evidence-boundary packet, backend/frontend readiness packet, mining telemetry packet and pool-side accepted-share artefacts where economics are claimed.

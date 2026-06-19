@@ -1,0 +1,1032 @@
+{
+  "snapshot_timestamp": "2026-06-19T16:00:59Z",
+  "backend_health": {
+    "status": "ok",
+    "substrate": {
+      "boot_id": "2026-06-19T15:30:49.686692+00:00",
+      "ready": true,
+      "initialization_order": [
+        "pulvini_reconstruction_kernel",
+        "hilbert_space_warm_start",
+        "phi_floor_coherence",
+        "pythia_consensus_monitors",
+        "mining_engine_optimization_sync",
+        "organism_cns"
+      ],
+      "shutdown_at": null,
+      "subsystems": {
+        "pulvini_reconstruction_kernel": {
+          "name": "pulvini_reconstruction_kernel",
+          "ready": true,
+          "initialized_at": "2026-06-19T15:30:49.860144+00:00",
+          "detail": "deterministic reconstruction kernel loaded; no drift detected"
+        },
+        "hilbert_space_warm_start": {
+          "name": "hilbert_space_warm_start",
+          "ready": true,
+          "initialized_at": "2026-06-19T15:30:49.860230+00:00",
+          "detail": "Hilbert-space path cache warmed with stable baseline invariants"
+        },
+        "phi_floor_coherence": {
+          "name": "phi_floor_coherence",
+          "ready": true,
+          "initialized_at": "2026-06-19T15:30:49.860252+00:00",
+          "detail": "\u03a6-floor coherence established at 0.85 governance threshold"
+        },
+        "pythia_consensus_monitors": {
+          "name": "pythia_consensus_monitors",
+          "ready": true,
+          "initialized_at": "2026-06-19T15:30:49.860312+00:00",
+          "detail": "consensus monitor heartbeat registered"
+        },
+        "mining_engine_optimization_sync": {
+          "name": "mining_engine_optimization_sync",
+          "ready": true,
+          "initialized_at": "2026-06-19T15:30:49.860331+00:00",
+          "detail": "mining optimization parameters synchronized with telemetry baseline"
+        },
+        "organism_cns": {
+          "name": "organism_cns",
+          "ready": true,
+          "initialized_at": "2026-06-19T15:30:49.860826+00:00",
+          "detail": "Organism CNS (Sensory, Immune, Cognitive, Metabolic, Executive) fully initialized"
+        }
+      },
+      "organism_cns_active": true
+    },
+    "telemetry": {
+      "requests_total": 18,
+      "errors_total": 0,
+      "last_request": {
+        "request_id": "req-1781883897473247000",
+        "method": "POST",
+        "path": "/api/v1/mining-production/initialize",
+        "status_code": 400,
+        "duration_ms": 1.132
+      },
+      "startup_time": 1781883049.860065
+    }
+  },
+  "mining_status": {
+    "status": "running",
+    "active": true,
+    "daemon_running": false,
+    "connection": {
+      "pool_id": "viabtc",
+      "worker": "PYTHIA.001",
+      "profile": {
+        "pool_id": "viabtc",
+        "name": "ViaBTC BTC",
+        "url": "stratum+tcp://btc.viabtc.io:3333",
+        "username": "<configured>",
+        "password": "<configured>",
+        "stratum_version": 1,
+        "priority": 10,
+        "tls_required": false,
+        "max_reconnect_attempts": 10,
+        "max_share_retry_attempts": 3,
+        "reconnect_backoff_base": 1.0,
+        "reconnect_backoff_max": 60.0,
+        "share_retry_backoff_base": 0.5,
+        "share_retry_backoff_max": 5.0
+      },
+      "base_capacity_ehs": 1.0,
+      "capacity_ehs": 1.0,
+      "power_scale": 1.0,
+      "hashrate_cap_ehs": 1.0,
+      "connected_at": "2026-06-19T15:37:16.518765+00:00",
+      "request_id": "mining_req_1781883436_6fea4f80d591452a",
+      "credential_mode": "username_password"
+    },
+    "shares": {
+      "submitted": 0,
+      "accepted": 0,
+      "rejected": 0
+    },
+    "acceptance_rate": 0.0,
+    "hashrate_ehs": 1.0,
+    "hashrate_cap_ehs": 1.0,
+    "capacity_source": "configured_capped",
+    "last_job": null,
+    "system_health": "HEALTHY",
+    "telemetry_source": "live_api",
+    "midas": {
+      "state": "running",
+      "validation": {
+        "valid": true,
+        "current_state": "running",
+        "canonical_path": [
+          "idle",
+          "starting",
+          "running",
+          "paused",
+          "stopping",
+          "stopped"
+        ],
+        "errors": [],
+        "transition_count": 2,
+        "metrics": {
+          "transitions_total": 2,
+          "invalid_transitions_total": 0,
+          "transition_idle_to_starting_total": 1,
+          "transition_starting_to_running_total": 1
+        }
+      },
+      "rate_limiter": {
+        "scope": "process",
+        "rate_per_second": 10.0,
+        "burst_capacity": 10,
+        "tokens_available": 9.0,
+        "allowed_total": 1,
+        "rejected_total": 0
+      },
+      "backpressure": {
+        "scope": "process",
+        "max_inflight": 25,
+        "max_queue_depth": 100,
+        "inflight": 0,
+        "queue_depth": 0,
+        "rejected_total": 0
+      },
+      "requests": {
+        "total_requests": 1,
+        "status_breakdown": {
+          "completed": 1
+        },
+        "idempotency_keys_tracked": 1,
+        "request_ttl_seconds": 3600,
+        "last_cleanup": "2026-06-19T15:30:49.691366+00:00"
+      }
+    },
+    "timestamp": "2026-06-19T16:00:59.634885+00:00"
+  },
+  "intelligence_health": {
+    "phi_resonance": 0.317434,
+    "system_state": "fragmented",
+    "telemetry_source": "measured_reflexive_controller_runtime",
+    "measurement_basis": {
+      "controller_root": "/Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/pythia_mining",
+      "observed_nodes": 16,
+      "umwelt_keys": [
+        "__init__.py",
+        "ai_optimizer.py",
+        "ai_optimizer_meta.py",
+        "ai_orchestration_layer.py",
+        "apple_silicon_metal.py",
+        "async_executor.py",
+        "audit_logger.py",
+        "auditable_decision_bridge.py",
+        "autogenous_self_coding.py",
+        "autonomous_controller.py",
+        "autonomous_mining_controller.py",
+        "benchmark_formalism.py",
+        "bitcoin_header.py",
+        "blockchain_oracle.py",
+        "blockchain_structure_intelligence.py",
+        "church_lambda_calculus.py",
+        "consciousness_engine.py",
+        "counterfactual_reflection.py",
+        "deutsch_constructor_theory.py",
+        "deutsch_knowledge_substrate.py",
+        "dodecahedral_solver.py",
+        "du_sautoy_symmetry.py",
+        "finance_sovereign_audit.py",
+        "fourier_harmonic_analysis.py",
+        "fourier_harmonic_transform.py",
+        "frontier_experiment_1_qmc_convergence.py",
+        "frontier_experiment_2_qfi_truncation.py",
+        "frontier_experiment_3_topological_correlation.py",
+        "frontier_experiment_4_golden_sld.py",
+        "genesis_ai.py",
+        "genesis_ai_service.py",
+        "golden_ratio_library.py",
+        "golden_trifecta.py",
+        "grover_structured_search.py",
+        "hendrix_phi_solver.py",
+        "iit_4_analyzer.py",
+        "iit_4_conceptual_integration.py",
+        "immune_system.py",
+        "it_from_bit_archeology.py",
+        "live_stratum_session.py",
+        "live_stratum_v2_session.py",
+        "main.py",
+        "mass_gap_protector.py",
+        "mass_gap_shield.py",
+        "metabolism.py",
+        "metal_sha256_pipeline.py",
+        "metrics_store.py",
+        "mining_evidence_seal.py",
+        "mining_executive_controller.py",
+        "mining_knowledge_base.py",
+        "mining_learning_signal.py",
+        "mining_validation.py",
+        "mining_verification_firewall.py",
+        "noise_wrapper.py",
+        "nonce_resonance_guidance.py",
+        "nonce_tensor_precomputer.py",
+        "penrose_objective_reduction.py",
+        "penrose_quantum_gravity.py",
+        "phi_accelerated_formalism.py",
+        "phi_alu.py",
+        "phi_config.py",
+        "phi_core_orchestrator.py",
+        "phi_entropy.py",
+        "phi_fibonacci_lcg.py",
+        "phi_folding.py",
+        "phi_jit.py",
+        "phi_malloc.py",
+        "phi_network_router.py",
+        "phi_oracle.py",
+        "phi_production_loop.py",
+        "phi_scaling_engine.py",
+        "phi_tuner.py",
+        "phi_unified_mining_engine.py",
+        "phi_vm.py",
+        "pitfall_guard.py",
+        "pool_profiles.py",
+        "production_mining_gateway.py",
+        "production_mining_orchestrator.py",
+        "pulvini_autonomics.py",
+        "pulvini_bures.py",
+        "pulvini_bures_variational.py",
+        "pulvini_certificates.py",
+        "pulvini_choi.py",
+        "pulvini_compressed_solver.py",
+        "pulvini_coverage_certificate.py",
+        "pulvini_elevation.py",
+        "pulvini_gamma.py",
+        "pulvini_group.py",
+        "pulvini_group_h4.py",
+        "pulvini_grover_certificate.py",
+        "pulvini_manifold.py",
+        "pulvini_manifold_h4.py",
+        "pulvini_memory.py",
+        "pulvini_memory_compression_proof.py",
+        "pulvini_memory_fabric.py",
+        "pulvini_nonce_compression.py",
+        "pulvini_observability.py",
+        "pulvini_operator.py",
+        "pulvini_overlay.py",
+        "pulvini_phi_empirical.py",
+        "pulvini_phi_memory.py",
+        "pulvini_propagation.py",
+        "pulvini_structural_certificate.py",
+        "pulvini_tensor_network_integration.py",
+        "pulvini_topology.py",
+        "pulvini_topology_h4.py",
+        "pulvini_variational.py",
+        "pulvini_verifier.py",
+        "pythia_matched_mining_benchmark.py",
+        "pythia_mining_pitfalls_curriculum.py",
+        "pythia_one_block_mission.py",
+        "quantum_axiom_helpers.py",
+        "quantum_regeneration.py",
+        "quantum_solver.py",
+        "reflexive_controller.py",
+        "regeneration_manager.py",
+        "resonance_fabric.py",
+        "run_unified_miner.py",
+        "runtime_reflexive_introspection.py",
+        "rust_pulvini_bridge.py",
+        "scientific_rigor_kernel.py",
+        "sensory_integrity_protocol.py",
+        "sensory_protocol.py",
+        "stable_core_evidence.py",
+        "stateful_regeneration.py",
+        "stratum_client.py",
+        "stratum_protocol.py",
+        "stratum_submission_firewall.py",
+        "stratum_transport.py",
+        "stratum_v2.py",
+        "swarm_coherence.py",
+        "synaptic_persistence_layer.py",
+        "tensor_network_1000qubit.py",
+        "topological_holonomy_engine.py",
+        "turing_church_universal_computation.py",
+        "unified_mathematical_framework.py"
+      ],
+      "file_count": 136
+    },
+    "claim_boundary": "Measured reflexive codebase state from the current controller step; runtime values are derived from controller observations only."
+  },
+  "pool_list": {
+    "default_pool": "viabtc",
+    "pools": {
+      "braiins": {
+        "name": "Braiins Pool",
+        "url": "stratum+tcp://stratum.braiins.com:3333",
+        "stratum_version": 1,
+        "username": "PYTHAGORAS",
+        "password": "anything123",
+        "worker": "hendrix_phi",
+        "priority": 2,
+        "enabled": true,
+        "is_default": false,
+        "description": "Braiins Pool - V1 Stratum (fallback)",
+        "btc_address": null
+      },
+      "viabtc": {
+        "name": "ViaBTC BTC",
+        "url": "stratum+tcp://btc.viabtc.io:3333",
+        "stratum_version": 1,
+        "username": "PYTHIA.001",
+        "password": "Password123",
+        "worker": "hendrix_phi",
+        "priority": 1,
+        "enabled": true,
+        "is_default": true,
+        "description": "ViaBTC SHA256 pool - V1 Stratum (primary)",
+        "btc_address": null
+      },
+      "nicehash": {
+        "name": "NiceHash SHA256",
+        "url": "stratum+tcp://sha256.auto.nicehash.com:9200",
+        "stratum_version": 1,
+        "username": "NHbaCJGb1gM7MjgJ9QnnqbG2sLVW9w8hdPzK",
+        "password": "jyZwO;El!aY5Rq[SHf,q82\\n_i4\\SD5}",
+        "worker": "hendrix_phi",
+        "priority": 3,
+        "enabled": false,
+        "is_default": false,
+        "description": "NiceHash auto-trading SHA256 - disabled for Braiins live run",
+        "btc_address": null
+      },
+      "ckpool": {
+        "name": "Solo CKPool",
+        "url": "stratum+tcp://solo.ckpool.org:3333",
+        "stratum_version": 1,
+        "username": "",
+        "password": "]'&eeH$4\\tJgYcFjvop$sYZZ20ho?3pJ",
+        "worker": "hendrix_phi",
+        "priority": 4,
+        "enabled": false,
+        "is_default": false,
+        "description": "CKPool solo mining - disabled for Braiins live run",
+        "btc_address": "bc1qsyva7t00e0cwqzts54u7ffys7l76pp8a02x8r9"
+      },
+      "stratumv2": {
+        "name": "Braiins Stratum V2",
+        "url": "stratum2+ssl://stratum.braiins.com:3336",
+        "stratum_version": 2,
+        "username": "PYTHAGORAS",
+        "password": "<OCdpET^bAQ5\\jm4**=>Te\\sxK1u?}vv",
+        "worker": "hendrix_phi",
+        "priority": 5,
+        "enabled": false,
+        "is_default": false,
+        "description": "Braiins Stratum V2 profile retained for future channel/job-flow support; disabled because current command-room job flow is Stratum v1 only",
+        "btc_address": null
+      }
+    },
+    "timestamp": "2026-06-19T16:00:59.955003+00:00"
+  },
+  "pool_health": {
+    "status": "healthy",
+    "default_pool": "viabtc",
+    "total_pools": 5,
+    "enabled_pools": 2,
+    "timestamp": "2026-06-19T16:00:59.956482+00:00"
+  },
+  "mining_stats": {
+    "timeframe": "24h",
+    "summary": {
+      "total_hashrate": 1.0,
+      "avg_hashrate": 1.0,
+      "peak_hashrate": 1.0,
+      "hashrate_cap_ehs": 1.0,
+      "capacity_source": "configured_capped",
+      "total_shares": 0,
+      "accepted_shares": 0,
+      "rejected_shares": 0,
+      "acceptance_rate": null,
+      "estimated_revenue_btc": null,
+      "estimated_revenue_usd": null,
+      "power_scale": 1.0,
+      "telemetry_source": "live_api"
+    },
+    "timeseries": [],
+    "quantum_performance": {
+      "quantum_speedup_avg": null,
+      "phi_resonance_avg": null,
+      "vqe_iterations_avg": null,
+      "consciousness_correlation": null,
+      "quantum_metrics": {}
+    },
+    "midas": {
+      "state": "running",
+      "state_machine": {
+        "valid": true,
+        "current_state": "running",
+        "canonical_path": [
+          "idle",
+          "starting",
+          "running",
+          "paused",
+          "stopping",
+          "stopped"
+        ],
+        "errors": [],
+        "transition_count": 2,
+        "metrics": {
+          "transitions_total": 2,
+          "invalid_transitions_total": 0,
+          "transition_idle_to_starting_total": 1,
+          "transition_starting_to_running_total": 1
+        }
+      },
+      "rate_limiter": {
+        "scope": "process",
+        "rate_per_second": 10.0,
+        "burst_capacity": 10,
+        "tokens_available": 9.0,
+        "allowed_total": 1,
+        "rejected_total": 0
+      },
+      "backpressure": {
+        "scope": "process",
+        "max_inflight": 25,
+        "max_queue_depth": 100,
+        "inflight": 0,
+        "queue_depth": 0,
+        "rejected_total": 0
+      },
+      "requests": {
+        "total_requests": 1,
+        "status_breakdown": {
+          "completed": 1
+        },
+        "idempotency_keys_tracked": 1,
+        "request_ttl_seconds": 3600,
+        "last_cleanup": "2026-06-19T15:30:49.691366+00:00"
+      }
+    }
+  },
+  "mining_ops_metrics": {
+    "status": "ok",
+    "timestamp": "2026-06-19T16:00:59.960896+00:00",
+    "pools": [
+      {
+        "pool_name": "Alpha",
+        "pool_url": "stratum+tcp://example.com:3333",
+        "shares_submitted": 0,
+        "shares_accepted": 0,
+        "shares_rejected": 0,
+        "connection_failures": 5,
+        "avg_latency_ms": null,
+        "last_activity_timestamp": 1781883280.281963,
+        "last_pool_event_timestamp": null,
+        "last_share_submit_timestamp": null,
+        "current_difficulty": 1.0,
+        "current_jobs_count": 0,
+        "acceptance_rate": 0.0
+      },
+      {
+        "pool_name": "Test Pool",
+        "pool_url": "stratum+tcp://example.com:3333",
+        "shares_submitted": 0,
+        "shares_accepted": 0,
+        "shares_rejected": 0,
+        "connection_failures": 0,
+        "avg_latency_ms": null,
+        "last_activity_timestamp": 1781883280.280378,
+        "last_pool_event_timestamp": 1781883280.280378,
+        "last_share_submit_timestamp": null,
+        "current_difficulty": 2.0,
+        "current_jobs_count": 1,
+        "acceptance_rate": 0.0
+      },
+      {
+        "pool_name": "ViaBTC BTC",
+        "pool_url": "stratum+tcp://btc.viabtc.io:3333",
+        "shares_submitted": 0,
+        "shares_accepted": 0,
+        "shares_rejected": 0,
+        "connection_failures": 0,
+        "avg_latency_ms": 93.30608300297172,
+        "last_activity_timestamp": 1781883143.594928,
+        "last_pool_event_timestamp": null,
+        "last_share_submit_timestamp": null,
+        "current_difficulty": 1.0,
+        "current_jobs_count": 0,
+        "acceptance_rate": 0.0
+      },
+      {
+        "pool_name": "Example Pool",
+        "pool_url": "stratum+tcp://example.com:3333",
+        "shares_submitted": 0,
+        "shares_accepted": 0,
+        "shares_rejected": 0,
+        "connection_failures": 0,
+        "avg_latency_ms": 0.20454200057429262,
+        "last_activity_timestamp": 1781883143.6025379,
+        "last_pool_event_timestamp": null,
+        "last_share_submit_timestamp": null,
+        "current_difficulty": 1.0,
+        "current_jobs_count": 0,
+        "acceptance_rate": 0.0
+      },
+      {
+        "pool_name": "Example V2 Pool",
+        "pool_url": "stratum2+tcp://example.com:3336",
+        "shares_submitted": 0,
+        "shares_accepted": 0,
+        "shares_rejected": 0,
+        "connection_failures": 0,
+        "avg_latency_ms": 0.2754580018518027,
+        "last_activity_timestamp": 1781883143.608315,
+        "last_pool_event_timestamp": null,
+        "last_share_submit_timestamp": null,
+        "current_difficulty": 1.0,
+        "current_jobs_count": 0,
+        "acceptance_rate": 0.0
+      },
+      {
+        "pool_name": "Braiins Pool",
+        "pool_url": "stratum+tcp://stratum.braiins.com:3333",
+        "shares_submitted": 0,
+        "shares_accepted": 0,
+        "shares_rejected": 0,
+        "connection_failures": 0,
+        "avg_latency_ms": null,
+        "last_activity_timestamp": 1781882176.345101,
+        "last_pool_event_timestamp": null,
+        "last_share_submit_timestamp": null,
+        "current_difficulty": 1.0,
+        "current_jobs_count": 1,
+        "acceptance_rate": 0.0
+      }
+    ],
+    "share_history": [],
+    "connection_history": [
+      {
+        "pool_name": "Alpha",
+        "pool_url": "stratum+tcp://example.com:3333",
+        "event_type": "connection_failure",
+        "latency_ms": null,
+        "error_message": "failed to connect to example.com:3333: ",
+        "attempt_number": 5,
+        "occurred_at": "2026-06-19 15:36:02"
+      },
+      {
+        "pool_name": "Alpha",
+        "pool_url": "stratum+tcp://example.com:3333",
+        "event_type": "connection_failure",
+        "latency_ms": null,
+        "error_message": "failed to connect to example.com:3333: ",
+        "attempt_number": 4,
+        "occurred_at": "2026-06-19 15:35:34"
+      },
+      {
+        "pool_name": "Alpha",
+        "pool_url": "stratum+tcp://example.com:3333",
+        "event_type": "connection_failure",
+        "latency_ms": null,
+        "error_message": "failed to connect to example.com:3333: ",
+        "attempt_number": 3,
+        "occurred_at": "2026-06-19 15:35:16"
+      },
+      {
+        "pool_name": "Alpha",
+        "pool_url": "stratum+tcp://example.com:3333",
+        "event_type": "connection_failure",
+        "latency_ms": null,
+        "error_message": "failed to connect to example.com:3333: ",
+        "attempt_number": 2,
+        "occurred_at": "2026-06-19 15:35:02"
+      },
+      {
+        "pool_name": "Alpha",
+        "pool_url": "stratum+tcp://example.com:3333",
+        "event_type": "connection_failure",
+        "latency_ms": null,
+        "error_message": "failed to connect to example.com:3333: ",
+        "attempt_number": 1,
+        "occurred_at": "2026-06-19 15:34:50"
+      },
+      {
+        "pool_name": "Alpha",
+        "pool_url": "stratum+tcp://example.com:3333",
+        "event_type": "connection_failure",
+        "latency_ms": null,
+        "error_message": "failed to connect to example.com:3333: ",
+        "attempt_number": 5,
+        "occurred_at": "2026-06-19 15:33:07"
+      },
+      {
+        "pool_name": "Alpha",
+        "pool_url": "stratum+tcp://example.com:3333",
+        "event_type": "connection_failure",
+        "latency_ms": null,
+        "error_message": "failed to connect to example.com:3333: ",
+        "attempt_number": 4,
+        "occurred_at": "2026-06-19 15:32:40"
+      },
+      {
+        "pool_name": "ViaBTC BTC",
+        "pool_url": "stratum+tcp://btc.viabtc.io:3333",
+        "event_type": "connection_success",
+        "latency_ms": 93.30608300297172,
+        "error_message": null,
+        "attempt_number": 1,
+        "occurred_at": "2026-06-19 15:32:23"
+      },
+      {
+        "pool_name": "Example Pool",
+        "pool_url": "stratum+tcp://example.com:3333",
+        "event_type": "connection_success",
+        "latency_ms": 0.20454200057429262,
+        "error_message": null,
+        "attempt_number": 1,
+        "occurred_at": "2026-06-19 15:32:23"
+      },
+      {
+        "pool_name": "Example Pool",
+        "pool_url": "stratum+tcp://example.com:3333",
+        "event_type": "disconnection",
+        "latency_ms": null,
+        "error_message": null,
+        "attempt_number": null,
+        "occurred_at": "2026-06-19 15:32:23"
+      },
+      {
+        "pool_name": "Example V2 Pool",
+        "pool_url": "stratum2+tcp://example.com:3336",
+        "event_type": "connection_success",
+        "latency_ms": 0.2754580018518027,
+        "error_message": null,
+        "attempt_number": 1,
+        "occurred_at": "2026-06-19 15:32:23"
+      },
+      {
+        "pool_name": "Example V2 Pool",
+        "pool_url": "stratum2+tcp://example.com:3336",
+        "event_type": "disconnection",
+        "latency_ms": null,
+        "error_message": null,
+        "attempt_number": null,
+        "occurred_at": "2026-06-19 15:32:23"
+      },
+      {
+        "pool_name": "Alpha",
+        "pool_url": "stratum+tcp://example.com:3333",
+        "event_type": "connection_failure",
+        "latency_ms": null,
+        "error_message": "failed to connect to example.com:3333: ",
+        "attempt_number": 3,
+        "occurred_at": "2026-06-19 15:32:21"
+      },
+      {
+        "pool_name": "Alpha",
+        "pool_url": "stratum+tcp://example.com:3333",
+        "event_type": "connection_failure",
+        "latency_ms": null,
+        "error_message": "failed to connect to example.com:3333: ",
+        "attempt_number": 2,
+        "occurred_at": "2026-06-19 15:32:07"
+      },
+      {
+        "pool_name": "Alpha",
+        "pool_url": "stratum+tcp://example.com:3333",
+        "event_type": "connection_failure",
+        "latency_ms": null,
+        "error_message": "failed to connect to example.com:3333: ",
+        "attempt_number": 1,
+        "occurred_at": "2026-06-19 15:31:55"
+      },
+      {
+        "pool_name": "ViaBTC BTC",
+        "pool_url": "stratum+tcp://btc.viabtc.io:3333",
+        "event_type": "connection_success",
+        "latency_ms": 108.59937500208616,
+        "error_message": null,
+        "attempt_number": 1,
+        "occurred_at": "2026-06-19 15:29:32"
+      },
+      {
+        "pool_name": "Example Pool",
+        "pool_url": "stratum+tcp://example.com:3333",
+        "event_type": "connection_success",
+        "latency_ms": 0.11854100011987612,
+        "error_message": null,
+        "attempt_number": 1,
+        "occurred_at": "2026-06-19 15:29:32"
+      },
+      {
+        "pool_name": "Example Pool",
+        "pool_url": "stratum+tcp://example.com:3333",
+        "event_type": "disconnection",
+        "latency_ms": null,
+        "error_message": null,
+        "attempt_number": null,
+        "occurred_at": "2026-06-19 15:29:32"
+      },
+      {
+        "pool_name": "Example V2 Pool",
+        "pool_url": "stratum2+tcp://example.com:3336",
+        "event_type": "connection_success",
+        "latency_ms": 0.11116599853266962,
+        "error_message": null,
+        "attempt_number": 1,
+        "occurred_at": "2026-06-19 15:29:32"
+      },
+      {
+        "pool_name": "Example V2 Pool",
+        "pool_url": "stratum2+tcp://example.com:3336",
+        "event_type": "disconnection",
+        "latency_ms": null,
+        "error_message": null,
+        "attempt_number": null,
+        "occurred_at": "2026-06-19 15:29:32"
+      },
+      {
+        "pool_name": "Braiins Pool",
+        "pool_url": "stratum+tcp://stratum.braiins.com:3333",
+        "event_type": "connection_success",
+        "latency_ms": 0.03012499655596912,
+        "error_message": null,
+        "attempt_number": 1,
+        "occurred_at": "2026-06-19 15:16:16"
+      },
+      {
+        "pool_name": "Example Pool",
+        "pool_url": "stratum+tcp://example.com:3333",
+        "event_type": "connection_success",
+        "latency_ms": 0.1537079988338519,
+        "error_message": null,
+        "attempt_number": 1,
+        "occurred_at": "2026-06-19 15:16:16"
+      },
+      {
+        "pool_name": "Example Pool",
+        "pool_url": "stratum+tcp://example.com:3333",
+        "event_type": "disconnection",
+        "latency_ms": null,
+        "error_message": null,
+        "attempt_number": null,
+        "occurred_at": "2026-06-19 15:16:16"
+      },
+      {
+        "pool_name": "Example V2 Pool",
+        "pool_url": "stratum2+tcp://example.com:3336",
+        "event_type": "connection_success",
+        "latency_ms": 0.14079200263950042,
+        "error_message": null,
+        "attempt_number": 1,
+        "occurred_at": "2026-06-19 15:16:16"
+      },
+      {
+        "pool_name": "Example V2 Pool",
+        "pool_url": "stratum2+tcp://example.com:3336",
+        "event_type": "disconnection",
+        "latency_ms": null,
+        "error_message": null,
+        "attempt_number": null,
+        "occurred_at": "2026-06-19 15:16:16"
+      },
+      {
+        "pool_name": "Alpha",
+        "pool_url": "stratum+tcp://example.com:3333",
+        "event_type": "connection_failure",
+        "latency_ms": null,
+        "error_message": "failed to connect to example.com:3333: ",
+        "attempt_number": 5,
+        "occurred_at": "2026-06-19 15:13:20"
+      },
+      {
+        "pool_name": "Alpha",
+        "pool_url": "stratum+tcp://example.com:3333",
+        "event_type": "connection_failure",
+        "latency_ms": null,
+        "error_message": "failed to connect to example.com:3333: ",
+        "attempt_number": 4,
+        "occurred_at": "2026-06-19 15:12:53"
+      },
+      {
+        "pool_name": "Alpha",
+        "pool_url": "stratum+tcp://example.com:3333",
+        "event_type": "connection_failure",
+        "latency_ms": null,
+        "error_message": "failed to connect to example.com:3333: ",
+        "attempt_number": 3,
+        "occurred_at": "2026-06-19 15:12:35"
+      },
+      {
+        "pool_name": "Alpha",
+        "pool_url": "stratum+tcp://example.com:3333",
+        "event_type": "connection_failure",
+        "latency_ms": null,
+        "error_message": "failed to connect to example.com:3333: ",
+        "attempt_number": 2,
+        "occurred_at": "2026-06-19 15:12:20"
+      },
+      {
+        "pool_name": "Alpha",
+        "pool_url": "stratum+tcp://example.com:3333",
+        "event_type": "connection_failure",
+        "latency_ms": null,
+        "error_message": "failed to connect to example.com:3333: ",
+        "attempt_number": 1,
+        "occurred_at": "2026-06-19 15:12:08"
+      },
+      {
+        "pool_name": "ViaBTC BTC",
+        "pool_url": "stratum+tcp://btc.viabtc.io:3333",
+        "event_type": "connection_success",
+        "latency_ms": 200.4534590014373,
+        "error_message": null,
+        "attempt_number": 1,
+        "occurred_at": "2026-06-19 15:09:43"
+      },
+      {
+        "pool_name": "Example Pool",
+        "pool_url": "stratum+tcp://example.com:3333",
+        "event_type": "connection_success",
+        "latency_ms": 0.12687500202446245,
+        "error_message": null,
+        "attempt_number": 1,
+        "occurred_at": "2026-06-19 15:09:43"
+      },
+      {
+        "pool_name": "Example Pool",
+        "pool_url": "stratum+tcp://example.com:3333",
+        "event_type": "disconnection",
+        "latency_ms": null,
+        "error_message": null,
+        "attempt_number": null,
+        "occurred_at": "2026-06-19 15:09:43"
+      },
+      {
+        "pool_name": "Example V2 Pool",
+        "pool_url": "stratum2+tcp://example.com:3336",
+        "event_type": "connection_success",
+        "latency_ms": 0.11820900181191973,
+        "error_message": null,
+        "attempt_number": 1,
+        "occurred_at": "2026-06-19 15:09:43"
+      },
+      {
+        "pool_name": "Example V2 Pool",
+        "pool_url": "stratum2+tcp://example.com:3336",
+        "event_type": "disconnection",
+        "latency_ms": null,
+        "error_message": null,
+        "attempt_number": null,
+        "occurred_at": "2026-06-19 15:09:43"
+      },
+      {
+        "pool_name": "Alpha",
+        "pool_url": "stratum+tcp://example.com:3333",
+        "event_type": "connection_failure",
+        "latency_ms": null,
+        "error_message": "failed to connect to example.com:3333: ",
+        "attempt_number": 5,
+        "occurred_at": "2026-06-19 15:08:04"
+      },
+      {
+        "pool_name": "Alpha",
+        "pool_url": "stratum+tcp://example.com:3333",
+        "event_type": "connection_failure",
+        "latency_ms": null,
+        "error_message": "failed to connect to example.com:3333: ",
+        "attempt_number": 4,
+        "occurred_at": "2026-06-19 15:07:37"
+      },
+      {
+        "pool_name": "Alpha",
+        "pool_url": "stratum+tcp://example.com:3333",
+        "event_type": "connection_failure",
+        "latency_ms": null,
+        "error_message": "failed to connect to example.com:3333: ",
+        "attempt_number": 3,
+        "occurred_at": "2026-06-19 15:07:18"
+      },
+      {
+        "pool_name": "Alpha",
+        "pool_url": "stratum+tcp://example.com:3333",
+        "event_type": "connection_failure",
+        "latency_ms": null,
+        "error_message": "failed to connect to example.com:3333: ",
+        "attempt_number": 5,
+        "occurred_at": "2026-06-19 15:07:10"
+      },
+      {
+        "pool_name": "Alpha",
+        "pool_url": "stratum+tcp://example.com:3333",
+        "event_type": "connection_failure",
+        "latency_ms": null,
+        "error_message": "failed to connect to example.com:3333: ",
+        "attempt_number": 2,
+        "occurred_at": "2026-06-19 15:07:04"
+      },
+      {
+        "pool_name": "Alpha",
+        "pool_url": "stratum+tcp://example.com:3333",
+        "event_type": "connection_failure",
+        "latency_ms": null,
+        "error_message": "failed to connect to example.com:3333: ",
+        "attempt_number": 1,
+        "occurred_at": "2026-06-19 15:06:52"
+      },
+      {
+        "pool_name": "Alpha",
+        "pool_url": "stratum+tcp://example.com:3333",
+        "event_type": "connection_failure",
+        "latency_ms": null,
+        "error_message": "failed to connect to example.com:3333: ",
+        "attempt_number": 4,
+        "occurred_at": "2026-06-19 15:06:42"
+      },
+      {
+        "pool_name": "Alpha",
+        "pool_url": "stratum+tcp://example.com:3333",
+        "event_type": "connection_failure",
+        "latency_ms": null,
+        "error_message": "failed to connect to example.com:3333: ",
+        "attempt_number": 3,
+        "occurred_at": "2026-06-19 15:06:24"
+      },
+      {
+        "pool_name": "Alpha",
+        "pool_url": "stratum+tcp://example.com:3333",
+        "event_type": "connection_failure",
+        "latency_ms": null,
+        "error_message": "failed to connect to example.com:3333: ",
+        "attempt_number": 2,
+        "occurred_at": "2026-06-19 15:06:10"
+      },
+      {
+        "pool_name": "Alpha",
+        "pool_url": "stratum+tcp://example.com:3333",
+        "event_type": "connection_failure",
+        "latency_ms": null,
+        "error_message": "failed to connect to example.com:3333: ",
+        "attempt_number": 1,
+        "occurred_at": "2026-06-19 15:05:58"
+      },
+      {
+        "pool_name": "ViaBTC BTC",
+        "pool_url": "stratum+tcp://btc.viabtc.io:3333",
+        "event_type": "connection_success",
+        "latency_ms": 96.06045799955609,
+        "error_message": null,
+        "attempt_number": 1,
+        "occurred_at": "2026-06-19 15:04:28"
+      },
+      {
+        "pool_name": "Example Pool",
+        "pool_url": "stratum+tcp://example.com:3333",
+        "event_type": "connection_success",
+        "latency_ms": 0.29312499827938154,
+        "error_message": null,
+        "attempt_number": 1,
+        "occurred_at": "2026-06-19 15:04:28"
+      },
+      {
+        "pool_name": "Example Pool",
+        "pool_url": "stratum+tcp://example.com:3333",
+        "event_type": "disconnection",
+        "latency_ms": null,
+        "error_message": null,
+        "attempt_number": null,
+        "occurred_at": "2026-06-19 15:04:28"
+      },
+      {
+        "pool_name": "Example V2 Pool",
+        "pool_url": "stratum2+tcp://example.com:3336",
+        "event_type": "connection_success",
+        "latency_ms": 0.16458300160593353,
+        "error_message": null,
+        "attempt_number": 1,
+        "occurred_at": "2026-06-19 15:04:28"
+      },
+      {
+        "pool_name": "Example V2 Pool",
+        "pool_url": "stratum2+tcp://example.com:3336",
+        "event_type": "disconnection",
+        "latency_ms": null,
+        "error_message": null,
+        "attempt_number": null,
+        "occurred_at": "2026-06-19 15:04:28"
+      }
+    ],
+    "alerts": [
+      {
+        "severity": "critical",
+        "code": "repeated_pool_connection_failures",
+        "pool_name": "Alpha",
+        "message": "Pool has three or more recorded connection failures.",
+        "value": 5,
+        "timestamp": "2026-06-19T16:00:59.961117+00:00"
+      }
+    ],
+    "state": {
+      "active_pool": "viabtc",
+      "system_health": "HEALTHY",
+      "hashrate_ehs": 1.0,
+      "capacity_source": "configured_capped"
+    }
+  },
+  "unified_health": {
+    "error": "HTTP Error 500: Internal Server Error"
+  }
+}

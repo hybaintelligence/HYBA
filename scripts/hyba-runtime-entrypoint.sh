@@ -25,6 +25,9 @@ shutdown() {
 
 trap shutdown INT TERM HUP
 
+echo "[hyba-entrypoint] verifying production SPA entrypoint"
+node scripts/ensure_spa_entrypoint.mjs
+
 echo "[hyba-entrypoint] starting FastAPI backend on ${BACKEND_HOST}:${BACKEND_PORT}"
 uvicorn hyba_genesis_api.main:app \
   --host "$BACKEND_HOST" \

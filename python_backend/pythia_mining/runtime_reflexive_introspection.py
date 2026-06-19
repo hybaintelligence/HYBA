@@ -20,7 +20,7 @@ import hashlib
 import math
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any
 
 INVARIANT_HINTS: dict[str, str] = {
     "hermit": "density_matrix_self_adjoint",
@@ -158,7 +158,6 @@ def _build_edges(modules: list[ModuleInspection]) -> list[tuple[str, str, float]
     if edges:
         return sorted(edges, key=lambda item: (-item[2], item[0], item[1]))[:256]
 
-    # Fallback when imports are too dynamic: connect invariant-related modules.
     invariant_modules = [m for m in modules if m.invariant_hits]
     for left, right in zip(invariant_modules, invariant_modules[1:]):
         edges.append((left.name, right.name, _edge_weight(left, right)))
@@ -234,12 +233,10 @@ def simulate_virtual_mining_with_hash_landscape(controller: Any, proposal: Any) 
     current_density = float(controller.get_phi_density())
     horizon = max(float(getattr(controller.config, "virtual_session_horizon", 0.25)), 0.01)
     samples = max(16, min(512, int(horizon * 512)))
-    seed = json_seed = (
-        f"{proposal.proposal_id}|{proposal.improvement_type}|{proposal.current_value:.12f}|"
-        f"{proposal.proposed_value:.12f}|{proposal.logical_consistency_score:.12f}|"
-        f"{proposal.counterfactual_confidence:.12f}"
+    seed = (
+        f"{proposal.proposal_id}|{proposal.improvement_type}|"
+        f"{proposal.current_value:.12f}|{proposal.proposed_value:.12f}"
     ).encode("utf-8")
-    del json_seed
 
     scores: list[float] = []
     for nonce in range(samples):
@@ -252,14 +249,14 @@ def simulate_virtual_mining_with_hash_landscape(controller: Any, proposal: Any) 
     top_mean = sum(top_k) / len(top_k)
     landscape_signal = 0.65 * best + 0.35 * top_mean
 
-    violation_penalty = min(0.50, 0.10 * len(getattr(proposal, "constraints_violated", [])))
+    violation_penalty = min(0.60, 0.18 * len(getattr(proposal, "constraints_violated", [])))
     consistency = max(0.0, min(1.0, float(proposal.logical_consistency_score)))
     confidence = max(0.0, min(1.0, float(proposal.counterfactual_confidence)))
     expected_gain = float(proposal.expected_phi_density_gain)
     quality = max(0.0, (1.0 - violation_penalty) * (0.55 * consistency + 0.45 * confidence))
 
     mining_delta = (landscape_signal - 0.50) * 0.04
-    simulated_density = current_density + expected_gain * quality + mining_delta - violation_penalty * 0.05
+    simulated_density = current_density + expected_gain * quality + mining_delta - violation_penalty * 0.08
     return min(max(simulated_density, 0.0), 1.0)
 
 

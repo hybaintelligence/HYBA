@@ -17,7 +17,7 @@
     "seed": "tsx src/db/seed.ts",
     "python:env:check": "cross-env PYTHONPATH=python_backend python scripts/check_python_test_environment.py",
     "review:nodus:gate": "python -m pytest tests/test_nodus_solutus_proof_structure.py -q",
-    "review:manifest:gate": "python -m pytest tests/test_claim_evidence_manifest.py tests/test_no_merge_conflict_markers.py -q",
+    "review:manifest:gate": "python -m pytest tests/test_claim_evidence_manifest.py tests/test_validation_claim_tiers.py tests/test_no_merge_conflict_markers.py -q && npm run review:claim-tiers",
     "review:evidence:gate": "npm run review:nodus:gate && npm run review:manifest:gate && cross-env PYTHONPATH=python_backend python -m pytest hyba_intelligence_tests -q",
     "test:e2e:backend": "npm run python:env:check && cross-env PYTHONPATH=python_backend python scripts/run_backend_e2e.py",
     "test:backend": "npm run python:env:check && cross-env PYTHONPATH=python_backend python -m unittest discover -s tests -p \"test_*.py\"",
@@ -101,7 +101,8 @@
     "test:frontend:all": "npm run lint && npm run test:frontend:unit && npm run test:frontend:components && npm run test:frontend:e2e",
     "test:frontend:gate": "npm run test:frontend:all && npm run build",
     "test:frontend:unit:coverage": "vitest run tests/**/*.test.ts --config vitest.config.ts --coverage",
-    "test:frontend:components:coverage": "vitest run tests/**/*.test.tsx --config vitest.component.config.ts --coverage"
+    "test:frontend:components:coverage": "vitest run tests/**/*.test.tsx --config vitest.component.config.ts --coverage",
+    "review:claim-tiers": "python scripts/check_validation_claim_tiers.py"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",

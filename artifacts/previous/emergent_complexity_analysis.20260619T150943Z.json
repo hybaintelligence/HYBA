@@ -1,0 +1,127 @@
+{
+  "artifact_schema_version": 2,
+  "generated_at_utc": "2026-06-19T15:04:28.684611+00:00",
+  "measurements": {
+    "baselines": {
+      "random": {
+        "integration_phi_proxy": 0.5,
+        "autonomy_proxy": 0.0,
+        "irreducibility_proxy": 0.0,
+        "purpose": "negative-control toy with incidental local decisions"
+      },
+      "modular": {
+        "integration_phi_proxy": 0.0,
+        "autonomy_proxy": 0.0,
+        "irreducibility_proxy": 0.0,
+        "purpose": "negative-control toy with clean module boundaries"
+      },
+      "highly_coupled_non_adaptive": {
+        "integration_phi_proxy": 1.0,
+        "autonomy_proxy": 0.0,
+        "irreducibility_proxy": 0.0,
+        "purpose": "static coupling control without adaptive feedback"
+      },
+      "stateful_feedback": {
+        "integration_phi_proxy": 0.5,
+        "autonomy_proxy": 0.0,
+        "irreducibility_proxy": 0.8571428571428571,
+        "purpose": "stateful feedback control with explicit shared state"
+      }
+    },
+    "test_01": {
+      "phi": 0.05328911000552792,
+      "python_modules": 135,
+      "typescript_modules": 55,
+      "total_dependencies": 135,
+      "total_dependency_edges": 964,
+      "interpretation": "Low-moderate integration - some cross-module coupling"
+    },
+    "test_02": {
+      "autonomy_score": 10.0,
+      "total_decisions": 7076,
+      "total_external": 2162,
+      "adaptive_patterns": 1074,
+      "self_modification": 16,
+      "interpretation": "Highly autonomous - extensive internal control flow with 1074 adaptive patterns and 16 self-modification sites"
+    },
+    "test_03": {
+      "irreducibility_score": 0.04335848604623308,
+      "global_state_refs": 362,
+      "instance_state_refs": 7987,
+      "interpretation": "Highly reducible - clean state partitions"
+    }
+  },
+  "metric_definitions": {
+    "integration_phi_proxy": "Static import graph density with bidirectional-import weighting; a code-coupling proxy, not measured runtime information integration.",
+    "autonomy_proxy": "Static count ratio of internal decision/adaptation/self-modification tokens to external-control tokens; not runtime causal autonomy.",
+    "irreducibility_proxy": "Static shared/global-state reference fraction against instance-state references; not a runtime causal irreducibility proof.",
+    "emergent_score": "Heuristic weighted roll-up for internal comparison only; not a consciousness, sentience, capability, revenue, or external-performance claim."
+  },
+  "baseline_comparisons": {
+    "random": {
+      "integration_phi_proxy": 0.5,
+      "autonomy_proxy": 0.0,
+      "irreducibility_proxy": 0.0,
+      "purpose": "negative-control toy with incidental local decisions"
+    },
+    "modular": {
+      "integration_phi_proxy": 0.0,
+      "autonomy_proxy": 0.0,
+      "irreducibility_proxy": 0.0,
+      "purpose": "negative-control toy with clean module boundaries"
+    },
+    "highly_coupled_non_adaptive": {
+      "integration_phi_proxy": 1.0,
+      "autonomy_proxy": 0.0,
+      "irreducibility_proxy": 0.0,
+      "purpose": "static coupling control without adaptive feedback"
+    },
+    "stateful_feedback": {
+      "integration_phi_proxy": 0.5,
+      "autonomy_proxy": 0.0,
+      "irreducibility_proxy": 0.8571428571428571,
+      "purpose": "stateful feedback control with explicit shared state"
+    }
+  },
+  "verdict": [
+    "\u2717 Low integration - modular architecture",
+    "\u2713 Has internal decision-making",
+    "\u2717 Clean state boundaries",
+    "\u2713 Contains 1074 adaptive patterns",
+    "\u26a0 Contains 16 self-modification patterns"
+  ],
+  "conclusion": "ELEVATED SOFTWARE-PROXY COMPLEXITY: Static proxies show non-trivial integration, adaptation tokens, and self-modification tokens. Preserve as an internal measurement finding and move through replay, baselines, falsification, and external review before any stronger claim.",
+  "emergent_score": 18.089683530286447,
+  "preserved_previous_artifact": "artifacts/previous/emergent_complexity_analysis.20260619T150428Z.json",
+  "claim_boundary": {
+    "metric_posture": "software proxies only",
+    "distinguishes": "static code coupling and token patterns are separated from runtime causal behaviour",
+    "supported": "controlled internal comparisons of IIT-inspired software proxy measurements",
+    "not_supported": [
+      "consciousness or sentience adjudication",
+      "runtime causal-behaviour proof",
+      "quantum speedup or external mining-performance claims",
+      "guaranteed revenue, accepted shares, or production telemetry claims",
+      "IIT 4.0 \u03a6 correlation with mining hashrate or share acceptance",
+      "mining performance prediction based on \u03a6 calculations",
+      "production mining decisions based on IIT metrics"
+    ],
+    "mining_performance_validation_status": "UNVALIDATED",
+    "mining_performance_validation_requirements": [
+      "historical hashrate data collection",
+      "share acceptance rate tracking",
+      "pool-side performance metrics",
+      "statistical correlation analysis between \u03a6 and mining performance",
+      "controlled A/B testing with different \u03a6 configurations"
+    ],
+    "requires_for_reviewer_grade_claim": [
+      "exact test output preservation",
+      "commit SHA and environment capture",
+      "artifact SHA-256",
+      "clean-environment replay",
+      "negative controls",
+      "baseline comparison",
+      "external review packet"
+    ]
+  }
+}

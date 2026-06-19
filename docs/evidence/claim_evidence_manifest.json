@@ -42,6 +42,33 @@
       ]
     },
     {
+      "id": "pythia_validation_tier_guardrail",
+      "claim": "PYTHIA/HYBA external claims are gated by a three-tier validation protocol and proactive documentation checks that separate formalism-validated invariants, prototype-validated benchmark code, and hypothetical research candidates before investor, sovereign, mining, or clean-energy positioning.",
+      "status": "implemented_and_documented",
+      "boundary": "This is a documentation and evidence-governance guardrail. It does not certify guaranteed mining revenue, SHA-256 quantum acceleration, broad energy advantage over physical quantum systems, clean-energy dispatch savings, phenomenal consciousness, proof of the Yang-Mills Millennium problem, or claims about the physical universe beyond repository-local evidence.",
+      "code_paths": [
+        "scripts/local_production_gate.py",
+        "scripts/check_validation_claim_tiers.py"
+      ],
+      "test_paths": [
+        "tests/test_claim_evidence_manifest.py",
+        "tests/test_validation_claim_tiers.py"
+      ],
+      "doc_paths": [
+        "docs/PYTHIA_HYBA_VALIDATION_REMEDIATION.md",
+        "docs/templates/external_claim_material.md",
+        "docs/MINING_STANDALONE_VALIDATION_ROADMAP.md",
+        "docs/mining/evidence/mining_validation_manifest.json",
+        "docs/SCIENTIFIC_REFRAMING_DEUTSCH_PRINCIPLE_VERIFIED.md",
+        "docs/PROVEN_QUANTUM_OPERATIONS_EVIDENCE.md",
+        "docs/evidence/EXTRAORDINARY_PROOF_INDEX.md"
+      ],
+      "commands": [
+        "python -m pytest tests/test_claim_evidence_manifest.py tests/test_validation_claim_tiers.py -q",
+        "python scripts/check_validation_claim_tiers.py"
+      ]
+    },
+    {
       "id": "bitcoin_deployment_readiness_gate",
       "claim": "HYBA_FULLSTACK exposes a bounded Bitcoin deployment readiness gate that validates the operational mining, Stratum, pool-profile, runtime-safety, build, backend, and deployment surfaces without requiring research-only frontier bundles to pass first.",
       "status": "implemented_and_executable",

@@ -1,0 +1,72 @@
+{
+  "benchmark_suite": "MemoryRoutedController",
+  "timestamp": 1781884859.869621,
+  "iterations": 10,
+  "results": [
+    {
+      "operation": "routing_decision",
+      "iterations": 10,
+      "total_time_ms": 4.091083996172529,
+      "avg_time_ms": 0.40910839961725287,
+      "min_time_ms": 0.018042002920992672,
+      "max_time_ms": 3.8890829964657314,
+      "throughput_ops_per_sec": 2444.3399376193793,
+      "metadata": {
+        "decision": "execute"
+      }
+    },
+    {
+      "operation": "hebbian_memory",
+      "iterations": 10,
+      "total_time_ms": 0.005753994628321379,
+      "avg_time_ms": 0.0005753994628321379,
+      "min_time_ms": 0.0004169996827840805,
+      "max_time_ms": 0.0011669981176964939,
+      "throughput_ops_per_sec": 1737923.0683983648,
+      "metadata": {
+        "history_length": 20
+      }
+    },
+    {
+      "operation": "circuit_breaker",
+      "iterations": 10,
+      "total_time_ms": 0.0017069978639483452,
+      "avg_time_ms": 0.00017069978639483452,
+      "min_time_ms": 8.299684850499034e-05,
+      "max_time_ms": 0.0005420006345957518,
+      "throughput_ops_per_sec": 5858238.144990793,
+      "metadata": {
+        "would_trip": false
+      }
+    },
+    {
+      "operation": "memory_learning",
+      "iterations": 10,
+      "total_time_ms": 0.006165995728224516,
+      "avg_time_ms": 0.0006165995728224516,
+      "min_time_ms": 0.0004169996827840805,
+      "max_time_ms": 0.0010420044418424368,
+      "throughput_ops_per_sec": 1621798.0745957275,
+      "metadata": {
+        "final_weight": 0.0
+      }
+    },
+    {
+      "operation": "route_probability",
+      "iterations": 10,
+      "total_time_ms": 0.013042001228313893,
+      "avg_time_ms": 0.0013042001228313893,
+      "min_time_ms": 0.0010829971870407462,
+      "max_time_ms": 0.002124994352925569,
+      "throughput_ops_per_sec": 766753.4931901573,
+      "metadata": {
+        "num_routes": 5
+      }
+    }
+  ],
+  "summary": {
+    "total_operations": 5,
+    "total_time_ms": 4.117752985621337,
+    "avg_throughput": 1997431.4242225327
+  }
+}

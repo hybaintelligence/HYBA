@@ -284,12 +284,14 @@ class MiningPassportFactory:
         if additional_metadata:
             payload.update(additional_metadata)
 
-        return make_mining_passport(
-            nonce=nonce,
-            job_id=job_id,
-            pool_name=pool_name,
-            phi_score=phi_score,
-            bures_score=bures_score,
+        return make_passport(
+            subsystem=Subsystem.PYTHIA.value,
+            claim_type=ClaimType.NONCE_FOUND.value,
+            payload=payload,
+            epistemic_bounds=[
+                EpistemicBound.NO_QUANTUM_SPEEDUP.value,
+                EpistemicBound.NO_GUARANTEE_CORRECTNESS.value,
+            ],
         )
 
     @staticmethod

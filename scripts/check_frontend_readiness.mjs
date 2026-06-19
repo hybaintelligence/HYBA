@@ -15,6 +15,9 @@ const generatedManifest = readJson('artifacts/frontend_api_command_manifest.gene
 const coverageStatus = readJson('artifacts/frontend_api_command_coverage_status.json');
 const frontendCi = readText('.github/workflows/frontend-ci.yml');
 const e2eWorkflow = readText('.github/workflows/frontend-e2e.yml');
+const dockerfile = readText('Dockerfile');
+const runtimeEntrypoint = readText('scripts/hyba-runtime-entrypoint.sh');
+const spaEntrypointHardener = readText('scripts/ensure_spa_entrypoint.mjs');
 
 for (const filePath of [
   'tests/e2e/accessibility.spec.ts',
@@ -23,6 +26,8 @@ for (const filePath of [
   'tests/e2e-live/live-stack.spec.ts',
   'tests/test_frontend_production_hardening.test.ts',
   'tests/test_frontend_release_readiness.test.ts',
+  'tests/test_production_spa_entrypoint.test.ts',
+  'scripts/ensure_spa_entrypoint.mjs',
   'docs/frontend/PRODUCTION_HARDENING_EVIDENCE.md',
 ]) {
   pass(exists(filePath), `Missing required frontend evidence file: ${filePath}`);
@@ -35,6 +40,25 @@ for (const scriptName of ['lint', 'test:frontend:unit', 'test:frontend:component
 for (const dependencyName of ['@axe-core/playwright', '@playwright/test', '@testing-library/react', 'msw', 'jsdom']) {
   pass(Boolean(packageJson.devDependencies?.[dependencyName]), `Missing dev dependency: ${dependencyName}`);
 }
+
+pass(dockerfile.includes('RUN npm run build'), 'Dockerfile must build the frontend before runtime image assembly');
+pass(dockerfile.includes('RUN node scripts/ensure_spa_entrypoint.mjs'), 'Dockerfile must harden the SPA entrypoint after build');
+pass(
+  dockerfile.indexOf('RUN node scripts/ensure_spa_entrypoint.mjs') > dockerfile.indexOf('RUN npm run build'),
+  'SPA entrypoint hardening must run after npm run build',
+);
+pass(dockerfile.includes('FROM node:22.15.0-bookworm-slim AS runtime'), 'Docker runtime must include Node/npm for the bridge');
+pass(
+  dockerfile.indexOf('FROM node:22.15.0-bookworm-slim AS runtime') < dockerfile.indexOf('RUN npm install --omit=dev'),
+  'Docker runtime must be Node-capable before production npm install runs',
+);
+pass(runtimeEntrypoint.includes('node scripts/ensure_spa_entrypoint.mjs'), 'Runtime entrypoint must verify the SPA entrypoint before bridge startup');
+pass(
+  runtimeEntrypoint.indexOf('node scripts/ensure_spa_entrypoint.mjs') < runtimeEntrypoint.indexOf('node "$NODE_ENTRYPOINT"'),
+  'Runtime SPA entrypoint verification must run before the Node bridge starts',
+);
+pass(spaEntrypointHardener.includes('app.get("/bridge/status"'), 'SPA entrypoint hardener must preserve bridge status on /bridge/status');
+pass(spaEntrypointHardener.includes('production root route still intercepts the SPA'), 'SPA entrypoint hardener must fail closed when / still intercepts the SPA');
 
 pass(generatedManifest.length >= 80, `Generated command manifest is too small: ${generatedManifest.length}`);
 pass(generatedManifest.every((entry) => entry.tested === undefined), 'Generated manifest must not include direct tested claims');
