@@ -199,13 +199,26 @@ class CodebaseSurroundings:
 # ---------------------------------------------------------------------------
 
 
+def _env_autonomous_mining_enabled() -> bool:
+    """Whether PYTHIA autonomous mining bootstrap is enabled at process startup."""
+    val = os.getenv("HYBA_ENABLE_AUTONOMOUS_MINING", "true").strip().lower()
+    return val in ("true", "1", "yes", "on")
+
+
 def _env_autonomy_level() -> AutonomyLevel:
-    """Read autonomy level from environment, fall back to ADVISORY."""
-    raw = os.getenv("HYBA_AUTONOMY_LEVEL", "advisory").strip().lower()
+    """Read startup autonomy authority from environment.
+
+    HYBA_ENABLE_AUTONOMOUS_MINING=true means the AI owns the boot path by
+    default, so an unset HYBA_AUTONOMY_LEVEL starts in AUTONOMOUS instead of
+    advisory. Operators can still explicitly set HYBA_AUTONOMY_LEVEL to manual,
+    advisory, supervised, or emergency when they need a narrower launch posture.
+    """
+    default = "autonomous" if _env_autonomous_mining_enabled() else "advisory"
+    raw = os.getenv("HYBA_AUTONOMY_LEVEL", default).strip().lower()
     try:
         return AutonomyLevel(raw)
     except ValueError:
-        return AutonomyLevel.ADVISORY
+        return AutonomyLevel.AUTONOMOUS if default == "autonomous" else AutonomyLevel.ADVISORY
 
 
 def _env_float(name: str, default: float) -> float:
