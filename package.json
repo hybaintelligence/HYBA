@@ -90,7 +90,9 @@
     "review:pipeline:audit": "cross-env PYTHONPATH=python_backend python scripts/review_environment_pipeline_audit.py",
     "preflight:production": "bash scripts/preflight_production_readiness_check.sh",
     "prod:game-day": "cross-env PYTHONPATH=python_backend python scripts/command_room_game_day.py",
-    "test:e2e:frontend": "npx playwright install --with-deps && npx playwright test"
+    "test:e2e:frontend": "npx playwright install --with-deps && npx playwright test",
+    "benchmark:capabilities": "npm run python:env:check && cross-env PYTHONPATH=python_backend python -m pytest tests/test_mining_capability_benchmarks.py tests/test_ai_capability_benchmarks.py -q -s",
+    "benchmark:ai-capabilities": "npm run python:env:check && cross-env PYTHONPATH=python_backend python -m pytest tests/test_ai_capability_benchmarks.py -q -s"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
