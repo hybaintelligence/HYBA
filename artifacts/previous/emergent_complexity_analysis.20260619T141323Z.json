@@ -1,6 +1,6 @@
 {
   "artifact_schema_version": 2,
-  "generated_at_utc": "2026-06-19T14:13:23.139645+00:00",
+  "generated_at_utc": "2026-06-19T14:12:38.342587+00:00",
   "measurements": {
     "baselines": {
       "random": {
@@ -45,9 +45,9 @@
       "interpretation": "Highly autonomous - extensive internal control flow with 1132 adaptive patterns and 16 self-modification sites"
     },
     "test_03": {
-      "irreducibility_score": 0.04235382308845577,
-      "global_state_refs": 339,
-      "instance_state_refs": 7665,
+      "irreducibility_score": 0.0424090338770389,
+      "global_state_refs": 338,
+      "instance_state_refs": 7632,
       "interpretation": "Highly reducible - clean state partitions"
     }
   },
@@ -91,8 +91,8 @@
     "\u26a0 Contains 16 self-modification patterns"
   ],
   "conclusion": "ELEVATED SOFTWARE-PROXY COMPLEXITY: Static proxies show non-trivial integration, adaptation tokens, and self-modification tokens. Preserve as an internal measurement finding and move through replay, baselines, falsification, and external review before any stronger claim.",
-  "emergent_score": 18.67289465656782,
-  "preserved_previous_artifact": "artifacts/previous/emergent_complexity_analysis.20260619T141323Z.json",
+  "emergent_score": 18.67317071051074,
+  "preserved_previous_artifact": "artifacts/previous/emergent_complexity_analysis.20260619T141238Z.json",
   "claim_boundary": {
     "metric_posture": "software proxies only",
     "distinguishes": "static code coupling and token patterns are separated from runtime causal behaviour",

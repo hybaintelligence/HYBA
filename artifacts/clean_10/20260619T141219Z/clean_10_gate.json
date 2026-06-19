@@ -1,5 +1,5 @@
 {
-  "generated_at_utc": "2026-06-19T14:14:28.893186+00:00",
+  "generated_at_utc": "2026-06-19T14:13:43.940428+00:00",
   "next_actions": [
     "Do not describe the repository as clean until required failures are zero.",
     "Open the referenced per-command logs, fix the first failing command, and rerun this gate."
@@ -7,6 +7,7 @@
   "passed": false,
   "repository": "HYBA_FULLSTACK",
   "required_failures": [
+    "hendrix_job_backed_benchmarks",
     "local_launch_contracts",
     "frontend_unit_gate",
     "backend_gate"
@@ -18,8 +19,8 @@
         "run",
         "python:env:check"
       ],
-      "duration_seconds": 0.292651,
-      "log_path": "artifacts/clean_10/20260619T141304Z/python_backend_environment.log",
+      "duration_seconds": 0.30861,
+      "log_path": "artifacts/clean_10/20260619T141219Z/python_backend_environment.log",
       "name": "python_backend_environment",
       "passed": true,
       "returncode": 0
@@ -32,8 +33,8 @@
         "tests/test_auth_jwt_contracts.py",
         "-q"
       ],
-      "duration_seconds": 0.560661,
-      "log_path": "artifacts/clean_10/20260619T141304Z/auth_jwt_contracts.log",
+      "duration_seconds": 0.515287,
+      "log_path": "artifacts/clean_10/20260619T141219Z/auth_jwt_contracts.log",
       "name": "auth_jwt_contracts",
       "passed": true,
       "returncode": 0
@@ -46,8 +47,8 @@
         "tests/test_runtime_reflexive_introspection.py",
         "-q"
       ],
-      "duration_seconds": 1.459994,
-      "log_path": "artifacts/clean_10/20260619T141304Z/runtime_reflexive_introspection.log",
+      "duration_seconds": 1.401642,
+      "log_path": "artifacts/clean_10/20260619T141219Z/runtime_reflexive_introspection.log",
       "name": "runtime_reflexive_introspection",
       "passed": true,
       "returncode": 0
@@ -60,8 +61,8 @@
         "tests/test_evidence_boundary_report.py",
         "-q"
       ],
-      "duration_seconds": 0.244528,
-      "log_path": "artifacts/clean_10/20260619T141304Z/evidence_boundary_report.log",
+      "duration_seconds": 0.282829,
+      "log_path": "artifacts/clean_10/20260619T141219Z/evidence_boundary_report.log",
       "name": "evidence_boundary_report",
       "passed": true,
       "returncode": 0
@@ -74,8 +75,8 @@
         "tests/test_adaptive_capability_registry.py",
         "-q"
       ],
-      "duration_seconds": 0.240145,
-      "log_path": "artifacts/clean_10/20260619T141304Z/adaptive_capability_registry.log",
+      "duration_seconds": 0.230105,
+      "log_path": "artifacts/clean_10/20260619T141219Z/adaptive_capability_registry.log",
       "name": "adaptive_capability_registry",
       "passed": true,
       "returncode": 0
@@ -88,8 +89,8 @@
         "tests/test_prediction_endpoint.py",
         "-q"
       ],
-      "duration_seconds": 0.50363,
-      "log_path": "artifacts/clean_10/20260619T141304Z/prediction_endpoint_contracts.log",
+      "duration_seconds": 0.490636,
+      "log_path": "artifacts/clean_10/20260619T141219Z/prediction_endpoint_contracts.log",
       "name": "prediction_endpoint_contracts",
       "passed": true,
       "returncode": 0
@@ -102,8 +103,8 @@
         "tests/test_pool_profile_primitives.py",
         "-q"
       ],
-      "duration_seconds": 0.332117,
-      "log_path": "artifacts/clean_10/20260619T141304Z/pool_profile_primitives.log",
+      "duration_seconds": 0.32091,
+      "log_path": "artifacts/clean_10/20260619T141219Z/pool_profile_primitives.log",
       "name": "pool_profile_primitives",
       "passed": true,
       "returncode": 0
@@ -116,11 +117,11 @@
         "tests/test_hendrix_phi_performance_benchmark.py",
         "-q"
       ],
-      "duration_seconds": 1.883324,
-      "log_path": "artifacts/clean_10/20260619T141304Z/hendrix_job_backed_benchmarks.log",
+      "duration_seconds": 1.881322,
+      "log_path": "artifacts/clean_10/20260619T141219Z/hendrix_job_backed_benchmarks.log",
       "name": "hendrix_job_backed_benchmarks",
-      "passed": true,
-      "returncode": 0
+      "passed": false,
+      "returncode": 1
     },
     {
       "command": [
@@ -130,8 +131,8 @@
         "tests/test_mining_autonomous_sovereign_gate.py",
         "-q"
       ],
-      "duration_seconds": 0.239382,
-      "log_path": "artifacts/clean_10/20260619T141304Z/autonomous_sovereign_gate_contracts.log",
+      "duration_seconds": 0.249165,
+      "log_path": "artifacts/clean_10/20260619T141219Z/autonomous_sovereign_gate_contracts.log",
       "name": "autonomous_sovereign_gate_contracts",
       "passed": true,
       "returncode": 0
@@ -144,8 +145,8 @@
         "tests/test_local_launch_script_contract.py",
         "-q"
       ],
-      "duration_seconds": 0.237409,
-      "log_path": "artifacts/clean_10/20260619T141304Z/local_launch_contracts.log",
+      "duration_seconds": 0.252829,
+      "log_path": "artifacts/clean_10/20260619T141219Z/local_launch_contracts.log",
       "name": "local_launch_contracts",
       "passed": false,
       "returncode": 1
@@ -159,8 +160,8 @@
         "tests/test_security_swarm_routes.test.ts",
         "tests/test_consciousness_behavioral.test.ts"
       ],
-      "duration_seconds": 0.759844,
-      "log_path": "artifacts/clean_10/20260619T141304Z/frontend_bridge_and_security_contracts.log",
+      "duration_seconds": 0.778207,
+      "log_path": "artifacts/clean_10/20260619T141219Z/frontend_bridge_and_security_contracts.log",
       "name": "frontend_bridge_and_security_contracts",
       "passed": true,
       "returncode": 0
@@ -171,8 +172,8 @@
         "run",
         "test:frontend:unit"
       ],
-      "duration_seconds": 7.888735,
-      "log_path": "artifacts/clean_10/20260619T141304Z/frontend_unit_gate.log",
+      "duration_seconds": 7.796314,
+      "log_path": "artifacts/clean_10/20260619T141219Z/frontend_unit_gate.log",
       "name": "frontend_unit_gate",
       "passed": false,
       "returncode": 1
@@ -183,8 +184,8 @@
         "run",
         "test:backend"
       ],
-      "duration_seconds": 68.074156,
-      "log_path": "artifacts/clean_10/20260619T141304Z/backend_gate.log",
+      "duration_seconds": 67.917886,
+      "log_path": "artifacts/clean_10/20260619T141219Z/backend_gate.log",
       "name": "backend_gate",
       "passed": false,
       "returncode": 1
@@ -195,8 +196,8 @@
         "run",
         "build"
       ],
-      "duration_seconds": 1.66465,
-      "log_path": "artifacts/clean_10/20260619T141304Z/build_gate.log",
+      "duration_seconds": 1.664731,
+      "log_path": "artifacts/clean_10/20260619T141219Z/build_gate.log",
       "name": "build_gate",
       "passed": true,
       "returncode": 0
