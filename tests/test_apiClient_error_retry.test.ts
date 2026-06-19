@@ -20,7 +20,7 @@ describe("apiClient retry, auth, and error contracts", () => {
     vi.useFakeTimers();
     vi.stubGlobal("fetch", vi.fn());
     vi.stubGlobal("localStorage", {
-      getItem: vi.fn(),
+      getItem: vi.fn().mockReturnValue(null),
       setItem: vi.fn(),
       removeItem: vi.fn(),
       clear: vi.fn(),
