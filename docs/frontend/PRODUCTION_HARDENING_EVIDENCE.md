@@ -8,8 +8,9 @@ This document records the hardening gates installed for HYBA_FULLSTACK frontend 
 | --- | --- | --- |
 | Axe accessibility scan | `tests/e2e/accessibility.spec.ts` | Runs Playwright plus `@axe-core/playwright` across anonymous, operator, admin, and executive surfaces. |
 | Full role matrix | `tests/e2e/role-matrix.spec.ts` | Proves ordinary, invalid-session, admin, and executive roles receive the correct navigation surface. |
-| Command safety E2E | `tests/e2e/command-safety.spec.ts` | Proves passive dashboard/admin/executive navigation does not accidentally dispatch high-impact command routes. |
+| Command safety E2E | `tests/e2e/autonomous-safety.spec.ts` | Proves passive dashboard/admin/executive navigation does not accidentally dispatch high-impact command routes. |
 | Manifest evidence gate | `tests/test_frontend_production_hardening.test.ts` | Proves the generated command inventory remains broad and high-impact commands remain explicitly tracked in behavioural status. |
+| Expanded Playwright fixtures | `tests/e2e/fixtures.ts` | Provides deterministic role/profile states and mocked admin/intelligence/security/organism routes for safe tests. |
 
 ## Production standard
 
@@ -29,7 +30,7 @@ npm ci
 npm run lint
 npm run test:frontend:unit
 npm run test:frontend:components
-npx playwright test tests/e2e/accessibility.spec.ts tests/e2e/role-matrix.spec.ts tests/e2e/command-safety.spec.ts
+npx playwright test tests/e2e/accessibility.spec.ts tests/e2e/role-matrix.spec.ts tests/e2e/autonomous-safety.spec.ts
 npm run build
 ```
 

@@ -6,7 +6,7 @@ type ManifestEntry = {
   function: string;
   method: string;
   path: string;
-  sideEffect: string;
+  sideEffect: "read" | "mutation" | "destructive" | "autonomous_control";
   role: string;
   idempotent: boolean;
 };

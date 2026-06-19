@@ -1,15 +1,15 @@
 import { expect, test } from "@playwright/test";
-import { installBackendMocks, seedAuth } from "./fixtures";
+import { installBackendMocks, seedAuth, type MockRole } from "./fixtures";
 
-const operationalRoles = ["operator", "analyst", "miner"] as const;
-const invalidSessionRoles = ["anonymous", "expired_token", "malformed_token", "backend_profile_unavailable"] as const;
-const executiveRoles = ["ceo_heir_apparent", "chairman", "cto", "cfo", "legal", "chief_of_staff"] as const;
+const operationalRoles: MockRole[] = ["operator", "analyst", "miner"];
+const invalidSessionRoles: MockRole[] = ["anonymous", "expired_token", "malformed_token", "backend_profile_unavailable"];
+const executiveRoles: MockRole[] = ["ceo_heir_apparent", "chairman", "cto", "cfo", "legal", "chief_of_staff"];
 
 test.describe("frontend role matrix", () => {
   for (const role of [...operationalRoles, ...invalidSessionRoles]) {
     test(`${role} receives operator surface only`, async ({ page }) => {
-      await seedAuth(page, role as any);
-      await installBackendMocks(page, { role: role as any });
+      await seedAuth(page, role);
+      await installBackendMocks(page, { role });
       await page.goto("/");
       await expect(page.getByRole("heading", { name: "Genesis Runtime Console" })).toBeVisible();
       await expect(page.getByRole("button", { name: "Admin" })).toHaveCount(0);
@@ -28,8 +28,8 @@ test.describe("frontend role matrix", () => {
 
   for (const role of executiveRoles) {
     test(`${role} receives executive surface`, async ({ page }) => {
-      await seedAuth(page, role as any);
-      await installBackendMocks(page, { role: role as any });
+      await seedAuth(page, role);
+      await installBackendMocks(page, { role });
       await page.goto("/");
       await expect(page.getByRole("button", { name: "Admin" })).toBeVisible();
       await expect(page.getByRole("button", { name: "Executive" })).toBeVisible();

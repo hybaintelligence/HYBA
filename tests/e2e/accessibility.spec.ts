@@ -1,8 +1,8 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
-import { installBackendMocks, seedAuth } from "./fixtures";
+import { installBackendMocks, seedAuth, type MockRole } from "./fixtures";
 
-const ACCESSIBILITY_ROLES = [
+const ACCESSIBILITY_ROLES: MockRole[] = [
   "anonymous",
   "operator",
   "admin",
@@ -12,7 +12,7 @@ const ACCESSIBILITY_ROLES = [
   "cfo",
   "legal",
   "chief_of_staff",
-] as const;
+];
 
 test.describe("accessibility production hardening", () => {
   for (const role of ACCESSIBILITY_ROLES) {

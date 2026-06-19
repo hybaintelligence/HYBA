@@ -1,6 +1,20 @@
 import type { Page, Route } from "@playwright/test";
 
-export type MockRole = "anonymous" | "operator" | "admin" | "ceo_heir_apparent";
+export type MockRole =
+  | "anonymous"
+  | "operator"
+  | "analyst"
+  | "miner"
+  | "admin"
+  | "ceo_heir_apparent"
+  | "chairman"
+  | "cto"
+  | "cfo"
+  | "legal"
+  | "chief_of_staff"
+  | "expired_token"
+  | "malformed_token"
+  | "backend_profile_unavailable";
 
 type MockOptions = {
   role?: MockRole;
@@ -8,6 +22,14 @@ type MockOptions = {
 };
 
 const now = "2026-06-19T09:00:00.000Z";
+const EXECUTIVE_ROLES: MockRole[] = [
+  "ceo_heir_apparent",
+  "chairman",
+  "cto",
+  "cfo",
+  "legal",
+  "chief_of_staff",
+];
 
 export const disposableUsers = [
   {
@@ -112,12 +134,19 @@ const telemetry = {
   },
 };
 
+const userRoleFor = (role: MockRole) => {
+  if (["expired_token", "malformed_token", "backend_profile_unavailable", "anonymous"].includes(role)) {
+    return "operator";
+  }
+  return role;
+};
+
 const profileByRole = (role: MockRole) => ({
   success: true,
   user: {
     id: `fixture-${role}`,
     username: role === "anonymous" ? "guest" : `fixture-${role}`,
-    role: role === "anonymous" ? "operator" : role,
+    role: userRoleFor(role),
     createdAt: now,
   },
 });
@@ -143,10 +172,14 @@ export async function installBackendMocks(page: Page, options: MockOptions = {})
     if (path === "/mining/pools") return json(route, telemetry.pools);
     if (path === "/security/status") return json(route, telemetry.security);
     if (path === "/products") return json(route, []);
-    if (path === "/auth/profile")
-      return role === "anonymous"
-        ? json(route, { success: false }, 401)
-        : json(route, profileByRole(role));
+    if (path === "/auth/profile") {
+      if (role === "anonymous") return json(route, { success: false }, 401);
+      if (role === "expired_token") return json(route, { success: false, error: "token expired" }, 401);
+      if (role === "malformed_token") return json(route, { success: false, error: "malformed token" }, 401);
+      if (role === "backend_profile_unavailable")
+        return json(route, { success: false, error: "profile unavailable" }, 503);
+      return json(route, profileByRole(role));
+    }
     if (path === "/auth/login")
       return json(route, { success: true, token: "mock-token", user: profileByRole(role).user });
     if (path === "/auth/register")
@@ -169,12 +202,16 @@ export async function installBackendMocks(page: Page, options: MockOptions = {})
       return json(route, {
         total_users: 2,
         active_users: 2,
-        admin_users: 1,
-        executive_users: role === "ceo_heir_apparent" ? 1 : 0,
+        admin_users: role === "admin" ? 1 : 0,
+        executive_users: EXECUTIVE_ROLES.includes(role) ? 1 : 0,
       });
     if (path === "/admin/audit-logs") return json(route, { logs: [], total: 0 });
     if (path === "/admin/funding/overview")
       return json(route, { total_funds: 0, pending_requests: 0, approved_allocations: 0 });
+    if (/^\/admin\/funding\/allocations\/[^/]+\/disburse$/.test(path) && request.method() === "POST")
+      return json(route, { status: "disbursed", allocation_id: path.split("/").at(-2) });
+    if (/^\/admin\/funding\/requests\/[^/]+\/review$/.test(path) && request.method() === "PUT")
+      return json(route, { status: "reviewed", request_id: path.split("/").at(-2) });
     if (path === "/admin/users" && request.method() === "GET")
       return json(route, { users: disposableUsers, total: disposableUsers.length });
     if (path === "/admin/users" && request.method() === "POST")
@@ -191,6 +228,18 @@ export async function installBackendMocks(page: Page, options: MockOptions = {})
     if (path === "/intelligence/start") return json(route, { status: "started" });
     if (path === "/intelligence/stop") return json(route, { status: "stopped" });
     if (path === "/intelligence/reset") return json(route, { status: "reset" });
+    if (path === "/v1/intelligence/scale" && request.method() === "POST")
+      return json(route, { status: "scaled", scale: 2 });
+    if (path === "/v1/intelligence/consciousness/boost" && request.method() === "POST")
+      return json(route, { status: "boosted" });
+    if (path === "/v1/intelligence/orchestrate" && request.method() === "POST")
+      return json(route, { status: "orchestrated" });
+    if (path === "/security/shield" && request.method() === "POST")
+      return json(route, { status: "shield_activated" });
+    if (/^\/organism\/immune\/quarantine\/[^/]+$/.test(path) && request.method() === "POST")
+      return json(route, { status: "quarantined", lane_id: path.split("/").at(-1) });
+    if (/^\/organism\/cognition\/evolve\/[^/]+$/.test(path) && request.method() === "POST")
+      return json(route, { status: "evolution_applied", conjecture_id: path.split("/").at(-1) });
     if (path === "/organism/executive/status")
       return json(route, { status: "ready", intent: "stasis" });
     if (path === "/organism/executive/telemetry")
@@ -199,6 +248,8 @@ export async function installBackendMocks(page: Page, options: MockOptions = {})
       return json(route, { habitats: telemetry.pools.pools, default_pool: "mock-alpha" });
     if (path === "/organism/executive/intent")
       return json(route, { status: "accepted", intent: "stasis" });
+    if (/^\/organism\/executive\/habitats\/migrate\/[^/]+$/.test(path) && request.method() === "PUT")
+      return json(route, { status: "migration_scheduled", pool: path.split("/").at(-1) });
 
     return json(route, { detail: `Unhandled mock route: ${request.method()} ${path}` }, 404);
   });
@@ -206,7 +257,9 @@ export async function installBackendMocks(page: Page, options: MockOptions = {})
 
 export async function seedAuth(page: Page, role: MockRole) {
   if (role !== "anonymous") {
-    await page.addInitScript(() => window.localStorage.setItem("hyba_auth_token", "mock-token"));
+    const token =
+      role === "expired_token" ? "expired-token" : role === "malformed_token" ? "malformed-token" : "mock-token";
+    await page.addInitScript((authToken) => window.localStorage.setItem("hyba_auth_token", authToken), token);
   }
 }
 
