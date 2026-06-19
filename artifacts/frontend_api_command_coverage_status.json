@@ -298,5 +298,1061 @@
     "evidence": [
       "Seed API/client or mocked E2E coverage exists, but full success/failure/auth/retry/payload/role/UI coverage is not complete."
     ]
+  },
+  {
+    "function": "aiChat",
+    "method": "POST",
+    "path": "/api/ai/chat",
+    "sideEffect": "mutation",
+    "role": "any_authenticated_or_public",
+    "idempotent": false,
+    "coverageStatus": "partial",
+    "evidence": [
+      "API/client coverage exists but full success/failure/auth/retry/payload/role/UI coverage is not complete."
+    ]
+  },
+  {
+    "function": "configurePool",
+    "method": "POST",
+    "path": "/api/mining/pool-config",
+    "sideEffect": "mutation",
+    "role": "operator_or_admin",
+    "idempotent": false,
+    "coverageStatus": "partial",
+    "evidence": [
+      "API/client coverage exists but full success/failure/auth/retry/payload/role/UI coverage is not complete."
+    ]
+  },
+  {
+    "function": "createFundingAllocation",
+    "method": "POST",
+    "path": "/api/admin/funding/allocations",
+    "sideEffect": "mutation",
+    "role": "admin",
+    "idempotent": false,
+    "coverageStatus": "partial",
+    "evidence": [
+      "API/client coverage exists but full success/failure/auth/retry/payload/role/UI coverage is not complete."
+    ]
+  },
+  {
+    "function": "createFundingRequest",
+    "method": "POST",
+    "path": "/api/admin/funding/requests",
+    "sideEffect": "mutation",
+    "role": "admin",
+    "idempotent": false,
+    "coverageStatus": "partial",
+    "evidence": [
+      "API/client coverage exists but full success/failure/auth/retry/payload/role/UI coverage is not complete."
+    ]
+  },
+  {
+    "function": "executePulvini",
+    "method": "POST",
+    "path": "/api/pulvini/execute",
+    "sideEffect": "mutation",
+    "role": "any_authenticated_or_public",
+    "idempotent": false,
+    "coverageStatus": "partial",
+    "evidence": [
+      "API/client coverage exists but full success/failure/auth/retry/payload/role/UI coverage is not complete."
+    ]
+  },
+  {
+    "function": "fetchPoolConfig",
+    "method": "GET",
+    "path": "/api/mining/pool-config",
+    "sideEffect": "read",
+    "role": "operator_or_admin",
+    "idempotent": true,
+    "coverageStatus": "partial",
+    "evidence": [
+      "API/client coverage exists but full success/failure/auth/retry/payload/role/UI coverage is not complete."
+    ]
+  },
+  {
+    "function": "fetchProductsApi",
+    "method": "GET",
+    "path": "/api/products",
+    "sideEffect": "read",
+    "role": "any_authenticated_or_public",
+    "idempotent": true,
+    "coverageStatus": "partial",
+    "evidence": [
+      "API/client coverage exists but full success/failure/auth/retry/payload/role/UI coverage is not complete."
+    ]
+  },
+  {
+    "function": "fetchProfileApi",
+    "method": "GET",
+    "path": "/api/auth/profile",
+    "sideEffect": "read",
+    "role": "any_authenticated_or_public",
+    "idempotent": true,
+    "coverageStatus": "partial",
+    "evidence": [
+      "API/client coverage exists but full success/failure/auth/retry/payload/role/UI coverage is not complete."
+    ]
+  },
+  {
+    "function": "fetchTelemetryData",
+    "method": "GET",
+    "path": "/api/ai/consciousness",
+    "sideEffect": "read",
+    "role": "any_authenticated_or_public",
+    "idempotent": true,
+    "coverageStatus": "partial",
+    "evidence": [
+      "API/client coverage exists but full success/failure/auth/retry/payload/role/UI coverage is not complete."
+    ]
+  },
+  {
+    "function": "getAdminStats",
+    "method": "GET",
+    "path": "/api/admin/stats",
+    "sideEffect": "read",
+    "role": "admin",
+    "idempotent": true,
+    "coverageStatus": "partial",
+    "evidence": [
+      "API/client coverage exists but full success/failure/auth/retry/payload/role/UI coverage is not complete."
+    ]
+  },
+  {
+    "function": "getAdminUser",
+    "method": "GET",
+    "path": "/api/admin/users/${userId}",
+    "sideEffect": "read",
+    "role": "admin",
+    "idempotent": true,
+    "coverageStatus": "partial",
+    "evidence": [
+      "API/client coverage exists but full success/failure/auth/retry/payload/role/UI coverage is not complete."
+    ]
+  },
+  {
+    "function": "getAdminUsers",
+    "method": "GET",
+    "path": "/api/admin/users?${params.toString()}",
+    "sideEffect": "read",
+    "role": "admin",
+    "idempotent": true,
+    "coverageStatus": "partial",
+    "evidence": [
+      "API/client coverage exists but full success/failure/auth/retry/payload/role/UI coverage is not complete."
+    ]
+  },
+  {
+    "function": "getAuditLogs",
+    "method": "GET",
+    "path": "/api/admin/audit-logs?${params.toString()}",
+    "sideEffect": "read",
+    "role": "admin",
+    "idempotent": true,
+    "coverageStatus": "partial",
+    "evidence": [
+      "API/client coverage exists but full success/failure/auth/retry/payload/role/UI coverage is not complete."
+    ]
+  },
+  {
+    "function": "getBlockchainThreats",
+    "method": "GET",
+    "path": "/api/security/blockchain/threats",
+    "sideEffect": "read",
+    "role": "operator_or_admin",
+    "idempotent": true,
+    "coverageStatus": "partial",
+    "evidence": [
+      "API/client coverage exists but full success/failure/auth/retry/payload/role/UI coverage is not complete."
+    ]
+  },
+  {
+    "function": "getConjectures",
+    "method": "GET",
+    "path": "/api/organism/cognition/conjectures",
+    "sideEffect": "read",
+    "role": "executive",
+    "idempotent": true,
+    "coverageStatus": "partial",
+    "evidence": [
+      "API/client coverage exists but full success/failure/auth/retry/payload/role/UI coverage is not complete."
+    ]
+  },
+  {
+    "function": "getConsciousness",
+    "method": "GET",
+    "path": "/api/ai/consciousness",
+    "sideEffect": "read",
+    "role": "any_authenticated_or_public",
+    "idempotent": true,
+    "coverageStatus": "partial",
+    "evidence": [
+      "API/client coverage exists but full success/failure/auth/retry/payload/role/UI coverage is not complete."
+    ]
+  },
+  {
+    "function": "getExecutiveTelemetry",
+    "method": "GET",
+    "path": "/api/organism/executive/telemetry",
+    "sideEffect": "read",
+    "role": "executive",
+    "idempotent": true,
+    "coverageStatus": "partial",
+    "evidence": [
+      "API/client coverage exists but full success/failure/auth/retry/payload/role/UI coverage is not complete."
+    ]
+  },
+  {
+    "function": "getFundingAllocations",
+    "method": "GET",
+    "path": "/api/admin/funding/allocations?${params.toString()}",
+    "sideEffect": "read",
+    "role": "admin",
+    "idempotent": true,
+    "coverageStatus": "partial",
+    "evidence": [
+      "API/client coverage exists but full success/failure/auth/retry/payload/role/UI coverage is not complete."
+    ]
+  },
+  {
+    "function": "getFundingRequests",
+    "method": "GET",
+    "path": "/api/admin/funding/requests?${params.toString()}",
+    "sideEffect": "read",
+    "role": "admin",
+    "idempotent": true,
+    "coverageStatus": "partial",
+    "evidence": [
+      "API/client coverage exists but full success/failure/auth/retry/payload/role/UI coverage is not complete."
+    ]
+  },
+  {
+    "function": "getFundingSummary",
+    "method": "GET",
+    "path": "/api/admin/funding/summary?${params.toString()}",
+    "sideEffect": "read",
+    "role": "admin",
+    "idempotent": true,
+    "coverageStatus": "partial",
+    "evidence": [
+      "API/client coverage exists but full success/failure/auth/retry/payload/role/UI coverage is not complete."
+    ]
+  },
+  {
+    "function": "getHealth",
+    "method": "GET",
+    "path": "/api/health",
+    "sideEffect": "read",
+    "role": "any_authenticated_or_public",
+    "idempotent": true,
+    "coverageStatus": "partial",
+    "evidence": [
+      "API/client coverage exists but full success/failure/auth/retry/payload/role/UI coverage is not complete."
+    ]
+  },
+  {
+    "function": "getHealthLiveness",
+    "method": "GET",
+    "path": "/api/health/live",
+    "sideEffect": "read",
+    "role": "any_authenticated_or_public",
+    "idempotent": true,
+    "coverageStatus": "partial",
+    "evidence": [
+      "API/client coverage exists but full success/failure/auth/retry/payload/role/UI coverage is not complete."
+    ]
+  },
+  {
+    "function": "getHealthReadiness",
+    "method": "GET",
+    "path": "/api/health/readiness",
+    "sideEffect": "read",
+    "role": "any_authenticated_or_public",
+    "idempotent": true,
+    "coverageStatus": "partial",
+    "evidence": [
+      "API/client coverage exists but full success/failure/auth/retry/payload/role/UI coverage is not complete."
+    ]
+  },
+  {
+    "function": "getHealthReady",
+    "method": "GET",
+    "path": "/api/health/ready",
+    "sideEffect": "read",
+    "role": "any_authenticated_or_public",
+    "idempotent": true,
+    "coverageStatus": "partial",
+    "evidence": [
+      "API/client coverage exists but full success/failure/auth/retry/payload/role/UI coverage is not complete."
+    ]
+  },
+  {
+    "function": "getHungerDrive",
+    "method": "GET",
+    "path": "/api/v4/metabolism/drive",
+    "sideEffect": "read",
+    "role": "any_authenticated_or_public",
+    "idempotent": true,
+    "coverageStatus": "partial",
+    "evidence": [
+      "API/client coverage exists but full success/failure/auth/retry/payload/role/UI coverage is not complete."
+    ]
+  },
+  {
+    "function": "getImmuneStatus",
+    "method": "GET",
+    "path": "/api/organism/immune/status",
+    "sideEffect": "read",
+    "role": "executive",
+    "idempotent": true,
+    "coverageStatus": "partial",
+    "evidence": [
+      "API/client coverage exists but full success/failure/auth/retry/payload/role/UI coverage is not complete."
+    ]
+  },
+  {
+    "function": "getIntelligenceStatus",
+    "method": "GET",
+    "path": "/api/intelligence/status",
+    "sideEffect": "read",
+    "role": "any_authenticated_or_public",
+    "idempotent": true,
+    "coverageStatus": "partial",
+    "evidence": [
+      "API/client coverage exists but full success/failure/auth/retry/payload/role/UI coverage is not complete."
+    ]
+  },
+  {
+    "function": "getIntelligenceTelemetry",
+    "method": "GET",
+    "path": "/api/intelligence/telemetry",
+    "sideEffect": "read",
+    "role": "any_authenticated_or_public",
+    "idempotent": true,
+    "coverageStatus": "partial",
+    "evidence": [
+      "API/client coverage exists but full success/failure/auth/retry/payload/role/UI coverage is not complete."
+    ]
+  },
+  {
+    "function": "getIntelligenceV1AbsoluteAudit",
+    "method": "GET",
+    "path": "/api/v1/intelligence/absolute-audit",
+    "sideEffect": "read",
+    "role": "executive",
+    "idempotent": true,
+    "coverageStatus": "partial",
+    "evidence": [
+      "API/client coverage exists but full success/failure/auth/retry/payload/role/UI coverage is not complete."
+    ]
+  },
+  {
+    "function": "getIntelligenceV1Audit",
+    "method": "GET",
+    "path": "/api/v1/intelligence/audit",
+    "sideEffect": "read",
+    "role": "executive",
+    "idempotent": true,
+    "coverageStatus": "partial",
+    "evidence": [
+      "API/client coverage exists but full success/failure/auth/retry/payload/role/UI coverage is not complete."
+    ]
+  },
+  {
+    "function": "getIntelligenceV1Health",
+    "method": "GET",
+    "path": "/api/v1/intelligence/health",
+    "sideEffect": "read",
+    "role": "executive",
+    "idempotent": true,
+    "coverageStatus": "partial",
+    "evidence": [
+      "API/client coverage exists but full success/failure/auth/retry/payload/role/UI coverage is not complete."
+    ]
+  },
+  {
+    "function": "getMemoryByKey",
+    "method": "GET",
+    "path": "/api/v1/memory/memory/${encodeURIComponent(memoryKey)}",
+    "sideEffect": "read",
+    "role": "any_authenticated_or_public",
+    "idempotent": true,
+    "coverageStatus": "partial",
+    "evidence": [
+      "API/client coverage exists but full success/failure/auth/retry/payload/role/UI coverage is not complete."
+    ]
+  },
+  {
+    "function": "getMemoryHealth",
+    "method": "GET",
+    "path": "/api/v1/memory/health",
+    "sideEffect": "read",
+    "role": "any_authenticated_or_public",
+    "idempotent": true,
+    "coverageStatus": "partial",
+    "evidence": [
+      "API/client coverage exists but full success/failure/auth/retry/payload/role/UI coverage is not complete."
+    ]
+  },
+  {
+    "function": "getMemorySnapshots",
+    "method": "GET",
+    "path": "/api/v1/memory/snapshots",
+    "sideEffect": "read",
+    "role": "any_authenticated_or_public",
+    "idempotent": true,
+    "coverageStatus": "partial",
+    "evidence": [
+      "API/client coverage exists but full success/failure/auth/retry/payload/role/UI coverage is not complete."
+    ]
+  },
+  {
+    "function": "getMetabolicCertificate",
+    "method": "GET",
+    "path": "/api/v4/metabolism/certificate",
+    "sideEffect": "read",
+    "role": "any_authenticated_or_public",
+    "idempotent": true,
+    "coverageStatus": "partial",
+    "evidence": [
+      "API/client coverage exists but full success/failure/auth/retry/payload/role/UI coverage is not complete."
+    ]
+  },
+  {
+    "function": "getMetabolicEntropy",
+    "method": "GET",
+    "path": "/api/v4/metabolism/entropy",
+    "sideEffect": "read",
+    "role": "any_authenticated_or_public",
+    "idempotent": true,
+    "coverageStatus": "partial",
+    "evidence": [
+      "API/client coverage exists but full success/failure/auth/retry/payload/role/UI coverage is not complete."
+    ]
+  },
+  {
+    "function": "getMetabolicFlux",
+    "method": "GET",
+    "path": "/api/organism/metabolism/flux",
+    "sideEffect": "read",
+    "role": "executive",
+    "idempotent": true,
+    "coverageStatus": "partial",
+    "evidence": [
+      "API/client coverage exists but full success/failure/auth/retry/payload/role/UI coverage is not complete."
+    ]
+  },
+  {
+    "function": "getMiningDaemon",
+    "method": "GET",
+    "path": "/api/mining/daemon",
+    "sideEffect": "read",
+    "role": "operator_or_admin",
+    "idempotent": true,
+    "coverageStatus": "partial",
+    "evidence": [
+      "API/client coverage exists but full success/failure/auth/retry/payload/role/UI coverage is not complete."
+    ]
+  },
+  {
+    "function": "getMiningHealth",
+    "method": "GET",
+    "path": "/api/mining/health",
+    "sideEffect": "read",
+    "role": "operator_or_admin",
+    "idempotent": true,
+    "coverageStatus": "partial",
+    "evidence": [
+      "API/client coverage exists but full success/failure/auth/retry/payload/role/UI coverage is not complete."
+    ]
+  },
+  {
+    "function": "getMiningJob",
+    "method": "GET",
+    "path": "/api/mining/job",
+    "sideEffect": "read",
+    "role": "operator_or_admin",
+    "idempotent": true,
+    "coverageStatus": "partial",
+    "evidence": [
+      "API/client coverage exists but full success/failure/auth/retry/payload/role/UI coverage is not complete."
+    ]
+  },
+  {
+    "function": "getMiningOpsAutonomics",
+    "method": "GET",
+    "path": "/api/mining/ops/autonomics",
+    "sideEffect": "read",
+    "role": "operator_or_admin",
+    "idempotent": true,
+    "coverageStatus": "partial",
+    "evidence": [
+      "API/client coverage exists but full success/failure/auth/retry/payload/role/UI coverage is not complete."
+    ]
+  },
+  {
+    "function": "getMiningOpsMetrics",
+    "method": "GET",
+    "path": "/api/mining/ops/metrics",
+    "sideEffect": "read",
+    "role": "operator_or_admin",
+    "idempotent": true,
+    "coverageStatus": "partial",
+    "evidence": [
+      "API/client coverage exists but full success/failure/auth/retry/payload/role/UI coverage is not complete."
+    ]
+  },
+  {
+    "function": "getMiningOpsProfitability",
+    "method": "GET",
+    "path": "/api/mining/ops/profitability",
+    "sideEffect": "read",
+    "role": "operator_or_admin",
+    "idempotent": true,
+    "coverageStatus": "partial",
+    "evidence": [
+      "API/client coverage exists but full success/failure/auth/retry/payload/role/UI coverage is not complete."
+    ]
+  },
+  {
+    "function": "getMiningPools",
+    "method": "GET",
+    "path": "/api/mining/pools",
+    "sideEffect": "read",
+    "role": "operator_or_admin",
+    "idempotent": true,
+    "coverageStatus": "partial",
+    "evidence": [
+      "API/client coverage exists but full success/failure/auth/retry/payload/role/UI coverage is not complete."
+    ]
+  },
+  {
+    "function": "getMiningProductionHealth",
+    "method": "GET",
+    "path": "/api/v1/mining-production/health",
+    "sideEffect": "read",
+    "role": "operator_or_admin",
+    "idempotent": true,
+    "coverageStatus": "partial",
+    "evidence": [
+      "API/client coverage exists but full success/failure/auth/retry/payload/role/UI coverage is not complete."
+    ]
+  },
+  {
+    "function": "getMiningProductionMetrics",
+    "method": "GET",
+    "path": "/api/v1/mining-production/metrics",
+    "sideEffect": "read",
+    "role": "operator_or_admin",
+    "idempotent": true,
+    "coverageStatus": "partial",
+    "evidence": [
+      "API/client coverage exists but full success/failure/auth/retry/payload/role/UI coverage is not complete."
+    ]
+  },
+  {
+    "function": "getMiningProductionNextJob",
+    "method": "GET",
+    "path": "/api/v1/mining-production/next-job",
+    "sideEffect": "read",
+    "role": "operator_or_admin",
+    "idempotent": true,
+    "coverageStatus": "partial",
+    "evidence": [
+      "API/client coverage exists but full success/failure/auth/retry/payload/role/UI coverage is not complete."
+    ]
+  },
+  {
+    "function": "getMiningProductionStatus",
+    "method": "GET",
+    "path": "/api/v1/mining-production/status",
+    "sideEffect": "read",
+    "role": "operator_or_admin",
+    "idempotent": true,
+    "coverageStatus": "partial",
+    "evidence": [
+      "API/client coverage exists but full success/failure/auth/retry/payload/role/UI coverage is not complete."
+    ]
+  },
+  {
+    "function": "getMiningStats",
+    "method": "GET",
+    "path": "/api/mining/stats",
+    "sideEffect": "read",
+    "role": "operator_or_admin",
+    "idempotent": true,
+    "coverageStatus": "partial",
+    "evidence": [
+      "API/client coverage exists but full success/failure/auth/retry/payload/role/UI coverage is not complete."
+    ]
+  },
+  {
+    "function": "getOrganismRegenerationStatus",
+    "method": "GET",
+    "path": "/api/organism/regeneration/status",
+    "sideEffect": "read",
+    "role": "executive",
+    "idempotent": true,
+    "coverageStatus": "partial",
+    "evidence": [
+      "API/client coverage exists but full success/failure/auth/retry/payload/role/UI coverage is not complete."
+    ]
+  },
+  {
+    "function": "getPitfalls",
+    "method": "GET",
+    "path": "/api/pitfalls",
+    "sideEffect": "read",
+    "role": "any_authenticated_or_public",
+    "idempotent": true,
+    "coverageStatus": "partial",
+    "evidence": [
+      "API/client coverage exists but full success/failure/auth/retry/payload/role/UI coverage is not complete."
+    ]
+  },
+  {
+    "function": "getPoolHabitats",
+    "method": "GET",
+    "path": "/api/organism/executive/habitats",
+    "sideEffect": "read",
+    "role": "executive",
+    "idempotent": true,
+    "coverageStatus": "partial",
+    "evidence": [
+      "API/client coverage exists but full success/failure/auth/retry/payload/role/UI coverage is not complete."
+    ]
+  },
+  {
+    "function": "getRealityAnchor",
+    "method": "GET",
+    "path": "/api/organism/senses/reality",
+    "sideEffect": "read",
+    "role": "executive",
+    "idempotent": true,
+    "coverageStatus": "partial",
+    "evidence": [
+      "API/client coverage exists but full success/failure/auth/retry/payload/role/UI coverage is not complete."
+    ]
+  },
+  {
+    "function": "getRegenerationStatus",
+    "method": "GET",
+    "path": "/api/security/regeneration/status",
+    "sideEffect": "read",
+    "role": "operator_or_admin",
+    "idempotent": true,
+    "coverageStatus": "partial",
+    "evidence": [
+      "API/client coverage exists but full success/failure/auth/retry/payload/role/UI coverage is not complete."
+    ]
+  },
+  {
+    "function": "getSecurityStatus",
+    "method": "GET",
+    "path": "/api/security/status",
+    "sideEffect": "read",
+    "role": "operator_or_admin",
+    "idempotent": true,
+    "coverageStatus": "partial",
+    "evidence": [
+      "API/client coverage exists but full success/failure/auth/retry/payload/role/UI coverage is not complete."
+    ]
+  },
+  {
+    "function": "getStreamingStats",
+    "method": "GET",
+    "path": "/api/v1/streaming/stats",
+    "sideEffect": "read",
+    "role": "any_authenticated_or_public",
+    "idempotent": true,
+    "coverageStatus": "partial",
+    "evidence": [
+      "API/client coverage exists but full success/failure/auth/retry/payload/role/UI coverage is not complete."
+    ]
+  },
+  {
+    "function": "getSubstrate",
+    "method": "GET",
+    "path": "/api/substrate",
+    "sideEffect": "read",
+    "role": "any_authenticated_or_public",
+    "idempotent": true,
+    "coverageStatus": "partial",
+    "evidence": [
+      "API/client coverage exists but full success/failure/auth/retry/payload/role/UI coverage is not complete."
+    ]
+  },
+  {
+    "function": "getSwarmStatus",
+    "method": "GET",
+    "path": "/api/security/swarm/status",
+    "sideEffect": "read",
+    "role": "operator_or_admin",
+    "idempotent": true,
+    "coverageStatus": "partial",
+    "evidence": [
+      "API/client coverage exists but full success/failure/auth/retry/payload/role/UI coverage is not complete."
+    ]
+  },
+  {
+    "function": "getUnifiedHealth",
+    "method": "GET",
+    "path": "/api/v1/unified/health",
+    "sideEffect": "read",
+    "role": "any_authenticated_or_public",
+    "idempotent": true,
+    "coverageStatus": "partial",
+    "evidence": [
+      "API/client coverage exists but full success/failure/auth/retry/payload/role/UI coverage is not complete."
+    ]
+  },
+  {
+    "function": "getUnifiedMetrics",
+    "method": "GET",
+    "path": "/api/v1/unified/metrics",
+    "sideEffect": "read",
+    "role": "any_authenticated_or_public",
+    "idempotent": true,
+    "coverageStatus": "partial",
+    "evidence": [
+      "API/client coverage exists but full success/failure/auth/retry/payload/role/UI coverage is not complete."
+    ]
+  },
+  {
+    "function": "getUnifiedStatus",
+    "method": "GET",
+    "path": "/api/v1/unified/status",
+    "sideEffect": "read",
+    "role": "any_authenticated_or_public",
+    "idempotent": true,
+    "coverageStatus": "partial",
+    "evidence": [
+      "API/client coverage exists but full success/failure/auth/retry/payload/role/UI coverage is not complete."
+    ]
+  },
+  {
+    "function": "getV1PoolsCurrent",
+    "method": "GET",
+    "path": "/api/v1/pools/current",
+    "sideEffect": "read",
+    "role": "operator_or_admin",
+    "idempotent": true,
+    "coverageStatus": "partial",
+    "evidence": [
+      "API/client coverage exists but full success/failure/auth/retry/payload/role/UI coverage is not complete."
+    ]
+  },
+  {
+    "function": "getV1PoolsDefault",
+    "method": "GET",
+    "path": "/api/v1/pools/default",
+    "sideEffect": "read",
+    "role": "operator_or_admin",
+    "idempotent": true,
+    "coverageStatus": "partial",
+    "evidence": [
+      "API/client coverage exists but full success/failure/auth/retry/payload/role/UI coverage is not complete."
+    ]
+  },
+  {
+    "function": "getV1PoolsEnabled",
+    "method": "GET",
+    "path": "/api/v1/pools/enabled",
+    "sideEffect": "read",
+    "role": "operator_or_admin",
+    "idempotent": true,
+    "coverageStatus": "partial",
+    "evidence": [
+      "API/client coverage exists but full success/failure/auth/retry/payload/role/UI coverage is not complete."
+    ]
+  },
+  {
+    "function": "getV1PoolsHealth",
+    "method": "GET",
+    "path": "/api/v1/pools/health",
+    "sideEffect": "read",
+    "role": "operator_or_admin",
+    "idempotent": true,
+    "coverageStatus": "partial",
+    "evidence": [
+      "API/client coverage exists but full success/failure/auth/retry/payload/role/UI coverage is not complete."
+    ]
+  },
+  {
+    "function": "getV1PoolsList",
+    "method": "GET",
+    "path": "/api/v1/pools/list",
+    "sideEffect": "read",
+    "role": "operator_or_admin",
+    "idempotent": true,
+    "coverageStatus": "partial",
+    "evidence": [
+      "API/client coverage exists but full success/failure/auth/retry/payload/role/UI coverage is not complete."
+    ]
+  },
+  {
+    "function": "getV1PoolsStatus",
+    "method": "GET",
+    "path": "/api/v1/pools/status",
+    "sideEffect": "read",
+    "role": "operator_or_admin",
+    "idempotent": true,
+    "coverageStatus": "partial",
+    "evidence": [
+      "API/client coverage exists but full success/failure/auth/retry/payload/role/UI coverage is not complete."
+    ]
+  },
+  {
+    "function": "initializeMiningProduction",
+    "method": "POST",
+    "path": "/api/v1/mining-production/initialize",
+    "sideEffect": "mutation",
+    "role": "operator_or_admin",
+    "idempotent": false,
+    "coverageStatus": "partial",
+    "evidence": [
+      "API/client coverage exists but full success/failure/auth/retry/payload/role/UI coverage is not complete."
+    ]
+  },
+  {
+    "function": "intelligenceClosureSync",
+    "method": "POST",
+    "path": "/api/v1/intelligence/closure/sync",
+    "sideEffect": "mutation",
+    "role": "executive",
+    "idempotent": false,
+    "coverageStatus": "partial",
+    "evidence": [
+      "API/client coverage exists but full success/failure/auth/retry/payload/role/UI coverage is not complete."
+    ]
+  },
+  {
+    "function": "intelligenceExplain",
+    "method": "POST",
+    "path": "/api/v1/intelligence/explain",
+    "sideEffect": "mutation",
+    "role": "executive",
+    "idempotent": false,
+    "coverageStatus": "partial",
+    "evidence": [
+      "API/client coverage exists but full success/failure/auth/retry/payload/role/UI coverage is not complete."
+    ]
+  },
+  {
+    "function": "intelligenceHeartbeatPulse",
+    "method": "POST",
+    "path": "/api/v1/intelligence/heartbeat/pulse",
+    "sideEffect": "mutation",
+    "role": "executive",
+    "idempotent": false,
+    "coverageStatus": "partial",
+    "evidence": [
+      "API/client coverage exists but full success/failure/auth/retry/payload/role/UI coverage is not complete."
+    ]
+  },
+  {
+    "function": "intelligenceReflect",
+    "method": "POST",
+    "path": "/api/v1/intelligence/reflect",
+    "sideEffect": "mutation",
+    "role": "executive",
+    "idempotent": false,
+    "coverageStatus": "partial",
+    "evidence": [
+      "API/client coverage exists but full success/failure/auth/retry/payload/role/UI coverage is not complete."
+    ]
+  },
+  {
+    "function": "listStreamingChannels",
+    "method": "GET",
+    "path": "/api/v1/streaming/channels",
+    "sideEffect": "read",
+    "role": "any_authenticated_or_public",
+    "idempotent": true,
+    "coverageStatus": "partial",
+    "evidence": [
+      "API/client coverage exists but full success/failure/auth/retry/payload/role/UI coverage is not complete."
+    ]
+  },
+  {
+    "function": "loginApi",
+    "method": "POST",
+    "path": "/api/auth/login",
+    "sideEffect": "mutation",
+    "role": "any_authenticated_or_public",
+    "idempotent": false,
+    "coverageStatus": "partial",
+    "evidence": [
+      "API/client coverage exists but full success/failure/auth/retry/payload/role/UI coverage is not complete."
+    ]
+  },
+  {
+    "function": "postSecurityEvent",
+    "method": "POST",
+    "path": "/api/security/event",
+    "sideEffect": "mutation",
+    "role": "operator_or_admin",
+    "idempotent": false,
+    "coverageStatus": "partial",
+    "evidence": [
+      "API/client coverage exists but full success/failure/auth/retry/payload/role/UI coverage is not complete."
+    ]
+  },
+  {
+    "function": "proposeSelfModification",
+    "method": "POST",
+    "path": "/api/security/autogenous/propose",
+    "sideEffect": "mutation",
+    "role": "operator_or_admin",
+    "idempotent": false,
+    "coverageStatus": "partial",
+    "evidence": [
+      "API/client coverage exists but full success/failure/auth/retry/payload/role/UI coverage is not complete."
+    ]
+  },
+  {
+    "function": "registerApi",
+    "method": "POST",
+    "path": "/api/auth/register",
+    "sideEffect": "mutation",
+    "role": "any_authenticated_or_public",
+    "idempotent": false,
+    "coverageStatus": "partial",
+    "evidence": [
+      "API/client coverage exists but full success/failure/auth/retry/payload/role/UI coverage is not complete."
+    ]
+  },
+  {
+    "function": "reportV1PoolShare",
+    "method": "POST",
+    "path": "/api/v1/pools/report-share",
+    "sideEffect": "mutation",
+    "role": "operator_or_admin",
+    "idempotent": false,
+    "coverageStatus": "partial",
+    "evidence": [
+      "API/client coverage exists but full success/failure/auth/retry/payload/role/UI coverage is not complete."
+    ]
+  },
+  {
+    "function": "requestPrediction",
+    "method": "POST",
+    "path": "/api/predict",
+    "sideEffect": "mutation",
+    "role": "any_authenticated_or_public",
+    "idempotent": false,
+    "coverageStatus": "partial",
+    "evidence": [
+      "API/client coverage exists but full success/failure/auth/retry/payload/role/UI coverage is not complete."
+    ]
+  },
+  {
+    "function": "resetIntelligence",
+    "method": "POST",
+    "path": "/api/intelligence/reset",
+    "sideEffect": "mutation",
+    "role": "any_authenticated_or_public",
+    "idempotent": false,
+    "coverageStatus": "partial",
+    "evidence": [
+      "API/client coverage exists but full success/failure/auth/retry/payload/role/UI coverage is not complete."
+    ]
+  },
+  {
+    "function": "runToeExperiment",
+    "method": "POST",
+    "path": "/api/toe/experiments",
+    "sideEffect": "mutation",
+    "role": "any_authenticated_or_public",
+    "idempotent": false,
+    "coverageStatus": "partial",
+    "evidence": [
+      "API/client coverage exists but full success/failure/auth/retry/payload/role/UI coverage is not complete."
+    ]
+  },
+  {
+    "function": "simulateDisturbance",
+    "method": "POST",
+    "path": "/api/intelligence/disturbance",
+    "sideEffect": "autonomous_control",
+    "role": "any_authenticated_or_public",
+    "idempotent": false,
+    "coverageStatus": "partial",
+    "evidence": [
+      "API/client coverage exists but full success/failure/auth/retry/payload/role/UI coverage is not complete."
+    ]
+  },
+  {
+    "function": "startIntelligence",
+    "method": "POST",
+    "path": "/api/intelligence/start",
+    "sideEffect": "destructive",
+    "role": "any_authenticated_or_public",
+    "idempotent": false,
+    "coverageStatus": "partial",
+    "evidence": [
+      "API/client coverage exists but full success/failure/auth/retry/payload/role/UI coverage is not complete."
+    ]
+  },
+  {
+    "function": "startKeepAlivePing",
+    "method": "GET",
+    "path": "/api/health",
+    "sideEffect": "read",
+    "role": "any_authenticated_or_public",
+    "idempotent": true,
+    "coverageStatus": "partial",
+    "evidence": [
+      "API/client coverage exists but full success/failure/auth/retry/payload/role/UI coverage is not complete."
+    ]
+  },
+  {
+    "function": "stimulateConsciousness",
+    "method": "POST",
+    "path": "/api/ai/consciousness/stimulate",
+    "sideEffect": "mutation",
+    "role": "any_authenticated_or_public",
+    "idempotent": false,
+    "coverageStatus": "partial",
+    "evidence": [
+      "API/client coverage exists but full success/failure/auth/retry/payload/role/UI coverage is not complete."
+    ]
+  },
+  {
+    "function": "stopIntelligence",
+    "method": "POST",
+    "path": "/api/intelligence/stop",
+    "sideEffect": "destructive",
+    "role": "any_authenticated_or_public",
+    "idempotent": false,
+    "coverageStatus": "partial",
+    "evidence": [
+      "API/client coverage exists but full success/failure/auth/retry/payload/role/UI coverage is not complete."
+    ]
+  },
+  {
+    "function": "switchV1Pool",
+    "method": "POST",
+    "path": "/api/v1/pools/switch",
+    "sideEffect": "destructive",
+    "role": "operator_or_admin",
+    "idempotent": false,
+    "coverageStatus": "partial",
+    "evidence": [
+      "API/client coverage exists but full success/failure/auth/retry/payload/role/UI coverage is not complete."
+    ]
+  },
+  {
+    "function": "updateFundingAllocation",
+    "method": "PUT",
+    "path": "/api/admin/funding/allocations/${allocationId}",
+    "sideEffect": "mutation",
+    "role": "admin",
+    "idempotent": false,
+    "coverageStatus": "partial",
+    "evidence": [
+      "API/client coverage exists but full success/failure/auth/retry/payload/role/UI coverage is not complete."
+    ]
   }
 ]

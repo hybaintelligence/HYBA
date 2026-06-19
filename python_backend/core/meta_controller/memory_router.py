@@ -468,7 +468,10 @@ class MemoryRoutedController:
             decision = RouteDecision.FALLBACK
 
         # Create passport for routing decision
-        from python_backend.core.audit.universal_passport import make_passport
+        from python_backend.core.audit.universal_passport import (
+            EpistemicBound,
+            make_passport,
+        )
 
         passport = make_passport(
             subsystem="meta_controller",
@@ -480,8 +483,8 @@ class MemoryRoutedController:
                 "explanation": explanation,
             },
             epistemic_bounds=[
-                "no_guarantee_of_correctness",
-                "autonomous_action_bounded_by_breaker",
+                EpistemicBound.NO_GUARANTEE_CORRECTNESS.value,
+                EpistemicBound.NO_DETERMINISTIC_OUTCOME.value,
             ],
         )
 

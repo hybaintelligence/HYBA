@@ -21,12 +21,23 @@ const success = () =>
 
 describe("apiClient autonomous/destructive safety contracts", () => {
   beforeEach(() => {
-    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(success()));
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockImplementation(() =>
+        Promise.resolve(
+          new Response(JSON.stringify({ status: "ok", accepted: true }), {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          }),
+        ),
+      ),
+    );
+    const autonomyStorage = new Map<string, string>();
     vi.stubGlobal("localStorage", {
-      getItem: vi.fn(),
-      setItem: vi.fn(),
-      removeItem: vi.fn(),
-      clear: vi.fn(),
+      getItem: (key: string) => autonomyStorage.get(key) ?? null,
+      setItem: (key: string, value: string) => { autonomyStorage.set(key, value); },
+      removeItem: (key: string) => { autonomyStorage.delete(key); },
+      clear: () => { autonomyStorage.clear(); },
       key: vi.fn(),
       length: 0,
     });

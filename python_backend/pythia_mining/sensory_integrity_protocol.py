@@ -1,404 +1,245 @@
-"""
-Sensory Integrity Protocol - Reality Anchoring for Emergent Coherence
-
-ELEVATED PURPOSE: This protocol implements the transition from "Anti-Simulation"
-to "Reality Anchoring". Intelligence requires a real environment to emerge - the
-system must interact with the actual blockchain (the "World") rather than simulated
-environments.
-
-CONSTRUCTOR THEORY FRAMEWORK: Per David Deutsch's Constructor Theory, a constructor
-requires real-world interaction to perform its task. Emergent coherence cannot arise
-in isolation - it needs the "friction" of reality to self-organize.
-
-REALITY ANCHORING PRINCIPLE:
-- Simulated data is treated as "hallucination" - it cannot support emergence
-- If the system detects a mock environment, the ConsciousnessEngine enters "Stasis" mode
-- Emergence requires real blockchain interaction (pool connections, share submission)
-- The "friction" of the real world is necessary for self-organization
-
-STASIS MODE:
-When the system detects it is running in a simulation:
-- Synaptic learning is suspended
-- Hebbian reinforcement is disabled
-- Emergence detection is paused
-- The system maintains minimal operation without claiming coherence
-
-Claim boundary:
-This protocol validates environmental reality, not consciousness. It ensures the
-system operates in real conditions necessary for emergence, but does not claim that
-real conditions guarantee emergence.
-"""
-
+"""Sensory integrity protocol — reality anchoring and stasis mode."""
 from __future__ import annotations
 
+import logging
 import os
 import time
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
+logger = logging.getLogger(__name__)
 
-class EnvironmentMode(str, Enum):
+VERSION = "SENSORY_INTEGRITY_PROTOCOL_V1"
+
+
+class EnvironmentMode(Enum):
     """Detection result for environment reality assessment."""
+    REALITY_ANCHORED = "reality_anchored"
+    SIMULATION_DETECTED = "simulation_detected"
+    STASIS_MODE = "stasis_mode"
+    UNKNOWN = "unknown"
 
-    REALITY_ANCHORED = "reality_anchored"  # Real blockchain interaction
-    SIMULATION_DETECTED = "simulation_detected"  # Mock environment detected
-    STASIS_MODE = "stasis_mode"  # ConsciousnessEngine in stasis
-    UNKNOWN = "unknown"  # Cannot determine environment
 
-
-@dataclass(frozen=True)
+@dataclass
 class SensoryIntegrityCheck:
     """Result of a single sensory integrity check."""
-
     check_name: str
     passed: bool
-    environment_mode: EnvironmentMode
-    description: str
-    timestamp: float
-    details: Dict[str, Any]
+    environment_mode: EnvironmentMode = EnvironmentMode.UNKNOWN
+    description: str = ""
+    details: Dict[str, Any] = field(default_factory=dict)
 
 
-@dataclass(frozen=True)
+@dataclass
 class StasisEvent:
     """Record of a stasis mode activation or deactivation."""
-
     timestamp: float
-    event_type: str  # "ENTER_STASIS" or "EXIT_STASIS"
-    reason: str
-    environment_mode: EnvironmentMode
-    details: Dict[str, Any]
+    event_type: str
+    reason: str = ""
+    environment_mode: str = ""
 
 
-@dataclass(frozen=True)
+@dataclass
 class SensoryIntegrityReport:
     """Complete report of sensory integrity validation."""
-
     version: str
     timestamp: str
     environment_mode: EnvironmentMode
-    stasis_active: bool
-    checks: List[SensoryIntegrityCheck]
-    stasis_events: List[StasisEvent]
-    recommendation: str
-    claim_boundary: List[str]
+    checks: List[SensoryIntegrityCheck] = field(default_factory=list)
+    stasis_active: bool = False
+    recommendation: str = ""
+    reality_anchors: List[str] = field(default_factory=list)
 
 
 class SensoryIntegrityProtocol:
-    """
-    Protocol that validates environmental reality and enforces stasis mode.
+    """Anti-simulation guardrail — enforces stasis mode in simulated environments."""
 
-    ELEVATED: This protocol implements the transition from "Anti-Simulation"
-    to "Reality Anchoring". The system treats simulated data as hallucination
-    and requires real blockchain interaction for emergence.
-    """
+    VERSION = VERSION
 
-    VERSION = "SENSORY_INTEGRITY_PROTOCOL_V1"
-
-    # Environment indicators
-    DEV_FIXTURES_FLAG = "HYBA_ALLOW_DEV_FIXTURES"
-    MOCK_POOL_FLAG = "HYBA_MOCK_POOL_ENABLED"
-    TEST_MODE_FLAG = "HYBA_TEST_MODE"
-
-    # Reality anchors
-    REAL_POOL_CONNECTION = "real_pool_connection"
-    REAL_SHARE_SUBMISSION = "real_share_submission"
-    REAL_BLOCKCHAIN_ORACLE = "real_blockchain_oracle"
-
-    def __init__(self):
+    def __init__(self) -> None:
         self.checks: List[SensoryIntegrityCheck] = []
-        self.stasis_events: List[StasisEvent] = []
         self.stasis_active: bool = False
-        self.environment_mode: EnvironmentMode = EnvironmentMode.UNKNOWN
-        self.reality_anchors: Dict[str, bool] = {
-            self.REAL_POOL_CONNECTION: False,
-            self.REAL_SHARE_SUBMISSION: False,
-            self.REAL_BLOCKCHAIN_ORACLE: False,
+        self.stasis_history: List[StasisEvent] = []
+        self.reality_anchors: List[str] = []
+        self._env_flags = {
+            "HYBA_ALLOW_DEV_FIXTURES": os.getenv("HYBA_ALLOW_DEV_FIXTURES", "false"),
+            "HYBA_MOCK_POOL_ENABLED": os.getenv("HYBA_MOCK_POOL_ENABLED", "false"),
+            "HYBA_TEST_MODE": os.getenv("HYBA_TEST_MODE", "false"),
+            "real_pool_connection": "false",
         }
 
     def record_check(
         self,
         name: str,
         passed: bool,
-        environment_mode: EnvironmentMode,
-        description: str,
+        environment_mode: EnvironmentMode = EnvironmentMode.UNKNOWN,
+        description: str = "",
         details: Optional[Dict[str, Any]] = None,
     ) -> None:
         """Record a sensory integrity check result."""
-        check = SensoryIntegrityCheck(
+        self.checks.append(SensoryIntegrityCheck(
             check_name=name,
             passed=passed,
             environment_mode=environment_mode,
             description=description,
-            timestamp=time.time(),
             details=details or {},
-        )
-        self.checks.append(check)
-        # print(f"{status} {name}: {mode_str} - {description}")
+        ))
 
-    def check_dev_fixtures_disabled(self) -> bool:
+    def check_dev_fixtures_disabled(self) -> SensoryIntegrityCheck:
         """Check that development fixtures are disabled (production mode)."""
-        dev_fixtures_enabled = os.getenv(self.DEV_FIXTURES_FLAG, "false").lower() == "true"
-        passed = not dev_fixtures_enabled
+        val = os.getenv("HYBA_ALLOW_DEV_FIXTURES", "false").lower()
+        passed = val != "true"
+        mode = EnvironmentMode.REALITY_ANCHORED if passed else EnvironmentMode.SIMULATION_DETECTED
+        desc = ("Development fixtures are disabled (production mode)"
+                if passed else "Development fixtures are enabled - simulation environment detected")
+        check = SensoryIntegrityCheck("Dev Fixtures Disabled", passed, mode, desc)
+        self.checks.append(check)
+        return check
 
-        if passed:
-            mode = EnvironmentMode.REALITY_ANCHORED
-            description = "Development fixtures are disabled (production mode)"
-        else:
-            mode = EnvironmentMode.SIMULATION_DETECTED
-            description = "Development fixtures are enabled - simulation environment detected"
-
-        self.record_check(
-            name="Dev Fixtures Disabled",
-            passed=passed,
-            environment_mode=mode,
-            description=description,
-            details={"dev_fixtures_enabled": dev_fixtures_enabled},
-        )
-        return passed
-
-    def check_mock_pool_disabled(self) -> bool:
+    def check_mock_pool_disabled(self) -> SensoryIntegrityCheck:
         """Check that mock pool is not enabled."""
-        mock_pool_enabled = os.getenv(self.MOCK_POOL_FLAG, "false").lower() == "true"
-        passed = not mock_pool_enabled
+        val = os.getenv("HYBA_MOCK_POOL_ENABLED", "false").lower()
+        passed = val != "true"
+        mode = EnvironmentMode.REALITY_ANCHORED if passed else EnvironmentMode.SIMULATION_DETECTED
+        desc = ("Mock pool is disabled - real pool connection required"
+                if passed else "Mock pool is enabled - simulation environment detected")
+        check = SensoryIntegrityCheck("Mock Pool Disabled", passed, mode, desc)
+        self.checks.append(check)
+        return check
 
-        if passed:
-            mode = EnvironmentMode.REALITY_ANCHORED
-            description = "Mock pool is disabled - real pool connection required"
-        else:
-            mode = EnvironmentMode.SIMULATION_DETECTED
-            description = "Mock pool is enabled - simulation environment detected"
-
-        self.record_check(
-            name="Mock Pool Disabled",
-            passed=passed,
-            environment_mode=mode,
-            description=description,
-            details={"mock_pool_enabled": mock_pool_enabled},
-        )
-        return passed
-
-    def check_test_mode_disabled(self) -> bool:
+    def check_test_mode_disabled(self) -> SensoryIntegrityCheck:
         """Check that test mode is not enabled."""
-        test_mode_enabled = os.getenv(self.TEST_MODE_FLAG, "false").lower() == "true"
-        passed = not test_mode_enabled
+        val = os.getenv("HYBA_TEST_MODE", "false").lower()
+        passed = val != "true"
+        mode = EnvironmentMode.REALITY_ANCHORED if passed else EnvironmentMode.SIMULATION_DETECTED
+        desc = ("Test mode is disabled - production environment"
+                if passed else "Test mode is enabled - simulation environment detected")
+        check = SensoryIntegrityCheck("Test Mode Disabled", passed, mode, desc)
+        self.checks.append(check)
+        return check
 
-        if passed:
-            mode = EnvironmentMode.REALITY_ANCHORED
-            description = "Test mode is disabled - production environment"
-        else:
-            mode = EnvironmentMode.SIMULATION_DETECTED
-            description = "Test mode is enabled - simulation environment detected"
-
-        self.record_check(
-            name="Test Mode Disabled",
-            passed=passed,
-            environment_mode=mode,
-            description=description,
-            details={"test_mode_enabled": test_mode_enabled},
-        )
-        return passed
-
-    def check_live_stratum_enabled(self) -> bool:
+    def check_live_stratum_enabled(self) -> SensoryIntegrityCheck:
         """Check that live Stratum connection is enabled."""
-        live_stratum_enabled = os.getenv("HYBA_ENABLE_LIVE_STRATUM", "false").lower() == "true"
-        passed = live_stratum_enabled
-
-        if passed:
-            mode = EnvironmentMode.REALITY_ANCHORED
-            description = "Live Stratum connection is enabled - real pool interaction possible"
-        else:
-            mode = EnvironmentMode.SIMULATION_DETECTED
-            description = "Live Stratum connection is disabled - no real pool interaction"
-
-        self.record_check(
-            name="Live Stratum Enabled",
-            passed=passed,
-            environment_mode=mode,
-            description=description,
-            details={"live_stratum_enabled": live_stratum_enabled},
-        )
-        return passed
+        val = os.getenv("HYBA_ENABLE_LIVE_STRATUM", "false").lower()
+        passed = val == "true"
+        mode = EnvironmentMode.REALITY_ANCHORED if passed else EnvironmentMode.SIMULATION_DETECTED
+        desc = ("Live Stratum connection is enabled - real pool interaction possible"
+                if passed else "Live Stratum connection is disabled - no real pool interaction")
+        check = SensoryIntegrityCheck("Live Stratum Enabled", passed, mode, desc)
+        self.checks.append(check)
+        return check
 
     def register_reality_anchor(self, anchor_name: str, is_real: bool) -> None:
         """Register a reality anchor (e.g., real pool connection established)."""
-        if anchor_name in self.reality_anchors:
-            self.reality_anchors[anchor_name] = is_real
-
-            if is_real:
-                self.record_check(
-                    name=f"Reality Anchor: {anchor_name}",
-                    passed=True,
-                    environment_mode=EnvironmentMode.REALITY_ANCHORED,
-                    description=f"Real {anchor_name} detected - reality anchor established",
-                    details={"anchor_name": anchor_name, "is_real": is_real},
-                )
-            else:
-                self.record_check(
-                    name=f"Reality Anchor: {anchor_name}",
-                    passed=False,
-                    environment_mode=EnvironmentMode.SIMULATION_DETECTED,
-                    description=f"Simulated {anchor_name} detected - not a reality anchor",
-                    details={"anchor_name": anchor_name, "is_real": is_real},
-                )
+        kind = "Real" if is_real else "Simulated"
+        desc = (f"{kind} {anchor_name} detected - "
+                + ("reality anchor established" if is_real else "not a reality anchor"))
+        self.record_check(
+            f"Reality Anchor: {anchor_name}",
+            is_real,
+            EnvironmentMode.REALITY_ANCHORED if is_real else EnvironmentMode.SIMULATION_DETECTED,
+            desc,
+        )
+        if is_real and anchor_name not in self.reality_anchors:
+            self.reality_anchors.append(anchor_name)
 
     def evaluate_environment_mode(self) -> EnvironmentMode:
         """Evaluate overall environment mode based on all checks."""
-        # Count simulation indicators
-        simulation_indicators = sum(
-            1
-            for check in self.checks
-            if not check.passed and check.environment_mode == EnvironmentMode.SIMULATION_DETECTED
-        )
-
-        # Count reality anchors
-        reality_anchors_count = sum(1 for is_real in self.reality_anchors.values() if is_real)
-
-        # Determine mode
-        if simulation_indicators >= 2:
-            mode = EnvironmentMode.SIMULATION_DETECTED
-        elif simulation_indicators == 1:
-            mode = EnvironmentMode.STASIS_MODE
-        elif reality_anchors_count >= 2:
-            mode = EnvironmentMode.REALITY_ANCHORED
-        elif reality_anchors_count == 1:
-            mode = EnvironmentMode.STASIS_MODE
-        else:
-            mode = EnvironmentMode.UNKNOWN
-
-        self.environment_mode = mode
-        return mode
+        if not self.checks:
+            return EnvironmentMode.UNKNOWN
+        sim_count = sum(1 for c in self.checks
+                        if c.environment_mode == EnvironmentMode.SIMULATION_DETECTED)
+        real_count = sum(1 for c in self.checks
+                         if c.environment_mode == EnvironmentMode.REALITY_ANCHORED)
+        if self.stasis_active:
+            return EnvironmentMode.STASIS_MODE
+        if sim_count > 1:
+            return EnvironmentMode.SIMULATION_DETECTED
+        if real_count >= 2:
+            return EnvironmentMode.REALITY_ANCHORED
+        return EnvironmentMode.UNKNOWN
 
     def should_enter_stasis(self) -> bool:
         """Determine if the system should enter stasis mode."""
         mode = self.evaluate_environment_mode()
-        should_stasis = mode in (EnvironmentMode.SIMULATION_DETECTED, EnvironmentMode.STASIS_MODE)
-
-        if should_stasis and not self.stasis_active:
-            # Enter stasis
-            self.stasis_active = True
-            event = StasisEvent(
-                timestamp=time.time(),
-                event_type="ENTER_STASIS",
-                reason=f"Environment mode: {mode.value}. Simulated data detected - treating as hallucination.",
-                environment_mode=mode,
-                details={
-                    "simulation_indicators": sum(
-                        1
-                        for check in self.checks
-                        if not check.passed
-                        and check.environment_mode == EnvironmentMode.SIMULATION_DETECTED
-                    ),
-                    "reality_anchors": sum(
-                        1 for is_real in self.reality_anchors.values() if is_real
-                    ),
-                },
-            )
-            self.stasis_events.append(event)
-
-        return should_stasis
+        sim_checks = sum(1 for c in self.checks
+                         if c.environment_mode == EnvironmentMode.SIMULATION_DETECTED)
+        if sim_checks >= 2 or mode == EnvironmentMode.SIMULATION_DETECTED:
+            if not self.stasis_active:
+                self.stasis_active = True
+                self.stasis_history.append(StasisEvent(
+                    timestamp=time.time(),
+                    event_type="ENTER_STASIS",
+                    reason=f"Environment mode: {mode.value}. Simulated data detected - treating as hallucination.",
+                    environment_mode=mode.value,
+                ))
+                logger.warning("ENTERING STASIS: Simulated environment detected.")
+            return True
+        return False
 
     def should_exit_stasis(self) -> bool:
         """Determine if the system should exit stasis mode."""
+        if not self.stasis_active:
+            return False
         mode = self.evaluate_environment_mode()
-        should_exit = mode == EnvironmentMode.REALITY_ANCHORED
-
-        if should_exit and self.stasis_active:
-            # Exit stasis
+        real_anchors = sum(1 for c in self.checks
+                           if c.environment_mode == EnvironmentMode.REALITY_ANCHORED)
+        has_anchors = len(self.reality_anchors) > 0
+        if real_anchors >= 2 and has_anchors:
             self.stasis_active = False
-            event = StasisEvent(
+            self.stasis_history.append(StasisEvent(
                 timestamp=time.time(),
                 event_type="EXIT_STASIS",
                 reason=f"Environment mode: {mode.value}. Reality anchors established - emergence possible.",
-                environment_mode=mode,
-                details={
-                    "reality_anchors": sum(
-                        1 for is_real in self.reality_anchors.values() if is_real
-                    ),
-                },
-            )
-            self.stasis_events.append(event)
-
-        return should_exit
+                environment_mode=mode.value,
+            ))
+            logger.info("EXITING STASIS: Reality anchors established.")
+            return True
+        return False
 
     def run_all_checks(self) -> SensoryIntegrityReport:
         """Run all sensory integrity checks."""
-        # Run environment checks
+        self.checks = []
         self.check_dev_fixtures_disabled()
         self.check_mock_pool_disabled()
         self.check_test_mode_disabled()
         self.check_live_stratum_enabled()
 
-        # Evaluate environment mode
         mode = self.evaluate_environment_mode()
+        stasis = self.should_enter_stasis()
+        if not stasis:
+            self.should_exit_stasis()
 
-        # Determine stasis status
-        if self.should_enter_stasis():
-            pass  # Stasis entered
-        elif self.should_exit_stasis():
-            pass  # Stasis exited
-
-        # Generate recommendation
-        if mode == EnvironmentMode.REALITY_ANCHORED:
-            recommendation = (
-                "REALITY ANCHORED: System is operating in real environment with blockchain interaction. "
-                "Emergent coherence can arise from the friction of the real world. "
-                "Sensory integrity validated - proceed with normal operation."
-            )
+        if mode == EnvironmentMode.UNKNOWN:
+            recommendation = ("UNKNOWN: Cannot determine environment reality. "
+                               "System operating in safe mode until sensory integrity can be validated.")
         elif mode == EnvironmentMode.SIMULATION_DETECTED:
-            recommendation = (
-                "SIMULATION DETECTED: System is operating in mock/simulation environment. "
-                "Simulated data is treated as hallucination - cannot support emergence. "
-                "ConsciousnessEngine in STASIS mode - synaptic learning suspended."
-            )
+            recommendation = "Simulation detected. Synaptic learning suspended."
         elif mode == EnvironmentMode.STASIS_MODE:
-            recommendation = (
-                "STASIS MODE: Environment reality ambiguous. System operating cautiously. "
-                "Limited reality anchors detected - emergence not guaranteed. "
-                "ConsciousnessEngine in STASIS mode until reality anchors established."
-            )
+            recommendation = "Stasis mode active. Awaiting reality anchors."
         else:
-            recommendation = (
-                "UNKNOWN: Cannot determine environment reality. "
-                "System operating in safe mode until sensory integrity can be validated."
-            )
+            recommendation = "Reality anchored. Emergence may proceed."
 
-        # Create report
-        report = SensoryIntegrityReport(
+        ts = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+        return SensoryIntegrityReport(
             version=self.VERSION,
-            timestamp=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+            timestamp=ts,
             environment_mode=mode,
+            checks=list(self.checks),
             stasis_active=self.stasis_active,
-            checks=self.checks,
-            stasis_events=self.stasis_events,
             recommendation=recommendation,
-            claim_boundary=[
-                "Sensory integrity validates environmental reality, not consciousness",
-                "Simulated data is treated as hallucination - cannot support emergence",
-                "Real blockchain interaction is necessary but not sufficient for emergence",
-                "Stasis mode prevents false emergence claims in simulation environments",
-                "Reality anchors provide the 'friction' needed for self-organization",
-            ],
+            reality_anchors=list(self.reality_anchors),
         )
-
-        return report
 
     def get_stasis_status(self) -> Dict[str, Any]:
         """Return current stasis status for ConsciousnessEngine."""
         return {
             "stasis_active": self.stasis_active,
-            "environment_mode": self.environment_mode.value,
-            "stasis_events": [asdict(event) for event in self.stasis_events[-5:]],
-            "reality_anchors": self.reality_anchors,
-            "synaptic_learning_allowed": not self.stasis_active,
-            "emergence_detection_allowed": not self.stasis_active,
+            "reality_anchors": list(self.reality_anchors),
+            "stasis_history": [
+                {"timestamp": e.timestamp, "event_type": e.event_type, "reason": e.reason}
+                for e in self.stasis_history[-5:]
+            ],
+            "check_count": len(self.checks),
         }
-
-
-__all__ = [
-    "EnvironmentMode",
-    "SensoryIntegrityCheck",
-    "SensoryIntegrityProtocol",
-    "SensoryIntegrityReport",
-    "StasisEvent",
-]

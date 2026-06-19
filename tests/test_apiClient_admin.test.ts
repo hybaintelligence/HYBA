@@ -28,11 +28,12 @@ describe("apiClient admin and funding command contracts", () => {
         ),
       ),
     );
+    const adminStorage = new Map<string, string>();
     vi.stubGlobal("localStorage", {
-      getItem: vi.fn(),
-      setItem: vi.fn(),
-      removeItem: vi.fn(),
-      clear: vi.fn(),
+      getItem: (key: string) => adminStorage.get(key) ?? null,
+      setItem: (key: string, value: string) => { adminStorage.set(key, value); },
+      removeItem: (key: string) => { adminStorage.delete(key); },
+      clear: () => { adminStorage.clear(); },
       key: vi.fn(),
       length: 0,
     });
