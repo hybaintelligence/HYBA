@@ -1,0 +1,28 @@
+{
+  "generated_at_utc": "2026-06-19T14:06:34.578511+00:00",
+  "next_actions": [
+    "Do not describe the repository as clean until required failures are zero.",
+    "Open the referenced per-command logs, fix the first failing command, and rerun this gate."
+  ],
+  "passed": false,
+  "repository": "HYBA_FULLSTACK",
+  "required_failures": [
+    "minimal_fail"
+  ],
+  "results": [
+    {
+      "command": [
+        "/Users/demouser/.pyenv/versions/3.12.0/bin/python",
+        "-c",
+        "raise SystemExit(7)"
+      ],
+      "duration_seconds": 0.011677,
+      "log_path": "artifacts/clean_10/20260619T140634Z/minimal_fail.log",
+      "name": "minimal_fail",
+      "passed": false,
+      "returncode": 7
+    }
+  ],
+  "schema": "HYBA_FULLSTACK_LOCAL_CLEAN_10_GATE_V1",
+  "status": "NO_GO"
+}

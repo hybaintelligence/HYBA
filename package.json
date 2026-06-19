@@ -94,7 +94,7 @@
     "test:e2e:frontend": "npx playwright install --with-deps && npx playwright test",
     "benchmark:capabilities": "npm run python:env:check && cross-env PYTHONPATH=python_backend python -m pytest tests/test_mining_capability_benchmarks.py tests/test_ai_capability_benchmarks.py -q -s",
     "benchmark:ai-capabilities": "npm run python:env:check && cross-env PYTHONPATH=python_backend python -m pytest tests/test_ai_capability_benchmarks.py -q -s",
-    "test:frontend:unit": "vitest run tests/**/*.test.ts --config vitest.config.ts",
+    "test:frontend:unit": "vitest run --config vitest.config.ts",
     "test:frontend:components": "vitest run tests/**/*.test.tsx --config vitest.component.config.ts",
     "test:frontend:coverage": "npm run test:frontend:unit:coverage && npm run test:frontend:components:coverage",
     "test:frontend:e2e": "playwright install --with-deps && playwright test",

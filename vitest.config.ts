@@ -4,6 +4,9 @@ import { defineConfig } from "vitest/config";
 export default defineConfig({
   plugins: [react({ babel: { configFile: false } })],
   test: {
+    env: {
+      NODE_ENV: "test",
+    },
     include: ["tests/**/*.test.ts", "tests/**/*.test.tsx"],
     exclude: ["node_modules", "dist"],
     globals: true,

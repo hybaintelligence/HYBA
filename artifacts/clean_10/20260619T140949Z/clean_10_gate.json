@@ -1,0 +1,150 @@
+{
+  "generated_at_utc": "2026-06-19T14:11:08.963767+00:00",
+  "next_actions": [
+    "Do not describe the repository as clean until required failures are zero.",
+    "Open the referenced per-command logs, fix the first failing command, and rerun this gate."
+  ],
+  "passed": false,
+  "repository": "HYBA_FULLSTACK",
+  "required_failures": [
+    "frontend_unit_gate",
+    "backend_gate"
+  ],
+  "results": [
+    {
+      "command": [
+        "npm",
+        "run",
+        "python:env:check"
+      ],
+      "duration_seconds": 0.280177,
+      "log_path": "artifacts/clean_10/20260619T140949Z/python_backend_environment.log",
+      "name": "python_backend_environment",
+      "passed": true,
+      "returncode": 0
+    },
+    {
+      "command": [
+        "/Users/demouser/.pyenv/versions/3.12.0/bin/python",
+        "-m",
+        "pytest",
+        "tests/test_auth_jwt_contracts.py",
+        "-q"
+      ],
+      "duration_seconds": 0.494346,
+      "log_path": "artifacts/clean_10/20260619T140949Z/auth_jwt_contracts.log",
+      "name": "auth_jwt_contracts",
+      "passed": true,
+      "returncode": 0
+    },
+    {
+      "command": [
+        "/Users/demouser/.pyenv/versions/3.12.0/bin/python",
+        "-m",
+        "pytest",
+        "tests/test_runtime_reflexive_introspection.py",
+        "-q"
+      ],
+      "duration_seconds": 1.374375,
+      "log_path": "artifacts/clean_10/20260619T140949Z/runtime_reflexive_introspection.log",
+      "name": "runtime_reflexive_introspection",
+      "passed": true,
+      "returncode": 0
+    },
+    {
+      "command": [
+        "/Users/demouser/.pyenv/versions/3.12.0/bin/python",
+        "-m",
+        "pytest",
+        "tests/test_evidence_boundary_report.py",
+        "-q"
+      ],
+      "duration_seconds": 0.238767,
+      "log_path": "artifacts/clean_10/20260619T140949Z/evidence_boundary_report.log",
+      "name": "evidence_boundary_report",
+      "passed": true,
+      "returncode": 0
+    },
+    {
+      "command": [
+        "/Users/demouser/.pyenv/versions/3.12.0/bin/python",
+        "-m",
+        "pytest",
+        "tests/test_mining_autonomous_sovereign_gate.py",
+        "-q"
+      ],
+      "duration_seconds": 0.221393,
+      "log_path": "artifacts/clean_10/20260619T140949Z/autonomous_sovereign_gate_contracts.log",
+      "name": "autonomous_sovereign_gate_contracts",
+      "passed": true,
+      "returncode": 0
+    },
+    {
+      "command": [
+        "/Users/demouser/.pyenv/versions/3.12.0/bin/python",
+        "-m",
+        "pytest",
+        "tests/test_local_launch_script_contract.py",
+        "-q"
+      ],
+      "duration_seconds": 0.221692,
+      "log_path": "artifacts/clean_10/20260619T140949Z/local_launch_contracts.log",
+      "name": "local_launch_contracts",
+      "passed": true,
+      "returncode": 0
+    },
+    {
+      "command": [
+        "npx",
+        "vitest",
+        "run",
+        "tests/test_bridge_security.test.ts",
+        "tests/test_security_swarm_routes.test.ts",
+        "tests/test_consciousness_behavioral.test.ts"
+      ],
+      "duration_seconds": 0.719223,
+      "log_path": "artifacts/clean_10/20260619T140949Z/frontend_bridge_and_security_contracts.log",
+      "name": "frontend_bridge_and_security_contracts",
+      "passed": true,
+      "returncode": 0
+    },
+    {
+      "command": [
+        "npm",
+        "run",
+        "test:frontend:unit"
+      ],
+      "duration_seconds": 7.941997,
+      "log_path": "artifacts/clean_10/20260619T140949Z/frontend_unit_gate.log",
+      "name": "frontend_unit_gate",
+      "passed": false,
+      "returncode": 1
+    },
+    {
+      "command": [
+        "npm",
+        "run",
+        "test:backend"
+      ],
+      "duration_seconds": 65.849507,
+      "log_path": "artifacts/clean_10/20260619T140949Z/backend_gate.log",
+      "name": "backend_gate",
+      "passed": false,
+      "returncode": 1
+    },
+    {
+      "command": [
+        "npm",
+        "run",
+        "build"
+      ],
+      "duration_seconds": 1.734974,
+      "log_path": "artifacts/clean_10/20260619T140949Z/build_gate.log",
+      "name": "build_gate",
+      "passed": true,
+      "returncode": 0
+    }
+  ],
+  "schema": "HYBA_FULLSTACK_LOCAL_CLEAN_10_GATE_V1",
+  "status": "NO_GO"
+}

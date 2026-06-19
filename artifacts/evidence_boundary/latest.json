@@ -1,0 +1,53 @@
+{
+  "checks": [
+    {
+      "detail": {
+        "connected": false,
+        "errors": [
+          "Failed to connect to pool"
+        ],
+        "jobs_received": 0,
+        "shares_accepted": 0,
+        "shares_submitted": 0
+      },
+      "evidence_path": "logs/braiins_session_stats.json",
+      "name": "session_stats",
+      "status": "warning",
+      "summary": "Session statistics exist but do not prove acceptance evidence."
+    },
+    {
+      "detail": {
+        "acceptance_evidence_present": false
+      },
+      "evidence_path": "artifacts/production_gate_output.json",
+      "name": "production_gate_output",
+      "status": "warning",
+      "summary": "Production gate artifact does not include acceptance evidence."
+    },
+    {
+      "detail": {
+        "required_failures": [
+          "minimal_fail"
+        ],
+        "status": "NO_GO"
+      },
+      "evidence_path": "artifacts/clean_10/latest.json",
+      "name": "clean_10_gate",
+      "status": "fail",
+      "summary": "Local clean evidence gate has failures."
+    }
+  ],
+  "claim_boundaries": [
+    "Protocol correctness, validation, governance and auditability may be claimed from code and test evidence.",
+    "Operational acceptance, economic performance and advantage claims require acceptance artifacts.",
+    "Synthetic or local benchmark evidence must be labelled as synthetic/local benchmark evidence."
+  ],
+  "generated_at_utc": "2026-06-19T13:59:58.045773+00:00",
+  "next_actions": [
+    "Resolve missing or warning evidence checks before making unqualified operational claims.",
+    "Resolve any local clean evidence gate failures before describing the repo as clean."
+  ],
+  "passed": false,
+  "schema": "HYBA_REPOSITORY_EVIDENCE_BOUNDARY_V1",
+  "status": "NO_GO"
+}
