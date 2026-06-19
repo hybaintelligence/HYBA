@@ -47,7 +47,21 @@ class TestAutonomousMiningController(unittest.TestCase):
         # Add engine attributes that apply_self_optimization() checks
         self.unified_engine.phi_ensemble = MagicMock()
         self.unified_engine.solver = MagicMock()
-        self.unified_engine.consciousness = MagicMock()
+        
+        # Create a proper dataclass mock for consciousness config
+        from dataclasses import dataclass, field
+        @dataclass
+        class MockConsciousnessConfig:
+            phi_critical_threshold: float = 0.2
+            phi_distributed_threshold: float = 0.4
+            phi_singular_threshold: float = 0.7
+            
+        @dataclass
+        class MockConsciousness:
+            config: MockConsciousnessConfig = field(default_factory=MockConsciousnessConfig)
+            
+        self.unified_engine.consciousness = MockConsciousness()
+        
         self.config = AutonomousConfig(
             autonomy_level=AutonomyLevel.ADVISORY,
             max_autonomous_hashrate_ehs=0.5,  # Within mission-memory hard limit of 1.0
