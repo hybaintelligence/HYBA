@@ -1,54 +1,41 @@
-# HYBA FULLSTACK Python Backend - Canonical Dependency Lock
-# Single source of truth for FastAPI API, PYTHIA/PULVINI mining, and operational runtime
-# Production-aligned: used in Dockerfile and development environments
-# Generated: pinned versions for reproducibility
+# HYBA FULLSTACK / PYTHIA-PULVINI Dependencies
+# Production-grade mathematical mining substrate
 
-# API & Web Framework
-fastapi==0.136.1
-uvicorn[standard]==0.47.0
-python-multipart==0.0.32
-websockets==15.0.1
-starlette>=0.46.0
-email-validator==2.3.0
+# Core Web Framework
+fastapi==0.115.0
+uvicorn[standard]==0.32.0
+pydantic==2.9.2
 
-# Configuration & Validation
-pydantic==2.13.4
-pydantic-settings==2.14.1
+# Async HTTP
+aiohttp==3.10.10
+
+# Numerical & Scientific Computing
+numpy==1.26.4
+scipy==1.14.1
 
 # Authentication & Security
-PyJWT==2.10.1
-argon2-cffi==25.1.0
+argon2-cffi==23.1.0
+PyJWT==2.9.0
+cryptography==43.0.1
 
-# Scientific & Numerical Computing
-numpy==2.4.6
-scipy==1.17.1
-networkx==3.4.2
-matplotlib==3.9.2
+# Database & Migrations
+sqlalchemy==2.0.35
+alembic==1.13.3
 
-# Async & Networking
-aiohttp==3.11.16
-asyncpg==0.31.0
-requests==2.32.5
-SQLAlchemy==2.0.45
-alembic==1.17.2
+# Monitoring & Observability
+prometheus-client==0.21.0
+python-json-logger==2.0.7
+psutil==6.1.0
 
-# Caching & Pub/Sub
-redis==6.2.0
+# HTTP Client
+requests==2.32.3
 
-# Monitoring & Logging
-prometheus-client==0.21.1
-structlog==25.2.0
-python-json-logger==4.1.0
+# Apple Silicon ML (optional for Metal acceleration)
+mlx==0.20.0
 
-# Utilities
-psutil==7.0.0
-python-dateutil==2.9.0
+# Noise generation for testing
+noise==1.2.2
 
-# Testing
-pytest==8.3.4
-pytest-asyncio==0.24.0
-hypothesis==6.92.1
+# Command-line argument parsing (if needed beyond stdlib argparse)
+# argparse is stdlib, no need to include
 
-# Cryptographic Protocols
-noiseprotocol==0.3.1
-httpx==0.28.1
