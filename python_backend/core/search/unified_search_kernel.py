@@ -54,6 +54,14 @@ class SearchResult:
     passport: Mapping[str, Any] = field(default_factory=dict)
     schema_version: str = UNIFIED_SEARCH_SCHEMA_VERSION
 
+    @property
+    def success(self) -> bool:
+        return (not self.partial) and self.score >= 1.0
+
+    @property
+    def iterations(self) -> int:
+        return self.iterations_used
+
     def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary representation."""
         return {

@@ -48,7 +48,7 @@ class PulviniCompressedQuantumSolver(DodecahedralQuantumSolver):
                 "phi_tier": phi_tier,
                 "phi_tier_multiplier": phi_multiplier,
                 "hashrate_cap_ehs": PULVINI_HASHRATE_CAP_EHS,
-                "configured_capacity_ehs": self.configured_capacity_ehs,
+                "configured_capacity_ehs": self._capacity_ehs,
                 "exploration_mode": "phi_tiled_van_der_corput_full_2e32",
             }
         )
@@ -77,7 +77,7 @@ class PulviniCompressedQuantumSolver(DodecahedralQuantumSolver):
                 "phi_tier": phi_tier,
                 "phi_tier_multiplier": phi_multiplier,
                 "hashrate_cap_ehs": PULVINI_HASHRATE_CAP_EHS,
-                "configured_capacity_ehs": self.configured_capacity_ehs,
+                "configured_capacity_ehs": self._capacity_ehs,
                 "compressed_nonce_plan": compressed_plan.to_dict(),
                 "exploration_mode": "phi_tiled_van_der_corput_full_2e32",
             }

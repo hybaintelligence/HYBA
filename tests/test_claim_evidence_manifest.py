@@ -40,6 +40,7 @@ def test_claim_manifest_keeps_extraordinary_claim_boundaries_explicit() -> None:
         "proof of the yang-mills millennium problem",
         "physical universe",
         "not a metaphysical proof",
+        "formalism-derived classical simulation",
     ]
     for phrase in boundary_phrases:
         assert phrase in manifest_text, f"boundary phrase missing from manifest: {phrase}"

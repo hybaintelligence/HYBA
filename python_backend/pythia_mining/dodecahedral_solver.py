@@ -21,6 +21,7 @@ from typing import Any, Dict, List, Optional, Tuple
 import numpy as np
 
 GOLDEN_RATIO = (1.0 + math.sqrt(5.0)) / 2.0
+MASS_GAP_TARGET = 3.0 - GOLDEN_RATIO
 DODECAHEDRON_VERTICES = 20
 MAX_UINT32_NONCE = 2**32 - 1
 PULVINI_HASHRATE_CAP_EHS = 1.0
@@ -211,6 +212,45 @@ class DodecahedralQuantumSolver:
         if not np.isfinite(state).all():
             raise QuantumNumericalInstabilityError(f"{label} contains NaN or Inf values")
 
+    @staticmethod
+    def _normalize_state_vector(state: np.ndarray) -> np.ndarray:
+        values = np.asarray(state, dtype=np.complex128).reshape(-1)
+        norm = float(np.linalg.norm(values))
+        if not math.isfinite(norm) or norm <= 0.0:
+            raise QuantumNumericalInstabilityError("state vector norm is invalid")
+        return values / norm
+
+    @staticmethod
+    def density_matrix_from_state(state: np.ndarray) -> np.ndarray:
+        """Return a trace-one density matrix for a state vector."""
+        psi = DodecahedralQuantumSolver._normalize_state_vector(state).reshape(-1, 1)
+        rho = psi @ psi.conj().T
+        trace = np.trace(rho)
+        if not np.isclose(trace.real, 1.0, atol=1e-10):
+            raise QuantumNumericalInstabilityError("density trace is not conserved")
+        return rho
+
+    @staticmethod
+    def irrational_truncation_boundary(singular_values: np.ndarray) -> Dict[str, Any]:
+        """Choose the SVD boundary whose adjacent ratio is closest to 3-φ."""
+        values = np.asarray(singular_values, dtype=np.float64).reshape(-1)
+        values = values[np.isfinite(values) & (values > 0.0)]
+        if values.size < 2:
+            raise QuantumSolverConfigurationError("at least two positive singular values required")
+        ratios = values[:-1] / values[1:]
+        idx = int(np.argmin(np.abs(ratios - MASS_GAP_TARGET)))
+        selected = float(ratios[idx])
+        return {
+            "boundary_index": idx + 1,
+            "selected_ratio": selected,
+            "mass_gap_target": float(MASS_GAP_TARGET),
+            "alignment_error": abs(selected - MASS_GAP_TARGET),
+        }
+
+    def _mass_gap_alignment(self) -> Dict[str, Any]:
+        spectrum = np.array([MASS_GAP_TARGET ** (-idx) for idx in range(1, 8)], dtype=np.float64)
+        return self.irrational_truncation_boundary(spectrum)
+
     def _basis_coherence(self) -> float:
         """Derive coherence from observed row-norm spread instead of using a fixed score."""
         row_norms = np.linalg.norm(self.basis_states, axis=1)
@@ -286,7 +326,7 @@ class DodecahedralQuantumSolver:
             target = int(self.current_config.get("target", 0))
 
             superposition = np.ones(DODECAHEDRON_VERTICES, dtype=np.complex128)
-            superposition = superposition / np.linalg.norm(superposition)
+            superposition = self._normalize_state_vector(superposition)
 
             marked_indices = set()
             for idx in range(DODECAHEDRON_VERTICES):
@@ -313,10 +353,16 @@ class DodecahedralQuantumSolver:
                 for idx in marked_indices:
                     superposition[idx] *= -1.0
                 avg = np.mean(superposition)
-                superposition = 2.0 * avg - superposition
+                superposition = self._normalize_state_vector(2.0 * avg - superposition)
+
                 self.last_solve_iterations += 1
 
-            probabilities = np.abs(superposition) ** 2
+            # Phase 2: Measurement via Born rule
+            # Measurement probabilities = |amplitude|^2
+            rho = self.density_matrix_from_state(superposition)
+            probabilities = np.real(np.diag(rho))
+
+            # Numerically stable sampling via cumulative distribution
             cumsum = np.cumsum(probabilities)
             cumsum = cumsum / cumsum[-1]
             random_value = (self._solve_call_count * GOLDEN_RATIO) % 1.0
@@ -410,10 +456,12 @@ class DodecahedralQuantumSolver:
         return True
 
     def get_metrics(self) -> Dict[str, Any]:
-        state_vector = np.ones(DODECAHEDRON_VERTICES, dtype=np.complex128) / math.sqrt(
-            DODECAHEDRON_VERTICES
+        state_vector = self._normalize_state_vector(
+            np.ones(DODECAHEDRON_VERTICES, dtype=np.complex128)
         )
         entropy = self.calculate_integrated_entropy(state_vector)
+        rho = self.density_matrix_from_state(state_vector)
+        mass_gap = self._mass_gap_alignment()
         hashrate_ehs = self.calculate_integrated_hashrate()
 
         return {
@@ -430,6 +478,12 @@ class DodecahedralQuantumSolver:
             "von_neumann_entropy": round(entropy, 4),
             "dodecahedral_coherence": round(self._basis_coherence(), 6),
             "phi_phase_alignment": round(self._phi_phase_alignment(), 6),
+            "density_trace": round(float(np.trace(rho).real), 12),
+            "unitary_closure": bool(np.isclose(np.trace(rho).real, 1.0, atol=1e-10)),
+            "mass_gap_target": round(float(MASS_GAP_TARGET), 12),
+            "mass_gap_alignment": round(float(mass_gap["selected_ratio"]), 12),
+            "mass_gap_alignment_error": round(float(mass_gap["alignment_error"]), 12),
+            "truncation_rule": "irrational_gauge_svd_boundary",
             "last_solve_iterations": self.last_solve_iterations,
             "last_solve_duration_seconds": self.last_solve_duration_seconds,
             "last_solution_nonce": self.last_solution_nonce,

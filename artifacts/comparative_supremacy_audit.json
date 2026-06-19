@@ -1,0 +1,17 @@
+{
+  "system": "HYBA/PYTHIA Formalism",
+  "hardware_target": "Mac Studio M3 Ultra",
+  "audit_date": "2026-06-19",
+  "epistemic_status": "Bounded by CTD Principle; structured workloads only",
+  "claim_boundary": "Formalism-derived comparison. Not measured pool-side hashrate, not ASIC replacement proof, not universal SHA-256 acceleration, and not physical quantum hardware execution.",
+  "comparative_metrics": {
+    "structured_scaling": "phi-logarithmic structured-state model; unstructured states remain exponential",
+    "energy_parity": "reported as a projection by benchmarks/real_world_comparison_report.py, not a live hardware certification",
+    "determinism_ratio": "1.00 for deterministic formalism replay paths only",
+    "market_pivots": [
+      "Structured mining candidate navigation",
+      "High-dimensional SAT/geodesic logic",
+      "Formalism-derived post-quantum audit surfaces"
+    ]
+  }
+}
