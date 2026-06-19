@@ -25,7 +25,7 @@ describe("HYBA Frontend Components", () => {
   it("App component renders the operator console shell without throwing", () => {
     vi.stubGlobal("localStorage", createStorage());
 
-    const html = renderToString(<App />);
+    const html = renderToString(React.createElement(App));
 
     expect(html).toContain("HYBA");
     expect(html).toContain("Operator");
@@ -62,7 +62,7 @@ describe("HYBA Frontend Components", () => {
   it("ErrorBoundary derives fallback state with the rendering error message", () => {
     const error = new Error("component integration sentinel");
     const state = ErrorBoundary.getDerivedStateFromError(error);
-    const boundary = new ErrorBoundary({ children: <RenderFailure /> });
+    const boundary = new ErrorBoundary({ children: React.createElement(RenderFailure) });
     boundary.setState = vi.fn();
     boundary.state = state;
 
