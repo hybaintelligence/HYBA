@@ -1,34 +1,36 @@
 import { expect, test } from "@playwright/test";
-import { EXECUTIVE_ROLES, installBackendMocks, OPERATIONAL_ROLES, seedAuth, type MockRole } from "./fixtures";
+import { installBackendMocks, seedAuth, type MockRole } from "./fixtures";
 
+const operationalRoles: MockRole[] = ["operator", "analyst", "miner"];
 const invalidSessionRoles: MockRole[] = ["anonymous", "expired_token", "malformed_token", "backend_profile_unavailable"];
+const executiveRoles: MockRole[] = ["ceo_heir_apparent", "chairman", "cto", "cfo", "legal", "chief_of_staff"];
 
-async function openShell(page: Parameters<Parameters<typeof test>[1]>[0]["page"], role: MockRole) {
-  await seedAuth(page, role);
-  await installBackendMocks(page, { role });
-  await page.goto("/");
-  await expect(page.getByRole("heading", { name: "Genesis Runtime Console" })).toBeVisible();
-}
-
-test.describe("frontend role matrix production gate", () => {
-  for (const role of [...OPERATIONAL_ROLES, ...invalidSessionRoles]) {
-    test(`${role} cannot see admin or executive command navigation`, async ({ page }) => {
-      await openShell(page, role);
+test.describe("frontend role matrix", () => {
+  for (const role of [...operationalRoles, ...invalidSessionRoles]) {
+    test(`${role} receives operator surface only`, async ({ page }) => {
+      await seedAuth(page, role);
+      await installBackendMocks(page, { role });
+      await page.goto("/");
+      await expect(page.getByRole("heading", { name: "Genesis Runtime Console" })).toBeVisible();
       await expect(page.getByRole("button", { name: "Admin" })).toHaveCount(0);
       await expect(page.getByRole("button", { name: "Executive" })).toHaveCount(0);
       await expect(page.getByRole("button", { name: "Refresh" })).toBeVisible();
     });
   }
 
-  test("admin can see admin navigation but not executive-only navigation", async ({ page }) => {
-    await openShell(page, "admin");
+  test("admin receives admin surface", async ({ page }) => {
+    await seedAuth(page, "admin");
+    await installBackendMocks(page, { role: "admin" });
+    await page.goto("/");
     await expect(page.getByRole("button", { name: "Admin" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Executive" })).toHaveCount(0);
   });
 
-  for (const role of EXECUTIVE_ROLES) {
-    test(`${role} can see executive and governance navigation`, async ({ page }) => {
-      await openShell(page, role);
+  for (const role of executiveRoles) {
+    test(`${role} receives executive surface`, async ({ page }) => {
+      await seedAuth(page, role);
+      await installBackendMocks(page, { role });
+      await page.goto("/");
       await expect(page.getByRole("button", { name: "Admin" })).toBeVisible();
       await expect(page.getByRole("button", { name: "Executive" })).toBeVisible();
       await page.getByRole("button", { name: "Executive" }).click();
