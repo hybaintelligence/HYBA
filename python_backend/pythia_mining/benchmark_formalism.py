@@ -1,8 +1,8 @@
 """
-Benchmark: Φ-Accelerated Tensor Networks vs Quantum Programs
+Benchmark: Φ-Accelerated Formalism vs Classical Programs
 
 This benchmark demonstrates that:
-1. Golden ratio (Φ) acceleration provides quantum speedup on classical hardware
+1. Golden ratio (Φ) acceleration provides mathematical speedup on classical hardware
 2. NEITHER classical NOR quantum programs can carry 1000 qubit workload (exponential wall)
 3. Our mathematical approach can handle 1000+ qubits efficiently
 4. Quantum speedup comes from mathematical structure, not hardware

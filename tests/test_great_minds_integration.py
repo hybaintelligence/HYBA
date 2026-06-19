@@ -166,14 +166,14 @@ class TestQuantumFourierTransform:
 
     def test_qft_initialization(self):
         """Test QFT initialization."""
-        from pythia_mining.shor_quantum_fourier_transform import ShorQuantumFourierTransform
+        from pythia_mining.fourier_harmonic_transform import ShorQuantumFourierTransform
 
         shor = ShorQuantumFourierTransform(precision_bits=12)
         assert shor.precision_bits == 12
 
     def test_quantum_fourier_transform(self):
         """Test quantum Fourier transform."""
-        from pythia_mining.shor_quantum_fourier_transform import ShorQuantumFourierTransform
+        from pythia_mining.fourier_harmonic_transform import ShorQuantumFourierTransform
 
         shor = ShorQuantumFourierTransform()
         state = np.array([1.0, 0.0, 0.0, 0.0], dtype=complex)
@@ -184,7 +184,7 @@ class TestQuantumFourierTransform:
 
     def test_period_finding(self):
         """Test period finding."""
-        from pythia_mining.shor_quantum_fourier_transform import ShorQuantumFourierTransform
+        from pythia_mining.fourier_harmonic_transform import ShorQuantumFourierTransform
 
         shor = ShorQuantumFourierTransform()
 
@@ -197,7 +197,7 @@ class TestQuantumFourierTransform:
 
     def test_phase_estimation(self):
         """Test phase estimation."""
-        from pythia_mining.shor_quantum_fourier_transform import ShorQuantumFourierTransform
+        from pythia_mining.fourier_harmonic_transform import ShorQuantumFourierTransform
 
         shor = ShorQuantumFourierTransform()
 
@@ -212,7 +212,7 @@ class TestQuantumFourierTransform:
 
     def test_nonce_frequency_analysis(self):
         """Test nonce frequency analysis."""
-        from pythia_mining.shor_quantum_fourier_transform import ShorQuantumFourierTransform
+        from pythia_mining.fourier_harmonic_transform import ShorQuantumFourierTransform
 
         shor = ShorQuantumFourierTransform()
         nonces = [100, 200, 300, 400, 500]
@@ -382,14 +382,14 @@ class TestEnhancedGrover:
 
     def test_grover_initialization(self):
         """Test Grover initialization."""
-        from pythia_mining.grover_enhanced_quantum_search import GroverEnhancedQuantumSearch
+        from pythia_mining.grover_structured_search import GroverEnhancedQuantumSearch
 
         grover = GroverEnhancedQuantumSearch(system_size=20)
         assert grover.system_size == 20
 
     def test_grover_multiple_marked(self):
         """Test Grover with multiple marked states."""
-        from pythia_mining.grover_enhanced_quantum_search import GroverEnhancedQuantumSearch
+        from pythia_mining.grover_structured_search import GroverEnhancedQuantumSearch
 
         grover = GroverEnhancedQuantumSearch()
         result = grover.grover_multiple_marked(20, [5, 10, 15], max_iterations=10)
@@ -399,7 +399,7 @@ class TestEnhancedGrover:
 
     def test_quantum_walk_search(self):
         """Test quantum walk search."""
-        from pythia_mining.grover_enhanced_quantum_search import GroverEnhancedQuantumSearch
+        from pythia_mining.grover_structured_search import GroverEnhancedQuantumSearch
 
         grover = GroverEnhancedQuantumSearch()
         adjacency = np.ones((10, 10))
@@ -411,7 +411,7 @@ class TestEnhancedGrover:
 
     def test_continuous_time_quantum_walk(self):
         """Test continuous-time quantum walk."""
-        from pythia_mining.grover_enhanced_quantum_search import GroverEnhancedQuantumSearch
+        from pythia_mining.grover_structured_search import GroverEnhancedQuantumSearch
 
         grover = GroverEnhancedQuantumSearch()
         adjacency = np.ones((10, 10))
@@ -422,7 +422,7 @@ class TestEnhancedGrover:
 
     def test_amplitude_amplification(self):
         """Test amplitude amplification."""
-        from pythia_mining.grover_enhanced_quantum_search import GroverEnhancedQuantumSearch
+        from pythia_mining.grover_structured_search import GroverEnhancedQuantumSearch
 
         grover = GroverEnhancedQuantumSearch()
 
@@ -440,7 +440,7 @@ class TestEnhancedGrover:
 
     def test_qaoa_optimization(self):
         """Test QAOA optimization."""
-        from pythia_mining.grover_enhanced_quantum_search import GroverEnhancedQuantumSearch
+        from pythia_mining.grover_structured_search import GroverEnhancedQuantumSearch
 
         grover = GroverEnhancedQuantumSearch()
         cost_hamiltonian = np.random.rand(5, 5)

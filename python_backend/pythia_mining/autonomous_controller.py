@@ -7,7 +7,7 @@ ARCHITECTURE OVERVIEW
 Three subsystems, two different autonomy postures, one orchestrator:
 
   HEALING        -- full autonomy, no gate. Quantum-formalism state
-                     (quantum_regeneration.py). Risk is contained to
+                     (stateful_regeneration.py). Risk is contained to
                      this system's own modules; reversible by
                      construction (re-measure, re-collapse).
 
@@ -43,7 +43,7 @@ WHAT THIS FILE DOES NOT CLAIM
   optimizing loops are classical control theory (PID-style /
   threshold adaptation), not quantum search. If genuine quantum
   search (Grover-style) is later wired to the role-selection step in
-  the healing subsystem, see quantum_regeneration.py's explicit
+  the healing subsystem, see stateful_regeneration.py's explicit
   REQUIRES_QUANTUM_HARDWARE flag -- the same discipline applies here:
   do not label a classical loop "quantum-accelerated."
 - Does not claim mining profitability or hashrate optimality --
@@ -83,7 +83,7 @@ from typing import Callable, Optional, Any, Dict, List, Tuple
 import numpy as np
 
 # Reuses the existing, tested healing substrate rather than
-# reimplementing it -- see quantum_regeneration.py
+# reimplementing it -- see stateful_regeneration.py
 from .quantum_regeneration import (
     ModuleState,
     ContextSignal,
@@ -164,7 +164,7 @@ class AuditLog:
 class AutonomousHealer:
     """
     Thin autonomous wrapper around the existing, tested
-    quantum_regeneration.py pipeline. No new math here -- this just
+    stateful_regeneration.py pipeline. No new math here -- this just
     gives it a self-triggering loop instead of requiring an external
     caller to invoke regeneration_pipeline() manually.
     """

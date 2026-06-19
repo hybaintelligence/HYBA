@@ -36,7 +36,7 @@ from pythia_mining.mining_validation import (  # noqa: E402
     validate_share,
 )
 from pythia_mining.stratum_client import MiningJob  # noqa: E402
-from pythia_mining.quantum_solver import DodecahedralQuantumSolver  # noqa: E402
+from pythia_mining.dodecahedral_solver import DodecahedralQuantumSolver  # noqa: E402
 
 
 # ---------------------------------------------------------------------------

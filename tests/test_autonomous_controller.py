@@ -26,7 +26,7 @@ from pythia_mining.autonomous_controller import (
     BreakerState,
 )
 
-from pythia_mining.quantum_regeneration import (
+from pythia_mining.stateful_regeneration import (
     ContextSignal,
     Role,
 )

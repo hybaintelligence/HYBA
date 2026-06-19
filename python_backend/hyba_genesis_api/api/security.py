@@ -28,7 +28,7 @@ from hyba_genesis_api.auth.jwt_handler import APIKeyManager
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "python_backend"))
 from pythia_mining.consciousness_engine import ConsciousnessEngine
 from pythia_mining.synaptic_persistence_layer import SynapticPersistenceLayer
-from pythia_mining.quantum_regeneration import (
+from pythia_mining.stateful_regeneration import (
     ModuleState,
     Role,
     ContextSignal,

@@ -322,6 +322,7 @@ class TestSharedAuditLog:
             subsystem=Subsystem.PYTHIA.value,
             claim_type=ClaimType.NONCE_FOUND.value,
             payload={"nonce": 1},
+            epistemic_bounds=[EpistemicBound.NO_QUANTUM_SPEEDUP.value],
         ))
         log.append(make_passport(
             subsystem=Subsystem.PYTHIA.value,
@@ -337,23 +338,27 @@ class TestSharedAuditLog:
         """Test filtering audit log by timestamp range."""
         log = SharedAuditLog()
         t1 = time.time()
-        time.sleep(0.01)
         log.append(make_passport(
             subsystem=Subsystem.PYTHIA.value,
             claim_type=ClaimType.NONCE_FOUND.value,
             payload={"nonce": 1},
             timestamp=t1,
+            epistemic_bounds=[EpistemicBound.NO_QUANTUM_SPEEDUP.value],
         ))
-        t2 = time.time()
         time.sleep(0.01)
+        t_mid = time.time()
+        time.sleep(0.01)
+        t2 = time.time()
         log.append(make_passport(
             subsystem=Subsystem.PYTHIA.value,
             claim_type=ClaimType.NONCE_FOUND.value,
             payload={"nonce": 2},
             timestamp=t2,
+            epistemic_bounds=[EpistemicBound.NO_QUANTUM_SPEEDUP.value],
         ))
         
-        entries = log.get_entries(since=t1, until=t2)
+        # Filter for first entry only (t1 inclusive, t_mid exclusive)
+        entries = log.get_entries(since=t1, until=t_mid)
         assert len(entries) == 1
         assert entries[0].payload["nonce"] == 1
 
@@ -364,6 +369,7 @@ class TestSharedAuditLog:
             subsystem=Subsystem.PYTHIA.value,
             claim_type=ClaimType.NONCE_FOUND.value,
             payload={"nonce": 12345},
+            epistemic_bounds=[EpistemicBound.NO_QUANTUM_SPEEDUP.value],
         )
         log.append(passport)
         assert log.verify_chain() is True
@@ -378,6 +384,7 @@ class TestSharedAuditLog:
                 subsystem=Subsystem.PYTHIA.value,
                 claim_type=ClaimType.NONCE_FOUND.value,
                 payload={"nonce": 12345},
+                epistemic_bounds=[EpistemicBound.NO_QUANTUM_SPEEDUP.value],
             )
             log.append(passport)
             

@@ -54,7 +54,7 @@ Provides self-monitoring, decision-making, and operational control capabilities.
 ### Core Components
 
 #### Autonomous Healing and Recovery
-- **Location**: `python_backend/pythia_mining/quantum_regeneration.py`
+- **Location**: `python_backend/pythia_mining/stateful_regeneration.py`
 - **Function**: Automatic recovery from failure states
 - **Key modules**: Regeneration engines, state restoration, recovery planners
 
@@ -101,7 +101,7 @@ Provides fault tolerance, recovery physics, and regenerative process capabilitie
 ### Core Components
 
 #### Recovery Physics
-- **Location**: `python_backend/pythia_mining/quantum_regeneration.py`
+- **Location**: `python_backend/pythia_mining/stateful_regeneration.py`
 - **Function**: Mathematical modeling of recovery processes
 - **Key modules**: Recovery state machines, physics models, regeneration timers
 
@@ -167,7 +167,7 @@ Provides fault tolerance, recovery physics, and regenerative process capabilitie
 ### Backend (Python/FastAPI)
 - **Location**: `python_backend/hyba_genesis_api/`, `python_backend/pythia_mining/`
 - **Layers**: All three layers
-- **Key files**: `main.py`, `quantum_regeneration.py`, mining modules
+- **Key files**: `main.py`, `stateful_regeneration.py`, mining modules
 
 ### Accelerated Compute (Rust/CUDA)
 - **Location**: `rust_core/`, `cuda_core/`, `quantum_core/`

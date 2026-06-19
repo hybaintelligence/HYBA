@@ -39,7 +39,7 @@ from pythia_mining.pulvini_group import (
     coxeter_group_certificate,
 )
 from pythia_mining.pulvini_operator import ManifoldOperator
-from pythia_mining.quantum_solver import DodecahedralQuantumSolver
+from pythia_mining.dodecahedral_solver import DodecahedralQuantumSolver
 
 
 class TestQuantumMathematicsIsSubstrateAgnostic:

@@ -25,7 +25,7 @@ if str(BACKEND) not in sys.path:
 
 np.seterr(all="raise")
 
-from pythia_mining.phi_accelerated_quantum import (
+from pythia_mining.phi_accelerated_formalism import (
     PhiAcceleratedDensityMatrix,
     PhiAcceleratedUnitaryEvolution,
     PhiAcceleratedGrover,

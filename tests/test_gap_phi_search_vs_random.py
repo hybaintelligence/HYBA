@@ -34,7 +34,7 @@ from pythia_mining.hendrix_phi_solver import (  # noqa: E402
     phi_gradient_proposal,
     voronoi_domain,
 )
-from pythia_mining.quantum_solver import DodecahedralQuantumSolver  # noqa: E402
+from pythia_mining.dodecahedral_solver import DodecahedralQuantumSolver  # noqa: E402
 from pythia_mining.mining_validation import validate_share  # noqa: E402
 from pythia_mining.stratum_client import MiningJob  # noqa: E402
 

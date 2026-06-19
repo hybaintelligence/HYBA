@@ -76,7 +76,7 @@ def test_property_compact_to_target_valid_range(exponent: int, mantissa: int) ->
 @settings(max_examples=100)
 def test_property_entropy_always_bounded(seed: int) -> None:
     """Property: Integrated entropy must always be in [0, log2(DODECAHEDRON_VERTICES)]."""
-    from pythia_mining.quantum_solver import (
+    from pythia_mining.dodecahedral_solver import (
         DODECAHEDRON_VERTICES,
         DodecahedralQuantumSolver,
     )
@@ -110,7 +110,7 @@ def test_property_entropy_always_bounded(seed: int) -> None:
 @settings(max_examples=50)
 def test_property_hashrate_monotonic_in_power_scale(scales: list[float]) -> None:
     """Property: Hashrate must be monotonic non-decreasing with power scale."""
-    from pythia_mining.quantum_solver import DodecahedralQuantumSolver
+    from pythia_mining.dodecahedral_solver import DodecahedralQuantumSolver
 
     solver = DodecahedralQuantumSolver(configured_capacity_ehs=10.0)
     sorted_scales = sorted(scales)
@@ -138,7 +138,7 @@ def test_property_hashrate_monotonic_in_power_scale(scales: list[float]) -> None
 @settings(max_examples=20)
 def test_property_solver_basis_has_correct_dimensions(seed: int) -> None:
     """Property: The quantum solver must always have exactly DODECAHEDRON_VERTICES basis states."""
-    from pythia_mining.quantum_solver import (
+    from pythia_mining.dodecahedral_solver import (
         DODECAHEDRON_VERTICES,
         DodecahedralQuantumSolver,
     )
@@ -317,7 +317,7 @@ def test_property_idempotency_keys_produce_same_request_id(keys: list[str]) -> N
 @settings(max_examples=50)
 async def test_property_nonce_in_range(start: int, range_size: int, target: int) -> None:
     """Property: Every nonce returned by the solver must be within its declared range."""
-    from pythia_mining.quantum_solver import DodecahedralQuantumSolver
+    from pythia_mining.dodecahedral_solver import DodecahedralQuantumSolver
 
     end = start + range_size
     solver = DodecahedralQuantumSolver()

@@ -20,7 +20,7 @@ This document maps the dependencies and relationships between the 43 modules in 
 - `pulvini_verifier.py` - Unified substate verifier consolidating structural, coverage, Grover-scope, Choi, Bures, and operator-topology certificates into single deterministic passport for runtime telemetry and block/share audit records.
 
 ### Quantum Mathematics Core (15 modules)
-- `quantum_solver.py` - Core quantum solver implementation
+- `dodecahedral_solver.py` - Core quantum solver implementation
 - `pulvini_manifold.py` - 32-node manifold topology and state management
 - `pulvini_autonomics.py` - Autonomous control and self-regulation
 - `pulvini_memory.py` - Memory state management
@@ -85,7 +85,7 @@ main.py
 
 ### New Production Façade Path (RECOMMENDED)
 ```
-quantum_solver.py
+dodecahedral_solver.py
   └─ pulvini_operator.py (NEW - Production façade)
       ├─ pulvini_bures.py
       ├─ pulvini_choi.py
@@ -105,7 +105,7 @@ pulvini_verifier.py (NEW - Unified verifier)
 ### Legacy Quantum Solver Path (Still Supported)
 ```
 stratum_client.py
-  └─ quantum_solver.py
+  └─ dodecahedral_solver.py
       ├─ pulvini_manifold.py
       │   ├─ pulvini_autonomics.py
       │   ├─ pulvini_memory.py
@@ -178,7 +178,7 @@ stratum_client.py
 3. `phi_scaling_engine.py` (12KB) - Scaling operations
 4. `stratum_v2.py` (12KB) - Stratum v2 protocol
 5. `pulvini_phi_memory.py` (13KB) - Phi memory compression
-6. `quantum_solver.py` (15KB) - Core solver
+6. `dodecahedral_solver.py` (15KB) - Core solver
 7. `pulvini_certificates.py` (10KB) - Certificate generation
 8. `mining_validation.py` (8KB) - Validation logic
 
@@ -191,7 +191,7 @@ stratum_client.py
 - All Core Mining Infrastructure (8 modules)
 - `pulvini_operator.py` - NEW - Production façade for quantum operations
 - `pulvini_verifier.py` - NEW - Unified substate verifier for audit records
-- `quantum_solver.py` - Core solver
+- `dodecahedral_solver.py` - Core solver
 - `pulvini_manifold.py` - Manifold topology
 - `pulvini_compressed_solver.py` - Compressed solver
 - `pulvini_certificates.py` - Certificate generation
@@ -257,7 +257,7 @@ The façade architecture achieves the goals of simplification without removing r
 
 ### High Risk (Breaking Changes Require Careful Testing)
 - `stratum_client.py` - Core client, changes affect all pool operations
-- `quantum_solver.py` - Core solver, changes affect share submission
+- `dodecahedral_solver.py` - Core solver, changes affect share submission
 - `pulvini_manifold.py` - Manifold state, changes affect quantum operations
 - `pulvini_certificates.py` - Certificate validation, changes affect compliance
 - `pulvini_operator.py` - NEW - Production façade, changes affect all quantum operations via façade
@@ -279,7 +279,7 @@ The façade architecture achieves the goals of simplification without removing r
 ## Performance Impact Analysis
 
 ### CPU-Intensive Modules
-1. `quantum_solver.py` - Core quantum operations
+1. `dodecahedral_solver.py` - Core quantum operations
 2. `pulvini_manifold.py` - 32-node state evolution
 3. `pulvini_bures_variational.py` - Variational optimization
 4. `pulvini_compressed_solver.py` - Compression algorithms
@@ -333,7 +333,7 @@ The façade architecture achieves the goals of simplification without removing r
 
 ### Phase 2: Update Integration Points
 ```bash
-# Update quantum_solver.py to use ManifoldOperator
+# Update dodecahedral_solver.py to use ManifoldOperator
 # Update consciousness_engine.py to use ManifoldOperator for Φ-proxy metrics
 # Update audit logging to use SubstateVerifier for passport generation
 ```

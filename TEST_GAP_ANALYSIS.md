@@ -8,7 +8,7 @@
 
 The test suite reveals **3 critical bug categories** that need immediate attention:
 
-1. **CRITICAL: quantum_solver.py NameError** - `job` variable undefined (affects 15+ tests)
+1. **CRITICAL: dodecahedral_solver.py NameError** - `job` variable undefined (affects 15+ tests)
 2. **CRITICAL: IIT 4.0 Φ computation failures** - Integration metrics returning 0.0 or inverted values
 3. **MEDIUM: API validation errors** - JSON serialization and authentication issues
 
@@ -18,10 +18,10 @@ The test suite reveals **3 critical bug categories** that need immediate attenti
 
 ### 🔴 Category 1: Quantum Solver Critical Bug (15+ failures)
 
-**Root Cause:** `python_backend/pythia_mining/quantum_solver.py:404` - undefined variable `job`
+**Root Cause:** `python_backend/pythia_mining/dodecahedral_solver.py:404` - undefined variable `job`
 
 ```python
-# Line 404 in quantum_solver.py
+# Line 404 in dodecahedral_solver.py
 if job is not None:  # ❌ NameError: name 'job' is not defined
 ```
 
@@ -210,8 +210,8 @@ Unhandled Rejection: TypeError: network offline
 
 ### P0 - Critical (Blocks Production)
 
-1. **Fix quantum_solver.py NameError**
-   - File: `python_backend/pythia_mining/quantum_solver.py:404`
+1. **Fix dodecahedral_solver.py NameError**
+   - File: `python_backend/pythia_mining/dodecahedral_solver.py:404`
    - Fix: Pass `job` parameter to `_classical_fallback()` method
    - Tests Fixed: 15+
 
@@ -269,7 +269,7 @@ Unhandled Rejection: TypeError: network offline
 
 ## Recommendations
 
-1. **Immediate Action**: Fix P0 quantum_solver.py bug (blocking 15+ tests)
+1. **Immediate Action**: Fix P0 dodecahedral_solver.py bug (blocking 15+ tests)
 2. **Code Review**: HENDRIX-Φ API changes broke 6 benchmarks - requires interface stability
 3. **IIT 4.0 Investigation**: Φ computation algorithm needs mathematical review
 4. **API Hardening**: JSON serialization and auth headers need production-grade error handling
@@ -280,8 +280,8 @@ Unhandled Rejection: TypeError: network offline
 ## Next Steps
 
 ```bash
-# 1. Fix quantum_solver.py
-vim python_backend/pythia_mining/quantum_solver.py +404
+# 1. Fix dodecahedral_solver.py
+vim python_backend/pythia_mining/dodecahedral_solver.py +404
 
 # 2. Fix HENDRIX-Φ API
 vim python_backend/pythia_mining/hendrix_phi_solver.py

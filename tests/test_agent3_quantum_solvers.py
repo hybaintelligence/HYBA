@@ -14,8 +14,8 @@ import time
 import numpy as np
 import pytest
 
-from pythia_mining.grover_enhanced_quantum_search import GroverEnhancedQuantumSearch
-from pythia_mining.quantum_regeneration import (
+from pythia_mining.grover_structured_search import GroverEnhancedQuantumSearch
+from pythia_mining.stateful_regeneration import (
     DIM,
     ContextSignal,
     InnervationFailure,
@@ -33,7 +33,7 @@ from pythia_mining.quantum_regeneration import (
     redifferentiation_unitary,
     regeneration_fidelity,
 )
-from pythia_mining.quantum_solver import (
+from pythia_mining.dodecahedral_solver import (
     DODECAHEDRON_VERTICES,
     MAX_UINT32_NONCE,
     QuantumNumericalInstabilityError,

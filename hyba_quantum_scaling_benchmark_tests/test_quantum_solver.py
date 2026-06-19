@@ -12,7 +12,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from python_backend.pythia_mining.quantum_solver import (
+from python_backend.pythia_mining.dodecahedral_solver import (
     DodecahedralQuantumSolver,
     QuantumSolverConfigurationError,
 )

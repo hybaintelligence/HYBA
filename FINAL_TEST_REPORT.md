@@ -28,14 +28,14 @@
 
 ## ✅ FIXES IMPLEMENTED
 
-### 1. quantum_solver.py NameError (P0 - CRITICAL) ✅
+### 1. dodecahedral_solver.py NameError (P0 - CRITICAL) ✅
 
 **Status:** FIXED  
 **Impact:** HIGH - Unblocked 15+ core mining tests
 
 **Problem:**
 ```python
-# Line 404 in quantum_solver.py
+# Line 404 in dodecahedral_solver.py
 if job is not None:  # ❌ NameError: name 'job' is not defined
 ```
 
@@ -45,7 +45,7 @@ if job is not None:  # ❌ NameError: name 'job' is not defined
 - Updated test expectations (tests can't find valid nonces without real pool jobs)
 
 **Files Modified:**
-- `python_backend/pythia_mining/quantum_solver.py`
+- `python_backend/pythia_mining/dodecahedral_solver.py`
 - `tests/test_agent3_quantum_solvers.py`
 
 **Tests Fixed:** 15+
@@ -303,7 +303,7 @@ global.localStorage = localStorageMock as Storage;
 ## 💡 RECOMMENDATIONS
 
 ### For Production
-1. ✅ **quantum_solver.py bug is resolved** - Mining pipeline now functional
+1. ✅ **dodecahedral_solver.py bug is resolved** - Mining pipeline now functional
 2. ✅ **API error handling hardened** - JSON serialization fixed
 3. ✅ **VIA BTC pool configured** - Ready for live connection
 4. ⚠️ **HENDRIX-Φ performance needs review** - 66% slower than target
@@ -347,7 +347,7 @@ global.localStorage = localStorageMock as Storage;
 ## 📦 DELIVERABLES
 
 ### Code Fixes
-- ✅ quantum_solver.py (NameError fix)
+- ✅ dodecahedral_solver.py (NameError fix)
 - ✅ test_agent3_quantum_solvers.py (test expectations)
 - ✅ test_hendrix_phi_performance_benchmark.py (parameter names)
 - ✅ api_posture.py (JSON serialization)

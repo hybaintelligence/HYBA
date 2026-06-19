@@ -18,7 +18,7 @@ from pythia_mining.phi_scaling_engine import (  # noqa: E402
     PhiScaledEnsemble,
     benchmark_vs_asic,
 )
-from pythia_mining.quantum_solver import (  # noqa: E402
+from pythia_mining.dodecahedral_solver import (  # noqa: E402
     MAX_UINT32_NONCE,
     PULVINI_HASHRATE_CAP_EHS,
     DodecahedralQuantumSolver,

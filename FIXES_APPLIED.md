@@ -2,10 +2,10 @@
 
 ## ✅ COMPLETED FIXES
 
-### 1. quantum_solver.py NameError (P0 - CRITICAL)
+### 1. dodecahedral_solver.py NameError (P0 - CRITICAL)
 **Status:** ✅ FIXED
 **Files Modified:**
-- `python_backend/pythia_mining/quantum_solver.py`
+- `python_backend/pythia_mining/dodecahedral_solver.py`
   - Added `job=None` and `extranonce2="00000000"` parameters to `_classical_fallback()`
   - Updated all 5 call sites
 
@@ -107,7 +107,7 @@
 
 ## NEXT STEPS
 
-1. ✅ ~~Fix quantum_solver.py~~
+1. ✅ ~~Fix dodecahedral_solver.py~~
 2. ✅ ~~Fix HENDRIX-Φ test parameters~~
 3. 🔧 Fix IIT 4.0 Φ computation
 4. 🔧 Fix API JSON serialization

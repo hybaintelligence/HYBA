@@ -9,7 +9,7 @@
 |-------|-------------|------------------|-----------|------|
 | **1** | `phi_unified_mining_engine.py` | `test_agent1_` | 45-50 | Engine & Orchestration |
 | **2** | `live_stratum_session.py` | `test_agent2_` | 40-45 | Pool Integration |
-| **3** | `quantum_solver.py` | `test_agent3_` | 35-40 | Quantum & Math |
+| **3** | `dodecahedral_solver.py` | `test_agent3_` | 35-40 | Quantum & Math |
 | **4** | `pulvini_phi_memory.py` | `test_agent4_` | 30-35 | Data & Compression |
 
 ---
@@ -119,9 +119,9 @@ python_backend/pythia_mining/stratum_client.py
 
 **Agent 3:**
 ```python
-python_backend/pythia_mining/quantum_solver.py
-python_backend/pythia_mining/quantum_regeneration.py
-python_backend/pythia_mining/grover_quantum_solver.py
+python_backend/pythia_mining/dodecahedral_solver.py
+python_backend/pythia_mining/stateful_regeneration.py
+python_backend/pythia_mining/grover_dodecahedral_solver.py
 ```
 
 **Agent 4:**

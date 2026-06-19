@@ -1,7 +1,7 @@
 """Tests for Φ-accelerated quantum mathematics utilities.
 
 These tests verify the correctness and invariants of the golden ratio
-accelerated functions provided in `phi_accelerated_quantum.py`.  We test
+accelerated functions provided in `phi_accelerated_formalism.py`.  We test
 purification, folding compression, decoherence suppression, phase
 modulation, unitary evolution, probability distributions, and Grover
 diffusion.  Each test focuses on mathematical properties: trace
@@ -14,7 +14,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from python_backend.pythia_mining.phi_accelerated_quantum import (
+from python_backend.pythia_mining.phi_accelerated_formalism import (
     PhiAcceleratedDensityMatrix,
     PhiAcceleratedUnitaryEvolution,
     PhiAcceleratedGrover,

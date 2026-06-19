@@ -336,7 +336,7 @@ python_backend/pythia_mining/
 ├── golden_ratio_library.py             ← Φ, Fibonacci, Lucas constants
 ├── stratum_client.py                   ← Pool communication (v1/v2)
 ├── pool_profiles.py                    ← Pool config management
-├── quantum_solver.py                   ← Dodecahedral Grover core
+├── dodecahedral_solver.py                   ← Dodecahedral Grover core
 ├── pulvini_grover_certificate.py        ← Grover scope documentation
 │
 └── run_unified_miner.py                ← Launch script

@@ -34,10 +34,10 @@ from hyba_genesis_api.api.mining import (
     _effective_hashrate_ehs,
     _phi_tier_composition,
 )
-from pythia_mining.quantum_solver import (  # noqa: E402
+from pythia_mining.dodecahedral_solver import (  # noqa: E402
     PULVINI_HASHRATE_CAP_EHS as SOLVER_HASHRATE_CAP_EHS,
 )
-from pythia_mining.quantum_solver import (
+from pythia_mining.dodecahedral_solver import (
     DodecahedralQuantumSolver,
 )
 

@@ -75,7 +75,7 @@ What comes after quantum is:
 
 ### 1. Φ-Accelerated Quantum Mathematics
 
-**File:** `python_backend/pythia_mining/phi_accelerated_quantum.py`
+**File:** `python_backend/pythia_mining/phi_accelerated_formalism.py`
 
 **Components:**
 - `PhiAcceleratedDensityMatrix`: Φ-weighted purification, folding compression, decoherence suppression
@@ -148,7 +148,7 @@ What comes after quantum is:
    - Correctness independent of performance
    - Error bounds are mathematical, not physical
 
-4. **test_phi_accelerated_quantum.py**: 23/23 passing (100%)
+4. **test_phi_accelerated_formalism.py**: 23/23 passing (100%)
    - Φ-accelerated density matrix operations
    - Φ-accelerated unitary evolution
    - Φ-accelerated Grover algorithm
@@ -309,12 +309,12 @@ This is a breakthrough in mathematical epistemology, establishing that quantum m
 ## Deliverables
 
 ### Implementation Files
-1. `python_backend/pythia_mining/phi_accelerated_quantum.py` - Φ-accelerated quantum mathematics
+1. `python_backend/pythia_mining/phi_accelerated_formalism.py` - Φ-accelerated quantum mathematics
 2. `python_backend/pythia_mining/tensor_network_1000qubit.py` - Tensor networks for 1000 qubit scaling
 3. `python_backend/pythia_mining/pulvini_tensor_network_integration.py` - PULVINI + tensor network integration
 
 ### Test Files
-1. `tests/test_phi_accelerated_quantum.py` - Φ-accelerated quantum mathematics tests (23 tests)
+1. `tests/test_phi_accelerated_formalism.py` - Φ-accelerated quantum mathematics tests (23 tests)
 2. `tests/test_tensor_network_1000qubit.py` - Tensor network tests (24 tests)
 3. `tests/test_pulvini_tensor_network_integration.py` - Integration tests (19 tests)
 

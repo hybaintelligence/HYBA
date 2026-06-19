@@ -1,4 +1,4 @@
-from pythia_mining.golden_quantum_trifecta import (
+from pythia_mining.golden_trifecta import (
     TrifectaPillar,
     assert_golden_quantum_trifecta_integrity,
     bounded_mps_parameter_upper_bound,

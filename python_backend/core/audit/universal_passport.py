@@ -427,17 +427,15 @@ class SharedAuditLog:
     def _required_bounds_for_claim(self, claim_type: str) -> list[str]:
         """Return required epistemic bounds for a given claim type."""
         # High-stakes claims require explicit boundaries
-        high_stakes_claims = {
-            ClaimType.NONCE_FOUND.value,
-            ClaimType.MODE_TRANSITION.value,
-            ClaimType.CIRCUIT_BREAKER_TRIP.value,
-            ClaimType.PHI_MEASUREMENT.value,
+        # Each claim type has its own specific required bounds
+        requirements = {
+            ClaimType.NONCE_FOUND.value: [EpistemicBound.NO_QUANTUM_SPEEDUP.value],
+            ClaimType.MODE_TRANSITION.value: [EpistemicBound.NO_SECURITY_INVULNERABILITY.value],
+            ClaimType.CIRCUIT_BREAKER_TRIP.value: [EpistemicBound.NO_GUARANTEE_CORRECTNESS.value],
+            ClaimType.PHI_MEASUREMENT.value: [EpistemicBound.NO_CONSCIOUSNESS_CLAIM.value],
         }
 
-        if claim_type in high_stakes_claims:
-            return [EpistemicBound.NO_QUANTUM_SPEEDUP.value]
-
-        return []
+        return requirements.get(claim_type, [])
 
     def _load_from_storage(self) -> None:
         """Load entries from persistent storage if available."""

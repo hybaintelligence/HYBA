@@ -17,7 +17,7 @@ from pythia_mining.pulvini_memory_compression_proof import (  # noqa: E402
     prove_lane_surface_coverage,
     prove_phi_folding_reversibility,
 )
-from pythia_mining.quantum_solver import DodecahedralQuantumSolver  # noqa: E402
+from pythia_mining.dodecahedral_solver import DodecahedralQuantumSolver  # noqa: E402
 
 
 def _phi_resonance_strength(value: int, scale: float = PHI**15) -> float:

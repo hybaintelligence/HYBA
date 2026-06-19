@@ -13,7 +13,7 @@
 |-------|-----------|-----------------|-----------------|---------|
 | **Agent 1** | Core Mining Engine | 80%+ | 45-50 | `unified_mining_engine.py`, `mining_orchestrator.py` |
 | **Agent 2** | Pool & Stratum | 80%+ | 40-45 | `live_stratum_session.py`, `pool_profiles.py`, `stratum_client.py` |
-| **Agent 3** | Quantum & Solvers | 80%+ | 35-40 | `quantum_solver.py`, `quantum_regeneration.py`, `grover_quantum_solver.py` |
+| **Agent 3** | Quantum & Solvers | 80%+ | 35-40 | `dodecahedral_solver.py`, `stateful_regeneration.py`, `grover_dodecahedral_solver.py` |
 | **Agent 4** | Data & Storage | 80%+ | 30-35 | `pulvini_phi_memory.py`, `pulvini_memory_compression_proof.py`, `mining_knowledge_base.py` |
 
 **Total New Tests:** ~150-170 tests
@@ -247,9 +247,9 @@
 ## AGENT 3: Quantum & Solvers (35-40 tests)
 
 ### Target Modules
-- `python_backend/pythia_mining/quantum_solver.py`
-- `python_backend/pythia_mining/quantum_regeneration.py`
-- `python_backend/pythia_mining/grover_quantum_solver.py`
+- `python_backend/pythia_mining/dodecahedral_solver.py`
+- `python_backend/pythia_mining/stateful_regeneration.py`
+- `python_backend/pythia_mining/grover_dodecahedral_solver.py`
 - `python_backend/pythia_mining/enhanced_grover.py`
 
 ### Test Categories (9 test groups × 4-5 tests each)

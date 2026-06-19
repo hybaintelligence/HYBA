@@ -79,7 +79,7 @@ This elevation transforms the system from a sophisticated mining platform into a
 
 ### 3. Quantum Fourier Transform (Peter Shor)
 
-**File**: `python_backend/pythia_mining/shor_quantum_fourier_transform.py`
+**File**: `python_backend/pythia_mining/fourier_harmonic_transform.py`
 
 **Mathematical Foundation**:
 - Quantum Fourier Transform: |j⟩ → (1/√N) Σ_k exp(2πijk/N) |k⟩
@@ -163,7 +163,7 @@ This elevation transforms the system from a sophisticated mining platform into a
 
 ### 6. Enhanced Grover Implementation (Lov Grover)
 
-**File**: `python_backend/pythia_mining/grover_enhanced_quantum_search.py`
+**File**: `python_backend/pythia_mining/grover_structured_search.py`
 
 **Mathematical Foundation**:
 - Multiple marked states Grover search
@@ -342,10 +342,10 @@ All implementations adhere to the repository's production discipline:
 unified_mathematical_framework.py
 ├── iit_4_conceptual_integration.py
 ├── deutsch_constructor_theory.py
-├── shor_quantum_fourier_transform.py
+├── fourier_harmonic_transform.py
 ├── turing_church_universal_computation.py
 ├── penrose_quantum_gravity.py
-├── grover_enhanced_quantum_search.py
+├── grover_structured_search.py
 ├── fourier_harmonic_analysis.py
 └── church_lambda_calculus.py
 ```
@@ -483,10 +483,10 @@ The system is now positioned at the intersection of theoretical computer science
 python_backend/pythia_mining/
 ├── iit_4_conceptual_integration.py          # Tononi: IIT 4.0 Conceptual Integration
 ├── deutsch_constructor_theory.py            # Deutsch: Constructor Theory
-├── shor_quantum_fourier_transform.py        # Shor: Quantum Fourier Transform
+├── fourier_harmonic_transform.py        # Shor: Quantum Fourier Transform
 ├── turing_church_universal_computation.py    # Turing/Church: Universal Computation
 ├── penrose_quantum_gravity.py               # Penrose: Quantum Gravity
-├── grover_enhanced_quantum_search.py        # Grover: Enhanced Quantum Search
+├── grover_structured_search.py        # Grover: Enhanced Quantum Search
 ├── fourier_harmonic_analysis.py             # Fourier: Harmonic Analysis
 ├── church_lambda_calculus.py                 # Church: Lambda Calculus
 └── unified_mathematical_framework.py        # Unified Integration

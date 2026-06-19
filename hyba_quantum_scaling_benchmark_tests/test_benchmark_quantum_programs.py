@@ -1,6 +1,6 @@
 """Tests for QuantumProgramBenchmark and golden ratio scaling benchmarks.
 
-These tests cover the helper functions inside `benchmark_quantum_programs.py` that
+These tests cover the helper functions inside `benchmark_formalism.py` that
 should behave predictably for small input sizes.  Because full tensor network
 benchmarks are expensive, we restrict to small numbers of qubits to ensure
 the functions return without exhausting resources.  We validate golden ratio
@@ -11,7 +11,7 @@ simple density matrix benchmarks, and PULVINI compression tests.
 from __future__ import annotations
 
 
-from python_backend.pythia_mining.benchmark_quantum_programs import (
+from python_backend.pythia_mining.benchmark_formalism import (
     QuantumProgramBenchmark,
 )
 

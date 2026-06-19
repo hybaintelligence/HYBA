@@ -10,7 +10,7 @@
 - Added HYBA_OPERATOR_CREDENTIALS with proper Argon2id format
 
 ### 2. Runtime Random Telemetry Removed ✅
-- Replaced `random.randint()` in `quantum_solver.py` with deterministic calculation
+- Replaced `random.randint()` in `dodecahedral_solver.py` with deterministic calculation
 - Removed `random` import from quantum solver
 - Ensured no runtime random telemetry in production code paths
 - Maintained deterministic behavior as per production discipline
@@ -165,7 +165,7 @@ The system is production-ready from a code, configuration, and documentation per
 - `.env.mining.local` - Added pool profile credentials and fixed operator credentials
 
 ### Code Files
-- `python_backend/pythia_mining/quantum_solver.py` - Removed random telemetry
+- `python_backend/pythia_mining/dodecahedral_solver.py` - Removed random telemetry
 - `scripts/quick_production_check.py` - Fixed python3 command
 - `scripts/command_room_game_day.py` - Added boundary chaos scenario
 

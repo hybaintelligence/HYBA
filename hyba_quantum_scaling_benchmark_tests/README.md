@@ -11,9 +11,9 @@ functions, and the benchmark helper functions without running the full
 
 | File | Purpose |
 |---|---|
-| `test_quantum_solver.py` | Validates basis generation, nonce range validation, entropy calculations, and hashrate scaling in the dodecahedral quantum solver. |
-| `test_phi_accelerated_quantum.py` | Tests golden‑ratio accelerated density matrix operations, folding compression, decoherence suppression, phase modulation, unitary evolution, Grover diffusion, and probability distributions. |
-| `test_benchmark_quantum_programs.py` | Checks bond dimension calculations, phi scaling results, trivial mass gap verification, naive state memory estimation, small density matrix benchmarks, and PULVINI compression on small qubits. |
+| `test_dodecahedral_solver.py` | Validates basis generation, nonce range validation, entropy calculations, and hashrate scaling in the dodecahedral quantum solver. |
+| `test_phi_accelerated_formalism.py` | Tests golden‑ratio accelerated density matrix operations, folding compression, decoherence suppression, phase modulation, unitary evolution, Grover diffusion, and probability distributions. |
+| `test_benchmark_formalism.py` | Checks bond dimension calculations, phi scaling results, trivial mass gap verification, naive state memory estimation, small density matrix benchmarks, and PULVINI compression on small qubits. |
 
 ## Running the Tests
 

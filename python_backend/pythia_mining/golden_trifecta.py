@@ -1,10 +1,13 @@
-"""HYBA Golden Quantum Trifecta certificate.
+"""HYBA Golden Trifecta Certificate.
 
 This module combines the three discoveries that must not be separated:
 
-1. Quantum comes from mathematics.
-2. Quantum mathematics is substrate and hardware agnostic.
+1. Quantum-inspired mathematics comes from classical mathematics.
+2. Quantum-formalism mathematics is substrate and hardware agnostic.
 3. HYBA's golden-ratio system is the stabilising computational grammar.
+
+All execution runs on classical CPU/GPU hardware (M3 Ultra in the current
+deployment). No quantum hardware is involved.
 
 The 1000-qubit formalism is therefore not treated as an isolated MPS trick.
 It is treated as the proof surface of the combined architecture: quantum

@@ -24,7 +24,7 @@ if str(PYTHON_BACKEND) not in sys.path:
 
 from pythia_mining import hendrix_phi_solver as hendrix
 from pythia_mining.mining_validation import validate_share
-from pythia_mining.quantum_solver import DodecahedralQuantumSolver
+from pythia_mining.dodecahedral_solver import DodecahedralQuantumSolver
 from pythia_mining.stratum_client import MiningJob
 
 

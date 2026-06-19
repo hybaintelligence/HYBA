@@ -408,7 +408,7 @@ def _check_claim_boundary_contract() -> CheckResult:
     start = time.monotonic()
     failures: list[str] = []
     try:
-        from pythia_mining.quantum_solver import DodecahedralQuantumSolver
+        from pythia_mining.dodecahedral_solver import DodecahedralQuantumSolver
 
         solver = DodecahedralQuantumSolver()
         metrics = solver.get_metrics()

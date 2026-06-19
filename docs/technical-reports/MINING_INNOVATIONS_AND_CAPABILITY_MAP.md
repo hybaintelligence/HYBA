@@ -21,7 +21,7 @@ The purpose is not to claim magical mining dominance before evidence. The purpos
 
 | Capability | Implementation surface | What is different | Expected benefit | Claim boundary |
 | --- | --- | --- | --- | --- |
-| Deterministic PYTHIA search | `python_backend/pythia_mining/quantum_solver.py` | Same mining target and nonce range must return the same candidate nonce. | Reproducibility, replay, command-room auditability, lower operational ambiguity. | Candidate search repeatability is not the same as pool accepted-share proof. |
+| Deterministic PYTHIA search | `python_backend/pythia_mining/dodecahedral_solver.py` | Same mining target and nonce range must return the same candidate nonce. | Reproducibility, replay, command-room auditability, lower operational ambiguity. | Candidate search repeatability is not the same as pool accepted-share proof. |
 | Dodecahedral bounded search | `DodecahedralQuantumSolver` | Uses a 20-basis dodecahedral state-vector search with bounded nonce projection. | Compact, deterministic, range-safe exploration of nonce space. | Does not bypass Bitcoin proof-of-work or guarantee acceptance. |
 | PULVINI capacity boundary | `PULVINI_HASHRATE_CAP_EHS` | Configured capacity estimates are capped at 1 EH/s. | Prevents fabricated hashrate claims and keeps funding evidence treasury-safe. | Live performance must come from measured shares or device/pool telemetry. |
 | Phi-scaled ensemble weighting | `phi_scaling_engine.py` | Model votes and mining indicators are weighted deterministically by golden-ratio coherence. | Stable decision scoring and transparent weighting. | Scoring support only; not a cryptographic shortcut. |

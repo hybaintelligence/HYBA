@@ -282,7 +282,26 @@ VERIFIER_AUTHORITY_NAMESPACE = "pythia_mining.mining_verification_firewall"
 - **Property-Based**: Multiple (Hypothesis finding edge cases)
 - **Finance/Audit**: ~10 tests (hash mismatches, missing keys)
 
-**Status**: ⚠️ **PARTIALLY EVIDENCED** - 97.6% pass rate is strong, but 59 failures remain.
+**Gap Closure Progress (June 19, 2026)**:
+- ✅ **HENDRIX API Compatibility**: Fixed - `start_nonce` parameter compatibility added
+- ✅ **API Serialization**: Fixed - JSON serialization tests added and passing
+- ✅ **Capability Registry**: Fixed - registry and manifest tests passing
+- ✅ **Auth/JWT**: Fixed - authentication contracts passing
+- ✅ **Evidence Boundary**: Fixed - boundary report tests passing
+- ✅ **Pool Profiles**: Fixed - profile primitives tests passing
+- ✅ **Frontend Security**: Fixed - bridge and security contracts passing
+- ⚠️ **Quantum Solver Plumbing**: Still failing (returncode 2)
+- ⚠️ **IIT Phi Proxy**: Still failing (returncode 2)
+- ⚠️ **Backend Mining API**: Still failing (returncode 2)
+- ⚠️ **Runtime Reflexive Introspection**: Still failing (returncode 1)
+- ⚠️ **Frontend Unit Gate**: Still failing (returncode 1)
+- ⚠️ **Backend Gate**: Still failing (returncode 1)
+
+**Clean Gate Status**: NO_GO (13/21 tests passed)
+- **Passed**: HENDRIX contracts, API serialization, auth, evidence boundary, capability registry, pool profiles, autonomous gate, launch contracts, frontend security, build
+- **Failed**: Review gap closure matrix, quantum solver plumbing, HENDRIX benchmarks, IIT Phi proxy, backend mining API, runtime introspection, frontend unit, backend gate
+
+**Status**: ⚠️ **PARTIALLY EVIDENCED** - 97.6% pass rate is strong, gap closure progress made (7/13 gaps closed), but 8 critical test suites still failing.
 
 ---
 

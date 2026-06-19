@@ -1,7 +1,11 @@
 """
-Dodecahedral Quantum Solver Core
-PYTHIA Mining System - Frontier Quantum Physics Layer
-Fully Substrate-Agnostic Mathematical Representation
+Dodecahedral Solver Core
+PYTHIA Mining System - Classical Structured-Search Layer
+
+This module implements a classical structured-search algorithm using dodecahedral
+symmetry and golden ratio geometry. It runs deterministically on classical CPU/GPU
+hardware (M3 Ultra in the current deployment). It does NOT claim quantum hardware
+execution or quantum speedup over classical brute-force search.
 """
 
 from __future__ import annotations

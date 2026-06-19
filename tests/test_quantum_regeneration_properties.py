@@ -31,7 +31,7 @@ PYTHON_BACKEND = str(REPO_ROOT / "python_backend")
 if PYTHON_BACKEND not in sys.path:
     sys.path.insert(0, PYTHON_BACKEND)
 
-from pythia_mining.quantum_regeneration import (
+from pythia_mining.stateful_regeneration import (
     ModuleState,
     Role,
     DIM,

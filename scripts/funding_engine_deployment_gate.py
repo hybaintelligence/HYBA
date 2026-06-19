@@ -233,7 +233,7 @@ def check_phi_resonance_artifacts(phi_dir: Path) -> GateCheck:
 
 
 async def _solve_once(target: int, nonce_start: int, nonce_end: int) -> int | None:
-    from pythia_mining.quantum_solver import DodecahedralQuantumSolver
+    from pythia_mining.dodecahedral_solver import DodecahedralQuantumSolver
 
     solver = DodecahedralQuantumSolver(configured_capacity_ehs=0.1)
     await solver.configure_search(target=target, nonce_ranges=[(nonce_start, nonce_end)])

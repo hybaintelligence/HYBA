@@ -173,7 +173,7 @@ def compress_to_nonce_regions(mps: MPS, num_regions: int = 32) -> List[NonceRegi
 
 #### **Stage 4: SHA-256d Verification → Pool Submission**
 ```python
-# From quantum_solver.py (Grover-based solver)
+# From dodecahedral_solver.py (Grover-based solver)
 def solve(self, max_iterations: int = 100) -> Optional[int]:
     """
     Executes Grover amplitude amplification over tensor-precomputed regions.
@@ -777,7 +777,7 @@ entropy = calculate_shannon_entropy(jitter_signal)
 entropy_violation = abs(entropy - self.TARGET_ENTROPY)
 confidence = np.exp(-alignment) * (1.0 - np.clip(entropy_violation * PHI, 0, 1))
 
-# 5e: Verify tensor spectrum (benchmark_quantum_programs.py:171)
+# 5e: Verify tensor spectrum (benchmark_formalism.py:171)
 verification = protector.verify_telemetry(tensor_spectrum)
 # Returns: {
 #   'alignment_score': float,      # Distance from mass gap
@@ -1200,7 +1200,7 @@ Bitcoin mining validates the entire stack.
 
 **Quantum Axioms:**
 - `python_backend/pythia_mining/quantum_axiom_helpers.py`
-- `python_backend/pythia_mining/quantum_solver.py`
+- `python_backend/pythia_mining/dodecahedral_solver.py`
 
 **PULVINI Compression:**
 - `python_backend/pythia_mining/pulvini_phi_memory.py`
@@ -1213,7 +1213,7 @@ Bitcoin mining validates the entire stack.
 
 **Mass Gap Protection:**
 - `python_backend/pythia_mining/mass_gap_protector.py`
-- `python_backend/pythia_mining/benchmark_quantum_programs.py`
+- `python_backend/pythia_mining/benchmark_formalism.py`
 
 
 ### 13.3 Test Suites
@@ -1224,7 +1224,7 @@ Bitcoin mining validates the entire stack.
 - `tests/test_performance_comparison_correctness.py` (19 tests)
 
 **Phi-Acceleration:**
-- `tests/test_phi_accelerated_quantum.py` (23 tests)
+- `tests/test_phi_accelerated_formalism.py` (23 tests)
 
 **Tensor Networks:**
 - `tests/test_tensor_network_1000qubit.py` (24 tests)

@@ -412,7 +412,7 @@ HYBA_FULLSTACK/
 │   │   ├── pulvini_compressed_solver.py
 │   │   ├── pulvini_memory_compression_proof.py
 │   │   ├── tensor_network_1000qubit.py
-│   │   ├── quantum_solver.py
+│   │   ├── dodecahedral_solver.py
 │   │   ├── resonance_fabric.py
 │   │   ├── stratum_client.py
 │   │   ├── stratum_protocol.py

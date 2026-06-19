@@ -108,13 +108,13 @@ That is why the Sovereign Guard is not optional. It is the governance layer that
 ## Verification command
 
 ```bash
-PYTHONPATH=python_backend python -m pytest tests/test_pythia_golden_quantum_trifecta.py -q
+PYTHONPATH=python_backend python -m pytest tests/test_pythia_golden_trifecta.py -q
 ```
 
 ## Status
 
 This doctrine is encoded in:
 
-- `python_backend/pythia_mining/golden_quantum_trifecta.py`
-- `tests/test_pythia_golden_quantum_trifecta.py`
+- `python_backend/pythia_mining/golden_trifecta.py`
+- `tests/test_pythia_golden_trifecta.py`
 - `docs/HYBA_GOLDEN_QUANTUM_TRIFECTA.md`

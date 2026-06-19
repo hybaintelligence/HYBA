@@ -383,7 +383,7 @@ def test_solver_without_configured_capacity_reports_no_hashrate() -> None:
     sys.path.insert(
         0, str(__import__("pathlib").Path(__file__).resolve().parents[1] / "python_backend")
     )
-    from pythia_mining.quantum_solver import DodecahedralQuantumSolver
+    from pythia_mining.dodecahedral_solver import DodecahedralQuantumSolver
 
     solver = DodecahedralQuantumSolver()  # no configured_capacity_ehs
     metrics = solver.get_metrics()

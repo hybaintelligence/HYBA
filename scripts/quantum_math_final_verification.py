@@ -68,7 +68,7 @@ except ImportError as e:
     import_errors.append(f"pulvini_bures: {e}")
 
 try:
-    from pythia_mining.quantum_solver import DodecahedralQuantumSolver
+    from pythia_mining.dodecahedral_solver import DodecahedralQuantumSolver
 
     print("✓ quantum_solver imports OK")
 except ImportError as e:

@@ -82,7 +82,7 @@ def _load_json(path: Path) -> dict[str, Any]:
 
 
 async def _solve_once() -> int | None:
-    from pythia_mining.quantum_solver import DodecahedralQuantumSolver
+    from pythia_mining.dodecahedral_solver import DodecahedralQuantumSolver
 
     solver = DodecahedralQuantumSolver(configured_capacity_ehs=0.1)
     await solver.configure_search(

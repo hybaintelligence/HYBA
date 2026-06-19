@@ -24,18 +24,18 @@
 
 ---
 
-## 2. Critical Bug Fix: quantum_solver.py NameError ✅
+## 2. Critical Bug Fix: dodecahedral_solver.py NameError ✅
 
 ### Problem
 ```python
-# Line 404 in quantum_solver.py
+# Line 404 in dodecahedral_solver.py
 if job is not None:  # ❌ NameError: name 'job' is not defined
 ```
 
 The `_classical_fallback` method referenced `job` and `extranonce2` variables that weren't passed as parameters.
 
 ### Solution Applied
-**File:** `python_backend/pythia_mining/quantum_solver.py`
+**File:** `python_backend/pythia_mining/dodecahedral_solver.py`
 
 **Changes:**
 1. Added `job=None` and `extranonce2="00000000"` parameters to `_classical_fallback()` method signature
@@ -120,7 +120,7 @@ npm run dev
 ### Key Findings Documented
 
 #### 🔴 Priority 0 - Critical (Blocks Production)
-1. **quantum_solver.py NameError** - FIXED ✅
+1. **dodecahedral_solver.py NameError** - FIXED ✅
 2. **HENDRIX-Φ API signature** - Needs `start_nonce` parameter
 3. **HENDRIX-Φ throughput** - Only 34K/sec vs 100K/sec target
 
@@ -141,7 +141,7 @@ npm run dev
 ## 6. Remaining Work
 
 ### Immediate Next Steps (P0)
-1. ✅ ~~Fix quantum_solver.py NameError~~ - **COMPLETED**
+1. ✅ ~~Fix dodecahedral_solver.py NameError~~ - **COMPLETED**
 2. 🔧 Fix HENDRIX-Φ `phi_gradient_proposal()` API signature
 3. 🔧 Investigate HENDRIX-Φ throughput (66% slower than target)
 
@@ -162,7 +162,7 @@ npm run dev
 ## 7. Files Modified This Session
 
 ### Bug Fixes
-1. `python_backend/pythia_mining/quantum_solver.py` - Fixed NameError
+1. `python_backend/pythia_mining/dodecahedral_solver.py` - Fixed NameError
 2. `tests/test_agent3_quantum_solvers.py` - Updated test expectations
 
 ### Configuration

@@ -218,7 +218,7 @@ def validate_endpoint(path: str, payload: dict[str, Any]) -> list[str]:
 async def run_mining_connect_search_submit_smoke() -> tuple[dict[str, Any], list[str]]:
     """Execute PYTHIA connect/search/submit code paths without external credentials."""
 
-    from pythia_mining.quantum_solver import DodecahedralQuantumSolver
+    from pythia_mining.dodecahedral_solver import DodecahedralQuantumSolver
     from pythia_mining.stratum_client import PoolManager
 
     failures: list[str] = []

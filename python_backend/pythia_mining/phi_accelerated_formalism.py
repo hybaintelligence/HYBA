@@ -1,10 +1,11 @@
 """
-Φ-Accelerated Quantum Mathematics: Post-Quantum Enhancement
+Φ-Accelerated Formalism: Classical Mathematical Enhancement
 
-This module implements golden ratio (Φ) accelerated versions of quantum mathematical
-operations. These are not quantum algorithms; they are post-quantum enhancements
-that use the golden ratio Φ ≈ 1.618 to accelerate mathematical operations on
-classical hardware.
+This module implements golden ratio (Φ) accelerated versions of mathematical
+operations using quantum-formalism-inspired algorithms. These run deterministically
+on classical CPU/GPU hardware (M3 Ultra in the current deployment). The mathematics
+borrows density-matrix and purification formalism as an expressive language, but
+execution is entirely classical with no quantum hardware involved.
 
 THESIS: What comes after quantum is not faster quantum hardware, but mathematically
 enhanced classical algorithms that leverage golden ratio geometry for acceleration.

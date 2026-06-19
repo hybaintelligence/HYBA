@@ -253,7 +253,7 @@ class TestEmergentHotspotsAnalysis(unittest.TestCase):
             "consciousness_engine.py",
             "genesis_ai.py",
             "ai_optimizer.py",
-            "quantum_solver.py",
+            "dodecahedral_solver.py",
         ]
 
     def test_01_computational_complexity_hotspots(self):

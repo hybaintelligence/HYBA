@@ -1,8 +1,12 @@
 """
-Shor Quantum Fourier Transform — Enhanced Implementation
-Per Peter Shor's Quantum Fourier Transform and Period Finding Algorithms
+Fourier Harmonic Transform — Enhanced Implementation
 
-ELEVATED PURPOSE: This module implements quantum-inspired Fourier analysis:
+This module implements classical Fourier analysis inspired by Shor's quantum
+Fourier transform formalism. It runs deterministically on classical CPU/GPU
+hardware (M3 Ultra in the current deployment). It does NOT claim quantum
+advantage or speedup over classical FFT.
+
+ELEVATED PURPOSE: This module implements classical Fourier analysis:
 - Quantum Fourier Transform (QFT) for frequency domain analysis
 - Period finding algorithms for hash function pattern analysis
 - Phase estimation algorithms for fine-grained nonce selection

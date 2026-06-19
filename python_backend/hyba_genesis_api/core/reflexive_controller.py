@@ -60,7 +60,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "python_backend"))
 from pythia_mining.synaptic_persistence_layer import SynapticPersistenceLayer
 
 # Import quantum_regeneration for salamander-inspired self-healing
-from pythia_mining.quantum_regeneration import (
+from pythia_mining.stateful_regeneration import (
     ModuleState,
     Role,
     ContextSignal,

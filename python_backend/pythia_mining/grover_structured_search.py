@@ -1,11 +1,15 @@
 """
-Enhanced Grover Quantum Search — Advanced Implementation
-Per Lov Grover's Quantum Search Algorithm with Advanced Variants
+Grover-Structured Classical Search — Advanced Implementation
 
-ELEVATED PURPOSE: This module implements enhanced Grover search algorithms:
+This module implements classical structured-search algorithms inspired by
+Grover's quantum search formalism. It runs deterministically on classical
+CPU/GPU hardware (M3 Ultra in the current deployment). It does NOT claim
+quantum speedup over classical brute-force search.
+
+ELEVATED PURPOSE: This module implements structured search algorithms:
 - Multiple marked states handling
-- Quantum walk algorithms as alternative search method
-- Continuous-time quantum walk optimization
+- Classical walk algorithms as alternative search method
+- Continuous-time classical walk optimization
 - Amplitude amplification for arbitrary unitary operations
 - Quantum Approximate Optimization Algorithm (QAOA) integration
 - Variable iteration count optimization

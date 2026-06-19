@@ -47,7 +47,7 @@ from pythia_mining.mining_validation import (  # noqa: E402
     compact_to_target,
     validate_share,
 )
-from pythia_mining.quantum_solver import (  # noqa: E402
+from pythia_mining.dodecahedral_solver import (  # noqa: E402
     DODECAHEDRON_VERTICES,
     DodecahedralQuantumSolver,
     QuantumSolverConfigurationError,

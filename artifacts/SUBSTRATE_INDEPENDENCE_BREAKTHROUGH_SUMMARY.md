@@ -206,7 +206,7 @@ Quantum mathematics is ontologically primary to quantum physics. Quantum physics
 - `python_backend/pythia_mining/pulvini_bures.py` - Density matrix operations
 - `python_backend/pythia_mining/pulvini_group.py` - Group theory operations
 - `python_backend/pythia_mining/pulvini_operator.py` - Unitary evolution
-- `python_backend/pythia_mining/quantum_solver.py` - Grover algorithm
+- `python_backend/pythia_mining/dodecahedral_solver.py` - Grover algorithm
 
 ### Existing Verification
 - `scripts/quantum_math_final_verification.py` - 8/8 mathematical proofs verified
