@@ -53,12 +53,14 @@ class CodeModificationProposal:
     backup_path: Optional[str] = None
 
 
-@dataclass
+from enum import Enum
+
+
 class AutonomyWriteMode(Enum):
     """Mutation boundary modes for autonomous code rewriting."""
-    OBSERVE_ONLY = "observe_only"  # No writes at all, just observations
-    PROPOSE_PATCH = "propose_patch"  # Generate proposals but don't apply them
-    APPLY_SAFE_PATCH = "apply_safe_patch"  # Apply only safe, validated patches
+    OBSERVE_ONLY = "observe_only"
+    PROPOSE_PATCH = "propose_patch"
+    APPLY_SAFE_PATCH = "apply_safe_patch"
 
 
 class CodeRewriterConfig:
@@ -101,7 +103,9 @@ class AutonomousCodeRewriter:
     """Enables PYTHIA to rewrite its own source code within safety bounds."""
     
     def __init__(self, config: Optional[CodeRewriterConfig] = None):
-        self.config = config or CodeRewriterConfig.from_env()
+        if config is None:
+            config = CodeRewriterConfig()
+        self.config = config
         self.proposals: List[CodeModificationProposal] = []
         self.applied_modifications: List[CodeModificationProposal] = []
         self.backup_dir = Path("backups/code_modifications")
@@ -198,13 +202,24 @@ class AutonomousCodeRewriter:
             f"{file_path}:{node.lineno}:{time.time()}".encode()
         ).hexdigest()[:16]
         
+        # Get line numbers from AST node if available
+        lines = source.split('\n')
+        if hasattr(node, 'lineno') and node.lineno > 0 and node.lineno <= len(lines):
+            line_idx = node.lineno - 1
+            current_line = lines[line_idx]
+            current_code = current_line.strip()
+            proposed_code = current_line.replace(str(current_value), str(proposed_value)) + "  # φ-optimized"
+        else:
+            current_code = f"{current_value}"
+            proposed_code = f"{proposed_value}  # φ-optimized"
+        
         return CodeModificationProposal(
             proposal_id=proposal_id,
             timestamp=time.time(),
             target_file=file_path,
             modification_type="optimize_parameter",
-            current_code=f"value = {current_value}",
-            proposed_code=f"value = {proposed_value}  # φ-optimized",
+            current_code=current_code,
+            proposed_code=proposed_code,
             mathematical_justification=f"Phi-resonant scaling: {current_value} → {proposed_value}",
             expected_phi_density_gain=expected_gain,
             constraints_satisfied=constraints_satisfied,
