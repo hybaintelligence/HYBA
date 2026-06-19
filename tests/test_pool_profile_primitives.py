@@ -35,7 +35,8 @@ class PoolProfilePrimitiveTests(unittest.TestCase):
             priority=1,
         )
         self.assertEqual(["beta", "alpha"], [item.pool_id for item in order_profiles([a, b])])
-        self.assertEqual("<redacted>", a.to_dict()["password"])
+        self.assertEqual("<configured>", a.to_dict()["password"])
+        self.assertEqual("<configured>", a.to_dict()["username"])
 
     def test_rejects_invalid_profile_values(self):
         with self.assertRaises(PoolProfileError):
