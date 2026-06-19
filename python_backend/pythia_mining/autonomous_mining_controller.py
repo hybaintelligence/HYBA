@@ -2677,6 +2677,12 @@ class AutonomousMiningController:
                 break
             except Exception as exc:
                 logger.error(f"Autonomy monitor error: {exc}", exc_info=True)
+                self._log_audit_event(
+                    "monitor_error",
+                    {"error": str(exc), "error_type": type(exc).__name__},
+                    action="_continuous_autonomy_monitor",
+                    outcome="exception_swallowed",
+                )
                 self._log_event("monitor_error", {"error": str(exc)})
 
             await asyncio.sleep(60.0)  # Monitor every minute

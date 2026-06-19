@@ -51,6 +51,13 @@ class ImmutableAuditEntry:
         return cls(**{k: v for k, v in d.items() if k in cls.__dataclass_fields__})
 
 
+# Maximum number of segments to load on init (hot window for chain continuity).
+# Older segments remain on disk but are not loaded into memory.
+_LOAD_SEGMENTS_LIMIT: int = 3
+# Maximum number of segment files retained on disk before the oldest are pruned.
+_MAX_SEGMENTS_ON_DISK: int = 10
+
+
 class AuditJournal:
     """Append-only, tamper-evident audit journal backed by rotating JSON segments.
 
@@ -59,6 +66,12 @@ class AuditJournal:
 
     This guarantees: once written, an entry cannot be silently removed or altered
     without breaking the checksum chain across entries and segments.
+
+    Rotation policy:
+    - On init, only the most recent ``_LOAD_SEGMENTS_LIMIT`` segments are loaded
+      into memory (avoids O(total history) cost on every boot).
+    - After each flush, segments beyond ``_MAX_SEGMENTS_ON_DISK`` are pruned
+      (oldest-first) so disk usage stays bounded.
     """
 
     def __init__(self, journal_dir: str = "artifacts/autonomous_mining/audit") -> None:
@@ -203,12 +216,18 @@ class AuditJournal:
     # ------------------------------------------------------------------
 
     def _load_existing_segments(self) -> None:
-        """Load all previous segment files on init to rebuild the chain."""
+        """Load the most recent _LOAD_SEGMENTS_LIMIT segments on init.
+
+        Older segments remain on disk (cold archive) but are not loaded into
+        memory.  This caps init cost at O(recent entries) regardless of how
+        much history has accumulated on disk.
+        """
         segments = sorted(self._journal_dir.glob("audit_segment_*.json"))
-        for seg_path in segments:
+        # Take only the most recent N segments; skip the rest.
+        hot_segments = segments[-_LOAD_SEGMENTS_LIMIT:]
+        for seg_path in hot_segments:
             seg_checksum_path = seg_path.with_suffix(seg_path.suffix + ".sha256")
             if not seg_checksum_path.exists():
-                # Missing checksum — skip corrupt segment
                 continue
             try:
                 stored_seg_checksum = seg_checksum_path.read_text(encoding="utf-8").strip()
@@ -229,7 +248,13 @@ class AuditJournal:
             self._flush_segment()
 
     def _flush_segment(self) -> None:
-        """Write current entries to a new segment file with checksum."""
+        """Write current entries to a new segment file with checksum.
+
+        After a successful write:
+        - Clears the in-memory buffer (avoids O(n²) re-serialisation).
+        - Prunes segments beyond _MAX_SEGMENTS_ON_DISK (oldest-first) so
+          disk usage stays bounded.
+        """
         if not self._dirty:
             return
         segment_id = int(time.time() * 1000)
@@ -242,8 +267,20 @@ class AuditJournal:
             seg_path.with_suffix(seg_path.suffix + ".sha256").write_text(
                 seg_checksum, encoding="utf-8"
             )
+            self._entries.clear()
+            self._dirty = False
+            self._prune_old_segments()
         except OSError:
             pass  # Non-fatal — entries are still in memory
+
+    def _prune_old_segments(self) -> None:
+        """Delete the oldest segment files (+ their .sha256 sidecars) when the
+        total on-disk count exceeds _MAX_SEGMENTS_ON_DISK."""
+        segments = sorted(self._journal_dir.glob("audit_segment_*.json"))
+        excess = len(segments) - _MAX_SEGMENTS_ON_DISK
+        for seg_path in segments[:excess]:
+            seg_path.unlink(missing_ok=True)
+            seg_path.with_suffix(seg_path.suffix + ".sha256").unlink(missing_ok=True)
 
 
 class AutonomousAuditLogger:

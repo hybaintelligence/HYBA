@@ -183,11 +183,11 @@ async def test_circuit_breaker_fires_backup_infrastructure_event():
 
 @pytest.mark.asyncio
 async def test_monitor_survives_exception_in_one_iteration(caplog):
-    """An exception raised inside one monitor iteration must be caught, logged
-    at ERROR level, and not propagate out of the loop.
+    """An exception raised inside one monitor iteration must be caught, written
+    to the tamper-evident audit log, and not propagate out of the loop.
 
-    The monitor loop's except branch calls _log_event() which writes to the
-    Python logger (not the autonomy journal), so we assert via caplog.
+    The monitor except branch now calls _log_audit_event (structured chain) AND
+    _log_event (Python logger), so we assert both sinks receive the event.
     """
     import logging
 
@@ -195,7 +195,7 @@ async def test_monitor_survives_exception_in_one_iteration(caplog):
         ctrl = _make_controller(tmp, reflexive=False)
 
         async def _raises_once() -> None:
-            ctrl.is_running = False  # prevent a second iteration
+            ctrl.is_running = False
             raise RuntimeError("simulated transient monitor error")
 
         ctrl._seek_improvement_with_resource_awareness = _raises_once
@@ -213,12 +213,23 @@ async def test_monitor_survives_exception_in_one_iteration(caplog):
                 await asyncio.sleep(0)
             await ctrl.stop_continuous_monitor()
 
+    # 1. Python logger received the ERROR
     error_records = [
         r for r in caplog.records
         if r.levelno == logging.ERROR and "simulated transient monitor error" in r.message
     ]
     assert len(error_records) == 1, (
         f"Expected 1 ERROR log for the swallowed exception, got {len(error_records)}"
+    )
+
+    # 2. The tamper-evident audit_log also has the event (chain completeness)
+    monitor_error_entries = [
+        e for e in ctrl.audit_log
+        if e.event_type == "monitor_error"
+    ]
+    assert len(monitor_error_entries) == 1, (
+        f"Expected 1 monitor_error AuditLogEntry, got {len(monitor_error_entries)} "
+        "(exception must land in the tamper-evident chain, not only the ephemeral logger)"
     )
 
 
@@ -228,16 +239,25 @@ async def test_monitor_double_start_is_no_op():
     with tempfile.TemporaryDirectory() as tmp:
         ctrl = _make_controller(tmp, reflexive=False)
 
-        async def _never_sleep(s: float) -> None:
-            ctrl.is_running = False
+        # Block the loop at the resource-check step so it never reaches asyncio.sleep(60)
+        hold = asyncio.Event()
 
-        with patch("asyncio.sleep", side_effect=_never_sleep):
-            await ctrl.start_continuous_monitor()
-            first_task = ctrl._monitor_task
+        async def _blocking_resource_check() -> None:
+            await hold.wait()
 
-            # Second start — must be a no-op
-            await ctrl.start_continuous_monitor()
-            second_task = ctrl._monitor_task
+        ctrl._seek_improvement_with_resource_awareness = _blocking_resource_check
+
+        await ctrl.start_continuous_monitor()
+        # Yield so the task enters _blocking_resource_check
+        await asyncio.sleep(0)
+        await asyncio.sleep(0)
+        first_task = ctrl._monitor_task
+
+        # Second start — must be a no-op
+        await ctrl.start_continuous_monitor()
+        second_task = ctrl._monitor_task
+
+        await ctrl.stop_continuous_monitor()
 
     assert first_task is second_task, "second start_continuous_monitor must reuse the existing task"
 
@@ -380,7 +400,82 @@ def test_cpu_load_psutil_branch():
     assert result == 42.5
 
 
-def test_cpu_load_fallback_to_system_load_when_psutil_missing():
+# ============================================================
+# 5. AuditJournal rotation — init cost bounded, disk pruned
+# ============================================================
+
+
+def test_audit_journal_init_loads_only_recent_segments():
+    """Constructing AuditJournal against a directory with many segments must
+    load only the most recent _LOAD_SEGMENTS_LIMIT segments into memory,
+    not the full history.  This is the regression test for the 490 MB
+    unbounded-load bug."""
+    from pythia_mining.autonomous_audit_persistence import (
+        AuditJournal,
+        ImmutableAuditEntry,
+        _LOAD_SEGMENTS_LIMIT,
+        _MAX_SEGMENTS_ON_DISK,
+    )
+
+    with tempfile.TemporaryDirectory() as tmp:
+        # Write _LOAD_SEGMENTS_LIMIT + 3 synthetic segments, each with 2 entries
+        total_segments = _LOAD_SEGMENTS_LIMIT + 3
+        for i in range(total_segments):
+            seg_id = 1000000000000 + i  # ascending timestamps
+            seg_path = Path(tmp) / f"audit_segment_{seg_id}.json"
+            entry = {
+                "entry_id": f"e{i}",
+                "timestamp": float(i),
+                "event_type": f"seg_{i}",
+                "autonomy_level": "advisory",
+                "decision_id": None,
+                "action": "",
+                "outcome": "",
+                "constraints_checked": [],
+                "constraints_violated": [],
+                "operator_id": None,
+                "operator_action": None,
+                "state_diff": {},
+                "checksum_sha256": "",
+                "previous_entry_checksum": "",
+            }
+            payload = json.dumps([entry], indent=2, sort_keys=True)
+            seg_path.write_text(payload, encoding="utf-8")
+            import hashlib as _hl
+            seg_path.with_suffix(".json.sha256").write_text(
+                _hl.sha256(payload.encode()).hexdigest(), encoding="utf-8"
+            )
+
+        journal = AuditJournal(journal_dir=tmp)
+
+    # Only the most recent _LOAD_SEGMENTS_LIMIT segments × 1 entry each
+    assert journal.count() == _LOAD_SEGMENTS_LIMIT, (
+        f"Expected {_LOAD_SEGMENTS_LIMIT} entries (hot-window load), "
+        f"got {journal.count()} — old segments are leaking into memory"
+    )
+
+
+def test_audit_journal_flush_prunes_old_segments_on_disk():
+    """After enough flushes, segments beyond _MAX_SEGMENTS_ON_DISK must be
+    deleted from disk so total on-disk count stays bounded."""
+    from pythia_mining.autonomous_audit_persistence import AuditJournal, _MAX_SEGMENTS_ON_DISK
+
+    with tempfile.TemporaryDirectory() as tmp:
+        journal = AuditJournal(journal_dir=tmp)
+        journal._segment_size = 1  # flush after every single entry
+
+        # Write enough entries to create _MAX_SEGMENTS_ON_DISK + 3 segments
+        for i in range(_MAX_SEGMENTS_ON_DISK + 3):
+            journal.append("test_event", "advisory", action=f"a{i}", outcome="ok")
+
+        journal.flush()
+
+        seg_files = list(Path(tmp).glob("audit_segment_*.json"))
+
+    assert len(seg_files) <= _MAX_SEGMENTS_ON_DISK, (
+        f"Expected <= {_MAX_SEGMENTS_ON_DISK} segments on disk after rotation, "
+        f"got {len(seg_files)}"
+    )
     """When psutil is not importable and os.getloadavg raises, the _system_load
     sentinel value must be returned."""
     with tempfile.TemporaryDirectory() as tmp:

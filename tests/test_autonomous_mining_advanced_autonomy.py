@@ -23,6 +23,7 @@ from pythia_mining.autonomous_mining_controller import (
     AutonomyLevel,
 )
 from pythia_mining.phi_unified_mining_engine import UnifiedMiningEngine
+from pythia_mining.autonomous_audit_persistence import AutonomousAuditLogger
 
 
 # ---------------------------------------------------------------------------
@@ -30,8 +31,13 @@ from pythia_mining.phi_unified_mining_engine import UnifiedMiningEngine
 # ---------------------------------------------------------------------------
 
 
-def _make_controller(**kwargs) -> AutonomousMiningController:
-    """Build a controller with a mock engine and given config overrides."""
+def _make_controller(tmp_path: Optional[Any] = None, **kwargs) -> AutonomousMiningController:
+    """Build a controller with a mock engine and given config overrides.
+
+    When ``tmp_path`` is provided the persistent audit journal is redirected
+    into that directory so tests are hermetic and never touch the real
+    ``artifacts/`` tree.
+    """
     engine = MagicMock(spec=UnifiedMiningEngine)
     engine.optimizer = MagicMock()
     engine.phi_ensemble = MagicMock()
@@ -66,6 +72,13 @@ def _make_controller(**kwargs) -> AutonomousMiningController:
             setattr(config, k, v)
 
     ctrl = AutonomousMiningController(unified_engine=engine, config=config)
+
+    # Redirect the persistent audit journal into tmp_path when available
+    if tmp_path is not None:
+        from pythia_mining.autonomous_audit_persistence import AuditJournal
+        journal_dir = str(tmp_path / "audit")
+        ctrl._persistent_audit_logger = AutonomousAuditLogger(journal=AuditJournal(journal_dir))
+
     return ctrl
 
 
@@ -319,9 +332,9 @@ class TestCircuitBreakerPattern:
     """Exercise heal-attempt frequency threshold and failover logic."""
 
     @pytest.mark.asyncio
-    async def test_excessive_heal_attempts_triggers_failover(self):
+    async def test_excessive_heal_attempts_triggers_failover(self, tmp_path):
         """More than 5 heal attempts in the sliding window should trigger backup switch."""
-        ctrl = _make_controller()
+        ctrl = _make_controller(tmp_path=tmp_path)
 
         # Seed the heal window with 6 timestamps within the last 10 minutes
         now = time.time()
@@ -340,43 +353,31 @@ class TestCircuitBreakerPattern:
         assert events[0]["data"]["action"] == "switch_to_backup"
 
     @pytest.mark.asyncio
-    async def test_exactly_five_heal_attempts_does_not_trigger_failover(self):
+    async def test_exactly_five_heal_attempts_does_not_trigger_failover(self, tmp_path):
         """Exactly 5 heal attempts (boundary) must NOT trigger the circuit breaker.
 
         The code uses `attempts > 5`, so 5 is the last safe value.
         """
-        ctrl = _make_controller()
+        ctrl = _make_controller(tmp_path=tmp_path)
         now = time.time()
         ctrl._heal_attempt_window = [now - i * 60 for i in range(5)]
 
-        # Replace the entire audit logger with a mock to eliminate I/O timeout
-        original_logger = ctrl._persistent_audit_logger
-        ctrl._persistent_audit_logger = MagicMock()
-        try:
-            with patch.object(ctrl, "seek_improvement", return_value={"reflexive_cycle_executed": False}):
-                result = await ctrl.boot_self_heal_and_optimize()
-        finally:
-            ctrl._persistent_audit_logger = original_logger
+        with patch.object(ctrl, "seek_improvement", return_value={"reflexive_cycle_executed": False}):
+            result = await ctrl.boot_self_heal_and_optimize()
 
         assert result.get("circuit_breaker_triggered") is not True
 
     @pytest.mark.asyncio
-    async def test_few_heal_attempts_proceeds_normally(self):
+    async def test_few_heal_attempts_proceeds_normally(self, tmp_path):
         """Fewer than 6 heal attempts should proceed with normal boot logic."""
-        ctrl = _make_controller()
+        ctrl = _make_controller(tmp_path=tmp_path)
 
         # Seed with only 2 attempts
         now = time.time()
         ctrl._heal_attempt_window = [now - i * 60 for i in range(2)]
 
-        # Replace the entire audit logger with a mock to eliminate I/O timeout
-        original_logger = ctrl._persistent_audit_logger
-        ctrl._persistent_audit_logger = MagicMock()
-        try:
-            with patch.object(ctrl, "seek_improvement", return_value={"reflexive_cycle_executed": False}):
-                result = await ctrl.boot_self_heal_and_optimize()
-        finally:
-            ctrl._persistent_audit_logger = original_logger
+        with patch.object(ctrl, "seek_improvement", return_value={"reflexive_cycle_executed": False}):
+            result = await ctrl.boot_self_heal_and_optimize()
 
         # Should NOT circuit-break
         assert result.get("circuit_breaker_triggered") is not True
