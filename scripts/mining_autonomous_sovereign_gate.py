@@ -231,7 +231,7 @@ def _share_submit_check() -> AutonomousGateCheck:
         status="fail" if failures else "pass",
         summary="live share submit is not authorised"
         if failures
-        else "live share submit gate is explicit or disabled",
+        else "live share submit is either disabled or explicitly approved",
         detail="\n".join(failures),
     )
 
@@ -275,16 +275,16 @@ def run_gate(mode: Mode) -> AutonomousSovereignGateReport:
         actions.extend(
             [
                 "Do not proceed to live mining cutover until critical failures are resolved.",
-                "Fix production env flags, disable dev fixtures, keep startup autonomy internal, and attach approval IDs only for externalising actions.",
+                "Fix production env flags, disable dev fixtures, keep startup autonomy internal, and attach approval IDs for externalising actions and live share submission.",
             ]
         )
     else:
         actions.extend(
             [
                 "PYTHIA may boot, heal, optimise, check APIs/pool readiness, and run the mining startup/search path under command-room observation.",
-                "Monitor subscribe -> authorize -> notify -> search -> local validate -> submit gate -> pool ACK if share submission is separately enabled.",
+                "Monitor subscribe -> authorize -> notify -> search -> local validate -> submit gate -> pool ACK when share submission is enabled and approved.",
                 "Keep HYBA_AUTONOMOUS_EXTERNAL_ACTIONS=false unless a human approval ID/operator/reason is attached.",
-                "Keep HYBA_ENABLE_LIVE_SHARE_SUBMIT=false until CEO/treasury/legal approval ID is attached for actual pool submission.",
+                "HYBA_ENABLE_LIVE_SHARE_SUBMIT=true is permitted when HYBA_LIVE_SHARE_APPROVAL_ID is present and audit logging is enabled.",
             ]
         )
     return AutonomousSovereignGateReport(
