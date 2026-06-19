@@ -25,6 +25,13 @@ python_backend/mining_pools.*.local.json
 artifacts/production_readiness/
 artifacts/funding_engine/
 
+# Autonomous mining runtime artifacts — large, high-churn, runtime-generated
+artifacts/autonomous_mining/reflexive_state.json
+artifacts/autonomous_mining/reflexive_state.json.sha256
+artifacts/autonomous_mining/pythia_autonomous_bootstrap_latest.json
+artifacts/autonomous_mining/backups/
+artifacts/autonomous_mining/audit/
+
 # Local review and generated result artifacts
 %EVDIR%/
 changes.diff
