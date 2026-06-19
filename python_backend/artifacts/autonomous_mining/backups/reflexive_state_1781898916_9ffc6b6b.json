@@ -1,0 +1,81 @@
+{
+  "autonomy_level": "autonomous",
+  "capacity_limits": {
+    "max_autonomous_hashrate_ehs": 0.5,
+    "max_autonomous_power_watts": 500.0,
+    "max_proposals_per_cycle": 3
+  },
+  "compression_seeking_history": [
+    1.8786
+  ],
+  "epochs": 3,
+  "logical_consistency_history": [
+    0.77
+  ],
+  "optimization_targets": [
+    {
+      "current_value": 1.5,
+      "objective_function": "maximize_phi_coherence",
+      "priority": 5,
+      "target_name": "phi_scaling",
+      "target_value": 1.4249999999999998,
+      "tolerance": 0.05
+    },
+    {
+      "current_value": 1.86,
+      "objective_function": "maximize_phi_coherence",
+      "priority": 3,
+      "target_name": "compression_target",
+      "target_value": 1.8786,
+      "tolerance": 0.05
+    },
+    {
+      "current_value": 60.0,
+      "objective_function": "maximize_hashrate",
+      "priority": 4,
+      "target_name": "search_depth",
+      "target_value": 54.0,
+      "tolerance": 5.0
+    }
+  ],
+  "phi_coherence_threshold": 0.7,
+  "phi_density_history": [
+    0.5
+  ],
+  "proposals": [
+    {
+      "applied": true,
+      "codebase_source_module": "phi_scaling_engine",
+      "counterfactual_confidence": 0.3,
+      "current_value": 1.5,
+      "expected_phi_density_gain": 0.006321420000000022,
+      "improvement_type": "phi_scaling",
+      "logical_consistency_score": 0.76,
+      "proposal_id": "self_opt_0_1781898916",
+      "proposed_value": 1.4249999999999998
+    },
+    {
+      "applied": true,
+      "codebase_source_module": "pulvini_memory_compression_proof",
+      "counterfactual_confidence": 0.7999999999999999,
+      "current_value": 1.86,
+      "expected_phi_density_gain": 0.00032447999999996036,
+      "improvement_type": "compression_target",
+      "logical_consistency_score": 0.8,
+      "proposal_id": "self_opt_0_1781898916",
+      "proposed_value": 1.8786
+    },
+    {
+      "applied": true,
+      "codebase_source_module": "ai_optimizer",
+      "counterfactual_confidence": 0.6,
+      "current_value": 60.0,
+      "expected_phi_density_gain": 0.009617624999999963,
+      "improvement_type": "search_depth",
+      "logical_consistency_score": 0.75,
+      "proposal_id": "self_opt_0_1781898916",
+      "proposed_value": 54.0
+    }
+  ],
+  "schema_version": 2
+}

@@ -1,0 +1,25 @@
+[
+  {
+    "action": "boot_self_heal_and_optimize",
+    "autonomy_level": "autonomous",
+    "checksum_sha256": "2bdd0bf829c852288aea0e57ea63057439728a25de366381f39e3be8531b5b0f",
+    "constraints_checked": [],
+    "constraints_violated": [],
+    "decision_id": null,
+    "entry_id": "audit_a463fc840b81_1781898916488",
+    "event_type": "startup_self_healing",
+    "operator_action": null,
+    "operator_id": null,
+    "outcome": "completed",
+    "previous_entry_checksum": "",
+    "state_diff": {
+      "duration_ms": 1.866,
+      "phi_density_after": 0.9124300000000001,
+      "phi_density_before": 0.5,
+      "proposals_applied": 3,
+      "proposals_generated": 3,
+      "stale_lock_recoveries": 0
+    },
+    "timestamp": 1781898916.4882472
+  }
+]
