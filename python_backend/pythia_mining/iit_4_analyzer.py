@@ -584,6 +584,11 @@ class IIT4Analyzer:
 
         if not subset1 or not subset2:
             return 0.0
+        
+        # Ensure both subsets have at least 2 elements for meaningful Φ calculation
+        if len(subset1) < 2 or len(subset2) < 2:
+            # For small subsets, use connectivity-based approximation
+            return self._calculate_subset_phi(set(subset1 + subset2), system_state, connectivity_matrix)
 
         # Build the TPM (Transition Probability Matrix) from connectivity
         # TPM[t+1_state][t_state] = probability of transition

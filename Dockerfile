@@ -1,8 +1,10 @@
+# Standardized production Dockerfile for HYBA Fullstack
+# This is the canonical Docker configuration - use Dockerfile.prod for production-specific optimizations
+
 FROM node:22.15.0-bookworm-slim AS node-deps
 WORKDIR /app
 COPY package.json package-lock.json* ./
-# Tactical local-container build mode: use npm install while the monorepo lockfile is being repaired.
-# Final reproducible production posture should restore npm ci once package-lock.json is regenerated under Node 22+ outside OneDrive.
+# Use npm install for compatibility while package-lock.json is being stabilized
 RUN npm install --legacy-peer-deps --no-audit --no-fund
 
 FROM node:22.15.0-bookworm-slim AS frontend-build
@@ -13,7 +15,7 @@ COPY . .
 RUN npm run lint
 RUN npm run build
 
-FROM node:22.15.0-bookworm-slim AS runtime
+FROM python:3.12.13-slim AS runtime
 ENV NODE_ENV=production \
     HYBA_ENV=production \
     HYBA_PHASE_TRANSITION_CONTAINER=1 \

@@ -1,78 +1,60 @@
 # Production-ready Dockerfile for HYBA Fullstack
 # Builds both frontend and backend in a single containerized environment
 # Optimized for Stratum mining pool integration and inference-heavy workloads
+# Standardized to use consistent Node.js 22.15.0 and Python 3.12.13
 
-FROM python:3.12.13-slim as base
+FROM node:22.15.0-bookworm-slim AS node-deps
 WORKDIR /app
+COPY package.json package-lock.json* ./
+RUN npm install --legacy-peer-deps --no-audit --no-fund
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
-    git \
-    curl \
-    ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
-
-# ─────────────────────────────────────────────────────────────────────────
-# Python backend layer
-# ─────────────────────────────────────────────────────────────────────────
-FROM base as python-builder
-
-COPY python_backend/requirements.txt /requirements.txt
-RUN pip install --no-cache-dir -r /requirements.txt
-
-COPY python_backend /python_backend
-
-# ─────────────────────────────────────────────────────────────────────────
-# Node.js frontend layer
-# ─────────────────────────────────────────────────────────────────────────
-FROM node:22.22.3-alpine as frontend-builder
-
-WORKDIR /build
-COPY package.json package-lock.json ./
-RUN npm ci --omit=dev
-
-COPY src src
-COPY vite.config.ts tsconfig.json tsconfig.app.json ./
+FROM node:22.15.0-bookworm-slim AS frontend-build
+WORKDIR /app
+COPY --from=node-deps /app/node_modules ./node_modules
+COPY package*.json ./
+COPY . .
+RUN npm run lint
 RUN npm run build
 
-# ─────────────────────────────────────────────────────────────────────────
-# Production runtime
-# ─────────────────────────────────────────────────────────────────────────
-FROM python-base as runtime
-
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
+FROM python:3.12.13-slim AS runtime
+ENV NODE_ENV=production \
+    HYBA_ENV=production \
+    HYBA_PHASE_TRANSITION_CONTAINER=1 \
+    PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONPATH=/app/python_backend \
+    HOST=0.0.0.0 \
+    PORT=3000 \
+    PULVINI_BACKEND_URL=http://127.0.0.1:3001 \
+    HYBA_SPAWN_BACKEND=false \
+    HYBA_ENABLE_MINING_AUTOCONNECT=false \
+    BACKEND_PROXY_TIMEOUT_MS=30000
 
 WORKDIR /app
 
-# Copy Python environment
-COPY --from=python-builder /python_backend /app/python_backend
-RUN cp /requirements.txt /app/ && \
-    pip install --no-cache-dir -r /app/requirements.txt
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends python3 python3-pip python3-venv curl ca-certificates tini \
+    && rm -rf /var/lib/apt/lists/*
 
-# Copy frontend build artifacts
-COPY --from=frontend-builder /build/dist /app/public
+COPY python_backend/requirements.txt /app/python_backend/requirements.txt
+RUN python3 -m venv /opt/hyba-venv \
+    && /opt/hyba-venv/bin/python -m pip install --upgrade pip \
+    && /opt/hyba-venv/bin/python -m pip install --no-cache-dir -r /app/python_backend/requirements.txt
+ENV PATH="/opt/hyba-venv/bin:${PATH}"
 
-# Copy data and config
-COPY data /app/data
-COPY config /app/config
-COPY scripts /app/scripts
+COPY package.json package-lock.json* ./
+RUN npm install --omit=dev --legacy-peer-deps --no-audit --no-fund
 
-# Create non-root user
-RUN useradd -m -u 1001 hyba
-RUN chown -R hyba:hyba /app
+COPY --from=frontend-build /app/dist ./dist
+COPY python_backend ./python_backend
+COPY scripts ./scripts
+RUN chmod +x /app/scripts/hyba-runtime-entrypoint.sh
+
+RUN useradd --create-home --shell /usr/sbin/nologin hyba \
+    && chown -R hyba:hyba /app /opt/hyba-venv
 USER hyba
 
-# Expose ports
 EXPOSE 3000 3001
-
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:3001/health || exit 1
-
-# Production entrypoint
-ENV PYTHONUNBUFFERED=1
-ENV HYBA_ENV=production
-CMD ["sh", "-c", "uvicorn python_backend.hyba_genesis_api.main:app --host 0.0.0.0 --port 3001"]
+HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
+  CMD curl -fsS http://127.0.0.1:3000/bridge/health || exit 1
+ENTRYPOINT ["tini", "--", "/app/scripts/hyba-runtime-entrypoint.sh"]

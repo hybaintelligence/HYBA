@@ -182,7 +182,9 @@ def install_enterprise_api_posture(app: FastAPI, config: EnterpriseAPIConfig | N
         message = str(detail)
         if isinstance(detail, dict):
             code = str(detail.get("error", code))
-            message = str(detail.get("message", detail))
+            raw_message = detail.get("message", detail)
+            # Ensure message is JSON-serializable by converting to string
+            message = str(raw_message) if not isinstance(raw_message, str) else raw_message
         response = JSONResponse(
             status_code=exc.status_code,
             content=enterprise_error_payload(
