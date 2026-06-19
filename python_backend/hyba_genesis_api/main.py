@@ -46,6 +46,7 @@ from hyba_genesis_api.api import (  # noqa: E402
     security,
     streaming_sense,
     unified_mining,
+    ops,
 )
 from hyba_genesis_api.core.api_posture import install_enterprise_api_posture  # noqa: E402
 from hyba_genesis_api.core.recursive_closure import build_buffered_closure  # noqa: E402
@@ -54,6 +55,7 @@ from hyba_genesis_api.core.reflexive_controller import (  # noqa: E402
     default_reflexive_root,
 )
 from hyba_genesis_api.core.reflexive_daemon import IntelligenceHeartbeat  # noqa: E402
+from hyba_genesis_api.core.autonomy_persistence import save_autonomy_report  # noqa: E402
 from hyba_genesis_api.core.substrate import (  # noqa: E402
     get_substrate_state,
     initialize_substrate,
@@ -115,6 +117,8 @@ async def _activate_startup_self_healing(app: FastAPI) -> None:
         timeout=max(0.1, timeout_seconds),
     )
     app.state.startup_self_healing_report = report
+    # Save startup report to disk
+    save_autonomy_report(report, report_type="startup")
     logging.info(
         "HYBA API startup: PYTHIA self-healing/self-optimising cycle complete",
         extra={
@@ -229,6 +233,7 @@ app.include_router(streaming_sense.router)
 app.include_router(metabolic_router.router)
 app.include_router(organism_router.router)
 app.include_router(executive_router.router)
+app.include_router(ops.router)
 
 
 @app.get("/health", response_model=Dict[str, Any], tags=["health"])

@@ -2699,6 +2699,32 @@ class AutonomousMiningController:
             "action": "soft_reset",
         })
 
+        # Apply quantum healing swarm for self-repair
+        from .quantum_healing_swarm import QuantumHealingSwarm
+        swarm = QuantumHealingSwarm(
+            num_candidates=8,
+            num_lanes=32,
+            enable_tunnelling=True,
+            enable_annealing=True,
+            enable_swarming=True,
+            enable_interference=True,
+        )
+        phi_density = self.get_phi_density() if hasattr(self, 'get_phi_density') else 0.5
+        healing_result = swarm.heal(
+            phi_density=phi_density,
+            consecutive_failures=self._consecutive_failures,
+            degrade_factor=1.0 - (self._actual_hashrate / self._target_hashrate) if self._target_hashrate > 0 else 0.5,
+        )
+
+        # Log quantum healing to persistent audit
+        self._log_audit_event(
+            "quantum_healing_complete",
+            healing_result.to_dict(),
+            action="handle_performance_degradation",
+            outcome="quantum_healed",
+            state_diff=healing_result.to_dict(),
+        )
+
         # Reset internal state to recover from drift
         self._consecutive_failures = 0
         self._error_rate = 0.0

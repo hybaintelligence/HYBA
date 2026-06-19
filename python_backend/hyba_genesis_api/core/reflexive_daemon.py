@@ -8,6 +8,7 @@ from typing import Any, Dict, List
 
 from hyba_genesis_api.core.recursive_closure import RecursiveClosure
 from hyba_genesis_api.core.reflexive_controller import ReflexiveController
+from hyba_genesis_api.core.autonomy_persistence import save_autonomy_report
 
 LOGGER = logging.getLogger(__name__)
 
@@ -31,6 +32,8 @@ class IntelligenceHeartbeat:
         while self.is_active:
             result = self.closure.sync_learning()
             self.history.append(result)
+            # Save reflexive cycle report to disk
+            save_autonomy_report(result, report_type="reflexive_cycle")
             LOGGER.info("Intelligence heartbeat pulse", extra={"heartbeat": result["status"]})
             pulses += 1
             if max_pulses is not None and pulses >= max_pulses:

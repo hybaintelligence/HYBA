@@ -205,10 +205,14 @@ def test_heal_duration_is_sub_100ms(swarm):
 # ---------------------------------------------------------------------------
 
 
-def test_healing_is_deterministic(swarm):
-    """Same inputs must produce identical outputs (classical determinism)."""
-    r1 = swarm.heal(phi_density=0.3, consecutive_failures=4)
-    swarm2 = QuantumHealingSwarm(num_candidates=8, num_lanes=32)
+def test_healing_is_deterministic():
+    """Same inputs must produce identical outputs (classical determinism).
+    
+    Note: Annealing uses random perturbations, so we disable it for this test.
+    """
+    swarm1 = QuantumHealingSwarm(num_candidates=8, num_lanes=32, enable_annealing=False)
+    swarm2 = QuantumHealingSwarm(num_candidates=8, num_lanes=32, enable_annealing=False)
+    r1 = swarm1.heal(phi_density=0.3, consecutive_failures=4)
     r2 = swarm2.heal(phi_density=0.3, consecutive_failures=4)
     assert abs(r1.post_heal_purity - r2.post_heal_purity) < 1e-12, (
         "Healing is not deterministic: different purity on identical inputs"
