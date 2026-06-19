@@ -35,12 +35,11 @@ hyba_stress_tests/
 # Core dependencies
 pip install numpy scipy matplotlib
 
-# Optional quantum simulators
-pip install qiskit cirq
-
 # Optional GPU acceleration
 pip install cupy  # For CUDA
 # Metal is built-in on macOS
+
+# Note: No external quantum simulators needed - uses native HYBA quantum math
 ```
 
 ## Usage
@@ -54,7 +53,7 @@ python hyba_orchestrator.py --mode all
 # Run specific test modes
 python hyba_orchestrator.py --mode resonance-sync --nodes 1000 --topology coxeter-120
 python hyba_orchestrator.py --mode manifold-stress --dimensions 20000
-python hyba_orchestrator.py --mode quantum-adversarial --simulator qiskit
+python hyba_orchestrator.py --mode quantum-adversarial --quantum-mode native
 python hyba_orchestrator.py --mode consciousness-opt --backend metal
 python hyba_orchestrator.py --mode entropy-mining --entropy-target 0.1
 ```
@@ -99,15 +98,17 @@ python -m hyba_stress_tests.entropy_mining_tests
 
 **Purpose**: Test quantum attacks against Bures Certificate with geometric detection, moving from quantum-resistant to quantum-sensing.
 
-**Fields Medal Rigor**: Uses quantum information theory, Grover's algorithm, and Shor's algorithm variants.
+**Fields Medal Rigor**: Uses native HYBA quantum mathematical frameworks (Pulvini memory compression, Bures certificates, phi resonance gates, Yang-Mills gap operationalization). Quantum computations are substrate-agnostic mathematical implementations, not external simulations.
 
 **Key Metrics**:
 - Quantum observation detection signal
 - Bures certificate integrity under attack
 - Geometric perturbation from quantum attacks
+- Von Neumann entropy change
+- Yang-Mills gap alignment
 - Quantum-sensing capability score
 
-**Supported Simulators**: Qiskit, Cirq, Classical simulation
+**Native Frameworks**: PulviniPhiMemoryCompressionEngine, PostQuantumPassport, phi_resonance_gate, MassGapShield
 
 **Output**: `artifacts/quantum_adversarial_report.json`
 

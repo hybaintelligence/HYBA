@@ -22,6 +22,7 @@ from enum import Enum
 from typing import Any, Mapping, Sequence
 
 import numpy as np
+from scipy.linalg import sqrtm
 
 
 class StabilityThreshold(str, Enum):
@@ -148,7 +149,7 @@ class HighDimensionalManifold:
         # In practice, this would use the full Bures metric
         
         # Compute fidelity with itself (should be 1.0)
-        sqrt_rho = np.sqrtm(rho)
+        sqrt_rho = sqrtm(rho)
         fidelity = np.real(np.trace(sqrt_rho @ sqrt_rho))
         
         # Stability ratio based on fidelity

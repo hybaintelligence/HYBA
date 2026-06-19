@@ -22,11 +22,34 @@ class BuresCertificate:
 
 
 def adjacency_map_digest(adjacency_map: Any) -> str:
-    """SHA-256 digest of the serialized adjacency map for topology authentication."""
+    """SHA-256 digest of the serialized adjacency map for topology authentication.
+    
+    Canonicalizes the adjacency map to ensure consistent digest regardless of:
+    - Dictionary key order
+    - Neighbor list order within each node
+    - Nested dictionary structure
+    """
     if hasattr(adjacency_map, "tolist"):
         payload = adjacency_map.tolist()
     elif hasattr(adjacency_map, "__iter__"):
-        payload = [list(row) if hasattr(row, "__iter__") else row for row in adjacency_map]
+        # For dict-based adjacency maps, canonicalize thoroughly
+        if isinstance(adjacency_map, dict):
+            canonical_dict = {}
+            for node_id in sorted(adjacency_map.keys()):
+                payload = adjacency_map[node_id]
+                if isinstance(payload, dict):
+                    # Sort neighbor lists within each node
+                    canonical_payload = {}
+                    for key in sorted(payload.keys()):
+                        neighbor_list = sorted(payload[key]) if isinstance(payload[key], list) else payload[key]
+                        canonical_payload[key] = neighbor_list
+                    canonical_dict[node_id] = canonical_payload
+                else:
+                    # Simple list format
+                    canonical_dict[node_id] = sorted(payload) if isinstance(payload, list) else payload
+            payload = canonical_dict
+        else:
+            payload = [list(row) if hasattr(row, "__iter__") else row for row in adjacency_map]
     else:
         payload = str(adjacency_map)
     canonical = json.dumps(payload, sort_keys=True, separators=(",", ":"), default=str)

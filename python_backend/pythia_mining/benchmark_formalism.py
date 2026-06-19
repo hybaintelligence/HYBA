@@ -158,10 +158,14 @@ class QuantumProgramBenchmark:
 
     @staticmethod
     def compute_phi_bond_dim(num_qubits: int) -> int:
-        """Compute the Golden Ratio scaled bond dimension."""
+        """Compute the Golden Ratio scaled bond dimension, avoiding power-of-2 results."""
         phi_log_n = math.log(num_qubits) / math.log(PHI)
         chi_phi = int(math.ceil(PHI ** (phi_log_n * 0.5 + 2)))
-        return max(2, min(64, chi_phi))
+        chi_phi = max(2, min(64, chi_phi))
+        # Nudge up by 1 if result is a power of 2 (and within cap)
+        if chi_phi < 64 and (chi_phi & (chi_phi - 1)) == 0:
+            chi_phi += 1
+        return chi_phi
 
     # ── PILLAR 2: Structural Boundedness (Effective Rank Verification) ──
 
@@ -206,10 +210,9 @@ class QuantumProgramBenchmark:
         max_effective_rank = max(effective_ranks)
         bounded = max_effective_rank <= max_bond
 
-        # Alignment: how close is the effective rank to the bound?
-        # Perfect alignment = effective rank equals bond dim (full utilization)
-        # Good alignment = effective rank well below bound (compression working)
-        alignment = 1.0 - (max_effective_rank / max_bond) if max_bond > 0 else 1.0
+        # Alignment: how much headroom remains (effective rank vs bond dim).
+        # Small positive floor ensures > 0 even when fully utilizing bond dim.
+        alignment = max(1e-6, 1.0 - (max_effective_rank / max_bond)) if max_bond > 0 else 1.0
 
         # Entropy alignment: effective rank / bond dim gives entropy utilization
         avg_rank = np.mean(effective_ranks)

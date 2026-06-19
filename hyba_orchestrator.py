@@ -704,7 +704,7 @@ class HYBAOrchestrator:
         
         if self.config.mode in ["quantum-adversarial", "all"]:
             print("\n" + "="*60)
-            print("Running Quantum Adversarial Attack Test")
+            print("Running Quantum Adversarial Attack Test (Native HYBA Quantum Math)")
             print("="*60)
             result = self.quantum_tester.test_quantum_adversarial_attack()
             results.append(result)
@@ -872,11 +872,11 @@ def main():
     )
     
     parser.add_argument(
-        "--quantum-simulator",
+        "--quantum-mode",
         type=str,
-        default="qiskit",
-        choices=["qiskit", "cirq", "classical"],
-        help="Quantum simulator to use (default: qiskit)"
+        default="native",
+        choices=["native"],
+        help="Quantum computation mode (default: native - uses HYBA mathematical frameworks)"
     )
     
     parser.add_argument(
@@ -918,7 +918,7 @@ def main():
         dimensions=args.dimensions,
         duration_seconds=args.duration,
         output_dir=args.output_dir,
-        quantum_simulator=args.quantum_simulator,
+        quantum_simulator=args.quantum_mode,  # Uses native HYBA quantum math
         consciousness_backend=args.consciousness_backend,
         entropy_target=args.entropy_target,
         resonance_threshold=args.resonance_threshold,

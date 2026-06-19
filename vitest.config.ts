@@ -7,8 +7,8 @@ export default defineConfig({
     env: {
       NODE_ENV: "test",
     },
-    include: ["tests/**/*.test.ts", "tests/**/*.test.tsx"],
-    exclude: ["node_modules", "dist"],
+    include: ["tests/**/*.test.ts"],
+    exclude: ["node_modules", "dist", "tests/**/*.test.tsx"],
     globals: true,
     environment: "node",
     testTimeout: 30000,

@@ -1191,17 +1191,19 @@ async function fetchWithRetry(
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
       const response = await fetch(url, interceptedOptions);
-      if (response.ok || !retryOn(response.status) || attempt >= maxRetries) {
-        return response;
+      if (response.ok) return response;
+      if (!retryOn(response.status) || attempt >= maxRetries) {
+        throw await parseApiError(response);
       }
-      const delay = calculateDelay(attempt, baseDelayMs, maxDelayMs);
-      await new Promise((resolve) => setTimeout(resolve, delay + secureUnitInterval() * 100));
       lastError = await parseApiError(response);
-    } catch (error) {
-      if (attempt >= maxRetries) throw error;
       const delay = calculateDelay(attempt, baseDelayMs, maxDelayMs);
       await new Promise((resolve) => setTimeout(resolve, delay + secureUnitInterval() * 100));
+    } catch (error) {
+      if (error instanceof HybaApiError) throw error;
+      if (attempt >= maxRetries) throw error;
       lastError = error instanceof Error ? error : new Error(String(error));
+      const delay = calculateDelay(attempt, baseDelayMs, maxDelayMs);
+      await new Promise((resolve) => setTimeout(resolve, delay + secureUnitInterval() * 100));
     }
   }
   throw lastError || new Error(`Request to ${url} failed after ${maxRetries} retries`);
@@ -1209,7 +1211,6 @@ async function fetchWithRetry(
 
 async function get<T>(path: string, retryOptions?: Partial<RetryOptions>): Promise<T> {
   const response = await fetchWithRetry(`${BACKEND_URL}${path}`, { method: "GET" }, retryOptions);
-  if (!response.ok) throw await parseApiError(response);
   return response.json() as Promise<T>;
 }
 
@@ -1223,7 +1224,6 @@ async function post<T>(
     { method: "POST", body: JSON.stringify(body) },
     retryOptions,
   );
-  if (!response.ok) throw await parseApiError(response);
   return response.json() as Promise<T>;
 }
 
@@ -1237,7 +1237,6 @@ async function put<T>(
     { method: "PUT", body: JSON.stringify(body) },
     retryOptions,
   );
-  if (!response.ok) throw await parseApiError(response);
   return response.json() as Promise<T>;
 }
 
@@ -1247,7 +1246,6 @@ async function del<T = void>(path: string, retryOptions?: Partial<RetryOptions>)
     { method: "DELETE" },
     retryOptions,
   );
-  if (!response.ok) throw await parseApiError(response);
   return response.json() as Promise<T>;
 }
 

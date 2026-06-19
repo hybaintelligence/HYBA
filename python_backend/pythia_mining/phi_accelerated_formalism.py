@@ -155,11 +155,12 @@ class PhiAcceleratedUnitaryEvolution:
 
         for _ in range(steps):
             # Evolve with H1
-            U1 = np.linalg.expm(-1j * H1 * dt1)
+            from scipy.linalg import expm as _expm
+            U1 = _expm(-1j * H1 * dt1)
             U[:split_point, :split_point] = U1 @ U[:split_point, :split_point]
 
             # Evolve with H2
-            U2 = np.linalg.expm(-1j * H2 * dt2)
+            U2 = _expm(-1j * H2 * dt2)
             U[split_point:, split_point:] = U2 @ U[split_point:, split_point:]
 
         return U

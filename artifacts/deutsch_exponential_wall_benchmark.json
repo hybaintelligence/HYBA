@@ -1,0 +1,158 @@
+{
+  "memory_scaling": [
+    {
+      "num_qubits": 4,
+      "state_size": 16,
+      "memory_bytes": 256,
+      "memory_mb": 0.000244140625,
+      "memory_gb": 2.384185791015625e-07,
+      "memory_tb": 2.3283064365386963e-10
+    },
+    {
+      "num_qubits": 6,
+      "state_size": 64,
+      "memory_bytes": 1024,
+      "memory_mb": 0.0009765625,
+      "memory_gb": 9.5367431640625e-07,
+      "memory_tb": 9.313225746154785e-10
+    },
+    {
+      "num_qubits": 8,
+      "state_size": 256,
+      "memory_bytes": 4096,
+      "memory_mb": 0.00390625,
+      "memory_gb": 3.814697265625e-06,
+      "memory_tb": 3.725290298461914e-09
+    },
+    {
+      "num_qubits": 10,
+      "state_size": 1024,
+      "memory_bytes": 16384,
+      "memory_mb": 0.015625,
+      "memory_gb": 1.52587890625e-05,
+      "memory_tb": 1.4901161193847656e-08
+    },
+    {
+      "num_qubits": 12,
+      "state_size": 4096,
+      "memory_bytes": 65536,
+      "memory_mb": 0.0625,
+      "memory_gb": 6.103515625e-05,
+      "memory_tb": 5.960464477539063e-08
+    },
+    {
+      "num_qubits": 14,
+      "state_size": 16384,
+      "memory_bytes": 262144,
+      "memory_mb": 0.25,
+      "memory_gb": 0.000244140625,
+      "memory_tb": 2.384185791015625e-07
+    }
+  ],
+  "time_scaling": [
+    {
+      "num_qubits": 4,
+      "state_size": 16,
+      "avg_time_ms": 0.0016040998161770403
+    },
+    {
+      "num_qubits": 6,
+      "state_size": 64,
+      "avg_time_ms": 0.0024625001969980076
+    },
+    {
+      "num_qubits": 8,
+      "state_size": 256,
+      "avg_time_ms": 0.010054199810838327
+    },
+    {
+      "num_qubits": 10,
+      "state_size": 1024,
+      "avg_time_ms": 0.1366874999803258
+    }
+  ],
+  "tensor_network_efficiency": [
+    {
+      "num_qubits": 50,
+      "max_bond": 16,
+      "num_params": 23412,
+      "memory_mb": 0.35723876953125,
+      "state_vector_memory_tb": 16384.0,
+      "compression_ratio": 46963592.50709038
+    },
+    {
+      "num_qubits": 100,
+      "max_bond": 16,
+      "num_params": 49012,
+      "memory_mb": 0.74786376953125,
+      "state_vector_memory_tb": 1.8446744073709552e+19,
+      "compression_ratio": 2.525789682700931e+22
+    },
+    {
+      "num_qubits": 200,
+      "max_bond": 16,
+      "num_params": 100212,
+      "memory_mb": 1.52911376953125,
+      "state_vector_memory_tb": 2.3384026197294447e+49,
+      "compression_ratio": 1.5659556079577997e+52
+    },
+    {
+      "num_qubits": 500,
+      "max_bond": 16,
+      "num_params": 253812,
+      "memory_mb": 3.87286376953125,
+      "state_vector_memory_tb": 4.7634102635436893e+139,
+      "compression_ratio": 1.2594639006522844e+142
+    },
+    {
+      "num_qubits": 1000,
+      "max_bond": 16,
+      "num_params": 509812,
+      "memory_mb": 7.77911376953125,
+      "state_vector_memory_tb": 1.559250241824e+290,
+      "compression_ratio": 2.0525117576780054e+292
+    }
+  ],
+  "approximation_error": [
+    {
+      "original_bond": 4,
+      "entanglement_entropy": 1.6554444804067416,
+      "compressed_bond": 4,
+      "approximation_error": 0.0
+    },
+    {
+      "original_bond": 8,
+      "entanglement_entropy": 2.000000000000064,
+      "compressed_bond": 4,
+      "approximation_error": 9.992007221626409e-16
+    },
+    {
+      "original_bond": 16,
+      "entanglement_entropy": 3.0000000000001568,
+      "compressed_bond": 4,
+      "approximation_error": 4.440892098500626e-16
+    },
+    {
+      "original_bond": 32,
+      "entanglement_entropy": 4.000000000004844,
+      "compressed_bond": 4,
+      "approximation_error": 3.3306690738754696e-16
+    },
+    {
+      "original_bond": 64,
+      "entanglement_entropy": 5.0000000000141505,
+      "compressed_bond": 4,
+      "approximation_error": 6.661338147750939e-16
+    }
+  ],
+  "deutsch_prediction": [
+    {
+      "structured_params": 892,
+      "structured_entropy": 1.6922514775363358,
+      "unstructured_params": 194004,
+      "unstructured_entropy": 5.000000000011659,
+      "param_ratio": 217.4932735426009,
+      "entropy_ratio": 2.9546436013699977
+    }
+  ]
+}
