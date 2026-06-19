@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useMemo, useState } from "react";
+import type { TelemetryData } from "../apiClient";
 import { History, TrendingUp, TrendingDown, Calendar, BarChart3, Activity, RefreshCw } from "lucide-react";
 
 interface HistoricalDataPoint {
@@ -11,35 +12,24 @@ interface HistoricalDataPoint {
   powerConsumption: number;
 }
 
-export default function HistoricalDataSection() {
-  const [historicalData, setHistoricalData] = useState<HistoricalDataPoint[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+export default function HistoricalDataSection({ telemetry }: { telemetry?: TelemetryData | null }) {
+  const historicalData = useMemo<HistoricalDataPoint[]>(() => {
+    const health = telemetry?.health as Record<string, any> | undefined;
+    const records = Array.isArray(health?.history) ? health.history : [];
+    return records.map((entry: Record<string, any>, index: number) => ({
+      timestamp: String(entry.timestamp || new Date(Date.now() - (records.length - index) * 3600000).toISOString()),
+      hashrate: Number(entry.hashrate ?? entry.hashrate_ehs ?? 0),
+      shares: Number(entry.shares ?? entry.shares_submitted ?? 0),
+      difficulty: Number(entry.difficulty ?? 0),
+      blockHeight: Number(entry.blockHeight ?? entry.block_height ?? 0),
+      temperature: Number(entry.temperature ?? 0),
+      powerConsumption: Number(entry.powerConsumption ?? entry.power_watts ?? 0),
+    }));
+  }, [telemetry]);
+  const isLoading = false;
   const [timeRange, setTimeRange] = useState<"24h" | "7d" | "30d">("24h");
   const [selectedMetric, setSelectedMetric] = useState<"hashrate" | "shares" | "difficulty" | "power">("hashrate");
 
-  useEffect(() => {
-    // Simulate loading historical data
-    const mockData: HistoricalDataPoint[] = [];
-    const now = Date.now();
-    const points = timeRange === "24h" ? 24 : timeRange === "7d" ? 168 : 720;
-    const interval = timeRange === "24h" ? 3600000 : timeRange === "7d" ? 3600000 : 3600000;
-
-    for (let i = 0; i < points; i++) {
-      const timestamp = new Date(now - (points - i) * interval);
-      mockData.push({
-        timestamp: timestamp.toISOString(),
-        hashrate: 120 + Math.random() * 20,
-        shares: Math.floor(1000 + Math.random() * 500),
-        difficulty: 72000000000000 + Math.random() * 5000000000000,
-        blockHeight: 845000 + i * 6,
-        temperature: 45 + Math.random() * 15,
-        powerConsumption: 2500 + Math.random() * 500,
-      });
-    }
-
-    setHistoricalData(mockData);
-    setIsLoading(false);
-  }, [timeRange]);
 
   const getMetricLabel = (metric: string) => {
     switch (metric) {
@@ -97,6 +87,15 @@ export default function HistoricalDataSection() {
   }
 
   const latestData = historicalData[historicalData.length - 1];
+
+  if (historicalData.length === 0) {
+    return (
+      <div className="space-y-6">
+        <div><h2 className="text-2xl font-black text-slate-900">Historical Data</h2><p className="text-slate-600">Backend-attested mining performance history</p></div>
+        <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-sm text-slate-600">No historical telemetry records are available from the backend yet. This handover build intentionally avoids synthetic history.</div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

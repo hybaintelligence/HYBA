@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from "react";
-import { Clock, Activity, Server, CheckCircle2, AlertCircle, Pause, Play, RefreshCw } from "lucide-react";
+import React, { useMemo, useState } from "react";
+import type { PoolInfo, TelemetryData } from "../apiClient";
+import { Clock, Activity, Server, CheckCircle2, AlertCircle, Pause, RefreshCw } from "lucide-react";
 
 interface MiningJob {
   id: string;
@@ -15,55 +16,30 @@ interface MiningJob {
   blockHeight: number;
 }
 
-export default function MiningJobsSection() {
-  const [jobs, setJobs] = useState<MiningJob[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+export default function MiningJobsSection({ telemetry, pools = [] }: { telemetry?: TelemetryData | null; pools?: PoolInfo[] }) {
   const [selectedJob, setSelectedJob] = useState<MiningJob | null>(null);
+  const jobs = useMemo<MiningJob[]>(() => {
+    const health = telemetry?.health as Record<string, any> | undefined;
+    const metrics = (health?.systemMetrics || {}) as Record<string, any>;
+    const activePools = pools.filter((pool) => pool.is_active);
+    if (activePools.length === 0 && !metrics.activePool) return [];
+    return (activePools.length ? activePools : [{ name: String(metrics.activePool || "Configured pool"), is_active: true } as PoolInfo]).map((pool, index) => ({
+      id: `pool-${index + 1}`,
+      name: index === 0 ? "Primary pool execution" : "Failover pool execution",
+      status: pool.is_active ? "running" : "paused",
+      pool: pool.name,
+      startTime: String(metrics.startedAt || health?.timestamp || new Date().toISOString()),
+      hashrate: Number(metrics.currentHashrate ?? (pool as any).hashrate_ehs ?? 0),
+      sharesSubmitted: Number(metrics.sharesSubmitted ?? (pool as any).shares_submitted ?? 0),
+      sharesAccepted: Number(metrics.sharesAccepted ?? (pool as any).shares_accepted ?? 0),
+      difficulty: Number(metrics.difficulty ?? health?.network_difficulty ?? 0),
+      blockHeight: Number(metrics.blockHeight ?? health?.block_height ?? 0),
+    }));
+  }, [telemetry, pools]);
 
-  useEffect(() => {
-    // Simulate loading mining jobs
-    const mockJobs: MiningJob[] = [
-      {
-        id: "job-001",
-        name: "Primary Mining Job",
-        status: "running",
-        pool: "Foundry USA",
-        startTime: new Date(Date.now() - 3600000).toISOString(),
-        hashrate: 125.5,
-        sharesSubmitted: 15420,
-        sharesAccepted: 15398,
-        difficulty: 72000000000000,
-        blockHeight: 845210,
-      },
-      {
-        id: "job-002",
-        name: "Secondary Mining Job",
-        status: "paused",
-        pool: "AntPool",
-        startTime: new Date(Date.now() - 7200000).toISOString(),
-        hashrate: 0,
-        sharesSubmitted: 8920,
-        sharesAccepted: 8915,
-        difficulty: 71500000000000,
-        blockHeight: 845208,
-      },
-      {
-        id: "job-003",
-        name: "Backup Mining Job",
-        status: "completed",
-        pool: "F2Pool",
-        startTime: new Date(Date.now() - 86400000).toISOString(),
-        endTime: new Date(Date.now() - 3600000).toISOString(),
-        hashrate: 98.2,
-        sharesSubmitted: 24560,
-        sharesAccepted: 24542,
-        difficulty: 71000000000000,
-        blockHeight: 845150,
-      },
-    ];
-    setJobs(mockJobs);
-    setIsLoading(false);
-  }, []);
+  const isLoading = false;
+
+  /* Live jobs are derived above from authenticated telemetry only. */
 
   const getStatusColor = (status: MiningJob["status"]) => {
     switch (status) {
@@ -116,6 +92,12 @@ export default function MiningJobsSection() {
       </div>
 
       <div className="grid gap-4">
+      {jobs.length === 0 && (
+        <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-sm text-slate-600">
+          No active mining jobs are available from authenticated backend telemetry. This handover build intentionally avoids fabricated pool jobs.
+        </div>
+      )}
+
         {jobs.map((job) => (
           <div
             key={job.id}

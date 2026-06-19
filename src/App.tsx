@@ -690,11 +690,11 @@ function AppContent() {
             latencyMs={latencyMs}
           />
         ) : currentView === "jobs" ? (
-          <MiningJobsSection />
+          <MiningJobsSection telemetry={telemetry} pools={pools} />
         ) : currentView === "history" ? (
-          <HistoricalDataSection />
+          <HistoricalDataSection telemetry={telemetry} />
         ) : currentView === "analytics" ? (
-          <AnalyticsSection />
+          <AnalyticsSection telemetry={telemetry} pools={pools} />
         ) : (
           <>
             <ExecutiveSummary
