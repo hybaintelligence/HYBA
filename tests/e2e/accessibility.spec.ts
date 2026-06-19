@@ -19,8 +19,8 @@ test.describe("accessibility production hardening", () => {
     test(`${role} surface has landmarks, named controls, and no high-impact axe findings`, async ({
       page,
     }) => {
-      await seedAuth(page, role);
-      await installBackendMocks(page, { role });
+      await seedAuth(page, role as any);
+      await installBackendMocks(page, { role: role as any });
       await page.goto("/");
 
       await expect(page.getByRole("banner")).toBeVisible();
