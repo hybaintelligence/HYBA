@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 import type { PoolInfo, TelemetryData } from "../apiClient";
-import { Clock, Activity, Server, CheckCircle2, AlertCircle, Pause, RefreshCw } from "lucide-react";
+import { Clock, Activity, Server, CheckCircle2, AlertCircle, Pause, Play, RefreshCw } from "lucide-react";
 
 interface MiningJob {
   id: string;
