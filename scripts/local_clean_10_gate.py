@@ -77,6 +77,42 @@ def _commands() -> list[GateCommand]:
             command=["npm", "run", "python:env:check"],
         ),
         GateCommand(
+            name="review_gap_closure_matrix",
+            command=[python, "-m", "pytest", "tests/test_review_gap_closure_matrix.py", "-q"],
+        ),
+        GateCommand(
+            name="quantum_solver_job_plumbing",
+            command=[python, "-m", "pytest", "tests/test_agent3_quantum_solvers.py", "-q"],
+        ),
+        GateCommand(
+            name="hendrix_phi_solver_contracts",
+            command=[python, "-m", "pytest", "tests/test_hendrix_phi_solver_contracts.py", "-q"],
+        ),
+        GateCommand(
+            name="hendrix_job_backed_benchmarks",
+            command=[python, "-m", "pytest", "tests/test_hendrix_phi_performance_benchmark.py", "-q"],
+        ),
+        GateCommand(
+            name="iit_phi_proxy_contracts",
+            command=[
+                python,
+                "-m",
+                "pytest",
+                "tests/test_iit_4_analyzer.py",
+                "tests/test_iit_4_complete.py",
+                "tests/test_iit_phi_mining_correlation.py",
+                "-q",
+            ],
+        ),
+        GateCommand(
+            name="api_posture_serialization",
+            command=[python, "-m", "pytest", "tests/test_api_posture_serialization.py", "-q"],
+        ),
+        GateCommand(
+            name="backend_mining_api_contracts",
+            command=[python, "-m", "pytest", "tests/test_backend_mining_api.py", "-q"],
+        ),
+        GateCommand(
             name="auth_jwt_contracts",
             command=[python, "-m", "pytest", "tests/test_auth_jwt_contracts.py", "-q"],
         ),
@@ -93,16 +129,16 @@ def _commands() -> list[GateCommand]:
             command=[python, "-m", "pytest", "tests/test_adaptive_capability_registry.py", "-q"],
         ),
         GateCommand(
+            name="claim_evidence_manifest",
+            command=[python, "-m", "pytest", "tests/test_claim_evidence_manifest.py", "-q"],
+        ),
+        GateCommand(
             name="prediction_endpoint_contracts",
             command=[python, "-m", "pytest", "tests/test_prediction_endpoint.py", "-q"],
         ),
         GateCommand(
             name="pool_profile_primitives",
             command=[python, "-m", "pytest", "tests/test_pool_profile_primitives.py", "-q"],
-        ),
-        GateCommand(
-            name="hendrix_job_backed_benchmarks",
-            command=[python, "-m", "pytest", "tests/test_hendrix_phi_performance_benchmark.py", "-q"],
         ),
         GateCommand(
             name="autonomous_sovereign_gate_contracts",
