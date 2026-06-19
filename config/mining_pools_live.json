@@ -18,7 +18,7 @@
       "url": "stratum+tcp://btc.viabtc.io:3333",
       "stratum_version": 1,
       "username": "PYTHIA.001",
-      "password": "123",
+      "password": "Password123",
       "worker": "hendrix_phi",
       "priority": 1,
       "enabled": true,

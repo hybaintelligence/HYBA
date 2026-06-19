@@ -318,6 +318,7 @@ class TestMiningPassportFactory:
         )
         
         assert passport.payload["custom_field"] == "value"
+        assert passport.payload["nonce"] == 42
 
 
 # ============================================================================
@@ -383,7 +384,7 @@ class TestPythiaAdapterIntegration:
         
         # Should be deserializable
         deserialized = json.loads(json_str)
-        assert deserialized["nonce"] == 42
+        assert deserialized["payload"]["nonce"] == 42
 
     def test_search_result_auditable(self):
         """Test that search results are auditable."""
@@ -451,7 +452,7 @@ class TestAdapterProperties:
         
         # Should not raise
         deserialized = json.loads(json_str)
-        assert deserialized["share_hash"] == share_hash
+        assert deserialized["payload"]["share_hash"] == share_hash
 
 
 if __name__ == "__main__":
