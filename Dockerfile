@@ -14,6 +14,7 @@ COPY package*.json ./
 COPY . .
 RUN npm run lint
 RUN npm run build
+RUN node scripts/ensure_spa_entrypoint.mjs
 
 FROM python:3.12.13-slim AS runtime
 ENV NODE_ENV=production \
