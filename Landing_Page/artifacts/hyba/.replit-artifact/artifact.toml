@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "HYBA"
+version = "1.0.0"
+id = "artifacts/hyba"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 20083
+
+[services.development]
+run = "pnpm --filter @workspace/hyba run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/hyba", "run", "build" ]
+publicDir = "artifacts/hyba/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "20083"
+BASE_PATH = "/"

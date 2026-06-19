@@ -1,0 +1,14 @@
+uploads = []
+outputs = []
+
+[[generated]]
+id = "tx737P2hawuGkFNA19Yx7"
+uri = "file://artifacts/hyba/public/bg-topology.png"
+type = "image"
+title = "abstract dark mathematical topology"
+
+[[generated]]
+id = "sMrEOK4ObDXH9UCDplzBa"
+uri = "file://artifacts/hyba/public/bg-circuit.png"
+type = "image"
+title = "dark circuit deep space texture"
