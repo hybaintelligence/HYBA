@@ -1,21 +1,31 @@
-"""Products/catalog API endpoints."""
+"""Products/catalog API endpoints backed by handover seed data."""
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
-from typing import Any, Dict
+import json
+from pathlib import Path
+from typing import Any, Dict, List
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 
 router = APIRouter(prefix="/api/products", tags=["products"])
+ROOT = Path(__file__).resolve().parents[3]
+SEED_CATALOG = ROOT / "config" / "frontend_seed_data.json"
 
 
-@router.get("", response_model=Dict[str, Any])
-async def list_products():
-    """Return an empty measured catalog until a real catalog datastore is connected."""
-    return {
-        "items": [],
-        "count": 0,
-        "source": "catalog_datastore_not_connected",
-        "timestamp": datetime.now(timezone.utc).isoformat(),
-    }
+def load_seed_products() -> List[Dict[str, Any]]:
+    """Load deterministic frontend catalog records for handover demos."""
+    try:
+        payload = json.loads(SEED_CATALOG.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise HTTPException(status_code=503, detail="frontend seed catalog unavailable") from exc
+    products = payload.get("products")
+    if not isinstance(products, list):
+        raise HTTPException(status_code=503, detail="frontend seed catalog is malformed")
+    return [dict(item) for item in products if isinstance(item, dict)]
+
+
+@router.get("", response_model=List[Dict[str, Any]])
+async def list_products() -> List[Dict[str, Any]]:
+    """Return deterministic catalog records used to seed the frontend product panel."""
+    return load_seed_products()

@@ -1062,6 +1062,12 @@ export function assertPulviniHashrateCap(value: number | undefined, field: strin
   }
 }
 
+function assertFiniteNumber(value: number, field: string): void {
+  if (!Number.isFinite(value)) {
+    throw new Error(`${field} must be a finite number`);
+  }
+}
+
 export function getToken(): string | null {
   try {
     return localStorage.getItem(TOKEN_KEY);
@@ -1394,7 +1400,7 @@ export async function disconnectFromPool(): Promise<{ status: string; previous_p
 /** POST /api/mining/submit — Submit a mining job share */
 export async function submitJob(data: SubmitJobRequest): Promise<SubmitJobResponse> {
   assertPulviniHashrateCap(data.hashrate_ehs, "hashrate_ehs");
-  return post<SubmitJobResponse>("/mining/submit", data);
+  return post<SubmitJobResponse>("/mining/submit", data, { maxRetries: 0 });
 }
 
 /** POST /api/mining/pause — Pause mining operations */
@@ -1415,6 +1421,7 @@ export async function updatePowerScale(
   return post<{ status: string; effective_hashrate_ehs?: number; phi_tier?: number }>(
     "/mining/power",
     { scale, phi_tier: phiTier },
+    { maxRetries: 0 },
   );
 }
 
@@ -1501,7 +1508,7 @@ export async function getMiningProductionHealth(): Promise<MiningProductionHealt
 
 /** POST /api/v1/mining-production/initialize — Initialize mining pipeline */
 export async function initializeMiningProduction(): Promise<MiningProductionInitializeResponse> {
-  return post<MiningProductionInitializeResponse>("/v1/mining-production/initialize", {});
+  return post<MiningProductionInitializeResponse>("/v1/mining-production/initialize", {}, { maxRetries: 0 });
 }
 
 /** GET /api/v1/mining-production/metrics — Production pipeline metrics */
@@ -1516,7 +1523,7 @@ export async function getMiningProductionNextJob(): Promise<MiningProductionNext
 
 /** POST /api/v1/mining-production/start — Start production mining */
 export async function startMiningProduction(): Promise<MiningProductionStartResponse> {
-  return post<MiningProductionStartResponse>("/v1/mining-production/start", {});
+  return post<MiningProductionStartResponse>("/v1/mining-production/start", {}, { maxRetries: 0 });
 }
 
 /** GET /api/v1/mining-production/status — Production pipeline status */
@@ -1526,14 +1533,14 @@ export async function getMiningProductionStatus(): Promise<MiningProductionStatu
 
 /** POST /api/v1/mining-production/stop — Stop production mining */
 export async function stopMiningProduction(): Promise<MiningProductionStopResponse> {
-  return post<MiningProductionStopResponse>("/v1/mining-production/stop", {});
+  return post<MiningProductionStopResponse>("/v1/mining-production/stop", {}, { maxRetries: 0 });
 }
 
 /** POST /api/v1/mining-production/submit-share — Submit share via production pipeline */
 export async function submitMiningProductionShare(
   data: MiningProductionSubmitShareRequest,
 ): Promise<MiningProductionSubmitShareResponse> {
-  return post<MiningProductionSubmitShareResponse>("/v1/mining-production/submit-share", data);
+  return post<MiningProductionSubmitShareResponse>("/v1/mining-production/submit-share", data, { maxRetries: 0 });
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -1569,7 +1576,7 @@ export async function getV1PoolsList(): Promise<V1PoolsListResponse> {
 export async function reportV1PoolShare(
   data: V1PoolsReportShareRequest,
 ): Promise<{ status: string }> {
-  return post<{ status: string }>("/v1/pools/report-share", data);
+  return post<{ status: string }>("/v1/pools/report-share", data, { maxRetries: 0 });
 }
 
 /** GET /api/v1/pools/status — Pool connection status */
@@ -1579,7 +1586,7 @@ export async function getV1PoolsStatus(): Promise<V1PoolsStatusResponse> {
 
 /** POST /api/v1/pools/switch — Switch active pool */
 export async function switchV1Pool(data: V1PoolsSwitchRequest): Promise<V1PoolsSwitchResponse> {
-  return post<V1PoolsSwitchResponse>("/v1/pools/switch", data);
+  return post<V1PoolsSwitchResponse>("/v1/pools/switch", data, { maxRetries: 0 });
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -1606,10 +1613,11 @@ export async function scaleIntelligence(
   scale: number,
   target = "reflexive_controller",
 ): Promise<{ status: string; intelligence_scale: number }> {
+  assertFiniteNumber(scale, "scale");
   return post<{ status: string; intelligence_scale: number }>("/v1/intelligence/scale", {
     scale,
     target,
-  });
+  }, { maxRetries: 0 });
 }
 
 /** POST /api/v1/intelligence/consciousness/boost — Boost consciousness */
@@ -1617,9 +1625,12 @@ export async function boostConsciousness(
   boost: number,
   taskBudget = 1,
 ): Promise<{ status: string; boost: number; task_budget: number }> {
+  assertFiniteNumber(boost, "boost");
+  assertFiniteNumber(taskBudget, "taskBudget");
   return post<{ status: string; boost: number; task_budget: number }>(
     "/v1/intelligence/consciousness/boost",
     { boost, task_budget: taskBudget },
+    { maxRetries: 0 },
   );
 }
 
@@ -1627,31 +1638,31 @@ export async function boostConsciousness(
 export async function intelligenceReflect(
   data?: IntelligenceV1ReflectRequest,
 ): Promise<IntelligenceV1ReflectResponse> {
-  return post<IntelligenceV1ReflectResponse>("/v1/intelligence/reflect", data || {});
+  return post<IntelligenceV1ReflectResponse>("/v1/intelligence/reflect", data || {}, { maxRetries: 0 });
 }
 
 /** POST /api/v1/intelligence/explain — Request explanation */
 export async function intelligenceExplain(
   data: IntelligenceV1ExplainRequest,
 ): Promise<IntelligenceV1ExplainResponse> {
-  return post<IntelligenceV1ExplainResponse>("/v1/intelligence/explain", data);
+  return post<IntelligenceV1ExplainResponse>("/v1/intelligence/explain", data, { maxRetries: 0 });
 }
 
 /** POST /api/v1/intelligence/orchestrate — Orchestrate multi-step plan */
 export async function intelligenceOrchestrate(
   data: IntelligenceV1OrchestrateRequest,
 ): Promise<IntelligenceV1OrchestrateResponse> {
-  return post<IntelligenceV1OrchestrateResponse>("/v1/intelligence/orchestrate", data);
+  return post<IntelligenceV1OrchestrateResponse>("/v1/intelligence/orchestrate", data, { maxRetries: 0 });
 }
 
 /** POST /api/v1/intelligence/closure/sync — Sync closure state */
 export async function intelligenceClosureSync(): Promise<IntelligenceV1ClosureSyncResponse> {
-  return post<IntelligenceV1ClosureSyncResponse>("/v1/intelligence/closure/sync", {});
+  return post<IntelligenceV1ClosureSyncResponse>("/v1/intelligence/closure/sync", {}, { maxRetries: 0 });
 }
 
 /** POST /api/v1/intelligence/heartbeat/pulse — Send heartbeat pulse */
 export async function intelligenceHeartbeatPulse(): Promise<IntelligenceV1HeartbeatPulseResponse> {
-  return post<IntelligenceV1HeartbeatPulseResponse>("/v1/intelligence/heartbeat/pulse", {});
+  return post<IntelligenceV1HeartbeatPulseResponse>("/v1/intelligence/heartbeat/pulse", {}, { maxRetries: 0 });
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -1667,12 +1678,12 @@ export async function getConsciousness(): Promise<ConsciousnessResponse> {
 export async function stimulateConsciousness(
   data: AiStimulateRequest,
 ): Promise<AiStimulateResponse> {
-  return post<AiStimulateResponse>("/ai/consciousness/stimulate", data);
+  return post<AiStimulateResponse>("/ai/consciousness/stimulate", data, { maxRetries: 0 });
 }
 
 /** POST /api/ai/chat — Send chat message */
 export async function aiChat(data: AiChatRequest): Promise<AiChatResponse> {
-  return post<AiChatResponse>("/ai/chat", data);
+  return post<AiChatResponse>("/ai/chat", data, { maxRetries: 0 });
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -1688,7 +1699,7 @@ export async function getSecurityStatus(): Promise<SecurityStatus> {
 export async function securityShield(
   data: SecurityShieldRequest,
 ): Promise<SecurityShieldResponse> {
-  return post<SecurityShieldResponse>("/security/shield", data);
+  return post<SecurityShieldResponse>("/security/shield", data, { maxRetries: 0 });
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -1714,7 +1725,7 @@ export async function getUnifiedMetrics(): Promise<UnifiedMetricsResponse> {
 export async function analyzeBlockchainSnapshot(
   blocks: Array<{ height: number; block_hash: string }>,
 ): Promise<Record<string, unknown>> {
-  return post<Record<string, unknown>>("/v1/unified/analyze/blockchain", { blocks });
+  return post<Record<string, unknown>>("/v1/unified/analyze/blockchain", { blocks }, { maxRetries: 0 });
 }
 
 /** POST /api/v1/unified/analyze/it-from-bit — Analyze it-from-bit data */
@@ -1722,21 +1733,21 @@ export async function analyzeItFromBit(bits: string, wordSize = 8): Promise<Reco
   return post<Record<string, unknown>>("/v1/unified/analyze/it-from-bit", {
     bits,
     word_size: wordSize,
-  });
+  }, { maxRetries: 0 });
 }
 
 /** POST /api/v1/unified/analyze/resonance — Analyze resonance data */
 export async function analyzeResonance(
   data: UnifiedAnalyzeResonanceRequest,
 ): Promise<Record<string, unknown>> {
-  return post<Record<string, unknown>>("/v1/unified/analyze/resonance", data);
+  return post<Record<string, unknown>>("/v1/unified/analyze/resonance", data, { maxRetries: 0 });
 }
 
 /** POST /api/v1/unified/share-result — Share a result */
 export async function unifiedShareResult(
   data: UnifiedShareResultRequest,
 ): Promise<{ status: string; accepted: boolean }> {
-  return post<{ status: string; accepted: boolean }>("/v1/unified/share-result", data);
+  return post<{ status: string; accepted: boolean }>("/v1/unified/share-result", data, { maxRetries: 0 });
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -2047,7 +2058,7 @@ export async function getImmuneStatus(): Promise<ImmuneStatus> {
 
 /** POST /organism/immune/quarantine/{lane_id} — Quarantine a lane */
 export async function quarantineLane(laneId: number): Promise<{ status: string }> {
-  return post<{ status: string }>(`/organism/immune/quarantine/${laneId}`, {});
+  return post<{ status: string }>(`/organism/immune/quarantine/${laneId}`, {}, { maxRetries: 0 });
 }
 
 /** GET /organism/cognition/conjectures — Get active conjectures */
@@ -2062,7 +2073,7 @@ export async function getOrganismRegenerationStatus(): Promise<{ status: string;
 
 /** POST /organism/cognition/evolve/{conjecture_id} — Apply evolution */
 export async function applyEvolution(conjectureId: string): Promise<{ status: string }> {
-  return post<{ status: string }>(`/organism/cognition/evolve/${conjectureId}`, {});
+  return post<{ status: string }>(`/organism/cognition/evolve/${conjectureId}`, {}, { maxRetries: 0 });
 }
 
 /** GET /organism/metabolism/flux — Get metabolic flux */
@@ -2127,7 +2138,7 @@ export interface PoolHabitatList {
 
 /** POST /organism/executive/intent — Set mining intent */
 export async function setMiningIntent(data: MiningIntentRequest): Promise<IgnitionResponse | QuiescenceResponse | StasisResponse> {
-  return post<IgnitionResponse | QuiescenceResponse | StasisResponse>("/organism/executive/intent", data);
+  return post<IgnitionResponse | QuiescenceResponse | StasisResponse>("/organism/executive/intent", data, { maxRetries: 0 });
 }
 
 /** GET /organism/executive/habitats — List pool habitats */
@@ -2137,7 +2148,7 @@ export async function getPoolHabitats(): Promise<PoolHabitatList> {
 
 /** PUT /organism/executive/habitats/migrate/{pool_name} — Migrate to habitat */
 export async function migrateToHabitat(poolName: string): Promise<MigrationResponse> {
-  return put<MigrationResponse>(`/organism/executive/habitats/migrate/${poolName}`, {});
+  return put<MigrationResponse>(`/organism/executive/habitats/migrate/${poolName}`, {}, { maxRetries: 0 });
 }
 
 /** GET /organism/executive/telemetry — Get executive telemetry */

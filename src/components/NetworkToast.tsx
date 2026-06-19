@@ -43,7 +43,7 @@ export const NetworkToast: React.FC<NetworkToastProps> = ({
           <button
             onClick={onDismiss}
             className="text-red-400 hover:text-white transition-colors cursor-pointer"
-            aria-label="Dismiss network alert"
+            aria-label="Dismiss network status"
           >
             <X className="w-4 h-4" />
           </button>

@@ -1219,16 +1219,17 @@ function AuthInput({
   type: string;
   placeholder: string;
 }) {
+  const inputId = `auth-${label.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
   return (
     <div className="space-y-2">
       <label
-        htmlFor={id}
+        htmlFor={inputId}
         className="text-[10px] font-mono font-bold uppercase tracking-[0.18em] text-slate-500"
       >
         {label}
       </label>
       <input
-        id={id}
+        id={inputId}
         type={type}
         required
         placeholder={placeholder}
