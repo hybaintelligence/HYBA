@@ -2,7 +2,9 @@
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 
 const sourcePath = new URL('../src/apiClient.ts', import.meta.url);
-const outPath = new URL('../artifacts/frontend_api_command_manifest.json', import.meta.url);
+const defaultOutPath = new URL('../artifacts/frontend_api_command_manifest.generated.json', import.meta.url);
+const outArgIndex = process.argv.indexOf('--out');
+const outPath = outArgIndex === -1 ? defaultOutPath : new URL(process.argv[outArgIndex + 1], `file://${process.cwd()}/`);
 const source = readFileSync(sourcePath, 'utf8');
 
 const helpers = { get: 'GET', getOptional: 'GET', post: 'POST', put: 'PUT', del: 'DELETE', patch: 'PATCH' };
@@ -88,7 +90,6 @@ while ((match = fnRegex.exec(source))) {
     role: roleFor(name, path),
     idempotent: method === 'GET',
     helper,
-    tested: false,
   });
 }
 rows.sort((a, b) => a.function.localeCompare(b.function));
