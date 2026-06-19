@@ -2769,8 +2769,11 @@ function QuantumView({
 
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Select Pool</label>
+            <label htmlFor="executive-pool-switch" className="block text-sm font-medium text-slate-700 mb-1">
+              Select Pool
+            </label>
             <select
+              id="executive-pool-switch"
               value={selectedPool}
               onChange={(e) => setSelectedPool(e.target.value)}
               className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#003666]"

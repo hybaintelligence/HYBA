@@ -513,14 +513,18 @@ function AdminPanel({ token }: { token: string | null }) {
               <button
                 onClick={() => setShowCreateModal(false)}
                 className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+                aria-label="Close create user dialog"
               >
                 <X className="h-5 w-5 text-slate-600" />
               </button>
             </div>
             <form onSubmit={handleCreateUser} className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Username</label>
+                <label htmlFor="create-username" className="block text-sm font-medium text-slate-700 mb-1">
+                  Username
+                </label>
                 <input
+                  id="create-username"
                   type="text"
                   required
                   minLength={3}
@@ -530,10 +534,11 @@ function AdminPanel({ token }: { token: string | null }) {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">
+                <label htmlFor="create-email" className="block text-sm font-medium text-slate-700 mb-1">
                   Email (optional)
                 </label>
                 <input
+                  id="create-email"
                   type="email"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
@@ -541,8 +546,11 @@ function AdminPanel({ token }: { token: string | null }) {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Password</label>
+                <label htmlFor="create-password" className="block text-sm font-medium text-slate-700 mb-1">
+                  Password
+                </label>
                 <input
+                  id="create-password"
                   type="password"
                   required
                   minLength={8}
@@ -552,8 +560,11 @@ function AdminPanel({ token }: { token: string | null }) {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Role</label>
+                <label htmlFor="create-role" className="block text-sm font-medium text-slate-700 mb-1">
+                  Role
+                </label>
                 <select
+                  id="create-role"
                   value={formData.role}
                   onChange={(e) => setFormData({ ...formData, role: e.target.value })}
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#003666] focus:border-transparent"
@@ -596,14 +607,18 @@ function AdminPanel({ token }: { token: string | null }) {
               <button
                 onClick={() => setShowEditModal(false)}
                 className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+                aria-label="Close edit user dialog"
               >
                 <X className="h-5 w-5 text-slate-600" />
               </button>
             </div>
             <form onSubmit={handleUpdateUser} className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Username</label>
+                <label htmlFor="edit-username" className="block text-sm font-medium text-slate-700 mb-1">
+                  Username
+                </label>
                 <input
+                  id="edit-username"
                   type="text"
                   value={formData.username}
                   disabled
@@ -611,8 +626,11 @@ function AdminPanel({ token }: { token: string | null }) {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Email</label>
+                <label htmlFor="edit-email" className="block text-sm font-medium text-slate-700 mb-1">
+                  Email
+                </label>
                 <input
+                  id="edit-email"
                   type="email"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
@@ -620,10 +638,11 @@ function AdminPanel({ token }: { token: string | null }) {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">
+                <label htmlFor="edit-password" className="block text-sm font-medium text-slate-700 mb-1">
                   New Password (leave blank to keep current)
                 </label>
                 <input
+                  id="edit-password"
                   type="password"
                   minLength={8}
                   value={formData.password}
@@ -632,8 +651,11 @@ function AdminPanel({ token }: { token: string | null }) {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Role</label>
+                <label htmlFor="edit-role" className="block text-sm font-medium text-slate-700 mb-1">
+                  Role
+                </label>
                 <select
+                  id="edit-role"
                   value={formData.role}
                   onChange={(e) => setFormData({ ...formData, role: e.target.value })}
                   disabled={selectedUser.username === backendUser?.username}
