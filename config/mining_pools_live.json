@@ -59,9 +59,9 @@
       "password": "<OCdpET^bAQ5\\jm4**=>Te\\sxK1u?}vv",
       "worker": "hendrix_phi",
       "priority": 5,
-      "enabled": true,
+      "enabled": false,
       "is_default": false,
-      "description": "Braiins Pool - Stratum V2 configuration"
+      "description": "Braiins Stratum V2 profile retained for future channel/job-flow support; disabled because current command-room job flow is Stratum v1 only"
     }
   }
 }
