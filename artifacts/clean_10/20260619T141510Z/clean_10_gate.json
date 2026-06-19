@@ -1,0 +1,206 @@
+{
+  "generated_at_utc": "2026-06-19T14:16:33.438433+00:00",
+  "next_actions": [
+    "Do not describe the repository as clean until required failures are zero.",
+    "Open the referenced per-command logs, fix the first failing command, and rerun this gate."
+  ],
+  "passed": false,
+  "repository": "HYBA_FULLSTACK",
+  "required_failures": [
+    "frontend_unit_gate",
+    "backend_gate"
+  ],
+  "results": [
+    {
+      "command": [
+        "npm",
+        "run",
+        "python:env:check"
+      ],
+      "duration_seconds": 0.304959,
+      "log_path": "artifacts/clean_10/20260619T141510Z/python_backend_environment.log",
+      "name": "python_backend_environment",
+      "passed": true,
+      "returncode": 0
+    },
+    {
+      "command": [
+        "/Users/demouser/.pyenv/versions/3.12.0/bin/python",
+        "-m",
+        "pytest",
+        "tests/test_auth_jwt_contracts.py",
+        "-q"
+      ],
+      "duration_seconds": 0.552098,
+      "log_path": "artifacts/clean_10/20260619T141510Z/auth_jwt_contracts.log",
+      "name": "auth_jwt_contracts",
+      "passed": true,
+      "returncode": 0
+    },
+    {
+      "command": [
+        "/Users/demouser/.pyenv/versions/3.12.0/bin/python",
+        "-m",
+        "pytest",
+        "tests/test_runtime_reflexive_introspection.py",
+        "-q"
+      ],
+      "duration_seconds": 1.430638,
+      "log_path": "artifacts/clean_10/20260619T141510Z/runtime_reflexive_introspection.log",
+      "name": "runtime_reflexive_introspection",
+      "passed": true,
+      "returncode": 0
+    },
+    {
+      "command": [
+        "/Users/demouser/.pyenv/versions/3.12.0/bin/python",
+        "-m",
+        "pytest",
+        "tests/test_evidence_boundary_report.py",
+        "-q"
+      ],
+      "duration_seconds": 0.282268,
+      "log_path": "artifacts/clean_10/20260619T141510Z/evidence_boundary_report.log",
+      "name": "evidence_boundary_report",
+      "passed": true,
+      "returncode": 0
+    },
+    {
+      "command": [
+        "/Users/demouser/.pyenv/versions/3.12.0/bin/python",
+        "-m",
+        "pytest",
+        "tests/test_adaptive_capability_registry.py",
+        "-q"
+      ],
+      "duration_seconds": 0.252978,
+      "log_path": "artifacts/clean_10/20260619T141510Z/adaptive_capability_registry.log",
+      "name": "adaptive_capability_registry",
+      "passed": true,
+      "returncode": 0
+    },
+    {
+      "command": [
+        "/Users/demouser/.pyenv/versions/3.12.0/bin/python",
+        "-m",
+        "pytest",
+        "tests/test_prediction_endpoint.py",
+        "-q"
+      ],
+      "duration_seconds": 0.533989,
+      "log_path": "artifacts/clean_10/20260619T141510Z/prediction_endpoint_contracts.log",
+      "name": "prediction_endpoint_contracts",
+      "passed": true,
+      "returncode": 0
+    },
+    {
+      "command": [
+        "/Users/demouser/.pyenv/versions/3.12.0/bin/python",
+        "-m",
+        "pytest",
+        "tests/test_pool_profile_primitives.py",
+        "-q"
+      ],
+      "duration_seconds": 0.330219,
+      "log_path": "artifacts/clean_10/20260619T141510Z/pool_profile_primitives.log",
+      "name": "pool_profile_primitives",
+      "passed": true,
+      "returncode": 0
+    },
+    {
+      "command": [
+        "/Users/demouser/.pyenv/versions/3.12.0/bin/python",
+        "-m",
+        "pytest",
+        "tests/test_hendrix_phi_performance_benchmark.py",
+        "-q"
+      ],
+      "duration_seconds": 1.840233,
+      "log_path": "artifacts/clean_10/20260619T141510Z/hendrix_job_backed_benchmarks.log",
+      "name": "hendrix_job_backed_benchmarks",
+      "passed": true,
+      "returncode": 0
+    },
+    {
+      "command": [
+        "/Users/demouser/.pyenv/versions/3.12.0/bin/python",
+        "-m",
+        "pytest",
+        "tests/test_mining_autonomous_sovereign_gate.py",
+        "-q"
+      ],
+      "duration_seconds": 0.269882,
+      "log_path": "artifacts/clean_10/20260619T141510Z/autonomous_sovereign_gate_contracts.log",
+      "name": "autonomous_sovereign_gate_contracts",
+      "passed": true,
+      "returncode": 0
+    },
+    {
+      "command": [
+        "/Users/demouser/.pyenv/versions/3.12.0/bin/python",
+        "-m",
+        "pytest",
+        "tests/test_local_launch_script_contract.py",
+        "-q"
+      ],
+      "duration_seconds": 0.229044,
+      "log_path": "artifacts/clean_10/20260619T141510Z/local_launch_contracts.log",
+      "name": "local_launch_contracts",
+      "passed": true,
+      "returncode": 0
+    },
+    {
+      "command": [
+        "npx",
+        "vitest",
+        "run",
+        "tests/test_bridge_security.test.ts",
+        "tests/test_security_swarm_routes.test.ts",
+        "tests/test_consciousness_behavioral.test.ts"
+      ],
+      "duration_seconds": 0.781798,
+      "log_path": "artifacts/clean_10/20260619T141510Z/frontend_bridge_and_security_contracts.log",
+      "name": "frontend_bridge_and_security_contracts",
+      "passed": true,
+      "returncode": 0
+    },
+    {
+      "command": [
+        "npm",
+        "run",
+        "test:frontend:unit"
+      ],
+      "duration_seconds": 8.037915,
+      "log_path": "artifacts/clean_10/20260619T141510Z/frontend_unit_gate.log",
+      "name": "frontend_unit_gate",
+      "passed": false,
+      "returncode": 1
+    },
+    {
+      "command": [
+        "npm",
+        "run",
+        "test:backend"
+      ],
+      "duration_seconds": 66.433264,
+      "log_path": "artifacts/clean_10/20260619T141510Z/backend_gate.log",
+      "name": "backend_gate",
+      "passed": false,
+      "returncode": 1
+    },
+    {
+      "command": [
+        "npm",
+        "run",
+        "build"
+      ],
+      "duration_seconds": 1.657251,
+      "log_path": "artifacts/clean_10/20260619T141510Z/build_gate.log",
+      "name": "build_gate",
+      "passed": true,
+      "returncode": 0
+    }
+  ],
+  "schema": "HYBA_FULLSTACK_LOCAL_CLEAN_10_GATE_V1",
+  "status": "NO_GO"
+}
