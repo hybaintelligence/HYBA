@@ -241,6 +241,84 @@
       "commands": [
         "python -m pytest tests/test_claim_evidence_manifest.py -q"
       ]
+    },
+    {
+      "id": "topological_information_grammar_formalism",
+      "claim": "HYBA/PYTHIA frames quantum-style computation as Topological Information Grammar: formalism-derived Hilbert geometry, geometric phase holonomy, trace-one density projections, and PULVINI/\u03a6 structured-state bottlenecks executed on classical hardware.",
+      "status": "implemented_and_executable",
+      "boundary": "All 1000-qubit and holonomy results are tagged as Formalism-Derived Classical Simulation. This does not claim physical quantum hardware execution, universal quantum speedup, RSA-breaking capability, proof of the Yang-Mills Millennium problem, or guaranteed mining revenue.",
+      "code_paths": [
+        "python_backend/pythia_mining/ctd_formalism.py",
+        "python_backend/pythia_mining/dodecahedral_solver.py",
+        "scripts/geometric_phase_formalism.py"
+      ],
+      "test_paths": [
+        "tests/test_ctd_formalism.py",
+        "tests/test_topological_information_grammar.py",
+        "tests/test_claim_evidence_manifest.py"
+      ],
+      "doc_paths": [
+        "docs/SUBSTRATE_INDEPENDENCE.md",
+        "docs/evidence/claim_evidence_manifest.json"
+      ],
+      "commands": [
+        "python scripts/geometric_phase_formalism.py",
+        "python -m pytest tests/test_topological_information_grammar.py tests/test_claim_evidence_manifest.py -q"
+      ]
+    },
+    {
+      "id": "empirical_phi_resonance_and_real_world_workloads",
+      "claim": "HYBA/PYTHIA includes empirical fixture tests for \u03a6-resonance over externally supplied Bitcoin block nonces, Hypothesis Hilbert/Bures invariants, SAT geodesic solving, and a bounded real-world efficiency comparison report.",
+      "status": "implemented_and_executable",
+      "boundary": "These are deterministic regression and formalism-derived benchmark fixtures. They do not prove causal \u03a6 generation of Bitcoin nonces, pool-side accepted shares, measured ASIC replacement, universal SHA-256 acceleration, or physical quantum hardware execution.",
+      "code_paths": [
+        "python_backend/pythia_mining/ctd_formalism.py",
+        "python_backend/pythia_mining/unified_search_kernel.py",
+        "benchmarks/real_world_comparison_report.py"
+      ],
+      "test_paths": [
+        "tests/test_phi_resonance_empirical_realworld.py",
+        "tests/test_hypothesis_hilbert_invariants.py",
+        "tests/test_sat_real_world.py"
+      ],
+      "doc_paths": [
+        "docs/evidence/datasets/bitcoin_block_nonce_fixture.json",
+        "artifacts/comparative_supremacy_audit.json",
+        "docs/evidence/claim_evidence_manifest.json"
+      ],
+      "commands": [
+        "python -m pytest tests/test_phi_resonance_empirical_realworld.py tests/test_hypothesis_hilbert_invariants.py tests/test_sat_real_world.py -q",
+        "python benchmarks/real_world_comparison_report.py"
+      ]
+    },
+    {
+      "id": "after_quantum_trifecta_broad_range_benchmarks",
+      "claim": "HYBA/PYTHIA combines PULVINI memory compression, golden-ratio irrational gauges, and Hilbert/Bures formal geometry into a broad-range after-quantum benchmark suite for logistics, AI weights, biotech, finance, fluids, AI reasoning, and cyber topology.",
+      "status": "implemented_and_executable",
+      "boundary": "These benchmarks are formalism-derived structured-workload proxies. They do not prove physical quantum supremacy, production logistics optimality, LLM compression superiority, drug-discovery accuracy, market prediction accuracy, fluid-solver correctness, zero-day detection, ASIC replacement, or universal speedup.",
+      "code_paths": [
+        "python_backend/pythia_mining/after_quantum_trifecta.py",
+        "benchmarks/logistics_manifold_efficiency.py",
+        "benchmarks/ai_weight_geometry_folding.py",
+        "benchmarks/biotech_interaction_resonance.py",
+        "benchmarks/finance_tail_risk_holonomy.py",
+        "benchmarks/fluid_dynamics_resonance.py",
+        "benchmarks/ai_reasoning_integrity.py",
+        "benchmarks/cyber_topological_defense.py",
+        "benchmarks/global_formalism_efficiency_index.py"
+      ],
+      "test_paths": [
+        "tests/test_after_quantum_trifecta.py",
+        "tests/test_claim_evidence_manifest.py"
+      ],
+      "doc_paths": [
+        "docs/BEYOND_QUANTUM.md",
+        "docs/evidence/claim_evidence_manifest.json"
+      ],
+      "commands": [
+        "python -m pytest tests/test_after_quantum_trifecta.py tests/test_claim_evidence_manifest.py -q",
+        "python benchmarks/global_formalism_efficiency_index.py"
+      ]
     }
   ]
 }
