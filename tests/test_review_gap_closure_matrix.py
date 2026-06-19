@@ -74,6 +74,18 @@ GAP_CLOSURES = (
         closure_boundary="Proves documentation/evidence coupling; does not independently validate scientific claims.",
     ),
     GapClosure(
+        gap_id="SCIENCE-SIMULATION-INSTANTIATION-BOUNDARY",
+        category="simulation_vs_instantiation_and_deutsch_wall",
+        implementation_paths=(
+            "scripts/benchmark_deutsch_exponential_wall.py",
+            "scripts/benchmark_deutsch_with_pulvini.py",
+            "scripts/__init__.py",
+        ),
+        regression_tests=("tests/test_simulation_vs_instantiation.py", "tests/test_deutsch_pulvini_claim_boundary.py"),
+        evidence_or_gate_paths=("scripts/local_clean_10_gate.py",),
+        closure_boundary="Proves structured classical approximation and PULVINI polynomial compression boundaries; not physical quantum computation or exponential-wall elimination.",
+    ),
+    GapClosure(
         gap_id="LIVE-EMPIRICAL-PROOF",
         category="live_pool_and_commercial_claim_evidence",
         implementation_paths=("scripts/evidence_boundary_report.py",),
@@ -119,3 +131,14 @@ def test_iit_gap_is_registered_as_diagnostic_proxy_not_consciousness_claim() -> 
     assert "diagnostic-proxy" in iit_gap.closure_boundary
     assert "not phenomenal consciousness" in iit_gap.closure_boundary
     assert "tests/test_iit_4_complete.py" in iit_gap.regression_tests
+
+
+def test_scientific_boundary_gap_registers_deutsch_and_pulvini_evidence() -> None:
+    science_gap = next(
+        gap for gap in GAP_CLOSURES if gap.gap_id == "SCIENCE-SIMULATION-INSTANTIATION-BOUNDARY"
+    )
+
+    assert "structured classical approximation" in science_gap.closure_boundary
+    assert "not physical quantum computation" in science_gap.closure_boundary
+    assert "tests/test_simulation_vs_instantiation.py" in science_gap.regression_tests
+    assert "tests/test_deutsch_pulvini_claim_boundary.py" in science_gap.regression_tests
