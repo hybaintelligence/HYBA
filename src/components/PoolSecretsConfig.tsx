@@ -228,10 +228,17 @@ function TextInput({
   required: boolean;
   type?: string;
 }) {
+  const inputId = `pool-${label.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
   return (
     <div className="space-y-1.5">
-      <label className="text-[10px] font-mono text-[#64748B] uppercase font-bold">{label}</label>
+      <label
+        htmlFor={inputId}
+        className="text-[10px] font-mono text-[#64748B] uppercase font-bold"
+      >
+        {label}
+      </label>
       <input
+        id={inputId}
         type={type}
         required={required}
         placeholder={placeholder}
