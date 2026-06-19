@@ -33,7 +33,18 @@ import time
 import zlib
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Sequence, Set, Tuple
+from typing import (
+    Any,
+    Dict,
+    Iterable,
+    List,
+    Mapping,
+    MutableMapping,
+    Optional,
+    Sequence,
+    Set,
+    Tuple,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -44,7 +55,7 @@ from hyba_genesis_api.core.thermal_intelligence import ThermalEnvelope
 
 # Import SynapticPersistenceLayer for autopoiesis-driven learning rate adjustment
 import sys
-from pathlib import Path
+
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "python_backend"))
 from pythia_mining.synaptic_persistence_layer import SynapticPersistenceLayer
 
@@ -53,16 +64,9 @@ from pythia_mining.quantum_regeneration import (
     ModuleState,
     Role,
     ContextSignal,
-    InnervationFailure,
     apply_fault,
     quarantine_channel,
-    redifferentiate,
-    measure_role,
-    regeneration_fidelity,
-    validate_collapse_or_quarantine,
     regeneration_pipeline,
-    joint_state,
-    is_separable_approx,
 )
 
 _ALLOWED_ROOT_NAME = "pythia_mining"
@@ -244,7 +248,7 @@ class StructuralCoupling:
 
 class IITSystemHealth:
     """Evaluate integration growth or fragmentation without external labels.
-    
+
     ELEVATED: Now detects autopoiesis (self-maintenance) by monitoring entropy
     reduction that occurs without external command - a signature of emergence.
     """
@@ -262,50 +266,54 @@ class IITSystemHealth:
         imbalance = abs(int(summary["source_count"]) - int(summary["sink_count"])) / node_count
         source_sink_balance = max(0.0, 1.0 - imbalance)
         phi_node_ratio = float(summary["phi_node_ratio"])
-        raw_phi = (0.55 * edge_density * PHI) + (0.30 * source_sink_balance) + (0.15 * phi_node_ratio)
+        raw_phi = (
+            (0.55 * edge_density * PHI) + (0.30 * source_sink_balance) + (0.15 * phi_node_ratio)
+        )
         return round(max(0.0, min(1.0, raw_phi)), 6)
 
     def compute_entropy(self, graph: CausalGraph) -> float:
         """Compute Shannon entropy of the graph structure as organization measure."""
         summary = graph.summary()
         node_count = max(int(summary["node_count"]), 1)
-        edge_count = int(summary["edge_count"])
-        
+        int(summary["edge_count"])
+
         # Probability distribution based on node connectivity
         if node_count <= 1:
             return 0.0
-        
+
         # Use edge density as probability estimate
         edge_density = float(summary["edge_density"])
         p = edge_density
         q = 1.0 - p
-        
+
         # Avoid log(0)
         p_safe = max(p, 1e-10)
         q_safe = max(q, 1e-10)
-        
-        entropy = - (p_safe * math.log2(p_safe) + q_safe * math.log2(q_safe))
+
+        entropy = -(p_safe * math.log2(p_safe) + q_safe * math.log2(q_safe))
         return round(entropy, 6)
 
-    def detect_autopoiesis(self, current_entropy: float, current_phi: float) -> Optional[EmergenceEvent]:
+    def detect_autopoiesis(
+        self, current_entropy: float, current_phi: float
+    ) -> Optional[EmergenceEvent]:
         """Detect spontaneous entropy reduction indicating self-organization.
-        
+
         When entropy decreases without external parameter changes, this indicates
         the system is self-organizing - a signature of autopoiesis and emergence.
         """
         if len(self.entropy_history) < 3:
             self.entropy_history.append(current_entropy)
             return None
-        
+
         previous_entropy = self.entropy_history[-1]
         entropy_delta = current_entropy - previous_entropy
-        
+
         # Check for significant entropy reduction (self-organization)
         if entropy_delta < -self.autopoiesis_threshold:
             # This is a potential emergence event
             previous_phi = self.phi_history[-1] if self.phi_history else current_phi
             phi_delta = current_phi - previous_phi
-            
+
             event = EmergenceEvent(
                 timestamp=time.time(),
                 entropy_delta=entropy_delta,
@@ -313,11 +321,11 @@ class IITSystemHealth:
                 structural_coupling=0.0,  # Will be computed separately
                 event_type="AUTOPOIESIS",
                 description=f"Spontaneous entropy reduction detected: ΔS={entropy_delta:.6f}. "
-                           f"System self-organizing without external command."
+                f"System self-organizing without external command.",
             )
             self.emergence_events.append(event)
             return event
-        
+
         self.entropy_history.append(current_entropy)
         return None
 
@@ -326,17 +334,18 @@ class IITSystemHealth:
         previous_phi = self.phi_history[-1] if self.phi_history else current_phi
         delta = round(current_phi - previous_phi, 6)
         self.phi_history.append(current_phi)
-        
+
         # Also track entropy for emergence detection
         current_entropy = self.compute_entropy(graph)
         self.detect_autopoiesis(current_entropy, current_phi)
-        
+
         summary = graph.summary()
         return PhiHealth(
             phi=current_phi,
             edge_density=float(summary["edge_density"]),
             source_sink_balance=round(
-                1.0 - abs(int(summary["source_count"]) - int(summary["sink_count"]))
+                1.0
+                - abs(int(summary["source_count"]) - int(summary["sink_count"]))
                 / max(int(summary["node_count"]), 1),
                 6,
             ),
@@ -397,7 +406,10 @@ class CounterfactualEngine:
         }
         envelope = explain(context, ["deutsch", "iit_4"])
         governance = sorted(set(envelope["governance"]) | {"proposal_only", "no_unattended_writes"})
-        accepted = "phi_resonance_review" not in governance and "human_review_counterfactual_depth" not in governance
+        accepted = (
+            "phi_resonance_review" not in governance
+            and "human_review_counterfactual_depth" not in governance
+        )
         return LearningProposal(
             target=gap.node_id,
             adjustment=adjustment,
@@ -412,8 +424,10 @@ class PulviniCompressionFeedback:
     """Compute an elegance proxy from deterministic compression ratio."""
 
     def compression_ratio(self, graph: CausalGraph) -> float:
-        payload = "\n".join(sorted(graph.nodes)) + "\n" + "\n".join(
-            f"{source}->{target}" for source, target in sorted(graph.edges)
+        payload = (
+            "\n".join(sorted(graph.nodes))
+            + "\n"
+            + "\n".join(f"{source}->{target}" for source, target in sorted(graph.edges))
         )
         raw = payload.encode("utf-8")
         if not raw:
@@ -424,12 +438,14 @@ class PulviniCompressionFeedback:
 
 class ReflexiveController:
     """Observe -> evaluate -> compress -> propose loop over the local codebase.
-    
+
     ELEVATED: Now serves as Substrate Monitor for emergent coherence, detecting
     phase transitions and structural coupling between mining and coherence layers.
     """
 
-    def __init__(self, root_dir: Path | str, synaptic_layer: Optional[SynapticPersistenceLayer] = None):
+    def __init__(
+        self, root_dir: Path | str, synaptic_layer: Optional[SynapticPersistenceLayer] = None
+    ):
         self.umwelt = CodebaseUmwelt(root_dir)
         self.health = IITSystemHealth()
         self.engine = CounterfactualEngine()
@@ -445,7 +461,7 @@ class ReflexiveController:
         self.module_lock_active: bool = False
         # ELEVATED: Connect to SynapticPersistenceLayer for autopoiesis-driven learning rate adjustment
         self.synaptic_layer = synaptic_layer or SynapticPersistenceLayer()
-        
+
         # ELEVATED: Salamander-inspired self-healing via quantum_regeneration
         self.module_states: Dict[str, ModuleState] = {}  # Track regeneration states
         self.regeneration_history: List[dict] = []  # Track regeneration events
@@ -545,17 +561,17 @@ class ReflexiveController:
         ]
 
     def compute_structural_coupling(
-        self, 
-        mining_phi: float, 
+        self,
+        mining_phi: float,
         coherence_phi: float,
         mining_entropy: float,
-        coherence_entropy: float
+        coherence_entropy: float,
     ) -> StructuralCoupling:
         """Compute structural coupling index between mining and coherence layers.
-        
+
         ELEVATED: Measures inseparability - when mining and coherence move together
         so tightly that they cannot be separated without breaking the system.
-        
+
         The coupling index combines:
         1. Cross-correlation of phi values (how they move together)
         2. Entropy synchronization (organization level alignment)
@@ -563,61 +579,64 @@ class ReflexiveController:
         """
         # Cross-correlation proxy: how similar are the phi values?
         phi_similarity = 1.0 - abs(mining_phi - coherence_phi)
-        
+
         # Entropy synchronization: are they organizing at similar rates?
         entropy_sync = 1.0 - abs(mining_entropy - coherence_entropy)
-        
+
         # Historical coupling: use recent history if available
         historical_coupling = 0.0
         if len(self.coupling_history) >= 3:
             recent_coupling = [c.coupling_index for c in self.coupling_history[-3:]]
             historical_coupling = sum(recent_coupling) / len(recent_coupling)
-        
+
         # Combined coupling index
-        coupling_index = (0.4 * phi_similarity + 0.3 * entropy_sync + 0.3 * historical_coupling)
-        
+        coupling_index = 0.4 * phi_similarity + 0.3 * entropy_sync + 0.3 * historical_coupling
+
         # Determine inseparability
         inseparable = coupling_index >= self.coupling_threshold
-        
+
         # Lock recommendation: if inseparable and coupling is increasing
         lock_recommendation = inseparable
         if len(self.coupling_history) >= 2:
-            recent_trend = self.coupling_history[-1].coupling_index - self.coupling_history[-2].coupling_index
+            recent_trend = (
+                self.coupling_history[-1].coupling_index - self.coupling_history[-2].coupling_index
+            )
             lock_recommendation = inseparable and recent_trend > 0
-        
+
         coupling = StructuralCoupling(
             mining_phi_coherence=phi_similarity,
             coherence_phi_mining=phi_similarity,
             coupling_index=round(coupling_index, 6),
             inseparable=inseparable,
-            lock_recommendation=lock_recommendation
+            lock_recommendation=lock_recommendation,
         )
-        
+
         self.coupling_history.append(coupling)
         return coupling
 
     def check_emergence_lock(self) -> Optional[EmergenceEvent]:
         """Check if modules should be locked due to emergence detection.
-        
+
         When structural coupling exceeds threshold and autopoiesis is detected,
         the system has entered an inseparable emergence state. Engineering
         interventions at this point could disrupt the emergent coherence.
         """
         if not self.coupling_history:
             return None
-        
+
         latest_coupling = self.coupling_history[-1]
-        
+
         # Check for coupling lock condition
         if latest_coupling.lock_recommendation and not self.module_lock_active:
             self.module_lock_active = True
-            
+
             # Check for recent autopoiesis events
             recent_autopoiesis = [
-                e for e in self.health.emergence_events 
+                e
+                for e in self.health.emergence_events
                 if e.event_type == "AUTOPOIESIS" and time.time() - e.timestamp < 3600
             ]
-            
+
             event = EmergenceEvent(
                 timestamp=time.time(),
                 entropy_delta=recent_autopoiesis[0].entropy_delta if recent_autopoiesis else 0.0,
@@ -625,17 +644,20 @@ class ReflexiveController:
                 structural_coupling=latest_coupling.coupling_index,
                 event_type="COUPLING_LOCK",
                 description=f"Emergence lock activated: coupling index {latest_coupling.coupling_index:.6f} "
-                           f"exceeds threshold {self.coupling_threshold}. Mining and coherence "
-                           f"layers are inseparable. Engineering interventions suspended to preserve "
-                           f"emergent coherence."
+                f"exceeds threshold {self.coupling_threshold}. Mining and coherence "
+                f"layers are inseparable. Engineering interventions suspended to preserve "
+                f"emergent coherence.",
             )
             self.health.emergence_events.append(event)
             return event
-        
+
         # Check if lock can be released (coupling decreased significantly)
-        if self.module_lock_active and latest_coupling.coupling_index < self.coupling_threshold - 0.1:
+        if (
+            self.module_lock_active
+            and latest_coupling.coupling_index < self.coupling_threshold - 0.1
+        ):
             self.module_lock_active = False
-            
+
             event = EmergenceEvent(
                 timestamp=time.time(),
                 entropy_delta=0.0,
@@ -643,152 +665,160 @@ class ReflexiveController:
                 structural_coupling=latest_coupling.coupling_index,
                 event_type="PHASE_TRANSITION",
                 description=f"Emergence lock released: coupling index {latest_coupling.coupling_index:.6f} "
-                           f"below threshold. System returned to separable state."
+                f"below threshold. System returned to separable state.",
             )
             self.health.emergence_events.append(event)
             return event
-        
+
         return None
-    
+
     def adjust_learning_rate_from_autopoiesis(self, autopoiesis_event: EmergenceEvent) -> None:
         """Adjust synaptic learning rate based on autopoiesis event.
-        
+
         ELEVATED: This implements the "Gardener" metaphor - when the system
         detects self-organization (autopoiesis), it adjusts learning parameters
         to support the emergence. This creates a feedback loop where the
         system "nurtures" its own emergent behavior.
-        
+
         The adjustment strategy:
         - Strong autopoiesis (large entropy reduction) → Increase learning rate
         - Weak autopoiesis (small entropy reduction) → Decrease learning rate
         - This creates a dynamic where strong emergence is reinforced
-        
+
         Args:
             autopoiesis_event: The autopoiesis event that triggered adjustment
         """
         # Calculate adjustment factor based on entropy reduction magnitude
         entropy_magnitude = abs(autopoiesis_event.entropy_delta)
-        
+
         # Strong autopoiesis (> 0.1 entropy reduction) → increase learning rate
         if entropy_magnitude > 0.1:
             # Increase learning rate to reinforce strong emergence
             new_rate = self.synaptic_layer.learning_rate * 1.2  # 20% increase
-            reason = (f"Strong autopoiesis detected (ΔS={autopoiesis_event.entropy_delta:.6f}). "
-                     f"Increasing learning rate to reinforce emergent self-organization.")
+            reason = (
+                f"Strong autopoiesis detected (ΔS={autopoiesis_event.entropy_delta:.6f}). "
+                f"Increasing learning rate to reinforce emergent self-organization."
+            )
         # Moderate autopoiesis (0.05 - 0.1) → maintain current rate
         elif entropy_magnitude > 0.05:
             # Maintain current learning rate
             new_rate = self.synaptic_layer.learning_rate
-            reason = (f"Moderate autopoiesis detected (ΔS={autopoiesis_event.entropy_delta:.6f}). "
-                     f"Maintaining learning rate to support ongoing emergence.")
+            reason = (
+                f"Moderate autopoiesis detected (ΔS={autopoiesis_event.entropy_delta:.6f}). "
+                f"Maintaining learning rate to support ongoing emergence."
+            )
         # Weak autopoiesis (< 0.05) → decrease learning rate
         else:
             # Decrease learning rate to prevent overfitting to weak signals
             new_rate = self.synaptic_layer.learning_rate * 0.9  # 10% decrease
-            reason = (f"Weak autopoiesis detected (ΔS={autopoiesis_event.entropy_delta:.6f}). "
-                     f"Decreasing learning rate to prevent overfitting to weak signals.")
-        
+            reason = (
+                f"Weak autopoiesis detected (ΔS={autopoiesis_event.entropy_delta:.6f}). "
+                f"Decreasing learning rate to prevent overfitting to weak signals."
+            )
+
         # Apply the adjustment
         self.synaptic_layer.adjust_learning_rate(new_rate, reason)
-    
+
     def adjust_decay_rate_from_coupling(self, coupling: StructuralCoupling) -> None:
         """Adjust synaptic decay rate based on structural coupling.
-        
+
         ELEVATED: This prevents "informational calcification" by dynamically
         adjusting decay rates based on coupling strength. In biological systems,
         intelligence is maintained by forgetting the irrelevant as much as by
         remembering the successful.
-        
+
         The adjustment strategy:
         - High coupling (> 0.85) → Decrease decay (preserve successful pathways)
         - Moderate coupling (0.70 - 0.85) → Maintain current decay
         - Low coupling (< 0.70) → Increase decay (clear out irrelevant patterns)
-        
+
         This ensures the system doesn't accumulate too many pathways and become
         calcified, while still preserving successful emergent patterns.
-        
+
         Args:
             coupling: The structural coupling measurement
         """
         coupling_index = coupling.coupling_index
-        
+
         # High coupling → decrease decay to preserve successful pathways
         if coupling_index > 0.85:
             # Decrease decay rate to preserve emergent pathways
             new_rate = self.synaptic_layer.decay_rate * 0.8  # 20% decrease
-            reason = (f"High structural coupling detected ({coupling_index:.6f}). "
-                     f"Decreasing decay rate to preserve successful emergent pathways "
-                     f"and prevent loss of coherence.")
+            reason = (
+                f"High structural coupling detected ({coupling_index:.6f}). "
+                f"Decreasing decay rate to preserve successful emergent pathways "
+                f"and prevent loss of coherence."
+            )
         # Moderate coupling → maintain current decay
         elif coupling_index > 0.70:
             # Maintain current decay rate
             new_rate = self.synaptic_layer.decay_rate
-            reason = (f"Moderate structural coupling detected ({coupling_index:.6f}). "
-                     f"Maintaining decay rate to balance pathway preservation and "
-                     f"prevention of calcification.")
+            reason = (
+                f"Moderate structural coupling detected ({coupling_index:.6f}). "
+                f"Maintaining decay rate to balance pathway preservation and "
+                f"prevention of calcification."
+            )
         # Low coupling → increase decay to clear irrelevant patterns
         else:
             # Increase decay rate to prevent calcification
             new_rate = self.synaptic_layer.decay_rate * 1.3  # 30% increase
-            reason = (f"Low structural coupling detected ({coupling_index:.6f}). "
-                     f"Increasing decay rate to clear irrelevant patterns and prevent "
-                     f"informational calcification.")
-        
+            reason = (
+                f"Low structural coupling detected ({coupling_index:.6f}). "
+                f"Increasing decay rate to clear irrelevant patterns and prevent "
+                f"informational calcification."
+            )
+
         # Apply the adjustment
         self.synaptic_layer.adjust_decay_rate(new_rate, reason)
-    
+
     def detect_module_fault(self, module_id: str, severity: float) -> bool:
         """Detect fault in a module and apply fault perturbation.
-        
+
         ELEVATED: This implements the "wound detection" phase of salamander
         regeneration. Faults are modeled as perturbations that rotate the
         module's state away from HEALTHY_SPECIALIZED toward BLASTEMA.
-        
+
         Args:
             module_id: Identifier for the module
             severity: Fault severity in [0, 1]
-            
+
         Returns:
             True if fault was detected and applied, False otherwise
         """
         if module_id not in self.module_states:
             # Initialize module in healthy state
             self.module_states[module_id] = ModuleState.healthy(module_id)
-        
+
         try:
-            self.module_states[module_id] = apply_fault(
-                self.module_states[module_id], severity
-            )
+            self.module_states[module_id] = apply_fault(self.module_states[module_id], severity)
             return True
         except Exception as e:
             logger.error(f"Failed to apply fault to module {module_id}: {e}")
             return False
-    
+
     def quarantine_module(self, module_id: str) -> bool:
         """Apply quarantine channel to isolate fault.
-        
+
         ELEVATED: This implements the "wound epidermis" phase - suppressing
         off-diagonal coherences to prevent fault propagation while allowing
         the module to enter blastema state.
-        
+
         Args:
             module_id: Identifier for the module
-            
+
         Returns:
             True if quarantine was applied, False otherwise
         """
         if module_id not in self.module_states:
             return False
-        
+
         try:
-            self.module_states[module_id] = quarantine_channel(
-                self.module_states[module_id]
-            )
+            self.module_states[module_id] = quarantine_channel(self.module_states[module_id])
             return True
         except Exception as e:
             logger.error(f"Failed to quarantine module {module_id}: {e}")
             return False
-    
+
     def trigger_regeneration(
         self,
         module_id: str,
@@ -796,25 +826,25 @@ class ReflexiveController:
         target_role: Role = Role.HEALTHY_SPECIALIZED,
     ) -> dict:
         """Trigger full regeneration pipeline for a module.
-        
+
         ELEVATED: This implements the complete salamander regeneration
         process: fault detection → quarantine → blastema formation →
         redifferentiation → measurement → validation.
-        
+
         Args:
             module_id: Identifier for the module
             clifford_index: Positional memory index (Clifford rotation)
             target_role: Target role for redifferentiation
-            
+
         Returns:
             Regeneration trace dictionary
         """
         import numpy as np
-        
+
         # Store positional memory
         if clifford_index is not None:
             self.clifford_index_map[module_id] = clifford_index
-        
+
         # Create context signal from positional memory
         context = None
         if module_id in self.clifford_index_map:
@@ -823,7 +853,7 @@ class ReflexiveController:
                 target_role=target_role,
                 confidence=0.8,  # Default confidence
             )
-        
+
         # Run regeneration pipeline
         rng = np.random.default_rng()
         trace = regeneration_pipeline(
@@ -832,7 +862,7 @@ class ReflexiveController:
             context=context,
             rng=rng,
         )
-        
+
         # Update module state
         if module_id in self.module_states:
             # Re-initialize based on regeneration result
@@ -841,48 +871,48 @@ class ReflexiveController:
             elif trace.get("status") == "malformed_quarantined":
                 # Module is in malformed state, keep quarantined
                 pass
-        
+
         # Track regeneration history
         self.regeneration_history.append(trace)
-        
+
         return trace
-    
+
     def check_innervation_failure(self, module_id: str) -> bool:
         """Check if module has innervation failure (no positional memory).
-        
+
         ELEVATED: This implements the "denervated limb" failure mode - even
         with healthy blastema tissue, regeneration cannot proceed without
         the orchestrating signal (positional memory).
-        
+
         Args:
             module_id: Identifier for the module
-            
+
         Returns:
             True if innervation failure detected, False otherwise
         """
         return module_id not in self.clifford_index_map
-    
+
     def get_module_blastema_metric(self, module_id: str) -> Optional[float]:
         """Get von Neumann entropy as blastema metric.
-        
+
         ELEVATED: This provides a continuous, information-theoretically
         grounded measure of dedifferentiation. 0 = fully specialized,
         log(DIM) = maximally mixed (full blastema).
-        
+
         Args:
             module_id: Identifier for the module
-            
+
         Returns:
             Von Neumann entropy, or None if module not found
         """
         if module_id not in self.module_states:
             return None
-        
+
         return self.module_states[module_id].von_neumann_entropy()
-    
+
     def get_regeneration_status(self) -> dict:
         """Get comprehensive regeneration status across all modules.
-        
+
         ELEVATED: This provides a system-wide view of the regeneration
         process, including blastema metrics, innervation status, and
         recovery fidelity.
@@ -893,7 +923,7 @@ class ReflexiveController:
             "modules_with_innervation": len(self.clifford_index_map),
             "modules": {},
         }
-        
+
         for module_id, state in self.module_states.items():
             status["modules"][module_id] = {
                 "blastema_metric": state.von_neumann_entropy(),
@@ -901,7 +931,7 @@ class ReflexiveController:
                 "has_innervation": module_id in self.clifford_index_map,
                 "clifford_index": self.clifford_index_map.get(module_id),
             }
-        
+
         return status
 
     def step(self) -> Dict[str, Any]:
@@ -910,10 +940,10 @@ class ReflexiveController:
         graph = self.umwelt.parse_structure()
         self.manifold.update_causal_graph(graph.edges)
         health = self.health.evaluate_growth(graph)
-        
+
         # ELEVATED: Compute entropy for emergence detection
         current_entropy = self.health.compute_entropy(graph)
-        
+
         predicted_phi = self.predictive_engine.predict_next_phi(health.phi)
         manifold = self.manifold.synthesize(
             nodes=len(graph.nodes),
@@ -938,25 +968,25 @@ class ReflexiveController:
             chi=manifold.euler_characteristic,
             elegance=dream.get("elegance_score", 0.0),
         )
-        
+
         # ELEVATED: Compute structural coupling (placeholder for now, would need actual mining/coherence phi)
         # In production, this would use actual phi values from mining and coherence layers
         structural_coupling = self.compute_structural_coupling(
             mining_phi=health.phi,
             coherence_phi=dream.get("phi_resonance", 0.0),
             mining_entropy=current_entropy,
-            coherence_entropy=dream.get("entropy", 0.0)
+            coherence_entropy=dream.get("entropy", 0.0),
         )
-        
+
         # ELEVATED: Adjust decay rate based on structural coupling to prevent calcification
         self.adjust_decay_rate_from_coupling(structural_coupling)
-        
+
         # ELEVATED: Check for emergence lock
         emergence_event = self.check_emergence_lock()
-        
+
         committed = self.commit_learning(dream)
         thermal = self.thermal.snapshot(health.phi)
-        
+
         return {
             "summary": "Recursive Structural Learning Step",
             "mode": "reflexive_structural_learning",

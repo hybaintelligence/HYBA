@@ -19,7 +19,7 @@ import re
 import unittest
 from collections import defaultdict
 from pathlib import Path
-from typing import Dict, List, Set
+from typing import Dict, Set
 
 
 class FeedbackLoopDetector:
@@ -48,10 +48,19 @@ class FeedbackLoopDetector:
             for node in ast.walk(tree):
                 if isinstance(node, ast.FunctionDef) and any(
                     keyword in node.name.lower()
-                    for keyword in ["update", "adjust", "tune", "optimize", "optimise", "adapt", "learn"]
+                    for keyword in [
+                        "update",
+                        "adjust",
+                        "tune",
+                        "optimize",
+                        "optimise",
+                        "adapt",
+                        "learn",
+                    ]
                 ):
                     modifies_state = any(
-                        isinstance(child, (ast.Assign, ast.AugAssign)) and self._assigns_to_self(child)
+                        isinstance(child, (ast.Assign, ast.AugAssign))
+                        and self._assigns_to_self(child)
                         for child in ast.walk(node)
                     )
                     if modifies_state:
@@ -159,7 +168,11 @@ class ParameterOptimizationDetector:
                             "snippet": content[max(0, match.start() - 40) : match.end() + 40],
                         }
                     )
-            return {"file": str(file_path.name), "optimizations": optimizations, "count": len(optimizations)}
+            return {
+                "file": str(file_path.name),
+                "optimizations": optimizations,
+                "count": len(optimizations),
+            }
         except Exception as exc:
             return {"file": str(file_path.name), "error": str(exc), "count": 0}
 
@@ -196,7 +209,11 @@ class MemoryAccumulationDetector:
                             "context": content[line_start:line_end].strip()[:120],
                         }
                     )
-            return {"file": str(file_path.name), "memory_patterns": memory_patterns, "count": len(memory_patterns)}
+            return {
+                "file": str(file_path.name),
+                "memory_patterns": memory_patterns,
+                "count": len(memory_patterns),
+            }
         except Exception as exc:
             return {"file": str(file_path.name), "error": str(exc), "count": 0}
 
@@ -240,7 +257,7 @@ class SelfModificationDetector:
                     continue
 
                 line_num = getattr(node, "lineno", 0)
-                line_start = content.rfind("\n", 0, max(0, getattr(node, "col_offset", 0))) + 1
+                content.rfind("\n", 0, max(0, getattr(node, "col_offset", 0))) + 1
                 lines = content.splitlines()
                 if 1 <= line_num <= len(lines):
                     context = lines[line_num - 1].strip()[:160]
@@ -253,7 +270,11 @@ class SelfModificationDetector:
                     }
                 )
 
-            return {"file": str(file_path.name), "modifications": modifications, "count": len(modifications)}
+            return {
+                "file": str(file_path.name),
+                "modifications": modifications,
+                "count": len(modifications),
+            }
         except Exception as exc:
             return {"file": str(file_path.name), "error": str(exc), "count": 0}
 

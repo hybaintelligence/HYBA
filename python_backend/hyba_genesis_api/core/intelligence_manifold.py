@@ -10,7 +10,7 @@ from __future__ import annotations
 import math
 import os
 from dataclasses import asdict, dataclass
-from typing import Any, Dict, Iterable, List, Mapping, Sequence, Tuple
+from typing import Any, Dict, Iterable, List, Sequence, Tuple
 
 PHI = (1.0 + math.sqrt(5.0)) / 2.0
 

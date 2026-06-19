@@ -90,6 +90,7 @@ async def test_unified_health_reports_measured_engine_surface() -> None:
     assert health["telemetry_source"] == "canonical_unified_engine_state"
     assert health["verifier_backend"]
 
+
 @pytest.mark.asyncio
 async def test_unified_blockchain_analysis_is_deterministic_and_bounded() -> None:
     req = unified_mining.BlockchainAnalysisRequest(
@@ -124,6 +125,7 @@ async def test_it_from_bit_parser_is_claim_bounded_and_deterministic() -> None:
     assert response["ones"] == 4
     assert response["zeros"] == 4
     assert response["digest"] == unified_mining.hashlib.sha256(b"01001101").hexdigest()
+
 
 from hypothesis import given, strategies as st
 

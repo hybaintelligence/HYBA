@@ -35,16 +35,13 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 # Set pool config path BEFORE importing pythia_mining modules to ensure it's respected
 # For mainnet mission, use live config; for testing, use test config via env override
 default_config = str(Path(__file__).resolve().parents[1] / "config" / "mining_pools_live.json")
-os.environ.setdefault("HYBA_POOL_CONFIG_PATH", 
-                      os.getenv("HYBA_POOL_CONFIG_PATH", default_config))
+os.environ.setdefault("HYBA_POOL_CONFIG_PATH", os.getenv("HYBA_POOL_CONFIG_PATH", default_config))
 
 from pythia_mining.phi_config import initialize_production_secrets
 from pythia_mining.phi_unified_mining_engine import UnifiedMiningEngine
 from pythia_mining.pool_profiles import (
     PoolCredentialConfig,
-    PoolProfileError,
     load_pool_profiles,
-    load_runtime_pool_configs,
 )
 from pythia_mining.stratum_client import MiningJob, ShareResult, StratumClient
 from pythia_mining.pythia_one_block_mission import ShareOutcome
@@ -81,13 +78,16 @@ class UnifiedMiner:
         default_config = str(
             Path(__file__).resolve().parents[1] / "config" / "mining_pools_test.json"
         )
-        self.pool_config_path = pool_config_path or os.getenv("HYBA_POOL_CONFIG_PATH", default_config)
+        self.pool_config_path = pool_config_path or os.getenv(
+            "HYBA_POOL_CONFIG_PATH", default_config
+        )
         os.environ["HYBA_POOL_CONFIG_PATH"] = self.pool_config_path
 
         self.engine = UnifiedMiningEngine()
 
         # Activate PYTHIA autonomous intelligence
         from pythia_mining.autonomous_mining_controller import AutonomyLevel
+
         self.engine.set_autonomy_level(AutonomyLevel.AUTONOMOUS)
         logger.info("PYTHIA intelligence activated: AUTONOMOUS mode")
         logger.info("  Self-healing: ENABLED (consciousness-driven regime adaptation)")
@@ -100,15 +100,26 @@ class UnifiedMiner:
             seed_mission_memory,
             validate_mission_memory,
         )
+
         # Make ShareOutcome available for mission recording
         self.ShareOutcome = ShareOutcome
         self.mission = seed_mission_memory()
         assert validate_mission_memory(self.mission), "Mission memory validation failed"
         logger.info("PYTHIA mission memory seeded: %s", self.mission.mission)
-        logger.info("  Mission target: %d pool-confirmed accepted block(s)", self.mission.mission_target.accepted_blocks)
-        logger.info("  Shutdown after completion: %s", self.mission.mission_target.shutdown_after_completion)
-        logger.info("  Max hashrate: %.1f EH/s (hard limit)", self.mission.hashrate_limit.max_autonomous_hashrate_ehs)
-        logger.info("  Supreme invariants: %s", "; ".join(self.mission.supreme_invariants.invariants))
+        logger.info(
+            "  Mission target: %d pool-confirmed accepted block(s)",
+            self.mission.mission_target.accepted_blocks,
+        )
+        logger.info(
+            "  Shutdown after completion: %s", self.mission.mission_target.shutdown_after_completion
+        )
+        logger.info(
+            "  Max hashrate: %.1f EH/s (hard limit)",
+            self.mission.hashrate_limit.max_autonomous_hashrate_ehs,
+        )
+        logger.info(
+            "  Supreme invariants: %s", "; ".join(self.mission.supreme_invariants.invariants)
+        )
         self.pool_configs: List[PoolCredentialConfig] = []
         self.active_pool_idx: int = 0
         self.stratum: Optional[StratumClient] = None
@@ -224,7 +235,9 @@ class UnifiedMiner:
         verified_profiles = load_pool_profiles()
 
         if len(verified_profiles) < 1:
-            raise RuntimeError("Initialization blocked: No verified stratum pool profiles available.")
+            raise RuntimeError(
+                "Initialization blocked: No verified stratum pool profiles available."
+            )
 
         # Convert PoolProfile objects back to PoolCredentialConfig for internal use
         self.pool_configs = []
@@ -387,7 +400,7 @@ class UnifiedMiner:
         rejected locally before any pool submission attempt.
         """
         local = self.engine.submit_candidate(job, nonce)
-        
+
         share_info: dict[str, Any] = {
             "nonce": nonce,
             "job_id": job.job_id,
@@ -424,7 +437,9 @@ class UnifiedMiner:
         if self.stratum is None:
             self._rejected += 1
             share_info.update({"error_code": 503, "error_msg": "stratum_disconnected"})
-            self._record_reason("submit", "stratum_disconnected_after_local_pass", level=logging.ERROR)
+            self._record_reason(
+                "submit", "stratum_disconnected_after_local_pass", level=logging.ERROR
+            )
             await self.engine.on_share_result(share_info, accepted=False)
             return True
 
@@ -556,9 +571,7 @@ class UnifiedMiner:
 
         try:
             nonce_plan = build_pulvini_nonce_plan()
-            segments, coverage, overlap_free, active_ranges = self._nonce_plan_telemetry(
-                nonce_plan
-            )
+            segments, coverage, overlap_free, active_ranges = self._nonce_plan_telemetry(nonce_plan)
             logger.info(
                 "PULVINI nonce plan: %d coverage_segments, complete_coverage=%s, overlap_free=%s, active_ranges=%d",
                 segments,
@@ -574,9 +587,13 @@ class UnifiedMiner:
 
         while RUNNING:
             if not self.stratum or not self.stratum.is_connected:
-                self._record_reason("no_job", "not_connected_reconnect_required", level=logging.WARNING)
+                self._record_reason(
+                    "no_job", "not_connected_reconnect_required", level=logging.WARNING
+                )
                 if not await self.connect_next_pool():
-                    self._record_reason("no_job", "all_pools_unreachable_retrying", level=logging.ERROR)
+                    self._record_reason(
+                        "no_job", "all_pools_unreachable_retrying", level=logging.ERROR
+                    )
                     await asyncio.sleep(30)
                     continue
 
@@ -636,7 +653,9 @@ class UnifiedMiner:
             except asyncio.CancelledError:
                 break
             except Exception as exc:
-                self._record_reason("search_skip", "search_loop_exception", level=logging.ERROR, detail=str(exc))
+                self._record_reason(
+                    "search_skip", "search_loop_exception", level=logging.ERROR, detail=str(exc)
+                )
                 logger.exception("Search loop error")
                 await asyncio.sleep(1)
 
@@ -667,20 +686,14 @@ class UnifiedMiner:
         logger.info("  Coherence:    %.4f", state["state"]["phi_coherence"])
         logger.info("  Regime:       %s", state["state"]["integration_regime"])
         logger.info("  Strategy:     %s", state["state"]["strategy"])
-        logger.info(
-            "  Compression:  %.2fx", state["state"]["working_set_compression"]
-        )
+        logger.info("  Compression:  %.2fx", state["state"]["working_set_compression"])
         logger.info("  M32 domains:  %s/32", state["state"]["m32_domains_covered"])
         logger.info("  Verifier:     %s", state["state"]["verifier_backend"])
         logger.info("  Last H/s:     %.2f", state["state"]["last_batch_hashrate_hps"])
         logger.info("")
         logger.info("  CONSCIOUSNESS:")
-        logger.info(
-            "  Coherence:    %.4f", state["consciousness"].get("coherence_meter", 0)
-        )
-        logger.info(
-            "  Regime:       %s", state["consciousness"].get("integration_regime", "?")
-        )
+        logger.info("  Coherence:    %.4f", state["consciousness"].get("coherence_meter", 0))
+        logger.info("  Regime:       %s", state["consciousness"].get("integration_regime", "?"))
         logger.info(
             "  Components:   %s active",
             state["consciousness"].get("active_components", 0),
@@ -688,12 +701,8 @@ class UnifiedMiner:
         logger.info("")
         logger.info("  SOLVER:")
         logger.info("  Available:    %s", state["solver"].get("available", False))
-        logger.info(
-            "  Φ alignment:  %.6f", state["solver"].get("phi_phase_alignment", 0)
-        )
-        logger.info(
-            "  Entropy:      %.4f", state["solver"].get("dodecahedral_entropy", 0)
-        )
+        logger.info("  Φ alignment:  %.6f", state["solver"].get("phi_phase_alignment", 0))
+        logger.info("  Entropy:      %.4f", state["solver"].get("dodecahedral_entropy", 0))
         logger.info("")
         logger.info("  PROOFS:")
         proofs = state.get("proofs", {})

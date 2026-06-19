@@ -13,7 +13,11 @@ import {
   unifiedShareResult,
 } from "../src/apiClient";
 
-const success = () => new Response(JSON.stringify({ status: "ok", accepted: true }), { status: 200, headers: { "Content-Type": "application/json" } });
+const success = () =>
+  new Response(JSON.stringify({ status: "ok", accepted: true }), {
+    status: 200,
+    headers: { "Content-Type": "application/json" },
+  });
 
 describe("apiClient autonomous/destructive safety contracts", () => {
   beforeEach(() => {
@@ -29,7 +33,10 @@ describe("apiClient autonomous/destructive safety contracts", () => {
   it("routes autonomous commands to mocked /api paths with explicit payloads and auth", async () => {
     await scaleIntelligence(0.75, "controller");
     await boostConsciousness(0.25, 2);
-    await intelligenceOrchestrate({ goal: "sandbox-plan", constraints: { safety: "no-live-destructive-calls" } });
+    await intelligenceOrchestrate({
+      goal: "sandbox-plan",
+      constraints: { safety: "no-live-destructive-calls" },
+    });
     await securityShield({ activation: true, reason: "contract test" });
     await unifiedShareResult({ task_id: "contract", result: { status: "ok" }, confidence: 0.9 });
     await quarantineLane(3);
@@ -55,7 +62,8 @@ describe("apiClient autonomous/destructive safety contracts", () => {
       ["POST", "/api/organism/executive/intent"],
       ["PUT", "/api/organism/executive/habitats/migrate/testnet-pool"],
     ]);
-    for (const call of observed) expect(call.headers.get("Authorization")).toBe("Bearer executive-token");
+    for (const call of observed)
+      expect(call.headers.get("Authorization")).toBe("Bearer executive-token");
     expect(observed[0].body).toEqual({ scale: 0.75, target: "controller" });
     expect(observed[7].body).toEqual({ intent: "STASIS" });
   });
@@ -68,7 +76,9 @@ describe("apiClient autonomous/destructive safety contracts", () => {
   });
 
   it("does not retry destructive/autonomous commands on 5xx", async () => {
-    vi.mocked(fetch).mockResolvedValue(new Response(JSON.stringify({ error: "server_error" }), { status: 500 }));
+    vi.mocked(fetch).mockResolvedValue(
+      new Response(JSON.stringify({ error: "server_error" }), { status: 500 }),
+    );
     await expect(securityShield({ activation: true })).rejects.toMatchObject({ status: 500 });
     await expect(setMiningIntent({ intent: "ACTIVATE" })).rejects.toMatchObject({ status: 500 });
     await expect(migrateToHabitat("sandbox")).rejects.toMatchObject({ status: 500 });

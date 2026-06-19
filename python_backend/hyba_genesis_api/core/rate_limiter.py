@@ -28,7 +28,9 @@ class RateLimiter(BaseHTTPMiddleware):
     def __init__(self, app, max_requests: int | None = None, window_seconds: int | None = None):
         super().__init__(app)
         # Determine limits from arguments or environment variables
-        self.max_requests = max_requests or int(os.getenv("HYBA_RATE_LIMIT_REQUESTS_PER_MINUTE", "120"))
+        self.max_requests = max_requests or int(
+            os.getenv("HYBA_RATE_LIMIT_REQUESTS_PER_MINUTE", "120")
+        )
         self.window = window_seconds or int(os.getenv("HYBA_RATE_LIMIT_WINDOW_SECONDS", "60"))
         # Track request timestamps by client IP
         self._access_log: Dict[str, Deque[float]] = defaultdict(deque)

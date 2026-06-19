@@ -16,14 +16,24 @@ interface MiningJob {
   blockHeight: number;
 }
 
-export default function MiningJobsSection({ telemetry, pools = [] }: { telemetry?: TelemetryData | null; pools?: PoolInfo[] }) {
+export default function MiningJobsSection({
+  telemetry,
+  pools = [],
+}: {
+  telemetry?: TelemetryData | null;
+  pools?: PoolInfo[];
+}) {
   const [selectedJob, setSelectedJob] = useState<MiningJob | null>(null);
   const jobs = useMemo<MiningJob[]>(() => {
     const health = telemetry?.health as Record<string, any> | undefined;
     const metrics = (health?.systemMetrics || {}) as Record<string, any>;
     const activePools = pools.filter((pool) => pool.is_active);
     if (activePools.length === 0 && !metrics.activePool) return [];
-    return (activePools.length ? activePools : [{ name: String(metrics.activePool || "Configured pool"), is_active: true } as PoolInfo]).map((pool, index) => ({
+    return (
+      activePools.length
+        ? activePools
+        : [{ name: String(metrics.activePool || "Configured pool"), is_active: true } as PoolInfo]
+    ).map((pool, index) => ({
       id: `pool-${index + 1}`,
       name: index === 0 ? "Primary pool execution" : "Failover pool execution",
       status: pool.is_active ? "running" : "paused",
@@ -92,11 +102,12 @@ export default function MiningJobsSection({ telemetry, pools = [] }: { telemetry
       </div>
 
       <div className="grid gap-4">
-      {jobs.length === 0 && (
-        <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-sm text-slate-600">
-          No active mining jobs are available from authenticated backend telemetry. This handover build intentionally avoids fabricated pool jobs.
-        </div>
-      )}
+        {jobs.length === 0 && (
+          <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-sm text-slate-600">
+            No active mining jobs are available from authenticated backend telemetry. This handover
+            build intentionally avoids fabricated pool jobs.
+          </div>
+        )}
 
         {jobs.map((job) => (
           <div
@@ -112,7 +123,9 @@ export default function MiningJobsSection({ telemetry, pools = [] }: { telemetry
                   <p className="text-sm text-slate-600">{job.pool}</p>
                 </div>
               </div>
-              <div className={`flex items-center gap-2 px-3 py-1 rounded-full border text-xs font-semibold ${getStatusColor(job.status)}`}>
+              <div
+                className={`flex items-center gap-2 px-3 py-1 rounded-full border text-xs font-semibold ${getStatusColor(job.status)}`}
+              >
                 {getStatusIcon(job.status)}
                 <span className="uppercase">{job.status}</span>
               </div>
@@ -131,11 +144,15 @@ export default function MiningJobsSection({ telemetry, pools = [] }: { telemetry
               </div>
               <div>
                 <p className="text-xs text-slate-600 uppercase tracking-wider">Difficulty</p>
-                <p className="text-lg font-bold text-slate-900">{(job.difficulty / 1e12).toFixed(2)}T</p>
+                <p className="text-lg font-bold text-slate-900">
+                  {(job.difficulty / 1e12).toFixed(2)}T
+                </p>
               </div>
               <div>
                 <p className="text-xs text-slate-600 uppercase tracking-wider">Block Height</p>
-                <p className="text-lg font-bold text-slate-900">{job.blockHeight.toLocaleString()}</p>
+                <p className="text-lg font-bold text-slate-900">
+                  {job.blockHeight.toLocaleString()}
+                </p>
               </div>
             </div>
 
@@ -151,11 +168,20 @@ export default function MiningJobsSection({ telemetry, pools = [] }: { telemetry
       </div>
 
       {selectedJob && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50" onClick={() => setSelectedJob(null)}>
-          <div className="bg-white rounded-2xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50"
+          onClick={() => setSelectedJob(null)}
+        >
+          <div
+            className="bg-white rounded-2xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-bold text-slate-900">{selectedJob.name}</h3>
-              <button onClick={() => setSelectedJob(null)} className="text-slate-600 hover:text-slate-900">
+              <button
+                onClick={() => setSelectedJob(null)}
+                className="text-slate-600 hover:text-slate-900"
+              >
                 ✕
               </button>
             </div>
@@ -164,7 +190,9 @@ export default function MiningJobsSection({ telemetry, pools = [] }: { telemetry
               <div className="grid grid-cols-2 gap-4">
                 <div className="p-4 bg-slate-50 rounded-xl">
                   <p className="text-xs text-slate-600 uppercase tracking-wider">Status</p>
-                  <p className="text-lg font-bold text-slate-900 capitalize">{selectedJob.status}</p>
+                  <p className="text-lg font-bold text-slate-900 capitalize">
+                    {selectedJob.status}
+                  </p>
                 </div>
                 <div className="p-4 bg-slate-50 rounded-xl">
                   <p className="text-xs text-slate-600 uppercase tracking-wider">Pool</p>
@@ -172,19 +200,29 @@ export default function MiningJobsSection({ telemetry, pools = [] }: { telemetry
                 </div>
                 <div className="p-4 bg-slate-50 rounded-xl">
                   <p className="text-xs text-slate-600 uppercase tracking-wider">Hashrate</p>
-                  <p className="text-lg font-bold text-slate-900">{selectedJob.hashrate.toFixed(2)} EH/s</p>
+                  <p className="text-lg font-bold text-slate-900">
+                    {selectedJob.hashrate.toFixed(2)} EH/s
+                  </p>
                 </div>
                 <div className="p-4 bg-slate-50 rounded-xl">
                   <p className="text-xs text-slate-600 uppercase tracking-wider">Block Height</p>
-                  <p className="text-lg font-bold text-slate-900">{selectedJob.blockHeight.toLocaleString()}</p>
+                  <p className="text-lg font-bold text-slate-900">
+                    {selectedJob.blockHeight.toLocaleString()}
+                  </p>
                 </div>
                 <div className="p-4 bg-slate-50 rounded-xl">
-                  <p className="text-xs text-slate-600 uppercase tracking-wider">Shares Submitted</p>
-                  <p className="text-lg font-bold text-slate-900">{selectedJob.sharesSubmitted.toLocaleString()}</p>
+                  <p className="text-xs text-slate-600 uppercase tracking-wider">
+                    Shares Submitted
+                  </p>
+                  <p className="text-lg font-bold text-slate-900">
+                    {selectedJob.sharesSubmitted.toLocaleString()}
+                  </p>
                 </div>
                 <div className="p-4 bg-slate-50 rounded-xl">
                   <p className="text-xs text-slate-600 uppercase tracking-wider">Shares Accepted</p>
-                  <p className="text-lg font-bold text-slate-900">{selectedJob.sharesAccepted.toLocaleString()}</p>
+                  <p className="text-lg font-bold text-slate-900">
+                    {selectedJob.sharesAccepted.toLocaleString()}
+                  </p>
                 </div>
                 <div className="p-4 bg-slate-50 rounded-xl">
                   <p className="text-xs text-slate-600 uppercase tracking-wider">Acceptance Rate</p>
@@ -194,21 +232,29 @@ export default function MiningJobsSection({ telemetry, pools = [] }: { telemetry
                 </div>
                 <div className="p-4 bg-slate-50 rounded-xl">
                   <p className="text-xs text-slate-600 uppercase tracking-wider">Difficulty</p>
-                  <p className="text-lg font-bold text-slate-900">{(selectedJob.difficulty / 1e12).toFixed(2)}T</p>
+                  <p className="text-lg font-bold text-slate-900">
+                    {(selectedJob.difficulty / 1e12).toFixed(2)}T
+                  </p>
                 </div>
               </div>
 
               <div className="p-4 bg-slate-50 rounded-xl">
-                <p className="text-xs text-slate-600 uppercase tracking-wider mb-2">Time Information</p>
+                <p className="text-xs text-slate-600 uppercase tracking-wider mb-2">
+                  Time Information
+                </p>
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
                     <span className="text-slate-600">Start Time:</span>
-                    <span className="font-medium text-slate-900">{new Date(selectedJob.startTime).toLocaleString()}</span>
+                    <span className="font-medium text-slate-900">
+                      {new Date(selectedJob.startTime).toLocaleString()}
+                    </span>
                   </div>
                   {selectedJob.endTime && (
                     <div className="flex justify-between">
                       <span className="text-slate-600">End Time:</span>
-                      <span className="font-medium text-slate-900">{new Date(selectedJob.endTime).toLocaleString()}</span>
+                      <span className="font-medium text-slate-900">
+                        {new Date(selectedJob.endTime).toLocaleString()}
+                      </span>
                     </div>
                   )}
                   <div className="flex justify-between">

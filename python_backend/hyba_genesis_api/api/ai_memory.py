@@ -30,6 +30,7 @@ except ImportError:
 # Global memory engine
 _memory_engine: Optional[AIMemoryEngine] = None
 
+
 def get_memory_engine() -> AIMemoryEngine:
     """Lazy-initialize memory engine."""
     global _memory_engine
@@ -40,9 +41,11 @@ def get_memory_engine() -> AIMemoryEngine:
         _memory_engine = AIMemoryEngine(db_path=db_path)
     return _memory_engine
 
+
 # Models
 class AIMemory(BaseModel):
     """A stored AI memory."""
+
     memory_key: str
     memory_type: str
     description: str
@@ -50,8 +53,10 @@ class AIMemory(BaseModel):
     phi_aligned: bool
     created_at: str
 
+
 class EmpiricalEvidence(BaseModel):
     """Bitcoin block empirical evidence."""
+
     block_height: int
     nonce: int
     phi_resonance_strength: float
@@ -60,29 +65,37 @@ class EmpiricalEvidence(BaseModel):
     miner: str
     precision_percent: float
 
+
 class MemorySnapshot(BaseModel):
     """Time-indexed memory state."""
+
     timestamp: str
     total_memories: int
     mean_confidence: float
     phi_resonance_mean: float
 
+
 class ReasoningTrace(BaseModel):
     """Decision audit trail."""
+
     trace_id: str
     timestamp: str
     query: str
     reasoning: str
     confidence: float
 
+
 class MemoriesListResponse(BaseModel):
     """Response: list of memories."""
+
     count: int
     memories: List[AIMemory]
     timestamp: str
 
+
 class EvidenceQueryResponse(BaseModel):
     """Response: empirical evidence."""
+
     count: int
     mean_phi_resonance: float
     z_score: float
@@ -90,8 +103,10 @@ class EvidenceQueryResponse(BaseModel):
     evidence: List[EmpiricalEvidence]
     timestamp: str
 
+
 # Router
 router = APIRouter(prefix="/api/v1/memory", tags=["ai-memory"])
+
 
 @router.get("/memories", response_model=MemoriesListResponse)
 async def list_memories(
@@ -101,8 +116,10 @@ async def list_memories(
     """List all AI memories with optional filters."""
     try:
         engine = get_memory_engine()
-        memories_data = engine.get_all_memories(memory_type=memory_type, min_confidence=min_confidence)
-        
+        memories_data = engine.get_all_memories(
+            memory_type=memory_type, min_confidence=min_confidence
+        )
+
         memories = [
             AIMemory(
                 memory_key=m.get("memory_key", ""),
@@ -114,7 +131,7 @@ async def list_memories(
             )
             for m in memories_data
         ]
-        
+
         return MemoriesListResponse(
             count=len(memories),
             memories=memories,
@@ -122,6 +139,7 @@ async def list_memories(
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
 
 @router.get("/memory/{memory_key}")
 async def get_memory(memory_key: str) -> Dict[str, Any]:
@@ -138,6 +156,7 @@ async def get_memory(memory_key: str) -> Dict[str, Any]:
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
 @router.get("/evidence", response_model=EvidenceQueryResponse)
 async def query_evidence(
     block_height: Optional[int] = Query(None, description="Filter by block height"),
@@ -147,7 +166,7 @@ async def query_evidence(
     try:
         engine = get_memory_engine()
         evidence_data = engine.get_evidence(block_height=block_height, limit=limit)
-        
+
         evidence = [
             EmpiricalEvidence(
                 block_height=e.get("block_height", 0),
@@ -160,10 +179,10 @@ async def query_evidence(
             )
             for e in evidence_data
         ]
-        
+
         phi_scores = [e.phi_resonance_strength for e in evidence]
         mean_phi = sum(phi_scores) / len(phi_scores) if phi_scores else 0.0
-        
+
         return EvidenceQueryResponse(
             count=len(evidence),
             mean_phi_resonance=mean_phi,
@@ -175,18 +194,19 @@ async def query_evidence(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
 @router.get("/snapshots")
 async def get_snapshots() -> Dict[str, Any]:
     """Get memory snapshots."""
     try:
         engine = get_memory_engine()
         memories = engine.get_all_memories()
-        
+
         if memories:
             mean_conf = sum(m.get("confidence", 0.0) for m in memories) / len(memories)
         else:
             mean_conf = 0.0
-        
+
         return {
             "total_memories": len(memories),
             "mean_confidence": mean_conf,
@@ -194,6 +214,7 @@ async def get_snapshots() -> Dict[str, Any]:
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
 
 @router.get("/health")
 async def memory_health() -> Dict[str, Any]:
@@ -207,7 +228,10 @@ async def memory_health() -> Dict[str, Any]:
             "timestamp": datetime.now(timezone.utc).isoformat(),
         }
     except Exception as e:
-        raise HTTPException(status_code=500, detail={
-            "status": "unhealthy",
-            "error": str(e),
-        })
+        raise HTTPException(
+            status_code=500,
+            detail={
+                "status": "unhealthy",
+                "error": str(e),
+            },
+        )

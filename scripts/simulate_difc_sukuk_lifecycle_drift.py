@@ -15,7 +15,11 @@ from dataclasses import replace
 from pathlib import Path
 from typing import Any, Dict, List
 
-from pythia_finance_audit import DIFCSukukCandidate, generate_difc_sukuk_audit_packet, sample_difc_sukuk_candidate
+from pythia_finance_audit import (
+    DIFCSukukCandidate,
+    generate_difc_sukuk_audit_packet,
+    sample_difc_sukuk_candidate,
+)
 
 
 STAGES = [
@@ -66,7 +70,9 @@ STAGES = [
 ]
 
 
-def _candidate_for_stage(base: DIFCSukukCandidate, idx: int, stage: Dict[str, Any]) -> DIFCSukukCandidate:
+def _candidate_for_stage(
+    base: DIFCSukukCandidate, idx: int, stage: Dict[str, Any]
+) -> DIFCSukukCandidate:
     return replace(
         base,
         candidate_id=f"DIFC-SUKUK-LIFECYCLE-{idx:03d}",
@@ -134,12 +140,16 @@ def simulate(output_dir: Path) -> Dict[str, Any]:
         "automatic_action_allowed": False,
         "rows": rows,
     }
-    (output_dir / "manifest.json").write_text(json.dumps(manifest, indent=2, sort_keys=True), encoding="utf-8")
+    (output_dir / "manifest.json").write_text(
+        json.dumps(manifest, indent=2, sort_keys=True), encoding="utf-8"
+    )
     return manifest
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Generate a deterministic DIFC/AAOIFI Sukuk lifecycle drift simulation.")
+    parser = argparse.ArgumentParser(
+        description="Generate a deterministic DIFC/AAOIFI Sukuk lifecycle drift simulation."
+    )
     parser.add_argument(
         "--output-dir",
         type=Path,

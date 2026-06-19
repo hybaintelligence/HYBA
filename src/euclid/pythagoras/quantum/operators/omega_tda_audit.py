@@ -12,15 +12,17 @@ Design goals:
 - strict input validation for adversarial / malformed payloads;
 - stable JSON-serialisable audit envelopes.
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass, asdict
-from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
+from typing import Any, Dict, List
 
 import numpy as np
 
 try:  # Optional dependency. Tests do not require it.
     from ripser import ripser  # type: ignore
+
     _RIPSER_AVAILABLE = True
 except Exception:  # pragma: no cover - environment dependent
     ripser = None  # type: ignore
@@ -149,7 +151,7 @@ def _laplacian_spectrum(dist: np.ndarray, k: int) -> np.ndarray:
     if dist.shape[0] <= 1:
         return np.zeros(k, dtype=float)
     sigma = np.median(dist[dist > 0]) if np.any(dist > 0) else 1.0
-    weights = np.exp(-(dist ** 2) / (2.0 * max(float(sigma), _EPS) ** 2))
+    weights = np.exp(-(dist**2) / (2.0 * max(float(sigma), _EPS) ** 2))
     np.fill_diagonal(weights, 0.0)
     degree = np.diag(weights.sum(axis=1))
     lap = degree - weights
@@ -210,12 +212,18 @@ def compute_omega_signature(
 
     persistence: List[PersistenceSummary] = []
     method = "laplacian_proxy"
-    betti_proxy = {"b0": max(1, zero_modes), "b1": int(max(0, np.sum(lap < 1e-3) - zero_modes)), "spectral_gap_scaled": int(round(spectral_gap * 1_000_000))}
+    betti_proxy = {
+        "b0": max(1, zero_modes),
+        "b1": int(max(0, np.sum(lap < 1e-3) - zero_modes)),
+        "spectral_gap_scaled": int(round(spectral_gap * 1_000_000)),
+    }
 
     if _RIPSER_AVAILABLE:
         try:  # pragma: no cover - depends on optional package
             diagrams = ripser(points, maxdim=max_homology_dimension)["dgms"]
-            persistence = [_persistence_summary(np.asarray(d), dim) for dim, d in enumerate(diagrams)]
+            persistence = [
+                _persistence_summary(np.asarray(d), dim) for dim, d in enumerate(diagrams)
+            ]
             method = "ripser_persistent_homology"
             if persistence:
                 betti_proxy["b0"] = persistence[0].feature_count
@@ -227,8 +235,22 @@ def compute_omega_signature(
 
     if not persistence:
         persistence = [
-            PersistenceSummary(0, betti_proxy["b0"], betti_proxy["b0"], float(lap[0]) if lap.size else 0.0, float(np.sum(lap[:3])), _spectral_entropy(lap[:3])),
-            PersistenceSummary(1, betti_proxy["b1"], betti_proxy["b1"], float(spectral_gap), float(np.sum(lap[1:4])), _spectral_entropy(lap[1:4])),
+            PersistenceSummary(
+                0,
+                betti_proxy["b0"],
+                betti_proxy["b0"],
+                float(lap[0]) if lap.size else 0.0,
+                float(np.sum(lap[:3])),
+                _spectral_entropy(lap[:3]),
+            ),
+            PersistenceSummary(
+                1,
+                betti_proxy["b1"],
+                betti_proxy["b1"],
+                float(spectral_gap),
+                float(np.sum(lap[1:4])),
+                _spectral_entropy(lap[1:4]),
+            ),
         ]
 
     return OmegaSignature(

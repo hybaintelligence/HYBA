@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import math
 import zlib
-from typing import Any
 
 from hyba_genesis_api.core.manifold_logic import ManifoldLogic
 from hyba_genesis_api.core.thermal_intelligence import ThermalEnvelope

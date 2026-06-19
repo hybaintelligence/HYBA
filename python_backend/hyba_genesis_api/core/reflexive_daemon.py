@@ -42,4 +42,8 @@ class IntelligenceHeartbeat:
         self.is_active = False
 
     def snapshot(self) -> Dict[str, Any]:
-        return {"is_active": self.is_active, "pulses": len(self.history), "history": list(self.history)}
+        return {
+            "is_active": self.is_active,
+            "pulses": len(self.history),
+            "history": list(self.history),
+        }

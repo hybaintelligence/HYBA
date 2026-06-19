@@ -25,8 +25,28 @@ const telemetry = {
   pools: {
     summary: { total_pools: 2, configured_pools: 2, active_pools: 1 },
     pools: [
-      { pool_id: "viabtc", name: "ViaBTC", url: "stratum+tcp://via", configured: true, is_active: true, status: "connected", credential_mode: "username_password", required_fields: ["username", "password"], performance: { latency_ms: 20, shares_submitted: 3 } },
-      { pool_id: "braiins", name: "Braiins", url: "stratum+tcp://braiins", configured: true, is_active: false, status: "configured", credential_mode: "username_password", required_fields: ["username", "password"], performance: { latency_ms: 25, shares_submitted: 1 } },
+      {
+        pool_id: "viabtc",
+        name: "ViaBTC",
+        url: "stratum+tcp://via",
+        configured: true,
+        is_active: true,
+        status: "connected",
+        credential_mode: "username_password",
+        required_fields: ["username", "password"],
+        performance: { latency_ms: 20, shares_submitted: 3 },
+      },
+      {
+        pool_id: "braiins",
+        name: "Braiins",
+        url: "stratum+tcp://braiins",
+        configured: true,
+        is_active: false,
+        status: "configured",
+        credential_mode: "username_password",
+        required_fields: ["username", "password"],
+        performance: { latency_ms: 25, shares_submitted: 1 },
+      },
     ],
   },
   security: { status: "nominal", threat_level: "low", defense_systems: {} },
@@ -35,17 +55,27 @@ const telemetry = {
 
 test.beforeEach(async ({ page }) => {
   await page.route("**/api/health", (route) => route.fulfill({ json: telemetry.health }));
-  await page.route("**/api/ai/consciousness", (route) => route.fulfill({ json: telemetry.consciousness }));
+  await page.route("**/api/ai/consciousness", (route) =>
+    route.fulfill({ json: telemetry.consciousness }),
+  );
   await page.route("**/api/mining/pools", (route) => route.fulfill({ json: telemetry.pools }));
-  await page.route("**/api/security/status", (route) => route.fulfill({ json: telemetry.security }));
-  await page.route("**/api/products", (route) => route.fulfill({ json: [{ id: "p1", name: "HYBA Console", description: "Control plane" }] }));
+  await page.route("**/api/security/status", (route) =>
+    route.fulfill({ json: telemetry.security }),
+  );
+  await page.route("**/api/products", (route) =>
+    route.fulfill({ json: [{ id: "p1", name: "HYBA Console", description: "Control plane" }] }),
+  );
   await page.route("**/api/auth/profile", (route) => route.fulfill({ json: { success: false } }));
   await page.route("**/api/mining/power", (route) => route.fulfill({ json: { status: "ok" } }));
   await page.route("**/api/mining/switch", (route) => route.fulfill({ json: { status: "ok" } }));
-  await page.route("**/api/mining/disconnect", (route) => route.fulfill({ json: { status: "ok" } }));
+  await page.route("**/api/mining/disconnect", (route) =>
+    route.fulfill({ json: { status: "ok" } }),
+  );
 });
 
-test("dashboard actions expose accessible controls and send mocked operator commands", async ({ page }) => {
+test("dashboard actions expose accessible controls and send mocked operator commands", async ({
+  page,
+}) => {
   await page.goto("/");
   await expect(page.getByText("Genesis Runtime Console")).toBeVisible();
   await expect(page.getByText("Enterprise-Grade Mining Operations")).toBeVisible();

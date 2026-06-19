@@ -27,11 +27,8 @@ so the suite stays green on partially-installed environments.
 from __future__ import annotations
 
 import math
-import time
-import sys
 import importlib
-from typing import Any, Dict, List
-from unittest.mock import MagicMock, patch
+from typing import Dict
 
 import pytest
 
@@ -41,6 +38,7 @@ import pytest
 try:
     from hypothesis import given, assume, settings, HealthCheck
     from hypothesis import strategies as st
+
     HAS_HYPOTHESIS = True
 except ImportError:
     HAS_HYPOTHESIS = False
@@ -51,9 +49,11 @@ except ImportError:
 # ---------------------------------------------------------------------------
 try:
     import numpy as np
+
     HAS_NUMPY = True
 except ImportError:
     HAS_NUMPY = False
+
 
 # ---------------------------------------------------------------------------
 # Lazy backend importer — skips gracefully if module absent
@@ -65,18 +65,20 @@ def _import(module_path: str):
     except Exception:
         return None
 
+
 # ---------------------------------------------------------------------------
 # Golden Ratio constants (standalone — no backend import required)
 # ---------------------------------------------------------------------------
 PHI: float = (1.0 + math.sqrt(5.0)) / 2.0
 PHI_INV: float = PHI - 1.0
-PHI_INV_2: float = PHI ** -2
-PHI_INV_3: float = PHI ** -3
+PHI_INV_2: float = PHI**-2
+PHI_INV_3: float = PHI**-3
 
 
 # ===========================================================================
 # 1. MiningKnowledgeBase — threshold boundary semantics
 # ===========================================================================
+
 
 class TestMiningKnowledgeBaseBoundaries:
     """
@@ -129,7 +131,7 @@ class TestMiningKnowledgeBaseBoundaries:
     def test_critical_metrics_are_critical(self, kb):
         """Genuinely bad metrics must return critical."""
         metrics = self._healthy_metrics()
-        metrics["temperature"] = 95.0          # above critical_threshold=85
+        metrics["temperature"] = 95.0  # above critical_threshold=85
         metrics["temperature_threshold"] = 95.0
         result = kb.evaluate_current_state(metrics)
         assert result["overall_assessment"]["status"] == "critical"
@@ -179,7 +181,7 @@ class TestMiningKnowledgeBaseBoundaries:
     def test_warnings_below_critical(self, kb):
         """Values in warning zone must produce warnings, not critical alerts."""
         metrics = self._healthy_metrics()
-        metrics["temperature"] = 72.0          # above warning=70, below critical=85
+        metrics["temperature"] = 72.0  # above warning=70, below critical=85
         metrics["temperature_threshold"] = 72.0
         result = kb.evaluate_current_state(metrics)
         assert result["overall_assessment"]["status"] != "critical"
@@ -191,9 +193,9 @@ class TestMiningKnowledgeBaseBoundaries:
 # 2. OperationalExpectationsKnowledge — property-based invariants
 # ===========================================================================
 
+
 @pytest.mark.skipif(not HAS_HYPOTHESIS, reason="hypothesis not installed")
 class TestOperationalExpectationsProperties:
-
     @pytest.fixture(scope="module")
     def oek(self):
         mod = _import("pythia_mining.mining_knowledge_base")
@@ -242,8 +244,8 @@ class TestOperationalExpectationsProperties:
 # 3. Deutsch Knowledge Substrate — counterfactual & Popperian criticism
 # ===========================================================================
 
-class TestDeutschKnowledgeSubstrate:
 
+class TestDeutschKnowledgeSubstrate:
     @pytest.fixture
     def substrate(self):
         mod = _import("pythia_mining.deutsch_knowledge_substrate")
@@ -260,7 +262,7 @@ class TestDeutschKnowledgeSubstrate:
         substrate.create_knowledge_from_success(
             strategy_id="phi_stride",
             context={"hashrate": 100.0, "phi_resonance": 0.85},
-            outcome={"accepted": True}
+            outcome={"accepted": True},
         )
         metrics = substrate.get_knowledge_metrics()
         assert metrics["total_explanations"] >= 1
@@ -268,15 +270,11 @@ class TestDeutschKnowledgeSubstrate:
     def test_popperian_criticism_reduces_accuracy_on_failure(self, substrate):
         """Failed prediction must reduce explanation accuracy by ×0.8."""
         substrate.create_knowledge_from_success(
-            strategy_id="test_strategy",
-            context={"hashrate": 100.0},
-            outcome={"accepted": True}
+            strategy_id="test_strategy", context={"hashrate": 100.0}, outcome={"accepted": True}
         )
         metrics_before = substrate.get_knowledge_metrics()
         substrate.create_knowledge_from_failure(
-            strategy_id="test_strategy",
-            context={"hashrate": 100.0},
-            outcome={"accepted": False}
+            strategy_id="test_strategy", context={"hashrate": 100.0}, outcome={"accepted": False}
         )
         metrics_after = substrate.get_knowledge_metrics()
         # Knowledge should grow after failure
@@ -285,14 +283,10 @@ class TestDeutschKnowledgeSubstrate:
     def test_popperian_criticism_partial_match(self, substrate):
         """Partial match must reduce by ×0.9."""
         substrate.create_knowledge_from_success(
-            strategy_id="partial_strategy",
-            context={"hashrate": 100.0},
-            outcome={"accepted": True}
+            strategy_id="partial_strategy", context={"hashrate": 100.0}, outcome={"accepted": True}
         )
         substrate.create_knowledge_from_failure(
-            strategy_id="partial_strategy",
-            context={"hashrate": 100.0},
-            outcome={"accepted": False}
+            strategy_id="partial_strategy", context={"hashrate": 100.0}, outcome={"accepted": False}
         )
         metrics = substrate.get_knowledge_metrics()
         assert metrics["total_explanations"] >= 1
@@ -303,7 +297,7 @@ class TestDeutschKnowledgeSubstrate:
             actual_strategy="phi_stride",
             actual_outcome={"accepted": True},
             alternative_strategy="linear_search",
-            context={"hashrate": 100.0, "phi_resonance": 0.85}
+            context={"hashrate": 100.0, "phi_resonance": 0.85},
         )
         assert result is not None
         assert hasattr(result, "counterfactual_strategy") or isinstance(result, dict)
@@ -311,14 +305,10 @@ class TestDeutschKnowledgeSubstrate:
     def test_knowledge_accumulates_across_epochs(self, substrate):
         """Knowledge must persist — not reset — between calls."""
         substrate.create_knowledge_from_success(
-            strategy_id="epoch_strategy",
-            context={"hashrate": 100.0},
-            outcome={"accepted": True}
+            strategy_id="epoch_strategy", context={"hashrate": 100.0}, outcome={"accepted": True}
         )
         substrate.create_knowledge_from_failure(
-            strategy_id="epoch_strategy",
-            context={"hashrate": 100.0},
-            outcome={"accepted": False}
+            strategy_id="epoch_strategy", context={"hashrate": 100.0}, outcome={"accepted": False}
         )
         metrics = substrate.get_knowledge_metrics()
         assert metrics["total_explanations"] >= 2
@@ -326,10 +316,10 @@ class TestDeutschKnowledgeSubstrate:
     def test_unknown_strategy_does_not_crash(self, substrate):
         """Criticizing an unknown strategy must not raise."""
         # KnowledgeSubstrate handles unknown strategies gracefully
-        result = substrate.create_knowledge_from_failure(
+        substrate.create_knowledge_from_failure(
             strategy_id="nonexistent_strategy",
             context={"hashrate": 100.0},
-            outcome={"accepted": False}
+            outcome={"accepted": False},
         )
         # Should not raise, may return None
 
@@ -338,9 +328,9 @@ class TestDeutschKnowledgeSubstrate:
 # 4. PULVINI Compression — φ-folding lossless kernel properties
 # ===========================================================================
 
+
 @pytest.mark.skipif(not HAS_NUMPY, reason="numpy not installed")
 class TestPulviniCompressionProperties:
-
     @pytest.fixture(scope="module")
     def pulvini(self):
         mod = _import("pythia_mining.pulvini_memory_compression_proof")
@@ -356,14 +346,20 @@ class TestPulviniCompressionProperties:
         # The boundary is a hard constant in the system
         LOSSLESS_BOUNDARY = 2.0
         # If the module exposes a constant, test it directly
-        ratio = getattr(pulvini, "PULVINI_LOSSLESS_BOUNDARY",
-                        getattr(pulvini, "COMPRESSION_BOUNDARY", LOSSLESS_BOUNDARY))
+        ratio = getattr(
+            pulvini,
+            "PULVINI_LOSSLESS_BOUNDARY",
+            getattr(pulvini, "COMPRESSION_BOUNDARY", LOSSLESS_BOUNDARY),
+        )
         assert ratio <= 2.0, f"Lossless boundary {ratio} exceeds 2.0"
 
-    @given(data=st.lists(
-        st.floats(min_value=-1e6, max_value=1e6, allow_nan=False, allow_infinity=False),
-        min_size=4, max_size=64
-    ))
+    @given(
+        data=st.lists(
+            st.floats(min_value=-1e6, max_value=1e6, allow_nan=False, allow_infinity=False),
+            min_size=4,
+            max_size=64,
+        )
+    )
     @settings(max_examples=30, suppress_health_check=[HealthCheck.too_slow])
     def test_phi_folding_reconstruction_error(self, pulvini, data):
         """φ-folding must reconstruct with error < 10⁻¹⁴."""
@@ -397,9 +393,9 @@ class TestPulviniCompressionProperties:
 # 5. IIT 4.0 Φ Diagnostic — coherence metric invariants
 # ===========================================================================
 
+
 @pytest.mark.skipif(not HAS_NUMPY, reason="numpy not installed")
 class TestIITPhiDiagnosticInvariants:
-
     @pytest.fixture
     def iit(self):
         mod = _import("pythia_mining.iit_4_analyzer")
@@ -415,6 +411,7 @@ class TestIITPhiDiagnosticInvariants:
         analyzer = analyzer_cls(system_size=4)
         # IIT4Analyzer uses calculate_phi_max, not compute_phi_proxy
         import numpy as np
+
         system_state = np.array([1.0, 1.0, 1.0, 1.0])
         result = analyzer.calculate_phi_max(system_state)
         phi = result.get("phi_max", 0.0)
@@ -428,6 +425,7 @@ class TestIITPhiDiagnosticInvariants:
         analyzer = analyzer_cls(system_size=4)
         # IIT4Analyzer uses calculate_phi_max, not compute_phi_proxy
         import numpy as np
+
         state_low = np.array([0.2, 0.2, 0.2, 0.2])
         state_high = np.array([0.9, 0.9, 0.9, 0.9])
         result_low = analyzer.calculate_phi_max(state_low)
@@ -455,8 +453,8 @@ class TestIITPhiDiagnosticInvariants:
 # 6. Reflexive Controller — proposal-only governance
 # ===========================================================================
 
-class TestReflexiveControllerGovernance:
 
+class TestReflexiveControllerGovernance:
     @pytest.fixture
     def controller(self, tmp_path):
         mod = _import("hyba_genesis_api.core.reflexive_controller")
@@ -467,11 +465,11 @@ class TestReflexiveControllerGovernance:
         cls = getattr(mod, "ReflexiveController", None)
         if cls is None:
             pytest.skip("ReflexiveController class not found")
-        
+
         # Create a valid test runtime scope ending in 'pythia_mining'
         mock_root = tmp_path / "pythia_mining"
         mock_root.mkdir(exist_ok=True)
-        
+
         try:
             return cls(root_dir=mock_root)
         except TypeError:
@@ -515,8 +513,8 @@ class TestReflexiveControllerGovernance:
 # 7. Autonomous Optimizer — bounds, rollback, history
 # ===========================================================================
 
-class TestAutonomousOptimizerProperties:
 
+class TestAutonomousOptimizerProperties:
     @pytest.fixture
     def optimizer(self):
         mod = _import("pythia_mining.autonomous_mining_controller")
@@ -550,7 +548,9 @@ class TestAutonomousOptimizerProperties:
         history = optimizer.get_history("history_param")
         assert len(history) >= 2
 
-    @given(delta=st.floats(min_value=-100.0, max_value=100.0, allow_nan=False, allow_infinity=False))
+    @given(
+        delta=st.floats(min_value=-100.0, max_value=100.0, allow_nan=False, allow_infinity=False)
+    )
     @settings(max_examples=30, suppress_health_check=[HealthCheck.too_slow])
     def test_bounds_invariant_under_arbitrary_delta(self, optimizer, delta):
         """Parameter value must always stay within [min, max] regardless of delta."""
@@ -564,8 +564,8 @@ class TestAutonomousOptimizerProperties:
 # 8. Circuit Breaker — rate limiting, window, cooldown
 # ===========================================================================
 
-class TestCircuitBreakerProperties:
 
+class TestCircuitBreakerProperties:
     @pytest.fixture
     def breaker(self):
         mod = _import("pythia_mining.autonomous_mining_controller")
@@ -615,9 +615,9 @@ class TestCircuitBreakerProperties:
 # 9. Consciousness Engine — regime classification & sigmoid continuity
 # ===========================================================================
 
+
 @pytest.mark.skipif(not HAS_NUMPY, reason="numpy not installed")
 class TestConsciousnessEngineProperties:
-
     @pytest.fixture(scope="module")
     def engine(self):
         mod = _import("pythia_mining.consciousness_engine")
@@ -631,6 +631,7 @@ class TestConsciousnessEngineProperties:
     def test_singular_agent_at_high_phi(self, engine):
         # ConsciousnessEngine uses _classify_integration (private) and IntegrationRegime enum
         import numpy as np
+
         state = np.array([1.0, 1.0, 1.0, 1.0])
         metrics = engine.measure_phi([state])
         regime = engine._classify_integration(metrics.phi_integrated)
@@ -639,6 +640,7 @@ class TestConsciousnessEngineProperties:
 
     def test_distributed_at_mid_phi(self, engine):
         import numpy as np
+
         state = np.array([0.5, 0.5, 0.5, 0.5])
         metrics = engine.measure_phi([state])
         regime = engine._classify_integration(metrics.phi_integrated)
@@ -646,6 +648,7 @@ class TestConsciousnessEngineProperties:
 
     def test_fragmented_at_low_phi(self, engine):
         import numpy as np
+
         state = np.array([0.2, 0.2, 0.2, 0.2])
         metrics = engine.measure_phi([state])
         regime = engine._classify_integration(metrics.phi_integrated)
@@ -653,6 +656,7 @@ class TestConsciousnessEngineProperties:
 
     def test_critical_below_floor(self, engine):
         import numpy as np
+
         state = np.array([0.1, 0.1, 0.1, 0.1])
         metrics = engine.measure_phi([state])
         regime = engine._classify_integration(metrics.phi_integrated)
@@ -661,7 +665,9 @@ class TestConsciousnessEngineProperties:
     def test_sigmoid_multiplier_continuous(self, engine):
         """Hardware multiplier must be continuous — no discrete jumps."""
         phi_values = np.linspace(0.0, 1.0, 100)
-        multipliers = [engine.calculate_continuous_multiplier(coherence_score=p) for p in phi_values]
+        multipliers = [
+            engine.calculate_continuous_multiplier(coherence_score=p) for p in phi_values
+        ]
         diffs = np.abs(np.diff(multipliers))
         max_jump = float(np.max(diffs))
         assert max_jump < 0.15, f"Discrete jump detected in sigmoid: {max_jump}"
@@ -686,6 +692,7 @@ class TestConsciousnessEngineProperties:
 # 10. Cross-Substrate Knowledge Transfer
 # ===========================================================================
 
+
 class TestCrossSubstrateKnowledgeTransfer:
     """
     Tests that knowledge accumulated in one search domain informs another.
@@ -705,7 +712,7 @@ class TestCrossSubstrateKnowledgeTransfer:
         substrate.create_knowledge_from_success(
             strategy_id="phi_stride_mining",
             context={"hashrate": 100.0, "phi_resonance": 0.85},
-            outcome={"accepted": True}
+            outcome={"accepted": True},
         )
         # Core system consumer queries without domain filter
         metrics = substrate.get_knowledge_metrics()
@@ -716,7 +723,7 @@ class TestCrossSubstrateKnowledgeTransfer:
         substrate.create_knowledge_from_success(
             strategy_id="pulvini_biotech",
             context={"hashrate": 100.0, "phi_resonance": 0.85},
-            outcome={"accepted": True}
+            outcome={"accepted": True},
         )
         metrics = substrate.get_knowledge_metrics()
         assert metrics["total_explanations"] >= 1
@@ -733,6 +740,7 @@ class TestCrossSubstrateKnowledgeTransfer:
 # 11. Golden Ratio Mathematical Properties — pure property-based
 # ===========================================================================
 
+
 class TestGoldenRatioMathematicalInvariants:
     """
     These tests require no backend imports — they validate the mathematical
@@ -741,7 +749,7 @@ class TestGoldenRatioMathematicalInvariants:
 
     def test_phi_identity(self):
         """φ² = φ + 1"""
-        assert abs(PHI ** 2 - (PHI + 1)) < 1e-14
+        assert abs(PHI**2 - (PHI + 1)) < 1e-14
 
     def test_phi_inverse_identity(self):
         """φ × φ⁻¹ = 1"""
@@ -758,9 +766,9 @@ class TestGoldenRatioMathematicalInvariants:
 
     def test_phi_weight_normalization(self):
         """φ-weight norm = φ⁻² + φ⁻³ + φ⁻⁴"""
-        PHI_INV_4 = PHI ** -4
+        PHI_INV_4 = PHI**-4
         norm = PHI_INV_2 + PHI_INV_3 + PHI_INV_4
-        assert abs(norm - (PHI ** -2 + PHI ** -3 + PHI ** -4)) < 1e-14
+        assert abs(norm - (PHI**-2 + PHI**-3 + PHI**-4)) < 1e-14
 
     def test_coxeter_h3_order(self):
         """H3 icosahedral Coxeter group order = 120"""
@@ -771,7 +779,7 @@ class TestGoldenRatioMathematicalInvariants:
         """A5 character table has exactly 5 irreducible representations"""
         A5_IRREPS = [1, 3, 3, 4, 5]
         assert len(A5_IRREPS) == 5
-        assert sum(d ** 2 for d in A5_IRREPS) == 60  # |A5| = 60
+        assert sum(d**2 for d in A5_IRREPS) == 60  # |A5| = 60
 
     @given(n=st.integers(min_value=1, max_value=50))
     @settings(max_examples=50)
@@ -797,9 +805,9 @@ class TestGoldenRatioMathematicalInvariants:
 # 12. Von Neumann Entropy & Density Matrix Properties
 # ===========================================================================
 
+
 @pytest.mark.skipif(not HAS_NUMPY, reason="numpy not installed")
 class TestVonNeumannEntropyProperties:
-
     def _pure_state_density_matrix(self, n: int = 4) -> np.ndarray:
         """Returns a valid rank-1 density matrix."""
         v = np.random.randn(n) + 1j * np.random.randn(n)
@@ -864,6 +872,7 @@ class TestVonNeumannEntropyProperties:
 # 13. Lindblad Decay — trace and PSD preservation
 # ===========================================================================
 
+
 @pytest.mark.skipif(not HAS_NUMPY, reason="numpy not installed")
 class TestLindbladDecayProperties:
     """
@@ -914,19 +923,16 @@ class TestLindbladDecayProperties:
 # 14. Bures Metric — information loss detection
 # ===========================================================================
 
+
 @pytest.mark.skipif(not HAS_NUMPY, reason="numpy not installed")
 class TestBuresMetricProperties:
-
     def _fidelity(self, rho: np.ndarray, sigma: np.ndarray) -> float:
         """Quantum fidelity F(ρ,σ) = (Tr√(√ρ σ √ρ))²"""
         # Compute eigendecomposition of rho
         eigvals, eigvecs = np.linalg.eigh(rho)
         eigvals = np.clip(eigvals, 0, None)
         # Build sqrt(ρ) from eigendecomposition: √ρ = Σ √λ_i |ψ_i⟩⟨ψ_i|
-        sqrt_rho = sum(
-            math.sqrt(v) * np.outer(u, u.conj())
-            for v, u in zip(eigvals, eigvecs.T)
-        )
+        sqrt_rho = sum(math.sqrt(v) * np.outer(u, u.conj()) for v, u in zip(eigvals, eigvecs.T))
         inner = sqrt_rho @ sigma @ sqrt_rho
         eigvals_inner = np.linalg.eigvalsh(inner)
         eigvals_inner = np.clip(eigvals_inner, 0, None)
@@ -961,6 +967,7 @@ class TestBuresMetricProperties:
 # ===========================================================================
 # 15. API Surface Contract — structural validation
 # ===========================================================================
+
 
 class TestAPIContractStructure:
     """

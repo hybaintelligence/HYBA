@@ -186,7 +186,7 @@ class TestUnverifiedPayoutAddress:
 class TestUnverifiedPool:
     """PITFALL_2.1 — Unverified pool endpoint."""
 
-    @patch.object(PitfallGuard, '_load_approved_pools')
+    @patch.object(PitfallGuard, "_load_approved_pools")
     def test_reject_unverified_pool(self, mock_load, guard: PitfallGuard):
         """Unverified pool should be QUARANTINED."""
         mock_load.return_value = [
@@ -197,7 +197,7 @@ class TestUnverifiedPool:
         assert result.pitfall_id == "PITFALL_2.1"
         assert result.action == PitfallAction.QUARANTINE.value
 
-    @patch.object(PitfallGuard, '_load_approved_pools')
+    @patch.object(PitfallGuard, "_load_approved_pools")
     def test_accept_verified_pool(self, mock_load, guard: PitfallGuard):
         """Verified pool should pass."""
         mock_load.return_value = [
@@ -255,8 +255,7 @@ class TestComprehensiveValidation:
         """The user's exact test message should trigger PITFALL_5.3, 5.2, and 3.1."""
         events = guard.validate_message(self.USER_TEST_MESSAGE, source="chat")
         assert len(events) >= 3, (
-            f"Expected 3+ pitfalls, got {len(events)}: "
-            f"{[e.pitfall_id for e in events]}"
+            f"Expected 3+ pitfalls, got {len(events)}: {[e.pitfall_id for e in events]}"
         )
         pitfall_ids = [e.pitfall_id for e in events]
         assert "PITFALL_5.3" in pitfall_ids, "Should detect credential harvesting"

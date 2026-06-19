@@ -20,7 +20,7 @@ import json
 import time
 from dataclasses import asdict, dataclass, field
 from enum import Enum
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, Optional, Tuple
 
 # Mission constants
 MAX_AUTONOMOUS_HASHRATE_EHS = 1.0  # Hard limit: 1 EH/s
@@ -46,16 +46,20 @@ class SessionIntention:
     pool: str = "ViaBTC"
     eh_limit: float = MAX_AUTONOMOUS_HASHRATE_EHS
     objective: str = "phi_dense_candidate_clusters"
-    constraints: Dict[str, Any] = field(default_factory=lambda: {
-        "governance": True,
-        "operator_approval_required": True,
-        "max_entropy_sources": ["job_stream", "local_prng"],
-    })
-    telemetry_contract: Dict[str, Any] = field(default_factory=lambda: {
-        "min_phi_density": 0.70,
-        "max_entropy_drift": 0.25,
-        "expected_rejection_profile": "hash_above_target-dominant",
-    })
+    constraints: Dict[str, Any] = field(
+        default_factory=lambda: {
+            "governance": True,
+            "operator_approval_required": True,
+            "max_entropy_sources": ["job_stream", "local_prng"],
+        }
+    )
+    telemetry_contract: Dict[str, Any] = field(
+        default_factory=lambda: {
+            "min_phi_density": 0.70,
+            "max_entropy_drift": 0.25,
+            "expected_rejection_profile": "hash_above_target-dominant",
+        }
+    )
 
 
 @dataclass(frozen=True)
@@ -246,8 +250,7 @@ class MissionMemory:
     def should_shutdown(self) -> bool:
         """Check if mission should shutdown."""
         return (
-            self.status == MissionStatus.COMPLETED
-            and self.mission_target.shutdown_after_completion
+            self.status == MissionStatus.COMPLETED and self.mission_target.shutdown_after_completion
         )
 
     def compute_deterministic_seed(self, operator_session_id: str, initial_job_id: str) -> str:
@@ -309,7 +312,9 @@ class MissionMemory:
         return json.dumps(self.to_dict(), indent=2, sort_keys=True, default=str)
 
 
-def seed_mission_memory(operator_session_id: str = "operator-live-default", initial_job_id: str = "genesis") -> MissionMemory:
+def seed_mission_memory(
+    operator_session_id: str = "operator-live-default", initial_job_id: str = "genesis"
+) -> MissionMemory:
     """Seed PYTHIA with the canonical one-block mission memory and deterministic state."""
     memory = MissionMemory()
     memory.compute_deterministic_seed(

@@ -2,15 +2,11 @@ import sys
 import os
 
 # Add the project root and python_backend to the Python path
-project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, project_root)
-sys.path.insert(0, os.path.join(project_root, 'python_backend'))
+sys.path.insert(0, os.path.join(project_root, "python_backend"))
 
 import pytest
 
 # Run the test
-pytest.main([
-    'tests/test_prediction_endpoint.py',
-    '-v',
-    '--tb=short'
-])
+pytest.main(["tests/test_prediction_endpoint.py", "-v", "--tb=short"])

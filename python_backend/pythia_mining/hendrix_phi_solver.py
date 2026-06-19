@@ -156,8 +156,7 @@ def phi_resonance(nonce: int) -> float:
         return 0.0
     ex, ey, ez = embed_nonce(n)
     c1 = min(
-        max(abs(M32[f][0] * ex + M32[f][1] * ey + M32[f][2] * ez) for f in range(32))
-        / PHI_INV,
+        max(abs(M32[f][0] * ex + M32[f][1] * ey + M32[f][2] * ez) for f in range(32)) / PHI_INV,
         1.0,
     )
     c2 = cheap_phi_resonance(n)
@@ -219,6 +218,6 @@ def algorithm_metadata() -> dict:
             "phi_vs_random_benchmark": "RANDOM_PERFORMS_BETTER_ON_SYNTHETIC",
             "cpu_overhead_vs_random": "3.73x",
             "hashrate_validation": "SYNTHETIC_ONLY",
-            "claim_boundary": "Mathematical structure is sound. Empirical tests show φ-guided search performs worse than random search on synthetic targets due to computational overhead. NO EVIDENCE of mining revenue or pool-side acceptance."
-        }
+            "claim_boundary": "Mathematical structure is sound. Empirical tests show φ-guided search performs worse than random search on synthetic targets due to computational overhead. NO EVIDENCE of mining revenue or pool-side acceptance.",
+        },
     }

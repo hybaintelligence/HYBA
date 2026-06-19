@@ -316,7 +316,10 @@ def main() -> int:
     # Preserve explicit no-live-submit semantics for review environments.
     os.environ.setdefault("HYBA_ENABLE_LIVE_SHARE_SUBMIT", "false")
     results = asyncio.run(run_audits())
-    payload = {"status": "pass" if all(r.status == "pass" for r in results) else "fail", "audits": [asdict(r) for r in results]}
+    payload = {
+        "status": "pass" if all(r.status == "pass" for r in results) else "fail",
+        "audits": [asdict(r) for r in results],
+    }
     if args.json:
         print(json.dumps(payload, indent=2, sort_keys=True, default=str))
     else:

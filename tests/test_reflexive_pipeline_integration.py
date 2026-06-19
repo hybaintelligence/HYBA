@@ -10,16 +10,10 @@ This file covers:
 
 from __future__ import annotations
 
-import asyncio
-import importlib.util
-import json
 import math
-import random
 import sys
-import tempfile
 import unittest
 from pathlib import Path
-from typing import Any, Dict
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 PYTHON_BACKEND = REPO_ROOT / "python_backend"
@@ -31,51 +25,10 @@ from hyba_genesis_api.core.audit_surface import (  # noqa: E402
     seal_consciousness_envelope,
 )
 from hyba_genesis_api.core.constructor_engine import ExplainerIntegrity  # noqa: E402
-from hyba_genesis_api.core.intelligence_fabric import (  # noqa: E402
-    PHI,
-    PhiResonanceFabric,
-    SubstrateOrchestrator,
-    context_state,
-    density_matrix,
-    evaluate_substrate,
-    explain,
-    phi_density,
-    phi_resonance,
-    route_substrates,
-    SubstrateName,
-)
 from hyba_genesis_api.core.intelligence_manifold import (  # noqa: E402
     IntelligenceManifold,
-    ManifoldEngine,
-    ManifoldStabilizer,
 )
-from hyba_genesis_api.core.ontological_memory import CrystallineRegistry  # noqa: E402
 from hyba_genesis_api.core.predictive_controller import PredictiveActiveInference  # noqa: E402
-from hyba_genesis_api.core.recursive_closure import (  # noqa: E402
-    BufferBackedMiningLoop,
-    RecursiveClosure,
-    SubstrateBuffer,
-    build_buffered_closure,
-)
-from hyba_genesis_api.core.reflexive_agent import ReflexiveAgent  # noqa: E402
-from hyba_genesis_api.core.reflexive_controller import (  # noqa: E402
-    CodebaseUmwelt,
-    CounterfactualEngine,
-    IITSystemHealth,
-    ReflexiveController,
-    default_reflexive_root,
-)
-from hyba_genesis_api.core.reflexive_daemon import IntelligenceHeartbeat  # noqa: E402
-from hyba_genesis_api.core.substrate import (  # noqa: E402
-    get_substrate_state,
-    initialize_substrate,
-    is_ready,
-    shutdown_substrate,
-)
-from hyba_genesis_api.core.substrate_interface import SubstrateContract  # noqa: E402
-from hyba_genesis_api.core.thermal_intelligence import ThermalEnvelope  # noqa: E402
-from hyba_genesis_api.core.manifold_logic import ManifoldLogic  # noqa: E402
-from tests.test_reflexive_controller import write_sample_umwelt  # noqa: E402
 
 
 # ============================================================
@@ -184,10 +137,14 @@ class ExplainerIntegrityUnitTests(unittest.TestCase):
         self.integrity = ExplainerIntegrity()
 
     def test_validates_positive_adjustment(self) -> None:
-        self.assertTrue(self.integrity.validate_explanation({"adjustment": 0.01}, "abcdef1234567890"))
+        self.assertTrue(
+            self.integrity.validate_explanation({"adjustment": 0.01}, "abcdef1234567890")
+        )
 
     def test_rejects_negative_adjustment(self) -> None:
-        self.assertFalse(self.integrity.validate_explanation({"adjustment": -1.0}, "abcdef1234567890"))
+        self.assertFalse(
+            self.integrity.validate_explanation({"adjustment": -1.0}, "abcdef1234567890")
+        )
 
     def test_rejects_empty_proposal(self) -> None:
         self.assertFalse(self.integrity.validate_explanation({}, "abcdef1234567890"))
@@ -196,8 +153,12 @@ class ExplainerIntegrityUnitTests(unittest.TestCase):
         self.assertFalse(self.integrity.validate_explanation({"adjustment": 0.01}, ""))
 
     def test_rejects_non_finite_adjustment(self) -> None:
-        self.assertFalse(self.integrity.validate_explanation({"adjustment": float("nan")}, "abcdef1234567890"))
-        self.assertFalse(self.integrity.validate_explanation({"adjustment": float("inf")}, "abcdef1234567890"))
+        self.assertFalse(
+            self.integrity.validate_explanation({"adjustment": float("nan")}, "abcdef1234567890")
+        )
+        self.assertFalse(
+            self.integrity.validate_explanation({"adjustment": float("inf")}, "abcdef1234567890")
+        )
 
 
 class PredictiveActiveInferenceUnitTests(unittest.TestCase):

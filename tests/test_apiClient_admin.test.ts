@@ -9,7 +9,11 @@ import {
   updateAdminUser,
 } from "../src/apiClient";
 
-const success = () => new Response(JSON.stringify({ id: 1, status: "ok" }), { status: 200, headers: { "Content-Type": "application/json" } });
+const success = () =>
+  new Response(JSON.stringify({ id: 1, status: "ok" }), {
+    status: 200,
+    headers: { "Content-Type": "application/json" },
+  });
 
 describe("apiClient admin and funding command contracts", () => {
   beforeEach(() => {
@@ -23,7 +27,12 @@ describe("apiClient admin and funding command contracts", () => {
   });
 
   it("sends admin mutations with bearer auth and maxRetries=0 semantics", async () => {
-    await createAdminUser({ username: "new-admin", email: "admin@example.com", password: "safe-test-password", role: "admin" });
+    await createAdminUser({
+      username: "new-admin",
+      email: "admin@example.com",
+      password: "safe-test-password",
+      role: "admin",
+    });
     await updateAdminUser(7, { is_active: false });
     await deleteAdminUser(7);
     await disburseFunding(42);
@@ -48,11 +57,15 @@ describe("apiClient admin and funding command contracts", () => {
   });
 
   it("does not retry destructive admin calls on backend 5xx", async () => {
-    vi.mocked(fetch).mockResolvedValue(new Response(JSON.stringify({ error: "server_error" }), { status: 500 }));
+    vi.mocked(fetch).mockResolvedValue(
+      new Response(JSON.stringify({ error: "server_error" }), { status: 500 }),
+    );
 
     await expect(deleteAdminUser(99)).rejects.toMatchObject({ status: 500 });
     await expect(disburseFunding(42)).rejects.toMatchObject({ status: 500 });
-    await expect(reviewFundingRequest("req-2", { status: "rejected" })).rejects.toMatchObject({ status: 500 });
+    await expect(reviewFundingRequest("req-2", { status: "rejected" })).rejects.toMatchObject({
+      status: 500,
+    });
     expect(fetch).toHaveBeenCalledTimes(3);
   });
 });

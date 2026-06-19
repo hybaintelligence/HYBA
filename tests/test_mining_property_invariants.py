@@ -1,5 +1,5 @@
 """Property-based invariants for the unified mining pipeline.
-    
+
 These tests verify that the entire mining stack — from consciousness coherence
 through solver traversal to meta-learning adaptation — satisfies mathematical
 invariants across a vast range of inputs. This is the production-grade answer
@@ -20,9 +20,8 @@ import math
 import random
 import sys
 import time
-from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Sequence, Tuple
+from typing import List
 
 import numpy as np
 import pytest
@@ -108,9 +107,7 @@ def coherence_state_strategy(draw):
         )
     )
     return {
-        "components": {
-            f"comp_{i}": health for i, health in enumerate(healths)
-        },
+        "components": {f"comp_{i}": health for i, health in enumerate(healths)},
         "n_known": sum(1 for h in healths if h is not None),
         "n_active": sum(1 for h in healths if h),
     }
@@ -141,9 +138,7 @@ def share_outcome_sequence_strategy(draw):
     coherence_input=st.floats(min_value=0.0, max_value=1.0, allow_nan=False, allow_infinity=False),
 )
 @settings(max_examples=50, deadline=30000)
-async def test_property_unified_state_invariants(
-    target: int, coherence_input: float
-) -> None:
+async def test_property_unified_state_invariants(target: int, coherence_input: float) -> None:
     """Property: UnifiedMiningEngine state always satisfies basic invariants.
 
     After ANY search cycle (including zero-iteration or timeout), the engine
@@ -167,9 +162,7 @@ async def test_property_unified_state_invariants(
     s = state["state"]
 
     # Core invariants
-    assert 0.0 <= s["phi_coherence"] <= 1.0, (
-        f"phi_coherence={s['phi_coherence']} outside [0, 1]"
-    )
+    assert 0.0 <= s["phi_coherence"] <= 1.0, f"phi_coherence={s['phi_coherence']} outside [0, 1]"
     assert 0.0 <= s["effective_search_dim_bits"] <= 32.0, (
         f"effective_search_dim_bits={s['effective_search_dim_bits']} outside [0, 32]"
     )
@@ -181,9 +174,7 @@ async def test_property_unified_state_invariants(
     assert s["working_set_compression"] >= 0.0, (
         f"working_set_compression={s['working_set_compression']} negative"
     )
-    assert s["solve_count"] >= 0, (
-        f"solve_count={s['solve_count']} negative"
-    )
+    assert s["solve_count"] >= 0, f"solve_count={s['solve_count']} negative"
 
     # Consciousness invariants
     assert "consciousness" in state
@@ -191,7 +182,10 @@ async def test_property_unified_state_invariants(
     if c["coherence_meter"] is not None:
         assert 0.0 <= c["coherence_meter"] <= 1.0
     assert c["integration_regime"] in (
-        "singular_agent_proxy", "distributed", "fragmented", "critical"
+        "singular_agent_proxy",
+        "distributed",
+        "fragmented",
+        "critical",
     )
 
     # Proof invariants
@@ -228,9 +222,7 @@ def test_property_coherence_monotonic_with_component_health(
 
     assume(n_healthy + n_unhealthy > 0)
 
-    engine = ConsciousnessEngine(
-        config=ConsciousnessConfig(measurement_window=100)
-    )
+    engine = ConsciousnessEngine(config=ConsciousnessConfig(measurement_window=100))
 
     coherences: list[float] = []
     for i in range(n_healthy):
@@ -279,9 +271,7 @@ async def test_property_search_strategy_bounds_respected(
     - phi_resonance_enabled must always be True (core invariant)
     - adaptive_difficulty must be True for coherence >= 0.40
     """
-    from pythia_mining.ai_optimizer import AIOptimizer, SearchStrategy
-    from pythia_mining.consciousness_engine import ConsciousnessEngine
-    from pythia_mining.pulvini_compressed_solver import PulviniCompressedQuantumSolver
+    from pythia_mining.ai_optimizer import SearchStrategy
     from pythia_mining.phi_unified_mining_engine import UnifiedMiningEngine
 
     engine = UnifiedMiningEngine()
@@ -312,9 +302,7 @@ async def test_property_search_strategy_bounds_respected(
     )
 
     # Invariants
-    assert strategy.phi_resonance_enabled is True, (
-        "phi_resonance_enabled must always be True"
-    )
+    assert strategy.phi_resonance_enabled is True, "phi_resonance_enabled must always be True"
     assert strategy.max_search_time in (30.0, 60.0, 120.0), (
         f"max_search_time={strategy.max_search_time} not in {{30, 60, 120}}"
     )
@@ -376,20 +364,17 @@ async def test_property_meta_learning_weights_normalized(
     snapshot = optimizer.meta_learning_snapshot()
     # The meta-learning system stores raw gradient-ascent weights (clipped to [0.05, 20.0]).
     # Use the softmax-normalized probabilities for the normalized invariant.
-    weights = snapshot.get("strategy_weights", {})
+    snapshot.get("strategy_weights", {})
     probs = snapshot.get("strategy_probabilities", {})
     total_prob = sum(probs.values())
 
     assert abs(total_prob - 1.0) < 1e-9, (
-        f"Meta-learning probabilities sum to {total_prob}, expected 1.0. "
-        f"Probabilities: {probs}"
+        f"Meta-learning probabilities sum to {total_prob}, expected 1.0. Probabilities: {probs}"
     )
 
     # All individual probabilities must be in [0, 1]
     for strategy, prob in probs.items():
-        assert 0.0 <= prob <= 1.0, (
-            f"Strategy '{strategy}' has probability {prob} outside [0, 1]"
-        )
+        assert 0.0 <= prob <= 1.0, f"Strategy '{strategy}' has probability {prob} outside [0, 1]"
 
     # Strategy portfolio must be non-empty
     assert len(probs) > 0, "Strategy portfolio is empty after share outcomes"
@@ -415,8 +400,6 @@ def test_property_nonce_compression_coverage(n_lanes: int, seed: int) -> None:
     """
     from pythia_mining.pulvini_nonce_compression import (
         PulviniNonceSpaceCompressor,
-        CompressedNonceSpacePlan,
-        NonceSegment,
     )
 
     compressor = PulviniNonceSpaceCompressor(lanes=n_lanes)
@@ -430,14 +413,10 @@ def test_property_nonce_compression_coverage(n_lanes: int, seed: int) -> None:
     )
 
     # Invariant 2: Complete coverage
-    assert plan.complete_coverage, (
-        "Compression plan does not cover full nonce space"
-    )
+    assert plan.complete_coverage, "Compression plan does not cover full nonce space"
 
     # Invariant 3: Overlap-free
-    assert plan.overlap_free, (
-        "Compression plan has overlapping segments"
-    )
+    assert plan.overlap_free, "Compression plan has overlapping segments"
 
     # Invariant 4: Coverage segments cover the full nonce space
     expected_size = compressor.nonce_space_size
@@ -496,9 +475,7 @@ def test_property_regime_classification_boundaries(phi_value: float) -> None:
 
     # Classification must be deterministic (same input → same output)
     regime2 = engine._classify_integration(clamped_phi)
-    assert regime == regime2, (
-        f"Classification not deterministic: {regime} vs {regime2}"
-    )
+    assert regime == regime2, f"Classification not deterministic: {regime} vs {regime2}"
 
 
 # =============================================================================
@@ -531,9 +508,7 @@ def test_property_continuous_multiplier_bounds_and_monotonicity(
         f"Multiplier {multiplier} outside [{engine.config.min_multiplier}, {engine.config.max_multiplier}] "
         f"for coherence={coherence_score}"
     )
-    assert math.isfinite(multiplier), (
-        f"Multiplier not finite: {multiplier}"
-    )
+    assert math.isfinite(multiplier), f"Multiplier not finite: {multiplier}"
 
     # Monotonicity check: sample nearby points
     if coherence_score < 1.0:
@@ -583,14 +558,11 @@ def test_property_phi_folding_round_trip_any_vector(values: List[float]) -> None
 
     # Round-trip must preserve original values
     assert np.allclose(reconstructed, payload, rtol=1e-6, atol=1e-6), (
-        f"Phi-folding round-trip failed: max diff = "
-        f"{np.max(np.abs(reconstructed - payload))}"
+        f"Phi-folding round-trip failed: max diff = {np.max(np.abs(reconstructed - payload))}"
     )
 
     # Must be marked as reversible
-    assert result.reversible, (
-        "Phi-folding compression must be reversible"
-    )
+    assert result.reversible, "Phi-folding compression must be reversible"
 
 
 # =============================================================================
@@ -615,21 +587,15 @@ def test_property_m32_embedding_deterministic_and_bounded(nonce: int) -> None:
     # Determinism
     v1 = embed_nonce(nonce)
     v2 = embed_nonce(nonce)
-    assert v1 == v2, (
-        f"embed_nonce not deterministic for nonce={nonce}: {v1} vs {v2}"
-    )
+    assert v1 == v2, f"embed_nonce not deterministic for nonce={nonce}: {v1} vs {v2}"
 
     # Unit norm
-    norm = math.sqrt(v1[0]**2 + v1[1]**2 + v1[2]**2)
-    assert abs(norm - 1.0) < 1e-12, (
-        f"Embedding norm {norm} != 1.0 for nonce={nonce}"
-    )
+    norm = math.sqrt(v1[0] ** 2 + v1[1] ** 2 + v1[2] ** 2)
+    assert abs(norm - 1.0) < 1e-12, f"Embedding norm {norm} != 1.0 for nonce={nonce}"
 
     # Voronoi domain in valid range
     domain = voronoi_domain(nonce)
-    assert 0 <= domain <= 31, (
-        f"Voronoi domain {domain} outside [0, 31] for nonce={nonce}"
-    )
+    assert 0 <= domain <= 31, f"Voronoi domain {domain} outside [0, 31] for nonce={nonce}"
 
 
 # =============================================================================
@@ -651,17 +617,11 @@ def test_property_yang_mills_action_bounded(nonce: int) -> None:
 
     action = yang_mills_action(nonce)
 
-    assert 0.0 <= action <= 2.0, (
-        f"Yang-Mills action {action} outside [0, 2] for nonce={nonce}"
-    )
-    assert math.isfinite(action), (
-        f"Yang-Mills action not finite: {action}"
-    )
+    assert 0.0 <= action <= 2.0, f"Yang-Mills action {action} outside [0, 2] for nonce={nonce}"
+    assert math.isfinite(action), f"Yang-Mills action not finite: {action}"
 
     # The mass gap threshold must be within bounds
-    assert 0.0 < YANG_MILLS_GAP < 2.0, (
-        f"YANG_MILLS_GAP={YANG_MILLS_GAP} outside (0, 2)"
-    )
+    assert 0.0 < YANG_MILLS_GAP < 2.0, f"YANG_MILLS_GAP={YANG_MILLS_GAP} outside (0, 2)"
 
 
 # =============================================================================
@@ -687,17 +647,13 @@ def test_property_phi_resonance_bounded_and_deterministic(nonce: int) -> None:
     c1 = cheap_phi_resonance(nonce)
     c2 = cheap_phi_resonance(nonce)
     assert c1 == c2, f"cheap_phi_resonance not deterministic for nonce={nonce}"
-    assert 0.0 <= c1 <= 1.0, (
-        f"cheap_phi_resonance={c1} outside [0, 1] for nonce={nonce}"
-    )
+    assert 0.0 <= c1 <= 1.0, f"cheap_phi_resonance={c1} outside [0, 1] for nonce={nonce}"
 
     # phi_resonance (full)
     p1 = phi_resonance(nonce)
     p2 = phi_resonance(nonce)
     assert p1 == p2, f"phi_resonance not deterministic for nonce={nonce}"
-    assert 0.0 <= p1 <= 1.0, (
-        f"phi_resonance={p1} outside [0, 1] for nonce={nonce}"
-    )
+    assert 0.0 <= p1 <= 1.0, f"phi_resonance={p1} outside [0, 1] for nonce={nonce}"
 
 
 # =============================================================================
@@ -725,7 +681,6 @@ def test_property_decision_log_invariants(n_decisions: int, seed: int) -> None:
         AutonomyLevel,
         SafetyConstraint,
     )
-    import time
 
     class _StubEngine:
         optimizer = None
@@ -742,18 +697,14 @@ def test_property_decision_log_invariants(n_decisions: int, seed: int) -> None:
 
     for i in range(n_decisions):
         violated = rng.random() < 0.3  # 30% violation rate
-        decision = AutonomousDecision(
+        AutonomousDecision(
             decision_id=f"d_{i}_{time.time_ns()}",
             timestamp=time.time(),
             autonomy_level=AutonomyLevel.ADVISORY,
             decision_type="search_optimisation",
             mathematical_justification={"phi_gain": rng.random()},
-            constraints_satisfied=(
-                [] if violated else [SafetyConstraint.HERMITICITY]
-            ),
-            constraints_violated=(
-                [SafetyConstraint.HERMITICITY] if violated else []
-            ),
+            constraints_satisfied=([] if violated else [SafetyConstraint.HERMITICITY]),
+            constraints_violated=([SafetyConstraint.HERMITICITY] if violated else []),
             action_taken="adjust_search_depth",
             expected_outcome="improved_coverage",
         )
@@ -765,9 +716,7 @@ def test_property_decision_log_invariants(n_decisions: int, seed: int) -> None:
 
         # Invariant checks after each decision
         density = ctrl.get_phi_density()
-        assert 0.0 <= density <= 1.0, (
-            f"phi_density={density} outside [0, 1] after decision {i}"
-        )
+        assert 0.0 <= density <= 1.0, f"phi_density={density} outside [0, 1] after decision {i}"
         assert ctrl._consecutive_failures >= 0, (
             f"consecutive_failures={ctrl._consecutive_failures} negative after decision {i}"
         )
@@ -777,11 +726,11 @@ def test_property_decision_log_invariants(n_decisions: int, seed: int) -> None:
     # 1. CLOSED: no recent failures, accepting optimization
     # 2. OPEN: failures exceeded threshold, cooldown active
     # 3. HALF-OPEN: cooldown expired, ready for reset
-    
+
     # If we triggered failures earlier in the sequence, the circuit may be open
     # even though _consecutive_failures is now 0 (due to recent successes).
     # This is "sticky" behavior: the system requires explicit reset after failure.
-    
+
     if ctrl.is_circuit_open():
         # Circuit is open. Either:
         # (a) _consecutive_failures still >= threshold, OR
@@ -793,16 +742,12 @@ def test_property_decision_log_invariants(n_decisions: int, seed: int) -> None:
         assert ctrl._consecutive_failures < ctrl.config.circuit_breaker_failure_threshold, (
             f"Circuit closed but failures={ctrl._consecutive_failures} >= threshold={ctrl.config.circuit_breaker_failure_threshold}"
         )
-    
+
     # Verify reset works: reset_circuit_breaker() should close the circuit
     if ctrl.is_circuit_open():
         ctrl.reset_circuit_breaker(operator_id="test_property", operator_reason="test_reset")
-        assert not ctrl.is_circuit_open(), (
-            "Circuit should be closed after explicit reset"
-        )
-        assert ctrl._consecutive_failures == 0, (
-            "Consecutive failures should be zero after reset"
-        )
+        assert not ctrl.is_circuit_open(), "Circuit should be closed after explicit reset"
+        assert ctrl._consecutive_failures == 0, "Consecutive failures should be zero after reset"
 
 
 # =============================================================================
@@ -886,9 +831,7 @@ def test_property_mass_gap_gate_determinism(action: float, seed: int) -> None:
     result2 = soft_mass_gap_gate(action, rng2)
 
     # Deterministic with same seed
-    assert result1 == result2, (
-        f"Mass gap gate not deterministic with same seed for action={action}"
-    )
+    assert result1 == result2, f"Mass gap gate not deterministic with same seed for action={action}"
 
     # For action >= threshold, must always pass
     if action >= YANG_MILLS_GAP:
@@ -908,9 +851,7 @@ def test_property_mass_gap_gate_determinism(action: float, seed: int) -> None:
     start=st.integers(min_value=0, max_value=100000),
 )
 @settings(max_examples=30, deadline=10000)
-async def test_property_solver_configuration_idempotent(
-    target: int, start: int
-) -> None:
+async def test_property_solver_configuration_idempotent(target: int, start: int) -> None:
     """Property: Configuring a solver with the same parameters twice must produce identical state.
 
     Solver configuration must be idempotent: re-configuring with the same
@@ -970,9 +911,7 @@ async def test_property_unified_engine_zero_shares_state(target: int) -> None:
     assert s["rejected_shares"] == 0, (
         f"rejected_shares={s['rejected_shares']} should be 0 before mining"
     )
-    assert s["solve_count"] == 0, (
-        f"solve_count={s['solve_count']} should be 0 before mining"
-    )
+    assert s["solve_count"] == 0, f"solve_count={s['solve_count']} should be 0 before mining"
     assert state["consciousness"]["coherence_meter"] is not None or s["phi_coherence"] == 0.0, (
         "Coherence meter should be initialized"
     )
@@ -1016,9 +955,7 @@ def test_property_strategy_selection_covers_all_regimes(
     # ACROSS all samples, we should see at least one regime
     # (single-coherence tests may see only one, but the function handles all)
     for r in observed_regimes:
-        assert isinstance(r, IntegrationRegime), (
-            f"Invalid regime type: {r}"
-        )
+        assert isinstance(r, IntegrationRegime), f"Invalid regime type: {r}"
 
     # Verify the regime boundary transitions work correctly
     test_points = [
@@ -1048,9 +985,7 @@ def test_property_strategy_selection_covers_all_regimes(
     seed=st.integers(min_value=0, max_value=1000),
 )
 @settings(max_examples=200, deadline=None)
-def test_property_gradient_proposal_in_range(
-    start_nonce: int, scale: int, seed: int
-) -> None:
+def test_property_gradient_proposal_in_range(start_nonce: int, scale: int, seed: int) -> None:
     """Property: phi_gradient_proposal must ALWAYS return a valid 32-bit nonce.
 
     For ANY starting nonce and any scale factor, the gradient proposal
@@ -1162,7 +1097,10 @@ def test_property_orchestrate_returns_valid_payload(seed: int) -> None:
     phi_m = payload["phi_metrics"]
     assert 0.0 <= phi_m["phi_integrated"] <= 1.0
     assert payload["integration_regime"] in (
-        "singular_agent_proxy", "distributed", "fragmented", "critical"
+        "singular_agent_proxy",
+        "distributed",
+        "fragmented",
+        "critical",
     )
     assert 0.0 <= payload["coherence_meter"] <= 1.0
 

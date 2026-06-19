@@ -339,7 +339,9 @@ class MetalSHA256Pipeline:
             )
         started = time.perf_counter()
         self._stage_nonces(nonce_list)
-        with ThreadPoolExecutor(max_workers=max(1, min(int(cpu_workers), DEFAULT_CPU_WORKERS))) as executor:
+        with ThreadPoolExecutor(
+            max_workers=max(1, min(int(cpu_workers), DEFAULT_CPU_WORKERS))
+        ) as executor:
             results = list(
                 executor.map(
                     lambda nonce: verify_nonce(

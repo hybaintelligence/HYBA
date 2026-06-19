@@ -34,7 +34,10 @@ def test_packet_extracts_all_seven_domains_without_backend_dependency() -> None:
 
     assert packet["fullstack_boundary"]["funding_runtime_separate"] is True
     assert packet["fullstack_boundary"]["imports_hyba_unified_backend"] is False
-    assert packet["backend_origin"]["extraction_mode"] == "local_contract_extraction_no_runtime_dependency"
+    assert (
+        packet["backend_origin"]["extraction_mode"]
+        == "local_contract_extraction_no_runtime_dependency"
+    )
     assert {item["slug"] for item in packet["contract_results"]} == EXPECTED_SLUGS
     assert packet["all_contracts_satisfied"] is True
 

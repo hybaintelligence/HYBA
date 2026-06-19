@@ -17,6 +17,7 @@ BACKEND_ROOT = Path(__file__).resolve().parents[1]
 if str(BACKEND_ROOT) not in sys.path:
     sys.path.insert(0, str(BACKEND_ROOT))
 
+
 def check_file_exists(path: Path, name: str) -> bool:
     """Check if a file exists and report."""
     if path.exists():
@@ -26,18 +27,19 @@ def check_file_exists(path: Path, name: str) -> bool:
         print(f"❌ {name} MISSING: {path.relative_to(BACKEND_ROOT)}")
         return False
 
+
 def validate_frontend():
     """Validate frontend components."""
     print("\n" + "=" * 70)
     print("FRONTEND VALIDATION")
     print("=" * 70)
-    
+
     results = []
-    
+
     # Check AdminPanel component
     admin_panel = BACKEND_ROOT / "src" / "components" / "AdminPanel.tsx"
     results.append(check_file_exists(admin_panel, "AdminPanel component"))
-    
+
     # Check App.tsx integration
     app_tsx = BACKEND_ROOT / "src" / "App.tsx"
     if app_tsx.exists():
@@ -51,21 +53,22 @@ def validate_frontend():
     else:
         print("❌ App.tsx not found")
         results.append(False)
-    
+
     return all(results)
+
 
 def validate_backend():
     """Validate backend API."""
     print("\n" + "=" * 70)
     print("BACKEND VALIDATION")
     print("=" * 70)
-    
+
     results = []
-    
+
     # Check admin API module
     admin_api = BACKEND_ROOT / "python_backend" / "hyba_genesis_api" / "api" / "admin.py"
     results.append(check_file_exists(admin_api, "Admin API module"))
-    
+
     # Check if admin API has required endpoints
     if admin_api.exists():
         content = admin_api.read_text()
@@ -78,7 +81,7 @@ def validate_backend():
             ("list_audit_logs", "GET /api/admin/audit-logs"),
             ("get_admin_stats", "GET /api/admin/stats"),
         ]
-        
+
         for func_name, endpoint in endpoints:
             if func_name in content:
                 print(f"✅ Endpoint implemented: {endpoint}")
@@ -86,7 +89,7 @@ def validate_backend():
             else:
                 print(f"❌ Endpoint MISSING: {endpoint}")
                 results.append(False)
-    
+
     # Check main.py router registration
     main_py = BACKEND_ROOT / "python_backend" / "hyba_genesis_api" / "main.py"
     if main_py.exists():
@@ -97,24 +100,25 @@ def validate_backend():
         else:
             print("❌ Admin router NOT registered in main.py")
             results.append(False)
-    
+
     return all(results)
+
 
 def validate_database():
     """Validate database models."""
     print("\n" + "=" * 70)
     print("DATABASE VALIDATION")
     print("=" * 70)
-    
+
     results = []
-    
+
     # Check models file
     models_file = BACKEND_ROOT / "python_backend" / "consciousness_db" / "models.py"
     results.append(check_file_exists(models_file, "Database models"))
-    
+
     if models_file.exists():
         content = models_file.read_text()
-        
+
         # Check User model
         if "class User(Base)" in content and "username" in content and "password_hash" in content:
             print("✅ User model defined with required fields")
@@ -122,7 +126,7 @@ def validate_database():
         else:
             print("❌ User model MISSING or incomplete")
             results.append(False)
-        
+
         # Check AuditLog model
         if "class AuditLog(Base)" in content and "actor_username" in content:
             print("✅ AuditLog model defined")
@@ -130,7 +134,7 @@ def validate_database():
         else:
             print("❌ AuditLog model MISSING")
             results.append(False)
-        
+
         # Check UserRole enum
         if "class UserRole" in content and "ADMIN" in content:
             print("✅ UserRole enum defined")
@@ -138,21 +142,22 @@ def validate_database():
         else:
             print("❌ UserRole enum MISSING")
             results.append(False)
-    
+
     return all(results)
+
 
 def validate_deployment_tools():
     """Validate deployment tools."""
     print("\n" + "=" * 70)
     print("DEPLOYMENT TOOLS VALIDATION")
     print("=" * 70)
-    
+
     results = []
-    
+
     # Check seed script
     seed_script = BACKEND_ROOT / "python_backend" / "scripts" / "seed_admin_user.py"
     results.append(check_file_exists(seed_script, "Seed admin user script"))
-    
+
     if seed_script.exists():
         content = seed_script.read_text()
         if "create_admin_user" in content and "PasswordHasher" in content:
@@ -161,21 +166,22 @@ def validate_deployment_tools():
         else:
             print("❌ Seed script INCOMPLETE")
             results.append(False)
-    
+
     return all(results)
+
 
 def validate_security():
     """Validate security features."""
     print("\n" + "=" * 70)
     print("SECURITY VALIDATION")
     print("=" * 70)
-    
+
     results = []
-    
+
     admin_api = BACKEND_ROOT / "python_backend" / "hyba_genesis_api" / "api" / "admin.py"
     if admin_api.exists():
         content = admin_api.read_text()
-        
+
         # Check for require_admin function
         if "def require_admin" in content:
             print("✅ Admin role enforcement function present")
@@ -183,7 +189,7 @@ def validate_security():
         else:
             print("❌ Admin role enforcement MISSING")
             results.append(False)
-        
+
         # Check for audit logging
         if "def log_audit" in content or "AuditLog" in content:
             print("✅ Audit logging implemented")
@@ -191,7 +197,7 @@ def validate_security():
         else:
             print("❌ Audit logging MISSING")
             results.append(False)
-        
+
         # Check for password hashing
         if "PasswordHasher" in content and "_password_hasher.hash" in content:
             print("✅ Argon2id password hashing configured")
@@ -199,7 +205,7 @@ def validate_security():
         else:
             print("❌ Password hashing MISSING or insecure")
             results.append(False)
-        
+
         # Check for self-protection
         if "Cannot delete your own account" in content or "Cannot change your own role" in content:
             print("✅ Self-protection mechanisms present")
@@ -207,15 +213,16 @@ def validate_security():
         else:
             print("❌ Self-protection MISSING")
             results.append(False)
-    
+
     return all(results)
+
 
 def main():
     """Run all validations."""
     print("=" * 70)
     print("HYBA ADMIN PANEL COMPLETE VALIDATION")
     print("=" * 70)
-    
+
     results = {
         "Frontend": validate_frontend(),
         "Backend": validate_backend(),
@@ -223,17 +230,17 @@ def main():
         "Deployment Tools": validate_deployment_tools(),
         "Security": validate_security(),
     }
-    
+
     print("\n" + "=" * 70)
     print("VALIDATION SUMMARY")
     print("=" * 70)
-    
+
     for category, passed in results.items():
         status = "✅ PASS" if passed else "❌ FAIL"
         print(f"{status} - {category}")
-    
+
     print("=" * 70)
-    
+
     all_passed = all(results.values())
     if all_passed:
         print("\n🎯 ALL VALIDATIONS PASSED")
@@ -249,6 +256,7 @@ def main():
         print("\n⚠️  VALIDATION FAILURES DETECTED")
         print("   Review output above for missing components")
         return 1
+
 
 if __name__ == "__main__":
     sys.exit(main())

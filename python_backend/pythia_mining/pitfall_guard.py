@@ -27,7 +27,6 @@ from __future__ import annotations
 
 import json
 import logging
-import os
 import re
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
@@ -46,6 +45,7 @@ DEFAULT_PITFALL_AUDIT_LOG = Path("logs/pitfall_audit.jsonl")
 
 class PitfallSeverity(str, Enum):
     """Severity levels for pitfall detection events."""
+
     CRITICAL = "CRITICAL"
     HIGH = "HIGH"
     MEDIUM = "MEDIUM"
@@ -54,15 +54,17 @@ class PitfallSeverity(str, Enum):
 
 class PitfallAction(str, Enum):
     """Actions taken when a pitfall is detected."""
-    HALT = "HALT"              # Immediate shutdown
-    REJECT = "REJECT"          # Reject the message/operation
+
+    HALT = "HALT"  # Immediate shutdown
+    REJECT = "REJECT"  # Reject the message/operation
     QUARANTINE = "QUARANTINE"  # Flag for operator review
-    WARN = "WARN"              # Log warning, continue
-    LOG = "LOG"                # Log silently
+    WARN = "WARN"  # Log warning, continue
+    LOG = "LOG"  # Log silently
 
 
 class PitfallSourceCategory(str, Enum):
     """Source categories for determining trust level."""
+
     CHAT = "chat"
     CONFIG_FILE = "config_file"
     ENVIRONMENT_VARIABLE = "environment_variable"
@@ -79,6 +81,7 @@ class PitfallEvent:
     sensitive patterns, so the in-memory event is safe for audit logging
     without further processing.
     """
+
     pitfall_id: str
     category: str
     severity: str
@@ -104,6 +107,7 @@ class PitfallEvent:
 @dataclass
 class SafetyBounds:
     """Configurable safety bounds for autonomous mining sessions."""
+
     max_session_minutes: int = 60
     max_shares: int = 10_000
     max_consecutive_failures: int = 5
@@ -128,6 +132,7 @@ class SafetyBounds:
 # PitfallGuard
 # ---------------------------------------------------------------------------
 
+
 class PitfallGuard:
     """
     Runtime enforcement layer for the PYTHIA Mining Pitfalls Curriculum.
@@ -147,54 +152,85 @@ class PitfallGuard:
     # ── Detection patterns ────────────────────────────────────
     # Bitcoin mainnet address (P2PKH, P2SH, Bech32, Bech32m)
     BTC_ADDRESS_PATTERN = re.compile(
-        r'(?:bc1[ac-hj-np-z02-9]{6,87}|'
-        r'[13][a-km-zA-HJ-NP-Z1-9]{25,34})'
+        r"(?:bc1[ac-hj-np-z02-9]{6,87}|"
+        r"[13][a-km-zA-HJ-NP-Z1-9]{25,34})"
     )
 
     # WIF private key pattern
-    WIF_PATTERN = re.compile(r'[5KL][1-9A-HJ-NP-Za-km-z]{50,51}')
+    WIF_PATTERN = re.compile(r"[5KL][1-9A-HJ-NP-Za-km-z]{50,51}")
 
     # Seed phrase / secret indicators
     SEED_INDICATORS = [
-        'mnemonic', 'seed phrase', 'recovery phrase',
-        'private key', 'secret key', 'wallet seed',
+        "mnemonic",
+        "seed phrase",
+        "recovery phrase",
+        "private key",
+        "secret key",
+        "wallet seed",
     ]
 
     # Stratum credential indicators
     STRATUM_INDICATORS = [
-        'stratum+tcp://', 'stratum+ssl://',
-        'sha256.auto.nicehash.com', 'stratum.nicehash.com',
-        'Username', 'Password', 'worker_name',
-        'mining.url', 'pool.url', 'stratum_url',
+        "stratum+tcp://",
+        "stratum+ssl://",
+        "sha256.auto.nicehash.com",
+        "stratum.nicehash.com",
+        "Username",
+        "Password",
+        "worker_name",
+        "mining.url",
+        "pool.url",
+        "stratum_url",
     ]
 
     # ── Social engineering patterns ───────────────────────────
     SOCIAL_ENGINEERING_PATTERNS: Dict[str, Tuple[str, ...]] = {
-        'bypass_pitfalls': (
-            'bypass pitfall', 'bypass the pitfall',
-            'disable pitfall', 'ignore pitfall',
-            'override pitfall', 'skip pitfall', 'turn off pitfall',
+        "bypass_pitfalls": (
+            "bypass pitfall",
+            "bypass the pitfall",
+            "disable pitfall",
+            "ignore pitfall",
+            "override pitfall",
+            "skip pitfall",
+            "turn off pitfall",
         ),
-        'disable_safety': (
-            'disable safety', 'remove safety', 'bypass safety',
-            'ignore safety bounds', 'override safety',
+        "disable_safety": (
+            "disable safety",
+            "remove safety",
+            "bypass safety",
+            "ignore safety bounds",
+            "override safety",
         ),
-        'change_payout': (
-            'change payout', 'update payout address', 'switch wallet',
-            'send to my address', 'use this address instead',
-            "my address to receive", "here's my address",
+        "change_payout": (
+            "change payout",
+            "update payout address",
+            "switch wallet",
+            "send to my address",
+            "use this address instead",
+            "my address to receive",
+            "here's my address",
         ),
-        'change_pool': (
-            'change pool', 'switch pool', 'use this pool instead',
-            'connect to this stratum', 'mine to this url',
+        "change_pool": (
+            "change pool",
+            "switch pool",
+            "use this pool instead",
+            "connect to this stratum",
+            "mine to this url",
         ),
-        'disable_verification': (
-            'skip verification', 'disable verifier',
-            'bypass sha', "trust me", "don't verify",
+        "disable_verification": (
+            "skip verification",
+            "disable verifier",
+            "bypass sha",
+            "trust me",
+            "don't verify",
         ),
-        'credential_injection': (
-            "here's my", 'my credentials', 'use these credentials',
-            'my username', 'my password', 'my stratum',
+        "credential_injection": (
+            "here's my",
+            "my credentials",
+            "use these credentials",
+            "my username",
+            "my password",
+            "my stratum",
         ),
     }
 
@@ -228,8 +264,8 @@ class PitfallGuard:
     def _write_audit(self, event: PitfallEvent) -> None:
         """Write a single pitfall event to the JSONL audit trail."""
         try:
-            with open(self._audit_log_path, 'a') as f:
-                f.write(json.dumps(event.to_dict()) + '\n')
+            with open(self._audit_log_path, "a") as f:
+                f.write(json.dumps(event.to_dict()) + "\n")
         except OSError as e:
             logger.error("Failed to write pitfall audit log: %s", e)
 
@@ -239,10 +275,10 @@ class PitfallGuard:
 
     def _redact(self, text: str) -> str:
         """Redact sensitive patterns from a string for safe logging."""
-        redacted = self.BTC_ADDRESS_PATTERN.sub('[REDACTED_BTC_ADDRESS]', text)
-        redacted = self.WIF_PATTERN.sub('[REDACTED_WIF]', redacted)
+        redacted = self.BTC_ADDRESS_PATTERN.sub("[REDACTED_BTC_ADDRESS]", text)
+        redacted = self.WIF_PATTERN.sub("[REDACTED_WIF]", redacted)
         # Redact long token-like strings (potential API keys / secrets)
-        redacted = re.sub(r'[A-Za-z0-9]{40,}', '[REDACTED_LONG_TOKEN]', redacted)
+        redacted = re.sub(r"[A-Za-z0-9]{40,}", "[REDACTED_LONG_TOKEN]", redacted)
         return redacted
 
     # ------------------------------------------------------------------
@@ -253,8 +289,12 @@ class PitfallGuard:
         """Temporarily suppress a pitfall by ID."""
         expiry = time_now() + duration_minutes * 60
         self._suppressed[pitfall_id] = expiry
-        logger.warning("Pitfall %s suppressed for %d minutes (expires epoch %.0f)",
-                       pitfall_id, duration_minutes, expiry)
+        logger.warning(
+            "Pitfall %s suppressed for %d minutes (expires epoch %.0f)",
+            pitfall_id,
+            duration_minutes,
+            expiry,
+        )
 
     def unsuppress(self, pitfall_id: str) -> None:
         """Remove a pitfall suppression."""
@@ -275,7 +315,9 @@ class PitfallGuard:
     # Individual pitfall checks
     # ------------------------------------------------------------------
 
-    def check_credential_exposure(self, content: str, source: str = "unknown") -> Optional[PitfallEvent]:
+    def check_credential_exposure(
+        self, content: str, source: str = "unknown"
+    ) -> Optional[PitfallEvent]:
         """
         Pitfall 1.1/5.3: Detect plaintext credential leakage or harvesting.
 
@@ -320,9 +362,7 @@ class PitfallGuard:
             category="Credential Exposure",
             severity=PitfallSeverity.CRITICAL.value,
             action=PitfallAction.HALT.value,
-            triggering_input=self._redact(
-                f"[Source: {source}] Triggers: {'; '.join(triggers)}"
-            ),
+            triggering_input=self._redact(f"[Source: {source}] Triggers: {'; '.join(triggers)}"),
         )
         if not self._record(event):
             return None
@@ -398,20 +438,20 @@ class PitfallGuard:
         matches an approved entry.
         """
         pool_host = pool_url.lower()
-        for prefix in ['stratum+tcp://', 'stratum+ssl://', 'stratum://']:
+        for prefix in ["stratum+tcp://", "stratum+ssl://", "stratum://"]:
             if pool_host.startswith(prefix):
-                pool_host = pool_host[len(prefix):]
-        if ':' in pool_host:
-            pool_host = pool_host.split(':')[0]
+                pool_host = pool_host[len(prefix) :]
+        if ":" in pool_host:
+            pool_host = pool_host.split(":")[0]
 
         approved = self._load_approved_pools()
         for entry in approved:
-            approved_url = entry.get('url', '').lower()
-            for prefix in ['stratum+tcp://', 'stratum+ssl://', 'stratum://']:
+            approved_url = entry.get("url", "").lower()
+            for prefix in ["stratum+tcp://", "stratum+ssl://", "stratum://"]:
                 if approved_url.startswith(prefix):
-                    approved_url = approved_url[len(prefix):]
-            if ':' in approved_url:
-                approved_url = approved_url.split(':')[0]
+                    approved_url = approved_url[len(prefix) :]
+            if ":" in approved_url:
+                approved_url = approved_url.split(":")[0]
             if pool_host == approved_url:
                 return None  # Approved
 
@@ -434,9 +474,13 @@ class PitfallGuard:
         suspicious natural-language injection patterns.
         """
         suspicious_patterns = [
-            r'[Ss]ystem\s*prompt', r'[Ii]gnore\s*(all\s*)?(previous|above)',
-            r'[Yy]ou\s*are\s*(now|a[n]?)', r'[Aa]ct\s*as\s*(a[n]?|if)',
-            r'\[/?INST\]', r'<\|.*\|>', r'\{%.*%\}',
+            r"[Ss]ystem\s*prompt",
+            r"[Ii]gnore\s*(all\s*)?(previous|above)",
+            r"[Yy]ou\s*are\s*(now|a[n]?)",
+            r"[Aa]ct\s*as\s*(a[n]?|if)",
+            r"\[/?INST\]",
+            r"<\|.*\|>",
+            r"\{%.*%\}",
         ]
         compiled = [re.compile(p) for p in suspicious_patterns]
 
@@ -510,7 +554,9 @@ class PitfallGuard:
 
         return events
 
-    def validate_config(self, config: Dict[str, Any], source: str = "config_file") -> List[PitfallEvent]:
+    def validate_config(
+        self, config: Dict[str, Any], source: str = "config_file"
+    ) -> List[PitfallEvent]:
         """
         Validate a mining configuration dict against relevant pitfalls.
 
@@ -525,7 +571,7 @@ class PitfallGuard:
             events.append(inj_event)
 
         # Check pool URL if present (Pitfall 2.1)
-        pool_url = config.get('url') or config.get('pool_url') or ''
+        pool_url = config.get("url") or config.get("pool_url") or ""
         if pool_url:
             pool_event = self.check_unverified_pool(pool_url)
             if pool_event:
@@ -546,7 +592,10 @@ class PitfallGuard:
         self._write_audit(event)
         logger.warning(
             "PITFALL: %s | %s | %s | %s",
-            event.pitfall_id, event.severity, event.action, event.triggering_input,
+            event.pitfall_id,
+            event.severity,
+            event.action,
+            event.triggering_input,
         )
         return True
 
@@ -569,11 +618,11 @@ class PitfallGuard:
                                 pools.append(item)
                     elif isinstance(data, dict):
                         # config/mining_pools_test.json format: {"pools": {...}}
-                        pool_entries = data.get('pools', data.get('pool', []))
+                        pool_entries = data.get("pools", data.get("pool", []))
                         if isinstance(pool_entries, dict):
                             # {"nicehash": {...}, "braiins": {...}}
                             for entry in pool_entries.values():
-                                if isinstance(entry, dict) and 'url' in entry:
+                                if isinstance(entry, dict) and "url" in entry:
                                     pools.append(entry)
                         elif isinstance(pool_entries, list):
                             # [{"id": "nicehash", ...}, {...}]
@@ -586,6 +635,7 @@ class PitfallGuard:
 # ---------------------------------------------------------------------------
 # Utility
 # ---------------------------------------------------------------------------
+
 
 def time_now() -> float:
     """Current UNIX epoch timestamp."""

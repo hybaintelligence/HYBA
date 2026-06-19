@@ -128,7 +128,11 @@ app = FastAPI(
 
 # CORS: configurable via HYBA_CORS_ORIGINS env var (comma-separated)
 _cors_origins = _parse_cors_origins()
-if _cors_origins and "*" in _cors_origins and os.getenv("HYBA_CORS_ALLOW_CREDENTIALS", "true").lower() == "true":
+if (
+    _cors_origins
+    and "*" in _cors_origins
+    and os.getenv("HYBA_CORS_ALLOW_CREDENTIALS", "true").lower() == "true"
+):
     logging.warning(
         "CORS is configured with * origins while allow_credentials=True. "
         "This is insecure and will be rejected by browsers. "

@@ -29,7 +29,7 @@ async def get_consciousness_status():
     """Return live consciousness metrics from GenesisAI if available, otherwise explicit unknown state."""
     try:
         from python_backend.pythia_mining.genesis_ai_service import GenesisAIServiceRegistry
-        
+
         if not GenesisAIServiceRegistry.is_registered():
             return {
                 "status": "not_measured",
@@ -43,17 +43,19 @@ async def get_consciousness_status():
                 },
                 "recent_insights": [],
             }
-        
+
         consciousness_metrics = GenesisAIServiceRegistry.get_consciousness_metrics()
         performance_metrics = GenesisAIServiceRegistry.get_performance_metrics()
         health_status = GenesisAIServiceRegistry.get_health_status()
-        
+
         return {
             "status": "measured",
             "timestamp": datetime.now(timezone.utc).isoformat(),
             "consciousness_level": consciousness_metrics.get("confidence"),
             "phi_resonance": consciousness_metrics.get("phi_resonance_score"),
-            "integrated_information": consciousness_metrics.get("phi_features", {}).get("phi_integrated"),
+            "integrated_information": consciousness_metrics.get("phi_features", {}).get(
+                "phi_integrated"
+            ),
             "runtime_state": {
                 "source": "genesis_ai_connected",
                 "message": "Live telemetry from GenesisAI mining instance.",

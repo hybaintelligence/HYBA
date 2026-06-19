@@ -142,7 +142,10 @@ class DIFCAaoifiInvariantRegistry:
         )
 
     def _spv_and_trustee_governance(self, candidate: DIFCSukukCandidate) -> DIFCAaoifiFinding:
-        passed = candidate.spv_independence_score >= self.spv_independence_threshold and candidate.trustee_oversight_present
+        passed = (
+            candidate.spv_independence_score >= self.spv_independence_threshold
+            and candidate.trustee_oversight_present
+        )
         status = DIFCFindingStatus.PASSED.value if passed else DIFCFindingStatus.FAILED.value
         return DIFCAaoifiFinding(
             finding_id="DIFC_AAOIFI_SPV_TRUSTEE_GOVERNANCE",
@@ -208,7 +211,11 @@ class DIFCAaoifiInvariantRegistry:
         )
 
     def _traceable_disclosure(self, candidate: DIFCSukukCandidate) -> DIFCAaoifiFinding:
-        passed = candidate.traceable_evidence_present and bool(candidate.data_lineage_hash) and bool(candidate.model_output_hash)
+        passed = (
+            candidate.traceable_evidence_present
+            and bool(candidate.data_lineage_hash)
+            and bool(candidate.model_output_hash)
+        )
         return DIFCAaoifiFinding(
             finding_id="DIFC_AAOIFI_DISCLOSURE_TRACEABILITY",
             name="Traceable disclosure and replay evidence",
@@ -257,7 +264,9 @@ def _to_finance_candidate(candidate: DIFCSukukCandidate) -> FinanceAuditCandidat
         human_approval_required=candidate.human_approval_required,
         mode="review_only" if not candidate.external_action_requested else "not_review_only",
         external_action_requested=candidate.external_action_requested,
-        proposed_core_symbol="external_candidate" if not candidate.external_action_requested else "validate_constraints",
+        proposed_core_symbol="external_candidate"
+        if not candidate.external_action_requested
+        else "validate_constraints",
         notes=(
             "DIFC/AAOIFI Sukuk overlay: evidence packet only; no fatwa, legal opinion, capital calculation, "
             "approval, issuance, booking, trading, or external filing. " + candidate.notes
@@ -282,7 +291,10 @@ def generate_difc_sukuk_audit_packet(candidate: DIFCSukukCandidate) -> Dict[str,
 
     overlay_findings = DIFCAaoifiInvariantRegistry().evaluate(candidate)
     core_packet = audit_finance_candidate(_to_finance_candidate(candidate)).to_dict()
-    blocker_failed = any(f.severity == "blocker" and f.status == DIFCFindingStatus.FAILED.value for f in overlay_findings)
+    blocker_failed = any(
+        f.severity == "blocker" and f.status == DIFCFindingStatus.FAILED.value
+        for f in overlay_findings
+    )
     core_rejected = core_packet["verdict"] == FinanceAuditVerdict.REJECTED_BEFORE_STAGING.value
     verdict = (
         FinanceAuditVerdict.REJECTED_BEFORE_STAGING.value

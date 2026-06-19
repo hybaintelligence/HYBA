@@ -149,9 +149,9 @@ class TestComputePhi15Resonance:
         far_target = round(100 * PHI_15) + 100000  # offset by 100000
         _, _, near_diff, _ = compute_phi15_resonance(near_target)
         _, _, far_diff, _ = compute_phi15_resonance(far_target)
-        assert (
-            near_diff < far_diff
-        ), f"Near diff {near_diff:.4f} should be < far diff {far_diff:.4f}"
+        assert near_diff < far_diff, (
+            f"Near diff {near_diff:.4f} should be < far diff {far_diff:.4f}"
+        )
 
     def test_known_nonce_block_919092(self) -> None:
         """Block 919,092 nonce = 4067381598 -> k=2981950, diff < 500."""
@@ -185,9 +185,9 @@ class TestComputePhi15Resonance:
         mean_diff = sum(diffs) / len(diffs)
         # Expected mean for random uniform nonces: Phi^15 / 4 ~= 341
         expected_mean = PHI_15 / 4.0
-        assert (
-            abs(mean_diff - expected_mean) < expected_mean * 0.15
-        ), f"Mean diff {mean_diff:.2f} not near expected {expected_mean:.2f}"
+        assert abs(mean_diff - expected_mean) < expected_mean * 0.15, (
+            f"Mean diff {mean_diff:.2f} not near expected {expected_mean:.2f}"
+        )
 
     def test_birthday_phi_target_resonance(self) -> None:
         """22780 * Phi^15 approx 31071937 should show strong resonance."""

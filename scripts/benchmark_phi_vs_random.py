@@ -27,34 +27,30 @@ Hypothesis being tested:
 Run:
   python scripts/benchmark_phi_vs_random.py [--iterations N] [--trials T] [--difficulty D]
 """
+
 from __future__ import annotations
 
 import argparse
 import hashlib
 import json
-import math
 import random
 import sys
 import time
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from typing import List, Optional, Tuple
+from typing import List, Optional
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "python_backend"))
 
-from pythia_mining.golden_ratio_library import FIBONACCI, PHI, PHI_INV
 from pythia_mining.hendrix_phi_solver import (
     cheap_phi_resonance,
     phi_gradient_proposal,
-    yang_mills_action,
-    YANG_MILLS_GAP,
 )
 from pythia_mining.mining_validation import (
     build_block_header,
     compute_merkle_root,
     coinbase_hash_hex,
-    hash256,
 )
 from pythia_mining.stratum_client import MiningJob
 
@@ -62,6 +58,7 @@ from pythia_mining.stratum_client import MiningJob
 # ---------------------------------------------------------------------------
 # Benchmark job fixture — regtest difficulty, real header construction
 # ---------------------------------------------------------------------------
+
 
 def _make_job(nbits: str, target: int) -> MiningJob:
     return MiningJob(
@@ -99,6 +96,7 @@ def _validate_nonce_fast(prefix: bytes, nonce: int, target: int) -> bool:
 # ---------------------------------------------------------------------------
 # Strategies
 # ---------------------------------------------------------------------------
+
 
 @dataclass
 class StrategyResult:
@@ -244,6 +242,7 @@ def _run_phi_sorted(
 # Trial runner
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class TrialResult:
     trial: int
@@ -291,6 +290,7 @@ def run_trial(
 # Aggregation and reporting
 # ---------------------------------------------------------------------------
 
+
 def _mean(values: List[float]) -> float:
     return sum(values) / len(values) if values else 0.0
 
@@ -299,18 +299,13 @@ def _aggregate(trials: List[TrialResult]) -> dict:
     strategy_names = [s.name for s in trials[0].strategies]
     agg: dict = {}
     for name in strategy_names:
-        all_hits = [
-            s.hits for t in trials for s in t.strategies if s.name == name
-        ]
-        all_hps = [
-            s.hashes_per_second for t in trials for s in t.strategies if s.name == name
-        ]
-        all_overhead = [
-            s.overhead_ratio for t in trials for s in t.strategies if s.name == name
-        ]
+        all_hits = [s.hits for t in trials for s in t.strategies if s.name == name]
+        all_hps = [s.hashes_per_second for t in trials for s in t.strategies if s.name == name]
+        all_overhead = [s.overhead_ratio for t in trials for s in t.strategies if s.name == name]
         first_hit_iters = [
             s.first_hit_iteration
-            for t in trials for s in t.strategies
+            for t in trials
+            for s in t.strategies
             if s.name == name and s.first_hit_iteration is not None
         ]
         agg[name] = {
@@ -381,23 +376,29 @@ def _verdict(agg: dict) -> str:
 # Entry point
 # ---------------------------------------------------------------------------
 
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="φ vs random nonce search benchmark")
     parser.add_argument(
-        "--iterations", type=int, default=100_000,
-        help="Nonce candidates evaluated per strategy per trial (default: 100000)"
+        "--iterations",
+        type=int,
+        default=100_000,
+        help="Nonce candidates evaluated per strategy per trial (default: 100000)",
     )
     parser.add_argument(
-        "--trials", type=int, default=5,
-        help="Number of independent trials (different seeds) (default: 5)"
+        "--trials",
+        type=int,
+        default=5,
+        help="Number of independent trials (different seeds) (default: 5)",
     )
     parser.add_argument(
-        "--difficulty", type=float, default=0.001,
-        help="Mining difficulty (lower = easier = more hits) (default: 0.001)"
+        "--difficulty",
+        type=float,
+        default=0.001,
+        help="Mining difficulty (lower = easier = more hits) (default: 0.001)",
     )
     parser.add_argument(
-        "--seed", type=int, default=42,
-        help="Base random seed (each trial gets seed+trial_idx)"
+        "--seed", type=int, default=42, help="Base random seed (each trial gets seed+trial_idx)"
     )
     args = parser.parse_args()
 
@@ -409,7 +410,7 @@ def main() -> None:
     # Override target directly — nbits is for display only in this benchmark
     target = int("0" * 0 + "ff" * 31, 16)  # ~1/256 chance per nonce
 
-    print(f"Benchmark: φ-guided vs uniform-random nonce search")
+    print("Benchmark: φ-guided vs uniform-random nonce search")
     print(f"  iterations/trial: {args.iterations:,}")
     print(f"  trials:           {args.trials}")
     print(f"  difficulty:       {args.difficulty}")
@@ -419,7 +420,7 @@ def main() -> None:
     trials: List[TrialResult] = []
     for t in range(args.trials):
         seed = args.seed + t
-        print(f"  Trial {t+1}/{args.trials} (seed={seed})...", end=" ", flush=True)
+        print(f"  Trial {t + 1}/{args.trials} (seed={seed})...", end=" ", flush=True)
         result = run_trial(
             trial_idx=t + 1,
             seed=seed,
@@ -429,7 +430,7 @@ def main() -> None:
         )
         trials.append(result)
         for s in result.strategies:
-            print(f"{s.name}={s.hits}hits@{s.hashes_per_second/1000:.1f}kH/s", end="  ")
+            print(f"{s.name}={s.hits}hits@{s.hashes_per_second / 1000:.1f}kH/s", end="  ")
         print()
 
     agg = _aggregate(trials)
@@ -440,7 +441,9 @@ def main() -> None:
     print()
 
     # Print per-strategy summary table
-    print(f"{'Strategy':<20} {'Mean Hits':>10} {'Mean kH/s':>12} {'Overhead':>10} {'MeanFirstHit':>14}")
+    print(
+        f"{'Strategy':<20} {'Mean Hits':>10} {'Mean kH/s':>12} {'Overhead':>10} {'MeanFirstHit':>14}"
+    )
     print("-" * 70)
     for name, stats in agg.items():
         fh = stats["mean_first_hit_iteration"]
@@ -448,7 +451,7 @@ def main() -> None:
         print(
             f"{name:<20} "
             f"{stats['mean_hits_per_trial']:>10.2f} "
-            f"{stats['mean_hashes_per_second']/1000:>12.1f} "
+            f"{stats['mean_hashes_per_second'] / 1000:>12.1f} "
             f"{stats['mean_overhead_ratio_vs_random']:>9.2f}x "
             f"{fh_str:>14}"
         )

@@ -59,12 +59,14 @@ class PhiNetworkRouter:
         for n in range(self.cluster_size):
             r = math.sqrt(n + 1)
             theta = n * self.GOLDEN_ANGLE
-            manifold.append({
-                'node_id': n,
-                'r': r,
-                'theta': theta % 360.0,
-                'load': 0.0,
-            })
+            manifold.append(
+                {
+                    "node_id": n,
+                    "r": r,
+                    "theta": theta % 360.0,
+                    "load": 0.0,
+                }
+            )
         return manifold
 
     def select_optimal_node(self, task_entropy: float) -> int:
@@ -86,17 +88,17 @@ class PhiNetworkRouter:
         search_angle = (task_entropy * 360.0 * self.PHI) % 360.0
 
         best_node = -1
-        min_interference = float('inf')
+        min_interference = float("inf")
 
         for node in self.nodes:
             # Interference = Angular distance from Search Ray + Load penalty
-            angle_diff = abs(node['theta'] - search_angle)
+            angle_diff = abs(node["theta"] - search_angle)
             angle_diff = min(angle_diff, 360.0 - angle_diff)  # wraparound
-            interference = angle_diff + (node['load'] * self.PHI)
+            interference = angle_diff + (node["load"] * self.PHI)
 
             if interference < min_interference:
                 min_interference = interference
-                best_node = node['node_id']
+                best_node = node["node_id"]
 
         return best_node
 
@@ -110,7 +112,7 @@ class PhiNetworkRouter:
                         negative for completion).
         """
         if 0 <= node_id < self.cluster_size:
-            self.nodes[node_id]['load'] = max(0.0, self.nodes[node_id]['load'] + load_delta)
+            self.nodes[node_id]["load"] = max(0.0, self.nodes[node_id]["load"] + load_delta)
 
     def get_node_coordinates(self, node_id: int) -> Dict[str, float]:
         """
@@ -124,8 +126,8 @@ class PhiNetworkRouter:
         """
         if 0 <= node_id < self.cluster_size:
             node = self.nodes[node_id]
-            return {'r': node['r'], 'theta': node['theta'], 'load': node['load']}
-        return {'r': 0.0, 'theta': 0.0, 'load': 0.0}
+            return {"r": node["r"], "theta": node["theta"], "load": node["load"]}
+        return {"r": 0.0, "theta": 0.0, "load": 0.0}
 
     def get_manifold_statistics(self) -> Dict[str, Any]:
         """
@@ -136,10 +138,10 @@ class PhiNetworkRouter:
             variance, and angular coverage uniformity.
         """
         if not self.nodes:
-            return {'cluster_size': 0, 'mean_load': 0.0}
+            return {"cluster_size": 0, "mean_load": 0.0}
 
-        loads = [node['load'] for node in self.nodes]
-        thetas = [node['theta'] for node in self.nodes]
+        loads = [node["load"] for node in self.nodes]
+        thetas = [node["theta"] for node in self.nodes]
 
         sorted_thetas = sorted(thetas)
         gaps = [
@@ -148,12 +150,12 @@ class PhiNetworkRouter:
         ]
 
         return {
-            'cluster_size': self.cluster_size,
-            'mean_load': float(np.mean(loads)),
-            'max_load': float(max(loads)),
-            'load_variance': float(np.var(loads)),
-            'angular_coverage_cv': float(np.std(gaps) / max(np.mean(gaps), 1e-12)),
-            'ideal_golden_angle': self.GOLDEN_ANGLE,
+            "cluster_size": self.cluster_size,
+            "mean_load": float(np.mean(loads)),
+            "max_load": float(max(loads)),
+            "load_variance": float(np.var(loads)),
+            "angular_coverage_cv": float(np.std(gaps) / max(np.mean(gaps), 1e-12)),
+            "ideal_golden_angle": self.GOLDEN_ANGLE,
         }
 
 

@@ -18,28 +18,22 @@ These tests do NOT connect to pools or submit shares.
 from __future__ import annotations
 
 import os
-import re
-from typing import Any, Dict
-from urllib.parse import urlparse
 
 import pytest
 
 from pythia_mining.pool_profiles import (
     DEFAULT_POOL_SPECS,
-    PoolCredentialConfig,
     PoolProfileError,
     build_profile,
     default_pool_config,
     load_pool_profiles,
     load_runtime_pool_configs,
     split_pool_url_credentials,
-    validate_pool_config,
     validate_profile,
 )
 from pythia_mining.stratum_client import (
     StratumClient,
     _live_share_submit_enabled,
-    _live_stratum_enabled,
 )
 
 
@@ -87,6 +81,7 @@ class TestBraiinsDefaultV1:
         # The check_pool_profile_job_flow script rejects stratum_version != 1.
         # Ensure the job-flow gate catches this:
         from pythia_mining.stratum_client import StratumClient
+
         client = StratumClient(
             pool_url=profile.url,
             username=profile.username,
@@ -334,6 +329,7 @@ class TestStratumV2FailsClosed:
         # V2 profile is structurally valid, but rejected at the job-flow gate
         # because stratum_version=2 is not in JOB_CAPABLE_STRATUM_VERSIONS.
         from pythia_mining.stratum_client import StratumClient
+
         client = StratumClient(
             pool_url=profile.url,
             username=profile.username,

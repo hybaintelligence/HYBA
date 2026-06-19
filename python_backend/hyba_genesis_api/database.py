@@ -15,6 +15,7 @@ Example usage:
         finally:
             db.close()
 """
+
 import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -51,9 +52,11 @@ def init_db() -> None:
         # Import ORM models only when initialising; this avoids
         # unnecessary dependencies for callers that only use SessionLocal.
         from consciousness_db.models import Base  # type: ignore
+
         Base.metadata.create_all(bind=engine)
     except Exception as exc:
         # Log the exception but allow the application to start; database
         # initialisation failures will surface through runtime errors.
         import logging
+
         logging.error("Database initialization failed", exc_info=exc)

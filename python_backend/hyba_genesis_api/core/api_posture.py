@@ -43,16 +43,23 @@ class EnterpriseAPIConfig:
             environment=environment,
             request_limit_per_minute=int(os.getenv("HYBA_API_RATE_LIMIT_PER_MINUTE", "120")),
             max_body_bytes=int(os.getenv("HYBA_API_MAX_BODY_BYTES", str(2 * 1024 * 1024))),
-            hsts_enabled=os.getenv("HYBA_API_HSTS", "true").lower() == "true" and environment == "production",
+            hsts_enabled=os.getenv("HYBA_API_HSTS", "true").lower() == "true"
+            and environment == "production",
             rate_limit_enabled=os.getenv("HYBA_API_RATE_LIMIT_ENABLED", "true").lower() == "true",
         )
 
 
 def _request_id(request: Request) -> str:
-    return request.headers.get("x-request-id") or request.headers.get("x-correlation-id") or f"req-{time.time_ns()}"
+    return (
+        request.headers.get("x-request-id")
+        or request.headers.get("x-correlation-id")
+        or f"req-{time.time_ns()}"
+    )
 
 
-def enterprise_error_payload(*, code: str, message: str, request_id: str, status_code: int) -> Dict[str, Any]:
+def enterprise_error_payload(
+    *, code: str, message: str, request_id: str, status_code: int
+) -> Dict[str, Any]:
     """Return the standard HYBA API error envelope."""
 
     return {
@@ -66,7 +73,9 @@ def enterprise_error_payload(*, code: str, message: str, request_id: str, status
     }
 
 
-def apply_enterprise_security_headers(response: Response, request_id: str, config: EnterpriseAPIConfig) -> None:
+def apply_enterprise_security_headers(
+    response: Response, request_id: str, config: EnterpriseAPIConfig
+) -> None:
     """Attach security and traceability headers to every API response."""
 
     response.headers["X-Request-ID"] = request_id
@@ -103,7 +112,11 @@ class InMemoryRateLimiter:
             count += 1
             self._windows[client_key] = (window, count)
             # Opportunistic pruning prevents unbounded memory growth in long-running workers.
-            stale = [key for key, (seen_window, _seen_count) in self._windows.items() if seen_window < current - 1]
+            stale = [
+                key
+                for key, (seen_window, _seen_count) in self._windows.items()
+                if seen_window < current - 1
+            ]
             for key in stale:
                 self._windows.pop(key, None)
             return count <= self.limit_per_minute
@@ -185,6 +198,21 @@ def install_enterprise_api_posture(app: FastAPI, config: EnterpriseAPIConfig | N
     @app.exception_handler(RequestValidationError)
     async def validation_exception_handler(request: Request, exc: RequestValidationError):
         request_id = getattr(request.state, "request_id", _request_id(request))
+        
+        # Convert validation errors to JSON-serializable format
+        errors = []
+        for error in exc.errors():
+            error_dict = {
+                "type": error.get("type"),
+                "loc": list(error.get("loc", [])),
+                "msg": str(error.get("msg", "")),
+                "input": str(error.get("input", ""))[:100],  # Truncate long inputs
+            }
+            # Convert ctx to string if present
+            if "ctx" in error:
+                error_dict["ctx"] = {k: str(v) for k, v in error["ctx"].items()}
+            errors.append(error_dict)
+        
         response = JSONResponse(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             content=enterprise_error_payload(
@@ -192,7 +220,8 @@ def install_enterprise_api_posture(app: FastAPI, config: EnterpriseAPIConfig | N
                 message="Request validation failed.",
                 request_id=request_id,
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            ) | {"details": exc.errors()},
+            )
+            | {"details": errors},
         )
         apply_enterprise_security_headers(response, request_id, config)
         return response

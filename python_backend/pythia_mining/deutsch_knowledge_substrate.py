@@ -216,18 +216,24 @@ class KnowledgeSubstrate:
         # Enhanced explanation generation with causal reasoning
         if outcome.get("accepted"):
             # Analyze multi-factor causality
-            phi_match = abs(features.get('phi_resonance', 0) - features.get('difficulty', 0) / 1e6) < 0.1
-            thermal_optimal = 0.3 < features.get('thermal', 0) < 0.7
-            latency_good = features.get('pool_latency', 100) < 50
-            
+            phi_match = (
+                abs(features.get("phi_resonance", 0) - features.get("difficulty", 0) / 1e6) < 0.1
+            )
+            thermal_optimal = 0.3 < features.get("thermal", 0) < 0.7
+            latency_good = features.get("pool_latency", 100) < 50
+
             causal_factors = []
             if phi_match:
-                causal_factors.append(f"φ-resonance alignment (φ={features.get('phi_resonance', 0):.3f})")
+                causal_factors.append(
+                    f"φ-resonance alignment (φ={features.get('phi_resonance', 0):.3f})"
+                )
             if thermal_optimal:
-                causal_factors.append(f"optimal thermal envelope (load={features.get('thermal', 0):.2f})")
+                causal_factors.append(
+                    f"optimal thermal envelope (load={features.get('thermal', 0):.2f})"
+                )
             if latency_good:
                 causal_factors.append(f"low pool latency ({features.get('pool_latency', 0):.1f}ms)")
-            
+
             if causal_factors:
                 return (
                     f"Strategy '{strategy_id}' succeeded due to: "
@@ -245,13 +251,13 @@ class KnowledgeSubstrate:
         else:
             # Failure analysis with specific reasons
             failure_reasons = []
-            if features.get('thermal', 0) > 0.8:
+            if features.get("thermal", 0) > 0.8:
                 failure_reasons.append("thermal saturation")
-            if features.get('pool_latency', 100) > 200:
+            if features.get("pool_latency", 100) > 200:
                 failure_reasons.append("network latency")
-            if abs(features.get('phi_resonance', 0) - features.get('difficulty', 0) / 1e6) > 0.3:
+            if abs(features.get("phi_resonance", 0) - features.get("difficulty", 0) / 1e6) > 0.3:
                 failure_reasons.append("φ-resonance mismatch")
-            
+
             if failure_reasons:
                 return (
                     f"Strategy '{strategy_id}' failed likely due to: "
@@ -354,15 +360,21 @@ class KnowledgeSubstrate:
         if strategy_id in self.strategy_performance:
             historical_perf = self.strategy_performance[strategy_id]
             base_performance = np.mean(historical_perf)
-            
+
             # Adjust prediction based on current context
-            thermal_factor = 1.0 - abs(features.get('thermal', 0.5) - 0.5)  # Optimal at 0.5
-            phi_factor = 1.0 - min(abs(features.get('phi_resonance', 0.5) - 0.5), 0.3)  # Tolerate some deviation
-            latency_factor = max(0.5, 1.0 - features.get('pool_latency', 100) / 200)  # Penalize high latency
-            
-            context_adjusted_performance = base_performance * thermal_factor * phi_factor * latency_factor
+            thermal_factor = 1.0 - abs(features.get("thermal", 0.5) - 0.5)  # Optimal at 0.5
+            phi_factor = 1.0 - min(
+                abs(features.get("phi_resonance", 0.5) - 0.5), 0.3
+            )  # Tolerate some deviation
+            latency_factor = max(
+                0.5, 1.0 - features.get("pool_latency", 100) / 200
+            )  # Penalize high latency
+
+            context_adjusted_performance = (
+                base_performance * thermal_factor * phi_factor * latency_factor
+            )
             confidence = min(0.9, 0.5 + len(historical_perf) * 0.05)  # Confidence grows with data
-            
+
             return {
                 "predicted_acceptance": float(np.clip(context_adjusted_performance, 0.0, 1.0)),
                 "confidence": float(confidence),
@@ -370,21 +382,21 @@ class KnowledgeSubstrate:
                 "context_factors": {
                     "thermal": float(thermal_factor),
                     "phi": float(phi_factor),
-                    "latency": float(latency_factor)
-                }
+                    "latency": float(latency_factor),
+                },
             }
 
         # Unknown strategy: use context-based heuristics
-        thermal_score = 1.0 if 0.3 < features.get('thermal', 0.5) < 0.7 else 0.5
-        phi_score = 1.0 if 0.4 < features.get('phi_resonance', 0.5) < 0.6 else 0.5
-        latency_score = 1.0 if features.get('pool_latency', 100) < 100 else 0.3
-        
+        thermal_score = 1.0 if 0.3 < features.get("thermal", 0.5) < 0.7 else 0.5
+        phi_score = 1.0 if 0.4 < features.get("phi_resonance", 0.5) < 0.6 else 0.5
+        latency_score = 1.0 if features.get("pool_latency", 100) < 100 else 0.3
+
         heuristic_performance = (thermal_score + phi_score + latency_score) / 3.0
-        
+
         return {
             "predicted_acceptance": float(heuristic_performance),
             "confidence": 0.3,  # Low confidence for unknown strategies
-            "method": "heuristic"
+            "method": "heuristic",
         }
 
     def _counterfactual_confidence(self, strategy_id: str, context: Dict[str, Any]) -> float:

@@ -1,7 +1,6 @@
 """Tests for Frontier Experiment 3: Topological Charge Correlation."""
 
 import numpy as np
-import pytest
 
 from pythia_mining.frontier_experiment_3_topological_correlation import (
     TopologicalMetrics,
@@ -79,19 +78,19 @@ def test_topological_correlation_measurement_phi():
         num_samples=500,  # Small for fast test
         phi_lcg=True,
     )
-    
+
     assert len(metrics_list) == 500
     assert isinstance(analysis, dict)
-    
+
     # Analysis should contain expected keys
     assert "correlation" in analysis
     assert "sharpness_overall" in analysis
     assert "hypothesis_result" in analysis
     assert "breakthrough_achieved" in analysis
-    
+
     # Correlation should be finite
     assert np.isfinite(analysis["correlation"])
-    
+
     # Sharpness should be in [0, 1]
     assert 0.0 <= analysis["sharpness_overall"] <= 1.0
 
@@ -102,7 +101,7 @@ def test_topological_correlation_measurement_random():
         num_samples=500,
         phi_lcg=False,
     )
-    
+
     assert len(metrics_list) == 500
     assert analysis["sampler_type"] == "random"
     assert np.isfinite(analysis["correlation"])
@@ -117,7 +116,7 @@ def test_topological_metrics_structure():
         winding_number=2,
         action_value=0.3,
     )
-    
+
     assert metrics.sample_index == 100
     assert isinstance(metrics.winding_number, int)
     assert np.isfinite(metrics.star_discrepancy)
@@ -127,12 +126,12 @@ def test_topological_metrics_structure():
 def test_experiment_metadata():
     """Experiment metadata should contain required fields."""
     metadata = get_experiment_metadata()
-    
+
     assert "experiment_id" in metadata
     assert "hypothesis" in metadata
     assert "falsifiability" in metadata
     assert "breakthrough_threshold" in metadata
-    
+
     assert metadata["experiment_id"] == "FRONTIER-TOPO-003"
 
 
@@ -140,6 +139,6 @@ def test_winding_number_bounded():
     """Winding numbers should be reasonably bounded for 4-byte configs."""
     # For a 4-byte nonce with 4 link variables, winding should be small
     windings = [compute_su2_winding_number(n) for n in range(0, 1000, 100)]
-    
+
     # Should be small integers (not arbitrarily large)
     assert all(abs(w) <= 10 for w in windings), "Winding numbers suspiciously large"

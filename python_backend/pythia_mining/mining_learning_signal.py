@@ -113,13 +113,11 @@ def compute_learning_signal_correction(event: MiningLearningEvent) -> LearningSi
 
     phi_mass = 1.0 if event.phi_score >= PHI_THRESHOLD else 0.25
     share_update = phi_mass if event.pool_accepted_share and event.local_valid else 0.0
-    block_update = (
-        phi_mass
-        if event.pool_confirmed_block
-        else share_update * difficulty_gap_ratio
-    )
+    block_update = phi_mass if event.pool_confirmed_block else share_update * difficulty_gap_ratio
 
-    topology_allowed = bool(event.local_valid and (event.pool_accepted_share or not event.pool_confirmed_block))
+    topology_allowed = bool(
+        event.local_valid and (event.pool_accepted_share or not event.pool_confirmed_block)
+    )
     amplitude_allowed = bool(event.pool_confirmed_block)
     reason = (
         "pool_confirmed_block_full_block_weight"
@@ -165,7 +163,8 @@ def validate_learning_correction_policy(payload: Mapping[str, Any]) -> bool:
     return (
         payload.get("protocol") == LEARNING_SIGNAL_PROTOCOL
         and 0.0 <= float(payload.get("difficulty_gap_ratio", -1.0)) <= 1.0
-        and float(payload.get("phi_block_update_weight", 0.0)) <= float(payload.get("phi_share_update_weight", 1.0))
+        and float(payload.get("phi_block_update_weight", 0.0))
+        <= float(payload.get("phi_share_update_weight", 1.0))
         and (
             bool(payload.get("pool_confirmed_block"))
             or payload.get("amplitude_amplification_allowed") is False

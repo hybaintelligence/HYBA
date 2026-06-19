@@ -184,8 +184,8 @@ def test_entangled_proxy_state_classification(operator: ManifoldOperator) -> Non
 
     # Check the actual classification
     classification = operator.classify_state(entangled_proxy)
-    coherence = operator.compute_coherence(entangled_proxy)
-    purity = float(np.real(np.trace(entangled_proxy @ entangled_proxy)))
+    operator.compute_coherence(entangled_proxy)
+    float(np.real(np.trace(entangled_proxy @ entangled_proxy)))
 
     # Verify the state meets the criteria for some classification
     # The actual classification depends on the exact values after normalization

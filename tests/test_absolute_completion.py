@@ -16,7 +16,6 @@ if str(PYTHON_BACKEND) not in sys.path:
 from hyba_genesis_api.core.audit_surface import seal_consciousness_envelope  # noqa: E402
 from hyba_genesis_api.core.constructor_engine import ExplainerIntegrity  # noqa: E402
 from hyba_genesis_api.core.intelligence_manifold import (  # noqa: E402
-    IntelligenceManifold,
     ManifoldStabilizer,
 )
 from hyba_genesis_api.core.recursive_closure import build_buffered_closure  # noqa: E402

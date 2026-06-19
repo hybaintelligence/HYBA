@@ -13,7 +13,7 @@ the multiplier BEFORE the thermal wave arrives.
 from __future__ import annotations
 
 from collections import deque
-from typing import Any, Dict, List
+from typing import Any, Dict
 
 import numpy as np
 
@@ -55,11 +55,13 @@ class PhiOracle:
             temp: Current hardware temperature.
             load: Current computational load / scaling factor.
         """
-        self.telemetry_buffer.append({
-            'coherence': coherence,
-            'temp': temp,
-            'load': load,
-        })
+        self.telemetry_buffer.append(
+            {
+                "coherence": coherence,
+                "temp": temp,
+                "load": load,
+            }
+        )
 
     def predict_next_state(self) -> Dict[str, Any]:
         """
@@ -74,9 +76,9 @@ class PhiOracle:
         """
         if len(self.telemetry_buffer) < max(self.FIBONACCI_WINDOWS):
             return {
-                'surge_probability': 0.0,
-                'expected_temp': 0.0,
-                'pre_emptive_cooling_needed': False,
+                "surge_probability": 0.0,
+                "expected_temp": 0.0,
+                "pre_emptive_cooling_needed": False,
             }
 
         history: list[Dict[str, float]] = list(self.telemetry_buffer)
@@ -86,9 +88,9 @@ class PhiOracle:
 
         if not sampled_states:
             return {
-                'surge_probability': 0.0,
-                'expected_temp': 0.0,
-                'pre_emptive_cooling_needed': False,
+                "surge_probability": 0.0,
+                "expected_temp": 0.0,
+                "pre_emptive_cooling_needed": False,
             }
 
         # Calculate the 'Fractal Momentum'
@@ -97,7 +99,7 @@ class PhiOracle:
         weight_sum = 0.0
         for i, state in enumerate(sampled_states):
             weight = self.PHI ** -float(i)
-            temp_trend += state['temp'] * weight
+            temp_trend += state["temp"] * weight
             weight_sum += weight
 
         # Normalize the trend to predict the 'Next Wave'
@@ -105,13 +107,13 @@ class PhiOracle:
 
         # A surge is likely if the current temp acceleration mirrors
         # a previous Fibonacci cycle
-        acceleration = sampled_states[0]['temp'] - sampled_states[1]['temp']
+        acceleration = sampled_states[0]["temp"] - sampled_states[1]["temp"]
         surge_prob = np.tanh(acceleration * self.PHI)
 
         return {
-            'surge_probability': float(np.clip(surge_prob, 0.0, 1.0)),
-            'expected_temp': float(expected_temp),
-            'pre_emptive_cooling_needed': expected_temp > self.MASS_GAP,
+            "surge_probability": float(np.clip(surge_prob, 0.0, 1.0)),
+            "expected_temp": float(expected_temp),
+            "pre_emptive_cooling_needed": expected_temp > self.MASS_GAP,
         }
 
 
@@ -185,9 +187,9 @@ class PhiSystemControllerEnhanced:
 
         # C. Record telemetry into the Oracle's fractal buffer
         self.oracle.record_state(
-            scaling_info['coherence'],
+            scaling_info["coherence"],
             telemetry_temp,
-            scaling_info['scaling_factor'],
+            scaling_info["scaling_factor"],
         )
 
         # D. Consult the Oracle for the FUTURE
@@ -196,26 +198,28 @@ class PhiSystemControllerEnhanced:
         # E. Pre-emptive Scaling (The 'Oracle Adjustment')
         # If a surge is predicted, we dampen the multiplier BEFORE the heat
         # hits, using a Golden-Ratio Damping factor (1/φ).
-        final_multiplier = scaling_info['scaling_factor']
-        if prediction['pre_emptive_cooling_needed']:
+        final_multiplier = scaling_info["scaling_factor"]
+        if prediction["pre_emptive_cooling_needed"]:
             final_multiplier *= INV_PHI
 
         # F. Adaptation Layer: Tuner looks at EXPECTED state
-        tuning_results = self.tuner.step({
-            "coherence": scaling_info['coherence'],
-            "current_temp": prediction['expected_temp'],
-        })
+        tuning_results = self.tuner.step(
+            {
+                "coherence": scaling_info["coherence"],
+                "current_temp": prediction["expected_temp"],
+            }
+        )
 
         return {
             "physical_addresses": physical_addrs,
             "scaling_factor": final_multiplier,
-            "regime": scaling_info['regime'],
-            "phi_exponent": tuning_results['new_phi_exponent'],
+            "regime": scaling_info["regime"],
+            "phi_exponent": tuning_results["new_phi_exponent"],
             "prediction": prediction,
-            "manifold_stable": scaling_info['status'] == "stable",
+            "manifold_stable": scaling_info["status"] == "stable",
             "status": (
                 "pre-emptive_stabilization"
-                if prediction['pre_emptive_cooling_needed']
+                if prediction["pre_emptive_cooling_needed"]
                 else "stable"
             ),
         }

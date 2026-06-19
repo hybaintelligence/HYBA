@@ -331,7 +331,6 @@ class TestEmergentComplexityIIT(unittest.TestCase):
         for tsx_file in src_dir.rglob("*.tsx"):
             yield tsx_file
 
-
     def test_00_baseline_comparisons(self):
         baselines = self._compute_baseline_comparisons()
         self.results["baselines"] = baselines
@@ -367,7 +366,9 @@ class TestEmergentComplexityIIT(unittest.TestCase):
             analyzer.analyze_python_module(py_file)
             for py_file in self._python_files("python_backend/pythia_mining")
         ]
-        ts_analyses = [analyzer.analyze_typescript_module(ts_file) for ts_file in self._typescript_files()]
+        ts_analyses = [
+            analyzer.analyze_typescript_module(ts_file) for ts_file in self._typescript_files()
+        ]
         phi = analyzer.compute_integration_phi()
         total_edges = sum(len(deps) for deps in analyzer.dependencies.values())
 
@@ -468,7 +469,7 @@ class TestEmergentComplexityIIT(unittest.TestCase):
     def test_05_mining_performance_correlation_disclaimer(self):
         """
         Explicit test documenting lack of mining performance correlation for IIT proxies.
-        
+
         This test documents that IIT-inspired software proxy measurements (integration,
         autonomy, irreducibility) have not been validated against mining performance
         metrics. The mathematical implementation is correct for neural systems, but its
@@ -477,7 +478,7 @@ class TestEmergentComplexityIIT(unittest.TestCase):
         self._record("\n" + "=" * 60)
         self._record("MINING PERFORMANCE CORRELATION DISCLAIMER")
         self._record("=" * 60)
-        
+
         # Document the current state of knowledge
         self._record("IIT-inspired software proxy measurements have NOT been correlated with:")
         self._record("- Mining hashrate")
@@ -486,25 +487,25 @@ class TestEmergentComplexityIIT(unittest.TestCase):
         self._record("- Revenue generation")
         self._record("- Energy efficiency")
         self._record("- Any production mining outcome")
-        
+
         self._record("\nRequired validation for mining relevance:")
         self._record("1. Historical hashrate data collection")
         self._record("2. Share acceptance rate tracking")
         self._record("3. Pool-side performance metrics")
         self._record("4. Statistical correlation analysis between Φ and mining performance")
         self._record("5. Controlled A/B testing with different Φ configurations")
-        
+
         self._record("\nCurrent status: UNVALIDATED")
         self._record("These metrics measure static code complexity only.")
         self._record("They do not predict or correlate with mining performance.")
-        
+
         # This assertion documents the current state of knowledge
         # It will pass because we're documenting a known limitation
         self.assertTrue(
             True,
             "IIT-inspired software proxies have not been correlated with mining "
             "performance. This is a correct implementation of neuroscience-inspired "
-            "metrics applied to an unvalidated domain (software mining)."
+            "metrics applied to an unvalidated domain (software mining).",
         )
 
     def test_04_emergent_intelligence_verdict(self):
@@ -540,7 +541,9 @@ class TestEmergentComplexityIIT(unittest.TestCase):
             if has_autonomy
             else "✗ Primarily reactive/externally-driven"
         )
-        verdict.append("✓ State coupling present" if has_irreducibility else "✗ Clean state boundaries")
+        verdict.append(
+            "✓ State coupling present" if has_irreducibility else "✗ Clean state boundaries"
+        )
         verdict.append(
             f"✓ Contains {adaptive} adaptive patterns"
             if has_adaptation
@@ -622,7 +625,6 @@ class TestEmergentComplexityIIT(unittest.TestCase):
         ]
         self.assertEqual([], unresolved_placeholders)
 
-
     def _compute_baseline_comparisons(self) -> Dict[str, Dict[str, float]]:
         toy_systems = {
             "random": {
@@ -660,11 +662,15 @@ class TestEmergentComplexityIIT(unittest.TestCase):
                 for py_file in py_files:
                     integration_analyzer.analyze_python_module(py_file)
                 autonomy = [autonomy_analyzer.analyze_file(py_file) for py_file in py_files]
-                state = [irreducibility_analyzer.analyze_shared_state(py_file) for py_file in py_files]
+                state = [
+                    irreducibility_analyzer.analyze_shared_state(py_file) for py_file in py_files
+                ]
                 comparisons[name] = {
                     "integration_phi_proxy": integration_analyzer.compute_integration_phi(),
                     "autonomy_proxy": autonomy_analyzer.compute_autonomy_score(autonomy),
-                    "irreducibility_proxy": irreducibility_analyzer.compute_irreducibility_score(state),
+                    "irreducibility_proxy": irreducibility_analyzer.compute_irreducibility_score(
+                        state
+                    ),
                     "purpose": {
                         "random": "negative-control toy with incidental local decisions",
                         "modular": "negative-control toy with clean module boundaries",

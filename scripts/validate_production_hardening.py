@@ -47,12 +47,8 @@ def validate_boundary_proximity_invariant() -> bool:
             "phi_scaling": 1.8,
         }
 
-        epsilon_dangerous = store.evaluate_boundary_proximity(
-            proposal_dangerous, config_limits
-        )
-        print(
-            f"✓ Adversarial proposal boundary distance: ε = {epsilon_dangerous:.2e}"
-        )
+        epsilon_dangerous = store.evaluate_boundary_proximity(proposal_dangerous, config_limits)
+        print(f"✓ Adversarial proposal boundary distance: ε = {epsilon_dangerous:.2e}")
 
         if epsilon_dangerous < 1e-5:
             print("✓ Adversarial convergence detection ACTIVE (ε < 1e-5)")
@@ -143,7 +139,6 @@ def validate_pool_profile_integration() -> bool:
 
     try:
         from pythia_mining.pool_profiles import (
-            PoolProfile,
             build_profile,
             validate_profile,
         )
@@ -163,7 +158,6 @@ def validate_pool_profile_integration() -> bool:
         print(f"✓ Pool profile validation: {validated.name} @ {validated.url}")
 
         # Test unified miner integration (without actually running)
-        from pythia_mining.run_unified_miner import main_mining_loop
 
         print("✓ Unified miner module imports successfully")
 

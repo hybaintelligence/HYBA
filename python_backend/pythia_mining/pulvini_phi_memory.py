@@ -178,13 +178,11 @@ class PulviniPhiMemoryCompressionEngine:
             )
             # For sparse case, store the kernel arrays from SparsePhiFoldKernel
             kernels = (sparse_kernel.kernel_values,)
-            sparse_kernel_obj = sparse_kernel  # Keep reference for unfold
             sizes = (int(flat.size), int(folded.size))
             reconstructed_flat = self.operator.unfold_sparse(folded, sparse_kernel, int(flat.size))
             effective_flat = flat
             compression_strategy = "sparse_fib_packed"
         else:
-            sparse_kernel_obj = None
             folded, kernels, sizes = self.operator.fold_recursive(flat, depth=self.fold_depth)
             reconstructed_flat = self.operator.unfold_recursive(folded, kernels, sizes)[: flat.size]
             effective_flat = reconstructed_flat if not np.isfinite(flat).all() else flat
@@ -208,7 +206,9 @@ class PulviniPhiMemoryCompressionEngine:
             reconstruction_error = (
                 float(raw_error)
                 if np.isfinite(raw_error)
-                else float(np.linalg.norm((effective_flat - reconstructed_flat).clip(-1e300, 1e300)))
+                else float(
+                    np.linalg.norm((effective_flat - reconstructed_flat).clip(-1e300, 1e300))
+                )
             )
 
         original_bytes = int(flat.nbytes)
@@ -251,7 +251,9 @@ class PulviniPhiMemoryCompressionEngine:
             sizes=tuple(int(size) for size in sizes),
             reconstructed=reconstructed.copy(),
             compression_strategy=compression_strategy,
-            sparse_optimized=bool(compression_strategy in ("sparse_passthrough", "sparse_fib_packed")),
+            sparse_optimized=bool(
+                compression_strategy in ("sparse_passthrough", "sparse_fib_packed")
+            ),
         )
 
     def decompress(self, result: PhiMemoryFoldResult) -> np.ndarray:

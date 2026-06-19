@@ -34,7 +34,7 @@ def test_phi_memory_isolation():
         engine = PulviniPhiMemoryCompressionEngine(fold_depth=2)
         test_matrix = np.random.randn(32, 32) + 1j * np.random.randn(32, 32)
         result = engine.compress(test_matrix)
-        reconstructed = engine.decompress(result)
+        engine.decompress(result)
         print("✓ pulvini_phi_memory: No RuntimeWarnings")
         return True
     except RuntimeWarning as e:

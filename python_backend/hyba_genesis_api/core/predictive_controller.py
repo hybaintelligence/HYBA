@@ -37,6 +37,8 @@ class PredictiveActiveInference:
         """Update and return a deterministic exponential-moving prediction."""
 
         previous = self.internal_model.get("phi", float(observed_phi))
-        prediction = (previous / self.manifold.PHI) + (float(observed_phi) * (1.0 / self.manifold.PHI**2))
+        prediction = (previous / self.manifold.PHI) + (
+            float(observed_phi) * (1.0 / self.manifold.PHI**2)
+        )
         self.internal_model["phi"] = prediction
         return round(max(0.0, prediction), 6)

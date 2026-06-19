@@ -10,7 +10,6 @@ simple density matrix benchmarks, and PULVINI compression tests.
 
 from __future__ import annotations
 
-import pytest
 
 from python_backend.pythia_mining.benchmark_quantum_programs import (
     QuantumProgramBenchmark,
@@ -46,16 +45,18 @@ def test_verify_mass_gap_trivial_spectrum_passes() -> None:
 def test_calculate_naive_state_vector_memory_small_qubits() -> None:
     """Calculating memory for a small qubit count should return finite TB values."""
     res = QuantumProgramBenchmark.calculate_naive_state_vector_memory(5)
-    assert res['success'] is False
-    assert 'memory_tb' in res
-    assert res['memory_tb'] > 0.0
+    assert res["success"] is False
+    assert "memory_tb" in res
+    assert res["memory_tb"] > 0.0
 
 
 def test_benchmark_density_matrix_construction_small_qubits() -> None:
     """Density matrix construction benchmark should succeed for small qubit counts."""
-    res = QuantumProgramBenchmark.benchmark_density_matrix_construction(num_qubits=2, use_phi_acceleration=True)
+    res = QuantumProgramBenchmark.benchmark_density_matrix_construction(
+        num_qubits=2, use_phi_acceleration=True
+    )
     assert res.success is True
-    assert res.method == 'Φ-Accelerated TN'
+    assert res.method == "Φ-Accelerated TN"
     # mass_gap_alignment should be between 0 and 1
     assert 0.0 <= res.mass_gap_alignment <= 1.0
 

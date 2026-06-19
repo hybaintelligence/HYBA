@@ -17,7 +17,7 @@ import json
 import re
 import unittest
 from pathlib import Path
-from typing import Dict, List, Set, Tuple
+from typing import Dict
 
 
 class ComputationalComplexityAnalyzer:
@@ -406,9 +406,9 @@ class TestEmergentHotspotsAnalysis(unittest.TestCase):
         print("{'='*60}")
 
         # Synthesize findings
-        has_complex_modules = len(self.results.get("complexity_hotspots", [])) > 0
-        has_consciousness_terms = len(self.results.get("consciousness_patterns", [])) > 0
-        has_autonomics = len(self.results.get("autonomic_patterns", [])) > 0
+        len(self.results.get("complexity_hotspots", [])) > 0
+        len(self.results.get("consciousness_patterns", [])) > 0
+        len(self.results.get("autonomic_patterns", [])) > 0
 
         complexity_scores = [
             h.get("complexity_score", 0) for h in self.results.get("complexity_hotspots", [])

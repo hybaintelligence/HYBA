@@ -30,7 +30,11 @@ OPTIONAL_FILES = (
 
 def exists(rel: str) -> dict[str, object]:
     path = PORTFOLIO / rel
-    return {"name": rel, "passed": path.exists(), "detail": "present" if path.exists() else "missing"}
+    return {
+        "name": rel,
+        "passed": path.exists(),
+        "detail": "present" if path.exists() else "missing",
+    }
 
 
 def find_number(payload: Any, names: set[str]) -> float | None:
@@ -66,25 +70,31 @@ def completion_checks(payload: dict[str, Any]) -> list[dict[str, object]]:
             if isinstance(item, dict) and str(item.get("status", "")).upper() != "PASSED":
                 incomplete.append({"script": item.get("script"), "status": item.get("status")})
 
-    ok = failed == 0 and timed_out == 0 and skipped == 0 and passed_count == total and not incomplete
-    return [{
-        "name": "script_completion",
-        "passed": ok,
-        "detail": {
-            "total": total,
-            "passed": passed_count,
-            "failed": failed,
-            "timed_out": timed_out,
-            "skipped": skipped,
-            "incomplete": incomplete,
-        },
-    }]
+    ok = (
+        failed == 0 and timed_out == 0 and skipped == 0 and passed_count == total and not incomplete
+    )
+    return [
+        {
+            "name": "script_completion",
+            "passed": ok,
+            "detail": {
+                "total": total,
+                "passed": passed_count,
+                "failed": failed,
+                "timed_out": timed_out,
+                "skipped": skipped,
+                "incomplete": incomplete,
+            },
+        }
+    ]
 
 
 def claim_checks() -> list[dict[str, object]]:
     report_path = PORTFOLIO / "run_output" / "portfolio_report.json"
     if not report_path.exists():
-        return [{"name": "portfolio_report", "passed": True, "detail": "optional saved report absent"}]
+        return [
+            {"name": "portfolio_report", "passed": True, "detail": "optional saved report absent"}
+        ]
 
     try:
         payload = json.loads(report_path.read_text(encoding="utf-8"))
@@ -94,25 +104,51 @@ def claim_checks() -> list[dict[str, object]]:
     checks: list[dict[str, object]] = []
     checks.extend(completion_checks(payload))
 
-    resonance = find_number(payload, {"resonance", "resonance_rate", "phi15_resonance", "phi_15_resonance", "resonance_percent", "phi_resonance_rate"})
+    resonance = find_number(
+        payload,
+        {
+            "resonance",
+            "resonance_rate",
+            "phi15_resonance",
+            "phi_15_resonance",
+            "resonance_percent",
+            "phi_resonance_rate",
+        },
+    )
     if resonance is not None:
         normalised = resonance / 100.0 if resonance > 1.0 else resonance
-        checks.append({"name": "phi15_resonance", "passed": 0.5 <= normalised <= 1.0, "detail": resonance})
+        checks.append(
+            {"name": "phi15_resonance", "passed": 0.5 <= normalised <= 1.0, "detail": resonance}
+        )
 
     z_score = find_number(payload, {"z", "z_score", "zscore", "phi_resonance_z_score"})
     if z_score is not None:
         checks.append({"name": "phi15_z_score", "passed": z_score >= 3.0, "detail": z_score})
 
-    corr = find_number(payload, {"hash_correlation", "sha_correlation", "validity_correlation", "correlation", "r"})
+    corr = find_number(
+        payload, {"hash_correlation", "sha_correlation", "validity_correlation", "correlation", "r"}
+    )
     if corr is not None:
-        checks.append({"name": "hash_validity_boundary", "passed": abs(corr) <= 0.10, "detail": corr})
+        checks.append(
+            {"name": "hash_validity_boundary", "passed": abs(corr) <= 0.10, "detail": corr}
+        )
 
-    advantage = find_number(payload, {"advantage", "grover_advantage", "advantage_over_grover", "structured_advantage"})
+    advantage = find_number(
+        payload, {"advantage", "grover_advantage", "advantage_over_grover", "structured_advantage"}
+    )
     if advantage is not None:
-        checks.append({"name": "structured_advantage", "passed": advantage > 1.0, "detail": advantage})
+        checks.append(
+            {"name": "structured_advantage", "passed": advantage > 1.0, "detail": advantage}
+        )
 
     if len(checks) == 1:
-        checks.append({"name": "portfolio_report_shape", "passed": True, "detail": "parsed without standard metric keys"})
+        checks.append(
+            {
+                "name": "portfolio_report_shape",
+                "passed": True,
+                "detail": "parsed without standard metric keys",
+            }
+        )
     return checks
 
 

@@ -36,7 +36,8 @@ def environment_status() -> dict[str, Any]:
     return {
         "python_executable": sys.executable,
         "python_version": sys.version.split()[0],
-        "venv_active": hasattr(sys, "real_prefix") or (hasattr(sys, "base_prefix") and sys.base_prefix != sys.prefix),
+        "venv_active": hasattr(sys, "real_prefix")
+        or (hasattr(sys, "base_prefix") and sys.base_prefix != sys.prefix),
         "required_imports": list(REQUIRED_IMPORTS),
         "missing_imports": missing,
         "status": "ready" if not missing else "blocked",
@@ -47,19 +48,35 @@ def banner(text: str) -> None:
     print(f"\n{'━' * 72}\n  {text}\n{'━' * 72}\n")
 
 
-def run_script(script_name: str, args: list[str] | None = None, *, timeout: int = 600) -> dict[str, Any]:
+def run_script(
+    script_name: str, args: list[str] | None = None, *, timeout: int = 600
+) -> dict[str, Any]:
     script_path = SCRIPTS / script_name
     needs_numpy = script_name in NUMPY_REQUIRED
     if not script_path.exists():
-        return {"script": script_name, "status": "SKIPPED", "duration_s": 0.0, "requires_numpy": needs_numpy, "error": f"missing: {script_path}"}
+        return {
+            "script": script_name,
+            "status": "SKIPPED",
+            "duration_s": 0.0,
+            "requires_numpy": needs_numpy,
+            "error": f"missing: {script_path}",
+        }
 
     cmd = [sys.executable, str(script_path), *(args or [])]
     print(f"  Running: {' '.join(cmd)}")
     start = time.time()
     try:
-        completed = subprocess.run(cmd, cwd=str(ROOT), capture_output=True, text=True, timeout=timeout)
+        completed = subprocess.run(
+            cmd, cwd=str(ROOT), capture_output=True, text=True, timeout=timeout
+        )
     except subprocess.TimeoutExpired:
-        return {"script": script_name, "status": "TIMEOUT", "duration_s": float(timeout), "requires_numpy": needs_numpy, "stderr": "timeout"}
+        return {
+            "script": script_name,
+            "status": "TIMEOUT",
+            "duration_s": float(timeout),
+            "requires_numpy": needs_numpy,
+            "stderr": "timeout",
+        }
 
     duration = round(time.time() - start, 2)
     status = "PASSED" if completed.returncode == 0 else "FAILED"
@@ -96,7 +113,13 @@ def first_artifact(artifacts: dict[str, Any], suffix: str) -> dict[str, Any]:
     return {}
 
 
-def build_report(results: list[dict[str, Any]], artifacts: dict[str, Any], env: dict[str, Any], run_mode: str, h4_enabled: bool) -> dict[str, Any]:
+def build_report(
+    results: list[dict[str, Any]],
+    artifacts: dict[str, Any],
+    env: dict[str, Any],
+    run_mode: str,
+    h4_enabled: bool,
+) -> dict[str, Any]:
     passed = sum(1 for item in results if item["status"] == "PASSED")
     failed = sum(1 for item in results if item["status"] == "FAILED")
     skipped = sum(1 for item in results if item["status"] == "SKIPPED")
@@ -108,7 +131,11 @@ def build_report(results: list[dict[str, Any]], artifacts: dict[str, Any], env: 
     phi_resonance = first_artifact(artifacts, "phi_resonance_summary.json")
     hash_validity = first_artifact(artifacts, "phi_hash_correlation_summary.json")
     stack = first_artifact(artifacts, "complete_stack_analysis.json")
-    resonance_summary = phi_resonance.get("summary", {}) if isinstance(phi_resonance.get("summary"), dict) else phi_resonance
+    resonance_summary = (
+        phi_resonance.get("summary", {})
+        if isinstance(phi_resonance.get("summary"), dict)
+        else phi_resonance
+    )
     stack_summary = stack.get("summary", {}) if isinstance(stack.get("summary"), dict) else stack
 
     return {
@@ -133,14 +160,29 @@ def build_report(results: list[dict[str, Any]], artifacts: dict[str, Any], env: 
             "quantum_math_tests": quantum_math.get("total_tests", "N/A"),
             "quantum_math_passed": quantum_math.get("passed", "N/A"),
             "quantum_math_pass_rate": quantum_math.get("pass_rate", "N/A"),
-            "structured_search_strategies": [s["name"] for s in structured_search.get("strategies", [])] if "strategies" in structured_search else [],
-            "phi_resonance_rate": resonance_summary.get("phi_resonance_rate", resonance_summary.get("resonance_rate", "N/A")),
-            "phi_resonance_z_score": resonance_summary.get("z_score_vs_random", resonance_summary.get("z_score", "N/A")),
-            "hash_validity_correlation": hash_validity.get("correlation", hash_validity.get("r", "N/A")),
-            "structured_advantage_over_grover": stack_summary.get("advantage_over_grover", stack_summary.get("grover_advantage", "N/A")),
+            "structured_search_strategies": [
+                s["name"] for s in structured_search.get("strategies", [])
+            ]
+            if "strategies" in structured_search
+            else [],
+            "phi_resonance_rate": resonance_summary.get(
+                "phi_resonance_rate", resonance_summary.get("resonance_rate", "N/A")
+            ),
+            "phi_resonance_z_score": resonance_summary.get(
+                "z_score_vs_random", resonance_summary.get("z_score", "N/A")
+            ),
+            "hash_validity_correlation": hash_validity.get(
+                "correlation", hash_validity.get("r", "N/A")
+            ),
+            "structured_advantage_over_grover": stack_summary.get(
+                "advantage_over_grover", stack_summary.get("grover_advantage", "N/A")
+            ),
         },
         "evidence_artifacts_included": list(artifacts.keys()),
-        "h4_600cell_experimental": {"enabled": h4_enabled, "artifact": "benchmark_portfolio/run_output/h4_600cell_benchmark.json"},
+        "h4_600cell_experimental": {
+            "enabled": h4_enabled,
+            "artifact": "benchmark_portfolio/run_output/h4_600cell_benchmark.json",
+        },
         "evidence_boundary": {
             "partial_reports_are_not_acceptance_evidence": True,
             "failed_scripts_block_portfolio_gate": True,
@@ -186,13 +228,17 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="HYBA Φ-Trifecta Benchmark Suite")
     parser.add_argument("--quick", action="store_true", help="Run reduced iterations")
     parser.add_argument("--output-dir", type=str, default=str(OUTPUT_DIR), help="Output directory")
-    parser.add_argument("--force", action="store_true", help="Run even if environment guard is blocked")
+    parser.add_argument(
+        "--force", action="store_true", help="Run even if environment guard is blocked"
+    )
     args = parser.parse_args()
 
     env = environment_status()
     if env["status"] != "ready" and not args.force:
         print(json.dumps({"benchmark_environment": env}, indent=2, sort_keys=True))
-        print("\nBenchmark runner blocked before execution. Activate the project virtual environment first.")
+        print(
+            "\nBenchmark runner blocked before execution. Activate the project virtual environment first."
+        )
         return 2
 
     output_dir = Path(args.output_dir)
@@ -202,10 +248,22 @@ def main() -> int:
 
     plan = [
         ("1/6  Quantum Mathematics Verification", "quantum_math_final_verification.py", []),
-        ("2/6  Structured Search Comparison", "phi_structured_search_demonstration.py", ["--steps", "10" if args.quick else "50000"]),
-        ("3/6  Φ¹⁵ Resonance in Bitcoin Blocks", "collect_100_blocks.py", ["10" if args.quick else "100"]),
+        (
+            "2/6  Structured Search Comparison",
+            "phi_structured_search_demonstration.py",
+            ["--steps", "10" if args.quick else "50000"],
+        ),
+        (
+            "3/6  Φ¹⁵ Resonance in Bitcoin Blocks",
+            "collect_100_blocks.py",
+            ["10" if args.quick else "100"],
+        ),
         ("4/6  Hash Validity Correlation", "phi_hash_validity_correlation.py", []),
-        ("5/6  Quantum Performance Benchmarks", "benchmark_quantum.py", ["10" if args.quick else "100"]),
+        (
+            "5/6  Quantum Performance Benchmarks",
+            "benchmark_quantum.py",
+            ["10" if args.quick else "100"],
+        ),
         ("6/6  Full Stack Analysis", "phi_complete_stack_analysis.py", []),
     ]
     for title, script, script_args in plan:

@@ -50,7 +50,9 @@ class DummySolver:
 
 
 class DummyOptimizer:
-    def __init__(self, quantum_solver: Any, consciousness_engine: Any, blockchain_oracle: Any) -> None:
+    def __init__(
+        self, quantum_solver: Any, consciousness_engine: Any, blockchain_oracle: Any
+    ) -> None:
         self.quantum_solver = quantum_solver
         self.consciousness_engine = consciousness_engine
         self.blockchain_oracle = blockchain_oracle
@@ -66,7 +68,9 @@ class DummyOptimizer:
     async def on_share_accepted(self, share_info: dict[str, Any]) -> None:
         self.accepted.append(share_info)
 
-    async def on_share_rejected(self, share_info: dict[str, Any], error_code: int, error_msg: str) -> None:
+    async def on_share_rejected(
+        self, share_info: dict[str, Any], error_code: int, error_msg: str
+    ) -> None:
         self.rejected.append({"share": share_info, "code": error_code, "message": error_msg})
 
     def meta_learning_snapshot(self) -> dict[str, Any]:
@@ -130,8 +134,11 @@ class DummyVerifier:
     def __init__(self, configured_capacity_ehs: float | None = None) -> None:
         self.configured_capacity_ehs = configured_capacity_ehs
         self.batch_result = types.SimpleNamespace(
-            backend="cpu", metal_available=False, total_nonces=3,
-            hashes_per_second=1200.0, hashrate_ehs=1.2e-15,
+            backend="cpu",
+            metal_available=False,
+            total_nonces=3,
+            hashes_per_second=1200.0,
+            hashrate_ehs=1.2e-15,
         )
         self.candidate_result = types.SimpleNamespace(
             backend="cpu", valid=True, block_hash="00feed"
@@ -161,7 +168,9 @@ class DummyAutonomousController:
     def __init__(self, unified_engine: Any) -> None:
         self.unified_engine = unified_engine
         self.current_autonomy_level = DummyAutonomyLevel()
-        self.config = types.SimpleNamespace(reflexive_loop_interval=999999.0, reflexive_loop_enabled=True)
+        self.config = types.SimpleNamespace(
+            reflexive_loop_interval=999999.0, reflexive_loop_enabled=True
+        )
         self._last_reflexive_cycle = 0.0
         self.fail_next = False
         self.failures = 0
@@ -176,15 +185,23 @@ class DummyAutonomousController:
             raise RuntimeError("optimizer unavailable")
         self.last_search_kwargs = kwargs
         return types.SimpleNamespace(
-            decision_id="d1", action_taken="tune", expected_outcome="stable",
-            actual_outcome=None, operator_override=False, autonomy_level=self.current_autonomy_level,
+            decision_id="d1",
+            action_taken="tune",
+            expected_outcome="stable",
+            actual_outcome=None,
+            operator_override=False,
+            autonomy_level=self.current_autonomy_level,
         )
 
     async def optimize_hashrate_target(self, **kwargs: Any) -> Any:
         self.last_hashrate_kwargs = kwargs
         return types.SimpleNamespace(
-            decision_id="d2", action_taken="cap", expected_outcome="bounded",
-            actual_outcome="bounded", operator_override=False, autonomy_level=self.current_autonomy_level,
+            decision_id="d2",
+            action_taken="cap",
+            expected_outcome="bounded",
+            actual_outcome="bounded",
+            operator_override=False,
+            autonomy_level=self.current_autonomy_level,
         )
 
     async def seek_improvement(self) -> None:
@@ -213,12 +230,20 @@ class DummyAutonomousController:
 
     def get_decision_history(self, limit: int | None = None) -> list[Any]:
         constraint = types.SimpleNamespace(value="operator_review")
-        return [types.SimpleNamespace(
-            decision_id="d1", timestamp=1.0, autonomy_level=self.current_autonomy_level,
-            decision_type="search", action_taken="tune", expected_outcome="stable",
-            actual_outcome=None, operator_override=False,
-            constraints_satisfied=[constraint], constraints_violated=[],
-        )]
+        return [
+            types.SimpleNamespace(
+                decision_id="d1",
+                timestamp=1.0,
+                autonomy_level=self.current_autonomy_level,
+                decision_type="search",
+                action_taken="tune",
+                expected_outcome="stable",
+                actual_outcome=None,
+                operator_override=False,
+                constraints_satisfied=[constraint],
+                constraints_violated=[],
+            )
+        ]
 
 
 @pytest.fixture()
@@ -248,7 +273,15 @@ def engine_module(monkeypatch: pytest.MonkeyPatch):
     hendrix = module("pythia_mining.hendrix_phi_solver")
     hendrix.M32 = tuple(range(32))
     hendrix.YANG_MILLS_GAP = 1.0
-    for name in ["cheap_phi_resonance", "embed_nonce", "phi_gradient_proposal", "phi_resonance", "soft_mass_gap_gate", "voronoi_domain", "yang_mills_action"]:
+    for name in [
+        "cheap_phi_resonance",
+        "embed_nonce",
+        "phi_gradient_proposal",
+        "phi_resonance",
+        "soft_mass_gap_gate",
+        "voronoi_domain",
+        "yang_mills_action",
+    ]:
         setattr(hendrix, name, lambda *args, **kwargs: 0)
 
     metal = module("pythia_mining.metal_sha256_pipeline")
@@ -259,12 +292,17 @@ def engine_module(monkeypatch: pytest.MonkeyPatch):
     scaling = module("pythia_mining.phi_scaling_engine")
     scaling.PhiScaledEnsemble = lambda config: types.SimpleNamespace(config=config)
     scaling.PhiResonanceAnalyzer = lambda: types.SimpleNamespace(
-        analyze_phi_resonance=lambda payload: {"count": len(payload["nonces"]), "nonces": payload["nonces"]}
+        analyze_phi_resonance=lambda payload: {
+            "count": len(payload["nonces"]),
+            "nonces": payload["nonces"],
+        }
     )
-    scaling.benchmark_vs_asic = lambda measured_hashes_per_second=None, asic_baseline_hashes_per_second=110e12: {
-        "measured_hashes_per_second": measured_hashes_per_second,
-        "asic_baseline_hashes_per_second": asic_baseline_hashes_per_second,
-    }
+    scaling.benchmark_vs_asic = (
+        lambda measured_hashes_per_second=None, asic_baseline_hashes_per_second=110e12: {
+            "measured_hashes_per_second": measured_hashes_per_second,
+            "asic_baseline_hashes_per_second": asic_baseline_hashes_per_second,
+        }
+    )
 
     compressed = module("pythia_mining.pulvini_compressed_solver")
     compressed.PulviniCompressedQuantumSolver = DummySolver
@@ -293,7 +331,9 @@ def run(coro: Any) -> Any:
     return asyncio.run(coro)
 
 
-def test_unified_mining_engine_initialization_default_config(engine_module: types.ModuleType) -> None:
+def test_unified_mining_engine_initialization_default_config(
+    engine_module: types.ModuleType,
+) -> None:
     engine = engine_module.UnifiedMiningEngine()
     assert engine.configured_capacity_ehs is None
     assert engine.state.verifier_backend == "cpu"
@@ -321,7 +361,9 @@ def test_strategy_selection_based_on_high_coherence(engine: Any) -> None:
     ("coherence", "expected_time", "adaptive"),
     [(0.55, 60.0, True), (0.1, 120.0, False)],
 )
-def test_strategy_selection_thresholds(engine: Any, coherence: float, expected_time: float, adaptive: bool) -> None:
+def test_strategy_selection_thresholds(
+    engine: Any, coherence: float, expected_time: float, adaptive: bool
+) -> None:
     engine.consciousness.current_state.integrated_information = coherence
     run(engine.search(job={"job_id": str(coherence)}))
     assert engine.optimizer.current_strategy.max_search_time == expected_time
@@ -403,7 +445,9 @@ def test_autonomy_status_level_and_decision_history(engine: Any) -> None:
     new_level = DummyAutonomyLevel("manual", False)
     engine.set_autonomy_level(new_level)
     assert engine.get_autonomy_status()["level"] == "manual"
-    assert engine.get_autonomous_decision_history()[0]["constraints_satisfied"] == ["operator_review"]
+    assert engine.get_autonomous_decision_history()[0]["constraints_satisfied"] == [
+        "operator_review"
+    ]
     engine.reset_autonomy_circuit_breaker("review complete")
     assert engine.autonomous_controller.reset_reason == "review complete"
 
@@ -429,7 +473,9 @@ def test_phi_config_loading_from_environment(monkeypatch: pytest.MonkeyPatch) ->
     assert phi_config.initialize_production_secrets() == {"status": "DEV_PASS"}
 
 
-def test_environment_variable_precedence_blocks_dev_fixtures_in_live_mode(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_environment_variable_precedence_blocks_dev_fixtures_in_live_mode(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     from pythia_mining import phi_config
 
     monkeypatch.setenv("HYBA_ALLOW_DEV_FIXTURES", "true")
@@ -464,21 +510,26 @@ def orchestrator_module(monkeypatch: pytest.MonkeyPatch):
     monkeypatch.setitem(sys.modules, "pythia_mining.metrics_store", metrics)
 
     stratum = types.ModuleType("pythia_mining.stratum_client")
+
     class AllPoolsOfflineError(Exception):
         pass
+
     @dataclass
     class ShareResult:
         accepted: bool
         response: Any = None
         error: str | None = None
+
     class StratumClient:
         pass
+
     stratum.AllPoolsOfflineError = AllPoolsOfflineError
     stratum.StratumClient = StratumClient
     stratum.ShareResult = ShareResult
     monkeypatch.setitem(sys.modules, "pythia_mining.stratum_client", stratum)
 
     profiles = types.ModuleType("pythia_mining.pool_profiles")
+
     @dataclass
     class PoolProfile:
         pool_id: str
@@ -487,6 +538,7 @@ def orchestrator_module(monkeypatch: pytest.MonkeyPatch):
         username: str = "user"
         password: str = "pass"
         stratum_version: str = "v1"
+
     profiles.PoolProfile = PoolProfile
     monkeypatch.setitem(sys.modules, "pythia_mining.pool_profiles", profiles)
 
@@ -504,14 +556,18 @@ def test_orchestrator_requires_at_least_one_pool(orchestrator_module: types.Modu
         orchestrator_module.ProductionMiningOrchestrator([])
 
 
-def test_orchestrator_initializes_pool_health(profile: Any, orchestrator_module: types.ModuleType) -> None:
+def test_orchestrator_initializes_pool_health(
+    profile: Any, orchestrator_module: types.ModuleType
+) -> None:
     orchestrator = orchestrator_module.ProductionMiningOrchestrator([profile])
     status = orchestrator.get_pool_health_status("p1")["p1"]
     assert status["pool_name"] == "Primary"
     assert status["health"] == "unknown"
 
 
-def test_pool_health_updates_reset_consecutive_failures(profile: Any, orchestrator_module: types.ModuleType) -> None:
+def test_pool_health_updates_reset_consecutive_failures(
+    profile: Any, orchestrator_module: types.ModuleType
+) -> None:
     orchestrator = orchestrator_module.ProductionMiningOrchestrator([profile])
     orchestrator.pool_health["p1"].consecutive_failures = 4
     orchestrator._update_pool_health("p1", orchestrator_module.PoolHealth.HEALTHY)
@@ -519,7 +575,9 @@ def test_pool_health_updates_reset_consecutive_failures(profile: Any, orchestrat
     assert orchestrator.pool_health["p1"].health is orchestrator_module.PoolHealth.HEALTHY
 
 
-def test_pool_failure_thresholds_progress_to_degraded(profile: Any, orchestrator_module: types.ModuleType) -> None:
+def test_pool_failure_thresholds_progress_to_degraded(
+    profile: Any, orchestrator_module: types.ModuleType
+) -> None:
     orchestrator = orchestrator_module.ProductionMiningOrchestrator(
         [profile], max_pool_failures_before_degraded=2, max_pool_failures_before_offline=3
     )
@@ -530,7 +588,9 @@ def test_pool_failure_thresholds_progress_to_degraded(profile: Any, orchestrator
     assert orchestrator.pool_health["p1"].consecutive_failures == 0
 
 
-def test_pool_failure_can_mark_offline_without_degraded_reset(profile: Any, orchestrator_module: types.ModuleType) -> None:
+def test_pool_failure_can_mark_offline_without_degraded_reset(
+    profile: Any, orchestrator_module: types.ModuleType
+) -> None:
     orchestrator = orchestrator_module.ProductionMiningOrchestrator(
         [profile], max_pool_failures_before_degraded=5, max_pool_failures_before_offline=2
     )
@@ -539,15 +599,21 @@ def test_pool_failure_can_mark_offline_without_degraded_reset(profile: Any, orch
     assert orchestrator.pool_health["p1"].health is orchestrator_module.PoolHealth.OFFLINE
 
 
-def test_orchestrator_job_dispatch_uses_priority_order(profile: Any, orchestrator_module: types.ModuleType) -> None:
-    second = orchestrator_module.PoolProfile(pool_id="p2", name="Secondary", url="stratum+tcp://pool2")
+def test_orchestrator_job_dispatch_uses_priority_order(
+    profile: Any, orchestrator_module: types.ModuleType
+) -> None:
+    second = orchestrator_module.PoolProfile(
+        pool_id="p2", name="Secondary", url="stratum+tcp://pool2"
+    )
     orchestrator = orchestrator_module.ProductionMiningOrchestrator([profile, second])
     orchestrator._update_pool_health("p1", orchestrator_module.PoolHealth.OFFLINE)
     orchestrator._update_pool_health("p2", orchestrator_module.PoolHealth.HEALTHY)
     assert orchestrator._get_healthy_pools() == ["p2"]
 
 
-def test_share_collection_records_acceptance_and_rejection(profile: Any, orchestrator_module: types.ModuleType) -> None:
+def test_share_collection_records_acceptance_and_rejection(
+    profile: Any, orchestrator_module: types.ModuleType
+) -> None:
     orchestrator = orchestrator_module.ProductionMiningOrchestrator([profile])
     orchestrator._record_share_result("p1", orchestrator_module.ShareResult(accepted=True))
     orchestrator._record_share_result("p1", orchestrator_module.ShareResult(accepted=False))
@@ -557,7 +623,9 @@ def test_share_collection_records_acceptance_and_rejection(profile: Any, orchest
     assert status.shares_rejected_total == 1
 
 
-def test_hashrate_acceptance_ratio_tracking_in_mining_stats(profile: Any, orchestrator_module: types.ModuleType) -> None:
+def test_hashrate_acceptance_ratio_tracking_in_mining_stats(
+    profile: Any, orchestrator_module: types.ModuleType
+) -> None:
     orchestrator = orchestrator_module.ProductionMiningOrchestrator([profile])
     orchestrator.total_connection_attempts = 4
     orchestrator.successful_connections = 3
@@ -569,14 +637,22 @@ def test_hashrate_acceptance_ratio_tracking_in_mining_stats(profile: Any, orches
     assert stats.healthy_pools == 1
 
 
-def test_orchestrator_failover_skips_rejected_first_pool(profile: Any, orchestrator_module: types.ModuleType) -> None:
-    second = orchestrator_module.PoolProfile(pool_id="p2", name="Secondary", url="stratum+tcp://pool2")
+def test_orchestrator_failover_skips_rejected_first_pool(
+    profile: Any, orchestrator_module: types.ModuleType
+) -> None:
+    second = orchestrator_module.PoolProfile(
+        pool_id="p2", name="Secondary", url="stratum+tcp://pool2"
+    )
     orchestrator = orchestrator_module.ProductionMiningOrchestrator([profile, second])
     orchestrator._update_pool_health("p1", orchestrator_module.PoolHealth.HEALTHY)
     orchestrator._update_pool_health("p2", orchestrator_module.PoolHealth.HEALTHY)
     orchestrator.clients = {
-        "p1": types.SimpleNamespace(submit_validated_share=AsyncMock(return_value=orchestrator_module.ShareResult(False))),
-        "p2": types.SimpleNamespace(submit_validated_share=AsyncMock(return_value=orchestrator_module.ShareResult(True))),
+        "p1": types.SimpleNamespace(
+            submit_validated_share=AsyncMock(return_value=orchestrator_module.ShareResult(False))
+        ),
+        "p2": types.SimpleNamespace(
+            submit_validated_share=AsyncMock(return_value=orchestrator_module.ShareResult(True))
+        ),
     }
     result = run(orchestrator._submit_failover(job=object(), nonce=1))
     assert result.accepted is True
@@ -584,23 +660,33 @@ def test_orchestrator_failover_skips_rejected_first_pool(profile: Any, orchestra
     assert orchestrator.pool_health["p2"].shares_accepted_total == 1
 
 
-def test_multi_pool_submission_collects_only_share_results(profile: Any, orchestrator_module: types.ModuleType) -> None:
-    second = orchestrator_module.PoolProfile(pool_id="p2", name="Secondary", url="stratum+tcp://pool2")
+def test_multi_pool_submission_collects_only_share_results(
+    profile: Any, orchestrator_module: types.ModuleType
+) -> None:
+    second = orchestrator_module.PoolProfile(
+        pool_id="p2", name="Secondary", url="stratum+tcp://pool2"
+    )
     orchestrator = orchestrator_module.ProductionMiningOrchestrator(
         [profile, second], mining_strategy=orchestrator_module.MiningStrategy.MULTI_POOL
     )
     orchestrator._update_pool_health("p1", orchestrator_module.PoolHealth.HEALTHY)
     orchestrator._update_pool_health("p2", orchestrator_module.PoolHealth.HEALTHY)
     orchestrator.clients = {
-        "p1": types.SimpleNamespace(submit_validated_share=AsyncMock(return_value=orchestrator_module.ShareResult(True))),
-        "p2": types.SimpleNamespace(submit_validated_share=AsyncMock(side_effect=RuntimeError("down"))),
+        "p1": types.SimpleNamespace(
+            submit_validated_share=AsyncMock(return_value=orchestrator_module.ShareResult(True))
+        ),
+        "p2": types.SimpleNamespace(
+            submit_validated_share=AsyncMock(side_effect=RuntimeError("down"))
+        ),
     }
     results = run(orchestrator.submit_share(job=object(), nonce=99))
     assert [r.accepted for r in results] == [True]
     assert orchestrator.pool_health["p2"].connection_failures == 1
 
 
-def test_get_next_job_updates_job_metadata(profile: Any, orchestrator_module: types.ModuleType) -> None:
+def test_get_next_job_updates_job_metadata(
+    profile: Any, orchestrator_module: types.ModuleType
+) -> None:
     orchestrator = orchestrator_module.ProductionMiningOrchestrator([profile])
     orchestrator._update_pool_health("p1", orchestrator_module.PoolHealth.HEALTHY)
     orchestrator.clients = {
@@ -613,9 +699,13 @@ def test_get_next_job_updates_job_metadata(profile: Any, orchestrator_module: ty
     assert orchestrator.pool_health["p1"].active_jobs == 2
 
 
-def test_start_stop_manage_background_tasks(profile: Any, orchestrator_module: types.ModuleType) -> None:
+def test_start_stop_manage_background_tasks(
+    profile: Any, orchestrator_module: types.ModuleType
+) -> None:
     async def scenario() -> bool:
-        orchestrator = orchestrator_module.ProductionMiningOrchestrator([profile], health_check_interval=60.0)
+        orchestrator = orchestrator_module.ProductionMiningOrchestrator(
+            [profile], health_check_interval=60.0
+        )
         orchestrator.clients = {"p1": types.SimpleNamespace(disconnect=AsyncMock())}
         await orchestrator.start()
         assert orchestrator._running is True

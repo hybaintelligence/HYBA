@@ -47,6 +47,7 @@ from pythia_mining.pulvini_overlay import ADJACENCY_MAP
 # 1.  SU(2) Wilson plaquette action
 # ══════════════════════════════════════════════════════════════════════════════
 
+
 class TestSU2PlaquetteAction:
     """The Wilson plaquette action 1 - Re Tr(U_i U_j U_i† U_j†)/2."""
 
@@ -71,11 +72,11 @@ class TestSU2PlaquetteAction:
         for b, ax in [(0, 0), (127, 1), (255, 2), (64, 0), (200, 2)]:
             U = _su2_from_byte(b, axis=ax)
             assert U.shape == (2, 2)
-            assert np.allclose(U.conj().T @ U, np.eye(2), atol=1e-12), \
+            assert np.allclose(U.conj().T @ U, np.eye(2), atol=1e-12), (
                 f"byte={b} axis={ax}: not unitary"
+            )
             det = np.linalg.det(U)
-            assert abs(abs(det) - 1.0) < 1e-12, \
-                f"byte={b} axis={ax}: |det|={abs(det)}"
+            assert abs(abs(det) - 1.0) < 1e-12, f"byte={b} axis={ax}: |det|={abs(det)}"
 
     def test_different_pauli_axes_produce_noncommuting_links(self):
         """Links on σ_x and σ_y axes must not commute — essential for non-trivial action."""
@@ -105,10 +106,10 @@ class TestSU2PlaquetteAction:
         """
         sample = [yang_mills_action(n) for n in range(0, 2**16, 97)]
         assert min(sample) == pytest.approx(0.0, abs=1e-10)
-        assert max(sample) > 0.05            # non-trivially spread
+        assert max(sample) > 0.05  # non-trivially spread
         assert max(sample) < YANG_MILLS_GAP  # all pass the gate (correct by design)
         std = float(np.std(sample))
-        assert std > 0.001                   # not a constant function
+        assert std > 0.001  # not a constant function
 
     def test_action_deterministic(self):
         """Same nonce must always produce the same action."""
@@ -124,6 +125,7 @@ class TestSU2PlaquetteAction:
 # ══════════════════════════════════════════════════════════════════════════════
 # 2.  Van der Corput star-discrepancy certificate
 # ══════════════════════════════════════════════════════════════════════════════
+
 
 class TestVanDerCorputDiscrepancy:
     """D*_N ≤ (1 + 1/φ)/N  and three-distance theorem for φ-LCG."""
@@ -146,8 +148,9 @@ class TestVanDerCorputDiscrepancy:
         """φ-LCG must produce at most 3 distinct gap sizes (three-distance theorem)."""
         for n in [100, 500, 2000]:
             c = van_der_corput_discrepancy(n)
-            assert c["three_distance_gap_count"] <= 3, \
+            assert c["three_distance_gap_count"] <= 3, (
                 f"N={n}: {c['three_distance_gap_count']} gap sizes > 3"
+            )
 
     def test_discrepancy_decays_with_n(self):
         """D*_N must decrease as N grows — verifying O(1/N) convergence."""
@@ -158,8 +161,7 @@ class TestVanDerCorputDiscrepancy:
     def test_efficiency_vs_random_greater_than_one(self):
         """φ-LCG must outperform Monte Carlo baseline (ratio > 1)."""
         c = van_der_corput_discrepancy(1000)
-        assert c["efficiency_vs_random"] > 1.0, \
-            f"efficiency_vs_random={c['efficiency_vs_random']}"
+        assert c["efficiency_vs_random"] > 1.0, f"efficiency_vs_random={c['efficiency_vs_random']}"
 
     def test_theoretical_bound_formula(self):
         """Bound must equal (1 + 1/φ)/N exactly."""
@@ -185,14 +187,15 @@ class TestVanDerCorputDiscrepancy:
         for start in [0.0, INV_PHI, 0.123456789, 0.314159265]:
             c = van_der_corput_discrepancy(500, base_state=start)
             n = c["n_samples"]
-            assert c["empirical_discrepancy"] <= c["theoretical_bound"] + 2.0 / n, \
+            assert c["empirical_discrepancy"] <= c["theoretical_bound"] + 2.0 / n, (
                 f"base_state={start}: D*={c['empirical_discrepancy']:.6f} > bound+2/N"
-
+            )
 
 
 # ══════════════════════════════════════════════════════════════════════════════
 # 3.  Exact MPS norm + entanglement spectrum + compress_adaptive
 # ══════════════════════════════════════════════════════════════════════════════
+
 
 class TestExactMPSNorm:
     """_contract_mps_norm_exact and MPS.compute_norm."""
@@ -213,8 +216,10 @@ class TestExactMPSNorm:
         """Applying a unitary to one site must preserve the norm exactly."""
         mps = MPS(num_sites=8, physical_dim=2, max_bond_dim=4)
         theta = math.pi / 5
-        U = np.array([[math.cos(theta), -math.sin(theta)],
-                      [math.sin(theta),  math.cos(theta)]], dtype=np.complex128)
+        U = np.array(
+            [[math.cos(theta), -math.sin(theta)], [math.sin(theta), math.cos(theta)]],
+            dtype=np.complex128,
+        )
         mps.apply_local_unitary(U, site=3)
         assert mps.compute_norm() == pytest.approx(1.0, abs=1e-8)
 
@@ -231,7 +236,7 @@ class TestExactMPSNorm:
         for i in range(N):
             mps.tensors[i] = mps.tensors[i] * c
         # norm^2 = c^(2N) → norm = c^N
-        expected = c ** N
+        expected = c**N
         assert mps.compute_norm() == pytest.approx(expected, rel=1e-6)
 
 
@@ -257,8 +262,7 @@ class TestEntanglementSpectrum:
         for bond in range(mps.num_sites - 1):
             spec = mps.entanglement_spectrum(bond)
             if len(spec) > 1:
-                assert np.all(np.diff(spec) <= 1e-12), \
-                    f"bond={bond}: spectrum not descending"
+                assert np.all(np.diff(spec) <= 1e-12), f"bond={bond}: spectrum not descending"
 
     def test_last_bond_returns_single_value(self):
         """Bond index == num_sites - 1 is out of range; must return [1.0]."""
@@ -272,7 +276,7 @@ class TestEntanglementSpectrum:
         mps = MPS(num_sites=8, physical_dim=2, max_bond_dim=4)
         for bond in range(mps.num_sites - 1):
             spec = mps.entanglement_spectrum(bond)
-            p = spec ** 2
+            p = spec**2
             p = p / (np.sum(p) + 1e-300)
             entropy = -float(np.sum(p * np.log2(p + 1e-300)))
             assert entropy >= -1e-10, f"bond={bond}: negative entropy {entropy}"
@@ -316,7 +320,7 @@ class TestCompressAdaptive:
         entropies = []
         for bond in range(mps.num_sites - 1):
             spec = mps.entanglement_spectrum(bond)
-            p = spec ** 2
+            p = spec**2
             p = p / (np.sum(p) + 1e-300)
             entropies.append(-float(np.sum(p * np.log2(p + 1e-300))))
         out = mps.compress_adaptive(base_max_bond=16)
@@ -331,6 +335,7 @@ class TestCompressAdaptive:
 # ══════════════════════════════════════════════════════════════════════════════
 # 4.  SLD Lyapunov natural gradient / Quantum Fisher Information
 # ══════════════════════════════════════════════════════════════════════════════
+
 
 class TestSLDNaturalGradient:
     """bures_gradient_of_collapse_functional — SLD Lyapunov equation."""
@@ -347,8 +352,14 @@ class TestSLDNaturalGradient:
         """Result must include bures_gradient_norm, quantum_fisher_trace, stationary."""
         m = evolved_manifold
         result = m.bures_gradient_of_collapse_functional(m.rho, m.entropy_gradient)
-        for key in ("bures_gradient_norm", "qgt_norm", "quantum_fisher_trace",
-                    "stationary", "stationary_reason", "collapse_criterion_met"):
+        for key in (
+            "bures_gradient_norm",
+            "qgt_norm",
+            "quantum_fisher_trace",
+            "stationary",
+            "stationary_reason",
+            "collapse_criterion_met",
+        ):
             assert key in result, f"missing key: {key}"
 
     def test_gradient_norm_non_negative(self, evolved_manifold):
@@ -391,8 +402,9 @@ class TestSLDNaturalGradient:
 
         lhs = rho @ L + L @ rho
         rhs = 2.0 * flat_grad
-        assert np.allclose(lhs, rhs, atol=1e-8), \
+        assert np.allclose(lhs, rhs, atol=1e-8), (
             f"Lyapunov residual too large: {np.linalg.norm(lhs - rhs):.2e}"
+        )
 
     def test_sld_is_hermitian(self, evolved_manifold):
         """L must be Hermitian: L = L†."""
@@ -445,5 +457,6 @@ class TestSLDNaturalGradient:
         if r1["stationary"] or r2["stationary"]:
             pytest.skip("state is already stationary")
 
-        assert r2["bures_gradient_norm"] > r1["bures_gradient_norm"], \
+        assert r2["bures_gradient_norm"] > r1["bures_gradient_norm"], (
             "gradient did not grow with larger entropy_gradient"
+        )

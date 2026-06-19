@@ -12,7 +12,7 @@ export const handlers = [
   http.get(api("/mining/pool-config"), () => HttpResponse.json(poolConfigFixture)),
   http.get(api("/admin/users"), () => HttpResponse.json(usersFixture)),
   http.post(api("/admin/users"), async ({ request }) => {
-    const body = await request.json() as Record<string, unknown>;
+    const body = (await request.json()) as Record<string, unknown>;
     return HttpResponse.json({ id: 99, role: "operator", ...body }, { status: 201 });
   }),
 ];

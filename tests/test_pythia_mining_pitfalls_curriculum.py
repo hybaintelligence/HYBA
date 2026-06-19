@@ -35,7 +35,9 @@ def test_consensus_lessons_protect_exact_sha256d_and_targets() -> None:
     assert "uint32 little-endian" in text
     assert "compact_to_target" in text
     assert "extranonce2" in text
-    assert "sha-256d" in text or any("sha-256d" in lesson.supreme_invariant.lower() for lesson in lessons)
+    assert "sha-256d" in text or any(
+        "sha-256d" in lesson.supreme_invariant.lower() for lesson in lessons
+    )
 
 
 def test_stratum_lessons_protect_pool_truth_and_stale_jobs() -> None:
@@ -89,4 +91,6 @@ def test_curriculum_is_json_safe_for_evidence_packets() -> None:
 
     assert len(ids) == len(set(ids)) == len(evidence)
     assert all(item["lesson_id"] for item in evidence)
-    assert all(item["category"] in {category.value for category in PitfallCategory} for item in evidence)
+    assert all(
+        item["category"] in {category.value for category in PitfallCategory} for item in evidence
+    )

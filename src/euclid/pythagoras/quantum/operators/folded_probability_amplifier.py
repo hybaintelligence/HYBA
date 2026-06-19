@@ -3,6 +3,7 @@
 This is a deterministic mathematical primitive over a bounded folded space. It
 supports enterprise auditability and repeatable solver capacity estimates.
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass, asdict
@@ -11,8 +12,10 @@ import numpy as np
 
 _EPS = 1e-12
 
+
 class FoldedAmplifierError(ValueError):
     pass
+
 
 @dataclass(frozen=True)
 class FoldedAmplifierResult:
@@ -22,8 +25,10 @@ class FoldedAmplifierResult:
     dimension: int
     deterministic_capacity: float
     probabilities: List[float]
+
     def to_dict(self) -> Dict[str, Any]:
         return asdict(self)
+
 
 def _norm(values: Any) -> np.ndarray:
     vec = np.asarray(values, dtype=float).reshape(-1)
@@ -36,10 +41,12 @@ def _norm(values: Any) -> np.ndarray:
         raise FoldedAmplifierError("zero norm vector")
     return vec / n
 
+
 def uniform_vector(dimension: int) -> np.ndarray:
     if dimension <= 0:
         raise FoldedAmplifierError("dimension must be positive")
     return np.ones(int(dimension), dtype=float) / np.sqrt(float(dimension))
+
 
 def mark(values: Any, indices: Sequence[int]) -> np.ndarray:
     vector = _norm(values)
@@ -51,17 +58,21 @@ def mark(values: Any, indices: Sequence[int]) -> np.ndarray:
         out[idx] *= -1.0
     return out
 
+
 def reflect_about_mean(values: Any) -> np.ndarray:
     vector = _norm(values)
     return _norm((2.0 * float(np.mean(vector))) - vector)
 
+
 def amplification_step(values: Any, indices: Sequence[int]) -> np.ndarray:
     return reflect_about_mean(mark(values, indices))
+
 
 def recommended_steps(dimension: int, target_count: int = 1) -> int:
     if dimension <= 0 or target_count <= 0 or target_count > dimension:
         raise FoldedAmplifierError("invalid dimensions")
     return max(1, int(round((np.pi / 4.0) * np.sqrt(float(dimension) / float(target_count)))))
+
 
 def run_amplifier(
     dimension: int,
@@ -87,6 +98,23 @@ def run_amplifier(
         vector = amplification_step(vector, idxs)
     probs = vector * vector
     best = int(np.argmax(probs))
-    return FoldedAmplifierResult(best, float(probs[best]), steps, int(dimension), float(dimension / max(1, steps)), [float(x) for x in probs])
+    return FoldedAmplifierResult(
+        best,
+        float(probs[best]),
+        steps,
+        int(dimension),
+        float(dimension / max(1, steps)),
+        [float(x) for x in probs],
+    )
 
-__all__ = ["FoldedAmplifierError", "FoldedAmplifierResult", "uniform_vector", "mark", "reflect_about_mean", "amplification_step", "recommended_steps", "run_amplifier"]
+
+__all__ = [
+    "FoldedAmplifierError",
+    "FoldedAmplifierResult",
+    "uniform_vector",
+    "mark",
+    "reflect_about_mean",
+    "amplification_step",
+    "recommended_steps",
+    "run_amplifier",
+]

@@ -122,7 +122,10 @@ def test_structured_replay_can_demonstrate_candidate_budget_advantage():
     )
 
     assert report.pythia.first_hit_budget is not None
-    assert report.baseline.first_hit_budget is None or report.pythia.first_hit_budget < report.baseline.first_hit_budget
+    assert (
+        report.baseline.first_hit_budget is None
+        or report.pythia.first_hit_budget < report.baseline.first_hit_budget
+    )
     if report.candidate_budget_advantage is not None:
         assert report.candidate_budget_advantage > 1.0
     assert "PYTHIA" in report.interpretation

@@ -24,13 +24,17 @@ class OmegaSignatureChecker:
         singular = singular / max(float(np.linalg.norm(singular)), 1e-12)
         spectrum = np.zeros(self.size)
         spectrum[: min(self.size, singular.size)] = singular[: self.size]
-        return OmegaSignature(int(arr.size), [float(x) for x in spectrum], int(np.sum(spectrum > 1e-8)))
+        return OmegaSignature(
+            int(arr.size), [float(x) for x in spectrum], int(np.sum(spectrum > 1e-8))
+        )
 
     def is_stable(self, before: OmegaSignature, after: OmegaSignature) -> bool:
         left = np.asarray(before.spectrum, dtype=float)
         right = np.asarray(after.spectrum, dtype=float)
         n = max(left.size, right.size)
-        distance = np.linalg.norm(np.pad(left, (0, n - left.size)) - np.pad(right, (0, n - right.size)))
+        distance = np.linalg.norm(
+            np.pad(left, (0, n - left.size)) - np.pad(right, (0, n - right.size))
+        )
         return bool(float(distance) <= self.tolerance)
 
 

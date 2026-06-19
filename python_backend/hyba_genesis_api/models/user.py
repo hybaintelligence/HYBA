@@ -26,8 +26,12 @@ class User(Base):
     password_hash: str = Column(Text, nullable=False)
     roles: str = Column(String(256), nullable=False, default="operator")
     is_active: bool = Column(Boolean, nullable=False, default=True)
-    created_at: datetime = Column(DateTime(timezone=True), nullable=False, default=lambda: datetime.now(timezone.utc))
-    updated_at: datetime = Column(DateTime(timezone=True), nullable=False, default=lambda: datetime.now(timezone.utc))
+    created_at: datetime = Column(
+        DateTime(timezone=True), nullable=False, default=lambda: datetime.now(timezone.utc)
+    )
+    updated_at: datetime = Column(
+        DateTime(timezone=True), nullable=False, default=lambda: datetime.now(timezone.utc)
+    )
     last_login: Optional[datetime] = Column(DateTime(timezone=True), nullable=True)
     created_by: Optional[str] = Column(String(100), nullable=True)
 

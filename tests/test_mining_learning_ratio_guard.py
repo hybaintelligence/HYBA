@@ -1,6 +1,9 @@
 from __future__ import annotations
 
-from pythia_mining.mining_learning_signal import MiningLearningEvent, compute_learning_signal_correction
+from pythia_mining.mining_learning_signal import (
+    MiningLearningEvent,
+    compute_learning_signal_correction,
+)
 
 
 def test_learning_difficulty_gap_ratio_is_never_above_one_for_valid_targets() -> None:

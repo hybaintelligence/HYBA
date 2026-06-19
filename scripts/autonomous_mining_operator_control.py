@@ -26,13 +26,10 @@ from pathlib import Path
 from typing import Any, Dict, Optional
 
 # Add python_backend to path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'python_backend'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "python_backend"))
 
 from pythia_mining.autonomous_mining_controller import (
-    AutonomousConfig,
-    AutonomousMiningController,
     AutonomyLevel,
-    SafetyConstraint,
 )
 from pythia_mining.phi_unified_mining_engine import UnifiedMiningEngine
 
@@ -81,7 +78,7 @@ class OperatorControlInterface:
         """Get current autonomous mining status."""
         status = self.controller.get_autonomy_status()
         engine_state = self.engine.get_unified_state()
-        
+
         return {
             "autonomy_level": status["autonomy_level"],
             "total_decisions": status["total_decisions"],
@@ -102,19 +99,21 @@ class OperatorControlInterface:
         except ValueError:
             return {
                 "success": False,
-                "error": f"Invalid autonomy level: {level}. Valid levels: {[l.value for l in AutonomyLevel]}",
+                "error": f"Invalid autonomy level: {level}. Valid levels: {[level_item.value for level_item in AutonomyLevel]}",
             }
 
         previous_level = self.controller.current_autonomy_level
         self.controller.set_autonomy_level(autonomy_level)
 
         # Log audit entry
-        self._log_audit_entry({
-            "action": "set_autonomy_level",
-            "previous_level": previous_level.value,
-            "new_level": autonomy_level.value,
-            "reason": operator_reason,
-        })
+        self._log_audit_entry(
+            {
+                "action": "set_autonomy_level",
+                "previous_level": previous_level.value,
+                "new_level": autonomy_level.value,
+                "reason": operator_reason,
+            }
+        )
 
         return {
             "success": True,
@@ -129,12 +128,14 @@ class OperatorControlInterface:
         self.controller.reset_circuit_breaker(operator_reason)
         status_after = self.controller.get_autonomy_status().get("circuit_breaker", {})
 
-        self._log_audit_entry({
-            "action": "reset_circuit_breaker",
-            "previous_state": status_before,
-            "new_state": status_after,
-            "reason": operator_reason,
-        })
+        self._log_audit_entry(
+            {
+                "action": "reset_circuit_breaker",
+                "previous_state": status_before,
+                "new_state": status_after,
+                "reason": operator_reason,
+            }
+        )
 
         return {
             "success": True,
@@ -146,15 +147,19 @@ class OperatorControlInterface:
     def get_decision_history(self, limit: Optional[int] = None) -> Dict[str, Any]:
         """Get history of autonomous decisions."""
         decisions = self.engine.get_autonomous_decision_history(limit=limit)
-        
+
         return {
             "total_decisions": len(decisions),
             "decisions": decisions,
             "recent_summary": {
-                "last_10_autonomous": sum(1 for d in decisions[-10:] if not d.get("operator_override")),
+                "last_10_autonomous": sum(
+                    1 for d in decisions[-10:] if not d.get("operator_override")
+                ),
                 "last_10_overridden": sum(1 for d in decisions[-10:] if d.get("operator_override")),
-                "last_10_violations": sum(1 for d in decisions[-10:] if d.get("constraints_violated")),
-            }
+                "last_10_violations": sum(
+                    1 for d in decisions[-10:] if d.get("constraints_violated")
+                ),
+            },
         }
 
     def approve_decision(self, decision_id: str, operator_reason: str) -> Dict[str, Any]:
@@ -166,7 +171,7 @@ class OperatorControlInterface:
             if decision.decision_id == decision_id:
                 target_decision = decision
                 break
-        
+
         if not target_decision:
             return {
                 "success": False,
@@ -174,13 +179,15 @@ class OperatorControlInterface:
             }
 
         # Log approval
-        self._log_audit_entry({
-            "action": "approve_decision",
-            "decision_id": decision_id,
-            "decision_type": target_decision.decision_type,
-            "action_taken": target_decision.action_taken,
-            "reason": operator_reason,
-        })
+        self._log_audit_entry(
+            {
+                "action": "approve_decision",
+                "decision_id": decision_id,
+                "decision_type": target_decision.decision_type,
+                "action_taken": target_decision.action_taken,
+                "reason": operator_reason,
+            }
+        )
 
         return {
             "success": True,
@@ -199,7 +206,7 @@ class OperatorControlInterface:
             if decision.decision_id == decision_id:
                 target_decision = decision
                 break
-        
+
         if not target_decision:
             return {
                 "success": False,
@@ -207,13 +214,15 @@ class OperatorControlInterface:
             }
 
         # Log rejection
-        self._log_audit_entry({
-            "action": "reject_decision",
-            "decision_id": decision_id,
-            "decision_type": target_decision.decision_type,
-            "action_taken": target_decision.action_taken,
-            "reason": operator_reason,
-        })
+        self._log_audit_entry(
+            {
+                "action": "reject_decision",
+                "decision_id": decision_id,
+                "decision_type": target_decision.decision_type,
+                "action_taken": target_decision.action_taken,
+                "reason": operator_reason,
+            }
+        )
 
         return {
             "success": True,
@@ -232,7 +241,7 @@ class OperatorControlInterface:
     ) -> Dict[str, Any]:
         """Configure safety constraints for autonomous operations."""
         config = self.controller.config
-        
+
         changes = {}
         if max_hashrate_ehs is not None:
             changes["max_autonomous_hashrate_ehs"] = {
@@ -240,14 +249,14 @@ class OperatorControlInterface:
                 "new": max_hashrate_ehs,
             }
             config.max_autonomous_hashrate_ehs = max_hashrate_ehs
-        
+
         if max_power_watts is not None:
             changes["max_autonomous_power_watts"] = {
                 "previous": config.max_autonomous_power_watts,
                 "new": max_power_watts,
             }
             config.max_autonomous_power_watts = max_power_watts
-        
+
         if phi_coherence_threshold is not None:
             changes["phi_coherence_threshold"] = {
                 "previous": config.phi_coherence_threshold,
@@ -256,11 +265,13 @@ class OperatorControlInterface:
             config.phi_coherence_threshold = phi_coherence_threshold
 
         # Log configuration change
-        self._log_audit_entry({
-            "action": "configure_safety_constraints",
-            "changes": changes,
-            "reason": operator_reason,
-        })
+        self._log_audit_entry(
+            {
+                "action": "configure_safety_constraints",
+                "changes": changes,
+                "reason": operator_reason,
+            }
+        )
 
         return {
             "success": True,
@@ -290,19 +301,20 @@ class OperatorControlInterface:
             }
 
         # Log optimization trigger
-        self._log_audit_entry({
-            "action": "trigger_autonomous_optimization",
-            "optimization_type": optimization_type,
-            "target_value": target_value,
-            "result": result,
-        })
+        self._log_audit_entry(
+            {
+                "action": "trigger_autonomous_optimization",
+                "optimization_type": optimization_type,
+                "target_value": target_value,
+                "result": result,
+            }
+        )
 
         return {
             "success": True,
             "optimization_type": optimization_type,
             "result": result,
         }
-
 
     def reset_autonomous_circuit(
         self,
@@ -318,9 +330,7 @@ class OperatorControlInterface:
         """
         now = time.time()
         last_reset_at = self._last_manual_circuit_reset_at()
-        seconds_since_last_reset = (
-            None if last_reset_at is None else max(0.0, now - last_reset_at)
-        )
+        seconds_since_last_reset = None if last_reset_at is None else max(0.0, now - last_reset_at)
         manual_reset_within_cooldown = (
             seconds_since_last_reset is not None
             and cooldown_seconds > 0
@@ -377,7 +387,7 @@ def main():
     parser = argparse.ArgumentParser(
         description="PYTHIA Autonomous Mining Operator Control Interface"
     )
-    
+
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
 
     # Status command
@@ -385,12 +395,20 @@ def main():
 
     # Set autonomy level command
     level_parser = subparsers.add_parser("set-level", help="Set autonomy level")
-    level_parser.add_argument("level", help="Autonomy level (MANUAL, ADVISORY, SUPERVISED, AUTONOMOUS, EMERGENCY)")
-    level_parser.add_argument("--reason", default="operator_directive", help="Reason for level change")
+    level_parser.add_argument(
+        "level", help="Autonomy level (MANUAL, ADVISORY, SUPERVISED, AUTONOMOUS, EMERGENCY)"
+    )
+    level_parser.add_argument(
+        "--reason", default="operator_directive", help="Reason for level change"
+    )
 
     # Manual circuit-breaker reset command
-    reset_parser = subparsers.add_parser("reset-circuit", help="Manually reset the autonomy circuit breaker")
-    reset_parser.add_argument("--reason", required=True, help="Reason for manual circuit-breaker reset")
+    reset_parser = subparsers.add_parser(
+        "reset-circuit", help="Manually reset the autonomy circuit breaker"
+    )
+    reset_parser.add_argument(
+        "--reason", required=True, help="Reason for manual circuit-breaker reset"
+    )
 
     # Decision history command
     history_parser = subparsers.add_parser("history", help="Get autonomous decision history")
@@ -408,14 +426,22 @@ def main():
 
     # Configure safety constraints command
     config_parser = subparsers.add_parser("configure", help="Configure safety constraints")
-    config_parser.add_argument("--max-hashrate", type=float, help="Maximum autonomous hashrate (EH/s)")
+    config_parser.add_argument(
+        "--max-hashrate", type=float, help="Maximum autonomous hashrate (EH/s)"
+    )
     config_parser.add_argument("--max-power", type=float, help="Maximum power consumption (Watts)")
-    config_parser.add_argument("--phi-threshold", type=float, help="Minimum phi coherence threshold")
-    config_parser.add_argument("--reason", default="safety_configuration", help="Reason for configuration change")
+    config_parser.add_argument(
+        "--phi-threshold", type=float, help="Minimum phi coherence threshold"
+    )
+    config_parser.add_argument(
+        "--reason", default="safety_configuration", help="Reason for configuration change"
+    )
 
     # Trigger optimization command
     opt_parser = subparsers.add_parser("optimize", help="Trigger autonomous optimization")
-    opt_parser.add_argument("type", choices=["search_strategy", "hashrate"], help="Optimization type")
+    opt_parser.add_argument(
+        "type", choices=["search_strategy", "hashrate"], help="Optimization type"
+    )
     opt_parser.add_argument("--target", type=float, help="Target value for optimization")
 
     # Manual autonomous circuit reset command
@@ -434,7 +460,9 @@ def main():
 
     # Audit log command
     audit_parser = subparsers.add_parser("audit", help="Get operator audit log")
-    audit_parser.add_argument("--limit", type=int, default=50, help="Number of audit entries to show")
+    audit_parser.add_argument(
+        "--limit", type=int, default=50, help="Number of audit entries to show"
+    )
 
     args = parser.parse_args()
 
@@ -467,10 +495,12 @@ def main():
             operator_reason=args.reason,
         )
     elif args.command == "optimize":
-        result = asyncio.run(interface.trigger_autonomous_optimization(
-            args.type,
-            args.target,
-        ))
+        result = asyncio.run(
+            interface.trigger_autonomous_optimization(
+                args.type,
+                args.target,
+            )
+        )
     elif args.command == "reset-circuit":
         result = interface.reset_autonomous_circuit(
             operator_id=args.operator,

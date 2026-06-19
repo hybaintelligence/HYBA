@@ -271,7 +271,9 @@ async def analyze_blockchain(req: BlockchainAnalysisRequest) -> Dict[str, Any]:
 async def analyze_it_from_bit(req: ItFromBitRequest) -> Dict[str, Any]:
     """Parse bits into deterministic information metrics for claim-bounded audits."""
 
-    chunks = [req.bits[index : index + req.word_size] for index in range(0, len(req.bits), req.word_size)]
+    chunks = [
+        req.bits[index : index + req.word_size] for index in range(0, len(req.bits), req.word_size)
+    ]
     one_count = req.bits.count("1")
     zero_count = len(req.bits) - one_count
     transitions = sum(1 for left, right in zip(req.bits, req.bits[1:]) if left != right)

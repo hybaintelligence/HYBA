@@ -15,20 +15,18 @@ These tests do NOT claim SHA-256 quantum speedup.  They verify that the
 structured traversal ordering described in the README is implemented and
 behaves as documented.
 """
+
 from __future__ import annotations
 
 import asyncio
-import math
 import sys
 from pathlib import Path
 from typing import List, Optional
 
-import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "python_backend"))
 
-from pythia_mining.golden_ratio_library import PHI  # noqa: E402
 from pythia_mining.hendrix_phi_solver import (  # noqa: E402
     M32,
     cheap_phi_resonance,
@@ -44,6 +42,7 @@ from pythia_mining.stratum_client import MiningJob  # noqa: E402
 # ---------------------------------------------------------------------------
 # helpers
 # ---------------------------------------------------------------------------
+
 
 def _regtest_job() -> MiningJob:
     """Regtest job with target so large almost any nonce is valid."""
@@ -86,6 +85,7 @@ def _first_hit(ordered: List[int], valid: set) -> int:
 # 1. φ-ordering reaches first valid nonce in ≤ sequential rank on regtest
 # ---------------------------------------------------------------------------
 
+
 def test_phi_ordering_reaches_valid_nonce_no_later_than_sequential_on_regtest() -> None:
     """Claim: φ-guided ordering is never worse than sequential on a regtest job.
 
@@ -111,6 +111,7 @@ def test_phi_ordering_reaches_valid_nonce_no_later_than_sequential_on_regtest() 
 # ---------------------------------------------------------------------------
 # 2. φ-ordered search finds injected high-resonance nonce before sequential
 # ---------------------------------------------------------------------------
+
 
 def test_phi_ordering_finds_high_resonance_nonce_faster_than_sequential() -> None:
     """Claim: when a nonce with high φ-resonance is valid, φ-ordering finds it first.
@@ -146,6 +147,7 @@ def test_phi_ordering_finds_high_resonance_nonce_faster_than_sequential() -> Non
 # 3. φ-ordering covers every candidate (no drops)
 # ---------------------------------------------------------------------------
 
+
 def test_phi_ordering_is_a_complete_permutation() -> None:
     """Claim: φ-guided reordering is a permutation — no candidates are dropped."""
     candidates = list(range(0, 512))
@@ -157,6 +159,7 @@ def test_phi_ordering_is_a_complete_permutation() -> None:
 # ---------------------------------------------------------------------------
 # 4. Voronoi domain assignment is stable (same nonce → same domain)
 # ---------------------------------------------------------------------------
+
 
 def test_voronoi_domain_assignment_is_deterministic_over_uint32_range() -> None:
     """Claim: every nonce in a representative sample maps to a stable Voronoi domain."""
@@ -171,6 +174,7 @@ def test_voronoi_domain_assignment_is_deterministic_over_uint32_range() -> None:
 # ---------------------------------------------------------------------------
 # 5. Gradient proposal stays within uint32 bounds
 # ---------------------------------------------------------------------------
+
 
 def test_phi_gradient_proposal_stays_within_uint32_bounds() -> None:
     """Claim: every φ-gradient proposal is a valid uint32 nonce."""
@@ -188,8 +192,10 @@ def test_phi_gradient_proposal_stays_within_uint32_bounds() -> None:
 # 6. Solver respects configured nonce range during search
 # ---------------------------------------------------------------------------
 
+
 def test_solver_search_respects_configured_range() -> None:
     """Claim: DodecahedralQuantumSolver never returns a nonce outside its configured range."""
+
     async def _run() -> Optional[int]:
         solver = DodecahedralQuantumSolver()
         await solver.configure_search(target=0x1D00FFFF, nonce_ranges=[(500, 600)])
@@ -204,8 +210,10 @@ def test_solver_search_respects_configured_range() -> None:
 # 7. Search is deterministic for same (target, range)
 # ---------------------------------------------------------------------------
 
+
 def test_solver_search_is_deterministic_for_same_target_and_range() -> None:
     """Claim: same (target, range) input produces the same nonce candidate."""
+
     async def _run() -> Optional[int]:
         solver = DodecahedralQuantumSolver()
         await solver.configure_search(target=0x1D00FFFF, nonce_ranges=[(1024, 2047)])

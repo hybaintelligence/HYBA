@@ -142,12 +142,16 @@ def _check_chain_validity(prevhash: str, block_height: int) -> str:
         return "unverified"
 
 
-def bitcoin_job_timestamp_authority(job_context: Mapping[str, Any], *, unix_seconds: Optional[float] = None) -> TimestampAuthority:
+def bitcoin_job_timestamp_authority(
+    job_context: Mapping[str, Any], *, unix_seconds: Optional[float] = None
+) -> TimestampAuthority:
     """Build the minimum viable external timestamp anchor from Bitcoin job context."""
 
     job_id = str(job_context.get("job_id") or job_context.get("stratum_job_id") or "")
     prevhash = str(job_context.get("prevhash") or job_context.get("job_prevhash") or "")
-    block_height = job_context.get("bitcoin_block_height", job_context.get("block_height", job_context.get("height", 0)))
+    block_height = job_context.get(
+        "bitcoin_block_height", job_context.get("block_height", job_context.get("height", 0))
+    )
     try:
         height_int = int(block_height)
     except (TypeError, ValueError):
@@ -186,9 +190,13 @@ def derive_session_event_id(
     """Derive a deterministic join key for all artefacts in a candidate lifecycle."""
 
     job_id = str(job_context.get("job_id") or job_context.get("stratum_job_id") or "")
-    height = job_context.get("bitcoin_block_height", job_context.get("block_height", job_context.get("height", 0)))
+    height = job_context.get(
+        "bitcoin_block_height", job_context.get("block_height", job_context.get("height", 0))
+    )
     prevhash = str(job_context.get("prevhash") or job_context.get("job_prevhash") or "")
-    nonce = str(candidate.get("nonce", candidate.get("nonce_hex", candidate.get("candidate_nonce", ""))))
+    nonce = str(
+        candidate.get("nonce", candidate.get("nonce_hex", candidate.get("candidate_nonce", "")))
+    )
     candidate_id = str(candidate.get("candidate_id") or candidate.get("id") or "")
     payload = {
         "mission_id": mission_id,
@@ -243,7 +251,9 @@ def build_sealed_mining_evidence_bundle(
         timestamp_authority=timestamp.to_dict(),
         prior_bundle_hash=prior_bundle_hash,
     )
-    sealed = SealedMiningEvidenceBundle(**{**bundle.unsigned_payload(), "bundle_hash": stable_hash(bundle.unsigned_payload())})
+    sealed = SealedMiningEvidenceBundle(
+        **{**bundle.unsigned_payload(), "bundle_hash": stable_hash(bundle.unsigned_payload())}
+    )
     validate_sealed_mining_evidence_bundle(sealed.to_dict())
     return sealed
 
@@ -283,7 +293,12 @@ def validate_sealed_mining_evidence_bundle(bundle: Mapping[str, Any]) -> bool:
     session_event_id = str(bundle.get("session_event_id") or "")
     if not session_event_id:
         raise EvidenceSealError("missing_session_event_id")
-    for nested_key in ("verifier_result", "firewall_decision", "learning_correction", "pool_response"):
+    for nested_key in (
+        "verifier_result",
+        "firewall_decision",
+        "learning_correction",
+        "pool_response",
+    ):
         _validate_nested_session_event_id(bundle, nested_key, session_event_id)
 
     firewall = bundle.get("firewall_decision") or {}
@@ -301,7 +316,9 @@ def validate_sealed_mining_evidence_bundle(bundle: Mapping[str, Any]) -> bool:
     timestamp = bundle.get("timestamp_authority") or {}
     if timestamp.get("authority") != TIMESTAMP_AUTHORITY:
         raise EvidenceSealError("timestamp_authority_not_bitcoin_anchored")
-    if str(timestamp.get("stratum_job_id")) != str(job_context.get("job_id") or job_context.get("stratum_job_id") or ""):
+    if str(timestamp.get("stratum_job_id")) != str(
+        job_context.get("job_id") or job_context.get("stratum_job_id") or ""
+    ):
         raise EvidenceSealError("timestamp_job_id_anchor_mismatch")
     if int(timestamp.get("bitcoin_block_height") or 0) <= 0:
         raise EvidenceSealError("timestamp_missing_bitcoin_block_height")

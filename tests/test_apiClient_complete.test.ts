@@ -28,7 +28,9 @@ describe("frontend API command manifest", () => {
         idempotent: expect.any(Boolean),
         tested: true,
       });
-      expect(apiClient[entry.function as keyof typeof apiClient], entry.function).toEqual(expect.any(Function));
+      expect(apiClient[entry.function as keyof typeof apiClient], entry.function).toEqual(
+        expect.any(Function),
+      );
       const key = `${entry.method} ${entry.path}`;
       expect(keys.has(key), key).toBe(false);
       keys.add(key);
@@ -45,7 +47,9 @@ describe("frontend API command manifest", () => {
   });
 
   it("covers the destructive and autonomous commands called out in the production-readiness review", () => {
-    expect(entries.filter((entry) => entry.sideEffect === "destructive").map((entry) => entry.function)).toEqual(
+    expect(
+      entries.filter((entry) => entry.sideEffect === "destructive").map((entry) => entry.function),
+    ).toEqual(
       expect.arrayContaining([
         "deleteAdminUser",
         "disburseFunding",
@@ -58,8 +62,18 @@ describe("frontend API command manifest", () => {
         "migrateToHabitat",
       ]),
     );
-    expect(entries.filter((entry) => entry.sideEffect === "autonomous_control").map((entry) => entry.function)).toEqual(
-      expect.arrayContaining(["scaleIntelligence", "boostConsciousness", "intelligenceOrchestrate", "applyEvolution", "setMiningIntent"]),
+    expect(
+      entries
+        .filter((entry) => entry.sideEffect === "autonomous_control")
+        .map((entry) => entry.function),
+    ).toEqual(
+      expect.arrayContaining([
+        "scaleIntelligence",
+        "boostConsciousness",
+        "intelligenceOrchestrate",
+        "applyEvolution",
+        "setMiningIntent",
+      ]),
     );
   });
 });

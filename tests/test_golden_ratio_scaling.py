@@ -535,17 +535,17 @@ class TestComprehensiveComparison:
         """At 10^7 dynamic scale, PULVINI should lose to all ASICs."""
         results = comparison.compare_golden_ratio_scaling()
         for comp in results["10^7"]["asic_comparison"]:
-            assert (
-                comp["pulvini_beats_asic"] is False
-            ), f"{comp['asic']} should beat PULVINI at 10^7"
+            assert comp["pulvini_beats_asic"] is False, (
+                f"{comp['asic']} should beat PULVINI at 10^7"
+            )
 
     def test_golden_ratio_10_15_beats_all_asics(self, comparison: ComprehensiveComparison) -> None:
         """At 10^15 scale, PULVINI should beat all ASICs."""
         results = comparison.compare_golden_ratio_scaling()
         for comp in results["10^15"]["asic_comparison"]:
-            assert (
-                comp["pulvini_beats_asic"] is True
-            ), f"{comp['asic']} should lose to PULVINI at 10^15"
+            assert comp["pulvini_beats_asic"] is True, (
+                f"{comp['asic']} should lose to PULVINI at 10^15"
+            )
 
     def test_golden_ratio_10_18_beats_all_asics(self, comparison: ComprehensiveComparison) -> None:
         results = comparison.compare_golden_ratio_scaling()
@@ -574,9 +574,9 @@ class TestComprehensiveComparison:
             ]
         ]
         for i in range(1, len(effs)):
-            assert (
-                effs[i] < effs[i - 1]
-            ), f"Efficiency worsened at index {i}: {effs[i - 1]} → {effs[i]}"
+            assert effs[i] < effs[i - 1], (
+                f"Efficiency worsened at index {i}: {effs[i - 1]} → {effs[i]}"
+            )
 
     def test_report_generated(self, comparison: ComprehensiveComparison) -> None:
         report = comparison.generate_golden_ratio_report()
@@ -669,9 +669,9 @@ class TestPublishedResultsCrossValidation:
             comp_t = computed[scale]["effective_throughput_with_quantum_advantages"]
             # Allow small floating-point discrepancies
             ratio = comp_t / pub_t if pub_t != 0 else float("inf")
-            assert (
-                0.99 < ratio < 1.01
-            ), f"Throughput mismatch at {scale}: {comp_t} vs {pub_t} (ratio {ratio})"
+            assert 0.99 < ratio < 1.01, (
+                f"Throughput mismatch at {scale}: {comp_t} vs {pub_t} (ratio {ratio})"
+            )
 
     def test_asic_data_consistent(self, published: dict) -> None:
         pub_asics = published["asic_data"]
@@ -679,9 +679,9 @@ class TestPublishedResultsCrossValidation:
         for name in pub_asics:
             assert name in code_asics, f"{name} missing from code"
             for key in ["hashrate_ths", "power_w", "efficiency_j_th"]:
-                assert (
-                    pub_asics[name][key] == code_asics[name][key]
-                ), f"{name}.{key} mismatch: {pub_asics[name][key]} vs {code_asics[name][key]}"
+                assert pub_asics[name][key] == code_asics[name][key], (
+                    f"{name}.{key} mismatch: {pub_asics[name][key]} vs {code_asics[name][key]}"
+                )
 
     def test_quantum_advantages_consistent(self, published: dict) -> None:
         comparison = ComprehensiveComparison()
@@ -738,9 +738,9 @@ class TestPropertyBasedInvariants:
                 "b": {"score": 0.5 - variance},
             }
             result = engine.predict_with_phi_scaling(predictions, {})
-            assert (
-                0.0 <= result["coherence"] <= 1.0
-            ), f"Coherence out of bounds for variance {variance}"
+            assert 0.0 <= result["coherence"] <= 1.0, (
+                f"Coherence out of bounds for variance {variance}"
+            )
 
     def test_power_scaling_sub_linear(self) -> None:
         """Doubling the golden ratio scale should less-than-double the power (sub-linear)."""

@@ -8,7 +8,9 @@ test.describe("live stack smoke", () => {
     ).toBe("true");
     expect(baseURL, "PLAYWRIGHT_BASE_URL must point at the live or sandbox frontend").toBeTruthy();
     const response = await page.goto("/", { waitUntil: "domcontentloaded" });
-    expect(response?.ok(), `Expected ${baseURL} to return a successful document response`).toBe(true);
+    expect(response?.ok(), `Expected ${baseURL} to return a successful document response`).toBe(
+      true,
+    );
     await expect(page.getByRole("heading", { name: "Genesis Runtime Console" })).toBeVisible();
   });
 });

@@ -372,7 +372,7 @@ class TestObservabilityFramework(unittest.TestCase):
         framework = ObservabilityFramework()
         framework.record_metric("test", 1.0)
         framework.define_slo("test_slo", 0.95, timedelta(hours=1), 0.97)
-        
+
         # Create a trace to enable tracing
         trace = framework.start_trace("test_span", tags={"op": "test"})
         framework.end_trace(trace.span_id)
@@ -483,7 +483,7 @@ class TestIntegration(unittest.TestCase):
         psi = np.random.randn(dim) + 1j * np.random.randn(dim)
         psi = psi / np.linalg.norm(psi)
         rho = np.outer(psi, psi.conj())
-        cert = bures_variational_certificate(rho, entropy_gradient=0.3)
+        bures_variational_certificate(rho, entropy_gradient=0.3)
         structural = structural_certificate()
         # Both operate on 32-dimensional space
         self.assertEqual(rho.shape[0], structural.num_nodes)

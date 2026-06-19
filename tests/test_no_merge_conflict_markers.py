@@ -54,7 +54,10 @@ def test_repository_contains_no_merge_conflict_markers() -> None:
             continue
         for line in text.splitlines():
             stripped = line.strip()
-            if any(stripped.startswith(marker) for marker in MARKER_PREFIXES) or stripped == SEPARATOR_MARKER:
+            if (
+                any(stripped.startswith(marker) for marker in MARKER_PREFIXES)
+                or stripped == SEPARATOR_MARKER
+            ):
                 offenders.append(str(path.relative_to(ROOT)))
                 break
 

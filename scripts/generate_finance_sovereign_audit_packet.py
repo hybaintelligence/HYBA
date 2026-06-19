@@ -21,8 +21,14 @@ from pythia_mining.finance_sovereign_audit import generate_finance_sovereign_pac
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Generate a PYTHIA finance sovereign audit packet.")
-    parser.add_argument("--challenge", action="store_true", help="Emit the challenge packet that should be rejected before staging.")
+    parser = argparse.ArgumentParser(
+        description="Generate a PYTHIA finance sovereign audit packet."
+    )
+    parser.add_argument(
+        "--challenge",
+        action="store_true",
+        help="Emit the challenge packet that should be rejected before staging.",
+    )
     parser.add_argument("--output", type=Path, default=None, help="Optional JSON output path.")
     args = parser.parse_args()
 

@@ -54,7 +54,7 @@ def create_token(
     """Create a JWT token."""
     if secret is None:
         secret = get_jwt_secret()
-    
+
     now = datetime.now(timezone.utc)
     payload = {
         "sub": user_id,
@@ -65,7 +65,7 @@ def create_token(
         "iss": "genesis.hyba.ai",
         "jti": secrets.token_hex(16),
     }
-    
+
     token = jwt.encode(payload, secret, algorithm="HS256")
     return token, payload
 
@@ -74,7 +74,7 @@ def decode_token(token: str, secret: str = None):
     """Decode and verify a JWT token."""
     if secret is None:
         secret = get_jwt_secret()
-    
+
     try:
         payload = jwt.decode(token, secret, algorithms=["HS256"])
         return payload
@@ -90,9 +90,9 @@ def main():
     parser = argparse.ArgumentParser(
         description="HYBA JWT CLI Tool - Generate and test JWT authentication tokens"
     )
-    
+
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
-    
+
     # Generate token command
     gen_parser = subparsers.add_parser("generate", help="Generate a JWT token")
     gen_parser.add_argument("--user-id", default="operator", help="User ID (default: operator)")
@@ -101,59 +101,45 @@ def main():
         "--roles",
         nargs="+",
         default=["ceo", "mining_operator"],
-        help="Roles (default: ceo mining_operator)"
+        help="Roles (default: ceo mining_operator)",
     )
     gen_parser.add_argument(
-        "--expiry",
-        type=int,
-        default=24,
-        help="Token expiry in hours (default: 24)"
+        "--expiry", type=int, default=24, help="Token expiry in hours (default: 24)"
     )
     gen_parser.add_argument(
-        "--secret",
-        help="JWT secret (uses JWT_SECRET env var or dev secret if not provided)"
+        "--secret", help="JWT secret (uses JWT_SECRET env var or dev secret if not provided)"
     )
     gen_parser.add_argument(
         "--output",
         choices=["token", "json", "curl"],
         default="token",
-        help="Output format (default: token)"
+        help="Output format (default: token)",
     )
-    
+
     # Decode token command
     decode_parser = subparsers.add_parser("decode", help="Decode and verify a JWT token")
     decode_parser.add_argument("token", help="JWT token to decode")
     decode_parser.add_argument(
-        "--secret",
-        help="JWT secret (uses JWT_SECRET env var or dev secret if not provided)"
+        "--secret", help="JWT secret (uses JWT_SECRET env var or dev secret if not provided)"
     )
-    
+
     # Test authentication command
     test_parser = subparsers.add_parser("test", help="Test authentication with API endpoints")
     test_parser.add_argument("--base-url", default="http://localhost:3001", help="API base URL")
     test_parser.add_argument(
-        "--secret",
-        help="JWT secret (uses JWT_SECRET env var or dev secret if not provided)"
+        "--secret", help="JWT secret (uses JWT_SECRET env var or dev secret if not provided)"
     )
-    test_parser.add_argument(
-        "--user-id",
-        default="operator",
-        help="User ID (default: operator)"
-    )
-    test_parser.add_argument(
-        "--username",
-        default="operator",
-        help="Username (default: operator)"
-    )
+    test_parser.add_argument("--user-id", default="operator", help="User ID (default: operator)")
+    test_parser.add_argument("--username", default="operator", help="Username (default: operator)")
     test_parser.add_argument(
         "--roles",
         nargs="+",
         default=["ceo", "mining_operator"],
-        help="Roles (default: ceo mining_operator)"
+        help="Roles (default: ceo mining_operator)",
     )
-    
+
     args = parser.parse_args()
-    
+
     if args.command == "generate":
         secret = args.secret or get_jwt_secret()
         token, payload = create_token(
@@ -163,20 +149,22 @@ def main():
             expiry_hours=args.expiry,
             secret=secret,
         )
-        
+
         if args.output == "token":
             print(token)
         elif args.output == "json":
             print(json.dumps({"token": token, "payload": payload}, indent=2))
         elif args.output == "curl":
-            print(f"export HYBA_JWT_TOKEN=\"{token}\"")
-            print(f"# Use with: curl -H \"Authorization: Bearer $HYBA_JWT_TOKEN\" http://localhost:3001/api/health")
-    
+            print(f'export HYBA_JWT_TOKEN="{token}"')
+            print(
+                '# Use with: curl -H "Authorization: Bearer $HYBA_JWT_TOKEN" http://localhost:3001/api/health'
+            )
+
     elif args.command == "decode":
         secret = args.secret or get_jwt_secret()
         payload = decode_token(args.token, secret)
         print(json.dumps(payload, indent=2, default=str))
-    
+
     elif args.command == "test":
         secret = args.secret or get_jwt_secret()
         token, payload = create_token(
@@ -185,26 +173,29 @@ def main():
             roles=args.roles,
             secret=secret,
         )
-        
+
         print(f"Generated token for user: {args.username}")
         print(f"Roles: {', '.join(args.roles)}")
         print(f"\nToken: {token}")
-        print(f"\n--- Testing Authentication ---\n")
-        
+        print("\n--- Testing Authentication ---\n")
+
         # Test health endpoint
         import subprocess
+
         try:
             result = subprocess.run(
                 [
-                    "curl", "-s",
+                    "curl",
+                    "-s",
                     f"{args.base_url}/api/health",
-                    "-H", f"Authorization: Bearer {token}"
+                    "-H",
+                    f"Authorization: Bearer {token}",
                 ],
                 capture_output=True,
                 text=True,
-                timeout=5
+                timeout=5,
             )
-            
+
             if result.returncode == 0:
                 print("✅ Health endpoint authenticated successfully")
                 try:
@@ -220,12 +211,12 @@ def main():
             print("❌ curl command not found")
         except Exception as e:
             print(f"❌ Error: {e}")
-        
-        print(f"\n--- Curl Command for Manual Testing ---\n")
+
+        print("\n--- Curl Command for Manual Testing ---\n")
         print(f"curl -s {args.base_url}/api/health \\")
-        print(f"  -H \"Authorization: Bearer {token}\" \\")
-        print(f"  | jq")
-    
+        print(f'  -H "Authorization: Bearer {token}" \\')
+        print("  | jq")
+
     else:
         parser.print_help()
 

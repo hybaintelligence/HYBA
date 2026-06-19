@@ -19,7 +19,9 @@ def test_production_pool_credentials_are_required(monkeypatch: pytest.MonkeyPatc
         )
 
 
-def test_circuit_breaker_opens_after_threshold_and_blocks_requests(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_circuit_breaker_opens_after_threshold_and_blocks_requests(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     monkeypatch.setenv("NODE_ENV", "development")
     client = StratumClient(
         pool_url="stratum+tcp://pool.example:3333",
@@ -35,7 +37,9 @@ def test_circuit_breaker_opens_after_threshold_and_blocks_requests(monkeypatch: 
     assert client._circuit_breaker_allow_request() is False
 
 
-def test_circuit_breaker_half_open_after_timeout_then_closes_on_success(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_circuit_breaker_half_open_after_timeout_then_closes_on_success(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     monkeypatch.setenv("NODE_ENV", "development")
     client = StratumClient(
         pool_url="stratum+tcp://pool.example:3333",

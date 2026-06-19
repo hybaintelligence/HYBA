@@ -22,7 +22,10 @@ describe("mining bridge rate-limit contract", () => {
       rateLimit({
         windowMs: 60_000,
         max: 10,
-        message: { error: "too_many_requests", message: "Too many requests, please try again later." },
+        message: {
+          error: "too_many_requests",
+          message: "Too many requests, please try again later.",
+        },
         standardHeaders: true,
         legacyHeaders: false,
       }),

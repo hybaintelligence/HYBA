@@ -33,6 +33,7 @@ Hypothesis being tested (falsifiable):
   φ-tiled nonces will achieve mean_first_hit close to phi_sorted (≈78)
   at overhead ≤ 1.05x vs uniform random.
 """
+
 from __future__ import annotations
 
 import hashlib
@@ -40,14 +41,14 @@ import json
 import random
 import sys
 import time
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterator, List, Optional
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "python_backend"))
 
-from pythia_mining.golden_ratio_library import PHI, FIBONACCI
+from pythia_mining.golden_ratio_library import FIBONACCI
 from pythia_mining.hendrix_phi_solver import cheap_phi_resonance
 from pythia_mining.mining_validation import (
     build_block_header,
@@ -75,6 +76,7 @@ UINT32 = 2**32
 # ---------------------------------------------------------------------------
 # Generators
 # ---------------------------------------------------------------------------
+
 
 def phi_tiled(start: int = 0) -> Iterator[int]:
     """Infinite φ-tiled nonce sequence (Van der Corput in base φ).
@@ -126,6 +128,7 @@ def phi_resonance_filtered(
 # Fast SHA-256d inner loop
 # ---------------------------------------------------------------------------
 
+
 def _make_job(nbits: str, target: int) -> MiningJob:
     return MiningJob(
         job_id="phi-tile-bench",
@@ -157,6 +160,7 @@ def _valid(prefix: bytes, nonce: int, target: int) -> bool:
 # Strategy runners (all under identical iteration budget)
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class Result:
     name: str
@@ -169,8 +173,14 @@ class Result:
     notes: str = ""
 
 
-def _run(name: str, nonce_iter: Iterator[int], prefix: bytes,
-         target: int, iterations: int, notes: str = "") -> Result:
+def _run(
+    name: str,
+    nonce_iter: Iterator[int],
+    prefix: bytes,
+    target: int,
+    iterations: int,
+    notes: str = "",
+) -> Result:
     hits = 0
     first_hit: Optional[int] = None
     t0 = time.perf_counter()
@@ -201,27 +211,41 @@ def run_all(iterations: int, target: int, seed: int) -> List[Result]:
 
     results = [
         # Baseline
-        _run("uniform_random",
-             (rng.randint(0, UINT32 - 1) for _ in range(iterations)),
-             prefix, target, iterations),
-        _run("sequential",
-             iter(range(start, start + iterations)),
-             prefix, target, iterations),
+        _run(
+            "uniform_random",
+            (rng.randint(0, UINT32 - 1) for _ in range(iterations)),
+            prefix,
+            target,
+            iterations,
+        ),
+        _run("sequential", iter(range(start, start + iterations)), prefix, target, iterations),
         # New: φ-tiled — zero overhead, maximal coverage
-        _run("phi_tiled",
-             phi_tiled(start),
-             prefix, target, iterations,
-             notes="Van der Corput base-phi, stride=2654435769"),
+        _run(
+            "phi_tiled",
+            phi_tiled(start),
+            prefix,
+            target,
+            iterations,
+            notes="Van der Corput base-phi, stride=2654435769",
+        ),
         # New: Fibonacci-stride tiling (coarser, multi-scale)
-        _run("fibonacci_tiled",
-             fibonacci_tiled(start, fib_index=16),
-             prefix, target, iterations,
-             notes=f"Fibonacci stride={_FIB_STRIDES[16]}"),
+        _run(
+            "fibonacci_tiled",
+            fibonacci_tiled(start, fib_index=16),
+            prefix,
+            target,
+            iterations,
+            notes=f"Fibonacci stride={_FIB_STRIDES[16]}",
+        ),
         # New: φ-tiled + resonance pre-filter (pays resonance check, skips ~80%)
-        _run("phi_tiled_filtered",
-             phi_resonance_filtered(threshold=0.6, start=start),
-             prefix, target, iterations,
-             notes="phi_tiled with cheap_phi_resonance>0.6 gate"),
+        _run(
+            "phi_tiled_filtered",
+            phi_resonance_filtered(threshold=0.6, start=start),
+            prefix,
+            target,
+            iterations,
+            notes="phi_tiled with cheap_phi_resonance>0.6 gate",
+        ),
     ]
 
     # Compute overhead ratios
@@ -236,12 +260,12 @@ def run_all(iterations: int, target: int, seed: int) -> List[Result]:
 # Multi-trial runner + reporting
 # ---------------------------------------------------------------------------
 
+
 def _mean(vals: List[float]) -> float:
     return sum(vals) / len(vals) if vals else 0.0
 
 
-def run_benchmark(iterations: int = 50_000, trials: int = 5,
-                  base_seed: int = 42) -> dict:
+def run_benchmark(iterations: int = 50_000, trials: int = 5, base_seed: int = 42) -> dict:
     # ~1/256 hit probability per nonce
     target = int("00" + "ff" * 31, 16)
 
@@ -250,43 +274,54 @@ def run_benchmark(iterations: int = 50_000, trials: int = 5,
         results = run_all(iterations, target, seed=base_seed + t)
         all_trials.append(results)
         row = "  ".join(
-            f"{r.name}={r.hits}hits@{r.hashes_per_second/1000:.0f}kH/s"
-            for r in results
+            f"{r.name}={r.hits}hits@{r.hashes_per_second / 1000:.0f}kH/s" for r in results
         )
-        print(f"  Trial {t+1}/{trials}: {row}")
+        print(f"  Trial {t + 1}/{trials}: {row}")
 
     # Aggregate
     names = [r.name for r in all_trials[0]]
     agg = {}
     for name in names:
         hits = [r.hits for trial in all_trials for r in trial if r.name == name]
-        hps  = [r.hashes_per_second for trial in all_trials for r in trial if r.name == name]
+        hps = [r.hashes_per_second for trial in all_trials for r in trial if r.name == name]
         ovhd = [r.overhead_ratio for trial in all_trials for r in trial if r.name == name]
-        fhi  = [r.first_hit_iteration for trial in all_trials for r in trial
-                if r.name == name and r.first_hit_iteration is not None]
+        fhi = [
+            r.first_hit_iteration
+            for trial in all_trials
+            for r in trial
+            if r.name == name and r.first_hit_iteration is not None
+        ]
         agg[name] = {
-            "mean_hits":           _mean(hits),
-            "mean_khs":            _mean(hps) / 1000,
-            "mean_overhead":       _mean(ovhd),
-            "mean_first_hit":      _mean(fhi) if fhi else None,
-            "trials_with_hit":     len(fhi),
+            "mean_hits": _mean(hits),
+            "mean_khs": _mean(hps) / 1000,
+            "mean_overhead": _mean(ovhd),
+            "mean_first_hit": _mean(fhi) if fhi else None,
+            "trials_with_hit": len(fhi),
         }
 
-    return {"aggregate": agg, "target_hex": f"{target:064x}",
-            "iterations": iterations, "trials": trials}
+    return {
+        "aggregate": agg,
+        "target_hex": f"{target:064x}",
+        "iterations": iterations,
+        "trials": trials,
+    }
 
 
 def print_table(agg: dict) -> None:
     base_fh = agg["uniform_random"]["mean_first_hit"] or 1.0
-    print(f"\n{'Strategy':<22} {'MeanHits':>9} {'kH/s':>8} {'Overhead':>9} "
-          f"{'FirstHit':>9} {'FH vs random':>13}")
+    print(
+        f"\n{'Strategy':<22} {'MeanHits':>9} {'kH/s':>8} {'Overhead':>9} "
+        f"{'FirstHit':>9} {'FH vs random':>13}"
+    )
     print("-" * 76)
     for name, s in agg.items():
         fh = s["mean_first_hit"]
         fh_str = f"{fh:.0f}" if fh else "none"
-        ratio_str = f"{fh/base_fh:.2f}x" if fh else "—"
-        print(f"{name:<22} {s['mean_hits']:>9.1f} {s['mean_khs']:>8.0f} "
-              f"{s['mean_overhead']:>8.2f}x {fh_str:>9} {ratio_str:>13}")
+        ratio_str = f"{fh / base_fh:.2f}x" if fh else "—"
+        print(
+            f"{name:<22} {s['mean_hits']:>9.1f} {s['mean_khs']:>8.0f} "
+            f"{s['mean_overhead']:>8.2f}x {fh_str:>9} {ratio_str:>13}"
+        )
 
 
 def verdict(agg: dict) -> str:
@@ -298,31 +333,30 @@ def verdict(agg: dict) -> str:
         ovhd = s["mean_overhead"]
         if fh and fh < base_fh * 0.95 and ovhd <= 1.05:
             lines.append(
-                f"✅ {name}: first_hit={fh:.0f} ({base_fh/fh:.2f}x faster), "
+                f"✅ {name}: first_hit={fh:.0f} ({base_fh / fh:.2f}x faster), "
                 f"overhead={ovhd:.2f}x  — NULL HYPOTHESIS REJECTED"
             )
         elif fh and fh < base_fh * 0.95:
             lines.append(
-                f"⚠️  {name}: first_hit advantage {base_fh/fh:.2f}x BUT overhead={ovhd:.2f}x "
+                f"⚠️  {name}: first_hit advantage {base_fh / fh:.2f}x BUT overhead={ovhd:.2f}x "
                 f"— structure is real, cost not yet eliminated"
             )
         else:
-            lines.append(
-                f"❌ {name}: no significant first_hit advantage (null hypothesis stands)"
-            )
+            lines.append(f"❌ {name}: no significant first_hit advantage (null hypothesis stands)")
     return "\n".join(lines)
 
 
 if __name__ == "__main__":
     import argparse
+
     p = argparse.ArgumentParser()
     p.add_argument("--iterations", type=int, default=50_000)
-    p.add_argument("--trials",     type=int, default=5)
-    p.add_argument("--seed",       type=int, default=42)
+    p.add_argument("--trials", type=int, default=5)
+    p.add_argument("--seed", type=int, default=42)
     args = p.parse_args()
 
     print(f"φ-tiling benchmark: {args.iterations:,} iterations × {args.trials} trials")
-    print(f"Hypothesis: phi_tiled overhead ≤ 1.05x AND first_hit < random\n")
+    print("Hypothesis: phi_tiled overhead ≤ 1.05x AND first_hit < random\n")
 
     result = run_benchmark(args.iterations, args.trials, args.seed)
     agg = result["aggregate"]

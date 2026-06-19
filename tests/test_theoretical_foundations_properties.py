@@ -10,16 +10,12 @@ import numpy as np
 
 from pythia_mining.penrose_objective_reduction import (
     ObjectiveReductionEngine,
-    ObjectiveReductionEvent,
 )
 from pythia_mining.deutsch_knowledge_substrate import (
     KnowledgeSubstrate,
-    Explanation,
-    CounterfactualModel,
 )
 from pythia_mining.du_sautoy_symmetry import (
     SymmetryExploitationEngine,
-    OrbitStructure,
 )
 from pythia_mining.pulvini_group import compute_graph_automorphisms
 from pythia_mining.pulvini_topology import ADJACENCY_MAP
@@ -98,7 +94,9 @@ class TestDeutschKnowledgeProperties(unittest.TestCase):
     """Property tests for Deutsch knowledge substrate"""
 
     @given(
-        strategy_id=st.text(min_size=1, max_size=20, alphabet=st.characters(whitelist_categories=("Lu", "Ll"))),
+        strategy_id=st.text(
+            min_size=1, max_size=20, alphabet=st.characters(whitelist_categories=("Lu", "Ll"))
+        ),
         difficulty=st.floats(min_value=1e10, max_value=1e20),
         accepted=st.booleans(),
     )
@@ -107,9 +105,7 @@ class TestDeutschKnowledgeProperties(unittest.TestCase):
         """Property: knowledge accumulates monotonically"""
         substrate = KnowledgeSubstrate()
 
-        initial_count = sum(
-            len(exps) for exps in substrate.explanations.values()
-        )
+        initial_count = sum(len(exps) for exps in substrate.explanations.values())
 
         context = {"difficulty": difficulty, "thermal_load": 0.5}
         outcome = {"accepted": accepted}
@@ -126,7 +122,9 @@ class TestDeutschKnowledgeProperties(unittest.TestCase):
 
     @given(
         strategies=st.lists(
-            st.text(min_size=1, max_size=10, alphabet=st.characters(whitelist_categories=("Lu", "Ll"))),
+            st.text(
+                min_size=1, max_size=10, alphabet=st.characters(whitelist_categories=("Lu", "Ll"))
+            ),
             min_size=2,
             max_size=5,
             unique=True,
@@ -163,9 +161,7 @@ class TestDeutschKnowledgeProperties(unittest.TestCase):
         num_failures=st.integers(min_value=0, max_value=5),
     )
     @settings(deadline=None, max_examples=30)
-    def test_explanation_accuracy_improves_with_data(
-        self, num_successes, num_failures
-    ):
+    def test_explanation_accuracy_improves_with_data(self, num_successes, num_failures):
         """Property: explanations should improve with more data"""
         substrate = KnowledgeSubstrate()
         strategy_id = "test_strategy"
@@ -173,15 +169,11 @@ class TestDeutschKnowledgeProperties(unittest.TestCase):
 
         # Add successes
         for _ in range(num_successes):
-            substrate.create_knowledge_from_success(
-                strategy_id, context, {"accepted": True}
-            )
+            substrate.create_knowledge_from_success(strategy_id, context, {"accepted": True})
 
         # Add failures
         for _ in range(num_failures):
-            substrate.create_knowledge_from_failure(
-                strategy_id, context, {"accepted": False}
-            )
+            substrate.create_knowledge_from_failure(strategy_id, context, {"accepted": False})
 
         # Check explanations exist and have reasonable accuracy
         if strategy_id in substrate.explanations:
@@ -189,7 +181,7 @@ class TestDeutschKnowledgeProperties(unittest.TestCase):
                 # Accuracy should be in [0, 1]
                 self.assertGreaterEqual(explanation.predictive_accuracy, 0.0)
                 self.assertLessEqual(explanation.predictive_accuracy, 1.0)
-                
+
                 # More data = more tests
                 expected_min_tests = min(num_successes + num_failures, 1)
                 self.assertGreaterEqual(explanation.times_tested, expected_min_tests)
@@ -228,9 +220,7 @@ class TestDuSautoySymmetryProperties(unittest.TestCase):
         for i, orbit_i in enumerate(engine.orbits):
             for j, orbit_j in enumerate(engine.orbits):
                 if i != j:
-                    intersection = set(orbit_i.orbit_members) & set(
-                        orbit_j.orbit_members
-                    )
+                    intersection = set(orbit_i.orbit_members) & set(orbit_j.orbit_members)
                     self.assertEqual(len(intersection), 0)
 
     def test_orbit_stabilizer_theorem(self):
@@ -349,7 +339,7 @@ class TestIntegrationProperties(unittest.TestCase):
     def test_penrose_or_with_symmetry_preserved(self):
         """Integration: OR should preserve symmetry structure"""
         or_engine = ObjectiveReductionEngine(enable_true_or=False)
-        symmetry = SymmetryExploitationEngine(self.automorphisms)
+        SymmetryExploitationEngine(self.automorphisms)
 
         # Create density matrix respecting symmetry
         dim = 32

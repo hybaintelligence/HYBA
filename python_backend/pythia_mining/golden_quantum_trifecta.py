@@ -30,7 +30,7 @@ from typing import Any, Dict, List
 
 PHI = (1.0 + math.sqrt(5.0)) / 2.0
 PHI_INV = PHI - 1.0
-PHI_INV_2 = PHI ** -2
+PHI_INV_2 = PHI**-2
 
 
 class TrifectaPillar(str, Enum):
@@ -96,7 +96,7 @@ def bounded_mps_parameter_upper_bound(
         raise ValueError("physical_dimension must be positive")
     if max_bond_dimension <= 0:
         raise ValueError("max_bond_dimension must be positive")
-    return qubit_formalism_sites * physical_dimension * (max_bond_dimension ** 2)
+    return qubit_formalism_sites * physical_dimension * (max_bond_dimension**2)
 
 
 def build_golden_quantum_trifecta_certificate(
@@ -190,7 +190,9 @@ def assert_golden_quantum_trifecta_integrity(
     if missing:
         raise AssertionError(f"Missing Golden Quantum Trifecta pillars: {sorted(missing)}")
     if certificate.qubit_formalism_sites < 1000:
-        raise AssertionError("HYBA Golden Quantum Trifecta certificate must preserve the 1000-site surface")
+        raise AssertionError(
+            "HYBA Golden Quantum Trifecta certificate must preserve the 1000-site surface"
+        )
     if certificate.hardware_required_for_quantum_mathematics:
         raise AssertionError("Quantum mathematics must remain substrate/hardware agnostic")
     if not certificate.avoided_full_state_materialisation:

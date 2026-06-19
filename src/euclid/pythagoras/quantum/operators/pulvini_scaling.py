@@ -74,7 +74,9 @@ class PulviniOperator:
         kernel = INV_PHI_SQUARED * x_n1 - INV_PHI * x_n2_padded
         return folded, kernel
 
-    def unfold(self, folded_tensor: np.ndarray, projection_kernel: np.ndarray, original_dim: int) -> np.ndarray:
+    def unfold(
+        self, folded_tensor: np.ndarray, projection_kernel: np.ndarray, original_dim: int
+    ) -> np.ndarray:
         if original_dim < 0:
             raise ValueError("original_dim must be non-negative")
         if original_dim <= 1:
@@ -106,7 +108,9 @@ class PulviniOperator:
             deterministic_work_rate=self.deterministic_work_rate(vector.size, folded.size),
         )
 
-    def hamiltonian_reduction(self, hamiltonian: np.ndarray) -> tuple[np.ndarray, PulviniAuditEnvelope]:
+    def hamiltonian_reduction(
+        self, hamiltonian: np.ndarray
+    ) -> tuple[np.ndarray, PulviniAuditEnvelope]:
         h = np.asarray(hamiltonian, dtype=np.complex128)
         if h.ndim != 2 or h.shape[0] != h.shape[1]:
             raise ValueError("hamiltonian must be a square matrix")
@@ -127,7 +131,10 @@ class PulviniOperator:
         gap_orig = float(eig_orig[1] - eig_orig[0]) if eig_orig.size > 1 else 0.0
         gap_red = float(eig_red[1] - eig_red[0]) if eig_red.size > 1 else 0.0
         gap_delta = abs(gap_orig - gap_red)
-        reconstruction_error = float(np.linalg.norm(h - v @ reduced @ v.conj().T, ord="fro") / max(1.0, np.linalg.norm(h, ord="fro")))
+        reconstruction_error = float(
+            np.linalg.norm(h - v @ reduced @ v.conj().T, ord="fro")
+            / max(1.0, np.linalg.norm(h, ord="fro"))
+        )
         return reduced, PulviniAuditEnvelope(
             original_dimension=int(dim),
             folded_dimension=int(dim_n1),

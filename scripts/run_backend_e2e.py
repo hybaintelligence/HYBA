@@ -207,7 +207,9 @@ def validate_endpoint(path: str, payload: dict[str, Any]) -> list[str]:
                 # This is a valid degraded response, not a failure
                 pass
             else:
-                failures.append("prediction response did not return success=true or valid degraded state")
+                failures.append(
+                    "prediction response did not return success=true or valid degraded state"
+                )
         else:
             failures.append("prediction response did not return success=true")
     return failures

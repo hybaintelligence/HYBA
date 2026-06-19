@@ -25,10 +25,10 @@ import json
 from dataclasses import asdict, dataclass, field
 from enum import Enum
 from math import log10
-from typing import Any, Dict, List, Mapping, Sequence
+from typing import Any, Dict, List
 
 
-PHI = (1.0 + 5.0 ** 0.5) / 2.0
+PHI = (1.0 + 5.0**0.5) / 2.0
 PHI_INV = PHI - 1.0
 NONCE_SPACE = 1 << 32
 RETARGET_EPOCH = 2016
@@ -345,7 +345,9 @@ def evaluate_mining_preflight(
     if not preflight.cap.allows_search():
         blocked.append(preflight.cap.reason())
 
-    decision = MiningLaunchDecision.GUARDED_SEARCH_READY if not blocked else MiningLaunchDecision.BLOCKED
+    decision = (
+        MiningLaunchDecision.GUARDED_SEARCH_READY if not blocked else MiningLaunchDecision.BLOCKED
+    )
     return MiningGuardrailReport(
         decision=decision,
         blocked_reasons=blocked,

@@ -158,10 +158,20 @@ def measure_point(name: str, history: List[np.ndarray], *, connectivity: str) ->
 def build_packet() -> Dict[str, Any]:
     histories = deterministic_histories()
     points = [
-        measure_point("disconnected_ablation", histories["balanced_stable"], connectivity="disconnected"),
-        measure_point("weak_connectivity_control", histories["balanced_stable"], connectivity="weak"),
-        measure_point("ring_integration_control", histories["concentrated_then_balanced"], connectivity="ring"),
-        measure_point("strong_integration_candidate", histories["concentrated_then_balanced"], connectivity="strong"),
+        measure_point(
+            "disconnected_ablation", histories["balanced_stable"], connectivity="disconnected"
+        ),
+        measure_point(
+            "weak_connectivity_control", histories["balanced_stable"], connectivity="weak"
+        ),
+        measure_point(
+            "ring_integration_control", histories["concentrated_then_balanced"], connectivity="ring"
+        ),
+        measure_point(
+            "strong_integration_candidate",
+            histories["concentrated_then_balanced"],
+            connectivity="strong",
+        ),
         measure_point("fragmented_control", histories["fragmented_control"], connectivity="weak"),
     ]
     by_name = {point.name: point.to_dict() for point in points}

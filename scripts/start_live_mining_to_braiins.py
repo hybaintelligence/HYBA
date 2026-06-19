@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 """Start live mining to Braiins pool."""
+
 import sys
 import os
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'python_backend'))
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "python_backend"))
 
 # Connect to pool and start mining
 import requests
@@ -12,10 +14,7 @@ import time
 BASE_URL = "http://127.0.0.1:3001"
 TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJvcGVyYXRvci1saXZlLXRlc3QiLCJyb2xlIjoibWluaW5nOm9wZXJhdGUiLCJpYXQiOjE3ODE2MjQzMzksImV4cCI6MTc4MTYyNzkzOX0.MxRnXcFGDR6IyvyZqQMYQaP65_nbaqL-I-pX4V0_Su8"
 
-headers = {
-    "Authorization": f"Bearer {TOKEN}",
-    "Content-Type": "application/json"
-}
+headers = {"Authorization": f"Bearer {TOKEN}", "Content-Type": "application/json"}
 
 print("=" * 60)
 print("STARTING LIVE MINING TO BRAIINS")
@@ -23,14 +22,12 @@ print("=" * 60)
 
 # Step 1: Connect to Braiins pool
 print("\n1. Connecting to Braiins pool...")
-connect_data = {
-    "pool_id": "braiins",
-    "capacity_ehs": 1.0,
-    "switch": True
-}
+connect_data = {"pool_id": "braiins", "capacity_ehs": 1.0, "switch": True}
 
 try:
-    response = requests.post(f"{BASE_URL}/api/mining/connect", json=connect_data, headers=headers, timeout=5)
+    response = requests.post(
+        f"{BASE_URL}/api/mining/connect", json=connect_data, headers=headers, timeout=5
+    )
     print(f"   Status: {response.status_code}")
     result = response.json()
     print(f"   Pool: {result.get('pool', 'unknown')}")
@@ -69,10 +66,10 @@ try:
     response = requests.get(f"{BASE_URL}/api/mining/pools", headers=headers, timeout=5)
     print(f"   Status: {response.status_code}")
     result = response.json()
-    summary = result.get('summary', {})
+    summary = result.get("summary", {})
     print(f"   Active pool: {summary.get('active_pool_name')}")
     print(f"   Total shares (24h): {summary.get('total_shares_24h', 0)}")
-    print(f"   Global acceptance rate: {summary.get('global_acceptance_rate', 0)*100:.1f}%")
+    print(f"   Global acceptance rate: {summary.get('global_acceptance_rate', 0) * 100:.1f}%")
 except Exception as e:
     print(f"   Error: {e}")
 

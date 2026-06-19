@@ -12,13 +12,8 @@ import pytest
 from pythia_mining.pythia_one_block_mission import (
     MAX_AUTONOMOUS_HASHRATE_EHS,
     MISSION_PROTOCOL,
-    MissionMemory,
     MissionStatus,
-    MissionTarget,
-    PoolSelectionPolicy,
-    QuantumDoctrine,
     ShareOutcome,
-    SupremeInvariants,
     seed_mission_memory,
     validate_mission_memory,
 )

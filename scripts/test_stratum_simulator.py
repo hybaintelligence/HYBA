@@ -31,7 +31,6 @@ import asyncio
 import json
 import logging
 import random
-import sys
 import time
 from typing import Any, Dict, Optional
 
@@ -68,13 +67,13 @@ class TestStratumSimulator:
                     line = await asyncio.wait_for(reader.readline(), timeout=30.0)
                     if not line:
                         break
-                    
+
                     message = line.decode().strip()
                     if not message:
                         continue
-                    
+
                     logger.info("Received: %s", message[:200])  # Truncate long messages
-                    
+
                     try:
                         request = json.loads(message)
                         response = await self.handle_message(request)
@@ -84,14 +83,14 @@ class TestStratumSimulator:
                             logger.info("Sent: %s", json.dumps(response)[:200])
                     except json.JSONDecodeError as e:
                         logger.error("JSON decode error: %s", e)
-                    except Exception as e:
+                    except Exception:
                         logger.exception("Error handling message: %s")
-                        
+
                 except asyncio.TimeoutError:
                     # Send a keep-alive notify
                     await self.send_notify(writer)
-                    
-        except Exception as e:
+
+        except Exception:
             logger.exception("Client handler error: %s")
         finally:
             logger.info("Client disconnected: %s", addr)
@@ -110,59 +109,54 @@ class TestStratumSimulator:
             return {
                 "id": msg_id,
                 "result": [[], self.extranonce1, self.extranonce2_size],
-                "error": None
+                "error": None,
             }
-        
+
         elif method == "mining.authorize":
             username = params[0] if len(params) > 0 else "unknown"
             logger.info("Authorizing worker: %s", username)
-            return {
-                "id": msg_id,
-                "result": True,
-                "error": None
-            }
-        
+            return {"id": msg_id, "result": True, "error": None}
+
         elif method == "mining.submit":
             # Simple validation: accept shares with nonce ending in even hex digit
             worker = params[0] if len(params) > 0 else "unknown"
             job_id = params[1] if len(params) > 1 else "unknown"
             nonce = params[2] if len(params) > 2 else "00000000"
-            
+
             # Accept 50% of shares randomly for testing
             accepted = random.random() < 0.5
-            
-            logger.info("Share from %s job=%s nonce=%s accepted=%s", 
-                       worker, job_id, nonce, accepted)
-            
+
+            logger.info(
+                "Share from %s job=%s nonce=%s accepted=%s", worker, job_id, nonce, accepted
+            )
+
             return {
                 "id": msg_id,
                 "result": accepted,
-                "error": None if accepted else "21:Job not found"
+                "error": None if accepted else "21:Job not found",
             }
-        
+
         else:
             logger.warning("Unknown method: %s", method)
-            return {
-                "id": msg_id,
-                "result": None,
-                "error": f"Unknown method: {method}"
-            }
+            return {"id": msg_id, "result": None, "error": f"Unknown method: {method}"}
 
     async def send_notify(self, writer: asyncio.StreamWriter):
         """Send a mining.notify message with a new job."""
         self.job_counter += 1
         job_id = f"test_job_{self.job_counter}"
-        
+
         # Generate fake job parameters
         prev_hash = "00" * 32  # All zeros for testing
-        coinb1 = "01000000010000000000000000000000000000000000000000000000000000000000000000ffffffff"
+        coinb1 = (
+            "01000000010000000000000000000000000000000000000000000000000000000000000000ffffffff"
+        )
         coinb2 = "ffffffff01"
         merkle_branch = []
         version = "00000001"
         nbits = "1d00ffff"  # Difficulty 1
         ntime = hex(int(time.time()))[2:].zfill(8)
         clean_jobs = True
-        
+
         notify = {
             "id": None,
             "method": "mining.notify",
@@ -175,10 +169,10 @@ class TestStratumSimulator:
                 version,
                 nbits,
                 ntime,
-                clean_jobs
-            ]
+                clean_jobs,
+            ],
         }
-        
+
         writer.write((json.dumps(notify) + "\n").encode())
         await writer.drain()
         logger.info("Sent job: %s", job_id)
@@ -186,11 +180,7 @@ class TestStratumSimulator:
     async def send_set_difficulty(self, writer: asyncio.StreamWriter, difficulty: float):
         """Send a mining.set_difficulty message."""
         self.difficulty = difficulty
-        message = {
-            "id": None,
-            "method": "mining.set_difficulty",
-            "params": [difficulty]
-        }
+        message = {"id": None, "method": "mining.set_difficulty", "params": [difficulty]}
         writer.write((json.dumps(message) + "\n").encode())
         await writer.drain()
         logger.info("Set difficulty: %.2f", difficulty)
@@ -199,7 +189,7 @@ class TestStratumSimulator:
         """Periodically send new jobs to all connected clients."""
         while self.running:
             await asyncio.sleep(30)  # New job every 30 seconds
-            
+
             for writer in list(self.clients.values()):
                 try:
                     if not writer.is_closing():
@@ -208,18 +198,14 @@ class TestStratumSimulator:
                         if random.random() < 0.1:
                             new_diff = round(random.uniform(0.5, 2.0), 2)
                             await self.send_set_difficulty(writer, new_diff)
-                except Exception as e:
+                except Exception:
                     logger.exception("Error broadcasting to client")
 
     async def start(self):
         """Start the Stratum simulator server."""
         self.running = True
-        server = await asyncio.start_server(
-            self.handle_client,
-            self.host,
-            self.port
-        )
-        
+        server = await asyncio.start_server(self.handle_client, self.host, self.port)
+
         logger.info("=" * 72)
         logger.info("TEST-ONLY Stratum Pool Simulator Started")
         logger.info("Listening on: %s:%d", self.host, self.port)
@@ -233,7 +219,7 @@ class TestStratumSimulator:
         async with server:
             # Start job broadcaster
             broadcaster = asyncio.create_task(self.broadcast_jobs())
-            
+
             try:
                 await server.serve_forever()
             except asyncio.CancelledError:
@@ -254,7 +240,7 @@ async def main():
     args = parser.parse_args()
 
     simulator = TestStratumSimulator(args.host, args.port)
-    
+
     try:
         await simulator.start()
     except KeyboardInterrupt:

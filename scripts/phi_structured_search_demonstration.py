@@ -30,13 +30,12 @@ import time
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List
 
 # Import HENDRIX-Φ solver primitives
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "python_backend"))
 from pythia_mining.hendrix_phi_solver import (
     M32,
-    embed_nonce,
     voronoi_domain,
     phi_resonance,
     cheap_phi_resonance,
@@ -47,9 +46,7 @@ from pythia_mining.hendrix_phi_solver import (
 )
 from pythia_mining.golden_ratio_library import (
     PHI,
-    PHI_INV,
     FIBONACCI,
-    normalize,
 )
 
 
@@ -206,9 +203,7 @@ def analyze_strategy(name: str, steps: List[SearchStep]) -> StrategyComparison:
     for d in domains:
         domain_counts[d] = domain_counts.get(d, 0) + 1
     total = sum(domain_counts.values())
-    entropy = -sum(
-        (c / total) * math.log2(c / total) for c in domain_counts.values() if c > 0
-    )
+    entropy = -sum((c / total) * math.log2(c / total) for c in domain_counts.values() if c > 0)
 
     # Top 10% phi resonance
     sorted_phi = sorted(phi_scores, reverse=True)
@@ -281,9 +276,7 @@ def print_comparison(results: List[StrategyComparison]) -> None:
             else 0
         )
         ym_reduction = (
-            (baseline.mean_ym_action - hendrix.mean_ym_action)
-            / baseline.mean_ym_action
-            * 100
+            (baseline.mean_ym_action - hendrix.mean_ym_action) / baseline.mean_ym_action * 100
             if baseline.mean_ym_action > 0
             else 0
         )
@@ -297,15 +290,19 @@ def print_comparison(results: List[StrategyComparison]) -> None:
         print(f"    Phi resonance increase : {phi_gain:+.2f}%")
         print(f"    Top-10% Φ increase    : {top_gain:+.2f}%")
         print(f"    Yang-Mills reduction   : {ym_reduction:+.2f}% (lower = more gated)")
-        print(f"    Gate pass rate         : {hendrix.ym_gate_pass_rate:.1%} vs {baseline.ym_gate_pass_rate:.1%}")
-        print(f"    Domain coverage        : {hendrix.domain_coverage}/32 vs {baseline.domain_coverage}/32")
+        print(
+            f"    Gate pass rate         : {hendrix.ym_gate_pass_rate:.1%} vs {baseline.ym_gate_pass_rate:.1%}"
+        )
+        print(
+            f"    Domain coverage        : {hendrix.domain_coverage}/32 vs {baseline.domain_coverage}/32"
+        )
 
         if hendrix.mean_phi_resonance > baseline.mean_phi_resonance:
-            print(f"\n  ✅ HENDRIX-Φ finds higher-Φ nonces per search step than linear scan.")
+            print("\n  ✅ HENDRIX-Φ finds higher-Φ nonces per search step than linear scan.")
         if hendrix.domain_coverage > baseline.domain_coverage:
-            print(f"  ✅ HENDRIX-Φ explores more M32 domains (better structural coverage).")
+            print("  ✅ HENDRIX-Φ explores more M32 domains (better structural coverage).")
         if hendrix.top_10pct_mean_phi > baseline.top_10pct_mean_phi:
-            print(f"  ✅ HENDRIX-Φ's best nonces have higher resonance (better top candidates).")
+            print("  ✅ HENDRIX-Φ's best nonces have higher resonance (better top candidates).")
     print(f"{sep}\n")
 
 
@@ -345,8 +342,8 @@ def _interpret_comparison(results: List[StrategyComparison]) -> Dict[str, str]:
     interp: Dict[str, str] = {}
     hendrix = next((r for r in results if "HENDRIX" in r.name.upper()), None)
     linear = next((r for r in results if "LINEAR" in r.name.upper()), None)
-    random_s = next((r for r in results if "RANDOM" in r.name.upper()), None)
-    fib = next((r for r in results if "FIBONACCI" in r.name.upper()), None)
+    next((r for r in results if "RANDOM" in r.name.upper()), None)
+    next((r for r in results if "FIBONACCI" in r.name.upper()), None)
 
     if not hendrix or not linear:
         return interp
@@ -355,9 +352,7 @@ def _interpret_comparison(results: List[StrategyComparison]) -> Dict[str, str]:
         (hendrix.mean_phi_resonance - linear.mean_phi_resonance) / linear.mean_phi_resonance * 100
     )
     top_over_linear = (
-        (hendrix.top_10pct_mean_phi - linear.top_10pct_mean_phi)
-        / linear.top_10pct_mean_phi
-        * 100
+        (hendrix.top_10pct_mean_phi - linear.top_10pct_mean_phi) / linear.top_10pct_mean_phi * 100
         if linear.top_10pct_mean_phi > 0
         else 0
     )
@@ -387,7 +382,7 @@ def _interpret_comparison(results: List[StrategyComparison]) -> Dict[str, str]:
     interp["domain_coverage"] = (
         f"HENDRIX-Φ visits {hendrix.domain_coverage}/32 M32 domains "
         f"({domain_gain:+d} vs linear scan "
-        f"{f'more' if domain_gain > 0 else 'fewer'})."
+        f"{'more' if domain_gain > 0 else 'fewer'})."
     )
     interp["yang_mills_gating"] = (
         f"HENDRIX-Φ mass gate pass rate: {hendrix.ym_gate_pass_rate:.1%} "
@@ -433,11 +428,11 @@ def run_demonstration(
     print("=" * 84)
     print("  HENDRIX-Φ Structured Search Operationalisation")
     print("=" * 84)
-    print(f"\n  Millennium Maths:")
+    print("\n  Millennium Maths:")
     print(f"    Yang-Mills mass gap: 3 - Φ = {YANG_MILLS_GAP:.6f}")
-    print(f"    M32 domains:         32 (icosahedral symmetry)")
-    print(f"    Phi gradient descent: Fibonacci steps + cheap_phi_resonance gradient")
-    print(f"    Mass gate:           soft_mass_gap_gate (probabilistic rejection)")
+    print("    M32 domains:         32 (icosahedral symmetry)")
+    print("    Phi gradient descent: Fibonacci steps + cheap_phi_resonance gradient")
+    print("    Mass gate:           soft_mass_gap_gate (probabilistic rejection)")
     print(f"\n  Benchmarks: {n_steps:,} steps per strategy")
 
     rng = random.Random(seed)
@@ -458,7 +453,9 @@ def run_demonstration(
         dt = time.time() - t0
         result = analyze_strategy(name, steps)
         results.append(result)
-        print(f"done ({dt:.2f}s)  mean Φ={result.mean_phi_resonance:.4f}  top10% Φ={result.top_10pct_mean_phi:.4f}")
+        print(
+            f"done ({dt:.2f}s)  mean Φ={result.mean_phi_resonance:.4f}  top10% Φ={result.top_10pct_mean_phi:.4f}"
+        )
 
     print_comparison(results)
 
@@ -475,15 +472,20 @@ def main() -> int:
         description="HENDRIX-Φ Structured Search Demonstration",
     )
     parser.add_argument(
-        "--steps", type=int, default=10_000,
+        "--steps",
+        type=int,
+        default=10_000,
         help="Number of search steps per strategy (default: 10,000)",
     )
     parser.add_argument(
-        "--seed", type=int, default=618034,
+        "--seed",
+        type=int,
+        default=618034,
         help="Random seed (default: 618034 = fibonacci)",
     )
     parser.add_argument(
-        "--out", default="artifacts/phi_structured_search",
+        "--out",
+        default="artifacts/phi_structured_search",
         help="Output directory",
     )
     args = parser.parse_args()

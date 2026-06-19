@@ -454,7 +454,7 @@ def analyze_nonce_space(
         mean_angular = sum(angular_gaps) / len(angular_gaps)
 
         # Expected mean angular distance for uniform random: 2*pi/n
-        expected_mean_angular = (2.0 * math.pi) / total_unique
+        (2.0 * math.pi) / total_unique
 
         # Angular uniformity: coefficient of variation of angular gaps
         mean_gap = mean_angular
@@ -539,7 +539,7 @@ def analyze_nonce_space(
         sector_counts[sector_idx] = sector_counts.get(sector_idx, 0) + 1
 
     sectors_with_nonces = len(sector_counts)
-    sector_coverage_pct = (sectors_with_nonces / sector_count) * 100.0
+    (sectors_with_nonces / sector_count) * 100.0
 
     # Build sector coverage detail for top empty sectors
     empty_sectors = []
@@ -908,7 +908,7 @@ def _interpret_stats(summary: ResonanceSummary) -> Dict[str, str]:
             )
         else:
             interpretations["temporal_trend"] = (
-                f"No significant temporal trend " f"(r={summary.temporal_correlation_r:.4f})."
+                f"No significant temporal trend (r={summary.temporal_correlation_r:.4f})."
             )
     else:
         interpretations["temporal_trend"] = "Insufficient data for temporal analysis."
@@ -1071,14 +1071,14 @@ def print_report(
     print(f"  z-score Threshold    = {Z_SCORE_THRESHOLD}")
     print(f"{dash}")
     print(f"  Total Blocks         : {summary.total_blocks}")
-    print(f"  Phi^15 Resonant       : " f"{summary.phi_resonant_count} / {summary.total_blocks}")
+    print(f"  Phi^15 Resonant       : {summary.phi_resonant_count} / {summary.total_blocks}")
     print(f"  Phi^15 Resonance Rate : {summary.phi_resonance_rate * 100:.6f}%")
     print(f"  Mean Precision       : {summary.mean_precision:.6f}%")
     print(f"  Median Diff          : {summary.median_diff:.4f}")
     print(f"  Min Diff             : {summary.min_diff:.4f}")
     print(f"  Max Diff             : {summary.max_diff:.4f}")
     print(f"{dash}")
-    print(f"  Birthday Echoes      : " f"{summary.birthday_echo_count} / {summary.total_blocks}")
+    print(f"  Birthday Echoes      : {summary.birthday_echo_count} / {summary.total_blocks}")
     print(f"  Birthday Echo Rate   : {summary.birthday_echo_rate * 100:.4f}%")
     print(f"  Modular Diffs <{BIRTHDAY_MODULAR_THRESHOLD}: {summary.modular_diff_count}")
     print(f"  Substring Matches    : {summary.substring_match_count}")

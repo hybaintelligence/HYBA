@@ -18,15 +18,31 @@ vi.mock("../src/components/AuthProvider", () => ({
   }),
 }));
 
-vi.mock("../src/components/SovereignGenesisPanel", () => ({ SovereignGenesisPanel: () => <div>Sovereign genesis panel</div> }));
-vi.mock("../src/components/SovereignCommandPost", () => ({ SovereignCommandPost: () => <div>Sovereign command post</div> }));
+vi.mock("../src/components/SovereignGenesisPanel", () => ({
+  SovereignGenesisPanel: () => <div>Sovereign genesis panel</div>,
+}));
+vi.mock("../src/components/SovereignCommandPost", () => ({
+  SovereignCommandPost: () => <div>Sovereign command post</div>,
+}));
 vi.mock("../src/components/AIAssistant", () => ({ default: () => <div>AI assistant</div> }));
-vi.mock("../src/components/AdminPanel", () => ({ default: () => <section>Admin panel content</section> }));
-vi.mock("../src/components/HybaAdminDashboard", () => ({ default: () => <section>Executive dashboard content</section> }));
-vi.mock("../src/components/MiningJobsSection", () => ({ default: () => <section>Mining jobs content</section> }));
-vi.mock("../src/components/HistoricalDataSection", () => ({ default: () => <section>Historical data content</section> }));
-vi.mock("../src/components/AnalyticsSection", () => ({ default: () => <section>Analytics content</section> }));
-vi.mock("../src/components/Sparkline", () => ({ Sparkline: () => <div aria-label="Latency history" /> }));
+vi.mock("../src/components/AdminPanel", () => ({
+  default: () => <section>Admin panel content</section>,
+}));
+vi.mock("../src/components/HybaAdminDashboard", () => ({
+  default: () => <section>Executive dashboard content</section>,
+}));
+vi.mock("../src/components/MiningJobsSection", () => ({
+  default: () => <section>Mining jobs content</section>,
+}));
+vi.mock("../src/components/HistoricalDataSection", () => ({
+  default: () => <section>Historical data content</section>,
+}));
+vi.mock("../src/components/AnalyticsSection", () => ({
+  default: () => <section>Analytics content</section>,
+}));
+vi.mock("../src/components/Sparkline", () => ({
+  Sparkline: () => <div aria-label="Latency history" />,
+}));
 
 const telemetry = {
   latency: 42,
@@ -53,9 +69,39 @@ const telemetry = {
   pools: {
     summary: { total_pools: 2, configured_pools: 2, active_pools: 1 },
     pools: [
-      { pool_id: "viabtc", name: "ViaBTC", url: "stratum+tcp://via", configured: true, is_active: true, status: "connected", credential_mode: "username_password", required_fields: ["username", "password"], performance: { latency_ms: 20, shares_submitted: 3 } },
-      { pool_id: "braiins", name: "Braiins", url: "stratum+tcp://braiins", configured: true, is_active: false, status: "configured", credential_mode: "username_password", required_fields: ["username", "password"], performance: { latency_ms: 25, shares_submitted: 1 } },
-      { pool_id: "ckpool", name: "CKPool", url: "stratum+tcp://ck", configured: false, is_active: false, status: "not_configured", credential_mode: "btc_address", required_fields: ["btc_address"], performance: { latency_ms: 0, shares_submitted: 0 } },
+      {
+        pool_id: "viabtc",
+        name: "ViaBTC",
+        url: "stratum+tcp://via",
+        configured: true,
+        is_active: true,
+        status: "connected",
+        credential_mode: "username_password",
+        required_fields: ["username", "password"],
+        performance: { latency_ms: 20, shares_submitted: 3 },
+      },
+      {
+        pool_id: "braiins",
+        name: "Braiins",
+        url: "stratum+tcp://braiins",
+        configured: true,
+        is_active: false,
+        status: "configured",
+        credential_mode: "username_password",
+        required_fields: ["username", "password"],
+        performance: { latency_ms: 25, shares_submitted: 1 },
+      },
+      {
+        pool_id: "ckpool",
+        name: "CKPool",
+        url: "stratum+tcp://ck",
+        configured: false,
+        is_active: false,
+        status: "not_configured",
+        credential_mode: "btc_address",
+        required_fields: ["btc_address"],
+        performance: { latency_ms: 0, shares_submitted: 0 },
+      },
     ],
   },
   security: { status: "nominal", threat_level: "low", defense_systems: {} },
@@ -81,13 +127,30 @@ beforeEach(() => {
   mockStorage();
   Object.defineProperty(window, "matchMedia", {
     configurable: true,
-    value: vi.fn(() => ({ matches: false, addEventListener: vi.fn(), removeEventListener: vi.fn() })),
+    value: vi.fn(() => ({
+      matches: false,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    })),
   });
-  vi.stubGlobal("fetch", vi.fn(() => Promise.resolve(new Response(JSON.stringify({ status: "ok" })) as any)));
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(() => Promise.resolve(new Response(JSON.stringify({ status: "ok" })) as any)),
+  );
   vi.spyOn(apiClient, "fetchTelemetryData").mockResolvedValue(telemetry as any);
-  vi.spyOn(apiClient, "fetchProductsApi").mockResolvedValue(new Response(JSON.stringify([{ id: "p1", name: "HYBA Console", description: "Control plane" }])) as any);
-  vi.spyOn(apiClient, "fetchProfileApi").mockResolvedValue(new Response(JSON.stringify({ success: false }))) as any;
-  vi.spyOn(apiClient, "loginApi").mockResolvedValue({ success: true, token: "token", user: { username: "operator", role: "miner" } } as any);
+  vi.spyOn(apiClient, "fetchProductsApi").mockResolvedValue(
+    new Response(
+      JSON.stringify([{ id: "p1", name: "HYBA Console", description: "Control plane" }]),
+    ) as any,
+  );
+  vi
+    .spyOn(apiClient, "fetchProfileApi")
+    .mockResolvedValue(new Response(JSON.stringify({ success: false }))) as any;
+  vi.spyOn(apiClient, "loginApi").mockResolvedValue({
+    success: true,
+    token: "token",
+    user: { username: "operator", role: "miner" },
+  } as any);
   vi.spyOn(apiClient, "registerApi").mockResolvedValue({ success: true } as any);
   vi.spyOn(apiClient, "updatePowerScale").mockResolvedValue({ status: "ok" } as any);
   vi.spyOn(apiClient, "switchPool").mockResolvedValue({ status: "ok" } as any);
@@ -131,7 +194,13 @@ describe("complete App component action coverage", () => {
     expect(apiClient.updatePowerScale).toHaveBeenLastCalledWith(expect.any(Number), 15);
 
     await user.click(screen.getAllByRole("button", { name: /switch/i })[0]);
-    await waitFor(() => expect(apiClient.switchPool).toHaveBeenCalledWith({ pool_id: "braiins", capacity_ehs: expect.any(Number), switch: true }));
+    await waitFor(() =>
+      expect(apiClient.switchPool).toHaveBeenCalledWith({
+        pool_id: "braiins",
+        capacity_ehs: expect.any(Number),
+        switch: true,
+      }),
+    );
     await user.click(screen.getAllByRole("button", { name: /disconnect/i })[0]);
     expect(apiClient.disconnectFromPool).toHaveBeenCalled();
 
@@ -139,12 +208,18 @@ describe("complete App component action coverage", () => {
     expect(screen.getByText(/Pool Config: CKPool/i)).toBeInTheDocument();
     await user.type(screen.getByLabelText(/btc address/i), "bc1qhybatest");
     await user.click(screen.getByRole("button", { name: /save pool config/i }));
-    await waitFor(() => expect(apiClient.configurePool).toHaveBeenCalledWith(expect.objectContaining({ pool_id: "ckpool", btc_address: "bc1qhybatest" })));
+    await waitFor(() =>
+      expect(apiClient.configurePool).toHaveBeenCalledWith(
+        expect.objectContaining({ pool_id: "ckpool", btc_address: "bc1qhybatest" }),
+      ),
+    );
   });
 
   it("covers login, register, logout, offline retry, and network toast dismissal", async () => {
     const user = userEvent.setup();
-    vi.spyOn(apiClient, "fetchTelemetryData").mockRejectedValueOnce(new Error("backend offline")).mockResolvedValue(telemetry as any);
+    vi.spyOn(apiClient, "fetchTelemetryData")
+      .mockRejectedValueOnce(new Error("backend offline"))
+      .mockResolvedValue(telemetry as any);
     render(<App />);
 
     expect(await screen.findByText("Telemetry interruption")).toBeInTheDocument();

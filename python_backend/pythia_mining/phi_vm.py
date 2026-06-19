@@ -28,8 +28,6 @@ from typing import Any, Dict, List, Tuple
 
 import numpy as np
 
-from .phi_tuner import PhiBackpropTuner
-from .phi_oracle import PhiOracle
 
 PHI = 1.618033988749895
 INV_PHI = 0.618033988749895
@@ -132,7 +130,7 @@ class PhiVM:
             )
 
             # Apply the system's scaling factor to arithmetic operations
-            scaling = cycle_info.get('scaling_factor', 1.0)
+            scaling = cycle_info.get("scaling_factor", 1.0)
             self._instruction_count += 1
 
             if op == PHIMUL:
@@ -191,8 +189,7 @@ class PhiVM:
         """Fibonacci-weighted compression: R1 = R2 × φ⁻¹ + R3 × φ⁻²."""
         if self._valid_reg(r1) and self._valid_reg(r2) and self._valid_reg(r3):
             self.registers[r1] = float(
-                (self.registers[r2] * self.INV_PHI)
-                + (self.registers[r3] * (self.INV_PHI ** 2))
+                (self.registers[r2] * self.INV_PHI) + (self.registers[r3] * (self.INV_PHI**2))
             )
 
     def _op_gaddr(self, r1: int, r2: int) -> None:
@@ -200,7 +197,7 @@ class PhiVM:
         if self._valid_reg(r1) and self._valid_reg(r2):
             n = int(abs(self.registers[r2]))
             r = np.sqrt(n + 1.0)
-            theta_deg = (n * (360.0 / (self.PHI ** 2))) % 360.0
+            theta_deg = (n * (360.0 / (self.PHI**2))) % 360.0
             theta_rad = np.deg2rad(theta_deg)
             x = r * np.cos(theta_rad)
             y = r * np.sin(theta_rad)
@@ -212,7 +209,9 @@ class PhiVM:
         if self._valid_reg(r1) and self._valid_reg(r2) and self._valid_reg(r3):
             modulus = self.registers[r3] * self.PHI
             if modulus != 0.0:
-                phi_component = self.registers[r2] - np.floor(self.registers[r2] / modulus) * modulus
+                phi_component = (
+                    self.registers[r2] - np.floor(self.registers[r2] / modulus) * modulus
+                )
                 inv_phi_component = self.registers[r2] - np.floor(
                     self.registers[r2] / (self.registers[r3] / self.PHI)
                 ) * (self.registers[r3] / self.PHI)
@@ -223,7 +222,7 @@ class PhiVM:
 
     def _op_jph(self, r1: int, cycle_info: Dict[str, Any]) -> bool:
         """Jump if Coherent: jump to address R1 if regime == SINGULAR_AGENT_PROXY."""
-        if cycle_info.get('regime') == "singular_agent_proxy":
+        if cycle_info.get("regime") == "singular_agent_proxy":
             target = int(abs(self.registers[r1])) if self._valid_reg(r1) else 0
             if 0 <= target < 2**16:
                 self.pc = target
@@ -234,7 +233,7 @@ class PhiVM:
         """Wait until the Singular regime is reached (spin-loop throttle)."""
         max_spins = 1000
         spins = 0
-        while cycle_info.get('regime') != "singular_agent_proxy" and spins < max_spins:
+        while cycle_info.get("regime") != "singular_agent_proxy" and spins < max_spins:
             telemetry_temp = self._get_simulated_temp()
             cycle_info = self.controller.process_cycle(
                 np.array([self.pc], dtype=np.uint32),
@@ -246,17 +245,21 @@ class PhiVM:
 
     def _op_mgate(self, cycle_info: Dict[str, Any]) -> None:
         """Mass Gate: hard-throttle if manifold is unstable."""
-        if not cycle_info.get('manifold_stable', True):
+        if not cycle_info.get("manifold_stable", True):
             self._throttle_count += 1
             time.sleep(0.001 * self.PHI)
 
     def _op_tune(self, cycle_info: Dict[str, Any]) -> None:
         """Trigger a single-step Backprop update on the tuner."""
-        if hasattr(self.controller, 'tuner') and hasattr(self.controller.tuner, 'step'):
-            self.controller.tuner.step({
-                "coherence": cycle_info.get('regime_coherence', cycle_info.get('scaling_factor', 0.5)),
-                "current_temp": self._get_simulated_temp(),
-            })
+        if hasattr(self.controller, "tuner") and hasattr(self.controller.tuner, "step"):
+            self.controller.tuner.step(
+                {
+                    "coherence": cycle_info.get(
+                        "regime_coherence", cycle_info.get("scaling_factor", 0.5)
+                    ),
+                    "current_temp": self._get_simulated_temp(),
+                }
+            )
 
     # ── Helpers ───────────────────────────────────────────────────────────
 
@@ -318,6 +321,7 @@ class PhiVM:
 
 # ── Convenience: Example Resonant Kernel ─────────────────────────────────
 
+
 def search_optimization_kernel() -> List[Tuple[str, int, int, int]]:
     """
     Return the resonant search optimisation kernel in Φ-Bytecode.
@@ -337,14 +341,14 @@ def search_optimization_kernel() -> List[Tuple[str, int, int, int]]:
       JMP   START     — Else, continue the Golden Spiral search
     """
     return [
-        (SYNC_PHI, 0, 0, 0),      # Wait for Singular Regime
-        (TUNE, 0, 0, 0),           # Calibrate the tuner
-        (GADDR, 1, 2, 0),          # R1 = phyllotaxis(R2)
-        (PHIMUL, 3, 1, 4),         # R3 = R1 × R4 × φ × scaling
-        (FOLD, 5, 3, 1),           # R5 = R3 × φ⁻¹ + R1 × φ⁻²
-        (MGATE, 0, 0, 0),          # Safety check
-        (JPH, 0, 0, 0),            # Jump if coherent (to R1 = success handler)
-        (GADDR, 1, 2, 0),          # Fallthrough: continue spiral (back to GADDR)
+        (SYNC_PHI, 0, 0, 0),  # Wait for Singular Regime
+        (TUNE, 0, 0, 0),  # Calibrate the tuner
+        (GADDR, 1, 2, 0),  # R1 = phyllotaxis(R2)
+        (PHIMUL, 3, 1, 4),  # R3 = R1 × R4 × φ × scaling
+        (FOLD, 5, 3, 1),  # R5 = R3 × φ⁻¹ + R1 × φ⁻²
+        (MGATE, 0, 0, 0),  # Safety check
+        (JPH, 0, 0, 0),  # Jump if coherent (to R1 = success handler)
+        (GADDR, 1, 2, 0),  # Fallthrough: continue spiral (back to GADDR)
     ]
 
 

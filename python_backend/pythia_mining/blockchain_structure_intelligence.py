@@ -181,7 +181,9 @@ def _section(report: Mapping[str, Any], *names: str) -> Mapping[str, Any]:
     return {}
 
 
-def extract_empirical_structure_evidence(report: Mapping[str, Any]) -> EmpiricalBlockchainStructureEvidence:
+def extract_empirical_structure_evidence(
+    report: Mapping[str, Any],
+) -> EmpiricalBlockchainStructureEvidence:
     """
     Extract a conservative evidence summary from the empirical report JSON.
 
@@ -292,13 +294,17 @@ def evaluate_pythia_mining_guardrails(
         reasons.append("No PYTHIA structure intelligence packet supplied.")
         next_steps.append("Generate packet from empirical blockchain-structure report.")
     elif not packet.evidence.evidence_is_usable_as_prior:
-        reasons.append("Empirical blockchain-structure evidence is insufficient for live prior use.")
+        reasons.append(
+            "Empirical blockchain-structure evidence is insufficient for live prior use."
+        )
         next_steps.append("Collect a larger block sample and regenerate evidence packet.")
 
     lower_claim = inputs.claim_text.lower()
     forbidden_claim_terms = ("guaranteed", "risk-free", "certain block", "bypass sha", "free money")
     if any(term in lower_claim for term in forbidden_claim_terms):
-        reasons.append("Claim text contains forbidden guaranteed-revenue or verifier-bypass language.")
+        reasons.append(
+            "Claim text contains forbidden guaranteed-revenue or verifier-bypass language."
+        )
         next_steps.append("Replace claim with bounded evidence-first mining language.")
 
     if not inputs.exact_sha256d_verifier_enabled:
@@ -307,7 +313,9 @@ def evaluate_pythia_mining_guardrails(
 
     if not inputs.evidence_packet_present:
         reasons.append("Evidence packet is not present.")
-        next_steps.append("Persist PYTHIA structure intelligence and guardrail report as JSON artifacts.")
+        next_steps.append(
+            "Persist PYTHIA structure intelligence and guardrail report as JSON artifacts."
+        )
 
     if inputs.funding_action_requested and not inputs.accepted_share_proof_present:
         reasons.append("Funding action requested without pool-side accepted-share proof.")
@@ -316,12 +324,18 @@ def evaluate_pythia_mining_guardrails(
     if inputs.requested_live_mode:
         if not inputs.operator_approval:
             reasons.append("Live mode requested without explicit operator approval.")
-            next_steps.append("Set explicit operator approval only after reviewing guardrail packet.")
+            next_steps.append(
+                "Set explicit operator approval only after reviewing guardrail packet."
+            )
         if not inputs.pool_credentials_present:
             reasons.append("Live mode requested without pool credentials.")
-            next_steps.append("Provide pool credentials through approved secret path, not source code.")
+            next_steps.append(
+                "Provide pool credentials through approved secret path, not source code."
+            )
         if inputs.max_runtime_minutes <= 0 or inputs.max_runtime_minutes > 60:
-            reasons.append("Live runtime window must be between 1 and 60 minutes for initial guarded launch.")
+            reasons.append(
+                "Live runtime window must be between 1 and 60 minutes for initial guarded launch."
+            )
             next_steps.append("Use a bounded first launch window, then review evidence.")
         if inputs.max_power_watts < 0:
             reasons.append("Power limit cannot be negative.")
@@ -339,7 +353,11 @@ def evaluate_pythia_mining_guardrails(
             decision = MiningLaunchDecision.SUPERVISED_DRY_RUN
             launch = False
     else:
-        decision = MiningLaunchDecision.GUARDED_LIVE_READY if inputs.requested_live_mode else MiningLaunchDecision.SUPERVISED_DRY_RUN
+        decision = (
+            MiningLaunchDecision.GUARDED_LIVE_READY
+            if inputs.requested_live_mode
+            else MiningLaunchDecision.SUPERVISED_DRY_RUN
+        )
         launch = bool(inputs.requested_live_mode)
 
     guardrails = {

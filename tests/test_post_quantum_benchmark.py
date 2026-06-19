@@ -16,13 +16,11 @@ fidelity, and honest claim boundaries baked into every certificate.
 
 from __future__ import annotations
 
-import hashlib
 import sys
 import time
 from pathlib import Path
 
 import numpy as np
-import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
@@ -33,12 +31,10 @@ if str(BACKEND) not in sys.path:
 
 np.seterr(all="raise")
 
-from pythia_mining.pulvini_bures import bures_certificate, density_state
+from pythia_mining.pulvini_bures import bures_certificate
 from pythia_mining.pulvini_group import (
     a5_representation_certificate,
-    apply_automorphism_to_nonce,
     compute_graph_automorphisms,
-    compute_node_orbits,
     coxeter_group_certificate,
     nonce_orbit,
 )

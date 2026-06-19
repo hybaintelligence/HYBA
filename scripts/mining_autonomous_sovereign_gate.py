@@ -94,9 +94,13 @@ def _production_environment_check(mode: Mode) -> AutonomousGateCheck:
         if _env("HYBA_ENV").lower() != "production":
             failures.append("HYBA_ENV=production required for live PYTHIA mining startup")
         if not _env_bool("HYBA_ENABLE_LIVE_STRATUM"):
-            failures.append("HYBA_ENABLE_LIVE_STRATUM=true required for live pool/API connection checks")
+            failures.append(
+                "HYBA_ENABLE_LIVE_STRATUM=true required for live pool/API connection checks"
+            )
         if not _env_bool("HYBA_ENABLE_AUDIT_LOGGING"):
-            failures.append("HYBA_ENABLE_AUDIT_LOGGING=true required for live autonomous startup evidence")
+            failures.append(
+                "HYBA_ENABLE_AUDIT_LOGGING=true required for live autonomous startup evidence"
+            )
     return AutonomousGateCheck(
         name="production_environment_for_pythia_startup",
         severity="critical",
@@ -170,11 +174,15 @@ def _external_action_authorisation_check() -> AutonomousGateCheck:
 
     if external_actions_enabled:
         if not approval_id:
-            failures.append("HYBA_AUTONOMOUS_OPERATOR_APPROVAL_ID is required for autonomous external actions")
+            failures.append(
+                "HYBA_AUTONOMOUS_OPERATOR_APPROVAL_ID is required for autonomous external actions"
+            )
         if not operator:
             failures.append("HYBA_AUTONOMOUS_OPERATOR is required for autonomous external actions")
         if not reason:
-            failures.append("HYBA_AUTONOMOUS_OPERATOR_REASON is required for autonomous external actions")
+            failures.append(
+                "HYBA_AUTONOMOUS_OPERATOR_REASON is required for autonomous external actions"
+            )
 
     return AutonomousGateCheck(
         name="autonomous_external_action_authorisation",
@@ -206,7 +214,9 @@ def _autonomous_bounds_check() -> AutonomousGateCheck:
         name="autonomous_runtime_bounds",
         severity="critical",
         status="fail" if failures else "pass",
-        summary="autonomous bounds are unsafe" if failures else "autonomous bounds are within configured production limits",
+        summary="autonomous bounds are unsafe"
+        if failures
+        else "autonomous bounds are within configured production limits",
         detail="\n".join(failures),
     )
 
@@ -219,7 +229,9 @@ def _share_submit_check() -> AutonomousGateCheck:
         name="live_share_submit_authorisation",
         severity="critical",
         status="fail" if failures else "pass",
-        summary="live share submit is not authorised" if failures else "live share submit gate is explicit or disabled",
+        summary="live share submit is not authorised"
+        if failures
+        else "live share submit gate is explicit or disabled",
         detail="\n".join(failures),
     )
 
@@ -237,7 +249,9 @@ def _audit_evidence_check() -> AutonomousGateCheck:
         name="autonomous_audit_evidence",
         severity="advisory",
         status="warn" if warnings else "pass",
-        summary="autonomous audit evidence has advisory gaps" if warnings else "autonomous audit evidence fields are present",
+        summary="autonomous audit evidence has advisory gaps"
+        if warnings
+        else "autonomous audit evidence fields are present",
         detail="\n".join(warnings),
     )
 
@@ -252,7 +266,9 @@ def run_gate(mode: Mode) -> AutonomousSovereignGateReport:
         _share_submit_check(),
         _audit_evidence_check(),
     ]
-    critical_failures = [check for check in checks if check.severity == "critical" and check.status == "fail"]
+    critical_failures = [
+        check for check in checks if check.severity == "critical" and check.status == "fail"
+    ]
     passed = not critical_failures
     actions: list[str] = []
     if not passed:
@@ -291,9 +307,13 @@ def _write_report(report: AutonomousSovereignGateReport) -> Path:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Run the final autonomous-mining sovereign GO/NO-GO gate.")
+    parser = argparse.ArgumentParser(
+        description="Run the final autonomous-mining sovereign GO/NO-GO gate."
+    )
     parser.add_argument("--mode", choices=["command-room", "live"], default="command-room")
-    parser.add_argument("--write", action="store_true", help="Write JSON report to artifacts/mining_readiness/.")
+    parser.add_argument(
+        "--write", action="store_true", help="Write JSON report to artifacts/mining_readiness/."
+    )
     args = parser.parse_args()
 
     report = run_gate(args.mode)

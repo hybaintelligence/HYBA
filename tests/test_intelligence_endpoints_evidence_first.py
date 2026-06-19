@@ -102,6 +102,7 @@ class TestIntelligenceControlEndpoints(unittest.TestCase):
         self.assertEqual(payload["boost"], 1.25)
         self.assertIn("not a claim of phenomenal consciousness", payload["claim_boundary"])
 
+
 from hypothesis import given, strategies as st  # noqa: E402
 
 
@@ -112,7 +113,10 @@ class TestIntelligenceControlProperties(unittest.TestCase):
         self.assertGreaterEqual(req.scale, 0.1)
         self.assertLessEqual(req.scale, 3.0)
 
-    @given(st.floats(min_value=0.1, max_value=2.0, allow_nan=False, allow_infinity=False), st.integers(min_value=1, max_value=8))
+    @given(
+        st.floats(min_value=0.1, max_value=2.0, allow_nan=False, allow_infinity=False),
+        st.integers(min_value=1, max_value=8),
+    )
     def test_consciousness_boost_property_is_bounded(self, boost: float, task_budget: int) -> None:
         req = ConsciousnessBoostRequest(boost=boost, task_budget=task_budget)
         self.assertGreaterEqual(req.boost, 0.1)

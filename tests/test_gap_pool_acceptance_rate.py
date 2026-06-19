@@ -11,18 +11,18 @@ shares.  This file closes the gap by testing:
 6. Multi-share session accumulates counters monotonically.
 7. get_status() performance dict mirrors raw counters exactly.
 """
+
 from __future__ import annotations
 
 import asyncio
 import sys
 from pathlib import Path
-from typing import Optional
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "python_backend"))
 
 from pythia_mining.live_stratum_session import SubmitResult  # noqa: E402
-from pythia_mining.mining_validation import validate_share    # noqa: E402
+from pythia_mining.mining_validation import validate_share  # noqa: E402
 from pythia_mining.stratum_client import MiningJob, StratumClient  # noqa: E402
 
 
@@ -30,37 +30,56 @@ from pythia_mining.stratum_client import MiningJob, StratumClient  # noqa: E402
 # mock sessions
 # ---------------------------------------------------------------------------
 
+
 class _AlwaysAccept:
     def __init__(self):
         self.calls = 0
+
     async def submit_share(self, **_):
         self.calls += 1
         return SubmitResult(True, None, {"id": self.calls, "result": True, "error": None})
-    async def close(self): pass
+
+    async def close(self):
+        pass
 
 
 class _AlwaysReject:
     async def submit_share(self, **_):
-        return SubmitResult(False, [23, "low difficulty share", None], {"id": 1, "result": False, "error": [23, "low difficulty share", None]})
-    async def close(self): pass
+        return SubmitResult(
+            False,
+            [23, "low difficulty share", None],
+            {"id": 1, "result": False, "error": [23, "low difficulty share", None]},
+        )
+
+    async def close(self):
+        pass
 
 
 class _AcceptNth:
     """Accept every n-th share, reject the rest."""
+
     def __init__(self, n: int):
         self.n = n
         self.calls = 0
+
     async def submit_share(self, **_):
         self.calls += 1
         if self.calls % self.n == 0:
             return SubmitResult(True, None, {"id": self.calls, "result": True, "error": None})
-        return SubmitResult(False, [23, "low diff", None], {"id": self.calls, "result": False, "error": [23, "low diff", None]})
-    async def close(self): pass
+        return SubmitResult(
+            False,
+            [23, "low diff", None],
+            {"id": self.calls, "result": False, "error": [23, "low diff", None]},
+        )
+
+    async def close(self):
+        pass
 
 
 # ---------------------------------------------------------------------------
 # helpers
 # ---------------------------------------------------------------------------
+
 
 def _regtest_job(job_id: str = "rate-job") -> MiningJob:
     return MiningJob(
@@ -102,6 +121,7 @@ def _find_valid_nonces(job: MiningJob, limit: int = 200):
 # 1. All-accept session → acceptance rate == 1.0
 # ---------------------------------------------------------------------------
 
+
 def test_all_accept_session_rate_equals_one(monkeypatch) -> None:
     monkeypatch.setenv("HYBA_ENABLE_LIVE_SHARE_SUBMIT", "true")
     job = _regtest_job()
@@ -124,6 +144,7 @@ def test_all_accept_session_rate_equals_one(monkeypatch) -> None:
 # 2. Counter invariant: submitted == accepted + rejected at all times
 # ---------------------------------------------------------------------------
 
+
 def test_counter_invariant_submitted_equals_accepted_plus_rejected(monkeypatch) -> None:
     monkeypatch.setenv("HYBA_ENABLE_LIVE_SHARE_SUBMIT", "true")
     job = _regtest_job()
@@ -143,6 +164,7 @@ def test_counter_invariant_submitted_equals_accepted_plus_rejected(monkeypatch) 
 # ---------------------------------------------------------------------------
 # 3. Mixed session produces correct acceptance rate (≈ 0.5)
 # ---------------------------------------------------------------------------
+
 
 def test_mixed_session_acceptance_rate_correct(monkeypatch) -> None:
     monkeypatch.setenv("HYBA_ENABLE_LIVE_SHARE_SUBMIT", "true")
@@ -167,6 +189,7 @@ def test_mixed_session_acceptance_rate_correct(monkeypatch) -> None:
 # 4. Stale-job submission is counted as rejected, not accepted
 # ---------------------------------------------------------------------------
 
+
 def test_stale_job_counted_as_rejected(monkeypatch) -> None:
     monkeypatch.setenv("HYBA_ENABLE_LIVE_SHARE_SUBMIT", "true")
     job = _regtest_job(job_id="stale-job")
@@ -188,6 +211,7 @@ def test_stale_job_counted_as_rejected(monkeypatch) -> None:
 # 5. Live-share-submit gate blocks when env flag absent
 # ---------------------------------------------------------------------------
 
+
 def test_gate_blocks_submission_without_env_flag(monkeypatch) -> None:
     monkeypatch.delenv("HYBA_ENABLE_LIVE_SHARE_SUBMIT", raising=False)
     job = _regtest_job()
@@ -206,6 +230,7 @@ def test_gate_blocks_submission_without_env_flag(monkeypatch) -> None:
 # ---------------------------------------------------------------------------
 # 6. High-volume session maintains ≥ 0.95 when pool accepts all valid shares
 # ---------------------------------------------------------------------------
+
 
 def test_high_volume_session_maintains_target_acceptance_rate(monkeypatch) -> None:
     """20 valid shares submitted to an always-accepting pool must give rate ≥ 0.95."""
@@ -227,6 +252,7 @@ def test_high_volume_session_maintains_target_acceptance_rate(monkeypatch) -> No
 # 7. get_status performance dict mirrors raw counters exactly
 # ---------------------------------------------------------------------------
 
+
 def test_get_status_performance_mirrors_raw_counters(monkeypatch) -> None:
     monkeypatch.setenv("HYBA_ENABLE_LIVE_SHARE_SUBMIT", "true")
     job = _regtest_job()
@@ -240,6 +266,9 @@ def test_get_status_performance_mirrors_raw_counters(monkeypatch) -> None:
 
     status = client.get_status()["performance"]
     assert status["shares_submitted"] == client.shares_submitted
-    assert status["shares_accepted"]  == client.shares_accepted
-    assert status["shares_rejected"]  == client.shares_rejected
-    assert abs(status["acceptance_rate"] - (client.shares_accepted / max(client.shares_submitted, 1))) < 1e-9
+    assert status["shares_accepted"] == client.shares_accepted
+    assert status["shares_rejected"] == client.shares_rejected
+    assert (
+        abs(status["acceptance_rate"] - (client.shares_accepted / max(client.shares_submitted, 1)))
+        < 1e-9
+    )

@@ -33,34 +33,36 @@ def get_pythia_state() -> Optional[Dict[str, Any]]:
     return None
 
 
-def _calculate_structural_coupling_index(substrate_state: Dict[str, Any], pythia_state: Optional[Dict[str, Any]]) -> float:
+def _calculate_structural_coupling_index(
+    substrate_state: Dict[str, Any], pythia_state: Optional[Dict[str, Any]]
+) -> float:
     """Calculate the Structural Coupling Index for biological health monitoring.
-    
+
     The Structural Coupling Index measures how well the system components are integrated
     and coupled together, inspired by biological systems where structural coupling indicates
     the health of the nervous system and its ability to coordinate responses.
-    
+
     Args:
         substrate_state: Current substrate state from get_substrate_state()
         pythia_state: Current pythia mining state (optional)
-    
+
     Returns:
         Structural Coupling Index (0.0 = severed nerves, 1.0 = fully coupled)
     """
     coupling_factors = []
-    
+
     # Factor 1: Substrate readiness (0.0 to 1.0)
     if substrate_state.get("status") == "ready":
         coupling_factors.append(1.0)
     else:
         coupling_factors.append(0.3)
-    
+
     # Factor 2: Component initialization count
     initialized_components = substrate_state.get("initialized_components", 0)
     total_components = substrate_state.get("total_components", 1)
     if total_components > 0:
         coupling_factors.append(initialized_components / total_components)
-    
+
     # Factor 3: Pythia system health if available
     if pythia_state:
         system_health = pythia_state.get("system_health", "unknown")
@@ -70,7 +72,7 @@ def _calculate_structural_coupling_index(substrate_state: Dict[str, Any], pythia
             coupling_factors.append(0.5)
         else:
             coupling_factors.append(0.3)
-    
+
     # Factor 4: Phi-resonance if available
     if pythia_state:
         quantum = pythia_state.get("quantum", {})
@@ -81,7 +83,7 @@ def _calculate_structural_coupling_index(substrate_state: Dict[str, Any], pythia
             coupling_factors.append(0.7)
         else:
             coupling_factors.append(0.3)
-    
+
     # Calculate weighted average
     if coupling_factors:
         return sum(coupling_factors) / len(coupling_factors)
@@ -119,14 +121,14 @@ async def get_health_status():
     state = get_pythia_state()
     quantum = state.get("quantum", {}) if state else {}
     substrate_state = get_substrate_state()
-    
+
     # Calculate Structural Coupling Index and Φ-Floor
     # Structural Coupling Index: measures how well the system components are integrated
     # Φ-Floor: minimum acceptable φ-resonance threshold for healthy operation
     structural_coupling_index = _calculate_structural_coupling_index(substrate_state, state)
     phi_floor = 0.2  # Minimum φ-resonance threshold for healthy operation
     innervation_status = "healthy" if structural_coupling_index > phi_floor else "degraded"
-    
+
     return {
         "status": "healthy" if is_ready() else "degraded",
         "timestamp": datetime.now(timezone.utc).isoformat(),

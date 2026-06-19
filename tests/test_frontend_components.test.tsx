@@ -53,7 +53,9 @@ describe("HYBA Frontend Components", () => {
     ];
 
     for (const exportName of expectedExports) {
-      expect(apiClient[exportName as keyof typeof apiClient], exportName).toEqual(expect.any(Function));
+      expect(apiClient[exportName as keyof typeof apiClient], exportName).toEqual(
+        expect.any(Function),
+      );
     }
   });
 

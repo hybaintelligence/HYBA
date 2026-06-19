@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import asyncio
-from dataclasses import dataclass
 
 from pythia_mining.live_stratum_session import SubmitResult
 from pythia_mining.mining_validation import validate_share
@@ -36,7 +35,11 @@ class RetryThenAcceptSession:
 
 class RejectingSession:
     async def submit_share(self, *, job_id: str, extranonce2: str, ntime: str, nonce: str):
-        return SubmitResult(False, [23, "low difficulty share", None], {"id": 1, "result": False, "error": [23, "low difficulty share", None]})
+        return SubmitResult(
+            False,
+            [23, "low difficulty share", None],
+            {"id": 1, "result": False, "error": [23, "low difficulty share", None]},
+        )
 
     async def close(self):
         return None

@@ -162,7 +162,9 @@ def _production_environment_check(mode: Mode) -> ProtocolGateCheck:
         if _env("HYBA_ENV").lower() != "production":
             failures.append("HYBA_ENV=production required for live cutover")
         if not _env_bool("HYBA_ENABLE_LIVE_STRATUM"):
-            failures.append("HYBA_ENABLE_LIVE_STRATUM=true required for live pool/API connection checks")
+            failures.append(
+                "HYBA_ENABLE_LIVE_STRATUM=true required for live pool/API connection checks"
+            )
         if not _env_bool("HYBA_ENABLE_AUDIT_LOGGING"):
             failures.append("HYBA_ENABLE_AUDIT_LOGGING=true required by autonomic evidence logging")
     return ProtocolGateCheck(
@@ -214,12 +216,18 @@ def _pythia_search_authority_check() -> ProtocolGateCheck:
 def _mission_hashrate_contract_check() -> ProtocolGateCheck:
     warnings: list[str] = []
     configured = _float_env("HYBA_AUTONOMOUS_MAX_HASHRATE_EHS")
-    if configured is not None and configured == configured and configured > MAX_AUTONOMOUS_HASHRATE_EHS:
+    if (
+        configured is not None
+        and configured == configured
+        and configured > MAX_AUTONOMOUS_HASHRATE_EHS
+    ):
         warnings.append(
             f"HYBA_AUTONOMOUS_MAX_HASHRATE_EHS={configured} exceeds mission limit; mission memory clamps to {MAX_AUTONOMOUS_HASHRATE_EHS} EH/s."
         )
     if configured is not None and configured != configured:
-        warnings.append("HYBA_AUTONOMOUS_MAX_HASHRATE_EHS is not numeric; mission memory remains the authority.")
+        warnings.append(
+            "HYBA_AUTONOMOUS_MAX_HASHRATE_EHS is not numeric; mission memory remains the authority."
+        )
     return ProtocolGateCheck(
         name="mission_hashrate_limit_authority",
         severity="advisory",
@@ -261,11 +269,17 @@ def _outside_mission_external_action_check() -> ProtocolGateCheck:
 
     if external_enabled:
         if not approval_id:
-            failures.append("HYBA_AUTONOMOUS_OPERATOR_APPROVAL_ID required for actions outside the one-block mission")
+            failures.append(
+                "HYBA_AUTONOMOUS_OPERATOR_APPROVAL_ID required for actions outside the one-block mission"
+            )
         if not operator:
-            failures.append("HYBA_AUTONOMOUS_OPERATOR required for actions outside the one-block mission")
+            failures.append(
+                "HYBA_AUTONOMOUS_OPERATOR required for actions outside the one-block mission"
+            )
         if not reason:
-            failures.append("HYBA_AUTONOMOUS_OPERATOR_REASON required for actions outside the one-block mission")
+            failures.append(
+                "HYBA_AUTONOMOUS_OPERATOR_REASON required for actions outside the one-block mission"
+            )
 
     return ProtocolGateCheck(
         name="outside_mission_external_action_authority",
@@ -313,7 +327,9 @@ def run_gate(mode: Mode) -> ProtocolGateReport:
         _outside_mission_external_action_check(),
         _legacy_manual_approval_flags_check(),
     ]
-    critical_failures = [check for check in checks if check.severity == "critical" and check.status == "fail"]
+    critical_failures = [
+        check for check in checks if check.severity == "critical" and check.status == "fail"
+    ]
     passed = not critical_failures
     actions: list[str]
     if passed:
@@ -353,7 +369,9 @@ def _write_report(report: ProtocolGateReport) -> Path:
 def main() -> int:
     parser = argparse.ArgumentParser(description="Run the PYTHIA autonomic protocol gate.")
     parser.add_argument("--mode", choices=["command-room", "live"], default="command-room")
-    parser.add_argument("--write", action="store_true", help="Write JSON report to artifacts/mining_readiness/.")
+    parser.add_argument(
+        "--write", action="store_true", help="Write JSON report to artifacts/mining_readiness/."
+    )
     args = parser.parse_args()
 
     report = run_gate(args.mode)

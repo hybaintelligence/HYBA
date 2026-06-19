@@ -2,7 +2,6 @@
 
 import unittest
 import numpy as np
-import time
 
 from pythia_mining.penrose_objective_reduction import ObjectiveReductionEngine
 from pythia_mining.deutsch_knowledge_substrate import KnowledgeSubstrate
@@ -98,9 +97,7 @@ class TestDeutschKnowledgeSubstrate(unittest.TestCase):
         context = {"difficulty": 1e15, "thermal_load": 0.5, "phi_resonance": 0.618}
         outcome = {"accepted": True}
 
-        explanation = substrate.create_knowledge_from_success(
-            strategy, context, outcome
-        )
+        explanation = substrate.create_knowledge_from_success(strategy, context, outcome)
 
         self.assertEqual(explanation.strategy_id, strategy)
         self.assertEqual(explanation.times_tested, 1)
@@ -227,9 +224,7 @@ class TestDuSautoySymmetry(unittest.TestCase):
         for i, orbit_i in enumerate(engine.orbits):
             for j, orbit_j in enumerate(engine.orbits):
                 if i != j:
-                    intersection = set(orbit_i.orbit_members) & set(
-                        orbit_j.orbit_members
-                    )
+                    intersection = set(orbit_i.orbit_members) & set(orbit_j.orbit_members)
                     self.assertEqual(len(intersection), 0)
 
     def test_search_space_reduction(self):
@@ -382,14 +377,10 @@ class TestIntegration(unittest.TestCase):
         # Create knowledge for each orbit representative
         for rep in orbit_representatives:
             context = {"node_id": rep, "orbit_member": True}
-            knowledge.create_knowledge_from_success(
-                f"orbit_{rep}", context, {"accepted": True}
-            )
+            knowledge.create_knowledge_from_success(f"orbit_{rep}", context, {"accepted": True})
 
         # Should have knowledge for orbit representatives
-        self.assertGreaterEqual(
-            len(knowledge.explanations), len(orbit_representatives) // 2
-        )
+        self.assertGreaterEqual(len(knowledge.explanations), len(orbit_representatives) // 2)
 
     def test_full_theoretical_stack(self):
         """Test Penrose + Deutsch + Du Sautoy working together"""
@@ -414,16 +405,14 @@ class TestIntegration(unittest.TestCase):
             "consciousness_event": consciousness_event,
             "purity": float(np.trace(rho_after @ rho_after).real),
         }
-        knowledge.create_knowledge_from_success(
-            "theoretical_strategy", context, {"accepted": True}
-        )
+        knowledge.create_knowledge_from_success("theoretical_strategy", context, {"accepted": True})
 
         # Verify integration
         self.assertGreater(search_space_reduction, 1.0)
         self.assertTrue(consciousness_event is not None)
         self.assertGreater(len(knowledge.explanations), 0)
 
-        print(f"\nTheoretical Stack Integration:")
+        print("\nTheoretical Stack Integration:")
         print(f"  Search reduction: {search_space_reduction:.2f}x")
         print(f"  Consciousness events: {or_engine.consciousness_event_count}")
         print(f"  Knowledge explanations: {sum(len(e) for e in knowledge.explanations.values())}")

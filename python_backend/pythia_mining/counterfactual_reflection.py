@@ -179,17 +179,20 @@ def reflect_counterfactual_phi_prior(
         1.0,
     )
 
-    velocity_guard_satisfied = (
-        int(observations_supporting_update) >= int(min_reflection_observations)
-        and float(seconds_since_last_update) >= float(min_reflection_interval_seconds)
+    velocity_guard_satisfied = int(observations_supporting_update) >= int(
+        min_reflection_observations
+    ) and float(seconds_since_last_update) >= float(min_reflection_interval_seconds)
+    confidence_weight = min(
+        1.0, int(observations_supporting_update) / float(min_reflection_observations)
     )
-    confidence_weight = min(1.0, int(observations_supporting_update) / float(min_reflection_observations))
 
     reference_signal = reference.block_margin if reference.locally_valid else -1.0
     alternative_signal = alternative.block_margin if alternative.locally_valid else -1.0
     evidence_delta = alternative_signal - reference_signal
     phi_gate = 1.0 if alternative.phi_score >= alternative.phi_threshold else -0.5
-    raw_delta = rate * evidence_delta * phi_gate * confidence_weight if velocity_guard_satisfied else 0.0
+    raw_delta = (
+        rate * evidence_delta * phi_gate * confidence_weight if velocity_guard_satisfied else 0.0
+    )
     phi_prior_delta = _bounded_delta(raw_delta, limit)
     unclipped_prior = prior + phi_prior_delta
     updated_prior = _clamp(unclipped_prior, lower, upper)

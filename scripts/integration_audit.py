@@ -25,16 +25,20 @@ BOLD = "\033[1m"
 errors: list[str] = []
 warnings: list[str] = []
 
+
 def ok(msg: str) -> None:
     print(f"  {GRN}✓{RST} {msg}")
+
 
 def warn(msg: str) -> None:
     print(f"  {YEL}⚠{RST} {msg}")
     warnings.append(msg)
 
+
 def fail(msg: str) -> None:
     print(f"  {RED}✗{RST} {msg}")
     errors.append(msg)
+
 
 # ─────────────────────────────────────────────────────────────────────────────
 # 1. Server entrypoint duplication
@@ -63,12 +67,15 @@ def check_entrypoints() -> None:
                     all_prefix_only = False
         if len(lines_diff) == 3 and all_prefix_only:
             all_import_path = all(
-                'from "./src/' in a and 'from "./' in b
-                for lineno, a, b in lines_diff
+                'from "./src/' in a and 'from "./' in b for lineno, a, b in lines_diff
             )
             if all_import_path:
-                ok("Root server.ts and src/server.ts differ ONLY in import path prefix (./src/ vs ./)")
-                ok("Root server.ts delegates correctly to src/* modules — content is identical otherwise")
+                ok(
+                    "Root server.ts and src/server.ts differ ONLY in import path prefix (./src/ vs ./)"
+                )
+                ok(
+                    "Root server.ts delegates correctly to src/* modules — content is identical otherwise"
+                )
             else:
                 warn(f"server.ts vs src/server.ts differ: {lines_diff}")
         else:
@@ -86,6 +93,7 @@ def check_entrypoints() -> None:
     if dev_server.exists() and "server.ts" in dev_server.read_text():
         ok("dev-server.mjs references root server.ts")
 
+
 # ─────────────────────────────────────────────────────────────────────────────
 # 2. Backend API routers all registered
 # ─────────────────────────────────────────────────────────────────────────────
@@ -98,9 +106,9 @@ def check_backend_routers() -> None:
 
     content = main_py.read_text()
     # Handle multi-line parenthesized imports
-    import_match = re.search(r'from hyba_genesis_api\.api import \((.*?)\)', content, re.DOTALL)
+    import_match = re.search(r"from hyba_genesis_api\.api import \((.*?)\)", content, re.DOTALL)
     # Also handle any single-line import for routers
-    single_imports = re.findall(r'from hyba_genesis_api\.api import (\w+)', content)
+    single_imports = re.findall(r"from hyba_genesis_api\.api import (\w+)", content)
     imported_names = set()
     if import_match:
         for part in import_match.group(1).split(","):
@@ -118,7 +126,7 @@ def check_backend_routers() -> None:
     # Add single-line imports
     cleaned_names.update(single_imports)
 
-    included = set(re.findall(r'app\.include_router\((\w+)', content))
+    included = set(re.findall(r"app\.include_router\((\w+)", content))
 
     for name in sorted(cleaned_names):
         if name in included:
@@ -150,7 +158,19 @@ def check_api_client_alignment() -> None:
     client_calls = set()
     for m in re.finditer(r'["\'](/[^"\']*)["\']', client_content):
         path = m.group(1)
-        if any(path.startswith(p) for p in ["api/", "mining/", "intelligence/", "security/", "ai/", "v1/", "predict", "pulvini"]):
+        if any(
+            path.startswith(p)
+            for p in [
+                "api/",
+                "mining/",
+                "intelligence/",
+                "security/",
+                "ai/",
+                "v1/",
+                "predict",
+                "pulvini",
+            ]
+        ):
             if not path.startswith("/"):
                 path = "/" + path
             client_calls.add(path)
@@ -159,10 +179,15 @@ def check_api_client_alignment() -> None:
     backend_full_routes = set()
     for pyf in api_dir.glob("*.py"):
         content = pyf.read_text()
-        prefix_m = re.search(r'router\s*=\s*APIRouter\([^)]*prefix\s*=\s*["\']([^"\']*)["\']', content)
+        prefix_m = re.search(
+            r'router\s*=\s*APIRouter\([^)]*prefix\s*=\s*["\']([^"\']*)["\']', content
+        )
         if prefix_m:
             prefix = prefix_m.group(1).rstrip("/")
-            for route_m in re.finditer(r'@(?:router|api_router)\.(?:get|post|put|delete)\s*\(\s*["\'](/[^"\']*)["\']', content):
+            for route_m in re.finditer(
+                r'@(?:router|api_router)\.(?:get|post|put|delete)\s*\(\s*["\'](/[^"\']*)["\']',
+                content,
+            ):
                 full_route = prefix + route_m.group(1)
                 backend_full_routes.add(full_route)
 
@@ -172,7 +197,6 @@ def check_api_client_alignment() -> None:
     # Check each client path against backend routes
     unmatched = []
     for c in sorted(client_calls):
-        backend_path = c  # client paths are already relative to /api base
         # The client calls "GET /mining/pools" -> Express routes it as "/api/mining/pools" -> backend has "/api/mining/pools"
         # So we can match directly
         matched = False
@@ -197,6 +221,7 @@ def check_api_client_alignment() -> None:
     if not unmatched:
         ok("All API client paths have matching backend routes")
 
+
 # ─────────────────────────────────────────────────────────────────────────────
 # 4. Mining engine integration
 # ─────────────────────────────────────────────────────────────────────────────
@@ -210,17 +235,31 @@ def check_mining_engine() -> None:
 
     content = unified_engine.read_text()
     expected_modules = [
-        "pulvini_compressed_solver", "pulvini_coverage_certificate", "pulvini_nonce_compression",
-        "pulvini_overlay", "pulvini_propagation", "pulvini_verifier", "stratum_protocol",
-        "mining_validation", "genesis_ai", "quantum_solver", "metal_sha256_pipeline",
-        "phi_scaling_engine", "hendrix_phi_solver", "autonomous_mining_controller",
-        "consciousness_engine", "pulvini_memory_compression_proof", "stratum_client",
+        "pulvini_compressed_solver",
+        "pulvini_coverage_certificate",
+        "pulvini_nonce_compression",
+        "pulvini_overlay",
+        "pulvini_propagation",
+        "pulvini_verifier",
+        "stratum_protocol",
+        "mining_validation",
+        "genesis_ai",
+        "quantum_solver",
+        "metal_sha256_pipeline",
+        "phi_scaling_engine",
+        "hendrix_phi_solver",
+        "autonomous_mining_controller",
+        "consciousness_engine",
+        "pulvini_memory_compression_proof",
+        "stratum_client",
     ]
 
     referenced = [m for m in expected_modules if m in content]
     missing = [m for m in expected_modules if m not in content]
 
-    print(f"   Unified engine imports/references {len(referenced)}/{len(expected_modules)} key mining modules")
+    print(
+        f"   Unified engine imports/references {len(referenced)}/{len(expected_modules)} key mining modules"
+    )
     if missing:
         # Check if these are referenced by other mining modules
         mining_dir = ROOT / "python_backend" / "pythia_mining"
@@ -252,6 +291,7 @@ def check_mining_engine() -> None:
         if "phi_unified_mining_engine" in mining_content or "Pulvini" in mining_content:
             ok("Backend mining API routes reference mining engine")
 
+
 # ─────────────────────────────────────────────────────────────────────────────
 # 5. Frontend ↔ API client integration
 # ─────────────────────────────────────────────────────────────────────────────
@@ -266,8 +306,12 @@ def check_frontend_usage() -> None:
         return
 
     api_content = api_client.read_text()
-    api_exports = set(re.findall(r'export (?:async )?function (\w+)|export function (\w+)', api_content))
-    api_exports = {m[0] or m[1] for m in re.findall(r'export (?:async )?function (\w+)', api_content)}
+    api_exports = set(
+        re.findall(r"export (?:async )?function (\w+)|export function (\w+)", api_content)
+    )
+    api_exports = {
+        m[0] or m[1] for m in re.findall(r"export (?:async )?function (\w+)", api_content)
+    }
 
     comp_files = list(comp_dir.glob("*.tsx"))
     unused = set(api_exports)
@@ -277,9 +321,20 @@ def check_frontend_usage() -> None:
             if fn in comp_text:
                 unused.discard(fn)
 
-    noise = {"authInterceptor", "logout", "isAuthenticated", "startKeepAlivePing",
-             "assertPulviniHashrateCap", "getToken", "setToken", "clearToken",
-             "parseApiError", "fetchWithRetry", "calculateDelay", "secureUnitInterval"}
+    noise = {
+        "authInterceptor",
+        "logout",
+        "isAuthenticated",
+        "startKeepAlivePing",
+        "assertPulviniHashrateCap",
+        "getToken",
+        "setToken",
+        "clearToken",
+        "parseApiError",
+        "fetchWithRetry",
+        "calculateDelay",
+        "secureUnitInterval",
+    }
     unused -= noise
 
     if unused:
@@ -293,6 +348,7 @@ def check_frontend_usage() -> None:
         app_content = app_tsx.read_text()
         comp_imports = sum(1 for cf in comp_files if cf.stem in app_content)
         ok(f"{comp_imports}/{len(comp_files)} components imported in App.tsx")
+
 
 # ─────────────────────────────────────────────────────────────────────────────
 # 6. Euclid/quantum modules — all referenced
@@ -338,6 +394,7 @@ def check_euclid_modules() -> None:
     else:
         warn(f"{referenced} referenced, {unreferenced} may be standalone")
 
+
 # ─────────────────────────────────────────────────────────────────────────────
 # 7. Test coverage of backend routers
 # ─────────────────────────────────────────────────────────────────────────────
@@ -368,6 +425,7 @@ def check_test_coverage() -> None:
         else:
             ok(f"Backend router '{router_name}' covered by {covered} test file(s)")
 
+
 # ─────────────────────────────────────────────────────────────────────────────
 # 8. Scripts reference backend modules
 # ─────────────────────────────────────────────────────────────────────────────
@@ -385,19 +443,31 @@ def check_scripts_imports() -> None:
         content = sf.read_text()
         if sf.name == "integration_audit.py":
             continue
-        if any(imp in content for imp in
-               ["python_backend", "pythia_mining", "hyba_genesis_api",
-                "phi_unified_mining_engine", "pulvini", "stratum",
-                "genesis_ai", "mining_validation"]):
+        if any(
+            imp in content
+            for imp in [
+                "python_backend",
+                "pythia_mining",
+                "hyba_genesis_api",
+                "phi_unified_mining_engine",
+                "pulvini",
+                "stratum",
+                "genesis_ai",
+                "mining_validation",
+            ]
+        ):
             connected += 1
         else:
             standalone += 1
 
     if connected > 0:
-        ok(f"{connected} scripts reference backend modules" +
-           (f", {standalone} are utility scripts" if standalone else ""))
+        ok(
+            f"{connected} scripts reference backend modules"
+            + (f", {standalone} are utility scripts" if standalone else "")
+        )
     else:
         warn("No scripts reference backend modules")
+
 
 # ─────────────────────────────────────────────────────────────────────────────
 # MAIN
@@ -415,7 +485,7 @@ def main() -> int:
     check_test_coverage()
     check_scripts_imports()
 
-    print(f"\n{'='*50}")
+    print(f"\n{'=' * 50}")
     print(f"\n{BOLD}SUMMARY{RST}")
     if not errors:
         print(f"  {GRN}PASS{RST} — No integration errors found")

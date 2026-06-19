@@ -3,7 +3,9 @@ import { installBackendMocks, seedAuth } from "./fixtures";
 
 test.describe("accessibility smoke", () => {
   for (const role of ["anonymous", "admin", "ceo_heir_apparent"] as const) {
-    test(`${role} surface exposes named landmarks and controls without image-only buttons`, async ({ page }) => {
+    test(`${role} surface exposes named landmarks and controls without image-only buttons`, async ({
+      page,
+    }) => {
       await seedAuth(page, role);
       await installBackendMocks(page, { role });
       await page.goto("/");

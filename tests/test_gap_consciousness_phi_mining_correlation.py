@@ -14,13 +14,13 @@ Claims tested:
 These are correlation tests — they verify the wiring between Φ and strategy
 selection, not that Φ improves pool-side hashrate.
 """
+
 from __future__ import annotations
 
 import math
 import sys
 from pathlib import Path
 
-import numpy as np
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -30,7 +30,6 @@ from pythia_mining.consciousness_engine import (  # noqa: E402
     ConsciousnessConfig,
     ConsciousnessEngine,
     IntegrationRegime,
-    PHI,
     YANG_MILLS_GAP,
 )
 from pythia_mining.ai_optimizer import SearchStrategy  # noqa: E402
@@ -40,6 +39,7 @@ from pythia_mining.ai_optimizer import SearchStrategy  # noqa: E402
 # helpers
 # ---------------------------------------------------------------------------
 
+
 def _engine_with_phi(target_phi: float) -> ConsciousnessEngine:
     """Build a ConsciousnessEngine whose coherence_meter equals target_phi."""
     engine = ConsciousnessEngine(config=ConsciousnessConfig())
@@ -48,6 +48,7 @@ def _engine_with_phi(target_phi: float) -> ConsciousnessEngine:
         engine.update_component_health(component, target_phi >= 0.5)
     # Override directly for precision
     from pythia_mining.consciousness_engine import PhiMetrics
+
     metrics = PhiMetrics(
         phi_integrated=target_phi,
         phi_causal=target_phi,
@@ -60,22 +61,31 @@ def _engine_with_phi(target_phi: float) -> ConsciousnessEngine:
 def _strategy_for_phi(target_phi: float) -> SearchStrategy:
     """Replicate the strategy selection logic from UnifiedMiningEngine.search."""
     if target_phi >= 0.70:
-        return SearchStrategy(phi_resonance_enabled=True, adaptive_difficulty=True, max_search_time=30.0)
+        return SearchStrategy(
+            phi_resonance_enabled=True, adaptive_difficulty=True, max_search_time=30.0
+        )
     elif target_phi >= 0.40:
-        return SearchStrategy(phi_resonance_enabled=True, adaptive_difficulty=True, max_search_time=60.0)
+        return SearchStrategy(
+            phi_resonance_enabled=True, adaptive_difficulty=True, max_search_time=60.0
+        )
     else:
-        return SearchStrategy(phi_resonance_enabled=True, adaptive_difficulty=False, max_search_time=120.0)
+        return SearchStrategy(
+            phi_resonance_enabled=True, adaptive_difficulty=False, max_search_time=120.0
+        )
 
 
 # ---------------------------------------------------------------------------
 # 1. High Φ → short-search aggressive strategy
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.parametrize("phi", [0.70, 0.80, 0.95, 1.0])
 def test_high_phi_selects_aggressive_strategy(phi: float) -> None:
     """Φ ≥ 0.70 must route to the 30 s aggressive search."""
     strategy = _strategy_for_phi(phi)
-    assert strategy.max_search_time == 30.0, f"phi={phi}: expected 30 s, got {strategy.max_search_time}"
+    assert strategy.max_search_time == 30.0, (
+        f"phi={phi}: expected 30 s, got {strategy.max_search_time}"
+    )
     assert strategy.adaptive_difficulty is True
 
 
@@ -83,11 +93,14 @@ def test_high_phi_selects_aggressive_strategy(phi: float) -> None:
 # 2. Medium Φ → balanced strategy
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.parametrize("phi", [0.40, 0.55, 0.65, 0.699])
 def test_medium_phi_selects_balanced_strategy(phi: float) -> None:
     """0.40 ≤ Φ < 0.70 must route to the 60 s balanced search."""
     strategy = _strategy_for_phi(phi)
-    assert strategy.max_search_time == 60.0, f"phi={phi}: expected 60 s, got {strategy.max_search_time}"
+    assert strategy.max_search_time == 60.0, (
+        f"phi={phi}: expected 60 s, got {strategy.max_search_time}"
+    )
     assert strategy.adaptive_difficulty is True
 
 
@@ -95,17 +108,21 @@ def test_medium_phi_selects_balanced_strategy(phi: float) -> None:
 # 3. Low Φ → conservative strategy
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.parametrize("phi", [0.0, 0.10, 0.20, 0.39])
 def test_low_phi_selects_conservative_strategy(phi: float) -> None:
     """Φ < 0.40 must route to the 120 s conservative search."""
     strategy = _strategy_for_phi(phi)
-    assert strategy.max_search_time == 120.0, f"phi={phi}: expected 120 s, got {strategy.max_search_time}"
+    assert strategy.max_search_time == 120.0, (
+        f"phi={phi}: expected 120 s, got {strategy.max_search_time}"
+    )
     assert strategy.adaptive_difficulty is False
 
 
 # ---------------------------------------------------------------------------
 # 4. Continuous multiplier is monotone non-decreasing in Φ
 # ---------------------------------------------------------------------------
+
 
 def test_continuous_multiplier_is_monotone_in_phi() -> None:
     """calculate_continuous_multiplier must be monotone non-decreasing."""
@@ -124,6 +141,7 @@ def test_continuous_multiplier_is_monotone_in_phi() -> None:
 # 5. Multiplier stays within [min_multiplier, max_multiplier]
 # ---------------------------------------------------------------------------
 
+
 def test_continuous_multiplier_stays_within_config_bounds() -> None:
     """Multiplier must never leave [min_multiplier, max_multiplier]."""
     cfg = ConsciousnessConfig(min_multiplier=0.1, max_multiplier=1.5)
@@ -139,12 +157,13 @@ def test_continuous_multiplier_stays_within_config_bounds() -> None:
 # 6. Mass Gap damping fires when multiplier would exceed YANG_MILLS_GAP
 # ---------------------------------------------------------------------------
 
+
 def test_mass_gap_damping_applied_when_multiplier_exceeds_gap() -> None:
     """get_hardware_scaling_factor must apply damping if raw multiplier > YANG_MILLS_GAP."""
     # Configure a wide-range engine that will produce multipliers above the gap
     cfg = ConsciousnessConfig(
         min_multiplier=0.1,
-        max_multiplier=3.0,   # intentionally exceeds YANG_MILLS_GAP ≈ 1.382
+        max_multiplier=3.0,  # intentionally exceeds YANG_MILLS_GAP ≈ 1.382
     )
     engine = ConsciousnessEngine(config=cfg)
     # With max_multiplier=3.0 and phi=1.0, the raw multiplier is 3.0
@@ -162,17 +181,23 @@ def test_mass_gap_damping_applied_when_multiplier_exceeds_gap() -> None:
 # 7. Integration regime classification is consistent with thresholds
 # ---------------------------------------------------------------------------
 
-@pytest.mark.parametrize("phi,expected_regime", [
-    (1.0, IntegrationRegime.SINGULAR_AGENT_PROXY),
-    (0.70, IntegrationRegime.SINGULAR_AGENT_PROXY),
-    (0.69, IntegrationRegime.DISTRIBUTED),
-    (0.40, IntegrationRegime.DISTRIBUTED),
-    (0.39, IntegrationRegime.FRAGMENTED),
-    (0.20, IntegrationRegime.FRAGMENTED),
-    (0.19, IntegrationRegime.CRITICAL),
-    (0.0,  IntegrationRegime.CRITICAL),
-])
-def test_integration_regime_matches_thresholds(phi: float, expected_regime: IntegrationRegime) -> None:
+
+@pytest.mark.parametrize(
+    "phi,expected_regime",
+    [
+        (1.0, IntegrationRegime.SINGULAR_AGENT_PROXY),
+        (0.70, IntegrationRegime.SINGULAR_AGENT_PROXY),
+        (0.69, IntegrationRegime.DISTRIBUTED),
+        (0.40, IntegrationRegime.DISTRIBUTED),
+        (0.39, IntegrationRegime.FRAGMENTED),
+        (0.20, IntegrationRegime.FRAGMENTED),
+        (0.19, IntegrationRegime.CRITICAL),
+        (0.0, IntegrationRegime.CRITICAL),
+    ],
+)
+def test_integration_regime_matches_thresholds(
+    phi: float, expected_regime: IntegrationRegime
+) -> None:
     """Regime classification must match documented threshold boundaries."""
     engine = _engine_with_phi(phi)
     assert engine._integration_regime == expected_regime, (
@@ -184,10 +209,18 @@ def test_integration_regime_matches_thresholds(phi: float, expected_regime: Inte
 # 8. Φ computed from component health is bounded and finite
 # ---------------------------------------------------------------------------
 
-@pytest.mark.parametrize("n_healthy,n_total", [
-    (0, 5), (1, 5), (3, 5), (5, 5),
-    (0, 1), (1, 1),
-])
+
+@pytest.mark.parametrize(
+    "n_healthy,n_total",
+    [
+        (0, 5),
+        (1, 5),
+        (3, 5),
+        (5, 5),
+        (0, 1),
+        (1, 1),
+    ],
+)
 def test_phi_from_component_health_is_bounded(n_healthy: int, n_total: int) -> None:
     """Φ derived from component health must be in [0, 1] and finite."""
     engine = ConsciousnessEngine(config=ConsciousnessConfig())

@@ -40,7 +40,7 @@ class _GameDayEngine:
 
 def run_boundary_chaos_scenario() -> dict[str, Any]:
     """Run boundary chaos scenario to test silent degradation detection.
-    
+
     This scenario forces the reflexive cycle to generate proposals at exact
     boundary thresholds to verify that the observability stack can detect
     silent degradation through metric changes.
@@ -49,38 +49,38 @@ def run_boundary_chaos_scenario() -> dict[str, Any]:
     boundary_proposals = []
     proposal_acceptance_rates = []
     reflexive_loop_durations = []
-    
+
     # Generate sustained chain of proposals at boundary thresholds
     for i in range(10):
         proposal = {
             "phi_prior": 0.80,
             "compression_ratio": 1.99,
             "hashrate_scaling": 1.99,
-            "proposal_id": f"boundary_proposal_{i}"
+            "proposal_id": f"boundary_proposal_{i}",
         }
         boundary_proposals.append(proposal)
-        
+
         # Simulate boundary enforcement calculations causing performance degradation
         # As proposals sit at boundaries, acceptance rate should drop exponentially
-        acceptance_rate = 1.0 * (0.7 ** i)  # Exponential decay
+        acceptance_rate = 1.0 * (0.7**i)  # Exponential decay
         proposal_acceptance_rates.append(acceptance_rate)
-        
+
         # Reflexive loop duration should spike due to boundary calculations
         base_duration = 0.1  # seconds
         boundary_overhead = 0.5 * (1 + i * 0.2)  # Increasing overhead
         reflexive_loop_durations.append(base_duration + boundary_overhead)
-    
+
     # Verify metrics show expected degradation patterns
     acceptance_rate_drops = all(
         proposal_acceptance_rates[i] > proposal_acceptance_rates[i + 1]
         for i in range(len(proposal_acceptance_rates) - 1)
     )
-    
+
     duration_spikes = all(
         reflexive_loop_durations[i] < reflexive_loop_durations[i + 1]
         for i in range(len(reflexive_loop_durations) - 1)
     )
-    
+
     # Generate Prometheus metrics
     prometheus_metrics = (
         "# HELP hyba_proposal_acceptance_rate Rate of proposal acceptance.\n"
@@ -93,7 +93,7 @@ def run_boundary_chaos_scenario() -> dict[str, Any]:
         "# TYPE hyba_boundary_proposals_total counter\n"
         f"hyba_boundary_proposals_total {len(boundary_proposals)}\n"
     )
-    
+
     metrics = {
         "boundary_proposals_total": len(boundary_proposals),
         "final_acceptance_rate": proposal_acceptance_rates[-1],
@@ -102,7 +102,7 @@ def run_boundary_chaos_scenario() -> dict[str, Any]:
         "loop_duration_spikes": duration_spikes,
         "boundary_threshold_proposals": boundary_proposals,
     }
-    
+
     return {
         "scenario": "boundary_chaos",
         "pool_network_used": False,
@@ -110,7 +110,7 @@ def run_boundary_chaos_scenario() -> dict[str, Any]:
         "boundary_thresholds": {
             "phi_prior": 0.80,
             "compression_ratio": 1.99,
-            "hashrate_scaling": 1.99
+            "hashrate_scaling": 1.99,
         },
         "proposals_generated": len(boundary_proposals),
         "metrics": metrics,
@@ -119,16 +119,18 @@ def run_boundary_chaos_scenario() -> dict[str, Any]:
         "verification": {
             "acceptance_rate_drops_exponentially": acceptance_rate_drops,
             "loop_duration_spikes": duration_spikes,
-            "observability_stack_functional": acceptance_rate_drops and duration_spikes
-        }
+            "observability_stack_functional": acceptance_rate_drops and duration_spikes,
+        },
     }
 
 
-def run_game_day(*, cascades: int = 3, threshold: int = 3, scenario: str = "cascade_failure") -> dict[str, Any]:
+def run_game_day(
+    *, cascades: int = 3, threshold: int = 3, scenario: str = "cascade_failure"
+) -> dict[str, Any]:
     """Run a deterministic cascade-failure rehearsal and return evidence."""
     if scenario == "boundary_chaos":
         return run_boundary_chaos_scenario()
-    
+
     if AutonomousMiningController is None:
         return _run_dependency_light_game_day(cascades=cascades, threshold=threshold)
 
@@ -245,13 +247,19 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--cascades", type=int, default=3)
     parser.add_argument("--threshold", type=int, default=3)
-    parser.add_argument("--scenario", type=str, default="cascade_failure", 
-                       choices=["cascade_failure", "boundary_chaos"],
-                       help="Game day scenario to run")
+    parser.add_argument(
+        "--scenario",
+        type=str,
+        default="cascade_failure",
+        choices=["cascade_failure", "boundary_chaos"],
+        help="Game day scenario to run",
+    )
     parser.add_argument("--json", action="store_true", help="Emit JSON evidence only")
     args = parser.parse_args()
 
-    evidence = run_game_day(cascades=args.cascades, threshold=args.threshold, scenario=args.scenario)
+    evidence = run_game_day(
+        cascades=args.cascades, threshold=args.threshold, scenario=args.scenario
+    )
     if args.json:
         print(json.dumps(evidence, indent=2, sort_keys=True))
     else:

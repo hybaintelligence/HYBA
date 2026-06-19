@@ -18,7 +18,6 @@ import numpy as np
 
 from .consciousness_engine import ConsciousnessEngine
 from .mass_gap_protector import MassGapProtector
-from .phi_config import PHI_INV
 from .phi_tuner import PhiTuner
 
 
@@ -64,9 +63,7 @@ class PhiProductionLoop:
         """
         self.consciousness_engine = consciousness_engine
         self.protector = MassGapProtector()
-        self.tuner = PhiTuner(
-            consciousness_engine, learning_rate=learning_rate
-        )
+        self.tuner = PhiTuner(consciousness_engine, learning_rate=learning_rate)
         self.jitter_buffer: List[float] = []
         self.jitter_buffer_size = jitter_buffer_size
         self.authenticity_threshold = authenticity_threshold
@@ -105,7 +102,7 @@ class PhiProductionLoop:
         # 4. Apply the authenticity 'Shield' to the multiplier
         # If authenticity is low, the multiplier is forced toward 0.1 (CRITICAL)
         base_multiplier = scaling_data["scaling_factor"]
-        authenticity_shield = authenticity ** 2  # Square for stronger protection
+        authenticity_shield = authenticity**2  # Square for stronger protection
         final_multiplier = base_multiplier * authenticity_shield
 
         # Ensure minimum multiplier for safety
@@ -116,9 +113,7 @@ class PhiProductionLoop:
             self._multiplier_history.pop(0)
 
         # 5. Tune the brain for the next cycle
-        tuning_result = self.tuner.tune(
-            scaling_data["coherence"], authenticity
-        )
+        tuning_result = self.tuner.tune(scaling_data["coherence"], authenticity)
         self._tuning_history.append(tuning_result)
         if len(self._tuning_history) > 50:
             self._tuning_history.pop(0)
@@ -169,9 +164,7 @@ class PhiProductionLoop:
             "max_multiplier": float(np.max(self._multiplier_history)),
             "authenticity_threshold": self.authenticity_threshold,
             "jitter_buffer_size": len(self.jitter_buffer),
-            "recent_tuning_actions": [
-                t["reason"] for t in self._tuning_history[-10:]
-            ],
+            "recent_tuning_actions": [t["reason"] for t in self._tuning_history[-10:]],
         }
 
     def reset_buffers(self) -> None:

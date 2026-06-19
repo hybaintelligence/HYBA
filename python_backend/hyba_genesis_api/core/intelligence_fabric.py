@@ -14,13 +14,17 @@ import hashlib
 import json
 import math
 from dataclasses import asdict, dataclass
+
 try:
     from enum import StrEnum
 except ImportError:
     # Python 3.9 compatibility
     from enum import Enum
+
     class StrEnum(str, Enum):
         pass
+
+
 from typing import Any, Dict, Iterable, List, Mapping, Sequence
 
 from hyba_genesis_api.core.substrate_interface import SubstrateContract
@@ -161,7 +165,9 @@ def context_digest(context: Mapping[str, Any]) -> str:
     return hashlib.sha256(_stable_context_text(context).encode("utf-8")).hexdigest()
 
 
-def context_state(context: Mapping[str, Any], dimension: int = MAX_CONTEXT_DIMENSION) -> List[complex]:
+def context_state(
+    context: Mapping[str, Any], dimension: int = MAX_CONTEXT_DIMENSION
+) -> List[complex]:
     """Map arbitrary JSON-like context to a normalized complex state vector."""
 
     if not 1 <= dimension <= MAX_CONTEXT_DIMENSION:
@@ -316,7 +322,9 @@ def evaluate_substrate(substrate: SubstrateName, context: Mapping[str, Any]) -> 
     )
 
 
-def route_substrates(context: Mapping[str, Any], requested: Iterable[str] | None = None) -> List[SubstrateName]:
+def route_substrates(
+    context: Mapping[str, Any], requested: Iterable[str] | None = None
+) -> List[SubstrateName]:
     """Choose substrates deterministically from declared intent and context tokens."""
 
     if requested:
@@ -332,7 +340,9 @@ def route_substrates(context: Mapping[str, Any], requested: Iterable[str] | None
     return routed or [SubstrateName.DEUTSCH]
 
 
-def explain(context: Mapping[str, Any], requested_substrates: Iterable[str] | None = None) -> Dict[str, Any]:
+def explain(
+    context: Mapping[str, Any], requested_substrates: Iterable[str] | None = None
+) -> Dict[str, Any]:
     """Return the live intelligence-fabric explanation envelope."""
 
     substrates = route_substrates(context, requested_substrates)

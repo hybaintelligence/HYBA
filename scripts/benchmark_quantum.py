@@ -57,7 +57,7 @@ def benchmark_bures_metric(iterations: int = 100) -> Dict[str, Any]:
     times = []
     for _ in range(iterations):
         start = time.perf_counter()
-        cert = bures_certificate(manifold.rho, manifold.entropy_gradient)
+        bures_certificate(manifold.rho, manifold.entropy_gradient)
         end = time.perf_counter()
         times.append(end - start)
 
@@ -118,7 +118,7 @@ def benchmark_unitary_evolution(iterations: int = 100) -> Dict[str, Any]:
         eigenvectors = eigenvectors / (eigvecs_norm + 1e-300)
         with np.errstate(divide="ignore", invalid="ignore", over="ignore"):
             diag_phases = np.diag(phases)
-            unitary = eigenvectors @ diag_phases @ eigenvectors.conj().T
+            eigenvectors @ diag_phases @ eigenvectors.conj().T
         end = time.perf_counter()
         times.append(end - start)
 

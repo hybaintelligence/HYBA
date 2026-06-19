@@ -12,7 +12,6 @@ from argon2 import PasswordHasher
 from argon2.exceptions import InvalidHashError, VerificationError, VerifyMismatchError
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
-from sqlalchemy.orm import Session
 
 from hyba_genesis_api.auth.jwt_handler import (
     TokenPayload,
@@ -120,7 +119,7 @@ def _verify_operator(username: str, password: str) -> List[str]:
     except Exception:
         # Fall back to env var auth if database fails
         pass
-    
+
     # Fall back to environment variable authentication
     operators = _allowed_operator_hashes()
     operator = operators.get(username)

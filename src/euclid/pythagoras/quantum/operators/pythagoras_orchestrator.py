@@ -6,13 +6,14 @@ All placeholders filled. No simulated or fake data.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, asdict
-from typing import Any, Dict, List, Optional, Tuple
+from dataclasses import dataclass
+from typing import Any, Dict, Optional
 
 import numpy as np
 
 import sys
 import os
+
 _THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 if _THIS_DIR not in sys.path:
     sys.path.insert(0, _THIS_DIR)
@@ -21,7 +22,7 @@ from mpo_pulvini_hybrid import MPOPulviniHybrid, MPOHybridAudit
 from nonce_space_coverage import PlatonicNonceOverlay
 from omega_tda_audit import compare_omega_signatures, OmegaAuditResult, OmegaSignature
 from pulvini_scaling import PulviniOperator
-from tensor_train import TensorTrain, TensorTrainCompressor
+from tensor_train import TensorTrainCompressor
 from symbolic_verifier import (
     verify_unitary,
     verify_symbolic_phi_identity,
@@ -148,7 +149,9 @@ class PythagorasOrchestrator:
         hashrate_str = f"{work_rate:.2f}x (folded: {audit.folded_dimension} dims, {audit.tt_ranks})"
 
         return OrchestratorResult(
-            status="phi_resonance_achieved" if audit.topology_preserved else "degraded_preservation",
+            status="phi_resonance_achieved"
+            if audit.topology_preserved
+            else "degraded_preservation",
             compression_ratio=audit.compression_ratio,
             tda_stable=tda_result.stable,
             unitary_verified=unitary_result.passed,

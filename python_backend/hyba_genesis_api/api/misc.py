@@ -100,12 +100,12 @@ async def predict_params(req: PredictRequest):
     only when a measured optimizer runtime is connected. When unavailable, it reports
     the missing dependency explicitly rather than fabricating confidence or power scale.
     """
-    
+
     try:
         from pythia_mining.genesis_ai_service import GenesisAIServiceRegistry
-        
+
         optimizer = GenesisAIServiceRegistry.get_ai_optimizer()
-        
+
         if optimizer is None:
             raise HTTPException(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
@@ -116,19 +116,23 @@ async def predict_params(req: PredictRequest):
                     "timestamp": datetime.now(timezone.utc).isoformat(),
                 },
             )
-        
+
         # Get current optimizer state and meta-learning snapshot
         meta_snapshot = optimizer.meta_learning_snapshot()
         strategy_probs = meta_snapshot.get("strategy_probabilities", {})
         recent_performance = meta_snapshot.get("recent_performance", [])
-        
+
         # Calculate recommendation based on measured optimizer state
-        recommended_strategy = max(strategy_probs.items(), key=lambda x: x[1])[0] if strategy_probs else "phi_scaled_compressed_solver_search"
-        
+        recommended_strategy = (
+            max(strategy_probs.items(), key=lambda x: x[1])[0]
+            if strategy_probs
+            else "phi_scaled_compressed_solver_search"
+        )
+
         # Derive power scale recommendation from recent performance
         recent_accepted = [p for p in recent_performance[-10:] if p.get("accepted", False)]
         acceptance_rate = len(recent_accepted) / max(1, len(recent_performance[-10:]))
-        
+
         # Conservative power scaling based on acceptance rate
         if acceptance_rate > 0.7:
             recommended_power_scale = 1.0  # Stable
@@ -136,7 +140,7 @@ async def predict_params(req: PredictRequest):
             recommended_power_scale = 1.1  # Slight increase
         else:
             recommended_power_scale = 1.2  # Increase exploration
-        
+
         # Calculate confidence from strategy entropy
         if strategy_probs:
             strategy_values = list(strategy_probs.values())
@@ -145,7 +149,7 @@ async def predict_params(req: PredictRequest):
             confidence = 1.0 - (entropy / max(max_entropy, 1e-12))
         else:
             confidence = 0.0
-        
+
         return {
             "success": True,
             "status": "predicted",
@@ -163,7 +167,7 @@ async def predict_params(req: PredictRequest):
                 "recent_performance_samples": len(recent_performance),
             },
         }
-        
+
     except ImportError:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,

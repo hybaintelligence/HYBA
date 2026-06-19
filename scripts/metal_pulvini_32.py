@@ -16,6 +16,7 @@ SHA-256d on MLX:
   MLX integer kernel using the standard SHA-256 message schedule and
   compression function — all running on the Metal GPU.
 """
+
 from __future__ import annotations
 
 import hashlib
@@ -35,7 +36,9 @@ sys.path.insert(0, str(ROOT / "python_backend"))
 
 from pythia_mining.golden_ratio_library import PHI
 from pythia_mining.mining_validation import (
-    build_block_header, compute_merkle_root, coinbase_hash_hex,
+    build_block_header,
+    compute_merkle_root,
+    coinbase_hash_hex,
 )
 from pythia_mining.stratum_client import MiningJob
 
@@ -43,34 +46,88 @@ from pythia_mining.stratum_client import MiningJob
 # Constants
 # ---------------------------------------------------------------------------
 
-UINT32       = 2 ** 32
-N_SOLVERS    = 32
-SECTOR_SIZE  = UINT32 // N_SOLVERS          # 134,217,728
-PHI_STRIDE   = int(SECTOR_SIZE / PHI)       # 82,955,316 — irrational, low discrepancy
+UINT32 = 2**32
+N_SOLVERS = 32
+SECTOR_SIZE = UINT32 // N_SOLVERS  # 134,217,728
+PHI_STRIDE = int(SECTOR_SIZE / PHI)  # 82,955,316 — irrational, low discrepancy
 
 # SHA-256 constants
 _K = [
-    0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5,
-    0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
-    0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3,
-    0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
-    0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc,
-    0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da,
-    0x983e5152, 0xa831c66d, 0xb00327c8, 0xbf597fc7,
-    0xc6e00bf3, 0xd5a79147, 0x06ca6351, 0x14292967,
-    0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13,
-    0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85,
-    0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3,
-    0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070,
-    0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5,
-    0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3,
-    0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208,
-    0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2,
+    0x428A2F98,
+    0x71374491,
+    0xB5C0FBCF,
+    0xE9B5DBA5,
+    0x3956C25B,
+    0x59F111F1,
+    0x923F82A4,
+    0xAB1C5ED5,
+    0xD807AA98,
+    0x12835B01,
+    0x243185BE,
+    0x550C7DC3,
+    0x72BE5D74,
+    0x80DEB1FE,
+    0x9BDC06A7,
+    0xC19BF174,
+    0xE49B69C1,
+    0xEFBE4786,
+    0x0FC19DC6,
+    0x240CA1CC,
+    0x2DE92C6F,
+    0x4A7484AA,
+    0x5CB0A9DC,
+    0x76F988DA,
+    0x983E5152,
+    0xA831C66D,
+    0xB00327C8,
+    0xBF597FC7,
+    0xC6E00BF3,
+    0xD5A79147,
+    0x06CA6351,
+    0x14292967,
+    0x27B70A85,
+    0x2E1B2138,
+    0x4D2C6DFC,
+    0x53380D13,
+    0x650A7354,
+    0x766A0ABB,
+    0x81C2C92E,
+    0x92722C85,
+    0xA2BFE8A1,
+    0xA81A664B,
+    0xC24B8B70,
+    0xC76C51A3,
+    0xD192E819,
+    0xD6990624,
+    0xF40E3585,
+    0x106AA070,
+    0x19A4C116,
+    0x1E376C08,
+    0x2748774C,
+    0x34B0BCB5,
+    0x391C0CB3,
+    0x4ED8AA4A,
+    0x5B9CCA4F,
+    0x682E6FF3,
+    0x748F82EE,
+    0x78A5636F,
+    0x84C87814,
+    0x8CC70208,
+    0x90BEFFFA,
+    0xA4506CEB,
+    0xBEF9A3F7,
+    0xC67178F2,
 ]
 
 _H0 = [
-    0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a,
-    0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19,
+    0x6A09E667,
+    0xBB67AE85,
+    0x3C6EF372,
+    0xA54FF53A,
+    0x510E527F,
+    0x9B05688C,
+    0x1F83D9AB,
+    0x5BE0CD19,
 ]
 
 
@@ -78,13 +135,19 @@ _H0 = [
 # Header construction
 # ---------------------------------------------------------------------------
 
+
 def _make_job(target: int) -> MiningJob:
     return MiningJob(
-        job_id="metal-pulvini", prevhash="00" * 32,
+        job_id="metal-pulvini",
+        prevhash="00" * 32,
         coinbase_parts=("0100000001", "ffffffff"),
-        merkle_branch=[], version="20000000",
-        nbits="207fffff", ntime="5e9a5c00",
-        target=target, extranonce1="abcd1234", extranonce2_size=4,
+        merkle_branch=[],
+        version="20000000",
+        nbits="207fffff",
+        ntime="5e9a5c00",
+        target=target,
+        extranonce1="abcd1234",
+        extranonce2_size=4,
     )
 
 
@@ -105,6 +168,7 @@ def _prefix_to_words(prefix76: bytes) -> List[int]:
 # Pure-Python SHA-256d for reference / CPU fallback
 # ---------------------------------------------------------------------------
 
+
 def _sha256d_cpu(header80: bytes) -> int:
     d = hashlib.sha256(hashlib.sha256(header80).digest()).digest()
     return int.from_bytes(d, "little")
@@ -121,12 +185,15 @@ def _sha256d_cpu(header80: bytes) -> int:
 # MLX supports element-wise bitwise ops on integer arrays.
 # ---------------------------------------------------------------------------
 
+
 def _rotr32(x: mx.array, n: int) -> mx.array:
     """Rotate right 32-bit."""
     return mx.bitwise_or(
         mx.right_shift(x, n),
-        mx.left_shift(mx.bitwise_and(x, mx.array(0xFFFFFFFF, dtype=mx.uint32)),
-                      mx.array(32 - n, dtype=mx.uint32))
+        mx.left_shift(
+            mx.bitwise_and(x, mx.array(0xFFFFFFFF, dtype=mx.uint32)),
+            mx.array(32 - n, dtype=mx.uint32),
+        ),
     )
 
 
@@ -137,49 +204,42 @@ def _sha256_compress_batch(w: List[mx.array], h_init: List[mx.array]) -> List[mx
     h_init: list of 8 arrays, each shape (N,) uint32 — initial hash state
     Returns: list of 8 arrays shape (N,) — updated hash state
     """
-    K = mx.array(_K, dtype=mx.uint32)
+    mx.array(_K, dtype=mx.uint32)
     a, b, c, d, e, f, g, h = h_init
 
     for i in range(64):
         ki = mx.full(a.shape, _K[i], dtype=mx.uint32)
 
         # Sigma1(e)
-        s1 = mx.bitwise_xor(
-            mx.bitwise_xor(_rotr32(e, 6), _rotr32(e, 11)),
-            _rotr32(e, 25)
-        )
+        s1 = mx.bitwise_xor(mx.bitwise_xor(_rotr32(e, 6), _rotr32(e, 11)), _rotr32(e, 25))
         # Ch(e, f, g)
-        ch = mx.bitwise_xor(
-            mx.bitwise_and(e, f),
-            mx.bitwise_and(mx.bitwise_not(e), g)
-        )
+        ch = mx.bitwise_xor(mx.bitwise_and(e, f), mx.bitwise_and(mx.bitwise_not(e), g))
         temp1 = mx.add(mx.add(mx.add(mx.add(h, s1), ch), ki), w[i])
         temp1 = mx.bitwise_and(temp1, mx.array(0xFFFFFFFF, dtype=mx.uint32))
 
         # Sigma0(a)
-        s0 = mx.bitwise_xor(
-            mx.bitwise_xor(_rotr32(a, 2), _rotr32(a, 13)),
-            _rotr32(a, 22)
-        )
+        s0 = mx.bitwise_xor(mx.bitwise_xor(_rotr32(a, 2), _rotr32(a, 13)), _rotr32(a, 22))
         # Maj(a, b, c)
         maj = mx.bitwise_xor(
-            mx.bitwise_xor(
-                mx.bitwise_and(a, b),
-                mx.bitwise_and(a, c)
-            ),
-            mx.bitwise_and(b, c)
+            mx.bitwise_xor(mx.bitwise_and(a, b), mx.bitwise_and(a, c)), mx.bitwise_and(b, c)
         )
         temp2 = mx.bitwise_and(mx.add(s0, maj), mx.array(0xFFFFFFFF, dtype=mx.uint32))
 
-        h = g; g = f; f = e
+        h = g
+        g = f
+        f = e
         e = mx.bitwise_and(mx.add(d, temp1), mx.array(0xFFFFFFFF, dtype=mx.uint32))
-        d = c; c = b; b = a
+        d = c
+        c = b
+        b = a
         a = mx.bitwise_and(mx.add(temp1, temp2), mx.array(0xFFFFFFFF, dtype=mx.uint32))
 
-    H0 = mx.array(_H0, dtype=mx.uint32)
+    mx.array(_H0, dtype=mx.uint32)
     out = [
-        mx.bitwise_and(mx.add(x, mx.full(a.shape, int(_H0[i]), dtype=mx.uint32)),
-                       mx.array(0xFFFFFFFF, dtype=mx.uint32))
+        mx.bitwise_and(
+            mx.add(x, mx.full(a.shape, int(_H0[i]), dtype=mx.uint32)),
+            mx.array(0xFFFFFFFF, dtype=mx.uint32),
+        )
         for i, x in enumerate([a, b, c, d, e, f, g, h])
     ]
     return out
@@ -190,16 +250,16 @@ def _build_message_schedule(m16: List[mx.array]) -> List[mx.array]:
     w = list(m16)
     for i in range(16, 64):
         s0 = mx.bitwise_xor(
-            mx.bitwise_xor(_rotr32(w[i-15], 7), _rotr32(w[i-15], 18)),
-            mx.right_shift(w[i-15], 3)
+            mx.bitwise_xor(_rotr32(w[i - 15], 7), _rotr32(w[i - 15], 18)),
+            mx.right_shift(w[i - 15], 3),
         )
         s1 = mx.bitwise_xor(
-            mx.bitwise_xor(_rotr32(w[i-2], 17), _rotr32(w[i-2], 19)),
-            mx.right_shift(w[i-2], 10)
+            mx.bitwise_xor(_rotr32(w[i - 2], 17), _rotr32(w[i - 2], 19)),
+            mx.right_shift(w[i - 2], 10),
         )
         wi = mx.bitwise_and(
-            mx.add(mx.add(mx.add(w[i-16], s0), w[i-7]), s1),
-            mx.array(0xFFFFFFFF, dtype=mx.uint32)
+            mx.add(mx.add(mx.add(w[i - 16], s0), w[i - 7]), s1),
+            mx.array(0xFFFFFFFF, dtype=mx.uint32),
         )
         w.append(wi)
     return w
@@ -282,6 +342,7 @@ def sha256d_batch_mlx(prefix76: bytes, nonces: np.ndarray) -> np.ndarray:
 # 32-solver Metal benchmark
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class MetalResult:
     name: str
@@ -324,11 +385,14 @@ def run_metal_pulvini_32(
     while iterations_done < total_iterations:
         # Generate nonces for all 32 solvers
         # Solver s, step k: nonce = s*SECTOR_SIZE + (k * PHI_STRIDE) % SECTOR_SIZE
-        nonces = np.array([
-            (s * SECTOR_SIZE + (step * PHI_STRIDE) % SECTOR_SIZE)
-            for s in range(N_SOLVERS)
-            for _ in range(batch_size)
-        ], dtype=np.uint32)
+        nonces = np.array(
+            [
+                (s * SECTOR_SIZE + (step * PHI_STRIDE) % SECTOR_SIZE)
+                for s in range(N_SOLVERS)
+                for _ in range(batch_size)
+            ],
+            dtype=np.uint32,
+        )
 
         # Hash on Metal
         hashes = sha256d_batch_mlx(prefix76, nonces)  # (N, 8) uint32
@@ -399,23 +463,28 @@ def run_cpu_brute_force(prefix76: bytes, target: int, total_iterations: int) -> 
 
 if __name__ == "__main__":
     import argparse
+
     p = argparse.ArgumentParser()
-    p.add_argument("--batch",      type=int, default=512,
-                   help="Nonces per solver per GPU batch (default 512)")
-    p.add_argument("--iterations", type=int, default=160_000,
-                   help="Total iterations budget (default 160000)")
-    p.add_argument("--trials",     type=int, default=3)
+    p.add_argument(
+        "--batch", type=int, default=512, help="Nonces per solver per GPU batch (default 512)"
+    )
+    p.add_argument(
+        "--iterations", type=int, default=160_000, help="Total iterations budget (default 160000)"
+    )
+    p.add_argument("--trials", type=int, default=3)
     args = p.parse_args()
 
     target = int("00" + "ff" * 31, 16)
-    job    = _make_job(target)
+    job = _make_job(target)
     prefix = _header_prefix(job)
 
     print("Metal PULVINI-32 vs CPU Brute Force")
     print(f"  Device:     {mx.default_device()}")
     print(f"  Solvers:    {N_SOLVERS} sectors × {SECTOR_SIZE:,} nonces")
-    print(f"  Batch size: {args.batch} nonces/solver/step = "
-          f"{N_SOLVERS * args.batch:,} nonces/GPU call")
+    print(
+        f"  Batch size: {args.batch} nonces/solver/step = "
+        f"{N_SOLVERS * args.batch:,} nonces/GPU call"
+    )
     print(f"  Iterations: {args.iterations:,} total budget\n")
 
     # Warmup
@@ -424,43 +493,52 @@ if __name__ == "__main__":
     print("done\n")
 
     all_metal = []
-    all_cpu   = []
+    all_cpu = []
 
     for t in range(args.trials):
-        print(f"Trial {t+1}/{args.trials}")
+        print(f"Trial {t + 1}/{args.trials}")
         m = run_metal_pulvini_32(prefix, target, args.batch, args.iterations)
         c = run_cpu_brute_force(prefix, target, args.iterations)
         all_metal.append(m)
         all_cpu.append(c)
-        print(f"  Metal: {m.hits} hits  {m.hashes_per_second/1000:.0f} kH/s  "
-              f"first_hit={m.first_hit_iteration}")
-        print(f"  CPU:   {c.hits} hits  {c.hashes_per_second/1000:.0f} kH/s  "
-              f"first_hit={c.first_hit_iteration}\n")
+        print(
+            f"  Metal: {m.hits} hits  {m.hashes_per_second / 1000:.0f} kH/s  "
+            f"first_hit={m.first_hit_iteration}"
+        )
+        print(
+            f"  CPU:   {c.hits} hits  {c.hashes_per_second / 1000:.0f} kH/s  "
+            f"first_hit={c.first_hit_iteration}\n"
+        )
 
     def _mean(lst, attr):
         v = [getattr(x, attr) for x in lst if getattr(x, attr) is not None]
         return sum(v) / len(v) if v else None
 
-    m_hps  = _mean(all_metal, "hashes_per_second")
-    c_hps  = _mean(all_cpu,   "hashes_per_second")
-    m_fh   = _mean(all_metal, "first_hit_iteration")
-    c_fh   = _mean(all_cpu,   "first_hit_iteration")
+    m_hps = _mean(all_metal, "hashes_per_second")
+    c_hps = _mean(all_cpu, "hashes_per_second")
+    m_fh = _mean(all_metal, "first_hit_iteration")
+    c_fh = _mean(all_cpu, "first_hit_iteration")
 
     print("--- VERDICT ---")
-    print(f"CPU brute force:    {c_hps/1000:.0f} kH/s   first_hit={c_fh:.0f}")
-    print(f"Metal PULVINI-32:   {m_hps/1000:.0f} kH/s   first_hit={m_fh:.0f}")
-    print(f"Throughput ratio:   {m_hps/c_hps:.2f}x")
+    print(f"CPU brute force:    {c_hps / 1000:.0f} kH/s   first_hit={c_fh:.0f}")
+    print(f"Metal PULVINI-32:   {m_hps / 1000:.0f} kH/s   first_hit={m_fh:.0f}")
+    print(f"Throughput ratio:   {m_hps / c_hps:.2f}x")
     if m_fh and c_fh:
-        print(f"First-hit ratio:    {c_fh/m_fh:.1f}x faster to first hit")
+        print(f"First-hit ratio:    {c_fh / m_fh:.1f}x faster to first hit")
 
     out = ROOT / "artifacts" / f"benchmark_metal_pulvini32_{int(time.time())}.json"
     out.parent.mkdir(exist_ok=True)
-    out.write_text(json.dumps({
-        "benchmark": "metal_pulvini_32_vs_cpu",
-        "device": str(mx.default_device()),
-        "metal": {"mean_khs": m_hps/1000, "mean_first_hit": m_fh},
-        "cpu":   {"mean_khs": c_hps/1000, "mean_first_hit": c_fh},
-        "throughput_ratio": m_hps/c_hps,
-        "first_hit_ratio": (c_fh/m_fh) if (m_fh and c_fh) else None,
-    }, indent=2))
+    out.write_text(
+        json.dumps(
+            {
+                "benchmark": "metal_pulvini_32_vs_cpu",
+                "device": str(mx.default_device()),
+                "metal": {"mean_khs": m_hps / 1000, "mean_first_hit": m_fh},
+                "cpu": {"mean_khs": c_hps / 1000, "mean_first_hit": c_fh},
+                "throughput_ratio": m_hps / c_hps,
+                "first_hit_ratio": (c_fh / m_fh) if (m_fh and c_fh) else None,
+            },
+            indent=2,
+        )
+    )
     print(f"\nResults → {out}")

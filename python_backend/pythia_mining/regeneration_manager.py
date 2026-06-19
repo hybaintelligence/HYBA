@@ -138,12 +138,14 @@ class RegenerationManager:
             confidence=1.0,
         )
         rng = np.random.default_rng(seed=(lane_id << 16) + lane.generation)
-        trace = _json_safe(regeneration_pipeline(
-            module_id=lane.module_state.module_id,
-            fault_severity=0.7,
-            context=context,
-            rng=rng,
-        ))
+        trace = _json_safe(
+            regeneration_pipeline(
+                module_id=lane.module_state.module_id,
+                fault_severity=0.7,
+                context=context,
+                rng=rng,
+            )
+        )
         duration_ms = (time.perf_counter() - start) * 1000.0
         fidelity = float(trace.get("fidelity_pre_collapse", 0.0))
         status = str(trace.get("status", "unknown"))

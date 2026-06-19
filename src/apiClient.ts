@@ -1241,10 +1241,7 @@ async function put<T>(
   return response.json() as Promise<T>;
 }
 
-async function del<T = void>(
-  path: string,
-  retryOptions?: Partial<RetryOptions>,
-): Promise<T> {
+async function del<T = void>(path: string, retryOptions?: Partial<RetryOptions>): Promise<T> {
   const response = await fetchWithRetry(
     `${BACKEND_URL}${path}`,
     { method: "DELETE" },
@@ -1508,7 +1505,11 @@ export async function getMiningProductionHealth(): Promise<MiningProductionHealt
 
 /** POST /api/v1/mining-production/initialize — Initialize mining pipeline */
 export async function initializeMiningProduction(): Promise<MiningProductionInitializeResponse> {
-  return post<MiningProductionInitializeResponse>("/v1/mining-production/initialize", {}, { maxRetries: 0 });
+  return post<MiningProductionInitializeResponse>(
+    "/v1/mining-production/initialize",
+    {},
+    { maxRetries: 0 },
+  );
 }
 
 /** GET /api/v1/mining-production/metrics — Production pipeline metrics */
@@ -1540,7 +1541,9 @@ export async function stopMiningProduction(): Promise<MiningProductionStopRespon
 export async function submitMiningProductionShare(
   data: MiningProductionSubmitShareRequest,
 ): Promise<MiningProductionSubmitShareResponse> {
-  return post<MiningProductionSubmitShareResponse>("/v1/mining-production/submit-share", data, { maxRetries: 0 });
+  return post<MiningProductionSubmitShareResponse>("/v1/mining-production/submit-share", data, {
+    maxRetries: 0,
+  });
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -1614,10 +1617,14 @@ export async function scaleIntelligence(
   target = "reflexive_controller",
 ): Promise<{ status: string; intelligence_scale: number }> {
   assertFiniteNumber(scale, "scale");
-  return post<{ status: string; intelligence_scale: number }>("/v1/intelligence/scale", {
-    scale,
-    target,
-  }, { maxRetries: 0 });
+  return post<{ status: string; intelligence_scale: number }>(
+    "/v1/intelligence/scale",
+    {
+      scale,
+      target,
+    },
+    { maxRetries: 0 },
+  );
 }
 
 /** POST /api/v1/intelligence/consciousness/boost — Boost consciousness */
@@ -1638,7 +1645,9 @@ export async function boostConsciousness(
 export async function intelligenceReflect(
   data?: IntelligenceV1ReflectRequest,
 ): Promise<IntelligenceV1ReflectResponse> {
-  return post<IntelligenceV1ReflectResponse>("/v1/intelligence/reflect", data || {}, { maxRetries: 0 });
+  return post<IntelligenceV1ReflectResponse>("/v1/intelligence/reflect", data || {}, {
+    maxRetries: 0,
+  });
 }
 
 /** POST /api/v1/intelligence/explain — Request explanation */
@@ -1652,17 +1661,27 @@ export async function intelligenceExplain(
 export async function intelligenceOrchestrate(
   data: IntelligenceV1OrchestrateRequest,
 ): Promise<IntelligenceV1OrchestrateResponse> {
-  return post<IntelligenceV1OrchestrateResponse>("/v1/intelligence/orchestrate", data, { maxRetries: 0 });
+  return post<IntelligenceV1OrchestrateResponse>("/v1/intelligence/orchestrate", data, {
+    maxRetries: 0,
+  });
 }
 
 /** POST /api/v1/intelligence/closure/sync — Sync closure state */
 export async function intelligenceClosureSync(): Promise<IntelligenceV1ClosureSyncResponse> {
-  return post<IntelligenceV1ClosureSyncResponse>("/v1/intelligence/closure/sync", {}, { maxRetries: 0 });
+  return post<IntelligenceV1ClosureSyncResponse>(
+    "/v1/intelligence/closure/sync",
+    {},
+    { maxRetries: 0 },
+  );
 }
 
 /** POST /api/v1/intelligence/heartbeat/pulse — Send heartbeat pulse */
 export async function intelligenceHeartbeatPulse(): Promise<IntelligenceV1HeartbeatPulseResponse> {
-  return post<IntelligenceV1HeartbeatPulseResponse>("/v1/intelligence/heartbeat/pulse", {}, { maxRetries: 0 });
+  return post<IntelligenceV1HeartbeatPulseResponse>(
+    "/v1/intelligence/heartbeat/pulse",
+    {},
+    { maxRetries: 0 },
+  );
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -1696,9 +1715,7 @@ export async function getSecurityStatus(): Promise<SecurityStatus> {
 }
 
 /** POST /api/security/shield — Activate/deactivate security shield */
-export async function securityShield(
-  data: SecurityShieldRequest,
-): Promise<SecurityShieldResponse> {
+export async function securityShield(data: SecurityShieldRequest): Promise<SecurityShieldResponse> {
   return post<SecurityShieldResponse>("/security/shield", data, { maxRetries: 0 });
 }
 
@@ -1725,15 +1742,26 @@ export async function getUnifiedMetrics(): Promise<UnifiedMetricsResponse> {
 export async function analyzeBlockchainSnapshot(
   blocks: Array<{ height: number; block_hash: string }>,
 ): Promise<Record<string, unknown>> {
-  return post<Record<string, unknown>>("/v1/unified/analyze/blockchain", { blocks }, { maxRetries: 0 });
+  return post<Record<string, unknown>>(
+    "/v1/unified/analyze/blockchain",
+    { blocks },
+    { maxRetries: 0 },
+  );
 }
 
 /** POST /api/v1/unified/analyze/it-from-bit — Analyze it-from-bit data */
-export async function analyzeItFromBit(bits: string, wordSize = 8): Promise<Record<string, unknown>> {
-  return post<Record<string, unknown>>("/v1/unified/analyze/it-from-bit", {
-    bits,
-    word_size: wordSize,
-  }, { maxRetries: 0 });
+export async function analyzeItFromBit(
+  bits: string,
+  wordSize = 8,
+): Promise<Record<string, unknown>> {
+  return post<Record<string, unknown>>(
+    "/v1/unified/analyze/it-from-bit",
+    {
+      bits,
+      word_size: wordSize,
+    },
+    { maxRetries: 0 },
+  );
 }
 
 /** POST /api/v1/unified/analyze/resonance — Analyze resonance data */
@@ -1747,7 +1775,9 @@ export async function analyzeResonance(
 export async function unifiedShareResult(
   data: UnifiedShareResultRequest,
 ): Promise<{ status: string; accepted: boolean }> {
-  return post<{ status: string; accepted: boolean }>("/v1/unified/share-result", data, { maxRetries: 0 });
+  return post<{ status: string; accepted: boolean }>("/v1/unified/share-result", data, {
+    maxRetries: 0,
+  });
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -1892,9 +1922,7 @@ export async function getAdminUsers(
 }
 
 /** POST /api/admin/users — Create admin user */
-export async function createAdminUser(
-  data: CreateAdminUserRequest,
-): Promise<AdminUser> {
+export async function createAdminUser(data: CreateAdminUserRequest): Promise<AdminUser> {
   return post<AdminUser>("/admin/users", data, { maxRetries: 0 });
 }
 
@@ -1992,9 +2020,7 @@ export async function getFundingRequests(
 }
 
 /** POST /api/admin/funding/requests — Create funding request */
-export async function createFundingRequest(
-  data: CreateFundingRequest,
-): Promise<FundingRequest> {
+export async function createFundingRequest(data: CreateFundingRequest): Promise<FundingRequest> {
   return post<FundingRequest>("/admin/funding/requests", data, { maxRetries: 0 });
 }
 
@@ -2067,13 +2093,20 @@ export async function getConjectures(): Promise<Conjecture[]> {
 }
 
 /** GET /organism/regeneration/status — Get organism regeneration status */
-export async function getOrganismRegenerationStatus(): Promise<{ status: string; timestamp: string }> {
+export async function getOrganismRegenerationStatus(): Promise<{
+  status: string;
+  timestamp: string;
+}> {
   return get<{ status: string; timestamp: string }>("/organism/regeneration/status");
 }
 
 /** POST /organism/cognition/evolve/{conjecture_id} — Apply evolution */
 export async function applyEvolution(conjectureId: string): Promise<{ status: string }> {
-  return post<{ status: string }>(`/organism/cognition/evolve/${conjectureId}`, {}, { maxRetries: 0 });
+  return post<{ status: string }>(
+    `/organism/cognition/evolve/${conjectureId}`,
+    {},
+    { maxRetries: 0 },
+  );
 }
 
 /** GET /organism/metabolism/flux — Get metabolic flux */
@@ -2137,8 +2170,14 @@ export interface PoolHabitatList {
 }
 
 /** POST /organism/executive/intent — Set mining intent */
-export async function setMiningIntent(data: MiningIntentRequest): Promise<IgnitionResponse | QuiescenceResponse | StasisResponse> {
-  return post<IgnitionResponse | QuiescenceResponse | StasisResponse>("/organism/executive/intent", data, { maxRetries: 0 });
+export async function setMiningIntent(
+  data: MiningIntentRequest,
+): Promise<IgnitionResponse | QuiescenceResponse | StasisResponse> {
+  return post<IgnitionResponse | QuiescenceResponse | StasisResponse>(
+    "/organism/executive/intent",
+    data,
+    { maxRetries: 0 },
+  );
 }
 
 /** GET /organism/executive/habitats — List pool habitats */
@@ -2148,7 +2187,11 @@ export async function getPoolHabitats(): Promise<PoolHabitatList> {
 
 /** PUT /organism/executive/habitats/migrate/{pool_name} — Migrate to habitat */
 export async function migrateToHabitat(poolName: string): Promise<MigrationResponse> {
-  return put<MigrationResponse>(`/organism/executive/habitats/migrate/${poolName}`, {}, { maxRetries: 0 });
+  return put<MigrationResponse>(
+    `/organism/executive/habitats/migrate/${poolName}`,
+    {},
+    { maxRetries: 0 },
+  );
 }
 
 /** GET /organism/executive/telemetry — Get executive telemetry */
@@ -2244,7 +2287,12 @@ export async function getMetabolicHealth(): Promise<{
 //  STREAMING SENSE ENDPOINTS (V1)
 // ═══════════════════════════════════════════════════════════════════════════
 
-export type StreamingChannel = "phi_resonance" | "autonomy_metrics" | "mining_pulse" | "structural_coupling" | "system_health";
+export type StreamingChannel =
+  | "phi_resonance"
+  | "autonomy_metrics"
+  | "mining_pulse"
+  | "structural_coupling"
+  | "system_health";
 
 export interface StreamingStats {
   total_connections: number;
@@ -2306,14 +2354,17 @@ export interface RegenerationStatus {
   total_modules: number;
   modules_in_blastema: number;
   modules_with_positional_memory: number;
-  modules: Record<string, {
-    blastema_metric: number;
-    is_in_blastema: boolean;
-    role_probabilities: Record<string, number>;
-    has_positional_memory: boolean;
-    clifford_index?: number;
-    is_in_refractory_period: boolean;
-  }>;
+  modules: Record<
+    string,
+    {
+      blastema_metric: number;
+      is_in_blastema: boolean;
+      role_probabilities: Record<string, number>;
+      has_positional_memory: boolean;
+      clifford_index?: number;
+      is_in_refractory_period: boolean;
+    }
+  >;
 }
 
 export interface RegenerationResponse {
@@ -2364,7 +2415,10 @@ export async function getRegenerationStatus(): Promise<RegenerationResponse> {
 }
 
 /** POST /api/security/regeneration/trigger — Trigger regeneration */
-export async function triggerRegeneration(moduleId: string, cliffordIndex?: number): Promise<{
+export async function triggerRegeneration(
+  moduleId: string,
+  cliffordIndex?: number,
+): Promise<{
   success: boolean;
   status: string;
   timestamp: string;

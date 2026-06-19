@@ -57,7 +57,7 @@ Biological correspondence (for traceability back to thesis framing):
 """
 
 import numpy as np
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum
 from typing import Optional
 import time
@@ -72,12 +72,13 @@ import time
 # (syndrome-weight telemetry roles), or EUCLID cognitive-manifold function
 # slots, depending on which subsystem this module lives in.
 
+
 class Role(Enum):
-    HEALTHY_SPECIALIZED = "healthy_specialized"   # normal operating role
-    BLASTEMA = "blastema"                          # fully dedifferentiated
-    QUARANTINED = "quarantined"                    # isolated, pre-healing
-    REDIFFERENTIATING = "redifferentiating"        # mid-recovery
-    MALFORMED = "malformed"                        # failed/wrong recovery
+    HEALTHY_SPECIALIZED = "healthy_specialized"  # normal operating role
+    BLASTEMA = "blastema"  # fully dedifferentiated
+    QUARANTINED = "quarantined"  # isolated, pre-healing
+    REDIFFERENTIATING = "redifferentiating"  # mid-recovery
+    MALFORMED = "malformed"  # failed/wrong recovery
 
 
 ROLE_BASIS = list(Role)
@@ -96,15 +97,17 @@ def role_projector(role: Role) -> np.ndarray:
 # 2. MODULE STATE: DENSITY MATRIX
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class ModuleState:
     """
     rho: DIM x DIM complex density matrix.
     Must satisfy: Hermitian, trace 1, positive semi-definite.
     These constraints are CHECKED, not assumed -- see validate().
-    
+
     ELEVATED: Added refractory_period_end to prevent regeneration oscillation.
     """
+
     rho: np.ndarray
     module_id: str
     refractory_period_end: float = 0.0  # Timestamp when refractory period ends
@@ -112,10 +115,12 @@ class ModuleState:
 
     @classmethod
     def healthy(cls, module_id: str) -> "ModuleState":
-        return cls(rho=role_projector(Role.HEALTHY_SPECIALIZED).astype(complex),
-                    module_id=module_id,
-                    refractory_period_end=0.0,
-                    recovery_timestamp=time.time())
+        return cls(
+            rho=role_projector(Role.HEALTHY_SPECIALIZED).astype(complex),
+            module_id=module_id,
+            refractory_period_end=0.0,
+            recovery_timestamp=time.time(),
+        )
 
     def validate(self, atol: float = 1e-8) -> None:
         herm = np.allclose(self.rho, self.rho.conj().T, atol=atol)
@@ -150,15 +155,12 @@ class ModuleState:
         in the role basis (since role_projector states are the basis
         vectors themselves).
         """
-        return {
-            role: float(self.rho[i, i].real)
-            for i, role in enumerate(ROLE_BASIS)
-        }
-    
+        return {role: float(self.rho[i, i].real) for i, role in enumerate(ROLE_BASIS)}
+
     def is_in_refractory_period(self) -> bool:
         """Check if module is in refractory period (preventing re-injury)."""
         return time.time() < self.refractory_period_end
-    
+
     def enter_refractory_period(self, duration: float = 60.0) -> None:
         """Enter refractory period after recovery to prevent oscillation."""
         self.refractory_period_end = time.time() + duration
@@ -167,6 +169,7 @@ class ModuleState:
 # ---------------------------------------------------------------------------
 # 3. FAULT / INJURY: PERTURBATION OPERATOR
 # ---------------------------------------------------------------------------
+
 
 def fault_perturbation_operator(severity: float) -> np.ndarray:
     """
@@ -216,6 +219,7 @@ def apply_fault(state: ModuleState, severity: float) -> ModuleState:
     """
     if state.is_in_refractory_period():
         import time
+
         now = time.time()
         remaining = max(0.0, state.refractory_period_end - now)
         # refractory_period_end was set at recovery + duration
@@ -240,6 +244,7 @@ def apply_fault(state: ModuleState, severity: float) -> ModuleState:
 # 4. QUARANTINE: DECOHERENCE CHANNEL (WOUND EPIDERMIS ANALOG)
 # ---------------------------------------------------------------------------
 
+
 def quarantine_channel(state: ModuleState) -> ModuleState:
     """
     Wound-epidermis analog: suppress off-diagonal coherences between the
@@ -261,6 +266,7 @@ def quarantine_channel(state: ModuleState) -> ModuleState:
 # 5. POSITIONAL MEMORY / CONTEXT OPERATOR (CLIFFORD-INDEXED)
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class ContextSignal:
     """
@@ -269,6 +275,7 @@ class ContextSignal:
     this is NOT a new indexing system, it's a pointer into the one you
     already have in the security swarm.
     """
+
     clifford_index: int
     target_role: Role
     confidence: float  # in [0, 1] -- how reliable is this memory signal
@@ -285,6 +292,7 @@ class InnervationFailure(Exception):
     mode, not folded into generic "fault" handling -- a redundancy-style
     fix (spin up more spare nodes) will not resolve this.
     """
+
     pass
 
 
@@ -329,6 +337,7 @@ def redifferentiate(state: ModuleState, context: Optional[ContextSignal]) -> Mod
 # 6. MEASUREMENT / COLLAPSE: COMMITTING TO A ROLE
 # ---------------------------------------------------------------------------
 
+
 def measure_role(state: ModuleState, rng: np.random.Generator) -> tuple[Role, ModuleState]:
     """
     Projective measurement in the role basis. The swarm orchestrator
@@ -370,6 +379,7 @@ def regeneration_fidelity(state: ModuleState, target_role: Role) -> float:
 # 7. MALFORMED REGENERATION GUARD (CANCER ANALOG)
 # ---------------------------------------------------------------------------
 
+
 def validate_collapse_or_quarantine(
     collapsed_role: Role,
     target_role: Role,
@@ -396,6 +406,7 @@ def validate_collapse_or_quarantine(
 # 8. REFRACTORY PERIOD OPERATOR: LINDLAD DECAY (v4.x Enhancement)
 # ---------------------------------------------------------------------------
 
+
 def lindblad_decay_operator(
     state: ModuleState,
     decay_rate: float = 0.1,
@@ -403,46 +414,46 @@ def lindblad_decay_operator(
 ) -> ModuleState:
     """
     Lindblad decay operator for role stabilization during refractory period.
-    
+
     ELEVATED: This implements the "Refractory Period" analog from biological
     regeneration - a regrowing limb cannot be re-injured immediately without
     catastrophic failure. The Lindblad decay gradually lowers the "sensitivity"
     of a newly measured role, preventing "Regeneration Oscillation" where a
     module recovers and immediately collapses back into a fault because it
     hasn't stabilized its new role in the network.
-    
+
     The Lindblad master equation: dρ/dt = -i[H, ρ] + Σ_k (L_k ρ L_k† - 1/2 {L_k† L_k, ρ})
-    
+
     Here we use a simplified dissipative channel that drives the state toward
     the target role projector with rate decay_rate, simulating the biological
     stabilization process where newly differentiated tissue becomes less
     sensitive to perturbation over time.
-    
+
     Args:
         state: Current module state
         decay_rate: Rate at which sensitivity decreases (higher = faster stabilization)
         target_role: Role to stabilize toward (typically HEALTHY_SPECIALIZED)
-        
+
     Returns:
         New state with applied Lindblad decay
     """
     # Construct Lindblad jump operator L = √γ |target><target|
     gamma = decay_rate
     L = np.sqrt(gamma) * role_projector(target_role)
-    
+
     # Apply Lindblad dissipator: L ρ L† - 1/2 {L† L, ρ}
     L_dagger_L = L.conj().T @ L
     anti_commutator = L_dagger_L @ state.rho + state.rho @ L_dagger_L
-    
+
     dissipator = L @ state.rho @ L.conj().T - 0.5 * anti_commutator
-    
+
     # Apply dissipative evolution (small time step approximation)
     dt = 0.1  # Small time step for stability
     new_rho = state.rho + dt * dissipator
-    
+
     # Renormalize to maintain trace = 1
     new_rho = new_rho / np.trace(new_rho)
-    
+
     new_state = ModuleState(
         rho=new_rho,
         module_id=state.module_id,
@@ -460,25 +471,25 @@ def apply_refractory_stabilization(
 ) -> ModuleState:
     """
     Apply refractory period stabilization to prevent regeneration oscillation.
-    
+
     ELEVATED: This is the biological analog of the post-regeneration
     stabilization period where newly differentiated tissue becomes
     functionally integrated and less susceptible to re-injury.
-    
+
     Args:
         state: Current module state
         target_role: Role to stabilize toward
         duration: Duration of refractory period in seconds
-        
+
     Returns:
         Stabilized state with refractory period set
     """
     # Enter refractory period
     state.enter_refractory_period(duration)
-    
+
     # Apply Lindblad decay for initial stabilization
     state = lindblad_decay_operator(state, decay_rate=0.2, target_role=target_role)
-    
+
     return state
 
 
@@ -486,8 +497,8 @@ def apply_refractory_stabilization(
 # 8. NON-SEPARABILITY: COUPLED MODULES (XOR-SHARDED FAULT ANALOG)
 # ---------------------------------------------------------------------------
 
-def joint_state(state_a: ModuleState, state_b: ModuleState,
-                 correlated: bool = False) -> np.ndarray:
+
+def joint_state(state_a: ModuleState, state_b: ModuleState, correlated: bool = False) -> np.ndarray:
     """
     If correlated=False: rho_AB = rho_A (x) rho_B (tensor product) --
     independent diagnosis/recovery is valid.
@@ -551,9 +562,8 @@ def is_separable_approx(rho_joint: np.ndarray, atol: float = 1e-6) -> bool:
 # below, and it is NOT implemented as quantum hardware code here -- it's
 # flagged so it isn't silently smuggled in as "quantum-powered" elsewhere.
 
-def grover_role_search_NOTE_REQUIRES_QUANTUM_HARDWARE(
-    candidate_roles: list, oracle_fn
-) -> Role:
+
+def grover_role_search_NOTE_REQUIRES_QUANTUM_HARDWARE(candidate_roles: list, oracle_fn) -> Role:
     """
     NOTE: REQUIRES QUANTUM HARDWARE FOR THE CLAIMED SPEEDUP.
 
@@ -583,6 +593,7 @@ def grover_role_search_NOTE_REQUIRES_QUANTUM_HARDWARE(
 # 10. FULL RECOVERY PIPELINE (ORCHESTRATION SKETCH)
 # ---------------------------------------------------------------------------
 
+
 def regeneration_pipeline(
     module_id: str,
     fault_severity: float,
@@ -594,7 +605,7 @@ def regeneration_pipeline(
     End-to-end sketch wiring stages 3-7 together. Returns a trace dict
     for telemetry/logging -- in production this should emit into the
     same telemetry stream as syndrome-weight data, not a separate log.
-    
+
     ELEVATED: Now includes refractory period stabilization (v4.x enhancement)
     to prevent regeneration oscillation where modules recover and immediately
     collapse back due to insufficient stabilization.
@@ -625,7 +636,9 @@ def regeneration_pipeline(
 
     if context is not None:
         state = validate_collapse_or_quarantine(collapsed_role, context.target_role, state)
-        trace["status"] = "success" if collapsed_role == context.target_role else "malformed_quarantined"
+        trace["status"] = (
+            "success" if collapsed_role == context.target_role else "malformed_quarantined"
+        )
     else:
         trace["status"] = "collapsed_no_target_to_validate_against"
 

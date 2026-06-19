@@ -67,5 +67,8 @@ def test_package_scripts_expose_bitcoin_and_research_gates() -> None:
 
     assert scripts["prod:local:gate"] == "python scripts/local_production_gate.py --mode rc"
     assert scripts["prod:bitcoin:gate"] == "python scripts/local_production_gate.py --mode bitcoin"
-    assert scripts["prod:research:gate"] == "python scripts/local_production_gate.py --mode research --continue-on-failure"
+    assert (
+        scripts["prod:research:gate"]
+        == "python scripts/local_production_gate.py --mode research --continue-on-failure"
+    )
     assert "review:manifest:gate" in scripts

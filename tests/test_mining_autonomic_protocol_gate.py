@@ -5,7 +5,6 @@ import subprocess
 import sys
 from pathlib import Path
 
-import pytest
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = REPO_ROOT / "scripts" / "mining_autonomic_protocol_gate.py"
@@ -70,7 +69,9 @@ def test_actions_outside_one_block_mission_require_human_authority() -> None:
     result = _run_gate({"HYBA_AUTONOMOUS_EXTERNAL_ACTIONS": "true"})
 
     assert result.returncode == 2
-    assert "actions outside the seeded mining mission lack explicit human authority" in result.stdout
+    assert (
+        "actions outside the seeded mining mission lack explicit human authority" in result.stdout
+    )
     assert "HYBA_AUTONOMOUS_OPERATOR_APPROVAL_ID required" in result.stdout
 
 
@@ -85,7 +86,10 @@ def test_actions_outside_one_block_mission_pass_when_explicitly_authorised() -> 
     )
 
     assert result.returncode == 0, result.stdout + result.stderr
-    assert "actions outside the seeded mining mission are disabled or explicitly authorised" in result.stdout
+    assert (
+        "actions outside the seeded mining mission are disabled or explicitly authorised"
+        in result.stdout
+    )
 
 
 def test_env_hashrate_above_one_ehs_warns_because_mission_memory_clamps() -> None:

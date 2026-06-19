@@ -22,7 +22,10 @@ test.describe("mining operations E2E hardening", () => {
     await expect(page.getByText("EH/s cap")).toBeVisible();
     expect(powerCalls).toBeGreaterThan(0);
 
-    const betaCard = page.locator("div", { hasText: "Mock Pool Beta" }).filter({ has: page.getByRole("button", { name: "Switch" }) }).first();
+    const betaCard = page
+      .locator("div", { hasText: "Mock Pool Beta" })
+      .filter({ has: page.getByRole("button", { name: "Switch" }) })
+      .first();
     await betaCard.getByRole("button", { name: "Switch" }).dblclick();
     await expect(page.getByText("Switched to Mock Pool Beta")).toBeVisible();
     expect(switchCalls).toBe(1);
@@ -61,7 +64,9 @@ test.describe("mining operations E2E hardening", () => {
     await expect(page.locator("html")).toHaveClass(/dark/);
   });
 
-  test("pool config validates required fields, saves once, and disconnects active pool once", async ({ page }) => {
+  test("pool config validates required fields, saves once, and disconnects active pool once", async ({
+    page,
+  }) => {
     await seedAuth(page, "operator");
     await installBackendMocks(page, { role: "operator" });
     let configCalls = 0;
@@ -75,7 +80,10 @@ test.describe("mining operations E2E hardening", () => {
     });
 
     await page.goto("/");
-    const betaCard = page.locator("div", { hasText: "Mock Pool Beta" }).filter({ has: page.getByRole("button", { name: "Configure" }) }).first();
+    const betaCard = page
+      .locator("div", { hasText: "Mock Pool Beta" })
+      .filter({ has: page.getByRole("button", { name: "Configure" }) })
+      .first();
     await betaCard.getByRole("button", { name: "Configure" }).click();
     await page.getByRole("button", { name: /SAVE POOL CONFIG/i }).click();
     expect(configCalls).toBe(0);
@@ -87,7 +95,10 @@ test.describe("mining operations E2E hardening", () => {
     expect(switchCalls).toBe(1);
 
     await page.getByRole("button", { name: "Close pool configuration" }).click();
-    const alphaCard = page.locator("div", { hasText: "Mock Pool Alpha" }).filter({ has: page.getByRole("button", { name: "Disconnect" }) }).first();
+    const alphaCard = page
+      .locator("div", { hasText: "Mock Pool Alpha" })
+      .filter({ has: page.getByRole("button", { name: "Disconnect" }) })
+      .first();
     await alphaCard.getByRole("button", { name: "Disconnect" }).dblclick();
     await expect(page.getByText("Disconnected from pool")).toBeVisible();
     expect(disconnectCalls).toBe(1);

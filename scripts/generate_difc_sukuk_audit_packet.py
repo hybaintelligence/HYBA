@@ -22,7 +22,11 @@ from pythia_finance_audit.difc_aaiofi_bridge import generate_sample_difc_sukuk_p
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Generate a DIFC / AAOIFI Sukuk audit packet.")
-    parser.add_argument("--drift", action="store_true", help="Emit the drifting Sukuk packet that should be rejected before staging.")
+    parser.add_argument(
+        "--drift",
+        action="store_true",
+        help="Emit the drifting Sukuk packet that should be rejected before staging.",
+    )
     parser.add_argument("--output", type=Path, default=None, help="Optional JSON output path.")
     args = parser.parse_args()
 

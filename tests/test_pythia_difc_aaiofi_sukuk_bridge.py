@@ -23,7 +23,10 @@ def test_sample_difc_sukuk_packet_stages_for_human_review_only():
     assert packet["automatic_action_allowed"] is False
     assert "Not a fatwa" in packet["claim_boundary"]
     assert packet["core_finance_packet"]["automatic_action_allowed"] is False
-    assert all(f["status"] in {DIFCFindingStatus.PASSED.value, DIFCFindingStatus.WARNING.value} for f in packet["difc_aaiofi_findings"])
+    assert all(
+        f["status"] in {DIFCFindingStatus.PASSED.value, DIFCFindingStatus.WARNING.value}
+        for f in packet["difc_aaiofi_findings"]
+    )
 
 
 def test_drifting_difc_sukuk_packet_is_rejected_before_staging():
@@ -32,7 +35,11 @@ def test_drifting_difc_sukuk_packet_is_rejected_before_staging():
     assert packet["verdict"] == FinanceAuditVerdict.REJECTED_BEFORE_STAGING.value
     assert packet["human_review_required"] is True
     assert packet["automatic_action_allowed"] is False
-    failed = {finding["finding_id"] for finding in packet["difc_aaiofi_findings"] if finding["status"] == DIFCFindingStatus.FAILED.value}
+    failed = {
+        finding["finding_id"]
+        for finding in packet["difc_aaiofi_findings"]
+        if finding["status"] == DIFCFindingStatus.FAILED.value
+    }
     assert "DIFC_AAOIFI_SUBSTANCE_OVER_FORM" in failed
     assert "DIFC_AAOIFI_ASSET_BACKING_OWNERSHIP" in failed
     assert "DIFC_AAOIFI_SPV_TRUSTEE_GOVERNANCE" in failed
@@ -63,5 +70,8 @@ def test_difc_packet_preserves_external_action_boundary():
     packet = generate_difc_sukuk_audit_packet(candidate)
 
     assert packet["automatic_action_allowed"] is False
-    assert packet["core_finance_packet"]["bridge_report"]["guard_decision"]["decision"] in {"allow", "block"}
+    assert packet["core_finance_packet"]["bridge_report"]["guard_decision"]["decision"] in {
+        "allow",
+        "block",
+    }
     assert "issuance approval" in packet["claim_boundary"]

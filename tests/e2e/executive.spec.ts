@@ -2,12 +2,15 @@ import { expect, test } from "@playwright/test";
 import { installBackendMocks, seedAuth } from "./fixtures";
 
 test.describe("executive E2E hardening", () => {
-  test("executive role can open executive console and run mocked autonomy-adjacent pool operation", async ({ page }) => {
+  test("executive role can open executive console and run mocked autonomy-adjacent pool operation", async ({
+    page,
+  }) => {
     await seedAuth(page, "ceo_heir_apparent");
     await installBackendMocks(page, { role: "ceo_heir_apparent" });
     let switchCalls = 0;
     page.on("request", (request) => {
-      if (request.method() === "POST" && new URL(request.url()).pathname === "/api/mining/switch") switchCalls += 1;
+      if (request.method() === "POST" && new URL(request.url()).pathname === "/api/mining/switch")
+        switchCalls += 1;
     });
 
     await page.goto("/");

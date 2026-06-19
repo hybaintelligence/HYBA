@@ -81,7 +81,9 @@ class RecursiveClosureIntegrationTests(unittest.TestCase):
         self.assertIn(result["status"], {"EVOLVED", "STAGNATED"})
         self.assertIn("reflection", result)
         self.assertIn("parameters", buffer.snapshot())
-        self.assertEqual("in-memory runtime parameter evolution; no source writes", result["claim_boundary"])
+        self.assertEqual(
+            "in-memory runtime parameter evolution; no source writes", result["claim_boundary"]
+        )
 
 
 if __name__ == "__main__":

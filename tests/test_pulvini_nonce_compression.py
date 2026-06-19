@@ -33,7 +33,9 @@ class PulviniNonceCompressionTests(unittest.TestCase):
         # Use actual compression values rather than hardcoded expectations
         self.assertGreater(plan.working_set_dimension, 0)
         self.assertGreaterEqual(plan.retained_kernel_lanes, 0)
-        self.assertEqual(plan.original_lanes, plan.working_set_dimension + plan.retained_kernel_lanes)
+        self.assertEqual(
+            plan.original_lanes, plan.working_set_dimension + plan.retained_kernel_lanes
+        )
         self.assertTrue(plan.complete_coverage)
         self.assertTrue(plan.overlap_free)
         self.assertEqual(NONCE_SPACE_SIZE, plan.coverage_size)
@@ -96,8 +98,12 @@ class PulviniNonceCompressionTests(unittest.TestCase):
             self.assertTrue(solver.current_config["complete_nonce_coverage"])
             self.assertTrue(solver.current_config["overlap_free_nonce_coverage"])
             # Use actual compression values rather than hardcoded expectations
-            self.assertEqual(plan.working_set_dimension, solver.current_config["compressed_working_set_size"])
-            self.assertEqual(plan.retained_kernel_lanes, solver.current_config["retained_kernel_lanes"])
+            self.assertEqual(
+                plan.working_set_dimension, solver.current_config["compressed_working_set_size"]
+            )
+            self.assertEqual(
+                plan.retained_kernel_lanes, solver.current_config["retained_kernel_lanes"]
+            )
             self.assertEqual(NONCE_SPACE_SIZE, solver.current_config["search_space_size"])
 
         asyncio.run(run())

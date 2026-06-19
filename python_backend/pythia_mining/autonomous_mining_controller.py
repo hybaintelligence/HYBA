@@ -25,9 +25,7 @@ mathematically-grounded recommendations and automated execution within safe boun
 
 from __future__ import annotations
 
-import asyncio
 import hashlib
-import inspect
 import json
 import os
 import shutil
@@ -37,13 +35,10 @@ import uuid
 from dataclasses import dataclass, field, replace
 from enum import Enum
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Union
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
-from .ai_optimizer import AIOptimizer, SearchStrategy
-from .consciousness_engine import ConsciousnessConfig, ConsciousnessEngine, PhiMetrics
+from .ai_optimizer import SearchStrategy
 from .deutsch_knowledge_substrate import (
-    CounterfactualModel,
-    Explanation,
     KnowledgeSubstrate,
 )
 
@@ -56,6 +51,7 @@ MAX_AUTONOMOUS_HASHRATE_EHS: float = 1.0  # Mission memory hard limit
 
 class AutonomyLevel(Enum):
     """Levels of autonomous operation with increasing decision authority."""
+
     MANUAL = "manual"  # All decisions require operator approval
     ADVISORY = "advisory"  # System recommends, operator decides
     SUPERVISED = "supervised"  # System executes within predefined bounds
@@ -75,6 +71,7 @@ class AutonomyLevel(Enum):
 
 class SafetyConstraint(Enum):
     """Mathematical safety constraints that autonomous actions must satisfy."""
+
     HERMITICITY = "hermiticity"  # Operations must preserve Hermitian properties
     POSITIVE_SEMIDEFINITE = "positive_semidefinite"  # Results must be PSD
     NATURAL_SCALING = "natural_scaling"  # Must follow φ-resonant scaling laws
@@ -93,6 +90,7 @@ class OperatorApprovalDecision:
     produce this type; legacy boolean paths are normalised by
     ``_normalise_operator_approval``.
     """
+
     approved: bool
     operator_id: Optional[str] = None
     reason: Optional[str] = "operator_callback"
@@ -102,6 +100,7 @@ class OperatorApprovalDecision:
 @dataclass
 class AutonomousDecision:
     """Record of an autonomous decision with mathematical justification."""
+
     decision_id: str
     timestamp: float
     autonomy_level: AutonomyLevel
@@ -121,6 +120,7 @@ class AutonomousDecision:
 @dataclass
 class AuditLogEntry:
     """Structured autonomy audit event with chain correlation metadata."""
+
     correlation_id: str
     timestamp: float
     event_type: str
@@ -138,6 +138,7 @@ class AuditLogEntry:
 @dataclass
 class OperatorApprovalRequest:
     """Durable record for a human approval request."""
+
     request_id: str
     decision_id: str
     requested_at: float
@@ -150,6 +151,7 @@ class OperatorApprovalRequest:
 @dataclass
 class OptimizationTarget:
     """Mathematical optimization target with constraints."""
+
     target_name: str
     objective_function: str  # "maximize_hashrate", "minimize_energy", "maximize_phi_coherence"
     current_value: float
@@ -162,9 +164,12 @@ class OptimizationTarget:
 @dataclass
 class SelfOptimizationProposal:
     """A proposed self-optimization discovered through the Reflexive Knowledge Loop."""
+
     proposal_id: str
     timestamp: float
-    improvement_type: str  # "phi_scaling", "search_depth", "compression_target", "coherence_threshold"
+    improvement_type: (
+        str  # "phi_scaling", "search_depth", "compression_target", "coherence_threshold"
+    )
     current_value: float
     proposed_value: float
     expected_phi_density_gain: float  # Expected improvement in φ-density
@@ -181,6 +186,7 @@ class SelfOptimizationProposal:
 @dataclass
 class CodebaseSurroundings:
     """Abstract representation of the codebase 'surroundings' for Active Inference."""
+
     module_names: List[str]
     mathematical_invariants: Dict[str, str]  # invariant_name -> invariant_type
     codebase_graph_edges: List[Tuple[str, str, float]]  # (module_a, module_b, phi_resonance_weight)
@@ -191,6 +197,7 @@ class CodebaseSurroundings:
 # ---------------------------------------------------------------------------
 # Environment-driven config helpers
 # ---------------------------------------------------------------------------
+
 
 def _env_autonomy_level() -> AutonomyLevel:
     """Read autonomy level from environment, fall back to ADVISORY."""
@@ -273,9 +280,11 @@ def _env_circuit_breaker_failure_threshold() -> int:
 # Metrics helper — simple counters / gauges that can be consumed externally
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class AutonomyMetrics:
     """Lightweight metrics for monitoring / alerting."""
+
     total_decisions: int = 0
     autonomous_executions: int = 0
     operator_overrides: int = 0
@@ -308,17 +317,20 @@ class AutonomousConfig:
     The mission-memory hard-limit (MAX_AUTONOMOUS_HASHRATE_EHS = 1.0) is
     always enforced and cannot be overridden.
     """
+
     autonomy_level: AutonomyLevel = field(default_factory=_env_autonomy_level)
     max_autonomous_hashrate_ehs: float = field(default_factory=_env_max_hashrate)
     max_autonomous_power_watts: float = field(default_factory=_env_max_power)
     phi_coherence_threshold: float = field(default_factory=_env_phi_threshold)
     decision_audit_log_size: int = 1000  # Number of decisions to keep in memory
-    operator_approval_required_for: List[str] = field(default_factory=lambda: [
-        "pool_connection_change",
-        "wallet_address_change",
-        "significant_parameter_change",
-        "emergency_shutdown"
-    ])
+    operator_approval_required_for: List[str] = field(
+        default_factory=lambda: [
+            "pool_connection_change",
+            "wallet_address_change",
+            "significant_parameter_change",
+            "emergency_shutdown",
+        ]
+    )
     optimization_targets: List[OptimizationTarget] = field(default_factory=list)
     # Reflexive Knowledge Loop configuration
     reflexive_loop_enabled: bool = field(default_factory=_env_reflexive_enabled)
@@ -349,9 +361,7 @@ class AutonomousConfig:
     circuit_breaker_failure_threshold: int = field(
         default_factory=_env_circuit_breaker_failure_threshold
     )
-    circuit_breaker_cooldown_seconds: float = field(
-        default_factory=_env_circuit_breaker_cooldown
-    )
+    circuit_breaker_cooldown_seconds: float = field(default_factory=_env_circuit_breaker_cooldown)
     operator_approval_timeout_seconds: float = field(
         default_factory=lambda: float(os.getenv("HYBA_OPERATOR_APPROVAL_TIMEOUT_SECONDS", "300.0"))
     )
@@ -377,7 +387,9 @@ class AutonomousConfig:
         # Clamp coherence threshold
         self.phi_coherence_threshold = max(0.0, min(self.phi_coherence_threshold, 1.0))
         self.circuit_breaker_failure_threshold = max(1, int(self.circuit_breaker_failure_threshold))
-        self.circuit_breaker_cooldown_seconds = max(0.0, float(self.circuit_breaker_cooldown_seconds))
+        self.circuit_breaker_cooldown_seconds = max(
+            0.0, float(self.circuit_breaker_cooldown_seconds)
+        )
         self.state_lock_stale_seconds = max(1.0, float(self.state_lock_stale_seconds))
         self.state_backup_retention_count = max(0, int(self.state_backup_retention_count))
 
@@ -480,15 +492,9 @@ class AutonomousMiningController:
         """Return current snapshot of autonomy metrics."""
         return AutonomyMetrics(
             total_decisions=len(self.decision_log),
-            autonomous_executions=sum(
-                1 for d in self.decision_log if not d.operator_override
-            ),
-            operator_overrides=sum(
-                1 for d in self.decision_log if d.operator_override
-            ),
-            constraint_violations=sum(
-                1 for d in self.decision_log if d.constraints_violated
-            ),
+            autonomous_executions=sum(1 for d in self.decision_log if not d.operator_override),
+            operator_overrides=sum(1 for d in self.decision_log if d.operator_override),
+            constraint_violations=sum(1 for d in self.decision_log if d.constraints_violated),
             consecutive_failures=self._consecutive_failures,
             autonomous_circuit_open=self.is_circuit_open(),
             autonomous_circuit_open_until=self._circuit_open_until,
@@ -555,44 +561,44 @@ class AutonomousMiningController:
             f"hyba_constraint_violations_total {snapshot['constraint_violations']}",
         ]
         for name, count in snapshot["constraint_violations_by_type"].items():
-            lines.append(
-                f'hyba_constraint_violations_by_type_total{{constraint="{name}"}} {count}'
-            )
-        lines.extend([
-            "# HELP hyba_consecutive_failures Current circuit-breaker failure count.",
-            "# TYPE hyba_consecutive_failures gauge",
-            f"hyba_consecutive_failures {snapshot['consecutive_failures']}",
-            "# HELP hyba_autonomous_consecutive_failures Current autonomous hook failure count.",
-            "# TYPE hyba_autonomous_consecutive_failures gauge",
-            f"hyba_autonomous_consecutive_failures {snapshot['consecutive_failures']}",
-            "# HELP hyba_autonomous_circuit_open Autonomous hook circuit-breaker state.",
-            "# TYPE hyba_autonomous_circuit_open gauge",
-            f"hyba_autonomous_circuit_open {1 if snapshot['autonomous_circuit_open'] else 0}",
-            "# HELP hyba_autonomous_circuit_breaker_trips_total Autonomous hook circuit-breaker trips.",
-            "# TYPE hyba_autonomous_circuit_breaker_trips_total counter",
-            f"hyba_autonomous_circuit_breaker_trips_total {snapshot['autonomous_circuit_breaker_trips']}",
-            "# HELP hyba_degradation_events_total Autonomy degradation events.",
-            "# TYPE hyba_degradation_events_total counter",
-            f"hyba_degradation_events_total {snapshot['degradation_events']}",
-            "# HELP hyba_stale_state_lock_recoveries_total Stale state lock files auto-recovered.",
-            "# TYPE hyba_stale_state_lock_recoveries_total counter",
-            f"hyba_stale_state_lock_recoveries_total {snapshot['stale_state_lock_recoveries']}",
-            "# HELP hyba_reflexive_cycle_duration_ms Last reflexive cycle duration.",
-            "# TYPE hyba_reflexive_cycle_duration_ms gauge",
-            f"hyba_reflexive_cycle_duration_ms {snapshot['last_reflexive_cycle_duration_ms']}",
-            "# HELP hyba_proposal_acceptance_rate Applied proposal ratio.",
-            "# TYPE hyba_proposal_acceptance_rate gauge",
-            f"hyba_proposal_acceptance_rate {snapshot['proposal_acceptance_rate']}",
-            "# HELP hyba_autonomy_level Numeric autonomy level.",
-            "# TYPE hyba_autonomy_level gauge",
-            f"hyba_autonomy_level {level_values.get(snapshot['current_autonomy_level'], -1)}",
-            "# HELP hyba_operator_overrides_total Operator override count.",
-            "# TYPE hyba_operator_overrides_total counter",
-            f"hyba_operator_overrides_total {snapshot['operator_overrides']}",
-            "# HELP hyba_pending_operator_approvals Pending bounded approval requests.",
-            "# TYPE hyba_pending_operator_approvals gauge",
-            f"hyba_pending_operator_approvals {snapshot['pending_operator_approvals']}",
-        ])
+            lines.append(f'hyba_constraint_violations_by_type_total{{constraint="{name}"}} {count}')
+        lines.extend(
+            [
+                "# HELP hyba_consecutive_failures Current circuit-breaker failure count.",
+                "# TYPE hyba_consecutive_failures gauge",
+                f"hyba_consecutive_failures {snapshot['consecutive_failures']}",
+                "# HELP hyba_autonomous_consecutive_failures Current autonomous hook failure count.",
+                "# TYPE hyba_autonomous_consecutive_failures gauge",
+                f"hyba_autonomous_consecutive_failures {snapshot['consecutive_failures']}",
+                "# HELP hyba_autonomous_circuit_open Autonomous hook circuit-breaker state.",
+                "# TYPE hyba_autonomous_circuit_open gauge",
+                f"hyba_autonomous_circuit_open {1 if snapshot['autonomous_circuit_open'] else 0}",
+                "# HELP hyba_autonomous_circuit_breaker_trips_total Autonomous hook circuit-breaker trips.",
+                "# TYPE hyba_autonomous_circuit_breaker_trips_total counter",
+                f"hyba_autonomous_circuit_breaker_trips_total {snapshot['autonomous_circuit_breaker_trips']}",
+                "# HELP hyba_degradation_events_total Autonomy degradation events.",
+                "# TYPE hyba_degradation_events_total counter",
+                f"hyba_degradation_events_total {snapshot['degradation_events']}",
+                "# HELP hyba_stale_state_lock_recoveries_total Stale state lock files auto-recovered.",
+                "# TYPE hyba_stale_state_lock_recoveries_total counter",
+                f"hyba_stale_state_lock_recoveries_total {snapshot['stale_state_lock_recoveries']}",
+                "# HELP hyba_reflexive_cycle_duration_ms Last reflexive cycle duration.",
+                "# TYPE hyba_reflexive_cycle_duration_ms gauge",
+                f"hyba_reflexive_cycle_duration_ms {snapshot['last_reflexive_cycle_duration_ms']}",
+                "# HELP hyba_proposal_acceptance_rate Applied proposal ratio.",
+                "# TYPE hyba_proposal_acceptance_rate gauge",
+                f"hyba_proposal_acceptance_rate {snapshot['proposal_acceptance_rate']}",
+                "# HELP hyba_autonomy_level Numeric autonomy level.",
+                "# TYPE hyba_autonomy_level gauge",
+                f"hyba_autonomy_level {level_values.get(snapshot['current_autonomy_level'], -1)}",
+                "# HELP hyba_operator_overrides_total Operator override count.",
+                "# TYPE hyba_operator_overrides_total counter",
+                f"hyba_operator_overrides_total {snapshot['operator_overrides']}",
+                "# HELP hyba_pending_operator_approvals Pending bounded approval requests.",
+                "# TYPE hyba_pending_operator_approvals gauge",
+                f"hyba_pending_operator_approvals {snapshot['pending_operator_approvals']}",
+            ]
+        )
         return "\n".join(lines) + "\n"
 
     def invalidate_prometheus_metrics_cache(self) -> None:
@@ -608,7 +614,11 @@ class AutonomousMiningController:
         endpoints should prefer this method so an accidentally aggressive scraper
         does not repeatedly force expensive phi-density recomputation.
         """
-        ttl = self.config.metrics_cache_ttl_seconds if cache_ttl_seconds is None else cache_ttl_seconds
+        ttl = (
+            self.config.metrics_cache_ttl_seconds
+            if cache_ttl_seconds is None
+            else cache_ttl_seconds
+        )
         if ttl <= 0:
             return self.get_prometheus_metrics_text()
         now = time.monotonic()
@@ -716,10 +726,12 @@ class AutonomousMiningController:
         # and should remain open until cooldown expires
 
         # structured log
-        self._log_audit_event("degradation", {"from": previous_level.value,
-                                                "to": new_level.value,
-                                                "reason": reason},
-                              action="degrade_autonomy_level", outcome=new_level.value)
+        self._log_audit_event(
+            "degradation",
+            {"from": previous_level.value, "to": new_level.value, "reason": reason},
+            action="degrade_autonomy_level",
+            outcome=new_level.value,
+        )
 
         return new_level
 
@@ -730,6 +742,7 @@ class AutonomousMiningController:
     def _log_event(self, event_type: str, data: Dict[str, Any]) -> None:
         """Write a structured event to the Python logger."""
         import logging
+
         logger = logging.getLogger("pythia.autonomy")
         logger.info("autonomy_event", extra={"event_type": event_type, **data})
 
@@ -759,11 +772,13 @@ class AutonomousMiningController:
             outcome=outcome or data.get("outcome", ""),
             constraints_checked=(
                 [c.value for c in decision.constraints_satisfied + decision.constraints_violated]
-                if decision else data.get("constraints_checked", [])
+                if decision
+                else data.get("constraints_checked", [])
             ),
             constraints_violated=(
                 [c.value for c in decision.constraints_violated]
-                if decision else data.get("constraints_violated", [])
+                if decision
+                else data.get("constraints_violated", [])
             ),
             operator_id=operator_id or data.get("operator_id"),
             operator_action=operator_action or data.get("operator_action"),
@@ -772,7 +787,7 @@ class AutonomousMiningController:
         with self._audit_lock:
             self.audit_log.append(entry)
             if len(self.audit_log) > self.config.decision_audit_log_size:
-                self.audit_log = self.audit_log[-self.config.decision_audit_log_size:]
+                self.audit_log = self.audit_log[-self.config.decision_audit_log_size :]
         self._log_event(event_type, {**data, **entry.__dict__})
         if event_type in {
             "decision",
@@ -796,7 +811,7 @@ class AutonomousMiningController:
 
     def _build_codebase_surroundings(self) -> CodebaseSurroundings:
         """Map the codebase 'surroundings' (Umwelt) as a graph of mathematical invariants.
-        
+
         The AI creates an abstract representation of its own codebase, identifying:
         - Module dependencies and their φ-resonance weights
         - Mathematical invariants that constrain behavior
@@ -874,11 +889,11 @@ class AutonomousMiningController:
 
     def get_phi_density(self) -> float:
         """Compute the current φ-density of the system.
-        
+
         φ-density is a measure of how 'resonant' the system is with its own
         mathematical invariants. Higher values indicate better self-alignment.
         This serves as the objective function for the Reflexive Knowledge Loop.
-        
+
         Includes a reentrancy guard to prevent circular recursion
         (get_autonomy_status → get_phi_density → …).
         """
@@ -891,9 +906,7 @@ class AutonomousMiningController:
 
             # Factor in constraint satisfaction rate from internal state
             total_decisions = len(self.decision_log)
-            constraint_violations = sum(
-                1 for d in self.decision_log if d.constraints_violated
-            )
+            constraint_violations = sum(1 for d in self.decision_log if d.constraints_violated)
             if total_decisions > 0:
                 constraint_health = 1.0 - (constraint_violations / max(total_decisions, 1))
                 base_density += 0.2 * constraint_health
@@ -917,7 +930,9 @@ class AutonomousMiningController:
 
             # Factor in logical consistency over time
             if self._logical_consistency_history:
-                avg_consistency = sum(self._logical_consistency_history) / len(self._logical_consistency_history)
+                avg_consistency = sum(self._logical_consistency_history) / len(
+                    self._logical_consistency_history
+                )
                 base_density += 0.05 * avg_consistency
 
             # Factor in self-optimization epochs (learning accumulates density)
@@ -931,23 +946,21 @@ class AutonomousMiningController:
 
     def get_current_efficiency(self) -> float:
         """Return current mining efficiency proxy for improvement tracking.
-        
+
         NOTE: This method intentionally does NOT call get_autonomy_status()
         to avoid circular recursion with get_phi_density().
         """
         base = 0.6
         total_decisions = len(self.decision_log)
         if total_decisions > 0:
-            autonomous_count = sum(
-                1 for d in self.decision_log if not d.operator_override
-            )
+            autonomous_count = sum(1 for d in self.decision_log if not d.operator_override)
             auto_rate = autonomous_count / max(total_decisions, 1)
             base += 0.2 * auto_rate
         return min(max(base, 0.0), 1.0)
 
     def _generate_counterfactual(self, target: str) -> SelfOptimizationProposal:
         """Use Deutsch Substrate to generate a counterfactual code change hypothesis.
-        
+
         The AI asks: "What would happen if I changed this parameter?"
         It uses the Deutsch Knowledge Substrate's counterfactual reasoning
         to simulate the outcome without actually executing the change.
@@ -1008,7 +1021,7 @@ class AutonomousMiningController:
         expected_gain = 0.02 * confidence
 
         # Compute logical consistency score based on explanation quality
-        best_explanation = self.knowledge_substrate.best_explanation_for_context(context)
+        self.knowledge_substrate.best_explanation_for_context(context)
         logical_consistency = 0.7 + 0.2 * confidence
 
         proposed_action = {
@@ -1052,9 +1065,9 @@ class AutonomousMiningController:
 
         # Adjust direction based on φ-coherence signal
         if self._phi_density_history:
-            trend = (
-                self._phi_density_history[-1] - self._phi_density_history[0]
-            ) / max(len(self._phi_density_history), 1)
+            trend = (self._phi_density_history[-1] - self._phi_density_history[0]) / max(
+                len(self._phi_density_history), 1
+            )
             if trend > 0.01:
                 # Increasing coherence → can afford deeper search
                 proposed_value = min(current_value * 1.1, 120.0)
@@ -1093,7 +1106,7 @@ class AutonomousMiningController:
         self, proposal_id: str, timestamp: float
     ) -> SelfOptimizationProposal:
         """Propose a memory compression ratio adjustment.
-        
+
         This is the "Hunger" drive — the AI seeks higher compression ratios
         to achieve more elegant representations of the mining process.
         """
@@ -1101,7 +1114,7 @@ class AutonomousMiningController:
 
         # The drive: seek higher compression for more elegant representation
         # But must respect information integrity constraint (compression_ratio <= 2.0)
-        current_phi_density = self.get_phi_density()
+        self.get_phi_density()
 
         # Compute the "hunger" signal based on current state
         if self._compression_seeking_history:
@@ -1186,11 +1199,11 @@ class AutonomousMiningController:
 
     def _simulate_virtual_mining(self, proposal: SelfOptimizationProposal) -> float:
         """Run a 'Virtual Mining Session' in memory to assess the proposal.
-        
+
         Instead of executing on hardware, the AI simulates the effect of the
         proposed change on its internal model, using the Deutsch Knowledge
         Substrate's counterfactual reasoning engine.
-        
+
         Returns the simulated φ-density after applying the proposal.
         """
         # Start with current φ-density
@@ -1207,9 +1220,7 @@ class AutonomousMiningController:
 
         # Expected gain scaled by proposal quality
         quality_factor = (
-            (1.0 - violation_penalty)
-            * (1.0 + consistency_bonus)
-            * (1.0 + confidence_bonus)
+            (1.0 - violation_penalty) * (1.0 + consistency_bonus) * (1.0 + confidence_bonus)
         )
         simulated_density = current_density + proposal.expected_phi_density_gain * quality_factor
 
@@ -1217,7 +1228,7 @@ class AutonomousMiningController:
 
     def validate_constraints(self, proposal: SelfOptimizationProposal) -> bool:
         """Validate that a proposal satisfies all 5 Safety Constraints.
-        
+
         Returns True only if all constraints are satisfied and the proposal
         maintains logical consistency above the minimum threshold.
         """
@@ -1243,7 +1254,7 @@ class AutonomousMiningController:
 
     def apply_self_optimization(self, proposal: SelfOptimizationProposal) -> None:
         """Commit a validated self-optimization to internal memory AND apply to engine.
-        
+
         This is the "learning" step — the AI updates its internal configuration
         to reflect the discovered improvement, which takes effect immediately
         in the next mining epoch.
@@ -1264,7 +1275,7 @@ class AutonomousMiningController:
             if self.engine is not None:
                 if self.engine.phi_ensemble is not None:
                     self.engine.phi_ensemble.config["phi_scaling_power"] = proposed_phi_scaling
-            
+
             self.config.optimization_targets.append(
                 OptimizationTarget(
                     target_name="phi_scaling",
@@ -1288,7 +1299,7 @@ class AutonomousMiningController:
                 # Clamp search depth within safe bounds (10–1000 iterations)
                 clamped_depth = max(10, min(1000, int(proposed_depth)))
                 self.engine.optimizer.max_search_iterations = clamped_depth
-            
+
             self.config.optimization_targets.append(
                 OptimizationTarget(
                     target_name="search_depth",
@@ -1311,7 +1322,7 @@ class AutonomousMiningController:
                 # Clamp compression within safe bounds (1.0–2.0 ratio)
                 clamped_compression = max(1.0, min(2.0, proposed_compression))
                 self.engine.solver.compression_target_ratio = clamped_compression
-            
+
             self.config.optimization_targets.append(
                 OptimizationTarget(
                     target_name="compression_target",
@@ -1342,7 +1353,7 @@ class AutonomousMiningController:
                     phi_distributed_threshold=max(0.0, min(1.0, 0.40 * ratio)),
                     phi_critical_threshold=max(0.0, min(1.0, 0.20 * ratio)),
                 )
-            
+
             self.config.optimization_targets.append(
                 OptimizationTarget(
                     target_name="coherence_threshold",
@@ -1378,7 +1389,7 @@ class AutonomousMiningController:
 
     async def _run_reflexive_cycle(self) -> List[SelfOptimizationProposal]:
         """Run one complete iteration of the Reflexive Knowledge Loop.
-        
+
         The full loop:
         1. Analyze surroundings (current φ-density and codebase state)
         2. Generate counterfactual proposals via Deutsch Substrate
@@ -1390,7 +1401,7 @@ class AutonomousMiningController:
             return []
 
         current_density = self.get_phi_density()
-        current_efficiency = self.get_current_efficiency()
+        self.get_current_efficiency()
 
         # Record historical metrics — bounded sliding window for O(1) heap
         self._phi_density_history.append(current_density)
@@ -1413,9 +1424,9 @@ class AutonomousMiningController:
         growth_rate = knowledge_metrics.get("knowledge_growth_rate", 0.0)
         if growth_rate < self.config.knowledge_growth_rate_target:
             extra_targets = [t for t in target_cycle if t not in targets_to_try]
-            targets_to_try.extend(extra_targets[:self.config.max_proposals_per_cycle])
+            targets_to_try.extend(extra_targets[: self.config.max_proposals_per_cycle])
 
-        for target in targets_to_try[:self.config.max_proposals_per_cycle]:
+        for target in targets_to_try[: self.config.max_proposals_per_cycle]:
             proposal = self._generate_counterfactual(target)
             proposals.append(proposal)
             self.proposal_history.append(proposal)
@@ -1434,31 +1445,39 @@ class AutonomousMiningController:
             self.apply_self_optimization(proposal)
 
         # Record logical consistency — bounded sliding window
-        avg_consistency = (
-            sum(p.logical_consistency_score for p in proposals) / max(len(proposals), 1)
+        avg_consistency = sum(p.logical_consistency_score for p in proposals) / max(
+            len(proposals), 1
         )
         self._logical_consistency_history.append(avg_consistency)
         if len(self._logical_consistency_history) > _MAX_LOGICAL_CONSISTENCY_HISTORY_LEN:
-            self._logical_consistency_history = self._logical_consistency_history[-_MAX_LOGICAL_CONSISTENCY_HISTORY_LEN:]
+            self._logical_consistency_history = self._logical_consistency_history[
+                -_MAX_LOGICAL_CONSISTENCY_HISTORY_LEN:
+            ]
 
         # Record compression seeking — bounded sliding window
         if self.config.compression_drive_enabled:
-            compression_proposals = [p for p in proposals if p.improvement_type == "compression_target"]
+            compression_proposals = [
+                p for p in proposals if p.improvement_type == "compression_target"
+            ]
             if compression_proposals:
-                avg_compression = sum(p.proposed_value for p in compression_proposals) / len(compression_proposals)
+                avg_compression = sum(p.proposed_value for p in compression_proposals) / len(
+                    compression_proposals
+                )
                 self._compression_seeking_history.append(avg_compression)
                 if len(self._compression_seeking_history) > _MAX_COMPRESSION_SEEKING_HISTORY_LEN:
-                    self._compression_seeking_history = self._compression_seeking_history[-_MAX_COMPRESSION_SEEKING_HISTORY_LEN:]
+                    self._compression_seeking_history = self._compression_seeking_history[
+                        -_MAX_COMPRESSION_SEEKING_HISTORY_LEN:
+                    ]
 
         return proposals
 
     async def seek_improvement(self) -> Dict[str, Any]:
         """Public entry point for the Reflexive Knowledge Loop.
-        
+
         Analyzes the 'surroundings' (codebase state), uses the Deutsch Substrate
         to simulate counterfactual improvements, validates against Safety Constraints,
         and commits validated improvements to internal memory.
-        
+
         Returns a status report of the improvement cycle.
         """
         cycle_start = time.time()
@@ -1471,7 +1490,7 @@ class AutonomousMiningController:
 
         # Build the improvement report
         if proposals:
-            applied_count = sum(1 for p in proposals if p.applied)
+            sum(1 for p in proposals if p.applied)
             proposal_details = [
                 {
                     "proposal_id": p.proposal_id,
@@ -1584,7 +1603,7 @@ class AutonomousMiningController:
 
     def _rotate_state_backups(self, state_file: Optional[Path] = None) -> None:
         """Keep only the configured number of state backups.
-        
+
         When called with a state_file path, snapshots the current state into
         a timestamped backup under a 'backups/' subdirectory before rotating.
         When called without arguments, rotates the legacy .backup.* files.
@@ -1597,7 +1616,7 @@ class AutonomousMiningController:
             backups = sorted(
                 backup_dir.glob("reflexive_state_*.json"), key=lambda p: p.stat().st_mtime
             )
-            for stale in backups[:-self.config.state_backup_count]:
+            for stale in backups[: -self.config.state_backup_count]:
                 stale.unlink(missing_ok=True)
         retention = self.config.state_backup_retention_count
         glob_pattern = self._state_backup_glob()
@@ -1619,7 +1638,7 @@ class AutonomousMiningController:
 
     def _save_reflexive_state(self) -> None:
         """Persist reflexive learning state to disk.
-        
+
         Saves proposals, φ-density history, knowledge substrate state,
         and optimisation targets so they survive a restart.
         """
@@ -1744,7 +1763,6 @@ class AutonomousMiningController:
 
         return _StateFileLock()
 
-
     def _load_reflexive_state(self) -> None:
         """Restore previously-persisted reflexive learning state."""
         state_file = self._state_file_path()
@@ -1784,13 +1802,19 @@ class AutonomousMiningController:
             self._phi_density_history = state.get("phi_density_history", [])
             # Enforce maximum bounds on restored history
             if len(self._phi_density_history) > _MAX_PHI_DENSITY_HISTORY_LEN:
-                self._phi_density_history = self._phi_density_history[-_MAX_PHI_DENSITY_HISTORY_LEN:]
+                self._phi_density_history = self._phi_density_history[
+                    -_MAX_PHI_DENSITY_HISTORY_LEN:
+                ]
             self._compression_seeking_history = state.get("compression_seeking_history", [])
             if len(self._compression_seeking_history) > _MAX_COMPRESSION_SEEKING_HISTORY_LEN:
-                self._compression_seeking_history = self._compression_seeking_history[-_MAX_COMPRESSION_SEEKING_HISTORY_LEN:]
+                self._compression_seeking_history = self._compression_seeking_history[
+                    -_MAX_COMPRESSION_SEEKING_HISTORY_LEN:
+                ]
             self._logical_consistency_history = state.get("logical_consistency_history", [])
             if len(self._logical_consistency_history) > _MAX_LOGICAL_CONSISTENCY_HISTORY_LEN:
-                self._logical_consistency_history = self._logical_consistency_history[-_MAX_LOGICAL_CONSISTENCY_HISTORY_LEN:]
+                self._logical_consistency_history = self._logical_consistency_history[
+                    -_MAX_LOGICAL_CONSISTENCY_HISTORY_LEN:
+                ]
             self.config.phi_coherence_threshold = state.get(
                 "phi_coherence_threshold", self.config.phi_coherence_threshold
             )
@@ -1804,20 +1828,25 @@ class AutonomousMiningController:
                     pass
             # Restore optimisation targets
             for t_data in state.get("optimization_targets", []):
-                self.config.optimization_targets.append(OptimizationTarget(
-                    target_name=t_data["target_name"],
-                    objective_function=t_data["objective_function"],
-                    current_value=t_data["current_value"],
-                    target_value=t_data["target_value"],
-                    tolerance=t_data.get("tolerance", 0.05),
-                    constraints=[],
-                    priority=t_data.get("priority", 1),
-                ))
-            self._log_audit_event("state_restored", {
-                "epochs": self._self_optimization_epochs,
-                "phi_density_history_len": len(self._phi_density_history),
-                "proposals_restored": len(state.get("proposals", [])),
-            })
+                self.config.optimization_targets.append(
+                    OptimizationTarget(
+                        target_name=t_data["target_name"],
+                        objective_function=t_data["objective_function"],
+                        current_value=t_data["current_value"],
+                        target_value=t_data["target_value"],
+                        tolerance=t_data.get("tolerance", 0.05),
+                        constraints=[],
+                        priority=t_data.get("priority", 1),
+                    )
+                )
+            self._log_audit_event(
+                "state_restored",
+                {
+                    "epochs": self._self_optimization_epochs,
+                    "phi_density_history_len": len(self._phi_density_history),
+                    "proposals_restored": len(state.get("proposals", [])),
+                },
+            )
         except (OSError, json.JSONDecodeError, KeyError, ValueError) as exc:
             self._log_audit_event(
                 "load_state_error",
@@ -1839,21 +1868,26 @@ class AutonomousMiningController:
         self.decision_log.append(decision)
         # Maintain log size limit
         if len(self.decision_log) > self.config.decision_audit_log_size:
-            self.decision_log = self.decision_log[-self.config.decision_audit_log_size:]
+            self.decision_log = self.decision_log[-self.config.decision_audit_log_size :]
 
         # Structured logging for monitoring
-        self._log_audit_event("decision", {
-            "decision_id": decision.decision_id,
-            "autonomy_level": decision.autonomy_level.value,
-            "decision_type": decision.decision_type,
-            "constraints_violated": len(decision.constraints_violated),
-            "operator_override": decision.operator_override,
-            "operator_id": decision.operator_id,
-            "operator_reason": decision.operator_reason,
-            "operator_approval_source": decision.operator_approval_source,
-            "action_taken": decision.action_taken,
-        }, decision=decision, action=decision.action_taken,
-                              outcome=decision.actual_outcome or "pending")
+        self._log_audit_event(
+            "decision",
+            {
+                "decision_id": decision.decision_id,
+                "autonomy_level": decision.autonomy_level.value,
+                "decision_type": decision.decision_type,
+                "constraints_violated": len(decision.constraints_violated),
+                "operator_override": decision.operator_override,
+                "operator_id": decision.operator_id,
+                "operator_reason": decision.operator_reason,
+                "operator_approval_source": decision.operator_approval_source,
+                "action_taken": decision.action_taken,
+            },
+            decision=decision,
+            action=decision.action_taken,
+            outcome=decision.actual_outcome or "pending",
+        )
 
     def set_operator_approval_callback(
         self,
@@ -1885,15 +1919,9 @@ class AutonomousMiningController:
         return {
             "autonomy_level": self.current_autonomy_level.value,
             "total_decisions": len(self.decision_log),
-            "autonomous_decisions": sum(
-                1 for d in self.decision_log if not d.operator_override
-            ),
-            "operator_overrides": sum(
-                1 for d in self.decision_log if d.operator_override
-            ),
-            "constraint_violations": sum(
-                1 for d in self.decision_log if d.constraints_violated
-            ),
+            "autonomous_decisions": sum(1 for d in self.decision_log if not d.operator_override),
+            "operator_overrides": sum(1 for d in self.decision_log if d.operator_override),
+            "constraint_violations": sum(1 for d in self.decision_log if d.constraints_violated),
             "consecutive_failures": self._consecutive_failures,
             "degradation_events": self._degradation_events,
             "circuit_breaker": {
@@ -2068,7 +2096,10 @@ class AutonomousMiningController:
             }
             action_taken = f"decrease_hashrate_by_{proposed_decrease}_ehs"
             hashrate_change = -proposed_decrease
-        proposed_action = {"hashrate_change": hashrate_change, "target_hashrate_ehs": target_hashrate_ehs}
+        proposed_action = {
+            "hashrate_change": hashrate_change,
+            "target_hashrate_ehs": target_hashrate_ehs,
+        }
         satisfied, violated = self._check_safety_constraints(proposed_action)
         decision = AutonomousDecision(
             decision_id=decision_id,
@@ -2108,7 +2139,10 @@ class AutonomousMiningController:
             "phi_optimal_range": (1.5, 2.0),
             "expected_improvement": "better_memory_utilization",
         }
-        proposed_action = {"compression_ratio": target_compression, "current_compression": current_compression}
+        proposed_action = {
+            "compression_ratio": target_compression,
+            "current_compression": current_compression,
+        }
         satisfied, violated = self._check_safety_constraints(proposed_action)
         decision = AutonomousDecision(
             decision_id=decision_id,
@@ -2200,7 +2234,7 @@ class AutonomousMiningController:
 
     def _check_hermiticity(self, action: Dict[str, Any]) -> bool:
         """Check if action preserves Hermitian properties.
-        
+
         An operation preserves Hermiticity if:
         - It does not introduce imaginary asymmetries in the density matrix
         - The proposed change is self-adjoint (symmetric under transpose-conjugate)
@@ -2218,7 +2252,7 @@ class AutonomousMiningController:
 
     def _check_psd(self, action: Dict[str, Any]) -> bool:
         """Check if action results in positive semidefinite matrices.
-        
+
         PSD is preserved if:
         - All eigenvalues remain non-negative
         - The action does not introduce negative diagonal elements
@@ -2271,7 +2305,7 @@ class AutonomousMiningController:
 
     def _check_information_integrity(self, action: Dict[str, Any]) -> bool:
         """Check if action preserves informational structure.
-        
+
         Information Integrity is the 5th and most important constraint
         for a data-less learning system. It ensures that no information
         is lost during compression or transformation.
@@ -2404,7 +2438,9 @@ class AutonomousMiningController:
                 operator_action="emergency_bypass_rejected",
             )
             return OperatorApprovalDecision(
-                approved=False, operator_id=operator_id, reason="operator_not_authorized",
+                approved=False,
+                operator_id=operator_id,
+                reason="operator_not_authorized",
                 source="emergency_bypass",
             )
         if not emergency_reason.strip():
@@ -2418,10 +2454,14 @@ class AutonomousMiningController:
                 operator_action="emergency_bypass_rejected",
             )
             return OperatorApprovalDecision(
-                approved=False, operator_id=operator_id, reason="missing_emergency_reason",
+                approved=False,
+                operator_id=operator_id,
+                reason="missing_emergency_reason",
                 source="emergency_bypass",
             )
-        decision.operator_reason = f"EMERGENCY_BYPASS_AUTONOMY_LAYER_ONLY: {emergency_reason.strip()}"
+        decision.operator_reason = (
+            f"EMERGENCY_BYPASS_AUTONOMY_LAYER_ONLY: {emergency_reason.strip()}"
+        )
         self._log_audit_event(
             "emergency_operator_bypass_approved",
             {"operator_id": operator_id, "reason": decision.operator_reason},
@@ -2432,7 +2472,9 @@ class AutonomousMiningController:
             operator_action="emergency_bypass",
         )
         return OperatorApprovalDecision(
-            approved=True, operator_id=operator_id, reason=decision.operator_reason,
+            approved=True,
+            operator_id=operator_id,
+            reason=decision.operator_reason,
             source="emergency_bypass",
         )
 

@@ -130,107 +130,107 @@ class ObjectiveReductionEngine:
         """Compute gravitational self-energy uncertainty via Penrose OR integral.
 
         GENUINE PENROSE CRITERION (Phase 4 elevation):
-        
+
         ΔE = (G/2) ∫ (ρ₁(x)ρ₁(y) - ρ₂(x)ρ₂(y)) / |x-y| dx³dy³
-        
+
         where ρ₁ and ρ₂ are two superposed mass distributions encoded in the
         density matrix eigendecomposition. This is Penrose's actual formulation
         for gravitational self-energy difference between superposed states.
-        
+
         Approximation Strategy (computational feasibility):
         1. Eigendecompose ρ: ρ = Σ λᵢ |ψᵢ⟩⟨ψᵢ|
         2. Use two largest-weight eigenstates as ρ₁, ρ₂
         3. Compute spatial integral via Coulomb-like summation on lattice
         4. Each lattice point weighted by eigenstate amplitude
-        
+
         Args:
             rho: Density matrix (N × N complex)
-            
+
         Returns:
             Energy uncertainty in Joules (float)
         """
         # Eigendecompose to extract superposed states
         eigenvalues, eigenvectors = np.linalg.eigh(rho)
         eigenvalues = np.real(eigenvalues)
-        
+
         # Sort by weight (descending)
         sort_idx = np.argsort(-np.abs(eigenvalues))
         eigenvalues = eigenvalues[sort_idx]
         eigenvectors = eigenvectors[:, sort_idx]
-        
+
         # Use two largest-weight eigenstates as the superposed mass distributions
         # This operationalizes the two branches of the superposition
         if len(eigenvalues) < 2:
             # Single eigenstate - no superposition
             return 0.0
-        
+
         lambda_1 = np.abs(eigenvalues[0])  # Weight of first superposition branch
         lambda_2 = np.abs(eigenvalues[1])  # Weight of second superposition branch
         psi_1 = eigenvectors[:, 0]  # First mass distribution (amplitude profile)
         psi_2 = eigenvectors[:, 1]  # Second mass distribution (amplitude profile)
-        
+
         if lambda_1 < 1e-15 or lambda_2 < 1e-15:
             # Insufficient superposition weight
             return 0.0
-        
+
         # Normalize eigenvectors to unit norm (they should be, but ensure)
         psi_1 = psi_1 / (np.linalg.norm(psi_1) + 1e-30)
         psi_2 = psi_2 / (np.linalg.norm(psi_2) + 1e-30)
-        
+
         # Compute mass density distributions
         # ρ₁(x) ∝ λ₁ * |ψ₁(x)|²  (positional probability)
         # ρ₂(x) ∝ λ₂ * |ψ₂(x)|²  (positional probability)
         rho_dist_1 = lambda_1 * np.abs(psi_1) ** 2
         rho_dist_2 = lambda_2 * np.abs(psi_2) ** 2
-        
+
         # Normalize to unit total mass (each distribution sums to 1)
         rho_dist_1 = rho_dist_1 / (np.sum(rho_dist_1) + 1e-30)
         rho_dist_2 = rho_dist_2 / (np.sum(rho_dist_2) + 1e-30)
-        
+
         # Compute 6D integral via pairwise lattice summation
         # I(ρ₁, ρ₂) = ∫∫ (ρ₁(x)ρ₁(y) - ρ₂(x)ρ₂(y)) / |x-y| dx³dy³
         #
         # Approximation: treat each basis element as a lattice point
         # with effective position i·ℓ_scale in a 1D effective space
         # (operationalization: N basis states → N lattice sites)
-        
+
         n_sites = len(rho_dist_1)
         integrand_1 = 0.0  # ∫∫ ρ₁(x)ρ₁(y) / |x-y|
         integrand_2 = 0.0  # ∫∫ ρ₂(x)ρ₂(y) / |x-y|
-        
+
         for i in range(n_sites):
             for j in range(i + 1, n_sites):
                 # Effective distance in computational space
                 # Using effective scale: Δx = |i-j| * ℓ_scale
                 site_distance = float(abs(i - j)) * self.coherence_scale
-                
+
                 # Avoid division by zero
                 if site_distance < 1e-30:
                     continue
-                
+
                 # Pairwise contribution to integral
                 # Factor of 2 for i≠j symmetry in 6D integral
                 pair_weight = 2.0 / site_distance
-                
+
                 # Accumulate superposition 1 integral
                 integrand_1 += pair_weight * rho_dist_1[i] * rho_dist_1[j]
-                
+
                 # Accumulate superposition 2 integral
                 integrand_2 += pair_weight * rho_dist_2[i] * rho_dist_2[j]
-        
+
         # Compute Coulomb-like integral difference
         # I_diff = ∫∫ (ρ₁(x)ρ₁(y) - ρ₂(x)ρ₂(y)) / |x-y| dx³dy³
         integral_difference = integrand_1 - integrand_2
-        
+
         if self.enhanced_gravity_model:
             # Enhanced: weight by superposition quality (coherence)
             superposition_coherence = float(np.abs(np.vdot(psi_1, psi_2)))
             integral_difference = integral_difference * (1.0 + superposition_coherence)
-        
+
         # Penrose gravitational self-energy
         # ΔE = (G/2) * I_diff
         energy_uncertainty = (GRAVITATIONAL_CONSTANT / 2.0) * max(0.0, integral_difference)
-        
+
         return float(energy_uncertainty)
 
     def _collapse_to_eigenstate(

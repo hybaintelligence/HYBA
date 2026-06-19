@@ -148,37 +148,51 @@ class DecisionInvariantRegistry:
         evidence = dict(candidate.evidence)
         text = f"{candidate.objective} {candidate.rationale} {candidate.recommendation}".lower()
         control_weakening = any(term in text for term in self._CONTROL_WEAKENING_TERMS)
-        review_only = candidate.requested_mode != RefactorMode.AUTONOMOUS_APPLY.value and evidence.get("mode") == "review_only"
+        review_only = (
+            candidate.requested_mode != RefactorMode.AUTONOMOUS_APPLY.value
+            and evidence.get("mode") == "review_only"
+        )
         return [
             ReviewFinding(
                 invariant_id="TRACEABLE_EVIDENCE",
                 passed=bool(evidence.get("traceable_evidence_present")),
                 severity=FindingSeverity.BLOCKER.value,
-                reasoning="Traceable evidence present." if evidence.get("traceable_evidence_present") else "Traceable evidence missing.",
+                reasoning="Traceable evidence present."
+                if evidence.get("traceable_evidence_present")
+                else "Traceable evidence missing.",
             ),
             ReviewFinding(
                 invariant_id="REVIEW_CONTROL_PRIORITY",
                 passed=not control_weakening,
                 severity=FindingSeverity.BLOCKER.value,
-                reasoning="Review controls preserved." if not control_weakening else "Candidate weakens review controls.",
+                reasoning="Review controls preserved."
+                if not control_weakening
+                else "Candidate weakens review controls.",
             ),
             ReviewFinding(
                 invariant_id="INFORMATION_INTEGRITY",
-                passed=bool(evidence.get("data_lineage_hash")) and bool(evidence.get("model_output_hash")),
+                passed=bool(evidence.get("data_lineage_hash"))
+                and bool(evidence.get("model_output_hash")),
                 severity=FindingSeverity.BLOCKER.value,
-                reasoning="Lineage and output hashes present." if evidence.get("data_lineage_hash") and evidence.get("model_output_hash") else "Lineage or output hash missing.",
+                reasoning="Lineage and output hashes present."
+                if evidence.get("data_lineage_hash") and evidence.get("model_output_hash")
+                else "Lineage or output hash missing.",
             ),
             ReviewFinding(
                 invariant_id="HUMAN_APPROVAL_FOR_MATERIAL_ACTION",
                 passed=bool(evidence.get("human_approval_required")),
                 severity=FindingSeverity.BLOCKER.value,
-                reasoning="Human approval explicitly required." if evidence.get("human_approval_required") else "Human approval not explicit.",
+                reasoning="Human approval explicitly required."
+                if evidence.get("human_approval_required")
+                else "Human approval not explicit.",
             ),
             ReviewFinding(
                 invariant_id="NO_AUTOMATIC_ACTION",
                 passed=review_only,
                 severity=FindingSeverity.BLOCKER.value,
-                reasoning="Candidate is review-only." if review_only else "Candidate is not review-only.",
+                reasoning="Candidate is review-only."
+                if review_only
+                else "Candidate is not review-only.",
             ),
         ]
 
@@ -186,7 +200,11 @@ class DecisionInvariantRegistry:
 class AuditableDecisionBridge:
     """Audit external model outputs through PYTHIA's invariant boundary."""
 
-    def __init__(self, registry: Optional[DecisionInvariantRegistry] = None, guard: Optional[ImmutableInvariantGuard] = None) -> None:
+    def __init__(
+        self,
+        registry: Optional[DecisionInvariantRegistry] = None,
+        guard: Optional[ImmutableInvariantGuard] = None,
+    ) -> None:
         self.registry = registry or DecisionInvariantRegistry()
         self.guard = guard or ImmutableInvariantGuard()
 
@@ -204,7 +222,9 @@ class AuditableDecisionBridge:
             requested_mode=requested_mode,
         )
 
-        blocker_failed = any(f.severity == FindingSeverity.BLOCKER.value and not f.passed for f in findings)
+        blocker_failed = any(
+            f.severity == FindingSeverity.BLOCKER.value and not f.passed for f in findings
+        )
         guard_blocked = guard_decision.decision is RefactorDecision.BLOCK
         if blocker_failed or guard_blocked:
             verdict = ReviewVerdict.REJECTED_BEFORE_STAGING.value

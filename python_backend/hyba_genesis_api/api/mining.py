@@ -379,7 +379,9 @@ def _pool_config_response(
     payload["status"] = (
         "connected"
         if active_pool_id == config.pool_id
-        else "configured" if payload.get("configured") else "not_configured"
+        else "configured"
+        if payload.get("configured")
+        else "not_configured"
     )
     return payload
 
@@ -387,9 +389,7 @@ def _pool_config_response(
 def _build_pool_config_from_request(req: PoolCredentialRequest) -> PoolCredentialConfig:
     base = load_runtime_pool_configs().get(req.pool_id)
     if base is None:
-        base = PoolCredentialConfig(
-            **DEFAULT_POOL_SPECS[req.pool_id], pool_id=req.pool_id
-        )  # type: ignore[arg-type]
+        base = PoolCredentialConfig(**DEFAULT_POOL_SPECS[req.pool_id], pool_id=req.pool_id)  # type: ignore[arg-type]
     return PoolCredentialConfig(
         pool_id=req.pool_id,
         name=base.name,
@@ -989,12 +989,18 @@ async def pause_mining(
         if _ACTIVE_CONNECTION is None:
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
-                detail={"error": "mining_not_connected", "message": "Connect mining before pausing."},
+                detail={
+                    "error": "mining_not_connected",
+                    "message": "Connect mining before pausing.",
+                },
             )
         if midas_state_machine.get_state() != MiningState.RUNNING:
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
-                detail={"error": "midas_not_running", "state": midas_state_machine.get_state().value},
+                detail={
+                    "error": "midas_not_running",
+                    "state": midas_state_machine.get_state().value,
+                },
             )
         daemon_status = stop_pythia_daemon()
         state = get_pythia_state() or {}
@@ -1056,12 +1062,18 @@ async def resume_mining(
         if _ACTIVE_CONNECTION is None:
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
-                detail={"error": "mining_not_connected", "message": "Connect mining before resuming."},
+                detail={
+                    "error": "mining_not_connected",
+                    "message": "Connect mining before resuming.",
+                },
             )
         if midas_state_machine.get_state() != MiningState.PAUSED:
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
-                detail={"error": "midas_not_paused", "state": midas_state_machine.get_state().value},
+                detail={
+                    "error": "midas_not_paused",
+                    "state": midas_state_machine.get_state().value,
+                },
             )
         daemon_status = start_pythia_daemon(
             capacity_ehs=_ACTIVE_CONNECTION.get("capacity_ehs")

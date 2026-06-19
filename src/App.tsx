@@ -191,7 +191,9 @@ function AppContent() {
   } | null>(null);
   const [selectedPoolForConfig, setSelectedPoolForConfig] = useState<PoolInfo | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [currentView, setCurrentView] = useState<"dashboard" | "admin" | "executive" | "jobs" | "history" | "analytics">("dashboard");
+  const [currentView, setCurrentView] = useState<
+    "dashboard" | "admin" | "executive" | "jobs" | "history" | "analytics"
+  >("dashboard");
 
   const { execute: fetchTelemetryExecute } = useApiRequest(fetchTelemetryData, { maxRetries: 3 });
   const {
@@ -628,7 +630,9 @@ function AppContent() {
               <span>{currentView === "history" ? "Dashboard" : "History"}</span>
             </button>
             <button
-              onClick={() => setCurrentView(currentView === "analytics" ? "dashboard" : "analytics")}
+              onClick={() =>
+                setCurrentView(currentView === "analytics" ? "dashboard" : "analytics")
+              }
               className={`status-pill border ${currentView === "analytics" ? "border-cyan-300/30 bg-cyan-400/15 text-cyan-100" : "border-white/30 bg-white/10 text-white"}`}
               title={currentView === "analytics" ? "Return to Dashboard" : "View Analytics"}
             >

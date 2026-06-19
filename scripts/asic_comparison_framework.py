@@ -351,7 +351,7 @@ class ComprehensiveComparison:
 
         for scale_name, scale_factor in scaling_factors.items():
             pulvini_throughput = self.pulvini_estimator.estimate_native_throughput(scale_factor)
-            pulvini_coverage = self.pulvini_estimator.estimate_effective_coverage(1) * scale_factor
+            self.pulvini_estimator.estimate_effective_coverage(1) * scale_factor
             pulvini_power = self.pulvini_estimator.estimate_power_consumption(1, scale_factor)
             effective_throughput = pulvini_throughput * self.total_quantum_multiplier
             effective_hashrate_ths = effective_throughput / 1e12
@@ -577,8 +577,7 @@ class ComprehensiveComparison:
         report.append("─" * 80)
         report.append("AUDITOR'S NOTE")
         report.append(
-            "  The measured envelope (φ² compression, pure-state convergence, 3/3 "
-            "discrimination,"
+            "  The measured envelope (φ² compression, pure-state convergence, 3/3 discrimination,"
         )
         report.append("  1.367 ms solve time) stands on its own. The 393,000x compound multiplier")
         report.append("  is a projection ceiling under phi-ensemble weighting, directly useful for")

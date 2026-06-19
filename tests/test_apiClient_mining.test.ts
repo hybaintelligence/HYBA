@@ -15,10 +15,16 @@ import {
 } from "../src/apiClient";
 
 function ok(body: unknown = { status: "ok" }) {
-  return new Response(JSON.stringify(body), { status: 200, headers: { "Content-Type": "application/json" } });
+  return new Response(JSON.stringify(body), {
+    status: 200,
+    headers: { "Content-Type": "application/json" },
+  });
 }
 
-async function expectSingleMutation(call: () => Promise<unknown>, expected: { method: string; path: string; body?: unknown }) {
+async function expectSingleMutation(
+  call: () => Promise<unknown>,
+  expected: { method: string; path: string; body?: unknown },
+) {
   const fetchMock = vi.mocked(fetch);
   fetchMock.mockClear();
   fetchMock.mockResolvedValue(ok());
@@ -46,17 +52,31 @@ describe("apiClient mining and production-mining command contracts", () => {
   });
 
   it("sends one authenticated non-retried request for each core mining mutation", async () => {
-    await expectSingleMutation(
-      () => connectToPool({ pool_id: "braiins", capacity_ehs: 0.5 }),
-      { method: "POST", path: "/api/mining/connect", body: { pool_id: "braiins", capacity_ehs: 0.5, switch: true } },
-    );
-    await expectSingleMutation(
-      () => switchPool({ pool_id: "via", capacity_ehs: 0.25 }),
-      { method: "POST", path: "/api/mining/switch", body: { pool_id: "via", capacity_ehs: 0.25, switch: true } },
-    );
-    await expectSingleMutation(() => disconnectFromPool(), { method: "POST", path: "/api/mining/disconnect", body: {} });
-    await expectSingleMutation(() => pauseMining(), { method: "POST", path: "/api/mining/pause", body: {} });
-    await expectSingleMutation(() => resumeMining(), { method: "POST", path: "/api/mining/resume", body: {} });
+    await expectSingleMutation(() => connectToPool({ pool_id: "braiins", capacity_ehs: 0.5 }), {
+      method: "POST",
+      path: "/api/mining/connect",
+      body: { pool_id: "braiins", capacity_ehs: 0.5, switch: true },
+    });
+    await expectSingleMutation(() => switchPool({ pool_id: "via", capacity_ehs: 0.25 }), {
+      method: "POST",
+      path: "/api/mining/switch",
+      body: { pool_id: "via", capacity_ehs: 0.25, switch: true },
+    });
+    await expectSingleMutation(() => disconnectFromPool(), {
+      method: "POST",
+      path: "/api/mining/disconnect",
+      body: {},
+    });
+    await expectSingleMutation(() => pauseMining(), {
+      method: "POST",
+      path: "/api/mining/pause",
+      body: {},
+    });
+    await expectSingleMutation(() => resumeMining(), {
+      method: "POST",
+      path: "/api/mining/resume",
+      body: {},
+    });
     await expectSingleMutation(() => updatePowerScale(0.5, 21), {
       method: "POST",
       path: "/api/mining/power",
@@ -65,18 +85,33 @@ describe("apiClient mining and production-mining command contracts", () => {
   });
 
   it("enforces the 1 EH/s cap before mining connect, switch, and submit requests leave the browser", async () => {
-    await expect(connectToPool({ pool_id: "x", capacity_ehs: 1.01 })).rejects.toThrow("capacity_ehs");
-    await expect(switchPool({ pool_id: "x", capacity_ehs: Number.NaN })).rejects.toThrow("capacity_ehs");
-    await expect(submitJob({ pool_id: "x", worker: "w", job_id: "job", nonce: "00", hashrate_ehs: 2 })).rejects.toThrow("hashrate_ehs");
+    await expect(connectToPool({ pool_id: "x", capacity_ehs: 1.01 })).rejects.toThrow(
+      "capacity_ehs",
+    );
+    await expect(switchPool({ pool_id: "x", capacity_ehs: Number.NaN })).rejects.toThrow(
+      "capacity_ehs",
+    );
+    await expect(
+      submitJob({ pool_id: "x", worker: "w", job_id: "job", nonce: "00", hashrate_ehs: 2 }),
+    ).rejects.toThrow("hashrate_ehs");
     expect(fetch).not.toHaveBeenCalled();
   });
 
   it("does not retry production-mining destructive commands on 5xx", async () => {
-    const fetchMock = vi.mocked(fetch).mockResolvedValue(new Response(JSON.stringify({ error: "boom" }), { status: 500 }));
+    const fetchMock = vi
+      .mocked(fetch)
+      .mockResolvedValue(new Response(JSON.stringify({ error: "boom" }), { status: 500 }));
 
     await expect(startMiningProduction()).rejects.toMatchObject({ status: 500 });
     await expect(stopMiningProduction()).rejects.toMatchObject({ status: 500 });
-    await expect(submitMiningProductionShare({ pool_id: "pool", worker: "worker", job_id: "job-1", nonce: "abc" })).rejects.toMatchObject({ status: 500 });
+    await expect(
+      submitMiningProductionShare({
+        pool_id: "pool",
+        worker: "worker",
+        job_id: "job-1",
+        nonce: "abc",
+      }),
+    ).rejects.toMatchObject({ status: 500 });
     expect(fetchMock).toHaveBeenCalledTimes(3);
   });
 });

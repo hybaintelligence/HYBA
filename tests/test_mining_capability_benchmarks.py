@@ -26,15 +26,13 @@ Run with:
 
 from __future__ import annotations
 
-import asyncio
-import math
 import random
 import sys
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
-from statistics import mean, median, stdev
-from typing import Any, Dict, List, Optional, Tuple
+from statistics import mean, stdev
+from typing import Any, Dict, List
 
 import numpy as np
 import pytest
@@ -86,7 +84,7 @@ class BenchmarkSuite:
         return all(r.passed for r in self.results)
 
     def summary(self) -> str:
-        lines = [f"\n{'='*72}", f"  BENCHMARK SUITE: {self.name}", f"{'='*72}"]
+        lines = [f"\n{'=' * 72}", f"  BENCHMARK SUITE: {self.name}", f"{'=' * 72}"]
         for r in self.results:
             status = "✅" if r.passed else "❌"
             ratio = r.ratio_vs_baseline()
@@ -96,9 +94,9 @@ class BenchmarkSuite:
             )
             if r.std_dev > 0 and r.samples > 1:
                 lines.append(f"     ±{r.std_dev:.4f} over {r.samples} samples")
-        lines.append(f"{'='*72}")
+        lines.append(f"{'=' * 72}")
         lines.append(f"  Overall: {'✅ PASSED' if self.passed() else '❌ FAILED'}")
-        lines.append(f"{'='*72}")
+        lines.append(f"{'=' * 72}")
         return "\n".join(lines)
 
 
@@ -291,18 +289,17 @@ async def benchmark_solver_search_efficiency() -> List[BenchmarkResult]:
     - State management under load
     """
     from pythia_mining.pulvini_compressed_solver import PulviniCompressedQuantumSolver
-    from pythia_mining.mining_validation import validate_share
 
     results = []
 
     # Test across multiple difficulty levels
     difficulties = [
-        ("easy", int("ffffff" + "0" * 56, 16)),       # 1 in 2^24
-        ("medium", int("ffff" + "0" * 60, 16)),        # 1 in 2^32
+        ("easy", int("ffffff" + "0" * 56, 16)),  # 1 in 2^24
+        ("medium", int("ffff" + "0" * 60, 16)),  # 1 in 2^32
     ]
 
     for diff_name, target in difficulties:
-        job = _create_synthetic_job(target=target, job_id=f"bench-{diff_name}")
+        _create_synthetic_job(target=target, job_id=f"bench-{diff_name}")
         solver = PulviniCompressedQuantumSolver(configured_capacity_ehs=100.0)
 
         # Configure search
@@ -349,7 +346,11 @@ def benchmark_yang_mills_gate_effectiveness(
 
     This validates the structural properties of the gate, not a specific pass rate.
     """
-    from pythia_mining.hendrix_phi_solver import YANG_MILLS_GAP, soft_mass_gap_gate, yang_mills_action
+    from pythia_mining.hendrix_phi_solver import (
+        YANG_MILLS_GAP,
+        soft_mass_gap_gate,
+        yang_mills_action,
+    )
 
     rng = random.Random(42)
     passed = 0
@@ -497,7 +498,7 @@ def benchmark_consciousness_latency(n_samples: int = 100) -> BenchmarkResult:
     import numpy as np
 
     engine = ConsciousnessEngine()
-    
+
     # Use the correct dimension (32) for the ManifoldOperator
     dim = engine.operator.dim
     states = [np.eye(dim, dtype=np.complex128) for _ in range(10)]
@@ -510,7 +511,9 @@ def benchmark_consciousness_latency(n_samples: int = 100) -> BenchmarkResult:
 
     mean_latency = mean(latencies) * 1000  # convert to ms
     std_latency = stdev(latencies) * 1000 if len(latencies) > 1 else 0.0
-    p99_latency = sorted(latencies)[int(len(latencies) * 0.99)] * 1000 if len(latencies) > 1 else mean_latency
+    p99_latency = (
+        sorted(latencies)[int(len(latencies) * 0.99)] * 1000 if len(latencies) > 1 else mean_latency
+    )
 
     baseline = 10.0  # 10ms per measurement is the target
 
@@ -725,7 +728,7 @@ def benchmark_phi_folding_compression(
                 samples=1,
                 metadata={
                     "original_size": size,
-                    "folded_size": result.folded.size if hasattr(result, 'folded') else 0,
+                    "folded_size": result.folded.size if hasattr(result, "folded") else 0,
                     "max_reconstruction_error": max_error,
                     "compression_is_reversible": result.reversible,
                 },
@@ -804,8 +807,7 @@ def test_capability_benchmark_suite() -> None:
     # Report and assert
     print(suite.summary())
     assert suite.passed(), (
-        f"Benchmark suite '{suite.name}' FAILED. "
-        "See output above for individual results."
+        f"Benchmark suite '{suite.name}' FAILED. See output above for individual results."
     )
 
 
@@ -836,8 +838,7 @@ async def test_capability_async_benchmark_suite() -> None:
     # Report and assert
     print(suite.summary())
     assert suite.passed(), (
-        f"Benchmark suite '{suite.name}' FAILED. "
-        "See output above for individual results."
+        f"Benchmark suite '{suite.name}' FAILED. See output above for individual results."
     )
 
 

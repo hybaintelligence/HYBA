@@ -1,4 +1,7 @@
-import hashlib, json, pathlib, time
+import hashlib
+import json
+import pathlib
+import time
 
 root = pathlib.Path("artifacts/release_candidates/pythia_live_viabtc_rc_20260616")
 files = {}
@@ -17,7 +20,7 @@ manifest = {
         "phi_unified_mining_engine": "21/21",
         "unified_miner_search_workflow": "10/10",
         "pythia_one_block_mission": "15/15",
-        "hyba_enterprise_api_posture": "5/5"
+        "hyba_enterprise_api_posture": "5/5",
     },
     "mission": "one_pool_confirmed_block_then_shutdown",
     "supreme_invariants": [
@@ -25,9 +28,9 @@ manifest = {
         "exact SHA-256d final oracle",
         "full nonce coverage preserved",
         "accepted shares are learning events",
-        "accepted block proof is mission completion"
+        "accepted block proof is mission completion",
     ],
-    "files": files
+    "files": files,
 }
 
 (root / "MANIFEST.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")

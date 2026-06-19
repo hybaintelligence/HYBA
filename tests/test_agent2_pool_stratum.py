@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import asyncio
 import json
 from types import SimpleNamespace
 from unittest.mock import AsyncMock
@@ -118,20 +117,26 @@ def test_pool_profile_masks_credentials_by_default():
 
 
 def test_pool_profile_extracts_inline_credentials_and_sanitizes_url():
-    clean, username, password = split_pool_url_credentials("stratum+tcp://user%2E1:p%40ss@host:3333")
+    clean, username, password = split_pool_url_credentials(
+        "stratum+tcp://user%2E1:p%40ss@host:3333"
+    )
     assert clean == "stratum+tcp://host:3333"
     assert username == "user.1"
     assert password == "p@ss"
 
 
 def test_build_profile_uses_inline_credentials_when_fields_empty():
-    p = build_profile("Inline", name="Inline", url="stratum+tcp://u:p@host:3333", username="", password="")
+    p = build_profile(
+        "Inline", name="Inline", url="stratum+tcp://u:p@host:3333", username="", password=""
+    )
     assert p.pool_id == "inline"
     assert p.url == "stratum+tcp://host:3333"
     assert (p.username, p.password) == ("u", "p")
 
 
-@pytest.mark.parametrize("url", ["http://host:3333", "stratum+tcp://host", "stratum+tcp://host:3336"])
+@pytest.mark.parametrize(
+    "url", ["http://host:3333", "stratum+tcp://host", "stratum+tcp://host:3336"]
+)
 def test_validate_pool_url_rejects_invalid_or_mismatched_urls(url):
     with pytest.raises(PoolProfileError):
         validate_pool_url(url)
@@ -140,7 +145,9 @@ def test_validate_pool_url_rejects_invalid_or_mismatched_urls(url):
 def test_validate_pool_url_enforces_tls_requirement():
     with pytest.raises(PoolProfileError, match="TLS is required"):
         validate_pool_url("stratum+tcp://host:3333", tls_required=True)
-    assert validate_pool_url("stratum+ssl://host:443", tls_required=True) == "stratum+ssl://host:443"
+    assert (
+        validate_pool_url("stratum+ssl://host:443", tls_required=True) == "stratum+ssl://host:443"
+    )
 
 
 def test_validate_profile_normalizes_url_credentials():
@@ -148,7 +155,10 @@ def test_validate_profile_normalizes_url_credentials():
     assert validate_profile(raw).url == "stratum+tcp://host:3333"
 
 
-@pytest.mark.parametrize("kwargs", [{"pool_id": ""}, {"username": ""}, {"password": ""}, {"priority": -1}, {"stratum_version": 9}])
+@pytest.mark.parametrize(
+    "kwargs",
+    [{"pool_id": ""}, {"username": ""}, {"password": ""}, {"priority": -1}, {"stratum_version": 9}],
+)
 def test_validate_profile_rejects_required_field_errors(kwargs):
     data = dict(pool_id="p", name="Pool", url="stratum+tcp://host:3333", username="u", password="p")
     data.update(kwargs)
@@ -157,15 +167,35 @@ def test_validate_profile_rejects_required_field_errors(kwargs):
 
 
 def test_pool_credential_config_resolves_ckpool_and_nicehash_usernames():
-    ck = PoolCredentialConfig("ckpool", "CK", "stratum+tcp://host:3333", 1, False, "btc_address", btc_address="bc1qq")
-    nh = PoolCredentialConfig("nicehash", "NH", "stratum+ssl://host:443", 1, True, "nicehash_worker_pool_id", nicehash_pool_id="wallet", worker="rig")
+    ck = PoolCredentialConfig(
+        "ckpool", "CK", "stratum+tcp://host:3333", 1, False, "btc_address", btc_address="bc1qq"
+    )
+    nh = PoolCredentialConfig(
+        "nicehash",
+        "NH",
+        "stratum+ssl://host:443",
+        1,
+        True,
+        "nicehash_worker_pool_id",
+        nicehash_pool_id="wallet",
+        worker="rig",
+    )
     assert ck.resolved_username() == "bc1qq"
     assert ck.resolved_password() == "x"
     assert nh.resolved_username() == "wallet.rig"
 
 
 def test_pool_config_to_dict_redacts_runtime_secrets():
-    cfg = PoolCredentialConfig("viabtc", "Via", "stratum+tcp://user:pass@host:3333", 1, False, "username_password", username="u", password="p")
+    cfg = PoolCredentialConfig(
+        "viabtc",
+        "Via",
+        "stratum+tcp://user:pass@host:3333",
+        1,
+        False,
+        "username_password",
+        username="u",
+        password="p",
+    )
     payload = cfg.to_dict()
     assert payload["url"] == "stratum+tcp://host:3333"
     assert payload["username"] == "<configured>"
@@ -173,7 +203,13 @@ def test_pool_config_to_dict_redacts_runtime_secrets():
 
 
 def test_order_profiles_sorts_by_priority_then_pool_id():
-    ordered = order_profiles([profile(pool_id="b", priority=2), profile(pool_id="a", priority=2), profile(pool_id="c", priority=1)])
+    ordered = order_profiles(
+        [
+            profile(pool_id="b", priority=2),
+            profile(pool_id="a", priority=2),
+            profile(pool_id="c", priority=1),
+        ]
+    )
     assert [p.pool_id for p in ordered] == ["c", "a", "b"]
 
 
@@ -184,7 +220,19 @@ def test_default_pool_config_reads_env_priority(monkeypatch):
 
 def test_load_runtime_pool_configs_env_takes_precedence_over_file(tmp_path, monkeypatch):
     path = tmp_path / "pools.json"
-    path.write_text(json.dumps({"pools": {"viabtc": {"username": "file", "password": "file", "url": "stratum+tcp://file:3333"}}}))
+    path.write_text(
+        json.dumps(
+            {
+                "pools": {
+                    "viabtc": {
+                        "username": "file",
+                        "password": "file",
+                        "url": "stratum+tcp://file:3333",
+                    }
+                }
+            }
+        )
+    )
     monkeypatch.setenv("HYBA_POOL_CONFIG_PATH", str(path))
     monkeypatch.setenv("HYBA_POOL_VIABTC_USERNAME", "env")
     monkeypatch.setenv("HYBA_POOL_VIABTC_PASSWORD", "envpass")
@@ -197,7 +245,19 @@ def test_load_runtime_pool_configs_env_takes_precedence_over_file(tmp_path, monk
 def test_save_runtime_pool_config_writes_0600_and_load_pool_profiles(tmp_path, monkeypatch):
     path = tmp_path / "pools.json"
     monkeypatch.setenv("HYBA_POOL_CONFIG_PATH", str(path))
-    save_runtime_pool_config(PoolCredentialConfig("viabtc", "Via", "stratum+tcp://host:3333", 1, False, "username_password", username="u", password="p", priority=3))
+    save_runtime_pool_config(
+        PoolCredentialConfig(
+            "viabtc",
+            "Via",
+            "stratum+tcp://host:3333",
+            1,
+            False,
+            "username_password",
+            username="u",
+            password="p",
+            priority=3,
+        )
+    )
     assert oct(path.stat().st_mode & 0o777) == "0o600"
     loaded = [p for p in load_pool_profiles() if p.pool_id == "viabtc"][0]
     assert loaded.username == "u"
@@ -205,10 +265,21 @@ def test_save_runtime_pool_config_writes_0600_and_load_pool_profiles(tmp_path, m
 
 def test_validate_pool_config_rejects_missing_credentials():
     with pytest.raises(PoolProfileError):
-        validate_pool_config(PoolCredentialConfig("viabtc", "Via", "stratum+tcp://host:3333", 1, False, "username_password"))
+        validate_pool_config(
+            PoolCredentialConfig(
+                "viabtc", "Via", "stratum+tcp://host:3333", 1, False, "username_password"
+            )
+        )
 
 
-@pytest.mark.parametrize("url,tls", [("stratum+tcp://host:3333", False), ("stratum+ssl://host:443", True), ("stratum2+tls://host:3336", True)])
+@pytest.mark.parametrize(
+    "url,tls",
+    [
+        ("stratum+tcp://host:3333", False),
+        ("stratum+ssl://host:443", True),
+        ("stratum2+tls://host:3336", True),
+    ],
+)
 def test_parse_endpoint_recognizes_tls_and_ports(url, tls):
     endpoint = parse_endpoint(url)
     assert endpoint.host == "host"
@@ -226,7 +297,12 @@ async def test_transport_send_line_appends_newline_and_requires_connection():
     transport = StratumLineTransport("stratum+tcp://host:3333")
     with pytest.raises(StratumTransportError):
         await transport.send_line("{}")
-    writer = SimpleNamespace(is_closing=lambda: False, buffer=b"", write=lambda payload: setattr(writer, "buffer", payload), drain=AsyncMock())
+    writer = SimpleNamespace(
+        is_closing=lambda: False,
+        buffer=b"",
+        write=lambda payload: setattr(writer, "buffer", payload),
+        drain=AsyncMock(),
+    )
     transport.writer = writer
     await transport.send_line("{}")
     assert writer.buffer == b"{}\n"
@@ -243,10 +319,16 @@ async def test_transport_read_line_decodes_and_detects_closed_stream():
 
 def test_json_rpc_submit_formatting_and_hex_normalization():
     payload = json.loads(build_submit(9, "worker", "job", "AABB", "5E9A5C00", "0000000F"))
-    assert payload == {"id": 9, "method": "mining.submit", "params": ["worker", "job", "aabb", "5e9a5c00", "0000000f"]}
+    assert payload == {
+        "id": 9,
+        "method": "mining.submit",
+        "params": ["worker", "job", "aabb", "5e9a5c00", "0000000f"],
+    }
 
 
-@pytest.mark.parametrize("line", ["not-json", "[]", json.dumps({"method": "mining.notify", "params": []})])
+@pytest.mark.parametrize(
+    "line", ["not-json", "[]", json.dumps({"method": "mining.notify", "params": []})]
+)
 def test_malformed_json_and_protocol_messages_raise(line):
     with pytest.raises(StratumProtocolError):
         parse_server_message(line)
@@ -270,19 +352,29 @@ async def test_live_session_connection_handshake_ignores_interleaved_notificatio
     await session.connect()
     handshake = await session.subscribe_and_authorize()
     assert transport.connected is True
-    assert handshake.to_dict() == {"pool_id": "alpha", "extranonce1": "abcd", "extranonce2_size": 4, "authorized": True}
+    assert handshake.to_dict() == {
+        "pool_id": "alpha",
+        "extranonce1": "abcd",
+        "extranonce2_size": 4,
+        "authorized": True,
+    }
     assert [item["method"] for item in transport.sent] == ["mining.subscribe", "mining.authorize"]
 
 
 async def test_live_session_authentication_failure_raises():
-    transport = FakeTransport([json.dumps({"id": 1, "result": [[], "aa", 4]}), json.dumps({"id": 2, "result": False})])
+    transport = FakeTransport(
+        [json.dumps({"id": 1, "result": [[], "aa", 4]}), json.dumps({"id": 2, "result": False})]
+    )
     with pytest.raises(LiveStratumSessionError, match="rejected authorization"):
         await LiveStratumSession(profile(), transport=transport).subscribe_and_authorize()
 
 
 async def test_live_session_read_event_skips_responses_by_default():
     notify = {"method": "mining.set_difficulty", "params": [8]}
-    session = LiveStratumSession(profile(), transport=FakeTransport([json.dumps({"id": 99, "result": True}), json.dumps(notify)]))
+    session = LiveStratumSession(
+        profile(),
+        transport=FakeTransport([json.dumps({"id": 99, "result": True}), json.dumps(notify)]),
+    )
     event, payload = await session.read_event()
     assert event == "mining.set_difficulty"
     assert payload.difficulty == 8
@@ -291,10 +383,16 @@ async def test_live_session_read_event_skips_responses_by_default():
 async def test_live_session_submit_share_requires_authorization_and_records_rejection():
     session = LiveStratumSession(profile(), transport=FakeTransport([]))
     with pytest.raises(LiveStratumSessionError):
-        await session.submit_share(job_id="j", extranonce2="00000000", ntime="5e9a5c00", nonce="00000000")
+        await session.submit_share(
+            job_id="j", extranonce2="00000000", ntime="5e9a5c00", nonce="00000000"
+        )
     session.authorized = True
-    session.transport = FakeTransport([json.dumps({"id": 1, "result": None, "error": [21, "stale", None]})])
-    result = await session.submit_share(job_id="j", extranonce2="00000000", ntime="5e9a5c00", nonce="00000000")
+    session.transport = FakeTransport(
+        [json.dumps({"id": 1, "result": None, "error": [21, "stale", None]})]
+    )
+    result = await session.submit_share(
+        job_id="j", extranonce2="00000000", ntime="5e9a5c00", nonce="00000000"
+    )
     assert result.accepted is False
     assert result.error[1] == "stale"
 
@@ -324,30 +422,50 @@ def test_client_circuit_breaker_opens_and_half_opens_after_timeout(client, monke
     for _ in range(client._circuit_breaker_threshold):
         client._circuit_breaker_record_failure()
     assert client._circuit_breaker_allow_request() is False
-    monkeypatch.setattr("pythia_mining.stratum_client.time.time", lambda: client._circuit_breaker_last_failure + 61)
+    monkeypatch.setattr(
+        "pythia_mining.stratum_client.time.time", lambda: client._circuit_breaker_last_failure + 61
+    )
     assert client._circuit_breaker_allow_request() is True
     assert client._circuit_breaker_state == "half_open"
     client._circuit_breaker_record_success()
     assert client._circuit_breaker_state == "closed"
 
 
-@pytest.mark.parametrize("response", [{}, {"id": 1}, {"id": 1, "error": {"bad": "shape"}}, {"id": 1, "result": True}])
+@pytest.mark.parametrize(
+    "response", [{}, {"id": 1}, {"id": 1, "error": {"bad": "shape"}}, {"id": 1, "result": True}]
+)
 def test_client_pool_response_validation(client, response):
     expected = response == {"id": 1, "result": True}
     assert client._validate_pool_response(response) is expected
 
 
 async def test_client_poll_live_event_records_difficulty(client):
-    client.live_session = SimpleNamespace(read_event=AsyncMock(return_value=("mining.set_difficulty", SimpleNamespace(difficulty=16))))
+    client.live_session = SimpleNamespace(
+        read_event=AsyncMock(return_value=("mining.set_difficulty", SimpleNamespace(difficulty=16)))
+    )
     assert await client.poll_live_event() is None
     assert client.current_difficulty == 16
     client._persist_metrics.assert_awaited()
 
 
 async def test_client_poll_live_event_adds_notify_job_and_marks_clean_jobs_stale(client):
-    client.current_jobs["old"] = MiningJob("old", "00" * 32, ("aa", "bb"), [], "20000000", "1d00ffff", "5e9a5c00", 1)
-    payload = SimpleNamespace(job_id="new", prevhash="11" * 32, coinbase1="aa", coinbase2="bb", merkle_branch=[], version="20000000", nbits="1d00ffff", ntime="5e9a5c00", clean_jobs=True)
-    client.live_session = SimpleNamespace(read_event=AsyncMock(return_value=("mining.notify", payload)))
+    client.current_jobs["old"] = MiningJob(
+        "old", "00" * 32, ("aa", "bb"), [], "20000000", "1d00ffff", "5e9a5c00", 1
+    )
+    payload = SimpleNamespace(
+        job_id="new",
+        prevhash="11" * 32,
+        coinbase1="aa",
+        coinbase2="bb",
+        merkle_branch=[],
+        version="20000000",
+        nbits="1d00ffff",
+        ntime="5e9a5c00",
+        clean_jobs=True,
+    )
+    client.live_session = SimpleNamespace(
+        read_event=AsyncMock(return_value=("mining.notify", payload))
+    )
     job = await client.poll_live_event()
     assert job.job_id == "new"
     assert "old" in client.stale_job_ids
@@ -355,15 +473,26 @@ async def test_client_poll_live_event_adds_notify_job_and_marks_clean_jobs_stale
 
 
 async def test_client_poll_live_event_handles_extranonce_and_unknown_events(client):
-    client.live_session = SimpleNamespace(read_event=AsyncMock(return_value=("mining.set_extranonce", SimpleNamespace(extranonce1="ff", extranonce2_size=8))))
+    client.live_session = SimpleNamespace(
+        read_event=AsyncMock(
+            return_value=(
+                "mining.set_extranonce",
+                SimpleNamespace(extranonce1="ff", extranonce2_size=8),
+            )
+        )
+    )
     assert await client.poll_live_event() is None
     assert (client.extranonce1, client.extranonce2_size) == ("ff", 8)
-    client.live_session.read_event = AsyncMock(return_value=("unknown", {"method": "vendor.message"}))
+    client.live_session.read_event = AsyncMock(
+        return_value=("unknown", {"method": "vendor.message"})
+    )
     assert await client.poll_live_event() is None
 
 
 async def test_client_poll_live_event_timeout_returns_none_and_checks_stale(client):
-    client.live_session = SimpleNamespace(read_event=AsyncMock(side_effect=StratumTransportError("timeout")))
+    client.live_session = SimpleNamespace(
+        read_event=AsyncMock(side_effect=StratumTransportError("timeout"))
+    )
     client._check_block_height_for_stale_jobs = AsyncMock()
     assert await client.poll_live_event() is None
     client._check_block_height_for_stale_jobs.assert_awaited_once()
@@ -417,10 +546,22 @@ async def test_pool_manager_selects_current_healthy_pool(monkeypatch):
 
 async def test_pool_manager_fails_over_to_secondary(monkeypatch):
     monkeypatch.setenv("NODE_ENV", "development")
-    mgr = PoolManager({
-        "primary": {"url": "stratum+tcp://p:3333", "username": "u", "password": "p", "priority": 1},
-        "secondary": {"url": "stratum+tcp://s:3333", "username": "u", "password": "p", "priority": 2},
-    })
+    mgr = PoolManager(
+        {
+            "primary": {
+                "url": "stratum+tcp://p:3333",
+                "username": "u",
+                "password": "p",
+                "priority": 1,
+            },
+            "secondary": {
+                "url": "stratum+tcp://s:3333",
+                "username": "u",
+                "password": "p",
+                "priority": 2,
+            },
+        }
+    )
     primary, secondary = mgr.pools["primary"], mgr.pools["secondary"]
     primary.connect = AsyncMock(return_value=False)
     secondary.connect = AsyncMock(return_value=True)

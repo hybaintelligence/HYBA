@@ -12,6 +12,7 @@ This file closes that gap by verifying:
 7. verify_telemetry returns complete diagnostic fields on all paths.
 8. Energy-ratio of organic jitter converges near MASS_GAP constant.
 """
+
 from __future__ import annotations
 
 import math
@@ -26,14 +27,15 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "python_backend"))
 
 from pythia_mining.mass_gap_protector import MassGapProtector  # noqa: E402
-from pythia_mining.golden_ratio_library import PHI              # noqa: E402
+from pythia_mining.golden_ratio_library import PHI  # noqa: E402
 
-MASS_GAP = 3.0 - PHI   # ≈ 1.381966
+MASS_GAP = 3.0 - PHI  # ≈ 1.381966
 
 
 # ---------------------------------------------------------------------------
 # helpers — jitter generators
 # ---------------------------------------------------------------------------
+
 
 def _fixed_jitter(n: int = 64, value: float = 1.0) -> List[float]:
     """Fully simulated: constant value, zero variance."""
@@ -67,6 +69,7 @@ def _phi_organic_jitter(n: int = 64) -> List[float]:
 # 1. Fixed-value telemetry is rejected
 # ---------------------------------------------------------------------------
 
+
 def test_fixed_value_telemetry_rejected() -> None:
     """Constant jitter (simulated) must score below authenticity threshold."""
     protector = MassGapProtector()
@@ -78,6 +81,7 @@ def test_fixed_value_telemetry_rejected() -> None:
 # ---------------------------------------------------------------------------
 # 2. Linear (perfectly predictable) synthetic telemetry is rejected
 # ---------------------------------------------------------------------------
+
 
 def test_linear_synthetic_telemetry_rejected() -> None:
     """Linearly-spaced jitter has no irrational structure and must be rejected."""
@@ -91,6 +95,7 @@ def test_linear_synthetic_telemetry_rejected() -> None:
 # ---------------------------------------------------------------------------
 # 3. Pure white noise is rejected
 # ---------------------------------------------------------------------------
+
 
 def test_white_noise_telemetry_rejected() -> None:
     """Gaussian white noise has correct entropy range but wrong spectral curvature."""
@@ -108,6 +113,7 @@ def test_white_noise_telemetry_rejected() -> None:
 # 4. φ-organic jitter achieves high authenticity score
 # ---------------------------------------------------------------------------
 
+
 def test_phi_organic_jitter_authenticated() -> None:
     """φ-resonant organic jitter must score above 0.0 (non-trivial authenticity)."""
     protector = MassGapProtector()
@@ -119,6 +125,7 @@ def test_phi_organic_jitter_authenticated() -> None:
 # ---------------------------------------------------------------------------
 # 5. Insufficient data (<32 samples) → score 0.0 and authentic=False
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.parametrize("n", [0, 1, 16, 31])
 def test_insufficient_data_returns_zero_score(n: int) -> None:
@@ -142,12 +149,16 @@ def test_insufficient_data_verify_returns_not_authentic(n: int) -> None:
 # 6. Confidence is always bounded [0, 1] for arbitrary inputs
 # ---------------------------------------------------------------------------
 
-@pytest.mark.parametrize("jitter_fn,label", [
-    (_fixed_jitter,       "fixed"),
-    (_linear_jitter,      "linear"),
-    (_white_noise_jitter, "white_noise"),
-    (_phi_organic_jitter, "phi_organic"),
-])
+
+@pytest.mark.parametrize(
+    "jitter_fn,label",
+    [
+        (_fixed_jitter, "fixed"),
+        (_linear_jitter, "linear"),
+        (_white_noise_jitter, "white_noise"),
+        (_phi_organic_jitter, "phi_organic"),
+    ],
+)
 def test_confidence_always_bounded(jitter_fn, label: str) -> None:
     """Confidence score must always be in [0, 1] and finite."""
     protector = MassGapProtector()
@@ -161,16 +172,23 @@ def test_confidence_always_bounded(jitter_fn, label: str) -> None:
 # ---------------------------------------------------------------------------
 
 _REQUIRED_KEYS = {
-    "authentic", "reason", "confidence",
-    "energy_ratio", "entropy_normalized",
+    "authentic",
+    "reason",
+    "confidence",
+    "energy_ratio",
+    "entropy_normalized",
 }
 
-@pytest.mark.parametrize("jitter_fn", [
-    _fixed_jitter,
-    _linear_jitter,
-    _white_noise_jitter,
-    _phi_organic_jitter,
-])
+
+@pytest.mark.parametrize(
+    "jitter_fn",
+    [
+        _fixed_jitter,
+        _linear_jitter,
+        _white_noise_jitter,
+        _phi_organic_jitter,
+    ],
+)
 def test_verify_telemetry_returns_complete_diagnostic_fields(jitter_fn) -> None:
     """verify_telemetry must include all required diagnostic fields."""
     protector = MassGapProtector()
@@ -182,6 +200,7 @@ def test_verify_telemetry_returns_complete_diagnostic_fields(jitter_fn) -> None:
 # ---------------------------------------------------------------------------
 # 8. Energy ratio of φ-organic jitter converges near MASS_GAP
 # ---------------------------------------------------------------------------
+
 
 def test_phi_organic_jitter_energy_ratio_near_mass_gap() -> None:
     """Organic φ-jitter derivative energy ratio should be measurably structured.
@@ -198,6 +217,7 @@ def test_phi_organic_jitter_energy_ratio_near_mass_gap() -> None:
 # ---------------------------------------------------------------------------
 # 9. Adversarial: pseudo-random (seeded) jitter does not pass as organic
 # ---------------------------------------------------------------------------
+
 
 def test_seeded_pseudorandom_not_reliably_authentic() -> None:
     """Seeded pseudo-random jitter must not produce consistently high authenticity.
@@ -223,6 +243,7 @@ def test_seeded_pseudorandom_not_reliably_authentic() -> None:
 # ---------------------------------------------------------------------------
 # 10. Repeated identical calls produce identical results (determinism)
 # ---------------------------------------------------------------------------
+
 
 def test_mass_gap_protector_is_deterministic() -> None:
     """Identical jitter buffers must produce identical scores on every call."""

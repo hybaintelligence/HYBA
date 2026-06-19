@@ -26,7 +26,7 @@ class MiningExecutiveController:
     Executive Lobe: Manages the conscious intent of the organism.
     Integrates functional mining with biological health constraints.
     """
-    
+
     def __init__(
         self,
         consciousness_engine: Optional[ConsciousnessEngine] = None,
@@ -40,11 +40,11 @@ class MiningExecutiveController:
         self.stasis_mode = False
         self._mining_task: Optional[asyncio.Task] = None
         self._stop_event = asyncio.Event()
-        
+
     def set_stratum_client(self, client: StratumClient) -> None:
         """Set the Stratum client for pool connections."""
         self.stratum_client = client
-        
+
     async def ignite_manifold(self) -> Dict[str, Any]:
         """
         Ignites the 32-lane manifold.
@@ -61,11 +61,11 @@ class MiningExecutiveController:
                 "success": False,
                 "error": "STASIS_LOCK",
                 "reason": sensory_report.get("recommendation"),
-                "environment_mode": sensory_report.get("environment_mode")
+                "environment_mode": sensory_report.get("environment_mode"),
             }
-        
+
         # Check system Phi
-        phi = getattr(self.consciousness, 'phi', self.consciousness.coherence_meter)
+        phi = getattr(self.consciousness, "phi", self.consciousness.coherence_meter)
         if phi < 0.45:
             logger.error(f"Ignition blocked: Substrate coherence (Φ) below safe threshold: {phi}")
             return {"success": False, "error": "IMMUNE_LOCK", "phi": phi}
@@ -74,7 +74,7 @@ class MiningExecutiveController:
             return {"success": True, "status": "ALREADY_ACTIVE"}
 
         logger.info("Executive: Initiating manifold ignition sequence...")
-        
+
         # 1. Start the Stratum Session if client is available
         if self.stratum_client:
             try:
@@ -85,33 +85,32 @@ class MiningExecutiveController:
             except Exception as e:
                 logger.error(f"Executive: Pool connection error: {e}")
                 return {"success": False, "error": "POOL_CONNECTION_ERROR", "detail": str(e)}
-        
+
         # 2. Warm up the 32 lanes (regeneration manager)
         try:
             # Trigger regeneration for a sample lane to verify system health
             await self.regeneration.trigger_regeneration(0)
         except Exception as e:
             logger.warning(f"Executive: Regeneration warm-up warning: {e}")
-        
+
         # 3. Start mining loop
         self._stop_event.clear()
         self._mining_task = asyncio.create_task(self._mining_loop())
-        
+
         self.is_active = True
         self.ignition_time = datetime.now()
-        
+
         logger.info(
-            f"Executive: Manifold ignited at {self.ignition_time.isoformat()} "
-            f"with Φ={phi:.4f}"
+            f"Executive: Manifold ignited at {self.ignition_time.isoformat()} with Φ={phi:.4f}"
         )
-        
+
         return {
             "success": True,
             "status": "IGNITED",
             "active_lanes": 32,
             "phi": phi,
             "timestamp": self.ignition_time.isoformat(),
-            "sensory_integrity": sensory_report
+            "sensory_integrity": sensory_report,
         }
 
     async def quiesce_manifold(self) -> Dict[str, Any]:
@@ -122,7 +121,7 @@ class MiningExecutiveController:
             return {"success": True, "status": "ALREADY_QUIESCENT"}
 
         logger.info("Executive: Initiating graceful quiescence...")
-        
+
         # 1. Stop mining loop
         self._stop_event.set()
         if self._mining_task:
@@ -134,7 +133,7 @@ class MiningExecutiveController:
                     await self._mining_task
                 except asyncio.CancelledError:
                     pass
-        
+
         # 2. Hibernate the intelligence layer (save learned Phi-paths)
         synaptic_stats = self.consciousness.get_synaptic_statistics()
         logger.info(
@@ -142,22 +141,22 @@ class MiningExecutiveController:
             f"{synaptic_stats.get('total_patterns', 0)} patterns, "
             f"{synaptic_stats.get('emergent_pathway_count', 0)} emergent pathways"
         )
-        
+
         # 3. Disconnect from pool if connected
         if self.stratum_client and self.stratum_client.is_connected:
             try:
                 await self.stratum_client.disconnect()
             except Exception as e:
                 logger.warning(f"Executive: Pool disconnect warning: {e}")
-        
+
         self.is_active = False
         self.ignition_time = None
-        
+
         return {
             "success": True,
             "status": "QUIESCENT",
             "synaptic_state_preserved": True,
-            "patterns_count": synaptic_stats.get("total_patterns", 0)
+            "patterns_count": synaptic_stats.get("total_patterns", 0),
         }
 
     async def set_stasis(self, enabled: bool) -> Dict[str, Any]:
@@ -174,7 +173,7 @@ class MiningExecutiveController:
         uptime_seconds = 0.0
         if self.ignition_time:
             uptime_seconds = (datetime.now() - self.ignition_time).total_seconds()
-        
+
         stratum_telemetry = {}
         if self.stratum_client:
             stratum_telemetry = {
@@ -189,10 +188,10 @@ class MiningExecutiveController:
                 "current_difficulty": self.stratum_client.current_difficulty,
                 "avg_latency_ms": self.stratum_client.avg_latency,
             }
-        
+
         coherence_state = self.consciousness.get_metrics()
         regeneration_status = self.regeneration.get_status()
-        
+
         return {
             "is_active": self.is_active,
             "uptime_seconds": uptime_seconds,
@@ -216,20 +215,20 @@ class MiningExecutiveController:
                         # Process job through consciousness engine
                         # This is where synaptic learning would occur
                         pass
-                
+
                 # Apply synaptic decay periodically
                 if self.consciousness.synaptic_layer:
                     decay_stats = self.consciousness.apply_synaptic_decay()
                     if decay_stats.get("total_decays", 0) > 0:
                         logger.debug(f"Executive: Synaptic decay applied: {decay_stats}")
-                
+
                 await asyncio.sleep(0.1)
             except asyncio.CancelledError:
                 break
             except Exception as e:
                 logger.error(f"Executive: Mining loop error: {e}")
                 await asyncio.sleep(1.0)
-        
+
         logger.info("Executive: Mining loop stopped")
 
 

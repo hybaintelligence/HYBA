@@ -49,7 +49,11 @@ def _overlay_findings(packet: Dict[str, Any]) -> List[Dict[str, Any]]:
 
 def _ledger_lines(packet: Dict[str, Any]) -> Iterable[str]:
     candidate = packet.get("candidate", {}) if isinstance(packet.get("candidate"), dict) else {}
-    jurisdiction = packet.get("jurisdiction_context", {}) if isinstance(packet.get("jurisdiction_context"), dict) else {}
+    jurisdiction = (
+        packet.get("jurisdiction_context", {})
+        if isinstance(packet.get("jurisdiction_context"), dict)
+        else {}
+    )
     findings = _overlay_findings(packet)
     failed = [f for f in findings if str(f.get("status", "")).lower() == "failed"]
     warnings = [f for f in findings if str(f.get("status", "")).lower() == "warning"]
@@ -99,8 +103,12 @@ def _ledger_lines(packet: Dict[str, Any]) -> Iterable[str]:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Render a read-only DIFC Sukuk criticism ledger.")
-    parser.add_argument("packet", type=Path, help="Path to a generated DIFC Sukuk evidence packet JSON file.")
-    parser.add_argument("--output", type=Path, default=None, help="Optional path for the rendered ledger text.")
+    parser.add_argument(
+        "packet", type=Path, help="Path to a generated DIFC Sukuk evidence packet JSON file."
+    )
+    parser.add_argument(
+        "--output", type=Path, default=None, help="Optional path for the rendered ledger text."
+    )
     args = parser.parse_args()
 
     packet = _load_packet(args.packet)

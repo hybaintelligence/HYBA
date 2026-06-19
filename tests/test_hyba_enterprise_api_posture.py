@@ -67,7 +67,9 @@ def test_request_body_size_guard_fails_closed():
     async def payload():
         return {"ok": True}
 
-    response = TestClient(app).post("/payload", content="12345", headers={"x-request-id": "req-large"})
+    response = TestClient(app).post(
+        "/payload", content="12345", headers={"x-request-id": "req-large"}
+    )
 
     assert response.status_code == 413
     body = response.json()

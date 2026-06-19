@@ -10,9 +10,9 @@ even across the phase transition, proving that topological transitions
 are controlled by number-theoretic discrepancy within the operational
 boundary of the Nodus Solutus thesis.
 """
+
 from __future__ import annotations
 
-import math
 import sys
 import json
 import time
@@ -54,8 +54,7 @@ def run_phase_scan(
     )
 
     lambda_values = [
-        lambda_start + (lambda_end - lambda_start) * i / (num_lambda - 1)
-        for i in range(num_lambda)
+        lambda_start + (lambda_end - lambda_start) * i / (num_lambda - 1) for i in range(num_lambda)
     ]
 
     scan_points = []
@@ -87,7 +86,9 @@ def run_phase_scan(
 
         q_str = "YES" if chern.is_quantized else "NO"
         d_str = "YES" if chern.discrepancy_satisfied else "NO"
-        print(f"{lam:10.6f}  {chern.chern_number:12.6f}  {chern.quantization_error:12.6e}  {q_str:>10s}  {d_str:>10s}")
+        print(
+            f"{lam:10.6f}  {chern.chern_number:12.6f}  {chern.quantization_error:12.6e}  {q_str:>10s}  {d_str:>10s}"
+        )
 
         # Detect transition: jump > 0.5 in Chern number
         if i > 0:
@@ -179,9 +180,13 @@ def main():
         print("  Chern number trend may still show gradual topological change.")
 
     print()
-    print(f"Midpoint comparison (λ ≈ 0.5):")
-    print(f"  Φ-LCG Chern:    {result['phi_mid_chern']:.6f}  (error: {result['phi_mid_quantization_error']:.6e}, quantized: {result['phi_mid_quantized']})")
-    print(f"  Uniform Chern:  {result['uniform_mid_chern']:.6f}  (error: {result['uniform_mid_quantization_error']:.6e}, quantized: {result['uniform_mid_quantized']})")
+    print("Midpoint comparison (λ ≈ 0.5):")
+    print(
+        f"  Φ-LCG Chern:    {result['phi_mid_chern']:.6f}  (error: {result['phi_mid_quantization_error']:.6e}, quantized: {result['phi_mid_quantized']})"
+    )
+    print(
+        f"  Uniform Chern:  {result['uniform_mid_chern']:.6f}  (error: {result['uniform_mid_quantization_error']:.6e}, quantized: {result['uniform_mid_quantized']})"
+    )
 
     # Save results to artifacts
     artifacts_dir = Path(__file__).resolve().parents[1] / "artifacts"
@@ -202,8 +207,14 @@ def main():
         "uniform_mid_quantization_error": result["uniform_mid_quantization_error"],
         "uniform_mid_quantized": result["uniform_mid_quantized"],
         "scan_points": [
-            {k: float(v) if isinstance(v, (float, int)) and k != "is_quantized" and k != "discrepancy_satisfied" else v
-             for k, v in p.items()}
+            {
+                k: float(v)
+                if isinstance(v, (float, int))
+                and k != "is_quantized"
+                and k != "discrepancy_satisfied"
+                else v
+                for k, v in p.items()
+            }
             for p in result["scan_points"]
         ],
     }

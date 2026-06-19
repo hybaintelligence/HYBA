@@ -12,7 +12,7 @@ Mathematical structure:
   H₄ = <r₀, r₁, r₂, r₃ | (r₀r₁)⁵ = (r₁r₂)³ = (r₂r₃)³ = 1, rᵢ² = 1>
   Coxeter matrix: [[1,5,3,2],[5,1,3,2],[3,3,1,3],[2,2,3,1]]
   Order: 14,400 = 120² / 1 (index of H₃ × H₃ in H₄)
-  
+
   The 600-cell vertices are the 120 elements of the binary icosahedral group (2I).
   Under H₄, these partition into 10 orbits of 12 vertices each.
 
@@ -30,16 +30,13 @@ import math
 from dataclasses import asdict, dataclass
 from typing import Dict, List, Optional, Sequence, Set, Tuple
 
-import math
-from dataclasses import asdict, dataclass
-from typing import Dict, List, Optional, Sequence, Set, Tuple
 
 # Use constants directly to avoid circular imports at module level
 NUM_NODES = 120
 PHI = (1.0 + math.sqrt(5.0)) / 2.0
-PHI_3 = PHI ** 3
+PHI_3 = PHI**3
 
-NONCE_SPACE = 2 ** 32
+NONCE_SPACE = 2**32
 PHI_SQ = PHI * PHI  # φ² ≈ 2.618
 PHI_INV = 1.0 / PHI  # φ⁻¹ ≈ 0.618
 PHI_3_INV = 1.0 / PHI_3  # φ⁻³ ≈ 0.236
@@ -60,6 +57,7 @@ H4_RANK = 4
 @dataclass(frozen=True)
 class TensorCoordinateH4:
     """Tensor coordinate for a 600-cell vertex under H₄ action."""
+
     node_id: int
     orbit_id: int
     orbit_size: int
@@ -115,21 +113,21 @@ def compute_graph_automorphisms_h4(
     """
     if adjacency_map is None:
         from .pulvini_topology_h4 import ADJACENCY_MAP_H4
+
         adjacency_map = ADJACENCY_MAP_H4
-    
+
     num_nodes = len(adjacency_map)
-    
+
     # For graphs with > 64 nodes, skip full enumeration and use theoretical generators
     if num_nodes > 64:
         return _generate_h4_theoretical_automorphisms(num_nodes, max_count=max_count)
-    
+
     neighbors = adjacency_sets_h4(adjacency_map)
     assert_symmetric_graph_h4(neighbors)
     nodes = list(range(num_nodes))
     degree = {node_id: len(neighbors[node_id]) for node_id in nodes}
     candidates = {
-        node_id: {other for other in nodes if degree[other] == degree[node_id]}
-        for node_id in nodes
+        node_id: {other for other in nodes if degree[other] == degree[node_id]} for node_id in nodes
     }
     mapping: Dict[int, int] = {}
     used: Set[int] = set()
@@ -221,10 +219,9 @@ def nonce_orbit_h4(
     nonce: int, automorphisms: Sequence[Tuple[int, ...]], num_nodes: int = NUM_NODES
 ) -> List[int]:
     """Compute the orbit of a nonce under H₄ automorphisms."""
-    return sorted({
-        apply_h4_automorphism_to_nonce(nonce, sigma, num_nodes)
-        for sigma in automorphisms
-    })
+    return sorted(
+        {apply_h4_automorphism_to_nonce(nonce, sigma, num_nodes) for sigma in automorphisms}
+    )
 
 
 def phi_3_resonance(nonce: int, job_id: Optional[str] = None) -> float:
@@ -237,9 +234,10 @@ def phi_3_resonance(nonce: int, job_id: Optional[str] = None) -> float:
     Returns a score in [0, 1] where higher = more resonant.
     """
     import hashlib
+
     material = f"{job_id or 'h4_job'}:{int(nonce) % NONCE_SPACE}".encode("utf-8")
     digest = hashlib.blake2b(material, digest_size=8).digest()
-    sample = int.from_bytes(digest, "big") / float(2 ** 64)
+    sample = int.from_bytes(digest, "big") / float(2**64)
     return 1.0 - abs(0.5 - ((sample * PHI_3) % 1.0)) * 2.0
 
 

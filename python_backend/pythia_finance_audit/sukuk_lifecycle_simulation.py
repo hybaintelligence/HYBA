@@ -269,7 +269,14 @@ def simulate_sukuk_lifecycle_drift(
             "blocker_steps": len(rejected),
             "first_warning_step_id": first_warning_step_id,
             "first_blocker_step_id": first_blocker_step_id,
-            "first_blocker_stage": next((entry["lifecycle_stage"] for entry in timeline if entry["step_id"] == first_blocker_step_id), None),
+            "first_blocker_stage": next(
+                (
+                    entry["lifecycle_stage"]
+                    for entry in timeline
+                    if entry["step_id"] == first_blocker_step_id
+                ),
+                None,
+            ),
         },
         "human_review_required": True,
         "automatic_action_allowed": False,

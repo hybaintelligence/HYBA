@@ -47,7 +47,7 @@ class PhiTuner:
         self.eta = learning_rate * self.PHI_INV
         # Target coherence for Singular regime (PHI²/2 scaled for stability)
         self.target_coherence = float(
-            target_coherence if target_coherence is not None else ((self.PHI ** 2) / 2.0)
+            target_coherence if target_coherence is not None else ((self.PHI**2) / 2.0)
         )
         self.min_exponent = float(min_exponent)
         self.max_exponent = float(max_exponent)
@@ -214,8 +214,8 @@ class PhiBackpropTuner:
             Dictionary with adjustment, new_phi_exponent, thermal_damping, loss
         """
         # 1. Extract current state
-        current_coherence = telemetry.get('coherence', 0.0)
-        current_temp = telemetry.get('current_temp', 0.0)
+        current_coherence = telemetry.get("coherence", 0.0)
+        current_temp = telemetry.get("current_temp", 0.0)
 
         # 2. Define the Target: The 'Singular' Boundary
         # We want to maximize power (1.5x) while maintaining stability (3-φ)
@@ -237,11 +237,13 @@ class PhiBackpropTuner:
 
         # Apply adjustment to the consciousness engine
         old_exponent = float(getattr(self.engine, "phi_exponent", 1.0))
-        new_exponent = float(np.clip(
-            old_exponent + adjustment,
-            0.618,  # Floor at Inv_Phi
-            1.618,  # Cap at Phi
-        ))
+        new_exponent = float(
+            np.clip(
+                old_exponent + adjustment,
+                0.618,  # Floor at Inv_Phi
+                1.618,  # Cap at Phi
+            )
+        )
         if hasattr(self.engine, "phi_exponent"):
             self.engine.phi_exponent = new_exponent
 
@@ -314,17 +316,19 @@ class PhiSystemController:
         scaling_info = self.engine.get_hardware_scaling_factor(thermal_metrics)
 
         # C. Adaptation Layer: Self-Tuning the Manifold
-        tuning_results = self.tuner.step({
-            "coherence": scaling_info['coherence'],
-            "current_temp": telemetry_temp,
-        })
+        tuning_results = self.tuner.step(
+            {
+                "coherence": scaling_info["coherence"],
+                "current_temp": telemetry_temp,
+            }
+        )
 
         return {
             "physical_addresses": physical_addrs,
-            "scaling_factor": scaling_info['scaling_factor'],
-            "regime": scaling_info['regime'],
-            "phi_exponent": tuning_results['new_phi_exponent'],
-            "manifold_stable": scaling_info['status'] == "stable",
+            "scaling_factor": scaling_info["scaling_factor"],
+            "regime": scaling_info["regime"],
+            "phi_exponent": tuning_results["new_phi_exponent"],
+            "manifold_stable": scaling_info["status"] == "stable",
         }
 
 
@@ -401,8 +405,7 @@ class PhiALUHardwareTuner:
         self.min_exponent = float(min_exponent)
         self.max_exponent = float(max_exponent)
         self.golden_angle_base = (
-            float(golden_angle_base) if golden_angle_base is not None
-            else 360.0 / (PHI * PHI)
+            float(golden_angle_base) if golden_angle_base is not None else 360.0 / (PHI * PHI)
         )
         self.history_window = int(history_window)
 
@@ -433,9 +436,7 @@ class PhiALUHardwareTuner:
         self._iteration += 1
 
         # 1. Read current harmony from the ALU
-        coherence_report = self.alu.verify_coherence(
-            start_addr=0, window=min(100, self._iteration)
-        )
+        coherence_report = self.alu.verify_coherence(start_addr=0, window=min(100, self._iteration))
         harmony_score = coherence_report.get("harmony_score", 0.0)
         self._harmony_history.append(harmony_score)
         if len(self._harmony_history) > self.history_window:
@@ -468,9 +469,7 @@ class PhiALUHardwareTuner:
             "recovery_level": self._recovery_level,
             "action": action,
             "current_exponent": self.current_exponent,
-            "golden_angle_deg": float(
-                getattr(self.alu, "golden_angle", self.golden_angle_base)
-            ),
+            "golden_angle_deg": float(getattr(self.alu, "golden_angle", self.golden_angle_base)),
             "vfs_hint": float(self._vfs_hint),
             "temperature": float(current_temp),
             "coherence_report": coherence_report,
@@ -495,9 +494,7 @@ class PhiALUHardwareTuner:
             return 0.0
         return float(np.mean(self._harmony_history))
 
-    def get_tuning_history(
-        self, n_last: int = 0
-    ) -> list[dict[str, Any]]:
+    def get_tuning_history(self, n_last: int = 0) -> list[dict[str, Any]]:
         """Return recent tuning decisions.
 
         Args:
@@ -521,9 +518,7 @@ class PhiALUHardwareTuner:
 
     # ── Internal recovery strategies ───────────────────────────────────────
 
-    def _noop(
-        self, harmony: float, coherence: float, temp: float
-    ) -> dict[str, Any]:
+    def _noop(self, harmony: float, coherence: float, temp: float) -> dict[str, Any]:
         """No tuning needed — already in Singular Regime."""
         self._recovery_level = max(0, self._recovery_level - 1)
         return {
@@ -532,9 +527,7 @@ class PhiALUHardwareTuner:
             "reason": "singular_regime_sustained",
         }
 
-    def _golden_step(
-        self, harmony: float, coherence: float, temp: float
-    ) -> dict[str, Any]:
+    def _golden_step(self, harmony: float, coherence: float, temp: float) -> dict[str, Any]:
         """Small φ-weighted gradient correction on the exponent.
 
         This is the gentle nudging strategy — equivalent to the original
@@ -562,9 +555,7 @@ class PhiALUHardwareTuner:
             "new_exponent": new_exp,
         }
 
-    def _angle_rephase(
-        self, harmony: float, coherence: float, temp: float
-    ) -> dict[str, Any]:
+    def _angle_rephase(self, harmony: float, coherence: float, temp: float) -> dict[str, Any]:
         """Shift golden angle by φ⁻¹ to find a new resonance mode.
 
         In addition to the exponent step, this adjusts the addressing
@@ -597,9 +588,7 @@ class PhiALUHardwareTuner:
             "angle_offset": float(self._current_angle_offset),
         }
 
-    def _regime_reset(
-        self, harmony: float, coherence: float, temp: float
-    ) -> dict[str, Any]:
+    def _regime_reset(self, harmony: float, coherence: float, temp: float) -> dict[str, Any]:
         """Emergency: reset exponent to conservative base and widen angle.
 
         This is the hardware equivalent of a *cold restart* — it pulls

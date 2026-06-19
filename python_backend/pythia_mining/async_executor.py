@@ -24,6 +24,7 @@ from typing import Any, Callable, TypeVar
 
 T = TypeVar("T")
 
+
 async def run_in_thread(func: Callable[..., T], *args: Any, **kwargs: Any) -> T:
     """Execute a synchronous function in a background thread.
 
@@ -36,6 +37,7 @@ async def run_in_thread(func: Callable[..., T], *args: Any, **kwargs: Any) -> T:
         The return value of the function.
     """
     return await asyncio.to_thread(func, *args, **kwargs)
+
 
 async def run_in_process_pool(func: Callable[..., T], *args: Any, **kwargs: Any) -> T:
     """Execute a synchronous function in a process pool executor.

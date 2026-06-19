@@ -23,13 +23,11 @@ from .phi_vm import (
     PhiVM,
     FOLD,
     GADDR,
-    JPH,
     MGATE,
     PHIMUL,
     PMOD,
     SYNC_PHI,
     TUNE,
-    OPCODES,
 )
 
 PHI = 1.618033988749895
@@ -85,7 +83,7 @@ class PhiJIT:
 
         # 1. Initialisation: Pre-flight resonance tuning
         bytecode.append((SYNC_PHI, 0, 0, 0))  # Wait for Singular Regime
-        bytecode.append((TUNE, 0, 0, 0))       # Calibrate the tuner
+        bytecode.append((TUNE, 0, 0, 0))  # Calibrate the tuner
 
         # 2. AST Traversal — identify transmutable patterns
         for node in ast.walk(tree):
@@ -157,9 +155,11 @@ class PhiJIT:
         result = self.vm.execute_kernel(bytecode)
 
         # Log execution summary
-        print(f"  → {result['instructions_executed']} instructions, "
-              f"{result['cycles']} cycles, "
-              f"IPC={result['ipc']:.3f}")
+        print(
+            f"  → {result['instructions_executed']} instructions, "
+            f"{result['cycles']} cycles, "
+            f"IPC={result['ipc']:.3f}"
+        )
 
         return self.vm.registers.copy()
 
@@ -183,6 +183,7 @@ class PhiJIT:
 
 
 # ── Convenience decorator ────────────────────────────────────────────────
+
 
 def resonant(func: Callable) -> Callable:
     """
@@ -217,6 +218,7 @@ def resonant(func: Callable) -> Callable:
 
 
 # ── Example: Transmutable Kernel ─────────────────────────────────────────
+
 
 def mining_kernel_template() -> None:
     """

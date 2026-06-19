@@ -35,31 +35,19 @@ import json
 import math
 import sys
 import time
-from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Tuple
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "python_backend"))
 from pythia_mining.hendrix_phi_solver import (
     M32,
     ADJACENT,
-    embed_nonce,
-    voronoi_domain,
-    phi_resonance,
-    cheap_phi_resonance,
     yang_mills_action,
-    soft_mass_gap_gate,
-    phi_gradient_proposal,
     YANG_MILLS_GAP,
-    CURVATURE_TABLE,
 )
 from pythia_mining.golden_ratio_library import (
     PHI,
-    PHI_INV,
-    FIBONACCI,
-    LUCAS,
-    normalize,
 )
 
 UINT32_SPACE = 2**32
@@ -97,7 +85,9 @@ def compute_m32_spectrum() -> Dict[str, Any]:
 
     # Deflate and get second eigenvalue
     dim = len(adj)
-    deflated = [[adj[i][j] - lambda_1 * top_vec[i] * top_vec[j] for j in range(dim)] for i in range(dim)]
+    deflated = [
+        [adj[i][j] - lambda_1 * top_vec[i] * top_vec[j] for j in range(dim)] for i in range(dim)
+    ]
     lambda_2, _ = power_iterate(deflated)
 
     # Spectral gap
@@ -122,7 +112,9 @@ def compute_m32_spectrum() -> Dict[str, Any]:
         classical_mix_steps = float("inf")
         quantum_mix_steps = float("inf")
 
-    speedup_ratio = classical_mix_steps / quantum_mix_steps if quantum_mix_steps > 0 else float("inf")
+    speedup_ratio = (
+        classical_mix_steps / quantum_mix_steps if quantum_mix_steps > 0 else float("inf")
+    )
 
     return {
         "dimension": dim,
@@ -159,6 +151,7 @@ def analyze_ym_manifold(n_samples: int = 100_000) -> Dict[str, Any]:
     preferentially stays in this subspace.
     """
     import random
+
     rng = random.Random(618034)
 
     # Sample nonces and compute their curvature
@@ -197,7 +190,7 @@ def analyze_ym_manifold(n_samples: int = 100_000) -> Dict[str, Any]:
         "interpretation": (
             f"Yang-Mills mass gap = {YANG_MILLS_GAP:.4f}. "
             f"Of {n_samples:,} random nonces, {on_manifold:,} "
-            f"({volume_fraction*100:.4f}%) have action below the mass gap — "
+            f"({volume_fraction * 100:.4f}%) have action below the mass gap — "
             f"i.e., they lie on the low-curvature manifold. "
             f"Effective manifold dimension: {effective_dim:.2f} bits "
             f"(of 32-bit nonce space). "
@@ -239,9 +232,9 @@ def compute_grover_comparison(
       HENDRIX-Φ classical (C) is already  8.6× BETTER than Grover unstructured (B).
       HENDRIX-Φ + Grover (D) would be    22.6× BETTER than Grover unstructured (B).
     """
-    N_full = UINT32_SPACE              # 2^32
+    N_full = UINT32_SPACE  # 2^32
     eff_dim = manifold.get("effective_manifold_dimension_bits", 32)
-    N_effective = 2 ** eff_dim         # States on low-curvature manifold
+    N_effective = 2**eff_dim  # States on low-curvature manifold
     reduction_factor = max(1.0, N_full / N_effective)  # ~562×
 
     # Grover iterations for each case
@@ -280,17 +273,21 @@ def compute_grover_comparison(
         },
         "speedup_ratios": {
             "classical_vs_hendrix_structured": round(classical_vs_hendrix, 2),
-            "grover_unstructured_vs_hendrix_classical": round(grover_unstructured_vs_hendrix_classical, 2),
-            "grover_unstructured_vs_hendrix_grover": round(grover_unstructured_vs_hendrix_grover, 2),
+            "grover_unstructured_vs_hendrix_classical": round(
+                grover_unstructured_vs_hendrix_classical, 2
+            ),
+            "grover_unstructured_vs_hendrix_grover": round(
+                grover_unstructured_vs_hendrix_grover, 2
+            ),
         },
         "interpretation": (
             f"Grover's algorithm achieves O(√N) = {grover_full_iters:,} iterations "
             f"on the full 32-bit nonce space (N={N_full:,}). "
             f"This is provably optimal for UNSTRUCTURED search.\n\n"
             f"HENDRIX-Φ OPERATES ON A STRUCTURED MANIFOLD:\n"
-            f"  - Yang-Mills mass gap prunes {((1 - 1/reduction_factor)*100):.2f}% of the nonce space\n"
+            f"  - Yang-Mills mass gap prunes {((1 - 1 / reduction_factor) * 100):.2f}% of the nonce space\n"
             f"  - Effective search: {int(N_effective):,} states ({eff_dim:.1f}-bit manifold)\n"
-            f"  - Phi gradient guidance: +{((per_step_efficiency-1)*100):.2f}% per-step efficiency\n\n"
+            f"  - Phi gradient guidance: +{((per_step_efficiency - 1) * 100):.2f}% per-step efficiency\n\n"
             f"RESULTS (lower is better):\n"
             f"  A. Classical brute force:          {classical_full_steps:>15,} steps\n"
             f"  B. Grover unstructured (32-bit):   {grover_full_iters:>15,} iterations\n"
@@ -339,7 +336,9 @@ def compute_effective_speedup(
         "phi_per_step_boost": phi_boost,
         "total_effective_speedup_ratio": round(total_speedup, 4),
         "total_speedup_log10": round(total_speedup_log10, 4),
-        "total_speedup_notation": f"~{10**total_speedup_log10:.2e}×" if total_speedup_log10 > 0 else "1×",
+        "total_speedup_notation": f"~{10**total_speedup_log10:.2e}×"
+        if total_speedup_log10 > 0
+        else "1×",
         "interpretation": (
             f"The HENDRIX-Φ quantum walk achieves its advantage from three sources:\n"
             f"  1. M32 EXPANDER GRAPH: Quantum walk mixes {graph_speedup:.1f}× faster\n"
@@ -372,9 +371,11 @@ def generate_report(
     t0 = time.time()
     spectrum = compute_m32_spectrum()
     dt = time.time() - t0
-    print(f"  Dim={spectrum['dimension']}, deg={spectrum['degree']}, "
-          f"λ₁={spectrum['lambda_1']:.4f}, λ₂={spectrum['lambda_2']:.4f}, "
-          f"gap={spectrum['spectral_gap']:.4f}")
+    print(
+        f"  Dim={spectrum['dimension']}, deg={spectrum['degree']}, "
+        f"λ₁={spectrum['lambda_1']:.4f}, λ₂={spectrum['lambda_2']:.4f}, "
+        f"gap={spectrum['spectral_gap']:.4f}"
+    )
     print(f"  Expander: {spectrum['is_expander']}")
     print(f"  Classical mix: {spectrum['classical_mixing_steps']:.1f} steps")
     print(f"  Quantum walk:  {spectrum['quantum_walk_mixing_steps']:.1f} steps")
@@ -387,9 +388,11 @@ def generate_report(
     dt = time.time() - t0
     print(f"  Mass gap = {manifold['yang_mills_mass_gap']:.4f}")
     print(f"  Mean action = {manifold['mean_ym_action']:.2f}")
-    print(f"  On-manifold fraction = {manifold['on_manifold_fraction']*100:.4f}%")
+    print(f"  On-manifold fraction = {manifold['on_manifold_fraction'] * 100:.4f}%")
     print(f"  Effective manifold dim = {manifold['effective_manifold_dimension_bits']:.2f} bits")
-    print(f"  (Reduction from 32 bits: {32 - manifold['effective_manifold_dimension_bits']:.2f} bits)")
+    print(
+        f"  (Reduction from 32 bits: {32 - manifold['effective_manifold_dimension_bits']:.2f} bits)"
+    )
     print(f"  ({dt:.3f}s)")
 
     print("\n[3/3] Computing effective speedup and Grover comparison...")
@@ -402,13 +405,25 @@ def generate_report(
     grover = compute_grover_comparison(spectrum, manifold)
     gc = grover["algorithm_comparison"]
     sr = grover["speedup_ratios"]
-    print(f"\n  GROVER COMPARISON:")
-    print(f"    A. Classical brute force:          {gc['A_classical_brute_force_steps']:>15,} steps")
-    print(f"    B. Grover unstructured (32-bit):   {gc['B_grover_unstructured_32bit_iterations']:>15,} iters")
-    print(f"    C. HENDRIX-Φ classical structured: {gc['C_hendrix_classical_structured_steps']:>15,} steps")
-    print(f"    D. HENDRIX-Φ + Grover structured:  {gc['D_hendrix_grover_on_structured_iterations']:>15,} iters")
-    print(f"\n    HENDRIX-Φ classical (C) is {sr['grover_unstructured_vs_hendrix_classical']:.1f}× BETTER than Grover (B)")
-    print(f"    HENDRIX-Φ + Grover (D) is {sr['grover_unstructured_vs_hendrix_grover']:.1f}× BETTER than Grover (B)")
+    print("\n  GROVER COMPARISON:")
+    print(
+        f"    A. Classical brute force:          {gc['A_classical_brute_force_steps']:>15,} steps"
+    )
+    print(
+        f"    B. Grover unstructured (32-bit):   {gc['B_grover_unstructured_32bit_iterations']:>15,} iters"
+    )
+    print(
+        f"    C. HENDRIX-Φ classical structured: {gc['C_hendrix_classical_structured_steps']:>15,} steps"
+    )
+    print(
+        f"    D. HENDRIX-Φ + Grover structured:  {gc['D_hendrix_grover_on_structured_iterations']:>15,} iters"
+    )
+    print(
+        f"\n    HENDRIX-Φ classical (C) is {sr['grover_unstructured_vs_hendrix_classical']:.1f}× BETTER than Grover (B)"
+    )
+    print(
+        f"    HENDRIX-Φ + Grover (D) is {sr['grover_unstructured_vs_hendrix_grover']:.1f}× BETTER than Grover (B)"
+    )
 
     out_path = Path(output_dir)
     out_path.mkdir(parents=True, exist_ok=True)
@@ -432,24 +447,34 @@ def generate_report(
     print(f"\n{'=' * 84}")
     print("  HENDRIX-Φ vs GROVER: STRUCTURE BEATS UNSTRUCTURED")
     print(f"{'=' * 84}")
-    print(f"  Algorithm                Steps/Iters  vs Classical  vs Grover")
-    print(f"  ──────────────────────── ──────────── ──────────── ────────────")
+    print("  Algorithm                Steps/Iters  vs Classical  vs Grover")
+    print("  ──────────────────────── ──────────── ──────────── ────────────")
     N_u32 = UINT32_SPACE
     print(f"  A. Classical brute force {gc['A_classical_brute_force_steps']:>13,}    1×         —")
-    print(f"  B. Grover unstructured   {gc['B_grover_unstructured_32bit_iterations']:>13,}   ~{gc['B_grover_unstructured_32bit_iterations']*4//N_u32:.0e}×    1×")
-    print(f"  C. HENDRIX-Φ classical   {gc['C_hendrix_classical_structured_steps']:>13,}   {gc['A_classical_brute_force_steps']//max(1,gc['C_hendrix_classical_structured_steps']):>12,}×    {gc['B_grover_unstructured_32bit_iterations']//max(1,gc['C_hendrix_classical_structured_steps']):>4d}×")
-    print(f"  D. HENDRIX-Φ + Grover    {gc['D_hendrix_grover_on_structured_iterations']:>13,}   {gc['A_classical_brute_force_steps']//max(1,gc['D_hendrix_grover_on_structured_iterations']):>12,}×    {gc['B_grover_unstructured_32bit_iterations']//max(1,gc['D_hendrix_grover_on_structured_iterations']):>4d}×")
+    print(
+        f"  B. Grover unstructured   {gc['B_grover_unstructured_32bit_iterations']:>13,}   ~{gc['B_grover_unstructured_32bit_iterations'] * 4 // N_u32:.0e}×    1×"
+    )
+    print(
+        f"  C. HENDRIX-Φ classical   {gc['C_hendrix_classical_structured_steps']:>13,}   {gc['A_classical_brute_force_steps'] // max(1, gc['C_hendrix_classical_structured_steps']):>12,}×    {gc['B_grover_unstructured_32bit_iterations'] // max(1, gc['C_hendrix_classical_structured_steps']):>4d}×"
+    )
+    print(
+        f"  D. HENDRIX-Φ + Grover    {gc['D_hendrix_grover_on_structured_iterations']:>13,}   {gc['A_classical_brute_force_steps'] // max(1, gc['D_hendrix_grover_on_structured_iterations']):>12,}×    {gc['B_grover_unstructured_32bit_iterations'] // max(1, gc['D_hendrix_grover_on_structured_iterations']):>4d}×"
+    )
     print(f"{'=' * 84}")
-    print(f"  KEY RESULT:")
-    print(f"    HENDRIX-Φ classical structured search ({gc['C_hendrix_classical_structured_steps']:,} steps)")
+    print("  KEY RESULT:")
+    print(
+        f"    HENDRIX-Φ classical structured search ({gc['C_hendrix_classical_structured_steps']:,} steps)"
+    )
     print(f"    is {sr['grover_unstructured_vs_hendrix_classical']:.1f}× BETTER than")
-    print(f"    Grover's optimal unstructured search ({gc['B_grover_unstructured_32bit_iterations']:,} iterations).")
+    print(
+        f"    Grover's optimal unstructured search ({gc['B_grover_unstructured_32bit_iterations']:,} iterations)."
+    )
     print(f"{'=' * 84}")
-    print(f"  WHY: Structure beats unstructured. Grover achieves √N on random data.")
-    print(f"       HENDRIX-Φ has proven structure (z=8.16, Φ¹⁵ resonance 91.67%)")
-    print(f"       and exploits it via Yang-Mills manifold + φ geodesic traversal.")
-    print(f"       The manifold pre-filters 99.822% of the space, reducing")
-    print(f"       effective dimension from 32 to ~23 bits before search begins.")
+    print("  WHY: Structure beats unstructured. Grover achieves √N on random data.")
+    print("       HENDRIX-Φ has proven structure (z=8.16, Φ¹⁵ resonance 91.67%)")
+    print("       and exploits it via Yang-Mills manifold + φ geodesic traversal.")
+    print("       The manifold pre-filters 99.822% of the space, reducing")
+    print("       effective dimension from 32 to ~23 bits before search begins.")
     print(f"{'=' * 84}")
     print()
 
@@ -461,11 +486,14 @@ def main() -> int:
         description="HENDRIX-Φ Quantum Walk Analysis — M32 Expander + Yang-Mills Manifold",
     )
     parser.add_argument(
-        "--samples", type=int, default=100_000,
+        "--samples",
+        type=int,
+        default=100_000,
         help="Number of random nonces to sample for Yang-Mills manifold analysis",
     )
     parser.add_argument(
-        "--out", default="artifacts/phi_quantum_walk",
+        "--out",
+        default="artifacts/phi_quantum_walk",
         help="Output directory",
     )
     args = parser.parse_args()

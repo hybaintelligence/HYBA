@@ -96,7 +96,17 @@ def _score(value: Any) -> Tuple[float, bool]:
         normalized = value.strip().lower()
         if normalized in {"true", "pass", "passed", "ok", "valid", "confirmed"}:
             return 1.0, False
-        if normalized in {"false", "fail", "failed", "error", "invalid", "missing", "none", "unknown", "revoked"}:
+        if normalized in {
+            "false",
+            "fail",
+            "failed",
+            "error",
+            "invalid",
+            "missing",
+            "none",
+            "unknown",
+            "revoked",
+        }:
             return 0.0, True
         return 0.0, True
     return 0.0, True
@@ -114,7 +124,9 @@ def _extract_revocation_code(evidence: Mapping[str, Any]) -> str:
     return str(raw).strip().lower()
 
 
-def _revocation_disposition(evidence: Mapping[str, Any], reason: str) -> Tuple[RevocationDisposition, str]:
+def _revocation_disposition(
+    evidence: Mapping[str, Any], reason: str
+) -> Tuple[RevocationDisposition, str]:
     """Classify revocation code-first, with text only as fallback.
 
     Unknown response codes do not become falsification. They are explicit
@@ -156,14 +168,19 @@ def _revocation_disposition(evidence: Mapping[str, Any], reason: str) -> Tuple[R
     }
     if code:
         if code in falsifying_codes:
-            return RevocationDisposition.FALSIFIED_INVALID_LOCAL_OR_EXTERNAL_TRUTH, "pool_response_code"
+            return (
+                RevocationDisposition.FALSIFIED_INVALID_LOCAL_OR_EXTERNAL_TRUTH,
+                "pool_response_code",
+            )
         if code in reevaluate_codes:
             return RevocationDisposition.REEVALUATE_AGAINST_UPDATED_TARGET, "pool_response_code"
         if code in reentry_codes:
             return RevocationDisposition.REENTER_EXTERNAL_TRUTH, "pool_response_code"
         return RevocationDisposition.UNCLASSIFIED_REVOCATION, "pool_response_code"
 
-    explicit = str(evidence.get("revocation_type") or evidence.get("pool_revocation_type") or "").lower()
+    explicit = str(
+        evidence.get("revocation_type") or evidence.get("pool_revocation_type") or ""
+    ).lower()
     haystack = f"{explicit} {reason.lower()}"
     falsifying_terms = (
         "invalid hash",
@@ -237,7 +254,9 @@ def assess_penrose_obligation(
         or "external confirmation was revoked; return to proof obligation"
     )
     disposition, classifier_source = (
-        _revocation_disposition(evidence, revocation_reason) if revoked else (RevocationDisposition.NONE, "none")
+        _revocation_disposition(evidence, revocation_reason)
+        if revoked
+        else (RevocationDisposition.NONE, "none")
     )
 
     if falsified:

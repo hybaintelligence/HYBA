@@ -39,7 +39,9 @@ class IntelligenceFabricUnitTests(unittest.TestCase):
         self.assertAlmostEqual(1.0, sum(rho[idx][idx].real for idx in range(len(rho))), places=12)
         self.assertTrue(all(rho[idx][idx].real >= -1e-12 for idx in range(len(rho))))
 
-    def test_substrate_contract_contains_telemetry_explanation_counterfactuals_governance(self) -> None:
+    def test_substrate_contract_contains_telemetry_explanation_counterfactuals_governance(
+        self,
+    ) -> None:
         result = evaluate_substrate(
             SubstrateName.DEUTSCH,
             {"intent": "explain counterfactual policy", "risk": "review"},

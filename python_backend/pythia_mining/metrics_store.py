@@ -547,7 +547,9 @@ class MetricsStore:
 
         # Check Coherence Threshold Bounds
         if "coherence_threshold" in proposal and "MAX_COHERENCE_DELTA" in config_limits:
-            proximity = abs(config_limits["MAX_COHERENCE_DELTA"] - abs(proposal["coherence_threshold"]))
+            proximity = abs(
+                config_limits["MAX_COHERENCE_DELTA"] - abs(proposal["coherence_threshold"])
+            )
             proximities.append(proximity)
 
         min_epsilon = min(proximities) if proximities else 1.0
@@ -555,6 +557,7 @@ class MetricsStore:
         # Log adversarial boundary convergence warning
         if min_epsilon < 1e-5:
             import logging
+
             logger = logging.getLogger("hyba.metrics")
             logger.warning(
                 f"Adversarial boundary convergence detected: ε = {min_epsilon:.2e}. "

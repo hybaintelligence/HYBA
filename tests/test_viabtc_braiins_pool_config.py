@@ -13,8 +13,6 @@ configurations, ensuring proper:
 
 from __future__ import annotations
 
-import os
-from typing import Any, Dict
 from urllib.parse import urlparse
 
 import pytest
@@ -22,8 +20,6 @@ import pytest
 from pythia_mining.pool_profiles import (
     DEFAULT_POOL_SPECS,
     PoolCredentialConfig,
-    PoolProfile,
-    PoolProfileError,
     build_profile,
     load_pool_profiles,
     split_pool_url_credentials,
@@ -31,8 +27,6 @@ from pythia_mining.pool_profiles import (
 )
 from pythia_mining.stratum_client import (
     StratumClient,
-    _live_share_submit_enabled,
-    _live_stratum_enabled,
 )
 
 
@@ -214,7 +208,6 @@ class TestPoolRotationAndPriority:
         config_file.write_text(config_content)
         monkeypatch.setenv("HYBA_POOL_CONFIG_PATH", str(config_file))
 
-        from pythia_mining.pool_profiles import load_pool_profiles
         profiles = load_pool_profiles()
         pool_ids = [p.pool_id for p in profiles]
         assert "viabtc" in pool_ids

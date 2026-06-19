@@ -51,8 +51,8 @@ from .stratum_client import MiningJob
 from .autonomous_mining_controller import (
     AutonomousMiningController,
     AutonomyLevel,
-    AutonomousDecision,
 )
+
 
 @dataclass
 class UnifiedMiningState:
@@ -174,25 +174,19 @@ class UnifiedMiningEngine:
                 phi_integrated=float(
                     self.consciousness.current_state.integrated_information or 0.0
                 ),
-                phi_causal=float(
-                    self.consciousness.current_state.component_integration or 0.0
-                ),
+                phi_causal=float(self.consciousness.current_state.component_integration or 0.0),
                 complexity=float(self.consciousness.current_state.system_complexity or 0.0),
                 source=str(
-                    self.consciousness.current_state.source
-                    or "component_health_operational_proxy"
+                    self.consciousness.current_state.source or "component_health_operational_proxy"
                 ),
             )
         self.consciousness.update_component_health("quantum_solver", True)
         return PhiMetrics(
-            phi_integrated=float(
-                self.consciousness.current_state.integrated_information or 0.0
-            ),
+            phi_integrated=float(self.consciousness.current_state.integrated_information or 0.0),
             phi_causal=float(self.consciousness.current_state.component_integration or 0.0),
             complexity=float(self.consciousness.current_state.system_complexity or 0.0),
             source=str(
-                self.consciousness.current_state.source
-                or "component_health_operational_proxy"
+                self.consciousness.current_state.source or "component_health_operational_proxy"
             ),
         )
 
@@ -237,6 +231,7 @@ class UnifiedMiningEngine:
                 ac.record_autonomy_success()
             except Exception as exc:
                 import logging
+
                 logger = logging.getLogger("pythia.engine")
                 logger.error("autonomous_optimize_search failed: %s", exc)
                 degraded_to = ac.record_autonomy_failure("search_optimisation")
@@ -246,10 +241,12 @@ class UnifiedMiningEngine:
             # Periodically trigger reflexive learning when the autonomous hook circuit is closed.
             interval = ac.config.reflexive_loop_interval
             now = time.time()
-            if (not ac.is_circuit_open()
-                    and ac.config.reflexive_loop_enabled
-                    and ac.current_autonomy_level.should_optimize
-                    and (now - ac._last_reflexive_cycle) > interval):
+            if (
+                not ac.is_circuit_open()
+                and ac.config.reflexive_loop_enabled
+                and ac.current_autonomy_level.should_optimize
+                and (now - ac._last_reflexive_cycle) > interval
+            ):
                 try:
                     await ac.seek_improvement()
                     ac._last_reflexive_cycle = now
@@ -267,9 +264,7 @@ class UnifiedMiningEngine:
         self.state.effective_search_dim_bits = 32.0 - 9.13
         self.state.phi_gradient_efficiency = 1.0284
         self.state.m32_domains_covered = len(M32)
-        self.state.working_set_compression = float(
-            metrics.get("phi_compression_factor") or 1.86
-        )
+        self.state.working_set_compression = float(metrics.get("phi_compression_factor") or 1.86)
         self.state.strategy_name = result.strategy_used
         self._sync_verifier_state()
 
@@ -346,9 +341,7 @@ class UnifiedMiningEngine:
                 "available": solver_metrics.get("available"),
                 "dodecahedral_entropy": solver_metrics.get("von_neumann_entropy"),
                 "phi_phase_alignment": solver_metrics.get("phi_phase_alignment"),
-                "compressed_working_set_size": solver_metrics.get(
-                    "compressed_working_set_size"
-                ),
+                "compressed_working_set_size": solver_metrics.get("compressed_working_set_size"),
                 "working_set_compression_ratio": solver_metrics.get(
                     "working_set_compression_ratio"
                 ),

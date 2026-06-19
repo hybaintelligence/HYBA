@@ -53,8 +53,12 @@ def test_live_pythia_startup_autonomy_passes_without_operator_approval(monkeypat
     assert report.passed is True
     assert report.status == "GO"
     assert report.schema == "HYBA_AUTONOMOUS_MINING_SOVEREIGN_GATE_V2"
-    startup = next(check for check in report.checks if check.name == "pythia_startup_autonomy_allowed")
-    external = next(check for check in report.checks if check.name == "autonomous_external_action_authorisation")
+    startup = next(
+        check for check in report.checks if check.name == "pythia_startup_autonomy_allowed"
+    )
+    external = next(
+        check for check in report.checks if check.name == "autonomous_external_action_authorisation"
+    )
     assert startup.status == "pass"
     assert external.status == "pass"
     assert "boot, heal, optimise" in " ".join(report.next_operator_actions)
@@ -69,7 +73,9 @@ def test_autonomous_external_actions_require_operator_approval(monkeypatch) -> N
 
     assert report.passed is False
     assert report.status == "NO_GO"
-    approval = next(check for check in report.checks if check.name == "autonomous_external_action_authorisation")
+    approval = next(
+        check for check in report.checks if check.name == "autonomous_external_action_authorisation"
+    )
     assert approval.status == "fail"
     assert "HYBA_AUTONOMOUS_OPERATOR_APPROVAL_ID" in approval.detail
 
@@ -98,7 +104,9 @@ def test_autonomous_gate_blocks_dev_fixtures_and_unbounded_hashrate(monkeypatch)
     report = run_gate("live")
 
     assert report.passed is False
-    fixture = next(check for check in report.checks if check.name == "dev_fixtures_disabled_for_pythia_startup")
+    fixture = next(
+        check for check in report.checks if check.name == "dev_fixtures_disabled_for_pythia_startup"
+    )
     bounds = next(check for check in report.checks if check.name == "autonomous_runtime_bounds")
     assert fixture.status == "fail"
     assert bounds.status == "fail"
@@ -111,7 +119,9 @@ def test_live_share_submit_requires_separate_approval(monkeypatch) -> None:
 
     report = run_gate("live")
 
-    submit = next(check for check in report.checks if check.name == "live_share_submit_authorisation")
+    submit = next(
+        check for check in report.checks if check.name == "live_share_submit_authorisation"
+    )
     assert report.passed is False
     assert submit.status == "fail"
     assert "HYBA_LIVE_SHARE_APPROVAL_ID" in submit.detail

@@ -25,6 +25,7 @@ Design:
       Synaptic layer produces no measurable difference in hit rate or
       first_hit_iteration vs baseline after N epochs.
 """
+
 from __future__ import annotations
 
 import hashlib
@@ -33,18 +34,19 @@ import sys
 import time
 from dataclasses import dataclass
 from pathlib import Path
-from typing import List, Optional, Tuple
+from typing import List, Optional
 
-import numpy as np
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "python_backend"))
 
 from pythia_mining.golden_ratio_library import PHI
-from pythia_mining.hendrix_phi_solver import cheap_phi_resonance, voronoi_domain, embed_nonce
+from pythia_mining.hendrix_phi_solver import cheap_phi_resonance, voronoi_domain
 from pythia_mining.synaptic_persistence_layer import SynapticPersistenceLayer
 from pythia_mining.mining_validation import (
-    build_block_header, compute_merkle_root, coinbase_hash_hex,
+    build_block_header,
+    compute_merkle_root,
+    coinbase_hash_hex,
 )
 from pythia_mining.stratum_client import MiningJob
 
@@ -52,23 +54,29 @@ from pythia_mining.stratum_client import MiningJob
 # Constants
 # ---------------------------------------------------------------------------
 
-UINT32       = 2 ** 32
-N_SOLVERS    = 32
-SECTOR_SIZE  = UINT32 // N_SOLVERS
-PHI_STRIDE   = int(SECTOR_SIZE / PHI)
+UINT32 = 2**32
+N_SOLVERS = 32
+SECTOR_SIZE = UINT32 // N_SOLVERS
+PHI_STRIDE = int(SECTOR_SIZE / PHI)
 
 
 # ---------------------------------------------------------------------------
 # SHA-256d
 # ---------------------------------------------------------------------------
 
+
 def _make_job(target: int) -> MiningJob:
     return MiningJob(
-        job_id="ablation", prevhash="00" * 32,
+        job_id="ablation",
+        prevhash="00" * 32,
         coinbase_parts=("0100000001", "ffffffff"),
-        merkle_branch=[], version="20000000",
-        nbits="207fffff", ntime="5e9a5c00",
-        target=target, extranonce1="abcd1234", extranonce2_size=4,
+        merkle_branch=[],
+        version="20000000",
+        nbits="207fffff",
+        ntime="5e9a5c00",
+        target=target,
+        extranonce1="abcd1234",
+        extranonce2_size=4,
     )
 
 
@@ -87,6 +95,7 @@ def _valid(prefix: bytes, nonce: int, target: int) -> bool:
 # ---------------------------------------------------------------------------
 # Nonce generators
 # ---------------------------------------------------------------------------
+
 
 def _phi_sector_nonces(solver_id: int, step: int, n: int) -> List[int]:
     """Generate n nonces for solver_id at epoch step using φ-stride."""
@@ -140,10 +149,11 @@ def _synaptic_biased_nonces(
 # Epoch runner
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class EpochResult:
     epoch: int
-    condition: str          # "baseline" or "synaptic"
+    condition: str  # "baseline" or "synaptic"
     hits: int
     iterations: int
     first_hit_iteration: Optional[int]
@@ -169,9 +179,7 @@ def run_epoch(
 
     for solver_id in range(N_SOLVERS):
         if condition == "synaptic" and synaptic is not None:
-            nonces = _synaptic_biased_nonces(
-                solver_id, epoch, iters_per_solver, synaptic
-            )
+            nonces = _synaptic_biased_nonces(solver_id, epoch, iters_per_solver, synaptic)
         else:
             nonces = _phi_sector_nonces(solver_id, epoch, iters_per_solver)
 
@@ -228,6 +236,7 @@ def run_epoch(
 # Ablation runner
 # ---------------------------------------------------------------------------
 
+
 def run_ablation(
     n_epochs: int = 10,
     iters_per_solver: int = 2_000,
@@ -236,7 +245,7 @@ def run_ablation(
     if target is None:
         target = int("00" + "ff" * 31, 16)  # ~1/256 hit probability
 
-    job    = _make_job(target)
+    job = _make_job(target)
     prefix = _prefix(job)
     synaptic = SynapticPersistenceLayer(
         learning_rate=0.15,
@@ -250,15 +259,17 @@ def run_ablation(
     total_iters = N_SOLVERS * iters_per_solver
 
     print(f"Ablation: {n_epochs} epochs × {total_iters:,} iters/epoch")
-    print(f"Condition A: baseline (no learning)")
-    print(f"Condition B: synaptic Hebbian layer (learning_rate=0.15, decay=0.005)\n")
-    print(f"{'Epoch':>5}  {'A hits':>7} {'A 1stHit':>9}  {'B hits':>7} {'B 1stHit':>9}  "
-          f"{'Pathways':>9} {'MeanW':>7}")
+    print("Condition A: baseline (no learning)")
+    print("Condition B: synaptic Hebbian layer (learning_rate=0.15, decay=0.005)\n")
+    print(
+        f"{'Epoch':>5}  {'A hits':>7} {'A 1stHit':>9}  {'B hits':>7} {'B 1stHit':>9}  "
+        f"{'Pathways':>9} {'MeanW':>7}"
+    )
     print("-" * 70)
 
     for epoch in range(n_epochs):
-        a = run_epoch(epoch, "baseline",  prefix, target, iters_per_solver)
-        b = run_epoch(epoch, "synaptic",  prefix, target, iters_per_solver, synaptic)
+        a = run_epoch(epoch, "baseline", prefix, target, iters_per_solver)
+        b = run_epoch(epoch, "synaptic", prefix, target, iters_per_solver, synaptic)
 
         baseline_results.append(a)
         synaptic_results.append(b)
@@ -266,8 +277,10 @@ def run_ablation(
         a_fh = f"{a.first_hit_iteration}" if a.first_hit_iteration else "none"
         b_fh = f"{b.first_hit_iteration}" if b.first_hit_iteration else "none"
 
-        print(f"{epoch+1:>5}  {a.hits:>7} {a_fh:>9}  {b.hits:>7} {b_fh:>9}  "
-              f"{b.synaptic_pathways:>9} {b.synaptic_mean_weight:>7.4f}")
+        print(
+            f"{epoch + 1:>5}  {a.hits:>7} {a_fh:>9}  {b.hits:>7} {b_fh:>9}  "
+            f"{b.synaptic_pathways:>9} {b.synaptic_mean_weight:>7.4f}"
+        )
 
     # Aggregate
     def _mean(results, attr):
@@ -278,33 +291,41 @@ def run_ablation(
         vals = [r.first_hit_iteration for r in results if r.first_hit_iteration is not None]
         return sum(vals) / len(vals) if vals else None
 
-    a_hits     = _mean(baseline_results, "hits")
-    b_hits     = _mean(synaptic_results,  "hits")
-    a_fhi      = _mean_fhi(baseline_results)
-    b_fhi      = _mean_fhi(synaptic_results)
-    a_hps      = _mean(baseline_results, "hashes_per_second")
-    b_hps      = _mean(synaptic_results,  "hashes_per_second")
+    a_hits = _mean(baseline_results, "hits")
+    b_hits = _mean(synaptic_results, "hits")
+    a_fhi = _mean_fhi(baseline_results)
+    b_fhi = _mean_fhi(synaptic_results)
+    a_hps = _mean(baseline_results, "hashes_per_second")
+    b_hps = _mean(synaptic_results, "hashes_per_second")
 
     # Late-epoch comparison (last 30% of epochs — after learning has accumulated)
     cutoff = max(1, int(n_epochs * 0.7))
     a_late_fhi = _mean_fhi(baseline_results[cutoff:])
     b_late_fhi = _mean_fhi(synaptic_results[cutoff:])
     a_late_hits = _mean(baseline_results[cutoff:], "hits")
-    b_late_hits = _mean(synaptic_results[cutoff:],  "hits")
+    b_late_hits = _mean(synaptic_results[cutoff:], "hits")
 
     final_pathways = synaptic_results[-1].synaptic_pathways
-    final_mean_w   = synaptic_results[-1].synaptic_mean_weight
+    final_mean_w = synaptic_results[-1].synaptic_mean_weight
 
     print("\n--- ABLATION RESULTS ---")
-    print(f"\nAll epochs:")
-    print(f"  Baseline  — mean hits: {a_hits:.1f}  mean first_hit: {f'{a_fhi:.0f}' if a_fhi else 'none'}"
-          f"  kH/s: {a_hps/1000:.0f}")
-    print(f"  Synaptic  — mean hits: {b_hits:.1f}  mean first_hit: {f'{b_fhi:.0f}' if b_fhi else 'none'}"
-          f"  kH/s: {b_hps/1000:.0f}")
+    print("\nAll epochs:")
+    print(
+        f"  Baseline  — mean hits: {a_hits:.1f}  mean first_hit: {f'{a_fhi:.0f}' if a_fhi else 'none'}"
+        f"  kH/s: {a_hps / 1000:.0f}"
+    )
+    print(
+        f"  Synaptic  — mean hits: {b_hits:.1f}  mean first_hit: {f'{b_fhi:.0f}' if b_fhi else 'none'}"
+        f"  kH/s: {b_hps / 1000:.0f}"
+    )
 
-    print(f"\nLate epochs (epoch {cutoff+1}–{n_epochs}, after learning accumulates):")
-    print(f"  Baseline  — hits: {a_late_hits:.1f}  first_hit: {f'{a_late_fhi:.0f}' if a_late_fhi else 'none'}")
-    print(f"  Synaptic  — hits: {b_late_hits:.1f}  first_hit: {f'{b_late_fhi:.0f}' if b_late_fhi else 'none'}")
+    print(f"\nLate epochs (epoch {cutoff + 1}–{n_epochs}, after learning accumulates):")
+    print(
+        f"  Baseline  — hits: {a_late_hits:.1f}  first_hit: {f'{a_late_fhi:.0f}' if a_late_fhi else 'none'}"
+    )
+    print(
+        f"  Synaptic  — hits: {b_late_hits:.1f}  first_hit: {f'{b_late_fhi:.0f}' if b_late_fhi else 'none'}"
+    )
     print(f"  Emergent pathways: {final_pathways}  mean weight: {final_mean_w:.4f}")
 
     # Verdict
@@ -312,23 +333,31 @@ def run_ablation(
     null_rejected = False
 
     if b_late_fhi and a_late_fhi and b_late_fhi < a_late_fhi * 0.90:
-        print(f"✅ NULL HYPOTHESIS REJECTED (first_hit)")
-        print(f"   Synaptic first_hit {b_late_fhi:.0f} vs baseline {a_late_fhi:.0f} "
-              f"({a_late_fhi/b_late_fhi:.2f}x faster in late epochs)")
+        print("✅ NULL HYPOTHESIS REJECTED (first_hit)")
+        print(
+            f"   Synaptic first_hit {b_late_fhi:.0f} vs baseline {a_late_fhi:.0f} "
+            f"({a_late_fhi / b_late_fhi:.2f}x faster in late epochs)"
+        )
         null_rejected = True
     elif b_late_hits and a_late_hits and b_late_hits > a_late_hits * 1.05:
-        print(f"✅ NULL HYPOTHESIS REJECTED (hit rate)")
-        print(f"   Synaptic hits {b_late_hits:.1f} vs baseline {a_late_hits:.1f} "
-              f"in late epochs ({b_late_hits/a_late_hits:.2f}x)")
+        print("✅ NULL HYPOTHESIS REJECTED (hit rate)")
+        print(
+            f"   Synaptic hits {b_late_hits:.1f} vs baseline {a_late_hits:.1f} "
+            f"in late epochs ({b_late_hits / a_late_hits:.2f}x)"
+        )
         null_rejected = True
     else:
-        print(f"❌ NULL HYPOTHESIS STANDS")
-        print(f"   No significant improvement in hit rate or first_hit in late epochs.")
+        print("❌ NULL HYPOTHESIS STANDS")
+        print("   No significant improvement in hit rate or first_hit in late epochs.")
         if final_pathways == 0:
-            print(f"   Synaptic layer formed 0 emergent pathways — "
-                  f"not enough accepted shares to learn from at this difficulty/budget.")
-            print(f"   Recommendation: increase iterations or lower difficulty "
-                  f"to generate sufficient reinforcement signal.")
+            print(
+                "   Synaptic layer formed 0 emergent pathways — "
+                "not enough accepted shares to learn from at this difficulty/budget."
+            )
+            print(
+                "   Recommendation: increase iterations or lower difficulty "
+                "to generate sufficient reinforcement signal."
+            )
 
     result = {
         "benchmark": "synaptic_layer_ablation",
@@ -384,12 +413,16 @@ def run_ablation(
 
 if __name__ == "__main__":
     import argparse
+
     p = argparse.ArgumentParser()
-    p.add_argument("--epochs",     type=int, default=10)
-    p.add_argument("--iterations", type=int, default=2000,
-                   help="Iterations per solver per epoch")
-    p.add_argument("--difficulty", type=float, default=None,
-                   help="Override target difficulty (lower = easier = more hits)")
+    p.add_argument("--epochs", type=int, default=10)
+    p.add_argument("--iterations", type=int, default=2000, help="Iterations per solver per epoch")
+    p.add_argument(
+        "--difficulty",
+        type=float,
+        default=None,
+        help="Override target difficulty (lower = easier = more hits)",
+    )
     args = p.parse_args()
 
     target = None

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from pythia_mining.counterfactual_reflection import (
-    COUNTERFACTUAL_REFLECTION_PROTOCOL,
     SearchTrajectory,
     _derive_reflection_episode_id,
     reflect_counterfactual_phi_prior,
@@ -31,7 +30,10 @@ def test_counterfactual_reflection_increases_phi_prior_when_alternative_improves
 
     assert result.phi_prior_delta > 0
     assert result.updated_phi_prior > 0.5
-    assert result.reflection_reason == "alternative_phi_trajectory_improves_block_margin_with_bounded_prior_update"
+    assert (
+        result.reflection_reason
+        == "alternative_phi_trajectory_improves_block_margin_with_bounded_prior_update"
+    )
     assert result.memory_write_target == "phi_resonance_prior"
     assert result.share_difficulty_prior_unchanged is True
 
@@ -44,7 +46,10 @@ def test_counterfactual_reflection_penalizes_when_alternative_has_worse_block_ma
 
     assert result.phi_prior_delta < 0
     assert result.updated_phi_prior < 0.5
-    assert result.reflection_reason == "alternative_phi_trajectory_weakens_block_margin_with_bounded_prior_update"
+    assert (
+        result.reflection_reason
+        == "alternative_phi_trajectory_weakens_block_margin_with_bounded_prior_update"
+    )
 
 
 def test_counterfactual_reflection_does_not_update_share_difficulty_prior():
@@ -124,7 +129,9 @@ def test_reflection_episode_id_reproducible_from_pair():
     alternative_b = _trajectory(trajectory_id="t2")
 
     result_a = reflect_counterfactual_phi_prior(reference_a, alternative_a, current_phi_prior=0.5)
-    result_b = reflect_counterfactual_phi_prior(reference_b, alternative_b, current_phi_prior=0.5, session_event_id="different-session")
+    result_b = reflect_counterfactual_phi_prior(
+        reference_b, alternative_b, current_phi_prior=0.5, session_event_id="different-session"
+    )
 
     assert result_a.reflection_episode_id == result_b.reflection_episode_id
     assert result_a.session_event_id == ""

@@ -6,7 +6,7 @@ to the Golden Ratio (Φ).
 
 from __future__ import annotations
 
-from typing import List, Optional
+from typing import List
 
 import numpy as np
 
@@ -21,20 +21,50 @@ class PlatonicNonceOverlay:
     """
 
     # Standardized Icosahedron vertices (normalized to unit sphere)
-    ICOSAHEDRON_VERTICES = np.array([
-        [0.0, 1.0, PHI], [0.0, -1.0, PHI], [0.0, 1.0, -PHI], [0.0, -1.0, -PHI],
-        [1.0, PHI, 0.0], [-1.0, PHI, 0.0], [1.0, -PHI, 0.0], [-1.0, -PHI, 0.0],
-        [PHI, 0.0, 1.0], [-PHI, 0.0, 1.0], [PHI, 0.0, -1.0], [-PHI, 0.0, -1.0],
-    ], dtype=np.float64)
+    ICOSAHEDRON_VERTICES = np.array(
+        [
+            [0.0, 1.0, PHI],
+            [0.0, -1.0, PHI],
+            [0.0, 1.0, -PHI],
+            [0.0, -1.0, -PHI],
+            [1.0, PHI, 0.0],
+            [-1.0, PHI, 0.0],
+            [1.0, -PHI, 0.0],
+            [-1.0, -PHI, 0.0],
+            [PHI, 0.0, 1.0],
+            [-PHI, 0.0, 1.0],
+            [PHI, 0.0, -1.0],
+            [-PHI, 0.0, -1.0],
+        ],
+        dtype=np.float64,
+    )
 
     # Standardized Dodecahedron vertices (normalized to unit sphere)
-    DODECAHEDRON_VERTICES = np.array([
-        [1.0, 1.0, 1.0], [1.0, 1.0, -1.0], [1.0, -1.0, 1.0], [1.0, -1.0, -1.0],
-        [-1.0, 1.0, 1.0], [-1.0, 1.0, -1.0], [-1.0, -1.0, 1.0], [-1.0, -1.0, -1.0],
-        [0.0, 1.0 / PHI, PHI], [0.0, -1.0 / PHI, PHI], [0.0, 1.0 / PHI, -PHI], [0.0, -1.0 / PHI, -PHI],
-        [1.0 / PHI, PHI, 0.0], [-1.0 / PHI, PHI, 0.0], [1.0 / PHI, -PHI, 0.0], [-1.0 / PHI, -PHI, 0.0],
-        [PHI, 0.0, 1.0 / PHI], [-PHI, 0.0, 1.0 / PHI], [PHI, 0.0, -1.0 / PHI], [-PHI, 0.0, -1.0 / PHI],
-    ], dtype=np.float64)
+    DODECAHEDRON_VERTICES = np.array(
+        [
+            [1.0, 1.0, 1.0],
+            [1.0, 1.0, -1.0],
+            [1.0, -1.0, 1.0],
+            [1.0, -1.0, -1.0],
+            [-1.0, 1.0, 1.0],
+            [-1.0, 1.0, -1.0],
+            [-1.0, -1.0, 1.0],
+            [-1.0, -1.0, -1.0],
+            [0.0, 1.0 / PHI, PHI],
+            [0.0, -1.0 / PHI, PHI],
+            [0.0, 1.0 / PHI, -PHI],
+            [0.0, -1.0 / PHI, -PHI],
+            [1.0 / PHI, PHI, 0.0],
+            [-1.0 / PHI, PHI, 0.0],
+            [1.0 / PHI, -PHI, 0.0],
+            [-1.0 / PHI, -PHI, 0.0],
+            [PHI, 0.0, 1.0 / PHI],
+            [-PHI, 0.0, 1.0 / PHI],
+            [PHI, 0.0, -1.0 / PHI],
+            [-PHI, 0.0, -1.0 / PHI],
+        ],
+        dtype=np.float64,
+    )
 
     def __init__(self) -> None:
         # Normalize both solids to unit sphere
@@ -55,13 +85,9 @@ class PlatonicNonceOverlay:
             extra = self._fibonacci_sphere(n_extra)
             self.coverage_points = np.vstack([self.coverage_points, extra])
         # Final normalization
-        self.coverage_points /= np.linalg.norm(
-            self.coverage_points, axis=1, keepdims=True
-        )
+        self.coverage_points /= np.linalg.norm(self.coverage_points, axis=1, keepdims=True)
         # Eliminate any duplicate rows (tol=1e-8)
-        _, unique_idx = np.unique(
-            self.coverage_points.round(8), axis=0, return_index=True
-        )
+        _, unique_idx = np.unique(self.coverage_points.round(8), axis=0, return_index=True)
         self.coverage_points = self.coverage_points[np.sort(unique_idx)]
 
     @staticmethod
@@ -70,11 +96,13 @@ class PlatonicNonceOverlay:
         indices = np.arange(n, dtype=float) + 0.5
         theta = np.arccos(1.0 - 2.0 * indices / n)
         phi_angles = 2.0 * np.pi * indices / PHI
-        pts = np.column_stack([
-            np.sin(theta) * np.cos(phi_angles),
-            np.sin(theta) * np.sin(phi_angles),
-            np.cos(theta),
-        ])
+        pts = np.column_stack(
+            [
+                np.sin(theta) * np.cos(phi_angles),
+                np.sin(theta) * np.sin(phi_angles),
+                np.cos(theta),
+            ]
+        )
         pts /= np.linalg.norm(pts, axis=1, keepdims=True)
         return pts
 
@@ -87,9 +115,7 @@ class PlatonicNonceOverlay:
         points = self.get_full_coverage()
         if num_workers < 1:
             raise ValueError("num_workers must be >= 1")
-        return [
-            points[i :: num_workers] for i in range(min(num_workers, len(points)))
-        ]
+        return [points[i::num_workers] for i in range(min(num_workers, len(points)))]
 
 
 __all__ = ["PlatonicNonceOverlay"]

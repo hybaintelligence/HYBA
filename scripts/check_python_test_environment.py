@@ -30,7 +30,11 @@ REQUIRED_IMPORTS: Dict[str, str] = {
 
 
 def missing_imports() -> List[str]:
-    return [package for module, package in REQUIRED_IMPORTS.items() if importlib.util.find_spec(module) is None]
+    return [
+        package
+        for module, package in REQUIRED_IMPORTS.items()
+        if importlib.util.find_spec(module) is None
+    ]
 
 
 def main() -> int:

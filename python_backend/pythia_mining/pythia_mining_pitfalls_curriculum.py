@@ -18,7 +18,7 @@ from __future__ import annotations
 
 from dataclasses import asdict, dataclass
 from enum import Enum
-from typing import Dict, Iterable, List, Tuple
+from typing import Dict, List, Tuple
 
 CURRICULUM_PROTOCOL = "PYTHIA_MINING_PITFALLS_CURRICULUM_V1"
 

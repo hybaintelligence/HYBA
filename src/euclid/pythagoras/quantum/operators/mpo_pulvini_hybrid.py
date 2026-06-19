@@ -1,7 +1,7 @@
 """
 mpo_pulvini_hybrid.py — Real MPO + PULVINI integrated pipeline.
 
-Builds a Matrix Product Operator (MPO) representation for quantum walks 
+Builds a Matrix Product Operator (MPO) representation for quantum walks
 and unitary operations on the PULVINI-folded subspace. Maintains audit
 contracts for spectral gap, reconstruction error, and topology.
 """
@@ -10,18 +10,19 @@ from __future__ import annotations
 
 from dataclasses import dataclass, asdict
 from math import sqrt
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Tuple
 
 import numpy as np
 
 # Absolute imports for direct execution / test compatibility
 import sys
 import os
+
 _THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 if _THIS_DIR not in sys.path:
     sys.path.insert(0, _THIS_DIR)
 
-from pulvini_scaling import PulviniOperator, PulviniAuditEnvelope
+from pulvini_scaling import PulviniOperator
 from tensor_train import TensorTrain, TensorTrainCompressor
 
 PHI = (1.0 + sqrt(5.0)) / 2.0
@@ -53,7 +54,7 @@ def _build_phi_projector(source_dim: int, target_dim: int) -> np.ndarray:
         V[i, i] = 1.0 / PHI
     for i in range(min(target_dim, source_dim - target_dim)):
         if target_dim + i < source_dim:
-            V[target_dim + i, i] = 1.0 / (PHI ** 2)
+            V[target_dim + i, i] = 1.0 / (PHI**2)
     norms = np.linalg.norm(V, axis=0)
     norms[norms == 0] = 1.0
     return V / norms
@@ -90,9 +91,7 @@ class MPOPulviniHybrid:
         # PULVINI fold
         folded, kernel = self.pulvini.fold(flat)
         reconstructed = self.pulvini.unfold(folded, kernel, original_dim)
-        recon_error = float(
-            np.linalg.norm(flat - reconstructed) / max(1.0, np.linalg.norm(flat))
-        )
+        recon_error = float(np.linalg.norm(flat - reconstructed) / max(1.0, np.linalg.norm(flat)))
 
         # Reshape folded to a balanced 2D tensor for TT
         n = folded.size
@@ -115,12 +114,8 @@ class MPOPulviniHybrid:
             H_small = H_red.conj().T @ H_folded @ H_red
             eig_full = np.sort(np.linalg.eigvalsh(H_folded).real)
             eig_small = np.sort(np.linalg.eigvalsh(H_small).real)
-            gap_full = (
-                float(eig_full[1] - eig_full[0]) if eig_full.size > 1 else 0.0
-            )
-            gap_small = (
-                float(eig_small[1] - eig_small[0]) if eig_small.size > 1 else 0.0
-            )
+            gap_full = float(eig_full[1] - eig_full[0]) if eig_full.size > 1 else 0.0
+            gap_small = float(eig_small[1] - eig_small[0]) if eig_small.size > 1 else 0.0
             gap_delta = abs(gap_full - gap_small)
         except Exception:
             gap_delta = 0.0
@@ -142,9 +137,7 @@ class MPOPulviniHybrid:
             deterministic_work_rate=work_rate,
         )
 
-    def apply_mpo_step(
-        self, state: TensorTrain, operator_matrix: np.ndarray
-    ) -> TensorTrain:
+    def apply_mpo_step(self, state: TensorTrain, operator_matrix: np.ndarray) -> TensorTrain:
         """
         Apply a matrix operator (in MPO form) to a TT state.
         Uses Φ-guided truncation to control bond dimension growth.

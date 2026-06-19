@@ -22,7 +22,7 @@ import json
 import time
 from dataclasses import asdict, dataclass, field
 from enum import Enum
-from typing import Any, Dict, List, Mapping, Optional
+from typing import Any, Dict, List, Mapping
 
 from .auditable_decision_bridge import AuditableDecisionBridge, ReviewCandidate
 from .resonance_fabric import RefactorMode
@@ -130,7 +130,8 @@ class FinanceSovereignInvariantRegistry:
                 severity="blocker",
                 reasoning=(
                     "Economic substance is aligned with contractual form."
-                    if candidate.economic_substance_score >= self.substance_threshold and substance_drift <= self.form_substance_drift_limit
+                    if candidate.economic_substance_score >= self.substance_threshold
+                    and substance_drift <= self.form_substance_drift_limit
                     else (
                         "Potential substance-over-form drift: economic substance score "
                         f"{candidate.economic_substance_score:.2f}, form alignment score "
@@ -178,7 +179,9 @@ class FinanceSovereignInvariantRegistry:
             FinanceInvariantFinding(
                 invariant_id="NO_AUTOMATIC_EXTERNAL_ACTION",
                 name="No automatic external action",
-                passed=(candidate.mode == "review_only" and not candidate.external_action_requested),
+                passed=(
+                    candidate.mode == "review_only" and not candidate.external_action_requested
+                ),
                 severity="blocker",
                 reasoning=(
                     "Candidate is review-only and requests no external action."
@@ -193,7 +196,9 @@ class FinanceSovereignInvariantRegistry:
 class FinanceSyntheticAdversary:
     """Internal critic for finance audit candidates."""
 
-    def criticize(self, candidate: FinanceAuditCandidate, findings: List[FinanceInvariantFinding]) -> Dict[str, Any]:
+    def criticize(
+        self, candidate: FinanceAuditCandidate, findings: List[FinanceInvariantFinding]
+    ) -> Dict[str, Any]:
         failed = [finding.invariant_id for finding in findings if not finding.passed]
         if failed:
             return {
@@ -256,14 +261,18 @@ def audit_finance_candidate(candidate: FinanceAuditCandidate) -> FinanceSovereig
     findings = registry.evaluate(candidate)
     criticism = FinanceSyntheticAdversary().criticize(candidate, findings)
     bridge_report = AuditableDecisionBridge().audit(_bridge_candidate(candidate)).to_dict()
-    blocker_failed = any(finding.severity == "blocker" and not finding.passed for finding in findings)
+    blocker_failed = any(
+        finding.severity == "blocker" and not finding.passed for finding in findings
+    )
     bridge_rejected = bridge_report.get("verdict") == "rejected_before_staging"
     if blocker_failed or bridge_rejected:
         verdict = FinanceAuditVerdict.REJECTED_BEFORE_STAGING.value
         next_action = "Reject before staging; return candidate to domain expert for corrected evidence and structure."
     else:
         verdict = FinanceAuditVerdict.STAGED_FOR_SUPERVISION.value
-        next_action = "Stage sealed packet for Shariah/compliance review; no automatic action permitted."
+        next_action = (
+            "Stage sealed packet for Shariah/compliance review; no automatic action permitted."
+        )
 
     payload = {
         "schema": SCHEMA_VERSION,

@@ -33,8 +33,12 @@ async def get_current_job() -> Dict[str, Any]:
     }
 
 
-@router.get("/jobs/search", response_model=Dict[str, Any], dependencies=[Depends(require_mining_read)])
-async def search_jobs(job_id: str | None = None, limit: int = 10, offset: int = 0) -> Dict[str, Any]:
+@router.get(
+    "/jobs/search", response_model=Dict[str, Any], dependencies=[Depends(require_mining_read)]
+)
+async def search_jobs(
+    job_id: str | None = None, limit: int = 10, offset: int = 0
+) -> Dict[str, Any]:
     """Search for mining jobs.
 
     If job_id is provided, searches for a specific job by identifier.
@@ -43,7 +47,7 @@ async def search_jobs(job_id: str | None = None, limit: int = 10, offset: int = 
     """
     state = get_pythia_state()
     results: List[Dict[str, Any]] = []
-    
+
     if state:
         if job_id:
             # Search for specific job
@@ -61,11 +65,11 @@ async def search_jobs(job_id: str | None = None, limit: int = 10, offset: int = 
             last_job = state.get("last_job")
             if last_job:
                 results.append(last_job)
-    
+
     # Apply pagination
     total = len(results)
-    paginated_results = results[offset:offset + limit]
-    
+    paginated_results = results[offset : offset + limit]
+
     return {
         "jobs": paginated_results,
         "total": total,

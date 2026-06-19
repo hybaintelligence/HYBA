@@ -38,7 +38,9 @@ def _finding_rows(findings: Iterable[Mapping[str, Any]]) -> list[str]:
 def render_packet_ledger(packet: Mapping[str, Any]) -> str:
     """Render one DIFC / AAOIFI Sukuk evidence packet as Markdown."""
 
-    candidate = packet.get("candidate", {}) if isinstance(packet.get("candidate", {}), Mapping) else {}
+    candidate = (
+        packet.get("candidate", {}) if isinstance(packet.get("candidate", {}), Mapping) else {}
+    )
     findings = packet.get("difc_aaiofi_findings", [])
     failed = [finding for finding in findings if finding.get("status") == "failed"]
     warnings = [finding for finding in findings if finding.get("status") == "warning"]
@@ -54,7 +56,7 @@ def render_packet_ledger(packet: Mapping[str, Any]) -> str:
         f"**Verdict:** `{_cell(packet.get('verdict'))}`  ",
         f"**Human review required:** `{str(packet.get('human_review_required')).lower()}`  ",
         f"**Automatic action allowed:** `{str(packet.get('automatic_action_allowed')).lower()}`  ",
-        f"**Action:** `ESCALATE_TO_SOVEREIGN_HUMAN`  ",
+        "**Action:** `ESCALATE_TO_SOVEREIGN_HUMAN`  ",
         f"**Packet hash:** `{_cell(packet.get('difc_aaiofi_packet_hash'))}`",
         "",
         "> Presentation only. This ledger is a human-review aid, not a legal, regulatory, religious, capital, investment, credit, or operational decision.",
@@ -83,7 +85,9 @@ def render_packet_ledger(packet: Mapping[str, Any]) -> str:
                 "",
             ]
         )
-    lines.extend(["## Recommended next action", "", _cell(packet.get("recommended_next_action")), ""])
+    lines.extend(
+        ["## Recommended next action", "", _cell(packet.get("recommended_next_action")), ""]
+    )
     return "\n".join(lines).rstrip() + "\n"
 
 
@@ -123,8 +127,16 @@ def render_lifecycle_ledger(bundle: Mapping[str, Any]) -> str:
                 step=_cell(entry.get("step_id")),
                 stage=_cell(entry.get("lifecycle_stage")),
                 verdict=_cell(entry.get("verdict")),
-                warnings=_cell(", ".join(entry.get("warning_findings", [])) if entry.get("warning_findings") else "-"),
-                failures=_cell(", ".join(entry.get("failed_findings", [])) if entry.get("failed_findings") else "-"),
+                warnings=_cell(
+                    ", ".join(entry.get("warning_findings", []))
+                    if entry.get("warning_findings")
+                    else "-"
+                ),
+                failures=_cell(
+                    ", ".join(entry.get("failed_findings", []))
+                    if entry.get("failed_findings")
+                    else "-"
+                ),
                 action=_cell(entry.get("action")),
             )
         )
@@ -143,7 +155,9 @@ def render_lifecycle_ledger(bundle: Mapping[str, Any]) -> str:
                 "",
             ]
         )
-    lines.extend(["## Recommended next action", "", _cell(bundle.get("recommended_next_action")), ""])
+    lines.extend(
+        ["## Recommended next action", "", _cell(bundle.get("recommended_next_action")), ""]
+    )
     return "\n".join(lines).rstrip() + "\n"
 
 

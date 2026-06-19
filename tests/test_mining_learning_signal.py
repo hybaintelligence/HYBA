@@ -33,7 +33,11 @@ def test_share_ack_learning_is_discounted_by_block_share_gap() -> None:
     correction = compute_learning_signal_correction(_event())
 
     assert correction.protocol == LEARNING_SIGNAL_PROTOCOL
-    assert correction.pool_accepted_share if hasattr(correction, "pool_accepted_share") else correction.event.pool_accepted_share
+    assert (
+        correction.pool_accepted_share
+        if hasattr(correction, "pool_accepted_share")
+        else correction.event.pool_accepted_share
+    )
     assert correction.event.pool_confirmed_block is False
     assert correction.difficulty_gap_ratio == pytest.approx(0.01)
     assert correction.phi_share_update_weight == pytest.approx(1.0)
@@ -65,10 +69,14 @@ def test_rejected_share_updates_negative_operational_memory_only() -> None:
 
 
 def test_learning_signal_rejects_block_target_easier_than_share_target() -> None:
-    with pytest.raises(LearningSignalError, match="block_target_must_not_be_easier_than_share_target"):
+    with pytest.raises(
+        LearningSignalError, match="block_target_must_not_be_easier_than_share_target"
+    ):
         compute_learning_signal_correction(_event(block_target=20_000))
 
 
 def test_learning_signal_rejects_confirmed_block_without_pool_share_acceptance() -> None:
     with pytest.raises(LearningSignalError, match="confirmed_block_requires_pool_share_acceptance"):
-        compute_learning_signal_correction(_event(pool_accepted_share=False, pool_confirmed_block=True))
+        compute_learning_signal_correction(
+            _event(pool_accepted_share=False, pool_confirmed_block=True)
+        )

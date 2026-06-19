@@ -173,7 +173,9 @@ def check_phi_resonance_artifacts(phi_dir: Path) -> GateCheck:
     computed_mean = sum(strengths) / len(strengths)
     computed_above = sum(1 for item in strengths if item >= 0.5)
     computed_rate = computed_above / len(strengths)
-    total_blocks = _safe_int(_first_present(values, "total_blocks", "blocks", "csv_rows"), len(rows))
+    total_blocks = _safe_int(
+        _first_present(values, "total_blocks", "blocks", "csv_rows"), len(rows)
+    )
     reported_mean = _first_present(values, "mean_resonance_strength", "mean_phi_resonance")
     reported_above_count = _first_present(
         values,

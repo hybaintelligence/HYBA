@@ -42,6 +42,7 @@ except OSError:
             rust_lib = None
             print("Warning: Rust PULVINI library not found. Falling back to Python implementation.")
 
+
 # Define C structures
 class LaneState(ctypes.Structure):
     _fields_ = [
@@ -52,6 +53,7 @@ class LaneState(ctypes.Structure):
         ("golden_angle_alignment", ctypes.c_double),
     ]
 
+
 class PulviniState(ctypes.Structure):
     _fields_ = [
         ("lanes", LaneState * 32),
@@ -60,27 +62,28 @@ class PulviniState(ctypes.Structure):
         ("phi_stride", ctypes.c_double),
     ]
 
+
 # Define FFI function signatures
 if rust_lib:
     rust_lib.pulvini_manifold_new.argtypes = []
     rust_lib.pulvini_manifold_new.restype = ctypes.c_void_p
-    
+
     rust_lib.pulvini_manifold_free.argtypes = [ctypes.c_void_p]
     rust_lib.pulvini_manifold_free.restype = None
-    
+
     rust_lib.pulvini_manifold_advance.argtypes = [ctypes.c_void_p]
     rust_lib.pulvini_manifold_advance.restype = None
-    
+
     rust_lib.pulvini_manifold_get_state.argtypes = [ctypes.c_void_p]
     rust_lib.pulvini_manifold_get_state.restype = PulviniState
-    
+
     rust_lib.pulvini_manifold_validate.argtypes = [ctypes.c_void_p]
     rust_lib.pulvini_manifold_validate.restype = ctypes.c_bool
 
 
 class RustPulviniManifold:
     """Python wrapper for Rust PULVINI manifold."""
-    
+
     def __init__(self):
         """Initialize a new PULVINI manifold using Rust implementation."""
         if rust_lib:
@@ -90,7 +93,7 @@ class RustPulviniManifold:
         else:
             self._ptr = None
             self._fallback_state = self._create_fallback_state()
-    
+
     def _create_fallback_state(self):
         """Create fallback Python state if Rust library unavailable."""
         return {
@@ -99,19 +102,19 @@ class RustPulviniManifold:
             "iteration": 0,
             "phi_stride": 1.618033988749895,
         }
-    
+
     def __del__(self):
         """Clean up Rust resources."""
         if self._ptr and rust_lib:
             rust_lib.pulvini_manifold_free(self._ptr)
-    
+
     def advance(self) -> None:
         """Advance all lanes with Φ-stride."""
         if self._ptr and rust_lib:
             rust_lib.pulvini_manifold_advance(self._ptr)
         else:
             self._advance_fallback()
-    
+
     def _advance_fallback(self) -> None:
         """Fallback Python implementation."""
         phi = 1.618033988749895
@@ -119,49 +122,53 @@ class RustPulviniManifold:
             stride = int(self._fallback_state["phi_stride"] * 1e6)
             lane["nonce"] = (lane["nonce"] + stride) % (2**64)
             lane["phi_resonance"] = self._compute_phi_resonance_fallback(lane["nonce"])
-        
+
         self._fallback_state["iteration"] += 1
         self._fallback_state["phi_stride"] = (self._fallback_state["phi_stride"] * phi) % 10.0
-        self._fallback_state["coherence"] = sum(
-            lane["phi_resonance"] for lane in self._fallback_state["lanes"]
-        ) / 32.0
-    
+        self._fallback_state["coherence"] = (
+            sum(lane["phi_resonance"] for lane in self._fallback_state["lanes"]) / 32.0
+        )
+
     def _compute_phi_resonance_fallback(self, nonce: int) -> float:
         """Fallback Φ-resonance computation."""
         phi = 1.618033988749895
         phi_inv = 1.0 / phi
         golden_angle = 2.399963229728653  # 2π/φ²
         two_pi = 6.283185307179586
-        
+
         nonce_f = float(nonce)
         phi_component = (nonce_f % phi) / phi
         dodecahedral = (nonce % 12) / 12.0
         icosahedral = (nonce % 20) / 20.0
         golden_angle_alignment = ((nonce_f * golden_angle) % two_pi) / two_pi
-        
-        resonance = (phi_component * phi_inv 
-                   + dodecahedral * phi_inv 
-                   + icosahedral * phi_inv 
-                   + golden_angle_alignment * phi_inv) / 4.0
-        
+
+        resonance = (
+            phi_component * phi_inv
+            + dodecahedral * phi_inv
+            + icosahedral * phi_inv
+            + golden_angle_alignment * phi_inv
+        ) / 4.0
+
         return max(0.0, min(1.0, resonance))
-    
+
     def get_state(self) -> dict:
         """Get current manifold state."""
         if self._ptr and rust_lib:
             c_state = rust_lib.pulvini_manifold_get_state(self._ptr)
-            
+
             lanes = []
             for i in range(32):
                 lane_data = c_state.lanes[i]
-                lanes.append({
-                    "nonce": lane_data.nonce,
-                    "phi_resonance": lane_data.phi_resonance,
-                    "dodecahedral_sector": lane_data.dodecahedral_sector,
-                    "icosahedral_face": lane_data.icosahedral_face,
-                    "golden_angle_alignment": lane_data.golden_angle_alignment,
-                })
-            
+                lanes.append(
+                    {
+                        "nonce": lane_data.nonce,
+                        "phi_resonance": lane_data.phi_resonance,
+                        "dodecahedral_sector": lane_data.dodecahedral_sector,
+                        "icosahedral_face": lane_data.icosahedral_face,
+                        "golden_angle_alignment": lane_data.golden_angle_alignment,
+                    }
+                )
+
             return {
                 "lanes": lanes,
                 "coherence": c_state.coherence,
@@ -170,58 +177,60 @@ class RustPulviniManifold:
             }
         else:
             return self._fallback_state.copy()
-    
+
     def validate_invariants(self) -> bool:
         """Validate mathematical invariants."""
         if self._ptr and rust_lib:
             return rust_lib.pulvini_manifold_validate(self._ptr)
         else:
             return self._validate_fallback()
-    
+
     def _validate_fallback(self) -> bool:
         """Fallback invariant validation."""
         state = self._fallback_state
-        
+
         # Coherence in [0, 1]
         if not (0.0 <= state["coherence"] <= 1.0):
             return False
-        
+
         # All lane resonances in [0, 1]
         for lane in state["lanes"]:
             if not (0.0 <= lane["phi_resonance"] <= 1.0):
                 return False
-        
+
         return True
-    
+
     def get_best_lane(self) -> Optional[Tuple[int, dict]]:
         """Get the lane with highest Φ-resonance."""
         state = self.get_state()
-        
+
         best_idx = None
         best_resonance = -1.0
-        
+
         for i, lane in enumerate(state["lanes"]):
             if lane["phi_resonance"] > best_resonance:
                 best_resonance = lane["phi_resonance"]
                 best_idx = i
-        
+
         if best_idx is not None:
             return best_idx, state["lanes"][best_idx]
         return None
-    
+
     def export_numpy(self) -> NDArray:
         """Export state as numpy array for efficient processing."""
         state = self.get_state()
-        
+
         # Create structured array
-        dtype = np.dtype([
-            ('nonce', 'u8'),
-            ('phi_resonance', 'f8'),
-            ('dodecahedral_sector', 'u1'),
-            ('icosahedral_face', 'u1'),
-            ('golden_angle_alignment', 'f8'),
-        ])
-        
+        dtype = np.dtype(
+            [
+                ("nonce", "u8"),
+                ("phi_resonance", "f8"),
+                ("dodecahedral_sector", "u1"),
+                ("icosahedral_face", "u1"),
+                ("golden_angle_alignment", "f8"),
+            ]
+        )
+
         lanes_array = np.zeros(32, dtype=dtype)
         for i, lane in enumerate(state["lanes"]):
             lanes_array[i] = (
@@ -231,7 +240,7 @@ class RustPulviniManifold:
                 lane["icosahedral_face"],
                 lane["golden_angle_alignment"],
             )
-        
+
         return lanes_array
 
 

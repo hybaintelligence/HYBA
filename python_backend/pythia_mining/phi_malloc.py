@@ -15,7 +15,7 @@ to Golden Ratio boundaries.
 
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 import numpy as np
 
@@ -120,7 +120,6 @@ class PhiMalloc:
                     f_n_minus_2 = self.FIB[fib_idx - 2]
 
                     # Split the block: first part = F_{n-1}, new block = F_{n-2}
-                    old_size = block.size
                     block.size = f_n_minus_1
                     new_block = PhiBlock(f_n_minus_2, block.offset + f_n_minus_1)
                     self.blocks.insert(idx + 1, new_block)
@@ -200,9 +199,7 @@ class PhiMalloc:
 
         # Fragmentation: how many free blocks vs. a single contiguous region
         free_blocks = sum(1 for b in self.blocks if b.is_free)
-        fragmentation = 1.0 - (
-            1.0 / max(free_blocks, 1) if free_blocks > 0 else 0.0
-        )
+        fragmentation = 1.0 - (1.0 / max(free_blocks, 1) if free_blocks > 0 else 0.0)
 
         return {
             "total_size": self.total_size,

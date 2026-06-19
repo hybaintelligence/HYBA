@@ -36,7 +36,9 @@ class PulviniHybridPipeline:
         before_sig = self.omega.signature(flat)
         folded, kernel = self.pulvini.fold(flat)
         reconstructed = self.pulvini.unfold(folded, kernel, flat.size)
-        roundtrip_error = float(np.linalg.norm(flat - reconstructed) / max(1.0, np.linalg.norm(flat)))
+        roundtrip_error = float(
+            np.linalg.norm(flat - reconstructed) / max(1.0, np.linalg.norm(flat))
+        )
 
         target_shape = self._balanced_shape(folded.size)
         folded_tensor = folded[: int(np.prod(target_shape))].reshape(target_shape)

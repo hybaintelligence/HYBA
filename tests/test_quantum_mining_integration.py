@@ -41,9 +41,9 @@ async def test_quantum_integration():
     print("✓ Quantum solver has configuration")
 
     # Verify AI optimizer uses quantum solver
-    assert (
-        genesis.ai_optimizer.quantum_solver is genesis.quantum_solver
-    ), "AI optimizer not linked to quantum solver"
+    assert genesis.ai_optimizer.quantum_solver is genesis.quantum_solver, (
+        "AI optimizer not linked to quantum solver"
+    )
     print("✓ AI optimizer linked to quantum solver")
 
     # Verify overlay manifold is initialized

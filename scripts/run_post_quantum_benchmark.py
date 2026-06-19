@@ -30,6 +30,7 @@ ARTIFACT_PATH = ROOT / "artifacts" / "post_quantum_benchmark_result.json"
 def _pkg_version(name: str) -> str:
     try:
         import importlib.metadata
+
         return importlib.metadata.version(name)
     except Exception:
         return "unknown"
@@ -42,7 +43,9 @@ def run() -> int:
         str(venv_pytest) if venv_pytest.exists() else sys.executable,
         *([] if venv_pytest.exists() else ["-m", "pytest"]),
         "tests/test_post_quantum_benchmark.py",
-        "-v", "--tb=short", "--no-header",
+        "-v",
+        "--tb=short",
+        "--no-header",
     ]
 
     print(f"Running: {' '.join(cmd)}")
@@ -103,13 +106,15 @@ def run() -> int:
                         (v for k, v in current_failures.items() if segments[-1] in k),
                         None,
                     )
-                tests.append({
-                    "nodeid": nodeid,
-                    "class": segments[-2] if len(segments) >= 3 else "",
-                    "name": segments[-1],
-                    "outcome": outcome,
-                    "failure": failure_msg,
-                })
+                tests.append(
+                    {
+                        "nodeid": nodeid,
+                        "class": segments[-2] if len(segments) >= 3 else "",
+                        "name": segments[-1],
+                        "outcome": outcome,
+                        "failure": failure_msg,
+                    }
+                )
                 break
 
     passed = sum(1 for t in tests if t["outcome"] == "PASSED")
@@ -121,7 +126,7 @@ def run() -> int:
     try:
         venv_python = str(ROOT / "venv" / "bin" / "python")
         ver_proc = subprocess.run([venv_python, "--version"], capture_output=True, text=True)
-        sys_python = (ver_proc.stdout.strip() or ver_proc.stderr.strip())
+        sys_python = ver_proc.stdout.strip() or ver_proc.stderr.strip()
     except Exception:
         pass
 
@@ -159,12 +164,12 @@ def run() -> int:
     ARTIFACT_PATH.parent.mkdir(parents=True, exist_ok=True)
     ARTIFACT_PATH.write_text(json.dumps(payload, indent=2))
 
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print(f"POST-QUANTUM BENCHMARK — {passed}/{total} passed")
     print(f"Wall clock : {wall_elapsed:.2f}s")
     print(f"SHA-256    : {integrity_hash}")
     print(f"Artifact   : {ARTIFACT_PATH.relative_to(ROOT)}")
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
 
     if failed:
         print(f"\nFAILED ({failed}):")

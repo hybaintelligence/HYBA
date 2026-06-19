@@ -15,7 +15,7 @@ import sys
 import os
 
 # Proper PYTHONPATH setup
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../python_backend'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../python_backend"))
 
 import time
 import json
@@ -34,15 +34,15 @@ try:
     from pythia_mining.pulvini_group import (
         coxeter_group_certificate,
         a5_representation_certificate,
-        adjacency_sets,
-        compute_graph_automorphisms,
     )
+
     print("✓ pulvini_group imports OK")
 except ImportError as e:
     import_errors.append(f"pulvini_group: {e}")
 
 try:
     from pythia_mining.pulvini_topology import ADJACENCY_MAP, NUM_NODES
+
     print(f"✓ pulvini_topology imports OK (NUM_NODES={NUM_NODES})")
 except ImportError as e:
     import_errors.append(f"pulvini_topology: {e}")
@@ -52,6 +52,7 @@ try:
         adjacency_map_digest,
         automorphism_runtime_certificate,
     )
+
     print("✓ pulvini_certificates imports OK")
 except ImportError as e:
     import_errors.append(f"pulvini_certificates: {e}")
@@ -61,24 +62,28 @@ try:
         bures_certificate,
         density_state,
     )
+
     print("✓ pulvini_bures imports OK")
 except ImportError as e:
     import_errors.append(f"pulvini_bures: {e}")
 
 try:
     from pythia_mining.quantum_solver import DodecahedralQuantumSolver
+
     print("✓ quantum_solver imports OK")
 except ImportError as e:
     import_errors.append(f"quantum_solver: {e}")
 
 try:
     from pythia_mining.pulvini_operator import ManifoldOperator, ManifoldConfig
+
     print("✓ pulvini_operator imports OK")
 except ImportError as e:
     import_errors.append(f"pulvini_operator: {e}")
 
 try:
     from pythia_mining.phi_config import PHI
+
     print("✓ phi_config imports OK")
 except ImportError as e:
     import_errors.append(f"phi_config: {e}")
@@ -89,17 +94,19 @@ if import_errors:
         print(f"  {err}")
     sys.exit(1)
 
-print("\n" + "="*140)
+print("\n" + "=" * 140)
 print("ALL IMPORTS VERIFIED - PROCEEDING WITH TESTS")
-print("="*140 + "\n")
+print("=" * 140 + "\n")
 
 # ============================================================================
 # TEST FRAMEWORK
 # ============================================================================
 
+
 @dataclass
 class TestResult:
     """Single test result."""
+
     name: str
     category: str
     passed: bool
@@ -110,7 +117,7 @@ class TestResult:
 
     def to_dict(self) -> Dict[str, Any]:
         result = asdict(self)
-        result['timestamp'] = datetime.now().isoformat()
+        result["timestamp"] = datetime.now().isoformat()
         return result
 
 
@@ -476,7 +483,7 @@ class VerificationSuite:
 
         try:
             operator = ManifoldOperator()
-            config = ManifoldConfig()
+            ManifoldConfig()
 
             # Create pure state
             psi = np.zeros(32, dtype=complex)
@@ -523,11 +530,11 @@ class VerificationSuite:
 
     def run_all(self) -> Dict[str, Any]:
         """Execute all verifications."""
-        print("\n" + "="*140)
+        print("\n" + "=" * 140)
         print("HYBA QUANTUM MATHEMATICS VERIFICATION SUITE")
-        print("="*140)
+        print("=" * 140)
         print(f"{'Status':<5} | {'Category':<25} | {'Test Name':<45} | {'Time':<8}")
-        print("-"*140)
+        print("-" * 140)
 
         self.log_test(self.test_coxeter_h3_structure())
         self.log_test(self.test_a5_representations())
@@ -538,11 +545,11 @@ class VerificationSuite:
         self.log_test(self.test_dodecahedral_solver())
         self.log_test(self.test_manifold_coherence())
 
-        print("-"*140)
+        print("-" * 140)
         total = self.passed + self.failed
         pass_rate = (self.passed / total * 100) if total > 0 else 0
         print(f"RESULTS: {self.passed}/{total} PASSED ({pass_rate:.1f}%), {self.failed} FAILED")
-        print("="*140 + "\n")
+        print("=" * 140 + "\n")
 
         report = {
             "timestamp": datetime.now().isoformat(),
@@ -586,7 +593,9 @@ if __name__ == "__main__":
 
     print("VERIFICATION REPORT")
     print(f"Status: {report['summary']['verification_status']}")
-    print(f"Pass Rate: {report['pass_rate']*100:.1f}% ({report['passed']}/{report['total_tests']})")
+    print(
+        f"Pass Rate: {report['pass_rate'] * 100:.1f}% ({report['passed']}/{report['total_tests']})"
+    )
     print("\nMathematical Proofs Verified:")
     for proof in report["summary"]["mathematical_proofs_verified"]:
         print(f"  ✓ {proof}")

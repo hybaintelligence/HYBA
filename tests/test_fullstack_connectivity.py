@@ -63,7 +63,9 @@ def _get_json(url: str, *, timeout: float = REQUEST_TIMEOUT_SECONDS) -> SimpleRe
     return _request(url, timeout=timeout)
 
 
-def _post_json(url: str, payload: dict[str, Any], *, timeout: float = REQUEST_TIMEOUT_SECONDS) -> SimpleResponse:
+def _post_json(
+    url: str, payload: dict[str, Any], *, timeout: float = REQUEST_TIMEOUT_SECONDS
+) -> SimpleResponse:
     return _request(url, method="POST", payload=payload, timeout=timeout)
 
 
@@ -80,10 +82,7 @@ requires_backend = pytest.mark.skipif(
     reason="HYBA backend is not running on 127.0.0.1:3001",
 )
 requires_fullstack = pytest.mark.skipif(
-    not (
-        _server_available(f"{BACKEND_URL}/health")
-        and _server_available(FRONTEND_URL)
-    ),
+    not (_server_available(f"{BACKEND_URL}/health") and _server_available(FRONTEND_URL)),
     reason="HYBA backend and frontend dev server are not both running",
 )
 
@@ -203,7 +202,9 @@ class DeploymentReadinessReport:
         self.backend_url = backend_url.rstrip("/")
         self.frontend_url = frontend_url.rstrip("/")
 
-    def generate(self, output_path: str | Path = "DEPLOYMENT_READINESS_REPORT.json") -> dict[str, Any]:
+    def generate(
+        self, output_path: str | Path = "DEPLOYMENT_READINESS_REPORT.json"
+    ) -> dict[str, Any]:
         checks = {
             "backend_running": self._check_backend,
             "frontend_running": self._check_frontend,
@@ -236,23 +237,34 @@ class DeploymentReadinessReport:
         return self._safe_check(lambda: _get_json(self.frontend_url).status_code == 200)
 
     def _check_proxy(self) -> bool:
-        return self._safe_check(lambda: _get_json(f"{self.frontend_url}/api/health").status_code == 200)
+        return self._safe_check(
+            lambda: _get_json(f"{self.frontend_url}/api/health").status_code == 200
+        )
 
     def _check_health(self) -> bool:
-        return self._safe_check(lambda: _get_json(f"{self.backend_url}/api/health").status_code == 200)
+        return self._safe_check(
+            lambda: _get_json(f"{self.backend_url}/api/health").status_code == 200
+        )
 
     def _check_mining_api(self) -> bool:
-        return self._safe_check(lambda: _get_json(f"{self.backend_url}/api/mining/pools").status_code == 200)
+        return self._safe_check(
+            lambda: _get_json(f"{self.backend_url}/api/mining/pools").status_code == 200
+        )
 
     def _check_security_api(self) -> bool:
-        return self._safe_check(lambda: _get_json(f"{self.backend_url}/api/security/status").status_code == 200)
+        return self._safe_check(
+            lambda: _get_json(f"{self.backend_url}/api/security/status").status_code == 200
+        )
 
     def _check_cors(self) -> bool:
         def check() -> bool:
             response = _request(
                 f"{self.backend_url}/api/mining/connect",
                 method="OPTIONS",
-                headers={"Origin": "http://localhost:3000", "Access-Control-Request-Method": "POST"},
+                headers={
+                    "Origin": "http://localhost:3000",
+                    "Access-Control-Request-Method": "POST",
+                },
             )
             return response.status_code == 200 and "access-control-allow-origin" in {
                 key.lower() for key in response.headers

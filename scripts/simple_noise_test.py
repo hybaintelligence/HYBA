@@ -11,7 +11,7 @@ sys.path.insert(0, str(ROOT))
 
 print("Testing noise protocol import...")
 try:
-    from pythia_mining.noise_wrapper import NoiseHandshakeResult, NoiseWrapper
+    from pythia_mining.noise_wrapper import NoiseWrapper
 
     print("✓ noise_wrapper imported successfully")
 except ImportError as e:
@@ -20,7 +20,7 @@ except ImportError as e:
 
 print("\nTesting LiveStratumV2Session import...")
 try:
-    from pythia_mining.live_stratum_v2_session import LiveStratumV2Session
+    from pythia_mining.live_stratum_v2_session import LiveStratumV2Session  # noqa: F401
 
     print("✓ LiveStratumV2Session imported successfully")
 except ImportError as e:

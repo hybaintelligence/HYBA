@@ -76,4 +76,7 @@ def test_verification_firewall_is_outside_optimisation_authority() -> None:
     assert summary["authority_namespace"] == VERIFIER_AUTHORITY_NAMESPACE
     assert summary["optimisation_namespace_authority"] is False
     assert "pythia_mining.ai_optimizer" in summary["optimisation_namespaces_blocked"]
-    assert "exact SHA-256d local verification before Stratum submit" in summary["blockchain_security_invariant"]
+    assert (
+        "exact SHA-256d local verification before Stratum submit"
+        in summary["blockchain_security_invariant"]
+    )

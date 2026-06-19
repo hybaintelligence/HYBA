@@ -85,10 +85,9 @@ import numpy as np
 # Reuses the existing, tested healing substrate rather than
 # reimplementing it -- see quantum_regeneration.py
 from .quantum_regeneration import (
-    ModuleState, ContextSignal, InnervationFailure,
-    apply_fault, quarantine_channel, redifferentiate,
-    measure_role, validate_collapse_or_quarantine,
-    regeneration_pipeline, Role,
+    ModuleState,
+    ContextSignal,
+    regeneration_pipeline,
 )
 from .ai_orchestration_layer import (
     UnifiedAIOrchestrationLayer,
@@ -97,18 +96,20 @@ from .ai_orchestration_layer import (
     AIRecommendation,
 )
 
-PHI = (1.0 + 5.0 ** 0.5) / 2.0
+PHI = (1.0 + 5.0**0.5) / 2.0
 
 
 # =============================================================================
 # 1. SHARED INFRASTRUCTURE: AUDIT LOG (all three subsystems write here)
 # =============================================================================
 
+
 @dataclass
 class AuditEntry:
     """Immutable audit entry for all autonomous actions."""
+
     timestamp: float
-    subsystem: str          # "healing" | "optimizing" | "mining"
+    subsystem: str  # "healing" | "optimizing" | "mining"
     action: str
     detail: Dict[str, Any]
     reversible: bool
@@ -122,11 +123,14 @@ class AuditLog:
     Without this, "full autonomy" and "no accountability" become the
     same thing by default, which is not what was asked for.
     """
+
     def __init__(self):
         self._entries: List[AuditEntry] = []
         self._lock = threading.Lock()
 
-    def record(self, subsystem: str, action: str, detail: Dict[str, Any], reversible: bool) -> AuditEntry:
+    def record(
+        self, subsystem: str, action: str, detail: Dict[str, Any], reversible: bool
+    ) -> AuditEntry:
         """Record an action in the audit log."""
         entry = AuditEntry(time.time(), subsystem, action, detail, reversible)
         with self._lock:
@@ -136,9 +140,11 @@ class AuditLog:
     def recent(self, subsystem: Optional[str] = None, n: int = 50) -> List[AuditEntry]:
         """Get recent audit entries, optionally filtered by subsystem."""
         with self._lock:
-            entries = self._entries if subsystem is None else [
-                e for e in self._entries if e.subsystem == subsystem
-            ]
+            entries = (
+                self._entries
+                if subsystem is None
+                else [e for e in self._entries if e.subsystem == subsystem]
+            )
             return entries[-n:]
 
     def count_by_subsystem(self) -> Dict[str, int]:
@@ -154,6 +160,7 @@ class AuditLog:
 # 2. HEALING SUBSYSTEM WRAPPER (full autonomy, wraps tested formalism)
 # =============================================================================
 
+
 class AutonomousHealer:
     """
     Thin autonomous wrapper around the existing, tested
@@ -161,6 +168,7 @@ class AutonomousHealer:
     gives it a self-triggering loop instead of requiring an external
     caller to invoke regeneration_pipeline() manually.
     """
+
     def __init__(self, audit: AuditLog, entropy_fault_threshold: float = 0.3):
         self.audit = audit
         self.entropy_fault_threshold = entropy_fault_threshold
@@ -171,8 +179,9 @@ class AutonomousHealer:
         """Register a module for autonomous healing."""
         self.module_states[module_id] = ModuleState.healthy(module_id)
 
-    def monitor_tick(self, module_id: str, observed_severity: float,
-                      context: Optional[ContextSignal]) -> Dict[str, Any]:
+    def monitor_tick(
+        self, module_id: str, observed_severity: float, context: Optional[ContextSignal]
+    ) -> Dict[str, Any]:
         """
         One control-loop tick for one module. In production this is
         driven by real telemetry (syndrome-weight signals), not a
@@ -209,12 +218,14 @@ class AutonomousHealer:
 # 3. OPTIMIZING SUBSYSTEM (full autonomy, classical control loop)
 # =============================================================================
 
+
 @dataclass
 class OptimizationTarget:
     """Parameter to optimize with bounded search space."""
+
     name: str
     current_value: float
-    bounds: Tuple[float, float]   # (min, max) -- hard clamp, always enforced
+    bounds: Tuple[float, float]  # (min, max) -- hard clamp, always enforced
     step_size: float
     objective_fn: Callable[[float], float]  # higher = better; yours to define
 
@@ -234,6 +245,7 @@ class AutonomousOptimizer:
     that parameter should move to the bounded/circuit-breaker pattern
     used for mining, not stay here unexamined.
     """
+
     def __init__(self, audit: AuditLog):
         self.audit = audit
         self.targets: Dict[str, OptimizationTarget] = {}
@@ -269,8 +281,10 @@ class AutonomousOptimizer:
             subsystem="optimizing",
             action="parameter_adjustment" if changed else "parameter_held",
             detail={
-                "target": name, "old_value": old_value,
-                "new_value": best_value, "score": best_score,
+                "target": name,
+                "old_value": old_value,
+                "new_value": best_value,
+                "score": best_score,
             },
             reversible=True,  # full history retained, can replay backward
         )
@@ -305,12 +319,14 @@ class AutonomousOptimizer:
 # 4. MINING SUBSYSTEM: AUTONOMOUS, WITH BOUNDED CIRCUIT BREAKER
 # =============================================================================
 
+
 class MiningActionClass(Enum):
     """Classification of mining actions by risk profile."""
-    INTERNAL_TUNING = "internal_tuning"          # e.g. thread count, intensity
-    POOL_SWITCH = "pool_switch"                    # external, semi-reversible
-    PAYOUT_ADDRESS_CHANGE = "payout_address_change" # external, HIGH risk
-    SPEND_PAST_BUDGET = "spend_past_budget"         # external, irreversible
+
+    INTERNAL_TUNING = "internal_tuning"  # e.g. thread count, intensity
+    POOL_SWITCH = "pool_switch"  # external, semi-reversible
+    PAYOUT_ADDRESS_CHANGE = "payout_address_change"  # external, HIGH risk
+    SPEND_PAST_BUDGET = "spend_past_budget"  # external, irreversible
 
 
 # Action classes requiring the circuit breaker. INTERNAL_TUNING is NOT
@@ -332,12 +348,14 @@ class CircuitBreakerTripped(Exception):
     external actions. Catching and silently retrying this in a tight
     loop defeats its purpose -- callers should respect the cooldown.
     """
+
     pass
 
 
 @dataclass
 class BreakerState:
     """State for circuit breaker rate limiting and cooldown."""
+
     action_class: MiningActionClass
     max_actions: int
     window_seconds: float
@@ -382,17 +400,27 @@ class MiningCircuitBreaker:
     they should be tuned against your actual pool-switching/payout
     cadence and reviewed, not left at these placeholders.
     """
+
     def __init__(self):
         self.breakers: Dict[MiningActionClass, BreakerState] = {
             MiningActionClass.POOL_SWITCH: BreakerState(
-                MiningActionClass.POOL_SWITCH, max_actions=3,
-                window_seconds=3600, cooldown_seconds=1800),
+                MiningActionClass.POOL_SWITCH,
+                max_actions=3,
+                window_seconds=3600,
+                cooldown_seconds=1800,
+            ),
             MiningActionClass.PAYOUT_ADDRESS_CHANGE: BreakerState(
-                MiningActionClass.PAYOUT_ADDRESS_CHANGE, max_actions=1,
-                window_seconds=86400, cooldown_seconds=86400),
+                MiningActionClass.PAYOUT_ADDRESS_CHANGE,
+                max_actions=1,
+                window_seconds=86400,
+                cooldown_seconds=86400,
+            ),
             MiningActionClass.SPEND_PAST_BUDGET: BreakerState(
-                MiningActionClass.SPEND_PAST_BUDGET, max_actions=1,
-                window_seconds=86400, cooldown_seconds=43200),
+                MiningActionClass.SPEND_PAST_BUDGET,
+                max_actions=1,
+                window_seconds=86400,
+                cooldown_seconds=43200,
+            ),
         }
 
     def gate(self, action_class: MiningActionClass, now: Optional[float] = None) -> None:
@@ -401,7 +429,9 @@ class MiningCircuitBreaker:
             return  # ungated class, no-op
         self.breakers[action_class].check_and_record(now or time.time())
 
-    def get_breaker_status(self, action_class: MiningActionClass, now: Optional[float] = None) -> Dict[str, Any]:
+    def get_breaker_status(
+        self, action_class: MiningActionClass, now: Optional[float] = None
+    ) -> Dict[str, Any]:
         """Get current status of a circuit breaker."""
         if action_class not in self.breakers:
             return {"gated": False}
@@ -420,6 +450,7 @@ class MiningCircuitBreaker:
 @dataclass
 class MiningDecision:
     """Decision made by autonomous mining subsystem."""
+
     action_class: MiningActionClass
     payload: Dict[str, Any]
     reversible: bool
@@ -431,8 +462,13 @@ class AutonomousMiner:
     (decide_next_action) is yours to define -- this skeleton wires the
     control loop and the breaker, not a profitability model.
     """
-    def __init__(self, audit: AuditLog, breaker: MiningCircuitBreaker,
-                 decision_policy: Callable[[Dict[str, Any]], MiningDecision]):
+
+    def __init__(
+        self,
+        audit: AuditLog,
+        breaker: MiningCircuitBreaker,
+        decision_policy: Callable[[Dict[str, Any]], MiningDecision],
+    ):
         self.audit = audit
         self.breaker = breaker
         self.decision_policy = decision_policy
@@ -447,8 +483,11 @@ class AutonomousMiner:
             self.audit.record(
                 subsystem="mining",
                 action="action_blocked_by_breaker",
-                detail={"action_class": decision.action_class.value,
-                        "payload": decision.payload, "reason": str(e)},
+                detail={
+                    "action_class": decision.action_class.value,
+                    "payload": decision.payload,
+                    "reason": str(e),
+                },
                 reversible=True,
             )
             return {"status": "blocked", "reason": str(e)}
@@ -484,6 +523,7 @@ class AutonomousMiner:
 # 5. META-CONTROLLER: ORCHESTRATES ALL THREE
 # =============================================================================
 
+
 class AutonomousMetaController:
     """
     Top-level reflexive loop. Owns no domain logic itself -- delegates
@@ -494,10 +534,11 @@ class AutonomousMetaController:
     separable failures discussed earlier -- this is where that
     diagnostic claim could actually be tested against real data,
     rather than asserted.
-    
+
     ELEVATED: Now includes AI orchestration layer for AI-powered
     capabilities at every stage of the mining lifecycle.
     """
+
     def __init__(self, enable_ai: bool = True):
         self.audit = AuditLog()
         self.healer = AutonomousHealer(self.audit)
@@ -511,34 +552,41 @@ class AutonomousMetaController:
     def attach_miner(self, decision_policy: Callable[[Dict[str, Any]], MiningDecision]) -> None:
         """Attach mining subsystem with custom decision policy."""
         self.miner = AutonomousMiner(self.audit, self.breaker, decision_policy)
-    
+
     def ai_initialize_system(self, system_info: Dict[str, Any]) -> Optional[AIDecision]:
         """AI-powered system initialization."""
         if self.ai_orchestration is None:
             return None
         return self.ai_orchestration.initialize_system(system_info)
-    
-    def ai_make_pipeline_decisions(self, metrics: Dict[str, float], context: Dict[str, Any]) -> Optional[Dict[str, AIDecision]]:
+
+    def ai_make_pipeline_decisions(
+        self, metrics: Dict[str, float], context: Dict[str, Any]
+    ) -> Optional[Dict[str, AIDecision]]:
         """AI decision-making throughout mining pipeline."""
         if self.ai_orchestration is None:
             return None
         return self.ai_orchestration.make_pipeline_decision(metrics, context)
-    
-    def ai_optimize_submission(self, shares: List[Dict[str, Any]], pool_info: Dict[str, Any]) -> Optional[AIDecision]:
+
+    def ai_optimize_submission(
+        self, shares: List[Dict[str, Any]], pool_info: Dict[str, Any]
+    ) -> Optional[AIDecision]:
         """AI-optimized share submission."""
         if self.ai_orchestration is None:
             return None
         return self.ai_orchestration.optimize_share_submission(shares, pool_info)
-    
+
     def ai_generate_advisory(self, system_state: Dict[str, Any]) -> Optional[AIRecommendation]:
         """Generate AI advisory."""
         if self.ai_orchestration is None:
             return None
         return self.ai_orchestration.generate_advisory(system_state)
 
-    def tick_all(self, healing_inputs: List[Dict[str, Any]],
-                 optimization_targets: List[str],
-                 mining_telemetry: Optional[Dict[str, Any]]) -> Dict[str, Any]:
+    def tick_all(
+        self,
+        healing_inputs: List[Dict[str, Any]],
+        optimization_targets: List[str],
+        mining_telemetry: Optional[Dict[str, Any]],
+    ) -> Dict[str, Any]:
         """
         One full control-loop pass across all three subsystems. In
         production this is called on a scheduler (e.g. every N
@@ -572,11 +620,11 @@ class AutonomousMetaController:
             "recent_optimizing": len(self.audit.recent("optimizing", 10)),
             "recent_mining": len(self.audit.recent("mining", 10)),
         }
-        
+
         # Add AI orchestration summary if available
         if self.ai_orchestration is not None:
             summary["ai_orchestration"] = self.ai_orchestration.get_comprehensive_summary()
-        
+
         return summary
 
     def get_breaker_status(self) -> Dict[str, Dict[str, Any]]:

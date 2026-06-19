@@ -31,7 +31,9 @@ class UnitaryEvolver:
             matrix[:2, :2] = h
         return matrix
 
-    def evolve(self, vector: np.ndarray, operator: np.ndarray, steps: int = 1) -> tuple[np.ndarray, EvolutionAudit]:
+    def evolve(
+        self, vector: np.ndarray, operator: np.ndarray, steps: int = 1
+    ) -> tuple[np.ndarray, EvolutionAudit]:
         state = self.normalize(vector)
         op = np.asarray(operator, dtype=np.complex128)
         if op.ndim != 2 or op.shape[0] != op.shape[1] or op.shape[0] != state.size:
@@ -39,7 +41,9 @@ class UnitaryEvolver:
         for _ in range(max(0, int(steps))):
             state = self.normalize(op @ state)
         norm_error = abs(float(np.linalg.norm(state)) - 1.0)
-        return state, EvolutionAudit(int(state.size), int(steps), norm_error, norm_error <= self.tolerance)
+        return state, EvolutionAudit(
+            int(state.size), int(steps), norm_error, norm_error <= self.tolerance
+        )
 
 
 __all__ = ["UnitaryEvolver", "EvolutionAudit"]

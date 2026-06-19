@@ -32,7 +32,9 @@ def signed(payload: dict[str, Any]) -> dict[str, Any]:
 def build_packet(root: Path = ROOT) -> dict[str, Any]:
     state = read_json(root / "python_backend" / "pythia_state.json")
     total = int((state or {}).get("total_shares") or 0) if state and "error" not in state else 0
-    accepted = int((state or {}).get("accepted_shares") or 0) if state and "error" not in state else 0
+    accepted = (
+        int((state or {}).get("accepted_shares") or 0) if state and "error" not in state else 0
+    )
     return signed(
         {
             "schema_version": SCHEMA_VERSION,
@@ -46,8 +48,12 @@ def build_packet(root: Path = ROOT) -> dict[str, Any]:
                 "accepted_present": accepted > 0,
             },
             "runtime": {
-                "system_health": (state or {}).get("system_health") if state and "error" not in state else "unavailable",
-                "telemetry_source": (state or {}).get("telemetry_source") if state and "error" not in state else "unavailable",
+                "system_health": (state or {}).get("system_health")
+                if state and "error" not in state
+                else "unavailable",
+                "telemetry_source": (state or {}).get("telemetry_source")
+                if state and "error" not in state
+                else "unavailable",
             },
             "claim_level": "share_present" if accepted > 0 else "runtime_trace_no_share_present",
             "boundaries": {

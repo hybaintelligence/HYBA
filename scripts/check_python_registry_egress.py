@@ -57,7 +57,9 @@ def fetch_package(package: str, version: str, timeout: float) -> PackageCheck:
     url = f"https://pypi.org/pypi/{package}/{version}/json"
     request = urllib.request.Request(url, headers={"User-Agent": "hyba-registry-egress-check/1"})
     try:
-        with urllib.request.urlopen(request, timeout=timeout, context=ssl.create_default_context()) as response:
+        with urllib.request.urlopen(
+            request, timeout=timeout, context=ssl.create_default_context()
+        ) as response:
             payload = json.loads(response.read().decode("utf-8"))
     except (urllib.error.URLError, TimeoutError, OSError, json.JSONDecodeError) as exc:
         return PackageCheck(
@@ -88,11 +90,15 @@ def fetch_package(package: str, version: str, timeout: float) -> PackageCheck:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--timeout", type=float, default=10.0, help="per-package request timeout in seconds")
+    parser.add_argument(
+        "--timeout", type=float, default=10.0, help="per-package request timeout in seconds"
+    )
     args = parser.parse_args(argv)
 
     pins = parse_pins(REQUIREMENTS)
-    checks = [fetch_package(package, version, args.timeout) for package, version in sorted(pins.items())]
+    checks = [
+        fetch_package(package, version, args.timeout) for package, version in sorted(pins.items())
+    ]
     status = "ready" if all(check.status == "reachable" for check in checks) else "blocked"
     payload = {
         "status": status,
@@ -100,7 +106,14 @@ def main(argv: list[str] | None = None) -> int:
         "checks": [asdict(check) for check in checks],
         "proxy_environment_present": {
             key: bool(os.getenv(key))
-            for key in ("HTTP_PROXY", "HTTPS_PROXY", "http_proxy", "https_proxy", "npm_config_http_proxy", "npm_config_https_proxy")
+            for key in (
+                "HTTP_PROXY",
+                "HTTPS_PROXY",
+                "http_proxy",
+                "https_proxy",
+                "npm_config_http_proxy",
+                "npm_config_https_proxy",
+            )
         },
     }
     print(json.dumps(payload, indent=2, sort_keys=True))

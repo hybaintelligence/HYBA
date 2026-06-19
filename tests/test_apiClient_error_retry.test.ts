@@ -1,5 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { authInterceptor, clearToken, getHealth, getSecurityStatus, setToken } from "../src/apiClient";
+import {
+  authInterceptor,
+  clearToken,
+  getHealth,
+  getSecurityStatus,
+  setToken,
+} from "../src/apiClient";
 
 function jsonResponse(body: unknown, init: ResponseInit = {}) {
   return new Response(JSON.stringify(body), {
@@ -39,16 +45,30 @@ describe("apiClient retry, auth, and error contracts", () => {
   it("retries GET requests on 429/5xx and propagates request id from final API errors", async () => {
     const fetchMock = vi.mocked(fetch);
     fetchMock
-      .mockResolvedValueOnce(jsonResponse({ error: "rate_limited", message: "slow down" }, { status: 429 }))
-      .mockResolvedValueOnce(jsonResponse({ error: "unavailable", message: "try later" }, { status: 503 }))
-      .mockResolvedValueOnce(jsonResponse({ error: "still_unavailable", message: "nope" }, {
-        status: 503,
-        headers: { "x-request-id": "rid-final" },
-      }))
-      .mockResolvedValueOnce(jsonResponse({ error: "still_unavailable", message: "nope" }, {
-        status: 503,
-        headers: { "x-request-id": "rid-final" },
-      }));
+      .mockResolvedValueOnce(
+        jsonResponse({ error: "rate_limited", message: "slow down" }, { status: 429 }),
+      )
+      .mockResolvedValueOnce(
+        jsonResponse({ error: "unavailable", message: "try later" }, { status: 503 }),
+      )
+      .mockResolvedValueOnce(
+        jsonResponse(
+          { error: "still_unavailable", message: "nope" },
+          {
+            status: 503,
+            headers: { "x-request-id": "rid-final" },
+          },
+        ),
+      )
+      .mockResolvedValueOnce(
+        jsonResponse(
+          { error: "still_unavailable", message: "nope" },
+          {
+            status: 503,
+            headers: { "x-request-id": "rid-final" },
+          },
+        ),
+      );
 
     const promise = getSecurityStatus();
     await vi.runAllTimersAsync();
@@ -63,9 +83,11 @@ describe("apiClient retry, auth, and error contracts", () => {
   });
 
   it("does not retry non-retriable 4xx responses", async () => {
-    const fetchMock = vi.mocked(fetch).mockResolvedValue(
-      jsonResponse({ detail: { error: "forbidden", message: "denied" } }, { status: 403 }),
-    );
+    const fetchMock = vi
+      .mocked(fetch)
+      .mockResolvedValue(
+        jsonResponse({ detail: { error: "forbidden", message: "denied" } }, { status: 403 }),
+      );
 
     await expect(getHealth()).rejects.toMatchObject({ code: "forbidden", status: 403 });
     expect(fetchMock).toHaveBeenCalledTimes(1);

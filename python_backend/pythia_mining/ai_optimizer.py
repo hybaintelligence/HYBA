@@ -92,9 +92,7 @@ class AIOptimizer:
         """
         if hasattr(self.quantum_solver, "configure_compressed_search"):
             compressed_plan = build_pulvini_nonce_plan()
-            await self.quantum_solver.configure_compressed_search(
-                int(job.target), compressed_plan
-            )
+            await self.quantum_solver.configure_compressed_search(int(job.target), compressed_plan)
             return
         await self.quantum_solver.configure_search(int(job.target), [(0, 2**32 - 1)])
 
@@ -114,10 +112,9 @@ class AIOptimizer:
             float(self.current_strategy.max_search_time),
             self._configured_timeout_cap_seconds(),
         )
-        
+
         compressed_contract_active = (
-            initial_metrics.get("nonce_space_contract")
-            == "pulvini_phi_compressed_pre_search"
+            initial_metrics.get("nonce_space_contract") == "pulvini_phi_compressed_pre_search"
         )
         if not compressed_contract_active:
             # Shift ranges slightly based on time to diversify exploration for
@@ -133,13 +130,13 @@ class AIOptimizer:
                     shifted_end = min(shifted_start + (end - start), 2**32 - 1)
                     new_ranges.append((shifted_start, shifted_end))
                 await self.quantum_solver.configure_search(int(job.target), new_ranges)
-        
+
         nonce = await self.quantum_solver.solve(
             max_iterations=self._configured_max_iterations(),
             timeout=max(0.001, solve_timeout),
             target=int(job.target),
             job=job,
-            extranonce2=getattr(self, '_current_extranonce2', '00000000'),
+            extranonce2=getattr(self, "_current_extranonce2", "00000000"),
         )
         metrics = self.quantum_solver.get_metrics()
 
@@ -148,18 +145,16 @@ class AIOptimizer:
                 "phi_phase_alignment": float(metrics.get("phi_phase_alignment") or 0.0),
                 "power_scale": float(metrics.get("power_scale") or 1.0),
                 "search_space_size_norm": float(
-                    (metrics.get("search_space_size") or initial_metrics.get("search_space_size") or 0)
+                    (
+                        metrics.get("search_space_size")
+                        or initial_metrics.get("search_space_size")
+                        or 0
+                    )
                     / max(1, 2**32)
                 ),
-                "compressed_working_set_size": int(
-                    metrics.get("compressed_working_set_size") or 0
-                ),
-                "complete_nonce_coverage": bool(
-                    metrics.get("complete_nonce_coverage")
-                ),
-                "overlap_free_nonce_coverage": bool(
-                    metrics.get("overlap_free_nonce_coverage")
-                ),
+                "compressed_working_set_size": int(metrics.get("compressed_working_set_size") or 0),
+                "complete_nonce_coverage": bool(metrics.get("complete_nonce_coverage")),
+                "overlap_free_nonce_coverage": bool(metrics.get("overlap_free_nonce_coverage")),
             },
             "job": {
                 "target_norm": float(int(job.target) / max(1, 2**256 - 1)),
@@ -176,13 +171,9 @@ class AIOptimizer:
         model_predictions = {
             "solver_phi": {"score": phi_score},
             "difficulty_window": {"score": indicators["job"]["target_norm"]},
-            "search_space": {
-                "score": min(1.0, indicators["solver"]["search_space_size_norm"])
-            },
+            "search_space": {"score": min(1.0, indicators["solver"]["search_space_size_norm"])},
         }
-        phi_scaling = self.phi_ensemble.predict_with_phi_scaling(
-            model_predictions, indicators
-        )
+        phi_scaling = self.phi_ensemble.predict_with_phi_scaling(model_predictions, indicators)
         phi_features = self.phi_features.extract_phi_optimized_features(indicators)
         benchmark = benchmark_vs_asic(
             measured_hashes_per_second=metrics.get("hashrate_hps"),
@@ -207,9 +198,7 @@ class AIOptimizer:
     def _update_meta_learning(
         self, share_info: Dict[str, Any], *, accepted: bool
     ) -> Dict[str, Any]:
-        strategy_id = str(
-            share_info.get("strategy_used") or "phi_scaled_compressed_solver_search"
-        )
+        strategy_id = str(share_info.get("strategy_used") or "phi_scaled_compressed_solver_search")
         event = self.meta_optimizer.update_from_outcome(
             strategy_id=strategy_id,
             accepted=accepted,

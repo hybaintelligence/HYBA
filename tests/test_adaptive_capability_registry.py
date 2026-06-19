@@ -74,7 +74,10 @@ def test_registry_preserves_claim_boundary_language():
     assert "known gap" in text
     assert "claim boundary" in text
     assert "Capability-to-proof ladder" in text
-    assert "registry entry, test command, artifact, supported claim, known gap, and claim boundary" in text
+    assert (
+        "registry entry, test command, artifact, supported claim, known gap, and claim boundary"
+        in text
+    )
 
 
 def test_status_values_are_from_declared_vocabulary():

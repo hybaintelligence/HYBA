@@ -28,11 +28,14 @@ def test_thousand_qubit_surface_is_preserved_without_full_state_materialisation(
 
 
 def test_bounded_parameter_count_scales_as_tensor_network_surface():
-    assert bounded_mps_parameter_upper_bound(
-        qubit_formalism_sites=1000,
-        physical_dimension=2,
-        max_bond_dimension=16,
-    ) == 1000 * 2 * 16 * 16
+    assert (
+        bounded_mps_parameter_upper_bound(
+            qubit_formalism_sites=1000,
+            physical_dimension=2,
+            max_bond_dimension=16,
+        )
+        == 1000 * 2 * 16 * 16
+    )
 
 
 def test_integrity_guard_rejects_any_attempt_to_remove_golden_ratio_grammar():

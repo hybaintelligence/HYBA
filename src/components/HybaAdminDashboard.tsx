@@ -2769,7 +2769,10 @@ function QuantumView({
 
         <div className="space-y-4">
           <div>
-            <label htmlFor="executive-pool-switch" className="block text-sm font-medium text-slate-700 mb-1">
+            <label
+              htmlFor="executive-pool-switch"
+              className="block text-sm font-medium text-slate-700 mb-1"
+            >
               Select Pool
             </label>
             <select

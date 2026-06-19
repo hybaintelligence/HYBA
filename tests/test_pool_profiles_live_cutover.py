@@ -123,7 +123,9 @@ def test_env_configured_pool_overrides_disabled_runtime_config(monkeypatch, tmp_
     assert profiles["braiins"].password == "x"
 
 
-def test_runtime_pool_config_disabled_flag_respected_without_env_override(monkeypatch, tmp_path) -> None:
+def test_runtime_pool_config_disabled_flag_respected_without_env_override(
+    monkeypatch, tmp_path
+) -> None:
     """Without env vars, runtime config enabled=false should prevent profile from loading."""
     runtime_config_file = tmp_path / "pools.json"
     runtime_config_file.write_text(
@@ -166,7 +168,9 @@ def test_rotation_pools_all_stratum_v1_job_capable(monkeypatch, tmp_path) -> Non
     for pool_id in ("viabtc", "braiins", "nicehash", "ckpool"):
         assert pool_id in profiles, f"{pool_id} not loaded"
         profile = profiles[pool_id]
-        assert profile.stratum_version == 1, f"{pool_id} must be Stratum V1, got {profile.stratum_version}"
+        assert profile.stratum_version == 1, (
+            f"{pool_id} must be Stratum V1, got {profile.stratum_version}"
+        )
         assert profile.username, f"{pool_id} missing username"
         assert profile.password, f"{pool_id} missing password"
 
@@ -174,6 +178,7 @@ def test_rotation_pools_all_stratum_v1_job_capable(monkeypatch, tmp_path) -> Non
 # ---------------------------------------------------------------------------
 # TLS enforcement
 # ---------------------------------------------------------------------------
+
 
 def test_non_tls_url_rejected_when_tls_required() -> None:
     """validate_pool_url must reject plain stratum+tcp when tls_required=True."""
@@ -202,15 +207,34 @@ def test_nicehash_default_spec_requires_tls() -> None:
 # Priority ordering and failover sequencing
 # ---------------------------------------------------------------------------
 
+
 def test_order_profiles_produces_ascending_priority() -> None:
     """order_profiles must sort profiles by ascending priority value."""
     profiles = [
-        build_profile("b", name="B", url="stratum+tcp://b.example.com:3333",
-                      username="u", password="x", priority=30),
-        build_profile("a", name="A", url="stratum+tcp://a.example.com:3333",
-                      username="u", password="x", priority=10),
-        build_profile("c", name="C", url="stratum+tcp://c.example.com:3333",
-                      username="u", password="x", priority=20),
+        build_profile(
+            "b",
+            name="B",
+            url="stratum+tcp://b.example.com:3333",
+            username="u",
+            password="x",
+            priority=30,
+        ),
+        build_profile(
+            "a",
+            name="A",
+            url="stratum+tcp://a.example.com:3333",
+            username="u",
+            password="x",
+            priority=10,
+        ),
+        build_profile(
+            "c",
+            name="C",
+            url="stratum+tcp://c.example.com:3333",
+            username="u",
+            password="x",
+            priority=20,
+        ),
     ]
     ordered = order_profiles(profiles)
     priorities = [p.priority for p in ordered]
@@ -240,6 +264,7 @@ def test_viabtc_has_highest_priority_among_defaults() -> None:
 # ---------------------------------------------------------------------------
 # Credential redaction in public status surfaces
 # ---------------------------------------------------------------------------
+
 
 def test_pool_profile_to_dict_redacts_username_and_password() -> None:
     """to_dict(include_secret_fields=False) must replace credentials with '<configured>'."""
@@ -276,6 +301,7 @@ def test_pool_profile_to_dict_exposes_credentials_when_requested() -> None:
 # ---------------------------------------------------------------------------
 # PoolProfile validation rejects malformed configs at construction time
 # ---------------------------------------------------------------------------
+
 
 def test_validate_profile_rejects_empty_username() -> None:
     """build_profile must raise PoolProfileError when username is empty."""
@@ -326,6 +352,7 @@ def test_validate_profile_rejects_missing_port() -> None:
 # Stratum V2 scheme contract
 # ---------------------------------------------------------------------------
 
+
 def test_stratumv2_default_spec_uses_stratum2_scheme() -> None:
     """The stratumv2 default spec must use a stratum2+ URL scheme, not stratum+."""
     spec = DEFAULT_POOL_SPECS["stratumv2"]
@@ -348,13 +375,17 @@ def test_stratum_v1_url_on_v2_port_3336_is_rejected() -> None:
 # Claim-boundary: no revenue/financial fabrication in telemetry paths
 # ---------------------------------------------------------------------------
 
+
 def test_solver_without_configured_capacity_reports_no_hashrate() -> None:
     """An unconfigured solver must not report a hashrate — claim boundary enforced at source."""
     import sys
-    sys.path.insert(0, str(__import__("pathlib").Path(__file__).resolve().parents[1] / "python_backend"))
+
+    sys.path.insert(
+        0, str(__import__("pathlib").Path(__file__).resolve().parents[1] / "python_backend")
+    )
     from pythia_mining.quantum_solver import DodecahedralQuantumSolver
 
-    solver = DodecahedralQuantumSolver()   # no configured_capacity_ehs
+    solver = DodecahedralQuantumSolver()  # no configured_capacity_ehs
     metrics = solver.get_metrics()
 
     assert metrics["hashrate_ehs"] is None, (
@@ -367,7 +398,10 @@ def test_solver_without_configured_capacity_reports_no_hashrate() -> None:
 def test_benchmark_projection_only_mode_reports_no_effective_hashrate() -> None:
     """benchmark_vs_asic without measured input must not claim an effective hashrate."""
     import sys
-    sys.path.insert(0, str(__import__("pathlib").Path(__file__).resolve().parents[1] / "python_backend"))
+
+    sys.path.insert(
+        0, str(__import__("pathlib").Path(__file__).resolve().parents[1] / "python_backend")
+    )
     from pythia_mining.phi_scaling_engine import benchmark_vs_asic
 
     result = benchmark_vs_asic(measured_hashes_per_second=None)
@@ -382,7 +416,10 @@ def test_benchmark_measured_mode_exposes_ratio_as_finite() -> None:
     """benchmark_vs_asic with measured input must produce a finite ratio, not None."""
     import math
     import sys
-    sys.path.insert(0, str(__import__("pathlib").Path(__file__).resolve().parents[1] / "python_backend"))
+
+    sys.path.insert(
+        0, str(__import__("pathlib").Path(__file__).resolve().parents[1] / "python_backend")
+    )
     from pythia_mining.phi_scaling_engine import benchmark_vs_asic
 
     result = benchmark_vs_asic(measured_hashes_per_second=1_000_000.0)

@@ -21,8 +21,14 @@ from pythia_finance_audit.sukuk_lifecycle_simulation import simulate_sukuk_lifec
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Generate a DIFC / AAOIFI Sukuk lifecycle drift simulation.")
-    parser.add_argument("--compact", action="store_true", help="Omit embedded full per-step packets and emit a compact summary artifact.")
+    parser = argparse.ArgumentParser(
+        description="Generate a DIFC / AAOIFI Sukuk lifecycle drift simulation."
+    )
+    parser.add_argument(
+        "--compact",
+        action="store_true",
+        help="Omit embedded full per-step packets and emit a compact summary artifact.",
+    )
     parser.add_argument("--output", type=Path, default=None, help="Optional JSON output path.")
     args = parser.parse_args()
 

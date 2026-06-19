@@ -11,7 +11,6 @@ from pythia_mining.auditable_decision_bridge import (
     AuditableDecisionBridge,
     ReviewCandidate,
     ReviewVerdict,
-    adversarial_review_candidate,
     first_review_candidate,
     generate_first_decision_audit_report,
 )

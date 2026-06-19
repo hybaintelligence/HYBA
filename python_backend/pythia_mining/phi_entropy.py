@@ -154,9 +154,7 @@ class PhiEntropyGenerator:
 
         # Build a coarse histogram of the most recent `bins * 4` nonces
         n_samples = bins * 4
-        indices = np.arange(
-            max(0, self.counter - n_samples), self.counter, dtype=np.float64
-        )
+        indices = np.arange(max(0, self.counter - n_samples), self.counter, dtype=np.float64)
         states = (self.current_state + indices * self.INV_PHI) % 1.0
         hist, _ = np.histogram(states, bins=bins, range=(0.0, 1.0))
 
@@ -192,9 +190,9 @@ class PhiEntropyGenerator:
             seed: Optional new seed.  If ``None``, preserves the
                   original seed used at construction.
         """
-        original_seed = int(
-            (self.current_state * self.memory_size) / self.INV_PHI
-        ) if self.counter > 0 else 0
+        original_seed = (
+            int((self.current_state * self.memory_size) / self.INV_PHI) if self.counter > 0 else 0
+        )
 
         s = seed if seed is not None else original_seed
         self.current_state = (s * self.INV_PHI) % 1.0
@@ -245,8 +243,8 @@ def van_der_corput_discrepancy(n_samples: int, base_state: float = 0.0) -> dict:
     n = n_samples
     idx = np.arange(1, n + 1, dtype=np.float64)
     # Supremum over all intervals [0, u) using sorted points as candidates
-    d_plus = np.max(idx / n - states_sorted)          # sup of F_N(u) - u
-    d_minus = np.max(states_sorted - (idx - 1) / n)   # sup of u - F_N(u-)
+    d_plus = np.max(idx / n - states_sorted)  # sup of F_N(u) - u
+    d_minus = np.max(states_sorted - (idx - 1) / n)  # sup of u - F_N(u-)
     empirical_discrepancy = float(max(d_plus, d_minus))
 
     # Theoretical upper bound for golden irrational rotation
@@ -300,6 +298,7 @@ def create_phi_entropy_generator(
 
 # ── Self-test / validation ─────────────────────────────────────────────────
 
+
 def _self_test() -> None:
     """Quick sanity check of the generator's dispersion properties."""
     gen = create_phi_entropy_generator(seed=42, memory_size=10_000)
@@ -308,7 +307,7 @@ def _self_test() -> None:
     nonces = [gen.next_nonce() for _ in range(1000)]
     assert all(0 <= n < 10_000 for n in nonces), "nonces out of range"
     unique = len(set(nonces))
-    print(f"Single-step: {unique}/1000 unique nonces ({unique/10:.1f}%)")
+    print(f"Single-step: {unique}/1000 unique nonces ({unique / 10:.1f}%)")
 
     # Batch generation
     gen.reset(seed=42)
@@ -316,12 +315,14 @@ def _self_test() -> None:
     assert batch.shape == (1000,), f"unexpected batch shape: {batch.shape}"
     assert batch.dtype == np.uint32, f"unexpected dtype: {batch.dtype}"
     batch_unique = len(set(batch.tolist()))
-    print(f"Batch:       {batch_unique}/1000 unique nonces ({batch_unique/10:.1f}%)")
+    print(f"Batch:       {batch_unique}/1000 unique nonces ({batch_unique / 10:.1f}%)")
 
     # Coverage diagnostics
     metrics = gen.get_coverage_entropy(bins=128)
-    print(f"Coverage:    {metrics['coverage_pct']:.1f}% "
-          f"(uniformity={metrics['golden_uniformity']:.4f})")
+    print(
+        f"Coverage:    {metrics['coverage_pct']:.1f}% "
+        f"(uniformity={metrics['golden_uniformity']:.4f})"
+    )
     assert metrics["golden_uniformity"] > 0.85, (
         f"low golden uniformity: {metrics['golden_uniformity']}"
     )

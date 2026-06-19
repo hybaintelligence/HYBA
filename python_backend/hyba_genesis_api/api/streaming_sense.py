@@ -38,15 +38,12 @@ import json
 import logging
 import time
 from dataclasses import asdict, dataclass
-from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional, Set
 
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from fastapi.responses import StreamingResponse
-from pydantic import BaseModel, Field
 
-from hyba_genesis_api.api.auth import get_current_user
 from hyba_genesis_api.core.substrate import get_substrate_state
 
 logger = logging.getLogger(__name__)
@@ -57,9 +54,10 @@ router = APIRouter(prefix="/api/v1/streaming", tags=["streaming"])
 # Streaming Channel Definitions
 # ---------------------------------------------------------------------------
 
+
 class StreamingChannel(str, Enum):
     """Available streaming telemetry channels."""
-    
+
     PHI_RESONANCE = "phi_resonance"
     AUTONOMY_METRICS = "autonomy_metrics"
     MINING_PULSE = "mining_pulse"
@@ -71,10 +69,11 @@ class StreamingChannel(str, Enum):
 # Telemetry Event Models
 # ---------------------------------------------------------------------------
 
+
 @dataclass(frozen=True)
 class PhiResonanceEvent:
     """Real-time φ-resonance telemetry event."""
-    
+
     timestamp: float
     phi_integrated: float
     phi_causal: float
@@ -84,7 +83,7 @@ class PhiResonanceEvent:
     complexity: float
     integration_regime: str
     source: str = "consciousness_engine"
-    
+
     def to_dict(self) -> Dict[str, Any]:
         return asdict(self)
 
@@ -92,7 +91,7 @@ class PhiResonanceEvent:
 @dataclass(frozen=True)
 class AutonomyEvent:
     """Live autonomy controller telemetry event."""
-    
+
     timestamp: float
     autonomy_level: str
     phi_density: float
@@ -106,7 +105,7 @@ class AutonomyEvent:
     proposal_acceptance_rate: float
     last_cycle_duration_ms: float
     source: str = "autonomous_controller"
-    
+
     def to_dict(self) -> Dict[str, Any]:
         return asdict(self)
 
@@ -114,7 +113,7 @@ class AutonomyEvent:
 @dataclass(frozen=True)
 class MiningPulseEvent:
     """High-frequency mining iteration telemetry."""
-    
+
     timestamp: float
     iteration_id: str
     hashrate_ehs: float
@@ -125,7 +124,7 @@ class MiningPulseEvent:
     block_height: Optional[int]
     pool_url: str
     source: str = "mining_engine"
-    
+
     def to_dict(self) -> Dict[str, Any]:
         return asdict(self)
 
@@ -133,7 +132,7 @@ class MiningPulseEvent:
 @dataclass(frozen=True)
 class StructuralCouplingEvent:
     """System-wide structural coupling index update."""
-    
+
     timestamp: float
     coupling_index: float
     phi_floor: float
@@ -141,7 +140,7 @@ class StructuralCouplingEvent:
     substrate_health: str
     regeneration_active: bool
     source: str = "regeneration_manager"
-    
+
     def to_dict(self) -> Dict[str, Any]:
         return asdict(self)
 
@@ -149,14 +148,14 @@ class StructuralCouplingEvent:
 @dataclass(frozen=True)
 class SystemHealthEvent:
     """System health and substrate status event."""
-    
+
     timestamp: float
     status: str
     substrate_ready: bool
     component_health: Dict[str, str]
     active_alerts: List[str]
     source: str = "health_monitor"
-    
+
     def to_dict(self) -> Dict[str, Any]:
         return asdict(self)
 
@@ -165,9 +164,10 @@ class SystemHealthEvent:
 # Connection Manager
 # ---------------------------------------------------------------------------
 
+
 class ConnectionManager:
     """Manages active WebSocket connections and channel subscriptions."""
-    
+
     def __init__(self):
         # Active WebSocket connections: websocket -> set of subscribed channels
         self.active_connections: Dict[WebSocket, Set[StreamingChannel]] = {}
@@ -178,11 +178,11 @@ class ConnectionManager:
         # Connection metadata for rate limiting and monitoring
         self.connection_metadata: Dict[WebSocket, Dict[str, Any]] = {}
         self._lock = asyncio.Lock()
-    
+
     async def connect(self, websocket: WebSocket, channels: List[StreamingChannel]):
         """Register a new WebSocket connection with channel subscriptions."""
         await websocket.accept()
-        
+
         async with self._lock:
             self.active_connections[websocket] = set(channels)
             self.connection_metadata[websocket] = {
@@ -190,18 +190,18 @@ class ConnectionManager:
                 "messages_sent": 0,
                 "last_activity": time.time(),
             }
-            
+
             for channel in channels:
                 self.channel_subscribers[channel].add(websocket)
-        
+
         logger.info(
             "StreamingSense: WebSocket connected",
             extra={
                 "channels": [c.value for c in channels],
                 "total_connections": len(self.active_connections),
-            }
+            },
         )
-    
+
     async def disconnect(self, websocket: WebSocket):
         """Unregister a WebSocket connection."""
         async with self._lock:
@@ -209,67 +209,71 @@ class ConnectionManager:
                 channels = self.active_connections[websocket]
                 for channel in channels:
                     self.channel_subscribers[channel].discard(websocket)
-                
+
                 del self.active_connections[websocket]
                 del self.connection_metadata[websocket]
-        
+
         logger.info(
             "StreamingSense: WebSocket disconnected",
             extra={"total_connections": len(self.active_connections)},
         )
-    
+
     async def send_to_channel(self, channel: StreamingChannel, event: Dict[str, Any]):
         """Send an event to all subscribers of a channel."""
         if channel not in self.channel_subscribers:
             return
-        
-        message = json.dumps({
-            "channel": channel.value,
-            "timestamp": time.time(),
-            "data": event,
-        })
-        
+
+        message = json.dumps(
+            {
+                "channel": channel.value,
+                "timestamp": time.time(),
+                "data": event,
+            }
+        )
+
         # Create a list of websockets to avoid holding lock during sends
         async with self._lock:
             subscribers = list(self.channel_subscribers[channel])
-        
+
         disconnected = []
         for websocket in subscribers:
             try:
                 await websocket.send_text(message)
-                
+
                 # Update metadata
                 if websocket in self.connection_metadata:
                     self.connection_metadata[websocket]["messages_sent"] += 1
                     self.connection_metadata[websocket]["last_activity"] = time.time()
             except Exception:
                 disconnected.append(websocket)
-        
+
         # Clean up disconnected websockets
         for websocket in disconnected:
             await self.disconnect(websocket)
-    
+
     async def broadcast(self, event: Dict[str, Any]):
         """Send an event to all connected websockets."""
-        message = json.dumps({
-            "channel": "broadcast",
-            "timestamp": time.time(),
-            "data": event,
-        })
-        
+        message = json.dumps(
+            {
+                "channel": "broadcast",
+                "timestamp": time.time(),
+                "data": event,
+            }
+        )
+
         async with self._lock:
             connections = list(self.active_connections.keys())
-        
+
         disconnected = []
         for websocket in connections:
             try:
                 await websocket.send_text(message)
             except Exception:
                 disconnected.append(websocket)
-        
+
         for websocket in disconnected:
             await self.disconnect(websocket)
-    
+
     async def get_connection_stats(self) -> Dict[str, Any]:
         """Return connection statistics for monitoring."""
         async with self._lock:
@@ -298,13 +302,14 @@ _manager = ConnectionManager()
 # Telemetry Source Interfaces
 # ---------------------------------------------------------------------------
 
+
 class TelemetrySource:
     """Base interface for telemetry sources."""
-    
+
     async def get_current_telemetry(self) -> Optional[Dict[str, Any]]:
         """Get current telemetry from the source."""
         return None
-    
+
     async def start_streaming(self, channel: StreamingChannel, interval_seconds: float = 1.0):
         """Start streaming telemetry to a channel at the specified interval."""
         while True:
@@ -314,19 +319,19 @@ class TelemetrySource:
                     await _manager.send_to_channel(channel, telemetry)
             except Exception as e:
                 logger.error(f"TelemetrySource error for {channel}: {e}")
-            
+
             await asyncio.sleep(interval_seconds)
 
 
 class PhiResonanceSource(TelemetrySource):
     """Telemetry source for φ-resonance metrics."""
-    
+
     async def get_current_telemetry(self) -> Optional[Dict[str, Any]]:
         """Get current φ-resonance telemetry from ConsciousnessEngine."""
         try:
             # Import here to avoid circular dependencies
-            from pythia_mining.consciousness_engine import ConsciousnessEngine, PhiMetrics
-            
+            from pythia_mining.consciousness_engine import ConsciousnessEngine  # noqa: F401
+
             # This would typically get the singleton engine instance
             # For now, return a placeholder that demonstrates the structure
             event = PhiResonanceEvent(
@@ -350,13 +355,13 @@ class PhiResonanceSource(TelemetrySource):
 
 class AutonomySource(TelemetrySource):
     """Telemetry source for autonomy controller metrics."""
-    
+
     async def get_current_telemetry(self) -> Optional[Dict[str, Any]]:
         """Get current autonomy metrics from AutonomousMiningController."""
         try:
             # Import here to avoid circular dependencies
-            from pythia_mining.autonomous_mining_controller import AutonomousMiningController
-            
+            from pythia_mining.autonomous_mining_controller import AutonomousMiningController  # noqa: F401
+
             # This would typically get the singleton controller instance
             # For now, return a placeholder that demonstrates the structure
             event = AutonomyEvent(
@@ -384,18 +389,18 @@ class AutonomySource(TelemetrySource):
 
 class StructuralCouplingSource(TelemetrySource):
     """Telemetry source for structural coupling index."""
-    
+
     async def get_current_telemetry(self) -> Optional[Dict[str, Any]]:
         """Get current structural coupling index."""
         try:
             # Calculate structural coupling from substrate state
             substrate_state = get_substrate_state()
-            
+
             # Placeholder calculation - actual implementation would compute
             # the Structural Coupling Index from component health and integration
             coupling_index = 0.8 if substrate_state.get("status") == "ready" else 0.3
             phi_floor = 0.2  # Minimum acceptable φ-resonance
-            
+
             event = StructuralCouplingEvent(
                 timestamp=time.time(),
                 coupling_index=coupling_index,
@@ -412,12 +417,12 @@ class StructuralCouplingSource(TelemetrySource):
 
 class SystemHealthSource(TelemetrySource):
     """Telemetry source for system health status."""
-    
+
     async def get_current_telemetry(self) -> Optional[Dict[str, Any]]:
         """Get current system health status."""
         try:
             substrate_state = get_substrate_state()
-            
+
             event = SystemHealthEvent(
                 timestamp=time.time(),
                 status="healthy" if substrate_state.get("status") == "ready" else "degraded",
@@ -437,6 +442,7 @@ class SystemHealthSource(TelemetrySource):
 # WebSocket Endpoints
 # ---------------------------------------------------------------------------
 
+
 @router.websocket("/connect")
 async def websocket_endpoint(
     websocket: WebSocket,
@@ -444,11 +450,11 @@ async def websocket_endpoint(
 ):
     """
     WebSocket endpoint for real-time telemetry streaming.
-    
+
     Query Parameters:
         channels: Comma-separated list of channels to subscribe to
                   (phi_resonance, autonomy_metrics, mining_pulse, structural_coupling, system_health)
-    
+
     Example:
         ws://localhost:3001/api/v1/streaming/connect?channels=phi_resonance,autonomy_metrics
     """
@@ -461,7 +467,7 @@ async def websocket_endpoint(
             requested_channels.append(channel)
         except ValueError:
             logger.warning(f"Invalid channel requested: {channel_name}")
-    
+
     if not requested_channels:
         requested_channels = [
             StreamingChannel.PHI_RESONANCE,
@@ -469,9 +475,9 @@ async def websocket_endpoint(
             StreamingChannel.STRUCTURAL_COUPLING,
             StreamingChannel.SYSTEM_HEALTH,
         ]
-    
+
     await _manager.connect(websocket, requested_channels)
-    
+
     try:
         # Keep connection alive and handle incoming messages (if any)
         while True:
@@ -489,6 +495,7 @@ async def websocket_endpoint(
 # SSE (Server-Sent Events) Endpoints
 # ---------------------------------------------------------------------------
 
+
 async def event_stream_generator(channel: StreamingChannel, interval_seconds: float = 1.0):
     """Generator for SSE events."""
     source_map = {
@@ -497,11 +504,11 @@ async def event_stream_generator(channel: StreamingChannel, interval_seconds: fl
         StreamingChannel.STRUCTURAL_COUPLING: StructuralCouplingSource(),
         StreamingChannel.SYSTEM_HEALTH: SystemHealthSource(),
     }
-    
+
     source = source_map.get(channel)
     if not source:
         return
-    
+
     while True:
         try:
             telemetry = await source.get_current_telemetry()
@@ -510,7 +517,7 @@ async def event_stream_generator(channel: StreamingChannel, interval_seconds: fl
         except Exception as e:
             logger.error(f"SSE generator error for {channel}: {e}")
             yield f"data: {{'error': '{str(e)}'}}\n\n"
-        
+
         await asyncio.sleep(interval_seconds)
 
 
@@ -521,13 +528,13 @@ async def sse_endpoint(
 ):
     """
     SSE endpoint for server-sent events telemetry streaming.
-    
+
     Path Parameters:
         channel: Streaming channel to subscribe to
-    
+
     Query Parameters:
         interval_seconds: Update interval in seconds (default: 1.0)
-    
+
     Example:
         GET /api/v1/streaming/sse/phi_resonance?interval_seconds=0.5
     """
@@ -545,6 +552,7 @@ async def sse_endpoint(
 # ---------------------------------------------------------------------------
 # Management Endpoints
 # ---------------------------------------------------------------------------
+
 
 @router.get("/stats")
 async def get_streaming_stats():
@@ -589,6 +597,7 @@ async def list_channels():
 # ---------------------------------------------------------------------------
 # Background Streaming Tasks
 # ---------------------------------------------------------------------------
+
 
 async def start_background_streamers():
     """Start background tasks for continuous telemetry streaming."""

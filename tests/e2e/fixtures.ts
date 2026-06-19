@@ -84,14 +84,30 @@ const telemetry = {
         performance: { latency_ms: 18, shares_submitted: 0, shares_accepted: 0 },
       },
     ],
-    summary: { total_pools: 2, configured_pools: 2, active_pools: 1, telemetry_source: "playwright-mock" },
+    summary: {
+      total_pools: 2,
+      configured_pools: 2,
+      active_pools: 1,
+      telemetry_source: "playwright-mock",
+    },
   },
   security: {
     status: "nominal",
     threat_level: "low",
     defense_systems: {
-      stabilizer_monitor: { operating_mode: "observe", confidence: 0.99, check_frequency: 0.5, syndrome_weight: 1, sanitized: true },
-      preallocated_ancilla_trap_pool: { active_ancillas: 2, max_ancilla_pool: 8, active_traps: 1, retired_traps: 0 },
+      stabilizer_monitor: {
+        operating_mode: "observe",
+        confidence: 0.99,
+        check_frequency: 0.5,
+        syndrome_weight: 1,
+        sanitized: true,
+      },
+      preallocated_ancilla_trap_pool: {
+        active_ancillas: 2,
+        max_ancilla_pool: 8,
+        active_traps: 1,
+        retired_traps: 0,
+      },
     },
   },
 };
@@ -127,31 +143,62 @@ export async function installBackendMocks(page: Page, options: MockOptions = {})
     if (path === "/mining/pools") return json(route, telemetry.pools);
     if (path === "/security/status") return json(route, telemetry.security);
     if (path === "/products") return json(route, []);
-    if (path === "/auth/profile") return role === "anonymous" ? json(route, { success: false }, 401) : json(route, profileByRole(role));
-    if (path === "/auth/login") return json(route, { success: true, token: "mock-token", user: profileByRole(role).user });
-    if (path === "/auth/register") return json(route, { success: true, token: "mock-token", user: profileByRole(role).user });
-    if (path === "/mining/power") return json(route, { status: "ok", effective_hashrate_ehs: 0.42, phi_tier: 12, hashrate_cap_ehs: 1 });
-    if (path === "/mining/switch") return json(route, { status: "switched", current_pool: "mock-beta" });
-    if (path === "/mining/disconnect") return json(route, { status: "disconnected", previous_pool: "mock-alpha" });
-    if (path === "/mining/pool-config") return json(route, { status: "configured", pool: telemetry.pools.pools[0] });
+    if (path === "/auth/profile")
+      return role === "anonymous"
+        ? json(route, { success: false }, 401)
+        : json(route, profileByRole(role));
+    if (path === "/auth/login")
+      return json(route, { success: true, token: "mock-token", user: profileByRole(role).user });
+    if (path === "/auth/register")
+      return json(route, { success: true, token: "mock-token", user: profileByRole(role).user });
+    if (path === "/mining/power")
+      return json(route, {
+        status: "ok",
+        effective_hashrate_ehs: 0.42,
+        phi_tier: 12,
+        hashrate_cap_ehs: 1,
+      });
+    if (path === "/mining/switch")
+      return json(route, { status: "switched", current_pool: "mock-beta" });
+    if (path === "/mining/disconnect")
+      return json(route, { status: "disconnected", previous_pool: "mock-alpha" });
+    if (path === "/mining/pool-config")
+      return json(route, { status: "configured", pool: telemetry.pools.pools[0] });
 
-    if (path === "/admin/stats") return json(route, { total_users: 2, active_users: 2, admin_users: 1, executive_users: role === "ceo_heir_apparent" ? 1 : 0 });
+    if (path === "/admin/stats")
+      return json(route, {
+        total_users: 2,
+        active_users: 2,
+        admin_users: 1,
+        executive_users: role === "ceo_heir_apparent" ? 1 : 0,
+      });
     if (path === "/admin/audit-logs") return json(route, { logs: [], total: 0 });
-    if (path === "/admin/funding/overview") return json(route, { total_funds: 0, pending_requests: 0, approved_allocations: 0 });
-    if (path === "/admin/users" && request.method() === "GET") return json(route, { users: disposableUsers, total: disposableUsers.length });
-    if (path === "/admin/users" && request.method() === "POST") return json(route, { ...disposableUsers[1], id: 99, username: "agent4-created" }, 201);
-    if (path === "/admin/users/11" && request.method() === "PUT") return json(route, { ...disposableUsers[1], role: "analyst" });
-    if (path === "/admin/users/11" && request.method() === "DELETE") return json(route, { status: "deleted" });
+    if (path === "/admin/funding/overview")
+      return json(route, { total_funds: 0, pending_requests: 0, approved_allocations: 0 });
+    if (path === "/admin/users" && request.method() === "GET")
+      return json(route, { users: disposableUsers, total: disposableUsers.length });
+    if (path === "/admin/users" && request.method() === "POST")
+      return json(route, { ...disposableUsers[1], id: 99, username: "agent4-created" }, 201);
+    if (path === "/admin/users/11" && request.method() === "PUT")
+      return json(route, { ...disposableUsers[1], role: "analyst" });
+    if (path === "/admin/users/11" && request.method() === "DELETE")
+      return json(route, { status: "deleted" });
 
-    if (path === "/intelligence/status") return json(route, { status: "ready", active: true, scale: 1 });
-    if (path === "/intelligence/telemetry") return json(route, { timestamp: now, phi_resonance: 0.88, consciousness_level: 0.64 });
+    if (path === "/intelligence/status")
+      return json(route, { status: "ready", active: true, scale: 1 });
+    if (path === "/intelligence/telemetry")
+      return json(route, { timestamp: now, phi_resonance: 0.88, consciousness_level: 0.64 });
     if (path === "/intelligence/start") return json(route, { status: "started" });
     if (path === "/intelligence/stop") return json(route, { status: "stopped" });
     if (path === "/intelligence/reset") return json(route, { status: "reset" });
-    if (path === "/organism/executive/status") return json(route, { status: "ready", intent: "stasis" });
-    if (path === "/organism/executive/telemetry") return json(route, { status: "ready", lanes: [] });
-    if (path === "/organism/executive/habitats") return json(route, { habitats: telemetry.pools.pools, default_pool: "mock-alpha" });
-    if (path === "/organism/executive/intent") return json(route, { status: "accepted", intent: "stasis" });
+    if (path === "/organism/executive/status")
+      return json(route, { status: "ready", intent: "stasis" });
+    if (path === "/organism/executive/telemetry")
+      return json(route, { status: "ready", lanes: [] });
+    if (path === "/organism/executive/habitats")
+      return json(route, { habitats: telemetry.pools.pools, default_pool: "mock-alpha" });
+    if (path === "/organism/executive/intent")
+      return json(route, { status: "accepted", intent: "stasis" });
 
     return json(route, { detail: `Unhandled mock route: ${request.method()} ${path}` }, 404);
   });
@@ -165,7 +212,12 @@ export async function seedAuth(page: Page, role: MockRole) {
 
 export async function installRecoverableBackendMocks(page: Page, role: MockRole = "operator") {
   const state = { offline: true };
-  await installBackendMocks(page, { role, get offline() { return state.offline; } });
+  await installBackendMocks(page, {
+    role,
+    get offline() {
+      return state.offline;
+    },
+  });
   return {
     recover() {
       state.offline = false;

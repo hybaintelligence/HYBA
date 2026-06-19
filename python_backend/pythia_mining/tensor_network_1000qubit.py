@@ -15,7 +15,7 @@ from __future__ import annotations
 
 import math
 import numpy as np
-from typing import List, Tuple, Optional, Callable
+from typing import List, Tuple
 from dataclasses import dataclass
 
 # Golden ratio constant
@@ -44,9 +44,9 @@ def _contract_mps_norm_exact(tensors: List[np.ndarray]) -> float:
 
     for t in tensors:
         tc = np.conj(t)
-        curr = np.einsum('ij,ikl,jkm->lm', curr, t, tc)
+        curr = np.einsum("ij,ikl,jkm->lm", curr, t, tc)
         # Rescale to prevent underflow / overflow
-        frob = float(np.linalg.norm(curr, 'fro'))
+        frob = float(np.linalg.norm(curr, "fro"))
         if frob > 1e-300:
             curr = curr / frob
             log_scale += math.log(frob)
@@ -73,7 +73,7 @@ def _compute_bond_entanglement(tensor_left: np.ndarray, tensor_right: np.ndarray
     _, d, b = tensor_right.shape
 
     # Contract at shared bond c: (a, p, c) * (c, d, b) -> (a, p, d, b)
-    merged = np.einsum('apc,cdb->apdb', tensor_left, tensor_right)
+    merged = np.einsum("apc,cdb->apdb", tensor_left, tensor_right)
 
     # Reshape to matrix for SVD: rows = a*p, cols = d*b
     matrix = merged.reshape(a * p, d * b)
@@ -94,7 +94,9 @@ def _compute_bond_entanglement(tensor_left: np.ndarray, tensor_right: np.ndarray
     return float(entropy)
 
 
-def _deterministic_complex_tensor(shape: Tuple[int, ...], scale: float = 0.01, phase_offset: float = 0.0) -> np.ndarray:
+def _deterministic_complex_tensor(
+    shape: Tuple[int, ...], scale: float = 0.01, phase_offset: float = 0.0
+) -> np.ndarray:
     """Generate a deterministic complex tensor with bounded magnitude."""
     idx = np.indices(shape, dtype=np.float64)
     accumulator = np.zeros(shape, dtype=np.float64)
@@ -120,8 +122,8 @@ class MPS:
     """
 
     tensors: List[np.ndarray]  # List of tensors A_i
-    physical_dims: List[int]   # Physical dimensions (usually 2 for qubits)
-    bond_dims: List[int]       # Bond dimensions
+    physical_dims: List[int]  # Physical dimensions (usually 2 for qubits)
+    bond_dims: List[int]  # Bond dimensions
 
     def __init__(self, num_sites: int, physical_dim: int = 2, max_bond_dim: int = 16):
         """Initialize MPS for N sites with given physical dimension."""
@@ -137,17 +139,23 @@ class MPS:
             if i == 0:
                 # First site: (1, phys_dim, bond_dim)
                 bond = min(max_bond_dim, physical_dim)
-                tensor = _deterministic_complex_tensor((1, physical_dim, bond), phase_offset=float(i))
+                tensor = _deterministic_complex_tensor(
+                    (1, physical_dim, bond), phase_offset=float(i)
+                )
             elif i == num_sites - 1:
                 # Last site: (bond_dim, phys_dim, 1)
                 bond = self.bond_dims[-1]
-                tensor = _deterministic_complex_tensor((bond, physical_dim, 1), phase_offset=float(i))
+                tensor = _deterministic_complex_tensor(
+                    (bond, physical_dim, 1), phase_offset=float(i)
+                )
             else:
                 # Middle sites: (bond_dim, phys_dim, bond_dim)
                 bond_left = self.bond_dims[-1]
                 bond_right = min(max_bond_dim, bond_left * physical_dim)
                 bond_right = min(bond_right, max_bond_dim)
-                tensor = _deterministic_complex_tensor((bond_left, physical_dim, bond_right), phase_offset=float(i))
+                tensor = _deterministic_complex_tensor(
+                    (bond_left, physical_dim, bond_right), phase_offset=float(i)
+                )
 
             self.tensors.append(tensor)
             self.bond_dims.append(tensor.shape[2])  # Right bond dimension
@@ -182,33 +190,33 @@ class MPS:
             t = self.tensors[i]
             a, d, b = t.shape
             mat = t.reshape(a * d, b)
-            
+
             # Handle NaN/Inf from constant initialization
             if not _np.all(_np.isfinite(mat)):
                 mat = _np.nan_to_num(mat, nan=0.0, posinf=0.0, neginf=0.0)
-            
-            Q, R = _np.linalg.qr(mat, mode='reduced')
-            
+
+            Q, R = _np.linalg.qr(mat, mode="reduced")
+
             # Guard against QR failure
             if not _np.all(_np.isfinite(Q)) or not _np.all(_np.isfinite(R)):
                 r = min(a * d, b)
                 Q = _np.eye(a * d, r, dtype=mat.dtype)
                 R = _np.eye(r, b, dtype=mat.dtype) if r == b else _np.zeros((r, b), dtype=mat.dtype)
-            
+
             r = Q.shape[1]
             self.tensors[i] = Q.reshape(a, d, r)
-            
+
             # Extract R norm and track in log space
-            r_norm = float(_np.linalg.norm(R, 'fro'))
+            r_norm = float(_np.linalg.norm(R, "fro"))
             if r_norm < 1e-300:
                 # R is zero - state is degenerate
                 return 0.0
-            
+
             log_scale += _np.log(r_norm)
             R_normalized = R / r_norm
-            
+
             # Absorb normalized R into next tensor
-            self.tensors[i + 1] = _np.einsum('ij,jkl->ikl', R_normalized, self.tensors[i + 1])
+            self.tensors[i + 1] = _np.einsum("ij,jkl->ikl", R_normalized, self.tensors[i + 1])
 
         # The sweep absorbs *normalized* R factors into the next tensor, so the
         # active MPS norm is carried by the final tensor after the sweep.
@@ -258,29 +266,29 @@ class MPS:
         # Build left environment L(a, a')
         L = np.eye(1, dtype=complex)
         for k in range(site):
-            L = np.einsum('ij,ikl,jkm->lm', L, tensors[k], np.conj(tensors[k]))
+            L = np.einsum("ij,ikl,jkm->lm", L, tensors[k], np.conj(tensors[k]))
 
         # Build right environment R(b, b')
         R = np.eye(1, dtype=complex)
         for k in range(num_sites - 1, site, -1):
             t = tensors[k]
             tc = np.conj(t)
-            R = np.einsum('ikl,jkm,lm->ij', t, tc, R)
+            R = np.einsum("ikl,jkm,lm->ij", t, tc, R)
 
         # Contract at target site with observable
         # Step 1: Contract L with t: L(i,j) * t(i,k,l) -> T(j,k,l)
         t = tensors[site]
         tc = np.conj(t)
-        T = np.einsum('ij,ikl->jkl', L, t)
+        T = np.einsum("ij,ikl->jkl", L, t)
 
         # Step 2: Contract with observable: T(j,k,l) * O(k,m) -> T2(j,l,m)
-        T2 = np.einsum('jkl,km->jlm', T, observable)
+        T2 = np.einsum("jkl,km->jlm", T, observable)
 
         # Step 3: Contract with conj(t): T2(j,l,m) * tc(j,m,n) -> T3(l,n)
-        T3 = np.einsum('jlm,jmn->ln', T2, tc)
+        T3 = np.einsum("jlm,jmn->ln", T2, tc)
 
         # Step 4: Contract with R: T3(l,n) * R(l,n) -> scalar
-        result = np.einsum('ln,ln->', T3, R)
+        result = np.einsum("ln,ln->", T3, R)
 
         return float(result.real)
 
@@ -298,7 +306,7 @@ class MPS:
         """
         tensor = self.tensors[site]
         # Exact tensor contraction: U(p',p) * A(a,p,b) -> A'(a,p',b)
-        self.tensors[site] = np.einsum('qp,apb->aqb', U, tensor)
+        self.tensors[site] = np.einsum("qp,apb->aqb", U, tensor)
 
     def compute_local_entanglement(self, site: int) -> float:
         """Compute exact von Neumann entropy of entanglement at given bond.
@@ -341,11 +349,11 @@ class MPS:
         A_right = self.tensors[site + 1]
         a, p, c = A_left.shape
         _, d, b = A_right.shape
-        merged = np.einsum('apc,cdb->apdb', A_left, A_right).reshape(a * p, d * b)
+        merged = np.einsum("apc,cdb->apdb", A_left, A_right).reshape(a * p, d * b)
         _, S, _ = np.linalg.svd(merged, full_matrices=False)
         return S[S > 1e-15]
 
-    def compress_adaptive(self, base_max_bond: int = 16) -> 'MPS':
+    def compress_adaptive(self, base_max_bond: int = 16) -> "MPS":
         """Compress MPS using SVD with Φ-weighted adaptive bond truncation.
 
         At each bond the exact Schmidt spectrum is computed via SVD.  The
@@ -373,12 +381,12 @@ class MPS:
             A_right = tensors[i + 1]
             a, p, c = A_left.shape
             _, d, b = A_right.shape
-            merged_spec = np.einsum('apc,cdb->apdb', A_left, A_right).reshape(a * p, d * b)
+            merged_spec = np.einsum("apc,cdb->apdb", A_left, A_right).reshape(a * p, d * b)
             _, S_spectrum, _ = np.linalg.svd(merged_spec, full_matrices=False)
             S_spectrum = S_spectrum[S_spectrum > 1e-15]
 
             # von Neumann entanglement entropy from Schmidt values
-            p_sq = S_spectrum ** 2 if len(S_spectrum) else np.array([1.0])
+            p_sq = S_spectrum**2 if len(S_spectrum) else np.array([1.0])
             p_sq = p_sq / (np.sum(p_sq) + 1e-300)
             entanglement = -float(np.sum(p_sq * np.log2(p_sq + 1e-300)))
 
@@ -425,7 +433,7 @@ class MPS:
 
         return new_mps
 
-    def compress(self, max_bond_dim: int) -> 'MPS':
+    def compress(self, max_bond_dim: int) -> "MPS":
         """Compress MPS using SVD truncation with proper bond propagation.
 
         Mathematical procedure:
@@ -504,14 +512,20 @@ class MPO:
         for i in range(num_sites):
             if i == 0:
                 # First site: (1, phys_dim, phys_dim, bond_dim)
-                tensor = np.eye(physical_dim, dtype=complex).reshape(1, physical_dim, physical_dim, 1)
+                tensor = np.eye(physical_dim, dtype=complex).reshape(
+                    1, physical_dim, physical_dim, 1
+                )
             elif i == num_sites - 1:
                 # Last site: (bond_dim, phys_dim, phys_dim, 1)
-                tensor = np.eye(physical_dim, dtype=complex).reshape(1, physical_dim, physical_dim, 1)
+                tensor = np.eye(physical_dim, dtype=complex).reshape(
+                    1, physical_dim, physical_dim, 1
+                )
             else:
                 # Middle sites: (bond_dim, phys_dim, phys_dim, bond_dim)
-                bond = min(max_bond_dim, physical_dim ** 2)
-                tensor = np.eye(physical_dim, dtype=complex).reshape(1, physical_dim, physical_dim, 1)
+                bond = min(max_bond_dim, physical_dim**2)
+                tensor = np.eye(physical_dim, dtype=complex).reshape(
+                    1, physical_dim, physical_dim, 1
+                )
                 tensor = np.repeat(tensor, bond, axis=0)
                 tensor = np.repeat(tensor, bond, axis=3)
 
@@ -527,11 +541,11 @@ class MPO:
 
         for i in range(self.num_sites):
             mpo_t = self.tensors[i]  # (a_mpo, p, p', b_mpo)
-            mps_t = mps.tensors[i]   # (a_mps, p, b_mps)
+            mps_t = mps.tensors[i]  # (a_mps, p, b_mps)
 
             # Contract MPO input physical index with MPS physical index:
             # W(a, p_in, p_out, b) * A(c, p_in, d) -> (a*c, p_out, b*d)
-            contracted = np.einsum('apqb,cpd->acqbd', mpo_t, mps_t)
+            contracted = np.einsum("apqb,cpd->acqbd", mpo_t, mps_t)
 
             # Reshape to standard MPS form: (a_mps_out, p', b_mps_out)
             a_out = mpo_t.shape[0] * mps_t.shape[0]
@@ -567,11 +581,13 @@ class PhiAcceleratedTensorNetwork:
         Uses golden ratio to determine optimal bond dimension scaling.
         """
         # Φ-based scaling: bond_dim ~ max_bond / PHI^(site/num_sites)
-        phi_scaling = max_bond / (PHI ** 0.5)  # Square root of PHI
+        phi_scaling = max_bond / (PHI**0.5)  # Square root of PHI
         return int(min(max_bond, phi_scaling))
 
     @staticmethod
-    def phi_svd_truncation(singular_values: np.ndarray, max_bond: int) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    def phi_svd_truncation(
+        singular_values: np.ndarray, max_bond: int
+    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """Φ-accelerated SVD truncation.
 
         Uses golden ratio weighting to determine optimal truncation.
@@ -594,10 +610,7 @@ class PhiAcceleratedTensorNetwork:
         return singular_values_sorted[:trunc_idx], idx[:trunc_idx], trunc_idx
 
     @staticmethod
-    def phi_optimized_mps_initialization(
-        data: np.ndarray,
-        max_bond_dim: int = 16
-    ) -> MPS:
+    def phi_optimized_mps_initialization(data: np.ndarray, max_bond_dim: int = 16) -> MPS:
         """Initialize MPS from data using Φ-optimized compression.
 
         This is used to convert real datasets (e.g., MNIST images) into MPS form.
@@ -622,13 +635,13 @@ class PhiAcceleratedTensorNetwork:
             # Apply to tensor using simple indexing
             if i == 0:
                 tensor[0, 0, :] = phi_weight
-                tensor[0, 1, :] = (1 - phi_weight)
+                tensor[0, 1, :] = 1 - phi_weight
             elif i == num_sites - 1:
                 tensor[:, 0, 0] = phi_weight
-                tensor[:, 1, 0] = (1 - phi_weight)
+                tensor[:, 1, 0] = 1 - phi_weight
             else:
                 tensor[:, 0, :] = phi_weight
-                tensor[:, 1, :] = (1 - phi_weight)
+                tensor[:, 1, :] = 1 - phi_weight
 
         mps.normalize()
         return mps
@@ -658,8 +671,7 @@ class DatasetBenchmark:
 
     @staticmethod
     def benchmark_mps_compression(
-        data: np.ndarray,
-        max_bond_dims: List[int] = [4, 8, 16, 32]
+        data: np.ndarray, max_bond_dims: List[int] = [4, 8, 16, 32]
     ) -> dict:
         """Benchmark MPS compression at different bond dimensions."""
         results = {}
@@ -677,10 +689,10 @@ class DatasetBenchmark:
             reconstruction_error = 0.1 / max_bond
 
             results[max_bond] = {
-                'compression_ratio': compression_ratio,
-                'reconstruction_error': reconstruction_error,
-                'bond_dimensions': mps.bond_dims,
-                'num_parameters': compressed_size
+                "compression_ratio": compression_ratio,
+                "reconstruction_error": reconstruction_error,
+                "bond_dimensions": mps.bond_dims,
+                "num_parameters": compressed_size,
             }
 
         return results
@@ -704,20 +716,21 @@ class DatasetBenchmark:
 
             # Norm computation
             start = time.perf_counter()
-            norm = mps.compute_norm()
+            mps.compute_norm()
             norm_time = time.perf_counter() - start
 
             # Compression
             start = time.perf_counter()
-            mps_compressed = mps.compress(max_bond_dim=8)
+            mps.compress(max_bond_dim=8)
             compress_time = time.perf_counter() - start
 
             results[num_qubits] = {
-                'num_parameters': num_parameters,
-                'norm_time': norm_time,
-                'compress_time': compress_time,
-                'memory_efficiency': num_parameters / (2 ** num_qubits),  # Compared to full state vector
-                'feasible': num_parameters < 1e6  # Feasible if < 1M parameters
+                "num_parameters": num_parameters,
+                "norm_time": norm_time,
+                "compress_time": compress_time,
+                "memory_efficiency": num_parameters
+                / (2**num_qubits),  # Compared to full state vector
+                "feasible": num_parameters < 1e6,  # Feasible if < 1M parameters
             }
 
         return results
@@ -760,10 +773,7 @@ def run_1000_qubit_benchmark():
     print("BENCHMARK COMPLETE")
     print("=" * 80)
 
-    return {
-        'compression': compression_results,
-        'scaling': scaling_results
-    }
+    return {"compression": compression_results, "scaling": scaling_results}
 
 
 if __name__ == "__main__":

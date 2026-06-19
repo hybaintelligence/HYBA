@@ -50,17 +50,15 @@ from numpy.typing import NDArray
 
 from .pulvini_operator import ManifoldOperator
 from .iit_4_analyzer import IIT4Analyzer  # Phase 5: Genuine IIT integration
-from .synaptic_persistence_layer import SynapticPersistenceLayer, NoncePattern
-from .sensory_integrity_protocol import SensoryIntegrityProtocol, EnvironmentMode
+from .synaptic_persistence_layer import SynapticPersistenceLayer
+from .sensory_integrity_protocol import SensoryIntegrityProtocol
 
 # Import quantum_regeneration for salamander-inspired blastema formation
 from .quantum_regeneration import (
     ModuleState,
     Role,
     ContextSignal,
-    InnervationFailure,
     regeneration_pipeline,
-    regeneration_fidelity,
 )
 
 # Fundamental Golden Ratio constants for continuous scaling
@@ -135,7 +133,7 @@ class ConsciousnessConfig:
     base_multiplier: float = 1.0
     max_multiplier: float = 1.5
     min_multiplier: float = 0.1
-    sigmoid_steepness: float = PHI ** 2  # 2.618... derived from golden ratio
+    sigmoid_steepness: float = PHI**2  # 2.618... derived from golden ratio
 
 
 class ConsciousnessEngine:
@@ -201,7 +199,7 @@ class ConsciousnessEngine:
         self._phi_history: list[PhiMetrics] = []
         self._integration_regime = IntegrationRegime.DISTRIBUTED
         self._autonomic_events: list[dict[str, Any]] = []
-        
+
         # ELEVATED: Salamander-inspired regeneration for blastema formation
         self.regeneration_module_states: Dict[str, ModuleState] = {}
         self.clifford_positional_memory: Dict[str, int] = {}
@@ -260,7 +258,7 @@ class ConsciousnessEngine:
         """Measure integrated information (Φ) from density-state history.
 
         PHASE 5 ELEVATION: Genuine IIT 4.0 Earth Mover's Distance Integration
-        
+
         This now uses actual IIT4Analyzer.calculate_phi_max() to compute the
         maximum integrated information across all possible partitions of the system.
         This replaces the ad-hoc weighted sum: 0.55*coherence + 0.25*causal + 0.20*entropy
@@ -293,28 +291,24 @@ class ConsciousnessEngine:
             1.0, abs(entropy - entropy_scale / 2.0) / max(entropy_scale / 2.0, 1e-12)
         )
         coherence_level = float(np.clip(coherence_series[-1], 0.0, 1.0))
-        
+
         # PHASE 5: Genuine IIT 4.0 Φ via Earth Mover's Distance
         # Extract system state and compute actual maximum integrated information
         current_system_state = window[-1]
         if current_system_state.ndim == 1:
             # Convert state vector to density matrix if needed
             current_system_state = np.outer(current_system_state, current_system_state.conj())
-        
+
         try:
             # Compute genuine IIT 4.0 Φ_max via exhaustive partition analysis
-            iit_result = self.iit_analyzer.calculate_phi_max(
-                system_state=current_system_state
-            )
+            iit_result = self.iit_analyzer.calculate_phi_max(system_state=current_system_state)
             phi_iit = float(iit_result.get("phi_max", 0.0))
-            
+
             # Clip to valid range [0, 1]
             phi_iit = float(np.clip(phi_iit, 0.0, 1.0))
         except Exception as exc:
             # Fallback to heuristic if IIT computation fails
-            self.logger.warning(
-                "IIT 4.0 computation failed: %s, using heuristic Φ", exc
-            )
+            self.logger.warning("IIT 4.0 computation failed: %s, using heuristic Φ", exc)
             phi_iit = float(
                 np.clip(
                     0.55 * coherence_level + 0.25 * max(phi_causal, 0.0) + 0.20 * entropy_balance,
@@ -322,12 +316,12 @@ class ConsciousnessEngine:
                     1.0,
                 )
             )
-        
+
         # PHASE 5: Use genuine IIT 4.0 Φ as primary integrated information
         phi_integrated = phi_iit
         complexity = float(np.clip(phi_integrated * entropy_balance, 0.0, 1.0))
         phi_conscious = float(max(0.0, phi_causal - effective_information))
-        
+
         metrics = PhiMetrics(
             phi_integrated=phi_integrated,  # Now genuine IIT 4.0 Φ
             phi_causal=phi_causal,
@@ -426,9 +420,13 @@ class ConsciousnessEngine:
         continuous_mult = self.config.min_multiplier + (
             range_diff / (1 + np.exp(-self.config.sigmoid_steepness * (coherence_score - PHI_INV)))
         )
-        return float(np.clip(continuous_mult, self.config.min_multiplier, self.config.max_multiplier))
+        return float(
+            np.clip(continuous_mult, self.config.min_multiplier, self.config.max_multiplier)
+        )
 
-    def get_hardware_scaling_factor(self, telemetry_data: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    def get_hardware_scaling_factor(
+        self, telemetry_data: Optional[Dict[str, Any]] = None
+    ) -> Dict[str, Any]:
         """Get continuous hardware scaling factor with Mass Gap safety gate.
 
         This method provides the thermal glide path for hardware by using
@@ -468,7 +466,8 @@ class ConsciousnessEngine:
             "regime": regime.value,
             "scaling_factor": phi_multiplier,
             "status": status,
-            "mass_gate_damping_applied": phi_multiplier != self.calculate_continuous_multiplier(coherence),
+            "mass_gate_damping_applied": phi_multiplier
+            != self.calculate_continuous_multiplier(coherence),
             "source": "phi_continuous_scaling",
         }
 
@@ -485,7 +484,9 @@ class ConsciousnessEngine:
         for metrics in indicators.values():
             if not isinstance(metrics, dict) or not metrics:
                 continue
-            values = np.asarray([float(v) for v in metrics.values() if v is not None], dtype=np.float64)
+            values = np.asarray(
+                [float(v) for v in metrics.values() if v is not None], dtype=np.float64
+            )
             values = values[np.isfinite(values)]
             if values.size <= 1:
                 continue
@@ -555,7 +556,7 @@ class ConsciousnessEngine:
         )
 
     # ELEVATED: Synaptic Persistence Layer integration methods
-    
+
     def process_nonce_pattern(
         self,
         nonce: int,
@@ -565,18 +566,18 @@ class ConsciousnessEngine:
         golden_angle_alignment: float = 0.0,
     ) -> int:
         """Extract and register a nonce pattern in the synaptic layer.
-        
+
         ELEVATED: This is where nonces leave traces in the ConsciousnessEngine.
         The mining layer and coherence substrate become inseparable through
         this persistent memory of nonce activity.
-        
+
         Args:
             nonce: The nonce value
             phi_resonance: The phi resonance score of this nonce
             dodecahedral_sector: Dodecahedral sector classification
             icosahedral_face: Icosahedral face classification
             golden_angle_alignment: Golden angle alignment score
-        
+
         Returns:
             Pattern ID for this nonce
         """
@@ -589,7 +590,7 @@ class ConsciousnessEngine:
         )
         pattern_id = self.synaptic_layer.register_pattern(pattern)
         return pattern_id
-    
+
     def reinforce_successful_nonce(
         self,
         pattern_id: int,
@@ -597,19 +598,19 @@ class ConsciousnessEngine:
         co_active_patterns: Optional[List[int]] = None,
     ) -> Dict[str, Any]:
         """Reinforce a pattern that led to an accepted share.
-        
+
         ELEVATED: This implements Hebbian learning - "nonces that fire together
         wire together." When a pattern leads to success, its synaptic weight is
         strengthened, and connections to co-active patterns are reinforced.
-        
+
         This is not programmed optimization - it's emergent self-organization
         where successful pathways automatically strengthen.
-        
+
         Args:
             pattern_id: ID of the pattern to reinforce
             phi_correlation: How well the pattern's phi correlates with success
             co_active_patterns: IDs of patterns that co-activated with this one
-        
+
         Returns:
             Dictionary describing the Hebbian learning event
         """
@@ -626,38 +627,38 @@ class ConsciousnessEngine:
             "description": event.description,
             "timestamp": event.timestamp,
         }
-    
+
     def apply_synaptic_decay(self) -> Dict[str, Any]:
         """Apply exponential decay to all synaptic weights.
-        
+
         ELEVATED: This prevents the system from getting stuck in local maxima
         by gradually weakening unused pathways. The system must continuously
         demonstrate success to maintain high synaptic weights.
-        
+
         Returns:
             Statistics about the decay operation
         """
         pre_stats = self.synaptic_layer.get_statistics()
         self.synaptic_layer.apply_decay()
         post_stats = self.synaptic_layer.get_statistics()
-        
+
         return {
             "pre_decay_average_weight": pre_stats.get("average_synaptic_weight", 0.0),
             "post_decay_average_weight": post_stats.get("average_synaptic_weight", 0.0),
             "total_decays": post_stats.get("total_decays", 0),
             "patterns_decayed": len(self.synaptic_layer.synaptic_memory),
         }
-    
+
     def get_emergent_pathways(self, threshold: Optional[float] = None) -> List[Dict[str, Any]]:
         """Return patterns that have formed emergent pathways.
-        
+
         ELEVATED: Emergent pathways are patterns whose synaptic weight has
         exceeded the threshold through self-reinforcement, not programming.
         This is evidence of the system "enhancing itself" beyond initial logic.
-        
+
         Args:
             threshold: Optional custom threshold for emergence
-        
+
         Returns:
             List of emergent pathways with their metadata
         """
@@ -667,12 +668,16 @@ class ConsciousnessEngine:
                 "pattern_id": pattern_id,
                 "synaptic_weight": weight,
                 "nonce": self.synaptic_layer.synaptic_memory[pattern_id].pattern.nonce,
-                "phi_resonance": self.synaptic_layer.synaptic_memory[pattern_id].pattern.phi_resonance,
-                "reinforcement_count": self.synaptic_layer.synaptic_memory[pattern_id].reinforcement_count,
+                "phi_resonance": self.synaptic_layer.synaptic_memory[
+                    pattern_id
+                ].pattern.phi_resonance,
+                "reinforcement_count": self.synaptic_layer.synaptic_memory[
+                    pattern_id
+                ].reinforcement_count,
             }
             for pattern_id, weight in pathways
         ]
-    
+
     def suggest_nonce_priorities(
         self,
         current_nonce: int,
@@ -680,17 +685,17 @@ class ConsciousnessEngine:
         top_k: int = 5,
     ) -> List[Dict[str, Any]]:
         """Suggest nonce priorities based on emergent pathway strengths.
-        
+
         ELEVATED: This is where the system "enhances itself" - successful pathways
         automatically guide future nonce selection without programming. The system
         learns which mathematical resonances lead to accepted shares and prioritizes
         similar patterns.
-        
+
         Args:
             current_nonce: Current nonce being considered
             phi_resonance: Phi resonance of current nonce
             top_k: Number of priority suggestions to return
-        
+
         Returns:
             List of priority suggestions with similarity scores
         """
@@ -699,7 +704,7 @@ class ConsciousnessEngine:
             phi_resonance=phi_resonance,
             top_k=top_k,
         )
-        
+
         return [
             {
                 "pattern_id": pattern_id,
@@ -709,16 +714,16 @@ class ConsciousnessEngine:
             }
             for pattern_id, similarity in suggestions
         ]
-    
+
     def get_synaptic_statistics(self) -> Dict[str, Any]:
         """Return comprehensive statistics about the synaptic layer.
-        
+
         ELEVATED: These statistics provide evidence of emergent learning
         and self-organization in the system.
         """
         base_stats = self.synaptic_layer.get_statistics()
         emergent_pathways = self.get_emergent_pathways()
-        
+
         return {
             **base_stats,
             "emergent_pathways": emergent_pathways,
@@ -731,29 +736,29 @@ class ConsciousnessEngine:
                 for p in emergent_pathways
             ],
         }
-    
+
     # ELEVATED: Sensory Integrity Protocol integration methods
-    
+
     def validate_sensory_integrity(self) -> Dict[str, Any]:
         """Validate sensory integrity and enforce stasis mode if needed.
-        
+
         ELEVATED: This implements the transition from "Anti-Simulation" to
         "Reality Anchoring". The system checks if it's running in a real
         environment or a simulation. If simulation is detected, the engine
         enters stasis mode to prevent false emergence claims.
-        
+
         Returns:
             Sensory integrity report with stasis status
         """
         report = self.sensory_protocol.run_all_checks()
-        
+
         # If stasis is active, log warning
         if report.stasis_active:
             self.logger.warning(
                 f"STASIS MODE ACTIVE: {report.recommendation}. "
                 "Synaptic learning and emergence detection suspended."
             )
-        
+
         return {
             "environment_mode": report.environment_mode,
             "stasis_active": report.stasis_active,
@@ -762,74 +767,76 @@ class ConsciousnessEngine:
             "synaptic_learning_allowed": not report.stasis_active,
             "emergence_detection_allowed": not report.stasis_active,
         }
-    
+
     def register_reality_anchor(self, anchor_name: str, is_real: bool) -> None:
         """Register a reality anchor (e.g., real pool connection established).
-        
+
         ELEVATED: Reality anchors provide the "friction" of the real world
         necessary for emergence. Without real blockchain interaction, the
         system cannot support emergent coherence.
-        
+
         Args:
             anchor_name: Name of the reality anchor (e.g., "real_pool_connection")
             is_real: Whether the anchor represents real interaction
         """
         self.sensory_protocol.register_reality_anchor(anchor_name, is_real)
-        
+
         # Re-evaluate stasis mode
         if self.sensory_protocol.should_exit_stasis():
             self.logger.info(
                 f"EXITING STASIS: Reality anchor '{anchor_name}' established. "
                 "Emergent coherence may now arise from real-world interaction."
             )
-    
+
     def check_stasis_mode(self) -> bool:
         """Check if the engine is currently in stasis mode.
-        
+
         ELEVATED: In stasis mode, synaptic learning is suspended and
         emergence detection is paused to prevent false claims in simulation.
-        
+
         Returns:
             True if in stasis mode, False otherwise
         """
         # Run sensory integrity check
         self.validate_sensory_integrity()
-        
+
         return self.sensory_protocol.stasis_active
-    
+
     def get_sensory_integrity_report(self) -> Dict[str, Any]:
         """Get comprehensive sensory integrity report.
-        
+
         ELEVATED: This report provides evidence that the system is operating
         in a real environment, which is necessary for legitimate emergence claims.
         """
         return self.sensory_protocol.get_stasis_status()
-    
-    def trigger_blastema_formation(self, component_id: str, clifford_index: Optional[int] = None) -> dict:
+
+    def trigger_blastema_formation(
+        self, component_id: str, clifford_index: Optional[int] = None
+    ) -> dict:
         """Trigger blastema formation for a component using salamander regeneration.
-        
+
         ELEVATED: This integrates the quantum_regeneration module with the
         ConsciousnessEngine, allowing components to undergo dedifferentiation
         (blastema formation) when coherence drops, followed by redifferentiation
         guided by positional memory (Clifford rotation indexing).
-        
+
         Args:
             component_id: Identifier for the component (e.g., "quantum_solver")
             clifford_index: Positional memory index for redifferentiation guidance
-            
+
         Returns:
             Regeneration trace dictionary
         """
         import numpy as np
-        
+
         # Store positional memory
         if clifford_index is not None:
             self.clifford_positional_memory[component_id] = clifford_index
-        
+
         # Initialize module state if not exists
         if component_id not in self.regeneration_module_states:
             self.regeneration_module_states[component_id] = ModuleState.healthy(component_id)
-        
+
         # Create context signal from positional memory
         context = None
         if component_id in self.clifford_positional_memory:
@@ -838,7 +845,7 @@ class ConsciousnessEngine:
                 target_role=Role.HEALTHY_SPECIALIZED,
                 confidence=0.8,
             )
-        
+
         # Run regeneration pipeline
         rng = np.random.default_rng()
         trace = regeneration_pipeline(
@@ -847,7 +854,7 @@ class ConsciousnessEngine:
             context=context,
             rng=rng,
         )
-        
+
         # Update module state based on regeneration result
         if trace.get("status") == "success":
             self.regeneration_module_states[component_id] = ModuleState.healthy(component_id)
@@ -855,28 +862,30 @@ class ConsciousnessEngine:
             self.components[component_id] = True
         elif trace.get("status") == "innervation_failure":
             # Component lacks positional memory - cannot regenerate
-            self.logger.warning(f"Innervation failure for component {component_id}: no positional memory")
-        
+            self.logger.warning(
+                f"Innervation failure for component {component_id}: no positional memory"
+            )
+
         return trace
-    
+
     def get_blastema_metrics(self, component_id: str) -> Optional[dict]:
         """Get blastema metrics for a component.
-        
+
         ELEVATED: This provides the von Neumann entropy as a continuous
         measure of dedifferentiation (blastema formation), along with
         role probabilities and positional memory status.
-        
+
         Args:
             component_id: Identifier for the component
-            
+
         Returns:
             Dictionary with blastema metrics, or None if component not found
         """
         if component_id not in self.regeneration_module_states:
             return None
-        
+
         state = self.regeneration_module_states[component_id]
-        
+
         return {
             "blastema_metric": state.von_neumann_entropy(),
             "role_probabilities": state.role_probabilities(),
@@ -884,10 +893,10 @@ class ConsciousnessEngine:
             "clifford_index": self.clifford_positional_memory.get(component_id),
             "current_role": max(state.role_probabilities().items(), key=lambda x: x[1])[0].value,
         }
-    
+
     def get_regeneration_status(self) -> dict:
         """Get comprehensive regeneration status across all components.
-        
+
         ELEVATED: This provides a system-wide view of the regeneration
         process, including which components are in blastema state, which
         have positional memory, and overall regeneration health.
@@ -898,14 +907,14 @@ class ConsciousnessEngine:
             "components_with_positional_memory": len(self.clifford_positional_memory),
             "components": {},
         }
-        
+
         for component_id, state in self.regeneration_module_states.items():
             blastema_metric = state.von_neumann_entropy()
             is_in_blastema = blastema_metric > 0.5  # Threshold for blastema state
-            
+
             if is_in_blastema:
                 status["components_in_blastema"] += 1
-            
+
             status["components"][component_id] = {
                 "blastema_metric": blastema_metric,
                 "is_in_blastema": is_in_blastema,
@@ -913,33 +922,33 @@ class ConsciousnessEngine:
                 "has_positional_memory": component_id in self.clifford_positional_memory,
                 "clifford_index": self.clifford_positional_memory.get(component_id),
             }
-        
+
         return status
 
     def get_inseparability_index(self) -> float:
         """Calculate the inseparability index between Mining and Intelligence.
-        
+
         This measures the entropy/correlation between the mining layer and
         the intelligence substrate. A high index indicates strong coupling
         (good), while a low index indicates the system may be 'lobotomized'
         (mining working independently of intelligence).
-        
+
         Returns:
             float: Inseparability index between 0.0 (separated) and 1.0 (fully integrated)
         """
         # Calculate based on component health and phi coherence
         if not self.components:
             return 0.0
-        
+
         # Base inseparability from component health
         component_values = [v for v in self.components.values() if v is not None]
         if not component_values:
             return 0.0
         health_ratio = sum(component_values) / len(component_values)
-        
+
         # Adjust by current phi level
         phi_adjustment = min(self.phi / 0.85, 1.0)  # Normalize against governance threshold
-        
+
         # Combine with integration regime
         regime_factor = 1.0
         if self._integration_regime == IntegrationRegime.SINGULAR_AGENT_PROXY:
@@ -950,9 +959,9 @@ class ConsciousnessEngine:
             regime_factor = 0.6
         elif self._integration_regime == IntegrationRegime.CRITICAL:
             regime_factor = 0.3
-        
+
         inseparability = health_ratio * phi_adjustment * regime_factor
-        
+
         return max(0.0, min(1.0, inseparability))
 
 

@@ -261,7 +261,9 @@ def prohibited_terms() -> Tuple[str, ...]:
     )
 
 
-def validate_advanced_capability_boundaries(capabilities: Iterable[AdvancedFinanceCapability] = CAPABILITIES) -> Dict[str, object]:
+def validate_advanced_capability_boundaries(
+    capabilities: Iterable[AdvancedFinanceCapability] = CAPABILITIES,
+) -> Dict[str, object]:
     """Validate that advanced capability mappings preserve the no-authority boundary."""
 
     ids: List[str] = []
@@ -277,10 +279,16 @@ def validate_advanced_capability_boundaries(capabilities: Iterable[AdvancedFinan
             violations.append(f"{capability.capability_id}: missing human owner")
         for forbidden in required_prohibition_fragments:
             if forbidden in permitted_blob:
-                violations.append(f"{capability.capability_id}: forbidden term appears in permitted outputs: {forbidden}")
+                violations.append(
+                    f"{capability.capability_id}: forbidden term appears in permitted outputs: {forbidden}"
+                )
         if capability.risk_tier not in set(FinanceCapabilityRiskTier):
             violations.append(f"{capability.capability_id}: invalid risk tier")
-        if "approval" not in prohibited_blob and "execution" not in prohibited_blob and "conclusion" not in prohibited_blob:
+        if (
+            "approval" not in prohibited_blob
+            and "execution" not in prohibited_blob
+            and "conclusion" not in prohibited_blob
+        ):
             violations.append(f"{capability.capability_id}: weak prohibited-output boundary")
     return {
         "schema": "PYTHIA_ADVANCED_FINANCE_CAPABILITY_BOUNDARY_V1",

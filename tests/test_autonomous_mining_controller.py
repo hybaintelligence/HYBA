@@ -20,13 +20,12 @@ import os
 from pathlib import Path
 
 # Add python_backend to path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'python_backend'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "python_backend"))
 
 from pythia_mining.autonomous_mining_controller import (
     AutonomousConfig,
     AutonomousDecision,
     AutonomousMiningController,
-    OperatorApprovalDecision,
     AutonomyLevel,
     OperatorApprovalDecision,
     SafetyConstraint,
@@ -74,15 +73,17 @@ class TestAutonomousMiningController(unittest.TestCase):
         self.assertEqual(len(self.controller.proposal_history), 0)
         self.assertEqual(self.controller._self_optimization_epochs, 0)
 
-
     def test_invalid_environment_values_fall_back_to_safe_defaults(self):
         """Bad environment config should not crash autonomous controller startup."""
-        with patch.dict(os.environ, {
-            "HYBA_AUTONOMOUS_MAX_HASHRATE_EHS": "not-a-float",
-            "HYBA_AUTONOMOUS_MAX_POWER_WATTS": "bad",
-            "HYBA_PHI_COHERENCE_THRESHOLD": "bad",
-            "HYBA_REFLEXIVE_LOOP_INTERVAL": "bad",
-        }):
+        with patch.dict(
+            os.environ,
+            {
+                "HYBA_AUTONOMOUS_MAX_HASHRATE_EHS": "not-a-float",
+                "HYBA_AUTONOMOUS_MAX_POWER_WATTS": "bad",
+                "HYBA_PHI_COHERENCE_THRESHOLD": "bad",
+                "HYBA_REFLEXIVE_LOOP_INTERVAL": "bad",
+            },
+        ):
             config = AutonomousConfig(persistence_enabled=False)
 
         self.assertEqual(config.max_autonomous_hashrate_ehs, 0.5)
@@ -109,8 +110,6 @@ class TestAutonomousMiningController(unittest.TestCase):
 
         self.controller.record_autonomy_success()
         self.assertFalse(self.controller.is_circuit_open())
-
-
 
     def test_manual_circuit_breaker_reset_clears_open_state(self):
         """Operator reset should clear circuit state after review."""
@@ -362,12 +361,8 @@ class TestAutonomousMiningController(unittest.TestCase):
 
     def test_operator_approval_required(self):
         """Test that certain decision types require operator approval."""
-        self.assertTrue(
-            self.controller._requires_operator_approval("pool_connection_change")
-        )
-        self.assertTrue(
-            self.controller._requires_operator_approval("wallet_address_change")
-        )
+        self.assertTrue(self.controller._requires_operator_approval("pool_connection_change"))
+        self.assertTrue(self.controller._requires_operator_approval("wallet_address_change"))
         self.assertFalse(
             self.controller._requires_operator_approval("search_strategy_optimization")
         )
@@ -772,7 +767,6 @@ class TestAutonomousMiningController(unittest.TestCase):
             counterfactual_confidence=0.7,
             codebase_source_module="consciousness_engine",
         )
-        prev_threshold = self.controller.config.phi_coherence_threshold
         self.controller.apply_self_optimization(proposal)
         self.assertTrue(proposal.applied)
         # Threshold should be updated
@@ -903,70 +897,84 @@ class TestAutonomousMiningController(unittest.TestCase):
 
     def test_optimize_search_strategy_high_coherence(self):
         """Test search strategy optimization with high phi coherence."""
-        decision = asyncio.run(self.controller.optimize_search_strategy(
-            current_coherence=0.85,
-            current_hashrate_ehs=50.0,
-        ))
+        decision = asyncio.run(
+            self.controller.optimize_search_strategy(
+                current_coherence=0.85,
+                current_hashrate_ehs=50.0,
+            )
+        )
         self.assertEqual(decision.decision_type, "search_strategy_optimization")
         self.assertIn("aggressive", decision.mathematical_justification["reason"])
         self.assertEqual(decision.expected_outcome, "faster_search_with_high_confidence")
 
     def test_optimize_search_strategy_medium_coherence(self):
         """Test search strategy optimization with medium phi coherence."""
-        decision = asyncio.run(self.controller.optimize_search_strategy(
-            current_coherence=0.75,
-            current_hashrate_ehs=50.0,
-        ))
+        decision = asyncio.run(
+            self.controller.optimize_search_strategy(
+                current_coherence=0.75,
+                current_hashrate_ehs=50.0,
+            )
+        )
         self.assertEqual(decision.decision_type, "search_strategy_optimization")
         self.assertIn("balanced", decision.mathematical_justification["reason"])
         self.assertEqual(decision.expected_outcome, "balanced_speed_and_reliability")
 
     def test_optimize_search_strategy_low_coherence(self):
         """Test search strategy optimization with low phi coherence."""
-        decision = asyncio.run(self.controller.optimize_search_strategy(
-            current_coherence=0.50,
-            current_hashrate_ehs=50.0,
-        ))
+        decision = asyncio.run(
+            self.controller.optimize_search_strategy(
+                current_coherence=0.50,
+                current_hashrate_ehs=50.0,
+            )
+        )
         self.assertEqual(decision.decision_type, "search_strategy_optimization")
         self.assertIn("conservative", decision.mathematical_justification["reason"])
         self.assertEqual(decision.expected_outcome, "prioritize_reliability_over_speed")
 
     def test_optimize_hashrate_increase(self):
         """Test hashrate optimization for increase."""
-        decision = asyncio.run(self.controller.optimize_hashrate_target(
-            current_hashrate_ehs=0.2,
-            target_hashrate_ehs=0.4,
-        ))
+        decision = asyncio.run(
+            self.controller.optimize_hashrate_target(
+                current_hashrate_ehs=0.2,
+                target_hashrate_ehs=0.4,
+            )
+        )
         self.assertEqual(decision.decision_type, "hashrate_optimization")
         self.assertIn("increase", decision.action_taken)
         self.assertEqual(decision.expected_outcome, "higher_mining_efficiency")
 
     def test_optimize_hashrate_decrease(self):
         """Test hashrate optimization for decrease (energy saving)."""
-        decision = asyncio.run(self.controller.optimize_hashrate_target(
-            current_hashrate_ehs=0.4,
-            target_hashrate_ehs=0.2,
-        ))
+        decision = asyncio.run(
+            self.controller.optimize_hashrate_target(
+                current_hashrate_ehs=0.4,
+                target_hashrate_ehs=0.2,
+            )
+        )
         self.assertEqual(decision.decision_type, "hashrate_optimization")
         self.assertIn("decrease", decision.action_taken)
         self.assertEqual(decision.expected_outcome, "reduced_energy_consumption")
 
     def test_optimize_compression_ratio(self):
         """Test memory compression ratio optimization."""
-        decision = asyncio.run(self.controller.optimize_compression_ratio(
-            current_compression=1.5,
-            target_compression=1.8,
-        ))
+        decision = asyncio.run(
+            self.controller.optimize_compression_ratio(
+                current_compression=1.5,
+                target_compression=1.8,
+            )
+        )
         self.assertEqual(decision.decision_type, "compression_optimization")
         self.assertIn("adjust_compression", decision.action_taken)
         self.assertEqual(decision.expected_outcome, "better_memory_utilization")
 
     def test_emergency_shutdown(self):
         """Test emergency shutdown capability."""
-        decision = asyncio.run(self.controller.emergency_shutdown(
-            reason="test_emergency",
-            mathematical_justification={"emergency": True},
-        ))
+        decision = asyncio.run(
+            self.controller.emergency_shutdown(
+                reason="test_emergency",
+                mathematical_justification={"emergency": True},
+            )
+        )
         self.assertEqual(decision.decision_type, "emergency_shutdown")
         self.assertEqual(decision.autonomy_level, AutonomyLevel.EMERGENCY)
         self.assertEqual(decision.action_taken, "emergency_shutdown_initiated")
@@ -1068,10 +1076,12 @@ class TestAutonomousMiningController(unittest.TestCase):
         self.controller.set_autonomy_level(AutonomyLevel.SUPERVISED)
 
         # This should trigger callback in real scenario
-        decision = asyncio.run(self.controller.optimize_search_strategy(
-            current_coherence=0.75,
-            current_hashrate_ehs=50.0,
-        ))
+        asyncio.run(
+            self.controller.optimize_search_strategy(
+                current_coherence=0.75,
+                current_hashrate_ehs=50.0,
+            )
+        )
         # In supervised mode with no violations, it should execute autonomously
         # without callback invocation
 
@@ -1168,7 +1178,9 @@ class TestAutonomousMiningControllerOperationalHardening(unittest.TestCase):
 
         self.assertFalse(controller._can_execute_autonomously(decision))
         self.assertEqual(controller.operator_approval_requests[-1].status, "rejected")
-        self.assertEqual(controller.operator_approval_requests[-1].reason, "approval_callback_missing")
+        self.assertEqual(
+            controller.operator_approval_requests[-1].reason, "approval_callback_missing"
+        )
 
     def test_operator_approval_timeout_rejects(self):
         controller = AutonomousMiningController(
@@ -1254,9 +1266,7 @@ class TestAutonomousMiningControllerOperationalHardening(unittest.TestCase):
         metrics = controller.get_metrics_snapshot()
         prometheus_text = controller.get_prometheus_metrics_text()
 
-        self.assertEqual(
-            metrics["constraint_violations_by_type"]["information_integrity"], 1
-        )
+        self.assertEqual(metrics["constraint_violations_by_type"]["information_integrity"], 1)
         self.assertIn("hyba_phi_density", prometheus_text)
         self.assertIn("hyba_constraint_violations_total 1", prometheus_text)
         self.assertIn(
@@ -1328,7 +1338,10 @@ class TestAutonomousMiningControllerOperationalHardening(unittest.TestCase):
             self.assertTrue(state_file.exists())
             self.assertFalse(lock_file.exists())
             self.assertTrue(
-                any(entry.event_type == "stale_state_lock_removed" for entry in controller.get_audit_log())
+                any(
+                    entry.event_type == "stale_state_lock_removed"
+                    for entry in controller.get_audit_log()
+                )
             )
 
     def test_cached_prometheus_metrics_reuses_snapshot_until_ttl_expires(self):
@@ -1347,8 +1360,6 @@ class TestAutonomousMiningControllerOperationalHardening(unittest.TestCase):
 
         self.assertEqual(first, second)
         self.assertIn("hyba_degradation_events_total 1", fresh)
-
-
 
     def test_autonomous_circuit_breaker_opens_and_cools_down(self):
         controller = AutonomousMiningController(
@@ -1440,6 +1451,7 @@ class TestAutonomousMiningControllerOperationalHardening(unittest.TestCase):
 
     def test_emergency_bypass_source_is_isolated_from_verification_firewall(self):
         import inspect
+
         source = inspect.getsource(AutonomousMiningController.authorize_emergency_operator_bypass)
 
         self.assertNotIn("submit_candidate", source)
@@ -1480,7 +1492,10 @@ class TestAutonomousMiningControllerOperationalHardening(unittest.TestCase):
         self.assertEqual(approved.operator_id, "incident-commander")
         self.assertIn("EMERGENCY_BYPASS", approved.reason)
         self.assertTrue(
-            any(entry.event_type == "emergency_operator_bypass_approved" for entry in controller.get_audit_log())
+            any(
+                entry.event_type == "emergency_operator_bypass_approved"
+                for entry in controller.get_audit_log()
+            )
         )
 
 

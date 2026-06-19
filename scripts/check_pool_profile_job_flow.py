@@ -10,7 +10,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
 import sys
 import time
 from dataclasses import asdict, dataclass
@@ -82,7 +81,9 @@ def build_report(mode: Mode) -> PoolProfileReport:
         )
 
     braiins = DEFAULT_POOL_SPECS.get("braiins", {})
-    if int(braiins.get("stratum_version", 0)) != 1 or not str(braiins.get("url", "")).startswith("stratum+tcp://"):
+    if int(braiins.get("stratum_version", 0)) != 1 or not str(braiins.get("url", "")).startswith(
+        "stratum+tcp://"
+    ):
         findings.append(
             PoolProfileFinding(
                 pool_id="braiins",
@@ -180,7 +181,9 @@ def main(argv: list[str] | None = None) -> int:
     artifact.write_text(json.dumps(report.to_dict(), indent=2, sort_keys=True), encoding="utf-8")
 
     for finding in report.findings:
-        print(f"[{finding.status.upper()}] {finding.severity.upper()} {finding.pool_id}: {finding.message}")
+        print(
+            f"[{finding.status.upper()}] {finding.severity.upper()} {finding.pool_id}: {finding.message}"
+        )
         if finding.status == "fail":
             print(json.dumps(finding.detail, indent=2, sort_keys=True))
     print(f"Pool profile job-flow status: {report.status}")

@@ -48,8 +48,12 @@ class VerifierContract:
     protocol: str = VERIFICATION_FIREWALL_PROTOCOL
     authority_namespace: str = VERIFIER_AUTHORITY_NAMESPACE
     required_algorithm: str = "bitcoin_header_double_sha256_sha256d"
-    required_target_rule: str = "effective_target_is_min(block_target_from_nbits, active_pool_share_target)"
-    required_job_binding: str = "job_id + clean_jobs_epoch + extranonce + ntime + nbits + pool_target + nonce"
+    required_target_rule: str = (
+        "effective_target_is_min(block_target_from_nbits, active_pool_share_target)"
+    )
+    required_job_binding: str = (
+        "job_id + clean_jobs_epoch + extranonce + ntime + nbits + pool_target + nonce"
+    )
     required_backend_property: str = "exact_not_approximate_consensus_verifier"
     optimisation_namespace_authority: bool = False
     external_pool_truth_required: bool = True
@@ -168,7 +172,10 @@ def assert_verification_firewall_precondition(
         raise VerificationFirewallError("invalid_effective_or_pool_target")
     if int(candidate.effective_target) > int(candidate.pool_target):
         raise VerificationFirewallError("effective_target_weaker_than_pool_target")
-    if "sha256" not in candidate.verifier_backend.lower() and "sha-256" not in candidate.verifier_backend.lower():
+    if (
+        "sha256" not in candidate.verifier_backend.lower()
+        and "sha-256" not in candidate.verifier_backend.lower()
+    ):
         raise VerificationFirewallError("verifier_backend_not_declared_sha256d")
 
     expected_binding = build_candidate_binding_hash(

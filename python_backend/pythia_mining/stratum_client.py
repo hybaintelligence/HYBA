@@ -1256,7 +1256,8 @@ class StratumClient:
             "health_score": self.get_health_score(),
             "circuit_breaker_state": self._circuit_breaker_state,
             "production_state": (
-                "ready" if (
+                "ready"
+                if (
                     self.is_connected
                     and self.is_authenticated
                     and current_job is not None

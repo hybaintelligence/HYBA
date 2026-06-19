@@ -55,9 +55,7 @@ class JWTManager:
         # If still over limit after pruning expired entries, evict oldest
         if len(self.token_blacklist) > self._MAX_BLACKLIST_SIZE:
             # Sort by expiry (ascending) and evict the oldest fraction
-            sorted_jtis = sorted(
-                self.token_blacklist.items(), key=lambda x: x[1]
-            )
+            sorted_jtis = sorted(self.token_blacklist.items(), key=lambda x: x[1])
             evict_count = int(self._MAX_BLACKLIST_SIZE * self._EVICT_FRACTION)
             for jti, _ in sorted_jtis[:evict_count]:
                 del self.token_blacklist[jti]

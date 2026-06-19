@@ -45,14 +45,8 @@ class TestAPrioriBeing(unittest.TestCase):
             for _ in range(10):
                 res = ctrl.step()
                 phi = res["telemetry"]["phi"]
-                self.assertGreaterEqual(
-                    phi, 0.0,
-                    msg=f"Phi resonance dropped below zero: {phi}"
-                )
-                self.assertLessEqual(
-                    phi, 1.0,
-                    msg=f"Phi resonance exceeded unity: {phi}"
-                )
+                self.assertGreaterEqual(phi, 0.0, msg=f"Phi resonance dropped below zero: {phi}")
+                self.assertLessEqual(phi, 1.0, msg=f"Phi resonance exceeded unity: {phi}")
 
     def test_manifold_curvature_positivity(self) -> None:
         """Property: Fisher curvature must be non-negative.
@@ -67,10 +61,7 @@ class TestAPrioriBeing(unittest.TestCase):
             ctrl = ReflexiveController(root)
             res = ctrl.step()
             curvature = res["manifold"]["fisher_curvature"]
-            self.assertGreaterEqual(
-                curvature, 0.0,
-                msg=f"Fisher curvature negative: {curvature}"
-            )
+            self.assertGreaterEqual(curvature, 0.0, msg=f"Fisher curvature negative: {curvature}")
 
     def test_recursive_closure_safety(self) -> None:
         """Property: Proposals must be rejected when status is PAIN.
@@ -97,7 +88,7 @@ class TestAPrioriBeing(unittest.TestCase):
             self.assertIn(
                 status["status"],
                 {"EVOLVED", "STAGNATED"},
-                msg=f"Unexpected closure status: {status['status']}"
+                msg=f"Unexpected closure status: {status['status']}",
             )
 
 
@@ -116,10 +107,7 @@ class TestAPrioriBeingExtended(unittest.TestCase):
             ctrl = ReflexiveController(root)
             res = ctrl.step()
             entropy = res["telemetry"]["entropy"]
-            self.assertGreaterEqual(
-                entropy, 0.0,
-                msg=f"Entropy negative: {entropy}"
-            )
+            self.assertGreaterEqual(entropy, 0.0, msg=f"Entropy negative: {entropy}")
 
     def test_euler_characteristic_integer(self) -> None:
         """Property: Euler characteristic must be an integer (topological invariant)."""
@@ -129,8 +117,7 @@ class TestAPrioriBeingExtended(unittest.TestCase):
             res = ctrl.step()
             chi = res["telemetry"]["chi"]
             self.assertIsInstance(
-                chi, int,
-                msg=f"Euler characteristic not integer: {chi} (type {type(chi).__name__})"
+                chi, int, msg=f"Euler characteristic not integer: {chi} (type {type(chi).__name__})"
             )
 
     def test_predictive_free_energy_non_negative(self) -> None:
@@ -140,10 +127,7 @@ class TestAPrioriBeingExtended(unittest.TestCase):
             ctrl = ReflexiveController(root)
             res = ctrl.step()
             free_energy = res["manifold"]["predictive_free_energy"]
-            self.assertGreaterEqual(
-                free_energy, 0.0,
-                msg=f"Free energy negative: {free_energy}"
-            )
+            self.assertGreaterEqual(free_energy, 0.0, msg=f"Free energy negative: {free_energy}")
 
     def test_ricci_flow_curvature_non_negative(self) -> None:
         """Property: Ricci flow curvature must be non-negative.
@@ -156,10 +140,7 @@ class TestAPrioriBeingExtended(unittest.TestCase):
             ctrl = ReflexiveController(root)
             res = ctrl.step()
             ricci = res["manifold"]["ricci_flow_curvature"]
-            self.assertGreaterEqual(
-                ricci, 0.0,
-                msg=f"Ricci flow curvature negative: {ricci}"
-            )
+            self.assertGreaterEqual(ricci, 0.0, msg=f"Ricci flow curvature negative: {ricci}")
 
     def test_elegance_score_bounded(self) -> None:
         """Property: Elegance score (compression proxy) must be in [0, 1]."""
@@ -181,7 +162,7 @@ class TestAPrioriBeingExtended(unittest.TestCase):
             self.assertEqual(
                 governance,
                 "BOUNDED_BY_GEOMETRIC_INVARIANTS",
-                msg=f"Unexpected governance tag: {governance}"
+                msg=f"Unexpected governance tag: {governance}",
             )
 
     def test_compression_ratio_bounded(self) -> None:
@@ -202,8 +183,7 @@ class TestAPrioriBeingExtended(unittest.TestCase):
             res = ctrl.step()
             genus = res["manifold"]["topological_genus_proxy"]
             self.assertIsInstance(
-                genus, int,
-                msg=f"Genus not integer: {genus} (type {type(genus).__name__})"
+                genus, int, msg=f"Genus not integer: {genus} (type {type(genus).__name__})"
             )
 
 

@@ -31,7 +31,7 @@ import random
 import sys
 import time
 import urllib.request
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence, Tuple
@@ -48,12 +48,13 @@ ALTERNATE_API: str = "https://mempool.space/api"
 @dataclass(frozen=True)
 class BlockHashRecord:
     """A block with nonce, hash, and derived metrics."""
+
     height: int
     nonce: int
     block_hash: str
     difficulty: float
-    leading_zeros: int       # count of '0' prefix chars in hex hash
-    leading_zero_bits: int   # leading zeros in binary representation
+    leading_zeros: int  # count of '0' prefix chars in hex hash
+    leading_zero_bits: int  # leading zeros in binary representation
     phi_resonance_strength: float
     phi_diff: float
     is_phi_resonant: bool
@@ -61,13 +62,18 @@ class BlockHashRecord:
 
 # -- API Helpers ---------------------------------------------------------------
 
+
 def api_base(url: str) -> str:
     return url.rstrip("/")
 
 
 def _get_text(url: str, timeout: int = 30) -> str:
     req = urllib.request.Request(
-        url, headers={"User-Agent": "HYBA-Phi-Correlation/1.0", "Accept": "application/json, text/plain"}
+        url,
+        headers={
+            "User-Agent": "HYBA-Phi-Correlation/1.0",
+            "Accept": "application/json, text/plain",
+        },
     )
     with urllib.request.urlopen(req, timeout=timeout) as response:
         return response.read().decode("utf-8").strip()
@@ -89,6 +95,7 @@ def resolve_api(primary: str, secondary: str) -> str:
 
 
 # -- Phi^15 Resonance ----------------------------------------------------------
+
 
 def compute_phi15_resonance(nonce: int) -> Tuple[int, float, float, float]:
     """Returns (k, approx, diff, precision_pct)."""
@@ -115,6 +122,7 @@ def is_phi_resonant(nonce: int) -> bool:
 
 
 # -- Hash Analysis -------------------------------------------------------------
+
 
 def count_leading_zeros(block_hash: str) -> int:
     """Count leading '0' characters in the hex block hash."""
@@ -151,6 +159,7 @@ def count_leading_zero_bits(block_hash: str) -> int:
 
 
 # -- Block Fetching ------------------------------------------------------------
+
 
 def fetch_block_data(api: str, height: int, timeout: int = 30) -> Optional[BlockHashRecord]:
     """Fetch a single block's nonce and hash, compute metrics."""
@@ -203,13 +212,16 @@ def collect_block_data(
         rec = fetch_block_data(api, height)
         if rec is not None:
             records.append(rec)
-            print(f"  [{height}] hash={rec.block_hash[:16]}... zeros={rec.leading_zeros} bits={rec.leading_zero_bits} phi={rec.phi_resonance_strength:.4f}")
+            print(
+                f"  [{height}] hash={rec.block_hash[:16]}... zeros={rec.leading_zeros} bits={rec.leading_zero_bits} phi={rec.phi_resonance_strength:.4f}"
+            )
         if delay > 0:
             time.sleep(delay)
     return records
 
 
 # -- Correlation Analysis ------------------------------------------------------
+
 
 @dataclass
 class CorrelationResult:
@@ -233,7 +245,7 @@ def compute_correlation(records: List[BlockHashRecord]) -> CorrelationResult:
 
     strengths = [r.phi_resonance_strength for r in records]
     zero_bits = [r.leading_zero_bits for r in records]
-    zero_hex = [r.leading_zeros for r in records]
+    [r.leading_zeros for r in records]
 
     # -- Pearson correlation: phi_resonance_strength vs leading_zero_bits --
     mean_s = sum(strengths) / n
@@ -264,7 +276,9 @@ def compute_correlation(records: List[BlockHashRecord]) -> CorrelationResult:
     median_strength = sorted(strengths)[n // 2]
     high_phi = [r for r in records if r.phi_resonance_strength >= median_strength]
     low_phi = [r for r in records if r.phi_resonance_strength < median_strength]
-    mean_high_zeros = sum(r.leading_zero_bits for r in high_phi) / len(high_phi) if high_phi else 0.0
+    mean_high_zeros = (
+        sum(r.leading_zero_bits for r in high_phi) / len(high_phi) if high_phi else 0.0
+    )
     mean_low_zeros = sum(r.leading_zero_bits for r in low_phi) / len(low_phi) if low_phi else 0.0
     obs_diff = mean_high_zeros - mean_low_zeros
 
@@ -275,8 +289,8 @@ def compute_correlation(records: List[BlockHashRecord]) -> CorrelationResult:
     rng = random.Random(618034)
     for _ in range(n_perm):
         rng.shuffle(combined)
-        ph = sum(combined[:len(high_phi)]) / len(high_phi)
-        pl = sum(combined[len(high_phi):]) / len(low_phi) if low_phi else 0.0
+        ph = sum(combined[: len(high_phi)]) / len(high_phi)
+        pl = sum(combined[len(high_phi) :]) / len(low_phi) if low_phi else 0.0
         if abs(ph - pl) >= abs(obs_diff):
             count_extreme += 1
     p_value = (count_extreme + 1) / (n_perm + 1)
@@ -316,32 +330,43 @@ def _t_cdf(t: float, df: int) -> float:
 
 # -- Output --------------------------------------------------------------------
 
+
 def write_correlation_csv(path: Path, records: List[BlockHashRecord]) -> None:
     """Write per-block phi-hash data."""
     path.parent.mkdir(parents=True, exist_ok=True)
     fieldnames = [
-        "height", "nonce", "block_hash", "difficulty",
-        "leading_zeros_hex", "leading_zeros_bits",
-        "phi_resonance_strength", "phi_diff", "is_phi_resonant",
+        "height",
+        "nonce",
+        "block_hash",
+        "difficulty",
+        "leading_zeros_hex",
+        "leading_zeros_bits",
+        "phi_resonance_strength",
+        "phi_diff",
+        "is_phi_resonant",
     ]
     with path.open("w", newline="", encoding="utf-8") as handle:
         writer = csv.DictWriter(handle, fieldnames=fieldnames)
         writer.writeheader()
         for r in records:
-            writer.writerow({
-                "height": r.height,
-                "nonce": r.nonce,
-                "block_hash": r.block_hash,
-                "difficulty": round(r.difficulty, 2),
-                "leading_zeros_hex": r.leading_zeros,
-                "leading_zeros_bits": r.leading_zero_bits,
-                "phi_resonance_strength": round(r.phi_resonance_strength, 6),
-                "phi_diff": round(r.phi_diff, 4),
-                "is_phi_resonant": r.is_phi_resonant,
-            })
+            writer.writerow(
+                {
+                    "height": r.height,
+                    "nonce": r.nonce,
+                    "block_hash": r.block_hash,
+                    "difficulty": round(r.difficulty, 2),
+                    "leading_zeros_hex": r.leading_zeros,
+                    "leading_zeros_bits": r.leading_zero_bits,
+                    "phi_resonance_strength": round(r.phi_resonance_strength, 6),
+                    "phi_diff": round(r.phi_diff, 4),
+                    "is_phi_resonant": r.is_phi_resonant,
+                }
+            )
 
 
-def write_correlation_json(path: Path, result: CorrelationResult, records: List[BlockHashRecord]) -> None:
+def write_correlation_json(
+    path: Path, result: CorrelationResult, records: List[BlockHashRecord]
+) -> None:
     """Write correlation summary as JSON."""
     path.parent.mkdir(parents=True, exist_ok=True)
     payload = {
@@ -354,7 +379,9 @@ def write_correlation_json(path: Path, result: CorrelationResult, records: List[
             "spearman_r": result.spearman_r,
             "phi_high_group_mean_zero_bits": result.phi_high_mean_zeros,
             "phi_low_group_mean_zero_bits": result.phi_low_mean_zeros,
-            "zero_bit_diff_observed": round(result.phi_high_mean_zeros - result.phi_low_mean_zeros, 4),
+            "zero_bit_diff_observed": round(
+                result.phi_high_mean_zeros - result.phi_low_mean_zeros, 4
+            ),
             "zero_bit_diff_p_value_resampled": f"{result.zero_diff_p_value:.4f}",
             "phi_resonant_rate": round(result.phi_resonant_rate, 6),
             "above_median_hash_prob_if_phi_resonant": result.above_median_prob,
@@ -495,6 +522,7 @@ def print_report(result: CorrelationResult) -> None:
 
 # -- Main Pipeline ------------------------------------------------------------
 
+
 def run_pipeline(
     api: str = DEFAULT_API,
     block_count: int = 100,
@@ -523,7 +551,7 @@ def run_pipeline(
     print(f"  -> Collected {len(records)} blocks")
 
     # Compute correlation
-    print(f"[3/4] Computing phi-hash correlation...")
+    print("[3/4] Computing phi-hash correlation...")
     result = compute_correlation(records)
     print(f"  -> Pearson r = {result.pearson_r:.6f}")
     print(f"  -> Spearman r = {result.spearman_r:.6f}")
@@ -550,7 +578,9 @@ def main() -> int:
     )
     parser.add_argument("--api", default=DEFAULT_API, help=f"API base URL (default: {DEFAULT_API})")
     parser.add_argument("--blocks", type=int, default=100, help="Number of blocks (default: 100)")
-    parser.add_argument("--delay", type=float, default=0.1, help="Delay between requests (default: 0.1)")
+    parser.add_argument(
+        "--delay", type=float, default=0.1, help="Delay between requests (default: 0.1)"
+    )
     parser.add_argument("--out", default="artifacts/phi_hash_validity", help="Output directory")
     parser.add_argument("--dry-run", action="store_true", help="Print config and exit")
     args = parser.parse_args()
@@ -563,7 +593,9 @@ def main() -> int:
         print(f"  Output  : {args.out}")
         return 0
 
-    return run_pipeline(api=args.api, block_count=args.blocks, delay=args.delay, output_dir=args.out)
+    return run_pipeline(
+        api=args.api, block_count=args.blocks, delay=args.delay, output_dir=args.out
+    )
 
 
 if __name__ == "__main__":

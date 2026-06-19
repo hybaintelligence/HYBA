@@ -31,7 +31,9 @@ def generate_fields_medal_audit(reflection_payload: Dict[str, Any]) -> Dict[str,
     thermal = reflection_payload.get("thermal", {})
     genus = int(manifold.get("topological_genus_proxy", 0))
     chi = int(manifold.get("euler_characteristic", telemetry.get("chi", 1)))
-    phi = float(telemetry.get("phi_resonance", telemetry.get("phi_density", telemetry.get("phi", 0.0))))
+    phi = float(
+        telemetry.get("phi_resonance", telemetry.get("phi_density", telemetry.get("phi", 0.0)))
+    )
     curvature = float(manifold.get("fisher_curvature", 0.0))
     ricci = float(manifold.get("ricci_flow_curvature", 0.0))
     free_energy = float(manifold.get("predictive_free_energy", 0.0))
@@ -39,7 +41,9 @@ def generate_fields_medal_audit(reflection_payload: Dict[str, Any]) -> Dict[str,
     # Ontological integrity: certified only when the measured topological and
     # geometric invariants are coherent for the current controller step.
     ricci_smoothed = curvature > 0 and ricci < curvature
-    ontological_integrity = "CERTIFIED" if (chi >= 1 and ricci >= 0 and ricci_smoothed) else "HOLES_DETECTED"
+    ontological_integrity = (
+        "CERTIFIED" if (chi >= 1 and ricci >= 0 and ricci_smoothed) else "HOLES_DETECTED"
+    )
 
     return {
         "ontological_integrity": ontological_integrity,
@@ -53,9 +57,7 @@ def generate_fields_medal_audit(reflection_payload: Dict[str, Any]) -> Dict[str,
         "predictive_status": reflection_payload.get("predictive_status", "UNKNOWN"),
         "thermal_state": {
             "duration_seconds": float(thermal.get("duration_seconds", 0.0)),
-            "thermal_cost_phi_per_second": float(
-                thermal.get("thermal_cost_phi_per_second", 0.0)
-            ),
+            "thermal_cost_phi_per_second": float(thermal.get("thermal_cost_phi_per_second", 0.0)),
         },
         "measurement_basis": {
             "source": "current_reflexive_controller_step",

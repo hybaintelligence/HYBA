@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Rollback PYTHIA autonomous mining reflexive state with audit evidence."""
+
 from __future__ import annotations
 
 import argparse
@@ -7,6 +8,7 @@ import hashlib
 import json
 import sys
 from pathlib import Path
+
 ROOT = Path(__file__).resolve().parents[1]
 PYTHON_BACKEND = ROOT / "python_backend"
 if str(PYTHON_BACKEND) not in sys.path:

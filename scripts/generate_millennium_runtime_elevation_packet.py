@@ -51,7 +51,11 @@ def millennium_contracts() -> List[Dict[str, Any]]:
             "slug": "riemann-hypothesis",
             "fullstack_dimension": "spectral_coherence_phi_resonance",
             "runtime_question": "Does the runtime preserve spectral coherence under replay, noise, and phi ablation?",
-            "required_controls": ["random_constant_ablation", "uniform_allocation", "spectral_replay"],
+            "required_controls": [
+                "random_constant_ablation",
+                "uniform_allocation",
+                "spectral_replay",
+            ],
             "evidence_fields": ["phi_similarity", "spectral_ordering", "replay_stability"],
         },
         {
@@ -87,7 +91,11 @@ def millennium_contracts() -> List[Dict[str, Any]]:
             "fullstack_dimension": "resource_flow_and_solvency_signal",
             "runtime_question": "Does accepted-share evidence cleanly change the resource-flow state without premature solvency claims?",
             "required_controls": ["pre_share_null", "accepted_share_transition", "ledger_root"],
-            "evidence_fields": ["resource_signal_state", "ledger_root_present", "accepted_share_required"],
+            "evidence_fields": [
+                "resource_signal_state",
+                "ledger_root_present",
+                "accepted_share_required",
+            ],
         },
         {
             "slug": "poincare-conjecture",
@@ -208,7 +216,15 @@ def build_packet() -> Dict[str, Any]:
             "extraction_method": "local immutable challenge contracts",
             "backward_compatibility": "adds tests and artifacts without changing production API routes",
         },
-        "review_panel_lenses": ["Penrose", "Deutsch", "du Sautoy", "Turing", "Shor", "Grover", "Fourier"],
+        "review_panel_lenses": [
+            "Penrose",
+            "Deutsch",
+            "du Sautoy",
+            "Turing",
+            "Shor",
+            "Grover",
+            "Fourier",
+        ],
         "phi_resonance_evidence": phi_resonance_evidence(),
         "contract_results": contract_results,
         "all_contracts_satisfied": all(item["contract_satisfied"] for item in contract_results),

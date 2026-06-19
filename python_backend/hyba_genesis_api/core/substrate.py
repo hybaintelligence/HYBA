@@ -123,33 +123,33 @@ def init_organism_cns() -> Dict[str, object]:
     """Initialize the Organism CNS components (Sensory, Immune, Cognitive, Metabolic)."""
 
     LOGGER.info("Substrate: Initializing Organism CNS...")
-    
+
     # Initialize Consciousness Engine
     _STATE.consciousness_engine = ConsciousnessEngine()
     LOGGER.info("Substrate: Consciousness Engine initialized")
-    
+
     # Initialize Sensory Protocol
     _STATE.sensory_protocol = SensoryProtocol()
     LOGGER.info("Substrate: Sensory Protocol initialized")
-    
+
     # Initialize Immune System
     _STATE.immune_system = ImmuneSystem(_STATE.consciousness_engine)
     LOGGER.info("Substrate: Immune System initialized")
-    
+
     # Initialize Reflexive Controller
     _STATE.reflexive_controller = ReflexiveController()
     LOGGER.info("Substrate: Reflexive Controller initialized")
-    
+
     # Initialize Metabolism
     _STATE.metabolism = Metabolism()
     LOGGER.info("Substrate: Metabolism initialized")
-    
+
     # Initialize Executive Lobe
     _STATE.executive = MiningExecutiveController(
         consciousness_engine=_STATE.consciousness_engine,
     )
     LOGGER.info("Substrate: Executive Lobe initialized")
-    
+
     _mark_ready(
         "organism_cns",
         "Organism CNS (Sensory, Immune, Cognitive, Metabolic, Executive) fully initialized",

@@ -8,7 +8,7 @@ or persistent configuration without an explicitly supplied external actuator.
 from __future__ import annotations
 
 import hashlib
-from dataclasses import asdict, dataclass, field
+from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any, Dict, Protocol
 

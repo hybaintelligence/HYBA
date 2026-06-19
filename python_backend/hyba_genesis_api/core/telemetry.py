@@ -11,7 +11,7 @@ from fastapi import Request
 from pythonjsonlogger import jsonlogger
 
 # Prometheus metrics
-from prometheus_client import Counter, Histogram, generate_latest, CONTENT_TYPE_LATEST
+from prometheus_client import Counter, Histogram, generate_latest
 
 # Define Prometheus counters and histograms with labels.
 REQUEST_COUNT = Counter(

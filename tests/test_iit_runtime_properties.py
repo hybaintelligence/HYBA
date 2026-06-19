@@ -42,7 +42,7 @@ def density(diagonal):
     if density_matrix.shape[0] < 32:
         # Pad to 32x32 if smaller
         padded = np.zeros((32, 32), dtype=np.complex128)
-        padded[:density_matrix.shape[0], :density_matrix.shape[1]] = density_matrix
+        padded[: density_matrix.shape[0], : density_matrix.shape[1]] = density_matrix
         density_matrix = padded
     return density_matrix
 
@@ -81,7 +81,9 @@ class RuntimePhiPropertyTests(unittest.TestCase):
             engine.update_component_health(component, True)
         metrics = engine.get_metrics()
 
-        self.assertEqual(IntegrationRegime.SINGULAR_AGENT_PROXY.value, metrics["integration_regime"])
+        self.assertEqual(
+            IntegrationRegime.SINGULAR_AGENT_PROXY.value, metrics["integration_regime"]
+        )
         self.assertAlmostEqual(1.0, metrics["integrated_information"], places=12)
         self.assertAlmostEqual(1.0, metrics["consciousness_level"], places=12)
         self.assertFalse(engine.needs_healing)
@@ -144,7 +146,9 @@ class IIT4PropertyTests(unittest.TestCase):
         self.assertGreaterEqual(ces.total_phi, 0.0)
         self.assertGreaterEqual(ces.max_phi_s, 0.0)
         self.assertGreaterEqual(ces.dimensionality, 0)
-        for repertoire in list(ces.cause_repertoires.values()) + list(ces.effect_repertoires.values()):
+        for repertoire in list(ces.cause_repertoires.values()) + list(
+            ces.effect_repertoires.values()
+        ):
             self.assertAlmostEqual(1.0, float(np.sum(repertoire)), places=12)
             self.assertTrue(np.all(repertoire >= 0.0))
 

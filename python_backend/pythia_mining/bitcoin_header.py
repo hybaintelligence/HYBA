@@ -33,9 +33,7 @@ def merkle_root(coinbase_txid_bytes: bytes, branch: list[str]) -> bytes:
     root = coinbase_txid_bytes
     for node_hex in branch:
         node = bytes.fromhex(node_hex)
-        root = hashlib.sha256(
-            hashlib.sha256(root + node).digest()
-        ).digest()
+        root = hashlib.sha256(hashlib.sha256(root + node).digest()).digest()
     return root
 
 
@@ -55,9 +53,7 @@ def build_header(job: "MiningJob", nonce: int, extranonce2: str) -> bytes:
 
     # prevhash: reverse byte order of each 4-byte word (stratum byte-reversal)
     prev_bytes = bytes.fromhex(job.prevhash)
-    prevhash = b"".join(
-        prev_bytes[i:i+4][::-1] for i in range(0, 32, 4)
-    )
+    prevhash = b"".join(prev_bytes[i : i + 4][::-1] for i in range(0, 32, 4))
 
     coinbase = build_coinbase(job, extranonce2)
     txid = coinbase_txid(coinbase)

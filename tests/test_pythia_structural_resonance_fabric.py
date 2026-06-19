@@ -18,11 +18,14 @@ def test_corpus_callosum_resonance_matrix_matches_epoch10_signature() -> None:
     assert matrix.active_links() == 3
     assert matrix.coherence() == pytest.approx(0.8921)
     assert matrix.get_weight("penrose_or", "iit_4") == pytest.approx(0.7250)
-    assert matrix.trust_route(
-        penrose_signal=0.98,
-        iit_phi=0.70,
-        deutsch_confidence=0.60,
-    ) == "penrose_or"
+    assert (
+        matrix.trust_route(
+            penrose_signal=0.98,
+            iit_phi=0.70,
+            deutsch_confidence=0.60,
+        )
+        == "penrose_or"
+    )
 
 
 def test_penrose_event_without_iit_partition_generates_handshake_criticism() -> None:

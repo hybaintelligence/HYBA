@@ -33,7 +33,9 @@ def test_baseline_factory_emits_required_controls() -> None:
 
 def test_baselines_separate_coupling_feedback_and_learning() -> None:
     baselines = all_baselines()
-    assert baselines["coupled_nonadaptive"]["phi_analog"] > baselines["modular_static"]["phi_analog"]
+    assert (
+        baselines["coupled_nonadaptive"]["phi_analog"] > baselines["modular_static"]["phi_analog"]
+    )
     assert baselines["coupled_nonadaptive"]["learning_present"] is False
     assert baselines["stateful_feedback_control"]["feedback_loops"] > 0
     assert baselines["stateful_feedback_control"]["learning_present"] is False

@@ -58,16 +58,17 @@ def test_sovereign_audit_consensus_requires_human_merge() -> None:
         target_symbol=proposal.target_symbol,
         requested_mode=proposal.requested_mode,
     )
-    consensus = SovereignAuditAggregator().build_consensus(
-        [proposal], [guard_result.to_dict()]
-    )
+    consensus = SovereignAuditAggregator().build_consensus([proposal], [guard_result.to_dict()])
 
     assert consensus.staged_count == 1
     assert consensus.blocked_count == 0
     assert consensus.human_merge_required is True
     assert consensus.total_expected_phi_gain == proposal.expected_phi_gain
     assert consensus.mean_expected_logical_consistency == proposal.expected_logical_consistency
-    assert any("test_pythia_stable_core_evidence_packet.py" in command for command in consensus.review_commands)
+    assert any(
+        "test_pythia_stable_core_evidence_packet.py" in command
+        for command in consensus.review_commands
+    )
 
 
 def test_first_evidence_packet_is_sealed_and_replayable() -> None:

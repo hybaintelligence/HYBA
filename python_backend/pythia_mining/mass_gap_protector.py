@@ -31,7 +31,9 @@ class MassGapProtector:
         self.PHI = PHI
         self.PHI_INV = PHI_INV
         self.MASS_GAP = float(mass_gap if mass_gap is not None else (3.0 - self.PHI))  # 1.381966...
-        self.TARGET_ENTROPY = float(target_entropy if target_entropy is not None else (1.0 / self.PHI))  # 0.618...
+        self.TARGET_ENTROPY = float(
+            target_entropy if target_entropy is not None else (1.0 / self.PHI)
+        )  # 0.618...
 
     def get_authenticity_score(self, jitter_buffer: List[float]) -> float:
         """Returns a confidence score [0, 1] for hardware authenticity.
@@ -131,11 +133,7 @@ class MassGapProtector:
 
         # Determine authenticity based on confidence threshold
         authentic = bool(confidence >= 0.7)
-        reason = (
-            "organic_hardware_detected"
-            if authentic
-            else "simulation_or_noise_detected"
-        )
+        reason = "organic_hardware_detected" if authentic else "simulation_or_noise_detected"
 
         return {
             "authentic": authentic,

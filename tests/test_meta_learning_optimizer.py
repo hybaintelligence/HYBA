@@ -2,13 +2,11 @@ import os
 import sys
 import unittest
 
-import numpy as np
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, os.path.join(ROOT, "python_backend"))
 
 from pythia_mining.ai_optimizer_meta import MetaLearningOptimizer  # noqa: E402
-from pythia_mining.pulvini_memory_fabric import PulviniMemoryFabric  # noqa: E402
 
 
 class MetaLearningOptimizerTests(unittest.TestCase):
@@ -46,7 +44,6 @@ class MetaLearningOptimizerTests(unittest.TestCase):
 
         self.assertGreaterEqual(optimizer.strategy_weights["phi_scaled"], 0.2)
         self.assertLess(optimizer.strategy_weights["phi_scaled"], 1.0)
-
 
 
 if __name__ == "__main__":

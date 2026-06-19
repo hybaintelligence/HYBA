@@ -59,7 +59,9 @@ def test_dev_fixture_bypass_is_refused_when_live_submit_enabled(monkeypatch: Any
         initialize_production_secrets()
 
 
-def test_dev_fixture_bypass_is_allowed_only_in_explicit_non_live_development(monkeypatch: Any) -> None:
+def test_dev_fixture_bypass_is_allowed_only_in_explicit_non_live_development(
+    monkeypatch: Any,
+) -> None:
     _clear_gate_env(monkeypatch)
     monkeypatch.setenv("HYBA_ALLOW_DEV_FIXTURES", "true")
     monkeypatch.setenv("HYBA_ENV", "development")

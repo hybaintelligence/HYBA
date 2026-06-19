@@ -26,7 +26,12 @@ from pythia_mining.stratum_client import MiningJob, ShareResult
 
 
 class FakePool:
-    def __init__(self, job: MiningJob | None, result: ShareResult | None = None, session: object | None = object()):
+    def __init__(
+        self,
+        job: MiningJob | None,
+        result: ShareResult | None = None,
+        session: object | None = object(),
+    ):
         self.is_connected = True
         self.live_session = session
         self.current_difficulty = 1.0
@@ -64,11 +69,18 @@ class FakeEngine:
 
     async def search(self, job: MiningJob):
         self.searches.append(job)
-        return SimpleNamespace(nonce=self.nonce, strategy_used="e2e", phi_resonance_score=0.5, search_time=0.001)
+        return SimpleNamespace(
+            nonce=self.nonce, strategy_used="e2e", phi_resonance_score=0.5, search_time=0.001
+        )
 
     def submit_candidate(self, job: MiningJob, nonce: int):
         self.validations.append((job, nonce))
-        return SimpleNamespace(valid=self.valid, reason=None if self.valid else self.reason, block_hash="00" * 32, target=job.target)
+        return SimpleNamespace(
+            valid=self.valid,
+            reason=None if self.valid else self.reason,
+            block_hash="00" * 32,
+            target=job.target,
+        )
 
     async def on_share_result(self, share_info: dict[str, Any], *, accepted: bool):
         self.feedback.append((dict(share_info), accepted))
@@ -124,7 +136,12 @@ async def test_e2e_job_to_guarded_accept_records_feedback(monkeypatch):
     miner = make_miner(monkeypatch)
     job = make_job("accepted")
     engine = FakeEngine(nonce=123, valid=True)
-    pool = FakePool(job, ShareResult(accepted=True, job_id=job.job_id, nonce=123, block_hash="aa" * 32, target=job.target))
+    pool = FakePool(
+        job,
+        ShareResult(
+            accepted=True, job_id=job.job_id, nonce=123, block_hash="aa" * 32, target=job.target
+        ),
+    )
     miner.engine = engine
     miner.stratum = pool
 
@@ -144,7 +161,12 @@ async def test_e2e_job_to_guarded_reject_records_feedback_without_acceptance(mon
     miner = make_miner(monkeypatch)
     job = make_job("guard-reject")
     engine = FakeEngine(nonce=777, valid=True)
-    pool = FakePool(job, ShareResult(accepted=False, error_code=423, error_message="guarded", job_id=job.job_id, nonce=777))
+    pool = FakePool(
+        job,
+        ShareResult(
+            accepted=False, error_code=423, error_message="guarded", job_id=job.job_id, nonce=777
+        ),
+    )
     miner.engine = engine
     miner.stratum = pool
 

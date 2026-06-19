@@ -158,11 +158,11 @@ async def intelligence_health() -> Dict[str, Any]:
     # Parse the umwelt string to get file counts
     file_counts = {}
     if umwelt_str:
-        for item in umwelt_str.split('|'):
-            if ':' in item:
-                file_part, count_part = item.split(':', 1)
+        for item in umwelt_str.split("|"):
+            if ":" in item:
+                file_part, count_part = item.split(":", 1)
                 file_counts[file_part] = int(count_part) if count_part.isdigit() else 0
-    
+
     return {
         "phi_resonance": round(phi, 6),
         "system_state": "coherent" if phi > 0.5 else "fragmented",

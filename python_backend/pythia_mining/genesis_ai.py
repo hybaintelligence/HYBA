@@ -123,35 +123,42 @@ class GenesisAI:
         )
         self.quantum_solver = PulviniCompressedQuantumSolver()
         self.blockchain_oracle = BlockchainOracle()
-        
+
         # Enhanced consciousness engine with IIT 4.0 integration
         from python_backend.pythia_mining.iit_4_analyzer import IIT4Analyzer
+
         # Dynamically enable enhanced partitioning based on system complexity
         system_complexity = config.get("system_complexity", "high")
         enhanced_partitioning = system_complexity in ("high", "production")
-        self.iit_analyzer = IIT4Analyzer(system_size=32, enhanced_partitioning=enhanced_partitioning)
+        self.iit_analyzer = IIT4Analyzer(
+            system_size=32, enhanced_partitioning=enhanced_partitioning
+        )
         self.consciousness_engine = ConsciousnessEngine()
-        
+
         # Enhanced Penrose OR for consciousness events
-        from python_backend.pythia_mining.penrose_objective_reduction import ObjectiveReductionEngine
+        from python_backend.pythia_mining.penrose_objective_reduction import (
+            ObjectiveReductionEngine,
+        )
+
         # Dynamically enable enhanced gravity model based on computational budget
         computational_budget = config.get("computational_budget", "standard")
         enhanced_gravity = computational_budget in ("high", "production")
         self.penrose_or = ObjectiveReductionEngine(
             enhanced_gravity_model=enhanced_gravity,
-            enable_true_or=False  # Use operational proxy for production
+            enable_true_or=False,  # Use operational proxy for production
         )
-        
+
         # Enhanced Deutsch knowledge substrate for decision making
         from python_backend.pythia_mining.deutsch_knowledge_substrate import KnowledgeSubstrate
+
         self.knowledge_substrate = KnowledgeSubstrate()
-        
+
         self.ai_optimizer = AIOptimizer(
             self.quantum_solver,
             self.consciousness_engine,
             self.blockchain_oracle,
         )
-        
+
         self.is_running = False
         self.current_job: Optional[MiningJob] = None
         self.metrics_history: List[SystemMetrics] = []
@@ -169,9 +176,10 @@ class GenesisAI:
         self.mining_loop_timing: List[float] = []
         self.enhanced_analysis_timing: List[float] = []
         self.max_timing_history = 100
-        
+
         # Register this instance with the service registry for API integration
         from .genesis_ai_service import GenesisAIServiceRegistry
+
         GenesisAIServiceRegistry.register_instance(self)
         self.logger.info("GenesisAI instance registered with service registry for API integration")
         self.allow_dev_fixture_jobs = os.getenv(
@@ -272,13 +280,9 @@ class GenesisAI:
         self.is_running = False
         await self.pool_manager.disconnect_all()
         self.logger.info("PYTHIA Orchestrator stopped cleanly.")
-    
+
     async def _run_enhanced_analysis_async(
-        self,
-        density_states,
-        optimization,
-        memory_snapshot,
-        compression_ratio
+        self, density_states, optimization, memory_snapshot, compression_ratio
     ) -> None:
         """Run enhanced consciousness calculations asynchronously to prevent HPS degradation."""
         analysis_start = time.time()
@@ -286,7 +290,7 @@ class GenesisAI:
             # Enhanced consciousness metrics with IIT 4.0 and Penrose OR
             if density_states:
                 phi_metrics = self.consciousness_engine.measure_phi(density_states)
-                
+
                 # Apply Penrose OR for consciousness events
                 if density_states:
                     current_rho = density_states[-1]
@@ -295,17 +299,18 @@ class GenesisAI:
                         current_rho, coherence_time
                     )
                     if or_event:
-                        self.logger.info(f"Penrose OR consciousness event detected")
-                
+                        self.logger.info("Penrose OR consciousness event detected")
+
                 # Apply dynamic Golden Ratio scaling to consciousness metrics
                 # Calibrated by Deutsch substrate based on mining success rate
                 import math
+
                 PHI = (1 + math.sqrt(5)) / 2
-                
+
                 # Get knowledge substrate metrics for adaptive scaling
                 knowledge_metrics = self.knowledge_substrate.get_knowledge_metrics()
-                avg_accuracy = knowledge_metrics.get('avg_predictive_accuracy', 0.5)
-                
+                avg_accuracy = knowledge_metrics.get("avg_predictive_accuracy", 0.5)
+
                 # Dynamic calibration: adjust scaling based on success rate
                 if avg_accuracy < 0.3:
                     # Low success: increase scaling to boost exploration
@@ -316,10 +321,10 @@ class GenesisAI:
                 else:
                     # Nominal: use baseline
                     scaling_factor = PHI / 1.5
-                
+
                 phi_metrics.phi_integrated = min(1.0, phi_metrics.phi_integrated * scaling_factor)
                 phi_metrics.phi_causal = min(1.0, phi_metrics.phi_causal * scaling_factor)
-                
+
                 self.latest_phi_optimization = {
                     "strategy_used": "enhanced_consciousness",
                     "confidence": phi_metrics.phi_integrated,
@@ -337,7 +342,7 @@ class GenesisAI:
                     "iit_enhanced": True,
                     "iit_performance_metrics": self.iit_analyzer.get_performance_metrics(),
                 }
-            
+
             # Enhanced AI decision making with Deutsch knowledge substrate
             if self.current_job:
                 context = {
@@ -346,17 +351,18 @@ class GenesisAI:
                     "phi_resonance": self.latest_phi_optimization.get("phi_resonance_score", 0.5),
                     "pool_latency": 50.0,  # Placeholder for actual latency
                 }
-                
+
                 # Record decision in knowledge substrate
                 if optimization and optimization.strategy_used:
                     self.knowledge_substrate.create_knowledge_from_success(
                         optimization.strategy_used,
                         context,
-                        {"accepted": True, "confidence": optimization.confidence}
+                        {"accepted": True, "confidence": optimization.confidence},
                     )
-            
+
             # Log memory compression metrics
             import math
+
             PHI = (1 + math.sqrt(5)) / 2
             phi_scaled_compression = min(1.0, compression_ratio * PHI)
             self.logger.debug(
@@ -364,24 +370,32 @@ class GenesisAI:
                 f"phi_scaled={phi_scaled_compression:.4f}, "
                 f"kernel_size={memory_snapshot.compression.get('compressed_dimension', 0)}"
             )
-            
+
             # Record enhanced analysis timing
             analysis_elapsed = (time.time() - analysis_start) * 1000  # Convert to ms
             self.enhanced_analysis_timing.append(analysis_elapsed)
             if len(self.enhanced_analysis_timing) > self.max_timing_history:
                 self.enhanced_analysis_timing.pop(0)
-            
+
         except Exception as e:
             self.logger.error(f"Enhanced analysis async task failed: {e}", exc_info=True)
             # Graceful degradation: continue mining even if enhanced analysis fails
-    
+
     def get_performance_metrics(self) -> Dict[str, Any]:
         """Return performance metrics for telemetry and monitoring."""
-        mining_avg = sum(self.mining_loop_timing) / len(self.mining_loop_timing) if self.mining_loop_timing else 0.0
+        mining_avg = (
+            sum(self.mining_loop_timing) / len(self.mining_loop_timing)
+            if self.mining_loop_timing
+            else 0.0
+        )
         mining_max = max(self.mining_loop_timing) if self.mining_loop_timing else 0.0
-        enhanced_avg = sum(self.enhanced_analysis_timing) / len(self.enhanced_analysis_timing) if self.enhanced_analysis_timing else 0.0
+        enhanced_avg = (
+            sum(self.enhanced_analysis_timing) / len(self.enhanced_analysis_timing)
+            if self.enhanced_analysis_timing
+            else 0.0
+        )
         enhanced_max = max(self.enhanced_analysis_timing) if self.enhanced_analysis_timing else 0.0
-        
+
         return {
             "mining_loop_avg_ms": mining_avg,
             "mining_loop_max_ms": mining_max,
@@ -395,7 +409,7 @@ class GenesisAI:
             "shares_solved": self.shares_solved,
             "health_status": self.health_status,
         }
-    
+
     def get_health_status(self) -> Dict[str, Any]:
         """Return health status for all enhanced components."""
         try:
@@ -405,7 +419,7 @@ class GenesisAI:
             }
         except Exception as e:
             iit_health = {"status": "unhealthy", "error": str(e)}
-        
+
         try:
             penrose_health = {
                 "status": "healthy",
@@ -413,7 +427,7 @@ class GenesisAI:
             }
         except Exception as e:
             penrose_health = {"status": "unhealthy", "error": str(e)}
-        
+
         try:
             deutsch_health = {
                 "status": "healthy",
@@ -421,7 +435,7 @@ class GenesisAI:
             }
         except Exception as e:
             deutsch_health = {"status": "unhealthy", "error": str(e)}
-        
+
         return {
             "overall_status": self.health_status,
             "iit_analyzer": iit_health,
@@ -497,27 +511,31 @@ class GenesisAI:
                 self.overlay.phase_heartbeat(self.heartbeat_tick)
                 self.overlay.manifold.evolve_closed_system(dt=0.05)
                 self._run_autonomic_feedback()
-                
+
                 # Core mining operations (synchronous, minimal overhead)
                 optimization = await self.ai_optimizer.optimize_nonce_search(self.current_job)
-                
+
                 # Enhanced nonce space pre-computation with Pulvini memory compression
                 memory_snapshot = self.propagation.memory_fabric.compressed_kernel_snapshot()
-                compression_ratio = memory_snapshot.compression.get('working_set_compression_ratio', 0.5)
-                
+                compression_ratio = memory_snapshot.compression.get(
+                    "working_set_compression_ratio", 0.5
+                )
+
                 await self.quantum_solver.configure_compressed_search(
                     self.current_job.target, self.overlay.nonce_plan
                 )
                 resolved_nonce = await self.quantum_solver.solve()
-                
+
                 # Offload enhanced calculations to background to prevent HPS degradation
-                asyncio.create_task(self._run_enhanced_analysis_async(
-                    density_states=self.overlay.manifold.get_density_state_history(window=5),
-                    optimization=optimization,
-                    memory_snapshot=memory_snapshot,
-                    compression_ratio=compression_ratio
-                ))
-                
+                asyncio.create_task(
+                    self._run_enhanced_analysis_async(
+                        density_states=self.overlay.manifold.get_density_state_history(window=5),
+                        optimization=optimization,
+                        memory_snapshot=memory_snapshot,
+                        compression_ratio=compression_ratio,
+                    )
+                )
+
                 # Record mining loop timing
                 loop_elapsed = (time.time() - loop_start) * 1000  # Convert to ms
                 self.mining_loop_timing.append(loop_elapsed)

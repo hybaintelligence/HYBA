@@ -16,6 +16,7 @@ primitives are fully deterministic.  This file closes the gap by proving:
 These tests do NOT deploy to mainnet/testnet.  They validate the local
 validation pipeline that gates every pool submission.
 """
+
 from __future__ import annotations
 
 import asyncio
@@ -25,14 +26,11 @@ import time
 from pathlib import Path
 from typing import List, Optional
 
-import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "python_backend"))
 
 from pythia_mining.mining_validation import (  # noqa: E402
-    block_hash,
-    build_block_header,
     coinbase_hash_hex,
     compute_merkle_root,
     validate_share,
@@ -44,6 +42,7 @@ from pythia_mining.quantum_solver import DodecahedralQuantumSolver  # noqa: E402
 # ---------------------------------------------------------------------------
 # helpers
 # ---------------------------------------------------------------------------
+
 
 def _job(target_hex_prefix: str = "7fffff") -> MiningJob:
     """Regtest job.  target_hex_prefix controls difficulty."""
@@ -70,6 +69,7 @@ def _find_valid_nonces(job: MiningJob, limit: int = 10_000) -> List[int]:
 # 1. Regtest target yields valid shares within reasonable nonce range
 # ---------------------------------------------------------------------------
 
+
 def test_regtest_target_yields_valid_shares_in_range() -> None:
     """Valid nonces must exist within the first 10,000 candidates on regtest target."""
     job = _job("7fffff")
@@ -80,6 +80,7 @@ def test_regtest_target_yields_valid_shares_in_range() -> None:
 # ---------------------------------------------------------------------------
 # 2. Every valid nonce produces a correct 80-byte block header
 # ---------------------------------------------------------------------------
+
 
 def test_valid_share_produces_correct_80_byte_header() -> None:
     """Each valid nonce must produce a properly-formed 80-byte header."""
@@ -100,6 +101,7 @@ def test_valid_share_produces_correct_80_byte_header() -> None:
 # 3. SHA-256d hash of header is consistent with validate_share result
 # ---------------------------------------------------------------------------
 
+
 def test_sha256d_hash_matches_validate_share_output() -> None:
     """validate_share block_hash must equal double-SHA256 of the 80-byte header."""
     job = _job("7fffff")
@@ -113,24 +115,23 @@ def test_sha256d_hash_matches_validate_share_output() -> None:
         digest = hashlib.sha256(hashlib.sha256(header_bytes).digest()).digest()
         # display hash is reversed
         expected_display = digest[::-1].hex()
-        assert result.block_hash == expected_display, (
-            f"block_hash mismatch for nonce {nonce}"
-        )
+        assert result.block_hash == expected_display, f"block_hash mismatch for nonce {nonce}"
 
 
 # ---------------------------------------------------------------------------
 # 4. Easier target yields strictly more valid shares than harder target
 # ---------------------------------------------------------------------------
 
+
 def test_easier_target_yields_more_valid_shares() -> None:
     """Valid share count must increase as target increases (difficulty decreases)."""
-    easy_job  = _job("7fffff")   # very easy regtest
+    easy_job = _job("7fffff")  # very easy regtest
     medium_job = _job("0fffff")  # medium
 
     extranonce2 = "00000000"
     limit = 5_000
 
-    easy_count   = sum(1 for n in range(limit) if validate_share(easy_job, n, extranonce2).valid)
+    easy_count = sum(1 for n in range(limit) if validate_share(easy_job, n, extranonce2).valid)
     medium_count = sum(1 for n in range(limit) if validate_share(medium_job, n, extranonce2).valid)
 
     assert easy_count >= medium_count, (
@@ -142,8 +143,10 @@ def test_easier_target_yields_more_valid_shares() -> None:
 # 5. Solver finds nonce within regtest range in bounded time
 # ---------------------------------------------------------------------------
 
+
 def test_solver_finds_nonce_within_regtest_target_in_bounded_time() -> None:
     """DodecahedralQuantumSolver must return a valid nonce for the regtest target."""
+
     async def _run() -> Optional[int]:
         solver = DodecahedralQuantumSolver()
         await solver.configure_search(
@@ -160,6 +163,7 @@ def test_solver_finds_nonce_within_regtest_target_in_bounded_time() -> None:
 # ---------------------------------------------------------------------------
 # 6. Nonce throughput baseline is measurable (establishes anti-sim reference)
 # ---------------------------------------------------------------------------
+
 
 def test_nonce_validation_throughput_is_measurable() -> None:
     """Local SHA-256d validation must process at least 1,000 nonces/sec.
@@ -186,6 +190,7 @@ def test_nonce_validation_throughput_is_measurable() -> None:
 # ---------------------------------------------------------------------------
 # 7. Deterministic extranonce2 variation changes merkle root
 # ---------------------------------------------------------------------------
+
 
 def test_extranonce2_variation_changes_merkle_root() -> None:
     """Different extranonce2 values must produce different merkle roots."""

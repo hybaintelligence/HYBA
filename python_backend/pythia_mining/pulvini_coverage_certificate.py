@@ -195,8 +195,7 @@ def lane_coverage_report() -> Dict[str, Any]:
         "total_covered": sum(lane["size"] for lane in lanes),
         "lanes": lanes,
         "automorphism_action": (
-            f"sigma(q*{NUM_NODES}+r) = q*{NUM_NODES}+sigma(r) "
-            f"where sigma ∈ Aut(G), |Aut(G)| = 120"
+            f"sigma(q*{NUM_NODES}+r) = q*{NUM_NODES}+sigma(r) where sigma ∈ Aut(G), |Aut(G)| = 120"
         ),
     }
 

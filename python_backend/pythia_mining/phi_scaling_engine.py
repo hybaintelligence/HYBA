@@ -250,11 +250,11 @@ class PhiScaledEnsemble:
             # Update telemetry buffer
             self._telemetry_buffer.extend(telemetry_stream)
             if len(self._telemetry_buffer) > self._telemetry_buffer_size:
-                self._telemetry_buffer = self._telemetry_buffer[-self._telemetry_buffer_size:]
-            
+                self._telemetry_buffer = self._telemetry_buffer[-self._telemetry_buffer_size :]
+
             # Verify authenticity
             authenticity_result = self.mass_gap_shield.verify_authenticity(self._telemetry_buffer)
-            
+
             # If telemetry is inauthentic, apply conservative scaling
             if not authenticity_result["authentic"]:
                 return {
@@ -319,12 +319,12 @@ class PhiScaledEnsemble:
         )
         self._remember(decision)
         result = decision.to_dict()
-        
+
         # Add authenticity verification result if available
         if authenticity_result:
             result["authenticity"] = authenticity_result
             result["scaling_mode"] = "phi_scaling_with_anti_simulation_protection"
-        
+
         return result
 
     def _calculate_indicator_harmony(self, indicators: Mapping[str, Mapping[str, float]]) -> float:
@@ -334,7 +334,9 @@ class PhiScaledEnsemble:
         for metrics in indicators.values():
             if not isinstance(metrics, Mapping) or not metrics:
                 continue
-            values = np.asarray([float(v) for v in metrics.values() if v is not None], dtype=np.float64)
+            values = np.asarray(
+                [float(v) for v in metrics.values() if v is not None], dtype=np.float64
+            )
             values = values[np.isfinite(values)]
             if values.size <= 1:
                 continue

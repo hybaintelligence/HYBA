@@ -31,8 +31,8 @@ SLICE_SIZE = (1 << NONCE_BITS) // NUM_NODES
 # H₄ Yang-Mills mass gap: in 4D the gap widens
 # For H₃: gap = 3 - φ ≈ 1.382
 # For H₄: gap = 4 - φ³ ≈ 2.236 (wider gap = more aggressive curvature rejection)
-PHI = (1.0 + 5.0 ** 0.5) / 2.0
-PHI_3 = PHI ** 3  # ≈ 4.23607
+PHI = (1.0 + 5.0**0.5) / 2.0
+PHI_3 = PHI**3  # ≈ 4.23607
 H4_YANG_MILLS_GAP = 4.0 - PHI_3  # ≈ -0.23607 (absolute value ≈ 0.236)
 
 # ── 600-cell Adjacency (120 vertices, degree 12, vertex-transitive) ──────
@@ -107,9 +107,7 @@ def _build_600cell_adjacency() -> Dict[int, Dict[str, List[int]]]:
     for i in range(NUM_NODES):
         for j in adj[i]["d"]:
             assert i in adj[j]["d"], f"Symmetry broken: {i}->{j} but not {j}->{i}"
-        assert len(adj[i]["d"]) == 12, (
-            f"Vertex {i} has {len(adj[i]['d'])} neighbors, expected 12"
-        )
+        assert len(adj[i]["d"]) == 12, f"Vertex {i} has {len(adj[i]['d'])} neighbors, expected 12"
 
     return adj
 

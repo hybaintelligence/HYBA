@@ -26,7 +26,7 @@ from __future__ import annotations
 
 import hashlib
 import json
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass
 from enum import Enum
 from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
 
@@ -34,7 +34,6 @@ from pythia_mining.nonce_resonance_guidance import (
     BlockContext,
     EmpiricalStructureEvidence,
     PythiaNonceResonanceGuidance,
-    ResonanceSignal,
     build_nonce_resonance_guidance,
 )
 
@@ -212,7 +211,9 @@ def pythia_structured_nonce_order(
     _validate_budget(candidate_budget)
     seen: set[int] = set()
     ordered: List[int] = []
-    seed = f"{guidance.seal}:{guidance.block_context.block_height}:{guidance.block_context.target_hex}"
+    seed = (
+        f"{guidance.seal}:{guidance.block_context.block_height}:{guidance.block_context.target_hex}"
+    )
 
     for rank, priority in enumerate(guidance.priorities):
         center = _anchor_nonce(seed, priority.signal.value, rank, start_nonce)

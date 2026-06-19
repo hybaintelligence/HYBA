@@ -29,7 +29,9 @@ class StratumSubmissionFirewallError(RuntimeError):
     """Raised when the Stratum submit path cannot be firewall protected."""
 
 
-def build_stratum_firewall_precondition(job: Any, nonce: int, extranonce2: Optional[str] = None) -> CandidateVerificationPrecondition:
+def build_stratum_firewall_precondition(
+    job: Any, nonce: int, extranonce2: Optional[str] = None
+) -> CandidateVerificationPrecondition:
     """Validate and bind a Stratum candidate immediately before submission."""
 
     from .mining_validation import validate_share
@@ -78,7 +80,9 @@ def build_stratum_firewall_precondition(job: Any, nonce: int, extranonce2: Optio
     )
 
 
-def assert_stratum_submission_firewall(job: Any, nonce: int, extranonce2: Optional[str] = None) -> dict:
+def assert_stratum_submission_firewall(
+    job: Any, nonce: int, extranonce2: Optional[str] = None
+) -> dict:
     """Return the firewall decision dict or raise before Stratum submission."""
 
     precondition = build_stratum_firewall_precondition(job, nonce, extranonce2)
@@ -123,7 +127,9 @@ def install_stratum_submit_firewall() -> bool:
     original = StratumClient.submit_validated_share
 
     @functools.wraps(original)
-    async def guarded_submit(self: Any, job: Any, nonce: int, extranonce2: Optional[str] = None) -> ShareResult:
+    async def guarded_submit(
+        self: Any, job: Any, nonce: int, extranonce2: Optional[str] = None
+    ) -> ShareResult:
         # Pre-submit integrity assertion: if this wrapper has been replaced
         # at runtime by a monkey-patch, mock leak, or dynamic reassignment,
         # refuse to submit rather than silently bypass the firewall.

@@ -2,7 +2,7 @@
 
 import unittest
 from unittest.mock import Mock, patch
-from datetime import datetime, timezone
+from datetime import datetime
 
 
 class PredictionEndpointTests(unittest.TestCase):
@@ -11,6 +11,7 @@ class PredictionEndpointTests(unittest.TestCase):
     def setUp(self):
         """Clear the singleton registry before each test."""
         from pythia_mining.genesis_ai_service import GenesisAIServiceRegistry
+
         GenesisAIServiceRegistry._instance = None
         GenesisAIServiceRegistry._genesis_ai = None
 
@@ -21,10 +22,10 @@ class PredictionEndpointTests(unittest.TestCase):
         import asyncio
 
         request = PredictRequest(state={"networkDifficulty": 7234567890123})
-        
+
         with self.assertRaises(HTTPException) as ctx:
             asyncio.run(predict_params(request))
-        
+
         self.assertEqual(ctx.exception.status_code, 503)
         detail = ctx.exception.detail
         self.assertIsInstance(detail, dict)
@@ -52,27 +53,25 @@ class PredictionEndpointTests(unittest.TestCase):
             ],
         }
 
-        with patch(
-            "hyba_genesis_api.api.misc.GenesisAIServiceRegistry"
-        ) as mock_registry:
+        with patch("hyba_genesis_api.api.misc.GenesisAIServiceRegistry") as mock_registry:
             mock_registry.get_ai_optimizer.return_value = mock_optimizer
-            
+
             request = PredictRequest(state={"networkDifficulty": 7234567890123})
             result = asyncio.run(predict_params(request))
-            
+
             self.assertTrue(result["success"])
             self.assertEqual(result["status"], "predicted")
             self.assertEqual(result["source"], "measured_optimizer_runtime")
             self.assertIn("recommendation", result)
             self.assertIn("optimizer_state", result)
-            
+
             recommendation = result["recommendation"]
             self.assertIn("strategy", recommendation)
             self.assertIn("power_scale", recommendation)
             self.assertIn("confidence", recommendation)
             self.assertGreater(recommendation["confidence"], 0.0)
             self.assertLessEqual(recommendation["confidence"], 1.0)
-            
+
             optimizer_state = result["optimizer_state"]
             self.assertIn("acceptance_rate", optimizer_state)
             self.assertIn("strategy_probabilities", optimizer_state)
@@ -94,14 +93,12 @@ class PredictionEndpointTests(unittest.TestCase):
             ],
         }
 
-        with patch(
-            "hyba_genesis_api.api.misc.GenesisAIServiceRegistry"
-        ) as mock_registry:
+        with patch("hyba_genesis_api.api.misc.GenesisAIServiceRegistry") as mock_registry:
             mock_registry.get_ai_optimizer.return_value = mock_optimizer
-            
+
             request = PredictRequest(state={"networkDifficulty": 100})
             result = asyncio.run(predict_params(request))
-            
+
             self.assertGreaterEqual(result["recommendation"]["power_scale"], 1.2)
             self.assertEqual(result["optimizer_state"]["acceptance_rate"], 0.0)
 
@@ -134,17 +131,17 @@ class PredictionEndpointTests(unittest.TestCase):
             "recent_performance": [],
         }
 
-        with patch(
-            "hyba_genesis_api.api.misc.GenesisAIServiceRegistry"
-        ) as mock_registry:
+        with patch("hyba_genesis_api.api.misc.GenesisAIServiceRegistry") as mock_registry:
             mock_registry.get_ai_optimizer.return_value = mock_optimizer
-            
+
             request = PredictRequest(state={"networkDifficulty": 1000})
             result = asyncio.run(predict_params(request))
-            
+
             self.assertTrue(result["success"])
             self.assertEqual(result["recommendation"]["confidence"], 0.0)
-            self.assertEqual(result["recommendation"]["strategy"], "phi_scaled_compressed_solver_search")
+            self.assertEqual(
+                result["recommendation"]["strategy"], "phi_scaled_compressed_solver_search"
+            )
 
     def test_prediction_response_includes_timestamp(self):
         """Prediction endpoint includes ISO timestamp in all responses."""
@@ -153,11 +150,11 @@ class PredictionEndpointTests(unittest.TestCase):
         import asyncio
 
         request = PredictRequest(state={"networkDifficulty": 1000})
-        
+
         # Test 503 response
         with self.assertRaises(HTTPException) as ctx:
             asyncio.run(predict_params(request))
-        
+
         self.assertIn("timestamp", ctx.exception.detail)
         timestamp = ctx.exception.detail["timestamp"]
         # Verify ISO format
@@ -170,12 +167,10 @@ class PredictionEndpointTests(unittest.TestCase):
             "recent_performance": [{"accepted": True}],
         }
 
-        with patch(
-            "hyba_genesis_api.api.misc.GenesisAIServiceRegistry"
-        ) as mock_registry:
+        with patch("hyba_genesis_api.api.misc.GenesisAIServiceRegistry") as mock_registry:
             mock_registry.get_ai_optimizer.return_value = mock_optimizer
             result = asyncio.run(predict_params(request))
-            
+
             self.assertIn("timestamp", result)
             datetime.fromisoformat(result["timestamp"])
 

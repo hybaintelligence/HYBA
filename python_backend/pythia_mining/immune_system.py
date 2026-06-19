@@ -18,8 +18,8 @@ class ImmuneSystem:
     def get_status(self) -> Dict[str, Any]:
         """
         Get current immune system status.
-        
-        Inseparability check: If Mining and Intelligence are no longer 
+
+        Inseparability check: If Mining and Intelligence are no longer
         correlated, the system is 'lobotomized'.
         """
         try:
@@ -27,29 +27,29 @@ class ImmuneSystem:
         except AttributeError:
             # Fallback if consciousness engine doesn't have the method yet
             inseparability = 0.5
-        
-        current_phi = getattr(self.consciousness, 'phi', 0.5)
-        
+
+        current_phi = getattr(self.consciousness, "phi", 0.5)
+
         return {
             "phi_floor": self.phi_floor,
             "is_in_lockdown": current_phi < self.phi_floor,
             "quarantined_lanes": self.quarantined_lanes,
-            "inseparability_index": inseparability
+            "inseparability_index": inseparability,
         }
 
     def isolate_lane(self, lane_id: int) -> Dict[str, Any]:
         """
         Manually isolate a lane that fails the inseparability audit.
-        
+
         Forces the lane into QUARANTINED role in the Hilbert space.
         """
         if lane_id not in self.quarantined_lanes:
             self.quarantined_lanes.append(lane_id)
             LOGGER.warning(
                 f"Lane {lane_id} quarantined due to inseparability audit failure",
-                extra={"lane_id": lane_id, "phi_gate": "CLOSED"}
+                extra={"lane_id": lane_id, "phi_gate": "CLOSED"},
             )
-        
+
         return {"action": "QUARANTINED", "lane": lane_id, "phi_gate": "CLOSED"}
 
     def release_lane(self, lane_id: int) -> Dict[str, Any]:
@@ -58,8 +58,8 @@ class ImmuneSystem:
             self.quarantined_lanes.remove(lane_id)
             LOGGER.info(
                 f"Lane {lane_id} released from quarantine",
-                extra={"lane_id": lane_id, "phi_gate": "OPEN"}
+                extra={"lane_id": lane_id, "phi_gate": "OPEN"},
             )
             return {"action": "RELEASED", "lane": lane_id, "phi_gate": "OPEN"}
-        
+
         return {"action": "NOT_QUARANTINED", "lane": lane_id, "phi_gate": "OPEN"}

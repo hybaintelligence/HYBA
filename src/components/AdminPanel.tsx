@@ -520,7 +520,10 @@ function AdminPanel({ token }: { token: string | null }) {
             </div>
             <form onSubmit={handleCreateUser} className="p-6 space-y-4">
               <div>
-                <label htmlFor="create-username" className="block text-sm font-medium text-slate-700 mb-1">
+                <label
+                  htmlFor="create-username"
+                  className="block text-sm font-medium text-slate-700 mb-1"
+                >
                   Username
                 </label>
                 <input
@@ -534,7 +537,10 @@ function AdminPanel({ token }: { token: string | null }) {
                 />
               </div>
               <div>
-                <label htmlFor="create-email" className="block text-sm font-medium text-slate-700 mb-1">
+                <label
+                  htmlFor="create-email"
+                  className="block text-sm font-medium text-slate-700 mb-1"
+                >
                   Email (optional)
                 </label>
                 <input
@@ -546,7 +552,10 @@ function AdminPanel({ token }: { token: string | null }) {
                 />
               </div>
               <div>
-                <label htmlFor="create-password" className="block text-sm font-medium text-slate-700 mb-1">
+                <label
+                  htmlFor="create-password"
+                  className="block text-sm font-medium text-slate-700 mb-1"
+                >
                   Password
                 </label>
                 <input
@@ -560,7 +569,10 @@ function AdminPanel({ token }: { token: string | null }) {
                 />
               </div>
               <div>
-                <label htmlFor="create-role" className="block text-sm font-medium text-slate-700 mb-1">
+                <label
+                  htmlFor="create-role"
+                  className="block text-sm font-medium text-slate-700 mb-1"
+                >
                   Role
                 </label>
                 <select
@@ -614,7 +626,10 @@ function AdminPanel({ token }: { token: string | null }) {
             </div>
             <form onSubmit={handleUpdateUser} className="p-6 space-y-4">
               <div>
-                <label htmlFor="edit-username" className="block text-sm font-medium text-slate-700 mb-1">
+                <label
+                  htmlFor="edit-username"
+                  className="block text-sm font-medium text-slate-700 mb-1"
+                >
                   Username
                 </label>
                 <input
@@ -626,7 +641,10 @@ function AdminPanel({ token }: { token: string | null }) {
                 />
               </div>
               <div>
-                <label htmlFor="edit-email" className="block text-sm font-medium text-slate-700 mb-1">
+                <label
+                  htmlFor="edit-email"
+                  className="block text-sm font-medium text-slate-700 mb-1"
+                >
                   Email
                 </label>
                 <input
@@ -638,7 +656,10 @@ function AdminPanel({ token }: { token: string | null }) {
                 />
               </div>
               <div>
-                <label htmlFor="edit-password" className="block text-sm font-medium text-slate-700 mb-1">
+                <label
+                  htmlFor="edit-password"
+                  className="block text-sm font-medium text-slate-700 mb-1"
+                >
                   New Password (leave blank to keep current)
                 </label>
                 <input
@@ -651,7 +672,10 @@ function AdminPanel({ token }: { token: string | null }) {
                 />
               </div>
               <div>
-                <label htmlFor="edit-role" className="block text-sm font-medium text-slate-700 mb-1">
+                <label
+                  htmlFor="edit-role"
+                  className="block text-sm font-medium text-slate-700 mb-1"
+                >
                   Role
                 </label>
                 <select

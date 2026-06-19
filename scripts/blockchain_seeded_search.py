@@ -31,11 +31,11 @@ it is searching where no one else is looking.
 This is the correct framing of the thesis: not "φ makes SHA-256d easier" but
 "φ structure in historical data tells us where the search space is uncrowded."
 """
+
 from __future__ import annotations
 
 import hashlib
 import json
-import math
 import random
 import sys
 import time
@@ -48,7 +48,9 @@ sys.path.insert(0, str(ROOT / "python_backend"))
 
 from pythia_mining.golden_ratio_library import PHI
 from pythia_mining.mining_validation import (
-    build_block_header, compute_merkle_root, coinbase_hash_hex,
+    build_block_header,
+    compute_merkle_root,
+    coinbase_hash_hex,
 )
 from pythia_mining.stratum_client import MiningJob
 
@@ -59,22 +61,23 @@ from pythia_mining.stratum_client import MiningJob
 # From phi_resonance_100blocks: the 60 identified gaps.
 # The largest gap is the primary search target.
 LARGEST_GAP_START = 2_006_376_725
-LARGEST_GAP_END   = 2_374_011_124
-LARGEST_GAP_SIZE  = LARGEST_GAP_END - LARGEST_GAP_START  # 367,634,399
+LARGEST_GAP_END = 2_374_011_124
+LARGEST_GAP_SIZE = LARGEST_GAP_END - LARGEST_GAP_START  # 367,634,399
 
 # φ^15 = 1364.000733... — the resonance multiple around which mined nonces cluster
-PHI_15 = PHI ** 15  # 1364.0007331374366
+PHI_15 = PHI**15  # 1364.0007331374366
 
 # Historically dense zone: where most miners search (empirically observed)
 DENSE_ZONE_START = 0
-DENSE_ZONE_END   = 2_000_000_000
+DENSE_ZONE_END = 2_000_000_000
 
-UINT32 = 2 ** 32
+UINT32 = 2**32
 
 
 # ---------------------------------------------------------------------------
 # Nonce generators
 # ---------------------------------------------------------------------------
+
 
 def uniform_random_gen(rng: random.Random) -> Iterator[int]:
     while True:
@@ -111,7 +114,6 @@ def gap_phi_tiled_gen(start: int = LARGEST_GAP_START) -> Iterator[int]:
     Combines gap-seeding with low-discrepancy coverage inside the gap.
     Stride scaled to gap size so the full gap is covered before wrapping.
     """
-    phi_stride = 2_654_435_769  # floor(2^32 / φ)
     # Scale stride to gap size for intra-gap coverage
     gap_stride = int(LARGEST_GAP_SIZE / PHI) % LARGEST_GAP_SIZE
     n = start - LARGEST_GAP_START  # offset within gap
@@ -124,13 +126,19 @@ def gap_phi_tiled_gen(start: int = LARGEST_GAP_START) -> Iterator[int]:
 # SHA-256d validation
 # ---------------------------------------------------------------------------
 
+
 def _make_job(target: int) -> MiningJob:
     return MiningJob(
-        job_id="gap-bench", prevhash="00" * 32,
+        job_id="gap-bench",
+        prevhash="00" * 32,
         coinbase_parts=("0100000001", "ffffffff"),
-        merkle_branch=[], version="20000000",
-        nbits="207fffff", ntime="5e9a5c00",
-        target=target, extranonce1="abcd1234", extranonce2_size=4,
+        merkle_branch=[],
+        version="20000000",
+        nbits="207fffff",
+        ntime="5e9a5c00",
+        target=target,
+        extranonce1="abcd1234",
+        extranonce2_size=4,
     )
 
 
@@ -150,6 +158,7 @@ def _valid(prefix: bytes, nonce: int, target: int) -> bool:
 # Strategy runner
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class Result:
     name: str
@@ -162,9 +171,15 @@ class Result:
     notes: str = ""
 
 
-def _run(name: str, gen: Iterator[int], prefix: bytes,
-         target: int, iterations: int,
-         search_region: str, notes: str = "") -> Result:
+def _run(
+    name: str,
+    gen: Iterator[int],
+    prefix: bytes,
+    target: int,
+    iterations: int,
+    search_region: str,
+    notes: str = "",
+) -> Result:
     hits = 0
     first_hit: Optional[int] = None
     t0 = time.perf_counter()
@@ -177,49 +192,75 @@ def _run(name: str, gen: Iterator[int], prefix: bytes,
                 first_hit = i + 1
     elapsed = time.perf_counter() - t0
     return Result(
-        name=name, iterations=iterations, hits=hits,
-        time_s=elapsed, first_hit_iteration=first_hit,
+        name=name,
+        iterations=iterations,
+        hits=hits,
+        time_s=elapsed,
+        first_hit_iteration=first_hit,
         hashes_per_second=iterations / max(elapsed, 1e-9),
-        search_region=search_region, notes=notes,
+        search_region=search_region,
+        notes=notes,
     )
 
 
 def run_trial(seed: int, iterations: int, target: int) -> List[Result]:
-    rng = random.Random(seed)
+    random.Random(seed)
     job = _make_job(target)
     prefix = _prefix(job)
 
     return [
-        _run("uniform_random",  uniform_random_gen(random.Random(seed)),
-             prefix, target, iterations,
-             search_region=f"[0, {UINT32})",
-             notes="Baseline — no structural prior"),
-
-        _run("dense_zone",      dense_zone_gen(random.Random(seed + 1)),
-             prefix, target, iterations,
-             search_region=f"[0, {DENSE_ZONE_END:,})",
-             notes="Historically exhausted region — where most miners search"),
-
-        _run("phi15_multiples", phi15_multiples_gen(random.Random(seed + 2)),
-             prefix, target, iterations,
-             search_region="near k*φ^15 multiples",
-             notes="Replicates observed miner clustering around φ^15"),
-
-        _run("gap_seeded",      gap_seeded_gen(random.Random(seed + 3)),
-             prefix, target, iterations,
-             search_region=f"[{LARGEST_GAP_START:,}, {LARGEST_GAP_END:,}]",
-             notes="Largest identified unsearched gap — zero historical competition"),
-
-        _run("gap_phi_tiled",   gap_phi_tiled_gen(LARGEST_GAP_START),
-             prefix, target, iterations,
-             search_region=f"gap, φ-tiled (stride={int(LARGEST_GAP_SIZE/PHI)})",
-             notes="φ-tiled low-discrepancy coverage within the gap"),
+        _run(
+            "uniform_random",
+            uniform_random_gen(random.Random(seed)),
+            prefix,
+            target,
+            iterations,
+            search_region=f"[0, {UINT32})",
+            notes="Baseline — no structural prior",
+        ),
+        _run(
+            "dense_zone",
+            dense_zone_gen(random.Random(seed + 1)),
+            prefix,
+            target,
+            iterations,
+            search_region=f"[0, {DENSE_ZONE_END:,})",
+            notes="Historically exhausted region — where most miners search",
+        ),
+        _run(
+            "phi15_multiples",
+            phi15_multiples_gen(random.Random(seed + 2)),
+            prefix,
+            target,
+            iterations,
+            search_region="near k*φ^15 multiples",
+            notes="Replicates observed miner clustering around φ^15",
+        ),
+        _run(
+            "gap_seeded",
+            gap_seeded_gen(random.Random(seed + 3)),
+            prefix,
+            target,
+            iterations,
+            search_region=f"[{LARGEST_GAP_START:,}, {LARGEST_GAP_END:,}]",
+            notes="Largest identified unsearched gap — zero historical competition",
+        ),
+        _run(
+            "gap_phi_tiled",
+            gap_phi_tiled_gen(LARGEST_GAP_START),
+            prefix,
+            target,
+            iterations,
+            search_region=f"gap, φ-tiled (stride={int(LARGEST_GAP_SIZE / PHI)})",
+            notes="φ-tiled low-discrepancy coverage within the gap",
+        ),
     ]
 
 
 # ---------------------------------------------------------------------------
 # Aggregation
 # ---------------------------------------------------------------------------
+
 
 def _mean(v: List) -> float:
     return sum(v) / len(v) if v else 0.0
@@ -230,18 +271,22 @@ def aggregate(all_trials: List[List[Result]]) -> dict:
     out = {}
     for name in names:
         hits = [r.hits for t in all_trials for r in t if r.name == name]
-        hps  = [r.hashes_per_second for t in all_trials for r in t if r.name == name]
-        fhi  = [r.first_hit_iteration for t in all_trials for r in t
-                if r.name == name and r.first_hit_iteration is not None]
+        hps = [r.hashes_per_second for t in all_trials for r in t if r.name == name]
+        fhi = [
+            r.first_hit_iteration
+            for t in all_trials
+            for r in t
+            if r.name == name and r.first_hit_iteration is not None
+        ]
         region = next(r.search_region for t in all_trials for r in t if r.name == name)
-        notes  = next(r.notes for t in all_trials for r in t if r.name == name)
+        notes = next(r.notes for t in all_trials for r in t if r.name == name)
         out[name] = {
-            "mean_hits":       _mean(hits),
-            "mean_khs":        _mean(hps) / 1000,
-            "mean_first_hit":  _mean(fhi) if fhi else None,
+            "mean_hits": _mean(hits),
+            "mean_khs": _mean(hps) / 1000,
+            "mean_first_hit": _mean(fhi) if fhi else None,
             "trials_with_hit": len(fhi),
-            "search_region":   region,
-            "notes":           notes,
+            "search_region": region,
+            "notes": notes,
         }
     return out
 
@@ -257,13 +302,15 @@ def print_table(agg: dict) -> None:
             hit_marker = " ✅"
         elif s["mean_hits"] < base_hits * 0.95:
             hit_marker = " ⚠️"
-        print(f"{name:<20} {s['mean_hits']:>6.1f} {s['mean_khs']:>7.0f} {fh:>7}  "
-              f"{s['search_region'][:45]}{hit_marker}")
+        print(
+            f"{name:<20} {s['mean_hits']:>6.1f} {s['mean_khs']:>7.0f} {fh:>7}  "
+            f"{s['search_region'][:45]}{hit_marker}"
+        )
 
 
 def verdict(agg: dict) -> str:
     base = agg["uniform_random"]["mean_hits"]
-    gap  = agg["gap_seeded"]["mean_hits"]
+    gap = agg["gap_seeded"]["mean_hits"]
     dense = agg["dense_zone"]["mean_hits"]
     lines = ["\n--- VERDICT ---"]
 
@@ -302,19 +349,22 @@ def verdict(agg: dict) -> str:
 
 if __name__ == "__main__":
     import argparse
+
     p = argparse.ArgumentParser()
     p.add_argument("--iterations", type=int, default=50_000)
-    p.add_argument("--trials",     type=int, default=5)
-    p.add_argument("--seed",       type=int, default=42)
+    p.add_argument("--trials", type=int, default=5)
+    p.add_argument("--seed", type=int, default=42)
     args = p.parse_args()
 
     # ~1/256 hit probability — same target as previous benchmarks
     target = int("00" + "ff" * 31, 16)
 
     print("Blockchain-seeded nonce search benchmark")
-    print(f"Thesis: search the gap, not the crowd\n")
+    print("Thesis: search the gap, not the crowd\n")
     print(f"Largest identified unsearched gap: {LARGEST_GAP_START:,} → {LARGEST_GAP_END:,}")
-    print(f"Gap size: {LARGEST_GAP_SIZE:,} nonces ({LARGEST_GAP_SIZE/UINT32*100:.1f}% of uint32 space)")
+    print(
+        f"Gap size: {LARGEST_GAP_SIZE:,} nonces ({LARGEST_GAP_SIZE / UINT32 * 100:.1f}% of uint32 space)"
+    )
     print(f"φ^15 = {PHI_15:.6f}  (miner clustering anchor)\n")
 
     all_trials = []
@@ -322,7 +372,7 @@ if __name__ == "__main__":
         results = run_trial(args.seed + t, args.iterations, target)
         all_trials.append(results)
         row = "  ".join(f"{r.name}={r.hits}hits" for r in results)
-        print(f"  Trial {t+1}/{args.trials}: {row}")
+        print(f"  Trial {t + 1}/{args.trials}: {row}")
 
     agg = aggregate(all_trials)
     print_table(agg)
@@ -330,19 +380,24 @@ if __name__ == "__main__":
 
     out = ROOT / "artifacts" / f"benchmark_gap_seeded_{int(time.time())}.json"
     out.parent.mkdir(exist_ok=True)
-    out.write_text(json.dumps({
-        "benchmark": "blockchain_seeded_gap_search",
-        "thesis": "search unsearched nonce gaps — same solve rate, zero historical competition",
-        "gap_evidence": {
-            "source": "artifacts/phi_resonance_100blocks/phi_resonance_summary.json",
-            "z_score": 7.58,
-            "p_value": "4.2e-14",
-            "largest_gap_start": LARGEST_GAP_START,
-            "largest_gap_end":   LARGEST_GAP_END,
-            "largest_gap_size":  LARGEST_GAP_SIZE,
-            "phi15": PHI_15,
-        },
-        "aggregate": agg,
-        "verdict": verdict(agg),
-    }, indent=2))
+    out.write_text(
+        json.dumps(
+            {
+                "benchmark": "blockchain_seeded_gap_search",
+                "thesis": "search unsearched nonce gaps — same solve rate, zero historical competition",
+                "gap_evidence": {
+                    "source": "artifacts/phi_resonance_100blocks/phi_resonance_summary.json",
+                    "z_score": 7.58,
+                    "p_value": "4.2e-14",
+                    "largest_gap_start": LARGEST_GAP_START,
+                    "largest_gap_end": LARGEST_GAP_END,
+                    "largest_gap_size": LARGEST_GAP_SIZE,
+                    "phi15": PHI_15,
+                },
+                "aggregate": agg,
+                "verdict": verdict(agg),
+            },
+            indent=2,
+        )
+    )
     print(f"\nResults → {out}")

@@ -43,7 +43,7 @@ class UserRole(str, enum.Enum):
     CFO = "cfo"
     LEGAL = "legal"
     CHIEF_OF_STAFF = "chief_of_staff"
-    
+
     # Operational roles
     ADMIN = "admin"
     OPERATOR = "operator"
@@ -53,9 +53,9 @@ class UserRole(str, enum.Enum):
 
 class User(Base):
     """User account for HYBA platform with role-based access control."""
-    
+
     __tablename__ = "users"
-    
+
     id: int | None = Column(BigInteger, primary_key=True, index=True)
     username = Column(String(100), unique=True, nullable=False, index=True)
     email = Column(String(255), unique=True, nullable=True, index=True)
@@ -63,16 +63,18 @@ class User(Base):
     role = Column(SQLEnum(UserRole), nullable=False, default=UserRole.OPERATOR)
     is_active = Column(Boolean, default=True, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
-    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
+    updated_at = Column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
+    )
     last_login = Column(DateTime(timezone=True), nullable=True)
     created_by = Column(String(100), nullable=True)  # Username of admin who created this user
 
 
 class AuditLog(Base):
     """Audit trail for all administrative actions."""
-    
+
     __tablename__ = "audit_logs"
-    
+
     id: int | None = Column(BigInteger, primary_key=True, index=True)
     timestamp = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     actor_username = Column(String(100), nullable=False)
@@ -104,6 +106,7 @@ class ConsciousnessSnapshot(Base):
 
     # Additional metrics can be added here as needed.  See schema.sql for
     # the complete list of fields.
+
 
 class Experiment(Base):
     """Metadata for a consciousness experiment.
@@ -139,17 +142,23 @@ class Experiment(Base):
 
 class FundingAllocation(Base):
     """Funding allocation for HYBA Group entities (Research, Analytics, Foundation, etc.)."""
-    
+
     __tablename__ = "funding_allocations"
-    
+
     id: int | None = Column(BigInteger, primary_key=True, index=True)
-    entity_name = Column(String(100), nullable=False, index=True)  # e.g., "HYBA Research", "HYBA Analytics", "HYBA Foundation"
-    entity_type = Column(String(50), nullable=False)  # e.g., "research", "analytics", "foundation", "vertical"
+    entity_name = Column(
+        String(100), nullable=False, index=True
+    )  # e.g., "HYBA Research", "HYBA Analytics", "HYBA Foundation"
+    entity_type = Column(
+        String(50), nullable=False
+    )  # e.g., "research", "analytics", "foundation", "vertical"
     allocation_amount = Column(Float, nullable=False)  # In USD
     currency = Column(String(10), default="USD", nullable=False)
     fiscal_year = Column(Integer, nullable=False, index=True)
     fiscal_quarter = Column(Integer, nullable=True)
-    status = Column(String(50), default="pending", nullable=False)  # pending, approved, disbursed, rejected
+    status = Column(
+        String(50), default="pending", nullable=False
+    )  # pending, approved, disbursed, rejected
     allocated_by = Column(String(100), nullable=False)  # Username of executive who approved
     allocated_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     disbursed_at = Column(DateTime(timezone=True), nullable=True)
@@ -157,14 +166,16 @@ class FundingAllocation(Base):
     restrictions = Column(JSON, nullable=True)
     allocation_metadata = Column(JSON, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
-    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
+    updated_at = Column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
+    )
 
 
 class FundingRequest(Base):
     """Funding requests from HYBA Group entities."""
-    
+
     __tablename__ = "funding_requests"
-    
+
     id: int | None = Column(BigInteger, primary_key=True, index=True)
     request_id = Column(String(100), unique=True, nullable=False, index=True)
     entity_name = Column(String(100), nullable=False, index=True)
@@ -175,7 +186,9 @@ class FundingRequest(Base):
     fiscal_quarter = Column(Integer, nullable=True)
     purpose = Column(String(1000), nullable=False)
     justification = Column(String(2000), nullable=True)
-    status = Column(String(50), default="pending_review", nullable=False)  # pending_review, under_review, approved, rejected, disbursed
+    status = Column(
+        String(50), default="pending_review", nullable=False
+    )  # pending_review, under_review, approved, rejected, disbursed
     requested_by = Column(String(100), nullable=False)
     requested_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     reviewed_by = Column(String(100), nullable=True)
@@ -183,4 +196,6 @@ class FundingRequest(Base):
     approval_notes = Column(String(1000), nullable=True)
     request_metadata = Column(JSON, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
-    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
+    updated_at = Column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
+    )

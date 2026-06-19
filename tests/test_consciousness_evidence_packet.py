@@ -78,7 +78,9 @@ def test_consciousness_iit_packet_contains_elevation_controls() -> None:
     assert "stateful_feedback_control" in packet["comparisons"]["baselines_present"]
 
 
-@pytest.mark.parametrize("name", ["disconnected_ablation", "strong_integration_candidate", "fragmented_control"])
+@pytest.mark.parametrize(
+    "name", ["disconnected_ablation", "strong_integration_candidate", "fragmented_control"]
+)
 def test_evidence_points_are_bounded(name: str) -> None:
     packet = build_packet()
     point = packet["evidence_points"][name]

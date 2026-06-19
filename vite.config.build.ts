@@ -1,8 +1,8 @@
-import tailwindcss from '@tailwindcss/vite';
-import react from '@vitejs/plugin-react';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
-import { defineConfig } from 'vite';
+import tailwindcss from "@tailwindcss/vite";
+import react from "@vitejs/plugin-react";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { defineConfig } from "vite";
 
 // Windows-safe root resolution — explicitly convert to file:// URL to handle
 // OneDrive virtualised paths that can break the tsx ESM resolver.
@@ -14,19 +14,19 @@ export default defineConfig(() => {
     plugins: [react({ babel: { configFile: false } }), tailwindcss()],
     resolve: {
       alias: {
-        '@': projectRoot,
+        "@": projectRoot,
       },
     },
     build: {
       rollupOptions: {
-        external: ['react-is'],
+        external: ["react-is"],
       },
     },
     server: {
       // HMR is disabled in AI Studio via DISABLE_HMR env var.
-      hmr: process.env.DISABLE_HMR !== 'true',
+      hmr: process.env.DISABLE_HMR !== "true",
       // Disable file watching when DISABLE_HMR is true to save CPU during agent edits.
-      watch: process.env.DISABLE_HMR === 'true' ? null : {},
+      watch: process.env.DISABLE_HMR === "true" ? null : {},
       // Force file:// scheme for all file serving on Windows to avoid tsx resolver issues
       fs: {
         strict: false,

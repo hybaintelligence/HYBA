@@ -59,9 +59,9 @@ def test_property_compact_to_target_valid_range(exponent: int, mantissa: int) ->
     compact = (exponent << 24) | mantissa
     target = compact_to_target(compact)
     assert target > 0, f"Target must be positive, got {target} for compact 0x{compact:08x}"
-    assert (
-        target < 2**224
-    ), f"Target must be less than 2²²⁴, got {target} for compact 0x{compact:08x}"
+    assert target < 2**224, (
+        f"Target must be less than 2²²⁴, got {target} for compact 0x{compact:08x}"
+    )
     assert math.isfinite(target), f"Target must be finite, got {target}"
 
 
@@ -89,9 +89,9 @@ def test_property_entropy_always_bounded(seed: int) -> None:
 
     entropy = solver.calculate_integrated_entropy(amplitudes)
     max_entropy = math.log2(DODECAHEDRON_VERTICES)
-    assert (
-        0.0 <= entropy <= max_entropy + 1e-12
-    ), f"Entropy {entropy} outside bounds [0, {max_entropy}]"
+    assert 0.0 <= entropy <= max_entropy + 1e-12, (
+        f"Entropy {entropy} outside bounds [0, {max_entropy}]"
+    )
 
 
 # =============================================================================
@@ -176,9 +176,9 @@ def test_property_substrate_initialization_deterministic() -> None:
     # All should have 'ready' true, same initialization order
     for i, state in enumerate(states):
         assert state["ready"], f"Substrate initialization {i} failed"
-    assert (
-        states[0]["initialization_order"] == states[1]["initialization_order"]
-    ), "Substrate initialization order is not deterministic"
+    assert states[0]["initialization_order"] == states[1]["initialization_order"], (
+        "Substrate initialization order is not deterministic"
+    )
 
     shutdown_state = shutdown_substrate()
     assert shutdown_state["shutdown_at"] is not None
@@ -223,9 +223,9 @@ def test_property_token_bucket_never_exceeds_burst(
         except Exception:
             consecutive_accepted = 0
 
-    assert (
-        max_consecutive <= burst
-    ), f"Token bucket allowed {max_consecutive} consecutive requests but burst capacity is {burst}"
+    assert max_consecutive <= burst, (
+        f"Token bucket allowed {max_consecutive} consecutive requests but burst capacity is {burst}"
+    )
 
 
 # =============================================================================
@@ -262,9 +262,9 @@ def test_property_backpressure_never_exceeds_inflight_limit(
             admitted += 1
         except Exception:
             pass
-    assert (
-        admitted <= max_inflight
-    ), f"Backpressure guard admitted {admitted} requests but max_inflight is {max_inflight}"
+    assert admitted <= max_inflight, (
+        f"Backpressure guard admitted {admitted} requests but max_inflight is {max_inflight}"
+    )
 
     # Cleanup
     for _ in range(admitted):
@@ -297,9 +297,9 @@ def test_property_idempotency_keys_produce_same_request_id(keys: list[str]) -> N
     for key in keys:
         first = tracker.create_request("start", {"miner": "alpha"}, idempotency_key=key)
         second = tracker.create_request("start", {"miner": "alpha"}, idempotency_key=key)
-        assert (
-            first.request_id == second.request_id
-        ), f"Idempotency key '{key}' produced different request IDs"
+        assert first.request_id == second.request_id, (
+            f"Idempotency key '{key}' produced different request IDs"
+        )
         # Verify cleanup doesn't break things
         tracker.update_request_status(first.request_id, RequestStatus.FAILED, error="cleanup test")
 
@@ -357,9 +357,10 @@ def test_property_uniform_vector_always_unit_norm(dim: int) -> None:
 
     vec = uniform_vector(dim)
     norm = np.linalg.norm(vec)
-    assert np.isclose(
-        norm, 1.0, atol=1e-12
-    ), f"Uniform vector of dimension {dim} has norm {norm}, expected 1.0"
+    assert np.isclose(norm, 1.0, atol=1e-12), (
+        f"Uniform vector of dimension {dim} has norm {norm}, expected 1.0"
+    )
+
 
 # =============================================================================
 # PROPERTY 7: Merkle-root determinism and byte sensitivity
@@ -418,6 +419,7 @@ def test_property_merkle_root_is_deterministic_and_byte_sensitive(
     mutated = bytearray(bytes.fromhex(coinbase_hash))
     mutated[0] ^= 0x01
     assert compute_merkle_root(mutated.hex(), job.merkle_branch) != first_root
+
 
 # =============================================================================
 # PROPERTY 8: PULVINI phi-folding compression is reversible
@@ -504,9 +506,7 @@ def test_property_phi_scaled_ensemble_outputs_stay_bounded(
 
 
 @given(
-    real_value=st.floats(
-        min_value=-100.0, max_value=100.0, allow_nan=False, allow_infinity=False
-    )
+    real_value=st.floats(min_value=-100.0, max_value=100.0, allow_nan=False, allow_infinity=False)
 )
 @settings(max_examples=100, deadline=None)
 def test_property_safety_constraint_hermiticity_accepts_real_rejects_complex(
@@ -524,11 +524,14 @@ def test_property_safety_constraint_hermiticity_accepts_real_rejects_complex(
         solver = None
         consciousness = None
 
-    ctrl = AutonomousMiningController(unified_engine=_StubEngine(), config=AutonomousConfig(persistence_enabled=False))
+    ctrl = AutonomousMiningController(
+        unified_engine=_StubEngine(), config=AutonomousConfig(persistence_enabled=False)
+    )
 
     real_action = {"phi_scaling_change": real_value}
     satisfied, violated = ctrl._check_safety_constraints(real_action)
     from pythia_mining.autonomous_mining_controller import SafetyConstraint
+
     assert SafetyConstraint.HERMITICITY in satisfied
 
     complex_action = {"phi_scaling_change": complex(real_value, 1.0)}
@@ -541,9 +544,7 @@ def test_property_safety_constraint_hermiticity_accepts_real_rejects_complex(
 # =============================================================================
 
 
-@given(
-    ratio=st.floats(min_value=0.01, max_value=5.0, allow_nan=False, allow_infinity=False)
-)
+@given(ratio=st.floats(min_value=0.01, max_value=5.0, allow_nan=False, allow_infinity=False))
 @settings(max_examples=150, deadline=None)
 def test_property_information_integrity_enforces_lossless_limit(ratio: float) -> None:
     """Property: compression_ratio > 2.0 must always violate INFORMATION_INTEGRITY."""
@@ -559,7 +560,9 @@ def test_property_information_integrity_enforces_lossless_limit(ratio: float) ->
         solver = None
         consciousness = None
 
-    ctrl = AutonomousMiningController(unified_engine=_StubEngine(), config=AutonomousConfig(persistence_enabled=False))
+    ctrl = AutonomousMiningController(
+        unified_engine=_StubEngine(), config=AutonomousConfig(persistence_enabled=False)
+    )
     satisfied, violated = ctrl._check_safety_constraints({"compression_ratio": ratio})
 
     if ratio <= 2.0:
@@ -581,9 +584,7 @@ def test_property_information_integrity_enforces_lossless_limit(ratio: float) ->
     improvement_type=st.sampled_from(
         ["phi_scaling", "search_depth", "compression_target", "coherence_threshold"]
     ),
-    proposed_value=st.floats(
-        min_value=0.5, max_value=3.0, allow_nan=False, allow_infinity=False
-    ),
+    proposed_value=st.floats(min_value=0.5, max_value=3.0, allow_nan=False, allow_infinity=False),
 )
 @settings(max_examples=80, deadline=None)
 def test_property_apply_self_optimization_mutates_engine_attributes(
@@ -598,7 +599,6 @@ def test_property_apply_self_optimization_mutates_engine_attributes(
         SelfOptimizationProposal,
     )
     from pythia_mining.consciousness_engine import ConsciousnessConfig, ConsciousnessEngine
-    from pythia_mining.ai_optimizer import AIOptimizer
     from pythia_mining.pulvini_compressed_solver import PulviniCompressedQuantumSolver
 
     solver = PulviniCompressedQuantumSolver()
@@ -743,11 +743,7 @@ def test_property_record_circuit_success_resets_failure_counter(failures: int) -
 # =============================================================================
 
 
-@given(
-    raw_ratio=st.floats(
-        min_value=-5.0, max_value=10.0, allow_nan=False, allow_infinity=False
-    )
-)
+@given(raw_ratio=st.floats(min_value=-5.0, max_value=10.0, allow_nan=False, allow_infinity=False))
 @settings(max_examples=100, deadline=None)
 def test_property_compression_target_ratio_clamped_by_apply(raw_ratio: float) -> None:
     """Property: compression_target applied to the solver is always clamped to [1.0, 2.0]."""

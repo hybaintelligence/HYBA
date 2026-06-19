@@ -18,7 +18,6 @@ from pythia_mining.mining_knowledge_base import (  # noqa: E402
     MiningRulesKnowledge,
     OperationalExpectationsKnowledge,
     OperationalThreshold,
-    PitfallCategory,
     SuccessCriteria,
 )
 from pythia_mining.phi_scaling_engine import (  # noqa: E402
@@ -271,9 +270,15 @@ class TestAgent4KnowledgeBase:
         )
 
         assert not status["within_limits"]
-        assert any(alert["threshold"] == "hashrate_threshold" for alert in status["critical_alerts"])
-        assert any(alert["threshold"] == "error_rate_threshold" for alert in status["critical_alerts"])
-        assert any(warning["threshold"] == "temperature_threshold" for warning in status["warnings"])
+        assert any(
+            alert["threshold"] == "hashrate_threshold" for alert in status["critical_alerts"]
+        )
+        assert any(
+            alert["threshold"] == "error_rate_threshold" for alert in status["critical_alerts"]
+        )
+        assert any(
+            warning["threshold"] == "temperature_threshold" for warning in status["warnings"]
+        )
 
     def test_knowledge_base_consistency_and_overall_assessment(self) -> None:
         kb = MiningKnowledgeBase()

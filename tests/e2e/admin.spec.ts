@@ -2,13 +2,16 @@ import { expect, test } from "@playwright/test";
 import { installBackendMocks, seedAuth } from "./fixtures";
 
 test.describe("admin E2E hardening", () => {
-  test("admin can create, edit, and delete only disposable users through mocked endpoints", async ({ page }) => {
+  test("admin can create, edit, and delete only disposable users through mocked endpoints", async ({
+    page,
+  }) => {
     await seedAuth(page, "admin");
     await installBackendMocks(page, { role: "admin" });
 
     const mutations: string[] = [];
     page.on("request", (request) => {
-      if (["POST", "PUT", "DELETE"].includes(request.method())) mutations.push(`${request.method()} ${new URL(request.url()).pathname}`);
+      if (["POST", "PUT", "DELETE"].includes(request.method()))
+        mutations.push(`${request.method()} ${new URL(request.url()).pathname}`);
     });
     page.on("dialog", (dialog) => dialog.accept());
 

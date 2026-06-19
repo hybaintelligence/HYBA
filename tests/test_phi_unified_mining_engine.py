@@ -76,7 +76,10 @@ async def test_unified_engine_real_search_returns_candidate_for_sha256d_verifica
     assert len(verification.block_hash) == 64
     assert state_after_verify["state"]["last_candidate_hash"] == verification.block_hash
     assert state_after_verify["state"]["last_candidate_valid"] is verification.valid
-    assert state_after_verify["proofs"]["sha256d_external_oracle"] == "bitcoin_header_double_sha256_pool_target"
+    assert (
+        state_after_verify["proofs"]["sha256d_external_oracle"]
+        == "bitcoin_header_double_sha256_pool_target"
+    )
 
 
 @pytest.mark.asyncio
@@ -99,8 +102,7 @@ async def test_unified_search_uses_pulvini_compressed_plan_not_base_solver() -> 
     assert metrics["nonce_space_contract"] == "pulvini_phi_compressed_pre_search"
     assert metrics["last_solve_iterations"] <= 1448
     assert any(
-        event["stage"] == "tunnel_anneal_projected_nonce"
-        for event in metrics["last_solve_trace"]
+        event["stage"] == "tunnel_anneal_projected_nonce" for event in metrics["last_solve_trace"]
     )
 
 

@@ -238,9 +238,9 @@ class TestPhiAlignmentProperties:
         result = features.extract_phi_optimized_features({"x": {"val": value}})
         if result:
             alignment = result["x"][0]["phi_alignment"]
-            assert (
-                0.0 <= alignment <= 1.0
-            ), f"phi_alignment {alignment} outside [0,1] for value {value}"
+            assert 0.0 <= alignment <= 1.0, (
+                f"phi_alignment {alignment} outside [0,1] for value {value}"
+            )
             assert alignment == pytest.approx(max(0.0, min(1.0, alignment)))
 
     @given(st.floats(min_value=-1e12, max_value=1e12, allow_nan=False, allow_infinity=False))
@@ -354,9 +354,9 @@ class TestASICScalingMonotonicity:
             pytest.skip("Need strict ascending pair")
         comparison = ComprehensiveComparison()
         results = comparison.compare_golden_ratio_scaling()
-        assert (
-            results[a]["effective_hashrate_ths"] < results[b]["effective_hashrate_ths"]
-        ), f"Hashrate not monotonic: {a} < {b} failed"
+        assert results[a]["effective_hashrate_ths"] < results[b]["effective_hashrate_ths"], (
+            f"Hashrate not monotonic: {a} < {b} failed"
+        )
 
     @given(
         st.sampled_from(["10^12", "10^15", "10^18", "10^20"]),
@@ -370,9 +370,9 @@ class TestASICScalingMonotonicity:
             pytest.skip("Need strict ascending pair")
         comparison = ComprehensiveComparison()
         results = comparison.compare_golden_ratio_scaling()
-        assert (
-            results[a]["hashrate_efficiency_j_th"] > results[b]["hashrate_efficiency_j_th"]
-        ), f"Efficiency not monotonic: {a} < {b} failed (J/TH should decrease)"
+        assert results[a]["hashrate_efficiency_j_th"] > results[b]["hashrate_efficiency_j_th"], (
+            f"Efficiency not monotonic: {a} < {b} failed (J/TH should decrease)"
+        )
 
 
 # ============================================================================
@@ -391,7 +391,7 @@ class TestGoldenRatioSelfSimilarity:
     def test_scale_factor_self_similarity(self, a: int, b: int) -> None:
         """Scaling by 10^(a+b) = scaling by 10^a then 10^b."""
         base = 1.0
-        direct = GoldenRatioScaling.apply_scaling(base, a + b)
+        GoldenRatioScaling.apply_scaling(base, a + b)
         composite = GoldenRatioScaling.apply_scaling(
             GoldenRatioScaling.apply_scaling(base, a),
             b,

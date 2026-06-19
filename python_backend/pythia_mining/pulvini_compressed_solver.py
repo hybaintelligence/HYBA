@@ -157,21 +157,21 @@ class PulviniCompressedQuantumSolver(DodecahedralQuantumSolver):
     def _tunnel_anneal_project_nonce(self, coordinate: Any) -> int:
         # Use φ-tiled random walk over full 2^32 space instead of compressed segments
         # This ensures nonce diversity by exploring the entire space
-        target = int(self.current_config["target"])
-        
+        int(self.current_config["target"])
+
         # Van der Corput sequence in base φ (golden angle low-discrepancy sequence)
         # nonce_k = (k * φ_int) mod 2^32 where φ_int = 2654435769 (Knuth's multiplicative constant)
         phi_stride = 2654435769  # 0x9E3779B9
         nonce_space = 2**32
-        
+
         # Use solve counter as k to ensure progression through the sequence
         k = self._solve_counter
         base_nonce = (k * phi_stride) % nonce_space
-        
+
         # Add coordinate-specific offset to ensure different coordinates explore different regions
         coord_offset = (coordinate.coordinate_id * phi_stride) % nonce_space
         nonce = (base_nonce + coord_offset) % nonce_space
-        
+
         self.last_solve_trace.append(
             {
                 "stage": "phi_tiled_full_space_nonce",
@@ -182,11 +182,24 @@ class PulviniCompressedQuantumSolver(DodecahedralQuantumSolver):
         )
         return nonce
 
-    async def solve(self, max_iterations: int = 100, timeout: float = 30.0, target: int = 0, job=None, extranonce2: str = "00000000") -> Optional[int]:
+    async def solve(
+        self,
+        max_iterations: int = 100,
+        timeout: float = 30.0,
+        target: int = 0,
+        job=None,
+        extranonce2: str = "00000000",
+    ) -> Optional[int]:
         if max_iterations <= 0 or timeout <= 0:
             raise QuantumSolverConfigurationError("max_iterations and timeout must be positive")
         if self.compressed_plan is None:
-            return await super().solve(max_iterations=max_iterations, timeout=timeout, target=target, job=job, extranonce2=extranonce2)
+            return await super().solve(
+                max_iterations=max_iterations,
+                timeout=timeout,
+                target=target,
+                job=job,
+                extranonce2=extranonce2,
+            )
 
         # Advance the deterministic phase so repeated solve attempts traverse the
         # compressed plan instead of replaying the same nonce.
@@ -234,7 +247,9 @@ class PulviniCompressedQuantumSolver(DodecahedralQuantumSolver):
                 ),
                 "retained_kernel_lanes": self.current_config.get("retained_kernel_lanes"),
                 "complete_nonce_coverage": self.current_config.get("complete_nonce_coverage"),
-                "overlap_free_nonce_coverage": self.current_config.get("overlap_free_nonce_coverage"),
+                "overlap_free_nonce_coverage": self.current_config.get(
+                    "overlap_free_nonce_coverage"
+                ),
                 "working_set_compression_ratio": self.current_config.get(
                     "working_set_compression_ratio"
                 ),

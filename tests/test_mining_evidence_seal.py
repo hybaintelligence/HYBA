@@ -24,7 +24,10 @@ from pythia_mining.mining_verification_firewall import (
     build_candidate_binding_hash,
     verifier_contract,
 )
-from pythia_mining.pythia_mining_pitfalls_curriculum import lesson_ids, seed_mining_pitfalls_curriculum
+from pythia_mining.pythia_mining_pitfalls_curriculum import (
+    lesson_ids,
+    seed_mining_pitfalls_curriculum,
+)
 
 
 def _firewall_decision(session_event_id: str = "") -> dict:
@@ -105,11 +108,25 @@ def _bundle(session_event_id: str = "") -> dict:
         event_type="accepted_share_learning_event",
         job_context=_job_context(),
         candidate=_candidate(),
-        verifier_result={"valid": True, "block_hash": "0" * 64, "backend": "cpu_parallel_exact_sha256d", "session_event_id": event_id},
+        verifier_result={
+            "valid": True,
+            "block_hash": "0" * 64,
+            "backend": "cpu_parallel_exact_sha256d",
+            "session_event_id": event_id,
+        },
         firewall_decision=_firewall_decision(event_id),
         learning_correction=_learning_correction(event_id),
-        pool_response={"accepted": True, "jsonrpc_id": 7, "error": None, "session_event_id": event_id},
-        runtime_config={"pool_url": "stratum+tcp://pool.example:3333", "password": "private", "wallet": "bc1q..."},
+        pool_response={
+            "accepted": True,
+            "jsonrpc_id": 7,
+            "error": None,
+            "session_event_id": event_id,
+        },
+        runtime_config={
+            "pool_url": "stratum+tcp://pool.example:3333",
+            "password": "private",
+            "wallet": "bc1q...",
+        },
         lesson_ids=list(lesson_ids(curriculum)),
         session_event_id=event_id,
     )
@@ -123,7 +140,10 @@ def test_sealed_mining_evidence_bundle_is_hash_committed_and_replayable() -> Non
     assert validate_sealed_mining_evidence_bundle(bundle) is True
     assert bundle["session_event_id"]
     assert bundle["firewall_decision"]["submission_allowed"] is True
-    assert bundle["learning_correction"]["correction_reason"] == "share_ack_discounted_by_block_share_difficulty_gap"
+    assert (
+        bundle["learning_correction"]["correction_reason"]
+        == "share_ack_discounted_by_block_share_difficulty_gap"
+    )
     assert bundle["timestamp_authority"]["authority"] == TIMESTAMP_AUTHORITY
     assert bundle["timestamp_authority"]["bitcoin_block_height"] == 840_000
     assert bundle["timestamp_authority"]["stratum_job_id"] == "job-1"
@@ -153,7 +173,10 @@ def test_session_event_id_mismatch_is_rejected() -> None:
     bundle = _bundle("session-a")
     bundle["learning_correction"]["session_event_id"] = "session-b"
 
-    with pytest.raises(EvidenceSealError, match="session_event_id_mismatch:learning_correction|bundle_hash_mismatch"):
+    with pytest.raises(
+        EvidenceSealError,
+        match="session_event_id_mismatch:learning_correction|bundle_hash_mismatch",
+    ):
         validate_sealed_mining_evidence_bundle(bundle)
 
 
@@ -181,7 +204,9 @@ def test_sealed_mining_evidence_bundle_detects_timestamp_anchor_tampering() -> N
     bundle = _bundle()
     bundle["timestamp_authority"]["bitcoin_block_height"] = 840_001
 
-    with pytest.raises(EvidenceSealError, match="timestamp_anchor_hash_mismatch|bundle_hash_mismatch"):
+    with pytest.raises(
+        EvidenceSealError, match="timestamp_anchor_hash_mismatch|bundle_hash_mismatch"
+    ):
         validate_sealed_mining_evidence_bundle(bundle)
 
 

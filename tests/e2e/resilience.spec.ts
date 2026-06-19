@@ -1,15 +1,30 @@
 import { expect, test } from "@playwright/test";
 
-test("offline backend handling shows interruption, retry, and dismissible network state", async ({ page }) => {
+test("offline backend handling shows interruption, retry, and dismissible network state", async ({
+  page,
+}) => {
   let telemetryCalls = 0;
   await page.route("**/api/health", (route) => {
     telemetryCalls += 1;
     if (telemetryCalls === 1) return route.abort("failed");
-    return route.fulfill({ json: { status: "ok", timestamp: new Date().toISOString(), version: "2.0.1", systemMetrics: {} } });
+    return route.fulfill({
+      json: {
+        status: "ok",
+        timestamp: new Date().toISOString(),
+        version: "2.0.1",
+        systemMetrics: {},
+      },
+    });
   });
-  await page.route("**/api/ai/consciousness", (route) => route.fulfill({ json: { status: "nominal", source: "mock" } }));
-  await page.route("**/api/mining/pools", (route) => route.fulfill({ json: { summary: {}, pools: [] } }));
-  await page.route("**/api/security/status", (route) => route.fulfill({ json: { status: "nominal", defense_systems: {} } }));
+  await page.route("**/api/ai/consciousness", (route) =>
+    route.fulfill({ json: { status: "nominal", source: "mock" } }),
+  );
+  await page.route("**/api/mining/pools", (route) =>
+    route.fulfill({ json: { summary: {}, pools: [] } }),
+  );
+  await page.route("**/api/security/status", (route) =>
+    route.fulfill({ json: { status: "nominal", defense_systems: {} } }),
+  );
   await page.route("**/api/products", (route) => route.fulfill({ json: [] }));
   await page.route("**/api/auth/profile", (route) => route.fulfill({ json: { success: false } }));
 

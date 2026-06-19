@@ -21,9 +21,7 @@ from pythia_mining.stable_core_evidence import generate_stable_core_evidence_pac
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(
-        description="Generate PYTHIA Stable Core evidence packet"
-    )
+    parser = argparse.ArgumentParser(description="Generate PYTHIA Stable Core evidence packet")
     parser.add_argument(
         "--output",
         type=Path,

@@ -31,11 +31,10 @@ def get_db():
 
 def require_admin(payload: TokenPayload = Depends(get_token_payload)) -> TokenPayload:
     """Require admin role for access."""
-    if "admin" not in payload.roles and not RolePermissions.is_executive_role(payload.roles[0] if payload.roles else ""):
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Admin access required"
-        )
+    if "admin" not in payload.roles and not RolePermissions.is_executive_role(
+        payload.roles[0] if payload.roles else ""
+    ):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required")
     return payload
 
 
@@ -45,7 +44,7 @@ def require_executive(payload: TokenPayload = Depends(get_token_payload)) -> Tok
     if not RolePermissions.is_executive_role(user_role):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Executive access required for funding operations"
+            detail="Executive access required for funding operations",
         )
     return payload
 
@@ -125,16 +124,15 @@ async def list_users(
 ):
     """List all users with optional search and pagination."""
     query = db.query(User)
-    
+
     if search:
         query = query.filter(
-            (User.username.ilike(f"%{search}%")) |
-            (User.email.ilike(f"%{search}%"))
+            (User.username.ilike(f"%{search}%")) | (User.email.ilike(f"%{search}%"))
         )
-    
+
     total = query.count()
     users = query.order_by(User.created_at.desc()).offset(skip).limit(limit).all()
-    
+
     return UserListResponse(users=users, total=total)
 
 
@@ -147,10 +145,7 @@ async def get_user(
     """Get a specific user by ID."""
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found"
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
     return user
 
 
@@ -164,31 +159,27 @@ async def create_user(
     # Check if username already exists
     existing = db.query(User).filter(User.username == user_data.username).first()
     if existing:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="Username already exists"
-        )
-    
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Username already exists")
+
     # Check if email already exists
     if user_data.email:
         existing_email = db.query(User).filter(User.email == user_data.email).first()
         if existing_email:
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT,
-                detail="Email already exists"
-            )
-    
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email already exists")
+
     # Check if user has permission to create executive roles
     user_role = payload.roles[0] if payload.roles else ""
-    if RolePermissions.is_executive_role(user_data.role.value) and not RolePermissions.is_executive_role(user_role):
+    if RolePermissions.is_executive_role(
+        user_data.role.value
+    ) and not RolePermissions.is_executive_role(user_role):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Only executives can create executive roles"
+            detail="Only executives can create executive roles",
         )
-    
+
     # Hash password
     password_hash = _password_hasher.hash(user_data.password)
-    
+
     # Create user
     user = User(
         username=user_data.username,
@@ -201,7 +192,7 @@ async def create_user(
     db.add(user)
     db.commit()
     db.refresh(user)
-    
+
     # Log audit
     log_audit(
         db=db,
@@ -216,7 +207,7 @@ async def create_user(
             "role": user.role,
         },
     )
-    
+
     return user
 
 
@@ -230,46 +221,45 @@ async def update_user(
     """Update an existing user."""
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found"
-        )
-    
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+
     # Prevent self-deactivation
     if user.username == payload.username and user_data.is_active is False:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Cannot deactivate your own account"
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Cannot deactivate your own account"
         )
-    
+
     # Prevent self-role-change
     if user.username == payload.username and user_data.role is not None:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Cannot change your own role"
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Cannot change your own role"
         )
-    
+
     # Check if user has permission to assign executive roles
     user_role = payload.roles[0] if payload.roles else ""
-    if user_data.role and RolePermissions.is_executive_role(user_data.role.value) and not RolePermissions.is_executive_role(user_role):
+    if (
+        user_data.role
+        and RolePermissions.is_executive_role(user_data.role.value)
+        and not RolePermissions.is_executive_role(user_role)
+    ):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Only executives can assign executive roles"
+            detail="Only executives can assign executive roles",
         )
-    
+
     # Update fields
     update_data = user_data.model_dump(exclude_unset=True)
-    
+
     if "password" in update_data:
         update_data["password_hash"] = _password_hasher.hash(update_data.pop("password"))
-    
+
     for field, value in update_data.items():
         setattr(user, field, value)
-    
+
     user.updated_at = datetime.now(timezone.utc)
     db.commit()
     db.refresh(user)
-    
+
     # Log audit
     log_audit(
         db=db,
@@ -282,7 +272,7 @@ async def update_user(
             "updated_fields": list(update_data.keys()),
         },
     )
-    
+
     return user
 
 
@@ -295,30 +285,28 @@ async def delete_user(
     """Delete a user."""
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found"
-        )
-    
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+
     # Prevent self-deletion
     if user.username == payload.username:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Cannot delete your own account"
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Cannot delete your own account"
         )
-    
+
     # Prevent deletion of executive roles by non-executives
     user_role = payload.roles[0] if payload.roles else ""
-    if RolePermissions.is_executive_role(user.role.value) and not RolePermissions.is_executive_role(user_role):
+    if RolePermissions.is_executive_role(user.role.value) and not RolePermissions.is_executive_role(
+        user_role
+    ):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Only executives can delete executive accounts"
+            detail="Only executives can delete executive accounts",
         )
-    
+
     username = user.username
     db.delete(user)
     db.commit()
-    
+
     # Log audit
     log_audit(
         db=db,
@@ -342,20 +330,20 @@ async def list_audit_logs(
     payload: TokenPayload = Depends(require_admin),
 ):
     """List audit logs with pagination and filtering."""
-    user_role = payload.roles[0] if payload.roles else ""
-    
+    payload.roles[0] if payload.roles else ""
+
     query = db.query(AuditLog)
-    
+
     if action:
         query = query.filter(AuditLog.action == action)
     if target_type:
         query = query.filter(AuditLog.target_type == target_type)
     if actor_username:
         query = query.filter(AuditLog.actor_username == actor_username)
-    
+
     logs = query.order_by(AuditLog.timestamp.desc()).offset(skip).limit(limit).all()
     total = query.count()
-    
+
     return {
         "logs": logs,
         "total": total,
@@ -369,9 +357,9 @@ async def get_admin_stats(
 ):
     """Get administrative statistics."""
     total_users = db.query(User).count()
-    active_users = db.query(User).filter(User.is_active == True).count()
+    active_users = db.query(User).filter(User.is_active).count()
     admin_users = db.query(User).filter(User.role == UserRole.ADMIN).count()
-    
+
     # Executive stats
     executive_roles = [
         UserRole.CEO_HEIR_APPARENT,
@@ -382,16 +370,25 @@ async def get_admin_stats(
         UserRole.CHIEF_OF_STAFF,
     ]
     executive_users = db.query(User).filter(User.role.in_(executive_roles)).count()
-    
+
     # Funding stats
     total_allocations = db.query(FundingAllocation).count()
-    pending_allocations = db.query(FundingAllocation).filter(FundingAllocation.status == "pending").count()
-    approved_allocations = db.query(FundingAllocation).filter(FundingAllocation.status == "approved").count()
-    total_funding_allocated = db.query(FundingAllocation).filter(
-        FundingAllocation.status.in_(["approved", "disbursed"])
-    ).with_entities(FundingAllocation.allocation_amount).all()
-    total_amount = sum([alloc[0] for alloc in total_funding_allocated]) if total_funding_allocated else 0
-    
+    pending_allocations = (
+        db.query(FundingAllocation).filter(FundingAllocation.status == "pending").count()
+    )
+    approved_allocations = (
+        db.query(FundingAllocation).filter(FundingAllocation.status == "approved").count()
+    )
+    total_funding_allocated = (
+        db.query(FundingAllocation)
+        .filter(FundingAllocation.status.in_(["approved", "disbursed"]))
+        .with_entities(FundingAllocation.allocation_amount)
+        .all()
+    )
+    total_amount = (
+        sum([alloc[0] for alloc in total_funding_allocated]) if total_funding_allocated else 0
+    )
+
     return {
         "total_users": total_users,
         "active_users": active_users,
@@ -406,6 +403,7 @@ async def get_admin_stats(
 
 
 # ── Funding Management Endpoints ─────────────────────────────────────────────
+
 
 class FundingAllocationRequest(BaseModel):
     entity_name: str = Field(min_length=1, max_length=100)
@@ -507,7 +505,7 @@ async def list_funding_allocations(
 ):
     """List funding allocations with filtering."""
     query = db.query(FundingAllocation)
-    
+
     if entity_name:
         query = query.filter(FundingAllocation.entity_name.ilike(f"%{entity_name}%"))
     if entity_type:
@@ -516,14 +514,20 @@ async def list_funding_allocations(
         query = query.filter(FundingAllocation.status == status)
     if fiscal_year:
         query = query.filter(FundingAllocation.fiscal_year == fiscal_year)
-    
+
     total = query.count()
-    allocations = query.order_by(FundingAllocation.created_at.desc()).offset(skip).limit(limit).all()
-    
+    allocations = (
+        query.order_by(FundingAllocation.created_at.desc()).offset(skip).limit(limit).all()
+    )
+
     return FundingAllocationListResponse(allocations=allocations, total=total)
 
 
-@router.post("/funding/allocations", response_model=FundingAllocationResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/funding/allocations",
+    response_model=FundingAllocationResponse,
+    status_code=status.HTTP_201_CREATED,
+)
 async def create_funding_allocation(
     allocation_data: FundingAllocationRequest,
     db: Session = Depends(get_db),
@@ -531,7 +535,7 @@ async def create_funding_allocation(
 ):
     """Create a new funding allocation."""
     user_role = payload.roles[0] if payload.roles else ""
-    
+
     allocation = FundingAllocation(
         entity_name=allocation_data.entity_name,
         entity_type=allocation_data.entity_type,
@@ -548,7 +552,7 @@ async def create_funding_allocation(
     db.add(allocation)
     db.commit()
     db.refresh(allocation)
-    
+
     # Log audit
     log_audit(
         db=db,
@@ -565,7 +569,7 @@ async def create_funding_allocation(
             "fiscal_year": allocation.fiscal_year,
         },
     )
-    
+
     return allocation
 
 
@@ -580,21 +584,20 @@ async def update_funding_allocation(
     allocation = db.query(FundingAllocation).filter(FundingAllocation.id == allocation_id).first()
     if not allocation:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Funding allocation not found"
+            status_code=status.HTTP_404_NOT_FOUND, detail="Funding allocation not found"
         )
-    
+
     user_role = payload.roles[0] if payload.roles else ""
-    
+
     # Update fields
     update_data = allocation_data.model_dump(exclude_unset=True)
     for field, value in update_data.items():
         setattr(allocation, field, value)
-    
+
     allocation.updated_at = datetime.now(timezone.utc)
     db.commit()
     db.refresh(allocation)
-    
+
     # Log audit
     log_audit(
         db=db,
@@ -607,11 +610,13 @@ async def update_funding_allocation(
             "updated_fields": list(update_data.keys()),
         },
     )
-    
+
     return allocation
 
 
-@router.post("/funding/allocations/{allocation_id}/disburse", response_model=FundingAllocationResponse)
+@router.post(
+    "/funding/allocations/{allocation_id}/disburse", response_model=FundingAllocationResponse
+)
 async def disburse_funding(
     allocation_id: int,
     db: Session = Depends(get_db),
@@ -621,24 +626,23 @@ async def disburse_funding(
     allocation = db.query(FundingAllocation).filter(FundingAllocation.id == allocation_id).first()
     if not allocation:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Funding allocation not found"
+            status_code=status.HTTP_404_NOT_FOUND, detail="Funding allocation not found"
         )
-    
+
     if allocation.status != "approved":
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Only approved allocations can be disbursed"
+            detail="Only approved allocations can be disbursed",
         )
-    
+
     user_role = payload.roles[0] if payload.roles else ""
-    
+
     allocation.status = "disbursed"
     allocation.disbursed_at = datetime.now(timezone.utc)
     allocation.updated_at = datetime.now(timezone.utc)
     db.commit()
     db.refresh(allocation)
-    
+
     # Log audit
     log_audit(
         db=db,
@@ -652,7 +656,7 @@ async def disburse_funding(
             "amount": allocation.allocation_amount,
         },
     )
-    
+
     return allocation
 
 
@@ -669,7 +673,7 @@ async def list_funding_requests(
 ):
     """List funding requests with filtering."""
     query = db.query(FundingRequest)
-    
+
     if entity_name:
         query = query.filter(FundingRequest.entity_name.ilike(f"%{entity_name}%"))
     if entity_type:
@@ -678,14 +682,16 @@ async def list_funding_requests(
         query = query.filter(FundingRequest.status == status)
     if fiscal_year:
         query = query.filter(FundingRequest.fiscal_year == fiscal_year)
-    
+
     total = query.count()
     requests = query.order_by(FundingRequest.created_at.desc()).offset(skip).limit(limit).all()
-    
+
     return FundingRequestListResponse(requests=requests, total=total)
 
 
-@router.post("/funding/requests", response_model=FundingRequestResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/funding/requests", response_model=FundingRequestResponse, status_code=status.HTTP_201_CREATED
+)
 async def create_funding_request(
     request_data: FundingRequestCreate,
     db: Session = Depends(get_db),
@@ -694,7 +700,7 @@ async def create_funding_request(
     """Create a new funding request."""
     user_role = payload.roles[0] if payload.roles else ""
     request_id = f"REQ-{uuid.uuid4().hex[:12].upper()}"
-    
+
     funding_request = FundingRequest(
         request_id=request_id,
         entity_name=request_data.entity_name,
@@ -712,7 +718,7 @@ async def create_funding_request(
     db.add(funding_request)
     db.commit()
     db.refresh(funding_request)
-    
+
     # Log audit
     log_audit(
         db=db,
@@ -727,7 +733,7 @@ async def create_funding_request(
             "fiscal_year": funding_request.fiscal_year,
         },
     )
-    
+
     return funding_request
 
 
@@ -739,27 +745,28 @@ async def review_funding_request(
     payload: TokenPayload = Depends(require_executive),
 ):
     """Review and approve/reject a funding request."""
-    funding_request = db.query(FundingRequest).filter(FundingRequest.request_id == request_id).first()
+    funding_request = (
+        db.query(FundingRequest).filter(FundingRequest.request_id == request_id).first()
+    )
     if not funding_request:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Funding request not found"
+            status_code=status.HTTP_404_NOT_FOUND, detail="Funding request not found"
         )
-    
+
     if funding_request.status not in ["pending_review", "under_review"]:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Request cannot be reviewed in its current state"
+            detail="Request cannot be reviewed in its current state",
         )
-    
+
     user_role = payload.roles[0] if payload.roles else ""
-    
+
     funding_request.status = review_data.status
     funding_request.reviewed_by = payload.username
     funding_request.reviewed_at = datetime.now(timezone.utc)
     funding_request.approval_notes = review_data.approval_notes
     funding_request.updated_at = datetime.now(timezone.utc)
-    
+
     # If approved, create allocation
     if review_data.status == "approved":
         allocated_amount = review_data.allocated_amount or funding_request.requested_amount
@@ -777,10 +784,10 @@ async def review_funding_request(
         )
         db.add(allocation)
         funding_request.status = "approved"
-    
+
     db.commit()
     db.refresh(funding_request)
-    
+
     # Log audit
     log_audit(
         db=db,
@@ -794,7 +801,7 @@ async def review_funding_request(
             "approval_notes": review_data.approval_notes,
         },
     )
-    
+
     return funding_request
 
 
@@ -806,16 +813,16 @@ async def get_funding_summary(
 ):
     """Get funding summary by entity and fiscal year."""
     query = db.query(FundingAllocation)
-    
+
     if fiscal_year:
         query = query.filter(FundingAllocation.fiscal_year == fiscal_year)
-    
+
     allocations = query.all()
-    
+
     # Group by entity
     entity_summary = {}
     total_by_status = {"pending": 0, "approved": 0, "disbursed": 0, "rejected": 0}
-    
+
     for alloc in allocations:
         entity_key = f"{alloc.entity_name} ({alloc.entity_type})"
         if entity_key not in entity_summary:
@@ -826,16 +833,16 @@ async def get_funding_summary(
                 "total_disbursed": 0,
                 "allocation_count": 0,
             }
-        
+
         entity_summary[entity_key]["total_allocated"] += alloc.allocation_amount
         entity_summary[entity_key]["allocation_count"] += 1
-        
+
         if alloc.status == "disbursed":
             entity_summary[entity_key]["total_disbursed"] += alloc.allocation_amount
-        
+
         if alloc.status in total_by_status:
             total_by_status[alloc.status] += alloc.allocation_amount
-    
+
     return {
         "entity_summary": list(entity_summary.values()),
         "total_by_status": total_by_status,

@@ -82,7 +82,10 @@ def test_penrose_obligation_uses_pool_code_before_text() -> None:
 
     assert obligation.status == ScientificClaimStatus.FALSIFIED.value
     assert obligation.reentry_required is False
-    assert obligation.revocation_disposition == RevocationDisposition.FALSIFIED_INVALID_LOCAL_OR_EXTERNAL_TRUTH.value
+    assert (
+        obligation.revocation_disposition
+        == RevocationDisposition.FALSIFIED_INVALID_LOCAL_OR_EXTERNAL_TRUTH.value
+    )
     assert obligation.revocation_classifier_source == "pool_response_code"
 
 
@@ -118,7 +121,10 @@ def test_penrose_obligation_re_evaluates_vardiff_revocation() -> None:
 
     assert obligation.status == ScientificClaimStatus.CONFIRMED_THEN_REVOKED.value
     assert obligation.reentry_required is True
-    assert obligation.revocation_disposition == RevocationDisposition.REEVALUATE_AGAINST_UPDATED_TARGET.value
+    assert (
+        obligation.revocation_disposition
+        == RevocationDisposition.REEVALUATE_AGAINST_UPDATED_TARGET.value
+    )
     assert obligation.next_required_status == ScientificClaimStatus.REQUIRES_EXTERNAL_TRUTH.value
 
 
@@ -220,5 +226,9 @@ def test_causal_integration_maps_negative_and_error_inputs_to_zero() -> None:
     assert telemetry.channel_scores["pitfalls_curriculum"] == 0.0
     assert telemetry.operational_phi_floor_score == 0.0
     assert telemetry.escalation_allowed is False
-    assert set(telemetry.sanitized_channels) >= {"learning_correction", "evidence_seal", "pitfalls_curriculum"}
+    assert set(telemetry.sanitized_channels) >= {
+        "learning_correction",
+        "evidence_seal",
+        "pitfalls_curriculum",
+    }
     assert "mapped to [0,1]" in telemetry.score_domain_policy

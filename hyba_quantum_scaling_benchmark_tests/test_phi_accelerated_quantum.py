@@ -19,8 +19,6 @@ from python_backend.pythia_mining.phi_accelerated_quantum import (
     PhiAcceleratedUnitaryEvolution,
     PhiAcceleratedGrover,
     PhiAcceleratedMeasurement,
-    PHI,
-    PHI_INVERSE,
 )
 
 

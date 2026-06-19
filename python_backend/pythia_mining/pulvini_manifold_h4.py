@@ -14,26 +14,19 @@ from __future__ import annotations
 
 import hashlib
 import math
-import time
-from dataclasses import asdict, dataclass, field
-from typing import Any, Dict, Iterable, List, Optional, Sequence
+from dataclasses import asdict, dataclass
+from typing import Any, Dict, Iterable, List, Optional
 
 import numpy as np
 
 from .pulvini_group_h4 import (
-    NONCE_SPACE,
-    PHI,
     PHI_3,
-    TensorCoordinateH4,
     adjacency_sets_h4,
-    apply_h4_automorphism_to_nonce,
     compute_graph_automorphisms_h4,
     compute_node_orbits_h4,
-    nonce_orbit_h4,
     phi_3_resonance,
-    tensor_coordinate_for_node_h4,
 )
-from .pulvini_topology_h4 import ADJACENCY_MAP_H4, H4_YANG_MILLS_GAP, NUM_NODES
+from .pulvini_topology_h4 import ADJACENCY_MAP_H4, H4_YANG_MILLS_GAP
 
 HBAR = 1.0
 EPSILON = 1e-12
@@ -42,6 +35,7 @@ EPSILON = 1e-12
 @dataclass
 class H4ManifoldObservation:
     """Observable state of the H₄ 600-cell manifold."""
+
     job_id: Optional[str]
     probabilities: List[float]
     phases: List[float]
@@ -257,7 +251,7 @@ class PulviniManifoldH4:
             # Probabilistic acceptance
             hash_input = f"{job_id or 'h4'}:{nonce}:{self.coupling}".encode("utf-8")
             digest = hashlib.blake2b(hash_input, digest_size=4).digest()
-            threshold = int.from_bytes(digest, "big") / float(2 ** 32)
+            threshold = int.from_bytes(digest, "big") / float(2**32)
             if threshold < gate_value:
                 result.append(int(nonce))
         return result
@@ -271,6 +265,7 @@ class PulviniManifoldH4:
         with φ-modulated step sizes scaled for the 120-domain topology.
         """
         import random as _random
+
         rng = rng or _random.Random()
         current_phi = self.compute_h4_phi_resonance(current_nonce)
 
@@ -279,7 +274,7 @@ class PulviniManifoldH4:
         candidates = []
 
         for step in step_sizes:
-            next_nonce = (current_nonce + step * scale) % (2 ** 32)
+            next_nonce = (current_nonce + step * scale) % (2**32)
             next_phi = self.compute_h4_phi_resonance(next_nonce)
             if next_phi > current_phi:
                 candidates.append((next_nonce, next_phi))
@@ -287,7 +282,7 @@ class PulviniManifoldH4:
         if candidates:
             return max(candidates, key=lambda x: x[1])[0]
         else:
-            return (current_nonce + rng.choice(step_sizes)) % (2 ** 32)
+            return (current_nonce + rng.choice(step_sizes)) % (2**32)
 
     def h4_phase_entropy(self) -> float:
         """Compute the φ³-phase entropy across all 120 nodes."""
@@ -323,28 +318,30 @@ class PulviniManifoldH4:
 
     def snapshot(self) -> Dict[str, Any]:
         obs = self.observe().to_dict()
-        obs.update({
-            "num_nodes": self.num_nodes,
-            "coupling": self.coupling,
-            "h4_yang_mills_gap": self.h4_gap,
-            "phi_3_constant": PHI_3,
-            "phi_phase_entropy": self.h4_phase_entropy(),
-            "entropy_gradient": self.entropy_gradient,
-            "automorphism_count": len(self.automorphisms),
-            "orbit_count": len(self.node_orbits),
-            "h4_structure": {
-                "type": "600-cell (4D regular polytope)",
-                "schlafli": "{3,3,5}",
-                "coxeter_diagram": "o-5-o-3-o-3-o",
-                "group_order": 14400,
-                "h3_subgroup_order": 120,
-            },
-            "topological_scaling": {
-                "vs_m32_domain_multiple": self.num_nodes / 32,
-                "vs_m32_symmetry_multiple": 14400 / 120,
-                "vs_m32_edge_density": 12 / 3.5,
-            },
-        })
+        obs.update(
+            {
+                "num_nodes": self.num_nodes,
+                "coupling": self.coupling,
+                "h4_yang_mills_gap": self.h4_gap,
+                "phi_3_constant": PHI_3,
+                "phi_phase_entropy": self.h4_phase_entropy(),
+                "entropy_gradient": self.entropy_gradient,
+                "automorphism_count": len(self.automorphisms),
+                "orbit_count": len(self.node_orbits),
+                "h4_structure": {
+                    "type": "600-cell (4D regular polytope)",
+                    "schlafli": "{3,3,5}",
+                    "coxeter_diagram": "o-5-o-3-o-3-o",
+                    "group_order": 14400,
+                    "h3_subgroup_order": 120,
+                },
+                "topological_scaling": {
+                    "vs_m32_domain_multiple": self.num_nodes / 32,
+                    "vs_m32_symmetry_multiple": 14400 / 120,
+                    "vs_m32_edge_density": 12 / 3.5,
+                },
+            }
+        )
         return obs
 
     def benchmark_structured_search(self, steps: int = 1000) -> Dict[str, Any]:
@@ -353,12 +350,13 @@ class PulviniManifoldH4:
         Compares H₄-guided traversal against random walk.
         """
         import random as _random
+
         rng = _random.Random(42)
 
         # H₄-guided walk
         h4_nonces = []
         h4_phis = []
-        nonce = rng.randint(0, 2 ** 32 - 1)
+        nonce = rng.randint(0, 2**32 - 1)
         for _ in range(steps):
             phi_val = self.compute_h4_phi_resonance(nonce)
             h4_nonces.append(nonce)
@@ -367,11 +365,11 @@ class PulviniManifoldH4:
 
         # Random walk
         random_phis = []
-        nonce = rng.randint(0, 2 ** 32 - 1)
+        nonce = rng.randint(0, 2**32 - 1)
         for _ in range(steps):
             phi_val = self.compute_h4_phi_resonance(nonce)
             random_phis.append(phi_val)
-            nonce = rng.randint(0, 2 ** 32 - 1)
+            nonce = rng.randint(0, 2**32 - 1)
 
         h4_mean = float(np.mean(h4_phis))
         random_mean = float(np.mean(random_phis))

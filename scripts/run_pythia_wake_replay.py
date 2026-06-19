@@ -85,7 +85,9 @@ async def replay_wake(cycles: int) -> dict[str, Any]:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Replay PYTHIA wake-event telemetry")
-    parser.add_argument("--cycles", type=int, default=2, help="Number of reflexive cycles to replay")
+    parser.add_argument(
+        "--cycles", type=int, default=2, help="Number of reflexive cycles to replay"
+    )
     parser.add_argument("--output", type=Path, default=None, help="Optional JSON output path")
     args = parser.parse_args()
 

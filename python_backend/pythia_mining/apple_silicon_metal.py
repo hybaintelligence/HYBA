@@ -181,7 +181,11 @@ def probe_mlx_metal(*, matrix_size: int = 64, require_mlx: bool = False) -> Dict
         )
         return packet.signed()
 
-    status = "verified" if metal_verified and cpu_verified and delta is not None and delta < 1e-2 else "degraded"
+    status = (
+        "verified"
+        if metal_verified and cpu_verified and delta is not None and delta < 1e-2
+        else "degraded"
+    )
     packet = AppleSiliconMetalPacket(
         schema_version="2026-06-15.apple-silicon-metal.v1",
         generated_by="python_backend.pythia_mining.apple_silicon_metal",

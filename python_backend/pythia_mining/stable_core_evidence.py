@@ -15,14 +15,13 @@ import platform
 import time
 from dataclasses import asdict, dataclass, field
 from enum import Enum
-from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence
+from typing import Any, Dict, Mapping, Optional, Sequence
 
 from .resonance_fabric import (
     CriticismLedger,
     ImmutableInvariantGuard,
     RefactorDecision,
     RefactorMode,
-    ResonanceMatrix,
     simulate_epoch10_structural_resonance,
 )
 
@@ -182,9 +181,14 @@ class SovereignAuditAggregator:
         staged = [
             result
             for result in guard_results
-            if result.get("decision") in {RefactorDecision.STAGE_FOR_SUPERVISION.value, RefactorDecision.ALLOW.value}
+            if result.get("decision")
+            in {RefactorDecision.STAGE_FOR_SUPERVISION.value, RefactorDecision.ALLOW.value}
         ]
-        blocked = [result for result in guard_results if result.get("decision") == RefactorDecision.BLOCK.value]
+        blocked = [
+            result
+            for result in guard_results
+            if result.get("decision") == RefactorDecision.BLOCK.value
+        ]
         total_phi = round(sum(float(proposal.expected_phi_gain) for proposal in proposals), 6)
         mean_logic = round(
             sum(float(proposal.expected_logical_consistency) for proposal in proposals)
@@ -270,7 +274,8 @@ def generate_stable_core_evidence_packet(
     )
     status = (
         EvidenceStatus.REJECTED_BEFORE_STAGING.value
-        if adversarial_result.rejected_before_staging and guard_result.decision is RefactorDecision.BLOCK
+        if adversarial_result.rejected_before_staging
+        and guard_result.decision is RefactorDecision.BLOCK
         else EvidenceStatus.STAGED_FOR_SUPERVISION.value
     )
     packet_payload = {
