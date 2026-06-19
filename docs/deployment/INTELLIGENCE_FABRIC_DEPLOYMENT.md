@@ -456,9 +456,9 @@ curl http://localhost:3001/api/health/readiness
 
 ### Additional Documentation
 
-- `docs/RECURSIVE_STRUCTURAL_LEARNING.md` - Comprehensive technical documentation
-- `docs/SCIENTIFIC_INNOVATION_README.md` - Scientific foundations
-- `docs/INTEGRATION_VERIFICATION.md` - Integration verification report
+- `docs/scientific/RECURSIVE_STRUCTURAL_LEARNING.md` - Comprehensive technical documentation
+- `docs/scientific/SCIENTIFIC_INNOVATION_README.md` - Scientific foundations
+- `docs/implementation/INTEGRATION_VERIFICATION.md` - Integration verification report
 
 ### Test Coverage
 

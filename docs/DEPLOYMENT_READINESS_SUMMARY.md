@@ -38,7 +38,7 @@ Scripts:
 
 Documentation:
   ✓ RUN_LIVE_NOW.md — Quick execution
-  ✓ SYSTEM_READY_TO_RUN.md — Architecture
+  ✓ CANONICAL_DOCUMENTS.md — Documentation source-of-truth map
   ✓ LIVE_MINING_QUICKSTART.md — Setup guide
 ```
 

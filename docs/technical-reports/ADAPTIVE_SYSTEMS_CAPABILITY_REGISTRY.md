@@ -197,8 +197,8 @@ Use as evidence of software integration proxy measurement only.
 **Evidence files:**
 
 - `tests/test_adaptive_science_claim_gate.py`
-- `docs/CONTROLLED_ADAPTIVE_SYSTEMS_SCIENCE_PROGRAM.md`
-- `docs/ADAPTIVE_SYSTEMS_CAPABILITY_REGISTRY.md`
+- `docs/governance/CONTROLLED_ADAPTIVE_SYSTEMS_SCIENCE_PROGRAM.md`
+- `docs/technical-reports/ADAPTIVE_SYSTEMS_CAPABILITY_REGISTRY.md`
 
 **Test command:**
 

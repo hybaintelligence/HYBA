@@ -114,7 +114,7 @@ node dev-server.mjs
 | `FRONTEND_INTEGRATION_AGENTS.md` | Detailed task specs | All agents |
 | `AGENT_FRONTEND_QUICK_START.md` | Quick reference | All agents |
 | `DEPLOYMENT_READINESS_CHECKLIST.md` | Verification steps | Agent 7 |
-| `DEPLOYMENT_STATUS_SUMMARY.md` | System status | All agents |
+| `CANONICAL_DOCUMENTS.md` | Canonical source-of-truth map | All agents |
 | `CLOUD_AGENTS_README.md` | This file | All agents |
 
 ---
