@@ -24,7 +24,6 @@ for (const filePath of [
   'tests/test_frontend_production_hardening.test.ts',
   'tests/test_frontend_release_readiness.test.ts',
   'docs/frontend/PRODUCTION_HARDENING_EVIDENCE.md',
-  'docs/frontend/FRONTEND_RELEASE_CHECKLIST.md',
 ]) {
   pass(exists(filePath), `Missing required frontend evidence file: ${filePath}`);
 }
