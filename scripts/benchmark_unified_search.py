@@ -1,14 +1,14 @@
-"""Benchmark script for UniversalPassport module with auditable JSON output.
+"""Benchmark script for UnifiedSearchKernel module with auditable JSON output.
 
-This script benchmarks the UniversalPassport module performance and generates
+This script benchmarks the UnifiedSearchKernel module performance and generates
 auditable JSON output for reproducible evidence.
 
 Benchmarks:
-1. Passport creation performance
-2. Hash computation performance
-3. Verification performance
-4. Audit log append performance
-5. Serialization/deserialization performance
+1. Search performance across different budgets
+2. Warm cache vs cold cache latency
+3. Domain-specific search performance
+4. Resonance score computation
+5. Neighbor generation performance
 """
 
 from __future__ import annotations
@@ -23,17 +23,12 @@ from typing import Any, Mapping, Sequence
 # Add python_backend to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from python_backend.core.audit.universal_passport import (
-    ClaimType,
-    EpistemicBound,
-    SharedAuditLog,
-    Subsystem,
-    UniversalPassport,
-    make_circuit_breaker_passport,
-    make_mining_passport,
-    make_mode_transition_passport,
-    make_passport,
-    make_phi_measurement_passport,
+from python_backend.core.search.unified_search_kernel import (
+    PythiaMiningDomain,
+    SatGeodesicDomain,
+    UnifiedSearchKernel,
+    WarmCache,
+    YangMillsDomain,
 )
 
 
@@ -64,8 +59,8 @@ class BenchmarkResult:
         }
 
 
-class UniversalPassportBenchmark:
-    """Benchmark suite for UniversalPassport module."""
+class UnifiedSearchBenchmark:
+    """Benchmark suite for UnifiedSearchKernel module."""
 
     def __init__(self, iterations: int = 1000):
         """Initialize the benchmark suite.
@@ -74,19 +69,38 @@ class UniversalPassportBenchmark:
             iterations: Number of iterations for each benchmark
         """
         self.iterations = int(iterations)
+        self._setup_test_domains()
 
-    def benchmark_passport_creation(self) -> BenchmarkResult:
-        """Benchmark passport creation performance."""
+    def _setup_test_domains(self):
+        """Setup test domains for benchmarking."""
+        # Mining domain
+        self.mining_domain = PythiaMiningDomain(
+            target_nonce=50,
+            nonce_range=(0, 100),
+        )
+        self.mining_kernel = UnifiedSearchKernel(self.mining_domain)
+
+        # SAT domain
+        self.sat_domain = SatGeodesicDomain(
+            num_variables=3,
+            clauses=[[1, 2], [-1, 3]],
+        )
+        self.sat_kernel = UnifiedSearchKernel(self.sat_domain)
+
+        # Yang-Mills domain
+        self.yang_mills_domain = YangMillsDomain(
+            lattice_size=10,
+            initial_action=1.0,
+        )
+        self.yang_mills_kernel = UnifiedSearchKernel(self.yang_mills_domain)
+
+    def benchmark_search_performance(self, budget: int = 10) -> BenchmarkResult:
+        """Benchmark search performance with given budget."""
         times = []
 
         for _ in range(self.iterations):
             start = time.perf_counter()
-            passport = make_passport(
-                subsystem=Subsystem.PYTHIA.value,
-                claim_type=ClaimType.NONCE_FOUND.value,
-                payload={"nonce": 12345, "job_id": "test_job"},
-                epistemic_bounds=[EpistemicBound.NO_QUANTUM_SPEEDUP.value],
-            )
+            result = self.mining_kernel.search(budget=budget, seed=42)
             end = time.perf_counter()
             times.append((end - start) * 1000)
 
@@ -97,65 +111,29 @@ class UniversalPassportBenchmark:
         throughput = self.iterations / (total_time / 1000)
 
         return BenchmarkResult(
-            operation="passport_creation",
+            operation="search_performance",
             iterations=self.iterations,
             total_time_ms=total_time,
             avg_time_ms=avg_time,
             min_time_ms=min_time,
             max_time_ms=max_time,
             throughput_ops_per_sec=throughput,
-            metadata={"passport_type": "standard"},
+            metadata={"budget": budget, "domain": "mining"},
         )
 
-    def benchmark_hash_computation(self) -> BenchmarkResult:
-        """Benchmark hash computation performance."""
-        times = []
+    def benchmark_warm_cache(self) -> BenchmarkResult:
+        """Benchmark warm cache performance."""
+        cache = WarmCache(max_size=100)
+        kernel = UnifiedSearchKernel(self.mining_domain, warm_cache=cache)
 
-        for _ in range(self.iterations):
-            start = time.perf_counter()
-            passport = make_passport(
-                subsystem=Subsystem.PYTHIA.value,
-                claim_type=ClaimType.NONCE_FOUND.value,
-                payload={"nonce": 12345, "job_id": "test_job"},
-                epistemic_bounds=[EpistemicBound.NO_QUANTUM_SPEEDUP.value],
-            )
-            # Hash is computed during passport creation, so this measures that
-            _ = passport.embedded_hash
-            end = time.perf_counter()
-            times.append((end - start) * 1000)
-
-        total_time = sum(times)
-        avg_time = total_time / len(times)
-        min_time = min(times)
-        max_time = max(times)
-        throughput = self.iterations / (total_time / 1000)
-
-        return BenchmarkResult(
-            operation="hash_computation",
-            iterations=self.iterations,
-            total_time_ms=total_time,
-            avg_time_ms=avg_time,
-            min_time_ms=min_time,
-            max_time_ms=max_time,
-            throughput_ops_per_sec=throughput,
-            metadata={"hash_algorithm": "SHA-256"},
-        )
-
-    def benchmark_verification(self) -> BenchmarkResult:
-        """Benchmark passport verification performance."""
-        # Create a passport to verify
-        passport = make_passport(
-            subsystem=Subsystem.PYTHIA.value,
-            claim_type=ClaimType.NONCE_FOUND.value,
-            payload={"nonce": 12345, "job_id": "test_job"},
-            epistemic_bounds=[EpistemicBound.NO_QUANTUM_SPEEDUP.value],
-        )
+        # Pre-warm the cache
+        cache.store_warm(self.mining_domain.domain_id, 50)
 
         times = []
 
         for _ in range(self.iterations):
             start = time.perf_counter()
-            is_valid = passport.verify()
+            result = kernel.search(budget=10, seed=42)
             end = time.perf_counter()
             times.append((end - start) * 1000)
 
@@ -166,68 +144,26 @@ class UniversalPassportBenchmark:
         throughput = self.iterations / (total_time / 1000)
 
         return BenchmarkResult(
-            operation="verification",
+            operation="warm_cache",
             iterations=self.iterations,
             total_time_ms=total_time,
             avg_time_ms=avg_time,
             min_time_ms=min_time,
             max_time_ms=max_time,
             throughput_ops_per_sec=throughput,
-            metadata={"verification_result": is_valid},
+            metadata={"cache_hit": result.latency_mode.value},
         )
 
-    def benchmark_audit_log_append(self) -> BenchmarkResult:
-        """Benchmark audit log append performance."""
-        audit_log = SharedAuditLog()
-        times = []
-
-        for i in range(self.iterations):
-            passport = make_passport(
-                subsystem=Subsystem.PYTHIA.value,
-                claim_type=ClaimType.NONCE_FOUND.value,
-                payload={"nonce": i, "job_id": "test_job"},
-                epistemic_bounds=[EpistemicBound.NO_QUANTUM_SPEEDUP.value],
-            )
-            start = time.perf_counter()
-            audit_log.append(passport)
-            end = time.perf_counter()
-            times.append((end - start) * 1000)
-
-        total_time = sum(times)
-        avg_time = total_time / len(times)
-        min_time = min(times)
-        max_time = max(times)
-        throughput = self.iterations / (total_time / 1000)
-
-        return BenchmarkResult(
-            operation="audit_log_append",
-            iterations=self.iterations,
-            total_time_ms=total_time,
-            avg_time_ms=avg_time,
-            min_time_ms=min_time,
-            max_time_ms=max_time,
-            throughput_ops_per_sec=throughput,
-            metadata={"final_log_size": len(audit_log.get_entries())},
-        )
-
-    def benchmark_serialization(self) -> BenchmarkResult:
-        """Benchmark passport serialization/deserialization performance."""
-        passport = make_passport(
-            subsystem=Subsystem.PYTHIA.value,
-            claim_type=ClaimType.NONCE_FOUND.value,
-            payload={"nonce": 12345, "job_id": "test_job"},
-            epistemic_bounds=[EpistemicBound.NO_QUANTUM_SPEEDUP.value],
-        )
+    def benchmark_cold_cache(self) -> BenchmarkResult:
+        """Benchmark cold cache performance."""
+        cache = WarmCache(max_size=100)
+        kernel = UnifiedSearchKernel(self.mining_domain, warm_cache=cache)
 
         times = []
 
         for _ in range(self.iterations):
             start = time.perf_counter()
-            # Serialize
-            passport_dict = passport.to_dict()
-            json_str = json.dumps(passport_dict)
-            # Deserialize
-            deserialized = json.loads(json_str)
+            result = kernel.search(budget=10, seed=42)
             end = time.perf_counter()
             times.append((end - start) * 1000)
 
@@ -238,38 +174,122 @@ class UniversalPassportBenchmark:
         throughput = self.iterations / (total_time / 1000)
 
         return BenchmarkResult(
-            operation="serialization",
+            operation="cold_cache",
             iterations=self.iterations,
             total_time_ms=total_time,
             avg_time_ms=avg_time,
             min_time_ms=min_time,
             max_time_ms=max_time,
             throughput_ops_per_sec=throughput,
-            metadata={"serialization_format": "JSON"},
+            metadata={"cache_hit": result.latency_mode.value},
+        )
+
+    def benchmark_domain_specific_search(self) -> BenchmarkResult:
+        """Benchmark domain-specific search performance."""
+        times = []
+
+        for _ in range(self.iterations):
+            start = time.perf_counter()
+            result = self.sat_kernel.search(budget=10, seed=42)
+            end = time.perf_counter()
+            times.append((end - start) * 1000)
+
+        total_time = sum(times)
+        avg_time = total_time / len(times)
+        min_time = min(times)
+        max_time = max(times)
+        throughput = self.iterations / (total_time / 1000)
+
+        return BenchmarkResult(
+            operation="domain_specific_search",
+            iterations=self.iterations,
+            total_time_ms=total_time,
+            avg_time_ms=avg_time,
+            min_time_ms=min_time,
+            max_time_ms=max_time,
+            throughput_ops_per_sec=throughput,
+            metadata={"domain": "sat_geodesic"},
+        )
+
+    def benchmark_resonance_score(self) -> BenchmarkResult:
+        """Benchmark resonance score computation."""
+        times = []
+
+        for _ in range(self.iterations):
+            start = time.perf_counter()
+            score = self.mining_domain.resonance_score(618)
+            end = time.perf_counter()
+            times.append((end - start) * 1000)
+
+        total_time = sum(times)
+        avg_time = total_time / len(times)
+        min_time = min(times)
+        max_time = max(times)
+        throughput = self.iterations / (total_time / 1000)
+
+        return BenchmarkResult(
+            operation="resonance_score",
+            iterations=self.iterations,
+            total_time_ms=total_time,
+            avg_time_ms=avg_time,
+            min_time_ms=min_time,
+            max_time_ms=max_time,
+            throughput_ops_per_sec=throughput,
+            metadata={"score": score},
+        )
+
+    def benchmark_neighbor_generation(self) -> BenchmarkResult:
+        """Benchmark neighbor generation performance."""
+        times = []
+
+        for _ in range(self.iterations):
+            start = time.perf_counter()
+            neighbors = self.mining_domain.neighbor_fn(50)
+            end = time.perf_counter()
+            times.append((end - start) * 1000)
+
+        total_time = sum(times)
+        avg_time = total_time / len(times)
+        min_time = min(times)
+        max_time = max(times)
+        throughput = self.iterations / (total_time / 1000)
+
+        return BenchmarkResult(
+            operation="neighbor_generation",
+            iterations=self.iterations,
+            total_time_ms=total_time,
+            avg_time_ms=avg_time,
+            min_time_ms=min_time,
+            max_time_ms=max_time,
+            throughput_ops_per_sec=throughput,
+            metadata={"num_neighbors": len(neighbors)},
         )
 
     def run_all_benchmarks(self) -> Sequence[BenchmarkResult]:
         """Run all benchmarks and return results."""
         results = []
 
-        print("Running UniversalPassport benchmarks...")
+        print("Running UnifiedSearchKernel benchmarks...")
         print(f"Iterations: {self.iterations}")
         print()
 
-        results.append(self.benchmark_passport_creation())
-        print(f"✓ Passport creation: {results[-1].avg_time_ms:.3f}ms avg")
+        results.append(self.benchmark_search_performance(budget=10))
+        print(f"✓ Search performance (budget=10): {results[-1].avg_time_ms:.3f}ms avg")
 
-        results.append(self.benchmark_hash_computation())
-        print(f"✓ Hash computation: {results[-1].avg_time_ms:.3f}ms avg")
+        results.append(self.benchmark_warm_cache())
+        print(f"✓ Warm cache: {results[-1].avg_time_ms:.3f}ms avg")
 
-        results.append(self.benchmark_verification())
-        print(f"✓ Verification: {results[-1].avg_time_ms:.3f}ms avg")
+        results.append(self.benchmark_cold_cache())
+        print(f"✓ Cold cache: {results[-1].avg_time_ms:.3f}ms avg")
 
-        results.append(self.benchmark_audit_log_append())
-        print(f"✓ Audit log append: {results[-1].avg_time_ms:.3f}ms avg")
+        results.append(self.benchmark_domain_specific_search())
+        print(f"✓ Domain-specific search: {results[-1].avg_time_ms:.3f}ms avg")
 
-        results.append(self.benchmark_serialization())
-        print(f"✓ Serialization: {results[-1].avg_time_ms:.3f}ms avg")
+        results.append(self.benchmark_resonance_score())
+        print(f"✓ Resonance score: {results[-1].avg_time_ms:.3f}ms avg")
+
+        results.append(self.benchmark_neighbor_generation())
+        print(f"✓ Neighbor generation: {results[-1].avg_time_ms:.3f}ms avg")
 
         return results
 
@@ -288,7 +308,7 @@ class UniversalPassportBenchmark:
             Formatted report string
         """
         report_dict = {
-            "benchmark_suite": "UniversalPassport",
+            "benchmark_suite": "UnifiedSearchKernel",
             "timestamp": time.time(),
             "iterations": self.iterations,
             "results": [r.to_dict() for r in results],
@@ -308,7 +328,7 @@ class UniversalPassportBenchmark:
         # Generate human-readable report
         lines = [
             "=" * 80,
-            "UNIVERSAL PASSPORT BENCHMARK REPORT",
+            "UNIFIED SEARCH KERNEL BENCHMARK REPORT",
             "=" * 80,
             "",
             f"Timestamp: {time.ctime(report_dict['timestamp'])}",
@@ -345,7 +365,7 @@ def main():
     import argparse
 
     parser = argparse.ArgumentParser(
-        description="Benchmark UniversalPassport module with auditable JSON output"
+        description="Benchmark UnifiedSearchKernel module with auditable JSON output"
     )
     parser.add_argument(
         "--iterations",
@@ -356,14 +376,14 @@ def main():
     parser.add_argument(
         "--output",
         type=Path,
-        default=Path("artifacts/universal_passport_benchmark.json"),
-        help="Output file for benchmark results (default: artifacts/universal_passport_benchmark.json)",
+        default=Path("artifacts/unified_search_benchmark.json"),
+        help="Output file for benchmark results (default: artifacts/unified_search_benchmark.json)",
     )
 
     args = parser.parse_args()
 
     # Run benchmarks
-    benchmark = UniversalPassportBenchmark(iterations=args.iterations)
+    benchmark = UnifiedSearchBenchmark(iterations=args.iterations)
     results = benchmark.run_all_benchmarks()
 
     # Generate report

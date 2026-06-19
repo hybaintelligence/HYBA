@@ -14,10 +14,14 @@ Benchmarks:
 from __future__ import annotations
 
 import json
+import sys
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Mapping, Sequence
+
+# Add python_backend to path
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from python_backend.core.attribution.causal_router import (
     CausalAttributionEngine,
