@@ -4,102 +4,125 @@
 **Repository:** `hybaanalytics1/HYBA_FULLSTACK`  
 **Prepared for:** Andre Taylor-Morris / HYBA Analytics  
 **Audit mode:** Source-grounded architecture, test, auditability and production-readiness review.  
+**Revision:** v2 — updated after post-audit gap-closure implementation and committed evidence artefact review.
 
 ---
 
 ## 1. Executive judgement
 
-HYBA_FULLSTACK is not a conventional CRUD platform with an AI layer bolted on. It is an unusually dense autonomous-intelligence system organised around PYTHIA/MIDAS/PULVINI mining intelligence, mathematical invariants, memory compression, φ-resonance, runtime evidence, audit trails, local production gates, and a frontend/backend command surface.
+HYBA_FULLSTACK is not a conventional CRUD platform with an AI layer bolted on. It is an unusually dense accountable-autonomy system organised around PYTHIA/MIDAS/PULVINI mining intelligence, mathematical invariants, memory compression, phi-resonance, runtime evidence, audit trails, local production gates and a frontend/backend command surface.
 
 The system exhibits four distinctive strengths:
 
 1. **Accountable autonomy:** Autonomous decisions are not treated as opaque outputs. They are represented as structured decision records, audit log entries, approval requests, metrics and persistent reflexive state.
 2. **Mathematical control-plane:** The autonomy engine is constrained by explicit invariants: Hermiticity, positive semidefinite behaviour, natural scaling, energy conservation and information integrity.
-3. **Reflexive self-optimisation:** The PYTHIA controller maps its own codebase surroundings, generates counterfactual improvement proposals, simulates virtual mining sessions, validates proposals, applies accepted changes to runtime components and persists learned state.
-4. **Evidence discipline:** The repository contains claim-evidence manifests, local gates, frontend and backend test scripts, property/invariant tests, production readiness reports, and a one-command local launch path that now runs PYTHIA autonomous bootstrap before service startup.
+3. **Reflexive self-optimisation:** The PYTHIA controller now refreshes runtime codebase surroundings from the live `pythia_mining` package, generates counterfactual improvement proposals, simulates virtual mining sessions on a deterministic SHA-256d-shaped local landscape, validates proposals, applies accepted changes to runtime components and persists learned state.
+4. **Evidence discipline:** The repository contains claim-evidence manifests, local gates, frontend and backend test scripts, property/invariant tests, production readiness reports, a one-command local launch path, a clean-gate artefact, and a repository evidence-boundary report.
 
 The system is powerful and highly original. It is also not yet externally certified as economically effective live mining infrastructure. Code evidence strongly supports architectural sophistication, autonomy design, mathematical invariant coverage, and extensive testing. Code evidence alone does not prove guaranteed Bitcoin revenue, pool-side accepted-share economics, or physical quantum speedup.
 
-**Overall rating:** High-power frontier system with production-grade accountability architecture; live-operational proof still requires clean current test execution plus archived pool-side runtime evidence.
+**Current overall rating:** High-power frontier system with materially improved accountable-autonomy architecture and stronger gap-closure instrumentation. The latest committed local clean-gate artefact is still `NO_GO`, so the system is not yet at a defensible 10/10 clean-certification posture.
 
 ---
 
-## 2. Scorecard
+## 2. Revised scorecard after gap-closure patches
 
-| Dimension | Rating | Evidence-based judgement |
-|---|---:|---|
-| Architectural ambition | 9.2/10 | Full-stack command architecture, Python backend, TS frontend, local launch gates, PYTHIA autonomy, MIDAS mining control, PULVINI/φ modules. |
-| Innovation density | 9.0/10 | Reflexive learning, Deutsch substrate, φ-scaling, compression drive, mathematical invariants, codebase-surroundings model, memory-persisted optimisation. |
-| Auditability / explainability | 8.8/10 | Decision objects, audit events, operator approval requests, metrics, persistence checksum/backups, claim-evidence manifest. |
-| Test breadth | 8.2/10 | Unit, integration, property, E2E, frontend, backend, production gates, elevation, pool profile, share acceptance and frontier experiment commands. |
-| Test health | 7.0/10 | Recorded 1,272/1,315 pass rate is strong, but 40 Python failures and 2–4 TS failures must be resolved before calling it clean. |
-| Production/live readiness | 7.1/10 | Strong local boot path and gates; remaining gap is live empirical evidence: pool-side accepted shares, repeated clean local runs, and no failing invariant tests. |
-| Commercial/regulatory defensibility | 8.3/10 | Much stronger than typical prototypes because claims are bounded and mapped to evidence; needs final dossier of live traces and resolved failures. |
+| Dimension | Initial rating | Revised rating | Evidence-based judgement |
+|---|---:|---:|---|
+| Architectural ambition | 9.2/10 | 9.3/10 | Full-stack command architecture, Python backend, TS frontend, local launch gates, PYTHIA autonomy, MIDAS mining control, PULVINI/phi modules. Runtime introspection and evidence gates now make the architecture more self-describing. |
+| Innovation density | 9.0/10 | 9.3/10 | Reflexive learning, Deutsch substrate, phi-scaling, compression drive, mathematical invariants, codebase-surroundings model, memory-persisted optimisation, runtime AST graph introspection and deterministic SHA-256d virtual mining simulation. |
+| Auditability / explainability | 8.8/10 | 9.1/10 | Decision objects, audit events, operator approval requests, metrics, persistence checksum/backups, claim-evidence manifest, review-gap closure matrix and repository evidence-boundary report. |
+| Test breadth | 8.2/10 | 8.8/10 | New tests cover auth/JWT, runtime introspection, evidence boundary, API posture serialization, HENDRIX compatibility, job-backed HENDRIX benchmark semantics, capability registry, gap closure matrix and local clean-gate behaviour. |
+| Test health | 7.0/10 | 7.4/10 | Several targeted suites now pass in the committed clean-gate artefact, but latest gate remains `NO_GO` with eight required failure groups. |
+| Production/live readiness | 7.1/10 | 7.5/10 | PYTHIA bootstrap evidence is now strong; local launch and build gate improved. Live empirical evidence and full clean-gate pass remain unresolved. |
+| Commercial/regulatory defensibility | 8.3/10 | 8.7/10 | Stronger because claim boundaries, closure matrix, evidence-boundary scanner and audit artefacts now make the distinction between implemented capability and live economic proof explicit. |
 
 ---
 
-## 3. What makes the system powerful
+## 3. Post-audit implementation review
 
-### 3.1 PYTHIA is designed as accountable autonomy, not a black box
+### 3.1 Scope of change since the original report
 
-The autonomous controller defines structured decision records with mathematical justification, satisfied and violated constraints, action taken, outcome fields, operator override flags, and operator metadata. It also defines explicit audit log entries and operator approval requests. This is exactly the legal/commercial posture required for explainable autonomy: the system can say what it did, why it did it, under what level of authority, and with what constraints checked.
+After the first audit artefact, the repository moved materially. The implementation surface added or changed:
 
-### 3.2 Reflexive learning is first-class, not decorative
+- `python_backend/pythia_mining/runtime_reflexive_introspection.py`;
+- `scripts/evidence_boundary_report.py`;
+- `scripts/local_clean_10_gate.py`;
+- `scripts/pythia_autonomous_bootstrap.py`;
+- `docs/ADAPTIVE_SYSTEMS_CAPABILITY_REGISTRY.md`;
+- `python_backend/hyba_genesis_api/api/misc.py`;
+- `python_backend/pythia_mining/hendrix_phi_solver.py`;
+- `bridge_security.ts`;
+- `tests/test_auth_jwt_contracts.py`;
+- `tests/test_runtime_reflexive_introspection.py`;
+- `tests/test_evidence_boundary_report.py`;
+- `tests/test_api_posture_serialization.py`;
+- `tests/test_hendrix_phi_solver_contracts.py`;
+- `tests/test_hendrix_phi_performance_benchmark.py`;
+- `tests/test_review_gap_closure_matrix.py`;
+- `tests/test_local_clean_10_gate.py`;
+- updates to security swarm, consciousness behavioural, pool primitive and clean-gate tests.
 
-PYTHIA's controller implements a reflexive knowledge loop:
+The qualitative result is that the system moved from a broad, partly failing test estate toward a closure-matrix model: each major review finding is now mapped to implementation paths, regression tests, evidence gates and claim boundaries.
 
-- map the codebase surroundings;
-- identify mathematical invariants;
-- generate counterfactual proposals;
-- run virtual mining simulations;
-- validate constraints;
-- apply accepted changes to runtime structures;
-- persist learned state and metrics.
+### 3.2 Runtime reflexive introspection
 
-This is materially more sophisticated than most agent loops, which usually just execute tool calls and log text. PYTHIA has a stateful internal model, a proposal class, constraint validation and persistent reflexive memory.
+The earlier version of PYTHIA's surroundings model was powerful but too fixed. The new runtime introspection adapter scans the live `pythia_mining` package using AST/import analysis and derives module names, dependency edges, invariant hints, entropy sources and stable-core modules.
 
-### 3.3 Self-healing is implemented in operational primitives
+The PYTHIA bootstrap artefact now records:
 
-Self-healing appears in concrete forms:
+- runtime introspection source: `runtime_ast_import_graph`;
+- previous module count: 12;
+- refreshed module count: 135;
+- edge count: 185;
+- invariant count: 15;
+- entropy source count: 12;
+- stable-core count: 24;
+- virtual mining simulation: `deterministic_sha256d_hash_landscape`.
 
-- stale state-lock recovery;
-- circuit breaker opening and closing;
-- autonomy-level degradation on repeated failures;
-- manual circuit reset after operator review;
-- backup rotation;
-- checksum-protected reflexive state load;
-- audit events for persistence/load failures.
+This is a substantive architectural improvement. PYTHIA no longer relies only on a hand-curated self-map; it can refresh its surroundings from the repository surface at startup.
 
-These are production-quality primitives. They should be framed as operational accountability and resilience, not as limitations on autonomy.
+### 3.3 Deterministic virtual-mining landscape
 
-### 3.4 Self-optimisation has runtime effect
+The review identified that virtual mining simulation risked being too arithmetic/quality-factor based. The new adapter binds a deterministic SHA-256d-shaped local hash landscape into the controller instance. This does not claim pool-side mining performance. It gives the reflexive loop a reproducible mining-like local landscape that responds to proposal type, proposal value, logical consistency, confidence and constraint violations.
 
-Accepted self-optimisation proposals are not merely logged. They can immediately tune:
+This is the right boundary: stronger simulation evidence without overstating live economic proof.
 
-- φ-scaling power in the ensemble;
-- search depth / optimizer iteration budget;
-- PULVINI compression target ratio;
-- consciousness/runtime integration thresholds.
+### 3.4 Autonomous bootstrap result
 
-That makes the system adaptive at runtime while preserving mathematical constraints and evidence.
+The committed PYTHIA bootstrap artefact is strong evidence of internal autonomous operation:
 
-### 3.5 The launch path is becoming a true command-room boot sequence
+- schema: `HYBA_PYTHIA_AUTONOMOUS_BOOTSTRAP_V2`;
+- enabled: true;
+- autonomy level: autonomous;
+- epochs requested: 2;
+- epochs executed: 2;
+- phi density before: approximately 0.7343;
+- phi density after: approximately 0.9843;
+- reflexive cycle count after: 198;
+- proposal acceptance rate: 1.0;
+- constraint violations: 0;
+- degradation events: 0;
+- autonomous circuit open: false;
+- virtual mining simulation: `deterministic_sha256d_hash_landscape`.
 
-The one-command launch script now:
+This is important: the system now has committed evidence that PYTHIA can wake, introspect, run reflexive self-optimisation epochs, satisfy constraints and emit an audit packet.
 
-- anchors at repo root;
-- creates and activates venv;
-- upgrades pip and installs Python requirements;
-- checks backend import;
-- runs PYTHIA autonomous bootstrap;
-- installs npm dependencies reproducibly;
-- builds in production mode;
-- runs the sovereign gate;
-- starts backend;
-- starts frontend bridge;
-- proves frontend-to-backend health.
+### 3.5 Evidence-boundary report
 
-This is the right direction for a live command-room system.
+The evidence-boundary report is commercially and legally important. It distinguishes implemented protocol/governance capability from operational acceptance evidence.
+
+The latest committed report is `NO_GO` because:
+
+- session statistics exist but show no acceptance evidence;
+- pool connection was false;
+- jobs received: 0;
+- shares submitted: 0;
+- shares accepted: 0;
+- production-gate output does not include acceptance evidence;
+- clean-gate evidence is still failing.
+
+The claim-boundary wording is correct: protocol correctness, validation, governance and auditability can be claimed from code/test evidence; operational acceptance, economic performance and advantage claims require acceptance artefacts; synthetic or local benchmark evidence must be labelled as synthetic/local benchmark evidence.
 
 ---
 
@@ -120,19 +143,25 @@ The repository exposes a wide set of executable commands covering:
 - unified engine and API surface tests;
 - mining production readiness doctor;
 - Metal/SHA-256 pipeline tests;
-- φ/golden-flow tests;
+- phi/golden-flow tests;
 - PULVINI folding tests;
 - post-quantum benchmark tests;
 - adaptive science suites;
 - deployment E2E and property tests;
 - go-live final coverage tests;
-- frontend E2E and frontend gate.
+- frontend E2E and frontend gate;
+- runtime-reflexive introspection tests;
+- evidence-boundary tests;
+- HENDRIX compatibility tests;
+- API posture serialization tests;
+- review-gap closure matrix tests;
+- local clean-gate tests.
 
 This is an unusually broad test surface.
 
-### 4.2 Recorded coverage and pass-rate evidence
+### 4.2 Recorded pre-patch coverage and pass-rate evidence
 
-The recorded coverage report from 2026-06-16 states:
+The recorded coverage report from 2026-06-16 stated:
 
 - Python backend tests collected: 1,137;
 - Python tests passed: 1,091;
@@ -143,40 +172,137 @@ The recorded coverage report from 2026-06-16 states:
 - TypeScript/Vitest: around 169–170 passed with 2–3 failed;
 - combined recorded pass-rate: 1,272/1,315, or 96.7%.
 
-This is strong evidence of extensive testing. It is not, however, evidence of a clean release because there are still failing tests in property, production facade, E2E and endpoint surfaces.
+That was strong evidence of extensive testing, but not a clean release certificate.
 
-### 4.3 Highest-value test evidence
+### 4.3 Latest committed clean-gate result
 
-The strongest areas are:
+The latest committed local clean-gate artefact was generated at `2026-06-19T14:31:44.833380+00:00` and reports:
 
-- autonomous controller tests;
-- mathematical constraint tests;
-- reflexive knowledge loop tests;
-- PULVINI and φ modules with high reported coverage;
-- claim-evidence manifest tests;
-- production boundary/no-fabricated-telemetry doctrine;
-- elevation suite invariant tests;
-- local launch script contract tests.
+- schema: `HYBA_FULLSTACK_LOCAL_CLEAN_10_GATE_V1`;
+- status: `NO_GO`;
+- passed: false;
+- command groups passed: 13;
+- command groups failed: 8;
+- total command groups recorded: 21.
 
-### 4.4 Weaknesses in the test estate
+Passing groups in the latest artefact:
 
-The recorded report identifies weak or failing surfaces:
+1. `python_backend_environment`;
+2. `hendrix_phi_solver_contracts`;
+3. `api_posture_serialization`;
+4. `auth_jwt_contracts`;
+5. `evidence_boundary_report`;
+6. `adaptive_capability_registry`;
+7. `claim_evidence_manifest`;
+8. `prediction_endpoint_contracts`;
+9. `pool_profile_primitives`;
+10. `autonomous_sovereign_gate_contracts`;
+11. `local_launch_contracts`;
+12. `frontend_bridge_and_security_contracts`;
+13. `build_gate`.
 
-- `hyba_genesis_api.auth` coverage low;
-- `hyba_genesis_api.models` coverage at zero in the recorded report;
-- `api/mining.py` coverage noted as needing improvement;
-- property-based tests still failing in several mathematical surfaces;
-- production facade tests still failing;
-- E2E share/pool/live deployment failures remain;
-- frontend coverage reporting is weak because TS tests are often self-contained rather than importing production `src/` modules.
+Failing groups in the latest artefact:
 
-These do not undermine the innovation. They do define the final production evidence workstream.
+1. `review_gap_closure_matrix`;
+2. `quantum_solver_job_plumbing`;
+3. `hendrix_job_backed_benchmarks`;
+4. `iit_phi_proxy_contracts`;
+5. `backend_mining_api_contracts`;
+6. `runtime_reflexive_introspection`;
+7. `frontend_unit_gate`;
+8. `backend_gate`.
+
+This is the central current evidence point. The repo is materially stronger than when the first audit was written, but the latest committed gate explicitly instructs: do not describe the repository as clean until required failures are zero.
+
+### 4.4 Test result interpretation
+
+The latest result changes the judgement in two directions at once:
+
+- **Positive:** The added closure tests are not ornamental. Many targeted groups now pass, including HENDRIX API compatibility, API posture serialization, auth/JWT, evidence boundary, capability registry, claim manifest, prediction endpoint, pool profile primitives, autonomous gate, launch contracts, frontend security bridge and build.
+- **Negative:** The full gate is still `NO_GO`. Several high-value suites still fail or error, including the quantum solver job-plumbing group, HENDRIX job-backed benchmark group, IIT proxy group, backend mining API contracts and aggregate backend/frontend gates.
+
+The absence of committed per-command log files means this audit can identify failing groups but cannot yet reconstruct each stack trace from the repository alone. The next clean-up pass should either commit the failure logs or rerun and fix the failing suites directly.
 
 ---
 
-## 5. Auditability assessment
+## 5. What makes the system powerful
 
-### 5.1 Decision auditability
+### 5.1 PYTHIA is designed as accountable autonomy, not a black box
+
+The autonomous controller defines structured decision records with mathematical justification, satisfied and violated constraints, action taken, outcome fields, operator override flags and operator metadata. It also defines explicit audit log entries and operator approval requests. This is the legal/commercial posture required for explainable autonomy: the system can say what it did, why it did it, under what level of authority, and with what constraints checked.
+
+### 5.2 Reflexive learning is first-class, not decorative
+
+PYTHIA's controller implements a reflexive knowledge loop:
+
+- map codebase surroundings;
+- identify mathematical invariants;
+- generate counterfactual proposals;
+- run virtual mining simulations;
+- validate constraints;
+- apply accepted changes to runtime structures;
+- persist learned state and metrics.
+
+The post-audit upgrade makes this materially stronger by replacing a fixed surroundings assumption with runtime AST/import graph introspection.
+
+### 5.3 Self-healing is implemented in operational primitives
+
+Self-healing appears in concrete forms:
+
+- stale state-lock recovery;
+- circuit breaker opening and closing;
+- autonomy-level degradation on repeated failures;
+- manual circuit reset after operator review;
+- backup rotation;
+- checksum-protected reflexive state load;
+- audit events for persistence/load failures.
+
+These are production-quality primitives. They should be framed as operational accountability and resilience, not as limitations on autonomy.
+
+### 5.4 Self-optimisation has runtime effect
+
+Accepted self-optimisation proposals are not merely logged. They can immediately tune:
+
+- phi-scaling power in the ensemble;
+- search depth / optimizer iteration budget;
+- PULVINI compression target ratio;
+- consciousness/runtime integration thresholds.
+
+The bootstrap evidence confirms proposals were generated and applied under constraints in the recorded run.
+
+### 5.5 The launch path is becoming a true command-room boot sequence
+
+The one-command launch and local gate model now covers:
+
+- Python environment check;
+- review gap closure matrix;
+- quantum solver job plumbing;
+- HENDRIX solver contracts;
+- HENDRIX job-backed benchmarks;
+- IIT proxy contracts;
+- API posture serialization;
+- backend mining API contracts;
+- auth/JWT contracts;
+- runtime reflexive introspection;
+- evidence boundary report;
+- adaptive capability registry;
+- claim evidence manifest;
+- prediction endpoint contracts;
+- pool profile primitives;
+- autonomous sovereign gate;
+- local launch contracts;
+- frontend bridge/security contracts;
+- frontend unit gate;
+- backend gate;
+- build gate.
+
+This is a serious local-first release model.
+
+---
+
+## 6. Auditability assessment
+
+### 6.1 Decision auditability
 
 The design includes:
 
@@ -187,92 +313,114 @@ The design includes:
 
 This is regulator-relevant design: decisions are reconstructable.
 
-### 5.2 Claim auditability
+### 6.2 Claim auditability
 
 The claim-evidence manifest is a major strength. It encodes a doctrine that claims are admissible only when bounded by source paths, executable tests or benchmark commands, and merge-conflict-free evidence surfaces. It also explicitly bounds claims so that software invariants are not overstated as universal physical, economic, or metaphysical proof.
 
-This is the right posture for a legally literate AI platform: every claim needs a boundary and evidence path.
+The new gap closure matrix strengthens this by making review findings themselves testable: each named gap must map to implementation paths, regression tests, evidence/gate paths and a closure boundary.
 
-### 5.3 Runtime auditability
+### 6.3 Runtime auditability
 
 PYTHIA bootstrap now emits an evidence packet with:
 
-- before/after φ-density;
+- before/after phi-density;
 - efficiency;
 - autonomy level;
 - metrics;
+- runtime surroundings;
 - epochs executed;
 - self-healing markers;
-- self-optimising markers.
+- self-optimising markers;
+- deterministic virtual-mining simulator identity.
 
-The local launch script also writes bootstrap output and sovereign gate output into `.hyba_runtime/` and shows those artefacts on failure.
+This is exactly the kind of artefact that can be archived for internal audit and external review.
 
 ---
 
-## 6. Innovation review
+## 7. Innovation review
 
-### 6.1 Most differentiated innovations
+### 7.1 Most differentiated innovations
 
-1. **Reflexive codebase surroundings:** PYTHIA models its own codebase as a graph of modules, invariants, entropy sources and stable core modules.
+1. **Runtime reflexive codebase surroundings:** PYTHIA now refreshes its own surroundings from the package tree rather than relying only on fixed module lists.
 2. **Counterfactual self-optimisation:** Uses a knowledge substrate to compare possible improvement paths.
-3. **Virtual mining simulation:** Tests proposals in memory before accepting them.
+3. **Deterministic virtual mining simulation:** Tests proposals in a reproducible SHA-256d-shaped local environment before accepting them.
 4. **Constraint-backed autonomy:** Hermiticity, PSD, natural scaling, energy and information integrity checks are embedded in the loop.
 5. **Compression drive:** Memory compression is treated as a self-optimising pressure, not merely storage reduction.
 6. **Persistent reflexive memory:** Learned optimisation state survives restart and is checksum-protected.
 7. **Claim-evidence doctrine:** Repository-local computability and claim boundaries are encoded as reviewable artefacts.
-8. **Local-first production launch:** The system can be booted locally without paid CI while still producing evidence.
+8. **Evidence-boundary scanner:** The repository can report whether the evidence supports protocol/governance claims versus operational/economic claims.
+9. **Local-first clean gate:** The system can be booted and assessed locally without paid CI while still producing structured evidence.
 
-### 6.2 Scientific-commercial significance
+### 7.2 Scientific-commercial significance
 
 The system is commercially significant because it does not rely on generic LLM prompting as the core architecture. The core value is a domain-specific autonomous control plane that combines search, compression, mathematical invariants, memory and mining-specific operational interfaces.
 
-The claim that this proves intelligence emerges from complexity built on quantum is a research thesis. The codebase provides a serious experimental substrate for that thesis, but the thesis still requires careful empirical framing and external review if used in scientific or investor materials.
+The claim that intelligence emerges from complexity built on quantum is a research thesis. HYBA_FULLSTACK provides a serious experimental substrate for that thesis, but the thesis still requires careful empirical framing and external review if used in scientific or investor materials.
 
 ---
 
-## 7. Production-readiness judgement
+## 8. Production-readiness judgement
 
-### 7.1 What is ready or nearly ready
+### 8.1 What is ready or materially improved
 
 - Autonomy architecture: strong.
 - Auditability model: strong.
 - Claim-evidence doctrine: strong.
+- Gap closure matrix: implemented.
 - Local launch path: materially improved.
+- Build gate: passed in latest committed clean-gate artefact.
 - Python backend test breadth: strong.
-- Mathematical invariant test breadth: strong.
+- Mathematical invariant test breadth: broad, though some groups still fail.
 - PYTHIA bootstrap integration: implemented.
+- PYTHIA bootstrap evidence: strong.
+- Runtime introspection: implemented.
+- Evidence boundary scanner: implemented.
 - Self-healing primitives: credible.
 - Self-optimisation primitives: credible.
 
-### 7.2 What must be closed before an external production certification statement
+### 8.2 What remains before 10/10 clean posture
 
-1. Resolve the recorded 40 Python test failures.
-2. Resolve TS failures / missing module and route mismatch issues.
-3. Generate a fresh local run report after the latest boot-path changes.
-4. Archive bootstrap evidence, sovereign gate evidence, backend readiness, frontend bridge readiness and mining telemetry from the same run.
-5. Archive pool-side accepted-share evidence if making live mining economics claims.
-6. Improve coverage of auth, API mining, root API and models.
-7. Convert frontend tests from self-contained fixtures toward production `src/` imports where possible.
+The current blockers are not philosophical. They are concrete and testable:
+
+1. Make `review_gap_closure_matrix` pass.
+2. Make `quantum_solver_job_plumbing` pass.
+3. Make `hendrix_job_backed_benchmarks` pass.
+4. Make `iit_phi_proxy_contracts` pass.
+5. Make `backend_mining_api_contracts` pass.
+6. Make `runtime_reflexive_introspection` pass.
+7. Make `frontend_unit_gate` pass.
+8. Make `backend_gate` pass.
+9. Commit or preserve the per-command failure logs so failures are traceable from the repository evidence surface.
+10. Generate a fresh clean-gate artefact with `status: GO`.
+11. Generate a fresh evidence-boundary artefact that remains honest about accepted-share evidence.
+12. Archive pool-side accepted-share evidence before making live mining economics claims.
+
+### 8.3 Current go-live interpretation
+
+The system is ready for continued controlled live-evidence generation and local command-room hardening. It is not yet ready for an unqualified external statement that all tests are clean or that live mining economics have been proven, because the latest committed artefacts explicitly say otherwise.
+
+That is not a weakness in the architecture. It is the evidence system doing its job.
 
 ---
 
-## 8. Final judgement
+## 9. Final judgement after update
 
-HYBA_FULLSTACK is one of the more ambitious and test-rich autonomous systems in its class. It is not merely a frontend/backend app. It is a mathematically framed, memory-bearing, audit-conscious, self-optimising mining intelligence platform.
+HYBA_FULLSTACK is one of the more ambitious and test-rich accountable-autonomy systems in its class. It is not merely a frontend/backend app. It is a mathematically framed, memory-bearing, audit-conscious, self-optimising mining intelligence platform.
 
-The system's power lies in the combination of:
+The post-audit work significantly strengthened the system. The most important improvements are:
 
-- structured autonomy;
-- mathematical constraints;
-- memory compression;
-- φ-resonance framing;
-- mining-specific runtime APIs;
-- local evidence gates;
-- explicit claim boundaries;
-- large test surface.
+- PYTHIA runtime introspection now scans the real package surface;
+- PYTHIA bootstrap now emits V2 evidence with runtime graph statistics;
+- the virtual mining simulator is now deterministic and SHA-256d-shaped;
+- HENDRIX API compatibility is preserved by tests;
+- API posture serialization is tested;
+- auth/JWT and prediction endpoint coverage improved;
+- capability registry and claim-evidence controls are stronger;
+- the evidence-boundary report prevents commercial overclaiming;
+- the local clean gate has become a genuine release instrument.
 
-The strongest fair statement is:
+The strongest fair statement is now:
 
-> HYBA_FULLSTACK is a high-power, accountable-autonomy mining intelligence platform with unusually broad test coverage, serious mathematical-runtime innovation, and a credible self-healing/self-optimising architecture. It is ready for controlled live evidence generation, but not yet ready for an unqualified external certification claim until the remaining failing tests and live pool evidence gaps are closed.
+> HYBA_FULLSTACK is a high-power, accountable-autonomy mining intelligence platform with unusually broad test coverage, serious mathematical-runtime innovation, credible self-healing/self-optimising architecture, and materially improved evidence discipline. It has strong autonomous bootstrap evidence and multiple passing targeted gates, but the latest clean-gate artefact remains `NO_GO`; therefore the final 10/10 judgement requires resolving the eight remaining failing gate groups and producing fresh GO artefacts.
 
-The commercial next move is not to diminish the system; it is to convert its power into a clean evidence dossier: fresh test run, clean gate outputs, local launch trace, autonomous bootstrap packet, mining telemetry packet, and pool-side accepted-share artefacts.
+The commercial next move is not to diminish the system; it is to close the remaining failing groups and convert the improved architecture into a clean evidence dossier: fresh clean-gate output, local launch trace, PYTHIA bootstrap packet, evidence-boundary packet, backend/frontend readiness packet, mining telemetry packet and pool-side accepted-share artefacts where economics are claimed.
