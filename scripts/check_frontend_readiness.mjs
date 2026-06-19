@@ -16,6 +16,7 @@ const coverageStatus = readJson('artifacts/frontend_api_command_coverage_status.
 const frontendCi = readText('.github/workflows/frontend-ci.yml');
 const e2eWorkflow = readText('.github/workflows/frontend-e2e.yml');
 const dockerfile = readText('Dockerfile');
+const runtimeEntrypoint = readText('scripts/hyba-runtime-entrypoint.sh');
 const spaEntrypointHardener = readText('scripts/ensure_spa_entrypoint.mjs');
 
 for (const filePath of [
@@ -50,6 +51,11 @@ pass(dockerfile.includes('FROM node:22.15.0-bookworm-slim AS runtime'), 'Docker 
 pass(
   dockerfile.indexOf('FROM node:22.15.0-bookworm-slim AS runtime') < dockerfile.indexOf('RUN npm install --omit=dev'),
   'Docker runtime must be Node-capable before production npm install runs',
+);
+pass(runtimeEntrypoint.includes('node scripts/ensure_spa_entrypoint.mjs'), 'Runtime entrypoint must verify the SPA entrypoint before bridge startup');
+pass(
+  runtimeEntrypoint.indexOf('node scripts/ensure_spa_entrypoint.mjs') < runtimeEntrypoint.indexOf('node "$NODE_ENTRYPOINT"'),
+  'Runtime SPA entrypoint verification must run before the Node bridge starts',
 );
 pass(spaEntrypointHardener.includes('app.get("/bridge/status"'), 'SPA entrypoint hardener must preserve bridge status on /bridge/status');
 pass(spaEntrypointHardener.includes('production root route still intercepts the SPA'), 'SPA entrypoint hardener must fail closed when / still intercepts the SPA');
