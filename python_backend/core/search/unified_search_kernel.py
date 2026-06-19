@@ -533,6 +533,10 @@ class YangMillsDomain(SearchDomain[Mapping[str, Any], Mapping[str, Any]]):
         """Domain identifier."""
         return "yang_mills_cooling"
 
+    def _initialize_state(self, initial: Any) -> Mapping[str, Any]:
+        """Initialize state as action dictionary."""
+        return {"action": float(initial)}
+
     def state_space_bounds(self) -> Bounds:
         """Action space bounds."""
         return Bounds(min_value=0.0, max_value=self.initial_action)

@@ -230,7 +230,9 @@ class TestSatGeodesicDomain:
             clauses=[[1, 2], [-1, 3]],
         )
         # Assignment that satisfies both clauses
-        assignment = {"assignment": {1: True, 2: True, 3: False}}
+        # Clause [1, 2]: satisfied if 1=True OR 2=True
+        # Clause [-1, 3]: satisfied if 1=False OR 3=True
+        assignment = {"assignment": {1: True, 2: False, 3: True}}
         assert domain.is_target(assignment) is True
 
     def test_sat_neighbor_fn(self):
