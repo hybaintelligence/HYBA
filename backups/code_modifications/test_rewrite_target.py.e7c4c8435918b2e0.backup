@@ -1,0 +1,22 @@
+"""Test module for autonomous code rewriting demonstration."""
+
+def calculate_threshold():
+    """Calculate a threshold value."""
+    # This hardcoded value could be phi-optimized
+    threshold = 10.0
+    return threshold
+
+def process_data(data, iterations=50):
+    """Process data with fixed iteration count."""
+    result = []
+    for i in range(iterations):
+        result.append(data * i)
+    return result
+
+# Mathematical constant (will be protected)
+PHI = 1.618033988749895
+
+def fibonacci_scaling(value):
+    """Scale a value using fibonacci-like progression."""
+    scale_factor = 3.0  # Could be phi-optimized
+    return value * scale_factor
