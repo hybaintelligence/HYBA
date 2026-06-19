@@ -1,67 +1,68 @@
 {
   "default_pool": "braiins",
+  "security_note": "Committed file is an env-backed template only. Store real live credentials in environment variables or an ignored local config path.",
   "pools": {
     "braiins": {
       "name": "Braiins Pool",
       "url": "stratum+tcp://stratum.braiins.com:3333",
       "stratum_version": 1,
-      "username": "PYTHAGORAS",
-      "password": "anything123",
-      "worker": "hendrix_phi",
+      "username": "${HYBA_POOL_BRAIINS_USERNAME}",
+      "password": "${HYBA_POOL_BRAIINS_PASSWORD}",
+      "worker": "${HYBA_POOL_BRAIINS_WORKER}",
       "priority": 1,
       "enabled": true,
       "is_default": true,
-      "description": "Braiins Pool - Default mining pool (V1 Stratum)"
+      "description": "Braiins Pool - V1 Stratum. Credentials resolve from environment or ignored local config."
     },
     "viabtc": {
       "name": "ViaBTC BTC",
       "url": "stratum+tcp://btc.viabtc.io:3333",
       "stratum_version": 1,
-      "username": "PYTHIA.101",
-      "password": "123",
-      "worker": "hendrix_phi",
+      "username": "${HYBA_POOL_VIABTC_USERNAME}",
+      "password": "${HYBA_POOL_VIABTC_PASSWORD}",
+      "worker": "${HYBA_POOL_VIABTC_WORKER}",
       "priority": 2,
       "enabled": true,
       "is_default": false,
-      "description": "ViaBTC SHA256 pool - selectable from dropdown"
+      "description": "ViaBTC SHA256 pool - selectable when env/local credentials are present."
     },
     "nicehash": {
       "name": "NiceHash SHA256",
       "url": "stratum+ssl://sha256.auto.nicehash.com:443",
       "stratum_version": 1,
-      "username": "NHbaCJGb1gM7MjgJ9QnnqbG2sLVW9w8hdPzK",
-      "password": "x",
-      "worker": "hendrix_phi",
-      "nicehash_pool_id": "NHbaCJGb1gM7MjgJ9QnnqbG2sLVW9w8hdPzK",
+      "username": "${HYBA_POOL_NICEHASH_USERNAME}",
+      "password": "${HYBA_POOL_NICEHASH_PASSWORD}",
+      "worker": "${HYBA_POOL_NICEHASH_WORKER}",
+      "nicehash_pool_id": "${HYBA_POOL_NICEHASH_NH_POOL_ID}",
       "priority": 3,
-      "enabled": true,
+      "enabled": false,
       "is_default": false,
-      "description": "NiceHash auto-trading SHA256 - selectable from dropdown"
+      "description": "NiceHash SHA256 - disabled by default; credentials resolve from environment or ignored local config."
     },
     "ckpool": {
       "name": "Solo CKPool",
       "url": "stratum+tcp://solo.ckpool.org:3333",
       "stratum_version": 1,
-      "btc_address": "bc1qsyva7t00e0cwqzts54u7ffys7l76pp8a02x8r9",
+      "btc_address": "${HYBA_POOL_CKPOOL_BTC_ADDRESS}",
       "username": "",
       "password": "x",
-      "worker": "hendrix_phi",
+      "worker": "${HYBA_POOL_CKPOOL_WORKER}",
       "priority": 4,
-      "enabled": true,
+      "enabled": false,
       "is_default": false,
-      "description": "CKPool solo mining - selectable from dropdown"
+      "description": "CKPool solo mining - disabled by default; payout address resolves from environment or ignored local config."
     },
     "stratumv2": {
       "name": "Braiins Stratum V2",
       "url": "stratum2+ssl://stratum.braiins.com:3336",
       "stratum_version": 2,
-      "username": "PYTHAGORAS",
-      "password": "anything123",
-      "worker": "hendrix_phi",
+      "username": "${HYBA_POOL_STRATUMV2_USERNAME}",
+      "password": "${HYBA_POOL_STRATUMV2_PASSWORD}",
+      "worker": "${HYBA_POOL_STRATUMV2_WORKER}",
       "priority": 5,
-      "enabled": true,
+      "enabled": false,
       "is_default": false,
-      "description": "Braiins Pool - Stratum V2 configuration"
+      "description": "Braiins Pool - Stratum V2. Credentials resolve from environment or ignored local config."
     }
   }
 }
