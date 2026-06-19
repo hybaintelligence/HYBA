@@ -92,7 +92,8 @@
     "prod:game-day": "cross-env PYTHONPATH=python_backend python scripts/command_room_game_day.py",
     "test:e2e:frontend": "npx playwright install --with-deps && npx playwright test",
     "benchmark:capabilities": "npm run python:env:check && cross-env PYTHONPATH=python_backend python -m pytest tests/test_mining_capability_benchmarks.py tests/test_ai_capability_benchmarks.py -q -s",
-    "benchmark:ai-capabilities": "npm run python:env:check && cross-env PYTHONPATH=python_backend python -m pytest tests/test_ai_capability_benchmarks.py -q -s"
+    "benchmark:ai-capabilities": "npm run python:env:check && cross-env PYTHONPATH=python_backend python -m pytest tests/test_ai_capability_benchmarks.py -q -s",
+    "test:frontend:components": "vitest run tests/**/*.test.tsx --config vitest.component.config.ts"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
@@ -138,6 +139,10 @@
     "esbuild": "^0.28.1",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",
-    "vitest": "^4.0.15"
+    "vitest": "^4.0.15",
+    "jsdom": "^27.3.0",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^14.6.1",
+    "@testing-library/jest-dom": "^6.9.1"
   }
 }
