@@ -2,7 +2,7 @@
 
 **Document ID:** HYBA-REFRAMING-DEUTSCH-2026-06-19
 **Classification:** Scientific / Evidence-Based
-**Status:** IRREFUTABLE EVIDENCE GATHERED
+**Status:** BOUNDED LOCAL BENCHMARK EVIDENCE — not external real-world validation
 **Date:** June 19, 2026
 
 ---
@@ -36,7 +36,7 @@ The Church-Turing-Deutsch principle establishes that:
 
 ---
 
-## 2. Irrefutable Evidence Gathered
+## 2. Bounded Local Evidence Gathered
 
 ### 2.1 Test Suite: Simulation vs Instantiation
 
@@ -246,14 +246,14 @@ This is NOT a limitation of current technology — it's a fundamental property o
 - "PULVINI provides polynomial compression for STRUCTURED quantum states"
 - "Tensor networks achieve efficient representation for LOW-ENTANGLEMENT states"
 - "The exponential wall is REAL for UNSTRUCTURED (high-entanglement) states"
-- "Deutsch's Church-Turing-Deutsch principle is VERIFIED by empirical evidence"
+- "Deutsch's Church-Turing-Deutsch boundary is supported by local benchmark evidence"
 
 **Why These Are Correct:**
 1. Distinguishes simulation from instantiation
 2. Acknowledges Deutsch's prediction about exponential slowdown
 3. Accurately represents polynomial compression limits
 4. Distinguishes structured from unstructured states
-5. Backed by irrefutable empirical evidence
+5. Backed by local benchmark evidence with explicit data, dependency, and scope boundaries
 
 ### 5.3 The Real Scientific Value
 
