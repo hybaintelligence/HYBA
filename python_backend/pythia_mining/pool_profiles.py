@@ -4,12 +4,18 @@ Pool URL, payout address, worker name, pool id, and the conventional Stratum
 password value ``x`` are launch configuration for an open Bitcoin network, not
 HYBA application secrets. Runtime profile files are still written with 0600 file
 permissions so operators do not accidentally expose deployment routing choices.
+
+Committed JSON pool configs may contain environment references such as
+``${HYBA_POOL_BRAIINS_PASSWORD}`` or ``env:HYBA_POOL_BRAIINS_PASSWORD``. Those
+references are resolved at runtime so source control can carry live topology
+without carrying live credentials.
 """
 
 from __future__ import annotations
 
 import json
 import os
+import re
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any, Dict, Iterable
@@ -137,6 +143,8 @@ SUPPORTED_SCHEMES = {
     "stratum2+tls",
 }
 SUPPORTED_VERSIONS = {1, 2}
+ENV_REFERENCE = re.compile(r"^\$\{([A-Za-z_][A-Za-z0-9_]*)\}$")
+
 DEFAULT_POOL_SPECS: dict[str, dict[str, Any]] = {
     "viabtc": {
         "name": "ViaBTC BTC",
@@ -194,6 +202,17 @@ def runtime_pool_config_path() -> Path:
     return Path(
         os.getenv("HYBA_POOL_CONFIG_PATH", str(_backend_root() / "mining_pools_config.json"))
     )
+
+
+def resolve_env_reference(value: Any) -> str:
+    """Resolve committed env-backed template values without leaking secrets to git."""
+    text = str(value or "")
+    if text.startswith("env:"):
+        return os.getenv(text.removeprefix("env:"), "")
+    match = ENV_REFERENCE.match(text)
+    if match:
+        return os.getenv(match.group(1), "")
+    return text
 
 
 def split_pool_url_credentials(url: str) -> tuple[str, str, str]:
@@ -408,11 +427,7 @@ def load_runtime_pool_configs(
             if pool_id not in DEFAULT_POOL_SPECS:
                 continue
             base = configs[pool_id]
-            # Preserve env-configured credentials; runtime file only overrides if explicitly set
-            # and only if not already configured via env (source == "env")
             if base.source == "env":
-                # Env var source takes precedence for all fields including URL and stratum_version.
-                # Runtime config file fields MUST NOT override env-configured values.
                 configs[pool_id] = PoolCredentialConfig(
                     pool_id=pool_id,
                     name=base.name,
@@ -430,19 +445,18 @@ def load_runtime_pool_configs(
                     source="env",
                 )
             else:
-                # No env config; use runtime file values
                 configs[pool_id] = PoolCredentialConfig(
                     pool_id=pool_id,
                     name=base.name,
-                    url=str(payload.get("url") or base.url),
+                    url=resolve_env_reference(payload.get("url") or base.url),
                     stratum_version=int(payload.get("stratum_version") or base.stratum_version),
                     tls_required=base.tls_required,
                     credential_mode=base.credential_mode,
-                    username=str(payload.get("username") or ""),
-                    password=str(payload.get("password") or ""),
-                    btc_address=str(payload.get("btc_address") or ""),
-                    worker=str(payload.get("worker") or ""),
-                    nicehash_pool_id=str(payload.get("nicehash_pool_id") or ""),
+                    username=resolve_env_reference(payload.get("username") or ""),
+                    password=resolve_env_reference(payload.get("password") or ""),
+                    btc_address=resolve_env_reference(payload.get("btc_address") or ""),
+                    worker=resolve_env_reference(payload.get("worker") or ""),
+                    nicehash_pool_id=resolve_env_reference(payload.get("nicehash_pool_id") or ""),
                     priority=int(payload.get("priority") or base.priority),
                     enabled=bool(payload.get("enabled", True)),
                     source="runtime",
@@ -509,4 +523,5 @@ __all__ = [
     "validate_profile",
     "build_profile",
     "order_profiles",
+    "resolve_env_reference",
 ]
