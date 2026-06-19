@@ -20,3 +20,8 @@ profile = "black"
 line_length = 100
 known_first_party = ["hyba_genesis_api", "pythia_mining"]
 skip = [".git", ".venv", "venv", "node_modules", "dist", "artifacts", "logs"]
+
+[tool.pytest.ini_options]
+markers = [
+    "benchmark: performance/capability benchmark tests with explicit thresholds",
+]
