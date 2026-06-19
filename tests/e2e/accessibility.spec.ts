@@ -1,9 +1,22 @@
+import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
-import { installBackendMocks, seedAuth } from "./fixtures";
+import { installBackendMocks, seedAuth, type MockRole } from "./fixtures";
 
-test.describe("accessibility smoke", () => {
-  for (const role of ["anonymous", "admin", "ceo_heir_apparent"] as const) {
-    test(`${role} surface exposes named landmarks and controls without image-only buttons`, async ({
+const ACCESSIBILITY_ROLES: MockRole[] = [
+  "anonymous",
+  "operator",
+  "admin",
+  "ceo_heir_apparent",
+  "chairman",
+  "cto",
+  "cfo",
+  "legal",
+  "chief_of_staff",
+];
+
+test.describe("accessibility production hardening", () => {
+  for (const role of ACCESSIBILITY_ROLES) {
+    test(`${role} surface has landmarks, named controls, and no high-impact axe findings`, async ({
       page,
     }) => {
       await seedAuth(page, role);
@@ -25,6 +38,12 @@ test.describe("accessibility smoke", () => {
           .filter((button) => !button.text && !button.label),
       );
       expect(unnamedButtons).toEqual([]);
+
+      const results = await new AxeBuilder({ page }).analyze();
+      const highImpactFindings = results.violations.filter((violation) =>
+        ["serious", "critical"].includes(violation.impact || ""),
+      );
+      expect(highImpactFindings).toEqual([]);
     });
   }
 });
