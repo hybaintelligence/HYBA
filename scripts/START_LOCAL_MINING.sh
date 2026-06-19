@@ -35,13 +35,14 @@ echo ""
 
 # Start backend in background
 echo "Starting backend on http://127.0.0.1:3001..."
+cd ../python_backend
 python -m uvicorn hyba_genesis_api.main:app \
-  --app-dir python_backend \
   --host 127.0.0.1 \
   --port 3001 \
   --reload \
   > /tmp/hyba_backend.log 2>&1 &
 BACKEND_PID=$!
+cd ../scripts
 echo "✓ Backend started (PID: $BACKEND_PID)"
 echo "  Mining auto-starting in background..."
 
