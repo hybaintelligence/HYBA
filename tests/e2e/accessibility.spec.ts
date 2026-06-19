@@ -1,8 +1,8 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
-import { installBackendMocks, seedAuth, type MockRole } from "./fixtures";
+import { installBackendMocks, seedAuth } from "./fixtures";
 
-const ACCESSIBILITY_ROLES: MockRole[] = [
+const ACCESSIBILITY_ROLES = [
   "anonymous",
   "operator",
   "admin",
@@ -12,15 +12,15 @@ const ACCESSIBILITY_ROLES: MockRole[] = [
   "cfo",
   "legal",
   "chief_of_staff",
-];
+] as const;
 
 test.describe("accessibility production hardening", () => {
   for (const role of ACCESSIBILITY_ROLES) {
     test(`${role} surface has landmarks, named controls, and no high-impact axe findings`, async ({
       page,
     }) => {
-      await seedAuth(page, role);
-      await installBackendMocks(page, { role });
+      await seedAuth(page, role as any);
+      await installBackendMocks(page, { role: role as any });
       await page.goto("/");
 
       await expect(page.getByRole("banner")).toBeVisible();
