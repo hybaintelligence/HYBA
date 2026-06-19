@@ -65,7 +65,6 @@ class DodecahedralQuantumSolver:
         self.last_error: Optional[str] = None
         self.configured_capacity_ehs = self._load_configured_capacity(configured_capacity_ehs)
         self.basis_states = self._generate_dodecahedral_basis_states()
-        # Track used nonces to ensure unique exploration
         self._used_nonces: set[int] = set()
         self._solve_call_count = 0
 
@@ -243,7 +242,6 @@ class DodecahedralQuantumSolver:
             raise QuantumSolverConfigurationError(
                 "Solver must be configured before projecting a nonce"
             )
-
         offset = basis_index % int(self.current_config["search_space_size"])
         for start, end in self.current_config["nonce_ranges"]:
             span = end - start + 1
@@ -253,6 +251,13 @@ class DodecahedralQuantumSolver:
         raise QuantumSolverConfigurationError(
             "Measured state could not be projected to a nonce range"
         )
+
+    def _hash_for_nonce(self, nonce: int, target: int, job=None, extranonce2: str = "00000000") -> int:
+        """Return real job SHA-256d when a job is supplied, otherwise never match."""
+        if job is None:
+            return (2**256) - 1
+        header = build_header(job, nonce, extranonce2 or "00000000")
+        return sha256d_hash(header)
 
     async def solve(
         self,
@@ -265,23 +270,6 @@ class DodecahedralQuantumSolver:
         """
         Hybrid quantum-classical nonce search combining Grover amplitude amplification
         with honest classical fallback.
-
-        QUANTUM MATHEMATICS:
-        - Grover's algorithm for unstructured search: O(√N) amplitude amplification
-        - Oracle: marks nonces meeting target difficulty via interference
-        - Diffusion operator: inverts about average on the Hilbert space
-        - Measurement: projects superposition to nonce basis
-
-        CLASSICAL FALLBACK:
-        - If quantum search exceeds iterations or timeout, fall back to deterministic
-          brute-force PoW search
-        - No claim of quantum speedup: classical fallback is always available
-        - All nonces are valid uint32 candidates
-
-        HONEST GOVERNANCE:
-        - Quantum search is a genuine mathematical implementation
-        - Speedup claims (if any) are derived from published Grover theory
-        - Actual mining uses Stratum protocol pool validation regardless of solver mode
         """
         if max_iterations <= 0 or timeout <= 0:
             raise QuantumSolverConfigurationError("max_iterations and timeout must be positive")
@@ -297,37 +285,24 @@ class DodecahedralQuantumSolver:
             nonce_ranges = self.current_config.get("nonce_ranges", [(0, 2**32 - 1)])
             target = int(self.current_config.get("target", 0))
 
-            # Phase 1: Grover amplitude amplification on dodecahedral basis
-            # Initialize superposition over marked basis states
             superposition = np.ones(DODECAHEDRON_VERTICES, dtype=np.complex128)
             superposition = superposition / np.linalg.norm(superposition)
 
-            # Determine which basis states "mark" valid nonces via oracle
             marked_indices = set()
             for idx in range(DODECAHEDRON_VERTICES):
                 nonce = self._project_index_to_nonce(idx)
-                # Oracle: real SHA-256d against actual pool job header
-                if job is not None:
-                    header = build_header(job, nonce, extranonce2 or "00000000")
-                    hash_value = sha256d_hash(header)
-                else:
-                    hash_value = (2**256) - 1  # never marks
-                if hash_value <= target:
+                if self._hash_for_nonce(nonce, target, job, extranonce2) <= target:
                     marked_indices.add(idx)
 
             if not marked_indices:
-                # No marked states - use classical fallback immediately
                 return await self._classical_fallback(
                     nonce_ranges, target, max_iterations, timeout, start_time, job, extranonce2
                 )
 
-            # Grover iterations: amplitude amplification via (2|s⟩⟨s| - I) * Oracle
             num_grover_iterations = int(
                 np.ceil(np.pi / 4 * np.sqrt(DODECAHEDRON_VERTICES / len(marked_indices)))
             )
-            num_grover_iterations = min(
-                num_grover_iterations, max_iterations // 2
-            )  # Bound iterations
+            num_grover_iterations = min(num_grover_iterations, max_iterations // 2)
 
             for iteration in range(num_grover_iterations):
                 if time.monotonic() - start_time >= timeout:
@@ -335,45 +310,27 @@ class DodecahedralQuantumSolver:
                     return await self._classical_fallback(
                         nonce_ranges, target, max_iterations, timeout, start_time, job, extranonce2
                     )
-
-                # Oracle: phase flip marked states
                 for idx in marked_indices:
                     superposition[idx] *= -1.0
-
-                # Diffusion operator: 2|s⟩⟨s| - I
                 avg = np.mean(superposition)
                 superposition = 2.0 * avg - superposition
-
                 self.last_solve_iterations += 1
 
-            # Phase 2: Measurement via Born rule
-            # Measurement probabilities = |amplitude|^2
             probabilities = np.abs(superposition) ** 2
-
-            # Numerically stable sampling via cumulative distribution
             cumsum = np.cumsum(probabilities)
-            cumsum = cumsum / cumsum[-1]  # Normalize
-
-            # Measure: project to basis state
-            random_value = (
-                self._solve_call_count * GOLDEN_RATIO
-            ) % 1.0  # Deterministic pseudo-random
+            cumsum = cumsum / cumsum[-1]
+            random_value = (self._solve_call_count * GOLDEN_RATIO) % 1.0
             measured_index = np.searchsorted(cumsum, random_value)
             measured_index = min(int(measured_index), DODECAHEDRON_VERTICES - 1)
-
-            # Convert measured basis state to nonce
             measured_nonce = self._project_index_to_nonce(measured_index)
 
-            # Phase 3: Verify measurement via hash check
-            hash_value = (measured_nonce * 7919 + target) % (2**256)
-            if hash_value <= max(target, 2**200):
+            if self._hash_for_nonce(measured_nonce, target, job, extranonce2) <= target:
                 self.last_solution_nonce = measured_nonce
                 self.last_solve_duration_seconds = time.monotonic() - start_time
                 self.last_error = None
                 self.logger.info("Grover measurement yielded valid nonce %d", measured_nonce)
                 return measured_nonce
 
-            # If measurement didn't yield valid nonce, fall back to classical search
             self.logger.info("Grover measurement invalid, falling back to classical search")
             return await self._classical_fallback(
                 nonce_ranges, target, max_iterations, timeout, start_time, job, extranonce2
@@ -387,7 +344,6 @@ class DodecahedralQuantumSolver:
             self.last_error = str(exc)
             self.last_solve_duration_seconds = time.monotonic() - start_time
             self.logger.error("Numerical instability in Grover solve: %s", exc)
-            # Fall back to classical on numerical error
             try:
                 return await self._classical_fallback(
                     self.current_config.get("nonce_ranges", [(0, 2**32 - 1)]),
@@ -413,9 +369,10 @@ class DodecahedralQuantumSolver:
     ) -> Optional[int]:
         """Deterministic brute-force PoW search fallback using real SHA-256d."""
 
+        searched = 0
         for start, end in nonce_ranges:
-            # Search linearly through nonce space (not pseudo-random offsets)
-            for i, nonce in enumerate(range(start, min(start + max_iterations, end))):
+            stop = min(start + max_iterations - searched, end + 1)
+            for i, nonce in enumerate(range(start, stop)):
                 if time.monotonic() - start_time >= timeout:
                     self.last_error = "timeout"
                     self.last_solve_duration_seconds = time.monotonic() - start_time
@@ -423,22 +380,18 @@ class DodecahedralQuantumSolver:
                     return None
 
                 self.last_solve_iterations += 1
-
-                # Real SHA-256d using actual pool job header
-                if job is not None:
-                    header = build_header(job, nonce, extranonce2 or "00000000")
-                    hash_value = sha256d_hash(header)
-                else:
-                    hash_value = (2**256) - 1  # never matches
-
-                if hash_value <= target:
+                searched += 1
+                if self._hash_for_nonce(nonce, target, job, extranonce2) <= target:
                     self.last_solution_nonce = nonce
                     self.last_solve_duration_seconds = time.monotonic() - start_time
                     self.last_error = None
                     self.logger.info("Classical PoW found valid nonce %d", nonce)
                     return nonce
+                if searched >= max_iterations:
+                    break
+            if searched >= max_iterations:
+                break
 
-        # No solution found (expected - very low hashrate on CPU)
         self.last_error = "no_solution_found"
         self.last_solve_duration_seconds = time.monotonic() - start_time
         self.logger.debug(

@@ -20,7 +20,10 @@ GAP_CLOSURES = (
     GapClosure(
         gap_id="P0-QUANTUM-SOLVER-JOB-PLUMBING",
         category="quantum_solver_job_backed_fallback",
-        implementation_paths=("python_backend/pythia_mining/dodecahedral_solver.py",),
+        implementation_paths=(
+            "python_backend/pythia_mining/dodecahedral_solver.py",
+            "python_backend/pythia_mining/quantum_solver.py",
+        ),
         regression_tests=("tests/test_agent3_quantum_solvers.py", "tests/test_hendrix_phi_performance_benchmark.py"),
         evidence_or_gate_paths=("scripts/local_clean_10_gate.py",),
         closure_boundary="Proves job-aware local validation and graceful no-job fallback; not pool-side revenue.",
