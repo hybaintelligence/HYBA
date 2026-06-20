@@ -19,7 +19,7 @@
       "enabled": false,
       "is_default": false,
       "name": "Solo CKPool",
-      "password": "x",
+      "password": "${HYBA_POOL_CKPOOL_PASSWORD}",
       "priority": 4,
       "stratum_version": 1,
       "url": "stratum+tcp://solo.ckpool.org:3333",
@@ -52,15 +52,15 @@
       "worker": "${HYBA_POOL_STRATUMV2_WORKER}"
     },
     "viabtc": {
-      "btc_address": "",
+      "btc_address": "${HYBA_POOL_VIABTC_BTC_ADDRESS}",
       "enabled": true,
       "nicehash_pool_id": "",
-      "password": "123",
+      "password": "${HYBA_POOL_VIABTC_PASSWORD}",
       "priority": 10,
       "stratum_version": 1,
       "url": "stratum+tcp://btc.viabtc.io:3333",
-      "username": "PYTHIA.001",
-      "worker": ""
+      "username": "${HYBA_POOL_VIABTC_USERNAME}",
+      "worker": "${HYBA_POOL_VIABTC_WORKER}"
     }
   },
   "security_note": "Committed file is an env-backed template only. Store real live credentials in environment variables or an ignored local config path."
