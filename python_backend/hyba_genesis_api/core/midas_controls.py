@@ -13,7 +13,7 @@ import json
 import time
 import uuid
 from dataclasses import asdict, dataclass, field
-from datetime import UTC, datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from enum import Enum
 from threading import RLock
 from typing import Any, Optional
@@ -110,7 +110,7 @@ class MIDASStateMachine:
                 transition_id=str(uuid.uuid4()),
                 from_state=self.current_state,
                 to_state=to_state,
-                timestamp=datetime.now(UTC),
+                timestamp=datetime.now(timezone.utc),
                 reason=reason,
                 request_id=str(request_id),
                 duration_in_previous_state_ms=(now - self.state_entry_time) * 1000,
@@ -362,7 +362,7 @@ class MiningRequestTracker:
                 existing = self.requests.get(existing_id)
                 if existing and existing.status != RequestStatus.FAILED:
                     return existing
-            now = datetime.now(UTC)
+            now = datetime.now(timezone.utc)
             request = MiningRequest(
                 request_id=self.generate_request_id(),
                 operation_type=operation_type,
@@ -389,7 +389,7 @@ class MiningRequestTracker:
             if request is None:
                 return False
             request.status = status
-            request.updated_at = datetime.now(UTC)
+            request.updated_at = datetime.now(timezone.utc)
             if result is not None:
                 request.result = result
             if error is not None:
@@ -398,7 +398,7 @@ class MiningRequestTracker:
 
     def cleanup_expired_requests(self) -> int:
         with self._lock:
-            cutoff = datetime.now(UTC) - timedelta(seconds=self.request_ttl_seconds)
+            cutoff = datetime.now(timezone.utc) - timedelta(seconds=self.request_ttl_seconds)
             expired_ids = [rid for rid, req in self.requests.items() if req.created_at < cutoff]
             for request_id in expired_ids:
                 request = self.requests.pop(request_id)
@@ -420,7 +420,7 @@ class MiningRequestTracker:
                 "status_breakdown": status_counts,
                 "idempotency_keys_tracked": len(self.idempotency_keys),
                 "request_ttl_seconds": self.request_ttl_seconds,
-                "last_cleanup": datetime.fromtimestamp(self.last_cleanup, tz=UTC).isoformat(),
+                "last_cleanup": datetime.fromtimestamp(self.last_cleanup, tz=timezone.utc).isoformat(),
             }
 
 

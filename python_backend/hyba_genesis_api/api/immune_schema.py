@@ -1,5 +1,7 @@
 """Immune and Sensory schema models for the Organism CNS."""
 
+from __future__ import annotations
+
 from pydantic import BaseModel
 from typing import List
 from datetime import datetime

@@ -7,6 +7,8 @@ execution is physically blocked to prevent thermal runaway and maintain
 manifold coherence.
 """
 
+from __future__ import annotations
+
 import numpy as np
 from typing import Dict, Tuple
 from dataclasses import dataclass

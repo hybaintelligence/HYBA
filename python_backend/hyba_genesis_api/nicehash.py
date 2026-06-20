@@ -17,6 +17,8 @@ Usage:
     accounts = api.get_accounts()
 """
 
+from __future__ import annotations
+
 import hmac
 import json
 import logging

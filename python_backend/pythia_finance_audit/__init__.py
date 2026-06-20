@@ -5,6 +5,8 @@ adapt to PYTHIA internals today, but product/jurisdiction logic belongs here so
 it can be extracted later without moving mining code.
 """
 
+from __future__ import annotations
+
 from .difc_aaiofi_bridge import (
     DIFCAaoifiFinding,
     DIFCAaoifiInvariantRegistry,

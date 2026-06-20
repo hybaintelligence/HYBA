@@ -5,3 +5,5 @@ Python package so that Alembic can locate migration scripts.  Do not
 place code here; all migration revisions should live in the
 `versions/` subpackage.
 """
+
+from __future__ import annotations

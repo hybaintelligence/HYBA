@@ -6,6 +6,8 @@ eliminating row-hammer and reducing memory wear through non-repeating
 golden angle access patterns.
 """
 
+from __future__ import annotations
+
 import numpy as np
 from typing import Union, Tuple
 from dataclasses import dataclass

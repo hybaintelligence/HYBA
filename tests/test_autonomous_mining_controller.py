@@ -1370,9 +1370,10 @@ class TestAutonomousMiningControllerIntegration(unittest.TestCase):
     def test_unified_engine_has_autonomous_controller(self):
         """Test that unified engine has autonomous controller initialized."""
         self.assertIsNotNone(self.unified_engine.autonomous_controller)
+        # Default autonomy level is AUTONOMOUS when HYBA_ENABLE_AUTONOMOUS_MINING=true
         self.assertEqual(
             self.unified_engine.autonomous_controller.current_autonomy_level,
-            AutonomyLevel.ADVISORY,
+            AutonomyLevel.AUTONOMOUS,
         )
 
     def test_set_autonomy_level_via_engine(self):

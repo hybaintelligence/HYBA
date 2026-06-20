@@ -16,6 +16,8 @@ CRITICAL SAFETY BOUNDARY:
 - Always maintain rollback capability
 """
 
+from __future__ import annotations
+
 import ast
 import hashlib
 import json

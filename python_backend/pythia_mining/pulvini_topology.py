@@ -13,6 +13,8 @@ THEORETICAL GROUNDING:
 - Canonical map to 3D Euclidean space preserving symmetries
 """
 
+from __future__ import annotations
+
 from typing import List, Dict, Any, Optional
 import numpy as np
 from numpy.typing import NDArray

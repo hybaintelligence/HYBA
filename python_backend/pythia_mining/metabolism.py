@@ -1,5 +1,7 @@
 """Metabolism - Energy-to-intelligence conversion rate monitoring."""
 
+from __future__ import annotations
+
 import logging
 import random
 from typing import Dict, Any

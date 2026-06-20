@@ -19,6 +19,8 @@ This module provides interface to mathematical optimization, not consciousness.
 It maintains the structural conditions for emergence, not the emergence itself.
 """
 
+from __future__ import annotations
+
 import ctypes
 import ctypes.util
 from pathlib import Path
