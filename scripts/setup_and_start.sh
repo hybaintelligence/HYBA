@@ -87,8 +87,10 @@ load_env_file() {
   if [[ -f "${file}" ]]; then
     log "Loading ${file}"
     set -a
+    set +u
     # shellcheck disable=SC1090
     source "${file}"
+    set -u
     set +a
   fi
 }
@@ -232,10 +234,10 @@ PY
   if [[ "${HYBA_SKIP_NPM_INSTALL:-false}" != "true" ]]; then
     if [[ -f "package-lock.json" ]]; then
       log "Installing npm dependencies with npm ci"
-      npm ci
+      npm ci --include=dev
     else
       log "Installing npm dependencies with npm install"
-      npm install
+      npm install --include=dev
     fi
   else
     log "Skipping npm dependency install"

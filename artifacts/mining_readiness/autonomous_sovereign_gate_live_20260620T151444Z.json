@@ -1,0 +1,64 @@
+{
+  "checks": [
+    {
+      "detail": "",
+      "name": "production_environment_for_pythia_startup",
+      "severity": "critical",
+      "status": "pass",
+      "summary": "production environment permits live PYTHIA startup autonomy"
+    },
+    {
+      "detail": "",
+      "name": "dev_fixtures_disabled_for_pythia_startup",
+      "severity": "critical",
+      "status": "pass",
+      "summary": "development fixtures are disabled for live PYTHIA mining startup"
+    },
+    {
+      "detail": "",
+      "name": "pythia_startup_autonomy_allowed",
+      "severity": "advisory",
+      "status": "pass",
+      "summary": "PYTHIA startup autonomy is allowed as internal production behaviour"
+    },
+    {
+      "detail": "",
+      "name": "autonomous_external_action_authorisation",
+      "severity": "critical",
+      "status": "pass",
+      "summary": "autonomous external actions are disabled or explicitly approved"
+    },
+    {
+      "detail": "",
+      "name": "autonomous_runtime_bounds",
+      "severity": "critical",
+      "status": "pass",
+      "summary": "autonomous bounds are within configured production limits"
+    },
+    {
+      "detail": "",
+      "name": "live_share_submit_authorisation",
+      "severity": "critical",
+      "status": "pass",
+      "summary": "live share submit is either disabled or explicitly approved"
+    },
+    {
+      "detail": "operator approval ID missing; this is acceptable for PYTHIA startup autonomy, but not for autonomous external actions or separately approved live share submission",
+      "name": "autonomous_audit_evidence",
+      "severity": "advisory",
+      "status": "warn",
+      "summary": "autonomous audit evidence has advisory gaps"
+    }
+  ],
+  "generated_at_utc": "2026-06-20T15:14:44.444951+00:00",
+  "mode": "live",
+  "next_operator_actions": [
+    "PYTHIA may boot, heal, optimise, check APIs/pool readiness, and run the mining startup/search path under command-room observation.",
+    "Monitor subscribe -> authorize -> notify -> search -> local validate -> submit gate -> pool ACK when share submission is enabled and approved.",
+    "Keep HYBA_AUTONOMOUS_EXTERNAL_ACTIONS=false unless a human approval ID/operator/reason is attached.",
+    "HYBA_ENABLE_LIVE_SHARE_SUBMIT=true is permitted when HYBA_LIVE_SHARE_APPROVAL_ID is present and audit logging is enabled."
+  ],
+  "passed": true,
+  "schema": "HYBA_AUTONOMOUS_MINING_SOVEREIGN_GATE_V2",
+  "status": "GO"
+}

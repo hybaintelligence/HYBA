@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "node scripts/dev-server.mjs",
     "dev:full": "node scripts/start-all.mjs",
-    "build": "vite build --config vite.config.build.ts && esbuild ./src/server.ts --bundle --platform=node --format=esm --packages=external --sourcemap --outfile=dist/server.mjs",
+    "build": "vite build --config vite.config.build.ts && npx esbuild ./src/server.ts --bundle --platform=node --format=esm --packages=external --sourcemap --outfile=dist/server.mjs",
     "build:ci": "npm run build",
     "cloudflare:build": "npm run build",
     "pages:build": "npm run build",

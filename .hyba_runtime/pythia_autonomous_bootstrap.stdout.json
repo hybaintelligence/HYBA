@@ -1,0 +1,369 @@
+{
+  "after": {
+    "autonomy_level": "advisory",
+    "efficiency": 0.6,
+    "metrics": {
+      "autonomous_circuit_breaker_trips": 0,
+      "autonomous_circuit_open": false,
+      "autonomous_circuit_open_until": 0.0,
+      "autonomous_executions": 0,
+      "consecutive_failures": 0,
+      "constraint_violations": 0,
+      "constraint_violations_by_type": {
+        "energy_conservation": 0,
+        "hermiticity": 0,
+        "information_integrity": 0,
+        "natural_scaling": 0,
+        "positive_semidefinite": 0
+      },
+      "current_autonomy_level": "advisory",
+      "degradation_events": 0,
+      "last_reflexive_cycle_duration_ms": 0.251,
+      "operator_overrides": 0,
+      "pending_operator_approvals": 0,
+      "phi_density": 0.9840374991979507,
+      "proposal_acceptance_rate": 1.0,
+      "reflexive_cycle_count": 273,
+      "stale_state_lock_recoveries": 0,
+      "total_decisions": 0
+    },
+    "phi_density": 0.9840374991979507,
+    "status": {
+      "autonomous_decisions": 0,
+      "autonomy_level": "advisory",
+      "circuit_breaker": {
+        "cooldown_seconds": 300.0,
+        "failure_threshold": 3,
+        "open": false,
+        "open_until": 0.0
+      },
+      "consecutive_failures": 0,
+      "constraint_violations": 0,
+      "degradation_events": 0,
+      "operator_overrides": 0,
+      "recent_decisions": [],
+      "reflexive_learning": {
+        "compression_drive_enabled": true,
+        "enabled": true,
+        "knowledge_counterfactuals": 3,
+        "knowledge_criticisms": 0,
+        "knowledge_explanations": 4,
+        "latest_phi_density": 0.9840374991446332,
+        "logical_consistency_history_length": 100,
+        "phi_density": 0.9840374991979507,
+        "proposals_applied": 5,
+        "proposals_generated": 5,
+        "self_optimization_epochs": 273
+      },
+      "total_decisions": 0
+    },
+    "surroundings": {
+      "edge_count": 205,
+      "entropy_source_count": 12,
+      "invariant_count": 15,
+      "module_count": 152,
+      "stable_core_count": 24
+    }
+  },
+  "artifact_path": "/Users/demouser/Desktop/HYBA_FULLSTACK/.hyba_runtime/pythia_autonomous_bootstrap.json",
+  "autonomy_level": "advisory",
+  "before": {
+    "autonomy_level": "advisory",
+    "efficiency": 0.6,
+    "metrics": {
+      "autonomous_circuit_breaker_trips": 0,
+      "autonomous_circuit_open": false,
+      "autonomous_circuit_open_until": 0.0,
+      "autonomous_executions": 0,
+      "consecutive_failures": 0,
+      "constraint_violations": 0,
+      "constraint_violations_by_type": {
+        "energy_conservation": 0,
+        "hermiticity": 0,
+        "information_integrity": 0,
+        "natural_scaling": 0,
+        "positive_semidefinite": 0
+      },
+      "current_autonomy_level": "advisory",
+      "degradation_events": 0,
+      "last_reflexive_cycle_duration_ms": 0.0,
+      "operator_overrides": 0,
+      "pending_operator_approvals": 0,
+      "phi_density": 0.7340399990837242,
+      "proposal_acceptance_rate": 0.0,
+      "reflexive_cycle_count": 268,
+      "stale_state_lock_recoveries": 0,
+      "total_decisions": 0
+    },
+    "phi_density": 0.7340399990837242,
+    "surroundings": {
+      "edge_count": 205,
+      "entropy_source_count": 12,
+      "invariant_count": 15,
+      "module_count": 152,
+      "stable_core_count": 24
+    }
+  },
+  "capacity_ehs_requested": 1.0,
+  "enabled": true,
+  "epochs": [
+    {
+      "autonomy_level": "advisory",
+      "compression_drive": {
+        "enabled": true,
+        "history_length": 100,
+        "latest_seeking": 1.8971999828926664
+      },
+      "current_phi_density": 0.9840374991446332,
+      "cycle_duration_ms": 0.415,
+      "cycle_duration_seconds": 0.0004,
+      "epoch": 271,
+      "knowledge_metrics": {
+        "avg_predictive_accuracy": 1.0,
+        "counterfactual_models": 3,
+        "criticism_events": 0,
+        "knowledge_growth_rate": 76260.07272727272,
+        "total_explanations": 3
+      },
+      "pool_feedback_samples": 0,
+      "proposals": [
+        {
+          "applied": true,
+          "constraints_satisfied": [
+            "hermiticity",
+            "positive_semidefinite",
+            "natural_scaling",
+            "energy_conservation",
+            "information_integrity"
+          ],
+          "constraints_violated": [],
+          "counterfactual_confidence": 0.3,
+          "current_value": 1.5,
+          "expected_gain": 0.022692048792760322,
+          "improvement_type": "phi_scaling",
+          "logical_consistency": 0.76,
+          "proposal_id": "self_opt_268_1781968481",
+          "proposed_value": 1.4249999999999998,
+          "source_module": "phi_scaling_engine"
+        },
+        {
+          "applied": true,
+          "constraints_satisfied": [
+            "hermiticity",
+            "positive_semidefinite",
+            "natural_scaling",
+            "energy_conservation",
+            "information_integrity"
+          ],
+          "constraints_violated": [],
+          "counterfactual_confidence": 0.8999999080250891,
+          "current_value": 1.86,
+          "expected_gain": 0.01953528080856959,
+          "improvement_type": "compression_target",
+          "logical_consistency": 0.8,
+          "proposal_id": "self_opt_268_1781968481",
+          "proposed_value": 1.8971999828926664,
+          "source_module": "pulvini_memory_compression_proof"
+        },
+        {
+          "applied": true,
+          "constraints_satisfied": [
+            "hermiticity",
+            "positive_semidefinite",
+            "natural_scaling",
+            "energy_conservation",
+            "information_integrity"
+          ],
+          "constraints_violated": [],
+          "counterfactual_confidence": 0.6,
+          "current_value": 60.0,
+          "expected_gain": 0.02544639843268459,
+          "improvement_type": "search_depth",
+          "logical_consistency": 0.75,
+          "proposal_id": "self_opt_268_1781968481",
+          "proposed_value": 54.0,
+          "source_module": "ai_optimizer"
+        }
+      ],
+      "proposals_applied": 3,
+      "proposals_generated": 3,
+      "reflexive_cycle_executed": true,
+      "surroundings": {
+        "entropy_sources": [
+          "autonomous_mining_controller",
+          "autonomous_searching_system",
+          "pulvini_elevation",
+          "stratum_client",
+          "pulvini_autonomics",
+          "consciousness_engine",
+          "pulvini_manifold",
+          "benchmark_formalism",
+          "mining_knowledge_base",
+          "church_lambda_calculus",
+          "topological_holonomy_engine",
+          "iit_4_analyzer"
+        ],
+        "module_count": 152,
+        "stable_core_count": 24
+      },
+      "target_selection": {
+        "coherence_threshold": {
+          "evidence_weight": 1.948717,
+          "failures": 1,
+          "posterior_mean": 0.888889,
+          "successes": 8
+        },
+        "compression_target": {
+          "evidence_weight": 10.0,
+          "failures": 1,
+          "posterior_mean": 0.965517,
+          "successes": 28
+        },
+        "phi_scaling": {
+          "evidence_weight": 3.138429,
+          "failures": 1,
+          "posterior_mean": 0.928571,
+          "successes": 13
+        },
+        "search_depth": {
+          "evidence_weight": 8.954304,
+          "failures": 1,
+          "posterior_mean": 0.96,
+          "successes": 24
+        }
+      }
+    },
+    {
+      "autonomy_level": "advisory",
+      "compression_drive": {
+        "enabled": true,
+        "history_length": 100,
+        "latest_seeking": 1.8971999839590146
+      },
+      "current_phi_density": 0.9840374991979507,
+      "cycle_duration_ms": 0.251,
+      "cycle_duration_seconds": 0.0003,
+      "epoch": 273,
+      "knowledge_metrics": {
+        "avg_predictive_accuracy": 1.0,
+        "counterfactual_models": 3,
+        "criticism_events": 0,
+        "knowledge_growth_rate": 2210.3204047217537,
+        "total_explanations": 5
+      },
+      "pool_feedback_samples": 0,
+      "proposals": [
+        {
+          "applied": true,
+          "constraints_satisfied": [
+            "hermiticity",
+            "positive_semidefinite",
+            "natural_scaling",
+            "energy_conservation",
+            "information_integrity"
+          ],
+          "constraints_violated": [],
+          "counterfactual_confidence": 0.8,
+          "current_value": 0.8319004812278545,
+          "expected_gain": 0.015962500855366768,
+          "improvement_type": "coherence_threshold",
+          "logical_consistency": 0.8999999999999999,
+          "proposal_id": "self_opt_271_1781968481",
+          "proposed_value": 0.7903054571664617,
+          "source_module": "consciousness_engine"
+        },
+        {
+          "applied": true,
+          "constraints_satisfied": [
+            "hermiticity",
+            "positive_semidefinite",
+            "natural_scaling",
+            "energy_conservation",
+            "information_integrity"
+          ],
+          "constraints_violated": [],
+          "counterfactual_confidence": 0.8999999137581415,
+          "current_value": 1.86,
+          "expected_gain": 0.015962500855366768,
+          "improvement_type": "compression_target",
+          "logical_consistency": 0.8,
+          "proposal_id": "self_opt_271_1781968481",
+          "proposed_value": 1.8971999839590146,
+          "source_module": "pulvini_memory_compression_proof"
+        }
+      ],
+      "proposals_applied": 2,
+      "proposals_generated": 2,
+      "reflexive_cycle_executed": true,
+      "surroundings": {
+        "entropy_sources": [
+          "autonomous_mining_controller",
+          "autonomous_searching_system",
+          "pulvini_elevation",
+          "stratum_client",
+          "pulvini_autonomics",
+          "consciousness_engine",
+          "pulvini_manifold",
+          "benchmark_formalism",
+          "mining_knowledge_base",
+          "church_lambda_calculus",
+          "topological_holonomy_engine",
+          "iit_4_analyzer"
+        ],
+        "module_count": 152,
+        "stable_core_count": 24
+      },
+      "target_selection": {
+        "coherence_threshold": {
+          "evidence_weight": 2.143589,
+          "failures": 1,
+          "posterior_mean": 0.9,
+          "successes": 9
+        },
+        "compression_target": {
+          "evidence_weight": 10.0,
+          "failures": 1,
+          "posterior_mean": 0.966667,
+          "successes": 29
+        },
+        "phi_scaling": {
+          "evidence_weight": 3.138429,
+          "failures": 1,
+          "posterior_mean": 0.928571,
+          "successes": 13
+        },
+        "search_depth": {
+          "evidence_weight": 8.954304,
+          "failures": 1,
+          "posterior_mean": 0.96,
+          "successes": 24
+        }
+      }
+    }
+  ],
+  "epochs_executed": 2,
+  "epochs_requested": 2,
+  "generated_at_utc": "2026-06-20T15:14:41.578299+00:00",
+  "runtime_introspection": {
+    "edge_count": 205,
+    "entropy_source_count": 12,
+    "invariant_count": 15,
+    "module_count": 152,
+    "previous_module_count": 12,
+    "source": "runtime_ast_import_graph",
+    "stable_core_count": 24,
+    "virtual_mining_simulation": "deterministic_sha256d_hash_landscape"
+  },
+  "schema": "HYBA_PYTHIA_AUTONOMOUS_BOOTSTRAP_V2",
+  "self_healing": {
+    "autonomous_circuit_open": false,
+    "degradation_events": 0,
+    "stale_state_lock_recoveries": 0
+  },
+  "self_optimising": {
+    "last_reflexive_cycle_duration_ms": 0.251,
+    "proposal_acceptance_rate": 1.0,
+    "reflexive_cycle_count": 273,
+    "virtual_mining_simulation": "deterministic_sha256d_hash_landscape"
+  }
+}
