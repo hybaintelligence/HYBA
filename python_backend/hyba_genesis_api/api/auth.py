@@ -10,10 +10,11 @@ from typing import Any, Dict, List
 
 from argon2 import PasswordHasher
 from argon2.exceptions import InvalidHashError, VerificationError, VerifyMismatchError
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 from pydantic import BaseModel, Field
 
 from hyba_genesis_api.auth.jwt_handler import (
+    ACCESS_COOKIE_NAME,
     TokenPayload,
     get_jwt_manager,
     get_token_payload,
@@ -32,6 +33,19 @@ class AuthRequest(BaseModel):
 
 def _is_production() -> bool:
     return os.getenv("NODE_ENV", os.getenv("HYBA_ENV", "development")).lower() == "production"
+
+
+def _cookie_samesite() -> str:
+    return os.getenv("HYBA_AUTH_COOKIE_SAMESITE", "strict" if _is_production() else "lax")
+
+
+def _cookie_secure() -> bool:
+    return os.getenv("HYBA_AUTH_COOKIE_SECURE", "true" if _is_production() else "false").lower() in {
+        "1",
+        "true",
+        "yes",
+        "on",
+    }
 
 
 def _credential_entries(raw: str) -> List[str]:
@@ -140,16 +154,29 @@ def _verify_operator(username: str, password: str) -> List[str]:
 
 
 @router.post("/login", response_model=Dict[str, Any])
-async def login(req: AuthRequest):
+async def login(req: AuthRequest, response: Response):
     roles = _verify_operator(req.username, req.password)
     token = get_jwt_manager().create_access_token(
         user_id=req.username,
         username=req.username,
         roles=roles,
     )
+    response.set_cookie(
+        key=ACCESS_COOKIE_NAME,
+        value=token,
+        httponly=True,
+        secure=_cookie_secure(),
+        samesite=_cookie_samesite(),
+        max_age=3600,
+        path="/",
+    )
     return {
         "success": True,
-        "token": token,
+        # Token is retained only for local CLI/backward-compatibility. Browser
+        # clients should rely on the httpOnly cookie and must not persist it in
+        # localStorage/sessionStorage.
+        "token": token if not _is_production() else None,
+        "token_transport": "httpOnly_cookie",
         "user": {
             "id": req.username,
             "username": req.username,
@@ -157,6 +184,21 @@ async def login(req: AuthRequest):
             "roles": roles,
             "createdAt": None,
         },
+    }
+
+
+@router.post("/logout", response_model=Dict[str, Any])
+async def logout(response: Response, payload: TokenPayload = Depends(get_token_payload)):
+    response.delete_cookie(
+        key=ACCESS_COOKIE_NAME,
+        path="/",
+        secure=_cookie_secure(),
+        samesite=_cookie_samesite(),
+    )
+    return {
+        "success": True,
+        "user": payload.username,
+        "timestamp": datetime.now(timezone.utc).isoformat(),
     }
 
 
