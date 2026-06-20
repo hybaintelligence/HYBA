@@ -29,6 +29,18 @@ from pythia_mining.phi_unified_mining_engine import UnifiedMiningEngine
 
 
 _engine: Optional[UnifiedMiningEngine] = None
+_lock_manager_initialized: bool = False
+
+
+def initialize_engine_with_lock_manager(lock_manager) -> None:
+    """Initialize the unified mining engine with a distributed lock manager.
+    
+    This must be called during app startup in main.py lifespan before get_engine().
+    """
+    global _lock_manager_initialized
+    _lock_manager_initialized = True
+    # Store lock manager in module state for get_engine() to use
+    globals()['_lock_manager'] = lock_manager
 
 
 def get_engine() -> UnifiedMiningEngine:
@@ -36,7 +48,9 @@ def get_engine() -> UnifiedMiningEngine:
 
     global _engine
     if _engine is None:
-        _engine = UnifiedMiningEngine()
+        # Retrieve lock manager if available (should be initialized by main.py)
+        lock_manager = globals().get('_lock_manager')
+        _engine = UnifiedMiningEngine(lock_manager=lock_manager)
     return _engine
 
 

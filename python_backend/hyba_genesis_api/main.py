@@ -74,6 +74,7 @@ from hyba_genesis_api.core.telemetry import (  # noqa: E402
     get_prometheus_metrics,
 )
 from hyba_genesis_api.core.rate_limiter import RateLimiter  # noqa: E402
+from pythia_mining.distributed_lock_manager import DistributedLockManager  # noqa: E402
 
 # Initialize the database (create tables if necessary)
 try:
@@ -93,6 +94,40 @@ def _parse_cors_origins() -> List[str]:
     raw = os.getenv("HYBA_CORS_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000")
     origins = [o.strip() for o in raw.split(",") if o.strip()]
     return origins
+
+
+def _get_or_init_distributed_lock_manager(app: FastAPI) -> DistributedLockManager:
+    """Get existing or initialize DistributedLockManager in app state.
+    
+    The lock manager is created once per app startup and stored in app.state.
+    Fail-closed behavior:
+    - QaaS execution: Redis unavailable -> return 423 Locked, do not proceed
+    - Single-node mining: Can optionally use local fallback if HYBA_SINGLE_NODE_MODE=true
+    """
+    if hasattr(app.state, 'distributed_lock_manager'):
+        return app.state.distributed_lock_manager
+    
+    # Initialize with Redis client (from redis_state_registry)
+    from pythia_mining.redis_state_registry import get_redis_registry
+    
+    redis_registry = get_redis_registry()
+    if not redis_registry.available:
+        logging.warning(
+            "Redis unavailable for distributed lock manager; "
+            "QaaS execution will fail-closed (no local fallback)"
+        )
+    
+    # Create lock manager (will use mock if Redis unavailable)
+    lock_manager = DistributedLockManager(
+        redis_client=redis_registry.client if redis_registry.available else None,
+        max_retry_attempts=10
+    )
+    app.state.distributed_lock_manager = lock_manager
+    logging.info(
+        "DistributedLockManager initialized",
+        extra={"redis_available": redis_registry.available}
+    )
+    return lock_manager
 
 
 async def _activate_startup_self_healing(app: FastAPI) -> None:
@@ -140,9 +175,18 @@ async def lifespan(app: FastAPI):
 
     init_logging()
     init_metrics()
+    
+    # Initialize distributed lock manager (fail-closed for Redis unavailability)
+    lock_manager = _get_or_init_distributed_lock_manager(app)
+    
     logging.info("HYBA API startup: initializing substrate lifecycle")
     initialize_substrate()
     logging.info("HYBA API startup: substrate READY", extra={"substrate": get_substrate_state()})
+    
+    # Initialize unified mining engine with hardening modules
+    from hyba_genesis_api.api import unified_mining
+    unified_mining.initialize_engine_with_lock_manager(lock_manager)
+    
     try:
         await _activate_startup_self_healing(app)
     except Exception as exc:

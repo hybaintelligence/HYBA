@@ -1,6 +1,6 @@
 """
-HYBA Stress Tests: Fields Medal/Nobel Rigor Testing Framework
-============================================================
+HYBA Stress Tests: Advanced Stress Testing Framework
+====================================================
 
 Advanced stress testing modules for HYBA/PYTHIA system focusing on:
 - High-dimensional manifold saturation (dim=10,000+)

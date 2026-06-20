@@ -249,6 +249,9 @@ class CoxeterTopology:
 # Number of nodes in the PULVINI manifold (32 lanes)
 NUM_NODES = 32
 
+# Number of bits in a nonce (32-bit unsigned integer)
+NONCE_BITS = 32
+
 # Maximum uint32 nonce value (2^32 - 1)
 MAX_UINT32_NONCE = 2**32 - 1
 
@@ -297,4 +300,4 @@ ADJACENCY_MAP = {
 }
 
 
-__all__ = ['CoxeterTopology', 'ADJACENCY_MAP', 'NUM_NODES', 'MAX_UINT32_NONCE', 'SLICE_SIZE']
+__all__ = ['CoxeterTopology', 'ADJACENCY_MAP', 'NUM_NODES', 'NONCE_BITS', 'MAX_UINT32_NONCE', 'SLICE_SIZE']

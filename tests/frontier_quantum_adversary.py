@@ -11,7 +11,7 @@ The test verifies whether the system can:
 2. Self-heal using Bures gradient descent
 3. Maintain post-quantum passport integrity
 
-NOBEL/FIELDS MEDAL RIGOR:
+MATHEMATICAL RIGOR:
 - Group-theoretic symmetry detection (Lagrange's theorem)
 - Lie algebra perturbation analysis
 - Bures metric geodesic restoration

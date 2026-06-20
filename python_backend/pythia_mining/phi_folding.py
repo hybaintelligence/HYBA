@@ -346,8 +346,15 @@ class PhiFoldingOperator:
             # blocks for PhiMalloc compatibility
             w1 = 1.0 / PHI
             w2 = 1.0 / (PHI**2)
-            packed = w1 * non_zero_values + w2 * non_zero_indices.astype(np.float64)
-            kernel = w2 * non_zero_values - w1 * non_zero_indices.astype(np.float64)
+            # Ensure arrays have same shape for broadcasting
+            indices_float = non_zero_indices.astype(np.float64)
+            if non_zero_values.shape != indices_float.shape:
+                # Reshape to ensure compatibility
+                min_size = min(non_zero_values.size, indices_float.size)
+                non_zero_values = non_zero_values[:min_size]
+                indices_float = indices_float[:min_size]
+            packed = w1 * non_zero_values + w2 * indices_float
+            kernel = w2 * non_zero_values - w1 * indices_float
 
             sparse_kernel = SparsePhiFoldKernel(
                 indices=non_zero_indices, packed_values=packed, kernel_values=kernel

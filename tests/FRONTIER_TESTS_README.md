@@ -1,8 +1,8 @@
-# Frontier Tests — Nobel/Fields Medal Rigor
+# Frontier Tests — Advanced Mathematical Rigor
 
 ## Overview
 
-These three frontier tests push the HYBA/PYTHIA system beyond verification into stress testing, optimization, and security hardening. Each test is implemented with **Nobel/Fields Medal-level mathematical rigor**, grounded in published research and fundamental theorems.
+These three frontier tests push the HYBA/PYTHIA system beyond verification into stress testing, optimization, and security hardening. Each test is implemented with advanced mathematical rigor, grounded in published research and fundamental theorems.
 
 ## Test Suite
 

@@ -87,7 +87,9 @@ class PhiResonanceFabric:
         if total == 0.0:
             return 0.0
         normalized = [max(float(probability), 0.0) / total for probability in probabilities]
-        return float(-sum(p * math.log(p) for p in normalized if p > 0.0))
+        entropy = float(-sum(p * math.log(p) for p in normalized if p > 0.0))
+        # Clamp to non-negative to handle floating-point precision issues
+        return max(0.0, entropy)
 
     def compute_phi_density(self, state_vector: Sequence[complex]) -> float:
         """Measure bounded φ-spiral coherence for a complex structural state."""

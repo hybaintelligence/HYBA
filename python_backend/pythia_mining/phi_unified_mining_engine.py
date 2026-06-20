@@ -86,8 +86,10 @@ class UnifiedMiningEngine:
         self,
         configured_capacity_ehs: Optional[float] = None,
         consciousness_config: Optional[ConsciousnessConfig] = None,
+        lock_manager = None,
     ) -> None:
         self.configured_capacity_ehs = configured_capacity_ehs
+        self.lock_manager = lock_manager  # Enterprise hardening: distributed lock manager
         self.solver = PulviniCompressedQuantumSolver(
             configured_capacity_ehs=configured_capacity_ehs,
         )
@@ -115,6 +117,7 @@ class UnifiedMiningEngine:
         # (config read from env automatically via AutonomousConfig factory defaults)
         self.autonomous_controller = AutonomousMiningController(
             unified_engine=self,
+            lock_manager=lock_manager,
         )
         self._sync_verifier_state()
 

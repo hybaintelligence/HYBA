@@ -317,13 +317,25 @@ class AutonomousQaaSController:
         with self._lock:
             if proposal.applied:
                 return False
-            
+
+            # Enforce cooldown period before applying optimization
+            if time.time() - self._last_optimization < 300.0:  # 5 minute cooldown
+                logger.warning(
+                    "Optimization rejected - cooldown period not elapsed",
+                    extra={
+                        "service_id": self.service_id,
+                        "proposal_id": proposal.proposal_id,
+                        "time_since_last": time.time() - self._last_optimization,
+                    },
+                )
+                return False
+
             proposal.applied = True
             self._proposals.append(proposal)
             self._optimization_epochs += 1
             self._last_optimization = time.time()
             self._save_state()
-            
+
             logger.info(
                 "Autonomous optimization applied",
                 extra={
@@ -334,7 +346,7 @@ class AutonomousQaaSController:
                     "proposed": proposal.proposed_value,
                 },
             )
-            
+
             return True
     
     def get_status(self) -> Dict[str, Any]:

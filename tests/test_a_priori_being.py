@@ -2,8 +2,7 @@
 
 These tests verify the invariant properties of the recursive structural learning
 loop: Phi resonance boundedness, manifold curvature positivity, and recursive
-closure safety. They constitute the Fields Medal-worthy validation gate for the
-GenesisAI mathematical organism.
+closure safety. They provide mathematical validation for the GenesisAI system.
 """
 
 from __future__ import annotations

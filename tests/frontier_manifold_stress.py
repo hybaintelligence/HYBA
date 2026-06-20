@@ -7,7 +7,7 @@ exponentially scaling the dimensionality until the Riemannian structure
 collapses. We are probing the boundary where the Fisher-Rao metric tensor
 becomes singular, analogous to horizon formation in general relativity.
 
-NOBEL/FIELDS MEDAL RIGOR:
+MATHEMATICAL RIGOR:
 - Implements genuine Riemannian geometry stress testing
 - Measures geometric stability via condition number of metric tensor
 - Computes Ricci curvature scalar to detect manifold pathologies
