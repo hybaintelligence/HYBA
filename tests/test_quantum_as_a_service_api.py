@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from pathlib import Path
 from fastapi.testclient import TestClient
 import pytest
 from hypothesis import given, strategies as st
@@ -134,8 +135,15 @@ def _customer_principal(tier: str = "developer", sovereign_enabled: bool = False
         metadata["sovereign_enabled"] = True
     return CustomerPrincipal(
         customer_id="test-customer",
+        customer_name="Test Customer",
         tier=tier,
+        quota_requests_per_month=1000,
+        quota_compute_units_per_month=10000,
+        api_key_hash="test_hash",
+        key_id="test_key_id",
+        created_at="2024-01-01T00:00:00Z",
         metadata=metadata,
+        pricing_usd_per_unit={"default": 0.01},
     )
 
 

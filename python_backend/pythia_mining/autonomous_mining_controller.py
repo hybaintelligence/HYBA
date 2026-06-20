@@ -1821,19 +1821,19 @@ class AutonomousMiningController:
                 proposal.expected_phi_density_gain = simulated_density - current_density
 
             # Step 4: Validate against 5 Safety Constraints
-            self.reflexive_cycle_guard.record_phase_start(ReflexiveCyclePhase.VALIDATE)
+            self.reflexive_cycle_guard.record_phase_start(ReflexiveCyclePhase.VALIDATE_CONSTRAINTS)
             valid_proposals = [p for p in proposals if self.validate_constraints(p)]
-            self.reflexive_cycle_guard.record_phase_end(ReflexiveCyclePhase.VALIDATE, success=True)
+            self.reflexive_cycle_guard.record_phase_end(ReflexiveCyclePhase.VALIDATE_CONSTRAINTS, success=True)
 
             # Step 5: Apply validated improvements
-            self.reflexive_cycle_guard.record_phase_start(ReflexiveCyclePhase.APPLY)
+            self.reflexive_cycle_guard.record_phase_start(ReflexiveCyclePhase.APPLY_PROPOSAL)
             for proposal in valid_proposals:
                 self.apply_self_optimization(proposal)
                 self._update_target_bandit(proposal.improvement_type, True)
             for proposal in proposals:
                 if not proposal.applied:
                     self._update_target_bandit(proposal.improvement_type, False)
-            self.reflexive_cycle_guard.record_phase_end(ReflexiveCyclePhase.APPLY, success=True)
+            self.reflexive_cycle_guard.record_phase_end(ReflexiveCyclePhase.APPLY_PROPOSAL, success=True)
 
             # Record logical consistency — bounded sliding window
             avg_consistency = sum(p.logical_consistency_score for p in proposals) / max(

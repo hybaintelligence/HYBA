@@ -462,7 +462,7 @@ class _CommercialIntelligenceComputer:
             # Generate optimization proposals (not auto-applied)
             proposal = self.autonomous.propose_optimization(
                 current_code_distance=self.policy["code_distance"],
-                current_error_rate=stats["physical_error_rate"],
+                current_error_rate=stats_after["physical_error_rate"],
                 metrics=metrics,
             )
             if proposal:
