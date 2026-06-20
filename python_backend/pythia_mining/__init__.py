@@ -94,6 +94,21 @@ _PYTHIA_AUTONOMOUS_MINING_EXPORTS = {
     "ShareSubmitter",
 }
 
+_AUTONOMOUS_SEARCH_EXPORTS = {
+    "AutonomousSearchSystem",
+    "create_autonomous_search_system",
+    "SearchMode",
+    "SearchPhase",
+    "UnifiedSearchResult",
+    "SearchBenchmarkResult",
+    "GroverAmplifier",
+    "StructurePrior",
+    "MemoryCompressor",
+    "PhiScaler",
+    "ManifoldRouter",
+    "HealingCoordinator",
+}
+
 _AUTONOMICS_EXPORTS = {
     "AutonomicOrchestrator",
     "BuresOptimizer",
@@ -181,6 +196,9 @@ def __getattr__(name: str) -> Any:
     if name in _PYTHIA_AUTONOMOUS_MINING_EXPORTS:
         module = import_module(".pythia_autonomous_mining_agent", __name__)
         return getattr(module, name)
+    if name in _AUTONOMOUS_SEARCH_EXPORTS:
+        module = import_module(".autonomous_searching_system", __name__)
+        return getattr(module, name)
     if name in _ORCHESTRATOR_EXPORTS:
         module = import_module(".phi_core_orchestrator", __name__)
         return getattr(module, name)
@@ -214,4 +232,5 @@ __all__ = sorted(
     | _JIT_EXPORTS
     | _MALLOC_EXPORTS
     | _PYTHIA_AUTONOMOUS_MINING_EXPORTS
+    | _AUTONOMOUS_SEARCH_EXPORTS
 )

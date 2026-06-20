@@ -638,6 +638,9 @@ class AutonomousMiningController:
             latency_ms = 0.0 if response_time_ms is None else response_time_ms
         if error_code and not reason:
             reason = error_code
+        
+        # Accept both 'difficulty' and 'job_difficulty' for backward compatibility
+        final_difficulty = job_difficulty if job_difficulty is not None else difficulty
 
         response_target = target
         if response_target is None and proposal_id is not None:
@@ -654,9 +657,13 @@ class AutonomousMiningController:
             "latency_ms": max(0.0, float(latency_ms)),
             "reason": reason,
             "error_code": error_code,
+<<<<<<< Updated upstream
             "job_difficulty": None
             if (job_difficulty if job_difficulty is not None else difficulty) is None
             else float(job_difficulty if job_difficulty is not None else difficulty),
+=======
+            "difficulty": None if final_difficulty is None else float(final_difficulty),
+>>>>>>> Stashed changes
             "proposal_id": proposal_id,
             "decision_id": decision_id,
             "target": response_target,

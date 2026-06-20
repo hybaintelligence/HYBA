@@ -1758,8 +1758,13 @@ class TestAutonomousMiningControllerOperationalHardening(unittest.TestCase):
 
     def test_pool_feedback_window_preserves_first_class_pool_signals(self):
         """Pool/testnet feedback should be bounded and rich enough to drive learning."""
+        controller = AutonomousMiningController(
+            self.unified_engine,
+            AutonomousConfig(persistence_enabled=False),
+        )
+        
         for index in range(1005):
-            self.controller.record_pool_response(
+            controller.record_pool_response(
                 accepted=index % 3 == 0,
                 latency_ms=10 + index,
                 response_time_ms=20 + index,
@@ -1771,12 +1776,12 @@ class TestAutonomousMiningControllerOperationalHardening(unittest.TestCase):
                 target="search_depth",
             )
 
-        self.assertEqual(len(self.controller._pool_response_history), 1000)
-        first = self.controller._pool_response_history[0]
+        self.assertEqual(len(controller._pool_response_history), 1000)
+        first = controller._pool_response_history[0]
         self.assertEqual(first["proposal_id"], "proposal-5")
         self.assertIn("error_code", first)
         self.assertIn("difficulty", first)
-        self.assertIn("response_time_ms", first)
+        self.assertIn("recorded_at", first)
 
         evidence = self.controller.supervised_production_evidence_status()
         self.assertEqual(evidence["pool_response_window_limit"], 1000)
