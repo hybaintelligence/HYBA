@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: hyba-config
+  namespace: hyba-production
+data:
+  LOG_LEVEL: INFO
+  REDIS_URL: redis://redis-service:6379
+  DATABASE_URL: postgresql+psycopg2://hyba:CHANGE_ME_IN_PRODUCTION@postgres-service:5432/hyba
+  API_WORKERS: "4"
+  HYBA_STARTUP_SELF_HEALING_ENABLED: "false"
