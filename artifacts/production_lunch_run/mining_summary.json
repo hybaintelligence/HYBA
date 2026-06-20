@@ -1,0 +1,14 @@
+{
+  "status": "TIMEOUT",
+  "runtime_minutes": 7,
+  "backend_health_ok": true,
+  "frontend_health_ok": true,
+  "focused_tests_passed": true,
+  "pythia_started": true,
+  "self_healing_completed": true,
+  "self_optimization_completed": true,
+  "mining_entered": true,
+  "block_found": false,
+  "shutdown_clean": true,
+  "operator_action_required": "none"
+}

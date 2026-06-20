@@ -245,6 +245,10 @@ class _CustomerQuantumComputerRegistry:
         result = admin_registry.execute(computer_id, request)
         usage = customer_registry.get_usage_metrics(customer)
         result["usage"] = usage.model_dump()
+        result["usage_meter"] = {
+            "product": "qaas.execute",
+            "units": compute_cost,
+        }
         return result
 
 

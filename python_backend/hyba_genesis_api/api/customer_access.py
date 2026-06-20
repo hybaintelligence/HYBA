@@ -22,17 +22,20 @@ from hyba_genesis_api.auth.jwt_handler import TokenPayload
 
 router = APIRouter(prefix="/api/admin/customer-access", tags=["customer-access"])
 
+# Separate router for admin customer API keys at the path expected by tests
+admin_router = APIRouter(prefix="/api/admin", tags=["customer-access-admin"])
+
 CustomerTier = Literal["developer", "production", "enterprise"]
 
 
-class APIKeyCreateRequest(BaseModel):
+class CustomerApiKeyIssueRequest(BaseModel):
     """Admin request to create an API key for a customer."""
 
     customer_id: str = Field(min_length=3, max_length=80)
-    customer_name: str = Field(min_length=3, max_length=80)
+    customer_name: str = Field(default="", min_length=0, max_length=80)
     tier: CustomerTier = "developer"
-    quota_requests_per_month: int = Field(default=10000, ge=100, le=10000000)
-    quota_compute_units_per_month: int = Field(default=1000, ge=100, le=10000000)
+    monthly_compute_units: int = Field(default=1000, ge=1, le=10000000)
+    monthly_requests: int = Field(default=10000, ge=1, le=10000000)
     metadata: Dict[str, Any] = Field(default_factory=dict)
 
 
@@ -63,6 +66,10 @@ class CustomerInfo(BaseModel):
     metadata: Dict[str, Any]
 
 
+# Alias for compatibility with existing code
+CustomerPrincipal = CustomerInfo
+
+
 class UsageMetrics(BaseModel):
     """Current usage metrics for a customer."""
 
@@ -81,6 +88,7 @@ class _CustomerRegistry:
         self._customers: Dict[str, CustomerInfo] = {}  # key_id -> CustomerInfo
         self._api_key_to_customer: Dict[str, str] = {}  # api_key_hash -> key_id
         self._usage: Dict[str, UsageMetrics] = {}  # key_id -> UsageMetrics
+        self._local_counters: Dict[str, Dict[str, int]] = {}  # customer_id -> {product: count}
 
         # Optional Redis backing for distributed state
         self._redis_client: Optional[Any] = None
@@ -97,10 +105,10 @@ class _CustomerRegistry:
     def _hash_api_key(self, api_key: str) -> str:
         return hashlib.sha256(api_key.encode()).hexdigest()
 
-    def create_api_key(self, request: APIKeyCreateRequest) -> APIKeyResponse:
+    def issue_key(self, request: CustomerApiKeyIssueRequest) -> APIKeyResponse:
         with self._lock:
             key_id = f"key-{uuid.uuid4().hex[:16]}"
-            raw_api_key = f"hyba-{key_id}-{uuid.uuid4().hex[:24]}"
+            raw_api_key = f"hyba_live_{key_id}_{uuid.uuid4().hex[:24]}"
             api_key_hash = self._hash_api_key(raw_api_key)
 
             now = datetime.now(UTC).isoformat()
@@ -108,8 +116,8 @@ class _CustomerRegistry:
                 customer_id=request.customer_id,
                 customer_name=request.customer_name,
                 tier=request.tier,
-                quota_requests_per_month=request.quota_requests_per_month,
-                quota_compute_units_per_month=request.quota_compute_units_per_month,
+                quota_requests_per_month=request.monthly_requests,
+                quota_compute_units_per_month=request.monthly_compute_units,
                 api_key_hash=api_key_hash,
                 key_id=key_id,
                 created_at=now,
@@ -124,11 +132,12 @@ class _CustomerRegistry:
             usage = UsageMetrics(
                 requests_this_month=0,
                 compute_units_this_month=0,
-                requests_remaining=request.quota_requests_per_month,
-                compute_units_remaining=request.quota_compute_units_per_month,
+                requests_remaining=request.monthly_requests,
+                compute_units_remaining=request.monthly_compute_units,
                 month=current_month,
             )
             self._usage[key_id] = usage
+            self._local_counters[request.customer_id] = {}
 
             # Back to Redis if available
             if self._redis_client:
@@ -216,12 +225,12 @@ class _CustomerRegistry:
             # Check quota
             if usage.requests_remaining < request_cost:
                 raise HTTPException(
-                    status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                    status_code=status.HTTP_402_PAYMENT_REQUIRED,
                     detail="Monthly request quota exceeded",
                 )
             if usage.compute_units_remaining < compute_cost:
                 raise HTTPException(
-                    status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                    status_code=status.HTTP_402_PAYMENT_REQUIRED,
                     detail="Monthly compute unit quota exceeded",
                 )
 
@@ -274,9 +283,34 @@ class _CustomerRegistry:
                 )
             return self._usage[key_id]
 
+    def meter(self, customer: CustomerInfo, product: str, units: int) -> Dict[str, Any]:
+        """Record usage for a specific product and return usage meter data."""
+        # Check quota before recording usage
+        self.check_and_increment_usage(customer, request_cost=1, compute_cost=units)
+
+        customer_id = customer.customer_id
+        with self._lock:
+            if customer_id not in self._local_counters:
+                self._local_counters[customer_id] = {}
+            if product not in self._local_counters[customer_id]:
+                self._local_counters[customer_id][product] = 0
+            self._local_counters[customer_id][product] += units
+            return {
+                "product": product,
+                "units": units,
+            }
+
+    def set_state(self, key: str, value: Any) -> None:
+        """Store state for a given key."""
+        with self._lock:
+            if not hasattr(self, "_state"):
+                self._state = {}
+            self._state[key] = value
+
 
 # Global registry instance
-customer_registry = _CustomerRegistry()
+customer_access = _CustomerRegistry()
+customer_registry = customer_access  # Alias for backward compatibility
 
 
 async def require_api_key(x_api_key: str = Header(...)) -> CustomerInfo:
@@ -289,13 +323,26 @@ async def require_api_key(x_api_key: str = Header(...)) -> CustomerInfo:
     return customer_registry.get_customer_by_api_key(x_api_key)
 
 
+# Alias for compatibility with existing code
+require_customer_api_key = require_api_key
+
+
 @router.post("/api-keys", response_model=APIKeyResponse, status_code=status.HTTP_201_CREATED)
 async def create_api_key(
-    request: APIKeyCreateRequest,
+    request: CustomerApiKeyIssueRequest,
     payload: TokenPayload = Depends(require_admin),
 ):
     """Admin endpoint to create an API key for a customer."""
-    return customer_registry.create_api_key(request)
+    return customer_access.issue_key(request)
+
+
+@admin_router.post("/customer-api-keys", response_model=APIKeyResponse, status_code=status.HTTP_201_CREATED)
+async def issue_customer_api_key(
+    request: CustomerApiKeyIssueRequest,
+    payload: TokenPayload = Depends(require_admin),
+):
+    """Admin endpoint to issue an API key for a customer."""
+    return customer_access.issue_key(request)
 
 
 @router.get("/customers/{customer_id}/usage", response_model=UsageMetrics)

@@ -92,6 +92,8 @@ def test_public_ciaas_quota_enforcement_and_admin_key_issuance():
                 "monthly_compute_units": 4,
             },
         )
+        if issued.status_code != 201:
+            print(f"Error response: {issued.text}")
         assert issued.status_code == 201
         api_key = issued.json()["api_key"]
         assert api_key.startswith("hyba_live_")

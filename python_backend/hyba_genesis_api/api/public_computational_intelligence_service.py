@@ -230,6 +230,10 @@ class _CustomerCIAASRegistry:
         result = admin_ciaas_registry.execute(service_id, request)
         usage = customer_registry.get_usage_metrics(customer)
         result["usage"] = usage.model_dump()
+        result["usage_meter"] = {
+            "product": "ciaas.execute",
+            "units": context_size,
+        }
         return result
 
 
