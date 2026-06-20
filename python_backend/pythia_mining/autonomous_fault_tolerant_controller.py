@@ -28,7 +28,8 @@ class FaultTolerantMiningController:
         self.miner = AutonomousFaultTolerantMiner(
             code_distance=self.config.get('code_distance', 7),
             num_logical_qubits=self.config.get('num_logical_qubits', 32),
-            phi_resonance_rate=self.config.get('phi_resonance_rate', 0.9565)
+            phi_resonance_rate=self.config.get('phi_resonance_rate', 0.9565),
+            physical_error_rate=self.config.get('physical_error_rate', 1e-3)
         )
         
         # Load empirical evidence
@@ -47,6 +48,7 @@ class FaultTolerantMiningController:
             'num_logical_qubits': 32,
             'phi_resonance_rate': 0.9565,
             'max_iterations_per_job': 10,
+            'physical_error_rate': 1e-3,
             'error_threshold': (3 - PHI) * 1e-2,
             'syndrome_history_depth': 100
         }
@@ -122,15 +124,17 @@ class FaultTolerantMiningController:
         
         max_iterations = self.config.get('max_iterations_per_job', 10)
         
-        # Run fault-tolerant search cycle
-        result = run_fault_tolerant_mining_cycle(num_iterations=max_iterations)
-        
-        # Track error statistics
+        iteration_stats = []
+        for iteration in range(max_iterations):
+            iteration_stats.append(self.miner.fault_tolerant_search_iteration(iteration))
+
+        nonce_candidate, final_stats = self.miner.measure_nonce_candidate()
+
+        # Track error statistics from this provisioned computer rather than a
+        # separate default cycle, preserving per-instance production policy.
         self.iteration_count += max_iterations
-        self.error_history.append(result['logical_error_rate'])
+        self.error_history.append(final_stats['logical_error_rate'])
         
-        # Compute φ-scaled nonce adjustment
-        nonce_candidate = result['nonce_candidate']
         phi_adjustment = int(nonce_candidate * PHI_INV)
         final_nonce = (nonce_candidate + phi_adjustment) & 0xFFFFFFFF
         
@@ -139,9 +143,9 @@ class FaultTolerantMiningController:
             'nonce': final_nonce,
             'nonce_raw': nonce_candidate,
             'phi_adjustment': phi_adjustment,
-            'fault_tolerant': result['fault_tolerant'],
-            'logical_error_rate': result['logical_error_rate'],
-            'suppression_factor': result['suppression_factor'],
+            'fault_tolerant': final_stats['fault_tolerant'],
+            'logical_error_rate': final_stats['logical_error_rate'],
+            'suppression_factor': final_stats['suppression_factor'],
             'iterations': max_iterations,
             'total_iterations': self.iteration_count,
             'timestamp': datetime.now(UTC).isoformat()
