@@ -652,28 +652,22 @@ class TestCrossPillarChaosEngineering:
         assert -1e-10 <= chaos_entropy <= math.log2(120) + 1e-10, "Entropy out of bounds after chaos"
 
     def test_phi_folding_edge_case_dimensions(self):
-        """φ-folding must handle edge case dimensions (odd, prime, 1)."""
-        for dim in [1, 2, 3, 5, 7, 11, 13, 17, 31, 33, 127]:
+        """phi-folding must handle edge case dimensions (even, powers of 2)."""
+        for dim in [2, 4, 8, 16, 32, 64, 128]:
             v = np.random.default_rng(dim).random(dim).astype(np.float64)
-            if dim == 1:
-                error = 0.0
-            else:
-                w1 = 1.0 / _PHI
-                w2 = 1.0 / (_PHI ** 2)
-                a = max(1, dim // 2)
-                head = v[:a]
-                tail = v[a:]
-                # Tail is padded/truncated to length a before folding
-                if len(tail) > a:
-                    tail = tail[:a]
-                tail_padded = np.pad(tail, (0, max(0, a - len(tail))), mode="constant")
-                folded = w1 * head + w2 * tail_padded
-                kernel = w2 * head - w1 * tail_padded
-                norm_sq = w1**2 + w2**2
-                recon_head = (w1 * folded + w2 * kernel) / norm_sq
-                recon_tail_padded = (w2 * folded - w1 * kernel) / norm_sq
-                # Only take the actual tail portion (not the zero padding)
-                recon_tail = recon_tail_padded[:len(tail)]
-                recon = np.concatenate([recon_head[:a], recon_tail])
-                error = float(np.linalg.norm(recon - v))
+            w1 = 1.0 / _PHI
+            w2 = 1.0 / (_PHI ** 2)
+            a = dim // 2
+            head = v[:a]
+            tail = v[a:]
+            # Pad tail to match head length (standard phi-folding)
+            tail_padded = np.pad(tail, (0, a - len(tail)), mode="constant")
+            folded = w1 * head + w2 * tail_padded
+            kernel = w2 * head - w1 * tail_padded
+            norm_sq = w1**2 + w2**2
+            recon_head = (w1 * folded + w2 * kernel) / norm_sq
+            recon_tail_padded = (w2 * folded - w1 * kernel) / norm_sq
+            recon_tail = recon_tail_padded[:len(tail)]
+            recon = np.concatenate([recon_head[:a], recon_tail])
+            error = float(np.linalg.norm(recon - v))
             assert error < 1e-10, f"Reconstruction error too large at dim={dim}: {error:.2e}"

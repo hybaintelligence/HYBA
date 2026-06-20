@@ -88,13 +88,15 @@ def test_healing_trigger():
 def test_autonomous_healing():
     """Test autonomous healing execution."""
     print("✓ Test 5: Autonomous healing")
-    controller = create_autonomous_controller("test-005", "qaas", Path("/tmp/test_autonomous"))
+    import uuid
+    unique_id = f"test-heal-{uuid.uuid4().hex[:8]}"
+    controller = create_autonomous_controller(unique_id, "qaas", Path("/tmp/test_autonomous"))
     controller.start()
     controller._consecutive_failures = 3
     
     heal_result = controller.heal("consecutive_correction_failures")
-    assert heal_result.success
-    assert controller._consecutive_failures == 0
+    assert heal_result.success, f"Expected healing success, got {heal_result.success}"
+    assert controller._consecutive_failures == 0, f"Expected 0 failures after heal, got {controller._consecutive_failures}"
     print(f"  ✓ Healing action: {heal_result.action}")
 
 

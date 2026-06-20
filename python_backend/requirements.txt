@@ -43,3 +43,7 @@ noise==1.2.2
 opentelemetry-api==1.29.0
 opentelemetry-sdk==1.29.0
 opentelemetry-exporter-otlp==1.29.0
+
+# Distributed systems & caching
+redis==5.0.1
+aioredis==2.0.1

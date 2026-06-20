@@ -16,6 +16,7 @@ Production Architecture:
 from __future__ import annotations
 
 import hashlib
+import json
 import math
 import threading
 import time
@@ -189,9 +190,11 @@ class _VirtualFaultTolerantQuantumComputer:
         )
         self._executions = 0
         self._idempotency_cache: dict[str, Dict[str, Any]] = {}
+        self._execution_lock = threading.RLock()  # Per-computer execution lock
+        self._idempotency_cache_max_size = 1000  # Prevent unbounded growth
         for _ in range(request.logical_qubits):
             self.core.initialize_logical_qubit("0")
-        
+
         # Initialize autonomous self-healing and self-optimization
         self.autonomous = create_autonomous_controller(
             service_id=computer_id,
@@ -269,6 +272,8 @@ class _VirtualFaultTolerantQuantumComputer:
     def response(self) -> FaultTolerantComputerResponse:
         substrate = get_substrate_state()
         seal_payload = {
+            "seal_version": "1.0",
+            "sealed_at": datetime.now(UTC).isoformat(),
             "computer_id": self.computer_id,
             "owner": self.owner,
             "state": self.state,
@@ -276,7 +281,8 @@ class _VirtualFaultTolerantQuantumComputer:
             "fault_tolerance": self.fault_tolerance(),
             "substrate_ready": substrate.get("ready"),
         }
-        evidence_seal = hashlib.sha256(repr(sorted(seal_payload.items())).encode()).hexdigest()
+        canonical = json.dumps(seal_payload, sort_keys=True, separators=(",", ":"), default=str)
+        evidence_seal = hashlib.sha256(canonical.encode()).hexdigest()
         return FaultTolerantComputerResponse(
             computer_id=self.computer_id,
             name=self.name,
@@ -306,141 +312,174 @@ class _VirtualFaultTolerantQuantumComputer:
             raise HTTPException(status_code=422, detail="logical_qubits contains an out-of-range index")
         return qubits
 
+    def _estimate_execution_duration_ms(self, request: QuantumWorkloadRequest) -> int:
+        """Estimate execution duration in milliseconds for lock lease calculation."""
+        # Conservative estimate: 0.1ms per circuit depth per qubit
+        qubits = len(request.logical_qubits or list(range(min(3, len(self.core.logical_qubits)))))
+        return int(request.circuit_depth * qubits * 0.1) + 1000  # +1s safety margin
+
     def execute(self, request: QuantumWorkloadRequest) -> Dict[str, Any]:
         qubits = self._validate_workload(request)
-        if request.idempotency_key and request.idempotency_key in self._idempotency_cache:
-            return self._idempotency_cache[request.idempotency_key]
 
-        # Acquire distributed lock before execution
-        redis_registry = get_redis_registry()
-        lock_acquired = False
-        if redis_registry.available:
-            lock_acquired = redis_registry.acquire_register_lock(
-                self.computer_id, self.owner
-            )
-            if not lock_acquired:
-                raise HTTPException(
-                    status_code=status.HTTP_409_CONFLICT,
-                    detail="Instance is currently executing another workload; retry after current execution completes",
+        # Improved idempotency: store request_hash and enforce mismatch rejection
+        if request.idempotency_key:
+            request_hash = hashlib.sha256(
+                json.dumps(request.model_dump(), sort_keys=True, default=str).encode()
+            ).hexdigest()
+
+            if request.idempotency_key in self._idempotency_cache:
+                cached_entry = self._idempotency_cache[request.idempotency_key]
+                if cached_entry.get("request_hash") != request_hash:
+                    raise HTTPException(
+                        status_code=409,
+                        detail="Idempotency key reused with different request payload",
+                    )
+                return cached_entry["envelope"]
+
+        # Acquire per-computer execution lock
+        with self._execution_lock:
+            # Acquire distributed lock before execution with estimated lease duration
+            redis_registry = get_redis_registry()
+            lock_acquired = False
+            if redis_registry.available:
+                estimated_duration_ms = self._estimate_execution_duration_ms(request)
+                lock_lease_ms = max(10_000, estimated_duration_ms * 2)  # At least 10s, double the estimate
+                lock_acquired = redis_registry.acquire_register_lock(
+                    self.computer_id, self.owner, lease_ms=lock_lease_ms
+                )
+                if not lock_acquired:
+                    raise HTTPException(
+                        status_code=status.HTTP_409_CONFLICT,
+                        detail="Instance is currently executing another workload; retry after current execution completes",
+                    )
+
+            try:
+                # Track execution start time for metering
+                exec_start = time.perf_counter()
+
+                for _ in range(request.circuit_depth):
+                    for qubit_idx in qubits:
+                        self.core.measure_syndromes(qubit_idx)
+                        self.core.measure_syndromes(qubit_idx)
+                        self.core.decode_and_correct(qubit_idx)
+
+                if request.operation == "surface_code_cycle":
+                    result = {
+                        "logical_qubits": qubits,
+                        "circuit_depth": request.circuit_depth,
+                        "shots": request.shots,
+                        "syndrome_rounds": self.core.get_error_statistics()["syndrome_rounds"],
+                    }
+                elif request.operation == "phi_resonance_analysis":
+                    target = self.policy["phi_resonance_target"]
+                    result = {
+                        "phi": PHI,
+                        "target": target,
+                        "alignment": round(max(0.0, min(1.0, 1.0 - abs(PHI / math.pi - target))), 6),
+                        "analysis": explain(request.context or {"operation": request.operation}, request.substrates),
+                    }
+                elif request.operation == "state_vector_summary":
+                    result = {
+                        "logical_qubits": qubits,
+                        "center_amplitudes": [
+                            str(self.core.logical_qubits[index].physical_qubits[self.core.d // 2, self.core.d // 2])
+                            for index in qubits
+                        ],
+                        "fault_tolerance": self.fault_tolerance(),
+                    }
+                elif request.operation == "substrate_orchestration":
+                    result = SubstrateOrchestrator().evaluate(request.context)
+                else:
+                    result = {
+                        "context_digest": hashlib.sha256(repr(sorted(request.context.items())).encode()).hexdigest(),
+                        "quantum_parameters": self.quantum_parameters(),
+                        "fault_tolerance": self.fault_tolerance(),
+                        "claim_boundary": "Governance audit for virtual QaaS runtime; no mining dependency.",
+                    }
+
+                exec_duration = time.perf_counter() - exec_start
+
+                # Record resource consumption to Redis
+                if redis_registry.available:
+                    stats = self.core.get_error_statistics()
+                    metering_result = redis_registry.record_resource_consumption(
+                        instance_id=self.computer_id,
+                        tenant_id=self.owner,
+                        metrics={
+                            "defect_count": stats.get("last_decoder_defects", 0),
+                            "pairing_weight": stats.get("last_decoder_weight", 1.0),
+                            "circuit_depth": request.circuit_depth,
+                        },
+                    )
+                    result["metering"] = metering_result
+                    result["execution_duration_ms"] = round(exec_duration * 1000, 2)
+
+                # Record execution for autonomous learning
+                stats = self.core.get_error_statistics()
+                self.autonomous.record_execution(
+                    execution_time_ms=exec_duration * 1000,
+                    logical_error_rate=stats["logical_error_rate"],
+                    correction_success=stats["correction_successes"] > 0,
                 )
 
-        try:
-            # Track execution start time for metering
-            exec_start = time.perf_counter()
+                # Check if autonomous healing should trigger
+                metrics = self.autonomous.get_health_metrics()
+                trigger = self.autonomous.should_trigger_healing(metrics)
+                if trigger:
+                    heal_result = self.autonomous.heal(trigger)
+                    result["autonomous_healing"] = {
+                        "triggered": True,
+                        "trigger": trigger,
+                        "action": heal_result.action,
+                        "success": heal_result.success,
+                    }
 
-            for _ in range(request.circuit_depth):
-                for qubit_idx in qubits:
-                    self.core.measure_syndromes(qubit_idx)
-                    self.core.measure_syndromes(qubit_idx)
-                    self.core.decode_and_correct(qubit_idx)
+                # Generate optimization proposals (not auto-applied)
+                proposal = self.autonomous.propose_optimization(
+                    current_code_distance=self.policy["code_distance"],
+                    current_error_rate=stats["physical_error_rate"],
+                    metrics=metrics,
+                )
+                if proposal:
+                    result["autonomous_optimization"] = {
+                        "proposal_id": proposal.proposal_id,
+                        "parameter": proposal.parameter,
+                        "current": proposal.current_value,
+                        "proposed": proposal.proposed_value,
+                        "expected_improvement": proposal.expected_improvement,
+                        "confidence": proposal.confidence,
+                        "status": "proposed_not_applied",
+                    }
 
-            if request.operation == "surface_code_cycle":
-                result = {
-                    "logical_qubits": qubits,
-                    "circuit_depth": request.circuit_depth,
-                    "shots": request.shots,
-                    "syndrome_rounds": self.core.get_error_statistics()["syndrome_rounds"],
-                }
-            elif request.operation == "phi_resonance_analysis":
-                target = self.policy["phi_resonance_target"]
-                result = {
-                    "phi": PHI,
-                    "target": target,
-                    "alignment": round(max(0.0, min(1.0, 1.0 - abs(PHI / math.pi - target))), 6),
-                    "analysis": explain(request.context or {"operation": request.operation}, request.substrates),
-                }
-            elif request.operation == "state_vector_summary":
-                result = {
-                    "logical_qubits": qubits,
-                    "center_amplitudes": [
-                        str(self.core.logical_qubits[index].physical_qubits[self.core.d // 2, self.core.d // 2])
-                        for index in qubits
-                    ],
-                    "fault_tolerance": self.fault_tolerance(),
-                }
-            elif request.operation == "substrate_orchestration":
-                result = SubstrateOrchestrator().evaluate(request.context)
-            else:
-                result = {
-                    "context_digest": hashlib.sha256(repr(sorted(request.context.items())).encode()).hexdigest(),
+                self._executions += 1
+                self.touch()
+                envelope = {
+                    "computer_id": self.computer_id,
+                    "operation": request.operation,
+                    "state": self.state,
+                    "result": result,
                     "quantum_parameters": self.quantum_parameters(),
                     "fault_tolerance": self.fault_tolerance(),
-                    "claim_boundary": "Governance audit for virtual QaaS runtime; no mining dependency.",
+                    "executed_at": self.updated_at,
+                    "claim_boundary": "Fault-tolerant virtual quantum computer API; pure mathematical/substrate-agnostic execution surface; not a mining hypervisor.",
                 }
+                if request.idempotency_key:
+                    # Store with request_hash for mismatch detection
+                    if len(self._idempotency_cache) >= self._idempotency_cache_max_size:
+                        # Remove oldest entry (simple FIFO)
+                        oldest_key = next(iter(self._idempotency_cache))
+                        del self._idempotency_cache[oldest_key]
 
-            exec_duration = time.perf_counter() - exec_start
-
-            # Record resource consumption to Redis
-            if redis_registry.available:
-                stats = self.core.get_error_statistics()
-                metering_result = redis_registry.record_resource_consumption(
-                    instance_id=self.computer_id,
-                    tenant_id=self.owner,
-                    metrics={
-                        "defect_count": stats.get("last_decoder_defects", 0),
-                        "pairing_weight": stats.get("last_decoder_weight", 1.0),
-                        "circuit_depth": request.circuit_depth,
-                    },
-                )
-                result["metering"] = metering_result
-                result["execution_duration_ms"] = round(exec_duration * 1000, 2)
-            
-            # Record execution for autonomous learning
-            stats = self.core.get_error_statistics()
-            self.autonomous.record_execution(
-                execution_time_ms=exec_duration * 1000,
-                logical_error_rate=stats["logical_error_rate"],
-                correction_success=stats["correction_successes"] > 0,
-            )
-            
-            # Check if autonomous healing should trigger
-            metrics = self.autonomous.get_health_metrics()
-            trigger = self.autonomous.should_trigger_healing(metrics)
-            if trigger:
-                heal_result = self.autonomous.heal(trigger)
-                result["autonomous_healing"] = {
-                    "triggered": True,
-                    "trigger": trigger,
-                    "action": heal_result.action,
-                    "success": heal_result.success,
-                }
-            
-            # Generate optimization proposals (not auto-applied)
-            proposal = self.autonomous.propose_optimization(
-                current_code_distance=self.policy["code_distance"],
-                current_error_rate=stats["physical_error_rate"],
-                metrics=metrics,
-            )
-            if proposal:
-                result["autonomous_optimization"] = {
-                    "proposal_id": proposal.proposal_id,
-                    "parameter": proposal.parameter,
-                    "current": proposal.current_value,
-                    "proposed": proposal.proposed_value,
-                    "expected_improvement": proposal.expected_improvement,
-                    "confidence": proposal.confidence,
-                    "status": "proposed_not_applied",
-                }
-
-            self._executions += 1
-            self.touch()
-            envelope = {
-                "computer_id": self.computer_id,
-                "operation": request.operation,
-                "state": self.state,
-                "result": result,
-                "quantum_parameters": self.quantum_parameters(),
-                "fault_tolerance": self.fault_tolerance(),
-                "executed_at": self.updated_at,
-                "claim_boundary": "Fault-tolerant virtual quantum computer API; pure mathematical/substrate-agnostic execution surface; not a mining hypervisor.",
-            }
-            if request.idempotency_key:
-                self._idempotency_cache[request.idempotency_key] = envelope
-            return envelope
-        finally:
-            # Always release lock, even if execution failed
-            if lock_acquired and redis_registry.available:
-                redis_registry.release_register_lock(self.computer_id, self.owner)
+                    self._idempotency_cache[request.idempotency_key] = {
+                        "request_hash": request_hash,
+                        "envelope": envelope,
+                        "created_at": datetime.now(UTC).isoformat(),
+                    }
+                return envelope
+            finally:
+                # Always release lock, even if execution failed
+                if lock_acquired and redis_registry.available:
+                    redis_registry.release_register_lock(self.computer_id, self.owner)
 
 
 class QuantumComputerRegistry:
@@ -526,11 +565,13 @@ class QuantumComputerRegistry:
             return computer.response()
 
     def execute(self, computer_id: str, request: QuantumWorkloadRequest) -> Dict[str, Any]:
+        # Narrow registry lock to lookup only, then execute under per-computer lock
         with self._lock:
             computer = self.get(computer_id)
             if computer.state != "running":
                 raise HTTPException(status_code=409, detail="computer must be running before workloads execute")
-            return computer.execute(request)
+        # Execute outside registry lock to avoid blocking other registry operations
+        return computer.execute(request)
 
     def assert_owner(self, computer_id: str, owner: str) -> _VirtualFaultTolerantQuantumComputer:
         computer = self.get(computer_id)
@@ -595,6 +636,27 @@ def _qaas_units(request: QuantumWorkloadRequest) -> int:
         * max(1, request.shots)
         * max(1, len(request.logical_qubits) or 1)
     )
+
+
+def _estimated_work_units(request: QuantumWorkloadRequest) -> int:
+    """Estimate work units for execution safety checks."""
+    return (
+        max(1, request.circuit_depth)
+        * max(1, request.shots)
+        * max(1, len(request.logical_qubits) or 1)
+    )
+
+
+def _get_tier_sync_limits(customer_tier: str) -> tuple[int, int]:
+    """Return (max_work_units, max_logical_qubits) for synchronous execution by customer tier."""
+    if customer_tier == "developer":
+        return (10_000, 32)  # Conservative limits for developer tier
+    elif customer_tier == "production":
+        return (100_000, 128)  # Higher limits for production tier
+    elif customer_tier == "enterprise":
+        return (1_000_000, 256)  # Highest limits for enterprise tier
+    else:
+        return (10_000, 32)  # Default conservative limits
 
 
 def _validate_customer_entitlement(
@@ -687,6 +749,23 @@ async def customer_execute_quantum_workload(
     principal: CustomerPrincipal = Depends(require_customer_api_key),
 ):
     registry.assert_owner(computer_id, principal.customer_id)
+
+    # Enforce tier-based sync limits to prevent event-loop blocking
+    estimated_units = _estimated_work_units(request)
+    max_units, max_qubits = _get_tier_sync_limits(principal.tier)
+
+    if estimated_units > max_units:
+        raise HTTPException(
+            status_code=413,
+            detail=f"Estimated work units ({estimated_units}) exceed tier sync limit ({max_units}). Use job queue for large workloads.",
+        )
+
+    if len(request.logical_qubits or []) > max_qubits:
+        raise HTTPException(
+            status_code=413,
+            detail=f"Logical qubit count ({len(request.logical_qubits or [])}) exceeds tier sync limit ({max_qubits}).",
+        )
+
     usage = customer_access.meter(principal, product="qaas.execute", units=_qaas_units(request))
     envelope = registry.execute(computer_id, request)
     envelope["usage_meter"] = usage
