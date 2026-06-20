@@ -61,8 +61,8 @@ def _regtest_job() -> MiningJob:
 
 
 def _phi_resonance_score(nonce: int) -> float:
-    vec = embed_nonce(nonce)
-    return cheap_phi_resonance(vec)
+    """Return φ-resonance score for a nonce (passes int, not tuple)."""
+    return cheap_phi_resonance(nonce)
 
 
 def _phi_ordered(candidates: List[int]) -> List[int]:
@@ -165,8 +165,8 @@ def test_voronoi_domain_assignment_is_deterministic_over_uint32_range() -> None:
     """Claim: every nonce in a representative sample maps to a stable Voronoi domain."""
     sample = [0, 1, 255, 256, 65535, 65536, 2**16 - 1, 2**24, 2**32 - 1]
     for nonce in sample:
-        d1 = voronoi_domain(embed_nonce(nonce), M32)
-        d2 = voronoi_domain(embed_nonce(nonce), M32)
+        d1 = voronoi_domain(nonce)
+        d2 = voronoi_domain(nonce)
         assert d1 == d2, f"voronoi domain not stable for nonce {nonce}"
         assert 0 <= d1 < len(M32), f"domain {d1} outside M32 range"
 
@@ -180,9 +180,7 @@ def test_phi_gradient_proposal_stays_within_uint32_bounds() -> None:
     """Claim: every φ-gradient proposal is a valid uint32 nonce."""
     test_nonces = [0, 1, 1000, 2**16, 2**24, 2**32 - 2, 2**32 - 1]
     for nonce in test_nonces:
-        vec = embed_nonce(nonce)
-        domain = voronoi_domain(vec, M32)
-        proposal = phi_gradient_proposal(nonce, domain, M32)
+        proposal = phi_gradient_proposal(nonce=nonce)
         assert 0 <= proposal <= 2**32 - 1, (
             f"phi_gradient_proposal({nonce}) = {proposal} outside uint32 range"
         )
