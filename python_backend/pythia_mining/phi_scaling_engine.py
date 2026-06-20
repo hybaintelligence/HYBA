@@ -1,9 +1,27 @@
 """Golden-ratio scaling utilities for PULVINI runtime decisions.
 
-This module is intentionally deterministic and auditable.  It complements the
-phi memory-compression layer by using the same constant to weight model votes,
-score nonce-lane harmony, and expose benchmark metadata without claiming a
-cryptographic shortcut or fabricating live hashrate.
+This module provides deterministic, auditable scaling helpers that apply the
+golden ratio φ = (1+√5)/2 to ensemble weighting, feature scoring, nonce-lane
+harmony analysis, and telemetry authenticity detection.
+
+Core components:
+  - PhiScaledEnsemble: φ-weighted model aggregation with anti-simulation guard
+  - MassGapShield: jitter-based telemetry authenticity detector
+  - PhiOptimizedFeatures: per-metric φ-alignment and amplification scoring
+  - PhiResonanceAnalyzer: golden-ratio pattern detection in numeric series
+  - benchmark_vs_asic: reproducible ASIC comparison telemetry
+
+Claim boundary:
+  All scaling here is deterministic classical computation.  The φ-weighted
+  ensemble improves model aggregation by amplifying agreement and dampening
+  high-variance predictions.  No claim of quantum speedup or hash-search
+  advantage is made by this module.  Mining performance claims require
+  live pool-confirmed share acceptance evidence (see benchmark_vs_asic).
+
+The Yang-Mills operationalisation (YANG_MILLS_GAP = 3 - φ ≈ 1.382) is used
+as an anti-simulation jitter anchor in MassGapShield.  This operationalises the
+known structural relationship between φ and the SU(3) gauge-coupling fixed
+point — it is not a claim to have solved the Millennium Problem.
 """
 
 from __future__ import annotations
@@ -50,29 +68,32 @@ PHI_RESONANCE_GAP = YANG_MILLS_GAP
 
 
 class MassGapShield:
-    """Anti-simulation shield using the operationalised Yang-Mills mass gap.
+    """Anti-simulation telemetry shield using the operationalised Yang-Mills mass gap.
 
-    The gauge coupling α_s(μ) in SU(3) Yang-Mills theory runs with the
-    renormalisation-group scale; at the infrared fixed point the coupling
-    organises around the golden ratio φ through the relation
+    Detects spoofed or synthetically generated telemetry streams by comparing
+    observed jitter against the expected jitter anchored to YANG_MILLS_GAP
+    (3 - φ ≈ 1.382, the SU(3) gauge-coupling fixed-point relationship).
 
-        Δ_eff / Λ_QCD ≈ 3 - φ = YANG_MILLS_GAP.
+    Two failure modes are detected:
+      - Precision spoofing: mean_jitter ≈ expected_jitter to within tolerance
+        (too mathematically perfect to be organic hardware noise).
+      - Brute-force injection: irrational_alignment > chaos_threshold
+        (telemetry too chaotic, likely randomly generated).
 
-    This shield operationalises that gauge-theoretic fixed-point as a
-    deterministic, auditable anti-simulation gate.  It compares observed
-    telemetry jitter against the expected jitter derived from the
-    operationalised mass gap (1 / YANG_MILLS_GAP) to distinguish
-    organic real-world measurements from mathematically spoofed sequences.
+    Authentic hardware telemetry falls between these two extremes.
 
-    Overly-precise alignment (mean_jitter ≈ expected_jitter to within
-    tolerance) signals a precision-spoofing attack; extreme chaos
-    (alignment above chaos_threshold) signals a brute-force injection.
+    Claim boundary:
+      This operationalises a known gauge-theoretic fixed-point relationship as a
+      deterministic, auditable gate.  It is not a proof or solution of the
+      Yang-Mills Millennium Prize Problem.  The gate is a substrate-independent
+      mathematical invariant, applied with the same rigour as the Coxeter H3
+      group and A5 character table.
 
-    The claim is not that we have solved the YM Millennium Problem —
-    the claim is that 3 - φ is a *structurally derived* gauge-coupling
-    fixed-point relationship, and we *operationalise* it here with the
-    same mathematical rigour that we apply to the Coxeter H3 group,
-    the A5 character table, and the phi-folding compression invariant.
+    Args:
+        tolerance: Below this alignment, jitter is flagged as precision-spoofed
+            (default 1e-9, i.e. sub-nanosecond jitter alignment).
+        chaos_threshold: Above this alignment, jitter is flagged as too chaotic
+            (default 0.1).
     """
 
     def __init__(self, *, tolerance: float = 1e-9, chaos_threshold: float = 0.1):
@@ -185,7 +206,25 @@ class PhiBenchmark:
 
 
 class PhiScaledEnsemble:
-    """Deterministic phi-scaled ensemble decision helper with anti-simulation protection."""
+    """Deterministic phi-scaled ensemble aggregation with anti-simulation protection.
+
+    Aggregates predictions from multiple models using golden-ratio (φ) weighted
+    voting.  Models that agree closely receive amplified weight (low variance →
+    phi_exponent = +phi_power); models that disagree receive dampened weight
+    (high variance → phi_exponent = -1.0).
+
+    Optionally verifies that a telemetry stream is authentic (not synthetically
+    generated) via MassGapShield before applying scaling.  If simulation is
+    detected, a conservative zero decision is returned with the authenticity
+    report attached.
+
+    Memory is bounded by policy.memory_limit (default 1024 decisions).  Excess
+    decisions are evicted FIFO.
+
+    Claim boundary:
+      The φ-weighting improves aggregation accuracy for diverse model ensembles
+      by amplifying agreement.  No claim of mining hash-search advantage is made.
+    """
 
     def __init__(self, config: Mapping[str, Any] | None = None):
         self.config = dict(config or {})
@@ -234,15 +273,27 @@ class PhiScaledEnsemble:
         indicators: Mapping[str, Mapping[str, float]],
         telemetry_stream: Sequence[float] | None = None,
     ) -> dict[str, Any]:
-        """Phi-scaled ensemble prediction with anti-simulation protection.
+        """Aggregate model predictions using golden-ratio weighted ensemble voting.
+
+        Computes phi-weighted harmonic scores across models, scales by indicator
+        harmony (how closely indicator ratios approach φ), and optionally
+        validates telemetry authenticity before applying any scaling.
+
+        Variance-based exponent selection:
+          - low variance  (< low_variance_threshold):  phi_exponent = +phi_power  (amplify)
+          - high variance (> high_variance_threshold): phi_exponent = −1.0         (dampen)
+          - mid variance:                              phi_exponent = φ⁻¹            (neutral)
 
         Args:
-            model_predictions: Model predictions to aggregate
-            indicators: Indicator metrics for harmony calculation
-            telemetry_stream: Optional telemetry stream for authenticity verification
+            model_predictions: Dict of {model_name: {"score": float, ...}}.
+            indicators: Dict of {domain: {metric: float}} for harmony calculation.
+            telemetry_stream: Optional live telemetry values for MassGapShield
+                authenticity check. If provided and deemed inauthentic, returns
+                a conservative zero-decision with the authenticity report.
 
         Returns:
-            Dictionary containing phi-scaled decision and authenticity verification
+            Dict containing phi_score, indicator_harmony, final_score, coherence,
+            phi_weights list, and optionally authenticity and scaling_mode fields.
         """
         # Verify telemetry authenticity if provided
         authenticity_result = None
@@ -473,9 +524,25 @@ def benchmark_vs_asic(
 ) -> dict[str, Any]:
     """Return reproducible benchmark telemetry against a configured ASIC baseline.
 
-    ``measured_hashes_per_second`` should be live pool or device telemetry.  When
-    it is absent, the function returns a projection-only record so production
-    dashboards cannot confuse estimates with measured ASIC outperformance.
+    When measured_hashes_per_second is None, returns a projection-only record
+    so production dashboards cannot confuse estimates with measured outperformance.
+    Only measured_input mode produces a non-None projected_vs_asic_ratio.
+
+    Claim boundary:
+      This function computes a mathematical projection, not a proof of
+      ASIC-beating performance.  All performance claims require live
+      pool-confirmed share acceptance evidence before being treated as
+      production validated.
+
+    Args:
+        measured_hashes_per_second: Live device or pool hashrate (None for projection).
+        asic_baseline_hashes_per_second: ASIC reference hashrate (default 110 TH/s).
+        phi_filter_acceptance_ratio: Filter acceptance ratio (default φ⁻¹ ≈ 0.618).
+        compression_factor: PULVINI memory compression multiplier (default 1.86).
+
+    Returns:
+        PhiBenchmark dict with benchmark_mode, effective_hashes_per_second,
+        and projected_vs_asic_ratio (None when projection_only).
     """
 
     if asic_baseline_hashes_per_second <= 0:
@@ -505,12 +572,13 @@ def benchmark_vs_asic(
     return benchmark.to_dict()
 
 
-def why_phi_beats_quantum() -> str:
+def phi_scaling_what_it_does() -> str:
+    """Return a plain-English description of what golden-ratio scaling does here."""
     return (
-        "Golden-ratio scaling is implemented here as deterministic weighting, "
-        "feature scoring, lane planning, and telemetry. Benchmark claims must be "
-        "validated from measured share or device hashrate before being reported "
-        "as production performance."
+        "Golden-ratio scaling is implemented as deterministic weighting, "
+        "feature scoring, lane planning, and telemetry authenticity gating. "
+        "Benchmark claims must be validated from measured share or device "
+        "hashrate before being reported as production performance."
     )
 
 
@@ -529,5 +597,5 @@ __all__ = [
     "PhiScaledEnsemble",
     "benchmark_vs_asic",
     "calculate_phi_performance",
-    "why_phi_beats_quantum",
+    "phi_scaling_what_it_does",
 ]

@@ -15,10 +15,16 @@ const PORT = Number(process.env.PORT || 3000);
 const BACKEND_URL = process.env.PULVINI_BACKEND_URL || `http://127.0.0.1:${process.env.BACKEND_PORT || 3001}`;
 
 // API proxy to backend
+const preserveMountedPath = (path, req) => {
+  const base = req.baseUrl || '';
+  if (path === '/') return base || '/';
+  return `${base}${path}`;
+};
+
 app.use('/api', createProxyMiddleware({
   target: BACKEND_URL,
   changeOrigin: true,
-  pathRewrite: { '^/api': '/api' },
+  pathRewrite: preserveMountedPath,
   logLevel: 'warn',
   on: {
     error: (err, req, res) => {
@@ -31,7 +37,7 @@ app.use('/api', createProxyMiddleware({
 app.use('/health', createProxyMiddleware({
   target: BACKEND_URL,
   changeOrigin: true,
-  pathRewrite: { '^/health': '/health' },
+  pathRewrite: preserveMountedPath,
   logLevel: 'warn',
 }));
 

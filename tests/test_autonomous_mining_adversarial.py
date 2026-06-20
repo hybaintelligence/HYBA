@@ -123,16 +123,15 @@ def test_adversarial_future_timestamp():
             "timestamp": time.time() + 86400,  # 24 hours in future
             "accepted": True,
             "difficulty": 1000.0,
+            "target": "search_depth",
         }
         ctrl._pool_response_history.append(malicious_response)
         
         # System should not crash when computing recency weights
         try:
-            adjustment = ctrl._pool_feedback_adjustment_weighted(
-                ctrl.optimization_targets[0] if ctrl.optimization_targets else None
-            )
+            adjustment = ctrl._pool_feedback_adjustment("search_depth")
             # Should complete without error
-            assert adjustment is not None
+            assert isinstance(adjustment, (int, float))
         except Exception as e:
             pytest.fail(f"Future timestamp caused crash: {e}")
 
@@ -226,14 +225,17 @@ def test_adversarial_hermiticity_violation():
         
         # Create malicious proposal
         malicious_proposal = SelfOptimizationProposal(
+            proposal_id="malicious_001",
+            timestamp=time.time(),
             improvement_type="search_depth",
             current_value=60.0,
             proposed_value=999999.0,  # Extreme value
-            expected_gain=100.0,
-            source_module="attacker",
+            expected_phi_density_gain=100.0,
+            logical_consistency_score=1.0,
+            constraints_satisfied=[],
+            constraints_violated=[],
             counterfactual_confidence=1.0,
-            logical_consistency=1.0,
-            proposal_id="malicious_001",
+            codebase_source_module="attacker",
         )
         
         # System should reject via constraint validation
@@ -251,14 +253,17 @@ def test_adversarial_energy_conservation_violation():
         
         # Create proposal claiming impossible energy reduction
         malicious_proposal = SelfOptimizationProposal(
+            proposal_id="malicious_002",
+            timestamp=time.time(),
             improvement_type="coherence_threshold",
             current_value=0.7,
             proposed_value=0.01,  # Unrealistic drop
-            expected_gain=1000.0,  # Impossible gain
-            source_module="attacker",
+            expected_phi_density_gain=1000.0,  # Impossible gain
+            logical_consistency_score=1.0,
+            constraints_satisfied=[],
+            constraints_violated=[],
             counterfactual_confidence=1.0,
-            logical_consistency=1.0,
-            proposal_id="malicious_002",
+            codebase_source_module="attacker",
         )
         
         # System should reject
@@ -381,16 +386,15 @@ def test_adversarial_timestamp_rollback():
             "timestamp": time.time() - 86400,  # 24 hours in past
             "accepted": True,
             "difficulty": 1000.0,
+            "target": "search_depth",
         }
         ctrl._pool_response_history.append(rollback_response)
         
         # System should not give excessive weight to old data
         try:
-            adjustment = ctrl._pool_feedback_adjustment_weighted(
-                ctrl.optimization_targets[0] if ctrl.optimization_targets else None
-            )
+            adjustment = ctrl._pool_feedback_adjustment("search_depth")
             # Should complete without giving old data excessive influence
-            assert adjustment is not None
+            assert isinstance(adjustment, (int, float))
         except Exception as e:
             pytest.fail(f"Timestamp rollback caused crash: {e}")
 

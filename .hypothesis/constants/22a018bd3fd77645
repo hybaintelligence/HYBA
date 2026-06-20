@@ -1,0 +1,4 @@
+# file: /Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/pythia_mining/mining_verification_firewall.py
+# hypothesis_version: 6.155.6
+
+[',', ':', 'FirewallDecision', 'UINT32_MAX', 'VerifierContract', 'authority_namespace', 'candidate', 'contract_hash', 'job_epoch', 'job_id', 'nbits', 'nonce', 'ntime', 'pool_target', 'protocol', 'sha-256', 'sha256', 'stable_hash', 'utf-8', 'validation_summary', 'verifier_contract']

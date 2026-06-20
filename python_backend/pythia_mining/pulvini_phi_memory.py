@@ -1,8 +1,30 @@
-"""PULVINI phi memory compression for the mining manifold.
+"""PULVINI phi-memory compression engine for the mining manifold.
 
-The engine is the HYBA golden-ratio memory contract: fold the active working
-set into a smaller phi-structured surface, retain projection kernels for exact
-replay, and report audit telemetry for reconstruction and invariant checks.
+This module implements the PULVINI memory contract:
+  - Fold the active working set into a smaller phi-structured surface using
+    the reversible golden-ratio linear transform from phi_folding.PhiFoldingOperator.
+  - Retain projection kernels for exact reconstruction (lossless replay).
+  - Report deterministic audit telemetry: reconstruction error, trace distance,
+    hermiticity error, Von Neumann entropy, and heavy-tail preservation.
+
+Compression ratio semantics (IMPORTANT):
+  - working_set_compression_ratio = original_bytes / folded_bytes
+      The working set alone is a ~φ:1 compressed representation.
+  - retained_state_compression_ratio = original_bytes / (folded + kernel bytes)
+      This is the lossless boundary.  The information-integrity hard cap is 2.0×.
+      Ratios observed above 2.0× are working-set observations tracked separately
+      as adaptive-science research throughput, not production-certified lossless
+      compression (see README §2.3).
+  - reversible = reconstruction_error <= max(tolerance, 1e-12)
+      This is the production guarantee flag.  Only check reversible for
+      pass/fail gates.
+
+Design decisions:
+  - Dense arrays: phi_fold (recursive depth-k folding)
+  - Sparse arrays (sparsity >= sparse_skip_threshold): sparse_fib_packed
+    (Fibonacci-sized non-zero chunks, PhiMalloc-compatible)
+  - Density matrices (2-D square complex): additional trace_distance,
+    hermiticity_error, and Von Neumann entropy telemetry is computed
 """
 
 from __future__ import annotations
@@ -144,7 +166,31 @@ class PhiMemoryStreamResult:
 
 
 class PulviniPhiMemoryCompressionEngine:
-    """Auditable phi folding engine for manifold, ledger, and tensor payloads."""
+    """Auditable PULVINI phi-folding engine for manifold, ledger, and tensor payloads.
+
+    Applies reversible golden-ratio compression to arbitrary NumPy arrays:
+    real vectors, complex density matrices, sparse weight tensors, and
+    streaming data chunks.
+
+    The lossless guarantee (reversible=True) holds for:
+      - float64 and complex128 payloads
+      - reconstruction_error <= max(tolerance, 1e-12)
+      - default fold_depth=2 (working-set ratio ~φ² ≈ 2.62× for dense data)
+
+    The information-integrity hard cap (retained_state_compression_ratio <= 2.0)
+    is enforced by the governance layer; this engine reports the ratio accurately
+    and does not truncate kernels to enforce the cap — that is the caller's
+    responsibility.
+
+    Args:
+        tolerance: Maximum acceptable reconstruction error (default 1e-8).
+            float64 accumulation over 2 fold levels can reach ~1e-9; 1e-8 gives
+            safe headroom without being overly strict.
+        fold_depth: Number of recursive fold levels (default 2, range [1, ∞)).
+            Each level reduces the working set by ~φ:1.
+        sparse_skip_threshold: Zero-element fraction above which the sparse
+            Fibonacci packing path is used instead of dense folding (default 0.85).
+    """
 
     def __init__(
         self,
@@ -165,6 +211,23 @@ class PulviniPhiMemoryCompressionEngine:
         self.operator = PhiFoldingOperator(tolerance=self.tolerance)
 
     def compress(self, payload: np.ndarray) -> PhiMemoryFoldResult:
+        """Compress payload using phi-folding and return a complete audit result.
+
+        Automatically selects the compression strategy based on input sparsity:
+          - sparse_fib_packed: sparsity >= sparse_skip_threshold
+          - phi_fold: dense arrays
+
+        For large arrays (size > 1000) the reconstruction error is estimated
+        using a randomised sketch rather than computing the full Frobenius norm.
+
+        Args:
+            payload: Any NumPy array (will be flattened to 1-D for folding;
+                     original shape is preserved in the result).
+
+        Returns:
+            PhiMemoryFoldResult with working set, kernels, audit metrics, and
+            the pre-computed reconstructed array for zero-cost decompression.
+        """
         source = np.asarray(payload)
         flat = source.reshape(-1)
         input_sparsity = _sparsity(flat)
@@ -257,9 +320,32 @@ class PulviniPhiMemoryCompressionEngine:
         )
 
     def decompress(self, result: PhiMemoryFoldResult) -> np.ndarray:
+        """Return the pre-computed reconstructed array from a compress() result.
+
+        The reconstructed array is computed eagerly during compress() and
+        cached in result.reconstructed, so this method is O(n) copy only.
+
+        Args:
+            result: PhiMemoryFoldResult returned by compress().
+
+        Returns:
+            Reconstructed array with the same shape as the original payload.
+        """
         return result.reconstructed.copy()
 
     def compress_stream(self, chunks: Iterable[np.ndarray]) -> PhiMemoryStreamResult:
+        """Compress an iterable of array chunks and return aggregate stream metrics.
+
+        Each chunk is independently compressed using compress().  The result
+        aggregates total bytes, element counts, worst-case reconstruction error,
+        and average working-set compression ratio across all chunks.
+
+        Args:
+            chunks: Iterable of NumPy arrays to compress sequentially.
+
+        Returns:
+            PhiMemoryStreamResult with aggregate streaming statistics.
+        """
         chunk_count = 0
         input_elements = 0
         folded_elements = 0

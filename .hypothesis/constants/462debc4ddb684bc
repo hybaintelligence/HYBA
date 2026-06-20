@@ -1,0 +1,4 @@
+# file: /Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/pythia_mining/autonomous_audit_persistence.py
+# hypothesis_version: 6.155.6
+
+[100, 1000, 5000, '.sha256', 'AuditJournal', 'ImmutableAuditEntry', 'action', 'audit_segment_*.json', 'auto_escalate', 'autonomy_degradation', 'autonomy_escalation', 'autonomy_level', 'chain_intact', 'checksum_sha256', 'completed', 'consecutive_failures', 'constraints_checked', 'constraints_violated', 'decision', 'decision_id', 'decision_type', 'duration_ms', 'entry_id', 'event_type', 'from_level', 'issues', 'operator_action', 'operator_id', 'outcome', 'phi_density', 'phi_density_after', 'phi_density_before', 'proposals_applied', 'proposals_generated', 'r', 'reason', 'startup_self_healing', 'state_diff', 'timestamp', 'to_level', 'total_entries', 'utf-8']
