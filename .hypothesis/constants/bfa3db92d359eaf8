@@ -1,0 +1,4 @@
+# file: /Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/pythia_mining/mining_evidence_seal.py
+# hypothesis_version: 6.155.6
+
+['<redacted>', 'EvidenceSealError', 'TIMESTAMP_AUTHORITY', 'TimestampAuthority', 'anchor_hash', 'authority', 'bitcoin_block_height', 'bitcoin_job_anchor', 'block_height', 'bundle_hash', 'bundle_hash_mismatch', 'candidate', 'candidate_id', 'candidate_nonce', 'canonical', 'credential', 'depends_on', 'event_type', 'firewall_decision', 'height', 'id', 'job_context', 'job_id', 'job_prevhash', 'key', 'learning_correction', 'lesson_ids', 'mission_id', 'nonce', 'nonce_hex', 'orphan_risk', 'password', 'pool_response', 'prevhash', 'protocol', 'seal_schema_summary', 'secret', 'session_event_id', 'stratum_job_id', 'success_boundary', 'timestamp_authority', 'token', 'unverified', 'verifier_result', 'wallet']

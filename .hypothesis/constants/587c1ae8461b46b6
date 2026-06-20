@@ -1,0 +1,4 @@
+# file: /Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/pythia_mining/phi_vm.py
+# hypothesis_version: 6.155.6
+
+[0.0, 0.001, 0.1, 0.2, 0.5, 0.618033988749895, 1.0, 1.618033988749895, 3.0, 360.0, 1000, 'FOLD', 'GADDR', 'JPH', 'MGATE', 'OPCODES', 'PHIMUL', 'PMOD', 'PhiVM', 'SYNC_PHI', 'TUNE', 'coherence', 'current_temp', 'cycles', 'elapsed_seconds', 'final_registers', 'ipc', 'manifold_stable', 'regime', 'regime_coherence', 'scaling_factor', 'singular_agent_proxy', 'step', 'throttle_events', 'tuner']

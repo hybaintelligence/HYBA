@@ -1,0 +1,18 @@
+test_prediction_adjusts_power_scale_based_on_acceptance_rate (test_prediction_endpoint.PredictionEndpointTests.test_prediction_adjusts_power_scale_based_on_acceptance_rate)
+Prediction endpoint recommends higher power scale for low acceptance rates. ... ok
+test_prediction_handles_empty_strategy_probabilities (test_prediction_endpoint.PredictionEndpointTests.test_prediction_handles_empty_strategy_probabilities)
+Prediction endpoint handles optimizer with no strategy history. ... ok
+test_prediction_rejects_invalid_difficulty (test_prediction_endpoint.PredictionEndpointTests.test_prediction_rejects_invalid_difficulty)
+Prediction endpoint validates network difficulty parameter. ... ok
+test_prediction_response_includes_timestamp (test_prediction_endpoint.PredictionEndpointTests.test_prediction_response_includes_timestamp)
+Prediction endpoint includes ISO timestamp in all responses. ... ok
+test_prediction_returns_503_when_optimizer_not_connected (test_prediction_endpoint.PredictionEndpointTests.test_prediction_returns_503_when_optimizer_not_connected)
+Prediction endpoint fails closed when optimizer is unavailable. ... ok
+test_prediction_returns_success_when_optimizer_connected (test_prediction_endpoint.PredictionEndpointTests.test_prediction_returns_success_when_optimizer_connected)
+Prediction endpoint returns predictions when optimizer is available. ... ok
+
+----------------------------------------------------------------------
+Ran 6 tests in 0.005s
+
+OK
+mainloop: caught unexpected SystemExit!

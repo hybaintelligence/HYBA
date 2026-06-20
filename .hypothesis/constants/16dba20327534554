@@ -1,0 +1,4 @@
+# file: /Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/pythia_mining/synaptic_persistence_layer.py
+# hypothesis_version: 6.155.6
+
+[0.0, 1e-09, 0.001, 0.01, 0.1, 0.5, 1.0, 1.618033988749895, 20.0, 32.0, 65535.0, -100, 100, 65535, 2147483648, 'decay_rate', 'learning_rate', 'max_synaptic_weight', 'nonce', 'pattern_id', 'patterns', 'phi_resonance', 'reinforcement_count', 'synaptic_threshold', 'synaptic_weight', 'total_decays', 'total_patterns', 'version']

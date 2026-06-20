@@ -1,0 +1,4 @@
+# file: /Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/pythia_mining/production_mining_gateway.py
+# hypothesis_version: 6.155.6
+
+[30.0, 100, '1', 'MiningGatewayError', 'degraded', 'false', 'get_gateway', 'healthy', 'initialized', 'name', 'not_initialized', 'offline', 'password', 'pools', 'priority', 'running', 'stats', 'status', 'stratum+ssl://', 'stratum+tls://', 'stratum2+ssl://', 'stratum2+tls://', 'stratum2://', 'stratum://', 'stratum_version', 'tls_required', 'true', 'unhealthy', 'url', 'username']

@@ -8,14 +8,15 @@ sys.path.insert(0, os.path.join(project_root, "python_backend"))
 
 import unittest
 
-# Discover and run the tests
-loader = unittest.TestLoader()
-suite = loader.discover("tests", pattern="test_prediction_endpoint.py")
-runner = unittest.TextTestRunner(verbosity=2)
-result = runner.run(suite)
+if __name__ == "__main__":
+    # Discover and run the tests
+    loader = unittest.TestLoader()
+    suite = loader.discover("tests", pattern="test_prediction_endpoint.py")
+    runner = unittest.TextTestRunner(verbosity=2)
+    result = runner.run(suite)
 
-# Exit with non-zero code if there were failures or errors
-if result.failures or result.errors:
-    sys.exit(1)
-else:
-    sys.exit(0)
+    # Exit with non-zero code if there were failures or errors
+    if result.failures or result.errors:
+        sys.exit(1)
+    else:
+        sys.exit(0)

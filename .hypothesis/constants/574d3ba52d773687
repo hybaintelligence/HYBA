@@ -1,0 +1,4 @@
+# file: /Users/demouser/Desktop/HYBA_FULLSTACK/src/euclid/pythagoras/quantum/operators/mpo_pulvini_hybrid.py
+# hypothesis_version: 6.155.6
+
+[0.0, 1e-10, 1e-05, 0.001, 1.0, 2.0, 5.0, 'MPOHybridAudit', 'MPOPulviniHybrid', '_build_phi_projector']

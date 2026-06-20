@@ -1,0 +1,4 @@
+# file: /Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/pythia_mining/sensory_protocol.py
+# hypothesis_version: 6.155.6
+
+[0.0, 0.05, 0.1, 0.3, 0.618, 0.9, 'anchor_verified_at', 'entropy_drift', 'is_simulated', 'jitter_coherence']

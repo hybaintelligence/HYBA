@@ -1,0 +1,4 @@
+# file: /Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/pythia_mining/pulvini_tensor_network_integration.py
+# hypothesis_version: 6.155.6
+
+[-1e-10, 0.0, 1e-10, 0.01, 0.1, 1.0, 1000000.0, 100, 500, 1000, '-', '=', 'TESTS COMPLETE', '__main__', 'axioms_satisfied', 'compression_benefits', 'compression_ratio', 'density_matrix', 'execution_time_ms', 'feasible_classical', 'fro', 'full_state_size', 'hermitian_error', 'integrated_size', 'is_simulation', 'mps_size', 'norm_preserved', 'num_qubits', 'num_sites', 'operation', 'purity', 'reconstruction_error', 'reproducibility', 'reproducible', 'trace_value', 'unitary_evolution', 'use_compression']

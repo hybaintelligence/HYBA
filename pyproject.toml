@@ -22,7 +22,12 @@ known_first_party = ["hyba_genesis_api", "pythia_mining"]
 skip = [".git", ".venv", "venv", "node_modules", "dist", "artifacts", "logs"]
 
 [tool.pytest.ini_options]
+testpaths = ["tests", "additional_tests", "hyba_intelligence_tests", "hyba_quantum_scaling_benchmark_tests"]
+norecursedirs = ["node_modules", "dist", "artifacts", "logs", "scripts", "python_backend", "public", "Landing_Page"]
 markers = [
     "benchmark: performance/capability benchmark tests with explicit thresholds",
+    "stress: stress/load tests",
+    "adversarial: adversarial/autonomy abuse-case tests",
+    "property: property-based invariant tests",
 ]
 timeout = 10

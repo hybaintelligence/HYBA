@@ -1,0 +1,148 @@
+additional_tests/test_coinbase_and_header.py::test_coinbase_transaction_hex_raises_on_wrong_extranonce_length
+additional_tests/test_coinbase_and_header.py::test_build_block_header_has_correct_length
+additional_tests/test_coinbase_and_header.py::test_build_block_header_raises_on_wrong_version_length
+additional_tests/test_compact_target_effective.py::test_compact_to_target_valid_exponent_mantissa
+additional_tests/test_compact_target_effective.py::test_compact_to_target_raises_on_invalid_negative_bit
+additional_tests/test_compact_target_effective.py::test_compact_to_target_raises_on_zero_mantissa
+additional_tests/test_compact_target_effective.py::test_effective_target_uses_minimum
+additional_tests/test_compact_target_effective.py::test_effective_target_raises_on_non_positive_target
+hyba_intelligence_tests/test_consciousness_engine_scaling.py::test_continuous_multiplier_stays_within_configured_bounds
+hyba_intelligence_tests/test_consciousness_engine_scaling.py::test_continuous_multiplier_is_monotonic_around_phi_inflection
+hyba_intelligence_tests/test_consciousness_engine_scaling.py::test_hardware_scaling_applies_mass_gap_damping_when_multiplier_exceeds_limit
+hyba_intelligence_tests/test_mass_gap_shield.py::test_mass_gap_shield_too_perfect
+hyba_intelligence_tests/test_mass_gap_shield.py::test_mass_gap_shield_too_chaotic
+hyba_intelligence_tests/test_mass_gap_shield.py::test_mass_gap_shield_insufficient_data
+hyba_intelligence_tests/test_mass_gap_shield.py::test_mass_gap_shield_authentic_stream
+hyba_intelligence_tests/test_memory_compression.py::test_phi_memory_compression_reverses_small_dense_matrix
+hyba_intelligence_tests/test_memory_compression.py::test_phi_memory_separates_working_set_ratio_from_total_retained_state
+hyba_intelligence_tests/test_memory_compression.py::test_memory_fabric_snapshot_exposes_expected_audit_keys
+hyba_intelligence_tests/test_phi_scaling_engine.py::test_phi_weights_normalize_and_final_scores_are_bounded
+hyba_intelligence_tests/test_phi_scaling_engine.py::test_low_variance_cases_use_configured_phi_exponent
+hyba_intelligence_tests/test_phi_scaling_engine.py::test_phi_resonance_detection_identifies_golden_ratio_sequence
+hyba_intelligence_tests/test_phi_scaling_engine.py::test_phi_optimized_feature_alignments_stay_bounded
+hyba_quantum_scaling_benchmark_tests/test_benchmark_quantum_programs.py::test_compute_phi_bond_dim_non_power_of_two
+hyba_quantum_scaling_benchmark_tests/test_benchmark_quantum_programs.py::test_verify_phi_scaling_returns_reasonable_results
+hyba_quantum_scaling_benchmark_tests/test_benchmark_quantum_programs.py::test_verify_mass_gap_trivial_spectrum_passes
+hyba_quantum_scaling_benchmark_tests/test_benchmark_quantum_programs.py::test_calculate_naive_state_vector_memory_small_qubits
+hyba_quantum_scaling_benchmark_tests/test_benchmark_quantum_programs.py::test_benchmark_density_matrix_construction_small_qubits
+hyba_quantum_scaling_benchmark_tests/test_benchmark_quantum_programs.py::test_verify_pulvini_compression_small_qubits
+hyba_quantum_scaling_benchmark_tests/test_phi_accelerated_quantum.py::test_phi_weighted_purification_on_identity
+hyba_quantum_scaling_benchmark_tests/test_phi_accelerated_quantum.py::test_phi_folding_compression_small_matrix
+hyba_quantum_scaling_benchmark_tests/test_phi_accelerated_quantum.py::test_phi_decoherence_suppression_reduces_off_diagonal
+hyba_quantum_scaling_benchmark_tests/test_phi_accelerated_quantum.py::test_phi_phase_modulation_preserves_norm
+hyba_quantum_scaling_benchmark_tests/test_phi_accelerated_quantum.py::test_phi_optimized_unitary_is_unitary
+hyba_quantum_scaling_benchmark_tests/test_phi_accelerated_quantum.py::test_phi_diffusion_normalization
+hyba_quantum_scaling_benchmark_tests/test_phi_accelerated_quantum.py::test_phi_weighted_expectation_smoothed_distribution
+hyba_quantum_scaling_benchmark_tests/test_quantum_solver.py::test_basis_generation_shape_and_finiteness
+hyba_quantum_scaling_benchmark_tests/test_quantum_solver.py::test_configure_search_and_nonce_validation
+hyba_quantum_scaling_benchmark_tests/test_quantum_solver.py::test_integrated_entropy_for_uniform_distribution
+hyba_quantum_scaling_benchmark_tests/test_quantum_solver.py::test_hashrate_calculation_and_power_scale
+INTERNALERROR> Traceback (most recent call last):
+INTERNALERROR>   File "/Users/demouser/.pyenv/versions/3.12.7/lib/python3.12/site-packages/_pytest/main.py", line 330, in wrap_session
+INTERNALERROR>     session.exitstatus = doit(config, session) or 0
+INTERNALERROR>                          ^^^^^^^^^^^^^^^^^^^^^
+INTERNALERROR>   File "/Users/demouser/.pyenv/versions/3.12.7/lib/python3.12/site-packages/_pytest/main.py", line 383, in _main
+INTERNALERROR>     config.hook.pytest_collection(session=session)
+INTERNALERROR>   File "/Users/demouser/.pyenv/versions/3.12.7/lib/python3.12/site-packages/pluggy/_hooks.py", line 512, in __call__
+INTERNALERROR>     return self._hookexec(self.name, self._hookimpls.copy(), kwargs, firstresult)
+INTERNALERROR>            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+INTERNALERROR>   File "/Users/demouser/.pyenv/versions/3.12.7/lib/python3.12/site-packages/pluggy/_manager.py", line 120, in _hookexec
+INTERNALERROR>     return self._inner_hookexec(hook_name, methods, kwargs, firstresult)
+INTERNALERROR>            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+INTERNALERROR>   File "/Users/demouser/.pyenv/versions/3.12.7/lib/python3.12/site-packages/pluggy/_callers.py", line 167, in _multicall
+INTERNALERROR>     raise exception
+INTERNALERROR>   File "/Users/demouser/.pyenv/versions/3.12.7/lib/python3.12/site-packages/pluggy/_callers.py", line 139, in _multicall
+INTERNALERROR>     teardown.throw(exception)
+INTERNALERROR>   File "/Users/demouser/.pyenv/versions/3.12.7/lib/python3.12/site-packages/_pytest/logging.py", line 803, in pytest_collection
+INTERNALERROR>     return (yield)
+INTERNALERROR>             ^^^^^
+INTERNALERROR>   File "/Users/demouser/.pyenv/versions/3.12.7/lib/python3.12/site-packages/pluggy/_callers.py", line 139, in _multicall
+INTERNALERROR>     teardown.throw(exception)
+INTERNALERROR>   File "/Users/demouser/.pyenv/versions/3.12.7/lib/python3.12/site-packages/_pytest/warnings.py", line 99, in pytest_collection
+INTERNALERROR>     return (yield)
+INTERNALERROR>             ^^^^^
+INTERNALERROR>   File "/Users/demouser/.pyenv/versions/3.12.7/lib/python3.12/site-packages/pluggy/_callers.py", line 139, in _multicall
+INTERNALERROR>     teardown.throw(exception)
+INTERNALERROR>   File "/Users/demouser/.pyenv/versions/3.12.7/lib/python3.12/site-packages/_pytest/config/__init__.py", line 1445, in pytest_collection
+INTERNALERROR>     return (yield)
+INTERNALERROR>             ^^^^^
+INTERNALERROR>   File "/Users/demouser/.pyenv/versions/3.12.7/lib/python3.12/site-packages/pluggy/_callers.py", line 121, in _multicall
+INTERNALERROR>     res = hook_impl.function(*args)
+INTERNALERROR>           ^^^^^^^^^^^^^^^^^^^^^^^^^
+INTERNALERROR>   File "/Users/demouser/.pyenv/versions/3.12.7/lib/python3.12/site-packages/_pytest/main.py", line 394, in pytest_collection
+INTERNALERROR>     session.perform_collect()
+INTERNALERROR>   File "/Users/demouser/.pyenv/versions/3.12.7/lib/python3.12/site-packages/_pytest/main.py", line 869, in perform_collect
+INTERNALERROR>     self.items.extend(self.genitems(node))
+INTERNALERROR>   File "/Users/demouser/.pyenv/versions/3.12.7/lib/python3.12/site-packages/_pytest/main.py", line 1035, in genitems
+INTERNALERROR>     yield from self.genitems(subnode)
+INTERNALERROR>   File "/Users/demouser/.pyenv/versions/3.12.7/lib/python3.12/site-packages/_pytest/main.py", line 1035, in genitems
+INTERNALERROR>     yield from self.genitems(subnode)
+INTERNALERROR>   File "/Users/demouser/.pyenv/versions/3.12.7/lib/python3.12/site-packages/_pytest/main.py", line 1032, in genitems
+INTERNALERROR>     rep, duplicate = self._collect_one_node(node, handle_dupes)
+INTERNALERROR>                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+INTERNALERROR>   File "/Users/demouser/.pyenv/versions/3.12.7/lib/python3.12/site-packages/_pytest/main.py", line 895, in _collect_one_node
+INTERNALERROR>     rep = collect_one_node(node)
+INTERNALERROR>           ^^^^^^^^^^^^^^^^^^^^^^
+INTERNALERROR>   File "/Users/demouser/.pyenv/versions/3.12.7/lib/python3.12/site-packages/_pytest/runner.py", line 589, in collect_one_node
+INTERNALERROR>     rep: CollectReport = ihook.pytest_make_collect_report(collector=collector)
+INTERNALERROR>                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+INTERNALERROR>   File "/Users/demouser/.pyenv/versions/3.12.7/lib/python3.12/site-packages/pluggy/_hooks.py", line 512, in __call__
+INTERNALERROR>     return self._hookexec(self.name, self._hookimpls.copy(), kwargs, firstresult)
+INTERNALERROR>            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+INTERNALERROR>   File "/Users/demouser/.pyenv/versions/3.12.7/lib/python3.12/site-packages/pluggy/_manager.py", line 120, in _hookexec
+INTERNALERROR>     return self._inner_hookexec(hook_name, methods, kwargs, firstresult)
+INTERNALERROR>            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+INTERNALERROR>   File "/Users/demouser/.pyenv/versions/3.12.7/lib/python3.12/site-packages/pluggy/_callers.py", line 167, in _multicall
+INTERNALERROR>     raise exception
+INTERNALERROR>   File "/Users/demouser/.pyenv/versions/3.12.7/lib/python3.12/site-packages/pluggy/_callers.py", line 139, in _multicall
+INTERNALERROR>     teardown.throw(exception)
+INTERNALERROR>   File "/Users/demouser/.pyenv/versions/3.12.7/lib/python3.12/site-packages/_pytest/fixtures.py", line 1798, in pytest_make_collect_report
+INTERNALERROR>     result = yield
+INTERNALERROR>              ^^^^^
+INTERNALERROR>   File "/Users/demouser/.pyenv/versions/3.12.7/lib/python3.12/site-packages/pluggy/_callers.py", line 139, in _multicall
+INTERNALERROR>     teardown.throw(exception)
+INTERNALERROR>   File "/Users/demouser/.pyenv/versions/3.12.7/lib/python3.12/site-packages/_pytest/capture.py", line 880, in pytest_make_collect_report
+INTERNALERROR>     rep = yield
+INTERNALERROR>           ^^^^^
+INTERNALERROR>   File "/Users/demouser/.pyenv/versions/3.12.7/lib/python3.12/site-packages/pluggy/_callers.py", line 121, in _multicall
+INTERNALERROR>     res = hook_impl.function(*args)
+INTERNALERROR>           ^^^^^^^^^^^^^^^^^^^^^^^^^
+INTERNALERROR>   File "/Users/demouser/.pyenv/versions/3.12.7/lib/python3.12/site-packages/_pytest/runner.py", line 408, in pytest_make_collect_report
+INTERNALERROR>     call = CallInfo.from_call(
+INTERNALERROR>            ^^^^^^^^^^^^^^^^^^^
+INTERNALERROR>   File "/Users/demouser/.pyenv/versions/3.12.7/lib/python3.12/site-packages/_pytest/runner.py", line 361, in from_call
+INTERNALERROR>     result: TResult | None = func()
+INTERNALERROR>                              ^^^^^^
+INTERNALERROR>   File "/Users/demouser/.pyenv/versions/3.12.7/lib/python3.12/site-packages/_pytest/runner.py", line 406, in collect
+INTERNALERROR>     return list(collector.collect())
+INTERNALERROR>                 ^^^^^^^^^^^^^^^^^^^
+INTERNALERROR>   File "/Users/demouser/.pyenv/versions/3.12.7/lib/python3.12/site-packages/_pytest/python.py", line 564, in collect
+INTERNALERROR>     self._register_setup_module_fixture()
+INTERNALERROR>   File "/Users/demouser/.pyenv/versions/3.12.7/lib/python3.12/site-packages/_pytest/python.py", line 577, in _register_setup_module_fixture
+INTERNALERROR>     self.obj, ("setUpModule", "setup_module")
+INTERNALERROR>     ^^^^^^^^
+INTERNALERROR>   File "/Users/demouser/.pyenv/versions/3.12.7/lib/python3.12/site-packages/_pytest/python.py", line 290, in obj
+INTERNALERROR>     self._obj = obj = self._getobj()
+INTERNALERROR>                       ^^^^^^^^^^^^^^
+INTERNALERROR>   File "/Users/demouser/.pyenv/versions/3.12.7/lib/python3.12/site-packages/_pytest/python.py", line 561, in _getobj
+INTERNALERROR>     return importtestmodule(self.path, self.config)
+INTERNALERROR>            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+INTERNALERROR>   File "/Users/demouser/.pyenv/versions/3.12.7/lib/python3.12/site-packages/_pytest/python.py", line 508, in importtestmodule
+INTERNALERROR>     mod = import_path(
+INTERNALERROR>           ^^^^^^^^^^^^
+INTERNALERROR>   File "/Users/demouser/.pyenv/versions/3.12.7/lib/python3.12/site-packages/_pytest/pathlib.py", line 596, in import_path
+INTERNALERROR>     importlib.import_module(module_name)
+INTERNALERROR>   File "/Users/demouser/.pyenv/versions/3.12.7/lib/python3.12/importlib/__init__.py", line 90, in import_module
+INTERNALERROR>     return _bootstrap._gcd_import(name[level:], package, level)
+INTERNALERROR>            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+INTERNALERROR>   File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+INTERNALERROR>   File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+INTERNALERROR>   File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+INTERNALERROR>   File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+INTERNALERROR>   File "/Users/demouser/.pyenv/versions/3.12.7/lib/python3.12/site-packages/_pytest/assertion/rewrite.py", line 188, in exec_module
+INTERNALERROR>     exec(co, module.__dict__)
+INTERNALERROR>   File "/Users/demouser/Desktop/HYBA_FULLSTACK/scripts/run_test.py", line 21, in <module>
+INTERNALERROR>     sys.exit(0)
+INTERNALERROR> SystemExit: 0
+
+39 tests collected, 2 errors in 0.34s

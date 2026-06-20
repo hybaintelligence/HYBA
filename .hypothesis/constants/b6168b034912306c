@@ -1,0 +1,4 @@
+# file: /Users/demouser/Desktop/HYBA_FULLSTACK/src/euclid/pythagoras/quantum/mathematical_verification.py
+# hypothesis_version: 6.155.6
+
+[0.0, 1e-10, 1.0, 'A', 'MathematicalVerifier', 'U', 'counterexample_found', 'fro', 'hermiticity', 'hermiticity_verified', 'inf', 'invariant_name', 'mathematical_proof', 'normalization', 'overall_passed', 'positivity', 'positivity_verified', 'preserved', 'residual', 'tolerance', 'trace_preservation', 'unitarity', 'unitarity_verified', '|ψ⟩', 'ρ']

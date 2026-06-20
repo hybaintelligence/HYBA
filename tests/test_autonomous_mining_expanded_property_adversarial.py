@@ -1,4 +1,3 @@
-cat > tests/test_autonomous_mining_expanded_property_adversarial.py <<'PY'
 """Expanded property and adversarial tests for PYTHIA autonomous mining.
 
 This file intentionally extends the already-green controller/property/adversarial
@@ -12,8 +11,6 @@ suites without changing their fixtures. It focuses on:
 - hostile operator approval payload normalization.
 """
 
-from __future__ import annotations
-
 import asyncio
 import math
 import string
@@ -22,7 +19,7 @@ import time
 from typing import Any
 
 import pytest
-from hypothesis import HealthCheck, given, settings, strategies as st
+from hypothesis import HealthCheck, assume, given, settings, strategies as st
 
 from pythia_mining.autonomous_mining_controller import (
     AutonomousConfig,
@@ -138,14 +135,13 @@ def test_property_unknown_pool_targets_fall_back_to_safe_compression_bandit(
     unknown_target: str,
 ):
     """Unknown or hostile pool target names must not create unbounded bandits."""
-    assume_known = {
+    known_targets = {
         "phi_scaling",
         "search_depth",
         "compression_target",
         "coherence_threshold",
     }
-    if unknown_target in assume_known:
-        unknown_target += "_unknown"
+    assume(unknown_target not in known_targets)
 
     with tempfile.TemporaryDirectory() as tmp:
         ctrl = _make_controller(tmp)
@@ -449,4 +445,3 @@ def test_adversarial_negative_latency_is_clamped_or_rejected():
 
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])
-PY
