@@ -45,15 +45,19 @@ def main() -> int:
         "python_version": sys.version.split()[0],
         "required_imports": REQUIRED_IMPORTS,
         "missing_packages": missing,
-        "install_command": "python -m pip install -r python_backend/requirements.txt",
+        "install_command": (
+            "python -m pip install -r python_backend/requirements.txt "
+            "-r python_backend/requirements.test.txt"
+        ),
         "requirements_lock": str(Path("python_backend/requirements.txt")),
+        "test_requirements_lock": str(Path("python_backend/requirements.test.txt")),
     }
     print(json.dumps(payload, indent=2, sort_keys=True))
     if missing:
         print(
             "\nPython test environment is incomplete. Activate the intended venv and run:\n"
             "  python -m pip install --upgrade pip\n"
-            "  python -m pip install -r python_backend/requirements.txt\n",
+            "  python -m pip install -r python_backend/requirements.txt -r python_backend/requirements.test.txt\n",
             file=sys.stderr,
         )
         return 2
