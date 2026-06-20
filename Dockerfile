@@ -1,60 +1,28 @@
-# Standardized production Dockerfile for HYBA Fullstack
-# This is the canonical Docker configuration - use Dockerfile.prod for production-specific optimizations
+FROM python:3.12.7-slim
 
-FROM node:22.15.0-bookworm-slim AS node-deps
 WORKDIR /app
-COPY package.json package-lock.json* ./
-# Use npm install for compatibility while package-lock.json is being stabilized
-RUN npm install --legacy-peer-deps --no-audit --no-fund
 
-FROM node:22.15.0-bookworm-slim AS frontend-build
-WORKDIR /app
-COPY --from=node-deps /app/node_modules ./node_modules
-COPY package*.json ./
-COPY . .
-RUN npm run lint
-RUN npm run build
-RUN node scripts/ensure_spa_entrypoint.mjs
-
-FROM node:22.15.0-bookworm-slim AS runtime
-ENV NODE_ENV=production \
-    HYBA_ENV=production \
-    HYBA_PHASE_TRANSITION_CONTAINER=1 \
+ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONPATH=/app/python_backend \
-    HOST=0.0.0.0 \
-    PORT=3000 \
-    PULVINI_BACKEND_URL=http://127.0.0.1:3001 \
-    HYBA_SPAWN_BACKEND=false \
-    HYBA_ENABLE_MINING_AUTOCONNECT=false \
-    BACKEND_PROXY_TIMEOUT_MS=30000
+    PYTHONPATH=/app
 
-WORKDIR /app
-
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends python3 python3-pip python3-venv curl ca-certificates tini \
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
-COPY python_backend/requirements.txt /app/python_backend/requirements.txt
-RUN python3 -m venv /opt/hyba-venv \
-    && /opt/hyba-venv/bin/python -m pip install --upgrade pip \
-    && /opt/hyba-venv/bin/python -m pip install --no-cache-dir -r /app/python_backend/requirements.txt
-ENV PATH="/opt/hyba-venv/bin:${PATH}"
+COPY python_backend/requirements.txt .
+COPY python_backend/requirements.test.txt .
 
-COPY package.json package-lock.json* ./
-RUN npm install --omit=dev --legacy-peer-deps --no-audit --no-fund
+RUN pip install --no-cache-dir --upgrade pip \
+    && pip install --no-cache-dir -r requirements.txt
 
-COPY --from=frontend-build /app/dist ./dist
-COPY python_backend ./python_backend
-COPY scripts ./scripts
-RUN chmod +x /app/scripts/hyba-runtime-entrypoint.sh
+COPY python_backend/ /app/
+COPY config/ /config/
 
-RUN useradd --create-home --shell /usr/sbin/nologin hyba \
-    && chown -R hyba:hyba /app /opt/hyba-venv
-USER hyba
+EXPOSE 8000
 
-EXPOSE 3000 3001
-HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
-  CMD curl -fsS http://127.0.0.1:3000/bridge/health || exit 1
-ENTRYPOINT ["tini", "--", "/app/scripts/hyba-runtime-entrypoint.sh"]
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+  CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health')"
+
+CMD ["uvicorn", "hyba_genesis_api.main:app", "--host", "0.0.0.0", "--port", "8000"]
