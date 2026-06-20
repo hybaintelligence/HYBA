@@ -1,0 +1,3621 @@
+{
+  "session": {
+    "session_id": "20260620_130042",
+    "start_time": "2026-06-20T13:00:42.081214+00:00",
+    "pool_url": "stratum+tcp://btc.viabtc.com:3333",
+    "worker_name": "HYBA_PYTHAGORAS.quantum_001",
+    "total_shares_submitted": 360,
+    "total_shares_accepted": 353,
+    "total_revenue_btc": 0.0035300000000000084,
+    "fault_tolerant_enabled": true,
+    "phi_resonance_rate": 0.9565,
+    "logical_error_rate": 2.12527563319559e-06
+  },
+  "shares": [
+    {
+      "timestamp": "2026-06-20T13:00:42.166894+00:00",
+      "job_id": "job_000000",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 85.66021919250488
+    },
+    {
+      "timestamp": "2026-06-20T13:00:42.332364+00:00",
+      "job_id": "job_000001",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 63.95268440246582
+    },
+    {
+      "timestamp": "2026-06-20T13:00:42.495012+00:00",
+      "job_id": "job_000002",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 61.54608726501465
+    },
+    {
+      "timestamp": "2026-06-20T13:00:42.658110+00:00",
+      "job_id": "job_000003",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 62.00408935546875
+    },
+    {
+      "timestamp": "2026-06-20T13:00:42.821955+00:00",
+      "job_id": "job_000004",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 62.737226486206055
+    },
+    {
+      "timestamp": "2026-06-20T13:00:42.987015+00:00",
+      "job_id": "job_000005",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": false,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 63.95864486694336
+    },
+    {
+      "timestamp": "2026-06-20T13:00:43.154588+00:00",
+      "job_id": "job_000006",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.42365455627441
+    },
+    {
+      "timestamp": "2026-06-20T13:00:43.319886+00:00",
+      "job_id": "job_000007",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 64.21089172363281
+    },
+    {
+      "timestamp": "2026-06-20T13:00:43.487868+00:00",
+      "job_id": "job_000008",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.86687469482422
+    },
+    {
+      "timestamp": "2026-06-20T13:00:43.653622+00:00",
+      "job_id": "job_000009",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 64.59689140319824
+    },
+    {
+      "timestamp": "2026-06-20T13:00:43.820277+00:00",
+      "job_id": "job_000010",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.50192832946777
+    },
+    {
+      "timestamp": "2026-06-20T13:00:43.985274+00:00",
+      "job_id": "job_000011",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": false,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 64.63408470153809
+    },
+    {
+      "timestamp": "2026-06-20T13:00:44.152300+00:00",
+      "job_id": "job_000012",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.91010093688965
+    },
+    {
+      "timestamp": "2026-06-20T13:00:44.320221+00:00",
+      "job_id": "job_000013",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.79511070251465
+    },
+    {
+      "timestamp": "2026-06-20T13:00:44.487774+00:00",
+      "job_id": "job_000014",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.44511222839355
+    },
+    {
+      "timestamp": "2026-06-20T13:00:44.655102+00:00",
+      "job_id": "job_000015",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.20907783508301
+    },
+    {
+      "timestamp": "2026-06-20T13:00:44.822193+00:00",
+      "job_id": "job_000016",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.00499153137207
+    },
+    {
+      "timestamp": "2026-06-20T13:00:44.989534+00:00",
+      "job_id": "job_000017",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": false,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.27511978149414
+    },
+    {
+      "timestamp": "2026-06-20T13:00:45.157058+00:00",
+      "job_id": "job_000018",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.45703315734863
+    },
+    {
+      "timestamp": "2026-06-20T13:00:45.324150+00:00",
+      "job_id": "job_000019",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.02907180786133
+    },
+    {
+      "timestamp": "2026-06-20T13:00:45.490992+00:00",
+      "job_id": "job_000020",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.78493118286133
+    },
+    {
+      "timestamp": "2026-06-20T13:00:45.657554+00:00",
+      "job_id": "job_000021",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.50192832946777
+    },
+    {
+      "timestamp": "2026-06-20T13:00:45.823273+00:00",
+      "job_id": "job_000022",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.56010246276855
+    },
+    {
+      "timestamp": "2026-06-20T13:00:45.990080+00:00",
+      "job_id": "job_000023",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": false,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.73224067687988
+    },
+    {
+      "timestamp": "2026-06-20T13:00:46.156908+00:00",
+      "job_id": "job_000024",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.78516960144043
+    },
+    {
+      "timestamp": "2026-06-20T13:00:46.323372+00:00",
+      "job_id": "job_000025",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.42110443115234
+    },
+    {
+      "timestamp": "2026-06-20T13:00:46.489628+00:00",
+      "job_id": "job_000026",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.21391868591309
+    },
+    {
+      "timestamp": "2026-06-20T13:00:46.656449+00:00",
+      "job_id": "job_000027",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.74892997741699
+    },
+    {
+      "timestamp": "2026-06-20T13:00:46.823233+00:00",
+      "job_id": "job_000028",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.71698188781738
+    },
+    {
+      "timestamp": "2026-06-20T13:00:46.990231+00:00",
+      "job_id": "job_000029",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": false,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.92607498168945
+    },
+    {
+      "timestamp": "2026-06-20T13:00:47.157247+00:00",
+      "job_id": "job_000030",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.97089767456055
+    },
+    {
+      "timestamp": "2026-06-20T13:00:47.323368+00:00",
+      "job_id": "job_000031",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.07372856140137
+    },
+    {
+      "timestamp": "2026-06-20T13:00:47.490613+00:00",
+      "job_id": "job_000032",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.2069320678711
+    },
+    {
+      "timestamp": "2026-06-20T13:00:47.657837+00:00",
+      "job_id": "job_000033",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.13802909851074
+    },
+    {
+      "timestamp": "2026-06-20T13:00:47.825048+00:00",
+      "job_id": "job_000034",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.14398956298828
+    },
+    {
+      "timestamp": "2026-06-20T13:00:47.992148+00:00",
+      "job_id": "job_000035",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": false,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.03384017944336
+    },
+    {
+      "timestamp": "2026-06-20T13:00:48.158747+00:00",
+      "job_id": "job_000036",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.52886962890625
+    },
+    {
+      "timestamp": "2026-06-20T13:00:48.327129+00:00",
+      "job_id": "job_000037",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 67.30222702026367
+    },
+    {
+      "timestamp": "2026-06-20T13:00:48.496123+00:00",
+      "job_id": "job_000038",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 67.91567802429199
+    },
+    {
+      "timestamp": "2026-06-20T13:00:48.662747+00:00",
+      "job_id": "job_000039",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.55628776550293
+    },
+    {
+      "timestamp": "2026-06-20T13:00:48.832158+00:00",
+      "job_id": "job_000040",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 68.34077835083008
+    },
+    {
+      "timestamp": "2026-06-20T13:00:48.999993+00:00",
+      "job_id": "job_000041",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": false,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.77603721618652
+    },
+    {
+      "timestamp": "2026-06-20T13:00:49.166820+00:00",
+      "job_id": "job_000042",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.75202941894531
+    },
+    {
+      "timestamp": "2026-06-20T13:00:49.334395+00:00",
+      "job_id": "job_000043",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.50710105895996
+    },
+    {
+      "timestamp": "2026-06-20T13:00:49.503686+00:00",
+      "job_id": "job_000044",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 68.21107864379883
+    },
+    {
+      "timestamp": "2026-06-20T13:00:49.670722+00:00",
+      "job_id": "job_000045",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.93799591064453
+    },
+    {
+      "timestamp": "2026-06-20T13:00:49.837726+00:00",
+      "job_id": "job_000046",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.92583656311035
+    },
+    {
+      "timestamp": "2026-06-20T13:00:50.005199+00:00",
+      "job_id": "job_000047",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.39599800109863
+    },
+    {
+      "timestamp": "2026-06-20T13:00:50.172501+00:00",
+      "job_id": "job_000048",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.21003150939941
+    },
+    {
+      "timestamp": "2026-06-20T13:00:50.339457+00:00",
+      "job_id": "job_000049",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.88387489318848
+    },
+    {
+      "timestamp": "2026-06-20T13:00:50.506280+00:00",
+      "job_id": "job_000050",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.7649040222168
+    },
+    {
+      "timestamp": "2026-06-20T13:00:50.672266+00:00",
+      "job_id": "job_000051",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.49787521362305
+    },
+    {
+      "timestamp": "2026-06-20T13:00:50.839186+00:00",
+      "job_id": "job_000052",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.85288047790527
+    },
+    {
+      "timestamp": "2026-06-20T13:00:51.006108+00:00",
+      "job_id": "job_000053",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.00499153137207
+    },
+    {
+      "timestamp": "2026-06-20T13:00:51.173065+00:00",
+      "job_id": "job_000054",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.88292121887207
+    },
+    {
+      "timestamp": "2026-06-20T13:00:51.339522+00:00",
+      "job_id": "job_000055",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.38581848144531
+    },
+    {
+      "timestamp": "2026-06-20T13:00:51.506317+00:00",
+      "job_id": "job_000056",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.72413444519043
+    },
+    {
+      "timestamp": "2026-06-20T13:00:51.673304+00:00",
+      "job_id": "job_000057",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.91796875
+    },
+    {
+      "timestamp": "2026-06-20T13:00:51.840141+00:00",
+      "job_id": "job_000058",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.76418876647949
+    },
+    {
+      "timestamp": "2026-06-20T13:00:52.003103+00:00",
+      "job_id": "job_000059",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 61.86985969543457
+    },
+    {
+      "timestamp": "2026-06-20T13:00:52.169658+00:00",
+      "job_id": "job_000060",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.48023223876953
+    },
+    {
+      "timestamp": "2026-06-20T13:00:52.336482+00:00",
+      "job_id": "job_000061",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.7501220703125
+    },
+    {
+      "timestamp": "2026-06-20T13:00:52.503183+00:00",
+      "job_id": "job_000062",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.63401222229004
+    },
+    {
+      "timestamp": "2026-06-20T13:00:52.669424+00:00",
+      "job_id": "job_000063",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.16814231872559
+    },
+    {
+      "timestamp": "2026-06-20T13:00:52.835604+00:00",
+      "job_id": "job_000064",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.11378288269043
+    },
+    {
+      "timestamp": "2026-06-20T13:00:53.002936+00:00",
+      "job_id": "job_000065",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.2698745727539
+    },
+    {
+      "timestamp": "2026-06-20T13:00:53.170146+00:00",
+      "job_id": "job_000066",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.1320686340332
+    },
+    {
+      "timestamp": "2026-06-20T13:00:53.337040+00:00",
+      "job_id": "job_000067",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.82784652709961
+    },
+    {
+      "timestamp": "2026-06-20T13:00:53.503624+00:00",
+      "job_id": "job_000068",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.51289558410645
+    },
+    {
+      "timestamp": "2026-06-20T13:00:53.670541+00:00",
+      "job_id": "job_000069",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.85216522216797
+    },
+    {
+      "timestamp": "2026-06-20T13:00:53.838250+00:00",
+      "job_id": "job_000070",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 67.31295585632324
+    },
+    {
+      "timestamp": "2026-06-20T13:00:54.005942+00:00",
+      "job_id": "job_000071",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.61725044250488
+    },
+    {
+      "timestamp": "2026-06-20T13:00:54.172174+00:00",
+      "job_id": "job_000072",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.37699699401855
+    },
+    {
+      "timestamp": "2026-06-20T13:00:54.339618+00:00",
+      "job_id": "job_000073",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.36810302734375
+    },
+    {
+      "timestamp": "2026-06-20T13:00:54.506859+00:00",
+      "job_id": "job_000074",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.12300872802734
+    },
+    {
+      "timestamp": "2026-06-20T13:00:54.674413+00:00",
+      "job_id": "job_000075",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.44916534423828
+    },
+    {
+      "timestamp": "2026-06-20T13:00:54.840881+00:00",
+      "job_id": "job_000076",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.37199020385742
+    },
+    {
+      "timestamp": "2026-06-20T13:00:55.008696+00:00",
+      "job_id": "job_000077",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.71905517578125
+    },
+    {
+      "timestamp": "2026-06-20T13:00:55.176285+00:00",
+      "job_id": "job_000078",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.45989418029785
+    },
+    {
+      "timestamp": "2026-06-20T13:00:55.343899+00:00",
+      "job_id": "job_000079",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.48492813110352
+    },
+    {
+      "timestamp": "2026-06-20T13:00:55.511076+00:00",
+      "job_id": "job_000080",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.06125831604004
+    },
+    {
+      "timestamp": "2026-06-20T13:00:55.677297+00:00",
+      "job_id": "job_000081",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.76991081237793
+    },
+    {
+      "timestamp": "2026-06-20T13:00:55.843357+00:00",
+      "job_id": "job_000082",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 64.971923828125
+    },
+    {
+      "timestamp": "2026-06-20T13:00:56.010649+00:00",
+      "job_id": "job_000083",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.21527671813965
+    },
+    {
+      "timestamp": "2026-06-20T13:00:56.178562+00:00",
+      "job_id": "job_000084",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.8480396270752
+    },
+    {
+      "timestamp": "2026-06-20T13:00:56.345976+00:00",
+      "job_id": "job_000085",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.35427474975586
+    },
+    {
+      "timestamp": "2026-06-20T13:00:56.514060+00:00",
+      "job_id": "job_000086",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 67.01898574829102
+    },
+    {
+      "timestamp": "2026-06-20T13:00:56.681557+00:00",
+      "job_id": "job_000087",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.42889976501465
+    },
+    {
+      "timestamp": "2026-06-20T13:00:56.848549+00:00",
+      "job_id": "job_000088",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.92512130737305
+    },
+    {
+      "timestamp": "2026-06-20T13:00:57.016219+00:00",
+      "job_id": "job_000089",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.63322448730469
+    },
+    {
+      "timestamp": "2026-06-20T13:00:57.183933+00:00",
+      "job_id": "job_000090",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.64705276489258
+    },
+    {
+      "timestamp": "2026-06-20T13:00:57.350999+00:00",
+      "job_id": "job_000091",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.98520278930664
+    },
+    {
+      "timestamp": "2026-06-20T13:00:57.517533+00:00",
+      "job_id": "job_000092",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.44899940490723
+    },
+    {
+      "timestamp": "2026-06-20T13:00:57.684264+00:00",
+      "job_id": "job_000093",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.65403938293457
+    },
+    {
+      "timestamp": "2026-06-20T13:00:57.851181+00:00",
+      "job_id": "job_000094",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.84405899047852
+    },
+    {
+      "timestamp": "2026-06-20T13:00:58.017790+00:00",
+      "job_id": "job_000095",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.54174423217773
+    },
+    {
+      "timestamp": "2026-06-20T13:00:58.184208+00:00",
+      "job_id": "job_000096",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.3681755065918
+    },
+    {
+      "timestamp": "2026-06-20T13:00:58.351246+00:00",
+      "job_id": "job_000097",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.9630298614502
+    },
+    {
+      "timestamp": "2026-06-20T13:00:58.518659+00:00",
+      "job_id": "job_000098",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.34211540222168
+    },
+    {
+      "timestamp": "2026-06-20T13:00:58.685981+00:00",
+      "job_id": "job_000099",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.24984741210938
+    },
+    {
+      "timestamp": "2026-06-20T13:00:58.852480+00:00",
+      "job_id": "job_000100",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.43898582458496
+    },
+    {
+      "timestamp": "2026-06-20T13:00:59.018933+00:00",
+      "job_id": "job_000101",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.37818908691406
+    },
+    {
+      "timestamp": "2026-06-20T13:00:59.185898+00:00",
+      "job_id": "job_000102",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.90008735656738
+    },
+    {
+      "timestamp": "2026-06-20T13:00:59.352643+00:00",
+      "job_id": "job_000103",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.68002700805664
+    },
+    {
+      "timestamp": "2026-06-20T13:00:59.518746+00:00",
+      "job_id": "job_000104",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.04106521606445
+    },
+    {
+      "timestamp": "2026-06-20T13:00:59.685702+00:00",
+      "job_id": "job_000105",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.87481498718262
+    },
+    {
+      "timestamp": "2026-06-20T13:00:59.854205+00:00",
+      "job_id": "job_000106",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 67.43502616882324
+    },
+    {
+      "timestamp": "2026-06-20T13:01:00.021769+00:00",
+      "job_id": "job_000107",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.47515296936035
+    },
+    {
+      "timestamp": "2026-06-20T13:01:00.190097+00:00",
+      "job_id": "job_000108",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 67.20995903015137
+    },
+    {
+      "timestamp": "2026-06-20T13:01:00.357639+00:00",
+      "job_id": "job_000109",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.45774841308594
+    },
+    {
+      "timestamp": "2026-06-20T13:01:00.525304+00:00",
+      "job_id": "job_000110",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.58601760864258
+    },
+    {
+      "timestamp": "2026-06-20T13:01:00.692377+00:00",
+      "job_id": "job_000111",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.98401069641113
+    },
+    {
+      "timestamp": "2026-06-20T13:01:00.859279+00:00",
+      "job_id": "job_000112",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.82021713256836
+    },
+    {
+      "timestamp": "2026-06-20T13:01:01.026544+00:00",
+      "job_id": "job_000113",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.18213653564453
+    },
+    {
+      "timestamp": "2026-06-20T13:01:01.194037+00:00",
+      "job_id": "job_000114",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.40219688415527
+    },
+    {
+      "timestamp": "2026-06-20T13:01:01.361063+00:00",
+      "job_id": "job_000115",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.97113609313965
+    },
+    {
+      "timestamp": "2026-06-20T13:01:01.527858+00:00",
+      "job_id": "job_000116",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.72389602661133
+    },
+    {
+      "timestamp": "2026-06-20T13:01:01.695018+00:00",
+      "job_id": "job_000117",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.09201431274414
+    },
+    {
+      "timestamp": "2026-06-20T13:01:01.861673+00:00",
+      "job_id": "job_000118",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.58895111083984
+    },
+    {
+      "timestamp": "2026-06-20T13:01:02.027008+00:00",
+      "job_id": "job_000119",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 64.25285339355469
+    },
+    {
+      "timestamp": "2026-06-20T13:01:02.193257+00:00",
+      "job_id": "job_000120",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.16289710998535
+    },
+    {
+      "timestamp": "2026-06-20T13:01:02.359834+00:00",
+      "job_id": "job_000121",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.49930572509766
+    },
+    {
+      "timestamp": "2026-06-20T13:01:02.526077+00:00",
+      "job_id": "job_000122",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.16575813293457
+    },
+    {
+      "timestamp": "2026-06-20T13:01:02.693138+00:00",
+      "job_id": "job_000123",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.98901748657227
+    },
+    {
+      "timestamp": "2026-06-20T13:01:02.860521+00:00",
+      "job_id": "job_000124",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.30182266235352
+    },
+    {
+      "timestamp": "2026-06-20T13:01:03.027879+00:00",
+      "job_id": "job_000125",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.28870964050293
+    },
+    {
+      "timestamp": "2026-06-20T13:01:03.195917+00:00",
+      "job_id": "job_000126",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.9713020324707
+    },
+    {
+      "timestamp": "2026-06-20T13:01:03.363755+00:00",
+      "job_id": "job_000127",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.77007675170898
+    },
+    {
+      "timestamp": "2026-06-20T13:01:03.533325+00:00",
+      "job_id": "job_000128",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 68.41683387756348
+    },
+    {
+      "timestamp": "2026-06-20T13:01:03.701418+00:00",
+      "job_id": "job_000129",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.96605682373047
+    },
+    {
+      "timestamp": "2026-06-20T13:01:03.869118+00:00",
+      "job_id": "job_000130",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.60008430480957
+    },
+    {
+      "timestamp": "2026-06-20T13:01:04.036087+00:00",
+      "job_id": "job_000131",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.88602066040039
+    },
+    {
+      "timestamp": "2026-06-20T13:01:04.203384+00:00",
+      "job_id": "job_000132",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.22314453125
+    },
+    {
+      "timestamp": "2026-06-20T13:01:04.370544+00:00",
+      "job_id": "job_000133",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.08390808105469
+    },
+    {
+      "timestamp": "2026-06-20T13:01:04.538332+00:00",
+      "job_id": "job_000134",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.72120094299316
+    },
+    {
+      "timestamp": "2026-06-20T13:01:04.705463+00:00",
+      "job_id": "job_000135",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.05887413024902
+    },
+    {
+      "timestamp": "2026-06-20T13:01:04.872782+00:00",
+      "job_id": "job_000136",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.24984741210938
+    },
+    {
+      "timestamp": "2026-06-20T13:01:05.040246+00:00",
+      "job_id": "job_000137",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.39313697814941
+    },
+    {
+      "timestamp": "2026-06-20T13:01:05.207768+00:00",
+      "job_id": "job_000138",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.47586822509766
+    },
+    {
+      "timestamp": "2026-06-20T13:01:05.375577+00:00",
+      "job_id": "job_000139",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.72406196594238
+    },
+    {
+      "timestamp": "2026-06-20T13:01:05.543025+00:00",
+      "job_id": "job_000140",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.34116172790527
+    },
+    {
+      "timestamp": "2026-06-20T13:01:05.710926+00:00",
+      "job_id": "job_000141",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.81323051452637
+    },
+    {
+      "timestamp": "2026-06-20T13:01:05.878012+00:00",
+      "job_id": "job_000142",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.01285934448242
+    },
+    {
+      "timestamp": "2026-06-20T13:01:06.044771+00:00",
+      "job_id": "job_000143",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.68694114685059
+    },
+    {
+      "timestamp": "2026-06-20T13:01:06.211930+00:00",
+      "job_id": "job_000144",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.09511375427246
+    },
+    {
+      "timestamp": "2026-06-20T13:01:06.379207+00:00",
+      "job_id": "job_000145",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.19882583618164
+    },
+    {
+      "timestamp": "2026-06-20T13:01:06.546567+00:00",
+      "job_id": "job_000146",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.29109382629395
+    },
+    {
+      "timestamp": "2026-06-20T13:01:06.713788+00:00",
+      "job_id": "job_000147",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.73383712768555
+    },
+    {
+      "timestamp": "2026-06-20T13:01:06.880904+00:00",
+      "job_id": "job_000148",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.04909896850586
+    },
+    {
+      "timestamp": "2026-06-20T13:01:07.048758+00:00",
+      "job_id": "job_000149",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.77103042602539
+    },
+    {
+      "timestamp": "2026-06-20T13:01:07.215353+00:00",
+      "job_id": "job_000150",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.55008888244629
+    },
+    {
+      "timestamp": "2026-06-20T13:01:07.382041+00:00",
+      "job_id": "job_000151",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.64593315124512
+    },
+    {
+      "timestamp": "2026-06-20T13:01:07.548650+00:00",
+      "job_id": "job_000152",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.5679702758789
+    },
+    {
+      "timestamp": "2026-06-20T13:01:07.715086+00:00",
+      "job_id": "job_000153",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.3989315032959
+    },
+    {
+      "timestamp": "2026-06-20T13:01:07.882416+00:00",
+      "job_id": "job_000154",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.26105308532715
+    },
+    {
+      "timestamp": "2026-06-20T13:01:08.048442+00:00",
+      "job_id": "job_000155",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.49215316772461
+    },
+    {
+      "timestamp": "2026-06-20T13:01:08.215845+00:00",
+      "job_id": "job_000156",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.29824638366699
+    },
+    {
+      "timestamp": "2026-06-20T13:01:08.383697+00:00",
+      "job_id": "job_000157",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.77079200744629
+    },
+    {
+      "timestamp": "2026-06-20T13:01:08.550566+00:00",
+      "job_id": "job_000158",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.78803062438965
+    },
+    {
+      "timestamp": "2026-06-20T13:01:08.717337+00:00",
+      "job_id": "job_000159",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.6733512878418
+    },
+    {
+      "timestamp": "2026-06-20T13:01:08.884550+00:00",
+      "job_id": "job_000160",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.12682342529297
+    },
+    {
+      "timestamp": "2026-06-20T13:01:09.051082+00:00",
+      "job_id": "job_000161",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.44375419616699
+    },
+    {
+      "timestamp": "2026-06-20T13:01:09.218376+00:00",
+      "job_id": "job_000162",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.22004508972168
+    },
+    {
+      "timestamp": "2026-06-20T13:01:09.382231+00:00",
+      "job_id": "job_000163",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 62.69383430480957
+    },
+    {
+      "timestamp": "2026-06-20T13:01:09.549435+00:00",
+      "job_id": "job_000164",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.12205505371094
+    },
+    {
+      "timestamp": "2026-06-20T13:01:09.716451+00:00",
+      "job_id": "job_000165",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.00022315979004
+    },
+    {
+      "timestamp": "2026-06-20T13:01:09.883630+00:00",
+      "job_id": "job_000166",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.10989570617676
+    },
+    {
+      "timestamp": "2026-06-20T13:01:10.050392+00:00",
+      "job_id": "job_000167",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.68503379821777
+    },
+    {
+      "timestamp": "2026-06-20T13:01:10.217661+00:00",
+      "job_id": "job_000168",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.17283821105957
+    },
+    {
+      "timestamp": "2026-06-20T13:01:10.385674+00:00",
+      "job_id": "job_000169",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.87116622924805
+    },
+    {
+      "timestamp": "2026-06-20T13:01:10.552725+00:00",
+      "job_id": "job_000170",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.93585014343262
+    },
+    {
+      "timestamp": "2026-06-20T13:01:10.720240+00:00",
+      "job_id": "job_000171",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.43319129943848
+    },
+    {
+      "timestamp": "2026-06-20T13:01:10.887558+00:00",
+      "job_id": "job_000172",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.2391185760498
+    },
+    {
+      "timestamp": "2026-06-20T13:01:11.054460+00:00",
+      "job_id": "job_000173",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.83094596862793
+    },
+    {
+      "timestamp": "2026-06-20T13:01:11.221722+00:00",
+      "job_id": "job_000174",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.19119644165039
+    },
+    {
+      "timestamp": "2026-06-20T13:01:11.390298+00:00",
+      "job_id": "job_000175",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 67.50011444091797
+    },
+    {
+      "timestamp": "2026-06-20T13:01:11.557670+00:00",
+      "job_id": "job_000176",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.20907783508301
+    },
+    {
+      "timestamp": "2026-06-20T13:01:11.723944+00:00",
+      "job_id": "job_000177",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.1099681854248
+    },
+    {
+      "timestamp": "2026-06-20T13:01:11.892452+00:00",
+      "job_id": "job_000178",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 67.81721115112305
+    },
+    {
+      "timestamp": "2026-06-20T13:01:12.059127+00:00",
+      "job_id": "job_000179",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.521240234375
+    },
+    {
+      "timestamp": "2026-06-20T13:01:12.225755+00:00",
+      "job_id": "job_000180",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.53006172180176
+    },
+    {
+      "timestamp": "2026-06-20T13:01:12.393400+00:00",
+      "job_id": "job_000181",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.55406951904297
+    },
+    {
+      "timestamp": "2026-06-20T13:01:12.562270+00:00",
+      "job_id": "job_000182",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 67.77405738830566
+    },
+    {
+      "timestamp": "2026-06-20T13:01:12.730904+00:00",
+      "job_id": "job_000183",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 67.49224662780762
+    },
+    {
+      "timestamp": "2026-06-20T13:01:12.897806+00:00",
+      "job_id": "job_000184",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.8109188079834
+    },
+    {
+      "timestamp": "2026-06-20T13:01:13.065013+00:00",
+      "job_id": "job_000185",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.11394882202148
+    },
+    {
+      "timestamp": "2026-06-20T13:01:13.232161+00:00",
+      "job_id": "job_000186",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.08104705810547
+    },
+    {
+      "timestamp": "2026-06-20T13:01:13.398718+00:00",
+      "job_id": "job_000187",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.51074981689453
+    },
+    {
+      "timestamp": "2026-06-20T13:01:13.565610+00:00",
+      "job_id": "job_000188",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.84382057189941
+    },
+    {
+      "timestamp": "2026-06-20T13:01:13.732585+00:00",
+      "job_id": "job_000189",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.93108177185059
+    },
+    {
+      "timestamp": "2026-06-20T13:01:13.899135+00:00",
+      "job_id": "job_000190",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.5059814453125
+    },
+    {
+      "timestamp": "2026-06-20T13:01:14.065023+00:00",
+      "job_id": "job_000191",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 64.81218338012695
+    },
+    {
+      "timestamp": "2026-06-20T13:01:14.231667+00:00",
+      "job_id": "job_000192",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.57917594909668
+    },
+    {
+      "timestamp": "2026-06-20T13:01:14.398939+00:00",
+      "job_id": "job_000193",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.20979309082031
+    },
+    {
+      "timestamp": "2026-06-20T13:01:14.566186+00:00",
+      "job_id": "job_000194",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.58101081848145
+    },
+    {
+      "timestamp": "2026-06-20T13:01:14.733775+00:00",
+      "job_id": "job_000195",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.5132999420166
+    },
+    {
+      "timestamp": "2026-06-20T13:01:14.901380+00:00",
+      "job_id": "job_000196",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.53714179992676
+    },
+    {
+      "timestamp": "2026-06-20T13:01:15.068601+00:00",
+      "job_id": "job_000197",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.1470890045166
+    },
+    {
+      "timestamp": "2026-06-20T13:01:15.236004+00:00",
+      "job_id": "job_000198",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.31612777709961
+    },
+    {
+      "timestamp": "2026-06-20T13:01:15.403126+00:00",
+      "job_id": "job_000199",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.04909896850586
+    },
+    {
+      "timestamp": "2026-06-20T13:01:15.569601+00:00",
+      "job_id": "job_000200",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.40608406066895
+    },
+    {
+      "timestamp": "2026-06-20T13:01:15.736528+00:00",
+      "job_id": "job_000201",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.85979461669922
+    },
+    {
+      "timestamp": "2026-06-20T13:01:15.903542+00:00",
+      "job_id": "job_000202",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.94991683959961
+    },
+    {
+      "timestamp": "2026-06-20T13:01:16.071047+00:00",
+      "job_id": "job_000203",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.44487380981445
+    },
+    {
+      "timestamp": "2026-06-20T13:01:16.237385+00:00",
+      "job_id": "job_000204",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.26470184326172
+    },
+    {
+      "timestamp": "2026-06-20T13:01:16.404258+00:00",
+      "job_id": "job_000205",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.82808494567871
+    },
+    {
+      "timestamp": "2026-06-20T13:01:16.570916+00:00",
+      "job_id": "job_000206",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.59205055236816
+    },
+    {
+      "timestamp": "2026-06-20T13:01:16.738036+00:00",
+      "job_id": "job_000207",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.0548210144043
+    },
+    {
+      "timestamp": "2026-06-20T13:01:16.904832+00:00",
+      "job_id": "job_000208",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.73486328125
+    },
+    {
+      "timestamp": "2026-06-20T13:01:17.071464+00:00",
+      "job_id": "job_000209",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.56177139282227
+    },
+    {
+      "timestamp": "2026-06-20T13:01:17.239383+00:00",
+      "job_id": "job_000210",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.85209274291992
+    },
+    {
+      "timestamp": "2026-06-20T13:01:17.409004+00:00",
+      "job_id": "job_000211",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 68.54510307312012
+    },
+    {
+      "timestamp": "2026-06-20T13:01:17.575535+00:00",
+      "job_id": "job_000212",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.43302536010742
+    },
+    {
+      "timestamp": "2026-06-20T13:01:17.742676+00:00",
+      "job_id": "job_000213",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.05792045593262
+    },
+    {
+      "timestamp": "2026-06-20T13:01:17.909623+00:00",
+      "job_id": "job_000214",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.86194038391113
+    },
+    {
+      "timestamp": "2026-06-20T13:01:18.076339+00:00",
+      "job_id": "job_000215",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.63591957092285
+    },
+    {
+      "timestamp": "2026-06-20T13:01:18.242984+00:00",
+      "job_id": "job_000216",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.59467315673828
+    },
+    {
+      "timestamp": "2026-06-20T13:01:18.409645+00:00",
+      "job_id": "job_000217",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.59109687805176
+    },
+    {
+      "timestamp": "2026-06-20T13:01:18.576230+00:00",
+      "job_id": "job_000218",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.51384925842285
+    },
+    {
+      "timestamp": "2026-06-20T13:01:18.743157+00:00",
+      "job_id": "job_000219",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.86074829101562
+    },
+    {
+      "timestamp": "2026-06-20T13:01:18.912704+00:00",
+      "job_id": "job_000220",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 68.47119331359863
+    },
+    {
+      "timestamp": "2026-06-20T13:01:19.079669+00:00",
+      "job_id": "job_000221",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.86003303527832
+    },
+    {
+      "timestamp": "2026-06-20T13:01:19.247095+00:00",
+      "job_id": "job_000222",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.34712219238281
+    },
+    {
+      "timestamp": "2026-06-20T13:01:19.413848+00:00",
+      "job_id": "job_000223",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.67811965942383
+    },
+    {
+      "timestamp": "2026-06-20T13:01:19.580795+00:00",
+      "job_id": "job_000224",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.88172912597656
+    },
+    {
+      "timestamp": "2026-06-20T13:01:19.748203+00:00",
+      "job_id": "job_000225",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.3449764251709
+    },
+    {
+      "timestamp": "2026-06-20T13:01:19.915297+00:00",
+      "job_id": "job_000226",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.03121757507324
+    },
+    {
+      "timestamp": "2026-06-20T13:01:20.079895+00:00",
+      "job_id": "job_000227",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 63.53616714477539
+    },
+    {
+      "timestamp": "2026-06-20T13:01:20.246044+00:00",
+      "job_id": "job_000228",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.06896018981934
+    },
+    {
+      "timestamp": "2026-06-20T13:01:20.412155+00:00",
+      "job_id": "job_000229",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.04011154174805
+    },
+    {
+      "timestamp": "2026-06-20T13:01:20.578718+00:00",
+      "job_id": "job_000230",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.49882888793945
+    },
+    {
+      "timestamp": "2026-06-20T13:01:20.745909+00:00",
+      "job_id": "job_000231",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.12515449523926
+    },
+    {
+      "timestamp": "2026-06-20T13:01:20.912843+00:00",
+      "job_id": "job_000232",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.87100028991699
+    },
+    {
+      "timestamp": "2026-06-20T13:01:21.079828+00:00",
+      "job_id": "job_000233",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.92011451721191
+    },
+    {
+      "timestamp": "2026-06-20T13:01:21.246704+00:00",
+      "job_id": "job_000234",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.81401824951172
+    },
+    {
+      "timestamp": "2026-06-20T13:01:21.413368+00:00",
+      "job_id": "job_000235",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.59896469116211
+    },
+    {
+      "timestamp": "2026-06-20T13:01:21.579961+00:00",
+      "job_id": "job_000236",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.51408767700195
+    },
+    {
+      "timestamp": "2026-06-20T13:01:21.746251+00:00",
+      "job_id": "job_000237",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.22202491760254
+    },
+    {
+      "timestamp": "2026-06-20T13:01:21.912351+00:00",
+      "job_id": "job_000238",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.03510475158691
+    },
+    {
+      "timestamp": "2026-06-20T13:01:22.078971+00:00",
+      "job_id": "job_000239",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.52886962890625
+    },
+    {
+      "timestamp": "2026-06-20T13:01:22.246647+00:00",
+      "job_id": "job_000240",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.58625602722168
+    },
+    {
+      "timestamp": "2026-06-20T13:01:22.412419+00:00",
+      "job_id": "job_000241",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 64.66293334960938
+    },
+    {
+      "timestamp": "2026-06-20T13:01:22.579033+00:00",
+      "job_id": "job_000242",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.49215316772461
+    },
+    {
+      "timestamp": "2026-06-20T13:01:22.745872+00:00",
+      "job_id": "job_000243",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.7341480255127
+    },
+    {
+      "timestamp": "2026-06-20T13:01:22.912924+00:00",
+      "job_id": "job_000244",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.97089767456055
+    },
+    {
+      "timestamp": "2026-06-20T13:01:23.079974+00:00",
+      "job_id": "job_000245",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.93012809753418
+    },
+    {
+      "timestamp": "2026-06-20T13:01:23.246498+00:00",
+      "job_id": "job_000246",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.43684005737305
+    },
+    {
+      "timestamp": "2026-06-20T13:01:23.413985+00:00",
+      "job_id": "job_000247",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.35904312133789
+    },
+    {
+      "timestamp": "2026-06-20T13:01:23.581928+00:00",
+      "job_id": "job_000248",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.81704521179199
+    },
+    {
+      "timestamp": "2026-06-20T13:01:23.748736+00:00",
+      "job_id": "job_000249",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.65396690368652
+    },
+    {
+      "timestamp": "2026-06-20T13:01:23.916269+00:00",
+      "job_id": "job_000250",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.43891334533691
+    },
+    {
+      "timestamp": "2026-06-20T13:01:24.083568+00:00",
+      "job_id": "job_000251",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.20001792907715
+    },
+    {
+      "timestamp": "2026-06-20T13:01:24.250832+00:00",
+      "job_id": "job_000252",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.16401672363281
+    },
+    {
+      "timestamp": "2026-06-20T13:01:24.418179+00:00",
+      "job_id": "job_000253",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.2851333618164
+    },
+    {
+      "timestamp": "2026-06-20T13:01:24.585414+00:00",
+      "job_id": "job_000254",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.15614891052246
+    },
+    {
+      "timestamp": "2026-06-20T13:01:24.755563+00:00",
+      "job_id": "job_000255",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 69.07510757446289
+    },
+    {
+      "timestamp": "2026-06-20T13:01:24.923098+00:00",
+      "job_id": "job_000256",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.45512580871582
+    },
+    {
+      "timestamp": "2026-06-20T13:01:25.090559+00:00",
+      "job_id": "job_000257",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.36905670166016
+    },
+    {
+      "timestamp": "2026-06-20T13:01:25.257624+00:00",
+      "job_id": "job_000258",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.01786613464355
+    },
+    {
+      "timestamp": "2026-06-20T13:01:25.424534+00:00",
+      "job_id": "job_000259",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.86122512817383
+    },
+    {
+      "timestamp": "2026-06-20T13:01:25.592129+00:00",
+      "job_id": "job_000260",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.53785705566406
+    },
+    {
+      "timestamp": "2026-06-20T13:01:25.759670+00:00",
+      "job_id": "job_000261",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.47706031799316
+    },
+    {
+      "timestamp": "2026-06-20T13:01:25.924261+00:00",
+      "job_id": "job_000262",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 63.4920597076416
+    },
+    {
+      "timestamp": "2026-06-20T13:01:26.089677+00:00",
+      "job_id": "job_000263",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 64.32223320007324
+    },
+    {
+      "timestamp": "2026-06-20T13:01:26.256245+00:00",
+      "job_id": "job_000264",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.45400619506836
+    },
+    {
+      "timestamp": "2026-06-20T13:01:26.423572+00:00",
+      "job_id": "job_000265",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.21003150939941
+    },
+    {
+      "timestamp": "2026-06-20T13:01:26.589564+00:00",
+      "job_id": "job_000266",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 64.86892700195312
+    },
+    {
+      "timestamp": "2026-06-20T13:01:26.755980+00:00",
+      "job_id": "job_000267",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.31095504760742
+    },
+    {
+      "timestamp": "2026-06-20T13:01:26.921557+00:00",
+      "job_id": "job_000268",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 64.4538402557373
+    },
+    {
+      "timestamp": "2026-06-20T13:01:27.088718+00:00",
+      "job_id": "job_000269",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.99688529968262
+    },
+    {
+      "timestamp": "2026-06-20T13:01:27.254776+00:00",
+      "job_id": "job_000270",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 64.9259090423584
+    },
+    {
+      "timestamp": "2026-06-20T13:01:27.420030+00:00",
+      "job_id": "job_000271",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.02604484558105
+    },
+    {
+      "timestamp": "2026-06-20T13:01:27.587478+00:00",
+      "job_id": "job_000272",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.33496284484863
+    },
+    {
+      "timestamp": "2026-06-20T13:01:27.753419+00:00",
+      "job_id": "job_000273",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 64.77594375610352
+    },
+    {
+      "timestamp": "2026-06-20T13:01:27.919236+00:00",
+      "job_id": "job_000274",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 64.67914581298828
+    },
+    {
+      "timestamp": "2026-06-20T13:01:28.085946+00:00",
+      "job_id": "job_000275",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.57798385620117
+    },
+    {
+      "timestamp": "2026-06-20T13:01:28.252841+00:00",
+      "job_id": "job_000276",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.73700904846191
+    },
+    {
+      "timestamp": "2026-06-20T13:01:28.420341+00:00",
+      "job_id": "job_000277",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.40410423278809
+    },
+    {
+      "timestamp": "2026-06-20T13:01:28.586163+00:00",
+      "job_id": "job_000278",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 64.6967887878418
+    },
+    {
+      "timestamp": "2026-06-20T13:01:28.752588+00:00",
+      "job_id": "job_000279",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.71006774902344
+    },
+    {
+      "timestamp": "2026-06-20T13:01:28.919237+00:00",
+      "job_id": "job_000280",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.50812721252441
+    },
+    {
+      "timestamp": "2026-06-20T13:01:29.085205+00:00",
+      "job_id": "job_000281",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.02819061279297
+    },
+    {
+      "timestamp": "2026-06-20T13:01:29.251959+00:00",
+      "job_id": "job_000282",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.59514999389648
+    },
+    {
+      "timestamp": "2026-06-20T13:01:29.417092+00:00",
+      "job_id": "job_000283",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 63.976287841796875
+    },
+    {
+      "timestamp": "2026-06-20T13:01:29.582832+00:00",
+      "job_id": "job_000284",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.05537033081055
+    },
+    {
+      "timestamp": "2026-06-20T13:01:29.748783+00:00",
+      "job_id": "job_000285",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 64.7881031036377
+    },
+    {
+      "timestamp": "2026-06-20T13:01:29.917116+00:00",
+      "job_id": "job_000286",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 67.27886199951172
+    },
+    {
+      "timestamp": "2026-06-20T13:01:30.081912+00:00",
+      "job_id": "job_000287",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 64.07809257507324
+    },
+    {
+      "timestamp": "2026-06-20T13:01:30.248264+00:00",
+      "job_id": "job_000288",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.23799896240234
+    },
+    {
+      "timestamp": "2026-06-20T13:01:30.414903+00:00",
+      "job_id": "job_000289",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.4599666595459
+    },
+    {
+      "timestamp": "2026-06-20T13:01:30.579961+00:00",
+      "job_id": "job_000290",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 63.91024589538574
+    },
+    {
+      "timestamp": "2026-06-20T13:01:30.747907+00:00",
+      "job_id": "job_000291",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.81394577026367
+    },
+    {
+      "timestamp": "2026-06-20T13:01:30.913748+00:00",
+      "job_id": "job_000292",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 64.90063667297363
+    },
+    {
+      "timestamp": "2026-06-20T13:01:31.080689+00:00",
+      "job_id": "job_000293",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.89722633361816
+    },
+    {
+      "timestamp": "2026-06-20T13:01:31.246878+00:00",
+      "job_id": "job_000294",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.07706642150879
+    },
+    {
+      "timestamp": "2026-06-20T13:01:31.411770+00:00",
+      "job_id": "job_000295",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 63.76814842224121
+    },
+    {
+      "timestamp": "2026-06-20T13:01:31.578345+00:00",
+      "job_id": "job_000296",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.43993949890137
+    },
+    {
+      "timestamp": "2026-06-20T13:01:31.745669+00:00",
+      "job_id": "job_000297",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.57719612121582
+    },
+    {
+      "timestamp": "2026-06-20T13:01:31.912241+00:00",
+      "job_id": "job_000298",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.45090675354004
+    },
+    {
+      "timestamp": "2026-06-20T13:01:32.077459+00:00",
+      "job_id": "job_000299",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 64.05091285705566
+    },
+    {
+      "timestamp": "2026-06-20T13:01:32.244038+00:00",
+      "job_id": "job_000300",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.97399711608887
+    },
+    {
+      "timestamp": "2026-06-20T13:01:32.410970+00:00",
+      "job_id": "job_000301",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.80805778503418
+    },
+    {
+      "timestamp": "2026-06-20T13:01:32.576689+00:00",
+      "job_id": "job_000302",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 64.58401679992676
+    },
+    {
+      "timestamp": "2026-06-20T13:01:32.743333+00:00",
+      "job_id": "job_000303",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.48404693603516
+    },
+    {
+      "timestamp": "2026-06-20T13:01:32.907784+00:00",
+      "job_id": "job_000304",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 63.28082084655762
+    },
+    {
+      "timestamp": "2026-06-20T13:01:33.073674+00:00",
+      "job_id": "job_000305",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 64.79001045227051
+    },
+    {
+      "timestamp": "2026-06-20T13:01:33.238696+00:00",
+      "job_id": "job_000306",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 63.89880180358887
+    },
+    {
+      "timestamp": "2026-06-20T13:01:33.406160+00:00",
+      "job_id": "job_000307",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.35522842407227
+    },
+    {
+      "timestamp": "2026-06-20T13:01:33.571533+00:00",
+      "job_id": "job_000308",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 64.25595283508301
+    },
+    {
+      "timestamp": "2026-06-20T13:01:33.738115+00:00",
+      "job_id": "job_000309",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.46831130981445
+    },
+    {
+      "timestamp": "2026-06-20T13:01:33.903905+00:00",
+      "job_id": "job_000310",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 64.63789939880371
+    },
+    {
+      "timestamp": "2026-06-20T13:01:34.069702+00:00",
+      "job_id": "job_000311",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 64.6820068359375
+    },
+    {
+      "timestamp": "2026-06-20T13:01:34.234769+00:00",
+      "job_id": "job_000312",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 63.941001892089844
+    },
+    {
+      "timestamp": "2026-06-20T13:01:34.400522+00:00",
+      "job_id": "job_000313",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 64.59593772888184
+    },
+    {
+      "timestamp": "2026-06-20T13:01:34.567855+00:00",
+      "job_id": "job_000314",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.16711616516113
+    },
+    {
+      "timestamp": "2026-06-20T13:01:34.733658+00:00",
+      "job_id": "job_000315",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 64.63909149169922
+    },
+    {
+      "timestamp": "2026-06-20T13:01:34.899248+00:00",
+      "job_id": "job_000316",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 64.80097770690918
+    },
+    {
+      "timestamp": "2026-06-20T13:01:35.062715+00:00",
+      "job_id": "job_000317",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 62.30330467224121
+    },
+    {
+      "timestamp": "2026-06-20T13:01:35.230434+00:00",
+      "job_id": "job_000318",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.59889221191406
+    },
+    {
+      "timestamp": "2026-06-20T13:01:35.398069+00:00",
+      "job_id": "job_000319",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.56002998352051
+    },
+    {
+      "timestamp": "2026-06-20T13:01:35.565789+00:00",
+      "job_id": "job_000320",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.54977798461914
+    },
+    {
+      "timestamp": "2026-06-20T13:01:35.730721+00:00",
+      "job_id": "job_000321",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 64.69416618347168
+    },
+    {
+      "timestamp": "2026-06-20T13:01:35.897592+00:00",
+      "job_id": "job_000322",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.7191276550293
+    },
+    {
+      "timestamp": "2026-06-20T13:01:36.063764+00:00",
+      "job_id": "job_000323",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.08183479309082
+    },
+    {
+      "timestamp": "2026-06-20T13:01:36.229808+00:00",
+      "job_id": "job_000324",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 64.92114067077637
+    },
+    {
+      "timestamp": "2026-06-20T13:01:36.396991+00:00",
+      "job_id": "job_000325",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.0848617553711
+    },
+    {
+      "timestamp": "2026-06-20T13:01:36.563595+00:00",
+      "job_id": "job_000326",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.50216674804688
+    },
+    {
+      "timestamp": "2026-06-20T13:01:36.727066+00:00",
+      "job_id": "job_000327",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 62.334299087524414
+    },
+    {
+      "timestamp": "2026-06-20T13:01:36.892190+00:00",
+      "job_id": "job_000328",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 63.990116119384766
+    },
+    {
+      "timestamp": "2026-06-20T13:01:37.058741+00:00",
+      "job_id": "job_000329",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.3839111328125
+    },
+    {
+      "timestamp": "2026-06-20T13:01:37.226834+00:00",
+      "job_id": "job_000330",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.93673133850098
+    },
+    {
+      "timestamp": "2026-06-20T13:01:37.394838+00:00",
+      "job_id": "job_000331",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.86782836914062
+    },
+    {
+      "timestamp": "2026-06-20T13:01:37.561093+00:00",
+      "job_id": "job_000332",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.8111572265625
+    },
+    {
+      "timestamp": "2026-06-20T13:01:37.728594+00:00",
+      "job_id": "job_000333",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.38693809509277
+    },
+    {
+      "timestamp": "2026-06-20T13:01:37.893701+00:00",
+      "job_id": "job_000334",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 63.95411491394043
+    },
+    {
+      "timestamp": "2026-06-20T13:01:38.061534+00:00",
+      "job_id": "job_000335",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.68996810913086
+    },
+    {
+      "timestamp": "2026-06-20T13:01:38.228407+00:00",
+      "job_id": "job_000336",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.76395034790039
+    },
+    {
+      "timestamp": "2026-06-20T13:01:38.394278+00:00",
+      "job_id": "job_000337",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 64.76974487304688
+    },
+    {
+      "timestamp": "2026-06-20T13:01:38.562036+00:00",
+      "job_id": "job_000338",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.67780876159668
+    },
+    {
+      "timestamp": "2026-06-20T13:01:38.717918+00:00",
+      "job_id": "job_000339",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 54.7788143157959
+    },
+    {
+      "timestamp": "2026-06-20T13:01:38.881348+00:00",
+      "job_id": "job_000340",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 62.26205825805664
+    },
+    {
+      "timestamp": "2026-06-20T13:01:39.045979+00:00",
+      "job_id": "job_000341",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 63.5380744934082
+    },
+    {
+      "timestamp": "2026-06-20T13:01:39.211774+00:00",
+      "job_id": "job_000342",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 64.6657943725586
+    },
+    {
+      "timestamp": "2026-06-20T13:01:39.375515+00:00",
+      "job_id": "job_000343",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 62.6370906829834
+    },
+    {
+      "timestamp": "2026-06-20T13:01:39.541263+00:00",
+      "job_id": "job_000344",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 64.58711624145508
+    },
+    {
+      "timestamp": "2026-06-20T13:01:39.708834+00:00",
+      "job_id": "job_000345",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 66.51782989501953
+    },
+    {
+      "timestamp": "2026-06-20T13:01:39.873634+00:00",
+      "job_id": "job_000346",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 64.15891647338867
+    },
+    {
+      "timestamp": "2026-06-20T13:01:40.033500+00:00",
+      "job_id": "job_000347",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 58.757781982421875
+    },
+    {
+      "timestamp": "2026-06-20T13:01:40.199109+00:00",
+      "job_id": "job_000348",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 64.49317932128906
+    },
+    {
+      "timestamp": "2026-06-20T13:01:40.361489+00:00",
+      "job_id": "job_000349",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 61.285972595214844
+    },
+    {
+      "timestamp": "2026-06-20T13:01:40.526410+00:00",
+      "job_id": "job_000350",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 63.79389762878418
+    },
+    {
+      "timestamp": "2026-06-20T13:01:40.686993+00:00",
+      "job_id": "job_000351",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 59.468746185302734
+    },
+    {
+      "timestamp": "2026-06-20T13:01:40.849267+00:00",
+      "job_id": "job_000352",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 61.15984916687012
+    },
+    {
+      "timestamp": "2026-06-20T13:01:41.013231+00:00",
+      "job_id": "job_000353",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 62.81709671020508
+    },
+    {
+      "timestamp": "2026-06-20T13:01:41.178748+00:00",
+      "job_id": "job_000354",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 64.3930435180664
+    },
+    {
+      "timestamp": "2026-06-20T13:01:41.344932+00:00",
+      "job_id": "job_000355",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 65.02294540405273
+    },
+    {
+      "timestamp": "2026-06-20T13:01:41.509637+00:00",
+      "job_id": "job_000356",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 63.57407569885254
+    },
+    {
+      "timestamp": "2026-06-20T13:01:41.674536+00:00",
+      "job_id": "job_000357",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 63.783884048461914
+    },
+    {
+      "timestamp": "2026-06-20T13:01:41.839598+00:00",
+      "job_id": "job_000358",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 63.93289566040039
+    },
+    {
+      "timestamp": "2026-06-20T13:01:42.004709+00:00",
+      "job_id": "job_000359",
+      "nonce": 0,
+      "difficulty": 1.0,
+      "accepted": true,
+      "fault_tolerant": true,
+      "logical_error_rate": 2.12527563319559e-06,
+      "time_to_solution_ms": 63.96007537841797
+    }
+  ],
+  "summary": {
+    "acceptance_rate": 0.9805555555555555,
+    "quantum_advantage": true,
+    "phi_resonance_exploitation": 0.9565
+  }
+}
