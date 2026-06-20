@@ -616,6 +616,42 @@ class TestAutonomousMiningController(unittest.TestCase):
         simulated_density = self.controller._simulate_virtual_mining(proposal)
         self.assertGreaterEqual(simulated_density, 0.0)
         self.assertLessEqual(simulated_density, 1.0)
+        score = self.controller._sha256d_landscape_score(proposal)
+        self.assertGreaterEqual(score, 0.0)
+        self.assertLessEqual(score, 1.0)
+
+    def test_pool_response_updates_target_bandit_and_virtual_feedback(self):
+        """Real pool/testnet feedback should steer target selection evidence."""
+        proposal = self.controller._generate_counterfactual("compression_target")
+        before = self.controller.get_reflexive_target_bandit_snapshot()["compression_target"]
+        baseline = self.controller._simulate_virtual_mining(proposal)
+
+        self.controller.record_pool_response(
+            accepted=True,
+            latency_ms=12.5,
+            reason="testnet_accept",
+            proposal_id=proposal.proposal_id,
+            target="compression_target",
+        )
+
+        after = self.controller.get_reflexive_target_bandit_snapshot()["compression_target"]
+        boosted = self.controller._simulate_virtual_mining(proposal)
+        self.assertGreater(after["successes"], before["successes"])
+        self.assertGreater(after["evidence_weight"], before["evidence_weight"])
+        self.assertGreaterEqual(boosted, baseline)
+
+    def test_deterministic_target_selection_explores_bounded_bandits(self):
+        """Target selection should combine round-robin coverage with posterior evidence."""
+        targets = ["phi_scaling", "search_depth", "compression_target", "coherence_threshold"]
+        selected = self.controller._select_reflexive_targets(
+            targets,
+            primary_target="search_depth",
+            growth_rate=0.0,
+        )
+
+        self.assertEqual(selected[0], "search_depth")
+        self.assertLessEqual(len(selected), self.controller.config.max_proposals_per_cycle)
+        self.assertEqual(len(selected), len(set(selected)))
 
     def test_virtual_mining_with_violations(self):
         """Test virtual mining simulation with constraint violations."""

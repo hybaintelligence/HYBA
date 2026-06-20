@@ -13,6 +13,8 @@
 - State recovery is exposed through `scripts/autonomous_mining_rollback.py` with operator ID and reason capture. Dry-run rollback reports whether a v1 backup will be migrated in memory on a v2 controller before any write occurs.
 - Emergency bypass authority is explicitly scoped to the autonomous optimisation/reflexive layer. It does not relax SHA-256d verification, verification firewall, live-share submission gates, or nonce-coverage/search submission paths.
 - Manual autonomous-circuit resets are audited with `manual_reset_within_cooldown`; repeated resets inside `HYBA_AUTONOMY_MANUAL_RESET_COOLDOWN_SECONDS` (default `300`) warn but do not block incident commanders.
+- Reflexive target selection now uses bounded posterior target statistics with deterministic Thompson-style exploration. Actual pool/testnet accept/reject observations can be ingested with `record_pool_response(...)`; those observations exponentially strengthen or weaken the corresponding target evidence without bypassing local SHA-256d verification.
+- Virtual mining proposal scoring is anchored to actual double-SHA-256 avalanche samples derived from deterministic proposal payloads, then damped or boosted by recent real pool/testnet response evidence. This closes the prior gap where the virtual landscape could be too idealized for live-response learning.
 - Loadable Prometheus alert rules live in `alerts/pythia_mining.yaml`, and the Grafana import template lives in `dashboards/pythia_mining.json`; the markdown dashboard is explanatory only.
 
 ## Required Metrics
@@ -45,6 +47,14 @@ npm run prod:game-day
 ```
 
 The rehearsal is deterministic and local-only: it does not connect to pools and submits zero shares. It intentionally triggers three circuit-breaker cascades against the autonomous controller, verifies that Prometheus text includes the degradation metrics, and confirms the autonomy level degrades to `manual` for operator escalation. Archive the JSON evidence with the incident-response notes and follow `docs/runbooks/AUTONOMOUS_MINING_INCIDENTS.md` if any assertion fails.
+
+Also run the boundary-observability rehearsal before unattended operation:
+
+```bash
+PYTHONPATH=python_backend python scripts/command_room_game_day.py --scenario boundary_chaos --json
+```
+
+That scenario validates silent-degradation observability by forcing boundary-threshold proposal pressure, confirming proposal acceptance decays, reflexive-loop duration rises, and Prometheus text exposes both signals.
 
 ## Incident Response
 

@@ -28,6 +28,7 @@ from __future__ import annotations
 import asyncio
 import hashlib
 import json
+import math
 import os
 import shutil
 import threading
@@ -195,6 +196,19 @@ class CodebaseSurroundings:
     codebase_graph_edges: List[Tuple[str, str, float]]  # (module_a, module_b, phi_resonance_weight)
     entropy_sources: List[str]  # Modules with high entropy (interesting for exploration)
     stable_core: List[str]  # Modules with high invariant stability
+
+
+@dataclass
+class ReflexiveTargetBanditStats:
+    """Bounded target-selection statistics for exploration/exploitation balance."""
+
+    successes: int = 1
+    failures: int = 1
+    evidence_weight: float = 1.0
+
+    @property
+    def posterior_mean(self) -> float:
+        return self.successes / max(self.successes + self.failures, 1)
 
 
 # ---------------------------------------------------------------------------
@@ -464,6 +478,16 @@ class AutonomousMiningController:
         self._compression_seeking_history: List[float] = []
         self._logical_consistency_history: List[float] = []
         self._last_reflexive_cycle_duration_ms: float = 0.0
+        self._reflexive_target_bandits: Dict[str, ReflexiveTargetBanditStats] = {
+            target: ReflexiveTargetBanditStats()
+            for target in (
+                "phi_scaling",
+                "search_depth",
+                "compression_target",
+                "coherence_threshold",
+            )
+        }
+        self._pool_response_history: List[Dict[str, Any]] = []
 
         # Reentrancy guard for get_phi_density
         self._computing_phi_density: bool = False
@@ -585,6 +609,98 @@ class AutonomousMiningController:
         if not self.proposal_history:
             return 0.0
         return sum(1 for p in self.proposal_history if p.applied) / len(self.proposal_history)
+
+    def record_pool_response(
+        self,
+        *,
+        accepted: bool,
+        latency_ms: float = 0.0,
+        reason: str = "",
+        proposal_id: Optional[str] = None,
+        target: Optional[str] = None,
+    ) -> None:
+        """Ingest an actual pool/testnet response without bypassing local verification.
+
+        The reflexive loop must not learn exclusively from its deterministic virtual
+        landscape. This method records real accept/reject evidence and updates the
+        target bandits using exponential evidence weighting: successes compound by
+        1.1× and failures compound by 0.9×, while posterior counts remain bounded.
+        """
+        response_target = target
+        if response_target is None and proposal_id is not None:
+            for proposal in reversed(self.proposal_history):
+                if proposal.proposal_id == proposal_id:
+                    response_target = proposal.improvement_type
+                    break
+        if response_target not in self._reflexive_target_bandits:
+            response_target = "compression_target"
+
+        response = {
+            "accepted": bool(accepted),
+            "latency_ms": max(0.0, float(latency_ms)),
+            "reason": reason,
+            "proposal_id": proposal_id,
+            "target": response_target,
+            "recorded_at": time.time(),
+        }
+        self._pool_response_history.append(response)
+        self._pool_response_history = self._pool_response_history[-200:]
+        self._update_target_bandit(response_target, bool(accepted))
+
+    def _update_target_bandit(self, target: str, accepted: bool) -> None:
+        stats = self._reflexive_target_bandits.setdefault(target, ReflexiveTargetBanditStats())
+        if accepted:
+            stats.successes = min(10_000, stats.successes + 1)
+            stats.evidence_weight = min(10.0, stats.evidence_weight * 1.1)
+        else:
+            stats.failures = min(10_000, stats.failures + 1)
+            stats.evidence_weight = max(0.1, stats.evidence_weight * 0.9)
+
+    def _select_reflexive_targets(
+        self, target_cycle: List[str], primary_target: str, growth_rate: float
+    ) -> List[str]:
+        """Select targets by deterministic Thompson-style posterior scoring.
+
+        A true RNG would make this safety-critical loop harder to reproduce. We
+        therefore use beta posterior means with a deterministic optimism term and
+        a mandatory round-robin primary target, which gives Thompson-sampling-like
+        exploration while preserving byte-for-byte replayability.
+        """
+        scores: List[Tuple[float, str]] = []
+        total_trials = sum(
+            stats.successes + stats.failures for stats in self._reflexive_target_bandits.values()
+        )
+        for target in target_cycle:
+            stats = self._reflexive_target_bandits.setdefault(
+                target, ReflexiveTargetBanditStats()
+            )
+            trials = stats.successes + stats.failures
+            optimism = math.sqrt(math.log(max(total_trials, 2)) / max(trials, 1))
+            compression_hunger = 0.05 if target == "compression_target" else 0.0
+            score = stats.posterior_mean * stats.evidence_weight + 0.15 * optimism
+            scores.append((score + compression_hunger, target))
+
+        selected = [primary_target]
+        for _, target in sorted(scores, reverse=True):
+            if target not in selected:
+                selected.append(target)
+            if len(selected) >= self.config.max_proposals_per_cycle:
+                break
+        if growth_rate >= self.config.knowledge_growth_rate_target:
+            return selected[: max(1, min(self.config.max_proposals_per_cycle, 2))]
+        return selected[: self.config.max_proposals_per_cycle]
+
+    def get_reflexive_target_bandit_snapshot(self) -> Dict[str, Dict[str, float]]:
+        """Return bounded, serialisable target-selection evidence."""
+        return {
+            target: {
+                "successes": stats.successes,
+                "failures": stats.failures,
+                "posterior_mean": round(stats.posterior_mean, 6),
+                "evidence_weight": round(stats.evidence_weight, 6),
+            }
+            for target, stats in sorted(self._reflexive_target_bandits.items())
+        }
 
     def _constraint_violations_by_type(self) -> Dict[str, int]:
         """Group observed decision constraint violations by constraint name."""
@@ -1264,13 +1380,58 @@ class AutonomousMiningController:
         # Factor in counterfactual confidence
         confidence_bonus = proposal.counterfactual_confidence * 0.05
 
+        # Deterministic SHA-256d landscape sample so proposals are measured against
+        # real hash avalanche behavior, not a smooth idealized proxy.
+        landscape_bonus = self._sha256d_landscape_score(proposal) * 0.01
+
+        # Actual pool/testnet feedback dampens or boosts virtual optimism.
+        pool_feedback = self._pool_feedback_adjustment(proposal.improvement_type)
+
         # Expected gain scaled by proposal quality
         quality_factor = (
             (1.0 - violation_penalty) * (1.0 + consistency_bonus) * (1.0 + confidence_bonus)
         )
-        simulated_density = current_density + proposal.expected_phi_density_gain * quality_factor
+        simulated_density = (
+            current_density
+            + proposal.expected_phi_density_gain * quality_factor
+            + landscape_bonus
+            + pool_feedback
+        )
 
         return min(max(simulated_density, 0.0), 1.0)
+
+    def _sha256d_landscape_score(self, proposal: SelfOptimizationProposal) -> float:
+        """Return a deterministic score from actual double-SHA-256 avalanche samples."""
+        sample = json.dumps(
+            {
+                "proposal_id": proposal.proposal_id,
+                "type": proposal.improvement_type,
+                "current": round(proposal.current_value, 12),
+                "proposed": round(proposal.proposed_value, 12),
+            },
+            sort_keys=True,
+        ).encode("utf-8")
+        digest = hashlib.sha256(hashlib.sha256(sample).digest()).digest()
+        leading_zero_nibbles = 0
+        for byte in digest:
+            high, low = byte >> 4, byte & 0x0F
+            if high == 0:
+                leading_zero_nibbles += 1
+            else:
+                break
+            if low == 0:
+                leading_zero_nibbles += 1
+            else:
+                break
+        avalanche = sum(bin(byte).count("1") for byte in digest) / 256.0
+        return min(1.0, 0.75 * avalanche + 0.25 * min(leading_zero_nibbles / 8.0, 1.0))
+
+    def _pool_feedback_adjustment(self, target: str) -> float:
+        relevant = [r for r in self._pool_response_history[-50:] if r.get("target") == target]
+        if not relevant:
+            return 0.0
+        acceptance = sum(1 for r in relevant if r["accepted"]) / len(relevant)
+        return (acceptance - 0.5) * 0.02
 
     def validate_constraints(self, proposal: SelfOptimizationProposal) -> bool:
         """Validate that a proposal satisfies all 5 Safety Constraints.
@@ -1455,22 +1616,18 @@ class AutonomousMiningController:
             self._phi_density_history = self._phi_density_history[-_MAX_PHI_DENSITY_HISTORY_LEN:]
 
         # Step 1: Analyze surroundings — which entropy source to explore?
-        # Rotate through improvement targets based on knowledge gaps
+        # Use deterministic posterior target selection so actual pool/testnet
+        # feedback can steer the loop without sacrificing reproducibility.
         knowledge_metrics = self.knowledge_substrate.get_knowledge_metrics()
         target_cycle = ["phi_scaling", "search_depth", "compression_target", "coherence_threshold"]
         current_target = target_cycle[self._self_optimization_epochs % len(target_cycle)]
+        growth_rate = knowledge_metrics.get("knowledge_growth_rate", 0.0)
 
         # Step 2: Generate counterfactual proposals
         proposals = []
-        targets_to_try = [current_target]
-        # Add the compression target more often (the "hunger" drive)
-        if self.config.compression_drive_enabled:
+        targets_to_try = self._select_reflexive_targets(target_cycle, current_target, growth_rate)
+        if self.config.compression_drive_enabled and "compression_target" not in targets_to_try:
             targets_to_try.append("compression_target")
-        # Add extra targets if knowledge growth is low
-        growth_rate = knowledge_metrics.get("knowledge_growth_rate", 0.0)
-        if growth_rate < self.config.knowledge_growth_rate_target:
-            extra_targets = [t for t in target_cycle if t not in targets_to_try]
-            targets_to_try.extend(extra_targets[: self.config.max_proposals_per_cycle])
 
         for target in targets_to_try[: self.config.max_proposals_per_cycle]:
             proposal = self._generate_counterfactual(target)
@@ -1489,6 +1646,10 @@ class AutonomousMiningController:
         # Step 5: Apply validated improvements
         for proposal in valid_proposals:
             self.apply_self_optimization(proposal)
+            self._update_target_bandit(proposal.improvement_type, True)
+        for proposal in proposals:
+            if not proposal.applied:
+                self._update_target_bandit(proposal.improvement_type, False)
 
         # Record logical consistency — bounded sliding window
         avg_consistency = sum(p.logical_consistency_score for p in proposals) / max(
@@ -1592,6 +1753,8 @@ class AutonomousMiningController:
                     else None
                 ),
             },
+            "target_selection": self.get_reflexive_target_bandit_snapshot(),
+            "pool_feedback_samples": len(self._pool_response_history),
         }
 
     # ================================================================
@@ -1732,6 +1895,8 @@ class AutonomousMiningController:
                 "max_autonomous_hashrate_ehs": self.config.max_autonomous_hashrate_ehs,
                 "max_autonomous_power_watts": self.config.max_autonomous_power_watts,
             },
+            "target_selection": self.get_reflexive_target_bandit_snapshot(),
+            "pool_response_history": self._pool_response_history[-50:],
         }
         state["schema_version"] = self.config.state_schema_version
         try:
@@ -1861,6 +2026,14 @@ class AutonomousMiningController:
                 self._logical_consistency_history = self._logical_consistency_history[
                     -_MAX_LOGICAL_CONSISTENCY_HISTORY_LEN:
                 ]
+            for target, data in state.get("target_selection", {}).items():
+                if target in self._reflexive_target_bandits:
+                    self._reflexive_target_bandits[target] = ReflexiveTargetBanditStats(
+                        successes=max(1, int(data.get("successes", 1))),
+                        failures=max(1, int(data.get("failures", 1))),
+                        evidence_weight=max(0.1, min(10.0, float(data.get("evidence_weight", 1.0)))),
+                    )
+            self._pool_response_history = list(state.get("pool_response_history", []))[-50:]
             self.config.phi_coherence_threshold = state.get(
                 "phi_coherence_threshold", self.config.phi_coherence_threshold
             )
