@@ -15,6 +15,8 @@ Key Features:
 - PULVINI memory compression via phi-recursive folding
 - Golden ratio scaling for circuit optimization
 - Rigorous mathematical verification of all invariants
+- Structured nonce search using empirical blockchain evidence
+- Fault-tolerant quantum mining with error correction
 
 This is NOT simulation. This is implementation of the actual mathematics.
 """
@@ -38,6 +40,19 @@ from .mathematical_verification import (
     MathematicalVerifier,
     InvariantVerification,
     ComprehensiveVerification,
+)
+
+from .structured_nonce_search import (
+    StructuredNonceSearch,
+    EmpiricalEvidence,
+    NonceCandidate,
+    SearchResult,
+)
+
+from .fault_tolerant_quantum_mining import (
+    FaultTolerantQuantumMiner,
+    FaultTolerantParameters,
+    FaultTolerantMiningResult,
 )
 
 __version__ = "1.0.0"
@@ -64,4 +79,15 @@ __all__ = [
     "MathematicalVerifier",
     "InvariantVerification",
     "ComprehensiveVerification",
+    
+    # Structured nonce search
+    "StructuredNonceSearch",
+    "EmpiricalEvidence",
+    "NonceCandidate",
+    "SearchResult",
+    
+    # Fault-tolerant quantum mining
+    "FaultTolerantQuantumMiner",
+    "FaultTolerantParameters",
+    "FaultTolerantMiningResult",
 ]

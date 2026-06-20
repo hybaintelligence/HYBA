@@ -367,26 +367,36 @@ class StructuredNonceSearch:
         mean_score = np.mean([c.structure_score for c in candidates])
         
         # Amplification factor based on iterations
-        # Grover's algorithm: probability amplification ~ sin²((2k+1)θ)
+        # Use positive amplification factor (sin of positive angle)
+        amplification_factor = 1.0 + 0.3 * abs(sin((2 * iterations + 1) * pi / 4))
+        
+        amplified_candidates = []
         for candidate in candidates:
             # Boost scores above mean
             if candidate.structure_score > mean_score:
-                amplification = 1.0 + 0.5 * sin((2 * iterations + 1) * pi / 4)
-                boosted_score = candidate.structure_score * amplification
+                boosted_score = candidate.structure_score * amplification_factor
                 # Create amplified candidate
-                candidates = [
-                    c if c != candidate else
-                    NonceCandidate(
-                        nonce=c.nonce,
-                        resonance_strength=c.resonance_strength,
-                        phi_15_distance=c.phi_15_distance,
-                        structure_score=min(1.0, boosted_score),
-                    )
-                    for c in candidates
-                ]
+                amplified_candidate = NonceCandidate(
+                    nonce=candidate.nonce,
+                    resonance_strength=candidate.resonance_strength,
+                    phi_15_distance=candidate.phi_15_distance,
+                    structure_score=min(1.0, boosted_score),
+                )
+                amplified_candidates.append(amplified_candidate)
+            else:
+                # Suppress scores below mean
+                suppression_factor = 1.0 - 0.2 * abs(sin((2 * iterations + 1) * pi / 4))
+                suppressed_score = candidate.structure_score * suppression_factor
+                amplified_candidate = NonceCandidate(
+                    nonce=candidate.nonce,
+                    resonance_strength=candidate.resonance_strength,
+                    phi_15_distance=candidate.phi_15_distance,
+                    structure_score=max(0.0, suppressed_score),
+                )
+                amplified_candidates.append(amplified_candidate)
         
         # Re-sort by amplified scores
-        return sorted(candidates, key=lambda x: x.structure_score, reverse=True)
+        return sorted(amplified_candidates, key=lambda x: x.structure_score, reverse=True)
     
     def search(
         self,
