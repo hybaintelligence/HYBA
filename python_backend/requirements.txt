@@ -39,3 +39,6 @@ noise==1.2.2
 # Command-line argument parsing (if needed beyond stdlib argparse)
 # argparse is stdlib, no need to include
 
+opentelemetry-api==1.29.0
+opentelemetry-sdk==1.29.0
+opentelemetry-exporter-otlp==1.29.0

@@ -223,17 +223,14 @@ class _CustomerCIAASRegistry:
     ) -> Dict[str, Any]:
         computer = self.get(customer, service_id)
 
-        # Check and increment usage before execution
+        # Check quota and meter accepted work before execution.
         context_size = len(str(request.context))
-        customer_registry.check_and_increment_usage(customer, request_cost=1, compute_cost=context_size)
+        usage_meter = customer_registry.meter(customer, product="ciaas.execute", units=context_size)
 
         result = admin_ciaas_registry.execute(service_id, request)
         usage = customer_registry.get_usage_metrics(customer)
         result["usage"] = usage.model_dump()
-        result["usage_meter"] = {
-            "product": "ciaas.execute",
-            "units": context_size,
-        }
+        result["usage_meter"] = usage_meter
         return result
 
 
