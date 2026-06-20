@@ -1560,7 +1560,7 @@ class TestAutonomousMiningControllerOperationalHardening(unittest.TestCase):
                 hashlib.sha256(state_file.read_bytes()).hexdigest(),
             )
             state = json.loads(state_file.read_text(encoding="utf-8"))
-            self.assertEqual(state["schema_version"], 2)
+            self.assertEqual(state["schema_version"], 3)
             self.assertTrue((Path(tmp) / "backups").exists())
 
             restored = AutonomousMiningController(
@@ -1755,6 +1755,72 @@ class TestAutonomousMiningControllerOperationalHardening(unittest.TestCase):
                 for entry in controller.get_audit_log()
             )
         )
+
+    def test_pool_feedback_window_preserves_first_class_pool_signals(self):
+        """Pool/testnet feedback should be bounded and rich enough to drive learning."""
+        for index in range(1005):
+            self.controller.record_pool_response(
+                accepted=index % 3 == 0,
+                latency_ms=10 + index,
+                response_time_ms=20 + index,
+                reason="low-difficulty-share" if index % 3 else "accepted",
+                error_code=None if index % 3 == 0 else "23",
+                difficulty=1.0 + (index % 7),
+                proposal_id=f"proposal-{index}",
+                decision_id=f"decision-{index}",
+                target="search_depth",
+            )
+
+        self.assertEqual(len(self.controller._pool_response_history), 1000)
+        first = self.controller._pool_response_history[0]
+        self.assertEqual(first["proposal_id"], "proposal-5")
+        self.assertIn("error_code", first)
+        self.assertIn("difficulty", first)
+        self.assertIn("response_time_ms", first)
+
+        evidence = self.controller.supervised_production_evidence_status()
+        self.assertEqual(evidence["pool_response_window_limit"], 1000)
+        self.assertEqual(evidence["pool_feedback_samples"], 1000)
+        self.assertEqual(evidence["pythia_decision_linked_samples"], 1000)
+        self.assertTrue(evidence["acceptance_criteria"]["real_pool_or_testnet_feedback"])
+        self.assertTrue(evidence["acceptance_criteria"]["share_telemetry_tied_to_pythia_decisions"])
+        self.assertEqual(evidence["unattended_production"], "blocked_until_24h_evidence_pack")
+
+    def test_pool_feedback_and_target_evidence_survive_restart(self):
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as tmp:
+            controller = AutonomousMiningController(
+                self.unified_engine,
+                AutonomousConfig(persistence_enabled=True, persistence_dir=tmp),
+            )
+            controller.record_pool_response(
+                accepted=True,
+                latency_ms=12.5,
+                error_code=None,
+                difficulty=4.0,
+                proposal_id="proposal-live-1",
+                decision_id="decision-live-1",
+                target="phi_scaling",
+            )
+            controller._save_reflexive_state()
+
+            restored = AutonomousMiningController(
+                self.unified_engine,
+                AutonomousConfig(persistence_enabled=True, persistence_dir=tmp),
+            )
+
+            self.assertEqual(len(restored._pool_response_history), 1)
+            self.assertEqual(restored._pool_response_history[0]["difficulty"], 4.0)
+            self.assertEqual(
+                restored.get_reflexive_target_bandit_snapshot()["phi_scaling"]["successes"],
+                2,
+            )
+            self.assertTrue(
+                restored.supervised_production_evidence_status()["acceptance_criteria"][
+                    "share_telemetry_tied_to_pythia_decisions"
+                ]
+            )
 
 
 if __name__ == "__main__":

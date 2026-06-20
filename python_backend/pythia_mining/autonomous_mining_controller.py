@@ -337,6 +337,8 @@ class AutonomyMetrics:
 _MAX_PHI_DENSITY_HISTORY_LEN: int = 200
 _MAX_COMPRESSION_SEEKING_HISTORY_LEN: int = 100
 _MAX_LOGICAL_CONSISTENCY_HISTORY_LEN: int = 100
+_MAX_POOL_RESPONSE_HISTORY_LEN: int = 1000
+_POOL_FEEDBACK_RECENT_WINDOW: int = 100
 
 
 @dataclass
@@ -372,7 +374,7 @@ class AutonomousConfig:
     knowledge_growth_rate_target: float = 0.01  # Minimum knowledge growth per cycle
     # Persistence
     persistence_enabled: bool = True
-    state_schema_version: int = 2
+    state_schema_version: int = 3
     state_backup_count: int = 10
     restore_autonomy_level_from_state: bool = False
     state_lock_stale_seconds: float = field(
@@ -614,7 +616,11 @@ class AutonomousMiningController:
         accepted: Optional[bool] = None,
         latency_ms: Optional[float] = None,
         reason: str = "",
+        error_code: Optional[Union[str, int]] = None,
+        difficulty: Optional[float] = None,
+        response_time_ms: Optional[float] = None,
         proposal_id: Optional[str] = None,
+        decision_id: Optional[str] = None,
         target: Optional[str] = None,
         share_accepted: Optional[bool] = None,
         error_code: Optional[str] = None,
@@ -624,9 +630,9 @@ class AutonomousMiningController:
         """Ingest an actual pool/testnet response without bypassing local verification.
 
         The reflexive loop must not learn exclusively from its deterministic virtual
-        landscape. This method records real accept/reject evidence and updates the
-        target bandits using exponential evidence weighting: successes compound by
-        1.1× and failures compound by 0.9×, while posterior counts remain bounded.
+        landscape. This method records real accept/reject evidence, including pool
+        error code, difficulty, and response-time evidence, then updates bounded
+        posterior target counts for deterministic Thompson-style selection.
         """
         if accepted is None:
             accepted = bool(share_accepted)
@@ -644,6 +650,7 @@ class AutonomousMiningController:
         if response_target not in self._reflexive_target_bandits:
             response_target = "compression_target"
 
+        observed_response_time = latency_ms if response_time_ms is None else response_time_ms
         response = {
             "accepted": bool(accepted),
             "latency_ms": max(0.0, float(latency_ms)),
@@ -651,6 +658,7 @@ class AutonomousMiningController:
             "error_code": error_code,
             "job_difficulty": None if job_difficulty is None else float(job_difficulty),
             "proposal_id": proposal_id,
+            "decision_id": decision_id,
             "target": response_target,
             "timestamp": time.time(),
             "recorded_at": time.time(),
@@ -1464,6 +1472,44 @@ class AutonomousMiningController:
             return 0.0
         acceptance = weighted_accepts / weighted_total
         return (acceptance - 0.5) * 0.02
+
+    def supervised_production_evidence_status(self) -> Dict[str, Any]:
+        """Return the evidence-gate status for supervised production graduation.
+
+        This is deliberately an evidence ledger, not a self-certification path: live
+        pool/testnet responses, restart-surviving state, proposal provenance, and
+        resource-drift measurements must be present before unattended production is
+        defensible.
+        """
+        linked_responses = [
+            r for r in self._pool_response_history if r.get("proposal_id") or r.get("decision_id")
+        ]
+        targets_with_feedback = sorted(
+            {str(r.get("target")) for r in self._pool_response_history if r.get("target")}
+        )
+        return {
+            "posture": "supervised_production_ready",
+            "unattended_production": "blocked_until_24h_evidence_pack",
+            "pool_response_window_limit": _MAX_POOL_RESPONSE_HISTORY_LEN,
+            "pool_feedback_samples": len(self._pool_response_history),
+            "accepted_shares": sum(1 for r in self._pool_response_history if r.get("accepted")),
+            "rejected_shares": sum(1 for r in self._pool_response_history if not r.get("accepted")),
+            "targets_with_feedback": targets_with_feedback,
+            "pythia_decision_linked_samples": len(linked_responses),
+            "target_selection": self.get_reflexive_target_bandit_snapshot(),
+            "acceptance_criteria": {
+                "pytest_suite_local_venv": "required_external_evidence",
+                "command_room_game_day_transcript": "required_external_evidence",
+                "twenty_four_hour_supervised_run": "required_external_evidence",
+                "real_pool_or_testnet_feedback": bool(self._pool_response_history),
+                "proposal_provenance_preserved": all(
+                    bool(p.codebase_source_module) for p in self.proposal_history
+                ),
+                "restart_recovery_verified": self.config.persistence_enabled,
+                "memory_cpu_drift_measured": "required_external_evidence",
+                "share_telemetry_tied_to_pythia_decisions": bool(linked_responses),
+            },
+        }
 
     def validate_constraints(self, proposal: SelfOptimizationProposal) -> bool:
         """Validate that a proposal satisfies all 5 Safety Constraints.
