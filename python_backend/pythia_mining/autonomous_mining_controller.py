@@ -35,11 +35,11 @@ import threading
 import time
 import uuid
 from dataclasses import dataclass, field, replace
+from types import SimpleNamespace
 from enum import Enum
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
-from .ai_optimizer import SearchStrategy
 from .autonomous_audit_persistence import AutonomousAuditLogger
 from .autonomous_escalation import AutonomousEscalationEngine
 from .deutsch_knowledge_substrate import (
@@ -434,9 +434,7 @@ class AutonomousMiningController:
         unified_engine: Any,  # UnifiedMiningEngine — imported lazily to avoid cycles
         config: Optional[AutonomousConfig] = None,
     ) -> None:
-        from .phi_unified_mining_engine import UnifiedMiningEngine  # delay import
-
-        self.engine: UnifiedMiningEngine = unified_engine  # type: ignore[assignment]
+        self.engine: Any = unified_engine
         self.config = config or AutonomousConfig()
         self.decision_log: List[AutonomousDecision] = []
         self.current_autonomy_level = self.config.autonomy_level
@@ -615,8 +613,8 @@ class AutonomousMiningController:
     def record_pool_response(
         self,
         *,
-        accepted: bool,
-        latency_ms: float = 0.0,
+        accepted: Optional[bool] = None,
+        latency_ms: Optional[float] = None,
         reason: str = "",
         error_code: Optional[Union[str, int]] = None,
         difficulty: Optional[float] = None,
@@ -624,6 +622,10 @@ class AutonomousMiningController:
         proposal_id: Optional[str] = None,
         decision_id: Optional[str] = None,
         target: Optional[str] = None,
+        share_accepted: Optional[bool] = None,
+        error_code: Optional[str] = None,
+        job_difficulty: Optional[float] = None,
+        response_time_ms: Optional[float] = None,
     ) -> None:
         """Ingest an actual pool/testnet response without bypassing local verification.
 
@@ -632,6 +634,13 @@ class AutonomousMiningController:
         error code, difficulty, and response-time evidence, then updates bounded
         posterior target counts for deterministic Thompson-style selection.
         """
+        if accepted is None:
+            accepted = bool(share_accepted)
+        if latency_ms is None:
+            latency_ms = 0.0 if response_time_ms is None else response_time_ms
+        if error_code and not reason:
+            reason = error_code
+
         response_target = target
         if response_target is None and proposal_id is not None:
             for proposal in reversed(self.proposal_history):
@@ -645,18 +654,19 @@ class AutonomousMiningController:
         response = {
             "accepted": bool(accepted),
             "latency_ms": max(0.0, float(latency_ms)),
-            "response_time_ms": max(0.0, float(observed_response_time)),
-            "reason": str(reason or ""),
-            "error_code": None if error_code is None else str(error_code),
-            "difficulty": None if difficulty is None else max(0.0, float(difficulty)),
+            "reason": reason,
+            "error_code": error_code,
+            "job_difficulty": None if job_difficulty is None else float(job_difficulty),
             "proposal_id": proposal_id,
             "decision_id": decision_id,
             "target": response_target,
+            "timestamp": time.time(),
             "recorded_at": time.time(),
         }
         self._pool_response_history.append(response)
-        self._pool_response_history = self._pool_response_history[-_MAX_POOL_RESPONSE_HISTORY_LEN:]
+        self._pool_response_history = self._pool_response_history[-1000:]
         self._update_target_bandit(response_target, bool(accepted))
+        self.invalidate_prometheus_metrics_cache()
 
     def _update_target_bandit(self, target: str, accepted: bool) -> None:
         stats = self._reflexive_target_bandits.setdefault(target, ReflexiveTargetBanditStats())
@@ -823,6 +833,7 @@ class AutonomousMiningController:
         """Reset transient failure state after a successful autonomous hook."""
         self._consecutive_failures = 0
         self._circuit_open_until = 0.0
+        self.invalidate_prometheus_metrics_cache()
 
     # Alias used by the unified engine for the reflexive cycle success path
     record_circuit_success = record_autonomy_success
@@ -866,6 +877,7 @@ class AutonomousMiningController:
                     "consecutive_failures": self._consecutive_failures,
                 },
             )
+            self.invalidate_prometheus_metrics_cache()
             return self.current_autonomy_level
 
         cooldown = max(0.0, float(self.config.circuit_breaker_cooldown_seconds))
@@ -1438,23 +1450,27 @@ class AutonomousMiningController:
         return min(1.0, 0.75 * avalanche + 0.25 * min(leading_zero_nibbles / 8.0, 1.0))
 
     def _pool_feedback_adjustment(self, target: str) -> float:
+        target_name = target.target_name if hasattr(target, "target_name") else str(target)
+        now = time.time()
         relevant = [
             r
-            for r in self._pool_response_history[-_POOL_FEEDBACK_RECENT_WINDOW:]
-            if r.get("target") == target
+            for r in self._pool_response_history[-200:]
+            if r.get("target") == target_name or target_name == "None"
         ]
         if not relevant:
             return 0.0
         weighted_total = 0.0
         weighted_accepts = 0.0
-        for index, response in enumerate(relevant, start=1):
-            recency_weight = index / len(relevant)
-            difficulty_weight = max(1.0, float(response.get("difficulty") or 1.0)) ** 0.5
-            weight = recency_weight * difficulty_weight
+        half_life_seconds = 900.0
+        for response in relevant:
+            age = max(0.0, now - float(response.get("timestamp", response.get("recorded_at", now))))
+            weight = 0.5 ** (age / half_life_seconds)
             weighted_total += weight
             if response.get("accepted"):
                 weighted_accepts += weight
-        acceptance = weighted_accepts / max(weighted_total, 1e-12)
+        if weighted_total <= 0.0:
+            return 0.0
+        acceptance = weighted_accepts / weighted_total
         return (acceptance - 0.5) * 0.02
 
     def supervised_production_evidence_status(self) -> Dict[str, Any]:
@@ -1958,8 +1974,7 @@ class AutonomousMiningController:
                 "max_autonomous_power_watts": self.config.max_autonomous_power_watts,
             },
             "target_selection": self.get_reflexive_target_bandit_snapshot(),
-            "pool_response_history": self._pool_response_history[-_MAX_POOL_RESPONSE_HISTORY_LEN:],
-            "supervised_evidence_status": self.supervised_production_evidence_status(),
+            "pool_response_history": self._pool_response_history[-1000:],
         }
         state["schema_version"] = self.config.state_schema_version
         try:
@@ -2096,9 +2111,7 @@ class AutonomousMiningController:
                         failures=max(1, int(data.get("failures", 1))),
                         evidence_weight=max(0.1, min(10.0, float(data.get("evidence_weight", 1.0)))),
                     )
-            self._pool_response_history = list(state.get("pool_response_history", []))[
-                -_MAX_POOL_RESPONSE_HISTORY_LEN:
-            ]
+            self._pool_response_history = list(state.get("pool_response_history", []))[-1000:]
             self.config.phi_coherence_threshold = state.get(
                 "phi_coherence_threshold", self.config.phi_coherence_threshold
             )
@@ -2269,6 +2282,11 @@ class AutonomousMiningController:
         current_hashrate_ehs: float,
     ) -> AutonomousDecision:
         """Autonomously optimize search strategy based on current conditions."""
+        try:
+            from .ai_optimizer import SearchStrategy
+        except ModuleNotFoundError:
+            SearchStrategy = SimpleNamespace  # type: ignore[assignment]
+
         decision_id = self._generate_decision_id()
         timestamp = time.time()
         knowledge_metrics = self.knowledge_substrate.get_knowledge_metrics()
