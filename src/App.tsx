@@ -59,6 +59,7 @@ import AIAssistant from "./components/AIAssistant";
 import MiningJobsSection from "./components/MiningJobsSection";
 import HistoricalDataSection from "./components/HistoricalDataSection";
 import AnalyticsSection from "./components/AnalyticsSection";
+import CustomerPortal from "./components/CustomerPortal";
 import { useApiRequest } from "./hooks/useApiRequest";
 import { useLatencyMetrics } from "./hooks/useLatencyMetrics";
 import { buildGovernanceSignals, type GovernanceSignal } from "./governance";
@@ -192,7 +193,7 @@ function AppContent() {
   const [selectedPoolForConfig, setSelectedPoolForConfig] = useState<PoolInfo | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [currentView, setCurrentView] = useState<
-    "dashboard" | "admin" | "executive" | "jobs" | "history" | "analytics"
+    "dashboard" | "admin" | "executive" | "jobs" | "history" | "analytics" | "portal"
   >("dashboard");
 
   const { execute: fetchTelemetryExecute } = useApiRequest(fetchTelemetryData, { maxRetries: 3 });
@@ -639,6 +640,14 @@ function AppContent() {
               <BarChart3 className="h-3.5 w-3.5" />
               <span>{currentView === "analytics" ? "Dashboard" : "Analytics"}</span>
             </button>
+            <button
+              onClick={() => setCurrentView(currentView === "portal" ? "dashboard" : "portal")}
+              className={`status-pill border ${currentView === "portal" ? "border-indigo-300/30 bg-indigo-400/15 text-indigo-100" : "border-white/30 bg-white/10 text-white"}`}
+              title={currentView === "portal" ? "Return to Dashboard" : "Open Customer Portal"}
+            >
+              <UserCheck className="h-3.5 w-3.5" />
+              <span>{currentView === "portal" ? "Dashboard" : "Portal"}</span>
+            </button>
             {(isAdmin || isExecutive) && (
               <>
                 <div className="h-6 w-px bg-white/20" />
@@ -699,6 +708,8 @@ function AppContent() {
           <HistoricalDataSection telemetry={telemetry} />
         ) : currentView === "analytics" ? (
           <AnalyticsSection telemetry={telemetry} pools={pools} />
+        ) : currentView === "portal" ? (
+          <CustomerPortal />
         ) : (
           <>
             <ExecutiveSummary

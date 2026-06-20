@@ -1,0 +1,5 @@
+image:
+  repository: ghcr.io/hyba/platform
+  tag: production
+replicaCount: 6
+environment: production

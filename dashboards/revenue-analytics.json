@@ -1,0 +1,13 @@
+{
+  "dashboard": {
+    "title": "Revenue Analytics",
+    "tags": ["hyba", "revenue", "market-readiness"],
+    "timezone": "browser",
+    "panels": [
+      {"title": "ARR (Annual Recurring Revenue)", "type": "stat", "targets": [{"expr": "sum(rate(hyba_billing_accepted_units_total[30d])) * 0.0001 * 12"}]},
+      {"title": "Customer Churn Rate", "type": "timeseries", "targets": [{"expr": "hyba_customer_churn_rate"}]},
+      {"title": "LTV / CAC Ratio", "type": "stat", "targets": [{"expr": "hyba_unit_economics_ltv_cac_ratio"}]},
+      {"title": "Forecast 12-Month Revenue", "type": "timeseries", "targets": [{"expr": "predict_linear(hyba_arr[7d], 365*24*60*60)"}]}
+    ]
+  }
+}
