@@ -34,25 +34,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [backendUser, setBackendUser] = useState<BackendUser | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchBackendProfile = async (token: string | null) => {
-    if (!token) {
-      setBackendUser(null);
-      return;
-    }
+  const fetchBackendProfile = async () => {
     try {
       const response = await fetch("/api/auth/profile", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        credentials: "include",
       });
       if (response.ok) {
         const data = await response.json();
         if (data.success && data.user) {
           setBackendUser(data.user);
+          return;
         }
       }
-    } catch (error) {
-      console.error("Failed to fetch backend profile:", error);
+      setBackendUser(null);
+    } catch {
+      setBackendUser(null);
     }
   };
 
@@ -65,8 +61,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   useEffect(() => {
-    const token = localStorage.getItem("hyba_auth_token") || localStorage.getItem("quantum_token");
-    fetchBackendProfile(token);
+    fetchBackendProfile();
   }, [user]);
 
   const isAdmin = backendUser?.role === "admin";
