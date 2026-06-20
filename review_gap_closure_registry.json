@@ -1,0 +1,129 @@
+{
+  "version": "2026-06-20",
+  "purpose": "Unified closure matrix for every gap review found in the repository: institutional, ecosystem, forensic/security, test-gap, McKinsey/HBS, and first-customer readiness.",
+  "claim_boundary": "Closed means the repository contains an auditable artifact, implementation hook, or validation gate. It does not mean external peer review, customer adoption, regulatory approval, live revenue, or physical quantum advantage has occurred.",
+  "reviews": [
+    {
+      "id": "institutional_qaas_19",
+      "source": "docs/institutional_qaas/gap_closure_registry.json",
+      "status": "closed_internal_artifacts",
+      "closed_count": 19,
+      "total_count": 19,
+      "customer_readiness_impact": "institutional diligence package",
+      "required_paths": [
+        "docs/institutional_qaas/gap_closure_registry.json",
+        "docs/institutional_qaas/MASTER_GAP_CLOSURE_STATUS.md",
+        "scripts/check_institutional_qaas_gap_closure.py"
+      ],
+      "validation_commands": ["python3 scripts/check_institutional_qaas_gap_closure.py"],
+      "remaining_external_gaps": ["peer review acceptance", "institutional endorsement", "external benchmark replication"]
+    },
+    {
+      "id": "mckinsey_hbs_business_intelligence",
+      "source": "MCKINSEY_GAP_ANALYSIS.md",
+      "status": "closed_internal_modules",
+      "closed_count": 16,
+      "total_count": 16,
+      "customer_readiness_impact": "CFO/CEO operating model for first enterprise pilot",
+      "required_paths": [
+        "reproducibility/benchmarks/sla_tracker.py",
+        "reproducibility/benchmarks/cost_attribution.py",
+        "reproducibility/benchmarks/risk_registry.py",
+        "reproducibility/benchmarks/compliance_validator.py",
+        "reproducibility/benchmarks/cohort_analytics.py",
+        "reproducibility/benchmarks/unit_economics.py",
+        "reproducibility/benchmarks/organizational_design.py",
+        "reproducibility/benchmarks/change_management.py",
+        "reproducibility/benchmarks/financial_model.py",
+        "reproducibility/benchmarks/financial_health.py",
+        "reproducibility/benchmarks/nps_program.py",
+        "reproducibility/benchmarks/customer_effort.py",
+        "reproducibility/benchmarks/win_loss_analysis.py",
+        "reproducibility/benchmarks/executive_dashboard.py",
+        "reproducibility/benchmarks/peer_benchmarking.py",
+        "reproducibility/benchmarks/okr_framework.py"
+      ],
+      "validation_commands": ["python3 -m py_compile reproducibility/benchmarks/*.py"],
+      "remaining_external_gaps": ["board-approved pricing", "real cohort data", "first-customer win/loss dataset"]
+    },
+    {
+      "id": "ecosystem_enablement",
+      "source": "QAAS_INFRASTRUCTURE_ECOSYSTEM_GAP_ANALYSIS.md",
+      "status": "closed_internal_enablement",
+      "closed_count": 10,
+      "total_count": 10,
+      "customer_readiness_impact": "developer self-service and enterprise integration path",
+      "required_paths": [
+        "sdks/hyba-sdk-py/hyba_sdk/client.py",
+        "sdks/hyba-sdk-py/README.md",
+        "sdks/hyba-sdk-ts/package.json",
+        "sdks/hyba-cli/hyba_cli/cli.py",
+        "python_backend/hyba_genesis_api/api/webhooks.py",
+        "python_backend/hyba_genesis_api/api/sandbox.py",
+        "terraform-provider-hyba/README.md",
+        "k8s-operator/INSTALLATION.md",
+        "dashboards/hyba_commercial_observability.json",
+        ".github/workflows/production-readiness.yml"
+      ],
+      "validation_commands": ["python3 scripts/check_first_customer_readiness.py"],
+      "remaining_external_gaps": ["public developer portal launch", "published SDK packages", "partner marketplace launch"]
+    },
+    {
+      "id": "forensic_security_operations",
+      "source": "FORENSIC_ANALYSIS_REPORT.md",
+      "status": "closed_static_security_gate",
+      "closed_count": 8,
+      "total_count": 8,
+      "customer_readiness_impact": "security posture needed for procurement review",
+      "required_paths": [
+        "scripts/check_forensic_gap_closure.py",
+        "scripts/check_secret_hygiene.py",
+        "scripts/run_local_security_scan.py",
+        "docs/security/FORENSIC_GAP_CLOSURE_MATRIX_2026-06-19.md",
+        "docs/runbooks/INCIDENT_RESPONSE_PLAYBOOK.md",
+        "docs/runbooks/DISASTER_RECOVERY_AND_BACKUP.md",
+        "docs/runbooks/DATABASE_MIGRATION_ROLLBACK.md",
+        "docs/observability/MONITORING_ALERTING_BASELINE.md"
+      ],
+      "validation_commands": ["python3 scripts/check_forensic_gap_closure.py"],
+      "remaining_external_gaps": ["customer security questionnaire", "SOC2/ISO audit evidence", "production DR exercise"]
+    },
+    {
+      "id": "test_gap_analysis_runtime",
+      "source": "TEST_GAP_ANALYSIS.md",
+      "status": "closed_by_regression_matrix",
+      "closed_count": 9,
+      "total_count": 9,
+      "customer_readiness_impact": "runtime defects mapped to regression coverage and claim boundaries",
+      "required_paths": [
+        "tests/test_review_gap_closure_matrix.py",
+        "python_backend/pythia_mining/dodecahedral_solver.py",
+        "python_backend/pythia_mining/hendrix_phi_solver.py",
+        "python_backend/pythia_mining/iit_4_analyzer.py",
+        "python_backend/hyba_genesis_api/core/api_posture.py",
+        "scripts/evidence_boundary_report.py"
+      ],
+      "validation_commands": ["python3 -m pytest tests/test_review_gap_closure_matrix.py"],
+      "remaining_external_gaps": ["full-suite runtime pass in pinned Python environment", "live-pool accepted share evidence"]
+    },
+    {
+      "id": "first_customer_readiness",
+      "source": "FIRST_CUSTOMER_READINESS.md",
+      "status": "closed_internal_go_to_pilot_gate",
+      "closed_count": 7,
+      "total_count": 7,
+      "customer_readiness_impact": "single source of truth for first pilot go/no-go",
+      "required_paths": [
+        "FIRST_CUSTOMER_READINESS.md",
+        "docs/PRODUCTION_DEPLOYMENT_QUICKSTART.md",
+        "docs/LIVE_MINING_QUICKSTART.md",
+        "docs/commercial_billing_observability.md",
+        "alerts/hyba_billing_observability.yaml",
+        "dashboards/hyba_commercial_observability.json",
+        "scripts/check_first_customer_readiness.py"
+      ],
+      "validation_commands": ["python3 scripts/check_first_customer_readiness.py"],
+      "remaining_external_gaps": ["signed pilot design partner", "customer environment credentials", "customer acceptance signoff"]
+    }
+  ]
+}
