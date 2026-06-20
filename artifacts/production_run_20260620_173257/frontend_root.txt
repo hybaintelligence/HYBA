@@ -1,0 +1,1 @@
+{"status":"online","service":"HYBA Secure Bridge","version":"2.1.0","backendReachable":true,"timestamp":"2026-06-20T16:35:10.427Z"}

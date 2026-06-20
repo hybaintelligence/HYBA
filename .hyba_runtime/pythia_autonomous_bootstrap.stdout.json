@@ -18,16 +18,16 @@
       },
       "current_autonomy_level": "advisory",
       "degradation_events": 0,
-      "last_reflexive_cycle_duration_ms": 0.251,
+      "last_reflexive_cycle_duration_ms": 0.21,
       "operator_overrides": 0,
       "pending_operator_approvals": 0,
-      "phi_density": 0.9840374991979507,
+      "phi_density": 0.9840158326913563,
       "proposal_acceptance_rate": 1.0,
-      "reflexive_cycle_count": 273,
+      "reflexive_cycle_count": 284,
       "stale_state_lock_recoveries": 0,
       "total_decisions": 0
     },
-    "phi_density": 0.9840374991979507,
+    "phi_density": 0.9840158326913563,
     "status": {
       "autonomous_decisions": 0,
       "autonomy_level": "advisory",
@@ -45,15 +45,15 @@
       "reflexive_learning": {
         "compression_drive_enabled": true,
         "enabled": true,
-        "knowledge_counterfactuals": 3,
+        "knowledge_counterfactuals": 2,
         "knowledge_criticisms": 0,
-        "knowledge_explanations": 4,
-        "latest_phi_density": 0.9840374991446332,
+        "knowledge_explanations": 3,
+        "latest_phi_density": 0.9840183326576422,
         "logical_consistency_history_length": 100,
-        "phi_density": 0.9840374991979507,
+        "phi_density": 0.9840158326913563,
         "proposals_applied": 5,
         "proposals_generated": 5,
-        "self_optimization_epochs": 273
+        "self_optimization_epochs": 284
       },
       "total_decisions": 0
     },
@@ -61,7 +61,7 @@
       "edge_count": 205,
       "entropy_source_count": 12,
       "invariant_count": 15,
-      "module_count": 152,
+      "module_count": 153,
       "stable_core_count": 24
     }
   },
@@ -89,18 +89,18 @@
       "last_reflexive_cycle_duration_ms": 0.0,
       "operator_overrides": 0,
       "pending_operator_approvals": 0,
-      "phi_density": 0.7340399990837242,
+      "phi_density": 0.7340433326201911,
       "proposal_acceptance_rate": 0.0,
-      "reflexive_cycle_count": 268,
+      "reflexive_cycle_count": 279,
       "stale_state_lock_recoveries": 0,
       "total_decisions": 0
     },
-    "phi_density": 0.7340399990837242,
+    "phi_density": 0.7340433326201911,
     "surroundings": {
       "edge_count": 205,
       "entropy_source_count": 12,
       "invariant_count": 15,
-      "module_count": 152,
+      "module_count": 153,
       "stable_core_count": 24
     }
   },
@@ -112,17 +112,17 @@
       "compression_drive": {
         "enabled": true,
         "history_length": 100,
-        "latest_seeking": 1.8971999828926664
+        "latest_seeking": 1.8971999864861768
       },
-      "current_phi_density": 0.9840374991446332,
-      "cycle_duration_ms": 0.415,
+      "current_phi_density": 0.9840183326576422,
+      "cycle_duration_ms": 0.397,
       "cycle_duration_seconds": 0.0004,
-      "epoch": 271,
+      "epoch": 282,
       "knowledge_metrics": {
         "avg_predictive_accuracy": 1.0,
-        "counterfactual_models": 3,
+        "counterfactual_models": 1,
         "criticism_events": 0,
-        "knowledge_growth_rate": 76260.07272727272,
+        "knowledge_growth_rate": 93206.75555555556,
         "total_explanations": 3
       },
       "pool_feedback_samples": 0,
@@ -137,14 +137,14 @@
             "information_integrity"
           ],
           "constraints_violated": [],
-          "counterfactual_confidence": 0.3,
-          "current_value": 1.5,
-          "expected_gain": 0.022692048792760322,
-          "improvement_type": "phi_scaling",
-          "logical_consistency": 0.76,
-          "proposal_id": "self_opt_268_1781968481",
-          "proposed_value": 1.4249999999999998,
-          "source_module": "phi_scaling_engine"
+          "counterfactual_confidence": 0.6,
+          "current_value": 0.7903054571664617,
+          "expected_gain": 0.021998431781839467,
+          "improvement_type": "coherence_threshold",
+          "logical_consistency": 0.7,
+          "proposal_id": "self_opt_279_1781973295",
+          "proposed_value": 0.8298207300247848,
+          "source_module": "consciousness_engine"
         },
         {
           "applied": true,
@@ -156,13 +156,13 @@
             "information_integrity"
           ],
           "constraints_violated": [],
-          "counterfactual_confidence": 0.8999999080250891,
+          "counterfactual_confidence": 0.8999999273450358,
           "current_value": 1.86,
-          "expected_gain": 0.01953528080856959,
+          "expected_gain": 0.020112565416491757,
           "improvement_type": "compression_target",
           "logical_consistency": 0.8,
-          "proposal_id": "self_opt_268_1781968481",
-          "proposed_value": 1.8971999828926664,
+          "proposal_id": "self_opt_279_1781973295",
+          "proposed_value": 1.8971999864861768,
           "source_module": "pulvini_memory_compression_proof"
         },
         {
@@ -177,10 +177,10 @@
           "constraints_violated": [],
           "counterfactual_confidence": 0.6,
           "current_value": 60.0,
-          "expected_gain": 0.02544639843268459,
+          "expected_gain": 0.025480194538633483,
           "improvement_type": "search_depth",
           "logical_consistency": 0.75,
-          "proposal_id": "self_opt_268_1781968481",
+          "proposal_id": "self_opt_279_1781973295",
           "proposed_value": 54.0,
           "source_module": "ai_optimizer"
         }
@@ -203,33 +203,33 @@
           "topological_holonomy_engine",
           "iit_4_analyzer"
         ],
-        "module_count": 152,
+        "module_count": 153,
         "stable_core_count": 24
       },
       "target_selection": {
         "coherence_threshold": {
-          "evidence_weight": 1.948717,
+          "evidence_weight": 2.357948,
           "failures": 1,
-          "posterior_mean": 0.888889,
-          "successes": 8
+          "posterior_mean": 0.909091,
+          "successes": 10
         },
         "compression_target": {
           "evidence_weight": 10.0,
           "failures": 1,
-          "posterior_mean": 0.965517,
-          "successes": 28
+          "posterior_mean": 0.969697,
+          "successes": 32
         },
         "phi_scaling": {
-          "evidence_weight": 3.138429,
+          "evidence_weight": 3.797499,
           "failures": 1,
-          "posterior_mean": 0.928571,
-          "successes": 13
+          "posterior_mean": 0.9375,
+          "successes": 15
         },
         "search_depth": {
-          "evidence_weight": 8.954304,
+          "evidence_weight": 10.0,
           "failures": 1,
-          "posterior_mean": 0.96,
-          "successes": 24
+          "posterior_mean": 0.964286,
+          "successes": 27
         }
       }
     },
@@ -238,17 +238,17 @@
       "compression_drive": {
         "enabled": true,
         "history_length": 100,
-        "latest_seeking": 1.8971999839590146
+        "latest_seeking": 1.8971999871604608
       },
-      "current_phi_density": 0.9840374991979507,
-      "cycle_duration_ms": 0.251,
-      "cycle_duration_seconds": 0.0003,
-      "epoch": 273,
+      "current_phi_density": 0.9840158326913563,
+      "cycle_duration_ms": 0.21,
+      "cycle_duration_seconds": 0.0002,
+      "epoch": 284,
       "knowledge_metrics": {
         "avg_predictive_accuracy": 1.0,
-        "counterfactual_models": 3,
+        "counterfactual_models": 2,
         "criticism_events": 0,
-        "knowledge_growth_rate": 2210.3204047217537,
+        "knowledge_growth_rate": 2135.8101639678175,
         "total_explanations": 5
       },
       "pool_feedback_samples": 0,
@@ -263,14 +263,14 @@
             "information_integrity"
           ],
           "constraints_violated": [],
-          "counterfactual_confidence": 0.8,
-          "current_value": 0.8319004812278545,
-          "expected_gain": 0.015962500855366768,
-          "improvement_type": "coherence_threshold",
-          "logical_consistency": 0.8999999999999999,
-          "proposal_id": "self_opt_271_1781968481",
-          "proposed_value": 0.7903054571664617,
-          "source_module": "consciousness_engine"
+          "counterfactual_confidence": 0.8999999309702189,
+          "current_value": 1.86,
+          "expected_gain": 0.01598166734235784,
+          "improvement_type": "compression_target",
+          "logical_consistency": 0.8,
+          "proposal_id": "self_opt_282_1781973295",
+          "proposed_value": 1.8971999871604608,
+          "source_module": "pulvini_memory_compression_proof"
         },
         {
           "applied": true,
@@ -282,14 +282,14 @@
             "information_integrity"
           ],
           "constraints_violated": [],
-          "counterfactual_confidence": 0.8999999137581415,
-          "current_value": 1.86,
-          "expected_gain": 0.015962500855366768,
-          "improvement_type": "compression_target",
-          "logical_consistency": 0.8,
-          "proposal_id": "self_opt_271_1781968481",
-          "proposed_value": 1.8971999839590146,
-          "source_module": "pulvini_memory_compression_proof"
+          "counterfactual_confidence": 0.6,
+          "current_value": 60.0,
+          "expected_gain": 0.01598166734235784,
+          "improvement_type": "search_depth",
+          "logical_consistency": 0.75,
+          "proposal_id": "self_opt_282_1781973295",
+          "proposed_value": 54.0,
+          "source_module": "ai_optimizer"
         }
       ],
       "proposals_applied": 2,
@@ -310,45 +310,45 @@
           "topological_holonomy_engine",
           "iit_4_analyzer"
         ],
-        "module_count": 152,
+        "module_count": 153,
         "stable_core_count": 24
       },
       "target_selection": {
         "coherence_threshold": {
-          "evidence_weight": 2.143589,
+          "evidence_weight": 2.357948,
           "failures": 1,
-          "posterior_mean": 0.9,
-          "successes": 9
+          "posterior_mean": 0.909091,
+          "successes": 10
         },
         "compression_target": {
           "evidence_weight": 10.0,
           "failures": 1,
-          "posterior_mean": 0.966667,
-          "successes": 29
+          "posterior_mean": 0.970588,
+          "successes": 33
         },
         "phi_scaling": {
-          "evidence_weight": 3.138429,
+          "evidence_weight": 3.797499,
           "failures": 1,
-          "posterior_mean": 0.928571,
-          "successes": 13
+          "posterior_mean": 0.9375,
+          "successes": 15
         },
         "search_depth": {
-          "evidence_weight": 8.954304,
+          "evidence_weight": 10.0,
           "failures": 1,
-          "posterior_mean": 0.96,
-          "successes": 24
+          "posterior_mean": 0.965517,
+          "successes": 28
         }
       }
     }
   ],
   "epochs_executed": 2,
   "epochs_requested": 2,
-  "generated_at_utc": "2026-06-20T15:14:41.578299+00:00",
+  "generated_at_utc": "2026-06-20T16:34:55.592919+00:00",
   "runtime_introspection": {
     "edge_count": 205,
     "entropy_source_count": 12,
     "invariant_count": 15,
-    "module_count": 152,
+    "module_count": 153,
     "previous_module_count": 12,
     "source": "runtime_ast_import_graph",
     "stable_core_count": 24,
@@ -361,9 +361,9 @@
     "stale_state_lock_recoveries": 0
   },
   "self_optimising": {
-    "last_reflexive_cycle_duration_ms": 0.251,
+    "last_reflexive_cycle_duration_ms": 0.21,
     "proposal_acceptance_rate": 1.0,
-    "reflexive_cycle_count": 273,
+    "reflexive_cycle_count": 284,
     "virtual_mining_simulation": "deterministic_sha256d_hash_landscape"
   }
 }

@@ -1,6 +1,6 @@
 {
   "status": "TIMEOUT",
-  "runtime_minutes": 7,
+  "runtime_minutes": 10,
   "backend_health_ok": true,
   "frontend_health_ok": true,
   "focused_tests_passed": true,

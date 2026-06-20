@@ -1,5 +1,7 @@
  M artifacts/production_lunch_run/backend_health.json
  M artifacts/production_lunch_run/frontend_health.txt
  M artifacts/production_lunch_run/git_status_after.txt
+ M artifacts/production_lunch_run/mining_summary.json
 ?? ENTERPRISE_PRODUCTION_READINESS_REPORT.md
+?? artifacts/production_run_20260620_173257/
 ?? start.sh
