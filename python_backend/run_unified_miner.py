@@ -27,6 +27,18 @@ import signal
 import sys
 import time
 from pathlib import Path
+
+# Load .env.local BEFORE any pythia_mining imports (security gate runs at import time)
+_env_local = Path(__file__).resolve().parents[1] / ".env.local"
+if _env_local.exists():
+    with open(_env_local, "r") as f:
+        for line in f:
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+            if "=" in line:
+                key, _, value = line.partition("=")
+                os.environ.setdefault(key.strip(), value.strip().strip("\"'"))
 from typing import Any, List, Optional, Tuple
 
 # Add backend to path when this script is executed directly from the repository.

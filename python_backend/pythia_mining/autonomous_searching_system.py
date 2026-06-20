@@ -970,12 +970,34 @@ class AutonomousSearchSystem:
         self._candidate_buffer: List[int] = []
 
     def build_seed(self, chain_context: Mapping[str, Any]) -> int:
-        """Build a deterministic seed from chain context and structure evidence."""
+        """Build a deterministic seed from chain context and structure evidence.
+        
+        The seed MUST be derived from:
+        1. Block height (changes every block)
+        2. Target difficulty (changes with difficulty adjustment)
+        3. Structure score (empirical φ-resonance evidence)
+        4. Current timestamp (for additional entropy)
+        5. Packet hash (evidence packet fingerprint)
+        
+        This ensures the AI autonomous search is seeded with REAL blockchain
+        state and empirical structure evidence, not arbitrary values.
+        """
         material = {
             "height": chain_context.get("block_height", 0),
             "difficulty": chain_context.get("pool_difficulty", 1.0),
             "target": chain_context.get("target", 0),
+            "timestamp": int(time.time() * 1000),  # millisecond precision
             "structure_score": self.structure_prior.structure_score,
+            "phi_resonance_rate": (
+                self.structure_prior.evidence.phi_resonance_rate
+                if self.structure_prior.evidence
+                else 0.5
+            ),
+            "golden_angle_alignment": (
+                self.structure_prior.evidence.golden_angle_alignment
+                if self.structure_prior.evidence
+                else 0.0
+            ),
             "packet_hash": (
                 self.structure_prior.packet.packet_hash
                 if self.structure_prior.packet

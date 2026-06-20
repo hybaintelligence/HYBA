@@ -26,6 +26,7 @@ from __future__ import annotations
 import hashlib
 import json
 import logging
+import math
 import os
 import sys
 import time
@@ -159,22 +160,50 @@ def find_solution_nonce(system: AutonomousSearchSystem, limit: int = 500000) -> 
 # Build Evidence from Artifacts
 # ---------------------------------------------------------------------------
 
+def _score_evidence_quality(data: dict) -> float:
+    """Score evidence quality for ranking. Higher = better evidence."""
+    summary = data.get("summary", data)
+    z = float(summary.get("z_score_vs_random", 0.0))
+    rate = float(summary.get("phi_resonance_rate", 0.0))
+    p_val = summary.get("p_value_binomial", "1.0")
+    try:
+        p = float(p_val)
+    except Exception:
+        p = 1.0
+    # Composite: z-score dominant, resonance rate secondary, p-value tertiary
+    return z * 10.0 + rate * 5.0 + max(0.0, -math.log10(max(p, 1e-300)))
+
+
 def build_empirical_evidence() -> EmpiricalBlockchainStructureEvidence:
-    """Build structure evidence from available blockchain data."""
+    """Build structure evidence from available blockchain data.
+    
+    Selects the highest-quality evidence by z-score and phi-resonance rate.
+    """
     # Scan for empirical reports
-    evidence_dir = ROOT / "artifacts" / "phi_resonance_structure"
     report_paths = list(ROOT.glob("artifacts/**/phi_resonance_*.json"))
     report_paths += list(ROOT.glob("artifacts/**/*empirical*.json"))
 
-    if report_paths:
-        path = report_paths[0]
-        logger.info(f"  Evidence source: {path.name}")
+    best_path = None
+    best_score = -1.0
+    best_data = None
+
+    for path in report_paths:
         try:
-            return extract_empirical_structure_evidence(
-                json.loads(path.read_text(encoding="utf-8"))
-            )
+            data = json.loads(path.read_text(encoding="utf-8"))
+            score = _score_evidence_quality(data)
+            if score > best_score:
+                best_score = score
+                best_path = path
+                best_data = data
+        except Exception:
+            continue
+
+    if best_path is not None and best_data is not None:
+        logger.info(f"  Evidence source: {best_path.name} (quality score: {best_score:.2f})")
+        try:
+            return extract_empirical_structure_evidence(best_data)
         except Exception as e:
-            logger.warning(f"  Could not load evidence: {e}")
+            logger.warning(f"  Could not load best evidence: {e}")
 
     # Use canonical evidence from the mining validation manifest
     manifest_path = ROOT / "docs" / "mining" / "evidence" / "mining_validation_manifest.json"

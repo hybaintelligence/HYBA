@@ -244,17 +244,16 @@ def test_property_evidence_reflects_accept_rate(accept_rate: float, sample_count
             ctrl.record_pool_response(
                 share_accepted=accepted,
                 job_difficulty=1000.0,
-                optimization_target="test_target",
+                target="test_target",
             )
         
-        # Check if evidence was accumulated
-        # (May not exist if target evidence tracking not implemented yet)
-        if hasattr(ctrl, "_target_evidence") and "test_target" in ctrl._target_evidence:
-            evidence = ctrl._target_evidence["test_target"]
-            total = evidence["accepted"] + evidence["rejected"]
+        # Check if evidence was accumulated in reflexive target bandits
+        if "test_target" in ctrl._reflexive_target_bandits:
+            stats = ctrl._reflexive_target_bandits["test_target"]
+            total = stats.accepts + stats.rejects
             
             if total > 0:
-                observed_rate = evidence["accepted"] / total
+                observed_rate = stats.accepts / total
                 
                 # Should be approximately equal (within reasonable error)
                 error = abs(observed_rate - accept_rate)
@@ -279,26 +278,32 @@ def test_property_hermiticity_symmetric(current_value: float, proposed_value: fl
         
         # Create proposal A→B
         proposal_forward = SelfOptimizationProposal(
+            proposal_id="forward",
+            timestamp=time.time(),
             improvement_type="phi_scaling",
             current_value=current_value,
             proposed_value=proposed_value,
-            expected_gain=0.1,
-            source_module="property_test",
+            expected_phi_density_gain=0.1,
+            logical_consistency_score=0.8,
+            constraints_satisfied=[],
+            constraints_violated=[],
             counterfactual_confidence=0.8,
-            logical_consistency=0.8,
-            proposal_id="forward",
+            codebase_source_module="property_test",
         )
         
         # Create proposal B→A
         proposal_backward = SelfOptimizationProposal(
+            proposal_id="backward",
+            timestamp=time.time(),
             improvement_type="phi_scaling",
             current_value=proposed_value,
             proposed_value=current_value,
-            expected_gain=0.1,
-            source_module="property_test",
+            expected_phi_density_gain=0.1,
+            logical_consistency_score=0.8,
+            constraints_satisfied=[],
+            constraints_violated=[],
             counterfactual_confidence=0.8,
-            logical_consistency=0.8,
-            proposal_id="backward",
+            codebase_source_module="property_test",
         )
         
         valid_forward = ctrl.validate_constraints(proposal_forward)
@@ -320,14 +325,17 @@ def test_property_natural_scaling_positive(proposed_search_depth: float):
         ctrl = _make_controller(tmp)
         
         proposal = SelfOptimizationProposal(
+            proposal_id="scaling_test",
+            timestamp=time.time(),
             improvement_type="search_depth",
             current_value=60.0,
             proposed_value=proposed_search_depth,
-            expected_gain=0.1,
-            source_module="property_test",
+            expected_phi_density_gain=0.1,
+            logical_consistency_score=0.8,
+            constraints_satisfied=[],
+            constraints_violated=[],
             counterfactual_confidence=0.8,
-            logical_consistency=0.8,
-            proposal_id="scaling_test",
+            codebase_source_module="property_test",
         )
         
         valid = ctrl.validate_constraints(proposal)
