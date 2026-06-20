@@ -168,10 +168,10 @@ def test_trace_preservation(n_qubits):
 @settings(max_examples=100)
 def test_yang_mills_threshold(physical_error):
     """
-    PROPERTY: System is fault-tolerant iff p_phys < (3-φ) × 0.01
-    INVARIANT: fault_tolerant ⟺ p_phys < 1.382%
+    PROPERTY: System is fault-tolerant iff p_phys is below model threshold.
+    INVARIANT: fault_tolerant ⟺ p_phys < 1.09%
     """
-    threshold = (3 - PHI) * 0.01
+    threshold = 0.0109
     
     qc = FaultTolerantQuantumCore(
         code_distance=7,
@@ -182,7 +182,7 @@ def test_yang_mills_threshold(physical_error):
     actual_ft = qc.p_phys < qc.error_threshold
     
     assert expected_ft == actual_ft, \
-        f"Yang-Mills threshold violated: p={physical_error:.4f}, " \
+        f"Surface-code model threshold violated: p={physical_error:.4f}, " \
         f"threshold={threshold:.4f}, FT={actual_ft}"
 
 

@@ -20,12 +20,14 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field, field_validator
 
 from hyba_genesis_api.api.admin import require_admin
+from hyba_genesis_api.api.customer_access import CustomerPrincipal, customer_access, require_customer_api_key
 from hyba_genesis_api.auth.jwt_handler import TokenPayload
 from hyba_genesis_api.core.intelligence_fabric import SubstrateOrchestrator, explain
 from hyba_genesis_api.core.substrate import get_substrate_state, initialize_substrate
 from pythia_mining.fault_tolerant_quantum_core import FaultTolerantQuantumCore, PHI
 
-router = APIRouter(prefix="/api/admin/fault-tolerant-computers", tags=["quantum-as-a-service"])
+router = APIRouter(prefix="/api/admin/fault-tolerant-computers", tags=["quantum-as-a-service-admin"])
+public_router = APIRouter(prefix="/api/v1/fault-tolerant-computers", tags=["quantum-as-a-service"])
 
 ComputerState = Literal["provisioned", "running", "stopped"]
 QaaSTier = Literal["developer", "production", "sovereign"]
@@ -163,6 +165,11 @@ class _VirtualFaultTolerantQuantumComputer:
             "fault_tolerant": stats["fault_tolerant"],
             "syndrome_rounds": stats["syndrome_rounds"],
             "suppression_factor": stats.get("suppression_factor", 1.0),
+            "evidence_basis": "modeled_logical_error_rate",
+            "claim_boundary": (
+                "Modeled surface-code logical-error-rate projection; not measured "
+                "physical hardware fault tolerance."
+            ),
         }
 
     def response(self) -> FaultTolerantComputerResponse:
@@ -295,9 +302,13 @@ class QuantumComputerRegistry:
         except KeyError as exc:
             raise HTTPException(status_code=404, detail="fault-tolerant computer not found") from exc
 
-    def list(self) -> list[FaultTolerantComputerResponse]:
+    def list(self, owner: str | None = None) -> list[FaultTolerantComputerResponse]:
         with self._lock:
-            return [computer.response() for computer in self._computers.values()]
+            return [
+                computer.response()
+                for computer in self._computers.values()
+                if owner is None or computer.owner == owner
+            ]
 
     def start(self, computer_id: str) -> FaultTolerantComputerResponse:
         with self._lock:
@@ -321,6 +332,12 @@ class QuantumComputerRegistry:
             if computer.state != "running":
                 raise HTTPException(status_code=409, detail="computer must be running before workloads execute")
             return computer.execute(request)
+
+    def assert_owner(self, computer_id: str, owner: str) -> _VirtualFaultTolerantQuantumComputer:
+        computer = self.get(computer_id)
+        if computer.owner != owner:
+            raise HTTPException(status_code=404, detail="fault-tolerant computer not found")
+        return computer
 
 
 registry = QuantumComputerRegistry()
@@ -361,3 +378,53 @@ async def execute_quantum_workload(
     payload: TokenPayload = Depends(require_admin),
 ):
     return registry.execute(computer_id, request)
+
+
+def _qaas_units(request: QuantumWorkloadRequest) -> int:
+    return (
+        max(1, request.circuit_depth)
+        * max(1, request.shots)
+        * max(1, len(request.logical_qubits) or 1)
+    )
+
+
+@public_router.post("", response_model=FaultTolerantComputerResponse, status_code=status.HTTP_201_CREATED)
+async def customer_provision_computer(
+    request: ProvisionFaultTolerantComputerRequest,
+    principal: CustomerPrincipal = Depends(require_customer_api_key),
+):
+    customer_access.meter(principal, product="qaas.provision", units=request.logical_qubits)
+    response = registry.provision(request, owner=principal.customer_id)
+    customer_access.set_state(f"qaas:{response.computer_id}", response.model_dump())
+    return response
+
+
+@public_router.get("", response_model=list[FaultTolerantComputerResponse])
+async def customer_list_computers(
+    principal: CustomerPrincipal = Depends(require_customer_api_key),
+):
+    customer_access.meter(principal, product="qaas.list", units=1)
+    return registry.list(owner=principal.customer_id)
+
+
+@public_router.post("/{computer_id}/start", response_model=FaultTolerantComputerResponse)
+async def customer_start_computer(
+    computer_id: str,
+    principal: CustomerPrincipal = Depends(require_customer_api_key),
+):
+    registry.assert_owner(computer_id, principal.customer_id)
+    customer_access.meter(principal, product="qaas.lifecycle", units=1)
+    return registry.start(computer_id)
+
+
+@public_router.post("/{computer_id}/execute", response_model=Dict[str, Any])
+async def customer_execute_quantum_workload(
+    computer_id: str,
+    request: QuantumWorkloadRequest,
+    principal: CustomerPrincipal = Depends(require_customer_api_key),
+):
+    registry.assert_owner(computer_id, principal.customer_id)
+    usage = customer_access.meter(principal, product="qaas.execute", units=_qaas_units(request))
+    envelope = registry.execute(computer_id, request)
+    envelope["usage_meter"] = usage
+    return envelope
