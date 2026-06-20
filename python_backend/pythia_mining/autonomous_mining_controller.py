@@ -657,13 +657,7 @@ class AutonomousMiningController:
             "latency_ms": max(0.0, float(latency_ms)),
             "reason": reason,
             "error_code": error_code,
-<<<<<<< Updated upstream
-            "job_difficulty": None
-            if (job_difficulty if job_difficulty is not None else difficulty) is None
-            else float(job_difficulty if job_difficulty is not None else difficulty),
-=======
             "difficulty": None if final_difficulty is None else float(final_difficulty),
->>>>>>> Stashed changes
             "proposal_id": proposal_id,
             "decision_id": decision_id,
             "target": response_target,

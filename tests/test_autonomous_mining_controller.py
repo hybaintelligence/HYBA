@@ -1783,7 +1783,7 @@ class TestAutonomousMiningControllerOperationalHardening(unittest.TestCase):
         self.assertIn("difficulty", first)
         self.assertIn("recorded_at", first)
 
-        evidence = self.controller.supervised_production_evidence_status()
+        evidence = controller.supervised_production_evidence_status()
         self.assertEqual(evidence["pool_response_window_limit"], 1000)
         self.assertEqual(evidence["pool_feedback_samples"], 1000)
         self.assertEqual(evidence["pythia_decision_linked_samples"], 1000)

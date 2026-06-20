@@ -195,11 +195,14 @@ def test_stress_state_persistence_rapid_saves():
     with tempfile.TemporaryDirectory() as tmp:
         ctrl = _make_controller(tmp)
         
-        # Rapidly save state 1000 times
+        # Rapidly save state 1000 times with pool responses
         for i in range(1000):
-            ctrl._target_evidence = {
-                f"target_{i % 5}": {"accepted": i, "rejected": i // 2}
-            }
+            ctrl.record_pool_response(
+                share_accepted=(i % 2 == 0),
+                error_code=None,
+                job_difficulty=1000.0,
+                target=f"target_{i % 5}",
+            )
             ctrl._save_reflexive_state()
         
         # Verify final state file exists and is valid
@@ -215,7 +218,7 @@ def test_stress_state_persistence_rapid_saves():
         ctrl2._load_reflexive_state()
         
         # Should load successfully without corruption
-        assert ctrl2._target_evidence is not None
+        assert len(ctrl2._reflexive_target_bandits) > 0
 
 
 # =============================================================================
@@ -240,15 +243,14 @@ def test_stress_memory_bounded_growth():
             # Record autonomy events
             if i % 100 == 0:
                 ctrl.record_autonomy_success()
-            
-            # Log decisions
-            ctrl._log_event("test_event", {"iteration": i})
         
         # Verify bounded structures
         assert len(ctrl._pool_response_history) <= 1000, \
             "Pool history should be bounded at 1000"
         
-        assert len(ctrl._decision_history) <= ctrl.config.max_decision_history, \
+        # Decision history is accessed via get_decision_history()
+        decision_history = ctrl.get_decision_history()
+        assert len(decision_history) <= 1000, \
             "Decision history should be bounded"
         
         # State file should not be enormous
@@ -315,7 +317,7 @@ def test_stress_prometheus_metrics_high_cardinality():
                 error_code=f"error_{i % 10}",  # 10 unique error codes
                 job_difficulty=1000.0 + i,
                 proposal_id=f"proposal_{i}",
-                pythia_decision_id=f"decision_{i}",
+                decision_id=f"decision_{i}",
             )
         
         # Get metrics
@@ -325,7 +327,7 @@ def test_stress_prometheus_metrics_high_cardinality():
         assert "proposal_id=" not in metrics, \
             "High-cardinality proposal_id should not be in metrics"
         
-        assert "pythia_decision_id=" not in metrics, \
+        assert "decision_id=" not in metrics, \
             "High-cardinality decision_id should not be in metrics"
         
         # Verify error_code is aggregated, not per-error
