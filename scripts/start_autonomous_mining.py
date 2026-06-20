@@ -24,6 +24,7 @@ Usage:
 from __future__ import annotations
 
 import hashlib
+import importlib.util
 import json
 import logging
 import math
@@ -36,16 +37,16 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "python_backend"))
 
-from pythia_mining.autonomous_searching_system import (
-    AutonomousSearchSystem,
-    SearchMode,
-    SearchBenchmarkResult,
-    create_autonomous_search_system,
-)
 from pythia_mining.blockchain_structure_intelligence import (
     EmpiricalBlockchainStructureEvidence,
     build_pythia_structure_intelligence_packet,
     extract_empirical_structure_evidence,
+)
+from pythia_mining.nonce_resonance_guidance import (
+    BlockContext,
+    EmpiricalStructureEvidence as ResonanceEvidence,
+    QuantumArsenalDirectives,
+    build_nonce_resonance_guidance,
 )
 from pythia_mining.pool_profiles import (
     build_profile,
@@ -56,12 +57,37 @@ from pythia_mining.pool_profiles import (
     PoolCredentialConfig,
 )
 from pythia_mining.phi_config import PHI
+from pythia_mining.pythia_mining_pitfalls_curriculum import (
+    seed_mining_pitfalls_curriculum,
+    validate_mining_pitfalls_curriculum,
+)
 
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
 )
 logger = logging.getLogger("hyba.autonomous_mining")
+
+
+REQUIRED_RUNTIME_IMPORTS = {
+    "numpy": "numpy==1.26.4 (from python_backend/requirements.txt)",
+}
+
+
+def require_runtime_dependencies() -> None:
+    """Fail fast with an actionable dependency message before heavy imports."""
+
+    missing = [
+        package
+        for module_name, package in REQUIRED_RUNTIME_IMPORTS.items()
+        if importlib.util.find_spec(module_name) is None
+    ]
+    if missing:
+        raise RuntimeError(
+            "PYTHIA autonomous mining runtime dependencies are missing: "
+            f"{', '.join(missing)}. Activate the intended Python environment and run: "
+            "python -m pip install -r python_backend/requirements.txt"
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -250,6 +276,15 @@ def run_full_review(system: AutonomousSearchSystem) -> dict:
     logger.info("=" * 70)
 
     diagnostics = system.get_system_diagnostics()
+    arsenal = QuantumArsenalDirectives()
+    curriculum = seed_mining_pitfalls_curriculum()
+    pitfalls_seeded = validate_mining_pitfalls_curriculum(curriculum)
+    diagnostics["quantum_arsenal"] = {
+        "all_enabled": arsenal.all_enabled(),
+        "components": arsenal.enabled_components(),
+    }
+    diagnostics["pitfalls_curriculum"] = curriculum.to_dict()
+    diagnostics["pitfalls_seeded"] = pitfalls_seeded
     diag = diagnostics
 
     print(f"""
@@ -265,6 +300,8 @@ def run_full_review(system: AutonomousSearchSystem) -> dict:
 ║  ✅ ManifoldRouter          (D/I 32-node topology)          ║
 ║  ✅ HealingCoordinator      (autonomic healing)             ║
 ║  ✅ MassGapShield           (anti-simulation gate)          ║
+║  ✅ PitfallsCurriculum      ({len(curriculum.lessons):>2d} Bitcoin/pool lessons)       ║
+║  ✅ ArsenalDirectives       ({len(arsenal.enabled_components()):>2d} components enabled)      ║
 ╠══════════════════════════════════════════════════════════════╣
 ║  STRUCTURE INTELLIGENCE                                     ║
 ║  ─────────────────────────────────────────────────────────   ║
@@ -332,6 +369,12 @@ def run_performance_benchmark(system: AutonomousSearchSystem) -> dict:
 # ---------------------------------------------------------------------------
 
 def main():
+    require_runtime_dependencies()
+    from pythia_mining.autonomous_searching_system import (
+        AutonomousSearchSystem,
+        SearchMode,
+    )
+
     print(r"""
 ╔══════════════════════════════════════════════════════════════╗
 ║                                                              ║
@@ -365,10 +408,34 @@ def main():
     logger.info("  STEP 2/6: Building Structure Intelligence")
     logger.info("=" * 70)
     evidence = build_empirical_evidence()
+    resonance_evidence = ResonanceEvidence(
+        sample_size=int(evidence.total_blocks),
+        phi15_rate=float(evidence.phi_resonance_rate),
+        golden_angle_alignment=float(evidence.golden_angle_alignment),
+        birthday_echo_rate=float(evidence.birthday_echo_rate),
+        sector_coverage=float(evidence.sector_coverage_pct) / 100.0,
+        large_gap_score=min(1.0, float(evidence.max_gap_size) / float(2**32)),
+        dodecahedral_domain_score=float(evidence.sunflower_score),
+        icosahedral_face_score=float(evidence.sunflower_score),
+        mass_gap_valley_score=float(evidence.mean_resonance_strength),
+        entanglement_spectrum_score=float(evidence.uniformity_score),
+        uniformity_score=float(evidence.uniformity_score),
+        provenance=evidence.source_kind,
+    )
+    guidance = build_nonce_resonance_guidance(
+        resonance_evidence,
+        BlockContext(
+            block_height=int(CHAIN_CONTEXT["block_height"]),
+            difficulty=float(CHAIN_CONTEXT["pool_difficulty"]),
+            target_hex=f"{REGTEST_TARGET:064x}",
+        ),
+    )
     logger.info(f"  Phi resonance rate:      {evidence.phi_resonance_rate:.4f}")
     logger.info(f"  Golden-angle alignment:  {evidence.golden_angle_alignment:.4f}")
     logger.info(f"  Sunflower score:         {evidence.sunflower_score:.4f}")
     logger.info(f"  Structure score:         {evidence.structure_score:.6f}")
+    logger.info(f"  Guidance seal:           {guidance.seal[:16]}…")
+    logger.info(f"  Arsenal enabled:         {guidance.arsenal.all_enabled()}")
 
     # ── Step 3: Create System ──────────────────────────────────
     logger.info("")
