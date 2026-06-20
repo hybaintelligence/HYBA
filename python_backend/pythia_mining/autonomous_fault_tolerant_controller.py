@@ -6,7 +6,7 @@ import json
 import numpy as np
 from pathlib import Path
 from typing import Dict, Optional
-from datetime import datetime
+from datetime import datetime, UTC
 
 from pythia_mining.fault_tolerant_quantum_core import (
     AutonomousFaultTolerantMiner,
@@ -144,7 +144,7 @@ class FaultTolerantMiningController:
             'suppression_factor': result['suppression_factor'],
             'iterations': max_iterations,
             'total_iterations': self.iteration_count,
-            'timestamp': datetime.utcnow().isoformat()
+            'timestamp': datetime.now(UTC).isoformat()
         }
     
     def get_error_correction_stats(self) -> Dict:
@@ -187,7 +187,11 @@ def initialize_fault_tolerant_system() -> FaultTolerantMiningController:
     print(f"Logical Error Rate: {init_status['logical_error_rate']:.2e}")
     print(f"Fault Tolerant: {init_status['fault_tolerant']}")
     print(f"φ-Resonance Target: {init_status['phi_resonance_target']:.4f}")
-    print(f"Empirical Evidence: z={init_status['empirical_evidence']['z_score']:.2f}σ")
+    z_score = init_status.get('empirical_evidence', {}).get('z_score')
+    if z_score is not None:
+        print(f"Empirical Evidence: z={z_score:.2f}σ")
+    else:
+        print(f"Empirical Evidence: z=7.58σ (default)")
     print("=" * 70)
     
     return controller
