@@ -12,7 +12,7 @@ from pythia_mining.fault_tolerant_quantum_core import (
     AutonomousFaultTolerantMiner,
     run_fault_tolerant_mining_cycle
 )
-from pythia_mining.golden_ratio_library import PHI, PHI_INV
+from pythia_mining.golden_ratio_library import PHI_INV
 
 
 class FaultTolerantMiningController:
@@ -49,7 +49,7 @@ class FaultTolerantMiningController:
             'phi_resonance_rate': 0.9565,
             'max_iterations_per_job': 10,
             'physical_error_rate': 1e-3,
-            'error_threshold': (3 - PHI) * 1e-2,
+            'error_threshold': 0.0109,
             'syndrome_history_depth': 100
         }
         

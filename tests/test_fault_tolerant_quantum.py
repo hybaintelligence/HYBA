@@ -57,6 +57,28 @@ class TestFaultTolerantCore:
         
         success = qc.decode_and_correct(idx)
         assert isinstance(success, bool)
+
+    def test_decoder_uses_syndrome_defects(self):
+        """Decoder statistics should be derived from syndrome changes."""
+        qc = FaultTolerantQuantumCore(code_distance=5, physical_error_rate=1e-4)
+        idx = qc.initialize_logical_qubit('0')
+        qubit = qc.logical_qubits[idx]
+
+        previous = np.zeros((2, 4, 4), dtype=int)
+        current = previous.copy()
+        current[0, 0, 0] = 1
+        current[0, 0, 1] = 1
+        current[1, 1, 1] = 1
+        current[1, 2, 1] = 1
+        qubit.syndrome_history.extend([previous, current])
+
+        assert qc.decode_and_correct(idx) is True
+        stats = qc.get_error_statistics()
+        assert stats["last_decoder_defects"] == 4
+        assert stats["last_decoder_weight"] == pytest.approx(2.0)
+        assert stats["correction_attempts"] == 1
+        assert stats["correction_successes"] == 1
+        assert stats["logical_error_rate_basis"] == "modeled_surface_code_scaling_law"
     
     def test_logical_gates(self):
         """Test fault-tolerant gate application"""

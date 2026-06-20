@@ -43,6 +43,11 @@ class FaultTolerantQuantumCore:
         self.error_threshold = 0.0109
         self.phi_reference_threshold = (3 - PHI) * 1e-2
         self.p_logical = self._compute_logical_error_rate()
+        self.correction_attempts = 0
+        self.correction_successes = 0
+        self.logical_failures = 0
+        self.last_decoder_defects = 0
+        self.last_decoder_weight = 0.0
         
         # Initialize logical qubit register
         self.logical_qubits: List[LogicalQubit] = []
@@ -115,9 +120,78 @@ class FaultTolerantQuantumCore:
         
         return syndrome
     
+    def _minimum_weight_pairing(self, defect_locations: List[Tuple[int, int, int]]) -> float:
+        """
+        Return the total Manhattan weight of a minimum-weight defect pairing.
+
+        This is a compact surface-code matching model for the small defect sets
+        produced by the local simulator.  It pairs syndrome-change defects by
+        stabilizer type and uses nearest-boundary matching for odd cardinality,
+        so decoder decisions are derived from syndrome data rather than sampled
+        from the closed-form logical-error-rate projection.
+        """
+        if not defect_locations:
+            return 0.0
+
+        # Large rounds can occur with intentionally high physical error rates.
+        # Use deterministic greedy matching as a bounded fallback rather than an
+        # exponential dynamic program.
+        if len(defect_locations) > 18:
+            remaining = defect_locations[:]
+            total = 0.0
+            while len(remaining) > 1:
+                defect = remaining.pop(0)
+                partner_idx, partner = min(
+                    enumerate(remaining),
+                    key=lambda item: abs(defect[1] - item[1][1]) + abs(defect[2] - item[1][2]),
+                )
+                total += float(abs(defect[1] - partner[1]) + abs(defect[2] - partner[2]))
+                remaining.pop(partner_idx)
+            if remaining:
+                _, row, col = remaining[0]
+                total += float(min(row + 1, col + 1, self.d - row - 1, self.d - col - 1))
+            return total
+
+        distances: Dict[Tuple[int, int], float] = {}
+        boundary_costs: Dict[int, float] = {}
+        for i, (_, row_i, col_i) in enumerate(defect_locations):
+            boundary_costs[i] = float(min(row_i + 1, col_i + 1, self.d - row_i - 1, self.d - col_i - 1))
+            for j in range(i + 1, len(defect_locations)):
+                _, row_j, col_j = defect_locations[j]
+                distances[(i, j)] = float(abs(row_i - row_j) + abs(col_i - col_j))
+
+        memo: Dict[int, float] = {}
+
+        def solve(mask: int) -> float:
+            if mask == 0:
+                return 0.0
+            if mask in memo:
+                return memo[mask]
+
+            first = (mask & -mask).bit_length() - 1
+            remaining_mask = mask & ~(1 << first)
+            best = boundary_costs[first] + solve(remaining_mask)
+            partner_mask = remaining_mask
+            while partner_mask:
+                partner = (partner_mask & -partner_mask).bit_length() - 1
+                pair = (min(first, partner), max(first, partner))
+                candidate = distances[pair] + solve(remaining_mask & ~(1 << partner))
+                best = min(best, candidate)
+                partner_mask &= ~(1 << partner)
+
+            memo[mask] = best
+            return best
+
+        return solve((1 << len(defect_locations)) - 1)
+
     def decode_and_correct(self, qubit_idx: int) -> bool:
         """
-        Run minimum-weight perfect matching decoder
+        Run a syndrome-derived minimum-weight matching decoder.
+
+        The modeled logical error rate remains an analytic surface-code
+        projection.  Correction success is not sampled from that projection; it
+        is determined from the observed syndrome-change defects and whether the
+        inferred correction chain reaches the code-distance failure boundary.
         Returns True if correction successful
         """
         qubit = self.logical_qubits[qubit_idx]
@@ -129,13 +203,31 @@ class FaultTolerantQuantumCore:
         current = qubit.syndrome_history[-1]
         previous = qubit.syndrome_history[-2]
         defects = current ^ previous  # XOR gives syndrome changes
-        
-        # φ-guided matching weight
-        correction_success = np.random.random() > self.p_logical
-        
+
+        total_weight = 0.0
+        for stabilizer_type in range(defects.shape[0]):
+            locations = [
+                (stabilizer_type, int(row), int(col))
+                for row, col in np.argwhere(defects[stabilizer_type] == 1)
+            ]
+            total_weight += self._minimum_weight_pairing(locations)
+
+        defect_count = int(np.sum(defects))
+        correction_success = total_weight < self.d
+
+        self.correction_attempts += 1
+        self.last_decoder_defects = defect_count
+        self.last_decoder_weight = total_weight
+
         if correction_success:
-            # Apply correction chain
-            qubit.physical_qubits *= np.exp(1j * PHI_INV)  # φ-phase correction
+            self.correction_successes += 1
+            # Mark the correction frame by absorbing the current syndrome as
+            # the new baseline.  The simplified state representation stores the
+            # logical value at the centre cell, so applying a physical chain
+            # here would fabricate amplitudes rather than model a real patch.
+            qubit.syndrome_history[-1] = current.copy()
+        else:
+            self.logical_failures += 1
         
         return correction_success
     
@@ -194,10 +286,16 @@ class FaultTolerantQuantumCore:
             return {
                 'physical_error_rate': self.p_phys,
                 'logical_error_rate': self.p_logical,
+                'logical_error_rate_basis': 'modeled_surface_code_scaling_law',
                 'error_threshold': self.error_threshold,
                 'phi_reference_threshold': self.phi_reference_threshold,
                 'fault_tolerant': self.p_phys < self.error_threshold,
-                'syndrome_rounds': 0
+                'syndrome_rounds': 0,
+                'correction_attempts': self.correction_attempts,
+                'correction_successes': self.correction_successes,
+                'logical_failures': self.logical_failures,
+                'last_decoder_defects': self.last_decoder_defects,
+                'last_decoder_weight': self.last_decoder_weight,
             }
         
         # Compute syndrome weight (number of non-zero syndromes)
@@ -207,11 +305,17 @@ class FaultTolerantQuantumCore:
         return {
             'physical_error_rate': self.p_phys,
             'logical_error_rate': self.p_logical,
+            'logical_error_rate_basis': 'modeled_surface_code_scaling_law',
             'error_threshold': self.error_threshold,
             'phi_reference_threshold': self.phi_reference_threshold,
             'fault_tolerant': self.p_phys < self.error_threshold,
             'syndrome_rounds': total_syndromes,
             'avg_syndrome_weight': avg_weight,
+            'correction_attempts': self.correction_attempts,
+            'correction_successes': self.correction_successes,
+            'logical_failures': self.logical_failures,
+            'last_decoder_defects': self.last_decoder_defects,
+            'last_decoder_weight': self.last_decoder_weight,
             'suppression_factor': self.p_phys / max(self.p_logical, 1e-10)
         }
 
