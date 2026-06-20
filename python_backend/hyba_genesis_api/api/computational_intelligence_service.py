@@ -19,6 +19,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field, field_validator
 
 from hyba_genesis_api.api.admin import require_admin
+from hyba_genesis_api.api.customer_access import CustomerPrincipal, customer_access, require_customer_api_key
 from hyba_genesis_api.auth.jwt_handler import TokenPayload
 from hyba_genesis_api.core.intelligence_fabric import SubstrateOrchestrator, explain
 from hyba_genesis_api.core.substrate import get_substrate_state, initialize_substrate
@@ -26,6 +27,10 @@ from pythia_mining.fault_tolerant_quantum_core import FaultTolerantQuantumCore
 
 router = APIRouter(
     prefix="/api/admin/computational-intelligence-services",
+    tags=["computational-intelligence-service-admin"],
+)
+public_router = APIRouter(
+    prefix="/api/v1/computational-intelligence-services",
     tags=["computational-intelligence-service"],
 )
 
@@ -157,6 +162,11 @@ class _CommercialIntelligenceComputer:
             "fault_tolerant": stats["fault_tolerant"],
             "syndrome_rounds": stats["syndrome_rounds"],
             "suppression_factor": stats.get("suppression_factor", 1.0),
+            "evidence_basis": "modeled_logical_error_rate",
+            "claim_boundary": (
+                "Modeled surface-code logical-error-rate projection for CIaaS control plane; "
+                "not measured physical hardware fault tolerance."
+            ),
         }
 
     def response(self) -> ServiceResponse:
@@ -274,9 +284,13 @@ class ComputationalIntelligenceServiceRegistry:
         except KeyError as exc:
             raise HTTPException(status_code=404, detail="computational intelligence service not found") from exc
 
-    def list(self) -> list[ServiceResponse]:
+    def list(self, owner: str | None = None) -> list[ServiceResponse]:
         with self._lock:
-            return [service.response() for service in self._services.values()]
+            return [
+                service.response()
+                for service in self._services.values()
+                if owner is None or service.owner == owner
+            ]
 
     def start(self, service_id: str) -> ServiceResponse:
         with self._lock:
@@ -300,6 +314,12 @@ class ComputationalIntelligenceServiceRegistry:
             if service.state != "running":
                 raise HTTPException(status_code=409, detail="service must be running before workloads execute")
             return service.execute(request)
+
+    def assert_owner(self, service_id: str, owner: str) -> _CommercialIntelligenceComputer:
+        service = self.get(service_id)
+        if service.owner != owner:
+            raise HTTPException(status_code=404, detail="computational intelligence service not found")
+        return service
 
 
 registry = ComputationalIntelligenceServiceRegistry()
@@ -340,3 +360,49 @@ async def execute_workload(
     payload: TokenPayload = Depends(require_admin),
 ):
     return registry.execute(service_id, request)
+
+
+def _ciaas_units(request: IntelligenceWorkloadRequest) -> int:
+    return max(1, len(repr(request.context).encode("utf-8")) // 1024 + 1)
+
+
+@public_router.post("", response_model=ServiceResponse, status_code=status.HTTP_201_CREATED)
+async def customer_provision_service(
+    request: ProvisionComputationalIntelligenceRequest,
+    principal: CustomerPrincipal = Depends(require_customer_api_key),
+):
+    customer_access.meter(principal, product="ciaas.provision", units=request.logical_compute_units)
+    response = registry.provision(request, owner=principal.customer_id)
+    customer_access.set_state(f"ciaas:{response.service_id}", response.model_dump())
+    return response
+
+
+@public_router.get("", response_model=list[ServiceResponse])
+async def customer_list_services(
+    principal: CustomerPrincipal = Depends(require_customer_api_key),
+):
+    customer_access.meter(principal, product="ciaas.list", units=1)
+    return registry.list(owner=principal.customer_id)
+
+
+@public_router.post("/{service_id}/start", response_model=ServiceResponse)
+async def customer_start_service(
+    service_id: str,
+    principal: CustomerPrincipal = Depends(require_customer_api_key),
+):
+    registry.assert_owner(service_id, principal.customer_id)
+    customer_access.meter(principal, product="ciaas.lifecycle", units=1)
+    return registry.start(service_id)
+
+
+@public_router.post("/{service_id}/workloads", response_model=Dict[str, Any])
+async def customer_execute_workload(
+    service_id: str,
+    request: IntelligenceWorkloadRequest,
+    principal: CustomerPrincipal = Depends(require_customer_api_key),
+):
+    registry.assert_owner(service_id, principal.customer_id)
+    usage = customer_access.meter(principal, product="ciaas.execute", units=_ciaas_units(request))
+    envelope = registry.execute(service_id, request)
+    envelope["usage_meter"] = usage
+    return envelope
