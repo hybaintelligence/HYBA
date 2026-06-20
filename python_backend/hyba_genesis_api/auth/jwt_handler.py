@@ -15,10 +15,11 @@ from threading import Lock
 from typing import Dict, List, Optional
 
 import jwt
-from fastapi import Header, HTTPException, status
+from fastapi import Cookie, Header, HTTPException, status
 from pydantic import BaseModel
 
 LOGGER = logging.getLogger(__name__)
+ACCESS_COOKIE_NAME = "hyba_access_token"
 
 
 class TokenPayload(BaseModel):
@@ -140,13 +141,28 @@ def get_jwt_manager() -> JWTManager:
     return JWTManager(secret_key=secret)
 
 
-async def get_token_payload(authorization: str = Header(None)) -> TokenPayload:
-    if not authorization or not authorization.startswith("Bearer "):
+def _bearer_token(authorization: str | None) -> str | None:
+    if authorization and authorization.startswith("Bearer "):
+        return authorization.split(" ", 1)[1]
+    return None
+
+
+async def get_token_payload(
+    authorization: str | None = Header(None),
+    hyba_access_token: str | None = Cookie(None, alias=ACCESS_COOKIE_NAME),
+) -> TokenPayload:
+    """Resolve a JWT from an httpOnly browser cookie or a legacy Bearer header.
+
+    Browser sessions should use the httpOnly ``hyba_access_token`` cookie to avoid
+    localStorage token exposure. The Bearer header remains for CLI, tests, and
+    non-browser operators.
+    """
+    token = hyba_access_token or _bearer_token(authorization)
+    if not token:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Missing or invalid Authorization header",
+            detail="Missing authentication token",
         )
-    token = authorization.split(" ", 1)[1]
     return get_jwt_manager().verify_token(token)
 
 
