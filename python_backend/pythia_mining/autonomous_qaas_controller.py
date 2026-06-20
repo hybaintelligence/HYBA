@@ -288,21 +288,10 @@ class AutonomousQaaSController:
         proposal_id = f"opt_{self.service_kind}_{uuid.uuid4().hex[:8]}"
         
         # Determine optimization direction based on metrics
-        if metrics.correction_success_rate > 0.95 and current_code_distance > 3:
-            # High success rate - can reduce code distance for performance
-            return OptimizationProposal(
-                proposal_id=proposal_id,
-                timestamp=time.time(),
-                parameter="code_distance",
-                current_value=float(current_code_distance),
-                proposed_value=float(current_code_distance - 2),
-                expected_improvement=0.15,  # ~15% latency improvement
-                confidence=0.8,
-            )
-        
-        elif metrics.logical_error_rate > 0.003 and current_code_distance < 15:
+        # Reliability takes precedence over performance - check error rate first
+        if metrics.logical_error_rate > 0.003 and current_code_distance < 15:
             # High error rate - increase code distance for reliability
-            return OptimizationProposal(
+            proposal = OptimizationProposal(
                 proposal_id=proposal_id,
                 timestamp=time.time(),
                 parameter="code_distance",
@@ -311,6 +300,22 @@ class AutonomousQaaSController:
                 expected_improvement=0.25,  # ~25% error reduction
                 confidence=0.85,
             )
+            self._last_optimization = time.time()
+            return proposal
+        
+        elif metrics.correction_success_rate > 0.95 and current_code_distance > 3:
+            # High success rate - can reduce code distance for performance
+            proposal = OptimizationProposal(
+                proposal_id=proposal_id,
+                timestamp=time.time(),
+                parameter="code_distance",
+                current_value=float(current_code_distance),
+                proposed_value=float(current_code_distance - 2),
+                expected_improvement=0.15,  # ~15% latency improvement
+                confidence=0.8,
+            )
+            self._last_optimization = time.time()
+            return proposal
         
         return None
     
