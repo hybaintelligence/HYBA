@@ -14,6 +14,7 @@ import tempfile
 import time
 import unittest
 from unittest.mock import MagicMock, patch
+from typing import Any
 
 import sys
 import os
@@ -21,6 +22,11 @@ from pathlib import Path
 
 # Add python_backend to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "python_backend"))
+
+try:
+    from pythia_mining.phi_unified_mining_engine import UnifiedMiningEngine
+except ModuleNotFoundError:
+    UnifiedMiningEngine = None  # type: ignore[assignment]
 
 from pythia_mining.autonomous_mining_controller import (
     AutonomousConfig,
@@ -32,7 +38,6 @@ from pythia_mining.autonomous_mining_controller import (
     SelfOptimizationProposal,
     CodebaseSurroundings,
 )
-from pythia_mining.phi_unified_mining_engine import UnifiedMiningEngine
 
 
 class TestAutonomousMiningController(unittest.TestCase):
@@ -40,7 +45,7 @@ class TestAutonomousMiningController(unittest.TestCase):
 
     def setUp(self):
         """Set up test fixtures."""
-        self.unified_engine = MagicMock(spec=UnifiedMiningEngine)
+        self.unified_engine = MagicMock(spec=Any)
         # Add optimizer mock to prevent AttributeError
         self.unified_engine.optimizer = MagicMock()
         self.unified_engine.optimizer.current_strategy = MagicMock()
@@ -653,6 +658,170 @@ class TestAutonomousMiningController(unittest.TestCase):
         self.assertLessEqual(len(selected), self.controller.config.max_proposals_per_cycle)
         self.assertEqual(len(selected), len(set(selected)))
 
+
+    def test_pool_response_feedback_error_codes(self):
+        """Different pool error codes should be retained in bounded response history."""
+        self.controller.record_pool_response(
+            share_accepted=True,
+            error_code=None,
+            job_difficulty=1000.0,
+            response_time_ms=50.0,
+            target="compression_target",
+        )
+        self.controller.record_pool_response(
+            share_accepted=False,
+            error_code="low-diff",
+            job_difficulty=1000.0,
+            response_time_ms=45.0,
+            target="compression_target",
+        )
+        self.controller.record_pool_response(
+            share_accepted=False,
+            error_code="stale-prevhash",
+            job_difficulty=1000.0,
+            response_time_ms=100.0,
+            target="compression_target",
+        )
+
+        self.assertEqual(len(self.controller._pool_response_history), 3)
+        self.assertTrue(self.controller._pool_response_history[0]["accepted"])
+        self.assertEqual(self.controller._pool_response_history[1]["error_code"], "low-diff")
+        self.assertEqual(self.controller._pool_response_history[2]["error_code"], "stale-prevhash")
+
+    def test_pool_response_exponential_weighting_recent_samples_dominate(self):
+        """Recent pool responses should carry more influence than stale samples."""
+        now = time.time()
+        self.controller._pool_response_history.append(
+            {
+                "timestamp": now - 3600,
+                "recorded_at": now - 3600,
+                "accepted": False,
+                "target": "compression_target",
+            }
+        )
+        self.controller._pool_response_history.append(
+            {
+                "timestamp": now,
+                "recorded_at": now,
+                "accepted": True,
+                "target": "compression_target",
+            }
+        )
+
+        adjustment = self.controller._pool_feedback_adjustment("compression_target")
+
+        self.assertIsInstance(adjustment, float)
+        self.assertGreater(adjustment, 0.0)
+
+    def test_pool_response_bounded_history(self):
+        """Pool response history should remain capped for long-running controllers."""
+        for i in range(1500):
+            self.controller.record_pool_response(
+                share_accepted=(i % 2 == 0),
+                error_code=None if i % 2 == 0 else "low-diff",
+                job_difficulty=1000.0,
+                response_time_ms=50.0,
+                target="compression_target",
+            )
+
+        self.assertLessEqual(len(self.controller._pool_response_history), 1000)
+        self.assertTrue(
+            all(r["timestamp"] > time.time() - 10 for r in self.controller._pool_response_history[:10])
+        )
+
+    def test_thompson_evidence_persistence(self):
+        """Target-selection bandit evidence should survive controller restart."""
+        with tempfile.TemporaryDirectory() as tmp:
+            ctrl1 = AutonomousMiningController(
+                self.unified_engine,
+                AutonomousConfig(persistence_enabled=True, persistence_dir=tmp),
+            )
+            ctrl1._reflexive_target_bandits["phi_scaling"].successes = 10
+            ctrl1._reflexive_target_bandits["phi_scaling"].failures = 2
+            ctrl1._reflexive_target_bandits["compression_target"].successes = 8
+            ctrl1._reflexive_target_bandits["compression_target"].failures = 4
+            ctrl1._reflexive_target_bandits["search_depth"].successes = 5
+            ctrl1._reflexive_target_bandits["search_depth"].failures = 5
+            ctrl1._save_reflexive_state()
+
+            ctrl2 = AutonomousMiningController(
+                self.unified_engine,
+                AutonomousConfig(persistence_enabled=True, persistence_dir=tmp),
+            )
+            snapshot = ctrl2.get_reflexive_target_bandit_snapshot()
+
+            self.assertEqual(snapshot["phi_scaling"]["successes"], 10)
+            self.assertEqual(snapshot["phi_scaling"]["failures"], 2)
+            self.assertEqual(snapshot["compression_target"]["successes"], 8)
+            selected = ctrl2._select_reflexive_targets(
+                ["phi_scaling", "compression_target", "search_depth"],
+                primary_target="phi_scaling",
+                growth_rate=0.0,
+            )
+            self.assertEqual(selected[0], "phi_scaling")
+
+    def test_thompson_deterministic_selection(self):
+        """Deterministic Thompson-style target selection should replay exactly."""
+        self.controller._reflexive_target_bandits["phi_scaling"].successes = 10
+        self.controller._reflexive_target_bandits["phi_scaling"].failures = 2
+        self.controller._reflexive_target_bandits["compression_target"].successes = 5
+        self.controller._reflexive_target_bandits["compression_target"].failures = 5
+        self.controller._reflexive_target_bandits["search_depth"].successes = 2
+        self.controller._reflexive_target_bandits["search_depth"].failures = 10
+
+        selections = [
+            tuple(
+                self.controller._select_reflexive_targets(
+                    ["phi_scaling", "compression_target", "search_depth"],
+                    primary_target="phi_scaling",
+                    growth_rate=0.0,
+                )
+            )
+            for _ in range(5)
+        ]
+
+        self.assertEqual(len(set(selections)), 1)
+        self.assertEqual(selections[0][0], "phi_scaling")
+
+    def test_prometheus_metrics_structure_and_low_cardinality(self):
+        """Prometheus metrics should expose required low-cardinality series only."""
+        self.controller.record_autonomy_success()
+        self.controller.record_autonomy_failure("test_failure")
+
+        metrics_text = self.controller.get_prometheus_metrics_text()
+        required_metrics = [
+            "hyba_phi_density",
+            "hyba_constraint_violations_total",
+            "hyba_consecutive_failures",
+            "hyba_autonomous_circuit_open",
+            "hyba_autonomous_circuit_breaker_trips_total",
+            "hyba_degradation_events_total",
+            "hyba_reflexive_cycle_duration_ms",
+            "hyba_operator_overrides_total",
+            "hyba_stale_state_lock_recoveries_total",
+        ]
+
+        for metric in required_metrics:
+            self.assertIn(metric, metrics_text)
+        self.assertNotIn("decision_id=", metrics_text)
+        self.assertNotIn("timestamp=", metrics_text)
+        for line in [line for line in metrics_text.split("\n") if line and not line.startswith("#")]:
+            self.assertIn(" ", line)
+            float(line.rsplit(" ", 1)[1])
+
+    def test_prometheus_metrics_cache_invalidation_on_failure(self):
+        """Autonomy failure events should invalidate cached scrape output."""
+        controller = AutonomousMiningController(
+            self.unified_engine,
+            AutonomousConfig(persistence_enabled=False, metrics_cache_ttl_seconds=60.0),
+        )
+        metrics1 = controller.get_prometheus_metrics_text_cached()
+        controller.record_autonomy_failure("cache_invalidation_test")
+        metrics2 = controller.get_prometheus_metrics_text_cached()
+
+        self.assertIn("hyba_consecutive_failures 0", metrics1)
+        self.assertIn("hyba_consecutive_failures 1", metrics2)
+
     def test_virtual_mining_with_violations(self):
         """Test virtual mining simulation with constraint violations."""
         proposal = SelfOptimizationProposal(
@@ -1173,6 +1342,7 @@ class TestAutonomousMiningController(unittest.TestCase):
         # without callback invocation
 
 
+@unittest.skipIf(UnifiedMiningEngine is None, "UnifiedMiningEngine dependencies unavailable")
 class TestAutonomousMiningControllerIntegration(unittest.TestCase):
     """Integration tests for autonomous mining controller with unified engine."""
 
@@ -1239,7 +1409,7 @@ class TestAutonomousMiningControllerOperationalHardening(unittest.TestCase):
     """Production hardening tests for approval, audit, and state recovery."""
 
     def setUp(self):
-        self.unified_engine = MagicMock(spec=UnifiedMiningEngine)
+        self.unified_engine = MagicMock(spec=Any)
         self.unified_engine.optimizer = MagicMock()
         self.unified_engine.optimizer.current_strategy = MagicMock()
 

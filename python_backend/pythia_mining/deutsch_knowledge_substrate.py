@@ -13,8 +13,6 @@ from collections import defaultdict
 from dataclasses import asdict, dataclass, field
 from typing import Any, Dict, List, Optional
 
-import numpy as np
-
 
 @dataclass
 class Explanation:
@@ -301,7 +299,7 @@ class KnowledgeSubstrate:
             return 0.0
 
         distances = [abs(features_a[k] - features_b[k]) for k in keys]
-        return 1.0 / (1.0 + np.mean(distances))
+        return 1.0 / (1.0 + (sum(distances) / len(distances)))
 
     def _find_relevant_explanations(
         self, strategy_id: str, context: Dict[str, Any]
@@ -359,7 +357,7 @@ class KnowledgeSubstrate:
         # Enhanced simulation using context-aware modeling
         if strategy_id in self.strategy_performance:
             historical_perf = self.strategy_performance[strategy_id]
-            base_performance = np.mean(historical_perf)
+            base_performance = sum(historical_perf) / len(historical_perf)
 
             # Adjust prediction based on current context
             thermal_factor = 1.0 - abs(features.get("thermal", 0.5) - 0.5)  # Optimal at 0.5
@@ -376,7 +374,7 @@ class KnowledgeSubstrate:
             confidence = min(0.9, 0.5 + len(historical_perf) * 0.05)  # Confidence grows with data
 
             return {
-                "predicted_acceptance": float(np.clip(context_adjusted_performance, 0.0, 1.0)),
+                "predicted_acceptance": float(max(0.0, min(context_adjusted_performance, 1.0))),
                 "confidence": float(confidence),
                 "base_performance": float(base_performance),
                 "context_factors": {
@@ -422,9 +420,8 @@ class KnowledgeSubstrate:
         total_explanations = sum(len(exps) for exps in self.explanations.values())
         avg_accuracy = (
             float(
-                np.mean(
-                    [exp.predictive_accuracy for exps in self.explanations.values() for exp in exps]
-                )
+                sum(exp.predictive_accuracy for exps in self.explanations.values() for exp in exps)
+                / total_explanations
             )
             if total_explanations > 0
             else 0.0
