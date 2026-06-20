@@ -169,12 +169,36 @@ class QuantumArsenalDirectives:
     substrate_independent_execution: bool = True
     golden_ratio_grammar: bool = True
     tensor_network_prior: bool = True
-    pulvin_memory_compression: bool = True
+    pulvini_memory_compression: bool = True
     hendrix_phi_traversal: bool = True
     dodecahedral_partitioning: bool = True
     icosahedral_symmetry: bool = True
+    di_manifold_routing: bool = True
+    grover_amplification: bool = True
+    quantum_walk_exploration: bool = True
+    mass_gap_shield: bool = True
+    iit_phi_coherence_monitoring: bool = True
+    after_quantum_trifecta_benchmarks: bool = True
+    empirical_nonce_resonance_prior: bool = True
+    bitcoin_pool_pitfalls_curriculum: bool = True
+    autonomic_healing_feedback: bool = True
+    share_acceptance_learning: bool = True
     deutsch_criticism_feedback: bool = True
     exact_hash_verification: bool = True
+
+    def enabled_components(self) -> List[str]:
+        """Return every enabled arsenal component for startup evidence packets."""
+
+        return [
+            name
+            for name, enabled in asdict(self).items()
+            if bool(enabled)
+        ]
+
+    def all_enabled(self) -> bool:
+        """Fail closed unless every declared arsenal component is enabled."""
+
+        return all(bool(enabled) for enabled in asdict(self).values())
 
 
 @dataclass(frozen=True)
@@ -303,8 +327,10 @@ def build_nonce_resonance_guidance(
             "Block height and difficulty shape search weighting; they do not guarantee a block.",
             "Dodecahedral and icosahedral domains guide priority ordering.",
             "PULVINI may compress the active search surface only if reconstruction kernels preserve coverage.",
+            "Bitcoin/pool pitfalls curriculum must remain seeded before autonomous submit loops.",
             "Collapse/search means priority collapse to solver ranges, not bypassing SHA-256d.",
             "Exact SHA-256d remains the final external oracle.",
+            "Pool-side ACK is the only accepted-share truth; local search may not fabricate acceptance.",
             "Sovereign cap: maximum 24 accepted blocks/day and 1 accepted block/hour.",
         ],
     )
