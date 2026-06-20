@@ -221,11 +221,12 @@ class AutonomousFaultTolerantMiner:
     def __init__(self, 
                  code_distance: int = 7,
                  num_logical_qubits: int = 32,
-                 phi_resonance_rate: float = 0.9565):
+                 phi_resonance_rate: float = 0.9565,
+                 physical_error_rate: float = 1e-3):
         
         self.qc = FaultTolerantQuantumCore(
             code_distance=code_distance,
-            physical_error_rate=1e-3
+            physical_error_rate=physical_error_rate
         )
         
         self.num_qubits = num_logical_qubits

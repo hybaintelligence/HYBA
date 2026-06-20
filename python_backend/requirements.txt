@@ -31,7 +31,7 @@ psutil==6.1.0
 requests==2.32.3
 
 # Apple Silicon ML (optional for Metal acceleration)
-mlx==0.20.0
+mlx==0.20.0; platform_system == "Darwin" and platform_machine == "arm64"
 
 # Noise generation for testing
 noise==1.2.2
