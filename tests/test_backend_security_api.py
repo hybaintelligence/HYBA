@@ -23,7 +23,8 @@ def test_security_regeneration_status_returns_module_summary() -> None:
     assert response.status_code == 200
     data = response.json()
     assert "status" in data
-    assert "modules" in data or "quantum_regeneration" in data or "total_modules" in data
+    assert "regeneration" in data
+    assert "total_modules" in data["regeneration"] or "modules" in data["regeneration"]
 
 
 def test_security_swarm_status_returns_controlled_payload() -> None:
