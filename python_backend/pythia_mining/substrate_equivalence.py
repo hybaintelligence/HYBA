@@ -390,7 +390,7 @@ class SubstrateEquivalenceProver:
         for op_name in operation_names:
             op_results = {}
             for i, sub_a in enumerate(substrates):
-                for sub_b in enumerate(substrates):
+                for j, sub_b in enumerate(substrates):
                     if i >= j:
                         continue
                     cert = self.prove_equivalence(

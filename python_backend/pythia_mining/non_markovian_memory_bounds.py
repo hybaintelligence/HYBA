@@ -342,13 +342,25 @@ class NonMarkovianDetector:
 
     @staticmethod
     def _bures_distance(rho: np.ndarray, sigma: np.ndarray) -> float:
-        """Compute Bures distance: d_B(ρ, σ) = √(2 - 2√(F(ρ, σ)))"""
-        sqrt_rho = np.linalg.inv(np.linalg.sqrtm(rho)) if np.allclose(rho, rho) else None
-        if sqrt_rho is None:
-            return 0.0
+        """Compute Bures distance: d_B(ρ, σ) = √(2 - 2√(F(ρ, σ)))
+
+        Uses eigenvalue decomposition for sqrtm since NumPy's linalg
+        does not provide sqrtm directly.
+        """
         try:
-            mid = sqrt_rho @ sigma @ sqrt_rho
-            fidelity = float(np.real(np.trace(np.linalg.sqrtm(mid))))
+            # Compute sqrt(rho) via eigendecomposition
+            evals, evecs = np.linalg.eigh(rho)
+            evals = np.clip(evals.real, 0.0, None)
+            sqrt_rho = evecs @ np.diag(np.sqrt(evals)) @ evecs.conj().T
+            # Regularize for inversion
+            sqrt_rho_inv = evecs @ np.diag(1.0 / (np.sqrt(evals) + 1e-12)) @ evecs.conj().T
+
+            mid = sqrt_rho_inv @ sigma @ sqrt_rho_inv
+            # Compute sqrt(mid) via eigendecomposition
+            m_evals, m_evecs = np.linalg.eigh(mid)
+            m_evals = np.clip(m_evals.real, 0.0, None)
+            sqrt_mid = m_evecs @ np.diag(np.sqrt(m_evals)) @ m_evecs.conj().T
+            fidelity = float(np.real(np.trace(sqrt_mid)))
             fidelity = np.clip(fidelity, 0.0, 1.0)
             return float(math.sqrt(max(0.0, 2.0 - 2.0 * fidelity)))
         except np.linalg.LinAlgError:
@@ -363,21 +375,17 @@ class NonMarkovianDetector:
 
         Uses the Choi-Jamiolkowski isomorphism: for a map E,
         J(E) = (E ⊗ I)(|Ω⟩⟨Ω|) where |Ω⟩ = Σ |kk⟩.
+
+        For a map E: M_d → M_d, the Choi matrix is d² × d².
+        We estimate E from the action on two states.
         """
         d = rho_i.shape[0]
         try:
             # If ρᵢ is invertible, we can estimate the map
             rho_i_inv = np.linalg.inv(rho_i + _EPS * np.eye(d))
-            # Crude estimate: E(ρ) = ρⱼ ρᵢ⁻¹ ρ
-            # Choi matrix: J(E) = Σ_{mn} E(|m⟩⟨n|) ⊗ |m⟩⟨n|
-            choi = np.zeros((d * d, d * d), dtype=np.complex128)
-            for m in range(d):
-                for n in range(d):
-                    emn = np.zeros((d, d), dtype=np.complex128)
-                    emn[m, n] = 1.0
-                    e_emn = rho_j @ rho_i_inv @ emn @ rho_i_inv @ rho_j
-                    basis = np.outer(emn, emn.conj())
-                    choi += np.kron(e_emn, basis)
+            # Simplified Choi estimate: J(E) ≈ ρⱼ ⊗ ρᵢ^T (crude but bounded)
+            # This is a valid Choi matrix if the map is close to identity
+            choi = np.kron(rho_j, rho_i.T)
             return (choi + choi.conj().T) / 2.0
         except np.linalg.LinAlgError:
             return None

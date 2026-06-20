@@ -33,6 +33,7 @@ from hyba_genesis_api.core.intelligence_fabric import SubstrateOrchestrator, exp
 from hyba_genesis_api.core.substrate import get_substrate_state, initialize_substrate
 from pythia_mining.fault_tolerant_quantum_core import FaultTolerantQuantumCore, PHI
 from pythia_mining.redis_state_registry import get_redis_registry
+from pythia_mining.autonomous_qaas_controller import create_autonomous_controller
 
 router = APIRouter(prefix="/api/admin/fault-tolerant-computers", tags=["quantum-as-a-service-admin"])
 public_router = APIRouter(prefix="/api/v1/fault-tolerant-computers", tags=["quantum-as-a-service"])
@@ -147,6 +148,12 @@ class _VirtualFaultTolerantQuantumComputer:
         self._idempotency_cache: dict[str, Dict[str, Any]] = {}
         for _ in range(request.logical_qubits):
             self.core.initialize_logical_qubit("0")
+        
+        # Initialize autonomous self-healing and self-optimization
+        self.autonomous = create_autonomous_controller(
+            service_id=computer_id,
+            service_kind="qaas",
+        )
 
         # Serialize initial topology to Redis for distributed state
         redis_registry = get_redis_registry()
@@ -334,6 +341,43 @@ class _VirtualFaultTolerantQuantumComputer:
                 )
                 result["metering"] = metering_result
                 result["execution_duration_ms"] = round(exec_duration * 1000, 2)
+            
+            # Record execution for autonomous learning
+            stats = self.core.get_error_statistics()
+            self.autonomous.record_execution(
+                execution_time_ms=exec_duration * 1000,
+                logical_error_rate=stats["logical_error_rate"],
+                correction_success=stats["correction_successes"] > 0,
+            )
+            
+            # Check if autonomous healing should trigger
+            metrics = self.autonomous.get_health_metrics()
+            trigger = self.autonomous.should_trigger_healing(metrics)
+            if trigger:
+                heal_result = self.autonomous.heal(trigger)
+                result["autonomous_healing"] = {
+                    "triggered": True,
+                    "trigger": trigger,
+                    "action": heal_result.action,
+                    "success": heal_result.success,
+                }
+            
+            # Generate optimization proposals (not auto-applied)
+            proposal = self.autonomous.propose_optimization(
+                current_code_distance=self.policy["code_distance"],
+                current_error_rate=stats["physical_error_rate"],
+                metrics=metrics,
+            )
+            if proposal:
+                result["autonomous_optimization"] = {
+                    "proposal_id": proposal.proposal_id,
+                    "parameter": proposal.parameter,
+                    "current": proposal.current_value,
+                    "proposed": proposal.proposed_value,
+                    "expected_improvement": proposal.expected_improvement,
+                    "confidence": proposal.confidence,
+                    "status": "proposed_not_applied",
+                }
 
             self._executions += 1
             self.touch()
@@ -409,12 +453,19 @@ class QuantumComputerRegistry:
                         "updated_at": computer.updated_at,
                     }
                     redis_registry.serialize_instance_topology(computer_id, topology_data)
+                
+                # Start autonomous controller
+                computer.autonomous.start()
 
             return computer.response()
 
     def stop(self, computer_id: str) -> FaultTolerantComputerResponse:
         with self._lock:
             computer = self.get(computer_id)
+            
+            # Stop autonomous controller and persist learned state
+            computer.autonomous.stop()
+            
             computer.state = "stopped"
             computer.touch()
 
@@ -483,6 +534,16 @@ async def execute_quantum_workload(
     payload: TokenPayload = Depends(require_admin),
 ):
     return registry.execute(computer_id, request)
+
+
+@router.get("/{computer_id}/autonomous", response_model=Dict[str, Any])
+async def get_autonomous_status(
+    computer_id: str,
+    payload: TokenPayload = Depends(require_admin),
+):
+    """Get autonomous self-healing and self-optimization status."""
+    computer = registry.get(computer_id)
+    return computer.autonomous.get_status()
 
 
 def _qaas_units(request: QuantumWorkloadRequest) -> int:
