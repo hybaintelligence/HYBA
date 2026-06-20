@@ -1,6 +1,6 @@
 /**
  * Production JWT secret validation utilities.
- * Tests in tests/ import from "../bridge_security" which resolves to this file.
+ * Tests in tests/ import from "../src/bridge_security" which resolves to this file.
  */
 
 export const MIN_PRODUCTION_JWT_SECRET_BYTES = 32;

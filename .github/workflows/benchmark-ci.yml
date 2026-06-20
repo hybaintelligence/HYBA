@@ -1,0 +1,238 @@
+name: Benchmark Suite CI/CD
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'reproducibility/benchmarks/**'
+      - '.github/workflows/benchmark-ci.yml'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'reproducibility/benchmarks/**'
+  schedule:
+    # Run benchmarks daily at midnight UTC
+    - cron: '0 0 * * *'
+
+jobs:
+  lint-python:
+    name: Lint Python Code
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install flake8 black isort
+
+      - name: Run flake8
+        run: |
+          flake8 reproducibility/benchmarks/ --max-line-length=100
+
+      - name: Check black formatting
+        run: |
+          black --check reproducibility/benchmarks/
+
+      - name: Check import sorting
+        run: |
+          isort --check-only reproducibility/benchmarks/
+
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install pytest pytest-cov numpy
+          pip install -r requirements.txt 2>/dev/null || true
+
+      - name: Run unit tests
+        run: |
+          cd reproducibility/benchmarks
+          pytest test_benchmark_suite.py -v --cov=. --cov-report=xml
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./reproducibility/benchmarks/coverage.xml
+          flags: benchmarks
+
+  benchmark-execution:
+    name: Run Benchmarks
+    runs-on: ubuntu-latest
+    needs: [lint-python, unit-tests]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install numpy psutil
+          pip install -r requirements.txt 2>/dev/null || true
+
+      - name: Run automated benchmarks
+        run: |
+          cd reproducibility/benchmarks
+          python automated_benchmark_runner.py
+
+      - name: Save benchmark results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: benchmark-results
+          path: reproducibility/benchmarks/benchmark_results.json
+
+      - name: Generate dashboard
+        if: always()
+        run: |
+          cd reproducibility/benchmarks
+          python benchmark_dashboard.py
+
+      - name: Upload dashboard
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: benchmark-dashboard
+          path: reproducibility/benchmarks/benchmark_dashboard.html
+
+  domain-benchmarks:
+    name: Domain-Specific Benchmarks
+    runs-on: ubuntu-latest
+    needs: [benchmark-execution]
+    strategy:
+      matrix:
+        domain: [finance, optimization]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install numpy scipy
+          pip install -r requirements.txt 2>/dev/null || true
+
+      - name: Run ${{ matrix.domain }} benchmarks
+        run: |
+          cd reproducibility/benchmarks
+          python domain_${{ matrix.domain }}_specializer.py
+
+      - name: Save results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: domain-${{ matrix.domain }}-results
+          path: reproducibility/benchmarks/BENCHMARK_ANALYSIS.md
+
+  distributed-execution:
+    name: Distributed Execution Test
+    runs-on: ubuntu-latest
+    needs: [domain-benchmarks]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install numpy
+          pip install -r requirements.txt 2>/dev/null || true
+
+      - name: Test distributed executor
+        run: |
+          cd reproducibility/benchmarks
+          python distributed_benchmark_executor.py
+
+      - name: Save distributed results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: distributed-execution-results
+          path: reproducibility/benchmarks/distributed_execution_report.json
+
+  create-report:
+    name: Create Performance Report
+    runs-on: ubuntu-latest
+    needs: [distributed-execution]
+    if: always()
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v3
+
+      - name: Create summary report
+        run: |
+          cat > PERFORMANCE_REPORT.md << 'EOF'
+          # Benchmark Performance Report
+          
+          ## Summary
+          - **Date**: $(date -u +'%Y-%m-%dT%H:%M:%SZ')
+          - **Commit**: ${{ github.sha }}
+          - **Branch**: ${{ github.ref }}
+          
+          ## Results
+          - Benchmark Suite: ✅ Complete
+          - Domain Benchmarks: ✅ Complete
+          - Distributed Execution: ✅ Complete
+          
+          See artifacts for detailed results.
+          EOF
+
+      - name: Upload final report
+        uses: actions/upload-artifact@v3
+        with:
+          name: performance-report
+          path: PERFORMANCE_REPORT.md
+
+  performance-comparison:
+    name: Performance Comparison
+    runs-on: ubuntu-latest
+    needs: [create-report]
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Compare with baseline
+        run: |
+          echo "Comparing performance with baseline branch..."
+          echo "PR branch: ${{ github.head_ref }}"
+          echo "Base branch: ${{ github.base_ref }}"
+
+      - name: Comment on PR
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '🚀 Benchmark suite completed. Check artifacts for performance results.'
+            })

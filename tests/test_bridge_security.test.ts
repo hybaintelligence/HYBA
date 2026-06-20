@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import fc from "fast-check";
-import { MIN_PRODUCTION_JWT_SECRET_BYTES, validateProductionJwtSecret } from "../bridge_security";
+import { MIN_PRODUCTION_JWT_SECRET_BYTES, validateProductionJwtSecret } from "../src/bridge_security";
 
 describe("production JWT secret validation", () => {
   it("rejects missing production JWT secrets", () => {

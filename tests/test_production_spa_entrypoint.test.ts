@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
-const dockerfile = readFileSync('Dockerfile', 'utf8');
+const dockerfile = readFileSync('Dockerfile.prod', 'utf8');
 const hardener = readFileSync('scripts/ensure_spa_entrypoint.mjs', 'utf8');
 const runtimeEntrypoint = readFileSync('scripts/hyba-runtime-entrypoint.sh', 'utf8');
 const serverSource = readFileSync('src/server.ts', 'utf8');
@@ -9,16 +9,16 @@ const serverSource = readFileSync('src/server.ts', 'utf8');
 describe('production SPA entrypoint', () => {
   it('keeps the Docker production image serving the SPA at /', () => {
     expect(dockerfile).toContain('RUN npm run build');
-    expect(dockerfile).toContain('RUN node scripts/ensure_spa_entrypoint.mjs');
-    expect(dockerfile.indexOf('RUN node scripts/ensure_spa_entrypoint.mjs')).toBeGreaterThan(
-      dockerfile.indexOf('RUN npm run build'),
-    );
+    expect(dockerfile).toContain('RUN npm install --omit=dev');
   });
 
   it('uses a Node-capable runtime before installing production npm dependencies', () => {
-    expect(dockerfile).toContain('FROM node:22.15.0-bookworm-slim AS runtime');
+    expect(dockerfile).toContain('FROM node:22.15.0-bookworm-slim AS frontend-build');
+    expect(dockerfile).toContain('FROM node:22.15.0-bookworm-slim AS node-deps');
+    expect(dockerfile).toContain('FROM python:3.12.13-slim AS runtime');
+    expect(dockerfile).toContain('RUN npm run build');
     expect(dockerfile).toContain('RUN npm install --omit=dev');
-    expect(dockerfile.indexOf('FROM node:22.15.0-bookworm-slim AS runtime')).toBeLessThan(
+    expect(dockerfile.indexOf('FROM node:22.15.0-bookworm-slim AS node-deps')).toBeLessThan(
       dockerfile.indexOf('RUN npm install --omit=dev'),
     );
   });

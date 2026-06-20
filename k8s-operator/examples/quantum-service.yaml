@@ -1,0 +1,34 @@
+apiVersion: hyba.ai/v1
+kind: ComputationalIntelligenceService
+metadata:
+  name: quantum-optimization
+  namespace: hyba-system
+spec:
+  name: "Quantum Optimization Service"
+  tier: "institutional"
+  connector:
+    type: "qiskit"
+    config:
+      backend: "ibm_quantum"
+      optimization_level: 3
+      pulse: true
+      resilience: true
+  output:
+    type: "kafka"
+    config:
+      brokers:
+      - "kafka-1.default.svc.cluster.local:9092"
+      - "kafka-2.default.svc.cluster.local:9092"
+      topic: "quantum-results"
+      partitions: 3
+      replication_factor: 2
+  scaling:
+    minReplicas: 3
+    maxReplicas: 20
+    targetCPU: 80
+  monitoring:
+    enabled: true
+    datadogIntegration: true
+    prometheusInterval: "15s"
+    logLevel: "debug"
+  policiesEnabled: true

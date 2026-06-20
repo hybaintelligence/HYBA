@@ -1,0 +1,99 @@
+{{- if .Values.rbac.create -}}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "hyba-operator.fullname" . }}
+  labels:
+    {{- include "hyba-operator.labels" . | nindent 4 }}
+rules:
+# ComputationalIntelligenceService resources
+- apiGroups:
+  - hyba.ai
+  resources:
+  - ciaasservices
+  verbs:
+  - create
+  - delete
+  - deletecollection
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - hyba.ai
+  resources:
+  - ciaasservices/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - hyba.ai
+  resources:
+  - ciaasservices/status
+  verbs:
+  - get
+  - patch
+  - update
+# Deployments
+- apiGroups:
+  - apps
+  resources:
+  - deployments
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+# Services
+- apiGroups:
+  - ""
+  resources:
+  - services
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+# HorizontalPodAutoscalers
+- apiGroups:
+  - autoscaling
+  resources:
+  - horizontalpodautoscalers
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+# Events
+- apiGroups:
+  - ""
+  resources:
+  - events
+  verbs:
+  - create
+  - patch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "hyba-operator.fullname" . }}
+  labels:
+    {{- include "hyba-operator.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ include "hyba-operator.fullname" . }}
+subjects:
+- kind: ServiceAccount
+  name: {{ include "hyba-operator.serviceAccountName" . }}
+  namespace: {{ .Release.Namespace }}
+{{- end }}

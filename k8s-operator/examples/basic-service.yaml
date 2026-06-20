@@ -1,0 +1,28 @@
+apiVersion: hyba.ai/v1
+kind: ComputationalIntelligenceService
+metadata:
+  name: sample-ml-service
+  namespace: default
+spec:
+  name: "ML Inference Service"
+  tier: "enterprise"
+  connector:
+    type: "tensorflow"
+    config:
+      model: "resnet50"
+      version: "2.0"
+      framework: "tensorflow"
+  output:
+    type: "http"
+    config:
+      format: "json"
+      compression: "gzip"
+  scaling:
+    minReplicas: 2
+    maxReplicas: 10
+    targetCPU: 70
+  monitoring:
+    enabled: true
+    prometheusInterval: "30s"
+    logLevel: "info"
+  policiesEnabled: true

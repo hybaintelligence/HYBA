@@ -1,0 +1,17 @@
+apiVersion: v2
+name: hyba-operator
+description: Kubernetes Operator for HYBA Computational Intelligence Services
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+keywords:
+  - hyba
+  - ciaas
+  - computational-intelligence
+  - operator
+home: https://hyba.ai
+sources:
+  - https://github.com/hyba-ai/k8s-operator
+maintainers:
+  - name: HYBA Team
+    email: ops@hyba.ai

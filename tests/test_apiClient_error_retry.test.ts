@@ -69,7 +69,7 @@ describe("apiClient retry, auth, and error contracts", () => {
           },
         ),
       )
-      .mockResolvedValueOnce(
+      .mockResolvedValue(
         jsonResponse(
           { error: "still_unavailable", message: "nope" },
           {
@@ -106,7 +106,13 @@ describe("apiClient retry, auth, and error contracts", () => {
     const fetchMock = vi.mocked(fetch).mockRejectedValue(new TypeError("network offline"));
     const promise = getHealth();
     await vi.runAllTimersAsync();
-    await expect(promise).rejects.toThrow("network offline");
+    try {
+      await promise;
+      throw new Error("Expected promise to reject");
+    } catch (error) {
+      expect(error).toBeInstanceOf(TypeError);
+      expect((error as TypeError).message).toBe("network offline");
+    }
     expect(fetchMock).toHaveBeenCalledTimes(4);
   });
 });

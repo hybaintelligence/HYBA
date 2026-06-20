@@ -231,7 +231,7 @@ The framework was validated against the following advanced mathematical rigor cr
 
 **Package Structure**:
 ```
-hyba_orchestrator.py          # Main CLI orchestrator
+scripts/hyba_orchestrator.py  # Main CLI orchestrator
 hyba_stress_tests/
 ├── __init__.py              # Package initialization
 ├── manifold_stress_tests.py  # Module 1

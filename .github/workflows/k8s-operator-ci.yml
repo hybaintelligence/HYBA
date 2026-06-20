@@ -1,0 +1,181 @@
+name: Kubernetes Operator CI/CD
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'k8s-operator/**'
+      - '.github/workflows/k8s-operator-ci.yml'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'k8s-operator/**'
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.21'
+          cache: true
+          cache-dependency-path: 'k8s-operator/go.sum'
+
+      - name: Run golangci-lint
+        uses: golangci/golangci-lint-action@v3
+        with:
+          version: latest
+          working-directory: k8s-operator
+
+  test:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.21'
+          cache: true
+          cache-dependency-path: 'k8s-operator/go.sum'
+
+      - name: Run tests
+        run: |
+          cd k8s-operator
+          go test -v -cover -timeout=5m ./...
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./k8s-operator/coverage.out
+          flags: k8s-operator
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    needs: [lint, test]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.21'
+
+      - name: Build
+        run: |
+          cd k8s-operator
+          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o manager main.go
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: operator-manager
+          path: k8s-operator/manager
+
+  docker-build:
+    name: Docker Build & Push
+    runs-on: ubuntu-latest
+    needs: [build]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: operator-manager
+          path: k8s-operator/
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v4
+        with:
+          context: k8s-operator
+          push: true
+          tags: |
+            hyba/k8s-operator:latest
+            hyba/k8s-operator:${{ github.sha }}
+
+  helm-lint:
+    name: Helm Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Helm
+        uses: azure/setup-helm@v3
+
+      - name: Lint Helm chart
+        run: |
+          helm lint k8s-operator/helm/hyba-operator
+
+  integration-test:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    needs: [docker-build]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create kind cluster
+        uses: helm/kind-action@v1.7.0
+        with:
+          cluster_name: test-cluster
+          config: |
+            kind: Cluster
+            apiVersion: kind.x-k8s.io/v1alpha4
+            nodes:
+            - role: control-plane
+
+      - name: Load operator image
+        run: |
+          kind load docker-image hyba/k8s-operator:${{ github.sha }} --name test-cluster
+
+      - name: Deploy operator
+        run: |
+          helm install hyba-operator k8s-operator/helm/hyba-operator \
+            --namespace hyba-system \
+            --create-namespace \
+            --set image.tag=${{ github.sha }}
+
+      - name: Verify deployment
+        run: |
+          kubectl rollout status deployment/hyba-operator -n hyba-system --timeout=5m
+
+      - name: Test service creation
+        run: |
+          kubectl apply -f k8s-operator/examples/basic-service.yaml
+          sleep 10
+          kubectl get ciaasservices
+
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    needs: [integration-test]
+    if: startsWith(github.ref, 'refs/tags/')
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: operator-manager
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: manager
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
