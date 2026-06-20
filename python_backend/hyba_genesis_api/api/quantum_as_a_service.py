@@ -162,13 +162,21 @@ class _VirtualFaultTolerantQuantumComputer:
             "logical_error_rate": stats["logical_error_rate"],
             "physical_error_rate": stats["physical_error_rate"],
             "error_threshold": stats["error_threshold"],
+            "phi_reference_threshold": stats["phi_reference_threshold"],
             "fault_tolerant": stats["fault_tolerant"],
             "syndrome_rounds": stats["syndrome_rounds"],
+            "correction_attempts": stats["correction_attempts"],
+            "correction_successes": stats["correction_successes"],
+            "logical_failures": stats["logical_failures"],
+            "last_decoder_defects": stats["last_decoder_defects"],
+            "last_decoder_weight": stats["last_decoder_weight"],
             "suppression_factor": stats.get("suppression_factor", 1.0),
-            "evidence_basis": "modeled_logical_error_rate",
+            "logical_error_rate_basis": stats["logical_error_rate_basis"],
+            "evidence_basis": "syndrome_decoder_with_modeled_logical_error_rate",
             "claim_boundary": (
-                "Modeled surface-code logical-error-rate projection; not measured "
-                "physical hardware fault tolerance."
+                "Syndrome corrections are derived from the local decoder model; "
+                "logical error rate is an analytic surface-code projection, not "
+                "measured physical hardware fault tolerance."
             ),
         }
 
