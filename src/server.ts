@@ -49,6 +49,13 @@ import tailwindcss from "@tailwindcss/vite";
 import { validateProductionJwtSecret } from "./bridge_security";
 import { securitySwarms } from "./core/security_swarm";
 import { IntelligenceService } from "./core/intelligence_service";
+import {
+  MonthlyQuotaLedger,
+  loadBillingPlans,
+  loadTenantBillingConfig,
+  parseBillingUnits,
+  sanitizeTenantId,
+} from "./core/billing";
 
 dotenv.config();
 
@@ -82,6 +89,7 @@ const CONFIG = {
   cspConnectSrc: parseCspConnectSrc(process.env.HYBA_CSP_CONNECT_SRC),
   swarmHeartbeatIntervalMs: Number(process.env.HYBA_SWARM_HEARTBEAT_INTERVAL_MS || 3000),
   proxyBodySizeLimit: Number(process.env.HYBA_PROXY_BODY_SIZE_LIMIT || 10 * 1024 * 1024),
+  billingEnforcementEnabled: process.env.HYBA_BILLING_ENFORCEMENT !== "false",
 } as const;
 
 interface CircuitState {
@@ -116,6 +124,8 @@ const metrics = {
   backendLatencyMs: 0,
   highLatencyCount: 0,
   lastHighLatencyTime: 0,
+  billingUnitsTotal: 0,
+  billingRejectedTotal: 0,
   startTime: Date.now(),
 };
 
@@ -287,6 +297,53 @@ function recordHealthCheckSuccess(): void {
   metrics.healthCheckFailures = 0;
   metrics.firstHealthCheckFailure = 0;
   metrics.lastHealthCheckFailure = 0;
+}
+
+const billingLedger = new MonthlyQuotaLedger();
+
+function enforceTenantBilling(req: Request, res: Response, next: NextFunction): void {
+  if (!CONFIG.billingEnforcementEnabled || !req.path.startsWith("/v1/")) {
+    next();
+    return;
+  }
+  const tenantHeader = Array.isArray(req.headers["x-hyba-tenant-id"])
+    ? req.headers["x-hyba-tenant-id"][0]
+    : req.headers["x-hyba-tenant-id"];
+  const unitHeader = Array.isArray(req.headers["x-hyba-billing-units"])
+    ? req.headers["x-hyba-billing-units"][0]
+    : req.headers["x-hyba-billing-units"];
+  const decision = billingLedger.evaluateAndRecord({
+    tenantId: sanitizeTenantId(tenantHeader),
+    requestedUnits: parseBillingUnits(unitHeader),
+    plans: loadBillingPlans(),
+    tenantConfigs: loadTenantBillingConfig(),
+  });
+  res.setHeader("x-hyba-billing-tenant", decision.tenantId);
+  res.setHeader("x-hyba-billing-plan", decision.plan.id);
+  res.setHeader("x-hyba-billing-period", decision.period);
+  res.setHeader("x-hyba-billing-units", String(decision.requestedUnits));
+  res.setHeader("x-hyba-quota-remaining", String(decision.remainingUnits));
+  if (!decision.allowed) {
+    metrics.billingRejectedTotal += 1;
+    noStore(res);
+    res.status(decision.reason === "invalid_units" ? 400 : 402).json({
+      error: decision.reason,
+      message:
+        decision.reason === "invalid_units"
+          ? "x-hyba-billing-units must be an integer from 1 to 1000000"
+          : "Monthly tenant quota exceeded",
+      tenantId: decision.tenantId,
+      planId: decision.plan.id,
+      monthlyQuotaUnits: decision.plan.monthlyQuotaUnits,
+      usedUnits: decision.usedUnits,
+      requestedUnits: decision.requestedUnits,
+      remainingUnits: decision.remainingUnits,
+      period: decision.period,
+    });
+    return;
+  }
+  metrics.billingUnitsTotal += decision.requestedUnits;
+  next();
 }
 
 async function autoConnectViaBTC(): Promise<void> {
@@ -717,6 +774,8 @@ async function startServer(): Promise<void> {
           requestsTotal: metrics.requestsTotal,
           proxyErrors: metrics.proxyErrors,
           circuitBreakerTrips: metrics.circuitBreakerTrips,
+          billingUnitsTotal: metrics.billingUnitsTotal,
+          billingRejectedTotal: metrics.billingRejectedTotal,
           topPaths: Array.from(metrics.requestsByPath.entries())
             .sort((a, b) => b[1] - a[1])
             .slice(0, 10),
@@ -832,6 +891,12 @@ async function startServer(): Promise<void> {
       "# HELP hyba_bridge_high_latency_count Total high latency events",
       "# TYPE hyba_bridge_high_latency_count counter",
       `hyba_bridge_high_latency_count ${metrics.highLatencyCount}`,
+      "# HELP hyba_billing_units_total Total accepted billable units",
+      "# TYPE hyba_billing_units_total counter",
+      `hyba_billing_units_total ${metrics.billingUnitsTotal}`,
+      "# HELP hyba_billing_rejected_total Total requests rejected by billing quota enforcement",
+      "# TYPE hyba_billing_rejected_total counter",
+      `hyba_billing_rejected_total ${metrics.billingRejectedTotal}`,
       "# HELP hyba_bridge_uptime_seconds Uptime in seconds",
       "# TYPE hyba_bridge_uptime_seconds counter",
       `hyba_bridge_uptime_seconds ${Math.floor((Date.now() - metrics.startTime) / 1000)}`,
@@ -842,6 +907,8 @@ async function startServer(): Promise<void> {
   });
 
   // Enforce body size limit for all proxied routes before streaming begins
+  app.use("/api", enforceTenantBilling);
+
   app.use(["/api", "/health"], (req: Request, res: Response, next: NextFunction) => {
     const contentLength = parseInt(req.headers["content-length"] || "0", 10);
     if (contentLength > CONFIG.proxyBodySizeLimit) {
