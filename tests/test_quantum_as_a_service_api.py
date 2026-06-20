@@ -888,3 +888,262 @@ def test_integration_autonomous_controller_integration():
             assert stop_status["status"] == "autonomous_controller_stopped"
     finally:
         registry._computers.clear()
+
+
+# End-to-End Tests for QaaS
+# -----------------------------------------------------------------
+
+def test_e2e_production_customer_lifecycle():
+    """E2E: Full production customer lifecycle from onboarding to workload execution."""
+    registry._computers.clear()
+    try:
+        client = TestClient(app)
+        
+        # Simulate production customer onboarding
+        prod_principal = _customer_principal(tier="production")
+        _override_customer_auth(prod_principal)
+        
+        # Step 1: Provision production-tier QPU
+        provision = client.post(
+            "/api/v1/fault-tolerant-computers",
+            json={
+                "name": "production-qpu-01",
+                "tier": "production",
+                "isolation": "dedicated-control-plane",
+                "code_distance": 11,
+                "logical_qubits": 64,
+                "physical_error_rate": 0.0005,
+                "phi_resonance_target": 0.95,
+            },
+        )
+        assert provision.status_code == 201
+        computer_id = provision.json()["computer_id"]
+        
+        # Step 2: Verify production-tier features
+        assert provision.json()["tier"] == "production"
+        assert provision.json()["isolation"] == "dedicated-control-plane"
+        assert provision.json()["admin_privileged"] is False
+        
+        # Step 3: Start QPU
+        start = client.post(f"/api/v1/fault-tolerant-computers/{computer_id}/start")
+        assert start.status_code == 200
+        assert start.json()["state"] == "running"
+        
+        # Step 4: Execute production workload
+        execute = client.post(
+            f"/api/v1/fault-tolerant-computers/{computer_id}/execute",
+            json={
+                "operation": "surface_code_cycle",
+                "logical_qubits": [0, 1, 2, 3],
+                "circuit_depth": 100,
+                "shots": 100,
+                "idempotency_key": "prod-workload-001",
+            },
+        )
+        assert execute.status_code == 200
+        result = execute.json()
+        assert result["operation"] == "surface_code_cycle"
+        assert result["result"]["syndrome_rounds"] >= 4
+        
+        # Step 5: Verify fault tolerance metrics
+        assert result["fault_tolerance"]["fault_tolerant"] is True
+        assert result["fault_tolerance"]["logical_error_rate"] < 0.001
+        
+        # Step 6: Replay with idempotency
+        replay = client.post(
+            f"/api/v1/fault-tolerant-computers/{computer_id}/execute",
+            json={
+                "operation": "surface_code_cycle",
+                "logical_qubits": [0, 1, 2, 3],
+                "circuit_depth": 100,
+                "shots": 100,
+                "idempotency_key": "prod-workload-001",
+            },
+        )
+        assert replay.status_code == 200
+        assert replay.json()["executed_at"] == result["executed_at"]
+        
+        # Step 7: Stop QPU
+        stop = client.post(f"/api/v1/fault-tolerant-computers/{computer_id}/stop")
+        assert stop.status_code == 200
+        assert stop.json()["state"] == "stopped"
+    finally:
+        app.dependency_overrides.clear()
+        registry._computers.clear()
+
+
+def test_e2e_multi_customer_isolation():
+    """E2E: Verify isolation between multiple customers with different tiers."""
+    registry._computers.clear()
+    try:
+        client = TestClient(app)
+        
+        # Customer 1: Developer tier
+        dev_principal = _customer_principal(tier="developer")
+        _override_customer_auth(dev_principal)
+        
+        dev_qpu = client.post(
+            "/api/v1/fault-tolerant-computers",
+            json={
+                "name": "dev-customer-qpu",
+                "tier": "developer",
+                "isolation": "single-tenant",
+                "code_distance": 7,
+                "logical_qubits": 32,
+            },
+        )
+        assert dev_qpu.status_code == 201
+        dev_computer_id = dev_qpu.json()["computer_id"]
+        
+        # Customer 2: Production tier
+        prod_principal = _customer_principal(tier="production")
+        _override_customer_auth(prod_principal)
+        
+        prod_qpu = client.post(
+            "/api/v1/fault-tolerant-computers",
+            json={
+                "name": "prod-customer-qpu",
+                "tier": "production",
+                "isolation": "dedicated-control-plane",
+                "code_distance": 11,
+                "logical_qubits": 64,
+            },
+        )
+        assert prod_qpu.status_code == 201
+        prod_computer_id = prod_qpu.json()["computer_id"]
+        
+        # Verify isolation: developer cannot access production QPU
+        _override_customer_auth(dev_principal)
+        dev_access_prod = client.post(
+            f"/api/v1/fault-tolerant-computers/{prod_computer_id}/start",
+        )
+        # Developer should not be able to access production customer's QPU
+        # (This depends on implementation - may return 404 or 403)
+        assert dev_access_prod.status_code in [403, 404]
+    finally:
+        app.dependency_overrides.clear()
+        registry._computers.clear()
+
+
+def test_e2e_error_recovery_workflow():
+    """E2E: Verify error recovery and autonomous healing workflow."""
+    from pythia_mining.autonomous_qaas_controller import AutonomousQaaSController
+    import tempfile
+    
+    registry._computers.clear()
+    try:
+        client = TestClient(app)
+        
+        # Create autonomous controller
+        with tempfile.TemporaryDirectory() as tmpdir:
+            controller = AutonomousQaaSController(
+                service_id="e2e-recovery-test",
+                service_kind="qaas",
+                persistence_dir=Path(tmpdir),
+            )
+            controller.start()
+            
+            # Provision QPU
+            app.dependency_overrides[require_admin] = _admin_payload
+            provision = client.post(
+                "/api/admin/fault-tolerant-computers",
+                json={"name": "recovery-qpu", "code_distance": 5, "logical_qubits": 4},
+            )
+            computer_id = provision.json()["computer_id"]
+            client.post(f"/api/admin/fault-tolerant-computers/{computer_id}/start")
+            
+            # Simulate error conditions
+            controller.record_execution(
+                execution_time_ms=500.0,
+                logical_error_rate=0.01,  # High error rate
+                correction_success=False,
+            )
+            
+            # Record multiple failures
+            controller.record_execution(
+                execution_time_ms=450.0,
+                logical_error_rate=0.012,
+                correction_success=False,
+            )
+            
+            controller.record_execution(
+                execution_time_ms=480.0,
+                logical_error_rate=0.011,
+                correction_success=False,
+            )
+            
+            # Check if healing should trigger
+            metrics = controller.get_health_metrics()
+            assert metrics.consecutive_failures >= 3
+            
+            trigger = controller.should_trigger_healing(metrics)
+            assert trigger is not None
+            
+            # Execute healing
+            heal_result = controller.heal(trigger)
+            assert heal_result.success is True
+            
+            # Verify recovery
+            controller.record_execution(
+                execution_time_ms=150.0,
+                logical_error_rate=0.001,
+                correction_success=True,
+            )
+            
+            metrics_after = controller.get_health_metrics()
+            assert metrics_after.consecutive_failures == 0
+            
+            controller.stop()
+    finally:
+        app.dependency_overrides.clear()
+        registry._computers.clear()
+
+
+def test_e2e_evidence_seal_integrity():
+    """E2E: Verify evidence seal integrity across full workflow."""
+    app.dependency_overrides[require_admin] = _admin_payload
+    registry._computers.clear()
+    try:
+        client = TestClient(app)
+        
+        # Provision QPU
+        provision = client.post(
+            "/api/admin/fault-tolerant-computers",
+            json={
+                "name": "evidence-qpu",
+                "code_distance": 5,
+                "logical_qubits": 4,
+                "phi_resonance_target": 0.95,
+            },
+        )
+        computer_id = provision.json()["computer_id"]
+        
+        # Verify evidence seal in provision response
+        assert "evidence_seal" in provision.json()
+        assert len(provision.json()["evidence_seal"]) == 64
+        
+        # Start QPU
+        client.post(f"/api/admin/fault-tolerant-computers/{computer_id}/start")
+        
+        # Execute workload
+        execute = client.post(
+            f"/api/admin/fault-tolerant-computers/{computer_id}/execute",
+            json={
+                "operation": "surface_code_cycle",
+                "logical_qubits": [0, 1],
+                "circuit_depth": 2,
+                "shots": 8,
+            },
+        )
+        assert execute.status_code == 200
+        
+        # Verify evidence seal in execution response
+        assert "evidence_seal" in execute.json()
+        assert len(execute.json()["evidence_seal"]) == 64
+        
+        # Verify seal_version and sealed_at fields
+        assert "seal_version" in execute.json()
+        assert "sealed_at" in execute.json()
+    finally:
+        app.dependency_overrides.clear()
+        registry._computers.clear()
