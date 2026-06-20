@@ -37,7 +37,11 @@
       "evidence_files": [
         "docs/MINING_STANDALONE_VALIDATION_ROADMAP.md",
         "docs/PYTHIA_HYBA_VALIDATION_REMEDIATION.md",
-        "docs/mining/commercialization_gates.json"
+        "docs/mining/commercialization_gates.json",
+        "docs/mining/evidence/solver_validation_results.md"
+      ],
+      "validation_blockers": [
+        "2026-06-20 NumPy validation gate blocked: active Python lacks NumPy; pip and apt package installation returned 403; existing venv NumPy wheel is Darwin-only."
       ]
     }
   ]
