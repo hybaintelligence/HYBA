@@ -31,6 +31,7 @@ from hyba_genesis_api.api import (  # noqa: E402
     ai_memory,
     auth,
     computational_intelligence_service,
+    customer_access,
     executive_router,
     health,
     quantum_as_a_service,
@@ -200,6 +201,7 @@ app.add_middleware(
         "X-Request-ID",
         "X-Correlation-ID",
         "Idempotency-Key",
+        "X-API-Key",
     ],
 )
 
@@ -226,8 +228,11 @@ app.include_router(misc.router)
 app.include_router(ai.router)
 app.include_router(auth.router)
 app.include_router(admin.router)
+app.include_router(customer_access.admin_router)
 app.include_router(computational_intelligence_service.router)
+app.include_router(computational_intelligence_service.public_router)
 app.include_router(quantum_as_a_service.router)
+app.include_router(quantum_as_a_service.public_router)
 app.include_router(products.router)
 app.include_router(unified_mining.router)
 app.include_router(ai_memory.router)

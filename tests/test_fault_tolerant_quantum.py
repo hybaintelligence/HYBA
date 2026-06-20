@@ -80,11 +80,12 @@ class TestFaultTolerantCore:
         assert result in [0, 1]
     
     def test_error_threshold(self):
-        """Verify φ-scaled error threshold"""
+        """Verify the modeled surface-code threshold used for FT classification."""
         qc = FaultTolerantQuantumCore(code_distance=7)
         
-        # Should be ~1.38% from (3-φ) scaling
-        assert 0.013 < qc.error_threshold < 0.014
+        # Classification must align with the logical-error-rate model threshold.
+        assert qc.error_threshold == pytest.approx(0.0109)
+        assert 0.013 < qc.phi_reference_threshold < 0.014
         assert qc.p_phys < qc.error_threshold  # Should be fault-tolerant
 
 
@@ -261,3 +262,48 @@ class TestController:
 
 if __name__ == '__main__':
     pytest.main([__file__, '-v'])
+
+
+def test_logical_error_rate_matches_documented_suppression_formula():
+    """Logical error rate must match the documented modeled threshold formula."""
+    p_phys = 1e-3
+    code_distance = 7
+    qc = FaultTolerantQuantumCore(code_distance=code_distance, physical_error_rate=p_phys)
+
+    expected = 0.03 * (p_phys / 0.0109) ** ((code_distance + 1) / 2)
+
+    assert qc.p_logical == pytest.approx(expected, rel=1e-12)
+    assert qc.get_error_statistics()["logical_error_rate"] == pytest.approx(expected, rel=1e-12)
+
+
+def test_logical_error_rate_decreases_monotonically_with_code_distance_below_threshold():
+    """The modeled threshold relationship must improve as odd distance increases."""
+    p_phys = 1e-3
+    distances = [3, 5, 7, 9]
+    logical_rates = [
+        FaultTolerantQuantumCore(code_distance=distance, physical_error_rate=p_phys).p_logical
+        for distance in distances
+    ]
+
+    assert logical_rates == sorted(logical_rates, reverse=True)
+    assert all(left > right for left, right in zip(logical_rates, logical_rates[1:]))
+
+
+def test_logical_error_rate_increases_with_physical_error_rate_below_threshold():
+    """The modeled threshold relationship must worsen as physical errors increase."""
+    rates = [1e-5, 1e-4, 1e-3]
+    logical_rates = [
+        FaultTolerantQuantumCore(code_distance=7, physical_error_rate=rate).p_logical
+        for rate in rates
+    ]
+
+    assert logical_rates == sorted(logical_rates)
+    assert all(left < right for left, right in zip(logical_rates, logical_rates[1:]))
+
+
+def test_logical_error_rate_saturates_above_model_threshold():
+    """Above the documented model threshold, the projection must report no protection."""
+    qc = FaultTolerantQuantumCore(code_distance=7, physical_error_rate=0.0109)
+
+    assert qc.p_logical == 1.0
+    assert qc.get_error_statistics()["logical_error_rate"] == 1.0

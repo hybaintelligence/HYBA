@@ -37,10 +37,12 @@ class FaultTolerantQuantumCore:
         
         self.d = code_distance
         self.p_phys = physical_error_rate
+        # Surface-code model threshold used by the logical-error-rate formula.
+        # Keep classification aligned with _compute_logical_error_rate(): values
+        # at or above this threshold are modeled as providing no protection.
+        self.error_threshold = 0.0109
+        self.phi_reference_threshold = (3 - PHI) * 1e-2
         self.p_logical = self._compute_logical_error_rate()
-        
-        # φ-scaled threshold for fault tolerance
-        self.error_threshold = (3 - PHI) * 1e-2  # ~1.38%
         
         # Initialize logical qubit register
         self.logical_qubits: List[LogicalQubit] = []
@@ -50,10 +52,10 @@ class FaultTolerantQuantumCore:
         """Compute logical error rate from surface code formula"""
         # p_L ≈ c * (p/p_th)^((d+1)/2) for p < p_th
         c = 0.03  # Constant factor
-        p_th = 0.0109  # Surface code threshold ~1.09%
+        p_th = getattr(self, "error_threshold", 0.0109)
         
         if self.p_phys >= p_th:
-            return 1.0  # Above threshold, no protection
+            return 1.0  # At/above threshold, no modeled protection
         
         exponent = (self.d + 1) / 2
         p_logical = c * (self.p_phys / p_th) ** exponent
@@ -193,6 +195,7 @@ class FaultTolerantQuantumCore:
                 'physical_error_rate': self.p_phys,
                 'logical_error_rate': self.p_logical,
                 'error_threshold': self.error_threshold,
+                'phi_reference_threshold': self.phi_reference_threshold,
                 'fault_tolerant': self.p_phys < self.error_threshold,
                 'syndrome_rounds': 0
             }
@@ -205,6 +208,7 @@ class FaultTolerantQuantumCore:
             'physical_error_rate': self.p_phys,
             'logical_error_rate': self.p_logical,
             'error_threshold': self.error_threshold,
+            'phi_reference_threshold': self.phi_reference_threshold,
             'fault_tolerant': self.p_phys < self.error_threshold,
             'syndrome_rounds': total_syndromes,
             'avg_syndrome_weight': avg_weight,
