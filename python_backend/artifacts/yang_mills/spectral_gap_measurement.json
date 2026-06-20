@@ -1,4 +1,25 @@
 {
-  "success": false,
-  "error": "No non-zero spectrum found"
+  "success": true,
+  "lattice_size": 8,
+  "n_configurations": 1000,
+  "spectrum": {
+    "min": 0.9681107026959052,
+    "max": 0.9860618087341275,
+    "mean": 0.9767969078523303,
+    "std": 0.003361862281215338,
+    "n_nonzero": 500
+  },
+  "mass_gap": {
+    "measured_GeV": 0.9681107026959052,
+    "expected_GeV": 0.276393202250021,
+    "measured_ratio": 4.8405535134795254,
+    "expected_ratio": 1.381966011250105,
+    "prediction_error_pct": 250.26574272263292,
+    "z_score": 5789.478418647699
+  },
+  "phi_validation": {
+    "phi": 1.618033988749895,
+    "yang_mills_threshold_3_minus_phi": 1.381966011250105,
+    "lambda_qcd_GeV": 0.2
+  }
 }
