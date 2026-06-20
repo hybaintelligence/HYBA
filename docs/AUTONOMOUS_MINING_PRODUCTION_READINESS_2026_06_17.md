@@ -59,3 +59,34 @@ That scenario validates silent-degradation observability by forcing boundary-thr
 ## Incident Response
 
 See `docs/runbooks/AUTONOMOUS_MINING_INCIDENTS.md` for constraint-violation, degradation, approval-timeout, and rollback procedures.
+
+## Production Go-Live Checklist
+
+### Pre-Flight (All Must Pass)
+
+- [ ] Test execution environment functional (pytest runs)
+- [ ] Pool response feedback tests pass (error codes, weighting, bounded history)
+- [ ] Thompson sampling persistence tests pass (restart recovery, deterministic selection)
+- [ ] 1-hour testnet validation complete (>10 pool responses, zero circuit trips)
+- [ ] Prometheus metrics validation passes (structure, cache invalidation)
+- [ ] Command-room game day all scenarios pass
+- [ ] Crash recovery validated (SIGKILL + restart)
+- [ ] Metrics under load validated (<1s for 100 responses)
+
+### Post-Go-Live (First 24 Hours)
+
+- [ ] Hour 1: Operator checkpoint (phi density, circuit state, pool responses)
+- [ ] Hour 3: Operator checkpoint (proposal acceptance rate, target evidence)
+- [ ] Hour 6: Operator checkpoint (reflexive cycles, constraint violations)
+- [ ] Hour 12: Operator checkpoint (Thompson posterior means, degradation events)
+- [ ] Hour 24: Full forensic review (export artifacts, analyze trends)
+
+### Success Criteria (24-Hour Window)
+
+- **Zero** circuit breaker trips
+- **Zero** degradation events
+- **Phi density** ≥ 0.70 (DISTRIBUTED or better)
+- **Proposal acceptance rate** ≥ 80%
+- **Pool response rate** ≥ 90% (not counting network timeouts)
+- **Metrics cache hit rate** ≥ 95%
+- **State backup rotation** working (no disk bloat)
