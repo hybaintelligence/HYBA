@@ -1,0 +1,14 @@
+{
+  "status": "READY_FOR_MINING",
+  "runtime_minutes": 0,
+  "backend_health_ok": true,
+  "frontend_health_ok": true,
+  "focused_tests_passed": true,
+  "pythia_started": true,
+  "self_healing_completed": true,
+  "self_optimization_completed": true,
+  "mining_entered": false,
+  "block_found": false,
+  "shutdown_clean": true,
+  "operator_action_required": "Run mining manually when ready"
+}
