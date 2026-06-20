@@ -5,12 +5,19 @@ computers for general computational-intelligence workloads.  It is deliberately
 not coupled to mining: requests are routed through the existing HYBA
 intelligence fabric and wrapped with fault-tolerance posture, tenancy,
 commercial policy, audit seals, and workload metering.
+
+Production Architecture:
+- Redis-backed distributed state for horizontal scaling
+- Distributed lock acquisition for multi-tenant execution isolation
+- Resource metering with compute unit tracking per workload
+- Automatic topology serialization on provision/start/stop
 """
 
 from __future__ import annotations
 
 import hashlib
 import threading
+import time
 import uuid
 from datetime import UTC, datetime
 from typing import Any, Dict, Literal, Mapping, Optional
@@ -24,6 +31,7 @@ from hyba_genesis_api.auth.jwt_handler import TokenPayload
 from hyba_genesis_api.core.intelligence_fabric import SubstrateOrchestrator, explain
 from hyba_genesis_api.core.substrate import get_substrate_state, initialize_substrate
 from pythia_mining.fault_tolerant_quantum_core import FaultTolerantQuantumCore
+from pythia_mining.redis_state_registry import get_redis_registry
 
 router = APIRouter(
     prefix="/api/admin/computational-intelligence-services",
@@ -138,8 +146,36 @@ class _CommercialIntelligenceComputer:
         for _ in range(request.logical_compute_units):
             self.core.initialize_logical_qubit("0")
 
+        # Serialize initial topology to Redis for distributed state
+        redis_registry = get_redis_registry()
+        if redis_registry.available:
+            topology_data = {
+                "service_id": service_id,
+                "name": self.name,
+                "owner": owner,
+                "state": self.state,
+                "created_at": now,
+                "policy": self.policy,
+                "workload_count": 0,
+            }
+            redis_registry.serialize_instance_topology(service_id, topology_data)
+
     def touch(self) -> None:
         self.updated_at = datetime.now(UTC).isoformat()
+
+        # Update Redis state on every modification
+        redis_registry = get_redis_registry()
+        if redis_registry.available:
+            topology_data = {
+                "service_id": self.service_id,
+                "name": self.name,
+                "owner": self.owner,
+                "state": self.state,
+                "updated_at": self.updated_at,
+                "policy": self.policy,
+                "workload_count": self._workload_count,
+            }
+            redis_registry.serialize_instance_topology(self.service_id, topology_data)
 
     def commercial_policy(self) -> Dict[str, Any]:
         return {
@@ -218,51 +254,92 @@ class _CommercialIntelligenceComputer:
         if request.idempotency_key and request.idempotency_key in self._idempotency_cache:
             return self._idempotency_cache[request.idempotency_key]
 
-        # Run syndrome rounds across a bounded quorum of logical compute units to
-        # expose measurable fault-tolerance posture for this intelligence call.
-        quorum = min(3, len(self.core.logical_qubits))
-        for qubit_idx in range(quorum):
-            self.core.measure_syndromes(qubit_idx)
-            self.core.measure_syndromes(qubit_idx)
-            self.core.decode_and_correct(qubit_idx)
+        # Acquire distributed lock before execution
+        redis_registry = get_redis_registry()
+        lock_acquired = False
+        if redis_registry.available:
+            lock_acquired = redis_registry.acquire_register_lock(
+                self.service_id, self.owner
+            )
+            if not lock_acquired:
+                raise HTTPException(
+                    status_code=status.HTTP_409_CONFLICT,
+                    detail="Service is currently executing another workload; retry after current workload completes",
+                )
 
-        if request.workload_type == "explain":
-            result = explain(request.context, request.substrates)
-        elif request.workload_type == "orchestrate":
-            result = SubstrateOrchestrator().evaluate(request.context)
-        elif request.workload_type == "counterfactual":
-            explanation = explain(request.context, request.substrates)
-            result = {
-                "context_digest": explanation["context_digest"],
-                "counterfactuals": explanation["counterfactuals"],
-                "governance": explanation["governance"],
-                "selected_substrate": explanation["selected_substrate"],
-            }
-        elif request.workload_type == "governance_audit":
-            result = {
-                "context_digest": hashlib.sha256(repr(sorted(request.context.items())).encode()).hexdigest(),
-                "commercial_policy": self.commercial_policy(),
+        try:
+            # Track execution start time for metering
+            exec_start = time.perf_counter()
+
+            # Run syndrome rounds across a bounded quorum of logical compute units to
+            # expose measurable fault-tolerance posture for this intelligence call.
+            quorum = min(3, len(self.core.logical_qubits))
+            for qubit_idx in range(quorum):
+                self.core.measure_syndromes(qubit_idx)
+                self.core.measure_syndromes(qubit_idx)
+                self.core.decode_and_correct(qubit_idx)
+
+            if request.workload_type == "explain":
+                result = explain(request.context, request.substrates)
+            elif request.workload_type == "orchestrate":
+                result = SubstrateOrchestrator().evaluate(request.context)
+            elif request.workload_type == "counterfactual":
+                explanation = explain(request.context, request.substrates)
+                result = {
+                    "context_digest": explanation["context_digest"],
+                    "counterfactuals": explanation["counterfactuals"],
+                    "governance": explanation["governance"],
+                    "selected_substrate": explanation["selected_substrate"],
+                }
+            elif request.workload_type == "governance_audit":
+                result = {
+                    "context_digest": hashlib.sha256(repr(sorted(request.context.items())).encode()).hexdigest(),
+                    "commercial_policy": self.commercial_policy(),
+                    "fault_tolerance": self.fault_tolerance(),
+                    "claim_boundary": "CIaaS deterministic intelligence workload; no mining dependency",
+                }
+            else:
+                result = {"substrate": get_substrate_state()}
+
+            exec_duration = time.perf_counter() - exec_start
+
+            # Record resource consumption to Redis
+            if redis_registry.available:
+                stats = self.core.get_error_statistics()
+                context_bytes = len(repr(request.context).encode("utf-8"))
+                circuit_depth_equiv = max(1, context_bytes // 1024 + 1)
+
+                metering_result = redis_registry.record_resource_consumption(
+                    instance_id=self.service_id,
+                    tenant_id=self.owner,
+                    metrics={
+                        "defect_count": stats.get("last_decoder_defects", 0),
+                        "pairing_weight": stats.get("last_decoder_weight", 1.0),
+                        "circuit_depth": circuit_depth_equiv,
+                    },
+                )
+                result["metering"] = metering_result
+                result["execution_duration_ms"] = round(exec_duration * 1000, 2)
+
+            self._workload_count += 1
+            self.touch()
+            envelope = {
+                "service_id": self.service_id,
+                "workload_type": request.workload_type,
+                "state": self.state,
+                "result": result,
                 "fault_tolerance": self.fault_tolerance(),
-                "claim_boundary": "CIaaS deterministic intelligence workload; no mining dependency",
+                "commercial_policy": self.commercial_policy(),
+                "executed_at": self.updated_at,
+                "claim_boundary": "Computational Intelligence as a Service; general-purpose HYBA substrate; no mining-specific execution path.",
             }
-        else:
-            result = {"substrate": get_substrate_state()}
-
-        self._workload_count += 1
-        self.touch()
-        envelope = {
-            "service_id": self.service_id,
-            "workload_type": request.workload_type,
-            "state": self.state,
-            "result": result,
-            "fault_tolerance": self.fault_tolerance(),
-            "commercial_policy": self.commercial_policy(),
-            "executed_at": self.updated_at,
-            "claim_boundary": "Computational Intelligence as a Service; general-purpose HYBA substrate; no mining-specific execution path.",
-        }
-        if request.idempotency_key:
-            self._idempotency_cache[request.idempotency_key] = envelope
-        return envelope
+            if request.idempotency_key:
+                self._idempotency_cache[request.idempotency_key] = envelope
+            return envelope
+        finally:
+            # Always release lock, even if execution failed
+            if lock_acquired and redis_registry.available:
+                redis_registry.release_register_lock(self.service_id, self.owner)
 
 
 class ComputationalIntelligenceServiceRegistry:
@@ -308,6 +385,17 @@ class ComputationalIntelligenceServiceRegistry:
                 initialize_substrate()
                 service.state = "running"
                 service.touch()
+
+                # Persist state change to Redis
+                redis_registry = get_redis_registry()
+                if redis_registry.available:
+                    topology_data = {
+                        "service_id": service.service_id,
+                        "state": service.state,
+                        "updated_at": service.updated_at,
+                    }
+                    redis_registry.serialize_instance_topology(service_id, topology_data)
+
             return service.response()
 
     def stop(self, service_id: str) -> ServiceResponse:
@@ -315,6 +403,18 @@ class ComputationalIntelligenceServiceRegistry:
             service = self.get(service_id)
             service.state = "stopped"
             service.touch()
+
+            # Release any held locks and persist state to Redis
+            redis_registry = get_redis_registry()
+            if redis_registry.available:
+                redis_registry.release_register_lock(service_id, service.owner)
+                topology_data = {
+                    "service_id": service.service_id,
+                    "state": service.state,
+                    "updated_at": service.updated_at,
+                }
+                redis_registry.serialize_instance_topology(service_id, topology_data)
+
             return service.response()
 
     def execute(self, service_id: str, request: IntelligenceWorkloadRequest) -> Dict[str, Any]:

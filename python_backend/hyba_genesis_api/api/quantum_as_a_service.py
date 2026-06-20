@@ -5,6 +5,12 @@ fault-tolerant quantum computer.  Mining remains only an external stress-test
 of the math; this router exposes general quantum compute provisioning and
 execution semantics: topological parameters, logical-qubit allocation,
 surface-code cycles, φ-resonance analysis, and intelligence-fabric routing.
+
+Production Architecture:
+- Redis-backed distributed state for horizontal scaling
+- Distributed lock acquisition for multi-tenant execution isolation
+- Resource metering with compute unit tracking per execution
+- Automatic topology serialization on provision/start/stop
 """
 
 from __future__ import annotations
@@ -12,6 +18,7 @@ from __future__ import annotations
 import hashlib
 import math
 import threading
+import time
 import uuid
 from datetime import UTC, datetime
 from typing import Any, Dict, Literal, Optional
@@ -25,6 +32,7 @@ from hyba_genesis_api.auth.jwt_handler import TokenPayload
 from hyba_genesis_api.core.intelligence_fabric import SubstrateOrchestrator, explain
 from hyba_genesis_api.core.substrate import get_substrate_state, initialize_substrate
 from pythia_mining.fault_tolerant_quantum_core import FaultTolerantQuantumCore, PHI
+from pythia_mining.redis_state_registry import get_redis_registry
 
 router = APIRouter(prefix="/api/admin/fault-tolerant-computers", tags=["quantum-as-a-service-admin"])
 public_router = APIRouter(prefix="/api/v1/fault-tolerant-computers", tags=["quantum-as-a-service"])
@@ -140,8 +148,36 @@ class _VirtualFaultTolerantQuantumComputer:
         for _ in range(request.logical_qubits):
             self.core.initialize_logical_qubit("0")
 
+        # Serialize initial topology to Redis for distributed state
+        redis_registry = get_redis_registry()
+        if redis_registry.available:
+            topology_data = {
+                "computer_id": computer_id,
+                "name": self.name,
+                "owner": owner,
+                "state": self.state,
+                "created_at": now,
+                "policy": self.policy,
+                "executions": 0,
+            }
+            redis_registry.serialize_instance_topology(computer_id, topology_data)
+
     def touch(self) -> None:
         self.updated_at = datetime.now(UTC).isoformat()
+
+        # Update Redis state on every modification
+        redis_registry = get_redis_registry()
+        if redis_registry.available:
+            topology_data = {
+                "computer_id": self.computer_id,
+                "name": self.name,
+                "owner": self.owner,
+                "state": self.state,
+                "updated_at": self.updated_at,
+                "policy": self.policy,
+                "executions": self._executions,
+            }
+            redis_registry.serialize_instance_topology(self.computer_id, topology_data)
 
     def quantum_parameters(self) -> Dict[str, Any]:
         return {
@@ -225,61 +261,99 @@ class _VirtualFaultTolerantQuantumComputer:
         if request.idempotency_key and request.idempotency_key in self._idempotency_cache:
             return self._idempotency_cache[request.idempotency_key]
 
-        for _ in range(request.circuit_depth):
-            for qubit_idx in qubits:
-                self.core.measure_syndromes(qubit_idx)
-                self.core.measure_syndromes(qubit_idx)
-                self.core.decode_and_correct(qubit_idx)
+        # Acquire distributed lock before execution
+        redis_registry = get_redis_registry()
+        lock_acquired = False
+        if redis_registry.available:
+            lock_acquired = redis_registry.acquire_register_lock(
+                self.computer_id, self.owner
+            )
+            if not lock_acquired:
+                raise HTTPException(
+                    status_code=status.HTTP_409_CONFLICT,
+                    detail="Instance is currently executing another workload; retry after current execution completes",
+                )
 
-        if request.operation == "surface_code_cycle":
-            result = {
-                "logical_qubits": qubits,
-                "circuit_depth": request.circuit_depth,
-                "shots": request.shots,
-                "syndrome_rounds": self.core.get_error_statistics()["syndrome_rounds"],
-            }
-        elif request.operation == "phi_resonance_analysis":
-            target = self.policy["phi_resonance_target"]
-            result = {
-                "phi": PHI,
-                "target": target,
-                "alignment": round(max(0.0, min(1.0, 1.0 - abs(PHI / math.pi - target))), 6),
-                "analysis": explain(request.context or {"operation": request.operation}, request.substrates),
-            }
-        elif request.operation == "state_vector_summary":
-            result = {
-                "logical_qubits": qubits,
-                "center_amplitudes": [
-                    str(self.core.logical_qubits[index].physical_qubits[self.core.d // 2, self.core.d // 2])
-                    for index in qubits
-                ],
-                "fault_tolerance": self.fault_tolerance(),
-            }
-        elif request.operation == "substrate_orchestration":
-            result = SubstrateOrchestrator().evaluate(request.context)
-        else:
-            result = {
-                "context_digest": hashlib.sha256(repr(sorted(request.context.items())).encode()).hexdigest(),
+        try:
+            # Track execution start time for metering
+            exec_start = time.perf_counter()
+
+            for _ in range(request.circuit_depth):
+                for qubit_idx in qubits:
+                    self.core.measure_syndromes(qubit_idx)
+                    self.core.measure_syndromes(qubit_idx)
+                    self.core.decode_and_correct(qubit_idx)
+
+            if request.operation == "surface_code_cycle":
+                result = {
+                    "logical_qubits": qubits,
+                    "circuit_depth": request.circuit_depth,
+                    "shots": request.shots,
+                    "syndrome_rounds": self.core.get_error_statistics()["syndrome_rounds"],
+                }
+            elif request.operation == "phi_resonance_analysis":
+                target = self.policy["phi_resonance_target"]
+                result = {
+                    "phi": PHI,
+                    "target": target,
+                    "alignment": round(max(0.0, min(1.0, 1.0 - abs(PHI / math.pi - target))), 6),
+                    "analysis": explain(request.context or {"operation": request.operation}, request.substrates),
+                }
+            elif request.operation == "state_vector_summary":
+                result = {
+                    "logical_qubits": qubits,
+                    "center_amplitudes": [
+                        str(self.core.logical_qubits[index].physical_qubits[self.core.d // 2, self.core.d // 2])
+                        for index in qubits
+                    ],
+                    "fault_tolerance": self.fault_tolerance(),
+                }
+            elif request.operation == "substrate_orchestration":
+                result = SubstrateOrchestrator().evaluate(request.context)
+            else:
+                result = {
+                    "context_digest": hashlib.sha256(repr(sorted(request.context.items())).encode()).hexdigest(),
+                    "quantum_parameters": self.quantum_parameters(),
+                    "fault_tolerance": self.fault_tolerance(),
+                    "claim_boundary": "Governance audit for virtual QaaS runtime; no mining dependency.",
+                }
+
+            exec_duration = time.perf_counter() - exec_start
+
+            # Record resource consumption to Redis
+            if redis_registry.available:
+                stats = self.core.get_error_statistics()
+                metering_result = redis_registry.record_resource_consumption(
+                    instance_id=self.computer_id,
+                    tenant_id=self.owner,
+                    metrics={
+                        "defect_count": stats.get("last_decoder_defects", 0),
+                        "pairing_weight": stats.get("last_decoder_weight", 1.0),
+                        "circuit_depth": request.circuit_depth,
+                    },
+                )
+                result["metering"] = metering_result
+                result["execution_duration_ms"] = round(exec_duration * 1000, 2)
+
+            self._executions += 1
+            self.touch()
+            envelope = {
+                "computer_id": self.computer_id,
+                "operation": request.operation,
+                "state": self.state,
+                "result": result,
                 "quantum_parameters": self.quantum_parameters(),
                 "fault_tolerance": self.fault_tolerance(),
-                "claim_boundary": "Governance audit for virtual QaaS runtime; no mining dependency.",
+                "executed_at": self.updated_at,
+                "claim_boundary": "Fault-tolerant virtual quantum computer API; pure mathematical/substrate-agnostic execution surface; not a mining hypervisor.",
             }
-
-        self._executions += 1
-        self.touch()
-        envelope = {
-            "computer_id": self.computer_id,
-            "operation": request.operation,
-            "state": self.state,
-            "result": result,
-            "quantum_parameters": self.quantum_parameters(),
-            "fault_tolerance": self.fault_tolerance(),
-            "executed_at": self.updated_at,
-            "claim_boundary": "Fault-tolerant virtual quantum computer API; pure mathematical/substrate-agnostic execution surface; not a mining hypervisor.",
-        }
-        if request.idempotency_key:
-            self._idempotency_cache[request.idempotency_key] = envelope
-        return envelope
+            if request.idempotency_key:
+                self._idempotency_cache[request.idempotency_key] = envelope
+            return envelope
+        finally:
+            # Always release lock, even if execution failed
+            if lock_acquired and redis_registry.available:
+                redis_registry.release_register_lock(self.computer_id, self.owner)
 
 
 class QuantumComputerRegistry:
@@ -325,6 +399,17 @@ class QuantumComputerRegistry:
                 initialize_substrate()
                 computer.state = "running"
                 computer.touch()
+
+                # Persist state change to Redis
+                redis_registry = get_redis_registry()
+                if redis_registry.available:
+                    topology_data = {
+                        "computer_id": computer.computer_id,
+                        "state": computer.state,
+                        "updated_at": computer.updated_at,
+                    }
+                    redis_registry.serialize_instance_topology(computer_id, topology_data)
+
             return computer.response()
 
     def stop(self, computer_id: str) -> FaultTolerantComputerResponse:
@@ -332,6 +417,18 @@ class QuantumComputerRegistry:
             computer = self.get(computer_id)
             computer.state = "stopped"
             computer.touch()
+
+            # Release any held locks and persist state to Redis
+            redis_registry = get_redis_registry()
+            if redis_registry.available:
+                redis_registry.release_register_lock(computer_id, computer.owner)
+                topology_data = {
+                    "computer_id": computer.computer_id,
+                    "state": computer.state,
+                    "updated_at": computer.updated_at,
+                }
+                redis_registry.serialize_instance_topology(computer_id, topology_data)
+
             return computer.response()
 
     def execute(self, computer_id: str, request: QuantumWorkloadRequest) -> Dict[str, Any]:
