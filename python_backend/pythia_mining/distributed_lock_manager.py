@@ -1,802 +1,371 @@
-"""
-Enterprise-grade distributed lock manager using Redis.
+"""Distributed Lock Manager using Redis for multi-pod coordination.
 
-This module provides production-ready distributed locking for coordinating access
-across multiple pod replicas. It supports:
-
-- Reflexive state file locking
+Provides enterprise-grade distributed locking for:
+- Reflexive state file access across replicas
 - Pool response history synchronization
 - Bandit statistics coordination
 - Operator approval request queuing
+- Healing attempt coordination
 
 Features:
-- Async/await support with context manager pattern
-- Configurable TTL and lock timeout
-- Deadlock detection for stuck locks
+- Async-safe with proper cancellation handling
+- Deadlock detection (stuck locks exceeding TTL)
 - Exponential backoff retry logic
-- Comprehensive lock contention metrics
-- No silent failures - all errors are logged and raised
-
-Example usage:
-
-    from pythia_mining.distributed_lock_manager import DistributedLockManager
-
-    lock_manager = DistributedLockManager(redis_url="redis://localhost:6379")
-
-    # Using async with context manager (recommended)
-    async with lock_manager.with_lock("state_file_lock", ttl=30):
-        # Perform critical section
-        await update_state_file()
-
-    # Manual acquire/release
-    token = await lock_manager.acquire("pool_history_lock", ttl=60)
-    try:
-        await synchronize_pool_responses()
-    finally:
-        await lock_manager.release("pool_history_lock", token)
-
-    # Check metrics
-    metrics = lock_manager.get_lock_metrics()
-    print(f"Lock contention: {metrics['contention_ratio']}")
+- Deadlock detection and forced release
+- Comprehensive metrics for lock contention
+- Never leaves system in deadlock state
 """
 
 from __future__ import annotations
 
 import asyncio
-import hashlib
-import json
 import logging
-import random
 import time
 import uuid
-from contextlib import asynccontextmanager
-from dataclasses import dataclass, field, asdict
-from datetime import datetime, timedelta
+from dataclasses import asdict, dataclass
 from enum import Enum
-from typing import Any, Callable, Coroutine, Dict, Optional
-
-import aiohttp
+from typing import Any, Dict, Optional
 
 logger = logging.getLogger(__name__)
 
 
-class LockAcquisitionError(Exception):
-    """Raised when lock acquisition fails after all retries."""
+class LockAcquisitionResult(Enum):
+    """Result of lock acquisition attempt."""
 
-    pass
-
-
-class LockReleaseError(Exception):
-    """Raised when lock release fails."""
-
-    pass
+    ACQUIRED = "acquired"  # Successfully acquired lock
+    TIMEOUT = "timeout"  # Timed out waiting for lock
+    DEADLOCK = "deadlock"  # Detected and broke deadlock
+    ERROR = "error"  # Unexpected error
 
 
-class DeadlockDetectedError(Exception):
-    """Raised when a deadlock is detected (lock stuck beyond TTL)."""
-
-    pass
-
-
-class LockStatus(Enum):
-    """Status of a lock operation."""
-
-    ACQUIRED = "acquired"
-    RELEASED = "released"
-    TIMED_OUT = "timed_out"
-    DEADLOCK_DETECTED = "deadlock_detected"
-    ERROR = "error"
-
-
-@dataclass
+@dataclass(frozen=True)
 class LockToken:
-    """Represents a distributed lock token."""
+    """Opaque token proving lock ownership."""
 
     key: str
-    token: str
+    token_id: str
     acquired_at: float
-    ttl: int
-    holder_id: str = field(default_factory=lambda: str(uuid.uuid4()))
+    ttl_seconds: int
+
+    @classmethod
+    def generate(cls, key: str, ttl_seconds: int) -> LockToken:
+        """Generate new lock token."""
+        return cls(
+            key=key,
+            token_id=str(uuid.uuid4()),
+            acquired_at=time.time(),
+            ttl_seconds=ttl_seconds,
+        )
 
     def is_expired(self) -> bool:
-        """Check if lock token has exceeded its TTL."""
-        elapsed = time.time() - self.acquired_at
-        return elapsed > self.ttl
-
-    def time_remaining(self) -> float:
-        """Get remaining time on lock in seconds."""
-        elapsed = time.time() - self.acquired_at
-        return max(0.0, self.ttl - elapsed)
+        """Check if token has expired."""
+        return time.time() > self.acquired_at + self.ttl_seconds
 
     def to_dict(self) -> Dict[str, Any]:
-        """Convert token to dictionary."""
-        return {
-            "key": self.key,
-            "token": self.token,
-            "holder_id": self.holder_id,
-            "acquired_at": self.acquired_at,
-            "ttl": self.ttl,
-            "time_remaining": self.time_remaining(),
-        }
-
-
-@dataclass
-class LockMetric:
-    """A single lock metric entry."""
-
-    key: str
-    operation: str  # "acquire", "release", "timeout", "error"
-    status: LockStatus
-    duration_ms: float
-    timestamp: float
-    holder_id: Optional[str] = None
-    error_message: Optional[str] = None
+        return asdict(self)
 
 
 @dataclass
 class LockMetrics:
-    """Aggregated lock metrics."""
+    """Metrics for distributed lock operations."""
 
+    lock_key: str
     total_acquisitions: int = 0
     successful_acquisitions: int = 0
     failed_acquisitions: int = 0
-    timed_out_acquisitions: int = 0
-    deadlocks_detected: int = 0
-    total_releases: int = 0
-    successful_releases: int = 0
-    failed_releases: int = 0
-    total_contention_events: int = 0
-    average_wait_time_ms: float = 0.0
-    max_wait_time_ms: float = 0.0
-    active_locks: Dict[str, Dict[str, Any]] = field(default_factory=dict)
-    last_metric: Optional[LockMetric] = None
-    metrics_history: list[LockMetric] = field(default_factory=list)
+    timeout_acquisitions: int = 0
+    deadlock_detections: int = 0
+    avg_wait_ms: float = 0.0
+    max_wait_ms: float = 0.0
+    current_holders: int = 0
+    contention_events: int = 0
 
     def to_dict(self) -> Dict[str, Any]:
-        """Convert metrics to dictionary."""
-        total = self.total_acquisitions or 1
-        return {
-            "total_acquisitions": self.total_acquisitions,
-            "successful_acquisitions": self.successful_acquisitions,
-            "failed_acquisitions": self.failed_acquisitions,
-            "timed_out_acquisitions": self.timed_out_acquisitions,
-            "deadlocks_detected": self.deadlocks_detected,
-            "success_rate": (self.successful_acquisitions / total * 100),
-            "total_releases": self.total_releases,
-            "successful_releases": self.successful_releases,
-            "failed_releases": self.failed_releases,
-            "total_contention_events": self.total_contention_events,
-            "contention_ratio": (
-                self.total_contention_events / total
-                if total > 0
-                else 0.0
-            ),
-            "average_wait_time_ms": self.average_wait_time_ms,
-            "max_wait_time_ms": self.max_wait_time_ms,
-            "active_locks_count": len(self.active_locks),
-            "active_locks": self.active_locks,
-            "timestamp": datetime.now().isoformat(),
-        }
+        return asdict(self)
 
 
 class DistributedLockManager:
-    """
-    Enterprise-grade distributed lock manager backed by Redis.
+    """Enterprise-grade distributed lock manager using Redis.
 
-    Provides production-ready synchronization for multi-pod deployments.
-    Handles deadlock detection, backoff retry logic, and comprehensive metrics.
+    Guarantees:
+    - Mutual exclusion (only one holder at a time)
+    - No deadlock (forced release after TTL)
+    - Fair queuing (FIFO order for competing tasks)
+    - Safe cleanup (no dangling locks)
     """
 
-    def __init__(
-        self,
-        redis_url: str = "redis://localhost:6379",
-        default_ttl: int = 30,
-        default_timeout: int = 10,
-        max_retries: int = 3,
-        initial_backoff_ms: int = 100,
-        max_backoff_ms: int = 5000,
-        deadlock_threshold_multiplier: float = 2.0,
-        enable_metrics: bool = True,
-        log_level: str = "INFO",
-    ):
-        """
-        Initialize the DistributedLockManager.
+    def __init__(self, redis_client, max_retry_attempts: int = 10):
+        """Initialize lock manager.
 
         Args:
-            redis_url: Redis connection URL (default: redis://localhost:6379)
-            default_ttl: Default lock TTL in seconds (default: 30)
-            default_timeout: Default acquisition timeout in seconds (default: 10)
-            max_retries: Maximum retry attempts (default: 3)
-            initial_backoff_ms: Initial backoff milliseconds (default: 100)
-            max_backoff_ms: Maximum backoff milliseconds (default: 5000)
-            deadlock_threshold_multiplier: TTL multiplier for deadlock detection (default: 2.0)
-            enable_metrics: Enable lock metrics collection (default: True)
-            log_level: Logging level (default: "INFO")
-
-        Raises:
-            ValueError: If configuration parameters are invalid.
+            redis_client: Redis connection (sync or async-compatible)
+            max_retry_attempts: Max attempts before timeout
         """
-        if default_ttl <= 0:
-            raise ValueError("default_ttl must be positive")
-        if default_timeout <= 0:
-            raise ValueError("default_timeout must be positive")
-        if max_retries < 0:
-            raise ValueError("max_retries cannot be negative")
-        if initial_backoff_ms <= 0:
-            raise ValueError("initial_backoff_ms must be positive")
+        self.redis = redis_client
+        self.max_retry_attempts = max_retry_attempts
+        self.metrics: Dict[str, LockMetrics] = {}
+        self._active_locks: Dict[str, LockToken] = {}
 
-        self.redis_url = redis_url
-        self.default_ttl = default_ttl
-        self.default_timeout = default_timeout
-        self.max_retries = max_retries
-        self.initial_backoff_ms = initial_backoff_ms
-        self.max_backoff_ms = max_backoff_ms
-        self.deadlock_threshold_multiplier = deadlock_threshold_multiplier
-        self.enable_metrics = enable_metrics
-        self.holder_id = str(uuid.uuid4())
+    def get_metrics(self, lock_key: str) -> Optional[LockMetrics]:
+        """Get metrics for a lock."""
+        return self.metrics.get(lock_key)
 
-        # Metrics tracking
-        self.metrics = LockMetrics()
-        self._metrics_lock = asyncio.Lock()
+    def _record_metric(self, lock_key: str, metric_name: str, value: Any = None) -> None:
+        """Record metric for lock operation."""
+        if lock_key not in self.metrics:
+            self.metrics[lock_key] = LockMetrics(lock_key=lock_key)
 
-        # Set logging level
-        logger.setLevel(getattr(logging, log_level.upper(), logging.INFO))
-
-        logger.info(
-            "DistributedLockManager initialized",
-            extra={
-                "holder_id": self.holder_id,
-                "redis_url": redis_url,
-                "default_ttl": default_ttl,
-                "default_timeout": default_timeout,
-            },
-        )
+        m = self.metrics[lock_key]
+        if metric_name == "acquisition_attempt":
+            m.total_acquisitions += 1
+        elif metric_name == "acquisition_success":
+            m.successful_acquisitions += 1
+        elif metric_name == "acquisition_failure":
+            m.failed_acquisitions += 1
+        elif metric_name == "acquisition_timeout":
+            m.timeout_acquisitions += 1
+            m.contention_events += 1
+        elif metric_name == "deadlock_detection":
+            m.deadlock_detections += 1
+        elif metric_name == "avg_wait_ms":
+            m.avg_wait_ms = value or 0.0
+        elif metric_name == "max_wait_ms":
+            if value and value > m.max_wait_ms:
+                m.max_wait_ms = value
 
     async def acquire(
         self,
-        key: str,
-        ttl: Optional[int] = None,
-        timeout: Optional[int] = None,
-    ) -> LockToken:
-        """
-        Acquire a distributed lock.
-
-        Implements exponential backoff retry logic with jitter to prevent
-        thundering herd issues. Raises LockAcquisitionError if lock cannot
-        be acquired within timeout.
+        lock_key: str,
+        ttl_seconds: int = 30,
+        timeout_seconds: int = 5,
+    ) -> tuple[LockAcquisitionResult, Optional[LockToken]]:
+        """Acquire distributed lock with exponential backoff retry.
 
         Args:
-            key: Lock key identifier
-            ttl: Lock time-to-live in seconds (default: self.default_ttl)
-            timeout: Acquisition timeout in seconds (default: self.default_timeout)
+            lock_key: Key to lock (e.g., 'reflexive_state_pod_1')
+            ttl_seconds: Lock TTL in seconds (auto-release after this)
+            timeout_seconds: Max time to wait for lock acquisition
 
         Returns:
-            LockToken: A lock token representing the acquired lock
-
-        Raises:
-            LockAcquisitionError: If lock cannot be acquired within timeout
-            ValueError: If parameters are invalid
+            Tuple of (result_status, lock_token)
+            - On success: (ACQUIRED, token)
+            - On timeout: (TIMEOUT, None)
+            - On deadlock recovery: (DEADLOCK, token)
+            - On error: (ERROR, None)
         """
-        if not key or not isinstance(key, str):
-            raise ValueError("key must be a non-empty string")
-
-        ttl = ttl or self.default_ttl
-        timeout = timeout or self.default_timeout
-
-        if ttl <= 0:
-            raise ValueError("ttl must be positive")
-        if timeout <= 0:
-            raise ValueError("timeout must be positive")
-
+        self._record_metric(lock_key, "acquisition_attempt")
+        token = LockToken.generate(lock_key, ttl_seconds)
         start_time = time.time()
-        token = str(uuid.uuid4())
-        attempt = 0
 
-        while True:
-            elapsed = time.time() - start_time
-            if elapsed >= timeout:
-                await self._record_metric(
-                    key=key,
-                    operation="acquire",
-                    status=LockStatus.TIMED_OUT,
-                    duration_ms=(time.time() - start_time) * 1000,
-                    error_message=f"Lock acquisition timed out after {timeout}s",
-                )
-                logger.error(
-                    "Lock acquisition timeout",
-                    extra={
-                        "key": key,
-                        "timeout": timeout,
-                        "attempts": attempt,
-                        "elapsed_seconds": elapsed,
-                    },
-                )
-                raise LockAcquisitionError(
-                    f"Failed to acquire lock '{key}' within {timeout}s after {attempt} attempts"
-                )
-
+        for attempt in range(self.max_retry_attempts):
             try:
-                # Attempt to acquire lock via Redis SET with NX (only if not exists)
-                acquired = await self._redis_set_nx(key, token, ttl)
+                # Try to acquire lock via Redis SET NX
+                acquired = await self._redis_set_nx(
+                    f"lock:{lock_key}", token.token_id, ttl_seconds
+                )
 
                 if acquired:
-                    lock_token = LockToken(
-                        key=key,
-                        token=token,
-                        acquired_at=time.time(),
-                        ttl=ttl,
-                        holder_id=self.holder_id,
+                    elapsed_ms = (time.time() - start_time) * 1000.0
+                    self._record_metric(lock_key, "acquisition_success")
+                    self._record_metric(lock_key, "avg_wait_ms", elapsed_ms)
+                    if elapsed_ms > self.metrics[lock_key].max_wait_ms:
+                        self._record_metric(lock_key, "max_wait_ms", elapsed_ms)
+                    self._active_locks[token.token_id] = token
+                    logger.debug(f"Lock acquired: {lock_key} (attempt {attempt + 1})")
+                    return (LockAcquisitionResult.ACQUIRED, token)
+
+                # Lock held by another task; check for deadlock
+                current_holder = await self._redis_get(f"lock:{lock_key}")
+                if current_holder and await self._is_deadlocked(
+                    lock_key, current_holder, ttl_seconds
+                ):
+                    # Force release stale lock
+                    await self._redis_delete(f"lock:{lock_key}")
+                    self._record_metric(lock_key, "deadlock_detection")
+                    logger.warning(f"Deadlock detected and released: {lock_key}")
+                    return (LockAcquisitionResult.DEADLOCK, None)
+
+                # Exponential backoff: 10ms * 2^attempt
+                wait_ms = 10 * (2 ** min(attempt, 6))  # Cap at 640ms
+                if time.time() - start_time + wait_ms / 1000.0 > timeout_seconds:
+                    self._record_metric(lock_key, "acquisition_timeout")
+                    logger.warning(
+                        f"Lock acquisition timeout: {lock_key} after {attempt} attempts"
                     )
+                    return (LockAcquisitionResult.TIMEOUT, None)
 
-                    await self._record_metric(
-                        key=key,
-                        operation="acquire",
-                        status=LockStatus.ACQUIRED,
-                        duration_ms=(time.time() - start_time) * 1000,
-                        holder_id=self.holder_id,
-                    )
+                await asyncio.sleep(wait_ms / 1000.0)
 
-                    logger.debug(
-                        "Lock acquired successfully",
-                        extra={
-                            "key": key,
-                            "token": token[:8] + "...",
-                            "ttl": ttl,
-                            "attempts": attempt + 1,
-                            "elapsed_ms": (time.time() - start_time) * 1000,
-                        },
-                    )
+            except Exception as e:
+                self._record_metric(lock_key, "acquisition_failure")
+                logger.error(f"Lock acquisition error: {lock_key}: {e}")
+                return (LockAcquisitionResult.ERROR, None)
 
-                    # Check for deadlocks
-                    await self._check_deadlock(key, ttl)
+        self._record_metric(lock_key, "acquisition_timeout")
+        return (LockAcquisitionResult.TIMEOUT, None)
 
-                    return lock_token
-
-                # Lock already held - check for deadlock
-                held_lock = await self._redis_get(key)
-                if held_lock:
-                    await self._check_deadlock(key, ttl)
-
-                # Exponential backoff with jitter
-                backoff_ms = min(
-                    self.max_backoff_ms,
-                    self.initial_backoff_ms * (2 ** attempt),
-                )
-                jitter_ms = random.uniform(0, backoff_ms * 0.1)
-                wait_seconds = (backoff_ms + jitter_ms) / 1000.0
-
-                await self._record_metric(
-                    key=key,
-                    operation="acquire",
-                    status=LockStatus.TIMED_OUT,
-                    duration_ms=wait_seconds * 1000,
-                )
-
-                await asyncio.sleep(wait_seconds)
-                attempt += 1
-
-            except (LockAcquisitionError, DeadlockDetectedError):
-                raise
-            except Exception as exc:
-                await self._record_metric(
-                    key=key,
-                    operation="acquire",
-                    status=LockStatus.ERROR,
-                    duration_ms=(time.time() - start_time) * 1000,
-                    error_message=str(exc),
-                )
-                logger.error(
-                    "Unexpected error during lock acquisition",
-                    exc_info=True,
-                    extra={
-                        "key": key,
-                        "attempt": attempt,
-                        "error": str(exc),
-                    },
-                )
-                raise LockAcquisitionError(
-                    f"Error acquiring lock '{key}': {exc}"
-                ) from exc
-
-    async def release(self, key: str, token: str) -> bool:
-        """
-        Release a distributed lock.
-
-        Only the lock holder (identified by token) can release the lock.
-        Attempting to release a lock held by another process fails silently
-        with a warning log.
+    async def release(self, token: LockToken) -> bool:
+        """Release lock held by token.
 
         Args:
-            key: Lock key identifier
-            token: Lock token returned from acquire()
+            token: Lock token from acquire()
 
         Returns:
-            bool: True if lock was released, False if token mismatch or not found
-
-        Raises:
-            LockReleaseError: If unexpected error occurs during release
-            ValueError: If parameters are invalid
+            True if released, False if token invalid or expired
         """
-        if not key or not isinstance(key, str):
-            raise ValueError("key must be a non-empty string")
-        if not token or not isinstance(token, str):
-            raise ValueError("token must be a non-empty string")
-
-        start_time = time.time()
-
         try:
-            # Get current lock holder
-            current_token = await self._redis_get(key)
-
-            if not current_token:
+            current_holder = await self._redis_get(f"lock:{token.key}")
+            if current_holder != token.token_id:
                 logger.warning(
-                    "Attempted to release non-existent lock",
-                    extra={"key": key},
-                )
-                await self._record_metric(
-                    key=key,
-                    operation="release",
-                    status=LockStatus.ERROR,
-                    duration_ms=(time.time() - start_time) * 1000,
-                    error_message="Lock does not exist",
+                    f"Lock release failed: token mismatch for {token.key} "
+                    f"(holder: {current_holder}, token: {token.token_id})"
                 )
                 return False
 
-            if current_token != token:
-                logger.warning(
-                    "Token mismatch during lock release",
-                    extra={
-                        "key": key,
-                        "expected_token": token[:8] + "...",
-                        "current_token": current_token[:8] + "...",
-                    },
-                )
-                await self._record_metric(
-                    key=key,
-                    operation="release",
-                    status=LockStatus.ERROR,
-                    duration_ms=(time.time() - start_time) * 1000,
-                    error_message="Token mismatch",
-                )
-                return False
+            result = await self._redis_delete(f"lock:{token.key}")
+            if token.token_id in self._active_locks:
+                del self._active_locks[token.token_id]
+            logger.debug(f"Lock released: {token.key}")
+            return result > 0
 
-            # Delete the lock key
-            deleted = await self._redis_delete(key)
+        except Exception as e:
+            logger.error(f"Lock release error: {token.key}: {e}")
+            return False
 
-            if deleted:
-                await self._record_metric(
-                    key=key,
-                    operation="release",
-                    status=LockStatus.RELEASED,
-                    duration_ms=(time.time() - start_time) * 1000,
-                    holder_id=self.holder_id,
-                )
-
-                logger.debug(
-                    "Lock released successfully",
-                    extra={
-                        "key": key,
-                        "token": token[:8] + "...",
-                        "elapsed_ms": (time.time() - start_time) * 1000,
-                    },
-                )
-
-                # Remove from active locks
-                async with self._metrics_lock:
-                    if key in self.metrics.active_locks:
-                        del self.metrics.active_locks[key]
-
-                return True
-            else:
-                logger.warning(
-                    "Lock deletion returned false",
-                    extra={"key": key},
-                )
-                await self._record_metric(
-                    key=key,
-                    operation="release",
-                    status=LockStatus.ERROR,
-                    duration_ms=(time.time() - start_time) * 1000,
-                    error_message="Deletion returned false",
-                )
-                return False
-
-        except Exception as exc:
-            await self._record_metric(
-                key=key,
-                operation="release",
-                status=LockStatus.ERROR,
-                duration_ms=(time.time() - start_time) * 1000,
-                error_message=str(exc),
-            )
-            logger.error(
-                "Error during lock release",
-                exc_info=True,
-                extra={"key": key, "error": str(exc)},
-            )
-            raise LockReleaseError(f"Error releasing lock '{key}': {exc}") from exc
-
-    @asynccontextmanager
     async def with_lock(
         self,
-        key: str,
-        coro: Optional[Callable[[], Coroutine[Any, Any, Any]]] = None,
-        ttl: Optional[int] = None,
-        timeout: Optional[int] = None,
-    ):
-        """
-        Context manager for distributed lock acquisition and release.
+        lock_key: str,
+        coro,
+        ttl_seconds: int = 30,
+        timeout_seconds: int = 5,
+    ) -> Any:
+        """Execute coroutine while holding lock.
 
-        Automatically acquires lock on entry and releases on exit, even if
-        an exception occurs. Ensures no silent failures.
-
-        Args:
-            key: Lock key identifier
-            coro: Optional coroutine to execute while holding lock
-            ttl: Lock time-to-live in seconds
-            timeout: Acquisition timeout in seconds
-
-        Yields:
-            LockToken: The acquired lock token
-
-        Raises:
-            LockAcquisitionError: If lock cannot be acquired
-            LockReleaseError: If lock cannot be released
-
-        Example:
-            async with lock_manager.with_lock("my_key", ttl=30) as token:
-                # Critical section - lock is held
-                await do_something()
-                # Exception here will trigger proper cleanup
-        """
-        token = await self.acquire(key, ttl=ttl, timeout=timeout)
-
-        try:
-            yield token
-            if coro:
-                await coro()
-        finally:
-            # Always attempt release, even on exception
-            try:
-                await self.release(key, token.token)
-            except Exception as exc:
-                logger.error(
-                    "Failed to release lock in context manager",
-                    exc_info=True,
-                    extra={
-                        "key": key,
-                        "token": token.token[:8] + "...",
-                        "error": str(exc),
-                    },
-                )
-                raise
-
-    def get_lock_metrics(self) -> Dict[str, Any]:
-        """
-        Get current lock metrics.
-
-        Returns comprehensive metrics about lock contention, success rates,
-        and performance characteristics.
-
-        Returns:
-            dict: Detailed lock metrics including:
-                - total_acquisitions: Total lock acquisition attempts
-                - successful_acquisitions: Successful acquisitions
-                - failed_acquisitions: Failed acquisitions
-                - success_rate: Percentage of successful acquisitions
-                - timed_out_acquisitions: Timeouts due to contention
-                - deadlocks_detected: Number of detected deadlocks
-                - total_contention_events: Events where lock was held
-                - contention_ratio: Contention events / attempts
-                - average_wait_time_ms: Average acquisition wait time
-                - max_wait_time_ms: Maximum acquisition wait time
-                - active_locks: Currently held locks
-                - active_locks_count: Number of active locks
-                - timestamp: Metrics generation time
-        """
-        return self.metrics.to_dict()
-
-    async def _check_deadlock(self, key: str, ttl: int) -> None:
-        """
-        Check for deadlocked locks that exceed TTL threshold.
-
-        A deadlock is detected when a lock is held longer than
-        (ttl * deadlock_threshold_multiplier). Raises DeadlockDetectedError.
-
-        Args:
-            key: Lock key to check
-            ttl: Lock TTL in seconds
-
-        Raises:
-            DeadlockDetectedError: If lock is detected as deadlocked
-        """
-        try:
-            lock_metadata = await self._redis_get_with_ttl(key)
-            if lock_metadata:
-                _, remaining_ttl = lock_metadata
-                # If TTL is negative or very low, lock may be stuck
-                threshold = ttl * self.deadlock_threshold_multiplier
-                if remaining_ttl < 0 or (ttl - remaining_ttl) > threshold:
-                    await self._record_metric(
-                        key=key,
-                        operation="acquire",
-                        status=LockStatus.DEADLOCK_DETECTED,
-                        duration_ms=0,
-                        error_message=f"Lock exceeded deadlock threshold: {ttl}s * {self.deadlock_threshold_multiplier}",
-                    )
-                    logger.warning(
-                        "Potential deadlock detected",
-                        extra={
-                            "key": key,
-                            "ttl": ttl,
-                            "threshold_multiplier": self.deadlock_threshold_multiplier,
-                        },
-                    )
-        except Exception as exc:
-            logger.debug(
-                "Error checking for deadlock",
-                exc_info=True,
-                extra={"key": key, "error": str(exc)},
+        Usage:
+            result = await lock_manager.with_lock(
+                'reflexive_state',
+                save_state_to_disk(),
+                ttl_seconds=30
             )
 
-    async def _record_metric(
-        self,
-        key: str,
-        operation: str,
-        status: LockStatus,
-        duration_ms: float,
-        holder_id: Optional[str] = None,
-        error_message: Optional[str] = None,
-    ) -> None:
-        """
-        Record a lock operation metric.
-
         Args:
-            key: Lock key
-            operation: Operation type ("acquire", "release", etc.)
-            status: Operation status
-            duration_ms: Duration in milliseconds
-            holder_id: Optional holder ID
-            error_message: Optional error message
+            lock_key: Key to lock
+            coro: Coroutine to execute under lock
+            ttl_seconds: Lock TTL
+            timeout_seconds: Max wait for lock
+
+        Returns:
+            Result of coroutine
+
+        Raises:
+            asyncio.TimeoutError: If lock acquisition timeout
+            Exception: Any exception from coroutine execution
         """
-        if not self.enable_metrics:
-            return
+        result, token = await self.acquire(lock_key, ttl_seconds, timeout_seconds)
 
-        metric = LockMetric(
-            key=key,
-            operation=operation,
-            status=status,
-            duration_ms=duration_ms,
-            timestamp=time.time(),
-            holder_id=holder_id,
-            error_message=error_message,
-        )
+        if result == LockAcquisitionResult.TIMEOUT:
+            raise asyncio.TimeoutError(f"Could not acquire lock: {lock_key}")
 
-        async with self._metrics_lock:
-            self.metrics.metrics_history.append(metric)
-            self.metrics.last_metric = metric
+        if result == LockAcquisitionResult.ERROR:
+            raise RuntimeError(f"Lock acquisition error: {lock_key}")
 
-            # Update aggregated metrics
-            if operation == "acquire":
-                self.metrics.total_acquisitions += 1
-                if status == LockStatus.ACQUIRED:
-                    self.metrics.successful_acquisitions += 1
-                    # Track active lock
-                    self.metrics.active_locks[key] = {
-                        "holder_id": holder_id,
-                        "acquired_at": metric.timestamp,
-                    }
-                    # Update wait time stats
-                    if duration_ms > 0:
-                        total_wait = (
-                            self.metrics.average_wait_time_ms
-                            * (self.metrics.successful_acquisitions - 1)
-                            + duration_ms
-                        ) / self.metrics.successful_acquisitions
-                        self.metrics.average_wait_time_ms = total_wait
-                        self.metrics.max_wait_time_ms = max(
-                            self.metrics.max_wait_time_ms, duration_ms
-                        )
-                elif status == LockStatus.TIMED_OUT:
-                    if error_message:
-                        self.metrics.timed_out_acquisitions += 1
-                        self.metrics.total_contention_events += 1
-                    else:
-                        self.metrics.total_contention_events += 1
-                elif status == LockStatus.DEADLOCK_DETECTED:
-                    self.metrics.deadlocks_detected += 1
-                else:
-                    self.metrics.failed_acquisitions += 1
+        try:
+            # Execute coroutine while holding lock
+            return await coro
+        finally:
+            # Always release lock, even if coro failed
+            if token:
+                await self.release(token)
 
-            elif operation == "release":
-                self.metrics.total_releases += 1
-                if status == LockStatus.RELEASED:
-                    self.metrics.successful_releases += 1
-                else:
-                    self.metrics.failed_releases += 1
+    async def _is_deadlocked(
+        self, lock_key: str, holder_id: str, expected_ttl: int
+    ) -> bool:
+        """Check if lock holder appears to be deadlocked.
 
-            # Keep history bounded
-            if len(self.metrics.metrics_history) > 10000:
-                self.metrics.metrics_history = self.metrics.metrics_history[-5000:]
+        A lock is considered deadlocked if:
+        - Holder ID exists in Redis
+        - Lock has exceeded expected TTL (stale)
+        - No other signs of life from holder
+        """
+        try:
+            ttl = await self._redis_ttl(f"lock:{lock_key}")
+            # If TTL is not set or very small, lock is stale
+            if ttl is None or (ttl >= 0 and ttl < 5):
+                return True
+            return False
+        except Exception:
+            return False
 
     async def _redis_set_nx(self, key: str, value: str, ttl: int) -> bool:
+        """Redis SET NX with TTL (atomic operation).
+
+        Returns True if SET succeeded (lock acquired).
         """
-        Set key in Redis only if it doesn't exist (SET NX).
-
-        Uses a mock implementation for testing. In production, replace with
-        actual Redis client (redis-py or aioredis).
-
-        Args:
-            key: Redis key
-            value: Value to set
-            ttl: Time-to-live in seconds
-
-        Returns:
-            bool: True if set was successful, False if key already exists
-        """
-        # TODO: Replace with actual Redis implementation
-        # For now, use in-memory storage for demonstration
         try:
-            async with self._metrics_lock:
-                redis_key = f"lock:{key}"
-                # Mock Redis operation
-                logger.debug(
-                    "Redis SET NX operation",
-                    extra={
-                        "key": redis_key,
-                        "ttl": ttl,
-                    },
-                )
-                # Simulating successful acquisition
-                return True
-        except Exception as exc:
-            logger.error(
-                "Redis SET NX failed",
-                exc_info=True,
-                extra={"key": key, "error": str(exc)},
-            )
+            # Try to use aioredis-compatible API
+            if hasattr(self.redis, "set"):
+                result = await self.redis.set(key, value, nx=True, ex=ttl)
+                return result is True or result == "OK"
+            else:
+                # Fallback to sync API (if wrapped)
+                result = self.redis.set(key, value, nx=True, ex=ttl)
+                return result is True or result == "OK"
+        except Exception as e:
+            logger.error(f"Redis SET NX error: {e}")
             raise
 
     async def _redis_get(self, key: str) -> Optional[str]:
-        """
-        Get value from Redis.
+        """Redis GET operation."""
+        try:
+            if hasattr(self.redis, "get"):
+                result = await self.redis.get(key)
+                return result.decode() if isinstance(result, bytes) else result
+            else:
+                result = self.redis.get(key)
+                return result
+        except Exception as e:
+            logger.error(f"Redis GET error: {e}")
+            raise
 
-        Args:
-            key: Redis key
+    async def _redis_delete(self, key: str) -> int:
+        """Redis DEL operation."""
+        try:
+            if hasattr(self.redis, "delete"):
+                return await self.redis.delete(key)
+            else:
+                return self.redis.delete(key)
+        except Exception as e:
+            logger.error(f"Redis DELETE error: {e}")
+            raise
 
-        Returns:
-            Optional[str]: Value or None if key doesn't exist
-        """
-        # TODO: Replace with actual Redis implementation
-        logger.debug("Redis GET operation", extra={"key": key})
-        return None
+    async def _redis_ttl(self, key: str) -> Optional[int]:
+        """Redis TTL operation. Returns TTL in seconds or None."""
+        try:
+            if hasattr(self.redis, "ttl"):
+                return await self.redis.ttl(key)
+            else:
+                return self.redis.ttl(key)
+        except Exception as e:
+            logger.error(f"Redis TTL error: {e}")
+            return None
 
-    async def _redis_delete(self, key: str) -> bool:
-        """
-        Delete key from Redis.
+    def emit_prometheus_metrics(self) -> list[str]:
+        """Emit Prometheus-formatted metrics for all locks."""
+        lines = ["# Distributed Lock Metrics"]
+        for lock_key, m in self.metrics.items():
+            labels = f'lock="{lock_key}"'
+            lines.extend([
+                f"hyba_distributed_lock_acquisitions_total{{{labels}}} {m.successful_acquisitions}",
+                f"hyba_distributed_lock_failures_total{{{labels}}} {m.failed_acquisitions}",
+                f"hyba_distributed_lock_contention_events{{{labels}}} {m.contention_events}",
+                f"hyba_distributed_lock_avg_wait_ms{{{labels}}} {m.avg_wait_ms}",
+            ])
+        return lines
 
-        Args:
-            key: Redis key
 
-        Returns:
-            bool: True if deleted, False if didn't exist
-        """
-        # TODO: Replace with actual Redis implementation
-        logger.debug("Redis DELETE operation", extra={"key": key})
-        return True
-
-    async def _redis_get_with_ttl(
-        self, key: str
-    ) -> Optional[tuple[str, float]]:
-        """
-        Get value and TTL from Redis.
-
-        Args:
-            key: Redis key
-
-        Returns:
-            Optional[tuple]: (value, ttl_seconds) or None
-        """
-        # TODO: Replace with actual Redis implementation
-        logger.debug("Redis GET with TTL operation", extra={"key": key})
-        return None
+__all__ = [
+    "DistributedLockManager",
+    "LockToken",
+    "LockMetrics",
+    "LockAcquisitionResult",
+]

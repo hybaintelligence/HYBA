@@ -98,6 +98,8 @@ class ProvisionFaultTolerantComputerRequest(BaseModel):
 class CustomerProvisionFaultTolerantComputerRequest(BaseModel):
     """Customer-facing provision request without admin privileges."""
 
+    model_config = {"extra": "forbid"}  # Reject unknown fields for security
+
     name: str = Field(min_length=3, max_length=80, pattern=r"^[a-zA-Z0-9][a-zA-Z0-9_.-]*$")
     tier: QaaSTier = "developer"
     isolation: IsolationMode = "single-tenant"
@@ -638,12 +640,41 @@ def _qaas_units(request: QuantumWorkloadRequest) -> int:
     )
 
 
-def _estimated_work_units(request: QuantumWorkloadRequest) -> int:
-    """Estimate work units for execution safety checks."""
-    return (
-        max(1, request.circuit_depth)
-        * max(1, request.shots)
-        * max(1, len(request.logical_qubits) or 1)
+def _estimated_work_units(
+    operation: str = "surface_code_cycle",
+    circuit_depth: int = 1,
+    logical_qubits: list[int] | None = None,
+    shots: int = 1,
+    code_distance: int = 7,
+) -> int:
+    """Estimate work units including operation weight and code distance.
+    
+    Formula: depth × shots × qubits × code_distance² × operation_weight
+    
+    Operation weights:
+        state_vector_summary: 1.0
+        governance_audit: 1.0
+        phi_resonance_analysis: 2.0
+        surface_code_cycle: 4.0
+        substrate_orchestration: 12.0
+    """
+    operation_weights = {
+        "state_vector_summary": 1.0,
+        "governance_audit": 1.0,
+        "phi_resonance_analysis": 2.0,
+        "surface_code_cycle": 4.0,
+        "substrate_orchestration": 12.0,
+    }
+    
+    qubit_count = max(1, len(logical_qubits) if logical_qubits else 1)
+    weight = operation_weights.get(operation, 1.0)
+    
+    return int(
+        max(1, circuit_depth)
+        * max(1, shots)
+        * qubit_count
+        * (code_distance ** 2)
+        * weight
     )
 
 
@@ -660,43 +691,52 @@ def _get_tier_sync_limits(customer_tier: str) -> tuple[int, int]:
 
 
 def _validate_customer_entitlement(
-    principal: CustomerPrincipal,
-    tier: QaaSTier,
-    isolation: IsolationMode,
+    principal: CustomerPrincipal | dict[str, Any],
+    requested_tier: QaaSTier,
+    requested_isolation: IsolationMode,
 ) -> None:
-    """Validate customer entitlement for requested QaaS tier and isolation."""
-    customer_tier = principal.tier
+    """Validate customer entitlement for requested QaaS tier and isolation.
+    
+    CRITICAL: Sovereign entitlement comes from principal.metadata only,
+    never from request body.
+    """
+    if isinstance(principal, dict):
+        customer_tier = principal["tier"]
+        metadata = principal.get("metadata", {})
+    else:
+        customer_tier = principal.tier
+        metadata = principal.metadata
 
     # Developer tier: only developer QaaS tier, single-tenant isolation
     if customer_tier == "developer":
-        if tier != "developer":
+        if requested_tier != "developer":
             raise HTTPException(
                 status_code=403,
-                detail=f"Developer API key can only provision developer tier QaaS (requested: {tier})",
+                detail=f"Developer API key can only provision developer tier QaaS (requested: {requested_tier})",
             )
-        if isolation != "single-tenant":
+        if requested_isolation != "single-tenant":
             raise HTTPException(
                 status_code=403,
-                detail=f"Developer API key can only use single-tenant isolation (requested: {isolation})",
+                detail=f"Developer API key can only use single-tenant isolation (requested: {requested_isolation})",
             )
 
     # Production tier: developer or production QaaS tier, single-tenant or dedicated-control-plane
     elif customer_tier == "production":
-        if tier not in ("developer", "production"):
+        if requested_tier not in ("developer", "production"):
             raise HTTPException(
                 status_code=403,
-                detail=f"Production API key can only provision developer or production tier QaaS (requested: {tier})",
+                detail=f"Production API key can only provision developer or production tier QaaS (requested: {requested_tier})",
             )
-        if isolation not in ("single-tenant", "dedicated-control-plane"):
+        if requested_isolation not in ("single-tenant", "dedicated-control-plane"):
             raise HTTPException(
                 status_code=403,
-                detail=f"Production API key can only use single-tenant or dedicated-control-plane isolation (requested: {isolation})",
+                detail=f"Production API key can only use single-tenant or dedicated-control-plane isolation (requested: {requested_isolation})",
             )
 
     # Enterprise tier: all tiers, but sovereign requires metadata.sovereign_enabled=true
     elif customer_tier == "enterprise":
-        if tier == "sovereign" or isolation == "sovereign-isolated":
-            sovereign_enabled = principal.metadata.get("sovereign_enabled", False)
+        if requested_tier == "sovereign" or requested_isolation == "sovereign-isolated":
+            sovereign_enabled = metadata.get("sovereign_enabled", False)
             if not sovereign_enabled:
                 raise HTTPException(
                     status_code=403,
@@ -751,7 +791,14 @@ async def customer_execute_quantum_workload(
     registry.assert_owner(computer_id, principal.customer_id)
 
     # Enforce tier-based sync limits to prevent event-loop blocking
-    estimated_units = _estimated_work_units(request)
+    computer = registry.get(computer_id)
+    estimated_units = _estimated_work_units(
+        operation=request.operation,
+        circuit_depth=request.circuit_depth,
+        logical_qubits=request.logical_qubits,
+        shots=request.shots,
+        code_distance=computer.policy["code_distance"],
+    )
     max_units, max_qubits = _get_tier_sync_limits(principal.tier)
 
     if estimated_units > max_units:
