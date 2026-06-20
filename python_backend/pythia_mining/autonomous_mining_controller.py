@@ -623,9 +623,7 @@ class AutonomousMiningController:
         decision_id: Optional[str] = None,
         target: Optional[str] = None,
         share_accepted: Optional[bool] = None,
-        error_code: Optional[str] = None,
         job_difficulty: Optional[float] = None,
-        response_time_ms: Optional[float] = None,
     ) -> None:
         """Ingest an actual pool/testnet response without bypassing local verification.
 
@@ -656,7 +654,9 @@ class AutonomousMiningController:
             "latency_ms": max(0.0, float(latency_ms)),
             "reason": reason,
             "error_code": error_code,
-            "job_difficulty": None if job_difficulty is None else float(job_difficulty),
+            "job_difficulty": None
+            if (job_difficulty if job_difficulty is not None else difficulty) is None
+            else float(job_difficulty if job_difficulty is not None else difficulty),
             "proposal_id": proposal_id,
             "decision_id": decision_id,
             "target": response_target,
@@ -780,6 +780,9 @@ class AutonomousMiningController:
                 "# HELP hyba_pending_operator_approvals Pending bounded approval requests.",
                 "# TYPE hyba_pending_operator_approvals gauge",
                 f"hyba_pending_operator_approvals {snapshot['pending_operator_approvals']}",
+                "# HELP hyba_pool_feedback_samples Bounded pool/testnet feedback samples retained.",
+                "# TYPE hyba_pool_feedback_samples gauge",
+                f"hyba_pool_feedback_samples {len(self._pool_response_history)}",
             ]
         )
         return "\n".join(lines) + "\n"
@@ -2672,6 +2675,8 @@ class AutonomousMiningController:
             with self._approval_lock:
                 request.status = "rejected"
                 request.reason = "approval_callback_missing"
+                decision.operator_reason = request.reason
+                decision.operator_approval_source = "missing_callback"
                 self._active_approval_requests.pop(request.request_id, None)
             self._log_audit_event(
                 "operator_approval_rejected",
@@ -2688,13 +2693,20 @@ class AutonomousMiningController:
             approved = approval.approved
             request.operator_id = approval.operator_id
             request.reason = approval.reason
+            decision.operator_id = approval.operator_id
+            decision.operator_reason = approval.reason
+            decision.operator_approval_source = approval.source
         except Exception as exc:
             approved = False
             request.reason = f"callback_error:{exc}"
+            decision.operator_reason = request.reason
+            decision.operator_approval_source = "callback_error"
         elapsed = time.monotonic() - started
         if elapsed > self.config.operator_approval_timeout_seconds:
             approved = False
             request.reason = "approval_timeout"
+            decision.operator_reason = request.reason
+            decision.operator_approval_source = "timeout"
         with self._approval_lock:
             request.status = "approved" if approved else "rejected"
             self._active_approval_requests.pop(request.request_id, None)
