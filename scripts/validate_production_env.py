@@ -63,6 +63,14 @@ def _is_placeholder(value: str | None) -> bool:
     )
 
 
+def _is_pool_placeholder(value: str | None) -> bool:
+    """Pool auth values are provider-side credentials, so short values can be valid."""
+    if value is None:
+        return True
+    lowered = value.strip().lower()
+    return not lowered or "replace-with" in lowered or lowered in {"changeme", "secret", "todo"}
+
+
 def _require(name: str, errors: list[str]) -> str | None:
     value = os.getenv(name)
     if _is_placeholder(value):
@@ -166,15 +174,15 @@ def _validate_pool_config(errors: list[str]) -> None:
         if not _is_pool_configured(pool_id):
             continue
         url = _env(pool_id, "URL")
-        if _is_placeholder(url):
+        if _is_pool_placeholder(url):
             errors.append(f"HYBA_POOL_{pool_id}_URL is required when configuring {pool_id}")
             continue
         identity_field, identity = _pool_identity(pool_id)
         auth_field, auth = _pool_auth(pool_id)
         missing = []
-        if _is_placeholder(identity):
+        if _is_pool_placeholder(identity):
             missing.append(identity_field)
-        if auth_field is not None and _is_placeholder(auth):
+        if auth_field is not None and _is_pool_placeholder(auth):
             missing.append(auth_field)
         if missing:
             errors.append(
