@@ -1,12 +1,11 @@
 {
   "autonomy_level": "autonomous",
   "capacity_limits": {
-    "max_autonomous_hashrate_ehs": 0.5,
+    "max_autonomous_hashrate_ehs": 1.0,
     "max_autonomous_power_watts": 500.0,
     "max_proposals_per_cycle": 3
   },
   "compression_seeking_history": [
-    1.89685404,
     1.8969736499040002,
     1.8970291250558926,
     1.8970628873095843,
@@ -105,11 +104,11 @@
     1.897192942298491,
     1.897193013561076,
     1.8971930833989554,
-    1.8971999974270246
+    1.8971999974270246,
+    1.8971998713038372
   ],
-  "epochs": 231,
+  "epochs": 234,
   "logical_consistency_history": [
-    0.8,
     0.78,
     0.8,
     0.78,
@@ -208,7 +207,8 @@
     0.775,
     0.78,
     0.775,
-    0.77
+    0.77,
+    0.75
   ],
   "optimization_targets": [
     {
@@ -2058,9 +2058,33 @@
       "target_name": "search_depth",
       "target_value": 54.0,
       "tolerance": 5.0
+    },
+    {
+      "current_value": 0.6844065846867133,
+      "objective_function": "minimize_energy",
+      "priority": 2,
+      "target_name": "coherence_threshold",
+      "target_value": 0.718626913921049,
+      "tolerance": 0.02
+    },
+    {
+      "current_value": 1.86,
+      "objective_function": "maximize_phi_coherence",
+      "priority": 3,
+      "target_name": "compression_target",
+      "target_value": 1.8971998713038372,
+      "tolerance": 0.05
+    },
+    {
+      "current_value": 60.0,
+      "objective_function": "maximize_hashrate",
+      "priority": 4,
+      "target_name": "search_depth",
+      "target_value": 54.0,
+      "tolerance": 5.0
     }
   ],
-  "phi_coherence_threshold": 0.6844065846867133,
+  "phi_coherence_threshold": 0.718626913921049,
   "phi_density_history": [
     0.5,
     0.86243,
@@ -2163,57 +2187,58 @@
     0.9842516502810789,
     0.9842451690004465,
     0.9842413173447204,
-    0.7342438208366144
+    0.7342438208366144,
+    0.9342524998713512
   ],
   "pool_response_history": [],
   "proposals": [
     {
       "applied": true,
-      "codebase_source_module": "phi_scaling_engine",
-      "counterfactual_confidence": 0.3,
-      "current_value": 1.5,
-      "expected_phi_density_gain": 0.010188607500000058,
-      "improvement_type": "phi_scaling",
-      "logical_consistency_score": 0.76,
-      "proposal_id": "self_opt_228_1781955127",
-      "proposed_value": 1.4249999999999998
+      "codebase_source_module": "consciousness_engine",
+      "counterfactual_confidence": 0.6,
+      "current_value": 0.6844065846867133,
+      "expected_phi_density_gain": 0.009941221875000017,
+      "improvement_type": "coherence_threshold",
+      "logical_consistency_score": 0.7,
+      "proposal_id": "self_opt_231_1781955861",
+      "proposed_value": 0.718626913921049
     },
     {
       "applied": true,
       "codebase_source_module": "pulvini_memory_compression_proof",
-      "counterfactual_confidence": 0.8999999861667979,
+      "counterfactual_confidence": 0.8999993080851459,
       "current_value": 1.86,
-      "expected_phi_density_gain": 0.004431376829466593,
+      "expected_phi_density_gain": 0.004782937097493112,
       "improvement_type": "compression_target",
       "logical_consistency_score": 0.8,
-      "proposal_id": "self_opt_228_1781955127",
-      "proposed_value": 1.8971999974270246
+      "proposal_id": "self_opt_231_1781955861",
+      "proposed_value": 1.8971998713038372
     },
     {
       "applied": true,
       "codebase_source_module": "ai_optimizer",
       "counterfactual_confidence": 0.6,
       "current_value": 60.0,
-      "expected_phi_density_gain": 0.01301606249999998,
+      "expected_phi_density_gain": 0.013396921874999967,
       "improvement_type": "search_depth",
       "logical_consistency_score": 0.75,
-      "proposal_id": "self_opt_228_1781955127",
+      "proposal_id": "self_opt_231_1781955861",
       "proposed_value": 54.0
     }
   ],
   "schema_version": 3,
   "target_selection": {
     "coherence_threshold": {
-      "evidence_weight": 1.331,
+      "evidence_weight": 1.4641,
       "failures": 1,
-      "posterior_mean": 0.8,
-      "successes": 4
+      "posterior_mean": 0.833333,
+      "successes": 5
     },
     "compression_target": {
-      "evidence_weight": 3.452271,
+      "evidence_weight": 3.797498,
       "failures": 1,
-      "posterior_mean": 0.933333,
-      "successes": 14
+      "posterior_mean": 0.9375,
+      "successes": 15
     },
     "phi_scaling": {
       "evidence_weight": 1.4641,
@@ -2222,10 +2247,10 @@
       "successes": 5
     },
     "search_depth": {
-      "evidence_weight": 2.357948,
+      "evidence_weight": 2.593743,
       "failures": 1,
-      "posterior_mean": 0.909091,
-      "successes": 10
+      "posterior_mean": 0.916667,
+      "successes": 11
     }
   }
 }

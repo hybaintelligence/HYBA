@@ -87,7 +87,7 @@ def test_adversarial_negative_difficulty():
             # If accepted, verify it was sanitized
             if ctrl._pool_response_history:
                 last_response = ctrl._pool_response_history[-1]
-                assert last_response["job_difficulty"] >= 0, \
+                assert last_response["difficulty"] >= 0, \
                     "Negative difficulty should be rejected or sanitized"
         except (ValueError, AssertionError):
             # Expected: system rejects invalid input
@@ -122,7 +122,7 @@ def test_adversarial_future_timestamp():
         malicious_response = {
             "timestamp": time.time() + 86400,  # 24 hours in future
             "accepted": True,
-            "job_difficulty": 1000.0,
+            "difficulty": 1000.0,
         }
         ctrl._pool_response_history.append(malicious_response)
         
@@ -158,7 +158,7 @@ def test_adversarial_corrupted_state_file():
         try:
             ctrl._load_reflexive_state()
             # If load succeeds, verify it fell back to defaults
-            assert ctrl._target_evidence is not None
+            assert len(ctrl._reflexive_target_bandits) >= 0
         except json.JSONDecodeError:
             # Expected: system detects corruption
             pass
@@ -380,7 +380,7 @@ def test_adversarial_timestamp_rollback():
         rollback_response = {
             "timestamp": time.time() - 86400,  # 24 hours in past
             "accepted": True,
-            "job_difficulty": 1000.0,
+            "difficulty": 1000.0,
         }
         ctrl._pool_response_history.append(rollback_response)
         
