@@ -21,6 +21,7 @@ cryptography==43.0.1
 # Database & Migrations
 sqlalchemy==2.0.35
 alembic==1.13.3
+psycopg2-binary==2.9.10
 
 # Monitoring & Observability
 prometheus-client==0.21.0
