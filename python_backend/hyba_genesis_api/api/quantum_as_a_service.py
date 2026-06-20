@@ -51,7 +51,7 @@ QuantumOperation = Literal[
 
 
 class ProvisionFaultTolerantComputerRequest(BaseModel):
-    """Provision a commercial virtual fault-tolerant quantum computer."""
+    """Provision a commercial virtual fault-tolerant quantum computer (admin-only)."""
 
     name: str = Field(min_length=3, max_length=80, pattern=r"^[a-zA-Z0-9][a-zA-Z0-9_.-]*$")
     tier: QaaSTier = "production"
@@ -63,6 +63,49 @@ class ProvisionFaultTolerantComputerRequest(BaseModel):
     max_circuit_depth: int = Field(default=1_024, ge=1, le=1_000_000)
     max_shots: int = Field(default=1_024, ge=1, le=1_000_000)
     admin_privileged: bool = Field(default=False)
+    data_residency: str = Field(default="us", min_length=2, max_length=32)
+    allowed_operations: list[QuantumOperation] = Field(
+        default_factory=lambda: [
+            "surface_code_cycle",
+            "phi_resonance_analysis",
+            "state_vector_summary",
+            "substrate_orchestration",
+            "governance_audit",
+        ],
+        min_length=1,
+        max_length=5,
+    )
+
+    @field_validator("code_distance")
+    @classmethod
+    def code_distance_must_be_odd(cls, value: int) -> int:
+        if value % 2 == 0:
+            raise ValueError("code_distance must be odd for surface-code fault tolerance")
+        return value
+
+    @field_validator("allowed_operations")
+    @classmethod
+    def allowed_operations_must_be_unique(
+        cls,
+        value: list[QuantumOperation],
+    ) -> list[QuantumOperation]:
+        if len(set(value)) != len(value):
+            raise ValueError("allowed_operations must not contain duplicates")
+        return value
+
+
+class CustomerProvisionFaultTolerantComputerRequest(BaseModel):
+    """Customer-facing provision request without admin privileges."""
+
+    name: str = Field(min_length=3, max_length=80, pattern=r"^[a-zA-Z0-9][a-zA-Z0-9_.-]*$")
+    tier: QaaSTier = "developer"
+    isolation: IsolationMode = "single-tenant"
+    code_distance: int = Field(default=7, ge=3, le=31)
+    logical_qubits: int = Field(default=32, ge=1, le=512)
+    physical_error_rate: float = Field(default=1e-3, gt=0.0, lt=0.0109)
+    phi_resonance_target: float = Field(default=0.9565, gt=0.0, le=1.0)
+    max_circuit_depth: int = Field(default=1_024, ge=1, le=1_000_000)
+    max_shots: int = Field(default=1_024, ge=1, le=1_000_000)
     data_residency: str = Field(default="us", min_length=2, max_length=32)
     allowed_operations: list[QuantumOperation] = Field(
         default_factory=lambda: [
@@ -554,13 +597,67 @@ def _qaas_units(request: QuantumWorkloadRequest) -> int:
     )
 
 
+def _validate_customer_entitlement(
+    principal: CustomerPrincipal,
+    tier: QaaSTier,
+    isolation: IsolationMode,
+) -> None:
+    """Validate customer entitlement for requested QaaS tier and isolation."""
+    customer_tier = principal.tier
+
+    # Developer tier: only developer QaaS tier, single-tenant isolation
+    if customer_tier == "developer":
+        if tier != "developer":
+            raise HTTPException(
+                status_code=403,
+                detail=f"Developer API key can only provision developer tier QaaS (requested: {tier})",
+            )
+        if isolation != "single-tenant":
+            raise HTTPException(
+                status_code=403,
+                detail=f"Developer API key can only use single-tenant isolation (requested: {isolation})",
+            )
+
+    # Production tier: developer or production QaaS tier, single-tenant or dedicated-control-plane
+    elif customer_tier == "production":
+        if tier not in ("developer", "production"):
+            raise HTTPException(
+                status_code=403,
+                detail=f"Production API key can only provision developer or production tier QaaS (requested: {tier})",
+            )
+        if isolation not in ("single-tenant", "dedicated-control-plane"):
+            raise HTTPException(
+                status_code=403,
+                detail=f"Production API key can only use single-tenant or dedicated-control-plane isolation (requested: {isolation})",
+            )
+
+    # Enterprise tier: all tiers, but sovereign requires metadata.sovereign_enabled=true
+    elif customer_tier == "enterprise":
+        if tier == "sovereign" or isolation == "sovereign-isolated":
+            sovereign_enabled = principal.metadata.get("sovereign_enabled", False)
+            if not sovereign_enabled:
+                raise HTTPException(
+                    status_code=403,
+                    detail="Enterprise API key requires sovereign_enabled=true metadata for sovereign tier or isolation",
+                )
+
+
 @public_router.post("", response_model=FaultTolerantComputerResponse, status_code=status.HTTP_201_CREATED)
 async def customer_provision_computer(
-    request: ProvisionFaultTolerantComputerRequest,
+    request: CustomerProvisionFaultTolerantComputerRequest,
     principal: CustomerPrincipal = Depends(require_customer_api_key),
 ):
+    # Validate customer entitlement for requested tier and isolation
+    _validate_customer_entitlement(principal, request.tier, request.isolation)
+
+    # Force admin_privileged=False for customer requests
+    admin_request = ProvisionFaultTolerantComputerRequest(
+        **request.model_dump(),
+        admin_privileged=False,
+    )
+
     customer_access.meter(principal, product="qaas.provision", units=request.logical_qubits)
-    response = registry.provision(request, owner=principal.customer_id)
+    response = registry.provision(admin_request, owner=principal.customer_id)
     customer_access.set_state(f"qaas:{response.computer_id}", response.model_dump())
     return response
 
