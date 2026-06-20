@@ -1,0 +1,21 @@
+{
+  "reproducibility_validation": {
+    "environment": "fresh_clone",
+    "freshness_date": "2026-06-20",
+    "git_commit": "29e420fabd57",
+    "python_version": "3.12.7",
+    "quantum_metrics": {
+      "compression_ratio": 2.0,
+      "purity": 0.999999,
+      "syndrome_validity": true
+    },
+    "test_results": {
+      "failed": 0,
+      "passed": 31,
+      "success_rate": 1.0,
+      "total": 31
+    },
+    "timestamp": "2026-06-20T18:40:18.374323+00:00"
+  },
+  "schema": "HYBA_REPRODUCIBILITY_MANIFEST_V1"
+}

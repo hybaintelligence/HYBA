@@ -222,12 +222,14 @@ class AutonomousQaaSController:
                 attempt.action = "failover_to_backup"
                 attempt.success = False
                 self._heal_attempts.append(attempt)
+                self._circuit_open_until = time.time() + self._heal_window_seconds
                 self._save_state()
                 logger.critical(
                     "Circuit breaker triggered - excessive heal attempts",
                     extra={
                         "service_id": self.service_id,
                         "recent_attempts": recent,
+                        "circuit_open_until": self._circuit_open_until,
                     },
                 )
                 return attempt

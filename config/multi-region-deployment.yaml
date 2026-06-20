@@ -1,0 +1,303 @@
+# HYBA PQMC Multi-Region Deployment Configuration
+# This configuration enables deployment across multiple cloud regions for high availability and low latency
+
+regions:
+  # Primary region (US East)
+  - name: us-east-1
+    provider: aws
+    role: primary
+    services:
+      - api
+      - database
+      - redis
+      - compute
+    capacity:
+      api_instances: 10
+      compute_instances: 20
+      database_replicas: 3
+    networking:
+      vpc_cidr: 10.0.0.0/16
+      public_subnets:
+        - 10.0.1.0/24
+        - 10.0.2.0/24
+      private_subnets:
+        - 10.0.10.0/24
+        - 10.0.11.0/24
+    dns:
+      api: api.hyba-analytics.com
+      internal: internal.api.hyba-analytics.com
+    monitoring:
+      enabled: true
+      metrics_endpoint: https://prometheus.us-east-1.hyba-analytics.com
+      logs_endpoint: https://logs.us-east-1.hyba-analytics.com
+
+  # Secondary region (US West)
+  - name: us-west-2
+    provider: aws
+    role: secondary
+    services:
+      - api
+      - database
+      - redis
+      - compute
+    capacity:
+      api_instances: 5
+      compute_instances: 10
+      database_replicas: 2
+    networking:
+      vpc_cidr: 10.1.0.0/16
+      public_subnets:
+        - 10.1.1.0/24
+        - 10.1.2.0/24
+      private_subnets:
+        - 10.1.10.0/24
+        - 10.1.11.0/24
+    dns:
+      api: api-us-west.hyba-analytics.com
+      internal: internal.api-us-west.hyba-analytics.com
+    monitoring:
+      enabled: true
+      metrics_endpoint: https://prometheus.us-west-2.hyba-analytics.com
+      logs_endpoint: https://logs.us-west-2.hyba-analytics.com
+
+  # EU region (Frankfurt)
+  - name: eu-central-1
+    provider: aws
+    role: secondary
+    services:
+      - api
+      - database
+      - redis
+      - compute
+    capacity:
+      api_instances: 5
+      compute_instances: 10
+      database_replicas: 2
+    networking:
+      vpc_cidr: 10.2.0.0/16
+      public_subnets:
+        - 10.2.1.0/24
+        - 10.2.2.0/24
+      private_subnets:
+        - 10.2.10.0/24
+        - 10.2.11.0/24
+    dns:
+      api: api-eu.hyba-analytics.com
+      internal: internal.api-eu.hyba-analytics.com
+    monitoring:
+      enabled: true
+      metrics_endpoint: https://prometheus.eu-central-1.hyba-analytics.com
+      logs_endpoint: https://logs.eu-central-1.hyba-analytics.com
+    compliance:
+      data_residency: eu
+      gdpr_compliant: true
+
+  # Asia Pacific region (Singapore)
+  - name: ap-southeast-1
+    provider: aws
+    role: secondary
+    services:
+      - api
+      - database
+      - redis
+      - compute
+    capacity:
+      api_instances: 3
+      compute_instances: 5
+      database_replicas: 1
+    networking:
+      vpc_cidr: 10.3.0.0/16
+      public_subnets:
+        - 10.3.1.0/24
+        - 10.3.2.0/24
+      private_subnets:
+        - 10.3.10.0/24
+        - 10.3.11.0/24
+    dns:
+      api: api-apac.hyba-analytics.com
+      internal: internal.api-apac.hyba-analytics.com
+    monitoring:
+      enabled: true
+      metrics_endpoint: https://prometheus.ap-southeast-1.hyba-analytics.com
+      logs_endpoint: https://logs.ap-southeast-1.hyba-analytics.com
+
+# Global DNS configuration
+global_dns:
+  provider: route53
+  ttl: 60
+  routing_policy: latency
+  health_checks:
+    enabled: true
+    interval: 30
+    timeout: 5
+    healthy_threshold: 2
+    unhealthy_threshold: 3
+
+# Database replication configuration
+database_replication:
+  mode: multi_master
+  consistency: eventual
+  conflict_resolution: last_write_wins
+  backup:
+    enabled: true
+    retention_days: 30
+    backup_window: "03:00-04:00 UTC"
+  point_in_time_recovery:
+    enabled: true
+    retention_days: 7
+
+# Redis cluster configuration
+redis_cluster:
+  mode: cluster
+  shards: 3
+  replicas_per_shard: 2
+  eviction_policy: allkeys-lru
+  persistence:
+    rdb:
+      enabled: true
+      save_interval: 900
+      save_changes: 1
+    aof:
+      enabled: true
+      fsync: everysec
+
+# Load balancing configuration
+load_balancing:
+  type: application_load_balancer
+  algorithm: round_robin
+  health_check:
+    path: /health
+    interval: 30
+    timeout: 5
+    healthy_threshold: 2
+    unhealthy_threshold: 3
+  ssl:
+    enabled: true
+    certificate_arn: arn:aws:acm:us-east-1:123456789012:certificate/abc123
+    protocols:
+      - tls_1_2
+      - tls_1_3
+
+# Auto-scaling configuration
+auto_scaling:
+  api:
+    min_instances: 2
+    max_instances: 20
+    target_cpu: 70
+    scale_up_cooldown: 300
+    scale_down_cooldown: 600
+  compute:
+    min_instances: 5
+    max_instances: 50
+    target_cpu: 80
+    scale_up_cooldown: 180
+    scale_down_cooldown: 300
+
+# Disaster recovery configuration
+disaster_recovery:
+  enabled: true
+  rto: 3600  # 1 hour recovery time objective
+  rpo: 300   # 5 minute recovery point objective
+  failover:
+    automatic: true
+    health_check_interval: 60
+    failover_threshold: 3
+  backup:
+    cross_region: true
+    replication_lag: 60
+    encryption: true
+
+# Security configuration
+security:
+  encryption:
+    at_rest: aes256
+    in_transit: tls1_3
+  network:
+    ddos_protection: enabled
+    waf: enabled
+    firewall_rules:
+      - allow: tcp
+        port: 443
+        source: 0.0.0.0/0
+      - allow: tcp
+        port: 80
+        source: 0.0.0.0/0
+      - deny: all
+  iam:
+    role_based_access: true
+    mfa_required: true
+    session_timeout: 3600
+
+# Monitoring and alerting
+monitoring:
+  prometheus:
+    retention: 30d
+    scrape_interval: 15s
+  grafana:
+    enabled: true
+    dashboards:
+      - system_overview
+      - api_performance
+      - database_metrics
+      - error_rates
+  alerts:
+    - name: high_error_rate
+      condition: error_rate > 0.05
+      duration: 5m
+      severity: critical
+    - name: high_latency
+      condition: p95_latency > 500ms
+      duration: 10m
+      severity: warning
+    - name: low_availability
+      condition: availability < 0.99
+      duration: 5m
+      severity: critical
+
+# Logging configuration
+logging:
+  level: info
+  format: json
+  retention: 90d
+  aggregation:
+    enabled: true
+    endpoint: https://logs.hyba-analytics.com
+  sensitive_data:
+    redaction: true
+    fields:
+      - api_key
+      - password
+      - token
+      - secret
+
+# Cost optimization
+cost_optimization:
+  instance_types:
+    api: t3.medium
+    compute: c5.large
+    database: db.r5.large
+  reserved_instances:
+    enabled: true
+    term: 1_year
+    payment: partial_upfront
+  spot_instances:
+    enabled: true
+    for_services:
+      - compute
+    max_percentage: 50
+
+# Compliance
+compliance:
+  soc2:
+    enabled: true
+    audit_frequency: annual
+  iso27001:
+    enabled: true
+    audit_frequency: annual
+  gdpr:
+    enabled: true
+    data_residency:
+      eu: eu-central-1
+      us: us-east-1
+  hipaa:
+    enabled: false

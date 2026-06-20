@@ -16,6 +16,7 @@ Production Architecture:
 from __future__ import annotations
 
 import hashlib
+import json
 import threading
 import time
 import uuid
@@ -53,6 +54,47 @@ WorkloadKind = Literal[
     "governance_audit",
     "substrate_health",
 ]
+
+
+class CustomerProvisionComputationalIntelligenceRequest(BaseModel):
+    """Customer-facing request to provision a commercial CIaaS virtual computer."""
+
+    name: str = Field(min_length=3, max_length=80, pattern=r"^[a-zA-Z0-9][a-zA-Z0-9_.-]*$")
+    service_tier: ServiceTier = "developer"
+    tenancy: TenancyMode = "single-tenant"
+    code_distance: int = Field(default=7, ge=3, le=31)
+    logical_compute_units: int = Field(default=32, ge=1, le=512)
+    physical_error_rate: float = Field(default=1e-3, gt=0.0, lt=0.0109)
+    max_workloads_per_minute: int = Field(default=60, ge=1, le=10_000)
+    max_context_bytes: int = Field(default=64_000, ge=1_024, le=2_000_000)
+    data_residency: str = Field(default="us", min_length=2, max_length=32)
+    allowed_workloads: list[WorkloadKind] = Field(
+        default_factory=lambda: [
+            "explain",
+            "orchestrate",
+            "counterfactual",
+            "governance_audit",
+            "substrate_health",
+        ],
+        min_length=1,
+        max_length=5,
+    )
+
+    model_config = {"extra": "forbid"}
+
+    @field_validator("code_distance")
+    @classmethod
+    def code_distance_must_be_odd(cls, value: int) -> int:
+        if value % 2 == 0:
+            raise ValueError("code_distance must be odd for surface-code fault tolerance")
+        return value
+
+    @field_validator("allowed_workloads")
+    @classmethod
+    def workloads_must_be_unique(cls, value: list[WorkloadKind]) -> list[WorkloadKind]:
+        if len(set(value)) != len(value):
+            raise ValueError("allowed_workloads must not contain duplicates")
+        return value
 
 
 class ProvisionComputationalIntelligenceRequest(BaseModel):
@@ -105,6 +147,50 @@ class IntelligenceWorkloadRequest(BaseModel):
     idempotency_key: Optional[str] = Field(default=None, max_length=128)
 
 
+def _validate_ciaas_customer_entitlement(
+    principal: CustomerPrincipal,
+    request_tier: ServiceTier,
+    request_tenancy: TenancyMode,
+) -> None:
+    """Validate customer entitlement for CIaaS tier and isolation."""
+    tier = principal.tier
+    sovereign_enabled = principal.metadata.get("sovereign_enabled", False)
+
+    # Tier entitlement
+    if tier == "developer":
+        if request_tier != "developer":
+            raise HTTPException(
+                status_code=403,
+                detail=f"Developer API key can only provision developer tier (requested: {request_tier})"
+            )
+    elif tier == "production":
+        if request_tier not in ["developer", "production"]:
+            raise HTTPException(
+                status_code=403,
+                detail=f"Production API key can only provision developer or production tier (requested: {request_tier})"
+            )
+    elif tier == "enterprise":
+        if request_tier == "sovereign" and not sovereign_enabled:
+            raise HTTPException(
+                status_code=403,
+                detail="Enterprise API key requires sovereign entitlement to provision sovereign tier"
+            )
+
+    # Isolation entitlement
+    if tier == "developer":
+        if request_tenancy != "single-tenant":
+            raise HTTPException(
+                status_code=403,
+                detail=f"Developer API key can only request single-tenant isolation (requested: {request_tenancy})"
+            )
+    elif tier == "production":
+        if request_tenancy not in ["single-tenant", "dedicated-control-plane"]:
+            raise HTTPException(
+                status_code=403,
+                detail=f"Production API key can only request single-tenant or dedicated-control-plane isolation (requested: {request_tenancy})"
+            )
+
+
 class ServiceResponse(BaseModel):
     service_id: str
     name: str
@@ -144,6 +230,7 @@ class _CommercialIntelligenceComputer:
         self.logical_compute_units = request.logical_compute_units
         self._workload_count = 0
         self._idempotency_cache: dict[str, Dict[str, Any]] = {}
+        self._execution_lock = threading.RLock()
         for _ in range(request.logical_compute_units):
             self.core.initialize_logical_qubit("0")
         
@@ -232,7 +319,7 @@ class _CommercialIntelligenceComputer:
             "fault_tolerance": self.fault_tolerance(),
             "substrate_ready": substrate.get("ready"),
         }
-        seal = hashlib.sha256(repr(sorted(seal_payload.items())).encode()).hexdigest()
+        seal = hashlib.sha256(json.dumps(seal_payload, sort_keys=True).encode()).hexdigest()
         return ServiceResponse(
             service_id=self.service_id,
             name=self.name,
@@ -258,8 +345,25 @@ class _CommercialIntelligenceComputer:
 
     def execute(self, request: IntelligenceWorkloadRequest) -> Dict[str, Any]:
         self._validate_workload(request)
-        if request.idempotency_key and request.idempotency_key in self._idempotency_cache:
-            return self._idempotency_cache[request.idempotency_key]
+        
+        # Request-hash idempotency with mismatch rejection
+        if request.idempotency_key:
+            request_hash = hashlib.sha256(json.dumps(request.model_dump(), sort_keys=True).encode()).hexdigest()
+            if request.idempotency_key in self._idempotency_cache:
+                cached = self._idempotency_cache[request.idempotency_key]
+                if cached.get("request_hash") != request_hash:
+                    raise HTTPException(
+                        status_code=409,
+                        detail="Idempotency key reused with different request payload"
+                    )
+                return cached
+
+        # Acquire per-service execution lock
+        if not self._execution_lock.acquire(blocking=False):
+            raise HTTPException(
+                status_code=409,
+                detail="Service is currently executing another workload; retry after current workload completes"
+            )
 
         # Acquire distributed lock before execution
         redis_registry = get_redis_registry()
@@ -269,6 +373,7 @@ class _CommercialIntelligenceComputer:
                 self.service_id, self.owner
             )
             if not lock_acquired:
+                self._execution_lock.release()
                 raise HTTPException(
                     status_code=status.HTTP_409_CONFLICT,
                     detail="Service is currently executing another workload; retry after current workload completes",
@@ -277,6 +382,10 @@ class _CommercialIntelligenceComputer:
         try:
             # Track execution start time for metering
             exec_start = time.perf_counter()
+
+            # Record stats before workload for delta correction_success
+            stats_before = self.core.get_error_statistics()
+            correction_successes_before = stats_before["correction_successes"]
 
             # Run syndrome rounds across a bounded quorum of logical compute units to
             # expose measurable fault-tolerance posture for this intelligence call.
@@ -300,7 +409,7 @@ class _CommercialIntelligenceComputer:
                 }
             elif request.workload_type == "governance_audit":
                 result = {
-                    "context_digest": hashlib.sha256(repr(sorted(request.context.items())).encode()).hexdigest(),
+                    "context_digest": hashlib.sha256(json.dumps(request.context, sort_keys=True).encode()).hexdigest(),
                     "commercial_policy": self.commercial_policy(),
                     "fault_tolerance": self.fault_tolerance(),
                     "claim_boundary": "CIaaS deterministic intelligence workload; no mining dependency",
@@ -310,9 +419,12 @@ class _CommercialIntelligenceComputer:
 
             exec_duration = time.perf_counter() - exec_start
 
+            # Record stats after workload for delta correction_success
+            stats_after = self.core.get_error_statistics()
+            correction_success = stats_after["correction_successes"] > correction_successes_before
+
             # Record resource consumption to Redis
             if redis_registry.available:
-                stats = self.core.get_error_statistics()
                 context_bytes = len(repr(request.context).encode("utf-8"))
                 circuit_depth_equiv = max(1, context_bytes // 1024 + 1)
 
@@ -320,20 +432,19 @@ class _CommercialIntelligenceComputer:
                     instance_id=self.service_id,
                     tenant_id=self.owner,
                     metrics={
-                        "defect_count": stats.get("last_decoder_defects", 0),
-                        "pairing_weight": stats.get("last_decoder_weight", 1.0),
+                        "defect_count": stats_after.get("last_decoder_defects", 0),
+                        "pairing_weight": stats_after.get("last_decoder_weight", 1.0),
                         "circuit_depth": circuit_depth_equiv,
                     },
                 )
                 result["metering"] = metering_result
                 result["execution_duration_ms"] = round(exec_duration * 1000, 2)
             
-            # Record execution for autonomous learning
-            stats = self.core.get_error_statistics()
+            # Record execution for autonomous learning with delta correction_success
             self.autonomous.record_execution(
                 execution_time_ms=exec_duration * 1000,
-                logical_error_rate=stats["logical_error_rate"],
-                correction_success=stats["correction_successes"] > 0,
+                logical_error_rate=stats_after["logical_error_rate"],
+                correction_success=correction_success,
             )
             
             # Check if autonomous healing should trigger
@@ -378,10 +489,12 @@ class _CommercialIntelligenceComputer:
                 "claim_boundary": "Computational Intelligence as a Service; general-purpose HYBA substrate; no mining-specific execution path.",
             }
             if request.idempotency_key:
+                envelope["request_hash"] = request_hash
                 self._idempotency_cache[request.idempotency_key] = envelope
             return envelope
         finally:
-            # Always release lock, even if execution failed
+            # Always release locks, even if execution failed
+            self._execution_lock.release()
             if lock_acquired and redis_registry.available:
                 redis_registry.release_register_lock(self.service_id, self.owner)
 
@@ -473,7 +586,7 @@ class ComputationalIntelligenceServiceRegistry:
             service = self.get(service_id)
             if service.state != "running":
                 raise HTTPException(status_code=409, detail="service must be running before workloads execute")
-            return service.execute(request)
+        return service.execute(request)
 
     def assert_owner(self, service_id: str, owner: str) -> _CommercialIntelligenceComputer:
         service = self.get(service_id)
@@ -538,11 +651,29 @@ def _ciaas_units(request: IntelligenceWorkloadRequest) -> int:
 
 @public_router.post("", response_model=ServiceResponse, status_code=status.HTTP_201_CREATED)
 async def customer_provision_service(
-    request: ProvisionComputationalIntelligenceRequest,
+    request: CustomerProvisionComputationalIntelligenceRequest,
     principal: CustomerPrincipal = Depends(require_customer_api_key),
 ):
+    # Validate customer entitlement for tier and isolation
+    _validate_ciaas_customer_entitlement(principal, request.service_tier, request.tenancy)
+    
+    # Convert customer request to admin request with admin_privileged=False
+    admin_request = ProvisionComputationalIntelligenceRequest(
+        name=request.name,
+        service_tier=request.service_tier,
+        tenancy=request.tenancy,
+        code_distance=request.code_distance,
+        logical_compute_units=request.logical_compute_units,
+        physical_error_rate=request.physical_error_rate,
+        max_workloads_per_minute=request.max_workloads_per_minute,
+        max_context_bytes=request.max_context_bytes,
+        admin_privileged=False,  # Force False for customer provisioning
+        data_residency=request.data_residency,
+        allowed_workloads=request.allowed_workloads,
+    )
+    
     customer_access.meter(principal, product="ciaas.provision", units=request.logical_compute_units)
-    response = registry.provision(request, owner=principal.customer_id)
+    response = registry.provision(admin_request, owner=principal.customer_id)
     customer_access.set_state(f"ciaas:{response.service_id}", response.model_dump())
     return response
 

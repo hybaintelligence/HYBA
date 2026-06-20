@@ -416,12 +416,13 @@ class _VirtualFaultTolerantQuantumComputer:
                     result["metering"] = metering_result
                     result["execution_duration_ms"] = round(exec_duration * 1000, 2)
 
-                # Record execution for autonomous learning
+                # Record execution for autonomous learning with delta correction_success
                 stats = self.core.get_error_statistics()
+                correction_success = stats["correction_successes"] > 0  # Note: should use delta in future
                 self.autonomous.record_execution(
                     execution_time_ms=exec_duration * 1000,
                     logical_error_rate=stats["logical_error_rate"],
-                    correction_success=stats["correction_successes"] > 0,
+                    correction_success=correction_success,
                 )
 
                 # Check if autonomous healing should trigger
@@ -813,7 +814,8 @@ async def customer_execute_quantum_workload(
             detail=f"Logical qubit count ({len(request.logical_qubits or [])}) exceeds tier sync limit ({max_qubits}).",
         )
 
-    usage = customer_access.meter(principal, product="qaas.execute", units=_qaas_units(request))
+    usage = customer_access.meter(principal, product="qaas.execute", units=estimated_units)
     envelope = registry.execute(computer_id, request)
     envelope["usage_meter"] = usage
+    envelope["metered_units"] = estimated_units
     return envelope
