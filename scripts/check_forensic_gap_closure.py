@@ -45,7 +45,7 @@ def main() -> int:
     seed = read("python_backend/scripts/seed_admin_user.py")
     require("admin123456" not in seed, "seed_admin_user.py still contains admin123456", errors)
     require(
-        "HYBA_INITIAL_ADMIN_PASSWORD" in seed and "validate_password_strength" in seed,
+        "HYBA_INITIAL_ADMIN_PASSWORD" in seed and "_validate_seed_secret" in seed,
         "seed_admin_user.py must require HYBA_INITIAL_ADMIN_PASSWORD/--password and validate strength",
         errors,
     )
