@@ -1,37 +1,64 @@
 #!/usr/bin/env python3
-"""Enterprise SLA tracking and service-credit reporting."""
-from __future__ import annotations
-from dataclasses import dataclass, asdict
-from datetime import datetime, timezone
-from typing import Any, Dict, List
+"""Enterprise SLA tracking and financial impact reporting."""
 
-@dataclass
-class SLABreach:
-    metric: str
-    target: float
-    actual: float
-    breach_severity: float
-    timestamp: str
-    service_id: str = "default"
+from datetime import datetime, timezone
+from typing import Any, Dict, List, Optional
+
 
 class SLATracker:
-    """Enterprise SLA enforcement, breach tracking, and reporting."""
-    def __init__(self, targets: Dict[str, float] | None = None):
-        self.targets = targets or {"availability":0.9999,"latency_p99":100.0,"latency_p999":500.0,"error_rate":0.0001}
-        self.breaches: List[SLABreach] = []
-        self.observations: List[Dict[str, Any]] = []
-    def _is_breach(self, metric: str, value: float) -> bool:
-        target = self.targets[metric]
-        return value < target if metric == "availability" else value > target
-    def track_metric(self, metric_name: str, value: float, timestamp: str | None = None, service_id: str = "default") -> Dict[str, Any]:
-        ts = timestamp or datetime.now(timezone.utc).isoformat()
-        obs = {"metric":metric_name,"value":float(value),"timestamp":ts,"service_id":service_id,"breached":False}
-        if metric_name in self.targets and self._is_breach(metric_name, float(value)):
-            target = self.targets[metric_name]
-            severity = ((target - value) / target) if metric_name == "availability" and target else ((value / target) - 1 if target else 0)
-            breach = SLABreach(metric_name, target, float(value), float(severity), ts, service_id)
-            self.breaches.append(breach); obs["breached"] = True; obs["breach"] = asdict(breach)
-        self.observations.append(obs); return obs
-    def generate_sla_report(self, revenue_at_risk: float = 0.0) -> Dict[str, Any]:
-        service_credits = sum(max(b.breach_severity,0) for b in self.breaches) * revenue_at_risk
-        return {"targets":self.targets,"observation_count":len(self.observations),"breach_count":len(self.breaches),"breaches":[asdict(b) for b in self.breaches],"estimated_service_credits":service_credits,"status":"breached" if self.breaches else "within_sla"}
+    """Enterprise SLA enforcement and reporting."""
+
+    def __init__(self, revenue_per_downtime_second: float = 0.0):
+        self.targets = {
+            "availability": 0.9999,
+            "latency_p99": 100.0,
+            "latency_p999": 500.0,
+            "error_rate": 0.0001,
+        }
+        self.revenue_per_downtime_second = revenue_per_downtime_second
+        self.measurements: List[Dict[str, Any]] = []
+        self.breaches: List[Dict[str, Any]] = []
+
+    def track_metric(
+        self, metric_name: str, value: float, timestamp: Optional[datetime] = None
+    ) -> Optional[Dict[str, Any]]:
+        """Track a metric against the configured SLA target."""
+        timestamp = timestamp or datetime.now(timezone.utc)
+        measurement = {"metric": metric_name, "value": value, "timestamp": timestamp}
+        self.measurements.append(measurement)
+        if metric_name not in self.targets:
+            return None
+        target = self.targets[metric_name]
+        breached = value < target if metric_name == "availability" else value > target
+        if not breached:
+            return None
+        severity = (
+            ((target - value) / target) if metric_name == "availability" else ((value / target) - 1)
+        )
+        breach = {
+            "metric": metric_name,
+            "target": target,
+            "actual": value,
+            "breach_severity": severity,
+            "timestamp": timestamp,
+        }
+        self.breaches.append(breach)
+        return breach
+
+    def generate_sla_report(self) -> Dict[str, Any]:
+        """Generate an executive SLA report with breach and financial impact summaries."""
+        downtime_seconds = 0.0
+        for breach in self.breaches:
+            if breach["metric"] == "availability":
+                downtime_seconds += max(
+                    0.0, (breach["target"] - breach["actual"]) * 30 * 24 * 60 * 60
+                )
+        return {
+            "generated_at": datetime.now(timezone.utc).isoformat(),
+            "targets": self.targets,
+            "measurement_count": len(self.measurements),
+            "breach_count": len(self.breaches),
+            "breaches": self.breaches,
+            "estimated_downtime_seconds": downtime_seconds,
+            "estimated_revenue_impact": downtime_seconds * self.revenue_per_downtime_second,
+        }
