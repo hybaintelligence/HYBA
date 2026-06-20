@@ -1,3 +1,4 @@
+market 
 # QaaS/CIaaS Infrastructure Layer & Ecosystem Gap Analysis
 ## Missed Opportunities for Platform Extensibility & Third-Party Enablement
 
