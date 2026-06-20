@@ -1,5 +1,7 @@
 """Immune System - Autonomous Security and Inseparability Enforcement."""
 
+from __future__ import annotations
+
 import logging
 from typing import Dict, List, Any
 

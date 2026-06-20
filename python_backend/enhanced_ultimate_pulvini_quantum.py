@@ -3,6 +3,8 @@
 ENHANCED ULTIMATE PULVINI QUANTUM SYSTEM: HIGH-PERFORMANCE OPTIMIZATION
 """
 
+from __future__ import annotations
+
 import json
 
 

@@ -46,6 +46,8 @@ Implements:
 - Earth Mover's Distance for irreducibility
 """
 
+from __future__ import annotations
+
 import numpy as np
 from typing import List, Dict, Tuple, Set, Optional, Any
 from dataclasses import dataclass

@@ -1,5 +1,7 @@
 """Organism CNS Router - Unified Sensory, Immune, Cognitive, and Metabolic endpoints."""
 
+from __future__ import annotations
+
 from fastapi import APIRouter, Depends
 from .immune_schema import RealityAnchorReport, ImmuneStatus
 from .cognitive_schema import Conjecture, MetabolicFlux

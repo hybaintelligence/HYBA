@@ -6,6 +6,8 @@ This ensures the search space is traversed as a Golden Spiral,
 hitting the most 'curved' (high-probability) regions first.
 """
 
+from __future__ import annotations
+
 import numpy as np
 from typing import Optional, Tuple
 from dataclasses import dataclass

@@ -1,5 +1,7 @@
 """Cognitive and Metabolic schema models for the Organism CNS."""
 
+from __future__ import annotations
+
 from pydantic import BaseModel
 
 

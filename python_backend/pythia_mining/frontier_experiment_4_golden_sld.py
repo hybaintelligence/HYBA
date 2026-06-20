@@ -34,6 +34,8 @@ IMPLICATIONS IF PROVEN:
 - Diophantine approximation explains quantum measurement precision
 """
 
+from __future__ import annotations
+
 import numpy as np
 from typing import List, Tuple
 from dataclasses import dataclass

@@ -3,6 +3,8 @@ HYBA Genesis Platform - Data Models
 Complete API schemas and domain models
 """
 
+from __future__ import annotations
+
 from datetime import datetime, timezone
 from enum import Enum
 from typing import List, Optional, Tuple

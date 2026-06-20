@@ -6,6 +6,8 @@ Mass Gap Safety Gates, and Golden Spiral Exploration into a
 coherent Φ-Architecture execution flow.
 """
 
+from __future__ import annotations
+
 import time
 import json
 import numpy as np

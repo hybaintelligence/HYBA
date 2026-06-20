@@ -1,5 +1,7 @@
 """GenesisAI Service Registry for API Integration."""
 
+from __future__ import annotations
+
 from typing import Optional, Dict, Any, TYPE_CHECKING
 
 if TYPE_CHECKING:

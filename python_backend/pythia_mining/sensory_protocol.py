@@ -1,5 +1,7 @@
 """Sensory Protocol - Reality verification via Mass-Gap jitter analysis."""
 
+from __future__ import annotations
+
 import logging
 import random
 from datetime import datetime, timezone
