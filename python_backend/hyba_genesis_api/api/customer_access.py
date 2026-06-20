@@ -1,14 +1,22 @@
 """Customer access control plane for commercial QaaS and CIaaS APIs.
 
-Provides admin API-key issuance, hashed API-key authentication, tiered quotas,
+Provides admin API-key issuance, HMAC-SHA256 API-key authentication, tiered quotas,
 request/monthly compute-unit metering, and optional Redis-backed distributed
 counters/state via HYBA_REDIS_URL.
+
+Enterprise Security Model:
+- API keys are hashed using HMAC-SHA256 with a secret pepper (HYBA_API_KEY_SECRET)
+- Redis failures are logged with structured error context (never silently swallowed)
+- All exception paths include specific error types and observability hooks
 """
 
 from __future__ import annotations
 
 import hashlib
+import hmac
+import logging
 import os
+import secrets
 import threading
 import uuid
 from datetime import UTC, datetime
@@ -19,6 +27,8 @@ from pydantic import BaseModel, Field
 
 from hyba_genesis_api.api.admin import require_admin
 from hyba_genesis_api.auth.jwt_handler import TokenPayload
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/admin/customer-access", tags=["customer-access"])
 
@@ -81,7 +91,13 @@ class UsageMetrics(BaseModel):
 
 
 class _CustomerRegistry:
-    """Thread-safe registry for customer API keys and usage tracking."""
+    """Thread-safe registry for customer API keys and usage tracking.
+
+    Enterprise-grade security:
+    - HMAC-SHA256 for API key hashing with secret pepper
+    - Structured error logging for all Redis operations
+    - Explicit exception handling with observability
+    """
 
     def __init__(self) -> None:
         self._lock = threading.RLock()
@@ -90,8 +106,19 @@ class _CustomerRegistry:
         self._usage: Dict[str, UsageMetrics] = {}  # key_id -> UsageMetrics
         self._local_counters: Dict[str, Dict[str, int]] = {}  # customer_id -> {product: count}
 
+        # Load HMAC secret for API key hashing (required for enterprise security)
+        self._hmac_secret = os.getenv("HYBA_API_KEY_SECRET")
+        if not self._hmac_secret:
+            # Generate ephemeral secret for development (single-instance only)
+            self._hmac_secret = secrets.token_hex(32)
+            logger.warning(
+                "HYBA_API_KEY_SECRET not set; using ephemeral secret. "
+                "Set HYBA_API_KEY_SECRET in production for distributed deployments."
+            )
+
         # Optional Redis backing for distributed state
         self._redis_client: Optional[Any] = None
+        self._redis_available = False
         redis_url = os.getenv("HYBA_REDIS_URL")
         if redis_url:
             try:
@@ -99,11 +126,29 @@ class _CustomerRegistry:
 
                 self._redis_client = redis.from_url(redis_url, decode_responses=True)
                 self._redis_client.ping()
-            except Exception:
+                self._redis_available = True
+                logger.info("Redis connection established for distributed state")
+            except (ImportError, ConnectionError, TimeoutError) as e:
+                logger.error(
+                    "Redis initialization failed",
+                    extra={"error": str(e), "redis_url": redis_url},
+                )
                 self._redis_client = None
+                self._redis_available = False
 
     def _hash_api_key(self, api_key: str) -> str:
-        return hashlib.sha256(api_key.encode()).hexdigest()
+        """Hash API key using HMAC-SHA256 with secret pepper.
+
+        This is the enterprise standard for API key hashing:
+        - Prevents rainbow table attacks via secret pepper
+        - Fast enough for request-time authentication
+        - Used by Stripe, AWS, GitHub, etc.
+        """
+        return hmac.new(
+            self._hmac_secret.encode(),
+            api_key.encode(),
+            hashlib.sha256,
+        ).hexdigest()
 
     def issue_key(self, request: CustomerApiKeyIssueRequest) -> APIKeyResponse:
         with self._lock:
@@ -155,8 +200,16 @@ class _CustomerRegistry:
                         },
                     )
                     self._redis_client.set(f"api_key:{api_key_hash}", key_id)
-                except Exception:
-                    pass
+                except (ConnectionError, TimeoutError) as e:
+                    logger.error(
+                        "Redis write failed during API key issuance",
+                        extra={
+                            "key_id": key_id,
+                            "customer_id": customer.customer_id,
+                            "error": str(e),
+                        },
+                    )
+                    # Continue with in-memory state; Redis is best-effort distributed cache
 
             return APIKeyResponse(
                 api_key=raw_api_key,
@@ -190,8 +243,11 @@ class _CustomerRegistry:
                             created_at=customer_data["created_at"],
                             metadata={},
                         )
-            except Exception:
-                pass
+            except (ConnectionError, TimeoutError, ValueError, KeyError) as e:
+                logger.warning(
+                    "Redis read failed during authentication; falling back to in-memory state",
+                    extra={"error": str(e)},
+                )
 
         # Fallback to in-memory
         with self._lock:
@@ -245,8 +301,18 @@ class _CustomerRegistry:
                 try:
                     self._redis_client.hincrby(f"usage:{key_id}", "requests", request_cost)
                     self._redis_client.hincrby(f"usage:{key_id}", "compute", compute_cost)
-                except Exception:
-                    pass
+                except (ConnectionError, TimeoutError) as e:
+                    logger.error(
+                        "Redis usage increment failed",
+                        extra={
+                            "key_id": key_id,
+                            "request_cost": request_cost,
+                            "compute_cost": compute_cost,
+                            "error": str(e),
+                        },
+                    )
+                    # Critical: Usage tracking failure on metered platform
+                    # In-memory state is authoritative; log for reconciliation
 
             return usage
 
@@ -268,8 +334,11 @@ class _CustomerRegistry:
                         - int(usage_data.get("compute", 0)),
                         month=current_month,
                     )
-            except Exception:
-                pass
+            except (ConnectionError, TimeoutError, ValueError, KeyError) as e:
+                logger.warning(
+                    "Redis usage read failed; returning in-memory metrics",
+                    extra={"key_id": key_id, "error": str(e)},
+                )
 
         # Fallback to in-memory
         with self._lock:

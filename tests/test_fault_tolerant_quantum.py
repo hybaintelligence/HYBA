@@ -11,7 +11,7 @@ from pythia_mining.fault_tolerant_quantum_core import (
 )
 from pythia_mining.autonomous_fault_tolerant_controller import (
     FaultTolerantMiningController,
-    initialize_fault_tolerant_system
+    initialize_fault_tolerant_controller
 )
 
 
@@ -219,50 +219,44 @@ class TestController:
     """Test production controller"""
     
     def test_controller_initialization(self):
-        """Test controller loads config and evidence"""
+        """Test controller loads config and initializes"""
         controller = FaultTolerantMiningController()
         
-        assert controller.miner is not None
-        assert controller.evidence is not None
-        # Evidence contains phi_15 structure, not phi_resonance_rate
-        assert 'phi_15' in controller.evidence or len(controller.evidence) > 0
+        assert controller.core is not None
+        assert len(controller.core.logical_qubits) == controller.num_logical_qubits
     
     def test_start_autonomous_mining(self):
-        """Test autonomous mining startup"""
+        """Test fault-tolerant compute startup"""
         controller = FaultTolerantMiningController()
-        status = controller.start_autonomous_mining()
+        status = controller.start()
         
         assert status['status'] == 'active'
         assert controller.active is True
         assert status['fault_tolerant'] is True
-        assert 'empirical_evidence' in status
+        assert 'code_distance' in status
+        assert 'logical_error_rate' in status
     
-    def test_process_mining_job(self):
-        """Test mining job processing"""
+    def test_execute_workload(self):
+        """Test fault-tolerant workload execution"""
         controller = FaultTolerantMiningController()
-        controller.start_autonomous_mining()
+        controller.start()
         
-        job_data = {
-            'job_id': 'test_001',
-            'prev_hash': '0' * 64,
-            'coinbase': 'test',
-            'merkle_branches': [],
-            'version': '20000000',
-            'nbits': '1d00ffff',
-            'ntime': '5f4a5e5a'
-        }
+        result = controller.execute_workload(
+            workload_type="surface_code_cycle",
+            circuit_depth=5,
+            logical_qubits=[0, 1, 2]
+        )
         
-        result = controller.process_mining_job(job_data)
-        
-        assert result['job_id'] == 'test_001'
-        assert 'nonce' in result
-        assert 'logical_error_rate' in result
-        assert result['fault_tolerant'] is True
+        assert result['result']['workload_type'] == "surface_code_cycle"
+        assert result['result']['circuit_depth'] == 5
+        assert 'logical_error_rate' in result['fault_tolerance']
+        assert result['fault_tolerance']['fault_tolerant'] is True
     
     def test_error_correction_stats(self):
         """Test error correction statistics"""
         controller = FaultTolerantMiningController()
-        controller.start_autonomous_mining()
+        controller.start()
+        controller.execute_workload(circuit_depth=3)
         
         stats = controller.get_error_correction_stats()
         
@@ -274,12 +268,14 @@ class TestController:
     def test_stop(self):
         """Test controller shutdown"""
         controller = FaultTolerantMiningController()
-        controller.start_autonomous_mining()
+        controller.start()
+        controller.execute_workload(circuit_depth=2)
         
         final = controller.stop()
         
         assert final['status'] == 'stopped'
         assert controller.active is False
+        assert final['total_workloads'] >= 1
 
 
 if __name__ == '__main__':
