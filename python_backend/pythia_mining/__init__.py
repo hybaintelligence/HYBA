@@ -83,6 +83,17 @@ _MALLOC_EXPORTS = {
     "PhiMalloc",
 }
 
+_PYTHIA_AUTONOMOUS_MINING_EXPORTS = {
+    "HashVerifier",
+    "MiningChainState",
+    "PythiaAutonomousMiningAgent",
+    "PythiaMiningObservation",
+    "PythiaMiningPlan",
+    "PythiaPersistentMiningMemory",
+    "PythiaSearchSeed",
+    "ShareSubmitter",
+}
+
 _AUTONOMICS_EXPORTS = {
     "AutonomicOrchestrator",
     "BuresOptimizer",
@@ -167,6 +178,9 @@ def __getattr__(name: str) -> Any:
     if name in _AUTONOMICS_EXPORTS:
         pulvini_autonomics = import_module(".pulvini_autonomics", __name__)
         return getattr(pulvini_autonomics, name)
+    if name in _PYTHIA_AUTONOMOUS_MINING_EXPORTS:
+        module = import_module(".pythia_autonomous_mining_agent", __name__)
+        return getattr(module, name)
     if name in _ORCHESTRATOR_EXPORTS:
         module = import_module(".phi_core_orchestrator", __name__)
         return getattr(module, name)
@@ -199,4 +213,5 @@ __all__ = sorted(
     | _VM_EXPORTS
     | _JIT_EXPORTS
     | _MALLOC_EXPORTS
+    | _PYTHIA_AUTONOMOUS_MINING_EXPORTS
 )
