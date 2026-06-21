@@ -595,6 +595,45 @@ class TopologicalHolonomyEngine:
             "certificate": discrepancy["certificate"],
         }
 
+    def _generate_su2_element(self, lambda_param: float) -> np.ndarray:
+        """Generate SU(2) element for spectral analysis.
+
+        Creates a 2x2 unitary matrix representing an SU(2) link matrix
+        parameterized by λ. Used for Riemann-Gauge correspondence spectral probe.
+
+        Args:
+            lambda_param: Parameter value controlling the SU(2) element
+
+        Returns:
+            2x2 unitary matrix (SU(2) element)
+        """
+        # Create rotation angle from lambda parameter
+        theta = 2 * math.pi * lambda_param
+
+        # SU(2) rotation matrix using Pauli matrices
+        # U = exp(i * theta * n·σ/2)
+        c, s = math.cos(theta / 2), math.sin(theta / 2)
+
+        # Use different rotation axes based on lambda to create diversity
+        axis = int(lambda_param * 100) % 3
+
+        if axis == 0:
+            # Rotation around x-axis
+            U = np.array([[c, -1j * s], [-1j * s, c]], dtype=np.complex128)
+        elif axis == 1:
+            # Rotation around y-axis
+            U = np.array([[c, -s], [s, c]], dtype=np.complex128)
+        else:
+            # Rotation around z-axis
+            U = np.array(
+                [[np.exp(1j * theta / 2), 0], [0, np.exp(-1j * theta / 2)]],
+                dtype=np.complex128,
+            )
+
+        # Ensure unitarity via QR decomposition
+        q, r = np.linalg.qr(U)
+        return q
+
     def scan_chern_transition(
         self,
         lambda_start: float = 0.0,
