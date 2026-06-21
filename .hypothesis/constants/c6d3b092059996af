@@ -1,0 +1,4 @@
+# file: /Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/hyba_genesis_api/core/telemetry.py
+# hypothesis_version: 6.155.7
+
+[0.005, 0.05, 0.2, 1000.0, 500, 1000, 'OTEL_SERVICE_NAME', 'compute_units', 'duration_ms', 'endpoint', 'errors_total', 'http_status', 'hyba-genesis-api', 'hyba_errors_total', 'hyba_requests_total', 'last_request', 'method', 'opentelemetry', 'opentelemetry.sdk', 'path', 'product', 'quota', 'request_id', 'requests', 'requests_total', 'service.name', 'startup_time', 'status_code', 'tenant_hash', 'tier', 'x-request-id']

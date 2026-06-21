@@ -103,13 +103,15 @@ export function buildGovernanceSignals(input: GovernanceTelemetryInput): Governa
     {
       id: "claim-boundary",
       label: "Claim boundary",
-      status: tags.has("no_unattended_writes") || tags.has("salamander_regeneration") ? "pass" : "warn",
+      status: tags.has("no_unattended_writes") || tags.has("proposal_only") || tags.has("salamander_regeneration") ? "pass" : "warn",
       detail:
         tags.has("no_unattended_writes")
           ? "Reflexive intelligence is bounded by no-unattended-writes governance."
-          : tags.has("salamander_regeneration")
-            ? "Reflexive intelligence operates under Salamander regeneration protocol - autonomous fixing enabled."
-            : "No reflexive governance tag was reported; do not infer autonomous source modification.",
+          : tags.has("proposal_only")
+            ? "Reflexive intelligence operates under proposal-only governance - changes require explicit approval."
+            : tags.has("salamander_regeneration")
+              ? "Reflexive intelligence operates under Salamander regeneration protocol - autonomous fixing enabled."
+              : "No reflexive governance tag was reported; do not infer autonomous source modification.",
     },
     {
       id: "phi-evidence",

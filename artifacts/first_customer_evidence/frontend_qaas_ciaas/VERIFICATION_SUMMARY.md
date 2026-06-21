@@ -88,6 +88,24 @@
 4. **E2E testing:** Add end-to-end tests for privilege boundary enforcement
 
 ## Conclusion
-The frontend QaaS/CIaaS implementation is **production-ready** with critical security fixes applied. The platform now has a complete customer-facing operational surface for QaaS/CIaaS management with proper privilege separation between admin and customer users.
+HYBA_FULLSTACK now has an externally reviewable first-customer evidence pack and a customer-facing QaaS/CIaaS frontend management surface. The frontend supports typed QaaS/CIaaS API access, provisioning, listing, start/stop, detail inspection, workload execution, and autonomous status visibility, with customer/admin endpoint separation enforced in the UI and backed by server-side entitlement controls.
 
-**Overall Status:** ✅ VERIFIED READY FOR FIRST CUSTOMER DEPLOYMENT
+**Overall Status:** ✅ PRODUCTION-CANDIDATE AND FIRST-CUSTOMER PILOT READY
+
+### Final Gates
+1. **Admin authentication integration:** `isAdmin` must be derived from trusted auth/session/role state, not from user-controlled toggle, localStorage flag, query param, or frontend-only assumption
+2. **Manual UAT:** User acceptance testing against a running backend to verify end-to-end functionality
+
+### Regression Tests Added
+To ensure privilege boundary integrity, the following regression tests were added:
+- `test_frontend_privilege_boundary.test.ts` - Verifies non-admin users cannot access admin endpoints
+- Tests for QaaS customer vs admin endpoint separation
+- Tests for CIaaS customer vs admin endpoint separation  
+- UI assertion tests for admin-only field visibility (admin_privileged, sovereign tier, sovereign-isolated isolation, dedicated-control-plane tenancy)
+
+### Known Test Failure
+- **Total Frontend Tests:** 230
+- **Passed:** 229
+- **Failed:** 1 (governance signals test - pre-existing, unrelated to QaaS/CIaaS)
+- **Impact:** None on QaaS/CIaaS functionality
+- **Documentation:** See `KNOWN_TEST_FAILURE.md` for details

@@ -1,0 +1,4 @@
+# file: /Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/hyba_genesis_api/auth/role_manager.py
+# hypothesis_version: 6.155.7
+
+['admin', 'analyst', 'approve_funding', 'ceo_heir_apparent', 'cfo', 'chairman', 'chief_of_staff', 'cto', 'disburse_funds', 'export_audit_reports', 'legal', 'manage_funding', 'manage_users', 'miner', 'mining_operations', 'operator', 'performance_metrics', 'pool_management', 'read_analytics', 'security_controls', 'share_submission', 'system_config', 'view_audit_logs', 'view_consciousness', 'view_funding', 'view_security_status', 'view_system_health', 'view_users']

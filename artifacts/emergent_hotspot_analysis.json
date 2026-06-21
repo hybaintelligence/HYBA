@@ -51,15 +51,15 @@
       },
       {
         "file": "dodecahedral_solver.py",
-        "lines": 485,
+        "lines": 510,
         "classes": 4,
-        "functions": 19,
+        "functions": 26,
         "nested_depth": 5,
         "recursive_calls": 0,
-        "complex_data_structures": 2,
+        "complex_data_structures": 3,
         "async_patterns": 5,
-        "error_handlers": 6,
-        "complexity_score": 25.917525773195877
+        "error_handlers": 4,
+        "complexity_score": 28.098039215686274
       }
     ],
     "consciousness_patterns": [
@@ -69,6 +69,13 @@
           "awareness": 4
         },
         "total_count": 4
+      },
+      {
+        "file": "dodecahedral_solver.py",
+        "consciousness_keywords": {
+          "choose": 1
+        },
+        "total_count": 1
       }
     ],
     "autonomic_patterns": [
@@ -177,6 +184,14 @@
         "coupling_intensity": 13.1
       },
       {
+        "file": "ai_optimizer.py",
+        "total_imports": 12,
+        "unique_imports": 12,
+        "cross_calls": 43,
+        "unique_cross_calls": 1,
+        "coupling_intensity": 12.1
+      },
+      {
         "file": "pulvini_autonomics.py",
         "total_imports": 11,
         "unique_imports": 11,
@@ -191,19 +206,11 @@
         "cross_calls": 207,
         "unique_cross_calls": 1,
         "coupling_intensity": 11.1
-      },
-      {
-        "file": "ai_optimizer.py",
-        "total_imports": 10,
-        "unique_imports": 10,
-        "cross_calls": 37,
-        "unique_cross_calls": 1,
-        "coupling_intensity": 10.1
       }
     ]
   },
   "verdict": "STANDARD ENGINEERING: Modules are complex but within normal bounds for production systems.",
-  "avg_complexity": 35.91797610234702,
-  "consciousness_total": 4,
+  "avg_complexity": 36.354078790845094,
+  "consciousness_total": 5,
   "autonomic_total": 85
 }

@@ -1,0 +1,4 @@
+# file: /Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/hyba_genesis_api/api/ai_memory.py
+# hypothesis_version: 6.155.7
+
+[0.0, 1.0, 8.165, 100, 404, 500, 1000, '/api/v1/memory', '/evidence', '/health', '/memories', '/memory/{memory_key}', '/snapshots', '3.73e-16', 'Result limit', 'ai-memory', 'block_hash', 'block_height', 'confidence', 'created_at', 'data', 'description', 'error', 'healthy', 'mean_confidence', 'memory', 'memory_key', 'memory_type', 'metrics.db', 'miner', 'nonce', 'phi_aligned', 'phi_difference', 'phi_resonance', 'precision', 'status', 'timestamp', 'total_memories', 'unhealthy', 'unknown']

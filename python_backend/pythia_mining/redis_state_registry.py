@@ -250,7 +250,63 @@ class RedisQuantumSubstrateRegistry:
         Args:
             instance_id: Unique identifier for the compute instance
             tenant_id: Tenant/customer ID for metering
-            metrics: Execution metrics (defect_count, pairing_weight, circuit_depth)
+            metrics: Dict with defect_count, pairing_weight, circuit_depth
+
+        Returns:
+            Dict with computed compute_units and persistence status
+        """
+        defect_count = metrics.get("defect_count", 0)
+        pairing_weight = metrics.get("pairing_weight", 1.0)
+        circuit_depth = metrics.get("circuit_depth", 1)
+
+        compute_units = (defect_count * pairing_weight + 1.0) * circuit_depth
+
+        result = {
+            "compute_units": compute_units,
+            "persisted": False,
+            "tenant_id": tenant_id,
+            "instance_id": instance_id,
+        }
+
+        if not self.available:
+            return result
+
+        usage_key = f"quantum:usage:{tenant_id}:{instance_id}"
+        try:
+            pipe = self._client.pipeline()
+            pipe.hincrbyfloat(usage_key, "total_compute_units", compute_units)
+            pipe.hincrby(usage_key, "execution_count", 1)
+            pipe.hset(usage_key, "last_execution", json.dumps(metrics))
+            pipe.expire(usage_key, 2592000)  # 30d retention
+            pipe.execute()
+            result["persisted"] = True
+            logger.debug(
+                "Resource consumption recorded",
+                extra={
+                    "tenant_id": tenant_id,
+                    "instance_id": instance_id,
+                    "compute_units": compute_units,
+                },
+            )
+        except Exception as e:
+            logger.error(
+                "Failed to record consumption",
+                extra={"tenant_id": tenant_id, "instance_id": instance_id, "error": str(e)},
+            )
+
+        return result
+
+    def close(self) -> None:
+        """Close Redis connection gracefully."""
+        if self._client is not None:
+            try:
+                self._client.close()
+                logger.debug("Redis connection closed")
+            except Exception as e:
+                logger.warning(f"Error closing Redis connection: {e}")
+            finally:
+                self._client = None
+                self._available = False   metrics: Execution metrics (defect_count, pairing_weight, circuit_depth)
 
         Returns:
             Metering result with compute_units_drawn and status

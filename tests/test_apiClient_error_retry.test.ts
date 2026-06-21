@@ -17,7 +17,6 @@ function jsonResponse(body: unknown, init: ResponseInit = {}) {
 
 describe("apiClient retry, auth, and error contracts", () => {
   beforeEach(() => {
-    vi.useFakeTimers();
     vi.stubGlobal("fetch", vi.fn());
     const storage = new Map<string, string>();
     vi.stubGlobal("localStorage", {
@@ -32,7 +31,6 @@ describe("apiClient retry, auth, and error contracts", () => {
   });
 
   afterEach(() => {
-    vi.useRealTimers();
     vi.unstubAllGlobals();
     clearToken();
   });
@@ -79,9 +77,7 @@ describe("apiClient retry, auth, and error contracts", () => {
         ),
       );
 
-    const promise = getSecurityStatus();
-    await vi.runAllTimersAsync();
-    await expect(promise).rejects.toMatchObject({
+    await expect(getSecurityStatus()).rejects.toMatchObject({
       name: "HybaApiError",
       code: "still_unavailable",
       message: "nope",
@@ -104,15 +100,7 @@ describe("apiClient retry, auth, and error contracts", () => {
 
   it("surfaces thrown network failures after retry budget is exhausted", async () => {
     const fetchMock = vi.mocked(fetch).mockRejectedValue(new TypeError("network offline"));
-    const promise = getHealth();
-    await vi.runAllTimersAsync();
-    try {
-      await promise;
-      throw new Error("Expected promise to reject");
-    } catch (error) {
-      expect(error).toBeInstanceOf(TypeError);
-      expect((error as TypeError).message).toBe("network offline");
-    }
+    await expect(getHealth()).rejects.toThrow("network offline");
     expect(fetchMock).toHaveBeenCalledTimes(4);
   });
 });

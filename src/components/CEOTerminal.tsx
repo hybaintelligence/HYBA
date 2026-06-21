@@ -5,7 +5,7 @@
  * showing the transition from proposal-based to actual fixing capability.
  */
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   Terminal,
   Activity,
@@ -25,6 +25,9 @@ import {
   Trash2,
   Edit,
   FileText,
+  CheckSquare,
+  Square,
+  FileText as FileExport,
 } from "lucide-react";
 
 interface RegenerationEvent {
@@ -32,7 +35,7 @@ interface RegenerationEvent {
   timestamp: string;
   module_id: string;
   lane_id?: number;
-  event_type: "fault_detected" | "quarantine" | "blastema_formation" | "redifferentiation" | "recovery" | "failure" | "rejection";
+  event_type: "fault_detected" | "quarantine" | "blastema_formation" | "redifferentiation" | "recovery" | "failure" | "rejection" | "retry";
   severity: "low" | "medium" | "high" | "critical";
   status: "pending" | "in_progress" | "completed" | "failed" | "rejected";
   phi_score?: number;
@@ -46,6 +49,13 @@ interface RegenerationEvent {
   files_changed?: string[];
   rollback_possible?: boolean;
   approval_status?: "auto_approved" | "pending_approval" | "rejected" | "approved";
+  // PHASE 3: Verification and retry fields
+  verification_status?: "pending" | "passed" | "failed" | "timeout" | "skipped" | "error";
+  verification_passed?: boolean;
+  retry_count?: number;
+  retry_history?: any[];
+  ai_confidence_score?: number;
+  ai_explanation?: string;
 }
 
 interface CEOTerminalProps {
@@ -61,24 +71,97 @@ const CEOTerminal: React.FC<CEOTerminalProps> = ({
 }) => {
   const [events, setEvents] = useState<RegenerationEvent[]>([]);
   const [pendingApprovals, setPendingApprovals] = useState<RegenerationEvent[]>([]);
+  const [selectedEvents, setSelectedEvents] = useState<Set<string>>(new Set());
   const [isConnected, setIsConnected] = useState(false);
+  const [connectionStatus, setConnectionStatus] = useState<'connected' | 'disconnected' | 'reconnecting'>('disconnected');
   const [filter, setFilter] = useState<"all" | "ai_triggered" | "system" | "failures" | "pending">("all");
   const [expandedEvents, setExpandedEvents] = useState<Set<string>>(new Set());
   const terminalRef = useRef<HTMLDivElement>(null);
   const wsRef = useRef<WebSocket | null>(null);
+  const pollingRef = useRef<NodeJS.Timeout | null>(null);
+  const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const reconnectAttemptsRef = useRef(0);
 
-  // Connect to real API for regeneration events
-  useEffect(() => {
+  // PHASE 3: Advanced WebSocket connection with fallback
+  const connectWebSocket = useCallback(() => {
     if (!token) return;
 
-    const fetchRegenerationEvents = async () => {
+    const room = "ceo"; // Default room for CEO Terminal
+    const clientId = `ceo-${Date.now()}`;
+    const wsUrl = `ws://localhost:3001/api/security/regeneration/ws?room=${room}&client_id=${clientId}&token=${token}`;
+    
+    const ws = new WebSocket(wsUrl);
+    wsRef.current = ws;
+
+    ws.onopen = () => {
+      setConnectionStatus('connected');
+      setIsConnected(true);
+      reconnectAttemptsRef.current = 0;
+      console.log('✅ CEO Terminal WebSocket connected to room:', room);
+      
+      // Clear polling if it was active
+      if (pollingRef.current) {
+        clearInterval(pollingRef.current);
+        pollingRef.current = null;
+      }
+    };
+
+    ws.onmessage = (event) => {
+      try {
+        const message = JSON.parse(event.data);
+        
+        if (message.type === 'regeneration_event') {
+          const newEvent = message.event;
+          setEvents(prev => {
+            const updated = [newEvent, ...prev.filter(e => e.id !== newEvent.id)];
+            return updated.slice(0, maxEvents);
+          });
+          
+          if (newEvent.approval_status === 'pending_approval') {
+            setPendingApprovals(prev => {
+              const updated = [newEvent, ...prev.filter(e => e.id !== newEvent.id)];
+              return updated;
+            });
+          }
+        } else if (message.type === 'connection_established') {
+          console.log(`Connected to room: ${message.room} as client: ${message.client_id}`);
+        } else if (message.type === 'initial_state') {
+          if (message.events && Array.isArray(message.events)) {
+            setEvents(message.events);
+          }
+          if (message.pending_approvals && Array.isArray(message.pending_approvals)) {
+            setPendingApprovals(message.pending_approvals);
+          }
+        }
+      } catch (e) {
+        console.error('Failed to parse WebSocket message:', e);
+      }
+    };
+
+    ws.onclose = () => {
+      setConnectionStatus('disconnected');
+      setIsConnected(false);
+      console.log('WebSocket closed. Starting polling fallback...');
+      startPollingFallback();
+      scheduleReconnect();
+    };
+
+    ws.onerror = (error) => {
+      console.error('WebSocket error:', error);
+      setConnectionStatus('disconnected');
+    };
+  }, [token, maxEvents]);
+
+  const startPollingFallback = useCallback(() => {
+    if (pollingRef.current) return;
+    
+    pollingRef.current = setInterval(async () => {
       try {
         const response = await fetch("/api/security/regeneration/events?limit=100&include_pending=true", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
-
         if (response.ok) {
           const data = await response.json();
           if (data.events && Array.isArray(data.events)) {
@@ -87,27 +170,55 @@ const CEOTerminal: React.FC<CEOTerminalProps> = ({
           if (data.pending_approvals && Array.isArray(data.pending_approvals)) {
             setPendingApprovals(data.pending_approvals);
           }
-          setIsConnected(true);
         }
-      } catch (error) {
-        console.error("Failed to fetch regeneration events:", error);
-        setIsConnected(false);
+      } catch (e) {
+        console.error('Polling fallback failed:', e);
       }
-    };
+    }, 3000);
+  }, [token]);
 
-    // Initial fetch
-    fetchRegenerationEvents();
+  const scheduleReconnect = useCallback(() => {
+    if (reconnectTimeoutRef.current) return;
+    
+    const backoffDelay = Math.min(1000 * Math.pow(2, reconnectAttemptsRef.current), 30000);
+    reconnectAttemptsRef.current++;
+    
+    console.log(`Scheduling reconnect in ${backoffDelay}ms (attempt ${reconnectAttemptsRef.current})`);
+    
+    reconnectTimeoutRef.current = setTimeout(() => {
+      reconnectTimeoutRef.current = null;
+      setConnectionStatus('reconnecting');
+      connectWebSocket();
+    }, backoffDelay);
+  }, [connectWebSocket]);
 
-    // Poll for updates every 3 seconds
-    const interval = setInterval(fetchRegenerationEvents, 3000);
+  // Heartbeat
+  useEffect(() => {
+    const heartbeat = setInterval(() => {
+      if (wsRef.current?.readyState === WebSocket.OPEN) {
+        wsRef.current.send('ping');
+      }
+    }, 15000);
 
+    return () => clearInterval(heartbeat);
+  }, []);
+
+  // Initial connection
+  useEffect(() => {
+    connectWebSocket();
+    
     return () => {
-      clearInterval(interval);
       if (wsRef.current) {
         wsRef.current.close();
       }
+      if (pollingRef.current) {
+        clearInterval(pollingRef.current);
+      }
+      if (reconnectTimeoutRef.current) {
+        clearTimeout(reconnectTimeoutRef.current);
+      }
     };
-  }, [token, maxEvents]);
+  }, [connectWebSocket]);
 
   // PHASE 2: Approval action handlers
   const handleApproval = async (eventId: string, action: "approve" | "reject" | "edit", editedParameters?: Record<string, any>) => {
@@ -145,6 +256,113 @@ const CEOTerminal: React.FC<CEOTerminalProps> = ({
       }
     } catch (error) {
       console.error("Failed to handle approval:", error);
+    }
+  };
+
+  // PHASE 3: Bulk approval handler
+  const handleBulkApproval = async (action: "approve" | "reject") => {
+    const eventIds = Array.from(selectedEvents);
+    if (eventIds.length === 0) return;
+
+    try {
+      const response = await fetch("/api/security/regeneration/bulk_approve", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          event_ids: eventIds,
+          action,
+        }),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        // Refresh the events after bulk approval
+        const eventsResponse = await fetch("/api/security/regeneration/events?limit=100&include_pending=true", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (eventsResponse.ok) {
+          const data = await eventsResponse.json();
+          if (data.events && Array.isArray(data.events)) {
+            setEvents(data.events);
+          }
+          if (data.pending_approvals && Array.isArray(data.pending_approvals)) {
+            setPendingApprovals(data.pending_approvals);
+          }
+        }
+        // Clear selection
+        setSelectedEvents(new Set());
+      }
+    } catch (error) {
+      console.error("Failed to handle bulk approval:", error);
+    }
+  };
+
+  // PHASE 3: Toggle event selection for bulk actions
+  const toggleEventSelection = (eventId: string) => {
+    const newSelection = new Set(selectedEvents);
+    if (newSelection.has(eventId)) {
+      newSelection.delete(eventId);
+    } else {
+      newSelection.add(eventId);
+    }
+    setSelectedEvents(newSelection);
+  };
+
+  // PHASE 3: Select all pending events
+  const selectAllPending = () => {
+    const pendingIds = pendingApprovals.map(e => e.id);
+    setSelectedEvents(new Set(pendingIds));
+  };
+
+  // PHASE 3: Clear selection
+  const clearSelection = () => {
+    setSelectedEvents(new Set());
+  };
+
+  // PHASE 3: Audit trail export
+  const exportAuditTrail = async (format: "json" | "pdf") => {
+    const logs = events.map(e => ({
+      id: e.id,
+      timestamp: e.timestamp,
+      module_id: e.module_id,
+      event_type: e.event_type,
+      severity: e.severity,
+      status: e.status,
+      message: e.message,
+      ai_triggered: e.ai_triggered,
+      impact_score: e.impact_score,
+      files_changed: e.files_changed,
+      rollback_possible: e.rollback_possible,
+      approval_status: e.approval_status,
+      verification_status: e.verification_status,
+      verification_passed: e.verification_passed,
+      retry_count: e.retry_count,
+      details: e.details,
+    }));
+    
+    if (format === "json") {
+      const blob = new Blob([JSON.stringify(logs, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `regeneration_audit_trail_${Date.now()}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } else if (format === "pdf") {
+      // For PDF, we'll export as JSON for now with a note
+      // In production, this would use a PDF generation library
+      const blob = new Blob([JSON.stringify(logs, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `regeneration_audit_trail_${Date.now()}.json`; // PDF export placeholder
+      a.click();
+      URL.revokeObjectURL(url);
     }
   };
 
@@ -237,6 +455,11 @@ const CEOTerminal: React.FC<CEOTerminalProps> = ({
         "Regeneration proposal declined - manual intervention required",
         "Autonomous fix blocked by executive override",
       ],
+      retry: [
+        "Follow-up regeneration attempt initiated",
+        "Self-healing retry triggered after verification failure",
+        "Regeneration retry with enriched failure context",
+      ],
     };
 
     const eventMessages = messages[eventType];
@@ -251,6 +474,11 @@ const CEOTerminal: React.FC<CEOTerminalProps> = ({
     if (event.event_type === "fault_detected") return <AlertTriangle className="w-4 h-4 text-yellow-500" />;
     if (event.event_type === "recovery") return <HeartPulse className="w-4 h-4 text-green-500" />;
     if (event.event_type === "blastema_formation") return <Zap className="w-4 h-4 text-purple-500" />;
+    if (event.event_type === "retry") return <RefreshCw className="w-4 h-4 text-orange-500" />;
+    // PHASE 3: Verification status icons
+    if (event.verification_status === "passed") return <CheckCircle className="w-4 h-4 text-green-500" />;
+    if (event.verification_status === "failed") return <XCircle className="w-4 h-4 text-red-500" />;
+    if (event.verification_status === "timeout") return <Clock className="w-4 h-4 text-yellow-500" />;
     if (event.ai_triggered) return <Brain className="w-4 h-4 text-blue-500" />;
     return <Activity className="w-4 h-4 text-slate-500" />;
   };
@@ -338,10 +566,18 @@ const CEOTerminal: React.FC<CEOTerminalProps> = ({
             <Terminal className="w-5 h-5 text-purple-400" />
             <h3 className="text-lg font-semibold text-white">CEO Terminal</h3>
             <div className={`flex items-center gap-2 px-2 py-1 rounded text-xs ${
-              isConnected ? "bg-green-500/20 text-green-400" : "bg-red-500/20 text-red-400"
+              connectionStatus === 'connected' ? "bg-green-500/20 text-green-400" :
+              connectionStatus === 'reconnecting' ? "bg-yellow-500/20 text-yellow-400" :
+              "bg-red-500/20 text-red-400"
             }`}>
-              <div className={`w-2 h-2 rounded-full ${isConnected ? "bg-green-400" : "bg-red-400"} ${isConnected ? "animate-pulse" : ""}`} />
-              {isConnected ? "Live" : "Disconnected"}
+              <div className={`w-2 h-2 rounded-full ${
+                connectionStatus === 'connected' ? "bg-green-400" :
+                connectionStatus === 'reconnecting' ? "bg-yellow-400 animate-pulse" :
+                "bg-red-400"
+              }`} />
+              {connectionStatus === 'connected' ? "Live • WebSocket" :
+               connectionStatus === 'reconnecting' ? "Reconnecting..." :
+               "Disconnected • Polling"}
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -410,8 +646,53 @@ const CEOTerminal: React.FC<CEOTerminalProps> = ({
         <div className="flex items-center gap-2">
           <Filter className="w-4 h-4 text-slate-400" />
           <span className="text-xs text-slate-400">Showing {filteredEvents.length} events</span>
+          {selectedEvents.size > 0 && (
+            <span className="text-xs text-purple-400 font-medium">{selectedEvents.size} selected</span>
+          )}
         </div>
         <div className="flex items-center gap-2">
+          {/* PHASE 3: Bulk approval buttons */}
+          {filter === "pending" && selectedEvents.size > 0 && (
+            <>
+              <button
+                onClick={() => handleBulkApproval("approve")}
+                className="flex items-center gap-1 px-3 py-1 bg-green-600 hover:bg-green-700 rounded text-xs text-white transition-colors"
+              >
+                <CheckCircle className="w-3 h-3" />
+                Approve All ({selectedEvents.size})
+              </button>
+              <button
+                onClick={() => handleBulkApproval("reject")}
+                className="flex items-center gap-1 px-3 py-1 bg-red-600 hover:bg-red-700 rounded text-xs text-white transition-colors"
+              >
+                <XCircle className="w-3 h-3" />
+                Reject All ({selectedEvents.size})
+              </button>
+              <button
+                onClick={clearSelection}
+                className="flex items-center gap-1 px-3 py-1 bg-slate-600 hover:bg-slate-700 rounded text-xs text-white transition-colors"
+              >
+                Clear Selection
+              </button>
+            </>
+          )}
+          {filter === "pending" && selectedEvents.size === 0 && pendingApprovals.length > 0 && (
+            <button
+              onClick={selectAllPending}
+              className="flex items-center gap-1 px-3 py-1 bg-purple-600 hover:bg-purple-700 rounded text-xs text-white transition-colors"
+            >
+              <CheckSquare className="w-3 h-3" />
+              Select All ({pendingApprovals.length})
+            </button>
+          )}
+          {/* PHASE 3: Audit trail export */}
+          <button
+            onClick={() => exportAuditTrail("json")}
+            className="flex items-center gap-1 px-3 py-1 bg-slate-700 hover:bg-slate-600 rounded text-xs text-slate-300 transition-colors"
+          >
+            <FileExport className="w-3 h-3" />
+            Audit Trail
+          </button>
           <button
             onClick={exportLogs}
             className="flex items-center gap-1 px-3 py-1 bg-slate-700 hover:bg-slate-600 rounded text-xs text-slate-300 transition-colors"
@@ -453,6 +734,22 @@ const CEOTerminal: React.FC<CEOTerminalProps> = ({
                 onClick={() => toggleExpand(event.id)}
               >
                 <div className="flex items-center gap-3">
+                  {/* PHASE 3: Checkbox for bulk selection */}
+                  {event.approval_status === "pending_approval" && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleEventSelection(event.id);
+                      }}
+                      className="flex-shrink-0"
+                    >
+                      {selectedEvents.has(event.id) ? (
+                        <CheckSquare className="w-4 h-4 text-purple-400" />
+                      ) : (
+                        <Square className="w-4 h-4 text-slate-500" />
+                      )}
+                    </button>
+                  )}
                   {getEventIcon(event)}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
@@ -470,6 +767,22 @@ const CEOTerminal: React.FC<CEOTerminalProps> = ({
                       {event.approval_status === "pending_approval" && (
                         <span className="text-xs font-medium px-2 py-0.5 rounded bg-yellow-500/20 text-yellow-400">
                           PENDING APPROVAL
+                        </span>
+                      )}
+                      {/* PHASE 3: Verification status badge */}
+                      {event.verification_status && (
+                        <span className={`text-xs font-medium px-2 py-0.5 rounded ${
+                          event.verification_status === "passed" ? "bg-green-500/20 text-green-400" :
+                          event.verification_status === "failed" ? "bg-red-500/20 text-red-400" :
+                          event.verification_status === "timeout" ? "bg-yellow-500/20 text-yellow-400" :
+                          "bg-slate-500/20 text-slate-400"
+                        }`}>
+                          VERIFICATION: {event.verification_status.toUpperCase()}
+                        </span>
+                      )}
+                      {event.retry_count && event.retry_count > 0 && (
+                        <span className="text-xs font-medium px-2 py-0.5 rounded bg-orange-500/20 text-orange-400">
+                          RETRY #{event.retry_count}
                         </span>
                       )}
                     </div>
@@ -542,6 +855,32 @@ const CEOTerminal: React.FC<CEOTerminalProps> = ({
                         </span>
                       </div>
                     )}
+                    {/* PHASE 3: Verification status details */}
+                    {event.verification_status && (
+                      <div>
+                        <span className="text-slate-500">Verification Status:</span>
+                        <span className={`ml-2 ${
+                          event.verification_status === "passed" ? "text-green-400" :
+                          event.verification_status === "failed" ? "text-red-400" :
+                          "text-slate-400"
+                        }`}>
+                          {event.verification_status}
+                        </span>
+                      </div>
+                    )}
+                    {event.retry_count !== undefined && event.retry_count > 0 && (
+                      <div>
+                        <span className="text-slate-500">Retry Count:</span>
+                        <span className="ml-2 text-slate-300">{event.retry_count}</span>
+                      </div>
+                    )}
+                    {/* PHASE 3: AI confidence score */}
+                    {event.ai_confidence_score !== undefined && (
+                      <div>
+                        <span className="text-slate-500">AI Confidence:</span>
+                        <span className="ml-2 text-slate-300">{(event.ai_confidence_score * 100).toFixed(1)}%</span>
+                      </div>
+                    )}
                   </div>
                   
                   {/* PHASE 2: Approval buttons for pending regenerations */}
@@ -583,6 +922,29 @@ const CEOTerminal: React.FC<CEOTerminalProps> = ({
                           </li>
                         ))}
                       </ul>
+                    </div>
+                  )}
+                  
+                  {/* PHASE 3: AI explanation display */}
+                  {event.ai_explanation && expandedEvents.has(event.id) && (
+                    <div className="mt-3 p-2 bg-slate-900 rounded">
+                      <div className="text-xs text-slate-500 mb-1">AI Explanation:</div>
+                      <p className="text-xs text-slate-400">{event.ai_explanation}</p>
+                    </div>
+                  )}
+                  
+                  {/* PHASE 3: Retry history display */}
+                  {event.retry_history && event.retry_history.length > 0 && expandedEvents.has(event.id) && (
+                    <div className="mt-3 p-2 bg-slate-900 rounded">
+                      <div className="text-xs text-slate-500 mb-1">Retry History:</div>
+                      <div className="text-xs text-slate-400 space-y-2">
+                        {event.retry_history.map((retry, idx) => (
+                          <div key={idx} className="border-l-2 border-orange-500 pl-2">
+                            <div className="font-medium">Attempt #{retry.retry_count}</div>
+                            <div className="text-slate-500">{retry.timestamp}</div>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   )}
                   
