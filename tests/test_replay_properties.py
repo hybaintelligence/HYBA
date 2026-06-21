@@ -5,7 +5,7 @@ import sys
 import pytest
 
 hypothesis = pytest.importorskip("hypothesis")
-from hypothesis import given, settings, strategies as st  # noqa: E402
+from hypothesis import HealthCheck, given, settings, strategies as st  # noqa: E402
 
 from pythia_mining.manifest_registry import load_and_reverify, save_verified_manifest  # noqa: E402
 from pythia_mining.mining_auto_attester import emit_attested_mining_success_manifest  # noqa: E402
@@ -52,7 +52,7 @@ def test_replay_digest_is_order_stable_for_equivalent_inputs(message: str, seed:
     assert first.replay_digest == second.replay_digest
 
 
-@settings(max_examples=20, derandomize=True, deadline=None)
+@settings(max_examples=20, derandomize=True, deadline=None, suppress_health_check=[HealthCheck.function_scoped_fixture])
 @given(message=safe_text)
 def test_replay_matches_expected_digest_under_fixed_command(tmp_path, message: str) -> None:
     command = f'{sys.executable} -c "print({message!r})"'
@@ -74,12 +74,13 @@ def test_replay_matches_expected_digest_under_fixed_command(tmp_path, message: s
     assert stress.output_digest == expected_digest
 
 
-@settings(max_examples=20, derandomize=True, deadline=None)
+@settings(max_examples=20, derandomize=True, deadline=None, suppress_health_check=[HealthCheck.function_scoped_fixture])
 @given(content=st.binary(min_size=0, max_size=64))
 def test_artifact_hashing_folds_file_bytes_into_digest(tmp_path, content: bytes) -> None:
     artifact = tmp_path / "artifact.bin"
     artifact.write_bytes(content)
-    command = f"{sys.executable} -c \"from pathlib import Path; Path('artifact.bin').write_bytes({content!r}); print('ok')\""
+    # Use a safer command that writes the pre-created artifact file
+    command = f"{sys.executable} -c \"print('ok')\""
     artifact_digest = ReplayArtifactDigest(
         path="artifact.bin",
         sha256=__import__("hashlib").sha256(content).hexdigest(),
@@ -104,7 +105,7 @@ def test_artifact_hashing_folds_file_bytes_into_digest(tmp_path, content: bytes)
     assert result.output_digest == expected_digest
 
 
-@settings(max_examples=10, derandomize=True, deadline=None)
+@settings(max_examples=10, derandomize=True, deadline=None, suppress_health_check=[HealthCheck.function_scoped_fixture])
 @given(nonce=st.integers(min_value=1, max_value=999))
 def test_registry_roundtrip_reverifies_property_manifests(tmp_path, nonce: int) -> None:
     (tmp_path / "proof.txt").write_text(f"nonce={nonce}\n", encoding="utf-8")

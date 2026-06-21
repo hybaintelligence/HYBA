@@ -35,7 +35,7 @@ interface RegenerationEvent {
   timestamp: string;
   module_id: string;
   lane_id?: number;
-  event_type: "fault_detected" | "quarantine" | "blastema_formation" | "redifferentiation" | "recovery" | "failure" | "rejection" | "retry";
+  event_type: "fault_detected" | "quarantine" | "blastema_formation" | "redifferentiation" | "recovery" | "failure" | "rejection" | "retry" | "multi_step_regeneration" | "agent_update" | "regeneration_step";
   severity: "low" | "medium" | "high" | "critical";
   status: "pending" | "in_progress" | "completed" | "failed" | "rejected";
   phi_score?: number;
@@ -56,6 +56,29 @@ interface RegenerationEvent {
   retry_history?: any[];
   ai_confidence_score?: number;
   ai_explanation?: string;
+  // PHASE 5: Multi-agent fields
+  regeneration_id?: string;
+  steps?: Array<{
+    step: string;
+    status: string;
+    agent: string;
+    data: any;
+    confidence: number;
+    explanation: string;
+    execution_time_ms: number;
+    timestamp: number;
+  }>;
+  specialist_results?: Record<string, any>;
+  diagnosis?: any;
+  plan?: any;
+  verification?: any;
+  execution?: any;
+  agent?: string;
+  agent_result?: {
+    status: string;
+    confidence: number;
+    explanation: string;
+  };
 }
 
 interface CEOTerminalProps {
@@ -446,19 +469,35 @@ const CEOTerminal: React.FC<CEOTerminalProps> = ({
         "Regeneration cycle completed",
       ],
       failure: [
-        "Regeneration failed - entering retry protocol",
-        "Insufficient innervation for regeneration",
-        "Malformed collapse detected - requarantine required",
+        "Regeneration failed - module remains in quarantined state",
+        "Regeneration protocol unsuccessful - escalation required",
+        "Critical failure in regeneration process",
       ],
       rejection: [
         "AI-triggered regeneration rejected by human operator",
         "Regeneration proposal declined - manual intervention required",
-        "Autonomous fix blocked by executive override",
+        "AI fix rejected - alternative approach needed",
       ],
       retry: [
-        "Follow-up regeneration attempt initiated",
-        "Self-healing retry triggered after verification failure",
-        "Regeneration retry with enriched failure context",
+        "Verification failed - initiating self-healing retry",
+        "Automatic retry triggered with enriched failure context",
+        "Regeneration retry attempt in progress",
+      ],
+      // PHASE 5: Multi-agent event types
+      multi_step_regeneration: [
+        "Multi-step regeneration initiated with hierarchical agent coordination",
+        "Orchestrator coordinating specialist agents for complex regeneration",
+        "Hierarchical multi-agent pipeline activated",
+      ],
+      agent_update: [
+        "Agent activity update received",
+        "Specialist agent reporting progress",
+        "Agent coordination event",
+      ],
+      regeneration_step: [
+        "Regeneration pipeline step completed",
+        "Multi-step regeneration milestone reached",
+        "Pipeline stage update",
       ],
     };
 
