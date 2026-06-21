@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Activity,
   AlertCircle,
+  Atom,
   BarChart3,
   CheckCircle2,
   Clock,
@@ -28,6 +29,7 @@ import {
   UserPlus,
   Wifi,
   WifiOff,
+  Brain,
 } from "lucide-react";
 
 import {
@@ -60,6 +62,8 @@ import MiningJobsSection from "./components/MiningJobsSection";
 import HistoricalDataSection from "./components/HistoricalDataSection";
 import AnalyticsSection from "./components/AnalyticsSection";
 import CustomerPortal from "./components/CustomerPortal";
+import CIaaSServiceManager from "./components/CIaaSServiceManager";
+import QaaSComputerManager from "./components/QaaSComputerManager";
 import { useApiRequest } from "./hooks/useApiRequest";
 import { useLatencyMetrics } from "./hooks/useLatencyMetrics";
 import { buildGovernanceSignals, type GovernanceSignal } from "./governance";
@@ -193,7 +197,7 @@ function AppContent() {
   const [selectedPoolForConfig, setSelectedPoolForConfig] = useState<PoolInfo | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [currentView, setCurrentView] = useState<
-    "dashboard" | "admin" | "executive" | "jobs" | "history" | "analytics" | "portal"
+    "dashboard" | "admin" | "executive" | "jobs" | "history" | "analytics" | "portal" | "ciaas" | "qaas"
   >("dashboard");
 
   const { execute: fetchTelemetryExecute } = useApiRequest(fetchTelemetryData, { maxRetries: 3 });

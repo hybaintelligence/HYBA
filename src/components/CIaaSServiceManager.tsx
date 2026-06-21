@@ -1,0 +1,343 @@
+import React, { useState, useEffect } from "react";
+import {
+  Plus,
+  Play,
+  Square,
+  Cpu,
+  Shield,
+  Activity,
+  ChevronRight,
+  RefreshCw,
+  AlertCircle,
+} from "lucide-react";
+import {
+  ServiceResponse,
+  ServiceState,
+  ServiceTier,
+  TenancyMode,
+  WorkloadKind,
+  ProvisionComputationalIntelligenceRequest,
+  listCIAASServices,
+  getCIAASService,
+  startCIAASService,
+  stopCIAASService,
+  getCIAASAutonomousStatus,
+} from "../apiClient";
+
+interface CIaaSServiceManagerProps {
+  token: string | null;
+}
+
+export default function CIaaSServiceManager({ token }: CIaaSServiceManagerProps) {
+  const [services, setServices] = useState<ServiceResponse[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedService, setSelectedService] = useState<ServiceResponse | null>(null);
+  const [showProvisionModal, setShowProvisionModal] = useState(false);
+  const [provisionForm, setProvisionForm] = useState<ProvisionComputationalIntelligenceRequest>({
+    name: "",
+    service_tier: "developer",
+    tenancy: "single-tenant",
+    code_distance: 7,
+    logical_compute_units: 32,
+    physical_error_rate: 0.001,
+    max_workloads_per_minute: 60,
+    max_context_bytes: 64000,
+    admin_privileged: false,
+    data_residency: "us",
+    allowed_workloads: ["explain", "orchestrate", "counterfactual", "governance_audit", "substrate_health"],
+  });
+
+  const fetchServices = async () => {
+    if (!token) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await listCIAASServices();
+      setServices(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to fetch CIaaS services");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchServices();
+  }, [token]);
+
+  const handleStart = async (serviceId: string) => {
+    try {
+      await startCIAASService(serviceId);
+      await fetchServices();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to start service");
+    }
+  };
+
+  const handleStop = async (serviceId: string) => {
+    try {
+      await stopCIAASService(serviceId);
+      await fetchServices();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to stop service");
+    }
+  };
+
+  const handleProvision = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!token) return;
+    try {
+      const { provisionCIAASService } = await import("../apiClient");
+      await provisionCIAASService(provisionForm);
+      setShowProvisionModal(false);
+      await fetchServices();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to provision service");
+    }
+  };
+
+  const getStateColor = (state: ServiceState) => {
+    switch (state) {
+      case "running":
+        return "text-emerald-600 bg-emerald-50 border-emerald-200";
+      case "stopped":
+        return "text-slate-600 bg-slate-50 border-slate-200";
+      case "provisioned":
+        return "text-blue-600 bg-blue-50 border-blue-200";
+      default:
+        return "text-slate-600 bg-slate-50 border-slate-200";
+    }
+  };
+
+  const getTierColor = (tier: ServiceTier) => {
+    switch (tier) {
+      case "sovereign":
+        return "text-purple-600 bg-purple-50 border-purple-200";
+      case "production":
+        return "text-blue-600 bg-blue-50 border-blue-200";
+      case "developer":
+        return "text-slate-600 bg-slate-50 border-slate-200";
+      default:
+        return "text-slate-600 bg-slate-50 border-slate-200";
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold text-slate-900">CIaaS Services</h2>
+          <p className="text-sm text-slate-600">
+            Computational Intelligence as a Service - Manage virtual intelligence computers
+          </p>
+        </div>
+        <button
+          onClick={() => setShowProvisionModal(true)}
+          className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+        >
+          <Plus className="h-4 w-4" />
+          Provision Service
+        </button>
+      </div>
+
+      {error && (
+        <div className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 p-4 text-red-800">
+          <AlertCircle className="h-5 w-5" />
+          <span>{error}</span>
+        </div>
+      )}
+
+      {loading ? (
+        <div className="flex items-center justify-center py-12">
+          <RefreshCw className="h-8 w-8 animate-spin text-slate-400" />
+        </div>
+      ) : services.length === 0 ? (
+        <div className="rounded-lg border border-dashed border-slate-300 p-12 text-center">
+          <Cpu className="mx-auto h-12 w-12 text-slate-400" />
+          <p className="mt-4 text-slate-600">No CIaaS services provisioned</p>
+          <button
+            onClick={() => setShowProvisionModal(true)}
+            className="mt-4 text-blue-600 hover:text-blue-700"
+          >
+            Provision your first service
+          </button>
+        </div>
+      ) : (
+        <div className="grid gap-4">
+          {services.map((service) => (
+            <div
+              key={service.service_id}
+              className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm"
+            >
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <div className="flex items-center gap-3">
+                    <h3 className="text-lg font-semibold text-slate-900">{service.name}</h3>
+                    <span
+                      className={`rounded-full border px-2.5 py-1 text-xs font-medium ${getStateColor(service.state)}`}
+                    >
+                      {service.state.toUpperCase()}
+                    </span>
+                    <span
+                      className={`rounded-full border px-2.5 py-1 text-xs font-medium ${getTierColor(service.service_tier)}`}
+                    >
+                      {service.service_tier.toUpperCase()}
+                    </span>
+                  </div>
+                  <div className="mt-2 grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <span className="text-slate-600">Service ID:</span>
+                      <span className="ml-2 font-mono text-slate-900">{service.service_id}</span>
+                    </div>
+                    <div>
+                      <span className="text-slate-600">Owner:</span>
+                      <span className="ml-2 font-mono text-slate-900">{service.owner}</span>
+                    </div>
+                    <div>
+                      <span className="text-slate-600">Tenancy:</span>
+                      <span className="ml-2 font-mono text-slate-900">{service.tenancy}</span>
+                    </div>
+                    <div>
+                      <span className="text-slate-600">Created:</span>
+                      <span className="ml-2 font-mono text-slate-900">
+                        {new Date(service.created_at).toLocaleString()}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  {service.state === "stopped" || service.state === "provisioned" ? (
+                    <button
+                      onClick={() => handleStart(service.service_id)}
+                      className="flex items-center gap-1 rounded-lg bg-emerald-600 px-3 py-2 text-white hover:bg-emerald-700"
+                    >
+                      <Play className="h-4 w-4" />
+                      Start
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => handleStop(service.service_id)}
+                      className="flex items-center gap-1 rounded-lg bg-slate-600 px-3 py-2 text-white hover:bg-slate-700"
+                    >
+                      <Square className="h-4 w-4" />
+                      Stop
+                    </button>
+                  )}
+                  <button
+                    onClick={() => setSelectedService(service)}
+                    className="flex items-center gap-1 rounded-lg border border-slate-300 px-3 py-2 text-slate-700 hover:bg-slate-50"
+                  >
+                    Details
+                    <ChevronRight className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {showProvisionModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="w-full max-w-2xl rounded-lg bg-white p-6 shadow-xl">
+            <h3 className="mb-4 text-xl font-bold text-slate-900">Provision CIaaS Service</h3>
+            <form onSubmit={handleProvision} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700">Service Name</label>
+                <input
+                  type="text"
+                  required
+                  value={provisionForm.name}
+                  onChange={(e) => setProvisionForm({ ...provisionForm, name: e.target.value })}
+                  className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
+                  placeholder="my-ciaas-service"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700">Service Tier</label>
+                  <select
+                    value={provisionForm.service_tier}
+                    onChange={(e) =>
+                      setProvisionForm({
+                        ...provisionForm,
+                        service_tier: e.target.value as ServiceTier,
+                      })
+                    }
+                    className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
+                  >
+                    <option value="developer">Developer</option>
+                    <option value="production">Production</option>
+                    <option value="sovereign">Sovereign</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700">Tenancy Mode</label>
+                  <select
+                    value={provisionForm.tenancy}
+                    onChange={(e) =>
+                      setProvisionForm({ ...provisionForm, tenancy: e.target.value as TenancyMode })
+                    }
+                    className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
+                  >
+                    <option value="single-tenant">Single Tenant</option>
+                    <option value="dedicated-control-plane">Dedicated Control Plane</option>
+                    <option value="sovereign-isolated">Sovereign Isolated</option>
+                  </select>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700">Code Distance</label>
+                  <input
+                    type="number"
+                    min="3"
+                    max="31"
+                    step="2"
+                    value={provisionForm.code_distance}
+                    onChange={(e) =>
+                      setProvisionForm({ ...provisionForm, code_distance: parseInt(e.target.value) })
+                    }
+                    className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700">Logical Compute Units</label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="512"
+                    value={provisionForm.logical_compute_units}
+                    onChange={(e) =>
+                      setProvisionForm({
+                        ...provisionForm,
+                        logical_compute_units: parseInt(e.target.value),
+                      })
+                    }
+                    className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
+                  />
+                </div>
+              </div>
+              <div className="flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowProvisionModal(false)}
+                  className="rounded-lg border border-slate-300 px-4 py-2 text-slate-700 hover:bg-slate-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+                >
+                  Provision Service
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

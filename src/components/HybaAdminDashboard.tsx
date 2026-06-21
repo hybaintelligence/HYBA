@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import AIAssistant from "./AIAssistant";
+import CEOTerminal from "./CEOTerminal";
 import { HilbertSpaceVisualizer } from "./HilbertSpaceVisualizer";
 import { useAuth } from "./AuthProvider";
 import {
@@ -56,6 +57,7 @@ import {
   Layers,
   Info,
   AlertTriangle,
+  Terminal,
 } from "lucide-react";
 import {
   getAdminStats,
@@ -157,7 +159,8 @@ type AdminView =
   | "network"
   | "quantum"
   | "mining"
-  | "security";
+  | "security"
+  | "ceo_terminal";
 
 function HybaAdminDashboard({
   token,
@@ -465,6 +468,12 @@ function HybaAdminDashboard({
               </>
             )}
             <NavButton
+              icon={<Terminal className="h-4 w-4" />}
+              label="CEO Terminal"
+              active={currentView === "ceo_terminal"}
+              onClick={() => setCurrentView("ceo_terminal")}
+            />
+            <NavButton
               icon={<History className="h-4 w-4" />}
               label="Audit Log"
               active={currentView === "audit"}
@@ -583,6 +592,9 @@ function HybaAdminDashboard({
         )}
         {currentView === "security" && isExecutive && (
           <SecurityView onFeedback={showFeedback} aiInsights={aiInsights} />
+        )}
+        {currentView === "ceo_terminal" && (
+          <CEOTerminal token={token} />
         )}
 
         {/* AI Assistant Panel */}

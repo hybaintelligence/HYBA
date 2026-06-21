@@ -968,6 +968,75 @@ async def mining_status():
     }
 
 
+@router.post("/start", dependencies=[Depends(require_mining_control)])
+async def start_mining(
+    request: Request,
+    idempotency_key: Optional[str] = Header(None, alias="Idempotency-Key"),
+):
+    """Start the PYTHIA mining daemon.
+
+    This starts the mining daemon process. The pool must already be connected
+    via POST /api/mining/connect before calling this endpoint.
+    """
+    request_id = _request_id(request)
+    parameters = {"active_pool": _ACTIVE_CONNECTION.get("pool_id") if _ACTIVE_CONNECTION else None}
+    idem = _idempotency_key(request, idempotency_key, "start", parameters)
+    tracked = mining_request_tracker.create_request("start", parameters, idem)
+    if tracked.status == RequestStatus.COMPLETED and tracked.result:
+        return tracked.result
+    if tracked.status == RequestStatus.PROCESSING:
+        return {"status": "processing", "request_id": tracked.request_id, "idempotency_key": idem}
+    _admit_midas_control(request_id)
+    mining_request_tracker.update_request_status(tracked.request_id, RequestStatus.PROCESSING)
+    try:
+        if _ACTIVE_CONNECTION is None:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail={
+                    "error": "mining_not_connected",
+                    "message": "Connect to a pool before starting the daemon.",
+                },
+            )
+        capacity = _ACTIVE_CONNECTION.get("capacity_ehs") or _ACTIVE_CONNECTION.get("base_capacity_ehs")
+        daemon_status = start_pythia_daemon(capacity_ehs=capacity)
+        state = get_pythia_state() or {}
+        state["midas_state"] = "running"
+        state["daemon_started_at"] = datetime.now(timezone.utc).isoformat()
+        _write_state(state)
+        result = {
+            "status": "started",
+            "request_id": request_id,
+            "tracked_request_id": tracked.request_id,
+            "idempotency_key": idem,
+            "daemon": daemon_status,
+            "connection": _redacted_connection(_ACTIVE_CONNECTION),
+            "midas_state": midas_state_machine.get_state().value,
+        }
+        mining_request_tracker.update_request_status(
+            tracked.request_id, RequestStatus.COMPLETED, result=result
+        )
+        return result
+    except HTTPException as exc:
+        mining_request_tracker.update_request_status(
+            tracked.request_id, RequestStatus.FAILED, error=str(exc.detail)
+        )
+        raise
+    except (RuntimeError, StateTransitionError) as exc:
+        mining_request_tracker.update_request_status(
+            tracked.request_id, RequestStatus.FAILED, error=str(exc)
+        )
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail={
+                "error": "mining_start_failed",
+                "detail": str(exc),
+                "request_id": request_id,
+            },
+        ) from exc
+    finally:
+        midas_backpressure_guard.release()
+
+
 @router.post("/pause", dependencies=[Depends(require_mining_control)])
 async def pause_mining(
     request: Request,

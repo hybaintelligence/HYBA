@@ -103,7 +103,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({
         timestamp: new Date().toISOString(),
       };
 
-      // Call intelligence fabric endpoint
+      // Call intelligence fabric endpoint with Salamander regeneration capability
       const response = await fetch("/api/intelligence/query", {
         method: "POST",
         headers: {
@@ -114,6 +114,8 @@ const AIAssistant: React.FC<AIAssistantProps> = ({
           query: userMessage,
           context: JSON.stringify(context),
           substrates: ["manifold", "consciousness", "quantum"],
+          enable_regeneration: true, // Enable Salamander-style regeneration
+          auto_fix: true, // Allow AI to trigger actual fixes instead of just proposals
         }),
       });
 
@@ -135,6 +137,11 @@ const AIAssistant: React.FC<AIAssistantProps> = ({
         },
       };
       setMessages((prev) => [...prev, assistantMsg]);
+
+      // Execute regeneration actions if triggered by AI
+      if (result.regeneration_action && onCommand) {
+        onCommand(result.regeneration_action);
+      }
 
       // Execute any commands if suggested
       if (result.suggested_action && onCommand) {

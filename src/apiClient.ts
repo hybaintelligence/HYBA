@@ -1045,6 +1045,167 @@ export interface FundingSummary {
   timestamp: string;
 }
 
+// ── CIaaS (Computational Intelligence as a Service) Types ─────────────────
+
+export type ServiceState = "provisioned" | "running" | "stopped";
+export type ServiceTier = "developer" | "production" | "sovereign";
+export type TenancyMode = "single-tenant" | "dedicated-control-plane" | "sovereign-isolated";
+export type WorkloadKind =
+  | "explain"
+  | "orchestrate"
+  | "counterfactual"
+  | "governance_audit"
+  | "substrate_health";
+
+export interface ProvisionComputationalIntelligenceRequest {
+  name: string;
+  service_tier: ServiceTier;
+  tenancy: TenancyMode;
+  code_distance: number;
+  logical_compute_units: number;
+  physical_error_rate: number;
+  max_workloads_per_minute: number;
+  max_context_bytes: number;
+  admin_privileged: boolean;
+  data_residency: string;
+  allowed_workloads: WorkloadKind[];
+}
+
+export interface CustomerProvisionComputationalIntelligenceRequest {
+  name: string;
+  service_tier: ServiceTier;
+  tenancy: TenancyMode;
+  code_distance: number;
+  logical_compute_units: number;
+  physical_error_rate: number;
+  max_workloads_per_minute: number;
+  max_context_bytes: number;
+  data_residency: string;
+  allowed_workloads: WorkloadKind[];
+}
+
+export interface IntelligenceWorkloadRequest {
+  workload_type: WorkloadKind;
+  context: Record<string, unknown>;
+  substrates?: Array<"penrose_or" | "iit_4" | "deutsch">;
+  idempotency_key?: string;
+}
+
+export interface ServiceResponse {
+  service_id: string;
+  name: string;
+  state: ServiceState;
+  service_tier: ServiceTier;
+  tenancy: TenancyMode;
+  admin_privileged: boolean;
+  owner: string;
+  created_at: string;
+  updated_at: string;
+  commercial_policy: Record<string, unknown>;
+  fault_tolerance: Record<string, unknown>;
+  substrate: Record<string, unknown>;
+  evidence_seal: string;
+}
+
+export interface PublicServiceResponse {
+  service_id: string;
+  name: string;
+  state: ServiceState;
+  service_tier: ServiceTier;
+  tenancy: TenancyMode;
+  owner: string;
+  created_at: string;
+  updated_at: string;
+  commercial_policy: Record<string, unknown>;
+  fault_tolerance: Record<string, unknown>;
+  substrate: Record<string, unknown>;
+  evidence_seal: string;
+}
+
+// ── QaaS (Quantum as a Service) Types ───────────────────────────────────────
+
+export type ComputerState = "provisioned" | "running" | "stopped";
+export type QaaSTier = "developer" | "production" | "sovereign";
+export type IsolationMode = "single-tenant" | "dedicated-control-plane" | "sovereign-isolated";
+export type QuantumOperation =
+  | "surface_code_cycle"
+  | "phi_resonance_analysis"
+  | "state_vector_summary"
+  | "substrate_orchestration"
+  | "governance_audit";
+
+export interface ProvisionFaultTolerantComputerRequest {
+  name: string;
+  tier: QaaSTier;
+  isolation: IsolationMode;
+  code_distance: number;
+  logical_qubits: number;
+  physical_error_rate: number;
+  phi_resonance_target: number;
+  max_circuit_depth: number;
+  max_shots: number;
+  admin_privileged: boolean;
+  data_residency: string;
+  allowed_operations: QuantumOperation[];
+}
+
+export interface CustomerProvisionFaultTolerantComputerRequest {
+  name: string;
+  tier: QaaSTier;
+  isolation: IsolationMode;
+  code_distance: number;
+  logical_qubits: number;
+  physical_error_rate: number;
+  phi_resonance_target: number;
+  max_circuit_depth: number;
+  max_shots: number;
+  data_residency: string;
+  allowed_operations: QuantumOperation[];
+}
+
+export interface QuantumWorkloadRequest {
+  operation: QuantumOperation;
+  logical_qubits: number[];
+  circuit_depth: number;
+  shots: number;
+  context: Record<string, unknown>;
+  substrates?: Array<"penrose_or" | "iit_4" | "deutsch">;
+  idempotency_key?: string;
+}
+
+export interface FaultTolerantComputerResponse {
+  computer_id: string;
+  name: string;
+  state: ComputerState;
+  tier: QaaSTier;
+  isolation: IsolationMode;
+  admin_privileged: boolean;
+  owner: string;
+  created_at: string;
+  updated_at: string;
+  quantum_parameters: Record<string, unknown>;
+  fault_tolerance: Record<string, unknown>;
+  substrate: Record<string, unknown>;
+  evidence_seal: string;
+  claim_boundary: string;
+}
+
+export interface PublicComputerResponse {
+  computer_id: string;
+  name: string;
+  state: ComputerState;
+  tier: QaaSTier;
+  isolation: IsolationMode;
+  owner: string;
+  created_at: string;
+  updated_at: string;
+  quantum_parameters: Record<string, unknown>;
+  fault_tolerance: Record<string, unknown>;
+  substrate: Record<string, unknown>;
+  evidence_seal: string;
+  claim_boundary: string;
+}
+
 // ── Constants ──────────────────────────────────────────────────────────────
 
 const BACKEND_URL = "/api";
@@ -2316,6 +2477,158 @@ export async function getStreamingStats(): Promise<StreamingStats> {
 /** GET /api/v1/streaming/channels — List streaming channels */
 export async function listStreamingChannels(): Promise<{ channels: StreamingChannelInfo[] }> {
   return get<{ channels: StreamingChannelInfo[] }>("/v1/streaming/channels");
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  CIaaS (COMPUTATIONAL INTELLIGENCE AS A SERVICE) ENDPOINTS
+// ═══════════════════════════════════════════════════════════════════════════
+
+/** POST /api/admin/computational-intelligence-services — Provision CIaaS service (admin) */
+export async function provisionCIAASService(
+  request: ProvisionComputationalIntelligenceRequest,
+): Promise<ServiceResponse> {
+  return post<ServiceResponse>("/admin/computational-intelligence-services", request);
+}
+
+/** POST /api/v1/computational-intelligence-services — Provision CIaaS service (customer) */
+export async function provisionCustomerCIAASService(
+  request: CustomerProvisionComputationalIntelligenceRequest,
+): Promise<PublicServiceResponse> {
+  return post<PublicServiceResponse>("/v1/computational-intelligence-services", request);
+}
+
+/** GET /api/admin/computational-intelligence-services — List CIaaS services (admin) */
+export async function listCIAASServices(): Promise<ServiceResponse[]> {
+  return get<ServiceResponse[]>("/admin/computational-intelligence-services");
+}
+
+/** GET /api/v1/computational-intelligence-services — List CIaaS services (customer) */
+export async function listCustomerCIAASServices(): Promise<PublicServiceResponse[]> {
+  return get<PublicServiceResponse[]>("/v1/computational-intelligence-services");
+}
+
+/** GET /api/admin/computational-intelligence-services/{service_id} — Get CIaaS service (admin) */
+export async function getCIAASService(serviceId: string): Promise<ServiceResponse> {
+  return get<ServiceResponse>(`/admin/computational-intelligence-services/${serviceId}`);
+}
+
+/** GET /api/v1/computational-intelligence-services/{service_id} — Get CIaaS service (customer) */
+export async function getCustomerCIAASService(serviceId: string): Promise<PublicServiceResponse> {
+  return get<PublicServiceResponse>(`/v1/computational-intelligence-services/${serviceId}`);
+}
+
+/** POST /api/admin/computational-intelligence-services/{service_id}/start — Start CIaaS service */
+export async function startCIAASService(serviceId: string): Promise<ServiceResponse> {
+  return post<ServiceResponse>(`/admin/computational-intelligence-services/${serviceId}/start`, {});
+}
+
+/** POST /api/admin/computational-intelligence-services/{service_id}/stop — Stop CIaaS service */
+export async function stopCIAASService(serviceId: string): Promise<ServiceResponse> {
+  return post<ServiceResponse>(`/admin/computational-intelligence-services/${serviceId}/stop`, {});
+}
+
+/** POST /api/admin/computational-intelligence-services/{service_id}/workloads — Execute workload */
+export async function executeCIAASWorkload(
+  serviceId: string,
+  request: IntelligenceWorkloadRequest,
+): Promise<Record<string, unknown>> {
+  return post<Record<string, unknown>>(
+    `/admin/computational-intelligence-services/${serviceId}/workloads`,
+    request,
+  );
+}
+
+/** POST /api/v1/computational-intelligence-services/{service_id}/workloads — Execute workload (customer) */
+export async function executeCustomerCIAASWorkload(
+  serviceId: string,
+  request: IntelligenceWorkloadRequest,
+): Promise<Record<string, unknown>> {
+  return post<Record<string, unknown>>(
+    `/v1/computational-intelligence-services/${serviceId}/workloads`,
+    request,
+  );
+}
+
+/** GET /api/admin/computational-intelligence-services/{service_id}/autonomous — Get autonomous status */
+export async function getCIAASAutonomousStatus(serviceId: string): Promise<Record<string, unknown>> {
+  return get<Record<string, unknown>>(
+    `/admin/computational-intelligence-services/${serviceId}/autonomous`,
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  QaaS (QUANTUM AS A SERVICE) ENDPOINTS
+// ═══════════════════════════════════════════════════════════════════════════
+
+/** POST /api/admin/fault-tolerant-computers — Provision QaaS computer (admin) */
+export async function provisionQaaSComputer(
+  request: ProvisionFaultTolerantComputerRequest,
+): Promise<FaultTolerantComputerResponse> {
+  return post<FaultTolerantComputerResponse>("/admin/fault-tolerant-computers", request);
+}
+
+/** POST /api/v1/fault-tolerant-computers — Provision QaaS computer (customer) */
+export async function provisionCustomerQaaSComputer(
+  request: CustomerProvisionFaultTolerantComputerRequest,
+): Promise<PublicComputerResponse> {
+  return post<PublicComputerResponse>("/v1/fault-tolerant-computers", request);
+}
+
+/** GET /api/admin/fault-tolerant-computers — List QaaS computers (admin) */
+export async function listQaaSComputers(): Promise<FaultTolerantComputerResponse[]> {
+  return get<FaultTolerantComputerResponse[]>("/admin/fault-tolerant-computers");
+}
+
+/** GET /api/v1/fault-tolerant-computers — List QaaS computers (customer) */
+export async function listCustomerQaaSComputers(): Promise<PublicComputerResponse[]> {
+  return get<PublicComputerResponse[]>("/v1/fault-tolerant-computers");
+}
+
+/** GET /api/admin/fault-tolerant-computers/{computer_id} — Get QaaS computer (admin) */
+export async function getQaaSComputer(computerId: string): Promise<FaultTolerantComputerResponse> {
+  return get<FaultTolerantComputerResponse>(`/admin/fault-tolerant-computers/${computerId}`);
+}
+
+/** GET /api/v1/fault-tolerant-computers/{computer_id} — Get QaaS computer (customer) */
+export async function getCustomerQaaSComputer(computerId: string): Promise<PublicComputerResponse> {
+  return get<PublicComputerResponse>(`/v1/fault-tolerant-computers/${computerId}`);
+}
+
+/** POST /api/admin/fault-tolerant-computers/{computer_id}/start — Start QaaS computer */
+export async function startQaaSComputer(computerId: string): Promise<FaultTolerantComputerResponse> {
+  return post<FaultTolerantComputerResponse>(`/admin/fault-tolerant-computers/${computerId}/start`, {});
+}
+
+/** POST /api/admin/fault-tolerant-computers/{computer_id}/stop — Stop QaaS computer */
+export async function stopQaaSComputer(computerId: string): Promise<FaultTolerantComputerResponse> {
+  return post<FaultTolerantComputerResponse>(`/admin/fault-tolerant-computers/${computerId}/stop`, {});
+}
+
+/** POST /api/admin/fault-tolerant-computers/{computer_id}/execute — Execute quantum workload */
+export async function executeQaaSWorkload(
+  computerId: string,
+  request: QuantumWorkloadRequest,
+): Promise<Record<string, unknown>> {
+  return post<Record<string, unknown>>(
+    `/admin/fault-tolerant-computers/${computerId}/execute`,
+    request,
+  );
+}
+
+/** POST /api/v1/fault-tolerant-computers/{computer_id}/execute — Execute quantum workload (customer) */
+export async function executeCustomerQaaSWorkload(
+  computerId: string,
+  request: QuantumWorkloadRequest,
+): Promise<Record<string, unknown>> {
+  return post<Record<string, unknown>>(
+    `/v1/fault-tolerant-computers/${computerId}/execute`,
+    request,
+  );
+}
+
+/** GET /api/admin/fault-tolerant-computers/{computer_id}/autonomous — Get autonomous status */
+export async function getQAASAutonomousStatus(computerId: string): Promise<Record<string, unknown>> {
+  return get<Record<string, unknown>>(`/admin/fault-tolerant-computers/${computerId}/autonomous`);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
