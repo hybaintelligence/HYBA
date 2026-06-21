@@ -232,3 +232,50 @@ def test_causal_integration_maps_negative_and_error_inputs_to_zero() -> None:
         "pitfalls_curriculum",
     }
     assert "mapped to [0,1]" in telemetry.score_domain_policy
+
+
+def test_reproducibility_attestation_is_order_stable_and_boundary_limited() -> None:
+    from pythia_mining.scientific_rigor_kernel import build_reproducibility_attestation
+
+    first = build_reproducibility_attestation(
+        "runtime_integration_proxy_not_consciousness_claim",
+        {"metrics": {"phi": 0.5, "channels": ["a", "b"]}, "version": 1},
+        ["PYTHONPATH=python_backend pytest tests/test_scientific_rigor_kernel.py -q"],
+        seeds={"numpy": 42, "python_hash_seed": 0},
+        dependency_pins={"python": "3.12"},
+        boundary="Local deterministic replay only; not phenomenal consciousness or external validation.",
+    )
+    second = build_reproducibility_attestation(
+        "runtime_integration_proxy_not_consciousness_claim",
+        {"version": 1, "metrics": {"channels": ["a", "b"], "phi": 0.5}},
+        ["PYTHONPATH=python_backend pytest tests/test_scientific_rigor_kernel.py -q"],
+        seeds={"python_hash_seed": 0, "numpy": 42},
+        dependency_pins={"python": "3.12"},
+        boundary="Local deterministic replay only; not phenomenal consciousness or external validation.",
+    )
+
+    assert first.reproducible is True
+    assert first.input_digest == second.input_digest
+    assert first.replay_digest == second.replay_digest
+    assert "not phenomenal consciousness" in first.boundary
+    assert "Digest mismatch" in first.falsification_route
+
+
+def test_reproducibility_attestation_changes_when_seed_changes() -> None:
+    from pythia_mining.scientific_rigor_kernel import build_reproducibility_attestation
+
+    baseline = build_reproducibility_attestation(
+        "phi_scaling_bounded",
+        {"sample": [1, 2, 3]},
+        ["pytest hyba_intelligence_tests/test_phi_scaling_engine.py -q"],
+        seeds={"numpy": 42},
+    )
+    changed = build_reproducibility_attestation(
+        "phi_scaling_bounded",
+        {"sample": [1, 2, 3]},
+        ["pytest hyba_intelligence_tests/test_phi_scaling_engine.py -q"],
+        seeds={"numpy": 43},
+    )
+
+    assert baseline.input_digest == changed.input_digest
+    assert baseline.replay_digest != changed.replay_digest

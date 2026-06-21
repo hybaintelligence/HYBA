@@ -1,0 +1,59 @@
+{
+  "claim": {
+    "boundaries": [
+      "Local deterministic replay only; not pool-side accepted-share evidence.",
+      "No guaranteed mining revenue, pool hashrate, or external validation claim.",
+      "No phenomenal consciousness or subjective-experience claim."
+    ],
+    "boundary": "Local deterministic replay only; not pool-side accepted-share evidence. No guaranteed mining revenue, pool hashrate, or external validation claim. No phenomenal consciousness or subjective-experience claim.",
+    "claim": "Example local nonce replay emits deterministic proof artifact.",
+    "commands": [
+      "python -c \"import os; from pathlib import Path; nonce=os.environ['PYTHIA_REPLAY_SEED_NONCE']; Path('nonce_proof.txt').write_text('nonce=' + nonce + chr(10)); print('nonce-ok')\""
+    ],
+    "falsification_routes": [
+      {
+        "expected": "mutated replay must diverge from expected_output_digest",
+        "name": "seed_mutation_negative_control",
+        "seed_overrides": {
+          "nonce": 43
+        },
+        "type": "seed_override"
+      }
+    ],
+    "id": "example_nonce_replay",
+    "reproducibility_attestation": {
+      "boundary": "Local deterministic replay only; not pool-side accepted-share evidence. No guaranteed mining revenue, pool hashrate, or external validation claim. No phenomenal consciousness or subjective-experience claim.",
+      "claim_id": "example_nonce_replay",
+      "commands": [
+        "python -c \"import os; from pathlib import Path; nonce=os.environ['PYTHIA_REPLAY_SEED_NONCE']; Path('nonce_proof.txt').write_text('nonce=' + nonce + chr(10)); print('nonce-ok')\""
+      ],
+      "dependency_pins": {
+        "python": "3.12.*"
+      },
+      "environment": {
+        "platform": "Linux-6.12.47-x86_64-with-glibc2.39",
+        "python_version": "3.12.13"
+      },
+      "expected_output_digest": "6305a8dce2897dc87106f6b808ab394b9027347f55e709651a1bdf6100933d3e",
+      "falsification_route": "Digest mismatch, missing replay command, changed seed/dependency pin, or boundary violation invalidates this local reproducibility attestation.",
+      "input_digest": "d1d976eb22c47617b7ac343d40d38d72631bb44af79d60a0a9253173e1b12121",
+      "inputs": {
+        "block_height": 1,
+        "nonce": 42
+      },
+      "produced_artifacts": [
+        "nonce_proof.txt"
+      ],
+      "protocol": "PYTHIA_MINING_SCIENTIFIC_RIGOR_KERNEL_V4",
+      "replay_digest": "3f9a6141db44b95675982b1760b3d65fffbb2285888c6fe8a88430210911d1aa",
+      "reproducible": true,
+      "seeds": {
+        "nonce": 42,
+        "python_hash_seed": 0
+      }
+    },
+    "status": "implemented_and_executable",
+    "tier": "PROTOTYPE_VALIDATED"
+  },
+  "schema": "HYBA_AUTO_ATTESTED_MINING_MANIFEST_V1"
+}

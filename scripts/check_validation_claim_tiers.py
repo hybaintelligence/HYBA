@@ -6,6 +6,7 @@ slides, emails, and exports must be evidence-bound before distribution.  The
 parser is deliberately small and dependency-free so it can run in CI before the
 normal application dependency graph is installed.
 """
+
 from __future__ import annotations
 
 import json
@@ -14,6 +15,10 @@ from pathlib import Path
 from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "python_backend"))
+
+from pythia_mining.scientific_rigor_kernel import build_reproducibility_attestation
+
 ALLOWED_TIERS = {"FORMALISM_VALIDATED", "PROTOTYPE_VALIDATED", "HYPOTHETICAL"}
 BOOLEAN_TRUE = {"true", "yes", "1"}
 EXPORT_SUFFIXES = {".pptx", ".pdf", ".docx", ".eml", ".html"}
@@ -33,6 +38,16 @@ REQUIRED_TEMPLATE_KEYS = {
 }
 
 REQUIRED_EXTERNAL_KEYS = REQUIRED_TEMPLATE_KEYS | {"distribution_boundary"}
+REQUIRED_ATTESTATION_KEYS = {
+    "claim_id",
+    "commands",
+    "produced_artifacts",
+    "input_digest",
+    "replay_digest",
+    "seeds",
+    "dependency_pins",
+    "boundary",
+}
 
 
 def parse_frontmatter(path: Path) -> dict[str, str]:
@@ -60,7 +75,9 @@ def _load_manifest(evidence_file: str, source_path: Path) -> dict[str, Any]:
     try:
         return json.loads(evidence.read_text(encoding="utf-8"))
     except json.JSONDecodeError as exc:
-        raise AssertionError(f"{source_path}: evidence manifest is not valid JSON: {evidence_file}") from exc
+        raise AssertionError(
+            f"{source_path}: evidence manifest is not valid JSON: {evidence_file}"
+        ) from exc
 
 
 def _claim_index(manifest: dict[str, Any]) -> dict[str, dict[str, Any]]:
@@ -75,7 +92,9 @@ def _validate_required_fields(path: Path, fields: dict[str, str], required: set[
         raise AssertionError(f"{path}: invalid tier {fields['tier']!r}")
 
 
-def _validate_manifest_binding(path: Path, fields: dict[str, str], *, require_tier_match: bool) -> None:
+def _validate_manifest_binding(
+    path: Path, fields: dict[str, str], *, require_tier_match: bool
+) -> None:
     manifest = _load_manifest(fields["evidence_file"], path)
     claims = _claim_index(manifest)
     claim_id = fields["evidence_claim_id"]
@@ -85,7 +104,9 @@ def _validate_manifest_binding(path: Path, fields: dict[str, str], *, require_ti
     manifest_tier = manifest_claim.get("tier")
     if require_tier_match:
         if manifest_tier not in ALLOWED_TIERS:
-            raise AssertionError(f"{path}: manifest claim {claim_id!r} must declare one of {sorted(ALLOWED_TIERS)}")
+            raise AssertionError(
+                f"{path}: manifest claim {claim_id!r} must declare one of {sorted(ALLOWED_TIERS)}"
+            )
         if fields["tier"] != manifest_tier:
             raise AssertionError(
                 f"{path}: claim tier {fields['tier']!r} does not match manifest tier {manifest_tier!r} for {claim_id!r}"
@@ -99,7 +120,67 @@ def _validate_manifest_binding(path: Path, fields: dict[str, str], *, require_ti
         or manifest_claim.get("commands")
     )
     if not reproduction:
-        raise AssertionError(f"{path}: manifest claim {claim_id!r} must include commands, reproduction_command, or required_to_promote")
+        raise AssertionError(
+            f"{path}: manifest claim {claim_id!r} must include commands, reproduction_command, or required_to_promote"
+        )
+    _validate_reproducibility_attestation(path, claim_id, manifest_claim)
+
+
+def _validate_reproducibility_attestation(
+    source_path: Path, claim_id: str, manifest_claim: dict[str, Any]
+) -> None:
+    """Require explicit attestations to verify against the deterministic builder.
+
+    Manifests may omit attestations while older evidence is being migrated. Once
+    a claim declares a reproducibility_attestation, however, the evidence gate
+    treats it as binding and rejects missing keys, command drift, boundary drift,
+    seed/pin drift, or digest tampering.
+    """
+
+    attestation = manifest_claim.get("reproducibility_attestation")
+    if attestation is None:
+        return
+    if not isinstance(attestation, dict):
+        raise AssertionError(
+            f"{source_path}: manifest claim {claim_id!r} reproducibility_attestation must be an object"
+        )
+    missing = REQUIRED_ATTESTATION_KEYS - set(attestation)
+    if missing:
+        raise AssertionError(
+            f"{source_path}: manifest claim {claim_id!r} reproducibility_attestation missing keys {sorted(missing)}"
+        )
+    commands = manifest_claim.get("commands") or manifest_claim.get("reproduction_command") or []
+    if isinstance(commands, str):
+        commands = [commands]
+    expected = build_reproducibility_attestation(
+        claim_id=claim_id,
+        inputs=attestation.get("inputs", {}),
+        commands=commands,
+        seeds=attestation.get("seeds", {}),
+        dependency_pins=attestation.get("dependency_pins", {}),
+        produced_artifacts=attestation.get("produced_artifacts", ()),
+        boundary=str(attestation.get("boundary", "")),
+    )
+    if attestation["claim_id"] != claim_id:
+        raise AssertionError(
+            f"{source_path}: manifest claim {claim_id!r} attestation claim_id mismatch"
+        )
+    if tuple(attestation["commands"]) != expected.commands:
+        raise AssertionError(
+            f"{source_path}: manifest claim {claim_id!r} attestation commands do not match manifest commands"
+        )
+    if attestation["input_digest"] != expected.input_digest:
+        raise AssertionError(
+            f"{source_path}: manifest claim {claim_id!r} attestation input_digest mismatch"
+        )
+    if attestation["replay_digest"] != expected.replay_digest:
+        raise AssertionError(
+            f"{source_path}: manifest claim {claim_id!r} attestation replay_digest mismatch"
+        )
+    if not expected.reproducible:
+        raise AssertionError(
+            f"{source_path}: manifest claim {claim_id!r} attestation is not locally reproducible"
+        )
 
 
 def _external_distribution_requested(fields: dict[str, str]) -> bool:
@@ -134,7 +215,7 @@ def validate_mining_manifest() -> None:
             "no guaranteed mining revenue claim",
             "no sha-256 quantum acceleration claim",
             "no antminer s21 superiority claim",
-            "real_double_sha256_loop_pending",
+            "actual_double_sha256_nonce_loop",
             "no commercialization before stage 2",
         ]:
             if phrase not in text:
@@ -160,7 +241,9 @@ def scan_external_materials() -> None:
         _validate_required_fields(path, fields, REQUIRED_EXTERNAL_KEYS)
         _validate_manifest_binding(path, fields, require_tier_match=True)
         if not _external_distribution_requested(fields):
-            raise AssertionError(f"{path}: external materials must set external_distribution=true after approval")
+            raise AssertionError(
+                f"{path}: external materials must set external_distribution=true after approval"
+            )
         if fields.get("review_status") != "approved_for_external_use":
             raise AssertionError(f"{path}: review_status must be approved_for_external_use")
         if fields.get("approved_by", "").lower() in {"", "tbd", "pending", "none"}:
@@ -177,10 +260,16 @@ def scan_external_exports() -> None:
             continue
         source = path.with_suffix(".md")
         if not source.exists():
-            raise AssertionError(f"{path}: exported material must have same-stem approved markdown source")
+            raise AssertionError(
+                f"{path}: exported material must have same-stem approved markdown source"
+            )
         fields = parse_frontmatter(source)
-        if fields.get("review_status") != "approved_for_external_use" or not _external_distribution_requested(fields):
-            raise AssertionError(f"{path}: source markdown is not approved for external distribution")
+        if fields.get(
+            "review_status"
+        ) != "approved_for_external_use" or not _external_distribution_requested(fields):
+            raise AssertionError(
+                f"{path}: source markdown is not approved for external distribution"
+            )
 
 
 def main() -> int:
