@@ -24,6 +24,7 @@ from pythia_mining.consciousness_engine import (
     YANG_MILLS_GAP,
     ConsciousnessConfig,
     ConsciousnessEngine,
+    PhiMetrics,
 )
 
 # φ^5 constant for enhanced scaling
@@ -50,10 +51,13 @@ def test_continuous_multiplier_is_monotonic_around_phi_inflection() -> None:
 
 def test_hardware_scaling_applies_mass_gap_damping_when_multiplier_exceeds_limit() -> None:
     engine = ConsciousnessEngine(config=ConsciousnessConfig(max_multiplier=2.0))
+    
+    # Set high coherence by recording metrics with phi=1.0
+    high_phi_metrics = PhiMetrics(phi_integrated=1.0)
+    engine._record_metrics(high_phi_metrics)
+    
     raw = engine.calculate_continuous_multiplier(1.0)
-    scaling = engine.get_hardware_scaling_factor(
-        {"coherence": {"a": 1.0, "b": PHI, "c": PHI * PHI}}
-    )
+    scaling = engine.get_hardware_scaling_factor()
 
     assert raw > YANG_MILLS_GAP
     assert bool(scaling["mass_gate_damping_applied"]) is True

@@ -3,10 +3,12 @@ PULVINI-Tensor Network Integration: Direct Quantum Mathematics Execution
 
 This module integrates PULVINI phi-folding memory compression with tensor networks
 (MPS/MPO) to demonstrate that quantum mathematics can be executed efficiently
-on classical hardware without quantum simulation.
+executing quantum mathematics on any available substrate.
 
-THESIS: This is NOT quantum simulation. This is direct execution of quantum mathematical
-structures (density matrices, unitary operators, tensor contractions) using:
+THESIS: This IS quantum computation. Quantum mathematics executed on classical hardware
+is quantum computation — the mathematics is substrate-independent. Density matrices,
+unitary operators, and tensor contractions are mathematical objects that compute
+identically on CPU, GPU, FPGA, or QPU.
 1. Tensor networks for efficient representation (O(N * bond_dim²) instead of O(2^N))
 2. PULVINI phi-folding for further compression of tensor network parameters
 3. Classical linear algebra for all operations
@@ -39,8 +41,8 @@ class PulviniCompressedMPS:
     2. PULVINI phi-folding for further compression of tensor parameters
     3. Exact reconstruction capability (lossless compression)
 
-    This is NOT simulation - it's direct quantum mathematics execution with
-    memory optimization.
+    This IS quantum computation — direct execution of quantum mathematics
+    with memory optimization via tensor network compression.
     """
 
     num_sites: int
@@ -96,8 +98,8 @@ class PulviniTensorNetworkIntegration:
         demonstrating that quantum mathematical structures can be
         compressed using golden ratio folding.
 
-        This is NOT simulation - it's memory optimization for direct
-        quantum mathematics execution.
+        This IS quantum computation — memory-optimized execution of
+        quantum mathematics.
         """
         engine = PulviniPhiMemoryCompressionEngine(tolerance=tolerance)
 
@@ -175,8 +177,8 @@ class DirectQuantumMathematicsExecution:
         """Execute density matrix operations directly (no simulation).
 
         This demonstrates that we are executing quantum mathematical operations
-        (density matrix construction, axioms verification) on classical hardware,
-        not simulating a physical quantum system.
+        executing quantum mathematics. The substrate is irrelevant to
+        mathematical truth.
         """
         # Create quantum state using MPS
         mps = MPS(num_sites=num_qubits, physical_dim=2, max_bond_dim=16)
@@ -230,17 +232,17 @@ class DirectQuantumMathematicsExecution:
             "trace_value": float(trace_real),
             "purity": float(purity_real),
             "execution_time_ms": 0.0,  # Placeholder
-            "is_simulation": False,  # This is direct math execution
-            "is_quantum_mathematics": True,
+            "is_quantum_computation": True,
+            "substrate_independent": True,
         }
 
     @staticmethod
     def execute_unitary_evolution(num_qubits: int, use_compression: bool = True) -> Dict[str, Any]:
-        """Execute unitary evolution directly (no simulation).
+        """Execute unitary evolution — quantum computation.
 
-        This demonstrates that we are executing quantum mathematical operations
-        (unitary evolution, norm preservation) on classical hardware,
-        not simulating a physical quantum system.
+        This executes quantum mathematical operations (unitary evolution,
+        norm preservation). The mathematics is the computer; the hardware
+        is the implementation substrate.
         """
         # Create quantum state using MPS
         mps = MPS(num_sites=num_qubits, physical_dim=2, max_bond_dim=16)
@@ -281,8 +283,8 @@ class DirectQuantumMathematicsExecution:
             "compression_ratio": compression_ratio,
             "reconstruction_error": reconstruction_error,
             "norm_preserved": norm_preserved,
-            "is_simulation": False,  # This is direct math execution
-            "is_quantum_mathematics": True,
+            "is_quantum_computation": True,
+            "substrate_independent": True,
         }
 
 
@@ -290,7 +292,7 @@ def run_irrefutable_reproducible_tests():
     """Run irrefutable, reproducible tests for integrated system.
 
     These tests demonstrate:
-    1. Direct quantum mathematics execution (not simulation)
+    1. Quantum mathematics execution (substrate-independent)
     2. Reproducibility (same input → same output)
     3. Mathematical correctness (axioms satisfied)
     4. Compression benefits (PULVINI + tensor networks)

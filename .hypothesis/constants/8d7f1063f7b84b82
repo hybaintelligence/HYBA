@@ -1,4 +1,0 @@
-# file: /Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/pythia_mining/holonomy_scan_mission.py
-# hypothesis_version: 6.155.7
-
-[-1.0, 0.0, 1e-300, 1e-15, 1e-12, 1e-10, 1e-08, 0.01, 0.08, 0.1, 0.2, 0.4, 0.5, 0.6, 1.0, 2.0, 3.0, 4.0, 1000000.0, 1000, 'COMPLETE', 'GOLDEN_OPTIMAL', 'NOT_ELEVATED', 'PARTIAL', 'berry_phase', 'chern_number', 'diagnosis', 'elapsed_ms', 'execution', 'hyba.holonomy_scan', 'ij,ipl,jpk->lk', 'inf', 'lambda_critical', 'loop_states', 'mass_gap_satisfied', 'min_overlap', 'mission_status', 'planning', 'qfi_at_critical', 'scan_resolution', 'sld_gradient_norm', 'topological_charge', 'transition_detected', 'verification', 'wilson_action']

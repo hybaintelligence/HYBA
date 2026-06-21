@@ -1,4 +1,0 @@
-# file: /Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/pythia_mining/dodecahedral_solver.py
-# hypothesis_version: 6.155.6
-
-[-1.0, 0.0, 1e-15, 1e-10, 0.2, 0.35, 0.45, 1.0, 2.0, 3.0, 5.0, 30.0, 1000003.0, 100, 1000003, '00000000', 'alignment_error', 'available', 'basis row norms', 'basis_states', 'boundary_index', 'capacity_source', 'configured', 'configured_at', 'configured_estimate', 'density_trace', 'dodecahedral basis', 'entropy amplitudes', 'hashrate_cap_ehs', 'hashrate_ehs', 'last_error', 'last_solution_nonce', 'mass_gap_alignment', 'mass_gap_target', 'no_solution_found', 'nonce_ranges', 'not_configured', 'phi_phase_alignment', 'power_scale', 'quantum_solver', 'search_mode', 'search_space_size', 'selected_ratio', 'target', 'telemetry_source', 'timeout', 'truncation_rule', 'unitary_closure', 'von_neumann_entropy']

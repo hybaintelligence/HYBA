@@ -1,4 +1,0 @@
-# file: /Users/demouser/Desktop/HYBA_FULLSTACK/scripts/local_clean_10_gate.py
-# hypothesis_version: 6.155.6
-
-['%Y%m%dT%H%M%SZ', '-m', '-q', 'GO', 'HYBA_ENV', 'HYBA_FULLSTACK', 'NODE_ENV', 'NO_GO', 'PYTHONPATH', '__main__', 'artifacts', 'auth_jwt_contracts', 'backend_gate', 'build', 'build_gate', 'clean_10', 'clean_10_gate.json', 'false', 'frontend_unit_gate', 'latest.json', 'npm', 'npx', 'production', 'pytest', 'python:env:check', 'python_backend', 'replace', 'results', 'run', 'test:backend', 'test:frontend:unit', 'true', 'utf-8', 'vitest', 'w']

@@ -1,4 +1,0 @@
-# file: /Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/pythia_mining/pythia_mining_pitfalls_curriculum.py
-# hypothesis_version: 6.155.6
-
-['1 EH/s hard limit', '1 eh/s', 'AUTO-COVERAGE-015', 'AUTO-HASHRATE-014', 'BTC-ENDIAN-NONCE-001', 'BTC-NBITS-TARGET-002', 'BTC-TIME-VERSION-004', 'CURRICULUM_PROTOCOL', 'EVIDENCE-REPLAY-018', 'PitfallCategory', 'PitfallLesson', 'RUNTIME-SECRETS-011', 'accepted shares', 'authority_statement', 'bitcoin_consensus', 'categories', 'category', 'coverage', 'credentials', 'dev fixtures', 'evidence_and_claims', 'lesson_count', 'lesson_ids', 'lessons', 'lessons_for_evidence', 'pool', 'pool-confirmed', 'protocol', 'sha-256d', 'software_runtime', 'stale', 'stratum_pool']

@@ -1,4 +1,0 @@
-# file: /Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/core/error_handling.py
-# hypothesis_version: 6.155.7
-
-[400, 401, 403, 429, 500, 502, 503, 504, 'An error occurred', 'ErrorResponse', 'access denied', 'api', 'auth', 'authentication', 'authorization', 'category', 'code', 'connection', 'context', 'critical', 'database', 'db', 'error_id', 'external_service', 'fetch', 'forbidden', 'function', 'high', 'internal', 'invalid', 'low', 'medium', 'message', 'network', 'original_error', 'permission', 'rate limit', 'rate_limit', 'recoverable', 'request_id', 'required', 'retryable', 'severity', 'sql', 'status_code', 'timed out', 'timeout', 'timestamp', 'too many requests', 'unauthorized', 'unknown', 'user_id', 'validation']

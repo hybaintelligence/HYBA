@@ -1,4 +1,0 @@
-# file: /Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/hyba_genesis_api/main.py
-# hypothesis_version: 6.155.7
-
-[0.1, '*', ',', '/api/substrate', '/health', '/metrics', '0', '120', '127.0.0.1', '15.0', '2.0.1', '3001', '60', 'Authorization', 'Content-Type', 'DELETE', 'GET', 'HYBA_BACKEND_HOST', 'HYBA_BACKEND_PORT', 'HYBA_CORS_ORIGINS', 'Idempotency-Key', 'OPTIONS', 'PATCH', 'PORT', 'POST', 'PUT', 'X-API-Key', 'X-Correlation-ID', 'X-Request-ID', '__main__', 'after', 'autonomy_level', 'duration_ms', 'error', 'false', 'health', 'http', 'interval_seconds', 'no', 'ok', 'proposals_applied', 'redis_available', 'reflexive_report', 'startup', 'status', 'substrate', 'telemetry', 'timeout_seconds', 'true']

@@ -1,4 +1,0 @@
-# file: /Users/demouser/Desktop/HYBA_FULLSTACK/src/euclid/pythagoras/quantum/operators/pythagoras_orchestrator.py
-# hypothesis_version: 6.155.2
-
-[0.0, 1e-10, 1e-05, 0.15, 'OrchestratorResult', 'audit', 'compressed_cores', 'compression_ratio', 'skipped', 'status', 'symbolic_phi_ok', 'tda_audit', 'tda_stable', 'unitary_verified']

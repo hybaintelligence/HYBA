@@ -1,4 +1,0 @@
-# file: /Users/demouser/Desktop/HYBA_FULLSTACK/src/euclid/pythagoras/quantum/operators/remez_approximator.py
-# hypothesis_version: 6.155.2
-
-[-1.0, 1e-10, 0.5, 1.0, 2.0, 10000, 'RemezApproximator', 'degree must be >= 0', 'n must be >= 1']

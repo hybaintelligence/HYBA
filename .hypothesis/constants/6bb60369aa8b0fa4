@@ -1,4 +1,0 @@
-# file: /Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/pythia_mining/metrics_store.py
-# hypothesis_version: 6.155.6
-
-[1e-05, 1.0, 30.0, 1000, 86400, 'HYBA_METRICS_DB_PATH', 'MAX_COHERENCE_DELTA', 'MAX_PHI_SCALING', 'MAX_SEARCH_DEPTH', 'MetricsStore', 'PoolMetrics', 'accepted', 'attempt_number', 'block_hash', 'coherence_threshold', 'compression_ratio', 'conn', 'data/metrics.db', 'error_code', 'error_message', 'event_type', 'get_metrics_store', 'hyba.metrics', 'job_id', 'latency_ms', 'nonce', 'occurred_at', 'phi_scaling', 'pool_name', 'pool_url', 'reset_metrics_store', 'search_depth', 'set_metrics_store', 'submitted_at', 'target']

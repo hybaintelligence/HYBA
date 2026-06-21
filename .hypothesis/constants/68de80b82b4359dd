@@ -1,4 +1,0 @@
-# file: /Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/pythia_mining/autonomous_fault_tolerant_controller.py
-# hypothesis_version: 6.155.6
-
-[0.0, 0.01, 0.9565, 1.0, 7.584309, 100, 4294967295, '\nMINING JOB RESULT:', '0', '1d00ffff', '20000000', '4.20e-14', '5f4a5e5a', '=', '__main__', 'active', 'avg_logical_error', 'code_distance', 'coinbase', 'empirical_evidence', 'error_history_length', 'error_threshold', 'fault_tolerant', 'final_stats', 'iterations', 'job_id', 'logical_error_rate', 'logical_qubits', 'merkle_branches', 'nbits', 'nonce', 'nonce_candidate', 'nonce_raw', 'ntime', 'num_logical_qubits', 'p_value', 'p_value_binomial', 'phi_adjustment', 'phi_resonance_rate', 'phi_resonance_target', 'physical_error_rate', 'prev_hash', 'rate', 'status', 'stopped', 'suppression_factor', 'syndrome_rounds', 'test_001', 'test_coinbase', 'timestamp', 'total_blocks', 'total_iterations', 'version', 'z_score', 'z_score_vs_random']

@@ -1,4 +1,0 @@
-# file: /Users/demouser/Desktop/HYBA_FULLSTACK/src/euclid/pythagoras/quantum/__init__.py
-# hypothesis_version: 6.155.6
-
-['1.0.0', 'EmpiricalEvidence', 'MathematicalVerifier', 'NonceCandidate', 'QuantumCircuit', 'QuantumComputerAudit', 'QuantumGate', 'QuantumMeasurement', 'QuantumState', 'SearchResult', 'cnot_gate', 'hadamard_gate', 'pauli_x_gate', 'pauli_y_gate', 'pauli_z_gate', 'phase_gate']

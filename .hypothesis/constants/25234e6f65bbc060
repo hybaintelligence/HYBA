@@ -1,4 +1,0 @@
-# file: /Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/hyba_genesis_api/core/api_posture.py
-# hypothesis_version: 6.155.7
-
-[100, 500, 1024, ',', '120', '60', 'Cache-Control', 'DENY', 'EnterpriseAPIConfig', 'Forbidden.', 'HYBA_API_CSP_ENABLED', 'HYBA_API_HSTS', 'HYBA_ENV', 'NODE_ENV', 'Not found.', 'Permissions-Policy', 'Referrer-Policy', 'Retry-After', 'X-Frame-Options', 'X-Request-ID', 'code', 'content-length', 'ctx', 'details', 'development', 'error', 'http', 'http_error', 'input', 'loc', 'message', 'msg', 'no-referrer', 'no-store', 'none', 'nosniff', 'production', 'rate_limit_exceeded', 'request_id', 'same-origin', 'status_code', 'success', 'true', 'type', 'unknown', 'validation_error', 'x-correlation-id', 'x-forwarded-for', 'x-request-id']

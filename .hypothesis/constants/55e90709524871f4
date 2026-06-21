@@ -1,4 +1,0 @@
-# file: /Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/hyba_genesis_api/websocket/handlers.py
-# hypothesis_version: 6.155.2
-
-['acceptance_rate', 'active_pools', 'avg_latency_ms', 'consciousness_level', 'error', 'hashrate', 'message', 'metrics_store_error', 'not_connected', 'ok', 'phi_resonance', 'quantum_speedup', 'shares_accepted', 'shares_rejected', 'shares_submitted', 'source', 'status', 'timestamp', 'type']

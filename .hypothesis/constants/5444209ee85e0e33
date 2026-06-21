@@ -1,4 +1,0 @@
-# file: /Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/pythia_mining/pulvini_topology_h4.py
-# hypothesis_version: 6.155.7
-
-[0.5, 1.0, 2.0, 4.0, 5.0, 120, 'ADJACENCY_MAP_H4', 'H4_YANG_MILLS_GAP', 'MAX_UINT32_NONCE', 'NONCE_BITS', 'NUM_NODES', 'PHI', 'PHI_3', 'SLICE_SIZE', 'd', 'i']

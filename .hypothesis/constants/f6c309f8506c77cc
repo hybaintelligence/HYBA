@@ -1,4 +1,0 @@
-# file: /Users/demouser/Desktop/HYBA_FULLSTACK/scripts/evidence_boundary_report.py
-# hypothesis_version: 6.155.6
-
-['--output', '.tmp', 'GO', 'NO_GO', '__main__', 'accepted', 'accepted_share', 'accepted_share_count', 'accepted_shares', 'artifact_path', 'artifacts', 'checks', 'clean_10', 'clean_10_gate', 'connected', 'errors', 'evidence_boundary', 'fail', 'jobs_received', 'latest.json', 'logs', 'missing', 'pass', 'passed', 'pool_ack', 'required_failures', 'session_stats', 'shares_accepted', 'shares_submitted', 'status', 'utf-8', 'warning']

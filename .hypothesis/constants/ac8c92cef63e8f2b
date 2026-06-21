@@ -1,4 +1,0 @@
-# file: /Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/core/attribution/causal_router.py
-# hypothesis_version: 6.155.6
-
-[0.0, 0.2, 0.3, 0.5, 0.7, 0.8, 0.85, 0.9, 0.95, 1.0, 'CausalExplanation', 'CausalHotspot', 'CounterfactualResult', 'CoverageThreshold', 'FabricGraph', 'MiningGraph', 'SecuritySwarmGraph', 'confidence', 'counterfactual', 'coverage_ratio', 'covered_nodes', 'detector', 'explanation_quality', 'high', 'hotspots', 'impact_score', 'intrusion_detection', 'low', 'low_confidence', 'medium', 'memory', 'metadata', 'mode_transition', 'monitor', 'network', 'node_id', 'node_type', 'nonce_found', 'reason', 'schema_version', 'security', 'share_submission', 'solver', 'strict', 'timestamp', 'total_nodes', 'type', 'uncovered_nodes', 'unknown', 'validator']

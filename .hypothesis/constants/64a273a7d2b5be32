@@ -1,4 +1,0 @@
-# file: /Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/pythia_mining/pulvini_coverage_certificate.py
-# hypothesis_version: 6.155.2
-
-['CoverageCertificate', 'D-node', 'I-node', 'automorphism_action', 'cardinality', 'certificate_type', 'coverage_certificate', 'end', 'lane_coverage_report', 'lane_id', 'lanes', 'node_type', 'num_lanes', 'size', 'start', 'total_covered', 'total_nonce_space']

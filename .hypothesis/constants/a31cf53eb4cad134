@@ -1,4 +1,0 @@
-# file: /Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/pythia_mining/reflexive_cycle_timeout.py
-# hypothesis_version: 6.155.7
-
-[0.0, 100.0, 1000.0, 'ReflexiveCycleGuard', 'ReflexiveCyclePhase', 'apply_proposal', 'completed', 'cycle_id', 'deadline_ms', 'duration_ms', 'error', 'finalize', 'init', 'parse_codebase', 'partial_results', 'phase', 'phases', 'proposals_applied', 'proposals_generated', 'rollback_count', 'select_targets', 'simulate_mining', 'timeout', 'timeout_occurred', 'total_duration_ms', 'validate_constraints']

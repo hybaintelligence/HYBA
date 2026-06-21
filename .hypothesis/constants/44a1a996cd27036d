@@ -1,4 +1,0 @@
-# file: /Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/core/integration/pythia_adapters.py
-# hypothesis_version: 6.155.6
-
-[0.0, 0.618, 1.0, 1000000000.0, 1000, 'MiningCausalAdapter', 'MiningSearchAdapter', 'SUBSTATE_PASSPORT_V2', 'budget_exhausted', 'bures_score', 'counterfactual', 'coverage_verified', 'difficulty', 'explanation_quality', 'has_warm_state', 'hotspots', 'information_content', 'iterations_used', 'job_id', 'latency_mode', 'manifold_dimension', 'max_size', 'nonce', 'nonce_found', 'partial', 'passport', 'passport_hash', 'phi_score', 'pool_name', 'result_data', 'result_type', 'search_time_ms', 'share_hash', 'size', 'structural_hash', 'submitter', 'success', 'timestamp', 'timestamp_ns', 'topology_verified', 'type', 'valid_nonce', 'version']

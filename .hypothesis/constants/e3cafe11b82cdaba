@@ -1,4 +1,0 @@
-# file: /Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/pythia_mining/yang_mills_spectral_gap.py
-# hypothesis_version: 6.155.7
-
-[0.0, 1e-10, 0.1, 0.2, 1.0, 2.0, 2.3, 3.0, 100, 1000, '=', 'MEASUREMENT COMPLETE', '__main__', 'absolute_error_GeV', 'claim_boundary', 'constant', 'control_constants', 'controls', 'e', 'error', 'expected_GeV', 'expected_ratio', 'failure_mode', 'inf', 'lambda_qcd_GeV', 'lattice_size', 'mass_gap', 'max', 'mean', 'measured_GeV', 'measured_ratio', 'min', 'n_configurations', 'n_nonzero', 'not_claimed', 'operational_elevated', 'operational_use', 'phi', 'phi_best_anchor', 'phi_rank', 'phi_validation', 'pi', 'prediction_delta_GeV', 'prediction_error_pct', 'prediction_z_score', 'relative_error_pct', 'sigma_tolerance', 'spectrum', 'sqrt2', 'standard_error_GeV', 'std', 'success', 'target_GeV', 'uniform', 'validated', 'verdict', 'w']

@@ -1,4 +1,0 @@
-# file: /Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/pythia_mining/phi_malloc.py
-# hypothesis_version: 6.155.6
-
-[0.0, 1.0, 1.618033988749895, 144, 233, 377, 610, 987, 'PhiBlock', 'PhiMalloc', 'allocations', 'fragmentation', 'free', 'free_blocks', 'frees', 'phi_alignment', 'total_blocks', 'total_size', 'used', 'used_blocks']

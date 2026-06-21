@@ -1,4 +1,0 @@
-# file: /Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/pythia_mining/phi_jit.py
-# hypothesis_version: 6.155.6
-
-[0.618033988749895, 1.618033988749895, 100, 1000, 'PhiJIT', 'compress', 'fold', 'function', 'instruction_count', 'log', 'opcodes_used', 'pack', 'resonant', 'search', 'total_transmutations', 'transmutation_id']

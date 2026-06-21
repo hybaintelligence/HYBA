@@ -1,4 +1,0 @@
-# file: /Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/pythia_mining/counterfactual_reflection.py
-# hypothesis_version: 6.155.6
-
-[-1.0, -0.5, 0.0, 0.025, 0.05, 0.1, 0.15, 0.2, 0.3, 0.45, 0.5, 0.8, 1.0, 60.0, 'DEFAULT_PHI_PRIOR', 'MAX_PHI_PRIOR_DELTA', 'PHI_PRIOR_MAX', 'PHI_PRIOR_MIN', 'SearchTrajectory', 'alternative', 'block_margin', 'current_phi_prior', 'learning_rate', 'max_phi_prior_delta', 'nonce_entropy', 'phi_prior_max', 'phi_prior_min', 'phi_resonance_prior', 'phi_score', 'phi_threshold', 'reference', 'share_margin', 'utf-8']

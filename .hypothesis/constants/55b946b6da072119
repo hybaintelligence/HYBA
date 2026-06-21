@@ -1,4 +1,0 @@
-# file: /Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/pythia_mining/mining_validation.py
-# hypothesis_version: 6.141.1
-
-[256, 8388607, 8388608, '0', '00000000ffff', '^[0-9a-fA-F]*$', 'coinbase hash', 'coinbase part 1', 'coinbase part 2', 'extranonce1', 'extranonce2', 'little', 'merkle root', 'nbits', 'nonce', 'ntime', 'previous block hash', 'version']

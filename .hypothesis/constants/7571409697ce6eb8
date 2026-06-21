@@ -1,4 +1,0 @@
-# file: /Users/demouser/Desktop/HYBA_FULLSTACK/scripts/validate_production_env.py
-# hypothesis_version: 6.155.2
-
-[1.0, '$argon2', ',', '1', '123', '2', ':', ';', 'BRAIINS', 'BTC_ADDRESS', 'CKPOOL', 'HYBA_ENV', 'JWT_SECRET', 'NH_POOL_ID', 'NICEHASH', 'NICEHASH_POOL_ID', 'NODE_ENV', 'PASSWORD', 'PULVINI_BACKEND_URL', 'STRATUMV2', 'STRATUM_VERSION', 'URL', 'USERNAME', 'VIABTC', 'WORKER', '__main__', 'ceo', 'changeme', 'false', 'http', 'https', 'mining:operate', 'mining:read', 'mining_operator', 'on', 'password', 'production', 'replace-with', 'secret', 'stratum+ssl', 'stratum+tcp', 'stratum+tls', 'stratum2+ssl', 'stratum2+tcp', 'stratum2+tls', 'todo', 'treasury_admin', 'treasury_viewer', 'true', 'username', 'v', 'version', 'yes']

@@ -1,4 +1,0 @@
-# file: /Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/core/meta_controller/memory_router.py
-# hypothesis_version: 6.155.6
-
-[-10.0, -1.0, 0.0, 0.1, 0.3, 0.5, 0.99, 1.0, 2.0, 10.0, 60.0, 100, 'CircuitBreaker', 'CircuitBreakerState', 'HebbianMemoryKernel', 'MEMORY_ROUTER_V1', 'RouteDecision', 'RouteResult', 'closed', 'confidence', 'decay_rate', 'decision', 'execute', 'explanation', 'failure_count', 'failure_threshold', 'fallback', 'fallback_safe', 'half_open', 'halt', 'history_length', 'last_failure_time', 'learning_rate', 'meta_controller', 'num_routes', 'open', 'passport', 'reason', 'recent_success_rate', 'retry', 'route', 'routing_decision', 'schema_version', 'signal', 'state', 'success', 'success_count', 'timeout_seconds', 'timestamp', 'type', 'weights', 'window_size']
