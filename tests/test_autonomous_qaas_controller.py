@@ -78,7 +78,7 @@ def test_health_metrics_computation(qaas_controller):
     
     metrics = qaas_controller.get_health_metrics()
     assert metrics.workload_count == 10
-    assert metrics.logical_error_rate == 0.001
+    assert metrics.logical_error_rate == pytest.approx(0.001)
     assert metrics.correction_success_rate == 1.0
     assert metrics.consecutive_failures == 0
     assert metrics.health_score > 0.8
