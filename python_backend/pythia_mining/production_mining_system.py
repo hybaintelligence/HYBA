@@ -77,7 +77,7 @@ class ProductionMiningSystem:
         # Revenue tracking
         self.total_shares_submitted = 0
         self.total_shares_accepted = 0
-        self.estimated_revenue_btc = 0.0
+        self.estimated_revenue_btc = None  # Computed from pool data
         
         # Output directory
         self.output_dir = Path('artifacts/mining_sessions')

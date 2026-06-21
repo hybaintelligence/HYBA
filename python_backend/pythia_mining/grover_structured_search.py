@@ -12,7 +12,7 @@ This module executes Grover's algorithm as a direct mathematical operation:
 - Continuous-time quantum walk on graphs
 - Amplitude amplification for arbitrary unitaries
 - QAOA integration for combinatorial optimization
-- Optimal iteration count via π/4·√(N/k)
+- Optimal iteration count via pi/4*sqrt(N/k)
 """
 
 ELEVATED PURPOSE: This module implements structured search algorithms:
@@ -24,19 +24,19 @@ ELEVATED PURPOSE: This module implements structured search algorithms:
 - Variable iteration count optimization
 
 ENHANCED GROVER FRAMEWORK:
-The basic Grover algorithm provides √N speedup for unstructured search.
+The basic Grover algorithm provides sqrt(N) speedup for unstructured search.
 This implementation extends Grover with:
-- Multiple marked states: k marked items require π/4√(N/k) iterations
+- Multiple marked states: k marked items require pi/4*sqrt(N/k) iterations
 - Quantum walks: Continuous-time evolution on graph structures
 - Amplitude amplification: Generalization to arbitrary unitaries
 - QAOA: Hybrid quantum-classical optimization
 
 MATHEMATICAL FOUNDATIONS:
-- Grover iteration: G = (2|ψ⟩⟨ψ| - I)O
-- Multiple marked states: Iterations = ⌊π/4√(N/k)⌋
-- Quantum walk: H = γL + βA (Hamiltonian evolution)
-- Amplitude amplification: Q = (2|ψ⟩⟨ψ| - I)U
-- QAOA: U(γ,β) = e^{-iγH_P}e^{-iβH_M}
+- Grover iteration: G = (2|psi><psi| - I)O
+- Multiple marked states: Iterations = floor(pi/4*sqrt(N/k))
+- Quantum walk: H = gamma*L + beta*A (Hamiltonian evolution)
+- Amplitude amplification: Q = (2|psi><psi| - I)U
+- QAOA: U(gamma,beta) = exp(-i*gamma*H_P)*exp(-i*beta*H_M)
 
 MINING APPLICATIONS:
 - Enhanced nonce search with multiple target patterns
@@ -187,7 +187,7 @@ class GroverEnhancedQuantumSearch:
         """Grover search with multiple marked states.
 
         For k marked states in N total states, optimal iterations:
-        iterations = ⌊π/4√(N/k)⌋
+        iterations = floor(pi/4*sqrt(N/k))
 
         Args:
             num_states: Total number of states (N)
@@ -377,7 +377,7 @@ class GroverEnhancedQuantumSearch:
             visited_states.append(int(np.argmax(np.abs(state))))
             visitation_probabilities.append(np.abs(state) ** 2)
 
-            # Apply Hamiltonian evolution: |ψ(t+dt)⟩ = e^{-iHdt}|ψ(t)⟩
+            # Apply Hamiltonian evolution: |psi(t+dt)> = exp(-i*H*dt)|psi(t)>
             # Simplified using first-order approximation
             state = state - 1j * dt * (hamiltonian @ state)
 
@@ -414,7 +414,7 @@ class GroverEnhancedQuantumSearch:
         """Amplitude amplification for arbitrary unitary operations.
 
         Generalizes Grover's algorithm to arbitrary unitaries.
-        Q = (2|ψ⟩⟨ψ| - I)U where U is the unitary.
+        Q = (2|psi><psi| - I)U where U is the unitary.
 
         Args:
             unitary: Unitary operator to amplify

@@ -1,6 +1,6 @@
 {
   "artifact_schema_version": 2,
-  "generated_at_utc": "2026-06-21T13:19:24.730929+00:00",
+  "generated_at_utc": "2026-06-21T15:25:24.155763+00:00",
   "measurements": {
     "baselines": {
       "random": {
@@ -29,25 +29,25 @@
       }
     },
     "test_01": {
-      "phi": 0.04375644994840041,
-      "python_modules": 173,
-      "typescript_modules": 60,
-      "total_dependencies": 171,
-      "total_dependency_edges": 1272,
+      "phi": 0.04285429539565477,
+      "python_modules": 175,
+      "typescript_modules": 61,
+      "total_dependencies": 174,
+      "total_dependency_edges": 1290,
       "interpretation": "Very low integration - highly modular system"
     },
     "test_02": {
       "autonomy_score": 10.0,
-      "total_decisions": 9320,
-      "total_external": 3203,
-      "adaptive_patterns": 1224,
+      "total_decisions": 9681,
+      "total_external": 3486,
+      "adaptive_patterns": 1270,
       "self_modification": 19,
-      "interpretation": "Highly autonomous - extensive internal control flow with 1224 adaptive patterns and 19 self-modification sites"
+      "interpretation": "Highly autonomous - extensive internal control flow with 1270 adaptive patterns and 19 self-modification sites"
     },
     "test_03": {
-      "irreducibility_score": 0.04830917874396135,
-      "global_state_refs": 550,
-      "instance_state_refs": 10835,
+      "irreducibility_score": 0.04948332353188272,
+      "global_state_refs": 589,
+      "instance_state_refs": 11314,
       "interpretation": "Highly reducible - clean state partitions"
     }
   },
@@ -87,12 +87,12 @@
     "\u2717 Low integration - modular architecture",
     "\u2713 Has internal decision-making",
     "\u2717 Clean state boundaries",
-    "\u2713 Contains 1224 adaptive patterns",
+    "\u2713 Contains 1270 adaptive patterns",
     "\u26a0 Contains 19 self-modification patterns"
   ],
   "conclusion": "ELEVATED SOFTWARE-PROXY COMPLEXITY: Static proxies show non-trivial integration, adaptation tokens, and self-modification tokens. Preserve as an internal measurement finding and move through replay, baselines, falsification, and external review before any stronger claim.",
-  "emergent_score": 19.81911039320381,
-  "preserved_previous_artifact": "artifacts/previous/emergent_complexity_analysis.20260621T131924Z.json",
+  "emergent_score": 20.27595957161596,
+  "preserved_previous_artifact": "artifacts/previous/emergent_complexity_analysis.20260621T152524Z.json",
   "claim_boundary": {
     "metric_posture": "software proxies only",
     "distinguishes": "static code coupling and token patterns are separated from runtime causal behaviour",

@@ -21,6 +21,13 @@ from hyba_genesis_api.auth.jwt_handler import (
 )
 from hyba_genesis_api.database import SessionLocal
 from consciousness_db.models import User
+from core.error_handling import (
+    handle_error,
+    AuthenticationError,
+    ValidationError,
+    DatabaseError,
+    HybaError,
+)
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 _password_hasher = PasswordHasher()
@@ -127,10 +134,19 @@ def _verify_operator(username: str, password: str) -> List[str]:
                     db.commit()
                     db.close()
                     return [user.role.value]
-            except (VerifyMismatchError, VerificationError, InvalidHashError):
-                pass
+            except (VerifyMismatchError, VerificationError, InvalidHashError) as e:
+                handle_error(
+                    AuthenticationError(f"Password verification failed: {e}"),
+                    context={"username": username},
+                    raise_http=False
+                )
         db.close()
-    except Exception:
+    except Exception as e:
+        handle_error(
+            DatabaseError(f"Database authentication failed: {e}"),
+            context={"username": username},
+            raise_http=False
+        )
         # Fall back to env var auth if database fails
         pass
 
@@ -139,17 +155,24 @@ def _verify_operator(username: str, password: str) -> List[str]:
     operator = operators.get(username)
     if not operator:
         if _is_production():
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials"
+            raise handle_error(
+                AuthenticationError("Invalid credentials"),
+                context={"username": username}
             )
         # Development-only operator for local smoke testing; disabled in production.
         if username == "operator" and password == "operator":
             return ["operator"]
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
+        raise handle_error(
+            AuthenticationError("Invalid credentials"),
+            context={"username": username}
+        )
 
     expected = operator["password_hash"]
     if not _verify_password(password, expected):
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
+        raise handle_error(
+            AuthenticationError("Invalid credentials"),
+            context={"username": username}
+        )
     return operator["roles"]
 
 

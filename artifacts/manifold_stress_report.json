@@ -1,0 +1,47 @@
+{
+  "test_summary": {
+    "max_dimension_tested": 100,
+    "cognitive_horizon": 100,
+    "total_dimensions_tested": 2,
+    "collapse_detected": true
+  },
+  "collapse_dynamics": {
+    "decay_rate": 0.0,
+    "decay_intercept": 0.0,
+    "decay_r_squared": 0.0,
+    "decay_p_value": 1.0,
+    "predicted_collapse_dimension": 0.0,
+    "actual_collapse_dimension": 100,
+    "stability_at_max_dim": 1.0,
+    "compression_at_max_dim": 1.0000000000000007,
+    "dimensional_scaling_exponent": 0.0
+  },
+  "dimensional_results": [
+    {
+      "dimension": 10,
+      "geometric_stability": 1.0,
+      "compression_efficiency": 0.9999999999999999,
+      "coherence_preserved": "True",
+      "bures_distance": 1.9253723992498557,
+      "fisher_curvature": 100009650.53485367,
+      "phi_folding_ratio": 5,
+      "collapse_detected": "False"
+    },
+    {
+      "dimension": 100,
+      "geometric_stability": 1.0,
+      "compression_efficiency": 1.0000000000000007,
+      "coherence_preserved": "True",
+      "bures_distance": 7.354044677819331,
+      "fisher_curvature": 3038558.5700832373,
+      "phi_folding_ratio": 5,
+      "collapse_detected": "True"
+    }
+  ],
+  "fields_medal_rigor_metrics": {
+    "manifold_coherence_limit": 100,
+    "geometric_stability_decay_rate": 0.0,
+    "phi_preservation_at_horizon": 1.0000000000000007,
+    "bures_distance_at_horizon": 7.354044677819331
+  }
+}

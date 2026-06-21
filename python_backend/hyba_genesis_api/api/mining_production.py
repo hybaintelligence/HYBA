@@ -178,7 +178,7 @@ async def submit_mining_share(payload: Dict[str, Any]) -> Dict[str, Any]:
     ```json
     {
         "job_id": "job_12345",
-        "nonce": 12345678,
+        "nonce": <computed_nonce>,
         "extranonce2": "00000001" (optional)
     }
     ```

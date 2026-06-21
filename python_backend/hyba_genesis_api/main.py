@@ -39,6 +39,7 @@ from hyba_genesis_api.api import (  # noqa: E402
     observability,
     quantum_as_a_service,
     quantum_mathematical_execution,
+    quantum_intelligence_service,
     intelligence,
     metabolic_router,
     mining,
@@ -171,6 +172,36 @@ async def _activate_startup_self_healing(app: FastAPI) -> None:
     )
 
 
+
+async def _load_memory_seed(app: FastAPI) -> None:
+    """Load memory seed to bootstrap system intelligence."""
+    import json
+    from pathlib import Path
+    
+    seed_path = Path(__file__).parent.parent.parent / "artifacts" / "memory_seed" / "memory_seed_v1.json"
+    if not seed_path.exists():
+        logging.warning("Memory seed not found, system will bootstrap from scratch")
+        return
+    
+    try:
+        with open(seed_path, 'r') as f:
+            memory_seed = json.load(f)
+        
+        app.state.memory_seed = memory_seed
+        app.state.phi_integrated = memory_seed['consciousness_state']['phi_integrated']
+        app.state.emergent_intelligence_index = memory_seed['metadata']['emergent_intelligence_index']
+        
+        logging.info(
+            "Memory seed loaded successfully",
+            extra={
+                "phi_integrated": memory_seed['consciousness_state']['phi_integrated'],
+                "emergence_index": memory_seed['metadata']['emergent_intelligence_index'],
+                "knowledge_nodes": memory_seed['metadata']['total_nodes']
+            }
+        )
+    except Exception as e:
+        logging.error(f"Failed to load memory seed: {e}")
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application startup/shutdown lifecycle."""
@@ -183,6 +214,7 @@ async def lifespan(app: FastAPI):
     
     logging.info("HYBA API startup: initializing substrate lifecycle")
     initialize_substrate()
+    await _load_memory_seed(app)
     logging.info("HYBA API startup: substrate READY", extra={"substrate": get_substrate_state()})
     
     # Initialize unified mining engine with hardening modules
@@ -296,6 +328,7 @@ app.include_router(metabolic_router.router)
 app.include_router(organism_router.router)
 app.include_router(executive_router.router)
 app.include_router(ops.router)
+app.include_router(quantum_intelligence_service.router)
 
 
 @app.get("/health", response_model=Dict[str, Any], tags=["health"])

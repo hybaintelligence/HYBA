@@ -9,6 +9,20 @@
  *   - All 80 backend endpoints are covered with typed request/response interfaces
  */
 
+import {
+  classifyError,
+  logError,
+  NetworkError,
+  HybaError,
+  TimeoutError,
+  ValidationError,
+  AuthenticationError,
+  AuthorizationError,
+  RateLimitError,
+  ErrorCategory,
+  ErrorSeverity
+} from "./utils/errorHandler";
+
 // ── Types ──────────────────────────────────────────────────────────────────
 
 export interface HealthResponse {
@@ -1267,7 +1281,7 @@ export function authInterceptor(init: RequestInit = {}): RequestInit {
 
 // ── Error Handling ─────────────────────────────────────────────────────────
 
-class HybaApiError extends Error {
+class LegacyApiError extends Error {
   public readonly code: string;
   public readonly status: number;
   public readonly requestId?: string;
@@ -1275,7 +1289,7 @@ class HybaApiError extends Error {
 
   constructor(error: ApiError) {
     super(error.message);
-    this.name = "HybaApiError";
+    this.name = "LegacyApiError";
     this.code = error.code;
     this.status = error.status;
     this.requestId = error.requestId;
@@ -1283,29 +1297,39 @@ class HybaApiError extends Error {
   }
 }
 
-async function parseApiError(response: Response): Promise<HybaApiError> {
+async function parseApiError(response: Response): Promise<HybaError> {
   const requestId = response.headers.get("x-request-id") || undefined;
   try {
     const body = await response.json();
-    return new HybaApiError({
-      code: body.error || body.detail?.error || "unknown_error",
-      message:
-        body.message ||
-        body.detail?.message ||
-        body.detail?.detail ||
-        body.detail ||
-        `HTTP ${response.status}`,
-      status: response.status,
-      requestId,
-      details: body.details || body,
-    });
-  } catch {
-    return new HybaApiError({
-      code: "http_error",
-      message: `HTTP ${response.status}: ${response.statusText}`,
-      status: response.status,
-      requestId,
-    });
+    const message = body.message || body.detail?.message || body.detail?.detail || body.detail || `HTTP ${response.status}`;
+    const code = body.error || body.detail?.error || "unknown_error";
+    const context = { details: body.details || body };
+    
+    // Map HTTP status codes to appropriate error types
+    switch (response.status) {
+      case 400:
+        return new ValidationError(message, { code, statusCode: response.status, requestId, context });
+      case 401:
+        return new AuthenticationError(message, { code, statusCode: response.status, requestId, context });
+      case 403:
+        return new AuthorizationError(message, { code, statusCode: response.status, requestId, context });
+      case 429:
+        return new RateLimitError(message, { code, statusCode: response.status, requestId, context });
+      case 500:
+      case 502:
+      case 503:
+      case 504:
+        return new HybaError(message, ErrorCategory.API, ErrorSeverity.HIGH, { code, statusCode: response.status, requestId, context });
+      default:
+        return new HybaError(message, ErrorCategory.API, ErrorSeverity.MEDIUM, { code, statusCode: response.status, requestId, context });
+    }
+  } catch (parseError) {
+    return new HybaError(
+      `HTTP ${response.status}: ${response.statusText}`,
+      ErrorCategory.API,
+      ErrorSeverity.MEDIUM,
+      { code: "http_error", statusCode: response.status, requestId, cause: parseError instanceof Error ? parseError : undefined }
+    );
   }
 }
 
@@ -1360,7 +1384,7 @@ async function fetchWithRetry(
       const delay = calculateDelay(attempt, baseDelayMs, maxDelayMs);
       await new Promise((resolve) => setTimeout(resolve, delay + secureUnitInterval() * 100));
     } catch (error) {
-      if (error instanceof HybaApiError) throw error;
+      if (error instanceof HybaError) throw error;
       if (attempt === maxRetries) throw error;
       lastError = error instanceof Error ? error : new Error(String(error));
       const delay = calculateDelay(attempt, baseDelayMs, maxDelayMs);

@@ -15,6 +15,7 @@ from fastapi.responses import JSONResponse
 
 from hyba_genesis_api.core.substrate import get_substrate_state, is_ready
 from hyba_genesis_api.core.telemetry import get_metrics
+from core.error_handling import handle_error, DatabaseError, HybaError
 
 router = APIRouter(prefix="/api/health", tags=["health"])
 
@@ -28,7 +29,13 @@ def get_pythia_state() -> Optional[Dict[str, Any]]:
         try:
             with open(state_file, "r", encoding="utf-8") as f:
                 return json.load(f)
-        except (OSError, json.JSONDecodeError):
+        except (OSError, json.JSONDecodeError) as e:
+            # Log error but don't raise - health endpoints should be resilient
+            handle_error(
+                DatabaseError(f"Failed to read pythia state file: {e}"),
+                context={"file": state_file},
+                raise_http=False
+            )
             return None
     return None
 

@@ -1,0 +1,33 @@
+{
+  "test_summary": {
+    "num_nodes": 100,
+    "topology": "coxeter-120",
+    "synchronization_time_steps": 200,
+    "network_resonance_achieved": "False"
+  },
+  "synchronization_dynamics": {
+    "synchronization_growth_rate": 0.014548889428061956,
+    "synchronization_r_squared": 0.7692863423960343,
+    "convergence_time_steps": null,
+    "final_phase_coherence": 0.26231079718247374,
+    "critical_coupling_strength": 0.7098701788698781,
+    "hebbian_learning_rate": 0.014548889428061956
+  },
+  "resonance_metrics": {
+    "final_correlation": 0.709870178869882,
+    "final_resonance_strength": 71.30606608561749,
+    "phase_coherence": 0.26231079718247374,
+    "critical_coupling_strength": 0.7098701788698781
+  },
+  "emergent_behavior": {
+    "hebbian_reinforcement_detected": "True",
+    "digital_entanglement_achieved": "True"
+  },
+  "fields_medal_rigor_metrics": {
+    "network_wide_resonance": "False",
+    "digital_entanglement_verified": "True",
+    "hebbian_learning_demonstrated": "True",
+    "phase_coherence_achieved": "False",
+    "synchronization_convergence": false
+  }
+}

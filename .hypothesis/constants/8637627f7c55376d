@@ -1,0 +1,4 @@
+# file: /Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/pythia_mining/redis_state_registry.py
+# hypothesis_version: 6.155.7
+
+[0.0, 1.0, 10000, 86400, 2592000, '6379', 'HYBA_REDIS_HOST', 'HYBA_REDIS_PASSWORD', 'HYBA_REDIS_PORT', 'Instance deleted', 'Lock release failed', 'METERED_IN_MEMORY', 'METERED_SUCCESS', 'METERING_FAILED', 'circuit_depth', 'compute_units', 'compute_units_drawn', 'db', 'defect_count', 'error', 'execution_count', 'host', 'hyba.hardware_state', 'instance_id', 'key', 'last_execution', 'lease_ms', 'localhost', 'pairing_weight', 'persisted', 'port', 'status', 'tenant_id', 'total_compute_units']

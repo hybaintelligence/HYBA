@@ -149,10 +149,16 @@ class CodebaseUmwelt:
         return graph
 
     def _python_files(self) -> List[Path]:
+        # Exclude research files with mathematical notation that cause parsing issues
+        excluded_files = {
+            "grover_structured_search.py",
+        }
         return sorted(
             path
             for path in self.root_dir.rglob("*.py")
-            if "__pycache__" not in path.parts and path.is_file()
+            if "__pycache__" not in path.parts 
+            and path.is_file()
+            and path.name not in excluded_files
         )
 
     def _relative_file(self, path: Path) -> str:
