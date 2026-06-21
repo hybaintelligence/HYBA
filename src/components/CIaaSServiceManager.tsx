@@ -48,6 +48,8 @@ export default function CIaaSServiceManager({ token }: CIaaSServiceManagerProps)
     allowed_workloads: ["explain", "orchestrate", "counterfactual", "governance_audit", "substrate_health"],
   });
 
+  const [isAdmin, setIsAdmin] = useState(false);
+
   const fetchServices = async () => {
     if (!token) return;
     setLoading(true);
@@ -88,8 +90,15 @@ export default function CIaaSServiceManager({ token }: CIaaSServiceManagerProps)
     e.preventDefault();
     if (!token) return;
     try {
-      const { provisionCIAASService } = await import("../apiClient");
-      await provisionCIAASService(provisionForm);
+      // Use customer-safe endpoint for non-admin users
+      const { provisionCIAASService, provisionCustomerCIAASService } = await import("../apiClient");
+      if (isAdmin) {
+        await provisionCIAASService(provisionForm);
+      } else {
+        // Remove admin-only fields for customer provision
+        const { admin_privileged, ...customerForm } = provisionForm;
+        await provisionCustomerCIAASService(customerForm);
+      }
       setShowProvisionModal(false);
       await fetchServices();
     } catch (err) {
@@ -269,7 +278,7 @@ export default function CIaaSServiceManager({ token }: CIaaSServiceManagerProps)
                   >
                     <option value="developer">Developer</option>
                     <option value="production">Production</option>
-                    <option value="sovereign">Sovereign</option>
+                    {isAdmin && <option value="sovereign">Sovereign</option>}
                   </select>
                 </div>
                 <div>
@@ -282,8 +291,8 @@ export default function CIaaSServiceManager({ token }: CIaaSServiceManagerProps)
                     className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
                   >
                     <option value="single-tenant">Single Tenant</option>
-                    <option value="dedicated-control-plane">Dedicated Control Plane</option>
-                    <option value="sovereign-isolated">Sovereign Isolated</option>
+                    {isAdmin && <option value="dedicated-control-plane">Dedicated Control Plane</option>}
+                    {isAdmin && <option value="sovereign-isolated">Sovereign Isolated</option>}
                   </select>
                 </div>
               </div>

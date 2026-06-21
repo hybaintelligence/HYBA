@@ -1353,7 +1353,7 @@ async function fetchWithRetry(
     try {
       const response = await fetch(url, interceptedOptions);
       if (response.ok) return response;
-      if (!retryOn(response.status) || attempt >= maxRetries) {
+      if (!retryOn(response.status) || attempt === maxRetries) {
         throw await parseApiError(response);
       }
       lastError = await parseApiError(response);
@@ -1361,7 +1361,7 @@ async function fetchWithRetry(
       await new Promise((resolve) => setTimeout(resolve, delay + secureUnitInterval() * 100));
     } catch (error) {
       if (error instanceof HybaApiError) throw error;
-      if (attempt >= maxRetries) throw error;
+      if (attempt === maxRetries) throw error;
       lastError = error instanceof Error ? error : new Error(String(error));
       const delay = calculateDelay(attempt, baseDelayMs, maxDelayMs);
       await new Promise((resolve) => setTimeout(resolve, delay + secureUnitInterval() * 100));

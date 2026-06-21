@@ -56,6 +56,8 @@ export default function QaaSComputerManager({ token }: QaaSComputerManagerProps)
     ],
   });
 
+  const [isAdmin, setIsAdmin] = useState(false);
+
   const fetchComputers = async () => {
     if (!token) return;
     setLoading(true);
@@ -96,8 +98,15 @@ export default function QaaSComputerManager({ token }: QaaSComputerManagerProps)
     e.preventDefault();
     if (!token) return;
     try {
-      const { provisionQaaSComputer } = await import("../apiClient");
-      await provisionQaaSComputer(provisionForm);
+      // Use customer-safe endpoint for non-admin users
+      const { provisionQaaSComputer, provisionCustomerQaaSComputer } = await import("../apiClient");
+      if (isAdmin) {
+        await provisionQaaSComputer(provisionForm);
+      } else {
+        // Remove admin-only fields for customer provision
+        const { admin_privileged, ...customerForm } = provisionForm;
+        await provisionCustomerQaaSComputer(customerForm);
+      }
       setShowProvisionModal(false);
       await fetchComputers();
     } catch (err) {
@@ -297,7 +306,7 @@ export default function QaaSComputerManager({ token }: QaaSComputerManagerProps)
                   >
                     <option value="developer">Developer</option>
                     <option value="production">Production</option>
-                    <option value="sovereign">Sovereign</option>
+                    {isAdmin && <option value="sovereign">Sovereign</option>}
                   </select>
                 </div>
                 <div>
@@ -310,8 +319,8 @@ export default function QaaSComputerManager({ token }: QaaSComputerManagerProps)
                     className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
                   >
                     <option value="single-tenant">Single Tenant</option>
-                    <option value="dedicated-control-plane">Dedicated Control Plane</option>
-                    <option value="sovereign-isolated">Sovereign Isolated</option>
+                    {isAdmin && <option value="dedicated-control-plane">Dedicated Control Plane</option>}
+                    {isAdmin && <option value="sovereign-isolated">Sovereign Isolated</option>}
                   </select>
                 </div>
               </div>

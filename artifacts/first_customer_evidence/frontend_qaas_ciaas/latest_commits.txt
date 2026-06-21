@@ -1,0 +1,10 @@
+eba714a2 Add quantum mathematical execution API — TN contraction, VQE, Berry phase, entanglement spectrum
+7c47b2b4 Merge branch 'main' of https://github.com/hybaanalytics1/HYBA_FULLSTACK
+6bfe2ea8 PRODUCTION ELEVATION
+82c17000 Merge pull request #125 from hybaanalytics1/codex/investigate-and-harden-consciousness-implementation
+07390485 Package replay CLI and add examples
+d821dd3e prod readiness elevation
+f1cb34eb Add first-customer review instructions for evidence-v1 tag
+5c58e9d9 Add first-customer readiness evidence logs
+51dd4080 prod closure
+6679d932 Add first-customer evidence artifacts: readiness gate, telemetry, McKinsey benchmarks, git state
