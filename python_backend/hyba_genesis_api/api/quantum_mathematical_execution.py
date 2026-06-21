@@ -344,11 +344,10 @@ def _execute_variational_eigensolver(req: VariationalEigensolverRequest) -> Dict
 
             energy = 0.0
             for i in range(n - 1):
-                z_i = mps.compute_expectation(Z, i)
-                z_j = mps.compute_expectation(Z, i + 1)
-                x_i = mps.compute_expectation(X, i)
-                energy -= req.coupling_strength * z_i * z_j
-                energy -= req.field_strength * x_i
+                z_i = extract_verified_real(mps.compute_expectation(Z, i), context=f"Z@{i}")
+                z_j = extract_verified_real(mps.compute_expectation(Z, i + 1), context=f"Z@{i+1}")
+                x_i = extract_verified_real(mps.compute_expectation(X, i), context=f"X@{i}")
+                energy += -req.coupling_strength * z_i * z_j + -req.field_strength * x_i
 
             # Apply φ-adaptive compression each sweep
             mps = mps.compress_adaptive(base_max_bond=req.max_bond_dim)
@@ -415,7 +414,7 @@ def _compute_berry_phase_loop(H_func, loop_steps: int, loop_radius: float) -> Di
     for k in range(loop_steps):
         next_k = (k + 1) % loop_steps
         overlap = np.vdot(states[k], states[next_k])
-        overlaps.append(abs(float(overlap)))
+        overlaps.append(float(abs(overlap)))
         product *= overlap
 
     berry_phase = -float(np.angle(product))

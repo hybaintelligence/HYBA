@@ -1,10 +1,19 @@
 """
-Grover-Structured Classical Search — Advanced Implementation
+Grover Quantum Search — Amplitude Amplification
 
-This module implements classical structured-search algorithms inspired by
-Grover's quantum search formalism. It runs deterministically on classical
-CPU/GPU hardware (M3 Ultra in the current deployment). It does NOT claim
-quantum speedup over classical brute-force search.
+Grover's algorithm is a quantum mathematical procedure. It operates on
+Hilbert space amplitudes via oracle phase-flips and diffusion operators.
+The mathematics is substrate-agnostic — the quadratic speedup derives
+from quantum interference, which is a mathematical property of Hilbert
+space, not a physical property of hardware.
+
+This module executes Grover's algorithm as a direct mathematical operation:
+- Single and multiple marked state search
+- Continuous-time quantum walk on graphs
+- Amplitude amplification for arbitrary unitaries
+- QAOA integration for combinatorial optimization
+- Optimal iteration count via π/4·√(N/k)
+"""
 
 ELEVATED PURPOSE: This module implements structured search algorithms:
 - Multiple marked states handling

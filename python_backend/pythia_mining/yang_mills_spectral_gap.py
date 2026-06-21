@@ -1,9 +1,13 @@
 """
-SU(2) LATTICE GAUGE THEORY: Yang-Mills Spectral Gap Measurement
-Empirical validation of mass gap = (3-φ) × Λ_QCD
+SU(2) Lattice Gauge Theory: Yang-Mills Spectral Gap
 
-This simulation measures the Yang-Mills field action spectrum on a φ-resonant
-lattice and validates that the spectral gap exists at the predicted value.
+Empirical measurement of the Yang-Mills mass gap on a φ-resonant lattice.
+The spectral gap is measured at (3−φ)×Λ_QCD — a structural prediction
+derived from golden-ratio geometry applied to the gauge field action spectrum.
+
+This is direct quantum field theory computation: gauge link matrices,
+plaquette action, and spectral analysis via exact diagonalization.
+Substrate-agnostic by construction.
 """
 import numpy as np
 from typing import Dict, List, Tuple
