@@ -1,27 +1,4 @@
- M python_backend/hyba_genesis_api/api/quantum_mathematical_execution.py
- M python_backend/hyba_genesis_api/api/security.py
- M python_backend/hyba_genesis_api/main.py
- M python_backend/pythia_mining/redis_state_registry.py
- M src/components/CEOTerminal.tsx
- M src/components/CIaaSServiceManager.tsx
- M src/components/QaaSComputerManager.tsx
-?? .hypothesis/constants/03927eab1a19ed1c
-?? .hypothesis/constants/19a4578092aa6ff0
-?? .hypothesis/constants/1c34d551c161ebf1
-?? .hypothesis/constants/57d70035b636eb94
-?? .hypothesis/constants/674887ce992769a5
-?? .hypothesis/constants/f3fae65408f42377
-?? SALAMANDER_PHASE_2_IMPLEMENTATION.md
-?? SESSION_SUMMARY_APIS_COMPLETE.md
-?? artifacts/first_customer_evidence/frontend_qaas_ciaas/
-?? docs/CI_LIMITATIONS_AND_LOCAL_EVIDENCE.md
-?? docs/COMPLETE_ANNOUNCEMENT_QUANTUM_MILLENNIUM_GREATMINDS.md
-?? docs/ENTERPRISE_API_CATALOG_COMPLETE.md
-?? docs/QAAS_LAUNCH_READINESS_SCALING_PLAN.md
-?? python_backend/hyba_genesis_api/api/millennium_mathematics.py
-?? python_backend/pythia_mining/lattice_yang_mills.py
-?? python_backend/pythia_mining/mera_quantum.py
-?? python_backend/pythia_mining/quantum_reproducibility_attestation.py
-?? run-local-acceptance.sh
-?? run-replay-tests.py
-?? tests/test_millennium_mathematics_api.py
+ M artifacts/first_customer_evidence/frontend_qaas_ciaas/git_status.txt
+ M python_backend/hyba_genesis_api/api/multi_agent/__init__.py
+ M python_backend/hyba_genesis_api/api/multi_agent/orchestrator.py
+?? python_backend/hyba_genesis_api/api/multi_agent/pso_allocator.py

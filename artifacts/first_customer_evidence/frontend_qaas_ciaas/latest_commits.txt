@@ -1,10 +1,10 @@
+50874085 production elevation
+0768d814 Add topological mass-gap optimizer with Yang-Mills enforcement gate
+3d0b371c Merge branch 'main' of https://github.com/hybaanalytics1/HYBA_FULLSTACK
+40032199 prod elevation
+b76e5a8e Merge pull request #126 from hybaanalytics1/codex/fix-validation-errors-in-mass-gap-measurement
+83584782 Elevate Yang-Mills operational controls
+c15543cb PRODUCTION ELEVATION
+966b0b31 Add frontend QaaS CIaaS management surface and evidence
 eba714a2 Add quantum mathematical execution API — TN contraction, VQE, Berry phase, entanglement spectrum
 7c47b2b4 Merge branch 'main' of https://github.com/hybaanalytics1/HYBA_FULLSTACK
-6bfe2ea8 PRODUCTION ELEVATION
-82c17000 Merge pull request #125 from hybaanalytics1/codex/investigate-and-harden-consciousness-implementation
-07390485 Package replay CLI and add examples
-d821dd3e prod readiness elevation
-f1cb34eb Add first-customer review instructions for evidence-v1 tag
-5c58e9d9 Add first-customer readiness evidence logs
-51dd4080 prod closure
-6679d932 Add first-customer evidence artifacts: readiness gate, telemetry, McKinsey benchmarks, git state
