@@ -15,6 +15,18 @@ from .specialist_agents import (
     VerificationSpecialist,
     ExecutorAgent,
 )
+from .swarm_communication import (
+    SwarmMessage,
+    SwarmCommunication,
+    SwarmEnabledAgent,
+    get_swarm_communication,
+)
+from .pso_allocator import (
+    PSOParticle,
+    PSOTaskAllocator,
+    SwarmTaskCoordinator,
+    get_task_coordinator,
+)
 
 __all__ = [
     "SalamanderAgent",
@@ -30,4 +42,12 @@ __all__ = [
     "FrontendSpecialist",
     "VerificationSpecialist",
     "ExecutorAgent",
+    "SwarmMessage",
+    "SwarmCommunication",
+    "SwarmEnabledAgent",
+    "get_swarm_communication",
+    "PSOParticle",
+    "PSOTaskAllocator",
+    "SwarmTaskCoordinator",
+    "get_task_coordinator",
 ]
