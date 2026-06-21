@@ -23,6 +23,8 @@ import {
   Filter,
   Download,
   Trash2,
+  Edit,
+  FileText,
 } from "lucide-react";
 
 interface RegenerationEvent {
@@ -30,15 +32,20 @@ interface RegenerationEvent {
   timestamp: string;
   module_id: string;
   lane_id?: number;
-  event_type: "fault_detected" | "quarantine" | "blastema_formation" | "redifferentiation" | "recovery" | "failure";
+  event_type: "fault_detected" | "quarantine" | "blastema_formation" | "redifferentiation" | "recovery" | "failure" | "rejection";
   severity: "low" | "medium" | "high" | "critical";
-  status: "pending" | "in_progress" | "completed" | "failed";
+  status: "pending" | "in_progress" | "completed" | "failed" | "rejected";
   phi_score?: number;
   fidelity?: number;
   duration_ms?: number;
   message: string;
   details?: Record<string, any>;
   ai_triggered: boolean;
+  // PHASE 2: Enhanced fields
+  impact_score?: number;
+  files_changed?: string[];
+  rollback_possible?: boolean;
+  approval_status?: "auto_approved" | "pending_approval" | "rejected" | "approved";
 }
 
 interface CEOTerminalProps {
@@ -53,47 +60,93 @@ const CEOTerminal: React.FC<CEOTerminalProps> = ({
   maxEvents = 100,
 }) => {
   const [events, setEvents] = useState<RegenerationEvent[]>([]);
+  const [pendingApprovals, setPendingApprovals] = useState<RegenerationEvent[]>([]);
   const [isConnected, setIsConnected] = useState(false);
-  const [filter, setFilter] = useState<"all" | "ai_triggered" | "system" | "failures">("all");
+  const [filter, setFilter] = useState<"all" | "ai_triggered" | "system" | "failures" | "pending">("all");
   const [expandedEvents, setExpandedEvents] = useState<Set<string>>(new Set());
   const terminalRef = useRef<HTMLDivElement>(null);
   const wsRef = useRef<WebSocket | null>(null);
 
-  // Simulated WebSocket connection for real-time updates
+  // Connect to real API for regeneration events
   useEffect(() => {
     if (!token) return;
 
-    // In production, this would connect to actual WebSocket endpoint
-    // For now, we'll simulate with periodic polling
-    const connectWebSocket = () => {
-      setIsConnected(true);
-      
-      // Simulate receiving regeneration events
-      const simulationInterval = setInterval(() => {
-        if (Math.random() > 0.7) { // 30% chance of new event
-          const newEvent = generateSimulatedEvent();
-          setEvents(prev => {
-            const updated = [newEvent, ...prev].slice(0, maxEvents);
-            return updated;
-          });
-        }
-      }, 3000);
+    const fetchRegenerationEvents = async () => {
+      try {
+        const response = await fetch("/api/security/regeneration/events?limit=100&include_pending=true", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
-      return () => {
-        clearInterval(simulationInterval);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.events && Array.isArray(data.events)) {
+            setEvents(data.events);
+          }
+          if (data.pending_approvals && Array.isArray(data.pending_approvals)) {
+            setPendingApprovals(data.pending_approvals);
+          }
+          setIsConnected(true);
+        }
+      } catch (error) {
+        console.error("Failed to fetch regeneration events:", error);
         setIsConnected(false);
-      };
+      }
     };
 
-    const cleanup = connectWebSocket();
+    // Initial fetch
+    fetchRegenerationEvents();
+
+    // Poll for updates every 3 seconds
+    const interval = setInterval(fetchRegenerationEvents, 3000);
 
     return () => {
+      clearInterval(interval);
       if (wsRef.current) {
         wsRef.current.close();
       }
-      cleanup();
     };
   }, [token, maxEvents]);
+
+  // PHASE 2: Approval action handlers
+  const handleApproval = async (eventId: string, action: "approve" | "reject" | "edit", editedParameters?: Record<string, any>) => {
+    try {
+      const response = await fetch("/api/security/regeneration/approve", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          event_id: eventId,
+          action,
+          edited_parameters: editedParameters,
+        }),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        // Refresh the events after approval action
+        const eventsResponse = await fetch("/api/security/regeneration/events?limit=100&include_pending=true", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (eventsResponse.ok) {
+          const data = await eventsResponse.json();
+          if (data.events && Array.isArray(data.events)) {
+            setEvents(data.events);
+          }
+          if (data.pending_approvals && Array.isArray(data.pending_approvals)) {
+            setPendingApprovals(data.pending_approvals);
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Failed to handle approval:", error);
+    }
+  };
 
   // Auto-scroll to latest event
   useEffect(() => {
@@ -179,6 +232,11 @@ const CEOTerminal: React.FC<CEOTerminalProps> = ({
         "Insufficient innervation for regeneration",
         "Malformed collapse detected - requarantine required",
       ],
+      rejection: [
+        "AI-triggered regeneration rejected by human operator",
+        "Regeneration proposal declined - manual intervention required",
+        "Autonomous fix blocked by executive override",
+      ],
     };
 
     const eventMessages = messages[eventType];
@@ -258,6 +316,7 @@ const CEOTerminal: React.FC<CEOTerminalProps> = ({
     if (filter === "all") return true;
     if (filter === "ai_triggered") return event.ai_triggered;
     if (filter === "system") return !event.ai_triggered;
+    if (filter === "pending") return event.approval_status === "pending_approval";
     if (filter === "failures") return event.status === "failed" || event.severity === "critical";
     return true;
   });
@@ -301,6 +360,14 @@ const CEOTerminal: React.FC<CEOTerminalProps> = ({
               }`}
             >
               AI-Triggered
+            </button>
+            <button
+              onClick={() => setFilter("pending")}
+              className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
+                filter === "pending" ? "bg-purple-500 text-white" : "bg-slate-700 text-slate-300 hover:bg-slate-600"
+              }`}
+            >
+              Pending ({pendingApprovals.length})
             </button>
             <button
               onClick={() => setFilter("failures")}
@@ -400,6 +467,11 @@ const CEOTerminal: React.FC<CEOTerminalProps> = ({
                           AI-TRIGGERED
                         </span>
                       )}
+                      {event.approval_status === "pending_approval" && (
+                        <span className="text-xs font-medium px-2 py-0.5 rounded bg-yellow-500/20 text-yellow-400">
+                          PENDING APPROVAL
+                        </span>
+                      )}
                     </div>
                     <p className="text-sm text-slate-300 truncate">{event.message}</p>
                   </div>
@@ -449,7 +521,71 @@ const CEOTerminal: React.FC<CEOTerminalProps> = ({
                       <span className="text-slate-500">Event Type:</span>
                       <span className="text-slate-300 ml-2">{event.event_type}</span>
                     </div>
+                    {/* PHASE 2: Enhanced fields display */}
+                    {event.impact_score !== undefined && (
+                      <div>
+                        <span className="text-slate-500">Impact Score:</span>
+                        <span className="text-slate-300 ml-2">{(event.impact_score * 100).toFixed(1)}%</span>
+                      </div>
+                    )}
+                    {event.files_changed && event.files_changed.length > 0 && (
+                      <div>
+                        <span className="text-slate-500">Files Changed:</span>
+                        <span className="text-slate-300 ml-2">{event.files_changed.length} files</span>
+                      </div>
+                    )}
+                    {event.rollback_possible !== undefined && (
+                      <div>
+                        <span className="text-slate-500">Rollback Possible:</span>
+                        <span className={`ml-2 ${event.rollback_possible ? "text-green-400" : "text-red-400"}`}>
+                          {event.rollback_possible ? "Yes" : "No"}
+                        </span>
+                      </div>
+                    )}
                   </div>
+                  
+                  {/* PHASE 2: Approval buttons for pending regenerations */}
+                  {event.approval_status === "pending_approval" && (
+                    <div className="mt-3 flex items-center gap-2">
+                      <button
+                        onClick={() => handleApproval(event.id, "approve")}
+                        className="flex items-center gap-1 px-3 py-1.5 bg-green-600 hover:bg-green-700 rounded text-xs text-white transition-colors"
+                      >
+                        <CheckCircle className="w-3 h-3" />
+                        Approve
+                      </button>
+                      <button
+                        onClick={() => handleApproval(event.id, "reject")}
+                        className="flex items-center gap-1 px-3 py-1.5 bg-red-600 hover:bg-red-700 rounded text-xs text-white transition-colors"
+                      >
+                        <XCircle className="w-3 h-3" />
+                        Reject
+                      </button>
+                      <button
+                        onClick={() => handleApproval(event.id, "edit", { severity: "low" })}
+                        className="flex items-center gap-1 px-3 py-1.5 bg-slate-600 hover:bg-slate-700 rounded text-xs text-white transition-colors"
+                      >
+                        <Edit className="w-3 h-3" />
+                        Edit
+                      </button>
+                    </div>
+                  )}
+                  
+                  {/* PHASE 2: Files changed display */}
+                  {event.files_changed && event.files_changed.length > 0 && expandedEvents.has(event.id) && (
+                    <div className="mt-3 p-2 bg-slate-900 rounded">
+                      <div className="text-xs text-slate-500 mb-1">Files to be changed:</div>
+                      <ul className="text-xs text-slate-400 space-y-1">
+                        {event.files_changed.map((file, idx) => (
+                          <li key={idx} className="flex items-center gap-2">
+                            <FileText className="w-3 h-3" />
+                            {file}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  
                   {event.details && (
                     <div className="mt-3 p-2 bg-slate-900 rounded">
                       <div className="text-xs text-slate-500 mb-1">Details:</div>

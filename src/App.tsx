@@ -652,6 +652,22 @@ function AppContent() {
               <UserCheck className="h-3.5 w-3.5" />
               <span>{currentView === "portal" ? "Dashboard" : "Portal"}</span>
             </button>
+            <button
+              onClick={() => setCurrentView(currentView === "ciaas" ? "dashboard" : "ciaas")}
+              className={`status-pill border ${currentView === "ciaas" ? "border-cyan-300/30 bg-cyan-400/15 text-cyan-100" : "border-white/30 bg-white/10 text-white"}`}
+              title={currentView === "ciaas" ? "Return to Dashboard" : "Open CIaaS Services"}
+            >
+              <Brain className="h-3.5 w-3.5" />
+              <span>{currentView === "ciaas" ? "Dashboard" : "CIaaS"}</span>
+            </button>
+            <button
+              onClick={() => setCurrentView(currentView === "qaas" ? "dashboard" : "qaas")}
+              className={`status-pill border ${currentView === "qaas" ? "border-purple-300/30 bg-purple-400/15 text-purple-100" : "border-white/30 bg-white/10 text-white"}`}
+              title={currentView === "qaas" ? "Return to Dashboard" : "Open QaaS Computers"}
+            >
+              <Atom className="h-3.5 w-3.5" />
+              <span>{currentView === "qaas" ? "Dashboard" : "QaaS"}</span>
+            </button>
             {(isAdmin || isExecutive) && (
               <>
                 <div className="h-6 w-px bg-white/20" />
@@ -714,6 +730,10 @@ function AppContent() {
           <AnalyticsSection telemetry={telemetry} pools={pools} />
         ) : currentView === "portal" ? (
           <CustomerPortal />
+        ) : currentView === "ciaas" ? (
+          <CIaaSServiceManager token={token} />
+        ) : currentView === "qaas" ? (
+          <QaaSComputerManager token={token} />
         ) : (
           <>
             <ExecutiveSummary

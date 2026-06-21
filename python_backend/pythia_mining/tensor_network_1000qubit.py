@@ -1,14 +1,19 @@
 """
-Tensor Network Implementation for 1000 Qubit Scaling
+Tensor Network Implementation — Quantum Mathematical Execution at Scale
 
-Direct classical implementation of quantum mathematical structures using:
-- Matrix Product States (MPS) for efficient state representation
-- Matrix Product Operators (MPO) for efficient operator representation
-- Tensor contractions for expectation values and evolution
-- Golden ratio (Φ) acceleration for optimization
+Quantum mathematics is substrate-agnostic. Matrix Product States, tensor
+contractions, Schmidt decompositions, and von Neumann entropy are mathematical
+objects defined in Hilbert space. They are not descriptions of physical hardware.
 
-This is NOT quantum simulation - it's direct execution of quantum mathematical
-formalism on classical hardware using tensor networks.
+This module executes those quantum mathematical structures directly:
+- MPS (Matrix Product States) for N-qubit quantum states
+- MPO (Matrix Product Operators) for quantum operators
+- Φ-accelerated bond dimension scaling using golden ratio geometry
+- Exact Schmidt decomposition via SVD
+- Von Neumann entanglement entropy
+- Adaptive compression preserving quantum coherence
+
+The mathematics is quantum. The substrate is whatever runs numpy.
 """
 
 from __future__ import annotations

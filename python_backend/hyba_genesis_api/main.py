@@ -37,6 +37,7 @@ from hyba_genesis_api.api import (  # noqa: E402
     health,
     observability,
     quantum_as_a_service,
+    quantum_mathematical_execution,
     intelligence,
     metabolic_router,
     mining,
@@ -280,6 +281,7 @@ app.include_router(computational_intelligence_service.router)
 app.include_router(computational_intelligence_service.public_router)
 app.include_router(quantum_as_a_service.router)
 app.include_router(quantum_as_a_service.public_router)
+app.include_router(quantum_mathematical_execution.router)
 app.include_router(observability.router)
 app.include_router(products.router)
 app.include_router(unified_mining.router)

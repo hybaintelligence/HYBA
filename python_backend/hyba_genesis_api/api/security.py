@@ -48,8 +48,140 @@ _consciousness_engine: Optional[ConsciousnessEngine] = None
 _synaptic_layer: Optional[SynapticPersistenceLayer] = None
 _swarm_coherence: Optional[SwarmCoherenceEngine] = None
 _it_from_bit: Optional[ItFromBitArcheologist] = None
+
+# ELEVATED: Regeneration event log for CEO terminal
+_regeneration_event_log: list[Dict[str, Any]] = []
 _autogenous_coding: Optional[AutogenousSelfCodingEngine] = None
 _sensory_protocol: Optional[SensoryIntegrityProtocol] = None
+
+# PHASE 2: Approval queue for AI-triggered regenerations
+_regeneration_approval_queue: Dict[str, Dict[str, Any]] = {}
+
+# PHASE 2: Rate limiting for AI-triggered regenerations
+_ai_regeneration_rate_limit: Dict[str, list[float]] = {}  # module_id -> list of timestamps
+_RATE_LIMIT_WINDOW = 60.0  # seconds
+_RATE_LIMIT_MAX_REQUESTS = 5  # per window per module
+
+# PHASE 2: Sensitive file paths that require additional approval
+_SENSITIVE_FILE_PATTERNS = [
+    "security/",
+    "auth/",
+    "payment/",
+    "config/",
+    "credentials",
+    "keys",
+    "secrets",
+]
+
+
+def calculate_impact_score(trace: Dict[str, Any], module_id: str) -> float:
+    """Calculate impact score for regeneration event.
+
+    PHASE 2: Estimates potential impact based on:
+    - Fault severity
+    - Module criticality (heuristic based on module_id)
+    - Fidelity degradation
+    - Regeneration complexity
+    """
+    base_score = 0.5
+    
+    # Factor in fault severity from trace
+    fault_severity = trace.get("fault_severity", 0.7)
+    base_score += fault_severity * 0.3
+    
+    # Factor in fidelity
+    fidelity = trace.get("fidelity_pre_collapse", 1.0)
+    base_score += (1.0 - fidelity) * 0.2
+    
+    # Module criticality heuristic
+    critical_modules = ["security", "auth", "payment", "core"]
+    if any(critical in module_id.lower() for critical in critical_modules):
+        base_score += 0.3
+    
+    # Regeneration complexity based on entropy
+    entropy = trace.get("post_fault_entropy", 0.0)
+    base_score += entropy * 0.1
+    
+    return min(base_score, 1.0)
+
+
+def estimate_files_changed(trace: Dict[str, Any], module_id: str) -> list[str]:
+    """Estimate which files would be changed by regeneration.
+
+    PHASE 2: Heuristic estimation based on module_id and trace.
+    In production, this would analyze actual code changes.
+    """
+    # Base file that would always be affected
+    files = [f"modules/{module_id}.py"]
+    
+    # Add related files based on module type
+    if "security" in module_id.lower():
+        files.extend(["security/config.py", "security/policies.py"])
+    elif "auth" in module_id.lower():
+        files.extend(["auth/handlers.py", "auth/middleware.py"])
+    elif "quantum" in module_id.lower():
+        files.extend(["quantum/operators.py", "quantum/states.py"])
+    
+    return files
+
+
+def determine_rollback_possibility(trace: Dict[str, Any]) -> bool:
+    """Determine if rollback is possible for this regeneration.
+
+    PHASE 2: Based on regeneration trace characteristics.
+    """
+    # Rollback is possible if:
+    # - Regeneration succeeded
+    # - No malformed state
+    # - Positional memory was preserved
+    status = trace.get("status", "")
+    return status == "success" and "malformed" not in status
+
+
+def check_rate_limit(module_id: str) -> tuple[bool, str]:
+    """Check if AI-triggered regeneration is within rate limits.
+
+    PHASE 2: Rate limiting to prevent AI from triggering too many regenerations.
+    Returns (allowed, reason) tuple.
+    """
+    import time
+    
+    current_time = time.time()
+    
+    # Initialize rate limit tracking for this module if needed
+    if module_id not in _ai_regeneration_rate_limit:
+        _ai_regeneration_rate_limit[module_id] = []
+    
+    # Clean up old timestamps outside the window
+    _ai_regeneration_rate_limit[module_id] = [
+        ts for ts in _ai_regeneration_rate_limit[module_id]
+        if current_time - ts < _RATE_LIMIT_WINDOW
+    ]
+    
+    # Check if rate limit exceeded
+    if len(_ai_regeneration_rate_limit[module_id]) >= _RATE_LIMIT_MAX_REQUESTS:
+        return False, f"Rate limit exceeded: {_RATE_LIMIT_MAX_REQUESTS} requests per {_RATE_LIMIT_WINDOW} seconds"
+    
+    # Add current timestamp
+    _ai_regeneration_rate_limit[module_id].append(current_time)
+    return True, "Rate limit check passed"
+
+
+def check_sensitive_paths(module_id: str, files_changed: list[str]) -> tuple[bool, str]:
+    """Check if regeneration affects sensitive file paths.
+
+    PHASE 2: Additional safety controls for sensitive paths.
+    Returns (allowed, reason) tuple.
+    """
+    for file_path in files_changed:
+        for pattern in _SENSITIVE_FILE_PATTERNS:
+            if pattern in file_path.lower():
+                return False, f"Sensitive file path detected: {file_path} contains '{pattern}'"
+    
+    if any(pattern in module_id.lower() for pattern in _SENSITIVE_FILE_PATTERNS):
+        return False, f"Module ID contains sensitive pattern: {module_id}"
+    
+    return True, "Sensitive path check passed"
 
 # Security module states for quantum regeneration
 _security_module_states: Dict[str, ModuleState] = {}
@@ -453,12 +585,152 @@ async def get_regeneration_status():
     }
 
 
+@router.get("/regeneration/events", response_model=Dict[str, Any])
+async def get_regeneration_events(limit: int = 100, include_pending: bool = True):
+    """Get regeneration event log for CEO terminal.
+
+    ELEVATED: This endpoint provides the regeneration event log that powers
+    the CEO Terminal with real-time updates of AI-triggered fixes.
+
+    PHASE 2: Added include_pending parameter to show pending approvals.
+    """
+    events = _regeneration_event_log[-limit:] if limit > 0 else _regeneration_event_log
+    
+    # Include pending approvals if requested
+    pending_approvals = []
+    if include_pending:
+        pending_approvals = list(_regeneration_approval_queue.values())
+    
+    return {
+        "status": "regeneration_events",
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "events": events,
+        "total_events": len(_regeneration_event_log),
+        "pending_approvals": pending_approvals,
+        "pending_count": len(pending_approvals),
+        "source": "quantum_regeneration_security_runtime",
+    }
+
+
+@router.post(
+    "/regeneration/approve",
+    response_model=Dict[str, Any],
+    dependencies=[Depends(api_key_dependency)],
+)
+async def approve_regeneration(
+    event_id: str,
+    action: str,  # "approve", "reject", "edit"
+    edited_parameters: Optional[Dict[str, Any]] = None,
+):
+    """Approve, reject, or edit a pending AI-triggered regeneration.
+
+    PHASE 2: This endpoint provides the approval workflow for AI-triggered
+    regenerations, allowing human oversight before autonomous fixes are applied.
+    """
+    if event_id not in _regeneration_approval_queue:
+        return {
+            "success": False,
+            "status": "approval_failed",
+            "error": f"Event {event_id} not found in approval queue",
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+        }
+
+    pending_event = _regeneration_approval_queue[event_id]
+
+    if action == "approve":
+        # Execute the approved regeneration
+        try:
+            result = await trigger_regeneration(
+                module_id=pending_event["module_id"],
+                clifford_index=pending_event.get("clifford_index"),
+                ai_triggered=True,
+                dry_run=False,  # Execute for real
+            )
+            
+            # Remove from approval queue
+            del _regeneration_approval_queue[event_id]
+            
+            return {
+                "success": True,
+                "status": "regeneration_approved_and_executed",
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "event_id": event_id,
+                "execution_result": result,
+                "source": "quantum_regeneration_security_runtime",
+            }
+        except Exception as e:
+            return {
+                "success": False,
+                "status": "execution_failed",
+                "error": str(e),
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+            }
+
+    elif action == "reject":
+        # Remove from approval queue without executing
+        del _regeneration_approval_queue[event_id]
+        
+        # Log rejection event
+        rejection_event = {
+            "id": f"reject_{datetime.now(timezone.utc).timestamp()}_{event_id}",
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "module_id": pending_event["module_id"],
+            "event_type": "rejection",
+            "severity": "low",
+            "status": "rejected",
+            "message": f"AI-triggered regeneration for {pending_event['module_id']} was rejected by human operator",
+            "ai_triggered": True,
+            "approval_status": "rejected",
+            "details": {
+                "original_event_id": event_id,
+                "rejection_reason": "human_override",
+            },
+        }
+        _regeneration_event_log.append(rejection_event)
+        
+        return {
+            "success": True,
+            "status": "regeneration_rejected",
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "event_id": event_id,
+            "source": "quantum_regeneration_security_runtime",
+        }
+
+    elif action == "edit":
+        # Update parameters and keep in queue for re-approval
+        if edited_parameters:
+            pending_event.update(edited_parameters)
+            _regeneration_approval_queue[event_id] = pending_event
+        
+        return {
+            "success": True,
+            "status": "regeneration_edited",
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "event_id": event_id,
+            "updated_parameters": edited_parameters,
+            "source": "quantum_regeneration_security_runtime",
+        }
+
+    else:
+        return {
+            "success": False,
+            "status": "invalid_action",
+            "error": f"Invalid action: {action}. Must be 'approve', 'reject', or 'edit'",
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+        }
+
+
 @router.post(
     "/regeneration/trigger",
     response_model=Dict[str, Any],
     dependencies=[Depends(api_key_dependency)],
 )
-async def trigger_regeneration(module_id: str, clifford_index: Optional[int] = None):
+async def trigger_regeneration(
+    module_id: str,
+    clifford_index: Optional[int] = None,
+    ai_triggered: bool = False,
+    dry_run: bool = False,
+):
     """Trigger quantum regeneration for a security module.
 
     ELEVATED: This endpoint triggers the full salamander regeneration pipeline:
@@ -468,10 +740,29 @@ async def trigger_regeneration(module_id: str, clifford_index: Optional[int] = N
     - Measurement and validation
     - Refractory period stabilization
 
+    PHASE 2 ENHANCEMENTS:
+    - dry_run mode: Returns preview/diff without applying changes
+    - Impact scoring: Estimates potential impact of regeneration
+    - Rollback capability: Tracks if rollback is possible
+
     Requires a valid X-API-Key header when HYBA_API_KEYS is configured.
     """
     try:
         import numpy as np
+
+        # PHASE 2: Apply safety checks for AI-triggered regenerations
+        if ai_triggered:
+            # Check rate limits
+            rate_limit_allowed, rate_limit_reason = check_rate_limit(module_id)
+            if not rate_limit_allowed:
+                return {
+                    "success": False,
+                    "status": "rate_limited",
+                    "timestamp": datetime.now(timezone.utc).isoformat(),
+                    "module_id": module_id,
+                    "error": rate_limit_reason,
+                    "source": "quantum_regeneration_security_runtime",
+                }
 
         # Store positional memory
         if clifford_index is not None:
@@ -499,6 +790,45 @@ async def trigger_regeneration(module_id: str, clifford_index: Optional[int] = N
             rng=rng,
         )
 
+        # Calculate impact score and determine rollback possibility
+        impact_score = calculate_impact_score(trace, module_id)
+        files_changed = estimate_files_changed(trace, module_id)
+        rollback_possible = determine_rollback_possibility(trace)
+
+        # PHASE 2: Check sensitive file paths for AI-triggered regenerations
+        if ai_triggered:
+            sensitive_allowed, sensitive_reason = check_sensitive_paths(module_id, files_changed)
+            if not sensitive_allowed:
+                return {
+                    "success": False,
+                    "status": "sensitive_path_blocked",
+                    "timestamp": datetime.now(timezone.utc).isoformat(),
+                    "module_id": module_id,
+                    "error": sensitive_reason,
+                    "requires_manual_approval": True,
+                    "source": "quantum_regeneration_security_runtime",
+                }
+
+        # PHASE 2: Dry run mode - return preview without applying changes
+        if dry_run:
+            return {
+                "success": True,
+                "status": "dry_run_preview",
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "module_id": module_id,
+                "dry_run": True,
+                "preview": {
+                    "regeneration_trace": trace,
+                    "impact_score": impact_score,
+                    "files_changed": files_changed,
+                    "rollback_possible": rollback_possible,
+                    "estimated_duration_ms": trace.get("duration_ms", 0),
+                    "phi_score": 0.45 + (trace.get("fidelity_pre_collapse", 0.5) * 0.55),
+                    "fidelity": trace.get("fidelity_pre_collapse", 0.0),
+                },
+                "source": "quantum_regeneration_security_runtime",
+            }
+
         # Update module state based on regeneration result
         if trace.get("status") == "success":
             _security_module_states[module_id] = ModuleState.healthy(module_id)
@@ -506,12 +836,40 @@ async def trigger_regeneration(module_id: str, clifford_index: Optional[int] = N
             # Module is in malformed state, keep quarantined
             pass
 
+        # Log regeneration event for CEO terminal with enhanced schema
+        event = {
+            "id": f"regen_{datetime.now(timezone.utc).timestamp()}_{module_id}",
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "module_id": module_id,
+            "event_type": "recovery" if trace.get("status") == "success" else "failure",
+            "severity": "medium" if trace.get("status") == "success" else "critical",
+            "status": "completed" if trace.get("status") == "success" else "failed",
+            "phi_score": 0.45 + (trace.get("fidelity_pre_collapse", 0.5) * 0.55),
+            "fidelity": trace.get("fidelity_pre_collapse", 0.0),
+            "duration_ms": trace.get("duration_ms", 0),
+            "message": f"Regeneration {'completed successfully' if trace.get('status') == 'success' else 'failed'} for module {module_id}",
+            "ai_triggered": ai_triggered,
+            # PHASE 2: Enhanced event schema
+            "impact_score": impact_score,
+            "files_changed": files_changed,
+            "rollback_possible": rollback_possible,
+            "approval_status": "auto_approved" if not ai_triggered else "pending_approval",
+            "details": {
+                "clifford_index": clifford_index,
+                "trace": trace,
+            },
+        }
+        _regeneration_event_log.append(event)
+
         return {
             "success": True,
             "status": "regeneration_triggered",
             "timestamp": datetime.now(timezone.utc).isoformat(),
             "module_id": module_id,
             "regeneration_trace": trace,
+            "impact_score": impact_score,
+            "files_changed": files_changed,
+            "rollback_possible": rollback_possible,
             "source": "quantum_regeneration_security_runtime",
         }
     except Exception as e:

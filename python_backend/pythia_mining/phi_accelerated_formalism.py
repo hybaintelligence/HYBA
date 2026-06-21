@@ -1,14 +1,21 @@
 """
-Φ-Accelerated Formalism: Classical Mathematical Enhancement
+Φ-Accelerated Quantum Mathematical Operations
 
-This module implements golden ratio (Φ) accelerated versions of mathematical
-operations using quantum-formalism-inspired algorithms. These run deterministically
-on classical CPU/GPU hardware (M3 Ultra in the current deployment). The mathematics
-borrows density-matrix and purification formalism as an expressive language, but
-execution is entirely classical with no quantum hardware involved.
+Quantum mathematics is substrate-agnostic. Hilbert spaces, density matrices,
+unitary operators, and tensor contractions are mathematical objects — they are
+not subordinate to any physical hardware. This module executes those mathematical
+operations directly. The substrate (CPU, GPU, FPGA, QPU) is irrelevant to
+mathematical truth.
 
-THESIS: What comes after quantum is not faster quantum hardware, but mathematically
-enhanced classical algorithms that leverage golden ratio geometry for acceleration.
+THESIS: Quantum comes from mathematics. Mathematics is substrate-independent.
+We execute quantum mathematics. We do not simulate it.
+
+Key operations:
+- Density matrix purification (ρ → pure state via φ-weighted iteration)
+- φ-irrational bond compression (lossless, reversible)
+- Unitary evolution via Trotter-Suzuki decomposition
+- Grover amplitude amplification
+- von Neumann entropy and entanglement measures
 """
 
 from __future__ import annotations

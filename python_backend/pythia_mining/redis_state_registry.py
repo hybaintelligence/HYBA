@@ -78,7 +78,7 @@ class RedisQuantumSubstrateRegistry:
                 "Redis state registry initialized",
                 extra={"host": self.host, "port": self.port, "db": self.db},
             )
-        except (ImportError, ConnectionError, TimeoutError) as e:
+        except (ImportError, ConnectionError, TimeoutError, Exception) as e:
             logger.warning(
                 "Redis not available; using in-memory state only",
                 extra={"error": str(e), "host": self.host, "port": self.port},
