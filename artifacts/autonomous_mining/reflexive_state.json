@@ -6,7 +6,6 @@
     "max_proposals_per_cycle": 3
   },
   "compression_seeking_history": [
-    1.8971808004057888,
     1.8971813187628355,
     1.8971818098668953,
     1.897182275812127,
@@ -105,11 +104,11 @@
     1.8971999919691542,
     1.8971999922122185,
     1.8971999924410021,
-    1.897199992656728
+    1.897199992656728,
+    1.8971999928604828
   ],
-  "epochs": 329,
+  "epochs": 332,
   "logical_consistency_history": [
-    0.78,
     0.8,
     0.78,
     0.8,
@@ -208,6 +207,7 @@
     0.77,
     0.77,
     0.75,
+    0.77,
     0.77
   ],
   "optimization_targets": [
@@ -2842,6 +2842,30 @@
       "target_name": "phi_scaling",
       "target_value": 1.4249999999999998,
       "tolerance": 0.05
+    },
+    {
+      "current_value": 60.0,
+      "objective_function": "maximize_hashrate",
+      "priority": 4,
+      "target_name": "search_depth",
+      "target_value": 54.0,
+      "tolerance": 5.0
+    },
+    {
+      "current_value": 1.86,
+      "objective_function": "maximize_phi_coherence",
+      "priority": 3,
+      "target_name": "compression_target",
+      "target_value": 1.8971999928604828,
+      "tolerance": 0.05
+    },
+    {
+      "current_value": 1.5,
+      "objective_function": "maximize_phi_coherence",
+      "priority": 5,
+      "target_name": "phi_scaling",
+      "target_value": 1.4249999999999998,
+      "tolerance": 0.05
     }
   ],
   "phi_coherence_threshold": 0.9,
@@ -3013,41 +3037,42 @@
     0.9338708329188548,
     0.9338658329317909,
     0.7338508329439443,
-    0.7338358329553833
+    0.7338358329553833,
+    0.7338208329661697
   ],
   "pool_response_history": [],
   "proposals": [
     {
       "applied": true,
-      "codebase_source_module": "pulvini_memory_compression_proof",
-      "counterfactual_confidence": 0.899999960520043,
-      "current_value": 1.86,
-      "expected_phi_density_gain": 0.004402079870047815,
-      "improvement_type": "compression_target",
-      "logical_consistency_score": 0.8,
-      "proposal_id": "self_opt_326_1782056598",
-      "proposed_value": 1.897199992656728
-    },
-    {
-      "applied": true,
       "codebase_source_module": "ai_optimizer",
       "counterfactual_confidence": 0.6,
       "current_value": 60.0,
-      "expected_phi_density_gain": 0.013045359374999954,
+      "expected_phi_density_gain": 0.013367624999999994,
       "improvement_type": "search_depth",
       "logical_consistency_score": 0.75,
-      "proposal_id": "self_opt_326_1782056598",
+      "proposal_id": "self_opt_329_1782056946",
       "proposed_value": 54.0
+    },
+    {
+      "applied": true,
+      "codebase_source_module": "pulvini_memory_compression_proof",
+      "counterfactual_confidence": 0.8999999616154981,
+      "current_value": 1.86,
+      "expected_phi_density_gain": 0.004695048623653553,
+      "improvement_type": "compression_target",
+      "logical_consistency_score": 0.8,
+      "proposal_id": "self_opt_329_1782056946",
+      "proposed_value": 1.8971999928604828
     },
     {
       "applied": true,
       "codebase_source_module": "phi_scaling_engine",
       "counterfactual_confidence": 0.3,
       "current_value": 1.5,
-      "expected_phi_density_gain": 0.010540170000000071,
+      "expected_phi_density_gain": 0.009954232500000049,
       "improvement_type": "phi_scaling",
       "logical_consistency_score": 0.76,
-      "proposal_id": "self_opt_326_1782056598",
+      "proposal_id": "self_opt_329_1782056946",
       "proposed_value": 1.4249999999999998
     }
   ],
@@ -3062,20 +3087,20 @@
     "compression_target": {
       "evidence_weight": 10.0,
       "failures": 1,
-      "posterior_mean": 0.979592,
-      "successes": 48
+      "posterior_mean": 0.98,
+      "successes": 49
     },
     "phi_scaling": {
       "evidence_weight": 10.0,
       "failures": 1,
-      "posterior_mean": 0.962963,
-      "successes": 26
+      "posterior_mean": 0.964286,
+      "successes": 27
     },
     "search_depth": {
       "evidence_weight": 10.0,
       "failures": 1,
-      "posterior_mean": 0.977273,
-      "successes": 43
+      "posterior_mean": 0.977778,
+      "successes": 44
     }
   }
 }

@@ -69,6 +69,19 @@ from pythia_mining.stateful_regeneration import (
     regeneration_pipeline,
 )
 
+# SALAMANDER INTEGRATION (21 June 2026): Wire multi-agent orchestrator
+try:
+    from hyba_genesis_api.api.multi_agent.orchestrator import SwarmOrchestrator
+    from hyba_genesis_api.api.multi_agent.specialist_agents import (
+        AnalysisAgent,
+        OptimizationAgent,
+        SecurityAgent,
+    )
+    _MULTI_AGENT_AVAILABLE = True
+except (ImportError, ModuleNotFoundError):
+    _MULTI_AGENT_AVAILABLE = False
+    logger.debug("Multi-agent orchestrator not available")
+
 _ALLOWED_ROOT_NAME = "pythia_mining"
 
 
@@ -472,6 +485,19 @@ class ReflexiveController:
         self.module_states: Dict[str, ModuleState] = {}  # Track regeneration states
         self.regeneration_history: List[dict] = []  # Track regeneration events
         self.clifford_index_map: Dict[str, int] = {}  # Positional memory mapping
+        
+        # SALAMANDER INTEGRATION (21 June 2026): Wire multi-agent orchestrator
+        if _MULTI_AGENT_AVAILABLE:
+            self.orchestrator = SwarmOrchestrator()
+            self.agents = {
+                "analysis": AnalysisAgent(),
+                "optimization": OptimizationAgent(),
+                "security": SecurityAgent(),
+            }
+            logger.info("Multi-agent orchestrator initialized and wired to ReflexiveController")
+        else:
+            self.orchestrator = None
+            self.agents = {}
 
     def observe_codebase(self) -> str:
         """Return deterministic AST topology text for dashboard and CIaaS routes."""

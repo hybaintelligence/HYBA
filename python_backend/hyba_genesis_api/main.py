@@ -38,8 +38,8 @@ from hyba_genesis_api.api import (  # noqa: E402
     millennium_mathematics,
     observability,
     quantum_as_a_service,
+    quantum_as_a_service_execute_hardened,
     quantum_mathematical_execution,
-    quantum_intelligence_service,
     intelligence,
     metabolic_router,
     mining,
@@ -56,6 +56,7 @@ from hyba_genesis_api.api import (  # noqa: E402
     unified_mining,
     ops,
 )
+from hyba_genesis_api.api import public_computational_intelligence_service  # noqa: E402
 from hyba_genesis_api.core.api_posture import install_enterprise_api_posture  # noqa: E402
 from hyba_genesis_api.core.recursive_closure import build_buffered_closure  # noqa: E402
 from hyba_genesis_api.core.reflexive_controller import (  # noqa: E402
@@ -328,7 +329,14 @@ app.include_router(metabolic_router.router)
 app.include_router(organism_router.router)
 app.include_router(executive_router.router)
 app.include_router(ops.router)
-app.include_router(quantum_intelligence_service.router)
+# QIaaS removed - serves unverified quantum intelligence claims with no falsifiable criteria
+
+# ============================================================================
+# SALAMANDER-REGENERATED INTEGRATIONS (Auto-wired 21 June 2026)
+# ============================================================================
+# QaaS subsystem integration: Wire quantum execution and computational intelligence
+app.include_router(quantum_as_a_service_execute_hardened.router, prefix="/api/qaas", tags=["Quantum-as-a-Service"])
+app.include_router(public_computational_intelligence_service.router, prefix="/api/ciaas", tags=["Computational-Intelligence"])
 
 
 @app.get("/health", response_model=Dict[str, Any], tags=["health"])
