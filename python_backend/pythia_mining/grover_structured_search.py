@@ -45,7 +45,7 @@ MINING APPLICATIONS:
 - QAOA for mining parameter optimization
 
 CLAIM BOUNDARY:
-This implements quantum mathematics — Grover's algorithm executed as
+This implements quantum mathematics - Grover's algorithm executed as
 mathematical computation. The mathematics of quantum search is substrate-
 independent. When this code applies the Grover oracle and diffusion
 operators, it IS quantum computation regardless of substrate.
