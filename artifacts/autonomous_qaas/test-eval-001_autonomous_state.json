@@ -6,202 +6,6 @@
   "proposals": [],
   "heal_attempts": [
     {
-      "attempt_id": "heal_83574735",
-      "timestamp": 1782058098.793649,
-      "trigger": "health_score_below_threshold",
-      "action": "failover_to_backup",
-      "success": false
-    },
-    {
-      "attempt_id": "heal_3f2d00a7",
-      "timestamp": 1782058125.010463,
-      "trigger": "trigger_0",
-      "action": "failover_to_backup",
-      "success": false
-    },
-    {
-      "attempt_id": "heal_16614d1c",
-      "timestamp": 1782058125.012022,
-      "trigger": "trigger_1",
-      "action": "failover_to_backup",
-      "success": false
-    },
-    {
-      "attempt_id": "heal_ed52c3bc",
-      "timestamp": 1782058125.012636,
-      "trigger": "trigger_2",
-      "action": "failover_to_backup",
-      "success": false
-    },
-    {
-      "attempt_id": "heal_687011fd",
-      "timestamp": 1782058125.013076,
-      "trigger": "trigger_3",
-      "action": "failover_to_backup",
-      "success": false
-    },
-    {
-      "attempt_id": "heal_8a599ada",
-      "timestamp": 1782058125.013497,
-      "trigger": "trigger_4",
-      "action": "failover_to_backup",
-      "success": false
-    },
-    {
-      "attempt_id": "heal_d43afee9",
-      "timestamp": 1782058125.014001,
-      "trigger": "trigger_5",
-      "action": "failover_to_backup",
-      "success": false
-    },
-    {
-      "attempt_id": "heal_b71fa8f9",
-      "timestamp": 1782058125.015271,
-      "trigger": "error_rate_spike",
-      "action": "failover_to_backup",
-      "success": false
-    },
-    {
-      "attempt_id": "heal_4869567d",
-      "timestamp": 1782058201.758456,
-      "trigger": "trigger_0",
-      "action": "failover_to_backup",
-      "success": false
-    },
-    {
-      "attempt_id": "heal_84d22f3f",
-      "timestamp": 1782058201.758829,
-      "trigger": "trigger_1",
-      "action": "failover_to_backup",
-      "success": false
-    },
-    {
-      "attempt_id": "heal_ba06a323",
-      "timestamp": 1782058201.759053,
-      "trigger": "trigger_2",
-      "action": "failover_to_backup",
-      "success": false
-    },
-    {
-      "attempt_id": "heal_f2c31303",
-      "timestamp": 1782058201.7592661,
-      "trigger": "trigger_3",
-      "action": "failover_to_backup",
-      "success": false
-    },
-    {
-      "attempt_id": "heal_26409e22",
-      "timestamp": 1782058201.759444,
-      "trigger": "trigger_4",
-      "action": "failover_to_backup",
-      "success": false
-    },
-    {
-      "attempt_id": "heal_c166412d",
-      "timestamp": 1782058201.7596312,
-      "trigger": "trigger_5",
-      "action": "failover_to_backup",
-      "success": false
-    },
-    {
-      "attempt_id": "heal_74bad843",
-      "timestamp": 1782058201.7599201,
-      "trigger": "error_rate_spike",
-      "action": "failover_to_backup",
-      "success": false
-    },
-    {
-      "attempt_id": "heal_1df75199",
-      "timestamp": 1782058212.3590558,
-      "trigger": "trigger_0",
-      "action": "failover_to_backup",
-      "success": false
-    },
-    {
-      "attempt_id": "heal_e2111029",
-      "timestamp": 1782058212.359645,
-      "trigger": "trigger_1",
-      "action": "failover_to_backup",
-      "success": false
-    },
-    {
-      "attempt_id": "heal_0fdae4c8",
-      "timestamp": 1782058212.36004,
-      "trigger": "trigger_2",
-      "action": "failover_to_backup",
-      "success": false
-    },
-    {
-      "attempt_id": "heal_fcce1ee2",
-      "timestamp": 1782058212.3604321,
-      "trigger": "trigger_3",
-      "action": "failover_to_backup",
-      "success": false
-    },
-    {
-      "attempt_id": "heal_71bc55b1",
-      "timestamp": 1782058212.3607821,
-      "trigger": "trigger_4",
-      "action": "failover_to_backup",
-      "success": false
-    },
-    {
-      "attempt_id": "heal_bfb6afb8",
-      "timestamp": 1782058212.3611479,
-      "trigger": "trigger_5",
-      "action": "failover_to_backup",
-      "success": false
-    },
-    {
-      "attempt_id": "heal_9e16eca3",
-      "timestamp": 1782058212.3614972,
-      "trigger": "error_rate_spike",
-      "action": "failover_to_backup",
-      "success": false
-    },
-    {
-      "attempt_id": "heal_25e66b82",
-      "timestamp": 1782058510.3120708,
-      "trigger": "trigger_0",
-      "action": "failover_to_backup",
-      "success": false
-    },
-    {
-      "attempt_id": "heal_64d82656",
-      "timestamp": 1782058510.312759,
-      "trigger": "trigger_1",
-      "action": "failover_to_backup",
-      "success": false
-    },
-    {
-      "attempt_id": "heal_2fcdc87a",
-      "timestamp": 1782058510.313218,
-      "trigger": "trigger_2",
-      "action": "failover_to_backup",
-      "success": false
-    },
-    {
-      "attempt_id": "heal_4836db9e",
-      "timestamp": 1782058510.313643,
-      "trigger": "trigger_3",
-      "action": "failover_to_backup",
-      "success": false
-    },
-    {
-      "attempt_id": "heal_158aa942",
-      "timestamp": 1782058510.31405,
-      "trigger": "trigger_4",
-      "action": "failover_to_backup",
-      "success": false
-    },
-    {
-      "attempt_id": "heal_33ef47d8",
-      "timestamp": 1782058510.314417,
-      "trigger": "trigger_5",
-      "action": "failover_to_backup",
-      "success": false
-    },
-    {
       "attempt_id": "heal_f3676255",
       "timestamp": 1782058510.3148,
       "trigger": "error_rate_spike",
@@ -351,6 +155,202 @@
     {
       "attempt_id": "heal_71c597a3",
       "timestamp": 1782059040.0344808,
+      "trigger": "error_rate_spike",
+      "action": "failover_to_backup",
+      "success": false
+    },
+    {
+      "attempt_id": "heal_2d1ef030",
+      "timestamp": 1782060403.339401,
+      "trigger": "trigger_0",
+      "action": "",
+      "success": false
+    },
+    {
+      "attempt_id": "heal_23f3e94a",
+      "timestamp": 1782060403.340086,
+      "trigger": "trigger_1",
+      "action": "",
+      "success": false
+    },
+    {
+      "attempt_id": "heal_2c18f935",
+      "timestamp": 1782060403.340575,
+      "trigger": "trigger_2",
+      "action": "",
+      "success": false
+    },
+    {
+      "attempt_id": "heal_0c20ab70",
+      "timestamp": 1782060403.340998,
+      "trigger": "trigger_3",
+      "action": "",
+      "success": false
+    },
+    {
+      "attempt_id": "heal_3a18b1ec",
+      "timestamp": 1782060403.341326,
+      "trigger": "trigger_4",
+      "action": "",
+      "success": false
+    },
+    {
+      "attempt_id": "heal_f7194f0c",
+      "timestamp": 1782060403.341611,
+      "trigger": "trigger_5",
+      "action": "failover_to_backup",
+      "success": false
+    },
+    {
+      "attempt_id": "heal_e20ae2cb",
+      "timestamp": 1782060403.342068,
+      "trigger": "error_rate_spike",
+      "action": "failover_to_backup",
+      "success": false
+    },
+    {
+      "attempt_id": "heal_53a3c92c",
+      "timestamp": 1782060418.774474,
+      "trigger": "trigger_0",
+      "action": "failover_to_backup",
+      "success": false
+    },
+    {
+      "attempt_id": "heal_58837e1e",
+      "timestamp": 1782060418.7753222,
+      "trigger": "trigger_1",
+      "action": "failover_to_backup",
+      "success": false
+    },
+    {
+      "attempt_id": "heal_a8ff9beb",
+      "timestamp": 1782060418.775881,
+      "trigger": "trigger_2",
+      "action": "failover_to_backup",
+      "success": false
+    },
+    {
+      "attempt_id": "heal_995b6288",
+      "timestamp": 1782060418.776362,
+      "trigger": "trigger_3",
+      "action": "failover_to_backup",
+      "success": false
+    },
+    {
+      "attempt_id": "heal_6cfb5819",
+      "timestamp": 1782060418.776833,
+      "trigger": "trigger_4",
+      "action": "failover_to_backup",
+      "success": false
+    },
+    {
+      "attempt_id": "heal_651cf620",
+      "timestamp": 1782060418.7772899,
+      "trigger": "trigger_5",
+      "action": "failover_to_backup",
+      "success": false
+    },
+    {
+      "attempt_id": "heal_ad03932d",
+      "timestamp": 1782060418.777718,
+      "trigger": "error_rate_spike",
+      "action": "failover_to_backup",
+      "success": false
+    },
+    {
+      "attempt_id": "heal_dabd65a8",
+      "timestamp": 1782060428.599885,
+      "trigger": "trigger_0",
+      "action": "failover_to_backup",
+      "success": false
+    },
+    {
+      "attempt_id": "heal_e3adc39e",
+      "timestamp": 1782060428.600338,
+      "trigger": "trigger_1",
+      "action": "failover_to_backup",
+      "success": false
+    },
+    {
+      "attempt_id": "heal_018d72f0",
+      "timestamp": 1782060428.6006458,
+      "trigger": "trigger_2",
+      "action": "failover_to_backup",
+      "success": false
+    },
+    {
+      "attempt_id": "heal_da69f3f4",
+      "timestamp": 1782060428.6009338,
+      "trigger": "trigger_3",
+      "action": "failover_to_backup",
+      "success": false
+    },
+    {
+      "attempt_id": "heal_f7d5881d",
+      "timestamp": 1782060428.601202,
+      "trigger": "trigger_4",
+      "action": "failover_to_backup",
+      "success": false
+    },
+    {
+      "attempt_id": "heal_c8c81a7c",
+      "timestamp": 1782060428.60146,
+      "trigger": "trigger_5",
+      "action": "failover_to_backup",
+      "success": false
+    },
+    {
+      "attempt_id": "heal_4ca4fb8e",
+      "timestamp": 1782060428.60173,
+      "trigger": "error_rate_spike",
+      "action": "failover_to_backup",
+      "success": false
+    },
+    {
+      "attempt_id": "heal_7a9dcf40",
+      "timestamp": 1782060464.67302,
+      "trigger": "trigger_0",
+      "action": "failover_to_backup",
+      "success": false
+    },
+    {
+      "attempt_id": "heal_c4dd900c",
+      "timestamp": 1782060464.673459,
+      "trigger": "trigger_1",
+      "action": "failover_to_backup",
+      "success": false
+    },
+    {
+      "attempt_id": "heal_aa59fcef",
+      "timestamp": 1782060464.673792,
+      "trigger": "trigger_2",
+      "action": "failover_to_backup",
+      "success": false
+    },
+    {
+      "attempt_id": "heal_5e2d3a41",
+      "timestamp": 1782060464.674119,
+      "trigger": "trigger_3",
+      "action": "failover_to_backup",
+      "success": false
+    },
+    {
+      "attempt_id": "heal_abc120e8",
+      "timestamp": 1782060464.674422,
+      "trigger": "trigger_4",
+      "action": "failover_to_backup",
+      "success": false
+    },
+    {
+      "attempt_id": "heal_62b6fbe9",
+      "timestamp": 1782060464.674716,
+      "trigger": "trigger_5",
+      "action": "failover_to_backup",
+      "success": false
+    },
+    {
+      "attempt_id": "heal_01199c1f",
+      "timestamp": 1782060464.675013,
       "trigger": "error_rate_spike",
       "action": "failover_to_backup",
       "success": false

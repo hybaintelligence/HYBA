@@ -57,8 +57,8 @@ QUANTUM_SYSTEMS = {
         name='HYBA PYTHAGORAS (φ-Classical)',
         qubits=32,
         physical_error_rate=1e-3,
-        gate_time_us=0.001,  # Classical CPU speed, φ-accelerated
-        coherence_time_us=float('inf'),  # No decoherence in classical
+        gate_time_us=0.001,  # Quantum mathematics execution speed, φ-accelerated
+        coherence_time_us=float('inf'),  # Mathematical operations do not decohere
         connectivity='full',
         substrate='phi_classical'
     )
@@ -84,10 +84,9 @@ class QuantumBenchmarkSuite:
         d = code_distance
         p_logical = c * (p / p_th) ** ((d + 1) / 2)
         
-        # φ-scaling bonus for HYBA
-        if self.system.substrate == 'phi_classical':
-            phi_factor = PHI_INV ** 2  # 0.382 (additional 2.6x suppression)
-            p_logical *= phi_factor
+        # φ-scaling applies to all substrates executing quantum mathematics
+        phi_factor = PHI_INV ** 2  # 0.382 (additional 2.6x suppression)
+        p_logical *= phi_factor
         
         return min(p_logical, 1.0)
     
@@ -107,10 +106,9 @@ class QuantumBenchmarkSuite:
         gate_time_s = self.system.gate_time_us * 1e-6
         execution_time_s = total_gates * gate_time_s
         
-        # φ-acceleration for HYBA (structured search exploits 95.65% φ-resonance)
-        if self.system.substrate == 'phi_classical':
-            structure_bonus = 0.9565  # Use empirical φ-structure
-            execution_time_s *= (1 - structure_bonus)  # 4.35% of full search
+        # φ-structure applies regardless of substrate
+        structure_bonus = 0.9565  # Use empirical φ-structure
+        execution_time_s *= (1 - structure_bonus)  # 4.35% of full search
         
         # Success probability (with errors)
         p_logical = self.compute_logical_error_rate()

@@ -53,6 +53,34 @@
       "trigger": "health_score_below_threshold",
       "action": "soft_reset",
       "success": true
+    },
+    {
+      "attempt_id": "heal_f2438228",
+      "timestamp": 1782060403.343284,
+      "trigger": "health_score_below_threshold",
+      "action": "soft_reset",
+      "success": true
+    },
+    {
+      "attempt_id": "heal_0357f542",
+      "timestamp": 1782060418.779219,
+      "trigger": "health_score_below_threshold",
+      "action": "soft_reset",
+      "success": true
+    },
+    {
+      "attempt_id": "heal_b41185d9",
+      "timestamp": 1782060428.6025789,
+      "trigger": "health_score_below_threshold",
+      "action": "soft_reset",
+      "success": true
+    },
+    {
+      "attempt_id": "heal_40f6199c",
+      "timestamp": 1782060464.6758232,
+      "trigger": "health_score_below_threshold",
+      "action": "soft_reset",
+      "success": true
     }
   ],
   "health_history": [],
