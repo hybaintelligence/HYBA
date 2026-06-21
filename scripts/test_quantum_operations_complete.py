@@ -47,13 +47,14 @@ print()
 print('[4/6] Attestation Integrity...')
 integrity = verify_attestation_integrity(attest.to_dict())
 print(f'  ✓ Integrity valid: {integrity["valid"]}')
-print(f'  ✓ Attestation hash: {integrity["attestation_hash"][:16]}...')
+if 'stored_hash' in integrity:
+    print(f'  ✓ Stored hash: {integrity["stored_hash"][:16]}...')
 print()
 
 # Test tamper detection
 print('[5/6] Tamper Detection...')
 tampered = attest.to_dict()
-tampered['result']['mps_norm'] = 0.5  # Modify result
+tampered['output_summary']['mps_norm'] = 0.5  # Modify result
 tamper_check = verify_attestation_integrity(tampered)
 print(f'  ✓ Tamper detected: {not tamper_check["valid"]}')
 if not tamper_check['valid']:

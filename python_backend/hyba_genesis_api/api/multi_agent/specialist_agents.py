@@ -3,10 +3,14 @@ Salamander Multi-Agent System - Specialist Agents
 
 Phase 5: Hierarchical Multi-Agent Coordination
 Specialized agents for different domains: Diagnosis, Planning, Backend, Frontend, Verification, Execution.
+
+Phase 5.1: Swarm Intelligence Integration
+Agents now have swarm communication capabilities for proposal/voting and stigmergy.
 """
 
 from typing import Dict, List, Optional, Any
 from .base_agent import SalamanderAgent, SpecialistAgent, AgentTask, AgentResult, AgentCapability
+from .swarm_communication import SwarmEnabledAgent, get_swarm_communication
 import time
 import json
 
@@ -16,6 +20,8 @@ class DiagnosisAgent(SalamanderAgent):
     Strategic layer agent responsible for diagnosing issues.
     
     Analyzes the problem, identifies root causes, and determines the scope of changes needed.
+    
+    PHASE 5.1: Enhanced with swarm communication for collaborative diagnosis.
     """
     
     def __init__(self):
@@ -41,6 +47,7 @@ class DiagnosisAgent(SalamanderAgent):
             ],
             confidence_threshold=75.0
         )
+        self.swarm_comm = get_swarm_communication()
     
     async def execute_task(self, task: AgentTask) -> AgentResult:
         """Execute diagnosis task."""
