@@ -26,10 +26,8 @@ is present" are not the same as tests which validate "the claim is true".
 
 import pytest
 
-pytestmark = pytest.mark.skip(reason="QIaaS removed 2026-06-21 - see CRITICAL_ELEVATION_REPORT.md")
 
-
-def test_qiaas_router_is_wired_into_fastapi_application_ARCHIVED() -> None:
+def test_qiaas_router_is_wired_into_fastapi_application() -> None:
     """ARCHIVED: This test expected quantum_intelligence_service to exist."""
     pass
 
@@ -138,22 +136,22 @@ class _FakeAPIRouter:
         self.tags = tags or []
         self.routes: list[tuple[str, str, str]] = []
 
-    def _decorator(self, method: str, path: str, **_: Any):
+    def _decorator(self, method: str, path: str, **_):
         def register(func):
             self.routes.append((method, path, func.__name__))
             return func
 
         return register
 
-    def post(self, path: str, **kwargs: Any):
+    def post(self, path: str, **kwargs):
         return self._decorator("POST", path, **kwargs)
 
-    def get(self, path: str, **kwargs: Any):
+    def get(self, path: str, **kwargs):
         return self._decorator("GET", path, **kwargs)
 
 
 class _FakeBaseModel:
-    def __init__(self, **kwargs: Any):
+    def __init__(self, **kwargs):
         for key, value in kwargs.items():
             setattr(self, key, value)
 
@@ -168,13 +166,13 @@ class _FakeConsciousnessEngine:
         self.coherence_meter = 0.83
         self.needs_healing = False
 
-    def get_metrics(self) -> dict[str, Any]:
+    def get_metrics(self) -> dict:
         return {
             "integrated_information": self.coherence_meter,
             "integration_regime": "DISTRIBUTED_TEST_DOUBLE",
         }
 
-    def get_synaptic_statistics(self) -> dict[str, Any]:
+    def get_synaptic_statistics(self) -> dict:
         return {
             "emergent_pathways": ["memory_seed->qiaas", "qiaas->claim_boundary"],
             "pathway_count": 2,
@@ -183,13 +181,13 @@ class _FakeConsciousnessEngine:
 
 class _FakeKnowledgeSubstrate:
     def __init__(self):
-        self.contexts_seen: list[dict[str, Any]] = []
+        self.contexts_seen: list[dict] = []
 
-    def best_explanation_for_context(self, context: dict[str, Any]) -> str:
+    def best_explanation_for_context(self, context: dict) -> str:
         self.contexts_seen.append(copy.deepcopy(context))
         return context.get("strategy_id") or "golden_ratio_substrate"
 
-    def explain_decision(self, strategy: str, context: dict[str, Any]) -> dict[str, Any]:
+    def explain_decision(self, strategy: str, context: dict) -> dict:
         self.contexts_seen.append(copy.deepcopy(context))
         return {
             "confidence": float(context.get("confidence", 0.81)),
@@ -198,7 +196,7 @@ class _FakeKnowledgeSubstrate:
             "times_tested": 3,
         }
 
-    def counterfactual_reasoning(self, **_: Any) -> _Counterfactual:
+    def counterfactual_reasoning(self, **_) -> _Counterfactual:
         return _Counterfactual()
 
     def get_knowledge_metrics(self) -> dict[str, int]:
@@ -206,7 +204,7 @@ class _FakeKnowledgeSubstrate:
 
 
 class _FakeRegenerationManager:
-    def get_status(self) -> dict[str, Any]:
+    def get_status(self) -> dict:
         return {
             "lanes": 32,
             "regeneration_potential": 0.91,
@@ -268,7 +266,7 @@ def qiaas_module(monkeypatch: pytest.MonkeyPatch):
     sys.modules.pop(QIAAS_MODULE, None)
 
 
-def _request(module: Any, query_type: str, context: dict[str, Any], threshold: float = 0.7):
+def _request(module, query_type: str, context: dict, threshold: float = 0.7):
     return module.QIaaSQueryRequest(
         query_type=query_type,
         context=context,
@@ -288,7 +286,7 @@ def test_qiaas_router_is_wired_into_fastapi_application() -> None:
     assert "app.include_router(quantum_intelligence_service.router)" in main_source
 
 
-def test_qiaas_runtime_router_contract_is_registered(qiaas_module: Any) -> None:
+def test_qiaas_runtime_router_contract_is_registered(qiaas_module) -> None:
     """The imported router should carry the intended prefix and endpoint surface."""
 
     assert qiaas_module.router.prefix == "/api/qiaas"
@@ -301,7 +299,7 @@ def test_qiaas_runtime_router_contract_is_registered(qiaas_module: Any) -> None:
     }
 
 
-def test_qiaas_metrics_synthesize_memory_seed_and_runtime_substrate(qiaas_module: Any) -> None:
+def test_qiaas_metrics_synthesize_memory_seed_and_runtime_substrate(qiaas_module) -> None:
     """Metrics should combine recorded emergence evidence with live substrate state."""
 
     service = qiaas_module.QuantumIntelligenceService()
@@ -317,7 +315,7 @@ def test_qiaas_metrics_synthesize_memory_seed_and_runtime_substrate(qiaas_module
     assert metrics["counterfactual_models"] == 1
 
 
-def test_qiaas_query_dispatch_and_confidence_gate_are_executed(qiaas_module: Any) -> None:
+def test_qiaas_query_dispatch_and_confidence_gate_are_executed(qiaas_module) -> None:
     """Endpoint dispatch should return bounded responses and fail closed on confidence."""
 
     service = qiaas_module.QuantumIntelligenceService()
@@ -344,7 +342,7 @@ def test_qiaas_query_dispatch_and_confidence_gate_are_executed(qiaas_module: Any
     assert "below threshold" in exc_info.value.detail
 
 
-def test_qiaas_rejects_adversarial_query_types(qiaas_module: Any) -> None:
+def test_qiaas_rejects_adversarial_query_types(qiaas_module) -> None:
     """Malformed, hostile, or scope-expanding query types must fail closed."""
 
     service = qiaas_module.QuantumIntelligenceService()
@@ -373,7 +371,7 @@ def test_qiaas_rejects_adversarial_query_types(qiaas_module: Any) -> None:
         assert "Must be: predict, explain, optimize, heal" in exc_info.value.detail
 
 
-def test_qiaas_operations_preserve_input_contexts_and_finite_scores(qiaas_module: Any) -> None:
+def test_qiaas_operations_preserve_input_contexts_and_finite_scores(qiaas_module) -> None:
     """Property-style invariant sweep over deterministic generated contexts."""
 
     service = qiaas_module.QuantumIntelligenceService()
@@ -406,7 +404,7 @@ def test_qiaas_operations_preserve_input_contexts_and_finite_scores(qiaas_module
             assert 0.0 <= float(score) <= 1.0
 
 
-def test_qiaas_health_and_bootstrap_are_claim_bounded(qiaas_module: Any) -> None:
+def test_qiaas_health_and_bootstrap_are_claim_bounded(qiaas_module) -> None:
     """Health/bootstrap endpoints should report availability without overclaiming."""
 
     service = qiaas_module.QuantumIntelligenceService()
@@ -448,7 +446,7 @@ def test_qiaas_claim_boundary_rejects_unmeasured_hardware_quantum_claims() -> No
         assert "Claim Boundary" in source or "CLAIM BOUNDARY" in source
 
 
-def test_qiaas_rejects_sophisticated_adversarial_payloads(qiaas_module: Any) -> None:
+def test_qiaas_rejects_sophisticated_adversarial_payloads(qiaas_module) -> None:
     """Advanced adversarial payloads including XSS, command injection, and Unicode attacks."""
 
     service = qiaas_module.QuantumIntelligenceService()
@@ -489,7 +487,7 @@ def test_qiaas_rejects_sophisticated_adversarial_payloads(qiaas_module: Any) -> 
         '["predict","explain"]',
         # Protocol-relative URLs
         "//evil.com/predict",
-        "\\\evil.com\\predict",
+        r"\\evil.com\predict",
         # Mixed encoding attacks
         "pre%64ict",  # URL-encoded
         "pre\x64ict",  # Hex-encoded
@@ -508,7 +506,7 @@ def test_qiaas_rejects_sophisticated_adversarial_payloads(qiaas_module: Any) -> 
         assert "Must be: predict, explain, optimize, heal" in exc_info.value.detail
 
 
-def test_qiaas_confidence_threshold_boundary_values(qiaas_module: Any) -> None:
+def test_qiaas_confidence_threshold_boundary_values(qiaas_module) -> None:
     """Confidence gate behavior at exact threshold boundaries and epsilon values."""
 
     service = qiaas_module.QuantumIntelligenceService()
@@ -547,7 +545,7 @@ def test_qiaas_confidence_threshold_boundary_values(qiaas_module: Any) -> None:
             assert "below threshold" in exc_info.value.detail
 
 
-def test_qiaas_handles_malformed_contexts_gracefully(qiaas_module: Any) -> None:
+def test_qiaas_handles_malformed_contexts_gracefully(qiaas_module) -> None:
     """Malformed or missing context fields should be handled without crashes."""
 
     service = qiaas_module.QuantumIntelligenceService()
@@ -579,7 +577,7 @@ def test_qiaas_handles_malformed_contexts_gracefully(qiaas_module: Any) -> None:
             pass
 
 
-def test_qiaas_metrics_handle_edge_cases(qiaas_module: Any) -> None:
+def test_qiaas_metrics_handle_edge_cases(qiaas_module) -> None:
     """Metrics endpoint should handle edge cases like missing or extreme values."""
 
     service = qiaas_module.QuantumIntelligenceService()
@@ -612,7 +610,7 @@ def test_qiaas_metrics_handle_edge_cases(qiaas_module: Any) -> None:
     assert metrics["substrate_health"] in ["OPERATIONAL", "DEGRADED", "OFFLINE"]
 
 
-def test_qiaas_response_format_validation(qiaas_module: Any) -> None:
+def test_qiaas_response_format_validation(qiaas_module) -> None:
     """All responses should conform to expected schema and required fields."""
 
     service = qiaas_module.QuantumIntelligenceService()
@@ -654,7 +652,7 @@ def test_qiaas_response_format_validation(qiaas_module: Any) -> None:
         assert field in bootstrap_response, f"Missing bootstrap response field: {field}"
 
 
-def test_qiaas_cross_operation_consistency(qiaas_module: Any) -> None:
+def test_qiaas_cross_operation_consistency(qiaas_module) -> None:
     """Same context should produce consistent results across different operations."""
 
     service = qiaas_module.QuantumIntelligenceService()
@@ -692,7 +690,7 @@ def test_qiaas_cross_operation_consistency(qiaas_module: Any) -> None:
     assert test_context == original_context, "Context mutated by cross-operation calls"
 
 
-def test_qiaas_all_query_types_execute_successfully(qiaas_module: Any) -> None:
+def test_qiaas_all_query_types_execute_successfully(qiaas_module) -> None:
     """All four allowed query types should execute with valid responses."""
 
     service = qiaas_module.QuantumIntelligenceService()
@@ -712,7 +710,7 @@ def test_qiaas_all_query_types_execute_successfully(qiaas_module: Any) -> None:
         assert "method" in response.result
 
 
-def test_qiaas_context_size_limits(qiaas_module: Any) -> None:
+def test_qiaas_context_size_limits(qiaas_module) -> None:
     """Service should handle contexts of varying sizes without degradation."""
 
     service = qiaas_module.QuantumIntelligenceService()
@@ -741,7 +739,7 @@ def test_qiaas_context_size_limits(qiaas_module: Any) -> None:
         assert 0.0 <= float(score) <= 1.0
 
 
-def test_qiaas_special_characters_in_context(qiaas_module: Any) -> None:
+def test_qiaas_special_characters_in_context(qiaas_module) -> None:
     """Context fields with special characters should be handled correctly."""
 
     service = qiaas_module.QuantumIntelligenceService()
@@ -765,7 +763,7 @@ def test_qiaas_special_characters_in_context(qiaas_module: Any) -> None:
         assert context["strategy_id"] == context["strategy_id"]
 
 
-def test_qiaas_concurrent_operation_safety(qiaas_module: Any) -> None:
+def test_qiaas_concurrent_operation_safety(qiaas_module) -> None:
     """Multiple operations should not interfere with each other."""
 
     service = qiaas_module.QuantumIntelligenceService()

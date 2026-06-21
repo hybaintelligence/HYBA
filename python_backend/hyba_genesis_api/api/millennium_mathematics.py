@@ -107,7 +107,7 @@ class YangMillsOperations:
             "measured_gap_GeV": results["mass_gap"]["measured_GeV"],
             "expected_gap_GeV": results["mass_gap"]["expected_GeV"],
             "prediction_error_pct": results["mass_gap"]["prediction_error_pct"],
-            "statistical_significance": f"{results['mass_gap']['z_score']:.2f}σ",
+            "statistical_significance": f"{results['mass_gap']['prediction_z_score']:.2f}σ",
             "lattice_configuration": {
                 "size": lattice_size,
                 "n_configurations": n_configs,
@@ -244,6 +244,48 @@ class RiemannHypothesisOperations:
             "claim_boundary": evidence["claim_boundary"],
         }
 
+    @staticmethod
+    def eigenvalue_coherence_analysis(params: Dict[str, Any]) -> Dict[str, Any]:
+        """Analyze eigenvalue alignment with the critical line (Re(s) = 0.5).
+
+        This is a runtime spectral coherence check for the Riemann Hypothesis
+        operationalization. It measures how well a set of eigenvalues aligns
+        with the critical line, using φ-resonance as a structural primitive.
+
+        Args:
+            params: Dictionary containing 'eigenvalues' list of complex numbers
+
+        Returns:
+            Dictionary with alignment metrics and claim boundary
+        """
+        eigenvalues = params.get("eigenvalues", [])
+        n_eigenvalues = len(eigenvalues)
+        critical_line = 0.5
+
+        if n_eigenvalues == 0:
+            return {
+                "n_eigenvalues": 0,
+                "critical_line": critical_line,
+                "alignment_percentage": 0.0,
+                "phi": PHI,
+                "claim_boundary": "Eigenvalue coherence analysis; not a proof of the Riemann Hypothesis",
+            }
+
+        # Count how many eigenvalues have real part ≈ 0.5 (within tolerance)
+        on_critical_line = sum(
+            1 for ev in eigenvalues if abs(ev.real - critical_line) < 0.01
+        )
+        alignment_percentage = (on_critical_line / n_eigenvalues) * 100.0
+
+        return {
+            "n_eigenvalues": n_eigenvalues,
+            "critical_line": critical_line,
+            "on_critical_line": on_critical_line,
+            "alignment_percentage": round(alignment_percentage, 2),
+            "phi": PHI,
+            "claim_boundary": "Eigenvalue coherence analysis; not a proof of the Riemann Hypothesis",
+        }
+
 
 class HodgeConjectureOperations:
     """Hodge Conjecture operations."""
@@ -337,6 +379,7 @@ class MillenniumMathematicsService:
         "riemann_hypothesis": {
             "spectral_coherence_analysis": RiemannHypothesisOperations.spectral_coherence_analysis,
             "forensic_spectral_zeta_probe": RiemannHypothesisOperations.spectral_coherence_analysis,
+            "eigenvalue_coherence_analysis": RiemannHypothesisOperations.eigenvalue_coherence_analysis,
         },
         "hodge_conjecture": {
             "memory_geometry_analysis": HodgeConjectureOperations.memory_geometry_analysis,

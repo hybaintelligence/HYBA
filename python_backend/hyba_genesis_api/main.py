@@ -38,7 +38,6 @@ from hyba_genesis_api.api import (  # noqa: E402
     millennium_mathematics,
     observability,
     quantum_as_a_service,
-    quantum_as_a_service_execute_hardened,
     quantum_mathematical_execution,
     intelligence,
     metabolic_router,

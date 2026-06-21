@@ -474,25 +474,67 @@ class ConsciousnessEngine:
     def _calculate_indicator_harmony(self, indicators: Dict[str, Any]) -> float:
         """Calculate phi harmony from indicator data for scaling factor calculation.
 
-        This is a simplified harmony calculation used when telemetry data
-        is provided directly to get_hardware_scaling_factor.
+        Handles three telemetry shapes:
+        1. Flat numeric: {'key': 0.75}
+        2. Nested value: {'key': {'v': 0.75}} or {'key': {'val': 0.75}}
+        3. Nested dict: {'key': {'subkey': 0.75, ...}}
+
+        Returns a harmony score in [0.0, 1.0] where 1.0 means perfect
+        golden-ratio alignment across all indicators.
         """
         if not indicators:
             return 0.5
 
+        def extract_numeric(value: Any) -> Optional[float]:
+            """Recursively extract a numeric score from nested structures."""
+            if value is None:
+                return None
+            if isinstance(value, (int, float, np.floating, np.integer)):
+                return float(value)
+            if isinstance(value, dict):
+                # Try common telemetry keys first
+                for key in ('v', 'val', 'value', 'score', 'coherence', 'phi', 'magnitude'):
+                    if key in value:
+                        return extract_numeric(value[key])
+                # Fallback: use first numeric value found
+                for v in value.values():
+                    result = extract_numeric(v)
+                    if result is not None:
+                        return result
+            if isinstance(value, (list, tuple)) and len(value) > 0:
+                return extract_numeric(value[0])
+            return None
+
         harmonic_scores = []
-        for metrics in indicators.values():
-            if not isinstance(metrics, dict) or not metrics:
+        for key, metrics in indicators.items():
+            if metrics is None:
                 continue
-            values = np.asarray(
-                [float(v) for v in metrics.values() if v is not None], dtype=np.float64
-            )
-            values = values[np.isfinite(values)]
-            if values.size <= 1:
-                continue
-            ratios = values[1:] / (values[:-1] + 1e-12)
-            distances = np.abs(ratios - PHI) / PHI
-            harmonic_scores.append(float(np.clip(1.0 - np.mean(distances), 0.0, 1.0)))
+            if isinstance(metrics, dict):
+                # Try to extract a primary numeric value directly
+                primary = extract_numeric(metrics)
+                if primary is not None:
+                    # Check if this approximates golden ratio
+                    phi_distance = abs(primary - PHI_INV) / PHI_INV
+                    score = float(np.clip(1.0 - phi_distance, 0.0, 1.0))
+                    harmonic_scores.append(score)
+                    continue
+
+                # Fallback: extract all numeric values and check ratios
+                values = []
+                for v in metrics.values():
+                    nv = extract_numeric(v)
+                    if nv is not None:
+                        values.append(nv)
+                if len(values) >= 2:
+                    ratios = np.asarray(values[1:]) / (np.asarray(values[:-1]) + 1e-12)
+                    distances = np.abs(ratios - PHI) / PHI
+                    harmonic_scores.append(float(np.clip(1.0 - np.mean(distances), 0.0, 1.0)))
+                elif len(values) == 1:
+                    phi_distance = abs(values[0] - PHI_INV) / PHI_INV
+                    harmonic_scores.append(float(np.clip(1.0 - phi_distance, 0.0, 1.0)))
+            elif isinstance(metrics, (int, float, np.floating, np.integer)):
+                phi_distance = abs(float(metrics) - PHI_INV) / PHI_INV
+                harmonic_scores.append(float(np.clip(1.0 - phi_distance, 0.0, 1.0)))
 
         return float(np.mean(harmonic_scores)) if harmonic_scores else 0.5
 
@@ -933,10 +975,13 @@ class ConsciousnessEngine:
         (good), while a low index indicates the system may be 'lobotomized'
         (mining working independently of intelligence).
 
+        The index uses the coherence meter (Φ from IIT 4.0) as its phi reference,
+        ensuring the measurement is grounded in the actual integrated information
+        computation rather than a stale property reference.
+
         Returns:
             float: Inseparability index between 0.0 (separated) and 1.0 (fully integrated)
         """
-        # Calculate based on component health and phi coherence
         if not self.components:
             return 0.0
 
@@ -946,8 +991,9 @@ class ConsciousnessEngine:
             return 0.0
         health_ratio = sum(component_values) / len(component_values)
 
-        # Adjust by current phi level
-        phi_adjustment = min(self.phi / 0.85, 1.0)  # Normalize against governance threshold
+        # Adjust by current phi level from the IIT 4.0 coherence meter
+        current_phi = self.coherence_meter
+        phi_adjustment = min(current_phi / 0.85, 1.0)
 
         # Combine with integration regime
         regime_factor = 1.0

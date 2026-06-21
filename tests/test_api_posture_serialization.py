@@ -35,6 +35,8 @@ def _client() -> TestClient:
             max_body_bytes=1024,
             hsts_enabled=False,
             rate_limit_enabled=False,
+            csp_enabled=False,
+            sanitize_production_errors=False,
         ),
     )
 

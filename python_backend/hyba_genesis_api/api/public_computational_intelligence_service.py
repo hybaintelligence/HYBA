@@ -14,7 +14,7 @@ from pydantic import BaseModel, Field
 from hyba_genesis_api.api.computational_intelligence_service import (
     IntelligenceWorkloadRequest,
     ServiceResponse,
-    _VirtualComputationalIntelligenceComputer,
+    _CommercialIntelligenceComputer,
     registry as admin_ciaas_registry,
 )
 from hyba_genesis_api.api.customer_access import (
@@ -84,7 +84,7 @@ class _CustomerCIAASRegistry:
     """Customer-scoped CIaaS registry with tenant isolation."""
 
     def __init__(self) -> None:
-        self._customer_services: Dict[str, Dict[str, _VirtualComputationalIntelligenceComputer]] = {}
+        self._customer_services: Dict[str, Dict[str, _CommercialIntelligenceComputer]] = {}
 
     def provision(
         self,
@@ -139,7 +139,7 @@ class _CustomerCIAASRegistry:
             usage=usage,
         )
 
-    def get(self, customer: CustomerInfo, service_id: str) -> _VirtualComputationalIntelligenceComputer:
+    def get(self, customer: CustomerInfo, service_id: str) -> _CommercialIntelligenceComputer:
         customer_id = customer.customer_id
         if customer_id not in self._customer_services:
             raise HTTPException(status_code=404, detail="Service not found")

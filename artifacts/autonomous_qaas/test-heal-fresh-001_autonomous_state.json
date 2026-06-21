@@ -11,6 +11,48 @@
       "trigger": "health_score_below_threshold",
       "action": "soft_reset",
       "success": true
+    },
+    {
+      "attempt_id": "heal_76843792",
+      "timestamp": 1782058201.760662,
+      "trigger": "health_score_below_threshold",
+      "action": "soft_reset",
+      "success": true
+    },
+    {
+      "attempt_id": "heal_36307216",
+      "timestamp": 1782058212.362831,
+      "trigger": "health_score_below_threshold",
+      "action": "soft_reset",
+      "success": true
+    },
+    {
+      "attempt_id": "heal_5fc8a2ce",
+      "timestamp": 1782058510.316745,
+      "trigger": "health_score_below_threshold",
+      "action": "soft_reset",
+      "success": true
+    },
+    {
+      "attempt_id": "heal_d695dab6",
+      "timestamp": 1782058767.1996312,
+      "trigger": "health_score_below_threshold",
+      "action": "soft_reset",
+      "success": true
+    },
+    {
+      "attempt_id": "heal_0f3e7128",
+      "timestamp": 1782058783.426608,
+      "trigger": "health_score_below_threshold",
+      "action": "soft_reset",
+      "success": true
+    },
+    {
+      "attempt_id": "heal_bd5faeb0",
+      "timestamp": 1782059040.0352309,
+      "trigger": "health_score_below_threshold",
+      "action": "soft_reset",
+      "success": true
     }
   ],
   "health_history": [],
