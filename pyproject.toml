@@ -1,3 +1,27 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hyba-pythia-mining"
+version = "1.0.0"
+description = "Local deterministic replay and reproducibility tooling for HYBA/PYTHIA mining evidence"
+readme = "docs/PYTHIA_REPLAY_PLAYBOOK.md"
+requires-python = ">=3.10"
+dependencies = [
+    "hypothesis==6.155.7",
+]
+
+[project.scripts]
+pythia-replay = "pythia_mining.replay_claim_cli:main"
+
+[tool.setuptools.package-dir]
+"" = "python_backend"
+
+[tool.setuptools.packages.find]
+where = ["python_backend"]
+include = ["pythia_mining*"]
+
 [tool.black]
 line-length = 100
 target-version = ["py39"]

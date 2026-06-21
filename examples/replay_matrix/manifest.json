@@ -1,0 +1,58 @@
+{
+  "claim": {
+    "boundaries": [
+      "Local deterministic replay only; not pool-side accepted-share evidence.",
+      "No guaranteed mining revenue, pool hashrate, or external validation claim.",
+      "No phenomenal consciousness or subjective-experience claim."
+    ],
+    "boundary": "Local deterministic replay only; not pool-side accepted-share evidence. No guaranteed mining revenue, pool hashrate, or external validation claim. No phenomenal consciousness or subjective-experience claim.",
+    "claim": "Example matrix benchmark replay emits deterministic summary artifact.",
+    "commands": [
+      "python -c \"from pathlib import Path; Path('matrix_summary.json').write_text('{\\\"trace\\\": 3, \\\"deterministic\\\": true}' + chr(10)); print('matrix-ok')\""
+    ],
+    "falsification_routes": [
+      {
+        "expected": "mutated replay must diverge from expected_output_digest",
+        "name": "seed_mutation_negative_control",
+        "seed_overrides": {
+          "python_hash_seed": 1
+        },
+        "type": "seed_override"
+      }
+    ],
+    "id": "example_matrix_replay",
+    "reproducibility_attestation": {
+      "boundary": "Local deterministic replay only; not pool-side accepted-share evidence. No guaranteed mining revenue, pool hashrate, or external validation claim. No phenomenal consciousness or subjective-experience claim.",
+      "claim_id": "example_matrix_replay",
+      "commands": [
+        "python -c \"from pathlib import Path; Path('matrix_summary.json').write_text('{\\\"trace\\\": 3, \\\"deterministic\\\": true}' + chr(10)); print('matrix-ok')\""
+      ],
+      "dependency_pins": {
+        "python": "3.12.*"
+      },
+      "environment": {
+        "platform": "Linux-6.12.47-x86_64-with-glibc2.39",
+        "python_version": "3.12.13"
+      },
+      "expected_output_digest": "dd69267833bbd6a20bb22df7d1be5952c02d00c4effc1cada679d9af155f4794",
+      "falsification_route": "Digest mismatch, missing replay command, changed seed/dependency pin, or boundary violation invalidates this local reproducibility attestation.",
+      "input_digest": "6ed291d18cb350eb0be1e28457cafb4adf778a98b752ee7535d070d917729865",
+      "inputs": {
+        "matrix": "diag(1,2)",
+        "trace": 3
+      },
+      "produced_artifacts": [
+        "matrix_summary.json"
+      ],
+      "protocol": "PYTHIA_MINING_SCIENTIFIC_RIGOR_KERNEL_V4",
+      "replay_digest": "45287fa0c1054dec306ef7f82a56ab0b64cafbea466f17e975245c53de33fcce",
+      "reproducible": true,
+      "seeds": {
+        "python_hash_seed": 0
+      }
+    },
+    "status": "implemented_and_executable",
+    "tier": "PROTOTYPE_VALIDATED"
+  },
+  "schema": "HYBA_AUTO_ATTESTED_MINING_MANIFEST_V1"
+}

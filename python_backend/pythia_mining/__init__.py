@@ -109,6 +109,29 @@ _AUTONOMOUS_SEARCH_EXPORTS = {
     "HealingCoordinator",
 }
 
+_REPLAY_REPORTING_EXPORTS = {
+    "VerificationReport",
+    "build_verification_report",
+    "unified_text_diff",
+    "write_report_html",
+    "write_report_json",
+}
+
+_MANIFEST_REGISTRY_EXPORTS = {
+    "RegistryRecord",
+    "ReverificationResult",
+    "list_claims",
+    "load_and_reverify",
+    "load_manifest",
+    "save_verified_manifest",
+}
+
+_AUTO_ATTESTER_EXPORTS = {
+    "AutoAttestedMiningManifest",
+    "DEFAULT_MINING_BOUNDARIES",
+    "emit_attested_mining_success_manifest",
+}
+
 _AUTONOMICS_EXPORTS = {
     "AutonomicOrchestrator",
     "BuresOptimizer",
@@ -190,6 +213,15 @@ def __getattr__(name: str) -> Any:
         else:
             module = import_module(".consciousness_engine", __name__)
         return getattr(module, name)
+    if name in _REPLAY_REPORTING_EXPORTS:
+        module = import_module(".replay_reporting", __name__)
+        return getattr(module, name)
+    if name in _MANIFEST_REGISTRY_EXPORTS:
+        module = import_module(".manifest_registry", __name__)
+        return getattr(module, name)
+    if name in _AUTO_ATTESTER_EXPORTS:
+        module = import_module(".mining_auto_attester", __name__)
+        return getattr(module, name)
     if name in _AUTONOMICS_EXPORTS:
         pulvini_autonomics = import_module(".pulvini_autonomics", __name__)
         return getattr(pulvini_autonomics, name)
@@ -222,7 +254,10 @@ def __getattr__(name: str) -> Any:
 
 
 __all__ = sorted(
-    _AUTONOMICS_EXPORTS
+    _REPLAY_REPORTING_EXPORTS
+    | _MANIFEST_REGISTRY_EXPORTS
+    | _AUTO_ATTESTER_EXPORTS
+    | _AUTONOMICS_EXPORTS
     | _OPERATOR_EXPORTS
     | _ORCHESTRATOR_EXPORTS
     | _TUNER_EXPORTS
