@@ -15,8 +15,14 @@
         "docs/institutional_qaas/MASTER_GAP_CLOSURE_STATUS.md",
         "scripts/check_institutional_qaas_gap_closure.py"
       ],
-      "validation_commands": ["python3 scripts/check_institutional_qaas_gap_closure.py"],
-      "remaining_external_gaps": ["peer review acceptance", "institutional endorsement", "external benchmark replication"]
+      "validation_commands": [
+        "python3 scripts/check_institutional_qaas_gap_closure.py"
+      ],
+      "remaining_external_gaps": [
+        "peer review acceptance",
+        "institutional endorsement",
+        "external benchmark replication"
+      ]
     },
     {
       "id": "mckinsey_hbs_business_intelligence",
@@ -43,8 +49,50 @@
         "reproducibility/benchmarks/peer_benchmarking.py",
         "reproducibility/benchmarks/okr_framework.py"
       ],
-      "validation_commands": ["python3 -m py_compile reproducibility/benchmarks/*.py"],
-      "remaining_external_gaps": ["board-approved pricing", "real cohort data", "first-customer win/loss dataset"]
+      "validation_commands": [
+        "python3 -m py_compile reproducibility/benchmarks/*.py"
+      ],
+      "remaining_external_gaps": [
+        "board-approved pricing",
+        "real cohort data",
+        "first-customer win/loss dataset"
+      ]
+    },
+    {
+      "id": "phase_3_5_enterprise_telemetry_bridge",
+      "review_source": "phase_3_5_enterprise_telemetry_bridge",
+      "source": "Phase 3.5 enterprise telemetry bridge closure",
+      "status": "internal_closed",
+      "closed_count": 1,
+      "total_count": 1,
+      "implemented_artifacts": [
+        "reproducibility/benchmarks/telemetry_bridge.py",
+        "reproducibility/benchmarks/test_mckinsey_additions.py"
+      ],
+      "required_paths": [
+        "reproducibility/benchmarks/telemetry_bridge.py",
+        "reproducibility/benchmarks/test_mckinsey_additions.py"
+      ],
+      "validation_commands": [
+        "python3 -m py_compile reproducibility/benchmarks/*.py",
+        "cd reproducibility/benchmarks && python3 - <<'PY'\nimport test_mckinsey_additions as t\nfor name in dir(t):\n    if name.startswith('test_'):\n        getattr(t, name)()\n        print(name, 'ok')\nPY",
+        "scripts/run_enterprise_telemetry_evidence.sh"
+      ],
+      "first_customer_impact": "Converts live HYBA/QaaS telemetry snapshots into SLA, chargeback, cohort, risk, weekly ops, and board-facing executive outputs.",
+      "customer_readiness_impact": "operating evidence bridge from production telemetry to first-customer executive intelligence",
+      "expected_bridge_outputs": [
+        "sla_report",
+        "chargeback_report",
+        "retention_curve",
+        "risk_count",
+        "weekly_ops_review",
+        "quarterly_deck"
+      ],
+      "remaining_external_gaps": [
+        "Requires customer-specific telemetry source mapping during pilot commissioning.",
+        "Requires agreed board KPI definitions and customer-specific SLA thresholds.",
+        "Requires customer-approved cost-driver and chargeback model."
+      ]
     },
     {
       "id": "ecosystem_enablement",
@@ -65,8 +113,14 @@
         "dashboards/hyba_commercial_observability.json",
         ".github/workflows/production-readiness.yml"
       ],
-      "validation_commands": ["python3 scripts/check_first_customer_readiness.py"],
-      "remaining_external_gaps": ["public developer portal launch", "published SDK packages", "partner marketplace launch"]
+      "validation_commands": [
+        "python3 scripts/check_first_customer_readiness.py"
+      ],
+      "remaining_external_gaps": [
+        "public developer portal launch",
+        "published SDK packages",
+        "partner marketplace launch"
+      ]
     },
     {
       "id": "forensic_security_operations",
@@ -85,8 +139,14 @@
         "docs/runbooks/DATABASE_MIGRATION_ROLLBACK.md",
         "docs/observability/MONITORING_ALERTING_BASELINE.md"
       ],
-      "validation_commands": ["python3 scripts/check_forensic_gap_closure.py"],
-      "remaining_external_gaps": ["customer security questionnaire", "SOC2/ISO audit evidence", "production DR exercise"]
+      "validation_commands": [
+        "python3 scripts/check_forensic_gap_closure.py"
+      ],
+      "remaining_external_gaps": [
+        "customer security questionnaire",
+        "SOC2/ISO audit evidence",
+        "production DR exercise"
+      ]
     },
     {
       "id": "test_gap_analysis_runtime",
@@ -103,8 +163,13 @@
         "python_backend/hyba_genesis_api/core/api_posture.py",
         "scripts/evidence_boundary_report.py"
       ],
-      "validation_commands": ["python3 -m pytest tests/test_review_gap_closure_matrix.py"],
-      "remaining_external_gaps": ["full-suite runtime pass in pinned Python environment", "live-pool accepted share evidence"]
+      "validation_commands": [
+        "python3 -m pytest tests/test_review_gap_closure_matrix.py"
+      ],
+      "remaining_external_gaps": [
+        "full-suite runtime pass in pinned Python environment",
+        "live-pool accepted share evidence"
+      ]
     },
     {
       "id": "first_customer_readiness",
@@ -122,8 +187,14 @@
         "dashboards/hyba_commercial_observability.json",
         "scripts/check_first_customer_readiness.py"
       ],
-      "validation_commands": ["python3 scripts/check_first_customer_readiness.py"],
-      "remaining_external_gaps": ["signed pilot design partner", "customer environment credentials", "customer acceptance signoff"]
+      "validation_commands": [
+        "python3 scripts/check_first_customer_readiness.py"
+      ],
+      "remaining_external_gaps": [
+        "signed pilot design partner",
+        "customer environment credentials",
+        "customer acceptance signoff"
+      ]
     }
   ]
 }

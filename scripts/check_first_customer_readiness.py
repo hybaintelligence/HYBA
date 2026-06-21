@@ -26,6 +26,82 @@ def _path_exists(rel_path: str) -> bool:
     return (ROOT / rel_path).exists()
 
 
+def _validate_enterprise_telemetry_bridge(registry: dict[str, Any], errors: list[str]) -> None:
+    """Assert the Phase 3.5 bridge is wired into the first-customer gate."""
+    bridge_review = next(
+        (
+            review
+            for review in registry.get("reviews", [])
+            if review.get("id") == "phase_3_5_enterprise_telemetry_bridge"
+        ),
+        None,
+    )
+    if not bridge_review:
+        errors.append("Missing phase_3_5_enterprise_telemetry_bridge review track.")
+        return
+
+    required_paths = set(bridge_review.get("required_paths", []))
+    for rel_path in [
+        "reproducibility/benchmarks/telemetry_bridge.py",
+        "reproducibility/benchmarks/test_mckinsey_additions.py",
+    ]:
+        if rel_path not in required_paths:
+            errors.append(f"phase_3_5_enterprise_telemetry_bridge: {rel_path} must be required.")
+
+    expected_outputs = {
+        "sla_report",
+        "chargeback_report",
+        "retention_curve",
+        "risk_count",
+        "weekly_ops_review",
+        "quarterly_deck",
+    }
+    configured_outputs = set(bridge_review.get("expected_bridge_outputs", []))
+    missing_outputs = sorted(expected_outputs - configured_outputs)
+    if missing_outputs:
+        errors.append(
+            "phase_3_5_enterprise_telemetry_bridge: missing expected bridge outputs "
+            + ", ".join(missing_outputs)
+        )
+
+    bridge_source = ROOT / "reproducibility/benchmarks/telemetry_bridge.py"
+    if bridge_source.exists():
+        source_text = bridge_source.read_text(encoding="utf-8")
+        for output in expected_outputs:
+            if f'"{output}"' not in source_text:
+                errors.append(f"telemetry_bridge.py does not statically expose {output}.")
+
+    smoke = subprocess.run(
+        [
+            sys.executable,
+            "-c",
+            (
+                "from telemetry_bridge import EnterpriseTelemetryBridge\n"
+                "out = EnterpriseTelemetryBridge().ingest_snapshot({\n"
+                "  'timestamp': '2026-06-20T00:00:00Z',\n"
+                "  'period': 'gate-smoke',\n"
+                "  'sla': {'availability': 0.999, 'latency_p99': 125},\n"
+                "  'costs': [{'service_id': 'qaas-api', 'department': 'platform', 'vcpu_hours': 1}],\n"
+                "  'cohorts': [{'cohort_id': 'gate', 'initial_size': 1, 'month': 1, 'metrics': {'retained_customers': 1}}],\n"
+                "  'incidents': [{'category': 'operational', 'severity': 'medium'}],\n"
+                "  'customers': {'customer_count': 1},\n"
+                "})\n"
+                f"missing = {sorted(expected_outputs)!r}\n"
+                "missing = [key for key in missing if key not in out]\n"
+                "raise SystemExit('missing bridge outputs: ' + ', '.join(missing) if missing else 0)\n"
+            ),
+        ],
+        cwd=ROOT / "reproducibility/benchmarks",
+        text=True,
+        capture_output=True,
+    )
+    if smoke.returncode != 0:
+        errors.append(
+            "EnterpriseTelemetryBridge smoke validation failed with "
+            f"{smoke.returncode}: {smoke.stderr or smoke.stdout}"
+        )
+
+
 def main() -> int:
     errors: list[str] = []
     registry = _load_registry()
@@ -48,6 +124,8 @@ def main() -> int:
         for rel_path in review.get("required_paths", []):
             if not _path_exists(rel_path):
                 errors.append(f"{review_id}: missing required path {rel_path}")
+
+    _validate_enterprise_telemetry_bridge(registry, errors)
 
     # Run the two authoritative static gates that are fast and environment-local.
     for command in [
