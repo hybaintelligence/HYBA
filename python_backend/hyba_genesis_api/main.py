@@ -38,6 +38,7 @@ from hyba_genesis_api.api import (  # noqa: E402
     millennium_mathematics,
     observability,
     quantum_as_a_service,
+    quantum_intelligence_service,
     quantum_mathematical_execution,
     intelligence,
     metabolic_router,
@@ -328,7 +329,7 @@ app.include_router(metabolic_router.router)
 app.include_router(organism_router.router)
 app.include_router(executive_router.router)
 app.include_router(ops.router)
-# QIaaS removed - serves unverified quantum intelligence claims with no falsifiable criteria
+app.include_router(quantum_intelligence_service.router)
 
 # ============================================================================
 # SALAMANDER-REGENERATED INTEGRATIONS (Auto-wired 21 June 2026)
