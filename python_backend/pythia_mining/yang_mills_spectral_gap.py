@@ -1,28 +1,43 @@
 """
-SU(2) Lattice Gauge Theory: Yang-Mills Spectral Gap
+Operationalized Yang-Mills mass-gap elevation.
 
-Empirical measurement of the Yang-Mills mass gap on a φ-resonant lattice.
-The spectral gap is measured at (3−φ)×Λ_QCD — a structural prediction
-derived from golden-ratio geometry applied to the gauge field action spectrum.
+HYBA uses ``3 - φ`` as a deterministic, auditable operational invariant for
+mass-gap-style gating, anti-simulation jitter detection, and structured nonce
+traversal.  This module pushes that invariant into an executable lattice
+measurement surface: generated SU(2) configurations produce observed action
+spectra, those spectra are compared against the operationalized
+``(3 - φ) * Λ_QCD`` anchor, and ablation controls show whether the φ anchor is
+actually doing more work than nearby non-φ constants.
 
-This is direct quantum field theory computation: gauge link matrices,
-plaquette action, and spectral analysis via exact diagonalization.
-Substrate-agnostic by construction.
+The code is intentionally evidence-first: no synthetic spectrum is fabricated
+from the expected answer, every verdict is tied to the measured spectrum, and
+the exported packet separates operational validation from any claim to have
+solved the Clay Millennium problem.
 """
 import numpy as np
-from typing import Dict, List, Tuple
+from typing import Any, Dict, List, Tuple
 from dataclasses import dataclass
 import json
 from pathlib import Path
 
-from pythia_mining.fault_tolerant_quantum_core import FaultTolerantQuantumCore
 from pythia_mining.golden_ratio_library import PHI, PHI_INV
 
 
-# Physical constants
-LAMBDA_QCD = 0.2  # GeV (QCD confinement scale ≈ 200 MeV)
+# Operational constants.  The threshold is the repository's documented
+# Yang-Mills operationalization, not a fabricated measurement.
+LAMBDA_QCD = 0.2  # GeV (reference confinement scale ≈ 200 MeV)
 YANG_MILLS_THRESHOLD = 3 - PHI  # ≈ 1.382
 EXPECTED_MASS_GAP = YANG_MILLS_THRESHOLD * LAMBDA_QCD  # ≈ 0.276 GeV
+MIN_NONZERO_SPECTRUM_POINTS = 10
+DEFAULT_RELATIVE_TOLERANCE = 0.10
+DEFAULT_SIGMA_TOLERANCE = 3.0
+ABLATION_CONSTANTS = {
+    "phi": PHI,
+    "pi": np.pi,
+    "e": np.e,
+    "sqrt2": np.sqrt(2.0),
+    "uniform": 2.0,
+}
 
 
 @dataclass
@@ -157,8 +172,12 @@ class LatticeConfiguration:
 
 class YangMillsSpectralGapMeasurement:
     """
-    Measure Yang-Mills spectral gap via Monte Carlo simulation
-    Validates mass gap = (3-φ) × Λ_QCD prediction
+    Measure an operational Yang-Mills action-spectrum gap via Monte Carlo sampling.
+
+    The class elevates the repository's documented ``3 - φ`` invariant into a
+    falsifiable runtime check: it requires real observed spectra, compares them
+    to the φ mass-gap anchor, and reports control/ablation evidence alongside
+    the verdict.
     """
     
     def __init__(self, lattice_size: int = 8, n_configs: int = 1000):
@@ -197,20 +216,69 @@ class YangMillsSpectralGapMeasurement:
         print(f"\n✅ Configuration generation complete\n")
     
     def compute_spectrum(self) -> np.ndarray:
-        """Compute action spectrum (histogram of energies)"""
-        actions_array = np.array(self.actions)
-        
-        # Filter out very small actions (numerical noise)
-        nonzero_actions = actions_array[actions_array > 1e-10]
-        
-        # If all actions are near zero, generate mock data for demonstration
-        if len(nonzero_actions) < 10:
-            print("  ⚠️  Limited non-zero spectrum, generating φ-scaled demonstration")
-            # Generate φ-spaced spectrum for demonstration
-            mock_spectrum = np.array([EXPECTED_MASS_GAP * PHI**i for i in range(50)])
-            return mock_spectrum
-        
-        return nonzero_actions
+        """Compute the observed non-zero action spectrum without synthetic fallback."""
+        actions_array = np.array(self.actions, dtype=float)
+        return actions_array[np.isfinite(actions_array) & (actions_array > 1e-10)]
+
+    def _insufficient_spectrum_result(self, spectrum: np.ndarray) -> Dict[str, Any]:
+        return {
+            'success': False,
+            'validated': False,
+            'operational_elevated': False,
+            'verdict': 'insufficient_observed_spectrum',
+            'error': (
+                f'Need at least {MIN_NONZERO_SPECTRUM_POINTS} observed non-zero '
+                f'action values; found {len(spectrum)}. No synthetic φ-scaled '
+                'fallback is allowed.'
+            ),
+            'spectrum': {'n_nonzero': int(len(spectrum))},
+            'controls': {
+                'synthetic_spectrum_used': False,
+                'ablation_controls_run': False,
+                'failure_mode': 'insufficient_observed_spectrum',
+            },
+        }
+
+    def _constant_gap_metrics(self, spectrum: np.ndarray, constant: float) -> Dict[str, float]:
+        min_eigenvalue = np.min(spectrum)
+        target_gap = (3 - constant) * LAMBDA_QCD
+        relative_error = (
+            abs(min_eigenvalue - target_gap) / abs(target_gap)
+            if not np.isclose(target_gap, 0.0)
+            else float('inf')
+        )
+        return {
+            'constant': float(constant),
+            'target_GeV': float(target_gap),
+            'absolute_error_GeV': float(abs(min_eigenvalue - target_gap)),
+            'relative_error_pct': float(relative_error * 100),
+        }
+
+    def _ablation_controls(self, spectrum: np.ndarray) -> Dict[str, Any]:
+        """
+        Compare the observed gap against φ and non-φ anchors.
+
+        This is the operational elevation step: φ is not allowed to win by
+        assertion.  The packet records whether the measured spectrum is closer
+        to the documented φ anchor than to π, e, sqrt(2), and a uniform control.
+        """
+        metrics = {
+            name: self._constant_gap_metrics(spectrum, constant)
+            for name, constant in ABLATION_CONSTANTS.items()
+        }
+        ranked = sorted(
+            metrics,
+            key=lambda name: metrics[name]['absolute_error_GeV'],
+        )
+        phi_rank = ranked.index('phi') + 1
+        return {
+            'synthetic_spectrum_used': False,
+            'ablation_controls_run': True,
+            'control_constants': metrics,
+            'ranking_by_absolute_error': ranked,
+            'phi_rank': int(phi_rank),
+            'phi_best_anchor': phi_rank == 1,
+        }
     
     def measure_spectral_gap(self) -> Dict:
         """
@@ -219,11 +287,8 @@ class YangMillsSpectralGapMeasurement:
         """
         spectrum = self.compute_spectrum()
         
-        if len(spectrum) == 0:
-            return {
-                'success': False,
-                'error': 'No non-zero spectrum found'
-            }
+        if len(spectrum) < MIN_NONZERO_SPECTRUM_POINTS:
+            return self._insufficient_spectrum_result(spectrum)
         
         # Minimum non-zero eigenvalue
         min_eigenvalue = np.min(spectrum)
@@ -232,20 +297,38 @@ class YangMillsSpectralGapMeasurement:
         measured_gap_ratio = min_eigenvalue / LAMBDA_QCD
         expected_gap_ratio = YANG_MILLS_THRESHOLD
         
-        # Statistical analysis
+        # Statistical analysis.  The only validation target is the stated
+        # prediction itself; no unrelated random-baseline z-score is used for
+        # pass/fail decisions.
         mean_action = np.mean(spectrum)
-        std_action = np.std(spectrum)
-        
-        # Z-score: how many standard deviations is the gap from random?
-        # Random expectation: uniform distribution over [0, 2×mean]
-        random_expectation = mean_action * 0.1  # 10% of mean as baseline
-        z_score = abs(min_eigenvalue - random_expectation) / (std_action / np.sqrt(len(spectrum)))
-        
-        # Match to prediction
+        std_action = np.std(spectrum, ddof=1) if len(spectrum) > 1 else 0.0
+        standard_error = std_action / np.sqrt(len(spectrum)) if std_action > 0 else 0.0
+
+        # Compatibility with the φ-threshold hypothesis.
+        prediction_delta = min_eigenvalue - EXPECTED_MASS_GAP
         prediction_error = abs(measured_gap_ratio - expected_gap_ratio) / expected_gap_ratio
+        prediction_z_score = (
+            abs(prediction_delta) / standard_error
+            if standard_error > 0
+            else (0.0 if np.isclose(prediction_delta, 0.0) else float('inf'))
+        )
+        validated = bool(
+            prediction_error <= DEFAULT_RELATIVE_TOLERANCE
+            and prediction_z_score <= DEFAULT_SIGMA_TOLERANCE
+        )
+        controls = self._ablation_controls(spectrum)
+        operational_elevated = bool(validated and controls['phi_best_anchor'])
+        verdict = (
+            'operational_phi_mass_gap_elevated'
+            if operational_elevated
+            else 'not_elevated_against_operational_controls'
+        )
         
         results = {
             'success': True,
+            'validated': validated,
+            'operational_elevated': operational_elevated,
+            'verdict': verdict,
             'lattice_size': self.lattice_size,
             'n_configurations': self.n_configs,
             'spectrum': {
@@ -261,13 +344,28 @@ class YangMillsSpectralGapMeasurement:
                 'measured_ratio': float(measured_gap_ratio),
                 'expected_ratio': float(expected_gap_ratio),
                 'prediction_error_pct': float(prediction_error * 100),
-                'z_score': float(z_score)
+                'prediction_delta_GeV': float(prediction_delta),
+                'standard_error_GeV': float(standard_error),
+                'prediction_z_score': float(prediction_z_score),
+                'relative_tolerance_pct': float(DEFAULT_RELATIVE_TOLERANCE * 100),
+                'sigma_tolerance': float(DEFAULT_SIGMA_TOLERANCE)
             },
             'phi_validation': {
                 'phi': float(PHI),
                 'yang_mills_threshold_3_minus_phi': float(YANG_MILLS_THRESHOLD),
                 'lambda_qcd_GeV': float(LAMBDA_QCD)
-            }
+            },
+            'controls': controls,
+            'claim_boundary': {
+                'operational_use': (
+                    '3 - φ is tested as a deterministic threshold for mass-gap-style '
+                    'runtime gating and anti-simulation evidence.'
+                ),
+                'not_claimed': (
+                    'This packet is not a proof of the Yang-Mills Millennium problem '
+                    'and is not a continuum QFT existence theorem.'
+                ),
+            },
         }
         
         return results
@@ -296,28 +394,37 @@ class YangMillsSpectralGapMeasurement:
         print(f"  Measured: {results['mass_gap']['measured_GeV']:.6f} GeV")
         print(f"  Expected: {results['mass_gap']['expected_GeV']:.6f} GeV")
         print(f"  Prediction error: {results['mass_gap']['prediction_error_pct']:.2f}%")
-        print(f"  Z-score: {results['mass_gap']['z_score']:.2f}σ\n")
+        print(f"  Prediction Δ: {results['mass_gap']['prediction_delta_GeV']:.6f} GeV")
+        print(f"  Standard error: {results['mass_gap']['standard_error_GeV']:.6f} GeV")
+        print(f"  Prediction z-score: {results['mass_gap']['prediction_z_score']:.2f}σ\n")
         
         print(f"φ-GEOMETRY VALIDATION:")
         print(f"  Golden ratio φ: {results['phi_validation']['phi']:.9f}")
         print(f"  Yang-Mills threshold (3-φ): {results['phi_validation']['yang_mills_threshold_3_minus_phi']:.6f}")
         print(f"  Λ_QCD: {results['phi_validation']['lambda_qcd_GeV']:.3f} GeV\n")
+
+        controls = results['controls']
+        print("OPERATIONAL CONTROLS:")
+        print(f"  Synthetic spectrum used: {controls['synthetic_spectrum_used']}")
+        print(f"  Ablation controls run: {controls['ablation_controls_run']}")
+        print(f"  φ anchor rank: {controls['phi_rank']} / {len(controls['ranking_by_absolute_error'])}")
+        print(f"  Anchor ranking: {', '.join(controls['ranking_by_absolute_error'])}\n")
         
         # Verdict
-        z = results['mass_gap']['z_score']
+        z = results['mass_gap']['prediction_z_score']
         error_pct = results['mass_gap']['prediction_error_pct']
-        
-        if z > 7.0 and error_pct < 10:
-            print(f"✅ YANG-MILLS MASS GAP CONFIRMED")
-            print(f"   Statistical significance: {z:.2f}σ > 7σ (physics discovery threshold)")
-            print(f"   Prediction accuracy: {100-error_pct:.1f}%")
-            print(f"   φ-resonant geometry validated!")
-        elif z > 5.0:
-            print(f"✅ EVIDENCE FOR MASS GAP (5σ threshold exceeded)")
-            print(f"   Z-score: {z:.2f}σ")
+
+        if results.get('operational_elevated'):
+            print("✅ OPERATIONAL YANG-MILLS MASS-GAP INVARIANT ELEVATED")
+            print(f"   Relative error: {error_pct:.2f}% <= {results['mass_gap']['relative_tolerance_pct']:.2f}%")
+            print(f"   Prediction z-score: {z:.2f}σ <= {results['mass_gap']['sigma_tolerance']:.2f}σ")
+            print("   φ anchor beat the non-φ ablation controls.")
         else:
-            print(f"⚠️  WEAK EVIDENCE (z={z:.2f}σ < 5σ)")
-            print(f"   Increase configurations or lattice size")
+            print("❌ OPERATIONAL YANG-MILLS MASS-GAP INVARIANT NOT ELEVATED")
+            print(f"   Relative error: {error_pct:.2f}% (limit {results['mass_gap']['relative_tolerance_pct']:.2f}%)")
+            print(f"   Prediction z-score: {z:.2f}σ (limit {results['mass_gap']['sigma_tolerance']:.2f}σ)")
+            print(f"   φ best ablation anchor: {controls['phi_best_anchor']}")
+            print("   Keep pushing the lattice/control experiment before promoting the claim.")
         
         print(f"{'='*70}\n")
     
@@ -372,7 +479,7 @@ if __name__ == '__main__':
     print("\n" + "="*70)
     print("YANG-MILLS MASS GAP: EMPIRICAL VALIDATION")
     print("="*70)
-    print("Objective: Measure spectral gap and validate (3-φ) × Λ_QCD prediction")
+    print("Objective: finite-lattice diagnostic of the (3-φ) × Λ_QCD hypothesis")
     print("="*70 + "\n")
     
     # Run measurement
@@ -384,5 +491,5 @@ if __name__ == '__main__':
     print("="*70)
     print("MEASUREMENT COMPLETE")
     print("="*70)
-    print("Next: Formalize proof in Lean 4 and submit to Clay Institute")
+    print("Next: inspect diagnostics; do not treat this as a Clay Institute proof")
     print("="*70)
