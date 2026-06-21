@@ -90,3 +90,53 @@ def test_strategy_finance_customer_additions_smoke():
 
     change = ChangeImpactAssessor()
     assert "technical" in change.assess_change_impact("API migration", ["customer_api"])
+
+
+def test_enterprise_telemetry_bridge_wires_live_evidence_to_dashboard():
+    from telemetry_bridge import EnterpriseTelemetryBridge
+
+    bridge = EnterpriseTelemetryBridge()
+    output = bridge.ingest_snapshot(
+        {
+            "timestamp": "2026-06-20T00:00:00Z",
+            "period": "2026-06",
+            "sla": {"availability": 0.999, "latency_p99": 125, "error_rate": 0.00005},
+            "costs": [
+                {
+                    "service_id": "qaas-api",
+                    "department": "platform",
+                    "period": "2026-06",
+                    "vcpu_hours": 20,
+                    "gb_hours": 50,
+                    "support_units": 4,
+                }
+            ],
+            "cohorts": [
+                {
+                    "cohort_id": "enterprise-2026-06",
+                    "start_date": "2026-06-01",
+                    "initial_size": 10,
+                    "month": 1,
+                    "metrics": {"retained_customers": 9, "revenue": 12000, "cac": 5000},
+                    "attributes": {"segment": "enterprise"},
+                }
+            ],
+            "incidents": [
+                {
+                    "category": "operational",
+                    "severity": "high",
+                    "description": "p99 latency exceeded target",
+                    "owner": "SRE",
+                }
+            ],
+            "customers": {"customer_count": 10, "churn_rate": 0.1, "net_revenue_retention": 1.15},
+            "kpis": {"arr": 144000, "gross_margin": 0.72},
+        }
+    )
+
+    assert output["sla_report"]["breach_count"] == 2
+    assert output["chargeback_report"]["departments"]["platform"] > 0
+    assert output["retention_curve"]["enterprise-2026-06"][0]["retention_rate"] == 0.9
+    assert output["risk_count"] == 1
+    assert output["weekly_ops_review"]["metrics"]["sla_latency_p99"] == 125
+    assert output["quarterly_deck"]["slides"][0]["metrics"]["arr"] == 144000
