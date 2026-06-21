@@ -1,3 +1,6 @@
+238db4a1 Add first-customer readiness evidence logs
+51dd4080 prod closure
+6679d932 Add first-customer evidence artifacts: readiness gate, telemetry, McKinsey benchmarks, git state
 21109bf0 Merge pull request #124 from hybaanalytics1/codex/update-readiness-for-enterprisetelemetrybridge
 8196e1af Wire enterprise telemetry bridge into readiness gate
 1d7edc84 Merge pull request #123 from hybaanalytics1/codex/verify-mckinsey-grade-module-integration
@@ -5,6 +8,3 @@
 47088254 Merge branch 'main' of https://github.com/hybaanalytics1/HYBA_FULLSTACK
 e655cc38 prod pass
 a6438d0b Merge pull request #122 from hybaanalytics1/codex/review-gap-analysis-and-complete-closures
-e014c701 Merge branch 'main' into codex/review-gap-analysis-and-complete-closures
-b69ca8d7 Unify review gap closures for first customer readiness
-78efdfe3 Merge branch 'main' of https://github.com/hybaanalytics1/HYBA_FULLSTACK

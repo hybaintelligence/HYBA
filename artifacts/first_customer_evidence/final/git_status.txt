@@ -1,2 +1,7 @@
- M tests/test_autonomous_qaas_controller.py
-?? artifacts/first_customer_evidence/
+ M artifacts/first_customer_evidence/final/git_status.txt
+ M artifacts/first_customer_evidence/final/latest_commits.txt
+?? scripts/benchmark_m32_throughput.py
+?? scripts/run_master_validation.py
+?? scripts/validate_phi_resonance_at_scale.py
+?? scripts/validate_system_configuration.py
+?? tests/test_pulvini_compression_comprehensive.py

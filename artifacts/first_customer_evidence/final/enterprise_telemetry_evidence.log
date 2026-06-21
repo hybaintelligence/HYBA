@@ -1,0 +1,3 @@
+test_enterprise_telemetry_bridge_wires_live_evidence_to_dashboard ok
+test_operational_and_governance_additions_smoke ok
+test_strategy_finance_customer_additions_smoke ok

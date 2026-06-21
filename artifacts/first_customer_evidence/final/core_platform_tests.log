@@ -1,0 +1,294 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.9.6, pytest-8.4.2, pluggy-1.6.0 -- /Library/Developer/CommandLineTools/usr/bin/python3
+cachedir: .pytest_cache
+hypothesis profile 'default'
+rootdir: /Users/demouser/Desktop/HYBA_FULLSTACK
+configfile: pyproject.toml
+plugins: anyio-4.12.1, asyncio-1.2.0, hypothesis-6.141.1, timeout-2.4.0
+asyncio: mode=strict, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+timeout: 10.0s
+timeout method: signal
+timeout func_only: False
+collecting ... collected 159 items
+
+tests/test_autonomous_qaas_controller.py::test_controller_initialization PASSED [  0%]
+tests/test_autonomous_qaas_controller.py::test_controller_start_stop PASSED [  1%]
+tests/test_autonomous_qaas_controller.py::test_health_metrics_computation PASSED [  1%]
+tests/test_autonomous_qaas_controller.py::test_health_score_degradation_detection PASSED [  2%]
+tests/test_autonomous_qaas_controller.py::test_healing_trigger_on_health_degradation PASSED [  3%]
+tests/test_autonomous_qaas_controller.py::test_autonomous_soft_reset_healing PASSED [  3%]
+tests/test_autonomous_qaas_controller.py::test_autonomous_recalibration_healing PASSED [  4%]
+tests/test_autonomous_qaas_controller.py::test_circuit_breaker_on_excessive_heal_attempts PASSED [  5%]
+tests/test_autonomous_qaas_controller.py::test_optimization_proposal_generation PASSED [  5%]
+tests/test_autonomous_qaas_controller.py::test_optimization_proposal_increase_code_distance PASSED [  6%]
+tests/test_autonomous_qaas_controller.py::test_optimization_not_proposed_when_unhealthy PASSED [  6%]
+tests/test_autonomous_qaas_controller.py::test_optimization_cooldown_period PASSED [  7%]
+tests/test_autonomous_qaas_controller.py::test_apply_optimization_proposal PASSED [  8%]
+tests/test_autonomous_qaas_controller.py::test_state_persistence PASSED  [  8%]
+tests/test_autonomous_qaas_controller.py::test_state_restoration PASSED  [  9%]
+tests/test_autonomous_qaas_controller.py::test_get_status_comprehensive PASSED [ 10%]
+tests/test_autonomous_qaas_controller.py::test_ciaas_controller_behavior PASSED [ 10%]
+tests/test_autonomous_qaas_controller.py::test_sliding_window_bounded_memory PASSED [ 11%]
+tests/test_autonomous_qaas_controller.py::test_heal_attempt_sliding_window PASSED [ 11%]
+tests/test_autonomous_qaas_controller.py::test_factory_function PASSED   [ 12%]
+tests/test_post_quantum_pillars.py::TestPillar6CStarAlgebra::test_identity_satisfies_c_star_axioms PASSED [ 13%]
+tests/test_post_quantum_pillars.py::TestPillar6CStarAlgebra::test_density_matrix_is_valid_state PASSED [ 13%]
+tests/test_post_quantum_pillars.py::TestPillar6CStarAlgebra::test_verify_channel_cptp PASSED [ 14%]
+tests/test_post_quantum_pillars.py::TestPillar6CStarAlgebra::test_verify_channel_with_depolarizing PASSED [ 15%]
+tests/test_post_quantum_pillars.py::TestPillar6CStarAlgebra::test_hamiltonian_verification PASSED [ 15%]
+tests/test_post_quantum_pillars.py::TestPillar6CStarAlgebra::test_batch_verification PASSED [ 16%]
+tests/test_post_quantum_pillars.py::TestPillar6CStarAlgebra::test_density_matrix_batch PASSED [ 16%]
+tests/test_post_quantum_pillars.py::TestPillar6CStarAlgebra::test_hermitian_operators_are_c_star[2] PASSED [ 17%]
+tests/test_post_quantum_pillars.py::TestPillar6CStarAlgebra::test_hermitian_operators_are_c_star[3] PASSED [ 18%]
+tests/test_post_quantum_pillars.py::TestPillar6CStarAlgebra::test_hermitian_operators_are_c_star[4] PASSED [ 18%]
+tests/test_post_quantum_pillars.py::TestPillar6CStarAlgebra::test_hermitian_operators_are_c_star[5] PASSED [ 19%]
+tests/test_post_quantum_pillars.py::TestPillar6CStarAlgebra::test_c_star_identity_holds_for_density_matrices[2] PASSED [ 20%]
+tests/test_post_quantum_pillars.py::TestPillar6CStarAlgebra::test_c_star_identity_holds_for_density_matrices[3] PASSED [ 20%]
+tests/test_post_quantum_pillars.py::TestPillar6CStarAlgebra::test_c_star_identity_holds_for_density_matrices[4] PASSED [ 21%]
+tests/test_post_quantum_pillars.py::TestPillar6CStarAlgebra::test_depolarizing_always_cptp[0.0] PASSED [ 22%]
+tests/test_post_quantum_pillars.py::TestPillar6CStarAlgebra::test_depolarizing_always_cptp[0.25] PASSED [ 22%]
+tests/test_post_quantum_pillars.py::TestPillar6CStarAlgebra::test_depolarizing_always_cptp[0.5] PASSED [ 23%]
+tests/test_post_quantum_pillars.py::TestPillar6CStarAlgebra::test_depolarizing_always_cptp[0.75] PASSED [ 23%]
+tests/test_post_quantum_pillars.py::TestPillar6CStarAlgebra::test_depolarizing_always_cptp[1.0] PASSED [ 24%]
+tests/test_post_quantum_pillars.py::TestPillar6CStarAlgebra::test_phi_weighted_spectral_gap PASSED [ 25%]
+tests/test_post_quantum_pillars.py::TestPillar6CStarAlgebra::test_gelfand_naimark_theorem PASSED [ 25%]
+tests/test_post_quantum_pillars.py::TestPillar6CStarAlgebra::test_certificate_serialization PASSED [ 26%]
+tests/test_post_quantum_pillars.py::TestPillar6CStarAlgebra::test_full_pipeline_density_to_channel PASSED [ 27%]
+tests/test_post_quantum_pillars.py::TestPillar7NonMarkovianMemory::test_markovian_trajectory_detected PASSED [ 27%]
+tests/test_post_quantum_pillars.py::TestPillar7NonMarkovianMemory::test_memory_capacity_bound PASSED [ 28%]
+tests/test_post_quantum_pillars.py::TestPillar7NonMarkovianMemory::test_pure_state_memory_bound PASSED [ 28%]
+tests/test_post_quantum_pillars.py::TestPillar7NonMarkovianMemory::test_phi_memory_capacity PASSED [ 29%]
+tests/test_post_quantum_pillars.py::TestPillar7NonMarkovianMemory::test_phi_folding_memory_bound PASSED [ 30%]
+tests/test_post_quantum_pillars.py::TestPillar7NonMarkovianMemory::test_entropy_bounds_density_matrix[2] PASSED [ 30%]
+tests/test_post_quantum_pillars.py::TestPillar7NonMarkovianMemory::test_entropy_bounds_density_matrix[4] PASSED [ 31%]
+tests/test_post_quantum_pillars.py::TestPillar7NonMarkovianMemory::test_entropy_bounds_density_matrix[8] PASSED [ 32%]
+tests/test_post_quantum_pillars.py::TestPillar7NonMarkovianMemory::test_fold_depth_increases_compression[1] PASSED [ 32%]
+tests/test_post_quantum_pillars.py::TestPillar7NonMarkovianMemory::test_fold_depth_increases_compression[2] PASSED [ 33%]
+tests/test_post_quantum_pillars.py::TestPillar7NonMarkovianMemory::test_fold_depth_increases_compression[3] PASSED [ 33%]
+tests/test_post_quantum_pillars.py::TestPillar7NonMarkovianMemory::test_memory_capacity_monotonic PASSED [ 34%]
+tests/test_post_quantum_pillars.py::TestPillar7NonMarkovianMemory::test_blp_witness PASSED [ 35%]
+tests/test_post_quantum_pillars.py::TestPillar7NonMarkovianMemory::test_full_detection_pipeline PASSED [ 35%]
+tests/test_post_quantum_pillars.py::TestPillar8H4Group::test_h4_coxeter_matrix_correct PASSED [ 36%]
+tests/test_post_quantum_pillars.py::TestPillar8H4Group::test_h4_order_correct PASSED [ 37%]
+tests/test_post_quantum_pillars.py::TestPillar8H4Group::test_h4_adjacency_map PASSED [ 37%]
+tests/test_post_quantum_pillars.py::TestPillar8H4Group::test_h4_adjacency_symmetric PASSED [ 38%]
+tests/test_post_quantum_pillars.py::TestPillar8H4Group::test_phi_3_resonance_bounds PASSED [ 38%]
+tests/test_post_quantum_pillars.py::TestPillar8H4Group::test_h4_coxeter_certificate PASSED [ 39%]
+tests/test_post_quantum_pillars.py::TestPillar8H4Group::test_h4_representation_certificate PASSED [ 40%]
+tests/test_post_quantum_pillars.py::TestPillar8H4Group::test_pulvini_manifold_h4_initialization PASSED [ 40%]
+tests/test_post_quantum_pillars.py::TestPillar8H4Group::test_h4_manifold_coherence PASSED [ 41%]
+tests/test_post_quantum_pillars.py::TestPillar8H4Group::test_h4_von_neumann_entropy PASSED [ 42%]
+tests/test_post_quantum_pillars.py::TestPillar8H4Group::test_phi_3_resonance_deterministic[0] PASSED [ 42%]
+tests/test_post_quantum_pillars.py::TestPillar8H4Group::test_phi_3_resonance_deterministic[42] PASSED [ 43%]
+tests/test_post_quantum_pillars.py::TestPillar8H4Group::test_phi_3_resonance_deterministic[2147483648] PASSED [ 44%]
+tests/test_post_quantum_pillars.py::TestPillar8H4Group::test_phi_3_resonance_deterministic[4294967295] PASSED [ 44%]
+tests/test_post_quantum_pillars.py::TestPillar8H4Group::test_h4_manifold_invariants PASSED [ 45%]
+tests/test_post_quantum_pillars.py::TestPillar8H4Group::test_h4_work_distribution_normalized PASSED [ 45%]
+tests/test_post_quantum_pillars.py::TestPillar8H4Group::test_h4_mass_gate_filter PASSED [ 46%]
+tests/test_post_quantum_pillars.py::TestPillar8H4Group::test_h4_manifold_snapshot PASSED [ 47%]
+tests/test_post_quantum_pillars.py::TestPillar8H4Group::test_h4_structured_search PASSED [ 47%]
+tests/test_post_quantum_pillars.py::TestPillar9SubstrateEquivalence::test_substrate_category_creation PASSED [ 48%]
+tests/test_post_quantum_pillars.py::TestPillar9SubstrateEquivalence::test_phi_folding_independence PASSED [ 49%]
+tests/test_post_quantum_pillars.py::TestPillar9SubstrateEquivalence::test_coxeter_group_independence PASSED [ 49%]
+tests/test_post_quantum_pillars.py::TestPillar9SubstrateEquivalence::test_mathematical_substrate_thesis PASSED [ 50%]
+tests/test_post_quantum_pillars.py::TestPillar9SubstrateEquivalence::test_prover_equivalence_self PASSED [ 50%]
+tests/test_post_quantum_pillars.py::TestPillar9SubstrateEquivalence::test_mathematical_structure_compute PASSED [ 51%]
+tests/test_post_quantum_pillars.py::TestPillar9SubstrateEquivalence::test_phi_folding_reconstruction[2] PASSED [ 52%]
+tests/test_post_quantum_pillars.py::TestPillar9SubstrateEquivalence::test_phi_folding_reconstruction[4] PASSED [ 52%]
+tests/test_post_quantum_pillars.py::TestPillar9SubstrateEquivalence::test_phi_folding_reconstruction[8] PASSED [ 53%]
+tests/test_post_quantum_pillars.py::TestPillar9SubstrateEquivalence::test_phi_folding_reconstruction[16] PASSED [ 54%]
+tests/test_post_quantum_pillars.py::TestPillar9SubstrateEquivalence::test_equivalence_is_transitive PASSED [ 54%]
+tests/test_post_quantum_pillars.py::TestPillar9SubstrateEquivalence::test_full_equivalence_pipeline PASSED [ 55%]
+tests/test_post_quantum_pillars.py::TestPillar9SubstrateEquivalence::test_batch_equivalence PASSED [ 55%]
+tests/test_post_quantum_pillars.py::TestPillar9SubstrateEquivalence::test_category_functor PASSED [ 56%]
+tests/test_post_quantum_pillars.py::TestCrossPillarIntegration::test_c_star_plus_non_markovian PASSED [ 57%]
+tests/test_post_quantum_pillars.py::TestCrossPillarIntegration::test_h4_plus_c_star_verification PASSED [ 57%]
+tests/test_post_quantum_pillars.py::TestCrossPillarIntegration::test_substrate_independence_with_c_star PASSED [ 58%]
+tests/test_post_quantum_pillars.py::TestCrossPillarIntegration::test_h4_substrate_independence PASSED [ 59%]
+tests/test_post_quantum_pillars.py::TestCrossPillarIntegration::test_all_pillars_thesis PASSED [ 59%]
+tests/test_post_quantum_adversarial.py::TestPillar6Adversarial::test_rejects_non_hermitian_density PASSED [ 60%]
+tests/test_post_quantum_adversarial.py::TestPillar6Adversarial::test_rejects_negative_eigenvalues PASSED [ 61%]
+tests/test_post_quantum_adversarial.py::TestPillar6Adversarial::test_rejects_trace_not_one PASSED [ 61%]
+tests/test_post_quantum_adversarial.py::TestPillar6Adversarial::test_handles_nan_gracefully PASSED [ 62%]
+tests/test_post_quantum_adversarial.py::TestPillar6Adversarial::test_handles_inf_gracefully PASSED [ 62%]
+tests/test_post_quantum_adversarial.py::TestPillar6Adversarial::test_rejects_non_square_operator PASSED [ 63%]
+tests/test_post_quantum_adversarial.py::TestPillar6Adversarial::test_rejects_non_hermitian_hamiltonian PASSED [ 64%]
+tests/test_post_quantum_adversarial.py::TestPillar6Adversarial::test_zero_matrix_is_not_valid_state PASSED [ 64%]
+tests/test_post_quantum_adversarial.py::TestPillar6Adversarial::test_identity_is_valid_operator PASSED [ 65%]
+tests/test_post_quantum_adversarial.py::TestPillar6Adversarial::test_various_dimensions_density[1] PASSED [ 66%]
+tests/test_post_quantum_adversarial.py::TestPillar6Adversarial::test_various_dimensions_density[2] PASSED [ 66%]
+tests/test_post_quantum_adversarial.py::TestPillar6Adversarial::test_various_dimensions_density[3] PASSED [ 67%]
+tests/test_post_quantum_adversarial.py::TestPillar6Adversarial::test_various_dimensions_density[10] PASSED [ 67%]
+tests/test_post_quantum_adversarial.py::TestPillar6Adversarial::test_various_dimensions_density[32] PASSED [ 68%]
+tests/test_post_quantum_adversarial.py::TestPillar6Adversarial::test_various_dimensions_operator[1] PASSED [ 69%]
+tests/test_post_quantum_adversarial.py::TestPillar6Adversarial::test_various_dimensions_operator[2] PASSED [ 69%]
+tests/test_post_quantum_adversarial.py::TestPillar6Adversarial::test_various_dimensions_operator[5] PASSED [ 70%]
+tests/test_post_quantum_adversarial.py::TestPillar6Adversarial::test_various_dimensions_operator[16] PASSED [ 71%]
+tests/test_post_quantum_adversarial.py::TestPillar6Adversarial::test_single_element_state PASSED [ 71%]
+tests/test_post_quantum_adversarial.py::TestPillar7Adversarial::test_empty_trajectory PASSED [ 72%]
+tests/test_post_quantum_adversarial.py::TestPillar7Adversarial::test_single_state_trajectory PASSED [ 72%]
+tests/test_post_quantum_adversarial.py::TestPillar7Adversarial::test_two_state_trajectory PASSED [ 73%]
+tests/test_post_quantum_adversarial.py::TestPillar7Adversarial::test_identical_states_trajectory PASSED [ 74%]
+tests/test_post_quantum_adversarial.py::TestPillar7Adversarial::test_nan_density_in_trajectory PASSED [ 74%]
+tests/test_post_quantum_adversarial.py::TestPillar7Adversarial::test_inf_density_in_trajectory PASSED [ 75%]
+tests/test_post_quantum_adversarial.py::TestPillar7Adversarial::test_zero_matrix_memory_bound PASSED [ 76%]
+tests/test_post_quantum_adversarial.py::TestPillar7Adversarial::test_max_entropy_memory_bound PASSED [ 76%]
+tests/test_post_quantum_adversarial.py::TestPillar7Adversarial::test_memory_bound_scaling[2] PASSED [ 77%]
+tests/test_post_quantum_adversarial.py::TestPillar7Adversarial::test_memory_bound_scaling[4] PASSED [ 77%]
+tests/test_post_quantum_adversarial.py::TestPillar7Adversarial::test_memory_bound_scaling[8] PASSED [ 78%]
+tests/test_post_quantum_adversarial.py::TestPillar7Adversarial::test_memory_bound_scaling[16] PASSED [ 79%]
+tests/test_post_quantum_adversarial.py::TestPillar7Adversarial::test_memory_bound_scaling[32] PASSED [ 79%]
+tests/test_post_quantum_adversarial.py::TestPillar7Adversarial::test_fold_bound_edge_cases[0] PASSED [ 80%]
+tests/test_post_quantum_adversarial.py::TestPillar7Adversarial::test_fold_bound_edge_cases[1] PASSED [ 81%]
+tests/test_post_quantum_adversarial.py::TestPillar7Adversarial::test_fold_bound_edge_cases[5] PASSED [ 81%]
+tests/test_post_quantum_adversarial.py::TestPillar7Adversarial::test_fold_bound_edge_cases[10] PASSED [ 82%]
+tests/test_post_quantum_adversarial.py::TestPillar7Adversarial::test_memory_capacity_phi_quality_bounds PASSED [ 83%]
+tests/test_post_quantum_adversarial.py::TestPillar8Adversarial::test_phi_3_resonance_extreme_inputs PASSED [ 83%]
+tests/test_post_quantum_adversarial.py::TestPillar8Adversarial::test_phi_3_resonance_deterministic PASSED [ 84%]
+tests/test_post_quantum_adversarial.py::TestPillar8Adversarial::test_adjacency_map_integrity PASSED [ 84%]
+tests/test_post_quantum_adversarial.py::TestPillar8Adversarial::test_adjacency_symmetry_violation PASSED [ 85%]
+tests/test_post_quantum_adversarial.py::TestPillar8Adversarial::test_h4_evolution_extreme_dt[0.0] PASSED [ 86%]
+tests/test_post_quantum_adversarial.py::TestPillar8Adversarial::test_h4_evolution_extreme_dt[-1.0] PASSED [ 86%]
+tests/test_post_quantum_adversarial.py::TestPillar8Adversarial::test_h4_evolution_extreme_dt[0.001] PASSED [ 87%]
+tests/test_post_quantum_adversarial.py::TestPillar8Adversarial::test_h4_evolution_extreme_dt[10.0] PASSED [ 88%]
+tests/test_post_quantum_adversarial.py::TestPillar8Adversarial::test_h4_evolution_extreme_dt[100.0] PASSED [ 88%]
+tests/test_post_quantum_adversarial.py::TestPillar8Adversarial::test_h4_manifold_repeated_evolution_stability PASSED [ 89%]
+tests/test_post_quantum_adversarial.py::TestPillar8Adversarial::test_h4_coxeter_certificate_reproducible PASSED [ 89%]
+tests/test_post_quantum_adversarial.py::TestPillar9Adversarial::test_different_implementations_not_equivalent PASSED [ 90%]
+tests/test_post_quantum_adversarial.py::TestPillar9Adversarial::test_nan_producing_implementation PASSED [ 91%]
+tests/test_post_quantum_adversarial.py::TestPillar9Adversarial::test_empty_substrate_category PASSED [ 91%]
+tests/test_post_quantum_adversarial.py::TestPillar9Adversarial::test_single_substrate_functor PASSED [ 92%]
+tests/test_post_quantum_adversarial.py::TestPillar9Adversarial::test_repeated_equivalence_is_consistent PASSED [ 93%]
+tests/test_post_quantum_adversarial.py::TestPillar9Adversarial::test_equivalence_at_different_sample_sizes[0] PASSED [ 93%]
+tests/test_post_quantum_adversarial.py::TestPillar9Adversarial::test_equivalence_at_different_sample_sizes[1] PASSED [ 94%]
+tests/test_post_quantum_adversarial.py::TestPillar9Adversarial::test_equivalence_at_different_sample_sizes[5] PASSED [ 94%]
+tests/test_post_quantum_adversarial.py::TestPillar9Adversarial::test_equivalence_at_different_sample_sizes[1000] PASSED [ 95%]
+tests/test_post_quantum_adversarial.py::TestPillar9Adversarial::test_substrate_independence_proof_thesis PASSED [ 96%]
+tests/test_post_quantum_adversarial.py::TestCrossPillarChaosEngineering::test_corrupted_density_chain_all_pillars PASSED [ 96%]
+tests/test_post_quantum_adversarial.py::TestCrossPillarChaosEngineering::test_numerical_boundary_across_pillars PASSED [ 97%]
+tests/test_post_quantum_adversarial.py::TestCrossPillarChaosEngineering::test_chaos_monte_carlo PASSED [ 98%]
+tests/test_post_quantum_adversarial.py::TestCrossPillarChaosEngineering::test_phi_3_resonance_stability_under_chaos PASSED [ 98%]
+tests/test_post_quantum_adversarial.py::TestCrossPillarChaosEngineering::test_h4_manifold_survives_synaptic_reset PASSED [ 99%]
+tests/test_post_quantum_adversarial.py::TestCrossPillarChaosEngineering::test_phi_folding_edge_case_dimensions PASSED [100%]
+
+=============================== warnings summary ===============================
+../../Library/Python/3.9/lib/python/site-packages/_hypothesis_pytestplugin.py:470
+  /Users/demouser/Library/Python/3.9/lib/python/site-packages/_hypothesis_pytestplugin.py:470: UserWarning: Skipping collection of '.hypothesis' directory - this usually means you've explicitly set the `norecursedirs` pytest config option, replacing rather than extending the default ignores.
+    warnings.warn(
+
+tests/test_post_quantum_pillars.py::TestPillar7NonMarkovianMemory::test_phi_memory_capacity
+tests/test_post_quantum_adversarial.py::TestPillar7Adversarial::test_memory_capacity_phi_quality_bounds
+  /Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/pythia_mining/non_markovian_memory_bounds.py:420: RuntimeWarning: divide by zero encountered in matmul
+    purity = float(np.real(np.trace(rho @ rho)))
+
+tests/test_post_quantum_pillars.py::TestPillar7NonMarkovianMemory::test_phi_memory_capacity
+tests/test_post_quantum_adversarial.py::TestPillar7Adversarial::test_memory_capacity_phi_quality_bounds
+  /Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/pythia_mining/non_markovian_memory_bounds.py:420: RuntimeWarning: overflow encountered in matmul
+    purity = float(np.real(np.trace(rho @ rho)))
+
+tests/test_post_quantum_pillars.py::TestPillar7NonMarkovianMemory::test_phi_memory_capacity
+tests/test_post_quantum_adversarial.py::TestPillar7Adversarial::test_memory_capacity_phi_quality_bounds
+  /Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/pythia_mining/non_markovian_memory_bounds.py:420: RuntimeWarning: invalid value encountered in matmul
+    purity = float(np.real(np.trace(rho @ rho)))
+
+tests/test_post_quantum_pillars.py::TestPillar9SubstrateEquivalence::test_coxeter_group_independence
+tests/test_post_quantum_pillars.py::TestPillar9SubstrateEquivalence::test_mathematical_substrate_thesis
+tests/test_post_quantum_pillars.py::TestCrossPillarIntegration::test_h4_substrate_independence
+tests/test_post_quantum_pillars.py::TestCrossPillarIntegration::test_all_pillars_thesis
+tests/test_post_quantum_adversarial.py::TestPillar9Adversarial::test_substrate_independence_proof_thesis
+  /Users/demouser/Library/Python/3.9/lib/python/site-packages/numpy/linalg/_linalg.py:2371: RuntimeWarning: divide by zero encountered in det
+    r = _umath_linalg.det(a, signature=signature)
+
+tests/test_post_quantum_pillars.py::TestPillar9SubstrateEquivalence::test_coxeter_group_independence
+tests/test_post_quantum_pillars.py::TestPillar9SubstrateEquivalence::test_mathematical_substrate_thesis
+tests/test_post_quantum_pillars.py::TestCrossPillarIntegration::test_h4_substrate_independence
+tests/test_post_quantum_pillars.py::TestCrossPillarIntegration::test_all_pillars_thesis
+tests/test_post_quantum_adversarial.py::TestPillar9Adversarial::test_substrate_independence_proof_thesis
+  /Users/demouser/Library/Python/3.9/lib/python/site-packages/numpy/linalg/_linalg.py:2371: RuntimeWarning: overflow encountered in det
+    r = _umath_linalg.det(a, signature=signature)
+
+tests/test_post_quantum_pillars.py::TestPillar9SubstrateEquivalence::test_coxeter_group_independence
+tests/test_post_quantum_pillars.py::TestPillar9SubstrateEquivalence::test_mathematical_substrate_thesis
+tests/test_post_quantum_pillars.py::TestCrossPillarIntegration::test_h4_substrate_independence
+tests/test_post_quantum_pillars.py::TestCrossPillarIntegration::test_all_pillars_thesis
+tests/test_post_quantum_adversarial.py::TestPillar9Adversarial::test_substrate_independence_proof_thesis
+  /Users/demouser/Library/Python/3.9/lib/python/site-packages/numpy/linalg/_linalg.py:2371: RuntimeWarning: invalid value encountered in det
+    r = _umath_linalg.det(a, signature=signature)
+
+tests/test_post_quantum_pillars.py::TestCrossPillarIntegration::test_h4_plus_c_star_verification
+tests/test_post_quantum_adversarial.py::TestPillar6Adversarial::test_various_dimensions_operator[16]
+  /Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/pythia_mining/operator_algebraic_verification.py:109: RuntimeWarning: divide by zero encountered in matmul
+    aa = mat.conj().T @ mat
+
+tests/test_post_quantum_pillars.py::TestCrossPillarIntegration::test_h4_plus_c_star_verification
+tests/test_post_quantum_adversarial.py::TestPillar6Adversarial::test_various_dimensions_operator[16]
+  /Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/pythia_mining/operator_algebraic_verification.py:109: RuntimeWarning: overflow encountered in matmul
+    aa = mat.conj().T @ mat
+
+tests/test_post_quantum_pillars.py::TestCrossPillarIntegration::test_h4_plus_c_star_verification
+tests/test_post_quantum_adversarial.py::TestPillar6Adversarial::test_various_dimensions_operator[16]
+  /Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/pythia_mining/operator_algebraic_verification.py:109: RuntimeWarning: invalid value encountered in matmul
+    aa = mat.conj().T @ mat
+
+tests/test_post_quantum_pillars.py::TestCrossPillarIntegration::test_h4_plus_c_star_verification
+tests/test_post_quantum_adversarial.py::TestPillar6Adversarial::test_various_dimensions_density[32]
+tests/test_post_quantum_adversarial.py::TestCrossPillarChaosEngineering::test_numerical_boundary_across_pillars
+  /Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/pythia_mining/operator_algebraic_verification.py:180: RuntimeWarning: divide by zero encountered in matmul
+    purity = float(np.real(np.trace(mat @ mat)))
+
+tests/test_post_quantum_pillars.py::TestCrossPillarIntegration::test_h4_plus_c_star_verification
+tests/test_post_quantum_adversarial.py::TestPillar6Adversarial::test_various_dimensions_density[32]
+tests/test_post_quantum_adversarial.py::TestCrossPillarChaosEngineering::test_numerical_boundary_across_pillars
+  /Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/pythia_mining/operator_algebraic_verification.py:180: RuntimeWarning: overflow encountered in matmul
+    purity = float(np.real(np.trace(mat @ mat)))
+
+tests/test_post_quantum_pillars.py::TestCrossPillarIntegration::test_h4_plus_c_star_verification
+tests/test_post_quantum_adversarial.py::TestPillar6Adversarial::test_various_dimensions_density[32]
+tests/test_post_quantum_adversarial.py::TestCrossPillarChaosEngineering::test_numerical_boundary_across_pillars
+  /Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/pythia_mining/operator_algebraic_verification.py:180: RuntimeWarning: invalid value encountered in matmul
+    purity = float(np.real(np.trace(mat @ mat)))
+
+tests/test_post_quantum_adversarial.py::TestPillar6Adversarial::test_rejects_non_hermitian_density
+tests/test_post_quantum_adversarial.py::TestCrossPillarChaosEngineering::test_chaos_monte_carlo
+  /Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/pythia_mining/operator_algebraic_verification.py:168: RuntimeWarning: divide by zero encountered in matmul
+    eigenvalues = np.linalg.eigvalsh(mat.conj().T @ mat).real
+
+tests/test_post_quantum_adversarial.py::TestPillar6Adversarial::test_rejects_non_hermitian_density
+tests/test_post_quantum_adversarial.py::TestCrossPillarChaosEngineering::test_chaos_monte_carlo
+  /Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/pythia_mining/operator_algebraic_verification.py:168: RuntimeWarning: overflow encountered in matmul
+    eigenvalues = np.linalg.eigvalsh(mat.conj().T @ mat).real
+
+tests/test_post_quantum_adversarial.py::TestPillar6Adversarial::test_rejects_non_hermitian_density
+tests/test_post_quantum_adversarial.py::TestCrossPillarChaosEngineering::test_chaos_monte_carlo
+  /Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/pythia_mining/operator_algebraic_verification.py:168: RuntimeWarning: invalid value encountered in matmul
+    eigenvalues = np.linalg.eigvalsh(mat.conj().T @ mat).real
+
+tests/test_post_quantum_adversarial.py::TestPillar6Adversarial::test_various_dimensions_density[32]
+tests/test_post_quantum_adversarial.py::TestPillar7Adversarial::test_memory_capacity_phi_quality_bounds
+  /Users/demouser/Desktop/HYBA_FULLSTACK/tests/test_post_quantum_adversarial.py:133: RuntimeWarning: divide by zero encountered in matmul
+    rho = (A @ A.conj().T)
+
+tests/test_post_quantum_adversarial.py::TestPillar6Adversarial::test_various_dimensions_density[32]
+tests/test_post_quantum_adversarial.py::TestPillar7Adversarial::test_memory_capacity_phi_quality_bounds
+  /Users/demouser/Desktop/HYBA_FULLSTACK/tests/test_post_quantum_adversarial.py:133: RuntimeWarning: overflow encountered in matmul
+    rho = (A @ A.conj().T)
+
+tests/test_post_quantum_adversarial.py::TestPillar6Adversarial::test_various_dimensions_density[32]
+tests/test_post_quantum_adversarial.py::TestPillar7Adversarial::test_memory_capacity_phi_quality_bounds
+  /Users/demouser/Desktop/HYBA_FULLSTACK/tests/test_post_quantum_adversarial.py:133: RuntimeWarning: invalid value encountered in matmul
+    rho = (A @ A.conj().T)
+
+tests/test_post_quantum_adversarial.py::TestCrossPillarChaosEngineering::test_numerical_boundary_across_pillars
+  /Users/demouser/Desktop/HYBA_FULLSTACK/tests/test_post_quantum_adversarial.py:586: RuntimeWarning: divide by zero encountered in matmul
+    rho = evecs @ np.diag(evals) @ evecs.conj().T
+
+tests/test_post_quantum_adversarial.py::TestCrossPillarChaosEngineering::test_numerical_boundary_across_pillars
+  /Users/demouser/Desktop/HYBA_FULLSTACK/tests/test_post_quantum_adversarial.py:586: RuntimeWarning: overflow encountered in matmul
+    rho = evecs @ np.diag(evals) @ evecs.conj().T
+
+tests/test_post_quantum_adversarial.py::TestCrossPillarChaosEngineering::test_numerical_boundary_across_pillars
+  /Users/demouser/Desktop/HYBA_FULLSTACK/tests/test_post_quantum_adversarial.py:586: RuntimeWarning: invalid value encountered in matmul
+    rho = evecs @ np.diag(evals) @ evecs.conj().T
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================= 159 passed, 52 warnings in 0.38s =======================
