@@ -395,8 +395,8 @@ class TopologicalHolonomyEngine:
         curvatures = np.array(curvatures)
 
         # Integrate curvature: C = (1/2π) ∫ F dλ
-        # Use trapezoidal rule
-        integral = np.trapezoid(curvatures, lambda_values)
+        # Use trapezoidal rule (np.trapz for numpy <2.0 compatibility)
+        integral = np.trapz(curvatures, lambda_values)
         chern = integral.real / (2 * math.pi)
 
         # Check quantization
