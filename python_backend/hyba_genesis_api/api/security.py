@@ -1047,6 +1047,9 @@ async def broadcast_regeneration_event(event: Dict[str, Any]):
 # PHASE 5: Multi-Agent System Integration
 from .multi_agent import (
     get_orchestrator,
+    get_swarm_communication,
+    SwarmCommunication,
+    SwarmEnabledAgent,
     DiagnosisAgent,
     PlanningAgent,
     BackendSpecialist,
@@ -1063,6 +1066,16 @@ _orchestrator.register_agent(BackendSpecialist())
 _orchestrator.register_agent(FrontendSpecialist())
 _orchestrator.register_agent(VerificationSpecialist())
 _orchestrator.register_agent(ExecutorAgent())
+
+# PHASE 5.1: Initialize Swarm Communication
+_swarm_comm = get_swarm_communication()
+_swarm_comm.register_agent("orchestrator")
+_swarm_comm.register_agent("diagnosis_agent")
+_swarm_comm.register_agent("planning_agent")
+_swarm_comm.register_agent("backend_specialist")
+_swarm_comm.register_agent("frontend_specialist")
+_swarm_comm.register_agent("verification_specialist")
+_swarm_comm.register_agent("executor_agent")
 
 
 def sign_regeneration_event(event_id: str, pending_event: Dict[str, Any], result: Dict[str, Any]) -> str:
@@ -1637,6 +1650,61 @@ async def get_swarm_status():
             "timestamp": datetime.now(timezone.utc).isoformat(),
             "error": str(e),
             "source": "swarm_coherence_security_error",
+        }
+
+
+@router.get("/regeneration/swarm/status", response_model=Dict[str, Any])
+async def get_salamander_swarm_status():
+    """Get Salamander Swarm Intelligence status.
+
+    PHASE 5.1: Provides comprehensive swarm intelligence status:
+    - Registered agents in swarm
+    - Pheromone trail summary
+    - Active proposals and consensus decisions
+    - Message history statistics
+    - Stigmergy learning metrics
+    """
+    try:
+        swarm_status = _swarm_comm.get_swarm_status()
+        
+        # Get top pheromone trails (up to 10 strongest)
+        sorted_trails = sorted(
+            _swarm_comm.pheromone_trails.items(),
+            key=lambda x: abs(x[1]),
+            reverse=True
+        )[:10]
+        
+        # Get active/pending proposals
+        pending_proposals = len([p for p in _swarm_comm.proposals.values() 
+                                 if p["status"] == "pending"])
+
+        return {
+            "success": True,
+            "status": "swarm_intelligence_status",
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "swarm": {
+                "registered_agents": swarm_status["registered_agents"],
+                "active_proposals": pending_proposals,
+                "pheromone_trails_count": swarm_status["pheromone_trails"],
+                "message_history_size": swarm_status["message_history_size"],
+                "agents": swarm_status["agents"],
+                "pheromone_trails": sorted_trails,
+                "communication_mode": "Async + Broadcast",
+                "consensus_mechanism": "Majority Vote",
+                "task_allocation": "PSO-Optimized",
+                "learning_rate": "5% decay/min",
+                "total_proposals": len(_swarm_comm.proposals),
+                "total_votes_cast": sum(len(v) for v in _swarm_comm.votes.values()),
+            },
+            "source": "salamander_swarm_intelligence",
+        }
+    except Exception as e:
+        return {
+            "success": False,
+            "status": "swarm_intelligence_error",
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "error": str(e),
+            "source": "salamander_swarm_intelligence_error",
         }
 
 

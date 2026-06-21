@@ -23,12 +23,14 @@ import {
   stopCIAASService,
   getCIAASAutonomousStatus,
 } from "../apiClient";
+import { useAuth } from "./AuthProvider";
 
 interface CIaaSServiceManagerProps {
   token: string | null;
 }
 
 export default function CIaaSServiceManager({ token }: CIaaSServiceManagerProps) {
+  const { isAdmin } = useAuth();
   const [services, setServices] = useState<ServiceResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -47,8 +49,6 @@ export default function CIaaSServiceManager({ token }: CIaaSServiceManagerProps)
     data_residency: "us",
     allowed_workloads: ["explain", "orchestrate", "counterfactual", "governance_audit", "substrate_health"],
   });
-
-  const [isAdmin, setIsAdmin] = useState(false);
 
   const fetchServices = async () => {
     if (!token) return;

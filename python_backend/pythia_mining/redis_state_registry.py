@@ -306,11 +306,12 @@ class RedisQuantumSubstrateRegistry:
                 logger.warning(f"Error closing Redis connection: {e}")
             finally:
                 self._client = None
-                self._available = False   metrics: Execution metrics (defect_count, pairing_weight, circuit_depth)
+                self._available = False
 
-        Returns:
-            Metering result with compute_units_drawn and status
-        """
+    def meter_instance_usage(self, instance_id: str, tenant_id: str, metrics: Dict[str, Any]) -> Dict[str, Any]:
+        # Calculate real compute units and update global usage ledger
+        # Args: metrics - Execution metrics (defect_count, pairing_weight, circuit_depth)
+        # Returns: Metering result with compute_units_drawn and status
         defect_count = metrics.get("defect_count", 0)
         pairing_weight = metrics.get("pairing_weight", 1.0)
         circuit_depth = metrics.get("circuit_depth", 1)
@@ -368,15 +369,11 @@ class RedisQuantumSubstrateRegistry:
             }
 
     def get_tenant_usage(self, tenant_id: str) -> Dict[str, Any]:
-        """
-        Retrieve tenant's total resource usage from Redis.
-
-        Args:
-            tenant_id: Tenant/customer ID
-
-        Returns:
-            Dict with total_compute_units and total_execution_cycles
-        """
+        # Retrieve tenant's total resource usage from Redis.
+        # Args:
+        #     tenant_id: Tenant/customer ID
+        # Returns:
+        #     Dict with total_compute_units and total_execution_cycles
         if not self.available:
             return {"total_compute_units": 0.0, "total_execution_cycles": 0}
 
@@ -394,15 +391,9 @@ class RedisQuantumSubstrateRegistry:
             return {"total_compute_units": 0.0, "total_execution_cycles": 0}
 
     def delete_instance(self, instance_id: str) -> bool:
-        """
-        Delete instance topology and release all associated locks.
-
-        Args:
-            instance_id: Unique identifier for the compute instance
-
-        Returns:
-            True if deletion successful, False otherwise
-        """
+        # Delete instance topology and release all associated locks
+        # Args: instance_id - Unique identifier for the compute instance
+        # Returns: True if deletion successful, False otherwise
         if not self.available:
             return True
 
@@ -432,7 +423,7 @@ _global_redis_registry: Optional[RedisQuantumSubstrateRegistry] = None
 
 
 def get_redis_registry() -> RedisQuantumSubstrateRegistry:
-    """Get or create global Redis registry instance."""
+    # Get or create global Redis registry instance
     global _global_redis_registry
     if _global_redis_registry is None:
         _global_redis_registry = RedisQuantumSubstrateRegistry()

@@ -13,7 +13,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "python_backend"))
 from pythia_mining.circuit_breaker_failover import (
     CircuitBreakerFailoverManager,
     PoolTier,
-    CircuitBreakerState,
+    CircuitBreakerStateEnum as CircuitBreakerState,
 )
 from pythia_mining.operator_approval_timeout import (
     OperatorApprovalTimeoutManager,

@@ -33,7 +33,7 @@ class PoolTier(Enum):
     MANUAL = "manual"  # Requires manual operator intervention
 
 
-class CircuitBreakerState(Enum):
+class CircuitBreakerStateEnum(Enum):
     """Circuit breaker state machine."""
 
     CLOSED = "closed"  # Normal operation
@@ -61,7 +61,7 @@ class CircuitBreakerState:
     """State machine for circuit breaker."""
 
     current_tier: PoolTier
-    current_state: CircuitBreakerState
+    current_state: CircuitBreakerStateEnum
     failures_in_current_tier: int = 0
     max_failures_before_failover: int = 10
     last_failure_time: Optional[float] = None
@@ -124,7 +124,7 @@ class CircuitBreakerFailoverManager:
 
         # State tracking
         self.current_tier = PoolTier.PRIMARY
-        self.current_state = CircuitBreakerState.CLOSED
+        self.current_state = CircuitBreakerStateEnum.CLOSED
         self.failures_in_current_tier = 0
         self.heal_attempt_window: List[float] = []
         self.heal_attempt_window_seconds = 600.0  # 10 minutes
@@ -154,7 +154,7 @@ class CircuitBreakerFailoverManager:
 
         # Check if threshold exceeded
         if self.failures_in_current_tier >= self.max_failures_before_failover:
-            self.current_state = CircuitBreakerState.OPEN
+            self.current_state = CircuitBreakerStateEnum.OPEN
             logger.error(
                 f"Circuit breaker OPEN: {self.current_tier.value} tier "
                 f"exceeded {self.max_failures_before_failover} failures"
@@ -162,9 +162,9 @@ class CircuitBreakerFailoverManager:
 
     def record_success(self) -> None:
         """Record a successful operation."""
-        if self.current_state == CircuitBreakerState.HALF_OPEN:
+        if self.current_state == CircuitBreakerStateEnum.HALF_OPEN:
             # Recovery successful
-            self.current_state = CircuitBreakerState.CLOSED
+            self.current_state = CircuitBreakerStateEnum.CLOSED
             self.failures_in_current_tier = 0
             self.heal_attempt_window = []
             self.recovery_attempt_count = 0
@@ -173,7 +173,7 @@ class CircuitBreakerFailoverManager:
     def should_failover(self) -> bool:
         """Check if failover to next tier should be triggered."""
         if (
-            self.current_state == CircuitBreakerState.OPEN
+            self.current_state == CircuitBreakerStateEnum.OPEN
             and self.failures_in_current_tier >= self.max_failures_before_failover
         ):
             return True
@@ -206,13 +206,13 @@ class CircuitBreakerFailoverManager:
                 f"Failover exhausted: all tiers have failed. Manual intervention required."
             )
             self.metrics.failed_failovers += 1
-            self.current_state = CircuitBreakerState.DEGRADED
+            self.current_state = CircuitBreakerStateEnum.DEGRADED
             self.current_tier = PoolTier.MANUAL
             return False
 
         # Transition to next tier
         self.current_tier = next_tier
-        self.current_state = CircuitBreakerState.CLOSED  # Reset state for new tier
+        self.current_state = CircuitBreakerStateEnum.CLOSED  # Reset state for new tier
         self.failures_in_current_tier = 0
         self.recovery_attempt_count = 0
 
@@ -267,7 +267,7 @@ class CircuitBreakerFailoverManager:
             True if transitioning to HALF_OPEN for testing
             False if recovery timeout not expired
         """
-        if self.current_state != CircuitBreakerState.OPEN:
+        if self.current_state != CircuitBreakerStateEnum.OPEN:
             return False
 
         now = time.time()
@@ -275,7 +275,7 @@ class CircuitBreakerFailoverManager:
             # First recovery attempt
             self.last_recovery_attempt = now
             self.recovery_attempt_count = 1
-            self.current_state = CircuitBreakerState.HALF_OPEN
+            self.current_state = CircuitBreakerStateEnum.HALF_OPEN
             logger.info(
                 f"Circuit breaker HALF_OPEN: Testing {self.current_tier.value} recovery"
             )
@@ -291,7 +291,7 @@ class CircuitBreakerFailoverManager:
         if time_since_last >= backoff_delay:
             self.recovery_attempt_count += 1
             self.last_recovery_attempt = now
-            self.current_state = CircuitBreakerState.HALF_OPEN
+            self.current_state = CircuitBreakerStateEnum.HALF_OPEN
             logger.info(
                 f"Circuit breaker HALF_OPEN (attempt {self.recovery_attempt_count}): "
                 f"Testing {self.current_tier.value} recovery"
@@ -375,6 +375,7 @@ class CircuitBreakerFailoverManager:
 __all__ = [
     "CircuitBreakerFailoverManager",
     "PoolTier",
+    "CircuitBreakerStateEnum",
     "CircuitBreakerState",
     "FailoverAttempt",
     "CircuitBreakerMetrics",

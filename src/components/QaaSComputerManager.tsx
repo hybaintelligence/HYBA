@@ -24,12 +24,14 @@ import {
   stopQaaSComputer,
   getQAASAutonomousStatus,
 } from "../apiClient";
+import { useAuth } from "./AuthProvider";
 
 interface QaaSComputerManagerProps {
   token: string | null;
 }
 
 export default function QaaSComputerManager({ token }: QaaSComputerManagerProps) {
+  const { isAdmin } = useAuth();
   const [computers, setComputers] = useState<FaultTolerantComputerResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -55,8 +57,6 @@ export default function QaaSComputerManager({ token }: QaaSComputerManagerProps)
       "governance_audit",
     ],
   });
-
-  const [isAdmin, setIsAdmin] = useState(false);
 
   const fetchComputers = async () => {
     if (!token) return;

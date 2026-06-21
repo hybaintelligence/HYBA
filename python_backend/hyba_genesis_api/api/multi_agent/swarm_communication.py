@@ -46,9 +46,16 @@ class SwarmCommunication:
         self.votes: Dict[str, List[Dict[str, Any]]] = {}  # proposal_id -> votes
         self.message_history: List[SwarmMessage] = []
         self.max_history = 1000
-        
-        # Start pheromone decay task
-        asyncio.create_task(self._pheromone_decay_loop())
+        self._decay_task = None  # Lazy initialization of decay loop
+    
+    def _ensure_decay_loop(self):
+        """Lazily start the pheromone decay loop if not already running."""
+        if self._decay_task is None:
+            try:
+                self._decay_task = asyncio.create_task(self._pheromone_decay_loop())
+            except RuntimeError:
+                # No running event loop yet; will be started on first use
+                pass
     
     def register_agent(self, agent_name: str) -> asyncio.Queue:
         """Register an agent and create its message queue."""
@@ -63,6 +70,9 @@ class SwarmCommunication:
     
     async def send(self, message: SwarmMessage) -> bool:
         """Send a message to target agent(s)."""
+        # Ensure decay loop is running (lazy initialization)
+        self._ensure_decay_loop()
+        
         # Add to history
         self.message_history.append(message)
         if len(self.message_history) > self.max_history:
