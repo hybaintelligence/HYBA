@@ -1,0 +1,19 @@
+{
+  "service_id": "test-heal-fresh-001",
+  "service_kind": "qaas",
+  "optimization_epochs": 0,
+  "last_optimization": 0.0,
+  "proposals": [],
+  "heal_attempts": [
+    {
+      "attempt_id": "heal_fb2d73c4",
+      "timestamp": 1782058125.0164108,
+      "trigger": "health_score_below_threshold",
+      "action": "soft_reset",
+      "success": true
+    }
+  ],
+  "health_history": [],
+  "error_rates": [],
+  "execution_times": []
+}
