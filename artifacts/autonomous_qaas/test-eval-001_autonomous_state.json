@@ -1,0 +1,117 @@
+{
+  "service_id": "test-eval-001",
+  "service_kind": "qaas",
+  "optimization_epochs": 0,
+  "last_optimization": 0.0,
+  "proposals": [],
+  "heal_attempts": [
+    {
+      "attempt_id": "heal_05ecada3",
+      "timestamp": 1782058098.79059,
+      "trigger": "trigger_0",
+      "action": "",
+      "success": false
+    },
+    {
+      "attempt_id": "heal_aa4653ca",
+      "timestamp": 1782058098.790952,
+      "trigger": "trigger_1",
+      "action": "",
+      "success": false
+    },
+    {
+      "attempt_id": "heal_6c918d76",
+      "timestamp": 1782058098.791313,
+      "trigger": "trigger_2",
+      "action": "",
+      "success": false
+    },
+    {
+      "attempt_id": "heal_b446494c",
+      "timestamp": 1782058098.791626,
+      "trigger": "trigger_3",
+      "action": "",
+      "success": false
+    },
+    {
+      "attempt_id": "heal_925ecf8a",
+      "timestamp": 1782058098.7919831,
+      "trigger": "trigger_4",
+      "action": "",
+      "success": false
+    },
+    {
+      "attempt_id": "heal_f564d7a6",
+      "timestamp": 1782058098.792325,
+      "trigger": "trigger_5",
+      "action": "failover_to_backup",
+      "success": false
+    },
+    {
+      "attempt_id": "heal_e4175481",
+      "timestamp": 1782058098.792712,
+      "trigger": "error_rate_spike",
+      "action": "failover_to_backup",
+      "success": false
+    },
+    {
+      "attempt_id": "heal_83574735",
+      "timestamp": 1782058098.793649,
+      "trigger": "health_score_below_threshold",
+      "action": "failover_to_backup",
+      "success": false
+    },
+    {
+      "attempt_id": "heal_3f2d00a7",
+      "timestamp": 1782058125.010463,
+      "trigger": "trigger_0",
+      "action": "failover_to_backup",
+      "success": false
+    },
+    {
+      "attempt_id": "heal_16614d1c",
+      "timestamp": 1782058125.012022,
+      "trigger": "trigger_1",
+      "action": "failover_to_backup",
+      "success": false
+    },
+    {
+      "attempt_id": "heal_ed52c3bc",
+      "timestamp": 1782058125.012636,
+      "trigger": "trigger_2",
+      "action": "failover_to_backup",
+      "success": false
+    },
+    {
+      "attempt_id": "heal_687011fd",
+      "timestamp": 1782058125.013076,
+      "trigger": "trigger_3",
+      "action": "failover_to_backup",
+      "success": false
+    },
+    {
+      "attempt_id": "heal_8a599ada",
+      "timestamp": 1782058125.013497,
+      "trigger": "trigger_4",
+      "action": "failover_to_backup",
+      "success": false
+    },
+    {
+      "attempt_id": "heal_d43afee9",
+      "timestamp": 1782058125.014001,
+      "trigger": "trigger_5",
+      "action": "failover_to_backup",
+      "success": false
+    },
+    {
+      "attempt_id": "heal_b71fa8f9",
+      "timestamp": 1782058125.015271,
+      "trigger": "error_rate_spike",
+      "action": "failover_to_backup",
+      "success": false
+    }
+  ],
+  "health_history": [],
+  "error_rates": [],
+  "execution_times": []
+}

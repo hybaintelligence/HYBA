@@ -335,7 +335,6 @@ app.include_router(ops.router)
 # SALAMANDER-REGENERATED INTEGRATIONS (Auto-wired 21 June 2026)
 # ============================================================================
 # QaaS subsystem integration: Wire quantum execution and computational intelligence
-app.include_router(quantum_as_a_service_execute_hardened.router, prefix="/api/qaas", tags=["Quantum-as-a-Service"])
 app.include_router(public_computational_intelligence_service.router, prefix="/api/ciaas", tags=["Computational-Intelligence"])
 
 

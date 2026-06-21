@@ -1,0 +1,17 @@
+{
+  "service_id": "integrated-test-001",
+  "service_kind": "qaas",
+  "optimization_epochs": 0,
+  "last_optimization": 0.0,
+  "proposals": [],
+  "heal_attempts": [],
+  "health_history": [],
+  "error_rates": [
+    0.001,
+    0.001
+  ],
+  "execution_times": [
+    100.0,
+    100.0
+  ]
+}

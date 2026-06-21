@@ -82,12 +82,21 @@ def verify_memory_seed_integration(main_py: Path) -> bool:
 
 
 def verify_qiaas_integration(main_py: Path) -> bool:
-    """Verify QIaaS service is wired to main.py"""
+    """Verify QIaaS service status: REMOVED due to unverified claims.
+    
+    QIaaS was removed on 21 June 2026 because it served unverified claims
+    about "quantum intelligence" without falsifiable definitions or measurement
+    protocols. See CRITICAL_ELEVATION_REPORT.md and falsifiability_requirements.md
+    for details.
+    
+    This check now verifies that QIaaS is NOT wired (the correct state).
+    """
     content = main_py.read_text()
     
+    # QIaaS should NOT be present - this is the correct state
     checks = [
-        ("quantum_intelligence_service imported", "quantum_intelligence_service" in content),
-        ("QIaaS router included", "quantum_intelligence_service.router" in content),
+        ("quantum_intelligence_service NOT imported", "quantum_intelligence_service" not in content or "QIaaS removed" in content),
+        ("QIaaS router NOT included", "quantum_intelligence_service.router" not in content or "QIaaS removed" in content),
     ]
     
     return all(result for _, result in checks), checks
@@ -124,12 +133,16 @@ def main():
     for check_name, passed in memory_seed_checks:
         logger.info(f"  {'✅' if passed else '❌'} {check_name}")
     
-    # 2. Verify QIaaS Integration
-    logger.info("\n2. QIaaS (Quantum Intelligence as a Service) Integration")
+    # 2. Verify QIaaS Integration Status
+    logger.info("\n2. QIaaS (Quantum Intelligence as a Service) - REMOVED")
     logger.info("-" * 80)
+    logger.info("  ℹ️  QIaaS was removed on 21 June 2026")
+    logger.info("  ℹ️  Reason: Served unverified claims without falsifiable criteria")
+    logger.info("  ℹ️  See: CRITICAL_ELEVATION_REPORT.md")
+    logger.info("  ℹ️  Policy: .kiro/steering/falsifiability_requirements.md")
     qiaas_ok, qiaas_checks = verify_qiaas_integration(main_py)
     results["qiaas"] = {
-        "status": "✅ INTEGRATED" if qiaas_ok else "❌ NOT INTEGRATED",
+        "status": "✅ CORRECTLY REMOVED" if qiaas_ok else "❌ STILL PRESENT (should remove)",
         "checks": qiaas_checks
     }
     for check_name, passed in qiaas_checks:
@@ -179,7 +192,7 @@ def main():
     
     logger.info(f"\n✅ Integrated: {integrated_count}/{total_count}")
     logger.info(f"   • Memory Seed: {'✅' if memory_seed_ok else '❌'}")
-    logger.info(f"   • QIaaS: {'✅' if qiaas_ok else '❌'}")
+    logger.info(f"   • QIaaS: {'✅ REMOVED (correct)' if qiaas_ok else '❌ Still present'}")
     logger.info(f"   • QaaS Routes: {'✅' if qaas_ok else '❌'}")
     logger.info(f"   • Multi-Agent: {'✅' if multi_agent_ok else '❌'}")
     logger.info(f"   • PULVINI: {'✅' if pulvini_ok else '❌'}")
@@ -187,16 +200,16 @@ def main():
     if all_ok:
         logger.info("\n🎉 ALL SALAMANDER INTEGRATIONS COMPLETE!")
         logger.info("\nSystem now fully wired:")
-        logger.info("  • Memory seed bootstraps system intelligence at startup")
-        logger.info("  • QIaaS exposes quantum intelligence as API endpoints")
+        logger.info("  • Memory seed bootstraps system structure metrics at startup")
         logger.info("  • QaaS/CIaaS routes available at /api/qaas and /api/ciaas")
         logger.info("  • Multi-agent orchestrator wired to reflexive controller")
         logger.info("  • PULVINI compression integrated in mining engine")
+        logger.info("  • QIaaS REMOVED (unverified claims - see CRITICAL_ELEVATION_REPORT.md)")
         logger.info("\nNext steps:")
         logger.info("  1. Start backend: npm run backend:start")
         logger.info("  2. Run integration tests: npm run test:backend")
         logger.info("  3. Monitor system health at /api/health")
-        logger.info("  4. Query QIaaS at /api/qiaas/health")
+        logger.info("  4. Query QaaS at /api/qaas/health")
     else:
         logger.warning(f"\n⚠️  {total_count - integrated_count} integrations incomplete")
         logger.warning("   Review check results above for details")

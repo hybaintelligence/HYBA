@@ -21,14 +21,14 @@
       ]
     },
     "qiaas": {
-      "status": "\u2705 INTEGRATED",
+      "status": "\u2705 CORRECTLY REMOVED",
       "checks": [
         [
-          "quantum_intelligence_service imported",
+          "quantum_intelligence_service NOT imported",
           true
         ],
         [
-          "QIaaS router included",
+          "QIaaS router NOT included",
           true
         ]
       ]
@@ -101,6 +101,6 @@
       ]
     }
   },
-  "integrated_count": 5,
+  "integrated_count": 4,
   "total_count": 5
 }

@@ -33,16 +33,7 @@ class QuotaManager:
         self._usage_history: Dict[str, list] = defaultdict(list)
     
     def provision_quota(self, customer_id: str, units: int) -> Dict[str, Any]:
-        """
-        Provision quota for a customer.
-        
-        Args:
-            customer_id: Customer identifier
-            units: Number of work units to provision
-            
-        Returns:
-            Provisioning confirmation
-        """
+        """Provision quota for a customer."""
         with self._lock:
             current = self._quotas.get(customer_id, 0)
             self._quotas[customer_id] = current + units
@@ -61,29 +52,14 @@ class QuotaManager:
             }
     
     def consume_quota(self, customer_id: str, units: int, execution_id: str) -> bool:
-        """
-        Attempt to consume quota for an execution.
-        
-        Args:
-            customer_id: Customer identifier
-            units: Work units to consume
-            execution_id: Execution identifier for tracking
-            
-        Returns:
-            True if quota consumed, False if insufficient
-        """
+        """Attempt to consume quota for an execution."""
         with self._lock:
             available = self.get_available(customer_id)
             
             if available < units:
                 logger.warning(
                     f"Insufficient quota for customer {customer_id}",
-                    extra={
-                        "customer_id": customer_id,
-                        "requested": units,
-                        "available": available,
-                        "execution_id": execution_id
-                    }
+                    extra={"customer_id": customer_id, "requested": units, "available": available}
                 )
                 return False
             
@@ -95,41 +71,13 @@ class QuotaManager:
                 "type": "consumption"
             })
             
-            logger.info(
-                f"Consumed {units} units for customer {customer_id}",
-                extra={
-                    "customer_id": customer_id,
-                    "units": units,
-                    "execution_id": execution_id,
-                    "remaining": available - units
-                }
-            )
-            
             return True
     
     def refund_quota(self, customer_id: str, units: int, execution_id: str, reason: str) -> Dict[str, Any]:
-        """
-        Refund quota for a failed execution.
-        
-        Args:
-            customer_id: Customer identifier
-            units: Work units to refund
-            execution_id: Execution identifier
-            reason: Refund reason
-            
-        Returns:
-            Refund confirmation
-        """
+        """Refund quota for a failed execution."""
         with self._lock:
             if customer_id not in self._consumed:
-                logger.warning(
-                    f"Refund attempted for customer with no consumption: {customer_id}",
-                    extra={"customer_id": customer_id, "execution_id": execution_id}
-                )
-                return {
-                    "success": False,
-                    "error": "no_consumption_recorded"
-                }
+                return {"success": False, "error": "no_consumption_recorded"}
             
             self._consumed[customer_id] = max(0, self._consumed[customer_id] - units)
             self._usage_history[customer_id].append({
@@ -140,15 +88,7 @@ class QuotaManager:
                 "type": "refund"
             })
             
-            logger.info(
-                f"Refunded {units} units for customer {customer_id}",
-                extra={
-                    "customer_id": customer_id,
-                    "units": units,
-                    "execution_id": execution_id,
-                    "reason": reason
-                }
-            )
+            logger.info(f"Refunded {units} units for {customer_id}: {reason}")
             
             return {
                 "success": True,
@@ -167,21 +107,12 @@ class QuotaManager:
             return max(0, total - consumed)
     
     def get_status(self, customer_id: str) -> Dict[str, Any]:
-        """
-        Get comprehensive quota status for a customer.
-        
-        Args:
-            customer_id: Customer identifier
-            
-        Returns:
-            Quota status including total, consumed, available
-        """
+        """Get comprehensive quota status for a customer."""
         with self._lock:
             total = self._quotas.get(customer_id, 0)
             consumed = self._consumed.get(customer_id, 0)
             available = max(0, total - consumed)
             
-            # Calculate usage statistics
             history = self._usage_history.get(customer_id, [])
             consumptions = [h for h in history if h["type"] == "consumption"]
             refunds = [h for h in history if h["type"] == "refund"]
@@ -200,53 +131,16 @@ class QuotaManager:
             }
     
     def get_usage_history(self, customer_id: str, limit: int = 100) -> list:
-        """
-        Get usage history for a customer.
-        
-        Args:
-            customer_id: Customer identifier
-            limit: Maximum number of records
-            
-        Returns:
-            List of usage records (most recent first)
-        """
+        """Get usage history for a customer."""
         with self._lock:
             history = self._usage_history.get(customer_id, [])
             return sorted(history, key=lambda x: x["timestamp"], reverse=True)[:limit]
-    
-    def reset_customer(self, customer_id: str) -> Dict[str, Any]:
-        """
-        Reset customer quota (for testing/admin purposes).
-        
-        Args:
-            customer_id: Customer identifier
-            
-        Returns:
-            Reset confirmation
-        """
-        with self._lock:
-            self._quotas.pop(customer_id, None)
-            self._consumed.pop(customer_id, None)
-            self._usage_history.pop(customer_id, None)
-            
-            logger.info(
-                f"Reset quota for customer {customer_id}",
-                extra={"customer_id": customer_id}
-            )
-            
-            return {
-                "success": True,
-                "customer_id": customer_id,
-                "action": "quota_reset"
-            }
 
 
-# Global quota manager instance
+# Global singleton
 _quota_manager: Optional[QuotaManager] = None
 
-
 def get_quota_manager() -> QuotaManager:
-    """Get or create the global quota manager."""
     global _quota_manager
     if _quota_manager is None:
         _quota_manager = QuotaManager()

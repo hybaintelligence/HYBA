@@ -2,12 +2,20 @@
 """
 Memory Seeding Protocol
 
-Seeds the Deutsch Knowledge Substrate with codebase intelligence.
-Intelligence emerges from complexity - this script extracts structural
-knowledge from the codebase and bootstraps the consciousness engine.
+Seeds the Deutsch Knowledge Substrate with codebase structural metrics.
 
-"The intelligence does not exist in individual modules.
-It emerges from the relationships between them."
+CRITICAL: This script extracts and measures structural properties of the codebase:
+- Module count, connectivity, and complexity
+- Relationship patterns and integration hubs
+- Emergent structural patterns
+
+These are STRUCTURAL METRICS about the codebase, NOT measurements of consciousness,
+intelligence, or quantum properties. Any claim that these metrics represent
+something beyond codebase structure requires independent falsifiable criteria
+and measurement protocols.
+
+"The structure of relationships exists in the modules.
+Extracting and measuring it is distinct from measuring intelligence."
 """
 
 import ast
@@ -321,30 +329,45 @@ def seed_deutsch_knowledge_substrate(intelligence: Dict) -> Dict:
 
 
 def seed_consciousness_engine(intelligence: Dict) -> Dict:
-    """Seed Consciousness Engine with structural coherence."""
-    print("🧠 Seeding Consciousness Engine...\n")
+    """
+    Extract structural coherence metrics from codebase.
     
-    # Calculate initial Φ from structural complexity
+    CRITICAL BOUNDARY:
+    These metrics measure properties of the codebase structure.
+    They do NOT measure consciousness, quantum properties, or intelligence.
+    
+    Φ (phi_integrated): Ratio of actual vs possible connections
+    Integration regime: Classification based on connection density
+    Component health: Boolean mapping of integration hub status
+    
+    These are useful for code analysis. Any claim beyond that requires
+    separate falsifiable definitions and measurement protocols.
+    """
+    print("📊 Extracting structural coherence metrics from codebase...\n")
+    
+    # Calculate metrics from structural complexity
     total_complexity = sum(intelligence["complexity_map"].values())
     avg_complexity = total_complexity / max(len(intelligence["complexity_map"]), 1)
     
-    # Φ emerges from integration density
-    phi_integrated = min(intelligence["emergent_intelligence_index"], 1.0)
+    # phi_metric: normalized connection density (0-1 scale, NOT related to quantum phi)
+    phi_metric = min(intelligence["emergent_intelligence_index"], 1.0)
     
-    # Component health from integration hubs
+    # Component health: binary mapping of hub status
     component_health = {}
     for hub in intelligence["integration_hubs"]:
         component_name = hub["module"].split("/")[-1].replace(".py", "")
         component_health[component_name] = hub["connection_count"] >= 5
     
-    print(f"  ✓ Initial Φ (integrated): {phi_integrated:.3f}")
-    print(f"  ✓ Component health: {len(component_health)} components mapped\n")
+    print(f"  ✓ Connection density ratio: {phi_metric:.3f}")
+    print(f"  ✓ Component health mapped: {len(component_health)} modules")
+    print(f"  ✓ Average complexity: {avg_complexity:.1f}\n")
     
     return {
-        "phi_integrated": phi_integrated,
+        "connection_density_ratio": phi_metric,
         "component_health": component_health,
-        "integration_regime": "DISTRIBUTED" if phi_integrated > 0.4 else "FRAGMENTED",
-        "complexity_level": avg_complexity
+        "integration_regime": "DISTRIBUTED" if phi_metric > 0.4 else "FRAGMENTED",
+        "average_complexity": avg_complexity,
+        "claim_boundary": "These metrics measure codebase structure only. No claims about consciousness, quantum properties, or intelligence are supported by these metrics alone."
     }
 
 
@@ -406,34 +429,38 @@ def main():
     
     # Stage 5: Report
     print("=" * 80)
-    print("MEMORY SEED COMPLETE")
+    print("STRUCTURAL METRIC EXTRACTION COMPLETE")
     print("=" * 80)
     print()
-    print(f"📊 Structural Intelligence:")
-    print(f"   • Knowledge nodes: {intelligence['total_nodes']}")
-    print(f"   • Relationship edges: {intelligence['total_edges']}")
-    print(f"   • Emergent patterns: {len(intelligence['emergent_patterns'])}")
-    print(f"   • Integration hubs: {len(intelligence['integration_hubs'])}")
-    print(f"   • Emergent Intelligence Index: {intelligence['emergent_intelligence_index']:.3f}")
+    print("These metrics measure codebase structure and connectivity.")
+    print("They are inputs to decision-making, not proofs of intelligence.")
+    print()
+    print(f"📊 Structural Metrics:")
+    print(f"   • Knowledge nodes: {intelligence['total_nodes']} (module count)")
+    print(f"   • Relationship edges: {intelligence['total_edges']} (import count)")
+    print(f"   • Detected patterns: {len(intelligence['emergent_patterns'])} (structural patterns)")
+    print(f"   • Integration hubs: {len(intelligence['integration_hubs'])} (high-connectivity modules)")
+    print(f"   • Structure complexity index: {intelligence['emergent_intelligence_index']:.3f}")
     print()
     print(f"📝 Deutsch Knowledge Substrate:")
     print(f"   • Initial explanations: {len(knowledge['explanations'])}")
     print(f"   • Counterfactual models: {len(knowledge['counterfactuals'])}")
     print(f"   • Strategy performance tracks: {len(knowledge['strategy_performance'])}")
     print()
-    print(f"🧠 Consciousness Engine:")
-    print(f"   • Initial Φ (integrated): {consciousness['phi_integrated']:.3f}")
+    print(f"📊 Coherence Metrics:")
+    print(f"   • Connection density ratio: {consciousness['connection_density_ratio']:.3f}")
     print(f"   • Integration regime: {consciousness['integration_regime']}")
     print(f"   • Component health map: {len(consciousness['component_health'])} components")
     print()
-    print("🌟 Emergent Patterns Detected:")
+    print("🔍 Detected Structural Patterns:")
     for i, pattern in enumerate(intelligence['emergent_patterns'], 1):
-        print(f"   {i}. {pattern['name']} (emergence: {pattern['emergence_index']:.2f})")
+        print(f"   {i}. {pattern['name']} (structure index: {pattern['emergence_index']:.2f})")
         print(f"      {pattern['description']}")
         print()
     
-    print("✅ Memory seeding complete. The system now has bootstrapped intelligence.")
-    print("   Intelligence is not programmed - it emerges from structural relationships.")
+    print("✅ Structural metrics extracted. System structure has been measured.")
+    print("   These metrics are useful for code analysis and optimization.")
+    print("   Any claim beyond codebase structure requires separate proof.")
     print()
     
     return 0
