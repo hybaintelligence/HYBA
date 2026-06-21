@@ -1,0 +1,250 @@
+{
+  "all_contracts_satisfied": false,
+  "backend_origin": {
+    "extraction_mode": "local_contract_extraction_no_runtime_dependency",
+    "path": "src/backend/api/v1/millennium_operationalisation.py",
+    "repo": "HYBA_Unified_Backend"
+  },
+  "contract_results": [
+    {
+      "contract_satisfied": false,
+      "failed_controls": [
+        "random_constant_ablation",
+        "spectral_replay"
+      ],
+      "fullstack_dimension": "spectral_coherence_phi_resonance",
+      "measurements": {
+        "claim_boundary": "SU(2) spectral-spacing runtime evidence only; not a proof of the Riemann Hypothesis or Yang-Mills mass gap",
+        "control_lcg_r_squared_to_gue": 0.0,
+        "control_results": {
+          "random_constant_ablation": false,
+          "spectral_replay": false,
+          "uniform_allocation": true
+        },
+        "gue_contract_satisfied": false,
+        "phi_lcg_ks_distance_to_gue": 0.444482692872,
+        "phi_lcg_r_squared_to_gue": 0.0,
+        "spectral_probe_sha256": "b086e7df34a0b41e5b37d60b55a6fda63d93f11e88c6c131d0a8a34e9f76b9ff"
+      },
+      "missing_controls": [],
+      "missing_fields": [],
+      "required_controls": [
+        "random_constant_ablation",
+        "uniform_allocation",
+        "spectral_replay"
+      ],
+      "runtime_question": "Does the runtime preserve spectral coherence under replay, noise, and phi ablation?",
+      "slug": "riemann-hypothesis"
+    },
+    {
+      "contract_satisfied": true,
+      "failed_controls": [],
+      "fullstack_dimension": "search_reduction_and_witness_verification",
+      "measurements": {
+        "candidate_reduction_ratio": 0.1875,
+        "control_results": {
+          "brute_force_baseline": true,
+          "random_search": true,
+          "witness_checker": true
+        },
+        "entropy_delta": 43.333333333333314,
+        "witness_validity": true
+      },
+      "missing_controls": [],
+      "missing_fields": [],
+      "required_controls": [
+        "brute_force_baseline",
+        "random_search",
+        "witness_checker"
+      ],
+      "runtime_question": "Does adaptive search reduce candidate entropy while preserving witness verification?",
+      "slug": "p-vs-np"
+    },
+    {
+      "contract_satisfied": true,
+      "failed_controls": [],
+      "fullstack_dimension": "runtime_flow_smoothness",
+      "measurements": {
+        "control_results": {
+          "bounded_queue": true,
+          "pool_rotation": true,
+          "thermal_spike": true
+        },
+        "flow_regular": true,
+        "max_pressure": 6,
+        "recovery_steps": 1
+      },
+      "missing_controls": [],
+      "missing_fields": [],
+      "required_controls": [
+        "thermal_spike",
+        "pool_rotation",
+        "bounded_queue"
+      ],
+      "runtime_question": "Does the orchestration layer avoid blow-up under queue, thermal, and pool-rotation pressure?",
+      "slug": "navier-stokes"
+    },
+    {
+      "contract_satisfied": true,
+      "failed_controls": [],
+      "fullstack_dimension": "perturbation_energy_gap",
+      "measurements": {
+        "control_results": {
+          "failure_probe": true,
+          "low_energy_noise": true,
+          "threshold_probe": true
+        },
+        "gap_positive": true,
+        "noise_tolerated": true,
+        "repair_threshold": 0.61803398875
+      },
+      "missing_controls": [],
+      "missing_fields": [],
+      "required_controls": [
+        "low_energy_noise",
+        "threshold_probe",
+        "failure_probe"
+      ],
+      "runtime_question": "Is there a measurable gap between harmless noise and structural failure?",
+      "slug": "yang-mills-mass-gap"
+    },
+    {
+      "contract_satisfied": true,
+      "failed_controls": [],
+      "fullstack_dimension": "memory_geometry_and_cycle_evidence",
+      "measurements": {
+        "control_results": {
+          "compression_reconstruction": true,
+          "cycle_hashes": true,
+          "memory_replay": true
+        },
+        "cycle_count": 7,
+        "memory_hash_stable": true,
+        "reconstruction_error": 0.0
+      },
+      "missing_controls": [],
+      "missing_fields": [],
+      "required_controls": [
+        "cycle_hashes",
+        "compression_reconstruction",
+        "memory_replay"
+      ],
+      "runtime_question": "Do memory/compression structures form replayable geometric cycles rather than inert logs?",
+      "slug": "hodge-conjecture"
+    },
+    {
+      "contract_satisfied": true,
+      "failed_controls": [],
+      "fullstack_dimension": "resource_flow_and_solvency_signal",
+      "measurements": {
+        "accepted_share_required": true,
+        "control_results": {
+          "accepted_share_transition": true,
+          "ledger_root": true,
+          "pre_share_null": true
+        },
+        "ledger_root_present": true,
+        "resource_signal_state": "accepted_share_observed"
+      },
+      "missing_controls": [],
+      "missing_fields": [],
+      "required_controls": [
+        "pre_share_null",
+        "accepted_share_transition",
+        "ledger_root"
+      ],
+      "runtime_question": "Does accepted-share evidence cleanly change the resource-flow state without premature solvency claims?",
+      "slug": "birch-swinnerton-dyer"
+    },
+    {
+      "contract_satisfied": true,
+      "failed_controls": [],
+      "fullstack_dimension": "topological_identity_preservation",
+      "measurements": {
+        "control_results": {
+          "manifest_identity": true,
+          "node_sacrifice": true,
+          "restart_replay": true
+        },
+        "identity_preserved": true,
+        "manifest_hash_rule": "canonical_restart_fields_ignored_identity_fields_hash_sensitive",
+        "topology_preserved": true
+      },
+      "missing_controls": [],
+      "missing_fields": [],
+      "required_controls": [
+        "restart_replay",
+        "node_sacrifice",
+        "manifest_identity"
+      ],
+      "runtime_question": "Does the system preserve identity through restart, healing, compression, and node sacrifice?",
+      "slug": "poincare-conjecture"
+    }
+  ],
+  "elevation_path": [
+    "extract operational challenge contracts without runtime dependency",
+    "map each contract to a FULLSTACK runtime challenge dimension",
+    "run deterministic fail-able controls and record measured outcomes",
+    "source Riemann-domain evidence from SU(2) spectral-spacing/GUE probe",
+    "preserve packet hash",
+    "feed surviving checks into funding/science gate evidence"
+  ],
+  "forensic_sha256": "3582cea7869d2bddf07b1bdd42e90fbccd63a01df8ce7b3d160be8253b8732b6",
+  "fullstack_boundary": {
+    "backward_compatibility": "adds tests and artifacts without changing production API routes",
+    "claim_boundary": "operational health-check metaphors only; no Millennium Problem proof claims",
+    "extraction_method": "local fail-able runtime challenge contracts",
+    "funding_runtime_separate": true,
+    "imports_hyba_unified_backend": false
+  },
+  "phi_resonance_evidence": {
+    "noise_similarity": {
+      "e": 0.38504512320062445,
+      "phi": 0.5944530711667086,
+      "pi": 0.35122646154711246,
+      "sqrt2": 0.6854569499661587,
+      "uniform": 1.0
+    },
+    "noise_winner": "uniform",
+    "phi_not_magic_on_uniform_noise": true,
+    "phi_structured_dominates": true,
+    "structured_similarity": {
+      "e": 0.7579407816046032,
+      "phi": 1.0,
+      "pi": 0.708511499439933,
+      "sqrt2": 0.901857603000028,
+      "uniform": 0.5944530711667086
+    },
+    "structured_target": [
+      0.3902734644166456,
+      0.24120226591665964,
+      0.14907119849998599,
+      0.09213106741667366,
+      0.05694013108331229,
+      0.035190936333361365,
+      0.021749194749950924,
+      0.013441741583410442
+    ],
+    "structured_winner": "phi",
+    "uniform_noise_target": [
+      0.125,
+      0.125,
+      0.125,
+      0.125,
+      0.125,
+      0.125,
+      0.125,
+      0.125
+    ]
+  },
+  "review_panel_lenses": [
+    "Penrose",
+    "Deutsch",
+    "du Sautoy",
+    "Turing",
+    "Shor",
+    "Grover",
+    "Fourier"
+  ],
+  "schema_version": "hyba.fullstack.millennium_runtime_elevation.v3"
+}

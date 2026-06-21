@@ -1,0 +1,8 @@
+{
+  "contract_count": 7,
+  "forensic_sha256": "04c73cfe0b28db0939d09b6b064b42293c62c7b83bbd664c503e70b5427b59ef",
+  "imports_hyba_unified_backend": false,
+  "packet": "artifacts/millennium_runtime_elevation/millennium_runtime_elevation_packet.json",
+  "packet_sha256": "3582cea7869d2bddf07b1bdd42e90fbccd63a01df8ce7b3d160be8253b8732b6",
+  "schema_version": "hyba.fullstack.millennium_runtime_elevation.v3.manifest"
+}
