@@ -63,7 +63,7 @@ def test_mining_manifest_keeps_standalone_status_honest() -> None:
     assert manifest["commercialization_stage"] == "stage_0_pre_validation_research_only"
     claim = manifest["claims"][0]
     assert claim["tier"] == "HYPOTHETICAL"
-    assert claim["evidence_status"] == "real_double_sha256_loop_pending"
+    assert claim["evidence_status"] == "benchmarks_passed_numpy_unblocked"
     boundaries = "\n".join(claim["boundaries"]).lower()
     assert "no guaranteed mining revenue claim" in boundaries
     assert "no antminer s21 superiority claim" in boundaries

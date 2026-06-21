@@ -14,6 +14,10 @@ from __future__ import annotations
 
 from dataclasses import asdict, dataclass
 from enum import Enum
+import hashlib
+import json
+import platform
+import sys
 from typing import Any, Dict, Mapping, Sequence, Tuple
 
 SCIENTIFIC_RIGOR_PROTOCOL = "PYTHIA_MINING_SCIENTIFIC_RIGOR_KERNEL_V4"
@@ -76,6 +80,33 @@ class CausalIntegrationTelemetry:
     score_domain_policy: str
     sanitized_channels: Tuple[str, ...]
     session_event_id: str = ""
+
+    def to_dict(self) -> Dict[str, Any]:
+        return asdict(self)
+
+
+@dataclass(frozen=True)
+class ReproducibilityAttestation:
+    """Deterministic replay envelope for scientific and operational claims.
+
+    The attestation is intentionally local and conservative: it records exactly
+    which inputs, commands, seeds, dependency pins, and claim boundaries were
+    used to produce a result. It is an audit checksum, not independent peer
+    review and not external truth confirmation.
+    """
+
+    protocol: str
+    claim_id: str
+    commands: Tuple[str, ...]
+    produced_artifacts: Tuple[str, ...]
+    input_digest: str
+    replay_digest: str
+    environment: Dict[str, str]
+    seeds: Dict[str, int]
+    dependency_pins: Dict[str, str]
+    reproducible: bool
+    boundary: str
+    falsification_route: str
 
     def to_dict(self) -> Dict[str, Any]:
         return asdict(self)
@@ -364,13 +395,85 @@ def compute_causal_integration_telemetry(
     )
 
 
+def _canonical_json(value: Any) -> str:
+    """Serialize replay material in a stable, cross-run order."""
+
+    return json.dumps(value, sort_keys=True, separators=(",", ":"), default=str)
+
+
+def build_reproducibility_attestation(
+    claim_id: str,
+    inputs: Mapping[str, Any],
+    commands: Sequence[str],
+    seeds: Mapping[str, int] | None = None,
+    dependency_pins: Mapping[str, str] | None = None,
+    produced_artifacts: Sequence[str] = (),
+    boundary: str = "Local deterministic replay only; not external validation or peer review.",
+) -> ReproducibilityAttestation:
+    """Build a deterministic local replay attestation for a bounded claim.
+
+    A claim is considered locally reproducible only when it has a claim id,
+    at least one replay command, a non-empty boundary, and all seed values are
+    integers. The replay digest is derived solely from canonicalized inputs,
+    commands, seeds, pins, and boundary text, so repeated calls with equivalent
+    material produce byte-identical digests.
+    """
+
+    normalized_commands = tuple(
+        str(command).strip() for command in commands if str(command).strip()
+    )
+    normalized_seeds = {str(key): int(value) for key, value in (seeds or {}).items()}
+    normalized_pins = {str(key): str(value) for key, value in (dependency_pins or {}).items()}
+    normalized_artifacts = tuple(
+        str(path).strip() for path in produced_artifacts if str(path).strip()
+    )
+    input_payload = _canonical_json(inputs)
+    input_digest = hashlib.sha256(input_payload.encode("utf-8")).hexdigest()
+    replay_payload = {
+        "boundary": str(boundary).strip(),
+        "claim_id": str(claim_id).strip(),
+        "commands": normalized_commands,
+        "dependency_pins": normalized_pins,
+        "input_digest": input_digest,
+        "produced_artifacts": normalized_artifacts,
+        "protocol": SCIENTIFIC_RIGOR_PROTOCOL,
+        "seeds": normalized_seeds,
+    }
+    replay_digest = hashlib.sha256(_canonical_json(replay_payload).encode("utf-8")).hexdigest()
+    reproducible = bool(
+        replay_payload["claim_id"] and normalized_commands and replay_payload["boundary"]
+    )
+    return ReproducibilityAttestation(
+        protocol=SCIENTIFIC_RIGOR_PROTOCOL,
+        claim_id=replay_payload["claim_id"],
+        commands=normalized_commands,
+        produced_artifacts=normalized_artifacts,
+        input_digest=input_digest,
+        replay_digest=replay_digest,
+        environment={
+            "python_version": sys.version.split()[0],
+            "platform": platform.platform(),
+        },
+        seeds=normalized_seeds,
+        dependency_pins=normalized_pins,
+        reproducible=reproducible,
+        boundary=replay_payload["boundary"],
+        falsification_route=(
+            "Digest mismatch, missing replay command, changed seed/dependency pin, "
+            "or boundary violation invalidates this local reproducibility attestation."
+        ),
+    )
+
+
 __all__ = [
     "DEFAULT_CAUSAL_INTEGRATION_FLOOR",
     "SCIENTIFIC_RIGOR_PROTOCOL",
     "CausalIntegrationTelemetry",
     "PenroseProofObligation",
+    "ReproducibilityAttestation",
     "RevocationDisposition",
     "ScientificClaimStatus",
     "assess_penrose_obligation",
+    "build_reproducibility_attestation",
     "compute_causal_integration_telemetry",
 ]
