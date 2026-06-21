@@ -46,7 +46,7 @@ class SalamanderOrchestrator:
         """Get all registered agents."""
         return list(self.agents.values())
     
-    def get_agent_for_task(self, task: AgentTask) -> Optional[SalamanderAgent]:
+    async def get_agent_for_task(self, task: AgentTask) -> Optional[SalamanderAgent]:
         """
         Select the best agent for a given task based on capabilities.
         """
@@ -205,7 +205,7 @@ class SalamanderOrchestrator:
         )
         
         # Select appropriate agent
-        agent = self.get_agent_for_task(task)
+        agent = await self.get_agent_for_task(task)
         
         if not agent:
             return {
