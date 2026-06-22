@@ -579,3 +579,123 @@ def test_resonant_substrate_tuner_selects_low_jitter_low_heat_harmonic():
 
     assert lock.phi_value == candidates[1]
     assert lock.reason == "max_throughput_min_jitter_min_thermal_drift"
+
+
+def test_dream_state_promotes_only_simulated_gene_improvements():
+    from pythia_mining.salamander_frontier import (
+        DreamMutation,
+        GlobalEvidenceLedger,
+        ImmutableEvidenceLog,
+        SalamanderDreamState,
+        SalamanderGene,
+    )
+
+    historical_log = ImmutableEvidenceLog().append(
+        "capability_observed", actor="dreamer", timestamp=1.0, roi=1.0
+    )
+    genes = {
+        "phi": SalamanderGene("phi", value=1.618, min_value=1.60, max_value=1.63),
+    }
+
+    def evaluator(log, candidate_genes):
+        observed_roi = sum(entry.data.get("roi", 0.0) for entry in log.entries())
+        return observed_roi - abs(candidate_genes["phi"].value - 1.619)
+
+    dream = SalamanderDreamState(evaluator, promotion_threshold=0.0001)
+    outcome = dream.simulate_mutation(historical_log, genes, DreamMutation("phi", 1.619))
+
+    assert outcome.promoted is True
+    assert outcome.dream_id.startswith("DRM-SIM-")
+    assert outcome.simulated_fitness > outcome.baseline_fitness
+    assert outcome.evolved_genes["phi"].value == 1.619
+    assert outcome.audit_log.entries()[-1].event == "dream_mutation_replayed"
+
+    ledger = GlobalEvidenceLedger()
+    record = dream.promote_blueprint(
+        outcome,
+        ledger=ledger,
+        domain="ciaas",
+        capability="resonant-execution",
+        origin_node="dreamer",
+        audit_log=historical_log,
+        published_at=2.0,
+    )
+
+    inherited = ledger.inherit_blueprints(
+        trusted_hashes={record.evidence_hash}, domain="ciaas", capability="resonant-execution"
+    )
+    assert inherited[0].blueprint_id.startswith("DRM-")
+    assert inherited[0].parameters["dream_id"] == outcome.dream_id
+    assert inherited[0].parameters["dream_gene"] == "phi"
+
+
+def test_dream_state_rejects_non_improving_mutation():
+    from pythia_mining.salamander_frontier import (
+        DreamMutation,
+        ImmutableEvidenceLog,
+        SalamanderDreamState,
+        SalamanderGene,
+    )
+
+    historical_log = ImmutableEvidenceLog().append(
+        "capability_observed", actor="dreamer", timestamp=1.0, roi=1.0
+    )
+    genes = {"phi": SalamanderGene("phi", value=1.619, min_value=1.60, max_value=1.63)}
+    dream = SalamanderDreamState(
+        lambda log, candidate_genes: 1.0 - abs(candidate_genes["phi"].value - 1.619),
+        promotion_threshold=0.0001,
+    )
+
+    outcome = dream.simulate_mutation(historical_log, genes, DreamMutation("phi", 1.61))
+
+    assert outcome.promoted is False
+    assert outcome.evolved_genes == genes
+
+
+def test_dream_state_orders_batch_by_simulated_improvement():
+    from pythia_mining.salamander_frontier import (
+        DreamMutation,
+        ImmutableEvidenceLog,
+        SalamanderDreamState,
+        SalamanderGene,
+    )
+
+    historical_log = ImmutableEvidenceLog().append(
+        "capability_observed", actor="dreamer", timestamp=1.0, roi=1.0
+    )
+    genes = {"phi": SalamanderGene("phi", value=1.61, min_value=1.60, max_value=1.63)}
+    dream = SalamanderDreamState(
+        lambda log, candidate_genes: 1.0 - abs(candidate_genes["phi"].value - 1.619),
+        promotion_threshold=0.0,
+    )
+
+    outcomes = dream.dream(
+        historical_log,
+        genes,
+        [DreamMutation("phi", 1.612), DreamMutation("phi", 1.619), DreamMutation("phi", 1.60)],
+        timestamp=2.0,
+    )
+
+    assert [outcome.mutated_value for outcome in outcomes] == [1.619, 1.612, 1.60]
+    assert outcomes[0].promoted is True
+    assert outcomes[-1].promoted is False
+
+
+def test_dream_state_rejects_non_finite_fitness():
+    import pytest
+
+    from pythia_mining.salamander_frontier import (
+        DreamMutation,
+        ImmutableEvidenceLog,
+        SalamanderDreamState,
+        SalamanderGene,
+    )
+
+    historical_log = ImmutableEvidenceLog().append(
+        "capability_observed", actor="dreamer", timestamp=1.0, roi=1.0
+    )
+    genes = {"phi": SalamanderGene("phi", value=1.619, min_value=1.60, max_value=1.63)}
+    dream = SalamanderDreamState(lambda log, candidate_genes: float("nan"))
+
+    with pytest.raises(ValueError, match="finite"):
+        dream.simulate_mutation(historical_log, genes, DreamMutation("phi", 1.62))

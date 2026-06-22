@@ -15,7 +15,7 @@ import hashlib
 import hmac
 import json
 from dataclasses import dataclass, field
-from math import sqrt
+from math import isfinite, sqrt
 from time import time
 from typing import Any, Callable, Iterable, Sequence
 
@@ -682,6 +682,119 @@ class CrossLanguageReplayManifest:
 
 
 @dataclass(frozen=True)
+class MetabolicInvariantMetrics:
+    """Measured work and energy window for substrate conservation checks."""
+
+    work_performed: float
+    energy_input_joules: float
+    thermodynamic_efficiency: float
+    max_work_per_joule: float
+
+
+@dataclass(frozen=True)
+class ValidationInvariantResult:
+    """Single invariant verdict emitted by the Salamander validation battery."""
+
+    invariant: str
+    passed: bool
+    reason: str
+    observed: dict[str, Any]
+
+
+class SalamanderPropertyBattery:
+    """Formal invariant checks for evidence, metabolism, and phi resonance.
+
+    These checks are deliberately deterministic and data-local.  They do not
+    claim external scientific proof; they enforce repository-level conservation
+    laws that can be exercised by property tests and audit scripts.
+    """
+
+    def invariant_evidence_fidelity(
+        self, evidence_log: ImmutableEvidenceLog
+    ) -> ValidationInvariantResult:
+        manifest = CrossLanguageReplayManifest(evidence_log).to_manifest()
+        replayed = CrossLanguageReplayManifest.from_manifest(manifest)
+        original_digest = evidence_log.seal()
+        replayed_digest = replayed.seal()
+        passed = original_digest == replayed_digest
+        return ValidationInvariantResult(
+            invariant="evidence_fidelity",
+            passed=passed,
+            reason=(
+                "replay_digest_matches_evidence"
+                if passed
+                else "INFIDELITY: State drift detected"
+            ),
+            observed={
+                "entry_count": manifest["entry_count"],
+                "original_digest": original_digest,
+                "replayed_digest": replayed_digest,
+            },
+        )
+
+    def invariant_metabolic_conservation(
+        self, metrics: MetabolicInvariantMetrics
+    ) -> ValidationInvariantResult:
+        values = (
+            metrics.work_performed,
+            metrics.energy_input_joules,
+            metrics.thermodynamic_efficiency,
+            metrics.max_work_per_joule,
+        )
+        if any(not isfinite(value) for value in values):
+            raise ValueError("metabolic invariant metrics must be finite")
+        if (
+            metrics.work_performed < 0
+            or metrics.energy_input_joules < 0
+            or metrics.thermodynamic_efficiency < 0
+            or metrics.max_work_per_joule < 0
+        ):
+            raise ValueError("metabolic invariant metrics must be non-negative")
+
+        theoretical_max_work = (
+            metrics.energy_input_joules
+            * min(metrics.thermodynamic_efficiency, 1.0)
+            * metrics.max_work_per_joule
+        )
+        passed = metrics.work_performed <= theoretical_max_work
+        return ValidationInvariantResult(
+            invariant="metabolic_conservation",
+            passed=passed,
+            reason=(
+                "work_within_energy_budget"
+                if passed
+                else "PHYSICS_VIOLATION: claimed work exceeds configured energy budget"
+            ),
+            observed={
+                "work_performed": metrics.work_performed,
+                "theoretical_max_work": theoretical_max_work,
+                "efficiency_used": min(metrics.thermodynamic_efficiency, 1.0),
+            },
+        )
+
+    def invariant_phi_resonance_bounds(
+        self, current_phi: float, *, epsilon: float = 0.5
+    ) -> ValidationInvariantResult:
+        if not isfinite(current_phi) or not isfinite(epsilon):
+            raise ValueError("phi resonance inputs must be finite")
+        if epsilon <= 0:
+            raise ValueError("phi resonance epsilon must be positive")
+
+        drift = abs(current_phi - PHI)
+        passed = drift < epsilon
+        return ValidationInvariantResult(
+            invariant="phi_resonance_bounds",
+            passed=passed,
+            reason=(
+                "phi_within_harmonic_zone"
+                if passed
+                else "GENETIC_DRIFT: Phi has mutated beyond resonance"
+            ),
+            observed={"current_phi": current_phi, "golden_ratio": PHI, "drift": drift},
+        )
+
+
+@dataclass(frozen=True)
 class MetricTrendPoint:
     """Observed metric point used for anticipatory adaptation."""
 
@@ -1237,6 +1350,178 @@ class GlobalEvidenceLedger:
             and record.blueprint.capability == capability
         ]
         return tuple(sorted(inherited, key=lambda blueprint: blueprint.fitness_score, reverse=True))
+
+
+@dataclass(frozen=True)
+class DreamMutation:
+    """Offline gene change to replay against historical evidence."""
+
+    gene_name: str
+    mutated_value: float
+
+
+@dataclass(frozen=True)
+class DreamOutcome:
+    """Result of a sandboxed what-if replay."""
+
+    dream_id: str
+    gene_name: str
+    mutated_value: float
+    baseline_fitness: float
+    simulated_fitness: float
+    improvement: float
+    promoted: bool
+    evolved_genes: dict[str, SalamanderGene]
+    evidence_hash: str
+    audit_log: ImmutableEvidenceLog
+
+
+class SalamanderDreamState:
+    """Sandboxed foresight from replaying evidence with mutated genes.
+
+    The dream state never edits live agents directly. It replays an
+    ``ImmutableEvidenceLog`` through a caller-supplied deterministic evaluator,
+    compares the mutated gene set with the current gene set, and only emits a
+    promotable outcome when the simulated fitness clears the configured
+    improvement threshold.
+    """
+
+    def __init__(
+        self,
+        fitness_evaluator: Callable[[ImmutableEvidenceLog, dict[str, SalamanderGene]], float],
+        *,
+        promotion_threshold: float = 0.0,
+    ) -> None:
+        self.fitness_evaluator = fitness_evaluator
+        self.promotion_threshold = float(promotion_threshold)
+
+    def dream(
+        self,
+        historical_log: ImmutableEvidenceLog,
+        genes: dict[str, SalamanderGene],
+        mutations: Sequence[DreamMutation],
+        *,
+        actor: str = "dream-state",
+        timestamp: float | None = None,
+    ) -> tuple[DreamOutcome, ...]:
+        """Replay a batch of mutations and return the strongest dreams first."""
+
+        outcomes = tuple(
+            self.simulate_mutation(
+                historical_log,
+                genes,
+                mutation,
+                actor=actor,
+                timestamp=timestamp,
+            )
+            for mutation in mutations
+        )
+        return tuple(sorted(outcomes, key=lambda outcome: outcome.improvement, reverse=True))
+
+    def simulate_mutation(
+        self,
+        historical_log: ImmutableEvidenceLog,
+        genes: dict[str, SalamanderGene],
+        mutation: DreamMutation,
+        *,
+        actor: str = "dream-state",
+        timestamp: float | None = None,
+    ) -> DreamOutcome:
+        if mutation.gene_name not in genes:
+            raise KeyError(f"unknown gene: {mutation.gene_name}")
+
+        baseline_fitness = float(self.fitness_evaluator(historical_log, dict(genes)))
+        evolved_genes = dict(genes)
+        evolved_genes[mutation.gene_name] = genes[mutation.gene_name].clipped(
+            mutation.mutated_value
+        )
+        simulated_fitness = float(self.fitness_evaluator(historical_log, evolved_genes))
+        if not isfinite(baseline_fitness) or not isfinite(simulated_fitness):
+            raise ValueError("dream fitness evaluator must return finite values")
+        improvement = simulated_fitness - baseline_fitness
+        promoted = improvement > self.promotion_threshold
+        evidence_hash = historical_log.seal()
+        dream_material = {
+            "evidence_hash": evidence_hash,
+            "gene_name": mutation.gene_name,
+            "mutated_value": evolved_genes[mutation.gene_name].value,
+            "baseline_fitness": baseline_fitness,
+            "simulated_fitness": simulated_fitness,
+            "promotion_threshold": self.promotion_threshold,
+        }
+        dream_id = "DRM-SIM-" + hashlib.sha256(
+            json.dumps(dream_material, sort_keys=True, default=str).encode("utf-8")
+        ).hexdigest()[:16]
+        audit_log = historical_log.append(
+            "dream_mutation_replayed",
+            actor=actor,
+            timestamp=timestamp,
+            dream_id=dream_id,
+            promoted=promoted,
+            improvement=improvement,
+            **dream_material,
+        )
+        return DreamOutcome(
+            dream_id=dream_id,
+            gene_name=mutation.gene_name,
+            mutated_value=evolved_genes[mutation.gene_name].value,
+            baseline_fitness=baseline_fitness,
+            simulated_fitness=simulated_fitness,
+            improvement=improvement,
+            promoted=promoted,
+            evolved_genes=evolved_genes if promoted else dict(genes),
+            evidence_hash=evidence_hash,
+            audit_log=audit_log,
+        )
+
+    def promote_blueprint(
+        self,
+        outcome: DreamOutcome,
+        *,
+        ledger: GlobalEvidenceLedger,
+        domain: str,
+        capability: str,
+        origin_node: str,
+        audit_log: ImmutableEvidenceLog,
+        published_at: float,
+        environment_signature: str = "dream-sandbox",
+    ) -> GlobalBlueprintRecord:
+        if not outcome.promoted:
+            raise ValueError("dream outcome did not clear promotion threshold")
+        parameters = {
+            "dream_id": outcome.dream_id,
+            "dream_gene": outcome.gene_name,
+            "mutated_value": outcome.mutated_value,
+            "evidence_hash": outcome.evidence_hash,
+            "baseline_fitness": outcome.baseline_fitness,
+            "simulated_fitness": outcome.simulated_fitness,
+            "improvement": outcome.improvement,
+            "genes": {name: gene.value for name, gene in outcome.evolved_genes.items()},
+        }
+        payload = {
+            "domain": domain,
+            "capability": capability,
+            "parameters": parameters,
+            "fitness_score": outcome.simulated_fitness,
+            "environment_signature": environment_signature,
+        }
+        blueprint_id = (
+            "DRM-"
+            + hashlib.sha256(
+                json.dumps(payload, sort_keys=True, default=str).encode("utf-8")
+            ).hexdigest()[:16]
+        )
+        blueprint = MorphogeneticBlueprint(
+            blueprint_id,
+            domain,
+            capability,
+            parameters,
+            outcome.simulated_fitness,
+            environment_signature,
+        )
+        return ledger.publish_blueprint(
+            blueprint, origin_node=origin_node, audit_log=audit_log, published_at=published_at
+        )
 
 
 @dataclass(frozen=True)
