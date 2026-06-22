@@ -1,9 +1,9 @@
 """Enterprise API posture controls for the HYBA Genesis backend.
 
 This module provides the production-hardening envelope around the FastAPI
-surface: request IDs, standard JSON error bodies, response security headers,
-body-size protection, and lightweight in-process rate limiting for edge or
-single-container deployments.
+surface: request IDs, correlation IDs, standard JSON error bodies, response
+security headers, body-size protection, and lightweight in-process rate limiting
+for edge or single-container deployments.
 
 It deliberately does not replace upstream infrastructure controls such as API
 Gateway, Cloud Armor/WAF, mTLS, IAM, or service mesh policy. Instead, it gives
@@ -65,6 +65,10 @@ def _request_id(request: Request) -> str:
     )
 
 
+def _correlation_id(request: Request, request_id: str) -> str:
+    return request.headers.get("x-correlation-id") or request_id
+
+
 def enterprise_error_payload(
     *, code: str, message: str, request_id: str, status_code: int
 ) -> Dict[str, Any]:
@@ -100,11 +104,12 @@ def _safe_http_message(exc: HTTPException, config: EnterpriseAPIConfig) -> str:
 
 
 def apply_enterprise_security_headers(
-    response: Response, request_id: str, config: EnterpriseAPIConfig
+    response: Response, request_id: str, config: EnterpriseAPIConfig, correlation_id: str | None = None
 ) -> None:
     """Attach security and traceability headers to every API response."""
 
     response.headers["X-Request-ID"] = request_id
+    response.headers["X-Correlation-ID"] = correlation_id or request_id
     response.headers["X-Content-Type-Options"] = "nosniff"
     response.headers["X-Frame-Options"] = "DENY"
     response.headers["Referrer-Policy"] = "no-referrer"
@@ -144,7 +149,6 @@ class InMemoryRateLimiter:
                 window, count = current, 0
             count += 1
             self._windows[client_key] = (window, count)
-            # Opportunistic pruning prevents unbounded memory growth in long-running workers.
             stale = [
                 key
                 for key, (seen_window, _seen_count) in self._windows.items()
@@ -164,6 +168,28 @@ def _client_key(request: Request) -> str:
     return "unknown"
 
 
+def _content_length_too_large(request: Request, max_body_bytes: int) -> bool:
+    raw = request.headers.get("content-length")
+    if not raw:
+        return False
+    try:
+        return int(raw) > max_body_bytes
+    except ValueError:
+        # Malformed content-length is unsafe; reject as a bad request rather than
+        # allowing an unhandled 500 through the production API surface.
+        return True
+
+
+def _record_posture_audit(event_type: str, outcome: str, **fields: Any) -> None:
+    try:
+        from hyba_genesis_api.core.telemetry import record_audit_event
+
+        record_audit_event(event_type, outcome, **fields)
+    except Exception:
+        # Audit metrics must never break request handling.
+        return
+
+
 def install_enterprise_api_posture(app: FastAPI, config: EnterpriseAPIConfig | None = None) -> None:
     """Install HYBA's enterprise API posture controls on a FastAPI app."""
 
@@ -173,10 +199,17 @@ def install_enterprise_api_posture(app: FastAPI, config: EnterpriseAPIConfig | N
     @app.middleware("http")
     async def enterprise_api_posture_middleware(request: Request, call_next: Callable[..., Any]):
         request_id = _request_id(request)
+        correlation_id = _correlation_id(request, request_id)
         request.state.request_id = request_id
+        request.state.correlation_id = correlation_id
 
-        content_length = request.headers.get("content-length")
-        if content_length and int(content_length) > config.max_body_bytes:
+        if _content_length_too_large(request, config.max_body_bytes):
+            _record_posture_audit(
+                "api_posture.request_rejected",
+                "body_too_large_or_invalid",
+                request_id=request_id,
+                path=request.url.path,
+            )
             response = JSONResponse(
                 status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
                 content=enterprise_error_payload(
@@ -186,10 +219,16 @@ def install_enterprise_api_posture(app: FastAPI, config: EnterpriseAPIConfig | N
                     status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
                 ),
             )
-            apply_enterprise_security_headers(response, request_id, config)
+            apply_enterprise_security_headers(response, request_id, config, correlation_id)
             return response
 
         if config.rate_limit_enabled and not limiter.allow(_client_key(request)):
+            _record_posture_audit(
+                "api_posture.request_rejected",
+                "rate_limit_exceeded",
+                request_id=request_id,
+                path=request.url.path,
+            )
             response = JSONResponse(
                 status_code=status.HTTP_429_TOO_MANY_REQUESTS,
                 content=enterprise_error_payload(
@@ -200,16 +239,17 @@ def install_enterprise_api_posture(app: FastAPI, config: EnterpriseAPIConfig | N
                 ),
             )
             response.headers["Retry-After"] = "60"
-            apply_enterprise_security_headers(response, request_id, config)
+            apply_enterprise_security_headers(response, request_id, config, correlation_id)
             return response
 
         response = await call_next(request)
-        apply_enterprise_security_headers(response, request_id, config)
+        apply_enterprise_security_headers(response, request_id, config, correlation_id)
         return response
 
     @app.exception_handler(HTTPException)
     async def http_exception_handler(request: Request, exc: HTTPException):
         request_id = getattr(request.state, "request_id", _request_id(request))
+        correlation_id = getattr(request.state, "correlation_id", _correlation_id(request, request_id))
         detail = exc.detail
         code = "http_error"
         if isinstance(detail, dict):
@@ -223,15 +263,14 @@ def install_enterprise_api_posture(app: FastAPI, config: EnterpriseAPIConfig | N
                 status_code=exc.status_code,
             ),
         )
-        apply_enterprise_security_headers(response, request_id, config)
+        apply_enterprise_security_headers(response, request_id, config, correlation_id)
         return response
 
     @app.exception_handler(RequestValidationError)
     async def validation_exception_handler(request: Request, exc: RequestValidationError):
         request_id = getattr(request.state, "request_id", _request_id(request))
+        correlation_id = getattr(request.state, "correlation_id", _correlation_id(request, request_id))
 
-        # Convert validation errors to JSON-serializable format and keep them out
-        # of production responses unless explicitly disabled for local debugging.
         errors = []
         if not config.sanitize_production_errors:
             for error in exc.errors():
@@ -254,5 +293,5 @@ def install_enterprise_api_posture(app: FastAPI, config: EnterpriseAPIConfig | N
         if errors:
             payload["details"] = errors
         response = JSONResponse(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, content=payload)
-        apply_enterprise_security_headers(response, request_id, config)
+        apply_enterprise_security_headers(response, request_id, config, correlation_id)
         return response
