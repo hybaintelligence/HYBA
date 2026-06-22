@@ -31,6 +31,7 @@ def test_repo_contract_declares_python_312_only() -> None:
 
     assert 'requires-python = ">=3.12"' in root_pyproject
     assert 'target-version = ["py312"]' in root_pyproject
+    assert 'pythia_agents*' in root_pyproject
     assert 'requires-python = ">=3.12"' in sdk_pyproject
     assert 'python_version = "3.12"' in sdk_pyproject
     assert 'target-version = "py312"' in sdk_pyproject
@@ -62,6 +63,8 @@ def test_active_runtime_files_do_not_reference_legacy_python_targets() -> None:
         "python_backend/pythia_self_healing/autonomous_damage_detector.py",
         "python_backend/pythia_self_healing/salamander_regenerator.py",
         "python_backend/pythia_self_healing/self_healing_reactor.py",
+        "python_backend/pythia_agents/__init__.py",
+        "python_backend/pythia_agents/pythia_agent_orchestrator.py",
     ]
     legacy_pattern = re.compile(r"py3(8|9|10|11)|Python 3\.(8|9|10|11)|python_version = \"3\.(8|9|10|11)\"")
     for path in active_paths:
