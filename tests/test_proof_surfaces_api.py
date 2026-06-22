@@ -1,4 +1,4 @@
-"""Contract tests for HYBA executable proof surfaces."""
+"""Contract tests for HYBA executable proof windows."""
 
 from __future__ import annotations
 
@@ -72,7 +72,18 @@ FORBIDDEN_POSTURE = (
     "believe hyba",
     "nothing is unproven",
     "mining-only",
+    "standalone product",
+    "independent mini-system",
+    "severable module",
 )
+
+
+def _assert_unified_platform(payload: dict) -> None:
+    unity = payload["platform_unity"]
+    assert unity["name"] == "HYBA_FULLSTACK"
+    assert unity["unity"] == "one_non_severable_platform"
+    assert unity["severability"] == "not_severable"
+    assert "same HYBA_FULLSTACK platform substrate" in payload["projection_rule"]
 
 
 def _assert_contract_payload(payload: dict) -> None:
@@ -89,20 +100,24 @@ def _assert_contract_payload(payload: dict) -> None:
     assert payload["executable_commands"]
     assert payload["verification_chain"] == CLAIM_CHAIN
     assert len(payload["ledger_digest"]) == 64
+    _assert_unified_platform(payload)
 
     encoded = json.dumps(payload, sort_keys=True).lower()
     for forbidden in FORBIDDEN_POSTURE:
         assert forbidden not in encoded
 
 
-def test_proof_surface_index_exposes_required_platform_posture() -> None:
+def test_proof_surface_index_exposes_required_unified_platform_posture() -> None:
     index = list_proof_surfaces()
 
     assert index["surface_count"] >= len(EXPECTED_ENDPOINTS)
     assert index["verification_chain"] == CLAIM_CHAIN
     assert "Run the proof" in index["claim_boundary"]
     assert "Every material operational claim" in index["material_claim_standard"]
-    assert "Mining is one verification surface" in index["platform_boundary"]
+    assert index["platform_identity"]["unity"] == "one_non_severable_platform"
+    assert index["platform_identity"]["severability"] == "not_severable"
+    assert "one non-severable platform" in index["platform_boundary"]
+    assert "verification windows into the same substrate" in index["platform_boundary"]
     assert set(index["domains"]) >= EXPECTED_PLATFORM_DOMAINS
     assert index["domain_count"] >= len(EXPECTED_PLATFORM_DOMAINS)
 
@@ -111,7 +126,7 @@ def test_proof_surface_index_exposes_required_platform_posture() -> None:
         assert endpoint in endpoints
 
 
-def test_mining_is_only_one_platform_domain() -> None:
+def test_domains_are_dimensions_not_separate_platforms() -> None:
     index = list_proof_surfaces()
     domains = set(index["domains"])
 
@@ -122,6 +137,10 @@ def test_mining_is_only_one_platform_domain() -> None:
     assert "commercial" in domains
     assert "observability" in domains
     assert len(domains - {"mining"}) >= 10
+    assert all(
+        surface["platform_unity"]["unity"] == "one_non_severable_platform"
+        for surface in index["surfaces"]
+    )
 
 
 def test_each_required_surface_returns_contract_payload() -> None:
@@ -163,18 +182,23 @@ def test_named_endpoint_functions_return_expected_surfaces() -> None:
         _assert_contract_payload(payload)
 
 
-def test_audit_ledger_digest_covers_all_surfaces_and_domains() -> None:
+def test_audit_ledger_digest_covers_all_windows_and_preserves_platform_unity() -> None:
     ledger = build_runtime_evidence_ledger()
 
-    assert ledger["ledger"] == "hyba_material_claim_verification_surfaces"
+    assert ledger["ledger"] == "hyba_material_claim_verification_windows"
     assert ledger["status"] == "audit_ledger_available"
     assert ledger["surface_count"] == len(PROOF_SURFACES)
     assert ledger["domain_count"] >= len(EXPECTED_PLATFORM_DOMAINS)
     assert set(ledger["domains"]) >= EXPECTED_PLATFORM_DOMAINS
-    assert "Mining is one verification surface" in ledger["platform_boundary"]
+    assert ledger["platform_identity"]["unity"] == "one_non_severable_platform"
+    assert "one non-severable platform" in ledger["platform_boundary"]
     assert len(ledger["head_hash"]) == 64
     assert {item["key"] for item in ledger["items"]} == set(PROOF_SURFACES)
     assert all(item["domain"] for item in ledger["items"])
+    assert all(
+        item["platform_unity"]["unity"] == "one_non_severable_platform"
+        for item in ledger["items"]
+    )
 
 
 def test_fastapi_routes_are_wired() -> None:
@@ -195,3 +219,4 @@ def test_surface_contract_is_stable_under_key_selection(key: str) -> None:
     assert payload["invariants"]
     assert payload["executable_commands"]
     assert payload["verification_chain"] == CLAIM_CHAIN
+    _assert_unified_platform(payload)
