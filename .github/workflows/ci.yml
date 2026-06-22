@@ -79,6 +79,8 @@ jobs:
             tests/test_computational_intelligence_service_api.py \
             tests/test_commercial_public_api.py \
             tests/test_salamander_self_healing_reactor.py \
+            tests/test_salamander_autonomic_organism_governor.py \
+            tests/test_pythia_agent_orchestrator.py \
             tests/test_phi_hardware_quantum_scaling_evidence.py \
             tests/test_quantum_finance_service_design.py \
             tests/test_product_boundary_and_secret_hygiene.py \
