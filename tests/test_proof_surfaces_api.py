@@ -86,6 +86,12 @@ def _assert_unified_platform(payload: dict) -> None:
     assert "same HYBA_FULLSTACK platform substrate" in payload["projection_rule"]
 
 
+def _assert_no_forbidden_posture(payload: dict) -> None:
+    encoded = json.dumps(payload, sort_keys=True).lower()
+    for forbidden in FORBIDDEN_POSTURE:
+        assert forbidden not in encoded
+
+
 def _assert_contract_payload(payload: dict) -> None:
     assert payload["claim"]
     assert payload["status"] in {"verified", "evidence_linked", "runtime_required"}
@@ -101,10 +107,7 @@ def _assert_contract_payload(payload: dict) -> None:
     assert payload["verification_chain"] == CLAIM_CHAIN
     assert len(payload["ledger_digest"]) == 64
     _assert_unified_platform(payload)
-
-    encoded = json.dumps(payload, sort_keys=True).lower()
-    for forbidden in FORBIDDEN_POSTURE:
-        assert forbidden not in encoded
+    _assert_no_forbidden_posture(payload)
 
 
 def test_proof_surface_index_exposes_required_unified_platform_posture() -> None:
@@ -120,6 +123,7 @@ def test_proof_surface_index_exposes_required_unified_platform_posture() -> None
     assert "verification windows into the same substrate" in index["platform_boundary"]
     assert set(index["domains"]) >= EXPECTED_PLATFORM_DOMAINS
     assert index["domain_count"] >= len(EXPECTED_PLATFORM_DOMAINS)
+    _assert_no_forbidden_posture(index)
 
     endpoints = {surface["endpoint"] for surface in index["surfaces"]}
     for endpoint in EXPECTED_ENDPOINTS.values():
@@ -199,6 +203,7 @@ def test_audit_ledger_digest_covers_all_windows_and_preserves_platform_unity() -
         item["platform_unity"]["unity"] == "one_non_severable_platform"
         for item in ledger["items"]
     )
+    _assert_no_forbidden_posture(ledger)
 
 
 def test_fastapi_routes_are_wired() -> None:
