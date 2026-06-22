@@ -28,6 +28,7 @@ from pydantic import BaseModel, Field, field_validator
 
 from hyba_genesis_api.api.admin import require_admin
 from hyba_genesis_api.api.customer_access import CustomerPrincipal, customer_access, require_customer_api_key
+from hyba_genesis_api.api.billing_integration import execute_with_billing
 from hyba_genesis_api.auth.jwt_handler import TokenPayload
 from hyba_genesis_api.core.intelligence_fabric import SubstrateOrchestrator, explain
 from hyba_genesis_api.core.substrate import get_substrate_state, initialize_substrate
@@ -703,7 +704,15 @@ async def customer_execute_workload(
     principal: CustomerPrincipal = Depends(require_customer_api_key),
 ):
     registry.assert_owner(service_id, principal.customer_id)
-    usage = customer_access.meter(principal, product="ciaas.execute", units=_ciaas_units(request))
-    envelope = registry.execute(service_id, request)
+    units = _ciaas_units(request)
+    envelope, usage, invoice = execute_with_billing(
+        principal=principal,
+        product="ciaas.execute",
+        endpoint=f"/api/v1/computational-intelligence-services/{service_id}/workloads",
+        units=units,
+        execution_id=request.idempotency_key,
+        execute=lambda: registry.execute(service_id, request),
+    )
     envelope["usage_meter"] = usage
+    envelope["invoice"] = invoice
     return envelope

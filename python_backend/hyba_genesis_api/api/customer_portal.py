@@ -35,6 +35,8 @@ class CreateApiKeyRequest(BaseModel):
 
     label: str = Field(default="Portal generated key", min_length=1, max_length=80)
     rotation_days: int = Field(default=90, ge=1, le=365)
+    plan_monthly_compute_units: int = Field(default=1000, ge=1, le=10000000)
+    plan_monthly_requests: int = Field(default=10000, ge=1, le=10000000)
 
 
 class PaymentMethodRequest(BaseModel):
@@ -242,6 +244,9 @@ async def create_api_key(tenant_id: str, request: CreateApiKeyRequest) -> dict[s
         "status": "active",
     }
     tenant.setdefault("api_keys", []).append(record)
+    quota = tenant.setdefault("quota", {})
+    quota["compute_units"] = max(int(quota.get("compute_units", 0)), request.plan_monthly_compute_units)
+    quota["requests"] = max(int(quota.get("requests", 0)), request.plan_monthly_requests)
     store.update_tenant(tenant_id, tenant)
     return {**record, "api_key": raw}
 
