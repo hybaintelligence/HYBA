@@ -6,6 +6,8 @@ on:
     paths:
       - 'reproducibility/benchmarks/**'
       - '.github/workflows/benchmark-ci.yml'
+      - 'python_backend/hyba_genesis_api/api/quantum_intelligence_service.py'
+      - 'tests/test_quantum_intelligence_service_enterprise_contract.py'
   pull_request:
     branches: [main, develop]
     paths:
