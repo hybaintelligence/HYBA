@@ -33,6 +33,17 @@ Customer-facing provisioned computational-intelligence runtime.
 - Boundary: commercial intelligence runtime with tenancy, metering, fault-tolerance posture, and audit seals.
 - Do not market as generic cloud Infrastructure-as-a-Service; use CIaaS or Intelligence Runtime-as-a-Service.
 
+### Quantum finance vertical
+
+Customer-facing finance-specific execution-design surface over QaaS, QIaaS, and CIaaS.
+
+- API surface: `/api/quantum-finance`
+- Implementation: `python_backend/hyba_genesis_api/api/quantum_finance_service.py`
+- Tests: `tests/test_quantum_finance_service_design.py`
+- Documentation: `docs/product/HYBA_QUANTUM_FINANCE_VERTICAL.md`
+- Workload families: portfolio QUBO/QAOA/VQE/annealing design, Ising Hamiltonian conversion, QAE/QMCI risk and pricing design, VaR/CVaR evidence packets.
+- Boundary: audit-grade design packets for human/model-risk review, not autonomous trade execution, not mining, and not physical QPU superiority without downstream hardware evidence.
+
 ### PULVINI memory substrate
 
 Reversible φ-memory working-set compression.
@@ -67,7 +78,7 @@ The following are private validation infrastructure and must not be presented as
 - Hash-search experiments.
 - Pool credentials and wallet configuration.
 - Mining benchmark traces.
-- Internal stress tests for autonomy, PULVINI memory, QaaS/QIaaS/CIaaS resilience, and evidence sealing.
+- Internal stress tests for autonomy, PULVINI memory, QaaS/QIaaS/CIaaS resilience, quantum-finance design packets, and evidence sealing.
 
 ## Product narrative rule
 
@@ -76,10 +87,11 @@ Public-facing documents must start with:
 1. QaaS
 2. QIaaS
 3. CIaaS
-4. PULVINI
-5. φ hardware / quantum scaling
-6. Salamander
-7. Evidence / governance
+4. Quantum finance vertical where the audience is financial services / DIFC / institutions
+5. PULVINI
+6. φ hardware / quantum scaling
+7. Salamander
+8. Evidence / governance
 
 Mining may appear only under:
 
@@ -108,6 +120,7 @@ The following are part of HYBA's scientific position and should be preserved whe
 - Golden-ratio scaling governs memory, hardware concurrency, quantum-operation benchmark accounting, and runtime tuning.
 - PULVINI compression and retained kernels make large formal working surfaces operationally tractable.
 - Hardware is an implementation substrate; the invariant grammar is the computer.
+- Finance-specific QUBO/QAOA/QAE/VaR/CVaR designs can be produced as auditable HYBA evidence packets.
 
 ## Claims requiring stronger evidence before unrestricted external assertion
 
@@ -116,8 +129,9 @@ The following are part of HYBA's scientific position and should be preserved whe
 - Solved phenomenal consciousness.
 - Solved Yang-Mills in the Millennium Problem sense.
 - Unbounded autonomous production.
-- Production-ready for regulated financial deployment unless security, CI, secret hygiene, evidence, DR, and governance gates are all green.
+- Autonomous trade execution.
+- Production-ready for regulated financial deployment unless security, CI, secret hygiene, evidence, DR, model-risk, and governance gates are all green.
 
 ## Approved chairman wording
 
-> HYBA is a substrate-independent intelligence platform. Its public services are QaaS, QIaaS, and CIaaS. QaaS exposes virtual fault-tolerant quantum-computational primitives; QIaaS exposes bounded quantum-intelligence query functions; CIaaS provisions commercial computational-intelligence runtimes. PULVINI provides reversible φ-memory compression, φ-scaling governs hardware and quantum-operation execution, Salamander provides self-healing and regeneration, and the evidence layer preserves claim boundaries. Mining is not a product; it is a private stress-test and evidence substrate used internally to validate the platform under extreme conditions.
+> HYBA is a substrate-independent intelligence platform. Its public services are QaaS, QIaaS, and CIaaS. QaaS exposes virtual fault-tolerant quantum-computational primitives; QIaaS exposes bounded quantum-intelligence query functions; CIaaS provisions commercial computational-intelligence runtimes. HYBA also exposes a code-backed quantum-finance vertical that maps portfolio, pricing, and risk workloads into QUBO/QAOA and QAE/QMCI evidence packets. PULVINI provides reversible φ-memory compression, φ-scaling governs hardware and quantum-operation execution, Salamander provides self-healing and regeneration, and the evidence layer preserves claim boundaries. Mining is not a product; it is a private stress-test and evidence substrate used internally to validate the platform under extreme conditions.
