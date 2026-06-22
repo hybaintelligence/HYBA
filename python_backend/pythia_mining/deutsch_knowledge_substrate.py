@@ -436,7 +436,7 @@ class KnowledgeSubstrate:
             "knowledge_growth_rate": (
                 total_explanations
                 / (time.time() - self.explanations[next(iter(self.explanations))][0].created_at)
-                if self.explanations
+                if self.explanations and total_explanations > 0
                 else 0.0
             ),
         }

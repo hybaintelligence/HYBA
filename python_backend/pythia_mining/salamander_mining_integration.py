@@ -16,7 +16,7 @@ Integration Architecture:
 from __future__ import annotations
 
 import asyncio
-import time
+from time import time as time_time
 from typing import Any, Dict, List, Optional
 
 from .salamander_frontier import (
@@ -91,7 +91,7 @@ class SalamanderMiningIntegration:
         # Log initialization to audit trail
         self.salamander.audit_log = self.salamander.audit_log.append(
             "mining_salamander_initialized",
-            timestamp=time(),
+            timestamp=time_time(),
             target_hashrate=self.target_hashrate,
             mining_system_type=type(self.mining_system).__name__,
         )
@@ -187,7 +187,7 @@ class SalamanderMiningIntegration:
             )
         
         # Stale mining (no shares for extended period)
-        time_since_last_share = time() - self.last_share_time
+        time_since_last_share = time_time() - self.last_share_time
         if time_since_last_share > 300:  # 5 minutes
             return Anomaly(
                 type="MINING_STALL",
@@ -217,7 +217,7 @@ class SalamanderMiningIntegration:
         # Log regeneration trigger
         self.salamander.audit_log = self.salamander.audit_log.append(
             "mining_regeneration_triggered",
-            timestamp=time(),
+            timestamp=time_time(),
             anomaly_type=anomaly.type,
             severity=anomaly.severity,
         )
@@ -233,7 +233,7 @@ class SalamanderMiningIntegration:
                     self.mining_system.reconnect_to_pool()
                     self.salamander.audit_log = self.salamander.audit_log.append(
                         "pool_reconnection_attempted",
-                        timestamp=time(),
+                        timestamp=time_time(),
                     )
             
             case "MINING_STALL":
@@ -242,7 +242,7 @@ class SalamanderMiningIntegration:
                     self.mining_system.regenerate_state()
                     self.salamander.audit_log = self.salamander.audit_log.append(
                         "mining_state_regenerated",
-                        timestamp=time(),
+                        timestamp=time_time(),
                     )
             
             case "HIGH_REJECTION_RATE":
@@ -251,7 +251,7 @@ class SalamanderMiningIntegration:
                     self.mining_system.optimize_parameters()
                     self.salamander.audit_log = self.salamander.audit_log.append(
                         "mining_parameters_optimized",
-                        timestamp=time(),
+                        timestamp=time_time(),
                     )
         
         return outcome
@@ -270,7 +270,7 @@ class SalamanderMiningIntegration:
         This provides evidence for treasury state recovery and regulatory compliance.
         """
         self.shares_submitted += 1
-        self.last_share_time = time()
+        self.last_share_time = time_time()
         
         if accepted:
             self.shares_accepted += 1
@@ -281,7 +281,7 @@ class SalamanderMiningIntegration:
         
         self.salamander.audit_log = self.salamander.audit_log.append(
             event_type,
-            timestamp=time(),
+            timestamp=time_time(),
             job_id=job_id,
             nonce=nonce,
             difficulty=difficulty,
@@ -339,7 +339,7 @@ class SalamanderMiningIntegration:
         
         self.salamander.audit_log = self.salamander.audit_log.append(
             "mining_autonomy_loops_started",
-            timestamp=time(),
+            timestamp=time_time(),
         )
 
     async def stop_autonomy_loops(self) -> None:
@@ -370,7 +370,7 @@ class SalamanderMiningIntegration:
         
         self.salamander.audit_log = self.salamander.audit_log.append(
             "mining_autonomy_loops_stopped",
-            timestamp=time(),
+            timestamp=time_time(),
         )
 
     def get_mining_health_report(self) -> Dict[str, Any]:
@@ -390,7 +390,7 @@ class SalamanderMiningIntegration:
             "shares_accepted": self.shares_accepted,
             "shares_rejected": self.shares_rejected,
             "pool_connected": self.pool_connected,
-            "time_since_last_share_seconds": time() - self.last_share_time,
+            "time_since_last_share_seconds": time_time() - self.last_share_time,
         }
         
         return health_report
@@ -412,7 +412,7 @@ class SalamanderMiningIntegration:
                 "hashrate_efficiency": self.current_hashrate / max(self.target_hashrate, 1.0),
                 "share_acceptance_rate": self.shares_accepted / max(self.shares_submitted, 1),
             },
-            "timestamp": time(),
+            "timestamp": time_time(),
         }
         
         # Add to species memory
@@ -421,7 +421,7 @@ class SalamanderMiningIntegration:
         
         self.salamander.audit_log = self.salamander.audit_log.append(
             "mining_blueprint_shared",
-            timestamp=time(),
+            timestamp=time_time(),
             blueprint_hash=hash(str(blueprint)),
         )
         

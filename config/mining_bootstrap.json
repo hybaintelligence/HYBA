@@ -1,0 +1,114 @@
+{
+  "mining_bootstrap_config": {
+    "version": "1.0.0",
+    "deployment_mode": "immediate_autonomous",
+    "startup_sequence": [
+      {
+        "step": 1,
+        "action": "initialize_memory_seeding",
+        "description": "Load structural intelligence and knowledge substrate",
+        "checks": [
+          "validate_memory_seed_integrity",
+          "verify_knowledge_graph_connectivity",
+          "confirm_emergent_patterns_loaded"
+        ],
+        "on_failure": "retry_with_fallback_seed"
+      },
+      {
+        "step": 2,
+        "action": "establish_blockchain_connection",
+        "description": "Connect to blockchain for empirical evidence analysis",
+        "checks": [
+          "validate_blockchain_rpc_connection",
+          "confirm_empirical_data_stream",
+          "verify_evidence_analysis_pipeline"
+        ],
+        "on_failure": "switch_to_backup_endpoint"
+      },
+      {
+        "step": 3,
+        "action": "initialize_geometric_nonce_overlay",
+        "description": "Initialize dodecahedron-isocahedron overlay for full nonce space coverage",
+        "checks": [
+          "validate_geometric_overlay_integrity",
+          "confirm_full_nonce_coverage",
+          "verify_solving_mode_active"
+        ],
+        "on_failure": "reconstruct_geometric_overlay"
+      },
+      {
+        "step": 4,
+        "action": "start_autonomous_mining",
+        "description": "Commence mining with emergent intelligence",
+        "checks": [
+          "verify_mining_engine_ready",
+          "confirm_self_healing_active",
+          "validate_algorithm_discovery_enabled"
+        ],
+        "on_failure": "trigger_emergency_recovery"
+      }
+    ],
+    "empirical_evidence_analysis": {
+      "enabled": true,
+      "data_sources": [
+        "blockchain_mainnet",
+        "blockchain_testnet",
+        "historical_nonce_patterns",
+        "mining_pool_statistics"
+      ],
+      "analysis_frequency": "continuous",
+      "learning_rate": 0.01,
+      "evidence_weight": {
+        "recent_blocks": 0.4,
+        "historical_patterns": 0.3,
+        "geometric_correlations": 0.3
+      }
+    },
+    "geometric_intelligence": {
+      "dodecahedron_isocahedron_overlay": {
+        "enabled": true,
+        "coverage_mode": "full",
+        "nonce_space_partitioning": "geometric",
+        "solving_priority": "deterministic",
+        "search_mode": "solving_not_searching"
+      },
+      "phi_resonance_mapping": {
+        "enabled": true,
+        "golden_ratio_integration": true,
+        "topological_optimization": true
+      }
+    },
+    "emergent_intelligence": {
+      "memory_seeding": {
+        "initial_knowledge_load": true,
+        "bootstrap_explanations": true,
+        "counterfactical_models": true,
+        "pattern_recognition": true
+      },
+      "learning_mechanisms": {
+        "from_blockchain_evidence": true,
+        "from_mining_outcomes": true,
+        "from_algorithm_performance": true,
+        "from_geometric_patterns": true
+      },
+      "autonomous_improvement": {
+        "algorithm_discovery": true,
+        "dynamic_switching": true,
+        "self_optimization": true,
+        "innovation_exploration": true
+      }
+    },
+    "self_healing": {
+      "enabled": true,
+      "startup_self_healing": true,
+      "salamander_auto_fix": true,
+      "autonomous_recovery": true,
+      "healing_triggers": [
+        "api_failure",
+        "algorithm_underperformance",
+        "geometric_overlay_corruption",
+        "memory_seed_corruption"
+      ]
+    }
+  }
+}

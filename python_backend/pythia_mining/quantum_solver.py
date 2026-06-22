@@ -138,12 +138,22 @@ class DodecahedralQuantumSolver:
         self._validate_nonce_ranges(nonce_ranges)
         self._target = target
         self._nonce_ranges = list(nonce_ranges)
-        self._search_space = [n for lo, hi in nonce_ranges for n in range(lo, hi + 1)]
-        if not self._search_space:
+        # Use generator to avoid MemoryError with large nonce ranges
+        self._search_space_generator = (n for lo, hi in nonce_ranges for n in range(lo, hi + 1))
+        # Calculate total size without storing all values
+        self._search_space_size = sum(hi - lo + 1 for lo, hi in nonce_ranges)
+        if self._search_space_size == 0:
             raise QuantumSolverConfigurationError("Nonce search space must be non-empty")
         self._basis = self._generate_dodecahedral_basis_states()
-        n = len(self._search_space)
-        self._amplitudes = np.ones(n, dtype=complex) / np.sqrt(n)
+        n = self._search_space_size
+        # Use chunked approach for large nonce spaces to avoid memory issues
+        if n > 100_000_000:  # More than 100 million nonces
+            self._use_chunked_amplitudes = True
+            self._chunk_size = 1_000_000  # 1 million per chunk
+            self._amplitudes = None  # Will be generated per chunk
+        else:
+            self._use_chunked_amplitudes = False
+            self._amplitudes = np.ones(n, dtype=complex) / np.sqrt(n)
         self._configured = True
 
     def calculate_integrated_entropy(self, amplitudes: np.ndarray) -> float:

@@ -255,7 +255,8 @@ class UnifiedMiningEngine:
                     ac._last_reflexive_cycle = now
                     ac.record_circuit_success()
                 except Exception as exc:
-                    logger.error("reflexive_cycle failed: %s", exc)
+                    import logging
+                    logging.error("reflexive_cycle failed: %s", exc)
                     ac.record_autonomy_failure("reflexive_cycle")
 
         # --- Run the actual nonce search ---

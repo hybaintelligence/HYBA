@@ -1,0 +1,233 @@
+{
+  "funding_run_id": "FUNDING-DEMO-2026-06-22",
+  "start_time": "2026-06-22T16:48:33.316007",
+  "end_time": "2026-06-22T16:49:33.428429",
+  "duration_seconds": 60.1124222278595,
+  "duration_minutes": 1.0018737037976584,
+  "performance": {
+    "average_hashrate_hps": 149.05026902467392,
+    "average_efficiency_percent": 99.36684601644929,
+    "average_acceptance_rate_percent": 0.0,
+    "max_hashrate_hps": 154.6134969081191,
+    "min_hashrate_hps": 145.31116524140015,
+    "target_hashrate_hps": 150.0
+  },
+  "salamander_frontier": {
+    "regeneration_events_count": 12,
+    "regeneration_events": [
+      {
+        "timestamp": 1782143313.317008,
+        "elapsed_seconds": 0,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143318.3262348,
+        "elapsed_seconds": 5.00623345375061,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143323.3409991,
+        "elapsed_seconds": 10.019630432128906,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143328.3438575,
+        "elapsed_seconds": 15.026832580566406,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143333.3469636,
+        "elapsed_seconds": 20.03039860725403,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143338.3631318,
+        "elapsed_seconds": 25.047125101089478,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143343.3644917,
+        "elapsed_seconds": 30.048485040664673,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143348.3669386,
+        "elapsed_seconds": 35.04991817474365,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143353.3834436,
+        "elapsed_seconds": 40.06581401824951,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143358.3933156,
+        "elapsed_seconds": 45.077308893203735,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143363.3997612,
+        "elapsed_seconds": 50.082756757736206,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143368.4425013,
+        "elapsed_seconds": 55.100994348526,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      }
+    ],
+    "evidence_log_entries": 0,
+    "evidence_log_seal": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "phi_value": 1.618033988749895,
+    "adaptations_performed": 0
+  },
+  "system_health": {
+    "autonomy_loops_enabled": true,
+    "evidence_sealing_enabled": true,
+    "anomaly_detection_enabled": true,
+    "self_optimization_enabled": true
+  },
+  "treasury_state": {},
+  "evidence": {
+    "metrics_history_sample": [
+      {
+        "timestamp": 1782143323.335637,
+        "elapsed_seconds": 10.019630432128906,
+        "hashrate_current": 151.1443510261998,
+        "hashrate_target": 150.0,
+        "hashrate_efficiency": 1.0076290068413318,
+        "memory_used": 0.4,
+        "compression_ratio": 1.618033988749895,
+        "share_acceptance_rate": 0.0
+      },
+      {
+        "timestamp": 1782143328.3428392,
+        "elapsed_seconds": 15.026832580566406,
+        "hashrate_current": 152.08227841785396,
+        "hashrate_target": 150.0,
+        "hashrate_efficiency": 1.0138818561190264,
+        "memory_used": 0.4,
+        "compression_ratio": 1.618033988749895,
+        "share_acceptance_rate": 0.0
+      },
+      {
+        "timestamp": 1782143333.3464053,
+        "elapsed_seconds": 20.03039860725403,
+        "hashrate_current": 145.31116524140015,
+        "hashrate_target": 150.0,
+        "hashrate_efficiency": 0.9687411016093344,
+        "memory_used": 0.4,
+        "compression_ratio": 1.618033988749895,
+        "share_acceptance_rate": 0.0
+      },
+      {
+        "timestamp": 1782143338.3631318,
+        "elapsed_seconds": 25.047125101089478,
+        "hashrate_current": 148.042312461202,
+        "hashrate_target": 150.0,
+        "hashrate_efficiency": 0.9869487497413466,
+        "memory_used": 0.4,
+        "compression_ratio": 1.618033988749895,
+        "share_acceptance_rate": 0.0
+      },
+      {
+        "timestamp": 1782143343.3644917,
+        "elapsed_seconds": 30.048485040664673,
+        "hashrate_current": 151.59290123416545,
+        "hashrate_target": 150.0,
+        "hashrate_efficiency": 1.0106193415611031,
+        "memory_used": 0.4,
+        "compression_ratio": 1.618033988749895,
+        "share_acceptance_rate": 0.0
+      },
+      {
+        "timestamp": 1782143348.3659248,
+        "elapsed_seconds": 35.04991817474365,
+        "hashrate_current": 154.6134969081191,
+        "hashrate_target": 150.0,
+        "hashrate_efficiency": 1.0307566460541273,
+        "memory_used": 0.4,
+        "compression_ratio": 1.618033988749895,
+        "share_acceptance_rate": 0.0
+      },
+      {
+        "timestamp": 1782143353.3823485,
+        "elapsed_seconds": 40.06581401824951,
+        "hashrate_current": 145.51134600202596,
+        "hashrate_target": 150.0,
+        "hashrate_efficiency": 0.9700756400135064,
+        "memory_used": 0.4,
+        "compression_ratio": 1.618033988749895,
+        "share_acceptance_rate": 0.0
+      },
+      {
+        "timestamp": 1782143358.3933156,
+        "elapsed_seconds": 45.077308893203735,
+        "hashrate_current": 149.57522818378376,
+        "hashrate_target": 150.0,
+        "hashrate_efficiency": 0.9971681878918918,
+        "memory_used": 0.4,
+        "compression_ratio": 1.618033988749895,
+        "share_acceptance_rate": 0.0
+      },
+      {
+        "timestamp": 1782143363.3987634,
+        "elapsed_seconds": 50.082756757736206,
+        "hashrate_current": 148.9531059089628,
+        "hashrate_target": 150.0,
+        "hashrate_efficiency": 0.9930207060597521,
+        "memory_used": 0.4,
+        "compression_ratio": 1.618033988749895,
+        "share_acceptance_rate": 0.0
+      },
+      {
+        "timestamp": 1782143368.417001,
+        "elapsed_seconds": 55.100994348526,
+        "hashrate_current": 145.70500915790333,
+        "hashrate_target": 150.0,
+        "hashrate_efficiency": 0.9713667277193555,
+        "memory_used": 0.4,
+        "compression_ratio": 1.618033988749895,
+        "share_acceptance_rate": 0.0
+      }
+    ],
+    "evidence_log_size": 0,
+    "integrity_seal": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+  }
+}

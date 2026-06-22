@@ -385,9 +385,19 @@ class PhiScaledEnsemble:
         for metrics in indicators.values():
             if not isinstance(metrics, Mapping) or not metrics:
                 continue
-            values = np.asarray(
-                [float(v) for v in metrics.values() if v is not None], dtype=np.float64
-            )
+            # Filter out non-numeric values and strings
+            numeric_values = []
+            for v in metrics.values():
+                if v is None:
+                    continue
+                try:
+                    # Skip string values that look like field names
+                    if isinstance(v, str) and v.startswith("'"):
+                        continue
+                    numeric_values.append(float(v))
+                except (ValueError, TypeError):
+                    continue
+            values = np.asarray(numeric_values, dtype=np.float64)
             values = values[np.isfinite(values)]
             if values.size <= 1:
                 continue
@@ -414,7 +424,13 @@ class PhiOptimizedFeatures:
             for metric_name, value in metrics.items():
                 if value is None:
                     continue
-                numeric = float(value)
+                # Skip string values that look like field names
+                if isinstance(value, str) and value.startswith("'"):
+                    continue
+                try:
+                    numeric = float(value)
+                except (ValueError, TypeError):
+                    continue
                 phi_alignment = self._calculate_phi_alignment(numeric)
                 amplification = float(PHI ** ((phi_alignment * 2.0) - 1.0))
                 domain_scores.append(

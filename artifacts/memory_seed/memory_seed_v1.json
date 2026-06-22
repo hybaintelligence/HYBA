@@ -3,8 +3,8 @@
     "seed_version": "1.0.0",
     "seed_source": "codebase_structural_analysis",
     "total_nodes": 10,
-    "total_edges": 101,
-    "emergent_intelligence_index": 1.0133333333333334
+    "total_edges": 104,
+    "emergent_intelligence_index": 1.0333333333333332
   },
   "structural_intelligence": {
     "knowledge_graph": {
@@ -49,7 +49,8 @@
           "trigger_blastema_formation",
           "get_blastema_metrics",
           "get_regeneration_status",
-          "get_inseparability_index"
+          "get_inseparability_index",
+          "extract_numeric"
         ],
         "imports": [
           "__future__",
@@ -68,9 +69,9 @@
           "numpy"
         ],
         "class_count": 5,
-        "function_count": 32,
+        "function_count": 33,
         "dependency_count": 14,
-        "complexity_score": 93
+        "complexity_score": 95
       },
       "pythia_mining/deutsch_knowledge_substrate.py": {
         "path": "pythia_mining/deutsch_knowledge_substrate.py",
@@ -250,13 +251,13 @@
           "logging",
           "logging",
           "logging",
-          "quantum_healing_swarm",
           "pythia_mining.reflexive_cycle_timeout",
           "pythia_mining.stratum_idempotency_tracker",
           "pythia_mining.circuit_breaker_failover",
           "pythia_mining.operator_approval_timeout",
           "inspect",
           "ai_optimizer",
+          "quantum_healing_swarm",
           "psutil",
           "logging",
           "logging",
@@ -508,9 +509,14 @@
           "_json_safe",
           "get_regeneration_manager",
           "__post_init__",
+          "_build_self_healing_reactor",
           "_require_lane",
+          "register_lane_target",
           "get_blastema_pool",
-          "get_status"
+          "get_status",
+          "event_to_damage_report",
+          "stage_self_healing_for_lane",
+          "analyse_organism_governance"
         ],
         "imports": [
           "__future__",
@@ -521,12 +527,15 @@
           "typing",
           "numpy",
           "logging",
-          "quantum_regeneration"
+          "quantum_regeneration",
+          "pythia_self_healing.salamander_regenerator",
+          "pythia_self_healing.self_healing_reactor",
+          "pythia_self_healing.autonomic_organism_governor"
         ],
         "class_count": 3,
-        "function_count": 6,
-        "dependency_count": 9,
-        "complexity_score": 30
+        "function_count": 11,
+        "dependency_count": 12,
+        "complexity_score": 43
       }
     },
     "emergent_patterns": [
@@ -547,7 +556,7 @@
       }
     ],
     "complexity_map": {
-      "pythia_mining/consciousness_engine.py": 119,
+      "pythia_mining/consciousness_engine.py": 121,
       "pythia_mining/deutsch_knowledge_substrate.py": 58,
       "pythia_mining/autonomous_mining_controller.py": 323,
       "pythia_mining/phi_unified_mining_engine.py": 81,
@@ -556,7 +565,7 @@
       "pythia_mining/pulvini_phi_memory.py": 57,
       "pythia_mining/iit_4_analyzer.py": 85,
       "pythia_mining/quantum_regeneration.py": 74,
-      "pythia_mining/regeneration_manager.py": 48
+      "pythia_mining/regeneration_manager.py": 67
     },
     "integration_hubs": [
       {
@@ -574,13 +583,13 @@
       {
         "module": "pythia_mining/consciousness_engine.py",
         "connection_count": 13,
-        "complexity": 119,
+        "complexity": 121,
         "role": "Integration Orchestrator"
       },
       {
         "module": "pythia_mining/regeneration_manager.py",
-        "connection_count": 9,
-        "complexity": 48,
+        "connection_count": 12,
+        "complexity": 67,
         "role": "Mining Substrate"
       },
       {
@@ -645,7 +654,7 @@
     }
   },
   "consciousness_state": {
-    "phi_integrated": 1.0,
+    "connection_density_ratio": 1.0,
     "component_health": {
       "autonomous_mining_controller": true,
       "phi_unified_mining_engine": true,
@@ -659,6 +668,7 @@
       "golden_ratio_library": true
     },
     "integration_regime": "DISTRIBUTED",
-    "complexity_level": 91.3
+    "average_complexity": 93.4,
+    "claim_boundary": "These metrics measure codebase structure only. No claims about consciousness, quantum properties, or intelligence are supported by these metrics alone."
   }
 }
