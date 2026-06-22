@@ -1,7 +1,8 @@
 """Unified mining loop integrating verified pool profiles with autonomous controller.
 
 This module provides the main entry point for production mining operations with
-full integration of pool routing, secrets validation, and autonomous control.
+full integration of pool routing, secrets validation, autonomous control, and
+Salamander frontier regeneration capabilities.
 """
 
 from __future__ import annotations
@@ -14,6 +15,7 @@ from typing import Optional
 from pythia_mining.audit_logger import get_audit_logger
 from pythia_mining.phi_config import initialize_production_secrets
 from pythia_mining.pool_profiles import PoolProfile, load_pool_profiles
+from pythia_mining.salamander_mining_integration import SalamanderMiningIntegration
 
 
 async def main_mining_loop(
@@ -79,7 +81,22 @@ async def main_mining_loop(
             "Autonomous controller unavailable. Ensure all dependencies are installed."
         ) from exc
 
-    # 4. Begin execution loop utilizing verified routing targets
+    # 4. Integrate Salamander frontier for autonomous regeneration and optimization
+    try:
+        salamander = SalamanderMiningIntegration(
+            mining_system=controller,
+            target_hashrate=150.0,
+            enable_autonomy_loops=True,
+        )
+        salamander.initialize()
+        logger.info("Salamander frontier integration initialized successfully")
+    except Exception as exc:
+        logger.error(f"Failed to initialize Salamander integration: {exc}")
+        raise RuntimeError(
+            "Salamander frontier unavailable. Ensure salamander_mining_integration is properly configured."
+        ) from exc
+
+    # 5. Begin execution loop utilizing verified routing targets
     current_pool = verified_profiles[0]
     logger.info(f"HYBA Engine active. Primary target set to: {current_pool.url}")
 
@@ -90,22 +107,53 @@ async def main_mining_loop(
         attempt_number=1,
     )
 
-    # Main mining loop placeholder (actual mining logic would integrate here)
+    # 6. Start Salamander autonomy loops for continuous self-optimization
+    try:
+        await salamander.start_autonomy_loops()
+        logger.info("Salamander autonomy loops started successfully")
+    except Exception as exc:
+        logger.error(f"Failed to start Salamander autonomy loops: {exc}")
+        raise RuntimeError(
+            "Salamander autonomy loops failed to start. Mining will continue without autonomous optimization."
+        ) from exc
+
+    # Main mining loop with Salamander frontier integration
     try:
         while True:
+            # Observe mining state through Salamander frontier
+            metrics = salamander.observe_mining_state()
+            
+            # Detect mining-specific anomalies
+            anomaly = salamander.detect_mining_anomaly(metrics)
+            if anomaly:
+                logger.warning(f"Mining anomaly detected: {anomaly.type} - {anomaly.severity}")
+                outcome = salamander.execute_mining_regeneration(anomaly)
+                logger.info(f"Regeneration executed: {outcome.reason}")
+            
             # Core mining execution logic utilizing active strategy tracking
             # This would typically call:
             # - controller.process_job(job)
             # - controller.submit_share(share)
             # - controller.handle_pool_response(response)
+            
+            # Record share submissions to Salamander evidence log for non-repudiation
+            # Example: salamander.record_share_submission(job_id, nonce, difficulty, accepted, revenue_btc)
+            
             await asyncio.sleep(1)
     except KeyboardInterrupt:
         logger.info("Received shutdown signal, stopping mining operations...")
+        await salamander.stop_autonomy_loops()
+        logger.info("Salamander autonomy loops stopped successfully")
     except Exception as exc:
         logger.error(f"Fatal error in mining loop: {exc}")
+        await salamander.stop_autonomy_loops()
         raise
     finally:
         logger.info("Mining loop terminated")
+        
+        # Export final health report for regulatory compliance
+        health_report = salamander.get_mining_health_report()
+        logger.info(f"Final mining health report: agents_active={health_report.get('agents_active')}, hashrate_current={health_report.get('hashrate_current')}")
 
 
 def main() -> None:
