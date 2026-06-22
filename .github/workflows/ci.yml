@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: [main, develop]
 
+env:
+  HYBA_PYTHON_VERSION: '3.12.7'
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -36,10 +39,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.12.7'
+          python-version: ${{ env.HYBA_PYTHON_VERSION }}
           cache: pip
           cache-dependency-path: |
             python_backend/requirements.txt
@@ -66,18 +69,28 @@ jobs:
         env:
           DATABASE_URL: postgresql+psycopg2://hyba:hyba@localhost:5432/hyba
           REDIS_URL: redis://localhost:6379
+          PYTHONPATH: python_backend
           HYBA_STARTUP_SELF_HEALING_ENABLED: "false"
         run: |
-          python -m pytest tests/test_fault_tolerant_quantum.py \
+          python -m pytest \
+            tests/test_python_runtime_contract.py \
+            tests/test_fault_tolerant_quantum.py \
             tests/test_quantum_as_a_service_api.py \
             tests/test_computational_intelligence_service_api.py \
-            tests/test_commercial_public_api.py -v --cov=python_backend --cov-report=xml
+            tests/test_commercial_public_api.py \
+            tests/test_salamander_self_healing_reactor.py \
+            tests/test_phi_hardware_quantum_scaling_evidence.py \
+            tests/test_quantum_finance_service_design.py \
+            tests/test_product_boundary_and_secret_hygiene.py \
+            tests/test_phi_architecture_golden_flow.py \
+            hyba_intelligence_tests/test_consciousness_engine_scaling.py \
+            -v --cov=python_backend --cov-report=xml
 
       - name: Run verifier firewall gate
         run: bash scripts/run_verifier_firewall_gate.sh
 
       - name: Upload coverage
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         with:
           files: ./coverage.xml
           fail_ci_if_error: false
