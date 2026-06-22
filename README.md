@@ -2,25 +2,26 @@
 
 **Status:** production-readiness elevation in progress  
 **Owner:** HYBA Analytics Ltd  
-**Public product surfaces:** QaaS, QIaaS, CIaaS  
+**Public product surfaces:** QaaS, QIaaS, CIaaS, Quantum Finance  
 **Core thesis:** quantum comes from mathematics; hardware is an implementation substrate  
 **Private validation substrate:** mining / pool telemetry / accepted-share evidence
 
-HYBA_FULLSTACK is a substrate-independent, post-quantum intelligence platform. The repository implements customer-facing quantum-computational and computational-intelligence services over a shared mathematical substrate, with PULVINI reversible φ-memory compression, φ hardware/quantum scaling, Salamander regeneration, evidence seals, customer access control, metering, observability, and governance controls.
+HYBA_FULLSTACK is a substrate-independent, post-quantum intelligence platform. The repository implements customer-facing quantum-computational and computational-intelligence services over a shared mathematical substrate, with PULVINI reversible φ-memory compression, φ hardware/quantum scaling, Salamander regeneration, evidence seals, customer access control, metering, observability, governance controls, and a code-backed finance vertical.
 
-Mining infrastructure exists in this repository only as a **private validation and stress-test substrate**. It is not a public product, not sold to customers, and not part of the QaaS/QIaaS/CIaaS commercial surface.
+Mining infrastructure exists in this repository only as a **private validation and stress-test substrate**. It is not a public product, not sold to customers, and not part of the QaaS/QIaaS/CIaaS/finance commercial surface.
 
 ---
 
 ## 1. Executive summary
 
-HYBA exposes three commercial service layers over one substrate-independent mathematical runtime:
+HYBA exposes commercial service layers over one substrate-independent mathematical runtime:
 
 | Layer | Name | Public role | Implementation anchor |
 |---|---|---|---|
 | QaaS | Quantum-as-a-Service | Virtual fault-tolerant quantum-computational service using quantum formalism without QPU dependency | `python_backend/hyba_genesis_api/api/quantum_as_a_service.py` |
 | QIaaS | Quantum Intelligence-as-a-Service | API-key gated predict / explain / optimise / heal query surface | `python_backend/hyba_genesis_api/api/quantum_intelligence_service.py` |
 | CIaaS | Computational Intelligence-as-a-Service | Customer-provisioned commercial intelligence runtimes | `python_backend/hyba_genesis_api/api/computational_intelligence_service.py` |
+| Quantum Finance | Finance vertical over QaaS/QIaaS/CIaaS | Portfolio QUBO/QAOA/VQE/annealing design, Ising conversion, QAE/QMCI risk/pricing design, VaR/CVaR evidence packets | `python_backend/hyba_genesis_api/api/quantum_finance_service.py` |
 | PULVINI | Reversible φ-memory substrate | Golden-ratio working-set compression with retained reconstruction kernels | `python_backend/pythia_mining/pulvini_phi_memory.py`, `python_backend/pythia_mining/phi_folding.py` |
 | φ hardware scaling | Golden-ratio hardware/throughput grammar | Effective concurrency, runtime tuning, hardware coherence, and quantum-operation benchmark accounting | `python_backend/pythia_mining/phi_cloud_deployer.py`, `python_backend/pythia_mining/phi_tuner.py`, `python_backend/pythia_mining/enhanced_benchmark_suite.py` |
 | Salamander | Regeneration substrate | Self-healing / topology repair / bounded reflexive optimisation | `python_backend/pythia_mining/*regeneration*`, `autonomous_mining_controller.py` |
@@ -56,6 +57,7 @@ This is why the platform is described as what comes after quantum: the mathemati
 - **QaaS:** virtual fault-tolerant quantum-computational primitives.
 - **QIaaS:** bounded quantum-intelligence query functions.
 - **CIaaS:** provisioned computational-intelligence runtimes.
+- **Quantum Finance:** QUBO/QAOA/QAE/VaR/CVaR finance design packets over QaaS/QIaaS/CIaaS.
 - **PULVINI:** reversible φ-memory compression.
 - **φ hardware / quantum scaling:** golden-ratio effective concurrency, tuning, and benchmark accounting.
 - **Salamander:** self-healing and regeneration substrate.
@@ -67,9 +69,9 @@ This is why the platform is described as what comes after quantum: the mathemati
 - Accepted-share evidence.
 - Hash-search experiments.
 - Private benchmark traces.
-- Internal stress tests for autonomy, memory compression, evidence seals, and resilience.
+- Internal stress tests for autonomy, memory compression, evidence seals, finance design packets, and resilience.
 
-See `docs/product/HYBA_PRODUCT_BOUNDARIES.md` and `docs/private-validation/MINING_INTERNAL_VALIDATION_BOUNDARY.md`.
+See `docs/product/HYBA_PRODUCT_BOUNDARIES.md`, `docs/product/HYBA_QUANTUM_FINANCE_VERTICAL.md`, and `docs/private-validation/MINING_INTERNAL_VALIDATION_BOUNDARY.md`.
 
 ---
 
@@ -102,7 +104,30 @@ This evidence supports the repository claim that HYBA uses golden-ratio mathemat
 
 ---
 
-## 6. Customer access, metering, and control plane
+## 6. Quantum finance vertical
+
+HYBA implements a finance-specific vertical over QaaS, QIaaS, and CIaaS:
+
+```text
+/api/quantum-finance/capability-map
+/api/quantum-finance/portfolio/qaoa-design
+/api/quantum-finance/risk/qae-design
+```
+
+Implemented finance algorithms/design packets:
+
+- portfolio optimisation as QUBO;
+- QUBO to Ising Hamiltonian conversion;
+- QAOA/VQE/annealing-compatible portfolio design;
+- QAE/QMCI risk and pricing design;
+- empirical VaR and CVaR summaries;
+- evidence packets with input hash, formula hash, claim boundary, and product boundary.
+
+The finance vertical is customer API-key gated and metered. It is for human/risk review and institution-specific validation; it does not execute autonomous trades and it does not expose mining telemetry.
+
+---
+
+## 7. Customer access, metering, and control plane
 
 Customer access is API-key based and backed by HMAC-SHA256 key hashing, tiered quota controls, compute-unit metering, and optional Redis-backed state. Customer-facing product surfaces must use `require_customer_api_key` and route usage through the customer-access metering layer.
 
@@ -118,13 +143,14 @@ No populated `.env.local`, live pool credential, wallet, JWT secret, or operator
 
 ---
 
-## 7. Claim boundaries
+## 8. Claim boundaries
 
 HYBA claim discipline:
 
 - QaaS is a post-quantum mathematical service: quantum formalism executed without dependency on a physical QPU.
 - QIaaS is bounded quantum intelligence on the HYBA mathematical substrate, not a generic chatbot or phenomenal-consciousness claim.
 - CIaaS is a commercial computational-intelligence runtime, not generic cloud IaaS.
+- Quantum Finance is a code-backed vertical for portfolio QUBO/QAOA/VQE/annealing design and QAE/QMCI risk/pricing evidence packets, not autonomous trade execution.
 - PULVINI φ-memory is reversible working-set compression with retained kernels.
 - φ scales hardware and quantum-operation execution in the repository implementation; external performance claims require sealed benchmark evidence.
 - Mining is internal validation only, not a public product.
@@ -132,7 +158,7 @@ HYBA claim discipline:
 
 ---
 
-## 8. API surfaces
+## 9. API surfaces
 
 Primary backend entrypoint:
 
@@ -146,13 +172,14 @@ Primary public APIs:
 /api/v1/fault-tolerant-computers             # QaaS public customer surface
 /api/qiaas                                   # QIaaS public customer surface
 /api/v1/computational-intelligence-services  # CIaaS public customer surface
+/api/quantum-finance                         # Finance vertical over QaaS/QIaaS/CIaaS
 ```
 
 Admin APIs remain under `/api/admin/*` and require admin JWT authorization.
 
 ---
 
-## 9. Development setup
+## 10. Development setup
 
 ```bash
 cp .env.example .env.local
@@ -160,25 +187,29 @@ cp .env.example .env.local
 python -m venv .venv
 . .venv/bin/activate
 pip install -r python_backend/hyba_genesis_api/requirements.txt
-python -m pytest tests/test_phi_hardware_quantum_scaling_evidence.py tests/test_product_boundary_and_secret_hygiene.py
+python -m pytest \
+  tests/test_phi_hardware_quantum_scaling_evidence.py \
+  tests/test_quantum_finance_service_design.py \
+  tests/test_product_boundary_and_secret_hygiene.py
 ```
 
 ---
 
-## 10. Production readiness gates
+## 11. Production readiness gates
 
 Before presenting this repo as production-ready, all of the following must pass:
 
 1. Secret scan: no committed runtime credentials or populated env files.
 2. Product-boundary scan: README and product docs state mining is private validation only.
-3. Auth scan: customer-facing QaaS/QIaaS/CIaaS endpoints require API-key auth except minimal health checks.
+3. Auth scan: customer-facing QaaS/QIaaS/CIaaS/Quantum Finance endpoints require API-key auth except minimal health checks.
 4. Route scan: no duplicate public CIaaS mount points.
 5. Evidence scan: investor/regulator claims map to evidence files, test logs, raw data, and claim boundaries.
 6. CI scan: full production-readiness workflow runs without development fixtures.
 7. φ scaling scan: hardware, memory, and quantum-operation scaling claims are backed by tests or sealed benchmark artifacts.
+8. Finance scan: QUBO/QAOA/QAE/VaR/CVaR design packets are tested, metered, and explicitly non-autonomous.
 
 ---
 
-## 11. Chairman / investor framing
+## 12. Chairman / investor framing
 
-> HYBA is a substrate-independent post-quantum intelligence platform. Its public services are QaaS, QIaaS, and CIaaS. QaaS exposes virtual fault-tolerant quantum-computational primitives; QIaaS exposes bounded quantum-intelligence query functions; CIaaS provisions commercial computational-intelligence runtimes. PULVINI provides reversible φ-memory compression, φ-scaling governs hardware and quantum-operation execution, Salamander provides self-healing and regeneration, and the evidence layer preserves claim boundaries. Mining is not a product; it is a private stress-test and evidence substrate used internally to validate the platform under extreme conditions.
+> HYBA is a substrate-independent post-quantum intelligence platform. Its public services are QaaS, QIaaS, CIaaS, and a code-backed quantum-finance vertical. QaaS exposes virtual fault-tolerant quantum-computational primitives; QIaaS exposes bounded quantum-intelligence query functions; CIaaS provisions commercial computational-intelligence runtimes; the finance vertical maps portfolio, pricing, and risk workloads into QUBO/QAOA and QAE/QMCI evidence packets. PULVINI provides reversible φ-memory compression, φ-scaling governs hardware and quantum-operation execution, Salamander provides self-healing and regeneration, and the evidence layer preserves claim boundaries. Mining is not a product; it is a private stress-test and evidence substrate used internally to validate the platform under extreme conditions.
