@@ -13,7 +13,7 @@ import hashlib
 import json
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Literal, Optional, Tuple
+from typing import Any, Literal
 
 
 ProposalKind = Literal["conservative", "optimised", "algorithmic", "rewiring"]
@@ -24,9 +24,9 @@ class RegenerationCandidate:
     target_name: str
     original_code: str
     improvement_goal: str
-    context: Dict[str, Any] = field(default_factory=dict)
+    context: dict[str, Any] = field(default_factory=dict)
     candidate_kind: ProposalKind = "conservative"
-    proposed_code: Optional[str] = None
+    proposed_code: str | None = None
 
 
 @dataclass
@@ -34,14 +34,14 @@ class SalamanderRegenerator:
     """Generate sealed, auditable regeneration proposal packets."""
 
     max_limb_size: int = 120
-    stable_core_markers: Tuple[str, ...] = (
+    stable_core_markers: tuple[str, ...] = (
         "STABLE_CORE",
         "DO_NOT_MODIFY",
         "SOVEREIGN_GATE",
         "HUMAN_APPROVAL_REQUIRED",
     )
 
-    def _run_criticism_and_guard(self, candidate: RegenerationCandidate) -> Dict[str, Any]:
+    def _run_criticism_and_guard(self, candidate: RegenerationCandidate) -> dict[str, Any]:
         """Criticise, guard, diff, and seal a candidate.
 
         The method name is preserved because the supplied ``SelfHealingReactor``
@@ -112,8 +112,8 @@ class SalamanderRegenerator:
         insert_at = 1 if lines[0].lstrip().startswith(("def ", "async def ", "class ")) else 0
         return "\n".join(lines[:insert_at] + [marker] + lines[insert_at:])
 
-    def _criticise(self, candidate: RegenerationCandidate, proposed_code: str) -> List[Dict[str, str]]:
-        issues: List[Dict[str, str]] = []
+    def _criticise(self, candidate: RegenerationCandidate, proposed_code: str) -> list[dict[str, str]]:
+        issues: list[dict[str, str]] = []
         original_lines = candidate.original_code.splitlines()
         proposed_lines = proposed_code.splitlines()
         if len(original_lines) > self.max_limb_size:
