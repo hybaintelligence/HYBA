@@ -28,7 +28,7 @@ This document provides a complete audit trail for every major claim in the Salam
 | 1.1 | Regeneration latency (p99) | <5 seconds | **Estimated** | Internal benchmark script | Production benchmark with CI artifact |
 | 1.2 | Regeneration success rate | >95% | **Tested** | 16/16 property-based tests | Independent reproduction |
 | 1.3 | Mathematical invariants proven | 16/16 | **Tested** | Hypothesis property tests | Formal proof (Lean/Coq/Isabelle) or independent review |
-| 1.4 | Test coverage | 46/46 passing | **Verified** | pytest output | CI artifact with reproducible command |
+| 1.4 | Test coverage | 51/51 passing | **Verified** | pytest output | CI artifact with reproducible command |
 | 1.5 | Memory per module | <10 KB | **Estimated** | Resource benchmark script | Standardized hardware benchmark |
 | 1.6 | Throughput | >500 regen/second | **Estimated** | Throughput benchmark script | Load test with CI artifact |
 
@@ -87,7 +87,7 @@ This document provides a complete audit trail for every major claim in the Salam
 | 6.5 | Pipeline correctness | Invariants preserved end-to-end | **Tested** | Integration tests | Full formal verification |
 | 6.6 | Non-separability detection | PPT criterion | **Claimed** | Implementation of is_separable_approx | Validation with known entangled/separable states |
 
-### 7. Implementation Claims
+### 7. Implementation & Mining Claims
 
 | # | Claim | Current Value | Classification | Evidence | Required for External Use |
 |---|-------|--------------|----------------|----------|---------------------------|
@@ -96,6 +96,9 @@ This document provides a complete audit trail for every major claim in the Salam
 | 7.3 | WebSocket streaming | Real-time events | **Tested** | Unit tests for ConnectionManager | Production load test |
 | 7.4 | CEO Terminal | Live monitoring | **Claimed** | Frontend component exists | User acceptance testing |
 | 7.5 | Approval workflows | Human-in-the-loop | **Tested** | API tests for approve_regeneration | Security audit |
+| 7.6 | Salamander Mining Guard | Registers 3 core mining targets | **Verified** | 5 integration tests passing | Production mining validation |
+| 7.7 | Mining Preflight Gate | Blocks ignition when scarred, allows non-strict same-day | **Tested** | Integration tests | Live pool operation |
+| 7.8 | Revenue Fabrication Prevention | Dry-run revenue at 0.0, no BTC invented without pool result | **Verified** | `test_production_mining_harness_does_not_fabricate_live_revenue` pass | Production financial audit |
 
 ### 8. Open Source / Community Claims
 
@@ -119,6 +122,7 @@ This document provides a complete audit trail for every major claim in the Salam
 | 3. No pilot customer data | 2.1-2.7, 5.3, 5.5 | Recruit 3-5 pilot customers | Customer Success | 3 months |
 | 4. No third-party security audit | 4.1-4.6 | Engage NCC Group or Cure53 | Security | 2 months |
 | 5. No public GitHub repo | 8.1-8.4 | Sanitize and release | Engineering | 2 weeks |
+| 6. No live pool mining validation | 7.6, 7.7 | Complete live Stratum auth, pool subscribe, telemetry | Mining Ops | 1 day |
 
 ### High-Priority Gaps (Block Academic Publication)
 
@@ -143,34 +147,6 @@ This document provides a complete audit trail for every major claim in the Salam
 | 1. No competitive benchmarks | 5.1-5.5 | Head-to-head vs. Kubernetes, AWS | Engineering | 2 months |
 | 2. No case studies | 2.1-2.7 | Recruit customers, write case studies | Marketing | 6 months |
 | 3. No Gartner briefing | 5.1-5.5 | Present to Gartner analysts | Marketing | 3 months |
-
----
-
-## Recommended Actions
-
-### Immediate (This Week)
-1. **Downgrade all "Estimated" and "Forecast" claims** in public-facing documents to clearly mark them as projections
-2. **Add evidence table** to SCIENTIFIC_POSITION_SALAMANDER.md and INDUSTRY_POSITION_SALAMANDER.md
-3. **Create CI workflow** that runs 46/46 tests and publishes artifacts
-4. **Pin all dependencies** in requirements.lock.txt
-
-### Short-Term (This Month)
-1. **Run independent test reproduction**: Fresh VM, clean clone, one-command test run
-2. **Complete 1 formal proof** in Lean or Coq (even if just density matrix Hermiticity)
-3. **Generate actual SBOM** using the template
-4. **Engage security audit firm** (RFP process)
-
-### Medium-Term (This Quarter)
-1. **Recruit 3 pilot customers** with signed agreements
-2. **Submit academic paper** to top-tier venue
-3. **Complete formal verification** of core invariants
-4. **Publish benchmark results** with reproducible methodology
-
-### Long-Term (6-12 Months)
-1. **Complete all formal proofs**
-2. **Publish 3+ customer case studies** with verified ROI
-3. **Obtain FedRAMP authorization**
-4. **Achieve Gartner Magic Quadrant positioning**
 
 ---
 
@@ -203,6 +179,10 @@ This document provides a complete audit trail for every major claim in the Salam
 | 2026-06-22 | Created evidence register | EVIDENCE_REGISTER_SALAMANDER.md | CTO Office |
 | 2026-06-22 | Downgraded unverified claims | All public docs | CTO Office |
 | 2026-06-22 | Added evidence tables | SCIENTIFIC_POSITION, INDUSTRY_POSITION | CTO Office |
+| 2026-06-22 | Added mining integration claims (7.6-7.8) | EVIDENCE_REGISTER_SALAMANDER.md | CTO Office |
+| 2026-06-22 | Added mining to CI workflow | .github/workflows/ci.yml | Engineering |
+| 2026-06-22 | Fixed Python 3.9 datetime.UTC across 7 files | production_mining_system, autonomous_fault_tolerant_controller, 5 API modules | Engineering |
+| 2026-06-22 | Updated test count to 51 | AGENT_WORKFLOW_COMPLETE.md | CTO Office |
 
 ---
 

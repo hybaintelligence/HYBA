@@ -4,7 +4,8 @@ from __future__ import annotations
 
 import inspect
 import uuid
-from datetime import UTC, datetime
+from datetime import datetime, timezone
+UTC = timezone.utc
 from typing import Any, Callable, Dict, TypeVar
 
 from fastapi import HTTPException

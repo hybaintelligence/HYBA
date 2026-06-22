@@ -22,6 +22,8 @@ import {
   startCIAASService,
   stopCIAASService,
   getCIAASAutonomousStatus,
+  provisionCIAASService,
+  provisionCustomerCIAASService,
 } from "../apiClient";
 import { useAuth } from "./AuthProvider";
 
@@ -91,7 +93,6 @@ export default function CIaaSServiceManager({ token }: CIaaSServiceManagerProps)
     if (!token) return;
     try {
       // Use customer-safe endpoint for non-admin users
-      const { provisionCIAASService, provisionCustomerCIAASService } = await import("../apiClient");
       if (isAdmin) {
         await provisionCIAASService(provisionForm);
       } else {

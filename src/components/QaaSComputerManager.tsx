@@ -23,6 +23,8 @@ import {
   startQaaSComputer,
   stopQaaSComputer,
   getQAASAutonomousStatus,
+  provisionQaaSComputer,
+  provisionCustomerQaaSComputer,
 } from "../apiClient";
 import { useAuth } from "./AuthProvider";
 
@@ -99,7 +101,6 @@ export default function QaaSComputerManager({ token }: QaaSComputerManagerProps)
     if (!token) return;
     try {
       // Use customer-safe endpoint for non-admin users
-      const { provisionQaaSComputer, provisionCustomerQaaSComputer } = await import("../apiClient");
       if (isAdmin) {
         await provisionQaaSComputer(provisionForm);
       } else {

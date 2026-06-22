@@ -12,7 +12,8 @@ import logging
 import numpy as np
 from pathlib import Path
 from typing import Dict, List, Optional, Literal
-from datetime import datetime, UTC
+from datetime import datetime, timezone
+UTC = timezone.utc
 
 from pythia_mining.fault_tolerant_quantum_core import (
     AutonomousFaultTolerantMiner,

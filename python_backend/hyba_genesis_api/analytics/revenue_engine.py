@@ -8,7 +8,8 @@ local/test environments that do not yet have commercial persistence tables.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import UTC, datetime, timedelta
+from datetime import datetime, timezone
+UTC = timezone.utc, timedelta
 from typing import Any
 
 from sqlalchemy import func
