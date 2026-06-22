@@ -50,3 +50,7 @@ aioredis==2.0.1
 
 # Property-based testing
 hypothesis==6.155.7
+
+opentelemetry-instrumentation-fastapi==0.50b0
+
+prometheus-fastapi-instrumentator==7.0.0

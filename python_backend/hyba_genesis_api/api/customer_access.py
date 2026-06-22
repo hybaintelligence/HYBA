@@ -437,6 +437,38 @@ class _CustomerRegistry:
                 "quota_enforced": True,
             }
 
+    def refund_metered_usage(self, customer: CustomerInfo, product: str, units: int) -> Dict[str, Any]:
+        """Reverse metered usage for a failed execution.
+
+        This is intentionally bounded to the current in-memory month ledger; Redis
+        deployments reconcile from rollback records and the immutable audit log.
+        """
+        key_id = customer.key_id
+        with self._lock:
+            usage = self.get_usage_metrics(customer)
+            refund_units = max(0, units)
+            usage.compute_units_this_month = max(0, usage.compute_units_this_month - refund_units)
+            usage.compute_units_remaining = min(
+                customer.quota_compute_units_per_month,
+                usage.compute_units_remaining + refund_units,
+            )
+            if usage.requests_this_month > 0:
+                usage.requests_this_month -= 1
+                usage.requests_remaining = min(customer.quota_requests_per_month, usage.requests_remaining + 1)
+            if customer.customer_id in self._local_counters and product in self._local_counters[customer.customer_id]:
+                self._local_counters[customer.customer_id][product] = max(
+                    0, self._local_counters[customer.customer_id][product] - refund_units
+                )
+            if key_id in self._usage:
+                self._usage[key_id] = usage
+            return {
+                "product": product,
+                "units_refunded": refund_units,
+                "requests_remaining": usage.requests_remaining,
+                "compute_units_remaining": usage.compute_units_remaining,
+                "quota_enforced": True,
+            }
+
     def set_state(self, key: str, value: Any) -> None:
         """Store state for a given key."""
         with self._lock:

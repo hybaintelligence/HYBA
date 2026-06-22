@@ -29,6 +29,7 @@ from pydantic import BaseModel, Field, field_validator
 
 from hyba_genesis_api.api.admin import require_admin
 from hyba_genesis_api.api.customer_access import CustomerPrincipal, customer_access, require_customer_api_key
+from hyba_genesis_api.api.billing_integration import execute_with_billing
 from hyba_genesis_api.auth.jwt_handler import TokenPayload
 from hyba_genesis_api.core.intelligence_fabric import SubstrateOrchestrator, explain
 from hyba_genesis_api.core.substrate import get_substrate_state, initialize_substrate
@@ -819,8 +820,15 @@ async def customer_execute_quantum_workload(
             detail=f"Logical qubit count ({len(request.logical_qubits or [])}) exceeds tier sync limit ({max_qubits}).",
         )
 
-    usage = customer_access.meter(principal, product="qaas.execute", units=estimated_units)
-    envelope = registry.execute(computer_id, request)
+    envelope, usage, invoice = execute_with_billing(
+        principal=principal,
+        product="qaas.execute",
+        endpoint=f"/api/v1/fault-tolerant-computers/{computer_id}/execute",
+        units=estimated_units,
+        execution_id=request.idempotency_key,
+        execute=lambda: registry.execute(computer_id, request),
+    )
     envelope["usage_meter"] = usage
     envelope["metered_units"] = estimated_units
+    envelope["invoice"] = invoice
     return envelope

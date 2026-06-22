@@ -34,7 +34,7 @@ from typing import Any, Dict, List, Optional
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
-from hyba_genesis_api.core.feature_flags import require_feature
+from hyba_genesis_api.api.billing_integration import execute_with_billing
 from hyba_genesis_api.api.customer_access import (
     CustomerInfo,
     CustomerPrincipal,
@@ -228,9 +228,10 @@ def _build_envelope(
     principal: Any,
     product: str,
     units: int,
+    usage_state_override: Dict[str, Any] | None = None,
 ) -> QuantumIntelligenceEnvelope:
     customer = _principal_or_internal(principal)
-    usage_state = _meter_usage(customer, product=product, units=units)
+    usage_state = usage_state_override or _meter_usage(customer, product=product, units=units)
     qi_execution_id = f"qi_{uuid.uuid4().hex}"
     trace_id = f"trc_{uuid.uuid4().hex}"
 
@@ -496,16 +497,26 @@ async def query_quantum_intelligence(
         )
 
     units = _qiaas_units(request)
-    return _build_envelope(
-        query_type=query_type,
-        context=request.context,
-        result=result,
-        confidence=confidence,
-        metrics=metrics,
+    product = f"qiaas.{query_type}"
+    envelope, usage, invoice = execute_with_billing(
         principal=customer,
-        product=f"qiaas.{query_type}",
+        product=product,
+        endpoint="/api/qiaas/query",
         units=units,
+        execute=lambda billed_usage: _build_envelope(
+            query_type=query_type,
+            context=request.context,
+            result=result,
+            confidence=confidence,
+            metrics=metrics,
+            principal=customer,
+            product=product,
+            units=units,
+            usage_state_override=billed_usage,
+        ),
     )
+    envelope.result["invoice"] = invoice
+    return envelope
 
 
 @router.get("/metrics", response_model=QIaaSMetrics)

@@ -44,3 +44,5 @@ firebase-applet-config.json
 config/firebase-applet-config.json
 venv/
 .venv/
+.env.local
+coverage/
