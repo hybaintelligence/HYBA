@@ -31,7 +31,6 @@ artifacts/funding_engine/
 artifacts/autonomous_mining/
 runtime/
 python_backend/pythia_mining/mining_pools_config.json
-python_backend/pythia_mining/quantum_healing_swarm.py
 config/mining_pools_live.json
 %EVDIR%/
 changes.diff
