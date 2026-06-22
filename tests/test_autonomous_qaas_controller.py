@@ -285,6 +285,59 @@ def test_apply_optimization_proposal(qaas_controller):
     assert len(qaas_controller._proposals) == 1
 
 
+def test_propose_then_apply_not_blocked_by_proposal_cooldown(qaas_controller):
+    """Real propose -> apply flow is not self-defeated by proposal cooldown."""
+    qaas_controller.start()
+
+    for _ in range(20):
+        qaas_controller.record_execution(
+            execution_time_ms=50.0,
+            logical_error_rate=0.001,
+            correction_success=True,
+        )
+
+    metrics = qaas_controller.get_health_metrics()
+    proposal = qaas_controller.propose_optimization(
+        current_code_distance=7,
+        current_error_rate=0.001,
+        metrics=metrics,
+    )
+
+    assert proposal is not None
+    assert qaas_controller.apply_optimization(proposal) is True
+    assert proposal.applied is True
+    assert qaas_controller._optimization_epochs == 1
+
+
+def test_repeated_apply_attempts_respect_apply_cooldown(qaas_controller):
+    """Applying one optimization starts the cooldown for subsequent applies."""
+    qaas_controller.start()
+
+    first = OptimizationProposal(
+        proposal_id="test_opt_apply_001",
+        timestamp=time.time(),
+        parameter="code_distance",
+        current_value=7.0,
+        proposed_value=5.0,
+        expected_improvement=0.15,
+        confidence=0.8,
+    )
+    second = OptimizationProposal(
+        proposal_id="test_opt_apply_002",
+        timestamp=time.time(),
+        parameter="code_distance",
+        current_value=5.0,
+        proposed_value=3.0,
+        expected_improvement=0.10,
+        confidence=0.75,
+    )
+
+    assert qaas_controller.apply_optimization(first) is True
+    assert qaas_controller.apply_optimization(second) is False
+    assert second.applied is False
+    assert qaas_controller._optimization_epochs == 1
+
+
 def test_state_persistence(qaas_controller, temp_persistence_dir):
     """Test autonomous controller state persists across restarts."""
     qaas_controller.start()
