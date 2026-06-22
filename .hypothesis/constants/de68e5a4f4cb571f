@@ -1,0 +1,4 @@
+# file: /Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/hyba_genesis_api/api/customer_access.py
+# hypothesis_version: 6.155.7
+
+[0.0, 0.0006, 0.0008, 0.001, 0.0015, 0.002, 0.0025, 404, 1000, 10000, 10000000, '%Y-%m', '.', '/api-keys', '/api/admin', '/customer-api-keys', 'Customer not found', 'HYBA_API_KEY_SECRET', 'HYBA_REDIS_URL', 'Invalid API key', 'USD', '_state', 'api_key_hash', 'ciaas', 'compute', 'compute_cost', 'compute_units', 'created_at', 'currency', 'customer-access', 'customer_id', 'customer_name', 'default', 'developer', 'enterprise', 'error', 'estimated_charge_usd', 'key_id', 'pricing_usd_per_unit', 'product', 'production', 'qaas', 'quota_compute', 'quota_enforced', 'quota_requests', 'redis_url', 'request_cost', 'requests', 'requests_remaining', 'tier', 'unit_price_usd', 'units', 'units_refunded']

@@ -1,0 +1,4 @@
+# file: /Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/hyba_genesis_api/core/telemetry.py
+# hypothesis_version: 6.155.7
+
+[0.005, 0.05, 0.2, 1000.0, 256, 500, 1000, '-', 'Audit event', 'OTEL_SERVICE_NAME', '[^a-zA-Z0-9_.:-]+', '_', 'active_requests', 'audit_events_total', 'circuit', 'closed', 'compute_units', 'correlation_id', 'duration_ms', 'endpoint', 'errors_total', 'event_type', 'failing', 'gap', 'gate', 'governance_gates', 'half_open', 'healthy', 'http_status', 'hyba-genesis-api', 'hyba_errors_total', 'hyba_requests_total', 'hyba_workflow_status', 'last_request', 'method', 'open', 'opentelemetry', 'opentelemetry.sdk', 'outcome', 'passing', 'path', 'product', 'quota', 'readiness_gaps', 'request_id', 'request_total', 'requests', 'requests_total', 'route', 'service.name', 'span_id', 'startup_time', 'status', 'status_code', 'tenant_hash', 'tier', 'trace_id', 'traceparent', 'unknown', 'workflow', 'workflows', 'x-correlation-id', 'x-request-id', 'x-trace-id']

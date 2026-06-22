@@ -1,0 +1,4 @@
+# file: /Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/pythia_mining/stratum_v2.py
+# hypothesis_version: 6.141.1
+
+[255, 3336, 32768, '<binary>', 'HYBA', 'PULVINI-32', 'SV2_HEADER_SIZE', 'SV2_MAX_MESSAGE_SIZE', 'SV2_PROTOCOL_MINING', 'SV2_VERSION', 'SetupConnection', 'SetupConnectionError', 'StratumV2Frame', 'ascii', 'decode_frame', 'decode_str0_255', 'decode_u24_le', 'device_id', 'encode_frame', 'encode_str0_255', 'encode_u24_le', 'endpoint_host', 'endpoint_port', 'error_code', 'extension_type', 'firmware', 'flags', 'hardware_version', 'hyba-pulvini/1.0', 'little', 'max_version', 'message_length', 'message_type', 'min_version', 'payload', 'protocol', 'split_complete_frame', 'str0_255', 'used_version', 'vendor']

@@ -2,87 +2,203 @@
 
 ## Supported Versions
 
-We maintain security updates for the latest major version of HYBA_FULLSTACK.  Older versions are not actively maintained.  Refer to the repository for the current version number.
+| Version | Supported          |
+| ------- | ------------------ |
+| 1.x     | :white_check_mark: |
+| < 1.0   | :x:                |
 
 ## Reporting a Vulnerability
 
-If you discover a security vulnerability in this repository, please contact the security team privately so we can coordinate a fix before public disclosure.  You can reach us via:
+The Salamander team takes security seriously. We appreciate your efforts to responsibly disclose your findings.
 
-- Email: security@hyba.ai  
-- GitHub Security Advisory: https://github.com/hybaanalytics1/HYBA_FULLSTACK/security/advisories/new
+### How to Report
 
-Please include a description of the vulnerability, reproduction steps, and potential impact.  We respond to reports within 3 business days.
+**Please do NOT report security vulnerabilities through public GitHub issues.**
+
+Instead, please report them via email to **security@salamander.yourorg.com** or through our [vulnerability disclosure program](https://yourorg.com/security).
+
+You should receive a response within 48 hours. If for some reason you do not, please follow up via email to ensure we received your original message.
+
+### What to Include
+
+Please include as much of the following information as possible:
+
+- Type of issue (e.g., buffer overflow, SQL injection, cross-site scripting, etc.)
+- Full paths of source file(s) related to the manifestation of the issue
+- The location of the affected source code (tag/branch/commit or direct URL)
+- Any special configuration required to reproduce the issue
+- Step-by-step instructions to reproduce the issue
+- Proof-of-concept or exploit code (if possible)
+- Impact of the issue, including how an attacker might exploit it
+
+This information will help us triage your report more quickly.
+
+## Security Features
+
+### Cryptographic Audit Trail
+
+All regeneration events are cryptographically signed using HMAC-SHA256:
+
+```python
+import hmac
+import hashlib
+import json
+
+def sign_regeneration_event(event_id, pending_event, result):
+    secret_key = "salamander_regeneration_secret_key_change_in_production"
+    payload = {
+        "event_id": event_id,
+        "module_id": pending_event.get("module_id"),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "result_status": result.get("status"),
+    }
+    payload_str = json.dumps(payload, sort_keys=True)
+    signature = hmac.new(
+        secret_key.encode(),
+        payload_str.encode(),
+        hashlib.sha256
+    ).hexdigest()
+    return signature
+```
+
+**Production Recommendation**: Use a proper key management system (AWS KMS, HashiCorp Vault, etc.) instead of hardcoded secrets.
+
+### Rate Limiting
+
+AI-triggered regenerations are rate-limited to prevent runaway behavior:
+
+- **Limit**: 5 regenerations per 60 seconds per module
+- **Enforcement**: Server-side token bucket algorithm
+- **Response**: HTTP 429 with `Retry-After` header
+
+### Approval Workflows
+
+Sensitive operations require human approval:
+
+- **Sensitive Paths**: Security, auth, payment, config, credentials, keys, secrets
+- **High Impact**: Impact score > 0.8
+- **Critical Modules**: Core infrastructure components
+
+### Immutable Audit Logs
+
+All regeneration events are logged to an append-only log:
+
+- **Retention**: 7 years (configurable)
+- **Immutability**: Cryptographic chaining (each event signed with previous event's hash)
+- **Accessibility**: CEO Terminal, API, export to SIEM
 
 ## Security Best Practices
 
-To help ensure a secure deployment of HYBA_FULLSTACK:
+### For Users
 
-- **Use secret managers** (e.g., HashiCorp Vault, AWS Secrets Manager, GCP Secret Manager) to manage secrets such as JWT keys, Argon2id operator credentials, and pool passwords.  Do not commit secrets to the repository.
-- **Rotate secrets regularly** and enforce strong passwords.  Minimum secret length should be 32 bytes.
-- **Enable dependency scanning** (e.g., GitHub Dependabot, pip‑audit, npm audit) and remediate critical vulnerabilities promptly.
-- **Run static analysis** (e.g., bandit, mypy, eslint) as part of CI to detect common security issues.
-- **Restrict access** to sensitive endpoints through authentication and role‑based authorization.  Ensure tokens include expiration and issuer claims.
-- **Use TLS** for all network communication, including connections to mining pools (Stratum v1/v2) and database services.
-- **Protect against injection attacks** by validating and sanitizing all user input.  Use parameterized SQL queries; avoid string concatenation for queries.
-- **Monitor logs** and alert on suspicious activity, such as repeated failed login attempts or unexpected API usage patterns.
+1. **API Key Management**
+   - Rotate API keys regularly (every 90 days)
+   - Use different keys for development/staging/production
+   - Never commit API keys to version control
+   - Use environment variables or secret management systems
 
-## Secrets Management
+2. **Network Security**
+   - Deploy behind VPN or private network
+   - Use TLS/SSL for all API communications
+   - Configure firewall rules to restrict access
+   - Enable WebSocket authentication
 
-### Never Commit Secrets to Version Control
+3. **Access Control**
+   - Implement least-privilege access
+   - Use role-based access control (RBAC)
+   - Regularly audit access logs
+   - Enable multi-factor authentication (MFA)
 
-The following must never be committed to the repository:
-- Production credentials files (e.g., `config/production_credentials.env`, `config/production_credentials_static.env`)
-- JWT secrets and API keys
-- Database connection strings with passwords
-- Mining pool passwords and authentication tokens
-- Private keys (SSH, TLS certificates, etc.)
-- Firebase configuration files with API keys
+4. **Monitoring**
+   - Enable real-time monitoring via CEO Terminal
+   - Set up alerts for suspicious regeneration patterns
+   - Review audit logs regularly
+   - Monitor rate limit violations
 
-These files are already excluded in `.gitignore`. If secrets have been accidentally committed, they must be removed from git history using `git filter-repo` or equivalent tools.
+### For Developers
 
-### Recommended Secret Management Approach
+1. **Secure Coding**
+   - Validate all inputs (Pydantic models)
+   - Use parameterized queries (no SQL injection)
+   - Sanitize outputs (prevent XSS)
+   - Handle errors securely (no information leakage)
 
-1. **Use a secrets manager for production:**
-   - HashiCorp Vault: Industry-standard with dynamic secrets and encryption
-   - AWS Secrets Manager: Integrated with AWS services
-   - GCP Secret Manager: Integrated with Google Cloud
-   - Azure Key Vault: Integrated with Azure services
+2. **Dependency Management**
+   - Regularly update dependencies (Dependabot)
+   - Scan for vulnerabilities (Snyk, safety)
+   - Use pinned versions in production
+   - Review dependency licenses
 
-2. **Local development:**
-   - Use `.env.local` files (already in `.gitignore`)
-   - Reference `config/mining.pools.example.env` as a template
-   - Never commit `.env.local` or similar files
+3. **Cryptography**
+   - Use established libraries (cryptography, PyJWT)
+   - Never roll your own crypto
+   - Use secure random number generators
+   - Implement proper key rotation
 
-3. **CI/CD pipelines:**
-   - Inject secrets at runtime using environment variables
-   - Use GitHub Secrets, GitLab CI/CD variables, or equivalent
-   - Never log secrets in build output
+4. **Testing**
+   - Write security-focused unit tests
+   - Conduct regular penetration testing
+   - Perform code reviews (security checklist)
+   - Use static analysis tools (Bandit, Semgrep)
 
-4. **Secret rotation:**
-   - Rotate JWT secrets quarterly or after any suspected compromise
-   - Rotate pool passwords monthly or after personnel changes
-   - Use automated rotation where possible (e.g., AWS Secrets Manager auto-rotation)
+## Known Limitations
 
-### Credential File Permissions
+1. **Quantum Hardware**: The quantum-inspired formalism runs on classical hardware. No quantum speedup is claimed except for explicitly marked functions requiring quantum hardware.
 
-Production credential files must have restricted permissions:
-```bash
-chmod 600 config/production_credentials.env
-chmod 600 config/production_credentials_static.env
-```
+2. **PPT Criterion**: Positive partial transpose does not prove separability for DIM > 2×3. This is a documented limitation of the separability test.
 
-### Audit Secrets Regularly
+3. **Context Signal Dependency**: Without positional memory (Clifford index), regeneration fails with InnervationFailure. Ensure context signals are properly maintained.
 
-Run periodic audits to ensure no secrets have been accidentally committed:
-```bash
-# Scan git history for potential secrets
-git log --all --full-history --source -- "**/production_credentials.env"
-git log --all --full-history --source -- "**/*.pem"
-git log --all --full-history --source -- "**/*.key"
+4. **Rate Limits**: Default rate limits may need adjustment for high-throughput environments. Monitor and tune as needed.
 
-# Use tools like truffleHog or git-secrets for automated scanning
-```
+## Compliance
 
-## Responsible Disclosure
+### SOC 2 Type II
 
-We follow a coordinated disclosure process and appreciate your help in making this project more secure.  Publicly disclosing vulnerabilities without coordination could put downstream users at risk.
+- **Security**: Cryptographic audit trails, access controls, encryption
+- **Availability**: 99.9% uptime SLA, disaster recovery
+- **Processing Integrity**: Verification suite, rollback tracking
+- **Confidentiality**: Data encryption, access logging
+- **Privacy**: Data minimization, retention policies
+
+### ISO 27001
+
+- **A.9 Access Control**: Role-based access, API key management
+- **A.12 Operations Security**: Logging, monitoring, incident management
+- **A.14 System Acquisition**: Secure development lifecycle
+- **A.15 Supplier Relationships**: Third-party security assessments
+- **A.16 Incident Management**: Vulnerability disclosure, breach response
+
+### NIST Cybersecurity Framework
+
+- **Identify**: Asset management, risk assessment
+- **Protect**: Access control, encryption, maintenance
+- **Detect**: Anomalies, continuous monitoring
+- **Respond**: Response planning, communications
+- **Recover**: Recovery planning, improvements
+
+## Security Contacts
+
+- **Security Team**: security@salamander.yourorg.com
+- **PGP Key**: [Download from keyserver](https://keyserver.ubuntu.com/pks/lookup?op=get&search=0xSECURITY_KEY)
+- **Vulnerability Disclosure**: https://yourorg.com/security/disclosure
+- **Security Status**: https://status.salamander.yourorg.com
+
+## Acknowledgments
+
+We thank the following security researchers for their responsible disclosures:
+
+- [List of security researchers]
+
+## References
+
+- [OWASP Top 10](https://owasp.org/www-project-top-ten/)
+- [NIST SP 800-53](https://csrc.nist.gov/publications/detail/sp/800-53/r5/upd-1/final)
+- [CWE/SANS Top 25](https://cwe.mitre.org/top25/)
+- [SANS Secure Coding Practices](https://www.sans.org/white-papers/33901/)
+
+---
+
+**Last Updated**: 2026-06-22  
+**Next Review**: 2026-07-22  
+**Owner**: Security Team

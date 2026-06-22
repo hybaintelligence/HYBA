@@ -1,0 +1,4 @@
+# file: /Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/hyba_genesis_api/api/billing_integration.py
+# hypothesis_version: 6.155.7
+
+[0.0, 'T', 'amount_usd', 'billing_rollback', 'created_at', 'customer_id', 'draft', 'endpoint', 'estimated_charge_usd', 'failure', 'invoice_id', 'message', 'outcome', 'product', 'quota_deducted', 'request_id', 'status', 'success', 'timestamp_iso8601', 'total_quota', 'units']

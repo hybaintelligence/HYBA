@@ -273,7 +273,7 @@ class _VirtualFaultTolerantQuantumComputer:
             ),
         }
 
-    def response(self) -> FaultTolerantComputerResponse:
+    def _generate_evidence_seal(self) -> tuple[str, str]:
         substrate = get_substrate_state()
         seal_payload = {
             "seal_version": "1.0",
@@ -287,6 +287,11 @@ class _VirtualFaultTolerantQuantumComputer:
         }
         canonical = json.dumps(seal_payload, sort_keys=True, separators=(",", ":"), default=str)
         evidence_seal = hashlib.sha256(canonical.encode()).hexdigest()
+        return evidence_seal, seal_payload["sealed_at"]
+
+    def response(self) -> FaultTolerantComputerResponse:
+        evidence_seal, sealed_at = self._generate_evidence_seal()
+        substrate = get_substrate_state()
         return FaultTolerantComputerResponse(
             computer_id=self.computer_id,
             name=self.name,
@@ -304,6 +309,22 @@ class _VirtualFaultTolerantQuantumComputer:
             claim_boundary="Quantum-as-a-Service virtual fault-tolerant computer; substrate-agnostic mathematical runtime; mining is not part of this API surface.",
         )
 
+    def execution_envelope(self, result: Dict[str, Any]) -> Dict[str, Any]:
+        evidence_seal, sealed_at = self._generate_evidence_seal()
+        return {
+            "computer_id": self.computer_id,
+            "operation": result.get("operation", "unknown"),
+            "state": self.state,
+            "result": result,
+            "quantum_parameters": self.quantum_parameters(),
+            "fault_tolerance": self.fault_tolerance(),
+            "executed_at": self.updated_at,
+            "evidence_seal": evidence_seal,
+            "seal_version": "1.0",
+            "sealed_at": sealed_at,
+            "claim_boundary": "Fault-tolerant virtual quantum computer API; pure mathematical/substrate-agnostic execution surface; not a mining hypervisor.",
+        }
+
     def _validate_workload(self, request: QuantumWorkloadRequest) -> list[int]:
         if request.operation not in self.policy["allowed_operations"]:
             raise HTTPException(status_code=403, detail="operation is not allowed by computer policy")
@@ -312,6 +333,11 @@ class _VirtualFaultTolerantQuantumComputer:
         if request.shots > self.policy["max_shots"]:
             raise HTTPException(status_code=413, detail="shot count exceeds computer policy")
         qubits = request.logical_qubits or list(range(min(3, len(self.core.logical_qubits))))
+        if len(qubits) > len(self.core.logical_qubits):
+            raise HTTPException(
+                status_code=413,
+                detail=f"logical_qubits count {len(qubits)} exceeds provisioned limit {len(self.core.logical_qubits)}",
+            )
         if any(index < 0 or index >= len(self.core.logical_qubits) for index in qubits):
             raise HTTPException(status_code=422, detail="logical_qubits contains an out-of-range index")
         return qubits
@@ -458,16 +484,8 @@ class _VirtualFaultTolerantQuantumComputer:
 
                 self._executions += 1
                 self.touch()
-                envelope = {
-                    "computer_id": self.computer_id,
-                    "operation": request.operation,
-                    "state": self.state,
-                    "result": result,
-                    "quantum_parameters": self.quantum_parameters(),
-                    "fault_tolerance": self.fault_tolerance(),
-                    "executed_at": self.updated_at,
-                    "claim_boundary": "Fault-tolerant virtual quantum computer API; pure mathematical/substrate-agnostic execution surface; not a mining hypervisor.",
-                }
+                result["operation"] = request.operation
+                envelope = self.execution_envelope(result)
                 if request.idempotency_key:
                     # Store with request_hash for mismatch detection
                     if len(self._idempotency_cache) >= self._idempotency_cache_max_size:

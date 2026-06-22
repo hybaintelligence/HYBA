@@ -1,0 +1,4 @@
+# file: /Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/pythia_self_healing/autonomous_damage_detector.py
+# hypothesis_version: 6.155.7
+
+[0.0, 0.45, 0.55, 0.6, 0.65, 0.75, 0.8, 1.0, 120, 512000, '*.py', '.git', '.py', '.venv', 'FIXME', 'HACK', 'TODO', '__pycache__', 'assert False', 'categories', 'debt', 'end_lineno', 'eval(', 'exec(', 'invariant', 'issues', 'line_numbers', 'module_path', 'needs_repair', 'node_modules', 'performance', 'pickle.loads', 'quality', 'replace', 'resilience', 'security', 'severity_score', 'shell=True', 'small_limb', 'subprocess.run', 'suggested_goal', 'syntax', 'target_name', 'time.sleep', 'utf-8', 'venv']

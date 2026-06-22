@@ -1,0 +1,4 @@
+# file: /Users/demouser/Desktop/HYBA_FULLSTACK/scripts/forensic_spectral_zeta_probe.py
+# hypothesis_version: 6.155.7
+
+[-4.0, -1.0, 0.0, 0.5, 0.95, 1.0, 2.0, 4.0, 5.0, 6.0, 32.0, 255.0, 255, 512, 1664525, 1013904223, 2654435769, 3235823838, ',', '--bins', '--output', '--sample-count', ':', '__main__', 'centers', 'claim_boundary', 'contract_satisfied', 'control_lcg', 'control_lcg_density', 'densities', 'forensic_sha256', 'gue_wigner_density', 'histogram', 'increment', 'multiplier', 'phi_lcg', 'phi_lcg_density', 'python_backend', 'r_squared_pass', 'sample_count', 'samplers', 'schema_version', 'spacing_count', 'stride', 'thresholds', 'utf-8']

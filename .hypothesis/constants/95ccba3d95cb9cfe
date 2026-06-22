@@ -1,0 +1,4 @@
+# file: /Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/hyba_genesis_api/core/intelligence_manifold.py
+# hypothesis_version: 6.155.7
+
+[0.0, 0.005, 0.5, 1.0, 1.1, 2.0, 5.0, '0.01', 'HYBA_RICCI_STEP_SIZE', 'causal_impact', 'node_id']

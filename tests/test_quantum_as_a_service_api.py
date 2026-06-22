@@ -69,12 +69,14 @@ def test_admin_provisions_virtual_fault_tolerant_quantum_computer_and_executes_s
         assert result["fault_tolerance"]["logical_error_rate"] < 0.0001
         assert "job_id" not in result["result"]
 
+        # Replay with same key and same payload (idempotent replay)
         replay = client.post(
             f"/api/admin/fault-tolerant-computers/{computer_id}/execute",
             json={
                 "operation": "surface_code_cycle",
-                "logical_qubits": [2],
-                "circuit_depth": 1,
+                "logical_qubits": [0, 1],
+                "circuit_depth": 2,
+                "shots": 8,
                 "idempotency_key": "surface-code-cycle-1",
             },
         )
@@ -987,7 +989,18 @@ def test_e2e_multi_customer_isolation():
         client = TestClient(app)
         
         # Customer 1: Developer tier
-        dev_principal = _customer_principal(tier="developer")
+        dev_principal = CustomerPrincipal(
+            customer_id="dev-customer-isolation-test",
+            customer_name="Dev Customer",
+            tier="developer",
+            quota_requests_per_month=1000,
+            quota_compute_units_per_month=10000,
+            api_key_hash="dev_hash_isolation",
+            key_id="dev_key_isolation",
+            created_at="2024-01-01T00:00:00Z",
+            metadata={},
+            pricing_usd_per_unit={"default": 0.01},
+        )
         _override_customer_auth(dev_principal)
         
         dev_qpu = client.post(
@@ -1004,7 +1017,18 @@ def test_e2e_multi_customer_isolation():
         dev_computer_id = dev_qpu.json()["computer_id"]
         
         # Customer 2: Production tier
-        prod_principal = _customer_principal(tier="production")
+        prod_principal = CustomerPrincipal(
+            customer_id="prod-customer-isolation-test",
+            customer_name="Prod Customer",
+            tier="production",
+            quota_requests_per_month=1000,
+            quota_compute_units_per_month=10000,
+            api_key_hash="prod_hash_isolation",
+            key_id="prod_key_isolation",
+            created_at="2024-01-01T00:00:00Z",
+            metadata={},
+            pricing_usd_per_unit={"default": 0.01},
+        )
         _override_customer_auth(prod_principal)
         
         prod_qpu = client.post(

@@ -1,0 +1,4 @@
+# file: /Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/hyba_genesis_api/api/multi_agent/swarm_communication.py
+# hypothesis_version: 6.155.7
+
+[-0.5, 0.0, 0.01, 0.1, 0.4, 0.7, 0.95, 1.0, 2.0, 5.0, 30.0, 100, 1000, 'abstain', 'active_proposals', 'agents', 'alert', 'all', 'approve', 'approved', 'confidence', 'consensus', 'diagnosis', 'fix_plan', 'id', 'message_history_size', 'pending', 'pheromone', 'pheromone_trails', 'proposal', 'proposal_id', 'proposed_by', 'registered_agents', 'reject', 'rejected', 'result', 'sender', 'status', 'swarm', 'swarm_coordinator', 'task', 'tie', 'timestamp', 'vote', 'voter']

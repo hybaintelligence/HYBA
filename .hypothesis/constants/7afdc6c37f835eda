@@ -1,0 +1,4 @@
+# file: /Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/hyba_genesis_api/api/salamander_substrate.py
+# hypothesis_version: 6.155.7
+
+[0.0, 0.001, 1.0, 1.618033988749895, 2.0, 120, 128, '/api/v1/salamander', '/audit/verdict', '/dream/simulate', '/metabolism/status', '/regenerate/jump', 'DEGRADED', 'HOMEOSTASIS', 'NO_LIVE_TELEMETRY', 'OBSERVE_ONLY', 'PASS', 'PLAN_READY', 'PROMOTABLE', 'REVIEW_REQUIRED', 'audit', 'audit_event', 'automatic_execution', 'baseline_fitness', 'dream_id', 'enterprise-client', 'enterprise-dream-api', 'entry_count', 'fabricated_values', 'improvement_detected', 'manifest_digest', 'metabolism', 'model_dump', 'mutated_value', 'next_step', 'not_configured', 'phi_ratio', 'python', 'regen', 'replay_digest', 'rust', 'salamander-substrate', 'simulated_fitness', 'target_language', 'target_node', 'telemetry_source']

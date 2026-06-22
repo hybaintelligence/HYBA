@@ -1,0 +1,4 @@
+# file: /Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/pythia_mining/metal_sha256_pipeline.py
+# hypothesis_version: 6.155.7
+
+[0.0, 1e-12, 1e+18, '00', '1', 'BatchResult', 'CPUParallelVerifier', 'Darwin', 'MetalSHA256Pipeline', 'NonceVerification', 'UnifiedBatchVerifier', 'aarch64', 'accepted_count', 'arm64', 'available', 'backend', 'cpu_workers', 'default_device', 'eval', 'false', 'float32', 'gpu', 'last_batch', 'little', 'metal', 'metal_unavailable', 'mlx_available', 'mlx_not_available', 'on', 'prefer_metal', 'require_metal', 'selected_backend', 'set_default_device', 'sha256d_headers', 'true', 'uint32', 'unavailable_reason', 'verify_nonce', 'yes']
