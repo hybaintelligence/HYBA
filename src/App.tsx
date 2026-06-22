@@ -587,7 +587,7 @@ function AppContent() {
                 Enterprise Command Center
               </p>
               <h1 className="text-base font-black tracking-tight text-white md:text-lg executive-typography">
-                Genesis Runtime Console
+                Quantum Intelligence Runtime Console
               </h1>
             </div>
             <span className="rounded-full border border-white/15 bg-white/10 px-2.5 py-1 text-[10px] font-mono font-semibold text-white/90">
@@ -666,7 +666,7 @@ function AppContent() {
               title={currentView === "qaas" ? "Return to Dashboard" : "Open QaaS Computers"}
             >
               <Atom className="h-3.5 w-3.5" />
-              <span>{currentView === "qaas" ? "Dashboard" : "QaaS"}</span>
+              <span>{currentView === "qaas" ? "Dashboard" : "QI API"}</span>
             </button>
             {(isAdmin || isExecutive) && (
               <>
@@ -755,12 +755,10 @@ function AppContent() {
                     </span>
                   </div>
                   <h2 className="max-w-3xl text-4xl font-black tracking-[-0.04em] text-slate-950 md:text-6xl executive-typography">
-                    Enterprise-Grade Mining Operations
+                    Sovereign Quantum Intelligence Execution
                   </h2>
                   <p className="mt-5 max-w-2xl text-base leading-8 text-slate-600 md:text-lg">
-                    Institutional-caliber control surface for HYBA operators: real-time telemetry,
-                    authenticated pool management, risk monitoring, and executive reporting with
-                    zero synthetic metrics.
+                    Institutional-caliber control surface for substrate-independent Quantum Intelligence: evidence-sealed execution, PULVINI φ-memory, Salamander regeneration, authenticated tenancy, and usage-metered enterprise operation.
                   </p>
                   <div className="mt-8 grid gap-3 sm:grid-cols-3">
                     {operatingPrinciples.map((item) => (
@@ -886,8 +884,8 @@ function AppContent() {
                 <MetricRow label="System health" value={fmtText(systemMetrics.system_health)} />
               </Panel>
               <Panel
-                title="Quantum runtime"
-                eyebrow="Optimization substrate"
+                title="Quantum Intelligence state"
+                eyebrow="Substrate coherence"
                 icon={<Cpu className="h-4 w-4" />}
                 isLoading={isLoading}
                 rows={6}

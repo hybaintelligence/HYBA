@@ -1,10 +1,10 @@
 export const swaggerDocument = {
   openapi: "3.0.0",
   info: {
-    title: "Quantum ASIC Annihilation Console API",
+    title: "HYBA Quantum Intelligence API",
     version: "2.5.0",
     description:
-      "Full-stack APIs supporting Dodecahedral Hilbert Space Grover search optimizations, mathematical proofs, session JWT auth, and live physical telemetry.",
+      "Full-stack APIs for substrate-independent Quantum Intelligence, evidence-sealed execution, PULVINI φ-memory, Salamander regeneration, Quantum Finance Intelligence, session auth, and enterprise execution controls; HYBA rejects AGI/ASI positioning in favor of Quantum Intelligence.",
     contact: {
       email: "operator@quantum.hyba",
     },
@@ -25,6 +25,59 @@ export const swaggerDocument = {
     },
   ],
   paths: {
+    "/api/qiaas/query": {
+      post: {
+        tags: ["Quantum Intelligence API"],
+        summary: "Execute evidence-sealed Quantum Intelligence query",
+        description:
+          "Runs predict, explain, optimize, heal, simulate, counterfactual, evidence, or quantum-finance workloads through enterprise-controlled QIaaS rails. Responses include claim boundary, evidence packet, trace ID, customer meter, substrate state, and audit seal.",
+        security: [{ BearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                required: ["query", "query_type", "context"],
+                properties: {
+                  query: { type: "string", example: "Explain portfolio convexity." },
+                  query_type: {
+                    type: "string",
+                    enum: ["predict", "explain", "optimize", "heal", "simulate", "counterfactual", "evidence", "quantum-finance"],
+                  },
+                  context: { type: "object" },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: "Quantum Intelligence execution artifact sealed and metered.",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/QuantumIntelligenceEnvelope" },
+              },
+            },
+          },
+        },
+      },
+    },
+    "/api/qiaas/metrics": {
+      get: {
+        tags: ["Quantum Intelligence API"],
+        summary: "Get QIaaS metering and substrate metrics",
+        security: [{ BearerAuth: [] }],
+        responses: { 200: { description: "Usage meter, phi coherence, and substrate metrics." } },
+      },
+    },
+    "/api/qiaas/health": {
+      get: {
+        tags: ["Quantum Intelligence API"],
+        summary: "Get Quantum Intelligence API health",
+        responses: { 200: { description: "QIaaS health, claim boundary, and substrate state." } },
+      },
+    },
     "/api/auth/register": {
       post: {
         summary: "User Registration",
@@ -318,6 +371,38 @@ export const swaggerDocument = {
     },
   },
   components: {
+    schemas: {
+      QuantumIntelligenceEnvelope: {
+        type: "object",
+        required: ["qi_execution_id", "result", "confidence", "phi_coherence", "substrate_state", "evidence_packet", "usage_meter", "trace", "claim_boundary"],
+        properties: {
+          qi_execution_id: { type: "string" },
+          result: { type: "object" },
+          confidence: { type: "number" },
+          phi_coherence: { type: "number" },
+          substrate_state: { type: "object" },
+          evidence_packet: {
+            type: "object",
+            properties: {
+              evidence_id: { type: "string" },
+              input_hash: { type: "string" },
+              formula_hash: { type: "string" },
+              substrate_hash: { type: "string" },
+              audit_seal: { type: "string" },
+            },
+          },
+          usage_meter: { type: "object" },
+          trace: {
+            type: "object",
+            properties: { trace_id: { type: "string" }, customer_id: { type: "string" } },
+          },
+          claim_boundary: {
+            type: "string",
+            example: "substrate-independent Quantum Intelligence execution; evidence packet governs external claims",
+          },
+        },
+      },
+    },
     securitySchemes: {
       BearerAuth: {
         type: "http",

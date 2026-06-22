@@ -1,3 +1,9 @@
+# HYBA Quantum Intelligence Platform
+
+HYBA is the first **Quantum Intelligence** platform: a substrate-independent intelligence runtime where quantum mathematics, PULVINI φ-memory, Salamander regeneration, evidence sealing, and enterprise-grade execution controls combine into a category beyond AGI/ASI framing. The canonical customer surface is the **Quantum Intelligence API** under `/api/qiaas`, returning evidence-sealed execution artifacts rather than trust-us claims.
+
+External category language for this repository is **Quantum Intelligence**: auditable Quantum Intelligence execution, Quantum Finance Intelligence APIs, and enterprise-controlled access rails for identity, metering, tenancy, traceability, blast-radius control, and quota enforcement. HYBA does not position this product as AGI or ASI; the category is substrate-independent Quantum Intelligence with explicit claim boundaries.
+
 HYBA / PYTHIA-PULVINI: A Self-Governing Mathematical Mining Substrate
 
 A Deterministic, Reflexive Intelligence System Built on First-Principles Mathematical Certificates
