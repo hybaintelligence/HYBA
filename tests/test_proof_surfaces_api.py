@@ -24,6 +24,15 @@ from hyba_genesis_api.core.proof_surfaces import (  # noqa: E402
 )
 
 EXPECTED_ENDPOINTS = {
+    "platform-overview": "/api/proofs/platform-overview",
+    "intelligence-fabric": "/api/proofs/intelligence-fabric",
+    "qaas": "/api/proofs/qaas",
+    "ciaas": "/api/proofs/ciaas",
+    "quantum-finance": "/api/proofs/quantum-finance",
+    "commercial-access": "/api/proofs/commercial-access",
+    "fair-governance": "/api/proofs/fair-governance",
+    "regeneration": "/api/proofs/regeneration",
+    "observability": "/api/proofs/observability",
     "property-tests": "/api/proofs/property-tests",
     "adversarial": "/api/proofs/adversarial",
     "invariants": "/api/proofs/invariants",
@@ -36,18 +45,40 @@ EXPECTED_ENDPOINTS = {
     "runtime-evidence": "/api/proofs/runtime-evidence",
 }
 
+EXPECTED_PLATFORM_DOMAINS = {
+    "platform",
+    "intelligence",
+    "quantum_as_a_service",
+    "computational_intelligence_as_a_service",
+    "quantum_finance",
+    "commercial",
+    "fairness_governance",
+    "salamander_regeneration",
+    "observability",
+    "verification",
+    "mining",
+    "autonomy",
+    "pulvini_memory",
+    "mathematical_runtime",
+    "security",
+    "evidence_governance",
+    "runtime",
+}
+
 FORBIDDEN_POSTURE = (
     "trust andre",
     "trust the story",
     "trust the vision",
     "believe hyba",
     "nothing is unproven",
+    "mining-only",
 )
 
 
 def _assert_contract_payload(payload: dict) -> None:
     assert payload["claim"]
     assert payload["status"] in {"verified", "evidence_linked", "runtime_required"}
+    assert payload["domain"]
     assert payload["test_suite"]
     assert isinstance(payload["passes"], int)
     assert isinstance(payload["failures"], int)
@@ -64,17 +95,33 @@ def _assert_contract_payload(payload: dict) -> None:
         assert forbidden not in encoded
 
 
-def test_proof_surface_index_exposes_required_buyer_posture() -> None:
+def test_proof_surface_index_exposes_required_platform_posture() -> None:
     index = list_proof_surfaces()
 
     assert index["surface_count"] >= len(EXPECTED_ENDPOINTS)
     assert index["verification_chain"] == CLAIM_CHAIN
     assert "Run the proof" in index["claim_boundary"]
     assert "Every material operational claim" in index["material_claim_standard"]
+    assert "Mining is one verification surface" in index["platform_boundary"]
+    assert set(index["domains"]) >= EXPECTED_PLATFORM_DOMAINS
+    assert index["domain_count"] >= len(EXPECTED_PLATFORM_DOMAINS)
 
     endpoints = {surface["endpoint"] for surface in index["surfaces"]}
     for endpoint in EXPECTED_ENDPOINTS.values():
         assert endpoint in endpoints
+
+
+def test_mining_is_only_one_platform_domain() -> None:
+    index = list_proof_surfaces()
+    domains = set(index["domains"])
+
+    assert "mining" in domains
+    assert "intelligence" in domains
+    assert "quantum_as_a_service" in domains
+    assert "computational_intelligence_as_a_service" in domains
+    assert "commercial" in domains
+    assert "observability" in domains
+    assert len(domains - {"mining"}) >= 10
 
 
 def test_each_required_surface_returns_contract_payload() -> None:
@@ -89,6 +136,15 @@ def test_each_required_surface_returns_contract_payload() -> None:
 
 def test_named_endpoint_functions_return_expected_surfaces() -> None:
     endpoint_calls = {
+        "platform-overview": proofs.platform_overview_proof,
+        "intelligence-fabric": proofs.intelligence_fabric_proof,
+        "qaas": proofs.qaas_proof,
+        "ciaas": proofs.ciaas_proof,
+        "quantum-finance": proofs.quantum_finance_proof,
+        "commercial-access": proofs.commercial_access_proof,
+        "fair-governance": proofs.fair_governance_proof,
+        "regeneration": proofs.regeneration_proof,
+        "observability": proofs.observability_proof,
         "property-tests": proofs.property_tests_proof,
         "adversarial": proofs.adversarial_proof,
         "invariants": proofs.invariants_proof,
@@ -107,14 +163,18 @@ def test_named_endpoint_functions_return_expected_surfaces() -> None:
         _assert_contract_payload(payload)
 
 
-def test_audit_ledger_digest_covers_all_surfaces() -> None:
+def test_audit_ledger_digest_covers_all_surfaces_and_domains() -> None:
     ledger = build_runtime_evidence_ledger()
 
     assert ledger["ledger"] == "hyba_material_claim_verification_surfaces"
     assert ledger["status"] == "audit_ledger_available"
     assert ledger["surface_count"] == len(PROOF_SURFACES)
+    assert ledger["domain_count"] >= len(EXPECTED_PLATFORM_DOMAINS)
+    assert set(ledger["domains"]) >= EXPECTED_PLATFORM_DOMAINS
+    assert "Mining is one verification surface" in ledger["platform_boundary"]
     assert len(ledger["head_hash"]) == 64
     assert {item["key"] for item in ledger["items"]} == set(PROOF_SURFACES)
+    assert all(item["domain"] for item in ledger["items"])
 
 
 def test_fastapi_routes_are_wired() -> None:
@@ -130,6 +190,7 @@ def test_surface_contract_is_stable_under_key_selection(key: str) -> None:
     payload = get_proof_surface(key)
 
     assert payload["endpoint"].startswith("/api/proofs/")
+    assert payload["domain"]
     assert payload["claim"].strip()
     assert payload["invariants"]
     assert payload["executable_commands"]
