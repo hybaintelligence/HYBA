@@ -1,18 +1,22 @@
-# Salamander mining go-live — same-day office deployment
+# Salamander mining go-live — same-day treasury deployment
 
-This is the operator runbook for starting the private mining validation substrate with Salamander fully attached.
+This is the operator runbook for starting the private HYBA treasury mining substrate with Salamander fully attached.
+
+HYBA_FULLSTACK remains the discrete deployable runtime for today. HYBA_Unified_Backend fusion is intentionally deferred until mining creates runway, equipment/workspace is stabilised, and GitHub subscription/agent capacity is available.
 
 ## Non-negotiable boundaries
 
-- Mining is a private validation and funding substrate, not a public HYBA product surface.
+- Mining is a private HYBA treasury and validation substrate, not a public HYBA product surface.
+- Mining exists to fund the vision, equipment, workspace, and operational runway.
 - Live BTC revenue must come from accepted pool shares only. The production harness must not fabricate BTC revenue.
 - Live Stratum and live share submission are separately gated.
 - Salamander must pass preflight before mining ignition.
 - Strict Salamander preflight is optional for same-day deployment. Normal mode allows ignition when regeneration succeeds and stages scar/fidelity anomalies as repair evidence. Strict mode blocks on scar events.
+- Do not merge HYBA_Unified_Backend into HYBA_FULLSTACK during same-day treasury mining operations.
 
 ## 1. Machine baseline
 
-Use Python 3.12. The repo now pins the production runtime contract to Python 3.12, and local Python 3.9 should be treated as a developer-machine fallback only.
+Use Python 3.12. The repo pins the production runtime contract to Python 3.12, and local Python 3.9 should be treated as a developer-machine fallback only.
 
 ```bash
 cd /Users/demouser/Desktop/HYBA_FULLSTACK
@@ -35,7 +39,7 @@ PYTHONPATH=python_backend python -m pytest \
 
 Expected gate: all selected tests pass. The regeneration property suite and Salamander frontier suite have already shown clean local passes in the 2026-06-22 operator run.
 
-## 3. Dry-run mining validation
+## 3. Dry-run treasury validation
 
 Dry-run confirms that the fault-tolerant mining controller, Salamander mining guard, session evidence, and revenue-accounting boundaries are alive without submitting live shares.
 
@@ -127,8 +131,20 @@ Before enabling live share submission, confirm:
 - Operator approval ID is recorded.
 - Monitoring is visible to the people in the office.
 - Kill switch is known: call `quiesce_manifold()` or stop the process.
+- A treasury record is kept for any BTC earned, pool payout thresholds, wallet movements, hardware purchases, workspace costs, and runway allocation.
 
-## 7. Stop path
+## 7. Treasury allocation order
+
+This is not a product launch. This is a treasury ignition sequence. Use mined proceeds in this order unless the chairman overrides it:
+
+1. keep machines online safely,
+2. secure/upgrade mining and development hardware,
+3. stabilise workspace/Airbnb/office logistics,
+4. pay for GitHub subscription and agent capacity,
+5. fund controlled HYBA_Unified_Backend fusion,
+6. preserve runway for product work.
+
+## 8. Stop path
 
 ```python
 await controller.quiesce_manifold()
