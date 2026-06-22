@@ -1,0 +1,4 @@
+# file: /Users/demouser/Desktop/HYBA_FULLSTACK/python_backend/pythia_mining/enhanced_benchmark_suite.py
+# hypothesis_version: 6.155.7
+
+[0.0, 0.001, 0.0109, 0.03, 0.05, 0.4565, 0.5, 0.618, 0.9565, 0.975, 1.0, 100, 200, 1000, 1024, '%Y%m%d_%H%M%S', '=', 'HYBA PYTHAGORAS', '__main__', 'artifacts/benchmarks', 'benchmark', 'benchmarks', 'binomial_p_value', 'code_distance', 'complexity_exponent', 'compressed_memory_mb', 'compression_ratio', 'correlation', 'distances', 'elapsed_s', 'execution_time', 'execution_times', 'exponent', 'fault_tolerant', 'greater', 'grover_search', 'grover_statistical', 'hardware_scaling', 'inf', 'logical_error', 'memory_mb', 'n_qubits', 'n_runs', 'n_samples', 'p_value', 'phi_scaling_bonus', 'phi_threshold', 'physical_error', 'power_law_fit', 'qops_per_sec', 'qops_values', 'qubit_range', 'r_squared', 'raw_data', 'results', 'session_id', 'state_size', 'success_rate', 'success_rates', 'suppression_factor', 'system', 'timestamp', 'w']
