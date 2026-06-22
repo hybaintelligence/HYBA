@@ -53,6 +53,7 @@ from hyba_genesis_api.api import (  # noqa: E402
     quantum_intelligence_service,
     quantum_mathematical_execution,
     regeneration_router,
+    webhooks,
     security,
     streaming_sense,
     unified_mining,
@@ -78,6 +79,7 @@ from hyba_genesis_api.core.telemetry import (  # noqa: E402
     get_prometheus_metrics,
 )
 from hyba_genesis_api.core.rate_limiter import RateLimiter  # noqa: E402
+from hyba_genesis_api.core.feature_flags import get_feature_flags  # noqa: E402
 from pythia_mining.distributed_lock_manager import DistributedLockManager  # noqa: E402
 
 # Initialize the database (create tables if necessary)
@@ -206,6 +208,7 @@ async def lifespan(app: FastAPI):
 
     init_logging()
     init_metrics()
+    app.state.feature_flags = get_feature_flags()
 
     lock_manager = _get_or_init_distributed_lock_manager(app)
 
@@ -327,6 +330,8 @@ app.include_router(organism_router.router)
 app.include_router(executive_router.router)
 app.include_router(ops.router)
 app.include_router(quantum_intelligence_service.router)
+app.include_router(webhooks.router)
+app.include_router(webhooks.api_router)
 
 
 @app.get("/health", response_model=Dict[str, Any], tags=["health"])

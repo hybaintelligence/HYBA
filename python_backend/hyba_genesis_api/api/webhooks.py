@@ -401,3 +401,14 @@ async def get_webhook_deliveries(
             })
     
     return logs
+
+# Developer-platform compatibility endpoint requested for async workload builders.
+api_router = APIRouter(prefix="/api/webhooks", tags=["webhooks"])
+
+
+@api_router.post("", response_model=Dict[str, Any])
+async def register_customer_webhook(
+    subscription: WebhookSubscription,
+    customer_id: str = Header(..., description="Customer ID from API key"),
+) -> Dict[str, Any]:
+    return await create_webhook_subscription(subscription, customer_id=customer_id)

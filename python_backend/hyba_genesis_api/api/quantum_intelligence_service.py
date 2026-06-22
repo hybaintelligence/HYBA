@@ -34,6 +34,7 @@ from typing import Any, Dict, List, Optional
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
+from hyba_genesis_api.core.feature_flags import require_feature
 from hyba_genesis_api.api.customer_access import (
     CustomerInfo,
     CustomerPrincipal,
@@ -470,6 +471,7 @@ async def query_quantum_intelligence(
 ) -> QIaaSResponse:
     """Execute the Sovereign Quantum Intelligence API."""
 
+    require_feature("qiaas_enabled")
     query_type = _normalise_query_type(request.query_type)
     customer = _principal_or_internal(principal)
     _validate_qiaas_entitlement(customer, query_type)

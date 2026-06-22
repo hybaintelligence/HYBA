@@ -1,0 +1,20 @@
+{
+  "concurrency": {
+    "peak_users": 50,
+    "ramp_seconds": 60,
+    "start_users": 10
+  },
+  "mode": "dry_run_no_staging_url",
+  "qaas_execute": {
+    "error_rate": 0,
+    "p50_ms": 0,
+    "p95_ms": 0,
+    "p99_ms": 0,
+    "requests": 0
+  },
+  "thresholds": {
+    "error_rate": 0.01,
+    "health_p95_ms": 200,
+    "qaas_execute_p95_ms": 500
+  }
+}
