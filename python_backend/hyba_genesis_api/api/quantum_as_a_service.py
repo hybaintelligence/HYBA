@@ -806,6 +806,17 @@ async def customer_start_computer(
     return registry.start(computer_id)
 
 
+@public_router.post("/{computer_id}/stop", response_model=FaultTolerantComputerResponse)
+async def customer_stop_computer(
+    computer_id: str,
+    principal: CustomerPrincipal = Depends(require_customer_api_key),
+):
+    require_feature("qaas_enabled")
+    registry.assert_owner(computer_id, principal.customer_id)
+    customer_access.meter(principal, product="qaas.lifecycle", units=1)
+    return registry.stop(computer_id)
+
+
 @public_router.post("/{computer_id}/execute", response_model=Dict[str, Any])
 async def customer_execute_quantum_workload(
     computer_id: str,
