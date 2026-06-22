@@ -54,6 +54,7 @@ from hyba_genesis_api.api import (  # noqa: E402
     quantum_mathematical_execution,
     regeneration_router,
     webhooks,
+    salamander_substrate,
     security,
     streaming_sense,
     unified_mining,
@@ -363,6 +364,7 @@ app.include_router(organism_router.router)
 app.include_router(executive_router.router)
 app.include_router(ops.router)
 app.include_router(quantum_intelligence_service.router)
+app.include_router(salamander_substrate.router)
 app.include_router(webhooks.router)
 app.include_router(webhooks.api_router)
 
