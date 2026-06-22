@@ -7,15 +7,7 @@ image:
   tag: latest
 
 redis:
-  enabled: true
-  architecture: standalone
-  auth:
-    enabled: false
-  master:
-    persistence:
-      enabled: true
-      size: 8Gi
+  enabled: false
 
 backend:
   env:
-    REDIS_URL: redis://hyba-platform-redis-master:6379/0

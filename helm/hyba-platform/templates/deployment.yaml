@@ -22,5 +22,3 @@ spec:
               value: "{{ .Values.environment }}"
             - name: HYBA_GIT_SHA
               value: "{{ .Values.image.tag }}"
-            - name: REDIS_URL
-              value: "{{ .Values.backend.env.REDIS_URL }}"
