@@ -988,9 +988,9 @@ def test_e2e_multi_customer_isolation():
     try:
         client = TestClient(app)
         
-        # Customer 1: Developer tier
+        # Customer 1: Developer tier with UNIQUE customer_id
         dev_principal = CustomerPrincipal(
-            customer_id="dev-customer-isolation-test",
+            customer_id="dev-customer-isolation-test-001",
             customer_name="Dev Customer",
             tier="developer",
             quota_requests_per_month=1000,
@@ -1016,9 +1016,9 @@ def test_e2e_multi_customer_isolation():
         assert dev_qpu.status_code == 201
         dev_computer_id = dev_qpu.json()["computer_id"]
         
-        # Customer 2: Production tier
+        # Customer 2: Production tier with DIFFERENT customer_id
         prod_principal = CustomerPrincipal(
-            customer_id="prod-customer-isolation-test",
+            customer_id="prod-customer-isolation-test-002",  # DIFFERENT from dev
             customer_name="Prod Customer",
             tier="production",
             quota_requests_per_month=1000,
