@@ -35,26 +35,27 @@ from hyba_genesis_api.api import (  # noqa: E402
     customer_portal,
     executive_router,
     health,
-    millennium_mathematics,
-    observability,
-    quantum_as_a_service,
-    quantum_intelligence_service,
-    quantum_mathematical_execution,
     intelligence,
     metabolic_router,
+    millennium_mathematics,
+    misc,
     mining,
     mining_jobs,
     mining_ops,
     mining_production,
-    misc,
+    observability,
+    ops,
     organism_router,
     pool_management,
     products,
+    quantum_as_a_service,
+    quantum_finance_service,
+    quantum_intelligence_service,
+    quantum_mathematical_execution,
     regeneration_router,
     security,
     streaming_sense,
     unified_mining,
-    ops,
 )
 from hyba_genesis_api.core.api_posture import install_enterprise_api_posture  # noqa: E402
 from hyba_genesis_api.core.recursive_closure import build_buffered_closure  # noqa: E402
@@ -249,9 +250,9 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="HYBA Intelligence Platform API",
-    version="2.1.0",
+    version="2.2.0",
     description=(
-        "Operational API for HYBA QaaS, QIaaS, CIaaS, PULVINI memory, "
+        "Operational API for HYBA QaaS, QIaaS, CIaaS, quantum finance, PULVINI memory, "
         "Salamander regeneration, evidence governance, and private validation workflows."
     ),
     lifespan=lifespan,
@@ -311,6 +312,7 @@ app.include_router(computational_intelligence_service.public_router)
 app.include_router(quantum_as_a_service.router)
 app.include_router(quantum_as_a_service.public_router)
 app.include_router(quantum_mathematical_execution.router)
+app.include_router(quantum_finance_service.router)
 app.include_router(millennium_mathematics.router)
 app.include_router(millennium_mathematics.public_router)
 app.include_router(observability.router)
