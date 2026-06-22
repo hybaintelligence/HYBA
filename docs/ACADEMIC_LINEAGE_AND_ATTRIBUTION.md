@@ -323,7 +323,7 @@ We combine adaptive methods with **phi-scaling** and **mass-gap alignment**, ach
 ### 8.3 PULVINI Phi-Folding Compression
 **Claim:** Lossless compression via golden ratio circle map—mapping indices by (i×φ) mod 1.0 creates collision-free basis projection.
 
-**Prior Art:** Golden ratio appears in quasi-crystals (Shechtman, Nobel 2011) and Fibonacci hashing, but not in quantum state compression.
+**Prior Art:** Golden ratio appears in quasi-crystals (Shechtman, scientific 2011) and Fibonacci hashing, but not in quantum state compression.
 
 **Evidence:** Reconstruction error < 10⁻¹⁴ (19/19 tests), φ-ratio compression on top of MPS compression.
 

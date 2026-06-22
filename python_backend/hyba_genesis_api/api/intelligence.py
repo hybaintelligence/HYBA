@@ -210,7 +210,7 @@ async def intelligence_audit() -> Dict[str, Any]:
     phi = reflection.get("telemetry", {}).get(
         "phi", reflection.get("telemetry", {}).get("phi_resonance", 0.0)
     )
-    audit = audit_surface.generate_fields_medal_audit(reflection)
+    audit = audit_surface.generate_formal_invariant_audit(reflection)
     return {
         "ontological_integrity": audit["ontological_integrity"],
         "manifold_state": audit["manifold_state"],
@@ -228,7 +228,7 @@ async def absolute_audit() -> Dict[str, Any]:
 
     controller = ReflexiveController(default_reflexive_root())
     reflection = controller.step()
-    audit = audit_surface.generate_fields_medal_audit(reflection)
+    audit = audit_surface.generate_formal_invariant_audit(reflection)
     seal_fn = getattr(audit_surface, "seal_" + "conscious" + "ness_envelope")
     sealed = seal_fn({"audit": audit})
     meta = {

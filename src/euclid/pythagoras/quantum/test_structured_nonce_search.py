@@ -1,8 +1,8 @@
 """
-Structured Nonce Search Test Suite — Oxbridge/Fields Medal Rigor
+Structured Nonce Search Test Suite — formal-invariant validation
 
 This test suite provides mathematical verification of the structured nonce search
-implementation with the rigor expected of Oxbridge mathematical analysis.
+implementation with the rigor expected of formal mathematical analysis.
 
 Testing Philosophy:
 1. Empirical Evidence Integration: Verify correct loading and use of blockchain evidence

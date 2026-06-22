@@ -175,7 +175,7 @@ The system includes rigorous mathematical verification of all invariants:
 
 ## Testing
 
-Run the comprehensive test suite with Oxbridge/Fields medal rigor:
+Run the comprehensive test suite with formal-invariant validation:
 
 ```bash
 ./venv/bin/python -m pytest src/euclid/pythagoras/quantum/test_quantum_computer.py -v
@@ -239,7 +239,7 @@ All 35 tests verify mathematical properties, not empirical observations:
 
 ## Scientific Rigor
 
-This implementation follows Oxbridge/Fields medal standards:
+This implementation follows formal-invariant validation standards:
 
 1. **Mathematical Proofs**: All properties verified through exact mathematical theorems
 2. **Invariant Preservation**: All operations preserve quantum mechanical invariants

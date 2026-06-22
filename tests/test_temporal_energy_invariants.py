@@ -13,7 +13,7 @@ PYTHON_BACKEND = REPO_ROOT / "python_backend"
 if str(PYTHON_BACKEND) not in sys.path:
     sys.path.insert(0, str(PYTHON_BACKEND))
 
-from hyba_genesis_api.core.audit_surface import generate_fields_medal_audit  # noqa: E402
+from hyba_genesis_api.core.audit_surface import generate_formal_invariant_audit  # noqa: E402
 from hyba_genesis_api.core.intelligence_manifold import IntelligenceManifold  # noqa: E402
 from hyba_genesis_api.core.ontological_memory import CrystallineRegistry  # noqa: E402
 from hyba_genesis_api.core.recursive_closure import (  # noqa: E402
@@ -78,7 +78,7 @@ class TemporalEnergyInvariantTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = write_sample_umwelt(Path(tmp))
             payload = ReflexiveController(root).step()
-            audit = generate_fields_medal_audit(payload)
+            audit = generate_formal_invariant_audit(payload)
 
         self.assertIn("thermal", payload)
         self.assertIn("ricci_flow_curvature", payload["manifold"])

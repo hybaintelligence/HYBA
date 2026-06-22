@@ -1,7 +1,7 @@
 """
 Comprehensive Verification Tests: Salamander Swarm Intelligence Phase 5.1
 
-Tests all swarm components with Nobel/Fields Medal scrutiny:
+Tests all swarm components with formal verification scrutiny:
 - Swarm Communication Hub
 - PSO Task Allocator
 - Stigmergy/Pheromone Mechanics
@@ -89,7 +89,7 @@ class TestSwarmMessage:
 
 
 class TestSwarmCommunication:
-    """Test SwarmCommunication hub with Nobel-level rigor."""
+    """Test SwarmCommunication hub with formal verification rigor."""
 
     @pytest.fixture
     def comm(self):

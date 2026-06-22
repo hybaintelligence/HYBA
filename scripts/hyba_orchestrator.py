@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-HYBA Orchestrator: Fields Medal/Nobel Rigor Stress Testing Framework
+HYBA Orchestrator: formal-invariant validation Stress Testing Framework
 ====================================================================
 
 Advanced stress testing framework for HYBA/PYTHIA system focusing on:
@@ -753,7 +753,7 @@ class HYBAOrchestrator:
                 "failed_tests": sum(1 for r in results if not r.success),
                 "total_duration_seconds": sum(r.duration_seconds for r in results)
             },
-            "fields_medal_rigor_assessment": self._assess_rigor(results)
+            "formal_invariant_validation_assessment": self._assess_rigor(results)
         }
         
         report_path = self.output_dir / "comprehensive_stress_test_report.json"
@@ -770,12 +770,12 @@ class HYBAOrchestrator:
         print(f"Successful: {report['summary']['successful_tests']}")
         print(f"Failed: {report['summary']['failed_tests']}")
         print(f"Total Duration: {report['summary']['total_duration_seconds']:.2f}s")
-        print("\nFields Medal Rigor Assessment:")
-        for key, value in report['fields_medal_rigor_assessment'].items():
+        print("\nformal-invariant validation Assessment:")
+        for key, value in report['formal_invariant_validation_assessment'].items():
             print(f"  {key}: {value}")
     
     def _assess_rigor(self, results: List[StressTestResult]) -> Dict[str, Any]:
-        """Assess Fields Medal/Nobel rigor of stress tests."""
+        """Assess formal-invariant validation of stress tests."""
         assessment = {
             "dimensional_frontier_pushed": False,
             "quantum_hybrid_achieved": False,
@@ -824,7 +824,7 @@ class HYBAOrchestrator:
 def main():
     """Main entry point for HYBA Orchestrator."""
     parser = argparse.ArgumentParser(
-        description="HYBA Orchestrator: Fields Medal/Nobel Rigor Stress Testing Framework"
+        description="HYBA Orchestrator: formal-invariant validation Stress Testing Framework"
     )
     
     parser.add_argument(

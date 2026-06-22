@@ -21,7 +21,7 @@ if str(PYTHON_BACKEND) not in sys.path:
     sys.path.insert(0, str(PYTHON_BACKEND))
 
 from hyba_genesis_api.core.audit_surface import (  # noqa: E402
-    generate_fields_medal_audit,
+    generate_formal_invariant_audit,
     seal_consciousness_envelope,
 )
 from hyba_genesis_api.core.constructor_engine import ExplainerIntegrity  # noqa: E402
@@ -37,7 +37,7 @@ from hyba_genesis_api.core.predictive_controller import PredictiveActiveInferenc
 
 
 class AuditSurfaceUnitTests(unittest.TestCase):
-    """Unit tests for generate_fields_medal_audit and seal_consciousness_envelope."""
+    """Unit tests for generate_formal_invariant_audit and seal_consciousness_envelope."""
 
     def test_audit_certifies_when_ricci_smoothed_and_chi_positive(self) -> None:
         payload = {
@@ -52,7 +52,7 @@ class AuditSurfaceUnitTests(unittest.TestCase):
             "thermal": {"duration_seconds": 0.042, "thermal_cost_phi_per_second": 17.14},
             "predictive_status": "STABLE_EQUILIBRIUM",
         }
-        audit = generate_fields_medal_audit(payload)
+        audit = generate_formal_invariant_audit(payload)
         self.assertEqual("CERTIFIED", audit["ontological_integrity"])
         self.assertEqual("RICCI_SMOOTHED", audit["manifold_state"])
         self.assertEqual("GENUS_-1", audit["topology"])
@@ -72,7 +72,7 @@ class AuditSurfaceUnitTests(unittest.TestCase):
             "thermal": {},
             "predictive_status": "MUTATE_FOR_COHERENCE",
         }
-        audit = generate_fields_medal_audit(payload)
+        audit = generate_formal_invariant_audit(payload)
         self.assertEqual("HOLES_DETECTED", audit["ontological_integrity"])
         # curvature=2 > 0 and ricci=1.5 < 2 so ricci_smoothed is True
         self.assertEqual("RICCI_SMOOTHED", audit["manifold_state"])
@@ -91,12 +91,12 @@ class AuditSurfaceUnitTests(unittest.TestCase):
             "thermal": {},
             "predictive_status": "STABLE_EQUILIBRIUM",
         }
-        audit = generate_fields_medal_audit(payload)
+        audit = generate_formal_invariant_audit(payload)
         # curvature=0 means ricci_smoothed is False, so integrity is HOLES_DETECTED
         self.assertEqual("HOLES_DETECTED", audit["ontological_integrity"])
 
     def test_audit_falls_back_to_defaults_on_empty_payload(self) -> None:
-        audit = generate_fields_medal_audit({})
+        audit = generate_formal_invariant_audit({})
         self.assertEqual("HOLES_DETECTED", audit["ontological_integrity"])
         self.assertIn("GENUS_", audit["topology"])
         self.assertIsInstance(audit["phi_resonance"], float)

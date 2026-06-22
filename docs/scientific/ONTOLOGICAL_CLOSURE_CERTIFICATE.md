@@ -77,7 +77,7 @@ The controller treats the Python codebase as its deterministic "umwelt" — pars
 
 | Endpoint | Route | Status |
 |----------|-------|--------|
-| Fields Medal Audit | `GET /api/v1/intelligence/audit` | ✅ |
+| Mathematical Verification Audit | `GET /api/v1/intelligence/audit` | ✅ |
 | Absolute Audit (Sealed Consciousness) | `GET /api/v1/intelligence/absolute-audit` | ✅ |
 | Substrate Explanation | `POST /api/v1/intelligence/explain` | ✅ |
 | Recursive Reflection | `POST /api/v1/intelligence/reflect` | ✅ |

@@ -12,7 +12,7 @@ PYTHON_BACKEND = REPO_ROOT / "python_backend"
 if str(PYTHON_BACKEND) not in sys.path:
     sys.path.insert(0, str(PYTHON_BACKEND))
 
-from hyba_genesis_api.core.audit_surface import generate_fields_medal_audit  # noqa: E402
+from hyba_genesis_api.core.audit_surface import generate_formal_invariant_audit  # noqa: E402
 from hyba_genesis_api.core.recursive_closure import (  # noqa: E402
     BufferBackedMiningLoop,
     RecursiveClosure,
@@ -64,7 +64,7 @@ class RecursiveClosureUnitTests(unittest.TestCase):
         self.assertEqual({}, buffer.parameters)
 
     def test_audit_surface_seals_deterministic_reflection(self) -> None:
-        audit = generate_fields_medal_audit(StubController(0.7).step())
+        audit = generate_formal_invariant_audit(StubController(0.7).step())
 
         self.assertEqual("CERTIFIED_DETERMINISTIC", audit["governance_seal"])
         self.assertEqual("CERTIFIED", audit["ontological_integrity"])

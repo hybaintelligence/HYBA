@@ -1,6 +1,6 @@
 {
   "schema_version": "2026-06-21.enterprise-gap-closure.v1",
-  "source_assessment": "docs/ENTERPRISE_PRODUCTION_READINESS_ASSESSMENT.md",
+  "source_assessment": "docs/archive/2026-06/ENTERPRISE_PRODUCTION_READINESS_ASSESSMENT.md",
   "updated_at": "2026-06-21T00:00:00Z",
   "closure_rule": "A gap is closed only when repository implementation, tests or validation scripts, runbooks, and evidence exist. External certifications remain external dependencies.",
   "gaps": [
@@ -100,5 +100,12 @@
       ],
       "residual_risk": "Cloud budgets and anomaly alerts must be connected to the production billing account."
     }
+  ],
+  "legacy_readiness_score": "archived_non_authoritative",
+  "current_closure_model": [
+    "closed_by_code",
+    "closed_by_operational_control",
+    "documented_but_external_dependency",
+    "not_closed"
   ]
 }

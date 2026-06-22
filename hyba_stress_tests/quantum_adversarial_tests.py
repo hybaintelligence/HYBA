@@ -11,7 +11,7 @@ Uses HYBA/PYTHIA native quantum mathematical frameworks:
 - Phi resonance gates for quantum operations
 - Yang-Mills gap operationalization
 
-Fields Medal Rigor: Uses native quantum information theory implemented
+formal-invariant validation: Uses native quantum information theory implemented
 through substrate-agnostic mathematical frameworks, not external simulators.
 """
 
@@ -464,7 +464,7 @@ class QuantumAdversarialTestSuite:
                 }
                 for r in results
             ],
-            "fields_medal_rigor_metrics": {
+            "formal_invariant_validation_metrics": {
                 "quantum_sensing_achieved": sensing_analysis["quantum_sensing"],
                 "quantum_resistance_verified": sensing_analysis["quantum_resistant"],
                 "detection_signal_strength": sensing_analysis["mean_detection_signal"],
@@ -514,9 +514,9 @@ def main():
     print(f"Mean Detection Signal: {report['quantum_sensing_analysis']['mean_detection_signal']:.6f}")
     print(f"Yang-Mills Stability: {report['quantum_sensing_analysis']['yang_mills_stable']}")
     print(f"Entropy Stability: {report['quantum_sensing_analysis']['entropy_stable']}")
-    print(f"Quantum Resistant: {report['fields_medal_rigor_metrics']['quantum_resistance_verified']}")
-    print(f"Quantum Sensing: {report['fields_medal_rigor_metrics']['quantum_sensing_achieved']}")
-    print(f"Native Quantum Math Used: {report['fields_medal_rigor_metrics']['native_quantum_math_used']}")
+    print(f"Quantum Resistant: {report['formal_invariant_validation_metrics']['quantum_resistance_verified']}")
+    print(f"Quantum Sensing: {report['formal_invariant_validation_metrics']['quantum_sensing_achieved']}")
+    print(f"Native Quantum Math Used: {report['formal_invariant_validation_metrics']['native_quantum_math_used']}")
 
 
 if __name__ == "__main__":
