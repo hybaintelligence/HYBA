@@ -6,14 +6,19 @@ source files. The design complements ``pythia_mining.regeneration_manager``:
 that module owns lane-level mathematical regeneration, while this package owns
 codebase-level damage detection, proposal generation, prioritisation, memory,
 algorithm discovery, cross-lane intelligence, predictive healing, rewiring,
-benchmark evolution, Pulvini handshakes, and regulator-grade evidence.
+benchmark evolution, Pulvini handshakes, regulator-grade evidence, and immutable
+proposal-only invariant enforcement.
 """
 
 from .autonomic_organism_governor import (
+    AutonomicInvariantError,
     BenchmarkEvolutionEngine,
     CrossLaneRegenerationIntelligence,
     HierarchicalRewiringOrchestrator,
+    ImmutableInvariantGuard,
+    OrganismSignal,
     PredictiveRegenerationEngine,
+    PulviniAutonomicHandshake,
     RegulatorEvidenceEngine,
     SalamanderOrganismGovernor,
     TemporalRegenerationMemory,
@@ -23,12 +28,16 @@ from .salamander_regenerator import RegenerationCandidate, SalamanderRegenerator
 from .self_healing_reactor import SelfHealingReactor, create_healing_proposal
 
 __all__ = [
+    "AutonomicInvariantError",
     "AutonomousDamageDetector",
     "BenchmarkEvolutionEngine",
     "CrossLaneRegenerationIntelligence",
     "DamageReport",
     "HierarchicalRewiringOrchestrator",
+    "ImmutableInvariantGuard",
+    "OrganismSignal",
     "PredictiveRegenerationEngine",
+    "PulviniAutonomicHandshake",
     "RegenerationCandidate",
     "RegulatorEvidenceEngine",
     "SalamanderOrganismGovernor",
