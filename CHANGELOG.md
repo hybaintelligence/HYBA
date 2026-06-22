@@ -23,3 +23,11 @@
 
 - Local deterministic replay only; no pool-side accepted-share, hashrate,
   revenue, external validation, regulatory, or consciousness claims.
+
+## 2026-06-22 — Agent D production closure documentation sprint
+
+- Added developer onboarding, SDK quickstart, API reference, and system architecture documentation for Issue #134.
+- Added incident response, customer onboarding, deployment, SLA template, FinOps controls, and unit-economics evidence boundaries.
+- Added `scripts/finops_report.py` for AWS Cost Explorer reporting by service, customer tag, and API-surface tag.
+- Archived `00_START_HERE_NEXT_STEPS.md` into `docs/strategy/` with a projection notice because its Series A and revenue assumptions are not yet production-evidenced.
+- PR reference: pending (`docs: developer docs, runbooks, evidence pack`).

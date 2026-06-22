@@ -1,3 +1,7 @@
+# Projection Notice
+
+This historical planning file contains projections and go-to-market assertions that are not yet validated by production telemetry. Treat ARR, LTV, SLA, and customer-conversion figures as planning assumptions until replaced by sealed evidence.
+
 # 🚀 START HERE: HYBA Platform - Final Sprint to Market
 
 **Date:** June 20, 2026  
