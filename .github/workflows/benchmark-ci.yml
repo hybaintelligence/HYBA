@@ -2,17 +2,20 @@ name: Benchmark Suite CI/CD
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [main, develop]
     paths:
       - 'reproducibility/benchmarks/**'
       - '.github/workflows/benchmark-ci.yml'
   pull_request:
-    branches: [ main, develop ]
+    branches: [main, develop]
     paths:
       - 'reproducibility/benchmarks/**'
+      - '.github/workflows/benchmark-ci.yml'
+      - 'python_backend/hyba_genesis_api/api/quantum_intelligence_service.py'
+      - 'tests/test_quantum_intelligence_service_enterprise_contract.py'
   schedule:
-    # Run benchmarks daily at midnight UTC
     - cron: '0 0 * * *'
+  workflow_dispatch:
 
 env:
   HYBA_PYTHON_VERSION: '3.12.7'
@@ -24,7 +27,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python 3.12
+      - name: Set up Python ${{ env.HYBA_PYTHON_VERSION }}
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.HYBA_PYTHON_VERSION }}
@@ -32,19 +35,17 @@ jobs:
 
       - name: Install dependencies
         run: |
+          python -m pip install --upgrade pip
           pip install flake8 black isort
 
       - name: Run flake8
-        run: |
-          flake8 reproducibility/benchmarks/ --max-line-length=100
+        run: flake8 reproducibility/benchmarks/ --max-line-length=100
 
       - name: Check black formatting
-        run: |
-          black --check reproducibility/benchmarks/
+        run: black --check reproducibility/benchmarks/
 
       - name: Check import sorting
-        run: |
-          isort --check-only reproducibility/benchmarks/
+        run: isort --check-only reproducibility/benchmarks/
 
   unit-tests:
     name: Unit Tests
@@ -52,7 +53,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python 3.12
+      - name: Set up Python ${{ env.HYBA_PYTHON_VERSION }}
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.HYBA_PYTHON_VERSION }}
@@ -60,19 +61,24 @@ jobs:
 
       - name: Install dependencies
         run: |
+          python -m pip install --upgrade pip
           pip install pytest pytest-cov numpy
           pip install -r requirements.txt 2>/dev/null || true
 
-      - name: Run unit tests
+      - name: Run benchmark unit tests
         run: |
           cd reproducibility/benchmarks
           pytest test_benchmark_suite.py -v --cov=. --cov-report=xml
 
+      - name: Run Quantum Intelligence enterprise contract tests
+        run: pytest tests/test_quantum_intelligence_service_enterprise_contract.py -q
+
       - name: Upload coverage
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         with:
           files: ./reproducibility/benchmarks/coverage.xml
           flags: benchmarks
+          fail_ci_if_error: false
 
   benchmark-execution:
     name: Run Benchmarks
@@ -81,7 +87,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python 3.12
+      - name: Set up Python ${{ env.HYBA_PYTHON_VERSION }}
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.HYBA_PYTHON_VERSION }}
@@ -89,6 +95,7 @@ jobs:
 
       - name: Install dependencies
         run: |
+          python -m pip install --upgrade pip
           pip install numpy psutil
           pip install -r requirements.txt 2>/dev/null || true
 
@@ -103,6 +110,7 @@ jobs:
         with:
           name: benchmark-results
           path: reproducibility/benchmarks/benchmark_results.json
+          if-no-files-found: warn
 
       - name: Generate dashboard
         if: always()
@@ -116,6 +124,7 @@ jobs:
         with:
           name: benchmark-dashboard
           path: reproducibility/benchmarks/benchmark_dashboard.html
+          if-no-files-found: warn
 
   quantum-intelligence-benchmark:
     name: Quantum Intelligence Benchmark Artifact
@@ -124,14 +133,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
+      - name: Set up Python ${{ env.HYBA_PYTHON_VERSION }}
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: ${{ env.HYBA_PYTHON_VERSION }}
           cache: 'pip'
 
       - name: Install dependencies
         run: |
+          python -m pip install --upgrade pip
           pip install -r requirements.txt 2>/dev/null || true
 
       - name: Run Quantum Intelligence benchmark artifact
@@ -141,29 +151,32 @@ jobs:
 
       - name: Upload Quantum Intelligence benchmark artifact
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: quantum-intelligence-benchmark
           path: reproducibility/benchmarks/quantum_intelligence_benchmark.json
+          if-no-files-found: warn
 
   domain-benchmarks:
     name: Domain-Specific Benchmarks
     runs-on: ubuntu-latest
     needs: [benchmark-execution]
     strategy:
+      fail-fast: false
       matrix:
         domain: [finance, optimization]
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
+      - name: Set up Python ${{ env.HYBA_PYTHON_VERSION }}
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: ${{ env.HYBA_PYTHON_VERSION }}
           cache: 'pip'
 
       - name: Install dependencies
         run: |
+          python -m pip install --upgrade pip
           pip install numpy scipy
           pip install -r requirements.txt 2>/dev/null || true
 
@@ -180,22 +193,33 @@ jobs:
             'commit_sha': sha,
             'runtime_version': {'python': sys.version, 'platform': platform.platform()},
             'command': f'python domain_{domain}_specializer.py',
-            'environment': {'ci': os.getenv('CI', 'false'), 'github_ref': os.getenv('GITHUB_REF', 'local'), 'cpu_count': os.cpu_count()},
+            'environment': {
+              'ci': os.getenv('CI', 'false'),
+              'github_ref': os.getenv('GITHUB_REF', 'local'),
+              'cpu_count': os.cpu_count(),
+            },
             'raw_json_output': {'stdout': raw},
-            'claim_boundary': {'category': 'domain benchmark evidence', 'scope': f'{domain} CI-local synthetic benchmark workload', 'excludes': ['production customer traffic', 'live trading decisions']}
+            'claim_boundary': {
+              'category': 'domain benchmark evidence',
+              'scope': f'{domain} CI-local synthetic benchmark workload',
+              'excludes': ['production customer traffic', 'live trading decisions'],
+            },
           }
-          open(f'domain_{domain}_benchmark_artifact.json', 'w', encoding='utf-8').write(json.dumps(payload, indent=2, sort_keys=True))
+          open(f'domain_{domain}_benchmark_artifact.json', 'w', encoding='utf-8').write(
+            json.dumps(payload, indent=2, sort_keys=True)
+          )
           PY
 
       - name: Save results
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: domain-${{ matrix.domain }}-results
           path: |
             reproducibility/benchmarks/BENCHMARK_ANALYSIS.md
             reproducibility/benchmarks/domain_${{ matrix.domain }}_benchmark_artifact.json
             reproducibility/benchmarks/domain_${{ matrix.domain }}_raw.log
+          if-no-files-found: warn
 
   distributed-execution:
     name: Distributed Execution Test
@@ -203,13 +227,16 @@ jobs:
     needs: [domain-benchmarks]
     steps:
       - uses: actions/checkout@v4
-      - name: Set up Python 3.12
+
+      - name: Set up Python ${{ env.HYBA_PYTHON_VERSION }}
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.HYBA_PYTHON_VERSION }}
           cache: 'pip'
-      - name: Run domain benchmark placeholder
+
+      - name: Install dependencies
         run: |
+          python -m pip install --upgrade pip
           pip install numpy
           pip install -r requirements.txt 2>/dev/null || true
 
@@ -225,19 +252,30 @@ jobs:
             'commit_sha': sha,
             'runtime_version': {'python': sys.version, 'platform': platform.platform()},
             'command': 'python distributed_benchmark_executor.py',
-            'environment': {'ci': os.getenv('CI', 'false'), 'github_ref': os.getenv('GITHUB_REF', 'local'), 'cpu_count': os.cpu_count()},
+            'environment': {
+              'ci': os.getenv('CI', 'false'),
+              'github_ref': os.getenv('GITHUB_REF', 'local'),
+              'cpu_count': os.cpu_count(),
+            },
             'raw_json_output': {'distributed_execution_report': report.get('results', [])},
-            'claim_boundary': {'category': 'distributed benchmark evidence', 'scope': 'CI-local distributed executor workload', 'excludes': ['multi-region production cluster proof']}
+            'claim_boundary': {
+              'category': 'distributed benchmark evidence',
+              'scope': 'CI-local distributed executor workload',
+              'excludes': ['multi-region production cluster proof'],
+            },
           })
-          open('distributed_execution_report.json', 'w', encoding='utf-8').write(json.dumps(report, indent=2, sort_keys=True))
+          open('distributed_execution_report.json', 'w', encoding='utf-8').write(
+            json.dumps(report, indent=2, sort_keys=True)
+          )
           PY
 
       - name: Save distributed results
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: distributed-execution-results
           path: reproducibility/benchmarks/distributed_execution_report.json
+          if-no-files-found: warn
 
   create-report:
     name: Create Performance Report
@@ -246,29 +284,29 @@ jobs:
     if: always()
     steps:
       - name: Download all artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
 
       - name: Create summary report
         run: |
           cat > PERFORMANCE_REPORT.md << 'EOF'
           # Benchmark Performance Report
-          
+
           ## Summary
           - **Date**: $(date -u +'%Y-%m-%dT%H:%M:%SZ')
           - **Commit**: ${{ github.sha }}
           - **Branch**: ${{ github.ref }}
-          
+
           ## Results
-          - Benchmark Suite: ✅ Complete
-          - Domain Benchmarks: ✅ Complete
-          - Distributed Execution: ✅ Complete
-          - Quantum Intelligence Artifact: ✅ Complete
-          
+          - Benchmark Suite: complete
+          - Domain Benchmarks: complete
+          - Distributed Execution: complete
+          - Quantum Intelligence Artifact: complete
+
           See artifacts for detailed results, including raw JSON claim-boundary evidence.
           EOF
 
       - name: Upload final report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: performance-report
           path: PERFORMANCE_REPORT.md
@@ -290,7 +328,7 @@ jobs:
           echo "Base branch: ${{ github.base_ref }}"
 
       - name: Comment on PR
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         with:
           script: |
             github.rest.issues.createComment({
