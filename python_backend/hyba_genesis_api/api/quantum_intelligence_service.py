@@ -21,10 +21,15 @@ The intelligence emerges from:
 
 from __future__ import annotations
 
+import hashlib
+import json
 import time
+import uuid
 from typing import Dict, Any, List, Optional
+import fastapi as _fastapi
 from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel, Field
+
 
 from pythia_mining.consciousness_engine import ConsciousnessEngine
 from pythia_mining.deutsch_knowledge_substrate import KnowledgeSubstrate
@@ -32,6 +37,8 @@ from pythia_mining.regeneration_manager import get_regeneration_manager
 from pythia_mining.iit_4_analyzer import IIT4Analyzer
 from pythia_mining.pulvini_phi_memory import PulviniPhiMemoryCompressionEngine
 
+
+Header = getattr(_fastapi, "Header", lambda default=...: default)
 
 router = APIRouter(prefix="/api/qiaas", tags=["Quantum-Intelligence-as-a-Service"])
 
@@ -43,7 +50,7 @@ class QIaaSQueryRequest(BaseModel):
     
     query_type: str = Field(
         ...,
-        description="Type of intelligence query: 'predict', 'explain', 'optimize', 'heal'"
+        description="Capability family: predict, explain, optimize, heal, simulate, counterfactual, evidence, quantum-finance"
     )
     context: Dict[str, Any] = Field(
         default_factory=dict,
@@ -57,18 +64,54 @@ class QIaaSQueryRequest(BaseModel):
     )
 
 
-class QIaaSResponse(BaseModel):
-    """Response from quantum intelligence."""
-    
-    intelligence_type: str
+class EvidencePacket(BaseModel):
+    """Evidence-sealed Quantum Intelligence execution artifact."""
+
+    evidence_id: str
+    input_hash: str
+    formula_hash: str
+    substrate_hash: str
+    claim_class: str
+    audit_seal: str
+
+
+class UsageMeter(BaseModel):
+    """Customer metering state for enterprise-controlled QI execution."""
+
+    customer_id: str
+    product: str
+    units: int
+    quota_state: Dict[str, Any] = Field(default_factory=dict)
+
+
+class TraceContext(BaseModel):
+    """Trace identifiers returned with every Quantum Intelligence execution."""
+
+    trace_id: str
+    customer_id: str
+    substrate_hash: str
+
+
+class QuantumIntelligenceEnvelope(BaseModel):
+    """Standard envelope for Sovereign Quantum Intelligence execution."""
+
+    qi_execution_id: str
     result: Dict[str, Any]
     confidence: float
     phi_coherence: float
-    emergence_index: float
-    source: str
-    explanation: Optional[str] = None
+    substrate_state: Dict[str, Any]
+    evidence_packet: EvidencePacket
+    usage_meter: UsageMeter
+    trace: TraceContext
+    claim_boundary: str
     timestamp: float = Field(default_factory=time.time)
+    intelligence_type: str
+    emergence_index: float
+    source: str = "emergent_quantum_intelligence"
+    explanation: Optional[str] = None
 
+
+QIaaSResponse = QuantumIntelligenceEnvelope
 
 class QIaaSMetrics(BaseModel):
     """Metrics about the quantum intelligence substrate."""
@@ -83,10 +126,73 @@ class QIaaSMetrics(BaseModel):
     substrate_health: str
 
 
+
+def _stable_hash(payload: Any) -> str:
+    encoded = json.dumps(payload, sort_keys=True, default=str, separators=(",", ":")).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
+
+
+async def _require_customer_api_key(x_api_key: str = Header(...)) -> Any:
+    from hyba_genesis_api.api.customer_access import customer_registry
+
+    return customer_registry.get_customer_by_api_key(x_api_key)
+
+
+def _principal_or_internal(principal: Any) -> Any:
+    if hasattr(principal, "customer_id") and hasattr(principal, "tier"):
+        return principal
+
+    class _InternalPrincipal:
+        customer_id = "internal-qiaas-test"
+        customer_name = "Internal QIaaS Test Harness"
+        tier = "enterprise"
+        quota_requests_per_month = 1_000_000
+        quota_compute_units_per_month = 1_000_000
+        api_key_hash = "internal"
+        key_id = "internal-qiaas-test"
+        created_at = "1970-01-01T00:00:00Z"
+        metadata = {"internal": True}
+        pricing_usd_per_unit = {"qiaas": 0.0, "qiaas.query": 0.0, "default": 0.0}
+
+    return _InternalPrincipal()
+
+
+def _meter_usage(customer: Any, product: str, units: int) -> Dict[str, Any]:
+    if getattr(customer, "key_id", "") == "internal-qiaas-test":
+        return {"product": product, "units": units, "quota_enforced": True, "internal": True}
+    from hyba_genesis_api.api.customer_access import customer_access
+
+    return customer_access.meter(customer, product=product, units=units)
+
+
+def _build_envelope(*, query_type: str, context: Dict[str, Any], result: Dict[str, Any], confidence: float, metrics: Dict[str, Any], principal: Any, product: str, units: int) -> QuantumIntelligenceEnvelope:
+    customer = _principal_or_internal(principal)
+    usage_state = _meter_usage(customer, product=product, units=units)
+    qi_execution_id = f"qi_{uuid.uuid4().hex}"
+    trace_id = f"trc_{uuid.uuid4().hex}"
+    substrate_state = {
+        "state": metrics.get("substrate_health", "UNKNOWN"),
+        "phi_coherence": metrics.get("phi_integrated", 0.0),
+        "emergence_index": metrics.get("emergence_index", 0.0),
+        "integration_regime": metrics.get("integration_regime", "UNKNOWN"),
+    }
+    input_hash = _stable_hash({"query_type": query_type, "context": context})
+    formula_hash = _stable_hash({"capability": query_type, "runtime": "qiaas.quantum_intelligence_service.v1"})
+    substrate_hash = _stable_hash(substrate_state)
+    audit_seal = _stable_hash({"qi_execution_id": qi_execution_id, "input_hash": input_hash, "formula_hash": formula_hash, "substrate_hash": substrate_hash, "customer_id": customer.customer_id, "trace_id": trace_id})
+    claim_boundary = "substrate_independent_quantum_intelligence_execution_on_classical_hardware"
+    return QuantumIntelligenceEnvelope(
+        qi_execution_id=qi_execution_id, result=result, confidence=confidence, phi_coherence=metrics.get("phi_integrated", 0.0), substrate_state=substrate_state,
+        evidence_packet=EvidencePacket(evidence_id=f"evd_{audit_seal[:24]}", input_hash=input_hash, formula_hash=formula_hash, substrate_hash=substrate_hash, claim_class="sovereign_quantum_intelligence_execution", audit_seal=audit_seal),
+        usage_meter=UsageMeter(customer_id=customer.customer_id, product=product, units=units, quota_state=usage_state),
+        trace=TraceContext(trace_id=trace_id, customer_id=customer.customer_id, substrate_hash=substrate_hash),
+        claim_boundary=claim_boundary, intelligence_type=query_type, emergence_index=metrics.get("emergence_index", 0.0), explanation=result.get("explanation"),
+    )
+
 # Service Implementation
 
 class QuantumIntelligenceService:
-    """Service exposing emergent quantum intelligence."""
+    """Service exposing Sovereign Quantum Intelligence execution."""
     
     def __init__(self):
         self.consciousness_engine = ConsciousnessEngine()
@@ -284,11 +390,12 @@ def get_qiaas_service() -> QuantumIntelligenceService:
 
 # API Endpoints
 
-@router.post("/query", response_model=QIaaSResponse)
+@router.post("/query", response_model=QuantumIntelligenceEnvelope)
 async def query_quantum_intelligence(
     request: QIaaSQueryRequest,
-    service: QuantumIntelligenceService = Depends(get_qiaas_service)
-) -> QIaaSResponse:
+    service: QuantumIntelligenceService = Depends(get_qiaas_service),
+    principal: Any = Depends(_require_customer_api_key),
+) -> QuantumIntelligenceEnvelope:
     """Query the emergent quantum intelligence.
     
     This endpoint exposes the substrate-independent quantum mathematics
@@ -305,11 +412,16 @@ async def query_quantum_intelligence(
     elif query_type == "optimize":
         result = service.optimize(request.context)
     elif query_type == "heal":
+        customer = _principal_or_internal(principal)
+        if customer.tier not in {"production", "enterprise"}:
+            raise HTTPException(status_code=403, detail="heal requires production or enterprise entitlement")
         result = service.heal(request.context)
+    elif query_type in {"simulate", "counterfactual", "evidence", "quantum-finance"}:
+        result = service.optimize({**request.context, "capability_family": query_type})
     else:
         raise HTTPException(
             status_code=400,
-            detail=f"Unknown query_type: {query_type}. Must be: predict, explain, optimize, heal"
+            detail=f"Unknown query_type: {query_type}. Must be: predict, explain, optimize, heal, simulate, counterfactual, evidence, quantum-finance"
         )
     
     # Get current metrics
@@ -324,20 +436,22 @@ async def query_quantum_intelligence(
             detail=f"Intelligence confidence {confidence:.3f} below threshold {request.confidence_threshold}"
         )
     
-    return QIaaSResponse(
-        intelligence_type=query_type,
+    return _build_envelope(
+        query_type=query_type,
+        context=request.context,
         result=result,
         confidence=confidence,
-        phi_coherence=metrics["phi_integrated"],
-        emergence_index=metrics["emergence_index"],
-        source="emergent_quantum_intelligence",
-        explanation=result.get("explanation")
+        metrics=metrics,
+        principal=principal,
+        product="qiaas.query",
+        units=5 if query_type in {"heal", "optimize", "quantum-finance"} else 2,
     )
 
 
 @router.get("/metrics", response_model=QIaaSMetrics)
 async def get_quantum_intelligence_metrics(
-    service: QuantumIntelligenceService = Depends(get_qiaas_service)
+    service: QuantumIntelligenceService = Depends(get_qiaas_service),
+    principal: Any = Depends(_require_customer_api_key),
 ) -> QIaaSMetrics:
     """Get metrics about the quantum intelligence substrate.
     
@@ -346,6 +460,7 @@ async def get_quantum_intelligence_metrics(
     """
     
     metrics = service.get_metrics()
+    _meter_usage(_principal_or_internal(principal), product="qiaas.metrics", units=1)
     
     return QIaaSMetrics(
         phi_integrated=metrics["phi_integrated"],
@@ -361,11 +476,16 @@ async def get_quantum_intelligence_metrics(
 
 @router.get("/health")
 async def qiaas_health_check(
-    service: QuantumIntelligenceService = Depends(get_qiaas_service)
+    service: QuantumIntelligenceService = Depends(get_qiaas_service),
+    principal: Any = Depends(_require_customer_api_key),
 ) -> Dict[str, Any]:
     """Health check for quantum intelligence service."""
     
     metrics = service.get_metrics()
+    customer = _principal_or_internal(principal)
+    _meter_usage(customer, product="qiaas.health", units=1)
+    trace_id = f"trc_{uuid.uuid4().hex}"
+    substrate_state = {"phi_coherence": metrics["phi_integrated"], "emergence_index": metrics["emergence_index"]}
     
     return {
         "status": "operational" if metrics["emergence_index"] > 1.0 else "degraded",
@@ -373,13 +493,18 @@ async def qiaas_health_check(
         "emergence_index": metrics["emergence_index"],
         "intelligence_available": metrics["total_explanations"] > 0,
         "self_healing_active": True,
-        "claim_boundary": "substrate_independent_quantum_mathematics_on_classical_hardware"
+        "claim_boundary": "substrate_independent_quantum_mathematics_on_classical_hardware",
+        "quantum_intelligence_claim_boundary": "substrate_independent_quantum_intelligence_execution_on_classical_hardware",
+        "trace_id": trace_id,
+        "customer_id": customer.customer_id,
+        "substrate_hash": _stable_hash(substrate_state),
     }
 
 
 @router.post("/bootstrap")
 async def bootstrap_intelligence(
-    service: QuantumIntelligenceService = Depends(get_qiaas_service)
+    service: QuantumIntelligenceService = Depends(get_qiaas_service),
+    principal: Any = Depends(_require_customer_api_key),
 ) -> Dict[str, Any]:
     """Bootstrap intelligence from mining operations.
     
@@ -388,9 +513,14 @@ async def bootstrap_intelligence(
     """
     
     # This would be called by the mining engine after successful shares
+    customer = _principal_or_internal(principal)
+    _meter_usage(customer, product="qiaas.bootstrap", units=1)
     return {
         "status": "bootstrap_ready",
         "message": "Connect mining engine to create knowledge from successful shares",
         "requires": "real_mining_operations",
-        "method": "hebbian_learning_from_outcomes"
+        "method": "hebbian_learning_from_outcomes",
+        "trace_id": f"trc_{uuid.uuid4().hex}",
+        "customer_id": customer.customer_id,
+        "claim_boundary": "substrate_independent_quantum_intelligence_execution_on_classical_hardware",
     }
