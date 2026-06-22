@@ -48,6 +48,7 @@ from hyba_genesis_api.api import (  # noqa: E402
     organism_router,
     pool_management,
     products,
+    proofs,
     quantum_as_a_service,
     quantum_finance_service,
     quantum_intelligence_service,
@@ -237,8 +238,6 @@ async def lifespan(app: FastAPI):
     initialize_substrate()
     await _load_memory_seed(app)
     logging.info("HYBA API startup: substrate READY", extra={"substrate": get_substrate_state()})
-
-    # Private validation/mining engine is initialized for internal evidence and stress tests.
     # It is not a public product surface; see docs/product/HYBA_PRODUCT_BOUNDARIES.md.
     from hyba_genesis_api.api import unified_mining
     unified_mining.initialize_engine_with_lock_manager(lock_manager)
@@ -354,6 +353,7 @@ app.include_router(millennium_mathematics.router)
 app.include_router(millennium_mathematics.public_router)
 app.include_router(observability.router)
 app.include_router(products.router)
+app.include_router(proofs.router)
 app.include_router(unified_mining.router)
 app.include_router(ai_memory.router)
 app.include_router(pool_management.router)
