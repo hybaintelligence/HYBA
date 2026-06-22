@@ -11,7 +11,7 @@ from __future__ import annotations
 import ast
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, Iterable, Iterator, List, Optional, Tuple, Union
+from typing import Iterator
 
 
 class DamageReport(dict):
@@ -28,16 +28,16 @@ class DamageReport(dict):
         return bool(self.get("needs_repair", False))
 
     @property
-    def issues(self) -> List[str]:
+    def issues(self) -> list[str]:
         return list(self.get("issues", []))
 
     @property
-    def module_path(self) -> Optional[str]:
+    def module_path(self) -> str | None:
         value = self.get("module_path")
         return str(value) if value is not None else None
 
     @property
-    def target_name(self) -> Optional[str]:
+    def target_name(self) -> str | None:
         value = self.get("target_name")
         return str(value) if value is not None else None
 
@@ -46,7 +46,7 @@ class DamageReport(dict):
 class DamageSignal:
     issue: str
     severity: float
-    line_number: Optional[int] = None
+    line_number: int | None = None
     category: str = "quality"
 
 
@@ -56,23 +56,23 @@ class AutonomousDamageDetector:
 
     max_target_lines: int = 120
     max_file_bytes: int = 512_000
-    todo_tokens: Tuple[str, ...] = ("TODO", "FIXME", "HACK")
-    performance_tokens: Tuple[str, ...] = ("time.sleep", "subprocess.run", "shell=True")
-    invariant_tokens: Tuple[str, ...] = ("assert False", "raise NotImplementedError")
-    security_tokens: Tuple[str, ...] = ("eval(", "exec(", "pickle.loads")
-    ignored_dirs: Tuple[str, ...] = (".git", "node_modules", ".venv", "venv", "__pycache__")
+    todo_tokens: tuple[str, ...] = ("TODO", "FIXME", "HACK")
+    performance_tokens: tuple[str, ...] = ("time.sleep", "subprocess.run", "shell=True")
+    invariant_tokens: tuple[str, ...] = ("assert False", "raise NotImplementedError")
+    security_tokens: tuple[str, ...] = ("eval(", "exec(", "pickle.loads")
+    ignored_dirs: tuple[str, ...] = (".git", "node_modules", ".venv", "venv", "__pycache__")
 
-    def scan_paths(self, paths: Iterable[Union[str, Path]]) -> List[DamageReport]:
+    def scan_paths(self, paths: list[str | Path] | tuple[str | Path, ...]) -> list[DamageReport]:
         """Scan files/directories and return reports sorted by severity."""
 
-        reports: List[DamageReport] = []
+        reports: list[DamageReport] = []
         for path in paths:
             p = Path(path)
             for file_path in self._iter_python_files(p):
                 reports.extend(self.scan_file(file_path))
         return sorted(reports, key=lambda report: report.get("severity_score", 0.0), reverse=True)
 
-    def scan_file(self, path: Union[str, Path]) -> List[DamageReport]:
+    def scan_file(self, path: str | Path) -> list[DamageReport]:
         file_path = Path(path)
         if not file_path.exists() or file_path.stat().st_size > self.max_file_bytes:
             return []
@@ -111,8 +111,8 @@ class AutonomousDamageDetector:
                 continue
             yield path
 
-    def _text_signals(self, text: str) -> List[DamageSignal]:
-        signals: List[DamageSignal] = []
+    def _text_signals(self, text: str) -> list[DamageSignal]:
+        signals: list[DamageSignal] = []
         for lineno, line in enumerate(text.splitlines(), start=1):
             stripped = line.strip()
             for token in self.todo_tokens:
@@ -129,13 +129,13 @@ class AutonomousDamageDetector:
                     signals.append(DamageSignal(f"Potential unsafe dynamic execution token {token} at line {lineno}", 0.75, lineno, "security"))
         return signals
 
-    def _ast_signals(self, text: str) -> List[DamageSignal]:
+    def _ast_signals(self, text: str) -> list[DamageSignal]:
         try:
             tree = ast.parse(text)
         except SyntaxError as exc:
             return [DamageSignal(f"Syntax drift: {exc.msg}", 1.0, exc.lineno, "syntax")]
 
-        signals: List[DamageSignal] = []
+        signals: list[DamageSignal] = []
         for node in ast.walk(tree):
             if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
                 end = getattr(node, "end_lineno", node.lineno)
@@ -153,13 +153,13 @@ class AutonomousDamageDetector:
                 signals.append(DamageSignal("Broad bare except handler detected", 0.6, node.lineno, "resilience"))
         return signals
 
-    def _select_target_name(self, text: str, signals: List[DamageSignal]) -> Optional[str]:
+    def _select_target_name(self, text: str, signals: list[DamageSignal]) -> str | None:
         try:
             tree = ast.parse(text)
         except SyntaxError:
             return None
         signal_lines = [signal.line_number for signal in signals if signal.line_number is not None]
-        candidates: List[Tuple[int, str]] = []
+        candidates: list[tuple[int, str]] = []
         for node in ast.walk(tree):
             if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
                 continue
@@ -176,7 +176,7 @@ class AutonomousDamageDetector:
         return None
 
     @staticmethod
-    def _suggest_goal(categories: List[str]) -> str:
+    def _suggest_goal(categories: list[str]) -> str:
         if "syntax" in categories:
             return "Restore parseability and invariant-safe execution"
         if "security" in categories:
