@@ -74,6 +74,23 @@ RELIABILITY_CIRCUIT_STATE = Gauge(
     ["circuit"],
 )
 
+ACTIVE_REQUESTS = Gauge(
+    "active_requests",
+    "Currently active HYBA HTTP requests",
+)
+
+REQUEST_TOTAL = Counter(
+    "request_total",
+    "Total HYBA HTTP requests by route and status",
+    ["route", "status"],
+)
+
+REQUEST_DURATION_SECONDS = Histogram(
+    "request_duration_seconds",
+    "HYBA HTTP request duration by route in seconds",
+    ["route"],
+)
+
 BILLING_USAGE_UNITS = Counter(
     "hyba_billing_usage_units_total",
     "Billable usage units accepted by HYBA commercial APIs",
@@ -104,6 +121,7 @@ _METRICS: Dict[str, Any] = {
     "last_request": None,
     "startup_time": None,
     "opentelemetry_enabled": False,
+    "active_requests": 0,
     "readiness_gaps": {},
     "governance_gates": {},
     "workflows": {},
@@ -127,8 +145,8 @@ def init_logging() -> None:
 
     log_handler = logging.StreamHandler(sys.stdout)
     formatter = jsonlogger.JsonFormatter(
-        "%(asctime)s %(levelname)s %(name)s %(message)s "
-        "%(request_id)s %(correlation_id)s %(traceparent)s "
+        "%(asctime)s %(levelname)s %(name)s %(module)s %(message)s "
+        "%(request_id)s %(correlation_id)s %(trace_id)s %(span_id)s %(traceparent)s "
         "%(method)s %(path)s %(status_code)s %(duration_ms)s"
     )
     log_handler.setFormatter(formatter)
@@ -261,11 +279,23 @@ async def telemetry_middleware(request: Request, call_next):
 
     request_id = request.headers.get("x-request-id") or f"req-{uuid.uuid4().hex}"
     correlation_id = _correlation_id(request, request_id)
-    traceparent = request.headers.get("traceparent", "")
+    incoming_traceparent = request.headers.get("traceparent", "")
+    trace_id = uuid.uuid4().hex
+    span_id = uuid.uuid4().hex[:16]
+    if incoming_traceparent:
+        parts = incoming_traceparent.split("-")
+        if len(parts) >= 4:
+            trace_id = parts[1]
+            span_id = parts[2]
+    traceparent = incoming_traceparent or f"00-{trace_id}-{span_id}-01"
     request.state.request_id = request_id
     request.state.correlation_id = correlation_id
     request.state.traceparent = traceparent
+    request.state.trace_id = trace_id
+    request.state.span_id = span_id
 
+    ACTIVE_REQUESTS.inc()
+    _METRICS["active_requests"] += 1
     start = time.perf_counter()
     status_code = 500
     exception_seen = False
@@ -274,8 +304,8 @@ async def telemetry_middleware(request: Request, call_next):
         status_code = response.status_code
         response.headers["x-request-id"] = request_id
         response.headers["x-correlation-id"] = correlation_id
-        if traceparent:
-            response.headers["traceparent"] = traceparent
+        response.headers["x-trace-id"] = trace_id
+        response.headers["traceparent"] = traceparent
         return response
     except Exception:
         exception_seen = True
@@ -285,6 +315,8 @@ async def telemetry_middleware(request: Request, call_next):
                 "request_id": request_id,
                 "correlation_id": correlation_id,
                 "traceparent": traceparent,
+                "trace_id": trace_id,
+                "span_id": span_id,
                 "method": request.method,
                 "path": request.url.path,
                 "status_code": status_code,
@@ -294,6 +326,8 @@ async def telemetry_middleware(request: Request, call_next):
         raise
     finally:
         duration_ms = round((time.perf_counter() - start) * 1000, 3)
+        ACTIVE_REQUESTS.dec()
+        _METRICS["active_requests"] = max(0, int(_METRICS.get("active_requests", 0)) - 1)
         if status_code >= 500 or exception_seen:
             _METRICS["errors_total"] += 1
         _METRICS["requests_total"] += 1
@@ -301,6 +335,8 @@ async def telemetry_middleware(request: Request, call_next):
             "request_id": request_id,
             "correlation_id": correlation_id,
             "traceparent": traceparent,
+            "trace_id": trace_id,
+            "span_id": span_id,
             "method": request.method,
             "path": request.url.path,
             "status_code": status_code,
@@ -310,6 +346,8 @@ async def telemetry_middleware(request: Request, call_next):
         endpoint = request.url.path
         REQUEST_COUNT.labels(request.method, endpoint, str(status_code)).inc()
         REQUEST_LATENCY.labels(endpoint).observe(duration_ms / 1000.0)
+        REQUEST_TOTAL.labels(endpoint, str(status_code)).inc()
+        REQUEST_DURATION_SECONDS.labels(endpoint).observe(duration_ms / 1000.0)
         if status_code >= 500 or exception_seen:
             ERROR_COUNT.labels(endpoint).inc()
 

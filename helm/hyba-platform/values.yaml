@@ -1,0 +1,21 @@
+replicaCount: 2
+
+environment: staging
+
+image:
+  repository: ghcr.io/hyba/hyba-fullstack
+  tag: latest
+
+redis:
+  enabled: true
+  architecture: standalone
+  auth:
+    enabled: false
+  master:
+    persistence:
+      enabled: true
+      size: 8Gi
+
+backend:
+  env:
+    REDIS_URL: redis://hyba-platform-redis-master:6379/0
