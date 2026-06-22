@@ -22,6 +22,69 @@ async def proof_surface_index() -> Dict[str, Any]:
     return list_proof_surfaces()
 
 
+@router.get("/platform-overview", response_model=Dict[str, Any])
+async def platform_overview_proof() -> Dict[str, Any]:
+    """Return the full-platform proof overview surface."""
+
+    return get_proof_surface("platform-overview")
+
+
+@router.get("/intelligence-fabric", response_model=Dict[str, Any])
+async def intelligence_fabric_proof() -> Dict[str, Any]:
+    """Return the intelligence-fabric proof surface."""
+
+    return get_proof_surface("intelligence-fabric")
+
+
+@router.get("/qaas", response_model=Dict[str, Any])
+async def qaas_proof() -> Dict[str, Any]:
+    """Return the QaaS product proof surface."""
+
+    return get_proof_surface("qaas")
+
+
+@router.get("/ciaas", response_model=Dict[str, Any])
+async def ciaas_proof() -> Dict[str, Any]:
+    """Return the CIaaS product proof surface."""
+
+    return get_proof_surface("ciaas")
+
+
+@router.get("/quantum-finance", response_model=Dict[str, Any])
+async def quantum_finance_proof() -> Dict[str, Any]:
+    """Return the quantum-finance proof surface."""
+
+    return get_proof_surface("quantum-finance")
+
+
+@router.get("/commercial-access", response_model=Dict[str, Any])
+async def commercial_access_proof() -> Dict[str, Any]:
+    """Return the commercial access proof surface."""
+
+    return get_proof_surface("commercial-access")
+
+
+@router.get("/fair-governance", response_model=Dict[str, Any])
+async def fair_governance_proof() -> Dict[str, Any]:
+    """Return the fair-governance proof surface."""
+
+    return get_proof_surface("fair-governance")
+
+
+@router.get("/regeneration", response_model=Dict[str, Any])
+async def regeneration_proof() -> Dict[str, Any]:
+    """Return the Salamander/regeneration proof surface."""
+
+    return get_proof_surface("regeneration")
+
+
+@router.get("/observability", response_model=Dict[str, Any])
+async def observability_proof() -> Dict[str, Any]:
+    """Return the observability proof surface."""
+
+    return get_proof_surface("observability")
+
+
 @router.get("/property-tests", response_model=Dict[str, Any])
 async def property_tests_proof() -> Dict[str, Any]:
     """Return the property-test proof surface."""
