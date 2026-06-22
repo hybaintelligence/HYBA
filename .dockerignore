@@ -71,10 +71,10 @@ k8s
 sdks
 backups
 Landing_Page
-public
-assets
 alerts
 functions
 terraform
 additional_tests
 tests_enhanced
+
+build
