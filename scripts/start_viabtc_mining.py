@@ -7,9 +7,10 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'python_backend
 import requests
 import json
 import time
+import os
 
 BASE_URL = "http://127.0.0.1:3001"
-TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJvcGVyYXRvci1saXZlLXRlc3QiLCJyb2xlIjoibWluaW5nOm9wZXJhdGUiLCJpYXQiOjE3ODE2MjQzMzksImV4cCI6MTc4MTYyNzkzOX0.MxRnXcFGDR6IyvyZqQMYQaP65_nbaqL-I-pX4V0_Su8"
+TOKEN = os.environ.get("HYBA_OPERATOR_JWT", "")
 
 headers = {
     "Authorization": f"Bearer {TOKEN}",

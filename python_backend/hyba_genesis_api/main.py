@@ -20,9 +20,9 @@ if str(_BACKEND_ROOT) not in sys.path:
     sys.path.insert(0, str(_BACKEND_ROOT))
 
 import uvicorn  # noqa: E402
-from fastapi import FastAPI  # noqa: E402
+from fastapi import FastAPI, Request  # noqa: E402
 from fastapi.middleware.cors import CORSMiddleware  # noqa: E402
-from fastapi.responses import PlainTextResponse  # noqa: E402
+from fastapi.responses import PlainTextResponse, JSONResponse  # noqa: E402
 from prometheus_client import CONTENT_TYPE_LATEST  # noqa: E402
 
 from hyba_genesis_api.api import (  # noqa: E402
@@ -200,11 +200,31 @@ async def _load_memory_seed(app: FastAPI) -> None:
         logging.error(f"Failed to load memory seed: {e}")
 
 
+def validate_required_secrets() -> None:
+    """Fail startup when production auth secrets are absent or placeholders."""
+    env = os.getenv("NODE_ENV", os.getenv("HYBA_ENV", "development")).lower()
+    strict = os.getenv("HYBA_STRICT_SECRET_GUARD", "false").lower() == "true"
+    if env != "production" and not strict:
+        return
+    placeholders = {"change-me", "changeme", "your-secret-here", "development-secret"}
+    missing = []
+    for name in ("HYBA_API_KEY_SECRET", "JWT_SECRET"):
+        value = os.getenv(name, "").strip()
+        if not value or value.lower() in placeholders or "example" in value.lower():
+            missing.append(name)
+    if missing:
+        raise RuntimeError(
+            "HYBA startup refused: required production secrets missing or placeholder: "
+            + ", ".join(missing)
+        )
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application startup/shutdown lifecycle."""
 
     init_logging()
+    validate_required_secrets()
     init_metrics()
 
     lock_manager = _get_or_init_distributed_lock_manager(app)
@@ -291,6 +311,19 @@ _rate_window = int(os.getenv("HYBA_RATE_LIMIT_WINDOW_SECONDS", "60"))
 app.add_middleware(RateLimiter, max_requests=_rate_limit, window_seconds=_rate_window)
 
 app.middleware("http")(telemetry_middleware)
+
+@app.middleware("http")
+async def enforce_cors_origin_allowlist(request: Request, call_next):
+    origin = request.headers.get("origin")
+    env = os.getenv("NODE_ENV", os.getenv("HYBA_ENV", "development")).lower()
+    if origin and (request.url.path.startswith("/api/") or request.url.path == "/api"):
+        allowed = _parse_cors_origins()
+        if env == "production" and "*" in allowed:
+            return JSONResponse(status_code=403, content={"detail": "Wildcard CORS origin is not allowed in production"})
+        if origin not in allowed:
+            return JSONResponse(status_code=403, content={"detail": "CORS origin is not allowed"})
+    return await call_next(request)
+
 install_enterprise_api_posture(app)
 
 # Include routers
