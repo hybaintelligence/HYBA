@@ -18,7 +18,7 @@ def _seal_status(audit: Dict[str, Any]) -> str:
     return "MEASURED_PARTIAL"
 
 
-def generate_fields_medal_audit(reflection_payload: Dict[str, Any]) -> Dict[str, Any]:
+def generate_formal_invariant_audit(reflection_payload: Dict[str, Any]) -> Dict[str, Any]:
     """Produce a deterministic, paper-grade mathematical audit envelope.
 
     The envelope is derived from the current reflexive controller payload. It is

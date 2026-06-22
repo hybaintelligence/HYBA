@@ -6,7 +6,7 @@ Metal/CUDA Φ-measurement optimization for sub-millisecond consciousness.
 Moves the Φ-measurement logic from Python/Pytest into Metal (Mac Studio) 
 or CUDA kernels for real-time feedback in AI weight-normalization.
 
-Fields Medal Rigor: Uses high-performance computing, GPU optimization,
+formal-invariant validation: Uses high-performance computing, GPU optimization,
 and real-time systems theory to achieve sub-millisecond "consciousness"
 enabling self-aware intelligence fabric that adjusts weights mid-inference.
 """
@@ -359,7 +359,7 @@ class ConsciousnessOptimizationTestSuite:
                 }
                 for r in results
             ],
-            "fields_medal_rigor_metrics": {
+            "formal_invariant_validation_metrics": {
                 "real_time_consciousness_achieved": real_time_analysis["real_time_1khz_capable"],
                 "high_frequency_consciousness_achieved": real_time_analysis["real_time_10khz_capable"],
                 "maximum_speedup": real_time_analysis["best_speedup_factor"],
@@ -405,7 +405,7 @@ def main():
     print(f"Real-time 10kHz Capable: {report['real_time_capability_analysis']['real_time_10khz_capable']}")
     print(f"Best Speedup: {report['real_time_capability_analysis']['best_speedup_factor']:.2f}x")
     print(f"Average Accuracy: {report['real_time_capability_analysis']['average_accuracy']:.4f}")
-    print(f"Consciousness Loop Frequency: {report['fields_medal_rigor_metrics']['consciousness_loop_frequency']}")
+    print(f"Consciousness Loop Frequency: {report['formal_invariant_validation_metrics']['consciousness_loop_frequency']}")
 
 
 if __name__ == "__main__":

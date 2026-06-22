@@ -7,7 +7,7 @@ Nakajima-Zwanzig non-Markovian evolution and IIT 4.0 Earth Mover's Distance
 computation. We use deterministic profiling with line-level granularity to
 pinpoint the exact operations consuming the 11.24ms measurement cycle.
 
-NOBEL/FIELDS MEDAL RIGOR:
+FORMAL-INVARIANT VALIDATION:
 - Statistical profiling with confidence intervals
 - Computational complexity analysis (Big-O verification)
 - Memory bandwidth profiling (cache miss detection)

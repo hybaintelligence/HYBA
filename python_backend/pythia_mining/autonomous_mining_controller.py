@@ -3077,30 +3077,43 @@ class AutonomousMiningController:
             "action": "soft_reset",
         })
 
-        # Apply quantum healing swarm for self-repair
-        from .quantum_healing_swarm import QuantumHealingSwarm
-        swarm = QuantumHealingSwarm(
-            num_candidates=8,
-            num_lanes=32,
-            enable_tunnelling=True,
-            enable_annealing=True,
-            enable_swarming=True,
-            enable_interference=True,
-        )
-        phi_density = self.get_phi_density() if hasattr(self, 'get_phi_density') else 0.5
-        healing_result = swarm.heal(
-            phi_density=phi_density,
-            consecutive_failures=self._consecutive_failures,
-            degrade_factor=1.0 - (self._actual_hashrate / self._target_hashrate) if self._target_hashrate > 0 else 0.5,
-        )
+        # Apply optional quantum healing swarm for self-repair.  The autonomy
+        # soft-reset path must remain available even if this optional numerical
+        # module is absent or cannot initialise in a constrained environment.
+        try:
+            from .quantum_healing_swarm import QuantumHealingSwarm
+
+            swarm = QuantumHealingSwarm(
+                num_candidates=8,
+                num_lanes=32,
+                enable_tunnelling=True,
+                enable_annealing=True,
+                enable_swarming=True,
+                enable_interference=True,
+            )
+            phi_density = self.get_phi_density() if hasattr(self, 'get_phi_density') else 0.5
+            healing_result = swarm.heal(
+                phi_density=phi_density,
+                consecutive_failures=self._consecutive_failures,
+                degrade_factor=1.0 - (self._actual_hashrate / self._target_hashrate) if self._target_hashrate > 0 else 0.5,
+            )
+            healing_payload = healing_result.to_dict()
+            healing_outcome = "quantum_healed"
+        except Exception as exc:  # pragma: no cover - defensive optional-module fallback
+            healing_payload = {
+                "error": str(exc),
+                "error_type": type(exc).__name__,
+                "fallback": "performance_soft_reset_only",
+            }
+            healing_outcome = "quantum_healing_unavailable"
 
         # Log quantum healing to persistent audit
         self._log_audit_event(
             "quantum_healing_complete",
-            healing_result.to_dict(),
+            healing_payload,
             action="handle_performance_degradation",
-            outcome="quantum_healed",
-            state_diff=healing_result.to_dict(),
+            outcome=healing_outcome,
+            state_diff=healing_payload,
         )
 
         # Reset internal state to recover from drift

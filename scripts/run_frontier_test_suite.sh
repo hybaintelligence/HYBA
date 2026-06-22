@@ -184,7 +184,7 @@ if [ -z "$TEST_EXIT" ] || [ "$TEST_EXIT" -eq 0 ]; then
     echo "  ✅ Regression Tests: Known behavior preservation"
     echo "  ✅ Edge Case Tests: Boundary condition handling"
     echo ""
-    echo "Quality Level: Nobel/Fields Medal Rigor"
+    echo "Quality Level: scientific/formal-invariant validation"
     echo ""
 else
     echo ""

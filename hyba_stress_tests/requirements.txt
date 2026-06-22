@@ -1,5 +1,5 @@
 # HYBA Stress Testing Framework Requirements
-# Fields Medal/Nobel Rigor Stress Testing for HYBA/PYTHIA System
+# formal-invariant validation Stress Testing for HYBA/PYTHIA System
 
 # Core dependencies (required)
 numpy>=1.21.0
