@@ -13,7 +13,7 @@ import hashlib
 import json
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Literal
+from typing import Any, Dict, List, Literal, Optional, Tuple
 
 
 ProposalKind = Literal["conservative", "optimised", "algorithmic", "rewiring"]
@@ -26,7 +26,7 @@ class RegenerationCandidate:
     improvement_goal: str
     context: Dict[str, Any] = field(default_factory=dict)
     candidate_kind: ProposalKind = "conservative"
-    proposed_code: str | None = None
+    proposed_code: Optional[str] = None
 
 
 @dataclass
@@ -34,7 +34,7 @@ class SalamanderRegenerator:
     """Generate sealed, auditable regeneration proposal packets."""
 
     max_limb_size: int = 120
-    stable_core_markers: tuple[str, ...] = (
+    stable_core_markers: Tuple[str, ...] = (
         "STABLE_CORE",
         "DO_NOT_MODIFY",
         "SOVEREIGN_GATE",
