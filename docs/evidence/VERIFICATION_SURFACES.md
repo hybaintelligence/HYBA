@@ -63,6 +63,20 @@ The windows currently expose evidence for these platform dimensions:
 
 Mining is therefore neither ignored nor centred. It is one operational dimension inside HYBA_FULLSTACK.
 
+## Wide layer search
+
+The endpoint catalogue above is intentionally not the whole ontology of HYBA_FULLSTACK. It is the first executable proof index. The wider repository layer map is recorded in `docs/evidence/HYBA_WIDE_LAYER_SEARCH_MAP.md` so future proof windows start from a broad substrate scan before narrowing to a route or product view.
+
+The wide-search rule is:
+
+```text
+many layers -> one platform substrate -> many verification windows
+```
+
+The search map currently tracks at least 25 evidence-bearing strata: substrate, autonomic governance, API composition, intelligence fabric, AI orchestration, synaptic persistence, PULVINI memory/math, φ runtime, quantum substrate/operators, QaaS/QIaaS, CIaaS, quantum finance, customer access, executive control-plane, metabolic/organism/cognitive schema, Salamander/regeneration, mining/PYTHIA operations, observability, evidence governance, test inventory, security/compliance, FinOps/performance/interoperability, frontend contracts, deployment gates, and infrastructure/extension adapters.
+
+A future proof endpoint is valid only if it names the layer it interrogates, the invariant it tests, the artifact it records, the command that reproduces it, and the mapping back to the one HYBA_FULLSTACK substrate.
+
 ## API proof endpoints
 
 | Endpoint | Purpose |
