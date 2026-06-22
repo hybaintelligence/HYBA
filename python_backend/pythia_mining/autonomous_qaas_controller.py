@@ -106,7 +106,8 @@ class AutonomousQaaSController:
         # Self-optimization
         self._proposals: List[OptimizationProposal] = []
         self._optimization_epochs = 0
-        self._last_optimization = 0.0
+        self._last_proposal_time = 0.0
+        self._last_applied_optimization = 0.0
         
         # Self-healing
         self._heal_attempts: List[HealAttempt] = []
@@ -282,7 +283,8 @@ class AutonomousQaaSController:
             return None
         
         # Limit optimization frequency
-        if time.time() - self._last_optimization < 300.0:  # 5 minute cooldown
+        proposal_elapsed = time.time() - self._last_proposal_time
+        if proposal_elapsed < 300.0:  # 5 minute proposal cooldown
             return None
         
         proposal_id = f"opt_{self.service_kind}_{uuid.uuid4().hex[:8]}"
@@ -300,7 +302,7 @@ class AutonomousQaaSController:
                 expected_improvement=0.25,  # ~25% error reduction
                 confidence=0.85,
             )
-            self._last_optimization = time.time()
+            self._last_proposal_time = time.time()
             return proposal
         
         elif metrics.correction_success_rate > 0.95 and current_code_distance > 3:
@@ -314,7 +316,7 @@ class AutonomousQaaSController:
                 expected_improvement=0.15,  # ~15% latency improvement
                 confidence=0.8,
             )
-            self._last_optimization = time.time()
+            self._last_proposal_time = time.time()
             return proposal
         
         return None
@@ -325,14 +327,17 @@ class AutonomousQaaSController:
             if proposal.applied:
                 return False
 
-            # Enforce cooldown period before applying optimization
-            if time.time() - self._last_optimization < 300.0:  # 5 minute cooldown
+            # Enforce cooldown between applied optimizations only. Proposal generation
+            # has its own timestamp so propose -> apply is not rejected solely
+            # because the proposal was just generated.
+            apply_elapsed = time.time() - self._last_applied_optimization
+            if apply_elapsed < 300.0:  # 5 minute apply cooldown
                 logger.warning(
                     "Optimization rejected - cooldown period not elapsed",
                     extra={
                         "service_id": self.service_id,
                         "proposal_id": proposal.proposal_id,
-                        "time_since_last": time.time() - self._last_optimization,
+                        "time_since_last": apply_elapsed,
                     },
                 )
                 return False
@@ -340,7 +345,7 @@ class AutonomousQaaSController:
             proposal.applied = True
             self._proposals.append(proposal)
             self._optimization_epochs += 1
-            self._last_optimization = time.time()
+            self._last_applied_optimization = time.time()
             self._save_state()
 
             logger.info(
@@ -377,7 +382,9 @@ class AutonomousQaaSController:
                     "epochs": self._optimization_epochs,
                     "proposals": len(self._proposals),
                     "applied": sum(1 for p in self._proposals if p.applied),
-                    "last_optimization": self._last_optimization,
+                    "last_proposal_time": self._last_proposal_time,
+                    "last_applied_optimization": self._last_applied_optimization,
+                    "last_optimization": self._last_applied_optimization,
                 },
                 "healing": {
                     "total_attempts": len(self._heal_attempts),
@@ -401,7 +408,9 @@ class AutonomousQaaSController:
                 "service_id": self.service_id,
                 "service_kind": self.service_kind,
                 "optimization_epochs": self._optimization_epochs,
-                "last_optimization": self._last_optimization,
+                "last_proposal_time": self._last_proposal_time,
+                "last_applied_optimization": self._last_applied_optimization,
+                "last_optimization": self._last_applied_optimization,
                 "proposals": [
                     {
                         "proposal_id": p.proposal_id,
@@ -452,7 +461,13 @@ class AutonomousQaaSController:
             state = json.loads(state_file.read_text())
             
             self._optimization_epochs = state.get("optimization_epochs", 0)
-            self._last_optimization = state.get("last_optimization", 0.0)
+            legacy_last_optimization = state.get("last_optimization", 0.0)
+            self._last_proposal_time = state.get(
+                "last_proposal_time", legacy_last_optimization
+            )
+            self._last_applied_optimization = state.get(
+                "last_applied_optimization", legacy_last_optimization
+            )
             
             # Restore proposals
             for p in state.get("proposals", []):
