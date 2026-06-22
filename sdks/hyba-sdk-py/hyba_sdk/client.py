@@ -19,6 +19,51 @@ from hyba_sdk.exceptions import (
 from hyba_sdk.connector import ConnectorConfig
 
 
+class QuantumIntelligenceNamespace:
+    """First-class Quantum Intelligence API namespace.
+
+    Exposes evidence-sealed QIaaS operations under ``/api/qiaas``. Enterprise
+    controls, quota enforcement, trace propagation, and claim boundaries remain
+    enforced by the platform for every call.
+    """
+
+    def __init__(self, client: "HybaClient") -> None:
+        self._client = client
+
+    def query(self, query: str, context: Optional[Dict[str, Any]] = None, **kwargs) -> Dict[str, Any]:
+        payload = {"query": query, "query_type": "explain", "context": context or {}, **kwargs}
+        return self._client._request("POST", "/api/qiaas/query", json=payload)
+
+    def optimize(self, context: Dict[str, Any], **kwargs) -> Dict[str, Any]:
+        payload = {"query": "optimize", "query_type": "optimize", "context": context, **kwargs}
+        return self._client._request("POST", "/api/qiaas/query", json=payload)
+
+    def heal(self, context: Dict[str, Any], **kwargs) -> Dict[str, Any]:
+        payload = {"query": "heal", "query_type": "heal", "context": context, **kwargs}
+        return self._client._request("POST", "/api/qiaas/query", json=payload)
+
+    def metrics(self) -> Dict[str, Any]:
+        return self._client._request("GET", "/api/qiaas/metrics")
+
+    def health(self) -> Dict[str, Any]:
+        return self._client._request("GET", "/api/qiaas/health")
+
+
+class QuantumFinanceNamespace:
+    """Enterprise-controlled Quantum Finance Intelligence helpers."""
+
+    def __init__(self, client: "HybaClient") -> None:
+        self._client = client
+
+    def portfolio_qaoa(self, portfolio: Dict[str, Any], **kwargs) -> Dict[str, Any]:
+        payload = {
+            "query": "quantum-finance portfolio_qaoa",
+            "query_type": "optimize",
+            "context": {"capability_family": "quantum-finance", "portfolio": portfolio, **kwargs},
+        }
+        return self._client._request("POST", "/api/qiaas/query", json=payload)
+
+
 class HybaClient:
     """
     Main client for HYBA QaaS/CIaaS platform
@@ -70,6 +115,8 @@ class HybaClient:
             "Content-Type": "application/json",
             "User-Agent": f"hyba-sdk-py/1.0.0",
         })
+        self.quantum_intelligence = QuantumIntelligenceNamespace(self)
+        self.quantum_finance = QuantumFinanceNamespace(self)
     
     def _request(
         self,

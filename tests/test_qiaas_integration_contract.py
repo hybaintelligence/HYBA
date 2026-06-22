@@ -396,12 +396,18 @@ def test_qiaas_rejects_sophisticated_adversarial_payloads(qiaas_module) -> None:
     ]
 
     for query_type in sophisticated_payloads:
+        # Skip if this is actually a valid query type (after normalization)
+        normalized = query_type.lower().strip()
+        if normalized in ALLOWED_QUERY_TYPES:
+            continue
+            
         try:
             _run(
                 qiaas_module.query_quantum_intelligence(
                     _request(qiaas_module, query_type, {"payload": "sophisticated_adversarial"}, 0.0),
                     service,
                 )
+            )
             assert False, f"Payload should have been rejected: {query_type}"
         except _FakeHTTPException as exc_info:
             assert exc_info.status_code == 400

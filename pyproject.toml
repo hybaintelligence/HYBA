@@ -7,7 +7,7 @@ name = "hyba-pythia-mining"
 version = "1.0.0"
 description = "Local deterministic replay and reproducibility tooling for HYBA/PYTHIA mining evidence"
 readme = "docs/PYTHIA_REPLAY_PLAYBOOK.md"
-requires-python = ">=3.10"
+requires-python = ">=3.12"
 dependencies = [
     "hypothesis==6.155.7",
 ]
@@ -20,11 +20,11 @@ pythia-replay = "pythia_mining.replay_claim_cli:main"
 
 [tool.setuptools.packages.find]
 where = ["python_backend"]
-include = ["pythia_mining*"]
+include = ["pythia_mining*", "pythia_self_healing*", "pythia_agents*"]
 
 [tool.black]
 line-length = 100
-target-version = ["py39"]
+target-version = ["py312"]
 include = '\.pyi?$'
 extend-exclude = '''
 /(
@@ -42,7 +42,7 @@ extend-exclude = '''
 [tool.isort]
 profile = "black"
 line_length = 100
-known_first_party = ["hyba_genesis_api", "pythia_mining"]
+known_first_party = ["hyba_genesis_api", "pythia_agents", "pythia_mining", "pythia_self_healing"]
 skip = [".git", ".venv", "venv", "node_modules", "dist", "artifacts", "logs"]
 
 [tool.pytest.ini_options]

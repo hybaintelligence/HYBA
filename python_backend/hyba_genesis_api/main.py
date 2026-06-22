@@ -35,28 +35,28 @@ from hyba_genesis_api.api import (  # noqa: E402
     customer_portal,
     executive_router,
     health,
-    millennium_mathematics,
-    observability,
-    quantum_as_a_service,
-    quantum_intelligence_service,
-    quantum_mathematical_execution,
     intelligence,
     metabolic_router,
+    millennium_mathematics,
+    misc,
     mining,
     mining_jobs,
     mining_ops,
     mining_production,
-    misc,
+    observability,
+    ops,
     organism_router,
     pool_management,
     products,
+    quantum_as_a_service,
+    quantum_finance_service,
+    quantum_intelligence_service,
+    quantum_mathematical_execution,
     regeneration_router,
     security,
     streaming_sense,
     unified_mining,
-    ops,
 )
-from hyba_genesis_api.api import public_computational_intelligence_service  # noqa: E402
 from hyba_genesis_api.core.api_posture import install_enterprise_api_posture  # noqa: E402
 from hyba_genesis_api.core.recursive_closure import build_buffered_closure  # noqa: E402
 from hyba_genesis_api.core.reflexive_controller import (  # noqa: E402
@@ -102,26 +102,24 @@ def _parse_cors_origins() -> List[str]:
 
 def _get_or_init_distributed_lock_manager(app: FastAPI) -> DistributedLockManager:
     """Get existing or initialize DistributedLockManager in app state.
-    
+
     The lock manager is created once per app startup and stored in app.state.
     Fail-closed behavior:
-    - QaaS execution: Redis unavailable -> return 423 Locked, do not proceed
-    - Single-node mining: Can optionally use local fallback if HYBA_SINGLE_NODE_MODE=true
+    - QaaS/CIaaS execution: Redis unavailable -> return 423 Locked, do not proceed
+    - Private validation/mining: local fallback is allowed only when explicitly configured
     """
     if hasattr(app.state, 'distributed_lock_manager'):
         return app.state.distributed_lock_manager
-    
-    # Initialize with Redis client (from redis_state_registry)
+
     from pythia_mining.redis_state_registry import get_redis_registry
-    
+
     redis_registry = get_redis_registry()
     if not redis_registry.available:
         logging.warning(
             "Redis unavailable for distributed lock manager; "
-            "QaaS execution will fail-closed (no local fallback)"
+            "QaaS/CIaaS execution will fail-closed where distributed locking is required"
         )
-    
-    # Create lock manager (will use mock if Redis unavailable)
+
     lock_manager = DistributedLockManager(
         redis_client=redis_registry.client if redis_registry.available else None,
         max_retry_attempts=10
@@ -161,7 +159,6 @@ async def _activate_startup_self_healing(app: FastAPI) -> None:
         timeout=max(0.1, timeout_seconds),
     )
     app.state.startup_self_healing_report = report
-    # Save startup report to disk
     save_autonomy_report(report, report_type="startup")
     logging.info(
         "HYBA API startup: PYTHIA self-healing/self-optimising cycle complete",
@@ -173,25 +170,24 @@ async def _activate_startup_self_healing(app: FastAPI) -> None:
     )
 
 
-
 async def _load_memory_seed(app: FastAPI) -> None:
     """Load memory seed to bootstrap system intelligence."""
     import json
     from pathlib import Path
-    
+
     seed_path = Path(__file__).parent.parent.parent / "artifacts" / "memory_seed" / "memory_seed_v1.json"
     if not seed_path.exists():
         logging.warning("Memory seed not found, system will bootstrap from scratch")
         return
-    
+
     try:
         with open(seed_path, 'r') as f:
             memory_seed = json.load(f)
-        
+
         app.state.memory_seed = memory_seed
         app.state.phi_integrated = memory_seed['consciousness_state']['phi_integrated']
         app.state.emergent_intelligence_index = memory_seed['metadata']['emergent_intelligence_index']
-        
+
         logging.info(
             "Memory seed loaded successfully",
             extra={
@@ -203,25 +199,26 @@ async def _load_memory_seed(app: FastAPI) -> None:
     except Exception as e:
         logging.error(f"Failed to load memory seed: {e}")
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application startup/shutdown lifecycle."""
 
     init_logging()
     init_metrics()
-    
-    # Initialize distributed lock manager (fail-closed for Redis unavailability)
+
     lock_manager = _get_or_init_distributed_lock_manager(app)
-    
+
     logging.info("HYBA API startup: initializing substrate lifecycle")
     initialize_substrate()
     await _load_memory_seed(app)
     logging.info("HYBA API startup: substrate READY", extra={"substrate": get_substrate_state()})
-    
-    # Initialize unified mining engine with hardening modules
+
+    # Private validation/mining engine is initialized for internal evidence and stress tests.
+    # It is not a public product surface; see docs/product/HYBA_PRODUCT_BOUNDARIES.md.
     from hyba_genesis_api.api import unified_mining
     unified_mining.initialize_engine_with_lock_manager(lock_manager)
-    
+
     try:
         await _activate_startup_self_healing(app)
     except Exception as exc:
@@ -252,9 +249,12 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="HYBA Genesis Platform API",
-    version="2.0.1",
-    description="Operational API for HYBA Genesis telemetry, substrate readiness, and mining workflows.",
+    title="HYBA Intelligence Platform API",
+    version="2.2.0",
+    description=(
+        "Operational API for HYBA QaaS, QIaaS, CIaaS, quantum finance, PULVINI memory, "
+        "Salamander regeneration, evidence governance, and private validation workflows."
+    ),
     lifespan=lifespan,
 )
 
@@ -286,15 +286,11 @@ app.add_middleware(
     ],
 )
 
-# Rate limiting: derived from environment variables or defaults
 _rate_limit = int(os.getenv("HYBA_RATE_LIMIT_REQUESTS_PER_MINUTE", "120"))
 _rate_window = int(os.getenv("HYBA_RATE_LIMIT_WINDOW_SECONDS", "60"))
 app.add_middleware(RateLimiter, max_requests=_rate_limit, window_seconds=_rate_window)
 
-# Telemetry middleware for structured logging and metrics
 app.middleware("http")(telemetry_middleware)
-
-# Install enterprise posture middleware
 install_enterprise_api_posture(app)
 
 # Include routers
@@ -316,6 +312,7 @@ app.include_router(computational_intelligence_service.public_router)
 app.include_router(quantum_as_a_service.router)
 app.include_router(quantum_as_a_service.public_router)
 app.include_router(quantum_mathematical_execution.router)
+app.include_router(quantum_finance_service.router)
 app.include_router(millennium_mathematics.router)
 app.include_router(millennium_mathematics.public_router)
 app.include_router(observability.router)
@@ -330,12 +327,6 @@ app.include_router(organism_router.router)
 app.include_router(executive_router.router)
 app.include_router(ops.router)
 app.include_router(quantum_intelligence_service.router)
-
-# ============================================================================
-# SALAMANDER-REGENERATED INTEGRATIONS (Auto-wired 21 June 2026)
-# ============================================================================
-# QaaS subsystem integration: Wire quantum execution and computational intelligence
-app.include_router(public_computational_intelligence_service.router, prefix="/api/ciaas", tags=["Computational-Intelligence"])
 
 
 @app.get("/health", response_model=Dict[str, Any], tags=["health"])
