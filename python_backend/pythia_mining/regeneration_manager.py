@@ -290,6 +290,19 @@ class RegenerationManager:
         self.healing_proposals.append(packet)
         return packet
 
+    def analyse_organism_governance(self, pulvini_state: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+        """Return CLRI/TRM/predictive/rewiring/benchmark/evidence organism report.
+
+        This is the manager-level entrypoint for Salamander's multi-scale
+        autonomic substrate. It stages intelligence and evidence only; it does
+        not apply rewires, deploy repairs, or alter Stable Core boundaries.
+        """
+
+        from pythia_self_healing.autonomic_organism_governor import SalamanderOrganismGovernor
+
+        governor = SalamanderOrganismGovernor()
+        return governor.analyse_manager(self, pulvini_state=pulvini_state)
+
 
 _MANAGER = RegenerationManager()
 
