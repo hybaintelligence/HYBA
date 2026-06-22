@@ -12,6 +12,9 @@ permissions:
   actions: read
   checks: write
 
+env:
+  HYBA_PYTHON_VERSION: '3.12.7'
+
 jobs:
   runtime-guardrails:
     name: Runtime mock/static telemetry guardrails
@@ -19,10 +22,14 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Set up Python
+      - name: Set up Python 3.12
         uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: ${{ env.HYBA_PYTHON_VERSION }}
+      - name: Assert Python runtime contract
+        env:
+          PYTHONPATH: python_backend
+        run: python -m pytest tests/test_python_runtime_contract.py -q
       - name: Assert runtime paths do not contain fabricated telemetry
         run: python scripts/check_no_runtime_mocks.py
       - name: Assert production entrypoint honors service commands
@@ -35,10 +42,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Set up Python
+      - name: Set up Python 3.12
         uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: ${{ env.HYBA_PYTHON_VERSION }}
           cache: pip
       - name: Install backend dependencies
         run: |
@@ -100,10 +107,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Set up Python
+      - name: Set up Python 3.12
         uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: ${{ env.HYBA_PYTHON_VERSION }}
           cache: pip
       - name: Install backend dependencies
         run: |
