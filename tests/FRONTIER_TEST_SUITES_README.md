@@ -494,7 +494,7 @@ When adding new frontier tests:
 |--------|--------|---------|--------|
 | Test Coverage | >80% | 95%+ | ✅ |
 | Property Tests | >50 | 300+ | ✅ |
-| Mathematical Rigor | Nobel/Fields | Verified | ✅ |
+| Mathematical Rigor | scientific/mathematical | Verified | ✅ |
 | Execution Time | <5 min | ~2 min | ✅ |
 | Failure Rate | <5% | <1% | ✅ |
 

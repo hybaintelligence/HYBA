@@ -6,7 +6,7 @@ Tests mining for low-entropy states in AI fabric instead of static hash.
 Uses Hendrix-Φ solver to find nonces that specifically reduce Fisher curvature
 of the manifold, enabling self-optimizing hardware that mines for efficiency.
 
-Fields Medal Rigor: Uses information theory, statistical mechanics, and
+formal-invariant validation: Uses information theory, statistical mechanics, and
 optimization theory to mine for self-optimization rather than static tokens.
 """
 
@@ -346,7 +346,7 @@ class EntropyMiningTestSuite:
             },
             "entropy_history": result.entropy_history,
             "fisher_curvature_history": result.fisher_curvature_history,
-            "fields_medal_rigor_metrics": {
+            "formal_invariant_validation_metrics": {
                 "self_optimization_demonstrated": result.self_optimization_successful,
                 "entropy_target_achieved": result.target_entropy_achieved,
                 "efficiency_gain_quantified": result.estimated_efficiency_gain > 0,

@@ -1,4 +1,4 @@
-"""Fields-rigour tests for Salamander organism-level autonomics.
+"""Formal-invariant tests for Salamander organism-level autonomics.
 
 These tests prove the next frontier above the lane-level math and SHR:
 CLRI, TRM, predictive healing, hierarchical rewiring, benchmark evolution,

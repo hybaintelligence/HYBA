@@ -276,7 +276,7 @@ The implementation incorporates:
 - **Thermodynamics**: Landauer limit cost proxy for computational cost
 - **Causal Analysis**: Dependency graph analysis for critical path identification
 
-### Fields Medal Mathematics
+### Formal-Invariant Mathematics
 
 The system implements:
 - **Euler Characteristic**: Topological integrity verification

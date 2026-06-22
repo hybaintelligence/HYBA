@@ -1,5 +1,8 @@
 # HYBA/PYTHIA Advanced Mathematical Validation Report
 
+> **Archived non-authoritative record (2026-06):** This document is retained for historical traceability only. It is not an active trust claim, external-award claim, production-readiness score, or institutional endorsement. Use active evidence gates and closure-status records for current readiness decisions.
+
+
 **Date**: 2026-06-19
 **Framework Version**: 1.0.0
 **Validation Scope**: Complete stress testing framework implementation

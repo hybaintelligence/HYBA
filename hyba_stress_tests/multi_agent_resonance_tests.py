@@ -6,7 +6,7 @@ Tests resonance synchronization across multiple nodes to achieve network-wide
 Φ-resonance where nonces found by one miner increase success probability of
 miners on other nodes without direct data transfer (Digital Entanglement).
 
-Fields Medal Rigor: Uses network theory, synchronization dynamics, and
+formal-invariant validation: Uses network theory, synchronization dynamics, and
 Hebbian learning principles to test emergent multi-agent intelligence.
 """
 
@@ -478,7 +478,7 @@ class MultiAgentResonanceTestSuite:
                 "hebbian_reinforcement_detected": result.hebbian_reinforcement_detected,
                 "digital_entanglement_achieved": result.digital_entanglement_achieved
             },
-            "fields_medal_rigor_metrics": {
+            "formal_invariant_validation_metrics": {
                 "network_wide_resonance": result.network_resonance_achieved,
                 "digital_entanglement_verified": result.digital_entanglement_achieved,
                 "hebbian_learning_demonstrated": result.hebbian_reinforcement_detected,

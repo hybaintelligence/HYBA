@@ -7,7 +7,7 @@ geometric stability falls below functional threshold. This defines the system's
 "Cognitive Horizon"—the maximum complexity the AI fabric can process before
 the manifold loses coherence.
 
-Fields Medal Rigor: Uses differential geometry, Bures metric, and Φ-based
+formal-invariant validation: Uses differential geometry, Bures metric, and Φ-based
 topological analysis to determine manifold coherence limits.
 """
 
@@ -350,7 +350,7 @@ class ManifoldStressTestSuite:
                 }
                 for r in results
             ],
-            "fields_medal_rigor_metrics": {
+            "formal_invariant_validation_metrics": {
                 "manifold_coherence_limit": cognitive_horizon,
                 "geometric_stability_decay_rate": collapse_dynamics.get("decay_rate", 0),
                 "phi_preservation_at_horizon": next(

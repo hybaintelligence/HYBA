@@ -1,5 +1,5 @@
 """
-Mathematical Verification Module — Oxbridge/Fields Medal Rigor
+Mathematical Verification Module — formal-invariant validation
 
 This module provides rigorous mathematical verification of quantum computer operations
 with the precision expected of mathematical research at the highest level.

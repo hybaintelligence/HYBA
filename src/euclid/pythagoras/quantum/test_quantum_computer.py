@@ -1,8 +1,8 @@
 """
-Mathematical Quantum Computer Test Suite — Oxbridge/Fields Medal Rigor
+Mathematical Quantum Computer Test Suite — formal-invariant validation
 
 This test suite provides mathematical verification of the quantum computer implementation
-with the rigor expected of Oxbridge mathematical analysis and Fields Medal-level precision.
+with the rigor expected of formal mathematical analysis and formal-invariant precision.
 
 Testing Philosophy:
 1. Mathematical Proofs: Verify exact mathematical properties, not just empirical observations
