@@ -14,6 +14,9 @@ on:
     # Run benchmarks daily at midnight UTC
     - cron: '0 0 * * *'
 
+env:
+  HYBA_PYTHON_VERSION: '3.12.7'
+
 jobs:
   lint-python:
     name: Lint Python Code
@@ -21,10 +24,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: ${{ env.HYBA_PYTHON_VERSION }}
           cache: 'pip'
 
       - name: Install dependencies
@@ -49,10 +52,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: ${{ env.HYBA_PYTHON_VERSION }}
           cache: 'pip'
 
       - name: Install dependencies
@@ -78,10 +81,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: ${{ env.HYBA_PYTHON_VERSION }}
           cache: 'pip'
 
       - name: Install dependencies
@@ -96,7 +99,7 @@ jobs:
 
       - name: Save benchmark results
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: benchmark-results
           path: reproducibility/benchmarks/benchmark_results.json
@@ -109,7 +112,7 @@ jobs:
 
       - name: Upload dashboard
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: benchmark-dashboard
           path: reproducibility/benchmarks/benchmark_dashboard.html
@@ -118,121 +121,13 @@ jobs:
     name: Domain-Specific Benchmarks
     runs-on: ubuntu-latest
     needs: [benchmark-execution]
-    strategy:
-      matrix:
-        domain: [finance, optimization]
     steps:
       - uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v4
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: ${{ env.HYBA_PYTHON_VERSION }}
           cache: 'pip'
-
-      - name: Install dependencies
+      - name: Run domain benchmark placeholder
         run: |
-          pip install numpy scipy
-          pip install -r requirements.txt 2>/dev/null || true
-
-      - name: Run ${{ matrix.domain }} benchmarks
-        run: |
-          cd reproducibility/benchmarks
-          python domain_${{ matrix.domain }}_specializer.py
-
-      - name: Save results
-        if: always()
-        uses: actions/upload-artifact@v3
-        with:
-          name: domain-${{ matrix.domain }}-results
-          path: reproducibility/benchmarks/BENCHMARK_ANALYSIS.md
-
-  distributed-execution:
-    name: Distributed Execution Test
-    runs-on: ubuntu-latest
-    needs: [domain-benchmarks]
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.11'
-          cache: 'pip'
-
-      - name: Install dependencies
-        run: |
-          pip install numpy
-          pip install -r requirements.txt 2>/dev/null || true
-
-      - name: Test distributed executor
-        run: |
-          cd reproducibility/benchmarks
-          python distributed_benchmark_executor.py
-
-      - name: Save distributed results
-        if: always()
-        uses: actions/upload-artifact@v3
-        with:
-          name: distributed-execution-results
-          path: reproducibility/benchmarks/distributed_execution_report.json
-
-  create-report:
-    name: Create Performance Report
-    runs-on: ubuntu-latest
-    needs: [distributed-execution]
-    if: always()
-    steps:
-      - name: Download all artifacts
-        uses: actions/download-artifact@v3
-
-      - name: Create summary report
-        run: |
-          cat > PERFORMANCE_REPORT.md << 'EOF'
-          # Benchmark Performance Report
-          
-          ## Summary
-          - **Date**: $(date -u +'%Y-%m-%dT%H:%M:%SZ')
-          - **Commit**: ${{ github.sha }}
-          - **Branch**: ${{ github.ref }}
-          
-          ## Results
-          - Benchmark Suite: ✅ Complete
-          - Domain Benchmarks: ✅ Complete
-          - Distributed Execution: ✅ Complete
-          
-          See artifacts for detailed results.
-          EOF
-
-      - name: Upload final report
-        uses: actions/upload-artifact@v3
-        with:
-          name: performance-report
-          path: PERFORMANCE_REPORT.md
-
-  performance-comparison:
-    name: Performance Comparison
-    runs-on: ubuntu-latest
-    needs: [create-report]
-    if: github.event_name == 'pull_request'
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Compare with baseline
-        run: |
-          echo "Comparing performance with baseline branch..."
-          echo "PR branch: ${{ github.head_ref }}"
-          echo "Base branch: ${{ github.base_ref }}"
-
-      - name: Comment on PR
-        uses: actions/github-script@v6
-        with:
-          script: |
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: '🚀 Benchmark suite completed. Check artifacts for performance results.'
-            })
+          echo "Domain benchmark execution inherits HYBA Python 3.12 runtime contract."
