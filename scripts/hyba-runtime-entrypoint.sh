@@ -32,6 +32,7 @@ echo "[hyba-entrypoint] starting FastAPI backend on ${BACKEND_HOST}:${BACKEND_PO
 uvicorn hyba_genesis_api.main:app \
   --host "$BACKEND_HOST" \
   --port "$BACKEND_PORT" \
+  --workers "${UVICORN_WORKERS:-2}" \
   --log-level "${LOG_LEVEL:-warning}" &
 BACKEND_PID=$!
 
