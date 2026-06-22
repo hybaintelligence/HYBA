@@ -12,7 +12,7 @@ from __future__ import annotations
 import ast
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional, Union
 
 from .autonomous_damage_detector import DamageReport
 from .salamander_regenerator import RegenerationCandidate, SalamanderRegenerator
@@ -34,7 +34,7 @@ class SelfHealingReactor:
 
     def heal_damage(
         self,
-        damage_report: DamageReport | Dict[str, Any],
+        damage_report: Union[DamageReport, Dict[str, Any]],
         module_path: str,
         target_name: str,
     ) -> Dict[str, Any]:
@@ -94,7 +94,7 @@ class SelfHealingReactor:
 
     def optimise_hot_path(
         self,
-        damage_report: DamageReport | Dict[str, Any],
+        damage_report: Union[DamageReport, Dict[str, Any]],
         module_path: str,
         target_name: str,
     ) -> Dict[str, Any]:
@@ -115,7 +115,7 @@ class SelfHealingReactor:
         staged["protocol_step"] = "optimise"
         return staged
 
-    def _load_target_code(self, module_path: str, target_name: str) -> str | Dict[str, Any]:
+    def _load_target_code(self, module_path: str, target_name: str) -> Union[str, Dict[str, Any]]:
         try:
             full_code = Path(module_path).read_text(encoding="utf-8")
         except Exception as exc:  # pragma: no cover - exercised through error packet tests
@@ -141,7 +141,7 @@ class SelfHealingReactor:
                 return "\n".join(lines[start:end])
         return None
 
-    def _build_improvement_goal(self, damage_report: DamageReport | Dict[str, Any]) -> str:
+    def _build_improvement_goal(self, damage_report: Union[DamageReport, Dict[str, Any]]) -> str:
         """Convert damage signals into an actionable healing goal."""
 
         issues = [str(issue) for issue in damage_report.get("issues", [])]
@@ -164,13 +164,13 @@ class SelfHealingReactor:
         return "Repair detected drift and strengthen resilience"
 
     @staticmethod
-    def _requires_rewiring(damage_report: DamageReport | Dict[str, Any]) -> bool:
+    def _requires_rewiring(damage_report: Union[DamageReport, Dict[str, Any]]) -> bool:
         lowered = " | ".join(str(issue) for issue in damage_report.get("issues", [])).lower()
         return any(token in lowered for token in ("rewire", "structural", "architecture", "dependency graph", "circular import"))
 
     def _governance_envelope(
         self,
-        damage_report: DamageReport | Dict[str, Any],
+        damage_report: Union[DamageReport, Dict[str, Any]],
         packet: Optional[Dict[str, Any]],
     ) -> Dict[str, Any]:
         return {
@@ -190,7 +190,7 @@ class SelfHealingReactor:
 
     def _create_error_packet(
         self,
-        damage_report: DamageReport | Dict[str, Any],
+        damage_report: Union[DamageReport, Dict[str, Any]],
         target_name: str,
         reason: str,
     ) -> Dict[str, Any]:
@@ -217,7 +217,7 @@ class SelfHealingReactor:
         }
 
 
-def create_healing_proposal(module_path: str, target_name: str, damage_issues: list[str] | None = None) -> Dict[str, Any]:
+def create_healing_proposal(module_path: str, target_name: str, damage_issues: Optional[List[str]] = None) -> Dict[str, Any]:
     """Manual development helper for staging a sovereign healing proposal."""
 
     regenerator = SalamanderRegenerator()
