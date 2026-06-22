@@ -64,6 +64,6 @@ def test_production_mining_harness_does_not_fabricate_live_revenue() -> None:
 
     assert "self.estimated_revenue_btc = 0.0" in source
     assert "time.time() % 1.0" not in source
-    assert "revenue_source": "live_pool_result_only" or "live_pool_result_only" in source
+    assert "live_pool_result_only" in source
     assert "SalamanderMiningGuard" in source
     assert "prepare_for_live_mining" in source
