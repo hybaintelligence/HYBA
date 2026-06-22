@@ -18,7 +18,7 @@ from dataclasses import asdict, dataclass
 try:
     from enum import StrEnum
 except ImportError:
-    # Python 3.9 compatibility
+    # Fallback for environments without StrEnum
     from enum import Enum
 
     class StrEnum(str, Enum):

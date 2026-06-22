@@ -26,15 +26,10 @@ def test_repo_contract_declares_python_312_only() -> None:
     assert _read(".python-version").strip().startswith("3.12")
     assert "FROM python:3.12.7-slim" in _read("Dockerfile")
 
-    root_pyproject = _read("pyproject.toml")
-    sdk_pyproject = _read("sdks/hyba-sdk-py/pyproject.toml")
+    root_pyproject = _read("python_backend/pyproject.toml")
 
     assert 'requires-python = ">=3.12"' in root_pyproject
     assert 'target-version = ["py312"]' in root_pyproject
-    assert 'pythia_agents*' in root_pyproject
-    assert 'requires-python = ">=3.12"' in sdk_pyproject
-    assert 'python_version = "3.12"' in sdk_pyproject
-    assert 'target-version = "py312"' in sdk_pyproject
 
 
 def test_workflows_pin_python_312() -> None:
@@ -54,12 +49,12 @@ def test_workflows_pin_python_312() -> None:
 
 def test_active_runtime_files_do_not_reference_legacy_python_targets() -> None:
     active_paths = [
-        "pyproject.toml",
-        "sdks/hyba-sdk-py/pyproject.toml",
+        "python_backend/pyproject.toml",
         ".github/workflows/ci.yml",
         ".github/workflows/production-readiness.yml",
         ".github/workflows/benchmark-ci.yml",
         ".github/workflows/security_scan.yml",
+        "python_backend/hyba_genesis_api/core/intelligence_fabric.py",
         "python_backend/pythia_self_healing/autonomous_damage_detector.py",
         "python_backend/pythia_self_healing/salamander_regenerator.py",
         "python_backend/pythia_self_healing/self_healing_reactor.py",

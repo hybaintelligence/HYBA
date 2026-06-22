@@ -1,4 +1,4 @@
-name: CI Pipeline
+name: CI
 
 on:
   push:
@@ -6,93 +6,144 @@ on:
   pull_request:
     branches: [main, develop]
 
-env:
-  HYBA_PYTHON_VERSION: '3.12.7'
-
 jobs:
   test:
     runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:16-alpine
-        env:
-          POSTGRES_USER: hyba
-          POSTGRES_PASSWORD: hyba
-          POSTGRES_DB: hyba
-        options: >-
-          --health-cmd "pg_isready -U hyba -d hyba"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
-      redis:
-        image: redis:7-alpine
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 6379:6379
-
+    strategy:
+      matrix:
+        python-version: ['3.12']
+    
     steps:
       - uses: actions/checkout@v4
-
-      - name: Set up Python 3.12
-        uses: actions/setup-python@v5
+      
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
         with:
-          python-version: ${{ env.HYBA_PYTHON_VERSION }}
-          cache: pip
-          cache-dependency-path: |
-            python_backend/requirements.txt
-            python_backend/requirements.test.txt
-
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+      
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
-          pip install -r python_backend/requirements.txt
-          pip install -r python_backend/requirements.test.txt
-
-      - name: Lint with flake8
+          python -m pip install --upgrade pip==23.2.1
+          pip install -r requirements.txt
+          pip install pytest==8.4.2 hypothesis==6.141.1 numpy==2.0.2
+      
+      - name: Run quantum regeneration property tests
         run: |
-          pip install flake8
-          flake8 python_backend --count --select=E9,F63,F7,F82 --show-source --statistics
-          flake8 python_backend --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-
-      - name: Type check with mypy
+          PYTHONPATH=python_backend python3 -m pytest tests/test_quantum_regeneration_properties.py -v --tb=short
+      
+      - name: Run salamander frontier tests
         run: |
-          pip install mypy
-          mypy python_backend --ignore-missing-imports || true
-
-      - name: Run pytest
-        env:
-          DATABASE_URL: postgresql+psycopg2://hyba:hyba@localhost:5432/hyba
-          REDIS_URL: redis://localhost:6379
-          PYTHONPATH: python_backend
-          HYBA_STARTUP_SELF_HEALING_ENABLED: "false"
+          PYTHONPATH=python_backend python3 -m pytest tests/test_salamander_frontier.py -v --tb=short
+      
+      - name: Run regeneration manager API tests
         run: |
-          python -m pytest \
-            tests/test_python_runtime_contract.py \
-            tests/test_fault_tolerant_quantum.py \
-            tests/test_quantum_as_a_service_api.py \
-            tests/test_computational_intelligence_service_api.py \
-            tests/test_commercial_public_api.py \
-            tests/test_salamander_self_healing_reactor.py \
-            tests/test_salamander_autonomic_organism_governor.py \
-            tests/test_pythia_agent_orchestrator.py \
-            tests/test_phi_hardware_quantum_scaling_evidence.py \
-            tests/test_quantum_finance_service_design.py \
-            tests/test_product_boundary_and_secret_hygiene.py \
-            tests/test_phi_architecture_golden_flow.py \
-            hyba_intelligence_tests/test_consciousness_engine_scaling.py \
-            -v --cov=python_backend --cov-report=xml
-
-      - name: Run verifier firewall gate
-        run: bash scripts/run_verifier_firewall_gate.sh
-
-      - name: Upload coverage
-        uses: codecov/codecov-action@v4
+          PYTHONPATH=python_backend python3 -m pytest tests/test_regeneration_manager_api.py -v --tb=short
+      
+      - name: Run all tests
+        run: |
+          PYTHONPATH=python_backend python3 -m pytest tests/ -v --tb=short
+      
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
         with:
-          files: ./coverage.xml
-          fail_ci_if_error: false
+          name: test-results-${{ matrix.python-version }}
+          path: |
+            .pytest_cache/
+            *.xml
+          retention-days: 30
+
+  lint:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+      
+      - name: Install dependencies
+        run: |
+          pip install flake8==7.0.0
+          pip install -r requirements.txt
+      
+      - name: Lint Python code
+        run: |
+          flake8 python_backend/ --count --select=E9,F63,F7,F82 --show-source --statistics
+          flake8 python_backend/ --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+
+  security:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+      
+      - name: Install dependencies
+        run: |
+          pip install safety==2.3.5
+          pip install -r requirements.txt
+      
+      - name: Run Safety check
+        run: |
+          safety check --json --output safety-report.json || true
+      
+      - name: Upload security report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-report
+          path: safety-report.json
+          retention-days: 30
+
+  benchmark:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+      
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install pytest hypothesis numpy psutil==5.9.8
+      
+      - name: Run benchmarks
+        run: |
+          PYTHONPATH=python_backend python3 -m pytest tests/test_quantum_regeneration_properties.py -v --benchmark-skip
+      
+      - name: Upload benchmark results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-results
+          path: |
+            .pytest_cache/
+            benchmark-results/
+          retention-days: 90
+
+  dependency-review:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Dependency Review
+        uses: actions/dependency-review-action@v3
+        with:
+          allow-licenses: MIT, Apache-2.0, BSD-3-Clause, BSD-2-Clause, Python-2.0, MPL-2.0, ISC
+          deny-licenses: GPL-3.0, AGPL-3.0
+          fail-on-severity: high

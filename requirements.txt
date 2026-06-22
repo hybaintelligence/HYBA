@@ -1,3 +1,0 @@
-# HYBA_FULLSTACK root dependency entrypoint
-# The backend lock is the canonical Python runtime/test environment.
--r python_backend/requirements.txt

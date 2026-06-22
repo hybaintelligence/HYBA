@@ -376,25 +376,84 @@ jobs:
 
 ## Verification Status
 
+### Implemented Proofs (Compiled and Verified)
+
 | Property | Lean | Coq | Isabelle | Status |
 |----------|------|-----|----------|--------|
-| Hermiticity Preservation | ⏳ | ⏳ | ⏳ | In Progress |
-| Trace Preservation | ⏳ | ⏳ | ⏳ | In Progress |
-| PSD Preservation | ⏳ | ⏳ | ⏳ | In Progress |
-| Entropy Bounds | ⏳ | ⏳ | ⏳ | In Progress |
-| Pipeline Correctness | ⏳ | ⏳ | ⏳ | In Progress |
-| Lindblad Trace Preservation | ⏳ | ⏳ | ⏳ | In Progress |
-| Malformed Guard | ⏳ | ⏳ | ⏳ | In Progress |
+| **Framework Setup** | ⏸ | ⏸ | ⏸ | **Not Started** - Project structure documented but not created |
+| **Basic Definitions** | ⏸ | ⏸ | ⏸ | **Not Started** - Role, DensityMatrix types defined in docs only |
+
+### Planned Proofs (Roadmap Only)
+
+| Property | Lean | Coq | Isabelle | Status |
+|----------|------|-----|----------|--------|
+| Hermiticity Preservation | ⏸ | ⏸ | ⏸ | **Planned** - Proof sketch documented, not implemented |
+| Trace Preservation | ⏸ | ⏸ | ⏸ | **Planned** - Proof sketch documented, not implemented |
+| PSD Preservation | ⏸ | ⏸ | ⏸ | **Planned** - Proof sketch documented, not implemented |
+| Entropy Bounds | ⏸ | ⏸ | ⏸ | **Planned** - Proof sketch documented, not implemented |
+| Pipeline Correctness | ⏸ | ⏸ | ⏸ | **Planned** - Proof sketch documented, not implemented |
+| Lindblad Trace Preservation | ⏸ | ⏸ | ⏸ | **Planned** - Proof sketch documented, not implemented |
+| Malformed Guard | ⏸ | ⏸ | ⏸ | **Planned** - Proof sketch documented, not implemented |
 
 **Legend**: ✅ Complete | ⏳ In Progress | ⏸ Planned | ❌ Not Started
 
+### Current State Summary
+
+**What EXISTS**:
+- ✅ Documentation of formal verification approach (this file)
+- ✅ Proof sketches for 7 key theorems
+- ✅ Example code snippets for Lean, Coq, Isabelle
+- ✅ CI/CD integration plan
+- ✅ Project structure design
+
+**What DOES NOT EXIST**:
+- ❌ No Lean/Coq/Isabelle project created
+- ❌ No proofs compiled or verified
+- ❌ No proof assistant environment set up
+- ❌ No formal verification artifacts
+
+**Evidence Classification**: **Planned** - All formal verification work is intended future work, not current capability.
+
 ## Next Steps
 
-1. **Complete Basic Proofs**: Finish proofs for density matrix invariants
-2. **Automate Proof Checking**: Integrate into CI/CD
-3. **Extend to Full Pipeline**: Prove correctness of entire regeneration pipeline
-4. **Publish Formalization**: Submit to formal methods community
-5. **Collaborate with Institutions**: Partner with Caltech, Oxbridge for advanced proofs
+### Immediate (0-3 months)
+1. **Set up proof assistant environments**: Install Lean 4, Coq, Isabelle
+2. **Create project structures**: Initialize lakefile.lean, Coq Makefile, Isabelle session
+3. **Complete 1 pilot proof**: Density matrix Hermiticity preservation (simplest theorem)
+4. **Verify proof compiles**: Ensure proof actually checks in proof assistant
+5. **Document proof process**: Create tutorial for other invariants
+
+### Short-Term (3-6 months)
+1. **Complete core invariant proofs**: Hermiticity, trace, PSD (3 proofs)
+2. **Set up CI/CD for proofs**: Automated proof checking on commits
+3. **Publish formalization**: Submit to formal methods community (arXiv, conference)
+4. **Collaborate with institutions**: Partner with Caltech/Oxbridge for advanced proofs
+
+### Medium-Term (6-12 months)
+1. **Complete all 7 planned proofs**: Full verification of regeneration pipeline
+2. **Extend to full pipeline**: Prove end-to-end correctness
+3. **Independent verification**: Have external formal methods expert review proofs
+4. **Integrate with academic paper**: Include formal verification section
+
+### Long-Term (12-24 months)
+1. **Advanced proofs**: Non-separability, Lindblad convergence, optimality
+2. **Proof automation**: Tactics, decision procedures for density matrix properties
+3. **Formal verification certification**: Third-party audit of proofs
+4. **Tool release**: Publish proof assistant integration as open-source tool
+
+### Critical Distinction
+
+**Current State**: Formal verification is **planned and documented**, not **implemented**.
+
+**What this means**:
+- ✅ We know WHAT to prove (7 theorems with proof sketches)
+- ✅ We know HOW to prove it (Lean/Coq/Isabelle examples provided)
+- ✅ We have a roadmap (24-month integration plan)
+- ❌ We have NOT actually compiled any proofs
+- ❌ We have NOT verified proofs in proof assistants
+- ❌ We have NOT published formal verification artifacts
+
+**For External Reviewers**: Do not cite this document as evidence of formal verification. Cite it as evidence of **formal verification planning and methodology**.
 
 ## References
 
