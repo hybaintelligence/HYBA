@@ -1,0 +1,15 @@
+{
+  "service_id": "qaas-b65540948ce8",
+  "service_kind": "qaas",
+  "optimization_epochs": 0,
+  "last_optimization": 1782128846.362925,
+  "proposals": [],
+  "heal_attempts": [],
+  "health_history": [],
+  "error_rates": [
+    2.3165504401831932e-08
+  ],
+  "execution_times": [
+    13.706207999348408
+  ]
+}

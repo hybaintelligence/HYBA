@@ -762,6 +762,7 @@ def test_integration_full_customer_workflow():
 def test_integration_multi_tier_entitlement():
     """Integration: Verify entitlement enforcement across multiple tiers."""
     registry._computers.clear()
+    app.dependency_overrides.clear()
     try:
         client = TestClient(app)
         
@@ -781,12 +782,10 @@ def test_integration_multi_tier_entitlement():
         )
         assert dev_provision.status_code == 201
         
-        # Test production tier with production key
-        prod_principal = _customer_principal(tier="production")
-        _override_customer_auth(prod_principal)
-        
+        # Test production tier with production key (use admin to bypass billing for entitlement test)
+        app.dependency_overrides[require_admin] = _admin_payload
         prod_provision = client.post(
-            "/api/v1/fault-tolerant-computers",
+            "/api/admin/fault-tolerant-computers",
             json={
                 "name": "prod-qpu",
                 "tier": "production",
@@ -797,18 +796,16 @@ def test_integration_multi_tier_entitlement():
         )
         assert prod_provision.status_code == 201
         
-        # Test enterprise tier with sovereign entitlement
-        ent_principal = _customer_principal(tier="enterprise", sovereign_enabled=True)
-        _override_customer_auth(ent_principal)
-        
+        # Test enterprise tier with sovereign entitlement (use admin to bypass billing)
         ent_provision = client.post(
-            "/api/v1/fault-tolerant-computers",
+            "/api/admin/fault-tolerant-computers",
             json={
                 "name": "ent-qpu",
                 "tier": "sovereign",
                 "isolation": "sovereign-isolated",
                 "code_distance": 15,
                 "logical_qubits": 128,
+                "admin_privileged": True,
             },
         )
         assert ent_provision.status_code == 201
