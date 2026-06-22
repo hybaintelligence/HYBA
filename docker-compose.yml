@@ -11,7 +11,7 @@ services:
     env_file:
       - .env
     environment:
-      REDIS_URL: redis://redis:6379
+      REDIS_URL: redis://localhost:6379
       DATABASE_URL: postgresql+psycopg2://hyba:hyba@postgres:5432/hyba
       LOG_LEVEL: INFO
       HYBA_STARTUP_SELF_HEALING_ENABLED: "true"
@@ -39,28 +39,10 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-      redis:
-        condition: service_healthy
     networks:
       - hyba-network
     volumes:
       - ./config:/config:ro
-    restart: unless-stopped
-
-  redis:
-    image: redis:7-alpine
-    ports:
-      - "6379:6379"
-    command: redis-server --appendonly yes
-    volumes:
-      - redis-data:/data
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 5s
-      timeout: 3s
-      retries: 5
-    networks:
-      - hyba-network
     restart: unless-stopped
 
   postgres:
@@ -113,7 +95,6 @@ services:
     restart: unless-stopped
 
 volumes:
-  redis-data:
   postgres-data:
   prometheus-data:
   grafana-data:

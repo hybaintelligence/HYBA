@@ -1,0 +1,3017 @@
+{
+  "funding_run_id": "FUNDING-DEMO-2026-06-22",
+  "start_time": "2026-06-22T16:50:56.706707",
+  "end_time": "2026-06-22T17:21:03.669865",
+  "duration_seconds": 1806.96315741539,
+  "duration_minutes": 30.116052623589834,
+  "performance": {
+    "average_hashrate_hps": 149.7560127657862,
+    "average_efficiency_percent": 99.83734184385743,
+    "average_acceptance_rate_percent": 0.0,
+    "max_hashrate_hps": 154.99226980234906,
+    "min_hashrate_hps": 145.0100394710869,
+    "target_hashrate_hps": 150.0
+  },
+  "salamander_frontier": {
+    "regeneration_events_count": 360,
+    "regeneration_events": [
+      {
+        "timestamp": 1782143456.7083375,
+        "elapsed_seconds": 0,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143461.7180068,
+        "elapsed_seconds": 5.0112996101379395,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143466.7338285,
+        "elapsed_seconds": 10.027121305465698,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143471.738243,
+        "elapsed_seconds": 15.030940532684326,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143476.7527657,
+        "elapsed_seconds": 20.045444011688232,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143481.7638443,
+        "elapsed_seconds": 25.05713701248169,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143486.7759254,
+        "elapsed_seconds": 30.069218158721924,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143491.7852898,
+        "elapsed_seconds": 35.076581954956055,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143496.7894552,
+        "elapsed_seconds": 40.07989430427551,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143501.8009355,
+        "elapsed_seconds": 45.09362077713013,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143506.8145072,
+        "elapsed_seconds": 50.10760831832886,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143511.8293257,
+        "elapsed_seconds": 55.121620893478394,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143516.8312285,
+        "elapsed_seconds": 60.12351894378662,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143521.8367045,
+        "elapsed_seconds": 65.1268892288208,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143526.8474188,
+        "elapsed_seconds": 70.13999009132385,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143531.8488538,
+        "elapsed_seconds": 75.14163064956665,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143536.8992157,
+        "elapsed_seconds": 80.15516519546509,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143541.8771627,
+        "elapsed_seconds": 85.16891980171204,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143546.8967514,
+        "elapsed_seconds": 90.1889226436615,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143551.9144964,
+        "elapsed_seconds": 95.20579552650452,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143556.9429,
+        "elapsed_seconds": 100.233393907547,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143561.9442012,
+        "elapsed_seconds": 105.23597145080566,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143566.951834,
+        "elapsed_seconds": 110.24287104606628,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143571.9894743,
+        "elapsed_seconds": 115.26759719848633,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143576.9825082,
+        "elapsed_seconds": 120.26716995239258,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143581.9832523,
+        "elapsed_seconds": 125.2759690284729,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143587.0246859,
+        "elapsed_seconds": 130.28456020355225,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143592.015119,
+        "elapsed_seconds": 135.30552196502686,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143597.0661726,
+        "elapsed_seconds": 140.29623079299927,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143602.0136743,
+        "elapsed_seconds": 145.30428671836853,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143607.0142632,
+        "elapsed_seconds": 150.30403399467468,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143612.0186706,
+        "elapsed_seconds": 155.3052623271942,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143617.0486565,
+        "elapsed_seconds": 160.32790446281433,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143622.0902727,
+        "elapsed_seconds": 165.33636927604675,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143627.0661898,
+        "elapsed_seconds": 170.3524670600891,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143632.0962381,
+        "elapsed_seconds": 175.36211276054382,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143637.0934556,
+        "elapsed_seconds": 180.3827826976776,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143642.094763,
+        "elapsed_seconds": 185.3840594291687,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143647.139581,
+        "elapsed_seconds": 190.40687680244446,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143652.5475967,
+        "elapsed_seconds": 195.41124939918518,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143657.1831605,
+        "elapsed_seconds": 200.4263210296631,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143662.1638162,
+        "elapsed_seconds": 205.45210671424866,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143667.199048,
+        "elapsed_seconds": 210.48835396766663,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143672.2624507,
+        "elapsed_seconds": 215.51650667190552,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143677.2285354,
+        "elapsed_seconds": 220.51585388183594,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143682.2473772,
+        "elapsed_seconds": 225.52214932441711,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143687.304305,
+        "elapsed_seconds": 230.5372269153595,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143692.4470859,
+        "elapsed_seconds": 235.53695583343506,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143697.3415024,
+        "elapsed_seconds": 240.6008222103119,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143702.3091307,
+        "elapsed_seconds": 245.59541606903076,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143707.3161776,
+        "elapsed_seconds": 250.58932185173035,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143712.3479102,
+        "elapsed_seconds": 255.6044852733612,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143717.3681185,
+        "elapsed_seconds": 260.6404094696045,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143722.3774364,
+        "elapsed_seconds": 265.66572976112366,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143727.4413216,
+        "elapsed_seconds": 270.699604511261,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143732.4089942,
+        "elapsed_seconds": 275.7017652988434,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143737.5484629,
+        "elapsed_seconds": 280.75923323631287,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143742.5148332,
+        "elapsed_seconds": 285.77913784980774,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143747.6833124,
+        "elapsed_seconds": 290.8587923049927,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143752.6535587,
+        "elapsed_seconds": 295.8805878162384,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143757.7504792,
+        "elapsed_seconds": 300.91668367385864,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143762.7335978,
+        "elapsed_seconds": 305.93728470802307,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143767.6832492,
+        "elapsed_seconds": 310.94863533973694,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143772.6882203,
+        "elapsed_seconds": 315.9715712070465,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143777.697598,
+        "elapsed_seconds": 320.97442650794983,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143782.698691,
+        "elapsed_seconds": 325.98824310302734,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143787.7245283,
+        "elapsed_seconds": 331.00316166877747,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143792.7061522,
+        "elapsed_seconds": 335.99846029281616,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143797.7215128,
+        "elapsed_seconds": 341.0142788887024,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143802.7447412,
+        "elapsed_seconds": 346.0270371437073,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143807.781594,
+        "elapsed_seconds": 351.02877259254456,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143812.8064926,
+        "elapsed_seconds": 356.0289843082428,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143817.7583392,
+        "elapsed_seconds": 361.04807686805725,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143822.7688744,
+        "elapsed_seconds": 366.0573287010193,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143827.7795463,
+        "elapsed_seconds": 371.065842628479,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143832.8999565,
+        "elapsed_seconds": 376.1347599029541,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143837.874321,
+        "elapsed_seconds": 381.15661454200745,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143842.9563577,
+        "elapsed_seconds": 386.16472578048706,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143848.2818835,
+        "elapsed_seconds": 391.2899045944214,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143853.181277,
+        "elapsed_seconds": 396.2917025089264,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143858.018906,
+        "elapsed_seconds": 401.28759694099426,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143863.01129,
+        "elapsed_seconds": 406.3007433414459,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143868.0720537,
+        "elapsed_seconds": 411.34428358078003,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143873.0663624,
+        "elapsed_seconds": 416.3576455116272,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143878.1372306,
+        "elapsed_seconds": 421.37950253486633,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143883.092415,
+        "elapsed_seconds": 426.38270020484924,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143888.0935645,
+        "elapsed_seconds": 431.38533210754395,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143893.1072018,
+        "elapsed_seconds": 436.39552330970764,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143898.1110911,
+        "elapsed_seconds": 441.3993821144104,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143903.1504984,
+        "elapsed_seconds": 446.4242992401123,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143908.221921,
+        "elapsed_seconds": 451.4502112865448,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143913.166859,
+        "elapsed_seconds": 456.4582817554474,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143918.1831648,
+        "elapsed_seconds": 461.46545362472534,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143923.1848114,
+        "elapsed_seconds": 466.47056770324707,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143928.188312,
+        "elapsed_seconds": 471.4776060581207,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143933.2230315,
+        "elapsed_seconds": 476.4759817123413,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143938.2522528,
+        "elapsed_seconds": 481.4778082370758,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143943.191898,
+        "elapsed_seconds": 486.4820873737335,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143948.2163067,
+        "elapsed_seconds": 491.50202322006226,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143953.278948,
+        "elapsed_seconds": 496.5222637653351,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143958.24178,
+        "elapsed_seconds": 501.52245712280273,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143963.2680612,
+        "elapsed_seconds": 506.55205392837524,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143968.275384,
+        "elapsed_seconds": 511.5591039657593,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143973.2739346,
+        "elapsed_seconds": 516.5622155666351,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143978.282358,
+        "elapsed_seconds": 521.5756506919861,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143983.301802,
+        "elapsed_seconds": 526.5945744514465,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143988.3283315,
+        "elapsed_seconds": 531.6146292686462,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143993.3314946,
+        "elapsed_seconds": 536.6227886676788,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782143998.368778,
+        "elapsed_seconds": 541.6423447132111,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144003.352658,
+        "elapsed_seconds": 546.6439497470856,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144008.3860016,
+        "elapsed_seconds": 551.6590230464935,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144013.3708792,
+        "elapsed_seconds": 556.657865524292,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144018.3978167,
+        "elapsed_seconds": 561.6723589897156,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144023.3846226,
+        "elapsed_seconds": 566.6769213676453,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144028.3940082,
+        "elapsed_seconds": 571.6818642616272,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144033.4357233,
+        "elapsed_seconds": 576.7018854618073,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144038.4134064,
+        "elapsed_seconds": 581.706645488739,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144043.4324772,
+        "elapsed_seconds": 586.7247805595398,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144048.460632,
+        "elapsed_seconds": 591.7479026317596,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144053.4602048,
+        "elapsed_seconds": 596.7529711723328,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144058.4767513,
+        "elapsed_seconds": 601.7697162628174,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144063.5027769,
+        "elapsed_seconds": 606.7825791835785,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144068.5079727,
+        "elapsed_seconds": 611.7972676753998,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144073.5256848,
+        "elapsed_seconds": 616.8159794807434,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144078.5239525,
+        "elapsed_seconds": 621.8167283535004,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144083.5444937,
+        "elapsed_seconds": 626.8253746032715,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144088.5917237,
+        "elapsed_seconds": 631.8305521011353,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144093.5574431,
+        "elapsed_seconds": 636.8495187759399,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144098.5625577,
+        "elapsed_seconds": 641.8478620052338,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144103.5692897,
+        "elapsed_seconds": 646.8575851917267,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144108.584258,
+        "elapsed_seconds": 651.8695502281189,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144113.6608717,
+        "elapsed_seconds": 656.8826577663422,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144118.6238515,
+        "elapsed_seconds": 661.9084312915802,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144123.6289537,
+        "elapsed_seconds": 666.9162256717682,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144128.6419194,
+        "elapsed_seconds": 671.924355506897,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144133.6288903,
+        "elapsed_seconds": 676.9178600311279,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144138.6626277,
+        "elapsed_seconds": 681.9258337020874,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144143.6767693,
+        "elapsed_seconds": 686.9604346752167,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144148.690683,
+        "elapsed_seconds": 691.9799790382385,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144153.737457,
+        "elapsed_seconds": 696.9937009811401,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144158.7170136,
+        "elapsed_seconds": 702.0073118209839,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144163.7399342,
+        "elapsed_seconds": 707.0226845741272,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144168.771015,
+        "elapsed_seconds": 712.0392615795135,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144173.759433,
+        "elapsed_seconds": 717.0517246723175,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144178.7711878,
+        "elapsed_seconds": 722.0580167770386,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144183.7948003,
+        "elapsed_seconds": 727.0840923786163,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144188.8013883,
+        "elapsed_seconds": 732.0910451412201,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144193.8051813,
+        "elapsed_seconds": 737.0924746990204,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144198.8101847,
+        "elapsed_seconds": 742.0966596603394,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144203.8153706,
+        "elapsed_seconds": 747.1020019054413,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144208.8408566,
+        "elapsed_seconds": 752.1207563877106,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144213.83563,
+        "elapsed_seconds": 757.128922700882,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144218.864933,
+        "elapsed_seconds": 762.1480314731598,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144223.8831365,
+        "elapsed_seconds": 767.174156665802,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144228.8906581,
+        "elapsed_seconds": 772.1804165840149,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144233.8798063,
+        "elapsed_seconds": 777.171746969223,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144238.8965924,
+        "elapsed_seconds": 782.1883172988892,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144243.9127657,
+        "elapsed_seconds": 787.2050130367279,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144248.9243612,
+        "elapsed_seconds": 792.213604927063,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144253.943562,
+        "elapsed_seconds": 797.233850479126,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144258.947535,
+        "elapsed_seconds": 802.2388296127319,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144263.9570577,
+        "elapsed_seconds": 807.2483599185944,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144268.9621952,
+        "elapsed_seconds": 812.2499492168427,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144273.9815083,
+        "elapsed_seconds": 817.2588522434235,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144278.9794345,
+        "elapsed_seconds": 822.2697281837463,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144283.9856765,
+        "elapsed_seconds": 827.2739899158478,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144289.0086024,
+        "elapsed_seconds": 832.2943410873413,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144294.012363,
+        "elapsed_seconds": 837.3009481430054,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144299.0263352,
+        "elapsed_seconds": 842.3156294822693,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144304.0256305,
+        "elapsed_seconds": 847.3159143924713,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144309.050032,
+        "elapsed_seconds": 852.3392479419708,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144314.0748248,
+        "elapsed_seconds": 857.3630855083466,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144319.0860286,
+        "elapsed_seconds": 862.3699653148651,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144324.0900655,
+        "elapsed_seconds": 867.378354549408,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144329.0971718,
+        "elapsed_seconds": 872.3867042064667,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144334.1114726,
+        "elapsed_seconds": 877.4012310504913,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144339.1353884,
+        "elapsed_seconds": 882.4246470928192,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144344.1360292,
+        "elapsed_seconds": 887.4263386726379,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144349.1357074,
+        "elapsed_seconds": 892.4257338047028,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144354.1407263,
+        "elapsed_seconds": 897.4308943748474,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144359.1469564,
+        "elapsed_seconds": 902.4402492046356,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144364.1690967,
+        "elapsed_seconds": 907.4603896141052,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144369.1780877,
+        "elapsed_seconds": 912.470853805542,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144374.1829073,
+        "elapsed_seconds": 917.4736342430115,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144379.198963,
+        "elapsed_seconds": 922.4907042980194,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144384.2081304,
+        "elapsed_seconds": 927.4988899230957,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144389.231494,
+        "elapsed_seconds": 932.5101945400238,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144394.217236,
+        "elapsed_seconds": 937.5049209594727,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144399.2162006,
+        "elapsed_seconds": 942.5079436302185,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144404.226424,
+        "elapsed_seconds": 947.5147168636322,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144409.2331846,
+        "elapsed_seconds": 952.5190246105194,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144414.2282462,
+        "elapsed_seconds": 957.5168936252594,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144419.2301006,
+        "elapsed_seconds": 962.5168664455414,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144424.2353575,
+        "elapsed_seconds": 967.5246579647064,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144429.2393093,
+        "elapsed_seconds": 972.5305969715118,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144434.260306,
+        "elapsed_seconds": 977.549387216568,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144439.2680867,
+        "elapsed_seconds": 982.5522229671478,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144444.2786367,
+        "elapsed_seconds": 987.5674047470093,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144449.273043,
+        "elapsed_seconds": 992.5641627311707,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144454.2744064,
+        "elapsed_seconds": 997.565703868866,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144459.2955525,
+        "elapsed_seconds": 1002.5728826522827,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144464.2744827,
+        "elapsed_seconds": 1007.5657811164856,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144469.2856991,
+        "elapsed_seconds": 1012.5749084949493,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144474.3062546,
+        "elapsed_seconds": 1017.5975592136383,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144479.3659859,
+        "elapsed_seconds": 1022.6191921234131,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144484.3319135,
+        "elapsed_seconds": 1027.6188080310822,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144489.3372016,
+        "elapsed_seconds": 1032.6262154579163,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144494.3395252,
+        "elapsed_seconds": 1037.6292779445648,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144499.3329144,
+        "elapsed_seconds": 1042.6252040863037,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144504.4353442,
+        "elapsed_seconds": 1047.638103723526,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144509.3640437,
+        "elapsed_seconds": 1052.6471781730652,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144514.3654308,
+        "elapsed_seconds": 1057.657202720642,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144519.368145,
+        "elapsed_seconds": 1062.6581120491028,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144524.3709223,
+        "elapsed_seconds": 1067.661213874817,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144529.430065,
+        "elapsed_seconds": 1072.6724784374237,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144534.410539,
+        "elapsed_seconds": 1077.690015554428,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144539.4182336,
+        "elapsed_seconds": 1082.7058839797974,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144544.4418938,
+        "elapsed_seconds": 1087.7185587882996,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144549.444807,
+        "elapsed_seconds": 1092.735105752945,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144554.5119548,
+        "elapsed_seconds": 1097.759325504303,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144559.479579,
+        "elapsed_seconds": 1102.7705442905426,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144564.4822073,
+        "elapsed_seconds": 1107.7735085487366,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144569.5131276,
+        "elapsed_seconds": 1112.7762002944946,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144574.5611317,
+        "elapsed_seconds": 1117.8017172813416,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144579.5914762,
+        "elapsed_seconds": 1122.851556301117,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144584.5678718,
+        "elapsed_seconds": 1127.8573381900787,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144589.5844982,
+        "elapsed_seconds": 1132.8717501163483,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144594.5967586,
+        "elapsed_seconds": 1137.882043838501,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144599.5965903,
+        "elapsed_seconds": 1142.8846864700317,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144604.6144097,
+        "elapsed_seconds": 1147.8941810131073,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144609.6092248,
+        "elapsed_seconds": 1152.9003841876984,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144614.6094139,
+        "elapsed_seconds": 1157.8997333049774,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144619.6128979,
+        "elapsed_seconds": 1162.8980059623718,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144624.6358376,
+        "elapsed_seconds": 1167.9126045703888,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144629.62848,
+        "elapsed_seconds": 1172.91370677948,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144634.6408038,
+        "elapsed_seconds": 1177.9296610355377,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144639.6553152,
+        "elapsed_seconds": 1182.9425766468048,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144644.6543179,
+        "elapsed_seconds": 1187.9470376968384,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144649.6720684,
+        "elapsed_seconds": 1192.962825536728,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144654.6745875,
+        "elapsed_seconds": 1197.9638800621033,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144659.685533,
+        "elapsed_seconds": 1202.970994234085,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144664.6994898,
+        "elapsed_seconds": 1207.99058842659,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144669.7486866,
+        "elapsed_seconds": 1213.0359587669373,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144674.7557137,
+        "elapsed_seconds": 1218.0398552417755,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144679.7506602,
+        "elapsed_seconds": 1223.0380880832672,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144684.7630622,
+        "elapsed_seconds": 1228.0535969734192,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144689.7664814,
+        "elapsed_seconds": 1233.0572338104248,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144694.7880492,
+        "elapsed_seconds": 1238.0719048976898,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144699.804015,
+        "elapsed_seconds": 1243.094648361206,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144704.8912356,
+        "elapsed_seconds": 1248.1445264816284,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144709.891975,
+        "elapsed_seconds": 1253.1802668571472,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144714.9056282,
+        "elapsed_seconds": 1258.1930303573608,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144719.9165955,
+        "elapsed_seconds": 1263.207312822342,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144724.9204214,
+        "elapsed_seconds": 1268.2107200622559,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144729.9262435,
+        "elapsed_seconds": 1273.2175340652466,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144734.9479647,
+        "elapsed_seconds": 1278.2312972545624,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144739.9484231,
+        "elapsed_seconds": 1283.2407162189484,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144744.9587612,
+        "elapsed_seconds": 1288.2490530014038,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144749.965893,
+        "elapsed_seconds": 1293.2565903663635,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144754.978732,
+        "elapsed_seconds": 1298.2587268352509,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144760.0051785,
+        "elapsed_seconds": 1303.2754316329956,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144765.0156589,
+        "elapsed_seconds": 1308.2971608638763,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144770.0105445,
+        "elapsed_seconds": 1313.301822900772,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144775.0713387,
+        "elapsed_seconds": 1318.2993264198303,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144780.017329,
+        "elapsed_seconds": 1323.3016588687897,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144785.0500162,
+        "elapsed_seconds": 1328.323075056076,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144790.0668385,
+        "elapsed_seconds": 1333.3404777050018,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144795.0662193,
+        "elapsed_seconds": 1338.3499257564545,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144800.251194,
+        "elapsed_seconds": 1343.4233593940735,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144805.2521427,
+        "elapsed_seconds": 1348.473878145218,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144810.3002656,
+        "elapsed_seconds": 1353.5448944568634,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144815.2792356,
+        "elapsed_seconds": 1358.5695338249207,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144820.2938142,
+        "elapsed_seconds": 1363.580734014511,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144825.3090851,
+        "elapsed_seconds": 1368.5993041992188,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144830.309393,
+        "elapsed_seconds": 1373.595688343048,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144835.3239334,
+        "elapsed_seconds": 1378.608172416687,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144840.3571558,
+        "elapsed_seconds": 1383.6186938285828,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144845.462301,
+        "elapsed_seconds": 1388.622139453888,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144850.3636189,
+        "elapsed_seconds": 1393.6243388652802,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144855.380071,
+        "elapsed_seconds": 1398.6578013896942,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144860.3901248,
+        "elapsed_seconds": 1403.6678760051727,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144865.3876402,
+        "elapsed_seconds": 1408.677780866623,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144870.391511,
+        "elapsed_seconds": 1413.6700308322906,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144875.4082735,
+        "elapsed_seconds": 1418.6860511302948,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144880.4107137,
+        "elapsed_seconds": 1423.701137304306,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144885.4388423,
+        "elapsed_seconds": 1428.7204790115356,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144890.4387202,
+        "elapsed_seconds": 1433.7264187335968,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144895.4639513,
+        "elapsed_seconds": 1438.7324821949005,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144900.4798963,
+        "elapsed_seconds": 1443.7464592456818,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144905.4761589,
+        "elapsed_seconds": 1448.7536244392395,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144910.4855459,
+        "elapsed_seconds": 1453.767553806305,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144915.49023,
+        "elapsed_seconds": 1458.7788429260254,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144920.4871078,
+        "elapsed_seconds": 1463.7794058322906,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144925.5034764,
+        "elapsed_seconds": 1468.7916059494019,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144930.512713,
+        "elapsed_seconds": 1473.7995431423187,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144935.503656,
+        "elapsed_seconds": 1478.7935738563538,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144940.5129356,
+        "elapsed_seconds": 1483.7933309078217,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144945.508289,
+        "elapsed_seconds": 1488.7982909679413,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144950.5192714,
+        "elapsed_seconds": 1493.8085634708405,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144955.526512,
+        "elapsed_seconds": 1498.8178017139435,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144960.5447948,
+        "elapsed_seconds": 1503.8350954055786,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144965.5526185,
+        "elapsed_seconds": 1508.8431241512299,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144970.5601783,
+        "elapsed_seconds": 1513.8519563674927,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144975.5638602,
+        "elapsed_seconds": 1518.855153799057,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144980.6737897,
+        "elapsed_seconds": 1523.8923063278198,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144985.6218998,
+        "elapsed_seconds": 1528.9078617095947,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144990.7280533,
+        "elapsed_seconds": 1533.949057817459,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782144995.68653,
+        "elapsed_seconds": 1538.9757113456726,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782145000.6903448,
+        "elapsed_seconds": 1543.979662656784,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782145005.727858,
+        "elapsed_seconds": 1549.0038125514984,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782145010.7419922,
+        "elapsed_seconds": 1554.0277621746063,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782145015.7428086,
+        "elapsed_seconds": 1559.0271046161652,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782145020.7470224,
+        "elapsed_seconds": 1564.0364677906036,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782145025.7615829,
+        "elapsed_seconds": 1569.0474646091461,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782145030.7469292,
+        "elapsed_seconds": 1574.0382187366486,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782145035.9219031,
+        "elapsed_seconds": 1579.1117405891418,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782145040.829645,
+        "elapsed_seconds": 1584.1214201450348,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782145045.8588912,
+        "elapsed_seconds": 1589.1341321468353,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782145050.8474996,
+        "elapsed_seconds": 1594.1293511390686,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782145055.8595054,
+        "elapsed_seconds": 1599.144418478012,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782145060.8627021,
+        "elapsed_seconds": 1604.1514627933502,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782145065.8643544,
+        "elapsed_seconds": 1609.1568043231964,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782145070.9039946,
+        "elapsed_seconds": 1614.1674802303314,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782145075.909019,
+        "elapsed_seconds": 1619.1973164081573,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782145081.0660043,
+        "elapsed_seconds": 1624.3007185459137,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782145086.0523305,
+        "elapsed_seconds": 1629.3055081367493,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782145091.0209713,
+        "elapsed_seconds": 1634.3072578907013,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782145096.0436735,
+        "elapsed_seconds": 1639.3328938484192,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782145101.045878,
+        "elapsed_seconds": 1644.3326771259308,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782145106.0443168,
+        "elapsed_seconds": 1649.3337676525116,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782145111.0513074,
+        "elapsed_seconds": 1654.3327674865723,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782145116.0616934,
+        "elapsed_seconds": 1659.3522441387177,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782145121.0717876,
+        "elapsed_seconds": 1664.35711312294,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782145126.0985043,
+        "elapsed_seconds": 1669.372079372406,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782145131.0947123,
+        "elapsed_seconds": 1674.3840057849884,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782145136.2033741,
+        "elapsed_seconds": 1679.421614408493,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782145141.1518686,
+        "elapsed_seconds": 1684.4350292682648,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782145146.2812033,
+        "elapsed_seconds": 1689.46643948555,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782145151.1986117,
+        "elapsed_seconds": 1694.4878227710724,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782145156.2234159,
+        "elapsed_seconds": 1699.499382019043,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782145161.3088999,
+        "elapsed_seconds": 1704.53995347023,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782145166.267208,
+        "elapsed_seconds": 1709.5501000881195,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782145171.340206,
+        "elapsed_seconds": 1714.5823891162872,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782145176.289767,
+        "elapsed_seconds": 1719.57666182518,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782145181.363148,
+        "elapsed_seconds": 1724.5727889537811,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782145186.3649845,
+        "elapsed_seconds": 1729.6174807548523,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782145191.3587267,
+        "elapsed_seconds": 1734.6333048343658,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782145196.4105268,
+        "elapsed_seconds": 1739.672914981842,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782145201.3901188,
+        "elapsed_seconds": 1744.6768805980682,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782145206.466989,
+        "elapsed_seconds": 1749.6979839801788,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782145211.4240737,
+        "elapsed_seconds": 1754.7087223529816,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782145216.441646,
+        "elapsed_seconds": 1759.7213017940521,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782145221.5054574,
+        "elapsed_seconds": 1764.7661283016205,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782145226.500892,
+        "elapsed_seconds": 1769.7776844501495,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782145231.5531118,
+        "elapsed_seconds": 1774.7870121002197,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782145236.5370798,
+        "elapsed_seconds": 1779.813107252121,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782145241.5722036,
+        "elapsed_seconds": 1784.8261721134186,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782145246.5672295,
+        "elapsed_seconds": 1789.8404562473297,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782145251.576296,
+        "elapsed_seconds": 1794.851865530014,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      },
+      {
+        "timestamp": 1782145256.6161218,
+        "elapsed_seconds": 1799.8624744415283,
+        "anomaly_type": "HIGH_REJECTION_RATE",
+        "severity": "MEDIUM",
+        "regeneration_reason": "unknown_anomaly_type",
+        "success": false
+      }
+    ],
+    "evidence_log_entries": 0,
+    "evidence_log_seal": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "phi_value": 1.618033988749895,
+    "adaptations_performed": 0
+  },
+  "system_health": {
+    "autonomy_loops_enabled": true,
+    "evidence_sealing_enabled": true,
+    "anomaly_detection_enabled": true,
+    "self_optimization_enabled": true
+  },
+  "treasury_state": {},
+  "evidence": {
+    "metrics_history_sample": [
+      {
+        "timestamp": 1782145211.419074,
+        "elapsed_seconds": 1754.7087223529816,
+        "hashrate_current": 147.27037994542385,
+        "hashrate_target": 150.0,
+        "hashrate_efficiency": 0.9818025329694924,
+        "memory_used": 0.4,
+        "compression_ratio": 1.618033988749895,
+        "share_acceptance_rate": 0.0
+      },
+      {
+        "timestamp": 1782145216.43702,
+        "elapsed_seconds": 1759.7213017940521,
+        "hashrate_current": 153.69103799212016,
+        "hashrate_target": 150.0,
+        "hashrate_efficiency": 1.0246069199474677,
+        "memory_used": 0.4,
+        "compression_ratio": 1.618033988749895,
+        "share_acceptance_rate": 0.0
+      },
+      {
+        "timestamp": 1782145221.4763696,
+        "elapsed_seconds": 1764.7661283016205,
+        "hashrate_current": 149.22138745545047,
+        "hashrate_target": 150.0,
+        "hashrate_efficiency": 0.9948092497030031,
+        "memory_used": 0.4,
+        "compression_ratio": 1.618033988749895,
+        "share_acceptance_rate": 0.0
+      },
+      {
+        "timestamp": 1782145226.4963083,
+        "elapsed_seconds": 1769.7776844501495,
+        "hashrate_current": 152.25740275505268,
+        "hashrate_target": 150.0,
+        "hashrate_efficiency": 1.0150493517003512,
+        "memory_used": 0.4,
+        "compression_ratio": 1.618033988749895,
+        "share_acceptance_rate": 0.0
+      },
+      {
+        "timestamp": 1782145231.5511904,
+        "elapsed_seconds": 1774.7870121002197,
+        "hashrate_current": 145.67055573338087,
+        "hashrate_target": 150.0,
+        "hashrate_efficiency": 0.971137038222539,
+        "memory_used": 0.4,
+        "compression_ratio": 1.618033988749895,
+        "share_acceptance_rate": 0.0
+      },
+      {
+        "timestamp": 1782145236.5219085,
+        "elapsed_seconds": 1779.813107252121,
+        "hashrate_current": 154.78017537562542,
+        "hashrate_target": 150.0,
+        "hashrate_efficiency": 1.0318678358375029,
+        "memory_used": 0.4,
+        "compression_ratio": 1.618033988749895,
+        "share_acceptance_rate": 0.0
+      },
+      {
+        "timestamp": 1782145241.5495389,
+        "elapsed_seconds": 1784.8261721134186,
+        "hashrate_current": 146.56693141825767,
+        "hashrate_target": 150.0,
+        "hashrate_efficiency": 0.9771128761217178,
+        "memory_used": 0.4,
+        "compression_ratio": 1.618033988749895,
+        "share_acceptance_rate": 0.0
+      },
+      {
+        "timestamp": 1782145246.5541596,
+        "elapsed_seconds": 1789.8404562473297,
+        "hashrate_current": 146.6852709066374,
+        "hashrate_target": 150.0,
+        "hashrate_efficiency": 0.9779018060442494,
+        "memory_used": 0.4,
+        "compression_ratio": 1.618033988749895,
+        "share_acceptance_rate": 0.0
+      },
+      {
+        "timestamp": 1782145251.5649772,
+        "elapsed_seconds": 1794.851865530014,
+        "hashrate_current": 150.47411528807277,
+        "hashrate_target": 150.0,
+        "hashrate_efficiency": 1.0031607685871518,
+        "memory_used": 0.4,
+        "compression_ratio": 1.618033988749895,
+        "share_acceptance_rate": 0.0
+      },
+      {
+        "timestamp": 1782145256.579182,
+        "elapsed_seconds": 1799.8624744415283,
+        "hashrate_current": 145.33254011225387,
+        "hashrate_target": 150.0,
+        "hashrate_efficiency": 0.9688836007483591,
+        "memory_used": 0.4,
+        "compression_ratio": 1.618033988749895,
+        "share_acceptance_rate": 0.0
+      }
+    ],
+    "evidence_log_size": 0,
+    "integrity_seal": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+  }
+}
