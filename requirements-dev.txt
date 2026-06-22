@@ -1,0 +1,11 @@
+# HYBA_FULLSTACK local production-certification test toolchain
+# Usage:
+#   python3 -m pip install -r requirements-dev.txt
+#   PYTHONPATH=python_backend python3 -m pytest tests/test_quantum_regeneration_properties.py -v --timeout=120
+
+-r requirements.txt
+
+pytest==8.4.2
+pytest-timeout==2.4.0
+hypothesis==6.155.7
+numpy==1.26.4
