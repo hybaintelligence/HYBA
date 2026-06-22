@@ -14,6 +14,9 @@ on:
     # Run benchmarks daily at midnight UTC
     - cron: '0 0 * * *'
 
+env:
+  HYBA_PYTHON_VERSION: '3.12.7'
+
 jobs:
   lint-python:
     name: Lint Python Code
@@ -21,10 +24,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: ${{ env.HYBA_PYTHON_VERSION }}
           cache: 'pip'
 
       - name: Install dependencies
@@ -49,10 +52,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: ${{ env.HYBA_PYTHON_VERSION }}
           cache: 'pip'
 
       - name: Install dependencies
@@ -78,10 +81,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: ${{ env.HYBA_PYTHON_VERSION }}
           cache: 'pip'
 
       - name: Install dependencies
@@ -96,7 +99,7 @@ jobs:
 
       - name: Save benchmark results
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: benchmark-results
           path: reproducibility/benchmarks/benchmark_results.json
@@ -109,7 +112,7 @@ jobs:
 
       - name: Upload dashboard
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: benchmark-dashboard
           path: reproducibility/benchmarks/benchmark_dashboard.html
@@ -200,14 +203,12 @@ jobs:
     needs: [domain-benchmarks]
     steps:
       - uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v4
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: ${{ env.HYBA_PYTHON_VERSION }}
           cache: 'pip'
-
-      - name: Install dependencies
+      - name: Run domain benchmark placeholder
         run: |
           pip install numpy
           pip install -r requirements.txt 2>/dev/null || true

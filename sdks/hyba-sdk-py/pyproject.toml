@@ -1,45 +1,40 @@
 [build-system]
-requires = ["setuptools>=45", "wheel"]
+requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "hyba-sdk"
 version = "1.0.0"
-description = "Official Python SDK for HYBA QaaS/CIaaS platform"
+description = "Official Python SDK for HYBA QaaS/QIaaS/CIaaS platform"
 readme = "README.md"
 license = {text = "MIT"}
 authors = [
     {name = "HYBA Analytics", email = "dev@hyba.ai"}
 ]
-keywords = ["hyba", "qaas", "ciaas", "quantum", "optimization", "ai"]
+keywords = ["hyba", "qaas", "qiaas", "ciaas", "quantum", "optimization", "ai"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
 ]
-requires-python = ">=3.8"
+requires-python = ">=3.12"
 dependencies = [
     "requests>=2.31.0",
     "pydantic>=2.0.0",
-    "typing-extensions>=4.5.0",
     "cryptography>=41.0.0",
 ]
 
 [project.optional-dependencies]
 dev = [
-    "pytest>=7.4.0",
-    "pytest-cov>=4.1.0",
-    "pytest-asyncio>=0.21.0",
-    "black>=23.0.0",
-    "mypy>=1.5.0",
-    "ruff>=0.1.0",
+    "pytest>=8.0.0",
+    "pytest-cov>=5.0.0",
+    "pytest-asyncio>=0.23.0",
+    "black>=24.0.0",
+    "mypy>=1.8.0",
+    "ruff>=0.4.0",
 ]
 
 [project.urls]
@@ -75,10 +70,10 @@ exclude_lines = [
 
 [tool.black]
 line-length = 100
-target-version = ["py38", "py39", "py310", "py311", "py312"]
+target-version = ["py312"]
 
 [tool.mypy]
-python_version = "3.8"
+python_version = "3.12"
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = true
@@ -93,7 +88,7 @@ warn_unreachable = true
 
 [tool.ruff]
 line-length = 100
-target-version = "py38"
+target-version = "py312"
 select = [
     "E",  # pycodestyle errors
     "W",  # pycodestyle warnings
