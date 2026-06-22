@@ -139,7 +139,7 @@ async def get_health_status():
     return {
         "status": "healthy" if is_ready() else "degraded",
         "timestamp": datetime.now(timezone.utc).isoformat(),
-        "version": "2.0.1",
+        "version": os.getenv("HYBA_GIT_SHA") or os.getenv("GIT_SHA") or "dev",
         "telemetry_source": state.get("telemetry_source") if state else "unavailable",
         "quantumCoherence": quantum.get("basis_coherence"),
         "decoherenceTimeMs": None,
