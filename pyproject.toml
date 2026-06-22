@@ -3,13 +3,21 @@ requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "hyba-pythia-mining"
+name = "hyba-quantum-intelligence"
 version = "1.0.0"
-description = "Local deterministic replay and reproducibility tooling for HYBA/PYTHIA mining evidence"
-readme = "docs/PYTHIA_REPLAY_PLAYBOOK.md"
+description = "Sovereign Quantum Intelligence API, PULVINI evidence substrate, and production validation tooling"
+readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "hypothesis==6.155.7",
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest==8.4.2",
+    "pytest-timeout==2.4.0",
+    "hypothesis==6.155.7",
+    "numpy==1.26.4",
 ]
 
 [project.scripts]
@@ -20,7 +28,7 @@ pythia-replay = "pythia_mining.replay_claim_cli:main"
 
 [tool.setuptools.packages.find]
 where = ["python_backend"]
-include = ["pythia_mining*", "pythia_self_healing*", "pythia_agents*"]
+include = ["hyba_genesis_api*", "pythia_mining*", "pythia_self_healing*", "pythia_agents*"]
 
 [tool.black]
 line-length = 100
@@ -47,7 +55,7 @@ skip = [".git", ".venv", "venv", "node_modules", "dist", "artifacts", "logs"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests", "additional_tests", "hyba_intelligence_tests", "hyba_quantum_scaling_benchmark_tests"]
-norecursedirs = ["node_modules", "dist", "artifacts", "logs", "scripts", "python_backend", "public", "Landing_Page"]
+norecursedirs = [".git", ".venv", "venv", "node_modules", "dist", "artifacts", "logs", "scripts", "python_backend", "public", "Landing_Page", ".hypothesis", "__pycache__"]
 markers = [
     "benchmark: performance/capability benchmark tests with explicit thresholds",
     "stress: stress/load tests",
