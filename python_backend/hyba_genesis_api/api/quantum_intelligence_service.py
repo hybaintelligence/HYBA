@@ -472,6 +472,7 @@ async def query_quantum_intelligence(
 ) -> QIaaSResponse:
     """Execute the Sovereign Quantum Intelligence API."""
 
+    require_feature("qiaas_enabled")
     query_type = _normalise_query_type(request.query_type)
     customer = _principal_or_internal(principal)
     _validate_qiaas_entitlement(customer, query_type)

@@ -30,6 +30,8 @@ from typing import Any, Dict, List, Literal, Optional, Tuple
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field, model_validator
 
+from hyba_genesis_api.core.feature_flags import require_feature
+from hyba_genesis_api.core.response_cache import get_cached_json, set_cached_json
 from hyba_genesis_api.api.customer_access import (
     CustomerPrincipal,
     customer_access,
@@ -467,8 +469,15 @@ async def quantum_finance_capability_map(
 ) -> Dict[str, Any]:
     """Return the implemented finance vertical capability map."""
 
+    require_feature("finance_enabled")
     usage_meter = customer_access.meter(customer, product="finance.capability_map", units=1)
-    return {
+    cached = get_cached_json("hyba:cache:quantum-finance:capability-map:v1")
+    if cached is not None:
+        cached["usage_meter"] = usage_meter
+        cached["cache"] = {"status": "hit", "ttl_seconds": 300}
+        return cached
+
+    response = {
         "vertical": "quantum_finance",
         "product_surfaces": ["QaaS", "QIaaS", "CIaaS"],
         "implemented_algorithms": [
@@ -492,7 +501,9 @@ async def quantum_finance_capability_map(
             "physical_QPU_superiority_without_hardware_evidence",
         ],
         "usage_meter": usage_meter,
+        "cache": {"status": "miss", "ttl_seconds": 300},
     }
+    return set_cached_json("hyba:cache:quantum-finance:capability-map:v1", response, ttl_seconds=300)
 
 
 @router.post("/portfolio/qaoa-design", response_model=PortfolioQAOAResponse)
@@ -501,6 +512,7 @@ async def portfolio_qaoa_design(
     customer: CustomerPrincipal = Depends(require_customer_api_key),
 ) -> PortfolioQAOAResponse:
     """Generate a finance-specific QUBO/Ising/QAOA design packet."""
+    require_feature("finance_enabled")
 
     design = design_portfolio_qaoa(request)
     usage_meter = customer_access.meter(
@@ -517,6 +529,7 @@ async def risk_qae_design(
     customer: CustomerPrincipal = Depends(require_customer_api_key),
 ) -> RiskQAEResponse:
     """Generate a finance-specific QAE/QMCI risk and pricing design packet."""
+    require_feature("finance_enabled")
 
     design = design_risk_qae(request)
     usage_meter = customer_access.meter(

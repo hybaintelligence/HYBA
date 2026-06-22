@@ -33,6 +33,7 @@ from hyba_genesis_api.api.billing_integration import execute_with_billing
 from hyba_genesis_api.auth.jwt_handler import TokenPayload
 from hyba_genesis_api.core.intelligence_fabric import SubstrateOrchestrator, explain
 from hyba_genesis_api.core.substrate import get_substrate_state, initialize_substrate
+from hyba_genesis_api.core.feature_flags import require_feature
 from pythia_mining.fault_tolerant_quantum_core import FaultTolerantQuantumCore, PHI
 from pythia_mining.redis_state_registry import get_redis_registry
 from pythia_mining.autonomous_qaas_controller import create_autonomous_controller
@@ -751,6 +752,7 @@ async def customer_provision_computer(
     request: CustomerProvisionFaultTolerantComputerRequest,
     principal: CustomerPrincipal = Depends(require_customer_api_key),
 ):
+    require_feature("qaas_enabled")
     # Validate customer entitlement for requested tier and isolation
     _validate_customer_entitlement(principal, request.tier, request.isolation)
 
@@ -770,6 +772,7 @@ async def customer_provision_computer(
 async def customer_list_computers(
     principal: CustomerPrincipal = Depends(require_customer_api_key),
 ):
+    require_feature("qaas_enabled")
     customer_access.meter(principal, product="qaas.list", units=1)
     return registry.list(owner=principal.customer_id)
 
@@ -779,6 +782,7 @@ async def customer_start_computer(
     computer_id: str,
     principal: CustomerPrincipal = Depends(require_customer_api_key),
 ):
+    require_feature("qaas_enabled")
     registry.assert_owner(computer_id, principal.customer_id)
     customer_access.meter(principal, product="qaas.lifecycle", units=1)
     return registry.start(computer_id)
@@ -790,6 +794,7 @@ async def customer_execute_quantum_workload(
     request: QuantumWorkloadRequest,
     principal: CustomerPrincipal = Depends(require_customer_api_key),
 ):
+    require_feature("qaas_enabled")
     registry.assert_owner(computer_id, principal.customer_id)
 
     # Enforce tier-based sync limits to prevent event-loop blocking
