@@ -1,6 +1,6 @@
 """
 HYBA SDK for Python
-Official Python SDK for HYBA QaaS/CIaaS platform
+Official Python SDK for HYBA Quantum Intelligence API, QaaS, and CIaaS platform
 
 Example:
     >>> from hyba_sdk import HybaClient
@@ -12,7 +12,7 @@ Example:
 __version__ = "1.0.0"
 __author__ = "HYBA Analytics"
 
-from hyba_sdk.client import HybaClient
+from hyba_sdk.client import HybaClient, QuantumFinanceNamespace, QuantumIntelligenceNamespace
 from hyba_sdk.service import ComputationalIntelligenceService
 from hyba_sdk.connector import ConnectorConfig
 from hyba_sdk.exceptions import (
@@ -25,6 +25,8 @@ from hyba_sdk.exceptions import (
 
 __all__ = [
     "HybaClient",
+    "QuantumIntelligenceNamespace",
+    "QuantumFinanceNamespace",
     "ComputationalIntelligenceService",
     "ConnectorConfig",
     "HybaApiError",
