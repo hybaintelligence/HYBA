@@ -1,6 +1,6 @@
 # HYBA TypeScript SDK
 
-TypeScript/JavaScript SDK for HYBA computational intelligence platform. Provision, manage, and execute computational intelligence services from your Node.js or browser application.
+TypeScript/JavaScript SDK for HYBA Quantum Intelligence API platform. Provision, manage, and execute computational intelligence services from your Node.js or browser application.
 
 ## Installation
 
@@ -45,6 +45,11 @@ const result = await service.execute({
 
 console.log(result);
 ```
+
+
+## Quantum Intelligence API
+
+HYBA exposes QIaaS as a first-class **Quantum Intelligence API**: beyond AGI/ASI framing, substrate-independent, evidence-sealed, and governed by enterprise auth, tenancy, quota, trace, and audit controls. Responses include execution evidence such as `qi_execution_id`, `evidence_id`, `trace_id`, `claim_boundary`, `substrate_state`, and usage-meter data.
 
 ## API Reference
 
@@ -368,3 +373,12 @@ Apache License 2.0
 - Documentation: https://docs.hyba.ai/typescript-sdk
 - GitHub Issues: https://github.com/hyba-ai/hyba-sdk-ts/issues
 - Email: support@hyba.ai
+
+### First-class QIaaS methods
+
+```typescript
+const qi = await client.quantum_intelligence.query({ query: "Explain portfolio convexity", context: { desk: "rates" } });
+const optimized = await client.quantum_intelligence.optimize({ objective: "max_sharpe", constraints: ["leverage <= 2"] });
+const repair = await client.quantum_intelligence.heal({ component: "executor", mode: "salamander" });
+const qaoa = await client.quantum_finance.portfolio_qaoa({ positions, riskModel: "enterprise" });
+```

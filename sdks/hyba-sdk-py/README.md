@@ -1,6 +1,6 @@
 # HYBA SDK for Python
 
-Official Python SDK for [HYBA QaaS/CIaaS](https://hyba.ai) platform.
+Official Python SDK for the [HYBA Quantum Intelligence API](https://hyba.ai), QaaS, and CIaaS platform.
 
 ## Installation
 
@@ -43,6 +43,11 @@ result = service.governance_audit("Check compliance with ESG constraints")
 # Stop when done
 service.stop()
 ```
+
+
+## Quantum Intelligence API
+
+HYBA exposes QIaaS as a first-class **Quantum Intelligence API**: beyond AGI/ASI framing, substrate-independent, evidence-sealed, and governed by enterprise auth, tenancy, quota, trace, and audit controls. Responses include execution evidence such as `qi_execution_id`, `evidence_id`, `trace_id`, `claim_boundary`, `substrate_state`, and usage-meter data.
 
 ## Features
 
@@ -222,3 +227,11 @@ MIT License - see [LICENSE](LICENSE) file for details.
 - Documentation: https://docs.hyba.ai
 - GitHub Issues: https://github.com/hybaanalytics1/hyba-sdk-py/issues
 - Email: dev@hyba.ai
+### First-class QIaaS methods
+
+```python
+qi = client.quantum_intelligence.query("Explain portfolio convexity", context={"desk": "rates"})
+optimized = client.quantum_intelligence.optimize({"objective": "max_sharpe", "constraints": ["leverage <= 2"]})
+repair = client.quantum_intelligence.heal({"component": "executor", "mode": "salamander"})
+qaoa = client.quantum_finance.portfolio_qaoa({"positions": positions, "risk_model": "enterprise"})
+```
