@@ -9,9 +9,9 @@ SelfHealingReactor.
 from __future__ import annotations
 
 import ast
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, Iterable, Iterator, List, Optional
+from typing import Dict, Iterable, Iterator, List, Optional, Tuple, Union
 
 
 class DamageReport(dict):
@@ -56,13 +56,13 @@ class AutonomousDamageDetector:
 
     max_target_lines: int = 120
     max_file_bytes: int = 512_000
-    todo_tokens: tuple[str, ...] = ("TODO", "FIXME", "HACK")
-    performance_tokens: tuple[str, ...] = ("time.sleep", "subprocess.run", "shell=True")
-    invariant_tokens: tuple[str, ...] = ("assert False", "raise NotImplementedError")
-    security_tokens: tuple[str, ...] = ("eval(", "exec(", "pickle.loads")
-    ignored_dirs: tuple[str, ...] = (".git", "node_modules", ".venv", "venv", "__pycache__")
+    todo_tokens: Tuple[str, ...] = ("TODO", "FIXME", "HACK")
+    performance_tokens: Tuple[str, ...] = ("time.sleep", "subprocess.run", "shell=True")
+    invariant_tokens: Tuple[str, ...] = ("assert False", "raise NotImplementedError")
+    security_tokens: Tuple[str, ...] = ("eval(", "exec(", "pickle.loads")
+    ignored_dirs: Tuple[str, ...] = (".git", "node_modules", ".venv", "venv", "__pycache__")
 
-    def scan_paths(self, paths: Iterable[str | Path]) -> List[DamageReport]:
+    def scan_paths(self, paths: Iterable[Union[str, Path]]) -> List[DamageReport]:
         """Scan files/directories and return reports sorted by severity."""
 
         reports: List[DamageReport] = []
@@ -72,7 +72,7 @@ class AutonomousDamageDetector:
                 reports.extend(self.scan_file(file_path))
         return sorted(reports, key=lambda report: report.get("severity_score", 0.0), reverse=True)
 
-    def scan_file(self, path: str | Path) -> List[DamageReport]:
+    def scan_file(self, path: Union[str, Path]) -> List[DamageReport]:
         file_path = Path(path)
         if not file_path.exists() or file_path.stat().st_size > self.max_file_bytes:
             return []
@@ -159,7 +159,7 @@ class AutonomousDamageDetector:
         except SyntaxError:
             return None
         signal_lines = [signal.line_number for signal in signals if signal.line_number is not None]
-        candidates: List[tuple[int, str]] = []
+        candidates: List[Tuple[int, str]] = []
         for node in ast.walk(tree):
             if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
                 continue
