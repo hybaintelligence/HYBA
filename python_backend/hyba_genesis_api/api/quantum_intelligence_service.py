@@ -41,6 +41,7 @@ from hyba_genesis_api.api.customer_access import (
     customer_access,
     require_customer_api_key,
 )
+from hyba_genesis_api.core.feature_flags import require_feature
 from pythia_mining.consciousness_engine import ConsciousnessEngine
 from pythia_mining.deutsch_knowledge_substrate import KnowledgeSubstrate
 from pythia_mining.iit_4_analyzer import IIT4Analyzer
@@ -228,7 +229,7 @@ def _build_envelope(
     principal: Any,
     product: str,
     units: int,
-    usage_state_override: Dict[str, Any] | None = None,
+    usage_state_override: Optional[Dict[str, Any]] = None,
 ) -> QuantumIntelligenceEnvelope:
     customer = _principal_or_internal(principal)
     usage_state = usage_state_override or _meter_usage(customer, product=product, units=units)
@@ -379,7 +380,7 @@ class QuantumIntelligenceService:
             "method": "constructor_theory_counterfactuals",
         }
 
-    def heal(self, context: Dict[str, Any]) -> Dict[str, Any]:
+    async def heal(self, context: Dict[str, Any]) -> Dict[str, Any]:
         """Trigger Salamander healing under enterprise entitlement and audit controls."""
 
         component_id = context.get("component_id", "system")
@@ -396,9 +397,7 @@ class QuantumIntelligenceService:
 
         lane_id = int(context.get("lane_id", 0))
         try:
-            import asyncio
-
-            event = asyncio.run(self.regeneration_manager.trigger_regeneration(lane_id))
+            event = await self.regeneration_manager.trigger_regeneration(lane_id)
             return {
                 "healing_type": "component_regeneration",
                 "component": component_id,
@@ -484,7 +483,7 @@ async def query_quantum_intelligence(
     elif query_type == "optimize":
         result = service.optimize(request.context)
     elif query_type == "heal":
-        result = service.heal(request.context)
+        result = await service.heal(request.context)
     else:
         result = service.optimize({**request.context, "capability_family": query_type})
 
@@ -526,6 +525,7 @@ async def get_quantum_intelligence_metrics(
 ) -> QIaaSMetrics:
     """Get customer-visible Quantum Intelligence substrate metrics."""
 
+    require_feature("qiaas_enabled")
     customer = _principal_or_internal(principal)
     _meter_usage(customer, product="qiaas.metrics", units=1)
     metrics = service.get_metrics()
@@ -548,6 +548,7 @@ async def qiaas_health_check(
 ) -> Dict[str, Any]:
     """Health check for the Quantum Intelligence API without leaking internals."""
 
+    require_feature("qiaas_enabled")
     customer = _principal_or_internal(principal)
     _meter_usage(customer, product="qiaas.health", units=1)
     metrics = service.get_metrics()
@@ -577,6 +578,7 @@ async def bootstrap_intelligence(
 ) -> Dict[str, Any]:
     """Return controlled QIaaS bootstrap readiness without exposing private validation."""
 
+    require_feature("qiaas_enabled")
     customer = _principal_or_internal(principal)
     if customer.tier not in {"production", "enterprise"}:
         raise HTTPException(
