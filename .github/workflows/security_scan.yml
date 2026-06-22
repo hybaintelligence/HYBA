@@ -5,15 +5,18 @@ on:
     branches: [ main, master ]
   pull_request:
 
+env:
+  HYBA_PYTHON_VERSION: '3.12.7'
+
 jobs:
   dependency-security:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - name: Set up Python
-        uses: actions/setup-python@v4
+      - uses: actions/checkout@v4
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: ${{ env.HYBA_PYTHON_VERSION }}
       - name: Install Python security tools
         run: |
           python -m pip install --upgrade pip
