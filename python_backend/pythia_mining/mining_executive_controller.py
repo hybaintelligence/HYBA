@@ -10,11 +10,12 @@ from __future__ import annotations
 import asyncio
 import logging
 from datetime import datetime
-from typing import Dict, Any, Optional
+from typing import Any, Dict, Optional
 
 from .audit_logger import get_audit_logger
-from .regeneration_manager import RegenerationManager, get_regeneration_manager
 from .consciousness_engine import ConsciousnessEngine
+from .regeneration_manager import RegenerationManager, get_regeneration_manager
+from .salamander_mining_guard import SalamanderMiningGuard
 from .stratum_client import StratumClient
 
 logger = logging.getLogger(__name__)
@@ -31,15 +32,18 @@ class MiningExecutiveController:
         self,
         consciousness_engine: Optional[ConsciousnessEngine] = None,
         regeneration_manager: Optional[RegenerationManager] = None,
+        salamander_guard: Optional[SalamanderMiningGuard] = None,
     ):
         self.consciousness = consciousness_engine or ConsciousnessEngine()
         self.regeneration = regeneration_manager or get_regeneration_manager()
+        self.salamander_guard = salamander_guard or SalamanderMiningGuard(self.regeneration)
         self.stratum_client: Optional[StratumClient] = None
         self.is_active = False
         self.ignition_time: Optional[datetime] = None
         self.stasis_mode = False
         self._mining_task: Optional[asyncio.Task] = None
         self._stop_event = asyncio.Event()
+        self.last_salamander_gate: Optional[Dict[str, Any]] = None
 
     def set_stratum_client(self, client: StratumClient) -> None:
         """Set the Stratum client for pool connections."""
@@ -73,6 +77,19 @@ class MiningExecutiveController:
         if self.is_active:
             return {"success": True, "status": "ALREADY_ACTIVE"}
 
+        # Salamander is a hard preflight for mining ignition. It proves the
+        # regeneration substrate is present, target-registered, and warm before
+        # any pool connection or live mining loop starts.
+        salamander_gate = await self.salamander_guard.preflight(source="executive_ignition")
+        self.last_salamander_gate = salamander_gate.to_dict()
+        if not salamander_gate.ready:
+            logger.error("Ignition blocked by Salamander gate: %s", salamander_gate.blocker)
+            return {
+                "success": False,
+                "error": "SALAMANDER_LOCK",
+                "salamander_gate": self.last_salamander_gate,
+            }
+
         logger.info("Executive: Initiating manifold ignition sequence...")
 
         # 1. Start the Stratum Session if client is available
@@ -86,14 +103,7 @@ class MiningExecutiveController:
                 logger.error(f"Executive: Pool connection error: {e}")
                 return {"success": False, "error": "POOL_CONNECTION_ERROR", "detail": str(e)}
 
-        # 2. Warm up the 32 lanes (regeneration manager)
-        try:
-            # Trigger regeneration for a sample lane to verify system health
-            await self.regeneration.trigger_regeneration(0)
-        except Exception as e:
-            logger.warning(f"Executive: Regeneration warm-up warning: {e}")
-
-        # 3. Start mining loop
+        # 2. Start mining loop
         self._stop_event.clear()
         self._mining_task = asyncio.create_task(self._mining_loop())
 
@@ -111,6 +121,7 @@ class MiningExecutiveController:
             "phi": phi,
             "timestamp": self.ignition_time.isoformat(),
             "sensory_integrity": sensory_report,
+            "salamander_gate": self.last_salamander_gate,
         }
 
     async def quiesce_manifold(self) -> Dict[str, Any]:
@@ -200,6 +211,7 @@ class MiningExecutiveController:
             "stratum": stratum_telemetry,
             "coherence": coherence_state,
             "regeneration": regeneration_status,
+            "salamander_mining_gate": self.salamander_guard.telemetry(),
             "sensory_integrity": self.consciousness.validate_sensory_integrity(),
         }
 

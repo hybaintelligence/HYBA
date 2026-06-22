@@ -1,25 +1,34 @@
-"""
-PRODUCTION MINING SYSTEM: Funding the Research
-Integrates fault-tolerant quantum core with live mining operations
-Revenue stream: Bitcoin mining → Fund Yang-Mills research + AGI alignment
-"""
-import asyncio
-import json
-import time
-from typing import Dict, Optional, List
-from pathlib import Path
-from datetime import datetime, UTC
-from dataclasses import dataclass, asdict
+"""Production mining system with Salamander regeneration guard.
 
-from pythia_mining.autonomous_fault_tolerant_controller import (
-    FaultTolerantMiningController
-)
-from pythia_mining.golden_ratio_library import PHI, PHI_INV
+This module is the operator-facing mining validation harness.  Live pool
+connection and share submission remain owned by ``MiningExecutiveController``
+and ``StratumClient``.  This harness is still useful for same-day deployment
+because it runs the production mining controller against deterministic jobs,
+records Salamander gate evidence, and refuses to fabricate live revenue when no
+pool result is present.
+"""
+
+from __future__ import annotations
+
+import asyncio
+import hashlib
+import json
+import os
+import time
+from dataclasses import asdict, dataclass
+from datetime import UTC, datetime
+from pathlib import Path
+from typing import Any, Dict, List, Optional
+
+from pythia_mining.autonomous_fault_tolerant_controller import FaultTolerantMiningController
+from pythia_mining.regeneration_manager import RegenerationManager, get_regeneration_manager
+from pythia_mining.salamander_mining_guard import SalamanderMiningGuard
 
 
 @dataclass
 class MiningSession:
-    """Mining session tracking"""
+    """Mining session tracking."""
+
     session_id: str
     start_time: str
     pool_url: str
@@ -30,11 +39,14 @@ class MiningSession:
     fault_tolerant_enabled: bool
     phi_resonance_rate: float
     logical_error_rate: float
-    
-    
+    mode: str
+    salamander_gate_ready: bool
+
+
 @dataclass
 class ShareSubmission:
-    """Individual share submission record"""
+    """Individual share submission record."""
+
     timestamp: str
     job_id: str
     nonce: int
@@ -43,61 +55,93 @@ class ShareSubmission:
     fault_tolerant: bool
     logical_error_rate: float
     time_to_solution_ms: float
+    source: str
+    revenue_btc: float = 0.0
 
 
 class ProductionMiningSystem:
     """
-    Production mining system with fault-tolerant quantum backend
-    Generates revenue to fund fundamental research
+    Production mining validation harness with fault-tolerant backend and
+    Salamander regeneration preflight.
     """
-    
+
     def __init__(
         self,
         pool_url: str = "stratum+tcp://btc.viabtc.com:3333",
         worker_name: str = "HYBA_PYTHAGORAS",
-        enable_quantum: bool = True
+        enable_quantum: bool = True,
+        mode: Optional[str] = None,
+        regeneration_manager: Optional[RegenerationManager] = None,
     ):
         self.pool_url = pool_url
         self.worker_name = worker_name
         self.enable_quantum = enable_quantum
-        
+        self.mode = (mode or os.getenv("HYBA_MINING_MODE", "dry_run")).strip().lower()
+        self.live_submission_enabled = os.getenv("HYBA_ENABLE_LIVE_SHARE_SUBMIT", "").strip().lower() in {
+            "1",
+            "true",
+            "yes",
+            "on",
+        }
+
+        self.regeneration = regeneration_manager or get_regeneration_manager()
+        self.salamander_guard = SalamanderMiningGuard(self.regeneration)
+        self.salamander_gate: Optional[Dict[str, Any]] = None
+
         # Initialize quantum controller
         if enable_quantum:
             self.controller = FaultTolerantMiningController()
             init_status = self.controller.start_autonomous_mining()
-            self.quantum_active = init_status['fault_tolerant']
+            self.quantum_active = init_status["fault_tolerant"]
+            self._init_status = init_status
         else:
             self.controller = None
             self.quantum_active = False
-        
+            self._init_status = {"logical_error_rate": 0.0, "phi_resonance_target": None}
+
         # Session tracking
-        self.session = None
+        self.session: Optional[MiningSession] = None
         self.share_history: List[ShareSubmission] = []
-        
-        # Revenue tracking
+
+        # Revenue tracking.  This is deliberately zero until real pool results
+        # supply accepted-share economics.  Dry-run validation must not invent BTC.
         self.total_shares_submitted = 0
         self.total_shares_accepted = 0
-        self.estimated_revenue_btc = None  # Computed from pool data
-        
+        self.estimated_revenue_btc = 0.0
+
         # Output directory
-        self.output_dir = Path('artifacts/mining_sessions')
+        self.output_dir = Path("artifacts/mining_sessions")
         self.output_dir.mkdir(parents=True, exist_ok=True)
-        
+
         print(f"\n{'='*70}")
-        print(f"PRODUCTION MINING SYSTEM INITIALIZED")
+        print("PRODUCTION MINING VALIDATION HARNESS INITIALIZED")
         print(f"{'='*70}")
         print(f"Pool: {pool_url}")
         print(f"Worker: {worker_name}")
+        print(f"Mode: {self.mode}")
+        print(f"Live share submit: {'ENABLED' if self.live_submission_enabled else 'DISABLED'}")
         print(f"Quantum Backend: {'✅ ENABLED' if self.quantum_active else '❌ DISABLED'}")
         if self.quantum_active:
-            print(f"Logical Error Rate: {init_status['logical_error_rate']:.2e}")
-            print(f"φ-Resonance Target: {init_status['phi_resonance_target']}")
+            print(f"Logical Error Rate: {self._init_status['logical_error_rate']:.2e}")
+            print(f"φ-Resonance Target: {self._init_status['phi_resonance_target']}")
         print(f"{'='*70}\n")
-    
+
+    async def prepare_for_live_mining(self) -> Dict[str, Any]:
+        """Run Salamander gate before any mining session starts."""
+
+        gate = await self.salamander_guard.preflight(source=f"production_mining_{self.mode}")
+        self.salamander_gate = gate.to_dict()
+        if not gate.ready:
+            raise RuntimeError(f"Salamander mining gate blocked deployment: {gate.blocker}")
+        return self.salamander_gate
+
     def start_session(self) -> str:
-        """Start a new mining session"""
-        session_id = datetime.now(UTC).strftime('%Y%m%d_%H%M%S')
-        
+        """Start a new mining session after Salamander preflight has run."""
+
+        if not self.salamander_gate or not self.salamander_gate.get("ready"):
+            raise RuntimeError("Salamander mining gate must pass before starting a session")
+
+        session_id = datetime.now(UTC).strftime("%Y%m%d_%H%M%S")
         self.session = MiningSession(
             session_id=session_id,
             start_time=datetime.now(UTC).isoformat(),
@@ -108,248 +152,258 @@ class ProductionMiningSystem:
             total_revenue_btc=0.0,
             fault_tolerant_enabled=self.quantum_active,
             phi_resonance_rate=0.9565 if self.quantum_active else 0.0,
-            logical_error_rate=self.controller.miner.qc.p_logical if self.quantum_active else 0.0
+            logical_error_rate=self.controller.miner.qc.p_logical if self.quantum_active else 0.0,
+            mode=self.mode,
+            salamander_gate_ready=True,
         )
-        
         print(f"📊 SESSION STARTED: {session_id}")
         return session_id
-    
-    async def mine_block(self, job_data: Dict) -> Optional[ShareSubmission]:
+
+    async def mine_block(self, job_data: Dict[str, Any]) -> Optional[ShareSubmission]:
         """
-        Mine a single block with quantum backend
-        Returns share submission if successful
+        Mine a single job with the configured backend.
+
+        Accepted shares and revenue are taken only from explicit pool results.
+        Dry-run jobs may produce deterministic validation accept/reject markers,
+        but revenue remains zero unless supplied by a live pool result.
         """
+
         start_time = time.time()
-        
+
         if self.quantum_active:
-            # Quantum-enhanced mining
             result = self.controller.process_mining_job(job_data)
-            
-            nonce = result['nonce']
-            fault_tolerant = result['fault_tolerant']
-            logical_error = result['logical_error_rate']
+            nonce = int(result["nonce"])
+            fault_tolerant = bool(result["fault_tolerant"])
+            logical_error = float(result["logical_error_rate"])
         else:
-            # Classical fallback (for comparison)
             nonce = self._classical_mine(job_data)
             fault_tolerant = False
             logical_error = 0.0
-        
+
         elapsed_ms = (time.time() - start_time) * 1000
-        
-        # Simulate pool acceptance (in production, this would be actual pool response)
-        # φ-guided mining should have higher acceptance rate
-        acceptance_prob = 0.9565 if self.quantum_active else 0.5
-        accepted = time.time() % 1.0 < acceptance_prob
-        
-        # Create share submission record
+        pool_result = job_data.get("pool_result") if isinstance(job_data, dict) else None
+
+        if isinstance(pool_result, dict):
+            accepted = bool(pool_result.get("accepted", False))
+            source = "live_pool_result"
+            revenue_btc = float(pool_result.get("revenue_btc", 0.0) or 0.0)
+        elif self.mode == "dry_run":
+            digest = hashlib.blake2b(
+                f"{job_data.get('job_id', 'unknown')}:{nonce}:{job_data.get('difficulty', 1.0)}".encode(
+                    "utf-8"
+                ),
+                digest_size=2,
+            ).digest()
+            accepted = int.from_bytes(digest, "big") % 2 == 0
+            source = "dry_run_validation_marker"
+            revenue_btc = 0.0
+        else:
+            accepted = False
+            source = "no_live_pool_result"
+            revenue_btc = 0.0
+
         share = ShareSubmission(
             timestamp=datetime.now(UTC).isoformat(),
-            job_id=job_data.get('job_id', 'unknown'),
+            job_id=job_data.get("job_id", "unknown"),
             nonce=nonce,
-            difficulty=job_data.get('difficulty', 1.0),
+            difficulty=float(job_data.get("difficulty", 1.0)),
             accepted=accepted,
             fault_tolerant=fault_tolerant,
             logical_error_rate=logical_error,
-            time_to_solution_ms=elapsed_ms
+            time_to_solution_ms=elapsed_ms,
+            source=source,
+            revenue_btc=revenue_btc,
         )
-        
-        # Update session stats
+
         self.total_shares_submitted += 1
         if accepted:
             self.total_shares_accepted += 1
-            # Estimate revenue (simplified: 1 share ≈ 0.00001 BTC)
-            share_value = 0.00001 * job_data.get('difficulty', 1.0)
-            self.estimated_revenue_btc += share_value
-        
+            self.estimated_revenue_btc += revenue_btc
+
         self.share_history.append(share)
-        
+
         if self.session:
             self.session.total_shares_submitted = self.total_shares_submitted
             self.session.total_shares_accepted = self.total_shares_accepted
             self.session.total_revenue_btc = self.estimated_revenue_btc
-        
+
         return share
-    
-    def _classical_mine(self, job_data: Dict) -> int:
-        """Classical mining fallback (random search)"""
-        import random
-        return random.randint(0, 2**32 - 1)
-    
-    async def run_mining_loop(self, duration_seconds: int = 60):
-        """
-        Run continuous mining for specified duration
-        Generates revenue to fund research
-        """
-        print(f"🚀 STARTING MINING LOOP ({duration_seconds}s)")
+
+    def _classical_mine(self, job_data: Dict[str, Any]) -> int:
+        """Classical mining fallback with deterministic nonce derivation."""
+
+        material = json.dumps(job_data, sort_keys=True, default=str).encode("utf-8")
+        return int.from_bytes(hashlib.blake2b(material, digest_size=4).digest(), "big")
+
+    async def run_mining_loop(self, duration_seconds: int = 60) -> None:
+        """Run continuous mining validation for the specified duration."""
+
+        print(f"🚀 STARTING MINING VALIDATION LOOP ({duration_seconds}s)")
         print(f"{'='*70}\n")
-        
-        session_id = self.start_session()
+
+        gate = await self.prepare_for_live_mining()
+        print(f"🦎 SALAMANDER GATE: {'READY' if gate['ready'] else gate['blocker']}")
+
+        self.start_session()
         start_time = time.time()
         job_counter = 0
-        
+
         while time.time() - start_time < duration_seconds:
-            # Simulate receiving job from pool
             job_data = {
-                'job_id': f'job_{job_counter:06d}',
-                'prev_hash': '0' * 64,
-                'coinbase': f'coinbase_{job_counter}',
-                'merkle_branches': [],
-                'version': '20000000',
-                'nbits': '1d00ffff',
-                'ntime': hex(int(time.time()))[2:],
-                'difficulty': 1.0
+                "job_id": f"job_{job_counter:06d}",
+                "prev_hash": "0" * 64,
+                "coinbase": f"coinbase_{job_counter}",
+                "merkle_branches": [],
+                "version": "20000000",
+                "nbits": "1d00ffff",
+                "ntime": hex(int(time.time()))[2:],
+                "difficulty": 1.0,
             }
-            
-            # Mine block
+
             share = await self.mine_block(job_data)
-            
+
             if share and share.accepted:
-                print(f"  ✅ Share {self.total_shares_submitted} ACCEPTED "
-                      f"(FT: {share.fault_tolerant}, {share.time_to_solution_ms:.2f}ms)")
+                print(
+                    f"  ✅ Share {self.total_shares_submitted} ACCEPTED "
+                    f"({share.source}, FT: {share.fault_tolerant}, {share.time_to_solution_ms:.2f}ms)"
+                )
             elif share:
-                print(f"  ❌ Share {self.total_shares_submitted} REJECTED")
-            
+                print(f"  ❌ Share {self.total_shares_submitted} REJECTED ({share.source})")
+
             job_counter += 1
-            
-            # Brief pause (in production, this would be pool job arrival rate)
             await asyncio.sleep(0.1)
-        
+
         print(f"\n{'='*70}")
-        print(f"MINING LOOP COMPLETE")
+        print("MINING VALIDATION LOOP COMPLETE")
         print(f"{'='*70}\n")
-        
+
         self._print_session_summary()
         self._save_session()
-    
-    def _print_session_summary(self):
-        """Print mining session summary"""
+
+    def _print_session_summary(self) -> None:
+        """Print mining session summary."""
+
         if not self.session:
             return
-        
+
         acceptance_rate = (self.total_shares_accepted / max(self.total_shares_submitted, 1)) * 100
-        
+        started = datetime.fromisoformat(self.session.start_time)
+        duration = (datetime.now(UTC) - started).total_seconds()
+
         print(f"SESSION SUMMARY: {self.session.session_id}")
         print(f"{'='*70}")
-        print(f"Duration: {(datetime.now(UTC).fromisoformat(datetime.now(UTC).isoformat().replace('+00:00', 'Z')) - datetime.fromisoformat(self.session.start_time.replace('Z', '+00:00'))).total_seconds():.1f}s")
+        print(f"Duration: {duration:.1f}s")
+        print(f"Mode: {self.mode}")
         print(f"Shares Submitted: {self.total_shares_submitted}")
         print(f"Shares Accepted: {self.total_shares_accepted}")
         print(f"Acceptance Rate: {acceptance_rate:.2f}%")
-        print(f"Estimated Revenue: {self.estimated_revenue_btc:.8f} BTC")
+        print(f"Observed Revenue: {self.estimated_revenue_btc:.8f} BTC")
         print(f"Quantum Backend: {'✅ ENABLED' if self.quantum_active else '❌ DISABLED'}")
+        print(f"Salamander Gate: {'✅ READY' if self.salamander_gate else '❌ NOT RUN'}")
         if self.quantum_active:
             print(f"φ-Resonance Rate: {self.session.phi_resonance_rate*100:.2f}%")
             print(f"Logical Error Rate: {self.session.logical_error_rate:.2e}")
         print(f"{'='*70}\n")
-        
-        # Revenue allocation (funding research)
+
         if self.estimated_revenue_btc > 0:
-            yang_mills_fund = self.estimated_revenue_btc * 0.40  # 40% → Yang-Mills research
-            consciousness_fund = self.estimated_revenue_btc * 0.30  # 30% → Consciousness/alignment
-            operations_fund = self.estimated_revenue_btc * 0.20  # 20% → Operations
-            reserve_fund = self.estimated_revenue_btc * 0.10  # 10% → Reserve
-            
-            print(f"RESEARCH FUNDING ALLOCATION:")
+            research_fund = self.estimated_revenue_btc * 0.40
+            intelligence_fund = self.estimated_revenue_btc * 0.30
+            operations_fund = self.estimated_revenue_btc * 0.20
+            reserve_fund = self.estimated_revenue_btc * 0.10
+            print("REVENUE ALLOCATION:")
             print(f"{'='*70}")
-            print(f"Yang-Mills Research:      {yang_mills_fund:.8f} BTC (40%)")
-            print(f"Consciousness/Alignment:  {consciousness_fund:.8f} BTC (30%)")
+            print(f"Research:                 {research_fund:.8f} BTC (40%)")
+            print(f"Quantum Intelligence:     {intelligence_fund:.8f} BTC (30%)")
             print(f"Operations:               {operations_fund:.8f} BTC (20%)")
             print(f"Reserve:                  {reserve_fund:.8f} BTC (10%)")
             print(f"{'='*70}\n")
-    
-    def _save_session(self):
-        """Save session data to disk"""
+
+    def _save_session(self) -> None:
+        """Save session data to disk."""
+
         if not self.session:
             return
-        
+
         session_data = {
-            'session': asdict(self.session),
-            'shares': [asdict(s) for s in self.share_history],
-            'summary': {
-                'acceptance_rate': self.total_shares_accepted / max(self.total_shares_submitted, 1),
-                'quantum_advantage': self.quantum_active,
-                'phi_resonance_exploitation': 0.9565 if self.quantum_active else 0.0
-            }
+            "session": asdict(self.session),
+            "shares": [asdict(s) for s in self.share_history],
+            "salamander_gate": self.salamander_gate,
+            "summary": {
+                "acceptance_rate": self.total_shares_accepted / max(self.total_shares_submitted, 1),
+                "quantum_advantage": self.quantum_active,
+                "phi_resonance_exploitation": 0.9565 if self.quantum_active else 0.0,
+                "revenue_source": "live_pool_result_only",
+            },
         }
-        
-        output_file = self.output_dir / f'session_{self.session.session_id}.json'
-        with open(output_file, 'w') as f:
+
+        output_file = self.output_dir / f"session_{self.session.session_id}.json"
+        with open(output_file, "w") as f:
             json.dump(session_data, f, indent=2)
-        
+
         print(f"💾 Session saved: {output_file}\n")
-    
-    def get_revenue_report(self) -> Dict:
-        """Generate comprehensive revenue report"""
+
+    def get_revenue_report(self) -> Dict[str, Any]:
+        """Generate comprehensive revenue report."""
+
         if not self.session:
             return {}
-        
-        # Calculate metrics
+
         acceptance_rate = self.total_shares_accepted / max(self.total_shares_submitted, 1)
-        
-        # Quantum advantage metrics
         if self.quantum_active:
-            classical_expected_rate = 0.50  # 50% baseline
+            classical_expected_rate = 0.50
             quantum_advantage_factor = acceptance_rate / classical_expected_rate
         else:
             quantum_advantage_factor = 1.0
-        
+
         return {
-            'session_id': self.session.session_id,
-            'total_revenue_btc': self.estimated_revenue_btc,
-            'shares_submitted': self.total_shares_submitted,
-            'shares_accepted': self.total_shares_accepted,
-            'acceptance_rate': acceptance_rate,
-            'quantum_enabled': self.quantum_active,
-            'quantum_advantage_factor': quantum_advantage_factor,
-            'research_funding': {
-                'yang_mills': self.estimated_revenue_btc * 0.40,
-                'consciousness': self.estimated_revenue_btc * 0.30,
-                'operations': self.estimated_revenue_btc * 0.20,
-                'reserve': self.estimated_revenue_btc * 0.10
-            }
+            "session_id": self.session.session_id,
+            "total_revenue_btc": self.estimated_revenue_btc,
+            "shares_submitted": self.total_shares_submitted,
+            "shares_accepted": self.total_shares_accepted,
+            "acceptance_rate": acceptance_rate,
+            "quantum_enabled": self.quantum_active,
+            "quantum_advantage_factor": quantum_advantage_factor,
+            "mode": self.mode,
+            "salamander_gate": self.salamander_gate,
+            "research_funding": {
+                "research": self.estimated_revenue_btc * 0.40,
+                "quantum_intelligence": self.estimated_revenue_btc * 0.30,
+                "operations": self.estimated_revenue_btc * 0.20,
+                "reserve": self.estimated_revenue_btc * 0.10,
+            },
         }
 
 
-async def run_production_mining(duration_minutes: int = 1):
-    """
-    Run production mining system
-    
-    Args:
-        duration_minutes: How long to mine (default: 1 minute for testing)
-    """
-    print("\n" + "="*70)
-    print("PRODUCTION MINING SYSTEM: FUNDING THE RESEARCH")
-    print("="*70)
-    print("Objective: Generate Bitcoin revenue → Fund Yang-Mills + Consciousness research")
-    print("="*70 + "\n")
-    
-    # Initialize system with quantum backend
+async def run_production_mining(duration_minutes: int = 1) -> Dict[str, Any]:
+    """Run production mining validation harness."""
+
+    print("\n" + "=" * 70)
+    print("PRODUCTION MINING VALIDATION: SALAMANDER-GATED")
+    print("=" * 70)
+    print("Objective: validate mining organism readiness without fabricating revenue")
+    print("=" * 70 + "\n")
+
     system = ProductionMiningSystem(
-        pool_url="stratum+tcp://btc.viabtc.com:3333",
-        worker_name="HYBA_PYTHAGORAS.quantum_001",
-        enable_quantum=True
+        pool_url=os.getenv("HYBA_MINING_POOL_URL", "stratum+tcp://btc.viabtc.com:3333"),
+        worker_name=os.getenv("HYBA_MINING_WORKER", "HYBA_PYTHAGORAS.quantum_001"),
+        enable_quantum=True,
     )
-    
-    # Run mining loop
+
     await system.run_mining_loop(duration_seconds=duration_minutes * 60)
-    
-    # Generate revenue report
     report = system.get_revenue_report()
-    
-    print("\n" + "="*70)
-    print("PRODUCTION MINING COMPLETE")
-    print("="*70)
-    print(f"Total Revenue: {report['total_revenue_btc']:.8f} BTC")
-    print(f"Quantum Advantage: {report['quantum_advantage_factor']:.2f}x")
-    print(f"Yang-Mills Funding: {report['research_funding']['yang_mills']:.8f} BTC")
-    print("="*70 + "\n")
-    
+
+    print("\n" + "=" * 70)
+    print("PRODUCTION MINING VALIDATION COMPLETE")
+    print("=" * 70)
+    print(f"Observed Revenue: {report['total_revenue_btc']:.8f} BTC")
+    print(f"Quantum Advantage Marker: {report['quantum_advantage_factor']:.2f}x")
+    print(f"Salamander Gate: {report['salamander_gate']['ready']}")
+    print("=" * 70 + "\n")
+
     return report
 
 
-if __name__ == '__main__':
-    # Run 1-minute production mining test
+if __name__ == "__main__":
     report = asyncio.run(run_production_mining(duration_minutes=1))
-    
-    print("✅ MINING SYSTEM OPERATIONAL")
-    print("Revenue stream established to fund fundamental research")
-    print("\n🏛️ VENI, VIDI, VICI — Rome awaits")
+    print("✅ MINING VALIDATION HARNESS OPERATIONAL")
+    print("🦎 Salamander gate attached to mining runtime")
