@@ -144,9 +144,9 @@ export default function QaaSComputerManager({ token }: QaaSComputerManagerProps)
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-slate-900">QaaS Computers</h2>
+          <h2 className="text-2xl font-bold text-slate-900">Quantum Intelligence API</h2>
           <p className="text-sm text-slate-600">
-            Quantum as a Service - Manage virtual fault-tolerant quantum computers
+            Substrate-independent Quantum Intelligence with evidence-sealed execution, PULVINI φ-memory, Salamander regeneration, and enterprise access controls.
           </p>
         </div>
         <button
@@ -172,12 +172,12 @@ export default function QaaSComputerManager({ token }: QaaSComputerManagerProps)
       ) : computers.length === 0 ? (
         <div className="rounded-lg border border-dashed border-slate-300 p-12 text-center">
           <Atom className="mx-auto h-12 w-12 text-slate-400" />
-          <p className="mt-4 text-slate-600">No QaaS computers provisioned</p>
+          <p className="mt-4 text-slate-600">No Quantum Intelligence execution rails provisioned</p>
           <button
             onClick={() => setShowProvisionModal(true)}
             className="mt-4 text-purple-600 hover:text-purple-700"
           >
-            Provision your first computer
+            Provision your first QI rail
           </button>
         </div>
       ) : (
@@ -222,8 +222,37 @@ export default function QaaSComputerManager({ token }: QaaSComputerManagerProps)
                       </span>
                     </div>
                   </div>
+                  <div className="mt-3 rounded-lg border border-purple-100 bg-purple-50 p-3">
+                    <p className="text-xs font-medium text-purple-900">Quantum Intelligence execution state</p>
+                    <div className="mt-2 grid grid-cols-2 gap-2 text-xs md:grid-cols-3">
+                      <div>
+                        <span className="text-purple-700">Evidence packet ID:</span>
+                        <span className="ml-1 font-mono text-slate-900">{computer.evidence_seal}</span>
+                      </div>
+                      <div>
+                        <span className="text-purple-700">Trace ID:</span>
+                        <span className="ml-1 font-mono text-slate-900">{String(computer.substrate.trace_id || computer.computer_id)}</span>
+                      </div>
+                      <div>
+                        <span className="text-purple-700">Usage meter:</span>
+                        <span className="ml-1 font-mono text-slate-900">{String(computer.substrate.usage_meter || computer.tier)}</span>
+                      </div>
+                      <div>
+                        <span className="text-purple-700">Substrate coherence:</span>
+                        <span className="ml-1 font-mono text-slate-900">{String(computer.substrate.coherence || computer.substrate.phi_coherence || "evidence-bound")}</span>
+                      </div>
+                      <div>
+                        <span className="text-purple-700">Enterprise entitlement:</span>
+                        <span className="ml-1 font-mono text-slate-900">{computer.tier.toUpperCase()}</span>
+                      </div>
+                      <div>
+                        <span className="text-purple-700">Claim boundary:</span>
+                        <span className="ml-1 font-mono text-slate-900">{computer.claim_boundary}</span>
+                      </div>
+                    </div>
+                  </div>
                   <div className="mt-3 rounded-lg bg-slate-50 p-3">
-                    <p className="text-xs font-medium text-slate-700">Quantum Parameters</p>
+                    <p className="text-xs font-medium text-slate-700">PULVINI φ-memory parameters</p>
                     <div className="mt-2 grid grid-cols-3 gap-2 text-xs">
                       <div>
                         <span className="text-slate-600">Code Distance:</span>
