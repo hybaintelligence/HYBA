@@ -1,6 +1,19 @@
 # HYBA Product Boundaries
 
-**Purpose:** make the repository presentation investor-ready and regulator-safe without flattening the science. The boundary is not a retreat from HYBA's thesis; it is the mechanism that lets HYBA make stronger claims with evidence.
+**Purpose:** make the repository presentation investor-ready, operator-safe, and regulator-safe without flattening the science. The boundary is not a retreat from HYBA's thesis; it is the mechanism that lets HYBA make stronger claims with evidence while keeping internal treasury operations separate from customer-facing products.
+
+## Current repository posture
+
+HYBA_FULLSTACK is the discrete deployable operating body. It grew beyond its original scope, but it remains the canonical same-day deployment surface for:
+
+- public product APIs,
+- private treasury mining,
+- Salamander-regulated regeneration,
+- evidence sealing,
+- runtime gates,
+- frontend/operator control surfaces.
+
+HYBA_Unified_Backend is the deeper legacy/substrate repository. It should not be merged into HYBA_FULLSTACK during same-day mining operations. Fusion is a funded later phase once treasury runway, GitHub subscription capacity, and agent orchestration are available.
 
 ## Public product surfaces
 
@@ -15,12 +28,12 @@ Customer-facing virtual fault-tolerant quantum-computational service.
 
 ### QIaaS — Quantum Intelligence-as-a-Service
 
-Customer-facing quantum-intelligence query surface.
+Customer-facing Quantum Intelligence query surface.
 
 - API surface: `/api/qiaas`
 - Implementation: `python_backend/hyba_genesis_api/api/quantum_intelligence_service.py`
-- Query families: `predict`, `explain`, `optimize`, `heal`
-- Boundary: bounded quantum intelligence on the HYBA mathematical substrate.
+- Query families: `predict`, `explain`, `optimize`, `heal`, `simulate`, `counterfactual`, `evidence`, `quantum-finance`
+- Boundary: sovereign Quantum Intelligence execution on the HYBA mathematical substrate.
 - Not a generic AI API, not a mining product, and not a phenomenal-consciousness claim.
 
 ### CIaaS — Computational Intelligence-as-a-Service
@@ -63,14 +76,16 @@ Golden-ratio scaling is a first-class platform mechanism, not decoration.
 
 ### Salamander regeneration substrate
 
-Self-healing / regeneration / bounded reflexive optimisation substrate.
+Self-healing / regeneration / governed reflexive optimisation substrate.
 
 - Boundary: software regeneration, topology repair, runtime state repair, and governed optimisation proposals.
 - Not uncontrolled self-modifying source-code mutation.
 
-## Private validation substrate
+## Private treasury and validation substrate
 
-The following are private validation infrastructure and must not be presented as customer products:
+Mining is a private HYBA treasury function. It is not a customer product, not an external revenue promise, and not a public API surface. It exists to fund the vision, purchase equipment, secure workspace, and create runway while simultaneously stress-testing HYBA under real operational pressure.
+
+The following are private treasury/validation infrastructure and must not be presented as customer products:
 
 - Mining workflows.
 - Stratum and pool telemetry.
@@ -78,7 +93,23 @@ The following are private validation infrastructure and must not be presented as
 - Hash-search experiments.
 - Pool credentials and wallet configuration.
 - Mining benchmark traces.
+- Internal treasury dashboards.
 - Internal stress tests for autonomy, PULVINI memory, QaaS/QIaaS/CIaaS resilience, quantum-finance design packets, and evidence sealing.
+
+## Deferred fusion boundary
+
+HYBA_FULLSTACK and HYBA_Unified_Backend must remain discrete during same-day treasury mining deployment.
+
+The future fusion posture is:
+
+1. mine to create treasury runway,
+2. stabilise office/workspace and equipment,
+3. secure GitHub subscription/agent capacity,
+4. create a controlled fusion bridge,
+5. migrate selected HYBA_Unified_Backend substrate capabilities into HYBA_FULLSTACK through adapters,
+6. keep HYBA_FULLSTACK as the canonical deployable runtime.
+
+No emergency mining deployment should perform broad repo fusion, route unification, dependency mixing, or legacy backend ingestion.
 
 ## Product narrative rule
 
@@ -95,6 +126,7 @@ Public-facing documents must start with:
 
 Mining may appear only under:
 
+- private treasury,
 - private validation,
 - internal benchmark harness,
 - evidence-generation substrate,
@@ -116,7 +148,7 @@ Every external claim must be classified as one of:
 The following are part of HYBA's scientific position and should be preserved when supported by evidence:
 
 - Quantum comes from mathematics before it comes from hardware.
-- HYBA is not merely "quantum computing"; it is a post-quantum mathematical intelligence substrate.
+- HYBA is a substrate-independent Quantum Intelligence platform.
 - Golden-ratio scaling governs memory, hardware concurrency, quantum-operation benchmark accounting, and runtime tuning.
 - PULVINI compression and retained kernels make large formal working surfaces operationally tractable.
 - Hardware is an implementation substrate; the invariant grammar is the computer.
@@ -134,4 +166,4 @@ The following are part of HYBA's scientific position and should be preserved whe
 
 ## Approved chairman wording
 
-> HYBA is a substrate-independent intelligence platform. Its public services are QaaS, QIaaS, and CIaaS. QaaS exposes virtual fault-tolerant quantum-computational primitives; QIaaS exposes bounded quantum-intelligence query functions; CIaaS provisions commercial computational-intelligence runtimes. HYBA also exposes a code-backed quantum-finance vertical that maps portfolio, pricing, and risk workloads into QUBO/QAOA and QAE/QMCI evidence packets. PULVINI provides reversible φ-memory compression, φ-scaling governs hardware and quantum-operation execution, Salamander provides self-healing and regeneration, and the evidence layer preserves claim boundaries. Mining is not a product; it is a private stress-test and evidence substrate used internally to validate the platform under extreme conditions.
+> HYBA is a substrate-independent Quantum Intelligence platform. Its public services are QaaS, QIaaS, and CIaaS. QaaS exposes virtual fault-tolerant quantum-computational primitives; QIaaS exposes sovereign Quantum Intelligence query functions; CIaaS provisions commercial computational-intelligence runtimes. HYBA also exposes a code-backed quantum-finance vertical that maps portfolio, pricing, and risk workloads into QUBO/QAOA and QAE/QMCI evidence packets. PULVINI provides reversible φ-memory compression, φ-scaling governs hardware and quantum-operation execution, Salamander provides self-healing and regeneration, and the evidence layer preserves claim boundaries. Mining is not a product; it is a private HYBA treasury and validation substrate used internally to fund the vision and validate the platform under extreme operating conditions.
