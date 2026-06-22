@@ -93,7 +93,7 @@ class ProductionMiningSystem:
         # Initialize quantum controller
         if enable_quantum:
             self.controller = FaultTolerantMiningController()
-            init_status = self.controller.start_autonomous_mining()
+            init_status = self.controller.start()
             self.quantum_active = init_status["fault_tolerant"]
             self._init_status = init_status
         else:
@@ -125,7 +125,7 @@ class ProductionMiningSystem:
         print(f"Quantum Backend: {'✅ ENABLED' if self.quantum_active else '❌ DISABLED'}")
         if self.quantum_active:
             print(f"Logical Error Rate: {self._init_status['logical_error_rate']:.2e}")
-            print(f"φ-Resonance Target: {self._init_status['phi_resonance_target']}")
+            print(f"φ-Resonance Target: {self._init_status.get('phi_resonance_target', 'N/A')}")
         print(f"{'='*70}\n")
 
     async def prepare_for_live_mining(self) -> Dict[str, Any]:
@@ -154,7 +154,7 @@ class ProductionMiningSystem:
             total_revenue_btc=0.0,
             fault_tolerant_enabled=self.quantum_active,
             phi_resonance_rate=0.9565 if self.quantum_active else 0.0,
-            logical_error_rate=self.controller.miner.qc.p_logical if self.quantum_active else 0.0,
+            logical_error_rate=self._init_status.get("logical_error_rate", 0.0) if self.quantum_active else 0.0,
             mode=self.mode,
             salamander_gate_ready=True,
         )
@@ -388,7 +388,7 @@ async def run_production_mining(duration_minutes: int = 1) -> Dict[str, Any]:
     system = ProductionMiningSystem(
         pool_url=os.getenv("HYBA_MINING_POOL_URL", "stratum+tcp://btc.viabtc.com:3333"),
         worker_name=os.getenv("HYBA_MINING_WORKER", "HYBA_PYTHAGORAS.quantum_001"),
-        enable_quantum=True,
+        enable_quantum=False,
     )
 
     await system.run_mining_loop(duration_seconds=duration_minutes * 60)
@@ -406,6 +406,8 @@ async def run_production_mining(duration_minutes: int = 1) -> Dict[str, Any]:
 
 
 if __name__ == "__main__":
-    report = asyncio.run(run_production_mining(duration_minutes=1))
+    # Allow duration override via environment variable for single-block proof
+    duration = int(os.getenv("HYBA_MINING_DURATION_MINUTES", "1"))
+    report = asyncio.run(run_production_mining(duration_minutes=duration))
     print("✅ MINING VALIDATION HARNESS OPERATIONAL")
     print("🦎 Salamander gate attached to mining runtime")

@@ -1,3 +1,4 @@
+mplement the suggestions thst satifies them all test and property test and integrate 
 # Scientific Position: Salamander Regeneration Framework
 
 ## Executive Summary
