@@ -33,13 +33,50 @@ interface AIAssistantProps {
   token: string;
   miningStatus?: any;
   telemetryData?: any;
+  userRole?: string;
   onCommand?: (command: string) => void;
+}
+
+type ProposedAction = {
+  command: string;
+  risk: "low" | "medium" | "high";
+  blastRadius: string;
+  approvalRequired: boolean;
+  reason: string;
+};
+
+const LOW_RISK_ALLOWLIST = new Set(["refresh_telemetry"]);
+
+function classifyAction(command: string, userRole?: string): ProposedAction {
+  const normalized = String(command || "").trim();
+  const lowRisk = LOW_RISK_ALLOWLIST.has(normalized);
+  const privileged = ["admin", "ceo_heir_apparent", "chairman", "cto"].includes(
+    String(userRole || "").toLowerCase(),
+  );
+  return {
+    command: normalized,
+    risk: lowRisk
+      ? "low"
+      : normalized.includes("stop") ||
+          normalized.includes("disconnect") ||
+          normalized.includes("switch")
+        ? "high"
+        : "medium",
+    blastRadius: lowRisk
+      ? "Read-only telemetry refresh; no system writes."
+      : "May affect runtime configuration, tenant state, or external integrations.",
+    approvalRequired: !lowRisk || !privileged,
+    reason: lowRisk
+      ? "Pre-authorized read-only command."
+      : "Governance requires explicit approval before execution.",
+  };
 }
 
 const AIAssistant: React.FC<AIAssistantProps> = ({
   token,
   miningStatus,
   telemetryData,
+  userRole,
   onCommand,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -48,7 +85,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({
     {
       role: "system",
       content:
-        "AI Assistant ready. I can help with mining optimization, diagnostics, and operational guidance.",
+        "AI Assistant ready in proposal-only mode. I can explain, simulate, prepare remediation plans, and request approval before any action.",
       timestamp: Date.now(),
     },
   ]);
@@ -259,6 +296,26 @@ const AIAssistant: React.FC<AIAssistantProps> = ({
 - "Optimize my mining configuration"
 - "Diagnose system issues"
 - "Explain consciousness events"`;
+  };
+
+  const approveProposedAction = () => {
+    if (!proposedAction || !onCommand) return;
+    if (proposedAction.approvalRequired) {
+      const approved = window.confirm(
+        `Approve HYBA action?\n\nCommand: ${proposedAction.command}\nRisk: ${proposedAction.risk}\nBlast radius: ${proposedAction.blastRadius}`,
+      );
+      if (!approved) return;
+    }
+    onCommand(proposedAction.command);
+    setMessages((prev) => [
+      ...prev,
+      {
+        role: "system",
+        content: `Approved action executed: ${proposedAction.command}`,
+        timestamp: Date.now(),
+      },
+    ]);
+    setProposedAction(null);
   };
 
   const handleSubmit = (e: React.FormEvent) => {

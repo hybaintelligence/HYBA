@@ -33,6 +33,97 @@ interface CIaaSServiceManagerProps {
   token: string | null;
 }
 
+type CIaaSPresetName =
+  | "Starter Intelligence Rail"
+  | "Enterprise Decision Rail"
+  | "Regulated Evidence Rail"
+  | "Sovereign Isolated Rail"
+  | "Research/Expert Rail";
+
+const ciaasPresets: Record<
+  CIaaSPresetName,
+  Omit<ProvisionComputationalIntelligenceRequest, "name">
+> = {
+  "Starter Intelligence Rail": {
+    service_tier: "developer",
+    tenancy: "single-tenant",
+    code_distance: 5,
+    logical_compute_units: 16,
+    physical_error_rate: 0.002,
+    max_workloads_per_minute: 30,
+    max_context_bytes: 32000,
+    admin_privileged: false,
+    data_residency: "us",
+    allowed_workloads: ["explain", "substrate_health"],
+  },
+  "Enterprise Decision Rail": {
+    service_tier: "production",
+    tenancy: "single-tenant",
+    code_distance: 7,
+    logical_compute_units: 64,
+    physical_error_rate: 0.001,
+    max_workloads_per_minute: 120,
+    max_context_bytes: 128000,
+    admin_privileged: false,
+    data_residency: "us",
+    allowed_workloads: [
+      "explain",
+      "orchestrate",
+      "counterfactual",
+      "governance_audit",
+      "substrate_health",
+    ],
+  },
+  "Regulated Evidence Rail": {
+    service_tier: "production",
+    tenancy: "dedicated-control-plane",
+    code_distance: 11,
+    logical_compute_units: 96,
+    physical_error_rate: 0.0005,
+    max_workloads_per_minute: 90,
+    max_context_bytes: 192000,
+    admin_privileged: false,
+    data_residency: "us",
+    allowed_workloads: ["explain", "counterfactual", "governance_audit", "substrate_health"],
+  },
+  "Sovereign Isolated Rail": {
+    service_tier: "sovereign",
+    tenancy: "sovereign-isolated",
+    code_distance: 15,
+    logical_compute_units: 128,
+    physical_error_rate: 0.0001,
+    max_workloads_per_minute: 60,
+    max_context_bytes: 256000,
+    admin_privileged: false,
+    data_residency: "us",
+    allowed_workloads: [
+      "explain",
+      "orchestrate",
+      "counterfactual",
+      "governance_audit",
+      "substrate_health",
+    ],
+  },
+  "Research/Expert Rail": {
+    service_tier: "developer",
+    tenancy: "single-tenant",
+    code_distance: 9,
+    logical_compute_units: 128,
+    physical_error_rate: 0.001,
+    max_workloads_per_minute: 180,
+    max_context_bytes: 256000,
+    admin_privileged: false,
+    data_residency: "us",
+    allowed_workloads: [
+      "explain",
+      "orchestrate",
+      "counterfactual",
+      "governance_audit",
+      "substrate_health",
+    ],
+  },
+};
+
 export default function CIaaSServiceManager({ token }: CIaaSServiceManagerProps) {
   const { isAdmin } = useAuth();
   const { isExpertMode } = useSkillMode();
@@ -95,6 +186,11 @@ export default function CIaaSServiceManager({ token }: CIaaSServiceManagerProps)
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to stop service");
     }
+  };
+
+  const applyPreset = (presetName: CIaaSPresetName) => {
+    setSelectedPreset(presetName);
+    setProvisionForm((current) => ({ ...current, ...ciaasPresets[presetName] }));
   };
 
   const handleProvision = async (e: React.FormEvent) => {

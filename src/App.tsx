@@ -644,6 +644,7 @@ function AppContent() {
               <RefreshCw className={`h-3.5 w-3.5 ${isSyncing ? "animate-spin" : ""}`} /> Refresh
             </button>
             <Sparkline data={latencyHistory} />
+            <SkillModeSelector />
             <div className="h-6 w-px bg-white/20" />
             <button
               onClick={() => setCurrentView(currentView === "jobs" ? "dashboard" : "jobs")}
@@ -845,6 +846,8 @@ function AppContent() {
               </div>
             </section>
 
+            <UseCaseStudio />
+            <DecisionCockpit />
             <section className="grid grid-cols-1 gap-4 md:grid-cols-4">
               {isLoading ? (
                 [1, 2, 3, 4].map((i) => (
@@ -887,6 +890,24 @@ function AppContent() {
             {telemetryError && !isLoading && (
               <ErrorState message={telemetryError} onRetry={getLiveTelemetry} />
             )}
+
+            <section className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+              <MetricExplainerCard
+                metricKey="substrate_coherence"
+                value={`Runtime: ${runtimeStatus.toUpperCase()}`}
+              />
+              <MetricExplainerCard
+                metricKey="phi_resonance"
+                value={`φ alignment: ${fmtPct(health?.phiResonance)}`}
+              />
+              <MetricExplainerCard metricKey="evidence_seal" value={`Seal: ${extraordinarySeal}`} />
+            </section>
+
+            <ProofExplainer
+              seal={extraordinarySeal}
+              invariantSummary={`${extraordinaryInvariantCount} / ${extraordinaryInvariantTotal}`}
+              source={fmtText(health?.telemetry_source)}
+            />
 
             <section className="grid grid-cols-1 gap-6 lg:grid-cols-3">
               <Panel
@@ -1307,6 +1328,7 @@ function AppContent() {
       {token && currentUser && (
         <AIAssistant
           token={token}
+          userRole={currentUser.role}
           telemetryData={telemetry}
           onCommand={(command) => {
             console.log("AI Command:", command);

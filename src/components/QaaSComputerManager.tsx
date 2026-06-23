@@ -34,6 +34,104 @@ interface QaaSComputerManagerProps {
   token: string | null;
 }
 
+type QiaPresetName =
+  | "Starter Intelligence Rail"
+  | "Enterprise Decision Rail"
+  | "Regulated Evidence Rail"
+  | "Sovereign Isolated Rail"
+  | "Research/Expert Rail";
+
+const qiaPresets: Record<QiaPresetName, Omit<ProvisionFaultTolerantComputerRequest, "name">> = {
+  "Starter Intelligence Rail": {
+    tier: "developer",
+    isolation: "single-tenant",
+    code_distance: 5,
+    logical_qubits: 16,
+    physical_error_rate: 0.002,
+    phi_resonance_target: 0.93,
+    max_circuit_depth: 512,
+    max_shots: 512,
+    admin_privileged: false,
+    data_residency: "us",
+    allowed_operations: ["state_vector_summary", "governance_audit"],
+  },
+  "Enterprise Decision Rail": {
+    tier: "production",
+    isolation: "single-tenant",
+    code_distance: 7,
+    logical_qubits: 64,
+    physical_error_rate: 0.001,
+    phi_resonance_target: 0.9565,
+    max_circuit_depth: 2048,
+    max_shots: 2048,
+    admin_privileged: false,
+    data_residency: "us",
+    allowed_operations: [
+      "surface_code_cycle",
+      "phi_resonance_analysis",
+      "state_vector_summary",
+      "substrate_orchestration",
+      "governance_audit",
+    ],
+  },
+  "Regulated Evidence Rail": {
+    tier: "production",
+    isolation: "dedicated-control-plane",
+    code_distance: 11,
+    logical_qubits: 96,
+    physical_error_rate: 0.0005,
+    phi_resonance_target: 0.972,
+    max_circuit_depth: 4096,
+    max_shots: 4096,
+    admin_privileged: false,
+    data_residency: "us",
+    allowed_operations: [
+      "surface_code_cycle",
+      "phi_resonance_analysis",
+      "state_vector_summary",
+      "governance_audit",
+    ],
+  },
+  "Sovereign Isolated Rail": {
+    tier: "sovereign",
+    isolation: "sovereign-isolated",
+    code_distance: 15,
+    logical_qubits: 128,
+    physical_error_rate: 0.0001,
+    phi_resonance_target: 0.986,
+    max_circuit_depth: 8192,
+    max_shots: 8192,
+    admin_privileged: false,
+    data_residency: "us",
+    allowed_operations: [
+      "surface_code_cycle",
+      "phi_resonance_analysis",
+      "state_vector_summary",
+      "substrate_orchestration",
+      "governance_audit",
+    ],
+  },
+  "Research/Expert Rail": {
+    tier: "developer",
+    isolation: "single-tenant",
+    code_distance: 9,
+    logical_qubits: 128,
+    physical_error_rate: 0.001,
+    phi_resonance_target: 0.9565,
+    max_circuit_depth: 16384,
+    max_shots: 8192,
+    admin_privileged: false,
+    data_residency: "us",
+    allowed_operations: [
+      "surface_code_cycle",
+      "phi_resonance_analysis",
+      "state_vector_summary",
+      "substrate_orchestration",
+      "governance_audit",
+    ],
+  },
+};
+
 export default function QaaSComputerManager({ token }: QaaSComputerManagerProps) {
   const { isAdmin } = useAuth();
   const { isExpertMode } = useSkillMode();
@@ -99,6 +197,11 @@ export default function QaaSComputerManager({ token }: QaaSComputerManagerProps)
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to stop computer");
     }
+  };
+
+  const applyPreset = (presetName: QiaPresetName) => {
+    setSelectedPreset(presetName);
+    setProvisionForm((current) => ({ ...current, ...qiaPresets[presetName] }));
   };
 
   const handleProvision = async (e: React.FormEvent) => {
