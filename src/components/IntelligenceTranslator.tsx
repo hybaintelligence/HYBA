@@ -104,6 +104,7 @@ export function MetricExplainerCard({ metric, metricKey, value }: { metric?: Met
     <div className="rounded-xl border border-blue-100 bg-blue-50/70 p-4 text-sm text-slate-700">
       {value && <p className="mb-1 font-mono text-[11px] font-bold uppercase tracking-[0.14em] text-blue-800">{value}</p>}
       <p className="font-semibold text-slate-900">{copy.title}</p>
+      {value !== undefined && <p className="mt-1 font-mono text-xs text-slate-950">{value}</p>}
       <p className="mt-2">
         <span className="font-medium">What this means:</span> {copy.plain}
       </p>

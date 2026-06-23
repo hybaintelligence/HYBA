@@ -66,7 +66,12 @@ import CIaaSServiceManager from "./components/CIaaSServiceManager";
 import QaaSComputerManager from "./components/QaaSComputerManager";
 import { useApiRequest } from "./hooks/useApiRequest";
 import { useLatencyMetrics } from "./hooks/useLatencyMetrics";
-import { buildGovernanceSignals, type GovernanceSignal } from "./governance";
+import {
+  buildGovernanceSignals,
+  buildPortableEvidencePackage,
+  downloadEvidencePackage,
+  type GovernanceSignal,
+} from "./governance";
 import { useAuth } from "./components/AuthProvider";
 import { SKILL_MODE_LABELS, SkillModeProvider, SkillModeSelector, useSkillMode } from "./components/SkillModeContext";
 import { ClaimBoundaryBadge, MetricExplainerCard } from "./components/IntelligenceTranslator";
@@ -309,6 +314,9 @@ function AppContent() {
         threatLevel: security.threat_level,
         phiResonance: health?.phiResonance,
         governanceTags,
+        computeNode,
+        residencyStatus,
+        jurisdiction,
       }),
     [
       activePoolCount,
@@ -317,7 +325,10 @@ function AppContent() {
       governanceTags,
       health?.phiResonance,
       health?.telemetry_source,
+      computeNode,
       isConnected,
+      jurisdiction,
+      residencyStatus,
       runtimeStatus,
       security.threat_level,
       securityStatus,
@@ -620,6 +631,47 @@ function AppContent() {
     } finally {
       setIsProcessing(false);
     }
+  };
+
+  const handleExportAuditMemo = async (format: "json" | "pdf") => {
+    const pkg = await buildPortableEvidencePackage({
+      decisionId: `decision-${Date.now()}`,
+      claimBoundary: fmtText(
+        extraordinaryEvidence?.claim_boundary || "Advisory intelligence; no unattended writes",
+      ),
+      invariants: (extraordinaryEvidence?.invariant_results as Record<string, boolean>) || {
+        live_telemetry: isConnected,
+        no_unattended_writes: governanceTags.includes("no_unattended_writes"),
+        human_approval_required: true,
+      },
+      evidenceSeal: extraordinaryEvidence?.evidence_seal || null,
+      approver: currentUser,
+      approvalLog: currentUser
+        ? [
+            {
+              action: "export_audit_memo",
+              approvedBy: currentUser.username,
+              role: currentUser.role,
+              approvedAt: new Date().toISOString(),
+            },
+          ]
+        : [],
+      runtimeStatus,
+      telemetrySource: health?.telemetry_source,
+      backendConnected: isConnected,
+      activePoolCount,
+      configuredPoolCount,
+      activePoolName,
+      securityStatus,
+      threatLevel: security.threat_level,
+      phiResonance: health?.phiResonance,
+      governanceTags,
+      computeNode,
+      residencyStatus,
+      jurisdiction,
+    });
+    downloadEvidencePackage(pkg, format);
+    setAuthFeedback({ text: `Signed audit memo exported as ${format.toUpperCase()}.`, error: false });
   };
 
   const isLoading = !telemetry && !telemetryError;
@@ -1308,6 +1360,27 @@ function AppContent() {
                   icon={<Scale className="h-4 w-4" />}
                   isLoading={false}
                 >
+                  <SovereigntyResidencyBadges
+                    computeNode={computeNode}
+                    residencyStatus={residencyStatus}
+                    jurisdiction={jurisdiction}
+                  />
+                  <div className="mb-4 grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handleExportAuditMemo("pdf")}
+                      className="control-button bg-[#002147] text-white"
+                    >
+                      Export Audit Memo PDF
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleExportAuditMemo("json")}
+                      className="control-button border border-slate-200 bg-white text-slate-900"
+                    >
+                      Export Signed JSON
+                    </button>
+                  </div>
                   <GovernanceDashboard signals={governanceSignals} />
                   <div className="mt-4 space-y-3">
                     {operatorCommandEvidence.map((item) => (
@@ -1675,6 +1748,38 @@ function GovernanceDashboard({ signals }: { signals: GovernanceSignal[] }) {
           </div>
         ))}
       </div>
+    </div>
+  );
+}
+
+function SovereigntyResidencyBadges({
+  computeNode,
+  residencyStatus,
+  jurisdiction,
+}: {
+  computeNode: string;
+  residencyStatus: string;
+  jurisdiction: string;
+}) {
+  return (
+    <div className="mb-4 rounded-2xl border border-emerald-200 bg-emerald-50 p-3">
+      <p className="text-xs font-black uppercase tracking-[0.14em] text-emerald-950">
+        Sovereignty proof
+      </p>
+      <div className="mt-3 grid gap-2 text-[11px] font-semibold text-emerald-950 sm:grid-cols-3">
+        <span className="rounded-full border border-emerald-200 bg-white px-3 py-2">
+          Node: {computeNode}
+        </span>
+        <span className="rounded-full border border-emerald-200 bg-white px-3 py-2">
+          Residency: {residencyStatus}
+        </span>
+        <span className="rounded-full border border-emerald-200 bg-white px-3 py-2">
+          Jurisdiction: {jurisdiction}
+        </span>
+      </div>
+      <p className="mt-2 text-xs leading-5 text-emerald-800">
+        These values are embedded into every portable evidence package before signing.
+      </p>
     </div>
   );
 }
