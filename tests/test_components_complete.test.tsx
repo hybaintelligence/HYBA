@@ -1,5 +1,5 @@
 import React from "react";
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import App from "../src/App";
@@ -44,10 +44,69 @@ vi.mock("../src/components/Sparkline", () => ({
   Sparkline: () => <div aria-label="Latency history" />,
 }));
 
+const proofEvidence = {
+  schema_version: "hyba.extraordinary_evidence.v1",
+  claim_boundary: "bounded",
+  claims: [
+    {
+      claim_id: "quantum_math_substrate",
+      title: "Quantum as mathematical substrate",
+      operationalization: "Runtime exposes substrate-independent proof surfaces.",
+      required_evidence: ["sealed_endpoint"],
+      invariants: ["claims_present"],
+      adversarial_tests: ["unknown_claim_fail_closed"],
+      api_surfaces: ["/api/v1/intelligence/extraordinary-claims/evidence"],
+      proof_status: "bounded",
+    },
+    {
+      claim_id: "emergence_intelligence",
+      title: "Emergence intelligence",
+      operationalization: "Runtime exposes adversarially testable intelligence invariants.",
+      required_evidence: ["adversarial_contract"],
+      invariants: ["phi_scaling_monotone"],
+      adversarial_tests: ["placeholder_language_rejected"],
+      api_surfaces: ["/api/v1/intelligence/extraordinary-claims/evidence"],
+      proof_status: "bounded",
+    },
+  ],
+  millennium_problems: [
+    "yang_mills_mass_gap",
+    "riemann_hypothesis",
+    "p_vs_np",
+    "navier_stokes",
+    "hodge_conjecture",
+    "poincare_conjecture",
+    "birch_swinnerton_dyer",
+  ],
+  phi: 1.61803398875,
+  phi_scaling_samples: [1.61803398875],
+  invariant_results: { claims_present: true, phi_scaling_monotone: true },
+  adversarial_contract: { seal_all_evidence_packets: true },
+  all_invariants_passed: true,
+  evidence_seal: "0123456789abcdef",
+};
+
+const unavailableProofEvidence = {
+  schema_version: "hyba.extraordinary_evidence.unavailable",
+  status: "unavailable",
+  source: "extraordinary_evidence_endpoint_unavailable",
+  claim_boundary: "Extraordinary-claims evidence endpoint unavailable; invariants are not visible.",
+  claims: [],
+  millennium_problems: [],
+  phi: Number.NaN,
+  phi_scaling_samples: [],
+  invariant_results: {},
+  adversarial_contract: {},
+  all_invariants_passed: false,
+  evidence_seal: "",
+};
+
 const telemetry = {
+  status: "success",
   latency: 42,
   health: {
     status: "ok",
+    timestamp: "2026-06-23T00:00:00.000Z",
     version: "2.0.1",
     telemetry_source: "mock",
     quantumCoherence: 0.91,
@@ -67,7 +126,7 @@ const telemetry = {
     },
   },
   pools: {
-    summary: { total_pools: 2, configured_pools: 2, active_pools: 1 },
+    summary: { total_pools: 2, configured_pools: 2, active_pools: 1, telemetry_source: "mock" },
     pools: [
       {
         pool_id: "viabtc",
@@ -104,21 +163,31 @@ const telemetry = {
       },
     ],
   },
-  security: { status: "nominal", threat_level: "low", defense_systems: {} },
-  consciousness: { status: "nominal", integrated_information: 0.5 },
-  extraordinaryEvidence: {
-    schema_version: "hyba.extraordinary_evidence.v1",
-    claim_boundary: "bounded",
-    claims: [{ claim_id: "quantum_math_substrate" }],
-    millennium_problems: ["yang_mills_mass_gap"],
-    phi: 1.61803398875,
-    phi_scaling_samples: [1.61803398875],
-    invariant_results: { claims_present: true, phi_scaling_monotone: true },
-    adversarial_contract: { seal_all_evidence_packets: true },
-    all_invariants_passed: true,
-    evidence_seal: "0123456789abcdef",
+  security: {
+    status: "nominal",
+    timestamp: "2026-06-23T00:00:00.000Z",
+    threat_level: "low",
+    defense_systems: {},
   },
+  consciousness: { status: "nominal", source: "mock", integrated_information: 0.5 },
+  extraordinaryEvidence: proofEvidence,
 };
+
+function withProofEvidence(evidence: typeof proofEvidence | typeof unavailableProofEvidence) {
+  return {
+    ...telemetry,
+    extraordinaryEvidence: evidence,
+  };
+}
+
+function getProofSealPanel() {
+  const heading = screen.getByText("Proof seal telemetry");
+  const panel = heading.closest(".overflow-hidden");
+  if (!panel) {
+    throw new Error("Proof seal telemetry panel container was not rendered");
+  }
+  return within(panel as HTMLElement);
+}
 
 function mockStorage() {
   const values = new Map<string, string>();
@@ -171,12 +240,26 @@ beforeEach(() => {
 });
 
 describe("complete App component action coverage", () => {
-  it("covers dashboard loading, refresh, polling pause/resume, theme, navigation, power, phi, and pool actions", async () => {
+  it("covers dashboard loading, proof telemetry, refresh, polling pause/resume, theme, navigation, power, phi, and pool actions", async () => {
     const user = userEvent.setup();
     render(<App />);
 
-    expect(screen.getByText("Genesis Runtime Console")).toBeInTheDocument();
-    expect(await screen.findByText("Enterprise-Grade Mining Operations")).toBeInTheDocument();
+    expect(screen.getByText("Quantum Intelligence Runtime Console")).toBeInTheDocument();
+    expect(await screen.findByText("Sovereign Quantum Intelligence Execution")).toBeInTheDocument();
+
+    const proofPanel = getProofSealPanel();
+    expect(proofPanel.getByText("Evidence seal")).toBeInTheDocument();
+    expect(proofPanel.getByText("0123456789ab…")).toBeInTheDocument();
+    expect(proofPanel.getByText("Invariant status")).toBeInTheDocument();
+    expect(proofPanel.getByText("PASS")).toBeInTheDocument();
+    expect(proofPanel.getByText("Invariant checks")).toBeInTheDocument();
+    expect(proofPanel.getByText("2 / 2")).toBeInTheDocument();
+    expect(proofPanel.getByText("Claim contracts")).toBeInTheDocument();
+    expect(proofPanel.getByText("2")).toBeInTheDocument();
+    expect(proofPanel.getByText("Millennium ops")).toBeInTheDocument();
+    expect(proofPanel.getByText("7")).toBeInTheDocument();
+    expect(proofPanel.getByText("Seal policy")).toBeInTheDocument();
+    expect(proofPanel.getByText("ENFORCED")).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: /refresh/i }));
     expect(apiClient.fetchTelemetryData).toHaveBeenCalledTimes(2);
@@ -227,6 +310,58 @@ describe("complete App component action coverage", () => {
     );
   });
 
+  it("degrades proof telemetry fail-closed when the evidence endpoint is unavailable", async () => {
+    vi.mocked(apiClient.fetchTelemetryData).mockResolvedValueOnce(
+      withProofEvidence(unavailableProofEvidence) as any,
+    );
+
+    render(<App />);
+
+    expect(await screen.findByText("Proof seal telemetry")).toBeInTheDocument();
+    const proofPanel = getProofSealPanel();
+    expect(proofPanel.getByText("FAIL-CLOSED")).toBeInTheDocument();
+    expect(proofPanel.getByText("0 / 0")).toBeInTheDocument();
+    expect(proofPanel.getByText("UNAVAILABLE")).toBeInTheDocument();
+    expect(proofPanel.getAllByText("—").length).toBeGreaterThan(0);
+  });
+
+  it("renders every valid evidence seal as a shortened proof metric with non-zero invariant coverage", async () => {
+    const evidenceCases = [
+      {
+        seal: "abcdef1234567890",
+        invariants: { claims_present: true },
+        expectedSeal: "abcdef123456…",
+        expectedInvariantCount: "1 / 1",
+      },
+      {
+        seal: "fedcba9876543210",
+        invariants: { claims_present: true, phi_scaling_monotone: true, hostile_prompt_rejected: false },
+        expectedSeal: "fedcba987654…",
+        expectedInvariantCount: "2 / 3",
+      },
+    ];
+
+    for (const evidenceCase of evidenceCases) {
+      vi.mocked(apiClient.fetchTelemetryData).mockResolvedValueOnce(
+        withProofEvidence({
+          ...proofEvidence,
+          evidence_seal: evidenceCase.seal,
+          invariant_results: evidenceCase.invariants,
+          all_invariants_passed: Object.values(evidenceCase.invariants).every(Boolean),
+        }) as any,
+      );
+
+      const { unmount } = render(<App />);
+
+      expect(await screen.findByText("Proof seal telemetry")).toBeInTheDocument();
+      const proofPanel = getProofSealPanel();
+      expect(proofPanel.getByText(evidenceCase.expectedSeal)).toBeInTheDocument();
+      expect(proofPanel.getByText(evidenceCase.expectedInvariantCount)).toBeInTheDocument();
+      expect(evidenceCase.expectedInvariantCount.startsWith("0 /")).toBe(false);
+      unmount();
+    }
+  });
+
   it("covers login, register, logout, offline retry, and network toast dismissal", async () => {
     const user = userEvent.setup();
     vi.spyOn(apiClient, "fetchTelemetryData")
@@ -236,7 +371,7 @@ describe("complete App component action coverage", () => {
 
     expect(await screen.findByText("Telemetry interruption")).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: /retry connection/i }));
-    expect(await screen.findByText("Enterprise-Grade Mining Operations")).toBeInTheDocument();
+    expect(await screen.findByText("Sovereign Quantum Intelligence Execution")).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: /dismiss network status/i }));
     expect(screen.queryByText(/connection restored/i)).not.toBeInTheDocument();
@@ -258,7 +393,7 @@ describe("complete App component action coverage", () => {
 
   it("gates admin and executive navigation by role", async () => {
     const { rerender } = render(<App />);
-    await screen.findByText("Enterprise-Grade Mining Operations");
+    await screen.findByText("Sovereign Quantum Intelligence Execution");
     expect(screen.queryByRole("button", { name: /admin/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /executive/i })).not.toBeInTheDocument();
 
