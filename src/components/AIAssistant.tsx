@@ -92,7 +92,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({
   const [input, setInput] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
   const [suggestions, setSuggestions] = useState<string[]>([]);
-  const [pendingAction, setPendingAction] = useState<string | null>(null);
+  const [pendingAction, setPendingAction] = useState<ProposedAction | null>(null);
   const { skillMode } = useSkillMode();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -191,7 +191,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({
 
       const proposedAction = result.regeneration_action || result.suggested_action;
       if (proposedAction) {
-        setPendingAction(String(proposedAction));
+        setPendingAction(classifyAction(String(proposedAction), userRole));
         setMessages((prev) => [
           ...prev,
           {
@@ -299,23 +299,22 @@ const AIAssistant: React.FC<AIAssistantProps> = ({
   };
 
   const approveProposedAction = () => {
-    if (!proposedAction || !onCommand) return;
-    if (proposedAction.approvalRequired) {
-      const approved = window.confirm(
-        `Approve HYBA action?\n\nCommand: ${proposedAction.command}\nRisk: ${proposedAction.risk}\nBlast radius: ${proposedAction.blastRadius}`,
-      );
-      if (!approved) return;
-    }
-    onCommand(proposedAction.command);
+    if (!pendingAction || !onCommand) return;
+    const approved = window.confirm(
+      `Approve HYBA remediation proposal?\n\nCommand: ${pendingAction.command}\nRisk: ${pendingAction.risk}\nBlast radius: ${pendingAction.blastRadius}\n\nHuman signature will be recorded in the audit log.`,
+    );
+    if (!approved) return;
+    onCommand(pendingAction.command);
     setMessages((prev) => [
       ...prev,
       {
         role: "system",
-        content: `Approved action executed: ${proposedAction.command}`,
+        content: `Human-approved action released: ${pendingAction.command}`,
         timestamp: Date.now(),
+        metadata: { governance: ["human_approved", "role_aware_signature"] },
       },
     ]);
-    setProposedAction(null);
+    setPendingAction(null);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -447,16 +446,15 @@ const AIAssistant: React.FC<AIAssistantProps> = ({
           </div>
           {pendingAction && (
             <div className="mx-4 mb-2 rounded-lg border border-amber-400/30 bg-amber-500/10 p-3 text-xs text-amber-100">
-              <p className="font-semibold">Action preview: {pendingAction}</p>
-              <p>Blast radius: low only if allowlisted. Governance tag missing means warn-block.</p>
+              <p className="font-semibold">Remediation Proposal: {pendingAction.command}</p>
+              <p className="mt-1">Risk: {pendingAction.risk.toUpperCase()}</p>
+              <p className="mt-1">Blast radius: {pendingAction.blastRadius}</p>
+              <p className="mt-1">Approval reason: {pendingAction.reason}</p>
               <button
-                onClick={() => {
-                  if (pendingAction === "refresh_telemetry" && onCommand) onCommand(pendingAction);
-                  setPendingAction(null);
-                }}
+                onClick={approveProposedAction}
                 className="mt-2 rounded bg-amber-400 px-3 py-1 font-semibold text-slate-950"
               >
-                Approve allowlisted action
+                Approve with human signature
               </button>
             </div>
           )}
