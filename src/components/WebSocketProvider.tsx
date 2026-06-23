@@ -40,8 +40,8 @@ export function WebSocketProvider({
   const [isConnected, setIsConnected] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
-  const reconnectTimeoutRef = useRef<NodeJS.Timeout>();
-  const pollIntervalRef = useRef<NodeJS.Timeout>();
+  const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const connect = useCallback(() => {
     if (!enabled) return;
@@ -59,7 +59,7 @@ export function WebSocketProvider({
         // Stop polling if active
         if (pollIntervalRef.current) {
           clearInterval(pollIntervalRef.current);
-          pollIntervalRef.current = undefined;
+          pollIntervalRef.current = null;
         }
       };
 
@@ -130,7 +130,7 @@ export function WebSocketProvider({
     }
     if (pollIntervalRef.current) {
       clearInterval(pollIntervalRef.current);
-      pollIntervalRef.current = undefined;
+      pollIntervalRef.current = null;
     }
 
     // Reconnect

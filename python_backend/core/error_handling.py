@@ -71,7 +71,11 @@ class HybaError(Exception):
         self.stack_trace = traceback.format_exc()
     
     def to_dict(self) -> Dict[str, Any]:
-        """Convert error to dictionary for API responses"""
+        """Convert error to dictionary for API responses.
+
+        Includes error_id for operator log correlation and omits stack_trace
+        from the response body to prevent internal detail leakage.
+        """
         return {
             "error_id": self.error_id,
             "code": self.code,
@@ -84,12 +88,13 @@ class HybaError(Exception):
             "retryable": self.retryable,
             "timestamp": self.timestamp.isoformat(),
         }
-    
+
     def to_http_exception(self) -> HTTPException:
-        """Convert to FastAPI HTTPException"""
+        """Convert to FastAPI HTTPException with correlation headers."""
         return HTTPException(
             status_code=self.status_code,
-            detail=self.to_dict()
+            detail=self.to_dict(),
+            headers={"x-error-id": self.error_id},
         )
 
 
@@ -294,19 +299,19 @@ def handle_error(
     error: Union[HybaError, Exception],
     context: Optional[Dict[str, Any]] = None,
     raise_http: bool = True,
-) -> Union[HybaError, HTTPException]:
-    """Handle error with classification and optional HTTP conversion"""
+) -> HTTPException:
+    """Classify, log, and convert an error to an HTTPException.
+
+    Always returns an HTTPException so callers can do `raise handle_error(...)`
+    regardless of `raise_http`. When `raise_http=False` the caller receives the
+    exception object without it being raised, which is useful for side-effect
+    logging in fire-and-forget paths.
+    """
     if not isinstance(error, HybaError):
         error = classify_error(error)
-    
-    # Log the error
+
     error_logger.log_error(error, context)
-    
-    # Convert to HTTP exception if requested
-    if raise_http:
-        return error.to_http_exception()
-    
-    return error
+    return error.to_http_exception()
 
 
 # ── Decorators ──────────────────────────────────────────────────────────────

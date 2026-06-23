@@ -54,6 +54,19 @@ from hyba_genesis_api.api import (  # noqa: E402
     quantum_intelligence_service,
     quantum_mathematical_execution,
     regeneration_router,
+    salamander_substrate,
+    security,
+    streaming_sense,
+    unified_mining,
+    webhooks,
+    websocket,
+)
+    proofs,
+    quantum_as_a_service,
+    quantum_finance_service,
+    quantum_intelligence_service,
+    quantum_mathematical_execution,
+    regeneration_router,
     webhooks,
     salamander_substrate,
     security,
@@ -324,6 +337,42 @@ app.add_middleware(RateLimiter, max_requests=_rate_limit, window_seconds=_rate_w
 
 app.middleware("http")(telemetry_middleware)
 
+
+@app.exception_handler(Exception)
+async def unhandled_exception_handler(request: Request, exc: Exception) -> JSONResponse:
+    """Catch-all for unhandled exceptions.
+
+    Returns a structured JSON error with the request-id and a stable error_id
+    so operators can correlate logs. Never leaks a Python traceback to the
+    client.
+    """
+    import traceback
+    import uuid
+
+    request_id = getattr(getattr(request, "state", None), "request_id", None) or ""
+    error_id = f"err_{uuid.uuid4().hex[:16]}"
+    logging.exception(
+        "Unhandled exception in request handler",
+        extra={
+            "error_id": error_id,
+            "request_id": request_id,
+            "path": request.url.path,
+            "method": request.method,
+        },
+    )
+    return JSONResponse(
+        status_code=500,
+        content={
+            "error": "internal_server_error",
+            "message": "An unexpected error occurred. Reference the error_id in operator logs.",
+            "error_id": error_id,
+            "request_id": request_id,
+            "retryable": False,
+        },
+        headers={"x-request-id": request_id, "x-error-id": error_id},
+    )
+
+
 @app.middleware("http")
 async def enforce_cors_origin_allowlist(request: Request, call_next):
     origin = request.headers.get("origin")
@@ -375,6 +424,7 @@ app.include_router(quantum_intelligence_service.router)
 app.include_router(salamander_substrate.router)
 app.include_router(webhooks.router)
 app.include_router(webhooks.api_router)
+app.include_router(websocket.router)
 
 
 @app.get("/health", response_model=Dict[str, Any], tags=["health"])

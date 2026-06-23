@@ -362,15 +362,38 @@ export class RefreshAuthStrategy implements RecoveryStrategy {
   }
 
   async recover(error: HybaError): Promise<boolean> {
-    try {
-      // Trigger token refresh logic
-      if (typeof window !== 'undefined') {
-        window.dispatchEvent(new CustomEvent('auth:refresh'));
+    // Dispatch the refresh event and wait up to 5 s for a confirmation.
+    // If the token refresh succeeds the auth layer should dispatch
+    // 'auth:refresh:success'; otherwise we fall through and return false so
+    // the error propagates to the UI rather than silently swallowing it.
+    return new Promise<boolean>((resolve) => {
+      if (typeof window === 'undefined') {
+        resolve(false);
+        return;
       }
-      return true;
-    } catch {
-      return false;
-    }
+
+      const timeout = setTimeout(() => {
+        window.removeEventListener('auth:refresh:success', onSuccess);
+        window.removeEventListener('auth:refresh:failed', onFailed);
+        resolve(false);
+      }, 5_000);
+
+      const onSuccess = () => {
+        clearTimeout(timeout);
+        window.removeEventListener('auth:refresh:failed', onFailed);
+        resolve(true);
+      };
+
+      const onFailed = () => {
+        clearTimeout(timeout);
+        window.removeEventListener('auth:refresh:success', onSuccess);
+        resolve(false);
+      };
+
+      window.addEventListener('auth:refresh:success', onSuccess, { once: true });
+      window.addEventListener('auth:refresh:failed', onFailed, { once: true });
+      window.dispatchEvent(new CustomEvent('auth:refresh'));
+    });
   }
 }
 

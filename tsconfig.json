@@ -30,6 +30,7 @@
   ],
   "exclude": [
     "tests",
+    "src/**/__tests__",
     "dist",
     "node_modules"
   ]

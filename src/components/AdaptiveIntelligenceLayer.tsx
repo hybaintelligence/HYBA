@@ -61,9 +61,9 @@ export function MetricExplainerCard({
   metricKey: MetricTranslationKey;
   value?: string;
 }) {
-  const { config } = useSkillMode();
+  const { mode, config } = useSkillMode();
   const [open, setOpen] = useState(config.evidenceFirst || config.showTechnicalDefaults);
-  const item = metricTranslations[metricKey];
+  const item = metricTranslations[metricKey][mode] || metricTranslations[metricKey].business;
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
       <div className="flex items-start justify-between gap-3">
