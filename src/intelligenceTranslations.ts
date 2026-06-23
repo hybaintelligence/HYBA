@@ -9,7 +9,9 @@ export type MetricTranslationKey =
   | "invariants"
   | "claim_boundary"
   | "pulvini_memory"
-  | "salamander_regeneration";
+  | "salamander_regeneration"
+  | "phi_density"
+  | "reflexive_cycles";
 
 type MetricTranslation = {
   label: string;
@@ -597,6 +599,146 @@ export const metricTranslations: Record<MetricTranslationKey, ModeSpecificTransl
       expert:
         "Salamander regeneration prepares bounded remediation plans through governance gates.",
       recommendation: "Optimize regeneration logic for specific failure modes.",
+    },
+  },
+  phi_density: {
+    executive: {
+      label: "Reasoning Maturity",
+      plainEnglish:
+        "How much the live substrate has organized itself into a reliable reasoning pattern.",
+      operationalImplication:
+        "Rising maturity means the self-healing startup is improving decision quality, but execution remains approval-gated.",
+      evidenceView:
+        "Compare pre/post φ-density, regeneration event metadata, invariant status, and bridge telemetry source.",
+      expert: "φ-density summarizes structural coherence in the reflexive substrate state.",
+      recommendation:
+        "Use as a board-level readiness indicator, not as an autonomous-execution approval.",
+    },
+    business: {
+      label: "Reasoning Maturity",
+      plainEnglish: "How ready the system's reasoning state is for business review.",
+      operationalImplication:
+        "Higher maturity supports confidence in recommendations while keeping human approval in place.",
+      evidenceView: "Review maturity trend, event cause, and evidence seal freshness.",
+      expert: "φ-density summarizes structural coherence in the reflexive substrate state.",
+      recommendation: "Track changes during handover scenarios and explain material drops.",
+    },
+    operator: {
+      label: "Healing Coherence",
+      plainEnglish: "Whether the runtime is becoming more coherent after a degradation event.",
+      operationalImplication:
+        "Use increases as a signal to continue observation; use drops as a triage trigger.",
+      evidenceView:
+        "Inspect pre/post density, degraded component, rollback plan, and health status.",
+      expert: "φ-density summarizes structural coherence in the reflexive substrate state.",
+      recommendation: "Escalate if repeated cycles fail to improve coherence.",
+    },
+    analyst: {
+      label: "Reasoning Maturity",
+      plainEnglish: "A trendable score for how organized the reasoning substrate is.",
+      operationalImplication:
+        "Correlate maturity movements with scenarios, latency, and invariant outcomes.",
+      evidenceView: "Plot φ-density deltas against reflexive cycles and simulation decisions.",
+      expert: "φ-density summarizes structural coherence in the reflexive substrate state.",
+      recommendation: "Use paired before/after comparisons for UAT evidence.",
+    },
+    engineer: {
+      label: "φ-Density",
+      plainEnglish: "The runtime coherence density reported by the self-healing substrate.",
+      operationalImplication:
+        "Validate bounded range, finite value, and no synthetic telemetry source before showing clients.",
+      evidenceView: "Raw metric, sampling time, regeneration proposal, and invariant logs.",
+      expert: "φ-density summarizes structural coherence in the reflexive substrate state.",
+      recommendation: "Keep raw traces attached to the evidence package.",
+    },
+    auditor: {
+      label: "Reasoning Maturity Evidence",
+      plainEnglish:
+        "The auditable proof that a self-healing event improved or preserved reasoning state.",
+      operationalImplication:
+        "Claims require the metric, source, invariant result, and evidence seal to be retained.",
+      evidenceView: "Pre/post φ-density, invariant logs, seal, and human approval policy.",
+      expert: "φ-density summarizes structural coherence in the reflexive substrate state.",
+      recommendation: "Reject client claims if source or seal is missing.",
+    },
+    expert: {
+      label: "φ-Density",
+      plainEnglish: "Structural coherence density for the reflexive substrate state.",
+      operationalImplication:
+        "Use with invariants and control boundaries; do not infer external mining or revenue outcomes.",
+      evidenceView: "Density estimator, event context, invariant logs, and signature digest.",
+      expert: "φ-density summarizes structural coherence in the reflexive substrate state.",
+      recommendation: "Review estimator assumptions before regulated claims.",
+    },
+  },
+  reflexive_cycles: {
+    executive: {
+      label: "Logic Refinement",
+      plainEnglish:
+        "How many safe review loops HYBA used to improve the recommendation before presentation.",
+      operationalImplication:
+        "More refinement can improve assurance, but changes remain proposal-only until signed.",
+      evidenceView: "Cycle count, timeout status, proposal IDs, and approval log.",
+      expert:
+        "Reflexive cycles are bounded self-analysis loops with timeout and proposal controls.",
+      recommendation: "Explain this as review depth, not autonomous action.",
+    },
+    business: {
+      label: "Logic Refinement",
+      plainEnglish: "The review loops HYBA completed while preparing a recommendation.",
+      operationalImplication: "Use cycle history to justify confidence and handoff actions.",
+      evidenceView: "Cycle count, proposal summary, and current decision boundary.",
+      expert:
+        "Reflexive cycles are bounded self-analysis loops with timeout and proposal controls.",
+      recommendation: "Include cycle summaries in UAT readouts.",
+    },
+    operator: {
+      label: "Review Cycles",
+      plainEnglish: "Bounded checks completed before a repair proposal is shown.",
+      operationalImplication:
+        "Confirm cycles completed inside timeout before approving operational remediation.",
+      evidenceView: "Cycle phases, duration, partial results, rollback status.",
+      expert:
+        "Reflexive cycles are bounded self-analysis loops with timeout and proposal controls.",
+      recommendation: "Escalate timed-out cycles to manual triage.",
+    },
+    analyst: {
+      label: "Logic Refinement",
+      plainEnglish: "A measurable trail of how the recommendation was refined.",
+      operationalImplication: "Use cycle-by-cycle differences to explain reasoning stability.",
+      evidenceView: "Cycle deltas, proposal acceptance/rejection, and scenario outcome changes.",
+      expert:
+        "Reflexive cycles are bounded self-analysis loops with timeout and proposal controls.",
+      recommendation: "Compare cycles across crisis simulations.",
+    },
+    engineer: {
+      label: "Reflexive Cycles",
+      plainEnglish: "Bounded self-analysis loops in the runtime controller.",
+      operationalImplication: "Monitor timeouts, partial results, and proposal boundaries.",
+      evidenceView: "Phase timings, timeout guard, proposal IDs, and runtime traces.",
+      expert:
+        "Reflexive cycles are bounded self-analysis loops with timeout and proposal controls.",
+      recommendation: "Keep timeout and partial-result evidence with the audit packet.",
+    },
+    auditor: {
+      label: "Governed Review Loops",
+      plainEnglish: "The audit trail proving self-analysis stayed bounded and proposal-only.",
+      operationalImplication: "Every cycle should map to a decision boundary and approval status.",
+      evidenceView: "Cycle logs, proposal-only tag, no-unattended-writes policy, and signature.",
+      expert:
+        "Reflexive cycles are bounded self-analysis loops with timeout and proposal controls.",
+      recommendation:
+        "Block acceptance if cycle evidence is missing for a claimed self-healing action.",
+    },
+    expert: {
+      label: "Reflexive Cycles",
+      plainEnglish: "Bounded self-analysis loops used by the intelligence substrate.",
+      operationalImplication:
+        "Interpret alongside φ-density and invariant state; cycles do not authorize writes by themselves.",
+      evidenceView: "Cycle graph, guard timings, proposal artifacts, and approval chain.",
+      expert:
+        "Reflexive cycles are bounded self-analysis loops with timeout and proposal controls.",
+      recommendation: "Analyze cycle convergence before expanding autonomy scope.",
     },
   },
 };
