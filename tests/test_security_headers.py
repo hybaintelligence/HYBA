@@ -2,17 +2,27 @@ import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from hyba_genesis_api.core.api_posture import EnterpriseAPIConfig, install_enterprise_api_posture
+from hyba_genesis_api.core.api_posture import (
+    EnterpriseAPIConfig,
+    install_enterprise_api_posture,
+)
 from hyba_genesis_api.main import validate_required_secrets
 
 
 def test_security_headers_present():
     app = FastAPI()
-    install_enterprise_api_posture(app, EnterpriseAPIConfig(
-        environment="production", request_limit_per_minute=100, max_body_bytes=1024,
-        hsts_enabled=True, rate_limit_enabled=False, csp_enabled=True,
-        sanitize_production_errors=True,
-    ))
+    install_enterprise_api_posture(
+        app,
+        EnterpriseAPIConfig(
+            environment="production",
+            request_limit_per_minute=100,
+            max_body_bytes=1024,
+            hsts_enabled=True,
+            rate_limit_enabled=False,
+            csp_enabled=True,
+            sanitize_production_errors=True,
+        ),
+    )
 
     @app.get("/ping")
     def ping():

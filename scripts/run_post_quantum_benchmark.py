@@ -125,7 +125,9 @@ def run() -> int:
     sys_python = sys.version
     try:
         venv_python = str(ROOT / "venv" / "bin" / "python")
-        ver_proc = subprocess.run([venv_python, "--version"], capture_output=True, text=True)
+        ver_proc = subprocess.run(
+            [venv_python, "--version"], capture_output=True, text=True
+        )
         sys_python = ver_proc.stdout.strip() or ver_proc.stderr.strip()
     except Exception:
         pass
@@ -157,7 +159,9 @@ def run() -> int:
     }
 
     # Self-sign: SHA-256 of canonical JSON (hash field excluded from digest)
-    canonical = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    canonical = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode(
+        "utf-8"
+    )
     integrity_hash = hashlib.sha256(canonical).hexdigest()
     payload["integrity_sha256"] = integrity_hash
 

@@ -17,12 +17,26 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-QA_AS_FILE = ROOT / "python_backend" / "hyba_genesis_api" / "api" / "quantum_as_a_service.py"
-HARDENED_FILE = ROOT / "python_backend" / "hyba_genesis_api" / "api" / "quantum_as_a_service_execute_hardened.py"
-BACKUP_FILE = ROOT / "python_backend" / "hyba_genesis_api" / "api" / "quantum_as_a_service.py.backup"
+QA_AS_FILE = (
+    ROOT / "python_backend" / "hyba_genesis_api" / "api" / "quantum_as_a_service.py"
+)
+HARDENED_FILE = (
+    ROOT
+    / "python_backend"
+    / "hyba_genesis_api"
+    / "api"
+    / "quantum_as_a_service_execute_hardened.py"
+)
+BACKUP_FILE = (
+    ROOT
+    / "python_backend"
+    / "hyba_genesis_api"
+    / "api"
+    / "quantum_as_a_service.py.backup"
+)
 
 # Production-hardened execute method
-HARDENED_EXECUTE = '''    def execute(self, request: QuantumWorkloadRequest) -> Dict[str, Any]:
+HARDENED_EXECUTE = """    def execute(self, request: QuantumWorkloadRequest) -> Dict[str, Any]:
         qubits = self._validate_workload(request)
         request_hash = hashlib.sha256(
             json.dumps(request.model_dump(), sort_keys=True, default=str).encode()
@@ -249,74 +263,75 @@ HARDENED_EXECUTE = '''    def execute(self, request: QuantumWorkloadRequest) -> 
         finally:
             # Always release per-computer lock
             self._execution_lock.release()
-'''
+"""
+
 
 def main():
     print("=" * 70)
     print("QaaS Production Hardening Integration")
     print("=" * 70)
-    
+
     # Check files exist
     if not QA_AS_FILE.exists():
         print(f"❌ ERROR: {QA_AS_FILE} not found")
         return 1
-    
+
     print(f"\n📁 Target file: {QA_AS_FILE.relative_to(ROOT)}")
     print(f"📁 Backup file: {BACKUP_FILE.relative_to(ROOT)}")
-    
+
     # Read current file
-    with open(QA_AS_FILE, 'r') as f:
+    with open(QA_AS_FILE, "r") as f:
         content = f.read()
-    
+
     # Find execute method
-    start_marker = "    def execute(self, request: QuantumWorkloadRequest) -> Dict[str, Any]:"
+    start_marker = (
+        "    def execute(self, request: QuantumWorkloadRequest) -> Dict[str, Any]:"
+    )
     if start_marker not in content:
         print("\n❌ ERROR: Could not find execute() method in file")
         return 1
-    
+
     print("\n✅ Found execute() method")
-    
+
     # Create backup
-    with open(BACKUP_FILE, 'w') as f:
+    with open(BACKUP_FILE, "w") as f:
         f.write(content)
     print(f"✅ Created backup: {BACKUP_FILE.relative_to(ROOT)}")
-    
+
     # Find the end of execute method (next method definition or class end)
-    lines = content.split('\n')
+    lines = content.split("\n")
     execute_start = None
     execute_end = None
-    
+
     for i, line in enumerate(lines):
         if start_marker in line:
             execute_start = i
         elif execute_start is not None and execute_end is None:
             # Look for next method or class boundary
-            if line.startswith('    def ') or line.startswith('class '):
+            if line.startswith("    def ") or line.startswith("class "):
                 execute_end = i
                 break
-    
+
     if execute_start is None:
         print("\n❌ ERROR: Could not find execute() method start")
         return 1
-    
+
     if execute_end is None:
         execute_end = len(lines)
-    
+
     print(f"✅ Execute method found at lines {execute_start+1}-{execute_end}")
-    
+
     # Replace execute method
     new_lines = (
-        lines[:execute_start] +
-        HARDENED_EXECUTE.split('\n') +
-        lines[execute_end:]
+        lines[:execute_start] + HARDENED_EXECUTE.split("\n") + lines[execute_end:]
     )
-    
-    new_content = '\n'.join(new_lines)
-    
+
+    new_content = "\n".join(new_lines)
+
     # Write updated file
-    with open(QA_AS_FILE, 'w') as f:
+    with open(QA_AS_FILE, "w") as f:
         f.write(new_content)
-    
+
     print(f"\n✅ Integrated production-hardened execute() method")
     print(f"\n📊 Changes:")
     print(f"  - Removed lines: {execute_end - execute_start}")
@@ -325,9 +340,12 @@ def main():
     print(f"\nNext steps:")
     print(f"  1. Run validation: python3 scripts/validate_qaas_hardening.py")
     print(f"  2. Test manually: npm run backend:start")
-    print(f"  3. If issues: cp {BACKUP_FILE.relative_to(ROOT)} {QA_AS_FILE.relative_to(ROOT)}")
-    
+    print(
+        f"  3. If issues: cp {BACKUP_FILE.relative_to(ROOT)} {QA_AS_FILE.relative_to(ROOT)}"
+    )
+
     return 0
+
 
 if __name__ == "__main__":
     sys.exit(main())

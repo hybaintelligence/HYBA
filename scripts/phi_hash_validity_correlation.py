@@ -161,7 +161,9 @@ def count_leading_zero_bits(block_hash: str) -> int:
 # -- Block Fetching ------------------------------------------------------------
 
 
-def fetch_block_data(api: str, height: int, timeout: int = 30) -> Optional[BlockHashRecord]:
+def fetch_block_data(
+    api: str, height: int, timeout: int = 30
+) -> Optional[BlockHashRecord]:
     """Fetch a single block's nonce and hash, compute metrics."""
     base = api_base(api)
     try:
@@ -270,7 +272,9 @@ def compute_correlation(records: List[BlockHashRecord]) -> CorrelationResult:
     d_num = sum((rs - mean_rs) * (rz - mean_rz) for rs, rz in zip(rank_s, rank_z))
     d_denom_s = math.sqrt(sum((rs - mean_rs) ** 2 for rs in rank_s))
     d_denom_z = math.sqrt(sum((rz - mean_rz) ** 2 for rz in rank_z))
-    spearman_r = d_num / (d_denom_s * d_denom_z) if (d_denom_s > 0 and d_denom_z > 0) else 0.0
+    spearman_r = (
+        d_num / (d_denom_s * d_denom_z) if (d_denom_s > 0 and d_denom_z > 0) else 0.0
+    )
 
     # -- High-Φ vs low-Φ groups (median split) --
     median_strength = sorted(strengths)[n // 2]
@@ -279,7 +283,9 @@ def compute_correlation(records: List[BlockHashRecord]) -> CorrelationResult:
     mean_high_zeros = (
         sum(r.leading_zero_bits for r in high_phi) / len(high_phi) if high_phi else 0.0
     )
-    mean_low_zeros = sum(r.leading_zero_bits for r in low_phi) / len(low_phi) if low_phi else 0.0
+    mean_low_zeros = (
+        sum(r.leading_zero_bits for r in low_phi) / len(low_phi) if low_phi else 0.0
+    )
     obs_diff = mean_high_zeros - mean_low_zeros
 
     # Resampling p-value for the difference
@@ -576,12 +582,18 @@ def main() -> int:
     parser = argparse.ArgumentParser(
         description="Phi^15 Resonance ↔ Hash Validity Correlation",
     )
-    parser.add_argument("--api", default=DEFAULT_API, help=f"API base URL (default: {DEFAULT_API})")
-    parser.add_argument("--blocks", type=int, default=100, help="Number of blocks (default: 100)")
+    parser.add_argument(
+        "--api", default=DEFAULT_API, help=f"API base URL (default: {DEFAULT_API})"
+    )
+    parser.add_argument(
+        "--blocks", type=int, default=100, help="Number of blocks (default: 100)"
+    )
     parser.add_argument(
         "--delay", type=float, default=0.1, help="Delay between requests (default: 0.1)"
     )
-    parser.add_argument("--out", default="artifacts/phi_hash_validity", help="Output directory")
+    parser.add_argument(
+        "--out", default="artifacts/phi_hash_validity", help="Output directory"
+    )
     parser.add_argument("--dry-run", action="store_true", help="Print config and exit")
     args = parser.parse_args()
 

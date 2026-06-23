@@ -13,8 +13,14 @@ BACKEND = ROOT / "python_backend"
 if str(BACKEND) not in sys.path:
     sys.path.insert(0, str(BACKEND))
 
-from pythia_mining.pulvini_manifold import PulviniManifold, SharedManifoldBlackboard  # noqa: E402
-from pythia_mining.pulvini_overlay import ADJACENCY_MAP, PulviniOverlayConcentrator  # noqa: E402
+from pythia_mining.pulvini_manifold import (
+    PulviniManifold,
+    SharedManifoldBlackboard,
+)  # noqa: E402
+from pythia_mining.pulvini_overlay import (
+    ADJACENCY_MAP,
+    PulviniOverlayConcentrator,
+)  # noqa: E402
 from pythia_mining.pulvini_propagation import SharePropagationController  # noqa: E402
 from pythia_mining.stratum_client import ShareResult  # noqa: E402
 
@@ -37,15 +43,23 @@ class PulviniManifoldUnitTests(unittest.TestCase):
         i_orbit = self.manifold.nonce_orbit(31)
         self.assertEqual(20, len(d_orbit))
         self.assertEqual(12, len(i_orbit))
-        self.assertTrue(all(value % 32 in self.manifold.node_orbits[0] for value in d_orbit))
-        self.assertTrue(all(value % 32 in self.manifold.node_orbits[1] for value in i_orbit))
+        self.assertTrue(
+            all(value % 32 in self.manifold.node_orbits[0] for value in d_orbit)
+        )
+        self.assertTrue(
+            all(value % 32 in self.manifold.node_orbits[1] for value in i_orbit)
+        )
 
     def test_hebbian_update_preserves_hermitian_hamiltonian_and_unit_norm(self) -> None:
         before = self.manifold.edge_weight(0, 20)
         self.manifold.hebbian_fire([0, 20, 25, 30, 31], signal_type="SHARE_FOUND")
         self.assertGreater(self.manifold.edge_weight(0, 20), before)
-        self.assertAlmostEqual(self.manifold.edge_weight(0, 20), self.manifold.edge_weight(20, 0))
-        self.assertTrue(np.allclose(self.manifold.hamiltonian, self.manifold.hamiltonian.conj().T))
+        self.assertAlmostEqual(
+            self.manifold.edge_weight(0, 20), self.manifold.edge_weight(20, 0)
+        )
+        self.assertTrue(
+            np.allclose(self.manifold.hamiltonian, self.manifold.hamiltonian.conj().T)
+        )
         self.manifold.evolve_closed_system(dt=0.25)
         self.assertAlmostEqual(float(np.linalg.norm(self.manifold.psi)), 1.0, places=10)
         self.assertAlmostEqual(float(np.trace(self.manifold.rho).real), 1.0, places=10)
@@ -58,12 +72,18 @@ class PulviniManifoldUnitTests(unittest.TestCase):
         self.assertEqual("nack_slice_exhausted", event.event_type)
         self.assertLess(after[0], before[0])
         self.assertAlmostEqual(float(np.trace(self.manifold.rho).real), 1.0, places=10)
-        self.assertGreaterEqual(float(np.min(np.linalg.eigvalsh(self.manifold.rho).real)), -1e-9)
+        self.assertGreaterEqual(
+            float(np.min(np.linalg.eigvalsh(self.manifold.rho).real)), -1e-9
+        )
 
     def test_threshold_projection_and_phi_projection_are_operational(self) -> None:
-        self.assertFalse(self.manifold.collapse_if_threshold(found_node=3, critical_value=10.0))
+        self.assertFalse(
+            self.manifold.collapse_if_threshold(found_node=3, critical_value=10.0)
+        )
         self.manifold.entropy_gradient = 10.0
-        self.assertTrue(self.manifold.collapse_if_threshold(found_node=3, critical_value=0.1))
+        self.assertTrue(
+            self.manifold.collapse_if_threshold(found_node=3, critical_value=0.1)
+        )
         self.assertEqual(3, int(np.argmax(self.manifold.work_distribution())))
         payload = self.manifold.calibrate_phi_projection(
             range(256), threshold=0.5, job_id="job-beta"
@@ -91,7 +111,9 @@ class PulviniManifoldIntegrationTests(unittest.TestCase):
         job = SimpleNamespace(job_id="job-gamma", target=12345, extranonce2_size=4)
         assignments = overlay.register_pool_job(job, pool_name="Pool")
         self.assertEqual(32, len(assignments))
-        self.assertEqual(32, len({assignment.extranonce2 for assignment in assignments.values()}))
+        self.assertEqual(
+            32, len({assignment.extranonce2 for assignment in assignments.values()})
+        )
         for assignment in assignments.values():
             self.assertIn("orbit_id", assignment.tensor_coordinate)
             self.assertIn("nonce_residue", assignment.tensor_coordinate)
@@ -112,7 +134,9 @@ class PulviniManifoldIntegrationTests(unittest.TestCase):
             before = manifold.edge_weight(0, 20)
 
             async def submitter(_job, nonce, extranonce2):
-                return ShareResult(True, job_id=_job.job_id, nonce=nonce, block_hash="00" * 32)
+                return ShareResult(
+                    True, job_id=_job.job_id, nonce=nonce, block_hash="00" * 32
+                )
 
             result = await controller.handle_share_found(
                 job=job,

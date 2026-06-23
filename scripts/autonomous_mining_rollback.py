@@ -14,7 +14,10 @@ PYTHON_BACKEND = ROOT / "python_backend"
 if str(PYTHON_BACKEND) not in sys.path:
     sys.path.insert(0, str(PYTHON_BACKEND))
 
-from pythia_mining.autonomous_mining_controller import AutonomousConfig, AutonomousMiningController  # noqa: E402
+from pythia_mining.autonomous_mining_controller import (
+    AutonomousConfig,
+    AutonomousMiningController,
+)  # noqa: E402
 
 
 class RollbackEngineStub:
@@ -22,9 +25,15 @@ class RollbackEngineStub:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Rollback autonomous mining reflexive state")
-    parser.add_argument("--state", required=True, type=Path, help="State JSON file to restore")
-    parser.add_argument("--operator", required=True, help="Operator ID approving rollback")
+    parser = argparse.ArgumentParser(
+        description="Rollback autonomous mining reflexive state"
+    )
+    parser.add_argument(
+        "--state", required=True, type=Path, help="State JSON file to restore"
+    )
+    parser.add_argument(
+        "--operator", required=True, help="Operator ID approving rollback"
+    )
     parser.add_argument("--reason", required=True, help="Auditable rollback reason")
     parser.add_argument(
         "--state-dir",
@@ -77,7 +86,9 @@ def main() -> int:
             "proposals_loaded": len(state.get("proposals", [])),
         }
     else:
-        result = controller.rollback_to_state(args.state, args.reason, operator_id=args.operator)
+        result = controller.rollback_to_state(
+            args.state, args.reason, operator_id=args.operator
+        )
     print(json.dumps(result, indent=2, sort_keys=True))
     return 0
 

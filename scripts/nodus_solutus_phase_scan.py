@@ -54,7 +54,8 @@ def run_phase_scan(
     )
 
     lambda_values = [
-        lambda_start + (lambda_end - lambda_start) * i / (num_lambda - 1) for i in range(num_lambda)
+        lambda_start + (lambda_end - lambda_start) * i / (num_lambda - 1)
+        for i in range(num_lambda)
     ]
 
     scan_points = []
@@ -63,7 +64,9 @@ def run_phase_scan(
     chern_before = None
     chern_after = None
 
-    print(f"{'λ':>10s}  {'Chern #':>12s}  {'Q-Error':>12s}  {'Quantized?':>10s}  {'Discrep?':>10s}")
+    print(
+        f"{'λ':>10s}  {'Chern #':>12s}  {'Q-Error':>12s}  {'Quantized?':>10s}  {'Discrep?':>10s}"
+    )
     print("-" * 60)
 
     for i, lam in enumerate(lambda_values):
@@ -174,7 +177,9 @@ def main():
     if result["transition_detected"]:
         print("✓✓✓ TOPOLOGICAL PHASE TRANSITION DETECTED")
         print(f"    Critical λ: {result['critical_lambda']:.6f}")
-        print(f"    Chern jump: {result['chern_before']:.6f} → {result['chern_after']:.6f}")
+        print(
+            f"    Chern jump: {result['chern_before']:.6f} → {result['chern_after']:.6f}"
+        )
     else:
         print("○ No sharp transition detected in this scan range.")
         print("  Chern number trend may still show gradual topological change.")
@@ -208,11 +213,13 @@ def main():
         "uniform_mid_quantized": result["uniform_mid_quantized"],
         "scan_points": [
             {
-                k: float(v)
-                if isinstance(v, (float, int))
-                and k != "is_quantized"
-                and k != "discrepancy_satisfied"
-                else v
+                k: (
+                    float(v)
+                    if isinstance(v, (float, int))
+                    and k != "is_quantized"
+                    and k != "discrepancy_satisfied"
+                    else v
+                )
                 for k, v in p.items()
             }
             for p in result["scan_points"]

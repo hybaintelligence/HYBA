@@ -98,7 +98,9 @@ class PhiScalingEngineTests(unittest.TestCase):
         for stream in [[], [1.0], [1.0, 2.0, 3.0]]:
             result = shield.verify_authenticity(stream)
             for key in required_keys:
-                self.assertIn(key, result, f"Missing key '{key}' for stream len={len(stream)}")
+                self.assertIn(
+                    key, result, f"Missing key '{key}' for stream len={len(stream)}"
+                )
 
     # ------------------------------------------------------------------
     # NEW: PhiScaledEnsemble edge-case tests
@@ -139,9 +141,7 @@ class PhiScalingEngineTests(unittest.TestCase):
         """Decision memory must not exceed policy.memory_limit."""
         engine = PhiScaledEnsemble(config={"memory_limit": 3})
         for i in range(10):
-            engine.predict_with_phi_scaling(
-                {"m": {"score": float(i) / 10.0}}, {}
-            )
+            engine.predict_with_phi_scaling({"m": {"score": float(i) / 10.0}}, {})
         self.assertLessEqual(len(engine.memory), 3)
 
     def test_inauthentic_telemetry_returns_conservative_decision(self):
@@ -174,7 +174,9 @@ class PhiScalingEngineTests(unittest.TestCase):
     def test_resonance_analyzer_fibonacci_series(self):
         """Fibonacci series must be detected as phi-resonant (is_fibonacci=True)."""
         analyzer = PhiResonanceAnalyzer()
-        result = analyzer.analyze_phi_resonance({"fib": [1, 1, 2, 3, 5, 8, 13, 21, 34, 55]})
+        result = analyzer.analyze_phi_resonance(
+            {"fib": [1, 1, 2, 3, 5, 8, 13, 21, 34, 55]}
+        )
         if "fib_resonance" in result:
             self.assertTrue(result["fib_resonance"]["is_fibonacci"])
 

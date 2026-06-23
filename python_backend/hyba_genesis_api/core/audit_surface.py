@@ -18,7 +18,9 @@ def _seal_status(audit: Dict[str, Any]) -> str:
     return "MEASURED_PARTIAL"
 
 
-def generate_formal_invariant_audit(reflection_payload: Dict[str, Any]) -> Dict[str, Any]:
+def generate_formal_invariant_audit(
+    reflection_payload: Dict[str, Any],
+) -> Dict[str, Any]:
     """Produce a deterministic, paper-grade mathematical audit envelope.
 
     The envelope is derived from the current reflexive controller payload. It is
@@ -32,7 +34,9 @@ def generate_formal_invariant_audit(reflection_payload: Dict[str, Any]) -> Dict[
     genus = int(manifold.get("topological_genus_proxy", 0))
     chi = int(manifold.get("euler_characteristic", telemetry.get("chi", 1)))
     phi = float(
-        telemetry.get("phi_resonance", telemetry.get("phi_density", telemetry.get("phi", 0.0)))
+        telemetry.get(
+            "phi_resonance", telemetry.get("phi_density", telemetry.get("phi", 0.0))
+        )
     )
     curvature = float(manifold.get("fisher_curvature", 0.0))
     ricci = float(manifold.get("ricci_flow_curvature", 0.0))
@@ -42,7 +46,9 @@ def generate_formal_invariant_audit(reflection_payload: Dict[str, Any]) -> Dict[
     # geometric invariants are coherent for the current controller step.
     ricci_smoothed = curvature > 0 and ricci < curvature
     ontological_integrity = (
-        "CERTIFIED" if (chi >= 1 and ricci >= 0 and ricci_smoothed) else "HOLES_DETECTED"
+        "CERTIFIED"
+        if (chi >= 1 and ricci >= 0 and ricci_smoothed)
+        else "HOLES_DETECTED"
     )
 
     return {
@@ -57,7 +63,9 @@ def generate_formal_invariant_audit(reflection_payload: Dict[str, Any]) -> Dict[
         "predictive_status": reflection_payload.get("predictive_status", "UNKNOWN"),
         "thermal_state": {
             "duration_seconds": float(thermal.get("duration_seconds", 0.0)),
-            "thermal_cost_phi_per_second": float(thermal.get("thermal_cost_phi_per_second", 0.0)),
+            "thermal_cost_phi_per_second": float(
+                thermal.get("thermal_cost_phi_per_second", 0.0)
+            ),
         },
         "measurement_basis": {
             "source": "current_reflexive_controller_step",

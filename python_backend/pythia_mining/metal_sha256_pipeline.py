@@ -131,7 +131,9 @@ def verify_nonce(
 
     checked_nonce = _check_nonce(nonce)
     started = time.perf_counter()
-    validation = validate_share(job, checked_nonce, _resolve_extranonce2(job, extranonce2))
+    validation = validate_share(
+        job, checked_nonce, _resolve_extranonce2(job, extranonce2)
+    )
     elapsed = time.perf_counter() - started
     return NonceVerification.from_share_validation(
         nonce=checked_nonce,
@@ -151,7 +153,9 @@ def verify_header_sha256d(header: bytes, target: int) -> tuple[bool, str, int]:
     return hash_int <= int(target), display_hash(digest), hash_int
 
 
-def _build_header_for_nonce(job: MiningJob, nonce: int, extranonce2: str) -> tuple[bytes, str]:
+def _build_header_for_nonce(
+    job: MiningJob, nonce: int, extranonce2: str
+) -> tuple[bytes, str]:
     coinbase_hash = coinbase_hash_hex(job, extranonce2)
     merkle_root = compute_merkle_root(coinbase_hash, job.merkle_branch)
     return build_block_header(job, merkle_root, nonce), merkle_root
@@ -160,7 +164,9 @@ def _build_header_for_nonce(job: MiningJob, nonce: int, extranonce2: str) -> tup
 def sha256d_headers(headers: Sequence[bytes]) -> list[bytes]:
     """Hash a sequence of 80-byte headers exactly with hashlib."""
 
-    return [hashlib.sha256(hashlib.sha256(header).digest()).digest() for header in headers]
+    return [
+        hashlib.sha256(hashlib.sha256(header).digest()).digest() for header in headers
+    ]
 
 
 class CPUParallelVerifier:
@@ -168,7 +174,9 @@ class CPUParallelVerifier:
 
     def __init__(self, workers: Optional[int] = None) -> None:
         env_workers = os.getenv("HYBA_CPU_VERIFY_WORKERS")
-        configured = int(env_workers) if env_workers and env_workers.isdigit() else workers
+        configured = (
+            int(env_workers) if env_workers and env_workers.isdigit() else workers
+        )
         if configured is None:
             configured = DEFAULT_CPU_WORKERS
         self.workers = max(1, min(int(configured), DEFAULT_CPU_WORKERS))
@@ -236,7 +244,8 @@ class MetalSHA256Pipeline:
         self.require_mlx = bool(require_mlx)
         self.backend = "metal_mlx_staged_exact_sha256d"
         self.apple_silicon_detected = (
-            platform.system() == "Darwin" and platform.machine().lower() in {"arm64", "aarch64"}
+            platform.system() == "Darwin"
+            and platform.machine().lower() in {"arm64", "aarch64"}
         )
         self._mlx_core: Optional[Any] = None
         self._mlx_error: Optional[str] = None
@@ -251,7 +260,9 @@ class MetalSHA256Pipeline:
             self._mlx_core = None
             self._mlx_error = str(exc)
             if self.require_mlx:
-                raise RuntimeError(f"MLX/Metal verifier requested but unavailable: {exc}") from exc
+                raise RuntimeError(
+                    f"MLX/Metal verifier requested but unavailable: {exc}"
+                ) from exc
 
     @property
     def mlx_available(self) -> bool:
@@ -259,13 +270,17 @@ class MetalSHA256Pipeline:
 
     @property
     def available(self) -> bool:
-        allow_any_platform = os.getenv("HYBA_ENABLE_MLX_SHA256_ANY_PLATFORM", "").lower() in {
+        allow_any_platform = os.getenv(
+            "HYBA_ENABLE_MLX_SHA256_ANY_PLATFORM", ""
+        ).lower() in {
             "1",
             "true",
             "yes",
             "on",
         }
-        return bool(self.mlx_available and (self.apple_silicon_detected or allow_any_platform))
+        return bool(
+            self.mlx_available and (self.apple_silicon_detected or allow_any_platform)
+        )
 
     @property
     def unavailable_reason(self) -> Optional[str]:
@@ -446,7 +461,9 @@ class UnifiedBatchVerifier:
         if self.prefer_metal and self.metal.available:
             self.selected_backend = self.metal.backend
         elif self.require_metal:
-            raise RuntimeError(status.get("unavailable_reason") or "MLX/Metal unavailable")
+            raise RuntimeError(
+                status.get("unavailable_reason") or "MLX/Metal unavailable"
+            )
         else:
             self.selected_backend = self.cpu.backend
         return self.status()

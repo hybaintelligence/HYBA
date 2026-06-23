@@ -44,7 +44,9 @@ def _walk_values(value: Any, prefix: str = "") -> list[tuple[str, Any]]:
     if isinstance(value, dict):
         items: list[tuple[str, Any]] = []
         for key, nested in value.items():
-            items.extend(_walk_values(nested, f"{prefix}.{key}" if prefix else str(key)))
+            items.extend(
+                _walk_values(nested, f"{prefix}.{key}" if prefix else str(key))
+            )
         return items
     if isinstance(value, list):
         items = []
@@ -78,7 +80,9 @@ def main() -> int:
         text = _read(path)
         for literal in BAD_LITERALS:
             if literal in text:
-                errors.append(f"{rel} contains blocked default/credential literal: {literal}")
+                errors.append(
+                    f"{rel} contains blocked default/credential literal: {literal}"
+                )
     _validate_pool_template(ROOT / "config/mining_pools_live.json", errors)
     _validate_pool_template(ROOT / "python_backend/mining_pools_config.json", errors)
 

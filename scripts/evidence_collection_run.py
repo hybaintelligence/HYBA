@@ -144,7 +144,9 @@ def main() -> int:
     snapshot_interval = 60  # 1 minute
     snapshots_to_collect = DURATION_SECONDS // snapshot_interval
 
-    print(f"Collecting {snapshots_to_collect} snapshots at {snapshot_interval}s intervals...")
+    print(
+        f"Collecting {snapshots_to_collect} snapshots at {snapshot_interval}s intervals..."
+    )
     print()
 
     for i in range(snapshots_to_collect):
@@ -285,7 +287,9 @@ def main() -> int:
         if all(h.get("status") == "ok" for h in s["health_checks"].values())
     )
     success_rate = (
-        (successful_snapshots / len(evidence["snapshots"]) * 100) if evidence["snapshots"] else 0
+        (successful_snapshots / len(evidence["snapshots"]) * 100)
+        if evidence["snapshots"]
+        else 0
     )
 
     print(

@@ -39,7 +39,8 @@ def build_packet() -> Dict[str, Any]:
         "phi_best_structured_scaler": max(structured, key=structured.get) == "phi",
         "phi_specific_not_noise_magic": max(noise, key=noise.get) == "uniform",
         "distribution_normalized": abs(sum(phi_distribution) - 1.0) < 1e-12,
-        "hardware_allocation_stable": abs(sum(allocation) - 1.0) < 1e-12 and max(allocation) < 0.75,
+        "hardware_allocation_stable": abs(sum(allocation) - 1.0) < 1e-12
+        and max(allocation) < 0.75,
     }
     return signed(
         {
@@ -48,7 +49,14 @@ def build_packet() -> Dict[str, Any]:
             "doctrine": {
                 "role": "first_class_operational_invariant",
                 "not_decorative": True,
-                "surfaces": ["scaling", "stability", "search", "memory", "hardware", "resonance"],
+                "surfaces": [
+                    "scaling",
+                    "stability",
+                    "search",
+                    "memory",
+                    "hardware",
+                    "resonance",
+                ],
             },
             "evidence": {
                 "lucas_ratios": ratios,
@@ -74,7 +82,9 @@ def write_packet(output_dir: Path) -> Dict[str, Any]:
     output_dir.mkdir(parents=True, exist_ok=True)
     packet = build_packet()
     packet_path = output_dir / "phi_resonance_elevation_packet.json"
-    packet_path.write_text(json.dumps(packet, indent=2, sort_keys=True), encoding="utf-8")
+    packet_path.write_text(
+        json.dumps(packet, indent=2, sort_keys=True), encoding="utf-8"
+    )
     manifest = signed(
         {
             "schema_version": f"{SCHEMA_VERSION}.manifest",
@@ -84,7 +94,9 @@ def write_packet(output_dir: Path) -> Dict[str, Any]:
         }
     )
     manifest_path = output_dir / "phi_resonance_elevation_manifest.json"
-    manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True), encoding="utf-8")
+    manifest_path.write_text(
+        json.dumps(manifest, indent=2, sort_keys=True), encoding="utf-8"
+    )
     return manifest
 
 

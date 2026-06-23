@@ -74,7 +74,9 @@ def test_regtest_target_yields_valid_shares_in_range() -> None:
     """Valid nonces must exist within the first 10,000 candidates on regtest target."""
     job = _job("7fffff")
     valid = _find_valid_nonces(job, limit=10_000)
-    assert len(valid) > 0, "no valid nonces found in [0, 10_000) — regtest target too hard"
+    assert (
+        len(valid) > 0
+    ), "no valid nonces found in [0, 10_000) — regtest target too hard"
 
 
 # ---------------------------------------------------------------------------
@@ -115,7 +117,9 @@ def test_sha256d_hash_matches_validate_share_output() -> None:
         digest = hashlib.sha256(hashlib.sha256(header_bytes).digest()).digest()
         # display hash is reversed
         expected_display = digest[::-1].hex()
-        assert result.block_hash == expected_display, f"block_hash mismatch for nonce {nonce}"
+        assert (
+            result.block_hash == expected_display
+        ), f"block_hash mismatch for nonce {nonce}"
 
 
 # ---------------------------------------------------------------------------
@@ -131,12 +135,16 @@ def test_easier_target_yields_more_valid_shares() -> None:
     extranonce2 = "00000000"
     limit = 5_000
 
-    easy_count = sum(1 for n in range(limit) if validate_share(easy_job, n, extranonce2).valid)
-    medium_count = sum(1 for n in range(limit) if validate_share(medium_job, n, extranonce2).valid)
-
-    assert easy_count >= medium_count, (
-        f"easier target produced fewer valid shares ({easy_count} < {medium_count})"
+    easy_count = sum(
+        1 for n in range(limit) if validate_share(easy_job, n, extranonce2).valid
     )
+    medium_count = sum(
+        1 for n in range(limit) if validate_share(medium_job, n, extranonce2).valid
+    )
+
+    assert (
+        easy_count >= medium_count
+    ), f"easier target produced fewer valid shares ({easy_count} < {medium_count})"
 
 
 # ---------------------------------------------------------------------------
@@ -182,9 +190,9 @@ def test_nonce_validation_throughput_is_measurable() -> None:
     elapsed = time.perf_counter() - start
 
     nonces_per_sec = n_candidates / elapsed
-    assert nonces_per_sec >= 1_000, (
-        f"validation throughput {nonces_per_sec:.0f} nonces/sec is below 1,000 baseline"
-    )
+    assert (
+        nonces_per_sec >= 1_000
+    ), f"validation throughput {nonces_per_sec:.0f} nonces/sec is below 1,000 baseline"
 
 
 # ---------------------------------------------------------------------------

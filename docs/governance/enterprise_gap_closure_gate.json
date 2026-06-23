@@ -1,7 +1,7 @@
 {
   "generated_at": "2026-06-21T00:00:00Z",
-  "source": "branch-premerge-note",
-  "passed": null,
   "note": "This placeholder is overwritten by scripts/run_enterprise_gap_closure_gate.py during local or CI execution.",
-  "required_command": "PYTHONPATH=python_backend python scripts/run_enterprise_gap_closure_gate.py"
+  "passed": null,
+  "required_command": "PYTHONPATH=python_backend python scripts/run_enterprise_gap_closure_gate.py",
+  "source": "branch-premerge-note"
 }

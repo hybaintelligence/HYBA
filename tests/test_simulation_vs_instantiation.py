@@ -82,8 +82,12 @@ class TestSimulationVsInstantiation:
         psi /= np.linalg.norm(psi)
 
         # Run twice - should be identical (deterministic classical)
-        result1 = PhiAcceleratedDensityMatrix.phi_weighted_purification(np.outer(psi, np.conj(psi)))
-        result2 = PhiAcceleratedDensityMatrix.phi_weighted_purification(np.outer(psi, np.conj(psi)))
+        result1 = PhiAcceleratedDensityMatrix.phi_weighted_purification(
+            np.outer(psi, np.conj(psi))
+        )
+        result2 = PhiAcceleratedDensityMatrix.phi_weighted_purification(
+            np.outer(psi, np.conj(psi))
+        )
 
         # Classical: deterministic (same result)
         # Quantum: probabilistic (measurement collapse)
@@ -143,7 +147,7 @@ class TestExponentialWallDeutschPrediction:
         """
         # Small qubit counts: feasible
         for num_qubits in [4, 6, 8]:
-            state_size = 2 ** num_qubits
+            state_size = 2**num_qubits
 
             # Create unstructured (random) state
             psi = np.random.randn(state_size) + 1j * np.random.randn(state_size)
@@ -163,13 +167,15 @@ class TestExponentialWallDeutschPrediction:
         # But we can demonstrate the exponential scaling
         scaling_factors = []
         for num_qubits in range(4, 12):
-            state_size = 2 ** num_qubits
+            state_size = 2**num_qubits
             scaling_factors.append(state_size)
 
         # Verify exponential growth (each step doubles)
         for i in range(len(scaling_factors) - 1):
             ratio = scaling_factors[i + 1] / scaling_factors[i]
-            assert np.isclose(ratio, 2.0, atol=0.1), f"Exponential scaling failed at {i+4} qubits"
+            assert np.isclose(
+                ratio, 2.0, atol=0.1
+            ), f"Exponential scaling failed at {i+4} qubits"
 
     def test_tensor_network_avoids_wall_for_structured_states(self):
         """Tensor networks avoid exponential wall ONLY for structured states.
@@ -196,7 +202,7 @@ class TestExponentialWallDeutschPrediction:
 
         # Test 3: Random state (unstructured)
         # Tensor network approximation degrades
-        psi_random = np.random.randn(2 ** 10) + 1j * np.random.randn(2 ** 10)
+        psi_random = np.random.randn(2**10) + 1j * np.random.randn(2**10)
         psi_random /= np.linalg.norm(psi_random)
 
         # Try to compress with small bond dimension
@@ -212,14 +218,16 @@ class TestExponentialWallDeutschPrediction:
         # Benchmark state vector operations at different scales
         times = []
         for num_qubits in [4, 6, 8, 10]:
-            state_size = 2 ** num_qubits
+            state_size = 2**num_qubits
 
             # Create random state
             psi = np.random.randn(state_size) + 1j * np.random.randn(state_size)
             psi /= np.linalg.norm(psi)
 
             # Benchmark matrix multiplication (simulating evolution)
-            H = np.random.randn(state_size, state_size) + 1j * np.random.randn(state_size, state_size)
+            H = np.random.randn(state_size, state_size) + 1j * np.random.randn(
+                state_size, state_size
+            )
             H = (H + H.conj().T) / 2
 
             start = time.perf_counter()
@@ -259,8 +267,9 @@ class TestTensorNetworkApproximationLimits:
 
         # The norms should be close but not identical
         # This proves approximation, not exact representation
-        assert np.isclose(norm_full, norm_compressed, atol=1e-6), \
-            "Compression introduces approximation error"
+        assert np.isclose(
+            norm_full, norm_compressed, atol=1e-6
+        ), "Compression introduces approximation error"
 
     def test_approximation_error_grows_with_entanglement(self):
         """Approximation error grows with entanglement entropy.
@@ -314,13 +323,15 @@ class TestTensorNetworkApproximationLimits:
         max_original = max(original_bonds)
         max_compressed = max(compressed_bonds)
 
-        assert max_compressed <= max_original, \
-            "Compression should reduce bond dimension (lossy)"
+        assert (
+            max_compressed <= max_original
+        ), "Compression should reduce bond dimension (lossy)"
 
         # Verify that this is not lossless
         # If it were lossless, bond dimensions wouldn't change
-        assert max_compressed < max_original or max_original <= 8, \
-            "Lossless compression would preserve bond dimensions"
+        assert (
+            max_compressed < max_original or max_original <= 8
+        ), "Lossless compression would preserve bond dimensions"
 
 
 class TestPhiAccelerationIsClassicalOptimization:
@@ -358,7 +369,7 @@ class TestPhiAccelerationIsClassicalOptimization:
 
         # All results should be identical (deterministic)
         for i in range(len(results) - 1):
-            assert np.allclose(results[i], results[i+1], atol=1e-14)
+            assert np.allclose(results[i], results[i + 1], atol=1e-14)
 
         # Quantum operations would be probabilistic
         # Classical operations are deterministic

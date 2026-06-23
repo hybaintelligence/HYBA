@@ -1,19 +1,19 @@
 {
-  "pool_name": "braiins",
-  "pool_url": "stratum2+tcp://stratum.braiins.com:3333",
-  "stratum_version": 2,
-  "duration_seconds": 300,
-  "start_time": 1781304117.4542084,
-  "end_time": null,
-  "connected": false,
   "authenticated": false,
-  "jobs_received": 0,
-  "jobs": [],
-  "shares_submitted": 0,
-  "shares_accepted": 0,
-  "shares_rejected": 0,
-  "share_results": [],
+  "connected": false,
+  "duration_seconds": 300,
+  "end_time": null,
   "errors": [
     "Failed to connect to pool"
-  ]
+  ],
+  "jobs": [],
+  "jobs_received": 0,
+  "pool_name": "braiins",
+  "pool_url": "stratum2+tcp://stratum.braiins.com:3333",
+  "share_results": [],
+  "shares_accepted": 0,
+  "shares_rejected": 0,
+  "shares_submitted": 0,
+  "start_time": 1781304117.4542084,
+  "stratum_version": 2
 }

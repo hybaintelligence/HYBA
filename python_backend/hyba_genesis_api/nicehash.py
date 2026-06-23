@@ -35,7 +35,9 @@ import numpy as np
 import requests
 
 # Set up logging for production readiness
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+)
 logger = logging.getLogger(__name__)
 
 
@@ -82,10 +84,14 @@ class GoldenRatioScaler:
         indices = np.arange(n_samples)
         return (indices * golden_angle) % (2 * np.pi)
 
-    def phi_scaled_regularization(self, layer_depth: int, base_reg: float = 0.001) -> float:
+    def phi_scaled_regularization(
+        self, layer_depth: int, base_reg: float = 0.001
+    ) -> float:
         return base_reg * (self.PHI_INVERSE**layer_depth)
 
-    def markowitz_frontier_phi_scaling(self, efficient_frontier: np.ndarray) -> np.ndarray:
+    def markowitz_frontier_phi_scaling(
+        self, efficient_frontier: np.ndarray
+    ) -> np.ndarray:
         scaled_frontier = efficient_frontier.copy()
         for i in range(len(scaled_frontier)):
             scaled_frontier[i] *= self.PHI ** (i / len(scaled_frontier))
@@ -107,7 +113,9 @@ class QuantumBackend(ABC):
     """Abstract quantum computation backend."""
 
     @abstractmethod
-    def apply_hadamard(self, state: np.ndarray, qubit: int, n_qubits: int) -> np.ndarray:
+    def apply_hadamard(
+        self, state: np.ndarray, qubit: int, n_qubits: int
+    ) -> np.ndarray:
         pass
 
     @abstractmethod
@@ -146,7 +154,9 @@ class AnalyticalQuantumBackend(QuantumBackend):
             result = np.kron(result, op)
         return result
 
-    def apply_hadamard(self, state: np.ndarray, qubit: int, n_qubits: int) -> np.ndarray:
+    def apply_hadamard(
+        self, state: np.ndarray, qubit: int, n_qubits: int
+    ) -> np.ndarray:
         h_matrix = (1 / np.sqrt(2)) * np.array([[1, 1], [1, -1]], dtype=complex)
         operators = [self.identity if i != qubit else h_matrix for i in range(n_qubits)]
         unitary = self._kron_chain(operators, n_qubits)
@@ -156,7 +166,9 @@ class AnalyticalQuantumBackend(QuantumBackend):
         self, state: np.ndarray, angle: float, qubit: int, n_qubits: int
     ) -> np.ndarray:
         phase_gate = np.array([[1, 0], [0, np.exp(1j * angle)]], dtype=complex)
-        operators = [self.identity if i != qubit else phase_gate for i in range(n_qubits)]
+        operators = [
+            self.identity if i != qubit else phase_gate for i in range(n_qubits)
+        ]
         unitary = self._kron_chain(operators, n_qubits)
         return unitary @ state
 
@@ -198,7 +210,9 @@ class VariationalQuantumAlgorithm:
         param_idx = 0
         for layer in range(layers):
             for qubit in range(self.n_qubits):
-                current_state = self.backend.apply_hadamard(current_state, qubit, self.n_qubits)
+                current_state = self.backend.apply_hadamard(
+                    current_state, qubit, self.n_qubits
+                )
             for qubit in range(self.n_qubits):
                 if param_idx < len(params):
                     current_state = self.backend.apply_phase_gate(
@@ -220,7 +234,9 @@ class VariationalQuantumAlgorithm:
         method="COBYLA",
         problem_depth="10",
     ):
-        initial_state = np.ones(2**self.n_qubits, dtype=complex) / np.sqrt(2**self.n_qubits)
+        initial_state = np.ones(2**self.n_qubits, dtype=complex) / np.sqrt(
+            2**self.n_qubits
+        )
         if initial_params is None:
             golden_angles = self.scaler.golden_angle_distribution(self.n_qubits * 3)
             initial_params = golden_angles[: self.n_qubits * 3] * 0.1
@@ -240,7 +256,9 @@ class VariationalQuantumAlgorithm:
         try:
             from scipy.optimize import minimize
 
-            result = minimize(objective, initial_params, method=method, options={"maxiter": 1000})
+            result = minimize(
+                objective, initial_params, method=method, options={"maxiter": 1000}
+            )
             logger.info("VQA optimization completed successfully.")
             return result.x, result.fun
         except Exception as e:
@@ -254,7 +272,9 @@ class QuantumCryptographicProtocol:
     def __init__(self, backend: QuantumBackend):
         self.backend = backend
 
-    def quantum_entropy_extraction(self, n_qubits: int, target_bits: int = 256) -> bytes:
+    def quantum_entropy_extraction(
+        self, n_qubits: int, target_bits: int = 256
+    ) -> bytes:
         initial_state = np.ones(2**n_qubits, dtype=complex) / np.sqrt(2**n_qubits)
         bits_per_shot = n_qubits
         min_shots = int(np.ceil(target_bits / bits_per_shot))
@@ -266,7 +286,9 @@ class QuantumCryptographicProtocol:
                 bitstrings.extend([bitstring] * count)
             concatenated = "".join(bitstrings)
             while len(concatenated) < target_bits:
-                additional_shots = int(np.ceil((target_bits - len(concatenated)) / bits_per_shot))
+                additional_shots = int(
+                    np.ceil((target_bits - len(concatenated)) / bits_per_shot)
+                )
                 more_results = self.backend.measure(initial_state, additional_shots)
                 more_bitstrings = []
                 for bs, cnt in more_results.items():
@@ -275,7 +297,9 @@ class QuantumCryptographicProtocol:
             concatenated = concatenated[:target_bits]
             while len(concatenated) % 8 != 0:
                 concatenated += "0"
-            byte_array = bytes(int(concatenated[i : i + 8], 2) for i in range(0, target_bits, 8))
+            byte_array = bytes(
+                int(concatenated[i : i + 8], 2) for i in range(0, target_bits, 8)
+            )
             return byte_array
         except Exception as e:
             logger.error(f"Entropy extraction failed: {e}")
@@ -317,7 +341,9 @@ class QuantumCryptographicProtocol:
                 )
             fidelity = np.abs(np.dot(expected_state.conj(), state)) ** 2
             verified = fidelity > (1 - tolerance)
-            logger.info(f"Authentication verified: {verified} (fidelity: {fidelity:.4f})")
+            logger.info(
+                f"Authentication verified: {verified} (fidelity: {fidelity:.4f})"
+            )
             return verified
         except Exception as e:
             logger.error(f"Verification failed: {e}")
@@ -354,7 +380,9 @@ class QuantumPortfolioOptimizer:
         return h_matrix
 
     def fibonacci_rebalancing_schedule(self, total_periods: int) -> np.ndarray:
-        fib_len = min(int(np.log2(total_periods)) + 1, len(self.scaler.fibonacci_sequence))
+        fib_len = min(
+            int(np.log2(total_periods)) + 1, len(self.scaler.fibonacci_sequence)
+        )
         fib_seq = self.scaler.fibonacci_sequence[:fib_len]
         schedule = []
         cumulative = 0
@@ -373,8 +401,12 @@ class QuantumPortfolioOptimizer:
         problem_depth: str = "10",
     ):
         hamiltonian = self.construct_portfolio_hamiltonian(expected_returns, covariance)
-        optimized_params, min_value = self.vqa.optimize(hamiltonian, problem_depth=problem_depth)
-        initial_state = np.ones(2**self.n_assets, dtype=complex) / np.sqrt(2**self.n_assets)
+        optimized_params, min_value = self.vqa.optimize(
+            hamiltonian, problem_depth=problem_depth
+        )
+        initial_state = np.ones(2**self.n_assets, dtype=complex) / np.sqrt(
+            2**self.n_assets
+        )
         final_state = self.vqa.vqe_ansatz(optimized_params, initial_state)
         allocation_probs = np.abs(final_state) ** 2
         phi_entropy = self.scaler.info_theoretic_phi_entropy(allocation_probs)
@@ -389,7 +421,9 @@ class QuantumPortfolioOptimizer:
             "problem_scale_factor": float(scale_factor),
             "fibonacci_rebalance_period": float(fib_period),
         }
-        allocation_dict = {i: float(allocation_probs[i]) for i in range(len(allocation_probs))}
+        allocation_dict = {
+            i: float(allocation_probs[i]) for i in range(len(allocation_probs))
+        }
         logger.info("Portfolio optimization completed.")
         return allocation_dict, metrics
 
@@ -397,7 +431,9 @@ class QuantumPortfolioOptimizer:
 class public_api:
     """NiceHash public API client."""
 
-    def __init__(self, host, verbose=False, quantum_backend: Optional[QuantumBackend] = None):
+    def __init__(
+        self, host, verbose=False, quantum_backend: Optional[QuantumBackend] = None
+    ):
         self.host = host
         self.verbose = verbose
         self.quantum_backend = quantum_backend or AnalyticalQuantumBackend()
@@ -421,7 +457,9 @@ class public_api:
             if response.status_code == 200:
                 return response.json()
             elif response.content:
-                raise Exception(f"{response.status_code}: {response.reason}: {response.content}")
+                raise Exception(
+                    f"{response.status_code}: {response.reason}: {response.content}"
+                )
             else:
                 raise Exception(f"{response.status_code}: {response.reason}")
         except Exception as e:
@@ -429,7 +467,9 @@ class public_api:
             raise
 
     def get_current_global_stats(self):
-        return self.request("GET", "/main/api/v2/public/stats/global/current/", "", None)
+        return self.request(
+            "GET", "/main/api/v2/public/stats/global/current/", "", None
+        )
 
     def get_global_stats_24(self):
         return self.request("GET", "/main/api/v2/public/stats/global/24h/", "", None)
@@ -453,7 +493,9 @@ class public_api:
         return self.request("GET", "/main/api/v2/public/currencies/", "", None)
 
     def get_multialgo_info(self):
-        return self.request("GET", "/main/api/v2/public/simplemultialgo/info/", "", None)
+        return self.request(
+            "GET", "/main/api/v2/public/simplemultialgo/info/", "", None
+        )
 
     def get_exchange_markets_info(self):
         return self.request("GET", "/exchange/api/v2/info/status", "", None)
@@ -465,7 +507,9 @@ class public_api:
         return self.request(
             "GET",
             "/exchange/api/v2/candlesticks",
-            "market={}&from={}&to={}&resolution={}".format(market, from_s, to_s, resolution),
+            "market={}&from={}&to={}&resolution={}".format(
+                market, from_s, to_s, resolution
+            ),
             None,
         )
 
@@ -537,7 +581,9 @@ class private_api:
                 body_json = json.dumps(body)
                 message += bytearray(b"\x00")
                 message += bytearray(body_json, "utf-8")
-            digest = hmac.new(bytearray(self.secret, "utf-8"), message, sha256).hexdigest()
+            digest = hmac.new(
+                bytearray(self.secret, "utf-8"), message, sha256
+            ).hexdigest()
             xauth = self.key + ":" + digest
             headers = {
                 "X-Time": str(xtime),
@@ -561,7 +607,9 @@ class private_api:
             if response.status_code == 200:
                 return response.json()
             elif response.content:
-                raise Exception(f"{response.status_code}: {response.reason}: {response.content}")
+                raise Exception(
+                    f"{response.status_code}: {response.reason}: {response.content}"
+                )
             else:
                 raise Exception(f"{response.status_code}: {response.reason}")
         except json.JSONDecodeError as e:
@@ -582,21 +630,29 @@ class private_api:
             if item["algorithm"] == algorithm:
                 algo_setting = item
         if algo_setting is None:
-            raise Exception("Settings for algorithm not found in algo_response parameter")
+            raise Exception(
+                "Settings for algorithm not found in algo_response parameter"
+            )
         return algo_setting
 
     def get_accounts(self):
         return self.request("GET", "/main/api/v2/accounting/accounts2/", "", None)
 
     def get_accounts_for_currency(self, currency):
-        return self.request("GET", "/main/api/v2/accounting/account2/" + currency, "", None)
+        return self.request(
+            "GET", "/main/api/v2/accounting/account2/" + currency, "", None
+        )
 
     def get_withdrawal_addresses(self, currency, size, page):
         params = "currency={}&size={}&page={}".format(currency, size, page)
-        return self.request("GET", "/main/api/v2/accounting/withdrawalAddresses/", params, None)
+        return self.request(
+            "GET", "/main/api/v2/accounting/withdrawalAddresses/", params, None
+        )
 
     def get_withdrawal_types(self):
-        return self.request("GET", "/main/api/v2/accounting/withdrawalAddresses/types/", "", None)
+        return self.request(
+            "GET", "/main/api/v2/accounting/withdrawalAddresses/types/", "", None
+        )
 
     def withdraw_request(self, address_id, amount, currency):
         withdraw_data = {
@@ -604,11 +660,15 @@ class private_api:
             "amount": amount,
             "currency": currency,
         }
-        return self.request("POST", "/main/api/v2/accounting/withdrawal/", "", withdraw_data)
+        return self.request(
+            "POST", "/main/api/v2/accounting/withdrawal/", "", withdraw_data
+        )
 
     def get_my_active_orders(self, algorithm, market, limit):
         ts = self.get_epoch_ms_from_now()
-        params = "algorithm={}&market={}&ts={}&limit={}&op=LT".format(algorithm, market, ts, limit)
+        params = "algorithm={}&market={}&ts={}&limit={}&op=LT".format(
+            algorithm, market, ts, limit
+        )
         return self.request("GET", "/main/api/v2/hashpower/myOrders", params, None)
 
     def create_pool(self, name, algorithm, pool_host, pool_port, username, password):
@@ -651,7 +711,9 @@ class private_api:
         return self.request("POST", "/main/api/v2/hashpower/order/", "", order_data)
 
     def cancel_hashpower_order(self, order_id):
-        return self.request("DELETE", "/main/api/v2/hashpower/order/" + order_id, "", None)
+        return self.request(
+            "DELETE", "/main/api/v2/hashpower/order/" + order_id, "", None
+        )
 
     def refill_hashpower_order(self, order_id, amount):
         refill_data = {"amount": amount}
@@ -691,10 +753,14 @@ class private_api:
         )
 
     def get_my_exchange_orders(self, market):
-        return self.request("GET", "/exchange/api/v2/myOrders", "market=" + market, None)
+        return self.request(
+            "GET", "/exchange/api/v2/myOrders", "market=" + market, None
+        )
 
     def get_my_exchange_trades(self, market):
-        return self.request("GET", "/exchange/api/v2/myTrades", "market=" + market, None)
+        return self.request(
+            "GET", "/exchange/api/v2/myTrades", "market=" + market, None
+        )
 
     def create_exchange_limit_order(self, market, side, quantity, price):
         query = "market={}&side={}&type=limit&quantity={}&price={}".format(
@@ -727,10 +793,14 @@ if __name__ == "__main__":
     parser.add_option("-o", "--organization_id", dest="org", help="Organization id")
     parser.add_option("-k", "--key", dest="key", help="Api key")
     parser.add_option("-s", "--secret", dest="secret", help="Secret for api key")
-    parser.add_option("-m", "--method", dest="method", help="Method for request", default="GET")
+    parser.add_option(
+        "-m", "--method", dest="method", help="Method for request", default="GET"
+    )
     parser.add_option("-p", "--path", dest="path", help="Path for request", default="/")
     parser.add_option("-q", "--params", dest="params", help="Parameters for request")
-    parser.add_option("-d", "--body", dest="body", help="Body for request (JSON string)")
+    parser.add_option(
+        "-d", "--body", dest="body", help="Body for request (JSON string)"
+    )
 
     options, args = parser.parse_args()
 
@@ -758,7 +828,9 @@ if __name__ == "__main__":
             sys.exit(1)
 
     try:
-        response = private_api_instance.request(options.method, options.path, params, body)
+        response = private_api_instance.request(
+            options.method, options.path, params, body
+        )
         print(json.dumps(response, indent=2))
         sys.exit(0)
     except Exception as ex:

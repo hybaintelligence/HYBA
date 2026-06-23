@@ -111,7 +111,9 @@ router = APIRouter(prefix="/api/v1/memory", tags=["ai-memory"])
 @router.get("/memories", response_model=MemoriesListResponse)
 async def list_memories(
     memory_type: Optional[str] = Query(None, description="Filter by memory type"),
-    min_confidence: float = Query(0.0, ge=0.0, le=1.0, description="Minimum confidence threshold"),
+    min_confidence: float = Query(
+        0.0, ge=0.0, le=1.0, description="Minimum confidence threshold"
+    ),
 ) -> MemoriesListResponse:
     """List all AI memories with optional filters."""
     try:
@@ -148,7 +150,9 @@ async def get_memory(memory_key: str) -> Dict[str, Any]:
         engine = get_memory_engine()
         memory = engine.get_memory(memory_key)
         if memory is None:
-            raise HTTPException(status_code=404, detail=f"Memory not found: {memory_key}")
+            raise HTTPException(
+                status_code=404, detail=f"Memory not found: {memory_key}"
+            )
         return {
             "memory": memory,
             "timestamp": datetime.now(timezone.utc).isoformat(),

@@ -161,7 +161,9 @@ class PulviniManifoldH4:
         return self._hermitian(diagonal + off_diagonal)
 
     def _refresh_hamiltonian(self) -> None:
-        self.synaptic_matrix = ((self.synaptic_matrix + self.synaptic_matrix.T) / 2.0).real
+        self.synaptic_matrix = (
+            (self.synaptic_matrix + self.synaptic_matrix.T) / 2.0
+        ).real
         self.hamiltonian = self._build_hamiltonian()
 
     def _phi_3_gate(self, curvature: float) -> float:
@@ -231,11 +233,15 @@ class PulviniManifoldH4:
         self.assert_invariants()
         return self.psi.copy()
 
-    def compute_h4_phi_resonance(self, nonce: int, job_id: Optional[str] = None) -> float:
+    def compute_h4_phi_resonance(
+        self, nonce: int, job_id: Optional[str] = None
+    ) -> float:
         """Compute φ³ resonance using the 4D H₄ resonance function."""
         return phi_3_resonance(nonce, job_id=job_id or self.current_job_id)
 
-    def h4_mass_gate_filter(self, nonces: Iterable[int], job_id: Optional[str] = None) -> List[int]:
+    def h4_mass_gate_filter(
+        self, nonces: Iterable[int], job_id: Optional[str] = None
+    ) -> List[int]:
         """Filter nonces through the 4D Yang-Mills mass gap gate.
 
         Only nonces with curvature below the H₄ gap (4 - φ³ ≈ 2.236) pass.
@@ -394,7 +400,8 @@ class PulviniManifoldH4:
             "vs_m32_scaling": {
                 "domain_multiple": self.num_nodes / 32,
                 "symmetry_multiple": 14400 / 120,
-                "theoretical_hashrate_multiple": (self.num_nodes / 32) * (14400 / 120) ** 0.5,
+                "theoretical_hashrate_multiple": (self.num_nodes / 32)
+                * (14400 / 120) ** 0.5,
             },
         }
 

@@ -139,7 +139,11 @@ class PhiCoreOrchestrator:
 
         self.current_clock_interval = interval_ns
         self.clock_history.append(
-            {"timestamp": time.time(), "interval_ns": interval_ns, "fib_value": next_val}
+            {
+                "timestamp": time.time(),
+                "interval_ns": interval_ns,
+                "fib_value": next_val,
+            }
         )
 
         # Keep history manageable
@@ -205,7 +209,9 @@ class PhiCoreOrchestrator:
             # Check if frequency aligns with golden ratio
             freq_mod_phi = freq % PHI
             golden_distance = min(
-                abs(freq_mod_phi - INV_PHI), abs(freq_mod_phi - PHI), abs(freq_mod_phi - 0.0)
+                abs(freq_mod_phi - INV_PHI),
+                abs(freq_mod_phi - PHI),
+                abs(freq_mod_phi - 0.0),
             )
 
             # Alignment score: 1.0 = perfect golden alignment
@@ -227,7 +233,9 @@ class PhiCoreOrchestrator:
             "energy_harmony": golden_alignment * consciousness_boost,
         }
 
-    def execute_phi_cycle(self, kernel_id: str, kernel_profile: Dict) -> PhiExecutionCycle:
+    def execute_phi_cycle(
+        self, kernel_id: str, kernel_profile: Dict
+    ) -> PhiExecutionCycle:
         """
         Execute a complete Φ-cycle with all safety gates and optimizations.
 
@@ -277,12 +285,15 @@ class PhiCoreOrchestrator:
 
             # Update thermal model
             self.mass_gap_shield.update_thermal_state(
-                thermal_state * self.mass_gap_shield.max_safe_temp, optimized_profile.base_energy
+                thermal_state * self.mass_gap_shield.max_safe_temp,
+                optimized_profile.base_energy,
             )
 
             # 6. Fibonacci-LCG Nonce Generation
-            nonces, nonce_telemetry = self.nonce_generator.generate_with_memory_optimization(
-                golden_addresses, thermal_state
+            nonces, nonce_telemetry = (
+                self.nonce_generator.generate_with_memory_optimization(
+                    golden_addresses, thermal_state
+                )
             )
 
             # Record success for optimization
@@ -323,7 +334,9 @@ class PhiCoreOrchestrator:
             energy_harmony=energy_harmony,
             mass_gap_margin=MASS_GAP - thermal_state,
             execution_authenticity=1.0 if allowed else 0.0,
-            golden_coverage=nonce_telemetry.get("coherence_report", {}).get("harmony_score", 0.0),
+            golden_coverage=nonce_telemetry.get("coherence_report", {}).get(
+                "harmony_score", 0.0
+            ),
             hardware_resonance=self._calculate_hardware_resonance(),
         )
 
@@ -339,7 +352,9 @@ class PhiCoreOrchestrator:
             "phi_boost": self.phi_boost,
             "harmony_target": self.harmony_target,
             "clock_fib_value": self.fib_clock_state[-1],
-            "memory_harmony": thermal_metrics.get("coherence_report", {}).get("harmony_score", 0.0),
+            "memory_harmony": thermal_metrics.get("coherence_report", {}).get(
+                "harmony_score", 0.0
+            ),
         }
 
         hardware_actions = []
@@ -455,7 +470,9 @@ class PhiCoreOrchestrator:
 
             # Calculate metrics
             recent_resonance = np.mean([c.telemetry.hardware_resonance for c in recent])
-            avg_consciousness = np.mean([c.telemetry.consciousness_level for c in recent])
+            avg_consciousness = np.mean(
+                [c.telemetry.consciousness_level for c in recent]
+            )
             avg_harmony = np.mean([c.telemetry.energy_harmony for c in recent])
 
             # Execution rate (cycles per second)
@@ -528,7 +545,9 @@ class PhiCoreOrchestrator:
         self.mass_gap_shield.optimize_cooling_strategy(0.5)  # Medium consciousness
 
         # 4. Clear recent history (keep long-term for learning)
-        self.execution_history = self.execution_history[-100:] if self.execution_history else []
+        self.execution_history = (
+            self.execution_history[-100:] if self.execution_history else []
+        )
         self.clock_history = self.clock_history[-100:] if self.clock_history else []
 
         # 5. Notify consciousness engine

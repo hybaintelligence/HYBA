@@ -327,7 +327,9 @@ def redifferentiation_unitary(context: Optional[ContextSignal]) -> np.ndarray:
     return U
 
 
-def redifferentiate(state: ModuleState, context: Optional[ContextSignal]) -> ModuleState:
+def redifferentiate(
+    state: ModuleState, context: Optional[ContextSignal]
+) -> ModuleState:
     U = redifferentiation_unitary(context)
     new_rho = U @ state.rho @ U.conj().T
     new_state = ModuleState(rho=new_rho, module_id=state.module_id)
@@ -340,7 +342,9 @@ def redifferentiate(state: ModuleState, context: Optional[ContextSignal]) -> Mod
 # ---------------------------------------------------------------------------
 
 
-def measure_role(state: ModuleState, rng: np.random.Generator) -> tuple[Role, ModuleState]:
+def measure_role(
+    state: ModuleState, rng: np.random.Generator
+) -> tuple[Role, ModuleState]:
     """
     Projective measurement in the role basis. The swarm orchestrator
     calls this when it needs to COMMIT the module to a single role
@@ -500,7 +504,9 @@ def apply_refractory_stabilization(
 # ---------------------------------------------------------------------------
 
 
-def joint_state(state_a: ModuleState, state_b: ModuleState, correlated: bool = False) -> np.ndarray:
+def joint_state(
+    state_a: ModuleState, state_b: ModuleState, correlated: bool = False
+) -> np.ndarray:
     """
     If correlated=False: rho_AB = rho_A (x) rho_B (tensor product) --
     independent diagnosis/recovery is valid.
@@ -565,7 +571,9 @@ def is_separable_approx(rho_joint: np.ndarray, atol: float = 1e-6) -> bool:
 # flagged so it isn't silently smuggled in as "quantum-powered" elsewhere.
 
 
-def grover_role_search_NOTE_REQUIRES_QUANTUM_HARDWARE(candidate_roles: list, oracle_fn) -> Role:
+def grover_role_search_NOTE_REQUIRES_QUANTUM_HARDWARE(
+    candidate_roles: list, oracle_fn
+) -> Role:
     """
     NOTE: REQUIRES QUANTUM HARDWARE FOR THE CLAIMED SPEEDUP.
 
@@ -631,15 +639,21 @@ def regeneration_pipeline(
         return trace
 
     if context is not None:
-        trace["fidelity_pre_collapse"] = regeneration_fidelity(state, context.target_role)
+        trace["fidelity_pre_collapse"] = regeneration_fidelity(
+            state, context.target_role
+        )
 
     collapsed_role, state = measure_role(state, rng)
     trace["collapsed_role"] = collapsed_role.value
 
     if context is not None:
-        state = validate_collapse_or_quarantine(collapsed_role, context.target_role, state)
+        state = validate_collapse_or_quarantine(
+            collapsed_role, context.target_role, state
+        )
         trace["status"] = (
-            "success" if collapsed_role == context.target_role else "malformed_quarantined"
+            "success"
+            if collapsed_role == context.target_role
+            else "malformed_quarantined"
         )
     else:
         trace["status"] = "collapsed_no_target_to_validate_against"
@@ -647,7 +661,9 @@ def regeneration_pipeline(
     # ELEVATED: Apply refractory period stabilization after successful recovery
     if enable_refractory_period and trace["status"] == "success":
         target_role = context.target_role if context else Role.HEALTHY_SPECIALIZED
-        state = apply_refractory_stabilization(state, target_role=target_role, duration=60.0)
+        state = apply_refractory_stabilization(
+            state, target_role=target_role, duration=60.0
+        )
         trace["refractory_period_end"] = state.refractory_period_end
         trace["refractory_duration"] = 60.0
 

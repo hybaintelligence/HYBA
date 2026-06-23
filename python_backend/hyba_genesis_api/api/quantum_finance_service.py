@@ -73,8 +73,12 @@ class PortfolioOptimizationRequest(BaseModel):
         n = len(self.expected_returns)
         if self.budget > n:
             raise ValueError("budget cannot exceed number of assets")
-        if len(self.covariance_matrix) != n or any(len(row) != n for row in self.covariance_matrix):
-            raise ValueError("covariance_matrix must be square and match expected_returns length")
+        if len(self.covariance_matrix) != n or any(
+            len(row) != n for row in self.covariance_matrix
+        ):
+            raise ValueError(
+                "covariance_matrix must be square and match expected_returns length"
+            )
         if self.transaction_costs is not None and len(self.transaction_costs) != n:
             raise ValueError("transaction_costs must match expected_returns length")
         if self.liquidity_scores is not None and len(self.liquidity_scores) != n:
@@ -148,7 +152,9 @@ def _sha256(data: Any) -> str:
     return hashlib.sha256(_canonical_json(data).encode("utf-8")).hexdigest()
 
 
-def _evidence_packet(label: str, payload: Dict[str, Any], formulas: Dict[str, Any]) -> EvidencePacket:
+def _evidence_packet(
+    label: str, payload: Dict[str, Any], formulas: Dict[str, Any]
+) -> EvidencePacket:
     return EvidencePacket(
         evidence_id=f"hyba-finance-{hashlib.sha256((label + _canonical_json(payload)).encode()).hexdigest()[:16]}",
         timestamp=time.time(),
@@ -177,7 +183,9 @@ def _add_pair(matrix: List[List[float]], i: int, j: int, value: float) -> None:
         matrix[a][b] += value
 
 
-def construct_portfolio_qubo(request: PortfolioOptimizationRequest) -> List[List[float]]:
+def construct_portfolio_qubo(
+    request: PortfolioOptimizationRequest,
+) -> List[List[float]]:
     """Construct a finance QUBO for binary Markowitz-style selection.
 
     Objective convention:
@@ -195,7 +203,12 @@ def construct_portfolio_qubo(request: PortfolioOptimizationRequest) -> List[List
     for i in range(n):
         _add_pair(qubo, i, i, request.risk_aversion * request.covariance_matrix[i][i])
         for j in range(i + 1, n):
-            _add_pair(qubo, i, j, 2.0 * request.risk_aversion * request.covariance_matrix[i][j])
+            _add_pair(
+                qubo,
+                i,
+                j,
+                2.0 * request.risk_aversion * request.covariance_matrix[i][j],
+            )
 
     # Return reward and optional transaction costs.
     costs = request.transaction_costs or [0.0] * n
@@ -215,14 +228,18 @@ def construct_portfolio_qubo(request: PortfolioOptimizationRequest) -> List[List
                 qubo,
                 i,
                 i,
-                request.target_return_penalty * (ret_i * ret_i - 2.0 * request.target_return * ret_i),
+                request.target_return_penalty
+                * (ret_i * ret_i - 2.0 * request.target_return * ret_i),
             )
             for j in range(i + 1, n):
                 _add_pair(
                     qubo,
                     i,
                     j,
-                    2.0 * request.target_return_penalty * ret_i * request.expected_returns[j],
+                    2.0
+                    * request.target_return_penalty
+                    * ret_i
+                    * request.expected_returns[j],
                 )
 
     # Liquidity penalty prefers higher liquidity scores by penalising low scores.
@@ -235,8 +252,14 @@ def construct_portfolio_qubo(request: PortfolioOptimizationRequest) -> List[List
     # Simple sector cap penalty: regulatory_constraints={"sector_caps":{"tech":[0,1], "energy":[2]}, "max_per_sector":1}
     sector_caps = request.regulatory_constraints.get("sector_caps")
     max_per_sector = request.regulatory_constraints.get("max_per_sector")
-    sector_penalty = float(request.regulatory_constraints.get("sector_penalty", request.budget_penalty))
-    if isinstance(sector_caps, dict) and isinstance(max_per_sector, int) and max_per_sector >= 0:
+    sector_penalty = float(
+        request.regulatory_constraints.get("sector_penalty", request.budget_penalty)
+    )
+    if (
+        isinstance(sector_caps, dict)
+        and isinstance(max_per_sector, int)
+        and max_per_sector >= 0
+    ):
         for indices in sector_caps.values():
             if not isinstance(indices, list):
                 continue
@@ -302,7 +325,9 @@ def _qubo_objective(bits: List[int], qubo: List[List[float]]) -> float:
     return total
 
 
-def select_candidate_portfolio(request: PortfolioOptimizationRequest, qubo: List[List[float]]) -> CandidatePortfolio:
+def select_candidate_portfolio(
+    request: PortfolioOptimizationRequest, qubo: List[List[float]]
+) -> CandidatePortfolio:
     """Select a deterministic candidate for auditability.
 
     Small finance examples are enumerated exactly. Larger inputs use a stable
@@ -317,7 +342,9 @@ def select_candidate_portfolio(request: PortfolioOptimizationRequest, qubo: List
             bits = [(mask >> i) & 1 for i in range(n)]
             if sum(bits) != request.budget:
                 continue
-            expected_return = sum(ret for ret, bit in zip(request.expected_returns, bits) if bit)
+            expected_return = sum(
+                ret for ret, bit in zip(request.expected_returns, bits) if bit
+            )
             variance = _portfolio_variance(bits, request.covariance_matrix)
             objective = _qubo_objective(bits, qubo)
             candidate = CandidatePortfolio(
@@ -330,11 +357,17 @@ def select_candidate_portfolio(request: PortfolioOptimizationRequest, qubo: List
             if best is None or candidate.objective_value < best.objective_value:
                 best = candidate
         if best is None:
-            raise HTTPException(status_code=422, detail="no feasible portfolio candidate")
+            raise HTTPException(
+                status_code=422, detail="no feasible portfolio candidate"
+            )
         return best
 
     diagonal_risk = [max(request.covariance_matrix[i][i], 1e-12) for i in range(n)]
-    ranking = sorted(range(n), key=lambda i: request.expected_returns[i] / diagonal_risk[i], reverse=True)
+    ranking = sorted(
+        range(n),
+        key=lambda i: request.expected_returns[i] / diagonal_risk[i],
+        reverse=True,
+    )
     selected = sorted(ranking[: request.budget])
     bits = [1 if i in selected else 0 for i in range(n)]
     return CandidatePortfolio(
@@ -346,7 +379,9 @@ def select_candidate_portfolio(request: PortfolioOptimizationRequest, qubo: List
     )
 
 
-def build_qaoa_design(request: PortfolioOptimizationRequest, qubo: List[List[float]]) -> Dict[str, Any]:
+def build_qaoa_design(
+    request: PortfolioOptimizationRequest, qubo: List[List[float]]
+) -> Dict[str, Any]:
     return {
         "encoding": "binary_asset_selection_qubits",
         "qubits": len(request.expected_returns),
@@ -359,10 +394,26 @@ def build_qaoa_design(request: PortfolioOptimizationRequest, qubo: List[List[flo
         "finance_specific_terms": [
             "mean_variance_markowitz_risk",
             "budget_constraint_penalty",
-            "target_return_penalty" if request.target_return is not None else "target_return_not_requested",
-            "transaction_cost_penalty" if request.transaction_costs else "transaction_costs_not_supplied",
-            "liquidity_penalty" if request.liquidity_scores else "liquidity_not_supplied",
-            "regulatory_constraint_penalty" if request.regulatory_constraints else "regulatory_constraints_not_supplied",
+            (
+                "target_return_penalty"
+                if request.target_return is not None
+                else "target_return_not_requested"
+            ),
+            (
+                "transaction_cost_penalty"
+                if request.transaction_costs
+                else "transaction_costs_not_supplied"
+            ),
+            (
+                "liquidity_penalty"
+                if request.liquidity_scores
+                else "liquidity_not_supplied"
+            ),
+            (
+                "regulatory_constraint_penalty"
+                if request.regulatory_constraints
+                else "regulatory_constraints_not_supplied"
+            ),
         ],
         "audit_boundary": "design_packet_for_human_risk_review_not_autonomous_trade_execution",
     }
@@ -380,7 +431,11 @@ def _serialise_qubo(qubo: List[List[float]]) -> Dict[str, Any]:
             if j < i or abs(value) < 1e-15:
                 continue
             terms.append({"i": i, "j": j, "coefficient": value})
-    return {"matrix": qubo, "terms": terms, "convention": "minimise ΣQii xi + ΣQij xi xj for i<j"}
+    return {
+        "matrix": qubo,
+        "terms": terms,
+        "convention": "minimise ΣQii xi + ΣQij xi xj for i<j",
+    }
 
 
 def design_portfolio_qaoa(request: PortfolioOptimizationRequest) -> Dict[str, Any]:
@@ -407,7 +462,11 @@ def design_portfolio_qaoa(request: PortfolioOptimizationRequest) -> Dict[str, An
             "expected_return": candidate.expected_return,
             "variance": candidate.variance,
             "objective_value": candidate.objective_value,
-            "selection_mode": "exact_enumeration" if len(request.expected_returns) <= 18 else "stable_return_risk_heuristic",
+            "selection_mode": (
+                "exact_enumeration"
+                if len(request.expected_returns) <= 18
+                else "stable_return_risk_heuristic"
+            ),
         },
         "finance_specific_constraints": request.regulatory_constraints,
         "evidence_packet": _evidence_packet(request.evidence_label, payload, formulas),
@@ -424,7 +483,7 @@ def design_risk_qae(request: RiskPricingRequest) -> Dict[str, Any]:
     tail = samples[alpha_index:]
     cvar_value = sum(tail) / len(tail)
 
-    classical_samples = math.ceil(1.0 / (request.precision_epsilon ** 2))
+    classical_samples = math.ceil(1.0 / (request.precision_epsilon**2))
     qae_iterations = math.ceil(math.pi / (4.0 * request.precision_epsilon))
     quadratic_speedup_factor = classical_samples / qae_iterations
 
@@ -470,7 +529,9 @@ async def quantum_finance_capability_map(
     """Return the implemented finance vertical capability map."""
 
     require_feature("finance_enabled")
-    usage_meter = customer_access.meter(customer, product="finance.capability_map", units=1)
+    usage_meter = customer_access.meter(
+        customer, product="finance.capability_map", units=1
+    )
     cached = get_cached_json("hyba:cache:quantum-finance:capability-map:v1")
     if cached is not None:
         cached["usage_meter"] = usage_meter
@@ -503,7 +564,9 @@ async def quantum_finance_capability_map(
         "usage_meter": usage_meter,
         "cache": {"status": "miss", "ttl_seconds": 300},
     }
-    return set_cached_json("hyba:cache:quantum-finance:capability-map:v1", response, ttl_seconds=300)
+    return set_cached_json(
+        "hyba:cache:quantum-finance:capability-map:v1", response, ttl_seconds=300
+    )
 
 
 @router.post("/portfolio/qaoa-design", response_model=PortfolioQAOAResponse)
@@ -518,7 +581,9 @@ async def portfolio_qaoa_design(
     usage_meter = customer_access.meter(
         customer,
         product=f"finance.{request.surface}.portfolio_qaoa",
-        units=_finance_units(len(_canonical_json(request.model_dump())), request.surface),
+        units=_finance_units(
+            len(_canonical_json(request.model_dump())), request.surface
+        ),
     )
     return PortfolioQAOAResponse(**design, usage_meter=usage_meter)
 
@@ -535,6 +600,8 @@ async def risk_qae_design(
     usage_meter = customer_access.meter(
         customer,
         product=f"finance.{request.surface}.risk_qae",
-        units=_finance_units(len(_canonical_json(request.model_dump())), request.surface),
+        units=_finance_units(
+            len(_canonical_json(request.model_dump())), request.surface
+        ),
     )
     return RiskQAEResponse(**design, usage_meter=usage_meter)

@@ -22,15 +22,21 @@ class UnitEconomicsCalculator:
                 "gross_margin": gross_margin,
                 "LTV": (arpa * gross_margin / churn_rate) if churn_rate else 0,
                 "LTV_CAC_ratio": (
-                    ((arpa * gross_margin / churn_rate) / cac) if churn_rate and cac else 0
+                    ((arpa * gross_margin / churn_rate) / cac)
+                    if churn_rate and cac
+                    else 0
                 ),
-                "payback_period": cac / (arpa * gross_margin / 12) if arpa and gross_margin else 0,
+                "payback_period": (
+                    cac / (arpa * gross_margin / 12) if arpa and gross_margin else 0
+                ),
             }
         )
         return self.metrics
 
     def calculate_magic_number(self, arr_current, arr_previous, s_m_spend):
-        self.metrics["magic_number"] = (arr_current - arr_previous) / s_m_spend if s_m_spend else 0
+        self.metrics["magic_number"] = (
+            (arr_current - arr_previous) / s_m_spend if s_m_spend else 0
+        )
         return self.metrics["magic_number"]
 
     def forecast_arr(self, current_arr, magic_number, months):

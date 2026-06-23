@@ -80,13 +80,17 @@ small_positive_strategy = st.floats(
 class TestPhiIdentityInvariants:
     """φ² = φ + 1 must hold under all operations."""
 
-    @given(st.floats(min_value=-1e6, max_value=1e6, allow_nan=False, allow_infinity=False))
+    @given(
+        st.floats(min_value=-1e6, max_value=1e6, allow_nan=False, allow_infinity=False)
+    )
     @settings(max_examples=100)
     def test_phi_quadratic_identity_preserved(self, _unused: float) -> None:
         """φ² == φ + 1 — the defining quadratic — regardless of prior ops."""
         assert abs(PHI * PHI - (PHI + 1.0)) < 1e-15
 
-    @given(st.floats(min_value=-1e6, max_value=1e6, allow_nan=False, allow_infinity=False))
+    @given(
+        st.floats(min_value=-1e6, max_value=1e6, allow_nan=False, allow_infinity=False)
+    )
     @settings(max_examples=100)
     def test_phi_inverse_identity_preserved(self, _unused: float) -> None:
         """1/φ == φ - 1 — invariant across all operations."""
@@ -106,7 +110,9 @@ class TestPhiScaledEnsembleProperties:
             st.text(
                 min_size=1,
                 max_size=8,
-                alphabet=st.characters(whitelist_categories=("L", "N"), whitelist_characters="_"),
+                alphabet=st.characters(
+                    whitelist_categories=("L", "N"), whitelist_characters="_"
+                ),
             ),
             st.fixed_dictionaries({"score": small_positive_strategy}),
             min_size=1,
@@ -135,7 +141,9 @@ class TestPhiScaledEnsembleProperties:
         result = engine.predict_with_phi_scaling(predictions, indicators)
         weights = result["phi_weights"]
         if weights:
-            assert abs(sum(weights) - 1.0) < 1e-10, f"Weights sum to {sum(weights)}, expected 1.0"
+            assert (
+                abs(sum(weights) - 1.0) < 1e-10
+            ), f"Weights sum to {sum(weights)}, expected 1.0"
         assert 0.0 <= result["final_score"] <= 1.0 + 1e-12
         assert 0.0 <= result["coherence"] <= 1.0 + 1e-12
 
@@ -164,7 +172,9 @@ class TestPhiScaledEnsembleProperties:
         weights = result["phi_weights"]
         if weights:
             assert abs(sum(weights) - 1.0) < 1e-10
-        assert result["final_score"] == pytest.approx(max(0.0, min(1.0, result["final_score"])))
+        assert result["final_score"] == pytest.approx(
+            max(0.0, min(1.0, result["final_score"]))
+        )
 
 
 # ============================================================================
@@ -213,7 +223,9 @@ class TestPhiResonanceRobustness:
         st.lists(phi_near_strategy, min_size=3, max_size=50),
     )
     @settings(max_examples=50)
-    def test_phi_near_sequences_have_high_harmony(self, phi_cluster: list[float]) -> None:
+    def test_phi_near_sequences_have_high_harmony(
+        self, phi_cluster: list[float]
+    ) -> None:
         """Sequences near φ should have non-zero harmony."""
         analyzer = PhiResonanceAnalyzer()
         result = analyzer.analyze_phi_resonance({"near_phi": phi_cluster})
@@ -229,7 +241,11 @@ class TestPhiResonanceRobustness:
 class TestPhiAlignmentProperties:
     """Phi alignment must always be in [0, 1]."""
 
-    @given(st.floats(min_value=-1e12, max_value=1e12, allow_nan=False, allow_infinity=False))
+    @given(
+        st.floats(
+            min_value=-1e12, max_value=1e12, allow_nan=False, allow_infinity=False
+        )
+    )
     @settings(max_examples=200)
     def test_phi_alignment_bounded(self, value: float) -> None:
         """phi_alignment must always be in [0, 1] for any finite input."""
@@ -238,12 +254,16 @@ class TestPhiAlignmentProperties:
         result = features.extract_phi_optimized_features({"x": {"val": value}})
         if result:
             alignment = result["x"][0]["phi_alignment"]
-            assert 0.0 <= alignment <= 1.0, (
-                f"phi_alignment {alignment} outside [0,1] for value {value}"
-            )
+            assert (
+                0.0 <= alignment <= 1.0
+            ), f"phi_alignment {alignment} outside [0,1] for value {value}"
             assert alignment == pytest.approx(max(0.0, min(1.0, alignment)))
 
-    @given(st.floats(min_value=-1e12, max_value=1e12, allow_nan=False, allow_infinity=False))
+    @given(
+        st.floats(
+            min_value=-1e12, max_value=1e12, allow_nan=False, allow_infinity=False
+        )
+    )
     @settings(max_examples=100)
     def test_amplification_non_negative(self, value: float) -> None:
         """Amplification must be non-negative for any finite input."""
@@ -354,9 +374,9 @@ class TestASICScalingMonotonicity:
             pytest.skip("Need strict ascending pair")
         comparison = ComprehensiveComparison()
         results = comparison.compare_golden_ratio_scaling()
-        assert results[a]["effective_hashrate_ths"] < results[b]["effective_hashrate_ths"], (
-            f"Hashrate not monotonic: {a} < {b} failed"
-        )
+        assert (
+            results[a]["effective_hashrate_ths"] < results[b]["effective_hashrate_ths"]
+        ), f"Hashrate not monotonic: {a} < {b} failed"
 
     @given(
         st.sampled_from(["10^12", "10^15", "10^18", "10^20"]),
@@ -370,9 +390,10 @@ class TestASICScalingMonotonicity:
             pytest.skip("Need strict ascending pair")
         comparison = ComprehensiveComparison()
         results = comparison.compare_golden_ratio_scaling()
-        assert results[a]["hashrate_efficiency_j_th"] > results[b]["hashrate_efficiency_j_th"], (
-            f"Efficiency not monotonic: {a} < {b} failed (J/TH should decrease)"
-        )
+        assert (
+            results[a]["hashrate_efficiency_j_th"]
+            > results[b]["hashrate_efficiency_j_th"]
+        ), f"Efficiency not monotonic: {a} < {b} failed (J/TH should decrease)"
 
 
 # ============================================================================

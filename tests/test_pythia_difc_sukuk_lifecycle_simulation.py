@@ -14,7 +14,9 @@ def test_lifecycle_simulation_detects_warning_then_blocker_without_action():
     assert bundle["summary"]["total_steps"] == 5
     assert bundle["summary"]["first_warning_step_id"] == "03"
     assert bundle["summary"]["first_blocker_step_id"] == "04"
-    assert bundle["summary"]["first_blocker_stage"] == "asset_drift_restructuring_trigger"
+    assert (
+        bundle["summary"]["first_blocker_stage"] == "asset_drift_restructuring_trigger"
+    )
 
     for entry in bundle["timeline"]:
         assert entry["human_review_required"] is True

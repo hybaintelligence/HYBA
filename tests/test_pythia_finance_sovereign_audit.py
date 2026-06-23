@@ -29,7 +29,9 @@ def test_challenge_finance_candidate_rejected_before_staging():
     assert packet["automatic_action_allowed"] is False
     assert packet["synthetic_criticism"]["outcome"] == "PATHWAY_BLOCKED"
     failed = {
-        finding["invariant_id"] for finding in packet["invariant_findings"] if not finding["passed"]
+        finding["invariant_id"]
+        for finding in packet["invariant_findings"]
+        if not finding["passed"]
     }
     assert "SUBSTANCE_OVER_FORM" in failed
     assert "GHARAR_UNCERTAINTY_SCREEN" in failed

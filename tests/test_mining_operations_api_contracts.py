@@ -18,7 +18,9 @@ from test_backend_api_helpers import bearer_headers, make_client
 
 
 @pytest.fixture()
-def mining_api_sandbox(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> dict[str, Path]:
+def mining_api_sandbox(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> dict[str, Path]:
     """Redirect mutable mining files away from the repository checkout."""
 
     from hyba_genesis_api.api import mining
@@ -48,14 +50,18 @@ def mining_api_sandbox(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> dict[
     }
 
 
-def _assert_enterprise_error(payload: dict[str, Any], *, code: str, status_code: int) -> None:
+def _assert_enterprise_error(
+    payload: dict[str, Any], *, code: str, status_code: int
+) -> None:
     assert payload["success"] is False
     assert payload["error"]["code"] == code
     assert payload["error"]["status_code"] == status_code
     assert payload["error"]["request_id"]
 
 
-def test_mining_status_requires_authentication(mining_api_sandbox: dict[str, Path]) -> None:
+def test_mining_status_requires_authentication(
+    mining_api_sandbox: dict[str, Path],
+) -> None:
     client = make_client()
 
     response = client.get("/api/mining/status")
@@ -66,7 +72,9 @@ def test_mining_status_requires_authentication(mining_api_sandbox: dict[str, Pat
     assert response.headers["Cache-Control"] == "no-store"
 
 
-def test_mining_control_rejects_read_only_role(mining_api_sandbox: dict[str, Path]) -> None:
+def test_mining_control_rejects_read_only_role(
+    mining_api_sandbox: dict[str, Path],
+) -> None:
     client = make_client()
 
     response = client.post(
@@ -83,7 +91,10 @@ def test_mining_control_rejects_read_only_role(mining_api_sandbox: dict[str, Pat
     ("payload", "expected_fragment"),
     [
         ({"pool_id": "unknown", "username": "operator", "password": "x"}, "pool_id"),
-        ({"pool_id": "viabtc", "username": "bad worker!", "password": "x"}, "identifier"),
+        (
+            {"pool_id": "viabtc", "username": "bad worker!", "password": "x"},
+            "identifier",
+        ),
         ({"pool_id": "ckpool", "btc_address": "short"}, "BTC address"),
     ],
 )
@@ -130,7 +141,9 @@ def test_pool_config_write_redacts_credentials_and_supports_idempotency(
     assert pool["password"] == "<configured>"
     assert "super-secret-token" not in first.text
     persisted = mining_api_sandbox["pool_config"].read_text(encoding="utf-8")
-    assert "super-secret-token" in persisted, "secret may persist only in the private runtime file"
+    assert (
+        "super-secret-token" in persisted
+    ), "secret may persist only in the private runtime file"
 
 
 def test_mining_status_and_job_search_return_frontend_contract_shapes(
@@ -153,7 +166,9 @@ def test_mining_status_and_job_search_return_frontend_contract_shapes(
     headers = bearer_headers("ceo", "mining:read")
 
     status_response = client.get("/api/mining/status", headers=headers)
-    jobs_response = client.get("/api/mining/jobs/search?limit=10&offset=0", headers=headers)
+    jobs_response = client.get(
+        "/api/mining/jobs/search?limit=10&offset=0", headers=headers
+    )
 
     assert status_response.status_code == 200, status_response.text
     status_body = status_response.json()
@@ -185,4 +200,6 @@ def test_oversized_api_payload_is_rejected_before_route_handler(
     )
 
     assert response.status_code == 413
-    _assert_enterprise_error(response.json(), code="request_body_too_large", status_code=413)
+    _assert_enterprise_error(
+        response.json(), code="request_body_too_large", status_code=413
+    )

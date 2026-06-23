@@ -181,7 +181,9 @@ class ReflexiveCycleGuard:
             f"(elapsed: {self.elapsed_ms():.1f}ms, remaining: {self.remaining_ms():.1f}ms)"
         )
 
-    def record_phase_end(self, phase: ReflexiveCyclePhase, success: bool = True) -> None:
+    def record_phase_end(
+        self, phase: ReflexiveCyclePhase, success: bool = True
+    ) -> None:
         """Record end of a phase."""
         if self.phases and self.phases[-1].phase == phase:
             self.phases[-1].end_time = time.time()
@@ -216,7 +218,10 @@ class ReflexiveCycleGuard:
                 return ctx_self.guard
 
             async def __aexit__(ctx_self, exc_type, exc_val, exc_tb):
-                if exc_type is asyncio.TimeoutError or exc_type is ReflexiveCycleTimeoutError:
+                if (
+                    exc_type is asyncio.TimeoutError
+                    or exc_type is ReflexiveCycleTimeoutError
+                ):
                     ctx_self.guard.record_phase_error(
                         ctx_self.phase_obj, "timeout_occurred"
                     )

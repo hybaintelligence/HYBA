@@ -12,7 +12,9 @@ from typing import Any, Dict, Optional
 LOGGER = logging.getLogger(__name__)
 
 # Default directory for storing autonomy reports
-DEFAULT_REPORT_DIR = Path(__file__).resolve().parents[3] / "runtime" / "evidence" / "pythia_autonomy"
+DEFAULT_REPORT_DIR = (
+    Path(__file__).resolve().parents[3] / "runtime" / "evidence" / "pythia_autonomy"
+)
 
 
 def ensure_report_dir(report_dir: Path = DEFAULT_REPORT_DIR) -> None:
@@ -58,11 +60,16 @@ def save_autonomy_report(
     with report_path.open("w", encoding="utf-8") as f:
         json.dump(enriched_report, f, ensure_ascii=False, indent=2)
 
-    LOGGER.info("Saved autonomy report", extra={"report_path": str(report_path), "report_type": report_type})
+    LOGGER.info(
+        "Saved autonomy report",
+        extra={"report_path": str(report_path), "report_type": report_type},
+    )
     return report_path
 
 
-def get_latest_report(report_dir: Path = DEFAULT_REPORT_DIR) -> Optional[Dict[str, Any]]:
+def get_latest_report(
+    report_dir: Path = DEFAULT_REPORT_DIR,
+) -> Optional[Dict[str, Any]]:
     """Get the most recent autonomy report.
 
     Args:
@@ -81,11 +88,16 @@ def get_latest_report(report_dir: Path = DEFAULT_REPORT_DIR) -> Optional[Dict[st
         with latest_file.open("r", encoding="utf-8") as f:
             return json.load(f)
     except Exception as e:
-        LOGGER.error("Failed to read latest report", extra={"error": str(e), "file": str(latest_file)})
+        LOGGER.error(
+            "Failed to read latest report",
+            extra={"error": str(e), "file": str(latest_file)},
+        )
         return None
 
 
-def list_all_reports(report_dir: Path = DEFAULT_REPORT_DIR, limit: int = 100) -> list[Dict[str, Any]]:
+def list_all_reports(
+    report_dir: Path = DEFAULT_REPORT_DIR, limit: int = 100
+) -> list[Dict[str, Any]]:
     """List all available autonomy reports (metadata only).
 
     Args:
@@ -102,11 +114,16 @@ def list_all_reports(report_dir: Path = DEFAULT_REPORT_DIR, limit: int = 100) ->
         try:
             with file.open("r", encoding="utf-8") as f:
                 data = json.load(f)
-                reports.append({
-                    "filename": file.name,
-                    "report_type": data.get("report_type"),
-                    "timestamp": data.get("timestamp"),
-                })
+                reports.append(
+                    {
+                        "filename": file.name,
+                        "report_type": data.get("report_type"),
+                        "timestamp": data.get("timestamp"),
+                    }
+                )
         except Exception as e:
-            LOGGER.error("Failed to read report metadata", extra={"error": str(e), "file": str(file)})
+            LOGGER.error(
+                "Failed to read report metadata",
+                extra={"error": str(e), "file": str(file)},
+            )
     return reports

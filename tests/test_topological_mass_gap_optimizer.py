@@ -11,6 +11,7 @@ Covers:
 - Evidence packet is structurally complete
 - Locked state drift is strictly less than initial drift
 """
+
 import math
 import sys
 from pathlib import Path
@@ -20,7 +21,10 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "python_backend"))
 
-from pythia_mining.yang_mills_spectral_gap import EXPECTED_MASS_GAP, MIN_NONZERO_SPECTRUM_POINTS
+from pythia_mining.yang_mills_spectral_gap import (
+    EXPECTED_MASS_GAP,
+    MIN_NONZERO_SPECTRUM_POINTS,
+)
 from pythia_mining.tensor_network_1000qubit import MPS
 
 # Import optimizer internals
@@ -133,9 +137,9 @@ def test_lock_mps_norm_preserved_every_step():
     mps = MPS(num_sites=15, physical_dim=2, max_bond_dim=8)
     _, steps = lock_mps_to_gap(mps, max_iterations=5)
     for step in steps:
-        assert abs(step.mps_norm - 1.0) < NORM_TOLERANCE, (
-            f"Norm diverged at iter {step.iteration}: {step.mps_norm}"
-        )
+        assert (
+            abs(step.mps_norm - 1.0) < NORM_TOLERANCE
+        ), f"Norm diverged at iter {step.iteration}: {step.mps_norm}"
 
 
 def test_lock_mps_already_at_target_takes_zero_steps_or_converges_immediately():
@@ -226,13 +230,16 @@ def test_optimizer_integration_small_scale(tmp_path):
 
     with patch(
         "topological_mass_gap_optimizer.run_enforcement_gate",
-        return_value=(mock_gate, np.array([EXPECTED_MASS_GAP + i * 0.001 for i in range(20)])),
+        return_value=(
+            mock_gate,
+            np.array([EXPECTED_MASS_GAP + i * 0.001 for i in range(20)]),
+        ),
     ):
         packet = run_optimizer(
             num_sites=10,
             max_bond_dim=8,
-            n_configs=5,       # ignored — gate is mocked
-            lattice_size=2,    # ignored — gate is mocked
+            n_configs=5,  # ignored — gate is mocked
+            lattice_size=2,  # ignored — gate is mocked
             output_file=str(tmp_path / "test_packet.json"),
             verbose=False,
         )
@@ -257,6 +264,7 @@ def test_optimizer_integration_small_scale(tmp_path):
     evidence_file = tmp_path / "test_packet.json"
     assert evidence_file.exists()
     import json
+
     payload = json.loads(evidence_file.read_text())
     assert payload["protocol"] == "HYBA_TOPOLOGICAL_MASS_GAP_OPTIMIZER_V1"
     assert payload["success"] is True

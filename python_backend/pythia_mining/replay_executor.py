@@ -115,7 +115,9 @@ class ReplayExecutionResult:
     def to_dict(self) -> dict[str, Any]:
         data = asdict(self)
         data["command_results"] = [result.to_dict() for result in self.command_results]
-        data["artifact_digests"] = [artifact.to_dict() for artifact in self.artifact_digests]
+        data["artifact_digests"] = [
+            artifact.to_dict() for artifact in self.artifact_digests
+        ]
         return data
 
 
@@ -140,7 +142,9 @@ def hash_replay_artifacts(
 
     root = Path(cwd or os.getcwd())
     digests: list[ReplayArtifactDigest] = []
-    for rel_path in sorted(str(path).strip() for path in produced_artifacts if str(path).strip()):
+    for rel_path in sorted(
+        str(path).strip() for path in produced_artifacts if str(path).strip()
+    ):
         artifact_path = root / rel_path
         if not artifact_path.is_file():
             raise ReplayExecutionError(f"declared replay artifact missing: {rel_path}")
@@ -187,7 +191,9 @@ def _installed_version(package: str) -> str:
     try:
         return importlib.metadata.version(package)
     except importlib.metadata.PackageNotFoundError as exc:
-        raise ReplayExecutionError(f"dependency pin {package!r} is not installed") from exc
+        raise ReplayExecutionError(
+            f"dependency pin {package!r} is not installed"
+        ) from exc
 
 
 def verify_dependency_pins(dependency_pins: Mapping[str, str]) -> dict[str, str]:
@@ -240,14 +246,18 @@ def execute_reproducibility_replay(
         else dict(attestation)
     )
     expected = (
-        expected_output_digest or data.get("expected_output_digest") or data.get("output_digest")
+        expected_output_digest
+        or data.get("expected_output_digest")
+        or data.get("output_digest")
     )
     if not expected:
         raise ReplayExecutionError(
             "expected_output_digest is required for dynamic replay verification"
         )
     commands = tuple(
-        str(command).strip() for command in data.get("commands", ()) if str(command).strip()
+        str(command).strip()
+        for command in data.get("commands", ())
+        if str(command).strip()
     )
     if not commands:
         raise ReplayExecutionError("at least one replay command is required")
@@ -276,7 +286,9 @@ def execute_reproducibility_replay(
             raise ReplayExecutionError(
                 f"replay command failed with exit code {completed.returncode}: {command}"
             )
-    artifact_digests = hash_replay_artifacts(data.get("produced_artifacts", ()), cwd=cwd)
+    artifact_digests = hash_replay_artifacts(
+        data.get("produced_artifacts", ()), cwd=cwd
+    )
     output_digest = canonical_replay_output_digest(command_results, artifact_digests)
     verified = output_digest == expected
     if not verified:
@@ -388,7 +400,9 @@ def generate_requirements_lock(packages: Sequence[str] = ("numpy", "scipy")) -> 
     )
 
 
-def _claim_from_manifest_or_claim(manifest_or_claim: Mapping[str, Any]) -> dict[str, Any]:
+def _claim_from_manifest_or_claim(
+    manifest_or_claim: Mapping[str, Any],
+) -> dict[str, Any]:
     if isinstance(manifest_or_claim.get("claim"), dict):
         return dict(manifest_or_claim["claim"])
     return dict(manifest_or_claim)
@@ -452,7 +466,9 @@ def replay_stress_test(
                 attestation, cwd=cwd, timeout_seconds=timeout_seconds
             )
         except ReplayExecutionError as exc:
-            raise ReplayExecutionError(f"stress run {index + 1}/{runs} failed: {exc}") from exc
+            raise ReplayExecutionError(
+                f"stress run {index + 1}/{runs} failed: {exc}"
+            ) from exc
         claim_id = result.claim_id
         observed.append(result.output_digest)
     unique = set(observed)

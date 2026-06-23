@@ -149,12 +149,18 @@ def parse_subscribe_result(message: Dict[str, Any]) -> SubscribeResult:
     extranonce1_raw = str(result[1]) if result[1] else ""
     # Allow empty extranonce1 for live mining - use fallback
     if extranonce1_raw and not _HEX_RE.match(extranonce1_raw):
-        raise StratumProtocolError(f"extranonce1 must be a hex string, got: {extranonce1_raw}")
-    extranonce1 = extranonce1_raw if extranonce1_raw else "00000001"  # Fallback for live mining
+        raise StratumProtocolError(
+            f"extranonce1 must be a hex string, got: {extranonce1_raw}"
+        )
+    extranonce1 = (
+        extranonce1_raw if extranonce1_raw else "00000001"
+    )  # Fallback for live mining
     size = int(result[2])
     if size <= 0 or size > 32:
         raise StratumProtocolError("extranonce2_size is out of safe range")
-    return SubscribeResult(extranonce1=extranonce1, extranonce2_size=size, raw_result=result)
+    return SubscribeResult(
+        extranonce1=extranonce1, extranonce2_size=size, raw_result=result
+    )
 
 
 def parse_authorize_result(message: Dict[str, Any]) -> bool:
@@ -211,7 +217,9 @@ def parse_set_extranonce(params: Sequence[Any]) -> SetExtranonceMessage:
     extranonce2_size = int(params[1])
     if extranonce2_size <= 0 or extranonce2_size > 32:
         raise StratumProtocolError("extranonce2_size is out of safe range")
-    return SetExtranonceMessage(extranonce1=extranonce1, extranonce2_size=extranonce2_size)
+    return SetExtranonceMessage(
+        extranonce1=extranonce1, extranonce2_size=extranonce2_size
+    )
 
 
 def parse_set_version_mask(params: Sequence[Any]) -> SetVersionMaskMessage:

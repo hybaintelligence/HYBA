@@ -1,12 +1,17 @@
 {
-  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "composite": true,
     "declarationMap": true,
     "emitDeclarationOnly": true,
+    "lib": [
+      "dom",
+      "es2022"
+    ],
     "outDir": "dist",
-    "rootDir": "src",
-    "lib": ["dom", "es2022"]
+    "rootDir": "src"
   },
-  "include": ["src"]
+  "extends": "../../tsconfig.base.json",
+  "include": [
+    "src"
+  ]
 }

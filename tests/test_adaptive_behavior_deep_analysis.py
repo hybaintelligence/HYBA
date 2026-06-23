@@ -89,7 +89,11 @@ class FeedbackLoopDetector:
                         }
                     )
 
-            return {"file": str(file_path.name), "feedback_loops": loops, "count": len(loops)}
+            return {
+                "file": str(file_path.name),
+                "feedback_loops": loops,
+                "count": len(loops),
+            }
         except Exception as exc:
             return {"file": str(file_path.name), "error": str(exc), "count": 0}
 
@@ -165,7 +169,9 @@ class ParameterOptimizationDetector:
                         {
                             "type": label,
                             "line": content[: match.start()].count("\n") + 1,
-                            "snippet": content[max(0, match.start() - 40) : match.end() + 40],
+                            "snippet": content[
+                                max(0, match.start() - 40) : match.end() + 40
+                            ],
                         }
                     )
             return {
@@ -243,13 +249,19 @@ class SelfModificationDetector:
                 elif isinstance(node.func, ast.Name) and node.func.id == "setattr":
                     label = "setattr_usage"
                     severity = "LOW"
-                elif isinstance(node.func, ast.Name) and node.func.id in {"globals", "locals"}:
+                elif isinstance(node.func, ast.Name) and node.func.id in {
+                    "globals",
+                    "locals",
+                }:
                     label = f"{node.func.id}_access"
                     severity = "MODERATE" if node.func.id == "globals" else "LOW"
                 elif isinstance(node.func, ast.Name) and node.func.id == "type":
                     label = "dynamic_type_creation"
                     severity = "MODERATE"
-                elif isinstance(node.func, ast.Attribute) and node.func.attr == "__setattr__":
+                elif (
+                    isinstance(node.func, ast.Attribute)
+                    and node.func.attr == "__setattr__"
+                ):
                     label = "setattr_override"
                     severity = "MODERATE"
 
@@ -327,7 +339,10 @@ class TestAdaptiveBehaviorDeepAnalysis(unittest.TestCase):
                 all_results.append(result)
 
         total_optimizations = sum(r.get("count", 0) for r in all_results)
-        self.results["optimizations"] = {"total": total_optimizations, "files": len(all_results)}
+        self.results["optimizations"] = {
+            "total": total_optimizations,
+            "files": len(all_results),
+        }
 
         print("\n=== PARAMETER OPTIMIZATION ANALYSIS ===")
         print(f"Total optimization patterns: {total_optimizations}")
@@ -356,7 +371,9 @@ class TestAdaptiveBehaviorDeepAnalysis(unittest.TestCase):
         print("\n=== MEMORY ACCUMULATION ANALYSIS ===")
         print(f"Total memory-related patterns: {total_memory}")
         print(f"Files with memory: {len(all_results)}")
-        for mem_type, count in sorted(type_counts.items(), key=lambda item: item[1], reverse=True):
+        for mem_type, count in sorted(
+            type_counts.items(), key=lambda item: item[1], reverse=True
+        ):
             print(f"  {mem_type}: {count}")
 
         self.assertGreater(total_memory, 0, "Should find memory patterns")
@@ -402,7 +419,12 @@ class TestAdaptiveBehaviorDeepAnalysis(unittest.TestCase):
         genuine_adaptive = optimizations > 5 and feedback > 10 and memory > 20
         has_learning = optimizations > 0 and any(
             keyword in json.dumps(self.results).lower()
-            for keyword in ["gradient", "backpropagation", "learning_rate", "weight_update"]
+            for keyword in [
+                "gradient",
+                "backpropagation",
+                "learning_rate",
+                "weight_update",
+            ]
         )
         has_dangerous_self_mod = dangerous > 0
 

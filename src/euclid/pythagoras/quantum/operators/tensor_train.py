@@ -24,7 +24,9 @@ class TensorTrainAudit:
 class TensorTrain:
     """Small NumPy Matrix Product State / Tensor Train container."""
 
-    def __init__(self, cores: list[np.ndarray], original_shape: tuple[int, ...]) -> None:
+    def __init__(
+        self, cores: list[np.ndarray], original_shape: tuple[int, ...]
+    ) -> None:
         self.cores = [np.asarray(core, dtype=np.complex128) for core in cores]
         self.original_shape = tuple(original_shape)
         if not self.cores:
@@ -46,10 +48,17 @@ class TensorTrain:
             result = np.tensordot(result, core, axes=([-1], [0]))
         return result.reshape(self.original_shape)
 
-    def audit(self, original_tensor: np.ndarray, phi_guided_rank: int) -> TensorTrainAudit:
-        original = np.asarray(original_tensor, dtype=np.complex128).reshape(self.original_shape)
+    def audit(
+        self, original_tensor: np.ndarray, phi_guided_rank: int
+    ) -> TensorTrainAudit:
+        original = np.asarray(original_tensor, dtype=np.complex128).reshape(
+            self.original_shape
+        )
         reconstructed = self.reconstruct()
-        error = float(np.linalg.norm(original - reconstructed) / max(1.0, np.linalg.norm(original)))
+        error = float(
+            np.linalg.norm(original - reconstructed)
+            / max(1.0, np.linalg.norm(original))
+        )
         original_size = int(np.prod(self.original_shape))
         return TensorTrainAudit(
             original_shape=self.original_shape,

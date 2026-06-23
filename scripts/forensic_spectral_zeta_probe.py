@@ -83,7 +83,9 @@ def forensic_sha256(payload: Dict[str, Any]) -> str:
     return hashlib.sha256(canonical_bytes(payload)).hexdigest()
 
 
-def nonce_stream(count: int, sampler: SamplerName = "phi_lcg", seed: int = 0xC0DEC0DE) -> List[int]:
+def nonce_stream(
+    count: int, sampler: SamplerName = "phi_lcg", seed: int = 0xC0DEC0DE
+) -> List[int]:
     """Return a deterministic nonce stream for the requested sampler."""
     if count < 1:
         raise ValueError("count must be positive")
@@ -110,7 +112,8 @@ def su2_plaquette_phases(nonce: int) -> List[float]:
     for left in range(4):
         for right in range(left + 1, 4):
             plaquette = matmul(
-                matmul(matmul(links[left], links[right]), dagger(links[left])), dagger(links[right])
+                matmul(matmul(links[left], links[right]), dagger(links[left])),
+                dagger(links[right]),
             )
             phases.extend(su2_eigenphases(plaquette))
     return sorted(phases)
@@ -121,7 +124,9 @@ def unfolded_spacings(phases: Sequence[float]) -> List[float]:
     if len(phases) < 3:
         return []
     ordered = sorted(float(phase) % (2.0 * math.pi) for phase in phases)
-    spacings = [ordered[index + 1] - ordered[index] for index in range(len(ordered) - 1)]
+    spacings = [
+        ordered[index + 1] - ordered[index] for index in range(len(ordered) - 1)
+    ]
     spacings.append((ordered[0] + 2.0 * math.pi) - ordered[-1])
     spacing_mean = sum(spacings) / len(spacings)
     if spacing_mean <= 0.0:
@@ -148,7 +153,11 @@ def wigner_gue_cdf(x: float) -> float:
         right = left + width
         middle = (left + right) / 2.0
         total += (
-            (wigner_gue_pdf(left) + 4.0 * wigner_gue_pdf(middle) + wigner_gue_pdf(right))
+            (
+                wigner_gue_pdf(left)
+                + 4.0 * wigner_gue_pdf(middle)
+                + wigner_gue_pdf(right)
+            )
             * width
             / 6.0
         )
@@ -192,11 +201,15 @@ def ks_distance(values: Sequence[float]) -> float:
         theoretical = wigner_gue_cdf(value)
         empirical_hi = index / n
         empirical_lo = (index - 1) / n
-        distance = max(distance, abs(empirical_hi - theoretical), abs(theoretical - empirical_lo))
+        distance = max(
+            distance, abs(empirical_hi - theoretical), abs(theoretical - empirical_lo)
+        )
     return distance
 
 
-def collect_spacings(count: int, sampler: SamplerName, seed: int = 0xC0DEC0DE) -> List[float]:
+def collect_spacings(
+    count: int, sampler: SamplerName, seed: int = 0xC0DEC0DE
+) -> List[float]:
     phases: List[float] = []
     for nonce in nonce_stream(count=count, sampler=sampler, seed=seed):
         phases.extend(su2_plaquette_phases(nonce))
@@ -247,7 +260,9 @@ def run_probe(
         "histogram": {
             "centers": [round(value, 12) for value in phi_hist["centers"]],
             "phi_lcg_density": [round(value, 12) for value in phi_hist["densities"]],
-            "control_lcg_density": [round(value, 12) for value in control_hist["densities"]],
+            "control_lcg_density": [
+                round(value, 12) for value in control_hist["densities"]
+            ],
             "gue_wigner_density": [round(value, 12) for value in expected],
         },
     }

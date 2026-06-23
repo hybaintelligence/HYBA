@@ -54,7 +54,12 @@ class TestIIT4Analyzer(unittest.TestCase):
 
         # Create a simple transition matrix
         self.transition_matrix = np.array(
-            [[0.7, 0.3, 0.0, 0.0], [0.2, 0.8, 0.0, 0.0], [0.0, 0.0, 0.6, 0.4], [0.0, 0.0, 0.3, 0.7]]
+            [
+                [0.7, 0.3, 0.0, 0.0],
+                [0.2, 0.8, 0.0, 0.0],
+                [0.0, 0.0, 0.6, 0.4],
+                [0.0, 0.0, 0.3, 0.7],
+            ]
         )
 
         # Test state
@@ -62,7 +67,9 @@ class TestIIT4Analyzer(unittest.TestCase):
 
     def test_phi_max_exceeds_phi_local(self):
         """Φ_max should be >= local Φ calculation"""
-        result = self.analyzer.calculate_phi_max(self.test_state, self.transition_matrix)
+        result = self.analyzer.calculate_phi_max(
+            self.test_state, self.transition_matrix
+        )
 
         self.assertIn("phi_max", result)
         self.assertGreaterEqual(result["phi_max"], 0.0)
@@ -76,7 +83,9 @@ class TestIIT4Analyzer(unittest.TestCase):
 
     def test_cause_effect_structure_completeness(self):
         """CES should have repertoires for all mechanisms"""
-        ces = self.analyzer.compute_cause_effect_structure(self.test_state, self.transition_matrix)
+        ces = self.analyzer.compute_cause_effect_structure(
+            self.test_state, self.transition_matrix
+        )
 
         # Should have mechanisms
         self.assertGreater(len(ces.mechanisms), 0)
@@ -96,7 +105,9 @@ class TestIIT4Analyzer(unittest.TestCase):
         simple_state = np.array([1, 0])
         simple_tm = np.array([[0.7, 0.3], [0.2, 0.8]])
         simple_analyzer = IIT4Analyzer(2)
-        simple_ces = simple_analyzer.compute_cause_effect_structure(simple_state, simple_tm)
+        simple_ces = simple_analyzer.compute_cause_effect_structure(
+            simple_state, simple_tm
+        )
 
         # Complex system
         complex_state = np.array([1, 0, 1, 0, 1, 0])
@@ -111,7 +122,9 @@ class TestIIT4Analyzer(unittest.TestCase):
             ]
         )
         complex_analyzer = IIT4Analyzer(6)
-        complex_ces = complex_analyzer.compute_cause_effect_structure(complex_state, complex_tm)
+        complex_ces = complex_analyzer.compute_cause_effect_structure(
+            complex_state, complex_tm
+        )
 
         # Complex system should have higher dimensionality
         self.assertGreaterEqual(complex_ces.dimensionality, simple_ces.dimensionality)
@@ -130,7 +143,9 @@ class TestIIT4Analyzer(unittest.TestCase):
 
     def test_cause_repertoire_normalization(self):
         """Cause repertoires should be normalized probability distributions"""
-        ces = self.analyzer.compute_cause_effect_structure(self.test_state, self.transition_matrix)
+        ces = self.analyzer.compute_cause_effect_structure(
+            self.test_state, self.transition_matrix
+        )
 
         for mech_id, repertoire in ces.cause_repertoires.items():
             # Should sum to 1 (allowing for floating point error)
@@ -141,7 +156,9 @@ class TestIIT4Analyzer(unittest.TestCase):
 
     def test_effect_repertoire_normalization(self):
         """Effect repertoires should be normalized probability distributions"""
-        ces = self.analyzer.compute_cause_effect_structure(self.test_state, self.transition_matrix)
+        ces = self.analyzer.compute_cause_effect_structure(
+            self.test_state, self.transition_matrix
+        )
 
         for mech_id, repertoire in ces.effect_repertoires.items():
             # Should sum to 1 (allowing for floating point error)
@@ -152,14 +169,18 @@ class TestIIT4Analyzer(unittest.TestCase):
 
     def test_phi_s_values_non_negative(self):
         """φ_s values should be non-negative"""
-        ces = self.analyzer.compute_cause_effect_structure(self.test_state, self.transition_matrix)
+        ces = self.analyzer.compute_cause_effect_structure(
+            self.test_state, self.transition_matrix
+        )
 
         for mech_id, phi_s in ces.phi_s_values.items():
             self.assertGreaterEqual(phi_s, 0.0)
 
     def test_partition_generation(self):
         """Partition generation should produce valid bipartitions"""
-        partitions = list(self.analyzer._generate_bipartitions(set(range(self.system_size))))
+        partitions = list(
+            self.analyzer._generate_bipartitions(set(range(self.system_size)))
+        )
 
         # Should produce at least one partition
         self.assertGreater(len(partitions), 0)
@@ -199,14 +220,18 @@ class TestIIT4Analyzer(unittest.TestCase):
 
     def test_cause_effect_structure_getters(self):
         """CES should have correct mechanism count"""
-        ces = self.analyzer.compute_cause_effect_structure(self.test_state, self.transition_matrix)
+        ces = self.analyzer.compute_cause_effect_structure(
+            self.test_state, self.transition_matrix
+        )
 
         # Mechanism count
         self.assertEqual(len(ces.mechanisms), len(ces.mechanisms))
 
     def test_transition_probability_bounds(self):
         """Partition phi values should be in [0, 1]"""
-        for partition in self.analyzer._generate_bipartitions(set(range(self.system_size))):
+        for partition in self.analyzer._generate_bipartitions(
+            set(range(self.system_size))
+        ):
             phi = self.analyzer._calculate_partition_phi(
                 partition, self.test_state, self.transition_matrix
             )
@@ -215,13 +240,17 @@ class TestIIT4Analyzer(unittest.TestCase):
 
     def test_integrated_information_calculation(self):
         """Integrated information should be non-negative"""
-        result = self.analyzer.calculate_phi_max(self.test_state, self.transition_matrix)
+        result = self.analyzer.calculate_phi_max(
+            self.test_state, self.transition_matrix
+        )
 
         self.assertGreaterEqual(result["phi_max"], 0.0)
 
     def test_quale_dimensionality_bounds(self):
         """Quale dimensionality should be within reasonable bounds"""
-        ces = self.analyzer.compute_cause_effect_structure(self.test_state, self.transition_matrix)
+        ces = self.analyzer.compute_cause_effect_structure(
+            self.test_state, self.transition_matrix
+        )
 
         # Dimensionality should be non-negative
         self.assertGreaterEqual(ces.dimensionality, 0)
@@ -266,7 +295,12 @@ class TestIIT4AnalyzerEdgeCases(unittest.TestCase):
         analyzer = IIT4Analyzer(4)
         state = np.array([1, 1, 1, 1])
         tm = np.array(
-            [[0.7, 0.3, 0.0, 0.0], [0.2, 0.8, 0.0, 0.0], [0.0, 0.0, 0.6, 0.4], [0.0, 0.0, 0.3, 0.7]]
+            [
+                [0.7, 0.3, 0.0, 0.0],
+                [0.2, 0.8, 0.0, 0.0],
+                [0.0, 0.0, 0.6, 0.4],
+                [0.0, 0.0, 0.3, 0.7],
+            ]
         )
 
         ces = analyzer.compute_cause_effect_structure(state, tm)
@@ -283,7 +317,12 @@ class TestIIT4AnalyzerEdgeCases(unittest.TestCase):
         analyzer = IIT4Analyzer(4)
         state = np.array([1, 0, 1, 0])
         tm = np.array(
-            [[0.7, 0.3, 0.0, 0.0], [0.2, 0.8, 0.0, 0.0], [0.0, 0.0, 0.6, 0.4], [0.0, 0.0, 0.3, 0.7]]
+            [
+                [0.7, 0.3, 0.0, 0.0],
+                [0.2, 0.8, 0.0, 0.0],
+                [0.0, 0.0, 0.6, 0.4],
+                [0.0, 0.0, 0.3, 0.7],
+            ]
         )
 
         # Calculate Φ for this configuration

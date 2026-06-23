@@ -112,7 +112,9 @@ class PhiNetworkRouter:
                         negative for completion).
         """
         if 0 <= node_id < self.cluster_size:
-            self.nodes[node_id]["load"] = max(0.0, self.nodes[node_id]["load"] + load_delta)
+            self.nodes[node_id]["load"] = max(
+                0.0, self.nodes[node_id]["load"] + load_delta
+            )
 
     def get_node_coordinates(self, node_id: int) -> Dict[str, float]:
         """

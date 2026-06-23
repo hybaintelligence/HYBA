@@ -17,7 +17,9 @@ BACKEND = ROOT / "python_backend"
 if str(BACKEND) not in sys.path:
     sys.path.insert(0, str(BACKEND))
 
-from pythia_finance_audit.sukuk_lifecycle_simulation import simulate_sukuk_lifecycle_drift
+from pythia_finance_audit.sukuk_lifecycle_simulation import (
+    simulate_sukuk_lifecycle_drift,
+)
 
 
 def main() -> int:
@@ -29,7 +31,9 @@ def main() -> int:
         action="store_true",
         help="Omit embedded full per-step packets and emit a compact summary artifact.",
     )
-    parser.add_argument("--output", type=Path, default=None, help="Optional JSON output path.")
+    parser.add_argument(
+        "--output", type=Path, default=None, help="Optional JSON output path."
+    )
     args = parser.parse_args()
 
     bundle = simulate_sukuk_lifecycle_drift(include_packets=not args.compact)

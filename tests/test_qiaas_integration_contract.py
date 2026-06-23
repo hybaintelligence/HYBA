@@ -211,7 +211,9 @@ def test_qiaas_runtime_router_contract_is_registered(qiaas_module) -> None:
     }
 
 
-def test_qiaas_metrics_synthesize_memory_seed_and_runtime_substrate(qiaas_module) -> None:
+def test_qiaas_metrics_synthesize_memory_seed_and_runtime_substrate(
+    qiaas_module,
+) -> None:
     """Metrics should combine recorded emergence evidence with live substrate state."""
 
     service = qiaas_module.QuantumIntelligenceService()
@@ -283,7 +285,9 @@ def test_qiaas_rejects_adversarial_query_types(qiaas_module) -> None:
         assert "Must be: predict, explain, optimize, heal" in exc_info.value.detail
 
 
-def test_qiaas_operations_preserve_input_contexts_and_finite_scores(qiaas_module) -> None:
+def test_qiaas_operations_preserve_input_contexts_and_finite_scores(
+    qiaas_module,
+) -> None:
     """Property-style invariant sweep over deterministic generated contexts."""
 
     service = qiaas_module.QuantumIntelligenceService()
@@ -325,7 +329,10 @@ def test_qiaas_health_and_bootstrap_are_claim_bounded(qiaas_module) -> None:
 
     assert health["status"] == "operational"
     assert health["intelligence_available"] is True
-    assert health["claim_boundary"] == "substrate_independent_quantum_mathematics_on_classical_hardware"
+    assert (
+        health["claim_boundary"]
+        == "substrate_independent_quantum_mathematics_on_classical_hardware"
+    )
     assert bootstrap["requires"] == "real_mining_operations"
     assert bootstrap["method"] == "hebbian_learning_from_outcomes"
 
@@ -353,7 +360,10 @@ def test_qiaas_claim_boundary_rejects_unmeasured_hardware_quantum_claims() -> No
     record_source = SCIENTIFIC_RECORD_PATH.read_text(encoding="utf-8")
 
     for source in (qiaas_source, record_source):
-        assert "NOT hardware quantum computing" in source or "not hardware quantum computing" in source
+        assert (
+            "NOT hardware quantum computing" in source
+            or "not hardware quantum computing" in source
+        )
         assert "classical hardware" in source
         assert "Claim Boundary" in source or "CLAIM BOUNDARY" in source
 
@@ -400,11 +410,16 @@ def test_qiaas_rejects_sophisticated_adversarial_payloads(qiaas_module) -> None:
         normalized = query_type.lower().strip()
         if normalized in ALLOWED_QUERY_TYPES:
             continue
-            
+
         try:
             _run(
                 qiaas_module.query_quantum_intelligence(
-                    _request(qiaas_module, query_type, {"payload": "sophisticated_adversarial"}, 0.0),
+                    _request(
+                        qiaas_module,
+                        query_type,
+                        {"payload": "sophisticated_adversarial"},
+                        0.0,
+                    ),
                     service,
                 )
             )
@@ -468,8 +483,8 @@ def test_qiaas_handles_malformed_contexts_gracefully(qiaas_module) -> None:
         {"nested": {"deep": {"deeper": {"value": "too_deep"}}}},
         {"strategy_id": "x" * 10000},
         {"list_field": [1, 2, 3]},
-        {"confidence": float('inf')},
-        {"confidence": float('nan')},
+        {"confidence": float("inf")},
+        {"confidence": float("nan")},
         {"strategy_id": 12345},
         None,
         "string_instead_of_dict",
@@ -502,8 +517,14 @@ def test_qiaas_metrics_handle_edge_cases(qiaas_module) -> None:
     for field in expected_fields:
         assert field in metrics, f"Missing metric field: {field}"
 
-    numeric_fields = ["emergence_index", "knowledge_nodes", "relationship_edges", 
-                     "synaptic_pathways", "total_explanations", "counterfactual_models"]
+    numeric_fields = [
+        "emergence_index",
+        "knowledge_nodes",
+        "relationship_edges",
+        "synaptic_pathways",
+        "total_explanations",
+        "counterfactual_models",
+    ]
     for field in numeric_fields:
         value = metrics[field]
         assert isinstance(value, (int, float)), f"{field} should be numeric"
@@ -530,7 +551,12 @@ def test_qiaas_response_format_validation(qiaas_module) -> None:
     for field in required_query_fields:
         assert hasattr(query_response, field), f"Missing query response field: {field}"
 
-    assert query_response.intelligence_type in ["predict", "explain", "optimize", "heal"]
+    assert query_response.intelligence_type in [
+        "predict",
+        "explain",
+        "optimize",
+        "heal",
+    ]
     assert query_response.source == "emergent_quantum_intelligence"
     assert isinstance(query_response.confidence, (int, float))
     assert 0.0 <= float(query_response.confidence) <= 1.0

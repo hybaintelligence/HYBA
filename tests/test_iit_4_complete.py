@@ -55,7 +55,9 @@ class TestIIT4Complete(unittest.TestCase):
         connectivity = np.ones((4, 4), dtype=np.float64)
         np.fill_diagonal(connectivity, 0)
 
-        ces = self.small_analyzer.compute_cause_effect_structure(system_state, connectivity)
+        ces = self.small_analyzer.compute_cause_effect_structure(
+            system_state, connectivity
+        )
 
         # Should be CauseEffectStructure
         self.assertIsInstance(ces, CauseEffectStructure)
@@ -105,8 +107,12 @@ class TestIIT4Complete(unittest.TestCase):
 
         # Complex system should have >= dimensionality
         print("\n[Dimensionality Test]:")
-        print(f"  Simple system (2 elements): dimensionality = {simple_ces.dimensionality}")
-        print(f"  Complex system (4 elements): dimensionality = {complex_ces.dimensionality}")
+        print(
+            f"  Simple system (2 elements): dimensionality = {simple_ces.dimensionality}"
+        )
+        print(
+            f"  Complex system (4 elements): dimensionality = {complex_ces.dimensionality}"
+        )
 
         self.assertGreaterEqual(complex_ces.dimensionality, simple_ces.dimensionality)
 
@@ -131,7 +137,9 @@ class TestIIT4Complete(unittest.TestCase):
         print(f"  Φ_local (full system): {full_system_phi:.4f}")
 
         # Φ_max should be at least as good as full system
-        self.assertGreaterEqual(phi_max, full_system_phi * 0.9)  # Allow some numerical error
+        self.assertGreaterEqual(
+            phi_max, full_system_phi * 0.9
+        )  # Allow some numerical error
 
     def test_repertoire_normalization(self):
         """Test that cause/effect repertoires are valid probability distributions"""
@@ -139,7 +147,9 @@ class TestIIT4Complete(unittest.TestCase):
         connectivity = np.ones((4, 4), dtype=np.float64)
         np.fill_diagonal(connectivity, 0)
 
-        ces = self.small_analyzer.compute_cause_effect_structure(system_state, connectivity)
+        ces = self.small_analyzer.compute_cause_effect_structure(
+            system_state, connectivity
+        )
 
         # Check all repertoires sum to 1 (valid probability distributions)
         for mech_id, cause_rep in ces.cause_repertoires.items():
@@ -170,7 +180,9 @@ class TestIIT4Complete(unittest.TestCase):
         connectivity = np.ones((4, 4), dtype=np.float64)
         np.fill_diagonal(connectivity, 0)
 
-        ces = self.small_analyzer.compute_cause_effect_structure(system_state, connectivity)
+        ces = self.small_analyzer.compute_cause_effect_structure(
+            system_state, connectivity
+        )
 
         for mech_id, phi_s in ces.phi_s_values.items():
             self.assertGreaterEqual(

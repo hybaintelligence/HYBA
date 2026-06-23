@@ -84,7 +84,9 @@ def test_phi_resonance_correlation_with_sha256_validity():
     mean_res = statistics.mean(resonances)
     mean_val = statistics.mean(validities)
 
-    numerator = sum((r - mean_res) * (v - mean_val) for r, v in zip(resonances, validities))
+    numerator = sum(
+        (r - mean_res) * (v - mean_val) for r, v in zip(resonances, validities)
+    )
     denominator = math.sqrt(sum((r - mean_res) ** 2 for r in resonances)) * math.sqrt(
         sum((v - mean_val) ** 2 for v in validities)
     )
@@ -103,9 +105,11 @@ def test_phi_resonance_correlation_with_sha256_validity():
         "interpretation": (
             "positive correlation"
             if correlation > 0.05
-            else "negative correlation"
-            if correlation < -0.05
-            else "no significant correlation"
+            else (
+                "negative correlation"
+                if correlation < -0.05
+                else "no significant correlation"
+            )
         ),
     }
 
@@ -155,9 +159,9 @@ def test_phi_resonance_distribution_vs_uniform():
         "distribution_similarity": (
             "very similar"
             if max_diff < 0.05
-            else "moderately different"
-            if max_diff < 0.15
-            else "significantly different"
+            else (
+                "moderately different" if max_diff < 0.15 else "significantly different"
+            )
         ),
     }
 
@@ -226,27 +230,33 @@ def test_phi_guided_vs_random_search_performance():
             "candidates_tested": len(phi_candidates),
             "time_seconds": phi_time,
             "found_target": phi_found,
-            "candidates_per_second": len(phi_candidates) / phi_time if phi_time > 0 else 0,
+            "candidates_per_second": (
+                len(phi_candidates) / phi_time if phi_time > 0 else 0
+            ),
         },
         "random_search": {
             "candidates_tested": len(random_candidates),
             "time_seconds": random_time,
             "found_target": random_found,
-            "candidates_per_second": len(random_candidates) / random_time if random_time > 0 else 0,
+            "candidates_per_second": (
+                len(random_candidates) / random_time if random_time > 0 else 0
+            ),
         },
         "performance_ratio": phi_time / random_time if random_time > 0 else 0,
         "winner": (
             "phi_guided"
             if phi_time < random_time
-            else "random_search"
-            if random_time < phi_time
-            else "tie"
+            else "random_search" if random_time < phi_time else "tie"
         ),
     }
 
     print("\nφ-Guided vs Random Search Benchmark:")
-    print(f"  φ-guided: {result['phi_guided']['candidates_per_second']:.2f} candidates/sec")
-    print(f"  Random: {result['random_search']['candidates_per_second']:.2f} candidates/sec")
+    print(
+        f"  φ-guided: {result['phi_guided']['candidates_per_second']:.2f} candidates/sec"
+    )
+    print(
+        f"  Random: {result['random_search']['candidates_per_second']:.2f} candidates/sec"
+    )
     print(f"  Performance ratio: {result['performance_ratio']:.4f}")
     print(f"  Winner: {result['winner']}")
 
@@ -311,8 +321,12 @@ def test_phi_guided_search_space_coverage():
     print("\nSearch Space Coverage Comparison:")
     print(f"  φ-guided unique ratio: {result['phi_guided']['unique_ratio']:.4f}")
     print(f"  Random unique ratio: {result['random_search']['unique_ratio']:.4f}")
-    print(f"  φ-guided domain coverage: {result['phi_guided']['domain_coverage_ratio']:.4f}")
-    print(f"  Random domain coverage: {result['random_search']['domain_coverage_ratio']:.4f}")
+    print(
+        f"  φ-guided domain coverage: {result['phi_guided']['domain_coverage_ratio']:.4f}"
+    )
+    print(
+        f"  Random domain coverage: {result['random_search']['domain_coverage_ratio']:.4f}"
+    )
 
     assert phi_unique <= len(phi_trajectory)
     assert random_unique <= len(random_trajectory)
@@ -335,7 +349,9 @@ def test_cpu_time_per_nonce_candidate():
 
     # Warm up
     for _ in range(100):
-        hendrix.phi_gradient_proposal(random.randint(0, 2**32 - 1), random.Random(101112), scale=1)
+        hendrix.phi_gradient_proposal(
+            random.randint(0, 2**32 - 1), random.Random(101112), scale=1
+        )
 
     # Measure φ-gradient proposal time
     rng = random.Random(101112)
@@ -385,21 +401,35 @@ def test_cpu_time_per_nonce_candidate():
             "candidates_per_second": iterations / random_time,
         },
         "overhead_factors": {
-            "phi_gradient_vs_random": phi_gradient_per_candidate / random_per_candidate
-            if random_per_candidate > 0
-            else 0,
-            "phi_resonance_vs_random": phi_resonance_per_candidate / random_per_candidate
-            if random_per_candidate > 0
-            else 0,
+            "phi_gradient_vs_random": (
+                phi_gradient_per_candidate / random_per_candidate
+                if random_per_candidate > 0
+                else 0
+            ),
+            "phi_resonance_vs_random": (
+                phi_resonance_per_candidate / random_per_candidate
+                if random_per_candidate > 0
+                else 0
+            ),
         },
     }
 
     print("\nCPU Time Per Nonce Candidate:")
-    print(f"  φ-gradient: {result['phi_gradient_proposal']['per_candidate_microseconds']:.2f} μs")
-    print(f"  φ-resonance: {result['phi_resonance']['per_candidate_microseconds']:.2f} μs")
-    print(f"  Random baseline: {result['random_baseline']['per_candidate_microseconds']:.2f} μs")
-    print(f"  φ-gradient overhead: {result['overhead_factors']['phi_gradient_vs_random']:.2f}x")
-    print(f"  φ-resonance overhead: {result['overhead_factors']['phi_resonance_vs_random']:.2f}x")
+    print(
+        f"  φ-gradient: {result['phi_gradient_proposal']['per_candidate_microseconds']:.2f} μs"
+    )
+    print(
+        f"  φ-resonance: {result['phi_resonance']['per_candidate_microseconds']:.2f} μs"
+    )
+    print(
+        f"  Random baseline: {result['random_baseline']['per_candidate_microseconds']:.2f} μs"
+    )
+    print(
+        f"  φ-gradient overhead: {result['overhead_factors']['phi_gradient_vs_random']:.2f}x"
+    )
+    print(
+        f"  φ-resonance overhead: {result['overhead_factors']['phi_resonance_vs_random']:.2f}x"
+    )
 
     assert phi_gradient_per_candidate > 0
     assert phi_resonance_per_candidate > 0
@@ -462,10 +492,12 @@ def test_hashrate_prediction_vs_actual():
             "microseconds_per_hash": phi_guided_hash_time / iterations * 1e6,
         },
         "performance_comparison": {
-            "phi_guided_ratio": phi_guided_hashrate / actual_hashrate if actual_hashrate > 0 else 0,
-            "slowdown_factor": actual_hashrate / phi_guided_hashrate
-            if phi_guided_hashrate > 0
-            else 0,
+            "phi_guided_ratio": (
+                phi_guided_hashrate / actual_hashrate if actual_hashrate > 0 else 0
+            ),
+            "slowdown_factor": (
+                actual_hashrate / phi_guided_hashrate if phi_guided_hashrate > 0 else 0
+            ),
         },
         "prediction_accuracy": {
             "note": "This is synthetic measurement. Real mining hashrate requires pool integration.",
@@ -474,9 +506,15 @@ def test_hashrate_prediction_vs_actual():
     }
 
     print("\nHashrate Prediction vs Actual (Synthetic):")
-    print(f"  Baseline hashrate: {result['baseline_hashrate']['hashes_per_second']:.2f} H/s")
-    print(f"  φ-guided hashrate: {result['phi_guided_hashrate']['hashes_per_second']:.2f} H/s")
-    print(f"  φ-guided ratio: {result['performance_comparison']['phi_guided_ratio']:.4f}")
+    print(
+        f"  Baseline hashrate: {result['baseline_hashrate']['hashes_per_second']:.2f} H/s"
+    )
+    print(
+        f"  φ-guided hashrate: {result['phi_guided_hashrate']['hashes_per_second']:.2f} H/s"
+    )
+    print(
+        f"  φ-guided ratio: {result['performance_comparison']['phi_guided_ratio']:.4f}"
+    )
     print(f"  Note: {result['prediction_accuracy']['note']}")
 
     assert actual_hashrate > 0
@@ -533,7 +571,9 @@ def test_comprehensive_empirical_validation_report():
     validities = [hash_validity_metric(nonce) for nonce in nonces]
     mean_res = statistics.mean(resonances)
     mean_val = statistics.mean(validities)
-    numerator = sum((r - mean_res) * (v - mean_val) for r, v in zip(resonances, validities))
+    numerator = sum(
+        (r - mean_res) * (v - mean_val) for r, v in zip(resonances, validities)
+    )
     denominator = math.sqrt(sum((r - mean_res) ** 2 for r in resonances)) * math.sqrt(
         sum((v - mean_val) ** 2 for v in validities)
     )
@@ -542,9 +582,11 @@ def test_comprehensive_empirical_validation_report():
     correlation_interpretation = (
         "positive correlation"
         if correlation > 0.05
-        else "negative correlation"
-        if correlation < -0.05
-        else "no significant correlation"
+        else (
+            "negative correlation"
+            if correlation < -0.05
+            else "no significant correlation"
+        )
     )
 
     # Performance comparison
@@ -566,9 +608,7 @@ def test_comprehensive_empirical_validation_report():
     winner = (
         "phi_guided"
         if phi_time < random_time
-        else "random_search"
-        if random_time < phi_time
-        else "tie"
+        else "random_search" if random_time < phi_time else "tie"
     )
 
     # CPU overhead
@@ -588,9 +628,11 @@ def test_comprehensive_empirical_validation_report():
             + (
                 "performs better"
                 if winner == "phi_guided"
-                else "performs worse"
-                if winner == "random_search"
-                else "performs similarly"
+                else (
+                    "performs worse"
+                    if winner == "random_search"
+                    else "performs similarly"
+                )
             )
             + " to random search on synthetic targets. "
             "NO EVIDENCE of mining revenue or pool-side acceptance."

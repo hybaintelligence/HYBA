@@ -2,66 +2,66 @@
   "default_pool": "viabtc",
   "pools": {
     "braiins": {
+      "description": "Braiins Pool - V1 Stratum",
+      "enabled": false,
+      "is_default": false,
       "name": "Braiins Pool",
-      "url": "stratum+tcp://stratum.braiins.com:3333",
-      "stratum_version": 1,
-      "username": "YOUR_BRAIINS_USERNAME",
       "password": "YOUR_BRAIINS_PASSWORD",
-      "worker": "hendrix_phi",
       "priority": 2,
-      "enabled": false,
-      "is_default": false,
-      "description": "Braiins Pool - V1 Stratum"
-    },
-    "viabtc": {
-      "name": "ViaBTC BTC",
-      "url": "stratum+tcp://btc.viabtc.io:3333",
       "stratum_version": 1,
-      "username": "YOUR_VIABTC_USERNAME",
-      "password": "YOUR_VIABTC_PASSWORD",
-      "worker": "hendrix_phi",
-      "priority": 1,
-      "enabled": true,
-      "is_default": true,
-      "description": "ViaBTC SHA256 pool - V1 Stratum"
-    },
-    "nicehash": {
-      "name": "NiceHash SHA256",
-      "url": "stratum+tcp://sha256.auto.nicehash.com:9200",
-      "stratum_version": 1,
-      "username": "YOUR_NICEHASH_ORG_ID",
-      "password": "YOUR_NICEHASH_PASSWORD",
-      "worker": "hendrix_phi",
-      "nicehash_pool_id": "YOUR_NICEHASH_POOL_ID",
-      "priority": 3,
-      "enabled": false,
-      "is_default": false,
-      "description": "NiceHash auto-trading SHA256"
+      "url": "stratum+tcp://stratum.braiins.com:3333",
+      "username": "YOUR_BRAIINS_USERNAME",
+      "worker": "hendrix_phi"
     },
     "ckpool": {
-      "name": "Solo CKPool",
-      "url": "stratum+tcp://solo.ckpool.org:3333",
-      "stratum_version": 1,
       "btc_address": "YOUR_BTC_ADDRESS",
-      "username": "",
-      "password": "YOUR_CKPOOL_PASSWORD",
-      "worker": "hendrix_phi",
-      "priority": 4,
+      "description": "CKPool solo mining",
       "enabled": false,
       "is_default": false,
-      "description": "CKPool solo mining"
+      "name": "Solo CKPool",
+      "password": "YOUR_CKPOOL_PASSWORD",
+      "priority": 4,
+      "stratum_version": 1,
+      "url": "stratum+tcp://solo.ckpool.org:3333",
+      "username": "",
+      "worker": "hendrix_phi"
+    },
+    "nicehash": {
+      "description": "NiceHash auto-trading SHA256",
+      "enabled": false,
+      "is_default": false,
+      "name": "NiceHash SHA256",
+      "nicehash_pool_id": "YOUR_NICEHASH_POOL_ID",
+      "password": "YOUR_NICEHASH_PASSWORD",
+      "priority": 3,
+      "stratum_version": 1,
+      "url": "stratum+tcp://sha256.auto.nicehash.com:9200",
+      "username": "YOUR_NICEHASH_ORG_ID",
+      "worker": "hendrix_phi"
     },
     "stratumv2": {
-      "name": "Braiins Stratum V2",
-      "url": "stratum2+ssl://stratum.braiins.com:3336",
-      "stratum_version": 2,
-      "username": "YOUR_BRAIINS_USERNAME",
-      "password": "YOUR_BRAIINS_PASSWORD",
-      "worker": "hendrix_phi",
-      "priority": 5,
+      "description": "Braiins Stratum V2 profile",
       "enabled": false,
       "is_default": false,
-      "description": "Braiins Stratum V2 profile"
+      "name": "Braiins Stratum V2",
+      "password": "YOUR_BRAIINS_PASSWORD",
+      "priority": 5,
+      "stratum_version": 2,
+      "url": "stratum2+ssl://stratum.braiins.com:3336",
+      "username": "YOUR_BRAIINS_USERNAME",
+      "worker": "hendrix_phi"
+    },
+    "viabtc": {
+      "description": "ViaBTC SHA256 pool - V1 Stratum",
+      "enabled": true,
+      "is_default": true,
+      "name": "ViaBTC BTC",
+      "password": "YOUR_VIABTC_PASSWORD",
+      "priority": 1,
+      "stratum_version": 1,
+      "url": "stratum+tcp://btc.viabtc.io:3333",
+      "username": "YOUR_VIABTC_USERNAME",
+      "worker": "hendrix_phi"
     }
   }
 }

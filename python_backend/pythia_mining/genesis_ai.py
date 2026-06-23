@@ -54,12 +54,20 @@ def classify_error(error: Exception) -> str:
         "ConnectionResetError",
     ]:
         return ErrorSeverity.TRANSIENT
-    if "timeout" in error_message or "network" in error_message or "connection" in error_message:
+    if (
+        "timeout" in error_message
+        or "network" in error_message
+        or "connection" in error_message
+    ):
         return ErrorSeverity.TRANSIENT
 
     # Fatal configuration errors
     if error_type in ["ValueError", "KeyError", "AttributeError", "TypeError"]:
-        if "config" in error_message or "credential" in error_message or "auth" in error_message:
+        if (
+            "config" in error_message
+            or "credential" in error_message
+            or "auth" in error_message
+        ):
             return ErrorSeverity.FATAL
     if error_type in ["ProductionConfigurationError", "PoolProfileError"]:
         return ErrorSeverity.FATAL
@@ -71,7 +79,9 @@ def classify_error(error: Exception) -> str:
         "StratumTransportError",
     ]:
         return ErrorSeverity.RECOVERABLE
-    if "pool" in error_message and ("disconnect" in error_message or "offline" in error_message):
+    if "pool" in error_message and (
+        "disconnect" in error_message or "offline" in error_message
+    ):
         return ErrorSeverity.RECOVERABLE
 
     # Default to transient for unknown errors
@@ -93,7 +103,9 @@ class GenesisAI:
     def __init__(self, config: Dict[str, Any]):
         self.config = config
         pools_config = config.get("pools", {})
-        runtime_env = os.getenv("NODE_ENV", os.getenv("HYBA_ENV", "development")).lower()
+        runtime_env = os.getenv(
+            "NODE_ENV", os.getenv("HYBA_ENV", "development")
+        ).lower()
         if not pools_config and runtime_env != "production":
             import json
             from pathlib import Path
@@ -112,7 +124,9 @@ class GenesisAI:
         )
         autonomics_config = config.get("autonomics") or {}
         self.autonomics = PulviniAutonomicsEngine(
-            decoherence_threshold=float(autonomics_config.get("decoherence_threshold", 0.15)),
+            decoherence_threshold=float(
+                autonomics_config.get("decoherence_threshold", 0.15)
+            ),
             audit_sink=self._record_autonomic_audit,
             lattice_repoint_sink=self.overlay.apply_lattice_repoint,
         )
@@ -149,7 +163,9 @@ class GenesisAI:
         )
 
         # Enhanced Deutsch knowledge substrate for decision making
-        from python_backend.pythia_mining.deutsch_knowledge_substrate import KnowledgeSubstrate
+        from python_backend.pythia_mining.deutsch_knowledge_substrate import (
+            KnowledgeSubstrate,
+        )
 
         self.knowledge_substrate = KnowledgeSubstrate()
 
@@ -181,10 +197,14 @@ class GenesisAI:
         from .genesis_ai_service import GenesisAIServiceRegistry
 
         GenesisAIServiceRegistry.register_instance(self)
-        self.logger.info("GenesisAI instance registered with service registry for API integration")
+        self.logger.info(
+            "GenesisAI instance registered with service registry for API integration"
+        )
         self.allow_dev_fixture_jobs = os.getenv(
             "NODE_ENV", os.getenv("HYBA_ENV", "development")
-        ).lower() != "production" and os.getenv("HYBA_ALLOW_DEV_FIXTURES", "false").lower() in {
+        ).lower() != "production" and os.getenv(
+            "HYBA_ALLOW_DEV_FIXTURES", "false"
+        ).lower() in {
             "1",
             "true",
             "yes",
@@ -209,7 +229,9 @@ class GenesisAI:
 
     def _run_autonomic_feedback(self) -> None:
         telemetry = self.overlay.autonomic_telemetry(
-            power_scale=float(self.quantum_solver.get_metrics().get("power_scale") or 1.0)
+            power_scale=float(
+                self.quantum_solver.get_metrics().get("power_scale") or 1.0
+            )
         )
         thermal_event, thermal_rebalance = self.autonomic_orchestrator.tick(telemetry)
         self.overlay.apply_autonomic_distribution(
@@ -223,12 +245,16 @@ class GenesisAI:
                 reason="thermal_sacrifice_healing",
             )
             self.latest_autonomic_event = thermal_rebalance.to_dict()
-            self.health_status = "HEALING" if thermal_rebalance.coverage_maintained else "DEGRADED"
+            self.health_status = (
+                "HEALING" if thermal_rebalance.coverage_maintained else "DEGRADED"
+            )
         heal_event = self.autonomics.heartbeat_and_heal(reason="runtime_telemetry")
         if heal_event is not None:
             self.repair_count += 1
             self.latest_autonomic_event = heal_event.to_dict()
-            self.health_status = "HEALING" if heal_event.coverage_maintained else "DEGRADED"
+            self.health_status = (
+                "HEALING" if heal_event.coverage_maintained else "DEGRADED"
+            )
         autonomics_config = self.config.get("autonomics") or {}
         learning_rate = float(autonomics_config.get("learning_rate", 0.01))
         if learning_rate > 0.0:
@@ -273,7 +299,9 @@ class GenesisAI:
 
         asyncio.create_task(self._mining_loop())
         asyncio.create_task(self._pool_rotation_loop())
-        self.logger.info("PYTHIA Genesis Orchestrator running without simulated production jobs.")
+        self.logger.info(
+            "PYTHIA Genesis Orchestrator running without simulated production jobs."
+        )
         return True
 
     async def stop(self) -> None:
@@ -322,8 +350,12 @@ class GenesisAI:
                     # Nominal: use baseline
                     scaling_factor = PHI / 1.5
 
-                phi_metrics.phi_integrated = min(1.0, phi_metrics.phi_integrated * scaling_factor)
-                phi_metrics.phi_causal = min(1.0, phi_metrics.phi_causal * scaling_factor)
+                phi_metrics.phi_integrated = min(
+                    1.0, phi_metrics.phi_integrated * scaling_factor
+                )
+                phi_metrics.phi_causal = min(
+                    1.0, phi_metrics.phi_causal * scaling_factor
+                )
 
                 self.latest_phi_optimization = {
                     "strategy_used": "enhanced_consciousness",
@@ -348,7 +380,9 @@ class GenesisAI:
                 context = {
                     "difficulty": self.current_job.difficulty,
                     "thermal_load": self.autonomics.homeostasis.get_average_coherence(),
-                    "phi_resonance": self.latest_phi_optimization.get("phi_resonance_score", 0.5),
+                    "phi_resonance": self.latest_phi_optimization.get(
+                        "phi_resonance_score", 0.5
+                    ),
                     "pool_latency": 50.0,  # Placeholder for actual latency
                 }
 
@@ -378,7 +412,9 @@ class GenesisAI:
                 self.enhanced_analysis_timing.pop(0)
 
         except Exception as e:
-            self.logger.error(f"Enhanced analysis async task failed: {e}", exc_info=True)
+            self.logger.error(
+                f"Enhanced analysis async task failed: {e}", exc_info=True
+            )
             # Graceful degradation: continue mining even if enhanced analysis fails
 
     def get_performance_metrics(self) -> Dict[str, Any]:
@@ -394,7 +430,9 @@ class GenesisAI:
             if self.enhanced_analysis_timing
             else 0.0
         )
-        enhanced_max = max(self.enhanced_analysis_timing) if self.enhanced_analysis_timing else 0.0
+        enhanced_max = (
+            max(self.enhanced_analysis_timing) if self.enhanced_analysis_timing else 0.0
+        )
 
         return {
             "mining_loop_avg_ms": mining_avg,
@@ -469,7 +507,9 @@ class GenesisAI:
             return job
         return None
 
-    async def _handle_found_share(self, *, active_pool, node_id: int, nonce: int, extranonce2: str):
+    async def _handle_found_share(
+        self, *, active_pool, node_id: int, nonce: int, extranonce2: str
+    ):
         if self.current_job is None:
             raise RuntimeError("cannot handle share without current job")
         self.overlay.record_share_candidate(node_id, nonce)
@@ -501,7 +541,9 @@ class GenesisAI:
                     await asyncio.sleep(0.5)
                     continue
 
-                self.overlay.register_pool_job(self.current_job, pool_name=active_pool.pool_name)
+                self.overlay.register_pool_job(
+                    self.current_job, pool_name=active_pool.pool_name
+                )
                 if self.propagation.is_job_cancelled(self.current_job.job_id):
                     self.health_status = "AWAITING_JOB"
                     await asyncio.sleep(0.25)
@@ -513,10 +555,14 @@ class GenesisAI:
                 self._run_autonomic_feedback()
 
                 # Core mining operations (synchronous, minimal overhead)
-                optimization = await self.ai_optimizer.optimize_nonce_search(self.current_job)
+                optimization = await self.ai_optimizer.optimize_nonce_search(
+                    self.current_job
+                )
 
                 # Enhanced nonce space pre-computation with Pulvini memory compression
-                memory_snapshot = self.propagation.memory_fabric.compressed_kernel_snapshot()
+                memory_snapshot = (
+                    self.propagation.memory_fabric.compressed_kernel_snapshot()
+                )
                 compression_ratio = memory_snapshot.compression.get(
                     "working_set_compression_ratio", 0.5
                 )
@@ -529,7 +575,9 @@ class GenesisAI:
                 # Offload enhanced calculations to background to prevent HPS degradation
                 asyncio.create_task(
                     self._run_enhanced_analysis_async(
-                        density_states=self.overlay.manifold.get_density_state_history(window=5),
+                        density_states=self.overlay.manifold.get_density_state_history(
+                            window=5
+                        ),
                         optimization=optimization,
                         memory_snapshot=memory_snapshot,
                         compression_ratio=compression_ratio,
@@ -542,8 +590,9 @@ class GenesisAI:
                 if len(self.mining_loop_timing) > self.max_timing_history:
                     self.mining_loop_timing.pop(0)
 
-                if resolved_nonce is not None and not self.propagation.is_job_cancelled(
-                    self.current_job.job_id
+                if (
+                    resolved_nonce is not None
+                    and not self.propagation.is_job_cancelled(self.current_job.job_id)
                 ):
                     self.shares_solved += 1
                     assignment = self.overlay.assignment_for_nonce(resolved_nonce)
@@ -600,13 +649,17 @@ class GenesisAI:
                             share_result.error_message or "share rejected",
                         )
                 elif resolved_nonce is None and self.current_job is not None:
-                    first_assignment = next(iter(self.overlay.assignments.values()), None)
+                    first_assignment = next(
+                        iter(self.overlay.assignments.values()), None
+                    )
                     if first_assignment is not None:
                         self.overlay.record_nack(first_assignment.node_id)
 
                 self.failure_counter = 0
                 if self.health_status != "HEALING":
-                    self.health_status = "HEALTHY" if active_pool.current_jobs else "AWAITING_JOB"
+                    self.health_status = (
+                        "HEALTHY" if active_pool.current_jobs else "AWAITING_JOB"
+                    )
                 await asyncio.sleep(0.25)
             except Exception as e:
                 severity = classify_error(e)
@@ -625,7 +678,9 @@ class GenesisAI:
                         e,
                     )
                     # Fatal errors should stop the mining loop
-                    await asyncio.sleep(60.0)  # Long sleep before retry for fatal errors
+                    await asyncio.sleep(
+                        60.0
+                    )  # Long sleep before retry for fatal errors
                 elif severity == ErrorSeverity.RECOVERABLE:
                     self.failure_counter = max(
                         self.failure_counter - 1, 0
@@ -657,7 +712,9 @@ class GenesisAI:
                 rotation_failures = 0
             except Exception as e:
                 rotation_failures += 1
-                self.logger.error("Pool scheduler failed (failures=%s): %s", rotation_failures, e)
+                self.logger.error(
+                    "Pool scheduler failed (failures=%s): %s", rotation_failures, e
+                )
                 self.health_status = "DEGRADED"
                 await asyncio.sleep(min(60.0, 10.0 * rotation_failures))
 
@@ -696,7 +753,9 @@ class GenesisAI:
             "acceptance_rate": None if acceptance is None else round(acceptance, 6),
             "system_health": self.health_status,
             "cpu_load": cpu_load,
-            "active_stratum_version": (active_pool.stratum_version if active_pool else None),
+            "active_stratum_version": (
+                active_pool.stratum_version if active_pool else None
+            ),
             "hashrate_ehs": quantum_metrics.get("hashrate_ehs"),
             "power_scale": quantum_metrics.get("power_scale"),
             "pools": pools_info,

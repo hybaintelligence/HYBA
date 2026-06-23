@@ -56,7 +56,9 @@ async def test_unified_engine_starts_as_one_powerhouse_stack() -> None:
 
 
 @pytest.mark.asyncio
-async def test_unified_engine_real_search_returns_candidate_for_sha256d_verification() -> None:
+async def test_unified_engine_real_search_returns_candidate_for_sha256d_verification() -> (
+    None
+):
     engine = UnifiedMiningEngine()
 
     result = await engine.search(_job())
@@ -97,17 +99,22 @@ async def test_unified_search_uses_pulvini_compressed_plan_not_base_solver() -> 
     # Use actual compression values rather than hardcoded expectations
     assert metrics["compressed_working_set_size"] > 0
     assert metrics["retained_kernel_lanes"] >= 0
-    assert metrics["compressed_working_set_size"] + metrics["retained_kernel_lanes"] == 32
+    assert (
+        metrics["compressed_working_set_size"] + metrics["retained_kernel_lanes"] == 32
+    )
     # search_space_size is an internal config key, not exposed in metrics
     assert metrics["nonce_space_contract"] == "pulvini_phi_compressed_pre_search"
     assert metrics["last_solve_iterations"] <= 1448
     assert any(
-        event["stage"] == "tunnel_anneal_projected_nonce" for event in metrics["last_solve_trace"]
+        event["stage"] == "tunnel_anneal_projected_nonce"
+        for event in metrics["last_solve_trace"]
     )
 
 
 @pytest.mark.asyncio
-async def test_rejected_share_drives_conservative_regime_without_faking_acceptance() -> None:
+async def test_rejected_share_drives_conservative_regime_without_faking_acceptance() -> (
+    None
+):
     engine = UnifiedMiningEngine()
     engine.optimizer.optimize_nonce_search = _fake_optimise  # type: ignore[method-assign]
 
@@ -131,7 +138,9 @@ async def test_rejected_share_drives_conservative_regime_without_faking_acceptan
     assert engine.optimizer.current_strategy.phi_resonance_enabled is True
     assert engine.optimizer.current_strategy.adaptive_difficulty is False
     assert engine.optimizer.current_strategy.max_search_time == 120.0
-    assert state["state"]["autonomic_event"]["action"] == "reduced_search_aggressiveness"
+    assert (
+        state["state"]["autonomic_event"]["action"] == "reduced_search_aggressiveness"
+    )
     assert state["consciousness"]["integration_regime"] in {"critical", "fragmented"}
 
 

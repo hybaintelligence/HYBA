@@ -17,7 +17,9 @@ def test_on_prem_profile_allows_local_ingestion_and_seals_controls():
         site_name="local-secure-room",
         data_residency="uk",
         allowed_source_types=("records", "inline", "file", "csv"),
-        usage_policy=UsagePolicy(max_ingestions_per_day=2, max_records_per_ingestion=10),
+        usage_policy=UsagePolicy(
+            max_ingestions_per_day=2, max_records_per_ingestion=10
+        ),
     )
     control_plane = SovereignControlPlane(profile)
     principal = PrincipalContext(
@@ -49,8 +51,18 @@ def test_on_prem_profile_allows_local_ingestion_and_seals_controls():
 
     assert envelope.raw_shape == (2, 3)
     assert envelope.metadata["deployment_control"]["decision"]["allowed"] is True
-    assert envelope.metadata["deployment_control"]["deployment_attestation"]["profile"]["deployment_mode"] == "on_premise"
-    assert envelope.metadata["deployment_control"]["deployment_attestation"]["cloud_dependency_required"] is False
+    assert (
+        envelope.metadata["deployment_control"]["deployment_attestation"]["profile"][
+            "deployment_mode"
+        ]
+        == "on_premise"
+    )
+    assert (
+        envelope.metadata["deployment_control"]["deployment_attestation"][
+            "cloud_dependency_required"
+        ]
+        is False
+    )
     assert control_plane.get_usage_snapshot(principal)["records"] == 2
 
 
@@ -62,7 +74,9 @@ def test_on_prem_profile_blocks_cloud_storage_and_external_sources_by_default():
         data_residency="us",
     )
     control_plane = SovereignControlPlane(profile)
-    principal = PrincipalContext(principal_id="analyst-2", roles=("analyst",), clearance="secret")
+    principal = PrincipalContext(
+        principal_id="analyst-2", roles=("analyst",), clearance="secret"
+    )
 
     cloud_decision = control_plane.authorize_ingestion(
         principal,
@@ -84,7 +98,9 @@ def test_on_prem_profile_blocks_cloud_storage_and_external_sources_by_default():
     )
 
     assert cloud_decision.allowed is False
-    assert "cloud/object-storage ingestion is disabled" in "; ".join(cloud_decision.reasons)
+    assert "cloud/object-storage ingestion is disabled" in "; ".join(
+        cloud_decision.reasons
+    )
     assert api_decision.allowed is False
     assert "external network ingestion is disabled" in "; ".join(api_decision.reasons)
 
@@ -98,16 +114,23 @@ def test_privileged_admin_requires_authorised_role_reason_and_dual_control():
     )
     control_plane = SovereignControlPlane(profile)
 
-    non_admin = PrincipalContext(principal_id="user-1", roles=("analyst",), clearance="secret")
+    non_admin = PrincipalContext(
+        principal_id="user-1", roles=("analyst",), clearance="secret"
+    )
     denied = control_plane.evaluate_action(
         non_admin,
         "privileged_admin_mutation",
-        metadata={"reason": "rotate customer policy", "second_approver": "security-controller"},
+        metadata={
+            "reason": "rotate customer policy",
+            "second_approver": "security-controller",
+        },
     )
     assert denied.allowed is False
     assert "admin action requires an authorised admin role" in "; ".join(denied.reasons)
 
-    admin = PrincipalContext(principal_id="admin-1", roles=("sovereign_admin",), clearance="top_secret")
+    admin = PrincipalContext(
+        principal_id="admin-1", roles=("sovereign_admin",), clearance="top_secret"
+    )
     needs_dual_control = control_plane.evaluate_action(
         admin,
         "privileged_admin_mutation",
@@ -119,7 +142,10 @@ def test_privileged_admin_requires_authorised_role_reason_and_dual_control():
     allowed = control_plane.evaluate_action(
         admin,
         "privileged_admin_mutation",
-        metadata={"reason": "change tenant execution restriction", "second_approver": "auditor-1"},
+        metadata={
+            "reason": "change tenant execution restriction",
+            "second_approver": "auditor-1",
+        },
     )
     assert allowed.allowed is True
     assert allowed.evidence_seal
@@ -134,7 +160,9 @@ def test_usage_quotas_are_enforced_without_cloud_billing():
         usage_policy=UsagePolicy(max_ingestions_per_day=1, max_records_per_day=5),
     )
     control_plane = SovereignControlPlane(profile)
-    principal = PrincipalContext(principal_id="operator-1", roles=("operator",), clearance="secret")
+    principal = PrincipalContext(
+        principal_id="operator-1", roles=("operator",), clearance="secret"
+    )
 
     first = control_plane.authorize_ingestion(
         principal,
@@ -173,11 +201,17 @@ def test_audit_export_requires_auditor_role_and_hash_chain_is_present():
         data_residency="uk",
     )
     control_plane = SovereignControlPlane(profile)
-    analyst = PrincipalContext(principal_id="analyst", roles=("analyst",), clearance="secret")
-    auditor = PrincipalContext(principal_id="auditor", roles=("auditor",), clearance="secret")
+    analyst = PrincipalContext(
+        principal_id="analyst", roles=("analyst",), clearance="secret"
+    )
+    auditor = PrincipalContext(
+        principal_id="auditor", roles=("auditor",), clearance="secret"
+    )
 
     control_plane.evaluate_action(analyst, "execute_workload", quantity=1)
-    denied_export = control_plane.evaluate_action(analyst, "export_audit", record_audit=False)
+    denied_export = control_plane.evaluate_action(
+        analyst, "export_audit", record_audit=False
+    )
     assert denied_export.allowed is False
 
     events = control_plane.export_audit_log(auditor)

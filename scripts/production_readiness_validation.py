@@ -45,9 +45,11 @@ class ValidationReport:
                 {
                     "name": name,
                     "passed": passed,
-                    "result": result
-                    if isinstance(result, (str, int, float, bool))
-                    else str(result)[:100],
+                    "result": (
+                        result
+                        if isinstance(result, (str, int, float, bool))
+                        else str(result)[:100]
+                    ),
                     "timestamp": datetime.now(timezone.utc).isoformat(),
                 }
             )
@@ -185,7 +187,9 @@ def validate_consciousness(report: ValidationReport) -> None:
         state = engine.get_state()
         return state is not None
 
-    report.check("Consciousness engine initializes", check_consciousness_init, expected=True)
+    report.check(
+        "Consciousness engine initializes", check_consciousness_init, expected=True
+    )
 
     def check_coherence_range():
         from pythia_mining.consciousness_engine import ConsciousnessEngine
@@ -237,7 +241,11 @@ def validate_evidence_integrity(report: ValidationReport) -> None:
             "phi_structured_search_final",
             "phi_hash_validity_final",
         }
-        found = {d.name for d in artifacts.iterdir() if d.is_dir() and d.name in required_dirs}
+        found = {
+            d.name
+            for d in artifacts.iterdir()
+            if d.is_dir() and d.name in required_dirs
+        }
         return len(found) >= 3  # At least 3 of 5
 
     report.check("Evidence artifacts generated", check_evidence_files, expected=True)
@@ -340,7 +348,9 @@ def main() -> int:
 
     # Write report
     report_path = (
-        Path(__file__).resolve().parents[1] / "artifacts" / "production_validation_report.json"
+        Path(__file__).resolve().parents[1]
+        / "artifacts"
+        / "production_validation_report.json"
     )
     report_path.parent.mkdir(parents=True, exist_ok=True)
     with open(report_path, "w") as f:

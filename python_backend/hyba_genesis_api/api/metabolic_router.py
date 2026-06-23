@@ -143,7 +143,9 @@ class LanePulse:
     @classmethod
     def from_binary(cls, data: bytes) -> "LanePulse":
         """Unpack from binary format."""
-        lane_id, phi, entropy, energy, is_injured, timestamp = struct.unpack(">Bffff?Q", data)
+        lane_id, phi, entropy, energy, is_injured, timestamp = struct.unpack(
+            ">Bffff?Q", data
+        )
         return cls(
             lane_id=lane_id,
             phi_resonance=phi,
@@ -224,7 +226,9 @@ class MetabolicEngine:
 
         return entropy
 
-    def calculate_energy_per_phi(self, phi_resonance: float, power_consumption: float) -> float:
+    def calculate_energy_per_phi(
+        self, phi_resonance: float, power_consumption: float
+    ) -> float:
         """Calculate energy consumption per unit φ-resonance.
 
         Args:
@@ -243,7 +247,9 @@ class MetabolicEngine:
         energy_per_phi = power_consumption / phi_resonance
         return energy_per_phi
 
-    def calculate_thermal_efficiency(self, hashrate: float, temperature: float) -> float:
+    def calculate_thermal_efficiency(
+        self, hashrate: float, temperature: float
+    ) -> float:
         """Calculate heat-normalized hashrate (performance per thermal unit).
 
         Args:
@@ -264,7 +270,10 @@ class MetabolicEngine:
         return efficiency
 
     def calculate_hunger_drive(
-        self, pool_reject_rate: float, pattern_discovery_rate: float, search_depth: float
+        self,
+        pool_reject_rate: float,
+        pattern_discovery_rate: float,
+        search_depth: float,
     ) -> HungerDrive:
         """Calculate knowledge hunger drive from mining telemetry.
 
@@ -293,7 +302,9 @@ class MetabolicEngine:
         depth_pressure = max(0.0, (1.0 - search_depth) * 0.5)
 
         # Combined hunger score
-        hunger_score = reject_pressure * 0.5 + discovery_pressure * 0.3 + depth_pressure * 0.2
+        hunger_score = (
+            reject_pressure * 0.5 + discovery_pressure * 0.3 + depth_pressure * 0.2
+        )
 
         # Determine hunger level
         if hunger_score < 0.2:
@@ -314,7 +325,9 @@ class MetabolicEngine:
             knowledge_acquisition_rate=pattern_discovery_rate,
             search_depth_pressure=depth_pressure_normalized,
             pattern_saturation=saturation,
-            last_feeding_time=time.time() if pattern_discovery_rate > 0 else time.time() - 3600,
+            last_feeding_time=(
+                time.time() if pattern_discovery_rate > 0 else time.time() - 3600
+            ),
             timestamp=time.time(),
         )
 
@@ -460,7 +473,9 @@ async def get_entropy_monitor() -> Dict[str, Any]:
         energy_per_phi = _metabolic_engine.calculate_energy_per_phi(
             phi_resonance, power_consumption
         )
-        thermal_efficiency = _metabolic_engine.calculate_thermal_efficiency(hashrate, temperature)
+        thermal_efficiency = _metabolic_engine.calculate_thermal_efficiency(
+            hashrate, temperature
+        )
         heat_dissipation = power_consumption * 0.8  # 80% becomes heat
 
         # Determine metabolic regime
@@ -486,7 +501,9 @@ async def get_entropy_monitor() -> Dict[str, Any]:
 
     except Exception as e:
         logger.error(f"Entropy Monitor error: {e}")
-        raise HTTPException(status_code=500, detail=f"Entropy calculation failed: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Entropy calculation failed: {str(e)}"
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -528,7 +545,9 @@ async def get_hunger_drive() -> Dict[str, Any]:
 
     except Exception as e:
         logger.error(f"Hunger Drive error: {e}")
-        raise HTTPException(status_code=500, detail=f"Hunger calculation failed: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Hunger calculation failed: {str(e)}"
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -605,7 +624,9 @@ async def get_metabolic_certificate() -> Dict[str, Any]:
 
     except Exception as e:
         logger.error(f"Metabolic Certificate error: {e}")
-        raise HTTPException(status_code=500, detail=f"Certificate generation failed: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Certificate generation failed: {str(e)}"
+        )
 
 
 # ---------------------------------------------------------------------------

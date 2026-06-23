@@ -29,7 +29,9 @@ def main() -> int:
         action="store_true",
         help="Emit the challenge packet that should be rejected before staging.",
     )
-    parser.add_argument("--output", type=Path, default=None, help="Optional JSON output path.")
+    parser.add_argument(
+        "--output", type=Path, default=None, help="Optional JSON output path."
+    )
     args = parser.parse_args()
 
     packet = generate_finance_sovereign_packet(adversarial=args.challenge).to_dict()

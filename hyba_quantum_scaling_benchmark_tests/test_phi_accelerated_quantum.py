@@ -46,7 +46,9 @@ def test_phi_folding_compression_small_matrix() -> None:
 def test_phi_decoherence_suppression_reduces_off_diagonal() -> None:
     """Decoherence suppression should reduce off-diagonal magnitude and preserve trace."""
     rho = np.array([[0.5, 0.5], [0.5, 0.5]], dtype=complex)
-    suppressed = PhiAcceleratedDensityMatrix.phi_decoherence_suppression(rho, strength=0.1)
+    suppressed = PhiAcceleratedDensityMatrix.phi_decoherence_suppression(
+        rho, strength=0.1
+    )
     # Trace should remain 1
     assert np.isclose(np.trace(suppressed), 1.0, atol=1e-6)
     # Off-diagonals should be damped compared to original

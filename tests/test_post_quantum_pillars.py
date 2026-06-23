@@ -76,6 +76,7 @@ _EPS = 1e-12
 # PILLAR 6: Operator Algebraic Formal Verification
 # ══════════════════════════════════════════════════════════════════════
 
+
 class TestPillar6CStarAlgebra:
     """Unit & property tests for C*-algebra formal verification."""
 
@@ -98,7 +99,9 @@ class TestPillar6CStarAlgebra:
         """Test that identity matrix satisfies all C*-algebra axioms."""
         cert = verifier.verify_operator(identity_2x2, name="I₂")
         assert cert.is_square
-        assert cert.c_star_identity_holds, f"C* identity failed: {cert.c_star_identity_error}"
+        assert (
+            cert.c_star_identity_holds
+        ), f"C* identity failed: {cert.c_star_identity_error}"
         assert cert.is_positive_semidefinite, f"Not PSD: {cert.min_eigenvalue}"
         assert cert.all_axioms_satisfied
         # Verify can raise no assertion
@@ -138,7 +141,9 @@ class TestPillar6CStarAlgebra:
             math.sqrt(p / 3) * sz,
         ]
         cert = verifier.verify_channel(kraus, name="depolarizing_channel")
-        assert cert.choi_positive_semidefinite, f"Choi min eigenvalue: {cert.choi_min_eigenvalue}"
+        assert (
+            cert.choi_positive_semidefinite
+        ), f"Choi min eigenvalue: {cert.choi_min_eigenvalue}"
         assert cert.trace_preserving, f"TP error: {cert.trace_preservation_error}"
         assert cert.is_cptp
 
@@ -169,11 +174,13 @@ class TestPillar6CStarAlgebra:
         rho_0 = np.array([[1, 0], [0, 0]], dtype=np.complex128)
         rho_1 = np.array([[0, 0], [0, 1]], dtype=np.complex128)
         mixed = 0.5 * (rho_0 + rho_1)
-        certs = verifier.verify_density_matrix_batch({
-            "pure_0": rho_0,
-            "pure_1": rho_1,
-            "mixed": mixed,
-        })
+        certs = verifier.verify_density_matrix_batch(
+            {
+                "pure_0": rho_0,
+                "pure_1": rho_1,
+                "mixed": mixed,
+            }
+        )
         assert len(certs) == 3
         for name, cert in certs.items():
             assert isinstance(cert, StateCertificate)
@@ -199,7 +206,9 @@ class TestPillar6CStarAlgebra:
         A = rng.random((dim, dim)) + 1j * rng.random((dim, dim))
         rho = (A @ A.conj().T) / np.trace(A @ A.conj().T).real
         cert = verifier.verify_operator(rho)
-        assert cert.c_star_identity_holds, f"C* identity error: {cert.c_star_identity_error:.2e}"
+        assert (
+            cert.c_star_identity_holds
+        ), f"C* identity error: {cert.c_star_identity_error:.2e}"
         assert cert.is_positive_semidefinite
 
     @pytest.mark.parametrize("p", [0.0, 0.25, 0.5, 0.75, 1.0])
@@ -216,7 +225,9 @@ class TestPillar6CStarAlgebra:
             math.sqrt(p / 3) * sz,
         ]
         cert = verifier.verify_channel(kraus)
-        assert cert.is_cptp, f"Not CPTP for p={p}: Choi min ev={cert.choi_min_eigenvalue}"
+        assert (
+            cert.is_cptp
+        ), f"Not CPTP for p={p}: Choi min ev={cert.choi_min_eigenvalue}"
 
     def test_phi_weighted_spectral_gap(self):
         """Property: φ-weighted spectral gap ≥ eigenvalue gap."""
@@ -257,8 +268,10 @@ class TestPillar6CStarAlgebra:
         assert state_cert.all_conditions_satisfied
 
         theta = 0.3
-        U = np.array([[np.cos(theta), -np.sin(theta)],
-                      [np.sin(theta), np.cos(theta)]], dtype=np.complex128)
+        U = np.array(
+            [[np.cos(theta), -np.sin(theta)], [np.sin(theta), np.cos(theta)]],
+            dtype=np.complex128,
+        )
         channel_cert = verifier.verify_channel([U], name="unitary_channel")
         assert channel_cert.is_cptp
         assert channel_cert.trace_preserving
@@ -268,6 +281,7 @@ class TestPillar6CStarAlgebra:
 # ══════════════════════════════════════════════════════════════════════
 # PILLAR 7: Non-Markovian Memory Bounds
 # ══════════════════════════════════════════════════════════════════════
+
 
 class TestPillar7NonMarkovianMemory:
     """Unit & property tests for non-Markovian memory bounds."""
@@ -403,6 +417,7 @@ class TestPillar7NonMarkovianMemory:
 # PILLAR 8: H4 Coxeter Group Integration
 # ══════════════════════════════════════════════════════════════════════
 
+
 class TestPillar8H4Group:
     """Unit & property tests for H4 600-cell integration."""
 
@@ -428,19 +443,25 @@ class TestPillar8H4Group:
         assert NUM_NODES == 120
         assert len(ADJACENCY_MAP_H4) == 120
         for node_id, payload in ADJACENCY_MAP_H4.items():
-            assert len(payload["d"]) == 12, f"Node {node_id} has {len(payload['d'])} neighbors"
+            assert (
+                len(payload["d"]) == 12
+            ), f"Node {node_id} has {len(payload['d'])} neighbors"
 
     def test_h4_adjacency_symmetric(self):
         """H4 adjacency should be symmetric: if i→j then j→i."""
         for i in range(NUM_NODES):
             for j in ADJACENCY_MAP_H4[i]["d"]:
-                assert i in ADJACENCY_MAP_H4[j]["d"], f"Symmetry broken: {i}→{j} but not {j}→{i}"
+                assert (
+                    i in ADJACENCY_MAP_H4[j]["d"]
+                ), f"Symmetry broken: {i}→{j} but not {j}→{i}"
 
     def test_phi_3_resonance_bounds(self):
         """φ³ resonance should be in [0, 1]."""
         for nonce in [0, 1, 100, 2**32 - 1, 123456789]:
             score = phi_3_resonance(nonce)
-            assert 0 <= score <= 1, f"φ³ resonance {score} out of bounds for nonce {nonce}"
+            assert (
+                0 <= score <= 1
+            ), f"φ³ resonance {score} out of bounds for nonce {nonce}"
 
     def test_h4_coxeter_certificate(self):
         """H4 Coxeter certificate should be valid."""
@@ -541,6 +562,7 @@ class TestPillar8H4Group:
 # PILLAR 9: Formal Proof of Substrate Equivalence
 # ══════════════════════════════════════════════════════════════════════
 
+
 class TestPillar9SubstrateEquivalence:
     """Unit & property tests for substrate equivalence proofs."""
 
@@ -559,6 +581,7 @@ class TestPillar9SubstrateEquivalence:
 
         def identity(x: np.ndarray) -> np.ndarray:
             return x
+
         cat.add_translation("cpu", "cpu", identity)
         assert len(cat.morphisms) == 1
 
@@ -612,7 +635,7 @@ class TestPillar9SubstrateEquivalence:
         v = rng.random(dim).astype(np.float64)
 
         w1 = 1.0 / _PHI
-        w2 = 1.0 / (_PHI ** 2)
+        w2 = 1.0 / (_PHI**2)
         a = dim // 2
         head = v[:a]
         tail = v[a:dim]
@@ -621,7 +644,7 @@ class TestPillar9SubstrateEquivalence:
         kernel = w2 * head - w1 * tail_padded
         norm_sq = w1**2 + w2**2
         recon_head = (w1 * folded + w2 * kernel) / norm_sq
-        recon_tail = ((w2 * folded - w1 * kernel) / norm_sq)[:len(tail)]
+        recon_tail = ((w2 * folded - w1 * kernel) / norm_sq)[: len(tail)]
         recon = np.concatenate([recon_head[:a], recon_tail])
         error = float(np.linalg.norm(recon - v))
         assert error < _EPS, f"Reconstruction error too large: {error:.2e}"
@@ -695,6 +718,7 @@ class TestPillar9SubstrateEquivalence:
 # ══════════════════════════════════════════════════════════════════════
 # CROSS-PILLAR INTEGRATION TESTS
 # ══════════════════════════════════════════════════════════════════════
+
 
 class TestCrossPillarIntegration:
     """Integration tests combining multiple pillars."""

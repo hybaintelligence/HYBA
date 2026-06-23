@@ -55,7 +55,9 @@ class TestStratumSimulator:
         self.extranonce2_size = 4
         self.running = False
 
-    async def handle_client(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter):
+    async def handle_client(
+        self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter
+    ):
         """Handle a single Stratum client connection."""
         addr = writer.get_extra_info("peername")
         logger.info("Client connected: %s", addr)
@@ -127,7 +129,11 @@ class TestStratumSimulator:
             accepted = random.random() < 0.5
 
             logger.info(
-                "Share from %s job=%s nonce=%s accepted=%s", worker, job_id, nonce, accepted
+                "Share from %s job=%s nonce=%s accepted=%s",
+                worker,
+                job_id,
+                nonce,
+                accepted,
             )
 
             return {
@@ -147,9 +153,7 @@ class TestStratumSimulator:
 
         # Generate fake job parameters
         prev_hash = "00" * 32  # All zeros for testing
-        coinb1 = (
-            "01000000010000000000000000000000000000000000000000000000000000000000000000ffffffff"
-        )
+        coinb1 = "01000000010000000000000000000000000000000000000000000000000000000000000000ffffffff"
         coinb2 = "ffffffff01"
         merkle_branch = []
         version = "00000001"
@@ -177,10 +181,16 @@ class TestStratumSimulator:
         await writer.drain()
         logger.info("Sent job: %s", job_id)
 
-    async def send_set_difficulty(self, writer: asyncio.StreamWriter, difficulty: float):
+    async def send_set_difficulty(
+        self, writer: asyncio.StreamWriter, difficulty: float
+    ):
         """Send a mining.set_difficulty message."""
         self.difficulty = difficulty
-        message = {"id": None, "method": "mining.set_difficulty", "params": [difficulty]}
+        message = {
+            "id": None,
+            "method": "mining.set_difficulty",
+            "params": [difficulty],
+        }
         writer.write((json.dumps(message) + "\n").encode())
         await writer.drain()
         logger.info("Set difficulty: %.2f", difficulty)

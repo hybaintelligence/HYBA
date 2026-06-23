@@ -84,7 +84,9 @@ def grover_scope_certificate(
     search_space_size = sum((end - start + 1) for start, end in nonce_ranges)
     basis_to_nonce_ratio = float(NONCE_SPACE) / float(basis_dimension)
     theoretical_steps = int(
-        math.floor((math.pi / 4.0) * math.sqrt(float(basis_dimension) / max(1, marked_states)))
+        math.floor(
+            (math.pi / 4.0) * math.sqrt(float(basis_dimension) / max(1, marked_states))
+        )
     )
     if actual_iterations is None:
         actual_iterations = min(100, theoretical_steps)
@@ -134,7 +136,9 @@ def grover_efficiency_report(
     import math
 
     grover_steps_20 = int(math.floor((math.pi / 4.0) * math.sqrt(20.0)))
-    grover_steps_full = int(math.floor((math.pi / 4.0) * math.sqrt(float(nonce_space_size))))
+    grover_steps_full = int(
+        math.floor((math.pi / 4.0) * math.sqrt(float(nonce_space_size)))
+    )
     classical_steps_full = nonce_space_size
 
     return {

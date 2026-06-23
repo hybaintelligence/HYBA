@@ -39,7 +39,9 @@ def check_and_install_dependencies():
     if missing_packages:
         print(f"\n📦 Installing {len(missing_packages)} missing packages...")
         try:
-            subprocess.check_call([sys.executable, "-m", "pip", "install", *missing_packages])
+            subprocess.check_call(
+                [sys.executable, "-m", "pip", "install", *missing_packages]
+            )
             print("✓ All dependencies installed successfully")
             return True
         except subprocess.CalledProcessError as e:
@@ -85,7 +87,9 @@ def run_property_tests():
             else:
                 print(f"✗ {test_file} FAILED")
                 print("Error output:")
-                print(result.stdout[-500:] if len(result.stdout) > 500 else result.stdout)
+                print(
+                    result.stdout[-500:] if len(result.stdout) > 500 else result.stdout
+                )
                 results.append((test_file, False))
         except subprocess.TimeoutExpired:
             print(f"⏱️  {test_file} TIMEOUT")

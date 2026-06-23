@@ -14,7 +14,9 @@ from pythia_mining.after_quantum_trifecta import benchmark_logistics_manifold
 
 
 def main() -> int:
-    print(json.dumps(benchmark_logistics_manifold().as_dict(), indent=2, sort_keys=True))
+    print(
+        json.dumps(benchmark_logistics_manifold().as_dict(), indent=2, sort_keys=True)
+    )
     return 0
 
 

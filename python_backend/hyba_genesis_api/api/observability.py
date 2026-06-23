@@ -104,7 +104,9 @@ async def get_system_health(
     )
 
 
-@router.get("/instances/{instance_id}/telemetry", response_model=InstanceTelemetryResponse)
+@router.get(
+    "/instances/{instance_id}/telemetry", response_model=InstanceTelemetryResponse
+)
 async def get_instance_telemetry(
     instance_id: str,
     payload: TokenPayload = Depends(require_admin),
@@ -137,7 +139,9 @@ async def get_instance_telemetry(
 
     return InstanceTelemetryResponse(
         instance_id=instance_id,
-        total_execution_cycles=topology.get("executions", topology.get("workload_count", 0)),
+        total_execution_cycles=topology.get(
+            "executions", topology.get("workload_count", 0)
+        ),
         last_updated=topology.get("updated_at", "unknown"),
         redis_backed=True,
     )

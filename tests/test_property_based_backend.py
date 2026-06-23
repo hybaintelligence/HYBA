@@ -58,10 +58,12 @@ def test_property_compact_to_target_valid_range(exponent: int, mantissa: int) ->
 
     compact = (exponent << 24) | mantissa
     target = compact_to_target(compact)
-    assert target > 0, f"Target must be positive, got {target} for compact 0x{compact:08x}"
-    assert target < 2**224, (
-        f"Target must be less than 2²²⁴, got {target} for compact 0x{compact:08x}"
-    )
+    assert (
+        target > 0
+    ), f"Target must be positive, got {target} for compact 0x{compact:08x}"
+    assert (
+        target < 2**224
+    ), f"Target must be less than 2²²⁴, got {target} for compact 0x{compact:08x}"
     assert math.isfinite(target), f"Target must be finite, got {target}"
 
 
@@ -89,9 +91,9 @@ def test_property_entropy_always_bounded(seed: int) -> None:
 
     entropy = solver.calculate_integrated_entropy(amplitudes)
     max_entropy = math.log2(DODECAHEDRON_VERTICES)
-    assert 0.0 <= entropy <= max_entropy + 1e-12, (
-        f"Entropy {entropy} outside bounds [0, {max_entropy}]"
-    )
+    assert (
+        0.0 <= entropy <= max_entropy + 1e-12
+    ), f"Entropy {entropy} outside bounds [0, {max_entropy}]"
 
 
 # =============================================================================
@@ -101,7 +103,9 @@ def test_property_entropy_always_bounded(seed: int) -> None:
 
 @given(
     scales=st.lists(
-        st.floats(min_value=0.1, max_value=100.0, allow_nan=False, allow_infinity=False),
+        st.floats(
+            min_value=0.1, max_value=100.0, allow_nan=False, allow_infinity=False
+        ),
         min_size=3,
         max_size=10,
         unique=True,
@@ -150,9 +154,13 @@ def test_property_solver_basis_has_correct_dimensions(seed: int) -> None:
     ), f"Basis states shape {solver.basis_states.shape}, expected ({DODECAHEDRON_VERTICES}, 3)"
     # All row norms must be 1
     row_norms = np.linalg.norm(solver.basis_states, axis=1)
-    assert np.allclose(row_norms, 1.0, atol=1e-12), "Basis state rows are not normalized"
+    assert np.allclose(
+        row_norms, 1.0, atol=1e-12
+    ), "Basis state rows are not normalized"
     # All entries must be finite
-    assert np.isfinite(solver.basis_states).all(), "Basis states contain non-finite values"
+    assert np.isfinite(
+        solver.basis_states
+    ).all(), "Basis states contain non-finite values"
 
 
 # =============================================================================
@@ -176,9 +184,9 @@ def test_property_substrate_initialization_deterministic() -> None:
     # All should have 'ready' true, same initialization order
     for i, state in enumerate(states):
         assert state["ready"], f"Substrate initialization {i} failed"
-    assert states[0]["initialization_order"] == states[1]["initialization_order"], (
-        "Substrate initialization order is not deterministic"
-    )
+    assert (
+        states[0]["initialization_order"] == states[1]["initialization_order"]
+    ), "Substrate initialization order is not deterministic"
 
     shutdown_state = shutdown_substrate()
     assert shutdown_state["shutdown_at"] is not None
@@ -192,7 +200,9 @@ def test_property_substrate_initialization_deterministic() -> None:
 
 @given(
     burst=st.integers(min_value=1, max_value=20),
-    rate=st.floats(min_value=1.0, max_value=100.0, allow_nan=False, allow_infinity=False),
+    rate=st.floats(
+        min_value=1.0, max_value=100.0, allow_nan=False, allow_infinity=False
+    ),
     request_ids=st.lists(
         st.text(
             min_size=1,
@@ -223,9 +233,9 @@ def test_property_token_bucket_never_exceeds_burst(
         except Exception:
             consecutive_accepted = 0
 
-    assert max_consecutive <= burst, (
-        f"Token bucket allowed {max_consecutive} consecutive requests but burst capacity is {burst}"
-    )
+    assert (
+        max_consecutive <= burst
+    ), f"Token bucket allowed {max_consecutive} consecutive requests but burst capacity is {burst}"
 
 
 # =============================================================================
@@ -262,9 +272,9 @@ def test_property_backpressure_never_exceeds_inflight_limit(
             admitted += 1
         except Exception:
             pass
-    assert admitted <= max_inflight, (
-        f"Backpressure guard admitted {admitted} requests but max_inflight is {max_inflight}"
-    )
+    assert (
+        admitted <= max_inflight
+    ), f"Backpressure guard admitted {admitted} requests but max_inflight is {max_inflight}"
 
     # Cleanup
     for _ in range(admitted):
@@ -296,12 +306,16 @@ def test_property_idempotency_keys_produce_same_request_id(keys: list[str]) -> N
     tracker = MiningRequestTracker()
     for key in keys:
         first = tracker.create_request("start", {"miner": "alpha"}, idempotency_key=key)
-        second = tracker.create_request("start", {"miner": "alpha"}, idempotency_key=key)
-        assert first.request_id == second.request_id, (
-            f"Idempotency key '{key}' produced different request IDs"
+        second = tracker.create_request(
+            "start", {"miner": "alpha"}, idempotency_key=key
         )
+        assert (
+            first.request_id == second.request_id
+        ), f"Idempotency key '{key}' produced different request IDs"
         # Verify cleanup doesn't break things
-        tracker.update_request_status(first.request_id, RequestStatus.FAILED, error="cleanup test")
+        tracker.update_request_status(
+            first.request_id, RequestStatus.FAILED, error="cleanup test"
+        )
 
 
 # =============================================================================
@@ -315,7 +329,9 @@ def test_property_idempotency_keys_produce_same_request_id(keys: list[str]) -> N
     target=st.integers(min_value=1, max_value=2**224),
 )
 @settings(max_examples=50)
-async def test_property_nonce_in_range(start: int, range_size: int, target: int) -> None:
+async def test_property_nonce_in_range(
+    start: int, range_size: int, target: int
+) -> None:
     """Property: Every nonce returned by the solver must be within its declared range."""
     from pythia_mining.dodecahedral_solver import DodecahedralQuantumSolver
 
@@ -324,7 +340,9 @@ async def test_property_nonce_in_range(start: int, range_size: int, target: int)
     await solver.configure_search(target=target, nonce_ranges=[(start, end)])
     nonce = await solver.solve(max_iterations=25, timeout=5.0)
     assert nonce is not None, "Solver returned None for valid range"
-    assert start <= nonce <= end, f"Nonce {nonce} outside declared range [{start}, {end}]"
+    assert (
+        start <= nonce <= end
+    ), f"Nonce {nonce} outside declared range [{start}, {end}]"
 
 
 # =============================================================================
@@ -357,9 +375,9 @@ def test_property_uniform_vector_always_unit_norm(dim: int) -> None:
 
     vec = uniform_vector(dim)
     norm = np.linalg.norm(vec)
-    assert np.isclose(norm, 1.0, atol=1e-12), (
-        f"Uniform vector of dimension {dim} has norm {norm}, expected 1.0"
-    )
+    assert np.isclose(
+        norm, 1.0, atol=1e-12
+    ), f"Uniform vector of dimension {dim} has norm {norm}, expected 1.0"
 
 
 # =============================================================================
@@ -377,7 +395,9 @@ def mining_job_strategy(draw):
     extranonce1 = draw(st.binary(min_size=0, max_size=8)).hex()
     extranonce2_size = draw(st.integers(min_value=0, max_value=8))
     merkle_branch = draw(
-        st.lists(st.binary(min_size=32, max_size=32).map(bytes.hex), min_size=0, max_size=6)
+        st.lists(
+            st.binary(min_size=32, max_size=32).map(bytes.hex), min_size=0, max_size=6
+        )
     )
     return MiningJob(
         job_id=draw(
@@ -469,7 +489,9 @@ def test_property_phi_folding_compression_round_trips_generated_vectors(
         max_size=12,
     ),
     indicator_values=st.lists(
-        st.floats(min_value=-10.0, max_value=10.0, allow_nan=False, allow_infinity=False),
+        st.floats(
+            min_value=-10.0, max_value=10.0, allow_nan=False, allow_infinity=False
+        ),
         min_size=1,
         max_size=12,
     ),
@@ -482,9 +504,13 @@ def test_property_phi_scaled_ensemble_outputs_stay_bounded(
     from pythia_mining.phi_scaling_engine import PhiScaledEnsemble
 
     engine = PhiScaledEnsemble({"memory_limit": 8})
-    predictions = {f"model_{index:02d}": {"score": score} for index, score in enumerate(scores)}
+    predictions = {
+        f"model_{index:02d}": {"score": score} for index, score in enumerate(scores)
+    }
     indicators = {
-        "quantum": {f"q_{index:02d}": value for index, value in enumerate(indicator_values)}
+        "quantum": {
+            f"q_{index:02d}": value for index, value in enumerate(indicator_values)
+        }
     }
 
     result = engine.predict_with_phi_scaling(predictions, indicators)
@@ -492,7 +518,9 @@ def test_property_phi_scaled_ensemble_outputs_stay_bounded(
 
     assert result["method"] == "golden_ratio_scaling"
     assert len(weights) == len(scores)
-    assert all(math.isfinite(float(weight)) and float(weight) > 0.0 for weight in weights)
+    assert all(
+        math.isfinite(float(weight)) and float(weight) > 0.0 for weight in weights
+    )
     assert 0.0 <= result["phi_score"] <= 1.0
     assert 0.0 <= result["indicator_harmony"] <= 1.0
     assert 0.0 <= result["final_score"] <= 1.0
@@ -506,7 +534,9 @@ def test_property_phi_scaled_ensemble_outputs_stay_bounded(
 
 
 @given(
-    real_value=st.floats(min_value=-100.0, max_value=100.0, allow_nan=False, allow_infinity=False)
+    real_value=st.floats(
+        min_value=-100.0, max_value=100.0, allow_nan=False, allow_infinity=False
+    )
 )
 @settings(max_examples=100, deadline=None)
 def test_property_safety_constraint_hermiticity_accepts_real_rejects_complex(
@@ -544,7 +574,11 @@ def test_property_safety_constraint_hermiticity_accepts_real_rejects_complex(
 # =============================================================================
 
 
-@given(ratio=st.floats(min_value=0.01, max_value=5.0, allow_nan=False, allow_infinity=False))
+@given(
+    ratio=st.floats(
+        min_value=0.01, max_value=5.0, allow_nan=False, allow_infinity=False
+    )
+)
 @settings(max_examples=150, deadline=None)
 def test_property_information_integrity_enforces_lossless_limit(ratio: float) -> None:
     """Property: compression_ratio > 2.0 must always violate INFORMATION_INTEGRITY."""
@@ -566,13 +600,13 @@ def test_property_information_integrity_enforces_lossless_limit(ratio: float) ->
     satisfied, violated = ctrl._check_safety_constraints({"compression_ratio": ratio})
 
     if ratio <= 2.0:
-        assert SafetyConstraint.INFORMATION_INTEGRITY in satisfied, (
-            f"ratio={ratio} should satisfy INFORMATION_INTEGRITY"
-        )
+        assert (
+            SafetyConstraint.INFORMATION_INTEGRITY in satisfied
+        ), f"ratio={ratio} should satisfy INFORMATION_INTEGRITY"
     else:
-        assert SafetyConstraint.INFORMATION_INTEGRITY in violated, (
-            f"ratio={ratio} should violate INFORMATION_INTEGRITY"
-        )
+        assert (
+            SafetyConstraint.INFORMATION_INTEGRITY in violated
+        ), f"ratio={ratio} should violate INFORMATION_INTEGRITY"
 
 
 # =============================================================================
@@ -584,7 +618,9 @@ def test_property_information_integrity_enforces_lossless_limit(ratio: float) ->
     improvement_type=st.sampled_from(
         ["phi_scaling", "search_depth", "compression_target", "coherence_threshold"]
     ),
-    proposed_value=st.floats(min_value=0.5, max_value=3.0, allow_nan=False, allow_infinity=False),
+    proposed_value=st.floats(
+        min_value=0.5, max_value=3.0, allow_nan=False, allow_infinity=False
+    ),
 )
 @settings(max_examples=80, deadline=None)
 def test_property_apply_self_optimization_mutates_engine_attributes(
@@ -598,7 +634,10 @@ def test_property_apply_self_optimization_mutates_engine_attributes(
         SafetyConstraint,
         SelfOptimizationProposal,
     )
-    from pythia_mining.consciousness_engine import ConsciousnessConfig, ConsciousnessEngine
+    from pythia_mining.consciousness_engine import (
+        ConsciousnessConfig,
+        ConsciousnessEngine,
+    )
     from pythia_mining.pulvini_compressed_solver import PulviniCompressedQuantumSolver
 
     solver = PulviniCompressedQuantumSolver()
@@ -743,7 +782,11 @@ def test_property_record_circuit_success_resets_failure_counter(failures: int) -
 # =============================================================================
 
 
-@given(raw_ratio=st.floats(min_value=-5.0, max_value=10.0, allow_nan=False, allow_infinity=False))
+@given(
+    raw_ratio=st.floats(
+        min_value=-5.0, max_value=10.0, allow_nan=False, allow_infinity=False
+    )
+)
 @settings(max_examples=100, deadline=None)
 def test_property_compression_target_ratio_clamped_by_apply(raw_ratio: float) -> None:
     """Property: compression_target applied to the solver is always clamped to [1.0, 2.0]."""
@@ -785,6 +828,6 @@ def test_property_compression_target_ratio_clamped_by_apply(raw_ratio: float) ->
     )
     ctrl.apply_self_optimization(proposal)
 
-    assert 1.0 <= solver.compression_target_ratio <= 2.0, (
-        f"compression_target_ratio={solver.compression_target_ratio} for raw_ratio={raw_ratio}"
-    )
+    assert (
+        1.0 <= solver.compression_target_ratio <= 2.0
+    ), f"compression_target_ratio={solver.compression_target_ratio} for raw_ratio={raw_ratio}"

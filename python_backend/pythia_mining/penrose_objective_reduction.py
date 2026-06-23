@@ -229,7 +229,9 @@ class ObjectiveReductionEngine:
 
         # Penrose gravitational self-energy
         # ΔE = (G/2) * I_diff
-        energy_uncertainty = (GRAVITATIONAL_CONSTANT / 2.0) * max(0.0, integral_difference)
+        energy_uncertainty = (GRAVITATIONAL_CONSTANT / 2.0) * max(
+            0.0, integral_difference
+        )
 
         return float(energy_uncertainty)
 
@@ -298,12 +300,17 @@ class ObjectiveReductionEngine:
             "total_or_events": self.consciousness_event_count,
             "recent_or_events": len([e for e in recent_events if e.collapse_occurred]),
             "or_event_rate": (
-                self.consciousness_event_count / (time.time() - self.or_events[0].timestamp)
+                self.consciousness_event_count
+                / (time.time() - self.or_events[0].timestamp)
                 if self.or_events
                 else 0.0
             ),
             "avg_time_threshold": (
-                float(np.mean([e.time_threshold for e in recent_events if e.collapse_occurred]))
+                float(
+                    np.mean(
+                        [e.time_threshold for e in recent_events if e.collapse_occurred]
+                    )
+                )
                 if recent_events
                 else 0.0
             ),

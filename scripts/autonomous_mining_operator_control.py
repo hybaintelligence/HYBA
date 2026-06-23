@@ -155,14 +155,18 @@ class OperatorControlInterface:
                 "last_10_autonomous": sum(
                     1 for d in decisions[-10:] if not d.get("operator_override")
                 ),
-                "last_10_overridden": sum(1 for d in decisions[-10:] if d.get("operator_override")),
+                "last_10_overridden": sum(
+                    1 for d in decisions[-10:] if d.get("operator_override")
+                ),
                 "last_10_violations": sum(
                     1 for d in decisions[-10:] if d.get("constraints_violated")
                 ),
             },
         }
 
-    def approve_decision(self, decision_id: str, operator_reason: str) -> Dict[str, Any]:
+    def approve_decision(
+        self, decision_id: str, operator_reason: str
+    ) -> Dict[str, Any]:
         """Approve a pending autonomous decision."""
         # Find the decision in history
         decisions = self.controller.get_decision_history()
@@ -330,13 +334,17 @@ class OperatorControlInterface:
         """
         now = time.time()
         last_reset_at = self._last_manual_circuit_reset_at()
-        seconds_since_last_reset = None if last_reset_at is None else max(0.0, now - last_reset_at)
+        seconds_since_last_reset = (
+            None if last_reset_at is None else max(0.0, now - last_reset_at)
+        )
         manual_reset_within_cooldown = (
             seconds_since_last_reset is not None
             and cooldown_seconds > 0
             and seconds_since_last_reset < cooldown_seconds
         )
-        reset_result = self.controller.reset_circuit_breaker(operator_id, operator_reason)
+        reset_result = self.controller.reset_circuit_breaker(
+            operator_id, operator_reason
+        )
 
         audit_entry = {
             "action": "reset_autonomous_circuit",
@@ -396,7 +404,8 @@ def main():
     # Set autonomy level command
     level_parser = subparsers.add_parser("set-level", help="Set autonomy level")
     level_parser.add_argument(
-        "level", help="Autonomy level (MANUAL, ADVISORY, SUPERVISED, AUTONOMOUS, EMERGENCY)"
+        "level",
+        help="Autonomy level (MANUAL, ADVISORY, SUPERVISED, AUTONOMOUS, EMERGENCY)",
     )
     level_parser.add_argument(
         "--reason", default="operator_directive", help="Reason for level change"
@@ -411,50 +420,76 @@ def main():
     )
 
     # Decision history command
-    history_parser = subparsers.add_parser("history", help="Get autonomous decision history")
-    history_parser.add_argument("--limit", type=int, default=20, help="Number of decisions to show")
+    history_parser = subparsers.add_parser(
+        "history", help="Get autonomous decision history"
+    )
+    history_parser.add_argument(
+        "--limit", type=int, default=20, help="Number of decisions to show"
+    )
 
     # Approve decision command
-    approve_parser = subparsers.add_parser("approve", help="Approve an autonomous decision")
+    approve_parser = subparsers.add_parser(
+        "approve", help="Approve an autonomous decision"
+    )
     approve_parser.add_argument("decision_id", help="Decision ID to approve")
-    approve_parser.add_argument("--reason", default="operator_approval", help="Reason for approval")
+    approve_parser.add_argument(
+        "--reason", default="operator_approval", help="Reason for approval"
+    )
 
     # Reject decision command
-    reject_parser = subparsers.add_parser("reject", help="Reject an autonomous decision")
+    reject_parser = subparsers.add_parser(
+        "reject", help="Reject an autonomous decision"
+    )
     reject_parser.add_argument("decision_id", help="Decision ID to reject")
     reject_parser.add_argument("--reason", required=True, help="Reason for rejection")
 
     # Configure safety constraints command
-    config_parser = subparsers.add_parser("configure", help="Configure safety constraints")
+    config_parser = subparsers.add_parser(
+        "configure", help="Configure safety constraints"
+    )
     config_parser.add_argument(
         "--max-hashrate", type=float, help="Maximum autonomous hashrate (EH/s)"
     )
-    config_parser.add_argument("--max-power", type=float, help="Maximum power consumption (Watts)")
+    config_parser.add_argument(
+        "--max-power", type=float, help="Maximum power consumption (Watts)"
+    )
     config_parser.add_argument(
         "--phi-threshold", type=float, help="Minimum phi coherence threshold"
     )
     config_parser.add_argument(
-        "--reason", default="safety_configuration", help="Reason for configuration change"
+        "--reason",
+        default="safety_configuration",
+        help="Reason for configuration change",
     )
 
     # Trigger optimization command
-    opt_parser = subparsers.add_parser("optimize", help="Trigger autonomous optimization")
+    opt_parser = subparsers.add_parser(
+        "optimize", help="Trigger autonomous optimization"
+    )
     opt_parser.add_argument(
         "type", choices=["search_strategy", "hashrate"], help="Optimization type"
     )
-    opt_parser.add_argument("--target", type=float, help="Target value for optimization")
+    opt_parser.add_argument(
+        "--target", type=float, help="Target value for optimization"
+    )
 
     # Manual autonomous circuit reset command
     reset_parser = subparsers.add_parser(
         "reset-circuit",
         help="Manually reset autonomous hook failure counter with cooldown audit warning",
     )
-    reset_parser.add_argument("--operator", required=True, help="Operator ID requesting reset")
-    reset_parser.add_argument("--reason", required=True, help="Auditable reason for manual reset")
+    reset_parser.add_argument(
+        "--operator", required=True, help="Operator ID requesting reset"
+    )
+    reset_parser.add_argument(
+        "--reason", required=True, help="Auditable reason for manual reset"
+    )
     reset_parser.add_argument(
         "--cooldown-seconds",
         type=float,
-        default=float(os.getenv("HYBA_AUTONOMY_MANUAL_RESET_COOLDOWN_SECONDS", "300.0")),
+        default=float(
+            os.getenv("HYBA_AUTONOMY_MANUAL_RESET_COOLDOWN_SECONDS", "300.0")
+        ),
         help="Cooldown window that flags repeated manual resets without blocking them",
     )
 

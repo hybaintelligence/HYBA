@@ -28,13 +28,17 @@ EXPECTED_GATES = {
 
 def main() -> int:
     repo_root = Path(__file__).resolve().parents[1]
-    registry_path = repo_root / "docs" / "institutional_qaas" / "gap_closure_registry.json"
+    registry_path = (
+        repo_root / "docs" / "institutional_qaas" / "gap_closure_registry.json"
+    )
     protocol_path = repo_root / "docs" / "INSTITUTIONAL_QAAS_GAP_CLOSURE.md"
 
     errors: list[str] = []
 
     if not protocol_path.exists():
-        errors.append(f"Missing protocol document: {protocol_path.relative_to(repo_root)}")
+        errors.append(
+            f"Missing protocol document: {protocol_path.relative_to(repo_root)}"
+        )
 
     if not registry_path.exists():
         errors.append(f"Missing registry: {registry_path.relative_to(repo_root)}")
@@ -48,7 +52,9 @@ def main() -> int:
 
     gates = set(registry.get("gates", []))
     if gates != EXPECTED_GATES:
-        errors.append(f"Registry gates mismatch: expected {sorted(EXPECTED_GATES)}, got {sorted(gates)}")
+        errors.append(
+            f"Registry gates mismatch: expected {sorted(EXPECTED_GATES)}, got {sorted(gates)}"
+        )
 
     claim_boundary = registry.get("claim_boundary", "")
     for required_phrase in ("Local reproducible", "external evidence"):
@@ -78,7 +84,9 @@ def main() -> int:
             print(f"- {error}", file=sys.stderr)
         return 1
 
-    print(f"Institutional QaaS gap-closure validation passed: {len(gaps)} gaps tracked with {len(gates)} closure gates.")
+    print(
+        f"Institutional QaaS gap-closure validation passed: {len(gaps)} gaps tracked with {len(gates)} closure gates."
+    )
     return 0
 
 

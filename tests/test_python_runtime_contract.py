@@ -61,6 +61,10 @@ def test_active_runtime_files_do_not_reference_legacy_python_targets() -> None:
         "python_backend/pythia_agents/__init__.py",
         "python_backend/pythia_agents/pythia_agent_orchestrator.py",
     ]
-    legacy_pattern = re.compile(r"py3(8|9|10|11)|Python 3\.(8|9|10|11)|python_version = \"3\.(8|9|10|11)\"")
+    legacy_pattern = re.compile(
+        r"py3(8|9|10|11)|Python 3\.(8|9|10|11)|python_version = \"3\.(8|9|10|11)\""
+    )
     for path in active_paths:
-        assert not legacy_pattern.search(_read(path)), f"legacy Python target found in {path}"
+        assert not legacy_pattern.search(
+            _read(path)
+        ), f"legacy Python target found in {path}"

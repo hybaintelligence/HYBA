@@ -4,7 +4,9 @@ from pathlib import Path
 from reproducibility.benchmarks.quantum_intelligence_benchmark import run_benchmark
 
 
-def test_quantum_intelligence_benchmark_artifact_contains_required_evidence_fields() -> None:
+def test_quantum_intelligence_benchmark_artifact_contains_required_evidence_fields() -> (
+    None
+):
     report = run_benchmark("python quantum_intelligence_benchmark.py")
 
     assert report["commit_sha"]
@@ -12,7 +14,10 @@ def test_quantum_intelligence_benchmark_artifact_contains_required_evidence_fiel
     assert report["command"] == "python quantum_intelligence_benchmark.py"
     assert report["environment"]["cpu_count"] is not None
     assert report["raw_json_output"]
-    assert report["claim_boundary"]["category"] == "Quantum Intelligence benchmark evidence"
+    assert (
+        report["claim_boundary"]["category"]
+        == "Quantum Intelligence benchmark evidence"
+    )
 
     names = {measurement["name"] for measurement in report["measurements"]}
     assert names == {

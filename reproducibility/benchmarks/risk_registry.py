@@ -19,7 +19,12 @@ class EnterpriseRiskRegistry:
         self.risks: List[Dict[str, Any]] = []
 
     def register_risk(
-        self, category: str, description: str, probability: float, impact: float, owner: str
+        self,
+        category: str,
+        description: str,
+        probability: float,
+        impact: float,
+        owner: str,
     ) -> Dict[str, Any]:
         """Register identified risk with mitigation plan."""
         if category not in self.RISK_CATEGORIES:
@@ -50,7 +55,9 @@ class EnterpriseRiskRegistry:
                 return risk
         raise KeyError(risk_id)
 
-    def calculate_risk_adjusted_metrics(self, base_metrics: Dict[str, float]) -> Dict[str, float]:
+    def calculate_risk_adjusted_metrics(
+        self, base_metrics: Dict[str, float]
+    ) -> Dict[str, float]:
         """Adjust KPIs for identified risks, capped at 25%."""
         exposure = sum(r["risk_score"] for r in self.risks if r["status"] != "closed")
         adjustment = min(exposure, 0.25)

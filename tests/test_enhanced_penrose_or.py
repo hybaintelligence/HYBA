@@ -2,7 +2,9 @@
 
 import unittest
 import numpy as np
-from python_backend.pythia_mining.penrose_objective_reduction import ObjectiveReductionEngine
+from python_backend.pythia_mining.penrose_objective_reduction import (
+    ObjectiveReductionEngine,
+)
 
 
 class TestEnhancedPenroseOR(unittest.TestCase):
@@ -12,7 +14,9 @@ class TestEnhancedPenroseOR(unittest.TestCase):
         self.assertFalse(engine.enhanced_gravity_model)
 
     def test_enhanced_gravity_model_enabled(self):
-        engine = ObjectiveReductionEngine(enhanced_gravity_model=True, enable_true_or=True)
+        engine = ObjectiveReductionEngine(
+            enhanced_gravity_model=True, enable_true_or=True
+        )
         self.assertTrue(engine.enhanced_gravity_model)
         self.assertTrue(engine.enable_true_or)
 

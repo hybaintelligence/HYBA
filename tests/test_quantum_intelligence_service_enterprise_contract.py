@@ -101,6 +101,12 @@ def test_quantum_intelligence_capabilities_are_enterprise_grade():
     ):
         assert capability in source
 
-    assert "Quantum Intelligence healing requires production or enterprise entitlement" in source
-    assert "Quantum Intelligence bootstrap requires production or enterprise entitlement" in source
+    assert (
+        "Quantum Intelligence healing requires production or enterprise entitlement"
+        in source
+    )
+    assert (
+        "Quantum Intelligence bootstrap requires production or enterprise entitlement"
+        in source
+    )
     assert "sovereign_quantum_intelligence_execution" in source

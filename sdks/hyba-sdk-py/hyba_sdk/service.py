@@ -18,14 +18,14 @@ from hyba_sdk.exceptions import (
 class ComputationalIntelligenceService:
     """
     Represents a provisioned CIaaS service
-    
+
     Example:
         >>> service = client.provision_service(name="my-optimizer")
         >>> service.start()
         >>> result = service.execute(workload="explain", context="test")
         >>> service.stop()
     """
-    
+
     def __init__(
         self,
         client: HybaClient,
@@ -43,11 +43,11 @@ class ComputationalIntelligenceService:
         evidence_seal: str,
         claim_boundary: str,
         usage: Optional[Dict[str, Any]] = None,
-        **kwargs
+        **kwargs,
     ):
         """
         Initialize service (usually called by HybaClient)
-        
+
         Args:
             client: HybaClient instance
             service_id: Unique service ID
@@ -80,77 +80,68 @@ class ComputationalIntelligenceService:
         self.evidence_seal = evidence_seal
         self.claim_boundary = claim_boundary
         self.usage = usage or {}
-    
+
     def start(self) -> "ComputationalIntelligenceService":
         """
         Start the service
-        
+
         Returns:
             Updated service instance
-            
+
         Raises:
             ServiceStateError: If service cannot be started
         """
         if self.state not in ["provisioned", "stopped"]:
             raise ServiceStateError(
-                service_id=self.service_id,
-                current_state=self.state,
-                operation="start"
+                service_id=self.service_id, current_state=self.state, operation="start"
             )
-        
+
         response = self._client._request(
             "POST",
-            f"/api/v1/computational-intelligence-services/{self.service_id}/start"
+            f"/api/v1/computational-intelligence-services/{self.service_id}/start",
         )
-        
+
         return self._update_from_response(response)
-    
+
     def stop(self) -> "ComputationalIntelligenceService":
         """
         Stop the service
-        
+
         Returns:
             Updated service instance
-            
+
         Raises:
             ServiceStateError: If service cannot be stopped
         """
         if self.state != "running":
             raise ServiceStateError(
-                service_id=self.service_id,
-                current_state=self.state,
-                operation="stop"
+                service_id=self.service_id, current_state=self.state, operation="stop"
             )
-        
+
         response = self._client._request(
             "POST",
-            f"/api/v1/computational-intelligence-services/{self.service_id}/stop"
+            f"/api/v1/computational-intelligence-services/{self.service_id}/stop",
         )
-        
+
         return self._update_from_response(response)
-    
-    def execute(
-        self,
-        workload: str,
-        context: str,
-        **kwargs
-    ) -> Dict[str, Any]:
+
+    def execute(self, workload: str, context: str, **kwargs) -> Dict[str, Any]:
         """
         Execute an intelligence workload
-        
+
         Args:
             workload: Workload type (explain, orchestrate, counterfactual, etc.)
             context: Workload context/input
             **kwargs: Additional workload parameters
-            
+
         Returns:
             Workload result dictionary
-            
+
         Raises:
             ServiceStateError: If service is not running
             ValidationError: If workload parameters are invalid
             QuotaExceededError: If quota is exceeded
-            
+
         Example:
             >>> result = service.execute(
             ...     workload="explain",
@@ -162,134 +153,136 @@ class ComputationalIntelligenceService:
             raise ServiceStateError(
                 service_id=self.service_id,
                 current_state=self.state,
-                operation="execute"
+                operation="execute",
             )
-        
-        payload = {
-            "workload_type": workload,
-            "context": context,
-            **kwargs
-        }
-        
+
+        payload = {"workload_type": workload, "context": context, **kwargs}
+
         response = self._client._request(
             "POST",
             f"/api/v1/computational-intelligence-services/{self.service_id}/execute",
-            json=payload
+            json=payload,
         )
-        
+
         return response
-    
+
     def explain(self, context: str, **kwargs) -> Dict[str, Any]:
         """
         Explain a context with shared substrate telemetry
-        
+
         Args:
             context: Context to explain
             **kwargs: Additional parameters
-            
+
         Returns:
             Explanation result
         """
         return self.execute(workload="explain", context=context, **kwargs)
-    
+
     def orchestrate(self, context: str, **kwargs) -> Dict[str, Any]:
         """
         Route a context through the unified substrate contract orchestrator
-        
+
         Args:
             context: Context to orchestrate
             **kwargs: Additional parameters
-            
+
         Returns:
             Orchestration result
         """
         return self.execute(workload="orchestrate", context=context, **kwargs)
-    
+
     def counterfactual(self, context: str, **kwargs) -> Dict[str, Any]:
         """
         Generate counterfactual analysis
-        
+
         Args:
             context: Context for counterfactual analysis
             **kwargs: Additional parameters
-            
+
         Returns:
             Counterfactual result
         """
         return self.execute(workload="counterfactual", context=context, **kwargs)
-    
+
     def governance_audit(self, context: str, **kwargs) -> Dict[str, Any]:
         """
         Perform governance audit
-        
+
         Args:
             context: Context to audit
             **kwargs: Additional parameters
-            
+
         Returns:
             Audit result
         """
         return self.execute(workload="governance_audit", context=context, **kwargs)
-    
+
     def substrate_health(self, **kwargs) -> Dict[str, Any]:
         """
         Check substrate health
-        
+
         Args:
             **kwargs: Additional parameters
-            
+
         Returns:
             Health status
         """
         return self.execute(workload="substrate_health", context="", **kwargs)
-    
+
     def refresh(self) -> "ComputationalIntelligenceService":
         """
         Refresh service metadata from API
-        
+
         Returns:
             Updated service instance
         """
         response = self._client._request(
-            "GET",
-            f"/api/v1/computational-intelligence-services/{self.service_id}"
+            "GET", f"/api/v1/computational-intelligence-services/{self.service_id}"
         )
-        
+
         return self._update_from_response(response)
-    
+
     def delete(self) -> bool:
         """
         Delete the service
-        
+
         Returns:
             True if deleted successfully
-            
+
         Raises:
             HybaApiError: If deletion fails
         """
         response = self._client._request(
-            "DELETE",
-            f"/api/v1/computational-intelligence-services/{self.service_id}"
+            "DELETE", f"/api/v1/computational-intelligence-services/{self.service_id}"
         )
-        
+
         return response.get("deleted", False)
-    
-    def _update_from_response(self, response: Dict[str, Any]) -> "ComputationalIntelligenceService":
+
+    def _update_from_response(
+        self, response: Dict[str, Any]
+    ) -> "ComputationalIntelligenceService":
         """Update service attributes from API response"""
         self.state = response.get("state", self.state)
         self.updated_at = response.get("updated_at", self.updated_at)
         self.usage = response.get("usage", self.usage)
-        
+
         # Update other attributes if present
         for attr in [
-            "name", "service_tier", "tenancy", "commercial_policy",
-            "fault_tolerance", "substrate", "evidence_seal", "claim_boundary"
+            "name",
+            "service_tier",
+            "tenancy",
+            "commercial_policy",
+            "fault_tolerance",
+            "substrate",
+            "evidence_seal",
+            "claim_boundary",
         ]:
             if attr in response:
                 setattr(self, attr, response[attr])
-        
+
         return self
-    
+
     def __repr__(self) -> str:
         return (
             f"ComputationalIntelligenceService("
@@ -297,6 +290,6 @@ class ComputationalIntelligenceService:
             f"name={self.name!r}, "
             f"state={self.state!r})"
         )
-    
+
     def __str__(self) -> str:
         return f"{self.name} ({self.service_id}) - {self.state}"

@@ -133,7 +133,9 @@ class GlobalMiningState:
         self.target: Optional[int] = None
         self.best_diff_observed = 0
         self.total_hashes = 0
-        self.node_progress: Dict[int, int] = {node_id: 0 for node_id in range(NUM_NODES)}
+        self.node_progress: Dict[int, int] = {
+            node_id: 0 for node_id in range(NUM_NODES)
+        }
 
     def activate_job(self, job_id: str, target: int) -> None:
         with self._lock:
@@ -191,12 +193,15 @@ class PulviniOverlayConcentrator:
         self.active_pool_name: Optional[str] = None
         self.assignments: Dict[int, NodeAssignment] = {}
         self.nodes = {
-            node_id: NodeRuntimeState(node_id=node_id, role="hub" if node_id >= 20 else "worker")
+            node_id: NodeRuntimeState(
+                node_id=node_id, role="hub" if node_id >= 20 else "worker"
+            )
             for node_id in range(NUM_NODES)
         }
         self.links = {
             node_id: {
-                neighbor: NeuralLink(neighbor) for neighbor in get_geometric_neighbors(node_id)
+                neighbor: NeuralLink(neighbor)
+                for neighbor in get_geometric_neighbors(node_id)
             }
             for node_id in range(NUM_NODES)
         }
@@ -235,7 +240,9 @@ class PulviniOverlayConcentrator:
         with self._lock:
             self._append_event("connect_requested", request_id=request_id)
 
-    def mark_pool_bound(self, pool_name: str, pool_url: str, stratum_version: int) -> None:
+    def mark_pool_bound(
+        self, pool_name: str, pool_url: str, stratum_version: int
+    ) -> None:
         with self._lock:
             self.active_pool_name = pool_name
             self._append_event(
@@ -247,8 +254,12 @@ class PulviniOverlayConcentrator:
             self._append_event("subscribed_authorized", pool_name=pool_name)
             self._append_event("awaiting_job", pool_name=pool_name)
 
-    def _extranonce2_for_node(self, node_id: int, job_id: str, extranonce2_size: int) -> str:
-        return self.manifold.manifold_drift_extranonce2(node_id, job_id, extranonce2_size)
+    def _extranonce2_for_node(
+        self, node_id: int, job_id: str, extranonce2_size: int
+    ) -> str:
+        return self.manifold.manifold_drift_extranonce2(
+            node_id, job_id, extranonce2_size
+        )
 
     def register_pool_job(
         self, job: Any, pool_name: Optional[str] = None
@@ -264,7 +275,9 @@ class PulviniOverlayConcentrator:
             self.assignments = {}
             for node_id, segment in enumerate(self.nonce_plan.coverage_segments):
                 coordinate = self.manifold.tensor_coordinate_for_node(node_id)
-                compressed_coordinate = self.nonce_plan.coordinate_for_nonce(segment.start)
+                compressed_coordinate = self.nonce_plan.coordinate_for_nonce(
+                    segment.start
+                )
                 assignment = NodeAssignment(
                     node_id=node_id,
                     job_id=str(job.job_id),
@@ -315,7 +328,9 @@ class PulviniOverlayConcentrator:
         return self.nonce_plan.to_dict()
 
     def tensor_coordinates(self) -> List[Dict[str, Any]]:
-        return [coordinate.to_dict() for coordinate in self.manifold.tensor_coordinates()]
+        return [
+            coordinate.to_dict() for coordinate in self.manifold.tensor_coordinates()
+        ]
 
     def assignment_for_nonce(self, nonce: int) -> Optional[NodeAssignment]:
         nonce = int(nonce)
@@ -355,7 +370,9 @@ class PulviniOverlayConcentrator:
         event = self.manifold.nack_slice(
             node_id, assignment.job_id, assignment.nonce_start, assignment.nonce_end
         )
-        self._append_event("nack_backaction", node_id=node_id, affected_nodes=event.affected_nodes)
+        self._append_event(
+            "nack_backaction", node_id=node_id, affected_nodes=event.affected_nodes
+        )
 
     def record_share_candidate(self, node_id: int, nonce: int) -> None:
         with self._lock:
@@ -371,7 +388,9 @@ class PulviniOverlayConcentrator:
                 nonce=int(nonce),
             )
 
-    def record_share_outcome(self, node_id: int, nonce: int, result: Any) -> Dict[str, Any]:
+    def record_share_outcome(
+        self, node_id: int, nonce: int, result: Any
+    ) -> Dict[str, Any]:
         with self._lock:
             node = self.nodes[node_id]
             node.shares_submitted += 1
@@ -506,9 +525,13 @@ class PulviniOverlayConcentrator:
                     return False
         return True
 
-    def record_link_latency(self, source_id: int, target_id: int, trip_seconds: float) -> None:
+    def record_link_latency(
+        self, source_id: int, target_id: int, trip_seconds: float
+    ) -> None:
         if target_id not in self.links.get(source_id, {}):
-            raise ValueError(f"nodes {source_id}->{target_id} are not adjacent in PULVINI topology")
+            raise ValueError(
+                f"nodes {source_id}->{target_id} are not adjacent in PULVINI topology"
+            )
         self.links[source_id][target_id].record_trip(trip_seconds)
         reward = 1.0 / (max(float(trip_seconds), 0.0) + 1e-9)
         self.manifold.hebbian_fire(
@@ -548,11 +571,17 @@ class PulviniOverlayConcentrator:
                     tres = 0.0
 
                 submitted = max(node.shares_submitted, 0)
-                phi_eff = 1.0 if submitted == 0 else node.shares_accepted / max(submitted, 1)
+                phi_eff = (
+                    1.0 if submitted == 0 else node.shares_accepted / max(submitted, 1)
+                )
                 neighbors = get_geometric_neighbors(node_id)
                 if neighbors:
                     phase_alignment = [
-                        (1.0 + math.cos(float(phases[node_id]) - float(phases[neighbor]))) / 2.0
+                        (
+                            1.0
+                            + math.cos(float(phases[node_id]) - float(phases[neighbor]))
+                        )
+                        / 2.0
                         for neighbor in neighbors
                     ]
                     chi_sync = sum(phase_alignment) / len(phase_alignment)
@@ -601,7 +630,9 @@ class PulviniOverlayConcentrator:
         return {
             "self": self.nodes[node_id].to_dict(),
             "assignment": (
-                self.assignments.get(node_id).to_dict() if node_id in self.assignments else None
+                self.assignments.get(node_id).to_dict()
+                if node_id in self.assignments
+                else None
             ),
             "neighbors": [self.nodes[neighbor].to_dict() for neighbor in neighbors],
             "best_neighbor": self.best_neighbor(node_id),
@@ -615,9 +646,15 @@ class PulviniOverlayConcentrator:
         with self._lock:
             totals = {
                 "shares_found": sum(node.shares_found for node in self.nodes.values()),
-                "shares_submitted": sum(node.shares_submitted for node in self.nodes.values()),
-                "shares_accepted": sum(node.shares_accepted for node in self.nodes.values()),
-                "shares_rejected": sum(node.shares_rejected for node in self.nodes.values()),
+                "shares_submitted": sum(
+                    node.shares_submitted for node in self.nodes.values()
+                ),
+                "shares_accepted": sum(
+                    node.shares_accepted for node in self.nodes.values()
+                ),
+                "shares_rejected": sum(
+                    node.shares_rejected for node in self.nodes.values()
+                ),
             }
             return {
                 "topology": self.topology_report,
@@ -632,7 +669,9 @@ class PulviniOverlayConcentrator:
                     node_id: assignment.to_dict()
                     for node_id, assignment in self.assignments.items()
                 },
-                "nodes": {node_id: node.to_dict() for node_id, node in self.nodes.items()},
+                "nodes": {
+                    node_id: node.to_dict() for node_id, node in self.nodes.items()
+                },
                 "shared_state": self.state.snapshot(),
                 "manifold": self.manifold.snapshot(),
                 "lifecycle": list(self.lifecycle),

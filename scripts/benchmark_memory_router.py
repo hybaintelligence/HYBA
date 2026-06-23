@@ -73,6 +73,7 @@ class MemoryRouterBenchmark:
 
     def _setup_test_components(self):
         """Setup test components for benchmarking."""
+
         # Mock causal router
         class MockCausalRouter:
             def explain(self, event, claim):
@@ -291,7 +292,8 @@ class MemoryRouterBenchmark:
             "summary": {
                 "total_operations": len(results),
                 "total_time_ms": sum(r.total_time_ms for r in results),
-                "avg_throughput": sum(r.throughput_ops_per_sec for r in results) / len(results),
+                "avg_throughput": sum(r.throughput_ops_per_sec for r in results)
+                / len(results),
             },
         }
 
@@ -330,7 +332,9 @@ class MemoryRouterBenchmark:
         lines.append("-" * 80)
         lines.append(f"Total operations: {report_dict['summary']['total_operations']}")
         lines.append(f"Total time: {report_dict['summary']['total_time_ms']:.3f}ms")
-        lines.append(f"Avg throughput: {report_dict['summary']['avg_throughput']:.1f} ops/sec")
+        lines.append(
+            f"Avg throughput: {report_dict['summary']['avg_throughput']:.1f} ops/sec"
+        )
         lines.append("=" * 80)
 
         return "\n".join(lines)

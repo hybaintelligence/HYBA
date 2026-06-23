@@ -26,7 +26,9 @@ def _path_exists(rel_path: str) -> bool:
     return (ROOT / rel_path).exists()
 
 
-def _validate_enterprise_telemetry_bridge(registry: dict[str, Any], errors: list[str]) -> None:
+def _validate_enterprise_telemetry_bridge(
+    registry: dict[str, Any], errors: list[str]
+) -> None:
     """Assert the Phase 3.5 bridge is wired into the first-customer gate."""
     bridge_review = next(
         (
@@ -46,7 +48,9 @@ def _validate_enterprise_telemetry_bridge(registry: dict[str, Any], errors: list
         "reproducibility/benchmarks/test_mckinsey_additions.py",
     ]:
         if rel_path not in required_paths:
-            errors.append(f"phase_3_5_enterprise_telemetry_bridge: {rel_path} must be required.")
+            errors.append(
+                f"phase_3_5_enterprise_telemetry_bridge: {rel_path} must be required."
+            )
 
     expected_outputs = {
         "sla_report",
@@ -69,7 +73,9 @@ def _validate_enterprise_telemetry_bridge(registry: dict[str, Any], errors: list
         source_text = bridge_source.read_text(encoding="utf-8")
         for output in expected_outputs:
             if f'"{output}"' not in source_text:
-                errors.append(f"telemetry_bridge.py does not statically expose {output}.")
+                errors.append(
+                    f"telemetry_bridge.py does not statically expose {output}."
+                )
 
     smoke = subprocess.run(
         [
@@ -107,7 +113,9 @@ def main() -> int:
     registry = _load_registry()
 
     if "external" not in registry.get("claim_boundary", ""):
-        errors.append("Registry claim_boundary must explicitly distinguish internal closure from external validation.")
+        errors.append(
+            "Registry claim_boundary must explicitly distinguish internal closure from external validation."
+        )
 
     reviews = registry.get("reviews", [])
     if not reviews:
@@ -118,9 +126,13 @@ def main() -> int:
         total = int(review.get("total_count", 0))
         closed = int(review.get("closed_count", -1))
         if total <= 0 or closed < total:
-            errors.append(f"{review_id}: closed_count must be >= total_count and total_count must be positive.")
+            errors.append(
+                f"{review_id}: closed_count must be >= total_count and total_count must be positive."
+            )
         if not review.get("remaining_external_gaps"):
-            errors.append(f"{review_id}: remaining external gaps must be listed to prevent over-claiming.")
+            errors.append(
+                f"{review_id}: remaining external gaps must be listed to prevent over-claiming."
+            )
         for rel_path in review.get("required_paths", []):
             if not _path_exists(rel_path):
                 errors.append(f"{review_id}: missing required path {rel_path}")
@@ -144,7 +156,9 @@ def main() -> int:
             print(f"- {error}", file=sys.stderr)
         return 1
 
-    print("✓ First-customer readiness gate passed: all review-gap closure artifacts are present and claim-bounded.")
+    print(
+        "✓ First-customer readiness gate passed: all review-gap closure artifacts are present and claim-bounded."
+    )
     return 0
 
 

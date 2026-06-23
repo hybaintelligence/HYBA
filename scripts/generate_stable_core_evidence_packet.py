@@ -17,11 +17,15 @@ PYTHON_BACKEND = REPO_ROOT / "python_backend"
 if str(PYTHON_BACKEND) not in sys.path:
     sys.path.insert(0, str(PYTHON_BACKEND))
 
-from pythia_mining.stable_core_evidence import generate_stable_core_evidence_packet  # noqa: E402
+from pythia_mining.stable_core_evidence import (
+    generate_stable_core_evidence_packet,
+)  # noqa: E402
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Generate PYTHIA Stable Core evidence packet")
+    parser = argparse.ArgumentParser(
+        description="Generate PYTHIA Stable Core evidence packet"
+    )
     parser.add_argument(
         "--output",
         type=Path,

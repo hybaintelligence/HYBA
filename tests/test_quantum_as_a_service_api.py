@@ -16,7 +16,9 @@ from hyba_genesis_api.main import app
 
 
 def _admin_payload() -> TokenPayload:
-    return TokenPayload(sub="1", username="root-admin", roles=["admin"], exp=9999999999, iat=1)
+    return TokenPayload(
+        sub="1", username="root-admin", roles=["admin"], exp=9999999999, iat=1
+    )
 
 
 def test_admin_provisions_virtual_fault_tolerant_quantum_computer_and_executes_surface_code_cycle():
@@ -48,7 +50,9 @@ def test_admin_provisions_virtual_fault_tolerant_quantum_computer_and_executes_s
         assert len(body["evidence_seal"]) == 64
 
         computer_id = body["computer_id"]
-        started = client.post(f"/api/admin/fault-tolerant-computers/{computer_id}/start")
+        started = client.post(
+            f"/api/admin/fault-tolerant-computers/{computer_id}/start"
+        )
         assert started.status_code == 200
         assert started.json()["state"] == "running"
 
@@ -130,7 +134,9 @@ def test_qaas_rejects_invalid_topology_and_policy_violations():
         registry._computers.clear()
 
 
-def _customer_principal(tier: str = "developer", sovereign_enabled: bool = False) -> CustomerPrincipal:
+def _customer_principal(
+    tier: str = "developer", sovereign_enabled: bool = False
+) -> CustomerPrincipal:
     """Create a test customer principal with specified tier."""
     metadata = {}
     if sovereign_enabled:
@@ -230,7 +236,9 @@ def test_public_developer_key_cannot_request_dedicated_isolation():
             },
         )
         assert provision.status_code == 403
-        assert "Developer API key can only use single-tenant isolation" in provision.text
+        assert (
+            "Developer API key can only use single-tenant isolation" in provision.text
+        )
     finally:
         app.dependency_overrides.clear()
         registry._computers.clear()
@@ -255,7 +263,10 @@ def test_public_production_key_cannot_request_sovereign_isolation():
             },
         )
         assert provision.status_code == 403
-        assert "Production API key can only use single-tenant or dedicated-control-plane" in provision.text
+        assert (
+            "Production API key can only use single-tenant or dedicated-control-plane"
+            in provision.text
+        )
     finally:
         app.dependency_overrides.clear()
         registry._computers.clear()
@@ -332,10 +343,10 @@ def test_public_qaas_rejects_excessive_estimated_units():
             },
         )
         computer_id = provision.json()["computer_id"]
-        
+
         # Start the computer
         client.post(f"/api/v1/fault-tolerant-computers/{computer_id}/start")
-        
+
         # Try to execute workload exceeding developer tier limits (10,000 units)
         # circuit_depth=1000, shots=10, logical_qubits=2 = 20,000 units > 10,000 limit
         execute = client.post(
@@ -373,10 +384,10 @@ def test_public_qaas_rejects_excessive_logical_qubits():
             },
         )
         computer_id = provision.json()["computer_id"]
-        
+
         # Start the computer
         client.post(f"/api/v1/fault-tolerant-computers/{computer_id}/start")
-        
+
         # Try to execute workload exceeding developer tier qubit limit (32 qubits)
         execute = client.post(
             f"/api/v1/fault-tolerant-computers/{computer_id}/execute",
@@ -390,7 +401,10 @@ def test_public_qaas_rejects_excessive_logical_qubits():
         assert execute.status_code == 413
         response_json = execute.json()
         error_message = response_json.get("error", {}).get("message", "")
-        assert "exceed tier sync limit" in error_message or "exceeds tier sync limit" in error_message
+        assert (
+            "exceed tier sync limit" in error_message
+            or "exceeds tier sync limit" in error_message
+        )
     finally:
         app.dependency_overrides.clear()
         registry._computers.clear()
@@ -475,7 +489,10 @@ def test_governance_audit_answers_arbitrary_criticism_with_runtime_invariants():
         criticism_response = body["result"]["criticism_response"]
         assert invariants["substrate_agnostic"] is True
         assert invariants["hardware_required"] is False
-        assert invariants["decoherence_channel"] == "not_applicable_to_virtual_mathematical_state"
+        assert (
+            invariants["decoherence_channel"]
+            == "not_applicable_to_virtual_mathematical_state"
+        )
         assert criticism_response["verdict"] == "answered_with_api_evidence"
         assert criticism_response["question_digest"]
         assert len(criticism_response["anticipated_criticisms"]) >= 4
@@ -531,6 +548,7 @@ def test_property_governance_audit_never_leaves_question_unanswered(question):
 # Property-Based Tests for QaaS
 # -----------------------------------------------------------------
 
+
 @settings(max_examples=50, phases=[Phase.generate])
 @given(
     code_distance=st.integers(min_value=3, max_value=31),
@@ -542,7 +560,7 @@ def test_property_code_distance_must_be_odd(code_distance, logical_qubits):
     registry._computers.clear()
     try:
         client = TestClient(app)
-        
+
         if code_distance % 2 == 0:
             # Even code_distance should be rejected
             response = client.post(
@@ -581,34 +599,58 @@ def test_property_execution_units_monotonic(circuit_depth, shots, qubit_count):
     """Property: execution units should be monotonic with respect to circuit_depth, shots, and qubits."""
     # Calculate expected units
     expected_units = max(1, circuit_depth) * max(1, shots) * max(1, qubit_count)
-    
+
     # Units should be non-negative
     assert expected_units >= 0
-    
+
     # Units should be monotonic: increasing any parameter should not decrease units
     for delta in [1, 10, 100]:
         if circuit_depth + delta <= 1000:
-            assert max(1, circuit_depth + delta) * max(1, shots) * max(1, qubit_count) >= expected_units
+            assert (
+                max(1, circuit_depth + delta) * max(1, shots) * max(1, qubit_count)
+                >= expected_units
+            )
         if shots + delta <= 1000:
-            assert max(1, circuit_depth) * max(1, shots + delta) * max(1, qubit_count) >= expected_units
+            assert (
+                max(1, circuit_depth) * max(1, shots + delta) * max(1, qubit_count)
+                >= expected_units
+            )
         if qubit_count + delta <= 10:
-            assert max(1, circuit_depth) * max(1, shots) * max(1, qubit_count + delta) >= expected_units
+            assert (
+                max(1, circuit_depth) * max(1, shots) * max(1, qubit_count + delta)
+                >= expected_units
+            )
 
 
 @settings(max_examples=20, phases=[Phase.generate])
 @given(
     tier=st.sampled_from(["developer", "production", "enterprise"]),
-    isolation=st.sampled_from(["single-tenant", "dedicated-control-plane", "sovereign-isolated"]),
+    isolation=st.sampled_from(
+        ["single-tenant", "dedicated-control-plane", "sovereign-isolated"]
+    ),
 )
 def test_property_entitlement_matrix_consistency(tier, isolation):
     """Property: entitlement matrix should be internally consistent."""
     # Define the entitlement policy
     entitlement_policy = {
-        "developer": {"allowed_tiers": ["developer"], "allowed_isolation": ["single-tenant"]},
-        "production": {"allowed_tiers": ["developer", "production"], "allowed_isolation": ["single-tenant", "dedicated-control-plane"]},
-        "enterprise": {"allowed_tiers": ["developer", "production", "sovereign"], "allowed_isolation": ["single-tenant", "dedicated-control-plane", "sovereign-isolated"]},
+        "developer": {
+            "allowed_tiers": ["developer"],
+            "allowed_isolation": ["single-tenant"],
+        },
+        "production": {
+            "allowed_tiers": ["developer", "production"],
+            "allowed_isolation": ["single-tenant", "dedicated-control-plane"],
+        },
+        "enterprise": {
+            "allowed_tiers": ["developer", "production", "sovereign"],
+            "allowed_isolation": [
+                "single-tenant",
+                "dedicated-control-plane",
+                "sovereign-isolated",
+            ],
+        },
     }
-    
+
     # Check that the policy is consistent
     for customer_tier, policy in entitlement_policy.items():
         for allowed_tier in policy["allowed_tiers"]:
@@ -623,22 +665,25 @@ def test_property_entitlement_matrix_consistency(tier, isolation):
 
 @settings(max_examples=25, phases=[Phase.generate])
 @given(
-    physical_error_rate=st.floats(min_value=0.0001, max_value=0.0108, allow_nan=False, allow_infinity=False),
+    physical_error_rate=st.floats(
+        min_value=0.0001, max_value=0.0108, allow_nan=False, allow_infinity=False
+    ),
 )
 def test_property_physical_error_rate_bounds(physical_error_rate):
     """Property: physical error rate should be within valid bounds for surface code."""
     # Error rate must be positive
     assert physical_error_rate > 0
-    
+
     # Error rate must be below surface code threshold (approximately 1%)
     assert physical_error_rate < 0.0109
-    
+
     # Error rate should be reasonable for fault tolerance
     assert 0.0001 <= physical_error_rate <= 0.0108
 
 
 # Adversarial Tests for QaaS
 # -----------------------------------------------------------------
+
 
 def test_adversarial_extreme_circuit_depth_rejection():
     """Adversarial: Attempt to provision with extreme circuit depth should be rejected."""
@@ -796,6 +841,7 @@ def test_adversarial_tier_escalation_via_metadata():
 # Integration Tests for QaaS
 # -----------------------------------------------------------------
 
+
 def test_integration_full_customer_workflow():
     """Integration: Complete customer workflow from provision to execute."""
     principal = _customer_principal(tier="developer")
@@ -803,7 +849,7 @@ def test_integration_full_customer_workflow():
     registry._computers.clear()
     try:
         client = TestClient(app)
-        
+
         # Step 1: Provision a computer
         provision = client.post(
             "/api/v1/fault-tolerant-computers",
@@ -817,12 +863,12 @@ def test_integration_full_customer_workflow():
         )
         assert provision.status_code == 201
         computer_id = provision.json()["computer_id"]
-        
+
         # Step 2: Start the computer
         start = client.post(f"/api/v1/fault-tolerant-computers/{computer_id}/start")
         assert start.status_code == 200
         assert start.json()["state"] == "running"
-        
+
         # Step 3: Execute a workload (within developer tier limits)
         execute = client.post(
             f"/api/v1/fault-tolerant-computers/{computer_id}/execute",
@@ -837,7 +883,7 @@ def test_integration_full_customer_workflow():
         result = execute.json()
         assert result["operation"] == "surface_code_cycle"
         assert "result" in result
-        
+
         # Step 4: Stop the computer (customer stop not implemented, skip or use admin)
         # For now, just verify the computer is still accessible
         list_result = client.get("/api/v1/fault-tolerant-computers")
@@ -853,11 +899,11 @@ def test_integration_multi_tier_entitlement():
     app.dependency_overrides.clear()
     try:
         client = TestClient(app)
-        
+
         # Test developer tier
         dev_principal = _customer_principal(tier="developer")
         _override_customer_auth(dev_principal)
-        
+
         dev_provision = client.post(
             "/api/v1/fault-tolerant-computers",
             json={
@@ -869,7 +915,7 @@ def test_integration_multi_tier_entitlement():
             },
         )
         assert dev_provision.status_code == 201
-        
+
         # Test production tier with production key (use admin to bypass billing for entitlement test)
         app.dependency_overrides[require_admin] = _admin_payload
         prod_provision = client.post(
@@ -883,7 +929,7 @@ def test_integration_multi_tier_entitlement():
             },
         )
         assert prod_provision.status_code == 201
-        
+
         # Test enterprise tier with sovereign entitlement (use admin to bypass billing)
         ent_provision = client.post(
             "/api/admin/fault-tolerant-computers",
@@ -908,7 +954,7 @@ def test_integration_idempotency_across_sessions():
     registry._computers.clear()
     try:
         client = TestClient(app)
-        
+
         # Provision and start
         provision = client.post(
             "/api/admin/fault-tolerant-computers",
@@ -916,7 +962,7 @@ def test_integration_idempotency_across_sessions():
         )
         computer_id = provision.json()["computer_id"]
         client.post(f"/api/admin/fault-tolerant-computers/{computer_id}/start")
-        
+
         # First execution with idempotency key
         first = client.post(
             f"/api/admin/fault-tolerant-computers/{computer_id}/execute",
@@ -930,7 +976,7 @@ def test_integration_idempotency_across_sessions():
         )
         assert first.status_code == 200
         first_result = first.json()
-        
+
         # Replay with same key and same payload
         replay = client.post(
             f"/api/admin/fault-tolerant-computers/{computer_id}/execute",
@@ -953,7 +999,7 @@ def test_integration_autonomous_controller_integration():
     """Integration: Verify autonomous controller integrates with QaaS execution."""
     from pythia_mining.autonomous_qaas_controller import AutonomousQaaSController
     import tempfile
-    
+
     registry._computers.clear()
     try:
         # Create autonomous controller
@@ -963,23 +1009,23 @@ def test_integration_autonomous_controller_integration():
                 service_kind="qaas",
                 persistence_dir=Path(tmpdir),
             )
-            
+
             # Start controller
             status = controller.start()
             assert status["status"] == "autonomous_controller_active"
-            
+
             # Record execution metrics
             controller.record_execution(
                 execution_time_ms=150.0,
                 logical_error_rate=0.001,
                 correction_success=True,
             )
-            
+
             # Check health metrics
             metrics = controller.get_health_metrics()
             assert metrics.logical_error_rate == 0.001
             assert metrics.correction_success_rate == 1.0
-            
+
             # Stop controller
             stop_status = controller.stop()
             assert stop_status["status"] == "autonomous_controller_stopped"
@@ -990,12 +1036,13 @@ def test_integration_autonomous_controller_integration():
 # End-to-End Tests for QaaS
 # -----------------------------------------------------------------
 
+
 def test_e2e_production_customer_lifecycle():
     """E2E: Full production customer lifecycle from onboarding to workload execution."""
     registry._computers.clear()
     try:
         client = TestClient(app)
-        
+
         # Simulate production customer onboarding with high quota for testing
         prod_principal = CustomerPrincipal(
             customer_id="prod-customer-lifecycle",
@@ -1010,7 +1057,7 @@ def test_e2e_production_customer_lifecycle():
             pricing_usd_per_unit={"default": 0.01},
         )
         _override_customer_auth(prod_principal)
-        
+
         # Step 1: Provision production-tier QPU
         provision = client.post(
             "/api/v1/fault-tolerant-computers",
@@ -1026,17 +1073,17 @@ def test_e2e_production_customer_lifecycle():
         )
         assert provision.status_code == 201
         computer_id = provision.json()["computer_id"]
-        
+
         # Step 2: Verify production-tier features
         assert provision.json()["tier"] == "production"
         assert provision.json()["isolation"] == "dedicated-control-plane"
         assert provision.json()["admin_privileged"] is False
-        
+
         # Step 3: Start QPU
         start = client.post(f"/api/v1/fault-tolerant-computers/{computer_id}/start")
         assert start.status_code == 200
         assert start.json()["state"] == "running"
-        
+
         # Step 4: Execute production workload (within production tier limits)
         execute = client.post(
             f"/api/v1/fault-tolerant-computers/{computer_id}/execute",
@@ -1052,11 +1099,11 @@ def test_e2e_production_customer_lifecycle():
         result = execute.json()
         assert result["operation"] == "surface_code_cycle"
         assert result["result"]["syndrome_rounds"] >= 4
-        
+
         # Step 5: Verify fault tolerance metrics
         assert result["fault_tolerance"]["fault_tolerant"] is True
         assert result["fault_tolerance"]["logical_error_rate"] < 0.001
-        
+
         # Step 6: Replay with same idempotency key and same payload (idempotent replay)
         replay = client.post(
             f"/api/v1/fault-tolerant-computers/{computer_id}/execute",
@@ -1070,7 +1117,7 @@ def test_e2e_production_customer_lifecycle():
         )
         assert replay.status_code == 200
         assert replay.json()["executed_at"] == result["executed_at"]
-        
+
         # Step 7: Stop QPU
         stop = client.post(f"/api/v1/fault-tolerant-computers/{computer_id}/stop")
         assert stop.status_code == 200
@@ -1085,7 +1132,7 @@ def test_e2e_multi_customer_isolation():
     registry._computers.clear()
     try:
         client = TestClient(app)
-        
+
         # Customer 1: Developer tier with UNIQUE customer_id
         dev_principal = CustomerPrincipal(
             customer_id="dev-customer-isolation-test-001",
@@ -1100,7 +1147,7 @@ def test_e2e_multi_customer_isolation():
             pricing_usd_per_unit={"default": 0.01},
         )
         _override_customer_auth(dev_principal)
-        
+
         dev_qpu = client.post(
             "/api/v1/fault-tolerant-computers",
             json={
@@ -1113,7 +1160,7 @@ def test_e2e_multi_customer_isolation():
         )
         assert dev_qpu.status_code == 201
         dev_computer_id = dev_qpu.json()["computer_id"]
-        
+
         # Customer 2: Production tier with DIFFERENT customer_id
         prod_principal = CustomerPrincipal(
             customer_id="prod-customer-isolation-test-002",  # DIFFERENT from dev
@@ -1128,7 +1175,7 @@ def test_e2e_multi_customer_isolation():
             pricing_usd_per_unit={"default": 0.01},
         )
         _override_customer_auth(prod_principal)
-        
+
         prod_qpu = client.post(
             "/api/v1/fault-tolerant-computers",
             json={
@@ -1141,7 +1188,7 @@ def test_e2e_multi_customer_isolation():
         )
         assert prod_qpu.status_code == 201
         prod_computer_id = prod_qpu.json()["computer_id"]
-        
+
         # Verify isolation: developer cannot access production QPU
         _override_customer_auth(dev_principal)
         dev_access_prod = client.post(
@@ -1159,11 +1206,11 @@ def test_e2e_error_recovery_workflow():
     """E2E: Verify error recovery and autonomous healing workflow."""
     from pythia_mining.autonomous_qaas_controller import AutonomousQaaSController
     import tempfile
-    
+
     registry._computers.clear()
     try:
         client = TestClient(app)
-        
+
         # Create autonomous controller
         with tempfile.TemporaryDirectory() as tmpdir:
             controller = AutonomousQaaSController(
@@ -1172,7 +1219,7 @@ def test_e2e_error_recovery_workflow():
                 persistence_dir=Path(tmpdir),
             )
             controller.start()
-            
+
             # Provision QPU
             app.dependency_overrides[require_admin] = _admin_payload
             provision = client.post(
@@ -1181,48 +1228,48 @@ def test_e2e_error_recovery_workflow():
             )
             computer_id = provision.json()["computer_id"]
             client.post(f"/api/admin/fault-tolerant-computers/{computer_id}/start")
-            
+
             # Simulate error conditions
             controller.record_execution(
                 execution_time_ms=500.0,
                 logical_error_rate=0.01,  # High error rate
                 correction_success=False,
             )
-            
+
             # Record multiple failures
             controller.record_execution(
                 execution_time_ms=450.0,
                 logical_error_rate=0.012,
                 correction_success=False,
             )
-            
+
             controller.record_execution(
                 execution_time_ms=480.0,
                 logical_error_rate=0.011,
                 correction_success=False,
             )
-            
+
             # Check if healing should trigger
             metrics = controller.get_health_metrics()
             assert metrics.consecutive_failures >= 3
-            
+
             trigger = controller.should_trigger_healing(metrics)
             assert trigger is not None
-            
+
             # Execute healing
             heal_result = controller.heal(trigger)
             assert heal_result.success is True
-            
+
             # Verify recovery
             controller.record_execution(
                 execution_time_ms=150.0,
                 logical_error_rate=0.001,
                 correction_success=True,
             )
-            
+
             metrics_after = controller.get_health_metrics()
             assert metrics_after.consecutive_failures == 0
-            
+
             controller.stop()
     finally:
         app.dependency_overrides.clear()
@@ -1235,7 +1282,7 @@ def test_e2e_evidence_seal_integrity():
     registry._computers.clear()
     try:
         client = TestClient(app)
-        
+
         # Provision QPU
         provision = client.post(
             "/api/admin/fault-tolerant-computers",
@@ -1247,14 +1294,14 @@ def test_e2e_evidence_seal_integrity():
             },
         )
         computer_id = provision.json()["computer_id"]
-        
+
         # Verify evidence seal in provision response
         assert "evidence_seal" in provision.json()
         assert len(provision.json()["evidence_seal"]) == 64
-        
+
         # Start QPU
         client.post(f"/api/admin/fault-tolerant-computers/{computer_id}/start")
-        
+
         # Execute workload
         execute = client.post(
             f"/api/admin/fault-tolerant-computers/{computer_id}/execute",
@@ -1266,11 +1313,11 @@ def test_e2e_evidence_seal_integrity():
             },
         )
         assert execute.status_code == 200
-        
+
         # Verify evidence seal in execution response
         assert "evidence_seal" in execute.json()
         assert len(execute.json()["evidence_seal"]) == 64
-        
+
         # Verify seal_version and sealed_at fields
         assert "seal_version" in execute.json()
         assert "sealed_at" in execute.json()

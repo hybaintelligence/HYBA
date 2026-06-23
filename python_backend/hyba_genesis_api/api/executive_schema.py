@@ -27,14 +27,18 @@ class PoolHabitat(BaseModel):
     stratum_version: int = Field(..., description="Stratum protocol version")
     enabled: bool = Field(..., description="Whether pool is enabled")
     priority: int = Field(..., description="Pool priority for selection")
-    is_default: bool = Field(default=False, description="Whether this is the default pool")
+    is_default: bool = Field(
+        default=False, description="Whether this is the default pool"
+    )
     description: Optional[str] = Field(None, description="Pool description")
 
 
 class MiningIntentRequest(BaseModel):
     """Request model for setting mining intent."""
 
-    intent: MiningIntent = Field(..., description="Mining intent: ACTIVATE, QUIESCE, or STASIS")
+    intent: MiningIntent = Field(
+        ..., description="Mining intent: ACTIVATE, QUIESCE, or STASIS"
+    )
 
 
 class IgnitionResponse(BaseModel):
@@ -47,7 +51,9 @@ class IgnitionResponse(BaseModel):
     timestamp: Optional[str] = Field(None, description="Ignition timestamp")
     error: Optional[str] = Field(None, description="Error message if failed")
     reason: Optional[str] = Field(None, description="Detailed reason for failure")
-    environment_mode: Optional[str] = Field(None, description="Environment mode if stasis lock")
+    environment_mode: Optional[str] = Field(
+        None, description="Environment mode if stasis lock"
+    )
 
 
 class QuiescenceResponse(BaseModel):
@@ -58,7 +64,9 @@ class QuiescenceResponse(BaseModel):
     synaptic_state_preserved: Optional[bool] = Field(
         None, description="Whether synaptic state was preserved"
     )
-    patterns_count: Optional[int] = Field(None, description="Number of patterns preserved")
+    patterns_count: Optional[int] = Field(
+        None, description="Number of patterns preserved"
+    )
 
 
 class StasisResponse(BaseModel):
@@ -85,8 +93,12 @@ class TelemetryResponse(BaseModel):
     stratum: Dict[str, Any] = Field(
         default_factory=dict, description="Stratum connection telemetry"
     )
-    coherence: Dict[str, Any] = Field(default_factory=dict, description="Conherence metrics")
-    regeneration: Dict[str, Any] = Field(default_factory=dict, description="Regeneration status")
+    coherence: Dict[str, Any] = Field(
+        default_factory=dict, description="Conherence metrics"
+    )
+    regeneration: Dict[str, Any] = Field(
+        default_factory=dict, description="Regeneration status"
+    )
     sensory_integrity: Dict[str, Any] = Field(
         default_factory=dict, description="Sensory integrity report"
     )

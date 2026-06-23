@@ -44,7 +44,9 @@ def test_inline_pool_url_credentials_are_promoted_and_stripped() -> None:
     assert "@" not in profile.url
 
 
-def test_validate_pool_config_accepts_inline_credentials_without_separate_fields() -> None:
+def test_validate_pool_config_accepts_inline_credentials_without_separate_fields() -> (
+    None
+):
     config = PoolCredentialConfig(
         pool_id="braiins",
         name="Braiins Pool",
@@ -62,7 +64,9 @@ def test_validate_pool_config_accepts_inline_credentials_without_separate_fields
     assert profile.url == "stratum+tcp://stratum.braiins.com:3333"
 
 
-def test_env_url_only_inline_credentials_load_as_pool_profile(monkeypatch, tmp_path) -> None:
+def test_env_url_only_inline_credentials_load_as_pool_profile(
+    monkeypatch, tmp_path
+) -> None:
     monkeypatch.setenv("HYBA_POOL_CONFIG_PATH", str(tmp_path / "missing.json"))
     monkeypatch.setenv(
         "HYBA_POOL_BRAIINS_URL",
@@ -80,7 +84,9 @@ def test_env_url_only_inline_credentials_load_as_pool_profile(monkeypatch, tmp_p
     assert profiles["braiins"].url == "stratum+tcp://stratum.braiins.com:3333"
 
 
-def test_default_pool_config_redacts_inline_credentials_in_public_dict(monkeypatch) -> None:
+def test_default_pool_config_redacts_inline_credentials_in_public_dict(
+    monkeypatch,
+) -> None:
     monkeypatch.setenv(
         "HYBA_POOL_BRAIINS_URL",
         "stratum+tcp://worker.name:token@stratum.braiins.com:3333",
@@ -94,7 +100,9 @@ def test_default_pool_config_redacts_inline_credentials_in_public_dict(monkeypat
     assert "token" not in str(public)
 
 
-def test_env_configured_pool_overrides_disabled_runtime_config(monkeypatch, tmp_path) -> None:
+def test_env_configured_pool_overrides_disabled_runtime_config(
+    monkeypatch, tmp_path
+) -> None:
     """Env-configured pools should enable even if runtime config has enabled=false."""
     runtime_config_file = tmp_path / "pools.json"
     runtime_config_file.write_text(
@@ -161,16 +169,18 @@ def test_rotation_pools_all_stratum_v1_job_capable(monkeypatch, tmp_path) -> Non
     monkeypatch.setenv("HYBA_POOL_BRAIINS_PASSWORD", "x")
     monkeypatch.setenv("HYBA_POOL_NICEHASH_WORKER", "nicehash_worker")
     monkeypatch.setenv("HYBA_POOL_NICEHASH_NH_POOL_ID", "pool123")
-    monkeypatch.setenv("HYBA_POOL_CKPOOL_BTC_ADDRESS", "1A1z7agoat4xFrqyqyUeGvW1vKjjzJ8D2s")
+    monkeypatch.setenv(
+        "HYBA_POOL_CKPOOL_BTC_ADDRESS", "1A1z7agoat4xFrqyqyUeGvW1vKjjzJ8D2s"
+    )
 
     profiles = {profile.pool_id: profile for profile in load_pool_profiles()}
 
     for pool_id in ("viabtc", "braiins", "nicehash", "ckpool"):
         assert pool_id in profiles, f"{pool_id} not loaded"
         profile = profiles[pool_id]
-        assert profile.stratum_version == 1, (
-            f"{pool_id} must be Stratum V1, got {profile.stratum_version}"
-        )
+        assert (
+            profile.stratum_version == 1
+        ), f"{pool_id} must be Stratum V1, got {profile.stratum_version}"
         assert profile.username, f"{pool_id} missing username"
         assert profile.password, f"{pool_id} missing password"
 
@@ -186,14 +196,18 @@ def test_non_tls_url_rejected_when_tls_required() -> None:
     import pytest
 
     with pytest.raises(PoolProfileError, match="TLS"):
-        validate_pool_url("stratum+tcp://sha256.auto.nicehash.com:443", tls_required=True)
+        validate_pool_url(
+            "stratum+tcp://sha256.auto.nicehash.com:443", tls_required=True
+        )
 
 
 def test_tls_url_accepted_when_tls_required() -> None:
     """validate_pool_url must accept stratum+ssl when tls_required=True."""
     from pythia_mining.pool_profiles import validate_pool_url
 
-    url = validate_pool_url("stratum+ssl://sha256.auto.nicehash.com:443", tls_required=True)
+    url = validate_pool_url(
+        "stratum+ssl://sha256.auto.nicehash.com:443", tls_required=True
+    )
     assert "sha256.auto.nicehash.com" in url
 
 
@@ -245,9 +259,9 @@ def test_order_profiles_produces_ascending_priority() -> None:
 def test_all_default_specs_have_unique_priorities() -> None:
     """Each default pool spec must have a unique priority to guarantee stable failover order."""
     priorities = [spec["priority"] for spec in DEFAULT_POOL_SPECS.values()]
-    assert len(set(priorities)) == len(priorities), (
-        f"duplicate priorities in DEFAULT_POOL_SPECS: {priorities}"
-    )
+    assert len(set(priorities)) == len(
+        priorities
+    ), f"duplicate priorities in DEFAULT_POOL_SPECS: {priorities}"
 
 
 def test_viabtc_has_highest_priority_among_defaults() -> None:
@@ -256,9 +270,9 @@ def test_viabtc_has_highest_priority_among_defaults() -> None:
     viabtc_priority = specs["viabtc"]["priority"]
     for pool_id, spec in specs.items():
         if pool_id != "viabtc":
-            assert viabtc_priority < spec["priority"], (
-                f"viabtc priority {viabtc_priority} not lower than {pool_id} priority {spec['priority']}"
-            )
+            assert (
+                viabtc_priority < spec["priority"]
+            ), f"viabtc priority {viabtc_priority} not lower than {pool_id} priority {spec['priority']}"
 
 
 # ---------------------------------------------------------------------------
@@ -356,9 +370,9 @@ def test_validate_profile_rejects_missing_port() -> None:
 def test_stratumv2_default_spec_uses_stratum2_scheme() -> None:
     """The stratumv2 default spec must use a stratum2+ URL scheme, not stratum+."""
     spec = DEFAULT_POOL_SPECS["stratumv2"]
-    assert spec["url"].startswith("stratum2+"), (
-        f"stratumv2 URL must start with 'stratum2+', got: {spec['url']}"
-    )
+    assert spec["url"].startswith(
+        "stratum2+"
+    ), f"stratumv2 URL must start with 'stratum2+', got: {spec['url']}"
     assert spec["stratum_version"] == 2
 
 
@@ -381,16 +395,19 @@ def test_solver_without_configured_capacity_reports_no_hashrate() -> None:
     import sys
 
     sys.path.insert(
-        0, str(__import__("pathlib").Path(__file__).resolve().parents[1] / "python_backend")
+        0,
+        str(
+            __import__("pathlib").Path(__file__).resolve().parents[1] / "python_backend"
+        ),
     )
     from pythia_mining.dodecahedral_solver import DodecahedralQuantumSolver
 
     solver = DodecahedralQuantumSolver()  # no configured_capacity_ehs
     metrics = solver.get_metrics()
 
-    assert metrics["hashrate_ehs"] is None, (
-        f"unconfigured solver reported hashrate_ehs={metrics['hashrate_ehs']}"
-    )
+    assert (
+        metrics["hashrate_ehs"] is None
+    ), f"unconfigured solver reported hashrate_ehs={metrics['hashrate_ehs']}"
     assert metrics["capacity_source"] == "not_configured"
     assert metrics["telemetry_source"] == "derived_runtime_state"
 
@@ -400,7 +417,10 @@ def test_benchmark_projection_only_mode_reports_no_effective_hashrate() -> None:
     import sys
 
     sys.path.insert(
-        0, str(__import__("pathlib").Path(__file__).resolve().parents[1] / "python_backend")
+        0,
+        str(
+            __import__("pathlib").Path(__file__).resolve().parents[1] / "python_backend"
+        ),
     )
     from pythia_mining.phi_scaling_engine import benchmark_vs_asic
 
@@ -418,7 +438,10 @@ def test_benchmark_measured_mode_exposes_ratio_as_finite() -> None:
     import sys
 
     sys.path.insert(
-        0, str(__import__("pathlib").Path(__file__).resolve().parents[1] / "python_backend")
+        0,
+        str(
+            __import__("pathlib").Path(__file__).resolve().parents[1] / "python_backend"
+        ),
     )
     from pythia_mining.phi_scaling_engine import benchmark_vs_asic
 

@@ -48,8 +48,9 @@ class TestPrivilegeEscalationPrevention:
     def test_public_customer_request_model_has_no_admin_privileged_field(self):
         """Customer request model must not expose admin_privileged field."""
         model_fields = CustomerProvisionFaultTolerantComputerRequest.model_fields
-        assert "admin_privileged" not in model_fields, \
-            "Customer request model must not include admin_privileged"
+        assert (
+            "admin_privileged" not in model_fields
+        ), "Customer request model must not include admin_privileged"
 
     def test_public_customer_request_rejects_admin_privileged_extra_field(self):
         """Pydantic must reject unknown admin_privileged field (extra='forbid')."""
@@ -58,12 +59,13 @@ class TestPrivilegeEscalationPrevention:
                 name="attacker",
                 admin_privileged=True,  # Attempt privilege escalation
                 tier="developer",
-                isolation="single_tenant"
+                isolation="single_tenant",
             )
-        
+
         error = str(exc_info.value)
-        assert "admin_privileged" in error or "extra" in error.lower(), \
-            "Must reject unknown admin_privileged field"
+        assert (
+            "admin_privileged" in error or "extra" in error.lower()
+        ), "Must reject unknown admin_privileged field"
 
     def test_public_customer_request_rejects_unknown_fields(self):
         """Any extra unknown field must be rejected."""
@@ -72,18 +74,16 @@ class TestPrivilegeEscalationPrevention:
                 name="test",
                 tier="developer",
                 isolation="single_tenant",
-                secret_backdoor="enabled"  # Unknown field
+                secret_backdoor="enabled",  # Unknown field
             )
-        
+
         error = str(exc_info.value)
         assert "secret_backdoor" in error or "extra" in error.lower()
 
     def test_valid_customer_request_succeeds(self):
         """Baseline: valid request without extra fields succeeds."""
         req = CustomerProvisionFaultTolerantComputerRequest(
-            name="legitimate",
-            tier="developer",
-            isolation="single_tenant"
+            name="legitimate", tier="developer", isolation="single_tenant"
         )
         assert req.name == "legitimate"
         assert req.tier == "developer"
@@ -102,45 +102,42 @@ class TestEntitlementMatrix:
     def test_developer_cannot_request_production_qpu(self):
         """Developer tier cannot provision production QPU."""
         principal = {"tier": "developer", "metadata": {}}
-        
+
         with pytest.raises(HTTPException) as exc_info:
             _validate_customer_entitlement(
                 principal=principal,
                 requested_tier="production",
-                requested_isolation="dedicated_control_plane"
+                requested_isolation="dedicated_control_plane",
             )
-        
+
         assert exc_info.value.status_code == 403
         assert "tier" in str(exc_info.value.detail).lower()
 
     def test_production_cannot_request_sovereign_isolation(self):
         """Production tier cannot provision sovereign without entitlement."""
         principal = {"tier": "production", "metadata": {}}
-        
+
         with pytest.raises(HTTPException) as exc_info:
             _validate_customer_entitlement(
                 principal=principal,
                 requested_tier="enterprise",
-                requested_isolation="sovereign_isolated"
+                requested_isolation="sovereign_isolated",
             )
-        
+
         assert exc_info.value.status_code == 403
         assert "sovereign" in str(exc_info.value.detail).lower()
 
     def test_enterprise_without_sovereign_enabled_cannot_request_sovereign(self):
         """Enterprise without sovereign_enabled=true cannot access sovereign."""
-        principal = {
-            "tier": "enterprise",
-            "metadata": {"sovereign_enabled": False}
-        }
-        
+        principal = {"tier": "enterprise", "metadata": {"sovereign_enabled": False}}
+
         with pytest.raises(HTTPException) as exc_info:
             _validate_customer_entitlement(
                 principal=principal,
                 requested_tier="enterprise",
-                requested_isolation="sovereign_isolated"
+                requested_isolation="sovereign_isolated",
             )
-        
+
         assert exc_info.value.status_code == 403
 
     # ── Positive Tests: Allowed ────────────────────────────────────
@@ -148,35 +145,32 @@ class TestEntitlementMatrix:
     def test_developer_can_create_developer_single_tenant_qpu(self):
         """Developer tier can provision developer single-tenant QPU."""
         principal = {"tier": "developer", "metadata": {}}
-        
+
         # Should not raise
         _validate_customer_entitlement(
             principal=principal,
             requested_tier="developer",
-            requested_isolation="single_tenant"
+            requested_isolation="single_tenant",
         )
 
     def test_production_can_create_production_dedicated_control_plane_qpu(self):
         """Production tier can provision production dedicated QPU."""
         principal = {"tier": "production", "metadata": {}}
-        
+
         _validate_customer_entitlement(
             principal=principal,
             requested_tier="production",
-            requested_isolation="dedicated_control_plane"
+            requested_isolation="dedicated_control_plane",
         )
 
     def test_enterprise_with_sovereign_enabled_can_create_sovereign_isolated_qpu(self):
         """Enterprise with sovereign_enabled=true can provision sovereign QPU."""
-        principal = {
-            "tier": "enterprise",
-            "metadata": {"sovereign_enabled": True}
-        }
-        
+        principal = {"tier": "enterprise", "metadata": {"sovereign_enabled": True}}
+
         _validate_customer_entitlement(
             principal=principal,
             requested_tier="enterprise",
-            requested_isolation="sovereign_isolated"
+            requested_isolation="sovereign_isolated",
         )
 
 
@@ -191,20 +185,17 @@ class TestMetadataTrustBoundary:
     def test_request_body_metadata_cannot_enable_sovereign_access(self):
         """Request metadata must not override principal sovereign entitlement."""
         # Principal: no sovereign access
-        principal = {
-            "tier": "enterprise",
-            "metadata": {"sovereign_enabled": False}
-        }
-        
+        principal = {"tier": "enterprise", "metadata": {"sovereign_enabled": False}}
+
         # Attacker tries to inject sovereign via request body
         # (This tests that _validate_customer_entitlement ignores request metadata)
         with pytest.raises(HTTPException) as exc_info:
             _validate_customer_entitlement(
                 principal=principal,
                 requested_tier="enterprise",
-                requested_isolation="sovereign_isolated"
+                requested_isolation="sovereign_isolated",
             )
-        
+
         assert exc_info.value.status_code == 403
 
     def test_principal_metadata_is_source_of_truth_for_sovereign(self):
@@ -212,14 +203,14 @@ class TestMetadataTrustBoundary:
         # Even if request claims sovereign, principal metadata decides
         principal_allowed = {
             "tier": "enterprise",
-            "metadata": {"sovereign_enabled": True}
+            "metadata": {"sovereign_enabled": True},
         }
-        
+
         # Should succeed based on principal metadata
         _validate_customer_entitlement(
             principal=principal_allowed,
             requested_tier="enterprise",
-            requested_isolation="sovereign_isolated"
+            requested_isolation="sovereign_isolated",
         )
 
 
@@ -268,18 +259,19 @@ class TestWorkUnitEstimateFairness:
             operation="surface_code_cycle",
             circuit_depth=10,
             logical_qubits=[0, 1, 2],
-            shots=100
+            shots=100,
         )
-        
+
         deep_units = _estimated_work_units(
             operation="surface_code_cycle",
             circuit_depth=1000,
             logical_qubits=[0, 1, 2],
-            shots=100
+            shots=100,
         )
-        
-        assert deep_units > shallow_units, \
-            "Deeper circuits must have higher work-unit estimates"
+
+        assert (
+            deep_units > shallow_units
+        ), "Deeper circuits must have higher work-unit estimates"
 
     def test_estimated_work_units_includes_qubit_count(self):
         """More qubits must increase estimated work units."""
@@ -287,16 +279,16 @@ class TestWorkUnitEstimateFairness:
             operation="surface_code_cycle",
             circuit_depth=100,
             logical_qubits=[0, 1],
-            shots=100
+            shots=100,
         )
-        
+
         many_qubits = _estimated_work_units(
             operation="surface_code_cycle",
             circuit_depth=100,
             logical_qubits=list(range(20)),
-            shots=100
+            shots=100,
         )
-        
+
         assert many_qubits > few_qubits
 
     def test_estimated_work_units_includes_shots(self):
@@ -305,16 +297,16 @@ class TestWorkUnitEstimateFairness:
             operation="surface_code_cycle",
             circuit_depth=100,
             logical_qubits=[0, 1, 2],
-            shots=10
+            shots=10,
         )
-        
+
         many_shots = _estimated_work_units(
             operation="surface_code_cycle",
             circuit_depth=100,
             logical_qubits=[0, 1, 2],
-            shots=10000
+            shots=10000,
         )
-        
+
         assert many_shots > few_shots
 
     def test_code_distance_increases_estimated_work_units(self):
@@ -327,18 +319,17 @@ class TestWorkUnitEstimateFairness:
             operation="state_vector_summary",
             circuit_depth=100,
             logical_qubits=[0, 1, 2],
-            shots=100
+            shots=100,
         )
-        
+
         heavy_op = _estimated_work_units(
             operation="substrate_orchestration",
             circuit_depth=100,
             logical_qubits=[0, 1, 2],
-            shots=100
+            shots=100,
         )
-        
-        assert heavy_op > light_op, \
-            "Heavy operations must have higher cost multipliers"
+
+        assert heavy_op > light_op, "Heavy operations must have higher cost multipliers"
 
     def test_large_shots_rejected_before_execution(self):
         """Excessive shots must be rejected with 413 before execution."""

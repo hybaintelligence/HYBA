@@ -291,7 +291,7 @@ class TestMemoryCompressor:
         folded, result = compressor.compress_score_vector(scores)
         assert result.reversible
         reconstructed = compressor.lane_scores_from_compressed(folded, result)
-        assert np.allclose(scores, reconstructed.reshape(-1)[:len(scores)], atol=1e-6)
+        assert np.allclose(scores, reconstructed.reshape(-1)[: len(scores)], atol=1e-6)
 
     def test_compression_factor(self):
         """Compression factor should increase with fold depth."""
@@ -377,6 +377,7 @@ class TestManifoldRouter:
         """First 20 nodes should be Dodecahedron, last 12 Icosahedron."""
         router = ManifoldRouter()
         from pythia_mining.pulvini_autonomics import NodeType
+
         for node_id in range(20):
             assert router.node_type(node_id) == NodeType.DODECAHEDRON
         for node_id in range(20, NUM_NODES):
@@ -404,7 +405,7 @@ class TestManifoldRouter:
         for node_id in range(NUM_NODES):
             start, end = router.nonce_range(node_id)
             assert start <= end
-            total += (end - start + 1)
+            total += end - start + 1
         # Should cover full uint32 range
         assert total == MAX_UINT32_NONCE + 1
 
@@ -491,7 +492,9 @@ class TestAutonomousSearchSystem:
         assert seed1 == seed2
         assert seed1 > 0
 
-    def test_build_seed_different_context(self, system_no_evidence, regtest_chain_context):
+    def test_build_seed_different_context(
+        self, system_no_evidence, regtest_chain_context
+    ):
         """Different context should produce different seeds."""
         seed1 = system_no_evidence.build_seed(regtest_chain_context)
         ctx2 = dict(regtest_chain_context)
@@ -503,6 +506,7 @@ class TestAutonomousSearchSystem:
         self, system_with_evidence, regtest_target, regtest_chain_context
     ):
         """STRUCTURED mode should find a solution using a simple known-nonce verifier."""
+
         # Use a verifier we control: nonce 42 always wins
         def test_verifier(nonce: int) -> int:
             return 0 if nonce == 42 else (regtest_target + 1)
@@ -526,6 +530,7 @@ class TestAutonomousSearchSystem:
         self, system_with_evidence, regtest_target, regtest_chain_context
     ):
         """GROVER mode should find a solution."""
+
         def test_verifier(nonce: int) -> int:
             return 0 if nonce == 42 else (regtest_target + 1)
 
@@ -549,6 +554,7 @@ class TestAutonomousSearchSystem:
         self, system_with_evidence, regtest_target, regtest_chain_context
     ):
         """QUANTUM_WALK mode should find a solution."""
+
         def test_verifier(nonce: int) -> int:
             return 0 if nonce == 42 else (regtest_target + 1)
 
@@ -569,6 +575,7 @@ class TestAutonomousSearchSystem:
         self, system_with_evidence, regtest_target, regtest_chain_context
     ):
         """HYBRID mode should find a solution using all mechanisms."""
+
         def test_verifier(nonce: int) -> int:
             return 0 if nonce == 42 else (regtest_target + 1)
 
@@ -598,6 +605,7 @@ class TestAutonomousSearchSystem:
         self, system_no_evidence, regtest_target, regtest_chain_context
     ):
         """System without evidence should still find solutions."""
+
         def test_verifier(nonce: int) -> int:
             return 0 if nonce == 42 else (regtest_target + 1)
 
@@ -631,6 +639,7 @@ class TestAutonomousSearchSystem:
         self, system_with_evidence, regtest_target, regtest_chain_context
     ):
         """Same inputs should produce same results."""
+
         def test_verifier(nonce: int) -> int:
             return 0 if nonce == 42 else (regtest_target + 1)
 
@@ -687,6 +696,7 @@ class TestAutonomousSearchSystem:
 
     def test_reset(self, system_with_evidence, regtest_target, regtest_chain_context):
         """Reset should clear search history."""
+
         def test_verifier(nonce: int) -> int:
             return 0 if nonce == 42 else (regtest_target + 1)
 
@@ -790,9 +800,7 @@ class TestCreateAutonomousSearchSystem:
 
     def test_create_with_fold_depth(self, sample_evidence):
         """Factory should accept fold depth."""
-        system = create_autonomous_search_system(
-            evidence=sample_evidence, fold_depth=3
-        )
+        system = create_autonomous_search_system(evidence=sample_evidence, fold_depth=3)
         assert system.memory_compressor.fold_depth == 3
 
 
@@ -840,7 +848,9 @@ def test_benchmark_all_modes(
     for mode_name, br in sorted(results.items()):
         print(f"\n  {mode_name.upper()}:")
         print(f"    Speedup vs uniform:  {br.speedup_vs_uniform:.4f}x")
-        print(f"    Mean attempts:       {br.mean_attempts:>8,.0f}  ±{br.std_attempts:>6,.0f}")
+        print(
+            f"    Mean attempts:       {br.mean_attempts:>8,.0f}  ±{br.std_attempts:>6,.0f}"
+        )
         print(f"    Median attempts:     {br.median_attempts:>8,.0f}")
         print(f"    Range:               {br.min_attempts:>8,} – {br.max_attempts:>8,}")
         print(f"    Found:               {br.found}/{br.trials}")
@@ -849,9 +859,9 @@ def test_benchmark_all_modes(
     # Assertions for speedup validity
     for mode_name, br in results.items():
         assert br.found > 0, f"{mode_name} should find solutions"
-        assert br.speedup_vs_uniform > 0.5, (
-            f"{mode_name} speedup should not be worse than 0.5x"
-        )
+        assert (
+            br.speedup_vs_uniform > 0.5
+        ), f"{mode_name} speedup should not be worse than 0.5x"
 
     # HYBRID should be at least as good as STRUCTURED
     hybrid = results["hybrid"]
@@ -921,7 +931,10 @@ class TestEdgeCases:
                     [nonce],
                     regtest_target,
                     mode=SearchMode.HYBRID,
-                    chain_context={"block_height": 840000, "job_id": "test-autonomous-search"},
+                    chain_context={
+                        "block_height": 840000,
+                        "job_id": "test-autonomous-search",
+                    },
                 )
                 assert result.found
                 assert result.nonce == nonce
@@ -1017,11 +1030,14 @@ if __name__ == "__main__":
     print(f"  Candidate count: {len(candidates)}")
 
     # Test each mode
-    for mode in [SearchMode.STRUCTURED, SearchMode.GROVER, SearchMode.QUANTUM_WALK, SearchMode.HYBRID]:
+    for mode in [
+        SearchMode.STRUCTURED,
+        SearchMode.GROVER,
+        SearchMode.QUANTUM_WALK,
+        SearchMode.HYBRID,
+    ]:
         system.reset()
-        result = system.search(
-            candidates, target, mode=mode, chain_context=chain_ctx
-        )
+        result = system.search(candidates, target, mode=mode, chain_context=chain_ctx)
         status = "✅ FOUND" if result.found else "❌ NOT FOUND"
         print(f"\n  {mode.value.upper():20s}  {status}")
         print(f"    Attempts:     {result.attempts:>8,}")
@@ -1044,7 +1060,9 @@ if __name__ == "__main__":
     print(f"  FINAL SPEEDUP SUMMARY")
     print(f"{'=' * 70}")
     for mode_name, br in sorted(benchmark_results.items()):
-        print(f"  {mode_name.upper():20s}  {br.speedup_vs_uniform:.4f}x  "
-              f"({br.mean_attempts:>8,.0f} mean attempts)")
+        print(
+            f"  {mode_name.upper():20s}  {br.speedup_vs_uniform:.4f}x  "
+            f"({br.mean_attempts:>8,.0f} mean attempts)"
+        )
 
     print(f"\n  ✅ Autonomous Searching System validation complete")

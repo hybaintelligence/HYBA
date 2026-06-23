@@ -25,7 +25,9 @@ def test_lucas_sequence_converges_to_phi() -> None:
     errors = [abs(value - PHI) for value in ratios]
 
     assert errors[-1] < 0.001
-    assert all(errors[index + 1] <= errors[index] for index in range(2, len(errors) - 1))
+    assert all(
+        errors[index + 1] <= errors[index] for index in range(2, len(errors) - 1)
+    )
 
 
 def test_phi_dominates_phi_structured_distribution() -> None:

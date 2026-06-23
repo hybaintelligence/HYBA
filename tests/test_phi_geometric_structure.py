@@ -9,8 +9,12 @@ BACKEND = ROOT / "python_backend"
 if str(BACKEND) not in sys.path:
     sys.path.insert(0, str(BACKEND))
 
-from pythia_mining.pulvini_certificates import phi_geometric_structure_certificate  # noqa: E402
-from pythia_mining.pulvini_nonce_compression import PulviniNonceSpaceCompressor  # noqa: E402
+from pythia_mining.pulvini_certificates import (
+    phi_geometric_structure_certificate,
+)  # noqa: E402
+from pythia_mining.pulvini_nonce_compression import (
+    PulviniNonceSpaceCompressor,
+)  # noqa: E402
 
 
 class PhiGeometricStructureTests(unittest.TestCase):
@@ -37,7 +41,9 @@ class PhiGeometricStructureTests(unittest.TestCase):
         self.assertLess(cert["pearson_chi_square"], cert["chi_square_critical_p_0_05"])
         self.assertFalse(cert["reject_uniform_lane_null_p_0_05"])
         self.assertFalse(cert["geometric_structure_detected"])
-        self.assertEqual(cert["status"], "uniform_lane_distribution_not_rejected_p_0_05")
+        self.assertEqual(
+            cert["status"], "uniform_lane_distribution_not_rejected_p_0_05"
+        )
 
         print("PHI GEOMETRIC STRUCTURE CERTIFICATE")
         print(f"  Phi acceptance ratio: {cert['phi_acceptance_ratio']:.6f}")
@@ -49,7 +55,9 @@ class PhiGeometricStructureTests(unittest.TestCase):
         print(f"  Pearson chi-square: {cert['pearson_chi_square']:.3f}")
         print(f"  Critical chi-square p=0.05: {cert['chi_square_critical_p_0_05']:.2f}")
         print(f"  Reduced chi-square: {cert['reduced_chi_square']:.3f}")
-        print(f"  Reject uniform lane null at p=0.05: {cert['reject_uniform_lane_null_p_0_05']}")
+        print(
+            f"  Reject uniform lane null at p=0.05: {cert['reject_uniform_lane_null_p_0_05']}"
+        )
         print(f"  Result: {cert['status']}")
 
 

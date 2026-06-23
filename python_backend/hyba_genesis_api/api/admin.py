@@ -14,7 +14,13 @@ from sqlalchemy.orm import Session
 from hyba_genesis_api.database import SessionLocal
 from hyba_genesis_api.auth.jwt_handler import TokenPayload, get_token_payload
 from hyba_genesis_api.auth.role_manager import RolePermissions, Permission
-from consciousness_db.models import User, AuditLog, UserRole, FundingAllocation, FundingRequest
+from consciousness_db.models import (
+    User,
+    AuditLog,
+    UserRole,
+    FundingAllocation,
+    FundingRequest,
+)
 
 router = APIRouter(prefix="/api/admin", tags=["admin"])
 _password_hasher = PasswordHasher()
@@ -34,11 +40,15 @@ def require_admin(payload: TokenPayload = Depends(get_token_payload)) -> TokenPa
     if "admin" not in payload.roles and not RolePermissions.is_executive_role(
         payload.roles[0] if payload.roles else ""
     ):
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required"
+        )
     return payload
 
 
-def require_executive(payload: TokenPayload = Depends(get_token_payload)) -> TokenPayload:
+def require_executive(
+    payload: TokenPayload = Depends(get_token_payload),
+) -> TokenPayload:
     """Require executive role for funding operations."""
     user_role = payload.roles[0] if payload.roles else ""
     if not RolePermissions.is_executive_role(user_role):
@@ -145,7 +155,9 @@ async def get_user(
     """Get a specific user by ID."""
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
+        )
     return user
 
 
@@ -159,13 +171,17 @@ async def create_user(
     # Check if username already exists
     existing = db.query(User).filter(User.username == user_data.username).first()
     if existing:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Username already exists")
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail="Username already exists"
+        )
 
     # Check if email already exists
     if user_data.email:
         existing_email = db.query(User).filter(User.email == user_data.email).first()
         if existing_email:
-            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email already exists")
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT, detail="Email already exists"
+            )
 
     # Check if user has permission to create executive roles
     user_role = payload.roles[0] if payload.roles else ""
@@ -221,18 +237,22 @@ async def update_user(
     """Update an existing user."""
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
+        )
 
     # Prevent self-deactivation
     if user.username == payload.username and user_data.is_active is False:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="Cannot deactivate your own account"
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Cannot deactivate your own account",
         )
 
     # Prevent self-role-change
     if user.username == payload.username and user_data.role is not None:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="Cannot change your own role"
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Cannot change your own role",
         )
 
     # Check if user has permission to assign executive roles
@@ -251,7 +271,9 @@ async def update_user(
     update_data = user_data.model_dump(exclude_unset=True)
 
     if "password" in update_data:
-        update_data["password_hash"] = _password_hasher.hash(update_data.pop("password"))
+        update_data["password_hash"] = _password_hasher.hash(
+            update_data.pop("password")
+        )
 
     for field, value in update_data.items():
         setattr(user, field, value)
@@ -285,19 +307,22 @@ async def delete_user(
     """Delete a user."""
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
+        )
 
     # Prevent self-deletion
     if user.username == payload.username:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="Cannot delete your own account"
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Cannot delete your own account",
         )
 
     # Prevent deletion of executive roles by non-executives
     user_role = payload.roles[0] if payload.roles else ""
-    if RolePermissions.is_executive_role(user.role.value) and not RolePermissions.is_executive_role(
-        user_role
-    ):
+    if RolePermissions.is_executive_role(
+        user.role.value
+    ) and not RolePermissions.is_executive_role(user_role):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Only executives can delete executive accounts",
@@ -373,10 +398,14 @@ async def get_admin_stats(
     # Funding stats
     total_allocations = db.query(FundingAllocation).count()
     pending_allocations = (
-        db.query(FundingAllocation).filter(FundingAllocation.status == "pending").count()
+        db.query(FundingAllocation)
+        .filter(FundingAllocation.status == "pending")
+        .count()
     )
     approved_allocations = (
-        db.query(FundingAllocation).filter(FundingAllocation.status == "approved").count()
+        db.query(FundingAllocation)
+        .filter(FundingAllocation.status == "approved")
+        .count()
     )
     total_funding_allocated = (
         db.query(FundingAllocation)
@@ -385,7 +414,9 @@ async def get_admin_stats(
         .all()
     )
     total_amount = (
-        sum([alloc[0] for alloc in total_funding_allocated]) if total_funding_allocated else 0
+        sum([alloc[0] for alloc in total_funding_allocated])
+        if total_funding_allocated
+        else 0
     )
 
     return {
@@ -516,7 +547,10 @@ async def list_funding_allocations(
 
     total = query.count()
     allocations = (
-        query.order_by(FundingAllocation.created_at.desc()).offset(skip).limit(limit).all()
+        query.order_by(FundingAllocation.created_at.desc())
+        .offset(skip)
+        .limit(limit)
+        .all()
     )
 
     return FundingAllocationListResponse(allocations=allocations, total=total)
@@ -572,7 +606,9 @@ async def create_funding_allocation(
     return allocation
 
 
-@router.put("/funding/allocations/{allocation_id}", response_model=FundingAllocationResponse)
+@router.put(
+    "/funding/allocations/{allocation_id}", response_model=FundingAllocationResponse
+)
 async def update_funding_allocation(
     allocation_id: int,
     allocation_data: FundingAllocationRequest,
@@ -580,7 +616,11 @@ async def update_funding_allocation(
     payload: TokenPayload = Depends(require_executive),
 ):
     """Update a funding allocation."""
-    allocation = db.query(FundingAllocation).filter(FundingAllocation.id == allocation_id).first()
+    allocation = (
+        db.query(FundingAllocation)
+        .filter(FundingAllocation.id == allocation_id)
+        .first()
+    )
     if not allocation:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Funding allocation not found"
@@ -614,7 +654,8 @@ async def update_funding_allocation(
 
 
 @router.post(
-    "/funding/allocations/{allocation_id}/disburse", response_model=FundingAllocationResponse
+    "/funding/allocations/{allocation_id}/disburse",
+    response_model=FundingAllocationResponse,
 )
 async def disburse_funding(
     allocation_id: int,
@@ -622,7 +663,11 @@ async def disburse_funding(
     payload: TokenPayload = Depends(require_executive),
 ):
     """Mark funding allocation as disbursed."""
-    allocation = db.query(FundingAllocation).filter(FundingAllocation.id == allocation_id).first()
+    allocation = (
+        db.query(FundingAllocation)
+        .filter(FundingAllocation.id == allocation_id)
+        .first()
+    )
     if not allocation:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Funding allocation not found"
@@ -683,13 +728,17 @@ async def list_funding_requests(
         query = query.filter(FundingRequest.fiscal_year == fiscal_year)
 
     total = query.count()
-    requests = query.order_by(FundingRequest.created_at.desc()).offset(skip).limit(limit).all()
+    requests = (
+        query.order_by(FundingRequest.created_at.desc()).offset(skip).limit(limit).all()
+    )
 
     return FundingRequestListResponse(requests=requests, total=total)
 
 
 @router.post(
-    "/funding/requests", response_model=FundingRequestResponse, status_code=status.HTTP_201_CREATED
+    "/funding/requests",
+    response_model=FundingRequestResponse,
+    status_code=status.HTTP_201_CREATED,
 )
 async def create_funding_request(
     request_data: FundingRequestCreate,
@@ -736,7 +785,9 @@ async def create_funding_request(
     return funding_request
 
 
-@router.put("/funding/requests/{request_id}/review", response_model=FundingRequestResponse)
+@router.put(
+    "/funding/requests/{request_id}/review", response_model=FundingRequestResponse
+)
 async def review_funding_request(
     request_id: str,
     review_data: FundingApprovalRequest,
@@ -768,7 +819,9 @@ async def review_funding_request(
 
     # If approved, create allocation
     if review_data.status == "approved":
-        allocated_amount = review_data.allocated_amount or funding_request.requested_amount
+        allocated_amount = (
+            review_data.allocated_amount or funding_request.requested_amount
+        )
         allocation = FundingAllocation(
             entity_name=funding_request.entity_name,
             entity_type=funding_request.entity_type,

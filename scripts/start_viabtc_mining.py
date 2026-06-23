@@ -2,7 +2,8 @@
 """Start live mining to ViaBTC pool - Internal CIaaS/QaaS substrate validation."""
 import sys
 import os
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'python_backend'))
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "python_backend"))
 
 import requests
 import json
@@ -12,10 +13,7 @@ import os
 BASE_URL = "http://127.0.0.1:3001"
 TOKEN = os.environ.get("HYBA_OPERATOR_JWT", "")
 
-headers = {
-    "Authorization": f"Bearer {TOKEN}",
-    "Content-Type": "application/json"
-}
+headers = {"Authorization": f"Bearer {TOKEN}", "Content-Type": "application/json"}
 
 print("=" * 60)
 print("STARTING VIABTC MINING - CIaaS/QaaS SUBSTRATE VALIDATION")
@@ -26,14 +24,12 @@ print("      Not a commercial offering.\n")
 
 # Step 1: Connect to ViaBTC pool
 print("1. Connecting to ViaBTC pool (PYTHIA.001)...")
-connect_data = {
-    "pool_id": "viabtc",
-    "capacity_ehs": 1.0,
-    "switch": True
-}
+connect_data = {"pool_id": "viabtc", "capacity_ehs": 1.0, "switch": True}
 
 try:
-    response = requests.post(f"{BASE_URL}/api/mining/connect", json=connect_data, headers=headers, timeout=5)
+    response = requests.post(
+        f"{BASE_URL}/api/mining/connect", json=connect_data, headers=headers, timeout=5
+    )
     print(f"   Status: {response.status_code}")
     result = response.json()
     print(f"   Pool: {result.get('pool', 'unknown')}")
@@ -45,7 +41,9 @@ except Exception as e:
 # Step 2: Start mining daemon
 print("\n2. Starting mining daemon...")
 try:
-    response = requests.post(f"{BASE_URL}/api/mining/start", headers=headers, timeout=10)
+    response = requests.post(
+        f"{BASE_URL}/api/mining/start", headers=headers, timeout=10
+    )
     print(f"   Status: {response.status_code}")
     result = response.json()
     print(f"   Result: {json.dumps(result, indent=2)}")
@@ -72,10 +70,12 @@ try:
     response = requests.get(f"{BASE_URL}/api/mining/pools", headers=headers, timeout=5)
     print(f"   Status: {response.status_code}")
     result = response.json()
-    summary = result.get('summary', {})
+    summary = result.get("summary", {})
     print(f"   Active pool: {summary.get('active_pool_name')}")
     print(f"   Total shares (24h): {summary.get('total_shares_24h', 0)}")
-    print(f"   Global acceptance rate: {summary.get('global_acceptance_rate', 0)*100:.1f}%")
+    print(
+        f"   Global acceptance rate: {summary.get('global_acceptance_rate', 0)*100:.1f}%"
+    )
 except Exception as e:
     print(f"   Error: {e}")
 

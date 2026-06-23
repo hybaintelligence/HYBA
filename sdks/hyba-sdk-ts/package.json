@@ -1,38 +1,10 @@
 {
-  "name": "@hyba/sdk",
-  "version": "0.1.0",
-  "description": "HYBA TypeScript SDK - Computational Intelligence Services",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "files": [
-    "dist"
-  ],
-  "scripts": {
-    "build": "tsc",
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage",
-    "lint": "eslint src/**/*.ts",
-    "format": "prettier --write src/**/*.ts",
-    "prepublishOnly": "npm run build && npm run test"
-  },
-  "keywords": [
-    "hyba",
-    "computational-intelligence",
-    "qaas",
-    "ciaas",
-    "sdk"
-  ],
   "author": "HYBA Team",
-  "license": "Apache-2.0",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/hyba-ai/hyba-sdk-ts.git"
-  },
   "dependencies": {
     "axios": "^1.6.0",
     "pydantic": "^2.0.0"
   },
+  "description": "HYBA TypeScript SDK - Computational Intelligence Services",
   "devDependencies": {
     "@types/jest": "^29.0.0",
     "@types/node": "^25.9.4",
@@ -46,5 +18,33 @@
   },
   "engines": {
     "node": ">=16.0.0"
-  }
+  },
+  "files": [
+    "dist"
+  ],
+  "keywords": [
+    "hyba",
+    "computational-intelligence",
+    "qaas",
+    "ciaas",
+    "sdk"
+  ],
+  "license": "Apache-2.0",
+  "main": "dist/index.js",
+  "name": "@hyba/sdk",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hyba-ai/hyba-sdk-ts.git"
+  },
+  "scripts": {
+    "build": "tsc",
+    "format": "prettier --write src/**/*.ts",
+    "lint": "eslint src/**/*.ts",
+    "prepublishOnly": "npm run build && npm run test",
+    "test": "jest",
+    "test:coverage": "jest --coverage",
+    "test:watch": "jest --watch"
+  },
+  "types": "dist/index.d.ts",
+  "version": "0.1.0"
 }

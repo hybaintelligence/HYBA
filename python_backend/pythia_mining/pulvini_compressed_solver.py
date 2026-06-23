@@ -53,8 +53,12 @@ class PulviniCompressedQuantumSolver(DodecahedralQuantumSolver):
             }
         )
 
-    async def configure_compressed_search(self, target: int, compressed_plan: Any) -> bool:
-        if not bool(compressed_plan.complete_coverage) or not bool(compressed_plan.overlap_free):
+    async def configure_compressed_search(
+        self, target: int, compressed_plan: Any
+    ) -> bool:
+        if not bool(compressed_plan.complete_coverage) or not bool(
+            compressed_plan.overlap_free
+        ):
             raise QuantumSolverConfigurationError(
                 "compressed nonce plan must provide complete overlap-free coverage"
             )
@@ -94,7 +98,9 @@ class PulviniCompressedQuantumSolver(DodecahedralQuantumSolver):
     @staticmethod
     def _unit_hash(material: str, seed: int = 0) -> float:
         """Map material and deterministic attempt seed into the unit interval."""
-        digest = hashlib.blake2b(f"{material}:{seed}".encode("utf-8"), digest_size=8).digest()
+        digest = hashlib.blake2b(
+            f"{material}:{seed}".encode("utf-8"), digest_size=8
+        ).digest()
         return int.from_bytes(digest, "big") / float(1 << 64)
 
     def _collapse_coordinate(self) -> Any:
@@ -131,7 +137,9 @@ class PulviniCompressedQuantumSolver(DodecahedralQuantumSolver):
         coordinates = list(self.compressed_plan.coordinates)
         if len(coordinates) == 1:
             return collapsed_coordinate
-        steps = max(1, min(int(max_iterations), int(math.ceil(math.sqrt(len(coordinates))))))
+        steps = max(
+            1, min(int(max_iterations), int(math.ceil(math.sqrt(len(coordinates)))))
+        )
         position = int(collapsed_coordinate.coordinate_id)
         target = int(self.current_config["target"])
         for step in range(steps):
@@ -193,7 +201,9 @@ class PulviniCompressedQuantumSolver(DodecahedralQuantumSolver):
         extranonce2: str = "00000000",
     ) -> Optional[int]:
         if max_iterations <= 0 or timeout <= 0:
-            raise QuantumSolverConfigurationError("max_iterations and timeout must be positive")
+            raise QuantumSolverConfigurationError(
+                "max_iterations and timeout must be positive"
+            )
         if self.compressed_plan is None:
             return await super().solve(
                 max_iterations=max_iterations,
@@ -224,7 +234,9 @@ class PulviniCompressedQuantumSolver(DodecahedralQuantumSolver):
                 1,
                 min(
                     int(max_iterations),
-                    int(math.ceil(math.sqrt(self.compressed_plan.working_set_dimension))),
+                    int(
+                        math.ceil(math.sqrt(self.compressed_plan.working_set_dimension))
+                    ),
                 ),
             )
             self.last_solution_nonce = nonce
@@ -247,15 +259,21 @@ class PulviniCompressedQuantumSolver(DodecahedralQuantumSolver):
                 "compressed_working_set_size": self.current_config.get(
                     "compressed_working_set_size"
                 ),
-                "retained_kernel_lanes": self.current_config.get("retained_kernel_lanes"),
-                "complete_nonce_coverage": self.current_config.get("complete_nonce_coverage"),
+                "retained_kernel_lanes": self.current_config.get(
+                    "retained_kernel_lanes"
+                ),
+                "complete_nonce_coverage": self.current_config.get(
+                    "complete_nonce_coverage"
+                ),
                 "overlap_free_nonce_coverage": self.current_config.get(
                     "overlap_free_nonce_coverage"
                 ),
                 "working_set_compression_ratio": self.current_config.get(
                     "working_set_compression_ratio"
                 ),
-                "phi_compression_factor": self.current_config.get("phi_compression_factor"),
+                "phi_compression_factor": self.current_config.get(
+                    "phi_compression_factor"
+                ),
                 "phi_filter_acceptance_ratio": self.current_config.get(
                     "phi_filter_acceptance_ratio"
                 ),

@@ -181,7 +181,9 @@ def test_session_event_id_mismatch_is_rejected() -> None:
 
 
 def test_bitcoin_job_timestamp_authority_requires_height_job_and_prevhash() -> None:
-    authority = bitcoin_job_timestamp_authority(_job_context(), unix_seconds=1_700_000_000.0)
+    authority = bitcoin_job_timestamp_authority(
+        _job_context(), unix_seconds=1_700_000_000.0
+    )
 
     assert authority.authority == TIMESTAMP_AUTHORITY
     assert authority.bitcoin_block_height == 840_000
@@ -211,9 +213,15 @@ def test_sealed_mining_evidence_bundle_detects_timestamp_anchor_tampering() -> N
 
 
 def test_runtime_config_hash_redacts_private_material() -> None:
-    first = redact_and_hash_runtime_config({"pool_url": "x", "password": "one", "wallet": "abc"})
-    second = redact_and_hash_runtime_config({"pool_url": "x", "password": "two", "wallet": "def"})
-    third = redact_and_hash_runtime_config({"pool_url": "y", "password": "two", "wallet": "def"})
+    first = redact_and_hash_runtime_config(
+        {"pool_url": "x", "password": "one", "wallet": "abc"}
+    )
+    second = redact_and_hash_runtime_config(
+        {"pool_url": "x", "password": "two", "wallet": "def"}
+    )
+    third = redact_and_hash_runtime_config(
+        {"pool_url": "y", "password": "two", "wallet": "def"}
+    )
 
     assert first == second
     assert first != third

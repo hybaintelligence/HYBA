@@ -21,7 +21,10 @@ PY_BACKEND = ROOT / "python_backend"
 if str(PY_BACKEND) not in sys.path:
     sys.path.insert(0, str(PY_BACKEND))
 
-from pythia_mining.regeneration_manager import RegenerationEventRecord, RegenerationManager
+from pythia_mining.regeneration_manager import (
+    RegenerationEventRecord,
+    RegenerationManager,
+)
 from pythia_self_healing import (
     AutonomicInvariantError,
     CrossLaneRegenerationIntelligence,
@@ -90,7 +93,9 @@ def test_clri_detects_correlated_scarring_and_multi_limb_sequence() -> None:
     assert "correlated_scarring" in finding_types
     assert "shared_regeneration_status_anomaly" in finding_types
     assert report["collapse_validation_scope"] == "multi_lane"
-    assert [item["lane_id"] for item in report["multi_limb_regeneration_sequence"]][:2] == [1, 2]
+    assert [item["lane_id"] for item in report["multi_limb_regeneration_sequence"]][
+        :2
+    ] == [1, 2]
     assert report["sovereign_human_gate"] is True
     assert report["auto_apply"] is False
 
@@ -104,13 +109,20 @@ def test_clri_properties_are_deterministic_bounded_and_deduplicate_lanes() -> No
     ]
 
     first = engine.analyse(signals, phi_floor=0.45, scar_free_fidelity_floor=0.999)
-    second = engine.analyse(list(reversed(signals)), phi_floor=0.45, scar_free_fidelity_floor=0.999)
+    second = engine.analyse(
+        list(reversed(signals)), phi_floor=0.45, scar_free_fidelity_floor=0.999
+    )
 
     assert first["analysis_id"] == second["analysis_id"]
     assert 0.0 <= first["minimum_fidelity"] <= first["mean_fidelity"] <= 1.0
-    correlated = next(f for f in first["findings"] if f["finding_type"] == "correlated_scarring")
+    correlated = next(
+        f for f in first["findings"] if f["finding_type"] == "correlated_scarring"
+    )
     assert correlated["lanes"] == [1, 2]
-    assert all(item["auto_apply"] is False for item in first["multi_limb_regeneration_sequence"])
+    assert all(
+        item["auto_apply"] is False
+        for item in first["multi_limb_regeneration_sequence"]
+    )
 
 
 def test_temporal_regeneration_memory_is_append_only_and_detects_recurrence() -> None:
@@ -128,7 +140,9 @@ def test_temporal_regeneration_memory_is_append_only_and_detects_recurrence() ->
     assert summary["auto_apply"] is False
 
 
-def test_temporal_memory_export_is_immutable_and_private_tampering_is_detected() -> None:
+def test_temporal_memory_export_is_immutable_and_private_tampering_is_detected() -> (
+    None
+):
     memory = TemporalRegenerationMemory()
     memory.record(_packet(1))
     exported = memory.records
@@ -209,30 +223,44 @@ def test_organism_signal_rejects_invalid_metrics() -> None:
 def test_invariant_guard_rejects_nested_auto_apply_and_direct_deploy_actions() -> None:
     guard = ImmutableInvariantGuard()
     with pytest.raises(AutonomicInvariantError):
-        guard.assert_proposal_only({"outer": {"auto_apply": True}}, context="hostile nested packet")
+        guard.assert_proposal_only(
+            {"outer": {"auto_apply": True}}, context="hostile nested packet"
+        )
     with pytest.raises(AutonomicInvariantError):
-        guard.assert_proposal_only({"action": "DEPLOY", "auto_apply": False}, context="hostile action")
+        guard.assert_proposal_only(
+            {"action": "DEPLOY", "auto_apply": False}, context="hostile action"
+        )
 
 
 def test_pulvini_handshake_rejects_hostile_candidate_exchange() -> None:
     with pytest.raises(AutonomicInvariantError):
         PulviniAutonomicHandshake().stage(
             clri_report={"analysis_id": "CLRI-test", "findings": []},
-            pulvini_state={"algorithmic_alternatives": [{"name": "unsafe", "auto_apply": True}]},
+            pulvini_state={
+                "algorithmic_alternatives": [{"name": "unsafe", "auto_apply": True}]
+            },
         )
 
 
-def test_manager_emits_organism_level_governance_report_with_regulator_evidence() -> None:
+def test_manager_emits_organism_level_governance_report_with_regulator_evidence() -> (
+    None
+):
     manager = RegenerationManager()
-    manager.fidelity_history.extend([
-        _event(1, fidelity=0.80),
-        _event(2, fidelity=0.82),
-        _event(3, fidelity=0.997),
-    ])
+    manager.fidelity_history.extend(
+        [
+            _event(1, fidelity=0.80),
+            _event(2, fidelity=0.82),
+            _event(3, fidelity=0.997),
+        ]
+    )
     manager.healing_proposals.extend([_packet(1), _packet(2)])
 
     report = manager.analyse_organism_governance(
-        pulvini_state={"algorithmic_alternatives": [{"name": "phi_memory_rebalance", "status": "candidate"}]}
+        pulvini_state={
+            "algorithmic_alternatives": [
+                {"name": "phi_memory_rebalance", "status": "candidate"}
+            ]
+        }
     )
 
     assert report["status"] == "ORGANISM_GOVERNANCE_STAGED"
@@ -242,21 +270,37 @@ def test_manager_emits_organism_level_governance_report_with_regulator_evidence(
     assert report["source_modified"] is False
     assert report["stable_core_modified"] is False
     assert report["clri"]["collapse_validation_scope"] == "multi_lane"
-    assert report["predictive_regeneration"]["status"] == "PRE_DAMAGE_PROPOSALS_AVAILABLE"
-    assert report["hierarchical_rewiring"]["tier"] in {"REGIONAL_ORGAN", "GLOBAL_ORGANISM"}
+    assert (
+        report["predictive_regeneration"]["status"] == "PRE_DAMAGE_PROPOSALS_AVAILABLE"
+    )
+    assert report["hierarchical_rewiring"]["tier"] in {
+        "REGIONAL_ORGAN",
+        "GLOBAL_ORGANISM",
+    }
     assert report["benchmark_evolution"]["proposed_tests"]
-    assert report["pulvini_handshake"]["candidate_exchange"] == [{"name": "phi_memory_rebalance", "status": "candidate"}]
+    assert report["pulvini_handshake"]["candidate_exchange"] == [
+        {"name": "phi_memory_rebalance", "status": "candidate"}
+    ]
     evidence = report["regulator_evidence"]
     assert evidence["evidence_id"].startswith("SALAMANDER-ORGANISM-EVIDENCE-")
     assert evidence["sovereign_human_gate"] is True
     assert evidence["auto_apply"] is False
     assert evidence["seal"]
-    assert RegulatorEvidenceEngine().verify(evidence, {k: v for k, v in report.items() if k != "regulator_evidence"}) is True
+    assert (
+        RegulatorEvidenceEngine().verify(
+            evidence, {k: v for k, v in report.items() if k != "regulator_evidence"}
+        )
+        is True
+    )
 
 
 def test_regulator_evidence_verification_rejects_tampered_report() -> None:
     engine = RegulatorEvidenceEngine()
-    report = {"status": "ORGANISM_GOVERNANCE_STAGED", "auto_apply": False, "sovereign_human_gate": True}
+    report = {
+        "status": "ORGANISM_GOVERNANCE_STAGED",
+        "auto_apply": False,
+        "sovereign_human_gate": True,
+    }
     evidence = engine.seal(report)
     tampered = dict(report)
     tampered["status"] = "MUTATED"
@@ -278,4 +322,7 @@ def test_governor_direct_entrypoint_preserves_non_deploying_contract() -> None:
     assert report["benchmark_evolution"]["auto_apply"] is False
     assert report["benchmark_evolution"]["benchmark_committed"] is False
     assert report["pulvini_handshake"]["auto_apply"] is False
-    assert report["regulator_evidence"]["invariant_claims"][-1] == "temporal_memory_chain_valid"
+    assert (
+        report["regulator_evidence"]["invariant_claims"][-1]
+        == "temporal_memory_chain_valid"
+    )

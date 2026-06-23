@@ -85,9 +85,13 @@ class PlatonicNonceOverlay:
             extra = self._fibonacci_sphere(n_extra)
             self.coverage_points = np.vstack([self.coverage_points, extra])
         # Final normalization
-        self.coverage_points /= np.linalg.norm(self.coverage_points, axis=1, keepdims=True)
+        self.coverage_points /= np.linalg.norm(
+            self.coverage_points, axis=1, keepdims=True
+        )
         # Eliminate any duplicate rows (tol=1e-8)
-        _, unique_idx = np.unique(self.coverage_points.round(8), axis=0, return_index=True)
+        _, unique_idx = np.unique(
+            self.coverage_points.round(8), axis=0, return_index=True
+        )
         self.coverage_points = self.coverage_points[np.sort(unique_idx)]
 
     @staticmethod

@@ -293,7 +293,9 @@ def aggregate(all_trials: List[List[Result]]) -> dict:
 
 def print_table(agg: dict) -> None:
     base_hits = agg["uniform_random"]["mean_hits"]
-    print(f"\n{'Strategy':<20} {'Hits':>6} {'kH/s':>7} {'1stHit':>7}  {'Region / Notes'}")
+    print(
+        f"\n{'Strategy':<20} {'Hits':>6} {'kH/s':>7} {'1stHit':>7}  {'Region / Notes'}"
+    )
     print("-" * 90)
     for name, s in agg.items():
         fh = f"{s['mean_first_hit']:.0f}" if s["mean_first_hit"] else "none"
@@ -361,7 +363,9 @@ if __name__ == "__main__":
 
     print("Blockchain-seeded nonce search benchmark")
     print("Thesis: search the gap, not the crowd\n")
-    print(f"Largest identified unsearched gap: {LARGEST_GAP_START:,} → {LARGEST_GAP_END:,}")
+    print(
+        f"Largest identified unsearched gap: {LARGEST_GAP_START:,} → {LARGEST_GAP_END:,}"
+    )
     print(
         f"Gap size: {LARGEST_GAP_SIZE:,} nonces ({LARGEST_GAP_SIZE / UINT32 * 100:.1f}% of uint32 space)"
     )

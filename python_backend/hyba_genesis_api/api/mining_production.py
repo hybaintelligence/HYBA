@@ -208,7 +208,9 @@ async def submit_mining_share(payload: Dict[str, Any]) -> Dict[str, Any]:
 
         return {
             "accepted": accepted,
-            "message": "Share submitted successfully" if accepted else "Share was rejected",
+            "message": (
+                "Share submitted successfully" if accepted else "Share was rejected"
+            ),
         }
 
     except HTTPException:

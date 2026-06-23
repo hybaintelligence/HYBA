@@ -21,7 +21,10 @@ def _cell(value: Any) -> str:
 
 
 def _finding_rows(findings: Iterable[Mapping[str, Any]]) -> list[str]:
-    rows = ["| Finding | Status | Severity | Human owner | Review tag |", "|---|---:|---:|---|---|"]
+    rows = [
+        "| Finding | Status | Severity | Human owner | Review tag |",
+        "|---|---:|---:|---|---|",
+    ]
     for finding in findings:
         rows.append(
             "| {finding_id} | {status} | {severity} | {owner} | {tag} |".format(
@@ -39,7 +42,9 @@ def render_packet_ledger(packet: Mapping[str, Any]) -> str:
     """Render one DIFC / AAOIFI Sukuk evidence packet as Markdown."""
 
     candidate = (
-        packet.get("candidate", {}) if isinstance(packet.get("candidate", {}), Mapping) else {}
+        packet.get("candidate", {})
+        if isinstance(packet.get("candidate", {}), Mapping)
+        else {}
     )
     findings = packet.get("difc_aaiofi_findings", [])
     failed = [finding for finding in findings if finding.get("status") == "failed"]
@@ -86,7 +91,12 @@ def render_packet_ledger(packet: Mapping[str, Any]) -> str:
             ]
         )
     lines.extend(
-        ["## Recommended next action", "", _cell(packet.get("recommended_next_action")), ""]
+        [
+            "## Recommended next action",
+            "",
+            _cell(packet.get("recommended_next_action")),
+            "",
+        ]
     )
     return "\n".join(lines).rstrip() + "\n"
 
@@ -95,7 +105,11 @@ def render_lifecycle_ledger(bundle: Mapping[str, Any]) -> str:
     """Render a lifecycle simulation bundle as a board-facing Markdown ledger."""
 
     timeline = bundle.get("timeline", [])
-    summary = bundle.get("summary", {}) if isinstance(bundle.get("summary", {}), Mapping) else {}
+    summary = (
+        bundle.get("summary", {})
+        if isinstance(bundle.get("summary", {}), Mapping)
+        else {}
+    )
     lines = [
         "# PYTHIA DIFC / AAOIFI Sukuk Lifecycle Criticism Ledger",
         "",
@@ -156,7 +170,12 @@ def render_lifecycle_ledger(bundle: Mapping[str, Any]) -> str:
             ]
         )
     lines.extend(
-        ["## Recommended next action", "", _cell(bundle.get("recommended_next_action")), ""]
+        [
+            "## Recommended next action",
+            "",
+            _cell(bundle.get("recommended_next_action")),
+            "",
+        ]
     )
     return "\n".join(lines).rstrip() + "\n"
 

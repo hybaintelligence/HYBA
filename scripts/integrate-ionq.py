@@ -11,7 +11,9 @@ class IonQSubstrate:
 
         self.client = ionq.IonQClient(api_key=api_key)
 
-    def execute_fault_tolerant_cycle(self, code_distance: int, circuit_depth: int) -> dict[str, object]:
+    def execute_fault_tolerant_cycle(
+        self, code_distance: int, circuit_depth: int
+    ) -> dict[str, object]:
         return {
             "substrate": "ionq",
             "code_distance": code_distance,

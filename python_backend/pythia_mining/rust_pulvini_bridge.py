@@ -42,7 +42,9 @@ except OSError:
             rust_lib = ctypes.CDLL(str(RUST_LIB_PATH / f"{LIB_NAME}.dll"))  # Windows
         except OSError:
             rust_lib = None
-            print("Warning: Rust PULVINI library not found. Falling back to Python implementation.")
+            print(
+                "Warning: Rust PULVINI library not found. Falling back to Python implementation."
+            )
 
 
 # Define C structures
@@ -126,7 +128,9 @@ class RustPulviniManifold:
             lane["phi_resonance"] = self._compute_phi_resonance_fallback(lane["nonce"])
 
         self._fallback_state["iteration"] += 1
-        self._fallback_state["phi_stride"] = (self._fallback_state["phi_stride"] * phi) % 10.0
+        self._fallback_state["phi_stride"] = (
+            self._fallback_state["phi_stride"] * phi
+        ) % 10.0
         self._fallback_state["coherence"] = (
             sum(lane["phi_resonance"] for lane in self._fallback_state["lanes"]) / 32.0
         )

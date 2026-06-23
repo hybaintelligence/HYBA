@@ -4,7 +4,7 @@
  * Provides state capture, prediction, and introspection capabilities
  */
 
-import { createHash, randomBytes } from "crypto";
+import { createHash } from "crypto";
 import {
   StateVector,
   IntrospectionReport,
@@ -178,7 +178,7 @@ export class MetacognitiveShield {
    * TRIGGER PREEMPTIVE SHIFT
    * Move the system state before disturbance occurs
    */
-  protected triggerPreemptiveShift(prediction: StateVector): void {
+  protected triggerPreemptiveShift(_prediction: StateVector): void {
     const preemptiveSeed = this.calculateMetacognitiveEntropy();
     this.handleAnomaly(preemptiveSeed);
     this.logTelemetryEvent("PREEMPTIVE_SHIFT_EXECUTED");
@@ -200,7 +200,7 @@ export class MetacognitiveShield {
    * REINFORCE SUCCESSFUL PATTERNS
    * Hebbian learning: strengthen patterns that preserved phi
    */
-  protected reinforceSuccessfulPatterns(state: StateVector, report: IntrospectionReport): void {
+  protected reinforceSuccessfulPatterns(state: StateVector, _report: IntrospectionReport): void {
     const lastSyndrome = this.getLastSyndrome();
     const currentWeight = this.strategyWeights.get(lastSyndrome) || {
       syndrome: lastSyndrome,

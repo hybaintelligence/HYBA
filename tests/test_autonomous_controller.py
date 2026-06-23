@@ -44,7 +44,10 @@ class TestAuditLog:
         """Test recording audit entries."""
         audit = AuditLog()
         entry = audit.record(
-            subsystem="test", action="test_action", detail={"key": "value"}, reversible=True
+            subsystem="test",
+            action="test_action",
+            detail={"key": "value"},
+            reversible=True,
         )
         assert entry.subsystem == "test"
         assert entry.action == "test_action"
@@ -110,7 +113,9 @@ class TestAutonomousHealer:
             clifford_index=0, target_role=Role.HEALTHY_SPECIALIZED, confidence=0.9
         )
 
-        trace = healer.monitor_tick(module_id="test_module", observed_severity=0.5, context=context)
+        trace = healer.monitor_tick(
+            module_id="test_module", observed_severity=0.5, context=context
+        )
 
         assert "module_id" in trace
         assert "status" in trace
@@ -123,7 +128,9 @@ class TestAutonomousHealer:
         healer.register_module("test_module")
 
         # No context signal should trigger innervation failure
-        trace = healer.monitor_tick(module_id="test_module", observed_severity=0.5, context=None)
+        trace = healer.monitor_tick(
+            module_id="test_module", observed_severity=0.5, context=None
+        )
 
         assert trace["status"] == "innervation_failure"
 
@@ -286,7 +293,9 @@ class TestMiningCircuitBreaker:
             breaker.gate(MiningActionClass.POOL_SWITCH)
 
         # Manually set cooldown to past to test cooldown expiration
-        breaker.breakers[MiningActionClass.POOL_SWITCH]._cooldown_until = time.time() - 1.0
+        breaker.breakers[MiningActionClass.POOL_SWITCH]._cooldown_until = (
+            time.time() - 1.0
+        )
 
         # Clear timestamps to allow new actions
         breaker.breakers[MiningActionClass.POOL_SWITCH]._timestamps.clear()
@@ -458,7 +467,9 @@ class TestAutonomousMetaController:
         optimization_targets = ["test_param"]
         mining_telemetry = {"hashrate": 100.0}
 
-        results = controller.tick_all(healing_inputs, optimization_targets, mining_telemetry)
+        results = controller.tick_all(
+            healing_inputs, optimization_targets, mining_telemetry
+        )
 
         assert "healing" in results
         assert "optimizing" in results

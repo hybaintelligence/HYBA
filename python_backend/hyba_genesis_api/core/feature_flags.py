@@ -1,4 +1,5 @@
 """Runtime feature flags for public HYBA product surfaces."""
+
 from __future__ import annotations
 
 import json

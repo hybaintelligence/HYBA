@@ -106,7 +106,9 @@ def test_property_unconfigured_solver_does_not_fabricate_hashrate() -> None:
     assert metrics["telemetry_source"] == "derived_runtime_state"
 
 
-def test_property_benchmark_projection_is_not_reported_as_measured_performance() -> None:
+def test_property_benchmark_projection_is_not_reported_as_measured_performance() -> (
+    None
+):
     """Capability invariant: projection-only benchmark records cannot masquerade as measured mining performance."""
     projection = benchmark_vs_asic(measured_hashes_per_second=None)
     assert projection["benchmark_mode"] == "projection_only"

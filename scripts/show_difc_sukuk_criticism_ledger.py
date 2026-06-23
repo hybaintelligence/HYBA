@@ -41,14 +41,18 @@ def _load_packet(path: Path) -> Dict[str, Any]:
 
 
 def _overlay_findings(packet: Dict[str, Any]) -> List[Dict[str, Any]]:
-    findings = packet.get("difc_aaiofi_findings") or packet.get("difc_aaoifi_findings") or []
+    findings = (
+        packet.get("difc_aaiofi_findings") or packet.get("difc_aaoifi_findings") or []
+    )
     if not isinstance(findings, list):
         raise ValueError("Packet findings must be a list.")
     return [finding for finding in findings if isinstance(finding, dict)]
 
 
 def _ledger_lines(packet: Dict[str, Any]) -> Iterable[str]:
-    candidate = packet.get("candidate", {}) if isinstance(packet.get("candidate"), dict) else {}
+    candidate = (
+        packet.get("candidate", {}) if isinstance(packet.get("candidate"), dict) else {}
+    )
     jurisdiction = (
         packet.get("jurisdiction_context", {})
         if isinstance(packet.get("jurisdiction_context"), dict)
@@ -102,12 +106,19 @@ def _ledger_lines(packet: Dict[str, Any]) -> Iterable[str]:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Render a read-only DIFC Sukuk criticism ledger.")
-    parser.add_argument(
-        "packet", type=Path, help="Path to a generated DIFC Sukuk evidence packet JSON file."
+    parser = argparse.ArgumentParser(
+        description="Render a read-only DIFC Sukuk criticism ledger."
     )
     parser.add_argument(
-        "--output", type=Path, default=None, help="Optional path for the rendered ledger text."
+        "packet",
+        type=Path,
+        help="Path to a generated DIFC Sukuk evidence packet JSON file.",
+    )
+    parser.add_argument(
+        "--output",
+        type=Path,
+        default=None,
+        help="Optional path for the rendered ledger text.",
     )
     args = parser.parse_args()
 

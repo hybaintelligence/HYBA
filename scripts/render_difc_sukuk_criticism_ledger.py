@@ -21,11 +21,15 @@ from pythia_finance_audit.criticism_ledger import render_criticism_ledger
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Render a DIFC / AAOIFI Sukuk criticism ledger.")
+    parser = argparse.ArgumentParser(
+        description="Render a DIFC / AAOIFI Sukuk criticism ledger."
+    )
     parser.add_argument(
         "input", type=Path, help="Generated packet JSON or lifecycle simulation JSON."
     )
-    parser.add_argument("--output", type=Path, default=None, help="Optional Markdown output path.")
+    parser.add_argument(
+        "--output", type=Path, default=None, help="Optional Markdown output path."
+    )
     args = parser.parse_args()
 
     data = json.loads(args.input.read_text(encoding="utf-8"))

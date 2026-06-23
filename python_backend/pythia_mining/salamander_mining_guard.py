@@ -15,7 +15,12 @@ from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from typing import Any, Dict, Iterable, List, Optional
 
-from .regeneration_manager import PHI_FLOOR, RegenerationEventRecord, RegenerationManager, get_regeneration_manager
+from .regeneration_manager import (
+    PHI_FLOOR,
+    RegenerationEventRecord,
+    RegenerationManager,
+    get_regeneration_manager,
+)
 
 
 @dataclass(frozen=True)
@@ -45,8 +50,14 @@ class SalamanderMiningGuard:
     """Run Salamander preflight and evidence staging for mining operations."""
 
     DEFAULT_TARGETS = {
-        0: ("python_backend/pythia_mining/production_mining_system.py", "ProductionMiningSystem"),
-        1: ("python_backend/pythia_mining/mining_executive_controller.py", "MiningExecutiveController"),
+        0: (
+            "python_backend/pythia_mining/production_mining_system.py",
+            "ProductionMiningSystem",
+        ),
+        1: (
+            "python_backend/pythia_mining/mining_executive_controller.py",
+            "MiningExecutiveController",
+        ),
         2: ("python_backend/pythia_mining/stratum_client.py", "StratumClient"),
     }
 
@@ -116,7 +127,10 @@ class SalamanderMiningGuard:
         statuses = [event.status for event in events]
         failed_statuses = [status for status in statuses if status != "success"]
         target_registry_complete = all(
-            bool(self.manager.lanes[lane_id].module_path and self.manager.lanes[lane_id].target_symbol)
+            bool(
+                self.manager.lanes[lane_id].module_path
+                and self.manager.lanes[lane_id].target_symbol
+            )
             for lane_id in self.DEFAULT_TARGETS
         )
 

@@ -1,21 +1,24 @@
 groups:
-  - name: hyba-commercial-billing
-    rules:
-      - alert: HYBAQuotaRejectionsSpike
-        expr: increase(hyba_billing_quota_rejections_total[10m]) > 5
-        for: 5m
-        labels:
-          severity: warning
-          vector: billing
-        annotations:
-          summary: HYBA commercial API quota rejections increased
-          description: A tenant tier is hitting monthly request or compute-unit limits; review quota, pricing plan, and customer communications.
-      - alert: HYBACommercialEndpointErrors
-        expr: increase(hyba_errors_total{endpoint=~"/api/v1/(fault-tolerant-computers|computational-intelligence-services).*"}[5m]) > 0
-        for: 2m
-        labels:
-          severity: critical
-          vector: observability
-        annotations:
-          summary: HYBA commercial API returned 5xx errors
-          description: Investigate QaaS/CIaaS runtime health, customer impact, and billing reconciliation.
+- name: hyba-commercial-billing
+  rules:
+  - alert: HYBAQuotaRejectionsSpike
+    expr: increase(hyba_billing_quota_rejections_total[10m]) > 5
+    for: 5m
+    labels:
+      severity: warning
+      vector: billing
+    annotations:
+      summary: HYBA commercial API quota rejections increased
+      description: A tenant tier is hitting monthly request or compute-unit limits;
+        review quota, pricing plan, and customer communications.
+  - alert: HYBACommercialEndpointErrors
+    expr: increase(hyba_errors_total{endpoint=~"/api/v1/(fault-tolerant-computers|computational-intelligence-services).*"}[5m])
+      > 0
+    for: 2m
+    labels:
+      severity: critical
+      vector: observability
+    annotations:
+      summary: HYBA commercial API returned 5xx errors
+      description: Investigate QaaS/CIaaS runtime health, customer impact, and billing
+        reconciliation.

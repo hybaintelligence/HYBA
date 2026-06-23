@@ -65,7 +65,9 @@ def test_autonomy_risk_and_approval_boundaries_are_fail_closed() -> None:
             assert surface["approval_required"] is False
             assert surface["execution_mode"] == "autonomous_with_audit"
 
-    high_risk = next(surface for surface in snapshot["surfaces"] if surface["risk"] == "high")
+    high_risk = next(
+        surface for surface in snapshot["surfaces"] if surface["risk"] == "high"
+    )
     simulation = simulate_autonomy_action(
         high_risk["surface_id"],
         high_risk["available_actions"][0],

@@ -7,7 +7,10 @@ canonical replay manifest emitted by the Python substrate.
 import json
 import subprocess
 
-from pythia_mining.salamander_frontier import CrossLanguageReplayManifest, ImmutableEvidenceLog
+from pythia_mining.salamander_frontier import (
+    CrossLanguageReplayManifest,
+    ImmutableEvidenceLog,
+)
 
 
 def test_e2e_rust_blastema_seed_accepts_python_manifest(tmp_path):

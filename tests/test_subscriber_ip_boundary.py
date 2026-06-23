@@ -4,7 +4,9 @@ import importlib
 
 import pytest
 
-fastapi = pytest.importorskip("fastapi", reason="FastAPI backend dependencies are not installed")
+fastapi = pytest.importorskip(
+    "fastapi", reason="FastAPI backend dependencies are not installed"
+)
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
@@ -34,7 +36,9 @@ def _client(monkeypatch: pytest.MonkeyPatch, production: bool = True) -> TestCli
     return TestClient(app)
 
 
-def test_security_status_is_subscriber_safe_and_redacted(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_security_status_is_subscriber_safe_and_redacted(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     client = _client(monkeypatch)
 
     response = client.get("/api/security/status?observer_pressure=1")
@@ -51,7 +55,9 @@ def test_security_status_is_subscriber_safe_and_redacted(monkeypatch: pytest.Mon
     assert "observer_pressure" not in serialized
 
 
-def test_security_operator_routes_are_hidden_from_subscribers(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_security_operator_routes_are_hidden_from_subscribers(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     client = _client(monkeypatch)
 
     response = client.post("/api/security/regeneration/trigger")
@@ -60,7 +66,9 @@ def test_security_operator_routes_are_hidden_from_subscribers(monkeypatch: pytes
     assert response.json()["error"]["code"] == "not_found"
 
 
-def test_security_operator_routes_allow_configured_operator_token(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_security_operator_routes_allow_configured_operator_token(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     client = _client(monkeypatch)
 
     response = client.post(

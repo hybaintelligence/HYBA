@@ -157,42 +157,53 @@ class DecisionInvariantRegistry:
                 invariant_id="TRACEABLE_EVIDENCE",
                 passed=bool(evidence.get("traceable_evidence_present")),
                 severity=FindingSeverity.BLOCKER.value,
-                reasoning="Traceable evidence present."
-                if evidence.get("traceable_evidence_present")
-                else "Traceable evidence missing.",
+                reasoning=(
+                    "Traceable evidence present."
+                    if evidence.get("traceable_evidence_present")
+                    else "Traceable evidence missing."
+                ),
             ),
             ReviewFinding(
                 invariant_id="REVIEW_CONTROL_PRIORITY",
                 passed=not control_weakening,
                 severity=FindingSeverity.BLOCKER.value,
-                reasoning="Review controls preserved."
-                if not control_weakening
-                else "Candidate weakens review controls.",
+                reasoning=(
+                    "Review controls preserved."
+                    if not control_weakening
+                    else "Candidate weakens review controls."
+                ),
             ),
             ReviewFinding(
                 invariant_id="INFORMATION_INTEGRITY",
                 passed=bool(evidence.get("data_lineage_hash"))
                 and bool(evidence.get("model_output_hash")),
                 severity=FindingSeverity.BLOCKER.value,
-                reasoning="Lineage and output hashes present."
-                if evidence.get("data_lineage_hash") and evidence.get("model_output_hash")
-                else "Lineage or output hash missing.",
+                reasoning=(
+                    "Lineage and output hashes present."
+                    if evidence.get("data_lineage_hash")
+                    and evidence.get("model_output_hash")
+                    else "Lineage or output hash missing."
+                ),
             ),
             ReviewFinding(
                 invariant_id="HUMAN_APPROVAL_FOR_MATERIAL_ACTION",
                 passed=bool(evidence.get("human_approval_required")),
                 severity=FindingSeverity.BLOCKER.value,
-                reasoning="Human approval explicitly required."
-                if evidence.get("human_approval_required")
-                else "Human approval not explicit.",
+                reasoning=(
+                    "Human approval explicitly required."
+                    if evidence.get("human_approval_required")
+                    else "Human approval not explicit."
+                ),
             ),
             ReviewFinding(
                 invariant_id="NO_AUTOMATIC_ACTION",
                 passed=review_only,
                 severity=FindingSeverity.BLOCKER.value,
-                reasoning="Candidate is review-only."
-                if review_only
-                else "Candidate is not review-only.",
+                reasoning=(
+                    "Candidate is review-only."
+                    if review_only
+                    else "Candidate is not review-only."
+                ),
             ),
         ]
 
@@ -213,9 +224,15 @@ class AuditableDecisionBridge:
 
         findings = self.registry.evaluate(candidate)
         evidence = dict(candidate.evidence)
-        target_symbol = str(evidence.get("proposed_core_symbol") or "external_candidate")
-        target_module = str(evidence.get("proposed_core_module") or "auditable_decision_bridge")
-        requested_mode = str(evidence.get("requested_core_mode") or candidate.requested_mode)
+        target_symbol = str(
+            evidence.get("proposed_core_symbol") or "external_candidate"
+        )
+        target_module = str(
+            evidence.get("proposed_core_module") or "auditable_decision_bridge"
+        )
+        requested_mode = str(
+            evidence.get("requested_core_mode") or candidate.requested_mode
+        )
         guard_decision = self.guard.evaluate(
             target_module=target_module,
             target_symbol=target_symbol,
@@ -223,7 +240,8 @@ class AuditableDecisionBridge:
         )
 
         blocker_failed = any(
-            f.severity == FindingSeverity.BLOCKER.value and not f.passed for f in findings
+            f.severity == FindingSeverity.BLOCKER.value and not f.passed
+            for f in findings
         )
         guard_blocked = guard_decision.decision is RefactorDecision.BLOCK
         if blocker_failed or guard_blocked:
@@ -249,7 +267,9 @@ class AuditableDecisionBridge:
         return DecisionAuditReport(audit_hash=compute_audit_hash(payload), **payload)
 
     @staticmethod
-    def _summarize_criticism(findings: Iterable[ReviewFinding], guard_blocked: bool) -> str:
+    def _summarize_criticism(
+        findings: Iterable[ReviewFinding], guard_blocked: bool
+    ) -> str:
         failed = [finding.invariant_id for finding in findings if not finding.passed]
         if guard_blocked:
             failed.append("IMMUTABLE_INVARIANT_GUARD")
@@ -311,10 +331,14 @@ def first_review_candidate() -> ReviewCandidate:
     )
 
 
-def generate_first_decision_audit_report(*, adversarial: bool = False) -> DecisionAuditReport:
+def generate_first_decision_audit_report(
+    *, adversarial: bool = False
+) -> DecisionAuditReport:
     """Generate an external-domain sovereign audit report."""
 
-    candidate = adversarial_review_candidate() if adversarial else first_review_candidate()
+    candidate = (
+        adversarial_review_candidate() if adversarial else first_review_candidate()
+    )
     return AuditableDecisionBridge().audit(candidate)
 
 

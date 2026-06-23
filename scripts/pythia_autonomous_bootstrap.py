@@ -131,17 +131,23 @@ async def run_bootstrap(epochs: int, capacity_ehs: float) -> dict[str, Any]:
         "epochs": epoch_reports,
         "after": after,
         "self_healing": {
-            "stale_state_lock_recoveries": after["metrics"].get("stale_state_lock_recoveries"),
+            "stale_state_lock_recoveries": after["metrics"].get(
+                "stale_state_lock_recoveries"
+            ),
             "degradation_events": after["metrics"].get("degradation_events"),
             "autonomous_circuit_open": after["metrics"].get("autonomous_circuit_open"),
         },
         "self_optimising": {
             "reflexive_cycle_count": after["metrics"].get("reflexive_cycle_count"),
-            "proposal_acceptance_rate": after["metrics"].get("proposal_acceptance_rate"),
+            "proposal_acceptance_rate": after["metrics"].get(
+                "proposal_acceptance_rate"
+            ),
             "last_reflexive_cycle_duration_ms": after["metrics"].get(
                 "last_reflexive_cycle_duration_ms"
             ),
-            "virtual_mining_simulation": runtime_introspection.get("virtual_mining_simulation"),
+            "virtual_mining_simulation": runtime_introspection.get(
+                "virtual_mining_simulation"
+            ),
         },
     }
 
@@ -156,7 +162,9 @@ def write_report(report: dict[str, Any], output: Path | None = None) -> Path:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Run PYTHIA autonomous bootstrap epochs.")
+    parser = argparse.ArgumentParser(
+        description="Run PYTHIA autonomous bootstrap epochs."
+    )
     parser.add_argument(
         "--epochs",
         type=int,

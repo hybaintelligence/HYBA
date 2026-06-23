@@ -27,7 +27,9 @@ def main() -> int:
 
     ARTIFACT_DIR.mkdir(parents=True, exist_ok=True)
     packet = probe_mlx_metal(matrix_size=args.matrix_size, require_mlx=args.require_mlx)
-    PACKET_PATH.write_text(json.dumps(packet, indent=2, sort_keys=True), encoding="utf-8")
+    PACKET_PATH.write_text(
+        json.dumps(packet, indent=2, sort_keys=True), encoding="utf-8"
+    )
 
     manifest = {
         "schema_version": "2026-06-15.apple-silicon-metal.manifest.v1",
@@ -45,7 +47,9 @@ def main() -> int:
             "optional_local_acceleration_gate": True,
         },
     }
-    MANIFEST_PATH.write_text(json.dumps(manifest, indent=2, sort_keys=True), encoding="utf-8")
+    MANIFEST_PATH.write_text(
+        json.dumps(manifest, indent=2, sort_keys=True), encoding="utf-8"
+    )
     print(json.dumps(manifest, indent=2, sort_keys=True))
 
     if args.require_mlx and packet["status"] != "verified":

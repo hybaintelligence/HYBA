@@ -160,7 +160,10 @@ def main() -> int:
     if not passed:
         for result in results:
             if result.returncode != 0:
-                print(f"FAILED: {result.command.name} -> {result.returncode}", file=sys.stderr)
+                print(
+                    f"FAILED: {result.command.name} -> {result.returncode}",
+                    file=sys.stderr,
+                )
     return 0 if passed else 1
 
 

@@ -230,10 +230,14 @@ class PhiScaledEnsemble:
         self.config = dict(config or {})
         self.policy = PhiScalingPolicy(
             phi_scaling_power=float(
-                self.config.get("phi_scaling_power", PhiScalingPolicy().phi_scaling_power)
+                self.config.get(
+                    "phi_scaling_power", PhiScalingPolicy().phi_scaling_power
+                )
             ),
             low_variance_threshold=float(
-                self.config.get("low_variance_threshold", PhiScalingPolicy().low_variance_threshold)
+                self.config.get(
+                    "low_variance_threshold", PhiScalingPolicy().low_variance_threshold
+                )
             ),
             high_variance_threshold=float(
                 self.config.get(
@@ -301,16 +305,24 @@ class PhiScaledEnsemble:
             # Update telemetry buffer
             self._telemetry_buffer.extend(telemetry_stream)
             if len(self._telemetry_buffer) > self._telemetry_buffer_size:
-                self._telemetry_buffer = self._telemetry_buffer[-self._telemetry_buffer_size :]
+                self._telemetry_buffer = self._telemetry_buffer[
+                    -self._telemetry_buffer_size :
+                ]
 
             # Verify authenticity
-            authenticity_result = self.mass_gap_shield.verify_authenticity(self._telemetry_buffer)
+            authenticity_result = self.mass_gap_shield.verify_authenticity(
+                self._telemetry_buffer
+            )
 
             # If telemetry is inauthentic, apply conservative scaling
             if not authenticity_result["authentic"]:
                 return {
                     "decision": PhiDecision(
-                        0.0, self._calculate_indicator_harmony(indicators), 0.0, 0.0, tuple()
+                        0.0,
+                        self._calculate_indicator_harmony(indicators),
+                        0.0,
+                        0.0,
+                        tuple(),
                     ).to_dict(),
                     "authenticity": authenticity_result,
                     "scaling_mode": "conservative_due_to_simulation_detected",
@@ -359,7 +371,9 @@ class PhiScaledEnsemble:
 
         harmonic_score = float(np.sum(model_scores * phi_weights))
         indicator_harmony = self._calculate_indicator_harmony(indicators)
-        final_score = float(np.clip(harmonic_score * (PHI ** (indicator_harmony - 1.0)), 0.0, 1.0))
+        final_score = float(
+            np.clip(harmonic_score * (PHI ** (indicator_harmony - 1.0)), 0.0, 1.0)
+        )
         coherence = float(np.clip(1.0 - (model_variance / (PHI * 0.5)), 0.0, 1.0))
         decision = PhiDecision(
             harmonic_score,
@@ -378,7 +392,9 @@ class PhiScaledEnsemble:
 
         return result
 
-    def _calculate_indicator_harmony(self, indicators: Mapping[str, Mapping[str, float]]) -> float:
+    def _calculate_indicator_harmony(
+        self, indicators: Mapping[str, Mapping[str, float]]
+    ) -> float:
         if not indicators:
             return 0.5
         harmonic_scores: list[float] = []
@@ -570,12 +586,16 @@ def benchmark_vs_asic(
     mode = "projection_only"
     if measured_hashes_per_second is not None:
         measured = float(measured_hashes_per_second)
-        effective = measured * float(compression_factor) / float(phi_filter_acceptance_ratio)
+        effective = (
+            measured * float(compression_factor) / float(phi_filter_acceptance_ratio)
+        )
         ratio = effective / float(asic_baseline_hashes_per_second)
         mode = "measured_input"
     benchmark = PhiBenchmark(
         measured_hashes_per_second=(
-            None if measured_hashes_per_second is None else float(measured_hashes_per_second)
+            None
+            if measured_hashes_per_second is None
+            else float(measured_hashes_per_second)
         ),
         asic_baseline_hashes_per_second=float(asic_baseline_hashes_per_second),
         effective_hashes_per_second=effective,

@@ -24,7 +24,10 @@ GAP_CLOSURES = (
             "python_backend/pythia_mining/dodecahedral_solver.py",
             "python_backend/pythia_mining/quantum_solver.py",
         ),
-        regression_tests=("tests/test_agent3_quantum_solvers.py", "tests/test_hendrix_phi_performance_benchmark.py"),
+        regression_tests=(
+            "tests/test_agent3_quantum_solvers.py",
+            "tests/test_hendrix_phi_performance_benchmark.py",
+        ),
         evidence_or_gate_paths=("scripts/local_clean_10_gate.py",),
         closure_boundary="Proves job-aware local validation and graceful no-job fallback; not pool-side revenue.",
     ),
@@ -32,23 +35,39 @@ GAP_CLOSURES = (
         gap_id="P0-HENDRIX-API-COMPATIBILITY",
         category="hendrix_phi_solver_api_stability",
         implementation_paths=("python_backend/pythia_mining/hendrix_phi_solver.py",),
-        regression_tests=("tests/test_hendrix_phi_solver_contracts.py", "tests/test_hendrix_phi_performance_benchmark.py"),
+        regression_tests=(
+            "tests/test_hendrix_phi_solver_contracts.py",
+            "tests/test_hendrix_phi_performance_benchmark.py",
+        ),
         evidence_or_gate_paths=("scripts/local_clean_10_gate.py",),
         closure_boundary="Preserves start_nonce compatibility and bounded local benchmark claims.",
     ),
     GapClosure(
         gap_id="P1-IIT-PHI-BOUNDED-PROXY",
         category="iit_phi_runtime_proxy",
-        implementation_paths=("python_backend/pythia_mining/iit_4_analyzer.py", "python_backend/pythia_mining/consciousness_engine.py"),
-        regression_tests=("tests/test_iit_4_analyzer.py", "tests/test_iit_4_complete.py", "tests/test_iit_phi_mining_correlation.py"),
-        evidence_or_gate_paths=("scripts/local_clean_10_gate.py", "scripts/evidence_boundary_report.py"),
+        implementation_paths=(
+            "python_backend/pythia_mining/iit_4_analyzer.py",
+            "python_backend/pythia_mining/consciousness_engine.py",
+        ),
+        regression_tests=(
+            "tests/test_iit_4_analyzer.py",
+            "tests/test_iit_4_complete.py",
+            "tests/test_iit_phi_mining_correlation.py",
+        ),
+        evidence_or_gate_paths=(
+            "scripts/local_clean_10_gate.py",
+            "scripts/evidence_boundary_report.py",
+        ),
         closure_boundary="Proves bounded diagnostic-proxy behaviour; not phenomenal consciousness or mining-performance validation.",
     ),
     GapClosure(
         gap_id="P2-API-JSON-SERIALIZATION",
         category="api_error_serialization",
         implementation_paths=("python_backend/hyba_genesis_api/core/api_posture.py",),
-        regression_tests=("tests/test_api_posture_serialization.py", "tests/test_backend_mining_api.py"),
+        regression_tests=(
+            "tests/test_api_posture_serialization.py",
+            "tests/test_backend_mining_api.py",
+        ),
         evidence_or_gate_paths=("scripts/local_clean_10_gate.py",),
         closure_boundary="Proves validation and HTTPException details are JSON-safe.",
     ),
@@ -71,8 +90,14 @@ GAP_CLOSURES = (
     GapClosure(
         gap_id="P3-CAPABILITY-REGISTRY",
         category="capability_registry_and_manifest",
-        implementation_paths=("docs/ADAPTIVE_SYSTEMS_CAPABILITY_REGISTRY.md", "docs/evidence/claim_evidence_manifest.json"),
-        regression_tests=("tests/test_adaptive_capability_registry.py", "tests/test_claim_evidence_manifest.py"),
+        implementation_paths=(
+            "docs/ADAPTIVE_SYSTEMS_CAPABILITY_REGISTRY.md",
+            "docs/evidence/claim_evidence_manifest.json",
+        ),
+        regression_tests=(
+            "tests/test_adaptive_capability_registry.py",
+            "tests/test_claim_evidence_manifest.py",
+        ),
         evidence_or_gate_paths=("scripts/local_clean_10_gate.py",),
         closure_boundary="Proves documentation/evidence coupling; does not independently validate scientific claims.",
     ),
@@ -84,7 +109,10 @@ GAP_CLOSURES = (
             "scripts/benchmark_deutsch_with_pulvini.py",
             "scripts/__init__.py",
         ),
-        regression_tests=("tests/test_simulation_vs_instantiation.py", "tests/test_deutsch_pulvini_claim_boundary.py"),
+        regression_tests=(
+            "tests/test_simulation_vs_instantiation.py",
+            "tests/test_deutsch_pulvini_claim_boundary.py",
+        ),
         evidence_or_gate_paths=("scripts/local_clean_10_gate.py",),
         closure_boundary="Proves structured classical approximation and PULVINI polynomial compression boundaries; not physical quantum computation or exponential-wall elimination.",
     ),
@@ -112,7 +140,9 @@ def test_every_review_gap_has_implementation_tests_and_gate() -> None:
 def test_review_gap_paths_exist_or_are_artifact_directories() -> None:
     artifact_prefixes = ("artifacts/",)
     for gap in GAP_CLOSURES:
-        for rel_path in gap.implementation_paths + gap.regression_tests + gap.evidence_or_gate_paths:
+        for rel_path in (
+            gap.implementation_paths + gap.regression_tests + gap.evidence_or_gate_paths
+        ):
             path = ROOT / rel_path
             if rel_path.startswith(artifact_prefixes):
                 # Artifact directories are generated by the local evidence gates.
@@ -129,7 +159,9 @@ def test_live_empirical_gap_remains_claim_bounded_until_artifact_exists() -> Non
 
 
 def test_iit_gap_is_registered_as_diagnostic_proxy_not_consciousness_claim() -> None:
-    iit_gap = next(gap for gap in GAP_CLOSURES if gap.gap_id == "P1-IIT-PHI-BOUNDED-PROXY")
+    iit_gap = next(
+        gap for gap in GAP_CLOSURES if gap.gap_id == "P1-IIT-PHI-BOUNDED-PROXY"
+    )
 
     assert "diagnostic-proxy" in iit_gap.closure_boundary
     assert "not phenomenal consciousness" in iit_gap.closure_boundary
@@ -138,10 +170,14 @@ def test_iit_gap_is_registered_as_diagnostic_proxy_not_consciousness_claim() -> 
 
 def test_scientific_boundary_gap_registers_deutsch_and_pulvini_evidence() -> None:
     science_gap = next(
-        gap for gap in GAP_CLOSURES if gap.gap_id == "SCIENCE-SIMULATION-INSTANTIATION-BOUNDARY"
+        gap
+        for gap in GAP_CLOSURES
+        if gap.gap_id == "SCIENCE-SIMULATION-INSTANTIATION-BOUNDARY"
     )
 
     assert "structured classical approximation" in science_gap.closure_boundary
     assert "not physical quantum computation" in science_gap.closure_boundary
     assert "tests/test_simulation_vs_instantiation.py" in science_gap.regression_tests
-    assert "tests/test_deutsch_pulvini_claim_boundary.py" in science_gap.regression_tests
+    assert (
+        "tests/test_deutsch_pulvini_claim_boundary.py" in science_gap.regression_tests
+    )

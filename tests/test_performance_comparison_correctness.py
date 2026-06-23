@@ -338,9 +338,9 @@ class TestPrecisionScalingIsMathematical:
         This is true on any substrate: better precision → better accuracy.
         """
         # Single precision
-        psi_single = np.random.randn(32).astype(np.float32) + 1j * np.random.randn(32).astype(
-            np.float32
-        )
+        psi_single = np.random.randn(32).astype(np.float32) + 1j * np.random.randn(
+            32
+        ).astype(np.float32)
         psi_single /= np.linalg.norm(psi_single)
         rho_single = np.outer(psi_single, np.conj(psi_single)).astype(np.complex64)
 
@@ -350,8 +350,12 @@ class TestPrecisionScalingIsMathematical:
         rho_double = np.outer(psi_double, np.conj(psi_double))
 
         # Double precision has lower error
-        hermitian_error_single = np.linalg.norm(rho_single - np.conj(rho_single.T), "fro")
-        hermitian_error_double = np.linalg.norm(rho_double - np.conj(rho_double.T), "fro")
+        hermitian_error_single = np.linalg.norm(
+            rho_single - np.conj(rho_single.T), "fro"
+        )
+        hermitian_error_double = np.linalg.norm(
+            rho_double - np.conj(rho_double.T), "fro"
+        )
 
         # Mathematical fact: higher precision → lower error
         assert hermitian_error_double < hermitian_error_single

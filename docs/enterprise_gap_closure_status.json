@@ -1,111 +1,111 @@
 {
-  "schema_version": "2026-06-21.enterprise-gap-closure.v1",
-  "source_assessment": "docs/archive/2026-06/ENTERPRISE_PRODUCTION_READINESS_ASSESSMENT.md",
-  "updated_at": "2026-06-21T00:00:00Z",
   "closure_rule": "A gap is closed only when repository implementation, tests or validation scripts, runbooks, and evidence exist. External certifications remain external dependencies.",
+  "current_closure_model": [
+    "closed_by_code",
+    "closed_by_operational_control",
+    "documented_but_external_dependency",
+    "not_closed"
+  ],
   "gaps": [
     {
-      "id": "observability_monitoring",
-      "status": "closed_by_code",
       "evidence": [
         "python_backend/hyba_genesis_api/core/telemetry.py",
         "tests/test_enterprise_telemetry_posture.py",
         "docs/runbooks/OBSERVABILITY_AND_RELIABILITY.md"
       ],
-      "residual_risk": "External APM collector, PagerDuty routing, and managed dashboard deployment must be configured per environment."
+      "id": "observability_monitoring",
+      "residual_risk": "External APM collector, PagerDuty routing, and managed dashboard deployment must be configured per environment.",
+      "status": "closed_by_code"
     },
     {
-      "id": "security_compliance",
-      "status": "documented_but_external_dependency",
       "evidence": [
         "python_backend/hyba_genesis_api/core/api_posture.py",
         "docs/security/ENTERPRISE_SECURITY_BASELINE.md",
         "docs/compliance/SOC2_READINESS_EVIDENCE_MAP.md",
         "tests/test_enterprise_telemetry_posture.py"
       ],
-      "residual_risk": "SOC2 certification, external penetration testing, SIEM provisioning, and enterprise SSO rollout require third-party or infrastructure execution."
+      "id": "security_compliance",
+      "residual_risk": "SOC2 certification, external penetration testing, SIEM provisioning, and enterprise SSO rollout require third-party or infrastructure execution.",
+      "status": "documented_but_external_dependency"
     },
     {
-      "id": "performance_scalability",
-      "status": "closed_by_operational_control",
       "evidence": [
         "scripts/run_enterprise_gap_closure_gate.py",
         "docs/ENTERPRISE_GAP_CLOSURE_EVIDENCE_PACK.md"
       ],
-      "residual_risk": "Cloud-scale P99 figures require environment-specific load testing against deployed infrastructure."
+      "id": "performance_scalability",
+      "residual_risk": "Cloud-scale P99 figures require environment-specific load testing against deployed infrastructure.",
+      "status": "closed_by_operational_control"
     },
     {
-      "id": "reliability_availability",
-      "status": "closed_by_code",
       "evidence": [
         "python_backend/hyba_genesis_api/core/resilience.py",
         "tests/test_enterprise_resilience.py",
         "docs/runbooks/OBSERVABILITY_AND_RELIABILITY.md"
       ],
-      "residual_risk": "Multi-region active-active failover is an infrastructure dependency and must not be claimed from code alone."
+      "id": "reliability_availability",
+      "residual_risk": "Multi-region active-active failover is an infrastructure dependency and must not be claimed from code alone.",
+      "status": "closed_by_code"
     },
     {
-      "id": "documentation_knowledge_management",
-      "status": "closed_by_operational_control",
       "evidence": [
         "docs/ENTERPRISE_GAP_CLOSURE_EVIDENCE_PACK.md",
         "docs/runbooks/OBSERVABILITY_AND_RELIABILITY.md",
         "docs/security/ENTERPRISE_SECURITY_BASELINE.md"
       ],
-      "residual_risk": "Screenshots and cloud-specific diagrams should be refreshed after every deployment topology change."
+      "id": "documentation_knowledge_management",
+      "residual_risk": "Screenshots and cloud-specific diagrams should be refreshed after every deployment topology change.",
+      "status": "closed_by_operational_control"
     },
     {
-      "id": "testing_quality_assurance",
-      "status": "closed_by_code",
       "evidence": [
         "tests/test_enterprise_telemetry_posture.py",
         "tests/test_enterprise_resilience.py",
         "scripts/run_enterprise_gap_closure_gate.py"
       ],
-      "residual_risk": "Full-suite coverage thresholds still need CI artifact capture after branch validation."
+      "id": "testing_quality_assurance",
+      "residual_risk": "Full-suite coverage thresholds still need CI artifact capture after branch validation.",
+      "status": "closed_by_code"
     },
     {
-      "id": "cicd_deployment",
-      "status": "closed_by_operational_control",
       "evidence": [
         "scripts/run_enterprise_gap_closure_gate.py",
         "docs/ENTERPRISE_GAP_CLOSURE_EVIDENCE_PACK.md"
       ],
-      "residual_risk": "Canary and rollback must be bound to the selected cloud runtime before a customer SLA is signed."
+      "id": "cicd_deployment",
+      "residual_risk": "Canary and rollback must be bound to the selected cloud runtime before a customer SLA is signed.",
+      "status": "closed_by_operational_control"
     },
     {
-      "id": "data_governance_privacy",
-      "status": "closed_by_operational_control",
       "evidence": [
         "docs/privacy/DATA_GOVERNANCE_AND_PRIVACY.md",
         "docs/security/ENTERPRISE_SECURITY_BASELINE.md"
       ],
-      "residual_risk": "Production data inventory must be reconciled against live databases and customer processors."
+      "id": "data_governance_privacy",
+      "residual_risk": "Production data inventory must be reconciled against live databases and customer processors.",
+      "status": "closed_by_operational_control"
     },
     {
-      "id": "customer_experience",
-      "status": "closed_by_operational_control",
       "evidence": [
         "docs/support/ENTERPRISE_CUSTOMER_EXPERIENCE.md",
         "docs/ENTERPRISE_GAP_CLOSURE_EVIDENCE_PACK.md"
       ],
-      "residual_risk": "Public status page and support tooling must be provisioned in the selected customer-support stack."
+      "id": "customer_experience",
+      "residual_risk": "Public status page and support tooling must be provisioned in the selected customer-support stack.",
+      "status": "closed_by_operational_control"
     },
     {
-      "id": "financial_operations",
-      "status": "closed_by_operational_control",
       "evidence": [
         "docs/finops/ENTERPRISE_FINOPS.md",
         "python_backend/hyba_genesis_api/core/telemetry.py"
       ],
-      "residual_risk": "Cloud budgets and anomaly alerts must be connected to the production billing account."
+      "id": "financial_operations",
+      "residual_risk": "Cloud budgets and anomaly alerts must be connected to the production billing account.",
+      "status": "closed_by_operational_control"
     }
   ],
   "legacy_readiness_score": "archived_non_authoritative",
-  "current_closure_model": [
-    "closed_by_code",
-    "closed_by_operational_control",
-    "documented_but_external_dependency",
-    "not_closed"
-  ]
+  "schema_version": "2026-06-21.enterprise-gap-closure.v1",
+  "source_assessment": "docs/archive/2026-06/ENTERPRISE_PRODUCTION_READINESS_ASSESSMENT.md",
+  "updated_at": "2026-06-21T00:00:00Z"
 }

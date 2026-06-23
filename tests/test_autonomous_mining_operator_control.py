@@ -13,7 +13,9 @@ PYTHON_BACKEND = ROOT / "python_backend"
 if str(PYTHON_BACKEND) not in sys.path:
     sys.path.insert(0, str(PYTHON_BACKEND))
 
-from scripts.autonomous_mining_operator_control import OperatorControlInterface  # noqa: E402
+from scripts.autonomous_mining_operator_control import (
+    OperatorControlInterface,
+)  # noqa: E402
 
 
 class TestAutonomousMiningOperatorControl(unittest.TestCase):

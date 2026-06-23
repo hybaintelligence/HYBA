@@ -211,17 +211,22 @@ def _sha256_compress_batch(w: List[mx.array], h_init: List[mx.array]) -> List[mx
         ki = mx.full(a.shape, _K[i], dtype=mx.uint32)
 
         # Sigma1(e)
-        s1 = mx.bitwise_xor(mx.bitwise_xor(_rotr32(e, 6), _rotr32(e, 11)), _rotr32(e, 25))
+        s1 = mx.bitwise_xor(
+            mx.bitwise_xor(_rotr32(e, 6), _rotr32(e, 11)), _rotr32(e, 25)
+        )
         # Ch(e, f, g)
         ch = mx.bitwise_xor(mx.bitwise_and(e, f), mx.bitwise_and(mx.bitwise_not(e), g))
         temp1 = mx.add(mx.add(mx.add(mx.add(h, s1), ch), ki), w[i])
         temp1 = mx.bitwise_and(temp1, mx.array(0xFFFFFFFF, dtype=mx.uint32))
 
         # Sigma0(a)
-        s0 = mx.bitwise_xor(mx.bitwise_xor(_rotr32(a, 2), _rotr32(a, 13)), _rotr32(a, 22))
+        s0 = mx.bitwise_xor(
+            mx.bitwise_xor(_rotr32(a, 2), _rotr32(a, 13)), _rotr32(a, 22)
+        )
         # Maj(a, b, c)
         maj = mx.bitwise_xor(
-            mx.bitwise_xor(mx.bitwise_and(a, b), mx.bitwise_and(a, c)), mx.bitwise_and(b, c)
+            mx.bitwise_xor(mx.bitwise_and(a, b), mx.bitwise_and(a, c)),
+            mx.bitwise_and(b, c),
         )
         temp2 = mx.bitwise_and(mx.add(s0, maj), mx.array(0xFFFFFFFF, dtype=mx.uint32))
 
@@ -430,7 +435,9 @@ def run_metal_pulvini_32(
     )
 
 
-def run_cpu_brute_force(prefix76: bytes, target: int, total_iterations: int) -> MetalResult:
+def run_cpu_brute_force(
+    prefix76: bytes, target: int, total_iterations: int
+) -> MetalResult:
     """CPU sequential baseline for direct comparison."""
     target_word7_max = (target >> 224) & 0xFFFFFFFF
     hits = 0
@@ -439,7 +446,9 @@ def run_cpu_brute_force(prefix76: bytes, target: int, total_iterations: int) -> 
     for i in range(total_iterations):
         header = prefix76 + (i % UINT32).to_bytes(4, "little")
         digest = hashlib.sha256(hashlib.sha256(header).digest()).digest()
-        word7 = struct.unpack_from("<I", digest, 28)[0]  # bytes 28-31 = most significant LE word
+        word7 = struct.unpack_from("<I", digest, 28)[
+            0
+        ]  # bytes 28-31 = most significant LE word
         if word7 <= target_word7_max:
             hits += 1
             if first_hit is None:
@@ -466,10 +475,16 @@ if __name__ == "__main__":
 
     p = argparse.ArgumentParser()
     p.add_argument(
-        "--batch", type=int, default=512, help="Nonces per solver per GPU batch (default 512)"
+        "--batch",
+        type=int,
+        default=512,
+        help="Nonces per solver per GPU batch (default 512)",
     )
     p.add_argument(
-        "--iterations", type=int, default=160_000, help="Total iterations budget (default 160000)"
+        "--iterations",
+        type=int,
+        default=160_000,
+        help="Total iterations budget (default 160000)",
     )
     p.add_argument("--trials", type=int, default=3)
     args = p.parse_args()

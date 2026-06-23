@@ -77,7 +77,10 @@ def _make_controller(tmp_dir: str, *, reflexive: bool = True):
         AutonomyLevel,
         AutonomousMiningController,
     )
-    from pythia_mining.autonomous_audit_persistence import AuditJournal, AutonomousAuditLogger
+    from pythia_mining.autonomous_audit_persistence import (
+        AuditJournal,
+        AutonomousAuditLogger,
+    )
 
     config = AutonomousConfig(
         autonomy_level=AutonomyLevel.SUPERVISED,
@@ -97,10 +100,13 @@ def _make_controller(tmp_dir: str, *, reflexive: bool = True):
     )
     # Re-wire the escalation engine to use the same isolated logger
     from pythia_mining.autonomous_escalation import AutonomousEscalationEngine
+
     ctrl._escalation_engine = AutonomousEscalationEngine(
         audit_logger=ctrl._persistent_audit_logger,
         escalation_callback=lambda level: ctrl.set_autonomy_level(
-            __import__('pythia_mining.autonomous_mining_controller', fromlist=['AutonomyLevel']).AutonomyLevel(level)
+            __import__(
+                "pythia_mining.autonomous_mining_controller", fromlist=["AutonomyLevel"]
+            ).AutonomyLevel(level)
         ),
         degradation_callback=lambda reason: ctrl.degrade_autonomy_level(reason).value,
     )
@@ -201,10 +207,12 @@ async def test_monitor_survives_exception_in_one_iteration(caplog):
         ctrl._seek_improvement_with_resource_awareness = _raises_once
 
         original_snapshot = ctrl.get_metrics_snapshot
+
         def _healthy_snapshot():
             snap = original_snapshot()
             snap["phi_density"] = 0.9
             return snap
+
         ctrl.get_metrics_snapshot = _healthy_snapshot
 
         with caplog.at_level(logging.ERROR, logger="pythia.autonomy.monitor"):
@@ -215,17 +223,18 @@ async def test_monitor_survives_exception_in_one_iteration(caplog):
 
     # 1. Python logger received the ERROR
     error_records = [
-        r for r in caplog.records
-        if r.levelno == logging.ERROR and "simulated transient monitor error" in r.message
+        r
+        for r in caplog.records
+        if r.levelno == logging.ERROR
+        and "simulated transient monitor error" in r.message
     ]
-    assert len(error_records) == 1, (
-        f"Expected 1 ERROR log for the swallowed exception, got {len(error_records)}"
-    )
+    assert (
+        len(error_records) == 1
+    ), f"Expected 1 ERROR log for the swallowed exception, got {len(error_records)}"
 
     # 2. The tamper-evident audit_log also has the event (chain completeness)
     monitor_error_entries = [
-        e for e in ctrl.audit_log
-        if e.event_type == "monitor_error"
+        e for e in ctrl.audit_log if e.event_type == "monitor_error"
     ]
     assert len(monitor_error_entries) == 1, (
         f"Expected 1 monitor_error AuditLogEntry, got {len(monitor_error_entries)} "
@@ -259,7 +268,9 @@ async def test_monitor_double_start_is_no_op():
 
         await ctrl.stop_continuous_monitor()
 
-    assert first_task is second_task, "second start_continuous_monitor must reuse the existing task"
+    assert (
+        first_task is second_task
+    ), "second start_continuous_monitor must reuse the existing task"
 
 
 @pytest.mark.asyncio
@@ -442,6 +453,7 @@ def test_audit_journal_init_loads_only_recent_segments():
             payload = json.dumps([entry], indent=2, sort_keys=True)
             seg_path.write_text(payload, encoding="utf-8")
             import hashlib as _hl
+
             seg_path.with_suffix(".json.sha256").write_text(
                 _hl.sha256(payload.encode()).hexdigest(), encoding="utf-8"
             )
@@ -458,7 +470,10 @@ def test_audit_journal_init_loads_only_recent_segments():
 def test_audit_journal_flush_prunes_old_segments_on_disk():
     """After enough flushes, segments beyond _MAX_SEGMENTS_ON_DISK must be
     deleted from disk so total on-disk count stays bounded."""
-    from pythia_mining.autonomous_audit_persistence import AuditJournal, _MAX_SEGMENTS_ON_DISK
+    from pythia_mining.autonomous_audit_persistence import (
+        AuditJournal,
+        _MAX_SEGMENTS_ON_DISK,
+    )
 
     with tempfile.TemporaryDirectory() as tmp:
         journal = AuditJournal(journal_dir=tmp)

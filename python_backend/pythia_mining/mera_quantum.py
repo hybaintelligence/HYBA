@@ -50,7 +50,9 @@ def _random_isometry(chi_in: int, chi_out: int, seed: int = 0) -> np.ndarray:
     """Generate a deterministic isometry (chi_in × chi_in → chi_out) via QR truncation."""
     assert chi_out <= chi_in * chi_in
     rng = np.random.default_rng(seed)
-    A = rng.standard_normal((chi_in * chi_in, chi_out)) + 1j * rng.standard_normal((chi_in * chi_in, chi_out))
+    A = rng.standard_normal((chi_in * chi_in, chi_out)) + 1j * rng.standard_normal(
+        (chi_in * chi_in, chi_out)
+    )
     Q, _ = np.linalg.qr(A)
     return Q[:, :chi_out]  # shape (chi_in^2, chi_out)
 
@@ -58,11 +60,12 @@ def _random_isometry(chi_in: int, chi_out: int, seed: int = 0) -> np.ndarray:
 @dataclass
 class MERALayer:
     """One renormalization layer of MERA."""
+
     level: int
-    num_sites: int           # Sites at this level
-    chi: int                 # Bond dimension
-    disentanglers: List[np.ndarray]   # Each: (chi^2, chi^2) unitary
-    isometries: List[np.ndarray]      # Each: (chi^2, chi) isometry
+    num_sites: int  # Sites at this level
+    chi: int  # Bond dimension
+    disentanglers: List[np.ndarray]  # Each: (chi^2, chi^2) unitary
+    isometries: List[np.ndarray]  # Each: (chi^2, chi) isometry
 
 
 @dataclass
@@ -82,6 +85,7 @@ class MERA:
     phi_weighted : bool
         Use φ-irrational disentangler phases for quasi-crystalline structure
     """
+
     num_sites: int
     chi: int
     layers: List[MERALayer] = field(default_factory=list)
@@ -100,20 +104,22 @@ class MERA:
             num_iso = max(1, n // 2)
 
             disentanglers = [
-                _random_unitary(self.chi ** 2, seed=level * 1000 + i)
+                _random_unitary(self.chi**2, seed=level * 1000 + i)
                 for i in range(num_dis)
             ]
             isometries = [
                 _random_isometry(self.chi, self.chi, seed=level * 1000 + 500 + i)
                 for i in range(num_iso)
             ]
-            self.layers.append(MERALayer(
-                level=level,
-                num_sites=n,
-                chi=self.chi,
-                disentanglers=disentanglers,
-                isometries=isometries,
-            ))
+            self.layers.append(
+                MERALayer(
+                    level=level,
+                    num_sites=n,
+                    chi=self.chi,
+                    disentanglers=disentanglers,
+                    isometries=isometries,
+                )
+            )
             n = max(1, n // 2)
 
         # Top-level density matrix: maximally mixed state as initialisation
@@ -141,7 +147,7 @@ class MERA:
         eigenvalues_abs = np.sort(np.abs(eigenvalues))[::-1]
 
         scaling_dims = []
-        for lam in eigenvalues_abs[:min(5, len(eigenvalues_abs))]:
+        for lam in eigenvalues_abs[: min(5, len(eigenvalues_abs))]:
             if lam > 1e-12 and lam < 1.0:
                 delta = -math.log(float(lam)) / math.log(2.0)
                 scaling_dims.append(round(delta, 6))
@@ -150,12 +156,21 @@ class MERA:
 
         return {
             "scaling_dimensions": scaling_dims,
-            "top_eigenvalue": round(float(eigenvalues_abs[0]), 8) if len(eigenvalues_abs) > 0 else None,
-            "spectral_gap": round(float(eigenvalues_abs[0] - eigenvalues_abs[1]), 8)
-            if len(eigenvalues_abs) > 1 else None,
+            "top_eigenvalue": (
+                round(float(eigenvalues_abs[0]), 8)
+                if len(eigenvalues_abs) > 0
+                else None
+            ),
+            "spectral_gap": (
+                round(float(eigenvalues_abs[0] - eigenvalues_abs[1]), 8)
+                if len(eigenvalues_abs) > 1
+                else None
+            ),
         }
 
-    def entanglement_entropy_scaling(self, subsystem_sizes: Optional[List[int]] = None) -> Dict[str, Any]:
+    def entanglement_entropy_scaling(
+        self, subsystem_sizes: Optional[List[int]] = None
+    ) -> Dict[str, Any]:
         """
         Compute entanglement entropy S(L) ~ (c/3) log L for a critical system.
 
@@ -163,8 +178,9 @@ class MERA:
         which characterises the universality class (Ising: c=1/2, XX: c=1, etc.)
         """
         if subsystem_sizes is None:
-            subsystem_sizes = [2 ** k for k in range(1, self.num_levels + 1)
-                               if 2 ** k < self.num_sites]
+            subsystem_sizes = [
+                2**k for k in range(1, self.num_levels + 1) if 2**k < self.num_sites
+            ]
 
         entropies = {}
         for L in subsystem_sizes:
@@ -205,14 +221,16 @@ class MERA:
         bulk_slices = []
         for layer in self.layers:
             # Each layer: num_sites boundary sites, chi entanglement per bond
-            bulk_slices.append({
-                "level": layer.level,
-                "boundary_sites": layer.num_sites,
-                "bond_dimension": layer.chi,
-                "entanglement_per_bond": round(math.log2(layer.chi), 4),
-                "num_disentanglers": len(layer.disentanglers),
-                "num_isometries": len(layer.isometries),
-            })
+            bulk_slices.append(
+                {
+                    "level": layer.level,
+                    "boundary_sites": layer.num_sites,
+                    "bond_dimension": layer.chi,
+                    "entanglement_per_bond": round(math.log2(layer.chi), 4),
+                    "num_disentanglers": len(layer.disentanglers),
+                    "num_isometries": len(layer.isometries),
+                }
+            )
 
         return {
             "bulk_slices": bulk_slices,
@@ -231,8 +249,8 @@ class MERA:
         entropy = self.entanglement_entropy_scaling()
         holographic = self.holographic_bulk_geometry()
         total_params = sum(
-            sum(u.size for u in layer.disentanglers) +
-            sum(w.size for w in layer.isometries)
+            sum(u.size for u in layer.disentanglers)
+            + sum(w.size for w in layer.isometries)
             for layer in self.layers
         )
         return {

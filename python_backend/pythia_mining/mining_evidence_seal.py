@@ -132,7 +132,9 @@ def _check_chain_validity(prevhash: str, block_height: int) -> str:
         except RuntimeError:
             tip = asyncio.run(oracle.get_current_block_tip(force_refresh=True))
         else:
-            tip = loop.run_until_complete(oracle.get_current_block_tip(force_refresh=True))
+            tip = loop.run_until_complete(
+                oracle.get_current_block_tip(force_refresh=True)
+            )
         if tip is None:
             return "unverified"
         if tip.hash.lower() == prevhash.lower():
@@ -150,7 +152,8 @@ def bitcoin_job_timestamp_authority(
     job_id = str(job_context.get("job_id") or job_context.get("stratum_job_id") or "")
     prevhash = str(job_context.get("prevhash") or job_context.get("job_prevhash") or "")
     block_height = job_context.get(
-        "bitcoin_block_height", job_context.get("block_height", job_context.get("height", 0))
+        "bitcoin_block_height",
+        job_context.get("block_height", job_context.get("height", 0)),
     )
     try:
         height_int = int(block_height)
@@ -191,11 +194,14 @@ def derive_session_event_id(
 
     job_id = str(job_context.get("job_id") or job_context.get("stratum_job_id") or "")
     height = job_context.get(
-        "bitcoin_block_height", job_context.get("block_height", job_context.get("height", 0))
+        "bitcoin_block_height",
+        job_context.get("block_height", job_context.get("height", 0)),
     )
     prevhash = str(job_context.get("prevhash") or job_context.get("job_prevhash") or "")
     nonce = str(
-        candidate.get("nonce", candidate.get("nonce_hex", candidate.get("candidate_nonce", "")))
+        candidate.get(
+            "nonce", candidate.get("nonce_hex", candidate.get("candidate_nonce", ""))
+        )
     )
     candidate_id = str(candidate.get("candidate_id") or candidate.get("id") or "")
     payload = {
@@ -252,13 +258,18 @@ def build_sealed_mining_evidence_bundle(
         prior_bundle_hash=prior_bundle_hash,
     )
     sealed = SealedMiningEvidenceBundle(
-        **{**bundle.unsigned_payload(), "bundle_hash": stable_hash(bundle.unsigned_payload())}
+        **{
+            **bundle.unsigned_payload(),
+            "bundle_hash": stable_hash(bundle.unsigned_payload()),
+        }
     )
     validate_sealed_mining_evidence_bundle(sealed.to_dict())
     return sealed
 
 
-def _validate_nested_session_event_id(bundle: Mapping[str, Any], key: str, expected: str) -> None:
+def _validate_nested_session_event_id(
+    bundle: Mapping[str, Any], key: str, expected: str
+) -> None:
     payload = bundle.get(key) or {}
     if isinstance(payload, Mapping):
         nested = str(payload.get("session_event_id") or "")

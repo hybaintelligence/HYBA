@@ -24,7 +24,9 @@ def pytest_pyfunc_call(pyfuncitem):
     """Run async test functions without requiring pytest-asyncio in minimal envs."""
     testfunction = pyfuncitem.obj
     if inspect.iscoroutinefunction(testfunction):
-        kwargs = {name: pyfuncitem.funcargs[name] for name in pyfuncitem._fixtureinfo.argnames}
+        kwargs = {
+            name: pyfuncitem.funcargs[name] for name in pyfuncitem._fixtureinfo.argnames
+        }
         asyncio.run(testfunction(**kwargs))
         return True
     return None

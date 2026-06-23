@@ -89,7 +89,9 @@ class MetaLearningOptimizer:
         if not self.strategy_weights:
             return {}
         strategies = list(self.strategy_weights)
-        weights = np.asarray([self.strategy_weights[s] for s in strategies], dtype=float)
+        weights = np.asarray(
+            [self.strategy_weights[s] for s in strategies], dtype=float
+        )
         weights = weights - np.max(weights)
         exp_weights = np.exp(weights)
         probabilities = exp_weights / np.sum(exp_weights)
@@ -112,9 +114,9 @@ class MetaLearningOptimizer:
             for strategy, probability in ranked
             if abs(probability - top_probability) < 1e-12
         ]
-        tie_break_index = (self._selection_offset + len(self.performance_history)) % len(
-            top_strategies
-        )
+        tie_break_index = (
+            self._selection_offset + len(self.performance_history)
+        ) % len(top_strategies)
         return str(top_strategies[tie_break_index])
 
     def snapshot(self) -> Dict[str, Any]:

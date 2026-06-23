@@ -80,7 +80,9 @@ class HashVerifier(Protocol):
 class ShareSubmitter(Protocol):
     """Protocol for governed pool/share submission."""
 
-    def __call__(self, nonce: int, hash_value: int, chain_state: MiningChainState) -> bool:
+    def __call__(
+        self, nonce: int, hash_value: int, chain_state: MiningChainState
+    ) -> bool:
         """Submit a verified share and return whether the pool accepted it."""
 
 
@@ -165,7 +167,9 @@ class PythiaAutonomousMiningAgent:
 
     def initialize_seed(self, chain_state: MiningChainState) -> PythiaSearchSeed:
         """Derive a reproducible seed from repo complexity and chain facts."""
-        evidence_hash = self.structure_packet.packet_hash if self.structure_packet else "no_packet"
+        evidence_hash = (
+            self.structure_packet.packet_hash if self.structure_packet else "no_packet"
+        )
         material = json.dumps(
             {
                 "repo": self.repo_structure,
@@ -197,7 +201,9 @@ class PythiaAutonomousMiningAgent:
         target_hashrate = self._modulate_hashrate(chain_state, requested_hashrate_ehs)
         candidates = self._candidate_order(chain_state, seed.digest, max_candidates)
         directives = (
-            self.structure_packet.pythia_directives if self.structure_packet is not None else {}
+            self.structure_packet.pythia_directives
+            if self.structure_packet is not None
+            else {}
         )
         plan = PythiaMiningPlan(
             seed_digest=seed.digest,
@@ -225,7 +231,9 @@ class PythiaAutonomousMiningAgent:
             if hash_value <= chain_state.target:
                 submitted = False
                 if self.share_submitter is not None:
-                    submitted = bool(self.share_submitter(nonce, hash_value, chain_state))
+                    submitted = bool(
+                        self.share_submitter(nonce, hash_value, chain_state)
+                    )
                 self.memory.remember_acceptance(nonce)
                 observation = PythiaMiningObservation(
                     nonce=nonce,
@@ -277,7 +285,9 @@ class PythiaAutonomousMiningAgent:
         seed_digest: str,
         max_candidates: int,
     ) -> list[int]:
-        candidates = list(self._bounded_candidates(chain_state.nonce_ranges, max_candidates))
+        candidates = list(
+            self._bounded_candidates(chain_state.nonce_ranges, max_candidates)
+        )
         seed_int = int(seed_digest[:16], 16)
         candidates.sort(
             key=lambda nonce: (
@@ -321,12 +331,18 @@ class PythiaAutonomousMiningAgent:
         chain_state: MiningChainState,
         requested_hashrate_ehs: float | None,
     ) -> float:
-        requested = 0.05 if requested_hashrate_ehs is None else float(requested_hashrate_ehs)
-        difficulty_factor = min(1.0, max(0.0, chain_state.pool_difficulty / 1_000_000.0))
+        requested = (
+            0.05 if requested_hashrate_ehs is None else float(requested_hashrate_ehs)
+        )
+        difficulty_factor = min(
+            1.0, max(0.0, chain_state.pool_difficulty / 1_000_000.0)
+        )
         evidence_factor = 0.5
         if self.structure_packet is not None:
             evidence_factor = float(self.structure_packet.evidence.structure_score)
-        modulated = requested * (0.75 + 0.25 * evidence_factor + 0.25 * difficulty_factor)
+        modulated = requested * (
+            0.75 + 0.25 * evidence_factor + 0.25 * difficulty_factor
+        )
         return round(min(self.MAX_AUTONOMOUS_HASHRATE_EHS, max(0.0, modulated)), 12)
 
     @staticmethod

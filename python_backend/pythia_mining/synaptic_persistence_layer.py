@@ -1,4 +1,5 @@
 """Synaptic persistence layer — Hebbian learning from nonce/share patterns."""
+
 from __future__ import annotations
 
 import logging
@@ -21,6 +22,7 @@ def _sector_pattern_key(dodecahedral_sector: int, phi_resonance: float) -> str:
 @dataclass
 class NoncePattern:
     """A fingerprint of nonce structure that can be tracked for learning."""
+
     nonce: int
     phi_resonance: float
     dodecahedral_sector: int = 0
@@ -29,19 +31,23 @@ class NoncePattern:
 
     def to_vector(self) -> np.ndarray:
         """Convert pattern to feature vector for synaptic processing."""
-        return np.array([
-            (self.nonce & 0xFFFF) / 65535.0,
-            ((self.nonce >> 16) & 0xFFFF) / 65535.0,
-            self.phi_resonance,
-            self.dodecahedral_sector / 32.0,
-            self.icosahedral_face / 20.0,
-            self.golden_angle_alignment,
-        ], dtype=float)
+        return np.array(
+            [
+                (self.nonce & 0xFFFF) / 65535.0,
+                ((self.nonce >> 16) & 0xFFFF) / 65535.0,
+                self.phi_resonance,
+                self.dodecahedral_sector / 32.0,
+                self.icosahedral_face / 20.0,
+                self.golden_angle_alignment,
+            ],
+            dtype=float,
+        )
 
 
 @dataclass
 class SynapticTrace:
     """A trace left in the ConsciousnessEngine by nonce activity."""
+
     pattern: NoncePattern
     synaptic_weight: float = 0.0
     reinforcement_count: int = 0
@@ -49,12 +55,13 @@ class SynapticTrace:
 
     def decay(self, decay_rate: float) -> None:
         """Apply exponential decay to synaptic weight."""
-        self.synaptic_weight *= (1.0 - decay_rate)
+        self.synaptic_weight *= 1.0 - decay_rate
 
 
 @dataclass
 class HebbianLearningEvent:
     """A Hebbian learning event from share acceptance."""
+
     timestamp: float
     pattern_id: int
     reinforcement_delta: float
@@ -111,11 +118,17 @@ class SynapticPersistenceLayer:
         key = nonce % 2_147_483_648
         for pid, trace in self.synaptic_memory.items():
             if trace.pattern.nonce == key:
-                trace.synaptic_weight = min(1.0, trace.synaptic_weight + self.learning_rate)
+                trace.synaptic_weight = min(
+                    1.0, trace.synaptic_weight + self.learning_rate
+                )
                 trace.reinforcement_count += 1
                 return pid
         pattern = self.extract_pattern(
-            nonce, phi_resonance, dodecahedral_sector, icosahedral_face, golden_angle_alignment
+            nonce,
+            phi_resonance,
+            dodecahedral_sector,
+            icosahedral_face,
+            golden_angle_alignment,
         )
         return self.register_pattern(pattern)
 
@@ -146,7 +159,7 @@ class SynapticPersistenceLayer:
             f"Hebbian reinforcement: pattern {pattern_id} weight "
             f"{old_weight:.6f} -> {trace.synaptic_weight:.6f}"
         )
-        for co_id in (co_active_patterns or []):
+        for co_id in co_active_patterns or []:
             self._strengthen_connection(pattern_id, co_id, delta * 0.5)
         return HebbianLearningEvent(
             timestamp=time.time(),
@@ -169,17 +182,26 @@ class SynapticPersistenceLayer:
             trace.decay(self.decay_rate)
         self._total_decays += 1
 
-    def get_emergent_pathways(self, threshold: Optional[float] = None) -> List[Tuple[int, float]]:
+    def get_emergent_pathways(
+        self, threshold: Optional[float] = None
+    ) -> List[Tuple[int, float]]:
         t = threshold if threshold is not None else self.synaptic_threshold
         return sorted(
-            [(pid, tr.synaptic_weight) for pid, tr in self.synaptic_memory.items()
-             if tr.synaptic_weight >= t],
-            key=lambda x: x[1], reverse=True,
+            [
+                (pid, tr.synaptic_weight)
+                for pid, tr in self.synaptic_memory.items()
+                if tr.synaptic_weight >= t
+            ],
+            key=lambda x: x[1],
+            reverse=True,
         )
 
     def get_pattern_similarity(self, pattern_id1: int, pattern_id2: int) -> float:
         """Compute similarity between two patterns based on co-activation strength."""
-        if pattern_id1 not in self.synaptic_memory or pattern_id2 not in self.synaptic_memory:
+        if (
+            pattern_id1 not in self.synaptic_memory
+            or pattern_id2 not in self.synaptic_memory
+        ):
             return 0.0
         conns = self.synaptic_memory[pattern_id1].connections
         return conns.get(pattern_id2, 0.0)
@@ -250,9 +272,13 @@ class SynapticPersistenceLayer:
             "total_patterns": len(self.synaptic_memory),
             "total_decays": self._total_decays,
             "patterns": [
-                {"pattern_id": pid, "synaptic_weight": tr.synaptic_weight,
-                 "reinforcement_count": tr.reinforcement_count,
-                 "nonce": tr.pattern.nonce, "phi_resonance": tr.pattern.phi_resonance}
+                {
+                    "pattern_id": pid,
+                    "synaptic_weight": tr.synaptic_weight,
+                    "reinforcement_count": tr.reinforcement_count,
+                    "nonce": tr.pattern.nonce,
+                    "phi_resonance": tr.pattern.phi_resonance,
+                }
                 for pid, tr in self.synaptic_memory.items()
             ],
         }

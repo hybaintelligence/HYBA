@@ -86,7 +86,9 @@ class PhiResonanceFabric:
         total = sum(max(float(probability), 0.0) for probability in probabilities)
         if total == 0.0:
             return 0.0
-        normalized = [max(float(probability), 0.0) / total for probability in probabilities]
+        normalized = [
+            max(float(probability), 0.0) / total for probability in probabilities
+        ]
         entropy = float(-sum(p * math.log(p) for p in normalized if p > 0.0))
         # Clamp to non-negative to handle floating-point precision issues
         return max(0.0, entropy)
@@ -243,7 +245,9 @@ def _coherence(rho: Sequence[Sequence[complex]]) -> float:
     return float(max(0.0, min(1.0, off_diagonal / max_l1)))
 
 
-def _counterfactuals(substrate: SubstrateName, base: SubstrateTelemetry) -> List[Dict[str, Any]]:
+def _counterfactuals(
+    substrate: SubstrateName, base: SubstrateTelemetry
+) -> List[Dict[str, Any]]:
     return [
         {
             "intervention": "raise_phi_alignment",
@@ -253,7 +257,9 @@ def _counterfactuals(substrate: SubstrateName, base: SubstrateTelemetry) -> List
         {
             "intervention": f"route_to_{substrate.value}",
             "expected_effect": "selected substrate emphasizes its native explanatory invariant",
-            "delta_counterfactual_depth": round((1.0 - base.counterfactual_depth) / PHI, 6),
+            "delta_counterfactual_depth": round(
+                (1.0 - base.counterfactual_depth) / PHI, 6
+            ),
         },
     ]
 
@@ -267,7 +273,9 @@ def _governance(telemetry: SubstrateTelemetry) -> List[str]:
     return tags
 
 
-def evaluate_substrate(substrate: SubstrateName, context: Mapping[str, Any]) -> SubstrateResult:
+def evaluate_substrate(
+    substrate: SubstrateName, context: Mapping[str, Any]
+) -> SubstrateResult:
     """Evaluate one substrate under the shared intelligence-fabric contract."""
 
     state = context_state(context)
@@ -296,7 +304,9 @@ def evaluate_substrate(substrate: SubstrateName, context: Mapping[str, Any]) -> 
 
     thermal = float(max(0.0, min(1.0, 1.0 - (resonance * density) / PHI)))
     latency = float(max(0.0, min(1.0, difficulty / PHI + (1.0 - richness) / (PHI**2))))
-    stability = float(max(0.0, min(1.0, (resonance + richness + (1.0 - thermal)) / 3.0)))
+    stability = float(
+        max(0.0, min(1.0, (resonance + richness + (1.0 - thermal)) / 3.0))
+    )
     quality = float(max(0.0, min(1.0, (stability + depth + density) / 3.0)))
 
     telemetry = SubstrateTelemetry(
@@ -335,9 +345,13 @@ def route_substrates(
     routed: List[SubstrateName] = []
     if any(token in text for token in ("gravity", "coherence", "stability", "thermal")):
         routed.append(SubstrateName.PENROSE_OR)
-    if any(token in text for token in ("integrated", "partition", "cause", "effect", "iit")):
+    if any(
+        token in text for token in ("integrated", "partition", "cause", "effect", "iit")
+    ):
         routed.append(SubstrateName.IIT_4)
-    if any(token in text for token in ("semantic", "counterfactual", "explain", "policy")):
+    if any(
+        token in text for token in ("semantic", "counterfactual", "explain", "policy")
+    ):
         routed.append(SubstrateName.DEUTSCH)
     return routed or [SubstrateName.DEUTSCH]
 
@@ -359,7 +373,9 @@ def explain(
         "routing": [substrate.value for substrate in substrates],
         "raw_metrics": telemetry,
         "explanations": [result.explanation for result in results],
-        "counterfactuals": [item for result in results for item in result.counterfactuals],
+        "counterfactuals": [
+            item for result in results for item in result.counterfactuals
+        ],
         "governance": sorted({tag for result in results for tag in result.governance}),
         "claim_boundary": "deterministic quantum mathematics; hardware-agnostic; no quantum-speedup claim",
     }
@@ -383,7 +399,9 @@ class FabricSubstrateAdapter(SubstrateContract):
                 "substrate": result.substrate,
                 "context_digest": result.context_digest,
                 "raw_metrics": asdict(result.telemetry),
-                "governance": sorted(set(result.governance + envelope["governance_tags"])),
+                "governance": sorted(
+                    set(result.governance + envelope["governance_tags"])
+                ),
             }
         )
         return envelope

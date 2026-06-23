@@ -55,7 +55,9 @@ class FinancialModelBuilder:
             name: {
                 "arr": (s["revenue"][-1] * 12 if s["revenue"] else 0),
                 "ev_arr_at_8x": (s["revenue"][-1] * 12 * 8 if s["revenue"] else 0),
-                "ebitda_margin": (sum(s["ebitda"]) / sum(s["revenue"]) if sum(s["revenue"]) else 0),
+                "ebitda_margin": (
+                    sum(s["ebitda"]) / sum(s["revenue"]) if sum(s["revenue"]) else 0
+                ),
             }
             for name, s in self.scenarios.items()
         }

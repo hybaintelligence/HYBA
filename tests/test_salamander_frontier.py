@@ -54,7 +54,9 @@ def test_adaptive_phi_tuning_adopts_measured_improvement_only():
     tuner = AdaptivePhiTuning(improvement_threshold=0.01)
     experiments = tuner.run_experiments([1.0, 2.0, 3.0, 5.0], candidates=[1.2, 1.7])
 
-    new_phi, adopted, best = tuner.adopt_best(baseline_ratio=0.1, experiments=experiments)
+    new_phi, adopted, best = tuner.adopt_best(
+        baseline_ratio=0.1, experiments=experiments
+    )
 
     assert adopted is True
     assert new_phi == best.phi_value
@@ -143,8 +145,13 @@ def test_default_portfolio_covers_funding_qaas_qiaas_ciaas_and_research():
     )
 
     assert portfolio.domains() == ("ciaas", "funding", "qaas", "qiaas", "research")
-    assert {observation.domain for observation in observations} == set(portfolio.domains())
-    assert next(obs for obs in observations if obs.domain == "ciaas").higher_is_better is False
+    assert {observation.domain for observation in observations} == set(
+        portfolio.domains()
+    )
+    assert (
+        next(obs for obs in observations if obs.domain == "ciaas").higher_is_better
+        is False
+    )
 
 
 def test_distributed_evidence_replicator_merges_replica_logs_deterministically():
@@ -154,7 +161,11 @@ def test_distributed_evidence_replicator_merges_replica_logs_deterministically()
         "capability_observed", actor="qaas", timestamp=2.0, domain="qaas", metric=0.99
     )
     log_b = ImmutableEvidenceLog().append(
-        "capability_observed", actor="ciaas", timestamp=1.0, domain="ciaas", metric=120.0
+        "capability_observed",
+        actor="ciaas",
+        timestamp=1.0,
+        domain="ciaas",
+        metric=120.0,
     )
     replicator = DistributedEvidenceReplicator()
 
@@ -167,7 +178,10 @@ def test_distributed_evidence_replicator_merges_replica_logs_deterministically()
 
 
 def test_feedback_loop_validator_rejects_artifacts_without_matched_load_samples():
-    from pythia_mining.salamander_frontier import ExperimentMeasurement, FeedbackLoopValidator
+    from pythia_mining.salamander_frontier import (
+        ExperimentMeasurement,
+        FeedbackLoopValidator,
+    )
 
     validator = FeedbackLoopValidator(min_samples=2, min_relative_improvement=0.05)
     measurements = [
@@ -219,7 +233,9 @@ def test_feedback_loop_validator_accepts_matched_load_improvement_and_snapshot_e
         domain="qiaas",
         action="add_capacity",
     )
-    snapshot = SalamanderObservabilitySnapshot(audit_log, EvidenceSealLifecycle()).to_dict()
+    snapshot = SalamanderObservabilitySnapshot(
+        audit_log, EvidenceSealLifecycle()
+    ).to_dict()
 
     assert snapshot["evidence_events_total"] == 1
     assert snapshot["adaptation_events_total"] == 1
@@ -231,7 +247,11 @@ def test_cross_language_replay_manifest_round_trips_and_detects_digest_mismatch(
     from pythia_mining.salamander_frontier import CrossLanguageReplayManifest
 
     audit_log = ImmutableEvidenceLog().append(
-        "capability_observed", actor="rust-agent", timestamp=1.0, domain="qaas", value=0.99
+        "capability_observed",
+        actor="rust-agent",
+        timestamp=1.0,
+        domain="qaas",
+        value=0.99,
     )
     manifest = CrossLanguageReplayManifest(audit_log).to_manifest()
 
@@ -277,12 +297,17 @@ def test_anticipatory_planner_grows_capacity_before_predicted_breach():
 
 
 def test_economic_autonomy_allocator_approves_only_risk_adjusted_roi():
-    from pythia_mining.salamander_frontier import ComputeGrowthOption, EconomicAutonomyAllocator
+    from pythia_mining.salamander_frontier import (
+        ComputeGrowthOption,
+        EconomicAutonomyAllocator,
+    )
 
     allocator = EconomicAutonomyAllocator(roi_threshold=0.20)
     decision = allocator.choose(
         [
-            ComputeGrowthOption("small-node", expected_value=120.0, cost=100.0, risk_discount=0.05),
+            ComputeGrowthOption(
+                "small-node", expected_value=120.0, cost=100.0, risk_discount=0.05
+            ),
             ComputeGrowthOption(
                 "burst-cluster", expected_value=180.0, cost=100.0, risk_discount=0.10
             ),
@@ -290,7 +315,11 @@ def test_economic_autonomy_allocator_approves_only_risk_adjusted_roi():
         available_budget=150.0,
     )
     rejected = allocator.choose(
-        [ComputeGrowthOption("low-yield", expected_value=105.0, cost=100.0, risk_discount=0.0)],
+        [
+            ComputeGrowthOption(
+                "low-yield", expected_value=105.0, cost=100.0, risk_discount=0.0
+            )
+        ],
         available_budget=150.0,
     )
 
@@ -308,14 +337,18 @@ def test_immune_system_quarantines_non_physical_trait_claim_and_peer_audit():
         SalamanderImmuneSystem,
     )
 
-    immune = SalamanderImmuneSystem(min_work_per_watt_hour=1.0, max_work_per_watt_hour=100.0)
+    immune = SalamanderImmuneSystem(
+        min_work_per_watt_hour=1.0, max_work_per_watt_hour=100.0
+    )
     plausible = EvidenceTraitClaim(
         "node-a", work_units=200.0, energy_watts=100.0, duration_seconds=3600.0
     )
     impossible = EvidenceTraitClaim(
         "node-b", work_units=1_000_000.0, energy_watts=10.0, duration_seconds=1.0
     )
-    audit_log = ImmutableEvidenceLog().append("capability_observed", actor="node-a", timestamp=1.0)
+    audit_log = ImmutableEvidenceLog().append(
+        "capability_observed", actor="node-a", timestamp=1.0
+    )
     lifecycle = EvidenceSealLifecycle(hmac_secret=b"immune")
     seals = lifecycle.seal_log(audit_log)
 
@@ -354,8 +387,13 @@ def test_morphogenetic_blueprint_library_remembers_success_templates():
     )
 
     assert blueprint.blueprint_id.startswith("BLP-")
-    assert library.best_for("ciaas", "computational-intelligence-api", "weekday-peak") == blueprint
-    assert library.best_for("ciaas", "computational-intelligence-api", "weekend") is None
+    assert (
+        library.best_for("ciaas", "computational-intelligence-api", "weekday-peak")
+        == blueprint
+    )
+    assert (
+        library.best_for("ciaas", "computational-intelligence-api", "weekend") is None
+    )
 
 
 def test_metabolic_allocator_includes_power_cost_before_growth():
@@ -370,11 +408,15 @@ def test_metabolic_allocator_includes_power_cost_before_growth():
         [
             (
                 ComputeGrowthOption("efficient-node", expected_value=200.0, cost=100.0),
-                MetabolicCostProfile(watts=200.0, duration_hours=10.0, cost_per_kwh=0.10),
+                MetabolicCostProfile(
+                    watts=200.0, duration_hours=10.0, cost_per_kwh=0.10
+                ),
             ),
             (
                 ComputeGrowthOption("wasteful-node", expected_value=200.0, cost=100.0),
-                MetabolicCostProfile(watts=10_000.0, duration_hours=10.0, cost_per_kwh=0.50),
+                MetabolicCostProfile(
+                    watts=10_000.0, duration_hours=10.0, cost_per_kwh=0.50
+                ),
             ),
         ],
         available_budget=200.0,
@@ -399,7 +441,9 @@ def test_symbiotic_bridge_accepts_only_trusted_evidence_and_blastema_plan_points
         "adaptation_decision", actor="research", timestamp=1.0, domain="research"
     )
     evidence_hash = audit_log.seal()
-    offer = SymbioticNutrientOffer("funding", "research", "compute_credits", 25.0, evidence_hash)
+    offer = SymbioticNutrientOffer(
+        "funding", "research", "compute_credits", 25.0, evidence_hash
+    )
     bridge = SymbioticEvidenceBridge()
 
     accepted = bridge.evaluate_offer(offer, {evidence_hash}, "compute_credits", 10.0)
@@ -416,12 +460,17 @@ def test_symbiotic_bridge_accepts_only_trusted_evidence_and_blastema_plan_points
 
 
 def test_nervous_system_selects_regeneration_affinity_from_latency_and_gravity():
-    from pythia_mining.salamander_frontier import SalamanderNervousSystem, SynapticLatencyEdge
+    from pythia_mining.salamander_frontier import (
+        SalamanderNervousSystem,
+        SynapticLatencyEdge,
+    )
 
     nervous = SalamanderNervousSystem(
         [
             SynapticLatencyEdge("origin", "near-data", latency_ms=20.0, jitter_ms=2.0),
-            SynapticLatencyEdge("origin", "near-treasury", latency_ms=35.0, jitter_ms=1.0),
+            SynapticLatencyEdge(
+                "origin", "near-treasury", latency_ms=35.0, jitter_ms=1.0
+            ),
             SynapticLatencyEdge("origin", "far-node", latency_ms=90.0, jitter_ms=5.0),
         ]
     )
@@ -455,9 +504,15 @@ def test_recursive_gene_folder_evolves_thresholds_toward_best_fitness():
         ),
     }
     outcomes = [
-        GeneExperimentOutcome("marginal_benefit_threshold", tested_value=0.015, fitness_score=0.9),
-        GeneExperimentOutcome("marginal_benefit_threshold", tested_value=0.03, fitness_score=0.5),
-        GeneExperimentOutcome("immune_error_rate", tested_value=0.08, fitness_score=0.8),
+        GeneExperimentOutcome(
+            "marginal_benefit_threshold", tested_value=0.015, fitness_score=0.9
+        ),
+        GeneExperimentOutcome(
+            "marginal_benefit_threshold", tested_value=0.03, fitness_score=0.5
+        ),
+        GeneExperimentOutcome(
+            "immune_error_rate", tested_value=0.08, fitness_score=0.8
+        ),
     ]
 
     evolved = RecursiveGeneFolder(learning_rate=0.5).evolve(genes, outcomes)
@@ -514,10 +569,17 @@ def test_global_evidence_ledger_shares_trusted_blueprints_only():
 
 
 def test_apoptosis_exports_evidence_manifest_before_pruning_unfit_agent():
-    from pythia_mining.salamander_frontier import AgentViabilityMetrics, SalamanderApoptosis
+    from pythia_mining.salamander_frontier import (
+        AgentViabilityMetrics,
+        SalamanderApoptosis,
+    )
 
     evidence_log = ImmutableEvidenceLog().append(
-        "capability_observed", actor="unfit-node", timestamp=1.0, domain="ciaas", roi=-0.1
+        "capability_observed",
+        actor="unfit-node",
+        timestamp=1.0,
+        domain="ciaas",
+        roi=-0.1,
     )
     metrics = AgentViabilityMetrics(
         agent_id="unfit-node",
@@ -539,7 +601,10 @@ def test_apoptosis_exports_evidence_manifest_before_pruning_unfit_agent():
 
 
 def test_apoptosis_keeps_temporarily_slow_but_viable_agent():
-    from pythia_mining.salamander_frontier import AgentViabilityMetrics, SalamanderApoptosis
+    from pythia_mining.salamander_frontier import (
+        AgentViabilityMetrics,
+        SalamanderApoptosis,
+    )
 
     evidence_log = ImmutableEvidenceLog().append(
         "capability_observed", actor="slow-node", timestamp=1.0
@@ -559,19 +624,34 @@ def test_apoptosis_keeps_temporarily_slow_but_viable_agent():
 
 
 def test_resonant_substrate_tuner_selects_low_jitter_low_heat_harmonic():
-    from pythia_mining.salamander_frontier import PHI, ResonanceMeasurement, ResonantSubstrateTuner
+    from pythia_mining.salamander_frontier import (
+        PHI,
+        ResonanceMeasurement,
+        ResonantSubstrateTuner,
+    )
 
-    tuner = ResonantSubstrateTuner(jitter_weight=2.0, thermal_weight=3.0, throughput_weight=1.0)
+    tuner = ResonantSubstrateTuner(
+        jitter_weight=2.0, thermal_weight=3.0, throughput_weight=1.0
+    )
     candidates = tuner.candidate_phi_values(center_phi=PHI, epsilon=0.001)
     measurements = [
         ResonanceMeasurement(
-            candidates[0], execution_jitter_ms=5.0, thermal_drift_c=3.0, throughput=120.0
+            candidates[0],
+            execution_jitter_ms=5.0,
+            thermal_drift_c=3.0,
+            throughput=120.0,
         ),
         ResonanceMeasurement(
-            candidates[1], execution_jitter_ms=1.0, thermal_drift_c=0.5, throughput=118.0
+            candidates[1],
+            execution_jitter_ms=1.0,
+            thermal_drift_c=0.5,
+            throughput=118.0,
         ),
         ResonanceMeasurement(
-            candidates[2], execution_jitter_ms=2.0, thermal_drift_c=2.0, throughput=121.0
+            candidates[2],
+            execution_jitter_ms=2.0,
+            thermal_drift_c=2.0,
+            throughput=121.0,
         ),
     ]
 
@@ -602,7 +682,9 @@ def test_dream_state_promotes_only_simulated_gene_improvements():
         return observed_roi - abs(candidate_genes["phi"].value - 1.619)
 
     dream = SalamanderDreamState(evaluator, promotion_threshold=0.0001)
-    outcome = dream.simulate_mutation(historical_log, genes, DreamMutation("phi", 1.619))
+    outcome = dream.simulate_mutation(
+        historical_log, genes, DreamMutation("phi", 1.619)
+    )
 
     assert outcome.promoted is True
     assert outcome.dream_id.startswith("DRM-SIM-")
@@ -622,7 +704,9 @@ def test_dream_state_promotes_only_simulated_gene_improvements():
     )
 
     inherited = ledger.inherit_blueprints(
-        trusted_hashes={record.evidence_hash}, domain="ciaas", capability="resonant-execution"
+        trusted_hashes={record.evidence_hash},
+        domain="ciaas",
+        capability="resonant-execution",
     )
     assert inherited[0].blueprint_id.startswith("DRM-")
     assert inherited[0].parameters["dream_id"] == outcome.dream_id
@@ -672,7 +756,11 @@ def test_dream_state_orders_batch_by_simulated_improvement():
     outcomes = dream.dream(
         historical_log,
         genes,
-        [DreamMutation("phi", 1.612), DreamMutation("phi", 1.619), DreamMutation("phi", 1.60)],
+        [
+            DreamMutation("phi", 1.612),
+            DreamMutation("phi", 1.619),
+            DreamMutation("phi", 1.60),
+        ],
         timestamp=2.0,
     )
 

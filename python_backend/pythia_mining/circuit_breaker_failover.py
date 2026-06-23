@@ -228,8 +228,7 @@ class CircuitBreakerFailoverManager:
         self.metrics.successful_failovers += 1
 
         logger.warning(
-            f"Failover: {from_tier.value} → {next_tier.value} "
-            f"(reason: {reason})"
+            f"Failover: {from_tier.value} → {next_tier.value} " f"(reason: {reason})"
         )
 
         return True
@@ -241,9 +240,7 @@ class CircuitBreakerFailoverManager:
         """
         # Remove old attempts outside window
         cutoff = time.time() - self.heal_attempt_window_seconds
-        recent_attempts = [
-            t for t in self.heal_attempt_window if t > cutoff
-        ]
+        recent_attempts = [t for t in self.heal_attempt_window if t > cutoff]
         self.heal_attempt_window = recent_attempts
 
         # If too many attempts in window even after failover
@@ -285,7 +282,8 @@ class CircuitBreakerFailoverManager:
         time_since_last = now - self.last_recovery_attempt
         backoff_delay = min(
             self.recovery_timeout_seconds,
-            (2 ** (self.recovery_attempt_count - 1)) * 30,  # Exponential: 30s, 60s, 120s...
+            (2 ** (self.recovery_attempt_count - 1))
+            * 30,  # Exponential: 30s, 60s, 120s...
         )
 
         if time_since_last >= backoff_delay:
@@ -330,15 +328,18 @@ class CircuitBreakerFailoverManager:
         self.metrics.current_tier = self.current_tier.value
         self.metrics.current_state = self.current_state.value
         self.metrics.primary_failures = sum(
-            1 for attempt in self.failover_history 
+            1
+            for attempt in self.failover_history
             if attempt.from_tier == PoolTier.PRIMARY
         )
         self.metrics.backup_failures = sum(
-            1 for attempt in self.failover_history 
+            1
+            for attempt in self.failover_history
             if attempt.from_tier == PoolTier.BACKUP
         )
         self.metrics.tertiary_failures = sum(
-            1 for attempt in self.failover_history 
+            1
+            for attempt in self.failover_history
             if attempt.from_tier == PoolTier.TERTIARY
         )
         return self.metrics

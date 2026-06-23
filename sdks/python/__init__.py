@@ -1,1 +1,7 @@
-from .hyba_client import HYBAClient, HYBAAuthError, HYBARateLimitError, HYBAQuotaExhaustedError, HYBAServiceError
+from .hyba_client import (
+    HYBAClient,
+    HYBAAuthError,
+    HYBARateLimitError,
+    HYBAQuotaExhaustedError,
+    HYBAServiceError,
+)

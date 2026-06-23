@@ -133,7 +133,9 @@ class StratumIdempotencyTracker:
         """Generate Redis key for (pool_id, nonce) pair."""
         return f"stratum_submission:{pool_id}:{nonce}"
 
-    async def check_duplicate(self, pool_id: str, nonce: int) -> Optional[StratumSubmissionRecord]:
+    async def check_duplicate(
+        self, pool_id: str, nonce: int
+    ) -> Optional[StratumSubmissionRecord]:
         """Check if (pool_id, nonce) has been submitted recently.
 
         Args:

@@ -165,7 +165,9 @@ def test_phi_router_oracle_controller_jit_vm_tuner_golden_flow() -> None:
     assert hot["new_phi_exponent"] <= PHI
 
 
-def test_phi_architecture_golden_flow_does_not_claim_live_hardware_or_pool_truth() -> None:
+def test_phi_architecture_golden_flow_does_not_claim_live_hardware_or_pool_truth() -> (
+    None
+):
     """The golden-flow test proves software integration, not external outcomes."""
 
     supported_claim = (

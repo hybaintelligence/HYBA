@@ -6,7 +6,12 @@ loaded lazily so central ingestion can run offline without requiring every
 optional enterprise/scientific dependency to be installed at import time.
 """
 
-from .base_connector import ConnectorSchema, DataType, NormalizationConfig, UniversalConnector
+from .base_connector import (
+    ConnectorSchema,
+    DataType,
+    NormalizationConfig,
+    UniversalConnector,
+)
 
 _LAZY_CONNECTORS = {
     "SQLConnector": ".sql_connector",

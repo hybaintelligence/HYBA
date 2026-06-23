@@ -59,7 +59,9 @@ class _AuthenticatedLiveSession:
 class _RejectedAuthorizationSession(_AuthenticatedLiveSession):
     """Fake that models a pool rejecting ``mining.authorize``."""
 
-    async def subscribe_and_authorize(self) -> SessionHandshake:  # pragma: no cover - raises
+    async def subscribe_and_authorize(
+        self,
+    ) -> SessionHandshake:  # pragma: no cover - raises
         self.subscribe_authorize_called = True
         raise LiveStratumSessionError("pool rejected authorization")
 
@@ -91,7 +93,9 @@ async def test_live_v1_pool_handshake_sets_authenticated_runtime_state(monkeypat
 
     monkeypatch.setenv("HYBA_ENABLE_LIVE_STRATUM", "true")
     monkeypatch.delenv("NODE_ENV", raising=False)
-    monkeypatch.setattr(stratum_client_module, "LiveStratumSession", _AuthenticatedLiveSession)
+    monkeypatch.setattr(
+        stratum_client_module, "LiveStratumSession", _AuthenticatedLiveSession
+    )
     _AuthenticatedLiveSession.instances.clear()
 
     client = StratumClient(
@@ -126,7 +130,9 @@ async def test_live_v1_pool_authorization_rejection_fails_closed(monkeypatch):
 
     monkeypatch.setenv("HYBA_ENABLE_LIVE_STRATUM", "true")
     monkeypatch.delenv("NODE_ENV", raising=False)
-    monkeypatch.setattr(stratum_client_module, "LiveStratumSession", _RejectedAuthorizationSession)
+    monkeypatch.setattr(
+        stratum_client_module, "LiveStratumSession", _RejectedAuthorizationSession
+    )
 
     client = StratumClient(
         "stratum+tcp://pool.example.test:3333",

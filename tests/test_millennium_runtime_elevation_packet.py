@@ -39,7 +39,10 @@ def test_packet_extracts_all_seven_domains_without_backend_dependency() -> None:
     )
     assert {item["slug"] for item in packet["contract_results"]} == EXPECTED_SLUGS
     assert packet["all_contracts_satisfied"] is False
-    assert "no Millennium Problem proof claims" in packet["fullstack_boundary"]["claim_boundary"]
+    assert (
+        "no Millennium Problem proof claims"
+        in packet["fullstack_boundary"]["claim_boundary"]
+    )
 
 
 def test_each_contract_has_runtime_question_controls_and_measurements() -> None:
@@ -58,7 +61,10 @@ def test_each_contract_has_runtime_question_controls_and_measurements() -> None:
         assert item["missing_fields"] == []
         assert item["missing_controls"] == []
         if item["slug"] == "riemann-hypothesis":
-            assert item["failed_controls"] == ["random_constant_ablation", "spectral_replay"]
+            assert item["failed_controls"] == [
+                "random_constant_ablation",
+                "spectral_replay",
+            ]
             assert item["measurements"]["gue_contract_satisfied"] is False
         else:
             assert item["failed_controls"] == []
@@ -96,9 +102,17 @@ def test_phi_resonance_is_central_but_not_magic() -> None:
     assert evidence["phi_structured_dominates"] is True
     assert evidence["noise_winner"] == "uniform"
     assert evidence["phi_not_magic_on_uniform_noise"] is True
-    assert evidence["structured_similarity"]["phi"] > evidence["structured_similarity"]["pi"]
-    assert evidence["structured_similarity"]["phi"] > evidence["structured_similarity"]["e"]
-    assert evidence["noise_similarity"]["uniform"] >= evidence["noise_similarity"]["phi"]
+    assert (
+        evidence["structured_similarity"]["phi"]
+        > evidence["structured_similarity"]["pi"]
+    )
+    assert (
+        evidence["structured_similarity"]["phi"]
+        > evidence["structured_similarity"]["e"]
+    )
+    assert (
+        evidence["noise_similarity"]["uniform"] >= evidence["noise_similarity"]["phi"]
+    )
 
 
 def test_packet_hash_is_forensic_and_replay_stable() -> None:

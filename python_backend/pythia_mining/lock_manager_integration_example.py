@@ -265,9 +265,7 @@ class PoolResponseHistorySynchronizer:
                 ]
 
                 # Deduplicate based on timestamp and pool_id
-                existing_keys = {
-                    (h["pool_id"], h["timestamp"]) for h in history
-                }
+                existing_keys = {(h["pool_id"], h["timestamp"]) for h in history}
                 unique_new = [
                     e
                     for e in new_entries

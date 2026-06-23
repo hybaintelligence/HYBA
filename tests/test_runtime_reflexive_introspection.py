@@ -72,7 +72,9 @@ def test_binding_refreshes_controller_surroundings_beyond_fixed_table() -> None:
     controller = _controller()
     previous_count = len(controller.surroundings.module_names)
 
-    report = bind_runtime_reflexive_adapters(controller, PYTHON_BACKEND / "pythia_mining")
+    report = bind_runtime_reflexive_adapters(
+        controller, PYTHON_BACKEND / "pythia_mining"
+    )
 
     assert report["source"] == "runtime_ast_import_graph"
     assert report["previous_module_count"] == previous_count

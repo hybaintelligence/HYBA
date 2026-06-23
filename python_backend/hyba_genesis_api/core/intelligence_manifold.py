@@ -35,7 +35,9 @@ class ManifoldTelemetry:
 class ManifoldStabilizer:
     """Prevent Ricci-flow collapse with a Perelman W-entropy proxy."""
 
-    def preserve_volume(self, current_curvature: float, complexity_density: float) -> float:
+    def preserve_volume(
+        self, current_curvature: float, complexity_density: float
+    ) -> float:
         """Apply a volume-preserving bias to curvature smoothing."""
 
         volume_bias = math.log(max(float(complexity_density), 0.0) + 1.1)
@@ -60,12 +62,16 @@ class IntelligenceManifold:
             graph.setdefault(source, [])
             graph.setdefault(target, [])
             graph[source].append(target)
-        self.causal_graph = {node: sorted(set(targets)) for node, targets in graph.items()}
+        self.causal_graph = {
+            node: sorted(set(targets)) for node, targets in graph.items()
+        }
 
     def calculate_fisher_curvature(self, weights: Sequence[float]) -> float:
         """Approximate Fisher curvature using coefficient of variation."""
 
-        positive = [abs(float(weight)) for weight in weights if math.isfinite(float(weight))]
+        positive = [
+            abs(float(weight)) for weight in weights if math.isfinite(float(weight))
+        ]
         if not positive:
             return 0.0
         mean = sum(positive) / len(positive)
@@ -74,17 +80,25 @@ class IntelligenceManifold:
         variance = sum((weight - mean) ** 2 for weight in positive) / len(positive)
         return float(math.sqrt(variance) / mean)
 
-    def calculate_ricci_flow(self, curvature: float, step_size: float | None = None) -> float:
+    def calculate_ricci_flow(
+        self, curvature: float, step_size: float | None = None
+    ) -> float:
         """Smooth high-curvature logic toward a flatter explanation manifold."""
 
         configured_step = (
-            float(os.getenv("HYBA_RICCI_STEP_SIZE", "0.01")) if step_size is None else step_size
+            float(os.getenv("HYBA_RICCI_STEP_SIZE", "0.01"))
+            if step_size is None
+            else step_size
         )
         bounded_step = max(0.0, min(0.5, float(configured_step)))
         smoothed = float(max(0.0, float(curvature)) * (1.0 - (2.0 * bounded_step)))
-        return self.stabilizer.preserve_volume(smoothed, complexity_density=max(curvature, 0.0))
+        return self.stabilizer.preserve_volume(
+            smoothed, complexity_density=max(curvature, 0.0)
+        )
 
-    def compute_euler_characteristic(self, nodes: int, edges: int, faces: int = 1) -> int:
+    def compute_euler_characteristic(
+        self, nodes: int, edges: int, faces: int = 1
+    ) -> int:
         """Return χ = V - E + F for a simplified AST/call-graph surface."""
 
         return int(nodes) - int(edges) + int(faces)
@@ -98,12 +112,19 @@ class IntelligenceManifold:
         """Return high-impact causal hubs sorted by deterministic impact."""
 
         hubs = [
-            {"node_id": node_id, "causal_impact": round(self.infer_causal_impact(node_id), 6)}
+            {
+                "node_id": node_id,
+                "causal_impact": round(self.infer_causal_impact(node_id), 6),
+            }
             for node_id in self.causal_graph
         ]
-        return sorted(hubs, key=lambda item: (-item["causal_impact"], item["node_id"]))[:limit]
+        return sorted(hubs, key=lambda item: (-item["causal_impact"], item["node_id"]))[
+            :limit
+        ]
 
-    def check_task_possibility(self, current_logic: str, target_transformation: str) -> bool:
+    def check_task_possibility(
+        self, current_logic: str, target_transformation: str
+    ) -> bool:
         """Constructor-theory proxy: can the target symbols be composed now?"""
 
         if not target_transformation:

@@ -53,7 +53,9 @@ class FinanceDomainSpecializer:
 
         # Calculate portfolio metrics
         portfolio_return = np.sum(weights * mean_returns) * 252
-        portfolio_risk = np.sqrt(np.dot(weights, np.dot(cov_matrix, weights))) * np.sqrt(252)
+        portfolio_risk = np.sqrt(
+            np.dot(weights, np.dot(cov_matrix, weights))
+        ) * np.sqrt(252)
         sharpe_ratio = portfolio_return / portfolio_risk if portfolio_risk > 0 else 0
 
         execution_time = time.time() - start_time
@@ -61,8 +63,12 @@ class FinanceDomainSpecializer:
         # Calculate additional metrics
         cumulative_returns = np.cumprod(1 + np.dot(returns, weights)) - 1
         max_drawdown = self._calculate_max_drawdown(cumulative_returns)
-        computation_efficiency = portfolio_return / execution_time if execution_time > 0 else 0
-        risk_adjusted_return = portfolio_return / portfolio_risk if portfolio_risk > 0 else 0
+        computation_efficiency = (
+            portfolio_return / execution_time if execution_time > 0 else 0
+        )
+        risk_adjusted_return = (
+            portfolio_return / portfolio_risk if portfolio_risk > 0 else 0
+        )
 
         return FinanceMetrics(
             portfolio_return=portfolio_return,
@@ -105,7 +111,9 @@ class FinanceDomainSpecializer:
             sharpe_ratio=portfolio_return / portfolio_risk if portfolio_risk > 0 else 0,
             max_drawdown=var_95,
             execution_time=execution_time,
-            computation_efficiency=portfolio_return / execution_time if execution_time > 0 else 0,
+            computation_efficiency=(
+                portfolio_return / execution_time if execution_time > 0 else 0
+            ),
             risk_adjusted_return=abs(cvar_95),
         )
 
@@ -133,7 +141,9 @@ class FinanceDomainSpecializer:
 
         for i in range(1, num_steps + 1):
             z = np.random.randn(100)
-            paths[i] = paths[i - 1] * np.exp((r - 0.5 * volatility ** 2) * dt + volatility * np.sqrt(dt) * z)
+            paths[i] = paths[i - 1] * np.exp(
+                (r - 0.5 * volatility**2) * dt + volatility * np.sqrt(dt) * z
+            )
 
         # Calculate call option payoff
         call_payoff = np.maximum(paths[-1] - strike_price, 0)
@@ -147,8 +157,12 @@ class FinanceDomainSpecializer:
             sharpe_ratio=0.0,  # Not applicable for single instrument
             max_drawdown=0.0,
             execution_time=execution_time,
-            computation_efficiency=call_price / execution_time if execution_time > 0 else 0,
-            risk_adjusted_return=call_price / np.std(call_payoff) if np.std(call_payoff) > 0 else 0,
+            computation_efficiency=(
+                call_price / execution_time if execution_time > 0 else 0
+            ),
+            risk_adjusted_return=(
+                call_price / np.std(call_payoff) if np.std(call_payoff) > 0 else 0
+            ),
         )
 
     def benchmark_fixed_income_analytics(
@@ -195,8 +209,12 @@ class FinanceDomainSpecializer:
             sharpe_ratio=0.0,
             max_drawdown=np.min(portfolio_values) - portfolio_return,
             execution_time=execution_time,
-            computation_efficiency=portfolio_return / execution_time if execution_time > 0 else 0,
-            risk_adjusted_return=portfolio_return / portfolio_risk if portfolio_risk > 0 else 0,
+            computation_efficiency=(
+                portfolio_return / execution_time if execution_time > 0 else 0
+            ),
+            risk_adjusted_return=(
+                portfolio_return / portfolio_risk if portfolio_risk > 0 else 0
+            ),
         )
 
     def _optimize_weights(
@@ -269,8 +287,12 @@ class FinanceDomainSpecializer:
             report.append(f"- **Sharpe Ratio**: {metrics.sharpe_ratio:.4f}\n")
             report.append(f"- **Max Drawdown**: {metrics.max_drawdown:.4f}\n")
             report.append(f"- **Execution Time**: {metrics.execution_time:.4f}s\n")
-            report.append(f"- **Computation Efficiency**: {metrics.computation_efficiency:.4f}\n")
-            report.append(f"- **Risk-Adjusted Return**: {metrics.risk_adjusted_return:.4f}\n\n")
+            report.append(
+                f"- **Computation Efficiency**: {metrics.computation_efficiency:.4f}\n"
+            )
+            report.append(
+                f"- **Risk-Adjusted Return**: {metrics.risk_adjusted_return:.4f}\n\n"
+            )
 
         return "".join(report)
 

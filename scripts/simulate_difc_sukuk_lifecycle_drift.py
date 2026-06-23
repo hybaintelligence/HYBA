@@ -126,7 +126,9 @@ def simulate(output_dir: Path) -> Dict[str, Any]:
         candidate = _candidate_for_stage(base, idx, stage)
         packet = generate_difc_sukuk_audit_packet(candidate)
         packet_path = output_dir / f"{idx:02d}_{stage['name']}.json"
-        packet_path.write_text(json.dumps(packet, indent=2, sort_keys=True), encoding="utf-8")
+        packet_path.write_text(
+            json.dumps(packet, indent=2, sort_keys=True), encoding="utf-8"
+        )
         rows.append(_summary_row(packet_path, packet))
 
     manifest = {

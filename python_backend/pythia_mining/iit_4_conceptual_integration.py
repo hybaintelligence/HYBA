@@ -147,12 +147,16 @@ class IIT4ConceptualIntegration:
 
         # Depth 2: Pairs
         if max_depth >= 2:
-            for i, j in combinations(range(min(self.system_size, len(system_state))), 2):
+            for i, j in combinations(
+                range(min(self.system_size, len(system_state))), 2
+            ):
                 mechanisms.append(frozenset([i, j]))
 
         # Depth 3: Triplets
         if max_depth >= 3:
-            for i, j, k in combinations(range(min(self.system_size, len(system_state))), 3):
+            for i, j, k in combinations(
+                range(min(self.system_size, len(system_state))), 3
+            ):
                 mechanisms.append(frozenset([i, j, k]))
 
         return mechanisms
@@ -196,7 +200,9 @@ class IIT4ConceptualIntegration:
 
         return float(conceptual_phi)
 
-    def _compute_cause_phi(self, mechanism_state: np.ndarray, connectivity: np.ndarray) -> float:
+    def _compute_cause_phi(
+        self, mechanism_state: np.ndarray, connectivity: np.ndarray
+    ) -> float:
         """Compute cause-effect information for cause repertoire."""
         # Simplified implementation - full IIT 4.0 requires partition analysis
         # Use phi-weighted integration as proxy
@@ -212,7 +218,9 @@ class IIT4ConceptualIntegration:
 
         return float(normalized_phi)
 
-    def _compute_effect_phi(self, mechanism_state: np.ndarray, connectivity: np.ndarray) -> float:
+    def _compute_effect_phi(
+        self, mechanism_state: np.ndarray, connectivity: np.ndarray
+    ) -> float:
         """Compute cause-effect information for effect repertoire."""
         # Similar to cause phi but for effect repertoire
         if len(mechanism_state) < 2:
@@ -244,11 +252,17 @@ class IIT4ConceptualIntegration:
         mechanism_state = system_state[elements]
 
         # Compute conceptual phi
-        conceptual_phi = self.compute_conceptual_phi(mechanism, system_state, connectivity_matrix)
+        conceptual_phi = self.compute_conceptual_phi(
+            mechanism, system_state, connectivity_matrix
+        )
 
         # Build cause and effect repertoires (simplified)
-        cause_repertoire = self._build_cause_repertoire(mechanism_state, connectivity_matrix)
-        effect_repertoire = self._build_effect_repertoire(mechanism_state, connectivity_matrix)
+        cause_repertoire = self._build_cause_repertoire(
+            mechanism_state, connectivity_matrix
+        )
+        effect_repertoire = self._build_effect_repertoire(
+            mechanism_state, connectivity_matrix
+        )
 
         # Build conceptual structure
         conceptual_structure = {
@@ -269,7 +283,9 @@ class IIT4ConceptualIntegration:
         return concept
 
     def _build_cause_repertoire(
-        self, mechanism_state: np.ndarray, connectivity_matrix: Optional[np.ndarray] = None
+        self,
+        mechanism_state: np.ndarray,
+        connectivity_matrix: Optional[np.ndarray] = None,
     ) -> np.ndarray:
         """Build cause repertoire for a mechanism."""
         if connectivity_matrix is None:
@@ -284,7 +300,9 @@ class IIT4ConceptualIntegration:
         return cause_repertoire
 
     def _build_effect_repertoire(
-        self, mechanism_state: np.ndarray, connectivity_matrix: Optional[np.ndarray] = None
+        self,
+        mechanism_state: np.ndarray,
+        connectivity_matrix: Optional[np.ndarray] = None,
     ) -> np.ndarray:
         """Build effect repertoire for a mechanism."""
         if connectivity_matrix is None:
@@ -296,7 +314,9 @@ class IIT4ConceptualIntegration:
         if mechanism_state.ndim == 1:
             mechanism_state = mechanism_state.reshape(-1, 1)
         if connectivity_matrix.shape[0] != mechanism_state.shape[0]:
-            connectivity_matrix = np.ones((mechanism_state.shape[0], mechanism_state.shape[0]))
+            connectivity_matrix = np.ones(
+                (mechanism_state.shape[0], mechanism_state.shape[0])
+            )
 
         effect_repertoire = mechanism_state.T @ connectivity_matrix
         effect_repertoire = effect_repertoire.flatten()
@@ -305,7 +325,9 @@ class IIT4ConceptualIntegration:
         return effect_repertoire
 
     def compute_star_phi(
-        self, concepts: FrozenSet[Concept], connectivity_matrix: Optional[np.ndarray] = None
+        self,
+        concepts: FrozenSet[Concept],
+        connectivity_matrix: Optional[np.ndarray] = None,
     ) -> float:
         """Compute Φ* (star phi) - conceptual integration.
 
@@ -319,7 +341,9 @@ class IIT4ConceptualIntegration:
         individual_phi_sum = sum(c.conceptual_phi for c in concepts)
 
         # Build integration matrix
-        integration_matrix = self._build_integration_matrix(concepts, connectivity_matrix)
+        integration_matrix = self._build_integration_matrix(
+            concepts, connectivity_matrix
+        )
 
         # Compute integrated conceptual phi
         integrated_phi = np.sum(np.abs(integration_matrix)) / (len(concepts) + 1)
@@ -330,7 +354,9 @@ class IIT4ConceptualIntegration:
         return float(star_phi)
 
     def _build_integration_matrix(
-        self, concepts: FrozenSet[Concept], connectivity_matrix: Optional[np.ndarray] = None
+        self,
+        concepts: FrozenSet[Concept],
+        connectivity_matrix: Optional[np.ndarray] = None,
     ) -> np.ndarray:
         """Build integration matrix for conceptual structure."""
         concepts_list = list(concepts)
@@ -346,7 +372,9 @@ class IIT4ConceptualIntegration:
 
         return integration_matrix
 
-    def _compute_conceptual_overlap(self, concept_a: Concept, concept_b: Concept) -> float:
+    def _compute_conceptual_overlap(
+        self, concept_a: Concept, concept_b: Concept
+    ) -> float:
         """Compute conceptual overlap between two concepts."""
         # Overlap based on mechanism intersection
         mechanism_overlap = len(concept_a.mechanism & concept_b.mechanism)
@@ -405,7 +433,9 @@ class IIT4ConceptualIntegration:
 
             # Gradient ascent: perturb state toward higher phi
             if iteration < iterations - 1:
-                current_state = self._phi_gradient_step(current_state, connectivity_matrix)
+                current_state = self._phi_gradient_step(
+                    current_state, connectivity_matrix
+                )
 
         return {
             "best_phi": best_phi,
@@ -416,7 +446,10 @@ class IIT4ConceptualIntegration:
         }
 
     def _phi_gradient_step(
-        self, state: np.ndarray, connectivity_matrix: np.ndarray, learning_rate: float = 0.1
+        self,
+        state: np.ndarray,
+        connectivity_matrix: np.ndarray,
+        learning_rate: float = 0.1,
     ) -> np.ndarray:
         """Take a gradient step toward higher phi."""
         # Compute phi gradient (simplified)
@@ -430,7 +463,10 @@ class IIT4ConceptualIntegration:
             # Compute phi change
             mechanisms = self.generate_conceptual_mechanisms(perturbed, max_depth=2)
             concepts = frozenset(
-                [self.build_concept(mech, perturbed, connectivity_matrix) for mech in mechanisms]
+                [
+                    self.build_concept(mech, perturbed, connectivity_matrix)
+                    for mech in mechanisms
+                ]
             )
             phi_perturbed = self.compute_star_phi(concepts, connectivity_matrix)
 
@@ -465,14 +501,19 @@ class IIT4ConceptualIntegration:
 
         # Build all concepts
         concepts = frozenset(
-            [self.build_concept(mech, system_state, connectivity_matrix) for mech in mechanisms]
+            [
+                self.build_concept(mech, system_state, connectivity_matrix)
+                for mech in mechanisms
+            ]
         )
 
         # Compute star phi
         star_phi = self.compute_star_phi(concepts, connectivity_matrix)
 
         # Build integration matrix
-        integration_matrix = self._build_integration_matrix(concepts, connectivity_matrix)
+        integration_matrix = self._build_integration_matrix(
+            concepts, connectivity_matrix
+        )
 
         # Compute conceptual dimensionality
         conceptual_dimensionality = len([c for c in concepts if c.conceptual_phi > 0.1])
@@ -482,9 +523,9 @@ class IIT4ConceptualIntegration:
             "num_concepts": len(concepts),
             "active_concepts": conceptual_dimensionality,
             "star_phi": star_phi,
-            "average_conceptual_phi": np.mean([c.conceptual_phi for c in concepts])
-            if concepts
-            else 0.0,
+            "average_conceptual_phi": (
+                np.mean([c.conceptual_phi for c in concepts]) if concepts else 0.0
+            ),
         }
 
         return ConceptualStructure(
@@ -522,11 +563,15 @@ class IIT4ConceptualIntegration:
 
         # Build conceptual cause repertoire (how concept affects other concepts)
         integration_row = conceptual_structure.integration_matrix[concept_idx]
-        cause_concept_repertoire = integration_row / (np.sum(np.abs(integration_row)) + 1e-10)
+        cause_concept_repertoire = integration_row / (
+            np.sum(np.abs(integration_row)) + 1e-10
+        )
 
         # Build conceptual effect repertoire (how other concepts affect this concept)
         integration_col = conceptual_structure.integration_matrix[:, concept_idx]
-        effect_concept_repertoire = integration_col / (np.sum(np.abs(integration_col)) + 1e-10)
+        effect_concept_repertoire = integration_col / (
+            np.sum(np.abs(integration_col)) + 1e-10
+        )
 
         # Compute conceptual cause and effect phi
         conceptual_cause_phi = float(np.sum(np.abs(cause_concept_repertoire)) / PHI)

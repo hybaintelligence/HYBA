@@ -31,9 +31,15 @@ def signed(payload: dict[str, Any]) -> dict[str, Any]:
 
 def build_packet(root: Path = ROOT) -> dict[str, Any]:
     state = read_json(root / "python_backend" / "pythia_state.json")
-    total = int((state or {}).get("total_shares") or 0) if state and "error" not in state else 0
+    total = (
+        int((state or {}).get("total_shares") or 0)
+        if state and "error" not in state
+        else 0
+    )
     accepted = (
-        int((state or {}).get("accepted_shares") or 0) if state and "error" not in state else 0
+        int((state or {}).get("accepted_shares") or 0)
+        if state and "error" not in state
+        else 0
     )
     return signed(
         {
@@ -48,14 +54,20 @@ def build_packet(root: Path = ROOT) -> dict[str, Any]:
                 "accepted_present": accepted > 0,
             },
             "runtime": {
-                "system_health": (state or {}).get("system_health")
-                if state and "error" not in state
-                else "unavailable",
-                "telemetry_source": (state or {}).get("telemetry_source")
-                if state and "error" not in state
-                else "unavailable",
+                "system_health": (
+                    (state or {}).get("system_health")
+                    if state and "error" not in state
+                    else "unavailable"
+                ),
+                "telemetry_source": (
+                    (state or {}).get("telemetry_source")
+                    if state and "error" not in state
+                    else "unavailable"
+                ),
             },
-            "claim_level": "share_present" if accepted > 0 else "runtime_trace_no_share_present",
+            "claim_level": (
+                "share_present" if accepted > 0 else "runtime_trace_no_share_present"
+            ),
             "boundaries": {
                 "changes_production_routes": False,
                 "changes_funding_gate": False,
@@ -69,7 +81,9 @@ def write_packet(output_dir: Path, root: Path = ROOT) -> dict[str, Any]:
     output_dir.mkdir(parents=True, exist_ok=True)
     packet = build_packet(root)
     packet_path = output_dir / "runtime_trace_packet.json"
-    packet_path.write_text(json.dumps(packet, indent=2, sort_keys=True), encoding="utf-8")
+    packet_path.write_text(
+        json.dumps(packet, indent=2, sort_keys=True), encoding="utf-8"
+    )
     manifest = signed(
         {
             "schema_version": f"{SCHEMA_VERSION}.manifest",

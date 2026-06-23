@@ -161,7 +161,9 @@ def run_all_frontier_experiments():
     for exp_id, result in results.items():
         status_symbol = "✓" if result.get("status") == "completed" else "✗"
         breakthrough_symbol = "🏆" if result.get("breakthrough", False) else " "
-        print(f"{status_symbol} {breakthrough_symbol} {exp_id}: {result.get('status', 'unknown')}")
+        print(
+            f"{status_symbol} {breakthrough_symbol} {exp_id}: {result.get('status', 'unknown')}"
+        )
 
     print()
 

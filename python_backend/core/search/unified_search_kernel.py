@@ -91,7 +91,9 @@ class Bounds:
         max_val = object.__getattribute__(self, "max_value")
         if hasattr(min_val, "__lt__") and hasattr(max_val, "__lt__"):
             if min_val > max_val:
-                raise ValueError(f"min_value ({min_val}) must be <= max_value ({max_val})")
+                raise ValueError(
+                    f"min_value ({min_val}) must be <= max_value ({max_val})"
+                )
 
     def init(self) -> Any:
         """Initialize a state at the lower bound."""
@@ -333,13 +335,17 @@ class UnifiedSearchKernel(Generic[T, R]):
         search_time_ms = (time.perf_counter() - start_time) * 1000
         return SearchResult(
             candidate=best if best is not None else state,
-            score=best_score if best is not None else self.domain.resonance_score(state),
+            score=(
+                best_score if best is not None else self.domain.resonance_score(state)
+            ),
             partial=True,
             iterations_used=iterations_used,
             budget_exhausted=iterations_used >= budget,
             latency_mode=latency_mode,
             search_time_ms=search_time_ms,
-            passport=self._make_passport(best if best is not None else state, best_score, True),
+            passport=self._make_passport(
+                best if best is not None else state, best_score, True
+            ),
         )
 
     def _select_neighbor(self, neighbors: Sequence[T], seed: int) -> T:
@@ -359,7 +365,9 @@ class UnifiedSearchKernel(Generic[T, R]):
         # Could be enhanced with seeded random selection
         return neighbors[0] if neighbors else neighbors
 
-    def _make_passport(self, candidate: Any, score: float, partial: bool) -> dict[str, Any]:
+    def _make_passport(
+        self, candidate: Any, score: float, partial: bool
+    ) -> dict[str, Any]:
         """Create a passport for the search result.
 
         Args:

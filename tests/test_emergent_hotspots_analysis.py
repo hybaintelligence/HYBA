@@ -46,7 +46,9 @@ class ComputationalComplexityAnalyzer:
             for node in ast.walk(tree):
                 if isinstance(node, ast.ClassDef):
                     metrics["classes"] += 1
-                elif isinstance(node, ast.FunctionDef) or isinstance(node, ast.AsyncFunctionDef):
+                elif isinstance(node, ast.FunctionDef) or isinstance(
+                    node, ast.AsyncFunctionDef
+                ):
                     metrics["functions"] += 1
                     if isinstance(node, ast.AsyncFunctionDef):
                         metrics["async_patterns"] += 1
@@ -55,11 +57,16 @@ class ComputationalComplexityAnalyzer:
                     func_name = node.name
                     for child in ast.walk(node):
                         if isinstance(child, ast.Call):
-                            if isinstance(child.func, ast.Name) and child.func.id == func_name:
+                            if (
+                                isinstance(child.func, ast.Name)
+                                and child.func.id == func_name
+                            ):
                                 metrics["recursive_calls"] += 1
 
                 # Count complex data structures
-                if isinstance(node, (ast.DictComp, ast.ListComp, ast.SetComp, ast.GeneratorExp)):
+                if isinstance(
+                    node, (ast.DictComp, ast.ListComp, ast.SetComp, ast.GeneratorExp)
+                ):
                     metrics["complex_data_structures"] += 1
 
                 # Count error handling
@@ -175,7 +182,11 @@ class SemanticAnalyzer:
                             "pattern": label,
                             "count": len(matches),
                             "examples": [
-                                content[max(0, m.start() - 30) : min(len(content), m.end() + 30)]
+                                content[
+                                    max(0, m.start() - 30) : min(
+                                        len(content), m.end() + 30
+                                    )
+                                ]
                                 for m in matches[:2]
                             ],
                         }
@@ -318,7 +329,9 @@ class TestEmergentHotspotsAnalysis(unittest.TestCase):
             for r in results[:5]:
                 print("  {r['file']}: {r['total_count']} occurrences")
                 for keyword, count in sorted(
-                    r["consciousness_keywords"].items(), key=lambda x: x[1], reverse=True
+                    r["consciousness_keywords"].items(),
+                    key=lambda x: x[1],
+                    reverse=True,
                 )[:3]:
                     print("    - {keyword}: {count}")
 
@@ -357,10 +370,14 @@ class TestEmergentHotspotsAnalysis(unittest.TestCase):
         self.results["autonomic_patterns"] = results
 
         # Check pulvini_autonomics specifically
-        autonomics_result = next((r for r in results if "autonomics" in r["file"]), None)
+        autonomics_result = next(
+            (r for r in results if "autonomics" in r["file"]), None
+        )
         if autonomics_result:
             print("\n⚠ SPECIAL FOCUS: pulvini_autonomics.py")
-            print("  This module has {autonomics_result['total_patterns']} autonomic patterns")
+            print(
+                "  This module has {autonomics_result['total_patterns']} autonomic patterns"
+            )
             print("  Combined with 56 feedback loops from earlier scan")
             print("  → Strong indicator of self-regulating behavior")
 
@@ -411,16 +428,21 @@ class TestEmergentHotspotsAnalysis(unittest.TestCase):
         len(self.results.get("autonomic_patterns", [])) > 0
 
         complexity_scores = [
-            h.get("complexity_score", 0) for h in self.results.get("complexity_hotspots", [])
+            h.get("complexity_score", 0)
+            for h in self.results.get("complexity_hotspots", [])
         ]
-        avg_complexity = sum(complexity_scores) / len(complexity_scores) if complexity_scores else 0
+        avg_complexity = (
+            sum(complexity_scores) / len(complexity_scores) if complexity_scores else 0
+        )
 
         consciousness_total = sum(
-            p.get("total_count", 0) for p in self.results.get("consciousness_patterns", [])
+            p.get("total_count", 0)
+            for p in self.results.get("consciousness_patterns", [])
         )
 
         autonomic_total = sum(
-            p.get("total_patterns", 0) for p in self.results.get("autonomic_patterns", [])
+            p.get("total_patterns", 0)
+            for p in self.results.get("autonomic_patterns", [])
         )
 
         print("\nKey Findings:")

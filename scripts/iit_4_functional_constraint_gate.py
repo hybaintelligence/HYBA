@@ -168,7 +168,8 @@ class IITFunctionalConstraintGate:
 
         recent_entropy = entropy_history[-3:]
         max_change = max(
-            abs(recent_entropy[i] - recent_entropy[i - 1]) for i in range(1, len(recent_entropy))
+            abs(recent_entropy[i] - recent_entropy[i - 1])
+            for i in range(1, len(recent_entropy))
         )
         passed = max_change <= ENTROPY_STABILITY_THRESHOLD
 
@@ -243,7 +244,10 @@ class IITFunctionalConstraintGate:
                     f"IIT 4.0 Φ computation {'valid' if passed else 'invalid'}. "
                     f"Φ must be in range [0, 1]."
                 ),
-                details={"phi_max": phi_max, "computation_method": result.get("method", "unknown")},
+                details={
+                    "phi_max": phi_max,
+                    "computation_method": result.get("method", "unknown"),
+                },
             )
             return passed
 
@@ -366,7 +370,9 @@ class IITFunctionalConstraintGate:
 
         logger.info(f"Version: {report.version}")
         logger.info(f"Timestamp: {report.timestamp}")
-        logger.info(f"Overall Status: {'✓ PASSED' if report.overall_passed else '✗ FAILED'}")
+        logger.info(
+            f"Overall Status: {'✓ PASSED' if report.overall_passed else '✗ FAILED'}"
+        )
         logger.info(f"Φ Integrated: {report.phi_integrated:.6f}")
         logger.info(f"Φ Regime: {report.phi_regime}")
         logger.info(f"Structural Coupling: {report.structural_coupling:.6f}")
@@ -419,7 +425,9 @@ async def main():
 
         # Save report to artifacts
         artifacts_dir = (
-            Path(__file__).resolve().parents[1] / "artifacts" / "iit_4_functional_constraints"
+            Path(__file__).resolve().parents[1]
+            / "artifacts"
+            / "iit_4_functional_constraints"
         )
         artifacts_dir.mkdir(parents=True, exist_ok=True)
 

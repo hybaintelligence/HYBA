@@ -32,7 +32,9 @@ def mock_redis_client():
 @pytest.fixture
 def registry_with_mock_redis(mock_redis_client):
     """Create registry instance with mocked Redis client."""
-    with patch("pythia_mining.redis_state_registry.RedisQuantumSubstrateRegistry._initialize_client"):
+    with patch(
+        "pythia_mining.redis_state_registry.RedisQuantumSubstrateRegistry._initialize_client"
+    ):
         registry = RedisQuantumSubstrateRegistry()
         registry._client = mock_redis_client
         registry._available = True
@@ -41,7 +43,9 @@ def registry_with_mock_redis(mock_redis_client):
 
 def test_redis_initialization_success(mock_redis_client):
     """Test successful Redis initialization with connection verification."""
-    with patch("pythia_mining.redis_state_registry.RedisQuantumSubstrateRegistry._initialize_client"):
+    with patch(
+        "pythia_mining.redis_state_registry.RedisQuantumSubstrateRegistry._initialize_client"
+    ):
         registry = RedisQuantumSubstrateRegistry(host="localhost", port=6379)
         registry._client = mock_redis_client
         registry._available = True
@@ -53,7 +57,9 @@ def test_redis_initialization_success(mock_redis_client):
 
 def test_redis_initialization_failure():
     """Test graceful fallback when Redis is unavailable."""
-    with patch("pythia_mining.redis_state_registry.RedisQuantumSubstrateRegistry._initialize_client") as mock_init:
+    with patch(
+        "pythia_mining.redis_state_registry.RedisQuantumSubstrateRegistry._initialize_client"
+    ) as mock_init:
         mock_init.side_effect = lambda: None
         registry = RedisQuantumSubstrateRegistry()
         registry._available = False
@@ -63,7 +69,9 @@ def test_redis_initialization_failure():
         assert registry._client is None
 
 
-def test_serialize_instance_topology_success(registry_with_mock_redis, mock_redis_client):
+def test_serialize_instance_topology_success(
+    registry_with_mock_redis, mock_redis_client
+):
     """Test successful instance topology serialization to Redis."""
     topology = {
         "instance_id": "qaas-test123",
@@ -150,7 +158,9 @@ def test_acquire_register_lock_success(registry_with_mock_redis, mock_redis_clie
     assert call_args[1]["nx"] is True
 
 
-def test_acquire_register_lock_already_held(registry_with_mock_redis, mock_redis_client):
+def test_acquire_register_lock_already_held(
+    registry_with_mock_redis, mock_redis_client
+):
     """Test lock acquisition fails when already held by another tenant."""
     mock_redis_client.set.return_value = False
 
@@ -202,7 +212,9 @@ def test_release_register_lock_not_owner(registry_with_mock_redis, mock_redis_cl
     assert result is False
 
 
-def test_record_resource_consumption_success(registry_with_mock_redis, mock_redis_client):
+def test_record_resource_consumption_success(
+    registry_with_mock_redis, mock_redis_client
+):
     """Test resource consumption recording with compute unit calculation."""
     metrics = {
         "defect_count": 5,
@@ -301,7 +313,9 @@ def test_compute_unit_formula_edge_cases(registry_with_mock_redis):
 
     # Single defect, unit weight
     result2 = registry_with_mock_redis.record_resource_consumption(
-        "test", "customer", {"defect_count": 1, "pairing_weight": 1.0, "circuit_depth": 1}
+        "test",
+        "customer",
+        {"defect_count": 1, "pairing_weight": 1.0, "circuit_depth": 1},
     )
     assert result2["compute_units_drawn"] == 2.0  # ((1 * 1.0) + 1.0) * 1
 

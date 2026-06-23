@@ -16,7 +16,9 @@ class ComplianceValidator:
         "FedRAMP": ["cloud_security", "compliance", "continuous_monitoring"],
     }
 
-    def validate_framework(self, framework: str, components: Iterable[str]) -> Dict[str, Any]:
+    def validate_framework(
+        self, framework: str, components: Iterable[str]
+    ) -> Dict[str, Any]:
         """Validate supplied components against a compliance framework."""
         if framework not in self.FRAMEWORKS:
             raise ValueError(f"Unsupported framework: {framework}")
@@ -33,10 +35,19 @@ class ComplianceValidator:
             "validated_at": datetime.now(timezone.utc).isoformat(),
         }
 
-    def generate_compliance_report(self, frameworks: Dict[str, Iterable[str]]) -> Dict[str, Any]:
+    def generate_compliance_report(
+        self, frameworks: Dict[str, Iterable[str]]
+    ) -> Dict[str, Any]:
         """Generate executive compliance summary."""
-        results = {name: self.validate_framework(name, comps) for name, comps in frameworks.items()}
-        avg = sum(r["coverage"] for r in results.values()) / len(results) if results else 0.0
+        results = {
+            name: self.validate_framework(name, comps)
+            for name, comps in frameworks.items()
+        }
+        avg = (
+            sum(r["coverage"] for r in results.values()) / len(results)
+            if results
+            else 0.0
+        )
         return {
             "overall_status": (
                 "compliant"

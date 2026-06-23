@@ -9,6 +9,7 @@ from enum import Enum
 
 class ConnectorType(str, Enum):
     """Supported connector types"""
+
     SQL_POSTGRESQL = "sql_postgresql"
     SQL_MYSQL = "sql_mysql"
     SQL_SNOWFLAKE = "sql_snowflake"
@@ -37,7 +38,7 @@ class ConnectorType(str, Enum):
 class ConnectorConfig:
     """
     Configuration for data source connectors
-    
+
     Example:
         >>> connector = ConnectorConfig(
         ...     type=ConnectorType.SQL_SNOWFLAKE,
@@ -46,7 +47,7 @@ class ConnectorConfig:
         ...     query="SELECT * FROM positions"
         ... )
     """
-    
+
     def __init__(
         self,
         type: ConnectorType,
@@ -69,7 +70,7 @@ class ConnectorConfig:
     ):
         """
         Initialize connector configuration
-        
+
         Args:
             type: Connector type (from ConnectorType enum)
             host: Database/server host
@@ -106,38 +107,51 @@ class ConnectorConfig:
         self.path = path
         self.protocol = protocol
         self.config = config or {}
-    
+
     def to_dict(self) -> Dict[str, Any]:
         """
         Convert to dictionary for API request
-        
+
         Returns:
             Dictionary representation
         """
         result = {"type": self.type.value}
-        
+
         # Add non-None values
         optional_fields = [
-            "host", "port", "database", "username", "password",
-            "query", "table", "bucket", "key", "format",
-            "broker", "topic", "endpoint", "path", "protocol", "config"
+            "host",
+            "port",
+            "database",
+            "username",
+            "password",
+            "query",
+            "table",
+            "bucket",
+            "key",
+            "format",
+            "broker",
+            "topic",
+            "endpoint",
+            "path",
+            "protocol",
+            "config",
         ]
-        
+
         for field in optional_fields:
             value = getattr(self, field)
             if value is not None:
                 result[field] = value
-        
+
         return result
-    
+
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "ConnectorConfig":
         """
         Create from dictionary
-        
+
         Args:
             data: Dictionary with connector configuration
-            
+
         Returns:
             ConnectorConfig instance
         """
@@ -147,9 +161,9 @@ class ConnectorConfig:
             connector_type = ConnectorType(type_str)
         except ValueError:
             connector_type = ConnectorType.HTTP
-        
+
         return cls(type=connector_type, **data)
-    
+
     def __repr__(self) -> str:
         return f"ConnectorConfig(type={self.type.value}, host={self.host})"
 
@@ -157,7 +171,7 @@ class ConnectorConfig:
 class OutputConnectorConfig:
     """
     Configuration for output connectors (egress)
-    
+
     Example:
         >>> output = OutputConnectorConfig(
         ...     type=OutputConnectorType.S3,
@@ -165,7 +179,7 @@ class OutputConnectorConfig:
         ...     format="parquet"
         ... )
     """
-    
+
     def __init__(
         self,
         type: str,
@@ -183,17 +197,15 @@ class OutputConnectorConfig:
         self.endpoint = endpoint
         self.protocol = protocol
         self.config = config or {}
-    
+
     def to_dict(self) -> Dict[str, Any]:
         result = {"type": self.type}
-        optional_fields = [
-            "bucket", "key", "format", "endpoint", "protocol", "config"
-        ]
+        optional_fields = ["bucket", "key", "format", "endpoint", "protocol", "config"]
         for field in optional_fields:
             value = getattr(self, field)
             if value is not None:
                 result[field] = value
         return result
-    
+
     def __repr__(self) -> str:
         return f"OutputConnectorConfig(type={self.type})"

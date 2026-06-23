@@ -13,8 +13,12 @@ PYTHON_BACKEND = REPO_ROOT / "python_backend"
 if str(PYTHON_BACKEND) not in sys.path:
     sys.path.insert(0, str(PYTHON_BACKEND))
 
-from hyba_genesis_api.core.audit_surface import generate_formal_invariant_audit  # noqa: E402
-from hyba_genesis_api.core.intelligence_manifold import IntelligenceManifold  # noqa: E402
+from hyba_genesis_api.core.audit_surface import (
+    generate_formal_invariant_audit,
+)  # noqa: E402
+from hyba_genesis_api.core.intelligence_manifold import (
+    IntelligenceManifold,
+)  # noqa: E402
 from hyba_genesis_api.core.ontological_memory import CrystallineRegistry  # noqa: E402
 from hyba_genesis_api.core.recursive_closure import (  # noqa: E402
     BufferBackedMiningLoop,

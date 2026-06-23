@@ -1,159 +1,138 @@
-# HYBA PQMC Observability Stack
-# Docker Compose configuration for Prometheus, Grafana, Jaeger, and Alertmanager
-
 version: '3.8'
-
 services:
-  # Prometheus - Metrics Collection
   prometheus:
     image: prom/prometheus:v2.47.0
     container_name: hyba-prometheus
     ports:
-      - "9090:9090"
+    - 9090:9090
     volumes:
-      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
-      - ./prometheus/rules:/etc/prometheus/rules
-      - prometheus-data:/prometheus
+    - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    - ./prometheus/rules:/etc/prometheus/rules
+    - prometheus-data:/prometheus
     command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--storage.tsdb.path=/prometheus'
-      - '--storage.tsdb.retention.time=30d'
-      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
-      - '--web.console.templates=/usr/share/prometheus/consoles'
+    - --config.file=/etc/prometheus/prometheus.yml
+    - --storage.tsdb.path=/prometheus
+    - --storage.tsdb.retention.time=30d
+    - --web.console.libraries=/usr/share/prometheus/console_libraries
+    - --web.console.templates=/usr/share/prometheus/consoles
     networks:
-      - observability
+    - observability
     restart: unless-stopped
-
-  # Grafana - Visualization
   grafana:
     image: grafana/grafana:10.1.0
     container_name: hyba-grafana
     ports:
-      - "3000:3000"
+    - 3000:3000
     volumes:
-      - grafana-data:/var/lib/grafana
-      - ./grafana/provisioning:/etc/grafana/provisioning
-      - ./grafana/dashboards:/var/lib/grafana/dashboards
+    - grafana-data:/var/lib/grafana
+    - ./grafana/provisioning:/etc/grafana/provisioning
+    - ./grafana/dashboards:/var/lib/grafana/dashboards
     environment:
-      - GF_SECURITY_ADMIN_USER=admin
-      - GF_SECURITY_ADMIN_PASSWORD=hyba_admin_password_change_me
-      - GF_USERS_ALLOW_SIGN_UP=false
-      - GF_SERVER_ROOT_URL=http://localhost:3000
-      - GF_INSTALL_PLUGINS=grafana-piechart-panel
+    - GF_SECURITY_ADMIN_USER=admin
+    - GF_SECURITY_ADMIN_PASSWORD=hyba_admin_password_change_me
+    - GF_USERS_ALLOW_SIGN_UP=false
+    - GF_SERVER_ROOT_URL=http://localhost:3000
+    - GF_INSTALL_PLUGINS=grafana-piechart-panel
     networks:
-      - observability
+    - observability
     depends_on:
-      - prometheus
+    - prometheus
     restart: unless-stopped
-
-  # Jaeger - Distributed Tracing
   jaeger:
     image: jaegertracing/all-in-one:1.50
     container_name: hyba-jaeger
     ports:
-      - "5775:5775/udp"
-      - "6831:6831/udp"
-      - "6832:6832/udp"
-      - "5778:5778"
-      - "16686:16686"
-      - "14268:14268"
-      - "14250:14250"
-      - "9411:9411"
+    - 5775:5775/udp
+    - 6831:6831/udp
+    - 6832:6832/udp
+    - 5778:5778
+    - 16686:16686
+    - 14268:14268
+    - 14250:14250
+    - 9411:9411
     environment:
-      - COLLECTOR_ZIPKIN_HOST_PORT=:9411
-      - COLLECTOR_OTLP_ENABLED=true
+    - COLLECTOR_ZIPKIN_HOST_PORT=:9411
+    - COLLECTOR_OTLP_ENABLED=true
     networks:
-      - observability
+    - observability
     restart: unless-stopped
-
-  # Alertmanager - Alert Management
   alertmanager:
     image: prom/alertmanager:v0.25.0
     container_name: hyba-alertmanager
     ports:
-      - "9093:9093"
+    - 9093:9093
     volumes:
-      - ./alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml
-      - alertmanager-data:/alertmanager
+    - ./alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml
+    - alertmanager-data:/alertmanager
     command:
-      - '--config.file=/etc/alertmanager/alertmanager.yml'
-      - '--storage.path=/alertmanager'
-      - '--web.external-url=http://localhost:9093'
+    - --config.file=/etc/alertmanager/alertmanager.yml
+    - --storage.path=/alertmanager
+    - --web.external-url=http://localhost:9093
     networks:
-      - observability
+    - observability
     restart: unless-stopped
-
-  # Node Exporter - System Metrics
   node-exporter:
     image: prom/node-exporter:v1.6.1
     container_name: hyba-node-exporter
     ports:
-      - "9100:9100"
+    - 9100:9100
     volumes:
-      - /proc:/host/proc:ro
-      - /sys:/host/sys:ro
-      - /:/rootfs:ro
+    - /proc:/host/proc:ro
+    - /sys:/host/sys:ro
+    - /:/rootfs:ro
     command:
-      - '--path.procfs=/host/proc'
-      - '--path.sysfs=/host/sys'
-      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+    - --path.procfs=/host/proc
+    - --path.sysfs=/host/sys
+    - --collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)
     networks:
-      - observability
+    - observability
     restart: unless-stopped
-
-  # cAdvisor - Container Metrics
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:v0.47.0
     container_name: hyba-cadvisor
     ports:
-      - "8080:8080"
+    - 8080:8080
     volumes:
-      - /:/rootfs:ro
-      - /var/run:/var/run:ro
-      - /sys:/sys:ro
-      - /var/lib/docker/:/var/lib/docker:ro
-      - /dev/disk/:/dev/disk:ro
+    - /:/rootfs:ro
+    - /var/run:/var/run:ro
+    - /sys:/sys:ro
+    - /var/lib/docker/:/var/lib/docker:ro
+    - /dev/disk/:/dev/disk:ro
     privileged: true
     networks:
-      - observability
+    - observability
     restart: unless-stopped
-
-  # PostgreSQL Exporter - Database Metrics
   postgres-exporter:
     image: prometheuscommunity/postgres-exporter:v0.12.0
     container_name: hyba-postgres-exporter
     ports:
-      - "9187:9187"
+    - 9187:9187
     environment:
-      - DATA_SOURCE_NAME=postgresql://postgres:postgres@postgres:5432/hyba?sslmode=disable
+    - DATA_SOURCE_NAME=postgresql://postgres:postgres@postgres:5432/hyba?sslmode=disable
     networks:
-      - observability
+    - observability
     depends_on:
-      - postgres
+    - postgres
     restart: unless-stopped
-
-  # PostgreSQL - For testing
   postgres:
     image: postgres:15-alpine
     container_name: hyba-postgres
     ports:
-      - "5432:5432"
+    - 5432:5432
     environment:
-      - POSTGRES_DB=hyba
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
+    - POSTGRES_DB=hyba
+    - POSTGRES_USER=postgres
+    - POSTGRES_PASSWORD=postgres
     networks:
-      - observability
+    - observability
     volumes:
-      - postgres-data:/var/lib/postgresql/data
+    - postgres-data:/var/lib/postgresql/data
     restart: unless-stopped
-
 networks:
   observability:
     driver: bridge
-
 volumes:
-  prometheus-data:
-  grafana-data:
-  alertmanager-data:
-  postgres-data:
+  prometheus-data: null
+  grafana-data: null
+  alertmanager-data: null
+  postgres-data: null

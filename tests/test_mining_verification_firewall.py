@@ -51,23 +51,35 @@ def test_verification_firewall_allows_only_exact_locally_verified_candidate() ->
 
     assert decision.protocol == VERIFICATION_FIREWALL_PROTOCOL
     assert decision.submission_allowed is True
-    assert decision.reason == "exact_local_sha256d_verified_and_bound_to_pool_job_context"
+    assert (
+        decision.reason == "exact_local_sha256d_verified_and_bound_to_pool_job_context"
+    )
     assert decision.optimisation_namespaces_blocked == OPTIMISATION_NAMESPACES
 
 
 def test_verification_firewall_fails_closed_on_local_invalid_candidate() -> None:
-    with pytest.raises(VerificationFirewallError, match="local_sha256d_verification_failed"):
+    with pytest.raises(
+        VerificationFirewallError, match="local_sha256d_verification_failed"
+    ):
         assert_verification_firewall_precondition(_candidate(local_valid=False))
 
 
-def test_verification_firewall_rejects_weaker_effective_target_than_pool_target() -> None:
-    with pytest.raises(VerificationFirewallError, match="effective_target_weaker_than_pool_target"):
+def test_verification_firewall_rejects_weaker_effective_target_than_pool_target() -> (
+    None
+):
+    with pytest.raises(
+        VerificationFirewallError, match="effective_target_weaker_than_pool_target"
+    ):
         assert_verification_firewall_precondition(_candidate(effective_target=1001))
 
 
 def test_verification_firewall_rejects_binding_mismatch() -> None:
-    with pytest.raises(VerificationFirewallError, match="candidate_binding_hash_mismatch"):
-        assert_verification_firewall_precondition(_candidate(candidate_binding_hash="bad"))
+    with pytest.raises(
+        VerificationFirewallError, match="candidate_binding_hash_mismatch"
+    ):
+        assert_verification_firewall_precondition(
+            _candidate(candidate_binding_hash="bad")
+        )
 
 
 def test_verification_firewall_is_outside_optimisation_authority() -> None:

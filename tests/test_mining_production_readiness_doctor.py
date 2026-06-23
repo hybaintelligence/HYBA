@@ -41,7 +41,9 @@ def test_bitcoin_and_stratum_pitfall_contracts_are_static_guarded() -> None:
     assert "pool ACK" in result.summary
 
 
-def test_command_room_environment_warnings_do_not_block_preparation(monkeypatch) -> None:
+def test_command_room_environment_warnings_do_not_block_preparation(
+    monkeypatch,
+) -> None:
     monkeypatch.delenv("NODE_ENV", raising=False)
     monkeypatch.delenv("HYBA_ENV", raising=False)
     monkeypatch.delenv("HYBA_ENABLE_LIVE_SHARE_SUBMIT", raising=False)
@@ -124,12 +126,12 @@ def test_run_doctor_includes_claim_boundary_and_failover_checks() -> None:
     report = run_doctor("prepare", skip_build=True)
 
     check_names = {c.name for c in report.checks}
-    assert "claim_boundary_contract" in check_names, (
-        "claim_boundary_contract check missing from report"
-    )
-    assert "multi_pool_failover_contract" in check_names, (
-        "multi_pool_failover_contract check missing from report"
-    )
+    assert (
+        "claim_boundary_contract" in check_names
+    ), "claim_boundary_contract check missing from report"
+    assert (
+        "multi_pool_failover_contract" in check_names
+    ), "multi_pool_failover_contract check missing from report"
 
 
 def test_live_mode_blocks_without_production_env(monkeypatch) -> None:

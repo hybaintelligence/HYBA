@@ -67,7 +67,9 @@ class SearchStep:
     is_mass_gate_passed: bool
 
 
-def random_search(n_steps: int, rng: random.Random, seed_nonce: int = 0) -> List[SearchStep]:
+def random_search(
+    n_steps: int, rng: random.Random, seed_nonce: int = 0
+) -> List[SearchStep]:
     """Uniform random nonce selection."""
     steps: List[SearchStep] = []
     for _ in range(n_steps):
@@ -86,7 +88,9 @@ def random_search(n_steps: int, rng: random.Random, seed_nonce: int = 0) -> List
     return steps
 
 
-def linear_search(n_steps: int, rng: random.Random, seed_nonce: int = 0) -> List[SearchStep]:
+def linear_search(
+    n_steps: int, rng: random.Random, seed_nonce: int = 0
+) -> List[SearchStep]:
     """Linear brute-force nonce scanning from seed."""
     steps: List[SearchStep] = []
     n = seed_nonce
@@ -106,7 +110,9 @@ def linear_search(n_steps: int, rng: random.Random, seed_nonce: int = 0) -> List
     return steps
 
 
-def fibonacci_search(n_steps: int, rng: random.Random, seed_nonce: int = 0) -> List[SearchStep]:
+def fibonacci_search(
+    n_steps: int, rng: random.Random, seed_nonce: int = 0
+) -> List[SearchStep]:
     """Fibonacci-step scanning from seed."""
     steps: List[SearchStep] = []
     n = seed_nonce
@@ -127,7 +133,9 @@ def fibonacci_search(n_steps: int, rng: random.Random, seed_nonce: int = 0) -> L
     return steps
 
 
-def hendrix_phi_search(n_steps: int, rng: random.Random, seed_nonce: int = 0) -> List[SearchStep]:
+def hendrix_phi_search(
+    n_steps: int, rng: random.Random, seed_nonce: int = 0
+) -> List[SearchStep]:
     """
     HENDRIX-Φ structured search using phi gradient proposals with
     Yang-Mills mass gap gating and Fibonacci step sizes.
@@ -203,7 +211,9 @@ def analyze_strategy(name: str, steps: List[SearchStep]) -> StrategyComparison:
     for d in domains:
         domain_counts[d] = domain_counts.get(d, 0) + 1
     total = sum(domain_counts.values())
-    entropy = -sum((c / total) * math.log2(c / total) for c in domain_counts.values() if c > 0)
+    entropy = -sum(
+        (c / total) * math.log2(c / total) for c in domain_counts.values() if c > 0
+    )
 
     # Top 10% phi resonance
     sorted_phi = sorted(phi_scores, reverse=True)
@@ -252,7 +262,9 @@ def print_comparison(results: List[StrategyComparison]) -> None:
         f"  {'Strategy':<24s} {'Mean Φ':>8s} {'Top10% Φ':>9s} "
         f"{'Mean YM':>8s} {'Gate%':>6s} {'Domains':>8s} {'Entropy':>8s} {'Q1 YM':>7s}"
     )
-    print(f"  {'─' * 24} {'─' * 8} {'─' * 9} {'─' * 8} {'─' * 6} {'─' * 8} {'─' * 8} {'─' * 7}")
+    print(
+        f"  {'─' * 24} {'─' * 8} {'─' * 9} {'─' * 8} {'─' * 6} {'─' * 8} {'─' * 8} {'─' * 7}"
+    )
 
     for r in results:
         print(
@@ -276,7 +288,9 @@ def print_comparison(results: List[StrategyComparison]) -> None:
             else 0
         )
         ym_reduction = (
-            (baseline.mean_ym_action - hendrix.mean_ym_action) / baseline.mean_ym_action * 100
+            (baseline.mean_ym_action - hendrix.mean_ym_action)
+            / baseline.mean_ym_action
+            * 100
             if baseline.mean_ym_action > 0
             else 0
         )
@@ -298,11 +312,17 @@ def print_comparison(results: List[StrategyComparison]) -> None:
         )
 
         if hendrix.mean_phi_resonance > baseline.mean_phi_resonance:
-            print("\n  ✅ HENDRIX-Φ finds higher-Φ nonces per search step than linear scan.")
+            print(
+                "\n  ✅ HENDRIX-Φ finds higher-Φ nonces per search step than linear scan."
+            )
         if hendrix.domain_coverage > baseline.domain_coverage:
-            print("  ✅ HENDRIX-Φ explores more M32 domains (better structural coverage).")
+            print(
+                "  ✅ HENDRIX-Φ explores more M32 domains (better structural coverage)."
+            )
         if hendrix.top_10pct_mean_phi > baseline.top_10pct_mean_phi:
-            print("  ✅ HENDRIX-Φ's best nonces have higher resonance (better top candidates).")
+            print(
+                "  ✅ HENDRIX-Φ's best nonces have higher resonance (better top candidates)."
+            )
     print(f"{sep}\n")
 
 
@@ -349,10 +369,14 @@ def _interpret_comparison(results: List[StrategyComparison]) -> Dict[str, str]:
         return interp
 
     phi_over_linear = (
-        (hendrix.mean_phi_resonance - linear.mean_phi_resonance) / linear.mean_phi_resonance * 100
+        (hendrix.mean_phi_resonance - linear.mean_phi_resonance)
+        / linear.mean_phi_resonance
+        * 100
     )
     top_over_linear = (
-        (hendrix.top_10pct_mean_phi - linear.top_10pct_mean_phi) / linear.top_10pct_mean_phi * 100
+        (hendrix.top_10pct_mean_phi - linear.top_10pct_mean_phi)
+        / linear.top_10pct_mean_phi
+        * 100
         if linear.top_10pct_mean_phi > 0
         else 0
     )

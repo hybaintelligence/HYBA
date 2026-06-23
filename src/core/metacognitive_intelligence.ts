@@ -66,7 +66,7 @@ export class MetacognitiveIntelligence {
   // Internal state for logic refolding
   private miningStrategyEntropy: Uint8Array;
   private consciousnessAnchor: number[];
-  private memoryFabricState: Map<string, any>;
+  private memoryFabricState: Map<string, unknown>;
 
   // Irreducibility enforcement
   private logicRefolded: boolean = false;
@@ -179,7 +179,7 @@ export class MetacognitiveIntelligence {
    * High Φ = subsystems cannot be understood independently.
    */
   protected async calculateIntegratedInformation(): Promise<number> {
-    const swarmState = this.securitySwarm.snapshot();
+    this.securitySwarm.snapshot();
 
     // Count cross-subsystem dependencies
     const dependencies = this.countCrossSubsystemDependencies();

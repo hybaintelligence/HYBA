@@ -283,10 +283,16 @@ class GoldenSLDExperiment:
 
         # Compute improvement ratio
         phi_points = [p for p in data_points if p.sequence_type == "phi_lcg"]
-        adversarial_points = [p for p in data_points if p.sequence_type == "adversarial"]
+        adversarial_points = [
+            p for p in data_points if p.sequence_type == "adversarial"
+        ]
 
         optimal_qfi = np.mean([p.qfi for p in phi_points]) if phi_points else 0.0
-        worst_qfi = np.mean([p.qfi for p in adversarial_points]) if adversarial_points else 1e-12
+        worst_qfi = (
+            np.mean([p.qfi for p in adversarial_points])
+            if adversarial_points
+            else 1e-12
+        )
         qfi_improvement = optimal_qfi / worst_qfi if worst_qfi > 0 else 0.0
 
         execution_time = (time.perf_counter() - start_time) * 1000.0
@@ -348,7 +354,9 @@ def run_golden_sld_correlation_experiment(
     print(f"R² (coefficient of determination): {analysis.r_squared:>12.6f}")
     print(f"Optimal QFI (φ-LCG):               {analysis.optimal_qfi:>12.6f}")
     print(f"Worst QFI (adversarial):           {analysis.worst_qfi:>12.6f}")
-    print(f"QFI improvement ratio:             {analysis.qfi_improvement_ratio:>12.2f}×")
+    print(
+        f"QFI improvement ratio:             {analysis.qfi_improvement_ratio:>12.2f}×"
+    )
     print(f"Execution time:                    {analysis.execution_time_ms:>12.2f} ms")
 
     print(f"\n{'BREAKTHROUGH THRESHOLD':<40}")

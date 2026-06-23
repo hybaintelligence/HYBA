@@ -1,94 +1,57 @@
-# HYBA Unified Miner — M3 Ultra Mac Studio Deployment Config
-#
-# Hardware: Apple M3 Ultra
-#   - 32 CPU cores (performance + efficiency)
-#   - 60 GPU cores (Apple Silicon Metal)
-#   - Unified memory: 128GB+ (shared CPU/GPU)
-#
-# Architecture:
-#   32 CPU cores ──► 32 M32 Voronoi domain solvers (parallel)
-#   60 GPU cores  ──► Parallel SHA-256d verification pipeline
-#
-# Each CPU core runs one HENDRIX-Φ structured walk on its
-# assigned M32 domain. The GPU batch-verifies 60 candidates
-# simultaneously via Metal Performance Shaders.
-
 deployment:
-  name: "HYBA M3 Ultra Mining Node"
-  version: "1.0.0"
-
+  name: HYBA M3 Ultra Mining Node
+  version: 1.0.0
 hardware:
-  platform: "apple_silicon"
-  model: "M3 Ultra"
+  platform: apple_silicon
+  model: M3 Ultra
   cpu_cores: 32
   gpu_cores: 60
   unified_memory_gb: 128
   metal_support: true
-
-# M32 parallel solver configuration
-# 32 CPU cores → 32 Voronoi domain walkers + 1 coordinator
 solver:
-  type: "hendrix_phi"
+  type: hendrix_phi
   m32_domains: 32
-  parallel_walkers: 31  # 1 CPU reserved for AI/consciousness
-  coordinator_core: 0   # CPU 0: consciousness + meta-learning
-  
-  # Per-walker settings
+  parallel_walkers: 31
+  coordinator_core: 0
   phi_gradient_enabled: true
   yang_mills_gate_enabled: true
-  pulse_frequency_hz: 60  # sync with GPU frame rate
-  
-  # Walk parameters
+  pulse_frequency_hz: 60
   steps_per_job: 10000
-  fibonacci_depth: 14    # Fibonacci sequence depth for step sizes
-  mass_gap_threshold: 1.381966  # 3 - Φ
-
-# GPU SHA-256d verification pipeline
-# 60 GPU cores → 60 parallel hash verifications
+  fibonacci_depth: 14
+  mass_gap_threshold: 1.381966
 verification:
-  engine: "metal_gpu"
-  parallel_hashes: 60     # matches GPU core count
+  engine: metal_gpu
+  parallel_hashes: 60
   batch_size: 60
-  pipeline_depth: 4       # 4 batches in flight
+  pipeline_depth: 4
   metal_device: 0
-  
-  # Timing
   target_ms_per_hash: 0.5
   max_batch_time_ms: 100
-
-# Pool configuration
 pool:
   primary:
-    name: "CKPool Solo"
-    url: "stratum+tcp://solo.ckpool.org:3333"
-    btc_address: "bc1qsyva7t00e0cwqzts54u7ffys7l76pp8a02x8r9"
-    password: "x"
-  
+    name: CKPool Solo
+    url: stratum+tcp://solo.ckpool.org:3333
+    btc_address: bc1qsyva7t00e0cwqzts54u7ffys7l76pp8a02x8r9
+    password: x
   backup:
-    name: "NiceHash SHA256"
-    url: "stratum+ssl://sha256.auto.nicehash.com:443"
-    username: "NHbaCJGb1gM7MjgJ9QnnqbG2sLVW9w8hdPzK"
-    password: "x"
-    worker: "hendrix_phi_m3"
-
-# Consciousness engine (runs on coordinator CPU)
+    name: NiceHash SHA256
+    url: stratum+ssl://sha256.auto.nicehash.com:443
+    username: NHbaCJGb1gM7MjgJ9QnnqbG2sLVW9w8hdPzK
+    password: x
+    worker: hendrix_phi_m3
 consciousness:
   enabled: true
   measurement_window: 100
-  phi_singular_threshold: 0.70
-  phi_distributed_threshold: 0.40
-  heal_trigger_threshold: 0.30
+  phi_singular_threshold: 0.7
+  phi_distributed_threshold: 0.4
+  heal_trigger_threshold: 0.3
   coherence_update_interval_s: 1.0
-
-# Meta-learning
 meta_learning:
   enabled: true
   strategy_memory: 1024
   adaptation_rate: 0.15
-
-# Performance targets
 performance:
-  expected_effective_hashrate_ths: 10593  # 110 TH/s × 32 × 1.86 × 1.618
-  conservative_estimate_ths: 5000          # after overhead
-  target_share_interval_s: 30             # ideal: 1 share per 30s
-  max_job_age_s: 120                      # abandon job after 2 min
+  expected_effective_hashrate_ths: 10593
+  conservative_estimate_ths: 5000
+  target_share_interval_s: 30
+  max_job_age_s: 120

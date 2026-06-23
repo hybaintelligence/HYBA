@@ -31,7 +31,9 @@ def test_replay_executor_verifies_valid_claim_output_digest(tmp_path) -> None:
         inputs={"message": "bounded replay ok"},
         commands=[command],
         seeds={"python_hash_seed": 0},
-        dependency_pins={"python": f"{sys.version_info.major}.{sys.version_info.minor}.*"},
+        dependency_pins={
+            "python": f"{sys.version_info.major}.{sys.version_info.minor}.*"
+        },
         boundary="Local deterministic replay only; not phenomenal consciousness or external validation.",
     ).to_dict()
     attestation["expected_output_digest"] = expected_digest
@@ -49,14 +51,20 @@ def test_replay_executor_verifies_valid_claim_output_digest(tmp_path) -> None:
 def test_replay_executor_rejects_invalid_seed_output_digest(tmp_path) -> None:
     command = _command_for("seed 43 output")
     stale_seed_42_digest = canonical_replay_output_digest(
-        [ReplayCommandResult(command=command, returncode=0, stdout="seed 42 output\n", stderr="")]
+        [
+            ReplayCommandResult(
+                command=command, returncode=0, stdout="seed 42 output\n", stderr=""
+            )
+        ]
     )
     attestation = build_reproducibility_attestation(
         claim_id="phi_scaling_bounded",
         inputs={"message": "seed 43 output"},
         commands=[command],
         seeds={"python_hash_seed": 43},
-        dependency_pins={"python": f"{sys.version_info.major}.{sys.version_info.minor}.*"},
+        dependency_pins={
+            "python": f"{sys.version_info.major}.{sys.version_info.minor}.*"
+        },
     ).to_dict()
     attestation["expected_output_digest"] = stale_seed_42_digest
 
@@ -79,7 +87,10 @@ def test_replay_executor_fails_fast_on_dependency_pin_mismatch(tmp_path) -> None
 
 
 def test_falsification_probe_passes_when_seed_mutation_diverges(tmp_path) -> None:
-    command = f'{sys.executable} -c "import os; ' "print(os.environ['PYTHIA_REPLAY_SEED_NUMPY'])\""
+    command = (
+        f'{sys.executable} -c "import os; '
+        "print(os.environ['PYTHIA_REPLAY_SEED_NUMPY'])\""
+    )
     expected_digest = canonical_replay_output_digest(
         [ReplayCommandResult(command=command, returncode=0, stdout="42\n", stderr="")]
     )
@@ -88,14 +99,18 @@ def test_falsification_probe_passes_when_seed_mutation_diverges(tmp_path) -> Non
         inputs={"seed": 42},
         commands=[command],
         seeds={"numpy": 42},
-        dependency_pins={"python": f"{sys.version_info.major}.{sys.version_info.minor}.*"},
+        dependency_pins={
+            "python": f"{sys.version_info.major}.{sys.version_info.minor}.*"
+        },
         boundary="Changing numpy seed is an actionable falsification route for this replay.",
     ).to_dict()
     attestation["expected_output_digest"] = expected_digest
 
     from pythia_mining.replay_executor import execute_falsification_probe
 
-    probe = execute_falsification_probe(attestation, seed_overrides={"numpy": 43}, cwd=tmp_path)
+    probe = execute_falsification_probe(
+        attestation, seed_overrides={"numpy": 43}, cwd=tmp_path
+    )
 
     assert probe.falsified is True
     assert probe.mutation["seed_overrides"] == {"numpy": 43}
@@ -105,21 +120,29 @@ def test_falsification_probe_passes_when_seed_mutation_diverges(tmp_path) -> Non
 def test_falsification_probe_rejects_non_diverging_mutation(tmp_path) -> None:
     command = _command_for("constant output")
     expected_digest = canonical_replay_output_digest(
-        [ReplayCommandResult(command=command, returncode=0, stdout="constant output\n", stderr="")]
+        [
+            ReplayCommandResult(
+                command=command, returncode=0, stdout="constant output\n", stderr=""
+            )
+        ]
     )
     attestation = build_reproducibility_attestation(
         claim_id="phi_scaling_bounded",
         inputs={"message": "constant output"},
         commands=[command],
         seeds={"numpy": 42},
-        dependency_pins={"python": f"{sys.version_info.major}.{sys.version_info.minor}.*"},
+        dependency_pins={
+            "python": f"{sys.version_info.major}.{sys.version_info.minor}.*"
+        },
     ).to_dict()
     attestation["expected_output_digest"] = expected_digest
 
     from pythia_mining.replay_executor import execute_falsification_probe
 
     with pytest.raises(ReplayExecutionError, match="did not diverge"):
-        execute_falsification_probe(attestation, seed_overrides={"numpy": 43}, cwd=tmp_path)
+        execute_falsification_probe(
+            attestation, seed_overrides={"numpy": 43}, cwd=tmp_path
+        )
 
 
 def test_replay_executor_hashes_declared_output_artifacts(tmp_path) -> None:
@@ -135,7 +158,11 @@ def test_replay_executor_hashes_declared_output_artifacts(tmp_path) -> None:
         size_bytes=len("artifact-proof"),
     )
     expected_digest = canonical_replay_output_digest(
-        [ReplayCommandResult(command=command, returncode=0, stdout="done\n", stderr="")],
+        [
+            ReplayCommandResult(
+                command=command, returncode=0, stdout="done\n", stderr=""
+            )
+        ],
         [expected_artifact],
     )
     attestation = build_reproducibility_attestation(
@@ -143,7 +170,9 @@ def test_replay_executor_hashes_declared_output_artifacts(tmp_path) -> None:
         inputs={"artifact": "proof.txt"},
         commands=[command],
         produced_artifacts=["proof.txt"],
-        dependency_pins={"python": f"{sys.version_info.major}.{sys.version_info.minor}.*"},
+        dependency_pins={
+            "python": f"{sys.version_info.major}.{sys.version_info.minor}.*"
+        },
     ).to_dict()
     attestation["expected_output_digest"] = expected_digest
 
@@ -158,13 +187,19 @@ def test_replay_stress_test_accepts_repeatable_claim(tmp_path) -> None:
 
     command = _command_for("stable")
     expected_digest = canonical_replay_output_digest(
-        [ReplayCommandResult(command=command, returncode=0, stdout="stable\n", stderr="")]
+        [
+            ReplayCommandResult(
+                command=command, returncode=0, stdout="stable\n", stderr=""
+            )
+        ]
     )
     attestation = build_reproducibility_attestation(
         claim_id="stable_claim",
         inputs={"message": "stable"},
         commands=[command],
-        dependency_pins={"python": f"{sys.version_info.major}.{sys.version_info.minor}.*"},
+        dependency_pins={
+            "python": f"{sys.version_info.major}.{sys.version_info.minor}.*"
+        },
     ).to_dict()
     attestation["expected_output_digest"] = expected_digest
 
@@ -183,7 +218,9 @@ def test_replay_stress_test_rejects_flaky_claim(tmp_path) -> None:
         claim_id="flaky_claim",
         inputs={"message": "flaky"},
         commands=[command],
-        dependency_pins={"python": f"{sys.version_info.major}.{sys.version_info.minor}.*"},
+        dependency_pins={
+            "python": f"{sys.version_info.major}.{sys.version_info.minor}.*"
+        },
     ).to_dict()
     attestation["expected_output_digest"] = "0" * 64
 
@@ -194,7 +231,10 @@ def test_replay_stress_test_rejects_flaky_claim(tmp_path) -> None:
 def test_full_falsification_suite_reports_coverage(tmp_path) -> None:
     from pythia_mining.replay_executor import run_full_falsification_suite
 
-    command = f'{sys.executable} -c "import os; ' "print(os.environ['PYTHIA_REPLAY_SEED_NONCE'])\""
+    command = (
+        f'{sys.executable} -c "import os; '
+        "print(os.environ['PYTHIA_REPLAY_SEED_NONCE'])\""
+    )
     expected_digest = canonical_replay_output_digest(
         [ReplayCommandResult(command=command, returncode=0, stdout="42\n", stderr="")]
     )
@@ -203,7 +243,9 @@ def test_full_falsification_suite_reports_coverage(tmp_path) -> None:
         inputs={"nonce": 42},
         commands=[command],
         seeds={"nonce": 42},
-        dependency_pins={"python": f"{sys.version_info.major}.{sys.version_info.minor}.*"},
+        dependency_pins={
+            "python": f"{sys.version_info.major}.{sys.version_info.minor}.*"
+        },
     ).to_dict()
     attestation["expected_output_digest"] = expected_digest
     claim = {
@@ -232,6 +274,8 @@ def test_environment_snapshot_and_requirements_lock_are_diagnostic() -> None:
     snapshot = capture_environment_snapshot(packages=("definitely-not-installed-hyba",))
     lock = generate_requirements_lock(packages=("definitely-not-installed-hyba",))
 
-    assert snapshot.python_version.startswith(f"{sys.version_info.major}.{sys.version_info.minor}.")
+    assert snapshot.python_version.startswith(
+        f"{sys.version_info.major}.{sys.version_info.minor}."
+    )
     assert snapshot.packages["definitely-not-installed-hyba"] == "not-installed"
     assert lock == ""

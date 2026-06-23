@@ -1,18 +1,113 @@
 {
-  "annotations": {"list": []},
+  "annotations": {
+    "list": []
+  },
   "editable": true,
   "panels": [
-    {"type": "stat", "title": "Autonomous Circuit Open", "targets": [{"expr": "hyba_autonomous_circuit_open"}], "gridPos": {"h": 4, "w": 6, "x": 0, "y": 0}},
-    {"type": "stat", "title": "Consecutive Failures", "targets": [{"expr": "hyba_autonomous_consecutive_failures"}], "gridPos": {"h": 4, "w": 6, "x": 6, "y": 0}},
-    {"type": "stat", "title": "Pending Approvals", "targets": [{"expr": "hyba_pending_operator_approvals"}], "gridPos": {"h": 4, "w": 6, "x": 12, "y": 0}},
-    {"type": "stat", "title": "Proposal Acceptance", "targets": [{"expr": "hyba_proposal_acceptance_rate"}], "gridPos": {"h": 4, "w": 6, "x": 18, "y": 0}},
-    {"type": "timeseries", "title": "Constraint Violations", "targets": [{"expr": "increase(hyba_constraint_violations_total[5m])"}], "gridPos": {"h": 8, "w": 12, "x": 0, "y": 4}},
-    {"type": "timeseries", "title": "Reflexive Cycle Duration", "targets": [{"expr": "hyba_reflexive_cycle_duration_ms"}], "gridPos": {"h": 8, "w": 12, "x": 12, "y": 4}}
+    {
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 0,
+        "y": 0
+      },
+      "targets": [
+        {
+          "expr": "hyba_autonomous_circuit_open"
+        }
+      ],
+      "title": "Autonomous Circuit Open",
+      "type": "stat"
+    },
+    {
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 6,
+        "y": 0
+      },
+      "targets": [
+        {
+          "expr": "hyba_autonomous_consecutive_failures"
+        }
+      ],
+      "title": "Consecutive Failures",
+      "type": "stat"
+    },
+    {
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 12,
+        "y": 0
+      },
+      "targets": [
+        {
+          "expr": "hyba_pending_operator_approvals"
+        }
+      ],
+      "title": "Pending Approvals",
+      "type": "stat"
+    },
+    {
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 18,
+        "y": 0
+      },
+      "targets": [
+        {
+          "expr": "hyba_proposal_acceptance_rate"
+        }
+      ],
+      "title": "Proposal Acceptance",
+      "type": "stat"
+    },
+    {
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 4
+      },
+      "targets": [
+        {
+          "expr": "increase(hyba_constraint_violations_total[5m])"
+        }
+      ],
+      "title": "Constraint Violations",
+      "type": "timeseries"
+    },
+    {
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 4
+      },
+      "targets": [
+        {
+          "expr": "hyba_reflexive_cycle_duration_ms"
+        }
+      ],
+      "title": "Reflexive Cycle Duration",
+      "type": "timeseries"
+    }
   ],
   "schemaVersion": 39,
-  "tags": ["hyba", "pythia", "autonomous-mining"],
-  "templating": {"list": []},
-  "time": {"from": "now-6h", "to": "now"},
+  "tags": [
+    "hyba",
+    "pythia",
+    "autonomous-mining"
+  ],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
   "timezone": "browser",
   "title": "PYTHIA Autonomous Mining",
   "uid": "pythia-autonomous-mining",

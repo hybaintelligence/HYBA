@@ -24,7 +24,9 @@ if given is not None:
     @settings(max_examples=500, deadline=None)
     @given(
         state_vector=st.lists(
-            st.complex_numbers(allow_infinity=False, allow_nan=False), min_size=8, max_size=8
+            st.complex_numbers(allow_infinity=False, allow_nan=False),
+            min_size=8,
+            max_size=8,
         )
     )
     def test_hilbert_normalization_invariant(state_vector: list[complex]) -> None:
@@ -46,6 +48,7 @@ if given is not None:
 
         assert np.isfinite(curvature)
         assert curvature >= 0.0
+
 else:
 
     @pytest.mark.skip(reason="hypothesis is not installed")

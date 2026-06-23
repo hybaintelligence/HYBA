@@ -78,24 +78,34 @@ class SubstrateCategory:
         self.objects: Dict[str, Dict[str, Any]] = {}
         self.morphisms: Dict[Tuple[str, str], Callable] = {}
 
-    def add_substrate(self, name: str, metadata: Optional[Dict[str, Any]] = None) -> None:
+    def add_substrate(
+        self, name: str, metadata: Optional[Dict[str, Any]] = None
+    ) -> None:
         self.objects[name] = metadata or {}
 
-    def add_translation(self, source: str, target: str, translation: Callable[[np.ndarray], np.ndarray]) -> None:
+    def add_translation(
+        self, source: str, target: str, translation: Callable[[np.ndarray], np.ndarray]
+    ) -> None:
         self.morphisms[(source, target)] = translation
 
-    def compose(self, f: Tuple[str, str], g: Tuple[str, str]) -> Optional[Callable[[np.ndarray], np.ndarray]]:
+    def compose(
+        self, f: Tuple[str, str], g: Tuple[str, str]
+    ) -> Optional[Callable[[np.ndarray], np.ndarray]]:
         if f[1] != g[0]:
             return None
         f_map = self.morphisms.get(f)
         g_map = self.morphisms.get(g)
         if f_map is None or g_map is None:
             return None
+
         def composed(x: np.ndarray) -> np.ndarray:
             return g_map(f_map(x))
+
         return composed
 
-    def verify_functoriality(self, mathematical_structure: MathematicalStructure) -> FunctorCertificate:
+    def verify_functoriality(
+        self, mathematical_structure: MathematicalStructure
+    ) -> FunctorCertificate:
         identity_ok = True
         for name in self.objects:
             test_input = np.random.default_rng(42).random((8, 8)).astype(np.complex128)
@@ -120,9 +130,12 @@ class SubstrateCategory:
                             composition_ok = False
         all_ok = identity_ok and composition_ok
         return FunctorCertificate(
-            source_category=self.name, target_category="MathematicalStructures",
-            num_objects=len(self.objects), num_morphisms=len(self.morphisms),
-            functoriality_preserved=all_ok, identity_preserved=identity_ok,
+            source_category=self.name,
+            target_category="MathematicalStructures",
+            num_objects=len(self.objects),
+            num_morphisms=len(self.morphisms),
+            functoriality_preserved=all_ok,
+            identity_preserved=identity_ok,
             composition_preserved=composition_ok,
             proof_statement=(
                 f"Functor F: {self.name} -> MathematicalStructures verified: "
@@ -137,7 +150,9 @@ class MathematicalStructure:
         self.name = name
         self.operations: Dict[str, Callable] = {}
 
-    def add_operation(self, name: str, operation: Callable[[np.ndarray], np.ndarray]) -> None:
+    def add_operation(
+        self, name: str, operation: Callable[[np.ndarray], np.ndarray]
+    ) -> None:
         self.operations[name] = operation
 
     def compute(self, input_data: np.ndarray, operation: str = "default") -> np.ndarray:
@@ -154,13 +169,26 @@ class SubstrateEquivalenceProver:
         self.tolerance = tolerance
         self.substrate_category = SubstrateCategory()
 
-    def register_substrate_implementation(self, name: str, implementation: Callable[[np.ndarray], np.ndarray], metadata: Optional[Dict[str, Any]] = None) -> None:
+    def register_substrate_implementation(
+        self,
+        name: str,
+        implementation: Callable[[np.ndarray], np.ndarray],
+        metadata: Optional[Dict[str, Any]] = None,
+    ) -> None:
         self.substrate_category.add_substrate(name, metadata)
+
         def identity(x: np.ndarray) -> np.ndarray:
             return x
+
         self.substrate_category.add_translation(name, name, identity)
 
-    def prove_equivalence(self, operation_name: str, substrate_a: str, substrate_b: str, num_test_cases: int = 100) -> SubstrateEquivalenceCertificate:
+    def prove_equivalence(
+        self,
+        operation_name: str,
+        substrate_a: str,
+        substrate_b: str,
+        num_test_cases: int = 100,
+    ) -> SubstrateEquivalenceCertificate:
         rng = np.random.default_rng(42)
         max_error = 0.0
         all_match = True
@@ -190,11 +218,14 @@ class SubstrateEquivalenceProver:
             output_a_bytes = output_a.tobytes()
             output_b_bytes = output_b.tobytes()
         return SubstrateEquivalenceCertificate(
-            operation_name=operation_name, substrate_a=substrate_a, substrate_b=substrate_b,
+            operation_name=operation_name,
+            substrate_a=substrate_a,
+            substrate_b=substrate_b,
             input_digest=input_digest,
             output_digest_a=hashlib.sha256(output_a_bytes).hexdigest(),
             output_digest_b=hashlib.sha256(output_b_bytes).hexdigest(),
-            outputs_match=all_match, max_relative_error=round(max_error, 12),
+            outputs_match=all_match,
+            max_relative_error=round(max_error, 12),
             num_test_cases=num_test_cases,
             categorical_statement=(
                 f"Operation '{operation_name}' on '{substrate_a}' and '{substrate_b}': "
@@ -202,7 +233,12 @@ class SubstrateEquivalenceProver:
             ),
         )
 
-    def prove_batch_equivalence(self, operation_names: List[str], substrates: List[str], num_test_cases: int = 50) -> Dict[str, Any]:
+    def prove_batch_equivalence(
+        self,
+        operation_names: List[str],
+        substrates: List[str],
+        num_test_cases: int = 50,
+    ) -> Dict[str, Any]:
         results = {}
         all_equivalent = True
         for op_name in operation_names:
@@ -216,13 +252,17 @@ class SubstrateEquivalenceProver:
                     if not cert.outputs_match:
                         all_equivalent = False
             results[op_name] = op_results
-        return {"results": results, "all_operations_equivalent": all_equivalent,
-                "num_operations": len(operation_names), "num_substrates": len(substrates)}
+        return {
+            "results": results,
+            "all_operations_equivalent": all_equivalent,
+            "num_operations": len(operation_names),
+            "num_substrates": len(substrates),
+        }
 
 
 def verify_phi_folding_substrate_independence() -> Dict[str, Any]:
     w1 = 1.0 / _PHI
-    w2 = 1.0 / (_PHI ** 2)
+    w2 = 1.0 / (_PHI**2)
     rng = np.random.default_rng(42)
     test_vector = rng.random(32).astype(np.float64)
     n = len(test_vector)
@@ -235,21 +275,28 @@ def verify_phi_folding_substrate_independence() -> Dict[str, Any]:
     norm_sq = w1**2 + w2**2
     reconstructed_head = (w1 * folded + w2 * kernel) / norm_sq
     reconstructed_tail_padded = (w2 * folded - w1 * kernel) / norm_sq
-    reconstructed_tail = reconstructed_tail_padded[:len(tail)]
+    reconstructed_tail = reconstructed_tail_padded[: len(tail)]
     reconstructed = np.concatenate([reconstructed_head[:a], reconstructed_tail])
     reconstruction_error = float(np.linalg.norm(reconstructed - test_vector))
     output_digest = hashlib.sha256(folded.tobytes()).hexdigest()
     return {
-        "primitive": "phi_folding", "substrate_independent": True,
-        "reconstruction_error": reconstruction_error, "invertible": reconstruction_error < _EPS,
+        "primitive": "phi_folding",
+        "substrate_independent": True,
+        "reconstruction_error": reconstruction_error,
+        "invertible": reconstruction_error < _EPS,
         "deterministic_output_digest": output_digest,
         "mathematical_basis": "phi-folding is a linear transform with non-zero determinant.",
-        "proof": {"type": "algebraic_invertibility", "determinant_nonzero": True, "inverse_exists": True},
+        "proof": {
+            "type": "algebraic_invertibility",
+            "determinant_nonzero": True,
+            "inverse_exists": True,
+        },
     }
 
 
 def verify_coxeter_group_substrate_independence() -> Dict[str, Any]:
     from .pulvini_topology import ADJACENCY_MAP
+
     num_nodes = len(ADJACENCY_MAP)
     coxeter_matrix = np.eye(num_nodes, dtype=np.float64)
     for i in range(num_nodes):
@@ -258,8 +305,10 @@ def verify_coxeter_group_substrate_independence() -> Dict[str, Any]:
     det = float(np.linalg.det(coxeter_matrix))
     digest = hashlib.sha256(coxeter_matrix.tobytes()).hexdigest()
     return {
-        "primitive": "coxeter_group_h3", "num_nodes": num_nodes,
-        "determinant": round(det, 6), "substrate_independent": True,
+        "primitive": "coxeter_group_h3",
+        "num_nodes": num_nodes,
+        "determinant": round(det, 6),
+        "substrate_independent": True,
         "deterministic_digest": digest,
     }
 
@@ -267,11 +316,16 @@ def verify_coxeter_group_substrate_independence() -> Dict[str, Any]:
 def verify_mathematical_substrate_thesis() -> Dict[str, Any]:
     phi_result = verify_phi_folding_substrate_independence()
     coxeter_result = verify_coxeter_group_substrate_independence()
-    all_independent = phi_result["substrate_independent"] and coxeter_result["substrate_independent"]
+    all_independent = (
+        phi_result["substrate_independent"] and coxeter_result["substrate_independent"]
+    )
     return {
         "thesis": "Mathematical Substrate Thesis",
         "statement": "Any mathematical structure is computable identically on any IEEE 754 substrate.",
-        "verified_primitives": ["phi_folding (linear algebra)", "coxeter_group_h3 (matrix operations)"],
+        "verified_primitives": [
+            "phi_folding (linear algebra)",
+            "coxeter_group_h3 (matrix operations)",
+        ],
         "all_substrate_independent": all_independent,
         "phi_folding_verification": phi_result,
         "coxeter_group_verification": coxeter_result,
@@ -281,8 +335,13 @@ def verify_mathematical_substrate_thesis() -> Dict[str, Any]:
 
 
 __all__ = [
-    "SubstrateType", "SubstrateEquivalenceCertificate", "FunctorCertificate",
-    "SubstrateCategory", "MathematicalStructure", "SubstrateEquivalenceProver",
-    "verify_phi_folding_substrate_independence", "verify_coxeter_group_substrate_independence",
+    "SubstrateType",
+    "SubstrateEquivalenceCertificate",
+    "FunctorCertificate",
+    "SubstrateCategory",
+    "MathematicalStructure",
+    "SubstrateEquivalenceProver",
+    "verify_phi_folding_substrate_independence",
+    "verify_coxeter_group_substrate_independence",
     "verify_mathematical_substrate_thesis",
 ]

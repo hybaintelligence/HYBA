@@ -54,8 +54,24 @@ def main(argv: Iterable[str] | None = None) -> int:
             args.phi_output_dir,
         ]
     )
-    run([sys.executable, "-m", "pytest", "tests/test_millennium_runtime_elevation_packet.py", "-q"])
-    run([sys.executable, "-m", "pytest", "tests/test_phi_resonance_elevation_properties.py", "-q"])
+    run(
+        [
+            sys.executable,
+            "-m",
+            "pytest",
+            "tests/test_millennium_runtime_elevation_packet.py",
+            "-q",
+        ]
+    )
+    run(
+        [
+            sys.executable,
+            "-m",
+            "pytest",
+            "tests/test_phi_resonance_elevation_properties.py",
+            "-q",
+        ]
+    )
     print("Millennium + phi runtime elevation gate passed")
     return 0
 

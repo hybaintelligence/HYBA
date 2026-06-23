@@ -32,7 +32,9 @@ def test_allowed_operator_hashes_parse_roles(monkeypatch: pytest.MonkeyPatch) ->
     assert operators["bob"]["roles"] == ["operator"]
 
 
-def test_sha256_operator_hashes_are_rejected_in_production(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_sha256_operator_hashes_are_rejected_in_production(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     monkeypatch.setenv("NODE_ENV", "production")
 
     with pytest.raises(HTTPException) as exc:
@@ -42,11 +44,18 @@ def test_sha256_operator_hashes_are_rejected_in_production(monkeypatch: pytest.M
     assert exc.value.detail["error"] == "operator_credentials_not_production_safe"
 
 
-def test_sha256_operator_hashes_remain_dev_only_compatibility(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_sha256_operator_hashes_remain_dev_only_compatibility(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     monkeypatch.setenv("NODE_ENV", "development")
 
-    assert auth_api._verify_password("password", auth_api._password_hash("password")) is True
-    assert auth_api._verify_password("wrong", auth_api._password_hash("password")) is False
+    assert (
+        auth_api._verify_password("password", auth_api._password_hash("password"))
+        is True
+    )
+    assert (
+        auth_api._verify_password("wrong", auth_api._password_hash("password")) is False
+    )
 
 
 def test_jwt_manager_create_verify_and_revoke_token() -> None:
@@ -64,7 +73,9 @@ def test_jwt_manager_create_verify_and_revoke_token() -> None:
     assert exc.value.status_code == 401
 
 
-def test_get_jwt_manager_requires_secret_in_production(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_get_jwt_manager_requires_secret_in_production(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     monkeypatch.delenv("JWT_SECRET", raising=False)
     monkeypatch.setenv("NODE_ENV", "production")
 
@@ -74,7 +85,9 @@ def test_get_jwt_manager_requires_secret_in_production(monkeypatch: pytest.Monke
     assert exc.value.status_code == 503
 
 
-def test_get_jwt_manager_generates_process_local_dev_secret(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_get_jwt_manager_generates_process_local_dev_secret(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     monkeypatch.delenv("JWT_SECRET", raising=False)
     monkeypatch.setenv("NODE_ENV", "development")
 
@@ -84,8 +97,12 @@ def test_get_jwt_manager_generates_process_local_dev_secret(monkeypatch: pytest.
     assert manager.verify_token(token).username == "operator"
 
 
-def test_api_key_manager_parses_and_compares_keys(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setenv("HYBA_API_KEYS", "key-1:read:user-1,key-2:write:user-2,bad-entry")
+def test_api_key_manager_parses_and_compares_keys(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv(
+        "HYBA_API_KEYS", "key-1:read:user-1,key-2:write:user-2,bad-entry"
+    )
 
     manager = APIKeyManager()
 

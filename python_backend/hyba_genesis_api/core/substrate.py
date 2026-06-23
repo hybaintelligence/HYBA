@@ -39,10 +39,16 @@ class SubstrateState:
     initialization_order: List[str] = field(default_factory=list)
     subsystems: Dict[str, SubsystemStatus] = field(
         default_factory=lambda: {
-            "pulvini_reconstruction_kernel": SubsystemStatus(name="pulvini_reconstruction_kernel"),
-            "hilbert_space_warm_start": SubsystemStatus(name="hilbert_space_warm_start"),
+            "pulvini_reconstruction_kernel": SubsystemStatus(
+                name="pulvini_reconstruction_kernel"
+            ),
+            "hilbert_space_warm_start": SubsystemStatus(
+                name="hilbert_space_warm_start"
+            ),
             "phi_floor_coherence": SubsystemStatus(name="phi_floor_coherence"),
-            "pythia_consensus_monitors": SubsystemStatus(name="pythia_consensus_monitors"),
+            "pythia_consensus_monitors": SubsystemStatus(
+                name="pythia_consensus_monitors"
+            ),
             "mining_engine_optimization_sync": SubsystemStatus(
                 name="mining_engine_optimization_sync"
             ),
@@ -191,7 +197,9 @@ def get_substrate_state() -> Dict[str, object]:
         "ready": is_ready(),
         "initialization_order": list(_STATE.initialization_order),
         "shutdown_at": _STATE.shutdown_at,
-        "subsystems": {name: asdict(status) for name, status in _STATE.subsystems.items()},
+        "subsystems": {
+            name: asdict(status) for name, status in _STATE.subsystems.items()
+        },
         "organism_cns_active": _STATE.consciousness_engine is not None,
     }
 

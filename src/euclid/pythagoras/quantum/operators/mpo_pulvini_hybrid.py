@@ -91,7 +91,9 @@ class MPOPulviniHybrid:
         # PULVINI fold
         folded, kernel = self.pulvini.fold(flat)
         reconstructed = self.pulvini.unfold(folded, kernel, original_dim)
-        recon_error = float(np.linalg.norm(flat - reconstructed) / max(1.0, np.linalg.norm(flat)))
+        recon_error = float(
+            np.linalg.norm(flat - reconstructed) / max(1.0, np.linalg.norm(flat))
+        )
 
         # Reshape folded to a balanced 2D tensor for TT
         n = folded.size
@@ -115,7 +117,9 @@ class MPOPulviniHybrid:
             eig_full = np.sort(np.linalg.eigvalsh(H_folded).real)
             eig_small = np.sort(np.linalg.eigvalsh(H_small).real)
             gap_full = float(eig_full[1] - eig_full[0]) if eig_full.size > 1 else 0.0
-            gap_small = float(eig_small[1] - eig_small[0]) if eig_small.size > 1 else 0.0
+            gap_small = (
+                float(eig_small[1] - eig_small[0]) if eig_small.size > 1 else 0.0
+            )
             gap_delta = abs(gap_full - gap_small)
         except Exception:
             gap_delta = 0.0
@@ -137,7 +141,9 @@ class MPOPulviniHybrid:
             deterministic_work_rate=work_rate,
         )
 
-    def apply_mpo_step(self, state: TensorTrain, operator_matrix: np.ndarray) -> TensorTrain:
+    def apply_mpo_step(
+        self, state: TensorTrain, operator_matrix: np.ndarray
+    ) -> TensorTrain:
         """
         Apply a matrix operator (in MPO form) to a TT state.
         Uses Φ-guided truncation to control bond dimension growth.

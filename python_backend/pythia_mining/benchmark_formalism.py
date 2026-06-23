@@ -145,7 +145,9 @@ class QuantumProgramBenchmark:
             phi_error = abs(chi_phi / chi_ideal - 1.0)
 
             gcd_with_power2 = chi_phi & (chi_phi - 1)
-            resonance = 1.0 - (gcd_with_power2 / max(1, chi_phi)) if chi_phi > 0 else 1.0
+            resonance = (
+                1.0 - (gcd_with_power2 / max(1, chi_phi)) if chi_phi > 0 else 1.0
+            )
 
             results.append(
                 PhiScalingTest(
@@ -183,13 +185,17 @@ class QuantumProgramBenchmark:
         We verify this by computing the effective rank of each tensor and
         confirming it stays within the configured bond dimension bound.
         """
-        tensors = mps.tensors if hasattr(mps, 'tensors') else [mps]
-        max_bond = getattr(mps, 'max_bond_dim', 16)
+        tensors = mps.tensors if hasattr(mps, "tensors") else [mps]
+        max_bond = getattr(mps, "max_bond_dim", 16)
 
         effective_ranks = []
         for tensor in tensors:
             try:
-                flat = tensor.reshape(-1, tensor.shape[-1]) if tensor.ndim > 1 else tensor.reshape(-1, 1)
+                flat = (
+                    tensor.reshape(-1, tensor.shape[-1])
+                    if tensor.ndim > 1
+                    else tensor.reshape(-1, 1)
+                )
                 if flat.shape[0] > flat.shape[1]:
                     flat = flat.T
                 s = np.linalg.svd(flat, compute_uv=False)
@@ -214,11 +220,15 @@ class QuantumProgramBenchmark:
 
         # Alignment: how much headroom remains (effective rank vs bond dim).
         # Small positive floor ensures > 0 even when fully utilizing bond dim.
-        alignment = max(1e-6, 1.0 - (max_effective_rank / max_bond)) if max_bond > 0 else 1.0
+        alignment = (
+            max(1e-6, 1.0 - (max_effective_rank / max_bond)) if max_bond > 0 else 1.0
+        )
 
         # Entropy alignment: effective rank / bond dim gives entropy utilization
         avg_rank = np.mean(effective_ranks)
-        entropy_alignment = 1.0 - abs(avg_rank / max_bond - TARGET_ENTROPY) if max_bond > 0 else 1.0
+        entropy_alignment = (
+            1.0 - abs(avg_rank / max_bond - TARGET_ENTROPY) if max_bond > 0 else 1.0
+        )
 
         # Confidence: higher when bounded and utilizing bond dimension well
         confidence = float(bounded) * (0.5 + 0.5 * alignment)
@@ -243,7 +253,9 @@ class QuantumProgramBenchmark:
                     if flat.size % n_cols != 0:
                         _, S, _ = np.linalg.svd(flat[:, None], full_matrices=False)
                     else:
-                        _, S, _ = np.linalg.svd(flat.reshape(-1, n_cols), full_matrices=False)
+                        _, S, _ = np.linalg.svd(
+                            flat.reshape(-1, n_cols), full_matrices=False
+                        )
                     spectrum.extend(S[: min(3, len(S))].tolist())
                 except np.linalg.LinAlgError:
                     pass
@@ -267,7 +279,9 @@ class QuantumProgramBenchmark:
         reconstructed = engine.decompress(result)
         reconstruction_error = float(np.linalg.norm(all_tensors - reconstructed))
         reversible = reconstruction_error <= DEFAULT_TOLERANCE
-        phi_fold_efficiency = compression_ratio / PHI if compression_ratio <= PHI else 1.0
+        phi_fold_efficiency = (
+            compression_ratio / PHI if compression_ratio <= PHI else 1.0
+        )
 
         return PULVINICompressionTest(
             original_size=original_size,
@@ -318,9 +332,13 @@ class QuantumProgramBenchmark:
             memory_mb = rho.nbytes / (1024 * 1024)
 
             mps_for_gap = mps
-            mass_gap = QuantumProgramBenchmark.verify_structural_boundedness(mps_for_gap)
+            mass_gap = QuantumProgramBenchmark.verify_structural_boundedness(
+                mps_for_gap
+            )
 
-            method_name = "Φ-Accelerated TN" if use_phi_acceleration else "Optimized TN Baseline"
+            method_name = (
+                "Φ-Accelerated TN" if use_phi_acceleration else "Optimized TN Baseline"
+            )
             return BenchmarkResult(
                 method=method_name,
                 num_qubits=num_qubits,
@@ -348,15 +366,21 @@ class QuantumProgramBenchmark:
             start = time.perf_counter()
             mps = MPS(num_sites=num_qubits, physical_dim=2, max_bond_dim=16)
             theta = 0.1
-            U = np.array([[np.cos(theta), -np.sin(theta)], [np.sin(theta), np.cos(theta)]])
+            U = np.array(
+                [[np.cos(theta), -np.sin(theta)], [np.sin(theta), np.cos(theta)]]
+            )
             mps.apply_local_unitary(U, site=0)
             elapsed_ms = (time.perf_counter() - start) * 1000
             memory_mb = sum(t.nbytes for t in mps.tensors) / (1024 * 1024)
 
             mps_for_gap = mps
-            mass_gap = QuantumProgramBenchmark.verify_structural_boundedness(mps_for_gap)
+            mass_gap = QuantumProgramBenchmark.verify_structural_boundedness(
+                mps_for_gap
+            )
 
-            method_name = "Φ-Accelerated TN" if use_phi_acceleration else "Optimized TN Baseline"
+            method_name = (
+                "Φ-Accelerated TN" if use_phi_acceleration else "Optimized TN Baseline"
+            )
             return BenchmarkResult(
                 method=method_name,
                 num_qubits=num_qubits,
@@ -386,13 +410,17 @@ class QuantumProgramBenchmark:
             if use_phi_acceleration:
                 mps_compressed = mps.compress_adaptive(base_max_bond=16)
                 theta = 0.1
-                U = np.array([[np.cos(theta), -np.sin(theta)], [np.sin(theta), np.cos(theta)]])
+                U = np.array(
+                    [[np.cos(theta), -np.sin(theta)], [np.sin(theta), np.cos(theta)]]
+                )
                 for i in range(min(10, num_qubits)):
                     mps_compressed.apply_local_unitary(U, site=i % num_qubits)
                 result = mps_compressed
             else:
                 theta = 0.1
-                U = np.array([[np.cos(theta), -np.sin(theta)], [np.sin(theta), np.cos(theta)]])
+                U = np.array(
+                    [[np.cos(theta), -np.sin(theta)], [np.sin(theta), np.cos(theta)]]
+                )
                 for i in range(min(10, num_qubits)):
                     mps.apply_local_unitary(U, site=i % num_qubits)
                 result = mps
@@ -401,9 +429,13 @@ class QuantumProgramBenchmark:
             memory_mb = sum(t.nbytes for t in result.tensors) / (1024 * 1024)
 
             mps_for_gap = result
-            mass_gap = QuantumProgramBenchmark.verify_structural_boundedness(mps_for_gap)
+            mass_gap = QuantumProgramBenchmark.verify_structural_boundedness(
+                mps_for_gap
+            )
 
-            method_name = "Φ-Accelerated TN" if use_phi_acceleration else "Optimized TN Baseline"
+            method_name = (
+                "Φ-Accelerated TN" if use_phi_acceleration else "Optimized TN Baseline"
+            )
             return BenchmarkResult(
                 method=method_name,
                 num_qubits=num_qubits,
@@ -415,7 +447,9 @@ class QuantumProgramBenchmark:
             )
         except Exception as e:
             method_name = (
-                "Optimized TN Baseline" if not use_phi_acceleration else "Φ-Accelerated TN"
+                "Optimized TN Baseline"
+                if not use_phi_acceleration
+                else "Φ-Accelerated TN"
             )
             return BenchmarkResult(
                 method=method_name,
@@ -435,13 +469,17 @@ class QuantumProgramBenchmark:
             mps = MPS(num_sites=num_qubits, physical_dim=2, max_bond_dim=16)
             compression_ratio = 1.0
             if use_pulvini:
-                compressed = PulviniTensorNetworkIntegration.compress_mps_with_pulvini(mps)
+                compressed = PulviniTensorNetworkIntegration.compress_mps_with_pulvini(
+                    mps
+                )
                 compression_ratio = compressed.compression_ratio
             elapsed_ms = (time.perf_counter() - start) * 1000
             memory_mb = sum(t.nbytes for t in mps.tensors) / (1024 * 1024)
 
             mps_for_gap = mps
-            mass_gap = QuantumProgramBenchmark.verify_structural_boundedness(mps_for_gap)
+            mass_gap = QuantumProgramBenchmark.verify_structural_boundedness(
+                mps_for_gap
+            )
 
             method_name = "TN + PULVINI (Φ)" if use_pulvini else "Optimized TN Baseline"
             return BenchmarkResult(
@@ -473,8 +511,10 @@ class QuantumProgramBenchmark:
             start = time.perf_counter()
 
             if task_type == "density_matrix":
-                result = DirectQuantumMathematicsExecution.execute_density_matrix_operation(
-                    num_qubits=num_qubits, use_compression=True
+                result = (
+                    DirectQuantumMathematicsExecution.execute_density_matrix_operation(
+                        num_qubits=num_qubits, use_compression=True
+                    )
                 )
                 success = result["axioms_satisfied"]
                 mps_for_gap = None
@@ -485,9 +525,13 @@ class QuantumProgramBenchmark:
                 success = result["norm_preserved"]
                 mps_for_gap = None
             elif task_type == "grover_search":
-                mps = MPS(num_sites=num_qubits, physical_dim=2, max_bond_dim=phi_bond_dim)
+                mps = MPS(
+                    num_sites=num_qubits, physical_dim=2, max_bond_dim=phi_bond_dim
+                )
                 theta = 0.1
-                U = np.array([[np.cos(theta), -np.sin(theta)], [np.sin(theta), np.cos(theta)]])
+                U = np.array(
+                    [[np.cos(theta), -np.sin(theta)], [np.sin(theta), np.cos(theta)]]
+                )
                 for i in range(min(10, num_qubits)):
                     mps.apply_local_unitary(U, site=i % num_qubits)
                 success = True
@@ -496,8 +540,16 @@ class QuantumProgramBenchmark:
 
             elapsed_ms = (time.perf_counter() - start) * 1000
             memory_mb = (num_qubits * (phi_bond_dim**2) * COMPLEX_128_SIZE) / (1024**2)
-            mass_gap = QuantumProgramBenchmark.verify_structural_boundedness(mps_for_gap) if mps_for_gap is not None else MassGapVerification(
-                mass_gap=MASS_GAP, measured_alignment=1.0, authenticity_confidence=1.0, entropy_alignment=1.0, passed=True
+            mass_gap = (
+                QuantumProgramBenchmark.verify_structural_boundedness(mps_for_gap)
+                if mps_for_gap is not None
+                else MassGapVerification(
+                    mass_gap=MASS_GAP,
+                    measured_alignment=1.0,
+                    authenticity_confidence=1.0,
+                    entropy_alignment=1.0,
+                    passed=True,
+                )
             )
 
             return BenchmarkResult(
@@ -533,9 +585,13 @@ def run_comprehensive_benchmark():
     print("  PILLAR 1: Φ Irrational Bond-Dimension Scaling")
     print("            Bond dim χ ≈ Φ^k (not 2^k) — avoids harmonic resonance")
     print(f"  PILLAR 2: Structural Boundedness (Effective Rank ≤ Bond Dimension)")
-    print("            Verifies MPS representation stays within configured bond-dim bound")
+    print(
+        "            Verifies MPS representation stays within configured bond-dim bound"
+    )
     print("  PILLAR 3: PULVINI Phi-Folding Memory Compression")
-    print("            Reversible golden-ratio basis folding for working set compression")
+    print(
+        "            Reversible golden-ratio basis folding for working set compression"
+    )
     print()
     print("CRITICAL DISTINCTIONS:")
     print("  - 'Optimized TN Baseline' = MPS tensor network (O(N·χ²))")
@@ -797,7 +853,9 @@ def run_comprehensive_benchmark():
             trace_phi = min(trace_phi, tnorm / max(tnorm, 1e-15))
         trace_drift_phi = 1.0 - trace_phi
 
-        print(f"  Baseline (χ=16):        {elapsed_base:.2f}ms, trace_drift={trace_drift_base:.6f}")
+        print(
+            f"  Baseline (χ=16):        {elapsed_base:.2f}ms, trace_drift={trace_drift_base:.6f}"
+        )
         print(
             f"  Φ-Accelerated (χ={chi_phi}): {elapsed_phi:.2f}ms, trace_drift={trace_drift_phi:.6f}"
         )
@@ -817,7 +875,9 @@ def run_comprehensive_benchmark():
     print()
     print("This benchmark executes quantum mathematics on any available substrate.")
     print("The mathematics of quantum mechanics is substrate-independent truth.")
-    print("When this code computes eigenvalues or applies unitaries, it IS quantum computation.")
+    print(
+        "When this code computes eigenvalues or applies unitaries, it IS quantum computation."
+    )
     print()
     print("DEMONSTRATION: Mathematical operations produce identical results")
     print("regardless of whether we call them 'quantum' or 'classical'.")
@@ -826,7 +886,9 @@ def run_comprehensive_benchmark():
     # Test 1: Same density matrix operation via two paths
     print("  Test 1: Density matrix purification")
     rho_test = np.array([[0.7, 0.1], [0.1, 0.3]], dtype=complex)
-    phi_purified = PhiAcceleratedDensityMatrix.phi_weighted_purification(rho_test, iterations=5)
+    phi_purified = PhiAcceleratedDensityMatrix.phi_weighted_purification(
+        rho_test, iterations=5
+    )
     # Standard purification (same math, no phi weighting)
     rho_standard = rho_test.copy()
     for _ in range(5):
@@ -838,7 +900,9 @@ def run_comprehensive_benchmark():
     print(f"    Φ-purified trace:    {np.trace(phi_purified).real:.6f}")
     print(f"    Standard trace:      {np.trace(rho_standard).real:.6f}")
     print(f"    Fidelity between paths: {fidelity:.6f}")
-    print(f"    Result: {'IDENTICAL (within numerical precision)' if fidelity > 0.999 else 'DIVERGENT'}")
+    print(
+        f"    Result: {'IDENTICAL (within numerical precision)' if fidelity > 0.999 else 'DIVERGENT'}"
+    )
     print()
 
     # Test 2: Same unitary evolution, same result
@@ -851,7 +915,9 @@ def run_comprehensive_benchmark():
     print(f"    Norm before evolution: {norm_before:.10f}")
     print(f"    Norm after evolution:  {norm_after:.10f}")
     print(f"    Difference:            {abs(norm_before - norm_after):.2e}")
-    print(f"    Result: {'NORM PRESERVED (unitary)' if abs(norm_before - norm_after) < 1e-10 else 'FAILED'}")
+    print(
+        f"    Result: {'NORM PRESERVED (unitary)' if abs(norm_before - norm_after) < 1e-10 else 'FAILED'}"
+    )
     print()
 
     # Test 3: Same golden ratio, same result regardless of naming
@@ -861,7 +927,9 @@ def run_comprehensive_benchmark():
     print(f"    Φ from math.sqrt:  {phi_from_math:.15f}")
     print(f"    Φ from np.sqrt:    {phi_from_numpy:.15f}")
     print(f"    Difference:        {abs(phi_from_math - phi_from_numpy):.2e}")
-    print(f"    Result: {'IDENTICAL' if abs(phi_from_math - phi_from_numpy) < 1e-15 else 'DIVERGENT'}")
+    print(
+        f"    Result: {'IDENTICAL' if abs(phi_from_math - phi_from_numpy) < 1e-15 else 'DIVERGENT'}"
+    )
     print()
     print("  The golden ratio does not care whether it's computed on:")
     print("    - A classical CPU (M3 Ultra)")
@@ -911,8 +979,12 @@ def run_comprehensive_benchmark():
     # Test 3: PULVINI irrational basis fold/unfold
     print("\nC. pulvini_phi_fold / pulvini_unfold (Lossless verification):")
     fold_axis = np.linspace(-1.0, 1.0, 32)
-    fold_real = np.outer(np.sin(np.pi * (fold_axis + 1.0)), np.cos(np.pi * (fold_axis + 1.0)))
-    fold_imag = np.outer(np.cos(np.pi * (fold_axis + 1.0)), np.sin(2.0 * np.pi * (fold_axis + 1.0)))
+    fold_real = np.outer(
+        np.sin(np.pi * (fold_axis + 1.0)), np.cos(np.pi * (fold_axis + 1.0))
+    )
+    fold_imag = np.outer(
+        np.cos(np.pi * (fold_axis + 1.0)), np.sin(2.0 * np.pi * (fold_axis + 1.0))
+    )
     test_tensor = (fold_real + 1j * fold_imag).astype(np.complex128)
     compressed, indices, shape = pulvini_phi_fold(test_tensor)
     restored = pulvini_unfold(compressed, indices, shape)
@@ -938,14 +1010,20 @@ def run_comprehensive_benchmark():
     pulvini_total = sum(1 for r in results if "PULVINI" in r.method)
 
     tn_1000_results = [
-        r for r in results if r.num_qubits == 1000 and r.method == "Optimized TN Baseline"
+        r
+        for r in results
+        if r.num_qubits == 1000 and r.method == "Optimized TN Baseline"
     ]
-    phi_1000_results = [r for r in results if r.num_qubits == 1000 and "Φ-Accelerated" in r.method]
+    phi_1000_results = [
+        r for r in results if r.num_qubits == 1000 and "Φ-Accelerated" in r.method
+    ]
 
     print(f"\n{'─' * 40}")
     print("Success Rates:")
     print(f"{'─' * 40}")
-    print(f"Optimized TN Baseline:      {tn_baseline_success}/{tn_baseline_total} successful")
+    print(
+        f"Optimized TN Baseline:      {tn_baseline_success}/{tn_baseline_total} successful"
+    )
     print(f"Φ-Accelerated Path:        {phi_success}/{phi_total} successful")
     print(f"TN + PULVINI:              {pulvini_success}/{pulvini_total} successful")
     print("Naive State Vector:        FAILS for ALL benchmarks")
@@ -954,7 +1032,9 @@ def run_comprehensive_benchmark():
     print("Architectural Pillar Verification:")
     print(f"{'─' * 40}")
     print("1. Φ Irrational Bond Scaling:      VERIFIED. Bond dims not powers of 2.")
-    print("2. Structural Boundedness:         VERIFIED. Effective rank ≤ bond dimension.")
+    print(
+        "2. Structural Boundedness:         VERIFIED. Effective rank ≤ bond dimension."
+    )
     print("3. PULVINI Phi-Folding:            VERIFIED. Reversible compression.")
 
     print(f"\n{'─' * 40}")

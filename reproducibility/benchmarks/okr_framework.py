@@ -38,11 +38,15 @@ class OKRFramework:
 
     def track_progress(self):
         """Weekly/monthly progress tracking."""
-        all_okrs = self.company_okrs + [okr for okrs in self.team_okrs.values() for okr in okrs]
+        all_okrs = self.company_okrs + [
+            okr for okrs in self.team_okrs.values() for okr in okrs
+        ]
         for okr in all_okrs:
             results = okr.get("key_results", [])
             if results and isinstance(results[0], dict):
-                okr["progress"] = sum(kr.get("progress", 0) for kr in results) / len(results)
+                okr["progress"] = sum(kr.get("progress", 0) for kr in results) / len(
+                    results
+                )
         return {
             "fiscal_year": self.fiscal_year,
             "company_progress": [o["progress"] for o in self.company_okrs],

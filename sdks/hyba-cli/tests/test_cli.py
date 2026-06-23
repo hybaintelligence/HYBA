@@ -15,26 +15,26 @@ def cli_runner():
 
 def test_cli_help(cli_runner):
     """Test CLI help output"""
-    result = cli_runner.invoke(main, ['--help'])
+    result = cli_runner.invoke(main, ["--help"])
     assert result.exit_code == 0
-    assert 'HYBA CLI' in result.output
+    assert "HYBA CLI" in result.output
 
 
 def test_cli_version(cli_runner):
     """Test CLI version output"""
-    result = cli_runner.invoke(main, ['--version'])
+    result = cli_runner.invoke(main, ["--version"])
     assert result.exit_code == 0
-    assert '0.1.0' in result.output
+    assert "0.1.0" in result.output
 
 
 def test_login_required(cli_runner):
     """Test that login is required for most commands"""
-    result = cli_runner.invoke(main, ['services', 'list'])
+    result = cli_runner.invoke(main, ["services", "list"])
     assert result.exit_code != 0
 
 
 def test_connectors_list(cli_runner):
     """Test listing connectors"""
-    result = cli_runner.invoke(main, ['connectors', 'list'])
+    result = cli_runner.invoke(main, ["connectors", "list"])
     assert result.exit_code == 0
-    assert 'sql_snowflake' in result.output
+    assert "sql_snowflake" in result.output

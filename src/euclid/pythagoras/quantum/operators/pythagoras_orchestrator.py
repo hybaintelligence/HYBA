@@ -149,9 +149,11 @@ class PythagorasOrchestrator:
         hashrate_str = f"{work_rate:.2f}x (folded: {audit.folded_dimension} dims, {audit.tt_ranks})"
 
         return OrchestratorResult(
-            status="phi_resonance_achieved"
-            if audit.topology_preserved
-            else "degraded_preservation",
+            status=(
+                "phi_resonance_achieved"
+                if audit.topology_preserved
+                else "degraded_preservation"
+            ),
             compression_ratio=audit.compression_ratio,
             tda_stable=tda_result.stable,
             unitary_verified=unitary_result.passed,

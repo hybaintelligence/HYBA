@@ -133,12 +133,16 @@ class SuccessCriteria:
 
         # Temperature evaluation
         temperature = metrics.get("temperature", 50.0)
-        if self.target_temperature_min <= temperature <= self.target_temperature_optimal:
+        if (
+            self.target_temperature_min
+            <= temperature
+            <= self.target_temperature_optimal
+        ):
             temperature_score = 1.0
         elif temperature <= self.target_temperature_max:
-            temperature_score = 1.0 - (temperature - self.target_temperature_optimal) / (
-                self.target_temperature_max - self.target_temperature_optimal
-            )
+            temperature_score = 1.0 - (
+                temperature - self.target_temperature_optimal
+            ) / (self.target_temperature_max - self.target_temperature_optimal)
         else:
             temperature_score = 0.0
             evaluation["recommendations"].append(
@@ -371,7 +375,11 @@ class MiningPitfallsKnowledge:
                 name="pool_fee_changes",
                 category=PitfallCategory.POOL,
                 description="Unexpected pool fee changes affecting profitability",
-                symptoms=["Reduced payouts", "Fee structure changes", "Profitability decline"],
+                symptoms=[
+                    "Reduced payouts",
+                    "Fee structure changes",
+                    "Profitability decline",
+                ],
                 causes=[
                     "Pool policy changes",
                     "Hidden fees",
@@ -461,7 +469,9 @@ class MiningPitfallsKnowledge:
             ),
         ]
 
-    def get_pitfalls_by_category(self, category: PitfallCategory) -> List[MiningPitfall]:
+    def get_pitfalls_by_category(
+        self, category: PitfallCategory
+    ) -> List[MiningPitfall]:
         """Get pitfalls filtered by category."""
         return [p for p in self.pitfalls if p.category == category]
 
@@ -469,7 +479,9 @@ class MiningPitfallsKnowledge:
         """Get pitfalls filtered by severity."""
         return [p for p in self.pitfalls if p.severity == severity]
 
-    def check_for_pitfall_indicators(self, metrics: Dict[str, float]) -> List[MiningPitfall]:
+    def check_for_pitfall_indicators(
+        self, metrics: Dict[str, float]
+    ) -> List[MiningPitfall]:
         """Check current metrics for pitfall indicators."""
         indicators = []
 
@@ -488,7 +500,9 @@ class MiningPitfallsKnowledge:
         hashrate = metrics.get("hashrate", 100.0)
         if hashrate < 30:
             indicators.extend(self.get_pitfalls_by_category(PitfallCategory.HARDWARE))
-            indicators.extend(self.get_pitfalls_by_category(PitfallCategory.CONFIGURATION))
+            indicators.extend(
+                self.get_pitfalls_by_category(PitfallCategory.CONFIGURATION)
+            )
 
         return indicators
 
@@ -617,7 +631,9 @@ class MiningRulesKnowledge:
         """Get mandatory compliance rules."""
         return [r for r in self.rules if r.compliance_level == "mandatory"]
 
-    def validate_against_rules(self, operation: str, parameters: Dict[str, Any]) -> Dict[str, Any]:
+    def validate_against_rules(
+        self, operation: str, parameters: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Validate an operation against mining rules."""
         validation_result = {"compliant": True, "violations": [], "warnings": []}
 
@@ -655,14 +671,18 @@ class OperationalExpectation:
     critical_threshold: float
     unit: str
     description: str
-    higher_is_better: bool = False  # If True, higher values are better (e.g., hashrate, uptime)
+    higher_is_better: bool = (
+        False  # If True, higher values are better (e.g., hashrate, uptime)
+    )
 
 
 class OperationalExpectationsKnowledge:
     """Knowledge base of operational expectations."""
 
     def __init__(self):
-        self.expectations: List[OperationalExpectation] = self._initialize_expectations()
+        self.expectations: List[OperationalExpectation] = (
+            self._initialize_expectations()
+        )
 
     def _initialize_expectations(self) -> List[OperationalExpectation]:
         """Initialize operational expectations."""

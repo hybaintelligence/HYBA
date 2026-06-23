@@ -64,7 +64,9 @@ class AutonomousEscalationEngine:
     ) -> None:
         self._audit = audit_logger
         self._escalate = escalation_callback  # set_autonomy_level(level)
-        self._degrade = degradation_callback  # degrade_autonomy_level(reason) -> new_level
+        self._degrade = (
+            degradation_callback  # degrade_autonomy_level(reason) -> new_level
+        )
         self._last_escalation_at: float = 0.0
         self._last_degradation_at: float = 0.0
         self._consecutive_successes_since_degradation: int = 0
@@ -102,7 +104,11 @@ class AutonomousEscalationEngine:
         now = time.time()
 
         # --- Check if recovery from degradation is needed ---
-        if current_level in ("manual", "advisory") and self._consecutive_successes_since_degradation >= DEGRADATION_RECOVERY["min_consecutive_successes"]:
+        if (
+            current_level in ("manual", "advisory")
+            and self._consecutive_successes_since_degradation
+            >= DEGRADATION_RECOVERY["min_consecutive_successes"]
+        ):
             if phi_density >= DEGRADATION_RECOVERY["min_phi_density"]:
                 # Recover back to SUPERVISED
                 recovery_level = "supervised"
@@ -114,7 +120,8 @@ class AutonomousEscalationEngine:
                     f"consecutive successes, phi_density={phi_density:.3f}"
                 )
                 self._audit.log_autonomy_escalation(
-                    current_level, recovery_level,
+                    current_level,
+                    recovery_level,
                     phi_density=phi_density,
                     proposal_acceptance_rate=proposal_acceptance_rate,
                     consecutive_successes=self._consecutive_successes_since_degradation,
@@ -124,9 +131,16 @@ class AutonomousEscalationEngine:
                 self._consecutive_successes_since_degradation = 0
 
         # --- Check escalation to higher level ---
-        if action == "none" and current_level == "advisory" and (now - self._last_escalation_at) >= _MIN_ESCALATION_INTERVAL_SECONDS:
+        if (
+            action == "none"
+            and current_level == "advisory"
+            and (now - self._last_escalation_at) >= _MIN_ESCALATION_INTERVAL_SECONDS
+        ):
             thresholds = ESCALATION_THRESHOLDS["advisory_to_supervised"]
-            if phi_density >= thresholds["min_phi_density"] and proposal_acceptance_rate >= thresholds["min_proposal_acceptance"]:
+            if (
+                phi_density >= thresholds["min_phi_density"]
+                and proposal_acceptance_rate >= thresholds["min_proposal_acceptance"]
+            ):
                 self._escalate("supervised")
                 action = "escalation"
                 new_level = "supervised"
@@ -135,7 +149,8 @@ class AutonomousEscalationEngine:
                     f"proposal_acceptance={proposal_acceptance_rate:.3f} >= {thresholds['min_proposal_acceptance']}"
                 )
                 self._audit.log_autonomy_escalation(
-                    current_level, "supervised",
+                    current_level,
+                    "supervised",
                     phi_density=phi_density,
                     proposal_acceptance_rate=proposal_acceptance_rate,
                     consecutive_successes=self._consecutive_successes_since_degradation,
@@ -143,9 +158,16 @@ class AutonomousEscalationEngine:
                 )
                 self._last_escalation_at = now
 
-        if action == "none" and current_level == "supervised" and (now - self._last_escalation_at) >= _MIN_ESCALATION_INTERVAL_SECONDS:
+        if (
+            action == "none"
+            and current_level == "supervised"
+            and (now - self._last_escalation_at) >= _MIN_ESCALATION_INTERVAL_SECONDS
+        ):
             thresholds = ESCALATION_THRESHOLDS["supervised_to_autonomous"]
-            if phi_density >= thresholds["min_phi_density"] and proposal_acceptance_rate >= thresholds["min_proposal_acceptance"]:
+            if (
+                phi_density >= thresholds["min_phi_density"]
+                and proposal_acceptance_rate >= thresholds["min_proposal_acceptance"]
+            ):
                 self._escalate("autonomous")
                 action = "escalation"
                 new_level = "autonomous"
@@ -154,7 +176,8 @@ class AutonomousEscalationEngine:
                     f"proposal_acceptance={proposal_acceptance_rate:.3f} >= {thresholds['min_proposal_acceptance']}"
                 )
                 self._audit.log_autonomy_escalation(
-                    current_level, "autonomous",
+                    current_level,
+                    "autonomous",
                     phi_density=phi_density,
                     proposal_acceptance_rate=proposal_acceptance_rate,
                     consecutive_successes=self._consecutive_successes_since_degradation,
@@ -163,14 +186,21 @@ class AutonomousEscalationEngine:
                 self._last_escalation_at = now
 
         # --- Check degradation (circuit-breaker already triggers this) ---
-        if action == "none" and consecutive_failures > 0 and (now - self._last_degradation_at) >= _MIN_DEGRADATION_INTERVAL_SECONDS:
-            degraded = self._degrade(f"auto_degradation_{consecutive_failures}_failures")
+        if (
+            action == "none"
+            and consecutive_failures > 0
+            and (now - self._last_degradation_at) >= _MIN_DEGRADATION_INTERVAL_SECONDS
+        ):
+            degraded = self._degrade(
+                f"auto_degradation_{consecutive_failures}_failures"
+            )
             if degraded != current_level:
                 action = "degradation"
                 new_level = degraded
                 reason = f"{consecutive_failures} consecutive failures triggered auto-degradation"
                 self._audit.log_autonomy_degradation(
-                    current_level, degraded,
+                    current_level,
+                    degraded,
                     reason=reason,
                     consecutive_failures=consecutive_failures,
                 )

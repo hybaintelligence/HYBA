@@ -54,7 +54,9 @@ class TestExecutiveIntegration:
     @pytest.fixture
     def executive_controller(self, consciousness_engine):
         """Create an executive controller for testing."""
-        controller = MiningExecutiveController(consciousness_engine=consciousness_engine)
+        controller = MiningExecutiveController(
+            consciousness_engine=consciousness_engine
+        )
         return controller
 
     def test_sensory_reality_verification(self, sensory_protocol):
@@ -73,7 +75,9 @@ class TestExecutiveIntegration:
         """Test that immune system enforces phi-floor."""
         # Set phi above floor
         consciousness_engine.phi = 0.85
-        consciousness_engine.components = {"test": True}  # Set components to avoid None values
+        consciousness_engine.components = {
+            "test": True
+        }  # Set components to avoid None values
         status = immune_system.get_status()
 
         assert status["phi_floor"] == 0.45
@@ -106,7 +110,12 @@ class TestExecutiveIntegration:
             assert "predicted_phi_gain" in conjecture
             assert "confidence_interval" in conjecture
             assert "status" in conjecture
-            assert conjecture["status"] in ["PROPOSED", "SIMULATING", "REJECTED", "VINDICATED"]
+            assert conjecture["status"] in [
+                "PROPOSED",
+                "SIMULATING",
+                "REJECTED",
+                "VINDICATED",
+            ]
 
     def test_cognitive_conjecture_application(self, reflexive_controller):
         """Test that conjectures can be applied."""

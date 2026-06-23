@@ -28,7 +28,9 @@ class TestIIT4ConceptualIntegration:
         from pythia_mining.iit_4_conceptual_integration import IIT4ConceptualIntegration
 
         iit = IIT4ConceptualIntegration(system_size=32)
-        mechanisms = iit.generate_conceptual_mechanisms(np.array([0.5, 0.7, 0.3]), max_depth=2)
+        mechanisms = iit.generate_conceptual_mechanisms(
+            np.array([0.5, 0.7, 0.3]), max_depth=2
+        )
 
         assert len(mechanisms) > 0
         assert all(len(mech) <= 3 for mech in mechanisms)
@@ -98,7 +100,9 @@ class TestConstructorTheory:
         )
 
         deutsch = DeutschConstructorTheory()
-        task = ConstructorTask(task_id="test_task", input_spec={"x": 1}, output_spec={"y": 2})
+        task = ConstructorTask(
+            task_id="test_task", input_spec={"x": 1}, output_spec={"y": 2}
+        )
 
         deutsch.register_task(task)
         assert "test_task" in deutsch.registered_tasks
@@ -122,7 +126,9 @@ class TestConstructorTheory:
         )
 
         deutsch = DeutschConstructorTheory()
-        task = ConstructorTask(task_id="test_task", input_spec={"x": 1}, output_spec={"y": 2})
+        task = ConstructorTask(
+            task_id="test_task", input_spec={"x": 1}, output_spec={"y": 2}
+        )
         deutsch.register_task(task)
 
         capability = ConstructorCapability(
@@ -141,7 +147,9 @@ class TestConstructorTheory:
         )
 
         deutsch = DeutschConstructorTheory()
-        task = ConstructorTask(task_id="impossible_task", input_spec={"x": 1}, output_spec={"y": 2})
+        task = ConstructorTask(
+            task_id="impossible_task", input_spec={"x": 1}, output_spec={"y": 2}
+        )
 
         constraints = {"max_resources": {"computation": 0.1}}
         proof = deutsch.prove_impossibility(task, constraints, "resource_bound")
@@ -362,7 +370,9 @@ class TestQuantumGravity:
         quantum_state = np.array([0.7, 0.3], dtype=complex)
         mass_distribution = np.array([1.0, 0.5])
 
-        or_event = penrose.calculate_objective_reduction(quantum_state, mass_distribution)
+        or_event = penrose.calculate_objective_reduction(
+            quantum_state, mass_distribution
+        )
         assert or_event.gravitational_energy >= 0
         assert or_event.reduction_timescale >= 0
 
@@ -589,14 +599,18 @@ class TestUnifiedMathematicalFramework:
 
     def test_unified_framework_initialization(self):
         """Test unified framework initialization."""
-        from pythia_mining.unified_mathematical_framework import UnifiedMathematicalFramework
+        from pythia_mining.unified_mathematical_framework import (
+            UnifiedMathematicalFramework,
+        )
 
         framework = UnifiedMathematicalFramework()
         assert framework.system_id == "unified_math_framework"
 
     def test_unified_nonce_analysis(self):
         """Test unified nonce analysis."""
-        from pythia_mining.unified_mathematical_framework import UnifiedMathematicalFramework
+        from pythia_mining.unified_mathematical_framework import (
+            UnifiedMathematicalFramework,
+        )
 
         framework = UnifiedMathematicalFramework()
         result = framework.unified_nonce_analysis(12345)
@@ -607,7 +621,9 @@ class TestUnifiedMathematicalFramework:
 
     def test_cross_paradigm_verification(self):
         """Test cross-paradigm verification."""
-        from pythia_mining.unified_mathematical_framework import UnifiedMathematicalFramework
+        from pythia_mining.unified_mathematical_framework import (
+            UnifiedMathematicalFramework,
+        )
 
         framework = UnifiedMathematicalFramework()
         test_cases = [100, 200, 300]
@@ -618,7 +634,9 @@ class TestUnifiedMathematicalFramework:
 
     def test_phi_harmonized_nonce_selection(self):
         """Test phi-harmonized nonce selection."""
-        from pythia_mining.unified_mathematical_framework import UnifiedMathematicalFramework
+        from pythia_mining.unified_mathematical_framework import (
+            UnifiedMathematicalFramework,
+        )
 
         framework = UnifiedMathematicalFramework()
         candidates = [100, 200, 300, 400, 500]

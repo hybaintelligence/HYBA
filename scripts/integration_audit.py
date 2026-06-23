@@ -106,7 +106,9 @@ def check_backend_routers() -> None:
 
     content = main_py.read_text()
     # Handle multi-line parenthesized imports
-    import_match = re.search(r"from hyba_genesis_api\.api import \((.*?)\)", content, re.DOTALL)
+    import_match = re.search(
+        r"from hyba_genesis_api\.api import \((.*?)\)", content, re.DOTALL
+    )
     # Also handle any single-line import for routers
     single_imports = re.findall(r"from hyba_genesis_api\.api import (\w+)", content)
     imported_names = set()
@@ -213,9 +215,13 @@ def check_api_client_alignment() -> None:
     other_unmatched = [p for p in unmatched if "/v1/" not in p and "/ai/" not in p]
 
     if v1_unmatched:
-        warn(f"Client /v1/ paths: {v1_unmatched} — bridge proxies /api/v1/* to backend /api/v1/*")
+        warn(
+            f"Client /v1/ paths: {v1_unmatched} — bridge proxies /api/v1/* to backend /api/v1/*"
+        )
     if ai_unmatched:
-        warn(f"Client /ai/ paths: {ai_unmatched} — bridge proxies /api/ai/* to backend /api/ai/*")
+        warn(
+            f"Client /ai/ paths: {ai_unmatched} — bridge proxies /api/ai/* to backend /api/ai/*"
+        )
     if other_unmatched:
         ok(f"Client paths {other_unmatched} proxied through Express bridge → backend")
     if not unmatched:
@@ -228,7 +234,9 @@ def check_api_client_alignment() -> None:
 def check_mining_engine() -> None:
     print(f"\n{BOLD}── 4. MINING ENGINE INTEGRATION ──{RST}")
 
-    unified_engine = ROOT / "python_backend" / "pythia_mining" / "phi_unified_mining_engine.py"
+    unified_engine = (
+        ROOT / "python_backend" / "pythia_mining" / "phi_unified_mining_engine.py"
+    )
     if not unified_engine.exists():
         fail("Unified mining engine not found")
         return
@@ -272,13 +280,17 @@ def check_mining_engine() -> None:
                     found_elsewhere = True
                     break
             if found_elsewhere:
-                warn(f"'{m}' referenced by other mining modules but NOT directly by unified engine")
+                warn(
+                    f"'{m}' referenced by other mining modules but NOT directly by unified engine"
+                )
             else:
                 warn(f"'{m}' NOT referenced by unified engine or other mining modules")
     else:
         ok("All key mining modules integrated in unified engine")
 
-    unified_api = ROOT / "python_backend" / "hyba_genesis_api" / "api" / "unified_mining.py"
+    unified_api = (
+        ROOT / "python_backend" / "hyba_genesis_api" / "api" / "unified_mining.py"
+    )
     if unified_api.exists():
         if "phi_unified_mining_engine" in unified_api.read_text():
             ok("Backend unified_mining API references the mining engine")
@@ -307,10 +319,13 @@ def check_frontend_usage() -> None:
 
     api_content = api_client.read_text()
     api_exports = set(
-        re.findall(r"export (?:async )?function (\w+)|export function (\w+)", api_content)
+        re.findall(
+            r"export (?:async )?function (\w+)|export function (\w+)", api_content
+        )
     )
     api_exports = {
-        m[0] or m[1] for m in re.findall(r"export (?:async )?function (\w+)", api_content)
+        m[0] or m[1]
+        for m in re.findall(r"export (?:async )?function (\w+)", api_content)
     }
 
     comp_files = list(comp_dir.glob("*.tsx"))
@@ -390,7 +405,9 @@ def check_euclid_modules() -> None:
             print(f"  {YEL}⚠{RST} {pyf.relative_to(ROOT)} may be standalone")
 
     if unreferenced == 0:
-        ok(f"All {referenced} euclid/quantum operator modules referenced in tests/backend/scripts")
+        ok(
+            f"All {referenced} euclid/quantum operator modules referenced in tests/backend/scripts"
+        )
     else:
         warn(f"{referenced} referenced, {unreferenced} may be standalone")
 

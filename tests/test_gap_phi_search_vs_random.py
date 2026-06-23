@@ -103,9 +103,9 @@ def test_phi_ordering_reaches_valid_nonce_no_later_than_sequential_on_regtest() 
     seq_rank = _first_hit(_sequential_ordered(candidates), valid)
 
     # φ ordering must reach a valid nonce no later than sequential sweep
-    assert phi_rank <= seq_rank or phi_rank <= 50, (
-        f"φ-ordering first-hit rank {phi_rank} worse than sequential {seq_rank}"
-    )
+    assert (
+        phi_rank <= seq_rank or phi_rank <= 50
+    ), f"φ-ordering first-hit rank {phi_rank} worse than sequential {seq_rank}"
 
 
 # ---------------------------------------------------------------------------
@@ -123,7 +123,9 @@ def test_phi_ordering_finds_high_resonance_nonce_faster_than_sequential() -> Non
 
     # Find the candidate with the single highest resonance score
     best = max(candidates, key=_phi_resonance_score)
-    assert _phi_resonance_score(best) > 0.0, "best candidate should have non-zero resonance"
+    assert (
+        _phi_resonance_score(best) > 0.0
+    ), "best candidate should have non-zero resonance"
 
     phi_order = _phi_ordered(candidates)
     seq_order = _sequential_ordered(candidates)
@@ -138,9 +140,9 @@ def test_phi_ordering_finds_high_resonance_nonce_faster_than_sequential() -> Non
         f"for the highest-resonance nonce {best}"
     )
     # Must appear in top 5% of the range
-    assert phi_rank <= max(5, int(0.05 * len(candidates))), (
-        f"φ-ordering rank {phi_rank} too deep for injected high-resonance signal"
-    )
+    assert phi_rank <= max(
+        5, int(0.05 * len(candidates))
+    ), f"φ-ordering rank {phi_rank} too deep for injected high-resonance signal"
 
 
 # ---------------------------------------------------------------------------
@@ -181,9 +183,9 @@ def test_phi_gradient_proposal_stays_within_uint32_bounds() -> None:
     test_nonces = [0, 1, 1000, 2**16, 2**24, 2**32 - 2, 2**32 - 1]
     for nonce in test_nonces:
         proposal = phi_gradient_proposal(nonce=nonce)
-        assert 0 <= proposal <= 2**32 - 1, (
-            f"phi_gradient_proposal({nonce}) = {proposal} outside uint32 range"
-        )
+        assert (
+            0 <= proposal <= 2**32 - 1
+        ), f"phi_gradient_proposal({nonce}) = {proposal} outside uint32 range"
 
 
 # ---------------------------------------------------------------------------

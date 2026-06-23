@@ -79,7 +79,8 @@ def test_consciousness_iit_packet_contains_elevation_controls() -> None:
 
 
 @pytest.mark.parametrize(
-    "name", ["disconnected_ablation", "strong_integration_candidate", "fragmented_control"]
+    "name",
+    ["disconnected_ablation", "strong_integration_candidate", "fragmented_control"],
 )
 def test_evidence_points_are_bounded(name: str) -> None:
     packet = build_packet()

@@ -60,7 +60,10 @@ def test_reverse_hex_bytes_is_an_involution(value: str) -> None:
 def test_uint32_little_endian_round_trips(value: int) -> None:
     encoded = uint32_little_endian_hex(value, field="nonce")
 
-    assert int.from_bytes(bytes.fromhex(encoded), byteorder="little", signed=False) == value
+    assert (
+        int.from_bytes(bytes.fromhex(encoded), byteorder="little", signed=False)
+        == value
+    )
 
 
 @given(value=st.one_of(st.integers(max_value=-1), st.integers(min_value=2**32)))

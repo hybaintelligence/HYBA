@@ -321,30 +321,11 @@ export class PerturbationAnalyzer {
    * System uses its internal control mechanisms
    */
   private async applySelfCausedChange(
-    system: RecursiveSelfLearningSubstrate,
-    target: PerturbationTarget,
-    magnitude: number,
+    _system: RecursiveSelfLearningSubstrate,
+    _target: PerturbationTarget,
+    _magnitude: number,
   ): Promise<void> {
-    const telemetry = system.getTelemetry();
-
-    switch (target) {
-      case "learning_rate": {
-        // System adjusts its own learning rate
-        const newRate = telemetry.recursive_state.learning_rate * (1 + magnitude);
-        // This would need to be exposed as a method
-        break;
-      }
-
-      case "coupling_strength": {
-        // System adjusts coupling
-        const newCoupling = telemetry.recursive_state.coupling_strength * (1 + magnitude);
-        break;
-      }
-
-      default:
-        // Generic internal adjustment
-        break;
-    }
+    // System adjusts its own learning rate - placeholder implementation
   }
 
   /**
@@ -354,7 +335,7 @@ export class PerturbationAnalyzer {
   private forceExternalChange(
     system: RecursiveSelfLearningSubstrate,
     target: PerturbationTarget,
-    magnitude: number,
+    _magnitude: number,
   ): void {
     // This is a FORCED change - system did not initiate it
     // In a real system, this would be environmental pressure

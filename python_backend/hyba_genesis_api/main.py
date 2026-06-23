@@ -61,14 +61,18 @@ from hyba_genesis_api.api import (  # noqa: E402
     webhooks,
     websocket,
 )
-from hyba_genesis_api.core.api_posture import install_enterprise_api_posture  # noqa: E402
+from hyba_genesis_api.core.api_posture import (
+    install_enterprise_api_posture,
+)  # noqa: E402
 from hyba_genesis_api.core.recursive_closure import build_buffered_closure  # noqa: E402
 from hyba_genesis_api.core.reflexive_controller import (  # noqa: E402
     ReflexiveController,
     default_reflexive_root,
 )
 from hyba_genesis_api.core.reflexive_daemon import IntelligenceHeartbeat  # noqa: E402
-from hyba_genesis_api.core.autonomy_persistence import save_autonomy_report  # noqa: E402
+from hyba_genesis_api.core.autonomy_persistence import (
+    save_autonomy_report,
+)  # noqa: E402
 from hyba_genesis_api.core.substrate import (  # noqa: E402
     get_substrate_state,
     initialize_substrate,
@@ -108,7 +112,9 @@ def _parse_cors_origins() -> List[str]:
 # Cache CORS origins at module load time — _parse_cors_origins() was previously
 # called on every request inside the middleware, re-parsing the env var each time.
 _CORS_ORIGINS: List[str] = _parse_cors_origins()
-_IS_PRODUCTION: bool = os.getenv("NODE_ENV", os.getenv("HYBA_ENV", "development")).lower() == "production"
+_IS_PRODUCTION: bool = (
+    os.getenv("NODE_ENV", os.getenv("HYBA_ENV", "development")).lower() == "production"
+)
 
 
 def _get_or_init_distributed_lock_manager(app: FastAPI) -> DistributedLockManager:
@@ -119,7 +125,7 @@ def _get_or_init_distributed_lock_manager(app: FastAPI) -> DistributedLockManage
     - QaaS/CIaaS execution: Redis unavailable -> return 423 Locked, do not proceed
     - Private validation/mining: local fallback is allowed only when explicitly configured
     """
-    if hasattr(app.state, 'distributed_lock_manager'):
+    if hasattr(app.state, "distributed_lock_manager"):
         return app.state.distributed_lock_manager
 
     from pythia_mining.redis_state_registry import get_redis_registry
@@ -133,12 +139,12 @@ def _get_or_init_distributed_lock_manager(app: FastAPI) -> DistributedLockManage
 
     lock_manager = DistributedLockManager(
         redis_client=redis_registry.client if redis_registry.available else None,
-        max_retry_attempts=10
+        max_retry_attempts=10,
     )
     app.state.distributed_lock_manager = lock_manager
     logging.info(
         "DistributedLockManager initialized",
-        extra={"redis_available": redis_registry.available}
+        extra={"redis_available": redis_registry.available},
     )
     return lock_manager
 
@@ -150,14 +156,18 @@ async def _activate_startup_self_healing(app: FastAPI) -> None:
         "0",
         "no",
     }:
-        logging.info("HYBA startup self-healing disabled by HYBA_STARTUP_SELF_HEALING_ENABLED")
+        logging.info(
+            "HYBA startup self-healing disabled by HYBA_STARTUP_SELF_HEALING_ENABLED"
+        )
         return
 
     from hyba_genesis_api.api.unified_mining import get_engine
 
     engine = get_engine()
     controller = engine.autonomous_controller
-    timeout_seconds = float(os.getenv("HYBA_STARTUP_SELF_HEALING_TIMEOUT_SECONDS", "15.0"))
+    timeout_seconds = float(
+        os.getenv("HYBA_STARTUP_SELF_HEALING_TIMEOUT_SECONDS", "15.0")
+    )
     logging.info(
         "HYBA API startup: activating PYTHIA self-healing/self-optimising cycle",
         extra={
@@ -175,8 +185,12 @@ async def _activate_startup_self_healing(app: FastAPI) -> None:
         "HYBA API startup: PYTHIA self-healing/self-optimising cycle complete",
         extra={
             "duration_ms": report.get("duration_ms"),
-            "proposals_applied": report.get("reflexive_report", {}).get("proposals_applied"),
-            "reflexive_cycle_count": report.get("after", {}).get("reflexive_cycle_count"),
+            "proposals_applied": report.get("reflexive_report", {}).get(
+                "proposals_applied"
+            ),
+            "reflexive_cycle_count": report.get("after", {}).get(
+                "reflexive_cycle_count"
+            ),
         },
     )
 
@@ -186,26 +200,35 @@ async def _load_memory_seed(app: FastAPI) -> None:
     import json
     from pathlib import Path
 
-    seed_path = Path(__file__).parent.parent.parent / "artifacts" / "memory_seed" / "memory_seed_v1.json"
+    seed_path = (
+        Path(__file__).parent.parent.parent
+        / "artifacts"
+        / "memory_seed"
+        / "memory_seed_v1.json"
+    )
     if not seed_path.exists():
         logging.warning("Memory seed not found, system will bootstrap from scratch")
         return
 
     try:
-        with open(seed_path, 'r') as f:
+        with open(seed_path, "r") as f:
             memory_seed = json.load(f)
 
         app.state.memory_seed = memory_seed
-        app.state.phi_integrated = memory_seed['consciousness_state']['phi_integrated']
-        app.state.emergent_intelligence_index = memory_seed['metadata']['emergent_intelligence_index']
+        app.state.phi_integrated = memory_seed["consciousness_state"]["phi_integrated"]
+        app.state.emergent_intelligence_index = memory_seed["metadata"][
+            "emergent_intelligence_index"
+        ]
 
         logging.info(
             "Memory seed loaded successfully",
             extra={
-                "phi_integrated": memory_seed['consciousness_state']['phi_integrated'],
-                "emergence_index": memory_seed['metadata']['emergent_intelligence_index'],
-                "knowledge_nodes": memory_seed['metadata']['total_nodes']
-            }
+                "phi_integrated": memory_seed["consciousness_state"]["phi_integrated"],
+                "emergence_index": memory_seed["metadata"][
+                    "emergent_intelligence_index"
+                ],
+                "knowledge_nodes": memory_seed["metadata"]["total_nodes"],
+            },
         )
     except Exception as e:
         logging.error(f"Failed to load memory seed: {e}")
@@ -241,6 +264,7 @@ async def lifespan(app: FastAPI):
 
     # Initialize customer portal database
     from hyba_genesis_api.database import initialize_database
+
     initialize_database()
 
     lock_manager = _get_or_init_distributed_lock_manager(app)
@@ -248,9 +272,12 @@ async def lifespan(app: FastAPI):
     logging.info("HYBA API startup: initializing substrate lifecycle")
     initialize_substrate()
     await _load_memory_seed(app)
-    logging.info("HYBA API startup: substrate READY", extra={"substrate": get_substrate_state()})
+    logging.info(
+        "HYBA API startup: substrate READY", extra={"substrate": get_substrate_state()}
+    )
     # It is not a public product surface; see docs/product/HYBA_PRODUCT_BOUNDARIES.md.
     from hyba_genesis_api.api import unified_mining
+
     unified_mining.initialize_engine_with_lock_manager(lock_manager)
 
     try:
@@ -268,7 +295,9 @@ async def lifespan(app: FastAPI):
         heartbeat = IntelligenceHeartbeat(controller, closure)
         interval = float(os.getenv("HYBA_REFLEXIVE_HEARTBEAT_INTERVAL_SECONDS", "60"))
         heartbeat_task = asyncio.create_task(heartbeat.pulse(interval_seconds=interval))
-        logging.info("HYBA reflexive heartbeat enabled", extra={"interval_seconds": interval})
+        logging.info(
+            "HYBA reflexive heartbeat enabled", extra={"interval_seconds": interval}
+        )
     try:
         yield
     finally:
@@ -367,10 +396,16 @@ async def enforce_cors_origin_allowlist(request: Request, call_next):
     if origin and (request.url.path.startswith("/api/") or request.url.path == "/api"):
         # Use the module-level cached list — avoids env-var re-parse on every request.
         if _IS_PRODUCTION and "*" in _CORS_ORIGINS:
-            return JSONResponse(status_code=403, content={"detail": "Wildcard CORS origin is not allowed in production"})
+            return JSONResponse(
+                status_code=403,
+                content={"detail": "Wildcard CORS origin is not allowed in production"},
+            )
         if origin not in _CORS_ORIGINS:
-            return JSONResponse(status_code=403, content={"detail": "CORS origin is not allowed"})
+            return JSONResponse(
+                status_code=403, content={"detail": "CORS origin is not allowed"}
+            )
     return await call_next(request)
+
 
 install_enterprise_api_posture(app)
 

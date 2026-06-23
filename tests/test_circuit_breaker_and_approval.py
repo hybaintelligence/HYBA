@@ -234,6 +234,7 @@ class TestOperatorApprovalTimeout:
 
     async def test_approval_with_callback_approved(self):
         """Test approval callback returns approved."""
+
         async def mock_callback(req):
             return True
 
@@ -252,6 +253,7 @@ class TestOperatorApprovalTimeout:
 
     async def test_approval_with_callback_denied(self):
         """Test approval callback returns denied."""
+
         async def mock_callback(req):
             return False
 
@@ -267,6 +269,7 @@ class TestOperatorApprovalTimeout:
 
     async def test_approval_timeout_auto_approve(self):
         """Test timeout escalation to auto-approve."""
+
         async def slow_callback(req):
             await asyncio.sleep(5)
             return True
@@ -285,6 +288,7 @@ class TestOperatorApprovalTimeout:
 
     async def test_approval_timeout_auto_deny(self):
         """Test timeout escalation to auto-deny."""
+
         async def slow_callback(req):
             await asyncio.sleep(5)
             return True
@@ -302,6 +306,7 @@ class TestOperatorApprovalTimeout:
 
     async def test_approval_timeout_manual_escalation(self):
         """Test timeout escalation to manual intervention."""
+
         async def slow_callback(req):
             await asyncio.sleep(5)
             return True
@@ -320,6 +325,7 @@ class TestOperatorApprovalTimeout:
 
     async def test_approval_callback_error_handling(self):
         """Test error handling in approval callback."""
+
         async def error_callback(req):
             raise ValueError("Callback error")
 
@@ -392,8 +398,12 @@ class TestOperatorApprovalTimeout:
 
         metrics = manager.emit_prometheus_metrics()
         assert isinstance(metrics, list)
-        assert any("hyba_operator_approval_requests_total 100" in line for line in metrics)
-        assert any("hyba_operator_approval_approved_total 80" in line for line in metrics)
+        assert any(
+            "hyba_operator_approval_requests_total 100" in line for line in metrics
+        )
+        assert any(
+            "hyba_operator_approval_approved_total 80" in line for line in metrics
+        )
 
 
 # ============================================================================

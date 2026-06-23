@@ -119,7 +119,9 @@ class AIPoweredInitialization:
         self.system_capabilities: Dict[str, Any] = {}
         self.historical_performance: Dict[str, List[float]] = {}
 
-    def analyze_system_capabilities(self, system_info: Dict[str, Any]) -> Dict[str, Any]:
+    def analyze_system_capabilities(
+        self, system_info: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """AI analysis of system capabilities for optimal configuration."""
         # Analyze CPU, GPU, memory, network capabilities
         cpu_cores = system_info.get("cpu_cores", 1)
@@ -235,7 +237,9 @@ class AIDecisionMaker:
             "timestamp": time.time(),
         }
 
-    def make_parameter_adjustment_decision(self, metrics: Dict[str, float]) -> AIDecision:
+    def make_parameter_adjustment_decision(
+        self, metrics: Dict[str, float]
+    ) -> AIDecision:
         """AI decision for parameter adjustment based on performance."""
         analysis = self.analyze_performance_metrics(metrics)
 
@@ -294,19 +298,23 @@ class AIDecisionMaker:
         context.get("pool_type", "standard")
 
         # Analyze recent share patterns
-        share_success_rate = len([s for s in recent_shares if s.get("accepted", False)]) / max(
-            1, len(recent_shares)
-        )
+        share_success_rate = len(
+            [s for s in recent_shares if s.get("accepted", False)]
+        ) / max(1, len(recent_shares))
 
         # AI-driven strategy selection
         if share_success_rate < 0.5:
             strategy = "conservative"
             nonce_range = 1000000
-            explanation = "Low share success rate, switching to conservative nonce generation"
+            explanation = (
+                "Low share success rate, switching to conservative nonce generation"
+            )
         elif share_success_rate > 0.8:
             strategy = "aggressive"
             nonce_range = 10000000
-            explanation = "High share success rate, enabling aggressive nonce generation"
+            explanation = (
+                "High share success rate, enabling aggressive nonce generation"
+            )
         else:
             strategy = "balanced"
             nonce_range = 5000000
@@ -322,7 +330,10 @@ class AIDecisionMaker:
             },
             confidence=share_success_rate,
             explanation=f"{explanation}. Phi-harmonized nonce range adjustment.",
-            metadata={"share_success_rate": share_success_rate, "difficulty": difficulty},
+            metadata={
+                "share_success_rate": share_success_rate,
+                "difficulty": difficulty,
+            },
         )
 
         self.decision_history.append(
@@ -358,7 +369,9 @@ class AIOptimizedShareSubmission:
         self.submission_patterns: Dict[str, List[float]] = {}
         self.pool_performance: Dict[str, Dict[str, float]] = {}
 
-    def analyze_submission_timing(self, recent_submissions: List[Dict[str, Any]]) -> Dict[str, Any]:
+    def analyze_submission_timing(
+        self, recent_submissions: List[Dict[str, Any]]
+    ) -> Dict[str, Any]:
         """AI analysis of optimal submission timing."""
         if not recent_submissions:
             return {"optimal_interval": 1.0, "batch_size": 1}
@@ -366,13 +379,16 @@ class AIOptimizedShareSubmission:
         # Analyze submission intervals and success rates
         intervals = []
         for i in range(1, len(recent_submissions)):
-            interval = recent_submissions[i]["timestamp"] - recent_submissions[i - 1]["timestamp"]
+            interval = (
+                recent_submissions[i]["timestamp"]
+                - recent_submissions[i - 1]["timestamp"]
+            )
             intervals.append(interval)
 
         avg_interval = np.mean(intervals) if intervals else 1.0
-        success_rate = len([s for s in recent_submissions if s.get("accepted", False)]) / len(
-            recent_submissions
-        )
+        success_rate = len(
+            [s for s in recent_submissions if s.get("accepted", False)]
+        ) / len(recent_submissions)
 
         # AI-driven timing optimization
         if success_rate > 0.8:
@@ -400,12 +416,16 @@ class AIOptimizedShareSubmission:
         # AI-driven submission strategy
         batch_size = timing_analysis["batch_size"]
         submission_interval = timing_analysis["optimal_interval"]
-        success_rate = timing_analysis.get("success_rate", 0.5)  # Default to 0.5 if no history
+        success_rate = timing_analysis.get(
+            "success_rate", 0.5
+        )  # Default to 0.5 if no history
 
         # Phi-harmonized batch optimization
         if len(shares) > batch_size:
             # Submit in batches
-            batches = [shares[i : i + batch_size] for i in range(0, len(shares), batch_size)]
+            batches = [
+                shares[i : i + batch_size] for i in range(0, len(shares), batch_size)
+            ]
             strategy = "batched"
         else:
             # Submit individually
@@ -512,7 +532,10 @@ class AIAdvisorySystem:
             recommendation = AIRecommendation(
                 stage=AIStage.ADVISORY,
                 recommendation_type="status_maintenance",
-                recommendation={"action": "maintain_current", "monitoring_level": "standard"},
+                recommendation={
+                    "action": "maintain_current",
+                    "monitoring_level": "standard",
+                },
                 priority="low",
                 rationale="System operating within normal parameters. Continue current configuration.",
                 expected_impact="Maintain stable performance",
@@ -544,7 +567,11 @@ class AIAdvisorySystem:
                         AIRecommendation(
                             stage=AIStage.ANOMALY_DETECTION,
                             recommendation_type="statistical_anomaly",
-                            recommendation={"metric": key, "value": value, "action": "investigate"},
+                            recommendation={
+                                "metric": key,
+                                "value": value,
+                                "action": "investigate",
+                            },
                             priority="high",
                             rationale=f"Statistical anomaly detected in {key}: {value}",
                             expected_impact="Anomaly investigation and resolution",
@@ -600,7 +627,11 @@ class UnifiedAIOrchestrationLayer:
         """AI-powered system initialization."""
         decision = self.initialization.generate_initial_configuration(system_info)
         self.orchestration_history.append(
-            {"timestamp": time.time(), "stage": AIStage.INITIALIZATION, "decision": decision}
+            {
+                "timestamp": time.time(),
+                "stage": AIStage.INITIALIZATION,
+                "decision": decision,
+            }
         )
         return decision
 
@@ -617,14 +648,19 @@ class UnifiedAIOrchestrationLayer:
 
         # Parameter optimization decision (knowledge-informed)
         param_decision = self.decision_maker.make_parameter_adjustment_decision(metrics)
-        if knowledge_assessment and knowledge_assessment["overall_assessment"]["priority_actions"]:
+        if (
+            knowledge_assessment
+            and knowledge_assessment["overall_assessment"]["priority_actions"]
+        ):
             # Add knowledge-based recommendations to decision explanation
             param_decision.explanation += f" Knowledge-informed: {len(knowledge_assessment['overall_assessment']['priority_actions'])} recommendations considered."
             param_decision.metadata["knowledge_assessment"] = knowledge_assessment
         decisions["parameter_adjustment"] = param_decision
 
         # Nonce generation decision
-        decisions["nonce_generation"] = self.decision_maker.make_nonce_generation_decision(context)
+        decisions["nonce_generation"] = (
+            self.decision_maker.make_nonce_generation_decision(context)
+        )
 
         self.orchestration_history.append(
             {
@@ -643,7 +679,11 @@ class UnifiedAIOrchestrationLayer:
         """AI-optimized share submission."""
         decision = self.share_submission.make_submission_decision(shares, pool_info)
         self.orchestration_history.append(
-            {"timestamp": time.time(), "stage": AIStage.SHARE_SUBMISSION, "decision": decision}
+            {
+                "timestamp": time.time(),
+                "stage": AIStage.SHARE_SUBMISSION,
+                "decision": decision,
+            }
         )
         return decision
 
@@ -654,7 +694,9 @@ class UnifiedAIOrchestrationLayer:
 
         # Enhance with knowledge base if available
         if self.knowledge_base is not None:
-            knowledge_assessment = self.knowledge_base.evaluate_current_state(system_state)
+            knowledge_assessment = self.knowledge_base.evaluate_current_state(
+                system_state
+            )
 
             # Add knowledge-based recommendations
             if knowledge_assessment["overall_assessment"]["priority_actions"]:
@@ -662,7 +704,10 @@ class UnifiedAIOrchestrationLayer:
                 recommendation.metadata["knowledge_assessment"] = knowledge_assessment
 
                 # Update priority based on knowledge assessment
-                if knowledge_assessment["overall_assessment"]["risk_level"] == "critical":
+                if (
+                    knowledge_assessment["overall_assessment"]["risk_level"]
+                    == "critical"
+                ):
                     recommendation.priority = "critical"
                 elif (
                     knowledge_assessment["overall_assessment"]["risk_level"] == "medium"

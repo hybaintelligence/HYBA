@@ -32,7 +32,7 @@ export const bridge = {
   /**
    * Universal RPC call to the Python mathematical core.
    */
-  async call(method: string, path: string, data?: any) {
+  async call(method: string, path: string, data?: unknown) {
     const ctx = get_trace_context();
     const startTime = Date.now();
 
@@ -50,15 +50,17 @@ export const bridge = {
       logger.debug({ ...ctx, path, latency }, "Bridge: Deterministic RPC call successful.");
 
       return response.data;
-    } catch (error: any) {
+    } catch (error: unknown) {
       const latency = Date.now() - startTime;
+      const errorMessage = (error as { message?: string }).message ?? "Unknown error";
+      const errorResponse = (error as { response?: { data?: unknown } }).response?.data;
       logger.error(
         {
           ...ctx,
           path,
           latency,
-          err: error.message,
-          response: error.response?.data,
+          err: errorMessage,
+          response: errorResponse,
         },
         "Bridge: RPC call failed. Substrate discontinuity detected.",
       );

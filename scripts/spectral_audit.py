@@ -56,7 +56,9 @@ def spectral_audit(matrix, label):
             if mult > 1:
                 multiplicities.append((val, mult))
         if multiplicities:
-            print(f"  degeneracy details: {[(f'{v:.3e}', m) for v, m in multiplicities]}")
+            print(
+                f"  degeneracy details: {[(f'{v:.3e}', m) for v, m in multiplicities]}"
+            )
 
     return eigvals, eigvecs
 
@@ -91,7 +93,9 @@ def main():
 
     # Analyze reconstructed matrix
     rho_reconstructed = engine.decompress(compression_result)
-    spectral_audit(rho_reconstructed, "4. Reconstructed Density Matrix (after decompression)")
+    spectral_audit(
+        rho_reconstructed, "4. Reconstructed Density Matrix (after decompression)"
+    )
 
     # Compare reconstruction error
     reconstruction_error = np.linalg.norm(rho_evolved - rho_reconstructed, ord="fro")
@@ -105,7 +109,9 @@ def main():
     print(
         f"  Reconstruction error from compression result: {compression_result.reconstruction_error or 'N/A'}"
     )
-    print(f"  Compression ratio: {compression_result.working_set_compression_ratio:.2f}x")
+    print(
+        f"  Compression ratio: {compression_result.working_set_compression_ratio:.2f}x"
+    )
 
     # Structural interpretation
     print("\n" + "=" * 70)
@@ -119,7 +125,9 @@ def main():
         print("  Condition number is HIGH (>1e10)")
         print("  → This suggests ill-conditioned spectrum")
         print("  → For icosahedral adjacency matrices, this is EXPECTED")
-        print("  → High-multiplicity eigenspaces correspond to irreducible representations of I_h")
+        print(
+            "  → High-multiplicity eigenspaces correspond to irreducible representations of I_h"
+        )
     elif condition_number > 1e6:
         print("  Condition number is MODERATE (1e6-1e10)")
         print("  → Some numerical conditioning issues present")
@@ -134,7 +142,9 @@ def main():
 
     near_zero_count = (np.abs(eigvals_initial) < 1e-10).sum()
     if near_zero_count > 0:
-        print(f"  ⚠ {near_zero_count} near-zero eigenvalues - potential rank deficiency")
+        print(
+            f"  ⚠ {near_zero_count} near-zero eigenvalues - potential rank deficiency"
+        )
         print("  → For pure states, this is EXPECTED (rank-1 density matrices)")
     else:
         print("  ✓ No near-zero eigenvalues - full rank matrix")

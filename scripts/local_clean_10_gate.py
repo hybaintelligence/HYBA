@@ -82,27 +82,63 @@ def _commands() -> list[GateCommand]:
         ),
         GateCommand(
             name="review_gap_closure_matrix",
-            command=[python, "-m", "pytest", "tests/test_review_gap_closure_matrix.py", "-q"],
+            command=[
+                python,
+                "-m",
+                "pytest",
+                "tests/test_review_gap_closure_matrix.py",
+                "-q",
+            ],
         ),
         GateCommand(
             name="simulation_vs_instantiation_boundary",
-            command=[python, "-m", "pytest", "tests/test_simulation_vs_instantiation.py", "-q"],
+            command=[
+                python,
+                "-m",
+                "pytest",
+                "tests/test_simulation_vs_instantiation.py",
+                "-q",
+            ],
         ),
         GateCommand(
             name="deutsch_pulvini_claim_boundary",
-            command=[python, "-m", "pytest", "tests/test_deutsch_pulvini_claim_boundary.py", "-q"],
+            command=[
+                python,
+                "-m",
+                "pytest",
+                "tests/test_deutsch_pulvini_claim_boundary.py",
+                "-q",
+            ],
         ),
         GateCommand(
             name="quantum_solver_job_plumbing",
-            command=[python, "-m", "pytest", "tests/test_agent3_quantum_solvers.py", "-q"],
+            command=[
+                python,
+                "-m",
+                "pytest",
+                "tests/test_agent3_quantum_solvers.py",
+                "-q",
+            ],
         ),
         GateCommand(
             name="hendrix_phi_solver_contracts",
-            command=[python, "-m", "pytest", "tests/test_hendrix_phi_solver_contracts.py", "-q"],
+            command=[
+                python,
+                "-m",
+                "pytest",
+                "tests/test_hendrix_phi_solver_contracts.py",
+                "-q",
+            ],
         ),
         GateCommand(
             name="hendrix_job_backed_benchmarks",
-            command=[python, "-m", "pytest", "tests/test_hendrix_phi_performance_benchmark.py", "-q"],
+            command=[
+                python,
+                "-m",
+                "pytest",
+                "tests/test_hendrix_phi_performance_benchmark.py",
+                "-q",
+            ],
         ),
         GateCommand(
             name="iit_phi_proxy_contracts",
@@ -118,7 +154,13 @@ def _commands() -> list[GateCommand]:
         ),
         GateCommand(
             name="api_posture_serialization",
-            command=[python, "-m", "pytest", "tests/test_api_posture_serialization.py", "-q"],
+            command=[
+                python,
+                "-m",
+                "pytest",
+                "tests/test_api_posture_serialization.py",
+                "-q",
+            ],
         ),
         GateCommand(
             name="backend_mining_api_contracts",
@@ -130,19 +172,43 @@ def _commands() -> list[GateCommand]:
         ),
         GateCommand(
             name="runtime_reflexive_introspection",
-            command=[python, "-m", "pytest", "tests/test_runtime_reflexive_introspection.py", "-q"],
+            command=[
+                python,
+                "-m",
+                "pytest",
+                "tests/test_runtime_reflexive_introspection.py",
+                "-q",
+            ],
         ),
         GateCommand(
             name="evidence_boundary_report",
-            command=[python, "-m", "pytest", "tests/test_evidence_boundary_report.py", "-q"],
+            command=[
+                python,
+                "-m",
+                "pytest",
+                "tests/test_evidence_boundary_report.py",
+                "-q",
+            ],
         ),
         GateCommand(
             name="adaptive_capability_registry",
-            command=[python, "-m", "pytest", "tests/test_adaptive_capability_registry.py", "-q"],
+            command=[
+                python,
+                "-m",
+                "pytest",
+                "tests/test_adaptive_capability_registry.py",
+                "-q",
+            ],
         ),
         GateCommand(
             name="claim_evidence_manifest",
-            command=[python, "-m", "pytest", "tests/test_claim_evidence_manifest.py", "-q"],
+            command=[
+                python,
+                "-m",
+                "pytest",
+                "tests/test_claim_evidence_manifest.py",
+                "-q",
+            ],
         ),
         GateCommand(
             name="prediction_endpoint_contracts",
@@ -150,15 +216,33 @@ def _commands() -> list[GateCommand]:
         ),
         GateCommand(
             name="pool_profile_primitives",
-            command=[python, "-m", "pytest", "tests/test_pool_profile_primitives.py", "-q"],
+            command=[
+                python,
+                "-m",
+                "pytest",
+                "tests/test_pool_profile_primitives.py",
+                "-q",
+            ],
         ),
         GateCommand(
             name="autonomous_sovereign_gate_contracts",
-            command=[python, "-m", "pytest", "tests/test_mining_autonomous_sovereign_gate.py", "-q"],
+            command=[
+                python,
+                "-m",
+                "pytest",
+                "tests/test_mining_autonomous_sovereign_gate.py",
+                "-q",
+            ],
         ),
         GateCommand(
             name="local_launch_contracts",
-            command=[python, "-m", "pytest", "tests/test_local_launch_script_contract.py", "-q"],
+            command=[
+                python,
+                "-m",
+                "pytest",
+                "tests/test_local_launch_script_contract.py",
+                "-q",
+            ],
         ),
         GateCommand(
             name="frontend_bridge_and_security_contracts",
@@ -196,7 +280,9 @@ def _read_log_tail(log_path: Path, line_limit: int = LOG_TAIL_LINES) -> list[str
     return lines[-line_limit:]
 
 
-def _run_command(command: GateCommand, env: dict[str, str], log_dir: Path) -> GateResult:
+def _run_command(
+    command: GateCommand, env: dict[str, str], log_dir: Path
+) -> GateResult:
     started = datetime.now(timezone.utc)
     log_path = log_dir / f"{command.name}.log"
     with log_path.open("w", encoding="utf-8") as log:
@@ -237,7 +323,9 @@ def run_gate(commands: Iterable[GateCommand] | None = None) -> CleanGateReport:
     ]
     passed = not failures
     next_actions = (
-        ["Archive this artifact with bootstrap, sovereign gate, readiness, telemetry and accepted-share evidence."]
+        [
+            "Archive this artifact with bootstrap, sovereign gate, readiness, telemetry and accepted-share evidence."
+        ]
         if passed
         else [
             "Do not describe the repository as clean until required failures are zero.",
@@ -256,9 +344,13 @@ def run_gate(commands: Iterable[GateCommand] | None = None) -> CleanGateReport:
         next_actions=next_actions,
     )
     report_path = run_dir / "clean_10_gate.json"
-    report_path.write_text(json.dumps(report.to_dict(), indent=2, sort_keys=True), encoding="utf-8")
+    report_path.write_text(
+        json.dumps(report.to_dict(), indent=2, sort_keys=True), encoding="utf-8"
+    )
     latest_path = ARTIFACT_DIR / "latest.json"
-    latest_path.write_text(json.dumps(report.to_dict(), indent=2, sort_keys=True), encoding="utf-8")
+    latest_path.write_text(
+        json.dumps(report.to_dict(), indent=2, sort_keys=True), encoding="utf-8"
+    )
     return report
 
 

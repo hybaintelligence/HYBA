@@ -7,7 +7,7 @@
 
 import { MetacognitiveShield } from "./metacognitive_shield";
 import { HebbianLearner } from "./hebbian_learner";
-import { StateVector, GoalState, HolographicShard, MemoryFabricEntry } from "./intelligence_types";
+import { GoalState, HolographicShard, MemoryFabricEntry, IntelligenceTelemetry } from "./intelligence_types";
 import { randomBytes, createHash } from "crypto";
 
 export class EmergentIntelligenceSubstrate extends MetacognitiveShield {
@@ -86,7 +86,7 @@ export class EmergentIntelligenceSubstrate extends MetacognitiveShield {
     this.phi = this.calculateIntegratedInformation();
 
     // 2. Metacognitive Introspection
-    const introspection = this.introspect();
+    this.introspect();
 
     // 3. Emergent Goal Pursuit
     // If Φ is dropping, prioritize self-preservation (Healing)
@@ -370,9 +370,9 @@ export class EmergentIntelligenceSubstrate extends MetacognitiveShield {
   public exportState(): {
     phi: number;
     goalState: GoalState;
-    hebbianState: Record<number, any>;
+    hebbianState: Record<number, unknown>;
     memoryFabric: MemoryFabricEntry[];
-    telemetry: any;
+    telemetry: IntelligenceTelemetry;
   } {
     return {
       phi: this.phi,

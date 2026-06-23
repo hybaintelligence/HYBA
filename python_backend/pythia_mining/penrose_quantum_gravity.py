@@ -88,7 +88,9 @@ class SpinNetwork:
             "num_edges": len(self.edges),
             "volume": self.volume,
             "area": self.area,
-            "average_spin": np.mean([e.spin for e in self.edges]) if self.edges else 0.0,
+            "average_spin": (
+                np.mean([e.spin for e in self.edges]) if self.edges else 0.0
+            ),
         }
 
 
@@ -203,12 +205,16 @@ class PenroseQuantumGravity:
         volume = self._calculate_spin_network_volume(edges)
         area = self._calculate_spin_network_area(edges)
 
-        spin_network = SpinNetwork(nodes=nodes, edges=frozenset(edges), volume=volume, area=area)
+        spin_network = SpinNetwork(
+            nodes=nodes, edges=frozenset(edges), volume=volume, area=area
+        )
 
         self.spin_networks["phi_folding_substrate"] = spin_network
         return spin_network
 
-    def _calculate_spin_network_volume(self, edges: FrozenSet[SpinNetworkEdge]) -> float:
+    def _calculate_spin_network_volume(
+        self, edges: FrozenSet[SpinNetworkEdge]
+    ) -> float:
         """Calculate volume from spin network edges.
 
         In LQG, volume is quantized and related to spin network geometry.
@@ -228,7 +234,9 @@ class PenroseQuantumGravity:
         area = total_area * PHI
         return float(area)
 
-    def evolve_spin_network(self, spin_network: SpinNetwork, time_step: float = 0.1) -> SpinNetwork:
+    def evolve_spin_network(
+        self, spin_network: SpinNetwork, time_step: float = 0.1
+    ) -> SpinNetwork:
         """Evolve spin network dynamics (spin foam).
 
         Spin foams describe the evolution of spin networks over time,
@@ -244,14 +252,19 @@ class PenroseQuantumGravity:
             # Spin can only change by integer amounts (SU(2) representation theory)
             evolved_spin = round(evolved_spin * 2) / 2
 
-            new_edges.add(SpinNetworkEdge(edge.source_node, edge.target_node, evolved_spin))
+            new_edges.add(
+                SpinNetworkEdge(edge.source_node, edge.target_node, evolved_spin)
+            )
 
         # Calculate new geometric quantities
         volume = self._calculate_spin_network_volume(frozenset(new_edges))
         area = self._calculate_spin_network_area(frozenset(new_edges))
 
         evolved_network = SpinNetwork(
-            nodes=spin_network.nodes, edges=frozenset(new_edges), volume=volume, area=area
+            nodes=spin_network.nodes,
+            edges=frozenset(new_edges),
+            volume=volume,
+            area=area,
         )
 
         return evolved_network
@@ -385,7 +398,9 @@ class PenroseQuantumGravity:
             weyl_curvature = self._calculate_weyl_curvature_proxy(window)
 
             # Detect temporal recurrence
-            temporal_recurrence = self._detect_temporal_recurrence(temporal_sequence, window, i)
+            temporal_recurrence = self._detect_temporal_recurrence(
+                temporal_sequence, window, i
+            )
 
             # Calculate confidence
             confidence = self._calculate_ccc_confidence(
@@ -483,10 +498,16 @@ class PenroseQuantumGravity:
         This uses twistor incidence relations to guide nonce selection.
         """
         if not candidate_nonces:
-            return {"selected_nonce": None, "incidence_scores": [], "method": "twistor_geometry"}
+            return {
+                "selected_nonce": None,
+                "incidence_scores": [],
+                "method": "twistor_geometry",
+            }
 
         # Create twistors for candidates
-        candidate_twistors = [self.create_twistor_for_nonce(nonce) for nonce in candidate_nonces]
+        candidate_twistors = [
+            self.create_twistor_for_nonce(nonce) for nonce in candidate_nonces
+        ]
 
         # Calculate incidence with target twistor
         incidence_scores = []

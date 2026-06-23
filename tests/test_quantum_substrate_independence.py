@@ -136,16 +136,19 @@ def phi_inverse():
 @pytest.fixture
 def random_quantum_state():
     """Generate a random quantum state for testing."""
+
     def _make(n_qubits: int = 4, seed: int = 42) -> np.ndarray:
         rng = np.random.RandomState(seed)
         state = rng.randn(2**n_qubits) + 1j * rng.randn(2**n_qubits)
         return state / np.linalg.norm(state)
+
     return _make
 
 
 @pytest.fixture
 def density_matrix_fixture():
     """Generate a valid density matrix for testing."""
+
     def _make(n_qubits: int = 2, seed: int = 42) -> np.ndarray:
         rng = np.random.RandomState(seed)
         dim = 2**n_qubits
@@ -157,6 +160,7 @@ def density_matrix_fixture():
         # Ensure trace 1
         rho = rho / np.trace(rho)
         return rho
+
     return _make
 
 
@@ -186,7 +190,7 @@ class TestSubstrateIndependenceProperties:
 
     def test_phi_satisfies_algebraic_identity(self, phi, phi_inverse):
         """Φ must satisfy φ² = φ + 1 (defining equation)."""
-        phi_squared = phi ** 2
+        phi_squared = phi**2
         phi_plus_1 = phi + 1.0
         assert abs(phi_squared - phi_plus_1) < 1e-14
 
@@ -338,14 +342,18 @@ class TestGoldenRatioInnovation:
                 power_of_2_count += 1
 
         # At most one can be power of 2 (due to capping at 64)
-        assert power_of_2_count <= 1, f"Too many power-of-2 bond dimensions: {power_of_2_count}"
+        assert (
+            power_of_2_count <= 1
+        ), f"Too many power-of-2 bond dimensions: {power_of_2_count}"
 
     def test_phi_accelerated_purification_converges(self):
         """Φ-weighted purification must converge to pure state."""
         rho = np.array([[0.7, 0.1], [0.1, 0.3]], dtype=complex)
         rho = rho / np.trace(rho)  # Normalize
 
-        purified = PhiAcceleratedDensityMatrix.phi_weighted_purification(rho, iterations=10)
+        purified = PhiAcceleratedDensityMatrix.phi_weighted_purification(
+            rho, iterations=10
+        )
 
         # Check trace normalization
         trace = np.trace(purified)
@@ -409,7 +417,9 @@ class TestGoldenRatioInnovation:
         psi = np.array([0.6, 0.8], dtype=complex)
         norm_before = np.linalg.norm(psi)
 
-        modulated = PhiAcceleratedUnitaryEvolution.phi_phase_modulation(psi, phi_power=1)
+        modulated = PhiAcceleratedUnitaryEvolution.phi_phase_modulation(
+            psi, phi_power=1
+        )
         norm_after = np.linalg.norm(modulated)
 
         assert abs(norm_before - norm_after) < 1e-10
@@ -657,7 +667,9 @@ class TestChurchTuringDeutschReframing:
         assert abs(inner_product - 0.0) < 1e-15
 
         # The mathematical structure is what matters, not the hardware
-        assert isinstance(inner_product, (float, complex, np.floating, np.complexfloating))
+        assert isinstance(
+            inner_product, (float, complex, np.floating, np.complexfloating)
+        )
 
     def test_ctd_reframe_density_matrix_on_classical(self):
         """Density matrix formalism executes correctly on classical hardware."""
@@ -843,7 +855,9 @@ class TestM3ClassicalHardwareBenchmarks:
 
     def test_m3_pulvini_compression_at_scale(self):
         """PULVINI compression works at 1000-qubit scale on M3."""
-        test_result = QuantumProgramBenchmark.verify_pulvini_compression(num_qubits=1000)
+        test_result = QuantumProgramBenchmark.verify_pulvini_compression(
+            num_qubits=1000
+        )
 
         assert test_result.reversible is True
         assert test_result.compression_ratio > 1.0
@@ -895,8 +909,12 @@ class TestPropertyBasedInvariants:
         """Φ-purification must be deterministic (same input → same output)."""
         rho = density_matrix_fixture(n_qubits=2, seed=seed)
 
-        result1 = PhiAcceleratedDensityMatrix.phi_weighted_purification(rho, iterations=5)
-        result2 = PhiAcceleratedDensityMatrix.phi_weighted_purification(rho, iterations=5)
+        result1 = PhiAcceleratedDensityMatrix.phi_weighted_purification(
+            rho, iterations=5
+        )
+        result2 = PhiAcceleratedDensityMatrix.phi_weighted_purification(
+            rho, iterations=5
+        )
 
         np.testing.assert_array_almost_equal(result1, result2)
 
@@ -935,7 +953,9 @@ class TestPropertyBasedInvariants:
                 rho_standard = rho_standard / trace
 
         # Φ-purification
-        rho_phi = PhiAcceleratedDensityMatrix.phi_weighted_purification(rho, iterations=5)
+        rho_phi = PhiAcceleratedDensityMatrix.phi_weighted_purification(
+            rho, iterations=5
+        )
 
         # Fidelity should be high
         fidelity = np.trace(rho_phi @ rho_standard).real
@@ -966,7 +986,9 @@ class TestBenchmarkSuite:
             return rho
 
         def phi_purification(rho, iterations=5):
-            return PhiAcceleratedDensityMatrix.phi_weighted_purification(rho, iterations)
+            return PhiAcceleratedDensityMatrix.phi_weighted_purification(
+                rho, iterations
+            )
 
         std_time, phi_time, speedup = phi_acceleration_benchmark(
             standard_purification, phi_purification, rho
@@ -1193,7 +1215,10 @@ class TestReproducibilityDeterminism:
         result1 = engine.compress(data)
         result2 = engine.compress(data)
 
-        assert result1.working_set_compression_ratio == result2.working_set_compression_ratio
+        assert (
+            result1.working_set_compression_ratio
+            == result2.working_set_compression_ratio
+        )
         assert result1.reconstruction_error == result2.reconstruction_error
 
     def test_benchmark_results_reproducible(self):

@@ -32,7 +32,8 @@ def test_phi_resonance_fixture_beats_local_counterfactual_window() -> None:
     blocks = _blocks()
     observed = [compute_phi_resonance(int(row["nonce"])) for row in blocks]
     counterfactual = [
-        compute_phi_resonance((int(row["nonce"]) + 10_000_019) & 0xFFFFFFFF) for row in blocks
+        compute_phi_resonance((int(row["nonce"]) + 10_000_019) & 0xFFFFFFFF)
+        for row in blocks
     ]
 
     assert sum(observed) / len(observed) > sum(counterfactual) / len(counterfactual)

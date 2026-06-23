@@ -107,7 +107,9 @@ async def test_solver_traversal():
 
     # Check solve time consistency
     if np.std(solve_times) < 0.1:
-        print(f"  ⚠ SUSPICIOUSLY CONSISTENT TIMING: std dev {np.std(solve_times):.3f}ms")
+        print(
+            f"  ⚠ SUSPICIOUSLY CONSISTENT TIMING: std dev {np.std(solve_times):.3f}ms"
+        )
         print("  → May indicate cached computation")
     else:
         print(f"  ✓ NATURAL TIMING VARIATION: std dev {np.std(solve_times):.3f}ms")

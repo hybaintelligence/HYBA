@@ -151,7 +151,9 @@ def install_stratum_submit_firewall() -> bool:
                 await self._persist_metrics()
             except Exception:
                 pass
-            return ShareResult(False, 428, reason, getattr(job, "job_id", ""), int(nonce))
+            return ShareResult(
+                False, 428, reason, getattr(job, "job_id", ""), int(nonce)
+            )
 
         try:
             decision = assert_stratum_submission_firewall(job, nonce, extranonce2)
@@ -173,7 +175,9 @@ def install_stratum_submit_firewall() -> bool:
                 await self._persist_metrics()
             except Exception:
                 pass
-            return ShareResult(False, 428, reason, getattr(job, "job_id", ""), int(nonce))
+            return ShareResult(
+                False, 428, reason, getattr(job, "job_id", ""), int(nonce)
+            )
 
         self.last_verification_firewall_decision = decision
         # Pass _firewall_validated=True to eliminate the redundant second

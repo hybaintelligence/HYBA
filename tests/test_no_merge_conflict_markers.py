@@ -61,4 +61,6 @@ def test_repository_contains_no_merge_conflict_markers() -> None:
                 offenders.append(str(path.relative_to(ROOT)))
                 break
 
-    assert not offenders, "merge-conflict markers remain in: " + ", ".join(sorted(offenders))
+    assert not offenders, "merge-conflict markers remain in: " + ", ".join(
+        sorted(offenders)
+    )

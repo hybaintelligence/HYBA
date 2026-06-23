@@ -72,7 +72,9 @@ def test_phi_memory_separates_working_set_ratio_from_total_retained_state() -> N
     # Reviewer-critical distinction: headline working-set compression can be
     # greater than the full retained-state ratio because kernels are retained for
     # exact replay. The proof is reversibility, not thrown-away bytes.
-    assert result.working_set_compression_ratio >= result.retained_state_compression_ratio
+    assert (
+        result.working_set_compression_ratio >= result.retained_state_compression_ratio
+    )
     assert result.retained_kernel_bytes >= 0
     assert result.original_bytes == matrix.nbytes
     assert result.reversible is True

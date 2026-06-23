@@ -74,9 +74,9 @@ class TestSubstatePassportAdapter:
         """Test converting SubstatePassport to UniversalPassport."""
         mock_substate = MockSubstatePassport()
         adapter = SubstatePassportAdapter()
-        
+
         universal_passport = adapter.from_substate_passport(mock_substate)
-        
+
         assert isinstance(universal_passport, UniversalPassport)
         assert universal_passport.subsystem == Subsystem.PYTHIA.value
         assert universal_passport.claim_type == ClaimType.MINING_RESULT.value
@@ -87,10 +87,10 @@ class TestSubstatePassportAdapter:
         """Test converting UniversalPassport back to SubstatePassport format."""
         mock_substate = MockSubstatePassport()
         adapter = SubstatePassportAdapter()
-        
+
         universal_passport = adapter.from_substate_passport(mock_substate)
         substate_dict = adapter.to_substate_passport(universal_passport)
-        
+
         assert substate_dict["structural_hash"] == "abc123"
         assert substate_dict["topology_verified"] is True
         assert substate_dict["version"] == "SUBSTATE_PASSPORT_V2"
@@ -99,10 +99,10 @@ class TestSubstatePassportAdapter:
         """Test roundtrip conversion preserves data."""
         mock_substate = MockSubstatePassport()
         adapter = SubstatePassportAdapter()
-        
+
         universal_passport = adapter.from_substate_passport(mock_substate)
         substate_dict = adapter.to_substate_passport(universal_passport)
-        
+
         # Verify key fields preserved
         assert substate_dict["structural_hash"] == mock_substate.structural_hash
         assert substate_dict["topology_verified"] == mock_substate.topology_verified
@@ -112,11 +112,14 @@ class TestSubstatePassportAdapter:
         """Test that epistemic bounds are correctly mapped."""
         mock_substate = MockSubstatePassport(quantum_speedup_claimed=False)
         adapter = SubstatePassportAdapter()
-        
+
         universal_passport = adapter.from_substate_passport(mock_substate)
-        
+
         # Should include NO_QUANTUM_SPEEDUP bound when quantum_speedup_claimed is False
-        assert EpistemicBound.NO_QUANTUM_SPEEDUP.value in universal_passport.epistemic_bounds
+        assert (
+            EpistemicBound.NO_QUANTUM_SPEEDUP.value
+            in universal_passport.epistemic_bounds
+        )
 
 
 # ============================================================================
@@ -134,7 +137,7 @@ class TestMiningSearchAdapter:
             nonce_range=(0, 100),
             phi_threshold=0.618,
         )
-        
+
         assert adapter.domain.target_nonce == 50
         assert adapter.domain.nonce_range == (0, 100)
 
@@ -144,9 +147,9 @@ class TestMiningSearchAdapter:
             target_nonce=50,
             nonce_range=(0, 100),
         )
-        
+
         result = adapter.search_nonce(budget=10, seed=42)
-        
+
         assert "nonce" in result
         assert "phi_score" in result
         assert "iterations_used" in result
@@ -159,10 +162,10 @@ class TestMiningSearchAdapter:
             target_nonce=50,
             nonce_range=(0, 100),
         )
-        
+
         result1 = adapter.search_nonce(budget=10, seed=42)
         result2 = adapter.search_nonce(budget=10, seed=42)
-        
+
         assert result1["nonce"] == result2["nonce"]
         assert result1["phi_score"] == result2["phi_score"]
 
@@ -173,9 +176,9 @@ class TestMiningSearchAdapter:
             nonce_range=(0, 100),
             warm_cache_size=100,
         )
-        
+
         stats = adapter.get_warm_cache_stats()
-        
+
         assert "size" in stats
         assert "max_size" in stats
         assert "has_warm_state" in stats
@@ -200,13 +203,13 @@ class TestMiningCausalAdapter:
             "solver": ["memory"],
             "memory": ["solver"],
         }
-        
+
         adapter = MiningCausalAdapter(
             mining_nodes=mining_nodes,
             mining_edges=mining_edges,
             coverage_threshold=0.8,
         )
-        
+
         assert adapter.engine.coverage_threshold == 0.8
 
     def test_explain_nonce_discovery(self):
@@ -219,17 +222,17 @@ class TestMiningCausalAdapter:
             "solver": ["memory"],
             "memory": ["solver"],
         }
-        
+
         adapter = MiningCausalAdapter(
             mining_nodes=mining_nodes,
             mining_edges=mining_edges,
         )
-        
+
         explanation = adapter.explain_nonce_discovery(
             nonce=42,
             phi_score=0.8,
         )
-        
+
         assert "hotspots" in explanation
         assert "counterfactual" in explanation
         assert "explanation_quality" in explanation
@@ -245,14 +248,14 @@ class TestMiningCausalAdapter:
             "solver": ["memory"],
             "memory": ["solver"],
         }
-        
+
         adapter = MiningCausalAdapter(
             mining_nodes=mining_nodes,
             mining_edges=mining_edges,
         )
-        
+
         hotspots = adapter.rank_mining_hotspots({"type": "nonce_found"})
-        
+
         assert isinstance(hotspots, list)
         assert all("node_id" in h for h in hotspots)
 
@@ -274,7 +277,7 @@ class TestMiningPassportFactory:
             phi_score=0.8,
             bures_score=0.9,
         )
-        
+
         assert isinstance(passport, UniversalPassport)
         assert passport.subsystem == Subsystem.PYTHIA.value
         assert passport.payload["nonce"] == 42
@@ -288,7 +291,7 @@ class TestMiningPassportFactory:
             difficulty=1.0,
             submitter="miner_1",
         )
-        
+
         assert isinstance(passport, UniversalPassport)
         assert passport.claim_type == ClaimType.SHARE_SUBMISSION.value
         assert passport.payload["share_hash"] == "abc123"
@@ -300,7 +303,7 @@ class TestMiningPassportFactory:
             result_data={"nonce": 42},
             success=True,
         )
-        
+
         assert isinstance(passport, UniversalPassport)
         assert passport.claim_type == ClaimType.MINING_RESULT.value
         assert passport.payload["result_type"] == "nonce_found"
@@ -316,7 +319,7 @@ class TestMiningPassportFactory:
             bures_score=0.9,
             additional_metadata={"custom_field": "value"},
         )
-        
+
         assert passport.payload["custom_field"] == "value"
         assert passport.payload["nonce"] == 42
 
@@ -339,14 +342,14 @@ class TestPythiaAdapterIntegration:
             phi_score=0.8,
             bures_score=0.9,
         )
-        
+
         # Step 2: Search for nonce
         search_adapter = MiningSearchAdapter(
             target_nonce=42,
             nonce_range=(0, 100),
         )
         search_result = search_adapter.search_nonce(budget=10)
-        
+
         # Step 3: Generate causal explanation
         causal_adapter = MiningCausalAdapter(
             mining_nodes={
@@ -362,7 +365,7 @@ class TestPythiaAdapterIntegration:
             nonce=42,
             phi_score=0.8,
         )
-        
+
         # Verify all steps completed
         assert isinstance(nonce_passport, UniversalPassport)
         assert "nonce" in search_result
@@ -377,11 +380,11 @@ class TestPythiaAdapterIntegration:
             phi_score=0.8,
             bures_score=0.9,
         )
-        
+
         # Should be JSON-serializable
         passport_dict = passport.to_dict()
         json_str = json.dumps(passport_dict)
-        
+
         # Should be deserializable
         deserialized = json.loads(json_str)
         assert deserialized["payload"]["nonce"] == 42
@@ -392,13 +395,13 @@ class TestPythiaAdapterIntegration:
             target_nonce=50,
             nonce_range=(0, 100),
         )
-        
+
         result = adapter.search_nonce(budget=10)
-        
+
         # Should be JSON-serializable
         json_str = json.dumps(result)
         deserialized = json.loads(json_str)
-        
+
         assert "nonce" in deserialized
         assert "passport" in deserialized
         assert "timestamp" in deserialized["passport"]
@@ -419,7 +422,9 @@ class TestAdapterProperties:
         phi_score=floats(min_value=0.0, max_value=1.0),
         bures_score=floats(min_value=0.0, max_value=1.0),
     )
-    def test_property_nonce_passport_valid(self, nonce, job_id, pool_name, phi_score, bures_score):
+    def test_property_nonce_passport_valid(
+        self, nonce, job_id, pool_name, phi_score, bures_score
+    ):
         """Property: Nonce passports are always valid."""
         passport = MiningPassportFactory.create_nonce_passport(
             nonce=nonce,
@@ -428,7 +433,7 @@ class TestAdapterProperties:
             phi_score=phi_score,
             bures_score=bures_score,
         )
-        
+
         assert isinstance(passport, UniversalPassport)
         assert passport.payload["nonce"] == nonce
         assert 0.0 <= passport.payload["phi_score"] <= 1.0
@@ -446,10 +451,10 @@ class TestAdapterProperties:
             difficulty=difficulty,
             submitter="miner_1",
         )
-        
+
         passport_dict = passport.to_dict()
         json_str = json.dumps(passport_dict)
-        
+
         # Should not raise
         deserialized = json.loads(json_str)
         assert deserialized["payload"]["share_hash"] == share_hash

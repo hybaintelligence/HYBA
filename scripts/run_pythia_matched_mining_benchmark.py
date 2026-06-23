@@ -26,10 +26,17 @@ from pythia_mining.pythia_matched_mining_benchmark import (
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--budget", type=int, default=4096, help="Matched nonce candidate budget")
-    parser.add_argument("--height", type=int, default=840_321, help="Replay block height context")
     parser.add_argument(
-        "--difficulty", type=float, default=88_000_000_000_000.0, help="Replay difficulty context"
+        "--budget", type=int, default=4096, help="Matched nonce candidate budget"
+    )
+    parser.add_argument(
+        "--height", type=int, default=840_321, help="Replay block height context"
+    )
+    parser.add_argument(
+        "--difficulty",
+        type=float,
+        default=88_000_000_000_000.0,
+        help="Replay difficulty context",
     )
     parser.add_argument(
         "--seed", default="hyba-pythia-matched-replay", help="Deterministic header seed"
@@ -38,7 +45,8 @@ def parse_args() -> argparse.Namespace:
         "--mode", choices=["baseline-best", "pythia-window"], default="pythia-window"
     )
     parser.add_argument(
-        "--output", default="artifacts/pythia_mining_benchmark/latest/benchmark_report.json"
+        "--output",
+        default="artifacts/pythia_mining_benchmark/latest/benchmark_report.json",
     )
     return parser.parse_args()
 

@@ -91,7 +91,8 @@ class PhiScalingContract:
             "components": (left_tier["label"], right_tier["label"]),
             "base10_exponent": int(left) + int(right),
             "phi_exponent": int(left) + int(right),
-            "phi_multiplier": left_tier["phi_multiplier"] * right_tier["phi_multiplier"],
+            "phi_multiplier": left_tier["phi_multiplier"]
+            * right_tier["phi_multiplier"],
             "scale_factor": left_tier["scale_factor"] * right_tier["scale_factor"],
             "scaling_model": self.scaling_model,
         }
@@ -103,9 +104,12 @@ class PhiScalingContract:
                 "scaling_model": self.scaling_model,
                 "requested_exponents": self.requested_exponents,
                 "combination_pairs": self.combination_pairs,
-                "tiers": tuple(self.tier(exponent) for exponent in self.requested_exponents),
+                "tiers": tuple(
+                    self.tier(exponent) for exponent in self.requested_exponents
+                ),
                 "combinations": tuple(
-                    self.combination(left, right) for left, right in self.combination_pairs
+                    self.combination(left, right)
+                    for left, right in self.combination_pairs
                 ),
             }
         )
@@ -144,14 +148,18 @@ class PhiStabilityDiagnostic:
                 Severity.WARN,
                 "collect_more_phi_tier_samples",
             )
-        ratios = [positive[index + 1] / positive[index] for index in range(len(positive) - 1)]
+        ratios = [
+            positive[index + 1] / positive[index] for index in range(len(positive) - 1)
+        ]
         ratio_mean = _mean(ratios)
         ratio_error = abs(ratio_mean - PHI) / PHI
         stable = ratio_error <= self.tolerance
         severity = (
             Severity.OK
             if stable
-            else (Severity.WATCH if ratio_error <= self.tolerance * 2.0 else Severity.WARN)
+            else (
+                Severity.WATCH if ratio_error <= self.tolerance * 2.0 else Severity.WARN
+            )
         )
         recommendation = (
             "phi_self_similarity_assumptions_hold"
@@ -242,7 +250,9 @@ class PhiTopologyLedgerCompressor:
 
     PHI_CERTIFICATE_TYPES = {"phi_scaling_invariant", "phi_scaling_violation"}
 
-    def compress(self, ledger: "CertificateLedger") -> PhiTopologyLedgerCompressionProof:
+    def compress(
+        self, ledger: "CertificateLedger"
+    ) -> PhiTopologyLedgerCompressionProof:
         entries = [
             entry
             for entry in ledger.entries
@@ -536,7 +546,9 @@ class KernelSupervisor:
         self.math_provider = math_provider or OperatorMathProvider(self.operator)
         self.ledger = ledger or CertificateLedger()
 
-    def validate_density(self, rho: NDArray[np.complex128], *, stage: str) -> KernelInvariantReport:
+    def validate_density(
+        self, rho: NDArray[np.complex128], *, stage: str
+    ) -> KernelInvariantReport:
         try:
             report = self.math_provider.invariant_report(rho, stage=stage)
         except ValueError as exc:
@@ -558,7 +570,9 @@ class KernelSupervisor:
                 "mathematical_exception", {"stage": stage, "report": report.to_dict()}
             )
             raise MathematicalException("kernel invariant violation", report)
-        self.ledger.append("kernel_invariant", {"stage": stage, "report": report.to_dict()})
+        self.ledger.append(
+            "kernel_invariant", {"stage": stage, "report": report.to_dict()}
+        )
         return report
 
     def execute_density_contract(
@@ -577,7 +591,9 @@ class KernelSupervisor:
         """
 
         if isinstance(rho, Mapping) and "phi_sequence" in rho:
-            self.validate_phi_stability(rho["phi_sequence"], stage=f"{stage}:phi_stability")
+            self.validate_phi_stability(
+                rho["phi_sequence"], stage=f"{stage}:phi_stability"
+            )
         self.validate_density(rho, stage=f"{stage}:pre")
         first = self._call_kernel(function, self.math_provider.copy_density(rho), seed)
         second = self._call_kernel(function, self.math_provider.copy_density(rho), seed)
@@ -597,11 +613,17 @@ class KernelSupervisor:
         report = self.validate_density(first, stage=f"{stage}:post")
         return first, report
 
-    def validate_phi_stability(self, values: Sequence[float], *, stage: str) -> PhiStabilityReport:
+    def validate_phi_stability(
+        self, values: Sequence[float], *, stage: str
+    ) -> PhiStabilityReport:
         """Ledger φ self-similarity violations before promoted kernel execution."""
         report = PhiStabilityDiagnostic().evaluate(values)
-        certificate_type = "phi_scaling_invariant" if report.stable else "phi_scaling_violation"
-        self.ledger.append(certificate_type, {"stage": stage, "report": report.to_dict()})
+        certificate_type = (
+            "phi_scaling_invariant" if report.stable else "phi_scaling_violation"
+        )
+        self.ledger.append(
+            certificate_type, {"stage": stage, "report": report.to_dict()}
+        )
         if not report.stable:
             raise MathematicalException(
                 "phi scaling invariant violation",
@@ -664,7 +686,9 @@ class CertificateLedger:
             "certificate_type": str(certificate_type),
             "certificate_hash": certificate_hash,
             "payload": canonical,
-            "timestamp_ns": (time.time_ns() if timestamp_ns is None else int(timestamp_ns)),
+            "timestamp_ns": (
+                time.time_ns() if timestamp_ns is None else int(timestamp_ns)
+            ),
         }
         entry = LedgerEntry(entry_hash=_hash_dict(material), **material)
         self._entries.append(entry)
@@ -778,7 +802,9 @@ class TelemetryContract:
                 "solver_latency_ms", maximum=10_000.0
             ).to_dict(),
             "phi_tier": FixedPointMetricSpec("phi_tier", maximum=100.0).to_dict(),
-            "phi_scale_factor": FixedPointMetricSpec("phi_scale_factor", maximum=120.0).to_dict(),
+            "phi_scale_factor": FixedPointMetricSpec(
+                "phi_scale_factor", maximum=120.0
+            ).to_dict(),
         }
 
     def encode(self, sample: Mapping[str, float]) -> dict[str, int]:
@@ -788,7 +814,9 @@ class TelemetryContract:
             value = float(sample.get(metric, 0.0))
             if metric == "phi_scale_factor":
                 value = math.log10(value) if value > 0.0 else 0.0
-            encoded[metric] = _to_fixed_point(value, maximum=float(specs[metric]["maximum"]))
+            encoded[metric] = _to_fixed_point(
+                value, maximum=float(specs[metric]["maximum"])
+            )
         return encoded
 
     def digest(self, samples: Iterable[Mapping[str, float]]) -> str:
@@ -826,7 +854,10 @@ class TelemetryContract:
     ) -> bool:
         return bool(
             passport.kernel_invariants_met
-            and any(entry.entry_hash == passport.ledger_entry_hash for entry in ledger.entries)
+            and any(
+                entry.entry_hash == passport.ledger_entry_hash
+                for entry in ledger.entries
+            )
             and ledger.verify_chain()
         )
 
@@ -901,23 +932,39 @@ class PhiHealthSupervisor:
         if not samples:
             raise ValueError("at least one telemetry sample is required")
         phis = [float(s.get("phi", self.phi_target)) for s in samples]
-        phi_tiers = [float(s["phi_scale_factor"]) for s in samples if "phi_scale_factor" in s]
+        phi_tiers = [
+            float(s["phi_scale_factor"]) for s in samples if "phi_scale_factor" in s
+        ]
         stability_report = (
-            PhiStabilityDiagnostic().evaluate(phi_tiers) if len(phi_tiers) >= 2 else None
+            PhiStabilityDiagnostic().evaluate(phi_tiers)
+            if len(phi_tiers) >= 2
+            else None
         )
         phi_density = _mean(phis)
         phi_drift = abs(phi_density - self.phi_target)
-        manifold_drift = _mean([abs(float(s.get("manifold_drift", 0.0))) for s in samples])
-        latency = _mean([max(0.0, float(s.get("solver_latency_ms", 0.0))) for s in samples])
-        health = _clip(1.0 - phi_drift - manifold_drift - min(latency / 10_000.0, 0.25), 0.0, 1.0)
-        status = Severity.OK if phi_drift < self.warn_drift and health >= 0.85 else Severity.WATCH
+        manifold_drift = _mean(
+            [abs(float(s.get("manifold_drift", 0.0))) for s in samples]
+        )
+        latency = _mean(
+            [max(0.0, float(s.get("solver_latency_ms", 0.0))) for s in samples]
+        )
+        health = _clip(
+            1.0 - phi_drift - manifold_drift - min(latency / 10_000.0, 0.25), 0.0, 1.0
+        )
+        status = (
+            Severity.OK
+            if phi_drift < self.warn_drift and health >= 0.85
+            else Severity.WATCH
+        )
         if phi_drift >= self.warn_drift or health < 0.75:
             status = Severity.WARN
         if phi_drift >= self.critical_drift or health < 0.45:
             status = Severity.CRITICAL
         suggestions: list[Mapping[str, str]] = []
         if status != Severity.OK:
-            suggestions.append({"severity": status.value, "action": "rebalance_phi_density_window"})
+            suggestions.append(
+                {"severity": status.value, "action": "rebalance_phi_density_window"}
+            )
         if manifold_drift > 0.05:
             suggestions.append(
                 {
@@ -926,7 +973,9 @@ class PhiHealthSupervisor:
                 }
             )
         if stability_report is not None and not stability_report.stable:
-            status = Severity.WARN if status in (Severity.OK, Severity.WATCH) else status
+            status = (
+                Severity.WARN if status in (Severity.OK, Severity.WATCH) else status
+            )
             suggestions.append(
                 {
                     "severity": Severity.WARN.value,
@@ -1023,7 +1072,9 @@ class ElevationBridge:
         anonymized: list[Mapping[str, Any]] = []
         for index, sample in enumerate(samples):
             numeric = {
-                key: value for key, value in sample.items() if isinstance(value, (int, float))
+                key: value
+                for key, value in sample.items()
+                if isinstance(value, (int, float))
             }
             anonymized.append(
                 {
@@ -1065,7 +1116,9 @@ class QuantumRuntimeManifestBuilder:
                 "supports_dynamic_phi_exponential_scaling": True,
                 "supports_phi_stability_diagnostic": True,
             },
-            facade_api_signatures=_facade_signatures_from_instances((self.operator, self.verifier)),
+            facade_api_signatures=_facade_signatures_from_instances(
+                (self.operator, self.verifier)
+            ),
             endpoint_invariants={
                 "ManifoldOperator.ensure_density_state": (
                     "trace_one",
@@ -1113,7 +1166,9 @@ class QuantumRuntimeManifestBuilder:
         compliance = ComplianceManifest()
         invariants = self.kernel_invariants(rho)
         phi_scaling = PhiScalingContract().to_dict()
-        stability = PhiStabilityDiagnostic().evaluate([PHI**n for n in (0, 1, 2, 3)]).to_dict()
+        stability = (
+            PhiStabilityDiagnostic().evaluate([PHI**n for n in (0, 1, 2, 3)]).to_dict()
+        )
         payload = {
             "version": RUNTIME_MANIFEST_VERSION,
             "module_versions": {
@@ -1144,13 +1199,17 @@ class QuantumRuntimeManifestBuilder:
     ) -> Path:
         target = Path(path)
         manifest = self.build(ledger=ledger, rho=rho)
-        target.write_text(json.dumps(manifest, sort_keys=True, indent=2), encoding="utf-8")
+        target.write_text(
+            json.dumps(manifest, sort_keys=True, indent=2), encoding="utf-8"
+        )
         return target
 
     def production_response(
         self, endpoint: str, result: Mapping[str, Any], ledger: CertificateLedger
     ) -> ProductionResponse:
-        entry = ledger.append("production_response", {"endpoint": endpoint, "result": result})
+        entry = ledger.append(
+            "production_response", {"endpoint": endpoint, "result": result}
+        )
         return ProductionResponse(
             result=_canonicalize(result),
             module_version_hash=_hash_dict(

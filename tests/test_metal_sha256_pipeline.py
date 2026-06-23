@@ -87,4 +87,7 @@ def test_unified_engine_exposes_verifier_telemetry() -> None:
     assert state["state"]["last_batch_hashrate_hps"] > 0
     assert state["state"]["last_candidate_hash"] == candidate.block_hash
     assert state["verifier"]["configured_capacity_ehs"] == 1.0
-    assert state["proofs"]["sha256d_external_oracle"] == "bitcoin_header_double_sha256_pool_target"
+    assert (
+        state["proofs"]["sha256d_external_oracle"]
+        == "bitcoin_header_double_sha256_pool_target"
+    )

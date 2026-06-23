@@ -240,7 +240,9 @@ def run_comparative_benchmark(
     print()
 
     # Comparative analysis
-    convergence_ratio = phi_metrics.samples_to_convergence / prng_metrics.samples_to_convergence
+    convergence_ratio = (
+        phi_metrics.samples_to_convergence / prng_metrics.samples_to_convergence
+    )
     rate_improvement = (
         phi_metrics.convergence_rate_exponent / prng_metrics.convergence_rate_exponent
     )

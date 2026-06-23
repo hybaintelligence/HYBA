@@ -214,7 +214,9 @@ class CausalAttributionEngine:
         self.coverage_threshold = float(coverage_threshold)
 
         if not 0.0 <= self.coverage_threshold <= 1.0:
-            raise ValueError(f"coverage_threshold must be in [0, 1], got {coverage_threshold}")
+            raise ValueError(
+                f"coverage_threshold must be in [0, 1], got {coverage_threshold}"
+            )
 
     def rank_hotspots(
         self,
@@ -373,7 +375,11 @@ class CausalAttributionEngine:
         Returns:
             True if explanation meets requirements
         """
-        threshold = required_coverage if required_coverage is not None else self.coverage_threshold
+        threshold = (
+            required_coverage
+            if required_coverage is not None
+            else self.coverage_threshold
+        )
         return explanation.counterfactual.coverage_ratio >= threshold
 
 
@@ -386,10 +392,18 @@ class SecuritySwarmGraph(FabricGraph):
 
         if event_type == "mode_transition":
             # Mode transitions involve all security nodes
-            return [node_id for node_id, meta in self.nodes.items() if meta.get("type") == "security"]
+            return [
+                node_id
+                for node_id, meta in self.nodes.items()
+                if meta.get("type") == "security"
+            ]
         elif event_type == "intrusion_detection":
             # Intrusion detection involves monitoring nodes
-            return [node_id for node_id, meta in self.nodes.items() if meta.get("type") in ["monitor", "detector"]]
+            return [
+                node_id
+                for node_id, meta in self.nodes.items()
+                if meta.get("type") in ["monitor", "detector"]
+            ]
         else:
             return list(self.nodes.keys())
 
@@ -416,10 +430,18 @@ class MiningGraph(FabricGraph):
 
         if event_type == "nonce_found":
             # Nonce discovery involves solver and memory nodes
-            return [node_id for node_id, meta in self.nodes.items() if meta.get("type") in ["solver", "memory"]]
+            return [
+                node_id
+                for node_id, meta in self.nodes.items()
+                if meta.get("type") in ["solver", "memory"]
+            ]
         elif event_type == "share_submission":
             # Share submission involves network and validation nodes
-            return [node_id for node_id, meta in self.nodes.items() if meta.get("type") in ["network", "validator"]]
+            return [
+                node_id
+                for node_id, meta in self.nodes.items()
+                if meta.get("type") in ["network", "validator"]
+            ]
         else:
             return list(self.nodes.keys())
 

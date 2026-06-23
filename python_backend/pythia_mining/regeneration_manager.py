@@ -33,7 +33,10 @@ SCAR_FREE_FIDELITY_FLOOR = 0.999
 def _json_safe(value: object) -> object:
     """Convert regeneration traces into JSON-safe primitives."""
     if isinstance(value, dict):
-        return {str(getattr(key, "value", key)): _json_safe(item) for key, item in value.items()}
+        return {
+            str(getattr(key, "value", key)): _json_safe(item)
+            for key, item in value.items()
+        }
     if isinstance(value, list):
         return [_json_safe(item) for item in value]
     if isinstance(value, tuple):
@@ -105,10 +108,14 @@ class RegenerationManager:
 
     def _require_lane(self, lane_id: int) -> LaneRegenerationState:
         if lane_id not in self.lanes:
-            raise ValueError(f"Invalid lane_id {lane_id}; expected 0-{self.lane_count - 1}")
+            raise ValueError(
+                f"Invalid lane_id {lane_id}; expected 0-{self.lane_count - 1}"
+            )
         return self.lanes[lane_id]
 
-    def register_lane_target(self, lane_id: int, module_path: str, target_symbol: str) -> Dict[str, object]:
+    def register_lane_target(
+        self, lane_id: int, module_path: str, target_symbol: str
+    ) -> Dict[str, object]:
         """Attach a code target to a regeneration lane.
 
         This makes the lane manager able to route scar/fidelity/φ-floor events
@@ -154,7 +161,9 @@ class RegenerationManager:
             "innervation_stable": self.system_phi > PHI_FLOOR,
             "active_blastemas": len(self.lanes),
             "global_fidelity_mean": fmean(fidelities) if fidelities else 1.0,
-            "regeneration_potential": "MAXIMAL" if self.system_phi > PHI_FLOOR else "LOCKED",
+            "regeneration_potential": (
+                "MAXIMAL" if self.system_phi > PHI_FLOOR else "LOCKED"
+            ),
             "fidelity_events": len(self.fidelity_history),
             "healing_proposals_staged": len(self.healing_proposals),
             "lanes": self.get_blastema_pool(),
@@ -167,7 +176,9 @@ class RegenerationManager:
             raise RuntimeError("Innervation is below phi floor; regeneration is locked")
 
         start = time.perf_counter()
-        logging.getLogger(__name__).info("Salamander regeneration requested for lane %s", lane_id)
+        logging.getLogger(__name__).info(
+            "Salamander regeneration requested for lane %s", lane_id
+        )
         context = ContextSignal(
             clifford_index=lane.clifford_index,
             target_role=Role.HEALTHY_SPECIALIZED,
@@ -196,7 +207,8 @@ class RegenerationManager:
             module_id=lane.module_state.module_id,
             pre_injury_phi=self.system_phi,
             post_recovery_fidelity=fidelity,
-            scarring_detected=fidelity < SCAR_FREE_FIDELITY_FLOOR or status != "success",
+            scarring_detected=fidelity < SCAR_FREE_FIDELITY_FLOOR
+            or status != "success",
             recovery_duration_ms=duration_ms,
             status=status,
             collapsed_role=trace.get("collapsed_role"),
@@ -204,7 +216,9 @@ class RegenerationManager:
         )
         self.fidelity_history.append(event)
         if event.scarring_detected and lane.module_path and lane.target_symbol:
-            self.stage_self_healing_for_lane(lane_id, lane.module_path, lane.target_symbol, event)
+            self.stage_self_healing_for_lane(
+                lane_id, lane.module_path, lane.target_symbol, event
+            )
         return event
 
     def event_to_damage_report(self, event: RegenerationEventRecord) -> Dict[str, Any]:
@@ -224,7 +238,11 @@ class RegenerationManager:
             issues.append("lane telemetry routed for sovereign audit")
 
         return {
-            "needs_repair": bool(event.scarring_detected or event.status != "success" or event.pre_injury_phi <= PHI_FLOOR),
+            "needs_repair": bool(
+                event.scarring_detected
+                or event.status != "success"
+                or event.pre_injury_phi <= PHI_FLOOR
+            ),
             "lane_id": event.lane_id,
             "module_path": lane.module_path,
             "target_name": lane.target_symbol,
@@ -232,7 +250,8 @@ class RegenerationManager:
             "blastema_state": {
                 "module_id": lane.module_state.module_id,
                 "role_probabilities": {
-                    role.value: probability for role, probability in lane.module_state.role_probabilities().items()
+                    role.value: probability
+                    for role, probability in lane.module_state.role_probabilities().items()
                 },
                 "entropy": lane.module_state.von_neumann_entropy(),
             },
@@ -251,8 +270,12 @@ class RegenerationManager:
                 "minimum_phi": PHI_FLOOR,
                 "scarring_detected": False,
             },
-            "performance_impact": "LANE_LOCAL" if event.recovery_duration_ms < 1000 else "LATENCY_RISK",
-            "stability_impact": "SCARRING_RISK" if event.scarring_detected else "STABLE",
+            "performance_impact": (
+                "LANE_LOCAL" if event.recovery_duration_ms < 1000 else "LATENCY_RISK"
+            ),
+            "stability_impact": (
+                "SCARRING_RISK" if event.scarring_detected else "STABLE"
+            ),
             "architecture_impact": "LOCAL_LIMB",
         }
 
@@ -290,7 +313,9 @@ class RegenerationManager:
         self.healing_proposals.append(packet)
         return packet
 
-    def analyse_organism_governance(self, pulvini_state: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    def analyse_organism_governance(
+        self, pulvini_state: Optional[Dict[str, Any]] = None
+    ) -> Dict[str, Any]:
         """Return CLRI/TRM/predictive/rewiring/benchmark/evidence organism report.
 
         This is the manager-level entrypoint for Salamander's multi-scale
@@ -298,7 +323,9 @@ class RegenerationManager:
         not apply rewires, deploy repairs, or alter Stable Core boundaries.
         """
 
-        from pythia_self_healing.autonomic_organism_governor import SalamanderOrganismGovernor
+        from pythia_self_healing.autonomic_organism_governor import (
+            SalamanderOrganismGovernor,
+        )
 
         governor = SalamanderOrganismGovernor()
         return governor.analyse_manager(self, pulvini_state=pulvini_state)

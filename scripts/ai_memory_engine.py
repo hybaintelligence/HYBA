@@ -93,7 +93,9 @@ class AIMemoryEngine:
 
         return memories
 
-    def get_evidence(self, block_height: Optional[int] = None, limit: int = 100) -> List[Dict]:
+    def get_evidence(
+        self, block_height: Optional[int] = None, limit: int = 100
+    ) -> List[Dict]:
         """Retrieve empirical evidence."""
         query = "SELECT * FROM empirical_evidence"
         params = []
@@ -124,11 +126,13 @@ class AIMemoryEngine:
 
     def get_phi_baseline(self) -> Optional[Dict]:
         """Get Phi resonance baseline statistics."""
-        self.cursor.execute("""
+        self.cursor.execute(
+            """
         SELECT * FROM phi_resonance_baseline
         WHERE baseline_type = 'bitcoin_empirical_100_blocks'
         ORDER BY collected_at DESC LIMIT 1
-        """)
+        """
+        )
 
         row = self.cursor.fetchone()
         if row:
@@ -163,12 +167,16 @@ class AIMemoryEngine:
             "supporting_evidence": {
                 "phi_baseline": baseline,
                 "recent_blocks_sampled": len(evidence_sample),
-                "avg_phi_resonance": sum(e["phi_resonance"] for e in evidence_sample)
-                / len(evidence_sample)
-                if evidence_sample
-                else 0,
+                "avg_phi_resonance": (
+                    sum(e["phi_resonance"] for e in evidence_sample)
+                    / len(evidence_sample)
+                    if evidence_sample
+                    else 0
+                ),
             },
-            "conclusion": self._form_conclusion(hypothesis, baseline, evidence_sample, query_str),
+            "conclusion": self._form_conclusion(
+                hypothesis, baseline, evidence_sample, query_str
+            ),
             "confidence": self._calculate_reasoning_confidence(
                 hypothesis, baseline, evidence_sample
             ),
@@ -180,7 +188,11 @@ class AIMemoryEngine:
         return reasoning
 
     def _form_conclusion(
-        self, hypothesis: Optional[Dict], baseline: Optional[Dict], evidence: List[Dict], query: str
+        self,
+        hypothesis: Optional[Dict],
+        baseline: Optional[Dict],
+        evidence: List[Dict],
+        query: str,
     ) -> str:
         """Form a conclusion based on evidence."""
         if not hypothesis:
@@ -216,7 +228,9 @@ class AIMemoryEngine:
         if baseline:
             # Higher z-score = higher confidence
             z_score = baseline.get("z_score", 0)
-            confidence = min(1.0, confidence + (z_score / 20.0))  # Boost for strong z-score
+            confidence = min(
+                1.0, confidence + (z_score / 20.0)
+            )  # Boost for strong z-score
 
         if evidence:
             # More evidence = higher confidence

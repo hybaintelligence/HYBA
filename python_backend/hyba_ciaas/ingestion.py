@@ -10,7 +10,18 @@ import uuid
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Callable, Dict, Iterable, Iterator, List, Mapping, Optional, Tuple, Union
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    Iterable,
+    Iterator,
+    List,
+    Mapping,
+    Optional,
+    Tuple,
+    Union,
+)
 
 import numpy as np
 import pandas as pd
@@ -90,7 +101,9 @@ class DataSourceSpec:
             data_format=payload_dict.get("data_format"),
             tenant_id=payload_dict.get("tenant_id"),
             purpose=payload_dict.get("purpose"),
-            privacy_classification=str(payload_dict.get("privacy_classification", "unclassified")),
+            privacy_classification=str(
+                payload_dict.get("privacy_classification", "unclassified")
+            ),
             tags=tags,
             query=payload_dict.get("query"),
             limit=payload_dict.get("limit"),
@@ -174,15 +187,19 @@ class IngestionEnvelope:
     def schema_as_dict(self) -> Dict[str, Any]:
         sample = self.schema.sample_rows
         return {
-            "columns": {name: dtype.value for name, dtype in self.schema.columns.items()},
+            "columns": {
+                name: dtype.value for name, dtype in self.schema.columns.items()
+            },
             "row_count": self.schema.row_count,
             "estimated_size_bytes": self.schema.estimated_size_bytes,
             "last_updated": self.schema.last_updated,
             "missing_value_rate": self.schema.missing_value_rate,
             "data_types_detected": dict(self.schema.data_types_detected),
-            "sample_rows": sample.head(5).to_dict(orient="records")
-            if isinstance(sample, pd.DataFrame)
-            else [],
+            "sample_rows": (
+                sample.head(5).to_dict(orient="records")
+                if isinstance(sample, pd.DataFrame)
+                else []
+            ),
         }
 
     def to_service_payload(self, include_data: bool = False) -> Dict[str, Any]:
@@ -206,7 +223,9 @@ class IngestionEnvelope:
         if include_data:
             payload["records"] = self.data.to_dict(orient="records")
             payload["normalized_data"] = (
-                self.normalized_data.tolist() if self.normalized_data is not None else None
+                self.normalized_data.tolist()
+                if self.normalized_data is not None
+                else None
             )
         return payload
 
@@ -235,10 +254,14 @@ class DataFrameConnector(UniversalConnector):
             last_updated=_utc_now(),
             sample_rows=df.head(100),
             missing_value_rate=float(df.isna().sum().sum() / cells) if cells else 0.0,
-            data_types_detected={column: str(dtype) for column, dtype in df.dtypes.items()},
+            data_types_detected={
+                column: str(dtype) for column, dtype in df.dtypes.items()
+            },
         )
 
-    def fetch_data(self, query: Optional[str] = None, limit: int = None) -> pd.DataFrame:
+    def fetch_data(
+        self, query: Optional[str] = None, limit: int = None
+    ) -> pd.DataFrame:
         df = self._ensure_dataframe()
         if query:
             df = df.query(query)
@@ -257,7 +280,9 @@ class DataFrameConnector(UniversalConnector):
 
     def _load_dataframe(self) -> pd.DataFrame:
         config = self.config
-        data = config.get("data", config.get("records", config.get("rows", config.get("array"))))
+        data = config.get(
+            "data", config.get("records", config.get("rows", config.get("array")))
+        )
         fmt = str(config.get("format") or config.get("data_format") or "").lower()
 
         if isinstance(data, pd.DataFrame):
@@ -271,7 +296,11 @@ class DataFrameConnector(UniversalConnector):
                 return pd.json_normalize(list(data))
             return pd.DataFrame(data)
         if isinstance(data, Mapping):
-            return pd.json_normalize(data) if any(isinstance(v, (list, tuple, dict)) for v in data.values()) else pd.DataFrame([dict(data)])
+            return (
+                pd.json_normalize(data)
+                if any(isinstance(v, (list, tuple, dict)) for v in data.values())
+                else pd.DataFrame([dict(data)])
+            )
         if isinstance(data, str):
             text = data.strip()
             if fmt == "csv" or ("\n" in text and "," in text.splitlines()[0]):
@@ -289,7 +318,11 @@ class DataFrameConnector(UniversalConnector):
         if isinstance(value, Mapping):
             return pd.json_normalize(value)
         if isinstance(value, list):
-            return pd.json_normalize(value) if all(isinstance(item, Mapping) for item in value) else pd.DataFrame(value)
+            return (
+                pd.json_normalize(value)
+                if all(isinstance(item, Mapping) for item in value)
+                else pd.DataFrame(value)
+            )
         if isinstance(value, np.ndarray):
             return self._from_array(value)
         return pd.DataFrame({"value": [value]})
@@ -316,9 +349,13 @@ class DataFrameConnector(UniversalConnector):
         if array.ndim == 1:
             return pd.DataFrame({"value": array})
         if array.ndim == 2:
-            return pd.DataFrame(array, columns=[f"feature_{i}" for i in range(array.shape[1])])
+            return pd.DataFrame(
+                array, columns=[f"feature_{i}" for i in range(array.shape[1])]
+            )
         flat = array.reshape(array.shape[0], -1)
-        return pd.DataFrame(flat, columns=[f"feature_{i}" for i in range(flat.shape[1])])
+        return pd.DataFrame(
+            flat, columns=[f"feature_{i}" for i in range(flat.shape[1])]
+        )
 
     @staticmethod
     def _infer_type(series: pd.Series) -> DataType:
@@ -352,18 +389,63 @@ class ConnectorRegistry:
     @classmethod
     def with_defaults(cls) -> "ConnectorRegistry":
         registry = cls()
-        registry.register("inline", DataFrameConnector, ("records", "rows", "dataframe", "array"))
-        registry.register("file", DataFrameConnector, ("csv", "json", "jsonl", "parquet", "excel", "text"))
-        registry.register("sql", "hyba_ciaas.connectors.sql_connector.SQLConnector", ("database", "postgres", "postgresql", "mysql", "oracle", "snowflake", "bigquery", "sqlserver"))
-        registry.register("stream", "hyba_ciaas.connectors.kafka_connector.KafkaConnector", ("kafka", "kinesis", "eventhub", "event_stream", "events"))
-        registry.register("object_store", "hyba_ciaas.connectors.kafka_connector.S3Connector", ("s3", "adls", "gcs", "data_lake", "blob"))
-        registry.register("http", "hyba_ciaas.connectors.http_connector.HTTPConnector", ("api", "rest", "graphql", "webhook"))
-        registry.register("scada", "hyba_ciaas.connectors.scada_connector.SCADAConnector", ("industrial_iot", "iot", "opcua", "modbus", "energy"))
-        registry.register("pubchem", "hyba_ciaas.connectors.pubchem_connector.PubChemConnector", ("chemistry", "molecule", "compound", "drug_discovery"))
-        registry.register("protein", "hyba_ciaas.connectors.protein_connector.ProteinConnector", ("fasta", "pdb", "uniprot", "bioinformatics"))
+        registry.register(
+            "inline", DataFrameConnector, ("records", "rows", "dataframe", "array")
+        )
+        registry.register(
+            "file",
+            DataFrameConnector,
+            ("csv", "json", "jsonl", "parquet", "excel", "text"),
+        )
+        registry.register(
+            "sql",
+            "hyba_ciaas.connectors.sql_connector.SQLConnector",
+            (
+                "database",
+                "postgres",
+                "postgresql",
+                "mysql",
+                "oracle",
+                "snowflake",
+                "bigquery",
+                "sqlserver",
+            ),
+        )
+        registry.register(
+            "stream",
+            "hyba_ciaas.connectors.kafka_connector.KafkaConnector",
+            ("kafka", "kinesis", "eventhub", "event_stream", "events"),
+        )
+        registry.register(
+            "object_store",
+            "hyba_ciaas.connectors.kafka_connector.S3Connector",
+            ("s3", "adls", "gcs", "data_lake", "blob"),
+        )
+        registry.register(
+            "http",
+            "hyba_ciaas.connectors.http_connector.HTTPConnector",
+            ("api", "rest", "graphql", "webhook"),
+        )
+        registry.register(
+            "scada",
+            "hyba_ciaas.connectors.scada_connector.SCADAConnector",
+            ("industrial_iot", "iot", "opcua", "modbus", "energy"),
+        )
+        registry.register(
+            "pubchem",
+            "hyba_ciaas.connectors.pubchem_connector.PubChemConnector",
+            ("chemistry", "molecule", "compound", "drug_discovery"),
+        )
+        registry.register(
+            "protein",
+            "hyba_ciaas.connectors.protein_connector.ProteinConnector",
+            ("fasta", "pdb", "uniprot", "bioinformatics"),
+        )
         return registry
 
-    def register(self, source_type: str, factory: ConnectorFactory, aliases: Iterable[str] = ()) -> None:
+    def register(
+        self, source_type: str, factory: ConnectorFactory, aliases: Iterable[str] = ()
+    ) -> None:
         canonical = self._normalise(source_type)
         self._factories[canonical] = factory
         self._aliases[canonical] = canonical
@@ -376,7 +458,9 @@ class ConnectorRegistry:
             return self._aliases[key]
         if key in self._factories:
             return key
-        raise KeyError(f"Unknown ingestion source_type={source_type!r}; registered={sorted(self._factories)}")
+        raise KeyError(
+            f"Unknown ingestion source_type={source_type!r}; registered={sorted(self._factories)}"
+        )
 
     def create_connector(self, spec: DataSourceSpec) -> UniversalConnector:
         canonical = self.resolve(spec.source_type)
@@ -390,11 +474,15 @@ class ConnectorRegistry:
         config.setdefault("data_format", spec.data_format)
         connector = factory(config)  # type: ignore[misc]
         if not isinstance(connector, UniversalConnector):
-            raise TypeError(f"Factory for {canonical!r} did not return UniversalConnector")
+            raise TypeError(
+                f"Factory for {canonical!r} did not return UniversalConnector"
+            )
         return connector
 
     def list_source_types(self) -> Dict[str, List[str]]:
-        aliases: Dict[str, List[str]] = {source_type: [] for source_type in self._factories}
+        aliases: Dict[str, List[str]] = {
+            source_type: [] for source_type in self._factories
+        }
         for alias, canonical in self._aliases.items():
             if alias != canonical:
                 aliases.setdefault(canonical, []).append(alias)
@@ -424,42 +512,92 @@ class DataIngestionService:
         query: Optional[str] = None,
         limit: Optional[int] = None,
     ) -> IngestionEnvelope:
-        spec = source if isinstance(source, DataSourceSpec) else DataSourceSpec.from_mapping(source)
+        spec = (
+            source
+            if isinstance(source, DataSourceSpec)
+            else DataSourceSpec.from_mapping(source)
+        )
         run_id = str(uuid.uuid4())
         started_at = _utc_now()
-        lineage = [LineageEvent("ingestion_requested", details={"source_id": spec.canonical_source_id, "source_type": spec.source_type, "sector": spec.sector})]
+        lineage = [
+            LineageEvent(
+                "ingestion_requested",
+                details={
+                    "source_id": spec.canonical_source_id,
+                    "source_type": spec.source_type,
+                    "sector": spec.sector,
+                },
+            )
+        ]
         warnings: List[str] = []
         connector = self.registry.create_connector(spec)
 
         try:
             connector.connect()
-            lineage.append(LineageEvent("connector_connected", details={"connector": connector.__class__.__name__}))
+            lineage.append(
+                LineageEvent(
+                    "connector_connected",
+                    details={"connector": connector.__class__.__name__},
+                )
+            )
             schema = connector.auto_detect_schema()
-            lineage.append(LineageEvent("schema_detected", details={"rows": schema.row_count, "columns": len(schema.columns)}))
-            raw_df = connector.fetch_data(query=query or spec.query, limit=limit or spec.limit)
-            raw_df = raw_df if isinstance(raw_df, pd.DataFrame) else pd.DataFrame(raw_df)
-            lineage.append(LineageEvent("data_fetched", details={"shape": tuple(raw_df.shape)}))
+            lineage.append(
+                LineageEvent(
+                    "schema_detected",
+                    details={"rows": schema.row_count, "columns": len(schema.columns)},
+                )
+            )
+            raw_df = connector.fetch_data(
+                query=query or spec.query, limit=limit or spec.limit
+            )
+            raw_df = (
+                raw_df if isinstance(raw_df, pd.DataFrame) else pd.DataFrame(raw_df)
+            )
+            lineage.append(
+                LineageEvent("data_fetched", details={"shape": tuple(raw_df.shape)})
+            )
 
             quality = self.assess_quality(raw_df)
             warnings.extend(quality.warnings)
             prepared_df, prep_warnings = self.prepare_for_normalization(raw_df)
             warnings.extend(prep_warnings)
-            lineage.append(LineageEvent("data_prepared", details={"prepared_shape": tuple(prepared_df.shape)}))
+            lineage.append(
+                LineageEvent(
+                    "data_prepared",
+                    details={"prepared_shape": tuple(prepared_df.shape)},
+                )
+            )
 
             normalized: Optional[np.ndarray]
             normalized_shape: Optional[Tuple[int, int]]
             if spec.normalize:
-                normalized = np.empty((0, 0), dtype=np.float32) if prepared_df.empty else connector.normalize_data(prepared_df, self.normalization_config)
+                normalized = (
+                    np.empty((0, 0), dtype=np.float32)
+                    if prepared_df.empty
+                    else connector.normalize_data(
+                        prepared_df, self.normalization_config
+                    )
+                )
                 normalized_shape = tuple(normalized.shape)
-                lineage.append(LineageEvent("data_normalized", details={"shape": normalized_shape}))
+                lineage.append(
+                    LineageEvent("data_normalized", details={"shape": normalized_shape})
+                )
             else:
                 normalized = None
                 normalized_shape = None
                 lineage.append(LineageEvent("normalization_skipped"))
 
-            compression_info = self._try_compress(normalized, warnings) if spec.compression and normalized is not None and normalized.size else None
+            compression_info = (
+                self._try_compress(normalized, warnings)
+                if spec.compression and normalized is not None and normalized.size
+                else None
+            )
             if spec.compression:
-                lineage.append(LineageEvent("compression_attempted", details=compression_info or {}))
+                lineage.append(
+                    LineageEvent(
+                        "compression_attempted", details=compression_info or {}
+                    )
+                )
 
             return IngestionEnvelope(
                 run_id=run_id,
@@ -487,13 +625,19 @@ class DataIngestionService:
                 },
             )
         except Exception as exc:
-            lineage.append(LineageEvent("ingestion_failed", "error", details={"error": str(exc)}))
-            logger.exception("HYBA central ingestion failed for %s", spec.canonical_source_id)
+            lineage.append(
+                LineageEvent("ingestion_failed", "error", details={"error": str(exc)})
+            )
+            logger.exception(
+                "HYBA central ingestion failed for %s", spec.canonical_source_id
+            )
             raise
         finally:
             connector.disconnect()
 
-    def ingest_many(self, sources: Iterable[Union[DataSourceSpec, Mapping[str, Any]]]) -> List[IngestionEnvelope]:
+    def ingest_many(
+        self, sources: Iterable[Union[DataSourceSpec, Mapping[str, Any]]]
+    ) -> List[IngestionEnvelope]:
         return [self.ingest(source) for source in sources]
 
     def stream(
@@ -502,20 +646,34 @@ class DataIngestionService:
         batch_size: Optional[int] = None,
         max_batches: Optional[int] = None,
     ) -> Iterator[IngestionEnvelope]:
-        spec = source if isinstance(source, DataSourceSpec) else DataSourceSpec.from_mapping(source)
+        spec = (
+            source
+            if isinstance(source, DataSourceSpec)
+            else DataSourceSpec.from_mapping(source)
+        )
         connector = self.registry.create_connector(spec)
         started_at = _utc_now()
         try:
             connector.connect()
             schema = connector.auto_detect_schema()
-            for batch_index, raw_df in enumerate(connector.stream_data(batch_size=batch_size or spec.batch_size)):
+            for batch_index, raw_df in enumerate(
+                connector.stream_data(batch_size=batch_size or spec.batch_size)
+            ):
                 if max_batches is not None and batch_index >= max_batches:
                     break
-                raw_df = raw_df if isinstance(raw_df, pd.DataFrame) else pd.DataFrame(raw_df)
+                raw_df = (
+                    raw_df if isinstance(raw_df, pd.DataFrame) else pd.DataFrame(raw_df)
+                )
                 quality = self.assess_quality(raw_df)
                 prepared_df, warnings = self.prepare_for_normalization(raw_df)
                 if spec.normalize:
-                    normalized = np.empty((0, 0), dtype=np.float32) if prepared_df.empty else connector.normalize_data(prepared_df, self.normalization_config)
+                    normalized = (
+                        np.empty((0, 0), dtype=np.float32)
+                        if prepared_df.empty
+                        else connector.normalize_data(
+                            prepared_df, self.normalization_config
+                        )
+                    )
                     normalized_shape = tuple(normalized.shape)
                 else:
                     normalized = None
@@ -534,14 +692,28 @@ class DataIngestionService:
                     normalized_shape=normalized_shape,
                     started_at=started_at,
                     completed_at=_utc_now(),
-                    lineage=[LineageEvent("stream_batch_ingested", details={"batch_index": batch_index})],
+                    lineage=[
+                        LineageEvent(
+                            "stream_batch_ingested",
+                            details={"batch_index": batch_index},
+                        )
+                    ],
                     warnings=warnings + quality.warnings,
-                    metadata={"batch_index": batch_index, "tenant_id": spec.tenant_id, "purpose": spec.purpose, "privacy_classification": spec.privacy_classification, "tags": list(spec.tags), **spec.metadata},
+                    metadata={
+                        "batch_index": batch_index,
+                        "tenant_id": spec.tenant_id,
+                        "purpose": spec.purpose,
+                        "privacy_classification": spec.privacy_classification,
+                        "tags": list(spec.tags),
+                        **spec.metadata,
+                    },
                 )
         finally:
             connector.disconnect()
 
-    def prepare_for_normalization(self, df: pd.DataFrame) -> Tuple[pd.DataFrame, List[str]]:
+    def prepare_for_normalization(
+        self, df: pd.DataFrame
+    ) -> Tuple[pd.DataFrame, List[str]]:
         warnings: List[str] = []
         if df is None or df.empty:
             return pd.DataFrame(), warnings
@@ -555,7 +727,10 @@ class DataIngestionService:
                 prepared[column] = series.astype("Int64")
                 continue
             if pd.api.types.is_datetime64_any_dtype(series):
-                prepared[column] = pd.to_datetime(series, errors="coerce").astype("int64") / 1_000_000_000
+                prepared[column] = (
+                    pd.to_datetime(series, errors="coerce").astype("int64")
+                    / 1_000_000_000
+                )
                 continue
             if series.dtype != object:
                 continue
@@ -563,28 +738,48 @@ class DataIngestionService:
             non_null = series.dropna()
             if non_null.empty:
                 continue
-            if non_null.map(lambda value: isinstance(value, (Mapping, list, tuple, np.ndarray))).any():
-                prepared[column] = series.map(lambda value: _json_string(value) if isinstance(value, (Mapping, list, tuple, np.ndarray)) else value)
+            if non_null.map(
+                lambda value: isinstance(value, (Mapping, list, tuple, np.ndarray))
+            ).any():
+                prepared[column] = series.map(
+                    lambda value: (
+                        _json_string(value)
+                        if isinstance(value, (Mapping, list, tuple, np.ndarray))
+                        else value
+                    )
+                )
 
-            parsed_datetime = pd.to_datetime(prepared[column], errors="coerce", utc=True)
+            parsed_datetime = pd.to_datetime(
+                prepared[column], errors="coerce", utc=True
+            )
             if parsed_datetime.notna().mean() >= 0.85:
                 prepared[column] = parsed_datetime.astype("int64") / 1_000_000_000
                 continue
 
             text_values = prepared[column].dropna().astype(str)
             unique_count = text_values.nunique(dropna=True)
-            mean_length = float(text_values.str.len().mean()) if len(text_values) else 0.0
+            mean_length = (
+                float(text_values.str.len().mean()) if len(text_values) else 0.0
+            )
             if unique_count > self.max_text_categories or mean_length > 80:
-                prepared[f"{column}__text_length"] = prepared[column].astype(str).str.len()
-                prepared[f"{column}__hash_bucket"] = prepared[column].map(self._hash_bucket)
+                prepared[f"{column}__text_length"] = (
+                    prepared[column].astype(str).str.len()
+                )
+                prepared[f"{column}__hash_bucket"] = prepared[column].map(
+                    self._hash_bucket
+                )
                 prepared = prepared.drop(columns=[column])
-                warnings.append(f"High-cardinality text column {column!r} converted to length/hash features")
+                warnings.append(
+                    f"High-cardinality text column {column!r} converted to length/hash features"
+                )
 
         return prepared, warnings
 
     def assess_quality(self, df: pd.DataFrame) -> DataQualityReport:
         if df is None or df.empty:
-            return DataQualityReport(0, 0, 1.0, 0.0, 0, [], 0.0, ["Source returned no rows"])
+            return DataQualityReport(
+                0, 0, 1.0, 0.0, 0, [], 0.0, ["Source returned no rows"]
+            )
 
         rows, columns = df.shape
         cells = rows * columns
@@ -614,15 +809,38 @@ class DataIngestionService:
         if empty_columns:
             warnings.append(f"{empty_columns} completely empty columns detected")
 
-        score = max(0.0, min(1.0, 1.0 - min(0.45, missing * 0.9) - min(0.25, duplicate_rate * 0.5) - min(0.2, (empty_columns / max(columns, 1)) * 0.5)))
-        return DataQualityReport(rows, columns, missing, duplicate_rate, empty_columns, high_cardinality, score, warnings)
+        score = max(
+            0.0,
+            min(
+                1.0,
+                1.0
+                - min(0.45, missing * 0.9)
+                - min(0.25, duplicate_rate * 0.5)
+                - min(0.2, (empty_columns / max(columns, 1)) * 0.5),
+            ),
+        )
+        return DataQualityReport(
+            rows,
+            columns,
+            missing,
+            duplicate_rate,
+            empty_columns,
+            high_cardinality,
+            score,
+            warnings,
+        )
 
     @staticmethod
     def _hash_bucket(value: Any, buckets: int = 1024) -> int:
-        return int(hashlib.sha256(str(value).encode("utf-8")).hexdigest()[:12], 16) % buckets
+        return (
+            int(hashlib.sha256(str(value).encode("utf-8")).hexdigest()[:12], 16)
+            % buckets
+        )
 
     @staticmethod
-    def _try_compress(data: np.ndarray, warnings: List[str]) -> Optional[Dict[str, Any]]:
+    def _try_compress(
+        data: np.ndarray, warnings: List[str]
+    ) -> Optional[Dict[str, Any]]:
         try:
             from pythia_mining.pulvini import PHIFoldingCompressor
 

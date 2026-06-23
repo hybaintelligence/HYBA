@@ -1,14 +1,89 @@
 {
-  "title": "HYBA Commercial QaaS CIaaS Observability",
-  "schemaVersion": 39,
-  "version": 1,
-  "refresh": "30s",
-  "tags": ["hyba", "qaas", "ciaas", "billing"],
   "panels": [
-    {"type":"timeseries","title":"Commercial API Requests","targets":[{"expr":"sum by (endpoint, http_status) (rate(hyba_requests_total{endpoint=~\"/api/v1/(fault-tolerant-computers|computational-intelligence-services).*\"}[5m]))"}],"gridPos":{"h":8,"w":12,"x":0,"y":0}},
-    {"type":"timeseries","title":"Billable Units by Product","targets":[{"expr":"sum by (product, tier) (rate(hyba_billing_usage_units_total[5m]))"}],"gridPos":{"h":8,"w":12,"x":12,"y":0}},
-    {"type":"stat","title":"Estimated Charges USD","targets":[{"expr":"sum(increase(hyba_billing_estimated_charges_usd_total[30d]))"}],"gridPos":{"h":6,"w":8,"x":0,"y":8}},
-    {"type":"timeseries","title":"Quota Rejections","targets":[{"expr":"sum by (quota, tier) (increase(hyba_billing_quota_rejections_total[1h]))"}],"gridPos":{"h":6,"w":8,"x":8,"y":8}},
-    {"type":"timeseries","title":"Quota Remaining","targets":[{"expr":"hyba_billing_quota_remaining"}],"gridPos":{"h":6,"w":8,"x":16,"y":8}}
-  ]
+    {
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "targets": [
+        {
+          "expr": "sum by (endpoint, http_status) (rate(hyba_requests_total{endpoint=~\"/api/v1/(fault-tolerant-computers|computational-intelligence-services).*\"}[5m]))"
+        }
+      ],
+      "title": "Commercial API Requests",
+      "type": "timeseries"
+    },
+    {
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
+      "targets": [
+        {
+          "expr": "sum by (product, tier) (rate(hyba_billing_usage_units_total[5m]))"
+        }
+      ],
+      "title": "Billable Units by Product",
+      "type": "timeseries"
+    },
+    {
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 0,
+        "y": 8
+      },
+      "targets": [
+        {
+          "expr": "sum(increase(hyba_billing_estimated_charges_usd_total[30d]))"
+        }
+      ],
+      "title": "Estimated Charges USD",
+      "type": "stat"
+    },
+    {
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 8,
+        "y": 8
+      },
+      "targets": [
+        {
+          "expr": "sum by (quota, tier) (increase(hyba_billing_quota_rejections_total[1h]))"
+        }
+      ],
+      "title": "Quota Rejections",
+      "type": "timeseries"
+    },
+    {
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 16,
+        "y": 8
+      },
+      "targets": [
+        {
+          "expr": "hyba_billing_quota_remaining"
+        }
+      ],
+      "title": "Quota Remaining",
+      "type": "timeseries"
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "tags": [
+    "hyba",
+    "qaas",
+    "ciaas",
+    "billing"
+  ],
+  "title": "HYBA Commercial QaaS CIaaS Observability",
+  "version": 1
 }

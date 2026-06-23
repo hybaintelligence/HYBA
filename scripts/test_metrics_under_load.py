@@ -8,7 +8,10 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "python_backend"))
 
-from pythia_mining.autonomous_mining_controller import AutonomousConfig, AutonomousMiningController
+from pythia_mining.autonomous_mining_controller import (
+    AutonomousConfig,
+    AutonomousMiningController,
+)
 
 
 def test_metrics_under_load() -> None:

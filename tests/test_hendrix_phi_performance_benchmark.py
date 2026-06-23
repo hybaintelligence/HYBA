@@ -114,8 +114,12 @@ async def test_hendrix_phi_vs_deterministic_walk_easy_target_is_job_backed():
 async def test_hendrix_phi_medium_target_handles_timeout_without_false_claim():
     medium_target = int("00ffff" + "ff" * 29, 16)
 
-    phi_nonce, phi_time_ms, phi_valid = await _benchmark_phi_solver(medium_target, max_time_ms=250.0)
-    walk_nonce, walk_time_ms, walk_valid = _benchmark_deterministic_walk(medium_target, 2_500)
+    phi_nonce, phi_time_ms, phi_valid = await _benchmark_phi_solver(
+        medium_target, max_time_ms=250.0
+    )
+    walk_nonce, walk_time_ms, walk_valid = _benchmark_deterministic_walk(
+        medium_target, 2_500
+    )
 
     result = BenchmarkResult(
         target=medium_target,
@@ -141,8 +145,12 @@ async def test_hendrix_phi_medium_target_handles_timeout_without_false_claim():
 async def test_hendrix_phi_hard_target_is_graceful_when_no_nonce_found():
     hard_target = int("00000001" + "00" * 28, 16)
 
-    phi_nonce, phi_time_ms, phi_valid = await _benchmark_phi_solver(hard_target, max_time_ms=100.0)
-    walk_nonce, walk_time_ms, walk_valid = _benchmark_deterministic_walk(hard_target, 1_000)
+    phi_nonce, phi_time_ms, phi_valid = await _benchmark_phi_solver(
+        hard_target, max_time_ms=100.0
+    )
+    walk_nonce, walk_time_ms, walk_valid = _benchmark_deterministic_walk(
+        hard_target, 1_000
+    )
 
     assert phi_time_ms >= 0.0
     assert walk_time_ms >= 0.0
@@ -164,7 +172,9 @@ def test_hendrix_phi_deterministic_within_target():
 
 
 def test_hendrix_phi_coverage_all_domains():
-    domains_covered = {hendrix.voronoi_domain(nonce) for nonce in range(0, 2**32, 2**32 // 1000)}
+    domains_covered = {
+        hendrix.voronoi_domain(nonce) for nonce in range(0, 2**32, 2**32 // 1000)
+    }
 
     assert len(domains_covered) == 32
     assert domains_covered == set(range(32))
@@ -182,7 +192,8 @@ def test_hendrix_phi_resonance_statistically_bounded():
 def test_hendrix_phi_top_percentile_placement_is_deterministic():
     sample_size = 10_000
     nonces_with_scores = [
-        (nonce, hendrix.phi_resonance(nonce)) for nonce in range(0, 2**32, 2**32 // sample_size)
+        (nonce, hendrix.phi_resonance(nonce))
+        for nonce in range(0, 2**32, 2**32 // sample_size)
     ]
     sorted_by_score = sorted(nonces_with_scores, key=lambda item: item[1], reverse=True)
     top_5_percent_scores = sorted_by_score[: max(1, len(sorted_by_score) // 20)]
@@ -191,12 +202,16 @@ def test_hendrix_phi_top_percentile_placement_is_deterministic():
     rng = random.Random(123)
     hendrix_scores = [
         hendrix.phi_resonance(
-            hendrix.phi_gradient_proposal(nonce=rng.randint(0, 2**32 - 1), rng=rng, scale=3)
+            hendrix.phi_gradient_proposal(
+                nonce=rng.randint(0, 2**32 - 1), rng=rng, scale=3
+            )
         )
         for _ in range(1_000)
     ]
-    percentage_in_top_5 = 100.0 * sum(score >= min_top_5_score for score in hendrix_scores) / len(
-        hendrix_scores
+    percentage_in_top_5 = (
+        100.0
+        * sum(score >= min_top_5_score for score in hendrix_scores)
+        / len(hendrix_scores)
     )
 
     # Local benchmark fixture — threshold set to observed baseline (4.7%) with margin.
@@ -221,7 +236,9 @@ async def test_hendrix_phi_finds_valid_on_regtest_job():
 
     solver = DodecahedralQuantumSolver()
     await solver.configure_search(target=job.target, nonce_ranges=[(0, 2**32 - 1)])
-    nonce = await solver.solve(max_iterations=10_000, timeout=5.0, job=job, extranonce2="00000000")
+    nonce = await solver.solve(
+        max_iterations=10_000, timeout=5.0, job=job, extranonce2="00000000"
+    )
 
     assert nonce is not None
     assert validate_share(job, nonce, "00000000").valid

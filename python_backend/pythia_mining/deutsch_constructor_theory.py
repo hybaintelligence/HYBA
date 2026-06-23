@@ -210,7 +210,10 @@ class DeutschConstructorTheory:
         self.registered_constructors[capability.constructor_id] = capability
 
     def analyze_reachability(
-        self, initial_state: Dict[str, Any], target_state: Dict[str, Any], max_depth: int = 10
+        self,
+        initial_state: Dict[str, Any],
+        target_state: Dict[str, Any],
+        max_depth: int = 10,
     ) -> Dict[str, Any]:
         """Analyze reachability: can initial state reach target state via constructor tasks?
 
@@ -257,9 +260,9 @@ class DeutschConstructorTheory:
         return {
             "is_reachable": len(reachable_paths) > 0,
             "num_paths": len(reachable_paths),
-            "shortest_path_length": min(len(p) for p in reachable_paths)
-            if reachable_paths
-            else None,
+            "shortest_path_length": (
+                min(len(p) for p in reachable_paths) if reachable_paths else None
+            ),
             "reachable_paths": reachable_paths[:5],  # Return first 5 paths
             "states_visited": len(visited_states),
         }
@@ -268,7 +271,9 @@ class DeutschConstructorTheory:
         """Convert state to hashable key."""
         return hashlib.md5(str(sorted(state.items())).encode()).hexdigest()
 
-    def _apply_task(self, state: Dict[str, Any], task: ConstructorTask) -> Dict[str, Any]:
+    def _apply_task(
+        self, state: Dict[str, Any], task: ConstructorTask
+    ) -> Dict[str, Any]:
         """Apply a task to a state (simplified implementation)."""
         # In full implementation, would actually transform state according to task
         # Here, we just check if output spec is satisfied
@@ -337,7 +342,8 @@ class DeutschConstructorTheory:
         available_resources = constraints.get("max_resources", {})
 
         is_impossible = any(
-            required_resources.get(resource, 0) > available_resources.get(resource, float("inf"))
+            required_resources.get(resource, 0)
+            > available_resources.get(resource, float("inf"))
             for resource in required_resources
         )
 
@@ -400,7 +406,10 @@ class DeutschConstructorTheory:
             proof_method="thermodynamic",
             mathematical_basis="Energy conservation and thermodynamic laws",
             is_impossible=is_impossible,
-            proof_details={"energy_required": energy_required, "max_energy": max_energy},
+            proof_details={
+                "energy_required": energy_required,
+                "max_energy": max_energy,
+            },
         )
 
     def _generic_impossibility(
@@ -456,7 +465,9 @@ class DeutschConstructorTheory:
         return (input_size + output_size) * PHI**2
 
     def multiverse_decision(
-        self, possible_paths: List[Dict[str, Any]], path_weights: Optional[np.ndarray] = None
+        self,
+        possible_paths: List[Dict[str, Any]],
+        path_weights: Optional[np.ndarray] = None,
     ) -> MultiverseDecision:
         """Make a decision using multiverse-based quantum superposition.
 
@@ -479,7 +490,9 @@ class DeutschConstructorTheory:
 
         # Select path based on measurement (probabilistic)
         probabilities = np.abs(evolved_weights) ** 2
-        probabilities = probabilities / (np.sum(probabilities) + 1e-10)  # Ensure sum to 1
+        probabilities = probabilities / (
+            np.sum(probabilities) + 1e-10
+        )  # Ensure sum to 1
         selected_path = int(np.random.choice(num_paths, p=probabilities))
 
         # Compute multiverse entropy
@@ -530,13 +543,16 @@ class DeutschConstructorTheory:
 
         # Analyze task complexity
         complexities = [
-            self._estimate_task_complexity(task) for task in self.registered_tasks.values()
+            self._estimate_task_complexity(task)
+            for task in self.registered_tasks.values()
         ]
 
         # Analyze constructor coverage
         constructor_coverage = {}
         for constructor_id, constructor in self.registered_constructors.items():
-            capability_matrix = constructor.capability_matrix(list(self.registered_tasks.values()))
+            capability_matrix = constructor.capability_matrix(
+                list(self.registered_tasks.values())
+            )
             constructor_coverage[constructor_id] = {
                 "coverage_ratio": float(np.mean(capability_matrix)),
                 "total_capabilities": int(np.sum(capability_matrix)),

@@ -49,7 +49,11 @@ POOL_URL = os.getenv("HYBA_TESTNET_POOL_URL", "stratum+tcp://localhost:18332")
 POOL_USERNAME = os.getenv("HYBA_TESTNET_USERNAME", "testuser")
 POOL_PASSWORD = os.getenv("HYBA_TESTNET_PASSWORD", "testpass")
 TEST_DURATION_SEC = float(os.getenv("HYBA_TESTNET_DURATION_SEC", "30.0"))
-SKIP_IF_OFFLINE = os.getenv("HYBA_TESTNET_SKIP_IF_OFFLINE", "true").lower() in ("true", "1", "yes")
+SKIP_IF_OFFLINE = os.getenv("HYBA_TESTNET_SKIP_IF_OFFLINE", "true").lower() in (
+    "true",
+    "1",
+    "yes",
+)
 
 
 async def is_pool_reachable(url: str, timeout: float = 5.0) -> bool:
@@ -213,7 +217,9 @@ async def test_mining_e2e_testnet_nonce_generation() -> None:
     # Verify the nonce produces a valid hash below target
     extranonce2 = "00000000"
     validation = validate_share(test_job, result.nonce, extranonce2)
-    assert validation.valid is True, f"Generated nonce produced invalid share: {validation.reason}"
+    assert (
+        validation.valid is True
+    ), f"Generated nonce produced invalid share: {validation.reason}"
     assert validation.hash_int <= test_job.target
 
 
@@ -291,7 +297,9 @@ async def test_mining_e2e_testnet_share_submission() -> None:
                             if result.nonce is not None:
                                 # Validate locally first
                                 extranonce2 = "00000000"
-                                validation = validate_share(current_job, result.nonce, extranonce2)
+                                validation = validate_share(
+                                    current_job, result.nonce, extranonce2
+                                )
 
                                 if validation.valid:
                                     # Submit to pool
@@ -305,7 +313,9 @@ async def test_mining_e2e_testnet_share_submission() -> None:
                                     submit_time_ms = (time.time() - submit_start) * 1000
 
                                     metrics["shares_submitted"] += 1
-                                    metrics["submission_times_ms"].append(submit_time_ms)
+                                    metrics["submission_times_ms"].append(
+                                        submit_time_ms
+                                    )
 
                                     if submit_result.accepted:
                                         metrics["shares_accepted"] += 1
@@ -331,11 +341,15 @@ async def test_mining_e2e_testnet_share_submission() -> None:
         print(f"Shares rejected:   {metrics['shares_rejected']}")
 
         if metrics["shares_submitted"] > 0:
-            acceptance_rate = metrics["shares_accepted"] / metrics["shares_submitted"] * 100
+            acceptance_rate = (
+                metrics["shares_accepted"] / metrics["shares_submitted"] * 100
+            )
             print(f"Acceptance rate:   {acceptance_rate:.1f}%")
 
             if metrics["submission_times_ms"]:
-                avg_time = sum(metrics["submission_times_ms"]) / len(metrics["submission_times_ms"])
+                avg_time = sum(metrics["submission_times_ms"]) / len(
+                    metrics["submission_times_ms"]
+                )
                 print(f"Avg submit time:   {avg_time:.1f}ms")
 
         if metrics["errors"]:
@@ -348,7 +362,8 @@ async def test_mining_e2e_testnet_share_submission() -> None:
         # Assert minimum metrics
         assert metrics["shares_submitted"] > 0, "No shares were submitted during test"
         assert (
-            metrics["shares_accepted"] + metrics["shares_rejected"] == metrics["shares_submitted"]
+            metrics["shares_accepted"] + metrics["shares_rejected"]
+            == metrics["shares_submitted"]
         ), "Share counts don't add up"
 
     except Exception as exc:

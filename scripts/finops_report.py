@@ -46,7 +46,13 @@ def main() -> int:
             for group in period.get("Groups", []):
                 amount = group["Metrics"]["UnblendedCost"]["Amount"]
                 unit = group["Metrics"]["UnblendedCost"]["Unit"]
-                rows.append({"key": group.get("Keys", ["unknown"])[0], "amount": _money(amount), "unit": unit})
+                rows.append(
+                    {
+                        "key": group.get("Keys", ["unknown"])[0],
+                        "amount": _money(amount),
+                        "unit": unit,
+                    }
+                )
         return rows
 
     by_service = query({"Type": "DIMENSION", "Key": "SERVICE"})

@@ -3,10 +3,9 @@ name: hyba-platform
 description: HYBA enterprise SaaS runtime chart
 type: application
 version: 0.1.0
-appVersion: "2.0.1"
-
+appVersion: 2.0.1
 dependencies:
-  - name: redis
-    version: 19.6.4
-    repository: https://charts.bitnami.com/bitnami
-    condition: redis.enabled
+- name: redis
+  version: 19.6.4
+  repository: https://charts.bitnami.com/bitnami
+  condition: redis.enabled

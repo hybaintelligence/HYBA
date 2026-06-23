@@ -47,7 +47,9 @@ def validate_boundary_proximity_invariant() -> bool:
             "phi_scaling": 1.8,
         }
 
-        epsilon_dangerous = store.evaluate_boundary_proximity(proposal_dangerous, config_limits)
+        epsilon_dangerous = store.evaluate_boundary_proximity(
+            proposal_dangerous, config_limits
+        )
         print(f"✓ Adversarial proposal boundary distance: ε = {epsilon_dangerous:.2e}")
 
         if epsilon_dangerous < 1e-5:
@@ -185,7 +187,9 @@ def main() -> None:
     results = []
 
     # Run all three validations
-    results.append(("Gap 1: Boundary Proximity", validate_boundary_proximity_invariant()))
+    results.append(
+        ("Gap 1: Boundary Proximity", validate_boundary_proximity_invariant())
+    )
     results.append(("Gap 2: Secrets Bootstrap", validate_secrets_bootstrapping()))
     results.append(("Gap 3: Pool Integration", validate_pool_profile_integration()))
 

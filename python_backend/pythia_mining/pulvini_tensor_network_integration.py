@@ -237,7 +237,9 @@ class DirectQuantumMathematicsExecution:
         }
 
     @staticmethod
-    def execute_unitary_evolution(num_qubits: int, use_compression: bool = True) -> Dict[str, Any]:
+    def execute_unitary_evolution(
+        num_qubits: int, use_compression: bool = True
+    ) -> Dict[str, Any]:
         """Execute unitary evolution — quantum computation.
 
         This executes quantum mathematical operations (unitary evolution,
@@ -346,7 +348,9 @@ def run_irrefutable_reproducible_tests():
         print(f"  MPS Size: {benefits['mps_size']:.2e}")
         print(f"  Integrated Size: {benefits['integrated_size']:.2e}")
         print(f"  MPS Compression Ratio: {benefits['mps_compression_ratio']:.2e}x")
-        print(f"  Integrated Compression Ratio: {benefits['integrated_compression_ratio']:.2e}x")
+        print(
+            f"  Integrated Compression Ratio: {benefits['integrated_compression_ratio']:.2e}x"
+        )
         print(f"  Feasible Classical: {benefits['feasible_classical']}")
         print()
     results["compression_benefits"] = benefits

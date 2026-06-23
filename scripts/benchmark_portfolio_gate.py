@@ -56,7 +56,9 @@ def find_number(payload: Any, names: set[str]) -> float | None:
 
 
 def completion_checks(payload: dict[str, Any]) -> list[dict[str, object]]:
-    summary = payload.get("summary", {}) if isinstance(payload.get("summary"), dict) else {}
+    summary = (
+        payload.get("summary", {}) if isinstance(payload.get("summary"), dict) else {}
+    )
     results = payload.get("scripts_results", [])
     failed = int(summary.get("failed", 0) or 0)
     timed_out = int(summary.get("timed_out", 0) or 0)
@@ -67,11 +69,20 @@ def completion_checks(payload: dict[str, Any]) -> list[dict[str, object]]:
     incomplete = []
     if isinstance(results, list):
         for item in results:
-            if isinstance(item, dict) and str(item.get("status", "")).upper() != "PASSED":
-                incomplete.append({"script": item.get("script"), "status": item.get("status")})
+            if (
+                isinstance(item, dict)
+                and str(item.get("status", "")).upper() != "PASSED"
+            ):
+                incomplete.append(
+                    {"script": item.get("script"), "status": item.get("status")}
+                )
 
     ok = (
-        failed == 0 and timed_out == 0 and skipped == 0 and passed_count == total and not incomplete
+        failed == 0
+        and timed_out == 0
+        and skipped == 0
+        and passed_count == total
+        and not incomplete
     )
     return [
         {
@@ -93,7 +104,11 @@ def claim_checks() -> list[dict[str, object]]:
     report_path = PORTFOLIO / "run_output" / "portfolio_report.json"
     if not report_path.exists():
         return [
-            {"name": "portfolio_report", "passed": True, "detail": "optional saved report absent"}
+            {
+                "name": "portfolio_report",
+                "passed": True,
+                "detail": "optional saved report absent",
+            }
         ]
 
     try:
@@ -118,27 +133,54 @@ def claim_checks() -> list[dict[str, object]]:
     if resonance is not None:
         normalised = resonance / 100.0 if resonance > 1.0 else resonance
         checks.append(
-            {"name": "phi15_resonance", "passed": 0.5 <= normalised <= 1.0, "detail": resonance}
+            {
+                "name": "phi15_resonance",
+                "passed": 0.5 <= normalised <= 1.0,
+                "detail": resonance,
+            }
         )
 
     z_score = find_number(payload, {"z", "z_score", "zscore", "phi_resonance_z_score"})
     if z_score is not None:
-        checks.append({"name": "phi15_z_score", "passed": z_score >= 3.0, "detail": z_score})
+        checks.append(
+            {"name": "phi15_z_score", "passed": z_score >= 3.0, "detail": z_score}
+        )
 
     corr = find_number(
-        payload, {"hash_correlation", "sha_correlation", "validity_correlation", "correlation", "r"}
+        payload,
+        {
+            "hash_correlation",
+            "sha_correlation",
+            "validity_correlation",
+            "correlation",
+            "r",
+        },
     )
     if corr is not None:
         checks.append(
-            {"name": "hash_validity_boundary", "passed": abs(corr) <= 0.10, "detail": corr}
+            {
+                "name": "hash_validity_boundary",
+                "passed": abs(corr) <= 0.10,
+                "detail": corr,
+            }
         )
 
     advantage = find_number(
-        payload, {"advantage", "grover_advantage", "advantage_over_grover", "structured_advantage"}
+        payload,
+        {
+            "advantage",
+            "grover_advantage",
+            "advantage_over_grover",
+            "structured_advantage",
+        },
     )
     if advantage is not None:
         checks.append(
-            {"name": "structured_advantage", "passed": advantage > 1.0, "detail": advantage}
+            {
+                "name": "structured_advantage",
+                "passed": advantage > 1.0,
+                "detail": advantage,
+            }
         )
 
     if len(checks) == 1:
@@ -153,7 +195,9 @@ def claim_checks() -> list[dict[str, object]]:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Validate benchmark portfolio integrity")
+    parser = argparse.ArgumentParser(
+        description="Validate benchmark portfolio integrity"
+    )
     parser.add_argument("--strict-optional", action="store_true")
     args = parser.parse_args()
 
@@ -162,7 +206,9 @@ def main() -> int:
     claims = claim_checks()
 
     required_ok = all(item["passed"] for item in required)
-    optional_ok = all(item["passed"] for item in optional) if args.strict_optional else True
+    optional_ok = (
+        all(item["passed"] for item in optional) if args.strict_optional else True
+    )
     claims_ok = all(item["passed"] for item in claims)
     passed = required_ok and optional_ok and claims_ok
 

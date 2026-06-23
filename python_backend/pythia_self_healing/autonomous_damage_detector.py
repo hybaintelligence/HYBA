@@ -60,9 +60,17 @@ class AutonomousDamageDetector:
     performance_tokens: tuple[str, ...] = ("time.sleep", "subprocess.run", "shell=True")
     invariant_tokens: tuple[str, ...] = ("assert False", "raise NotImplementedError")
     security_tokens: tuple[str, ...] = ("eval(", "exec(", "pickle.loads")
-    ignored_dirs: tuple[str, ...] = (".git", "node_modules", ".venv", "venv", "__pycache__")
+    ignored_dirs: tuple[str, ...] = (
+        ".git",
+        "node_modules",
+        ".venv",
+        "venv",
+        "__pycache__",
+    )
 
-    def scan_paths(self, paths: list[str | Path] | tuple[str | Path, ...]) -> list[DamageReport]:
+    def scan_paths(
+        self, paths: list[str | Path] | tuple[str | Path, ...]
+    ) -> list[DamageReport]:
         """Scan files/directories and return reports sorted by severity."""
 
         reports: list[DamageReport] = []
@@ -70,7 +78,9 @@ class AutonomousDamageDetector:
             p = Path(path)
             for file_path in self._iter_python_files(p):
                 reports.extend(self.scan_file(file_path))
-        return sorted(reports, key=lambda report: report.get("severity_score", 0.0), reverse=True)
+        return sorted(
+            reports, key=lambda report: report.get("severity_score", 0.0), reverse=True
+        )
 
     def scan_file(self, path: str | Path) -> list[DamageReport]:
         file_path = Path(path)
@@ -84,7 +94,9 @@ class AutonomousDamageDetector:
             return []
 
         target_name = self._select_target_name(text, signals)
-        severity_score = min(1.0, sum(signal.severity for signal in signals) / max(1.0, len(signals)))
+        severity_score = min(
+            1.0, sum(signal.severity for signal in signals) / max(1.0, len(signals))
+        )
         categories = sorted({signal.category for signal in signals})
         report = DamageReport(
             {
@@ -94,7 +106,11 @@ class AutonomousDamageDetector:
                 "issues": [signal.issue for signal in signals],
                 "severity_score": severity_score,
                 "categories": categories,
-                "line_numbers": [signal.line_number for signal in signals if signal.line_number is not None],
+                "line_numbers": [
+                    signal.line_number
+                    for signal in signals
+                    if signal.line_number is not None
+                ],
                 "suggested_goal": self._suggest_goal(categories),
             }
         )
@@ -117,16 +133,44 @@ class AutonomousDamageDetector:
             stripped = line.strip()
             for token in self.todo_tokens:
                 if token in stripped:
-                    signals.append(DamageSignal(f"Technical debt marker {token} at line {lineno}", 0.45, lineno, "debt"))
+                    signals.append(
+                        DamageSignal(
+                            f"Technical debt marker {token} at line {lineno}",
+                            0.45,
+                            lineno,
+                            "debt",
+                        )
+                    )
             for token in self.performance_tokens:
                 if token in stripped:
-                    signals.append(DamageSignal(f"Potential performance or process-risk token {token} at line {lineno}", 0.55, lineno, "performance"))
+                    signals.append(
+                        DamageSignal(
+                            f"Potential performance or process-risk token {token} at line {lineno}",
+                            0.55,
+                            lineno,
+                            "performance",
+                        )
+                    )
             for token in self.invariant_tokens:
                 if token in stripped:
-                    signals.append(DamageSignal(f"Incomplete invariant path {token} at line {lineno}", 0.65, lineno, "invariant"))
+                    signals.append(
+                        DamageSignal(
+                            f"Incomplete invariant path {token} at line {lineno}",
+                            0.65,
+                            lineno,
+                            "invariant",
+                        )
+                    )
             for token in self.security_tokens:
                 if token in stripped:
-                    signals.append(DamageSignal(f"Potential unsafe dynamic execution token {token} at line {lineno}", 0.75, lineno, "security"))
+                    signals.append(
+                        DamageSignal(
+                            f"Potential unsafe dynamic execution token {token} at line {lineno}",
+                            0.75,
+                            lineno,
+                            "security",
+                        )
+                    )
         return signals
 
     def _ast_signals(self, text: str) -> list[DamageSignal]:
@@ -150,7 +194,14 @@ class AutonomousDamageDetector:
                         )
                     )
             if isinstance(node, ast.ExceptHandler) and node.type is None:
-                signals.append(DamageSignal("Broad bare except handler detected", 0.6, node.lineno, "resilience"))
+                signals.append(
+                    DamageSignal(
+                        "Broad bare except handler detected",
+                        0.6,
+                        node.lineno,
+                        "resilience",
+                    )
+                )
         return signals
 
     def _select_target_name(self, text: str, signals: list[DamageSignal]) -> str | None:
@@ -158,10 +209,14 @@ class AutonomousDamageDetector:
             tree = ast.parse(text)
         except SyntaxError:
             return None
-        signal_lines = [signal.line_number for signal in signals if signal.line_number is not None]
+        signal_lines = [
+            signal.line_number for signal in signals if signal.line_number is not None
+        ]
         candidates: list[tuple[int, str]] = []
         for node in ast.walk(tree):
-            if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+            if not isinstance(
+                node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)
+            ):
                 continue
             start = int(node.lineno)
             end = int(getattr(node, "end_lineno", node.lineno))

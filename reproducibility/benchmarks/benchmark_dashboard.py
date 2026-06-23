@@ -167,67 +167,63 @@ class BenchmarkDashboard:
 
             # Latest run summary
             html += '<div class="card">\n'
-            html += '<h2>Latest Run</h2>\n'
+            html += "<h2>Latest Run</h2>\n"
 
             html += '<div class="metric">\n'
             html += '<span class="metric-label">Timestamp:</span>\n'
             html += (
                 f'<span class="metric-value">{latest.get("timestamp", "N/A")}</span>\n'
             )
-            html += '</div>\n'
+            html += "</div>\n"
 
             html += '<div class="metric">\n'
             html += '<span class="metric-label">Commit:</span>\n'
-            html += (
-                f'<span class="metric-value"><code>{latest.get("git_commit", "N/A")[:8]}</code></span>\n'
-            )
-            html += '</div>\n'
+            html += f'<span class="metric-value"><code>{latest.get("git_commit", "N/A")[:8]}</code></span>\n'
+            html += "</div>\n"
 
             sys_info = latest.get("system_info", {})
             html += '<div class="metric">\n'
             html += '<span class="metric-label">CPU Cores:</span>\n'
             html += f'<span class="metric-value">{sys_info.get("cpu_count", "N/A")}</span>\n'
-            html += '</div>\n'
+            html += "</div>\n"
 
             html += '<div class="metric">\n'
             html += '<span class="metric-label">Memory:</span>\n'
             memory_gb = sys_info.get("memory_total_gb", 0)
             html += f'<span class="metric-value">{memory_gb:.2f} GB</span>\n'
-            html += '</div>\n'
+            html += "</div>\n"
 
-            html += '</div>\n'
+            html += "</div>\n"
 
             # Benchmark status summary
             html += '<div class="card">\n'
-            html += '<h2>Benchmark Status</h2>\n'
+            html += "<h2>Benchmark Status</h2>\n"
 
             benchmarks = latest.get("benchmarks", {})
             for bench_name, result in benchmarks.items():
                 status = result.get("status", "unknown")
                 status_class = (
-                    "passed" if status == "passed"
-                    else "failed" if status == "failed"
-                    else "timeout"
+                    "passed"
+                    if status == "passed"
+                    else "failed" if status == "failed" else "timeout"
                 )
                 html += '<div class="metric">\n'
                 html += f'<span class="metric-label">{bench_name}:</span>\n'
-                html += (
-                    f'<span class="status {status_class}">{status.upper()}</span>\n'
-                )
-                html += '</div>\n'
+                html += f'<span class="status {status_class}">{status.upper()}</span>\n'
+                html += "</div>\n"
 
-            html += '</div>\n'
+            html += "</div>\n"
 
-        html += '</div>\n'
+        html += "</div>\n"
         return html
 
     def _generate_trends_section(self) -> str:
         """Generate trends section."""
         html = '<div class="card">\n'
-        html += '<h2>Performance Trends</h2>\n'
+        html += "<h2>Performance Trends</h2>\n"
         html += '<div class="chart-container">\n'
         html += '<canvas id="trendsChart"></canvas>\n'
-        html += '</div>\n'
+        html += "</div>\n"
 
         # Extract data for charting
         dates = []
@@ -236,21 +232,24 @@ class BenchmarkDashboard:
         for result in sorted(self.results, key=lambda r: r.get("timestamp", "")):
             dates.append(result.get("timestamp", "")[:10])
             benchmarks = result.get("benchmarks", {})
-            passed = sum(
-                1 for r in benchmarks.values() if r.get("status") == "passed"
-            )
+            passed = sum(1 for r in benchmarks.values() if r.get("status") == "passed")
             passed_counts.append(passed)
 
-        html += """
+        html += (
+            """
         <script>
             const ctx = document.getElementById('trendsChart').getContext('2d');
             new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: """ + json.dumps(dates) + """,
+                    labels: """
+            + json.dumps(dates)
+            + """,
                     datasets: [{
                         label: 'Passed Benchmarks',
-                        data: """ + json.dumps(passed_counts) + """,
+                        data: """
+            + json.dumps(passed_counts)
+            + """,
                         borderColor: '#28a745',
                         backgroundColor: 'rgba(40, 167, 69, 0.1)',
                         tension: 0.4,
@@ -275,17 +274,18 @@ class BenchmarkDashboard:
             });
         </script>
         """
+        )
 
-        html += '</div>\n'
+        html += "</div>\n"
         return html
 
     def _generate_comparison_section(self) -> str:
         """Generate comparison section."""
         html = '<div class="card">\n'
-        html += '<h2>Benchmark Comparison</h2>\n'
+        html += "<h2>Benchmark Comparison</h2>\n"
         html += '<div class="chart-container">\n'
         html += '<canvas id="comparisonChart"></canvas>\n'
-        html += '</div>\n'
+        html += "</div>\n"
 
         if self.results:
             latest = self.results[-1]
@@ -296,16 +296,21 @@ class BenchmarkDashboard:
                 for name in bench_names
             ]
 
-            html += """
+            html += (
+                """
             <script>
                 const ctx2 = document.getElementById('comparisonChart').getContext('2d');
                 new Chart(ctx2, {
                     type: 'bar',
                     data: {
-                        labels: """ + json.dumps(bench_names) + """,
+                        labels: """
+                + json.dumps(bench_names)
+                + """,
                         datasets: [{
                             label: 'Status (1=Passed, 0=Failed)',
-                            data: """ + json.dumps(bench_status) + """,
+                            data: """
+                + json.dumps(bench_status)
+                + """,
                             backgroundColor: [
                                 '#28a745',
                                 '#dc3545',
@@ -331,24 +336,29 @@ class BenchmarkDashboard:
                 });
             </script>
             """
+            )
 
-        html += '</div>\n'
+        html += "</div>\n"
         return html
 
     def _generate_html_footer(self) -> str:
         """Generate HTML footer."""
-        return """
+        return (
+            """
         <footer>
-            <p>HYBA Benchmark Dashboard | Generated """ + datetime.now().strftime(
-            "%Y-%m-%d %H:%M:%S"
-        ) + """</p>
+            <p>HYBA Benchmark Dashboard | Generated """
+            + datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            + """</p>
         </footer>
     </div>
 </body>
 </html>
 """
+        )
 
-    def generate_markdown_report(self, output_file: str = "BENCHMARK_ANALYSIS.md") -> None:
+    def generate_markdown_report(
+        self, output_file: str = "BENCHMARK_ANALYSIS.md"
+    ) -> None:
         """Generate markdown analysis report."""
         report = []
         report.append("# Benchmark Analysis Report\n\n")
@@ -358,7 +368,9 @@ class BenchmarkDashboard:
         else:
             report.append("## Summary\n\n")
             report.append(f"- **Total Runs**: {len(self.results)}\n")
-            report.append(f"- **Date Range**: {self.results[0].get('timestamp')} to {self.results[-1].get('timestamp')}\n\n")
+            report.append(
+                f"- **Date Range**: {self.results[0].get('timestamp')} to {self.results[-1].get('timestamp')}\n\n"
+            )
 
             report.append("## Latest Results\n\n")
             latest = self.results[-1]

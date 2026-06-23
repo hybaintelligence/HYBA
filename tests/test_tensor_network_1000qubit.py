@@ -132,7 +132,9 @@ class TestPhiAcceleratedTensorNetwork:
         num_sites = 100
         max_bond = 32
 
-        bond_dim = PhiAcceleratedTensorNetwork.phi_optimized_bond_dimension(num_sites, max_bond)
+        bond_dim = PhiAcceleratedTensorNetwork.phi_optimized_bond_dimension(
+            num_sites, max_bond
+        )
 
         # Verify it's within bounds
         assert 1 <= bond_dim <= max_bond
@@ -160,7 +162,9 @@ class TestPhiAcceleratedTensorNetwork:
         data = np.random.rand(28 * 28)
 
         # Initialize MPS
-        mps = PhiAcceleratedTensorNetwork.phi_optimized_mps_initialization(data, max_bond_dim=16)
+        mps = PhiAcceleratedTensorNetwork.phi_optimized_mps_initialization(
+            data, max_bond_dim=16
+        )
 
         # Verify MPS is valid
         assert mps.num_sites == 28 * 28
@@ -424,7 +428,9 @@ class TestAdaptiveBondDimension:
         adaptive_params = sum(t.size for t in mps_adaptive.tensors)
 
         # Adaptive should use fewer or equal parameters
-        assert adaptive_params <= uniform_params * 1.1  # Allow small overhead for demonstration
+        assert (
+            adaptive_params <= uniform_params * 1.1
+        )  # Allow small overhead for demonstration
 
 
 class TestIntegrationWithPhiAcceleration:
@@ -435,7 +441,9 @@ class TestIntegrationWithPhiAcceleration:
         data = DatasetBenchmark.load_mnist_sample(28 * 28)
 
         # Initialize with Φ-acceleration
-        mps = PhiAcceleratedTensorNetwork.phi_optimized_mps_initialization(data, max_bond_dim=16)
+        mps = PhiAcceleratedTensorNetwork.phi_optimized_mps_initialization(
+            data, max_bond_dim=16
+        )
 
         # Verify it's valid
         assert mps.num_sites == 28 * 28

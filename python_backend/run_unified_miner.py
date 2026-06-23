@@ -46,8 +46,12 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 # Set pool config path BEFORE importing pythia_mining modules to ensure it's respected
 # For mainnet mission, use live config; for testing, use test config via env override
-default_config = str(Path(__file__).resolve().parents[1] / "config" / "mining_pools_live.json")
-os.environ.setdefault("HYBA_POOL_CONFIG_PATH", os.getenv("HYBA_POOL_CONFIG_PATH", default_config))
+default_config = str(
+    Path(__file__).resolve().parents[1] / "config" / "mining_pools_live.json"
+)
+os.environ.setdefault(
+    "HYBA_POOL_CONFIG_PATH", os.getenv("HYBA_POOL_CONFIG_PATH", default_config)
+)
 
 from pythia_mining.phi_config import initialize_production_secrets
 from pythia_mining.phi_unified_mining_engine import UnifiedMiningEngine
@@ -123,14 +127,16 @@ class UnifiedMiner:
             self.mission.mission_target.accepted_blocks,
         )
         logger.info(
-            "  Shutdown after completion: %s", self.mission.mission_target.shutdown_after_completion
+            "  Shutdown after completion: %s",
+            self.mission.mission_target.shutdown_after_completion,
         )
         logger.info(
             "  Max hashrate: %.1f EH/s (hard limit)",
             self.mission.hashrate_limit.max_autonomous_hashrate_ehs,
         )
         logger.info(
-            "  Supreme invariants: %s", "; ".join(self.mission.supreme_invariants.invariants)
+            "  Supreme invariants: %s",
+            "; ".join(self.mission.supreme_invariants.invariants),
         )
         self.pool_configs: List[PoolCredentialConfig] = []
         self.active_pool_idx: int = 0
@@ -279,13 +285,17 @@ class UnifiedMiner:
         logger.info("Loaded %s verified pool profile(s):", len(self.pool_configs))
         for i, cfg in enumerate(self.pool_configs):
             username = cfg.btc_address or cfg.username or cfg.worker or "(not set)"
-            logger.info("  [%s] %-20s -> %-45s user: %s", i, cfg.name, cfg.url, username)
+            logger.info(
+                "  [%s] %-20s -> %-45s user: %s", i, cfg.name, cfg.url, username
+            )
 
     async def connect_pool(self, idx: int) -> bool:
         """Connect to the pool at the given index using the current StratumClient API."""
         if idx >= len(self.pool_configs):
             logger.error("Pool index %s out of range", idx)
-            self._record_reason("no_job", "pool_index_out_of_range", level=logging.ERROR)
+            self._record_reason(
+                "no_job", "pool_index_out_of_range", level=logging.ERROR
+            )
             return False
 
         cfg = self.pool_configs[idx]
@@ -350,7 +360,9 @@ class UnifiedMiner:
             self._record_reason("no_job", "stratum_client_missing", level=logging.ERROR)
             return None
         if not getattr(self.stratum, "is_connected", False):
-            self._record_reason("no_job", "stratum_not_connected", level=logging.WARNING)
+            self._record_reason(
+                "no_job", "stratum_not_connected", level=logging.WARNING
+            )
             return None
 
         deadline = time.monotonic() + timeout
@@ -376,7 +388,9 @@ class UnifiedMiner:
                     maybe_job = self.stratum.inject_dev_fixture_target_job(
                         difficulty=self.stratum.current_difficulty
                     )
-                    return await maybe_job if inspect.isawaitable(maybe_job) else maybe_job
+                    return (
+                        await maybe_job if inspect.isawaitable(maybe_job) else maybe_job
+                    )
 
                 self._record_reason(
                     "no_job",
@@ -522,11 +536,14 @@ class UnifiedMiner:
                     level=logging.ERROR,
                     detail=str(exc),
                 )
-                logger.exception("Structured engine.search failed for job=%s", job.job_id)
+                logger.exception(
+                    "Structured engine.search failed for job=%s", job.job_id
+                )
                 continue
 
             search_time = float(
-                getattr(result, "search_time", None) or (time.monotonic() - search_start)
+                getattr(result, "search_time", None)
+                or (time.monotonic() - search_start)
             )
             raw_nonce = getattr(result, "nonce", None)
             if raw_nonce is None:
@@ -558,7 +575,9 @@ class UnifiedMiner:
                 job,
                 nonce,
                 strategy_used=str(
-                    getattr(result, "strategy_used", "phi_scaled_compressed_solver_search")
+                    getattr(
+                        result, "strategy_used", "phi_scaled_compressed_solver_search"
+                    )
                 ),
                 phi_resonance_score=getattr(result, "phi_resonance_score", None),
                 search_time=search_time,
@@ -583,7 +602,9 @@ class UnifiedMiner:
 
         try:
             nonce_plan = build_pulvini_nonce_plan()
-            segments, coverage, overlap_free, active_ranges = self._nonce_plan_telemetry(nonce_plan)
+            segments, coverage, overlap_free, active_ranges = (
+                self._nonce_plan_telemetry(nonce_plan)
+            )
             logger.info(
                 "PULVINI nonce plan: %d coverage_segments, complete_coverage=%s, overlap_free=%s, active_ranges=%d",
                 segments,
@@ -593,8 +614,12 @@ class UnifiedMiner:
             )
         except Exception as exc:
             if self._production_mode() or self._live_stratum_enabled():
-                logger.exception("Unable to build PULVINI nonce-plan telemetry in live/prod mode")
-                raise RuntimeError("pulvini_nonce_plan_unavailable_in_live_mode") from exc
+                logger.exception(
+                    "Unable to build PULVINI nonce-plan telemetry in live/prod mode"
+                )
+                raise RuntimeError(
+                    "pulvini_nonce_plan_unavailable_in_live_mode"
+                ) from exc
             logger.warning("Unable to build PULVINI nonce-plan telemetry: %s", exc)
 
         while RUNNING:
@@ -622,9 +647,11 @@ class UnifiedMiner:
                     continue
 
                 batch_start = time.monotonic()
-                batch_checked, local_pass, local_fail = await self._run_structured_search_batch(
-                    job,
-                    batch_size,
+                batch_checked, local_pass, local_fail = (
+                    await self._run_structured_search_batch(
+                        job,
+                        batch_size,
+                    )
                 )
                 batch_elapsed = time.monotonic() - batch_start
                 batch_rate = batch_checked / max(0.001, batch_elapsed)
@@ -666,7 +693,10 @@ class UnifiedMiner:
                 break
             except Exception as exc:
                 self._record_reason(
-                    "search_skip", "search_loop_exception", level=logging.ERROR, detail=str(exc)
+                    "search_skip",
+                    "search_loop_exception",
+                    level=logging.ERROR,
+                    detail=str(exc),
                 )
                 logger.exception("Search loop error")
                 await asyncio.sleep(1)
@@ -704,8 +734,12 @@ class UnifiedMiner:
         logger.info("  Last H/s:     %.2f", state["state"]["last_batch_hashrate_hps"])
         logger.info("")
         logger.info("  CONSCIOUSNESS:")
-        logger.info("  Coherence:    %.4f", state["consciousness"].get("coherence_meter", 0))
-        logger.info("  Regime:       %s", state["consciousness"].get("integration_regime", "?"))
+        logger.info(
+            "  Coherence:    %.4f", state["consciousness"].get("coherence_meter", 0)
+        )
+        logger.info(
+            "  Regime:       %s", state["consciousness"].get("integration_regime", "?")
+        )
         logger.info(
             "  Components:   %s active",
             state["consciousness"].get("active_components", 0),
@@ -713,13 +747,22 @@ class UnifiedMiner:
         logger.info("")
         logger.info("  SOLVER:")
         logger.info("  Available:    %s", state["solver"].get("available", False))
-        logger.info("  Φ alignment:  %.6f", state["solver"].get("phi_phase_alignment", 0))
-        logger.info("  Entropy:      %.4f", state["solver"].get("dodecahedral_entropy", 0))
+        logger.info(
+            "  Φ alignment:  %.6f", state["solver"].get("phi_phase_alignment", 0)
+        )
+        logger.info(
+            "  Entropy:      %.4f", state["solver"].get("dodecahedral_entropy", 0)
+        )
         logger.info("")
         logger.info("  PROOFS:")
         proofs = state.get("proofs", {})
-        logger.info("  Φ-fold lossless:         %s", proofs.get("phi_folding_lossless", "?"))
-        logger.info("  M32 expander gap:        %s", proofs.get("m32_expander_spectral_gap", "?"))
+        logger.info(
+            "  Φ-fold lossless:         %s", proofs.get("phi_folding_lossless", "?")
+        )
+        logger.info(
+            "  M32 expander gap:        %s",
+            proofs.get("m32_expander_spectral_gap", "?"),
+        )
         logger.info(
             "  YM on-manifold fraction: %s",
             proofs.get("ym_on_manifold_fraction", "?"),
@@ -766,9 +809,10 @@ async def main() -> None:
 
     # Enforce production environmental validation gates
     secrets_status = initialize_production_secrets()
-    assert secrets_status["status"] in ["SEC_SECURE", "DEV_PASS"], (
-        f"Production secrets validation failed: {secrets_status['status']}"
-    )
+    assert secrets_status["status"] in [
+        "SEC_SECURE",
+        "DEV_PASS",
+    ], f"Production secrets validation failed: {secrets_status['status']}"
     logger.info("Production secrets validation passed: %s", secrets_status["status"])
 
     miner = UnifiedMiner()

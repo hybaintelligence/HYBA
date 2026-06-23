@@ -161,16 +161,22 @@ class MIDASProductionControlTests(unittest.TestCase):
 
     def test_mining_request_tracker_failed_boundary_is_retryable(self) -> None:
         tracker = MiningRequestTracker()
-        first = tracker.create_request("start", {"miner": "alpha"}, idempotency_key="idem-boundary")
+        first = tracker.create_request(
+            "start", {"miner": "alpha"}, idempotency_key="idem-boundary"
+        )
         tracker.update_request_status(
             first.request_id, RequestStatus.FAILED, error="pool unavailable"
         )
-        retry = tracker.create_request("start", {"miner": "alpha"}, idempotency_key="idem-boundary")
+        retry = tracker.create_request(
+            "start", {"miner": "alpha"}, idempotency_key="idem-boundary"
+        )
         self.assertNotEqual(first.request_id, retry.request_id)
 
     def test_mining_request_tracker_cleanup_keeps_maps_consistent(self) -> None:
         tracker = MiningRequestTracker(request_ttl_seconds=1)
-        request = tracker.create_request("start", {"miner": "alpha"}, idempotency_key="idem-expire")
+        request = tracker.create_request(
+            "start", {"miner": "alpha"}, idempotency_key="idem-expire"
+        )
         request.created_at = datetime.now(UTC) - timedelta(seconds=5)
         removed = tracker.cleanup_expired_requests()
         self.assertEqual(1, removed)
@@ -188,7 +194,9 @@ class SubstrateUnitTests(unittest.TestCase):
         self.assertTrue(first_state["ready"])
         self.assertTrue(second_state["ready"])
         self.assertEqual(EXPECTED_INIT_ORDER, second_state["initialization_order"])
-        self.assertEqual(EXPECTED_INIT_ORDER, get_substrate_state()["initialization_order"])
+        self.assertEqual(
+            EXPECTED_INIT_ORDER, get_substrate_state()["initialization_order"]
+        )
         self.assertIsInstance(json.dumps(second_state), str)
 
         shutdown_state = shutdown_substrate()
@@ -201,7 +209,9 @@ class SubstrateUnitTests(unittest.TestCase):
         self.assertEqual("PULVINI Memory Engine Executed", payload["message"])
         self.assertEqual(2, len(payload["operations"]))
         self.assertEqual(2**14, payload["operations"][0]["state_vector_entries"])
-        self.assertAlmostEqual(1.0, float(payload["operations"][0]["diffusion_norm"]), places=12)
+        self.assertAlmostEqual(
+            1.0, float(payload["operations"][0]["diffusion_norm"]), places=12
+        )
         self.assertEqual(158, payload["operations"][1]["projected_dimensions"])
 
 
@@ -248,8 +258,12 @@ class MiningPropertyAndIntegrationTests(unittest.TestCase):
         rng = random.Random(2026)
 
         for _ in range(100):
-            real = np.array([rng.uniform(-1.0, 1.0) for _ in range(DODECAHEDRON_VERTICES)])
-            imag = np.array([rng.uniform(-1.0, 1.0) for _ in range(DODECAHEDRON_VERTICES)])
+            real = np.array(
+                [rng.uniform(-1.0, 1.0) for _ in range(DODECAHEDRON_VERTICES)]
+            )
+            imag = np.array(
+                [rng.uniform(-1.0, 1.0) for _ in range(DODECAHEDRON_VERTICES)]
+            )
             amplitudes = real + 1j * imag
             entropy = solver.calculate_integrated_entropy(amplitudes)
             self.assertGreaterEqual(entropy, 0.0)
@@ -264,7 +278,9 @@ class MiningPropertyAndIntegrationTests(unittest.TestCase):
 
         solver = asyncio.run(run_case())
 
-        self.assertEqual([(0, 0), (10, 19), (100, 149)], solver.current_config["nonce_ranges"])
+        self.assertEqual(
+            [(0, 0), (10, 19), (100, 149)], solver.current_config["nonce_ranges"]
+        )
         self.assertEqual(61, solver.current_config["search_space_size"])
         for basis_index in range(DODECAHEDRON_VERTICES):
             nonce = solver._project_index_to_nonce(basis_index)
@@ -337,7 +353,9 @@ class MiningPropertyAndIntegrationTests(unittest.TestCase):
                 return None
 
             async def subscribe_and_authorize(self):
-                return SimpleNamespace(extranonce1="abc123", extranonce2_size=8, authorized=True)
+                return SimpleNamespace(
+                    extranonce1="abc123", extranonce2_size=8, authorized=True
+                )
 
             async def close(self):
                 self.closed = True
@@ -351,7 +369,9 @@ class MiningPropertyAndIntegrationTests(unittest.TestCase):
                 stratum_version=1,
             )
             with patch.dict(os.environ, {"HYBA_ENABLE_LIVE_STRATUM": "1"}, clear=False):
-                with patch("pythia_mining.stratum_client.LiveStratumSession", FakeLiveSession):
+                with patch(
+                    "pythia_mining.stratum_client.LiveStratumSession", FakeLiveSession
+                ):
                     connected = await client.connect()
             await client.disconnect()
             return connected, client
@@ -387,14 +407,18 @@ class MiningPropertyAndIntegrationTests(unittest.TestCase):
                 stratum_version=2,
             )
             with patch.dict(os.environ, {"HYBA_ENABLE_LIVE_STRATUM": "1"}, clear=False):
-                with patch("pythia_mining.stratum_client.LiveStratumV2Session", FakeV2Session):
+                with patch(
+                    "pythia_mining.stratum_client.LiveStratumV2Session", FakeV2Session
+                ):
                     connected = await client.connect()
             authenticated = client.is_authenticated
             connected_state = client.connection_state
             await client.disconnect()
             return connected, authenticated, connected_state, client.connection_state
 
-        connected, authenticated, connected_state, disconnected_state = asyncio.run(run_case())
+        connected, authenticated, connected_state, disconnected_state = asyncio.run(
+            run_case()
+        )
 
         self.assertTrue(connected)
         self.assertTrue(authenticated)
@@ -409,7 +433,9 @@ class MiningPropertyAndIntegrationTests(unittest.TestCase):
                 start = rng.randint(0, 1_000_000)
                 end = start + rng.randint(0, 500)
                 target = rng.randint(1, 2**224)
-                await solver.configure_search(target=target, nonce_ranges=[(start, end)])
+                await solver.configure_search(
+                    target=target, nonce_ranges=[(start, end)]
+                )
                 nonce = await solver.solve(max_iterations=25, timeout=5.0)
                 self.assertIsInstance(nonce, int)
                 self.assertGreaterEqual(nonce, start)
@@ -433,8 +459,12 @@ class MiningPropertyAndIntegrationTests(unittest.TestCase):
 
     def test_validation_primitives_build_80_byte_header_and_target(self) -> None:
         pool_manager = PoolManager()
-        job = pool_manager.get_active_pool().inject_dev_fixture_target_job(difficulty=1.0)
-        validation = validate_share(job, nonce=0, extranonce2="00" * job.extranonce2_size)
+        job = pool_manager.get_active_pool().inject_dev_fixture_target_job(
+            difficulty=1.0
+        )
+        validation = validate_share(
+            job, nonce=0, extranonce2="00" * job.extranonce2_size
+        )
         header = bytes.fromhex(validation.header_hex)
         self.assertEqual(80, len(header))
         self.assertEqual(header, build_block_header(job, validation.merkle_root, 0))
@@ -460,7 +490,9 @@ class AdversarialValidationTests(unittest.TestCase):
                 PredictRequest(state={"networkDifficulty": difficulty})
         self.assertEqual(
             7_234_567_890_123,
-            PredictRequest(state={"networkDifficulty": 7_234_567_890_123}).state.networkDifficulty,
+            PredictRequest(
+                state={"networkDifficulty": 7_234_567_890_123}
+            ).state.networkDifficulty,
         )
 
     def test_solver_rejects_invalid_targets_and_nonce_ranges(self) -> None:

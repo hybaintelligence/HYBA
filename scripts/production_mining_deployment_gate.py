@@ -61,7 +61,9 @@ class DeploymentGate:
         # Check for pool configuration
         profiles = ProductionMiningGateway.build_profiles_from_env()
         self.check(
-            "Pool Configuration", len(profiles) > 0, f"Found {len(profiles)} pool profile(s)"
+            "Pool Configuration",
+            len(profiles) > 0,
+            f"Found {len(profiles)} pool profile(s)",
         )
 
         if len(profiles) == 0:
@@ -70,9 +72,13 @@ class DeploymentGate:
 
         # Validate each profile
         for profile in profiles:
-            self.check(f"Pool '{profile.name}' URL", bool(profile.url), f"URL: {profile.url}")
             self.check(
-                f"Pool '{profile.name}' Username", bool(profile.username), "Username configured"
+                f"Pool '{profile.name}' URL", bool(profile.url), f"URL: {profile.url}"
+            )
+            self.check(
+                f"Pool '{profile.name}' Username",
+                bool(profile.username),
+                "Username configured",
             )
             if not profile.password:
                 self.warn(f"Pool '{profile.name}' has no password configured")
@@ -115,7 +121,9 @@ class DeploymentGate:
 
         return connection_success > 0
 
-    async def validate_mining_operations(self, gateway: ProductionMiningGateway) -> bool:
+    async def validate_mining_operations(
+        self, gateway: ProductionMiningGateway
+    ) -> bool:
         """Validate mining operations."""
         logger.info("\n" + "=" * 60)
         logger.info("STEP 3: Validating Mining Operations")
@@ -136,8 +144,12 @@ class DeploymentGate:
 
             # Check for active pools
             stats = status.get("stats", {})
-            active_pools = stats.get("healthy_pools", 0) + stats.get("degraded_pools", 0)
-            self.check("Active Pools", active_pools > 0, f"{active_pools} pool(s) active")
+            active_pools = stats.get("healthy_pools", 0) + stats.get(
+                "degraded_pools", 0
+            )
+            self.check(
+                "Active Pools", active_pools > 0, f"{active_pools} pool(s) active"
+            )
 
             # Try to get a job
             job = await gateway.get_next_job()
@@ -175,7 +187,9 @@ class DeploymentGate:
             logger.info("\n✓ DEPLOYMENT GATE PASSED - Ready for production")
             return True
         else:
-            logger.error("\n✗ DEPLOYMENT GATE FAILED - Address failures before deploying")
+            logger.error(
+                "\n✗ DEPLOYMENT GATE FAILED - Address failures before deploying"
+            )
             return False
 
 

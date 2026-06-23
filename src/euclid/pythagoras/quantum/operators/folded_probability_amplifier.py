@@ -71,7 +71,9 @@ def amplification_step(values: Any, indices: Sequence[int]) -> np.ndarray:
 def recommended_steps(dimension: int, target_count: int = 1) -> int:
     if dimension <= 0 or target_count <= 0 or target_count > dimension:
         raise FoldedAmplifierError("invalid dimensions")
-    return max(1, int(round((np.pi / 4.0) * np.sqrt(float(dimension) / float(target_count)))))
+    return max(
+        1, int(round((np.pi / 4.0) * np.sqrt(float(dimension) / float(target_count))))
+    )
 
 
 def run_amplifier(
@@ -91,7 +93,11 @@ def run_amplifier(
     vector = uniform_vector(dimension) if initial is None else _norm(initial)
     if vector.size != dimension:
         raise FoldedAmplifierError("dimension mismatch")
-    steps = recommended_steps(dimension, len(idxs)) if iterations is None else int(iterations)
+    steps = (
+        recommended_steps(dimension, len(idxs))
+        if iterations is None
+        else int(iterations)
+    )
     if steps < 0:
         raise FoldedAmplifierError("iterations cannot be negative")
     for _ in range(steps):

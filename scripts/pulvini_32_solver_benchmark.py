@@ -210,7 +210,9 @@ class BenchResult:
     notes: str = ""
 
 
-def run_brute_force(prefix: bytes, target: int, iterations_per_trial: int) -> BenchResult:
+def run_brute_force(
+    prefix: bytes, target: int, iterations_per_trial: int
+) -> BenchResult:
     """Single sequential scanner — brute force baseline."""
     hits = 0
     first_hit: Optional[int] = None
@@ -253,7 +255,12 @@ def run_pulvini_32(
     with ThreadPoolExecutor(max_workers=N_SOLVERS) as pool:
         futures = {
             pool.submit(
-                run_sector_solver, plan.solver_id, plan, prefix, target, iterations_per_solver
+                run_sector_solver,
+                plan.solver_id,
+                plan,
+                prefix,
+                target,
+                iterations_per_solver,
             ): plan.solver_id
             for plan in plans
         }
@@ -369,7 +376,9 @@ def main() -> None:
         f"  Compression ratio:    {plans[0].compression_ratio:.0f}:1  "
         f"(sector {SECTOR_SIZE:,} nonces → 2-param descriptor)"
     )
-    print(f"  Brute force hot set:  ~{UINT32 * 4 // 1024 // 1024:,} MB  (never fits cache)\n")
+    print(
+        f"  Brute force hot set:  ~{UINT32 * 4 // 1024 // 1024:,} MB  (never fits cache)\n"
+    )
 
     all_results = []
     for trial in range(args.trials):
@@ -383,7 +392,11 @@ def main() -> None:
         all_results.append(results)
 
         for r in results:
-            fh = f"first_hit={r.first_hit_iteration}" if r.first_hit_iteration else "no_hit"
+            fh = (
+                f"first_hit={r.first_hit_iteration}"
+                if r.first_hit_iteration
+                else "no_hit"
+            )
             print(
                 f"  {r.name:<28} hits={r.total_hits:>4}  "
                 f"{r.hashes_per_second / 1000:>8.1f} kH/s  {fh}"
@@ -392,13 +405,17 @@ def main() -> None:
 
     # Aggregate
     def _mean(name, attr):
-        vals = [getattr(r, attr) for trial in all_results for r in trial if r.name == name]
+        vals = [
+            getattr(r, attr) for trial in all_results for r in trial if r.name == name
+        ]
         return sum(vals) / len(vals) if vals else 0.0
 
     names = [r.name for r in all_results[0]]
     bf_hps = _mean("brute_force_sequential", "hashes_per_second")
 
-    print(f"\n{'Strategy':<30} {'MeanHits':>9} {'kH/s':>8} {'vs BF':>8} {'FirstHit':>9}")
+    print(
+        f"\n{'Strategy':<30} {'MeanHits':>9} {'kH/s':>8} {'vs BF':>8} {'FirstHit':>9}"
+    )
     print("-" * 70)
     for name in names:
         hits = _mean(name, "total_hits")
@@ -417,12 +434,16 @@ def main() -> None:
     p32s_hps = _mean("pulvini_32_serial", "hashes_per_second")
     print("\n--- VERDICT ---")
     print(f"Brute force sequential:    {bf_hps / 1000:.1f} kH/s")
-    print(f"PULVINI 32 serial:         {p32s_hps / 1000:.1f} kH/s  ({p32s_hps / bf_hps:.2f}x)")
+    print(
+        f"PULVINI 32 serial:         {p32s_hps / 1000:.1f} kH/s  ({p32s_hps / bf_hps:.2f}x)"
+    )
     print(
         f"\nWorking set per solver:    {plans[0].cache_bytes} bytes  "
         f"({'FITS in L3 ✅' if plans[0].fits_l3 else 'exceeds L3 ⚠️'})"
     )
-    print(f"Brute force hot set:       {UINT32 * 4 // 1024 // 1024} MB  (never fits cache)")
+    print(
+        f"Brute force hot set:       {UINT32 * 4 // 1024 // 1024} MB  (never fits cache)"
+    )
     print(
         f"\nCoverage: 32 × {SECTOR_SIZE:,} = {32 * SECTOR_SIZE:,} = 2^32 ✅ (no gaps, no overlap)"
     )

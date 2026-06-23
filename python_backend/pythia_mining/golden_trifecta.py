@@ -194,17 +194,25 @@ def assert_golden_quantum_trifecta_integrity(
     actual = set(certificate.pillars)
     missing = required - actual
     if missing:
-        raise AssertionError(f"Missing Golden Quantum Trifecta pillars: {sorted(missing)}")
+        raise AssertionError(
+            f"Missing Golden Quantum Trifecta pillars: {sorted(missing)}"
+        )
     if certificate.qubit_formalism_sites < 1000:
         raise AssertionError(
             "HYBA Golden Quantum Trifecta certificate must preserve the 1000-site surface"
         )
     if certificate.hardware_required_for_quantum_mathematics:
-        raise AssertionError("Quantum mathematics must remain substrate/hardware agnostic")
+        raise AssertionError(
+            "Quantum mathematics must remain substrate/hardware agnostic"
+        )
     if not certificate.avoided_full_state_materialisation:
-        raise AssertionError("The certificate must avoid full 2**N state materialisation")
+        raise AssertionError(
+            "The certificate must avoid full 2**N state materialisation"
+        )
     if "golden-ratio" not in certificate.distinctive_claim:
-        raise AssertionError("The golden-ratio system must be part of the central claim")
+        raise AssertionError(
+            "The golden-ratio system must be part of the central claim"
+        )
 
 
 __all__ = [

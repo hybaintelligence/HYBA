@@ -35,10 +35,10 @@ T = TypeVar("T")
 
 class ExternalAPIErrorHandler:
     """Centralized external API error handling"""
-    
+
     def __init__(self):
         self.logger = logging.getLogger(__name__)
-    
+
     def handle_requests_error(
         self,
         error: RequestException,
@@ -51,9 +51,9 @@ class ExternalAPIErrorHandler:
             "service": service_name,
             "url": url,
             "original_error_type": type(error).__name__,
-            **(context or {})
+            **(context or {}),
         }
-        
+
         if isinstance(error, RequestsTimeout):
             return HybaTimeoutError(
                 f"Request to {service_name} timed out: {str(error)}",
@@ -69,7 +69,7 @@ class ExternalAPIErrorHandler:
                 f"External API error from {service_name}: {str(error)}",
                 context=error_context,
             )
-    
+
     def handle_aiohttp_error(
         self,
         error: Exception,
@@ -82,11 +82,11 @@ class ExternalAPIErrorHandler:
             "service": service_name,
             "url": url,
             "original_error_type": type(error).__name__,
-            **(context or {})
+            **(context or {}),
         }
-        
+
         error_str = str(error).lower()
-        
+
         if "timeout" in error_str or "timed out" in error_str:
             return HybaTimeoutError(
                 f"Request to {service_name} timed out: {str(error)}",
@@ -115,7 +115,7 @@ external_api_error_handler = ExternalAPIErrorHandler()
 
 class SafeExternalAPICalls:
     """Safe external API calls with comprehensive error handling"""
-    
+
     @staticmethod
     def get(
         url: str,
@@ -134,7 +134,7 @@ class SafeExternalAPICalls:
                 headers=headers,
                 params=params,
             )
-            
+
             # Check for rate limiting
             if response.status_code == 429:
                 error = RateLimitError(
@@ -145,7 +145,7 @@ class SafeExternalAPICalls:
                 if raise_on_error:
                     raise error
                 return None
-            
+
             # Check for other HTTP errors
             if not response.ok:
                 error = ExternalServiceError(
@@ -154,16 +154,16 @@ class SafeExternalAPICalls:
                         "service": service_name,
                         "url": url,
                         "status_code": response.status_code,
-                        **(context or {})
+                        **(context or {}),
                     },
                 )
                 handle_error(error, raise_http=False)
                 if raise_on_error:
                     raise error
                 return None
-            
+
             return response
-            
+
         except RequestException as e:
             error = external_api_error_handler.handle_requests_error(
                 e, service_name, url, context
@@ -181,7 +181,7 @@ class SafeExternalAPICalls:
             if raise_on_error:
                 raise error
             return None
-    
+
     @staticmethod
     def post(
         url: str,
@@ -202,7 +202,7 @@ class SafeExternalAPICalls:
                 timeout=timeout,
                 headers=headers,
             )
-            
+
             # Check for rate limiting
             if response.status_code == 429:
                 error = RateLimitError(
@@ -213,7 +213,7 @@ class SafeExternalAPICalls:
                 if raise_on_error:
                     raise error
                 return None
-            
+
             # Check for other HTTP errors
             if not response.ok:
                 error = ExternalServiceError(
@@ -222,16 +222,16 @@ class SafeExternalAPICalls:
                         "service": service_name,
                         "url": url,
                         "status_code": response.status_code,
-                        **(context or {})
+                        **(context or {}),
                     },
                 )
                 handle_error(error, raise_http=False)
                 if raise_on_error:
                     raise error
                 return None
-            
+
             return response
-            
+
         except RequestException as e:
             error = external_api_error_handler.handle_requests_error(
                 e, service_name, url, context
@@ -249,7 +249,7 @@ class SafeExternalAPICalls:
             if raise_on_error:
                 raise error
             return None
-    
+
     @staticmethod
     async def async_get(
         url: str,
@@ -273,13 +273,17 @@ class SafeExternalAPICalls:
                     if response.status == 429:
                         error = RateLimitError(
                             f"Rate limit exceeded for {service_name}",
-                            context={"service": service_name, "url": url, **(context or {})},
+                            context={
+                                "service": service_name,
+                                "url": url,
+                                **(context or {}),
+                            },
                         )
                         handle_error(error, raise_http=False)
                         if raise_on_error:
                             raise error
                         return None
-                    
+
                     # Check for other HTTP errors
                     if not response.ok:
                         error = ExternalServiceError(
@@ -288,16 +292,16 @@ class SafeExternalAPICalls:
                                 "service": service_name,
                                 "url": url,
                                 "status_code": response.status,
-                                **(context or {})
+                                **(context or {}),
                             },
                         )
                         handle_error(error, raise_http=False)
                         if raise_on_error:
                             raise error
                         return None
-                    
+
                     return response
-                    
+
         except asyncio.TimeoutError as e:
             error = HybaTimeoutError(
                 f"Request to {service_name} timed out: {str(e)}",
@@ -324,7 +328,7 @@ class SafeExternalAPICalls:
             if raise_on_error:
                 raise error
             return None
-    
+
     @staticmethod
     async def async_post(
         url: str,
@@ -350,13 +354,17 @@ class SafeExternalAPICalls:
                     if response.status == 429:
                         error = RateLimitError(
                             f"Rate limit exceeded for {service_name}",
-                            context={"service": service_name, "url": url, **(context or {})},
+                            context={
+                                "service": service_name,
+                                "url": url,
+                                **(context or {}),
+                            },
                         )
                         handle_error(error, raise_http=False)
                         if raise_on_error:
                             raise error
                         return None
-                    
+
                     # Check for other HTTP errors
                     if not response.ok:
                         error = ExternalServiceError(
@@ -365,16 +373,16 @@ class SafeExternalAPICalls:
                                 "service": service_name,
                                 "url": url,
                                 "status_code": response.status,
-                                **(context or {})
+                                **(context or {}),
                             },
                         )
                         handle_error(error, raise_http=False)
                         if raise_on_error:
                             raise error
                         return None
-                    
+
                     return response
-                    
+
         except asyncio.TimeoutError as e:
             error = HybaTimeoutError(
                 f"Request to {service_name} timed out: {str(e)}",
@@ -409,7 +417,7 @@ def with_external_api_error_handling(
     context: Optional[Dict[str, Any]] = None,
 ):
     """Decorator for adding external API error handling to functions"""
-    
+
     def decorator(func: Callable[..., T]) -> Callable[..., Union[T, None]]:
         def wrapper(*args, **kwargs) -> Union[T, None]:
             try:
@@ -419,7 +427,7 @@ def with_external_api_error_handling(
                     e, service_name, "unknown", {**context, "function": func.__name__}
                 )
                 handle_error(error, raise_http=False)
-                
+
                 if default_return is not None:
                     return default_return
                 raise error
@@ -429,11 +437,13 @@ def with_external_api_error_handling(
                     context={"service": service_name, **(context or {})},
                 )
                 handle_error(error, raise_http=False)
-                
+
                 if default_return is not None:
                     return default_return
                 raise error
+
         return wrapper
+
     return decorator
 
 
@@ -443,7 +453,7 @@ def async_with_external_api_error_handling(
     context: Optional[Dict[str, Any]] = None,
 ):
     """Decorator for adding external API error handling to async functions"""
-    
+
     def decorator(func: Callable[..., T]) -> Callable[..., Union[T, None]]:
         async def wrapper(*args, **kwargs) -> Union[T, None]:
             try:
@@ -453,7 +463,7 @@ def async_with_external_api_error_handling(
                     e, service_name, "unknown", {**context, "function": func.__name__}
                 )
                 handle_error(error, raise_http=False)
-                
+
                 if default_return is not None:
                     return default_return
                 raise error
@@ -463,9 +473,11 @@ def async_with_external_api_error_handling(
                     context={"service": service_name, **(context or {})},
                 )
                 handle_error(error, raise_http=False)
-                
+
                 if default_return is not None:
                     return default_return
                 raise error
+
         return wrapper
+
     return decorator

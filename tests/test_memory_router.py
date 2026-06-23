@@ -66,7 +66,7 @@ class TestHebbianMemoryKernel:
         kernel = HebbianMemoryKernel()
         kernel.add_route("route_1")
         kernel.record_ack({"type": "test"}, "route_1")
-        
+
         assert len(kernel.history) == 1
         assert kernel.history[0] == ("route_1", True, pytest.approx(time.time()))
         assert kernel.weights["route_1"] > 0  # Should increase
@@ -76,7 +76,7 @@ class TestHebbianMemoryKernel:
         kernel = HebbianMemoryKernel()
         kernel.add_route("route_1")
         kernel.record_nack({"type": "test"}, "route_1")
-        
+
         assert len(kernel.history) == 1
         assert kernel.history[0] == ("route_1", False, pytest.approx(time.time()))
         assert kernel.weights["route_1"] < 0  # Should decrease
@@ -86,7 +86,7 @@ class TestHebbianMemoryKernel:
         kernel = HebbianMemoryKernel()
         kernel.add_route("route_1", initial_weight=1.0)
         kernel.add_route("route_2", initial_weight=0.5)
-        
+
         weights = kernel.current_route_weights()
         assert "route_1" in weights
         assert "route_2" in weights
@@ -97,7 +97,7 @@ class TestHebbianMemoryKernel:
         kernel = HebbianMemoryKernel()
         kernel.add_route("route_1", initial_weight=1.0)
         kernel.add_route("route_2", initial_weight=0.0)
-        
+
         probs = kernel.current_route_probabilities()
         assert "route_1" in probs
         assert "route_2" in probs
@@ -108,7 +108,7 @@ class TestHebbianMemoryKernel:
         kernel = HebbianMemoryKernel()
         kernel.add_route("route_1", initial_weight=10.0)
         kernel.add_route("route_2", initial_weight=-10.0)
-        
+
         probs = kernel.current_route_probabilities()
         assert abs(sum(probs.values()) - 1.0) < 1e-6
         assert all(0.0 <= p <= 1.0 for p in probs.values())
@@ -117,10 +117,10 @@ class TestHebbianMemoryKernel:
         """Test that history respects window size."""
         kernel = HebbianMemoryKernel(window_size=5)
         kernel.add_route("route_1")
-        
+
         for i in range(10):
             kernel.record_ack({"type": "test"}, "route_1")
-        
+
         assert len(kernel.history) == 5
 
     def test_memory_certificate(self):
@@ -128,7 +128,7 @@ class TestHebbianMemoryKernel:
         kernel = HebbianMemoryKernel()
         kernel.add_route("route_1")
         kernel.record_ack({"type": "test"}, "route_1")
-        
+
         cert = kernel.get_memory_certificate()
         assert "learning_rate" in cert
         assert "decay_rate" in cert
@@ -140,12 +140,12 @@ class TestHebbianMemoryKernel:
         """Test recent success rate calculation."""
         kernel = HebbianMemoryKernel()
         kernel.add_route("route_1")
-        
+
         # Record 3 successes, 1 failure
         for _ in range(3):
             kernel.record_ack({"type": "test"}, "route_1")
         kernel.record_nack({"type": "test"}, "route_1")
-        
+
         cert = kernel.get_memory_certificate()
         assert cert["recent_success_rate"] == 0.75
 
@@ -175,10 +175,10 @@ class TestCircuitBreaker:
     def test_would_trip_after_failures(self):
         """Test breaker trips after threshold failures."""
         breaker = CircuitBreaker(failure_threshold=3)
-        
+
         for _ in range(3):
             breaker.record_failure()
-        
+
         assert breaker.state == CircuitBreakerState.OPEN
         assert breaker.would_trip("route_1", {"type": "test"}) is True
 
@@ -186,7 +186,7 @@ class TestCircuitBreaker:
         """Test breaker trips when in OPEN state."""
         breaker = CircuitBreaker(failure_threshold=1)
         breaker.record_failure()
-        
+
         assert breaker.state == CircuitBreakerState.OPEN
         assert breaker.would_trip("route_1", {"type": "test"}) is True
 
@@ -195,22 +195,24 @@ class TestCircuitBreaker:
         breaker = CircuitBreaker(failure_threshold=1)
         breaker.record_failure()
         assert breaker.state == CircuitBreakerState.OPEN
-        
+
         # Wait for timeout
         breaker.last_failure_time = time.time() - breaker.timeout_seconds - 1
-        assert breaker.would_trip("route_1", {"type": "test"}) is False  # Should be HALF_OPEN
-        
+        assert (
+            breaker.would_trip("route_1", {"type": "test"}) is False
+        )  # Should be HALF_OPEN
+
         breaker.record_success()
         assert breaker.state == CircuitBreakerState.CLOSED
 
     def test_record_success_decays_failure_count(self):
         """Test success decays failure count."""
         breaker = CircuitBreaker(failure_threshold=5)
-        
+
         for _ in range(3):
             breaker.record_failure()
         assert breaker.failure_count == 3
-        
+
         breaker.record_success()
         assert breaker.failure_count == 2  # Should decay by 1
 
@@ -219,7 +221,7 @@ class TestCircuitBreaker:
         breaker = CircuitBreaker(failure_threshold=1)
         breaker.record_failure()
         assert breaker.state == CircuitBreakerState.OPEN
-        
+
         breaker.reset()
         assert breaker.state == CircuitBreakerState.CLOSED
         assert breaker.failure_count == 0
@@ -263,28 +265,29 @@ class TestMemoryRoutedController:
         """Test creating a memory-routed controller."""
         memory = HebbianMemoryKernel()
         breaker = CircuitBreaker()
-        
+
         # Mock causal router and audit log
         class MockCausalRouter:
             def explain(self, event, claim):
-                from python_backend.core.attribution.causal_router import CausalExplanation
+                from python_backend.core.attribution.causal_router import (
+                    CausalExplanation,
+                )
+
                 return CausalExplanation(
                     hotspots=[],
                     counterfactual=None,
                     explanation_quality="high",
                     timestamp=time.time(),
                 )
-        
+
         class MockAuditLog:
             def append(self, passport):
                 pass
-        
+
         causal_router = MockCausalRouter()
         audit_log = MockAuditLog()
-        
-        controller = MemoryRoutedController(
-            memory, breaker, causal_router, audit_log
-        )
+
+        controller = MemoryRoutedController(memory, breaker, causal_router, audit_log)
         assert controller.memory == memory
         assert controller.breaker == breaker
 
@@ -292,25 +295,28 @@ class TestMemoryRoutedController:
         """Test routing with no learned routes."""
         memory = HebbianMemoryKernel()
         breaker = CircuitBreaker()
-        
+
         class MockCausalRouter:
             def explain(self, event, claim):
-                from python_backend.core.attribution.causal_router import CausalExplanation
+                from python_backend.core.attribution.causal_router import (
+                    CausalExplanation,
+                )
+
                 return CausalExplanation(
                     hotspots=[],
                     counterfactual=None,
                     explanation_quality="high",
                     timestamp=time.time(),
                 )
-        
+
         class MockAuditLog:
             def append(self, passport):
                 pass
-        
+
         controller = MemoryRoutedController(
             memory, breaker, MockCausalRouter(), MockAuditLog()
         )
-        
+
         result = controller.route({"type": "test"})
         assert result.decision in [RouteDecision.EXECUTE, RouteDecision.FALLBACK]
         assert result.route == "fallback_safe"
@@ -321,25 +327,28 @@ class TestMemoryRoutedController:
         memory.add_route("route_1", initial_weight=2.0)
         memory.add_route("route_2", initial_weight=1.0)
         breaker = CircuitBreaker()
-        
+
         class MockCausalRouter:
             def explain(self, event, claim):
-                from python_backend.core.attribution.causal_router import CausalExplanation
+                from python_backend.core.attribution.causal_router import (
+                    CausalExplanation,
+                )
+
                 return CausalExplanation(
                     hotspots=[],
                     counterfactual=None,
                     explanation_quality="high",
                     timestamp=time.time(),
                 )
-        
+
         class MockAuditLog:
             def append(self, passport):
                 pass
-        
+
         controller = MemoryRoutedController(
             memory, breaker, MockCausalRouter(), MockAuditLog()
         )
-        
+
         result = controller.route({"type": "test"})
         assert result.route == "route_1"  # Should select highest weight
 
@@ -349,25 +358,28 @@ class TestMemoryRoutedController:
         memory.add_route("route_1")
         breaker = CircuitBreaker(failure_threshold=1)
         breaker.record_failure()  # Trip the breaker
-        
+
         class MockCausalRouter:
             def explain(self, event, claim):
-                from python_backend.core.attribution.causal_router import CausalExplanation
+                from python_backend.core.attribution.causal_router import (
+                    CausalExplanation,
+                )
+
                 return CausalExplanation(
                     hotspots=[],
                     counterfactual=None,
                     explanation_quality="high",
                     timestamp=time.time(),
                 )
-        
+
         class MockAuditLog:
             def append(self, passport):
                 pass
-        
+
         controller = MemoryRoutedController(
             memory, breaker, MockCausalRouter(), MockAuditLog()
         )
-        
+
         result = controller.route({"type": "test"})
         assert result.decision == RouteDecision.HALT
         assert result.circuit_breaker_tripped is True
@@ -377,25 +389,28 @@ class TestMemoryRoutedController:
         memory = HebbianMemoryKernel()
         memory.add_route("route_1")
         breaker = CircuitBreaker()
-        
+
         class MockCausalRouter:
             def explain(self, event, claim):
-                from python_backend.core.attribution.causal_router import CausalExplanation
+                from python_backend.core.attribution.causal_router import (
+                    CausalExplanation,
+                )
+
                 return CausalExplanation(
                     hotspots=[],
                     counterfactual=None,
                     explanation_quality="high",
                     timestamp=time.time(),
                 )
-        
+
         class MockAuditLog:
             def append(self, passport):
                 pass
-        
+
         controller = MemoryRoutedController(
             memory, breaker, MockCausalRouter(), MockAuditLog()
         )
-        
+
         state = controller.get_memory_state()
         assert "learning_rate" in state
         assert "weights" in state
@@ -404,25 +419,28 @@ class TestMemoryRoutedController:
         """Test getting circuit breaker state."""
         memory = HebbianMemoryKernel()
         breaker = CircuitBreaker()
-        
+
         class MockCausalRouter:
             def explain(self, event, claim):
-                from python_backend.core.attribution.causal_router import CausalExplanation
+                from python_backend.core.attribution.causal_router import (
+                    CausalExplanation,
+                )
+
                 return CausalExplanation(
                     hotspots=[],
                     counterfactual=None,
                     explanation_quality="high",
                     timestamp=time.time(),
                 )
-        
+
         class MockAuditLog:
             def append(self, passport):
                 pass
-        
+
         controller = MemoryRoutedController(
             memory, breaker, MockCausalRouter(), MockAuditLog()
         )
-        
+
         state = controller.get_circuit_breaker_state()
         assert "state" in state
         assert "failure_count" in state
@@ -432,25 +450,28 @@ class TestMemoryRoutedController:
         memory = HebbianMemoryKernel()
         breaker = CircuitBreaker(failure_threshold=1)
         breaker.record_failure()
-        
+
         class MockCausalRouter:
             def explain(self, event, claim):
-                from python_backend.core.attribution.causal_router import CausalExplanation
+                from python_backend.core.attribution.causal_router import (
+                    CausalExplanation,
+                )
+
                 return CausalExplanation(
                     hotspots=[],
                     counterfactual=None,
                     explanation_quality="high",
                     timestamp=time.time(),
                 )
-        
+
         class MockAuditLog:
             def append(self, passport):
                 pass
-        
+
         controller = MemoryRoutedController(
             memory, breaker, MockCausalRouter(), MockAuditLog()
         )
-        
+
         assert breaker.state == CircuitBreakerState.OPEN
         controller.reset_circuit_breaker()
         assert breaker.state == CircuitBreakerState.CLOSED
@@ -469,7 +490,9 @@ class TestHebbianMemoryKernelProperties:
         decay_rate=floats(min_value=0.9, max_value=0.999),
         window_size=integers(min_value=10, max_value=1000),
     )
-    def test_property_kernel_parameters_valid(self, learning_rate, decay_rate, window_size):
+    def test_property_kernel_parameters_valid(
+        self, learning_rate, decay_rate, window_size
+    ):
         """Property: Valid parameters create valid kernel."""
         kernel = HebbianMemoryKernel(learning_rate, decay_rate, window_size)
         assert kernel.learning_rate == learning_rate
@@ -484,7 +507,7 @@ class TestHebbianMemoryKernelProperties:
         kernel = HebbianMemoryKernel()
         for i in range(num_routes):
             kernel.add_route(f"route_{i}", initial_weight=float(i))
-        
+
         probs = kernel.current_route_probabilities()
         if probs:  # Only check if there are routes
             assert abs(sum(probs.values()) - 1.0) < 1e-6
@@ -496,10 +519,10 @@ class TestHebbianMemoryKernelProperties:
         """Property: History never exceeds window size."""
         kernel = HebbianMemoryKernel(window_size=20)
         kernel.add_route("route_1")
-        
+
         for _ in range(num_events):
             kernel.record_ack({"type": "test"}, "route_1")
-        
+
         assert len(kernel.history) <= 20
 
 
@@ -510,7 +533,9 @@ class TestCircuitBreakerProperties:
         failure_threshold=integers(min_value=1, max_value=100),
         timeout_seconds=floats(min_value=1.0, max_value=3600.0),
     )
-    def test_property_breaker_parameters_valid(self, failure_threshold, timeout_seconds):
+    def test_property_breaker_parameters_valid(
+        self, failure_threshold, timeout_seconds
+    ):
         """Property: Valid parameters create valid breaker."""
         breaker = CircuitBreaker(failure_threshold, timeout_seconds)
         assert breaker.failure_threshold == failure_threshold
@@ -522,14 +547,14 @@ class TestCircuitBreakerProperties:
     def test_property_failure_count_never_negative(self, num_failures):
         """Property: Failure count is never negative."""
         breaker = CircuitBreaker(failure_threshold=100)
-        
+
         for _ in range(num_failures):
             breaker.record_failure()
-        
+
         # Record some successes to decay
         for _ in range(num_failures):
             breaker.record_success()
-        
+
         assert breaker.failure_count >= 0
 
 
@@ -565,32 +590,35 @@ class TestMemoryRouterIntegration:
         memory.add_route("route_1", initial_weight=2.0)
         memory.add_route("route_2", initial_weight=1.0)
         breaker = CircuitBreaker()
-        
+
         class MockCausalRouter:
             def explain(self, event, claim):
-                from python_backend.core.attribution.causal_router import CausalExplanation
+                from python_backend.core.attribution.causal_router import (
+                    CausalExplanation,
+                )
+
                 return CausalExplanation(
                     hotspots=[],
                     counterfactual=None,
                     explanation_quality="high",
                     timestamp=time.time(),
                 )
-        
+
         class MockAuditLog:
             def append(self, passport):
                 pass
-        
+
         controller = MemoryRoutedController(
             memory, breaker, MockCausalRouter(), MockAuditLog()
         )
-        
+
         # Initial state: route_1 has higher weight
         assert memory.weights["route_1"] > memory.weights["route_2"]
-        
+
         # Simulate failures on route_1
         for _ in range(5):
             memory.record_nack({"type": "test"}, "route_1")
-        
+
         # route_1 weight should decrease
         assert memory.weights["route_1"] < 2.0
 
@@ -599,29 +627,32 @@ class TestMemoryRouterIntegration:
         memory = HebbianMemoryKernel()
         memory.add_route("route_1", initial_weight=0.0)
         breaker = CircuitBreaker()
-        
+
         class MockCausalRouter:
             def explain(self, event, claim):
-                from python_backend.core.attribution.causal_router import CausalExplanation
+                from python_backend.core.attribution.causal_router import (
+                    CausalExplanation,
+                )
+
                 return CausalExplanation(
                     hotspots=[],
                     counterfactual=None,
                     explanation_quality="high",
                     timestamp=time.time(),
                 )
-        
+
         class MockAuditLog:
             def append(self, passport):
                 pass
-        
+
         controller = MemoryRoutedController(
             memory, breaker, MockCausalRouter(), MockAuditLog()
         )
-        
+
         # Record successes on route_1
         for _ in range(5):
             memory.record_ack({"type": "test"}, "route_1")
-        
+
         # route_1 weight should increase
         assert memory.weights["route_1"] > 0.0
 
@@ -629,31 +660,34 @@ class TestMemoryRouterIntegration:
         """Test that controller generates audit passports."""
         memory = HebbianMemoryKernel()
         breaker = CircuitBreaker()
-        
+
         class MockCausalRouter:
             def explain(self, event, claim):
-                from python_backend.core.attribution.causal_router import CausalExplanation
+                from python_backend.core.attribution.causal_router import (
+                    CausalExplanation,
+                )
+
                 return CausalExplanation(
                     hotspots=[],
                     counterfactual=None,
                     explanation_quality="high",
                     timestamp=time.time(),
                 )
-        
+
         class MockAuditLog:
             def __init__(self):
                 self.passports = []
-            
+
             def append(self, passport):
                 self.passports.append(passport)
-        
+
         audit_log = MockAuditLog()
         controller = MemoryRoutedController(
             memory, breaker, MockCausalRouter(), audit_log
         )
-        
+
         controller.route({"type": "test"})
-        
+
         # Should have generated a passport
         assert len(audit_log.passports) == 1
 

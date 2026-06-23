@@ -66,7 +66,11 @@ def _scan_for_acceptance_marker(payload: Any) -> bool:
             lowered = str(key).lower()
             if lowered in {"accepted", "accepted_share", "pool_ack"} and value is True:
                 return True
-            if lowered in {"shares_accepted", "accepted_shares", "accepted_share_count"} and _as_int(value) > 0:
+            if (
+                lowered
+                in {"shares_accepted", "accepted_shares", "accepted_share_count"}
+                and _as_int(value) > 0
+            ):
                 return True
             if _scan_for_acceptance_marker(value):
                 return True
@@ -143,7 +147,11 @@ def check_clean_gate(root: Path = ROOT) -> EvidenceCheck:
     return EvidenceCheck(
         name="clean_10_gate",
         status="pass" if passed else "fail",
-        summary="Local clean evidence gate passed." if passed else "Local clean evidence gate has failures.",
+        summary=(
+            "Local clean evidence gate passed."
+            if passed
+            else "Local clean evidence gate has failures."
+        ),
         evidence_path=str(path.relative_to(root)),
         detail={
             "status": payload.get("status"),
@@ -153,7 +161,11 @@ def check_clean_gate(root: Path = ROOT) -> EvidenceCheck:
 
 
 def generate_report(root: Path = ROOT) -> EvidenceBoundaryReport:
-    checks = [check_session_stats(root), check_gate_output(root), check_clean_gate(root)]
+    checks = [
+        check_session_stats(root),
+        check_gate_output(root),
+        check_clean_gate(root),
+    ]
     acceptance_evidenced = any(
         check.status == "pass"
         and (
@@ -162,7 +174,9 @@ def generate_report(root: Path = ROOT) -> EvidenceBoundaryReport:
         )
         for check in checks
     )
-    clean_gate_failed = any(check.name == "clean_10_gate" and check.status == "fail" for check in checks)
+    clean_gate_failed = any(
+        check.name == "clean_10_gate" and check.status == "fail" for check in checks
+    )
     passed = acceptance_evidenced and not clean_gate_failed
     return EvidenceBoundaryReport(
         schema="HYBA_REPOSITORY_EVIDENCE_BOUNDARY_V1",
@@ -189,18 +203,26 @@ def generate_report(root: Path = ROOT) -> EvidenceBoundaryReport:
 def write_report(report: EvidenceBoundaryReport, output: Path = DEFAULT_OUTPUT) -> Path:
     output.parent.mkdir(parents=True, exist_ok=True)
     tmp = output.with_suffix(output.suffix + ".tmp")
-    tmp.write_text(json.dumps(report.to_dict(), indent=2, sort_keys=True), encoding="utf-8")
+    tmp.write_text(
+        json.dumps(report.to_dict(), indent=2, sort_keys=True), encoding="utf-8"
+    )
     tmp.replace(output)
     return output
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Generate repository evidence-boundary report.")
+    parser = argparse.ArgumentParser(
+        description="Generate repository evidence-boundary report."
+    )
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
     args = parser.parse_args()
     report = generate_report(ROOT)
     path = write_report(report, args.output)
-    print(json.dumps({**report.to_dict(), "artifact_path": str(path)}, indent=2, sort_keys=True))
+    print(
+        json.dumps(
+            {**report.to_dict(), "artifact_path": str(path)}, indent=2, sort_keys=True
+        )
+    )
     return 0 if report.passed else 2
 
 

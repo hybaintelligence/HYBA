@@ -134,8 +134,11 @@ class NonMarkovianDetector:
         T = len(states)
         if T < 3:
             return NonMarkovianityCertificate(
-                name=name, num_timesteps=T, dimension=0,
-                bures_divergence=0.0, rhp_non_markovianity=0.0,
+                name=name,
+                num_timesteps=T,
+                dimension=0,
+                bures_divergence=0.0,
+                rhp_non_markovianity=0.0,
                 cp_divisibility_violation=False,
                 memory_capacity_bound=0.0,
                 phi_compression_efficiency=0.0,
@@ -325,7 +328,9 @@ class NonMarkovianDetector:
 
         # Non-Markovian if witness derivative is positive at any point
         derivatives = np.diff(witness_values)
-        non_markovian_points = [int(i) for i, d in enumerate(derivatives) if d > self.tolerance]
+        non_markovian_points = [
+            int(i) for i, d in enumerate(derivatives) if d > self.tolerance
+        ]
 
         return {
             "witness_type": "BLP (Breuer-Laine-Piilo) Bures metric witness",
@@ -353,7 +358,9 @@ class NonMarkovianDetector:
             evals = np.clip(evals.real, 0.0, None)
             sqrt_rho = evecs @ np.diag(np.sqrt(evals)) @ evecs.conj().T
             # Regularize for inversion
-            sqrt_rho_inv = evecs @ np.diag(1.0 / (np.sqrt(evals) + 1e-12)) @ evecs.conj().T
+            sqrt_rho_inv = (
+                evecs @ np.diag(1.0 / (np.sqrt(evals) + 1e-12)) @ evecs.conj().T
+            )
 
             mid = sqrt_rho_inv @ sigma @ sqrt_rho_inv
             # Compute sqrt(mid) via eigendecomposition
@@ -462,7 +469,7 @@ def phi_folding_memory_bound(
     Returns:
         Dict with theoretical bounds and φ-optimal ratios.
     """
-    phi_k = _PHI ** fold_depth
+    phi_k = _PHI**fold_depth
     compression_bound = float(np.log2(max(original_dimension, 2)) / np.log2(_PHI))
 
     return {

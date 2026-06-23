@@ -50,7 +50,9 @@ class TestPhiAcceleratedDensityMatrix:
         rho = 0.5 * np.outer(psi1, np.conj(psi1)) + 0.5 * np.outer(psi2, np.conj(psi2))
 
         # Apply Φ-weighted purification
-        rho_purified = PhiAcceleratedDensityMatrix.phi_weighted_purification(rho, iterations=3)
+        rho_purified = PhiAcceleratedDensityMatrix.phi_weighted_purification(
+            rho, iterations=3
+        )
 
         # Verify axioms still hold
         assert np.allclose(rho_purified, rho_purified.conj().T, atol=1e-10)  # Hermitian
@@ -90,7 +92,9 @@ class TestPhiAcceleratedDensityMatrix:
         rho = np.outer(psi, np.conj(psi))
 
         # Apply Φ-decoherence suppression
-        rho_suppressed = PhiAcceleratedDensityMatrix.phi_decoherence_suppression(rho, strength=0.1)
+        rho_suppressed = PhiAcceleratedDensityMatrix.phi_decoherence_suppression(
+            rho, strength=0.1
+        )
 
         # Verify axioms still hold
         assert np.allclose(rho_suppressed, rho_suppressed.conj().T, atol=1e-10)
@@ -135,7 +139,9 @@ class TestPhiAcceleratedUnitaryEvolution:
         psi /= np.linalg.norm(psi)
 
         # Apply Φ-phase modulation
-        psi_modulated = PhiAcceleratedUnitaryEvolution.phi_phase_modulation(psi, phi_power=1)
+        psi_modulated = PhiAcceleratedUnitaryEvolution.phi_phase_modulation(
+            psi, phi_power=1
+        )
 
         # Verify norm preserved
         assert np.isclose(np.linalg.norm(psi_modulated), 1.0, atol=1e-10)
@@ -199,7 +205,9 @@ class TestPhiAcceleratedGrover:
         marked_index = 5
 
         # Run Φ-Grover search
-        final_state, iterations = grover.phi_grover_search(marked_index, max_iterations=10)
+        final_state, iterations = grover.phi_grover_search(
+            marked_index, max_iterations=10
+        )
 
         # Verify state is normalized
         assert np.isclose(np.linalg.norm(final_state), 1.0, atol=1e-10)
@@ -249,7 +257,9 @@ class TestPhiAcceleratedMeasurement:
         psi /= np.linalg.norm(psi)
 
         # Compute Φ-optimized probabilities
-        probabilities = PhiAcceleratedMeasurement.phi_optimized_probability_distribution(psi)
+        probabilities = (
+            PhiAcceleratedMeasurement.phi_optimized_probability_distribution(psi)
+        )
 
         # Verify normalization
         assert np.isclose(np.sum(probabilities), 1.0, atol=1e-10)
@@ -321,7 +331,9 @@ class TestPhiAccelerationPerformance:
             return r_squared / trace if trace > 1e-15 else r
 
         def phi_purification(r):
-            return PhiAcceleratedDensityMatrix.phi_weighted_purification(r, iterations=3)
+            return PhiAcceleratedDensityMatrix.phi_weighted_purification(
+                r, iterations=3
+            )
 
         # Benchmark
         std_time, phi_time, speedup = phi_acceleration_benchmark(

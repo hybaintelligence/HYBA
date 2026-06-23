@@ -32,7 +32,9 @@ class PulviniAuditEnvelope:
     compression_ratio: float
     phi_depth: int
     deterministic_work_rate: float
-    boundary: str = "Input-audited preservation evidence; not a universal invariant theorem."
+    boundary: str = (
+        "Input-audited preservation evidence; not a universal invariant theorem."
+    )
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -75,17 +77,24 @@ class PulviniOperator:
         return folded, kernel
 
     def unfold(
-        self, folded_tensor: np.ndarray, projection_kernel: np.ndarray, original_dim: int
+        self,
+        folded_tensor: np.ndarray,
+        projection_kernel: np.ndarray,
+        original_dim: int,
     ) -> np.ndarray:
         if original_dim < 0:
             raise ValueError("original_dim must be non-negative")
         if original_dim <= 1:
-            return np.asarray(folded_tensor, dtype=np.complex128).reshape(-1)[:original_dim]
+            return np.asarray(folded_tensor, dtype=np.complex128).reshape(-1)[
+                :original_dim
+            ]
         folded = np.asarray(folded_tensor, dtype=np.complex128).reshape(-1)
         kernel = np.asarray(projection_kernel, dtype=np.complex128).reshape(-1)
         dim_n1, dim_n2 = self.fibonacci_split(original_dim)
         if folded.size != dim_n1 or kernel.size != dim_n1:
-            raise ValueError("folded tensor and kernel must match the Phi split dimension")
+            raise ValueError(
+                "folded tensor and kernel must match the Phi split dimension"
+            )
         norm_sq = INV_PHI**2 + INV_PHI_SQUARED**2
         x_n1 = (INV_PHI * folded + INV_PHI_SQUARED * kernel) / norm_sq
         x_n2_padded = (INV_PHI_SQUARED * folded - INV_PHI * kernel) / norm_sq
@@ -95,7 +104,9 @@ class PulviniOperator:
         vector = np.asarray(tensor, dtype=np.complex128).reshape(-1)
         folded, kernel = self.fold(vector)
         reconstructed = self.unfold(folded, kernel, vector.size)
-        error = float(np.linalg.norm(vector - reconstructed) / max(1.0, np.linalg.norm(vector)))
+        error = float(
+            np.linalg.norm(vector - reconstructed) / max(1.0, np.linalg.norm(vector))
+        )
         return PulviniAuditEnvelope(
             original_dimension=int(vector.size),
             folded_dimension=int(folded.size),
@@ -105,7 +116,9 @@ class PulviniOperator:
             is_reversible=error <= self.tolerance,
             compression_ratio=float(vector.size / max(1, folded.size)),
             phi_depth=self.phi_depth(vector.size),
-            deterministic_work_rate=self.deterministic_work_rate(vector.size, folded.size),
+            deterministic_work_rate=self.deterministic_work_rate(
+                vector.size, folded.size
+            ),
         )
 
     def hamiltonian_reduction(
@@ -148,7 +161,9 @@ class PulviniOperator:
         )
 
     @staticmethod
-    def deterministic_work_rate(original_dimension: int, folded_dimension: int) -> float:
+    def deterministic_work_rate(
+        original_dimension: int, folded_dimension: int
+    ) -> float:
         return float(original_dimension / max(1, folded_dimension))
 
 

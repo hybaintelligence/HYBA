@@ -47,8 +47,8 @@ class AutomatedBenchmarkRunner:
         return {
             "cpu_count": psutil.cpu_count(),
             "cpu_percent": psutil.cpu_percent(interval=1),
-            "memory_total_gb": psutil.virtual_memory().total / (1024 ** 3),
-            "memory_available_gb": psutil.virtual_memory().available / (1024 ** 3),
+            "memory_total_gb": psutil.virtual_memory().total / (1024**3),
+            "memory_available_gb": psutil.virtual_memory().available / (1024**3),
             "python_version": sys.version,
         }
 
@@ -160,7 +160,9 @@ class AutomatedBenchmarkRunner:
         report.append(f"- **CPU Cores**: {sys_info['cpu_count']}\n")
         report.append(f"- **CPU Usage**: {sys_info['cpu_percent']:.1f}%\n")
         report.append(f"- **Memory Total**: {sys_info['memory_total_gb']:.2f} GB\n")
-        report.append(f"- **Memory Available**: {sys_info['memory_available_gb']:.2f} GB\n")
+        report.append(
+            f"- **Memory Available**: {sys_info['memory_available_gb']:.2f} GB\n"
+        )
 
         report.append("## Benchmark Results\n")
 
@@ -180,7 +182,9 @@ class AutomatedBenchmarkRunner:
 
         total = len(self.results["benchmarks"])
         passed = sum(
-            1 for r in self.results["benchmarks"].values() if r.get("status") == "passed"
+            1
+            for r in self.results["benchmarks"].values()
+            if r.get("status") == "passed"
         )
 
         report.append(f"- **Total Benchmarks**: {total}\n")
@@ -205,9 +209,7 @@ class AutomatedBenchmarkRunner:
         self.results["benchmarks"]["domain-specific"] = self.run_domain_benchmarks()
         print()
 
-        self.results["benchmarks"]["orchestrator"] = (
-            self.run_orchestrator_benchmarks()
-        )
+        self.results["benchmarks"]["orchestrator"] = self.run_orchestrator_benchmarks()
         print()
 
         # Generate report
@@ -223,8 +225,7 @@ class AutomatedBenchmarkRunner:
 
         # Determine exit code
         all_passed = all(
-            r.get("status") == "passed"
-            for r in self.results["benchmarks"].values()
+            r.get("status") == "passed" for r in self.results["benchmarks"].values()
         )
 
         return 0 if all_passed else 1

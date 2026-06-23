@@ -95,7 +95,9 @@ class TestDeutschKnowledgeProperties(unittest.TestCase):
 
     @given(
         strategy_id=st.text(
-            min_size=1, max_size=20, alphabet=st.characters(whitelist_categories=("Lu", "Ll"))
+            min_size=1,
+            max_size=20,
+            alphabet=st.characters(whitelist_categories=("Lu", "Ll")),
         ),
         difficulty=st.floats(min_value=1e10, max_value=1e20),
         accepted=st.booleans(),
@@ -123,7 +125,9 @@ class TestDeutschKnowledgeProperties(unittest.TestCase):
     @given(
         strategies=st.lists(
             st.text(
-                min_size=1, max_size=10, alphabet=st.characters(whitelist_categories=("Lu", "Ll"))
+                min_size=1,
+                max_size=10,
+                alphabet=st.characters(whitelist_categories=("Lu", "Ll")),
             ),
             min_size=2,
             max_size=5,
@@ -169,11 +173,15 @@ class TestDeutschKnowledgeProperties(unittest.TestCase):
 
         # Add successes
         for _ in range(num_successes):
-            substrate.create_knowledge_from_success(strategy_id, context, {"accepted": True})
+            substrate.create_knowledge_from_success(
+                strategy_id, context, {"accepted": True}
+            )
 
         # Add failures
         for _ in range(num_failures):
-            substrate.create_knowledge_from_failure(strategy_id, context, {"accepted": False})
+            substrate.create_knowledge_from_failure(
+                strategy_id, context, {"accepted": False}
+            )
 
         # Check explanations exist and have reasonable accuracy
         if strategy_id in substrate.explanations:
@@ -220,7 +228,9 @@ class TestDuSautoySymmetryProperties(unittest.TestCase):
         for i, orbit_i in enumerate(engine.orbits):
             for j, orbit_j in enumerate(engine.orbits):
                 if i != j:
-                    intersection = set(orbit_i.orbit_members) & set(orbit_j.orbit_members)
+                    intersection = set(orbit_i.orbit_members) & set(
+                        orbit_j.orbit_members
+                    )
                     self.assertEqual(len(intersection), 0)
 
     def test_orbit_stabilizer_theorem(self):

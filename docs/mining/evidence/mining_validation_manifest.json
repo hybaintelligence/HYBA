@@ -1,19 +1,96 @@
 {
-  "schema": "HYBA_MINING_VALIDATION_MANIFEST_V1",
-  "status": "partial_validation_complete",
-  "current_repository_state": "entangled_with_hyba_fullstack",
-  "independent_ci": false,
-  "standalone_repository": false,
-  "commercialization_stage": "stage_0_pre_validation_research_only",
-  "commercialization_gates_file": "docs/mining/commercialization_gates.json",
   "claims": [
     {
-      "id": "pulvini_hendrix_mining_external_performance",
-      "claim": "PULVINI/HENDRIX-Φ mining performance, ASIC-efficiency, accepted-share, and revenue claims are not externally validated yet.",
-      "tier": "HYPOTHETICAL",
+      "benchmark_results": {
+        "autonomous_mining_agent": {
+          "status": "PASSED",
+          "summary": "PYTHIA autonomous lifecycle submits verified share; plan is structured (not Grover)",
+          "tests_failed": 0,
+          "tests_passed": 2,
+          "timestamp": "2026-06-20T11:09:14+01:00"
+        },
+        "capability_suite": {
+          "results": [
+            {
+              "baseline": 30000.0,
+              "name": "HENDRIX-\u03a6 solver throughput",
+              "ratio": 1.64,
+              "unit": "nonces/sec",
+              "value": 49197.84
+            },
+            {
+              "baseline": 50000.0,
+              "name": "M32 embedding throughput",
+              "ratio": 634.03,
+              "unit": "nonces/sec",
+              "value": 31701579.09
+            },
+            {
+              "baseline": 0.5,
+              "name": "\u03c6-resonance mean score",
+              "ratio": 1.571,
+              "unit": "[0,1]",
+              "value": 0.7854
+            },
+            {
+              "baseline": 0.15,
+              "name": "\u03c6-resonance score std dev",
+              "ratio": 0.793,
+              "unit": "[0,1]",
+              "value": 0.119
+            },
+            {
+              "baseline": 0.85,
+              "name": "\u03c6-resonance top 1% threshold",
+              "ratio": 1.113,
+              "unit": "[0,1]",
+              "value": 0.9463
+            },
+            {
+              "baseline": 0.4011,
+              "name": "Yang-Mills gate pass rate",
+              "ratio": 1.0,
+              "unit": "fraction",
+              "value": 0.4011
+            },
+            {
+              "baseline": 5000.0,
+              "name": "Stratum message serialization throughput",
+              "ratio": 45.76,
+              "unit": "msgs/sec",
+              "value": 228806.77
+            }
+          ],
+          "status": "PASSED",
+          "timestamp": "2026-06-20T11:07:48+01:00"
+        },
+        "phi_search_vs_random": {
+          "status": "PASSED",
+          "summary": "\u03c6-guided ordering reaches valid nonces no later than sequential; finds high-resonance nonces faster; complete permutation; Voronoi domains deterministic; gradient proposals within uint32 bounds; solver respects configured range; search deterministic for same target/range",
+          "tests_failed": 0,
+          "tests_passed": 7,
+          "timestamp": "2026-06-20T11:08:42+01:00"
+        }
+      },
+      "boundaries": [
+        "No guaranteed mining revenue claim",
+        "No accepted-share or pool-side hashrate claim without pool evidence",
+        "No SHA-256 quantum acceleration claim",
+        "No Antminer S21 superiority claim without comparable measured evidence",
+        "No universal random-search speedup claim; high-entropy SHA-256 search remains bounded by the Deutsch/exponential-wall framing",
+        "No commercialization before Stage 2 firmware/hardware integration evidence is present",
+        "No production SLA, warranty, or sovereign mining claim before Stage 3 field-trial evidence is present"
+      ],
+      "claim": "PULVINI/HENDRIX-\u03a6 mining performance, ASIC-efficiency, accepted-share, and revenue claims are not externally validated yet.",
+      "evidence_files": [
+        "docs/MINING_STANDALONE_VALIDATION_ROADMAP.md",
+        "docs/PYTHIA_HYBA_VALIDATION_REMEDIATION.md",
+        "docs/mining/commercialization_gates.json",
+        "docs/mining/evidence/solver_validation_results.md"
+      ],
       "evidence_status": "benchmarks_passed_numpy_unblocked",
+      "id": "pulvini_hendrix_mining_external_performance",
       "last_validation_run": "2026-06-20T11:07:48+01:00",
-      "validation_environment": "Mac Studio M3 Ultra (Darwin arm64), Python 3.12.7, NumPy 2.4.6",
       "reproduction_command": "PYTHONPATH=python_backend python -m pytest tests/test_mining_capability_benchmarks.py -v -s",
       "required_to_promote": [
         "independent_package_or_repository_boundary",
@@ -27,54 +104,19 @@
         "published_asic_specs_comparison_with_no_replacement_claim",
         "pool_side_accepted_share_evidence_before_hashrate_or_revenue_claims"
       ],
-      "boundaries": [
-        "No guaranteed mining revenue claim",
-        "No accepted-share or pool-side hashrate claim without pool evidence",
-        "No SHA-256 quantum acceleration claim",
-        "No Antminer S21 superiority claim without comparable measured evidence",
-        "No universal random-search speedup claim; high-entropy SHA-256 search remains bounded by the Deutsch/exponential-wall framing",
-        "No commercialization before Stage 2 firmware/hardware integration evidence is present",
-        "No production SLA, warranty, or sovereign mining claim before Stage 3 field-trial evidence is present"
-      ],
-      "evidence_files": [
-        "docs/MINING_STANDALONE_VALIDATION_ROADMAP.md",
-        "docs/PYTHIA_HYBA_VALIDATION_REMEDIATION.md",
-        "docs/mining/commercialization_gates.json",
-        "docs/mining/evidence/solver_validation_results.md"
-      ],
-      "benchmark_results": {
-        "capability_suite": {
-          "status": "PASSED",
-          "timestamp": "2026-06-20T11:07:48+01:00",
-          "results": [
-            {"name": "HENDRIX-Φ solver throughput", "value": 49197.84, "unit": "nonces/sec", "baseline": 30000.0, "ratio": 1.640},
-            {"name": "M32 embedding throughput", "value": 31701579.09, "unit": "nonces/sec", "baseline": 50000.0, "ratio": 634.03},
-            {"name": "φ-resonance mean score", "value": 0.7854, "unit": "[0,1]", "baseline": 0.5, "ratio": 1.571},
-            {"name": "φ-resonance score std dev", "value": 0.1190, "unit": "[0,1]", "baseline": 0.15, "ratio": 0.793},
-            {"name": "φ-resonance top 1% threshold", "value": 0.9463, "unit": "[0,1]", "baseline": 0.85, "ratio": 1.113},
-            {"name": "Yang-Mills gate pass rate", "value": 0.4011, "unit": "fraction", "baseline": 0.4011, "ratio": 1.000},
-            {"name": "Stratum message serialization throughput", "value": 228806.77, "unit": "msgs/sec", "baseline": 5000.0, "ratio": 45.76}
-          ]
-        },
-        "phi_search_vs_random": {
-          "status": "PASSED",
-          "timestamp": "2026-06-20T11:08:42+01:00",
-          "tests_passed": 7,
-          "tests_failed": 0,
-          "summary": "φ-guided ordering reaches valid nonces no later than sequential; finds high-resonance nonces faster; complete permutation; Voronoi domains deterministic; gradient proposals within uint32 bounds; solver respects configured range; search deterministic for same target/range"
-        },
-        "autonomous_mining_agent": {
-          "status": "PASSED",
-          "timestamp": "2026-06-20T11:09:14+01:00",
-          "tests_passed": 2,
-          "tests_failed": 0,
-          "summary": "PYTHIA autonomous lifecycle submits verified share; plan is structured (not Grover)"
-        }
-      },
+      "tier": "HYPOTHETICAL",
       "validation_blockers": [
         "2026-06-20 RESOLVED: NumPy validation gate unblocked. NumPy 2.4.6 installed via pip under pyenv Python 3.12.7 on Darwin arm64. All capability benchmarks pass.",
         "2026-06-20 REMAINING: No real/testnet header fixture; no actual double-SHA-256 nonce loop; no pool-side accepted-share evidence. Mining remains HYPOTHETICAL until these are addressed."
-      ]
+      ],
+      "validation_environment": "Mac Studio M3 Ultra (Darwin arm64), Python 3.12.7, NumPy 2.4.6"
     }
-  ]
+  ],
+  "commercialization_gates_file": "docs/mining/commercialization_gates.json",
+  "commercialization_stage": "stage_0_pre_validation_research_only",
+  "current_repository_state": "entangled_with_hyba_fullstack",
+  "independent_ci": false,
+  "schema": "HYBA_MINING_VALIDATION_MANIFEST_V1",
+  "standalone_repository": false,
+  "status": "partial_validation_complete"
 }

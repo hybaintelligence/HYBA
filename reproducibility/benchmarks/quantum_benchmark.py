@@ -99,7 +99,9 @@ def benchmark_surface_code_simulation() -> BenchmarkResult:
         rounds = 100
 
         start = time.time()
-        core = FaultTolerantQuantumCore(code_distance=code_distance, physical_error_rate=physical_error_rate)
+        core = FaultTolerantQuantumCore(
+            code_distance=code_distance, physical_error_rate=physical_error_rate
+        )
         core.initialize_logical_qubit("0")
 
         successful_corrections = 0
@@ -149,7 +151,7 @@ def benchmark_optimization() -> BenchmarkResult:
         core = FaultTolerantQuantumCore(code_distance=7, physical_error_rate=0.001)
         core.initialize_logical_qubit("0")
 
-        best_value = float('-inf')
+        best_value = float("-inf")
         for _ in range(iterations):
             core.apply_logical_gate("H", 0)
             core.measure_syndrome()
@@ -163,7 +165,7 @@ def benchmark_optimization() -> BenchmarkResult:
 
         # Classical simulated annealing
         start = time.time()
-        best_value_classical = float('-inf')
+        best_value_classical = float("-inf")
         for _ in range(iterations):
             current_value = np.random.random()
             if current_value > best_value_classical:
@@ -213,8 +215,15 @@ def run_all_benchmarks(seed: int = 42) -> List[BenchmarkResult]:
 
 def main():
     parser = argparse.ArgumentParser(description="Run HYBA PQMC benchmarks")
-    parser.add_argument("--seed", type=int, default=42, help="Random seed for reproducibility")
-    parser.add_argument("--output", type=str, default="validation_output/benchmarks.json", help="Output file for results")
+    parser.add_argument(
+        "--seed", type=int, default=42, help="Random seed for reproducibility"
+    )
+    parser.add_argument(
+        "--output",
+        type=str,
+        default="validation_output/benchmarks.json",
+        help="Output file for results",
+    )
 
     args = parser.parse_args()
 
@@ -227,7 +236,9 @@ def main():
     for r in results:
         print(f"{r.name}:")
         print(f"  HYBA: {r.hyba_time*1000:.2f}ms, accuracy: {r.hyba_accuracy:.4f}")
-        print(f"  Classical: {r.classical_time*1000:.2f}ms, accuracy: {r.classical_accuracy:.4f}")
+        print(
+            f"  Classical: {r.classical_time*1000:.2f}ms, accuracy: {r.classical_accuracy:.4f}"
+        )
         print(f"  Speedup: {r.speedup:.2f}x")
         print(f"  Accuracy improvement: {r.accuracy_improvement:.4f}")
         print()

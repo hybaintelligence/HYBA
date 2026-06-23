@@ -41,7 +41,9 @@ def test_evidence_tamper_breaks_peer_audit_chain():
     tampered = ImmutableEvidenceLog().append(
         "capability_observed", actor="tokyo", timestamp=1.0, roi=0.0
     )
-    immune = SalamanderImmuneSystem(min_work_per_watt_hour=1.0, max_work_per_watt_hour=10.0)
+    immune = SalamanderImmuneSystem(
+        min_work_per_watt_hour=1.0, max_work_per_watt_hour=10.0
+    )
 
     response = immune.peer_audit("tokyo", tampered, expected_seals, lifecycle)
 

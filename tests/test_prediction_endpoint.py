@@ -53,7 +53,9 @@ class PredictionEndpointTests(unittest.TestCase):
             ],
         }
 
-        with patch("hyba_genesis_api.api.misc.GenesisAIServiceRegistry") as mock_registry:
+        with patch(
+            "hyba_genesis_api.api.misc.GenesisAIServiceRegistry"
+        ) as mock_registry:
             mock_registry.get_ai_optimizer.return_value = mock_optimizer
 
             request = PredictRequest(state={"networkDifficulty": 7234567890123})
@@ -93,7 +95,9 @@ class PredictionEndpointTests(unittest.TestCase):
             ],
         }
 
-        with patch("hyba_genesis_api.api.misc.GenesisAIServiceRegistry") as mock_registry:
+        with patch(
+            "hyba_genesis_api.api.misc.GenesisAIServiceRegistry"
+        ) as mock_registry:
             mock_registry.get_ai_optimizer.return_value = mock_optimizer
 
             request = PredictRequest(state={"networkDifficulty": 100})
@@ -131,7 +135,9 @@ class PredictionEndpointTests(unittest.TestCase):
             "recent_performance": [],
         }
 
-        with patch("hyba_genesis_api.api.misc.GenesisAIServiceRegistry") as mock_registry:
+        with patch(
+            "hyba_genesis_api.api.misc.GenesisAIServiceRegistry"
+        ) as mock_registry:
             mock_registry.get_ai_optimizer.return_value = mock_optimizer
 
             request = PredictRequest(state={"networkDifficulty": 1000})
@@ -140,7 +146,8 @@ class PredictionEndpointTests(unittest.TestCase):
             self.assertTrue(result["success"])
             self.assertEqual(result["recommendation"]["confidence"], 0.0)
             self.assertEqual(
-                result["recommendation"]["strategy"], "phi_scaled_compressed_solver_search"
+                result["recommendation"]["strategy"],
+                "phi_scaled_compressed_solver_search",
             )
 
     def test_prediction_response_includes_timestamp(self):
@@ -167,7 +174,9 @@ class PredictionEndpointTests(unittest.TestCase):
             "recent_performance": [{"accepted": True}],
         }
 
-        with patch("hyba_genesis_api.api.misc.GenesisAIServiceRegistry") as mock_registry:
+        with patch(
+            "hyba_genesis_api.api.misc.GenesisAIServiceRegistry"
+        ) as mock_registry:
             mock_registry.get_ai_optimizer.return_value = mock_optimizer
             result = asyncio.run(predict_params(request))
 

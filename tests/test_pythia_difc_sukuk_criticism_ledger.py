@@ -5,7 +5,9 @@ from pythia_finance_audit.criticism_ledger import (
     render_packet_ledger,
 )
 from pythia_finance_audit.difc_aaiofi_bridge import generate_sample_difc_sukuk_packet
-from pythia_finance_audit.sukuk_lifecycle_simulation import simulate_sukuk_lifecycle_drift
+from pythia_finance_audit.sukuk_lifecycle_simulation import (
+    simulate_sukuk_lifecycle_drift,
+)
 
 
 def test_single_packet_ledger_is_read_only_and_shows_findings():

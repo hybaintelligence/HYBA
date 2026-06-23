@@ -25,7 +25,9 @@ SECRET_PATTERNS = [
         "committed JWT bearer token",
     ),
     (
-        re.compile(r"JWT_SECRET\s*=\s*(?!(?:replace-with|your-|<))[^\s#]{24,}", re.IGNORECASE),
+        re.compile(
+            r"JWT_SECRET\s*=\s*(?!(?:replace-with|your-|<))[^\s#]{24,}", re.IGNORECASE
+        ),
         "committed JWT secret",
     ),
     (

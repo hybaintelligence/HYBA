@@ -122,7 +122,9 @@ class InformationIntegrationAnalyzer:
                 "setState",
                 "dispatch",
             ]
-            state_access_count = sum(content.count(pattern) for pattern in state_patterns)
+            state_access_count = sum(
+                content.count(pattern) for pattern in state_patterns
+            )
 
             api_patterns = ["fetch(", "axios.", "apiClient."]
             api_call_count = sum(content.count(pattern) for pattern in api_patterns)
@@ -232,10 +234,18 @@ class CausalAutonomyAnalyzer:
                 "monkey_patch",
             ]
 
-            decision_count = sum(content.count(keyword) for keyword in decision_keywords)
-            external_count = sum(content.count(keyword) for keyword in external_keywords)
-            adaptive_count = sum(content.count(keyword) for keyword in adaptive_keywords)
-            self_modify_count = sum(content.count(keyword) for keyword in self_modify_patterns)
+            decision_count = sum(
+                content.count(keyword) for keyword in decision_keywords
+            )
+            external_count = sum(
+                content.count(keyword) for keyword in external_keywords
+            )
+            adaptive_count = sum(
+                content.count(keyword) for keyword in adaptive_keywords
+            )
+            self_modify_count = sum(
+                content.count(keyword) for keyword in self_modify_patterns
+            )
 
             return {
                 "file": file_path.name,
@@ -286,8 +296,12 @@ class StateIrreducibilityAnalyzer:
 
             return {
                 "file": file_path.name,
-                "global_state": sum(content.count(pattern) for pattern in global_patterns),
-                "instance_state": sum(content.count(pattern) for pattern in instance_patterns),
+                "global_state": sum(
+                    content.count(pattern) for pattern in global_patterns
+                ),
+                "instance_state": sum(
+                    content.count(pattern) for pattern in instance_patterns
+                ),
             }
         except Exception as exc:
             return {"error": str(exc), "file": file_path.name}
@@ -367,7 +381,8 @@ class TestEmergentComplexityIIT(unittest.TestCase):
             for py_file in self._python_files("python_backend/pythia_mining")
         ]
         ts_analyses = [
-            analyzer.analyze_typescript_module(ts_file) for ts_file in self._typescript_files()
+            analyzer.analyze_typescript_module(ts_file)
+            for ts_file in self._typescript_files()
         ]
         phi = analyzer.compute_integration_phi()
         total_edges = sum(len(deps) for deps in analyzer.dependencies.values())
@@ -399,13 +414,17 @@ class TestEmergentComplexityIIT(unittest.TestCase):
                 "python_backend/pythia_mining", "python_backend/hyba_genesis_api"
             )
         ]
-        all_analyses.extend(analyzer.analyze_file(ts_file) for ts_file in self._typescript_files())
+        all_analyses.extend(
+            analyzer.analyze_file(ts_file) for ts_file in self._typescript_files()
+        )
 
         autonomy_score = analyzer.compute_autonomy_score(all_analyses)
         total_decisions = sum(item.get("decision_points", 0) for item in all_analyses)
         total_external = sum(item.get("external_controls", 0) for item in all_analyses)
         total_adaptive = sum(item.get("adaptive_patterns", 0) for item in all_analyses)
-        total_self_modify = sum(item.get("self_modification", 0) for item in all_analyses)
+        total_self_modify = sum(
+            item.get("self_modification", 0) for item in all_analyses
+        )
 
         self.results["test_02"] = {
             "autonomy_score": autonomy_score,
@@ -460,7 +479,9 @@ class TestEmergentComplexityIIT(unittest.TestCase):
         self._record(f"Irreducibility software proxy score: {irreducibility:.4f}")
         self._record(f"Global state references: {total_global}")
         self._record(f"Instance state references: {total_instance}")
-        self._record(f"Interpretation: {self._interpret_irreducibility(irreducibility)}")
+        self._record(
+            f"Interpretation: {self._interpret_irreducibility(irreducibility)}"
+        )
 
         self.assertIsNotNone(irreducibility)
         self.assertGreaterEqual(irreducibility, 0.0)
@@ -480,7 +501,9 @@ class TestEmergentComplexityIIT(unittest.TestCase):
         self._record("=" * 60)
 
         # Document the current state of knowledge
-        self._record("IIT-inspired software proxy measurements have NOT been correlated with:")
+        self._record(
+            "IIT-inspired software proxy measurements have NOT been correlated with:"
+        )
         self._record("- Mining hashrate")
         self._record("- Share acceptance rates")
         self._record("- Pool-side performance metrics")
@@ -492,7 +515,9 @@ class TestEmergentComplexityIIT(unittest.TestCase):
         self._record("1. Historical hashrate data collection")
         self._record("2. Share acceptance rate tracking")
         self._record("3. Pool-side performance metrics")
-        self._record("4. Statistical correlation analysis between Φ and mining performance")
+        self._record(
+            "4. Statistical correlation analysis between Φ and mining performance"
+        )
         self._record("5. Controlled A/B testing with different Φ configurations")
 
         self._record("\nCurrent status: UNVALIDATED")
@@ -511,7 +536,9 @@ class TestEmergentComplexityIIT(unittest.TestCase):
     def test_04_emergent_intelligence_verdict(self):
         phi = self.results.get("test_01", {}).get("phi", 0.0)
         autonomy = self.results.get("test_02", {}).get("autonomy_score", 0.0)
-        irreducibility = self.results.get("test_03", {}).get("irreducibility_score", 0.0)
+        irreducibility = self.results.get("test_03", {}).get(
+            "irreducibility_score", 0.0
+        )
         adaptive = self.results.get("test_02", {}).get("adaptive_patterns", 0)
         self_modify = self.results.get("test_02", {}).get("self_modification", 0)
 
@@ -542,7 +569,9 @@ class TestEmergentComplexityIIT(unittest.TestCase):
             else "✗ Primarily reactive/externally-driven"
         )
         verdict.append(
-            "✓ State coupling present" if has_irreducibility else "✗ Clean state boundaries"
+            "✓ State coupling present"
+            if has_irreducibility
+            else "✗ Clean state boundaries"
         )
         verdict.append(
             f"✓ Contains {adaptive} adaptive patterns"
@@ -595,7 +624,9 @@ class TestEmergentComplexityIIT(unittest.TestCase):
         self._record(f"Emergent Complexity Score: {emergent_score:.2f}")
         self._record(conclusion)
 
-        results_file = self.root_path / "artifacts" / "emergent_complexity_analysis.json"
+        results_file = (
+            self.root_path / "artifacts" / "emergent_complexity_analysis.json"
+        )
         results_file.parent.mkdir(exist_ok=True)
         preserved_previous_artifact = self._preserve_existing_artifact(results_file)
         payload = {
@@ -612,13 +643,17 @@ class TestEmergentComplexityIIT(unittest.TestCase):
         }
         results_file.write_text(json.dumps(payload, indent=2), encoding="utf-8")
         if preserved_previous_artifact:
-            self._record(f"Previous artifact preserved at: {preserved_previous_artifact}")
+            self._record(
+                f"Previous artifact preserved at: {preserved_previous_artifact}"
+            )
         self._record(f"Full results saved to: {results_file}")
 
         self.assertIn("metric_definitions", payload)
         self.assertIn("claim_boundary", payload)
         self.assertIn("baseline_comparisons", payload)
-        self.assertEqual("software proxies only", payload["claim_boundary"]["metric_posture"])
+        self.assertEqual(
+            "software proxies only", payload["claim_boundary"]["metric_posture"]
+        )
 
         unresolved_placeholders = [
             line for line in self.observation_lines if PLACEHOLDER_PATTERN.search(line)
@@ -653,7 +688,9 @@ class TestEmergentComplexityIIT(unittest.TestCase):
                 baseline_dir = tmp_root / name
                 baseline_dir.mkdir()
                 for filename, content in files.items():
-                    (baseline_dir / filename).write_text(textwrap.dedent(content), encoding="utf-8")
+                    (baseline_dir / filename).write_text(
+                        textwrap.dedent(content), encoding="utf-8"
+                    )
 
                 integration_analyzer = InformationIntegrationAnalyzer(baseline_dir)
                 autonomy_analyzer = CausalAutonomyAnalyzer()
@@ -661,13 +698,18 @@ class TestEmergentComplexityIIT(unittest.TestCase):
                 py_files = sorted(baseline_dir.glob("*.py"))
                 for py_file in py_files:
                     integration_analyzer.analyze_python_module(py_file)
-                autonomy = [autonomy_analyzer.analyze_file(py_file) for py_file in py_files]
+                autonomy = [
+                    autonomy_analyzer.analyze_file(py_file) for py_file in py_files
+                ]
                 state = [
-                    irreducibility_analyzer.analyze_shared_state(py_file) for py_file in py_files
+                    irreducibility_analyzer.analyze_shared_state(py_file)
+                    for py_file in py_files
                 ]
                 comparisons[name] = {
                     "integration_phi_proxy": integration_analyzer.compute_integration_phi(),
-                    "autonomy_proxy": autonomy_analyzer.compute_autonomy_score(autonomy),
+                    "autonomy_proxy": autonomy_analyzer.compute_autonomy_score(
+                        autonomy
+                    ),
                     "irreducibility_proxy": irreducibility_analyzer.compute_irreducibility_score(
                         state
                     ),
@@ -727,7 +769,9 @@ class TestEmergentComplexityIIT(unittest.TestCase):
         archive_dir = results_file.parent / "previous"
         archive_dir.mkdir(exist_ok=True)
         timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
-        archive_path = archive_dir / f"{results_file.stem}.{timestamp}{results_file.suffix}"
+        archive_path = (
+            archive_dir / f"{results_file.stem}.{timestamp}{results_file.suffix}"
+        )
         shutil.copy2(results_file, archive_path)
         return str(archive_path.relative_to(self.root_path))
 

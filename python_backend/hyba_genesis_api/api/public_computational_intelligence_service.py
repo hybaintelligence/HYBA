@@ -24,7 +24,9 @@ from hyba_genesis_api.api.customer_access import (
     require_api_key,
 )
 
-router = APIRouter(prefix="/api/v1/computational-intelligence-services", tags=["public-ciaas"])
+router = APIRouter(
+    prefix="/api/v1/computational-intelligence-services", tags=["public-ciaas"]
+)
 
 ServiceState = Literal["provisioned", "running", "stopped"]
 ServiceTier = Literal["developer", "production", "sovereign"]
@@ -41,7 +43,9 @@ WorkloadKind = Literal[
 class ProvisionComputationalIntelligenceRequest(BaseModel):
     """Customer request to provision a CIaaS virtual computer."""
 
-    name: str = Field(min_length=3, max_length=80, pattern=r"^[a-zA-Z0-9][a-zA-Z0-9_.-]*$")
+    name: str = Field(
+        min_length=3, max_length=80, pattern=r"^[a-zA-Z0-9][a-zA-Z0-9_.-]*$"
+    )
     service_tier: ServiceTier = "production"
     tenancy: TenancyMode = "single-tenant"
     code_distance: int = Field(default=7, ge=3, le=31)
@@ -84,7 +88,9 @@ class _CustomerCIAASRegistry:
     """Customer-scoped CIaaS registry with tenant isolation."""
 
     def __init__(self) -> None:
-        self._customer_services: Dict[str, Dict[str, _CommercialIntelligenceComputer]] = {}
+        self._customer_services: Dict[
+            str, Dict[str, _CommercialIntelligenceComputer]
+        ] = {}
 
     def provision(
         self,
@@ -118,7 +124,9 @@ class _CustomerCIAASRegistry:
         service_id = response.service_id
 
         # Track ownership
-        self._customer_services[customer_id][service_id] = admin_ciaas_registry.get(service_id)
+        self._customer_services[customer_id][service_id] = admin_ciaas_registry.get(
+            service_id
+        )
 
         # Add usage metrics
         usage = customer_registry.get_usage_metrics(customer)
@@ -139,7 +147,9 @@ class _CustomerCIAASRegistry:
             usage=usage,
         )
 
-    def get(self, customer: CustomerInfo, service_id: str) -> _CommercialIntelligenceComputer:
+    def get(
+        self, customer: CustomerInfo, service_id: str
+    ) -> _CommercialIntelligenceComputer:
         customer_id = customer.customer_id
         if customer_id not in self._customer_services:
             raise HTTPException(status_code=404, detail="Service not found")
@@ -225,7 +235,9 @@ class _CustomerCIAASRegistry:
 
         # Check quota and meter accepted work before execution.
         context_size = len(str(request.context))
-        usage_meter = customer_registry.meter(customer, product="ciaas.execute", units=context_size)
+        usage_meter = customer_registry.meter(
+            customer, product="ciaas.execute", units=context_size
+        )
 
         result = admin_ciaas_registry.execute(service_id, request)
         usage = customer_registry.get_usage_metrics(customer)
@@ -237,7 +249,9 @@ class _CustomerCIAASRegistry:
 customer_registry_ciaas = _CustomerCIAASRegistry()
 
 
-@router.post("", response_model=PublicServiceResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "", response_model=PublicServiceResponse, status_code=status.HTTP_201_CREATED
+)
 async def provision_service(
     request: ProvisionComputationalIntelligenceRequest,
     customer: CustomerInfo = Depends(require_api_key),

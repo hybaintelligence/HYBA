@@ -40,7 +40,9 @@ except Exception as e:
 # Step 2: Start mining daemon
 print("\n2. Starting mining daemon...")
 try:
-    response = requests.post(f"{BASE_URL}/api/mining/start", headers=headers, timeout=10)
+    response = requests.post(
+        f"{BASE_URL}/api/mining/start", headers=headers, timeout=10
+    )
     print(f"   Status: {response.status_code}")
     result = response.json()
     print(f"   Result: {json.dumps(result, indent=2)}")
@@ -70,7 +72,9 @@ try:
     summary = result.get("summary", {})
     print(f"   Active pool: {summary.get('active_pool_name')}")
     print(f"   Total shares (24h): {summary.get('total_shares_24h', 0)}")
-    print(f"   Global acceptance rate: {summary.get('global_acceptance_rate', 0) * 100:.1f}%")
+    print(
+        f"   Global acceptance rate: {summary.get('global_acceptance_rate', 0) * 100:.1f}%"
+    )
 except Exception as e:
     print(f"   Error: {e}")
 

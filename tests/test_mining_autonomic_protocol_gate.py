@@ -20,11 +20,16 @@ BASE_ENV = {
 }
 
 
-def _run_gate(extra_env: dict[str, str] | None = None) -> subprocess.CompletedProcess[str]:
+def _run_gate(
+    extra_env: dict[str, str] | None = None,
+) -> subprocess.CompletedProcess[str]:
     env = os.environ.copy()
     env.update(BASE_ENV)
     for key in list(env):
-        if key.startswith("HYBA_AUTONOMOUS_OPERATOR") or key == "HYBA_LIVE_SHARE_APPROVAL_ID":
+        if (
+            key.startswith("HYBA_AUTONOMOUS_OPERATOR")
+            or key == "HYBA_LIVE_SHARE_APPROVAL_ID"
+        ):
             env.pop(key, None)
     if extra_env:
         env.update(extra_env)
@@ -70,7 +75,8 @@ def test_actions_outside_one_block_mission_require_human_authority() -> None:
 
     assert result.returncode == 2
     assert (
-        "actions outside the seeded mining mission lack explicit human authority" in result.stdout
+        "actions outside the seeded mining mission lack explicit human authority"
+        in result.stdout
     )
     assert "HYBA_AUTONOMOUS_OPERATOR_APPROVAL_ID required" in result.stdout
 

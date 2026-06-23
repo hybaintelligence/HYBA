@@ -78,7 +78,11 @@ class SelfHealingReactor:
             },
         )
         packet = self.regenerator._run_criticism_and_guard(candidate)
-        action = "ESCALATE_TO_REWIRING_ORCHESTRATOR" if self._requires_rewiring(report) else "ESCALATE_TO_SOVEREIGN_HUMAN"
+        action = (
+            "ESCALATE_TO_REWIRING_ORCHESTRATOR"
+            if self._requires_rewiring(report)
+            else "ESCALATE_TO_SOVEREIGN_HUMAN"
+        )
 
         return {
             "status": "HEALING_PROPOSAL_STAGED",
@@ -106,24 +110,40 @@ class SelfHealingReactor:
 
         report = DamageReport(dict(damage_report))
         issues = list(report.get("issues", []))
-        issues.append("hot path optimisation requested: preserve latency, performance and φ-stability invariants")
+        issues.append(
+            "hot path optimisation requested: preserve latency, performance and φ-stability invariants"
+        )
         report["issues"] = issues
         report.setdefault("protocol_step", "optimise")
         report.setdefault("architecture_impact", "LOCAL_LIMB")
         staged = self.heal_damage(report, module_path, target_name)
-        staged["status"] = "OPTIMISATION_PROPOSAL_STAGED" if staged.get("packet") else staged["status"]
+        staged["status"] = (
+            "OPTIMISATION_PROPOSAL_STAGED" if staged.get("packet") else staged["status"]
+        )
         staged["protocol_step"] = "optimise"
         return staged
 
-    def _load_target_code(self, module_path: str, target_name: str) -> str | dict[str, Any]:
+    def _load_target_code(
+        self, module_path: str, target_name: str
+    ) -> str | dict[str, Any]:
         try:
             full_code = Path(module_path).read_text(encoding="utf-8")
-        except Exception as exc:  # pragma: no cover - exercised through error packet tests
-            return self._create_error_packet(DamageReport({"needs_repair": True}), target_name, f"Failed to read code: {exc}")
+        except (
+            Exception
+        ) as exc:  # pragma: no cover - exercised through error packet tests
+            return self._create_error_packet(
+                DamageReport({"needs_repair": True}),
+                target_name,
+                f"Failed to read code: {exc}",
+            )
 
         target_code = self._extract_target_code(full_code, target_name)
         if not target_code:
-            return self._create_error_packet(DamageReport({"needs_repair": True}), target_name, "Target code not found")
+            return self._create_error_packet(
+                DamageReport({"needs_repair": True}),
+                target_name,
+                "Target code not found",
+            )
         return target_code
 
     def _extract_target_code(self, full_code: str, target_name: str) -> str | None:
@@ -135,13 +155,18 @@ class SelfHealingReactor:
             return None
         lines = full_code.splitlines()
         for node in ast.walk(tree):
-            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)) and node.name == target_name:
+            if (
+                isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef))
+                and node.name == target_name
+            ):
                 start = int(node.lineno) - 1
                 end = int(getattr(node, "end_lineno", node.lineno))
                 return "\n".join(lines[start:end])
         return None
 
-    def _build_improvement_goal(self, damage_report: DamageReport | dict[str, Any]) -> str:
+    def _build_improvement_goal(
+        self, damage_report: DamageReport | dict[str, Any]
+    ) -> str:
         """Convert damage signals into an actionable healing goal."""
 
         issues = [str(issue) for issue in damage_report.get("issues", [])]
@@ -151,22 +176,45 @@ class SelfHealingReactor:
             return str(suggested_goal)
         if "φ" in lowered or "phi" in lowered or "floor" in lowered:
             return "Restore φ-geometry alignment, φ-floor coherence and invariant-safe execution"
-        if "fidelity" in lowered or "scarring" in lowered or "quarantine" in lowered or "redifferent" in lowered:
+        if (
+            "fidelity" in lowered
+            or "scarring" in lowered
+            or "quarantine" in lowered
+            or "redifferent" in lowered
+        ):
             return "Repair regeneration stability, reduce scarring risk and preserve Salamander fidelity invariants"
         if "performance" in lowered or "latency" in lowered or "hot path" in lowered:
             return "Repair hot-path performance regression while preserving φ-stability and all invariants"
-        if "rewire" in lowered or "structural" in lowered or "architecture" in lowered or "dependency" in lowered:
+        if (
+            "rewire" in lowered
+            or "structural" in lowered
+            or "architecture" in lowered
+            or "dependency" in lowered
+        ):
             return "Escalate structural brittleness to rewiring while preserving local limb safety"
         if "todo" in lowered or "fixme" in lowered or "technical debt" in lowered:
-            return "Resolve technical debt, restore invariants and remove TODO/FIXME drift"
+            return (
+                "Resolve technical debt, restore invariants and remove TODO/FIXME drift"
+            )
         if "invariant" in lowered:
             return "Restore invariant compliance and add protection"
         return "Repair detected drift and strengthen resilience"
 
     @staticmethod
     def _requires_rewiring(damage_report: DamageReport | dict[str, Any]) -> bool:
-        lowered = " | ".join(str(issue) for issue in damage_report.get("issues", [])).lower()
-        return any(token in lowered for token in ("rewire", "structural", "architecture", "dependency graph", "circular import"))
+        lowered = " | ".join(
+            str(issue) for issue in damage_report.get("issues", [])
+        ).lower()
+        return any(
+            token in lowered
+            for token in (
+                "rewire",
+                "structural",
+                "architecture",
+                "dependency graph",
+                "circular import",
+            )
+        )
 
     def _governance_envelope(
         self,
@@ -179,11 +227,22 @@ class SelfHealingReactor:
             "progenitor_state": damage_report.get("progenitor_state"),
             "before_metrics": damage_report.get("metrics_before"),
             "after_metrics_expected": damage_report.get("metrics_target"),
-            "reasoning_trace": (packet or {}).get("criticisms") or (packet or {}).get("criticism_trail"),
+            "reasoning_trace": (packet or {}).get("criticisms")
+            or (packet or {}).get("criticism_trail"),
             "performance_impact": damage_report.get("performance_impact"),
             "stability_impact": damage_report.get("stability_impact"),
-            "architecture_impact": damage_report.get("architecture_impact", "LOCAL_LIMB"),
-            "protocol_steps": ["observe", "diagnose", "heal", "optimise", "rewire", "evolve", "benchmark"],
+            "architecture_impact": damage_report.get(
+                "architecture_impact", "LOCAL_LIMB"
+            ),
+            "protocol_steps": [
+                "observe",
+                "diagnose",
+                "heal",
+                "optimise",
+                "rewire",
+                "evolve",
+                "benchmark",
+            ],
             "human_sovereign_required": True,
             "auto_apply": False,
         }
@@ -212,12 +271,16 @@ class SelfHealingReactor:
             "action": "NO_CHANGE_APPLIED",
             "sovereign_human_gate": True,
             "small_limb_rule_enforced": False,
-            "governance_envelope": self._governance_envelope(DamageReport(dict(damage_report)), packet),
+            "governance_envelope": self._governance_envelope(
+                DamageReport(dict(damage_report)), packet
+            ),
             "auto_apply": False,
         }
 
 
-def create_healing_proposal(module_path: str, target_name: str, damage_issues: list[str] | None = None) -> dict[str, Any]:
+def create_healing_proposal(
+    module_path: str, target_name: str, damage_issues: list[str] | None = None
+) -> dict[str, Any]:
     """Manual development helper for staging a sovereign healing proposal."""
 
     regenerator = SalamanderRegenerator()

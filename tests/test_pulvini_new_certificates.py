@@ -143,7 +143,9 @@ class TestCoxeterGroupCertificate(unittest.TestCase):
     def test_coxeter_certificate_embedded_in_a5(self):
         cert = a5_representation_certificate()
         self.assertIn("coxeter_structure", cert.to_dict())
-        self.assertEqual(cert.coxeter_structure["coxeter_group"], "H3 icosahedral Coxeter group")
+        self.assertEqual(
+            cert.coxeter_structure["coxeter_group"], "H3 icosahedral Coxeter group"
+        )
 
 
 class TestA5RepresentationCertificate(unittest.TestCase):

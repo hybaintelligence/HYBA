@@ -11,7 +11,9 @@ os.environ.setdefault("NODE_ENV", "test")
 
 import pytest
 
-fastapi = pytest.importorskip("fastapi", reason="FastAPI backend dependencies are not installed")
+fastapi = pytest.importorskip(
+    "fastapi", reason="FastAPI backend dependencies are not installed"
+)
 from fastapi.testclient import TestClient
 
 from hyba_genesis_api.auth.jwt_handler import get_jwt_manager

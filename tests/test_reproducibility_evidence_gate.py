@@ -10,7 +10,8 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def _load_claim_tier_guard():
     spec = importlib.util.spec_from_file_location(
-        "check_validation_claim_tiers", ROOT / "scripts" / "check_validation_claim_tiers.py"
+        "check_validation_claim_tiers",
+        ROOT / "scripts" / "check_validation_claim_tiers.py",
     )
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
@@ -20,7 +21,9 @@ def _load_claim_tier_guard():
 
 def test_reproducibility_attestation_gate_accepts_builder_output(tmp_path) -> None:
     guard = _load_claim_tier_guard()
-    commands = ["PYTHONPATH=python_backend pytest tests/test_scientific_rigor_kernel.py -q"]
+    commands = [
+        "PYTHONPATH=python_backend pytest tests/test_scientific_rigor_kernel.py -q"
+    ]
     attestation = build_reproducibility_attestation(
         claim_id="runtime_integration_proxy_not_consciousness_claim",
         inputs={"sample": {"phi": 0.5, "status": "bounded_proxy"}},
@@ -40,7 +43,9 @@ def test_reproducibility_attestation_gate_accepts_builder_output(tmp_path) -> No
 
 def test_reproducibility_attestation_gate_rejects_digest_tampering(tmp_path) -> None:
     guard = _load_claim_tier_guard()
-    commands = ["PYTHONPATH=python_backend pytest tests/test_scientific_rigor_kernel.py -q"]
+    commands = [
+        "PYTHONPATH=python_backend pytest tests/test_scientific_rigor_kernel.py -q"
+    ]
     attestation = build_reproducibility_attestation(
         claim_id="runtime_integration_proxy_not_consciousness_claim",
         inputs={"sample": {"phi": 0.5, "status": "bounded_proxy"}},

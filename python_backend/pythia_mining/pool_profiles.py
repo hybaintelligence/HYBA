@@ -75,7 +75,9 @@ class PoolCredentialConfig:
     share_retry_backoff_max: float = 5.0
 
     def resolved_username(self) -> str:
-        _clean_url, inline_username, _inline_password = split_pool_url_credentials(self.url)
+        _clean_url, inline_username, _inline_password = split_pool_url_credentials(
+            self.url
+        )
         if self.pool_id == "ckpool":
             return self.btc_address or self.username or inline_username
         if self.pool_id == "nicehash":
@@ -87,7 +89,9 @@ class PoolCredentialConfig:
         return self.username or inline_username
 
     def resolved_password(self) -> str:
-        _clean_url, _inline_username, inline_password = split_pool_url_credentials(self.url)
+        _clean_url, _inline_username, inline_password = split_pool_url_credentials(
+            self.url
+        )
         if self.pool_id in {"ckpool", "nicehash"}:
             return self.password or inline_password or "x"
         return self.password or inline_password
@@ -112,15 +116,21 @@ class PoolCredentialConfig:
 
     def to_dict(self, include_secret_fields: bool = False) -> Dict[str, Any]:
         payload = asdict(self)
-        payload["configured"] = bool(self.resolved_username() and self.resolved_password())
+        payload["configured"] = bool(
+            self.resolved_username() and self.resolved_password()
+        )
         payload["resolved_username"] = (
             self.resolved_username()
             if include_secret_fields
             else ("<configured>" if self.resolved_username() else "")
         )
         if not include_secret_fields:
-            clean_url, inline_username, inline_password = split_pool_url_credentials(self.url)
-            payload["url"] = clean_url if (inline_username or inline_password) else self.url
+            clean_url, inline_username, inline_password = split_pool_url_credentials(
+                self.url
+            )
+            payload["url"] = (
+                clean_url if (inline_username or inline_password) else self.url
+            )
             if payload.get("username"):
                 payload["username"] = "<configured>"
             if payload.get("password"):
@@ -200,7 +210,9 @@ def _backend_root() -> Path:
 
 def runtime_pool_config_path() -> Path:
     return Path(
-        os.getenv("HYBA_POOL_CONFIG_PATH", str(_backend_root() / "mining_pools_config.json"))
+        os.getenv(
+            "HYBA_POOL_CONFIG_PATH", str(_backend_root() / "mining_pools_config.json")
+        )
     )
 
 
@@ -352,11 +364,15 @@ def default_pool_config(pool_id: str) -> PoolCredentialConfig:
         name=spec["name"],
         url=os.getenv(f"HYBA_POOL_{pool_id.upper()}_URL", spec["url"]),
         stratum_version=int(
-            os.getenv(f"HYBA_POOL_{pool_id.upper()}_STRATUM_VERSION", spec["stratum_version"])
+            os.getenv(
+                f"HYBA_POOL_{pool_id.upper()}_STRATUM_VERSION", spec["stratum_version"]
+            )
         ),
         tls_required=bool(spec["tls_required"]),
         credential_mode=spec["credential_mode"],
-        priority=int(os.getenv(f"HYBA_POOL_{pool_id.upper()}_PRIORITY", spec["priority"])),
+        priority=int(
+            os.getenv(f"HYBA_POOL_{pool_id.upper()}_PRIORITY", spec["priority"])
+        ),
         source="default",
     )
 
@@ -372,7 +388,9 @@ def validate_pool_config(config: PoolCredentialConfig) -> PoolCredentialConfig:
     resolved_password = config.resolved_password()
     if config.pool_id in {"viabtc", "braiins"}:
         if not resolved_username or not resolved_password:
-            raise PoolProfileError(f"{config.pool_id} requires username and password/auth value")
+            raise PoolProfileError(
+                f"{config.pool_id} requires username and password/auth value"
+            )
     elif config.pool_id == "ckpool":
         if not config.btc_address and not config.username and not resolved_username:
             raise PoolProfileError("ckpool requires a BTC address")
@@ -381,7 +399,9 @@ def validate_pool_config(config: PoolCredentialConfig) -> PoolCredentialConfig:
             raise PoolProfileError("nicehash requires worker and NH pool id")
     elif config.pool_id == "stratumv2":
         if not resolved_username or not resolved_password:
-            raise PoolProfileError("stratumv2 requires username and password/auth value")
+            raise PoolProfileError(
+                "stratumv2 requires username and password/auth value"
+            )
     config.to_profile()
     return config
 
@@ -422,7 +442,9 @@ def load_runtime_pool_configs(
         try:
             raw = json.loads(path.read_text(encoding="utf-8"))
         except (OSError, json.JSONDecodeError) as exc:
-            raise PoolProfileError(f"failed to read runtime pool config: {exc}") from exc
+            raise PoolProfileError(
+                f"failed to read runtime pool config: {exc}"
+            ) from exc
         for pool_id, payload in raw.get("pools", {}).items():
             if pool_id not in DEFAULT_POOL_SPECS:
                 continue
@@ -449,14 +471,18 @@ def load_runtime_pool_configs(
                     pool_id=pool_id,
                     name=base.name,
                     url=resolve_env_reference(payload.get("url") or base.url),
-                    stratum_version=int(payload.get("stratum_version") or base.stratum_version),
+                    stratum_version=int(
+                        payload.get("stratum_version") or base.stratum_version
+                    ),
                     tls_required=base.tls_required,
                     credential_mode=base.credential_mode,
                     username=resolve_env_reference(payload.get("username") or ""),
                     password=resolve_env_reference(payload.get("password") or ""),
                     btc_address=resolve_env_reference(payload.get("btc_address") or ""),
                     worker=resolve_env_reference(payload.get("worker") or ""),
-                    nicehash_pool_id=resolve_env_reference(payload.get("nicehash_pool_id") or ""),
+                    nicehash_pool_id=resolve_env_reference(
+                        payload.get("nicehash_pool_id") or ""
+                    ),
                     priority=int(payload.get("priority") or base.priority),
                     enabled=bool(payload.get("enabled", True)),
                     source="runtime",

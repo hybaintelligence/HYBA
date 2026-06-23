@@ -20,7 +20,9 @@ from hyba_genesis_api.core.extraordinary_evidence import (  # noqa: E402
 )
 
 
-def test_extraordinary_claims_contract_returns_sealed_complete_evidence_packet() -> None:
+def test_extraordinary_claims_contract_returns_sealed_complete_evidence_packet() -> (
+    None
+):
     packet = build_extraordinary_evidence_packet()
 
     assert packet["schema_version"] == "hyba.extraordinary_evidence.v1"
@@ -32,7 +34,9 @@ def test_extraordinary_claims_contract_returns_sealed_complete_evidence_packet()
 
 
 @pytest.mark.parametrize("claim", CLAIMS)
-def test_every_claim_has_required_evidence_invariants_and_adversarial_tests(claim) -> None:
+def test_every_claim_has_required_evidence_invariants_and_adversarial_tests(
+    claim,
+) -> None:
     materialized = claim.to_dict()
 
     assert materialized["required_evidence"]
@@ -55,7 +59,9 @@ def test_millennium_operationalization_covers_every_last_problem() -> None:
 
 
 @pytest.mark.parametrize("exponent", range(1, 31))
-def test_phi_hardware_scaling_property_is_finite_positive_and_monotone(exponent: int) -> None:
+def test_phi_hardware_scaling_property_is_finite_positive_and_monotone(
+    exponent: int,
+) -> None:
     packet = build_extraordinary_evidence_packet()
     phi = packet["phi"]
 
@@ -67,8 +73,19 @@ def test_phi_hardware_scaling_property_is_finite_positive_and_monotone(exponent:
     assert value != float("inf")
 
 
-@pytest.mark.parametrize("hostile_claim_id", ["", "unknown", "quantum_math_substrate\x00", "millennium_operationalization_all ", "../../claim"])
-def test_adversarial_unknown_claim_cannot_appear_as_supported_claim(hostile_claim_id: str) -> None:
+@pytest.mark.parametrize(
+    "hostile_claim_id",
+    [
+        "",
+        "unknown",
+        "quantum_math_substrate\x00",
+        "millennium_operationalization_all ",
+        "../../claim",
+    ],
+)
+def test_adversarial_unknown_claim_cannot_appear_as_supported_claim(
+    hostile_claim_id: str,
+) -> None:
     packet = build_extraordinary_evidence_packet()
     supported = {claim["claim_id"] for claim in packet["claims"]}
 
@@ -77,9 +94,16 @@ def test_adversarial_unknown_claim_cannot_appear_as_supported_claim(hostile_clai
         assert packet["adversarial_contract"]["fail_closed_on_unknown_claim"] is True
 
 
-def test_adversarial_packet_contains_no_placeholder_or_simulated_evidence_language() -> None:
+def test_adversarial_packet_contains_no_placeholder_or_simulated_evidence_language() -> (
+    None
+):
     encoded = json.dumps(build_extraordinary_evidence_packet(), sort_keys=True).lower()
-    forbidden = ("placeholder telemetry", "fixture telemetry", "simulated proof", "trust me")
+    forbidden = (
+        "placeholder telemetry",
+        "fixture telemetry",
+        "simulated proof",
+        "trust me",
+    )
 
     for phrase in forbidden:
         assert phrase not in encoded

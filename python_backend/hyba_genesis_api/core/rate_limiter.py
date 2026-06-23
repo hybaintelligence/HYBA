@@ -25,12 +25,16 @@ import logging
 
 
 class RateLimiter(BaseHTTPMiddleware):
-    def __init__(self, app, max_requests: int | None = None, window_seconds: int | None = None):
+    def __init__(
+        self, app, max_requests: int | None = None, window_seconds: int | None = None
+    ):
         super().__init__(app)
         self.max_requests = max_requests or int(
             os.getenv("HYBA_RATE_LIMIT_REQUESTS_PER_MINUTE", "120")
         )
-        self.window = window_seconds or int(os.getenv("HYBA_RATE_LIMIT_WINDOW_SECONDS", "60"))
+        self.window = window_seconds or int(
+            os.getenv("HYBA_RATE_LIMIT_WINDOW_SECONDS", "60")
+        )
         self._eviction_interval = float(
             os.getenv("HYBA_RATE_LIMIT_EVICTION_INTERVAL_SECONDS", "300")
         )
@@ -82,7 +86,10 @@ class RateLimiter(BaseHTTPMiddleware):
             )
             return JSONResponse(
                 status_code=429,
-                content={"detail": "Too Many Requests", "retry_after_seconds": retry_after},
+                content={
+                    "detail": "Too Many Requests",
+                    "retry_after_seconds": retry_after,
+                },
                 headers={"Retry-After": str(retry_after)},
             )
 

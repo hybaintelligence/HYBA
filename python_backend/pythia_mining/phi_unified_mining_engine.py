@@ -44,7 +44,11 @@ from .hendrix_phi_solver import (
     yang_mills_action,
 )
 from .metal_sha256_pipeline import BatchResult, NonceVerification, UnifiedBatchVerifier
-from .phi_scaling_engine import PhiResonanceAnalyzer, PhiScaledEnsemble, benchmark_vs_asic
+from .phi_scaling_engine import (
+    PhiResonanceAnalyzer,
+    PhiScaledEnsemble,
+    benchmark_vs_asic,
+)
 from .pulvini_compressed_solver import PulviniCompressedQuantumSolver
 from .pulvini_memory_compression_proof import phi_folding_mathematical_proof
 from .stratum_client import MiningJob
@@ -86,10 +90,12 @@ class UnifiedMiningEngine:
         self,
         configured_capacity_ehs: Optional[float] = None,
         consciousness_config: Optional[ConsciousnessConfig] = None,
-        lock_manager = None,
+        lock_manager=None,
     ) -> None:
         self.configured_capacity_ehs = configured_capacity_ehs
-        self.lock_manager = lock_manager  # Enterprise hardening: distributed lock manager
+        self.lock_manager = (
+            lock_manager  # Enterprise hardening: distributed lock manager
+        )
         self.solver = PulviniCompressedQuantumSolver(
             configured_capacity_ehs=configured_capacity_ehs,
         )
@@ -110,7 +116,9 @@ class UnifiedMiningEngine:
         )
         self.phi_ensemble = PhiScaledEnsemble(config={"phi_scaling_power": 1.5})
         self.phi_analyzer = PhiResonanceAnalyzer()
-        self.verifier = UnifiedBatchVerifier(configured_capacity_ehs=configured_capacity_ehs)
+        self.verifier = UnifiedBatchVerifier(
+            configured_capacity_ehs=configured_capacity_ehs
+        )
         self.state = UnifiedMiningState()
         self._solve_count = 0
         # Initialize autonomous mining controller for PYTHIA self-governance
@@ -177,19 +185,29 @@ class UnifiedMiningEngine:
                 phi_integrated=float(
                     self.consciousness.current_state.integrated_information or 0.0
                 ),
-                phi_causal=float(self.consciousness.current_state.component_integration or 0.0),
-                complexity=float(self.consciousness.current_state.system_complexity or 0.0),
+                phi_causal=float(
+                    self.consciousness.current_state.component_integration or 0.0
+                ),
+                complexity=float(
+                    self.consciousness.current_state.system_complexity or 0.0
+                ),
                 source=str(
-                    self.consciousness.current_state.source or "component_health_operational_proxy"
+                    self.consciousness.current_state.source
+                    or "component_health_operational_proxy"
                 ),
             )
         self.consciousness.update_component_health("quantum_solver", True)
         return PhiMetrics(
-            phi_integrated=float(self.consciousness.current_state.integrated_information or 0.0),
-            phi_causal=float(self.consciousness.current_state.component_integration or 0.0),
+            phi_integrated=float(
+                self.consciousness.current_state.integrated_information or 0.0
+            ),
+            phi_causal=float(
+                self.consciousness.current_state.component_integration or 0.0
+            ),
             complexity=float(self.consciousness.current_state.system_complexity or 0.0),
             source=str(
-                self.consciousness.current_state.source or "component_health_operational_proxy"
+                self.consciousness.current_state.source
+                or "component_health_operational_proxy"
             ),
         )
 
@@ -239,7 +257,9 @@ class UnifiedMiningEngine:
                 logger.error("autonomous_optimize_search failed: %s", exc)
                 degraded_to = ac.record_autonomy_failure("search_optimisation")
                 if ac.is_circuit_open():
-                    logger.warning("autonomy circuit breaker open; level=%s", degraded_to.value)
+                    logger.warning(
+                        "autonomy circuit breaker open; level=%s", degraded_to.value
+                    )
 
             # Periodically trigger reflexive learning when the autonomous hook circuit is closed.
             interval = ac.config.reflexive_loop_interval
@@ -256,6 +276,7 @@ class UnifiedMiningEngine:
                     ac.record_circuit_success()
                 except Exception as exc:
                     import logging
+
                     logging.error("reflexive_cycle failed: %s", exc)
                     ac.record_autonomy_failure("reflexive_cycle")
 
@@ -268,7 +289,9 @@ class UnifiedMiningEngine:
         self.state.effective_search_dim_bits = 32.0 - 9.13
         self.state.phi_gradient_efficiency = 1.0284
         self.state.m32_domains_covered = len(M32)
-        self.state.working_set_compression = float(metrics.get("phi_compression_factor") or 1.86)
+        self.state.working_set_compression = float(
+            metrics.get("phi_compression_factor") or 1.86
+        )
         self.state.strategy_name = result.strategy_used
         self._sync_verifier_state()
 
@@ -345,7 +368,9 @@ class UnifiedMiningEngine:
                 "available": solver_metrics.get("available"),
                 "dodecahedral_entropy": solver_metrics.get("von_neumann_entropy"),
                 "phi_phase_alignment": solver_metrics.get("phi_phase_alignment"),
-                "compressed_working_set_size": solver_metrics.get("compressed_working_set_size"),
+                "compressed_working_set_size": solver_metrics.get(
+                    "compressed_working_set_size"
+                ),
                 "working_set_compression_ratio": solver_metrics.get(
                     "working_set_compression_ratio"
                 ),

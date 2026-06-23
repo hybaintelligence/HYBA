@@ -110,11 +110,18 @@ class DIFCAaoifiInvariantRegistry:
 
     def _substance_over_form(self, candidate: DIFCSukukCandidate) -> DIFCAaoifiFinding:
         drift = candidate.form_alignment_score - candidate.economic_substance_score
-        passed = candidate.economic_substance_score >= self.substance_threshold and drift <= 0.10
+        passed = (
+            candidate.economic_substance_score >= self.substance_threshold
+            and drift <= 0.10
+        )
         return DIFCAaoifiFinding(
             finding_id="DIFC_AAOIFI_SUBSTANCE_OVER_FORM",
             name="Substance-over-form and economic substance screen",
-            status=DIFCFindingStatus.PASSED.value if passed else DIFCFindingStatus.FAILED.value,
+            status=(
+                DIFCFindingStatus.PASSED.value
+                if passed
+                else DIFCFindingStatus.FAILED.value
+            ),
             severity="blocker",
             reasoning=(
                 "Economic substance remains aligned with contractual form."
@@ -125,12 +132,18 @@ class DIFCAaoifiInvariantRegistry:
             human_owner="Shariah Supervisory Board / authorised compliance officer",
         )
 
-    def _asset_backing_and_ownership(self, candidate: DIFCSukukCandidate) -> DIFCAaoifiFinding:
+    def _asset_backing_and_ownership(
+        self, candidate: DIFCSukukCandidate
+    ) -> DIFCAaoifiFinding:
         passed = candidate.asset_backing_ratio >= self.asset_backing_threshold
         return DIFCAaoifiFinding(
             finding_id="DIFC_AAOIFI_ASSET_BACKING_OWNERSHIP",
             name="Asset-backing and ownership evidence screen",
-            status=DIFCFindingStatus.PASSED.value if passed else DIFCFindingStatus.FAILED.value,
+            status=(
+                DIFCFindingStatus.PASSED.value
+                if passed
+                else DIFCFindingStatus.FAILED.value
+            ),
             severity="blocker",
             reasoning=(
                 "Asset-backing evidence meets the configured demonstration threshold."
@@ -141,12 +154,16 @@ class DIFCAaoifiInvariantRegistry:
             human_owner="SSSB / trustee / external Shariah audit reviewer",
         )
 
-    def _spv_and_trustee_governance(self, candidate: DIFCSukukCandidate) -> DIFCAaoifiFinding:
+    def _spv_and_trustee_governance(
+        self, candidate: DIFCSukukCandidate
+    ) -> DIFCAaoifiFinding:
         passed = (
             candidate.spv_independence_score >= self.spv_independence_threshold
             and candidate.trustee_oversight_present
         )
-        status = DIFCFindingStatus.PASSED.value if passed else DIFCFindingStatus.FAILED.value
+        status = (
+            DIFCFindingStatus.PASSED.value if passed else DIFCFindingStatus.FAILED.value
+        )
         return DIFCAaoifiFinding(
             finding_id="DIFC_AAOIFI_SPV_TRUSTEE_GOVERNANCE",
             name="SPV independence and trustee oversight screen",
@@ -161,10 +178,14 @@ class DIFCAaoifiInvariantRegistry:
             human_owner="Trustee, SSSB, issuer governance body, external auditor",
         )
 
-    def _risk_sharing_not_debt_mimicry(self, candidate: DIFCSukukCandidate) -> DIFCAaoifiFinding:
+    def _risk_sharing_not_debt_mimicry(
+        self, candidate: DIFCSukukCandidate
+    ) -> DIFCAaoifiFinding:
         if candidate.risk_sharing_score >= self.risk_sharing_threshold:
             status = DIFCFindingStatus.PASSED.value
-            reasoning = "Risk-sharing score is above the configured demonstration threshold."
+            reasoning = (
+                "Risk-sharing score is above the configured demonstration threshold."
+            )
         else:
             status = DIFCFindingStatus.WARNING.value
             reasoning = f"Risk-sharing score {candidate.risk_sharing_score:.2f} suggests potential debt-mimicry drift; human review required."
@@ -178,12 +199,18 @@ class DIFCAaoifiInvariantRegistry:
             human_owner="SSSB / product governance committee",
         )
 
-    def _gharar_and_uncertainty(self, candidate: DIFCSukukCandidate) -> DIFCAaoifiFinding:
+    def _gharar_and_uncertainty(
+        self, candidate: DIFCSukukCandidate
+    ) -> DIFCAaoifiFinding:
         passed = candidate.uncertainty_score <= self.uncertainty_limit
         return DIFCAaoifiFinding(
             finding_id="DIFC_AAOIFI_GHARAR_UNCERTAINTY",
             name="Gharar / uncertainty screen",
-            status=DIFCFindingStatus.PASSED.value if passed else DIFCFindingStatus.FAILED.value,
+            status=(
+                DIFCFindingStatus.PASSED.value
+                if passed
+                else DIFCFindingStatus.FAILED.value
+            ),
             severity="blocker",
             reasoning=(
                 "Uncertainty score is within the configured demonstration threshold."
@@ -194,12 +221,18 @@ class DIFCAaoifiInvariantRegistry:
             human_owner="SSB / compliance function / internal Shariah audit",
         )
 
-    def _sssb_human_sovereignty(self, candidate: DIFCSukukCandidate) -> DIFCAaoifiFinding:
+    def _sssb_human_sovereignty(
+        self, candidate: DIFCSukukCandidate
+    ) -> DIFCAaoifiFinding:
         passed = candidate.sssb_review_required and candidate.human_approval_required
         return DIFCAaoifiFinding(
             finding_id="DIFC_AAOIFI_SSSB_HUMAN_AUTHORITY",
             name="SSSB human authority preserved",
-            status=DIFCFindingStatus.PASSED.value if passed else DIFCFindingStatus.FAILED.value,
+            status=(
+                DIFCFindingStatus.PASSED.value
+                if passed
+                else DIFCFindingStatus.FAILED.value
+            ),
             severity="blocker",
             reasoning=(
                 "Candidate explicitly requires human SSSB/compliance review."
@@ -219,7 +252,11 @@ class DIFCAaoifiInvariantRegistry:
         return DIFCAaoifiFinding(
             finding_id="DIFC_AAOIFI_DISCLOSURE_TRACEABILITY",
             name="Traceable disclosure and replay evidence",
-            status=DIFCFindingStatus.PASSED.value if passed else DIFCFindingStatus.FAILED.value,
+            status=(
+                DIFCFindingStatus.PASSED.value
+                if passed
+                else DIFCFindingStatus.FAILED.value
+            ),
             severity="blocker",
             reasoning=(
                 "Traceable evidence, data-lineage hash, and model-output hash are present."
@@ -230,12 +267,18 @@ class DIFCAaoifiInvariantRegistry:
             human_owner="Compliance function / internal Shariah audit / external Shariah auditor",
         )
 
-    def _no_execution_boundary(self, candidate: DIFCSukukCandidate) -> DIFCAaoifiFinding:
+    def _no_execution_boundary(
+        self, candidate: DIFCSukukCandidate
+    ) -> DIFCAaoifiFinding:
         passed = not candidate.external_action_requested
         return DIFCAaoifiFinding(
             finding_id="DIFC_AAOIFI_NO_AUTOMATIC_ACTION",
             name="No automatic approval, issuance, trading, booking, or filing",
-            status=DIFCFindingStatus.PASSED.value if passed else DIFCFindingStatus.FAILED.value,
+            status=(
+                DIFCFindingStatus.PASSED.value
+                if passed
+                else DIFCFindingStatus.FAILED.value
+            ),
             severity="blocker",
             reasoning=(
                 "Candidate requests evidence-only review and no external action."
@@ -262,14 +305,21 @@ def _to_finance_candidate(candidate: DIFCSukukCandidate) -> FinanceAuditCandidat
         data_lineage_hash=candidate.data_lineage_hash,
         model_output_hash=candidate.model_output_hash,
         human_approval_required=candidate.human_approval_required,
-        mode="review_only" if not candidate.external_action_requested else "not_review_only",
+        mode=(
+            "review_only"
+            if not candidate.external_action_requested
+            else "not_review_only"
+        ),
         external_action_requested=candidate.external_action_requested,
-        proposed_core_symbol="external_candidate"
-        if not candidate.external_action_requested
-        else "validate_constraints",
+        proposed_core_symbol=(
+            "external_candidate"
+            if not candidate.external_action_requested
+            else "validate_constraints"
+        ),
         notes=(
             "DIFC/AAOIFI Sukuk overlay: evidence packet only; no fatwa, legal opinion, capital calculation, "
-            "approval, issuance, booking, trading, or external filing. " + candidate.notes
+            "approval, issuance, booking, trading, or external filing. "
+            + candidate.notes
         ).strip(),
     )
 
@@ -295,7 +345,9 @@ def generate_difc_sukuk_audit_packet(candidate: DIFCSukukCandidate) -> Dict[str,
         f.severity == "blocker" and f.status == DIFCFindingStatus.FAILED.value
         for f in overlay_findings
     )
-    core_rejected = core_packet["verdict"] == FinanceAuditVerdict.REJECTED_BEFORE_STAGING.value
+    core_rejected = (
+        core_packet["verdict"] == FinanceAuditVerdict.REJECTED_BEFORE_STAGING.value
+    )
     verdict = (
         FinanceAuditVerdict.REJECTED_BEFORE_STAGING.value
         if blocker_failed or core_rejected
@@ -381,7 +433,9 @@ def drifting_difc_sukuk_candidate() -> DIFCSukukCandidate:
 def generate_sample_difc_sukuk_packet(*, drift: bool = False) -> Dict[str, Any]:
     """Generate a sample staged or drifting DIFC/AAOIFI Sukuk packet."""
 
-    candidate = drifting_difc_sukuk_candidate() if drift else sample_difc_sukuk_candidate()
+    candidate = (
+        drifting_difc_sukuk_candidate() if drift else sample_difc_sukuk_candidate()
+    )
     return generate_difc_sukuk_audit_packet(candidate)
 
 

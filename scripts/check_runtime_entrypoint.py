@@ -41,7 +41,9 @@ def _check_unified_miner_api() -> list[str]:
 
     for snippet, reason in FORBIDDEN_MINER_SNIPPETS.items():
         if snippet in text:
-            failures.append(f"Forbidden stale live-miner API snippet {snippet!r}: {reason}")
+            failures.append(
+                f"Forbidden stale live-miner API snippet {snippet!r}: {reason}"
+            )
     for snippet, reason in REQUIRED_MINER_SNIPPETS.items():
         if snippet not in text:
             failures.append(f"Missing live-miner API snippet {snippet!r}: {reason}")
@@ -79,7 +81,9 @@ def main() -> int:
         print(command.stderr, file=sys.stderr)
         return command.returncode
     if "entrypoint command override honored" not in command.stdout:
-        print("Entry point did not execute the provided service command", file=sys.stderr)
+        print(
+            "Entry point did not execute the provided service command", file=sys.stderr
+        )
         print(command.stdout, file=sys.stderr)
         return 1
 

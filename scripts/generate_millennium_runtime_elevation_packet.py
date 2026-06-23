@@ -74,8 +74,16 @@ def millennium_contracts() -> List[Dict[str, Any]]:
             "slug": "p-vs-np",
             "fullstack_dimension": "search_reduction_and_witness_verification",
             "runtime_question": "Does adaptive search reduce candidate entropy while preserving witness verification?",
-            "required_controls": ["brute_force_baseline", "random_search", "witness_checker"],
-            "evidence_fields": ["candidate_reduction_ratio", "witness_validity", "entropy_delta"],
+            "required_controls": [
+                "brute_force_baseline",
+                "random_search",
+                "witness_checker",
+            ],
+            "evidence_fields": [
+                "candidate_reduction_ratio",
+                "witness_validity",
+                "entropy_delta",
+            ],
         },
         {
             "slug": "navier-stokes",
@@ -88,21 +96,37 @@ def millennium_contracts() -> List[Dict[str, Any]]:
             "slug": "yang-mills-mass-gap",
             "fullstack_dimension": "perturbation_energy_gap",
             "runtime_question": "Is there a measurable gap between harmless noise and structural failure?",
-            "required_controls": ["low_energy_noise", "threshold_probe", "failure_probe"],
+            "required_controls": [
+                "low_energy_noise",
+                "threshold_probe",
+                "failure_probe",
+            ],
             "evidence_fields": ["noise_tolerated", "gap_positive", "repair_threshold"],
         },
         {
             "slug": "hodge-conjecture",
             "fullstack_dimension": "memory_geometry_and_cycle_evidence",
             "runtime_question": "Do memory/compression structures form replayable geometric cycles rather than inert logs?",
-            "required_controls": ["cycle_hashes", "compression_reconstruction", "memory_replay"],
-            "evidence_fields": ["cycle_count", "reconstruction_error", "memory_hash_stable"],
+            "required_controls": [
+                "cycle_hashes",
+                "compression_reconstruction",
+                "memory_replay",
+            ],
+            "evidence_fields": [
+                "cycle_count",
+                "reconstruction_error",
+                "memory_hash_stable",
+            ],
         },
         {
             "slug": "birch-swinnerton-dyer",
             "fullstack_dimension": "resource_flow_and_solvency_signal",
             "runtime_question": "Does accepted-share evidence cleanly change the resource-flow state without premature solvency claims?",
-            "required_controls": ["pre_share_null", "accepted_share_transition", "ledger_root"],
+            "required_controls": [
+                "pre_share_null",
+                "accepted_share_transition",
+                "ledger_root",
+            ],
             "evidence_fields": [
                 "resource_signal_state",
                 "ledger_root_present",
@@ -113,8 +137,16 @@ def millennium_contracts() -> List[Dict[str, Any]]:
             "slug": "poincare-conjecture",
             "fullstack_dimension": "topological_identity_preservation",
             "runtime_question": "Does the system preserve identity through restart, healing, compression, and node sacrifice?",
-            "required_controls": ["restart_replay", "node_sacrifice", "manifest_identity"],
-            "evidence_fields": ["identity_preserved", "topology_preserved", "manifest_hash_rule"],
+            "required_controls": [
+                "restart_replay",
+                "node_sacrifice",
+                "manifest_identity",
+            ],
+            "evidence_fields": [
+                "identity_preserved",
+                "topology_preserved",
+                "manifest_hash_rule",
+            ],
         },
     ]
 
@@ -186,7 +218,9 @@ def domain_measurements() -> Dict[str, Dict[str, Any]]:
     phi = phi_resonance_evidence()
 
     candidates = list(range(1, 65))
-    witnesses = {value for value in candidates if value % 5 == 0 and (value * value) % 7 == 2}
+    witnesses = {
+        value for value in candidates if value % 5 == 0 and (value * value) % 7 == 2
+    }
     reduced = [value for value in candidates if value % 5 == 0]
     verified = [value for value in reduced if (value * value) % 7 == 2]
     brute_force_verified = [value for value in candidates if value in witnesses]
@@ -214,16 +248,21 @@ def domain_measurements() -> Dict[str, Dict[str, Any]]:
     failed = [value for value in perturbations if value >= tolerance_threshold]
     first_failure = failed[0] if failed else None
     last_tolerated = tolerated[-1] if tolerated else 0.0
-    measured_gap = (first_failure - last_tolerated) if first_failure is not None else 0.0
+    measured_gap = (
+        (first_failure - last_tolerated) if first_failure is not None else 0.0
+    )
 
     memory_cycles = ["ingest", "compress", "replay", "heal", "seal", "audit", "restore"]
     encoded_cycles = [
-        stable_hash({"cycle": cycle, "index": index}) for index, cycle in enumerate(memory_cycles)
+        stable_hash({"cycle": cycle, "index": index})
+        for index, cycle in enumerate(memory_cycles)
     ]
-    reconstructed_cycles = [memory_cycles[index] for index, _ in enumerate(encoded_cycles)]
-    reconstruction_error = sum(a != b for a, b in zip(memory_cycles, reconstructed_cycles)) / len(
-        memory_cycles
-    )
+    reconstructed_cycles = [
+        memory_cycles[index] for index, _ in enumerate(encoded_cycles)
+    ]
+    reconstruction_error = sum(
+        a != b for a, b in zip(memory_cycles, reconstructed_cycles)
+    ) / len(memory_cycles)
 
     share_events = [
         {"accepted": False, "share_id": "pre-share", "ledger_root": None},
@@ -244,7 +283,9 @@ def domain_measurements() -> Dict[str, Dict[str, Any]]:
     restart_manifest = dict(manifest)
     restart_manifest["last_restart_epoch"] = 1
     canonical_manifest = {
-        key: value for key, value in restart_manifest.items() if key != "last_restart_epoch"
+        key: value
+        for key, value in restart_manifest.items()
+        if key != "last_restart_epoch"
     }
     identity_hash = stable_hash(manifest)
     restart_hash = stable_hash(canonical_manifest)
@@ -300,7 +341,9 @@ def domain_measurements() -> Dict[str, Dict[str, Any]]:
             "gap_positive": measured_gap > 0,
             "repair_threshold": round(tolerance_threshold, 12),
             "control_results": {
-                "low_energy_noise": all(value < tolerance_threshold for value in tolerated),
+                "low_energy_noise": all(
+                    value < tolerance_threshold for value in tolerated
+                ),
                 "threshold_probe": measured_gap > 0,
                 "failure_probe": first_failure is not None,
             },
@@ -308,16 +351,20 @@ def domain_measurements() -> Dict[str, Dict[str, Any]]:
         "hodge-conjecture": {
             "cycle_count": len(encoded_cycles),
             "reconstruction_error": reconstruction_error,
-            "memory_hash_stable": stable_hash(memory_cycles) == stable_hash(reconstructed_cycles),
+            "memory_hash_stable": stable_hash(memory_cycles)
+            == stable_hash(reconstructed_cycles),
             "control_results": {
                 "cycle_hashes": len(set(encoded_cycles)) == len(encoded_cycles),
                 "compression_reconstruction": reconstruction_error == 0.0,
-                "memory_replay": stable_hash(memory_cycles) == stable_hash(reconstructed_cycles),
+                "memory_replay": stable_hash(memory_cycles)
+                == stable_hash(reconstructed_cycles),
             },
         },
         "birch-swinnerton-dyer": {
             "resource_signal_state": (
-                "accepted_share_observed" if accepted_events else "gated_until_accepted_share"
+                "accepted_share_observed"
+                if accepted_events
+                else "gated_until_accepted_share"
             ),
             "ledger_root_present": ledger_root is not None,
             "accepted_share_required": True,
@@ -333,7 +380,8 @@ def domain_measurements() -> Dict[str, Dict[str, Any]]:
             "manifest_hash_rule": "canonical_restart_fields_ignored_identity_fields_hash_sensitive",
             "control_results": {
                 "restart_replay": identity_hash == restart_hash,
-                "node_sacrifice": "auditor" in manifest["roles"] and len(manifest["roles"]) >= 2,
+                "node_sacrifice": "auditor" in manifest["roles"]
+                and len(manifest["roles"]) >= 2,
                 "manifest_identity": identity_hash != stable_hash(changed_identity),
             },
         },
@@ -347,7 +395,9 @@ def build_packet() -> Dict[str, Any]:
     for contract in contracts:
         slug = contract["slug"]
         observed = measurements[slug]
-        missing = [field for field in contract["evidence_fields"] if field not in observed]
+        missing = [
+            field for field in contract["evidence_fields"] if field not in observed
+        ]
         contract_results.append(
             {
                 "slug": slug,
@@ -397,7 +447,9 @@ def build_packet() -> Dict[str, Any]:
         ],
         "phi_resonance_evidence": phi_resonance_evidence(),
         "contract_results": contract_results,
-        "all_contracts_satisfied": all(item["contract_satisfied"] for item in contract_results),
+        "all_contracts_satisfied": all(
+            item["contract_satisfied"] for item in contract_results
+        ),
         "elevation_path": [
             "extract operational challenge contracts without runtime dependency",
             "map each contract to a FULLSTACK runtime challenge dimension",
@@ -414,7 +466,9 @@ def write_packet(output_dir: Path) -> Dict[str, Any]:
     output_dir.mkdir(parents=True, exist_ok=True)
     packet = build_packet()
     packet_path = output_dir / "millennium_runtime_elevation_packet.json"
-    packet_path.write_text(json.dumps(packet, indent=2, sort_keys=True), encoding="utf-8")
+    packet_path.write_text(
+        json.dumps(packet, indent=2, sort_keys=True), encoding="utf-8"
+    )
     manifest = signed(
         {
             "schema_version": f"{SCHEMA_VERSION}.manifest",
@@ -425,7 +479,9 @@ def write_packet(output_dir: Path) -> Dict[str, Any]:
         }
     )
     manifest_path = output_dir / "millennium_runtime_elevation_manifest.json"
-    manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True), encoding="utf-8")
+    manifest_path.write_text(
+        json.dumps(manifest, indent=2, sort_keys=True), encoding="utf-8"
+    )
     return manifest
 
 

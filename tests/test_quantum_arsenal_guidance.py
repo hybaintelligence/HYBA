@@ -46,4 +46,6 @@ def test_guidance_seeds_empirical_prior_and_pool_pitfalls_boundaries() -> None:
     assert guidance.arsenal.all_enabled()
     assert validate_mining_pitfalls_curriculum(curriculum)
     assert any("Pool-side ACK" in boundary for boundary in guidance.claim_boundary)
-    assert any("pitfalls curriculum" in boundary for boundary in guidance.claim_boundary)
+    assert any(
+        "pitfalls curriculum" in boundary for boundary in guidance.claim_boundary
+    )

@@ -123,9 +123,7 @@ class RedisConnectionPool:
                 )
 
                 # Start health check
-                self._health_check_task = asyncio.create_task(
-                    self._health_check_loop()
-                )
+                self._health_check_task = asyncio.create_task(self._health_check_loop())
 
                 return self.redis
 

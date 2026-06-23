@@ -66,19 +66,29 @@ def test_portfolio_finance_qubo_and_ising_are_generated_from_domain_terms() -> N
     assert "z0z1" in ising["couplers"]
 
 
-def test_portfolio_qaoa_design_returns_auditable_finance_packet_not_trade_execution() -> None:
+def test_portfolio_qaoa_design_returns_auditable_finance_packet_not_trade_execution() -> (
+    None
+):
     design = design_portfolio_qaoa(_portfolio_request())
 
     assert design["surface"] == "qiaas"
     assert design["asset_count"] == 4
     assert design["qaoa_circuit_design"]["encoding"] == "binary_asset_selection_qubits"
     assert design["qaoa_circuit_design"]["layers"] == 4
-    assert "regulatory_constraint_penalty" in design["qaoa_circuit_design"]["finance_specific_terms"]
+    assert (
+        "regulatory_constraint_penalty"
+        in design["qaoa_circuit_design"]["finance_specific_terms"]
+    )
     assert len(design["selected_candidate"]["selected_indices"]) == 2
     assert design["selected_candidate"]["selection_mode"] == "exact_enumeration"
     assert design["evidence_packet"].claim_class == "A"
-    assert design["evidence_packet"].product_boundary == "public_quantum_finance_vertical_not_mining"
-    assert "not autonomous trade execution" in " ".join(design["evidence_packet"].verification_notes)
+    assert (
+        design["evidence_packet"].product_boundary
+        == "public_quantum_finance_vertical_not_mining"
+    )
+    assert "not autonomous trade execution" in " ".join(
+        design["evidence_packet"].verification_notes
+    )
 
 
 def test_risk_qae_design_records_quadratic_speedup_accounting_and_var_cvar() -> None:
@@ -96,18 +106,31 @@ def test_risk_qae_design_records_quadratic_speedup_accounting_and_var_cvar() -> 
     assert design["pricing_summary"]["expected_payoff"] == pytest.approx(1.625)
     assert design["risk_summary"]["value_at_risk"] == pytest.approx(4.0)
     assert design["risk_summary"]["conditional_value_at_risk"] == pytest.approx(6.0)
-    assert design["qae_design"]["amplitude_estimation_iterations"] < design["qae_design"]["classical_monte_carlo_samples_for_same_epsilon"]
+    assert (
+        design["qae_design"]["amplitude_estimation_iterations"]
+        < design["qae_design"]["classical_monte_carlo_samples_for_same_epsilon"]
+    )
     assert design["qae_design"]["quadratic_speedup_accounting_factor"] > 1.0
-    assert design["evidence_packet"].claim_boundary.startswith("implemented_and_tested_finance_specific")
+    assert design["evidence_packet"].claim_boundary.startswith(
+        "implemented_and_tested_finance_specific"
+    )
 
 
 def test_quantum_finance_is_wired_as_public_vertical_but_not_mining_product() -> None:
-    main = (ROOT / "python_backend" / "hyba_genesis_api" / "main.py").read_text(encoding="utf-8")
-    module = (ROOT / "python_backend" / "hyba_genesis_api" / "api" / "quantum_finance_service.py").read_text(encoding="utf-8")
+    main = (ROOT / "python_backend" / "hyba_genesis_api" / "main.py").read_text(
+        encoding="utf-8"
+    )
+    module = (
+        ROOT
+        / "python_backend"
+        / "hyba_genesis_api"
+        / "api"
+        / "quantum_finance_service.py"
+    ).read_text(encoding="utf-8")
 
     assert "quantum_finance_service" in main
     assert "app.include_router(quantum_finance_service.router)" in main
-    assert "prefix=\"/api/quantum-finance\"" in module
+    assert 'prefix="/api/quantum-finance"' in module
     assert "require_customer_api_key" in module
     assert "customer_access.meter" in module
     assert "not mining" in module.lower() or "not_mining" in module.lower()

@@ -65,16 +65,24 @@ def test_phi_quantum_speedup_benchmark_accounting_is_consistent() -> None:
     )
 
 
-def test_enhanced_hardware_scaling_records_phi_memory_advantage(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_enhanced_hardware_scaling_records_phi_memory_advantage(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     """Enhanced benchmark suite must record φ-compression benefit during scaling."""
 
     # Avoid running the full mining cycle; this test verifies scaling accounting.
-    monkeypatch.setattr(enhanced_benchmarks, "run_fault_tolerant_mining_cycle", lambda num_iterations=5: {"ok": True})
+    monkeypatch.setattr(
+        enhanced_benchmarks,
+        "run_fault_tolerant_mining_cycle",
+        lambda num_iterations=5: {"ok": True},
+    )
 
     ticks = iter([0.0, 0.10, 1.0, 1.25, 2.0, 2.50])
     monkeypatch.setattr(enhanced_benchmarks.time, "time", lambda: next(ticks))
 
-    suite = EnhancedBenchmarkSuite(output_dir="artifacts/test_phi_hardware_quantum_scaling")
+    suite = EnhancedBenchmarkSuite(
+        output_dir="artifacts/test_phi_hardware_quantum_scaling"
+    )
     result = suite.benchmark_hardware_scaling(qubit_range=[4, 5, 6])
 
     assert result["benchmark"] == "hardware_scaling"

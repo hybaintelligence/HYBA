@@ -20,6 +20,7 @@ import secrets
 import threading
 import uuid
 from datetime import datetime, timezone
+
 UTC = timezone.utc
 from typing import Any, Dict, Literal, Optional
 
@@ -119,7 +120,9 @@ class _CustomerRegistry:
         self._customers: Dict[str, CustomerInfo] = {}  # key_id -> CustomerInfo
         self._api_key_to_customer: Dict[str, str] = {}  # api_key_hash -> key_id
         self._usage: Dict[str, UsageMetrics] = {}  # key_id -> UsageMetrics
-        self._local_counters: Dict[str, Dict[str, int]] = {}  # customer_id -> {product: count}
+        self._local_counters: Dict[str, Dict[str, int]] = (
+            {}
+        )  # customer_id -> {product: count}
 
         # Load HMAC secret for API key hashing (required for enterprise security)
         self._hmac_secret = os.getenv("HYBA_API_KEY_SECRET")
@@ -168,12 +171,20 @@ class _CustomerRegistry:
     def _tenant_hash(self, customer: CustomerInfo) -> str:
         return hashlib.sha256(customer.customer_id.encode()).hexdigest()[:16]
 
-    def _pricing_for(self, tier: CustomerTier, metadata: Dict[str, Any]) -> Dict[str, float]:
+    def _pricing_for(
+        self, tier: CustomerTier, metadata: Dict[str, Any]
+    ) -> Dict[str, float]:
         pricing = dict(DEFAULT_TIER_PRICING_USD_PER_UNIT[tier])
-        override = metadata.get("pricing_usd_per_unit") if isinstance(metadata, dict) else None
+        override = (
+            metadata.get("pricing_usd_per_unit") if isinstance(metadata, dict) else None
+        )
         if isinstance(override, dict):
             for product, value in override.items():
-                if isinstance(product, str) and isinstance(value, (int, float)) and value >= 0:
+                if (
+                    isinstance(product, str)
+                    and isinstance(value, (int, float))
+                    and value >= 0
+                ):
                     pricing[product] = float(value)
         return pricing
 
@@ -181,10 +192,14 @@ class _CustomerRegistry:
         family = product.split(".", 1)[0]
         return customer.pricing_usd_per_unit.get(
             product,
-            customer.pricing_usd_per_unit.get(family, customer.pricing_usd_per_unit.get("default", 0.0)),
+            customer.pricing_usd_per_unit.get(
+                family, customer.pricing_usd_per_unit.get("default", 0.0)
+            ),
         )
 
-    def _estimated_charge(self, customer: CustomerInfo, product: str, units: int) -> float:
+    def _estimated_charge(
+        self, customer: CustomerInfo, product: str, units: int
+    ) -> float:
         return round(max(0, units) * self._unit_price(customer, product), 6)
 
     def issue_key(self, request: CustomerApiKeyIssueRequest) -> APIKeyResponse:
@@ -233,7 +248,9 @@ class _CustomerRegistry:
                             "customer_name": customer.customer_name,
                             "tier": customer.tier,
                             "quota_requests": str(customer.quota_requests_per_month),
-                            "quota_compute": str(customer.quota_compute_units_per_month),
+                            "quota_compute": str(
+                                customer.quota_compute_units_per_month
+                            ),
                             "api_key_hash": api_key_hash,
                             "created_at": now,
                         },
@@ -275,13 +292,19 @@ class _CustomerRegistry:
                             customer_id=customer_data["customer_id"],
                             customer_name=customer_data["customer_name"],
                             tier=customer_data["tier"],
-                            quota_requests_per_month=int(customer_data["quota_requests"]),
-                            quota_compute_units_per_month=int(customer_data["quota_compute"]),
+                            quota_requests_per_month=int(
+                                customer_data["quota_requests"]
+                            ),
+                            quota_compute_units_per_month=int(
+                                customer_data["quota_compute"]
+                            ),
                             api_key_hash=customer_data["api_key_hash"],
                             key_id=key_id,
                             created_at=customer_data["created_at"],
                             metadata={},
-                            pricing_usd_per_unit=self._pricing_for(customer_data["tier"], {}),
+                            pricing_usd_per_unit=self._pricing_for(
+                                customer_data["tier"], {}
+                            ),
                         )
             except (ConnectionError, TimeoutError, ValueError, KeyError) as e:
                 logger.warning(
@@ -328,7 +351,9 @@ class _CustomerRegistry:
                     detail="Monthly request quota exceeded",
                 )
             if usage.compute_units_remaining < compute_cost:
-                record_billing_quota_rejection(tenant_hash, "compute_units", customer.tier)
+                record_billing_quota_rejection(
+                    tenant_hash, "compute_units", customer.tier
+                )
                 raise HTTPException(
                     status_code=status.HTTP_402_PAYMENT_REQUIRED,
                     detail="Monthly compute unit quota exceeded",
@@ -349,8 +374,12 @@ class _CustomerRegistry:
             # Update Redis if available
             if self._redis_client:
                 try:
-                    self._redis_client.hincrby(f"usage:{key_id}", "requests", request_cost)
-                    self._redis_client.hincrby(f"usage:{key_id}", "compute", compute_cost)
+                    self._redis_client.hincrby(
+                        f"usage:{key_id}", "requests", request_cost
+                    )
+                    self._redis_client.hincrby(
+                        f"usage:{key_id}", "compute", compute_cost
+                    )
                 except (ConnectionError, TimeoutError) as e:
                     logger.error(
                         "Redis usage increment failed",
@@ -383,13 +412,16 @@ class _CustomerRegistry:
                         compute_units_remaining=customer.quota_compute_units_per_month
                         - int(usage_data.get("compute", 0)),
                         month=current_month,
-                        estimated_charges_usd=self._usage.get(key_id, UsageMetrics(
-                            requests_this_month=0,
-                            compute_units_this_month=0,
-                            requests_remaining=0,
-                            compute_units_remaining=0,
-                            month=current_month,
-                        )).estimated_charges_usd,
+                        estimated_charges_usd=self._usage.get(
+                            key_id,
+                            UsageMetrics(
+                                requests_this_month=0,
+                                compute_units_this_month=0,
+                                requests_remaining=0,
+                                compute_units_remaining=0,
+                                month=current_month,
+                            ),
+                        ).estimated_charges_usd,
                         pricing_usd_per_unit=customer.pricing_usd_per_unit,
                     )
             except (ConnectionError, TimeoutError, ValueError, KeyError) as e:
@@ -425,9 +457,17 @@ class _CustomerRegistry:
             self._local_counters[customer_id][product] += units
             estimated_charge = self._estimated_charge(customer, product, units)
             usage = self._usage[customer.key_id]
-            usage.estimated_charges_usd = round(usage.estimated_charges_usd + estimated_charge, 6)
+            usage.estimated_charges_usd = round(
+                usage.estimated_charges_usd + estimated_charge, 6
+            )
             usage.pricing_usd_per_unit = customer.pricing_usd_per_unit
-            record_billing_usage(self._tenant_hash(customer), product, customer.tier, units, estimated_charge)
+            record_billing_usage(
+                self._tenant_hash(customer),
+                product,
+                customer.tier,
+                units,
+                estimated_charge,
+            )
             return {
                 "product": product,
                 "units": units,
@@ -437,7 +477,9 @@ class _CustomerRegistry:
                 "quota_enforced": True,
             }
 
-    def refund_metered_usage(self, customer: CustomerInfo, product: str, units: int) -> Dict[str, Any]:
+    def refund_metered_usage(
+        self, customer: CustomerInfo, product: str, units: int
+    ) -> Dict[str, Any]:
         """Reverse metered usage for a failed execution.
 
         This is intentionally bounded to the current in-memory month ledger; Redis
@@ -447,17 +489,25 @@ class _CustomerRegistry:
         with self._lock:
             usage = self.get_usage_metrics(customer)
             refund_units = max(0, units)
-            usage.compute_units_this_month = max(0, usage.compute_units_this_month - refund_units)
+            usage.compute_units_this_month = max(
+                0, usage.compute_units_this_month - refund_units
+            )
             usage.compute_units_remaining = min(
                 customer.quota_compute_units_per_month,
                 usage.compute_units_remaining + refund_units,
             )
             if usage.requests_this_month > 0:
                 usage.requests_this_month -= 1
-                usage.requests_remaining = min(customer.quota_requests_per_month, usage.requests_remaining + 1)
-            if customer.customer_id in self._local_counters and product in self._local_counters[customer.customer_id]:
+                usage.requests_remaining = min(
+                    customer.quota_requests_per_month, usage.requests_remaining + 1
+                )
+            if (
+                customer.customer_id in self._local_counters
+                and product in self._local_counters[customer.customer_id]
+            ):
                 self._local_counters[customer.customer_id][product] = max(
-                    0, self._local_counters[customer.customer_id][product] - refund_units
+                    0,
+                    self._local_counters[customer.customer_id][product] - refund_units,
                 )
             if key_id in self._usage:
                 self._usage[key_id] = usage
@@ -496,7 +546,9 @@ async def require_api_key(x_api_key: str = Header(...)) -> CustomerInfo:
 require_customer_api_key = require_api_key
 
 
-@router.post("/api-keys", response_model=APIKeyResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/api-keys", response_model=APIKeyResponse, status_code=status.HTTP_201_CREATED
+)
 async def create_api_key(
     request: CustomerApiKeyIssueRequest,
     payload: TokenPayload = Depends(require_admin),
@@ -505,7 +557,11 @@ async def create_api_key(
     return customer_access.issue_key(request)
 
 
-@admin_router.post("/customer-api-keys", response_model=APIKeyResponse, status_code=status.HTTP_201_CREATED)
+@admin_router.post(
+    "/customer-api-keys",
+    response_model=APIKeyResponse,
+    status_code=status.HTTP_201_CREATED,
+)
 async def issue_customer_api_key(
     request: CustomerApiKeyIssueRequest,
     payload: TokenPayload = Depends(require_admin),

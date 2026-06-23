@@ -30,19 +30,30 @@ def upgrade() -> None:
         "experiments",
         sa.Column("id", sa.String(length=100), primary_key=True),
         sa.Column(
-            "created_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()
+            "created_at",
+            sa.DateTime(timezone=True),
+            nullable=False,
+            server_default=sa.func.now(),
         ),
         sa.Column(
-            "updated_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()
+            "updated_at",
+            sa.DateTime(timezone=True),
+            nullable=False,
+            server_default=sa.func.now(),
         ),
         sa.Column("config", sa.JSON(), nullable=False),
         sa.Column("seed", sa.BigInteger(), nullable=False),
         sa.Column("status", sa.String(length=20), nullable=True),
         sa.Column("results_summary", sa.JSON(), nullable=True),
         sa.Column(
-            "reproducibility_verified", sa.Boolean(), nullable=True, server_default=sa.text("false")
+            "reproducibility_verified",
+            sa.Boolean(),
+            nullable=True,
+            server_default=sa.text("false"),
         ),
-        sa.Column("replications", sa.Integer(), nullable=True, server_default=sa.text("0")),
+        sa.Column(
+            "replications", sa.Integer(), nullable=True, server_default=sa.text("0")
+        ),
         sa.Column("description", sa.String(), nullable=True),
         sa.Column("tags", sa.JSON(), nullable=True),
         sa.Column("researcher", sa.String(length=100), nullable=True),
@@ -53,7 +64,10 @@ def upgrade() -> None:
         "consciousness_snapshots",
         sa.Column("id", sa.BigInteger(), primary_key=True, autoincrement=True),
         sa.Column(
-            "timestamp", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()
+            "timestamp",
+            sa.DateTime(timezone=True),
+            nullable=False,
+            server_default=sa.func.now(),
         ),
         sa.Column(
             "experiment_id",

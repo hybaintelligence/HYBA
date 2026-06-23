@@ -56,7 +56,9 @@ def test_nonce_diversity():
 
     # Check if we're cycling through only ~20 values
     if unique_nonces < 50:
-        print("\n❌ FAIL: Nonce diversity is too low - likely cycling through small set")
+        print(
+            "\n❌ FAIL: Nonce diversity is too low - likely cycling through small set"
+        )
         return False
     else:
         print(f"\n✅ PASS: Nonce diversity is good ({unique_nonces} unique values)")
@@ -69,7 +71,9 @@ def test_nonce_diversity():
 
     # Check for clustering in small regions
     sorted_nonces = sorted(nonces)
-    gaps = [sorted_nonces[i + 1] - sorted_nonces[i] for i in range(len(sorted_nonces) - 1)]
+    gaps = [
+        sorted_nonces[i + 1] - sorted_nonces[i] for i in range(len(sorted_nonces) - 1)
+    ]
     avg_gap = sum(gaps) / len(gaps) if gaps else 0
     print(f"Average gap between consecutive nonces: {avg_gap:.0f}")
 
@@ -85,7 +89,9 @@ def test_nonce_diversity():
     # Check the solver metrics
     metrics = solver.get_metrics()
     print(f"\nSolver exploration mode: {metrics.get('exploration_mode', 'unknown')}")
-    print(f"Compressed working set size: {metrics.get('compressed_working_set_size', 'unknown')}")
+    print(
+        f"Compressed working set size: {metrics.get('compressed_working_set_size', 'unknown')}"
+    )
     print(f"Retained kernel lanes: {metrics.get('retained_kernel_lanes', 'unknown')}")
 
     if metrics.get("exploration_mode") == "phi_tiled_van_der_corput_full_2e32":
@@ -97,7 +103,9 @@ def test_nonce_diversity():
     if metrics.get("compressed_working_set_size") == 2**32:
         print("✅ PASS: Working set size is full 2^32")
     else:
-        print(f"❌ FAIL: Working set size is {metrics.get('compressed_working_set_size')}")
+        print(
+            f"❌ FAIL: Working set size is {metrics.get('compressed_working_set_size')}"
+        )
         return False
 
     print("\n" + "=" * 70)

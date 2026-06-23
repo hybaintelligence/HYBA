@@ -93,7 +93,11 @@ class OmegaAuditResult:
 def _as_2d_points(data: Any, *, max_points: int = 512) -> np.ndarray:
     """Convert tensors / TT cores / nested arrays into a bounded point cloud."""
 
-    if isinstance(data, (list, tuple)) and data and all(hasattr(x, "shape") for x in data):
+    if (
+        isinstance(data, (list, tuple))
+        and data
+        and all(hasattr(x, "shape") for x in data)
+    ):
         flat = [np.asarray(x, dtype=float).reshape(-1) for x in data]
         max_len = max((x.size for x in flat), default=0)
         if max_len == 0:
@@ -222,7 +226,8 @@ def compute_omega_signature(
         try:  # pragma: no cover - depends on optional package
             diagrams = ripser(points, maxdim=max_homology_dimension)["dgms"]
             persistence = [
-                _persistence_summary(np.asarray(d), dim) for dim, d in enumerate(diagrams)
+                _persistence_summary(np.asarray(d), dim)
+                for dim, d in enumerate(diagrams)
             ]
             method = "ripser_persistent_homology"
             if persistence:
@@ -281,8 +286,12 @@ def compare_omega_signatures(
     if not (0.0 < threshold < 1.0):
         raise OmegaAuditError("threshold must be between 0 and 1")
 
-    sig_a = compute_omega_signature(reference, max_points=max_points, spectrum_size=spectrum_size)
-    sig_b = compute_omega_signature(candidate, max_points=max_points, spectrum_size=spectrum_size)
+    sig_a = compute_omega_signature(
+        reference, max_points=max_points, spectrum_size=spectrum_size
+    )
+    sig_b = compute_omega_signature(
+        candidate, max_points=max_points, spectrum_size=spectrum_size
+    )
 
     s_a = np.asarray(sig_a.singular_spectrum)
     s_b = np.asarray(sig_b.singular_spectrum)
@@ -297,11 +306,15 @@ def compare_omega_signatures(
         for key in sorted(set(sig_a.betti_proxy) | set(sig_b.betti_proxy))
     }
     betti_penalty = min(1.0, sum(betti_delta.values()) / 10.0)
-    score = float(0.45 * singular_distance + 0.45 * laplacian_distance + 0.10 * betti_penalty)
+    score = float(
+        0.45 * singular_distance + 0.45 * laplacian_distance + 0.10 * betti_penalty
+    )
 
     notes: List[str] = []
     if sig_a.method != sig_b.method:
-        notes.append(f"Different signature methods used: {sig_a.method} vs {sig_b.method}")
+        notes.append(
+            f"Different signature methods used: {sig_a.method} vs {sig_b.method}"
+        )
     if score >= threshold:
         notes.append("Ω-Signature drift exceeded threshold")
 

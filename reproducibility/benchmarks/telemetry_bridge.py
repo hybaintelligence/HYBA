@@ -50,7 +50,9 @@ class EnterpriseTelemetryBridge:
             "generated_at": datetime.now(timezone.utc).isoformat(),
             "period": period,
             "sla_report": self.sla_tracker.generate_sla_report(),
-            "chargeback_report": self.cost_attributor.generate_chargeback_report(period),
+            "chargeback_report": self.cost_attributor.generate_chargeback_report(
+                period
+            ),
             "retention_curve": self.cohort_analytics.generate_retention_curve(),
             "risk_count": len(self.risk_registry.risks),
             "new_sla_breaches": sla_breaches,
@@ -76,7 +78,9 @@ class EnterpriseTelemetryBridge:
             if not service_id:
                 raise ValueError("Cost telemetry requires service_id")
             metrics = {k: v for k, v in service.items() if k != "service_id"}
-            records.append(self.cost_attributor.calculate_service_cost(service_id, metrics))
+            records.append(
+                self.cost_attributor.calculate_service_cost(service_id, metrics)
+            )
         return records
 
     def _ingest_cohorts(self, cohorts: Iterable[Dict[str, Any]]) -> list:
@@ -101,9 +105,12 @@ class EnterpriseTelemetryBridge:
         risks = []
         for incident in incidents:
             severity = incident.get("severity", "medium")
-            probability = {"low": 0.1, "medium": 0.25, "high": 0.5, "critical": 0.8}.get(
-                severity, 0.25
-            )
+            probability = {
+                "low": 0.1,
+                "medium": 0.25,
+                "high": 0.5,
+                "critical": 0.8,
+            }.get(severity, 0.25)
             impact = incident.get(
                 "impact",
                 {"low": 0.2, "medium": 0.4, "high": 0.7, "critical": 1.0}.get(
@@ -126,7 +133,9 @@ class EnterpriseTelemetryBridge:
     ) -> Dict[str, float]:
         sla = snapshot.get("sla", {})
         customers = snapshot.get("customers", {})
-        total_support_cost = sum(r["direct_costs"].get("support", 0.0) for r in cost_records)
+        total_support_cost = sum(
+            r["direct_costs"].get("support", 0.0) for r in cost_records
+        )
         customer_count = customers.get("customer_count", 0)
         derived = {
             "sla_availability": sla.get(
@@ -136,9 +145,12 @@ class EnterpriseTelemetryBridge:
                 "latency_p99", self.executive_dashboard.kpis["sla_latency_p99"]
             ),
             "customer_count": customer_count,
-            "churn_rate": customers.get("churn_rate", self.executive_dashboard.kpis["churn_rate"]),
+            "churn_rate": customers.get(
+                "churn_rate", self.executive_dashboard.kpis["churn_rate"]
+            ),
             "net_revenue_retention": customers.get(
-                "net_revenue_retention", self.executive_dashboard.kpis["net_revenue_retention"]
+                "net_revenue_retention",
+                self.executive_dashboard.kpis["net_revenue_retention"],
             ),
             "support_cost_per_customer": (
                 total_support_cost / customer_count if customer_count else 0

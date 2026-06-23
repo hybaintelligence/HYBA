@@ -14,7 +14,9 @@ from pathlib import Path
 ROOT = Path(__file__).parent.parent
 ADAPTIVE_TEST_FILE = ROOT / "tests" / "test_adaptive_behavior_deep_analysis.py"
 
-spec = importlib.util.spec_from_file_location("adaptive_behavior_deep_analysis", ADAPTIVE_TEST_FILE)
+spec = importlib.util.spec_from_file_location(
+    "adaptive_behavior_deep_analysis", ADAPTIVE_TEST_FILE
+)
 adaptive_module = importlib.util.module_from_spec(spec)
 assert spec and spec.loader
 spec.loader.exec_module(adaptive_module)
@@ -80,7 +82,9 @@ def test_controlled_science_program_preserves_proof_ladder():
     program = ROOT / "docs" / "CONTROLLED_ADAPTIVE_SYSTEMS_SCIENCE_PROGRAM.md"
     content = program.read_text(encoding="utf-8")
 
-    assert "observe -> preserve -> instrument -> test -> replicate -> falsify" in content
+    assert (
+        "observe -> preserve -> instrument -> test -> replicate -> falsify" in content
+    )
     assert "compare baselines" in content
     assert "external review" in content
     assert "claim-boundary" in content

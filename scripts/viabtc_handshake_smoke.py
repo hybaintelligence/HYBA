@@ -48,7 +48,9 @@ class _SocketLineTransport:
         self._file = self._socket.makefile("rb")
 
     def send_json(self, payload: dict) -> None:
-        self._socket.sendall((json.dumps(payload, separators=(",", ":")) + "\n").encode())
+        self._socket.sendall(
+            (json.dumps(payload, separators=(",", ":")) + "\n").encode()
+        )
 
     def read_line(self) -> str:
         raw = self._file.readline()
@@ -95,13 +97,25 @@ def run_handshake(
     """Run subscribe/authorize only and return redacted evidence."""
 
     start = time.time()
-    transport = transport_factory() if transport_factory else _SocketLineTransport(host, port, timeout)
+    transport = (
+        transport_factory()
+        if transport_factory
+        else _SocketLineTransport(host, port, timeout)
+    )
     transcript: List[str] = []
     subscribed = False
     authorized = False
     try:
-        subscribe = {"id": 1, "method": "mining.subscribe", "params": ["HYBA-PYTHIA-smoke/1.0"]}
-        authorize = {"id": 2, "method": "mining.authorize", "params": [worker, password]}
+        subscribe = {
+            "id": 1,
+            "method": "mining.subscribe",
+            "params": ["HYBA-PYTHIA-smoke/1.0"],
+        }
+        authorize = {
+            "id": 2,
+            "method": "mining.authorize",
+            "params": [worker, password],
+        }
         transport.send_json(subscribe)  # type: ignore[attr-defined]
         for _ in range(8):
             line = transport.read_line()  # type: ignore[attr-defined]
@@ -146,16 +160,28 @@ def run_handshake(
 
 def run_mock_handshake() -> HandshakeEvidence:
     responses = [
-        {"id": 1, "result": [[ ["mining.set_difficulty", "1"], ["mining.notify", "1"] ], "abcdef01", 4], "error": None},
+        {
+            "id": 1,
+            "result": [
+                [["mining.set_difficulty", "1"], ["mining.notify", "1"]],
+                "abcdef01",
+                4,
+            ],
+            "error": None,
+        },
         {"id": 2, "result": True, "error": None},
     ]
-    return run_handshake(mode="mock", transport_factory=lambda: _MockLineTransport(responses))
+    return run_handshake(
+        mode="mock", transport_factory=lambda: _MockLineTransport(responses)
+    )
 
 
 def write_evidence(evidence: HandshakeEvidence, output_dir: Path) -> Path:
     output_dir.mkdir(parents=True, exist_ok=True)
     path = output_dir / f"viabtc_{evidence.mode}_handshake_{int(time.time())}.json"
-    path.write_text(json.dumps(evidence.to_dict(), indent=2, sort_keys=True), encoding="utf-8")
+    path.write_text(
+        json.dumps(evidence.to_dict(), indent=2, sort_keys=True), encoding="utf-8"
+    )
     return path
 
 
@@ -182,7 +208,11 @@ def main() -> int:
             timeout=args.timeout,
         )
     path = write_evidence(evidence, Path(args.output_dir))
-    print(json.dumps({"evidence_path": str(path), **evidence.to_dict()}, indent=2, sort_keys=True))
+    print(
+        json.dumps(
+            {"evidence_path": str(path), **evidence.to_dict()}, indent=2, sort_keys=True
+        )
+    )
     return 0 if evidence.subscribed and evidence.authorized else 2
 
 

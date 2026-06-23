@@ -183,7 +183,9 @@ def test_production_live_mode_refuses_dev_fixture_jobs(monkeypatch: Any) -> None
     assert miner._last_no_job_reason == "live_session_missing_dev_fixture_refused"
 
 
-def test_dev_fixture_jobs_require_explicit_non_live_non_production_mode(monkeypatch: Any) -> None:
+def test_dev_fixture_jobs_require_explicit_non_live_non_production_mode(
+    monkeypatch: Any,
+) -> None:
     monkeypatch.setenv("HYBA_ALLOW_DEV_FIXTURES", "true")
     monkeypatch.setenv("HYBA_ENV", "development")
     monkeypatch.setenv("NODE_ENV", "development")

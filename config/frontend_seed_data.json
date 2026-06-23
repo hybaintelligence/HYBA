@@ -1,27 +1,27 @@
 {
   "products": [
     {
+      "category": "Operator Evidence",
+      "description": "Operator-facing catalog record for deterministic certificate review, runtime evidence packets, and no-claim production handover controls.",
+      "difficultyScale": 8.4,
       "id": "prod-pulvini-evidence-console",
       "name": "PULVINI Evidence Console",
-      "description": "Operator-facing catalog record for deterministic certificate review, runtime evidence packets, and no-claim production handover controls.",
-      "category": "Operator Evidence",
-      "difficultyScale": 8.4,
       "qubitDimension": 512
     },
     {
+      "category": "Mining Operations",
+      "description": "ViaBTC-ready Stratum v1 profile, handshake, job-flow, and share-acceptance evidence surface for controlled mining cutover.",
+      "difficultyScale": 7.8,
       "id": "prod-stratum-v1-command-room",
       "name": "Stratum v1 Command-Room Adapter",
-      "description": "ViaBTC-ready Stratum v1 profile, handshake, job-flow, and share-acceptance evidence surface for controlled mining cutover.",
-      "category": "Mining Operations",
-      "difficultyScale": 7.8,
       "qubitDimension": 256
     },
     {
+      "category": "Mathematical Runtime",
+      "description": "PULVINI memory-folding workbench for retained-kernel replay, deterministic reconstruction checks, and bounded compression evidence.",
+      "difficultyScale": 9.1,
       "id": "prod-phi-memory-folding",
       "name": "Phi Memory Folding Workbench",
-      "description": "PULVINI memory-folding workbench for retained-kernel replay, deterministic reconstruction checks, and bounded compression evidence.",
-      "category": "Mathematical Runtime",
-      "difficultyScale": 9.1,
       "qubitDimension": 1024
     }
   ]

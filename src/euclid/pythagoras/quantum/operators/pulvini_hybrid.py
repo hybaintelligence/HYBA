@@ -26,7 +26,9 @@ class PulviniHybridResult:
 class PulviniHybridPipeline:
     def __init__(self, max_rank: int = 32, tolerance: float = 1e-6) -> None:
         self.pulvini = PulviniOperator(tolerance=tolerance)
-        self.tt = TensorTrainCompressor(max_rank=max_rank, tolerance=max(tolerance, 1e-10))
+        self.tt = TensorTrainCompressor(
+            max_rank=max_rank, tolerance=max(tolerance, 1e-10)
+        )
         self.omega = OmegaSignatureChecker(tolerance=0.12)
         self.tolerance = tolerance
 

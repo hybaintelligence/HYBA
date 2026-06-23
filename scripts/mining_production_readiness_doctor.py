@@ -139,7 +139,8 @@ def _environment_summary() -> dict[str, str]:
         if value is None:
             summary[field_name] = "<unset>"
         elif any(
-            marker in field_name for marker in ("SECRET", "PASSWORD", "TOKEN", "KEY", "CREDENTIAL")
+            marker in field_name
+            for marker in ("SECRET", "PASSWORD", "TOKEN", "KEY", "CREDENTIAL")
         ):
             summary[field_name] = "<redacted>"
         elif value == "":
@@ -178,7 +179,11 @@ def _check_required_files() -> CheckResult:
         name="required_mining_surfaces_present",
         severity="critical",
         status="fail" if missing else "pass",
-        summary="missing canonical mining files" if missing else "canonical mining files present",
+        summary=(
+            "missing canonical mining files"
+            if missing
+            else "canonical mining files present"
+        ),
         detail="\n".join(missing),
         duration_seconds=time.monotonic() - start,
     )
@@ -229,20 +234,28 @@ def _check_unified_engine_contract() -> CheckResult:
             name="unified_engine_pulvini_contract",
             severity="critical",
             status="fail" if failures else "pass",
-            summary="unified engine contract failed"
-            if failures
-            else "unified engine routes through compressed PULVINI search and SHA-256d verification boundary",
-            detail="\n".join(failures)
-            if failures
-            else json.dumps(
-                {
-                    "nonce": result.nonce,
-                    "metrics": {
-                        "compressed_working_set_size": metrics.get("compressed_working_set_size"),
-                        "last_solve_iterations": metrics.get("last_solve_iterations"),
+            summary=(
+                "unified engine contract failed"
+                if failures
+                else "unified engine routes through compressed PULVINI search and SHA-256d verification boundary"
+            ),
+            detail=(
+                "\n".join(failures)
+                if failures
+                else json.dumps(
+                    {
+                        "nonce": result.nonce,
+                        "metrics": {
+                            "compressed_working_set_size": metrics.get(
+                                "compressed_working_set_size"
+                            ),
+                            "last_solve_iterations": metrics.get(
+                                "last_solve_iterations"
+                            ),
+                        },
                     },
-                },
-                sort_keys=True,
+                    sort_keys=True,
+                )
             ),
             duration_seconds=time.monotonic() - start,
         )
@@ -290,9 +303,11 @@ def _check_bitcoin_mining_contracts() -> CheckResult:
             name="bitcoin_and_stratum_pitfall_contracts",
             severity="critical",
             status="fail" if failures else "pass",
-            summary="Bitcoin/Stratum contract failed"
-            if failures
-            else "byte order, compact target, local validation, stale jobs, pool ACK, and malformed response pitfalls are covered",
+            summary=(
+                "Bitcoin/Stratum contract failed"
+                if failures
+                else "byte order, compact target, local validation, stale jobs, pool ACK, and malformed response pitfalls are covered"
+            ),
             detail="\n".join(failures),
             duration_seconds=time.monotonic() - start,
         )
@@ -323,7 +338,9 @@ def _check_environment(mode: Mode) -> list[CheckResult]:
     ):
         failures.append("HYBA_ALLOW_DEV_FIXTURES must be false in production")
     if live_submit and not approval_id:
-        failures.append("HYBA_ENABLE_LIVE_SHARE_SUBMIT=true requires HYBA_LIVE_SHARE_APPROVAL_ID")
+        failures.append(
+            "HYBA_ENABLE_LIVE_SHARE_SUBMIT=true requires HYBA_LIVE_SHARE_APPROVAL_ID"
+        )
     if _env_bool("HYBA_ENABLE_MINING_AUTOCONNECT"):
         warnings.append(
             "HYBA_ENABLE_MINING_AUTOCONNECT is enabled; operator should confirm this is intentional"
@@ -340,7 +357,9 @@ def _check_environment(mode: Mode) -> list[CheckResult]:
     if persistence_path:
         path = Path(persistence_path)
         sensitive_fragments = ("/tmp", ".env", "secret", "credential", "token")
-        if any(fragment in persistence_path.lower() for fragment in sensitive_fragments):
+        if any(
+            fragment in persistence_path.lower() for fragment in sensitive_fragments
+        ):
             failures.append(
                 "HYBA ontological persistence path must not point at temp, .env, or secret-bearing locations"
             )
@@ -361,7 +380,9 @@ def _check_environment(mode: Mode) -> list[CheckResult]:
         if not _env_bool("HYBA_ENABLE_AUDIT_LOGGING"):
             failures.append("HYBA_ENABLE_AUDIT_LOGGING=true is required in live mode")
         if not pools:
-            failures.append("at least one HYBA_POOL_<ID>_* profile is required in live mode")
+            failures.append(
+                "at least one HYBA_POOL_<ID>_* profile is required in live mode"
+            )
     else:
         if node_env != "production" or hyba_env != "production":
             warnings.append(
@@ -377,9 +398,11 @@ def _check_environment(mode: Mode) -> list[CheckResult]:
             name="operator_environment_safety",
             severity="critical",
             status="fail" if failures else "pass",
-            summary="unsafe operator environment"
-            if failures
-            else "no critical unsafe live-mining flags detected",
+            summary=(
+                "unsafe operator environment"
+                if failures
+                else "no critical unsafe live-mining flags detected"
+            ),
             detail="\n".join(failures),
             duration_seconds=time.monotonic() - start,
         ),
@@ -387,9 +410,11 @@ def _check_environment(mode: Mode) -> list[CheckResult]:
             name="operator_environment_advisories",
             severity="advisory",
             status="warn" if warnings else "pass",
-            summary="operator environment has live-readiness advisories"
-            if warnings
-            else "no operator environment advisories",
+            summary=(
+                "operator environment has live-readiness advisories"
+                if warnings
+                else "no operator environment advisories"
+            ),
             detail="\n".join(warnings),
             duration_seconds=time.monotonic() - start,
         ),
@@ -416,12 +441,17 @@ def _check_claim_boundary_contract() -> CheckResult:
             failures.append(
                 "solver telemetry_source must be 'derived_runtime_state', not a fabricated label"
             )
-        if metrics.get("capacity_source") not in ("not_configured", "configured_estimate"):
+        if metrics.get("capacity_source") not in (
+            "not_configured",
+            "configured_estimate",
+        ):
             failures.append(
                 "solver capacity_source must be 'not_configured' or 'configured_estimate'"
             )
         if metrics.get("hashrate_ehs") is not None:
-            failures.append("unconfigured solver must not report a non-None hashrate_ehs")
+            failures.append(
+                "unconfigured solver must not report a non-None hashrate_ehs"
+            )
     except Exception as exc:
         failures.append(f"solver import/metrics raised: {exc}")
 
@@ -430,11 +460,17 @@ def _check_claim_boundary_contract() -> CheckResult:
 
         proj = benchmark_vs_asic(measured_hashes_per_second=None)
         if proj.get("benchmark_mode") != "projection_only":
-            failures.append("benchmark without measured input must be labelled 'projection_only'")
+            failures.append(
+                "benchmark without measured input must be labelled 'projection_only'"
+            )
         if proj.get("effective_hashes_per_second") is not None:
-            failures.append("projection_only benchmark must not report effective_hashes_per_second")
+            failures.append(
+                "projection_only benchmark must not report effective_hashes_per_second"
+            )
         if proj.get("projected_vs_asic_ratio") is not None:
-            failures.append("projection_only benchmark must not report projected_vs_asic_ratio")
+            failures.append(
+                "projection_only benchmark must not report projected_vs_asic_ratio"
+            )
     except Exception as exc:
         failures.append(f"benchmark_vs_asic import/call raised: {exc}")
 
@@ -458,9 +494,11 @@ def _check_claim_boundary_contract() -> CheckResult:
         name="claim_boundary_contract",
         severity="critical",
         status="fail" if failures else "pass",
-        summary="claim boundary violations found"
-        if failures
-        else "telemetry, benchmark, and anti-simulation claim boundaries enforced",
+        summary=(
+            "claim boundary violations found"
+            if failures
+            else "telemetry, benchmark, and anti-simulation claim boundaries enforced"
+        ),
         detail="\n".join(failures),
         duration_seconds=time.monotonic() - start,
     )
@@ -520,7 +558,9 @@ def _check_multi_pool_failover_contract() -> CheckResult:
         if not nh_spec["tls_required"]:
             failures.append("nicehash spec must require TLS")
         try:
-            validate_pool_url("stratum+tcp://sha256.auto.nicehash.com:443", tls_required=True)
+            validate_pool_url(
+                "stratum+tcp://sha256.auto.nicehash.com:443", tls_required=True
+            )
             failures.append("non-TLS URL must be rejected when tls_required=True")
         except PoolProfileError:
             pass  # expected
@@ -568,9 +608,11 @@ def _check_multi_pool_failover_contract() -> CheckResult:
         name="multi_pool_failover_contract",
         severity="critical",
         status="fail" if failures else "pass",
-        summary="multi-pool failover contract violations found"
-        if failures
-        else "pool priority ordering, TLS enforcement, credential redaction, and Stratum V2 scheme verified",
+        summary=(
+            "multi-pool failover contract violations found"
+            if failures
+            else "pool priority ordering, TLS enforcement, credential redaction, and Stratum V2 scheme verified"
+        ),
         detail="\n".join(failures),
         duration_seconds=time.monotonic() - start,
     )
@@ -592,9 +634,11 @@ def _check_focused_tests() -> CheckResult:
         name="focused_mining_regression_tests",
         severity="critical",
         status="pass" if code == 0 else "fail",
-        summary="focused mining regression tests passed"
-        if code == 0
-        else "focused mining regression tests failed",
+        summary=(
+            "focused mining regression tests passed"
+            if code == 0
+            else "focused mining regression tests failed"
+        ),
         detail=(stdout + "\n" + stderr).strip(),
         duration_seconds=duration,
     )
@@ -624,18 +668,25 @@ def _check_advisory_science_packets() -> CheckResult:
     expected = [
         ROOT / "artifacts" / "phi_resonance_100blocks" / "phi_resonance_summary.json",
         ROOT / "artifacts" / "phi_hash_validity" / "phi_hash_correlation_summary.json",
-        ROOT / "artifacts" / "phi_structured_search" / "structured_search_comparison.json",
+        ROOT
+        / "artifacts"
+        / "phi_structured_search"
+        / "structured_search_comparison.json",
         ROOT / "artifacts" / "phi_stack" / "complete_stack_analysis.json",
     ]
     present = [path.relative_to(ROOT).as_posix() for path in expected if path.exists()]
-    missing = [path.relative_to(ROOT).as_posix() for path in expected if not path.exists()]
+    missing = [
+        path.relative_to(ROOT).as_posix() for path in expected if not path.exists()
+    ]
     return CheckResult(
         name="empirical_evidence_artifacts",
         severity="advisory",
         status="warn" if missing else "pass",
-        summary="some empirical evidence artifacts are absent locally"
-        if missing
-        else "empirical evidence artifacts are present locally",
+        summary=(
+            "some empirical evidence artifacts are absent locally"
+            if missing
+            else "empirical evidence artifacts are present locally"
+        ),
         detail=json.dumps({"present": present, "missing": missing}, indent=2),
     )
 
@@ -704,7 +755,9 @@ def run_doctor(mode: Mode, *, skip_build: bool = False) -> ReadinessReport:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Run HYBA mining production-readiness doctor")
+    parser = argparse.ArgumentParser(
+        description="Run HYBA mining production-readiness doctor"
+    )
     parser.add_argument(
         "--mode", choices=("prepare", "command-room", "live"), default="command-room"
     )

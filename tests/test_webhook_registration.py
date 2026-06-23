@@ -1,6 +1,10 @@
 from datetime import datetime
 
-from hyba_genesis_api.api.webhooks import WebhookEvent, WebhookEventType, webhook_service
+from hyba_genesis_api.api.webhooks import (
+    WebhookEvent,
+    WebhookEventType,
+    webhook_service,
+)
 
 
 def test_webhook_registration_and_delivery_signature():
@@ -14,4 +18,6 @@ def test_webhook_registration_and_delivery_signature():
     payload = event.json()
     ts = "1700000000"
     sig = webhook_service.generate_signature(secret, payload, ts)
-    assert webhook_service.verify_signature(secret, payload, sig, ts, tolerance_seconds=10**10)
+    assert webhook_service.verify_signature(
+        secret, payload, sig, ts, tolerance_seconds=10**10
+    )

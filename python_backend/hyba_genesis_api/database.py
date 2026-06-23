@@ -24,9 +24,10 @@ def initialize_database():
     """
     conn = get_db_connection()
     cursor = conn.cursor()
-    
+
     # API Keys table
-    cursor.execute("""
+    cursor.execute(
+        """
         CREATE TABLE IF NOT EXISTS api_keys (
             api_key_id TEXT PRIMARY KEY,
             customer_id TEXT NOT NULL,
@@ -39,10 +40,12 @@ def initialize_database():
             status TEXT NOT NULL DEFAULT 'active',
             FOREIGN KEY (customer_id) REFERENCES users(id)
         )
-    """)
-    
+    """
+    )
+
     # Usage tracking table
-    cursor.execute("""
+    cursor.execute(
+        """
         CREATE TABLE IF NOT EXISTS usage_logs (
             log_id TEXT PRIMARY KEY,
             customer_id TEXT NOT NULL,
@@ -55,16 +58,20 @@ def initialize_database():
             FOREIGN KEY (customer_id) REFERENCES users(id),
             FOREIGN KEY (api_key_id) REFERENCES api_keys(api_key_id)
         )
-    """)
-    
+    """
+    )
+
     # Create index on timestamp for efficient queries
-    cursor.execute("""
+    cursor.execute(
+        """
         CREATE INDEX IF NOT EXISTS idx_usage_timestamp 
         ON usage_logs(customer_id, timestamp)
-    """)
-    
+    """
+    )
+
     # Quota alerts configuration
-    cursor.execute("""
+    cursor.execute(
+        """
         CREATE TABLE IF NOT EXISTS quota_alerts (
             customer_id TEXT PRIMARY KEY,
             enabled INTEGER NOT NULL DEFAULT 1,
@@ -73,10 +80,12 @@ def initialize_database():
             updated_at TEXT NOT NULL,
             FOREIGN KEY (customer_id) REFERENCES users(id)
         )
-    """)
-    
+    """
+    )
+
     # Customer subscriptions/tiers
-    cursor.execute("""
+    cursor.execute(
+        """
         CREATE TABLE IF NOT EXISTS customer_subscriptions (
             customer_id TEXT PRIMARY KEY,
             tier TEXT NOT NULL DEFAULT 'developer',
@@ -89,8 +98,9 @@ def initialize_database():
             status TEXT NOT NULL DEFAULT 'active',
             FOREIGN KEY (customer_id) REFERENCES users(id)
         )
-    """)
-    
+    """
+    )
+
     conn.commit()
     conn.close()
     print(f"✅ Database initialized at {DB_PATH}")

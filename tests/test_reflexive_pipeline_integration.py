@@ -28,7 +28,9 @@ from hyba_genesis_api.core.constructor_engine import ExplainerIntegrity  # noqa:
 from hyba_genesis_api.core.intelligence_manifold import (  # noqa: E402
     IntelligenceManifold,
 )
-from hyba_genesis_api.core.predictive_controller import PredictiveActiveInference  # noqa: E402
+from hyba_genesis_api.core.predictive_controller import (
+    PredictiveActiveInference,
+)  # noqa: E402
 
 
 # ============================================================
@@ -48,8 +50,16 @@ class AuditSurfaceUnitTests(unittest.TestCase):
                 "euler_characteristic": 2,
                 "predictive_free_energy": 0.05,
             },
-            "telemetry": {"phi_resonance": 0.72, "phi_density": 0.70, "phi": 0.72, "chi": 2},
-            "thermal": {"duration_seconds": 0.042, "thermal_cost_phi_per_second": 17.14},
+            "telemetry": {
+                "phi_resonance": 0.72,
+                "phi_density": 0.70,
+                "phi": 0.72,
+                "chi": 2,
+            },
+            "thermal": {
+                "duration_seconds": 0.042,
+                "thermal_cost_phi_per_second": 17.14,
+            },
             "predictive_status": "STABLE_EQUILIBRIUM",
         }
         audit = generate_formal_invariant_audit(payload)
@@ -102,7 +112,9 @@ class AuditSurfaceUnitTests(unittest.TestCase):
         self.assertIsInstance(audit["phi_resonance"], float)
 
     def test_seal_is_partial_without_measured_invariants(self) -> None:
-        sealed = seal_consciousness_envelope({"audit": {"governance_seal": "CERTIFIED"}})
+        sealed = seal_consciousness_envelope(
+            {"audit": {"governance_seal": "CERTIFIED"}}
+        )
         final = sealed["audit"]["final_seal"]
         self.assertEqual("MEASURED_PARTIAL", final["status"])
         self.assertEqual("PHI_RESONANT", final["mathematical_invariant"])
@@ -127,7 +139,9 @@ class AuditSurfaceUnitTests(unittest.TestCase):
         self.assertEqual("PHI_RESONANT", final["mathematical_invariant"])
         self.assertEqual("RICCI_SMOOTHED", final["manifold_state"])
         self.assertEqual("RECURSIVE_CLOSURE_GOVERNED", final["autonomy_level"])
-        self.assertEqual({"source": "unit_test_measured_payload"}, final["evidence_basis"])
+        self.assertEqual(
+            {"source": "unit_test_measured_payload"}, final["evidence_basis"]
+        )
 
 
 class ExplainerIntegrityUnitTests(unittest.TestCase):
@@ -138,12 +152,16 @@ class ExplainerIntegrityUnitTests(unittest.TestCase):
 
     def test_validates_positive_adjustment(self) -> None:
         self.assertTrue(
-            self.integrity.validate_explanation({"adjustment": 0.01}, "abcdef1234567890")
+            self.integrity.validate_explanation(
+                {"adjustment": 0.01}, "abcdef1234567890"
+            )
         )
 
     def test_rejects_negative_adjustment(self) -> None:
         self.assertFalse(
-            self.integrity.validate_explanation({"adjustment": -1.0}, "abcdef1234567890")
+            self.integrity.validate_explanation(
+                {"adjustment": -1.0}, "abcdef1234567890"
+            )
         )
 
     def test_rejects_empty_proposal(self) -> None:
@@ -154,10 +172,14 @@ class ExplainerIntegrityUnitTests(unittest.TestCase):
 
     def test_rejects_non_finite_adjustment(self) -> None:
         self.assertFalse(
-            self.integrity.validate_explanation({"adjustment": float("nan")}, "abcdef1234567890")
+            self.integrity.validate_explanation(
+                {"adjustment": float("nan")}, "abcdef1234567890"
+            )
         )
         self.assertFalse(
-            self.integrity.validate_explanation({"adjustment": float("inf")}, "abcdef1234567890")
+            self.integrity.validate_explanation(
+                {"adjustment": float("inf")}, "abcdef1234567890"
+            )
         )
 
 
@@ -172,7 +194,9 @@ class PredictiveActiveInferenceUnitTests(unittest.TestCase):
         for obs in [0.0, 0.1, 0.5, 0.9, 1.0]:
             for pred in [0.0, 0.1, 0.5, 0.9, 1.0]:
                 fe = self.engine.calculate_free_energy(obs, pred)
-                self.assertGreaterEqual(fe, 0.0, msg=f"FE negative for obs={obs}, pred={pred}")
+                self.assertGreaterEqual(
+                    fe, 0.0, msg=f"FE negative for obs={obs}, pred={pred}"
+                )
 
     def test_free_energy_zero_when_perfect_prediction(self) -> None:
         # Perfect prediction: obs == pred, free_energy = 0 + log(obs + 1.1)

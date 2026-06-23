@@ -66,7 +66,6 @@ __all__ = [
     "QuantumCircuit",
     "QuantumMeasurement",
     "QuantumComputerAudit",
-    
     # Standard quantum gates
     "hadamard_gate",
     "pauli_x_gate",
@@ -74,18 +73,15 @@ __all__ = [
     "pauli_z_gate",
     "cnot_gate",
     "phase_gate",
-    
     # Mathematical verification
     "MathematicalVerifier",
     "InvariantVerification",
     "ComprehensiveVerification",
-    
     # Structured nonce search
     "StructuredNonceSearch",
     "EmpiricalEvidence",
     "NonceCandidate",
     "SearchResult",
-    
     # Fault-tolerant quantum mining
     "FaultTolerantQuantumMiner",
     "FaultTolerantParameters",

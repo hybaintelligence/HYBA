@@ -14,7 +14,9 @@ from pythia_mining.after_quantum_trifecta import benchmark_ai_weight_geometry
 
 
 def main() -> int:
-    print(json.dumps(benchmark_ai_weight_geometry().as_dict(), indent=2, sort_keys=True))
+    print(
+        json.dumps(benchmark_ai_weight_geometry().as_dict(), indent=2, sort_keys=True)
+    )
     return 0
 
 

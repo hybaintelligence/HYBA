@@ -12,7 +12,10 @@ def test_setup_and_start_is_root_anchored_and_strict() -> None:
     assert 'SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"' in script
     assert 'REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"' in script
     assert 'cd "${REPO_ROOT}"' in script
-    assert 'if [[ ! -f "requirements.txt" || ! -f "package.json" || ! -d "python_backend" ]]' in script
+    assert (
+        'if [[ ! -f "requirements.txt" || ! -f "package.json" || ! -d "python_backend" ]]'
+        in script
+    )
 
 
 def test_setup_and_start_runs_bootstrap_and_gate_before_runtime_processes() -> None:
@@ -60,8 +63,12 @@ def test_dev_server_uses_repository_root_and_backend_url_contract() -> None:
     assert "fs: { strict: false, allow: [projectRoot] }" in script
 
 
-def test_pythia_bootstrap_script_records_self_healing_and_self_optimising_evidence() -> None:
-    script = (ROOT / "scripts" / "pythia_autonomous_bootstrap.py").read_text(encoding="utf-8")
+def test_pythia_bootstrap_script_records_self_healing_and_self_optimising_evidence() -> (
+    None
+):
+    script = (ROOT / "scripts" / "pythia_autonomous_bootstrap.py").read_text(
+        encoding="utf-8"
+    )
 
     assert "HYBA_PYTHIA_AUTONOMOUS_BOOTSTRAP_V2" in script
     assert "controller.set_autonomy_level(level)" in script
@@ -73,7 +80,9 @@ def test_pythia_bootstrap_script_records_self_healing_and_self_optimising_eviden
 
 
 def test_backend_lifespan_activates_pythia_self_healing_on_startup() -> None:
-    main = (ROOT / "python_backend" / "hyba_genesis_api" / "main.py").read_text(encoding="utf-8")
+    main = (ROOT / "python_backend" / "hyba_genesis_api" / "main.py").read_text(
+        encoding="utf-8"
+    )
     controller = (
         ROOT / "python_backend" / "pythia_mining" / "autonomous_mining_controller.py"
     ).read_text(encoding="utf-8")

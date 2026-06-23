@@ -78,7 +78,9 @@ class ProductionMiningGateway:
                         )
                         profiles.append(profile)
                     except Exception as e:
-                        logging.warning(f"Failed to build pool {i} from JSON config: {e}")
+                        logging.warning(
+                            f"Failed to build pool {i} from JSON config: {e}"
+                        )
                 return profiles
             except json.JSONDecodeError as e:
                 logging.warning(f"Invalid JSON in HYBA_MINING_POOLS_JSON: {e}")
@@ -93,10 +95,15 @@ class ProductionMiningGateway:
             url = os.getenv(f"HYBA_POOL_{pool_index}_URL", "")
             username = os.getenv(f"HYBA_POOL_{pool_index}_USERNAME", "")
             password = os.getenv(f"HYBA_POOL_{pool_index}_PASSWORD", "")
-            stratum_version = int(os.getenv(f"HYBA_POOL_{pool_index}_STRATUM_VERSION", "1"))
-            priority = int(os.getenv(f"HYBA_POOL_{pool_index}_PRIORITY", str(100 - pool_index)))
+            stratum_version = int(
+                os.getenv(f"HYBA_POOL_{pool_index}_STRATUM_VERSION", "1")
+            )
+            priority = int(
+                os.getenv(f"HYBA_POOL_{pool_index}_PRIORITY", str(100 - pool_index))
+            )
             tls_required = (
-                os.getenv(f"HYBA_POOL_{pool_index}_TLS_REQUIRED", "false").lower() == "true"
+                os.getenv(f"HYBA_POOL_{pool_index}_TLS_REQUIRED", "false").lower()
+                == "true"
             )
 
             try:
@@ -126,7 +133,9 @@ class ProductionMiningGateway:
 
         for profile in profiles:
             if not profile.url or not profile.username:
-                raise PoolConfigurationError(f"Pool {profile.name} is missing url or username")
+                raise PoolConfigurationError(
+                    f"Pool {profile.name} is missing url or username"
+                )
 
             # Validate URL format
             if not profile.url.startswith(
@@ -219,7 +228,9 @@ class ProductionMiningGateway:
         await self.orchestrator.stop()
         self.is_running = False
 
-    async def submit_share(self, job: Any, nonce: int, extranonce2: Optional[str] = None) -> bool:
+    async def submit_share(
+        self, job: Any, nonce: int, extranonce2: Optional[str] = None
+    ) -> bool:
         """
         Submit a mining share.
 

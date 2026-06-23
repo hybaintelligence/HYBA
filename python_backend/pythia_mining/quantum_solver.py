@@ -1,4 +1,5 @@
 """Dodecahedral quantum solver — φ-guided nonce search with classical SHA-256d fallback."""
+
 from __future__ import annotations
 
 import asyncio
@@ -13,9 +14,11 @@ import numpy as np
 
 logger = logging.getLogger(__name__)
 
-PHI = (1.0 + 5.0 ** 0.5) / 2.0
-UINT32_MAX = 2 ** 32 - 1
-PULVINI_HASHRATE_CAP_EHS: float = float(os.getenv("HYBA_PULVINI_HASHRATE_CAP_EHS", "1.0"))
+PHI = (1.0 + 5.0**0.5) / 2.0
+UINT32_MAX = 2**32 - 1
+PULVINI_HASHRATE_CAP_EHS: float = float(
+    os.getenv("HYBA_PULVINI_HASHRATE_CAP_EHS", "1.0")
+)
 
 
 class QuantumSolverConfigurationError(Exception):
@@ -109,7 +112,9 @@ class DodecahedralQuantumSolver:
         basis = np.array(vectors[:32], dtype=float)
         norms = np.linalg.norm(basis, axis=1, keepdims=True)
         if np.any(norms <= 0):
-            raise QuantumNumericalInstabilityError("Dodecahedral basis contains invalid norms")
+            raise QuantumNumericalInstabilityError(
+                "Dodecahedral basis contains invalid norms"
+            )
         basis = basis / norms
         logger.debug("dodecahedral basis: %d vectors", len(basis))
         return basis
@@ -117,16 +122,22 @@ class DodecahedralQuantumSolver:
     @staticmethod
     def _validate_nonce_ranges(nonce_ranges: Sequence[Tuple[int, int]]) -> None:
         if not nonce_ranges:
-            raise QuantumSolverConfigurationError("At least one nonce range is required")
+            raise QuantumSolverConfigurationError(
+                "At least one nonce range is required"
+            )
         for r in nonce_ranges:
             if len(r) != 2:
                 raise QuantumSolverConfigurationError(
                     f"Nonce range {r} must contain exactly two bounds"
                 )
             if r[0] < 0 or r[1] < 0:
-                raise QuantumSolverConfigurationError("Nonce range bounds must be non-negative")
+                raise QuantumSolverConfigurationError(
+                    "Nonce range bounds must be non-negative"
+                )
             if r[0] > r[1]:
-                raise QuantumSolverConfigurationError("Nonce range start must be <= end")
+                raise QuantumSolverConfigurationError(
+                    "Nonce range start must be <= end"
+                )
 
     async def configure_search(
         self,
@@ -134,16 +145,22 @@ class DodecahedralQuantumSolver:
         nonce_ranges: Sequence[Tuple[int, int]],
     ) -> None:
         if target <= 0:
-            raise QuantumSolverConfigurationError("Mining target must be a positive non-zero integer")
+            raise QuantumSolverConfigurationError(
+                "Mining target must be a positive non-zero integer"
+            )
         self._validate_nonce_ranges(nonce_ranges)
         self._target = target
         self._nonce_ranges = list(nonce_ranges)
         # Use generator to avoid MemoryError with large nonce ranges
-        self._search_space_generator = (n for lo, hi in nonce_ranges for n in range(lo, hi + 1))
+        self._search_space_generator = (
+            n for lo, hi in nonce_ranges for n in range(lo, hi + 1)
+        )
         # Calculate total size without storing all values
         self._search_space_size = sum(hi - lo + 1 for lo, hi in nonce_ranges)
         if self._search_space_size == 0:
-            raise QuantumSolverConfigurationError("Nonce search space must be non-empty")
+            raise QuantumSolverConfigurationError(
+                "Nonce search space must be non-empty"
+            )
         self._basis = self._generate_dodecahedral_basis_states()
         n = self._search_space_size
         # Use chunked approach for large nonce spaces to avoid memory issues
@@ -171,7 +188,9 @@ class DodecahedralQuantumSolver:
     @staticmethod
     def _assert_finite_state(state: np.ndarray, label: str) -> None:
         if not np.all(np.isfinite(state)):
-            raise QuantumNumericalInstabilityError(f"{label} contains NaN or Inf values")
+            raise QuantumNumericalInstabilityError(
+                f"{label} contains NaN or Inf values"
+            )
 
     def _basis_coherence(self) -> float:
         """Derive coherence from observed row-norm spread."""
@@ -192,7 +211,9 @@ class DodecahedralQuantumSolver:
     def _marked_state_index(self) -> int:
         """Find the index in search_space most likely to satisfy the target."""
         if not self._configured:
-            raise QuantumSolverConfigurationError("Solver must be configured before solving")
+            raise QuantumSolverConfigurationError(
+                "Solver must be configured before solving"
+            )
         if not self._search_space:
             return 0
         # Score each nonce by phi-resonance heuristic
@@ -208,7 +229,9 @@ class DodecahedralQuantumSolver:
     def _project_index_to_nonce(self, basis_index: int) -> Optional[int]:
         """Project a measured basis index back to a concrete nonce."""
         if not self._configured:
-            raise QuantumSolverConfigurationError("Solver must be configured before projecting a nonce")
+            raise QuantumSolverConfigurationError(
+                "Solver must be configured before projecting a nonce"
+            )
         size = len(self._search_space)
         if size == 0:
             return None
@@ -224,13 +247,17 @@ class DodecahedralQuantumSolver:
         extranonce2: str = "00000000",
     ) -> Optional[int]:
         """Run φ-guided Grover search; fall back to classical SHA-256d if needed.
-        
+
         Enhanced with adaptive iteration scaling and improved fallback for robustness.
         """
         if max_iterations <= 0 or timeout <= 0:
-            raise QuantumSolverConfigurationError("max_iterations and timeout must be positive")
+            raise QuantumSolverConfigurationError(
+                "max_iterations and timeout must be positive"
+            )
         if not self._configured:
-            raise QuantumSolverConfigurationError("Solver must be configured before solving")
+            raise QuantumSolverConfigurationError(
+                "Solver must be configured before solving"
+            )
 
         effective_target = target if target is not None else self._target
         self._job = job
@@ -239,7 +266,7 @@ class DodecahedralQuantumSolver:
         start = time.monotonic()
         amplitudes = self._amplitudes.copy()
         n = len(self._search_space)
-        
+
         # Adaptive iteration scaling: ensure minimum viable iterations for small search spaces
         adaptive_iterations = max(max_iterations, min(512, n * 2))
         self.last_solve_iterations = 0
@@ -265,6 +292,7 @@ class DodecahedralQuantumSolver:
             # Validate locally if job provided
             if job is not None:
                 from pythia_mining.mining_validation import validate_share
+
                 try:
                     result = validate_share(job, nonce, extranonce2)
                     if result.valid:
@@ -305,7 +333,7 @@ class DodecahedralQuantumSolver:
         extranonce2: str,
     ) -> Optional[int]:
         """Deterministic brute-force PoW search fallback using real SHA-256d.
-        
+
         Enhanced with expanded iteration budget and adaptive traversal strategy:
         - Linear traversal for small ranges (< 1000 nonces)
         - φ-guided traversal for large ranges to maintain determinism
@@ -313,30 +341,35 @@ class DodecahedralQuantumSolver:
         iterations = 0
         # Expanded iteration budget: ensure sufficient attempts for test scenarios
         max_classical_iterations = max(max_iterations * 512, 10000)
-        
+
         for lo, hi in nonce_ranges:
             range_size = hi - lo + 1
-            
+
             # Adaptive traversal: linear for small ranges, φ-guided for large ranges
             if range_size < 1000:
                 # Small range: use linear traversal for complete coverage
                 nonce_iterator = range(lo, hi + 1)
             else:
                 # Large range: use φ-guided traversal for deterministic coverage
-                phi = (1.0 + 5.0 ** 0.5) / 2.0
+                phi = (1.0 + 5.0**0.5) / 2.0
                 stride = int(phi * 1000) % range_size or 1
                 nonce_iterator = range(lo, hi + 1, stride)
-            
+
             for nonce in nonce_iterator:
                 if time.monotonic() - start_time > timeout:
-                    logger.warning("Classical PoW search timed out after %d iterations", iterations)
+                    logger.warning(
+                        "Classical PoW search timed out after %d iterations", iterations
+                    )
                     return None
                 iterations += 1
                 if iterations > max_classical_iterations:
-                    logger.info("Classical PoW search reached iteration budget %d", iterations)
+                    logger.info(
+                        "Classical PoW search reached iteration budget %d", iterations
+                    )
                     return None
                 if job is not None:
                     from pythia_mining.mining_validation import validate_share
+
                     try:
                         result = validate_share(job, nonce, extranonce2 or "00000000")
                         if result.valid:
@@ -346,7 +379,9 @@ class DodecahedralQuantumSolver:
                         pass
                 else:
                     nonce_bytes = nonce.to_bytes(4, "little")
-                    digest = hashlib.sha256(hashlib.sha256(nonce_bytes).digest()).digest()
+                    digest = hashlib.sha256(
+                        hashlib.sha256(nonce_bytes).digest()
+                    ).digest()
                     val = int.from_bytes(digest, "little")
                     if val <= target:
                         logger.info("Classical PoW found valid nonce %d", nonce)
@@ -357,7 +392,11 @@ class DodecahedralQuantumSolver:
         return True
 
     def health_check(self) -> Dict[str, Any]:
-        return {"status": "ok", "configured": self._configured, "capacity_ehs": self._capacity_ehs}
+        return {
+            "status": "ok",
+            "configured": self._configured,
+            "capacity_ehs": self._capacity_ehs,
+        }
 
     def restart(self) -> None:
         self._configured = False

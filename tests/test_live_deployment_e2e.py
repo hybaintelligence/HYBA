@@ -14,7 +14,9 @@ BACKEND = ROOT / "python_backend"
 if str(BACKEND) not in sys.path:
     sys.path.insert(0, str(BACKEND))
 
-from pythia_mining.pulvini_compressed_solver import PulviniCompressedQuantumSolver  # noqa: E402
+from pythia_mining.pulvini_compressed_solver import (
+    PulviniCompressedQuantumSolver,
+)  # noqa: E402
 from pythia_mining.pulvini_overlay import PulviniOverlayConcentrator  # noqa: E402
 from pythia_mining.pulvini_propagation import SharePropagationController  # noqa: E402
 from pythia_mining.stratum_client import (  # noqa: E402
@@ -29,7 +31,9 @@ class InterleavedHandshakeTransport:
         self.sent: list[str] = []
         self.closed = False
         self.responses = [
-            json.dumps({"id": None, "method": "mining.set_difficulty", "params": [8.0]}),
+            json.dumps(
+                {"id": None, "method": "mining.set_difficulty", "params": [8.0]}
+            ),
             json.dumps({"id": 1, "result": [[], "0a0b", 4], "error": None}),
             json.dumps(
                 {
@@ -94,12 +98,16 @@ class LiveDeploymentEndToEndTests(unittest.TestCase):
                         (),
                         {
                             "submit_share": staticmethod(
-                                lambda **kwargs: _accepted_submit_result(kwargs["job_id"])
+                                lambda **kwargs: _accepted_submit_result(
+                                    kwargs["job_id"]
+                                )
                             )
                         },
                     )()
                     client.connection_state = "AUTHENTICATED"
-                    overlay = PulviniOverlayConcentrator(worker_name="PULVINI.singularity")
+                    overlay = PulviniOverlayConcentrator(
+                        worker_name="PULVINI.singularity"
+                    )
                     propagation = SharePropagationController(overlay.manifold)
                     solver = PulviniCompressedQuantumSolver(configured_capacity_ehs=1.0)
                     job = MiningJob(
@@ -115,7 +123,9 @@ class LiveDeploymentEndToEndTests(unittest.TestCase):
                         extranonce2_size=client.extranonce2_size,
                     )
                     overlay.register_pool_job(job, pool_name=client.pool_name)
-                    await solver.configure_compressed_search(job.target, overlay.nonce_plan)
+                    await solver.configure_compressed_search(
+                        job.target, overlay.nonce_plan
+                    )
                     nonce = await solver.solve(max_iterations=16, timeout=5.0)
                     self.assertIsNotNone(nonce)
                     assert nonce is not None
@@ -129,7 +139,9 @@ class LiveDeploymentEndToEndTests(unittest.TestCase):
                         extranonce2=assignment.extranonce2,
                         submitter=client.submit_validated_share,
                     )
-                    overlay.record_share_outcome(assignment.node_id, nonce, result.share_result)
+                    overlay.record_share_outcome(
+                        assignment.node_id, nonce, result.share_result
+                    )
                     return {
                         "accepted": result.share_result.accepted,
                         "status": client.get_status(),

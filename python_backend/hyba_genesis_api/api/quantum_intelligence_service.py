@@ -52,7 +52,9 @@ from pythia_mining.regeneration_manager import get_regeneration_manager
 router = APIRouter(prefix="/api/qiaas", tags=["Quantum-Intelligence-as-a-Service"])
 
 QI_CLAIM_BOUNDARY = "substrate_independent_sovereign_quantum_intelligence_execution"
-QI_PRODUCT_BOUNDARY = "enterprise_quantum_intelligence_api_not_mining_not_hardware_quantum"
+QI_PRODUCT_BOUNDARY = (
+    "enterprise_quantum_intelligence_api_not_mining_not_hardware_quantum"
+)
 QI_RUNTIME = "hyba.qiaas.quantum_intelligence_service.v2"
 _QI_CAPABILITIES = {
     "predict",
@@ -155,7 +157,9 @@ class QIaaSMetrics(BaseModel):
 
 
 def _stable_hash(payload: Any) -> str:
-    encoded = json.dumps(payload, sort_keys=True, default=str, separators=(",", ":")).encode("utf-8")
+    encoded = json.dumps(
+        payload, sort_keys=True, default=str, separators=(",", ":")
+    ).encode("utf-8")
     return hashlib.sha256(encoded).hexdigest()
 
 
@@ -183,12 +187,16 @@ def _qiaas_units(request: QIaaSQueryRequest) -> int:
     """Compute QIaaS metering units from request size."""
 
     payload_bytes = len(
-        json.dumps(request.context, sort_keys=True, default=str, separators=(",", ":")).encode("utf-8")
+        json.dumps(
+            request.context, sort_keys=True, default=str, separators=(",", ":")
+        ).encode("utf-8")
     )
     return max(1, payload_bytes // 1024 + 1)
 
 
-def _meter_usage(customer: CustomerPrincipal, product: str, units: int) -> Dict[str, Any]:
+def _meter_usage(
+    customer: CustomerPrincipal, product: str, units: int
+) -> Dict[str, Any]:
     """Meter usage once per endpoint, with a deterministic internal test path."""
 
     if getattr(customer, "key_id", "") == "internal-qiaas-test":
@@ -215,7 +223,10 @@ def _normalise_query_type(query_type: str) -> str:
     value = query_type.strip().lower()
     if value not in _QI_CAPABILITIES:
         allowed = ", ".join(sorted(_QI_CAPABILITIES))
-        raise HTTPException(status_code=400, detail=f"Unknown query_type: {value}. Must be one of: {allowed}")
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unknown query_type: {value}. Must be one of: {allowed}",
+        )
     return value
 
 
@@ -232,7 +243,9 @@ def _build_envelope(
     usage_state_override: Optional[Dict[str, Any]] = None,
 ) -> QuantumIntelligenceEnvelope:
     customer = _principal_or_internal(principal)
-    usage_state = usage_state_override or _meter_usage(customer, product=product, units=units)
+    usage_state = usage_state_override or _meter_usage(
+        customer, product=product, units=units
+    )
     qi_execution_id = f"qi_{uuid.uuid4().hex}"
     trace_id = f"trc_{uuid.uuid4().hex}"
 
@@ -279,7 +292,11 @@ def _build_envelope(
             units=units,
             quota_state=usage_state,
         ),
-        trace=TraceContext(trace_id=trace_id, customer_id=customer.customer_id, substrate_hash=substrate_hash),
+        trace=TraceContext(
+            trace_id=trace_id,
+            customer_id=customer.customer_id,
+            substrate_hash=substrate_hash,
+        ),
         claim_boundary=QI_CLAIM_BOUNDARY,
         product_boundary=QI_PRODUCT_BOUNDARY,
         source="sovereign_quantum_intelligence_service",
@@ -302,7 +319,12 @@ class QuantumIntelligenceService:
         """Load memory seed if available."""
 
         try:
-            seed_path = Path(__file__).resolve().parents[3] / "artifacts" / "memory_seed" / "memory_seed_v1.json"
+            seed_path = (
+                Path(__file__).resolve().parents[3]
+                / "artifacts"
+                / "memory_seed"
+                / "memory_seed_v1.json"
+            )
             if seed_path.exists():
                 with seed_path.open("r", encoding="utf-8") as handle:
                     return json.load(handle)
@@ -335,7 +357,10 @@ class QuantumIntelligenceService:
 
         strategy_id = context.get("strategy_id", "unknown")
         if strategy_id == "unknown":
-            strategy_id = self.knowledge_substrate.best_explanation_for_context(context) or "unknown"
+            strategy_id = (
+                self.knowledge_substrate.best_explanation_for_context(context)
+                or "unknown"
+            )
 
         explanation = self.knowledge_substrate.explain_decision(strategy_id, context)
         return {
@@ -443,7 +468,9 @@ class QuantumIntelligenceService:
             "relationship_edges": total_edges,
             "synaptic_pathways": len(synaptic_stats.get("emergent_pathways", [])),
             "emergent_patterns": emergent_patterns,
-            "integration_regime": consciousness_metrics.get("integration_regime", "UNKNOWN"),
+            "integration_regime": consciousness_metrics.get(
+                "integration_regime", "UNKNOWN"
+            ),
             "substrate_health": "OPERATIONAL" if emergence_index > 1.0 else "DEGRADED",
             "total_explanations": knowledge_metrics.get("total_explanations", 0),
             "counterfactual_models": knowledge_metrics.get("counterfactual_models", 0),

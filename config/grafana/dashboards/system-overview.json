@@ -1,23 +1,16 @@
 {
   "dashboard": {
-    "title": "HYBA PQMC System Overview",
-    "uid": "hyba-system-overview",
-    "tags": ["hyba", "pqmc", "system"],
-    "timezone": "browser",
-    "schemaVersion": 27,
-    "version": 1,
-    "refresh": "30s",
     "panels": [
       {
         "id": 1,
-        "title": "API Requests per Second",
-        "type": "graph",
         "targets": [
           {
             "expr": "rate(hyba_api_requests_total[1m])",
             "legendFormat": "{{method}} {{endpoint}}"
           }
         ],
+        "title": "API Requests per Second",
+        "type": "graph",
         "yaxes": [
           {
             "format": "reqps",
@@ -27,14 +20,14 @@
       },
       {
         "id": 2,
-        "title": "API Latency (P95)",
-        "type": "graph",
         "targets": [
           {
             "expr": "histogram_quantile(0.95, rate(hyba_api_latency_seconds_bucket[1m]))",
             "legendFormat": "{{endpoint}}"
           }
         ],
+        "title": "API Latency (P95)",
+        "type": "graph",
         "yaxes": [
           {
             "format": "s",
@@ -44,14 +37,14 @@
       },
       {
         "id": 3,
-        "title": "API Error Rate",
-        "type": "graph",
         "targets": [
           {
             "expr": "rate(hyba_api_errors_total[1m]) / rate(hyba_api_requests_total[1m])",
             "legendFormat": "Error Rate"
           }
         ],
+        "title": "API Error Rate",
+        "type": "graph",
         "yaxes": [
           {
             "format": "percentunit",
@@ -60,20 +53,10 @@
         ]
       },
       {
-        "id": 4,
-        "title": "API Availability",
-        "type": "stat",
-        "targets": [
-          {
-            "expr": "avg_over_time(hyba_api_available[5m])",
-            "legendFormat": "Availability"
-          }
-        ],
         "fieldConfig": {
           "defaults": {
-            "unit": "percentunit",
-            "min": 0,
             "max": 1,
+            "min": 0,
             "thresholds": {
               "steps": [
                 {
@@ -85,20 +68,30 @@
                   "value": 0.999
                 }
               ]
-            }
+            },
+            "unit": "percentunit"
           }
-        }
+        },
+        "id": 4,
+        "targets": [
+          {
+            "expr": "avg_over_time(hyba_api_available[5m])",
+            "legendFormat": "Availability"
+          }
+        ],
+        "title": "API Availability",
+        "type": "stat"
       },
       {
         "id": 5,
-        "title": "Compute Jobs per Second",
-        "type": "graph",
         "targets": [
           {
             "expr": "rate(hyba_compute_jobs_total[1m])",
             "legendFormat": "Jobs/sec"
           }
         ],
+        "title": "Compute Jobs per Second",
+        "type": "graph",
         "yaxes": [
           {
             "format": "jobs/sec",
@@ -108,14 +101,14 @@
       },
       {
         "id": 6,
-        "title": "Compute Job Duration (P95)",
-        "type": "graph",
         "targets": [
           {
             "expr": "histogram_quantile(0.95, rate(hyba_compute_job_duration_seconds_bucket[1m]))",
             "legendFormat": "Duration (seconds)"
           }
         ],
+        "title": "Compute Job Duration (P95)",
+        "type": "graph",
         "yaxes": [
           {
             "format": "s",
@@ -125,14 +118,14 @@
       },
       {
         "id": 7,
-        "title": "Database Connections",
-        "type": "graph",
         "targets": [
           {
             "expr": "pg_stat_database_numbackends",
             "legendFormat": "{{datname}}"
           }
         ],
+        "title": "Database Connections",
+        "type": "graph",
         "yaxes": [
           {
             "format": "short",
@@ -142,14 +135,14 @@
       },
       {
         "id": 8,
-        "title": "Database Query Duration (P95)",
-        "type": "graph",
         "targets": [
           {
             "expr": "histogram_quantile(0.95, rate(pg_stat_statements_total_exec_time_seconds_bucket[1m]))",
             "legendFormat": "{{query}}"
           }
         ],
+        "title": "Database Query Duration (P95)",
+        "type": "graph",
         "yaxes": [
           {
             "format": "s",
@@ -159,14 +152,14 @@
       },
       {
         "id": 9,
-        "title": "Redis Memory Usage",
-        "type": "graph",
         "targets": [
           {
             "expr": "redis_memory_used_bytes / redis_memory_max_bytes",
             "legendFormat": "Memory Usage"
           }
         ],
+        "title": "Redis Memory Usage",
+        "type": "graph",
         "yaxes": [
           {
             "format": "percentunit",
@@ -176,14 +169,14 @@
       },
       {
         "id": 10,
-        "title": "Redis Operations per Second",
-        "type": "graph",
         "targets": [
           {
             "expr": "rate(redis_commands_processed_total[1m])",
             "legendFormat": "Ops/sec"
           }
         ],
+        "title": "Redis Operations per Second",
+        "type": "graph",
         "yaxes": [
           {
             "format": "ops/sec",
@@ -193,14 +186,14 @@
       },
       {
         "id": 11,
-        "title": "CPU Usage",
-        "type": "graph",
         "targets": [
           {
             "expr": "100 - (avg by (instance) (irate(node_cpu_seconds_total{mode='idle'}[5m])) * 100)",
             "legendFormat": "{{instance}}"
           }
         ],
+        "title": "CPU Usage",
+        "type": "graph",
         "yaxes": [
           {
             "format": "percent",
@@ -210,14 +203,14 @@
       },
       {
         "id": 12,
-        "title": "Memory Usage",
-        "type": "graph",
         "targets": [
           {
             "expr": "1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)",
             "legendFormat": "{{instance}}"
           }
         ],
+        "title": "Memory Usage",
+        "type": "graph",
         "yaxes": [
           {
             "format": "percentunit",
@@ -225,6 +218,17 @@
           }
         ]
       }
-    ]
+    ],
+    "refresh": "30s",
+    "schemaVersion": 27,
+    "tags": [
+      "hyba",
+      "pqmc",
+      "system"
+    ],
+    "timezone": "browser",
+    "title": "HYBA PQMC System Overview",
+    "uid": "hyba-system-overview",
+    "version": 1
   }
 }

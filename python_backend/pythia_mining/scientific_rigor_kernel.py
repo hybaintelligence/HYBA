@@ -38,7 +38,9 @@ class RevocationDisposition(str, Enum):
     NONE = "none"
     REENTER_EXTERNAL_TRUTH = "reenter_external_truth"
     REEVALUATE_AGAINST_UPDATED_TARGET = "reevaluate_against_updated_target"
-    FALSIFIED_INVALID_LOCAL_OR_EXTERNAL_TRUTH = "falsified_invalid_local_or_external_truth"
+    FALSIFIED_INVALID_LOCAL_OR_EXTERNAL_TRUTH = (
+        "falsified_invalid_local_or_external_truth"
+    )
     UNCLASSIFIED_REVOCATION = "unclassified_revocation"
 
 
@@ -204,7 +206,10 @@ def _revocation_disposition(
                 "pool_response_code",
             )
         if code in reevaluate_codes:
-            return RevocationDisposition.REEVALUATE_AGAINST_UPDATED_TARGET, "pool_response_code"
+            return (
+                RevocationDisposition.REEVALUATE_AGAINST_UPDATED_TARGET,
+                "pool_response_code",
+            )
         if code in reentry_codes:
             return RevocationDisposition.REENTER_EXTERNAL_TRUTH, "pool_response_code"
         return RevocationDisposition.UNCLASSIFIED_REVOCATION, "pool_response_code"
@@ -245,7 +250,10 @@ def _revocation_disposition(
         "previous job",
     )
     if any(term in haystack for term in falsifying_terms):
-        return RevocationDisposition.FALSIFIED_INVALID_LOCAL_OR_EXTERNAL_TRUTH, "text_fallback"
+        return (
+            RevocationDisposition.FALSIFIED_INVALID_LOCAL_OR_EXTERNAL_TRUTH,
+            "text_fallback",
+        )
     if any(term in haystack for term in reevaluate_terms):
         return RevocationDisposition.REEVALUATE_AGAINST_UPDATED_TARGET, "text_fallback"
     if any(term in haystack for term in reentry_terms):
@@ -294,7 +302,11 @@ def assess_penrose_obligation(
         status = ScientificClaimStatus.FALSIFIED.value
         reentry_required = False
         next_required_status = ""
-    elif revoked and disposition == RevocationDisposition.FALSIFIED_INVALID_LOCAL_OR_EXTERNAL_TRUTH:
+    elif (
+        revoked
+        and disposition
+        == RevocationDisposition.FALSIFIED_INVALID_LOCAL_OR_EXTERNAL_TRUTH
+    ):
         status = ScientificClaimStatus.FALSIFIED.value
         reentry_required = False
         next_required_status = ""
@@ -327,7 +339,8 @@ def assess_penrose_obligation(
         ),
         cannot_self_certify=True,
         claim_boundary="Penrose-style proof humility: PYTHIA may reason autonomously but cannot self-certify external truth.",
-        session_event_id=session_event_id or str(evidence.get("session_event_id") or ""),
+        session_event_id=session_event_id
+        or str(evidence.get("session_event_id") or ""),
         reentry_required=reentry_required,
         revocation_reason=revocation_reason if revoked else "",
         revocation_disposition=disposition.value,
@@ -391,7 +404,8 @@ def compute_causal_integration_telemetry(
         claim_boundary="IIT-style causal integration telemetry only; not exact IIT Phi and not a consciousness claim.",
         score_domain_policy="Channel inputs are mapped to [0,1]; negative, missing, error-like, or unrecognised values map to zero before floor scoring.",
         sanitized_channels=tuple(sanitized),
-        session_event_id=session_event_id or str(channels.get("session_event_id") or ""),
+        session_event_id=session_event_id
+        or str(channels.get("session_event_id") or ""),
     )
 
 
@@ -423,7 +437,9 @@ def build_reproducibility_attestation(
         str(command).strip() for command in commands if str(command).strip()
     )
     normalized_seeds = {str(key): int(value) for key, value in (seeds or {}).items()}
-    normalized_pins = {str(key): str(value) for key, value in (dependency_pins or {}).items()}
+    normalized_pins = {
+        str(key): str(value) for key, value in (dependency_pins or {}).items()
+    }
     normalized_artifacts = tuple(
         str(path).strip() for path in produced_artifacts if str(path).strip()
     )
@@ -439,9 +455,13 @@ def build_reproducibility_attestation(
         "protocol": SCIENTIFIC_RIGOR_PROTOCOL,
         "seeds": normalized_seeds,
     }
-    replay_digest = hashlib.sha256(_canonical_json(replay_payload).encode("utf-8")).hexdigest()
+    replay_digest = hashlib.sha256(
+        _canonical_json(replay_payload).encode("utf-8")
+    ).hexdigest()
     reproducible = bool(
-        replay_payload["claim_id"] and normalized_commands and replay_payload["boundary"]
+        replay_payload["claim_id"]
+        and normalized_commands
+        and replay_payload["boundary"]
     )
     return ReproducibilityAttestation(
         protocol=SCIENTIFIC_RIGOR_PROTOCOL,

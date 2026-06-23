@@ -1,9 +1,10 @@
 repos:
-  - repo: local
-    hooks:
-      - id: trufflehog-secret-scan
-        name: TruffleHog verified secret scan
-        entry: trufflehog filesystem --no-update --fail --only-verified .
-        language: system
-        pass_filenames: false
-        stages: [pre-commit]
+- repo: local
+  hooks:
+  - id: trufflehog-secret-scan
+    name: TruffleHog verified secret scan
+    entry: trufflehog filesystem --no-update --fail --only-verified .
+    language: system
+    pass_filenames: false
+    stages:
+    - pre-commit

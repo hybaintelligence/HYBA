@@ -218,7 +218,7 @@ class TestDistributedLockManager:
     async def test_lock_acquisition_timeout(self, mock_redis):
         """Test lock acquisition timeout after retries."""
         manager = DistributedLockManager(mock_redis, max_retry_attempts=2)
-        
+
         # Pre-populate with a lock holder
         await mock_redis.set("lock:contended", "other_holder", ex=30)
 
@@ -283,7 +283,10 @@ class TestDistributedLockManager:
         )
 
         # Should eventually acquire despite the stale lock
-        assert result in (LockAcquisitionResult.ACQUIRED, LockAcquisitionResult.DEADLOCK)
+        assert result in (
+            LockAcquisitionResult.ACQUIRED,
+            LockAcquisitionResult.DEADLOCK,
+        )
 
     async def test_lock_metrics_collection(self, mock_redis):
         """Test metrics collection during lock operations."""
@@ -343,9 +346,7 @@ class TestStratumIdempotencyTracker:
         assert allowed1
 
         # Mark as accepted
-        await tracker.mark_result(
-            record1.submission_id, "pool1", 12345, accepted=True
-        )
+        await tracker.mark_result(record1.submission_id, "pool1", 12345, accepted=True)
 
         # Duplicate attempt
         allowed2, record2 = await tracker.record_submission("pool1", 12345)
@@ -360,7 +361,11 @@ class TestStratumIdempotencyTracker:
         # First submission (rejected)
         allowed1, record1 = await tracker.record_submission("pool1", 12345)
         await tracker.mark_result(
-            record1.submission_id, "pool1", 12345, accepted=False, reason="low_difficulty"
+            record1.submission_id,
+            "pool1",
+            12345,
+            accepted=False,
+            reason="low_difficulty",
         )
 
         # Retry attempt (should be allowed)
@@ -421,8 +426,7 @@ class TestStratumIdempotencyTracker:
         for i in range(5):
             _, record = await tracker.record_submission("pool1", 100 + i)
             await tracker.mark_result(
-                record.submission_id, "pool1", 100 + i, 
-                accepted=i % 2 == 0
+                record.submission_id, "pool1", 100 + i, accepted=i % 2 == 0
             )
 
         audit = tracker.get_audit_log(limit=10)
@@ -435,7 +439,9 @@ class TestStratumIdempotencyTracker:
 
         assert isinstance(metrics_lines, list)
         assert any("hyba_stratum_submissions_total" in line for line in metrics_lines)
-        assert any("hyba_stratum_duplicate_attempts_total" in line for line in metrics_lines)
+        assert any(
+            "hyba_stratum_duplicate_attempts_total" in line for line in metrics_lines
+        )
 
 
 # ============================================================================

@@ -33,7 +33,12 @@ def verify_unitary(matrix: Any, *, tolerance: float = 1e-8) -> VerificationResul
     notes: List[str] = []
     if arr.ndim != 2 or arr.shape[0] != arr.shape[1]:
         return VerificationResult(
-            False, "unitarity", float("inf"), tolerance, "numeric", ["matrix is not square"]
+            False,
+            "unitarity",
+            float("inf"),
+            tolerance,
+            "numeric",
+            ["matrix is not square"],
         )
     ident = np.eye(arr.shape[0], dtype=np.complex128)
     residual = float(np.linalg.norm(arr.conj().T @ arr - ident, ord="fro"))
@@ -46,10 +51,16 @@ def verify_projector(matrix: Any, *, tolerance: float = 1e-8) -> VerificationRes
     arr = np.asarray(matrix, dtype=np.complex128)
     if arr.ndim != 2 or arr.shape[0] != arr.shape[1]:
         return VerificationResult(
-            False, "projector", float("inf"), tolerance, "numeric", ["matrix is not square"]
+            False,
+            "projector",
+            float("inf"),
+            tolerance,
+            "numeric",
+            ["matrix is not square"],
         )
     residual = float(
-        np.linalg.norm(arr @ arr - arr, ord="fro") + np.linalg.norm(arr - arr.conj().T, ord="fro")
+        np.linalg.norm(arr @ arr - arr, ord="fro")
+        + np.linalg.norm(arr - arr.conj().T, ord="fro")
     )
     return VerificationResult(
         residual <= tolerance, "projector", residual, tolerance, "numeric", []
@@ -69,11 +80,15 @@ def verify_trace_preserved(
 
 def verify_symbolic_phi_identity() -> VerificationResult:
     if not SYMPY_AVAILABLE:
-        return VerificationResult(True, "phi_identity", 0.0, 0.0, "skipped", ["sympy unavailable"])
+        return VerificationResult(
+            True, "phi_identity", 0.0, 0.0, "skipped", ["sympy unavailable"]
+        )
     phi = (1 + sp.sqrt(5)) / 2
     residual_expr = sp.simplify(phi**2 - phi - 1)
     passed = bool(residual_expr == 0)
-    return VerificationResult(passed, "phi_identity", 0.0 if passed else 1.0, 0.0, "sympy", [])
+    return VerificationResult(
+        passed, "phi_identity", 0.0 if passed else 1.0, 0.0, "sympy", []
+    )
 
 
 __all__ = [

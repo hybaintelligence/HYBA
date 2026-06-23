@@ -35,7 +35,9 @@ async def observe_pythia_state():
     print(f"  Autonomy from startup: {mission.autonomy_from_startup}")
     print(f"  Max hashrate: {mission.hashrate_limit.max_autonomous_hashrate_ehs} EH/s")
     print(f"  Target blocks: {mission.mission_target.accepted_blocks}")
-    print(f"  Shutdown after completion: {mission.mission_target.shutdown_after_completion}")
+    print(
+        f"  Shutdown after completion: {mission.mission_target.shutdown_after_completion}"
+    )
     print(f"  Status: {mission.status.value}")
     print(f"  Quantum doctrine items: {len(mission.knowledge_seed.quantum_doctrine)}")
     print(f"  Structure targets: {len(mission.knowledge_seed.structure_targets)}")
@@ -50,7 +52,9 @@ async def observe_pythia_state():
     print(f"  Autonomy level: {controller.current_autonomy_level.value}")
     print(f"  Total decisions: {len(controller.decision_log)}")
     print(f"  Phi coherence threshold: {controller.config.phi_coherence_threshold}")
-    print(f"  Max autonomous hashrate: {controller.config.max_autonomous_hashrate_ehs} EH/s")
+    print(
+        f"  Max autonomous hashrate: {controller.config.max_autonomous_hashrate_ehs} EH/s"
+    )
 
     # 3. Observe reflexive learning state
     print("\n--- REFLEXIVE KNOWLEDGE LOOP ---")
@@ -58,11 +62,19 @@ async def observe_pythia_state():
     print(f"  Self-optimization epochs: {controller._self_optimization_epochs}")
     print(f"  Phi density: {controller.get_phi_density():.6f}")
     print(f"  Current efficiency: {controller.get_current_efficiency():.6f}")
-    print(f"  Knowledge explanations: {len(controller.knowledge_substrate.explanations)}")
-    print(f"  Knowledge counterfactuals: {len(controller.knowledge_substrate.counterfactuals)}")
-    print(f"  Knowledge criticisms: {len(controller.knowledge_substrate.criticism_history)}")
+    print(
+        f"  Knowledge explanations: {len(controller.knowledge_substrate.explanations)}"
+    )
+    print(
+        f"  Knowledge counterfactuals: {len(controller.knowledge_substrate.counterfactuals)}"
+    )
+    print(
+        f"  Knowledge criticisms: {len(controller.knowledge_substrate.criticism_history)}"
+    )
     print(f"  Proposals generated: {len(controller.proposal_history)}")
-    print(f"  Proposals applied: {sum(1 for p in controller.proposal_history if p.applied)}")
+    print(
+        f"  Proposals applied: {sum(1 for p in controller.proposal_history if p.applied)}"
+    )
 
     # 4. Observe codebase surroundings
     print("\n--- CODEBASE SURROUNDINGS ---")
@@ -77,9 +89,15 @@ async def observe_pythia_state():
     print("\n--- KNOWLEDGE SUBSTRATE METRICS ---")
     knowledge_metrics = controller.knowledge_substrate.get_knowledge_metrics()
     print(f"  Total explanations: {knowledge_metrics.get('total_explanations', 0)}")
-    print(f"  Avg predictive accuracy: {knowledge_metrics.get('avg_predictive_accuracy', 0):.6f}")
-    print(f"  Knowledge growth rate: {knowledge_metrics.get('knowledge_growth_rate', 0):.6f}")
-    print(f"  Counterfactual models: {knowledge_metrics.get('counterfactual_models', 0)}")
+    print(
+        f"  Avg predictive accuracy: {knowledge_metrics.get('avg_predictive_accuracy', 0):.6f}"
+    )
+    print(
+        f"  Knowledge growth rate: {knowledge_metrics.get('knowledge_growth_rate', 0):.6f}"
+    )
+    print(
+        f"  Counterfactual models: {knowledge_metrics.get('counterfactual_models', 0)}"
+    )
     print(f"  Criticism events: {knowledge_metrics.get('criticism_events', 0)}")
 
     # 6. Run one reflexive improvement cycle
@@ -100,10 +118,14 @@ async def observe_pythia_state():
             print(f"    Proposed: {proposal['proposed_value']:.4f}")
             print(f"    Expected gain: {proposal['expected_gain']:.8f}")
             print(f"    Logical consistency: {proposal['logical_consistency']:.4f}")
-            print(f"    Counterfactual confidence: {proposal['counterfactual_confidence']:.4f}")
+            print(
+                f"    Counterfactual confidence: {proposal['counterfactual_confidence']:.4f}"
+            )
             print(f"    Source module: {proposal['source_module']}")
             print(f"    Applied: {proposal['applied']}")
-            print(f"    Constraints satisfied: {len(proposal['constraints_satisfied'])}")
+            print(
+                f"    Constraints satisfied: {len(proposal['constraints_satisfied'])}"
+            )
             print(f"    Constraints violated: {len(proposal['constraints_violated'])}")
 
     # 8. Final state after improvement

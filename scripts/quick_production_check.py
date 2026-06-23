@@ -69,7 +69,9 @@ def run_check(name: str, command: list[str], env: dict[str, str]) -> tuple[bool,
 
 def main(argv: list[str] | None = None) -> int:
     """Run all production readiness checks."""
-    parser = argparse.ArgumentParser(description="Run quick HYBA production readiness checks")
+    parser = argparse.ArgumentParser(
+        description="Run quick HYBA production readiness checks"
+    )
     parser.add_argument(
         "--env-file",
         help="Env file to load. Defaults to .env.production, then .env, then .env.mining.local.",
@@ -85,7 +87,9 @@ def main(argv: list[str] | None = None) -> int:
     if env_file is None or not env_file.exists():
         print("❌ FAILED: production env file not found")
         print("   Tried: .env.production, .env, .env.mining.local")
-        print("   Or pass: python scripts/quick_production_check.py --env-file path/to/env")
+        print(
+            "   Or pass: python scripts/quick_production_check.py --env-file path/to/env"
+        )
         return 1
 
     print(f"✅ Found env file: {env_file}")
@@ -142,7 +146,9 @@ def main(argv: list[str] | None = None) -> int:
         print("Next steps:")
         print("  1. Run: npm run prod:local:gate")
         print("  2. Run: npm run prod:live:gate with launch env injected")
-        print("  3. Deploy using: docker-compose -f docker-compose.production.yml up -d")
+        print(
+            "  3. Deploy using: docker-compose -f docker-compose.production.yml up -d"
+        )
         print("  4. Monitor health: curl http://localhost:3000/bridge/health")
         print()
         return 0

@@ -1,4 +1,5 @@
 """Small Redis-backed response cache with in-memory fallback for static capability maps."""
+
 from __future__ import annotations
 
 import json

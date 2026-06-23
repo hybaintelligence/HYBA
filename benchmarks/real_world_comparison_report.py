@@ -44,7 +44,9 @@ def _structured_iteration_loop(iterations: int) -> float:
     return accumulator
 
 
-def benchmark_hyba_efficiency(iterations: int = 50_000, assumed_power_w: float = 100.0) -> EfficiencyReport:
+def benchmark_hyba_efficiency(
+    iterations: int = 50_000, assumed_power_w: float = 100.0
+) -> EfficiencyReport:
     start_time = time.perf_counter()
     _structured_iteration_loop(iterations)
     duration = max(time.perf_counter() - start_time, 1e-12)
@@ -54,7 +56,8 @@ def benchmark_hyba_efficiency(iterations: int = 50_000, assumed_power_w: float =
     effective_th = (iterations_per_second * (PHI**15)) / 1e12
     hyba_j_per_effective_th = assumed_power_w / max(effective_th, 1e-18)
     asic_j_per_th = {
-        name: specs["power_w"] / specs["hashrate_th"] for name, specs in ASIC_DATA.items()
+        name: specs["power_w"] / specs["hashrate_th"]
+        for name, specs in ASIC_DATA.items()
     }
     return EfficiencyReport(
         iterations=iterations,

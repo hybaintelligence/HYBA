@@ -53,7 +53,9 @@ def test_build_env_sets_required_clean_run_secrets() -> None:
     assert len(env["JWT_SECRET"]) >= 32
     assert len(env["HYBA_INTERNAL_HEALTH_TOKEN"]) >= 32
     assert len(env["POOL_PRIMARY_CREDENTIALS"]) >= 16
-    assert re.match(r"operator:\$argon2id\$.*:mining_operator", env["HYBA_OPERATOR_CREDENTIALS"])
+    assert re.match(
+        r"operator:\$argon2id\$.*:mining_operator", env["HYBA_OPERATOR_CREDENTIALS"]
+    )
     assert env["HYBA_POOL_VIABTC_USERNAME"] == "PYTHIA.001"
     assert env["HYBA_POOL_VIABTC_PASSWORD"] == "123"
     assert env["HYBA_ENABLE_LIVE_SHARE_SUBMIT"] == "false"
@@ -65,15 +67,21 @@ def test_write_env_uses_private_permissions(tmp_path: Path) -> None:
 
     cli.write_env(env_file, cli.build_env(_args(jwt_secret="x" * 48)), overwrite=False)
 
-    assert env_file.read_text(encoding="utf-8").startswith("# HYBA local mining configuration")
+    assert env_file.read_text(encoding="utf-8").startswith(
+        "# HYBA local mining configuration"
+    )
     assert oct(os.stat(env_file).st_mode & 0o777) == "0o600"
 
 
 def test_validator_accepts_cli_viabtc_numeric_pool_password(monkeypatch) -> None:
     import importlib.util
 
-    validator_path = Path(__file__).resolve().parents[1] / "scripts" / "validate_production_env.py"
-    spec = importlib.util.spec_from_file_location("validate_production_env", validator_path)
+    validator_path = (
+        Path(__file__).resolve().parents[1] / "scripts" / "validate_production_env.py"
+    )
+    spec = importlib.util.spec_from_file_location(
+        "validate_production_env", validator_path
+    )
     assert spec and spec.loader
     validator = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(validator)

@@ -86,7 +86,9 @@ def validate_frontend_components():
     results = []
 
     # Check AdminPanel component
-    admin_panel_path = Path(__file__).parent.parent / "src" / "components" / "AdminPanel.tsx"
+    admin_panel_path = (
+        Path(__file__).parent.parent / "src" / "components" / "AdminPanel.tsx"
+    )
     if admin_panel_path.exists():
         print(f"✓ AdminPanel component exists: {admin_panel_path}")
         content = admin_panel_path.read_text()
@@ -146,7 +148,10 @@ def validate_deployment_files():
 
     # Check seed script
     seed_script_path = (
-        Path(__file__).parent.parent / "python_backend" / "scripts" / "seed_admin_user.py"
+        Path(__file__).parent.parent
+        / "python_backend"
+        / "scripts"
+        / "seed_admin_user.py"
     )
     if seed_script_path.exists():
         print(f"✓ Seed script exists: {seed_script_path}")

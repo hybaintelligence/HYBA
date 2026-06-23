@@ -23,7 +23,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 # Pool Configuration Management
 # ─────────────────────────────────────────────────────────────────────────
 
-POOLS_CONFIG_PATH = Path(__file__).resolve().parents[2].parent / "config" / "mining_pools_live.json"
+POOLS_CONFIG_PATH = (
+    Path(__file__).resolve().parents[2].parent / "config" / "mining_pools_live.json"
+)
 
 
 class PoolConfig(BaseModel):
@@ -53,7 +55,9 @@ class PoolListResponse(BaseModel):
 class SwitchPoolRequest(BaseModel):
     """Request to switch to a different pool."""
 
-    pool_name: str = Field(..., description="Pool identifier (e.g., 'brains', 'ckpool')")
+    pool_name: str = Field(
+        ..., description="Pool identifier (e.g., 'brains', 'ckpool')"
+    )
 
 
 class PoolStatusResponse(BaseModel):
@@ -147,7 +151,9 @@ async def get_default() -> Dict[str, Any]:
     pools = config.get("pools", {})
 
     if default_name not in pools:
-        raise HTTPException(status_code=404, detail=f"Default pool '{default_name}' not found")
+        raise HTTPException(
+            status_code=404, detail=f"Default pool '{default_name}' not found"
+        )
 
     pool_config = pools[default_name]
     return {
@@ -189,7 +195,9 @@ async def switch_pool(req: SwitchPoolRequest) -> Dict[str, Any]:
 
     pool_config = pools[req.pool_name]
     if not pool_config.get("enabled", False):
-        raise HTTPException(status_code=400, detail=f"Pool '{req.pool_name}' is disabled")
+        raise HTTPException(
+            status_code=400, detail=f"Pool '{req.pool_name}' is disabled"
+        )
 
     _active_pool = req.pool_name
 
@@ -257,7 +265,9 @@ async def pool_health() -> Dict[str, Any]:
             "status": "healthy",
             "default_pool": default_pool,
             "total_pools": pool_count,
-            "enabled_pools": sum(1 for p in config.get("pools", {}).values() if p.get("enabled")),
+            "enabled_pools": sum(
+                1 for p in config.get("pools", {}).values() if p.get("enabled")
+            ),
             "timestamp": datetime.now(timezone.utc).isoformat(),
         }
     except Exception as e:

@@ -14,13 +14,15 @@ router = APIRouter(prefix="/api/v1/sandbox", tags=["sandbox"])
 
 class SandboxMode(str):
     """Sandbox execution modes"""
-    MOCK = "mock"           # Return mock data
-    REPLAY = "replay"        # Replay recorded sessions
-    ISOLATED = "isolated"    # Isolated environment
+
+    MOCK = "mock"  # Return mock data
+    REPLAY = "replay"  # Replay recorded sessions
+    ISOLATED = "isolated"  # Isolated environment
 
 
 class SandboxService(BaseModel):
     """Sandboxed service instance"""
+
     service_id: str
     name: str
     tier: str = "developer"
@@ -33,6 +35,7 @@ class SandboxService(BaseModel):
 
 class MockExecutionResult(BaseModel):
     """Mock execution result for testing"""
+
     workload_type: str
     status: str = "completed"
     latency_ms: float
@@ -42,6 +45,7 @@ class MockExecutionResult(BaseModel):
 
 class SandboxFixture(BaseModel):
     """Test data fixture"""
+
     fixture_id: str
     name: str
     description: str
@@ -54,7 +58,7 @@ async def create_sandbox_service(
     name: str = Field(..., description="Service name"),
     tier: str = Field(default="developer", description="Service tier"),
     mode: SandboxMode = Field(default=SandboxMode.MOCK, description="Sandbox mode"),
-    customer_id: str = Header(..., description="Customer ID")
+    customer_id: str = Header(..., description="Customer ID"),
 ) -> SandboxService:
     """
     Create a sandboxed service for testing
@@ -80,7 +84,7 @@ async def create_sandbox_service(
     service_id = f"hyba-sandbox-{uuid.uuid4().hex[:8]}"
     created_at = datetime.utcnow()
     expires_at = datetime.utcnow() + timedelta(hours=24)
-    
+
     return SandboxService(
         service_id=service_id,
         name=name,
@@ -89,7 +93,7 @@ async def create_sandbox_service(
         created_at=created_at,
         expires_at=expires_at,
         quota_requests=100,
-        quota_remaining=100
+        quota_remaining=100,
     )
 
 
@@ -98,7 +102,7 @@ async def execute_sandbox_workload(
     service_id: str,
     workload_type: str = Field(..., description="Workload type"),
     context: str = Field(..., description="Workload context"),
-    mode: SandboxMode = Field(default=SandboxMode.MOCK)
+    mode: SandboxMode = Field(default=SandboxMode.MOCK),
 ) -> MockExecutionResult:
     """
     Execute workload in sandbox (returns mock data)
@@ -120,44 +124,37 @@ async def execute_sandbox_workload(
         "explain": {
             "explanation": "Mock explanation for testing",
             "confidence": 0.95,
-            "reasoning": [
-                "Mock reasoning point 1",
-                "Mock reasoning point 2"
-            ]
+            "reasoning": ["Mock reasoning point 1", "Mock reasoning point 2"],
         },
         "orchestrate": {
             "orchestration_result": "Simulated orchestration complete",
             "steps": [
                 {"step": 1, "action": "mock_action_1", "status": "completed"},
-                {"step": 2, "action": "mock_action_2", "status": "completed"}
-            ]
+                {"step": 2, "action": "mock_action_2", "status": "completed"},
+            ],
         },
         "counterfactual": {
             "original": {"value": 100},
             "counterfactual": {"value": 105},
-            "change": 5.0
+            "change": 5.0,
         },
         "governance_audit": {
             "audit_status": "mock_pass",
             "checks": [
                 {"check": "Authorization", "status": "pass"},
-                {"check": "Audit Trail", "status": "pass"}
-            ]
-        }
+                {"check": "Audit Trail", "status": "pass"},
+            ],
+        },
     }
-    
+
     result = mock_results.get(workload_type, {"mock": True, "status": "ok"})
-    
+
     return MockExecutionResult(
         workload_type=workload_type,
         status="completed",
         latency_ms=123.45,
         result=result,
-        usage={
-            "requests": 1,
-            "compute_units": 0,
-            "cost": 0.0
-        }
+        usage={"requests": 1, "compute_units": 0, "cost": 0.0},
     )
 
 
@@ -184,52 +181,52 @@ async def list_sandbox_fixtures() -> List[SandboxFixture]:
             name="Portfolio: 100 Stocks (1 Year)",
             description="Historical data for 100 stocks, 1 year period",
             size_bytes=5_242_880,  # 5 MB
-            created_at=datetime.utcnow()
+            created_at=datetime.utcnow(),
         ),
         SandboxFixture(
             fixture_id="portfolio_500stocks",
             name="Portfolio: 500 Stocks (1 Year)",
             description="Historical data for 500 stocks, 1 year period",
             size_bytes=26_214_400,  # 25 MB
-            created_at=datetime.utcnow()
+            created_at=datetime.utcnow(),
         ),
         SandboxFixture(
             fixture_id="molecules_1k",
             name="Molecules: 1,000 Compounds (SMILES Format)",
             description="1,000 chemical compounds in SMILES format",
             size_bytes=104_857_600,  # 100 MB
-            created_at=datetime.utcnow()
+            created_at=datetime.utcnow(),
         ),
         SandboxFixture(
             fixture_id="molecules_10k",
             name="Molecules: 10,000 Compounds (SDF Format)",
             description="10,000 chemical compounds in SDF format with properties",
             size_bytes=1_073_741_824,  # 1 GB
-            created_at=datetime.utcnow()
+            created_at=datetime.utcnow(),
         ),
         SandboxFixture(
             fixture_id="scada_24h",
             name="SCADA: 24 Hours Sensor Data",
             description="Sensor readings from SCADA system, 24 hour period",
             size_bytes=52_428_800,  # 50 MB
-            created_at=datetime.utcnow()
+            created_at=datetime.utcnow(),
         ),
         SandboxFixture(
             fixture_id="scada_7d",
             name="SCADA: 7 Days Sensor Data",
             description="Sensor readings from SCADA system, 7 day period",
             size_bytes=262_144_000,  # 250 MB
-            created_at=datetime.utcnow()
+            created_at=datetime.utcnow(),
         ),
         SandboxFixture(
             fixture_id="market_data_daily",
             name="Market Data: Daily Quotes (2 Years)",
             description="Daily OHLCV data for major indices and equities",
             size_bytes=104_857_600,  # 100 MB
-            created_at=datetime.utcnow()
+            created_at=datetime.utcnow(),
         ),
     ]
-    
+
     return fixtures
 
 
@@ -253,12 +250,12 @@ async def download_sandbox_fixture(fixture_id: str):
         "molecules_10k",
         "scada_24h",
         "scada_7d",
-        "market_data_daily"
+        "market_data_daily",
     ]
-    
+
     if fixture_id not in valid_fixtures:
         raise HTTPException(status_code=404, detail="Fixture not found")
-    
+
     # Return mock data (in production, would stream actual file)
     mock_data = {
         "portfolio_100stocks": [
@@ -272,31 +269,30 @@ async def download_sandbox_fixture(fixture_id: str):
         "scada_24h": [
             {"timestamp": "2025-01-01T00:00:00Z", "sensor_1": 42.5, "sensor_2": 98.2},
             {"timestamp": "2025-01-01T00:01:00Z", "sensor_1": 42.7, "sensor_2": 98.1},
-        ]
+        ],
     }
-    
+
     data = mock_data.get(fixture_id, [{"mock": True}])
-    
+
     return {
         "fixture_id": fixture_id,
         "format": "json",
         "row_count": len(data),
-        "data": data
+        "data": data,
     }
 
 
 @router.post("/replay-sessions", response_model=Dict[str, Any])
 async def create_replay_session(
     recordings: List[Dict[str, Any]] = Field(
-        ...,
-        description="List of request/response recordings"
+        ..., description="List of request/response recordings"
     )
 ) -> Dict[str, Any]:
     """
     Create replay session from recorded interactions
-    
+
     Use this to replay recorded API interactions for testing
-    
+
     Example:
     ```json
     {
@@ -317,12 +313,12 @@ async def create_replay_session(
     ```
     """
     session_id = f"replay_{uuid.uuid4().hex[:8]}"
-    
+
     return {
         "session_id": session_id,
         "recording_count": len(recordings),
         "created_at": datetime.utcnow().isoformat(),
-        "expires_at": (datetime.utcnow() + timedelta(hours=24)).isoformat()
+        "expires_at": (datetime.utcnow() + timedelta(hours=24)).isoformat(),
     }
 
 
@@ -335,7 +331,7 @@ async def sandbox_status() -> Dict[str, Any]:
         "sandbox_services": 42,
         "quota_per_service": 100,
         "service_lifetime_hours": 24,
-        "modes": ["mock", "replay", "isolated"]
+        "modes": ["mock", "replay", "isolated"],
     }
 
 

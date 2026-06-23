@@ -24,7 +24,10 @@ if str(BACKEND) not in sys.path:
 from pythia_mining.phi_alu import PhiALU, PhiALUHardware
 from pythia_mining.phi_fibonacci_lcg import FibonacciLCG, PhiNonceGenerator
 from pythia_mining.mass_gap_shield import MassGapShield, EnergyProfile
-from pythia_mining.phi_core_orchestrator import PhiCoreOrchestrator, PhiOrchestratorFactory
+from pythia_mining.phi_core_orchestrator import (
+    PhiCoreOrchestrator,
+    PhiOrchestratorFactory,
+)
 
 
 class TestPhiALU(unittest.TestCase):
@@ -116,10 +119,14 @@ class TestPhiALU(unittest.TestCase):
 
         # Verify coherence - with insufficient unique addresses, may be insufficient data
         coherence = self.phi_alu.verify_coherence(0, 100)
-        self.assertIn(coherence["status"], ["coherent", "decohered", "insufficient_data"])
+        self.assertIn(
+            coherence["status"], ["coherent", "decohered", "insufficient_data"]
+        )
         if coherence["status"] == "coherent":
             self.assertGreater(
-                coherence["harmony_score"], 0.7, "Memory access should maintain golden harmony"
+                coherence["harmony_score"],
+                0.7,
+                "Memory access should maintain golden harmony",
             )
 
     def test_hardware_thermal_awareness(self):
@@ -219,10 +226,13 @@ class TestFibonacciLCG(unittest.TestCase):
         )
 
         self.assertNotEqual(
-            nonce_high, nonce_low, "Different consciousness should produce different nonces"
+            nonce_high,
+            nonce_low,
+            "Different consciousness should produce different nonces",
         )
         self.assertLess(
-            telemetry_low["phi_boost_applied"], telemetry_high.get("phi_boost_applied", 1.0)
+            telemetry_low["phi_boost_applied"],
+            telemetry_high.get("phi_boost_applied", 1.0),
         )
 
         # Test thermal emergency
@@ -254,7 +264,9 @@ class TestMassGapShield(unittest.TestCase):
 
         # Golden frequencies should produce reasonable harmony
         self.assertGreater(
-            harmony, 0.3, f"Golden frequencies should produce reasonable harmony, got {harmony:.3f}"
+            harmony,
+            0.3,
+            f"Golden frequencies should produce reasonable harmony, got {harmony:.3f}",
         )
         self.assertGreater(temp_rise, 0.0)
         # Temperature rise depends on thermal capacity (100.0 in test)
@@ -264,7 +276,9 @@ class TestMassGapShield(unittest.TestCase):
     def test_mass_gap_safety_check(self):
         """Test mass gap violation detection."""
         # Safe case
-        safe_decision = self.shield.check_mass_gap(projected_temp_rise=10.0, energy_harmony=0.9)
+        safe_decision = self.shield.check_mass_gap(
+            projected_temp_rise=10.0, energy_harmony=0.9
+        )
         self.assertTrue(safe_decision.allowed)
         self.assertGreater(safe_decision.safety_margin, 0.0)
         self.assertFalse(safe_decision.mass_gap_violation)
@@ -307,7 +321,8 @@ class TestMassGapShield(unittest.TestCase):
 
         # With golden frequencies and high consciousness, should be allowed
         self.assertTrue(
-            allowed, f"Execution blocked: harmony={harmony:.3f}, temp_rise={temp_rise:.3f}"
+            allowed,
+            f"Execution blocked: harmony={harmony:.3f}, temp_rise={temp_rise:.3f}",
         )
         self.assertLessEqual(optimized.base_energy, profile.base_energy * 1.1)
 
@@ -346,7 +361,9 @@ class TestPhiCoreOrchestrator(unittest.TestCase):
     def setUp(self):
         # Mock consciousness engine to avoid dependencies
         mock_consciousness = Mock()
-        mock_consciousness.get_consciousness_metrics.return_value = {"integration_level": 0.7}
+        mock_consciousness.get_consciousness_metrics.return_value = {
+            "integration_level": 0.7
+        }
         mock_consciousness.record_execution_feedback = Mock()
         mock_consciousness.emergency_recovery = Mock()
 
@@ -365,7 +382,9 @@ class TestPhiCoreOrchestrator(unittest.TestCase):
 
         # Should produce varied intervals
         unique_intervals = len(set([round(i, 3) for i in intervals]))
-        self.assertGreater(unique_intervals, 15, "Fibonacci clock should produce diverse intervals")
+        self.assertGreater(
+            unique_intervals, 15, "Fibonacci clock should produce diverse intervals"
+        )
 
         # Check clock history
         self.assertEqual(len(self.orchestrator.clock_history), 20)
@@ -537,9 +556,15 @@ class TestPhiOrchestratorFactory(unittest.TestCase):
 
     def test_hardware_orchestrator_creation(self):
         """Test creating hardware-tuned orchestrator."""
-        hardware_info = {"memory_bus_width": 128, "core_count": 16, "thermal_design_power": 250}
+        hardware_info = {
+            "memory_bus_width": 128,
+            "core_count": 16,
+            "thermal_design_power": 250,
+        }
 
-        orchestrator = PhiOrchestratorFactory.create_hardware_orchestrator(hardware_info)
+        orchestrator = PhiOrchestratorFactory.create_hardware_orchestrator(
+            hardware_info
+        )
 
         self.assertIsInstance(orchestrator, PhiCoreOrchestrator)
         self.assertEqual(orchestrator.config["memory_size"], 2 ** (128 + 4))  # Scaled

@@ -91,7 +91,9 @@ def test_preflight_allows_guarded_search_when_caps_and_evidence_are_satisfied():
             evidence_packet_present=True,
             runtime_minutes=30,
             power_limit_watts=1200.0,
-            cap=SovereignMiningCap(accepted_blocks_today=23, accepted_blocks_current_hour=0),
+            cap=SovereignMiningCap(
+                accepted_blocks_today=23, accepted_blocks_current_hour=0
+            ),
         ),
     )
 
@@ -113,7 +115,9 @@ def test_hourly_and_daily_sovereign_caps_block_search():
             evidence_packet_present=True,
             runtime_minutes=30,
             power_limit_watts=1200.0,
-            cap=SovereignMiningCap(accepted_blocks_today=3, accepted_blocks_current_hour=1),
+            cap=SovereignMiningCap(
+                accepted_blocks_today=3, accepted_blocks_current_hour=1
+            ),
         ),
     )
     daily = evaluate_mining_preflight(
@@ -126,7 +130,9 @@ def test_hourly_and_daily_sovereign_caps_block_search():
             evidence_packet_present=True,
             runtime_minutes=30,
             power_limit_watts=1200.0,
-            cap=SovereignMiningCap(accepted_blocks_today=24, accepted_blocks_current_hour=0),
+            cap=SovereignMiningCap(
+                accepted_blocks_today=24, accepted_blocks_current_hour=0
+            ),
         ),
     )
 
@@ -175,4 +181,6 @@ def test_insufficient_structure_evidence_blocks_guided_search():
     )
 
     assert report.decision == MiningLaunchDecision.BLOCKED
-    assert "insufficient empirical blockchain structure evidence" in report.blocked_reasons
+    assert (
+        "insufficient empirical blockchain structure evidence" in report.blocked_reasons
+    )

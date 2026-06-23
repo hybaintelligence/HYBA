@@ -40,32 +40,51 @@ class TestSuccessCriteria:
         """Test evaluation with optimal metrics."""
         criteria = SuccessCriteria()
 
-        metrics = {"hashrate": 100.0, "efficiency": 0.8, "temperature": 50.0, "error_rate": 0.1}
+        metrics = {
+            "hashrate": 100.0,
+            "efficiency": 0.8,
+            "temperature": 50.0,
+            "error_rate": 0.1,
+        }
 
         evaluation = criteria.evaluate_success(metrics)
 
         assert evaluation["overall_score"] > 0
         assert "metric_scores" in evaluation
         assert "recommendations" in evaluation
-        assert len(evaluation["recommendations"]) == 0  # No recommendations for optimal state
+        assert (
+            len(evaluation["recommendations"]) == 0
+        )  # No recommendations for optimal state
 
     def test_evaluate_success_poor(self):
         """Test evaluation with poor metrics."""
         criteria = SuccessCriteria()
 
-        metrics = {"hashrate": 10.0, "efficiency": 0.3, "temperature": 85.0, "error_rate": 0.15}
+        metrics = {
+            "hashrate": 10.0,
+            "efficiency": 0.3,
+            "temperature": 85.0,
+            "error_rate": 0.15,
+        }
 
         evaluation = criteria.evaluate_success(metrics)
 
         assert evaluation["overall_score"] < 1.0
         assert len(evaluation["recommendations"]) > 0
-        assert any("temperature" in rec.lower() for rec in evaluation["recommendations"])
+        assert any(
+            "temperature" in rec.lower() for rec in evaluation["recommendations"]
+        )
 
     def test_evaluate_success_hashrate_below_minimum(self):
         """Test evaluation with hashrate below minimum."""
         criteria = SuccessCriteria()
 
-        metrics = {"hashrate": 30.0, "efficiency": 0.8, "temperature": 50.0, "error_rate": 0.1}
+        metrics = {
+            "hashrate": 30.0,
+            "efficiency": 0.8,
+            "temperature": 50.0,
+            "error_rate": 0.1,
+        }
 
         evaluation = criteria.evaluate_success(metrics)
 
@@ -76,12 +95,19 @@ class TestSuccessCriteria:
         """Test evaluation with critical temperature."""
         criteria = SuccessCriteria()
 
-        metrics = {"hashrate": 100.0, "efficiency": 0.8, "temperature": 90.0, "error_rate": 0.1}
+        metrics = {
+            "hashrate": 100.0,
+            "efficiency": 0.8,
+            "temperature": 90.0,
+            "error_rate": 0.1,
+        }
 
         evaluation = criteria.evaluate_success(metrics)
 
         assert evaluation["metric_scores"]["temperature"] == 0.0
-        assert any("temperature" in rec.lower() for rec in evaluation["recommendations"])
+        assert any(
+            "temperature" in rec.lower() for rec in evaluation["recommendations"]
+        )
 
 
 class TestMiningPitfallsKnowledge:
@@ -132,7 +158,8 @@ class TestMiningPitfallsKnowledge:
         assert len(indicators) > 0
         # Should detect network and pool related pitfalls
         assert any(
-            p.category in [PitfallCategory.NETWORK, PitfallCategory.POOL] for p in indicators
+            p.category in [PitfallCategory.NETWORK, PitfallCategory.POOL]
+            for p in indicators
         )
 
     def test_check_for_pitfall_indicators_healthy(self):
@@ -266,7 +293,8 @@ class TestOperationalExpectationsKnowledge:
         assert not status["within_limits"]
         assert len(status["critical_alerts"]) > 0
         assert any(
-            alert["threshold"] == "temperature_threshold" for alert in status["critical_alerts"]
+            alert["threshold"] == "temperature_threshold"
+            for alert in status["critical_alerts"]
         )
 
 

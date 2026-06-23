@@ -77,9 +77,9 @@ _600CELL_OFFSETS_NEG = [120 - o for o in _600CELL_OFFSETS]
 _600CELL_ALL_OFFSETS = sorted(set(_600CELL_OFFSETS + _600CELL_OFFSETS_NEG))
 
 # Verify: should have exactly 12 distinct offsets (6 pairs)
-assert len(_600CELL_ALL_OFFSETS) == 12, (
-    f"Expected 12 offsets, got {len(_600CELL_ALL_OFFSETS)}: {_600CELL_ALL_OFFSETS}"
-)
+assert (
+    len(_600CELL_ALL_OFFSETS) == 12
+), f"Expected 12 offsets, got {len(_600CELL_ALL_OFFSETS)}: {_600CELL_ALL_OFFSETS}"
 # Verify: no offset is 0 or 60 (self-loop would result)
 for o in _600CELL_ALL_OFFSETS:
     assert 1 <= o < NUM_NODES, f"Invalid offset {o}"
@@ -100,14 +100,18 @@ def _build_600cell_adjacency() -> Dict[int, Dict[str, List[int]]]:
     for i in range(NUM_NODES):
         # Compute neighbors using fixed offsets
         neighbors = sorted({(i + o) % NUM_NODES for o in _600CELL_ALL_OFFSETS})
-        assert len(neighbors) == 12, f"Vertex {i} has {len(neighbors)} neighbors, expected 12"
+        assert (
+            len(neighbors) == 12
+        ), f"Vertex {i} has {len(neighbors)} neighbors, expected 12"
         adj[i] = {"d": neighbors, "i": neighbors[:]}
 
     # Verify symmetry: if i has neighbor j, then j must have neighbor i
     for i in range(NUM_NODES):
         for j in adj[i]["d"]:
             assert i in adj[j]["d"], f"Symmetry broken: {i}->{j} but not {j}->{i}"
-        assert len(adj[i]["d"]) == 12, f"Vertex {i} has {len(adj[i]['d'])} neighbors, expected 12"
+        assert (
+            len(adj[i]["d"]) == 12
+        ), f"Vertex {i} has {len(adj[i]['d'])} neighbors, expected 12"
 
     return adj
 

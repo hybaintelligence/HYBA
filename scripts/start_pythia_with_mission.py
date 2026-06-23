@@ -58,7 +58,9 @@ async def start_pythia_with_mission():
     # Step 4: Set autonomy level to AUTONOMOUS
     print("\n--- STEP 4: SET AUTONOMY LEVEL ---")
     engine.set_autonomy_level(AutonomyLevel.AUTONOMOUS)
-    print(f"  Autonomy level: {engine.autonomous_controller.current_autonomy_level.value}")
+    print(
+        f"  Autonomy level: {engine.autonomous_controller.current_autonomy_level.value}"
+    )
     print("  Self-healing: ENABLED (consciousness-driven regime adaptation)")
     print("  Self-optimization: ENABLED (search strategy + hashrate tuning)")
     print("  Safety constraints: ENFORCED (mathematical bounds)")
@@ -69,7 +71,9 @@ async def start_pythia_with_mission():
     safe_hashrate = mission.enforce_hashrate_limit(current_capacity)
     print(f"  Requested hashrate: {current_capacity} EH/s")
     print(f"  Safe hashrate (clamped): {safe_hashrate} EH/s")
-    print(f"  Limit enforced: {mission.hashrate_limit.max_autonomous_hashrate_ehs} EH/s")
+    print(
+        f"  Limit enforced: {mission.hashrate_limit.max_autonomous_hashrate_ehs} EH/s"
+    )
 
     # Step 6: Verify mission readiness
     print("\n--- STEP 6: VERIFY MISSION READINESS ---")
@@ -77,7 +81,9 @@ async def start_pythia_with_mission():
     print(f"  Mission complete: {mission.is_complete()}")
     print(f"  Should shutdown: {mission.should_shutdown()}")
     print(f"  Phi density: {engine.autonomous_controller.get_phi_density():.6f}")
-    print(f"  Reflexive loop enabled: {engine.autonomous_controller.config.reflexive_loop_enabled}")
+    print(
+        f"  Reflexive loop enabled: {engine.autonomous_controller.config.reflexive_loop_enabled}"
+    )
 
     # Step 7: Run one reflexive improvement cycle
     print("\n--- STEP 7: RUN REFLEXIVE IMPROVEMENT CYCLE ---")

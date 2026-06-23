@@ -58,7 +58,9 @@ _sensory_protocol: Optional[SensoryIntegrityProtocol] = None
 _regeneration_approval_queue: Dict[str, Dict[str, Any]] = {}
 
 # PHASE 2: Rate limiting for AI-triggered regenerations
-_ai_regeneration_rate_limit: Dict[str, list[float]] = {}  # module_id -> list of timestamps
+_ai_regeneration_rate_limit: Dict[str, list[float]] = (
+    {}
+)  # module_id -> list of timestamps
 _RATE_LIMIT_WINDOW = 60.0  # seconds
 _RATE_LIMIT_MAX_REQUESTS = 5  # per window per module
 
@@ -96,22 +98,25 @@ from typing import List, Dict, Set, Tuple
 import asyncio
 import time
 
+
 class ConnectionManager:
     """Advanced WebSocket connection manager with rooms, auth, heartbeat, and backpressure."""
-    
+
     def __init__(self):
         # room -> set of (client_id, websocket)
         self.active_connections: Dict[str, Set[Tuple[str, WebSocket]]] = {
             "ceo": set(),
             "cto": set(),
             "dev": set(),
-            "all": set()
+            "all": set(),
         }
         self.message_queues: Dict[str, asyncio.Queue] = {}
         self.last_heartbeat: Dict[str, float] = {}
         self.client_rooms: Dict[str, str] = {}  # client_id -> room mapping
-    
-    async def connect(self, websocket: WebSocket, room: str, client_id: str, token: str = None):
+
+    async def connect(
+        self, websocket: WebSocket, room: str, client_id: str, token: str = None
+    ):
         """Connect a WebSocket client with room-based routing and optional JWT authentication."""
         # JWT authentication if token provided
         if token:
@@ -127,23 +132,25 @@ class ConnectionManager:
                 return
 
         await websocket.accept()
-        
+
         self.active_connections[room].add((client_id, websocket))
         self.active_connections["all"].add((client_id, websocket))
         self.client_rooms[client_id] = room
-        
+
         # Backpressure queue (max 50 messages)
         self.message_queues[client_id] = asyncio.Queue(maxsize=50)
         self.last_heartbeat[client_id] = time.time()
 
         # Send welcome message
-        await websocket.send_json({
-            "type": "connection_established",
-            "room": room,
-            "client_id": client_id,
-            "timestamp": datetime.now(timezone.utc).isoformat(),
-        })
-    
+        await websocket.send_json(
+            {
+                "type": "connection_established",
+                "room": room,
+                "client_id": client_id,
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+            }
+        )
+
     def _user_has_access_to_room(self, user, room: str) -> bool:
         """Check if user has access to specific room."""
         # Customize based on your auth roles
@@ -152,42 +159,46 @@ class ConnectionManager:
         if room == "cto" and not getattr(user, "is_cto", False):
             return False
         return True
-    
+
     async def disconnect(self, client_id: str):
         """Disconnect a client from all rooms."""
         room = self.client_rooms.get(client_id, "all")
-        
+
         for r in self.active_connections:
             self.active_connections[r] = {
                 (cid, ws) for cid, ws in self.active_connections[r] if cid != client_id
             }
-        
+
         self.message_queues.pop(client_id, None)
         self.last_heartbeat.pop(client_id, None)
         self.client_rooms.pop(client_id, None)
-    
+
     async def broadcast(self, message: Dict[str, Any], room: str = "all"):
         """Broadcast a message to all clients in a room with backpressure handling."""
         connections = self.active_connections.get(room, set())
         dead = []
-        
+
         for client_id, websocket in list(connections):
             try:
-                if not await self._send_with_backpressure(client_id, websocket, message):
+                if not await self._send_with_backpressure(
+                    client_id, websocket, message
+                ):
                     dead.append((client_id, websocket))
             except Exception as e:
                 dead.append((client_id, websocket))
-        
+
         # Cleanup dead connections
         for client_id, ws in dead:
             await self.disconnect(client_id)
-    
-    async def _send_with_backpressure(self, client_id: str, websocket: WebSocket, message: Dict[str, Any]) -> bool:
+
+    async def _send_with_backpressure(
+        self, client_id: str, websocket: WebSocket, message: Dict[str, Any]
+    ) -> bool:
         """Send message with backpressure handling via bounded queue."""
         queue = self.message_queues.get(client_id)
         if not queue:
             return False
-            
+
         try:
             # Non-blocking queue put with timeout
             await asyncio.wait_for(queue.put(message), timeout=2.0)
@@ -203,7 +214,7 @@ class ConnectionManager:
         except Exception as e:
             print(f"Error sending to {client_id}: {e}")
             return False
-    
+
     async def start_heartbeat_monitor(self):
         """Background task to monitor heartbeat timeouts."""
         while True:
@@ -213,12 +224,14 @@ class ConnectionManager:
                     print(f"💓 Heartbeat timeout for {client_id}")
                     await self.disconnect(client_id)
             await asyncio.sleep(10)
-    
+
     def update_heartbeat(self, client_id: str):
         """Update heartbeat timestamp for a client."""
         self.last_heartbeat[client_id] = time.time()
 
+
 _manager = ConnectionManager()
+
 
 # Start heartbeat monitor in background
 async def start_heartbeat_monitor():
@@ -235,24 +248,24 @@ def calculate_impact_score(trace: Dict[str, Any], module_id: str) -> float:
     - Regeneration complexity
     """
     base_score = 0.5
-    
+
     # Factor in fault severity from trace
     fault_severity = trace.get("fault_severity", 0.7)
     base_score += fault_severity * 0.3
-    
+
     # Factor in fidelity
     fidelity = trace.get("fidelity_pre_collapse", 1.0)
     base_score += (1.0 - fidelity) * 0.2
-    
+
     # Module criticality heuristic
     critical_modules = ["security", "auth", "payment", "core"]
     if any(critical in module_id.lower() for critical in critical_modules):
         base_score += 0.3
-    
+
     # Regeneration complexity based on entropy
     entropy = trace.get("post_fault_entropy", 0.0)
     base_score += entropy * 0.1
-    
+
     return min(base_score, 1.0)
 
 
@@ -264,7 +277,7 @@ def estimate_files_changed(trace: Dict[str, Any], module_id: str) -> list[str]:
     """
     # Base file that would always be affected
     files = [f"modules/{module_id}.py"]
-    
+
     # Add related files based on module type
     if "security" in module_id.lower():
         files.extend(["security/config.py", "security/policies.py"])
@@ -272,7 +285,7 @@ def estimate_files_changed(trace: Dict[str, Any], module_id: str) -> list[str]:
         files.extend(["auth/handlers.py", "auth/middleware.py"])
     elif "quantum" in module_id.lower():
         files.extend(["quantum/operators.py", "quantum/states.py"])
-    
+
     return files
 
 
@@ -296,23 +309,27 @@ def check_rate_limit(module_id: str) -> tuple[bool, str]:
     Returns (allowed, reason) tuple.
     """
     import time
-    
+
     current_time = time.time()
-    
+
     # Initialize rate limit tracking for this module if needed
     if module_id not in _ai_regeneration_rate_limit:
         _ai_regeneration_rate_limit[module_id] = []
-    
+
     # Clean up old timestamps outside the window
     _ai_regeneration_rate_limit[module_id] = [
-        ts for ts in _ai_regeneration_rate_limit[module_id]
+        ts
+        for ts in _ai_regeneration_rate_limit[module_id]
         if current_time - ts < _RATE_LIMIT_WINDOW
     ]
-    
+
     # Check if rate limit exceeded
     if len(_ai_regeneration_rate_limit[module_id]) >= _RATE_LIMIT_MAX_REQUESTS:
-        return False, f"Rate limit exceeded: {_RATE_LIMIT_MAX_REQUESTS} requests per {_RATE_LIMIT_WINDOW} seconds"
-    
+        return (
+            False,
+            f"Rate limit exceeded: {_RATE_LIMIT_MAX_REQUESTS} requests per {_RATE_LIMIT_WINDOW} seconds",
+        )
+
     # Add current timestamp
     _ai_regeneration_rate_limit[module_id].append(current_time)
     return True, "Rate limit check passed"
@@ -327,11 +344,14 @@ def check_sensitive_paths(module_id: str, files_changed: list[str]) -> tuple[boo
     for file_path in files_changed:
         for pattern in _SENSITIVE_FILE_PATTERNS:
             if pattern in file_path.lower():
-                return False, f"Sensitive file path detected: {file_path} contains '{pattern}'"
-    
+                return (
+                    False,
+                    f"Sensitive file path detected: {file_path} contains '{pattern}'",
+                )
+
     if any(pattern in module_id.lower() for pattern in _SENSITIVE_FILE_PATTERNS):
         return False, f"Module ID contains sensitive pattern: {module_id}"
-    
+
     return True, "Sensitive path check passed"
 
 
@@ -342,28 +362,32 @@ def check_resource_limits(module_id: str) -> tuple[bool, str]:
     Returns (allowed, reason) tuple.
     """
     import time
-    
+
     current_time = time.time()
-    
+
     # Clean up completed regenerations
     completed_regenerations = [
-        mod_id for mod_id, start_time in _active_regenerations.items()
+        mod_id
+        for mod_id, start_time in _active_regenerations.items()
         if current_time - start_time > _MAX_REGENERATION_DURATION_SECONDS
     ]
     for mod_id in completed_regenerations:
         del _active_regenerations[mod_id]
-    
+
     # Check concurrent regeneration limit
     if len(_active_regenerations) >= _MAX_CONCURRENT_REGENERATIONS:
-        return False, f"Maximum concurrent regenerations ({_MAX_CONCURRENT_REGENERATIONS}) reached"
-    
+        return (
+            False,
+            f"Maximum concurrent regenerations ({_MAX_CONCURRENT_REGENERATIONS}) reached",
+        )
+
     # Check if this module is already regenerating
     if module_id in _active_regenerations:
         return False, f"Module {module_id} is already regenerating"
-    
+
     # Add to active regenerations
     _active_regenerations[module_id] = current_time
-    
+
     return True, "Resource limit check passed"
 
 
@@ -381,13 +405,15 @@ def get_cached_fix_pattern(module_id: str, fault_type: str) -> Optional[Dict[str
     return None
 
 
-def cache_fix_pattern(module_id: str, fault_type: str, trace: Dict[str, Any], success: bool):
+def cache_fix_pattern(
+    module_id: str, fault_type: str, trace: Dict[str, Any], success: bool
+):
     """Cache a fix pattern for future regenerations.
 
     PHASE 3: Stores successful fix patterns for reuse in similar scenarios.
     """
     cache_key = f"{module_id}_{fault_type}"
-    
+
     if cache_key not in _fix_pattern_cache:
         _fix_pattern_cache[cache_key] = {
             "module_id": module_id,
@@ -397,17 +423,19 @@ def cache_fix_pattern(module_id: str, fault_type: str, trace: Dict[str, Any], su
             "success_count": 0,
             "last_used": None,
         }
-    
+
     cached = _fix_pattern_cache[cache_key]
     cached["hit_count"] += 1
     cached["last_used"] = datetime.now(timezone.utc).isoformat()
-    
+
     if success:
         cached["success_count"] += 1
         cached["trace"] = trace  # Update with most recent successful trace
 
 
-async def run_verification_suite(module_id: str, trace: Dict[str, Any]) -> Dict[str, Any]:
+async def run_verification_suite(
+    module_id: str, trace: Dict[str, Any]
+) -> Dict[str, Any]:
     """Run verification suite after regeneration.
 
     PHASE 3: Integrates with test runners and Pythia replay verification.
@@ -416,7 +444,7 @@ async def run_verification_suite(module_id: str, trace: Dict[str, Any]) -> Dict[
     import asyncio
     import subprocess
     import json
-    
+
     verification_result = {
         "status": "pending",
         "timestamp": datetime.now(timezone.utc).isoformat(),
@@ -425,34 +453,42 @@ async def run_verification_suite(module_id: str, trace: Dict[str, Any]) -> Dict[
         "overall_passed": False,
         "failure_reason": None,
     }
-    
+
     try:
         # PHASE 3: Run module-specific tests if available
-        test_command = ["python", "-m", "pytest", f"tests/test_{module_id}.py", "-v", "--tb=short"]
-        
+        test_command = [
+            "python",
+            "-m",
+            "pytest",
+            f"tests/test_{module_id}.py",
+            "-v",
+            "--tb=short",
+        ]
+
         try:
             process = await asyncio.create_subprocess_exec(
                 *test_command,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE,
             )
-            
+
             stdout, stderr = await asyncio.wait_for(
-                process.communicate(),
-                timeout=_VERIFICATION_TIMEOUT_SECONDS
+                process.communicate(), timeout=_VERIFICATION_TIMEOUT_SECONDS
             )
-            
+
             test_output = stdout.decode() if stdout else ""
             test_error = stderr.decode() if stderr else ""
-            
+
             # Parse test results
-            verification_result["tests_run"].append({
-                "name": f"test_{module_id}",
-                "status": "passed" if process.returncode == 0 else "failed",
-                "output": test_output,
-                "error": test_error if process.returncode != 0 else None,
-            })
-            
+            verification_result["tests_run"].append(
+                {
+                    "name": f"test_{module_id}",
+                    "status": "passed" if process.returncode == 0 else "failed",
+                    "output": test_output,
+                    "error": test_error if process.returncode != 0 else None,
+                }
+            )
+
             if process.returncode == 0:
                 verification_result["status"] = "passed"
                 verification_result["overall_passed"] = True
@@ -460,10 +496,12 @@ async def run_verification_suite(module_id: str, trace: Dict[str, Any]) -> Dict[
                 verification_result["status"] = "failed"
                 verification_result["overall_passed"] = False
                 verification_result["failure_reason"] = "Test suite failed"
-                
+
         except asyncio.TimeoutError:
             verification_result["status"] = "timeout"
-            verification_result["failure_reason"] = f"Verification timeout after {_VERIFICATION_TIMEOUT_SECONDS} seconds"
+            verification_result["failure_reason"] = (
+                f"Verification timeout after {_VERIFICATION_TIMEOUT_SECONDS} seconds"
+            )
         except FileNotFoundError:
             # No test file found, skip verification
             verification_result["status"] = "skipped"
@@ -471,31 +509,36 @@ async def run_verification_suite(module_id: str, trace: Dict[str, Any]) -> Dict[
         except Exception as e:
             verification_result["status"] = "error"
             verification_result["failure_reason"] = f"Verification error: {str(e)}"
-        
+
         # PHASE 3: Integrate with Pythia replay verification if available
         try:
             from pythia_mining.pythia_replay import verify_regeneration_claim
+
             pythia_result = verify_regeneration_claim(module_id, trace)
             verification_result["pythia_verification"] = pythia_result
-            verification_result["tests_run"].append({
-                "name": "pythia_replay",
-                "status": pythia_result.get("status", "unknown"),
-                "details": pythia_result,
-            })
+            verification_result["tests_run"].append(
+                {
+                    "name": "pythia_replay",
+                    "status": pythia_result.get("status", "unknown"),
+                    "details": pythia_result,
+                }
+            )
         except ImportError:
             # Pythia replay not available, skip
             pass
         except Exception as e:
-            verification_result["tests_run"].append({
-                "name": "pythia_replay",
-                "status": "error",
-                "error": str(e),
-            })
-        
+            verification_result["tests_run"].append(
+                {
+                    "name": "pythia_replay",
+                    "status": "error",
+                    "error": str(e),
+                }
+            )
+
     except Exception as e:
         verification_result["status"] = "error"
         verification_result["failure_reason"] = f"Verification suite error: {str(e)}"
-    
+
     return verification_result
 
 
@@ -511,10 +554,10 @@ async def trigger_followup_regeneration(
     PHASE 3: Automatically retries regeneration with failure context.
     """
     import time
-    
+
     # Add delay before retry
     await asyncio.sleep(_REGENERATION_RETRY_DELAY_SECONDS)
-    
+
     # Enrich context with failure information
     enriched_context = {
         "original_trace": original_trace,
@@ -522,7 +565,7 @@ async def trigger_followup_regeneration(
         "retry_count": retry_count,
         "failure_reason": verification_result.get("failure_reason"),
     }
-    
+
     # Trigger regeneration with enriched context
     result = await trigger_regeneration(
         module_id=module_id,
@@ -530,19 +573,22 @@ async def trigger_followup_regeneration(
         ai_triggered=True,
         dry_run=False,
     )
-    
+
     # Track retry history
     if module_id not in _regeneration_retry_history:
         _regeneration_retry_history[module_id] = []
-    
-    _regeneration_retry_history[module_id].append({
-        "timestamp": datetime.now(timezone.utc).isoformat(),
-        "retry_count": retry_count,
-        "original_failure": verification_result,
-        "result": result,
-    })
-    
+
+    _regeneration_retry_history[module_id].append(
+        {
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "retry_count": retry_count,
+            "original_failure": verification_result,
+            "result": result,
+        }
+    )
+
     return result
+
 
 # Security module states for quantum regeneration
 _security_module_states: Dict[str, ModuleState] = {}
@@ -665,7 +711,9 @@ async def get_security_status():
         regeneration_status = {
             "total_modules": len(_security_module_states),
             "modules_in_blastema": sum(
-                1 for state in _security_module_states.values() if state.von_neumann_entropy() > 0.5
+                1
+                for state in _security_module_states.values()
+                if state.von_neumann_entropy() > 0.5
             ),
             "modules_with_positional_memory": len(_security_clifford_memory),
         }
@@ -699,7 +747,9 @@ async def get_security_status():
                     "self_modification_enabled": coding_status.get(
                         "self_modification_enabled", False
                     ),
-                    "structural_coupling": coding_status.get("structural_coupling", 0.0),
+                    "structural_coupling": coding_status.get(
+                        "structural_coupling", 0.0
+                    ),
                     "last_proposal": coding_status.get("last_proposal"),
                 },
                 "sensory_integrity": {
@@ -709,7 +759,9 @@ async def get_security_status():
                 },
                 "quantum_regeneration": regeneration_status,
             },
-            "threat_level": "nominal" if phi_metrics.get("phi_integrated", 0) > 0.8 else "elevated",
+            "threat_level": (
+                "nominal" if phi_metrics.get("phi_integrated", 0) > 0.8 else "elevated"
+            ),
             "defense_systems": {
                 "stabilizer_swarm": "active",
                 "hebbian_learning": "active",
@@ -732,7 +784,9 @@ async def get_security_status():
         }
 
 
-@router.post("/shield", response_model=Dict[str, Any], dependencies=[Depends(api_key_dependency)])
+@router.post(
+    "/shield", response_model=Dict[str, Any], dependencies=[Depends(api_key_dependency)]
+)
 async def post_shield(param: ShieldParam):
     """Accept validated shield settings with multi-intelligence integration.
 
@@ -795,8 +849,12 @@ async def post_shield(param: ShieldParam):
 class SecurityEvent(BaseModel):
     event_type: str = Field(description="Type of security event")
     severity: float = Field(default=0.5, ge=0.0, le=1.0, description="Event severity")
-    module_id: Optional[str] = Field(default=None, description="Affected security module")
-    nonce: Optional[int] = Field(default=None, description="Associated nonce for pattern learning")
+    module_id: Optional[str] = Field(
+        default=None, description="Affected security module"
+    )
+    nonce: Optional[int] = Field(
+        default=None, description="Associated nonce for pattern learning"
+    )
     phi_resonance: Optional[float] = Field(
         default=None, description="Phi resonance for pattern learning"
     )
@@ -805,7 +863,9 @@ class SecurityEvent(BaseModel):
     )
 
 
-@router.post("/event", response_model=Dict[str, Any], dependencies=[Depends(api_key_dependency)])
+@router.post(
+    "/event", response_model=Dict[str, Any], dependencies=[Depends(api_key_dependency)]
+)
 async def post_security_event(event: SecurityEvent):
     """Process security event with multi-intelligence integration.
 
@@ -850,7 +910,9 @@ async def post_security_event(event: SecurityEvent):
 
             # Initialize module state if not exists
             if event.module_id not in _security_module_states:
-                _security_module_states[event.module_id] = ModuleState.healthy(event.module_id)
+                _security_module_states[event.module_id] = ModuleState.healthy(
+                    event.module_id
+                )
 
             # Create context signal with positional memory
             clifford_index = _security_clifford_memory.get(event.module_id)
@@ -873,7 +935,9 @@ async def post_security_event(event: SecurityEvent):
 
             # Update module state
             if regeneration_trace.get("status") == "success":
-                _security_module_states[event.module_id] = ModuleState.healthy(event.module_id)
+                _security_module_states[event.module_id] = ModuleState.healthy(
+                    event.module_id
+                )
 
         # Get phi-integrated metrics after event processing
         phi_metrics = consciousness.measure_phi()
@@ -886,7 +950,9 @@ async def post_security_event(event: SecurityEvent):
             "severity": event.severity,
             "pattern_learning": {
                 "pattern_id": pattern_id,
-                "reinforcement_count": learning_event.reinforcement_count if learning_event else 0,
+                "reinforcement_count": (
+                    learning_event.reinforcement_count if learning_event else 0
+                ),
                 "new_weight": learning_event.new_weight if learning_event else 0.0,
             },
             "regeneration": regeneration_trace,
@@ -957,12 +1023,12 @@ async def get_regeneration_events(limit: int = 100, include_pending: bool = True
     PHASE 3: Enhanced with retry history and verification status.
     """
     events = _regeneration_event_log[-limit:] if limit > 0 else _regeneration_event_log
-    
+
     # Include pending approvals if requested
     pending_approvals = []
     if include_pending:
         pending_approvals = list(_regeneration_approval_queue.values())
-    
+
     return {
         "status": "regeneration_events",
         "timestamp": datetime.now(timezone.utc).isoformat(),
@@ -980,13 +1046,13 @@ async def regeneration_websocket(
     websocket: WebSocket,
     room: str = "all",
     client_id: str = "default",
-    token: str = None
+    token: str = None,
 ):
     """WebSocket endpoint for real-time regeneration event streaming.
 
     PHASE 3: Provides real-time streaming of regeneration events to CEO Terminal,
     eliminating the need for polling and providing instant updates.
-    
+
     Advanced features:
     - Room-based routing (ceo, cto, dev, all)
     - JWT authentication via query parameter
@@ -994,23 +1060,25 @@ async def regeneration_websocket(
     - Backpressure handling via bounded queues
     """
     await _manager.connect(websocket, room, client_id, token)
-    
+
     try:
         # Send initial state
-        await websocket.send_json({
-            "type": "initial_state",
-            "room": room,
-            "client_id": client_id,
-            "events": _regeneration_event_log[-100:],
-            "pending_approvals": list(_regeneration_approval_queue.values()),
-            "retry_history": _regeneration_retry_history,
-            "timestamp": datetime.now(timezone.utc).isoformat(),
-        })
-        
+        await websocket.send_json(
+            {
+                "type": "initial_state",
+                "room": room,
+                "client_id": client_id,
+                "events": _regeneration_event_log[-100:],
+                "pending_approvals": list(_regeneration_approval_queue.values()),
+                "retry_history": _regeneration_retry_history,
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+            }
+        )
+
         # Keep connection alive and handle client messages
         while True:
             data = await websocket.receive_text()
-            
+
             if data == "ping":
                 _manager.update_heartbeat(client_id)
                 await websocket.send_text("pong")
@@ -1021,12 +1089,14 @@ async def regeneration_websocket(
                 await _manager.connect(websocket, new_room, client_id, token)
             else:
                 # Handle other client messages
-                await websocket.send_json({
-                    "type": "echo",
-                    "message": f"Received: {data}",
-                    "timestamp": datetime.now(timezone.utc).isoformat(),
-                })
-                
+                await websocket.send_json(
+                    {
+                        "type": "echo",
+                        "message": f"Received: {data}",
+                        "timestamp": datetime.now(timezone.utc).isoformat(),
+                    }
+                )
+
     except WebSocketDisconnect:
         await _manager.disconnect(client_id)
     except Exception as e:
@@ -1037,11 +1107,13 @@ async def regeneration_websocket(
 # PHASE 3: Helper function to broadcast regeneration events
 async def broadcast_regeneration_event(event: Dict[str, Any]):
     """Broadcast a regeneration event to all connected WebSocket clients."""
-    await _manager.broadcast({
-        "type": "regeneration_event",
-        "event": event,
-        "timestamp": datetime.now(timezone.utc).isoformat(),
-    })
+    await _manager.broadcast(
+        {
+            "type": "regeneration_event",
+            "event": event,
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+        }
+    )
 
 
 # PHASE 5: Multi-Agent System Integration
@@ -1078,7 +1150,9 @@ _swarm_comm.register_agent("verification_specialist")
 _swarm_comm.register_agent("executor_agent")
 
 
-def sign_regeneration_event(event_id: str, pending_event: Dict[str, Any], result: Dict[str, Any]) -> str:
+def sign_regeneration_event(
+    event_id: str, pending_event: Dict[str, Any], result: Dict[str, Any]
+) -> str:
     """Cryptographically sign a regeneration event for audit trail.
 
     PHASE 3: Provides cryptographic signing of applied regenerations for
@@ -1087,10 +1161,10 @@ def sign_regeneration_event(event_id: str, pending_event: Dict[str, Any], result
     import hmac
     import hashlib
     import json
-    
+
     # In production, this should use a proper key management system
     secret_key = "salamander_regeneration_secret_key_change_in_production"
-    
+
     # Create signature payload
     payload = {
         "event_id": event_id,
@@ -1098,15 +1172,13 @@ def sign_regeneration_event(event_id: str, pending_event: Dict[str, Any], result
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "result_status": result.get("status"),
     }
-    
+
     # Create HMAC signature
     payload_str = json.dumps(payload, sort_keys=True)
     signature = hmac.new(
-        secret_key.encode(),
-        payload_str.encode(),
-        hashlib.sha256
+        secret_key.encode(), payload_str.encode(), hashlib.sha256
     ).hexdigest()
-    
+
     return signature
 
 
@@ -1124,7 +1196,7 @@ async def approve_regeneration(
 
     PHASE 2: This endpoint provides the approval workflow for AI-triggered
     regenerations, allowing human oversight before autonomous fixes are applied.
-    
+
     PHASE 3: Enhanced with bulk approval support and cryptographic signing.
     """
     if event_id not in _regeneration_approval_queue:
@@ -1147,13 +1219,13 @@ async def approve_regeneration(
                 dry_run=False,  # Execute for real
                 verify_after_apply=True,  # PHASE 3: Enable verification
             )
-            
+
             # Remove from approval queue
             del _regeneration_approval_queue[event_id]
-            
+
             # PHASE 3: Cryptographically sign the approved regeneration
             signature = sign_regeneration_event(event_id, pending_event, result)
-            
+
             return {
                 "success": True,
                 "status": "regeneration_approved_and_executed",
@@ -1174,7 +1246,7 @@ async def approve_regeneration(
     elif action == "reject":
         # Remove from approval queue without executing
         del _regeneration_approval_queue[event_id]
-        
+
         # Log rejection event
         rejection_event = {
             "id": f"reject_{datetime.now(timezone.utc).timestamp()}_{event_id}",
@@ -1192,7 +1264,7 @@ async def approve_regeneration(
             },
         }
         _regeneration_event_log.append(rejection_event)
-        
+
         return {
             "success": True,
             "status": "regeneration_rejected",
@@ -1206,7 +1278,7 @@ async def approve_regeneration(
         if edited_parameters:
             pending_event.update(edited_parameters)
             _regeneration_approval_queue[event_id] = pending_event
-        
+
         return {
             "success": True,
             "status": "regeneration_edited",
@@ -1239,33 +1311,39 @@ async def bulk_approve_regeneration(event_ids: List[str]):
     results = []
     approved_count = 0
     failed_count = 0
-    
+
     for event_id in event_ids:
         if event_id not in _regeneration_approval_queue:
-            results.append({
-                "event_id": event_id,
-                "status": "failed",
-                "error": "Event not found in approval queue",
-            })
+            results.append(
+                {
+                    "event_id": event_id,
+                    "status": "failed",
+                    "error": "Event not found in approval queue",
+                }
+            )
             failed_count += 1
             continue
-        
+
         try:
             result = await approve_regeneration(event_id, "approve")
-            results.append({
-                "event_id": event_id,
-                "status": "approved",
-                "result": result,
-            })
+            results.append(
+                {
+                    "event_id": event_id,
+                    "status": "approved",
+                    "result": result,
+                }
+            )
             approved_count += 1
         except Exception as e:
-            results.append({
-                "event_id": event_id,
-                "status": "failed",
-                "error": str(e),
-            })
+            results.append(
+                {
+                    "event_id": event_id,
+                    "status": "failed",
+                    "error": str(e),
+                }
+            )
             failed_count += 1
-    
+
     return {
         "success": True,
         "status": "bulk_approval_completed",
@@ -1299,9 +1377,9 @@ async def multi_step_regeneration(
             prompt=prompt,
             target_files=target_files,
             context=context or {},
-            auto_approve_threshold=auto_approve_threshold
+            auto_approve_threshold=auto_approve_threshold,
         )
-        
+
         # Log the multi-step regeneration event
         event = {
             "id": f"multi_step_{datetime.now(timezone.utc).timestamp()}",
@@ -1323,10 +1401,10 @@ async def multi_step_regeneration(
             },
         }
         _regeneration_event_log.append(event)
-        
+
         # Broadcast via WebSocket
         await broadcast_regeneration_event(event)
-        
+
         return {
             "success": True,
             "status": "multi_step_regeneration_completed",
@@ -1334,7 +1412,7 @@ async def multi_step_regeneration(
             "result": result,
             "source": "quantum_regeneration_security_runtime",
         }
-    
+
     except Exception as e:
         return {
             "success": False,
@@ -1445,7 +1523,7 @@ async def trigger_regeneration(
 
         # Run regeneration pipeline
         rng = np.random.default_rng()
-        
+
         # PHASE 3: Check for cached fix pattern
         fault_type = trace.get("fault_type", "general")
         cached_pattern = get_cached_fix_pattern(module_id, fault_type)
@@ -1467,7 +1545,9 @@ async def trigger_regeneration(
 
         # PHASE 2: Check sensitive file paths for AI-triggered regenerations
         if ai_triggered:
-            sensitive_allowed, sensitive_reason = check_sensitive_paths(module_id, files_changed)
+            sensitive_allowed, sensitive_reason = check_sensitive_paths(
+                module_id, files_changed
+            )
             if not sensitive_allowed:
                 return {
                     "success": False,
@@ -1493,7 +1573,8 @@ async def trigger_regeneration(
                     "files_changed": files_changed,
                     "rollback_possible": rollback_possible,
                     "estimated_duration_ms": trace.get("duration_ms", 0),
-                    "phi_score": 0.45 + (trace.get("fidelity_pre_collapse", 0.5) * 0.55),
+                    "phi_score": 0.45
+                    + (trace.get("fidelity_pre_collapse", 0.5) * 0.55),
                     "fidelity": trace.get("fidelity_pre_collapse", 0.0),
                 },
                 "source": "quantum_regeneration_security_runtime",
@@ -1513,16 +1594,23 @@ async def trigger_regeneration(
         verification_result = None
         if verify_after_apply and trace.get("status") == "success":
             verification_result = await run_verification_suite(module_id, trace)
-            
+
             # PHASE 3: Integrate with Pythia registry for verified regeneration claims
             if verification_result["overall_passed"]:
                 try:
-                    from pythia_mining.pythia_registry import register_verified_regeneration
+                    from pythia_mining.pythia_registry import (
+                        register_verified_regeneration,
+                    )
+
                     pythia_claim_id = register_verified_regeneration(
                         module_id=module_id,
                         trace=trace,
                         verification_result=verification_result,
-                        signature=sign_regeneration_event(f"regen_{datetime.now(timezone.utc).timestamp()}_{module_id}", {"module_id": module_id}, {"status": "success"}),
+                        signature=sign_regeneration_event(
+                            f"regen_{datetime.now(timezone.utc).timestamp()}_{module_id}",
+                            {"module_id": module_id},
+                            {"status": "success"},
+                        ),
                     )
                     verification_result["pythia_claim_id"] = pythia_claim_id
                 except ImportError:
@@ -1530,9 +1618,12 @@ async def trigger_regeneration(
                     pass
                 except Exception as e:
                     verification_result["pythia_error"] = str(e)
-            
+
             # PHASE 3: Self-healing loop - retry on verification failure
-            if not verification_result["overall_passed"] and retry_count < _MAX_REGENERATION_RETRIES:
+            if (
+                not verification_result["overall_passed"]
+                and retry_count < _MAX_REGENERATION_RETRIES
+            ):
                 followup_result = await trigger_followup_regeneration(
                     module_id=module_id,
                     original_trace=trace,
@@ -1540,30 +1631,32 @@ async def trigger_regeneration(
                     retry_count=retry_count + 1,
                     clifford_index=clifford_index,
                 )
-                
+
                 # Log the follow-up attempt
-                _regeneration_event_log.append({
-                    "id": f"regen_retry_{datetime.now(timezone.utc).timestamp()}_{module_id}",
-                    "timestamp": datetime.now(timezone.utc).isoformat(),
-                    "module_id": module_id,
-                    "event_type": "retry",
-                    "severity": "medium",
-                    "status": "completed",
-                    "message": f"Follow-up regeneration attempt {retry_count + 1} for module {module_id}",
-                    "ai_triggered": ai_triggered,
-                    "impact_score": impact_score,
-                    "files_changed": files_changed,
-                    "rollback_possible": rollback_possible,
-                    "approval_status": "auto_approved",
-                    "verification_status": verification_result["status"],
-                    "retry_count": retry_count + 1,
-                    "details": {
-                        "original_trace": trace,
-                        "verification_result": verification_result,
-                        "followup_result": followup_result,
-                    },
-                })
-                
+                _regeneration_event_log.append(
+                    {
+                        "id": f"regen_retry_{datetime.now(timezone.utc).timestamp()}_{module_id}",
+                        "timestamp": datetime.now(timezone.utc).isoformat(),
+                        "module_id": module_id,
+                        "event_type": "retry",
+                        "severity": "medium",
+                        "status": "completed",
+                        "message": f"Follow-up regeneration attempt {retry_count + 1} for module {module_id}",
+                        "ai_triggered": ai_triggered,
+                        "impact_score": impact_score,
+                        "files_changed": files_changed,
+                        "rollback_possible": rollback_possible,
+                        "approval_status": "auto_approved",
+                        "verification_status": verification_result["status"],
+                        "retry_count": retry_count + 1,
+                        "details": {
+                            "original_trace": trace,
+                            "verification_result": verification_result,
+                            "followup_result": followup_result,
+                        },
+                    }
+                )
+
                 return followup_result
 
         # Log regeneration event for CEO terminal with enhanced schema
@@ -1583,10 +1676,16 @@ async def trigger_regeneration(
             "impact_score": impact_score,
             "files_changed": files_changed,
             "rollback_possible": rollback_possible,
-            "approval_status": "auto_approved" if not ai_triggered else "pending_approval",
+            "approval_status": (
+                "auto_approved" if not ai_triggered else "pending_approval"
+            ),
             # PHASE 3: Verification and retry fields
-            "verification_status": verification_result["status"] if verification_result else None,
-            "verification_passed": verification_result["overall_passed"] if verification_result else None,
+            "verification_status": (
+                verification_result["status"] if verification_result else None
+            ),
+            "verification_passed": (
+                verification_result["overall_passed"] if verification_result else None
+            ),
             "retry_count": retry_count,
             "retry_history": _regeneration_retry_history.get(module_id, []),
             "details": {
@@ -1596,7 +1695,7 @@ async def trigger_regeneration(
             },
         }
         _regeneration_event_log.append(event)
-        
+
         # PHASE 3: Broadcast event via WebSocket
         await broadcast_regeneration_event(event)
 
@@ -1666,17 +1765,16 @@ async def get_salamander_swarm_status():
     """
     try:
         swarm_status = _swarm_comm.get_swarm_status()
-        
+
         # Get top pheromone trails (up to 10 strongest)
         sorted_trails = sorted(
-            _swarm_comm.pheromone_trails.items(),
-            key=lambda x: abs(x[1]),
-            reverse=True
+            _swarm_comm.pheromone_trails.items(), key=lambda x: abs(x[1]), reverse=True
         )[:10]
-        
+
         # Get active/pending proposals
-        pending_proposals = len([p for p in _swarm_comm.proposals.values() 
-                                 if p["status"] == "pending"])
+        pending_proposals = len(
+            [p for p in _swarm_comm.proposals.values() if p["status"] == "pending"]
+        )
 
         return {
             "success": True,
@@ -1738,7 +1836,9 @@ async def get_blockchain_threats():
 
 
 @router.post(
-    "/autogenous/propose", response_model=Dict[str, Any], dependencies=[Depends(api_key_dependency)]
+    "/autogenous/propose",
+    response_model=Dict[str, Any],
+    dependencies=[Depends(api_key_dependency)],
 )
 async def propose_self_modification(description: str):
     """Propose security protocol self-modification using Autogenous Self-Coding.

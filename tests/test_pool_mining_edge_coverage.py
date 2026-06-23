@@ -46,7 +46,9 @@ class TestBraiinsDefaultV1:
     def test_default_spec_is_v1(self) -> None:
         spec = DEFAULT_POOL_SPECS["braiins"]
         assert spec["stratum_version"] == 1, "Braiins default must be Stratum V1"
-        assert spec["url"].startswith("stratum+tcp://"), "Braiins default URL must be stratum+tcp"
+        assert spec["url"].startswith(
+            "stratum+tcp://"
+        ), "Braiins default URL must be stratum+tcp"
 
     def test_default_build_yields_v1(self) -> None:
         profile = build_profile(
@@ -64,7 +66,9 @@ class TestBraiinsDefaultV1:
         """If an operator overrides Braiins to V2, the profile must fail closed."""
         monkeypatch.setenv("HYBA_POOL_CONFIG_PATH", "/nonexistent/pool_config.json")
         monkeypatch.setenv("HYBA_POOL_BRAIINS_STRATUM_VERSION", "2")
-        monkeypatch.setenv("HYBA_POOL_BRAIINS_URL", "stratum2+tcp://stratum.braiins.com:3333")
+        monkeypatch.setenv(
+            "HYBA_POOL_BRAIINS_URL", "stratum2+tcp://stratum.braiins.com:3333"
+        )
         monkeypatch.setenv("HYBA_POOL_BRAIINS_USERNAME", "worker")
         monkeypatch.setenv("HYBA_POOL_BRAIINS_PASSWORD", "token")
 
@@ -109,7 +113,9 @@ class TestSupportedRotationProfiles:
 
     def test_all_supported_pools_in_default_specs(self) -> None:
         for pool_id in self.SUPPORTED:
-            assert pool_id in DEFAULT_POOL_SPECS, f"{pool_id} missing from DEFAULT_POOL_SPECS"
+            assert (
+                pool_id in DEFAULT_POOL_SPECS
+            ), f"{pool_id} missing from DEFAULT_POOL_SPECS"
 
     def test_each_pool_has_minimal_viable_defaults(self) -> None:
         for pool_id in self.SUPPORTED:
@@ -228,7 +234,10 @@ class TestCredentialRedaction:
         config = default_pool_config("braiins")
         public = config.to_dict(include_secret_fields=False)
         assert "token" not in str(public), "inline credential leaked in public dict"
-        assert "worker" not in str(public) or public.get("resolved_username") == "<configured>"
+        assert (
+            "worker" not in str(public)
+            or public.get("resolved_username") == "<configured>"
+        )
 
     def test_url_with_creds_stripped_in_status(self) -> None:
         """Simulate the get_status() contract — URL must be clean."""
@@ -557,7 +566,9 @@ class TestProductionStateWithNullJob:
         client.active_job_id = "stale-job-1"
         status = client.get_status()
         assert status["current_job"] is not None
-        assert status["production_state"] == "blocked", "stale job must block ready status"
+        assert (
+            status["production_state"] == "blocked"
+        ), "stale job must block ready status"
 
 
 # ---------------------------------------------------------------------------

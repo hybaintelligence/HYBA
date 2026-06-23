@@ -22,7 +22,9 @@ class IntelligenceHeartbeat:
         self.is_active = False
         self.history: List[Dict[str, Any]] = []
 
-    async def pulse(self, interval_seconds: float = 60.0, max_pulses: int | None = None) -> None:
+    async def pulse(
+        self, interval_seconds: float = 60.0, max_pulses: int | None = None
+    ) -> None:
         """Run governed closure cycles asynchronously without blocking callers."""
 
         if interval_seconds < 0:
@@ -34,7 +36,9 @@ class IntelligenceHeartbeat:
             self.history.append(result)
             # Save reflexive cycle report to disk
             save_autonomy_report(result, report_type="reflexive_cycle")
-            LOGGER.info("Intelligence heartbeat pulse", extra={"heartbeat": result["status"]})
+            LOGGER.info(
+                "Intelligence heartbeat pulse", extra={"heartbeat": result["status"]}
+            )
             pulses += 1
             if max_pulses is not None and pulses >= max_pulses:
                 self.stop()

@@ -172,11 +172,11 @@ class SearchPhase(Enum):
 class SearchMode(Enum):
     """Operating mode for the autonomous search."""
 
-    STRUCTURED = "structured"                    # Evidence-weighted structured ordering
-    GROVER = "grover"                            # Grover-inspired amplification
-    QUANTUM_WALK = "quantum_walk"                # Quantum walk on D/I graph
-    HYBRID = "hybrid"                            # All mechanisms combined
-    EMERGENCY = "emergency"                      # Fallback uniform random
+    STRUCTURED = "structured"  # Evidence-weighted structured ordering
+    GROVER = "grover"  # Grover-inspired amplification
+    QUANTUM_WALK = "quantum_walk"  # Quantum walk on D/I graph
+    HYBRID = "hybrid"  # All mechanisms combined
+    EMERGENCY = "emergency"  # Fallback uniform random
 
 
 @dataclass(frozen=True)
@@ -304,10 +304,13 @@ class GroverAmplifier:
         )
 
         # Build marked indices from structure-weighted scoring
-        evidence_scores = np.array([
-            self._candidate_evidence_weight(nonce, seed_int, structure_score)
-            for nonce in candidates
-        ], dtype=np.float64)
+        evidence_scores = np.array(
+            [
+                self._candidate_evidence_weight(nonce, seed_int, structure_score)
+                for nonce in candidates
+            ],
+            dtype=np.float64,
+        )
         evidence_scores = evidence_scores / (evidence_scores.sum() + EPSILON)
 
         # Top-k candidates by evidence score become "marked"
@@ -372,7 +375,8 @@ class GroverAmplifier:
 
         # Target state: candidate closest to target hash
         target_state = min(
-            range(n), key=lambda i: abs(candidates[i] - (target_hash % (MAX_UINT32_NONCE + 1)))
+            range(n),
+            key=lambda i: abs(candidates[i] - (target_hash % (MAX_UINT32_NONCE + 1))),
         )
 
         # Run quantum walk
@@ -384,9 +388,7 @@ class GroverAmplifier:
             if 0 <= state_idx < n:
                 visit_counts[state_idx] = visit_counts.get(state_idx, 0) + 1
 
-        ordered = sorted(
-            range(n), key=lambda i: (-visit_counts.get(i, 0), i)
-        )
+        ordered = sorted(range(n), key=lambda i: (-visit_counts.get(i, 0), i))
         walk_ordered = [candidates[i] for i in ordered]
         return walk_ordered, len(result.visited_states)
 
@@ -458,7 +460,7 @@ class StructurePrior:
         for i, nonce in enumerate(nonces):
             phase = ((nonce ^ seed_int) % 1_000_003) / 1_000_003.0
             # Golden-angle sector alignment
-            sector = ((nonce * PHI) % 1.0)
+            sector = (nonce * PHI) % 1.0
             golden_alignment = 1.0 - abs(sector - 0.5) * 2.0
 
             # Sunflower spacing: gaps near phi-resonant spacing score higher
@@ -514,9 +516,7 @@ class MemoryCompressor:
         result = self.engine.compress(lane_data)
         return result.folded, result
 
-    def reconstruct_surface(
-        self, result: PhiMemoryFoldResult
-    ) -> np.ndarray:
+    def reconstruct_surface(self, result: PhiMemoryFoldResult) -> np.ndarray:
         """Reconstruct the original surface from compressed state + kernels.
 
         Args:
@@ -545,7 +545,7 @@ class MemoryCompressor:
     @property
     def compression_factor(self) -> float:
         """Theoretical compression factor for the configured depth."""
-        return float(PHI ** self.fold_depth)  # ≈ PHI^2 ≈ 2.62, PHI^3 ≈ 4.24
+        return float(PHI**self.fold_depth)  # ≈ PHI^2 ≈ 2.62, PHI^3 ≈ 4.24
 
 
 class PhiScaler:
@@ -663,10 +663,7 @@ class ManifoldRouter:
 
     def adjacency_map(self) -> Dict[int, List[int]]:
         """Return the adjacency as {node: [neighbor, ...]}."""
-        return {
-            node_id: self.neighbors(node_id)
-            for node_id in range(NUM_NODES)
-        }
+        return {node_id: self.neighbors(node_id) for node_id in range(NUM_NODES)}
 
     def adjacency_data_map(self) -> Dict[int, Dict[str, List[int]]]:
         """Return the raw adjacency data map."""
@@ -689,10 +686,7 @@ class ManifoldRouter:
         failed_set = {int(node) for node in failed_nodes}
         failed_set.add(failed_node)
 
-        direct = [
-            n for n in self.neighbors(failed_node)
-            if n not in failed_set
-        ]
+        direct = [n for n in self.neighbors(failed_node) if n not in failed_set]
         if direct:
             return direct
 
@@ -769,7 +763,8 @@ class _HealingEngineAdapter:
     def heartbeat_and_heal(self) -> Optional[RebalanceEvent]:
         """Lightweight heartbeat that checks for critical nodes."""
         critical = [
-            nid for nid, tel in self._telemetry.items()
+            nid
+            for nid, tel in self._telemetry.items()
             if tel.phi_eff < 0.15 or tel.chi_sync < 0.15
         ]
         if not critical:
@@ -777,11 +772,13 @@ class _HealingEngineAdapter:
 
         # Log failure events
         for nid in critical:
-            self._failure_log.append({
-                "timestamp": time.time(),
-                "node_id": nid,
-                "reason": "decoherence_detected",
-            })
+            self._failure_log.append(
+                {
+                    "timestamp": time.time(),
+                    "node_id": nid,
+                    "reason": "decoherence_detected",
+                }
+            )
 
         return RebalanceEvent(
             timestamp=time.time(),
@@ -792,7 +789,9 @@ class _HealingEngineAdapter:
             rho_trace=1.0,
         )
 
-    def thermal_tick(self) -> Tuple[Optional[ThermalGovernanceEvent], Optional[RebalanceEvent]]:
+    def thermal_tick(
+        self,
+    ) -> Tuple[Optional[ThermalGovernanceEvent], Optional[RebalanceEvent]]:
         if len(self._telemetry) < NUM_NODES:
             raise ValueError("Not all telemetry available")
         return None, None
@@ -839,7 +838,7 @@ class HealingCoordinator:
             thermal_entropy=thermal,
             hash_rate=hash_rate,
         )
-        if hasattr(self.engine, 'ingest_telemetry'):
+        if hasattr(self.engine, "ingest_telemetry"):
             # _HealingEngineAdapter
             self.engine.ingest_telemetry(telemetry)
         else:
@@ -851,7 +850,7 @@ class HealingCoordinator:
 
         This should be called periodically during the search lifecycle.
         """
-        if hasattr(self.engine, 'heartbeat_and_heal'):
+        if hasattr(self.engine, "heartbeat_and_heal"):
             event = self.engine.heartbeat_and_heal()
         else:
             event = None
@@ -883,7 +882,7 @@ class HealingCoordinator:
                     hash_rate=tel.hash_rate,
                 )
         try:
-            if hasattr(self.engine, 'thermal_tick'):
+            if hasattr(self.engine, "thermal_tick"):
                 t_event, r_event = self.engine.thermal_tick()
             else:
                 t_event, r_event = None, None
@@ -955,9 +954,15 @@ class AutonomousSearchSystem:
             try:
                 self.autonomics = PulviniAutonomicsEngine()
             except (ValueError, AssertionError):
-                self.autonomics = None  # Compound topology mismatch; use manifold-based healing
+                self.autonomics = (
+                    None  # Compound topology mismatch; use manifold-based healing
+                )
 
-            engine = self.autonomics if self.autonomics is not None else _HealingEngineAdapter(self.manifold)
+            engine = (
+                self.autonomics
+                if self.autonomics is not None
+                else _HealingEngineAdapter(self.manifold)
+            )
             self.healer = HealingCoordinator(engine)
         else:
             self.autonomics = None  # type: ignore
@@ -971,14 +976,14 @@ class AutonomousSearchSystem:
 
     def build_seed(self, chain_context: Mapping[str, Any]) -> int:
         """Build a deterministic seed from chain context and structure evidence.
-        
+
         The seed MUST be derived from:
         1. Block height (changes every block)
         2. Target difficulty (changes with difficulty adjustment)
         3. Structure score (empirical φ-resonance evidence)
         4. Current timestamp (for additional entropy)
         5. Packet hash (evidence packet fingerprint)
-        
+
         This ensures the AI autonomous search is seeded with REAL blockchain
         state and empirical structure evidence, not arbitrary values.
         """
@@ -1049,8 +1054,8 @@ class AutonomousSearchSystem:
             UnifiedSearchResult with outcome and metrics.
         """
         start_time = time.perf_counter()
-        seed_int = self._seed_int if self._seed_int else (
-            self.build_seed(chain_context or {})
+        seed_int = (
+            self._seed_int if self._seed_int else (self.build_seed(chain_context or {}))
         )
 
         if hash_verifier is None:
@@ -1082,7 +1087,7 @@ class AutonomousSearchSystem:
         if mode in (SearchMode.HYBRID,):
             # Compress the candidate list's lane-score vector
             lane_scores = np.zeros(NUM_NODES, dtype=np.float64)
-            for nonce in candidate_list[:NUM_NODES * 4]:
+            for nonce in candidate_list[: NUM_NODES * 4]:
                 node_id = self.manifold.node_for_nonce(nonce)
                 if node_id < NUM_NODES:
                     lane_scores[node_id] += 1.0
@@ -1091,7 +1096,9 @@ class AutonomousSearchSystem:
             if total_scores > EPSILON:
                 lane_scores = lane_scores / total_scores
 
-            folded, fold_result = self.memory_compressor.compress_score_vector(lane_scores)
+            folded, fold_result = self.memory_compressor.compress_score_vector(
+                lane_scores
+            )
             compression_ratio = fold_result.working_set_compression_ratio
 
             # Use compressed working set to focus on high-density lanes
@@ -1104,7 +1111,10 @@ class AutonomousSearchSystem:
             seen: Set[int] = set()
             for node_id in lane_priority:
                 for nonce in candidate_list:
-                    if self.manifold.node_for_nonce(nonce) == node_id and nonce not in seen:
+                    if (
+                        self.manifold.node_for_nonce(nonce) == node_id
+                        and nonce not in seen
+                    ):
                         lane_ordered.append(nonce)
                         seen.add(nonce)
             # Append any remaining candidates
@@ -1147,29 +1157,27 @@ class AutonomousSearchSystem:
         t0 = time.perf_counter()
         if mode is SearchMode.HYBRID:
             harmony_scores = self.phi_scaler.score_candidates_by_phi_harmony(
-                candidate_list[:min(len(candidate_list), 5000)], seed_int
+                candidate_list[: min(len(candidate_list), 5000)], seed_int
             )
             if len(harmony_scores) > 0:
                 # Partial re-rank: only the first block affected
-                first_block = list(zip(
-                    candidate_list[:len(harmony_scores)],
-                    harmony_scores
-                ))
+                first_block = list(
+                    zip(candidate_list[: len(harmony_scores)], harmony_scores)
+                )
                 first_block.sort(key=lambda x: (-x[1], x[0]))
-                tail = candidate_list[len(harmony_scores):]
+                tail = candidate_list[len(harmony_scores) :]
                 candidate_list = [fb[0] for fb in first_block] + tail
         elif mode is SearchMode.STRUCTURED:
             # Even in structured-only, apply gentle phi harmony boost
             harmony_scores = self.phi_scaler.score_candidates_by_phi_harmony(
-                candidate_list[:min(len(candidate_list), 3000)], seed_int
+                candidate_list[: min(len(candidate_list), 3000)], seed_int
             )
             if len(harmony_scores) > 0:
-                first_block = list(zip(
-                    candidate_list[:len(harmony_scores)],
-                    harmony_scores
-                ))
+                first_block = list(
+                    zip(candidate_list[: len(harmony_scores)], harmony_scores)
+                )
                 first_block.sort(key=lambda x: (-x[1], x[0]))
-                tail = candidate_list[len(harmony_scores):]
+                tail = candidate_list[len(harmony_scores) :]
                 candidate_list = [fb[0] for fb in first_block] + tail
         phases["phi_scaling_ms"] = (time.perf_counter() - t0) * 1000.0
 
@@ -1197,15 +1205,18 @@ class AutonomousSearchSystem:
         if self.autonomic_enabled and self.healer is not None and attempts > 0:
             # Feed telemetry: the node for the tested nonces
             tested_nodes: Dict[int, int] = {}
-            for nonce in candidate_list[:max(1, attempts)]:
+            for nonce in candidate_list[: max(1, attempts)]:
                 node_id = self.manifold.node_for_nonce(nonce)
                 tested_nodes[node_id] = tested_nodes.get(node_id, 0) + 1
 
             for node_id, count in tested_nodes.items():
                 # Compute effective metrics
-                phi_eff = 1.0 if found_nonce is not None and (
-                    self.manifold.node_for_nonce(found_nonce) == node_id
-                ) else 0.3
+                phi_eff = (
+                    1.0
+                    if found_nonce is not None
+                    and (self.manifold.node_for_nonce(found_nonce) == node_id)
+                    else 0.3
+                )
                 chi_sync = 0.8 if count > 0 else 0.2
                 thermal = float(count) / max(1, max(tested_nodes.values()))
                 hash_rate = float(count) / max(1.0, execute_ms / 1000.0)
@@ -1241,11 +1252,17 @@ class AutonomousSearchSystem:
             grover_iterations_used=grover_iterations,
             quantum_walk_steps=quantum_walk_steps,
             structure_score=self.structure_prior.structure_score,
-            phi_alignment=float(np.mean(
-                self.phi_scaler.score_candidates_by_phi_harmony(
-                    candidate_list[:min(100, len(candidate_list))], seed_int
+            phi_alignment=(
+                float(
+                    np.mean(
+                        self.phi_scaler.score_candidates_by_phi_harmony(
+                            candidate_list[: min(100, len(candidate_list))], seed_int
+                        )
+                    )
                 )
-            )) if len(candidate_list) > 0 else 0.0,
+                if len(candidate_list) > 0
+                else 0.0
+            ),
             compression_ratio=compression_ratio,
             healing_events=healing_events,
             phase_metrics=phases,
@@ -1296,8 +1313,8 @@ class AutonomousSearchSystem:
         baseline_elapsed: List[float] = []
         baseline_found: List[bool] = []
 
-        seed_int = self._seed_int if self._seed_int else (
-            self.build_seed(chain_context or {})
+        seed_int = (
+            self._seed_int if self._seed_int else (self.build_seed(chain_context or {}))
         )
 
         if hash_verifier is None:
@@ -1388,8 +1405,10 @@ class AutonomousSearchSystem:
         print(f"  Baseline (Uniform):     {speedup_ref:>10,.0f} attempts (mean)")
         for mode_name, br in sorted(results.items()):
             label = f"  {mode_name.upper():20s}"
-            print(f"  {label}  {br.speedup_vs_uniform:.4f}x  "
-                  f"({br.mean_attempts:>8,.0f} attempts)")
+            print(
+                f"  {label}  {br.speedup_vs_uniform:.4f}x  "
+                f"({br.mean_attempts:>8,.0f} attempts)"
+            )
 
         return results
 
@@ -1466,14 +1485,14 @@ class AutonomousSearchSystem:
 
         # Golden-ratio resonance analysis
         phi_data = {"phase_alignment": list(nonce_arr[:100] / float(MAX_UINT32_NONCE))}
-        resonance = self.phi_scaler.detect_phi_resonance({"nonce_series": nonce_arr[:100]})
+        resonance = self.phi_scaler.detect_phi_resonance(
+            {"nonce_series": nonce_arr[:100]}
+        )
 
         # Sector coverage
         sectors = np.zeros(12, dtype=np.float64)  # 12 icosahedron faces
         for nonce in nonces[:1000]:
-            sector_key = int(
-                ((nonce * PHI) % 1.0) * 12
-            ) % 12
+            sector_key = int(((nonce * PHI) % 1.0) * 12) % 12
             sectors[sector_key] += 1.0
 
         coverage_pct = float(np.sum(sectors > 0)) / 12.0 * 100.0
@@ -1528,6 +1547,7 @@ def create_autonomous_search_system(
 
     if empirical_report_path is not None:
         from .blockchain_structure_intelligence import load_empirical_report
+
         raw_report = load_empirical_report(str(empirical_report_path))
         evidence = extract_empirical_structure_evidence(raw_report)
 

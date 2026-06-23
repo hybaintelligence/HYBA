@@ -15,7 +15,8 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def _load_claim_tier_guard():
     spec = importlib.util.spec_from_file_location(
-        "check_validation_claim_tiers", ROOT / "scripts" / "check_validation_claim_tiers.py"
+        "check_validation_claim_tiers",
+        ROOT / "scripts" / "check_validation_claim_tiers.py",
     )
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
@@ -47,7 +48,9 @@ def test_mining_success_manifest_passes_gate_replay_and_falsification(tmp_path) 
     attestation = claim["reproducibility_attestation"]
 
     guard = _load_claim_tier_guard()
-    guard._validate_reproducibility_attestation(tmp_path / "manifest.json", claim["id"], claim)
+    guard._validate_reproducibility_attestation(
+        tmp_path / "manifest.json", claim["id"], claim
+    )
 
     replay = execute_reproducibility_replay(attestation, cwd=tmp_path)
     assert replay.verified is True

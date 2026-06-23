@@ -26,7 +26,9 @@ MASS_GAP_TARGET = 3.0 - PHI  # 1.3819660112501051...
 
 
 def extract_verified_real(
-    complex_val: complex | np.complexfloating, tolerance: float = 1e-10, context: str = ""
+    complex_val: complex | np.complexfloating,
+    tolerance: float = 1e-10,
+    context: str = "",
 ) -> float:
     """Extract real part of a quantum axiom value, verifying imaginary part is noise.
 
@@ -119,7 +121,9 @@ def adaptive_phi_truncation(
 # ── PILLAR 3: PULVINI Irrational Basis Phi-Folding ──
 
 
-def pulvini_phi_fold(tensor_data: np.ndarray) -> Tuple[np.ndarray, np.ndarray, Tuple[int, ...]]:
+def pulvini_phi_fold(
+    tensor_data: np.ndarray,
+) -> Tuple[np.ndarray, np.ndarray, Tuple[int, ...]]:
     """Compress tensor working set using Golden Ratio irrational basis folding.
 
     Maps high-dimensional tensor indices onto a 1D irrational circle using

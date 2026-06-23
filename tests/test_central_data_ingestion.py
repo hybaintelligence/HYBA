@@ -106,7 +106,9 @@ def test_central_ingestion_handles_nested_scientific_and_text_data():
     assert envelope.normalized_shape is not None
     assert envelope.normalized_shape[0] == 3
     assert any(column.startswith("free_text__") for column in envelope.data.columns)
-    assert any("High-cardinality text column" in warning for warning in envelope.warnings)
+    assert any(
+        "High-cardinality text column" in warning for warning in envelope.warnings
+    )
     assert envelope.to_service_payload()["schema"]["columns"]["vector"] == "array"
 
 

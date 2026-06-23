@@ -30,23 +30,23 @@ from demo_data.demo_execution import (
 
 __all__ = [
     # Data acquisition
-    'acquire_jpmorgan_data',
-    'acquire_fab_data_rabobank',
-    'acquire_aramco_seismic_data',
-    'acquire_difc_regulatory_data',
-    'acquire_all_demo_data',
+    "acquire_jpmorgan_data",
+    "acquire_fab_data_rabobank",
+    "acquire_aramco_seismic_data",
+    "acquire_difc_regulatory_data",
+    "acquire_all_demo_data",
     # POST-QUANTUM processing
-    'process_with_pulvini',
-    'allocate_with_phimalloc',
-    'process_with_salamander',
-    'process_with_post_quantum',
-    'demonstrate_post_quantum_advantages',
+    "process_with_pulvini",
+    "allocate_with_phimalloc",
+    "process_with_salamander",
+    "process_with_post_quantum",
+    "demonstrate_post_quantum_advantages",
     # Demo execution
-    'run_jpmorgan_demo',
-    'run_fab_demo',
-    'run_aramco_demo',
-    'run_difc_demo',
-    'run_all_demos',
+    "run_jpmorgan_demo",
+    "run_fab_demo",
+    "run_aramco_demo",
+    "run_difc_demo",
+    "run_all_demos",
 ]
 
-__version__ = '1.0.0'
+__version__ = "1.0.0"

@@ -222,14 +222,6 @@
     "health": {
       "0": 0.8973,
       "1": 0.8973,
-      "2": 0.8973,
-      "3": 0.8973,
-      "4": 0.8973,
-      "5": 0.8973,
-      "6": 0.8973,
-      "7": 0.8973,
-      "8": 0.8973,
-      "9": 0.8973,
       "10": 0.8973,
       "11": 0.8973,
       "12": 0.8973,
@@ -240,6 +232,7 @@
       "17": 0.8973,
       "18": 0.8973,
       "19": 0.8973,
+      "2": 0.8973,
       "20": 0.8973,
       "21": 0.8973,
       "22": 0.8973,
@@ -250,8 +243,15 @@
       "27": 0.8973,
       "28": 0.8973,
       "29": 0.8973,
+      "3": 0.8973,
       "30": 0.8973,
-      "31": 0.8973
+      "31": 0.8973,
+      "4": 0.8973,
+      "5": 0.8973,
+      "6": 0.8973,
+      "7": 0.8973,
+      "8": 0.8973,
+      "9": 0.8973
     },
     "optimizations": [],
     "rebalances": [
@@ -593,390 +593,6 @@
           "orbit_id": 0,
           "orbit_size": 20,
           "phase": 0.3926990816987242
-        }
-      },
-      "2": {
-        "compressed_coordinate": {
-          "active_segments": [
-            {
-              "end": 402653183,
-              "lane_id": 2,
-              "start": 268435456
-            },
-            {
-              "end": 3087007743,
-              "lane_id": 22,
-              "start": 2952790016
-            }
-          ],
-          "coordinate_id": 2,
-          "coverage_size": 268435456,
-          "folded_lane_value": 9.639320225002104
-        },
-        "extranonce2": "dce06a79",
-        "healing_ranges": [],
-        "job_id": "phase-transition-live-cut",
-        "neighbors": [
-          1,
-          3,
-          9,
-          20,
-          23,
-          24
-        ],
-        "node_id": 2,
-        "nonce_end": 402653183,
-        "nonce_start": 268435456,
-        "role": "worker",
-        "tensor_coordinate": {
-          "amplitude": 0.028175416344814585,
-          "cardinality": 134217728,
-          "legacy_range": [
-            268435456,
-            402653183
-          ],
-          "node_id": 2,
-          "nonce_residue": 2,
-          "nonce_stride": 32,
-          "orbit_id": 0,
-          "orbit_size": 20,
-          "phase": 0.5890486225480862
-        }
-      },
-      "3": {
-        "compressed_coordinate": {
-          "active_segments": [
-            {
-              "end": 536870911,
-              "lane_id": 3,
-              "start": 402653184
-            },
-            {
-              "end": 3221225471,
-              "lane_id": 23,
-              "start": 3087007744
-            }
-          ],
-          "coordinate_id": 3,
-          "coverage_size": 268435456,
-          "folded_lane_value": 10.639320225002104
-        },
-        "extranonce2": "2628d3bf",
-        "healing_ranges": [],
-        "job_id": "phase-transition-live-cut",
-        "neighbors": [
-          2,
-          4,
-          11,
-          20,
-          24,
-          25
-        ],
-        "node_id": 3,
-        "nonce_end": 536870911,
-        "nonce_start": 402653184,
-        "role": "worker",
-        "tensor_coordinate": {
-          "amplitude": 0.028175416344814585,
-          "cardinality": 134217728,
-          "legacy_range": [
-            402653184,
-            536870911
-          ],
-          "node_id": 3,
-          "nonce_residue": 3,
-          "nonce_stride": 32,
-          "orbit_id": 0,
-          "orbit_size": 20,
-          "phase": 0.7853981633974483
-        }
-      },
-      "4": {
-        "compressed_coordinate": {
-          "active_segments": [
-            {
-              "end": 671088639,
-              "lane_id": 4,
-              "start": 536870912
-            },
-            {
-              "end": 3355443199,
-              "lane_id": 24,
-              "start": 3221225472
-            }
-          ],
-          "coordinate_id": 4,
-          "coverage_size": 268435456,
-          "folded_lane_value": 11.639320225002104
-        },
-        "extranonce2": "ba87eff5",
-        "healing_ranges": [],
-        "job_id": "phase-transition-live-cut",
-        "neighbors": [
-          3,
-          0,
-          13,
-          20,
-          25,
-          21
-        ],
-        "node_id": 4,
-        "nonce_end": 671088639,
-        "nonce_start": 536870912,
-        "role": "worker",
-        "tensor_coordinate": {
-          "amplitude": 0.028175416344814585,
-          "cardinality": 134217728,
-          "legacy_range": [
-            536870912,
-            671088639
-          ],
-          "node_id": 4,
-          "nonce_residue": 4,
-          "nonce_stride": 32,
-          "orbit_id": 0,
-          "orbit_size": 20,
-          "phase": 0.9817477042468103
-        }
-      },
-      "5": {
-        "compressed_coordinate": {
-          "active_segments": [
-            {
-              "end": 805306367,
-              "lane_id": 5,
-              "start": 671088640
-            },
-            {
-              "end": 3489660927,
-              "lane_id": 25,
-              "start": 3355443200
-            }
-          ],
-          "coordinate_id": 5,
-          "coverage_size": 268435456,
-          "folded_lane_value": 12.639320225002104
-        },
-        "extranonce2": "86b81823",
-        "healing_ranges": [],
-        "job_id": "phase-transition-live-cut",
-        "neighbors": [
-          0,
-          6,
-          14,
-          21,
-          22,
-          26
-        ],
-        "node_id": 5,
-        "nonce_end": 805306367,
-        "nonce_start": 671088640,
-        "role": "worker",
-        "tensor_coordinate": {
-          "amplitude": 0.028175416344814585,
-          "cardinality": 134217728,
-          "legacy_range": [
-            671088640,
-            805306367
-          ],
-          "node_id": 5,
-          "nonce_residue": 5,
-          "nonce_stride": 32,
-          "orbit_id": 0,
-          "orbit_size": 20,
-          "phase": 1.1780972450961724
-        }
-      },
-      "6": {
-        "compressed_coordinate": {
-          "active_segments": [
-            {
-              "end": 939524095,
-              "lane_id": 6,
-              "start": 805306368
-            },
-            {
-              "end": 3623878655,
-              "lane_id": 26,
-              "start": 3489660928
-            }
-          ],
-          "coordinate_id": 6,
-          "coverage_size": 268435456,
-          "folded_lane_value": 13.639320225002102
-        },
-        "extranonce2": "86ed7561",
-        "healing_ranges": [],
-        "job_id": "phase-transition-live-cut",
-        "neighbors": [
-          5,
-          7,
-          15,
-          22,
-          26,
-          27
-        ],
-        "node_id": 6,
-        "nonce_end": 939524095,
-        "nonce_start": 805306368,
-        "role": "worker",
-        "tensor_coordinate": {
-          "amplitude": 0.028175416344814585,
-          "cardinality": 134217728,
-          "legacy_range": [
-            805306368,
-            939524095
-          ],
-          "node_id": 6,
-          "nonce_residue": 6,
-          "nonce_stride": 32,
-          "orbit_id": 0,
-          "orbit_size": 20,
-          "phase": 1.3744467859455345
-        }
-      },
-      "7": {
-        "compressed_coordinate": {
-          "active_segments": [
-            {
-              "end": 1073741823,
-              "lane_id": 7,
-              "start": 939524096
-            },
-            {
-              "end": 3758096383,
-              "lane_id": 27,
-              "start": 3623878656
-            }
-          ],
-          "coordinate_id": 7,
-          "coverage_size": 268435456,
-          "folded_lane_value": 14.639320225002102
-        },
-        "extranonce2": "52b2ca70",
-        "healing_ranges": [],
-        "job_id": "phase-transition-live-cut",
-        "neighbors": [
-          1,
-          6,
-          8,
-          22,
-          23,
-          27
-        ],
-        "node_id": 7,
-        "nonce_end": 1073741823,
-        "nonce_start": 939524096,
-        "role": "worker",
-        "tensor_coordinate": {
-          "amplitude": 0.02817541634481458,
-          "cardinality": 134217728,
-          "legacy_range": [
-            939524096,
-            1073741823
-          ],
-          "node_id": 7,
-          "nonce_residue": 7,
-          "nonce_stride": 32,
-          "orbit_id": 0,
-          "orbit_size": 20,
-          "phase": 1.5707963267948966
-        }
-      },
-      "8": {
-        "compressed_coordinate": {
-          "active_segments": [
-            {
-              "end": 1207959551,
-              "lane_id": 8,
-              "start": 1073741824
-            },
-            {
-              "end": 3892314111,
-              "lane_id": 28,
-              "start": 3758096384
-            }
-          ],
-          "coordinate_id": 8,
-          "coverage_size": 268435456,
-          "folded_lane_value": 15.639320225002102
-        },
-        "extranonce2": "47c441c3",
-        "healing_ranges": [],
-        "job_id": "phase-transition-live-cut",
-        "neighbors": [
-          7,
-          9,
-          16,
-          23,
-          27,
-          28
-        ],
-        "node_id": 8,
-        "nonce_end": 1207959551,
-        "nonce_start": 1073741824,
-        "role": "worker",
-        "tensor_coordinate": {
-          "amplitude": 0.028175416344814585,
-          "cardinality": 134217728,
-          "legacy_range": [
-            1073741824,
-            1207959551
-          ],
-          "node_id": 8,
-          "nonce_residue": 8,
-          "nonce_stride": 32,
-          "orbit_id": 0,
-          "orbit_size": 20,
-          "phase": 1.7671458676442586
-        }
-      },
-      "9": {
-        "compressed_coordinate": {
-          "active_segments": [
-            {
-              "end": 1342177279,
-              "lane_id": 9,
-              "start": 1207959552
-            },
-            {
-              "end": 4026531839,
-              "lane_id": 29,
-              "start": 3892314112
-            }
-          ],
-          "coordinate_id": 9,
-          "coverage_size": 268435456,
-          "folded_lane_value": 16.639320225002102
-        },
-        "extranonce2": "86323980",
-        "healing_ranges": [],
-        "job_id": "phase-transition-live-cut",
-        "neighbors": [
-          2,
-          8,
-          10,
-          23,
-          24,
-          28
-        ],
-        "node_id": 9,
-        "nonce_end": 1342177279,
-        "nonce_start": 1207959552,
-        "role": "worker",
-        "tensor_coordinate": {
-          "amplitude": 0.02817541634481458,
-          "cardinality": 134217728,
-          "legacy_range": [
-            1207959552,
-            1342177279
-          ],
-          "node_id": 9,
-          "nonce_residue": 9,
-          "nonce_stride": 32,
-          "orbit_id": 0,
-          "orbit_size": 20,
-          "phase": 1.9634954084936207
         }
       },
       "10": {
@@ -1417,6 +1033,54 @@
           "orbit_id": 0,
           "orbit_size": 20,
           "phase": -2.356194490192345
+        }
+      },
+      "2": {
+        "compressed_coordinate": {
+          "active_segments": [
+            {
+              "end": 402653183,
+              "lane_id": 2,
+              "start": 268435456
+            },
+            {
+              "end": 3087007743,
+              "lane_id": 22,
+              "start": 2952790016
+            }
+          ],
+          "coordinate_id": 2,
+          "coverage_size": 268435456,
+          "folded_lane_value": 9.639320225002104
+        },
+        "extranonce2": "dce06a79",
+        "healing_ranges": [],
+        "job_id": "phase-transition-live-cut",
+        "neighbors": [
+          1,
+          3,
+          9,
+          20,
+          23,
+          24
+        ],
+        "node_id": 2,
+        "nonce_end": 402653183,
+        "nonce_start": 268435456,
+        "role": "worker",
+        "tensor_coordinate": {
+          "amplitude": 0.028175416344814585,
+          "cardinality": 134217728,
+          "legacy_range": [
+            268435456,
+            402653183
+          ],
+          "node_id": 2,
+          "nonce_residue": 2,
+          "nonce_stride": 32,
+          "orbit_id": 0,
+          "orbit_size": 20,
+          "phase": 0.5890486225480862
         }
       },
       "20": {
@@ -2088,6 +1752,54 @@
           "phase": -0.3926990816987248
         }
       },
+      "3": {
+        "compressed_coordinate": {
+          "active_segments": [
+            {
+              "end": 536870911,
+              "lane_id": 3,
+              "start": 402653184
+            },
+            {
+              "end": 3221225471,
+              "lane_id": 23,
+              "start": 3087007744
+            }
+          ],
+          "coordinate_id": 3,
+          "coverage_size": 268435456,
+          "folded_lane_value": 10.639320225002104
+        },
+        "extranonce2": "2628d3bf",
+        "healing_ranges": [],
+        "job_id": "phase-transition-live-cut",
+        "neighbors": [
+          2,
+          4,
+          11,
+          20,
+          24,
+          25
+        ],
+        "node_id": 3,
+        "nonce_end": 536870911,
+        "nonce_start": 402653184,
+        "role": "worker",
+        "tensor_coordinate": {
+          "amplitude": 0.028175416344814585,
+          "cardinality": 134217728,
+          "legacy_range": [
+            402653184,
+            536870911
+          ],
+          "node_id": 3,
+          "nonce_residue": 3,
+          "nonce_stride": 32,
+          "orbit_id": 0,
+          "orbit_size": 20,
+          "phase": 0.7853981633974483
+        }
+      },
       "30": {
         "compressed_coordinate": {
           "active_segments": [
@@ -2190,6 +1902,294 @@
           "orbit_id": 1,
           "orbit_size": 12,
           "phase": -2.4492935982947064e-16
+        }
+      },
+      "4": {
+        "compressed_coordinate": {
+          "active_segments": [
+            {
+              "end": 671088639,
+              "lane_id": 4,
+              "start": 536870912
+            },
+            {
+              "end": 3355443199,
+              "lane_id": 24,
+              "start": 3221225472
+            }
+          ],
+          "coordinate_id": 4,
+          "coverage_size": 268435456,
+          "folded_lane_value": 11.639320225002104
+        },
+        "extranonce2": "ba87eff5",
+        "healing_ranges": [],
+        "job_id": "phase-transition-live-cut",
+        "neighbors": [
+          3,
+          0,
+          13,
+          20,
+          25,
+          21
+        ],
+        "node_id": 4,
+        "nonce_end": 671088639,
+        "nonce_start": 536870912,
+        "role": "worker",
+        "tensor_coordinate": {
+          "amplitude": 0.028175416344814585,
+          "cardinality": 134217728,
+          "legacy_range": [
+            536870912,
+            671088639
+          ],
+          "node_id": 4,
+          "nonce_residue": 4,
+          "nonce_stride": 32,
+          "orbit_id": 0,
+          "orbit_size": 20,
+          "phase": 0.9817477042468103
+        }
+      },
+      "5": {
+        "compressed_coordinate": {
+          "active_segments": [
+            {
+              "end": 805306367,
+              "lane_id": 5,
+              "start": 671088640
+            },
+            {
+              "end": 3489660927,
+              "lane_id": 25,
+              "start": 3355443200
+            }
+          ],
+          "coordinate_id": 5,
+          "coverage_size": 268435456,
+          "folded_lane_value": 12.639320225002104
+        },
+        "extranonce2": "86b81823",
+        "healing_ranges": [],
+        "job_id": "phase-transition-live-cut",
+        "neighbors": [
+          0,
+          6,
+          14,
+          21,
+          22,
+          26
+        ],
+        "node_id": 5,
+        "nonce_end": 805306367,
+        "nonce_start": 671088640,
+        "role": "worker",
+        "tensor_coordinate": {
+          "amplitude": 0.028175416344814585,
+          "cardinality": 134217728,
+          "legacy_range": [
+            671088640,
+            805306367
+          ],
+          "node_id": 5,
+          "nonce_residue": 5,
+          "nonce_stride": 32,
+          "orbit_id": 0,
+          "orbit_size": 20,
+          "phase": 1.1780972450961724
+        }
+      },
+      "6": {
+        "compressed_coordinate": {
+          "active_segments": [
+            {
+              "end": 939524095,
+              "lane_id": 6,
+              "start": 805306368
+            },
+            {
+              "end": 3623878655,
+              "lane_id": 26,
+              "start": 3489660928
+            }
+          ],
+          "coordinate_id": 6,
+          "coverage_size": 268435456,
+          "folded_lane_value": 13.639320225002102
+        },
+        "extranonce2": "86ed7561",
+        "healing_ranges": [],
+        "job_id": "phase-transition-live-cut",
+        "neighbors": [
+          5,
+          7,
+          15,
+          22,
+          26,
+          27
+        ],
+        "node_id": 6,
+        "nonce_end": 939524095,
+        "nonce_start": 805306368,
+        "role": "worker",
+        "tensor_coordinate": {
+          "amplitude": 0.028175416344814585,
+          "cardinality": 134217728,
+          "legacy_range": [
+            805306368,
+            939524095
+          ],
+          "node_id": 6,
+          "nonce_residue": 6,
+          "nonce_stride": 32,
+          "orbit_id": 0,
+          "orbit_size": 20,
+          "phase": 1.3744467859455345
+        }
+      },
+      "7": {
+        "compressed_coordinate": {
+          "active_segments": [
+            {
+              "end": 1073741823,
+              "lane_id": 7,
+              "start": 939524096
+            },
+            {
+              "end": 3758096383,
+              "lane_id": 27,
+              "start": 3623878656
+            }
+          ],
+          "coordinate_id": 7,
+          "coverage_size": 268435456,
+          "folded_lane_value": 14.639320225002102
+        },
+        "extranonce2": "52b2ca70",
+        "healing_ranges": [],
+        "job_id": "phase-transition-live-cut",
+        "neighbors": [
+          1,
+          6,
+          8,
+          22,
+          23,
+          27
+        ],
+        "node_id": 7,
+        "nonce_end": 1073741823,
+        "nonce_start": 939524096,
+        "role": "worker",
+        "tensor_coordinate": {
+          "amplitude": 0.02817541634481458,
+          "cardinality": 134217728,
+          "legacy_range": [
+            939524096,
+            1073741823
+          ],
+          "node_id": 7,
+          "nonce_residue": 7,
+          "nonce_stride": 32,
+          "orbit_id": 0,
+          "orbit_size": 20,
+          "phase": 1.5707963267948966
+        }
+      },
+      "8": {
+        "compressed_coordinate": {
+          "active_segments": [
+            {
+              "end": 1207959551,
+              "lane_id": 8,
+              "start": 1073741824
+            },
+            {
+              "end": 3892314111,
+              "lane_id": 28,
+              "start": 3758096384
+            }
+          ],
+          "coordinate_id": 8,
+          "coverage_size": 268435456,
+          "folded_lane_value": 15.639320225002102
+        },
+        "extranonce2": "47c441c3",
+        "healing_ranges": [],
+        "job_id": "phase-transition-live-cut",
+        "neighbors": [
+          7,
+          9,
+          16,
+          23,
+          27,
+          28
+        ],
+        "node_id": 8,
+        "nonce_end": 1207959551,
+        "nonce_start": 1073741824,
+        "role": "worker",
+        "tensor_coordinate": {
+          "amplitude": 0.028175416344814585,
+          "cardinality": 134217728,
+          "legacy_range": [
+            1073741824,
+            1207959551
+          ],
+          "node_id": 8,
+          "nonce_residue": 8,
+          "nonce_stride": 32,
+          "orbit_id": 0,
+          "orbit_size": 20,
+          "phase": 1.7671458676442586
+        }
+      },
+      "9": {
+        "compressed_coordinate": {
+          "active_segments": [
+            {
+              "end": 1342177279,
+              "lane_id": 9,
+              "start": 1207959552
+            },
+            {
+              "end": 4026531839,
+              "lane_id": 29,
+              "start": 3892314112
+            }
+          ],
+          "coordinate_id": 9,
+          "coverage_size": 268435456,
+          "folded_lane_value": 16.639320225002102
+        },
+        "extranonce2": "86323980",
+        "healing_ranges": [],
+        "job_id": "phase-transition-live-cut",
+        "neighbors": [
+          2,
+          8,
+          10,
+          23,
+          24,
+          28
+        ],
+        "node_id": 9,
+        "nonce_end": 1342177279,
+        "nonce_start": 1207959552,
+        "role": "worker",
+        "tensor_coordinate": {
+          "amplitude": 0.02817541634481458,
+          "cardinality": 134217728,
+          "legacy_range": [
+            1207959552,
+            1342177279
+          ],
+          "node_id": 9,
+          "nonce_residue": 9,
+          "nonce_stride": 32,
+          "orbit_id": 0,
+          "orbit_size": 20,
+          "phase": 1.9634954084936207
         }
       }
     },
@@ -3146,142 +3146,6 @@
         "shares_rejected": 0,
         "shares_submitted": 0
       },
-      "2": {
-        "active_job_id": "phase-transition-live-cut",
-        "best_diff": 0,
-        "best_neighbor": 9,
-        "current_nonce": 268435456,
-        "hashes": 0,
-        "last_update": 1781302816.0009787,
-        "node_id": 2,
-        "nonce_end": 402653183,
-        "nonce_start": 268435456,
-        "phase": "autonomic_repointed",
-        "role": "worker",
-        "shares_accepted": 0,
-        "shares_found": 0,
-        "shares_rejected": 0,
-        "shares_submitted": 0
-      },
-      "3": {
-        "active_job_id": "phase-transition-live-cut",
-        "best_diff": 0,
-        "best_neighbor": 11,
-        "current_nonce": 402653184,
-        "hashes": 0,
-        "last_update": 1781302813.0018368,
-        "node_id": 3,
-        "nonce_end": 536870911,
-        "nonce_start": 402653184,
-        "phase": "assigned",
-        "role": "worker",
-        "shares_accepted": 0,
-        "shares_found": 0,
-        "shares_rejected": 0,
-        "shares_submitted": 0
-      },
-      "4": {
-        "active_job_id": "phase-transition-live-cut",
-        "best_diff": 0,
-        "best_neighbor": 13,
-        "current_nonce": 536870912,
-        "hashes": 0,
-        "last_update": 1781302813.002834,
-        "node_id": 4,
-        "nonce_end": 671088639,
-        "nonce_start": 536870912,
-        "phase": "assigned",
-        "role": "worker",
-        "shares_accepted": 0,
-        "shares_found": 0,
-        "shares_rejected": 0,
-        "shares_submitted": 0
-      },
-      "5": {
-        "active_job_id": "phase-transition-live-cut",
-        "best_diff": 0,
-        "best_neighbor": 26,
-        "current_nonce": 671088640,
-        "hashes": 0,
-        "last_update": 1781302813.0044882,
-        "node_id": 5,
-        "nonce_end": 805306367,
-        "nonce_start": 671088640,
-        "phase": "assigned",
-        "role": "worker",
-        "shares_accepted": 0,
-        "shares_found": 0,
-        "shares_rejected": 0,
-        "shares_submitted": 0
-      },
-      "6": {
-        "active_job_id": "phase-transition-live-cut",
-        "best_diff": 0,
-        "best_neighbor": 15,
-        "current_nonce": 805306368,
-        "hashes": 0,
-        "last_update": 1781302813.0050235,
-        "node_id": 6,
-        "nonce_end": 939524095,
-        "nonce_start": 805306368,
-        "phase": "assigned",
-        "role": "worker",
-        "shares_accepted": 0,
-        "shares_found": 0,
-        "shares_rejected": 0,
-        "shares_submitted": 0
-      },
-      "7": {
-        "active_job_id": "phase-transition-live-cut",
-        "best_diff": 0,
-        "best_neighbor": 27,
-        "current_nonce": 939524096,
-        "hashes": 0,
-        "last_update": 1781302813.0055466,
-        "node_id": 7,
-        "nonce_end": 1073741823,
-        "nonce_start": 939524096,
-        "phase": "assigned",
-        "role": "worker",
-        "shares_accepted": 0,
-        "shares_found": 0,
-        "shares_rejected": 0,
-        "shares_submitted": 0
-      },
-      "8": {
-        "active_job_id": "phase-transition-live-cut",
-        "best_diff": 0,
-        "best_neighbor": 16,
-        "current_nonce": 1073741824,
-        "hashes": 0,
-        "last_update": 1781302813.0056238,
-        "node_id": 8,
-        "nonce_end": 1207959551,
-        "nonce_start": 1073741824,
-        "phase": "assigned",
-        "role": "worker",
-        "shares_accepted": 0,
-        "shares_found": 0,
-        "shares_rejected": 0,
-        "shares_submitted": 0
-      },
-      "9": {
-        "active_job_id": "phase-transition-live-cut",
-        "best_diff": 0,
-        "best_neighbor": 28,
-        "current_nonce": 1207959552,
-        "hashes": 0,
-        "last_update": 1781302813.0056238,
-        "node_id": 9,
-        "nonce_end": 1342177279,
-        "nonce_start": 1207959552,
-        "phase": "assigned",
-        "role": "worker",
-        "shares_accepted": 0,
-        "shares_found": 0,
-        "shares_rejected": 0,
-        "shares_submitted": 0
-      },
       "10": {
         "active_job_id": "phase-transition-live-cut",
         "best_diff": 0,
@@ -3446,6 +3310,23 @@
         "nonce_end": 2684354559,
         "nonce_start": 2550136832,
         "phase": "assigned",
+        "role": "worker",
+        "shares_accepted": 0,
+        "shares_found": 0,
+        "shares_rejected": 0,
+        "shares_submitted": 0
+      },
+      "2": {
+        "active_job_id": "phase-transition-live-cut",
+        "best_diff": 0,
+        "best_neighbor": 9,
+        "current_nonce": 268435456,
+        "hashes": 0,
+        "last_update": 1781302816.0009787,
+        "node_id": 2,
+        "nonce_end": 402653183,
+        "nonce_start": 268435456,
+        "phase": "autonomic_repointed",
         "role": "worker",
         "shares_accepted": 0,
         "shares_found": 0,
@@ -3622,6 +3503,23 @@
         "shares_rejected": 0,
         "shares_submitted": 0
       },
+      "3": {
+        "active_job_id": "phase-transition-live-cut",
+        "best_diff": 0,
+        "best_neighbor": 11,
+        "current_nonce": 402653184,
+        "hashes": 0,
+        "last_update": 1781302813.0018368,
+        "node_id": 3,
+        "nonce_end": 536870911,
+        "nonce_start": 402653184,
+        "phase": "assigned",
+        "role": "worker",
+        "shares_accepted": 0,
+        "shares_found": 0,
+        "shares_rejected": 0,
+        "shares_submitted": 0
+      },
       "30": {
         "active_job_id": "phase-transition-live-cut",
         "best_diff": 0,
@@ -3651,6 +3549,108 @@
         "nonce_start": 4160749568,
         "phase": "assigned",
         "role": "hub",
+        "shares_accepted": 0,
+        "shares_found": 0,
+        "shares_rejected": 0,
+        "shares_submitted": 0
+      },
+      "4": {
+        "active_job_id": "phase-transition-live-cut",
+        "best_diff": 0,
+        "best_neighbor": 13,
+        "current_nonce": 536870912,
+        "hashes": 0,
+        "last_update": 1781302813.002834,
+        "node_id": 4,
+        "nonce_end": 671088639,
+        "nonce_start": 536870912,
+        "phase": "assigned",
+        "role": "worker",
+        "shares_accepted": 0,
+        "shares_found": 0,
+        "shares_rejected": 0,
+        "shares_submitted": 0
+      },
+      "5": {
+        "active_job_id": "phase-transition-live-cut",
+        "best_diff": 0,
+        "best_neighbor": 26,
+        "current_nonce": 671088640,
+        "hashes": 0,
+        "last_update": 1781302813.0044882,
+        "node_id": 5,
+        "nonce_end": 805306367,
+        "nonce_start": 671088640,
+        "phase": "assigned",
+        "role": "worker",
+        "shares_accepted": 0,
+        "shares_found": 0,
+        "shares_rejected": 0,
+        "shares_submitted": 0
+      },
+      "6": {
+        "active_job_id": "phase-transition-live-cut",
+        "best_diff": 0,
+        "best_neighbor": 15,
+        "current_nonce": 805306368,
+        "hashes": 0,
+        "last_update": 1781302813.0050235,
+        "node_id": 6,
+        "nonce_end": 939524095,
+        "nonce_start": 805306368,
+        "phase": "assigned",
+        "role": "worker",
+        "shares_accepted": 0,
+        "shares_found": 0,
+        "shares_rejected": 0,
+        "shares_submitted": 0
+      },
+      "7": {
+        "active_job_id": "phase-transition-live-cut",
+        "best_diff": 0,
+        "best_neighbor": 27,
+        "current_nonce": 939524096,
+        "hashes": 0,
+        "last_update": 1781302813.0055466,
+        "node_id": 7,
+        "nonce_end": 1073741823,
+        "nonce_start": 939524096,
+        "phase": "assigned",
+        "role": "worker",
+        "shares_accepted": 0,
+        "shares_found": 0,
+        "shares_rejected": 0,
+        "shares_submitted": 0
+      },
+      "8": {
+        "active_job_id": "phase-transition-live-cut",
+        "best_diff": 0,
+        "best_neighbor": 16,
+        "current_nonce": 1073741824,
+        "hashes": 0,
+        "last_update": 1781302813.0056238,
+        "node_id": 8,
+        "nonce_end": 1207959551,
+        "nonce_start": 1073741824,
+        "phase": "assigned",
+        "role": "worker",
+        "shares_accepted": 0,
+        "shares_found": 0,
+        "shares_rejected": 0,
+        "shares_submitted": 0
+      },
+      "9": {
+        "active_job_id": "phase-transition-live-cut",
+        "best_diff": 0,
+        "best_neighbor": 28,
+        "current_nonce": 1207959552,
+        "hashes": 0,
+        "last_update": 1781302813.0056238,
+        "node_id": 9,
+        "nonce_end": 1342177279,
+        "nonce_start": 1207959552,
+        "phase": "assigned",
+        "role": "worker",
         "shares_accepted": 0,
         "shares_found": 0,
         "shares_rejected": 0,
@@ -4139,14 +4139,6 @@
       "node_progress": {
         "0": 0,
         "1": 0,
-        "2": 0,
-        "3": 0,
-        "4": 0,
-        "5": 0,
-        "6": 0,
-        "7": 0,
-        "8": 0,
-        "9": 0,
         "10": 0,
         "11": 0,
         "12": 0,
@@ -4157,6 +4149,7 @@
         "17": 0,
         "18": 0,
         "19": 0,
+        "2": 0,
         "20": 0,
         "21": 0,
         "22": 0,
@@ -4167,8 +4160,15 @@
         "27": 0,
         "28": 0,
         "29": 0,
+        "3": 0,
         "30": 0,
-        "31": 0
+        "31": 0,
+        "4": 0,
+        "5": 0,
+        "6": 0,
+        "7": 0,
+        "8": 0,
+        "9": 0
       },
       "target": 1,
       "total_hashes": 0

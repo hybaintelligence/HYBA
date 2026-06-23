@@ -41,7 +41,9 @@ class TestGenesisAIIntegration(unittest.TestCase):
             ObjectiveReductionEngine,
         )
 
-        engine = ObjectiveReductionEngine(enhanced_gravity_model=True, enable_true_or=False)
+        engine = ObjectiveReductionEngine(
+            enhanced_gravity_model=True, enable_true_or=False
+        )
 
         # Create a density matrix
         rho = np.eye(4, dtype=np.complex128) / 4
@@ -73,7 +75,9 @@ class TestGenesisAIIntegration(unittest.TestCase):
 
     def test_deutsch_substrate_integration(self):
         """Test that Deutsch knowledge substrate is used in decision making."""
-        from python_backend.pythia_mining.deutsch_knowledge_substrate import KnowledgeSubstrate
+        from python_backend.pythia_mining.deutsch_knowledge_substrate import (
+            KnowledgeSubstrate,
+        )
 
         substrate = KnowledgeSubstrate()
 
@@ -85,7 +89,9 @@ class TestGenesisAIIntegration(unittest.TestCase):
         }
         outcome = {"accepted": True}
 
-        explanation = substrate.create_knowledge_from_success("strategy_a", context, outcome)
+        explanation = substrate.create_knowledge_from_success(
+            "strategy_a", context, outcome
+        )
 
         # Verify φ-resonance is included (required for enhanced mode)
         self.assertIn("φ-resonance", explanation.explanation_text)
@@ -117,7 +123,9 @@ class TestGenesisAIIntegration(unittest.TestCase):
 
     def test_pulvini_memory_compression_integration(self):
         """Test that Pulvini memory compression is used for nonce space pre-computation."""
-        from python_backend.pythia_mining.pulvini_memory_fabric import PulviniMemoryFabric
+        from python_backend.pythia_mining.pulvini_memory_fabric import (
+            PulviniMemoryFabric,
+        )
 
         fabric = PulviniMemoryFabric(num_nodes=32)
 
@@ -138,7 +146,9 @@ class TestGenesisAIIntegration(unittest.TestCase):
             ObjectiveReductionEngine,
         )
         from python_backend.pythia_mining.iit_4_analyzer import IIT4Analyzer
-        from python_backend.pythia_mining.deutsch_knowledge_substrate import KnowledgeSubstrate
+        from python_backend.pythia_mining.deutsch_knowledge_substrate import (
+            KnowledgeSubstrate,
+        )
 
         # Test default parameters maintain backward compatibility
         penrose = ObjectiveReductionEngine()

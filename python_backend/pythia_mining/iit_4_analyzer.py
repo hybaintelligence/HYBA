@@ -166,7 +166,9 @@ class IIT4Analyzer:
 
         phi_values = []
         for partition in all_partitions:
-            phi = self._calculate_partition_phi(partition, system_state, connectivity_matrix)
+            phi = self._calculate_partition_phi(
+                partition, system_state, connectivity_matrix
+            )
             phi_values.append((partition, phi))
 
         # Main complex = partition with maximum Φ
@@ -190,7 +192,9 @@ class IIT4Analyzer:
         # strength only, so it can evaluate a 32-node topology with a compact
         # state vector without indexing beyond the observed state.
         current_subset = set(range(effective_size))
-        current_phi = self._calculate_subset_phi(current_subset, system_state, connectivity_matrix)
+        current_phi = self._calculate_subset_phi(
+            current_subset, system_state, connectivity_matrix
+        )
 
         if self.enhanced_partitioning:
             # Enhanced: spectral clustering for better initial partition
@@ -198,7 +202,9 @@ class IIT4Analyzer:
             from scipy.sparse import csr_matrix
 
             # Compute graph Laplacian
-            sparse_conn = csr_matrix(connectivity_matrix[:effective_size, :effective_size])
+            sparse_conn = csr_matrix(
+                connectivity_matrix[:effective_size, :effective_size]
+            )
             lapl = laplacian(sparse_conn, normed=True)
 
             # Use eigenvectors for spectral partitioning
@@ -208,7 +214,9 @@ class IIT4Analyzer:
                 # Use second smallest eigenvector (Fiedler vector) for partitioning
                 fiedler = eigenvectors[:, 1]
                 threshold = np.median(fiedler)
-                spectral_partition = set(i for i, val in enumerate(fiedler) if val > threshold)
+                spectral_partition = set(
+                    i for i, val in enumerate(fiedler) if val > threshold
+                )
 
                 # Test spectral partition
                 spectral_phi = self._calculate_subset_phi(
@@ -290,7 +298,9 @@ class IIT4Analyzer:
             effect_repertoires[mech_id] = effect_rep
 
             # INTEGRATED INFORMATION of this mechanism
-            phi_s = self._calculate_phi_s(mechanism, cause_rep, effect_rep, connectivity_matrix)
+            phi_s = self._calculate_phi_s(
+                mechanism, cause_rep, effect_rep, connectivity_matrix
+            )
             phi_s_values[mech_id] = phi_s
 
         # Total Φ = sum of φ_s across all mechanisms
@@ -300,7 +310,9 @@ class IIT4Analyzer:
         max_phi_s = max(phi_s_values.values()) if phi_s_values else 0.0
 
         # Dimensionality = number of independent dimensions in quale space
-        dimensionality = self._calculate_quale_dimensionality(cause_repertoires, effect_repertoires)
+        dimensionality = self._calculate_quale_dimensionality(
+            cause_repertoires, effect_repertoires
+        )
 
         return CauseEffectStructure(
             mechanisms=mechanisms,
@@ -353,7 +365,8 @@ class IIT4Analyzer:
                     if pair_count >= max_mechanisms // 2:
                         break
                     mechanism = Mechanism(
-                        elements={i, j}, state=np.array([system_state[i], system_state[j]])
+                        elements={i, j},
+                        state=np.array([system_state[i], system_state[j]]),
                     )
                     mechanisms.append(mechanism)
                     pair_count += 1
@@ -363,7 +376,10 @@ class IIT4Analyzer:
         return mechanisms
 
     def _compute_mechanism_cause_repertoire(
-        self, mechanism: Mechanism, current_state: np.ndarray, connectivity_matrix: np.ndarray
+        self,
+        mechanism: Mechanism,
+        current_state: np.ndarray,
+        connectivity_matrix: np.ndarray,
     ) -> np.ndarray:
         """
         Compute P(past | mechanism_state) using Bayesian inference.
@@ -375,7 +391,8 @@ class IIT4Analyzer:
         # All possible past states (2^n)
         n_states = 2**n_elements
         possible_pasts = [
-            np.array([int(b) for b in format(i, f"0{n_elements}b")]) for i in range(n_states)
+            np.array([int(b) for b in format(i, f"0{n_elements}b")])
+            for i in range(n_states)
         ]
 
         # Compute likelihood of each past state
@@ -398,7 +415,10 @@ class IIT4Analyzer:
         return likelihoods
 
     def _compute_mechanism_effect_repertoire(
-        self, mechanism: Mechanism, current_state: np.ndarray, connectivity_matrix: np.ndarray
+        self,
+        mechanism: Mechanism,
+        current_state: np.ndarray,
+        connectivity_matrix: np.ndarray,
     ) -> np.ndarray:
         """
         Compute P(future | mechanism_state).
@@ -410,7 +430,8 @@ class IIT4Analyzer:
         # All possible future states
         n_states = 2**n_elements
         possible_futures = [
-            np.array([int(b) for b in format(i, f"0{n_elements}b")]) for i in range(n_states)
+            np.array([int(b) for b in format(i, f"0{n_elements}b")])
+            for i in range(n_states)
         ]
 
         # Compute probability of each future state
@@ -473,7 +494,9 @@ class IIT4Analyzer:
             return 0
 
         # Combine all repertoires into matrix
-        all_repertoires = list(cause_repertoires.values()) + list(effect_repertoires.values())
+        all_repertoires = list(cause_repertoires.values()) + list(
+            effect_repertoires.values()
+        )
 
         # Pad to same length
         max_len = max(len(rep) for rep in all_repertoires)
@@ -586,11 +609,13 @@ class IIT4Analyzer:
 
         if not subset1 or not subset2:
             return 0.0
-        
+
         # Ensure both subsets have at least 2 elements for meaningful Φ calculation
         if len(subset1) < 2 or len(subset2) < 2:
             # For small subsets, use connectivity-based approximation
-            return self._calculate_subset_phi(set(subset1 + subset2), system_state, connectivity_matrix)
+            return self._calculate_subset_phi(
+                set(subset1 + subset2), system_state, connectivity_matrix
+            )
 
         # Build the TPM (Transition Probability Matrix) from connectivity
         # TPM[t+1_state][t_state] = probability of transition
@@ -613,10 +638,14 @@ class IIT4Analyzer:
         )
 
         # EMD between cause repertoires
-        cause_emd = self._wasserstein_1_distance(cause_rep_intact, cause_rep_disconnected)
+        cause_emd = self._wasserstein_1_distance(
+            cause_rep_intact, cause_rep_disconnected
+        )
 
         # EMD between effect repertoires
-        effect_emd = self._wasserstein_1_distance(effect_rep_intact, effect_rep_disconnected)
+        effect_emd = self._wasserstein_1_distance(
+            effect_rep_intact, effect_rep_disconnected
+        )
 
         # Φ = min(EMD_cause, EMD_effect) — the information loss under partition
         phi = min(cause_emd, effect_emd)
@@ -636,7 +665,9 @@ class IIT4Analyzer:
         for node in mechanism:
             # Backward influence: which past nodes influence this mechanism node
             backward_influence = connectivity[:, node]
-            backward_influence = backward_influence / (np.sum(backward_influence) + 1e-10)
+            backward_influence = backward_influence / (
+                np.sum(backward_influence) + 1e-10
+            )
             repertoire *= backward_influence
 
         # Normalize to probability distribution
@@ -663,7 +694,9 @@ class IIT4Analyzer:
 
         for node in subset1 + subset2:
             backward_influence = conn_disconnected[:, node]
-            backward_influence = backward_influence / (np.sum(backward_influence) + 1e-10)
+            backward_influence = backward_influence / (
+                np.sum(backward_influence) + 1e-10
+            )
             repertoire *= backward_influence
 
         repertoire = repertoire / (np.sum(repertoire) + 1e-10)
@@ -752,7 +785,10 @@ class IIT4Analyzer:
         return float(np.clip(emd, 0.0, 1.0))
 
     def _calculate_subset_phi(
-        self, subset: Set[int], system_state: np.ndarray, connectivity_matrix: np.ndarray
+        self,
+        subset: Set[int],
+        system_state: np.ndarray,
+        connectivity_matrix: np.ndarray,
     ) -> float:
         """Calculate Φ for a subset of elements"""
         if len(subset) <= 1:

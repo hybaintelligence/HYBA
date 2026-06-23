@@ -64,11 +64,25 @@ def run_gate() -> Dict[str, Any]:
     )
 
     attestation = control_plane.deployment_attestation()
-    assert_condition(attestation["profile"]["deployment_mode"] == "air_gapped", "air-gapped mode not attested")
-    assert_condition(attestation["data_control_plane"] == "local", "local control plane not attested")
-    assert_condition(attestation["customer_data_leaves_site_by_default"] is False, "data egress default is not false")
-    assert_condition(attestation["cloud_dependency_required"] is False, "cloud dependency is unexpectedly required")
-    assert_condition(attestation["audit_log_mode"] == "append_only_hash_chain", "audit hash-chain mode not attested")
+    assert_condition(
+        attestation["profile"]["deployment_mode"] == "air_gapped",
+        "air-gapped mode not attested",
+    )
+    assert_condition(
+        attestation["data_control_plane"] == "local", "local control plane not attested"
+    )
+    assert_condition(
+        attestation["customer_data_leaves_site_by_default"] is False,
+        "data egress default is not false",
+    )
+    assert_condition(
+        attestation["cloud_dependency_required"] is False,
+        "cloud dependency is unexpectedly required",
+    )
+    assert_condition(
+        attestation["audit_log_mode"] == "append_only_hash_chain",
+        "audit hash-chain mode not attested",
+    )
 
     cloud_denial = control_plane.authorize_ingestion(
         analyst,
@@ -79,7 +93,9 @@ def run_gate() -> Dict[str, Any]:
             metadata={"data_residency": "uk"},
         ),
     )
-    assert_condition(not cloud_denial.allowed, "air-gapped cloud storage source was allowed")
+    assert_condition(
+        not cloud_denial.allowed, "air-gapped cloud storage source was allowed"
+    )
 
     http_denial = control_plane.authorize_ingestion(
         analyst,
@@ -90,7 +106,9 @@ def run_gate() -> Dict[str, Any]:
             metadata={"data_residency": "uk"},
         ),
     )
-    assert_condition(not http_denial.allowed, "air-gapped external HTTP source was allowed")
+    assert_condition(
+        not http_denial.allowed, "air-gapped external HTTP source was allowed"
+    )
 
     envelope = control_plane.ingest_with_controls(
         analyst,
@@ -111,26 +129,41 @@ def run_gate() -> Dict[str, Any]:
         service=create_default_ingestion_service(),
         estimated_records=2,
     )
-    assert_condition(envelope.raw_shape == (2, 3), "local ingestion did not preserve expected shape")
-    assert_condition(envelope.metadata["deployment_control"]["decision"]["allowed"] is True, "ingestion control decision was not allowed")
+    assert_condition(
+        envelope.raw_shape == (2, 3), "local ingestion did not preserve expected shape"
+    )
+    assert_condition(
+        envelope.metadata["deployment_control"]["decision"]["allowed"] is True,
+        "ingestion control decision was not allowed",
+    )
 
     admin_denial = control_plane.evaluate_action(
         admin,
         "privileged_admin_mutation",
         metadata={"reason": "rotate sovereign policy"},
     )
-    assert_condition(not admin_denial.allowed, "privileged admin mutation without dual control was allowed")
+    assert_condition(
+        not admin_denial.allowed,
+        "privileged admin mutation without dual control was allowed",
+    )
 
     admin_allowed = control_plane.evaluate_action(
         admin,
         "privileged_admin_mutation",
         metadata={"reason": "rotate sovereign policy", "second_approver": "auditor-ci"},
     )
-    assert_condition(admin_allowed.allowed, "privileged admin mutation with dual control was denied")
+    assert_condition(
+        admin_allowed.allowed, "privileged admin mutation with dual control was denied"
+    )
 
     audit_events = control_plane.export_audit_log(auditor)
-    assert_condition(len(audit_events) >= 4, "audit log did not capture readiness events")
-    assert_condition(audit_events[0]["previous_hash"] == "genesis", "audit chain does not start at genesis")
+    assert_condition(
+        len(audit_events) >= 4, "audit log did not capture readiness events"
+    )
+    assert_condition(
+        audit_events[0]["previous_hash"] == "genesis",
+        "audit chain does not start at genesis",
+    )
     for previous, current in zip(audit_events, audit_events[1:]):
         assert_condition(
             current["previous_hash"] == previous["evidence_seal"],

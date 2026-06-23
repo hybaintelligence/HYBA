@@ -98,13 +98,17 @@ class PythiaAgentInvariantGuard:
     def assert_safe_payload(self, payload: Any, *, context: str) -> None:
         violations = self._find_violations(payload)
         if violations:
-            raise PythiaAgentInvariantError(f"{context}: invariant violations detected: {violations}")
+            raise PythiaAgentInvariantError(
+                f"{context}: invariant violations detected: {violations}"
+            )
         self._assert_json_and_finite(payload, context=context)
 
     def assert_result_mapping(self, result: Mapping[str, Any], *, context: str) -> None:
         self.assert_safe_payload(result, context=context)
         if "result" not in result and "evidence" not in result:
-            raise PythiaAgentInvariantError(f"{context}: executor result must expose result/evidence")
+            raise PythiaAgentInvariantError(
+                f"{context}: executor result must expose result/evidence"
+            )
 
     def seal(self, body: Mapping[str, Any], *, context: str) -> dict[str, Any]:
         self.assert_safe_payload(body, context=context)
@@ -118,7 +122,9 @@ class PythiaAgentInvariantGuard:
         seal_body["seal"] = _sha256(seal_body)
         return seal_body
 
-    def _find_violations(self, value: Any, *, path: str = "$", violations: list[str] | None = None) -> list[str]:
+    def _find_violations(
+        self, value: Any, *, path: str = "$", violations: list[str] | None = None
+    ) -> list[str]:
         if violations is None:
             violations = []
         if isinstance(value, Mapping):
@@ -127,39 +133,74 @@ class PythiaAgentInvariantGuard:
                 child = f"{path}.{key_text}"
                 if key_text in _FORBIDDEN_TRUE_FLAGS and item is True:
                     violations.append(f"{child}=True")
-                if key_text in {"sovereign_human_gate", "human_sovereign_required", "immutable_guard_active"} and item is False:
+                if (
+                    key_text
+                    in {
+                        "sovereign_human_gate",
+                        "human_sovereign_required",
+                        "immutable_guard_active",
+                    }
+                    and item is False
+                ):
                     violations.append(f"{child}=False")
-                if key_text == "action" and isinstance(item, str) and item.upper() in _FORBIDDEN_ACTIONS:
+                if (
+                    key_text == "action"
+                    and isinstance(item, str)
+                    and item.upper() in _FORBIDDEN_ACTIONS
+                ):
                     violations.append(f"{child}={item}")
                 self._find_violations(item, path=child, violations=violations)
-        elif isinstance(value, Sequence) and not isinstance(value, (str, bytes, bytearray)):
+        elif isinstance(value, Sequence) and not isinstance(
+            value, (str, bytes, bytearray)
+        ):
             for index, item in enumerate(value):
-                self._find_violations(item, path=f"{path}[{index}]", violations=violations)
+                self._find_violations(
+                    item, path=f"{path}[{index}]", violations=violations
+                )
         return violations
 
     def _assert_json_and_finite(self, value: Any, *, context: str) -> None:
         try:
             json.dumps(value, sort_keys=True, default=str, allow_nan=False)
         except (TypeError, ValueError) as exc:
-            raise PythiaAgentInvariantError(f"{context}: payload must be JSON-safe and finite: {exc}") from exc
+            raise PythiaAgentInvariantError(
+                f"{context}: payload must be JSON-safe and finite: {exc}"
+            ) from exc
         self._assert_finite_recursive(value, context=context)
 
-    def _assert_finite_recursive(self, value: Any, *, context: str, path: str = "$") -> None:
+    def _assert_finite_recursive(
+        self, value: Any, *, context: str, path: str = "$"
+    ) -> None:
         if isinstance(value, float):
             if not math.isfinite(value):
-                raise PythiaAgentInvariantError(f"{context}: non-finite float at {path}")
+                raise PythiaAgentInvariantError(
+                    f"{context}: non-finite float at {path}"
+                )
         elif isinstance(value, int) and not isinstance(value, bool):
             return
         elif isinstance(value, Mapping):
             for key, item in value.items():
-                self._assert_finite_recursive(item, context=context, path=f"{path}.{key}")
-        elif isinstance(value, Sequence) and not isinstance(value, (str, bytes, bytearray)):
+                self._assert_finite_recursive(
+                    item, context=context, path=f"{path}.{key}"
+                )
+        elif isinstance(value, Sequence) and not isinstance(
+            value, (str, bytes, bytearray)
+        ):
             for index, item in enumerate(value):
-                self._assert_finite_recursive(item, context=context, path=f"{path}[{index}]")
+                self._assert_finite_recursive(
+                    item, context=context, path=f"{path}[{index}]"
+                )
 
 
 def _canonical_json(value: Any) -> str:
-    return json.dumps(value, sort_keys=True, default=str, separators=(",", ":"), ensure_ascii=False, allow_nan=False)
+    return json.dumps(
+        value,
+        sort_keys=True,
+        default=str,
+        separators=(",", ":"),
+        ensure_ascii=False,
+        allow_nan=False,
+    )
 
 
 def _sha256(value: Any) -> str:
@@ -183,12 +224,18 @@ def _safe_float(value: Any, *, name: str) -> float:
     return number
 
 
-def _as_number_list(value: Any, *, name: str, minimum: int = 1, maximum: int = 4096) -> list[float]:
+def _as_number_list(
+    value: Any, *, name: str, minimum: int = 1, maximum: int = 4096
+) -> list[float]:
     if not isinstance(value, Sequence) or isinstance(value, (str, bytes, bytearray)):
         raise PythiaAgentInvariantError(f"{name} must be a numeric sequence")
     if not (minimum <= len(value) <= maximum):
-        raise PythiaAgentInvariantError(f"{name} length must be in [{minimum}, {maximum}]")
-    values = [_safe_float(item, name=f"{name}[{index}]") for index, item in enumerate(value)]
+        raise PythiaAgentInvariantError(
+            f"{name} length must be in [{minimum}, {maximum}]"
+        )
+    values = [
+        _safe_float(item, name=f"{name}[{index}]") for index, item in enumerate(value)
+    ]
     return values
 
 
@@ -234,14 +281,18 @@ class QuantumTask:
     def validate(self, *, guard: PythiaAgentInvariantGuard | None = None) -> None:
         guard = guard or PythiaAgentInvariantGuard()
         if not _TASK_ID_RE.match(self.task_id):
-            raise PythiaAgentInvariantError("task_id must be stable, printable, and 8-96 chars")
+            raise PythiaAgentInvariantError(
+                "task_id must be stable, printable, and 8-96 chars"
+            )
         if not self.description.strip():
             raise PythiaAgentInvariantError("description is required")
         if self.operation not in _ALLOWED_OPERATIONS:
             raise PythiaAgentInvariantError(f"unsupported operation: {self.operation}")
         guard.assert_safe_payload(self.payload, context=f"task:{self.task_id}")
 
-    def executor_payload(self, shared_state: Mapping[str, Any] | None = None) -> dict[str, Any]:
+    def executor_payload(
+        self, shared_state: Mapping[str, Any] | None = None
+    ) -> dict[str, Any]:
         payload = dict(self.payload)
         payload["operation"] = self.operation
         if shared_state is not None:
@@ -261,7 +312,12 @@ class QuantumResult:
     shared_state_hash: str
     created_at: str = field(default_factory=_utc_now)
 
-    def sealed(self, *, previous_hash: str = "GENESIS", guard: PythiaAgentInvariantGuard | None = None) -> dict[str, Any]:
+    def sealed(
+        self,
+        *,
+        previous_hash: str = "GENESIS",
+        guard: PythiaAgentInvariantGuard | None = None,
+    ) -> dict[str, Any]:
         guard = guard or PythiaAgentInvariantGuard()
         body = {
             "task_id": self.task.task_id,
@@ -287,7 +343,11 @@ class QuantumResult:
             "status": self.status,
             "body": body,
             "cryptographic_seal": seal,
-            "action": "RETURN_SEALED_EVIDENCE" if self.status == "EXECUTION_STAGED" else "ESCALATE_TO_SALAMANDER_REPAIR_REVIEW",
+            "action": (
+                "RETURN_SEALED_EVIDENCE"
+                if self.status == "EXECUTION_STAGED"
+                else "ESCALATE_TO_SALAMANDER_REPAIR_REVIEW"
+            ),
             "sovereign_human_gate": True,
             "auto_apply": False,
         }
@@ -315,16 +375,22 @@ class PythiaMathematicalQuantumExecutor:
             return self._amplitude_expectation(payload)
         if operation == "density_matrix_invariants":
             return self._density_matrix_invariants(payload)
-        raise AgentExecutionError(f"built-in executor does not implement operation {operation!r}")
+        raise AgentExecutionError(
+            f"built-in executor does not implement operation {operation!r}"
+        )
 
     def _phi_weighted_consensus(self, payload: Mapping[str, Any]) -> dict[str, Any]:
-        scores = _as_number_list(payload.get("scores"), name="scores", minimum=1, maximum=4096)
+        scores = _as_number_list(
+            payload.get("scores"), name="scores", minimum=1, maximum=4096
+        )
         for index, score in enumerate(scores):
             if not 0.0 <= score <= 1.0:
                 raise PythiaAgentInvariantError(f"scores[{index}] must be in [0, 1]")
         exponent = _safe_float(payload.get("phi_exponent", 1.0), name="phi_exponent")
         mean_score = fmean(scores)
-        raw_weights = [self.PHI ** (exponent * (1.0 - abs(score - mean_score))) for score in scores]
+        raw_weights = [
+            self.PHI ** (exponent * (1.0 - abs(score - mean_score))) for score in scores
+        ]
         total = sum(raw_weights)
         weights = [weight / total for weight in raw_weights]
         harmonic_score = sum(score * weight for score, weight in zip(scores, weights))
@@ -356,7 +422,10 @@ class PythiaMathematicalQuantumExecutor:
             bitstring = str(payload.get("bitstring", ""))
             if not bitstring or any(bit not in "01" for bit in bitstring):
                 raise PythiaAgentInvariantError("bitstring must contain only 0/1")
-            spins = {f"z{index}": 1 if bit == "1" else -1 for index, bit in enumerate(bitstring)}
+            spins = {
+                f"z{index}": 1 if bit == "1" else -1
+                for index, bit in enumerate(bitstring)
+            }
         else:
             if not isinstance(spin_state, Mapping):
                 raise PythiaAgentInvariantError("spin_state must be a mapping")
@@ -372,7 +441,11 @@ class PythiaMathematicalQuantumExecutor:
             if not match:
                 raise PythiaAgentInvariantError(f"invalid coupler key: {key}")
             left, right = f"z{match.group(1)}", f"z{match.group(2)}"
-            energy += _safe_float(coeff, name=f"couplers[{key}]") * spins.get(left, 0) * spins.get(right, 0)
+            energy += (
+                _safe_float(coeff, name=f"couplers[{key}]")
+                * spins.get(left, 0)
+                * spins.get(right, 0)
+            )
         return {
             "result": {"energy": energy, "spin_state": spins},
             "evidence": {
@@ -383,13 +456,19 @@ class PythiaMathematicalQuantumExecutor:
         }
 
     def _amplitude_expectation(self, payload: Mapping[str, Any]) -> dict[str, Any]:
-        samples = _as_number_list(payload.get("samples"), name="samples", minimum=2, maximum=100_000)
-        epsilon = _safe_float(payload.get("precision_epsilon", 0.01), name="precision_epsilon")
+        samples = _as_number_list(
+            payload.get("samples"), name="samples", minimum=2, maximum=100_000
+        )
+        epsilon = _safe_float(
+            payload.get("precision_epsilon", 0.01), name="precision_epsilon"
+        )
         if not 0.0 < epsilon <= 1.0:
             raise PythiaAgentInvariantError("precision_epsilon must be in (0, 1]")
         mean = fmean(samples)
         variance = pvariance(samples)
-        classical_samples = max(1, math.ceil(max(variance, 1e-12) / (epsilon * epsilon)))
+        classical_samples = max(
+            1, math.ceil(max(variance, 1e-12) / (epsilon * epsilon))
+        )
         qae_oracle_calls = max(1, math.ceil(math.sqrt(classical_samples)))
         return {
             "result": {
@@ -408,18 +487,30 @@ class PythiaMathematicalQuantumExecutor:
 
     def _density_matrix_invariants(self, payload: Mapping[str, Any]) -> dict[str, Any]:
         matrix = payload.get("matrix")
-        if not isinstance(matrix, Sequence) or isinstance(matrix, (str, bytes, bytearray)) or not matrix:
-            raise PythiaAgentInvariantError("matrix must be a non-empty square sequence")
+        if (
+            not isinstance(matrix, Sequence)
+            or isinstance(matrix, (str, bytes, bytearray))
+            or not matrix
+        ):
+            raise PythiaAgentInvariantError(
+                "matrix must be a non-empty square sequence"
+            )
         n = len(matrix)
         rows: list[list[complex]] = []
         for i, row in enumerate(matrix):
-            if not isinstance(row, Sequence) or isinstance(row, (str, bytes, bytearray)) or len(row) != n:
+            if (
+                not isinstance(row, Sequence)
+                or isinstance(row, (str, bytes, bytearray))
+                or len(row) != n
+            ):
                 raise PythiaAgentInvariantError("matrix must be square")
             parsed_row: list[complex] = []
             for j, value in enumerate(row):
                 parsed_row.append(self._parse_complex(value, name=f"matrix[{i}][{j}]"))
             rows.append(parsed_row)
-        hermitian_error = max(abs(rows[i][j] - rows[j][i].conjugate()) for i in range(n) for j in range(n))
+        hermitian_error = max(
+            abs(rows[i][j] - rows[j][i].conjugate()) for i in range(n) for j in range(n)
+        )
         trace = sum(rows[i][i] for i in range(n))
         trace_error = abs(trace.real - 1.0) + abs(trace.imag)
         diagonal_min = min(rows[i][i].real for i in range(n))
@@ -445,8 +536,15 @@ class PythiaMathematicalQuantumExecutor:
         if isinstance(value, int | float):
             real = _safe_float(value, name=name)
             return complex(real, 0.0)
-        if isinstance(value, Sequence) and not isinstance(value, (str, bytes, bytearray)) and len(value) == 2:
-            return complex(_safe_float(value[0], name=f"{name}.real"), _safe_float(value[1], name=f"{name}.imag"))
+        if (
+            isinstance(value, Sequence)
+            and not isinstance(value, (str, bytes, bytearray))
+            and len(value) == 2
+        ):
+            return complex(
+                _safe_float(value[0], name=f"{name}.real"),
+                _safe_float(value[1], name=f"{name}.imag"),
+            )
         raise PythiaAgentInvariantError(f"{name} must be numeric or [real, imag]")
 
 
@@ -468,12 +566,18 @@ class PythiaSubAgent:
         self.allowed_operations = set(allowed_operations or _ALLOWED_OPERATIONS)
         self.guard = guard or PythiaAgentInvariantGuard()
 
-    def execute(self, task: QuantumTask, shared_state: Mapping[str, Any] | None = None) -> QuantumResult:
+    def execute(
+        self, task: QuantumTask, shared_state: Mapping[str, Any] | None = None
+    ) -> QuantumResult:
         task.validate(guard=self.guard)
         if task.operation not in self.allowed_operations:
-            raise PythiaAgentInvariantError(f"agent {self.name} cannot execute {task.operation}")
+            raise PythiaAgentInvariantError(
+                f"agent {self.name} cannot execute {task.operation}"
+            )
         if shared_state is not None:
-            self.guard.assert_safe_payload(shared_state, context=f"shared_state:{task.task_id}")
+            self.guard.assert_safe_payload(
+                shared_state, context=f"shared_state:{task.task_id}"
+            )
         payload = task.executor_payload(shared_state=shared_state)
         raw = self.quantum_executor(payload)
         if not isinstance(raw, Mapping):
@@ -485,7 +589,9 @@ class PythiaSubAgent:
         evidence.setdefault("operation", task.operation)
         evidence.setdefault("input_hash", _sha256(payload))
         evidence.setdefault("result_hash", _sha256(result))
-        evidence.setdefault("product_boundary", "pythia_agent_quantum_execution_not_mining")
+        evidence.setdefault(
+            "product_boundary", "pythia_agent_quantum_execution_not_mining"
+        )
         return QuantumResult(
             task=task,
             agent_name=self.name,
@@ -499,7 +605,9 @@ class PythiaSubAgent:
 class PythiaAgentOrchestrator:
     """Production PYTHIA orchestrator for sealed, quantum-native agent work."""
 
-    def __init__(self, *, max_workers_limit: int = 16, max_payload_bytes: int = 262_144) -> None:
+    def __init__(
+        self, *, max_workers_limit: int = 16, max_payload_bytes: int = 262_144
+    ) -> None:
         self.sub_agents: dict[str, PythiaSubAgent] = {}
         self.max_workers_limit = max_workers_limit
         self.max_payload_bytes = max_payload_bytes
@@ -530,10 +638,20 @@ class PythiaAgentOrchestrator:
         operation: str,
         task_payloads: Iterable[Mapping[str, Any]],
     ) -> list[QuantumTask]:
-        tasks = [QuantumTask.create(description=base_description, operation=operation, payload=payload) for payload in task_payloads]
+        tasks = [
+            QuantumTask.create(
+                description=base_description, operation=operation, payload=payload
+            )
+            for payload in task_payloads
+        ]
         for task in tasks:
-            if len(_canonical_json(task.payload).encode("utf-8")) > self.max_payload_bytes:
-                raise PythiaAgentInvariantError(f"task payload too large: {task.task_id}")
+            if (
+                len(_canonical_json(task.payload).encode("utf-8"))
+                > self.max_payload_bytes
+            ):
+                raise PythiaAgentInvariantError(
+                    f"task payload too large: {task.task_id}"
+                )
         return tasks
 
     def run_entangled_group(
@@ -550,11 +668,18 @@ class PythiaAgentOrchestrator:
             return []
         _bounded_workers(max_workers, limit=self.max_workers_limit)
         if shared_state is not None:
-            self.guard.assert_safe_payload(shared_state, context="entangled_shared_state")
+            self.guard.assert_safe_payload(
+                shared_state, context="entangled_shared_state"
+            )
         agent = self.sub_agents[agent_name]
         results: list[QuantumResult] = []
         with ThreadPoolExecutor(max_workers=min(max_workers, len(tasks))) as executor:
-            futures = {executor.submit(self._execute_or_repair, agent, task, shared_state): task.task_id for task in tasks}
+            futures = {
+                executor.submit(
+                    self._execute_or_repair, agent, task, shared_state
+                ): task.task_id
+                for task in tasks
+            }
             for future in as_completed(futures):
                 results.append(future.result())
         return self._seal_ordered(results)
@@ -568,12 +693,18 @@ class PythiaAgentOrchestrator:
     ) -> dict[str, list[dict[str, Any]]]:
         _bounded_workers(max_workers, limit=self.max_workers_limit)
         if shared_state is not None:
-            self.guard.assert_safe_payload(shared_state, context="multi_agent_shared_state")
+            self.guard.assert_safe_payload(
+                shared_state, context="multi_agent_shared_state"
+            )
         unknown = sorted(set(agent_task_map) - set(self.sub_agents))
         if unknown:
             raise PythiaAgentInvariantError(f"unknown sub-agents: {unknown}")
-        output: dict[str, list[dict[str, Any]]] = {name: [] for name in sorted(agent_task_map)}
-        with ThreadPoolExecutor(max_workers=min(max_workers, max(1, len(agent_task_map)))) as executor:
+        output: dict[str, list[dict[str, Any]]] = {
+            name: [] for name in sorted(agent_task_map)
+        }
+        with ThreadPoolExecutor(
+            max_workers=min(max_workers, max(1, len(agent_task_map)))
+        ) as executor:
             futures = {
                 executor.submit(
                     self.run_entangled_group,
@@ -600,17 +731,27 @@ class PythiaAgentOrchestrator:
         completed: dict[str, dict[str, Any]] = {}
         packets: list[dict[str, Any]] = []
         for task in ordered:
-            dependency_context = {dep: completed[dep]["cryptographic_seal"]["body_hash"] for dep in task.dependencies}
+            dependency_context = {
+                dep: completed[dep]["cryptographic_seal"]["body_hash"]
+                for dep in task.dependencies
+            }
             merged_state = dict(shared_state or {})
             merged_state["dependency_context"] = dependency_context
-            packet = self.run_entangled_group(agent_name=agent_name, tasks=[task], shared_state=merged_state, max_workers=max_workers)[0]
+            packet = self.run_entangled_group(
+                agent_name=agent_name,
+                tasks=[task],
+                shared_state=merged_state,
+                max_workers=max_workers,
+            )[0]
             completed[task.task_id] = packet
             packets.append(packet)
         return packets
 
     def verify_packet_sequence(self, packets: Sequence[Mapping[str, Any]]) -> bool:
         previous = "GENESIS"
-        for packet in sorted(packets, key=lambda item: str(item.get("body", {}).get("task_id", ""))):
+        for packet in sorted(
+            packets, key=lambda item: str(item.get("body", {}).get("task_id", ""))
+        ):
             if not verify_sealed_packet(packet):
                 return False
             if packet["body"].get("previous_hash") != previous:
@@ -640,7 +781,11 @@ class PythiaAgentOrchestrator:
             return QuantumResult(
                 task=task,
                 agent_name=agent.name,
-                status="EXECUTION_REJECTED_REPAIR_STAGED" if repair_proposal else "EXECUTION_REJECTED",
+                status=(
+                    "EXECUTION_REJECTED_REPAIR_STAGED"
+                    if repair_proposal
+                    else "EXECUTION_REJECTED"
+                ),
                 result=None,
                 evidence=evidence,
                 shared_state_hash=_sha256(shared_state or {}),
@@ -668,7 +813,9 @@ class PythiaAgentOrchestrator:
                 "metrics_target": {"executor_status": "sealed_valid_execution"},
             }
         )
-        proposal = self.repair_reactor.heal_damage(report, str(module_path), str(target_name))
+        proposal = self.repair_reactor.heal_damage(
+            report, str(module_path), str(target_name)
+        )
         proposal["deployable_without_approval"] = False
         return proposal
 
@@ -690,7 +837,9 @@ class PythiaAgentOrchestrator:
         for task in tasks:
             missing = set(task.dependencies) - set(by_id)
             if missing:
-                raise PythiaAgentInvariantError(f"task {task.task_id} has missing dependencies: {sorted(missing)}")
+                raise PythiaAgentInvariantError(
+                    f"task {task.task_id} has missing dependencies: {sorted(missing)}"
+                )
         temporary: set[str] = set()
         permanent: set[str] = set()
         ordered: list[QuantumTask] = []
@@ -699,7 +848,9 @@ class PythiaAgentOrchestrator:
             if task_id in permanent:
                 return
             if task_id in temporary:
-                raise PythiaAgentInvariantError("task graph contains a dependency cycle")
+                raise PythiaAgentInvariantError(
+                    "task graph contains a dependency cycle"
+                )
             temporary.add(task_id)
             for dep in by_id[task_id].dependencies:
                 visit(dep)
@@ -716,7 +867,10 @@ def verify_sealed_packet(packet: Mapping[str, Any]) -> bool:
     try:
         body = packet["body"]
         seal = packet["cryptographic_seal"]
-        if seal.get("algorithm") != "SHA-256" or seal.get("immutable_guard_active") is not True:
+        if (
+            seal.get("algorithm") != "SHA-256"
+            or seal.get("immutable_guard_active") is not True
+        ):
             return False
         return seal.get("body_hash") == _sha256(body)
     except Exception:

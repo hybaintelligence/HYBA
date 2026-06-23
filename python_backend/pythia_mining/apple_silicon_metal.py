@@ -58,7 +58,10 @@ class AppleSiliconMetalPacket:
 
 
 def _is_apple_silicon() -> bool:
-    return platform.system() == "Darwin" and platform.machine().lower() in {"arm64", "aarch64"}
+    return platform.system() == "Darwin" and platform.machine().lower() in {
+        "arm64",
+        "aarch64",
+    }
 
 
 def _unavailable_packet(reason: str, *, require_mlx: bool = False) -> Dict[str, Any]:
@@ -106,7 +109,9 @@ def _force_mlx_execution(mx: Any, value: Any) -> None:
     getattr(mx, "eval")(value)
 
 
-def probe_mlx_metal(*, matrix_size: int = 64, require_mlx: bool = False) -> Dict[str, Any]:
+def probe_mlx_metal(
+    *, matrix_size: int = 64, require_mlx: bool = False
+) -> Dict[str, Any]:
     """Probe MLX GPU execution and CPU fallback on Apple Silicon.
 
     The probe uses a deterministic phi-weighted matrix multiplication on MLX GPU
@@ -117,7 +122,9 @@ def probe_mlx_metal(*, matrix_size: int = 64, require_mlx: bool = False) -> Dict
         raise ValueError("matrix_size must be in the range [2, 512]")
 
     if not _is_apple_silicon():
-        return _unavailable_packet("host is not Apple Silicon Darwin", require_mlx=require_mlx)
+        return _unavailable_packet(
+            "host is not Apple Silicon Darwin", require_mlx=require_mlx
+        )
 
     try:
         import mlx.core as mx  # type: ignore
@@ -136,7 +143,9 @@ def probe_mlx_metal(*, matrix_size: int = 64, require_mlx: bool = False) -> Dict
         # MLX arrays live in shared memory and can be operated on by CPU/GPU. We
         # still force explicit device execution here so the evidence packet shows
         # both paths were exercised.
-        base_gpu = mx.array(values, dtype=mx.float32).reshape((matrix_size, matrix_size))
+        base_gpu = mx.array(values, dtype=mx.float32).reshape(
+            (matrix_size, matrix_size)
+        )
         weights_gpu = mx.array(
             [PHI ** (-(i % 11)) for i in range(matrix_size)], dtype=mx.float32
         ).reshape((matrix_size, 1))
@@ -145,7 +154,9 @@ def probe_mlx_metal(*, matrix_size: int = 64, require_mlx: bool = False) -> Dict
         gpu_result = float(gpu_value.item())
         metal_verified = True
 
-        base_cpu = mx.array(values, dtype=mx.float32).reshape((matrix_size, matrix_size))
+        base_cpu = mx.array(values, dtype=mx.float32).reshape(
+            (matrix_size, matrix_size)
+        )
         weights_cpu = mx.array(
             [PHI ** (-(i % 11)) for i in range(matrix_size)], dtype=mx.float32
         ).reshape((matrix_size, 1))

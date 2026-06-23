@@ -165,7 +165,9 @@ class TopologicalHolonomyEngine:
             return self._state_cache[lambda_param]
 
         # Create a new MPS with λ-dependent tensor coefficients
-        mps = MPS(num_sites=self.num_sites, physical_dim=2, max_bond_dim=self.max_bond_dim)
+        mps = MPS(
+            num_sites=self.num_sites, physical_dim=2, max_bond_dim=self.max_bond_dim
+        )
 
         # Apply λ-dependent unitary rotations to create non-trivial geometry
         # This creates a smooth family of states with non-zero Berry connection
@@ -210,7 +212,9 @@ class TopologicalHolonomyEngine:
                 if self.haldane_twist > 0:
                     # Complex rotation that breaks time-reversal symmetry with SU(2) structure
                     if axis == 0:
-                        rotation = np.array([[c, -1j * s], [-1j * s, c]], dtype=np.complex128)
+                        rotation = np.array(
+                            [[c, -1j * s], [-1j * s, c]], dtype=np.complex128
+                        )
                     elif axis == 1:
                         rotation = np.array([[c, -s], [s, c]], dtype=np.complex128)
                     else:
@@ -221,7 +225,9 @@ class TopologicalHolonomyEngine:
                 else:
                     # Standard SU(2) rotations without time-reversal breaking
                     if axis == 0:
-                        rotation = np.array([[c, -1j * s], [-1j * s, c]], dtype=np.complex128)
+                        rotation = np.array(
+                            [[c, -1j * s], [-1j * s, c]], dtype=np.complex128
+                        )
                     elif axis == 1:
                         rotation = np.array([[c, -s], [s, c]], dtype=np.complex128)
                     else:
@@ -313,7 +319,9 @@ class TopologicalHolonomyEngine:
         self._connection_cache[cache_key] = connection
         return connection
 
-    def compute_berry_curvature(self, lambda_param: float, epsilon: float = 1e-3) -> BerryCurvature:
+    def compute_berry_curvature(
+        self, lambda_param: float, epsilon: float = 1e-3
+    ) -> BerryCurvature:
         """Compute Berry curvature F = ∂_μ A_ν - ∂_ν A_μ.
 
         For 1D parameter space, curvature is the derivative of connection:
@@ -352,7 +360,9 @@ class TopologicalHolonomyEngine:
             signature = "NONTRIVIAL"
 
         return BerryCurvature(
-            curvature_matrix=np.array([[0, curvature], [-curvature, 0]], dtype=np.complex128),
+            curvature_matrix=np.array(
+                [[0, curvature], [-curvature, 0]], dtype=np.complex128
+            ),
             field_strength=field_strength,
             topological_charge=topological_charge,
             signature=signature,
@@ -414,7 +424,9 @@ class TopologicalHolonomyEngine:
             discrepancy_result = van_der_corput_discrepancy(num_points)
             star_discrepancy = discrepancy_result["empirical_discrepancy"]
             theoretical_bound = (1.0 + 1.0 / PHI) / num_points
-            discrepancy_satisfied = star_discrepancy <= theoretical_bound + self.tolerance
+            discrepancy_satisfied = (
+                star_discrepancy <= theoretical_bound + self.tolerance
+            )
         else:
             star_discrepancy = float("nan")
             theoretical_bound = float("nan")
@@ -473,7 +485,9 @@ class TopologicalHolonomyEngine:
 
         # Compute unitary holonomy
         holonomy = np.exp(1j * geometric_phase)
-        unitary_holonomy = np.array([[holonomy, 0], [0, np.conj(holonomy)]], dtype=np.complex128)
+        unitary_holonomy = np.array(
+            [[holonomy, 0], [0, np.conj(holonomy)]], dtype=np.complex128
+        )
 
         # Path length
         path_length = float(np.sum(np.abs(np.diff(lambda_values))))
@@ -485,7 +499,9 @@ class TopologicalHolonomyEngine:
         topological_invariant = None
         phase_locking = False
         if path_type == HolonomyPathType.CLOSED_LOOP:
-            chern = self.compute_chern_number(num_points=num_steps, use_phi_sampling=True)
+            chern = self.compute_chern_number(
+                num_points=num_steps, use_phi_sampling=True
+            )
             topological_invariant = chern.chern_number
             phase_locking = chern.is_quantized and chern.discrepancy_satisfied
 
@@ -550,7 +566,9 @@ class TopologicalHolonomyEngine:
         overlap = np.sum(np.conj(t1) * t2)
         return complex(overlap)
 
-    def compute_topological_phase_locking(self, num_samples: int = 1000) -> Dict[str, Any]:
+    def compute_topological_phase_locking(
+        self, num_samples: int = 1000
+    ) -> Dict[str, Any]:
         """Check if topological phase locking occurs with Φ-LCG.
 
         Tests the hypothesis: Chern numbers are integers only when
@@ -563,10 +581,14 @@ class TopologicalHolonomyEngine:
             Dictionary with phase locking analysis
         """
         # Compute Chern number with Φ-LCG sampling
-        chern_phi = self.compute_chern_number(num_points=num_samples, use_phi_sampling=True)
+        chern_phi = self.compute_chern_number(
+            num_points=num_samples, use_phi_sampling=True
+        )
 
         # Compute Chern number with uniform sampling
-        chern_uniform = self.compute_chern_number(num_points=num_samples, use_phi_sampling=False)
+        chern_uniform = self.compute_chern_number(
+            num_points=num_samples, use_phi_sampling=False
+        )
 
         # Compute Star-Discrepancy
         discrepancy = van_der_corput_discrepancy(num_samples)
@@ -672,11 +694,15 @@ class TopologicalHolonomyEngine:
         for lambda_val in lambda_values:
             # Temporarily set engine to this λ for state generation
             # We compute Chern number at this λ point
-            chern_result = self.compute_chern_number(num_points=100, use_phi_sampling=True)
+            chern_result = self.compute_chern_number(
+                num_points=100, use_phi_sampling=True
+            )
 
             transition_data["lambda_values"].append(float(lambda_val))
             transition_data["chern_numbers"].append(chern_result.chern_number)
-            transition_data["quantization_errors"].append(chern_result.quantization_error)
+            transition_data["quantization_errors"].append(
+                chern_result.quantization_error
+            )
 
         # Detect transition: look for jump in Chern number
         chern_array = np.array(transition_data["chern_numbers"])
@@ -697,10 +723,14 @@ def run_topological_holonomy_demonstration():
     print("=" * 80)
     print("TOPOLOGICAL HOLONOMY ENGINE DEMONSTRATION")
     print("=" * 80)
-    print("\nFrontier 2: Topologically Protected 'Gate States' (Berry Phase & Holonomy)")
+    print(
+        "\nFrontier 2: Topologically Protected 'Gate States' (Berry Phase & Holonomy)"
+    )
     print("-" * 80)
 
-    engine = TopologicalHolonomyEngine(num_sites=100, max_bond_dim=16, phi_seed=42, tolerance=1e-9)
+    engine = TopologicalHolonomyEngine(
+        num_sites=100, max_bond_dim=16, phi_seed=42, tolerance=1e-9
+    )
 
     results = {}
 
@@ -779,7 +809,9 @@ def run_topological_holonomy_demonstration():
     print(f"Φ-LCG Quantization Error: {phase_locking['phi_quantization_error']:.6e}")
     print(f"Φ-LCG Phase Locked: {phase_locking['phi_phase_locked']}")
     print(f"Uniform Chern Number: {phase_locking['uniform_chern_number']:.6f}")
-    print(f"Uniform Quantization Error: {phase_locking['uniform_quantization_error']:.6e}")
+    print(
+        f"Uniform Quantization Error: {phase_locking['uniform_quantization_error']:.6e}"
+    )
     print(f"Uniform Phase Locked: {phase_locking['uniform_phase_locked']}")
     print(f"Star Discrepancy: {phase_locking['star_discrepancy']:.6e}")
     print(f"Theoretical Bound: {phase_locking['theoretical_bound']:.6e}")
@@ -799,7 +831,11 @@ def run_topological_holonomy_demonstration():
 
     for twist in twist_values:
         engine_twisted = TopologicalHolonomyEngine(
-            num_sites=100, max_bond_dim=16, phi_seed=42, tolerance=1e-9, haldane_twist=twist
+            num_sites=100,
+            max_bond_dim=16,
+            phi_seed=42,
+            tolerance=1e-9,
+            haldane_twist=twist,
         )
 
         # Scan for transition
@@ -825,9 +861,11 @@ def run_topological_holonomy_demonstration():
                 "critical_lambda": transition_scan["critical_lambda"],
                 "chern_before": transition_scan["chern_before"],
                 "chern_after": transition_scan["chern_after"],
-                "final_chern": transition_scan["chern_numbers"][-1]
-                if not transition_scan["transition_detected"]
-                else None,
+                "final_chern": (
+                    transition_scan["chern_numbers"][-1]
+                    if not transition_scan["transition_detected"]
+                    else None
+                ),
             }
         )
 
@@ -861,14 +899,17 @@ def run_topological_holonomy_demonstration():
 
     # Check if we achieved Chern = 1
     chern_1_achieved = any(
-        r["transition_detected"] and abs(r["chern_after"] - 1.0) < 0.1 for r in transition_results
+        r["transition_detected"] and abs(r["chern_after"] - 1.0) < 0.1
+        for r in transition_results
     )
 
     if chern_1_achieved:
         print("\n✓✓✓ BREAKTHROUGH: Non-trivial topological phase (Chern = 1) achieved!")
         print("✓✓✓ Number-theoretic topological transition confirmed")
     else:
-        print("\n○ Chern = 1 not yet achieved - requires higher twist or refined parameters")
+        print(
+            "\n○ Chern = 1 not yet achieved - requires higher twist or refined parameters"
+        )
 
     print("=" * 80)
 

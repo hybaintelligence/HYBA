@@ -79,7 +79,8 @@ class MetricsStore:
         cursor = conn.cursor()
 
         # Pool metrics table
-        cursor.execute("""
+        cursor.execute(
+            """
             CREATE TABLE IF NOT EXISTS pool_metrics (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 pool_name TEXT NOT NULL,
@@ -98,10 +99,12 @@ class MetricsStore:
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 UNIQUE(pool_name, pool_url)
             )
-        """)
+        """
+        )
 
         # Share submission history table for detailed analysis
-        cursor.execute("""
+        cursor.execute(
+            """
             CREATE TABLE IF NOT EXISTS share_history (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 pool_name TEXT NOT NULL,
@@ -115,10 +118,12 @@ class MetricsStore:
                 target TEXT,
                 submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
-        """)
+        """
+        )
 
         # Connection history table
-        cursor.execute("""
+        cursor.execute(
+            """
             CREATE TABLE IF NOT EXISTS connection_history (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 pool_name TEXT NOT NULL,
@@ -129,21 +134,28 @@ class MetricsStore:
                 attempt_number INTEGER,
                 occurred_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
-        """)
+        """
+        )
 
         # Create indexes for common queries
-        cursor.execute("""
+        cursor.execute(
+            """
             CREATE INDEX IF NOT EXISTS idx_share_history_pool
             ON share_history(pool_name, pool_url, submitted_at)
-        """)
-        cursor.execute("""
+        """
+        )
+        cursor.execute(
+            """
             CREATE INDEX IF NOT EXISTS idx_connection_history_pool
             ON connection_history(pool_name, pool_url, occurred_at)
-        """)
-        cursor.execute("""
+        """
+        )
+        cursor.execute(
+            """
             CREATE INDEX IF NOT EXISTS idx_share_history_submitted_at
             ON share_history(submitted_at)
-        """)
+        """
+        )
 
         conn.commit()
 
@@ -336,14 +348,16 @@ class MetricsStore:
         conn = self._get_connection()
         cursor = conn.cursor()
 
-        cursor.execute("""
+        cursor.execute(
+            """
             SELECT pool_name, pool_url, shares_submitted, shares_accepted, shares_rejected,
                    connection_failures, avg_latency_ms, last_activity_timestamp,
                    last_pool_event_timestamp, last_share_submit_timestamp,
                    current_difficulty, current_jobs_count, acceptance_rate
             FROM pool_metrics
             ORDER BY updated_at DESC
-        """)
+        """
+        )
 
         metrics = []
         for row in cursor.fetchall():
@@ -532,7 +546,9 @@ class MetricsStore:
 
         # Check Information Integrity Bounds (compression ratio hard cap)
         if "compression_ratio" in proposal and "MAX_COMPRESSION_RATIO" in config_limits:
-            proximity = abs(config_limits["MAX_COMPRESSION_RATIO"] - proposal["compression_ratio"])
+            proximity = abs(
+                config_limits["MAX_COMPRESSION_RATIO"] - proposal["compression_ratio"]
+            )
             proximities.append(proximity)
 
         # Check Natural Scaling Bounds (phi-scaling limits)
@@ -542,13 +558,18 @@ class MetricsStore:
 
         # Check Search Depth Bounds
         if "search_depth" in proposal and "MAX_SEARCH_DEPTH" in config_limits:
-            proximity = abs(config_limits["MAX_SEARCH_DEPTH"] - proposal["search_depth"])
-            proximities.append(proximity / config_limits["MAX_SEARCH_DEPTH"])  # Normalize
+            proximity = abs(
+                config_limits["MAX_SEARCH_DEPTH"] - proposal["search_depth"]
+            )
+            proximities.append(
+                proximity / config_limits["MAX_SEARCH_DEPTH"]
+            )  # Normalize
 
         # Check Coherence Threshold Bounds
         if "coherence_threshold" in proposal and "MAX_COHERENCE_DELTA" in config_limits:
             proximity = abs(
-                config_limits["MAX_COHERENCE_DELTA"] - abs(proposal["coherence_threshold"])
+                config_limits["MAX_COHERENCE_DELTA"]
+                - abs(proposal["coherence_threshold"])
             )
             proximities.append(proximity)
 

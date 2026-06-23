@@ -31,7 +31,9 @@ from pythia_mining.autonomous_audit_persistence import AutonomousAuditLogger
 # ---------------------------------------------------------------------------
 
 
-def _make_controller(tmp_path: Optional[Any] = None, **kwargs) -> AutonomousMiningController:
+def _make_controller(
+    tmp_path: Optional[Any] = None, **kwargs
+) -> AutonomousMiningController:
     """Build a controller with a mock engine and given config overrides.
 
     When ``tmp_path`` is provided the persistent audit journal is redirected
@@ -76,8 +78,11 @@ def _make_controller(tmp_path: Optional[Any] = None, **kwargs) -> AutonomousMini
     # Redirect the persistent audit journal into tmp_path when available
     if tmp_path is not None:
         from pythia_mining.autonomous_audit_persistence import AuditJournal
+
         journal_dir = str(tmp_path / "audit")
-        ctrl._persistent_audit_logger = AutonomousAuditLogger(journal=AuditJournal(journal_dir))
+        ctrl._persistent_audit_logger = AutonomousAuditLogger(
+            journal=AuditJournal(journal_dir)
+        )
 
     return ctrl
 
@@ -131,11 +136,15 @@ class TestContinuousHealthLoop:
         ctrl._handle_performance_degradation = tracking_handler
 
         # Run the monitor cycle with a low phi_density
-        with patch.object(ctrl, "get_metrics_snapshot", return_value={
-            "phi_density": 0.2,  # normalized hashrate = 0.4, target=1.0 => 40% of target => <70%
-            "total_decisions": 100,
-            "constraint_violations": 5,
-        }):
+        with patch.object(
+            ctrl,
+            "get_metrics_snapshot",
+            return_value={
+                "phi_density": 0.2,  # normalized hashrate = 0.4, target=1.0 => 40% of target => <70%
+                "total_decisions": 100,
+                "constraint_violations": 5,
+            },
+        ):
             await _run_single_monitor_cycle(ctrl)
 
         # Assert the handler was called
@@ -158,11 +167,15 @@ class TestContinuousHealthLoop:
         ctrl._recalibrate_parameters = tracking_recalibrate
 
         # Run the monitor cycle with high constraint violations
-        with patch.object(ctrl, "get_metrics_snapshot", return_value={
-            "phi_density": 0.8,
-            "total_decisions": 10,
-            "constraint_violations": 3,  # 30% error rate > 15% threshold
-        }):
+        with patch.object(
+            ctrl,
+            "get_metrics_snapshot",
+            return_value={
+                "phi_density": 0.8,
+                "total_decisions": 10,
+                "constraint_violations": 3,  # 30% error rate > 15% threshold
+            },
+        ):
             await _run_single_monitor_cycle(ctrl)
 
         assert recalibrated.is_set()
@@ -199,16 +212,21 @@ class TestContinuousHealthLoop:
         # Trigger a performance degradation event
         ctrl._actual_hashrate = 0.1
         ctrl._target_hashrate = 1.0
-        with patch.object(ctrl, "get_metrics_snapshot", return_value={
-            "phi_density": 0.05,
-            "total_decisions": 100,
-            "constraint_violations": 0,
-            "degradation_events": 0,
-        }):
+        with patch.object(
+            ctrl,
+            "get_metrics_snapshot",
+            return_value={
+                "phi_density": 0.05,
+                "total_decisions": 100,
+                "constraint_violations": 0,
+                "degradation_events": 0,
+            },
+        ):
             await ctrl._handle_performance_degradation()
 
         assert len(ctrl._autonomy_journal) == journal_len + 1
         assert ctrl._autonomy_journal[-1]["event_type"] == "PerformanceDegradation"
+
 
 # ===================================================================
 # TEST 2: Dynamic Resource Scaling
@@ -229,7 +247,9 @@ class TestDynamicResourceScaling:
 
         assert ctrl._current_intensity == initial_intensity - 1
         # Verify journal entry
-        journal_entries = [e for e in ctrl._autonomy_journal if e["event_type"] == "ResourceThrottle"]
+        journal_entries = [
+            e for e in ctrl._autonomy_journal if e["event_type"] == "ResourceThrottle"
+        ]
         assert len(journal_entries) == 1
         assert journal_entries[0]["data"]["system_load"] == 95.0
 
@@ -243,7 +263,9 @@ class TestDynamicResourceScaling:
             await ctrl._seek_improvement_with_resource_awareness()
 
         assert ctrl._current_intensity == initial
-        assert not any(e["event_type"] == "ResourceThrottle" for e in ctrl._autonomy_journal)
+        assert not any(
+            e["event_type"] == "ResourceThrottle" for e in ctrl._autonomy_journal
+        )
 
     @pytest.mark.asyncio
     async def test_low_cpu_load_triggers_expansion(self):
@@ -255,7 +277,9 @@ class TestDynamicResourceScaling:
             await ctrl._seek_improvement_with_resource_awareness()
 
         assert ctrl._current_intensity == 4
-        journal_entries = [e for e in ctrl._autonomy_journal if e["event_type"] == "ResourceExpansion"]
+        journal_entries = [
+            e for e in ctrl._autonomy_journal if e["event_type"] == "ResourceExpansion"
+        ]
         assert len(journal_entries) == 1
         assert journal_entries[0]["data"]["system_load"] == 25.0
 
@@ -269,7 +293,9 @@ class TestDynamicResourceScaling:
             await ctrl._seek_improvement_with_resource_awareness()
 
         assert ctrl._current_intensity == 3
-        assert not any(e["event_type"] == "ResourceExpansion" for e in ctrl._autonomy_journal)
+        assert not any(
+            e["event_type"] == "ResourceExpansion" for e in ctrl._autonomy_journal
+        )
 
     @pytest.mark.asyncio
     async def test_moderate_cpu_load_does_nothing(self):
@@ -318,7 +344,9 @@ class TestDynamicResourceScaling:
             await ctrl._seek_improvement_with_resource_awareness()
 
         # Verify the journal has a ResourceThrottle entry
-        events = [e for e in ctrl._autonomy_journal if e["event_type"] == "ResourceThrottle"]
+        events = [
+            e for e in ctrl._autonomy_journal if e["event_type"] == "ResourceThrottle"
+        ]
         assert len(events) == 1
         assert "new_intensity" in events[0]["data"]
 
@@ -348,7 +376,11 @@ class TestCircuitBreakerPattern:
         assert result["startup_self_healing_executed"] is False
 
         # Verify journal has a CircuitBreakerFailover entry
-        events = [e for e in ctrl._autonomy_journal if e["event_type"] == "CircuitBreakerFailover"]
+        events = [
+            e
+            for e in ctrl._autonomy_journal
+            if e["event_type"] == "CircuitBreakerFailover"
+        ]
         assert len(events) == 1
         assert events[0]["data"]["action"] == "switch_to_backup"
 
@@ -362,7 +394,9 @@ class TestCircuitBreakerPattern:
         now = time.time()
         ctrl._heal_attempt_window = [now - i * 60 for i in range(5)]
 
-        with patch.object(ctrl, "seek_improvement", return_value={"reflexive_cycle_executed": False}):
+        with patch.object(
+            ctrl, "seek_improvement", return_value={"reflexive_cycle_executed": False}
+        ):
             result = await ctrl.boot_self_heal_and_optimize()
 
         assert result.get("circuit_breaker_triggered") is not True
@@ -376,7 +410,9 @@ class TestCircuitBreakerPattern:
         now = time.time()
         ctrl._heal_attempt_window = [now - i * 60 for i in range(2)]
 
-        with patch.object(ctrl, "seek_improvement", return_value={"reflexive_cycle_executed": False}):
+        with patch.object(
+            ctrl, "seek_improvement", return_value={"reflexive_cycle_executed": False}
+        ):
             result = await ctrl.boot_self_heal_and_optimize()
 
         # Should NOT circuit-break
@@ -390,10 +426,10 @@ class TestCircuitBreakerPattern:
         # Seed with entries both inside and outside the window
         now = time.time()
         ctrl._heal_attempt_window = [
-            now - 10,           # 10s ago (inside)
-            now - 700,          # 700s ago (outside 600s window)
-            now - 100,          # 100s ago (inside)
-            now - 300,          # 300s ago (inside)
+            now - 10,  # 10s ago (inside)
+            now - 700,  # 700s ago (outside 600s window)
+            now - 100,  # 100s ago (inside)
+            now - 300,  # 300s ago (inside)
         ]
 
         count = await ctrl.get_recent_heal_attempts()
@@ -419,9 +455,15 @@ class TestCircuitBreakerPattern:
 
         await ctrl.boot_self_heal_and_optimize()
 
-        events = [e for e in ctrl._autonomy_journal if e["event_type"] == "CircuitBreakerFailover"]
+        events = [
+            e
+            for e in ctrl._autonomy_journal
+            if e["event_type"] == "CircuitBreakerFailover"
+        ]
         assert len(events) == 1
-        events2 = [e for e in ctrl._autonomy_journal if e["event_type"] == "BackupFailover"]
+        events2 = [
+            e for e in ctrl._autonomy_journal if e["event_type"] == "BackupFailover"
+        ]
         assert len(events2) == 1
 
 

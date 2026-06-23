@@ -68,7 +68,9 @@ class PhiAcceleratedDensityMatrix:
         return rho_phi
 
     @staticmethod
-    def phi_folding_compression(rho: np.ndarray, fold_depth: int = 2) -> Tuple[np.ndarray, float]:
+    def phi_folding_compression(
+        rho: np.ndarray, fold_depth: int = 2
+    ) -> Tuple[np.ndarray, float]:
         """Compress density matrix using Φ-folding.
 
         Uses golden ratio geometry to fold the matrix into a more compact
@@ -99,7 +101,9 @@ class PhiAcceleratedDensityMatrix:
         return compressed, compression_ratio
 
     @staticmethod
-    def phi_decoherence_suppression(rho: np.ndarray, strength: float = 0.1) -> np.ndarray:
+    def phi_decoherence_suppression(
+        rho: np.ndarray, strength: float = 0.1
+    ) -> np.ndarray:
         """Suppress decoherence using Φ-based damping.
 
         Mathematical property: Maintains trace normalization and positivity
@@ -136,7 +140,9 @@ class PhiAcceleratedUnitaryEvolution:
     """
 
     @staticmethod
-    def phi_trotter_suzuki(H: np.ndarray, dt: float, steps: int = 10, order: int = 2) -> np.ndarray:
+    def phi_trotter_suzuki(
+        H: np.ndarray, dt: float, steps: int = 10, order: int = 2
+    ) -> np.ndarray:
         """Φ-accelerated Trotter-Suzuki decomposition.
 
         Standard Trotter: exp(-iHt) ≈ (exp(-iH₁t/n)exp(-iH₂t/n))^n
@@ -163,6 +169,7 @@ class PhiAcceleratedUnitaryEvolution:
         for _ in range(steps):
             # Evolve with H1
             from scipy.linalg import expm as _expm
+
             U1 = _expm(-1j * H1 * dt1)
             U[:split_point, :split_point] = U1 @ U[:split_point, :split_point]
 
@@ -279,7 +286,9 @@ class PhiAcceleratedGrover:
         state = np.ones(self.dim, dtype=complex) / math.sqrt(self.dim)
 
         # Φ-accelerated iteration count
-        optimal_iterations = int(math.floor((math.pi / 4.0) * math.sqrt(self.dim) / self.phi))
+        optimal_iterations = int(
+            math.floor((math.pi / 4.0) * math.sqrt(self.dim) / self.phi)
+        )
         iterations = min(max_iterations, optimal_iterations)
 
         for _ in range(iterations):
@@ -338,7 +347,9 @@ class PhiAcceleratedMeasurement:
 
             smoothed[i] = (
                 PHI * probabilities[i]
-                + PHI_INVERSE * (probabilities[left_idx] + probabilities[right_idx]) / 2.0
+                + PHI_INVERSE
+                * (probabilities[left_idx] + probabilities[right_idx])
+                / 2.0
             ) / (PHI + PHI_INVERSE)
 
         # Renormalize
@@ -369,7 +380,9 @@ class PhiAcceleratedEntanglement:
         # For 4x4 system (2 qubits)
         if rho.shape == (4, 4):
             # Compute spin-flipped matrix
-            rho_tilde = np.kron(sigma_y, sigma_y) @ np.conj(rho) @ np.kron(sigma_y, sigma_y)
+            rho_tilde = (
+                np.kron(sigma_y, sigma_y) @ np.conj(rho) @ np.kron(sigma_y, sigma_y)
+            )
 
             # Compute sqrt(rho * rho_tilde)
             product = rho @ rho_tilde

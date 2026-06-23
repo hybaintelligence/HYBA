@@ -10,6 +10,7 @@ the formalism because it is the correct mathematics for representing
 superposed/mixed uncertainty over discrete role states.
 No claim of physical quantum effects or computational speedup is implied.
 """
+
 from __future__ import annotations
 
 import dataclasses
@@ -63,6 +64,7 @@ class ModuleState:
     rho: DIM x DIM complex density matrix.
     Must satisfy: Hermitian, trace 1, positive semi-definite.
     """
+
     rho: ndarray
     module_id: str
     refractory_period_end: float = 0.0
@@ -131,7 +133,14 @@ def apply_fault(state: ModuleState, severity: float) -> ModuleState:
     effective_severity = severity
     if state.is_in_refractory_period():
         remaining = state.refractory_period_end - time.time()
-        attenuation = max(0.0, min(1.0, remaining / max(state.refractory_period_end - state.recovery_timestamp, 1e-9)))
+        attenuation = max(
+            0.0,
+            min(
+                1.0,
+                remaining
+                / max(state.refractory_period_end - state.recovery_timestamp, 1e-9),
+            ),
+        )
         effective_severity = severity * (1.0 - attenuation)
     U = fault_perturbation_operator(effective_severity)
     new_rho = U @ state.rho @ U.conj().T
@@ -150,6 +159,7 @@ class ContextSignal:
     Positional memory analog. clifford_index ties this module's identity
     to its place in the Clifford rotation indexing scheme.
     """
+
     clifford_index: int
     target_role: Role
     confidence: float
@@ -160,6 +170,7 @@ class InnervationFailure(Exception):
     Raised when the context/feedback channel itself is severed.
     Distinct from insufficient redundancy: adding spare capacity will not fix this.
     """
+
     pass
 
 
@@ -182,14 +193,18 @@ def redifferentiation_unitary(context: Optional[ContextSignal]) -> ndarray:
     return U
 
 
-def redifferentiate(state: ModuleState, context: Optional[ContextSignal]) -> ModuleState:
+def redifferentiate(
+    state: ModuleState, context: Optional[ContextSignal]
+) -> ModuleState:
     """Apply redifferentiation unitary."""
     U = redifferentiation_unitary(context)
     new_rho = U @ state.rho @ U.conj().T
     return dataclasses.replace(state, rho=new_rho)
 
 
-def measure_role(state: ModuleState, rng: np.random.Generator) -> Tuple[Role, ModuleState]:
+def measure_role(
+    state: ModuleState, rng: np.random.Generator
+) -> Tuple[Role, ModuleState]:
     """
     Projective measurement in the role basis.
     Outcome probabilities are Born-rule weights from role_probabilities().
@@ -366,7 +381,9 @@ def regeneration_pipeline(
         trace["final_entropy"] = state.von_neumann_entropy()
         return trace
 
-    trace["status"] = "success" if context else "collapsed_no_target_to_validate_against"
+    trace["status"] = (
+        "success" if context else "collapsed_no_target_to_validate_against"
+    )
 
     # Stage 7: refractory stabilization
     if enable_refractory_period:

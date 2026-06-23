@@ -16,7 +16,9 @@ class ChangeImpactAssessor:
             "financial": ["Budget and chargeback review"],
             "organizational": list(self.stakeholder_map.keys()),
             "customer_facing": [
-                s for s in affected_systems if "api" in s.lower() or "customer" in s.lower()
+                s
+                for s in affected_systems
+                if "api" in s.lower() or "customer" in s.lower()
             ],
         }
 
@@ -27,6 +29,10 @@ class ChangeImpactAssessor:
                 {"name": "awareness", "audience": stakeholders, "timing": "T-14 days"},
                 {"name": "readiness", "audience": stakeholders, "timing": "T-3 days"},
                 {"name": "go-live", "audience": stakeholders, "timing": "T day"},
-                {"name": "reinforcement", "audience": stakeholders, "timing": "T+7 days"},
+                {
+                    "name": "reinforcement",
+                    "audience": stakeholders,
+                    "timing": "T+7 days",
+                },
             ],
         }

@@ -71,7 +71,9 @@ class DummyOptimizer:
     async def on_share_rejected(
         self, share_info: dict[str, Any], error_code: int, error_msg: str
     ) -> None:
-        self.rejected.append({"share": share_info, "code": error_code, "message": error_msg})
+        self.rejected.append(
+            {"share": share_info, "code": error_code, "message": error_msg}
+        )
 
     def meta_learning_snapshot(self) -> dict[str, Any]:
         return {"accepted": len(self.accepted), "rejected": len(self.rejected)}
@@ -150,11 +152,15 @@ class DummyVerifier:
     def initialize_metal(self) -> dict[str, Any]:
         return {"selected_backend": "cpu", "metal": {"available": False}}
 
-    def verify_batch(self, job: Any, nonces: list[int], extranonce2: str | None = None) -> Any:
+    def verify_batch(
+        self, job: Any, nonces: list[int], extranonce2: str | None = None
+    ) -> Any:
         self.batch_result.total_nonces = len(nonces)
         return self.batch_result
 
-    def submit_candidate(self, job: Any, nonce: int, extranonce2: str | None = None) -> Any:
+    def submit_candidate(
+        self, job: Any, nonce: int, extranonce2: str | None = None
+    ) -> Any:
         return self.candidate_result
 
 
@@ -297,12 +303,10 @@ def engine_module(monkeypatch: pytest.MonkeyPatch):
             "nonces": payload["nonces"],
         }
     )
-    scaling.benchmark_vs_asic = (
-        lambda measured_hashes_per_second=None, asic_baseline_hashes_per_second=110e12: {
-            "measured_hashes_per_second": measured_hashes_per_second,
-            "asic_baseline_hashes_per_second": asic_baseline_hashes_per_second,
-        }
-    )
+    scaling.benchmark_vs_asic = lambda measured_hashes_per_second=None, asic_baseline_hashes_per_second=110e12: {
+        "measured_hashes_per_second": measured_hashes_per_second,
+        "asic_baseline_hashes_per_second": asic_baseline_hashes_per_second,
+    }
 
     compressed = module("pythia_mining.pulvini_compressed_solver")
     compressed.PulviniCompressedQuantumSolver = DummySolver
@@ -385,7 +389,9 @@ def test_autonomic_event_when_healing_needed(engine: Any) -> None:
     assert engine.state.autonomic_event["action"] == "reduced_search_aggressiveness"
 
 
-def test_autonomous_failure_opens_degraded_path_without_blocking_search(engine: Any) -> None:
+def test_autonomous_failure_opens_degraded_path_without_blocking_search(
+    engine: Any,
+) -> None:
     engine.autonomous_controller.fail_next = True
     result = run(engine.search(job={"job_id": "failure"}))
     assert result.success is True
@@ -413,7 +419,9 @@ def test_submit_candidate_records_candidate_validity(engine: Any) -> None:
     assert engine.state.last_candidate_hash == "00feed"
 
 
-def test_share_acceptance_ratio_tracking_counts_accepted_and_rejected(engine: Any) -> None:
+def test_share_acceptance_ratio_tracking_counts_accepted_and_rejected(
+    engine: Any,
+) -> None:
     run(engine.on_share_result({"share": "a"}, accepted=True))
     run(engine.on_share_result({"share": "b", "error_code": 21}, accepted=False))
     state = engine.get_unified_state()["state"]
@@ -423,7 +431,10 @@ def test_share_acceptance_ratio_tracking_counts_accepted_and_rejected(engine: An
 
 
 def test_analyze_nonce_resonance_uses_float_nonce_payload(engine: Any) -> None:
-    assert engine.analyze_nonce_resonance([1, 2, 3]) == {"count": 3, "nonces": [1.0, 2.0, 3.0]}
+    assert engine.analyze_nonce_resonance([1, 2, 3]) == {
+        "count": 3,
+        "nonces": [1.0, 2.0, 3.0],
+    }
 
 
 def test_benchmark_passes_measured_and_baseline_values(engine: Any) -> None:
@@ -438,7 +449,9 @@ def test_autonomous_control_methods_delegate_to_controller(engine: Any) -> None:
     hash_decision = run(engine.autonomous_optimize_hashrate(target_hashrate_ehs=2.0))
     assert search_decision["decision_id"] == "d1"
     assert hash_decision["action_taken"] == "cap"
-    assert engine.autonomous_controller.last_hashrate_kwargs["target_hashrate_ehs"] == 2.0
+    assert (
+        engine.autonomous_controller.last_hashrate_kwargs["target_hashrate_ehs"] == 2.0
+    )
 
 
 def test_autonomy_status_level_and_decision_history(engine: Any) -> None:
@@ -484,7 +497,9 @@ def test_environment_variable_precedence_blocks_dev_fixtures_in_live_mode(
         phi_config.initialize_production_secrets()
 
 
-def test_production_secret_gate_accepts_secure_values(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_production_secret_gate_accepts_secure_values(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     from pythia_mining import phi_config
 
     monkeypatch.delenv("HYBA_ALLOW_DEV_FIXTURES", raising=False)
@@ -548,10 +563,14 @@ def orchestrator_module(monkeypatch: pytest.MonkeyPatch):
 
 @pytest.fixture()
 def profile(orchestrator_module: types.ModuleType):
-    return orchestrator_module.PoolProfile(pool_id="p1", name="Primary", url="stratum+tcp://pool")
+    return orchestrator_module.PoolProfile(
+        pool_id="p1", name="Primary", url="stratum+tcp://pool"
+    )
 
 
-def test_orchestrator_requires_at_least_one_pool(orchestrator_module: types.ModuleType) -> None:
+def test_orchestrator_requires_at_least_one_pool(
+    orchestrator_module: types.ModuleType,
+) -> None:
     with pytest.raises(ValueError, match="At least one pool"):
         orchestrator_module.ProductionMiningOrchestrator([])
 
@@ -572,19 +591,28 @@ def test_pool_health_updates_reset_consecutive_failures(
     orchestrator.pool_health["p1"].consecutive_failures = 4
     orchestrator._update_pool_health("p1", orchestrator_module.PoolHealth.HEALTHY)
     assert orchestrator.pool_health["p1"].consecutive_failures == 0
-    assert orchestrator.pool_health["p1"].health is orchestrator_module.PoolHealth.HEALTHY
+    assert (
+        orchestrator.pool_health["p1"].health is orchestrator_module.PoolHealth.HEALTHY
+    )
 
 
 def test_pool_failure_thresholds_progress_to_degraded(
     profile: Any, orchestrator_module: types.ModuleType
 ) -> None:
     orchestrator = orchestrator_module.ProductionMiningOrchestrator(
-        [profile], max_pool_failures_before_degraded=2, max_pool_failures_before_offline=3
+        [profile],
+        max_pool_failures_before_degraded=2,
+        max_pool_failures_before_offline=3,
     )
     orchestrator._record_pool_failure("p1", "timeout")
-    assert orchestrator.pool_health["p1"].health is orchestrator_module.PoolHealth.UNHEALTHY
+    assert (
+        orchestrator.pool_health["p1"].health
+        is orchestrator_module.PoolHealth.UNHEALTHY
+    )
     orchestrator._record_pool_failure("p1", "timeout")
-    assert orchestrator.pool_health["p1"].health is orchestrator_module.PoolHealth.DEGRADED
+    assert (
+        orchestrator.pool_health["p1"].health is orchestrator_module.PoolHealth.DEGRADED
+    )
     assert orchestrator.pool_health["p1"].consecutive_failures == 0
 
 
@@ -592,11 +620,15 @@ def test_pool_failure_can_mark_offline_without_degraded_reset(
     profile: Any, orchestrator_module: types.ModuleType
 ) -> None:
     orchestrator = orchestrator_module.ProductionMiningOrchestrator(
-        [profile], max_pool_failures_before_degraded=5, max_pool_failures_before_offline=2
+        [profile],
+        max_pool_failures_before_degraded=5,
+        max_pool_failures_before_offline=2,
     )
     orchestrator._record_pool_failure("p1", "timeout")
     orchestrator._record_pool_failure("p1", "timeout")
-    assert orchestrator.pool_health["p1"].health is orchestrator_module.PoolHealth.OFFLINE
+    assert (
+        orchestrator.pool_health["p1"].health is orchestrator_module.PoolHealth.OFFLINE
+    )
 
 
 def test_orchestrator_job_dispatch_uses_priority_order(
@@ -615,8 +647,12 @@ def test_share_collection_records_acceptance_and_rejection(
     profile: Any, orchestrator_module: types.ModuleType
 ) -> None:
     orchestrator = orchestrator_module.ProductionMiningOrchestrator([profile])
-    orchestrator._record_share_result("p1", orchestrator_module.ShareResult(accepted=True))
-    orchestrator._record_share_result("p1", orchestrator_module.ShareResult(accepted=False))
+    orchestrator._record_share_result(
+        "p1", orchestrator_module.ShareResult(accepted=True)
+    )
+    orchestrator._record_share_result(
+        "p1", orchestrator_module.ShareResult(accepted=False)
+    )
     status = orchestrator.pool_health["p1"]
     assert status.shares_submitted_total == 2
     assert status.shares_accepted_total == 1
@@ -629,8 +665,12 @@ def test_hashrate_acceptance_ratio_tracking_in_mining_stats(
     orchestrator = orchestrator_module.ProductionMiningOrchestrator([profile])
     orchestrator.total_connection_attempts = 4
     orchestrator.successful_connections = 3
-    orchestrator._record_share_result("p1", orchestrator_module.ShareResult(accepted=True))
-    orchestrator._record_share_result("p1", orchestrator_module.ShareResult(accepted=False))
+    orchestrator._record_share_result(
+        "p1", orchestrator_module.ShareResult(accepted=True)
+    )
+    orchestrator._record_share_result(
+        "p1", orchestrator_module.ShareResult(accepted=False)
+    )
     stats = orchestrator.get_mining_stats()
     assert stats.global_acceptance_rate == 0.5
     assert stats.connection_success_rate == 0.75
@@ -648,10 +688,14 @@ def test_orchestrator_failover_skips_rejected_first_pool(
     orchestrator._update_pool_health("p2", orchestrator_module.PoolHealth.HEALTHY)
     orchestrator.clients = {
         "p1": types.SimpleNamespace(
-            submit_validated_share=AsyncMock(return_value=orchestrator_module.ShareResult(False))
+            submit_validated_share=AsyncMock(
+                return_value=orchestrator_module.ShareResult(False)
+            )
         ),
         "p2": types.SimpleNamespace(
-            submit_validated_share=AsyncMock(return_value=orchestrator_module.ShareResult(True))
+            submit_validated_share=AsyncMock(
+                return_value=orchestrator_module.ShareResult(True)
+            )
         ),
     }
     result = run(orchestrator._submit_failover(job=object(), nonce=1))
@@ -673,7 +717,9 @@ def test_multi_pool_submission_collects_only_share_results(
     orchestrator._update_pool_health("p2", orchestrator_module.PoolHealth.HEALTHY)
     orchestrator.clients = {
         "p1": types.SimpleNamespace(
-            submit_validated_share=AsyncMock(return_value=orchestrator_module.ShareResult(True))
+            submit_validated_share=AsyncMock(
+                return_value=orchestrator_module.ShareResult(True)
+            )
         ),
         "p2": types.SimpleNamespace(
             submit_validated_share=AsyncMock(side_effect=RuntimeError("down"))

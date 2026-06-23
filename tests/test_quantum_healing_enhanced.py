@@ -41,7 +41,9 @@ class TestWKBTunnelling:
         _, amp_low = swarm._wkb_tunnel(rho_low_barrier, phi_density=0.9)
 
         # Higher barrier → lower amplitude
-        assert amp_high < amp_low, "Tunnelling amplitude should decrease with barrier height"
+        assert (
+            amp_high < amp_low
+        ), "Tunnelling amplitude should decrease with barrier height"
         assert 0.0 <= amp_high <= 1.0, "Amplitude must be in [0, 1]"
         assert 0.0 <= amp_low <= 1.0, "Amplitude must be in [0, 1]"
 
@@ -59,13 +61,17 @@ class TestWKBTunnelling:
         result_degraded = swarm.heal(
             phi_density=0.3, consecutive_failures=15, degrade_factor=1.0
         )
-        assert result_degraded.tunnelling_used, "Tunnelling should fire on degraded state"
+        assert (
+            result_degraded.tunnelling_used
+        ), "Tunnelling should fire on degraded state"
 
         # Healthy state: should not trigger tunnelling
         result_healthy = swarm.heal(
             phi_density=0.9, consecutive_failures=2, degrade_factor=0.1
         )
-        assert not result_healthy.tunnelling_used, "Tunnelling should not fire on healthy state"
+        assert (
+            not result_healthy.tunnelling_used
+        ), "Tunnelling should not fire on healthy state"
 
     def test_tunnelling_amplitude_follows_wkb_formula(self):
         """Tunnelling amplitude should follow T = exp(-α·barrier_height) approximately.
@@ -93,8 +99,9 @@ class TestWKBTunnelling:
 
         # Amplitudes should be monotonically increasing with purity (decreasing barrier)
         for i in range(len(amplitudes) - 1):
-            assert amplitudes[i] <= amplitudes[i + 1], \
-                f"Amplitude should increase with purity: {amplitudes[i]} vs {amplitudes[i+1]}"
+            assert (
+                amplitudes[i] <= amplitudes[i + 1]
+            ), f"Amplitude should increase with purity: {amplitudes[i]} vs {amplitudes[i+1]}"
 
         # All amplitudes should be in [0, 1]
         for amp in amplitudes:
@@ -110,7 +117,9 @@ class TestWKBTunnelling:
             enable_interference=False,
         )
 
-        result = swarm.heal(phi_density=0.2, consecutive_failures=15, degrade_factor=1.0)
+        result = swarm.heal(
+            phi_density=0.2, consecutive_failures=15, degrade_factor=1.0
+        )
 
         if result.tunnelling_used:
             assert (
@@ -153,8 +162,12 @@ class TestPhiAnnealing:
         temp_5_scalar = to_scalar(temp_5)
 
         # Temperature should be bounded: 0.1 <= T <= 1.0
-        assert 0.1 <= temp_0_scalar <= 1.0, f"Initial temperature {temp_0_scalar} out of bounds"
-        assert 0.1 <= temp_5_scalar <= 1.0, f"Final temperature {temp_5_scalar} out of bounds"
+        assert (
+            0.1 <= temp_0_scalar <= 1.0
+        ), f"Initial temperature {temp_0_scalar} out of bounds"
+        assert (
+            0.1 <= temp_5_scalar <= 1.0
+        ), f"Final temperature {temp_5_scalar} out of bounds"
 
     def test_annealing_accepts_lower_energy(self):
         """Annealing should always accept candidates with lower energy (entropy)."""
@@ -176,7 +189,9 @@ class TestPhiAnnealing:
         # it should be accepted. We test this by running multiple trials.
         accept_count = 0
         for _ in range(20):
-            _, _, accepted = swarm._phi_anneal(rho_high_entropy, high_entropy, phi_density=0.1)
+            _, _, accepted = swarm._phi_anneal(
+                rho_high_entropy, high_entropy, phi_density=0.1
+            )
             if accepted:
                 accept_count += 1
 
@@ -244,7 +259,9 @@ class TestSwarmConsensus:
 
         rho_consensus, consensus_purity = swarm._swarm_consensus(rho, phi_density=0.3)
 
-        assert consensus_purity >= pre_purity, "Swarm consensus should not decrease purity"
+        assert (
+            consensus_purity >= pre_purity
+        ), "Swarm consensus should not decrease purity"
 
     def test_swarm_consensus_purity_in_result(self):
         """The swarm_consensus_purity field should be populated in HealingResult."""
@@ -257,7 +274,9 @@ class TestSwarmConsensus:
         )
 
         result = swarm.heal(phi_density=0.5, consecutive_failures=5, degrade_factor=0.5)
-        assert result.swarm_consensus_purity > 0.0, "swarm_consensus_purity should be positive"
+        assert (
+            result.swarm_consensus_purity > 0.0
+        ), "swarm_consensus_purity should be positive"
         assert result.swarming_used, "swarming_used should be True when enabled"
 
     def test_swarm_consensus_hermitian_and_unit_trace(self):
@@ -282,7 +301,9 @@ class TestSwarmConsensus:
 
         # Unit trace
         trace = np.trace(rho_consensus).real
-        assert abs(trace - 1.0) < 1e-10, f"Consensus state should have unit trace, got {trace}"
+        assert (
+            abs(trace - 1.0) < 1e-10
+        ), f"Consensus state should have unit trace, got {trace}"
 
     def test_swarm_consensus_phi_weighted(self):
         """Consensus should use φ-weighted averaging (φ^(-i) weights)."""
@@ -374,7 +395,9 @@ class TestInterferenceAccumulation:
             swarm._interference_accumulate(rho, phi_density=0.5)
 
         # Should have reset
-        assert swarm._persistent_superposition is None, "Persistent state should reset after age > 10"
+        assert (
+            swarm._persistent_superposition is None
+        ), "Persistent state should reset after age > 10"
         assert swarm._superposition_age == 0, "Age should reset to 0"
 
     def test_interference_used_flag_set_correctly(self):
@@ -404,7 +427,9 @@ class TestIntegratedHealingWithAllMechanisms:
             enable_interference=True,
         )
 
-        result = swarm.heal(phi_density=0.3, consecutive_failures=15, degrade_factor=1.0)
+        result = swarm.heal(
+            phi_density=0.3, consecutive_failures=15, degrade_factor=1.0
+        )
 
         # Check that all mechanism flags are set
         # (Note: tunnelling only fires when purity < 0.5 and failures > 10)
@@ -413,7 +438,9 @@ class TestIntegratedHealingWithAllMechanisms:
 
         assert result.annealing_used, "Annealing should always be used when enabled"
         assert result.swarming_used, "Swarming should always be used when enabled"
-        assert result.interference_used, "Interference should always be used when enabled"
+        assert (
+            result.interference_used
+        ), "Interference should always be used when enabled"
 
     def test_healing_result_has_all_enhanced_fields(self):
         """HealingResult should populate all enhanced mechanism fields."""
@@ -449,7 +476,9 @@ class TestIntegratedHealingWithAllMechanisms:
 
         result = swarm.heal(phi_density=0.5, consecutive_failures=5, degrade_factor=0.5)
 
-        assert result.duration_ms < 100.0, f"Healing took {result.duration_ms}ms, should be < 100ms"
+        assert (
+            result.duration_ms < 100.0
+        ), f"Healing took {result.duration_ms}ms, should be < 100ms"
 
     def test_healing_is_deterministic_with_fixed_seed(self):
         """With fixed random seed, healing should be deterministic.
@@ -475,14 +504,22 @@ class TestIntegratedHealingWithAllMechanisms:
         )
 
         np.random.seed(42)
-        result1 = swarm1.heal(phi_density=0.5, consecutive_failures=5, degrade_factor=0.5)
+        result1 = swarm1.heal(
+            phi_density=0.5, consecutive_failures=5, degrade_factor=0.5
+        )
 
         np.random.seed(42)
-        result2 = swarm2.heal(phi_density=0.5, consecutive_failures=5, degrade_factor=0.5)
+        result2 = swarm2.heal(
+            phi_density=0.5, consecutive_failures=5, degrade_factor=0.5
+        )
 
         # Results should be identical with same seed (within floating-point tolerance)
-        assert result1.post_heal_purity == pytest.approx(result2.post_heal_purity, abs=1e-9)
-        assert result1.post_heal_entropy == pytest.approx(result2.post_heal_entropy, abs=1e-9)
+        assert result1.post_heal_purity == pytest.approx(
+            result2.post_heal_purity, abs=1e-9
+        )
+        assert result1.post_heal_entropy == pytest.approx(
+            result2.post_heal_entropy, abs=1e-9
+        )
 
     def test_purity_gain_positive_on_degraded_input(self):
         """On degraded input, healing should increase purity."""
@@ -494,9 +531,13 @@ class TestIntegratedHealingWithAllMechanisms:
             enable_interference=True,
         )
 
-        result = swarm.heal(phi_density=0.2, consecutive_failures=15, degrade_factor=1.0)
+        result = swarm.heal(
+            phi_density=0.2, consecutive_failures=15, degrade_factor=1.0
+        )
 
-        assert result.purity_gain > 0, f"Purity gain should be positive, got {result.purity_gain}"
+        assert (
+            result.purity_gain > 0
+        ), f"Purity gain should be positive, got {result.purity_gain}"
 
     def test_entropy_reduction_positive_on_degraded_input(self):
         """On degraded input, healing should reduce entropy."""
@@ -508,7 +549,9 @@ class TestIntegratedHealingWithAllMechanisms:
             enable_interference=True,
         )
 
-        result = swarm.heal(phi_density=0.2, consecutive_failures=15, degrade_factor=1.0)
+        result = swarm.heal(
+            phi_density=0.2, consecutive_failures=15, degrade_factor=1.0
+        )
 
         assert (
             result.entropy_reduction > 0

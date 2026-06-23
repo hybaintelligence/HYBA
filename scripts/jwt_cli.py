@@ -95,8 +95,12 @@ def main():
 
     # Generate token command
     gen_parser = subparsers.add_parser("generate", help="Generate a JWT token")
-    gen_parser.add_argument("--user-id", default="operator", help="User ID (default: operator)")
-    gen_parser.add_argument("--username", default="operator", help="Username (default: operator)")
+    gen_parser.add_argument(
+        "--user-id", default="operator", help="User ID (default: operator)"
+    )
+    gen_parser.add_argument(
+        "--username", default="operator", help="Username (default: operator)"
+    )
     gen_parser.add_argument(
         "--roles",
         nargs="+",
@@ -107,7 +111,8 @@ def main():
         "--expiry", type=int, default=24, help="Token expiry in hours (default: 24)"
     )
     gen_parser.add_argument(
-        "--secret", help="JWT secret (uses JWT_SECRET env var or dev secret if not provided)"
+        "--secret",
+        help="JWT secret (uses JWT_SECRET env var or dev secret if not provided)",
     )
     gen_parser.add_argument(
         "--output",
@@ -117,20 +122,32 @@ def main():
     )
 
     # Decode token command
-    decode_parser = subparsers.add_parser("decode", help="Decode and verify a JWT token")
+    decode_parser = subparsers.add_parser(
+        "decode", help="Decode and verify a JWT token"
+    )
     decode_parser.add_argument("token", help="JWT token to decode")
     decode_parser.add_argument(
-        "--secret", help="JWT secret (uses JWT_SECRET env var or dev secret if not provided)"
+        "--secret",
+        help="JWT secret (uses JWT_SECRET env var or dev secret if not provided)",
     )
 
     # Test authentication command
-    test_parser = subparsers.add_parser("test", help="Test authentication with API endpoints")
-    test_parser.add_argument("--base-url", default="http://localhost:3001", help="API base URL")
-    test_parser.add_argument(
-        "--secret", help="JWT secret (uses JWT_SECRET env var or dev secret if not provided)"
+    test_parser = subparsers.add_parser(
+        "test", help="Test authentication with API endpoints"
     )
-    test_parser.add_argument("--user-id", default="operator", help="User ID (default: operator)")
-    test_parser.add_argument("--username", default="operator", help="Username (default: operator)")
+    test_parser.add_argument(
+        "--base-url", default="http://localhost:3001", help="API base URL"
+    )
+    test_parser.add_argument(
+        "--secret",
+        help="JWT secret (uses JWT_SECRET env var or dev secret if not provided)",
+    )
+    test_parser.add_argument(
+        "--user-id", default="operator", help="User ID (default: operator)"
+    )
+    test_parser.add_argument(
+        "--username", default="operator", help="Username (default: operator)"
+    )
     test_parser.add_argument(
         "--roles",
         nargs="+",

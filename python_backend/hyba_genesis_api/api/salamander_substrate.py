@@ -48,7 +48,9 @@ class MetabolismStatus(BaseModel):
     not invent wattage, ROI, or efficiency readings.
     """
 
-    status: Literal["NO_LIVE_TELEMETRY", "HOMEOSTASIS", "DEGRADED"] = "NO_LIVE_TELEMETRY"
+    status: Literal["NO_LIVE_TELEMETRY", "HOMEOSTASIS", "DEGRADED"] = (
+        "NO_LIVE_TELEMETRY"
+    )
     wattage_draw: Optional[float] = None
     roi_threshold: Optional[float] = None
     current_efficiency: Optional[float] = None
@@ -92,7 +94,9 @@ def _trace(prefix: str) -> str:
 def _build_log(entries: List[EvidenceEntryRequest]) -> ImmutableEvidenceLog:
     log = ImmutableEvidenceLog()
     for entry in entries:
-        log = log.append(entry.event, actor=entry.actor, timestamp=entry.timestamp, **entry.data)
+        log = log.append(
+            entry.event, actor=entry.actor, timestamp=entry.timestamp, **entry.data
+        )
     return log
 
 
@@ -129,11 +133,17 @@ def simulate_dream(request: DreamSimulationRequest) -> EnterpriseEnvelope:
         max_value=request.max_value,
     )
 
-    def evaluator(evidence_log: ImmutableEvidenceLog, genes: Dict[str, SalamanderGene]) -> float:
+    def evaluator(
+        evidence_log: ImmutableEvidenceLog, genes: Dict[str, SalamanderGene]
+    ) -> float:
         evidence_bonus = len(evidence_log.entries()) * 0.001
-        return evidence_bonus - abs(genes[request.baseline_gene].value - request.target_value)
+        return evidence_bonus - abs(
+            genes[request.baseline_gene].value - request.target_value
+        )
 
-    dream = SalamanderDreamState(evaluator, promotion_threshold=request.promotion_threshold)
+    dream = SalamanderDreamState(
+        evaluator, promotion_threshold=request.promotion_threshold
+    )
     outcome = dream.simulate_mutation(
         log,
         {request.baseline_gene: gene},
@@ -193,7 +203,9 @@ def audit_verdict(request: AuditVerdictRequest) -> EnterpriseEnvelope:
         verdict="PASS" if all_passed else "REVIEW_REQUIRED",
         data={
             result.invariant: (
-                result.model_dump() if hasattr(result, "model_dump") else result.__dict__
+                result.model_dump()
+                if hasattr(result, "model_dump")
+                else result.__dict__
             )
             for result in invariants
         },

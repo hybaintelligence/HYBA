@@ -28,7 +28,9 @@ class StimulateReq(BaseModel):
 async def get_consciousness_status():
     """Return live consciousness metrics from GenesisAI if available, otherwise explicit unknown state."""
     try:
-        from python_backend.pythia_mining.genesis_ai_service import GenesisAIServiceRegistry
+        from python_backend.pythia_mining.genesis_ai_service import (
+            GenesisAIServiceRegistry,
+        )
 
         if not GenesisAIServiceRegistry.is_registered():
             return {

@@ -62,7 +62,9 @@ def test_pulvini_phi_ctd_experiment_compresses_and_keeps_claim_boundary() -> Non
     assert packet.compression_ratio > 1.0
     assert packet.reversible_compression is True
     assert packet.reconstruction_error < 1e-8
-    assert math.isclose(packet.phi * packet.phi, packet.phi + 1.0, rel_tol=0.0, abs_tol=1e-12)
+    assert math.isclose(
+        packet.phi * packet.phi, packet.phi + 1.0, rel_tol=0.0, abs_tol=1e-12
+    )
     assert review.rigorous is True
     assert review.implements_hilbert_space_math is True
     assert review.uses_pulvini_phi_compression is True
@@ -94,7 +96,9 @@ if given is not None:
         ),
     )
     @settings(max_examples=40, deadline=None)
-    def test_golden_phase_state_property_invariants(dimension: int, phase_seed: float) -> None:
+    def test_golden_phase_state_property_invariants(
+        dimension: int, phase_seed: float
+    ) -> None:
         state = golden_phase_state(dimension, phase_seed=phase_seed)
         evolved = state.evolve(golden_ratio_unitary(dimension))
         probabilities = evolved.born_probabilities()
@@ -104,6 +108,7 @@ if given is not None:
         assert np.all(probabilities >= 0.0)
         assert np.isclose(np.sum(probabilities), 1.0, atol=1e-12)
         assert abs(PHI * PHI - (PHI + 1.0)) < 1e-12
+
 else:
 
     @pytest.mark.skip(reason="hypothesis is not installed")
@@ -121,7 +126,9 @@ def test_ctd_formalism_microbenchmark_is_bounded_and_replayable() -> None:
     assert {sample.dimension for sample in samples} == {16}
 
 
-def test_deutsch_pulvini_benchmark_validates_exponential_wall_not_breakthrough() -> None:
+def test_deutsch_pulvini_benchmark_validates_exponential_wall_not_breakthrough() -> (
+    None
+):
     report = run_deutsch_pulvini_benchmark((30, 50, 100, 1000))
     rows = report.rows
 

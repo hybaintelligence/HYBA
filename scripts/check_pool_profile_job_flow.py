@@ -81,9 +81,9 @@ def build_report(mode: Mode) -> PoolProfileReport:
         )
 
     braiins = DEFAULT_POOL_SPECS.get("braiins", {})
-    if int(braiins.get("stratum_version", 0)) != 1 or not str(braiins.get("url", "")).startswith(
-        "stratum+tcp://"
-    ):
+    if int(braiins.get("stratum_version", 0)) != 1 or not str(
+        braiins.get("url", "")
+    ).startswith("stratum+tcp://"):
         findings.append(
             PoolProfileFinding(
                 pool_id="braiins",
@@ -160,7 +160,9 @@ def build_report(mode: Mode) -> PoolProfileReport:
                 )
             )
 
-    critical_failed = any(f.severity == "critical" and f.status == "fail" for f in findings)
+    critical_failed = any(
+        f.severity == "critical" and f.status == "fail" for f in findings
+    )
     return PoolProfileReport(
         status="blocked" if critical_failed else "ready",
         mode=mode,
@@ -177,8 +179,12 @@ def main(argv: list[str] | None = None) -> int:
 
     report = build_report(args.mode)
     ARTIFACT_DIR.mkdir(parents=True, exist_ok=True)
-    artifact = ARTIFACT_DIR / f"pool_profile_job_flow_{args.mode}_{int(time.time())}.json"
-    artifact.write_text(json.dumps(report.to_dict(), indent=2, sort_keys=True), encoding="utf-8")
+    artifact = (
+        ARTIFACT_DIR / f"pool_profile_job_flow_{args.mode}_{int(time.time())}.json"
+    )
+    artifact.write_text(
+        json.dumps(report.to_dict(), indent=2, sort_keys=True), encoding="utf-8"
+    )
 
     for finding in report.findings:
         print(

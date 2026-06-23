@@ -94,7 +94,9 @@ class PhiVM:
         self._throttle_count = 0
         self._history: list[dict[str, Any]] = []
 
-    def execute_kernel(self, bytecode: List[Tuple[str, int, int, int]]) -> Dict[str, Any]:
+    def execute_kernel(
+        self, bytecode: List[Tuple[str, int, int, int]]
+    ) -> Dict[str, Any]:
         """
         Execute a sequence of Φ-Instructions.
 
@@ -166,7 +168,9 @@ class PhiVM:
         end_time = time.time()
 
         result = {
-            "final_registers": [float(self.registers[i]) for i in range(self.num_registers)],
+            "final_registers": [
+                float(self.registers[i]) for i in range(self.num_registers)
+            ],
             "instructions_executed": self._instruction_count,
             "cycles": self._cycle_count,
             "throttle_events": self._throttle_count,
@@ -189,7 +193,8 @@ class PhiVM:
         """Fibonacci-weighted compression: R1 = R2 × φ⁻¹ + R3 × φ⁻²."""
         if self._valid_reg(r1) and self._valid_reg(r2) and self._valid_reg(r3):
             self.registers[r1] = float(
-                (self.registers[r2] * self.INV_PHI) + (self.registers[r3] * (self.INV_PHI**2))
+                (self.registers[r2] * self.INV_PHI)
+                + (self.registers[r3] * (self.INV_PHI**2))
             )
 
     def _op_gaddr(self, r1: int, r2: int) -> None:
@@ -210,14 +215,15 @@ class PhiVM:
             modulus = self.registers[r3] * self.PHI
             if modulus != 0.0:
                 phi_component = (
-                    self.registers[r2] - np.floor(self.registers[r2] / modulus) * modulus
+                    self.registers[r2]
+                    - np.floor(self.registers[r2] / modulus) * modulus
                 )
                 inv_phi_component = self.registers[r2] - np.floor(
                     self.registers[r2] / (self.registers[r3] / self.PHI)
                 ) * (self.registers[r3] / self.PHI)
-                result = (phi_component * self.PHI + inv_phi_component * self.INV_PHI) / (
-                    self.PHI + self.INV_PHI
-                )
+                result = (
+                    phi_component * self.PHI + inv_phi_component * self.INV_PHI
+                ) / (self.PHI + self.INV_PHI)
                 self.registers[r1] = float(result % modulus)
 
     def _op_jph(self, r1: int, cycle_info: Dict[str, Any]) -> bool:

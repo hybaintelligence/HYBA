@@ -85,19 +85,25 @@ def test_solver_configuration_idempotence():
 
 
 def test_grover_superposition_creation_probability_normalizes():
-    result = GroverEnhancedQuantumSearch().grover_multiple_marked(16, [2], max_iterations=1)
+    result = GroverEnhancedQuantumSearch().grover_multiple_marked(
+        16, [2], max_iterations=1
+    )
     assert np.isclose(float(np.sum(result.probabilities)), 1.0)
     assert result.iterations_used == 1
 
 
 def test_grover_oracle_phase_flip_amplifies_marked_state():
-    result = GroverEnhancedQuantumSearch().grover_multiple_marked(16, [3], max_iterations=1)
+    result = GroverEnhancedQuantumSearch().grover_multiple_marked(
+        16, [3], max_iterations=1
+    )
     assert result.probabilities[3] > 1.0 / 16.0
     assert 3 in result.marked_states
 
 
 def test_grover_diffusion_operator_preserves_norm():
-    result = GroverEnhancedQuantumSearch().grover_multiple_marked(32, [1, 7], max_iterations=2)
+    result = GroverEnhancedQuantumSearch().grover_multiple_marked(
+        32, [1, 7], max_iterations=2
+    )
     assert np.isclose(np.linalg.norm(np.sqrt(result.probabilities)), 1.0)
 
 
@@ -112,7 +118,9 @@ def test_grover_amplitude_amplification_returns_normalized_state():
 
 
 def test_grover_measurement_probability_distribution_bounds():
-    result = GroverEnhancedQuantumSearch().grover_multiple_marked(20, [0, 4, 8], max_iterations=3)
+    result = GroverEnhancedQuantumSearch().grover_multiple_marked(
+        20, [0, 4, 8], max_iterations=3
+    )
     assert np.all(result.probabilities >= 0.0)
     assert np.all(result.probabilities <= 1.0)
 
@@ -129,7 +137,11 @@ def test_nonce_generation_correctness():
 
 def test_nonce_range_boundary_handling():
     solver = DodecahedralQuantumSolver()
-    run(solver.configure_search(target=1, nonce_ranges=[(MAX_UINT32_NONCE, MAX_UINT32_NONCE)]))
+    run(
+        solver.configure_search(
+            target=1, nonce_ranges=[(MAX_UINT32_NONCE, MAX_UINT32_NONCE)]
+        )
+    )
     assert solver._project_index_to_nonce(0) == MAX_UINT32_NONCE
 
 
@@ -183,15 +195,19 @@ def test_lindblad_decay_operator_preserves_density_invariants():
 
 def test_module_recovery_from_injury_increases_target_fidelity():
     injured = quarantine_channel(apply_fault(ModuleState.healthy("module-c"), 0.8))
-    context = ContextSignal(clifford_index=7, target_role=Role.HEALTHY_SPECIALIZED, confidence=1.0)
-    recovered = redifferentiate(injured, context)
-    assert regeneration_fidelity(recovered, Role.HEALTHY_SPECIALIZED) >= regeneration_fidelity(
-        injured, Role.HEALTHY_SPECIALIZED
+    context = ContextSignal(
+        clifford_index=7, target_role=Role.HEALTHY_SPECIALIZED, confidence=1.0
     )
+    recovered = redifferentiate(injured, context)
+    assert regeneration_fidelity(
+        recovered, Role.HEALTHY_SPECIALIZED
+    ) >= regeneration_fidelity(injured, Role.HEALTHY_SPECIALIZED)
 
 
 def test_regeneration_stabilization_duration_records_window():
-    stabilized = apply_refractory_stabilization(ModuleState.healthy("module-d"), duration=12.0)
+    stabilized = apply_refractory_stabilization(
+        ModuleState.healthy("module-d"), duration=12.0
+    )
     remaining = stabilized.refractory_period_end - time.time()
     assert 0.0 < remaining <= 12.0
 
@@ -204,8 +220,13 @@ def test_classical_fallback_activation_when_no_marked_states():
     run(solver.configure_search(target=1, nonce_ranges=[(0, 5)]))
     nonce = run(
         solver._classical_fallback(
-            [(0, 5)], target=1, max_iterations=8, timeout=1.0, start_time=time.monotonic(),
-            job=None, extranonce2="00000000"
+            [(0, 5)],
+            target=1,
+            max_iterations=8,
+            timeout=1.0,
+            start_time=time.monotonic(),
+            job=None,
+            extranonce2="00000000",
         )
     )
     # Without a real job, hash_value is always (2**256) - 1, which never matches
@@ -239,8 +260,13 @@ def test_classical_timeout_handling():
     run(solver.configure_search(target=1, nonce_ranges=[(0, 10)]))
     nonce = run(
         solver._classical_fallback(
-            [(0, 10)], 1, 10, timeout=1e-12, start_time=time.monotonic() - 1.0,
-            job=None, extranonce2="00000000"
+            [(0, 10)],
+            1,
+            10,
+            timeout=1e-12,
+            start_time=time.monotonic() - 1.0,
+            job=None,
+            extranonce2="00000000",
         )
     )
     assert nonce is None
@@ -279,7 +305,9 @@ def test_solver_health_check_and_restart():
 
 
 def test_grover_iteration_count_is_bounded_by_max_iterations():
-    result = GroverEnhancedQuantumSearch().grover_multiple_marked(100, [1], max_iterations=2)
+    result = GroverEnhancedQuantumSearch().grover_multiple_marked(
+        100, [1], max_iterations=2
+    )
     assert result.iterations_used <= 2
 
 
@@ -312,7 +340,9 @@ def test_memory_efficiency_for_basis_state_size():
 
 
 def test_complex_amplitude_normalization():
-    result = GroverEnhancedQuantumSearch().grover_multiple_marked(12, [2, 5], max_iterations=2)
+    result = GroverEnhancedQuantumSearch().grover_multiple_marked(
+        12, [2, 5], max_iterations=2
+    )
     assert np.isclose(float(np.sum(result.probabilities)), 1.0)
 
 
@@ -323,7 +353,9 @@ def test_phase_accumulation_accuracy_for_fault_operator_unitary():
 
 def test_floating_point_precision_handling_rejects_nan_entropy():
     with pytest.raises(QuantumNumericalInstabilityError):
-        DodecahedralQuantumSolver().calculate_integrated_entropy(np.array([np.nan + 0j]))
+        DodecahedralQuantumSolver().calculate_integrated_entropy(
+            np.array([np.nan + 0j])
+        )
 
 
 def test_norme_computation_stability_for_joint_states():
@@ -337,7 +369,9 @@ def test_norme_computation_stability_for_joint_states():
 
 
 def test_zero_marked_states_handling():
-    result = GroverEnhancedQuantumSearch().grover_multiple_marked(8, [], max_iterations=5)
+    result = GroverEnhancedQuantumSearch().grover_multiple_marked(
+        8, [], max_iterations=5
+    )
     assert result.marked_states == []
     assert result.method == "no_marked_states"
     assert np.all(result.probabilities == 0.0)

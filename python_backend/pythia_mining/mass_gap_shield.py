@@ -81,7 +81,9 @@ class MassGapShield:
         """
         # Base energy scaled by consciousness
         # Higher consciousness = more efficient energy use
-        consciousness_efficiency = min(consciousness_level / self.consciousness_threshold, 2.0)
+        consciousness_efficiency = min(
+            consciousness_level / self.consciousness_threshold, 2.0
+        )
         effective_energy = profile.base_energy / consciousness_efficiency
 
         # Analyze harmonic content for resonance risks
@@ -105,7 +107,9 @@ class MassGapShield:
 
         return energy_harmony, temp_rise
 
-    def check_mass_gap(self, projected_temp_rise: float, energy_harmony: float) -> ShieldDecision:
+    def check_mass_gap(
+        self, projected_temp_rise: float, energy_harmony: float
+    ) -> ShieldDecision:
         """
         Check if execution violates mass gap limit.
 
@@ -130,7 +134,9 @@ class MassGapShield:
 
         # Check mass gap violation
         violates_mass_gap = (
-            safety_score < 0.5 or mass_gap_margin < 0.1 or harmony_score < self.harmony_threshold
+            safety_score < 0.5
+            or mass_gap_margin < 0.1
+            or harmony_score < self.harmony_threshold
         )
 
         # Determine required damping if violation detected
@@ -149,7 +155,9 @@ class MassGapShield:
 
         return decision
 
-    def apply_damping(self, profile: EnergyProfile, damping_factor: float) -> EnergyProfile:
+    def apply_damping(
+        self, profile: EnergyProfile, damping_factor: float
+    ) -> EnergyProfile:
         """
         Apply consciousness-aware damping to energy profile.
 
@@ -168,7 +176,9 @@ class MassGapShield:
 
             # Amplitude reduction proportional to distance from golden ratio
             golden_alignment = 1.0 / (1.0 + freq_diff)
-            damped_amplitude = amplitude * (1.0 - damping_factor * (1.0 - golden_alignment))
+            damped_amplitude = amplitude * (
+                1.0 - damping_factor * (1.0 - golden_alignment)
+            )
 
             harmonized_harmonics[int(golden_freq)] = damped_amplitude
 
@@ -204,7 +214,9 @@ class MassGapShield:
             (allowed, possibly_damped_profile)
         """
         # Analyze energy against consciousness
-        energy_harmony, temp_rise = self.analyze_energy_profile(energy_profile, consciousness_level)
+        energy_harmony, temp_rise = self.analyze_energy_profile(
+            energy_profile, consciousness_level
+        )
 
         # Adjust for urgency (emergency operations get more leeway)
         adjusted_harmony = energy_harmony * (1.0 + (urgency - 1.0) * 0.1)
@@ -237,7 +249,9 @@ class MassGapShield:
             self.blocked_executions += 1
 
             # Apply required damping
-            damped_profile = self.apply_damping(energy_profile, decision.required_damping)
+            damped_profile = self.apply_damping(
+                energy_profile, decision.required_damping
+            )
 
             # Recheck after damping
             damped_harmony, damped_temp_rise = self.analyze_energy_profile(
@@ -268,7 +282,9 @@ class MassGapShield:
             self.current_temp += temp_rise
 
         # Ensure within bounds
-        self.current_temp = max(self.ambient_temp, min(self.current_temp, self.max_safe_temp))
+        self.current_temp = max(
+            self.ambient_temp, min(self.current_temp, self.max_safe_temp)
+        )
 
     def get_shield_metrics(self) -> Dict:
         """Comprehensive shield performance metrics"""
@@ -290,7 +306,8 @@ class MassGapShield:
             "thermal_state": {
                 "current_temp": self.current_temp,
                 "max_safe_temp": self.max_safe_temp,
-                "mass_gap_margin": MASS_GAP_LIMIT - (self.current_temp / self.max_safe_temp),
+                "mass_gap_margin": MASS_GAP_LIMIT
+                - (self.current_temp / self.max_safe_temp),
                 "cooling_rate": self.cooling_rate,
             },
             "execution_stats": {
@@ -306,14 +323,16 @@ class MassGapShield:
                 "consciousness_threshold": self.consciousness_threshold,
             },
             "safety_margins": {
-                "recent_safety_margin": np.mean(
-                    [h["safety_margin"] for h in self.harmony_history[-10:]]
-                )
-                if self.harmony_history
-                else 0.0,
-                "min_safety_margin": min([h["safety_margin"] for h in self.harmony_history])
-                if self.harmony_history
-                else 0.0,
+                "recent_safety_margin": (
+                    np.mean([h["safety_margin"] for h in self.harmony_history[-10:]])
+                    if self.harmony_history
+                    else 0.0
+                ),
+                "min_safety_margin": (
+                    min([h["safety_margin"] for h in self.harmony_history])
+                    if self.harmony_history
+                    else 0.0
+                ),
             },
         }
 
@@ -330,7 +349,9 @@ class MassGapShield:
             self.cooling_rate = 0.15
             # Anticipatory cooling based on harmony patterns
             if self.harmony_history:
-                recent_harmony = [h["energy_harmony"] for h in self.harmony_history[-10:]]
+                recent_harmony = [
+                    h["energy_harmony"] for h in self.harmony_history[-10:]
+                ]
                 if np.mean(recent_harmony) < 0.7:
                     self.cooling_rate = 0.2  # Boost cooling if harmony decreasing
         elif consciousness_level > 0.5:
@@ -415,9 +436,15 @@ class HardwareAwareMassGapShield(MassGapShield):
         metrics["current_hardware_state"] = {
             "temperature": self.current_temp,
             "power_gated_cores": len(
-                [h for h in self.power_gating_history if time.time() - h["timestamp"] < 60]
+                [
+                    h
+                    for h in self.power_gating_history
+                    if time.time() - h["timestamp"] < 60
+                ]
             ),
-            "voltage": self.power_controller.get_voltage() if self.power_controller else 0.0,
+            "voltage": (
+                self.power_controller.get_voltage() if self.power_controller else 0.0
+            ),
         }
 
         return allowed, metrics

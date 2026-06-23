@@ -66,4 +66,7 @@ def test_global_formalism_efficiency_index_script_outputs_json() -> None:
 
     assert payload["index"] == "Global Formalism Efficiency Index"
     assert len(payload["reports"]) == 7
-    assert all("Formalism-derived classical" in row["claim_boundary"] for row in payload["reports"])
+    assert all(
+        "Formalism-derived classical" in row["claim_boundary"]
+        for row in payload["reports"]
+    )

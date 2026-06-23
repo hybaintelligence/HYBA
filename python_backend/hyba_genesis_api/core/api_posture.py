@@ -42,14 +42,21 @@ class EnterpriseAPIConfig:
 
     @classmethod
     def from_env(cls) -> "EnterpriseAPIConfig":
-        environment = os.getenv("NODE_ENV", os.getenv("HYBA_ENV", "development")).lower()
+        environment = os.getenv(
+            "NODE_ENV", os.getenv("HYBA_ENV", "development")
+        ).lower()
         return cls(
             environment=environment,
-            request_limit_per_minute=int(os.getenv("HYBA_API_RATE_LIMIT_PER_MINUTE", "120")),
-            max_body_bytes=int(os.getenv("HYBA_API_MAX_BODY_BYTES", str(2 * 1024 * 1024))),
+            request_limit_per_minute=int(
+                os.getenv("HYBA_API_RATE_LIMIT_PER_MINUTE", "120")
+            ),
+            max_body_bytes=int(
+                os.getenv("HYBA_API_MAX_BODY_BYTES", str(2 * 1024 * 1024))
+            ),
             hsts_enabled=os.getenv("HYBA_API_HSTS", "true").lower() == "true"
             and environment == "production",
-            rate_limit_enabled=os.getenv("HYBA_API_RATE_LIMIT_ENABLED", "true").lower() == "true",
+            rate_limit_enabled=os.getenv("HYBA_API_RATE_LIMIT_ENABLED", "true").lower()
+            == "true",
             csp_enabled=os.getenv("HYBA_API_CSP_ENABLED", "true").lower() == "true",
             sanitize_production_errors=os.getenv(
                 "HYBA_API_SANITIZE_PRODUCTION_ERRORS", "true"
@@ -106,7 +113,10 @@ def _safe_http_message(exc: HTTPException, config: EnterpriseAPIConfig) -> str:
 
 
 def apply_enterprise_security_headers(
-    response: Response, request_id: str, config: EnterpriseAPIConfig, correlation_id: str | None = None
+    response: Response,
+    request_id: str,
+    config: EnterpriseAPIConfig,
+    correlation_id: str | None = None,
 ) -> None:
     """Attach security and traceability headers to every API response."""
 
@@ -125,7 +135,9 @@ def apply_enterprise_security_headers(
             "default-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'"
         )
     if config.hsts_enabled:
-        response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+        response.headers["Strict-Transport-Security"] = (
+            "max-age=31536000; includeSubDomains"
+        )
 
 
 class InMemoryRateLimiter:
@@ -252,7 +264,9 @@ def _security_boundary_response(
 
     path = request.url.path.rstrip("/") or "/"
     if path == "/api/security/status":
-        response = JSONResponse(status_code=status.HTTP_200_OK, content=_safe_security_status())
+        response = JSONResponse(
+            status_code=status.HTTP_200_OK, content=_safe_security_status()
+        )
         apply_enterprise_security_headers(response, request_id, config, correlation_id)
         _record_posture_audit(
             "subscriber_boundary.security_status_redacted",
@@ -309,20 +323,26 @@ def _security_boundary_response(
     return response
 
 
-def install_enterprise_api_posture(app: FastAPI, config: EnterpriseAPIConfig | None = None) -> None:
+def install_enterprise_api_posture(
+    app: FastAPI, config: EnterpriseAPIConfig | None = None
+) -> None:
     """Install HYBA's enterprise API posture controls on a FastAPI app."""
 
     config = config or EnterpriseAPIConfig.from_env()
     limiter = InMemoryRateLimiter(config.request_limit_per_minute)
 
     @app.middleware("http")
-    async def enterprise_api_posture_middleware(request: Request, call_next: Callable[..., Any]):
+    async def enterprise_api_posture_middleware(
+        request: Request, call_next: Callable[..., Any]
+    ):
         request_id = _request_id(request)
         correlation_id = _correlation_id(request, request_id)
         request.state.request_id = request_id
         request.state.correlation_id = correlation_id
 
-        boundary_response = _security_boundary_response(request, config, request_id, correlation_id)
+        boundary_response = _security_boundary_response(
+            request, config, request_id, correlation_id
+        )
         if boundary_response is not None:
             return boundary_response
 
@@ -342,7 +362,9 @@ def install_enterprise_api_posture(app: FastAPI, config: EnterpriseAPIConfig | N
                     status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
                 ),
             )
-            apply_enterprise_security_headers(response, request_id, config, correlation_id)
+            apply_enterprise_security_headers(
+                response, request_id, config, correlation_id
+            )
             return response
 
         if config.rate_limit_enabled and not limiter.allow(_client_key(request)):
@@ -362,7 +384,9 @@ def install_enterprise_api_posture(app: FastAPI, config: EnterpriseAPIConfig | N
                 ),
             )
             response.headers["Retry-After"] = "60"
-            apply_enterprise_security_headers(response, request_id, config, correlation_id)
+            apply_enterprise_security_headers(
+                response, request_id, config, correlation_id
+            )
             return response
 
         response = await call_next(request)
@@ -372,7 +396,9 @@ def install_enterprise_api_posture(app: FastAPI, config: EnterpriseAPIConfig | N
     @app.exception_handler(HTTPException)
     async def http_exception_handler(request: Request, exc: HTTPException):
         request_id = getattr(request.state, "request_id", _request_id(request))
-        correlation_id = getattr(request.state, "correlation_id", _correlation_id(request, request_id))
+        correlation_id = getattr(
+            request.state, "correlation_id", _correlation_id(request, request_id)
+        )
         detail = exc.detail
         code = "http_error"
         if isinstance(detail, dict):
@@ -390,9 +416,13 @@ def install_enterprise_api_posture(app: FastAPI, config: EnterpriseAPIConfig | N
         return response
 
     @app.exception_handler(RequestValidationError)
-    async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    async def validation_exception_handler(
+        request: Request, exc: RequestValidationError
+    ):
         request_id = getattr(request.state, "request_id", _request_id(request))
-        correlation_id = getattr(request.state, "correlation_id", _correlation_id(request, request_id))
+        correlation_id = getattr(
+            request.state, "correlation_id", _correlation_id(request, request_id)
+        )
 
         errors = []
         if not config.sanitize_production_errors:
@@ -415,6 +445,8 @@ def install_enterprise_api_posture(app: FastAPI, config: EnterpriseAPIConfig | N
         )
         if errors:
             payload["details"] = errors
-        response = JSONResponse(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, content=payload)
+        response = JSONResponse(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, content=payload
+        )
         apply_enterprise_security_headers(response, request_id, config, correlation_id)
         return response

@@ -70,7 +70,9 @@ def test_difc_packet_preserves_external_action_boundary():
     packet = generate_difc_sukuk_audit_packet(candidate)
 
     assert packet["automatic_action_allowed"] is False
-    assert packet["core_finance_packet"]["bridge_report"]["guard_decision"]["decision"] in {
+    assert packet["core_finance_packet"]["bridge_report"]["guard_decision"][
+        "decision"
+    ] in {
         "allow",
         "block",
     }

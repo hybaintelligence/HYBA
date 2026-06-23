@@ -80,9 +80,13 @@ class HighDimensionalManifold:
     def _validate_dimension(self) -> None:
         """Validate dimension is within reasonable bounds."""
         if self.dimension < 100:
-            raise ValueError(f"Dimension must be >= 100 for saturation tests, got {self.dimension}")
+            raise ValueError(
+                f"Dimension must be >= 100 for saturation tests, got {self.dimension}"
+            )
         if self.dimension > 100000:
-            raise ValueError(f"Dimension must be <= 100000 for memory constraints, got {self.dimension}")
+            raise ValueError(
+                f"Dimension must be <= 100000 for memory constraints, got {self.dimension}"
+            )
 
     def generate_random_density_matrix(self) -> np.ndarray:
         """Generate a random density matrix for the manifold.
@@ -91,17 +95,19 @@ class HighDimensionalManifold:
             Complex Hermitian positive semidefinite matrix
         """
         # Generate random complex matrix
-        A = np.random.randn(self.dimension, self.dimension) + 1j * np.random.randn(self.dimension, self.dimension)
-        
+        A = np.random.randn(self.dimension, self.dimension) + 1j * np.random.randn(
+            self.dimension, self.dimension
+        )
+
         # Make it Hermitian
         rho = (A + A.conj().T) / 2
-        
+
         # Make it positive semidefinite
         rho = rho @ rho.conj().T
-        
+
         # Normalize trace to 1
         rho = rho / np.trace(rho)
-        
+
         return rho
 
     def compute_phi_folding_efficiency(self, rho: np.ndarray) -> float:
@@ -119,19 +125,19 @@ class HighDimensionalManifold:
         # Simplified Φ computation using eigenvalues
         eigvals = np.linalg.eigvalsh(rho).real
         eigvals = eigvals[eigvals > 0]
-        
+
         if len(eigvals) == 0:
             return 0.0
-        
+
         # Compute Shannon entropy
         entropy = -np.sum(eigvals * np.log2(eigvals))
-        
+
         # Maximum entropy for this dimension
         max_entropy = np.log2(self.dimension)
-        
+
         # Efficiency: how close to maximum entropy
         efficiency = entropy / max_entropy if max_entropy > 0 else 0.0
-        
+
         return float(efficiency)
 
     def compute_geometric_stability_ratio(self, rho: np.ndarray) -> float:
@@ -147,14 +153,14 @@ class HighDimensionalManifold:
         """
         # Simplified Bures distance computation
         # In practice, this would use the full Bures metric
-        
+
         # Compute fidelity with itself (should be 1.0)
         sqrt_rho = sqrtm(rho)
         fidelity = np.real(np.trace(sqrt_rho @ sqrt_rho))
-        
+
         # Stability ratio based on fidelity
         stability = min(1.0, fidelity)
-        
+
         return float(stability)
 
     def compute_manifold_coherence(self, rho: np.ndarray) -> float:
@@ -168,10 +174,10 @@ class HighDimensionalManifold:
         """
         phi_efficiency = self.compute_phi_folding_efficiency(rho)
         geometric_stability = self.compute_geometric_stability_ratio(rho)
-        
+
         # Combined coherence score
         coherence = (phi_efficiency + geometric_stability) / 2.0
-        
+
         return float(coherence)
 
 
@@ -209,16 +215,18 @@ class ManifoldSaturationTester:
             Sequence of saturation results for each dimension tested
         """
         results = []
-        
-        for dimension in range(self.start_dimension, self.max_dimension + 1, self.dimension_step):
+
+        for dimension in range(
+            self.start_dimension, self.max_dimension + 1, self.dimension_step
+        ):
             result = self.test_dimension(dimension)
             results.append(result)
-            
+
             # Stop if collapse detected
             if result.collapse_detected:
                 print(f"Collapse detected at dimension {dimension}")
                 break
-        
+
         return results
 
     def test_dimension(self, dimension: int) -> ManifoldSaturationResult:
@@ -231,35 +239,36 @@ class ManifoldSaturationTester:
             Saturation result for this dimension
         """
         manifold = HighDimensionalManifold(dimension)
-        
+
         # Measure memory before
         import psutil
         import os
+
         process = psutil.Process(os.getpid())
         mem_before = process.memory_info().rss / (1024 * 1024)  # MB
-        
+
         # Generate density matrix and measure time
         start_time = time.perf_counter()
         rho = manifold.generate_random_density_matrix()
-        
+
         # Compute metrics
         phi_efficiency = manifold.compute_phi_folding_efficiency(rho)
         geometric_stability = manifold.compute_geometric_stability_ratio(rho)
-        
+
         end_time = time.perf_counter()
-        
+
         # Measure memory after
         mem_after = process.memory_info().rss / (1024 * 1024)  # MB
         memory_usage = mem_after - mem_before
-        
+
         computation_time_ms = (end_time - start_time) * 1000
-        
+
         # Determine stability state
         stability_state = self._classify_stability(geometric_stability)
-        
+
         # Detect collapse
         collapse_detected = geometric_stability < self.stability_threshold
-        
+
         return ManifoldSaturationResult(
             dimension=dimension,
             phi_folding_efficiency=phi_efficiency,
@@ -292,7 +301,9 @@ class ManifoldSaturationTester:
         else:
             return StabilityThreshold.COLLAPSED
 
-    def find_cognitive_horizon(self, results: Sequence[ManifoldSaturationResult]) -> int | None:
+    def find_cognitive_horizon(
+        self, results: Sequence[ManifoldSaturationResult]
+    ) -> int | None:
         """Find the cognitive horizon (collapse point).
 
         Args:
@@ -306,7 +317,9 @@ class ManifoldSaturationTester:
                 return result.dimension
         return None
 
-    def generate_saturation_report(self, results: Sequence[ManifoldSaturationResult]) -> str:
+    def generate_saturation_report(
+        self, results: Sequence[ManifoldSaturationResult]
+    ) -> str:
         """Generate a comprehensive saturation test report.
 
         Args:
@@ -329,7 +342,7 @@ class ManifoldSaturationTester:
             "-" * 80,
             "",
         ]
-        
+
         for result in results:
             lines.append(
                 f"Dim {result.dimension:5d}: "
@@ -339,7 +352,7 @@ class ManifoldSaturationTester:
                 f"Time={result.computation_time_ms:.1f}ms, "
                 f"Mem={result.memory_usage_mb:.1f}MB"
             )
-        
+
         cognitive_horizon = self.find_cognitive_horizon(results)
         lines.append("")
         lines.append("-" * 80)
@@ -348,7 +361,7 @@ class ManifoldSaturationTester:
         else:
             lines.append("NO COLLAPSE DETECTED WITHIN TEST RANGE")
         lines.append("=" * 80)
-        
+
         return "\n".join(lines)
 
 
@@ -362,7 +375,7 @@ def run_cognitive_horizon_test() -> None:
     print("This will test manifold stability at dimensions up to 10,000+")
     print("Please ensure you have sufficient memory (8GB+ recommended)")
     print()
-    
+
     # Run saturation test
     tester = ManifoldSaturationTester(
         start_dimension=100,
@@ -370,20 +383,20 @@ def run_cognitive_horizon_test() -> None:
         dimension_step=500,
         stability_threshold=0.606,
     )
-    
+
     results = tester.run_saturation_test()
-    
+
     # Generate and display report
     report = tester.generate_saturation_report(results)
     print(report)
-    
+
     # Save results to file
     import json
     from pathlib import Path
-    
+
     output_file = Path("logs/cognitive_horizon_test_results.json")
     output_file.parent.mkdir(parents=True, exist_ok=True)
-    
+
     results_dict = {
         "test_config": {
             "start_dimension": tester.start_dimension,
@@ -394,7 +407,7 @@ def run_cognitive_horizon_test() -> None:
         "results": [r.to_dict() for r in results],
         "cognitive_horizon": tester.find_cognitive_horizon(results),
     }
-    
+
     output_file.write_text(json.dumps(results_dict, indent=2))
     print(f"\nResults saved to {output_file}")
 

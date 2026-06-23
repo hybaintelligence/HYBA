@@ -34,7 +34,7 @@ from hyba_genesis_api.api.quantum_as_a_service import (
 def test_privilege_escalation_prevention():
     """Verify customer cannot inject admin_privileged field."""
     print("🔒 TEST 1: Privilege Escalation Prevention")
-    
+
     try:
         # Attempt to inject admin_privileged
         request = CustomerProvisionFaultTolerantComputerRequest(
@@ -57,17 +57,37 @@ def test_privilege_escalation_prevention():
 def test_entitlement_matrix():
     """Verify entitlement enforcement for all tiers."""
     print("\n🎫 TEST 2: Entitlement Matrix Enforcement")
-    
+
     tests = [
         # (principal, requested_tier, requested_isolation, should_succeed)
         ({"tier": "developer", "metadata": {}}, "developer", "single_tenant", True),
         ({"tier": "developer", "metadata": {}}, "production", "single_tenant", False),
-        ({"tier": "production", "metadata": {}}, "production", "dedicated_control_plane", True),
-        ({"tier": "production", "metadata": {}}, "enterprise", "sovereign_isolated", False),
-        ({"tier": "enterprise", "metadata": {"sovereign_enabled": False}}, "enterprise", "sovereign_isolated", False),
-        ({"tier": "enterprise", "metadata": {"sovereign_enabled": True}}, "enterprise", "sovereign_isolated", True),
+        (
+            {"tier": "production", "metadata": {}},
+            "production",
+            "dedicated_control_plane",
+            True,
+        ),
+        (
+            {"tier": "production", "metadata": {}},
+            "enterprise",
+            "sovereign_isolated",
+            False,
+        ),
+        (
+            {"tier": "enterprise", "metadata": {"sovereign_enabled": False}},
+            "enterprise",
+            "sovereign_isolated",
+            False,
+        ),
+        (
+            {"tier": "enterprise", "metadata": {"sovereign_enabled": True}},
+            "enterprise",
+            "sovereign_isolated",
+            True,
+        ),
     ]
-    
+
     passed = 0
     for principal, tier, isolation, should_succeed in tests:
         try:
@@ -75,13 +95,17 @@ def test_entitlement_matrix():
             result = True
         except HTTPException:
             result = False
-        
+
         if result == should_succeed:
-            print(f"  ✅ {principal['tier']} → {tier}/{isolation}: {'allowed' if should_succeed else 'denied'}")
+            print(
+                f"  ✅ {principal['tier']} → {tier}/{isolation}: {'allowed' if should_succeed else 'denied'}"
+            )
             passed += 1
         else:
-            print(f"  ❌ {principal['tier']} → {tier}/{isolation}: expected {'allow' if should_succeed else 'deny'}, got {'allow' if result else 'deny'}")
-    
+            print(
+                f"  ❌ {principal['tier']} → {tier}/{isolation}: expected {'allow' if should_succeed else 'deny'}, got {'allow' if result else 'deny'}"
+            )
+
     print(f"  {passed}/{len(tests)} entitlement tests passed")
     return passed == len(tests)
 
@@ -89,13 +113,10 @@ def test_entitlement_matrix():
 def test_metadata_trust_boundary():
     """Verify sovereign entitlement comes from principal, not request."""
     print("\n🛡️  TEST 3: Metadata Trust Boundary")
-    
+
     # Principal says no sovereign access
-    principal = {
-        "tier": "enterprise",
-        "metadata": {"sovereign_enabled": False}
-    }
-    
+    principal = {"tier": "enterprise", "metadata": {"sovereign_enabled": False}}
+
     try:
         # Even if request claims sovereign, principal metadata decides
         _validate_customer_entitlement(principal, "enterprise", "sovereign_isolated")
@@ -109,7 +130,7 @@ def test_metadata_trust_boundary():
 def test_work_unit_fairness():
     """Verify work-unit estimation includes all cost dimensions."""
     print("\n⚖️  TEST 4: Work-Unit Estimate Fairness")
-    
+
     # Light operation
     light = _estimated_work_units(
         operation="state_vector_summary",
@@ -118,7 +139,7 @@ def test_work_unit_fairness():
         shots=100,
         code_distance=7,
     )
-    
+
     # Heavy operation (same params, different operation)
     heavy = _estimated_work_units(
         operation="substrate_orchestration",
@@ -127,7 +148,7 @@ def test_work_unit_fairness():
         shots=100,
         code_distance=7,
     )
-    
+
     # Deep circuit
     deep = _estimated_work_units(
         operation="surface_code_cycle",
@@ -136,7 +157,7 @@ def test_work_unit_fairness():
         shots=100,
         code_distance=7,
     )
-    
+
     # Many qubits
     wide = _estimated_work_units(
         operation="surface_code_cycle",
@@ -145,7 +166,7 @@ def test_work_unit_fairness():
         shots=100,
         code_distance=7,
     )
-    
+
     # High code distance
     high_d = _estimated_work_units(
         operation="surface_code_cycle",
@@ -154,14 +175,14 @@ def test_work_unit_fairness():
         shots=100,
         code_distance=15,
     )
-    
+
     checks = [
         (heavy > light, f"Heavy operation ({heavy}) > light operation ({light})"),
         (deep > light, f"Deep circuit ({deep}) > baseline ({light})"),
         (wide > light, f"Wide circuit ({wide}) > baseline ({light})"),
         (high_d > light, f"High code distance ({high_d}) > baseline ({light})"),
     ]
-    
+
     passed = 0
     for check, desc in checks:
         if check:
@@ -169,7 +190,7 @@ def test_work_unit_fairness():
             passed += 1
         else:
             print(f"  ❌ {desc}")
-    
+
     print(f"  {passed}/{len(checks)} fairness checks passed")
     return passed == len(checks)
 
@@ -178,31 +199,35 @@ def main():
     print("=" * 70)
     print("QaaS Production Hardening Validation")
     print("=" * 70)
-    
+
     results = []
-    
-    results.append(("Privilege Escalation Prevention", test_privilege_escalation_prevention()))
+
+    results.append(
+        ("Privilege Escalation Prevention", test_privilege_escalation_prevention())
+    )
     results.append(("Entitlement Matrix Enforcement", test_entitlement_matrix()))
     results.append(("Metadata Trust Boundary", test_metadata_trust_boundary()))
     results.append(("Work-Unit Estimate Fairness", test_work_unit_fairness()))
-    
+
     print("\n" + "=" * 70)
     print("SUMMARY")
     print("=" * 70)
-    
+
     for name, passed in results:
         status = "✅ PASS" if passed else "❌ FAIL"
         print(f"{status}: {name}")
-    
+
     total_passed = sum(1 for _, passed in results if passed)
     total_tests = len(results)
-    
+
     print(f"\nTotal: {total_passed}/{total_tests} test suites passed")
-    
+
     if total_passed == total_tests:
         print("\n🎉 All critical security controls validated!")
         print("\n📋 Next Steps:")
-        print("  1. Run full test suite: pytest tests/test_quantum_as_a_service_production_hardening.py")
+        print(
+            "  1. Run full test suite: pytest tests/test_quantum_as_a_service_production_hardening.py"
+        )
         print("  2. Validate admin route separation")
         print("  3. Load test concurrent execution")
         print("  4. Implement billing rollback semantics")

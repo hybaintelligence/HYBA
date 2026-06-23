@@ -32,7 +32,9 @@ NUMPY_REQUIRED = {
 
 
 def environment_status() -> dict[str, Any]:
-    missing = [name for name in REQUIRED_IMPORTS if importlib.util.find_spec(name) is None]
+    missing = [
+        name for name in REQUIRED_IMPORTS if importlib.util.find_spec(name) is None
+    ]
     return {
         "python_executable": sys.executable,
         "python_version": sys.version.split()[0],
@@ -126,7 +128,9 @@ def build_report(
     timed_out = sum(1 for item in results if item["status"] == "TIMEOUT")
     all_passed = failed == 0 and skipped == 0 and timed_out == 0
 
-    quantum_math = first_artifact(artifacts, "quantum_mathematics_final_verification.json")
+    quantum_math = first_artifact(
+        artifacts, "quantum_mathematics_final_verification.json"
+    )
     structured_search = first_artifact(artifacts, "structured_search_comparison.json")
     phi_resonance = first_artifact(artifacts, "phi_resonance_summary.json")
     hash_validity = first_artifact(artifacts, "phi_hash_correlation_summary.json")
@@ -136,7 +140,9 @@ def build_report(
         if isinstance(phi_resonance.get("summary"), dict)
         else phi_resonance
     )
-    stack_summary = stack.get("summary", {}) if isinstance(stack.get("summary"), dict) else stack
+    stack_summary = (
+        stack.get("summary", {}) if isinstance(stack.get("summary"), dict) else stack
+    )
 
     return {
         "portfolio_title": "HYBA Φ-Trifecta Benchmark Portfolio",
@@ -151,8 +157,12 @@ def build_report(
             "failed": failed,
             "timed_out": timed_out,
             "skipped": skipped,
-            "blocked_by_environment": 0 if env["status"] == "ready" else len(NUMPY_REQUIRED),
-            "total_duration_s": round(sum(float(item["duration_s"]) for item in results), 2),
+            "blocked_by_environment": (
+                0 if env["status"] == "ready" else len(NUMPY_REQUIRED)
+            ),
+            "total_duration_s": round(
+                sum(float(item["duration_s"]) for item in results), 2
+            ),
             "pass_rate": f"{passed / max(len(results) - skipped, 1) * 100:.1f}%",
             "all_scripts_passed": all_passed,
         },
@@ -160,11 +170,11 @@ def build_report(
             "quantum_math_tests": quantum_math.get("total_tests", "N/A"),
             "quantum_math_passed": quantum_math.get("passed", "N/A"),
             "quantum_math_pass_rate": quantum_math.get("pass_rate", "N/A"),
-            "structured_search_strategies": [
-                s["name"] for s in structured_search.get("strategies", [])
-            ]
-            if "strategies" in structured_search
-            else [],
+            "structured_search_strategies": (
+                [s["name"] for s in structured_search.get("strategies", [])]
+                if "strategies" in structured_search
+                else []
+            ),
             "phi_resonance_rate": resonance_summary.get(
                 "phi_resonance_rate", resonance_summary.get("resonance_rate", "N/A")
             ),
@@ -227,7 +237,9 @@ def write_markdown_summary(path: Path, report: dict[str, Any]) -> None:
 def main() -> int:
     parser = argparse.ArgumentParser(description="HYBA Φ-Trifecta Benchmark Suite")
     parser.add_argument("--quick", action="store_true", help="Run reduced iterations")
-    parser.add_argument("--output-dir", type=str, default=str(OUTPUT_DIR), help="Output directory")
+    parser.add_argument(
+        "--output-dir", type=str, default=str(OUTPUT_DIR), help="Output directory"
+    )
     parser.add_argument(
         "--force", action="store_true", help="Run even if environment guard is blocked"
     )
@@ -247,7 +259,11 @@ def main() -> int:
     results: list[dict[str, Any]] = []
 
     plan = [
-        ("1/6  Quantum Mathematics Verification", "quantum_math_final_verification.py", []),
+        (
+            "1/6  Quantum Mathematics Verification",
+            "quantum_math_final_verification.py",
+            [],
+        ),
         (
             "2/6  Structured Search Comparison",
             "phi_structured_search_demonstration.py",
@@ -307,7 +323,9 @@ def main() -> int:
     print(f"  JSON report:    {report_path}")
     print(f"  Markdown:       {md_path}")
     if not summary["all_scripts_passed"]:
-        print("\n  This report is smoke/diagnostic evidence only until all scripts pass.")
+        print(
+            "\n  This report is smoke/diagnostic evidence only until all scripts pass."
+        )
     return 0 if summary["all_scripts_passed"] else 1
 
 

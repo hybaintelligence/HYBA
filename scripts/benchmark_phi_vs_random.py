@@ -266,13 +266,17 @@ def run_trial(
 
     results = [
         _run_uniform_random(prefix, target, iterations, random.Random(seed)),
-        _run_sequential(prefix, target, iterations, start_nonce=rng.randint(0, 2**32 - 1)),
+        _run_sequential(
+            prefix, target, iterations, start_nonce=rng.randint(0, 2**32 - 1)
+        ),
         _run_phi_guided(prefix, target, iterations, random.Random(seed + 1)),
         _run_phi_sorted(prefix, target, iterations, random.Random(seed + 2)),
     ]
 
     # Compute overhead ratios relative to uniform_random throughput
-    random_hps = next(r.hashes_per_second for r in results if r.name == "uniform_random")
+    random_hps = next(
+        r.hashes_per_second for r in results if r.name == "uniform_random"
+    )
     for r in results:
         r.overhead_ratio = random_hps / max(r.hashes_per_second, 1.0)
 
@@ -300,8 +304,12 @@ def _aggregate(trials: List[TrialResult]) -> dict:
     agg: dict = {}
     for name in strategy_names:
         all_hits = [s.hits for t in trials for s in t.strategies if s.name == name]
-        all_hps = [s.hashes_per_second for t in trials for s in t.strategies if s.name == name]
-        all_overhead = [s.overhead_ratio for t in trials for s in t.strategies if s.name == name]
+        all_hps = [
+            s.hashes_per_second for t in trials for s in t.strategies if s.name == name
+        ]
+        all_overhead = [
+            s.overhead_ratio for t in trials for s in t.strategies if s.name == name
+        ]
         first_hit_iters = [
             s.first_hit_iteration
             for t in trials
@@ -312,7 +320,9 @@ def _aggregate(trials: List[TrialResult]) -> dict:
             "mean_hits_per_trial": _mean(all_hits),
             "mean_hashes_per_second": _mean(all_hps),
             "mean_overhead_ratio_vs_random": _mean(all_overhead),
-            "mean_first_hit_iteration": _mean(first_hit_iters) if first_hit_iters else None,
+            "mean_first_hit_iteration": (
+                _mean(first_hit_iters) if first_hit_iters else None
+            ),
             "trials_with_hit": len(first_hit_iters),
             "total_trials": len(trials),
         }
@@ -398,7 +408,10 @@ def main() -> None:
         help="Mining difficulty (lower = easier = more hits) (default: 0.001)",
     )
     parser.add_argument(
-        "--seed", type=int, default=42, help="Base random seed (each trial gets seed+trial_idx)"
+        "--seed",
+        type=int,
+        default=42,
+        help="Base random seed (each trial gets seed+trial_idx)",
     )
     args = parser.parse_args()
 
@@ -430,7 +443,9 @@ def main() -> None:
         )
         trials.append(result)
         for s in result.strategies:
-            print(f"{s.name}={s.hits}hits@{s.hashes_per_second / 1000:.1f}kH/s", end="  ")
+            print(
+                f"{s.name}={s.hits}hits@{s.hashes_per_second / 1000:.1f}kH/s", end="  "
+            )
         print()
 
     agg = _aggregate(trials)

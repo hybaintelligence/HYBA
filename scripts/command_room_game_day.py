@@ -26,7 +26,9 @@ try:
         AutonomousConfig,
         AutonomousMiningController,
     )
-except ModuleNotFoundError:  # pragma: no cover - fallback for minimal command-room shells
+except (
+    ModuleNotFoundError
+):  # pragma: no cover - fallback for minimal command-room shells
     AutonomyLevel = AutonomousConfig = AutonomousMiningController = None  # type: ignore[assignment]
 
 
@@ -147,7 +149,9 @@ def run_game_day(
     for cascade in range(1, cascades + 1):
         before = controller.current_autonomy_level.value
         for failure in range(1, threshold + 1):
-            controller.record_autonomy_failure(f"game_day_cascade_{cascade}_failure_{failure}")
+            controller.record_autonomy_failure(
+                f"game_day_cascade_{cascade}_failure_{failure}"
+            )
         after = controller.current_autonomy_level.value
         snapshot = controller.get_metrics_snapshot()
         transitions.append(

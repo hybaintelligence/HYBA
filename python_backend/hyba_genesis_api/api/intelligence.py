@@ -12,7 +12,10 @@ from hyba_genesis_api.core import audit_surface
 from hyba_genesis_api.core.intelligence_fabric import SubstrateOrchestrator, explain
 from hyba_genesis_api.core.recursive_closure import build_buffered_closure
 from hyba_genesis_api.core.reflexive_daemon import IntelligenceHeartbeat
-from hyba_genesis_api.core.reflexive_controller import ReflexiveController, default_reflexive_root
+from hyba_genesis_api.core.reflexive_controller import (
+    ReflexiveController,
+    default_reflexive_root,
+)
 
 router = APIRouter(prefix="/api/v1/intelligence", tags=["intelligence"])
 
@@ -265,6 +268,8 @@ async def heartbeat_pulse() -> Dict[str, Any]:
 async def extraordinary_claims_evidence() -> Dict[str, Any]:
     """Return sealed evidence contracts for extraordinary HYBA mathematical claims."""
 
-    from hyba_genesis_api.core.extraordinary_evidence import build_extraordinary_evidence_packet
+    from hyba_genesis_api.core.extraordinary_evidence import (
+        build_extraordinary_evidence_packet,
+    )
 
     return build_extraordinary_evidence_packet()

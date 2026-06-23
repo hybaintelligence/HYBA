@@ -77,7 +77,9 @@ def _su2_from_byte(b: int, axis: int = 0) -> np.ndarray:
         return np.array([[c, 1j * s], [1j * s, c]], dtype=np.complex128)
     if axis == 1:
         return np.array([[c, s], [-s, c]], dtype=np.complex128)
-    return np.array([[np.exp(1j * theta), 0], [0, np.exp(-1j * theta)]], dtype=np.complex128)
+    return np.array(
+        [[np.exp(1j * theta), 0], [0, np.exp(-1j * theta)]], dtype=np.complex128
+    )
 
 
 def yang_mills_action(nonce: int) -> float:
@@ -113,7 +115,10 @@ def embed_nonce(nonce: int) -> Vector3:
 @lru_cache(maxsize=200_000)
 def voronoi_domain(nonce: int) -> int:
     ex, ey, ez = embed_nonce(nonce)
-    return max(range(32), key=lambda idx: M32[idx][0] * ex + M32[idx][1] * ey + M32[idx][2] * ez)
+    return max(
+        range(32),
+        key=lambda idx: M32[idx][0] * ex + M32[idx][1] * ey + M32[idx][2] * ez,
+    )
 
 
 def cheap_phi_resonance(nonce: int) -> float:
@@ -126,7 +131,8 @@ def phi_resonance(nonce: int) -> float:
         return 0.0
     ex, ey, ez = embed_nonce(n)
     c1 = min(
-        max(abs(M32[f][0] * ex + M32[f][1] * ey + M32[f][2] * ez) for f in range(32)) / PHI_INV,
+        max(abs(M32[f][0] * ex + M32[f][1] * ey + M32[f][2] * ez) for f in range(32))
+        / PHI_INV,
         1.0,
     )
     c2 = cheap_phi_resonance(n)

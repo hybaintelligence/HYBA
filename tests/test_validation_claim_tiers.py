@@ -23,7 +23,9 @@ def _load_json(path: str) -> dict:
 
 
 def _template_frontmatter() -> str:
-    text = (ROOT / "docs" / "templates" / "external_claim_material.md").read_text(encoding="utf-8")
+    text = (ROOT / "docs" / "templates" / "external_claim_material.md").read_text(
+        encoding="utf-8"
+    )
     assert text.startswith("---\n")
     end = text.find("\n---\n", 4)
     assert end > 0

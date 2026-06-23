@@ -230,7 +230,9 @@ class AuditJournal:
             if not seg_checksum_path.exists():
                 continue
             try:
-                stored_seg_checksum = seg_checksum_path.read_text(encoding="utf-8").strip()
+                stored_seg_checksum = seg_checksum_path.read_text(
+                    encoding="utf-8"
+                ).strip()
                 actual_seg_checksum = hashlib.sha256(seg_path.read_bytes()).hexdigest()
                 if stored_seg_checksum != actual_seg_checksum:
                     continue  # Corrupt segment — skip
@@ -381,7 +383,9 @@ class AutonomousAuditLogger:
         self._journal.append(
             "decision",
             autonomy_level,
-            decision_id=decision.decision_id if hasattr(decision, "decision_id") else None,
+            decision_id=(
+                decision.decision_id if hasattr(decision, "decision_id") else None
+            ),
             action=action,
             outcome=outcome,
             constraints_checked=constraints_checked,

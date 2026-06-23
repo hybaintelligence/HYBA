@@ -147,9 +147,7 @@ class RedisQuantumSubstrateRegistry:
             )
             return None
 
-    def acquire_register_lock(
-        self, instance_id: str, client_tenant_id: str
-    ) -> bool:
+    def acquire_register_lock(self, instance_id: str, client_tenant_id: str) -> bool:
         """
         Acquire atomic distributed lock on hardware register slice.
 
@@ -192,9 +190,7 @@ class RedisQuantumSubstrateRegistry:
             )
             return False
 
-    def release_register_lock(
-        self, instance_id: str, client_tenant_id: str
-    ) -> bool:
+    def release_register_lock(self, instance_id: str, client_tenant_id: str) -> bool:
         """
         Safely release execution lock using atomic Lua script.
 
@@ -291,7 +287,11 @@ class RedisQuantumSubstrateRegistry:
         except Exception as e:
             logger.error(
                 "Failed to record consumption",
-                extra={"tenant_id": tenant_id, "instance_id": instance_id, "error": str(e)},
+                extra={
+                    "tenant_id": tenant_id,
+                    "instance_id": instance_id,
+                    "error": str(e),
+                },
             )
 
         return result
@@ -308,7 +308,9 @@ class RedisQuantumSubstrateRegistry:
                 self._client = None
                 self._available = False
 
-    def meter_instance_usage(self, instance_id: str, tenant_id: str, metrics: Dict[str, Any]) -> Dict[str, Any]:
+    def meter_instance_usage(
+        self, instance_id: str, tenant_id: str, metrics: Dict[str, Any]
+    ) -> Dict[str, Any]:
         # Calculate real compute units and update global usage ledger
         # Args: metrics - Execution metrics (defect_count, pairing_weight, circuit_depth)
         # Returns: Metering result with compute_units_drawn and status

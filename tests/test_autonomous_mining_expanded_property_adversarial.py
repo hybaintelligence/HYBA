@@ -119,7 +119,9 @@ def test_property_target_bandit_counts_track_pool_response_sequence(
 
         assert _bandit_successes(after) == expected_successes
         assert _bandit_failures(after) == expected_failures
-        assert _bandit_total(after) == before_successes + before_failures + len(responses)
+        assert _bandit_total(after) == before_successes + before_failures + len(
+            responses
+        )
 
 
 @pytest.mark.property
@@ -300,7 +302,7 @@ def test_adversarial_prometheus_does_not_leak_hostile_pool_strings():
         -float("inf"),
         float("nan"),
         10**309,
-        -10**309,
+        -(10**309),
     ],
 )
 def test_adversarial_non_finite_pool_telemetry_does_not_poison_metrics(value: float):

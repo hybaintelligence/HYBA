@@ -30,7 +30,10 @@ def test_dodecahedral_density_trace_and_mass_gap_anchor() -> None:
 
 @pytestmark_numpy
 def test_irrational_truncation_boundary_selects_golden_mean_gap() -> None:
-    from pythia_mining.dodecahedral_solver import DodecahedralQuantumSolver, MASS_GAP_TARGET
+    from pythia_mining.dodecahedral_solver import (
+        DodecahedralQuantumSolver,
+        MASS_GAP_TARGET,
+    )
 
     spectrum = np.array([MASS_GAP_TARGET ** (-idx) for idx in range(1, 7)])
     result = DodecahedralQuantumSolver.irrational_truncation_boundary(spectrum)

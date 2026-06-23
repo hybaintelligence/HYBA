@@ -10,7 +10,9 @@ BACKEND = ROOT / "python_backend"
 if str(BACKEND) not in sys.path:
     sys.path.insert(0, str(BACKEND))
 
-fastapi = pytest.importorskip("fastapi", reason="FastAPI backend dependencies are not installed")
+fastapi = pytest.importorskip(
+    "fastapi", reason="FastAPI backend dependencies are not installed"
+)
 from fastapi import FastAPI, HTTPException  # noqa: E402
 from fastapi.testclient import TestClient  # noqa: E402
 from pydantic import BaseModel, Field  # noqa: E402
@@ -65,7 +67,9 @@ def test_request_validation_error_is_json_serializable() -> None:
     assert body["error"]["code"] == "validation_error"
     assert isinstance(body["details"], list)
     assert body["details"][0]["ctx"]
-    assert all(isinstance(value, str) for value in body["details"][0].get("ctx", {}).values())
+    assert all(
+        isinstance(value, str) for value in body["details"][0].get("ctx", {}).values()
+    )
 
 
 def test_http_exception_detail_with_value_error_is_json_serializable() -> None:

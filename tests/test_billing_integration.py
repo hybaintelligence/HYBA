@@ -6,7 +6,10 @@ from hyba_genesis_api.api.billing_integration import (
     get_generated_invoices,
     reset_billing_evidence,
 )
-from hyba_genesis_api.api.customer_access import CustomerApiKeyIssueRequest, customer_access
+from hyba_genesis_api.api.customer_access import (
+    CustomerApiKeyIssueRequest,
+    customer_access,
+)
 from hyba_genesis_api.api.quota_manager import get_quota_manager
 
 
@@ -27,7 +30,9 @@ def test_billing_wrapper_deducts_refunds_audits_and_invoices():
     reset_billing_evidence()
     principal = _customer()
     quota = get_quota_manager()
-    quota.provision_quota(principal.customer_id, principal.quota_compute_units_per_month)
+    quota.provision_quota(
+        principal.customer_id, principal.quota_compute_units_per_month
+    )
 
     result, usage, invoice = execute_with_billing(
         principal=principal,
@@ -51,7 +56,9 @@ def test_billing_wrapper_deducts_refunds_audits_and_invoices():
             endpoint="/api/v1/fault-tolerant-computers/test/execute",
             units=5,
             execution_id="failed-exec",
-            execute=lambda: (_ for _ in ()).throw(HTTPException(status_code=503, detail="backend failed")),
+            execute=lambda: (_ for _ in ()).throw(
+                HTTPException(status_code=503, detail="backend failed")
+            ),
         )
     except HTTPException:
         pass

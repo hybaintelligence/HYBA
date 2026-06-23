@@ -67,7 +67,9 @@ class QaaSProvisionMetrics:
 
     def to_prometheus(self) -> str:
         """Format as Prometheus metric."""
-        labels = f'tier="{self.tier}",isolation="{self.isolation}",status="{self.status}"'
+        labels = (
+            f'tier="{self.tier}",isolation="{self.isolation}",status="{self.status}"'
+        )
         return f"hyba_qaas_provision_total{{{labels}}} 1"
 
 
@@ -87,13 +89,15 @@ class QaaSExecuteMetrics:
     def to_prometheus(self) -> str:
         """Format as Prometheus metrics (duration + billing)."""
         metrics = []
-        labels = f'operation="{self.operation}",tier="{self.tier}",status="{self.status}"'
+        labels = (
+            f'operation="{self.operation}",tier="{self.tier}",status="{self.status}"'
+        )
         metrics.append(f"hyba_qaas_execute_total{{{labels}}} 1")
         metrics.append(
-            f"hyba_qaas_execute_duration_seconds_bucket{{le=\"+Inf\",{labels}}} 1"
+            f'hyba_qaas_execute_duration_seconds_bucket{{le="+Inf",{labels}}} 1'
         )
         metrics.append(
-            f"hyba_qaas_compute_units_total{{operation=\"{self.operation}\",tier=\"{self.tier}\"}} {self.compute_units_billed}"
+            f'hyba_qaas_compute_units_total{{operation="{self.operation}",tier="{self.tier}"}} {self.compute_units_billed}'
         )
         return "\n".join(metrics)
 
@@ -111,7 +115,9 @@ class QaaSRejectionMetrics:
 
     def to_prometheus(self) -> str:
         """Format as Prometheus metric."""
-        return f'hyba_qaas_rejected_total{{reason="{self.reason}",tier="{self.tier}"}} 1'
+        return (
+            f'hyba_qaas_rejected_total{{reason="{self.reason}",tier="{self.tier}"}} 1'
+        )
 
 
 @dataclass
@@ -361,7 +367,9 @@ class QaaSMetricsCollector:
 
         # Entitlement metrics
         if self.entitlement_metrics:
-            lines.append("# HELP hyba_qaas_entitlement_denial_total Entitlement denials")
+            lines.append(
+                "# HELP hyba_qaas_entitlement_denial_total Entitlement denials"
+            )
             lines.append("# TYPE hyba_qaas_entitlement_denial_total counter")
             for m in self.entitlement_metrics:
                 lines.append(m.to_prometheus())

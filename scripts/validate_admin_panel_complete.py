@@ -66,7 +66,9 @@ def validate_backend():
     results = []
 
     # Check admin API module
-    admin_api = BACKEND_ROOT / "python_backend" / "hyba_genesis_api" / "api" / "admin.py"
+    admin_api = (
+        BACKEND_ROOT / "python_backend" / "hyba_genesis_api" / "api" / "admin.py"
+    )
     results.append(check_file_exists(admin_api, "Admin API module"))
 
     # Check if admin API has required endpoints
@@ -120,7 +122,11 @@ def validate_database():
         content = models_file.read_text()
 
         # Check User model
-        if "class User(Base)" in content and "username" in content and "password_hash" in content:
+        if (
+            "class User(Base)" in content
+            and "username" in content
+            and "password_hash" in content
+        ):
             print("✅ User model defined with required fields")
             results.append(True)
         else:
@@ -178,7 +184,9 @@ def validate_security():
 
     results = []
 
-    admin_api = BACKEND_ROOT / "python_backend" / "hyba_genesis_api" / "api" / "admin.py"
+    admin_api = (
+        BACKEND_ROOT / "python_backend" / "hyba_genesis_api" / "api" / "admin.py"
+    )
     if admin_api.exists():
         content = admin_api.read_text()
 
@@ -207,7 +215,10 @@ def validate_security():
             results.append(False)
 
         # Check for self-protection
-        if "Cannot delete your own account" in content or "Cannot change your own role" in content:
+        if (
+            "Cannot delete your own account" in content
+            or "Cannot change your own role" in content
+        ):
             print("✅ Self-protection mechanisms present")
             results.append(True)
         else:
@@ -247,7 +258,9 @@ def main():
         print("   Admin panel is complete and ready for deployment")
         print("\n📝 Next Steps:")
         print("   1. Install argon2-cffi: pip install argon2-cffi")
-        print("   2. Seed admin user: python3 python_backend/scripts/seed_admin_user.py")
+        print(
+            "   2. Seed admin user: python3 python_backend/scripts/seed_admin_user.py"
+        )
         print("   3. Start backend: npm run backend:start")
         print("   4. Start frontend: npm run dev")
         print("   5. Login as admin and access admin panel")

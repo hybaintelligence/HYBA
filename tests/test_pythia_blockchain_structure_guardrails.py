@@ -31,13 +31,20 @@ def test_empirical_structure_becomes_pythia_search_prior():
     packet = build_pythia_structure_intelligence_packet(evidence)
 
     assert evidence.total_blocks == 144
-    assert evidence.status in {StructureEvidenceStatus.OBSERVED, StructureEvidenceStatus.STRONG}
+    assert evidence.status in {
+        StructureEvidenceStatus.OBSERVED,
+        StructureEvidenceStatus.STRONG,
+    }
     assert evidence.evidence_is_usable_as_prior is True
     assert packet.pythia_directives["use_as"] == "search_traversal_prior_only"
     assert (
-        "retain_exact_sha256d_verification" in packet.pythia_directives["preferred_runtime_effect"]
+        "retain_exact_sha256d_verification"
+        in packet.pythia_directives["preferred_runtime_effect"]
     )
-    assert "do_not_bypass_sha256d_verifier" in packet.pythia_directives["forbidden_runtime_effect"]
+    assert (
+        "do_not_bypass_sha256d_verifier"
+        in packet.pythia_directives["forbidden_runtime_effect"]
+    )
     assert len(packet.packet_hash) == 64
 
 

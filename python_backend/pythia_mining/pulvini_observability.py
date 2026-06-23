@@ -127,7 +127,9 @@ class ObservabilityCertificate:
     def to_dict(self) -> Dict[str, Any]:
         return {
             "slo_targets": [slo.to_dict() for slo in self.slo_targets],
-            "metrics_collected": [metric.to_dict() for metric in self.metrics_collected],
+            "metrics_collected": [
+                metric.to_dict() for metric in self.metrics_collected
+            ],
             "tracing_enabled": self.tracing_enabled,
             "structured_logging_enabled": self.structured_logging_enabled,
             "chaos_engineering_hooks": self.chaos_engineering_hooks,
@@ -319,7 +321,9 @@ def verify_observability_framework() -> Dict[str, Any]:
 
     return {
         "status": (
-            "CLOSED" if (slo_count >= 2 and tracing_works and metrics_collected) else "OPEN"
+            "CLOSED"
+            if (slo_count >= 2 and tracing_works and metrics_collected)
+            else "OPEN"
         ),
         "slo_count": slo_count,
         "tracing_enabled": tracing_works,

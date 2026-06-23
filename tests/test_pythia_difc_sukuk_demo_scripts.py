@@ -6,7 +6,9 @@ import sys
 from pathlib import Path
 
 
-def _run_script(script: str, *args: str, tmp_path: Path) -> subprocess.CompletedProcess[str]:
+def _run_script(
+    script: str, *args: str, tmp_path: Path
+) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
         [sys.executable, script, *args],
         cwd=Path(__file__).resolve().parents[1],
@@ -17,7 +19,9 @@ def _run_script(script: str, *args: str, tmp_path: Path) -> subprocess.Completed
     )
 
 
-def test_sukuk_lifecycle_simulation_writes_manifest_and_stage_packets(tmp_path: Path) -> None:
+def test_sukuk_lifecycle_simulation_writes_manifest_and_stage_packets(
+    tmp_path: Path,
+) -> None:
     output_dir = tmp_path / "lifecycle"
     result = _run_script(
         "scripts/simulate_difc_sukuk_lifecycle_drift.py",

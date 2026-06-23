@@ -39,15 +39,22 @@ class AuthRequest(BaseModel):
 
 
 def _is_production() -> bool:
-    return os.getenv("NODE_ENV", os.getenv("HYBA_ENV", "development")).lower() == "production"
+    return (
+        os.getenv("NODE_ENV", os.getenv("HYBA_ENV", "development")).lower()
+        == "production"
+    )
 
 
 def _cookie_samesite() -> str:
-    return os.getenv("HYBA_AUTH_COOKIE_SAMESITE", "strict" if _is_production() else "lax")
+    return os.getenv(
+        "HYBA_AUTH_COOKIE_SAMESITE", "strict" if _is_production() else "lax"
+    )
 
 
 def _cookie_secure() -> bool:
-    return os.getenv("HYBA_AUTH_COOKIE_SECURE", "true" if _is_production() else "false").lower() in {
+    return os.getenv(
+        "HYBA_AUTH_COOKIE_SECURE", "true" if _is_production() else "false"
+    ).lower() in {
         "1",
         "true",
         "yes",
@@ -68,7 +75,11 @@ def _credential_entries(raw: str) -> List[str]:
     if not normalized:
         return []
     if ";" in normalized or "\n" in normalized:
-        return [item.strip() for item in normalized.replace("\n", ";").split(";") if item.strip()]
+        return [
+            item.strip()
+            for item in normalized.replace("\n", ";").split(";")
+            if item.strip()
+        ]
     if "$argon2" in normalized:
         return [normalized]
     return [item.strip() for item in normalized.split(",") if item.strip()]
@@ -202,7 +213,9 @@ async def login(req: AuthRequest, response: Response):
 
 
 @router.post("/logout", response_model=Dict[str, Any])
-async def logout(response: Response, payload: TokenPayload = Depends(get_token_payload)):
+async def logout(
+    response: Response, payload: TokenPayload = Depends(get_token_payload)
+):
     response.delete_cookie(
         key=ACCESS_COOKIE_NAME,
         path="/",
@@ -242,6 +255,8 @@ async def profile(payload: TokenPayload = Depends(get_token_payload)):
     }
 
 
-def get_current_user(payload: TokenPayload = Depends(get_token_payload)) -> TokenPayload:
+def get_current_user(
+    payload: TokenPayload = Depends(get_token_payload),
+) -> TokenPayload:
     """FastAPI dependency to get the current authenticated user from JWT token."""
     return payload

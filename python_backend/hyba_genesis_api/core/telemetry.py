@@ -180,7 +180,9 @@ def init_opentelemetry() -> bool:
         "opentelemetry.exporter.otlp.proto.http.trace_exporter",
     )
     if any(importlib.util.find_spec(module) is None for module in required):
-        logging.warning("Telemetry: OpenTelemetry endpoint configured but SDK/exporter packages are unavailable.")
+        logging.warning(
+            "Telemetry: OpenTelemetry endpoint configured but SDK/exporter packages are unavailable."
+        )
         return False
 
     from opentelemetry import trace
@@ -189,7 +191,9 @@ def init_opentelemetry() -> bool:
     from opentelemetry.sdk.trace import TracerProvider
     from opentelemetry.sdk.trace.export import BatchSpanProcessor
 
-    resource = Resource.create({"service.name": os.getenv("OTEL_SERVICE_NAME", "hyba-genesis-api")})
+    resource = Resource.create(
+        {"service.name": os.getenv("OTEL_SERVICE_NAME", "hyba-genesis-api")}
+    )
     provider = TracerProvider(resource=resource)
     provider.add_span_processor(BatchSpanProcessor(OTLPSpanExporter()))
     trace.set_tracer_provider(provider)
@@ -239,7 +243,10 @@ def set_workflow_status(workflow: str, status: str, healthy: bool) -> None:
     safe_workflow = _safe_label(workflow)
     safe_status = _safe_label(status)
     WORKFLOW_STATUS.labels(safe_workflow, safe_status).set(1 if healthy else 0)
-    _METRICS["workflows"][safe_workflow] = {"status": safe_status, "healthy": bool(healthy)}
+    _METRICS["workflows"][safe_workflow] = {
+        "status": safe_status,
+        "healthy": bool(healthy),
+    }
 
 
 def record_audit_event(event_type: str, outcome: str, **fields: Any) -> None:
@@ -327,7 +334,9 @@ async def telemetry_middleware(request: Request, call_next):
     finally:
         duration_ms = round((time.perf_counter() - start) * 1000, 3)
         ACTIVE_REQUESTS.dec()
-        _METRICS["active_requests"] = max(0, int(_METRICS.get("active_requests", 0)) - 1)
+        _METRICS["active_requests"] = max(
+            0, int(_METRICS.get("active_requests", 0)) - 1
+        )
         if status_code >= 500 or exception_seen:
             _METRICS["errors_total"] += 1
         _METRICS["requests_total"] += 1
@@ -352,13 +361,17 @@ async def telemetry_middleware(request: Request, call_next):
             ERROR_COUNT.labels(endpoint).inc()
 
 
-def record_billing_usage(tenant_hash: str, product: str, tier: str, units: int, estimated_charge_usd: float) -> None:
+def record_billing_usage(
+    tenant_hash: str, product: str, tier: str, units: int, estimated_charge_usd: float
+) -> None:
     """Record accepted low-cardinality commercial billing metrics."""
 
     safe_units = max(0, int(units))
     BILLING_USAGE_UNITS.labels(tenant_hash, product, tier).inc(safe_units)
     if estimated_charge_usd > 0:
-        BILLING_ESTIMATED_CHARGES.labels(tenant_hash, product, tier).inc(estimated_charge_usd)
+        BILLING_ESTIMATED_CHARGES.labels(tenant_hash, product, tier).inc(
+            estimated_charge_usd
+        )
 
 
 def record_billing_quota_rejection(tenant_hash: str, quota: str, tier: str) -> None:
@@ -367,8 +380,14 @@ def record_billing_quota_rejection(tenant_hash: str, quota: str, tier: str) -> N
     BILLING_QUOTA_REJECTIONS.labels(tenant_hash, quota, tier).inc()
 
 
-def set_billing_quota_remaining(tenant_hash: str, tier: str, requests_remaining: int, compute_remaining: int) -> None:
+def set_billing_quota_remaining(
+    tenant_hash: str, tier: str, requests_remaining: int, compute_remaining: int
+) -> None:
     """Publish current remaining monthly request and compute-unit quota gauges."""
 
-    BILLING_QUOTA_REMAINING.labels(tenant_hash, "requests", tier).set(max(0, requests_remaining))
-    BILLING_QUOTA_REMAINING.labels(tenant_hash, "compute_units", tier).set(max(0, compute_remaining))
+    BILLING_QUOTA_REMAINING.labels(tenant_hash, "requests", tier).set(
+        max(0, requests_remaining)
+    )
+    BILLING_QUOTA_REMAINING.labels(tenant_hash, "compute_units", tier).set(
+        max(0, compute_remaining)
+    )

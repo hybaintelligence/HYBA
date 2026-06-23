@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import datetime, timezone
+
 UTC = timezone.utc, timedelta
 from typing import Any
 
@@ -100,7 +101,11 @@ class RevenueAnalytics:
         if tenant is None or workload_execution is None:
             return UnitEconomics(self.assumed_cac_usd, 0.0, 0.0).as_dict()
         total_customers = self.session.query(func.count(tenant.id)).scalar() or 0
-        total_revenue = self.session.query(func.sum(workload_execution.actual_cost)).scalar() or 0
+        total_revenue = (
+            self.session.query(func.sum(workload_execution.actual_cost)).scalar() or 0
+        )
         ltv = float(total_revenue) / max(int(total_customers), 1)
         ratio = ltv / self.assumed_cac_usd if self.assumed_cac_usd > 0 else 0.0
-        return UnitEconomics(self.assumed_cac_usd, round(ltv, 2), round(ratio, 4)).as_dict()
+        return UnitEconomics(
+            self.assumed_cac_usd, round(ltv, 2), round(ratio, 4)
+        ).as_dict()

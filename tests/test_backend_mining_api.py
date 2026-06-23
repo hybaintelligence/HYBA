@@ -7,7 +7,9 @@ from tests.test_backend_api_helpers import bearer_headers, make_client
 
 def test_get_mining_pools_returns_summary_and_pool_list() -> None:
     with make_client() as client:
-        response = client.get("/api/mining/pools", headers=bearer_headers("mining:read"))
+        response = client.get(
+            "/api/mining/pools", headers=bearer_headers("mining:read")
+        )
 
     assert response.status_code == 200
     data = response.json()
@@ -20,7 +22,9 @@ def test_get_mining_pools_returns_summary_and_pool_list() -> None:
 
 def test_get_pool_config_exposes_configured_pool_records() -> None:
     with make_client() as client:
-        response = client.get("/api/mining/pool-config", headers=bearer_headers("mining:read"))
+        response = client.get(
+            "/api/mining/pool-config", headers=bearer_headers("mining:read")
+        )
 
     assert response.status_code == 200
     data = response.json()
@@ -31,7 +35,9 @@ def test_get_pool_config_exposes_configured_pool_records() -> None:
 
 def test_mining_status_is_readable_without_active_connection() -> None:
     with make_client() as client:
-        response = client.get("/api/mining/status", headers=bearer_headers("mining:read"))
+        response = client.get(
+            "/api/mining/status", headers=bearer_headers("mining:read")
+        )
 
     assert response.status_code == 200
     data = response.json()
@@ -42,7 +48,9 @@ def test_mining_status_is_readable_without_active_connection() -> None:
 
 def test_mining_health_reports_structured_checks() -> None:
     with make_client() as client:
-        response = client.get("/api/mining/health", headers=bearer_headers("mining:read"))
+        response = client.get(
+            "/api/mining/health", headers=bearer_headers("mining:read")
+        )
 
     assert response.status_code == 200
     data = response.json()

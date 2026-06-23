@@ -48,7 +48,9 @@ class SubmitResult:
 
 
 class LiveStratumSession:
-    def __init__(self, profile: PoolProfile, *, transport: Optional[StratumLineTransport] = None):
+    def __init__(
+        self, profile: PoolProfile, *, transport: Optional[StratumLineTransport] = None
+    ):
         self.profile = validate_profile(profile)
         self.transport = transport or StratumLineTransport(profile.url)
         self._ids = itertools.count(1)
@@ -102,7 +104,9 @@ class LiveStratumSession:
             self.authorized,
         )
 
-    async def read_event(self, *, timeout: Optional[float] = None, include_responses: bool = False):
+    async def read_event(
+        self, *, timeout: Optional[float] = None, include_responses: bool = False
+    ):
         while True:
             line = await self.transport.read_line(timeout=timeout)
             event, payload = parse_server_message(line)
@@ -116,11 +120,15 @@ class LiveStratumSession:
             raise LiveStratumSessionError("cannot submit before authorization")
         submit_id = self.next_id()
         await self.transport.send_line(
-            build_submit(submit_id, self.profile.username, job_id, extranonce2, ntime, nonce)
+            build_submit(
+                submit_id, self.profile.username, job_id, extranonce2, ntime, nonce
+            )
         )
         payload = await self._read_response_for_id(submit_id)
         accepted = bool(payload.get("result")) and not payload.get("error")
-        return SubmitResult(accepted=accepted, error=payload.get("error"), response=payload)
+        return SubmitResult(
+            accepted=accepted, error=payload.get("error"), response=payload
+        )
 
     async def close(self) -> None:
         await self.transport.close()

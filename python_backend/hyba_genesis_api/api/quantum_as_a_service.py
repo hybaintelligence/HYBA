@@ -22,6 +22,7 @@ import threading
 import time
 import uuid
 from datetime import datetime, timezone
+
 UTC = timezone.utc
 from typing import Any, Dict, Literal, Optional
 
@@ -29,7 +30,11 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field, field_validator
 
 from hyba_genesis_api.api.admin import require_admin
-from hyba_genesis_api.api.customer_access import CustomerPrincipal, customer_access, require_customer_api_key
+from hyba_genesis_api.api.customer_access import (
+    CustomerPrincipal,
+    customer_access,
+    require_customer_api_key,
+)
 from hyba_genesis_api.api.billing_integration import execute_with_billing
 from hyba_genesis_api.auth.jwt_handler import TokenPayload
 from hyba_genesis_api.core.intelligence_fabric import SubstrateOrchestrator, explain
@@ -39,12 +44,18 @@ from pythia_mining.fault_tolerant_quantum_core import FaultTolerantQuantumCore, 
 from pythia_mining.redis_state_registry import get_redis_registry
 from pythia_mining.autonomous_qaas_controller import create_autonomous_controller
 
-router = APIRouter(prefix="/api/admin/fault-tolerant-computers", tags=["quantum-as-a-service-admin"])
-public_router = APIRouter(prefix="/api/v1/fault-tolerant-computers", tags=["quantum-as-a-service"])
+router = APIRouter(
+    prefix="/api/admin/fault-tolerant-computers", tags=["quantum-as-a-service-admin"]
+)
+public_router = APIRouter(
+    prefix="/api/v1/fault-tolerant-computers", tags=["quantum-as-a-service"]
+)
 
 ComputerState = Literal["provisioned", "running", "stopped"]
 QaaSTier = Literal["developer", "production", "sovereign"]
-IsolationMode = Literal["single-tenant", "dedicated-control-plane", "sovereign-isolated"]
+IsolationMode = Literal[
+    "single-tenant", "dedicated-control-plane", "sovereign-isolated"
+]
 QuantumOperation = Literal[
     "surface_code_cycle",
     "phi_resonance_analysis",
@@ -57,7 +68,9 @@ QuantumOperation = Literal[
 class ProvisionFaultTolerantComputerRequest(BaseModel):
     """Provision a commercial virtual fault-tolerant quantum computer (admin-only)."""
 
-    name: str = Field(min_length=3, max_length=80, pattern=r"^[a-zA-Z0-9][a-zA-Z0-9_.-]*$")
+    name: str = Field(
+        min_length=3, max_length=80, pattern=r"^[a-zA-Z0-9][a-zA-Z0-9_.-]*$"
+    )
     tier: QaaSTier = "production"
     isolation: IsolationMode = "dedicated-control-plane"
     code_distance: int = Field(default=7, ge=3, le=31)
@@ -84,7 +97,9 @@ class ProvisionFaultTolerantComputerRequest(BaseModel):
     @classmethod
     def code_distance_must_be_odd(cls, value: int) -> int:
         if value % 2 == 0:
-            raise ValueError("code_distance must be odd for surface-code fault tolerance")
+            raise ValueError(
+                "code_distance must be odd for surface-code fault tolerance"
+            )
         return value
 
     @field_validator("allowed_operations")
@@ -103,7 +118,9 @@ class CustomerProvisionFaultTolerantComputerRequest(BaseModel):
 
     model_config = {"extra": "forbid"}  # Reject unknown fields for security
 
-    name: str = Field(min_length=3, max_length=80, pattern=r"^[a-zA-Z0-9][a-zA-Z0-9_.-]*$")
+    name: str = Field(
+        min_length=3, max_length=80, pattern=r"^[a-zA-Z0-9][a-zA-Z0-9_.-]*$"
+    )
     tier: QaaSTier = "developer"
     isolation: IsolationMode = "single-tenant"
     code_distance: int = Field(default=7, ge=3, le=31)
@@ -129,7 +146,9 @@ class CustomerProvisionFaultTolerantComputerRequest(BaseModel):
     @classmethod
     def code_distance_must_be_odd(cls, value: int) -> int:
         if value % 2 == 0:
-            raise ValueError("code_distance must be odd for surface-code fault tolerance")
+            raise ValueError(
+                "code_distance must be odd for surface-code fault tolerance"
+            )
         return value
 
     @field_validator("allowed_operations")
@@ -286,7 +305,9 @@ class _VirtualFaultTolerantQuantumComputer:
             "fault_tolerance": self.fault_tolerance(),
             "substrate_ready": substrate.get("ready"),
         }
-        canonical = json.dumps(seal_payload, sort_keys=True, separators=(",", ":"), default=str)
+        canonical = json.dumps(
+            seal_payload, sort_keys=True, separators=(",", ":"), default=str
+        )
         evidence_seal = hashlib.sha256(canonical.encode()).hexdigest()
         return evidence_seal, seal_payload["sealed_at"]
 
@@ -349,7 +370,9 @@ class _VirtualFaultTolerantQuantumComputer:
             ),
         }
 
-    def _answer_governance_question(self, request: QuantumWorkloadRequest) -> Dict[str, Any]:
+    def _answer_governance_question(
+        self, request: QuantumWorkloadRequest
+    ) -> Dict[str, Any]:
         """Return a criticism-ready answer for arbitrary governance/audit prompts."""
         question = str(
             request.context.get("question")
@@ -395,25 +418,37 @@ class _VirtualFaultTolerantQuantumComputer:
 
     def _validate_workload(self, request: QuantumWorkloadRequest) -> list[int]:
         if request.operation not in self.policy["allowed_operations"]:
-            raise HTTPException(status_code=403, detail="operation is not allowed by computer policy")
+            raise HTTPException(
+                status_code=403, detail="operation is not allowed by computer policy"
+            )
         if request.circuit_depth > self.policy["max_circuit_depth"]:
-            raise HTTPException(status_code=413, detail="circuit depth exceeds computer policy")
+            raise HTTPException(
+                status_code=413, detail="circuit depth exceeds computer policy"
+            )
         if request.shots > self.policy["max_shots"]:
-            raise HTTPException(status_code=413, detail="shot count exceeds computer policy")
-        qubits = request.logical_qubits or list(range(min(3, len(self.core.logical_qubits))))
+            raise HTTPException(
+                status_code=413, detail="shot count exceeds computer policy"
+            )
+        qubits = request.logical_qubits or list(
+            range(min(3, len(self.core.logical_qubits)))
+        )
         if len(qubits) > len(self.core.logical_qubits):
             raise HTTPException(
                 status_code=413,
                 detail=f"logical_qubits count {len(qubits)} exceeds provisioned limit {len(self.core.logical_qubits)}",
             )
         if any(index < 0 or index >= len(self.core.logical_qubits) for index in qubits):
-            raise HTTPException(status_code=422, detail="logical_qubits contains an out-of-range index")
+            raise HTTPException(
+                status_code=422, detail="logical_qubits contains an out-of-range index"
+            )
         return qubits
 
     def _estimate_execution_duration_ms(self, request: QuantumWorkloadRequest) -> int:
         """Estimate execution duration in milliseconds for lock lease calculation."""
         # Conservative estimate: 0.1ms per circuit depth per qubit
-        qubits = len(request.logical_qubits or list(range(min(3, len(self.core.logical_qubits)))))
+        qubits = len(
+            request.logical_qubits or list(range(min(3, len(self.core.logical_qubits))))
+        )
         return int(request.circuit_depth * qubits * 0.1) + 1000  # +1s safety margin
 
     def execute(self, request: QuantumWorkloadRequest) -> Dict[str, Any]:
@@ -441,7 +476,9 @@ class _VirtualFaultTolerantQuantumComputer:
             lock_acquired = False
             if redis_registry.available:
                 estimated_duration_ms = self._estimate_execution_duration_ms(request)
-                lock_lease_ms = max(10_000, estimated_duration_ms * 2)  # At least 10s, double the estimate
+                lock_lease_ms = max(
+                    10_000, estimated_duration_ms * 2
+                )  # At least 10s, double the estimate
                 lock_acquired = redis_registry.acquire_register_lock(
                     self.computer_id, self.owner, lease_ms=lock_lease_ms
                 )
@@ -466,21 +503,32 @@ class _VirtualFaultTolerantQuantumComputer:
                         "logical_qubits": qubits,
                         "circuit_depth": request.circuit_depth,
                         "shots": request.shots,
-                        "syndrome_rounds": self.core.get_error_statistics()["syndrome_rounds"],
+                        "syndrome_rounds": self.core.get_error_statistics()[
+                            "syndrome_rounds"
+                        ],
                     }
                 elif request.operation == "phi_resonance_analysis":
                     target = self.policy["phi_resonance_target"]
                     result = {
                         "phi": PHI,
                         "target": target,
-                        "alignment": round(max(0.0, min(1.0, 1.0 - abs(PHI / math.pi - target))), 6),
-                        "analysis": explain(request.context or {"operation": request.operation}, request.substrates),
+                        "alignment": round(
+                            max(0.0, min(1.0, 1.0 - abs(PHI / math.pi - target))), 6
+                        ),
+                        "analysis": explain(
+                            request.context or {"operation": request.operation},
+                            request.substrates,
+                        ),
                     }
                 elif request.operation == "state_vector_summary":
                     result = {
                         "logical_qubits": qubits,
                         "center_amplitudes": [
-                            str(self.core.logical_qubits[index].physical_qubits[self.core.d // 2, self.core.d // 2])
+                            str(
+                                self.core.logical_qubits[index].physical_qubits[
+                                    self.core.d // 2, self.core.d // 2
+                                ]
+                            )
                             for index in qubits
                         ],
                         "fault_tolerance": self.fault_tolerance(),
@@ -490,7 +538,9 @@ class _VirtualFaultTolerantQuantumComputer:
                 else:
                     result = {
                         "context_digest": hashlib.sha256(
-                            json.dumps(request.context, sort_keys=True, default=str).encode()
+                            json.dumps(
+                                request.context, sort_keys=True, default=str
+                            ).encode()
                         ).hexdigest(),
                         "criticism_response": self._answer_governance_question(request),
                         "quantum_parameters": self.quantum_parameters(),
@@ -517,7 +567,9 @@ class _VirtualFaultTolerantQuantumComputer:
 
                 # Record execution for autonomous learning with delta correction_success
                 stats = self.core.get_error_statistics()
-                correction_success = stats["correction_successes"] > 0  # Note: should use delta in future
+                correction_success = (
+                    stats["correction_successes"] > 0
+                )  # Note: should use delta in future
                 self.autonomous.record_execution(
                     execution_time_ms=exec_duration * 1000,
                     logical_error_rate=stats["logical_error_rate"],
@@ -602,7 +654,9 @@ class QuantumComputerRegistry:
         try:
             return self._computers[computer_id]
         except KeyError as exc:
-            raise HTTPException(status_code=404, detail="fault-tolerant computer not found") from exc
+            raise HTTPException(
+                status_code=404, detail="fault-tolerant computer not found"
+            ) from exc
 
     def list(self, owner: str | None = None) -> list[FaultTolerantComputerResponse]:
         with self._lock:
@@ -628,8 +682,10 @@ class QuantumComputerRegistry:
                         "state": computer.state,
                         "updated_at": computer.updated_at,
                     }
-                    redis_registry.serialize_instance_topology(computer_id, topology_data)
-                
+                    redis_registry.serialize_instance_topology(
+                        computer_id, topology_data
+                    )
+
                 # Start autonomous controller
                 computer.autonomous.start()
 
@@ -638,10 +694,10 @@ class QuantumComputerRegistry:
     def stop(self, computer_id: str) -> FaultTolerantComputerResponse:
         with self._lock:
             computer = self.get(computer_id)
-            
+
             # Stop autonomous controller and persist learned state
             computer.autonomous.stop()
-            
+
             computer.state = "stopped"
             computer.touch()
 
@@ -658,26 +714,39 @@ class QuantumComputerRegistry:
 
             return computer.response()
 
-    def execute(self, computer_id: str, request: QuantumWorkloadRequest) -> Dict[str, Any]:
+    def execute(
+        self, computer_id: str, request: QuantumWorkloadRequest
+    ) -> Dict[str, Any]:
         # Narrow registry lock to lookup only, then execute under per-computer lock
         with self._lock:
             computer = self.get(computer_id)
             if computer.state != "running":
-                raise HTTPException(status_code=409, detail="computer must be running before workloads execute")
+                raise HTTPException(
+                    status_code=409,
+                    detail="computer must be running before workloads execute",
+                )
         # Execute outside registry lock to avoid blocking other registry operations
         return computer.execute(request)
 
-    def assert_owner(self, computer_id: str, owner: str) -> _VirtualFaultTolerantQuantumComputer:
+    def assert_owner(
+        self, computer_id: str, owner: str
+    ) -> _VirtualFaultTolerantQuantumComputer:
         computer = self.get(computer_id)
         if computer.owner != owner:
-            raise HTTPException(status_code=404, detail="fault-tolerant computer not found")
+            raise HTTPException(
+                status_code=404, detail="fault-tolerant computer not found"
+            )
         return computer
 
 
 registry = QuantumComputerRegistry()
 
 
-@router.post("", response_model=FaultTolerantComputerResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "",
+    response_model=FaultTolerantComputerResponse,
+    status_code=status.HTTP_201_CREATED,
+)
 async def provision_computer(
     request: ProvisionFaultTolerantComputerRequest,
     payload: TokenPayload = Depends(require_admin),
@@ -691,17 +760,23 @@ async def list_computers(payload: TokenPayload = Depends(require_admin)):
 
 
 @router.get("/{computer_id}", response_model=FaultTolerantComputerResponse)
-async def get_computer(computer_id: str, payload: TokenPayload = Depends(require_admin)):
+async def get_computer(
+    computer_id: str, payload: TokenPayload = Depends(require_admin)
+):
     return registry.get(computer_id).response()
 
 
 @router.post("/{computer_id}/start", response_model=FaultTolerantComputerResponse)
-async def start_computer(computer_id: str, payload: TokenPayload = Depends(require_admin)):
+async def start_computer(
+    computer_id: str, payload: TokenPayload = Depends(require_admin)
+):
     return registry.start(computer_id)
 
 
 @router.post("/{computer_id}/stop", response_model=FaultTolerantComputerResponse)
-async def stop_computer(computer_id: str, payload: TokenPayload = Depends(require_admin)):
+async def stop_computer(
+    computer_id: str, payload: TokenPayload = Depends(require_admin)
+):
     return registry.stop(computer_id)
 
 
@@ -740,9 +815,9 @@ def _estimated_work_units(
     code_distance: int = 7,
 ) -> int:
     """Estimate work units including operation weight and code distance.
-    
+
     Formula: depth × shots × qubits × code_distance² × operation_weight
-    
+
     Operation weights:
         state_vector_summary: 1.0
         governance_audit: 1.0
@@ -757,15 +832,15 @@ def _estimated_work_units(
         "surface_code_cycle": 4.0,
         "substrate_orchestration": 12.0,
     }
-    
+
     qubit_count = max(1, len(logical_qubits) if logical_qubits else 1)
     weight = operation_weights.get(operation, 1.0)
-    
+
     return int(
         max(1, circuit_depth)
         * max(1, shots)
         * qubit_count
-        * (code_distance ** 2)
+        * (code_distance**2)
         * weight
     )
 
@@ -788,7 +863,7 @@ def _validate_customer_entitlement(
     requested_isolation: IsolationMode,
 ) -> None:
     """Validate customer entitlement for requested QaaS tier and isolation.
-    
+
     CRITICAL: Sovereign entitlement comes from principal.metadata only,
     never from request body.
     """
@@ -836,7 +911,11 @@ def _validate_customer_entitlement(
                 )
 
 
-@public_router.post("", response_model=FaultTolerantComputerResponse, status_code=status.HTTP_201_CREATED)
+@public_router.post(
+    "",
+    response_model=FaultTolerantComputerResponse,
+    status_code=status.HTTP_201_CREATED,
+)
 async def customer_provision_computer(
     request: CustomerProvisionFaultTolerantComputerRequest,
     principal: CustomerPrincipal = Depends(require_customer_api_key),
@@ -851,7 +930,9 @@ async def customer_provision_computer(
         admin_privileged=False,
     )
 
-    customer_access.meter(principal, product="qaas.provision", units=request.logical_qubits)
+    customer_access.meter(
+        principal, product="qaas.provision", units=request.logical_qubits
+    )
     response = registry.provision(admin_request, owner=principal.customer_id)
     customer_access.set_state(f"qaas:{response.computer_id}", response.model_dump())
     return response
@@ -866,7 +947,9 @@ async def customer_list_computers(
     return registry.list(owner=principal.customer_id)
 
 
-@public_router.post("/{computer_id}/start", response_model=FaultTolerantComputerResponse)
+@public_router.post(
+    "/{computer_id}/start", response_model=FaultTolerantComputerResponse
+)
 async def customer_start_computer(
     computer_id: str,
     principal: CustomerPrincipal = Depends(require_customer_api_key),

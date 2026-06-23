@@ -5,7 +5,11 @@ import subprocess
 import sys
 from pathlib import Path
 
-from pythia_mining.manifest_registry import list_claims, load_and_reverify, save_verified_manifest
+from pythia_mining.manifest_registry import (
+    list_claims,
+    load_and_reverify,
+    save_verified_manifest,
+)
 from pythia_mining.mining_auto_attester import emit_attested_mining_success_manifest
 from pythia_mining.replay_executor import execute_reproducibility_replay
 
@@ -36,9 +40,13 @@ def test_manifest_registry_saves_lists_and_reverifies(tmp_path) -> None:
     registry_dir = tmp_path / "registry"
     manifest = _manifest(tmp_path)
     claim = manifest["claim"]
-    replay = execute_reproducibility_replay(claim["reproducibility_attestation"], cwd=tmp_path)
+    replay = execute_reproducibility_replay(
+        claim["reproducibility_attestation"], cwd=tmp_path
+    )
 
-    record = save_verified_manifest(manifest, registry_dir, source_cwd=tmp_path, replay=replay)
+    record = save_verified_manifest(
+        manifest, registry_dir, source_cwd=tmp_path, replay=replay
+    )
     records = list_claims(registry_dir, filter_by_boundary="local deterministic")
     reverified = load_and_reverify(registry_dir, "registry_nonce_claim")
 

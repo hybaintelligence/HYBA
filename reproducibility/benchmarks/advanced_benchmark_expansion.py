@@ -17,6 +17,7 @@ import hashlib
 
 class WorkloadType(Enum):
     """Types of workloads that can be benchmarked"""
+
     FINANCIAL = "financial"
     MACHINE_LEARNING = "ml"
     CRYPTOGRAPHY = "crypto"
@@ -29,22 +30,22 @@ class WorkloadType(Enum):
 
 class DomainSpecializer(ABC):
     """Base class for domain-specific benchmark specializers"""
-    
+
     def __init__(self, domain: str):
         self.domain = domain
         self.benchmarks = []
         self.results = []
-    
+
     @abstractmethod
     def setup(self) -> None:
         """Setup domain-specific resources"""
         pass
-    
+
     @abstractmethod
     def get_benchmark_suite(self) -> List[Callable]:
         """Return list of benchmark functions for this domain"""
         pass
-    
+
     @abstractmethod
     def validate_results(self, results: Dict[str, Any]) -> bool:
         """Validate results are within expected ranges"""
@@ -54,6 +55,7 @@ class DomainSpecializer(ABC):
 @dataclass
 class QuantumBenchmarkMetrics:
     """Quantum-specific benchmark metrics"""
+
     fidelity: float  # State preparation fidelity (0-1)
     circuit_depth: int  # Quantum circuit depth
     gate_count: int  # Total gate operations
@@ -62,46 +64,46 @@ class QuantumBenchmarkMetrics:
     entanglement: float  # Entanglement measure
     state_purity: float  # Quantum state purity
     measurement_fidelity: float  # Measurement accuracy
-    
+
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary"""
         return {
-            'fidelity': self.fidelity,
-            'circuit_depth': self.circuit_depth,
-            'gate_count': self.gate_count,
-            'coherence_time': self.coherence_time,
-            'error_rate': self.error_rate,
-            'entanglement': self.entanglement,
-            'state_purity': self.state_purity,
-            'measurement_fidelity': self.measurement_fidelity,
+            "fidelity": self.fidelity,
+            "circuit_depth": self.circuit_depth,
+            "gate_count": self.gate_count,
+            "coherence_time": self.coherence_time,
+            "error_rate": self.error_rate,
+            "entanglement": self.entanglement,
+            "state_purity": self.state_purity,
+            "measurement_fidelity": self.measurement_fidelity,
         }
 
 
 class QuantumBenchmarker(DomainSpecializer):
     """Benchmarker for quantum algorithms and circuits"""
-    
+
     def __init__(self):
         super().__init__("quantum")
         self.num_qubits = 0
         self.circuit = None
-    
+
     def setup(self) -> None:
         """Setup quantum benchmarks"""
         self.num_qubits = 5
         self.circuit = self._create_test_circuit()
-    
+
     def _create_test_circuit(self) -> Dict[str, Any]:
         """Create a test quantum circuit"""
         return {
-            'gates': [
-                {'type': 'H', 'target': 0},
-                {'type': 'CNOT', 'control': 0, 'target': 1},
-                {'type': 'RZ', 'theta': np.pi/4, 'target': 1},
-                {'type': 'CNOT', 'control': 1, 'target': 2},
+            "gates": [
+                {"type": "H", "target": 0},
+                {"type": "CNOT", "control": 0, "target": 1},
+                {"type": "RZ", "theta": np.pi / 4, "target": 1},
+                {"type": "CNOT", "control": 1, "target": 2},
             ],
-            'num_qubits': self.num_qubits,
+            "num_qubits": self.num_qubits,
         }
-    
+
     def get_benchmark_suite(self) -> List[Callable]:
         """Get quantum benchmark functions"""
         return [
@@ -111,20 +113,20 @@ class QuantumBenchmarker(DomainSpecializer):
             self.benchmark_variational_ansatz,
             self.benchmark_error_mitigation,
         ]
-    
+
     def benchmark_state_preparation(self) -> QuantumBenchmarkMetrics:
         """Benchmark quantum state preparation"""
         start = time.time()
-        
+
         # Simulate state preparation
-        num_states = 2 ** self.num_qubits
+        num_states = 2**self.num_qubits
         fidelity = 0.999  # High fidelity preparation
         circuit_depth = 5
         gate_count = 12
         coherence_time = 100.0  # microseconds
-        
+
         duration = time.time() - start
-        
+
         return QuantumBenchmarkMetrics(
             fidelity=fidelity,
             circuit_depth=circuit_depth,
@@ -135,7 +137,7 @@ class QuantumBenchmarker(DomainSpecializer):
             state_purity=fidelity,
             measurement_fidelity=0.95,
         )
-    
+
     def benchmark_entanglement_creation(self) -> QuantumBenchmarkMetrics:
         """Benchmark entanglement creation"""
         metrics = QuantumBenchmarkMetrics(
@@ -149,13 +151,13 @@ class QuantumBenchmarker(DomainSpecializer):
             measurement_fidelity=0.94,
         )
         return metrics
-    
+
     def benchmark_quantum_fourier_transform(self) -> QuantumBenchmarkMetrics:
         """Benchmark quantum Fourier transform"""
         n = self.num_qubits
         circuit_depth = n * (n + 1) // 2
         gate_count = n * (n - 1)
-        
+
         metrics = QuantumBenchmarkMetrics(
             fidelity=0.97,
             circuit_depth=circuit_depth,
@@ -167,12 +169,12 @@ class QuantumBenchmarker(DomainSpecializer):
             measurement_fidelity=0.93,
         )
         return metrics
-    
+
     def benchmark_variational_ansatz(self) -> QuantumBenchmarkMetrics:
         """Benchmark variational quantum algorithm"""
         iterations = 100
         params = self.num_qubits * 2
-        
+
         metrics = QuantumBenchmarkMetrics(
             fidelity=0.95,
             circuit_depth=15,
@@ -184,7 +186,7 @@ class QuantumBenchmarker(DomainSpecializer):
             measurement_fidelity=0.92,
         )
         return metrics
-    
+
     def benchmark_error_mitigation(self) -> QuantumBenchmarkMetrics:
         """Benchmark error mitigation techniques"""
         metrics = QuantumBenchmarkMetrics(
@@ -198,27 +200,28 @@ class QuantumBenchmarker(DomainSpecializer):
             measurement_fidelity=0.98,  # Improved
         )
         return metrics
-    
+
     def validate_results(self, results: Dict[str, Any]) -> bool:
         """Validate quantum benchmark results"""
         # Fidelity should be > 0.9
-        if 'fidelity' in results and results['fidelity'] < 0.9:
+        if "fidelity" in results and results["fidelity"] < 0.9:
             return False
-        
+
         # Error rate should be < 0.1
-        if 'error_rate' in results and results['error_rate'] > 0.1:
+        if "error_rate" in results and results["error_rate"] > 0.1:
             return False
-        
+
         # Coherence time should be > 10 microseconds
-        if 'coherence_time' in results and results['coherence_time'] < 10:
+        if "coherence_time" in results and results["coherence_time"] < 10:
             return False
-        
+
         return True
 
 
 @dataclass
 class MLBenchmarkMetrics:
     """Machine Learning benchmark metrics"""
+
     accuracy: float
     precision: float
     recall: float
@@ -233,35 +236,35 @@ class MLBenchmarkMetrics:
 
 class MLBenchmarker(DomainSpecializer):
     """Benchmarker for machine learning models"""
-    
+
     def __init__(self):
         super().__init__("ml")
         self.model = None
         self.dataset = None
-    
+
     def setup(self) -> None:
         """Setup ML benchmarks"""
         self.model = self._create_model()
         self.dataset = self._load_dataset()
-    
+
     def _create_model(self) -> Dict[str, Any]:
         """Create a test model"""
         return {
-            'type': 'neural_network',
-            'layers': [784, 256, 128, 10],
-            'activation': 'relu',
-            'framework': 'pytorch',
+            "type": "neural_network",
+            "layers": [784, 256, 128, 10],
+            "activation": "relu",
+            "framework": "pytorch",
         }
-    
+
     def _load_dataset(self) -> Dict[str, Any]:
         """Load test dataset"""
         return {
-            'name': 'mnist',
-            'num_samples': 10000,
-            'num_features': 784,
-            'num_classes': 10,
+            "name": "mnist",
+            "num_samples": 10000,
+            "num_features": 784,
+            "num_classes": 10,
         }
-    
+
     def get_benchmark_suite(self) -> List[Callable]:
         """Get ML benchmark functions"""
         return [
@@ -271,7 +274,7 @@ class MLBenchmarker(DomainSpecializer):
             self.benchmark_distributed_training,
             self.benchmark_quantization,
         ]
-    
+
     def benchmark_training(self) -> MLBenchmarkMetrics:
         """Benchmark model training"""
         metrics = MLBenchmarkMetrics(
@@ -287,7 +290,7 @@ class MLBenchmarker(DomainSpecializer):
             model_size_mb=50,
         )
         return metrics
-    
+
     def benchmark_inference(self) -> MLBenchmarkMetrics:
         """Benchmark model inference"""
         metrics = MLBenchmarkMetrics(
@@ -303,7 +306,7 @@ class MLBenchmarker(DomainSpecializer):
             model_size_mb=50,
         )
         return metrics
-    
+
     def benchmark_batch_processing(self) -> MLBenchmarkMetrics:
         """Benchmark batch inference"""
         metrics = MLBenchmarkMetrics(
@@ -319,7 +322,7 @@ class MLBenchmarker(DomainSpecializer):
             model_size_mb=50,
         )
         return metrics
-    
+
     def benchmark_distributed_training(self) -> MLBenchmarkMetrics:
         """Benchmark distributed training"""
         metrics = MLBenchmarkMetrics(
@@ -335,7 +338,7 @@ class MLBenchmarker(DomainSpecializer):
             model_size_mb=50,
         )
         return metrics
-    
+
     def benchmark_quantization(self) -> MLBenchmarkMetrics:
         """Benchmark quantized model"""
         metrics = MLBenchmarkMetrics(
@@ -351,27 +354,28 @@ class MLBenchmarker(DomainSpecializer):
             model_size_mb=12.5,  # 4x compression
         )
         return metrics
-    
+
     def validate_results(self, results: Dict[str, Any]) -> bool:
         """Validate ML results"""
         # Accuracy should be > 0.7
-        if 'accuracy' in results and results['accuracy'] < 0.7:
+        if "accuracy" in results and results["accuracy"] < 0.7:
             return False
-        
+
         # F1 should be > 0.6
-        if 'f1_score' in results and results['f1_score'] < 0.6:
+        if "f1_score" in results and results["f1_score"] < 0.6:
             return False
-        
+
         # Inference time should be positive
-        if 'inference_time_ms' in results and results['inference_time_ms'] <= 0:
+        if "inference_time_ms" in results and results["inference_time_ms"] <= 0:
             return False
-        
+
         return True
 
 
 @dataclass
 class CryptoBenchmarkMetrics:
     """Cryptography benchmark metrics"""
+
     key_generation_ms: float
     encryption_throughput_mb_s: float
     decryption_throughput_mb_s: float
@@ -384,15 +388,15 @@ class CryptoBenchmarkMetrics:
 
 class CryptoBenchmarker(DomainSpecializer):
     """Benchmarker for cryptographic operations"""
-    
+
     def __init__(self):
         super().__init__("cryptography")
         self.algorithms = []
-    
+
     def setup(self) -> None:
         """Setup crypto benchmarks"""
-        self.algorithms = ['RSA-2048', 'ECC-256', 'AES-256', 'ChaCha20']
-    
+        self.algorithms = ["RSA-2048", "ECC-256", "AES-256", "ChaCha20"]
+
     def get_benchmark_suite(self) -> List[Callable]:
         """Get crypto benchmark functions"""
         return [
@@ -402,7 +406,7 @@ class CryptoBenchmarker(DomainSpecializer):
             self.benchmark_hash,
             self.benchmark_post_quantum,
         ]
-    
+
     def benchmark_rsa(self) -> CryptoBenchmarkMetrics:
         """Benchmark RSA operations"""
         metrics = CryptoBenchmarkMetrics(
@@ -416,7 +420,7 @@ class CryptoBenchmarker(DomainSpecializer):
             key_size_bits=2048,
         )
         return metrics
-    
+
     def benchmark_ecc(self) -> CryptoBenchmarkMetrics:
         """Benchmark ECC operations"""
         metrics = CryptoBenchmarkMetrics(
@@ -430,7 +434,7 @@ class CryptoBenchmarker(DomainSpecializer):
             key_size_bits=256,
         )
         return metrics
-    
+
     def benchmark_symmetric(self) -> CryptoBenchmarkMetrics:
         """Benchmark symmetric encryption"""
         metrics = CryptoBenchmarkMetrics(
@@ -444,7 +448,7 @@ class CryptoBenchmarker(DomainSpecializer):
             key_size_bits=256,
         )
         return metrics
-    
+
     def benchmark_hash(self) -> CryptoBenchmarkMetrics:
         """Benchmark cryptographic hashing"""
         metrics = CryptoBenchmarkMetrics(
@@ -458,7 +462,7 @@ class CryptoBenchmarker(DomainSpecializer):
             key_size_bits=0,
         )
         return metrics
-    
+
     def benchmark_post_quantum(self) -> CryptoBenchmarkMetrics:
         """Benchmark post-quantum cryptography"""
         metrics = CryptoBenchmarkMetrics(
@@ -472,98 +476,101 @@ class CryptoBenchmarker(DomainSpecializer):
             key_size_bits=1024,
         )
         return metrics
-    
+
     def validate_results(self, results: Dict[str, Any]) -> bool:
         """Validate crypto results"""
         # Key generation should be positive
-        if 'key_generation_ms' in results and results['key_generation_ms'] < 0:
+        if "key_generation_ms" in results and results["key_generation_ms"] < 0:
             return False
-        
+
         # Throughput should be positive
-        if 'encryption_throughput_mb_s' in results and results['encryption_throughput_mb_s'] <= 0:
+        if (
+            "encryption_throughput_mb_s" in results
+            and results["encryption_throughput_mb_s"] <= 0
+        ):
             return False
-        
+
         # Security level should be >= 128 bits
-        if 'security_level' in results and results['security_level'] < 128:
+        if "security_level" in results and results["security_level"] < 128:
             return False
-        
+
         return True
 
 
 class AdvancedBenchmarkRunner:
     """Runs advanced benchmarks across multiple domains"""
-    
+
     def __init__(self):
         self.benchmarkers = {
-            'quantum': QuantumBenchmarker(),
-            'ml': MLBenchmarker(),
-            'crypto': CryptoBenchmarker(),
+            "quantum": QuantumBenchmarker(),
+            "ml": MLBenchmarker(),
+            "crypto": CryptoBenchmarker(),
         }
         self.results = {}
-    
+
     def run_all_benchmarks(self) -> Dict[str, Dict[str, Any]]:
         """Run all benchmarks across domains"""
         all_results = {}
-        
+
         for domain_name, benchmarker in self.benchmarkers.items():
             benchmarker.setup()
             domain_results = {}
-            
+
             for benchmark_func in benchmarker.get_benchmark_suite():
                 bench_name = benchmark_func.__name__
-                
+
                 try:
                     result = benchmark_func()
-                    
+
                     # Convert to dict if needed
-                    if hasattr(result, 'to_dict'):
+                    if hasattr(result, "to_dict"):
                         domain_results[bench_name] = result.to_dict()
                     else:
                         domain_results[bench_name] = result.__dict__
-                    
+
                     # Validate
                     if benchmarker.validate_results(domain_results[bench_name]):
-                        domain_results[bench_name]['_validated'] = True
+                        domain_results[bench_name]["_validated"] = True
                     else:
-                        domain_results[bench_name]['_validated'] = False
-                
+                        domain_results[bench_name]["_validated"] = False
+
                 except Exception as e:
-                    domain_results[bench_name] = {'error': str(e)}
-            
+                    domain_results[bench_name] = {"error": str(e)}
+
             all_results[domain_name] = domain_results
             self.results[domain_name] = domain_results
-        
+
         return all_results
-    
+
     def generate_comparison_report(self) -> str:
         """Generate comparison report across domains"""
         report = "ADVANCED BENCHMARK COMPARISON REPORT\n"
         report += "=" * 60 + "\n\n"
-        
+
         for domain, benchmarks in self.results.items():
             report += f"\n{domain.upper()} BENCHMARKS\n"
             report += "-" * 40 + "\n"
-            
+
             for bench_name, metrics in benchmarks.items():
                 report += f"\n  {bench_name}:\n"
-                
+
                 if isinstance(metrics, dict):
                     for key, value in metrics.items():
-                        if not key.startswith('_'):
+                        if not key.startswith("_"):
                             report += f"    {key}: {value}\n"
                 else:
                     report += f"    {metrics}\n"
-        
+
         return report
-    
+
     def export_results_json(self, filepath: str) -> None:
         """Export results to JSON"""
         data = {
-            'timestamp': datetime.now().isoformat(),
-            'results': self.results,
+            "timestamp": datetime.now().isoformat(),
+            "results": self.results,
         }
-        
-        with open(filepath, 'w') as f:
+
+        with open(filepath, "w") as f:
             json.dump(data, f, indent=2, default=str)
 
 
@@ -571,11 +578,11 @@ class AdvancedBenchmarkRunner:
 if __name__ == "__main__":
     runner = AdvancedBenchmarkRunner()
     results = runner.run_all_benchmarks()
-    
+
     print(runner.generate_comparison_report())
-    
+
     # Export to JSON
-    runner.export_results_json('advanced_benchmark_results.json')
-    
+    runner.export_results_json("advanced_benchmark_results.json")
+
     print("\n✅ Advanced benchmarks completed!")
     print(f"Results saved to advanced_benchmark_results.json")

@@ -46,7 +46,9 @@ def main() -> None:
 
     deployment_doc = (ROOT / "docs/deployment/CLOUDFLARE_DEPLOYMENT.md").read_text()
     if "Build command | `npm run build`" not in deployment_doc:
-        fail("Cloudflare deployment docs must pin the Pages build command to `npm run build`")
+        fail(
+            "Cloudflare deployment docs must pin the Pages build command to `npm run build`"
+        )
     if "Build command | `npm build`" in deployment_doc:
         fail("Cloudflare Pages build command must not be documented as `npm build`")
 

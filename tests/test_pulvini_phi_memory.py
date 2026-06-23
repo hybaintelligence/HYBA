@@ -15,7 +15,9 @@ if str(BACKEND) not in sys.path:
 np.seterr(all="raise")
 
 from pythia_mining.pulvini_memory_fabric import PulviniMemoryFabric  # noqa: E402
-from pythia_mining.pulvini_phi_memory import PulviniPhiMemoryCompressionEngine  # noqa: E402
+from pythia_mining.pulvini_phi_memory import (
+    PulviniPhiMemoryCompressionEngine,
+)  # noqa: E402
 from pythia_mining.phi_folding import PhiFoldingOperator  # noqa: E402
 
 
@@ -97,13 +99,17 @@ class PulviniPhiMemoryCompressionTests(unittest.TestCase):
             f"fold not reversible for high-entropy input; error={result.reconstruction_error:.3e}",
         )
         self.assertTrue(
-            np.allclose(result.reconstructed.reshape(-1), payload, rtol=0, atol=engine.tolerance)
+            np.allclose(
+                result.reconstructed.reshape(-1), payload, rtol=0, atol=engine.tolerance
+            )
         )
 
     def test_round_trip_high_entropy_complex_vector(self) -> None:
         """Fold/unfold of a complex high-entropy vector must be lossless."""
         rng = np.random.default_rng(seed=0xCAFEBABE)
-        payload = (rng.standard_normal(64) + 1j * rng.standard_normal(64)).astype(np.complex128)
+        payload = (rng.standard_normal(64) + 1j * rng.standard_normal(64)).astype(
+            np.complex128
+        )
         engine = PulviniPhiMemoryCompressionEngine(fold_depth=2)
         result = engine.compress(payload)
         self.assertTrue(
@@ -111,7 +117,9 @@ class PulviniPhiMemoryCompressionTests(unittest.TestCase):
             f"fold not reversible for complex input; error={result.reconstruction_error:.3e}",
         )
         self.assertTrue(
-            np.allclose(result.reconstructed.reshape(-1), payload, rtol=0, atol=engine.tolerance)
+            np.allclose(
+                result.reconstructed.reshape(-1), payload, rtol=0, atol=engine.tolerance
+            )
         )
 
     def test_round_trip_all_equal_vector(self) -> None:
@@ -121,7 +129,9 @@ class PulviniPhiMemoryCompressionTests(unittest.TestCase):
         result = engine.compress(payload)
         self.assertTrue(result.reversible)
         self.assertTrue(
-            np.allclose(result.reconstructed.reshape(-1), payload, rtol=0, atol=engine.tolerance)
+            np.allclose(
+                result.reconstructed.reshape(-1), payload, rtol=0, atol=engine.tolerance
+            )
         )
 
     def test_round_trip_single_spike_vector(self) -> None:
@@ -135,7 +145,9 @@ class PulviniPhiMemoryCompressionTests(unittest.TestCase):
             f"fold not reversible for spike input; error={result.reconstruction_error:.3e}",
         )
         self.assertTrue(
-            np.allclose(result.reconstructed.reshape(-1), payload, rtol=0, atol=engine.tolerance)
+            np.allclose(
+                result.reconstructed.reshape(-1), payload, rtol=0, atol=engine.tolerance
+            )
         )
 
     def test_reconstruction_error_is_finite_for_normal_cases(self) -> None:
@@ -169,7 +181,9 @@ class PulviniPhiMemoryCompressionTests(unittest.TestCase):
         engine = PulviniPhiMemoryCompressionEngine(fold_depth=2)
         result = engine.compress(payload)
         expected_ratio = result.original_bytes / result.folded_working_set_bytes
-        self.assertAlmostEqual(result.working_set_compression_ratio, expected_ratio, places=10)
+        self.assertAlmostEqual(
+            result.working_set_compression_ratio, expected_ratio, places=10
+        )
 
     def test_retained_state_ratio_never_exceeds_working_set_ratio(self) -> None:
         """retained_state_compression_ratio <= working_set_compression_ratio always.
@@ -199,7 +213,9 @@ class PulviniPhiMemoryCompressionTests(unittest.TestCase):
         """A highly sparse vector (>85% zeros) should trigger the sparse fold path."""
         payload = np.zeros(200, dtype=np.float64)
         payload[[3, 17, 99]] = [1.0, 2.0, 3.0]  # Only 3/200 non-zero
-        engine = PulviniPhiMemoryCompressionEngine(fold_depth=2, sparse_skip_threshold=0.85)
+        engine = PulviniPhiMemoryCompressionEngine(
+            fold_depth=2, sparse_skip_threshold=0.85
+        )
         result = engine.compress(payload)
         self.assertEqual(result.compression_strategy, "sparse_fib_packed")
         self.assertTrue(result.reversible)
@@ -208,7 +224,9 @@ class PulviniPhiMemoryCompressionTests(unittest.TestCase):
         """A dense (low-sparsity) vector should use the standard phi_fold path."""
         rng = np.random.default_rng(seed=99)
         payload = rng.standard_normal(64)  # ~0% zeros
-        engine = PulviniPhiMemoryCompressionEngine(fold_depth=2, sparse_skip_threshold=0.85)
+        engine = PulviniPhiMemoryCompressionEngine(
+            fold_depth=2, sparse_skip_threshold=0.85
+        )
         result = engine.compress(payload)
         self.assertEqual(result.compression_strategy, "phi_fold")
         self.assertTrue(result.reversible)
@@ -289,8 +307,12 @@ class PulviniPhiMemoryCompressionTests(unittest.TestCase):
         sketch_error = op.approximate_error(payload, reconstructed, sketch_size=50)
         if full_error > 1e-12:
             ratio = sketch_error / full_error
-            self.assertLess(ratio, 10.0, "sketch error estimate more than 10x off full norm")
-            self.assertGreater(ratio, 0.01, "sketch error estimate more than 100x below full norm")
+            self.assertLess(
+                ratio, 10.0, "sketch error estimate more than 10x off full norm"
+            )
+            self.assertGreater(
+                ratio, 0.01, "sketch error estimate more than 100x below full norm"
+            )
 
 
 if __name__ == "__main__":

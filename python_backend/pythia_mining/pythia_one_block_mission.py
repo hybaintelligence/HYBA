@@ -193,7 +193,9 @@ class PoolSelectionPolicy:
 
     policy: str = "select first validated configured pool ordered by priority"
     require_validated_profile: bool = True
-    fallback_to_environment: bool = False  # If no validated profile, fail rather than fallback
+    fallback_to_environment: bool = (
+        False  # If no validated profile, fail rather than fallback
+    )
 
 
 @dataclass
@@ -203,12 +205,16 @@ class MissionMemory:
     protocol: str = MISSION_PROTOCOL
     mission: str = "one_pool_confirmed_block_then_shutdown"
     autonomy_from_startup: bool = True
-    default_pool_policy: str = "select first validated configured pool ordered by priority"
+    default_pool_policy: str = (
+        "select first validated configured pool ordered by priority"
+    )
     mission_target: MissionTarget = field(default_factory=MissionTarget)
     search_identity: str = "deterministic structured traversal, not blind brute force"
     knowledge_seed: QuantumDoctrine = field(default_factory=QuantumDoctrine)
     supreme_invariants: SupremeInvariants = field(default_factory=SupremeInvariants)
-    pool_selection_policy: PoolSelectionPolicy = field(default_factory=PoolSelectionPolicy)
+    pool_selection_policy: PoolSelectionPolicy = field(
+        default_factory=PoolSelectionPolicy
+    )
     hashrate_limit: HashrateLimit = field(default_factory=HashrateLimit)
     intention: SessionIntention = field(default_factory=SessionIntention)
     phi_contract: PhiContract = field(default_factory=PhiContract)
@@ -250,10 +256,13 @@ class MissionMemory:
     def should_shutdown(self) -> bool:
         """Check if mission should shutdown."""
         return (
-            self.status == MissionStatus.COMPLETED and self.mission_target.shutdown_after_completion
+            self.status == MissionStatus.COMPLETED
+            and self.mission_target.shutdown_after_completion
         )
 
-    def compute_deterministic_seed(self, operator_session_id: str, initial_job_id: str) -> str:
+    def compute_deterministic_seed(
+        self, operator_session_id: str, initial_job_id: str
+    ) -> str:
         """Compute a deterministic seed vector from governance-relevant inputs."""
         seed_material = (
             self.intention.mode
@@ -330,7 +339,8 @@ def validate_mission_memory(memory: MissionMemory) -> bool:
         memory.protocol == MISSION_PROTOCOL,
         memory.mission == "one_pool_confirmed_block_then_shutdown",
         memory.autonomy_from_startup is True,
-        memory.hashrate_limit.max_autonomous_hashrate_ehs == MAX_AUTONOMOUS_HASHRATE_EHS,
+        memory.hashrate_limit.max_autonomous_hashrate_ehs
+        == MAX_AUTONOMOUS_HASHRATE_EHS,
         memory.mission_target.accepted_blocks == 1,
         memory.mission_target.pool_side_confirmation_required is True,
         memory.mission_target.shutdown_after_completion is True,

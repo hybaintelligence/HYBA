@@ -11,7 +11,9 @@ class IBMQuantumSubstrate:
 
         self.service = QiskitRuntimeService(channel="ibm_quantum", token=api_key)
 
-    def execute_fault_tolerant_cycle(self, code_distance: int, circuit_depth: int) -> dict[str, object]:
+    def execute_fault_tolerant_cycle(
+        self, code_distance: int, circuit_depth: int
+    ) -> dict[str, object]:
         backend = self.service.least_busy()
         return {
             "substrate": "ibm_quantum",

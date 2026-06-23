@@ -48,7 +48,9 @@ def _tail_ratio(values: np.ndarray) -> float:
     if x.size == 0:
         return 0.0
     magnitudes = np.abs(x)
-    return float(np.quantile(magnitudes, 0.95) / (np.quantile(magnitudes, 0.50) + EPSILON))
+    return float(
+        np.quantile(magnitudes, 0.95) / (np.quantile(magnitudes, 0.50) + EPSILON)
+    )
 
 
 def _hermitian(values: np.ndarray) -> np.ndarray:
@@ -140,7 +142,9 @@ class PhiMemoryFoldResult:
     def retained_kernel(self) -> np.ndarray:
         if not self.kernels:
             return np.asarray([], dtype=self.folded.dtype)
-        return np.concatenate([np.asarray(kernel).reshape(-1) for kernel in self.kernels])
+        return np.concatenate(
+            [np.asarray(kernel).reshape(-1) for kernel in self.kernels]
+        )
 
     def as_dict(self) -> dict[str, Any]:
         data = asdict(self)
@@ -242,12 +246,18 @@ class PulviniPhiMemoryCompressionEngine:
             # For sparse case, store the kernel arrays from SparsePhiFoldKernel
             kernels = (sparse_kernel.kernel_values,)
             sizes = (int(flat.size), int(folded.size))
-            reconstructed_flat = self.operator.unfold_sparse(folded, sparse_kernel, int(flat.size))
+            reconstructed_flat = self.operator.unfold_sparse(
+                folded, sparse_kernel, int(flat.size)
+            )
             effective_flat = flat
             compression_strategy = "sparse_fib_packed"
         else:
-            folded, kernels, sizes = self.operator.fold_recursive(flat, depth=self.fold_depth)
-            reconstructed_flat = self.operator.unfold_recursive(folded, kernels, sizes)[: flat.size]
+            folded, kernels, sizes = self.operator.fold_recursive(
+                flat, depth=self.fold_depth
+            )
+            reconstructed_flat = self.operator.unfold_recursive(folded, kernels, sizes)[
+                : flat.size
+            ]
             effective_flat = reconstructed_flat if not np.isfinite(flat).all() else flat
             compression_strategy = "phi_fold"
 
@@ -261,7 +271,9 @@ class PulviniPhiMemoryCompressionEngine:
         # Use randomised sketch for production error bounds when array is large
         if flat.size > 1000:
             reconstruction_error = self.operator.approximate_error(
-                effective_flat, reconstructed_flat, sketch_size=min(500, flat.size // 10)
+                effective_flat,
+                reconstructed_flat,
+                sketch_size=min(500, flat.size // 10),
             )
         else:
             with np.errstate(over="ignore", invalid="ignore"):
@@ -270,7 +282,9 @@ class PulviniPhiMemoryCompressionEngine:
                 float(raw_error)
                 if np.isfinite(raw_error)
                 else float(
-                    np.linalg.norm((effective_flat - reconstructed_flat).clip(-1e300, 1e300))
+                    np.linalg.norm(
+                        (effective_flat - reconstructed_flat).clip(-1e300, 1e300)
+                    )
                 )
             )
 
@@ -282,7 +296,8 @@ class PulviniPhiMemoryCompressionEngine:
         folded_tail = _tail_ratio(folded)
         kernel_tail = _tail_ratio(kernel_flat)
         heavy_tail_preserved = bool(
-            input_tail == 0.0 or abs(folded_tail - input_tail) / max(input_tail, EPSILON) <= 1.0
+            input_tail == 0.0
+            or abs(folded_tail - input_tail) / max(input_tail, EPSILON) <= 1.0
         )
         return PhiMemoryFoldResult(
             original_shape=tuple(int(dim) for dim in source.shape),
@@ -290,7 +305,9 @@ class PulviniPhiMemoryCompressionEngine:
             folded_working_set_bytes=folded_bytes,
             retained_kernel_bytes=kernel_bytes,
             working_set_compression_ratio=float(original_bytes / max(1, folded_bytes)),
-            retained_state_compression_ratio=float(original_bytes / max(1, retained_bytes)),
+            retained_state_compression_ratio=float(
+                original_bytes / max(1, retained_bytes)
+            ),
             reconstruction_error=reconstruction_error,
             reversible=bool(reconstruction_error <= max(self.tolerance, EPSILON)),
             fold_depth=len(kernels),
@@ -369,7 +386,9 @@ class PulviniPhiMemoryCompressionEngine:
             input_bytes=input_bytes,
             folded_working_set_bytes=folded_bytes,
             max_reconstruction_error=max_error,
-            avg_working_set_compression_ratio=float(input_elements / max(1, folded_elements)),
+            avg_working_set_compression_ratio=float(
+                input_elements / max(1, folded_elements)
+            ),
             heavy_tail_preserved=heavy_tail_preserved,
         )
 

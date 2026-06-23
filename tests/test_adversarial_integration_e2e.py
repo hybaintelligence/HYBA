@@ -25,7 +25,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "python_backend"))
 
 from hyba_genesis_api.api.billing_rollback import (
     BillingRollbackManager,
-    get_billing_rollback_manager
+    get_billing_rollback_manager,
 )
 
 
@@ -48,7 +48,7 @@ class TestBillingRollbackIntegration(unittest.TestCase):
             execution_id=execution_id,
             customer_id=customer_id,
             work_units_consumed=work_units,
-            reason="out_of_memory"
+            reason="out_of_memory",
         )
 
         # Verify refund was processed
@@ -68,7 +68,7 @@ class TestBillingRollbackIntegration(unittest.TestCase):
             execution_id=execution_id,
             customer_id=customer_id,
             work_units_consumed=work_units,
-            reason="timeout"
+            reason="timeout",
         )
         self.assertEqual(result1["status"], "refunded")
 
@@ -77,7 +77,7 @@ class TestBillingRollbackIntegration(unittest.TestCase):
             execution_id=execution_id,
             customer_id=customer_id,
             work_units_consumed=work_units,
-            reason="timeout"
+            reason="timeout",
         )
         self.assertEqual(result2["status"], "already_refunded")
         self.assertEqual(result1["timestamp"], result2["timestamp"])
@@ -97,7 +97,7 @@ class TestBillingRollbackIntegration(unittest.TestCase):
                 execution_id=execution_id,
                 customer_id=customer_id,
                 work_units_consumed=work_units,
-                reason=reason
+                reason=reason,
             )
 
         # Run reconciliation
@@ -114,14 +114,14 @@ class TestBillingRollbackIntegration(unittest.TestCase):
     def test_rollback_history_accessible(self):
         """Verify rollback history is auditable."""
         customer_id = "cust-audit"
-        
+
         # Process multiple refunds
         for i in range(5):
             self.manager.refund_on_failure(
                 execution_id=f"exec-audit-{i}",
                 customer_id=customer_id,
                 work_units_consumed=100 * (i + 1),
-                reason="test_failure"
+                reason="test_failure",
             )
 
         # Get history
@@ -148,7 +148,7 @@ class TestBillingRollbackIntegration(unittest.TestCase):
             execution_id=execution_id,
             customer_id=customer_id,
             work_units_consumed=work_units,
-            reason="network_failure"
+            reason="network_failure",
         )
 
         # After refund
@@ -183,7 +183,7 @@ class TestQuotaManagementIntegration(unittest.TestCase):
         for i in range(20):
             t = threading.Thread(
                 target=consume_quota,
-                args=(100,)  # Each customer tries to consume 100 units
+                args=(100,),  # Each customer tries to consume 100 units
             )
             threads.append(t)
             t.start()
@@ -241,16 +241,15 @@ class TestRateLimitingIntegration(unittest.TestCase):
         def check_rate_limit(customer_id):
             """Check if customer has exceeded rate limit."""
             now = time.time()
-            
+
             if customer_id not in customer_limits:
                 customer_limits[customer_id] = []
-            
+
             # Remove old requests outside window
             customer_limits[customer_id] = [
-                t for t in customer_limits[customer_id]
-                if now - t < window_size
+                t for t in customer_limits[customer_id] if now - t < window_size
             ]
-            
+
             # Check if within limit
             if len(customer_limits[customer_id]) < rpm_limit:
                 customer_limits[customer_id].append(now)
@@ -258,17 +257,11 @@ class TestRateLimitingIntegration(unittest.TestCase):
             return False
 
         # Customer A makes requests
-        customer_a_success = sum(
-            1 for _ in range(30)
-            if check_rate_limit("customer-a")
-        )
+        customer_a_success = sum(1 for _ in range(30) if check_rate_limit("customer-a"))
         self.assertEqual(customer_a_success, 30)
 
         # Customer B makes requests (should not affect customer A's limit)
-        customer_b_success = sum(
-            1 for _ in range(30)
-            if check_rate_limit("customer-b")
-        )
+        customer_b_success = sum(1 for _ in range(30) if check_rate_limit("customer-b"))
         self.assertEqual(customer_b_success, 30)
 
         # Verify both customers still have capacity
@@ -280,7 +273,7 @@ class TestRateLimitingIntegration(unittest.TestCase):
         headers = {
             "X-RateLimit-Limit": "60",
             "X-RateLimit-Remaining": "45",
-            "X-RateLimit-Reset": str(int(time.time()) + 60)
+            "X-RateLimit-Reset": str(int(time.time()) + 60),
         }
 
         # All headers present
@@ -320,19 +313,18 @@ class TestCustomerIsolationIntegration(unittest.TestCase):
 
         # Verify isolation
         self.assertNotEqual(
-            get_customer_data("customer-1"),
-            get_customer_data("customer-2")
+            get_customer_data("customer-1"), get_customer_data("customer-2")
         )
 
     def test_evidence_seal_includes_customer_id(self):
         """Verify evidence seals include customer identifier."""
         import hashlib
-        
+
         execution = {
             "execution_id": "exec-001",
             "customer_id": "customer-secure",
             "work_units": 413,
-            "timestamp": datetime.now(timezone.utc).isoformat()
+            "timestamp": datetime.now(timezone.utc).isoformat(),
         }
 
         # Create evidence seal with customer ID
@@ -345,7 +337,7 @@ class TestCustomerIsolationIntegration(unittest.TestCase):
                 execution["customer_id"].encode()
             ).hexdigest(),
             "work_units": execution["work_units"],
-            "seal_hash": seal_hash
+            "seal_hash": seal_hash,
         }
 
         # Verify customer ID is in seal
@@ -363,7 +355,7 @@ class TestEvidenceSealIntegrity(unittest.TestCase):
         original_seal = {
             "execution_id": "exec-001",
             "work_units": 413,
-            "customer_id": "cust-123"
+            "customer_id": "cust-123",
         }
 
         # Calculate hash of original
@@ -390,7 +382,7 @@ class TestEvidenceSealIntegrity(unittest.TestCase):
             "billing_rate": 0.01,
             "total_cost": 4.13,
             "timestamp": datetime.now(timezone.utc).isoformat(),
-            "status": "completed"
+            "status": "completed",
         }
 
         # All metering fields present
@@ -416,7 +408,7 @@ class TestConcurrencyAndAtomicity(unittest.TestCase):
                 execution_states[execution_id] = {
                     "customer_id": customer_id,
                     "status": "in_progress",
-                    "created_at": time.time()
+                    "created_at": time.time(),
                 }
 
         def complete_execution_atomic(execution_id):
@@ -433,8 +425,7 @@ class TestConcurrencyAndAtomicity(unittest.TestCase):
         for i in range(10):
             # Create execution first
             t1 = threading.Thread(
-                target=create_execution,
-                args=(f"exec-{i}", f"customer-{i % 3}")
+                target=create_execution, args=(f"exec-{i}", f"customer-{i % 3}")
             )
             threads.append(t1)
 
@@ -447,10 +438,7 @@ class TestConcurrencyAndAtomicity(unittest.TestCase):
         # Then complete all executions
         completion_threads = []
         for i in range(10):
-            t = threading.Thread(
-                target=complete_execution_atomic,
-                args=(f"exec-{i}",)
-            )
+            t = threading.Thread(target=complete_execution_atomic, args=(f"exec-{i}",))
             completion_threads.append(t)
 
         for t in completion_threads:

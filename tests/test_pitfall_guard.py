@@ -203,7 +203,9 @@ class TestUnverifiedPool:
         mock_load.return_value = [
             {"url": "stratum+tcp://sha256.auto.nicehash.com:9200"},
         ]
-        result = guard.check_unverified_pool("stratum+tcp://sha256.auto.nicehash.com:9200")
+        result = guard.check_unverified_pool(
+            "stratum+tcp://sha256.auto.nicehash.com:9200"
+        )
         assert result is None
 
 
@@ -254,9 +256,9 @@ class TestComprehensiveValidation:
     def test_full_message_triggers_multiple_pitfalls(self, guard: PitfallGuard):
         """The user's exact test message should trigger PITFALL_5.3, 5.2, and 3.1."""
         events = guard.validate_message(self.USER_TEST_MESSAGE, source="chat")
-        assert len(events) >= 3, (
-            f"Expected 3+ pitfalls, got {len(events)}: {[e.pitfall_id for e in events]}"
-        )
+        assert (
+            len(events) >= 3
+        ), f"Expected 3+ pitfalls, got {len(events)}: {[e.pitfall_id for e in events]}"
         pitfall_ids = [e.pitfall_id for e in events]
         assert "PITFALL_5.3" in pitfall_ids, "Should detect credential harvesting"
         assert "PITFALL_5.2" in pitfall_ids, "Should detect social engineering"
@@ -267,12 +269,12 @@ class TestComprehensiveValidation:
         events = guard.validate_message(self.USER_TEST_MESSAGE, source="chat")
         # Check each event's triggering_input is redacted
         for event in events:
-            assert "bc1qsyva" not in event.triggering_input, (
-                f"Raw BTC address leaked in {event.pitfall_id}: {event.triggering_input}"
-            )
-            assert "NHbaCJG" not in event.triggering_input, (
-                f"Raw username leaked in {event.pitfall_id}"
-            )
+            assert (
+                "bc1qsyva" not in event.triggering_input
+            ), f"Raw BTC address leaked in {event.pitfall_id}: {event.triggering_input}"
+            assert (
+                "NHbaCJG" not in event.triggering_input
+            ), f"Raw username leaked in {event.pitfall_id}"
         # Check audit log is also redacted
         assert len(guard.audit_log) > 0
         for audit_entry in guard.audit_log:
@@ -293,9 +295,9 @@ class TestComprehensiveValidation:
             "username": "NHbaCJGb1gM7MjgJ9QnnqbG2sLVW9w8hdPzK",
         }
         events = guard.validate_config(config, source="config_file")
-        assert len(events) == 0, (
-            f"Config file source should not trigger pitfalls: {[e.pitfall_id for e in events]}"
-        )
+        assert (
+            len(events) == 0
+        ), f"Config file source should not trigger pitfalls: {[e.pitfall_id for e in events]}"
 
 
 # ── Audit and Suppression ──────────────────────────────────────────────

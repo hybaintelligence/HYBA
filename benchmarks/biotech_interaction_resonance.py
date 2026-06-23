@@ -14,7 +14,9 @@ from pythia_mining.after_quantum_trifecta import benchmark_biotech_interaction
 
 
 def main() -> int:
-    print(json.dumps(benchmark_biotech_interaction().as_dict(), indent=2, sort_keys=True))
+    print(
+        json.dumps(benchmark_biotech_interaction().as_dict(), indent=2, sort_keys=True)
+    )
     return 0
 
 

@@ -48,7 +48,10 @@ BANNED_PATTERNS = [
         re.compile(r"inject_simulated_target_job\("),
         "runtime simulated mining job injection",
     ),
-    (re.compile(r"Simulated Coherence", re.IGNORECASE), "simulated semantic audit label"),
+    (
+        re.compile(r"Simulated Coherence", re.IGNORECASE),
+        "simulated semantic audit label",
+    ),
     (
         re.compile(
             r"(?<!no\s)(?<!no\sfabricated,\s)(?<!no\sfabricated,\s)simulated\s+(?:coherence|telemetry|state|audit)",

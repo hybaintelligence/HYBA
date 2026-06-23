@@ -30,8 +30,14 @@ Mode = Literal["rc", "bitcoin", "research", "live", "command-room"]
 
 BITCOIN_RC_STEPS = [
     ("nodus_solutus_computability_doctrine", ["npm", "run", "review:nodus:gate"]),
-    ("reviewer_evidence_map_and_conflict_guard", ["npm", "run", "review:manifest:gate"]),
-    ("runtime_entrypoint_and_live_miner_api", ["npm", "run", "runtime:entrypoint:check"]),
+    (
+        "reviewer_evidence_map_and_conflict_guard",
+        ["npm", "run", "review:manifest:gate"],
+    ),
+    (
+        "runtime_entrypoint_and_live_miner_api",
+        ["npm", "run", "runtime:entrypoint:check"],
+    ),
     ("live_deployment_forensic_audit", ["npm", "run", "live:audit"]),
     ("runtime_mock_guard", ["npm", "run", "runtime:guard"]),
     ("evidence_first_intelligence_endpoints", ["npm", "run", "test:evidence:first"]),
@@ -56,7 +62,10 @@ BITCOIN_RC_STEPS = [
 RC_STEPS = BITCOIN_RC_STEPS
 
 RESEARCH_STEPS = [
-    ("elevation_suite_local_mathematical_invariants", ["npm", "run", "test:elevation:suite"]),
+    (
+        "elevation_suite_local_mathematical_invariants",
+        ["npm", "run", "test:elevation:suite"],
+    ),
     ("frontier_experiment_bundle", ["npm", "run", "test:frontier:experiments"]),
     ("post_quantum_benchmark_contracts", ["npm", "run", "test:post-quantum"]),
     ("adaptive_science_bundle", ["npm", "run", "test:adaptive:science"]),
@@ -307,7 +316,9 @@ def main(argv: list[str] | None = None) -> int:
         if not result.passed and not args.continue_on_failure:
             break
 
-    passed = all(step.passed for step in steps) and len(steps) == len(_steps_for_mode(args.mode))
+    passed = all(step.passed for step in steps) and len(steps) == len(
+        _steps_for_mode(args.mode)
+    )
     status = "passed" if passed else "blocked"
     now = datetime.now(timezone.utc)
     report = GateReport(
@@ -329,7 +340,8 @@ def main(argv: list[str] | None = None) -> int:
 
     ARTIFACT_DIR.mkdir(parents=True, exist_ok=True)
     artifact = (
-        ARTIFACT_DIR / f"local_production_gate_{args.mode}_{now.strftime('%Y%m%dT%H%M%SZ')}.json"
+        ARTIFACT_DIR
+        / f"local_production_gate_{args.mode}_{now.strftime('%Y%m%dT%H%M%SZ')}.json"
     )
     digest = _write_report(report, artifact)
     print(f"Evidence packet: {artifact.relative_to(ROOT)}")

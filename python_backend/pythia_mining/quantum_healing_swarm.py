@@ -14,7 +14,7 @@ from typing import Tuple
 
 import numpy as np
 
-PHI = (1.0 + 5.0 ** 0.5) / 2.0
+PHI = (1.0 + 5.0**0.5) / 2.0
 PHI_INV = 1.0 / PHI
 PURITY_COLLAPSE_THRESHOLD = 0.72
 
@@ -73,7 +73,7 @@ class QuantumHealingSwarm:
         self._superposition_age = 0
 
     def _phi_basis_vector(self, n: int) -> np.ndarray:
-        weights = np.array([PHI_INV ** i for i in range(n)], dtype=float)
+        weights = np.array([PHI_INV**i for i in range(n)], dtype=float)
         return weights / np.linalg.norm(weights)
 
     def _normalise_density(self, rho: np.ndarray) -> np.ndarray:
@@ -90,7 +90,13 @@ class QuantumHealingSwarm:
         self, phi_density: float, consecutive_failures: int, degrade_factor: float = 1.0
     ) -> np.ndarray:
         phi_density = float(np.clip(phi_density, 0.0, 1.0))
-        degradation = float(np.clip((1.0 - phi_density) * degrade_factor + consecutive_failures * 0.015, 0.0, 0.95))
+        degradation = float(
+            np.clip(
+                (1.0 - phi_density) * degrade_factor + consecutive_failures * 0.015,
+                0.0,
+                0.95,
+            )
+        )
         n = self.num_candidates
         basis = self._phi_basis_vector(n)
         pure = np.outer(basis, basis.conj())
@@ -108,10 +114,17 @@ class QuantumHealingSwarm:
         v = self._phi_basis_vector(rho.shape[0])
         return float(np.clip(np.real(v.conj().T @ rho @ v), 0.0, 1.0))
 
-    def _superpose_repair_candidates(self, rho: np.ndarray, phi_density: float) -> Tuple[np.ndarray, int]:
-        target = np.outer(self._phi_basis_vector(rho.shape[0]), self._phi_basis_vector(rho.shape[0]))
+    def _superpose_repair_candidates(
+        self, rho: np.ndarray, phi_density: float
+    ) -> Tuple[np.ndarray, int]:
+        target = np.outer(
+            self._phi_basis_vector(rho.shape[0]), self._phi_basis_vector(rho.shape[0])
+        )
         strength = 0.35 + 0.45 * (1.0 - float(np.clip(phi_density, 0.0, 1.0)))
-        return self._normalise_density((1.0 - strength) * rho + strength * target), self.num_candidates
+        return (
+            self._normalise_density((1.0 - strength) * rho + strength * target),
+            self.num_candidates,
+        )
 
     def _or_collapse(self, rho: np.ndarray) -> Tuple[np.ndarray, bool]:
         purity = self._purity(rho)
@@ -121,33 +134,61 @@ class QuantumHealingSwarm:
         dominant = vecs[:, int(np.argmax(vals.real))]
         return self._normalise_density(np.outer(dominant, dominant.conj())), True
 
-    def _wkb_tunnel(self, rho: np.ndarray, phi_density: float) -> Tuple[np.ndarray, float]:
+    def _wkb_tunnel(
+        self, rho: np.ndarray, phi_density: float
+    ) -> Tuple[np.ndarray, float]:
         barrier = max(0.0, 1.0 - self._purity(rho))
         amplitude = float(np.exp(-PHI * barrier) * np.clip(phi_density, 0.0, 1.0))
-        target = np.outer(self._phi_basis_vector(rho.shape[0]), self._phi_basis_vector(rho.shape[0]))
-        return self._normalise_density((1.0 - amplitude * 0.25) * rho + amplitude * 0.25 * target), amplitude
+        target = np.outer(
+            self._phi_basis_vector(rho.shape[0]), self._phi_basis_vector(rho.shape[0])
+        )
+        return (
+            self._normalise_density(
+                (1.0 - amplitude * 0.25) * rho + amplitude * 0.25 * target
+            ),
+            amplitude,
+        )
 
-    def _phi_anneal(self, rho: np.ndarray, pre_entropy: float, phi_density: float) -> Tuple[float, np.ndarray, bool]:
+    def _phi_anneal(
+        self, rho: np.ndarray, pre_entropy: float, phi_density: float
+    ) -> Tuple[float, np.ndarray, bool]:
         temp = max(0.1, min(1.0, PHI ** (-self.heal_count / 8.0)))
-        target = np.outer(self._phi_basis_vector(rho.shape[0]), self._phi_basis_vector(rho.shape[0]))
-        candidate = self._normalise_density((1.0 - 0.2 * temp) * rho + 0.2 * temp * target)
-        accepted = self._von_neumann_entropy(candidate) <= pre_entropy or np.random.random() < temp * 0.05
+        target = np.outer(
+            self._phi_basis_vector(rho.shape[0]), self._phi_basis_vector(rho.shape[0])
+        )
+        candidate = self._normalise_density(
+            (1.0 - 0.2 * temp) * rho + 0.2 * temp * target
+        )
+        accepted = (
+            self._von_neumann_entropy(candidate) <= pre_entropy
+            or np.random.random() < temp * 0.05
+        )
         return float(temp), candidate if accepted else rho, bool(accepted)
 
-    def _swarm_consensus(self, rho: np.ndarray, phi_density: float) -> Tuple[np.ndarray, float]:
-        target = np.outer(self._phi_basis_vector(rho.shape[0]), self._phi_basis_vector(rho.shape[0]))
-        weights = np.array([PHI_INV ** i for i in range(self.num_candidates)], dtype=float)
+    def _swarm_consensus(
+        self, rho: np.ndarray, phi_density: float
+    ) -> Tuple[np.ndarray, float]:
+        target = np.outer(
+            self._phi_basis_vector(rho.shape[0]), self._phi_basis_vector(rho.shape[0])
+        )
+        weights = np.array(
+            [PHI_INV**i for i in range(self.num_candidates)], dtype=float
+        )
         strength = float(weights.mean() / weights.max()) * 0.35
         consensus = self._normalise_density((1.0 - strength) * rho + strength * target)
         return consensus, self._purity(consensus)
 
-    def _interference_accumulate(self, rho: np.ndarray, phi_density: float) -> Tuple[np.ndarray, float]:
+    def _interference_accumulate(
+        self, rho: np.ndarray, phi_density: float
+    ) -> Tuple[np.ndarray, float]:
         if self._persistent_superposition is None:
             self._persistent_superposition = rho.copy()
             self._superposition_age = 1
             return rho, 0.0
         previous = self._purity(rho)
-        combined = self._normalise_density(PHI_INV * rho + (1.0 - PHI_INV) * self._persistent_superposition)
+        combined = self._normalise_density(
+            PHI_INV * rho + (1.0 - PHI_INV) * self._persistent_superposition
+        )
         gain = self._purity(combined) - previous
         self._persistent_superposition = combined.copy()
         self._superposition_age += 1
@@ -156,9 +197,13 @@ class QuantumHealingSwarm:
             self._superposition_age = 0
         return combined, float(gain)
 
-    def heal(self, phi_density: float, consecutive_failures: int, degrade_factor: float = 1.0) -> HealingResult:
+    def heal(
+        self, phi_density: float, consecutive_failures: int, degrade_factor: float = 1.0
+    ) -> HealingResult:
         started = time.perf_counter()
-        rho = self._form_degraded_density_matrix(phi_density, consecutive_failures, degrade_factor)
+        rho = self._form_degraded_density_matrix(
+            phi_density, consecutive_failures, degrade_factor
+        )
         pre_purity = self._purity(rho)
         pre_entropy = self._von_neumann_entropy(rho)
         pre_phi = self._phi_projection(rho)
@@ -169,7 +214,9 @@ class QuantumHealingSwarm:
             tunnelling_used = True
         annealing_temperature = 0.0
         if self.enable_annealing:
-            annealing_temperature, rho, _ = self._phi_anneal(rho, self._von_neumann_entropy(rho), phi_density)
+            annealing_temperature, rho, _ = self._phi_anneal(
+                rho, self._von_neumann_entropy(rho), phi_density
+            )
         swarm_consensus_purity = 0.0
         if self.enable_swarming:
             rho, swarm_consensus_purity = self._swarm_consensus(rho, phi_density)
@@ -184,12 +231,29 @@ class QuantumHealingSwarm:
         dominant = float(np.max(np.linalg.eigvalsh(rho).real))
         self.heal_count += 1
         degradation = max(0.0, 1.0 - float(np.clip(phi_density, 0.0, 1.0)))
-        lanes_healed = int(round(self.num_lanes * min(1.0, degradation + consecutive_failures * 0.03)))
+        lanes_healed = int(
+            round(self.num_lanes * min(1.0, degradation + consecutive_failures * 0.03))
+        )
         return HealingResult(
-            pre_purity, pre_entropy, pre_phi, post_purity, post_entropy, post_phi,
-            collapsed, dominant, candidates, lanes_healed,
-            post_purity - pre_purity, pre_entropy - post_entropy,
+            pre_purity,
+            pre_entropy,
+            pre_phi,
+            post_purity,
+            post_entropy,
+            post_phi,
+            collapsed,
+            dominant,
+            candidates,
+            lanes_healed,
+            post_purity - pre_purity,
+            pre_entropy - post_entropy,
             (time.perf_counter() - started) * 1000.0,
-            tunnelling_used, self.enable_annealing, self.enable_swarming, self.enable_interference,
-            tunnelling_amplitude, annealing_temperature, swarm_consensus_purity, interference_gain,
+            tunnelling_used,
+            self.enable_annealing,
+            self.enable_swarming,
+            self.enable_interference,
+            tunnelling_amplitude,
+            annealing_temperature,
+            swarm_consensus_purity,
+            interference_gain,
         )

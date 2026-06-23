@@ -54,7 +54,9 @@ class ReflexiveControllerUnitTests(unittest.TestCase):
     def test_phi_resonance_fabric_entropy_density_and_governance(self) -> None:
         fabric = PhiResonanceFabric()
         entropy = fabric.calculate_von_neumann_entropy([0.25, 0.25, 0.25, 0.25])
-        density = fabric.compute_phi_density([complex(1, 0), complex(0, 1), complex(1, 1)])
+        density = fabric.compute_phi_density(
+            [complex(1, 0), complex(0, 1), complex(1, 1)]
+        )
 
         self.assertGreater(entropy, 0.0)
         self.assertGreaterEqual(density, 0.0)
@@ -80,7 +82,9 @@ class ReflexiveControllerUnitTests(unittest.TestCase):
         self.assertIn("HIGH_COHERENCE", envelope["governance_tags"])
 
     def test_substrate_orchestrator_returns_ci_service_envelope(self) -> None:
-        payload = SubstrateOrchestrator().evaluate({"problem": "semantic policy explanation"})
+        payload = SubstrateOrchestrator().evaluate(
+            {"problem": "semantic policy explanation"}
+        )
         self.assertIn("orchestrator", payload)
         self.assertEqual("causal-explanation-v1", payload["orchestrator"]["ci_service"])
         self.assertIn(payload["substrate"], {"penrose_or", "iit_4", "deutsch"})
@@ -96,7 +100,9 @@ class ReflexiveControllerUnitTests(unittest.TestCase):
         self.assertGreater(summary["phi_node_ratio"], 0.0)
         self.assertTrue(any("source" in node_id for node_id in graph.nodes))
 
-    def test_iit_health_and_counterfactual_proposal_are_bounded_and_governed(self) -> None:
+    def test_iit_health_and_counterfactual_proposal_are_bounded_and_governed(
+        self,
+    ) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = write_sample_umwelt(Path(tmp))
             graph = CodebaseUmwelt(root).parse_structure()
@@ -132,7 +138,9 @@ class ReflexiveControllerIntegrationTests(unittest.TestCase):
         self.assertIn("compression", payload)
         self.assertIn("knowledge_gaps", payload)
         self.assertIn("no unattended source rewrites", payload["claim_boundary"])
-        self.assertIn(payload["action_taken"], {"ACCEPT_IN_MEMORY", "REJECT_FRAGMENTATION"})
+        self.assertIn(
+            payload["action_taken"], {"ACCEPT_IN_MEMORY", "REJECT_FRAGMENTATION"}
+        )
 
     @unittest.skipUnless(
         importlib.util.find_spec("fastapi") and importlib.util.find_spec("httpx"),
@@ -147,7 +155,9 @@ class ReflexiveControllerIntegrationTests(unittest.TestCase):
         payload = response.json()
         self.assertEqual("success", payload["status"])
         self.assertEqual("causal-explanation-v1", payload["ci_service"])
-        self.assertEqual("reflexive_structural_learning", payload["fabric_state"]["mode"])
+        self.assertEqual(
+            "reflexive_structural_learning", payload["fabric_state"]["mode"]
+        )
         self.assertEqual("proposal_only", payload["fabric_state"]["apply_mode"])
 
 
@@ -164,7 +174,9 @@ class ReflexiveControllerPropertyTests(unittest.TestCase):
             dream["governance"],
             {"FRAGMENTED_LOGIC", "EMERGENT_STRUCTURE", "INTEGRATED_COHERENT_STATE"},
         )
-        self.assertFalse(controller.commit_learning({"status": "PAIN", "phi_density": 0.1}))
+        self.assertFalse(
+            controller.commit_learning({"status": "PAIN", "phi_density": 0.1})
+        )
 
     def test_generated_code_topologies_keep_phi_health_bounded(self) -> None:
         rng = random.Random(20260614)

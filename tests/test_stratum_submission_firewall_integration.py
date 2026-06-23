@@ -4,7 +4,10 @@ import pytest
 
 from pythia_mining.mining_verification_firewall import VerificationFirewallError
 from pythia_mining.stratum_client import MiningJob, StratumClient
-from pythia_mining.stratum_submission_firewall import PATCH_MARKER, install_stratum_submit_firewall
+from pythia_mining.stratum_submission_firewall import (
+    PATCH_MARKER,
+    install_stratum_submit_firewall,
+)
 
 
 class _NoSubmitSession:
@@ -38,7 +41,9 @@ def test_stratum_client_submit_method_is_firewall_wrapped() -> None:
 
 
 @pytest.mark.asyncio
-async def test_firewall_blocks_before_live_session_submit(monkeypatch: pytest.MonkeyPatch) -> None:
+async def test_firewall_blocks_before_live_session_submit(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     from pythia_mining import stratum_submission_firewall as seam
 
     install_stratum_submit_firewall()

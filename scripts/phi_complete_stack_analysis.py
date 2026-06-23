@@ -192,7 +192,9 @@ def compute_total_stack_advantage(layers: Dict[str, Any]) -> Dict[str, Any]:
     32 - layers["yang_mills_mass_gap"]["dimension_reduction_bits"]
 
     # After phi gradient compounding over 1000 steps: additional reduction
-    grad_bit_reduction = layers["phi_gradient_guidance"]["effective_bit_reduction_1000_steps"]
+    grad_bit_reduction = layers["phi_gradient_guidance"][
+        "effective_bit_reduction_1000_steps"
+    ]
 
     # After phi folding: ~φ compression per depth
     fold_bit_reduction = math.log2(phi_fold_factor)
@@ -266,7 +268,9 @@ def generate_complete_report(output_dir: str = "artifacts/phi_stack") -> int:
     print("\n  LAYER 1: Yang-Mills Mass Gap")
     ym = layers["yang_mills_mass_gap"]
     print(f"    Gap (3-Φ)           = {ym['mass_gap']:.6f}")
-    print(f"    On-manifold          = {ym['on_manifold_fraction'] * 100:.4f}% of nonces")
+    print(
+        f"    On-manifold          = {ym['on_manifold_fraction'] * 100:.4f}% of nonces"
+    )
     print(f"    Dimension reduction  = {ym['dimension_reduction_bits']:.2f} bits")
     print(f"    Space reduction      = {ym['search_space_reduction_multiplier']:.1e}×")
 
@@ -280,8 +284,12 @@ def generate_complete_report(output_dir: str = "artifacts/phi_stack") -> int:
 
     print("\n  LAYER 3: Phi Gradient Guidance")
     pg = layers["phi_gradient_guidance"]
-    print(f"    Per-step efficiency  = +{pg['percent_improvement_per_step']:.2f}% vs linear")
-    print(f"    Over 1000 steps      = ~{pg['compounding_over_1000_steps']:.1e}× cumulative")
+    print(
+        f"    Per-step efficiency  = +{pg['percent_improvement_per_step']:.2f}% vs linear"
+    )
+    print(
+        f"    Over 1000 steps      = ~{pg['compounding_over_1000_steps']:.1e}× cumulative"
+    )
 
     print("\n  LAYER 4: PULVINI Phi-Folding")
     pf = layers["pulvini_phi_folding"]
@@ -302,12 +310,20 @@ def generate_complete_report(output_dir: str = "artifacts/phi_stack") -> int:
     print("  STACK SUMMARY")
     print(f"{'=' * 84}")
     print(f"  Full nonce space           : {total['nonce_space']:,} (2^32)")
-    print(f"  Effective dim after stack  : {total['effective_dimension_bits']:.1f} bits")
+    print(
+        f"  Effective dim after stack  : {total['effective_dimension_bits']:.1f} bits"
+    )
     print(f"  Total bit reduction        : {total['total_bit_reduction']:.1f} bits")
-    print(f"  Total space reduction      : {total['total_search_space_reduction']:.1e}×")
+    print(
+        f"  Total space reduction      : {total['total_search_space_reduction']:.1e}×"
+    )
     print(f"{'─' * 84}")
-    print(f"  Grover (unstructured)      : {total['grover_unstructured_iterations']:,} iters")
-    print(f"  Grover (structured stack)  : {total['grover_on_reduced_space_iterations']:,} iters")
+    print(
+        f"  Grover (unstructured)      : {total['grover_unstructured_iterations']:,} iters"
+    )
+    print(
+        f"  Grover (structured stack)  : {total['grover_on_reduced_space_iterations']:,} iters"
+    )
     print(
         f"  Advantage over Grover      : {total['grover_unstructured_vs_structured_advantage']:.1f}×"
     )
@@ -317,7 +333,9 @@ def generate_complete_report(output_dir: str = "artifacts/phi_stack") -> int:
     )
     print(f"{'=' * 84}")
     print("\n  WHAT THIS MEANS:")
-    print("  Grover's algorithm is optimal for UNSTRUCTURED search — O(√N) on random data.")
+    print(
+        "  Grover's algorithm is optimal for UNSTRUCTURED search — O(√N) on random data."
+    )
     print("  HENDRIX-Φ + PULVINI has proven structure across 5 independent layers.")
     print("  Each layer reduces the effective dimension independently.")
     print("  Result: Structured search beats unstructured by > QUADRATIC.")

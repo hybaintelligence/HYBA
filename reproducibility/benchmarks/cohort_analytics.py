@@ -26,9 +26,14 @@ class CohortAnalytics:
         stage = {
             "month": month,
             "metrics": metrics,
-            "retention_rate": retained / cohort["initial_size"] if cohort["initial_size"] else 0,
-            "churn_rate": 1 - (retained / cohort["initial_size"] if cohort["initial_size"] else 0),
-            "ltv_to_date": revenue / cohort["initial_size"] if cohort["initial_size"] else 0,
+            "retention_rate": (
+                retained / cohort["initial_size"] if cohort["initial_size"] else 0
+            ),
+            "churn_rate": 1
+            - (retained / cohort["initial_size"] if cohort["initial_size"] else 0),
+            "ltv_to_date": (
+                revenue / cohort["initial_size"] if cohort["initial_size"] else 0
+            ),
             "cac_payback_month": month if revenue >= cac and cac else None,
         }
         cohort["lifecycle_stages"].append(stage)

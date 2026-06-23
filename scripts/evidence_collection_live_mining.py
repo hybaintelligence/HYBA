@@ -94,7 +94,9 @@ class LiveMiningEvidenceCollector:
                 evidence["shares"]["rejected"] += 1
                 # Extract reason
                 match = re.search(
-                    r"rejected.*?(?:reason|cause|error)?:?\s*([^,\n]+)", line, re.IGNORECASE
+                    r"rejected.*?(?:reason|cause|error)?:?\s*([^,\n]+)",
+                    line,
+                    re.IGNORECASE,
                 )
                 if match:
                     reason = match.group(1).strip()
@@ -116,14 +118,20 @@ class LiveMiningEvidenceCollector:
                 match = re.search(r"user[^\s]*:\s*(\S+)", line, re.IGNORECASE)
                 if match:
                     evidence["pool"]["authorizations"].append(
-                        {"user": match.group(1), "timestamp": datetime.now().isoformat()}
+                        {
+                            "user": match.group(1),
+                            "timestamp": datetime.now().isoformat(),
+                        }
                     )
 
             # Difficulty update
             match = re.search(r"[Dd]ifficulty.*?(\d+(?:\.\d+)?)", line)
             if match:
                 evidence["pool"]["difficulty_updates"].append(
-                    {"difficulty": float(match.group(1)), "timestamp": datetime.now().isoformat()}
+                    {
+                        "difficulty": float(match.group(1)),
+                        "timestamp": datetime.now().isoformat(),
+                    }
                 )
 
             # Job received
@@ -151,7 +159,9 @@ class LiveMiningEvidenceCollector:
 
         # Calculate performance metrics
         if evidence["performance"]["search_batches"] > 0:
-            evidence["performance"]["search_duration_seconds"] = time.time() - self.start_time
+            evidence["performance"]["search_duration_seconds"] = (
+                time.time() - self.start_time
+            )
 
             if evidence["performance"]["search_duration_seconds"] > 0:
                 evidence["performance"]["hashes_per_second"] = (
@@ -164,7 +174,12 @@ class LiveMiningEvidenceCollector:
     def collect_hardware_stats(self) -> Dict[str, Any]:
         """Collect current hardware statistics (CPU, memory, thermal)."""
 
-        stats = {"timestamp": datetime.now().isoformat(), "cpu": {}, "memory": {}, "thermal": {}}
+        stats = {
+            "timestamp": datetime.now().isoformat(),
+            "cpu": {},
+            "memory": {},
+            "thermal": {},
+        }
 
         # CPU stats
         try:
@@ -177,7 +192,9 @@ class LiveMiningEvidenceCollector:
 
         # Memory stats (macOS)
         try:
-            result = subprocess.run(["vm_stat"], capture_output=True, text=True, timeout=2)
+            result = subprocess.run(
+                ["vm_stat"], capture_output=True, text=True, timeout=2
+            )
             if result.returncode == 0:
                 # Parse vm_stat output
                 for line in result.stdout.split("\n"):
@@ -194,7 +211,9 @@ class LiveMiningEvidenceCollector:
 
         # Thermal (if available)
         try:
-            result = subprocess.run(["istats", "all"], capture_output=True, text=True, timeout=2)
+            result = subprocess.run(
+                ["istats", "all"], capture_output=True, text=True, timeout=2
+            )
             if result.returncode == 0:
                 # Parse istats output if available
                 for line in result.stdout.split("\n"):
@@ -219,20 +238,28 @@ class LiveMiningEvidenceCollector:
             if baseline_rate > 0:
                 uplift_pct = ((current_rate - baseline_rate) / baseline_rate) * 100
                 uplift["metrics"]["hashrate_uplift_pct"] = uplift_pct
-                uplift["metrics"]["hashrate_uplift_multiplier"] = current_rate / baseline_rate
+                uplift["metrics"]["hashrate_uplift_multiplier"] = (
+                    current_rate / baseline_rate
+                )
 
         # Compare acceptance rate
         baseline_accepted = baseline.get("shares", {}).get("accepted", 0)
         baseline_submitted = baseline.get("shares", {}).get("submitted", 1)
-        baseline_accept_rate = baseline_accepted / baseline_submitted if baseline_submitted else 0
+        baseline_accept_rate = (
+            baseline_accepted / baseline_submitted if baseline_submitted else 0
+        )
 
         current_accepted = current.get("shares", {}).get("accepted", 0)
         current_submitted = current.get("shares", {}).get("submitted", 1)
-        current_accept_rate = current_accepted / current_submitted if current_submitted else 0
+        current_accept_rate = (
+            current_accepted / current_submitted if current_submitted else 0
+        )
 
         uplift["metrics"]["baseline_accept_rate"] = baseline_accept_rate
         uplift["metrics"]["current_accept_rate"] = current_accept_rate
-        uplift["metrics"]["accept_rate_improvement"] = current_accept_rate - baseline_accept_rate
+        uplift["metrics"]["accept_rate_improvement"] = (
+            current_accept_rate - baseline_accept_rate
+        )
 
         return uplift
 
@@ -289,7 +316,9 @@ class LiveMiningEvidenceCollector:
         perf = evidence.get("performance", {})
         report.append(f"Search Batches:    {perf.get('search_batches', 0)}")
         report.append(f"Total Nonces:      {perf.get('total_nonces_tested', 0):,}")
-        report.append(f"Duration:          {perf.get('search_duration_seconds', 0):.1f}s")
+        report.append(
+            f"Duration:          {perf.get('search_duration_seconds', 0):.1f}s"
+        )
         report.append(f"Hash Rate:         {perf.get('hashes_per_second', 0):,.0f} H/s")
         report.append("")
 
@@ -316,7 +345,9 @@ class LiveMiningEvidenceCollector:
         report.append("VERIFIABILITY")
         report.append("─" * 80)
         report.append(f"Log File:          {evidence.get('log_file', 'N/A')}")
-        report.append(f"Log Size:          {evidence.get('file_size_bytes', 0):,} bytes")
+        report.append(
+            f"Log Size:          {evidence.get('file_size_bytes', 0):,} bytes"
+        )
         report.append("No Fixtures:       ✓ Real pool I/O only")
         report.append("No Fabrication:    ✓ Direct pool feedback recorded")
         report.append("Auditable:         ✓ All metrics verifiable from log")
@@ -347,9 +378,13 @@ Examples:
 
     parser.add_argument("--log-file", type=Path, help="Mining log file to analyze")
 
-    parser.add_argument("--report", type=Path, help="Evidence JSON file to generate report from")
+    parser.add_argument(
+        "--report", type=Path, help="Evidence JSON file to generate report from"
+    )
 
-    parser.add_argument("--session-id", help="Session ID (auto-generated if not provided)")
+    parser.add_argument(
+        "--session-id", help="Session ID (auto-generated if not provided)"
+    )
 
     args = parser.parse_args()
 

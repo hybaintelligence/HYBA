@@ -69,12 +69,17 @@ def _qi_query() -> dict[str, Any]:
         "qi_execution_id": f"qi-bench-{_hash_json(prompt)[:16]}",
         "intent": "explain",
         "confidence": round(min(0.99, 0.72 + score / 20), 6),
-        "result": {"summary": "deterministic Quantum Intelligence query path exercised"},
+        "result": {
+            "summary": "deterministic Quantum Intelligence query path exercised"
+        },
     }
 
 
 def _evidence_seal() -> dict[str, Any]:
-    payload = {"input_hash": _hash_json({"query": "stress"}), "formula": "phi_coherence*vtrace"}
+    payload = {
+        "input_hash": _hash_json({"query": "stress"}),
+        "formula": "phi_coherence*vtrace",
+    }
     return {
         "evidence_id": f"ev-{_hash_json(payload)[:20]}",
         "input_hash": payload["input_hash"],
@@ -89,7 +94,11 @@ def _metering_overhead() -> dict[str, Any]:
     balance = 10_000
     for unit in units:
         balance -= unit
-    return {"customer_id": "bench-customer", "charged_units": sum(units), "remaining_quota": balance}
+    return {
+        "customer_id": "bench-customer",
+        "charged_units": sum(units),
+        "remaining_quota": balance,
+    }
 
 
 def _phi_coherence() -> dict[str, Any]:
@@ -103,7 +112,11 @@ def _phi_coherence() -> dict[str, Any]:
 def _qae_qaoa_design() -> dict[str, Any]:
     return {
         "qae_design": {"estimator": "amplitude", "shots": 256, "epsilon": 0.03125},
-        "qaoa_design": {"layers": 3, "mixer": "x", "cost_terms": ["risk", "return", "liquidity"]},
+        "qaoa_design": {
+            "layers": 3,
+            "mixer": "x",
+            "cost_terms": ["risk", "return", "liquidity"],
+        },
     }
 
 
@@ -111,7 +124,11 @@ def _salamander_repair() -> dict[str, Any]:
     return {
         "repair_id": f"sal-{_hash_json('quota-burst')[:12]}",
         "trigger": "quota-burst",
-        "proposal": ["isolate tenant", "degrade noncritical simulation", "preserve evidence writes"],
+        "proposal": [
+            "isolate tenant",
+            "degrade noncritical simulation",
+            "preserve evidence writes",
+        ],
         "blast_radius": "single-customer control plane",
     }
 
@@ -136,7 +153,9 @@ def run_benchmark(command: str) -> dict[str, Any]:
         _measure("qae_qaoa_design_generation", _qae_qaoa_design),
         _measure("salamander_repair_proposal_generation", _salamander_repair),
     ]
-    raw_json_output = {measurement["name"]: measurement["raw_output"] for measurement in measurements}
+    raw_json_output = {
+        measurement["name"]: measurement["raw_output"] for measurement in measurements
+    }
     return {
         "benchmark": "Quantum Intelligence launch-rail proof",
         "timestamp": datetime.now(timezone.utc).isoformat(),
@@ -147,7 +166,9 @@ def run_benchmark(command: str) -> dict[str, Any]:
         "claim_boundary": CLAIM_BOUNDARY,
         "measurements": measurements,
         "raw_json_output": raw_json_output,
-        "artifact_hash": _hash_json({"measurements": measurements, "raw_json_output": raw_json_output}),
+        "artifact_hash": _hash_json(
+            {"measurements": measurements, "raw_json_output": raw_json_output}
+        ),
     }
 
 
@@ -157,8 +178,14 @@ def main() -> int:
     args = parser.parse_args()
     command = " ".join([Path(sys.executable).name, *sys.argv])
     report = run_benchmark(command)
-    args.output.parent.mkdir(parents=True, exist_ok=True) if args.output.parent != Path("") else None
-    args.output.write_text(json.dumps(report, indent=2, sort_keys=True), encoding="utf-8")
+    (
+        args.output.parent.mkdir(parents=True, exist_ok=True)
+        if args.output.parent != Path("")
+        else None
+    )
+    args.output.write_text(
+        json.dumps(report, indent=2, sort_keys=True), encoding="utf-8"
+    )
     print(json.dumps(report, indent=2, sort_keys=True))
     return 0
 

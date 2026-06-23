@@ -64,26 +64,54 @@ CLAIMS: tuple[EvidenceClaim, ...] = (
         "quantum_math_substrate",
         "Quantum comes from mathematics and is hardware/substrate agnostic",
         "Expose quantum algorithms as deterministic mathematical state transforms with optional hardware adapters.",
-        ["canonical request/response hash", "backend mathematical primitive trace", "hardware adapter independence check"],
-        ["finite numeric amplitudes", "normalized probabilities", "adapter does not alter canonical math result"],
-        ["malformed state vector", "non-finite amplitude", "hardware adapter unavailable"],
+        [
+            "canonical request/response hash",
+            "backend mathematical primitive trace",
+            "hardware adapter independence check",
+        ],
+        [
+            "finite numeric amplitudes",
+            "normalized probabilities",
+            "adapter does not alter canonical math result",
+        ],
+        [
+            "malformed state vector",
+            "non-finite amplitude",
+            "hardware adapter unavailable",
+        ],
         ["/api/v1/quantum/*", "/api/v1/quantum-intelligence/*"],
     ),
     EvidenceClaim(
         "emergence_intelligence",
         "Emergent intelligence is computable as measured reflexive state",
         "Compute φ-resonance and closure telemetry from the current reflexive controller runtime.",
-        ["measured_reflexive_controller_runtime", "measurement_basis", "formal invariant audit"],
-        ["0 <= phi_resonance", "audit seal binds telemetry", "no fixture/simulated telemetry language"],
+        [
+            "measured_reflexive_controller_runtime",
+            "measurement_basis",
+            "formal invariant audit",
+        ],
+        [
+            "0 <= phi_resonance",
+            "audit seal binds telemetry",
+            "no fixture/simulated telemetry language",
+        ],
         ["empty codebase observation", "poisoned telemetry strings", "seal tampering"],
-        ["/api/v1/intelligence/health", "/api/v1/intelligence/audit", "/api/v1/intelligence/absolute-audit"],
+        [
+            "/api/v1/intelligence/health",
+            "/api/v1/intelligence/audit",
+            "/api/v1/intelligence/absolute-audit",
+        ],
     ),
     EvidenceClaim(
         "consciousness_operational_metric",
         "Consciousness claims are operational/IIT-style metrics, not phenomenal assertion by default",
         "Allocate and audit bounded φ/IIT/Deutsch analysis tasks with explicit claim boundaries.",
         ["bounded boost request", "task budget", "claim boundary"],
-        ["0.1 <= boost <= 2.0", "1 <= task_budget <= 8", "phenomenal-consciousness boundary present"],
+        [
+            "0.1 <= boost <= 2.0",
+            "1 <= task_budget <= 8",
+            "phenomenal-consciousness boundary present",
+        ],
         ["boost overflow", "negative task budget", "basis injection"],
         ["/api/v1/intelligence/consciousness/boost", "/api/ai/consciousness"],
     ),
@@ -94,23 +122,37 @@ CLAIMS: tuple[EvidenceClaim, ...] = (
         ["cohomology class count", "algebraic cycle count", "hodge ratio"],
         ["cohomology_classes >= 1", "0 <= hodge_ratio", "finite ratio"],
         ["zero denominator", "negative cycle count", "non-numeric memory state"],
-        ["/api/v1/millennium-mathematics/execute:hodge_conjecture.memory_geometry_analysis"],
+        [
+            "/api/v1/millennium-mathematics/execute:hodge_conjecture.memory_geometry_analysis"
+        ],
     ),
     EvidenceClaim(
         "golden_ratio_hardware_scaling",
         "Hardware scaling via golden ratio is testable as bounded φ-scaling law",
         "Use φ-derived capacities and compression factors only when finite, monotone, and sealed.",
-        ["phi constant", "capacity input", "computed scale factor", "monotonicity proof test"],
+        [
+            "phi constant",
+            "capacity input",
+            "computed scale factor",
+            "monotonicity proof test",
+        ],
         ["phi > 1", "scale(n+1) >= scale(n)", "finite output"],
         ["NaN capacity", "negative capacity", "extreme exponent overflow"],
-        ["/api/v1/evidence/extraordinary-claims", "hyba_quantum_scaling_benchmark_tests/*"],
+        [
+            "/api/v1/evidence/extraordinary-claims",
+            "hyba_quantum_scaling_benchmark_tests/*",
+        ],
     ),
     EvidenceClaim(
         "salamander_innovation",
         "Salamander innovation is regeneration backed by immutable evidence and invariant batteries",
         "Expose regeneration readiness with audit verdicts, property batteries, and fail-closed guards.",
         ["audit verdict", "property battery result", "regeneration action log"],
-        ["verdict is sealed", "failed invariant prevents promotion", "regeneration state is finite"],
+        [
+            "verdict is sealed",
+            "failed invariant prevents promotion",
+            "regeneration state is finite",
+        ],
         ["corrupt evidence log", "hostile regeneration payload", "missing guard"],
         ["/api/v1/salamander/*", "/api/v1/regeneration/*"],
     ),
@@ -118,10 +160,27 @@ CLAIMS: tuple[EvidenceClaim, ...] = (
         "millennium_operationalization_all",
         "Every Millennium problem has an API operationalization",
         "Map all seven Clay problems to explicitly bounded executable operations.",
-        ["problem list", "operation list", "claim boundary per problem", "evidence seal per execution"],
-        ["exactly seven problems", "all problem names unique", "each problem has at least one operation"],
-        ["unknown problem", "unknown operation", "idempotency replay", "parameter poisoning"],
-        ["/api/v1/millennium-mathematics/problems", "/api/v1/millennium-mathematics/execute"],
+        [
+            "problem list",
+            "operation list",
+            "claim boundary per problem",
+            "evidence seal per execution",
+        ],
+        [
+            "exactly seven problems",
+            "all problem names unique",
+            "each problem has at least one operation",
+        ],
+        [
+            "unknown problem",
+            "unknown operation",
+            "idempotency replay",
+            "parameter poisoning",
+        ],
+        [
+            "/api/v1/millennium-mathematics/problems",
+            "/api/v1/millennium-mathematics/execute",
+        ],
     ),
 )
 
@@ -144,7 +203,9 @@ def build_extraordinary_evidence_packet() -> Dict[str, Any]:
         "claim_ids_unique": _all_unique(claim["claim_id"] for claim in claims),
         "all_claims_have_evidence": all(claim["required_evidence"] for claim in claims),
         "all_claims_have_invariants": all(claim["invariants"] for claim in claims),
-        "all_claims_have_adversarial_tests": all(claim["adversarial_tests"] for claim in claims),
+        "all_claims_have_adversarial_tests": all(
+            claim["adversarial_tests"] for claim in claims
+        ),
         "millennium_problem_count": len(MILLENNIUM_PROBLEMS) == 7,
         "millennium_problem_ids_unique": _all_unique(MILLENNIUM_PROBLEMS),
         "phi_is_finite_and_greater_than_one": math.isfinite(PHI) and PHI > 1.0,
@@ -175,5 +236,7 @@ def build_extraordinary_evidence_packet() -> Dict[str, Any]:
         },
     }
     packet["all_invariants_passed"] = all(invariant_results.values())
-    packet["evidence_seal"] = _canonical_seal({k: v for k, v in packet.items() if k != "evidence_seal"})
+    packet["evidence_seal"] = _canonical_seal(
+        {k: v for k, v in packet.items() if k != "evidence_seal"}
+    )
     return packet

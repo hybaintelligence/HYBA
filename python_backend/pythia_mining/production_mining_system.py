@@ -22,8 +22,13 @@ UTC = timezone.utc
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from pythia_mining.autonomous_fault_tolerant_controller import FaultTolerantMiningController
-from pythia_mining.regeneration_manager import RegenerationManager, get_regeneration_manager
+from pythia_mining.autonomous_fault_tolerant_controller import (
+    FaultTolerantMiningController,
+)
+from pythia_mining.regeneration_manager import (
+    RegenerationManager,
+    get_regeneration_manager,
+)
 from pythia_mining.salamander_mining_guard import SalamanderMiningGuard
 
 
@@ -79,7 +84,9 @@ class ProductionMiningSystem:
         self.worker_name = worker_name
         self.enable_quantum = enable_quantum
         self.mode = (mode or os.getenv("HYBA_MINING_MODE", "dry_run")).strip().lower()
-        self.live_submission_enabled = os.getenv("HYBA_ENABLE_LIVE_SHARE_SUBMIT", "").strip().lower() in {
+        self.live_submission_enabled = os.getenv(
+            "HYBA_ENABLE_LIVE_SHARE_SUBMIT", ""
+        ).strip().lower() in {
             "1",
             "true",
             "yes",
@@ -99,7 +106,10 @@ class ProductionMiningSystem:
         else:
             self.controller = None
             self.quantum_active = False
-            self._init_status = {"logical_error_rate": 0.0, "phi_resonance_target": None}
+            self._init_status = {
+                "logical_error_rate": 0.0,
+                "phi_resonance_target": None,
+            }
 
         # Session tracking
         self.session: Optional[MiningSession] = None
@@ -121,27 +131,39 @@ class ProductionMiningSystem:
         print(f"Pool: {pool_url}")
         print(f"Worker: {worker_name}")
         print(f"Mode: {self.mode}")
-        print(f"Live share submit: {'ENABLED' if self.live_submission_enabled else 'DISABLED'}")
-        print(f"Quantum Backend: {'✅ ENABLED' if self.quantum_active else '❌ DISABLED'}")
+        print(
+            f"Live share submit: {'ENABLED' if self.live_submission_enabled else 'DISABLED'}"
+        )
+        print(
+            f"Quantum Backend: {'✅ ENABLED' if self.quantum_active else '❌ DISABLED'}"
+        )
         if self.quantum_active:
             print(f"Logical Error Rate: {self._init_status['logical_error_rate']:.2e}")
-            print(f"φ-Resonance Target: {self._init_status.get('phi_resonance_target', 'N/A')}")
+            print(
+                f"φ-Resonance Target: {self._init_status.get('phi_resonance_target', 'N/A')}"
+            )
         print(f"{'='*70}\n")
 
     async def prepare_for_live_mining(self) -> Dict[str, Any]:
         """Run Salamander gate before any mining session starts."""
 
-        gate = await self.salamander_guard.preflight(source=f"production_mining_{self.mode}")
+        gate = await self.salamander_guard.preflight(
+            source=f"production_mining_{self.mode}"
+        )
         self.salamander_gate = gate.to_dict()
         if not gate.ready:
-            raise RuntimeError(f"Salamander mining gate blocked deployment: {gate.blocker}")
+            raise RuntimeError(
+                f"Salamander mining gate blocked deployment: {gate.blocker}"
+            )
         return self.salamander_gate
 
     def start_session(self) -> str:
         """Start a new mining session after Salamander preflight has run."""
 
         if not self.salamander_gate or not self.salamander_gate.get("ready"):
-            raise RuntimeError("Salamander mining gate must pass before starting a session")
+            raise RuntimeError(
+                "Salamander mining gate must pass before starting a session"
+            )
 
         session_id = datetime.now(UTC).strftime("%Y%m%d_%H%M%S")
         self.session = MiningSession(
@@ -154,7 +176,11 @@ class ProductionMiningSystem:
             total_revenue_btc=0.0,
             fault_tolerant_enabled=self.quantum_active,
             phi_resonance_rate=0.9565 if self.quantum_active else 0.0,
-            logical_error_rate=self._init_status.get("logical_error_rate", 0.0) if self.quantum_active else 0.0,
+            logical_error_rate=(
+                self._init_status.get("logical_error_rate", 0.0)
+                if self.quantum_active
+                else 0.0
+            ),
             mode=self.mode,
             salamander_gate_ready=True,
         )
@@ -183,7 +209,9 @@ class ProductionMiningSystem:
             logical_error = 0.0
 
         elapsed_ms = (time.time() - start_time) * 1000
-        pool_result = job_data.get("pool_result") if isinstance(job_data, dict) else None
+        pool_result = (
+            job_data.get("pool_result") if isinstance(job_data, dict) else None
+        )
 
         if isinstance(pool_result, dict):
             accepted = bool(pool_result.get("accepted", False))
@@ -270,7 +298,9 @@ class ProductionMiningSystem:
                     f"({share.source}, FT: {share.fault_tolerant}, {share.time_to_solution_ms:.2f}ms)"
                 )
             elif share:
-                print(f"  ❌ Share {self.total_shares_submitted} REJECTED ({share.source})")
+                print(
+                    f"  ❌ Share {self.total_shares_submitted} REJECTED ({share.source})"
+                )
 
             job_counter += 1
             await asyncio.sleep(0.1)
@@ -288,7 +318,9 @@ class ProductionMiningSystem:
         if not self.session:
             return
 
-        acceptance_rate = (self.total_shares_accepted / max(self.total_shares_submitted, 1)) * 100
+        acceptance_rate = (
+            self.total_shares_accepted / max(self.total_shares_submitted, 1)
+        ) * 100
         started = datetime.fromisoformat(self.session.start_time)
         duration = (datetime.now(UTC) - started).total_seconds()
 
@@ -300,8 +332,12 @@ class ProductionMiningSystem:
         print(f"Shares Accepted: {self.total_shares_accepted}")
         print(f"Acceptance Rate: {acceptance_rate:.2f}%")
         print(f"Observed Revenue: {self.estimated_revenue_btc:.8f} BTC")
-        print(f"Quantum Backend: {'✅ ENABLED' if self.quantum_active else '❌ DISABLED'}")
-        print(f"Salamander Gate: {'✅ READY' if self.salamander_gate else '❌ NOT RUN'}")
+        print(
+            f"Quantum Backend: {'✅ ENABLED' if self.quantum_active else '❌ DISABLED'}"
+        )
+        print(
+            f"Salamander Gate: {'✅ READY' if self.salamander_gate else '❌ NOT RUN'}"
+        )
         if self.quantum_active:
             print(f"φ-Resonance Rate: {self.session.phi_resonance_rate*100:.2f}%")
             print(f"Logical Error Rate: {self.session.logical_error_rate:.2e}")
@@ -331,7 +367,8 @@ class ProductionMiningSystem:
             "shares": [asdict(s) for s in self.share_history],
             "salamander_gate": self.salamander_gate,
             "summary": {
-                "acceptance_rate": self.total_shares_accepted / max(self.total_shares_submitted, 1),
+                "acceptance_rate": self.total_shares_accepted
+                / max(self.total_shares_submitted, 1),
                 "quantum_advantage": self.quantum_active,
                 "phi_resonance_exploitation": 0.9565 if self.quantum_active else 0.0,
                 "revenue_source": "live_pool_result_only",
@@ -350,7 +387,9 @@ class ProductionMiningSystem:
         if not self.session:
             return {}
 
-        acceptance_rate = self.total_shares_accepted / max(self.total_shares_submitted, 1)
+        acceptance_rate = self.total_shares_accepted / max(
+            self.total_shares_submitted, 1
+        )
         if self.quantum_active:
             classical_expected_rate = 0.50
             quantum_advantage_factor = acceptance_rate / classical_expected_rate

@@ -11,7 +11,9 @@ def test_qiaas_preserves_quantum_intelligence_claim_boundary():
     assert "/api/qiaas" in source
     assert "Quantum-Intelligence-as-a-Service" in source
     assert "substrate_independent_sovereign_quantum_intelligence_execution" in source
-    assert "enterprise_quantum_intelligence_api_not_mining_not_hardware_quantum" in source
+    assert (
+        "enterprise_quantum_intelligence_api_not_mining_not_hardware_quantum" in source
+    )
 
 
 def test_api_key_secret_hygiene_uses_hmac_and_does_not_store_raw_keys():

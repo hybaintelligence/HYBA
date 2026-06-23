@@ -20,7 +20,9 @@ class CostAttributor:
         self.overhead_rate = overhead_rate
         self.service_costs: List[Dict[str, Any]] = []
 
-    def calculate_service_cost(self, service_id: str, metrics: Dict[str, float]) -> Dict[str, Any]:
+    def calculate_service_cost(
+        self, service_id: str, metrics: Dict[str, float]
+    ) -> Dict[str, Any]:
         """Calculate full-cost allocation including overhead."""
         direct = {
             "compute": metrics.get("vcpu_hours", 0) * self.cost_drivers["compute"],

@@ -118,7 +118,9 @@ class TestEnterprisinghardeningWiring:
         app = FastAPI()
 
         # Simulate Redis unavailable
-        with patch("pythia_mining.redis_state_registry.get_redis_registry") as mock_redis:
+        with patch(
+            "pythia_mining.redis_state_registry.get_redis_registry"
+        ) as mock_redis:
             mock_redis.return_value.available = False
             mock_redis.return_value.client = None
 
@@ -141,9 +143,15 @@ class TestEnterprisinghardeningWiring:
         try:
             from pythia_mining.reflexive_cycle_timeout import ReflexiveCycleGuard
             from pythia_mining.distributed_lock_manager import DistributedLockManager
-            from pythia_mining.stratum_idempotency_tracker import StratumIdempotencyTracker
-            from pythia_mining.circuit_breaker_failover import CircuitBreakerFailoverManager
-            from pythia_mining.operator_approval_timeout import OperatorApprovalTimeoutManager
+            from pythia_mining.stratum_idempotency_tracker import (
+                StratumIdempotencyTracker,
+            )
+            from pythia_mining.circuit_breaker_failover import (
+                CircuitBreakerFailoverManager,
+            )
+            from pythia_mining.operator_approval_timeout import (
+                OperatorApprovalTimeoutManager,
+            )
 
             # If we got here, all modules imported successfully
             assert True
@@ -167,7 +175,9 @@ class TestEnterprisinghardeningWiring:
 
     def test_autonomous_controller_accepts_lock_manager_parameter(self):
         """Verify AutonomousMiningController constructor accepts lock_manager parameter."""
-        from pythia_mining.autonomous_mining_controller import AutonomousMiningController
+        from pythia_mining.autonomous_mining_controller import (
+            AutonomousMiningController,
+        )
         import inspect
 
         sig = inspect.signature(AutonomousMiningController.__init__)

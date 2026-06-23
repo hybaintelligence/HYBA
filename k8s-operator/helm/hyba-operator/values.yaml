@@ -1,49 +1,38 @@
-# Default values for hyba-operator
 replicaCount: 1
-
 image:
   repository: hyba/k8s-operator
   pullPolicy: IfNotPresent
-  tag: "latest"
-
+  tag: latest
 imagePullSecrets: []
-nameOverride: ""
-fullnameOverride: ""
-
+nameOverride: ''
+fullnameOverride: ''
 serviceAccount:
   create: true
   annotations: {}
-  name: ""
-
+  name: ''
 podAnnotations: {}
-
 podSecurityContext:
   runAsNonRoot: true
   runAsUser: 65532
   runAsGroup: 65532
-
 securityContext:
   allowPrivilegeEscalation: false
   readOnlyRootFilesystem: true
   capabilities:
     drop:
     - ALL
-
 service:
   type: ClusterIP
   port: 80
   targetPort: 8080
-
 metrics:
   enabled: true
   port: 8080
   serviceMonitor:
     enabled: false
-
 webhooks:
   enabled: true
   port: 9443
-
 resources:
   limits:
     cpu: 500m
@@ -51,27 +40,17 @@ resources:
   requests:
     cpu: 100m
     memory: 64Mi
-
 autoscaling:
   enabled: false
   minReplicas: 1
   maxReplicas: 3
   targetCPUUtilizationPercentage: 80
-
 nodeSelector: {}
-
 tolerations: []
-
 affinity: {}
-
-# Leader election for HA deployments
 leaderElection:
   enabled: false
-
-# RBAC configuration
 rbac:
   create: true
-
-# CRD management
 crds:
   create: true

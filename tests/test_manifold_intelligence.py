@@ -12,8 +12,12 @@ PYTHON_BACKEND = REPO_ROOT / "python_backend"
 if str(PYTHON_BACKEND) not in sys.path:
     sys.path.insert(0, str(PYTHON_BACKEND))
 
-from hyba_genesis_api.core.intelligence_manifold import IntelligenceManifold  # noqa: E402
-from hyba_genesis_api.core.predictive_controller import PredictiveActiveInference  # noqa: E402
+from hyba_genesis_api.core.intelligence_manifold import (
+    IntelligenceManifold,
+)  # noqa: E402
+from hyba_genesis_api.core.predictive_controller import (
+    PredictiveActiveInference,
+)  # noqa: E402
 from hyba_genesis_api.core.reflexive_controller import ReflexiveController  # noqa: E402
 from tests.test_reflexive_controller import write_sample_umwelt  # noqa: E402
 
@@ -66,7 +70,9 @@ class ManifoldPropertyTests(unittest.TestCase):
         for _ in range(128):
             weights = [rng.uniform(0.1, 10.0) for _ in range(rng.randint(2, 12))]
             curvature = manifold.calculate_fisher_curvature(weights)
-            scaled = manifold.calculate_fisher_curvature([weight * 2.0 for weight in weights])
+            scaled = manifold.calculate_fisher_curvature(
+                [weight * 2.0 for weight in weights]
+            )
             self.assertGreaterEqual(curvature, 0.0)
             self.assertAlmostEqual(curvature, scaled, places=7)
 

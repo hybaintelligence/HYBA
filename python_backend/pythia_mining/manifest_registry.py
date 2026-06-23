@@ -72,17 +72,23 @@ def _write_index(registry_dir: Path, index: dict[str, Any]) -> None:
 
 
 def _record_key(claim_id: str, input_digest: str) -> str:
-    safe_claim = "".join(ch if ch.isalnum() or ch in {"-", "_"} else "_" for ch in claim_id)
+    safe_claim = "".join(
+        ch if ch.isalnum() or ch in {"-", "_"} else "_" for ch in claim_id
+    )
     return f"{safe_claim}--{input_digest[:16]}"
 
 
-def _copy_artifacts(claim: Mapping[str, Any], source_cwd: Path, artifact_dir: Path) -> None:
+def _copy_artifacts(
+    claim: Mapping[str, Any], source_cwd: Path, artifact_dir: Path
+) -> None:
     artifact_dir.mkdir(parents=True, exist_ok=True)
     attestation = claim["reproducibility_attestation"]
     for rel_path in attestation.get("produced_artifacts", []):
         source = source_cwd / rel_path
         if not source.is_file():
-            raise FileNotFoundError(f"declared artifact missing during registry save: {rel_path}")
+            raise FileNotFoundError(
+                f"declared artifact missing during registry save: {rel_path}"
+            )
         destination = artifact_dir / rel_path
         destination.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(source, destination)
@@ -101,7 +107,9 @@ def save_verified_manifest(
     source_root = Path(source_cwd)
     claim = _claim_from_manifest(manifest)
     attestation = claim["reproducibility_attestation"]
-    replay_result = replay or execute_reproducibility_replay(attestation, cwd=source_root)
+    replay_result = replay or execute_reproducibility_replay(
+        attestation, cwd=source_root
+    )
     input_digest = str(attestation["input_digest"])
     claim_id = str(claim["id"])
     key = _record_key(claim_id, input_digest)
@@ -109,7 +117,9 @@ def save_verified_manifest(
     artifact_dir = record_dir / ARTIFACTS_DIR
     record_dir.mkdir(parents=True, exist_ok=True)
     manifest_path = record_dir / "manifest.json"
-    manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True), encoding="utf-8")
+    manifest_path.write_text(
+        json.dumps(manifest, indent=2, sort_keys=True), encoding="utf-8"
+    )
     _copy_artifacts(claim, source_root, artifact_dir)
     record = RegistryRecord(
         claim_id=claim_id,
@@ -122,9 +132,13 @@ def save_verified_manifest(
         boundary=str(claim.get("boundary", attestation.get("boundary", ""))),
     )
     index = _load_index(registry_root)
-    records = [entry for entry in index.get("records", []) if entry.get("record_key") != key]
+    records = [
+        entry for entry in index.get("records", []) if entry.get("record_key") != key
+    ]
     records.append(record.to_dict())
-    index["records"] = sorted(records, key=lambda entry: (entry["claim_id"], entry["input_digest"]))
+    index["records"] = sorted(
+        records, key=lambda entry: (entry["claim_id"], entry["input_digest"])
+    )
     _write_index(registry_root, index)
     return record
 
@@ -136,7 +150,8 @@ def list_claims(
 
     needle = (filter_by_boundary or "").lower()
     records = [
-        RegistryRecord(**entry) for entry in _load_index(Path(registry_dir)).get("records", [])
+        RegistryRecord(**entry)
+        for entry in _load_index(Path(registry_dir)).get("records", [])
     ]
     if needle:
         records = [record for record in records if needle in record.boundary.lower()]
@@ -146,22 +161,30 @@ def list_claims(
 def load_manifest(registry_dir: str | Path, claim_id: str) -> dict[str, Any]:
     """Load the first registry manifest matching a claim id."""
 
-    matches = [record for record in list_claims(registry_dir) if record.claim_id == claim_id]
+    matches = [
+        record for record in list_claims(registry_dir) if record.claim_id == claim_id
+    ]
     if not matches:
         raise KeyError(f"claim id not found in registry: {claim_id}")
     registry_root = Path(registry_dir)
-    return json.loads((registry_root / matches[0].manifest_path).read_text(encoding="utf-8"))
+    return json.loads(
+        (registry_root / matches[0].manifest_path).read_text(encoding="utf-8")
+    )
 
 
 def load_and_reverify(registry_dir: str | Path, claim_id: str) -> ReverificationResult:
     """Load a registered manifest and re-run replay from stored artifacts dir."""
 
-    records = [record for record in list_claims(registry_dir) if record.claim_id == claim_id]
+    records = [
+        record for record in list_claims(registry_dir) if record.claim_id == claim_id
+    ]
     if not records:
         raise KeyError(f"claim id not found in registry: {claim_id}")
     record = records[0]
     registry_root = Path(registry_dir)
-    manifest = json.loads((registry_root / record.manifest_path).read_text(encoding="utf-8"))
+    manifest = json.loads(
+        (registry_root / record.manifest_path).read_text(encoding="utf-8")
+    )
     claim = _claim_from_manifest(manifest)
     replay = execute_reproducibility_replay(
         claim["reproducibility_attestation"], cwd=registry_root / record.artifact_dir

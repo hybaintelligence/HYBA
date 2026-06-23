@@ -74,7 +74,9 @@ def build_verification_report(
 
 
 def write_report_json(report: VerificationReport, path: str | Path) -> None:
-    Path(path).write_text(json.dumps(report.to_dict(), indent=2, sort_keys=True), encoding="utf-8")
+    Path(path).write_text(
+        json.dumps(report.to_dict(), indent=2, sort_keys=True), encoding="utf-8"
+    )
 
 
 def write_report_html(report: VerificationReport, path: str | Path) -> None:

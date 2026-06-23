@@ -10,7 +10,9 @@ from __future__ import annotations
 import numpy as np
 
 from pythia_mining.phi_folding import PhiFoldingOperator, SparsePhiFoldKernel
-from pythia_mining.pulvini_memory_compression_proof import verify_memory_compression_gate
+from pythia_mining.pulvini_memory_compression_proof import (
+    verify_memory_compression_gate,
+)
 from pythia_mining.pulvini_phi_memory import PulviniPhiMemoryCompressionEngine
 
 
@@ -31,9 +33,9 @@ def test_phi_folding_reversible_across_small_fibonacci_and_large_dimensions() ->
         # fold() uses the larger of the two splits, which may be [0] or [1]
         larger, smaller = operator.fibonacci_split(dimension)
         expected_folded_size = max(larger, smaller)
-        assert folded.size == expected_folded_size, (
-            f"dimension={dimension}: folded.size={folded.size}, expected={expected_folded_size}"
-        )
+        assert (
+            folded.size == expected_folded_size
+        ), f"dimension={dimension}: folded.size={folded.size}, expected={expected_folded_size}"
         assert kernel.size == folded.size
         assert error < 1e-9, f"dimension={dimension}, error={error}"
 
@@ -47,7 +49,9 @@ def test_phi_folding_supports_in_place_buffers() -> None:
     out = np.zeros(larger, dtype=np.float64)
     kernel_out = np.zeros(larger, dtype=np.float64)
 
-    folded, kernel, original_size = operator.fold(payload, out=out, kernel_out=kernel_out)
+    folded, kernel, original_size = operator.fold(
+        payload, out=out, kernel_out=kernel_out
+    )
     reconstructed = operator.unfold(folded, kernel, original_size)
 
     assert np.shares_memory(folded, out)

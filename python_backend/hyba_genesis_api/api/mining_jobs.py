@@ -10,7 +10,9 @@ from hyba_genesis_api.api.mining import get_pythia_state, require_mining_read
 router = APIRouter(prefix="/api/mining", tags=["mining"])
 
 
-@router.get("/job", response_model=Dict[str, Any], dependencies=[Depends(require_mining_read)])
+@router.get(
+    "/job", response_model=Dict[str, Any], dependencies=[Depends(require_mining_read)]
+)
 async def get_current_job() -> Dict[str, Any]:
     """Return the currently active mining job.
 
@@ -34,7 +36,9 @@ async def get_current_job() -> Dict[str, Any]:
 
 
 @router.get(
-    "/jobs/search", response_model=Dict[str, Any], dependencies=[Depends(require_mining_read)]
+    "/jobs/search",
+    response_model=Dict[str, Any],
+    dependencies=[Depends(require_mining_read)],
 )
 async def search_jobs(
     job_id: str | None = None, limit: int = 10, offset: int = 0

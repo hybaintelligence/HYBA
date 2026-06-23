@@ -1,7 +1,10 @@
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from hyba_genesis_api.core.reliability import BackendDependencyError, execute_with_circuit_breaker
+from hyba_genesis_api.core.reliability import (
+    BackendDependencyError,
+    execute_with_circuit_breaker,
+)
 
 
 def test_circuit_breaker_dependency_failure_returns_503_with_retry_after():

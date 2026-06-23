@@ -48,7 +48,10 @@ def mock_redis_registry():
 
 def test_get_tenant_resource_usage_success(admin_token, mock_redis_registry):
     """Test tenant usage retrieval with Redis available."""
-    with patch("hyba_genesis_api.api.observability.get_redis_registry", return_value=mock_redis_registry):
+    with patch(
+        "hyba_genesis_api.api.observability.get_redis_registry",
+        return_value=mock_redis_registry,
+    ):
         response = client.get(
             "/api/admin/observability/tenants/customer-abc/usage",
             headers={"Authorization": f"Bearer {admin_token}"},
@@ -67,7 +70,10 @@ def test_get_tenant_resource_usage_redis_unavailable(admin_token):
     mock_registry = MagicMock()
     mock_registry.available = False
 
-    with patch("hyba_genesis_api.api.observability.get_redis_registry", return_value=mock_registry):
+    with patch(
+        "hyba_genesis_api.api.observability.get_redis_registry",
+        return_value=mock_registry,
+    ):
         response = client.get(
             "/api/admin/observability/tenants/customer-abc/usage",
             headers={"Authorization": f"Bearer {admin_token}"},
@@ -79,7 +85,10 @@ def test_get_tenant_resource_usage_redis_unavailable(admin_token):
 
 def test_get_system_health_redis_available(admin_token, mock_redis_registry):
     """Test system health endpoint with Redis connected."""
-    with patch("hyba_genesis_api.api.observability.get_redis_registry", return_value=mock_redis_registry):
+    with patch(
+        "hyba_genesis_api.api.observability.get_redis_registry",
+        return_value=mock_redis_registry,
+    ):
         response = client.get(
             "/api/admin/observability/system/health",
             headers={"Authorization": f"Bearer {admin_token}"},
@@ -94,7 +103,10 @@ def test_get_system_health_redis_available(admin_token, mock_redis_registry):
 
 def test_get_instance_telemetry_success(admin_token, mock_redis_registry):
     """Test instance telemetry retrieval with Redis backing."""
-    with patch("hyba_genesis_api.api.observability.get_redis_registry", return_value=mock_redis_registry):
+    with patch(
+        "hyba_genesis_api.api.observability.get_redis_registry",
+        return_value=mock_redis_registry,
+    ):
         response = client.get(
             "/api/admin/observability/instances/qaas-test123/telemetry",
             headers={"Authorization": f"Bearer {admin_token}"},
@@ -110,7 +122,10 @@ def test_get_instance_telemetry_success(admin_token, mock_redis_registry):
 
 def test_delete_instance_state_success(admin_token, mock_redis_registry):
     """Test instance state deletion from Redis."""
-    with patch("hyba_genesis_api.api.observability.get_redis_registry", return_value=mock_redis_registry):
+    with patch(
+        "hyba_genesis_api.api.observability.get_redis_registry",
+        return_value=mock_redis_registry,
+    ):
         response = client.delete(
             "/api/admin/observability/instances/qaas-test123",
             headers={"Authorization": f"Bearer {admin_token}"},

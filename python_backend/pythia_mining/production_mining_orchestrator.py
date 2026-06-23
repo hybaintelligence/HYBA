@@ -16,7 +16,11 @@ from typing import Any, Dict, List, Optional
 
 from pythia_mining.audit_logger import get_audit_logger
 from pythia_mining.metrics_store import get_metrics_store
-from pythia_mining.stratum_client import AllPoolsOfflineError, StratumClient, ShareResult
+from pythia_mining.stratum_client import (
+    AllPoolsOfflineError,
+    StratumClient,
+    ShareResult,
+)
 from pythia_mining.pool_profiles import PoolProfile
 
 
@@ -181,7 +185,9 @@ class ProductionMiningOrchestrator:
 
     async def initialize(self) -> None:
         """Initialize connections to all pools."""
-        self.logger.info("Initializing mining orchestrator with %d pools", len(self.profiles))
+        self.logger.info(
+            "Initializing mining orchestrator with %d pools", len(self.profiles)
+        )
 
         initialization_tasks = []
         for profile in self.profiles:
@@ -192,7 +198,9 @@ class ProductionMiningOrchestrator:
 
         successful = sum(1 for r in results if r is True)
         self.logger.info(
-            "Pool initialization complete: %d/%d pools connected", successful, len(self.profiles)
+            "Pool initialization complete: %d/%d pools connected",
+            successful,
+            len(self.profiles),
         )
 
         if successful == 0:
@@ -337,7 +345,10 @@ class ProductionMiningOrchestrator:
 
         if old_health != health:
             self.logger.info(
-                "Pool %s health changed: %s -> %s", pool_id, old_health.value, health.value
+                "Pool %s health changed: %s -> %s",
+                pool_id,
+                old_health.value,
+                health.value,
             )
             self.audit_logger.log_pool_health_change(
                 pool_id=pool_id,
@@ -361,7 +372,9 @@ class ProductionMiningOrchestrator:
         # Determine new health based on failure count
         if health_status.consecutive_failures >= self.max_pool_failures_before_offline:
             self._update_pool_health(pool_id, PoolHealth.OFFLINE, error)
-        elif health_status.consecutive_failures >= self.max_pool_failures_before_degraded:
+        elif (
+            health_status.consecutive_failures >= self.max_pool_failures_before_degraded
+        ):
             self._update_pool_health(pool_id, PoolHealth.DEGRADED, error)
         else:
             self._update_pool_health(pool_id, PoolHealth.UNHEALTHY, error)
@@ -527,7 +540,9 @@ class ProductionMiningOrchestrator:
                 continue
 
             try:
-                job = await asyncio.wait_for(client.poll_live_event(timeout=1.0), timeout=5.0)
+                job = await asyncio.wait_for(
+                    client.poll_live_event(timeout=1.0), timeout=5.0
+                )
 
                 if job:
                     health_status = self.pool_health.get(pool_id)
@@ -596,7 +611,9 @@ class ProductionMiningOrchestrator:
                 return {pool_id: self.pool_health[pool_id].to_dict()}
             return {}
 
-        return {pool_id: status.to_dict() for pool_id, status in self.pool_health.items()}
+        return {
+            pool_id: status.to_dict() for pool_id, status in self.pool_health.items()
+        }
 
 
 __all__ = [

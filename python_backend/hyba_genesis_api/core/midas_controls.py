@@ -93,12 +93,19 @@ class MIDASStateMachine:
         with self._lock:
             if self.config.require_request_id and not request_id:
                 self.metrics["invalid_transitions_total"] += 1
-                raise StateTransitionError("MIDAS state transitions require a request_id")
+                raise StateTransitionError(
+                    "MIDAS state transitions require a request_id"
+                )
 
-            if to_state not in self.config.allowed_transitions.get(self.current_state, set()):
+            if to_state not in self.config.allowed_transitions.get(
+                self.current_state, set()
+            ):
                 self.metrics["invalid_transitions_total"] += 1
                 valid = [
-                    s.value for s in self.config.allowed_transitions.get(self.current_state, set())
+                    s.value
+                    for s in self.config.allowed_transitions.get(
+                        self.current_state, set()
+                    )
                 ]
                 raise StateTransitionError(
                     f"Invalid state transition from {self.current_state.value} to {to_state.value}. "
@@ -121,9 +128,7 @@ class MIDASStateMachine:
             self.state_entry_time = time.monotonic()
             self.transition_history.append(transition)
             self.metrics["transitions_total"] += 1
-            metric_name = (
-                f"transition_{transition.from_state.value}_to_{transition.to_state.value}_total"
-            )
+            metric_name = f"transition_{transition.from_state.value}_to_{transition.to_state.value}_total"
             self.metrics[metric_name] = self.metrics.get(metric_name, 0) + 1
             return transition
 
@@ -172,7 +177,9 @@ class MIDASStateMachine:
                     f"invalid historical transition: {transition.from_state.value}->{transition.to_state.value}"
                 )
             if not transition.request_id:
-                errors.append(f"transition {transition.transition_id} missing request_id")
+                errors.append(
+                    f"transition {transition.transition_id} missing request_id"
+                )
         return {
             "valid": not errors,
             "current_state": current_state.value,
@@ -187,7 +194,9 @@ class RateLimitExceededError(Exception):
     def __init__(self, retry_after_seconds: float, request_id: str | None = None):
         self.retry_after_seconds = max(retry_after_seconds, 0.0)
         self.request_id = request_id
-        super().__init__(f"MIDAS rate limit exceeded; retry after {self.retry_after_seconds:.3f}s")
+        super().__init__(
+            f"MIDAS rate limit exceeded; retry after {self.retry_after_seconds:.3f}s"
+        )
 
     def to_response_body(self) -> dict[str, Any]:
         return {
@@ -234,7 +243,9 @@ class TokenBucketRateLimiter:
         with self._lock:
             now = time.monotonic()
             elapsed = max(now - self.updated_at, 0.0)
-            self.tokens = min(self.burst_capacity, self.tokens + elapsed * self.rate_per_second)
+            self.tokens = min(
+                self.burst_capacity, self.tokens + elapsed * self.rate_per_second
+            )
             self.updated_at = now
             if self.tokens >= 1.0:
                 self.tokens -= 1.0
@@ -265,7 +276,10 @@ class BackpressureGuard:
     rejected_total: int = 0
 
     def admit(self, request_id: Optional[str] = None) -> None:
-        if self.inflight >= self.max_inflight or self.queue_depth >= self.max_queue_depth:
+        if (
+            self.inflight >= self.max_inflight
+            or self.queue_depth >= self.max_queue_depth
+        ):
             self.rejected_total += 1
             raise BackpressureError(
                 f"MIDAS backpressure active: inflight={self.inflight}/{self.max_inflight}, "
@@ -340,12 +354,18 @@ class MiningRequestTracker:
     def generate_request_id(self) -> str:
         return f"mining_req_{int(time.time())}_{uuid.uuid4().hex[:16]}"
 
-    def generate_idempotency_key(self, operation_type: str, parameters: dict[str, Any]) -> str:
+    def generate_idempotency_key(
+        self, operation_type: str, parameters: dict[str, Any]
+    ) -> str:
         try:
-            params_str = json.dumps(parameters, sort_keys=True, separators=(",", ":"), default=str)
+            params_str = json.dumps(
+                parameters, sort_keys=True, separators=(",", ":"), default=str
+            )
         except TypeError:
             params_str = repr(sorted(parameters.items()))
-        return hashlib.sha256(f"{operation_type}:{params_str}".encode("utf-8")).hexdigest()
+        return hashlib.sha256(
+            f"{operation_type}:{params_str}".encode("utf-8")
+        ).hexdigest()
 
     def create_request(
         self,
@@ -398,8 +418,12 @@ class MiningRequestTracker:
 
     def cleanup_expired_requests(self) -> int:
         with self._lock:
-            cutoff = datetime.now(timezone.utc) - timedelta(seconds=self.request_ttl_seconds)
-            expired_ids = [rid for rid, req in self.requests.items() if req.created_at < cutoff]
+            cutoff = datetime.now(timezone.utc) - timedelta(
+                seconds=self.request_ttl_seconds
+            )
+            expired_ids = [
+                rid for rid, req in self.requests.items() if req.created_at < cutoff
+            ]
             for request_id in expired_ids:
                 request = self.requests.pop(request_id)
                 if (
@@ -414,13 +438,17 @@ class MiningRequestTracker:
         with self._lock:
             status_counts: dict[str, int] = {}
             for request in self.requests.values():
-                status_counts[request.status.value] = status_counts.get(request.status.value, 0) + 1
+                status_counts[request.status.value] = (
+                    status_counts.get(request.status.value, 0) + 1
+                )
             return {
                 "total_requests": len(self.requests),
                 "status_breakdown": status_counts,
                 "idempotency_keys_tracked": len(self.idempotency_keys),
                 "request_ttl_seconds": self.request_ttl_seconds,
-                "last_cleanup": datetime.fromtimestamp(self.last_cleanup, tz=timezone.utc).isoformat(),
+                "last_cleanup": datetime.fromtimestamp(
+                    self.last_cleanup, tz=timezone.utc
+                ).isoformat(),
             }
 
 

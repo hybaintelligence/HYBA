@@ -40,10 +40,16 @@ def main() -> int:
     errors: list[str] = []
 
     for path in REQUIRED_FILES:
-        require((ROOT / path).exists(), f"Missing required closure artifact: {path}", errors)
+        require(
+            (ROOT / path).exists(), f"Missing required closure artifact: {path}", errors
+        )
 
     seed = read("python_backend/scripts/seed_admin_user.py")
-    require("admin123456" not in seed, "seed_admin_user.py still contains admin123456", errors)
+    require(
+        "admin123456" not in seed,
+        "seed_admin_user.py still contains admin123456",
+        errors,
+    )
     require(
         "HYBA_INITIAL_ADMIN_PASSWORD" in seed and "_validate_seed_secret" in seed,
         "seed_admin_user.py must require HYBA_INITIAL_ADMIN_PASSWORD/--password and validate strength",
@@ -53,13 +59,33 @@ def main() -> int:
     auth = read("python_backend/hyba_genesis_api/api/auth.py")
     jwt_handler = read("python_backend/hyba_genesis_api/auth/jwt_handler.py")
     require("httponly=True" in auth, "auth login must set an httpOnly cookie", errors)
-    require("ACCESS_COOKIE_NAME" in jwt_handler, "JWT handler must define/access the auth cookie", errors)
-    require("Cookie(None" in jwt_handler, "JWT handler must accept cookie-authenticated browser sessions", errors)
-    require("/logout" in auth and "delete_cookie" in auth, "auth API must expose logout cookie clearing", errors)
+    require(
+        "ACCESS_COOKIE_NAME" in jwt_handler,
+        "JWT handler must define/access the auth cookie",
+        errors,
+    )
+    require(
+        "Cookie(None" in jwt_handler,
+        "JWT handler must accept cookie-authenticated browser sessions",
+        errors,
+    )
+    require(
+        "/logout" in auth and "delete_cookie" in auth,
+        "auth API must expose logout cookie clearing",
+        errors,
+    )
 
     auth_provider = read("src/components/AuthProvider.tsx")
-    require("localStorage" not in auth_provider, "AuthProvider must not read auth tokens from localStorage", errors)
-    require("credentials: \"include\"" in auth_provider, "AuthProvider must request backend profile with cookies", errors)
+    require(
+        "localStorage" not in auth_provider,
+        "AuthProvider must not read auth tokens from localStorage",
+        errors,
+    )
+    require(
+        'credentials: "include"' in auth_provider,
+        "AuthProvider must request backend profile with cookies",
+        errors,
+    )
 
     posture = read("python_backend/hyba_genesis_api/core/api_posture.py")
     for header in [
@@ -70,18 +96,31 @@ def main() -> int:
         "Cross-Origin-Opener-Policy",
         "Cross-Origin-Resource-Policy",
     ]:
-        require(header in posture, f"API posture missing security header {header}", errors)
+        require(
+            header in posture, f"API posture missing security header {header}", errors
+        )
     require(
-        "sanitize_production_errors" in posture and "Internal server error. Reference the request_id" in posture,
+        "sanitize_production_errors" in posture
+        and "Internal server error. Reference the request_id" in posture,
         "API posture must sanitize production errors",
         errors,
     )
 
-    for path in ["config/mining_pools_live.json", "python_backend/mining_pools_config.json"]:
+    for path in [
+        "config/mining_pools_live.json",
+        "python_backend/mining_pools_config.json",
+    ]:
         text = read(path)
-        require("${HYBA_POOL_" in text, f"{path} must use environment-backed pool credentials", errors)
         require(
-            not re.search(r'"password"\s*:\s*"(123|anything123|admin123456|password|changeme)"', text),
+            "${HYBA_POOL_" in text,
+            f"{path} must use environment-backed pool credentials",
+            errors,
+        )
+        require(
+            not re.search(
+                r'"password"\s*:\s*"(123|anything123|admin123456|password|changeme)"',
+                text,
+            ),
             f"{path} still contains a concrete known/default password",
             errors,
         )

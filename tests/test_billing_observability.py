@@ -2,7 +2,10 @@ from __future__ import annotations
 
 from fastapi import HTTPException
 
-from hyba_genesis_api.api.customer_access import CustomerApiKeyIssueRequest, customer_access
+from hyba_genesis_api.api.customer_access import (
+    CustomerApiKeyIssueRequest,
+    customer_access,
+)
 from hyba_genesis_api.core.telemetry import get_prometheus_metrics
 
 

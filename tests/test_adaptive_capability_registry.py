@@ -64,7 +64,9 @@ def test_registry_referenced_tests_exist():
 
     assert referenced_tests, "registry must reference executable tests"
     for relative_path in referenced_tests:
-        assert (ROOT / relative_path).exists(), f"missing referenced test file: {relative_path}"
+        assert (
+            ROOT / relative_path
+        ).exists(), f"missing referenced test file: {relative_path}"
 
 
 def test_registry_preserves_claim_boundary_language():

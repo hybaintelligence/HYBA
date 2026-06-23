@@ -23,7 +23,9 @@ from pythia_mining.stratum_client import ShareResult  # noqa: E402
 
 class PulviniSharePropagationTests(unittest.TestCase):
     def test_share_signal_routes_unicast_to_h31_gateway(self) -> None:
-        signal = ShareSignal.create(job_id="job-1", finder_id=2, nonce=101, extranonce2="00000002")
+        signal = ShareSignal.create(
+            job_id="job-1", finder_id=2, nonce=101, extranonce2="00000002"
+        )
         route = ShareRouter().route_to_proxy(signal)
 
         self.assertEqual(2, route[0])
@@ -35,7 +37,9 @@ class PulviniSharePropagationTests(unittest.TestCase):
     def test_cancel_flood_reaches_all_nodes_within_three_hops(self) -> None:
         from pythia_mining.pulvini_propagation import CancelSignal
 
-        signal = CancelSignal(job_id="job-1", reason="share_accepted", source_share_id="share-1")
+        signal = CancelSignal(
+            job_id="job-1", reason="share_accepted", source_share_id="share-1"
+        )
         visited, max_hop = CancelFlood().flood(signal)
 
         self.assertEqual(32, len(visited))

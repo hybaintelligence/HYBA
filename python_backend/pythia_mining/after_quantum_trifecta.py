@@ -92,10 +92,13 @@ def benchmark_logistics_manifold(nodes: int = 500, seed: int = 1618) -> Benchmar
     started = _now()
     rng = _rng(seed)
     coords = [(rng.random(), rng.random()) for _ in range(nodes)]
-    order = sorted(range(nodes), key=lambda idx: ((coords[idx][0] * PHI + coords[idx][1]) % 1.0))
+    order = sorted(
+        range(nodes), key=lambda idx: ((coords[idx][0] * PHI + coords[idx][1]) % 1.0)
+    )
     route = [coords[idx] for idx in order]
     distances = [
-        math.dist(route[idx], route[(idx + 1) % len(route)]) for idx in range(len(route))
+        math.dist(route[idx], route[(idx + 1) % len(route)])
+        for idx in range(len(route))
     ]
     duration_ms = (_now() - started) * 1000.0
     stability = 1.0 / (1.0 + (sum(distances) / max(1, nodes)))
@@ -105,18 +108,25 @@ def benchmark_logistics_manifold(nodes: int = 500, seed: int = 1618) -> Benchmar
         scale=f"{nodes} nodes",
         duration_ms=duration_ms,
         primary_score=stability,
-        compression_ratio=_pulvini_ratio(nodes * nodes, nodes * math.ceil(math.log(nodes + 1, PHI))),
+        compression_ratio=_pulvini_ratio(
+            nodes * nodes, nodes * math.ceil(math.log(nodes + 1, PHI))
+        ),
         phi_alignment=_phi_alignment(distances[:128]),
         mass_gap_alignment=_mass_gap_alignment(sorted(distances[:128], reverse=True)),
     )
 
 
-def benchmark_ai_weight_geometry(dimension: int = 4096, seed: int = 2718) -> BenchmarkReport:
+def benchmark_ai_weight_geometry(
+    dimension: int = 4096, seed: int = 2718
+) -> BenchmarkReport:
     started = _now()
     rng = _rng(seed)
     weights = [rng.gauss(0.0, 1.0) for _ in range(dimension)]
     folded_dim = math.ceil(dimension / PHI)
-    folded = [weights[idx] + (weights[(idx + folded_dim) % dimension] / PHI) for idx in range(folded_dim)]
+    folded = [
+        weights[idx] + (weights[(idx + folded_dim) % dimension] / PHI)
+        for idx in range(folded_dim)
+    ]
     duration_ms = (_now() - started) * 1000.0
     return BenchmarkReport(
         name="LLM weight geometry folding",
@@ -126,11 +136,15 @@ def benchmark_ai_weight_geometry(dimension: int = 4096, seed: int = 2718) -> Ben
         primary_score=_phi_alignment(folded[:256]),
         compression_ratio=_pulvini_ratio(dimension, folded_dim),
         phi_alignment=_phi_alignment(folded[:256]),
-        mass_gap_alignment=_mass_gap_alignment(sorted((abs(v) for v in folded[:256]), reverse=True)),
+        mass_gap_alignment=_mass_gap_alignment(
+            sorted((abs(v) for v in folded[:256]), reverse=True)
+        ),
     )
 
 
-def benchmark_biotech_interaction(points: int = 1024, seed: int = 3141) -> BenchmarkReport:
+def benchmark_biotech_interaction(
+    points: int = 1024, seed: int = 3141
+) -> BenchmarkReport:
     started = _now()
     rng = _rng(seed)
     surface = [rng.random() for _ in range(points)]
@@ -149,12 +163,16 @@ def benchmark_biotech_interaction(points: int = 1024, seed: int = 3141) -> Bench
     )
 
 
-def benchmark_finance_tail_risk(assets: int = 1000, seed: int = 5772) -> BenchmarkReport:
+def benchmark_finance_tail_risk(
+    assets: int = 1000, seed: int = 5772
+) -> BenchmarkReport:
     started = _now()
     rng = _rng(seed)
     returns = [rng.gauss(0.0, 1.0) for _ in range(assets)]
     curvature = sum(abs(v) ** 1.5 for v in returns) / assets
-    path = [(complex(returns[i], returns[(i + 1) % assets]), 1.0 + 0.0j) for i in range(32)]
+    path = [
+        (complex(returns[i], returns[(i + 1) % assets]), 1.0 + 0.0j) for i in range(32)
+    ]
     holonomy = abs(_holonomy(path))
     duration_ms = (_now() - started) * 1000.0
     return BenchmarkReport(
@@ -163,13 +181,19 @@ def benchmark_finance_tail_risk(assets: int = 1000, seed: int = 5772) -> Benchma
         scale=f"{assets} assets",
         duration_ms=duration_ms,
         primary_score=1.0 / (1.0 + curvature + holonomy),
-        compression_ratio=_pulvini_ratio(assets * assets, assets * math.ceil(math.log(assets + 1, PHI))),
+        compression_ratio=_pulvini_ratio(
+            assets * assets, assets * math.ceil(math.log(assets + 1, PHI))
+        ),
         phi_alignment=_phi_alignment(returns[:256]),
-        mass_gap_alignment=_mass_gap_alignment(sorted((abs(v) for v in returns[:256]), reverse=True)),
+        mass_gap_alignment=_mass_gap_alignment(
+            sorted((abs(v) for v in returns[:256]), reverse=True)
+        ),
     )
 
 
-def benchmark_fluid_resonance(grid_side: int = 1024, seed: int = 8128) -> BenchmarkReport:
+def benchmark_fluid_resonance(
+    grid_side: int = 1024, seed: int = 8128
+) -> BenchmarkReport:
     started = _now()
     rng = _rng(seed)
     samples = [rng.random() for _ in range(4096)]
@@ -189,7 +213,9 @@ def benchmark_fluid_resonance(grid_side: int = 1024, seed: int = 8128) -> Benchm
     )
 
 
-def benchmark_ai_reasoning_integrity(steps: int = 50, hidden_dim: int = 8192, seed: int = 9001) -> BenchmarkReport:
+def benchmark_ai_reasoning_integrity(
+    steps: int = 50, hidden_dim: int = 8192, seed: int = 9001
+) -> BenchmarkReport:
     started = _now()
     rng = _rng(seed)
     path = []
@@ -205,13 +231,17 @@ def benchmark_ai_reasoning_integrity(steps: int = 50, hidden_dim: int = 8192, se
         scale=f"{steps} steps over hidden-dim {hidden_dim} sketch",
         duration_ms=duration_ms,
         primary_score=coherence,
-        compression_ratio=_pulvini_ratio(steps * hidden_dim, steps * math.ceil(math.log(hidden_dim, PHI))),
+        compression_ratio=_pulvini_ratio(
+            steps * hidden_dim, steps * math.ceil(math.log(hidden_dim, PHI))
+        ),
         phi_alignment=coherence,
         mass_gap_alignment=1.0 / (1.0 + abs(holonomy - MASS_GAP)),
     )
 
 
-def benchmark_cyber_topological_defense(nodes: int = 10_000, seed: int = 4242) -> BenchmarkReport:
+def benchmark_cyber_topological_defense(
+    nodes: int = 10_000, seed: int = 4242
+) -> BenchmarkReport:
     started = _now()
     rng = _rng(seed)
     baseline = [rng.random() for _ in range(512)]
@@ -228,7 +258,9 @@ def benchmark_cyber_topological_defense(nodes: int = 10_000, seed: int = 4242) -
         primary_score=detection_score,
         compression_ratio=_pulvini_ratio(nodes, len(baseline)),
         phi_alignment=_phi_alignment(perturbed[:256]),
-        mass_gap_alignment=_mass_gap_alignment(sorted((abs(v) for v in perturbed[:256]), reverse=True)),
+        mass_gap_alignment=_mass_gap_alignment(
+            sorted((abs(v) for v in perturbed[:256]), reverse=True)
+        ),
     )
 
 

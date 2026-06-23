@@ -29,7 +29,7 @@ from typing import Any, Dict, List, Optional, Tuple
 import numpy as np
 
 PHI = (1.0 + math.sqrt(5.0)) / 2.0
-LAMBDA_QCD = 0.2   # GeV — QCD confinement scale
+LAMBDA_QCD = 0.2  # GeV — QCD confinement scale
 MASS_GAP_REFERENCE = 3.0 - PHI  # φ-structural prediction ≈ 1.382
 
 
@@ -40,10 +40,13 @@ def _su2_random(seed: int = 0) -> np.ndarray:
     v = rng.standard_normal(4)
     v = v / np.linalg.norm(v)
     a, b1, b2, b3 = v
-    U = np.array([
-        [a + 1j * b3, b2 + 1j * b1],
-        [-b2 + 1j * b1, a - 1j * b3],
-    ], dtype=complex)
+    U = np.array(
+        [
+            [a + 1j * b3, b2 + 1j * b1],
+            [-b2 + 1j * b1, a - 1j * b3],
+        ],
+        dtype=complex,
+    )
     return U
 
 
@@ -55,7 +58,7 @@ def _su2_project(M: np.ndarray) -> np.ndarray:
     U = np.array([u0, u1])
     det = np.linalg.det(U)
     if abs(det) > 1e-15:
-        U = U / (det ** 0.5)
+        U = U / (det**0.5)
     return U
 
 
@@ -66,14 +69,15 @@ class LatticeGaugeField:
 
     links[x, mu] = SU(2) matrix on the bond from site x in direction mu.
     """
-    N: int          # Lattice size per dimension
-    d: int          # Number of spacetime dimensions
-    beta: float     # Inverse coupling β = 4/g²
-    group: str      # "SU2" or "U1"
+
+    N: int  # Lattice size per dimension
+    d: int  # Number of spacetime dimensions
+    beta: float  # Inverse coupling β = 4/g²
+    group: str  # "SU2" or "U1"
     links: np.ndarray = field(init=False)  # shape (N^d, d, 2, 2)
 
     def __post_init__(self) -> None:
-        num_sites = self.N ** self.d
+        num_sites = self.N**self.d
         # Initialise hot start (random SU(2) links)
         self.links = np.zeros((num_sites, self.d, 2, 2), dtype=complex)
         for x in range(num_sites):
@@ -120,7 +124,7 @@ class LatticeGaugeField:
         reproduces the Yang-Mills action (1/4g²) Tr F_{μν}².
         """
         S = 0.0
-        num_sites = self.N ** self.d
+        num_sites = self.N**self.d
         for x in range(num_sites):
             for mu in range(self.d):
                 for nu in range(mu + 1, self.d):
@@ -139,7 +143,7 @@ class LatticeGaugeField:
         """
         total = 0.0
         count = 0
-        num_sites = self.N ** self.d
+        num_sites = self.N**self.d
         for x in range(num_sites):
             for mu in range(self.d):
                 for nu in range(mu + 1, self.d):
@@ -197,7 +201,7 @@ class LatticeGaugeField:
         phi_predicted_gap = MASS_GAP_REFERENCE * LAMBDA_QCD
 
         # Plaquette variance as proxy for field fluctuations
-        num_sites = self.N ** self.d
+        num_sites = self.N**self.d
         plaqs = []
         for x in range(min(num_sites, 20)):
             for mu in range(self.d):
@@ -229,7 +233,7 @@ class LatticeGaugeField:
         P_avg = self.average_plaquette()
         poly = self.average_polyakov_loop()
         gap = self.spectral_gap_estimate()
-        num_sites = self.N ** self.d
+        num_sites = self.N**self.d
         num_links = num_sites * self.d
         return {
             "lattice_size": f"{self.N}^{self.d}",

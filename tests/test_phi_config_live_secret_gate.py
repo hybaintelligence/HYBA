@@ -41,7 +41,9 @@ def test_dev_fixture_bypass_is_refused_in_production(monkeypatch: Any) -> None:
         initialize_production_secrets()
 
 
-def test_dev_fixture_bypass_is_refused_when_live_stratum_enabled(monkeypatch: Any) -> None:
+def test_dev_fixture_bypass_is_refused_when_live_stratum_enabled(
+    monkeypatch: Any,
+) -> None:
     _clear_gate_env(monkeypatch)
     monkeypatch.setenv("HYBA_ALLOW_DEV_FIXTURES", "true")
     monkeypatch.setenv("HYBA_ENABLE_LIVE_STRATUM", "true")
@@ -50,7 +52,9 @@ def test_dev_fixture_bypass_is_refused_when_live_stratum_enabled(monkeypatch: An
         initialize_production_secrets()
 
 
-def test_dev_fixture_bypass_is_refused_when_live_submit_enabled(monkeypatch: Any) -> None:
+def test_dev_fixture_bypass_is_refused_when_live_submit_enabled(
+    monkeypatch: Any,
+) -> None:
     _clear_gate_env(monkeypatch)
     monkeypatch.setenv("HYBA_ALLOW_DEV_FIXTURES", "true")
     monkeypatch.setenv("HYBA_ENABLE_LIVE_SHARE_SUBMIT", "true")
@@ -72,7 +76,9 @@ def test_dev_fixture_bypass_is_allowed_only_in_explicit_non_live_development(
     assert initialize_production_secrets() == {"status": "DEV_PASS"}
 
 
-def test_secure_production_secrets_pass_without_fixture_bypass(monkeypatch: Any) -> None:
+def test_secure_production_secrets_pass_without_fixture_bypass(
+    monkeypatch: Any,
+) -> None:
     _clear_gate_env(monkeypatch)
     monkeypatch.setenv("HYBA_ENV", "production")
     monkeypatch.setenv("NODE_ENV", "production")

@@ -5,7 +5,13 @@ Phase 5: Hierarchical Multi-Agent Coordination
 Provides specialized AI agents with clear command-and-control layers for autonomous regeneration.
 """
 
-from .base_agent import SalamanderAgent, SpecialistAgent, AgentTask, AgentResult, AgentCapability
+from .base_agent import (
+    SalamanderAgent,
+    SpecialistAgent,
+    AgentTask,
+    AgentResult,
+    AgentCapability,
+)
 from .orchestrator import SalamanderOrchestrator, get_orchestrator
 from .specialist_agents import (
     DiagnosisAgent,

@@ -93,7 +93,10 @@ class EmpiricalBlockchainStructureEvidence:
 
     @property
     def evidence_is_usable_as_prior(self) -> bool:
-        return self.status in {StructureEvidenceStatus.OBSERVED, StructureEvidenceStatus.STRONG}
+        return self.status in {
+            StructureEvidenceStatus.OBSERVED,
+            StructureEvidenceStatus.STRONG,
+        }
 
 
 @dataclass(frozen=True)
@@ -192,7 +195,9 @@ def extract_empirical_structure_evidence(
     default to zero instead of being invented.
     """
     summary = _section(report, "summary", "resonance_summary", "phi_resonance_summary")
-    nonce_space = _section(report, "nonce_space_analysis", "nonce_space", "structure_analysis")
+    nonce_space = _section(
+        report, "nonce_space_analysis", "nonce_space", "structure_analysis"
+    )
 
     total_blocks = _first_int(
         summary.get("total_blocks"),
@@ -297,10 +302,18 @@ def evaluate_pythia_mining_guardrails(
         reasons.append(
             "Empirical blockchain-structure evidence is insufficient for live prior use."
         )
-        next_steps.append("Collect a larger block sample and regenerate evidence packet.")
+        next_steps.append(
+            "Collect a larger block sample and regenerate evidence packet."
+        )
 
     lower_claim = inputs.claim_text.lower()
-    forbidden_claim_terms = ("guaranteed", "risk-free", "certain block", "bypass sha", "free money")
+    forbidden_claim_terms = (
+        "guaranteed",
+        "risk-free",
+        "certain block",
+        "bypass sha",
+        "free money",
+    )
     if any(term in lower_claim for term in forbidden_claim_terms):
         reasons.append(
             "Claim text contains forbidden guaranteed-revenue or verifier-bypass language."
@@ -309,7 +322,9 @@ def evaluate_pythia_mining_guardrails(
 
     if not inputs.exact_sha256d_verifier_enabled:
         reasons.append("Exact SHA-256d verifier is not enabled.")
-        next_steps.append("Enable exact SHA-256d candidate verification before pool submission.")
+        next_steps.append(
+            "Enable exact SHA-256d candidate verification before pool submission."
+        )
 
     if not inputs.evidence_packet_present:
         reasons.append("Evidence packet is not present.")
@@ -318,8 +333,12 @@ def evaluate_pythia_mining_guardrails(
         )
 
     if inputs.funding_action_requested and not inputs.accepted_share_proof_present:
-        reasons.append("Funding action requested without pool-side accepted-share proof.")
-        next_steps.append("Disable funding actions until accepted share evidence exists.")
+        reasons.append(
+            "Funding action requested without pool-side accepted-share proof."
+        )
+        next_steps.append(
+            "Disable funding actions until accepted share evidence exists."
+        )
 
     if inputs.requested_live_mode:
         if not inputs.operator_approval:
@@ -336,7 +355,9 @@ def evaluate_pythia_mining_guardrails(
             reasons.append(
                 "Live runtime window must be between 1 and 60 minutes for initial guarded launch."
             )
-            next_steps.append("Use a bounded first launch window, then review evidence.")
+            next_steps.append(
+                "Use a bounded first launch window, then review evidence."
+            )
         if inputs.max_power_watts < 0:
             reasons.append("Power limit cannot be negative.")
             next_steps.append("Declare measured power budget or use zero if unknown.")

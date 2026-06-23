@@ -140,7 +140,9 @@ class ManifoldOperator:
 
         distance = None
         if target is not None:
-            distance = self.compute_bures_distance(rho, self.ensure_density_state(target))
+            distance = self.compute_bures_distance(
+                rho, self.ensure_density_state(target)
+            )
 
         return OperatorEvolution(
             state=rho,
@@ -229,7 +231,9 @@ class ManifoldOperator:
         bures_distance = (
             0.0
             if reference is None
-            else self.compute_bures_distance(matrix, self.ensure_density_state(reference))
+            else self.compute_bures_distance(
+                matrix, self.ensure_density_state(reference)
+            )
         )
         if bures_distance <= 0.25 and purity >= self.config.mixed_purity_threshold:
             classification = CoherenceClassification.COHERENT
@@ -278,7 +282,9 @@ class ManifoldOperator:
         right = self.ensure_density_state(rho_b)
         sqrt_left = self._matrix_sqrt(left)
         fidelity_root = np.trace(self._matrix_sqrt(sqrt_left @ right @ sqrt_left))
-        fidelity = float(np.clip(np.real(fidelity_root * np.conj(fidelity_root)), 0.0, 1.0))
+        fidelity = float(
+            np.clip(np.real(fidelity_root * np.conj(fidelity_root)), 0.0, 1.0)
+        )
         return float(np.sqrt(max(0.0, 2.0 - 2.0 * np.sqrt(fidelity))))
 
     def compute_fidelity(
@@ -349,7 +355,9 @@ class ManifoldOperator:
             certificate = automorphism_runtime_certificate(self.adjacency_map)
             certificate = dict(certificate)
             certificate["operator_version"] = self.VERSION
-            certificate["adjacency_map_sha256"] = adjacency_map_digest(self.adjacency_map)
+            certificate["adjacency_map_sha256"] = adjacency_map_digest(
+                self.adjacency_map
+            )
             certificate["dimension_verified"] = self.dim == NUM_NODES
             certificate["symmetry_verified"] = (
                 certificate.get("group_order") == self.config.adjacency_symmetry
@@ -368,7 +376,9 @@ class ManifoldOperator:
             "version": self.VERSION,
             "config": asdict(self.config),
             "state_count": len(self._state_history),
-            "latest_coherence": (self._coherence_history[-1] if self._coherence_history else 0.0),
+            "latest_coherence": (
+                self._coherence_history[-1] if self._coherence_history else 0.0
+            ),
             "latest_classification": self.classify_state(latest).value,
             "topology_gate_closed": self.verify_topology()["gate_closed"],
         }

@@ -92,7 +92,9 @@ def _check_trace(autonomics: dict[str, Any], *, tolerance: float) -> CheckResult
     try:
         value = float(trace)
     except (TypeError, ValueError):
-        return CheckResult("rho_trace_present", False, "rho.trace is missing or non-numeric", trace)
+        return CheckResult(
+            "rho_trace_present", False, "rho.trace is missing or non-numeric", trace
+        )
     return CheckResult(
         "rho_trace_unit",
         math.isclose(value, 1.0, rel_tol=0.0, abs_tol=tolerance),
@@ -158,7 +160,12 @@ def evaluate_live_cut_state(
     checks.append(
         CheckResult(
             "pool_identity_one",
-            int(state.get("pool_visible_workers") or overlay.get("pool_visible_workers") or 0) == 1,
+            int(
+                state.get("pool_visible_workers")
+                or overlay.get("pool_visible_workers")
+                or 0
+            )
+            == 1,
             "pool-visible worker count must remain one",
             state.get("pool_visible_workers") or overlay.get("pool_visible_workers"),
         )
@@ -172,7 +179,9 @@ def evaluate_live_cut_state(
                 or state.get("current_job")
             ),
             "active job id must be present before and after live cut",
-            state.get("current_job_id") or overlay.get("active_job_id") or state.get("current_job"),
+            state.get("current_job_id")
+            or overlay.get("active_job_id")
+            or state.get("current_job"),
         )
     )
     checks.append(
@@ -294,7 +303,9 @@ def main(argv: list[str] | None = None) -> int:
         default="",
         help="Comma-separated node ids expected to be severed/healed, e.g. 0,1,2",
     )
-    parser.add_argument("--json", action="store_true", help="Emit machine-readable JSON")
+    parser.add_argument(
+        "--json", action="store_true", help="Emit machine-readable JSON"
+    )
     args = parser.parse_args(argv)
 
     try:

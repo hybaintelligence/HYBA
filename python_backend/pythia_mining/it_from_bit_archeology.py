@@ -227,7 +227,9 @@ class ItFromBitArcheologist:
 
         return patterns
 
-    def detect_informational_waves(self, window_size: int = 100) -> List[InformationalWave]:
+    def detect_informational_waves(
+        self, window_size: int = 100
+    ) -> List[InformationalWave]:
         """
         Detect "informational gravitational waves" in blockchain data.
 
@@ -294,7 +296,8 @@ class ItFromBitArcheologist:
         return {
             "total_blocks": self.total_blocks_analyzed,
             "golden_pattern_count": self.golden_pattern_count,
-            "golden_pattern_ratio": self.golden_pattern_count / self.total_blocks_analyzed,
+            "golden_pattern_ratio": self.golden_pattern_count
+            / self.total_blocks_analyzed,
             "average_phi_resonance": np.mean(phi_values),
             "phi_std": np.std(phi_values),
             "phi_correlation": (

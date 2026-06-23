@@ -19,6 +19,7 @@ import json
 import time
 import uuid
 from datetime import datetime, timezone
+
 UTC = timezone.utc
 from typing import Any, Dict, Literal, Optional
 
@@ -38,12 +39,16 @@ from pythia_mining.yang_mills_spectral_gap import (
     YANG_MILLS_THRESHOLD,
     LAMBDA_QCD,
 )
-from scripts.forensic_spectral_zeta_probe import run_probe as run_forensic_spectral_zeta_probe
+from scripts.forensic_spectral_zeta_probe import (
+    run_probe as run_forensic_spectral_zeta_probe,
+)
 
 router = APIRouter(
     prefix="/api/admin/millennium-mathematics", tags=["millennium-mathematics-admin"]
 )
-public_router = APIRouter(prefix="/api/v1/millennium-mathematics", tags=["millennium-mathematics"])
+public_router = APIRouter(
+    prefix="/api/v1/millennium-mathematics", tags=["millennium-mathematics"]
+)
 
 MillenniumProblem = Literal[
     "yang_mills_mass_gap",
@@ -149,7 +154,9 @@ class PvsNPOperations:
 
         # Polynomial-time verification (O(1) hash check)
         start = time.perf_counter()
-        witness_hash = hashlib.sha256(hashlib.sha256(witness.encode()).digest()).hexdigest()
+        witness_hash = hashlib.sha256(
+            hashlib.sha256(witness.encode()).digest()
+        ).hexdigest()
         verification_time_ns = (time.perf_counter() - start) * 1e9
 
         verified = int(witness_hash, 16) < int(target, 16)
@@ -350,7 +357,9 @@ class PoincareConjectureOperations:
         simply_connected = manifold_state.get("simply_connected", True)
         homotopy_equivalent = manifold_state.get("homotopy_equivalent_to_sphere", True)
 
-        homeomorphic_to_sphere = simply_connected and homotopy_equivalent and dimension == 3
+        homeomorphic_to_sphere = (
+            simply_connected and homotopy_equivalent and dimension == 3
+        )
 
         return {
             "dimension": dimension,
@@ -418,7 +427,9 @@ class MillenniumMathematicsService:
 
         # Validate problem and operation
         if request.problem not in self.OPERATIONS:
-            raise HTTPException(status_code=400, detail=f"Unknown problem: {request.problem}")
+            raise HTTPException(
+                status_code=400, detail=f"Unknown problem: {request.problem}"
+            )
 
         problem_ops = self.OPERATIONS[request.problem]
         if request.operation not in problem_ops:
@@ -447,7 +458,9 @@ class MillenniumMathematicsService:
             "result": result,
             "executed_at": datetime.now(UTC).isoformat(),
         }
-        canonical = json.dumps(seal_payload, sort_keys=True, separators=(",", ":"), default=str)
+        canonical = json.dumps(
+            seal_payload, sort_keys=True, separators=(",", ":"), default=str
+        )
         evidence_seal = hashlib.sha256(canonical.encode()).hexdigest()
 
         response_dict = {

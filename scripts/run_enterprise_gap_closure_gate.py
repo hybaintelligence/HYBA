@@ -96,10 +96,18 @@ def _validate_status(payload: dict[str, Any]) -> list[str]:
         if status not in ALLOWED_STATUSES:
             errors.append(f"Gap {gap_id} has invalid status {status!r}")
         evidence = item.get("evidence", [])
-        if status in {"closed_by_code", "closed_by_operational_control"} and not evidence:
+        if (
+            status in {"closed_by_code", "closed_by_operational_control"}
+            and not evidence
+        ):
             errors.append(f"Gap {gap_id} is marked {status} without evidence entries")
-        if status == "closed_by_code" and not any(str(entry).startswith(("python_backend/", "tests/", "scripts/")) for entry in evidence):
-            errors.append(f"Gap {gap_id} is closed_by_code but has no code/test/script evidence")
+        if status == "closed_by_code" and not any(
+            str(entry).startswith(("python_backend/", "tests/", "scripts/"))
+            for entry in evidence
+        ):
+            errors.append(
+                f"Gap {gap_id} is closed_by_code but has no code/test/script evidence"
+            )
 
     missing = EXPECTED_GAPS - seen
     if missing:
@@ -122,7 +130,9 @@ def _validate_claim_language() -> list[str]:
         text = path.read_text(encoding="utf-8").lower()
         for phrase in FORBIDDEN_CLOSED_CERTIFICATION_PHRASES:
             if phrase in text:
-                errors.append(f"Forbidden unsupported certification claim {phrase!r} in {path.relative_to(ROOT)}")
+                errors.append(
+                    f"Forbidden unsupported certification claim {phrase!r} in {path.relative_to(ROOT)}"
+                )
     return errors
 
 
@@ -143,7 +153,9 @@ def main() -> int:
     try:
         status_payload = _load_status()
         status_errors = _validate_status(status_payload)
-    except Exception as exc:  # noqa: BLE001 - command-line gate must report all failure modes
+    except (
+        Exception
+    ) as exc:  # noqa: BLE001 - command-line gate must report all failure modes
         status_errors = [str(exc)]
 
     missing_files = _validate_required_files()
@@ -155,11 +167,17 @@ def main() -> int:
         "claim_language_conservative": not claim_errors,
         "expected_gap_count": len(EXPECTED_GAPS),
     }
-    transcript["errors"] = status_errors + [f"Missing required file: {p}" for p in missing_files] + claim_errors
+    transcript["errors"] = (
+        status_errors
+        + [f"Missing required file: {p}" for p in missing_files]
+        + claim_errors
+    )
     transcript["passed"] = not transcript["errors"]
 
     OUTPUT_FILE.parent.mkdir(parents=True, exist_ok=True)
-    OUTPUT_FILE.write_text(json.dumps(transcript, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    OUTPUT_FILE.write_text(
+        json.dumps(transcript, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
     print(json.dumps(transcript, indent=2, sort_keys=True))
     return 0 if transcript["passed"] else 1
 

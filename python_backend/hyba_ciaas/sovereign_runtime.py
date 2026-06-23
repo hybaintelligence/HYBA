@@ -166,7 +166,12 @@ class SovereignDeploymentProfile:
     allowed_source_types: Optional[Tuple[str, ...]] = None
     restricted_operations: Tuple[str, ...] = field(default_factory=tuple)
     admin_roles: Tuple[str, ...] = ("admin", "security_admin", "sovereign_admin")
-    auditor_roles: Tuple[str, ...] = ("admin", "auditor", "security_admin", "sovereign_admin")
+    auditor_roles: Tuple[str, ...] = (
+        "admin",
+        "auditor",
+        "security_admin",
+        "sovereign_admin",
+    )
     require_dual_control_for_privileged_admin: bool = True
     require_reason_for_privileged_admin: bool = True
     immutable_audit: bool = True
@@ -206,28 +211,41 @@ class SovereignDeploymentProfile:
         immutable_audit_env = bool_env("HYBA_IMMUTABLE_AUDIT")
 
         return cls(
-            deployment_mode=DeploymentMode(os.environ.get("HYBA_DEPLOYMENT_MODE", "cloud")),
+            deployment_mode=DeploymentMode(
+                os.environ.get("HYBA_DEPLOYMENT_MODE", "cloud")
+            ),
             tenant_id=os.environ.get("HYBA_TENANT_ID", "default"),
             jurisdiction=os.environ.get("HYBA_JURISDICTION", "global"),
             site_name=os.environ.get("HYBA_SITE_NAME"),
             data_residency=os.environ.get("HYBA_DATA_RESIDENCY", "global"),
-            classification_floor=os.environ.get("HYBA_CLASSIFICATION_FLOOR", "unclassified"),
+            classification_floor=os.environ.get(
+                "HYBA_CLASSIFICATION_FLOOR", "unclassified"
+            ),
             allow_external_network=bool_env("HYBA_ALLOW_EXTERNAL_NETWORK"),
             allow_cloud_storage=bool_env("HYBA_ALLOW_CLOUD_STORAGE"),
             allowed_source_types=csv_env("HYBA_ALLOWED_SOURCE_TYPES") or None,
             restricted_operations=csv_env("HYBA_RESTRICTED_OPERATIONS"),
-            admin_roles=csv_env("HYBA_ADMIN_ROLES") or ("admin", "security_admin", "sovereign_admin"),
+            admin_roles=csv_env("HYBA_ADMIN_ROLES")
+            or ("admin", "security_admin", "sovereign_admin"),
             auditor_roles=csv_env("HYBA_AUDITOR_ROLES")
             or ("admin", "auditor", "security_admin", "sovereign_admin"),
-            require_dual_control_for_privileged_admin=dual_control_env if dual_control_env is not None else True,
-            require_reason_for_privileged_admin=reason_env if reason_env is not None else True,
-            immutable_audit=immutable_audit_env if immutable_audit_env is not None else True,
+            require_dual_control_for_privileged_admin=(
+                dual_control_env if dual_control_env is not None else True
+            ),
+            require_reason_for_privileged_admin=(
+                reason_env if reason_env is not None else True
+            ),
+            immutable_audit=(
+                immutable_audit_env if immutable_audit_env is not None else True
+            ),
             usage_policy=UsagePolicy(
                 max_ingestions_per_day=_int_env("HYBA_MAX_INGESTIONS_PER_DAY"),
                 max_records_per_ingestion=_int_env("HYBA_MAX_RECORDS_PER_INGESTION"),
                 max_records_per_day=_int_env("HYBA_MAX_RECORDS_PER_DAY"),
                 max_workloads_per_day=_int_env("HYBA_MAX_WORKLOADS_PER_DAY"),
-                max_privileged_admin_actions_per_day=_int_env("HYBA_MAX_PRIVILEGED_ADMIN_ACTIONS_PER_DAY"),
+                max_privileged_admin_actions_per_day=_int_env(
+                    "HYBA_MAX_PRIVILEGED_ADMIN_ACTIONS_PER_DAY"
+                ),
             ),
         )
 
@@ -287,7 +305,9 @@ class RestrictionDecision:
 
     def assert_allowed(self) -> "RestrictionDecision":
         if not self.allowed:
-            raise PermissionError("; ".join(self.reasons) or "HYBA control-plane policy denied the action")
+            raise PermissionError(
+                "; ".join(self.reasons) or "HYBA control-plane policy denied the action"
+            )
         return self
 
     def to_dict(self) -> Dict[str, Any]:
@@ -346,10 +366,18 @@ class SovereignControlPlane:
         attestation = {
             "attested_at": _utc_now(),
             "profile": self.profile.to_dict(),
-            "data_control_plane": "local" if self.is_local_sovereign_mode else "cloud_or_managed",
-            "customer_data_leaves_site_by_default": False if self.is_local_sovereign_mode else None,
-            "cloud_dependency_required": False if self.is_local_sovereign_mode else None,
-            "audit_log_mode": "append_only_hash_chain" if self.profile.immutable_audit else "mutable",
+            "data_control_plane": (
+                "local" if self.is_local_sovereign_mode else "cloud_or_managed"
+            ),
+            "customer_data_leaves_site_by_default": (
+                False if self.is_local_sovereign_mode else None
+            ),
+            "cloud_dependency_required": (
+                False if self.is_local_sovereign_mode else None
+            ),
+            "audit_log_mode": (
+                "append_only_hash_chain" if self.profile.immutable_audit else "mutable"
+            ),
             "enforcement_surfaces": [
                 "deployment_mode",
                 "data_residency",
@@ -383,7 +411,11 @@ class SovereignControlPlane:
         quantity: int = 1,
         record_audit: bool = True,
     ) -> RestrictionDecision:
-        principal_ctx = principal if isinstance(principal, PrincipalContext) else PrincipalContext.from_mapping(principal)
+        principal_ctx = (
+            principal
+            if isinstance(principal, PrincipalContext)
+            else PrincipalContext.from_mapping(principal)
+        )
         action_value = action.value if isinstance(action, ActionType) else str(action)
         meta = dict(metadata or {})
         reasons: List[str] = []
@@ -397,7 +429,9 @@ class SovereignControlPlane:
         }
 
         if action_value in set(self.profile.restricted_operations):
-            reasons.append(f"operation {action_value!r} is restricted by deployment profile")
+            reasons.append(
+                f"operation {action_value!r} is restricted by deployment profile"
+            )
 
         if action_value in {
             ActionType.ADMIN_MUTATION.value,
@@ -407,12 +441,16 @@ class SovereignControlPlane:
             reasons.append("admin action requires an authorised admin role")
 
         if action_value == ActionType.PRIVILEGED_ADMIN_MUTATION.value:
-            if self.profile.require_reason_for_privileged_admin and not meta.get("reason"):
+            if self.profile.require_reason_for_privileged_admin and not meta.get(
+                "reason"
+            ):
                 reasons.append("privileged admin action requires a reason")
             if self.profile.require_dual_control_for_privileged_admin and not (
                 meta.get("second_approver") or meta.get("change_ticket")
             ):
-                reasons.append("privileged admin action requires dual-control approval or a change ticket")
+                reasons.append(
+                    "privileged admin action requires dual-control approval or a change ticket"
+                )
             if self._would_exceed_quota(
                 principal_ctx,
                 "privileged_admin_actions",
@@ -421,11 +459,18 @@ class SovereignControlPlane:
             ):
                 reasons.append("privileged admin daily quota exceeded")
 
-        if action_value == ActionType.EXPORT_AUDIT.value and not principal_ctx.has_any_role(self.profile.auditor_roles):
+        if (
+            action_value == ActionType.EXPORT_AUDIT.value
+            and not principal_ctx.has_any_role(self.profile.auditor_roles)
+        ):
             reasons.append("audit export requires an auditor/admin role")
 
         if source is not None:
-            spec = source if isinstance(source, DataSourceSpec) else DataSourceSpec.from_mapping(source)
+            spec = (
+                source
+                if isinstance(source, DataSourceSpec)
+                else DataSourceSpec.from_mapping(source)
+            )
             controls.update(
                 {
                     "source_type": spec.source_type,
@@ -458,11 +503,14 @@ class SovereignControlPlane:
             ):
                 reasons.append("records per ingestion exceed deployment usage policy")
 
-        if action_value == ActionType.EXECUTE_WORKLOAD.value and self._would_exceed_quota(
-            principal_ctx,
-            "workloads",
-            quantity,
-            self.profile.usage_policy.max_workloads_per_day,
+        if (
+            action_value == ActionType.EXECUTE_WORKLOAD.value
+            and self._would_exceed_quota(
+                principal_ctx,
+                "workloads",
+                quantity,
+                self.profile.usage_policy.max_workloads_per_day,
+            )
         ):
             reasons.append("daily workload quota exceeded")
 
@@ -508,8 +556,16 @@ class SovereignControlPlane:
     ) -> IngestionEnvelope:
         """Authorize, ingest, meter, and seal a central-ingestion run."""
 
-        principal_ctx = principal if isinstance(principal, PrincipalContext) else PrincipalContext.from_mapping(principal)
-        spec = source if isinstance(source, DataSourceSpec) else DataSourceSpec.from_mapping(source)
+        principal_ctx = (
+            principal
+            if isinstance(principal, PrincipalContext)
+            else PrincipalContext.from_mapping(principal)
+        )
+        spec = (
+            source
+            if isinstance(source, DataSourceSpec)
+            else DataSourceSpec.from_mapping(source)
+        )
         decision = self.authorize_ingestion(
             principal_ctx,
             spec,
@@ -563,13 +619,23 @@ class SovereignControlPlane:
         usage_key: str,
         quantity: int = 1,
     ) -> int:
-        principal_ctx = principal if isinstance(principal, PrincipalContext) else PrincipalContext.from_mapping(principal)
+        principal_ctx = (
+            principal
+            if isinstance(principal, PrincipalContext)
+            else PrincipalContext.from_mapping(principal)
+        )
         key = (principal_ctx.principal_id, usage_key, date.today().isoformat())
         self._usage[key] = self._usage.get(key, 0) + int(quantity)
         return self._usage[key]
 
-    def get_usage_snapshot(self, principal: Union[PrincipalContext, Mapping[str, Any]]) -> Dict[str, int]:
-        principal_ctx = principal if isinstance(principal, PrincipalContext) else PrincipalContext.from_mapping(principal)
+    def get_usage_snapshot(
+        self, principal: Union[PrincipalContext, Mapping[str, Any]]
+    ) -> Dict[str, int]:
+        principal_ctx = (
+            principal
+            if isinstance(principal, PrincipalContext)
+            else PrincipalContext.from_mapping(principal)
+        )
         today = date.today().isoformat()
         return {
             usage_key: value
@@ -590,7 +656,11 @@ class SovereignControlPlane:
             record_audit=True,
         )
         decision.assert_allowed()
-        events = self._audit_log if include_denied else [event for event in self._audit_log if event.allowed]
+        events = (
+            self._audit_log
+            if include_denied
+            else [event for event in self._audit_log if event.allowed]
+        )
         return [event.to_dict() for event in events]
 
     def _evaluate_source_controls(
@@ -600,15 +670,26 @@ class SovereignControlPlane:
         reasons: List[str],
     ) -> None:
         source_type = spec.source_type.lower()
-        allowed_types = {value.lower() for value in self.profile.allowed_source_types or ()}
+        allowed_types = {
+            value.lower() for value in self.profile.allowed_source_types or ()
+        }
         if allowed_types and source_type not in allowed_types:
-            reasons.append(f"source type {spec.source_type!r} is not allowed by deployment profile")
+            reasons.append(
+                f"source type {spec.source_type!r} is not allowed by deployment profile"
+            )
 
         if source_type in _CLOUD_SOURCE_TYPES and not self.profile.allow_cloud_storage:
-            reasons.append("cloud/object-storage ingestion is disabled for this deployment profile")
+            reasons.append(
+                "cloud/object-storage ingestion is disabled for this deployment profile"
+            )
 
-        if source_type in _EXTERNAL_NETWORK_SOURCE_TYPES and not self.profile.allow_external_network:
-            reasons.append("external network ingestion is disabled for this deployment profile")
+        if (
+            source_type in _EXTERNAL_NETWORK_SOURCE_TYPES
+            and not self.profile.allow_external_network
+        ):
+            reasons.append(
+                "external network ingestion is disabled for this deployment profile"
+            )
 
         source_residency = spec.metadata.get("data_residency")
         if source_residency and source_residency != self.profile.data_residency:
@@ -616,11 +697,17 @@ class SovereignControlPlane:
                 f"source data residency {source_residency!r} does not match deployment residency {self.profile.data_residency!r}"
             )
 
-        if _clearance_rank(principal.clearance) < _clearance_rank(spec.privacy_classification):
+        if _clearance_rank(principal.clearance) < _clearance_rank(
+            spec.privacy_classification
+        ):
             reasons.append("principal clearance is below source privacy classification")
 
-        if _clearance_rank(spec.privacy_classification) < _clearance_rank(self.profile.classification_floor):
-            reasons.append("source classification is below deployment classification floor")
+        if _clearance_rank(spec.privacy_classification) < _clearance_rank(
+            self.profile.classification_floor
+        ):
+            reasons.append(
+                "source classification is below deployment classification floor"
+            )
 
     def _would_exceed_quota(
         self,
@@ -641,7 +728,9 @@ class SovereignControlPlane:
         decision: RestrictionDecision,
         metadata: Mapping[str, Any],
     ) -> AuditEvent:
-        previous_hash = self._audit_log[-1].evidence_seal if self._audit_log else "genesis"
+        previous_hash = (
+            self._audit_log[-1].evidence_seal if self._audit_log else "genesis"
+        )
         payload = {
             "timestamp": _utc_now(),
             "action": decision.action,

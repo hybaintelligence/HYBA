@@ -21,18 +21,27 @@ PYTHON_BACKEND = ROOT / "python_backend"
 if str(PYTHON_BACKEND) not in sys.path:
     sys.path.insert(0, str(PYTHON_BACKEND))
 
-from pythia_mining.pulvini_elevation import CertificateLedger, ConsensusLedger  # noqa: E402
+from pythia_mining.pulvini_elevation import (
+    CertificateLedger,
+    ConsensusLedger,
+)  # noqa: E402
 
 
 def verify_ledger(path: Path) -> dict[str, Any]:
     ledger = CertificateLedger.from_bytes(path.read_bytes())
     chain_verified = ledger.verify_chain()
-    passport_checks = [_inspect_passport_entry(entry.to_dict()) for entry in ledger.entries]
+    passport_checks = [
+        _inspect_passport_entry(entry.to_dict()) for entry in ledger.entries
+    ]
     invariant_violations = [
-        entry for entry in ledger.entries if entry.certificate_type == "mathematical_exception"
+        entry
+        for entry in ledger.entries
+        if entry.certificate_type == "mathematical_exception"
     ]
     autonomic_repairs = [
-        entry for entry in ledger.entries if entry.certificate_type == "autonomic_repair"
+        entry
+        for entry in ledger.entries
+        if entry.certificate_type == "autonomic_repair"
     ]
     failed_passports = [
         check for check in passport_checks if check["checked"] and not check["verified"]
@@ -67,7 +76,9 @@ def _inspect_passport_entry(entry: Mapping[str, Any]) -> dict[str, Any]:
             "verified": True,
             "reason": "not_runtime_passport",
         }
-    verified = bool(candidate.get("kernel_invariants_met") and candidate.get("ledger_entry_hash"))
+    verified = bool(
+        candidate.get("kernel_invariants_met") and candidate.get("ledger_entry_hash")
+    )
     return {
         "entry_index": entry.get("index"),
         "checked": True,
@@ -93,10 +104,14 @@ def main(argv: list[str] | None = None) -> int:
     if len(reports) == 1:
         report = reports[0]
     else:
-        ledgers = [CertificateLedger.from_bytes(path.read_bytes()) for path in args.ledger]
+        ledgers = [
+            CertificateLedger.from_bytes(path.read_bytes()) for path in args.ledger
+        ]
         consensus = ConsensusLedger(ledgers).report().to_dict()
         report = {
-            "passed": bool(consensus["passed"] and all(item["passed"] for item in reports)),
+            "passed": bool(
+                consensus["passed"] and all(item["passed"] for item in reports)
+            ),
             "node_reports": reports,
             "consensus": consensus,
         }

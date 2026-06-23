@@ -37,7 +37,9 @@ class _AlwaysAccept:
 
     async def submit_share(self, **_):
         self.calls += 1
-        return SubmitResult(True, None, {"id": self.calls, "result": True, "error": None})
+        return SubmitResult(
+            True, None, {"id": self.calls, "result": True, "error": None}
+        )
 
     async def close(self):
         pass
@@ -65,7 +67,9 @@ class _AcceptNth:
     async def submit_share(self, **_):
         self.calls += 1
         if self.calls % self.n == 0:
-            return SubmitResult(True, None, {"id": self.calls, "result": True, "error": None})
+            return SubmitResult(
+                True, None, {"id": self.calls, "result": True, "error": None}
+            )
         return SubmitResult(
             False,
             [23, "low diff", None],
@@ -155,7 +159,9 @@ def test_counter_invariant_submitted_equals_accepted_plus_rejected(monkeypatch) 
 
     for nonce in valid[:6]:
         asyncio.run(client.submit_validated_share(job, nonce))
-        assert client.shares_submitted == client.shares_accepted + client.shares_rejected, (
+        assert (
+            client.shares_submitted == client.shares_accepted + client.shares_rejected
+        ), (
             f"invariant broken: submitted={client.shares_submitted} "
             f"accepted={client.shares_accepted} rejected={client.shares_rejected}"
         )
@@ -180,9 +186,9 @@ def test_mixed_session_acceptance_rate_correct(monkeypatch) -> None:
 
     expected_rate = client.shares_accepted / client.shares_submitted
     status_rate = client.get_status()["performance"]["acceptance_rate"]
-    assert abs(status_rate - expected_rate) < 1e-9, (
-        f"get_status rate {status_rate} != computed {expected_rate}"
-    )
+    assert (
+        abs(status_rate - expected_rate) < 1e-9
+    ), f"get_status rate {status_rate} != computed {expected_rate}"
 
 
 # ---------------------------------------------------------------------------
@@ -269,6 +275,9 @@ def test_get_status_performance_mirrors_raw_counters(monkeypatch) -> None:
     assert status["shares_accepted"] == client.shares_accepted
     assert status["shares_rejected"] == client.shares_rejected
     assert (
-        abs(status["acceptance_rate"] - (client.shares_accepted / max(client.shares_submitted, 1)))
+        abs(
+            status["acceptance_rate"]
+            - (client.shares_accepted / max(client.shares_submitted, 1))
+        )
         < 1e-9
     )

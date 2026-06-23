@@ -43,7 +43,9 @@ def require_hex(value: str, *, field: str, expected_bytes: Optional[int] = None)
         raise MiningValidationError(f"{field} must be a hex string")
     normalized = value.strip().lower()
     if len(normalized) % 2 != 0:
-        raise MiningValidationError(f"{field} must contain an even number of hex characters")
+        raise MiningValidationError(
+            f"{field} must contain an even number of hex characters"
+        )
     if not _HEX_RE.fullmatch(normalized):
         raise MiningValidationError(f"{field} contains non-hex characters")
     if expected_bytes is not None and len(normalized) != expected_bytes * 2:
@@ -56,7 +58,9 @@ def hash256(payload: bytes) -> bytes:
     return hashlib.sha256(hashlib.sha256(payload).digest()).digest()
 
 
-def reverse_hex_bytes(hex_value: str, *, field: str, expected_bytes: Optional[int] = None) -> str:
+def reverse_hex_bytes(
+    hex_value: str, *, field: str, expected_bytes: Optional[int] = None
+) -> str:
     """Reverse byte order of a validated hex string."""
     normalized = require_hex(hex_value, field=field, expected_bytes=expected_bytes)
     return bytes.fromhex(normalized)[::-1].hex()
@@ -126,7 +130,9 @@ def coinbase_hash_hex(job: MiningJob, extranonce2: str) -> str:
     return hash256(bytes.fromhex(coinbase_hex)).hex()
 
 
-def compute_merkle_root(coinbase_hash_internal_hex: str, merkle_branch: Iterable[str]) -> str:
+def compute_merkle_root(
+    coinbase_hash_internal_hex: str, merkle_branch: Iterable[str]
+) -> str:
     """
     Compute a Bitcoin merkle root in internal byte order.
 
@@ -135,7 +141,9 @@ def compute_merkle_root(coinbase_hash_internal_hex: str, merkle_branch: Iterable
     to be inserted into the block header after byte reversal.
     """
     current = bytes.fromhex(
-        require_hex(coinbase_hash_internal_hex, field="coinbase hash", expected_bytes=32)
+        require_hex(
+            coinbase_hash_internal_hex, field="coinbase hash", expected_bytes=32
+        )
     )
     for index, branch_hex in enumerate(merkle_branch):
         branch = bytes.fromhex(
@@ -145,13 +153,19 @@ def compute_merkle_root(coinbase_hash_internal_hex: str, merkle_branch: Iterable
     return current.hex()
 
 
-def build_block_header(job: MiningJob, merkle_root_internal_hex: str, nonce: int) -> bytes:
+def build_block_header(
+    job: MiningJob, merkle_root_internal_hex: str, nonce: int
+) -> bytes:
     """Build an 80-byte Bitcoin block header from a Stratum mining job."""
     header_hex = "".join(
         [
             reverse_hex_bytes(job.version, field="version", expected_bytes=4),
-            reverse_hex_bytes(job.prevhash, field="previous block hash", expected_bytes=32),
-            require_hex(merkle_root_internal_hex, field="merkle root", expected_bytes=32),
+            reverse_hex_bytes(
+                job.prevhash, field="previous block hash", expected_bytes=32
+            ),
+            require_hex(
+                merkle_root_internal_hex, field="merkle root", expected_bytes=32
+            ),
             reverse_hex_bytes(job.ntime, field="ntime", expected_bytes=4),
             reverse_hex_bytes(job.nbits, field="nbits", expected_bytes=4),
             uint32_little_endian_hex(nonce, field="nonce"),
@@ -177,7 +191,9 @@ def display_hash(internal_hash: bytes) -> str:
     return internal_hash[::-1].hex()
 
 
-def validate_share(job: MiningJob, nonce: int, extranonce2: str) -> ShareValidationResult:
+def validate_share(
+    job: MiningJob, nonce: int, extranonce2: str
+) -> ShareValidationResult:
     """
     Validate a solved nonce locally before any pool submission.
 

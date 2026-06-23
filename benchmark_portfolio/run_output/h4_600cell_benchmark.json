@@ -1,42 +1,52 @@
 {
   "benchmark": "H\u2084 600-cell Topological Upgrade",
-  "timestamp": "2026-06-15T19:36:13.460999+00:00",
   "config": {
-    "num_nodes": 120,
+    "coxeter_group": "H\u2084 [5,3,3]",
     "edges_per_node": 12,
+    "group_order": 14400,
+    "num_nodes": 120,
+    "phi_3_constant": 0.4045084971874737,
+    "steps": 100,
+    "yang_mills_gap_4d": -0.2360679774997898
+  },
+  "summary": {
     "coxeter_group": "H\u2084 [5,3,3]",
     "group_order": 14400,
-    "phi_3_constant": 0.4045084971874737,
-    "yang_mills_gap_4d": -0.2360679774997898,
-    "steps": 100
+    "n_vertices": 120,
+    "pass_rate": "88%",
+    "passed": 7,
+    "phi_3_constant": 4.23606797749979,
+    "topology": "600-cell (4D regular polytope)",
+    "total": 8,
+    "vs_m32_predicted_gain": "2.7\u201333.0\u00d7"
   },
   "tests": [
     {
-      "test": "H\u2084 Coxeter Group Certificate",
+      "certificate_group": "H\u2084 600-cell Coxeter group",
       "coxeter_matrix_valid": true,
       "group_order_14400": true,
-      "rank_4": true,
-      "phi_3_constant": 4.23606797749979,
-      "phi_3_correct": true,
-      "certificate_group": "H\u2084 600-cell Coxeter group",
       "n_orbits": 10,
       "orbit_size": 12,
-      "passed": true
+      "passed": true,
+      "phi_3_constant": 4.23606797749979,
+      "phi_3_correct": true,
+      "rank_4": true,
+      "test": "H\u2084 Coxeter Group Certificate"
     },
     {
-      "test": "Adjacency Map (600-cell)",
-      "num_nodes": 120,
-      "expected_nodes": 120,
       "all_degree_12": true,
+      "expected_nodes": 120,
+      "num_nodes": 120,
+      "passed": true,
       "symmetric": true,
-      "total_edges": 720,
-      "passed": true
+      "test": "Adjacency Map (600-cell)",
+      "total_edges": 720
     },
     {
-      "test": "Automorphism Enumeration",
-      "automorphisms_found": 6,
+      "all_vertices_covered": false,
       "automorphism_enumerate_time_s": 0.0,
-      "orbits_found": 60,
+      "automorphisms_found": 6,
+      "identity_present": true,
       "orbit_sizes": [
         2,
         2,
@@ -99,74 +109,64 @@
         5,
         5
       ],
-      "all_vertices_covered": false,
-      "identity_present": true,
-      "passed": false
+      "orbits_found": 60,
+      "passed": false,
+      "test": "Automorphism Enumeration"
     },
     {
-      "test": "Manifold Invariants",
-      "construction_time_ms": 1.34,
-      "num_nodes": 120,
-      "von_neumann_entropy": 0.0,
-      "coherence_norm": 0.995774,
-      "phi_3_phase_entropy": 3.577603,
-      "work_distribution_min": 0.0064184210071187575,
-      "work_distribution_max": 0.01014841468218354,
-      "work_distribution_sum": 1.0,
       "automorphism_count": 6,
-      "orbit_count": 60,
+      "coherence_norm": 0.995774,
+      "construction_time_ms": 1.34,
       "invariants_passed": true,
-      "passed": true
+      "num_nodes": 120,
+      "orbit_count": 60,
+      "passed": true,
+      "phi_3_phase_entropy": 3.577603,
+      "test": "Manifold Invariants",
+      "von_neumann_entropy": 0.0,
+      "work_distribution_max": 0.01014841468218354,
+      "work_distribution_min": 0.0064184210071187575,
+      "work_distribution_sum": 1.0
     },
     {
-      "test": "Hamiltonian Evolution",
-      "matrix_size": "120\u00d7120",
       "evolution_steps": 5,
-      "mean_time_per_step_ms": 3.71,
       "final_entropy": 0.0,
-      "passed": true
+      "matrix_size": "120\u00d7120",
+      "mean_time_per_step_ms": 3.71,
+      "passed": true,
+      "test": "Hamiltonian Evolution"
     },
     {
-      "test": "\u03c6\u00b3 Structured Search",
-      "steps": 100,
-      "h4_mean_phi_resonance": 0.731885,
-      "random_mean_phi_resonance": 0.46393,
       "h4_max_phi_resonance": 0.999986,
+      "h4_mean_phi_resonance": 0.731885,
       "improvement_vs_random_pct": 57.7576,
+      "passed": true,
       "phase_entropy": 3.577603,
-      "passed": true
+      "random_mean_phi_resonance": 0.46393,
+      "steps": 100,
+      "test": "\u03c6\u00b3 Structured Search"
     },
     {
-      "test": "H\u2084 4D Yang-Mills Gate",
-      "gap_value_4d": -0.2360679774997898,
-      "gap_threshold": 0.236,
-      "n_trials": 1000,
-      "gate_pass_rate": 0.561,
       "expected_pass_rate_approx": "~0.382 (\u03c6\u207b\u00b2) for high-curvature gate",
-      "passed": true
+      "gap_threshold": 0.236,
+      "gap_value_4d": -0.2360679774997898,
+      "gate_pass_rate": 0.561,
+      "n_trials": 1000,
+      "passed": true,
+      "test": "H\u2084 4D Yang-Mills Gate"
     },
     {
-      "test": "Topological Scaling vs M32",
-      "m32_nodes": 32,
-      "h4_nodes": 120,
       "domain_multiple": 3.75,
-      "symmetry_multiple": 120.0,
       "edge_density_ratio": 3.43,
+      "h4_nodes": 120,
+      "m32_nodes": 32,
+      "passed": true,
       "predicted_conservative_vs_raw_asics": 8.0,
       "predicted_optimistic_vs_raw_asics": 99.0,
-      "theoretical_gain_over_m32": "2.7\u201333.0\u00d7",
-      "passed": true
+      "symmetry_multiple": 120.0,
+      "test": "Topological Scaling vs M32",
+      "theoretical_gain_over_m32": "2.7\u201333.0\u00d7"
     }
   ],
-  "summary": {
-    "passed": 7,
-    "total": 8,
-    "pass_rate": "88%",
-    "topology": "600-cell (4D regular polytope)",
-    "coxeter_group": "H\u2084 [5,3,3]",
-    "group_order": 14400,
-    "n_vertices": 120,
-    "phi_3_constant": 4.23606797749979,
-    "vs_m32_predicted_gain": "2.7\u201333.0\u00d7"
-  }
+  "timestamp": "2026-06-15T19:36:13.460999+00:00"
 }

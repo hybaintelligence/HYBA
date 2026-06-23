@@ -47,7 +47,10 @@ def main() -> int:
 
     checks = [
         _run("secret hygiene", [sys.executable, "scripts/check_secret_hygiene.py"]),
-        _run("forensic closure", [sys.executable, "scripts/check_forensic_gap_closure.py"]),
+        _run(
+            "forensic closure",
+            [sys.executable, "scripts/check_forensic_gap_closure.py"],
+        ),
         _run("npm audit", ["npm", "audit", "--omit=dev"]),
         _run("pip-audit", ["pip-audit", "-r", "requirements.txt"]),
     ]

@@ -11,7 +11,9 @@ from hyba_genesis_api.main import app
 
 
 def _admin_payload() -> TokenPayload:
-    return TokenPayload(sub="1", username="root-admin", roles=["admin"], exp=9999999999, iat=1)
+    return TokenPayload(
+        sub="1", username="root-admin", roles=["admin"], exp=9999999999, iat=1
+    )
 
 
 def test_admin_can_provision_start_execute_and_stop_ciaas_without_mining_job_shape():
@@ -29,7 +31,11 @@ def test_admin_can_provision_start_execute_and_stop_ciaas_without_mining_job_sha
                 "logical_compute_units": 4,
                 "physical_error_rate": 0.0001,
                 "admin_privileged": True,
-                "allowed_workloads": ["orchestrate", "counterfactual", "governance_audit"],
+                "allowed_workloads": [
+                    "orchestrate",
+                    "counterfactual",
+                    "governance_audit",
+                ],
             },
         )
         assert provision.status_code == 201
@@ -41,7 +47,9 @@ def test_admin_can_provision_start_execute_and_stop_ciaas_without_mining_job_sha
         assert len(body["evidence_seal"]) == 64
 
         service_id = body["service_id"]
-        started = client.post(f"/api/admin/computational-intelligence-services/{service_id}/start")
+        started = client.post(
+            f"/api/admin/computational-intelligence-services/{service_id}/start"
+        )
         assert started.status_code == 200
         assert started.json()["state"] == "running"
 
@@ -74,7 +82,9 @@ def test_admin_can_provision_start_execute_and_stop_ciaas_without_mining_job_sha
         assert replay.status_code == 200
         assert replay.json()["executed_at"] == result["executed_at"]
 
-        stopped = client.post(f"/api/admin/computational-intelligence-services/{service_id}/stop")
+        stopped = client.post(
+            f"/api/admin/computational-intelligence-services/{service_id}/stop"
+        )
         assert stopped.status_code == 200
         assert stopped.json()["state"] == "stopped"
     finally:
@@ -99,7 +109,9 @@ def test_ciaas_rejects_invalid_surface_code_distance_and_disallowed_workload():
             json={"name": "audit-only", "allowed_workloads": ["governance_audit"]},
         )
         service_id = provision.json()["service_id"]
-        client.post(f"/api/admin/computational-intelligence-services/{service_id}/start")
+        client.post(
+            f"/api/admin/computational-intelligence-services/{service_id}/start"
+        )
         denied = client.post(
             f"/api/admin/computational-intelligence-services/{service_id}/workloads",
             json={"workload_type": "orchestrate", "context": {"x": 1}},

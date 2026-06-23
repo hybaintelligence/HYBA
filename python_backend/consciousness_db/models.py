@@ -62,12 +62,19 @@ class User(Base):
     password_hash = Column(String(255), nullable=False)
     role = Column(SQLEnum(UserRole), nullable=False, default=UserRole.OPERATOR)
     is_active = Column(Boolean, default=True, nullable=False)
-    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    created_at = Column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
     updated_at = Column(
-        DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
     )
     last_login = Column(DateTime(timezone=True), nullable=True)
-    created_by = Column(String(100), nullable=True)  # Username of admin who created this user
+    created_by = Column(
+        String(100), nullable=True
+    )  # Username of admin who created this user
 
 
 class AuditLog(Base):
@@ -76,11 +83,15 @@ class AuditLog(Base):
     __tablename__ = "audit_logs"
 
     id: int | None = Column(BigInteger, primary_key=True, index=True)
-    timestamp = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    timestamp = Column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
     actor_username = Column(String(100), nullable=False)
     actor_role = Column(String(50), nullable=True)
     action = Column(String(100), nullable=False)
-    target_type = Column(String(50), nullable=False)  # e.g., "user", "pool", "config", "funding"
+    target_type = Column(
+        String(50), nullable=False
+    )  # e.g., "user", "pool", "config", "funding"
     target_id = Column(String(255), nullable=True)
     details = Column(JSON, nullable=True)
     ip_address = Column(String(45), nullable=True)
@@ -96,7 +107,9 @@ class ConsciousnessSnapshot(Base):
     __tablename__ = "consciousness_snapshots"
 
     id: int | None = Column(BigInteger, primary_key=True, index=True)
-    timestamp = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    timestamp = Column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
     experiment_id = Column(String(100), ForeignKey("experiments.id"), nullable=False)
 
     # Core IIT metrics
@@ -118,8 +131,12 @@ class Experiment(Base):
     __tablename__ = "experiments"
 
     id: str = Column(String(100), primary_key=True)
-    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
-    updated_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    created_at = Column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    updated_at = Column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
 
     config = Column(JSON, nullable=False)
     seed = Column(BigInteger, nullable=False)
@@ -159,15 +176,24 @@ class FundingAllocation(Base):
     status = Column(
         String(50), default="pending", nullable=False
     )  # pending, approved, disbursed, rejected
-    allocated_by = Column(String(100), nullable=False)  # Username of executive who approved
-    allocated_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    allocated_by = Column(
+        String(100), nullable=False
+    )  # Username of executive who approved
+    allocated_at = Column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
     disbursed_at = Column(DateTime(timezone=True), nullable=True)
     purpose = Column(String(500), nullable=True)
     restrictions = Column(JSON, nullable=True)
     allocation_metadata = Column(JSON, nullable=True)
-    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    created_at = Column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
     updated_at = Column(
-        DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
     )
 
 
@@ -190,12 +216,19 @@ class FundingRequest(Base):
         String(50), default="pending_review", nullable=False
     )  # pending_review, under_review, approved, rejected, disbursed
     requested_by = Column(String(100), nullable=False)
-    requested_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    requested_at = Column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
     reviewed_by = Column(String(100), nullable=True)
     reviewed_at = Column(DateTime(timezone=True), nullable=True)
     approval_notes = Column(String(1000), nullable=True)
     request_metadata = Column(JSON, nullable=True)
-    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    created_at = Column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
     updated_at = Column(
-        DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
     )

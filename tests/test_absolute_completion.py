@@ -13,7 +13,9 @@ PYTHON_BACKEND = REPO_ROOT / "python_backend"
 if str(PYTHON_BACKEND) not in sys.path:
     sys.path.insert(0, str(PYTHON_BACKEND))
 
-from hyba_genesis_api.core.audit_surface import seal_consciousness_envelope  # noqa: E402
+from hyba_genesis_api.core.audit_surface import (
+    seal_consciousness_envelope,
+)  # noqa: E402
 from hyba_genesis_api.core.constructor_engine import ExplainerIntegrity  # noqa: E402
 from hyba_genesis_api.core.intelligence_manifold import (  # noqa: E402
     ManifoldStabilizer,
@@ -49,8 +51,12 @@ class AbsoluteCompletionTests(unittest.TestCase):
 
     def test_explainer_integrity_rejects_brittle_or_unbounded_proposals(self) -> None:
         integrity = ExplainerIntegrity()
-        self.assertTrue(integrity.validate_explanation({"adjustment": 0.01}, "abcdef123456"))
-        self.assertFalse(integrity.validate_explanation({"adjustment": -1.0}, "abcdef123456"))
+        self.assertTrue(
+            integrity.validate_explanation({"adjustment": 0.01}, "abcdef123456")
+        )
+        self.assertFalse(
+            integrity.validate_explanation({"adjustment": -1.0}, "abcdef123456")
+        )
         self.assertFalse(integrity.validate_explanation({}, "abcdef123456"))
 
     def test_heartbeat_runs_single_explicit_pulse(self) -> None:
@@ -69,14 +75,18 @@ class AbsoluteCompletionTests(unittest.TestCase):
         self.assertIn(snapshot["history"][0]["status"], {"EVOLVED", "STAGNATED"})
 
     def test_final_audit_seal_is_partial_without_measured_invariants(self) -> None:
-        sealed = seal_consciousness_envelope({"audit": {"governance_seal": "CERTIFIED"}})
+        sealed = seal_consciousness_envelope(
+            {"audit": {"governance_seal": "CERTIFIED"}}
+        )
         final = sealed["audit"]["final_seal"]
         self.assertEqual("MEASURED_PARTIAL", final["status"])
         self.assertEqual("PHI_RESONANT", final["mathematical_invariant"])
         self.assertIn("no fabricated", final["claim_boundary"])
         self.assertIn("RECURSIVE_CLOSURE_GOVERNED", final["autonomy_level"])
 
-    def test_final_audit_seal_is_absolute_with_complete_measured_invariants(self) -> None:
+    def test_final_audit_seal_is_absolute_with_complete_measured_invariants(
+        self,
+    ) -> None:
         sealed = seal_consciousness_envelope(
             {
                 "audit": {
@@ -92,7 +102,9 @@ class AbsoluteCompletionTests(unittest.TestCase):
         self.assertEqual("ABSOLUTE", final["status"])
         self.assertEqual("RICCI_SMOOTHED", final["manifold_state"])
         self.assertEqual(0.72, final["phi_resonance"])
-        self.assertEqual({"source": "unit_test_measured_payload"}, final["evidence_basis"])
+        self.assertEqual(
+            {"source": "unit_test_measured_payload"}, final["evidence_basis"]
+        )
 
 
 if __name__ == "__main__":

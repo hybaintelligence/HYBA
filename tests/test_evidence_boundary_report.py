@@ -11,16 +11,27 @@ if str(ROOT / "scripts") not in sys.path:
 from evidence_boundary_report import generate_report, write_report  # noqa: E402
 
 
-def test_evidence_boundary_reports_no_go_without_acceptance_marker(tmp_path: Path) -> None:
+def test_evidence_boundary_reports_no_go_without_acceptance_marker(
+    tmp_path: Path,
+) -> None:
     (tmp_path / "logs").mkdir()
     (tmp_path / "artifacts" / "clean_10").mkdir(parents=True)
     (tmp_path / "artifacts").mkdir(exist_ok=True)
     (tmp_path / "logs" / "braiins_session_stats.json").write_text(
-        json.dumps({"connected": False, "jobs_received": 0, "shares_submitted": 0, "errors": ["connect failed"]}),
+        json.dumps(
+            {
+                "connected": False,
+                "jobs_received": 0,
+                "shares_submitted": 0,
+                "errors": ["connect failed"],
+            }
+        ),
         encoding="utf-8",
     )
     (tmp_path / "artifacts" / "production_gate_output.json").write_text(
-        json.dumps({"status": "PASSED", "accepted_share_evidence": {"status": "warning"}}),
+        json.dumps(
+            {"status": "PASSED", "accepted_share_evidence": {"status": "warning"}}
+        ),
         encoding="utf-8",
     )
     (tmp_path / "artifacts" / "clean_10" / "latest.json").write_text(
@@ -32,16 +43,28 @@ def test_evidence_boundary_reports_no_go_without_acceptance_marker(tmp_path: Pat
 
     assert report.status == "NO_GO"
     assert report.passed is False
-    assert any(check.name == "session_stats" and check.status == "warning" for check in report.checks)
+    assert any(
+        check.name == "session_stats" and check.status == "warning"
+        for check in report.checks
+    )
     assert "Synthetic or local benchmark evidence" in report.claim_boundaries[2]
 
 
-def test_evidence_boundary_reports_go_with_acceptance_and_clean_gate(tmp_path: Path) -> None:
+def test_evidence_boundary_reports_go_with_acceptance_and_clean_gate(
+    tmp_path: Path,
+) -> None:
     (tmp_path / "logs").mkdir()
     (tmp_path / "artifacts" / "clean_10").mkdir(parents=True)
     (tmp_path / "artifacts").mkdir(exist_ok=True)
     (tmp_path / "logs" / "braiins_session_stats.json").write_text(
-        json.dumps({"connected": True, "jobs_received": 3, "shares_submitted": 2, "shares_accepted": 1}),
+        json.dumps(
+            {
+                "connected": True,
+                "jobs_received": 3,
+                "shares_submitted": 2,
+                "shares_accepted": 1,
+            }
+        ),
         encoding="utf-8",
     )
     (tmp_path / "artifacts" / "production_gate_output.json").write_text(
@@ -63,7 +86,9 @@ def test_evidence_boundary_reports_go_with_acceptance_and_clean_gate(tmp_path: P
     assert saved["schema"] == "HYBA_REPOSITORY_EVIDENCE_BOUNDARY_V1"
 
 
-def test_evidence_boundary_fails_when_clean_gate_failed_even_with_acceptance(tmp_path: Path) -> None:
+def test_evidence_boundary_fails_when_clean_gate_failed_even_with_acceptance(
+    tmp_path: Path,
+) -> None:
     (tmp_path / "logs").mkdir()
     (tmp_path / "artifacts" / "clean_10").mkdir(parents=True)
     (tmp_path / "artifacts").mkdir(exist_ok=True)
@@ -74,7 +99,9 @@ def test_evidence_boundary_fails_when_clean_gate_failed_even_with_acceptance(tmp
         json.dumps({"accepted": True}), encoding="utf-8"
     )
     (tmp_path / "artifacts" / "clean_10" / "latest.json").write_text(
-        json.dumps({"passed": False, "status": "NO_GO", "required_failures": ["backend_gate"]}),
+        json.dumps(
+            {"passed": False, "status": "NO_GO", "required_failures": ["backend_gate"]}
+        ),
         encoding="utf-8",
     )
 
@@ -82,5 +109,7 @@ def test_evidence_boundary_fails_when_clean_gate_failed_even_with_acceptance(tmp
 
     assert report.status == "NO_GO"
     assert report.passed is False
-    clean_check = next(check for check in report.checks if check.name == "clean_10_gate")
+    clean_check = next(
+        check for check in report.checks if check.name == "clean_10_gate"
+    )
     assert clean_check.status == "fail"

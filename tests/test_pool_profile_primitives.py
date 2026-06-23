@@ -34,7 +34,9 @@ class PoolProfilePrimitiveTests(unittest.TestCase):
             password="p",
             priority=1,
         )
-        self.assertEqual(["beta", "alpha"], [item.pool_id for item in order_profiles([a, b])])
+        self.assertEqual(
+            ["beta", "alpha"], [item.pool_id for item in order_profiles([a, b])]
+        )
         self.assertEqual("<configured>", a.to_dict()["password"])
         self.assertEqual("<configured>", a.to_dict()["username"])
 

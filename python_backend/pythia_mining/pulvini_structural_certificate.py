@@ -97,7 +97,9 @@ def verify_adjacency_preserved_for_all(
     """Verify every automorphism preserves adjacency exactly."""
     neighbors = adjacency_sets(ADJACENCY_MAP)
     edges = {
-        tuple(sorted((u, v))) for u, node_neighbors in neighbors.items() for v in node_neighbors
+        tuple(sorted((u, v)))
+        for u, node_neighbors in neighbors.items()
+        for v in node_neighbors
     }
 
     for sigma in automorphisms:

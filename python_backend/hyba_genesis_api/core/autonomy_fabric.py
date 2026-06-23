@@ -45,12 +45,19 @@ RISK_APPROVAL_MATRIX: Dict[str, Dict[str, Any]] = {
     "medium": {
         "approval_required": True,
         "execution_mode": "approval_gated",
-        "examples": ["change optimisation weights", "rebalance non-destructive workflow priorities"],
+        "examples": [
+            "change optimisation weights",
+            "rebalance non-destructive workflow priorities",
+        ],
     },
     "high": {
         "approval_required": True,
         "execution_mode": "dual_control_or_operator_approval",
-        "examples": ["start/stop production mining", "privileged admin mutation", "customer data export"],
+        "examples": [
+            "start/stop production mining",
+            "privileged admin mutation",
+            "customer data export",
+        ],
     },
 }
 
@@ -86,7 +93,9 @@ class AutonomySurface:
                 f"risk={self.risk} requires approval={expected_approval}"
             )
         if not self.available_actions:
-            raise ValueError(f"surface {self.surface_id} must expose at least one action")
+            raise ValueError(
+                f"surface {self.surface_id} must expose at least one action"
+            )
         if not self.evidence:
             raise ValueError(f"surface {self.surface_id} must expose evidence")
 
@@ -123,9 +132,17 @@ SURFACES: Tuple[AutonomySurface, ...] = (
         recommendation="Run onboarding diagnostic, then generate an executive opportunity brief and integration backlog.",
         risk="low",
         confidence=0.93,
-        available_actions=("run_onboarding_diagnostic", "draft_client_brief", "map_data_sources"),
+        available_actions=(
+            "run_onboarding_diagnostic",
+            "draft_client_brief",
+            "map_data_sources",
+        ),
         approval_required=False,
-        evidence=("hyba_ciaas.ingestion.DataSourceSpec", "docs/CENTRAL_DATA_INGESTION.md", "tests/test_central_data_ingestion.py"),
+        evidence=(
+            "hyba_ciaas.ingestion.DataSourceSpec",
+            "docs/CENTRAL_DATA_INGESTION.md",
+            "tests/test_central_data_ingestion.py",
+        ),
         audit_event="autonomy.client_onboarding.diagnostic_ready",
     ),
     AutonomySurface(
@@ -138,9 +155,16 @@ SURFACES: Tuple[AutonomySurface, ...] = (
         recommendation="Produce ranked next-best-actions with risk, confidence, expected impact, and proof references.",
         risk="low",
         confidence=0.91,
-        available_actions=("rank_next_best_actions", "generate_evidence_backed_brief", "prepare_roi_hypotheses"),
+        available_actions=(
+            "rank_next_best_actions",
+            "generate_evidence_backed_brief",
+            "prepare_roi_hypotheses",
+        ),
         approval_required=False,
-        evidence=("python_backend/hyba_genesis_api/core/proof_surfaces.py", "docs/evidence/VERIFICATION_SURFACES.md"),
+        evidence=(
+            "python_backend/hyba_genesis_api/core/proof_surfaces.py",
+            "docs/evidence/VERIFICATION_SURFACES.md",
+        ),
         audit_event="autonomy.client_value.opportunity_scan_ready",
     ),
     AutonomySurface(
@@ -153,9 +177,16 @@ SURFACES: Tuple[AutonomySurface, ...] = (
         recommendation="Require operator approval for privileged mutations and preserve local audit seals for every decision.",
         risk="high",
         confidence=0.89,
-        available_actions=("evaluate_policy", "ingest_with_controls", "export_audit_chain"),
+        available_actions=(
+            "evaluate_policy",
+            "ingest_with_controls",
+            "export_audit_chain",
+        ),
         approval_required=True,
-        evidence=("python_backend/hyba_ciaas/sovereign_runtime.py", "tests/test_sovereign_deployment_control_plane.py"),
+        evidence=(
+            "python_backend/hyba_ciaas/sovereign_runtime.py",
+            "tests/test_sovereign_deployment_control_plane.py",
+        ),
         audit_event="autonomy.deployment_governance.policy_gate_ready",
     ),
     AutonomySurface(
@@ -168,9 +199,17 @@ SURFACES: Tuple[AutonomySurface, ...] = (
         recommendation="Expose proof status beside every material recommendation and fail closed when evidence is unavailable.",
         risk="low",
         confidence=0.96,
-        available_actions=("open_proof_window", "summarise_evidence_packet", "emit_evidence_seal"),
+        available_actions=(
+            "open_proof_window",
+            "summarise_evidence_packet",
+            "emit_evidence_seal",
+        ),
         approval_required=False,
-        evidence=("/api/proofs", "/api/proofs/audit-ledger", "/api/v1/intelligence/extraordinary-claims/evidence"),
+        evidence=(
+            "/api/proofs",
+            "/api/proofs/audit-ledger",
+            "/api/v1/intelligence/extraordinary-claims/evidence",
+        ),
         audit_event="autonomy.buyer_confidence.proof_window_ready",
     ),
     AutonomySurface(
@@ -183,9 +222,18 @@ SURFACES: Tuple[AutonomySurface, ...] = (
         recommendation="Simulate first, require explicit approval for high-risk commands, then audit outcome and rollback metadata.",
         risk="high",
         confidence=0.9,
-        available_actions=("simulate_operational_change", "request_operator_approval", "execute_after_approval", "record_audit_event"),
+        available_actions=(
+            "simulate_operational_change",
+            "request_operator_approval",
+            "execute_after_approval",
+            "record_audit_event",
+        ),
         approval_required=True,
-        evidence=("artifacts/frontend_api_command_manifest.json", "tests/test_apiClient_intelligence_autonomy.test.ts", "tests/e2e/command-safety.spec.ts"),
+        evidence=(
+            "artifacts/frontend_api_command_manifest.json",
+            "tests/test_apiClient_intelligence_autonomy.test.ts",
+            "tests/e2e/command-safety.spec.ts",
+        ),
         audit_event="autonomy.operations.guardrail_ready",
     ),
     AutonomySurface(
@@ -198,9 +246,17 @@ SURFACES: Tuple[AutonomySurface, ...] = (
         recommendation="Keep self-healing bounded by environment flags, persist reports, and surface recommendations to clients as evidence-backed advisories.",
         risk="medium",
         confidence=0.88,
-        available_actions=("boot_self_heal_and_optimize", "persist_autonomy_report", "summarise_reflexive_proposals"),
+        available_actions=(
+            "boot_self_heal_and_optimize",
+            "persist_autonomy_report",
+            "summarise_reflexive_proposals",
+        ),
         approval_required=True,
-        evidence=("hyba_genesis_api.main._activate_startup_self_healing", "hyba_genesis_api.core.autonomy_persistence", "tests/test_local_launch_script_contract.py"),
+        evidence=(
+            "hyba_genesis_api.main._activate_startup_self_healing",
+            "hyba_genesis_api.core.autonomy_persistence",
+            "tests/test_local_launch_script_contract.py",
+        ),
         audit_event="autonomy.intelligence_runtime.self_optimization_bounded",
     ),
 )
@@ -228,7 +284,9 @@ def list_autonomy_surfaces() -> List[Dict[str, Any]]:
     return [surface.to_dict() for surface in SURFACES]
 
 
-def build_autonomy_fabric_snapshot(context: Optional[Mapping[str, Any]] = None) -> Dict[str, Any]:
+def build_autonomy_fabric_snapshot(
+    context: Optional[Mapping[str, Any]] = None,
+) -> Dict[str, Any]:
     """Return the canonical market-facing autonomy fabric snapshot."""
 
     context = dict(context or {})
@@ -237,19 +295,43 @@ def build_autonomy_fabric_snapshot(context: Optional[Mapping[str, Any]] = None) 
     approval_gated = [surface for surface in surfaces if surface["approval_required"]]
     autonomous = [surface for surface in surfaces if not surface["approval_required"]]
     invariant_results = {
-        "operating_chain_complete": tuple(AUTONOMY_CHAIN) == ("observe", "reason", "recommend", "simulate", "approve", "execute", "audit", "learn"),
+        "operating_chain_complete": tuple(AUTONOMY_CHAIN)
+        == (
+            "observe",
+            "reason",
+            "recommend",
+            "simulate",
+            "approve",
+            "execute",
+            "audit",
+            "learn",
+        ),
         "surface_count_minimum_met": surface_count >= 6,
-        "every_surface_has_client_value": all(bool(surface["client_value"]) for surface in surfaces),
-        "every_surface_has_recommendation": all(bool(surface["recommendation"]) for surface in surfaces),
-        "every_surface_has_action": all(bool(surface["available_actions"]) for surface in surfaces),
-        "every_surface_has_evidence": all(bool(surface["evidence"]) for surface in surfaces),
+        "every_surface_has_client_value": all(
+            bool(surface["client_value"]) for surface in surfaces
+        ),
+        "every_surface_has_recommendation": all(
+            bool(surface["recommendation"]) for surface in surfaces
+        ),
+        "every_surface_has_action": all(
+            bool(surface["available_actions"]) for surface in surfaces
+        ),
+        "every_surface_has_evidence": all(
+            bool(surface["evidence"]) for surface in surfaces
+        ),
         "high_risk_actions_approval_gated": all(
-            surface["approval_required"] for surface in surfaces if surface["risk"] == "high"
+            surface["approval_required"]
+            for surface in surfaces
+            if surface["risk"] == "high"
         ),
         "low_risk_actions_can_run_autonomously": all(
-            not surface["approval_required"] for surface in surfaces if surface["risk"] == "low"
+            not surface["approval_required"]
+            for surface in surfaces
+            if surface["risk"] == "low"
         ),
-        "confidence_values_bounded": all(0 <= float(surface["confidence"]) <= 1 for surface in surfaces),
+        "confidence_values_bounded": all(
+            0 <= float(surface["confidence"]) <= 1 for surface in surfaces
+        ),
     }
     snapshot: Dict[str, Any] = {
         "schema_version": "hyba.autonomy_fabric.v1",
@@ -275,11 +357,15 @@ def build_autonomy_fabric_snapshot(context: Optional[Mapping[str, Any]] = None) 
         "all_invariants_passed": all(invariant_results.values()),
         "context": context,
     }
-    snapshot["evidence_seal"] = _seal({k: v for k, v in snapshot.items() if k != "evidence_seal"})
+    snapshot["evidence_seal"] = _seal(
+        {k: v for k, v in snapshot.items() if k != "evidence_seal"}
+    )
     return snapshot
 
 
-def simulate_autonomy_action(surface_id: str, action: str, context: Optional[Mapping[str, Any]] = None) -> Dict[str, Any]:
+def simulate_autonomy_action(
+    surface_id: str, action: str, context: Optional[Mapping[str, Any]] = None
+) -> Dict[str, Any]:
     """Deterministically simulate an autonomy action before execution."""
 
     surfaces = _surface_index()
@@ -323,7 +409,9 @@ def request_autonomy_execution(
         decision = "approval_required"
         executable = False
     else:
-        decision = "approved_for_execution" if approved else "autonomous_execution_allowed"
+        decision = (
+            "approved_for_execution" if approved else "autonomous_execution_allowed"
+        )
         executable = True
     payload: Dict[str, Any] = {
         "schema_version": "hyba.autonomy_execution_decision.v1",
@@ -334,7 +422,9 @@ def request_autonomy_execution(
         "executable": executable,
         "approval_id": approval_id,
         "simulation": simulation,
-        "audit_event": simulation["audit_event"].replace(".simulation", ".execution_decision"),
+        "audit_event": simulation["audit_event"].replace(
+            ".simulation", ".execution_decision"
+        ),
     }
     payload["evidence_seal"] = _seal(payload)
     return payload
@@ -344,7 +434,9 @@ def build_client_intelligence_brief(client_name: str = "client") -> Dict[str, An
     """Return a board-safe brief showing how HYBA AI serves a client."""
 
     snapshot = build_autonomy_fabric_snapshot({"client_name": client_name})
-    ranked = sorted(snapshot["surfaces"], key=lambda surface: surface["confidence"], reverse=True)
+    ranked = sorted(
+        snapshot["surfaces"], key=lambda surface: surface["confidence"], reverse=True
+    )
     payload: Dict[str, Any] = {
         "schema_version": "hyba.client_intelligence_brief.v1",
         "generated_at": _utc_now(),

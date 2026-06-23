@@ -46,17 +46,17 @@ class OptimizationResult:
 
 class AIOptimizer:
     """Runtime search-coordination layer backed by measured solver outcomes.
-    
+
     CRITICAL: The AI optimizer MUST be seeded with empirical blockchain
     structure evidence to exploit the φ-resonance patterns discovered in
     the live blockchain (95.65% of blocks show φ¹⁵ resonance, z=7.58σ).
-    
+
     The optimizer coordinates:
     - Quantum solver (HENDRIX-Φ structured search)
     - Consciousness engine (IIT 4.0 Φ runtime coherence)
     - Blockchain oracle (live chain state)
     - Meta-learning (strategy adaptation from pool feedback)
-    
+
     Seeding Strategy:
     1. Load empirical evidence packet (artifacts/phi_resonance_100blocks/)
     2. Extract structure score, φ-resonance rate, golden-angle alignment
@@ -78,15 +78,15 @@ class AIOptimizer:
         )
         self.latest_meta_learning_event: Optional[Dict[str, Any]] = None
         self.logger = logging.getLogger("ai_optimizer")
-        
+
         # CRITICAL: Load empirical structure evidence to seed the AI
         self._empirical_evidence: Optional[Dict[str, Any]] = None
         self._structure_seed: Optional[int] = None
         self._load_empirical_evidence()
-    
+
     def _load_empirical_evidence(self) -> None:
         """Load empirical blockchain structure evidence for AI seeding.
-        
+
         The 95.65% φ-resonance rate (z=7.58σ, p=4.20×10⁻¹⁴) from 69 live
         Bitcoin blocks is THE foundation for the autonomous search AI.
         Without this evidence, the AI has no structure prior and defaults
@@ -94,25 +94,25 @@ class AIOptimizer:
         """
         import json
         from pathlib import Path
-        
+
         # Try loading from the known evidence packet locations
         evidence_paths = [
             Path("artifacts/phi_resonance_100blocks/phi_resonance_summary.json"),
             Path("artifacts/phi_resonance_final/phi_resonance_summary.json"),
             Path("../artifacts/phi_resonance_100blocks/phi_resonance_summary.json"),
         ]
-        
+
         for path in evidence_paths:
             try:
                 if path.exists():
                     with path.open("r", encoding="utf-8") as f:
                         self._empirical_evidence = json.load(f)
-                    
+
                     # Extract critical metrics
                     summary = self._empirical_evidence.get("summary", {})
                     phi_rate = float(summary.get("phi_resonance_rate", 0.5))
                     z_score = float(summary.get("z_score_vs_random", 0.0))
-                    
+
                     self.logger.info(
                         f"Loaded empirical evidence: φ-resonance={phi_rate:.4f} "
                         f"(z={z_score:.2f}σ) from {path}"
@@ -120,7 +120,7 @@ class AIOptimizer:
                     return
             except Exception as e:
                 self.logger.debug(f"Could not load {path}: {e}")
-        
+
         # No evidence found - log warning
         self.logger.warning(
             "No empirical blockchain structure evidence found. "
@@ -158,7 +158,9 @@ class AIOptimizer:
         """
         if hasattr(self.quantum_solver, "configure_compressed_search"):
             compressed_plan = build_pulvini_nonce_plan()
-            await self.quantum_solver.configure_compressed_search(int(job.target), compressed_plan)
+            await self.quantum_solver.configure_compressed_search(
+                int(job.target), compressed_plan
+            )
             return
         await self.quantum_solver.configure_search(int(job.target), [(0, 2**32 - 1)])
 
@@ -180,7 +182,8 @@ class AIOptimizer:
         )
 
         compressed_contract_active = (
-            initial_metrics.get("nonce_space_contract") == "pulvini_phi_compressed_pre_search"
+            initial_metrics.get("nonce_space_contract")
+            == "pulvini_phi_compressed_pre_search"
         )
         if not compressed_contract_active:
             # Shift ranges slightly based on time to diversify exploration for
@@ -218,9 +221,13 @@ class AIOptimizer:
                     )
                     / max(1, 2**32)
                 ),
-                "compressed_working_set_size": int(metrics.get("compressed_working_set_size") or 0),
+                "compressed_working_set_size": int(
+                    metrics.get("compressed_working_set_size") or 0
+                ),
                 "complete_nonce_coverage": bool(metrics.get("complete_nonce_coverage")),
-                "overlap_free_nonce_coverage": bool(metrics.get("overlap_free_nonce_coverage")),
+                "overlap_free_nonce_coverage": bool(
+                    metrics.get("overlap_free_nonce_coverage")
+                ),
             },
             "job": {
                 "target_norm": float(int(job.target) / max(1, 2**256 - 1)),
@@ -229,7 +236,9 @@ class AIOptimizer:
             "solve": {
                 "nonce_found": nonce is not None,
                 "iterations": int(metrics.get("last_solve_iterations") or 0),
-                "duration_seconds": float(metrics.get("last_solve_duration_seconds") or 0.0),
+                "duration_seconds": float(
+                    metrics.get("last_solve_duration_seconds") or 0.0
+                ),
                 "last_error": metrics.get("last_error"),
             },
         }
@@ -237,9 +246,13 @@ class AIOptimizer:
         model_predictions = {
             "solver_phi": {"score": phi_score},
             "difficulty_window": {"score": indicators["job"]["target_norm"]},
-            "search_space": {"score": min(1.0, indicators["solver"]["search_space_size_norm"])},
+            "search_space": {
+                "score": min(1.0, indicators["solver"]["search_space_size_norm"])
+            },
         }
-        phi_scaling = self.phi_ensemble.predict_with_phi_scaling(model_predictions, indicators)
+        phi_scaling = self.phi_ensemble.predict_with_phi_scaling(
+            model_predictions, indicators
+        )
         phi_features = self.phi_features.extract_phi_optimized_features(indicators)
         benchmark = benchmark_vs_asic(
             measured_hashes_per_second=metrics.get("hashrate_hps"),
@@ -264,7 +277,9 @@ class AIOptimizer:
     def _update_meta_learning(
         self, share_info: Dict[str, Any], *, accepted: bool
     ) -> Dict[str, Any]:
-        strategy_id = str(share_info.get("strategy_used") or "phi_scaled_compressed_solver_search")
+        strategy_id = str(
+            share_info.get("strategy_used") or "phi_scaled_compressed_solver_search"
+        )
         event = self.meta_optimizer.update_from_outcome(
             strategy_id=strategy_id,
             accepted=accepted,

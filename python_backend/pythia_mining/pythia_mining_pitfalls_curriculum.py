@@ -72,7 +72,9 @@ class PythiaMiningPitfallsCurriculum:
             "categories": sorted({lesson.category.value for lesson in self.lessons}),
         }
 
-    def lessons_by_category(self, category: PitfallCategory) -> Tuple[PitfallLesson, ...]:
+    def lessons_by_category(
+        self, category: PitfallCategory
+    ) -> Tuple[PitfallLesson, ...]:
         return tuple(lesson for lesson in self.lessons if lesson.category == category)
 
     def required_responses(self) -> Tuple[str, ...]:
@@ -257,12 +259,16 @@ def seed_mining_pitfalls_curriculum() -> PythiaMiningPitfallsCurriculum:
     )
 
 
-def validate_mining_pitfalls_curriculum(curriculum: PythiaMiningPitfallsCurriculum) -> bool:
+def validate_mining_pitfalls_curriculum(
+    curriculum: PythiaMiningPitfallsCurriculum,
+) -> bool:
     """Validate the curriculum covers all critical production education domains."""
 
     categories = {lesson.category for lesson in curriculum.lessons}
     responses = "\n".join(curriculum.required_responses()).lower()
-    invariants = "\n".join(lesson.supreme_invariant.lower() for lesson in curriculum.lessons)
+    invariants = "\n".join(
+        lesson.supreme_invariant.lower() for lesson in curriculum.lessons
+    )
     required_categories = set(PitfallCategory)
     required_terms = (
         "sha-256d",
@@ -290,7 +296,9 @@ def lesson_ids(curriculum: PythiaMiningPitfallsCurriculum) -> Tuple[str, ...]:
     return tuple(lesson.lesson_id for lesson in curriculum.lessons)
 
 
-def lessons_for_evidence(curriculum: PythiaMiningPitfallsCurriculum) -> List[Dict[str, str]]:
+def lessons_for_evidence(
+    curriculum: PythiaMiningPitfallsCurriculum,
+) -> List[Dict[str, str]]:
     """Return JSON-safe lessons for mission evidence packets."""
 
     return [lesson.to_dict() for lesson in curriculum.lessons]

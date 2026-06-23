@@ -71,7 +71,9 @@ def parse_frontmatter(path: Path) -> dict[str, str]:
 def _load_manifest(evidence_file: str, source_path: Path) -> dict[str, Any]:
     evidence = ROOT / evidence_file
     if not evidence.exists():
-        raise AssertionError(f"{source_path}: evidence_file does not exist: {evidence_file}")
+        raise AssertionError(
+            f"{source_path}: evidence_file does not exist: {evidence_file}"
+        )
     try:
         return json.loads(evidence.read_text(encoding="utf-8"))
     except json.JSONDecodeError as exc:
@@ -84,10 +86,14 @@ def _claim_index(manifest: dict[str, Any]) -> dict[str, dict[str, Any]]:
     return {claim["id"]: claim for claim in manifest.get("claims", []) if "id" in claim}
 
 
-def _validate_required_fields(path: Path, fields: dict[str, str], required: set[str]) -> None:
+def _validate_required_fields(
+    path: Path, fields: dict[str, str], required: set[str]
+) -> None:
     missing = required - set(fields)
     if missing:
-        raise AssertionError(f"{path}: missing required front matter keys {sorted(missing)}")
+        raise AssertionError(
+            f"{path}: missing required front matter keys {sorted(missing)}"
+        )
     if fields["tier"] not in ALLOWED_TIERS:
         raise AssertionError(f"{path}: invalid tier {fields['tier']!r}")
 
@@ -99,7 +105,9 @@ def _validate_manifest_binding(
     claims = _claim_index(manifest)
     claim_id = fields["evidence_claim_id"]
     if claim_id not in claims:
-        raise AssertionError(f"{path}: evidence_claim_id {claim_id!r} missing from manifest")
+        raise AssertionError(
+            f"{path}: evidence_claim_id {claim_id!r} missing from manifest"
+        )
     manifest_claim = claims[claim_id]
     manifest_tier = manifest_claim.get("tier")
     if require_tier_match:
@@ -111,9 +119,13 @@ def _validate_manifest_binding(
             raise AssertionError(
                 f"{path}: claim tier {fields['tier']!r} does not match manifest tier {manifest_tier!r} for {claim_id!r}"
             )
-    boundaries = manifest_claim.get("boundaries") or manifest_claim.get("boundary") or []
+    boundaries = (
+        manifest_claim.get("boundaries") or manifest_claim.get("boundary") or []
+    )
     if not boundaries:
-        raise AssertionError(f"{path}: manifest claim {claim_id!r} must list explicit boundaries")
+        raise AssertionError(
+            f"{path}: manifest claim {claim_id!r} must list explicit boundaries"
+        )
     reproduction = (
         manifest_claim.get("reproduction_command")
         or manifest_claim.get("required_to_promote")
@@ -149,7 +161,11 @@ def _validate_reproducibility_attestation(
         raise AssertionError(
             f"{source_path}: manifest claim {claim_id!r} reproducibility_attestation missing keys {sorted(missing)}"
         )
-    commands = manifest_claim.get("commands") or manifest_claim.get("reproduction_command") or []
+    commands = (
+        manifest_claim.get("commands")
+        or manifest_claim.get("reproduction_command")
+        or []
+    )
     if isinstance(commands, str):
         commands = [commands]
     expected = build_reproducibility_attestation(
@@ -196,17 +212,24 @@ def validate_template() -> None:
     # materials below must bind to a manifest claim with an explicit tier.
     _validate_manifest_binding(template, fields, require_tier_match=False)
     if _external_distribution_requested(fields):
-        raise AssertionError(f"{template}: template must remain external_distribution=false")
+        raise AssertionError(
+            f"{template}: template must remain external_distribution=false"
+        )
 
 
 def validate_mining_manifest() -> None:
-    manifest_path = ROOT / "docs" / "mining" / "evidence" / "mining_validation_manifest.json"
+    manifest_path = (
+        ROOT / "docs" / "mining" / "evidence" / "mining_validation_manifest.json"
+    )
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     assert manifest["schema"] == "HYBA_MINING_VALIDATION_MANIFEST_V1"
     assert manifest["current_repository_state"] == "entangled_with_hyba_fullstack"
     assert manifest["standalone_repository"] is False
     assert manifest["independent_ci"] is False
-    assert manifest.get("commercialization_stage") == "stage_0_pre_validation_research_only"
+    assert (
+        manifest.get("commercialization_stage")
+        == "stage_0_pre_validation_research_only"
+    )
     for claim in manifest["claims"]:
         if claim["tier"] not in ALLOWED_TIERS:
             raise AssertionError(f"{manifest_path}: invalid tier {claim['tier']!r}")
@@ -219,10 +242,14 @@ def validate_mining_manifest() -> None:
             "no commercialization before stage 2",
         ]:
             if phrase not in text:
-                raise AssertionError(f"{manifest_path}: missing mining boundary {phrase!r}")
+                raise AssertionError(
+                    f"{manifest_path}: missing mining boundary {phrase!r}"
+                )
         for rel_path in claim.get("evidence_files", []):
             if not (ROOT / rel_path).exists():
-                raise AssertionError(f"{manifest_path}: missing evidence file {rel_path}")
+                raise AssertionError(
+                    f"{manifest_path}: missing evidence file {rel_path}"
+                )
 
 
 def _is_protocol_doc(path: Path) -> bool:
@@ -245,9 +272,13 @@ def scan_external_materials() -> None:
                 f"{path}: external materials must set external_distribution=true after approval"
             )
         if fields.get("review_status") != "approved_for_external_use":
-            raise AssertionError(f"{path}: review_status must be approved_for_external_use")
+            raise AssertionError(
+                f"{path}: review_status must be approved_for_external_use"
+            )
         if fields.get("approved_by", "").lower() in {"", "tbd", "pending", "none"}:
-            raise AssertionError(f"{path}: approved_by must identify the accountable reviewer")
+            raise AssertionError(
+                f"{path}: approved_by must identify the accountable reviewer"
+            )
 
 
 def scan_external_exports() -> None:
@@ -266,7 +297,9 @@ def scan_external_exports() -> None:
         fields = parse_frontmatter(source)
         if fields.get(
             "review_status"
-        ) != "approved_for_external_use" or not _external_distribution_requested(fields):
+        ) != "approved_for_external_use" or not _external_distribution_requested(
+            fields
+        ):
             raise AssertionError(
                 f"{path}: source markdown is not approved for external distribution"
             )
@@ -278,7 +311,9 @@ def main() -> int:
         validate_mining_manifest()
         scan_external_materials()
         scan_external_exports()
-    except Exception as exc:  # noqa: BLE001 - CLI should print concise guardrail failure
+    except (
+        Exception
+    ) as exc:  # noqa: BLE001 - CLI should print concise guardrail failure
         print(f"validation-claim-tier guard failed: {exc}", file=sys.stderr)
         return 1
     print("validation-claim-tier guard passed")

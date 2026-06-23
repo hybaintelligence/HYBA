@@ -24,28 +24,28 @@ def config_group():
 def show():
     """
     Show current configuration
-    
+
     Example:
-    
+
     \b
     $ hyba config show
     """
     config = config_manager.load()
-    
+
     yaml_str = yaml.dump(config, default_flow_style=False)
     syntax = Syntax(yaml_str, "yaml", theme="monokai", line_numbers=True)
     console.print(Panel(syntax, title="Configuration", border_style="blue"))
 
 
 @click.command()
-@click.argument('key')
-@click.argument('value')
+@click.argument("key")
+@click.argument("value")
 def set_config(key, value):
     """
     Set configuration value
-    
+
     Example:
-    
+
     \b
     $ hyba config set api_url https://api.hyba.ai
     """
@@ -54,7 +54,7 @@ def set_config(key, value):
 
 
 @click.command()
-@click.argument('key')
+@click.argument("key")
 def get_config(key):
     """Get configuration value"""
     value = config_manager.get(key)
@@ -68,9 +68,9 @@ def get_config(key):
 def path():
     """
     Show configuration file path
-    
+
     Example:
-    
+
     \b
     $ hyba config path
     ~/.hyba/config.yaml
@@ -83,9 +83,9 @@ def path():
 def completion(shell):
     """
     Generate shell completion
-    
+
     Example:
-    
+
     \b
     $ eval "$(hyba completion bash)"
     """
@@ -98,6 +98,6 @@ def completion(shell):
 
 
 config_group.add_command(show)
-config_group.add_command(set_config, name='set')
-config_group.add_command(get_config, name='get')
+config_group.add_command(set_config, name="set")
+config_group.add_command(get_config, name="get")
 config_group.add_command(path)

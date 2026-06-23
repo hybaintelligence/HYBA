@@ -32,10 +32,14 @@ if str(BACKEND) not in sys.path:
 
 from pythia_mining.operator_algebraic_verification import CStarAlgebraVerifier
 from pythia_mining.non_markovian_memory_bounds import (
-    NonMarkovianDetector, compute_phi_memory_capacity, phi_folding_memory_bound,
+    NonMarkovianDetector,
+    compute_phi_memory_capacity,
+    phi_folding_memory_bound,
 )
 from pythia_mining.substrate_equivalence import (
-    SubstrateEquivalenceProver, SubstrateCategory, MathematicalStructure,
+    SubstrateEquivalenceProver,
+    SubstrateCategory,
+    MathematicalStructure,
     verify_phi_folding_substrate_independence,
     verify_mathematical_substrate_thesis,
 )
@@ -115,8 +119,9 @@ class ChaosFactory:
 
         elif corruption == "non_hermitian_hamiltonian":
             # Hamiltonian that isn't Hermitian
-            return self.rng.random((dim, dim)).astype(np.complex128) + \
-                   1j * self.rng.random((dim, dim)).astype(np.complex128)
+            return self.rng.random((dim, dim)).astype(
+                np.complex128
+            ) + 1j * self.rng.random((dim, dim)).astype(np.complex128)
 
         elif corruption == "zero_matrix":
             return np.zeros((dim, dim), dtype=np.complex128)
@@ -130,7 +135,7 @@ class ChaosFactory:
     def valid_density_matrix(self, dim: int = 8) -> np.ndarray:
         """Generate a VALID density matrix for control tests."""
         A = self.rng.random((dim, dim)) + 1j * self.rng.random((dim, dim))
-        rho = (A @ A.conj().T)
+        rho = A @ A.conj().T
         return rho / np.trace(rho).real
 
     def valid_hermitian(self, dim: int = 4) -> np.ndarray:
@@ -142,6 +147,7 @@ class ChaosFactory:
 # ══════════════════════════════════════════════════════════════════════
 # PILLAR 6 ADVERSARIAL: C*-Algebra Chaos
 # ══════════════════════════════════════════════════════════════════════
+
 
 class TestPillar6Adversarial:
     """Adversarial tests for C*-algebra verification — try to break it."""
@@ -167,7 +173,9 @@ class TestPillar6Adversarial:
         """Must reject density matrix with negative eigenvalues."""
         rho = chaos.corrupt_density_matrix(dim=6, corruption="negative_eigenvalues")
         cert = verifier.verify_state(rho, name="negative_ev")
-        assert not cert.is_positive, f"Should reject PSD violation (min eig={cert.trace})"
+        assert (
+            not cert.is_positive
+        ), f"Should reject PSD violation (min eig={cert.trace})"
         assert not cert.all_conditions_satisfied
 
     def test_rejects_trace_not_one(self, verifier, chaos):
@@ -249,6 +257,7 @@ class TestPillar6Adversarial:
 # ══════════════════════════════════════════════════════════════════════
 # PILLAR 7 ADVERSARIAL: Non-Markovian Chaos
 # ══════════════════════════════════════════════════════════════════════
+
 
 class TestPillar7Adversarial:
     """Adversarial tests for non-Markovian detection — stress the bounds."""
@@ -359,6 +368,7 @@ class TestPillar7Adversarial:
 # PILLAR 8 ADVERSARIAL: H4 Chaos & Boundary
 # ══════════════════════════════════════════════════════════════════════
 
+
 class TestPillar8Adversarial:
     """Adversarial tests for H4 integration — stress the 600-cell."""
 
@@ -368,10 +378,10 @@ class TestPillar8Adversarial:
             0,
             1,
             2**32 - 1,
-            2**32,       # Overflow boundary
-            2**64 - 1,   # Very large
-            -1,          # Negative (modulo will handle)
-            -2**31,      # Large negative
+            2**32,  # Overflow boundary
+            2**64 - 1,  # Very large
+            -1,  # Negative (modulo will handle)
+            -(2**31),  # Large negative
         ]
         for nonce in extreme_nonces:
             score = phi_3_resonance(nonce)
@@ -392,7 +402,9 @@ class TestPillar8Adversarial:
             assert "i" in payload, f"Node {node_id} missing 'i' key"
             assert len(payload["d"]) == 12, f"Node {node_id} degree != 12"
             for neighbor in payload["d"]:
-                assert 0 <= neighbor < NUM_NODES, f"Node {node_id} neighbor {neighbor} out of range"
+                assert (
+                    0 <= neighbor < NUM_NODES
+                ), f"Node {node_id} neighbor {neighbor} out of range"
 
     def test_adjacency_symmetry_violation(self):
         """Verify symmetry is NOT violated (positive proof of symmetry)."""
@@ -441,6 +453,7 @@ class TestPillar8Adversarial:
 # PILLAR 9 ADVERSARIAL: Substrate Equivalence Chaos
 # ══════════════════════════════════════════════════════════════════════
 
+
 class TestPillar9Adversarial:
     """Adversarial tests for substrate equivalence proofs."""
 
@@ -462,7 +475,9 @@ class TestPillar9Adversarial:
         # So both substrates are equivalent to themselves
         # To test non-equivalence, we need to compare different operations
         # or use the batch equivalence with different implementations
-        cert = prover.prove_equivalence("identity", "correct", "correct", num_test_cases=20)
+        cert = prover.prove_equivalence(
+            "identity", "correct", "correct", num_test_cases=20
+        )
         assert cert.outputs_match  # Same substrate is always equivalent to itself
 
     def test_nan_producing_implementation(self, prover):
@@ -490,8 +505,10 @@ class TestPillar9Adversarial:
         """Single-substrate category must be trivially functorial."""
         cat = SubstrateCategory("Single")
         cat.add_substrate("only_cpu")
+
         def id_fn(x: np.ndarray) -> np.ndarray:
             return x
+
         cat.add_translation("only_cpu", "only_cpu", id_fn)
         ms = MathematicalStructure("Identity")
         ms.add_operation("default", lambda x: x)
@@ -530,12 +547,15 @@ class TestPillar9Adversarial:
             assert r["verification_status"] == "PASSED"
             assert r["all_substrate_independent"]
         # All runs must produce identical results
-        assert all(r == results[0] for r in results), "Thesis verification not reproducible!"
+        assert all(
+            r == results[0] for r in results
+        ), "Thesis verification not reproducible!"
 
 
 # ══════════════════════════════════════════════════════════════════════
 # CROSS-PILLAR CHAOS ENGINEERING
 # ══════════════════════════════════════════════════════════════════════
+
 
 class TestCrossPillarChaosEngineering:
     """Chaos engineering tests combining multiple pillars under adversarial conditions."""
@@ -550,13 +570,20 @@ class TestCrossPillarChaosEngineering:
         detector = NonMarkovianDetector()
         prover = SubstrateEquivalenceProver()
 
-        corruption_types = ["non_hermitian", "negative_eigenvalues", "trace_not_one", "nan_values"]
+        corruption_types = [
+            "non_hermitian",
+            "negative_eigenvalues",
+            "trace_not_one",
+            "nan_values",
+        ]
         for corruption in corruption_types:
             rho = chaos.corrupt_density_matrix(dim=6, corruption=corruption)
 
             # Pillar 6: Should reject
             state_cert = verifier.verify_state(rho, name=f"chaos_{corruption}")
-            assert not state_cert.all_conditions_satisfied, f"Accepted corrupted: {corruption}"
+            assert (
+                not state_cert.all_conditions_satisfied
+            ), f"Accepted corrupted: {corruption}"
 
             # Pillar 7: Should handle gracefully (not crash)
             try:
@@ -566,7 +593,9 @@ class TestCrossPillarChaosEngineering:
 
             # Pillar 9: Should not crash on registration
             try:
-                prover.register_substrate_implementation(f"chaos_{corruption}", lambda x: x)
+                prover.register_substrate_implementation(
+                    f"chaos_{corruption}", lambda x: x
+                )
             except Exception as e:
                 pytest.fail(f"Substrate prover crashed on {corruption}: {e}")
 
@@ -607,14 +636,20 @@ class TestCrossPillarChaosEngineering:
 
         for trial in range(100):
             dim = chaos.rng.integers(2, 12)
-            corruption = chaos.rng.choice([
-                "non_hermitian", "negative_eigenvalues", "trace_not_one",
-            ])
+            corruption = chaos.rng.choice(
+                [
+                    "non_hermitian",
+                    "negative_eigenvalues",
+                    "trace_not_one",
+                ]
+            )
             rho = chaos.corrupt_density_matrix(dim=int(dim), corruption=str(corruption))
 
             # Pillar 6: Must reject
             cert = verifier.verify_state(rho, name=f"mc_trial_{trial}")
-            assert not cert.all_conditions_satisfied, f"MC trial {trial} ({corruption}) evaded detection!"
+            assert (
+                not cert.all_conditions_satisfied
+            ), f"MC trial {trial} ({corruption}) evaded detection!"
 
             # Pillar 7: short trajectory — must not crash
             trajectory = [rho, chaos.valid_density_matrix(dim=8)]
@@ -625,9 +660,11 @@ class TestCrossPillarChaosEngineering:
         rng = np.random.default_rng(123456)
 
         for _ in range(500):
-            nonce = int(rng.integers(-2**32, 2**33))  # Wide range including negatives
+            nonce = int(rng.integers(-(2**32), 2**33))  # Wide range including negatives
             score = phi_3_resonance(nonce)
-            assert 0 <= score <= 1, f"φ³ resonance out of bounds: nonce={nonce}, score={score}"
+            assert (
+                0 <= score <= 1
+            ), f"φ³ resonance out of bounds: nonce={nonce}, score={score}"
 
     def test_h4_manifold_survives_synaptic_reset(self):
         """H4 manifold must survive extreme synaptic perturbations."""
@@ -639,7 +676,9 @@ class TestCrossPillarChaosEngineering:
         for _ in range(5):
             noise = rng.random((120, 120)).astype(np.float64) * 0.5
             manifold.synaptic_matrix = manifold.synaptic_matrix + noise
-            manifold.synaptic_matrix = manifold.synaptic_matrix / np.max(manifold.synaptic_matrix)
+            manifold.synaptic_matrix = manifold.synaptic_matrix / np.max(
+                manifold.synaptic_matrix
+            )
             manifold._refresh_hamiltonian()
 
             # Must still satisfy invariants
@@ -649,14 +688,16 @@ class TestCrossPillarChaosEngineering:
         # After chaos, entropy should still be reasonable
         chaos_entropy = manifold.von_neumann_entropy()
         assert math.isfinite(chaos_entropy), "Entropy became non-finite after chaos"
-        assert -1e-10 <= chaos_entropy <= math.log2(120) + 1e-10, "Entropy out of bounds after chaos"
+        assert (
+            -1e-10 <= chaos_entropy <= math.log2(120) + 1e-10
+        ), "Entropy out of bounds after chaos"
 
     def test_phi_folding_edge_case_dimensions(self):
         """phi-folding must handle edge case dimensions (even, powers of 2)."""
         for dim in [2, 4, 8, 16, 32, 64, 128]:
             v = np.random.default_rng(dim).random(dim).astype(np.float64)
             w1 = 1.0 / _PHI
-            w2 = 1.0 / (_PHI ** 2)
+            w2 = 1.0 / (_PHI**2)
             a = dim // 2
             head = v[:a]
             tail = v[a:]
@@ -667,7 +708,9 @@ class TestCrossPillarChaosEngineering:
             norm_sq = w1**2 + w2**2
             recon_head = (w1 * folded + w2 * kernel) / norm_sq
             recon_tail_padded = (w2 * folded - w1 * kernel) / norm_sq
-            recon_tail = recon_tail_padded[:len(tail)]
+            recon_tail = recon_tail_padded[: len(tail)]
             recon = np.concatenate([recon_head[:a], recon_tail])
             error = float(np.linalg.norm(recon - v))
-            assert error < 1e-10, f"Reconstruction error too large at dim={dim}: {error:.2e}"
+            assert (
+                error < 1e-10
+            ), f"Reconstruction error too large at dim={dim}: {error:.2e}"

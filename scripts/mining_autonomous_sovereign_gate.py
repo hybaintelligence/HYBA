@@ -90,9 +90,13 @@ def _production_environment_check(mode: Mode) -> AutonomousGateCheck:
     failures: list[str] = []
     if mode == "live":
         if _env("NODE_ENV").lower() != "production":
-            failures.append("NODE_ENV=production required for live PYTHIA mining startup")
+            failures.append(
+                "NODE_ENV=production required for live PYTHIA mining startup"
+            )
         if _env("HYBA_ENV").lower() != "production":
-            failures.append("HYBA_ENV=production required for live PYTHIA mining startup")
+            failures.append(
+                "HYBA_ENV=production required for live PYTHIA mining startup"
+            )
         if not _env_bool("HYBA_ENABLE_LIVE_STRATUM"):
             failures.append(
                 "HYBA_ENABLE_LIVE_STRATUM=true required for live pool/API connection checks"
@@ -117,7 +121,9 @@ def _production_environment_check(mode: Mode) -> AutonomousGateCheck:
 def _dev_fixture_check() -> AutonomousGateCheck:
     failures: list[str] = []
     if _env_bool("HYBA_ALLOW_DEV_FIXTURES"):
-        failures.append("HYBA_ALLOW_DEV_FIXTURES must be false before live PYTHIA mining startup")
+        failures.append(
+            "HYBA_ALLOW_DEV_FIXTURES must be false before live PYTHIA mining startup"
+        )
     return AutonomousGateCheck(
         name="dev_fixtures_disabled_for_pythia_startup",
         severity="critical",
@@ -178,7 +184,9 @@ def _external_action_authorisation_check() -> AutonomousGateCheck:
                 "HYBA_AUTONOMOUS_OPERATOR_APPROVAL_ID is required for autonomous external actions"
             )
         if not operator:
-            failures.append("HYBA_AUTONOMOUS_OPERATOR is required for autonomous external actions")
+            failures.append(
+                "HYBA_AUTONOMOUS_OPERATOR is required for autonomous external actions"
+            )
         if not reason:
             failures.append(
                 "HYBA_AUTONOMOUS_OPERATOR_REASON is required for autonomous external actions"
@@ -208,30 +216,40 @@ def _autonomous_bounds_check() -> AutonomousGateCheck:
     if max_power != max_power or max_power <= 0 or max_power > 500.0:
         failures.append("HYBA_AUTONOMOUS_MAX_POWER_WATTS must be >0 and <=500.0")
     if phi_threshold != phi_threshold or phi_threshold < 0.70 or phi_threshold > 1.0:
-        failures.append("HYBA_AUTONOMOUS_MIN_PHI_COHERENCE must be between 0.70 and 1.0")
+        failures.append(
+            "HYBA_AUTONOMOUS_MIN_PHI_COHERENCE must be between 0.70 and 1.0"
+        )
 
     return AutonomousGateCheck(
         name="autonomous_runtime_bounds",
         severity="critical",
         status="fail" if failures else "pass",
-        summary="autonomous bounds are unsafe"
-        if failures
-        else "autonomous bounds are within configured production limits",
+        summary=(
+            "autonomous bounds are unsafe"
+            if failures
+            else "autonomous bounds are within configured production limits"
+        ),
         detail="\n".join(failures),
     )
 
 
 def _share_submit_check() -> AutonomousGateCheck:
     failures: list[str] = []
-    if _env_bool("HYBA_ENABLE_LIVE_SHARE_SUBMIT") and not _env("HYBA_LIVE_SHARE_APPROVAL_ID"):
-        failures.append("HYBA_ENABLE_LIVE_SHARE_SUBMIT=true requires HYBA_LIVE_SHARE_APPROVAL_ID")
+    if _env_bool("HYBA_ENABLE_LIVE_SHARE_SUBMIT") and not _env(
+        "HYBA_LIVE_SHARE_APPROVAL_ID"
+    ):
+        failures.append(
+            "HYBA_ENABLE_LIVE_SHARE_SUBMIT=true requires HYBA_LIVE_SHARE_APPROVAL_ID"
+        )
     return AutonomousGateCheck(
         name="live_share_submit_authorisation",
         severity="critical",
         status="fail" if failures else "pass",
-        summary="live share submit is not authorised"
-        if failures
-        else "live share submit is either disabled or explicitly approved",
+        summary=(
+            "live share submit is not authorised"
+            if failures
+            else "live share submit is either disabled or explicitly approved"
+        ),
         detail="\n".join(failures),
     )
 
@@ -249,9 +267,11 @@ def _audit_evidence_check() -> AutonomousGateCheck:
         name="autonomous_audit_evidence",
         severity="advisory",
         status="warn" if warnings else "pass",
-        summary="autonomous audit evidence has advisory gaps"
-        if warnings
-        else "autonomous audit evidence fields are present",
+        summary=(
+            "autonomous audit evidence has advisory gaps"
+            if warnings
+            else "autonomous audit evidence fields are present"
+        ),
         detail="\n".join(warnings),
     )
 
@@ -267,7 +287,9 @@ def run_gate(mode: Mode) -> AutonomousSovereignGateReport:
         _audit_evidence_check(),
     ]
     critical_failures = [
-        check for check in checks if check.severity == "critical" and check.status == "fail"
+        check
+        for check in checks
+        if check.severity == "critical" and check.status == "fail"
     ]
     passed = not critical_failures
     actions: list[str] = []
@@ -302,7 +324,9 @@ def _write_report(report: AutonomousSovereignGateReport) -> Path:
     ARTIFACT_DIR.mkdir(parents=True, exist_ok=True)
     stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     path = ARTIFACT_DIR / f"autonomous_sovereign_gate_{report.mode}_{stamp}.json"
-    path.write_text(json.dumps(report.to_dict(), indent=2, sort_keys=True), encoding="utf-8")
+    path.write_text(
+        json.dumps(report.to_dict(), indent=2, sort_keys=True), encoding="utf-8"
+    )
     return path
 
 
@@ -310,9 +334,13 @@ def main() -> int:
     parser = argparse.ArgumentParser(
         description="Run the final autonomous-mining sovereign GO/NO-GO gate."
     )
-    parser.add_argument("--mode", choices=["command-room", "live"], default="command-room")
     parser.add_argument(
-        "--write", action="store_true", help="Write JSON report to artifacts/mining_readiness/."
+        "--mode", choices=["command-room", "live"], default="command-room"
+    )
+    parser.add_argument(
+        "--write",
+        action="store_true",
+        help="Write JSON report to artifacts/mining_readiness/.",
     )
     args = parser.parse_args()
 

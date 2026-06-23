@@ -34,7 +34,7 @@ def get_pythia_state() -> Optional[Dict[str, Any]]:
             handle_error(
                 DatabaseError(f"Failed to read pythia state file: {e}"),
                 context={"file": state_file},
-                raise_http=False
+                raise_http=False,
             )
             return None
     return None
@@ -132,9 +132,13 @@ async def get_health_status():
     # Calculate Structural Coupling Index and Φ-Floor
     # Structural Coupling Index: measures how well the system components are integrated
     # Φ-Floor: minimum acceptable φ-resonance threshold for healthy operation
-    structural_coupling_index = _calculate_structural_coupling_index(substrate_state, state)
+    structural_coupling_index = _calculate_structural_coupling_index(
+        substrate_state, state
+    )
     phi_floor = 0.2  # Minimum φ-resonance threshold for healthy operation
-    innervation_status = "healthy" if structural_coupling_index > phi_floor else "degraded"
+    innervation_status = (
+        "healthy" if structural_coupling_index > phi_floor else "degraded"
+    )
 
     return {
         "status": "healthy" if is_ready() else "degraded",
@@ -161,7 +165,9 @@ async def get_health_status():
             "networkDifficulty": state.get("network_difficulty") if state else None,
             "power_scale": state.get("power_scale") if state else None,
             "phi_tier": state.get("phi_tier") if state else None,
-            "phi_tier_composition": (state.get("phi_tier_composition") if state else None),
+            "phi_tier_composition": (
+                state.get("phi_tier_composition") if state else None
+            ),
             "memory_compression_contract": (
                 state.get("memory_compression_contract") if state else None
             ),
@@ -185,7 +191,9 @@ async def get_substrate_readiness():
         "pythia": {
             "available": state is not None,
             "system_health": state.get("system_health") if state else "unavailable",
-            "telemetry_source": (state.get("telemetry_source") if state else "unavailable"),
+            "telemetry_source": (
+                state.get("telemetry_source") if state else "unavailable"
+            ),
         },
     }
 
@@ -199,13 +207,13 @@ def get_autonomous_bootstrap_report() -> Optional[Dict[str, Any]]:
         "evidence",
         "pythia_autonomy",
     )
-    
+
     if os.path.exists(runtime_evidence_dir):
         try:
             # Get the most recent report file
             report_files = sorted(
                 [f for f in os.listdir(runtime_evidence_dir) if f.endswith(".json")],
-                reverse=True
+                reverse=True,
             )
             if report_files:
                 latest_report_path = os.path.join(runtime_evidence_dir, report_files[0])
@@ -213,7 +221,7 @@ def get_autonomous_bootstrap_report() -> Optional[Dict[str, Any]]:
                     return json.load(f)
         except (OSError, json.JSONDecodeError):
             pass
-    
+
     # Fallback to artifacts directory for manually run bootstrap reports
     artifacts_dir = os.path.join(
         os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
@@ -227,14 +235,14 @@ def get_autonomous_bootstrap_report() -> Optional[Dict[str, Any]]:
                 return json.load(f)
         except (OSError, json.JSONDecodeError):
             return None
-    
+
     return None
 
 
 @router.get("/startup-self-healing", response_model=Dict[str, Any])
 async def get_startup_self_healing_report():
     """Operator endpoint for startup autonomous remediation visibility.
-    
+
     Returns the autonomous bootstrap report showing:
     - Whether autonomy was enabled at startup
     - Stale lock cleanup results
@@ -244,7 +252,7 @@ async def get_startup_self_healing_report():
     """
     bootstrap_report = get_autonomous_bootstrap_report()
     substrate_state = get_substrate_state()
-    
+
     if bootstrap_report is None:
         return {
             "enabled": False,
@@ -254,7 +262,7 @@ async def get_startup_self_healing_report():
             "timestamp": datetime.now(timezone.utc).isoformat(),
             "substrate": substrate_state,
         }
-    
+
     # Extract key metrics for operator visibility
     enabled = bootstrap_report.get("enabled", False)
     epochs_executed = bootstrap_report.get("epochs_executed", 0)
@@ -262,17 +270,19 @@ async def get_startup_self_healing_report():
     after = bootstrap_report.get("after", {})
     self_healing = bootstrap_report.get("self_healing", {})
     self_optimising = bootstrap_report.get("self_optimising", {})
-    
+
     # Calculate duration if timestamps available
     duration_seconds = None
-    if before.get("metrics", {}).get("timestamp") and after.get("metrics", {}).get("timestamp"):
+    if before.get("metrics", {}).get("timestamp") and after.get("metrics", {}).get(
+        "timestamp"
+    ):
         try:
             start = float(before["metrics"]["timestamp"])
             end = float(after["metrics"]["timestamp"])
             duration_seconds = end - start
         except (ValueError, TypeError):
             pass
-    
+
     return {
         "enabled": enabled,
         "completed": epochs_executed > 0,
@@ -296,9 +306,15 @@ async def get_startup_self_healing_report():
         "self_optimising": {
             "reflexive_cycle_count": self_optimising.get("reflexive_cycle_count"),
             "proposal_acceptance_rate": self_optimising.get("proposal_acceptance_rate"),
-            "last_reflexive_cycle_duration_ms": self_optimising.get("last_reflexive_cycle_duration_ms"),
+            "last_reflexive_cycle_duration_ms": self_optimising.get(
+                "last_reflexive_cycle_duration_ms"
+            ),
         },
-        "audit_event": "startup_self_healing_completed" if epochs_executed > 0 else "startup_self_healing_not_executed",
+        "audit_event": (
+            "startup_self_healing_completed"
+            if epochs_executed > 0
+            else "startup_self_healing_not_executed"
+        ),
         "timestamp": bootstrap_report.get("generated_at_utc"),
         "substrate": substrate_state,
     }

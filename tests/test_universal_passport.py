@@ -85,16 +85,16 @@ class TestUniversalPassportBasics:
             claim_type=ClaimType.NONCE_FOUND.value,
             payload={"nonce": 12345},
         )
-        
+
         # Simulate tampering by modifying the dataclass
         # Since it's frozen, we need to create a new passport with same hash but different payload
         tampered_dict = passport.to_dict()
         tampered_dict["payload"]["nonce"] = 99999
         tampered_dict["embedded_hash"] = passport.embedded_hash  # Keep original hash
-        
+
         # Create new passport from tampered dict
         tampered_passport = UniversalPassport(**tampered_dict)
-        
+
         # Verification should fail
         assert tampered_passport.verify() is False
 
@@ -133,13 +133,13 @@ class TestUniversalPassportBasics:
             claim_type=ClaimType.NONCE_FOUND.value,
             payload={"nonce": 12345, "job_id": "test_job"},
         )
-        
+
         # Test to_dict
         passport_dict = passport.to_dict()
         assert passport_dict["subsystem"] == Subsystem.PYTHIA.value
         assert passport_dict["claim_type"] == ClaimType.NONCE_FOUND.value
         assert passport_dict["payload"]["nonce"] == 12345
-        
+
         # Test to_json
         passport_json = passport.to_json()
         parsed = json.loads(passport_json)
@@ -190,7 +190,10 @@ class TestConvenienceFactories:
         assert passport.claim_type == ClaimType.MODE_TRANSITION.value
         assert passport.payload["from_mode"] == "NORMAL"
         assert passport.payload["to_mode"] == "SANITIZED"
-        assert EpistemicBound.NO_SECURITY_INVULNERABILITY.value in passport.epistemic_bounds
+        assert (
+            EpistemicBound.NO_SECURITY_INVULNERABILITY.value
+            in passport.epistemic_bounds
+        )
         assert passport.verify() is True
 
     def test_make_phi_measurement_passport(self):
@@ -216,7 +219,9 @@ class TestConvenienceFactories:
         assert passport.subsystem == Subsystem.META_CONTROLLER.value
         assert passport.claim_type == ClaimType.CIRCUIT_BREAKER_TRIP.value
         assert passport.payload["route"] == "fallback"
-        assert EpistemicBound.NO_GUARANTEE_CORRECTNESS.value in passport.epistemic_bounds
+        assert (
+            EpistemicBound.NO_GUARANTEE_CORRECTNESS.value in passport.epistemic_bounds
+        )
         assert passport.verify() is True
 
 
@@ -231,9 +236,12 @@ class TestEpistemicCompleteness:
             payload={"nonce": 12345},
             epistemic_bounds=[EpistemicBound.NO_QUANTUM_SPEEDUP.value],
         )
-        assert passport.verify_epistemic_completeness(
-            [EpistemicBound.NO_QUANTUM_SPEEDUP.value]
-        ) is True
+        assert (
+            passport.verify_epistemic_completeness(
+                [EpistemicBound.NO_QUANTUM_SPEEDUP.value]
+            )
+            is True
+        )
 
     def test_verify_epistemic_completeness_failure(self):
         """Test failed epistemic completeness verification."""
@@ -243,9 +251,12 @@ class TestEpistemicCompleteness:
             payload={"nonce": 12345},
             epistemic_bounds=[],
         )
-        assert passport.verify_epistemic_completeness(
-            [EpistemicBound.NO_QUANTUM_SPEEDUP.value]
-        ) is False
+        assert (
+            passport.verify_epistemic_completeness(
+                [EpistemicBound.NO_QUANTUM_SPEEDUP.value]
+            )
+            is False
+        )
 
     def test_multiple_required_bounds(self):
         """Test verification with multiple required bounds."""
@@ -258,10 +269,15 @@ class TestEpistemicCompleteness:
                 EpistemicBound.NO_GUARANTEE_CORRECTNESS.value,
             ],
         )
-        assert passport.verify_epistemic_completeness([
-            EpistemicBound.NO_QUANTUM_SPEEDUP.value,
-            EpistemicBound.NO_GUARANTEE_CORRECTNESS.value,
-        ]) is True
+        assert (
+            passport.verify_epistemic_completeness(
+                [
+                    EpistemicBound.NO_QUANTUM_SPEEDUP.value,
+                    EpistemicBound.NO_GUARANTEE_CORRECTNESS.value,
+                ]
+            )
+            is True
+        )
 
 
 class TestSharedAuditLog:
@@ -292,25 +308,31 @@ class TestSharedAuditLog:
             "schema_version": "UNIVERSAL_PASSPORT_V1",
         }
         passport = UniversalPassport(**passport_dict)
-        with pytest.raises(ValueError, match="Cannot append passport with invalid hash"):
+        with pytest.raises(
+            ValueError, match="Cannot append passport with invalid hash"
+        ):
             log.append(passport)
 
     def test_audit_log_filter_by_subsystem(self):
         """Test filtering audit log by subsystem."""
         log = SharedAuditLog()
-        log.append(make_passport(
-            subsystem=Subsystem.PYTHIA.value,
-            claim_type=ClaimType.NONCE_FOUND.value,
-            payload={"nonce": 1},
-            epistemic_bounds=[EpistemicBound.NO_QUANTUM_SPEEDUP.value],
-        ))
-        log.append(make_passport(
-            subsystem=Subsystem.SECURITY_SWARM.value,
-            claim_type=ClaimType.MODE_TRANSITION.value,
-            payload={"mode": "SANITIZED"},
-            epistemic_bounds=[EpistemicBound.NO_SECURITY_INVULNERABILITY.value],
-        ))
-        
+        log.append(
+            make_passport(
+                subsystem=Subsystem.PYTHIA.value,
+                claim_type=ClaimType.NONCE_FOUND.value,
+                payload={"nonce": 1},
+                epistemic_bounds=[EpistemicBound.NO_QUANTUM_SPEEDUP.value],
+            )
+        )
+        log.append(
+            make_passport(
+                subsystem=Subsystem.SECURITY_SWARM.value,
+                claim_type=ClaimType.MODE_TRANSITION.value,
+                payload={"mode": "SANITIZED"},
+                epistemic_bounds=[EpistemicBound.NO_SECURITY_INVULNERABILITY.value],
+            )
+        )
+
         pythia_entries = log.get_entries(subsystem=Subsystem.PYTHIA.value)
         assert len(pythia_entries) == 1
         assert pythia_entries[0].subsystem == Subsystem.PYTHIA.value
@@ -318,18 +340,22 @@ class TestSharedAuditLog:
     def test_audit_log_filter_by_claim_type(self):
         """Test filtering audit log by claim type."""
         log = SharedAuditLog()
-        log.append(make_passport(
-            subsystem=Subsystem.PYTHIA.value,
-            claim_type=ClaimType.NONCE_FOUND.value,
-            payload={"nonce": 1},
-            epistemic_bounds=[EpistemicBound.NO_QUANTUM_SPEEDUP.value],
-        ))
-        log.append(make_passport(
-            subsystem=Subsystem.PYTHIA.value,
-            claim_type=ClaimType.SHARE_SUBMISSION.value,
-            payload={"share": 2},
-        ))
-        
+        log.append(
+            make_passport(
+                subsystem=Subsystem.PYTHIA.value,
+                claim_type=ClaimType.NONCE_FOUND.value,
+                payload={"nonce": 1},
+                epistemic_bounds=[EpistemicBound.NO_QUANTUM_SPEEDUP.value],
+            )
+        )
+        log.append(
+            make_passport(
+                subsystem=Subsystem.PYTHIA.value,
+                claim_type=ClaimType.SHARE_SUBMISSION.value,
+                payload={"share": 2},
+            )
+        )
+
         nonce_entries = log.get_entries(claim_type=ClaimType.NONCE_FOUND.value)
         assert len(nonce_entries) == 1
         assert nonce_entries[0].claim_type == ClaimType.NONCE_FOUND.value
@@ -338,25 +364,29 @@ class TestSharedAuditLog:
         """Test filtering audit log by timestamp range."""
         log = SharedAuditLog()
         t1 = time.time()
-        log.append(make_passport(
-            subsystem=Subsystem.PYTHIA.value,
-            claim_type=ClaimType.NONCE_FOUND.value,
-            payload={"nonce": 1},
-            timestamp=t1,
-            epistemic_bounds=[EpistemicBound.NO_QUANTUM_SPEEDUP.value],
-        ))
+        log.append(
+            make_passport(
+                subsystem=Subsystem.PYTHIA.value,
+                claim_type=ClaimType.NONCE_FOUND.value,
+                payload={"nonce": 1},
+                timestamp=t1,
+                epistemic_bounds=[EpistemicBound.NO_QUANTUM_SPEEDUP.value],
+            )
+        )
         time.sleep(0.01)
         t_mid = time.time()
         time.sleep(0.01)
         t2 = time.time()
-        log.append(make_passport(
-            subsystem=Subsystem.PYTHIA.value,
-            claim_type=ClaimType.NONCE_FOUND.value,
-            payload={"nonce": 2},
-            timestamp=t2,
-            epistemic_bounds=[EpistemicBound.NO_QUANTUM_SPEEDUP.value],
-        ))
-        
+        log.append(
+            make_passport(
+                subsystem=Subsystem.PYTHIA.value,
+                claim_type=ClaimType.NONCE_FOUND.value,
+                payload={"nonce": 2},
+                timestamp=t2,
+                epistemic_bounds=[EpistemicBound.NO_QUANTUM_SPEEDUP.value],
+            )
+        )
+
         # Filter for first entry only (t1 inclusive, t_mid exclusive)
         entries = log.get_entries(since=t1, until=t_mid)
         assert len(entries) == 1
@@ -379,7 +409,7 @@ class TestSharedAuditLog:
         with tempfile.TemporaryDirectory() as tmpdir:
             storage_path = Path(tmpdir) / "audit_log.json"
             log = SharedAuditLog(storage_path=str(storage_path))
-            
+
             passport = make_passport(
                 subsystem=Subsystem.PYTHIA.value,
                 claim_type=ClaimType.NONCE_FOUND.value,
@@ -387,7 +417,7 @@ class TestSharedAuditLog:
                 epistemic_bounds=[EpistemicBound.NO_QUANTUM_SPEEDUP.value],
             )
             log.append(passport)
-            
+
             # Create new log instance to load from storage
             log2 = SharedAuditLog(storage_path=str(storage_path))
             entries = log2.get_entries()
@@ -453,9 +483,7 @@ class TestPassportProperties:
             max_size=5,
         ),
     )
-    def test_property_hash_deterministic(
-        self, subsystem, claim_type, payload
-    ):
+    def test_property_hash_deterministic(self, subsystem, claim_type, payload):
         """Property: Hash computation is deterministic for same input."""
         timestamp = time.time()
         passport1 = make_passport(
@@ -501,7 +529,7 @@ class TestPassportProperties:
                 modified_payload[first_key] = payload[first_key] + 1
             else:
                 modified_payload[first_key] = str(payload[first_key]) + "_mod"
-        
+
         passport2 = make_passport(
             subsystem=subsystem,
             claim_type=claim_type,
@@ -520,22 +548,20 @@ class TestPassportProperties:
             max_size=5,
         ),
     )
-    def test_property_serialization_roundtrip(
-        self, subsystem, claim_type, payload
-    ):
+    def test_property_serialization_roundtrip(self, subsystem, claim_type, payload):
         """Property: Serialization to dict/json and back preserves integrity."""
         passport = make_passport(
             subsystem=subsystem,
             claim_type=claim_type,
             payload=payload,
         )
-        
+
         # Dict roundtrip
         passport_dict = passport.to_dict()
         passport_from_dict = UniversalPassport(**passport_dict)
         assert passport_from_dict.verify() is True
         assert passport_from_dict.embedded_hash == passport.embedded_hash
-        
+
         # JSON roundtrip
         passport_json = passport.to_json()
         passport_from_json = UniversalPassport(**json.loads(passport_json))
@@ -563,20 +589,18 @@ class TestAuditLogProperties:
                 epistemic_bounds=[EpistemicBound.NO_QUANTUM_SPEEDUP.value],
             )
             log.append(passport)
-        
+
         assert log.verify_chain() is True
         assert len(log.get_entries()) == num_passports
 
     @given(
         num_passports=integers(min_value=2, max_value=10),
     )
-    def test_property_filter_subsystem_isolation(
-        self, num_passports
-    ):
+    def test_property_filter_subsystem_isolation(self, num_passports):
         """Property: Filtering by subsystem correctly isolates entries."""
         log = SharedAuditLog()
         subsystems = [s.value for s in Subsystem]
-        
+
         for i in range(num_passports):
             subsystem = subsystems[i % len(subsystems)]
             passport = make_passport(
@@ -586,7 +610,7 @@ class TestAuditLogProperties:
                 epistemic_bounds=[EpistemicBound.NO_QUANTUM_SPEEDUP.value],
             )
             log.append(passport)
-        
+
         # Each subsystem should only return its own entries
         for subsystem in subsystems:
             entries = log.get_entries(subsystem=subsystem)
@@ -610,7 +634,7 @@ class TestPassportIntegration:
             claim_type=ClaimType.NONCE_FOUND.value,
             payload={"nonce": 12345},
         )
-        
+
         # Hash should be SHA-256 hex string
         assert len(passport.embedded_hash) == 64
         assert all(c in "0123456789abcdef" for c in passport.embedded_hash)
@@ -619,7 +643,7 @@ class TestPassportIntegration:
         """Test that timestamps are monotonically increasing within subsystem."""
         log = SharedAuditLog()
         timestamps = []
-        
+
         for i in range(5):
             passport = make_passport(
                 subsystem=Subsystem.PYTHIA.value,
@@ -629,31 +653,44 @@ class TestPassportIntegration:
             )
             log.append(passport)
             timestamps.append(passport.timestamp)
-        
+
         # Timestamps should be non-decreasing
         assert timestamps == sorted(timestamps)
 
     def test_multiple_subsystems_in_single_log(self):
         """Test that multiple subsystems can coexist in single audit log."""
         log = SharedAuditLog()
-        
+
         # Add entries from different subsystems
-        log.append(make_mining_passport(
-            nonce=1, job_id="job1", pool_name="pool1", phi_score=0.5, bures_score=0.5
-        ))
-        log.append(make_mode_transition_passport(
-            from_mode="NORMAL", to_mode="SANITIZED", reason="test", security_context={}
-        ))
-        log.append(make_phi_measurement_passport(
-            phi_value=0.618, system_state={}, measurement_context={}
-        ))
-        log.append(make_circuit_breaker_passport(
-            signal={}, route="fallback", explanation={}
-        ))
-        
+        log.append(
+            make_mining_passport(
+                nonce=1,
+                job_id="job1",
+                pool_name="pool1",
+                phi_score=0.5,
+                bures_score=0.5,
+            )
+        )
+        log.append(
+            make_mode_transition_passport(
+                from_mode="NORMAL",
+                to_mode="SANITIZED",
+                reason="test",
+                security_context={},
+            )
+        )
+        log.append(
+            make_phi_measurement_passport(
+                phi_value=0.618, system_state={}, measurement_context={}
+            )
+        )
+        log.append(
+            make_circuit_breaker_passport(signal={}, route="fallback", explanation={})
+        )
+
         # All should be in the log
         assert len(log.get_entries()) == 4
-        
+
         # Each subsystem should have exactly one entry
         assert len(log.get_entries(subsystem=Subsystem.PYTHIA.value)) == 1
         assert len(log.get_entries(subsystem=Subsystem.SECURITY_SWARM.value)) == 1

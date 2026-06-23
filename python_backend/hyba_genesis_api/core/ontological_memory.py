@@ -17,7 +17,9 @@ class CrystallineRegistry:
             or os.getenv("HYBA_ONTOLOGICAL_STATE_PATH")
             or os.getenv("HYBA_ONTOLOGICAL_PERSISTENCE_PATH")
         )
-        self.filepath = Path(configured) if configured else Path("logs/ontological_state.json")
+        self.filepath = (
+            Path(configured) if configured else Path("logs/ontological_state.json")
+        )
 
     def save_peak_state(self, phi: float, weights: Dict[str, Any]) -> Dict[str, Any]:
         """Store only the most resonant state seen so far."""
@@ -32,7 +34,9 @@ class CrystallineRegistry:
             "persistence": "mathematical_artifact_no_source_write",
         }
         self.filepath.parent.mkdir(parents=True, exist_ok=True)
-        self.filepath.write_text(json.dumps(state, sort_keys=True, indent=2), encoding="utf-8")
+        self.filepath.write_text(
+            json.dumps(state, sort_keys=True, indent=2), encoding="utf-8"
+        )
         return state
 
     def persist(self, phi: float, weights: Dict[str, Any]) -> Dict[str, Any]:

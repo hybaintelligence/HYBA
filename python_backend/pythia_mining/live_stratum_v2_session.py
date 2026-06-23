@@ -87,7 +87,9 @@ class LiveStratumV2Session:
     ) -> None:
         self.profile = validate_profile(profile)
         if int(self.profile.stratum_version) != 2:
-            raise LiveStratumV2SessionError("LiveStratumV2Session requires a Stratum V2 profile")
+            raise LiveStratumV2SessionError(
+                "LiveStratumV2Session requires a Stratum V2 profile"
+            )
         self.transport = transport or StratumLineTransport(profile.url)
         self.setup = setup or setup_connection_from_url(profile.url)
         self.handshake: Optional[SetupConnectionSuccess] = None
@@ -141,7 +143,9 @@ class LiveStratumV2Session:
             )
 
             if not self.noise_handshake_result.encrypted:
-                raise LiveStratumV2SessionError("Noise handshake did not establish encryption")
+                raise LiveStratumV2SessionError(
+                    "Noise handshake did not establish encryption"
+                )
 
         except Exception as e:
             raise LiveStratumV2SessionError(f"Noise protocol handshake failed: {e}")
@@ -192,11 +196,15 @@ class LiveStratumV2Session:
 
         return frame
 
-    async def setup_connection(self, *, timeout: Optional[float] = None) -> StratumV2Handshake:
+    async def setup_connection(
+        self, *, timeout: Optional[float] = None
+    ) -> StratumV2Handshake:
         try:
             await self._send_frame(build_setup_connection_frame(self.setup))
             response = await self._read_frame(timeout=timeout)
-            self.handshake = parse_setup_connection_response(response, requested=self.setup)
+            self.handshake = parse_setup_connection_response(
+                response, requested=self.setup
+            )
         except asyncio.TimeoutError as exc:
             raise LiveStratumV2SessionError("SetupConnection response timeout") from exc
         return StratumV2Handshake(

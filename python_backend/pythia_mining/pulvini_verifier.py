@@ -180,7 +180,9 @@ class SubstatePassport:
             signature=_normalize_signature(signature),
         ).to_bytes()
 
-    def verify_binary_header(self, payload: bytes, signature: Optional[bytes] = None) -> bool:
+    def verify_binary_header(
+        self, payload: bytes, signature: Optional[bytes] = None
+    ) -> bool:
         """Validate a binary header against this passport's stable fields."""
         header = SubstateBinaryHeader.from_bytes(payload)
         return (
@@ -196,7 +198,9 @@ class SubstatePassport:
         """Verify the embedded passport digest."""
         payload = self.to_dict()
         digest = payload.pop("passport_hash")
-        material = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
+        material = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode(
+            "utf-8"
+        )
         return hashlib.sha256(material).hexdigest() == digest
 
     def verify(self, expected: "SubstatePassport") -> bool:
@@ -248,7 +252,9 @@ class SubstateVerifier:
             "signature": header.signature,
         }
 
-    def verify_topology_map(self, adjacency_map: dict[int, dict[str, list[int]]]) -> bool:
+    def verify_topology_map(
+        self, adjacency_map: dict[int, dict[str, list[int]]]
+    ) -> bool:
         """Return whether an arbitrary adjacency map satisfies the PULVINI D/I contract."""
 
         try:
@@ -354,7 +360,9 @@ class SubstateVerifier:
                 if reference_rho is None
                 else self.operator.ensure_density_state(reference_rho)
             )
-            fidelity_fixed = _to_fixed_point(self.operator.compute_fidelity(density, reference))
+            fidelity_fixed = _to_fixed_point(
+                self.operator.compute_fidelity(density, reference)
+            )
 
         topology_verified = bool(
             self.verify_topology_map(adjacency)
@@ -368,8 +376,12 @@ class SubstateVerifier:
             and coverage.overlap_free
             and coverage.automorphism_preserves_coverage
         )
-        grover_verified = bool(grover.deterministic_behavior and not grover.quantum_speedup_claimed)
-        status = self._status(topology_verified, coverage_verified, grover_verified, choi_ok)
+        grover_verified = bool(
+            grover.deterministic_behavior and not grover.quantum_speedup_claimed
+        )
+        status = self._status(
+            topology_verified, coverage_verified, grover_verified, choi_ok
+        )
 
         payload = {
             "structural_hash": adjacency_map_digest(adjacency),
@@ -386,7 +398,9 @@ class SubstateVerifier:
             "purity_fixed": purity_fixed,
             "fidelity_fixed": fidelity_fixed,
             "quantum_speedup_claimed": bool(grover.quantum_speedup_claimed),
-            "timestamp_ns": (time.time_ns() if timestamp_ns is None else int(timestamp_ns)),
+            "timestamp_ns": (
+                time.time_ns() if timestamp_ns is None else int(timestamp_ns)
+            ),
             "version": SubstatePassport.__dataclass_fields__["version"].default,
             "status": status.value,
         }
@@ -396,7 +410,9 @@ class SubstateVerifier:
             self._certificate_cache[cache_key] = passport
         return passport
 
-    def certificate_ledger(self, passports: Sequence[SubstatePassport]) -> "CertificateLedger":
+    def certificate_ledger(
+        self, passports: Sequence[SubstatePassport]
+    ) -> "CertificateLedger":
         """Unify generated passports into an append-only compliance ledger."""
         from .pulvini_elevation import CertificateLedger
 

@@ -100,7 +100,9 @@ class SymmetryExploitationEngine:
 
         return orbit_map
 
-    def reduce_search_space_by_orbit(self, node_assignments: Dict[int, any]) -> Dict[int, any]:
+    def reduce_search_space_by_orbit(
+        self, node_assignments: Dict[int, any]
+    ) -> Dict[int, any]:
         """Return only orbit representatives from full node set"""
 
         reduced = {}
@@ -111,7 +113,9 @@ class SymmetryExploitationEngine:
 
         return reduced
 
-    def expand_result_to_full_orbit(self, representative_results: Dict[int, any]) -> Dict[int, any]:
+    def expand_result_to_full_orbit(
+        self, representative_results: Dict[int, any]
+    ) -> Dict[int, any]:
         """Expand results from representatives to full orbit"""
 
         full_results = {}
@@ -137,7 +141,9 @@ class SymmetryExploitationEngine:
 
         for orbit in self.orbits:
             # Weight by orbit size (larger orbits get more nonces)
-            weighted_allocation = int(nonces_per_orbit * orbit.orbit_size / orbit.stabilizer_size)
+            weighted_allocation = int(
+                nonces_per_orbit * orbit.orbit_size / orbit.stabilizer_size
+            )
 
             allocations[orbit.representative] = (
                 current_nonce,
@@ -198,7 +204,9 @@ class SymmetryExploitationEngine:
 
         return nonces
 
-    def detect_temporal_symmetry(self, share_history: List[Dict[str, any]]) -> Dict[str, any]:
+    def detect_temporal_symmetry(
+        self, share_history: List[Dict[str, any]]
+    ) -> Dict[str, any]:
         """Du Sautoy: patterns are symmetries in data.
 
         Look for periodicity in successful shares.
@@ -208,7 +216,9 @@ class SymmetryExploitationEngine:
             return {"periodicity": None, "confidence": 0.0}
 
         # Extract timestamps of successful shares
-        success_times = [s["timestamp"] for s in share_history if s.get("accepted", False)]
+        success_times = [
+            s["timestamp"] for s in share_history if s.get("accepted", False)
+        ]
 
         if len(success_times) < 5:
             return {"periodicity": None, "confidence": 0.0}
@@ -263,7 +273,9 @@ class SymmetryExploitationEngine:
             return {"patterns": [], "confidence": 0.0}
 
         # Return most symmetric patterns
-        sorted_patterns = sorted(pattern_counts.items(), key=lambda x: x[1], reverse=True)
+        sorted_patterns = sorted(
+            pattern_counts.items(), key=lambda x: x[1], reverse=True
+        )
 
         return {
             "patterns": [
@@ -287,7 +299,9 @@ class SymmetryExploitationEngine:
             "orbit_sizes": [orbit.orbit_size for orbit in self.orbits],
             "largest_orbit": max(orbit.orbit_size for orbit in self.orbits),
             "smallest_orbit": min(orbit.orbit_size for orbit in self.orbits),
-            "avg_stabilizer_size": float(np.mean([orbit.stabilizer_size for orbit in self.orbits])),
+            "avg_stabilizer_size": float(
+                np.mean([orbit.stabilizer_size for orbit in self.orbits])
+            ),
         }
 
 

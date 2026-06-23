@@ -234,7 +234,7 @@ class IntegrationBenchmark:
 
         for i in range(self.iterations):
             start = time.perf_counter()
-            
+
             # Step 1: Create passport
             passport = make_passport(
                 subsystem=Subsystem.PYTHIA.value,
@@ -242,22 +242,22 @@ class IntegrationBenchmark:
                 payload={"nonce": i, "job_id": "test_job"},
                 epistemic_bounds=[EpistemicBound.NO_QUANTUM_SPEEDUP.value],
             )
-            
+
             # Step 2: Append to audit log
             self.audit_log.append(passport)
-            
+
             # Step 3: Search
             search_result = self.search_kernel.search(budget=10, seed=42)
-            
+
             # Step 4: Causal explanation
             event = {"type": "nonce_found", "nonce": search_result.candidate}
             claim = {"route": "solver", "type": "routing_decision"}
             explanation = self.causal_engine.explain(event, claim)
-            
+
             # Step 5: Memory routing
             signal = {"type": "test_signal", "nonce": search_result.candidate}
             routing_result = self.memory_controller.route(signal)
-            
+
             end = time.perf_counter()
             times.append((end - start) * 1000)
 
@@ -287,7 +287,7 @@ class IntegrationBenchmark:
 
         for _ in range(self.iterations):
             start = time.perf_counter()
-            
+
             # Create passport with causal context
             passport = make_passport(
                 subsystem=Subsystem.PYTHIA.value,
@@ -299,19 +299,19 @@ class IntegrationBenchmark:
                 },
                 epistemic_bounds=[EpistemicBound.NO_QUANTUM_SPEEDUP.value],
             )
-            
+
             # Use passport data in causal engine
             event = {"type": "nonce_found", "passport": passport.to_dict()}
             claim = {"route": "solver", "type": "routing_decision"}
             explanation = self.causal_engine.explain(event, claim)
-            
+
             # Use causal result in memory routing
             signal = {
                 "type": "test_signal",
                 "explanation": explanation.to_dict(),
             }
             routing_result = self.memory_controller.route(signal)
-            
+
             end = time.perf_counter()
             times.append((end - start) * 1000)
 
@@ -379,7 +379,8 @@ class IntegrationBenchmark:
             "summary": {
                 "total_operations": len(results),
                 "total_time_ms": sum(r.total_time_ms for r in results),
-                "avg_throughput": sum(r.throughput_ops_per_sec for r in results) / len(results),
+                "avg_throughput": sum(r.throughput_ops_per_sec for r in results)
+                / len(results),
             },
         }
 
@@ -418,7 +419,9 @@ class IntegrationBenchmark:
         lines.append("-" * 80)
         lines.append(f"Total operations: {report_dict['summary']['total_operations']}")
         lines.append(f"Total time: {report_dict['summary']['total_time_ms']:.3f}ms")
-        lines.append(f"Avg throughput: {report_dict['summary']['avg_throughput']:.1f} ops/sec")
+        lines.append(
+            f"Avg throughput: {report_dict['summary']['avg_throughput']:.1f} ops/sec"
+        )
         lines.append("=" * 80)
 
         return "\n".join(lines)

@@ -1,104 +1,100 @@
 version: '3.8'
-
 services:
   backend:
     build:
       context: .
       dockerfile: Dockerfile.prod
     ports:
-      - "3000:3000"
-      - "3001:3001"
+    - 3000:3000
+    - 3001:3001
     env_file:
-      - .env
+    - .env
     environment:
       REDIS_URL: redis://localhost:6379
       DATABASE_URL: postgresql+psycopg2://hyba:hyba@postgres:5432/hyba
       LOG_LEVEL: INFO
-      HYBA_STARTUP_SELF_HEALING_ENABLED: "true"
-      HYBA_AUTONOMOUS_RECOVERY_ENABLED: "true"
-      HYBA_SALAMANDER_AUTO_FIX_ENABLED: "true"
-      HYBA_ALGORITHM_DISCOVERY_ENABLED: "true"
-      HYBA_DYNAMIC_ALGORITHM_SWITCHING: "true"
-      HYBA_AUTONOMOUS_INNOVATION: "true"
-      HYBA_PERFORMANCE_OPTIMIZATION_AUTO: "true"
-      HYBA_ENABLE_MINING_AUTOCONNECT: "true"
-      HYBA_AUTO_START_MINING: "true"
-      HYBA_IMMEDIATE_MINING_ON_DEPLOY: "true"
-      HYBA_MEMORY_SEEDING_ENABLED: "true"
-      HYBA_BOOTSTRAP_KNOWLEDGE_BASE: "true"
-      HYBA_INITIAL_ACTION_SEQUENCE: "true"
-      HYBA_LEARNING_FROM_BLOCKCHAIN: "true"
-      HYBA_STRUCTURED_SEARCH_ENABLED: "true"
-      HYBA_EMPIRICAL_EVIDENCE_ANALYSIS: "true"
-      HYBA_DODECAHEDRON_ISOCAHEDRON_OVERLAY: "true"
-      HYBA_NONCE_SPACE_COVERAGE: "full"
-      HYBA_SOLVING_MODE: "true"
-      HYBA_SEARCH_MODE: "false"
+      HYBA_STARTUP_SELF_HEALING_ENABLED: 'true'
+      HYBA_AUTONOMOUS_RECOVERY_ENABLED: 'true'
+      HYBA_SALAMANDER_AUTO_FIX_ENABLED: 'true'
+      HYBA_ALGORITHM_DISCOVERY_ENABLED: 'true'
+      HYBA_DYNAMIC_ALGORITHM_SWITCHING: 'true'
+      HYBA_AUTONOMOUS_INNOVATION: 'true'
+      HYBA_PERFORMANCE_OPTIMIZATION_AUTO: 'true'
+      HYBA_ENABLE_MINING_AUTOCONNECT: 'true'
+      HYBA_AUTO_START_MINING: 'true'
+      HYBA_IMMEDIATE_MINING_ON_DEPLOY: 'true'
+      HYBA_MEMORY_SEEDING_ENABLED: 'true'
+      HYBA_BOOTSTRAP_KNOWLEDGE_BASE: 'true'
+      HYBA_INITIAL_ACTION_SEQUENCE: 'true'
+      HYBA_LEARNING_FROM_BLOCKCHAIN: 'true'
+      HYBA_STRUCTURED_SEARCH_ENABLED: 'true'
+      HYBA_EMPIRICAL_EVIDENCE_ANALYSIS: 'true'
+      HYBA_DODECAHEDRON_ISOCAHEDRON_OVERLAY: 'true'
+      HYBA_NONCE_SPACE_COVERAGE: full
+      HYBA_SOLVING_MODE: 'true'
+      HYBA_SEARCH_MODE: 'false'
       PULVINI_BACKEND_URL: http://127.0.0.1:3001
-      HYBA_SPAWN_BACKEND: "true"
+      HYBA_SPAWN_BACKEND: 'true'
     depends_on:
       postgres:
         condition: service_healthy
     networks:
-      - hyba-network
+    - hyba-network
     volumes:
-      - ./config:/config:ro
+    - ./config:/config:ro
     restart: unless-stopped
-
   postgres:
     image: postgres:16-alpine
     ports:
-      - "5432:5432"
+    - 5432:5432
     environment:
       POSTGRES_USER: hyba
       POSTGRES_PASSWORD: hyba
       POSTGRES_DB: hyba
     volumes:
-      - postgres-data:/var/lib/postgresql/data
-      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    - postgres-data:/var/lib/postgresql/data
+    - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init.sql:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U hyba -d hyba"]
+      test:
+      - CMD-SHELL
+      - pg_isready -U hyba -d hyba
       interval: 5s
       timeout: 3s
       retries: 5
     networks:
-      - hyba-network
+    - hyba-network
     restart: unless-stopped
-
   prometheus:
     image: prom/prometheus:latest
     ports:
-      - "9090:9090"
+    - 9090:9090
     volumes:
-      - ./config/prometheus.yml:/etc/prometheus/prometheus.yml:ro
-      - prometheus-data:/prometheus
+    - ./config/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    - prometheus-data:/prometheus
     command:
-      - --config.file=/etc/prometheus/prometheus.yml
-      - --storage.tsdb.path=/prometheus
+    - --config.file=/etc/prometheus/prometheus.yml
+    - --storage.tsdb.path=/prometheus
     networks:
-      - hyba-network
+    - hyba-network
     restart: unless-stopped
-
   grafana:
     image: grafana/grafana:latest
     ports:
-      - "3000:3000"
+    - 3000:3000
     environment:
       GF_SECURITY_ADMIN_PASSWORD: admin
     volumes:
-      - grafana-data:/var/lib/grafana
-      - ./config/grafana-datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml:ro
+    - grafana-data:/var/lib/grafana
+    - ./config/grafana-datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml:ro
     depends_on:
-      - prometheus
+    - prometheus
     networks:
-      - hyba-network
+    - hyba-network
     restart: unless-stopped
-
 volumes:
-  postgres-data:
-  prometheus-data:
-  grafana-data:
-
+  postgres-data: null
+  prometheus-data: null
+  grafana-data: null
 networks:
   hyba-network:
     driver: bridge

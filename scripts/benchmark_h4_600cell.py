@@ -136,7 +136,9 @@ def run_h4_benchmark(steps: int) -> dict[str, Any]:
         from pythia_mining.pulvini_topology_h4 import ADJACENCY_MAP_H4
 
         n_nodes = len(ADJACENCY_MAP_H4)
-        all_degree_12 = all(len(v.get("d", [])) == 12 for v in ADJACENCY_MAP_H4.values())
+        all_degree_12 = all(
+            len(v.get("d", [])) == 12 for v in ADJACENCY_MAP_H4.values()
+        )
         symmetric = all(
             i in ADJACENCY_MAP_H4.get(j, {}).get("d", [])
             for i, payload in ADJACENCY_MAP_H4.items()
@@ -162,7 +164,9 @@ def run_h4_benchmark(steps: int) -> dict[str, Any]:
         from pythia_mining.pulvini_topology_h4 import ADJACENCY_MAP_H4
 
         start = time.time()
-        autos = compute_graph_automorphisms_h4(ADJACENCY_MAP_H4, max_count=200, node_budget=500_000)
+        autos = compute_graph_automorphisms_h4(
+            ADJACENCY_MAP_H4, max_count=200, node_budget=500_000
+        )
         orbits = compute_node_orbits_h4(len(ADJACENCY_MAP_H4), autos)
         orbit_sizes = sorted(len(orbit) for orbit in orbits)
         record(
@@ -210,7 +214,9 @@ def run_h4_benchmark(steps: int) -> dict[str, Any]:
             math.isfinite(final_entropy),
             matrix_size="120×120",
             evolution_steps=steps_to_evolve,
-            mean_time_per_step_ms=round((time.time() - start) / steps_to_evolve * 1000, 2),
+            mean_time_per_step_ms=round(
+                (time.time() - start) / steps_to_evolve * 1000, 2
+            ),
             final_entropy=round(final_entropy, 6),
         )
     except Exception as exc:
@@ -268,8 +274,12 @@ def run_h4_benchmark(steps: int) -> dict[str, Any]:
         h4_symmetry = 14400
         domain_multiple = h4_nodes / m32_nodes
         symmetry_multiple = h4_symmetry / m32_symmetry
-        conservative = domain_multiple**0.5 * (math.log2(h4_nodes) / math.log2(m32_nodes))
-        optimistic = domain_multiple * (h4_nodes / m32_nodes) ** 0.25 * symmetry_multiple**0.2
+        conservative = domain_multiple**0.5 * (
+            math.log2(h4_nodes) / math.log2(m32_nodes)
+        )
+        optimistic = (
+            domain_multiple * (h4_nodes / m32_nodes) ** 0.25 * symmetry_multiple**0.2
+        )
         record(
             results,
             "Topological Scaling vs M32",

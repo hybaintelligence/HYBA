@@ -5,7 +5,9 @@ from pathlib import Path
 
 import pytest
 
-fastapi = pytest.importorskip("fastapi", reason="FastAPI backend dependencies are not installed")
+fastapi = pytest.importorskip(
+    "fastapi", reason="FastAPI backend dependencies are not installed"
+)
 from fastapi.testclient import TestClient
 
 
@@ -34,7 +36,9 @@ def _client(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> TestClient:
     return TestClient(app)
 
 
-def test_customer_portal_empty_tenant_is_evidence_first(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_customer_portal_empty_tenant_is_evidence_first(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     client = _client(tmp_path, monkeypatch)
 
     response = client.get("/api/customer/acme/dashboard", headers=_headers())
@@ -47,23 +51,33 @@ def test_customer_portal_empty_tenant_is_evidence_first(tmp_path: Path, monkeypa
     assert payload["data_provenance"]["demo_fixtures_enabled"] is False
 
 
-def test_customer_portal_denies_cross_tenant_access(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_customer_portal_denies_cross_tenant_access(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     client = _client(tmp_path, monkeypatch)
 
-    response = client.get("/api/customer/acme/dashboard", headers=_headers("other-tenant"))
+    response = client.get(
+        "/api/customer/acme/dashboard", headers=_headers("other-tenant")
+    )
 
     assert response.status_code == 403
 
 
-def test_customer_portal_requires_token_when_configured(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_customer_portal_requires_token_when_configured(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     client = _client(tmp_path, monkeypatch)
 
-    response = client.get("/api/customer/acme/dashboard", headers={"X-HYBA-Tenant-ID": "acme"})
+    response = client.get(
+        "/api/customer/acme/dashboard", headers={"X-HYBA-Tenant-ID": "acme"}
+    )
 
     assert response.status_code == 401
 
 
-def test_api_key_lifecycle_persists_hmac_only(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_api_key_lifecycle_persists_hmac_only(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     client = _client(tmp_path, monkeypatch)
 
     create_response = client.post(
@@ -87,21 +101,38 @@ def test_api_key_lifecycle_persists_hmac_only(tmp_path: Path, monkeypatch: pytes
     )
 
     assert revoke_response.status_code == 200
-    assert client.get("/api/customer/acme/dashboard", headers=_headers()).json()["api_keys"] == []
+    assert (
+        client.get("/api/customer/acme/dashboard", headers=_headers()).json()[
+            "api_keys"
+        ]
+        == []
+    )
 
 
-def test_payment_method_requires_tokenized_last4(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_payment_method_requires_tokenized_last4(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     client = _client(tmp_path, monkeypatch)
 
     invalid = client.post(
         "/api/customer/acme/payment-methods",
         headers=_headers(),
-        json={"provider": "stripe", "token": "tok_enterprise", "last4": "12ab", "card_type": "visa"},
+        json={
+            "provider": "stripe",
+            "token": "tok_enterprise",
+            "last4": "12ab",
+            "card_type": "visa",
+        },
     )
     valid = client.post(
         "/api/customer/acme/payment-methods",
         headers=_headers(),
-        json={"provider": "stripe", "token": "tok_enterprise", "last4": "4242", "card_type": "visa"},
+        json={
+            "provider": "stripe",
+            "token": "tok_enterprise",
+            "last4": "4242",
+            "card_type": "visa",
+        },
     )
 
     assert invalid.status_code == 422

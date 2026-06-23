@@ -51,7 +51,9 @@ class BlockchainOracle:
         if aiohttp is None:
             return None
         if self._session is None or self._session.closed:
-            self._session = aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10))
+            self._session = aiohttp.ClientSession(
+                timeout=aiohttp.ClientTimeout(total=10)
+            )
         return self._session
 
     async def _close_session(self) -> None:
@@ -67,11 +69,15 @@ class BlockchainOracle:
 
         try:
             # Try blockchain.info API first
-            async with session.get("https://blockchain.info/q/getblockcount") as response:
+            async with session.get(
+                "https://blockchain.info/q/getblockcount"
+            ) as response:
                 if response.status == 200:
                     height = int(await response.text())
                     # Get latest block hash
-                    async with session.get("https://blockchain.info/latestblock") as resp:
+                    async with session.get(
+                        "https://blockchain.info/latestblock"
+                    ) as resp:
                         if resp.status == 200:
                             data = await resp.json()
                             return BlockTip(
@@ -85,10 +91,14 @@ class BlockchainOracle:
 
         try:
             # Fallback to blockstream API
-            async with session.get("https://blockstream.info/api/blocks/tip/height") as response:
+            async with session.get(
+                "https://blockstream.info/api/blocks/tip/height"
+            ) as response:
                 if response.status == 200:
                     height = int(await response.text())
-                    async with session.get("https://blockstream.info/api/blocks/tip/hash") as resp:
+                    async with session.get(
+                        "https://blockstream.info/api/blocks/tip/hash"
+                    ) as resp:
                         if resp.status == 200:
                             block_hash = await resp.text()
                             return BlockTip(
@@ -102,7 +112,9 @@ class BlockchainOracle:
 
         return None
 
-    async def get_current_block_tip(self, force_refresh: bool = False) -> Optional[BlockTip]:
+    async def get_current_block_tip(
+        self, force_refresh: bool = False
+    ) -> Optional[BlockTip]:
         """Get current blockchain tip with caching."""
         if not self._enabled:
             return None

@@ -21,7 +21,9 @@ class MassGapProtector:
     mathematically difficult to simulate without actual hardware work.
     """
 
-    def __init__(self, *, mass_gap: float | None = None, target_entropy: float | None = None):
+    def __init__(
+        self, *, mass_gap: float | None = None, target_entropy: float | None = None
+    ):
         """Initialize the Mass Gap Protector.
 
         Args:
@@ -30,7 +32,9 @@ class MassGapProtector:
         """
         self.PHI = PHI
         self.PHI_INV = PHI_INV
-        self.MASS_GAP = float(mass_gap if mass_gap is not None else (3.0 - self.PHI))  # 1.381966...
+        self.MASS_GAP = float(
+            mass_gap if mass_gap is not None else (3.0 - self.PHI)
+        )  # 1.381966...
         self.TARGET_ENTROPY = float(
             target_entropy if target_entropy is not None else (1.0 / self.PHI)
         )  # 0.618...
@@ -85,7 +89,9 @@ class MassGapProtector:
 
         # Combine alignment and entropy into confidence score
         # Higher alignment (closer to MASS_GAP) and lower entropy violation = higher confidence
-        confidence = np.exp(-alignment) * (1.0 - np.clip(entropy_violation * self.PHI, 0, 1))
+        confidence = np.exp(-alignment) * (
+            1.0 - np.clip(entropy_violation * self.PHI, 0, 1)
+        )
 
         return float(np.clip(confidence, 0.0, 1.0))
 
@@ -129,11 +135,15 @@ class MassGapProtector:
         entropy_normalized = entropy / np.log(10)
         entropy_violation = abs(entropy_normalized - self.TARGET_ENTROPY)
 
-        confidence = np.exp(-alignment) * (1.0 - np.clip(entropy_violation * self.PHI, 0, 1))
+        confidence = np.exp(-alignment) * (
+            1.0 - np.clip(entropy_violation * self.PHI, 0, 1)
+        )
 
         # Determine authenticity based on confidence threshold
         authentic = bool(confidence >= 0.7)
-        reason = "organic_hardware_detected" if authentic else "simulation_or_noise_detected"
+        reason = (
+            "organic_hardware_detected" if authentic else "simulation_or_noise_detected"
+        )
 
         return {
             "authentic": authentic,

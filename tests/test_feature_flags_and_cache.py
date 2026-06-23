@@ -2,7 +2,11 @@ import pytest
 from fastapi import HTTPException
 
 from hyba_genesis_api.core.feature_flags import get_feature_flags, require_feature
-from hyba_genesis_api.core.response_cache import clear_response_cache, get_cached_json, set_cached_json
+from hyba_genesis_api.core.response_cache import (
+    clear_response_cache,
+    get_cached_json,
+    set_cached_json,
+)
 
 
 def test_feature_flags_disable_surface(monkeypatch):

@@ -77,7 +77,9 @@ def _target_probability(target: int) -> float:
     return int(target) / float(2**256)
 
 
-def compute_learning_signal_correction(event: MiningLearningEvent) -> LearningSignalCorrection:
+def compute_learning_signal_correction(
+    event: MiningLearningEvent,
+) -> LearningSignalCorrection:
     """Return a conservative update that prevents share difficulty drift.
 
     Formula intuition:
@@ -113,18 +115,23 @@ def compute_learning_signal_correction(event: MiningLearningEvent) -> LearningSi
 
     phi_mass = 1.0 if event.phi_score >= PHI_THRESHOLD else 0.25
     share_update = phi_mass if event.pool_accepted_share and event.local_valid else 0.0
-    block_update = phi_mass if event.pool_confirmed_block else share_update * difficulty_gap_ratio
+    block_update = (
+        phi_mass if event.pool_confirmed_block else share_update * difficulty_gap_ratio
+    )
 
     topology_allowed = bool(
-        event.local_valid and (event.pool_accepted_share or not event.pool_confirmed_block)
+        event.local_valid
+        and (event.pool_accepted_share or not event.pool_confirmed_block)
     )
     amplitude_allowed = bool(event.pool_confirmed_block)
     reason = (
         "pool_confirmed_block_full_block_weight"
         if event.pool_confirmed_block
-        else "share_ack_discounted_by_block_share_difficulty_gap"
-        if event.pool_accepted_share
-        else "rejection_updates_negative_operational_memory_only"
+        else (
+            "share_ack_discounted_by_block_share_difficulty_gap"
+            if event.pool_accepted_share
+            else "rejection_updates_negative_operational_memory_only"
+        )
     )
 
     return LearningSignalCorrection(

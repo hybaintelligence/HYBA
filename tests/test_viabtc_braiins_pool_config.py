@@ -46,7 +46,9 @@ class TestViaBTCPoolSpec:
         """ViaBTC must use Stratum V1 for job-flow capability."""
         spec = DEFAULT_POOL_SPECS["viabtc"]
         assert spec["stratum_version"] == 1
-        assert spec["url"].startswith("stratum+tcp://"), "ViaBTC must use plain TCP by default"
+        assert spec["url"].startswith(
+            "stratum+tcp://"
+        ), "ViaBTC must use plain TCP by default"
 
     def test_viabtc_url_parsing(self) -> None:
         """ViaBTC URL must parse correctly without credentials."""
@@ -108,7 +110,9 @@ class TestBraiinsPoolSpec:
         """Braiins default must be Stratum V1 for job-flow capability."""
         spec = DEFAULT_POOL_SPECS["braiins"]
         assert spec["stratum_version"] == 1
-        assert spec["url"].startswith("stratum+tcp://"), "Braiins default must use plain TCP"
+        assert spec["url"].startswith(
+            "stratum+tcp://"
+        ), "Braiins default must use plain TCP"
 
     def test_braiins_url_parsing(self) -> None:
         """Braiins URL must parse correctly."""
@@ -488,7 +492,9 @@ class TestEnvironmentConfigOverride:
     def test_braiins_env_override_url(self, monkeypatch, tmp_path) -> None:
         """Braiins URL can be overridden via environment variable."""
         monkeypatch.setenv("HYBA_POOL_CONFIG_PATH", str(tmp_path / "missing.json"))
-        monkeypatch.setenv("HYBA_POOL_BRAIINS_URL", "stratum+tcp://alt.braiins.com:3334")
+        monkeypatch.setenv(
+            "HYBA_POOL_BRAIINS_URL", "stratum+tcp://alt.braiins.com:3334"
+        )
         monkeypatch.setenv("HYBA_POOL_BRAIINS_USERNAME", "alt_worker")
         monkeypatch.setenv("HYBA_POOL_BRAIINS_PASSWORD", "x")
         monkeypatch.setenv("HYBA_POOL_BRAIINS_STRATUM_VERSION", "1")

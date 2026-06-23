@@ -82,7 +82,9 @@ class DistributedBenchmarkExecutor:
         try:
             # Execute function with timeout
             result = asyncio.run(
-                self._run_with_timeout(task.function, task.args, task.kwargs, task.timeout)
+                self._run_with_timeout(
+                    task.function, task.args, task.kwargs, task.timeout
+                )
             )
 
             end_time = datetime.utcnow()
@@ -155,7 +157,9 @@ class DistributedBenchmarkExecutor:
 
     def execute_parallel(self) -> List[BenchmarkResult]:
         """Execute benchmarks in parallel."""
-        print(f"Executing {len(self.tasks)} tasks in parallel with {self.num_workers} workers...")
+        print(
+            f"Executing {len(self.tasks)} tasks in parallel with {self.num_workers} workers..."
+        )
 
         with multiprocessing.Pool(processes=self.num_workers) as pool:
             self.results = pool.map(self._execute_task, self.tasks)
@@ -180,14 +184,16 @@ class DistributedBenchmarkExecutor:
         }
 
         for result in self.results:
-            report["results"].append({
-                "task_name": result.task_name,
-                "status": result.status,
-                "duration_seconds": result.duration_seconds,
-                "start_time": result.start_time,
-                "end_time": result.end_time,
-                "error": result.error,
-            })
+            report["results"].append(
+                {
+                    "task_name": result.task_name,
+                    "status": result.status,
+                    "duration_seconds": result.duration_seconds,
+                    "start_time": result.start_time,
+                    "end_time": result.end_time,
+                    "error": result.error,
+                }
+            )
 
         # Calculate summary
         total_duration = sum(r.duration_seconds for r in self.results)
@@ -205,7 +211,9 @@ class DistributedBenchmarkExecutor:
 
         return report
 
-    def save_report(self, output_file: str = "distributed_execution_report.json") -> None:
+    def save_report(
+        self, output_file: str = "distributed_execution_report.json"
+    ) -> None:
         """Save execution report to file."""
         report = self.generate_report()
 

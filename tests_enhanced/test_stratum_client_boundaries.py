@@ -7,7 +7,9 @@ import pytest
 from pythia_mining.stratum_client import ProductionConfigurationError, StratumClient
 
 
-def test_production_pool_credentials_are_required(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_production_pool_credentials_are_required(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     monkeypatch.setenv("NODE_ENV", "production")
 
     with pytest.raises(ProductionConfigurationError):
@@ -50,7 +52,9 @@ def test_circuit_breaker_half_open_after_timeout_then_closes_on_success(
     for _ in range(client._circuit_breaker_threshold):
         client._circuit_breaker_record_failure()
 
-    client._circuit_breaker_last_failure = time.time() - client._circuit_breaker_timeout - 1
+    client._circuit_breaker_last_failure = (
+        time.time() - client._circuit_breaker_timeout - 1
+    )
 
     assert client._circuit_breaker_allow_request() is True
     assert client._circuit_breaker_state == "half_open"
@@ -60,7 +64,9 @@ def test_circuit_breaker_half_open_after_timeout_then_closes_on_success(
     assert client._circuit_breaker_failures == 0
 
 
-def test_reconnect_backoff_is_bounded_and_non_decreasing(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_reconnect_backoff_is_bounded_and_non_decreasing(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     monkeypatch.setenv("NODE_ENV", "development")
     client = StratumClient(
         pool_url="stratum+tcp://pool.example:3333",
@@ -77,5 +83,7 @@ def test_reconnect_backoff_is_bounded_and_non_decreasing(monkeypatch: pytest.Mon
         delays.append(client._calculate_backoff_delay())
 
     assert all(delay >= 0.5 for delay in delays)
-    assert all(delay <= 8.8 for delay in delays)  # 10% deterministic jitter above max cap
+    assert all(
+        delay <= 8.8 for delay in delays
+    )  # 10% deterministic jitter above max cap
     assert delays[-1] >= delays[0]

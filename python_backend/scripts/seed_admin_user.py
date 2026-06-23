@@ -26,7 +26,9 @@ def _validate_seed_secret(secret: str) -> None:
     """Reject missing, short, placeholder, or low-complexity seed credentials."""
     normalized = (secret or "").strip()
     if not normalized:
-        raise ValueError("Initial admin secret is required via --password or HYBA_INITIAL_ADMIN_PASSWORD.")
+        raise ValueError(
+            "Initial admin secret is required via --password or HYBA_INITIAL_ADMIN_PASSWORD."
+        )
     lowered = normalized.lower()
     if len(normalized) < 14 or "replace-with" in lowered or "change-me" in lowered:
         raise ValueError("Initial admin secret is not strong enough for seeding.")
@@ -37,7 +39,9 @@ def _validate_seed_secret(secret: str) -> None:
         any(not ch.isalnum() for ch in normalized),
     ]
     if sum(classes) < 3:
-        raise ValueError("Initial admin secret must include at least three character classes.")
+        raise ValueError(
+            "Initial admin secret must include at least three character classes."
+        )
 
 
 def create_admin_user(username: str, password: str, email: str | None = None):
@@ -83,7 +87,9 @@ def create_admin_user(username: str, password: str, email: str | None = None):
 if __name__ == "__main__":
     import argparse
 
-    parser = argparse.ArgumentParser(description="Create initial admin user for HYBA platform")
+    parser = argparse.ArgumentParser(
+        description="Create initial admin user for HYBA platform"
+    )
     parser.add_argument("--username", default="admin", help="Admin username")
     parser.add_argument("--password", default=None, help="Initial admin secret")
     parser.add_argument("--email", default=None, help="Admin email")

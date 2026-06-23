@@ -12,10 +12,17 @@ BACKEND = ROOT / "python_backend"
 if str(BACKEND) not in sys.path:
     sys.path.insert(0, str(BACKEND))
 
-from pythia_mining.pulvini_certificates import automorphism_runtime_certificate  # noqa: E402
-from pythia_mining.pulvini_compressed_solver import PulviniCompressedQuantumSolver  # noqa: E402
+from pythia_mining.pulvini_certificates import (
+    automorphism_runtime_certificate,
+)  # noqa: E402
+from pythia_mining.pulvini_compressed_solver import (
+    PulviniCompressedQuantumSolver,
+)  # noqa: E402
 from pythia_mining.pulvini_manifold import PulviniManifold  # noqa: E402
-from pythia_mining.pulvini_overlay import ADJACENCY_MAP, PulviniOverlayConcentrator  # noqa: E402
+from pythia_mining.pulvini_overlay import (
+    ADJACENCY_MAP,
+    PulviniOverlayConcentrator,
+)  # noqa: E402
 from pythia_mining.pulvini_propagation import (  # noqa: E402
     PROXY_GATEWAY,
     CancelFlood,
@@ -88,7 +95,9 @@ class PulviniProductionWorkflowTests(unittest.TestCase):
 
         controller = SharePropagationController(manifold)
 
-        async def submitter(submit_job: MiningJob, nonce: int, extranonce2: str) -> ShareResult:
+        async def submitter(
+            submit_job: MiningJob, nonce: int, extranonce2: str
+        ) -> ShareResult:
             return ShareResult(
                 accepted=True,
                 job_id=submit_job.job_id,

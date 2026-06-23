@@ -15,7 +15,9 @@ from pythia_mining.salamander_frontier import (
 
 
 def test_benchmark_thermal_resonance_efficiency_fixture():
-    tuner = ResonantSubstrateTuner(jitter_weight=1.0, thermal_weight=4.0, throughput_weight=1.0)
+    tuner = ResonantSubstrateTuner(
+        jitter_weight=1.0, thermal_weight=4.0, throughput_weight=1.0
+    )
     standard = ResonanceMeasurement(
         phi_value=1.60, execution_jitter_ms=3.0, thermal_drift_c=8.0, throughput=100.0
     )

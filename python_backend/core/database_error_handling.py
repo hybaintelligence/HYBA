@@ -32,10 +32,10 @@ T = TypeVar("T")
 
 class DatabaseErrorHandler:
     """Centralized database error handling"""
-    
+
     def __init__(self):
         self.logger = logging.getLogger(__name__)
-    
+
     def handle_sqlalchemy_error(
         self,
         error: SQLAlchemyError,
@@ -46,9 +46,9 @@ class DatabaseErrorHandler:
         error_context = {
             "operation": operation,
             "original_error_type": type(error).__name__,
-            **(context or {})
+            **(context or {}),
         }
-        
+
         if isinstance(error, IntegrityError):
             return HybaDatabaseError(
                 f"Database integrity constraint violation: {str(error)}",
@@ -102,7 +102,7 @@ def handle_database_errors(
     except SQLAlchemyError as e:
         error = db_error_handler.handle_sqlalchemy_error(e, operation, context)
         handle_error(error, raise_http=False)
-        
+
         if raise_on_error:
             raise error
     except Exception as e:
@@ -111,7 +111,7 @@ def handle_database_errors(
             context={"operation": operation, **(context or {})},
         )
         handle_error(error, raise_http=False)
-        
+
         if raise_on_error:
             raise error
 
@@ -122,7 +122,7 @@ def with_database_error_handling(
     context: Optional[Dict[str, Any]] = None,
 ):
     """Decorator for adding database error handling to functions"""
-    
+
     def decorator(func: Callable[..., T]) -> Callable[..., Union[T, None]]:
         def wrapper(*args, **kwargs) -> Union[T, None]:
             try:
@@ -132,7 +132,7 @@ def with_database_error_handling(
                     e, operation, {**context, "function": func.__name__}
                 )
                 handle_error(error, raise_http=False)
-                
+
                 if default_return is not None:
                     return default_return
                 raise error
@@ -142,11 +142,13 @@ def with_database_error_handling(
                     context={"operation": operation, **(context or {})},
                 )
                 handle_error(error, raise_http=False)
-                
+
                 if default_return is not None:
                     return default_return
                 raise error
+
         return wrapper
+
     return decorator
 
 
@@ -156,7 +158,7 @@ def async_with_database_error_handling(
     context: Optional[Dict[str, Any]] = None,
 ):
     """Decorator for adding database error handling to async functions"""
-    
+
     def decorator(func: Callable[..., T]) -> Callable[..., Union[T, None]]:
         async def wrapper(*args, **kwargs) -> Union[T, None]:
             try:
@@ -166,7 +168,7 @@ def async_with_database_error_handling(
                     e, operation, {**context, "function": func.__name__}
                 )
                 handle_error(error, raise_http=False)
-                
+
                 if default_return is not None:
                     return default_return
                 raise error
@@ -176,17 +178,19 @@ def async_with_database_error_handling(
                     context={"operation": operation, **(context or {})},
                 )
                 handle_error(error, raise_http=False)
-                
+
                 if default_return is not None:
                     return default_return
                 raise error
+
         return wrapper
+
     return decorator
 
 
 class SafeDatabaseOperations:
     """Safe database operations with comprehensive error handling"""
-    
+
     @staticmethod
     def execute_query(
         db_session,
@@ -197,7 +201,7 @@ class SafeDatabaseOperations:
         """Safely execute a database query"""
         with handle_database_errors(operation, context):
             return db_session.execute(query)
-    
+
     @staticmethod
     def commit_session(
         db_session,
@@ -207,7 +211,7 @@ class SafeDatabaseOperations:
         """Safely commit a database session"""
         with handle_database_errors(operation, context):
             db_session.commit()
-    
+
     @staticmethod
     def rollback_session(
         db_session,
@@ -221,9 +225,9 @@ class SafeDatabaseOperations:
             handle_error(
                 HybaDatabaseError(f"Failed to rollback session: {str(e)}"),
                 context={"operation": operation, **(context or {})},
-                raise_http=False
+                raise_http=False,
             )
-    
+
     @staticmethod
     def close_session(
         db_session,
@@ -237,5 +241,5 @@ class SafeDatabaseOperations:
             handle_error(
                 HybaDatabaseError(f"Failed to close session: {str(e)}"),
                 context={"operation": operation, **(context or {})},
-                raise_http=False
+                raise_http=False,
             )

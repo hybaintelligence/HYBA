@@ -12,7 +12,11 @@ Example:
 __version__ = "1.0.0"
 __author__ = "HYBA Analytics"
 
-from hyba_sdk.client import HybaClient, QuantumFinanceNamespace, QuantumIntelligenceNamespace
+from hyba_sdk.client import (
+    HybaClient,
+    QuantumFinanceNamespace,
+    QuantumIntelligenceNamespace,
+)
 from hyba_sdk.service import ComputationalIntelligenceService
 from hyba_sdk.connector import ConnectorConfig
 from hyba_sdk.exceptions import (

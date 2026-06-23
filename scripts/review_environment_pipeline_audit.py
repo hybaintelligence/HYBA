@@ -96,9 +96,11 @@ async def _audit_pool_failover() -> AuditResult:
     return AuditResult(
         name="pool_failover_circuit_breaker",
         status="pass" if passed else "fail",
-        detail="PoolManager selected the healthy backup pool when the active pool circuit was open."
-        if passed
-        else "PoolManager did not move to the healthy backup pool.",
+        detail=(
+            "PoolManager selected the healthy backup pool when the active pool circuit was open."
+            if passed
+            else "PoolManager did not move to the healthy backup pool."
+        ),
         evidence={
             "selected_pool": selected.pool_name,
             "current_pool_key": manager.current_pool_key,
@@ -144,9 +146,11 @@ async def _audit_stale_job_invalidation() -> AuditResult:
     return AuditResult(
         name="stale_job_block_height_invalidation",
         status="pass" if passed else "fail",
-        detail="A block-tip mismatch marked the active job stale before share submission."
-        if passed
-        else "The active job was not marked stale after a block-tip mismatch.",
+        detail=(
+            "A block-tip mismatch marked the active job stale before share submission."
+            if passed
+            else "The active job was not marked stale after a block-tip mismatch."
+        ),
         evidence={
             "job_id": job.job_id,
             "stale_job_ids": sorted(client.stale_job_ids),
@@ -171,9 +175,11 @@ def _audit_malformed_nonce_validation() -> AuditResult:
         return AuditResult(
             name="malformed_nonce_validation",
             status="pass" if nonce_error else "fail",
-            detail="Malformed nonce payload is rejected by the FastAPI/Pydantic boundary before mining logic."
-            if nonce_error
-            else "Validation failed, but not on the nonce field.",
+            detail=(
+                "Malformed nonce payload is rejected by the FastAPI/Pydantic boundary before mining logic."
+                if nonce_error
+                else "Validation failed, but not on the nonce field."
+            ),
             evidence={"errors": errors},
         )
     return AuditResult(
@@ -194,9 +200,11 @@ def _audit_rate_limit_status() -> AuditResult:
     return AuditResult(
         name="bridge_rate_limit_contract",
         status="pass" if passed else "fail",
-        detail="Review limiter returned HTTP 429 after the configured burst budget."
-        if passed
-        else "Review limiter did not return the expected 429 sequence.",
+        detail=(
+            "Review limiter returned HTTP 429 after the configured burst budget."
+            if passed
+            else "Review limiter did not return the expected 429 sequence."
+        ),
         evidence={"statuses": statuses},
     )
 
@@ -215,9 +223,11 @@ def _audit_operator_route_contracts() -> AuditResult:
     return AuditResult(
         name="operator_route_contracts",
         status="pass" if not missing else "fail",
-        detail="All production operator routes are mounted on the FastAPI app."
-        if not missing
-        else "Some production operator routes are missing.",
+        detail=(
+            "All production operator routes are mounted on the FastAPI app."
+            if not missing
+            else "Some production operator routes are missing."
+        ),
         evidence={"required": sorted(required), "missing": missing},
     )
 
@@ -231,7 +241,9 @@ async def _audit_blockchain_and_it_from_bit_local_analysis() -> AuditResult:
             ]
         )
     )
-    information = await analyze_it_from_bit(ItFromBitRequest(bits="01001101", word_size=4))
+    information = await analyze_it_from_bit(
+        ItFromBitRequest(bits="01001101", word_size=4)
+    )
     passed = (
         blockchain["block_count"] == 2
         and 0.0 <= blockchain["mean_phi_resonance"] <= 1.0
@@ -241,9 +253,11 @@ async def _audit_blockchain_and_it_from_bit_local_analysis() -> AuditResult:
     return AuditResult(
         name="blockchain_it_from_bit_local_analysis",
         status="pass" if passed else "fail",
-        detail="Blockchain resonance and It-from-Bit analysis run deterministically without live network access."
-        if passed
-        else "Local deterministic analysis did not satisfy the production contract.",
+        detail=(
+            "Blockchain resonance and It-from-Bit analysis run deterministically without live network access."
+            if passed
+            else "Local deterministic analysis did not satisfy the production contract."
+        ),
         evidence={
             "blockchain_snapshot_hash": blockchain.get("snapshot_hash"),
             "information_digest": information.get("digest"),
@@ -280,7 +294,10 @@ def _rate_limit_contract_module() -> None:
             if len(recent) >= limit:
                 return JSONResponse(
                     status_code=429,
-                    content={"error": "too_many_requests", "message": "Too many requests"},
+                    content={
+                        "error": "too_many_requests",
+                        "message": "Too many requests",
+                    },
                 )
             recent.append(now)
             hits[key] = recent
@@ -309,8 +326,12 @@ async def run_audits() -> list[AuditResult]:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Run HYBA review-environment pipeline audits")
-    parser.add_argument("--json", action="store_true", help="Emit machine-readable JSON")
+    parser = argparse.ArgumentParser(
+        description="Run HYBA review-environment pipeline audits"
+    )
+    parser.add_argument(
+        "--json", action="store_true", help="Emit machine-readable JSON"
+    )
     args = parser.parse_args()
 
     # Preserve explicit no-live-submit semantics for review environments.

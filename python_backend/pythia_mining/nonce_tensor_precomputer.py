@@ -85,7 +85,8 @@ class NonceTensorPlan:
     def solver_ranges(self) -> List[Tuple[int, int]]:
         """Convert regions to solver-compatible range format."""
         return [
-            (r.start, r.end) for r in sorted(self.regions, key=lambda x: x.priority, reverse=True)
+            (r.start, r.end)
+            for r in sorted(self.regions, key=lambda x: x.priority, reverse=True)
         ]
 
     def to_dict(self) -> Dict[str, Any]:
@@ -142,7 +143,9 @@ class NonceTensorPrecomputer:
         chi_phi = int(math.ceil(PHI ** (phi_log_n * 0.5 + 2)))
         return max(2, min(64, chi_phi))
 
-    def precompute(self, target: int, chain_state: Optional[str] = None) -> NonceTensorPlan:
+    def precompute(
+        self, target: int, chain_state: Optional[str] = None
+    ) -> NonceTensorPlan:
         """Build a nonce search plan from the tensor network structure.
 
         This is the one-time precomputation that runs in ~17ms (1000 qubits).
@@ -158,7 +161,9 @@ class NonceTensorPrecomputer:
         start_time = time.perf_counter()
 
         # Step 1: Build the MPS (this is what the benchmark proved works in ~ms)
-        self._mps = MPS(num_sites=self.num_qubits, physical_dim=2, max_bond_dim=self._phi_bond_dim)
+        self._mps = MPS(
+            num_sites=self.num_qubits, physical_dim=2, max_bond_dim=self._phi_bond_dim
+        )
 
         # Step 2: Extract singular value spectrum for mass gap alignment
         singular_spectrum = self._extract_spectrum()
@@ -190,12 +195,15 @@ class NonceTensorPrecomputer:
 
             # Assign weight from singular value spectrum (cyclically indexed)
             sv_idx = boundary_indices[idx % max(1, len(boundary_indices))]
-            sv_weight = float(singular_spectrum[min(sv_idx, len(singular_spectrum) - 1)])
+            sv_weight = float(
+                singular_spectrum[min(sv_idx, len(singular_spectrum) - 1)]
+            )
 
             # Mass gap alignment for this region
             if sv_idx + 1 < len(singular_spectrum):
                 mg_align = abs(
-                    singular_spectrum[sv_idx + 1] / max(singular_spectrum[sv_idx], 1e-15)
+                    singular_spectrum[sv_idx + 1]
+                    / max(singular_spectrum[sv_idx], 1e-15)
                     - MASS_GAP_TARGET
                 )
             else:
@@ -259,7 +267,9 @@ class NonceTensorPrecomputer:
                     if flat.size % n_cols != 0:
                         _, S, _ = np.linalg.svd(flat[:, None], full_matrices=False)
                     else:
-                        _, S, _ = np.linalg.svd(flat.reshape(-1, n_cols), full_matrices=False)
+                        _, S, _ = np.linalg.svd(
+                            flat.reshape(-1, n_cols), full_matrices=False
+                        )
                     spectrum.extend(S[:5].tolist())
                 except np.linalg.LinAlgError:
                     pass
@@ -278,7 +288,9 @@ class NonceTensorPrecomputer:
         return float(entropy * PHI + mass_gap_align * PHI_INV)
 
 
-def create_nonce_plan_for_mining(target: int, chain_state: Optional[str] = None) -> NonceTensorPlan:
+def create_nonce_plan_for_mining(
+    target: int, chain_state: Optional[str] = None
+) -> NonceTensorPlan:
     """Factory function: creates a precomputed nonce plan for the mining pipeline.
 
     This is the main entry point for integrating the tensor engine into mining.
@@ -311,6 +323,8 @@ def create_nonce_plan_for_mining(target: int, chain_state: Optional[str] = None)
         f"[NonceTensorPlan] Total coverage: {plan.total_nonce_coverage}/{NONCE_SPACE} "
         f"({100.0 * plan.total_nonce_coverage / NONCE_SPACE:.2f}%)"
     )
-    print(f"[NonceTensorPlan] Phi-fold lossless: {plan.compression_stats['phi_fold_lossless']}")
+    print(
+        f"[NonceTensorPlan] Phi-fold lossless: {plan.compression_stats['phi_fold_lossless']}"
+    )
 
     return plan

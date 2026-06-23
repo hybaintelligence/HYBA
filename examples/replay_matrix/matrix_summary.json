@@ -1,1 +1,4 @@
-{"trace": 3, "deterministic": true}
+{
+  "deterministic": true,
+  "trace": 3
+}

@@ -38,7 +38,10 @@ class FibonacciLCG:
     """
 
     def __init__(
-        self, seed: Optional[int] = None, nonce_space: int = 2**32, spiral_layers: int = 8
+        self,
+        seed: Optional[int] = None,
+        nonce_space: int = 2**32,
+        spiral_layers: int = 8,
     ):
         """
         Args:
@@ -90,7 +93,9 @@ class FibonacciLCG:
         angular_component = int(self.current_angle * 1000) % self.nonce_space
 
         # Golden combination: φ-weighted mix
-        nonce = int((radial_component * PHI + angular_component * INV_PHI) % self.nonce_space)
+        nonce = int(
+            (radial_component * PHI + angular_component * INV_PHI) % self.nonce_space
+        )
 
         # Probability density: higher at golden ratio points
         # Density follows 1/φ^n decay from center
@@ -135,8 +140,12 @@ class FibonacciLCG:
             "unique_nonces": len(self.visited),
             "coverage_percentage": (covered_bins / total_bins) * 100,
             "golden_coverage_ratio": covered_bins / total_bins / golden_coverage_ideal,
-            "entropy": float(-np.sum(self.coverage_map * np.log(self.coverage_map + 1e-10))),
-            "spiral_layers_explored": min(self.spiral_layers, int(self.current_radius) + 1),
+            "entropy": float(
+                -np.sum(self.coverage_map * np.log(self.coverage_map + 1e-10))
+            ),
+            "spiral_layers_explored": min(
+                self.spiral_layers, int(self.current_radius) + 1
+            ),
         }
 
     def optimize_spiral_density(self, success_pattern: np.ndarray) -> None:
@@ -232,7 +241,9 @@ class PhiNonceGenerator:
 
         # Thermal damping if needed
         thermal_damping = 1.0 - min(thermal_state / mass_gap_limit, 0.5)
-        final_nonce = int(consciousness_boosted * thermal_damping) % self.lcg.nonce_space
+        final_nonce = (
+            int(consciousness_boosted * thermal_damping) % self.lcg.nonce_space
+        )
 
         # Calculate search authenticity
         coverage = self.lcg.get_coverage_metrics()
@@ -274,7 +285,9 @@ class PhiNonceGenerator:
         coverage = self.lcg.get_coverage_metrics()
 
         # Calculate golden efficiency
-        unique_per_iteration = coverage["unique_nonces"] / max(coverage["iterations"], 1)
+        unique_per_iteration = coverage["unique_nonces"] / max(
+            coverage["iterations"], 1
+        )
         golden_efficiency = unique_per_iteration / INV_PHI  # Compare to ideal
 
         # Consciousness integration score
@@ -292,15 +305,21 @@ class PhiNonceGenerator:
             "search_space_coverage": coverage,
             "golden_efficiency": golden_efficiency,
             "consciousness_integration": consciousness_score,
-            "success_rate": np.mean(self.success_history[-100:]) if self.success_history else 0.0,
+            "success_rate": (
+                np.mean(self.success_history[-100:]) if self.success_history else 0.0
+            ),
             "spiral_optimization": {
                 "current_layers": self.lcg.spiral_layers,
                 "phi_boost": self.phi_boost,
                 "harmony_threshold": self.harmony_threshold,
             },
             "thermal_awareness": {
-                "recent_temps": self.thermal_history[-10:] if self.thermal_history else [],
-                "avg_temp": np.mean(self.thermal_history) if self.thermal_history else 0.0,
+                "recent_temps": (
+                    self.thermal_history[-10:] if self.thermal_history else []
+                ),
+                "avg_temp": (
+                    np.mean(self.thermal_history) if self.thermal_history else 0.0
+                ),
             },
         }
 
@@ -363,7 +382,9 @@ class PhiNonceGeneratorHardware(PhiNonceGenerator):
         combined_telemetry = {
             "nonces_generated": batch_size,
             "memory_optimized": True,
-            "golden_address_alignment": np.mean([t["memory_alignment"] for t in telemetry_batch]),
+            "golden_address_alignment": np.mean(
+                [t["memory_alignment"] for t in telemetry_batch]
+            ),
             "thermal_metrics": thermal_metrics,
             "coherence_report": self.phi_alu.verify_coherence(0, 100),
         }

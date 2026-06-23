@@ -8,7 +8,10 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from pythia_mining.live_stratum_session import LiveStratumSession, LiveStratumSessionError
+from pythia_mining.live_stratum_session import (
+    LiveStratumSession,
+    LiveStratumSessionError,
+)
 from pythia_mining.pool_profiles import (
     PoolCredentialConfig,
     PoolProfile,
@@ -127,7 +130,11 @@ def test_pool_profile_extracts_inline_credentials_and_sanitizes_url():
 
 def test_build_profile_uses_inline_credentials_when_fields_empty():
     p = build_profile(
-        "Inline", name="Inline", url="stratum+tcp://u:p@host:3333", username="", password=""
+        "Inline",
+        name="Inline",
+        url="stratum+tcp://u:p@host:3333",
+        username="",
+        password="",
     )
     assert p.pool_id == "inline"
     assert p.url == "stratum+tcp://host:3333"
@@ -146,7 +153,8 @@ def test_validate_pool_url_enforces_tls_requirement():
     with pytest.raises(PoolProfileError, match="TLS is required"):
         validate_pool_url("stratum+tcp://host:3333", tls_required=True)
     assert (
-        validate_pool_url("stratum+ssl://host:443", tls_required=True) == "stratum+ssl://host:443"
+        validate_pool_url("stratum+ssl://host:443", tls_required=True)
+        == "stratum+ssl://host:443"
     )
 
 
@@ -157,10 +165,22 @@ def test_validate_profile_normalizes_url_credentials():
 
 @pytest.mark.parametrize(
     "kwargs",
-    [{"pool_id": ""}, {"username": ""}, {"password": ""}, {"priority": -1}, {"stratum_version": 9}],
+    [
+        {"pool_id": ""},
+        {"username": ""},
+        {"password": ""},
+        {"priority": -1},
+        {"stratum_version": 9},
+    ],
 )
 def test_validate_profile_rejects_required_field_errors(kwargs):
-    data = dict(pool_id="p", name="Pool", url="stratum+tcp://host:3333", username="u", password="p")
+    data = dict(
+        pool_id="p",
+        name="Pool",
+        url="stratum+tcp://host:3333",
+        username="u",
+        password="p",
+    )
     data.update(kwargs)
     with pytest.raises(PoolProfileError):
         validate_profile(PoolProfile(**data))
@@ -168,7 +188,13 @@ def test_validate_profile_rejects_required_field_errors(kwargs):
 
 def test_pool_credential_config_resolves_ckpool_and_nicehash_usernames():
     ck = PoolCredentialConfig(
-        "ckpool", "CK", "stratum+tcp://host:3333", 1, False, "btc_address", btc_address="bc1qq"
+        "ckpool",
+        "CK",
+        "stratum+tcp://host:3333",
+        1,
+        False,
+        "btc_address",
+        btc_address="bc1qq",
     )
     nh = PoolCredentialConfig(
         "nicehash",
@@ -218,7 +244,9 @@ def test_default_pool_config_reads_env_priority(monkeypatch):
     assert default_pool_config("viabtc").priority == 7
 
 
-def test_load_runtime_pool_configs_env_takes_precedence_over_file(tmp_path, monkeypatch):
+def test_load_runtime_pool_configs_env_takes_precedence_over_file(
+    tmp_path, monkeypatch
+):
     path = tmp_path / "pools.json"
     path.write_text(
         json.dumps(
@@ -242,7 +270,9 @@ def test_load_runtime_pool_configs_env_takes_precedence_over_file(tmp_path, monk
     assert cfg.url != "stratum+tcp://file:3333"
 
 
-def test_save_runtime_pool_config_writes_0600_and_load_pool_profiles(tmp_path, monkeypatch):
+def test_save_runtime_pool_config_writes_0600_and_load_pool_profiles(
+    tmp_path, monkeypatch
+):
     path = tmp_path / "pools.json"
     monkeypatch.setenv("HYBA_POOL_CONFIG_PATH", str(path))
     save_runtime_pool_config(
@@ -267,7 +297,12 @@ def test_validate_pool_config_rejects_missing_credentials():
     with pytest.raises(PoolProfileError):
         validate_pool_config(
             PoolCredentialConfig(
-                "viabtc", "Via", "stratum+tcp://host:3333", 1, False, "username_password"
+                "viabtc",
+                "Via",
+                "stratum+tcp://host:3333",
+                1,
+                False,
+                "username_password",
             )
         )
 
@@ -318,7 +353,9 @@ async def test_transport_read_line_decodes_and_detects_closed_stream():
 
 
 def test_json_rpc_submit_formatting_and_hex_normalization():
-    payload = json.loads(build_submit(9, "worker", "job", "AABB", "5E9A5C00", "0000000F"))
+    payload = json.loads(
+        build_submit(9, "worker", "job", "AABB", "5E9A5C00", "0000000F")
+    )
     assert payload == {
         "id": 9,
         "method": "mining.submit",
@@ -358,22 +395,32 @@ async def test_live_session_connection_handshake_ignores_interleaved_notificatio
         "extranonce2_size": 4,
         "authorized": True,
     }
-    assert [item["method"] for item in transport.sent] == ["mining.subscribe", "mining.authorize"]
+    assert [item["method"] for item in transport.sent] == [
+        "mining.subscribe",
+        "mining.authorize",
+    ]
 
 
 async def test_live_session_authentication_failure_raises():
     transport = FakeTransport(
-        [json.dumps({"id": 1, "result": [[], "aa", 4]}), json.dumps({"id": 2, "result": False})]
+        [
+            json.dumps({"id": 1, "result": [[], "aa", 4]}),
+            json.dumps({"id": 2, "result": False}),
+        ]
     )
     with pytest.raises(LiveStratumSessionError, match="rejected authorization"):
-        await LiveStratumSession(profile(), transport=transport).subscribe_and_authorize()
+        await LiveStratumSession(
+            profile(), transport=transport
+        ).subscribe_and_authorize()
 
 
 async def test_live_session_read_event_skips_responses_by_default():
     notify = {"method": "mining.set_difficulty", "params": [8]}
     session = LiveStratumSession(
         profile(),
-        transport=FakeTransport([json.dumps({"id": 99, "result": True}), json.dumps(notify)]),
+        transport=FakeTransport(
+            [json.dumps({"id": 99, "result": True}), json.dumps(notify)]
+        ),
     )
     event, payload = await session.read_event()
     assert event == "mining.set_difficulty"
@@ -423,7 +470,8 @@ def test_client_circuit_breaker_opens_and_half_opens_after_timeout(client, monke
         client._circuit_breaker_record_failure()
     assert client._circuit_breaker_allow_request() is False
     monkeypatch.setattr(
-        "pythia_mining.stratum_client.time.time", lambda: client._circuit_breaker_last_failure + 61
+        "pythia_mining.stratum_client.time.time",
+        lambda: client._circuit_breaker_last_failure + 61,
     )
     assert client._circuit_breaker_allow_request() is True
     assert client._circuit_breaker_state == "half_open"
@@ -432,7 +480,8 @@ def test_client_circuit_breaker_opens_and_half_opens_after_timeout(client, monke
 
 
 @pytest.mark.parametrize(
-    "response", [{}, {"id": 1}, {"id": 1, "error": {"bad": "shape"}}, {"id": 1, "result": True}]
+    "response",
+    [{}, {"id": 1}, {"id": 1, "error": {"bad": "shape"}}, {"id": 1, "result": True}],
 )
 def test_client_pool_response_validation(client, response):
     expected = response == {"id": 1, "result": True}
@@ -441,14 +490,18 @@ def test_client_pool_response_validation(client, response):
 
 async def test_client_poll_live_event_records_difficulty(client):
     client.live_session = SimpleNamespace(
-        read_event=AsyncMock(return_value=("mining.set_difficulty", SimpleNamespace(difficulty=16)))
+        read_event=AsyncMock(
+            return_value=("mining.set_difficulty", SimpleNamespace(difficulty=16))
+        )
     )
     assert await client.poll_live_event() is None
     assert client.current_difficulty == 16
     client._persist_metrics.assert_awaited()
 
 
-async def test_client_poll_live_event_adds_notify_job_and_marks_clean_jobs_stale(client):
+async def test_client_poll_live_event_adds_notify_job_and_marks_clean_jobs_stale(
+    client,
+):
     client.current_jobs["old"] = MiningJob(
         "old", "00" * 32, ("aa", "bb"), [], "20000000", "1d00ffff", "5e9a5c00", 1
     )
@@ -498,7 +551,9 @@ async def test_client_poll_live_event_timeout_returns_none_and_checks_stale(clie
     client._check_block_height_for_stale_jobs.assert_awaited_once()
 
 
-def test_client_health_score_penalizes_failures_latency_rejections_and_stale_jobs(client):
+def test_client_health_score_penalizes_failures_latency_rejections_and_stale_jobs(
+    client,
+):
     client.connection_failures = 3
     client._circuit_breaker_state = "open"
     client.shares_submitted = 20
@@ -537,7 +592,9 @@ def test_dev_fixture_job_injection_disabled_in_production(monkeypatch):
 
 async def test_pool_manager_selects_current_healthy_pool(monkeypatch):
     monkeypatch.setenv("NODE_ENV", "development")
-    mgr = PoolManager({"a": {"url": "stratum+tcp://a:3333", "username": "u", "password": "p"}})
+    mgr = PoolManager(
+        {"a": {"url": "stratum+tcp://a:3333", "username": "u", "password": "p"}}
+    )
     pool = next(iter(mgr.pools.values()))
     pool.is_connected = pool.is_authenticated = True
     mgr.current_pool_key = "a"
@@ -572,7 +629,9 @@ async def test_pool_manager_fails_over_to_secondary(monkeypatch):
 
 async def test_pool_manager_raises_when_all_pools_offline(monkeypatch):
     monkeypatch.setenv("NODE_ENV", "development")
-    mgr = PoolManager({"a": {"url": "stratum+tcp://a:3333", "username": "u", "password": "p"}})
+    mgr = PoolManager(
+        {"a": {"url": "stratum+tcp://a:3333", "username": "u", "password": "p"}}
+    )
     pool = mgr.pools["a"]
     pool.connect = AsyncMock(return_value=False)
     pool.connection_state = "ERROR"
@@ -582,7 +641,9 @@ async def test_pool_manager_raises_when_all_pools_offline(monkeypatch):
 
 def test_pool_manager_status_marks_active_pool(monkeypatch):
     monkeypatch.setenv("NODE_ENV", "development")
-    mgr = PoolManager({"a": {"url": "stratum+tcp://a:3333", "username": "u", "password": "p"}})
+    mgr = PoolManager(
+        {"a": {"url": "stratum+tcp://a:3333", "username": "u", "password": "p"}}
+    )
     mgr.current_pool_key = "a"
     status = mgr.get_all_pools_status()[0]
     assert status["pool_id"] == "a"

@@ -171,7 +171,9 @@ class ShorQuantumFourierTransform:
         self.precision_bits = precision_bits
         self.qft_cache: Dict[int, np.ndarray] = {}
 
-    def quantum_fourier_transform(self, state: np.ndarray, inverse: bool = False) -> QFTResult:
+    def quantum_fourier_transform(
+        self, state: np.ndarray, inverse: bool = False
+    ) -> QFTResult:
         """Apply Quantum Fourier Transform to a quantum state.
 
         The QFT transforms |j⟩ → (1/√N) Σ_k exp(2πijk/N) |k⟩
@@ -274,7 +276,9 @@ class ShorQuantumFourierTransform:
             PeriodFindingResult with period estimate
         """
         # Sample function values
-        function_values = np.array([function(i % domain_size) for i in range(num_samples)])
+        function_values = np.array(
+            [function(i % domain_size) for i in range(num_samples)]
+        )
 
         # Apply classical FFT as quantum-inspired approximation
         fourier_spectrum = np.fft.fft(function_values)
@@ -382,7 +386,9 @@ class ShorQuantumFourierTransform:
         generators = self._find_subgroup_generators(subgroup_elements, group_size)
 
         # Confidence based on collision rate
-        collision_rate = sum(len(g) for g in collision_groups.values() if len(g) > 1) / num_samples
+        collision_rate = (
+            sum(len(g) for g in collision_groups.values() if len(g) > 1) / num_samples
+        )
         confidence = min(1.0, collision_rate * 2)
 
         return HiddenSubgroupResult(
@@ -392,7 +398,9 @@ class ShorQuantumFourierTransform:
             oracle_calls=num_samples,
         )
 
-    def _find_subgroup_generators(self, subgroup_elements: Set[int], group_size: int) -> List[int]:
+    def _find_subgroup_generators(
+        self, subgroup_elements: Set[int], group_size: int
+    ) -> List[int]:
         """Find generators of a subgroup from its elements."""
         if not subgroup_elements:
             return []
@@ -447,7 +455,9 @@ class ShorQuantumFourierTransform:
 
         return new_control_state, new_target_state
 
-    def nonce_frequency_analysis(self, nonces: List[int], window_size: int = 64) -> Dict[str, Any]:
+    def nonce_frequency_analysis(
+        self, nonces: List[int], window_size: int = 64
+    ) -> Dict[str, Any]:
         """Analyze nonce sequences using frequency domain methods.
 
         This applies QFT-inspired analysis to nonce sequences to detect
@@ -467,7 +477,9 @@ class ShorQuantumFourierTransform:
         nonce_window = np.array(nonces[:window_size], dtype=float)
 
         # Normalize
-        nonce_window = (nonce_window - np.mean(nonce_window)) / (np.std(nonce_window) + 1e-10)
+        nonce_window = (nonce_window - np.mean(nonce_window)) / (
+            np.std(nonce_window) + 1e-10
+        )
 
         # Apply FFT
         frequency_spectrum = np.fft.fft(nonce_window)
@@ -488,14 +500,17 @@ class ShorQuantumFourierTransform:
         periodicities = []
         for freq_idx, magnitude in dominant_freqs[:5]:
             period = window_size / freq_idx if freq_idx > 0 else window_size
-            periodicities.append({"frequency": freq_idx, "period": period, "magnitude": magnitude})
+            periodicities.append(
+                {"frequency": freq_idx, "period": period, "magnitude": magnitude}
+            )
 
         return {
             "window_size": window_size,
             "dominant_frequencies": dominant_freqs[:10],
             "estimated_periodicities": periodicities,
             "spectral_centroid": float(
-                np.sum(range(len(magnitudes)) * magnitudes) / (np.sum(magnitudes) + 1e-10)
+                np.sum(range(len(magnitudes)) * magnitudes)
+                / (np.sum(magnitudes) + 1e-10)
             ),
             "spectral_bandwidth": float(
                 np.sqrt(
@@ -570,7 +585,9 @@ class ShorQuantumFourierTransform:
             "final_amplitudes": np.abs(amplitudes).tolist(),
         }
 
-    def continuous_qft(self, signal: np.ndarray, sample_rate: float = 1.0) -> Dict[str, Any]:
+    def continuous_qft(
+        self, signal: np.ndarray, sample_rate: float = 1.0
+    ) -> Dict[str, Any]:
         """Apply continuous-time QFT analysis to a signal.
 
         This extends the discrete QFT to continuous-time analysis

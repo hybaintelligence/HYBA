@@ -70,7 +70,9 @@ async def main_mining_loop(
 
     # 3. Instantiate the autonomous controller (lazy import to avoid circular dependencies)
     try:
-        from pythia_mining.autonomous_mining_controller import AutonomousMiningController
+        from pythia_mining.autonomous_mining_controller import (
+            AutonomousMiningController,
+        )
 
         controller = AutonomousMiningController()
         await controller.initialize_substrate()
@@ -122,23 +124,25 @@ async def main_mining_loop(
         while True:
             # Observe mining state through Salamander frontier
             metrics = salamander.observe_mining_state()
-            
+
             # Detect mining-specific anomalies
             anomaly = salamander.detect_mining_anomaly(metrics)
             if anomaly:
-                logger.warning(f"Mining anomaly detected: {anomaly.type} - {anomaly.severity}")
+                logger.warning(
+                    f"Mining anomaly detected: {anomaly.type} - {anomaly.severity}"
+                )
                 outcome = salamander.execute_mining_regeneration(anomaly)
                 logger.info(f"Regeneration executed: {outcome.reason}")
-            
+
             # Core mining execution logic utilizing active strategy tracking
             # This would typically call:
             # - controller.process_job(job)
             # - controller.submit_share(share)
             # - controller.handle_pool_response(response)
-            
+
             # Record share submissions to Salamander evidence log for non-repudiation
             # Example: salamander.record_share_submission(job_id, nonce, difficulty, accepted, revenue_btc)
-            
+
             await asyncio.sleep(1)
     except KeyboardInterrupt:
         logger.info("Received shutdown signal, stopping mining operations...")
@@ -150,10 +154,12 @@ async def main_mining_loop(
         raise
     finally:
         logger.info("Mining loop terminated")
-        
+
         # Export final health report for regulatory compliance
         health_report = salamander.get_mining_health_report()
-        logger.info(f"Final mining health report: agents_active={health_report.get('agents_active')}, hashrate_current={health_report.get('hashrate_current')}")
+        logger.info(
+            f"Final mining health report: agents_active={health_report.get('agents_active')}, hashrate_current={health_report.get('hashrate_current')}"
+        )
 
 
 def main() -> None:

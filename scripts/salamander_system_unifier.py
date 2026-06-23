@@ -15,17 +15,17 @@ from collections import defaultdict
 
 class SystemUnifier:
     """Wires orphaned modules using salamander regeneration principles."""
-    
+
     def __init__(self, root: Path):
         self.root = root
         self.backend = root / "python_backend"
         self.orphans: Dict[str, List[str]] = {}
         self.integration_map: Dict[str, str] = {}
-        
+
     def scan_orphans(self) -> Dict[str, List[str]]:
         """Identify orphaned modules requiring integration."""
         print("🔍 Scanning for orphaned modules...\n")
-        
+
         orphans = {
             "billing": [],
             "qaas": [],
@@ -33,9 +33,9 @@ class SystemUnifier:
             "pulvini": [],
             "analytics": [],
             "connectors": [],
-            "other": []
+            "other": [],
         }
-        
+
         critical_orphans = [
             "hyba_genesis_api/api/billing_rollback.py",
             "hyba_genesis_api/api/quantum_as_a_service_execute_hardened.py",
@@ -47,13 +47,16 @@ class SystemUnifier:
             "pythia_mining/pulvini_compressed_solver.py",
             "pythia_mining/pulvini_memory_compression_proof.py",
         ]
-        
+
         for orphan in critical_orphans:
             path = self.backend / orphan
             if path.exists():
                 if "billing" in orphan:
                     orphans["billing"].append(orphan)
-                elif "quantum_as_a_service" in orphan or "computational_intelligence" in orphan:
+                elif (
+                    "quantum_as_a_service" in orphan
+                    or "computational_intelligence" in orphan
+                ):
                     orphans["qaas"].append(orphan)
                 elif "multi_agent" in orphan:
                     orphans["multi_agent"].append(orphan)
@@ -63,16 +66,16 @@ class SystemUnifier:
                     orphans["analytics"].append(orphan)
                 else:
                     orphans["other"].append(orphan)
-        
+
         self.orphans = orphans
         return orphans
-    
+
     def generate_integration_plan(self) -> Dict[str, Dict]:
         """Generate salamander-inspired integration plan."""
         print("🦎 Generating salamander regeneration plan...\n")
-        
+
         plan = {}
-        
+
         # Billing integration
         if self.orphans["billing"]:
             plan["billing_subsystem"] = {
@@ -81,9 +84,9 @@ class SystemUnifier:
                 "integration_point": "hyba_genesis_api/api/quantum_router.py",
                 "wire_to": ["quantum_as_a_service_execute_hardened.py"],
                 "confidence": 1.0,
-                "action": "integrate_billing_rollback"
+                "action": "integrate_billing_rollback",
             }
-        
+
         # QaaS integration
         if self.orphans["qaas"]:
             plan["qaas_subsystem"] = {
@@ -92,9 +95,9 @@ class SystemUnifier:
                 "integration_point": "hyba_genesis_api/main.py",
                 "wire_to": ["api router registration"],
                 "confidence": 1.0,
-                "action": "register_qaas_routes"
+                "action": "register_qaas_routes",
             }
-        
+
         # Multi-agent integration
         if self.orphans["multi_agent"]:
             plan["multi_agent_subsystem"] = {
@@ -103,9 +106,9 @@ class SystemUnifier:
                 "integration_point": "hyba_genesis_api/core/reflexive_controller.py",
                 "wire_to": ["autonomous_mining_controller.py"],
                 "confidence": 0.9,
-                "action": "integrate_multi_agent_orchestrator"
+                "action": "integrate_multi_agent_orchestrator",
             }
-        
+
         # PULVINI integration
         if self.orphans["pulvini"]:
             plan["pulvini_subsystem"] = {
@@ -114,15 +117,15 @@ class SystemUnifier:
                 "integration_point": "pythia_mining/phi_unified_mining_engine.py",
                 "wire_to": ["consciousness_engine.py", "hendrix_phi_solver.py"],
                 "confidence": 1.0,
-                "action": "integrate_pulvini_compression"
+                "action": "integrate_pulvini_compression",
             }
-        
+
         return plan
-    
+
     def apply_integration(self, subsystem: str, config: Dict) -> str:
         """Apply salamander healing to integrate a subsystem."""
         action = config["action"]
-        
+
         if action == "integrate_billing_rollback":
             return self._wire_billing_rollback(config)
         elif action == "register_qaas_routes":
@@ -133,14 +136,14 @@ class SystemUnifier:
             return self._wire_pulvini(config)
         else:
             return f"❌ Unknown action: {action}"
-    
+
     def _wire_billing_rollback(self, config: Dict) -> str:
         """Wire billing rollback into QaaS execution."""
         target = self.backend / "hyba_genesis_api/api/quantum_router.py"
-        
+
         if not target.exists():
             return "⚠️  Target integration point not found"
-        
+
         # Generate integration code
         integration = '''
 # Salamander-regenerated billing integration
@@ -161,36 +164,36 @@ async def execute_with_rollback(execution_id: str, customer_id: str, work_units:
         )
         raise
 '''
-        
+
         self.integration_map["billing_rollback"] = integration
         return f"✅ Billing rollback wired to {config['integration_point']}"
-    
+
     def _wire_qaas_routes(self, config: Dict) -> str:
         """Wire QaaS routes into main API."""
         target = self.backend / "hyba_genesis_api/main.py"
-        
+
         if not target.exists():
             return "⚠️  Target integration point not found"
-        
-        integration = '''
+
+        integration = """
 # Salamander-regenerated QaaS routes
 from .api.quantum_as_a_service_execute_hardened import router as qaas_router
 from .api.public_computational_intelligence_service import router as ciaas_router
 
 app.include_router(qaas_router, prefix="/api/qaas", tags=["Quantum-as-a-Service"])
 app.include_router(ciaas_router, prefix="/api/ciaas", tags=["Computational-Intelligence"])
-'''
-        
+"""
+
         self.integration_map["qaas_routes"] = integration
         return f"✅ QaaS routes wired to {config['integration_point']}"
-    
+
     def _wire_multi_agent(self, config: Dict) -> str:
         """Wire multi-agent orchestrator into reflexive controller."""
         target = self.backend / "hyba_genesis_api/core/reflexive_controller.py"
-        
+
         if not target.exists():
             return "⚠️  Target integration point not found"
-        
+
         integration = '''
 # Salamander-regenerated multi-agent integration
 from ..api.multi_agent.orchestrator import SwarmOrchestrator
@@ -215,17 +218,17 @@ class ReflexiveControllerWithSwarm:
         """Delegate optimization to multi-agent swarm."""
         return await self.orchestrator.coordinate(self.agents, context)
 '''
-        
+
         self.integration_map["multi_agent"] = integration
         return f"✅ Multi-agent orchestrator wired to {config['integration_point']}"
-    
+
     def _wire_pulvini(self, config: Dict) -> str:
         """Wire PULVINI compression into mining engine."""
         target = self.backend / "pythia_mining/phi_unified_mining_engine.py"
-        
+
         if not target.exists():
             return "⚠️  Target integration point not found"
-        
+
         integration = '''
 # Salamander-regenerated PULVINI integration
 from .pulvini_compressed_solver import CompressedSolver
@@ -255,45 +258,47 @@ class PhiUnifiedMiningEngineWithPulvini:
         
         return result
 '''
-        
+
         self.integration_map["pulvini"] = integration
         return f"✅ PULVINI compression wired to {config['integration_point']}"
-    
+
     def generate_integration_scripts(self) -> Path:
         """Generate integration scripts for manual review."""
         output_dir = self.root / "artifacts" / "salamander_integration"
         output_dir.mkdir(parents=True, exist_ok=True)
-        
+
         for subsystem, code in self.integration_map.items():
             script_path = output_dir / f"{subsystem}_integration.py"
             with open(script_path, "w") as f:
                 f.write(f"# Salamander-regenerated integration for {subsystem}\n")
                 f.write(f"# Generated by: salamander_system_unifier.py\n\n")
                 f.write(code)
-        
+
         return output_dir
-    
+
     def execute_unification(self):
         """Execute full system unification pipeline."""
         print("=" * 80)
         print("SALAMANDER SYSTEM UNIFIER")
         print("=" * 80)
         print()
-        
+
         # Stage 1: Scan
         orphans = self.scan_orphans()
         total = sum(len(v) for v in orphans.values())
-        print(f"📊 Found {total} critical orphaned modules across {len(orphans)} subsystems\n")
-        
+        print(
+            f"📊 Found {total} critical orphaned modules across {len(orphans)} subsystems\n"
+        )
+
         for subsystem, modules in orphans.items():
             if modules:
                 print(f"  • {subsystem}: {len(modules)} modules")
         print()
-        
+
         # Stage 2: Plan
         plan = self.generate_integration_plan()
         print(f"📋 Generated integration plan for {len(plan)} subsystems\n")
-        
+
         # Stage 3: Apply
         print("🔧 Applying salamander healing...\n")
         results = []
@@ -305,11 +310,11 @@ class PhiUnifiedMiningEngineWithPulvini:
             print(f"    {result}")
             results.append((subsystem, result))
             print()
-        
+
         # Stage 4: Generate scripts
         output_dir = self.generate_integration_scripts()
         print(f"📝 Integration scripts written to: {output_dir}\n")
-        
+
         # Stage 5: Report
         print("=" * 80)
         print("REGENERATION COMPLETE")

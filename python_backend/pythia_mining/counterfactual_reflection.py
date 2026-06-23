@@ -191,7 +191,9 @@ def reflect_counterfactual_phi_prior(
     evidence_delta = alternative_signal - reference_signal
     phi_gate = 1.0 if alternative.phi_score >= alternative.phi_threshold else -0.5
     raw_delta = (
-        rate * evidence_delta * phi_gate * confidence_weight if velocity_guard_satisfied else 0.0
+        rate * evidence_delta * phi_gate * confidence_weight
+        if velocity_guard_satisfied
+        else 0.0
     )
     phi_prior_delta = _bounded_delta(raw_delta, limit)
     unclipped_prior = prior + phi_prior_delta
@@ -201,9 +203,13 @@ def reflect_counterfactual_phi_prior(
     if not velocity_guard_satisfied:
         reason = "reflection_velocity_guard_wait_for_more_evidence"
     elif effective_delta > 0:
-        reason = "alternative_phi_trajectory_improves_block_margin_with_bounded_prior_update"
+        reason = (
+            "alternative_phi_trajectory_improves_block_margin_with_bounded_prior_update"
+        )
     elif effective_delta < 0:
-        reason = "alternative_phi_trajectory_weakens_block_margin_with_bounded_prior_update"
+        reason = (
+            "alternative_phi_trajectory_weakens_block_margin_with_bounded_prior_update"
+        )
     else:
         reason = "counterfactual_phi_prior_unchanged_or_clipped_at_bound"
 

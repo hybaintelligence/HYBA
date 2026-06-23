@@ -31,7 +31,9 @@ NO EVIDENCE of mining revenue or pool-side acceptance.
 
 def test_m32_complete_domain_shape_and_adjacency():
     assert len(hendrix.M32) == 32
-    assert all(abs(sum(coord * coord for coord in face) - 1.0) < 1e-12 for face in hendrix.M32)
+    assert all(
+        abs(sum(coord * coord for coord in face) - 1.0) < 1e-12 for face in hendrix.M32
+    )
     assert len(hendrix.ADJACENT) == 32
     assert all(len(row) == 32 for row in hendrix.ADJACENT)
     assert all(hendrix.ADJACENT[i][i] for i in range(32))
@@ -63,8 +65,12 @@ def test_yang_mills_action_and_soft_gate_behaviour():
 def test_phi_gradient_proposal_is_deterministic_under_seed_and_stays_uint32():
     rng_a = random.Random(1234)
     rng_b = random.Random(1234)
-    path_a = [hendrix.phi_gradient_proposal(123456789, rng_a, scale=3) for _ in range(12)]
-    path_b = [hendrix.phi_gradient_proposal(123456789, rng_b, scale=3) for _ in range(12)]
+    path_a = [
+        hendrix.phi_gradient_proposal(123456789, rng_a, scale=3) for _ in range(12)
+    ]
+    path_b = [
+        hendrix.phi_gradient_proposal(123456789, rng_b, scale=3) for _ in range(12)
+    ]
     assert path_a == path_b
     assert all(0 <= nonce < 2**32 for nonce in path_a)
 

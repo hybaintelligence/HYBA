@@ -512,7 +512,9 @@ def benchmark_consciousness_latency(n_samples: int = 100) -> BenchmarkResult:
     mean_latency = mean(latencies) * 1000  # convert to ms
     std_latency = stdev(latencies) * 1000 if len(latencies) > 1 else 0.0
     p99_latency = (
-        sorted(latencies)[int(len(latencies) * 0.99)] * 1000 if len(latencies) > 1 else mean_latency
+        sorted(latencies)[int(len(latencies) * 0.99)] * 1000
+        if len(latencies) > 1
+        else mean_latency
     )
 
     baseline = 10.0  # 10ms per measurement is the target
@@ -695,7 +697,9 @@ def benchmark_phi_folding_compression(
     results = []
     for size in vector_sizes:
         engine = PulviniPhiMemoryCompressionEngine(fold_depth=1, tolerance=1e-6)
-        payload = np.random.default_rng(42).uniform(-10, 10, size=size).astype(np.float64)
+        payload = (
+            np.random.default_rng(42).uniform(-10, 10, size=size).astype(np.float64)
+        )
 
         # Compress and get result
         result = engine.compress(payload)
@@ -728,7 +732,9 @@ def benchmark_phi_folding_compression(
                 samples=1,
                 metadata={
                     "original_size": size,
-                    "folded_size": result.folded.size if hasattr(result, "folded") else 0,
+                    "folded_size": (
+                        result.folded.size if hasattr(result, "folded") else 0
+                    ),
                     "max_reconstruction_error": max_error,
                     "compression_is_reversible": result.reversible,
                 },
@@ -806,9 +812,9 @@ def test_capability_benchmark_suite() -> None:
 
     # Report and assert
     print(suite.summary())
-    assert suite.passed(), (
-        f"Benchmark suite '{suite.name}' FAILED. See output above for individual results."
-    )
+    assert (
+        suite.passed()
+    ), f"Benchmark suite '{suite.name}' FAILED. See output above for individual results."
 
 
 @pytest.mark.benchmark
@@ -837,9 +843,9 @@ async def test_capability_async_benchmark_suite() -> None:
 
     # Report and assert
     print(suite.summary())
-    assert suite.passed(), (
-        f"Benchmark suite '{suite.name}' FAILED. See output above for individual results."
-    )
+    assert (
+        suite.passed()
+    ), f"Benchmark suite '{suite.name}' FAILED. See output above for individual results."
 
 
 if __name__ == "__main__":

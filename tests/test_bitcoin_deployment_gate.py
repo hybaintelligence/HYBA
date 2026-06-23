@@ -65,8 +65,14 @@ def test_research_gate_keeps_frontier_and_adaptive_science_evidence() -> None:
 def test_package_scripts_expose_bitcoin_and_research_gates() -> None:
     scripts = json.loads(PACKAGE_JSON.read_text(encoding="utf-8"))["scripts"]
 
-    assert scripts["prod:local:gate"] == "python scripts/local_production_gate.py --mode rc"
-    assert scripts["prod:bitcoin:gate"] == "python scripts/local_production_gate.py --mode bitcoin"
+    assert (
+        scripts["prod:local:gate"]
+        == "python scripts/local_production_gate.py --mode rc"
+    )
+    assert (
+        scripts["prod:bitcoin:gate"]
+        == "python scripts/local_production_gate.py --mode bitcoin"
+    )
     assert (
         scripts["prod:research:gate"]
         == "python scripts/local_production_gate.py --mode research --continue-on-failure"

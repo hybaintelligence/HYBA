@@ -33,4 +33,6 @@ class SubstrateBenchmark:
         }
 
     def _benchmark_partner(self, substrate: str) -> dict[str, float | int | str]:
-        return SubstrateResult(0.0, 0, 0.0, f"adapter_pending_credentials:{substrate}").as_dict()
+        return SubstrateResult(
+            0.0, 0, 0.0, f"adapter_pending_credentials:{substrate}"
+        ).as_dict()

@@ -189,11 +189,7 @@ class QuantumArsenalDirectives:
     def enabled_components(self) -> List[str]:
         """Return every enabled arsenal component for startup evidence packets."""
 
-        return [
-            name
-            for name, enabled in asdict(self).items()
-            if bool(enabled)
-        ]
+        return [name for name, enabled in asdict(self).items() if bool(enabled)]
 
     def all_enabled(self) -> bool:
         """Fail closed unless every declared arsenal component is enabled."""
@@ -249,7 +245,9 @@ class PythiaNonceResonanceGuidance:
     def with_seal(self) -> "PythiaNonceResonanceGuidance":
         payload = self.to_payload()
         payload.pop("seal", None)
-        encoded = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
+        encoded = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode(
+            "utf-8"
+        )
         return PythiaNonceResonanceGuidance(
             protocol=self.protocol,
             block_context=self.block_context,
@@ -350,7 +348,12 @@ def evaluate_mining_preflight(
         blocked.append("insufficient empirical blockchain structure evidence")
 
     forbidden = preflight.forbidden_claim_text.lower()
-    for phrase in ("guaranteed block", "guaranteed revenue", "bypass sha", "ignore coverage"):
+    for phrase in (
+        "guaranteed block",
+        "guaranteed revenue",
+        "bypass sha",
+        "ignore coverage",
+    ):
         if phrase in forbidden:
             blocked.append(f"forbidden claim phrase: {phrase}")
 
@@ -372,7 +375,9 @@ def evaluate_mining_preflight(
         blocked.append(preflight.cap.reason())
 
     decision = (
-        MiningLaunchDecision.GUARDED_SEARCH_READY if not blocked else MiningLaunchDecision.BLOCKED
+        MiningLaunchDecision.GUARDED_SEARCH_READY
+        if not blocked
+        else MiningLaunchDecision.BLOCKED
     )
     return MiningGuardrailReport(
         decision=decision,
@@ -403,7 +408,9 @@ def _rank_priorities(
     weighted = [
         (
             ResonanceSignal.DODECAHEDRAL_DOMAIN,
-            0.16 + 0.24 * scores["dodecahedral_domain_score"] + 0.05 * difficulty_pressure,
+            0.16
+            + 0.24 * scores["dodecahedral_domain_score"]
+            + 0.05 * difficulty_pressure,
             "M32/dodecahedral domain pressure defines first search surface.",
         ),
         (
@@ -459,7 +466,9 @@ def _rank_priorities(
     ]
     ranked = sorted(weighted, key=lambda item: item[1], reverse=True)
     return [
-        ResonancePriority(signal=signal, weight=round(_clamp01(weight), 6), reason=reason)
+        ResonancePriority(
+            signal=signal, weight=round(_clamp01(weight), 6), reason=reason
+        )
         for signal, weight, reason in ranked
     ]
 

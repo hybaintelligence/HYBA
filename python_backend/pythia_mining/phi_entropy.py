@@ -154,7 +154,9 @@ class PhiEntropyGenerator:
 
         # Build a coarse histogram of the most recent `bins * 4` nonces
         n_samples = bins * 4
-        indices = np.arange(max(0, self.counter - n_samples), self.counter, dtype=np.float64)
+        indices = np.arange(
+            max(0, self.counter - n_samples), self.counter, dtype=np.float64
+        )
         states = (self.current_state + indices * self.INV_PHI) % 1.0
         hist, _ = np.histogram(states, bins=bins, range=(0.0, 1.0))
 
@@ -191,7 +193,9 @@ class PhiEntropyGenerator:
                   original seed used at construction.
         """
         original_seed = (
-            int((self.current_state * self.memory_size) / self.INV_PHI) if self.counter > 0 else 0
+            int((self.current_state * self.memory_size) / self.INV_PHI)
+            if self.counter > 0
+            else 0
         )
 
         s = seed if seed is not None else original_seed
@@ -271,7 +275,8 @@ def van_der_corput_discrepancy(n_samples: int, base_state: float = 0.0) -> dict:
         "three_distance_satisfied": three_distance_satisfied,
         "certificate": (
             "GOLDEN_OPTIMAL"
-            if empirical_discrepancy <= theoretical_bound + 1e-12 and three_distance_satisfied
+            if empirical_discrepancy <= theoretical_bound + 1e-12
+            and three_distance_satisfied
             else "SUBOPTIMAL"
         ),
     }
@@ -323,9 +328,9 @@ def _self_test() -> None:
         f"Coverage:    {metrics['coverage_pct']:.1f}% "
         f"(uniformity={metrics['golden_uniformity']:.4f})"
     )
-    assert metrics["golden_uniformity"] > 0.85, (
-        f"low golden uniformity: {metrics['golden_uniformity']}"
-    )
+    assert (
+        metrics["golden_uniformity"] > 0.85
+    ), f"low golden uniformity: {metrics['golden_uniformity']}"
     print("[PASS] All self-tests passed.")
 
 

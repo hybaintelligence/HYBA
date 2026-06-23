@@ -166,7 +166,9 @@ def _production_environment_check(mode: Mode) -> ProtocolGateCheck:
                 "HYBA_ENABLE_LIVE_STRATUM=true required for live pool/API connection checks"
             )
         if not _env_bool("HYBA_ENABLE_AUDIT_LOGGING"):
-            failures.append("HYBA_ENABLE_AUDIT_LOGGING=true required by autonomic evidence logging")
+            failures.append(
+                "HYBA_ENABLE_AUDIT_LOGGING=true required by autonomic evidence logging"
+            )
     return ProtocolGateCheck(
         name="production_environment_for_seeded_pythia",
         severity="critical",
@@ -296,7 +298,9 @@ def _outside_mission_external_action_check() -> ProtocolGateCheck:
 
 def _legacy_manual_approval_flags_check() -> ProtocolGateCheck:
     warnings: list[str] = []
-    if _env_bool("HYBA_ENABLE_LIVE_SHARE_SUBMIT") and not _env("HYBA_LIVE_SHARE_APPROVAL_ID"):
+    if _env_bool("HYBA_ENABLE_LIVE_SHARE_SUBMIT") and not _env(
+        "HYBA_LIVE_SHARE_APPROVAL_ID"
+    ):
         warnings.append(
             "HYBA_ENABLE_LIVE_SHARE_SUBMIT=true without HYBA_LIVE_SHARE_APPROVAL_ID is acceptable under the seeded mission: "
             "PYTHIA may submit verifier-passing candidates to the configured validated pool."
@@ -328,7 +332,9 @@ def run_gate(mode: Mode) -> ProtocolGateReport:
         _legacy_manual_approval_flags_check(),
     ]
     critical_failures = [
-        check for check in checks if check.severity == "critical" and check.status == "fail"
+        check
+        for check in checks
+        if check.severity == "critical" and check.status == "fail"
     ]
     passed = not critical_failures
     actions: list[str]
@@ -362,15 +368,23 @@ def _write_report(report: ProtocolGateReport) -> Path:
     ARTIFACT_DIR.mkdir(parents=True, exist_ok=True)
     stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     path = ARTIFACT_DIR / f"pythia_autonomic_protocol_gate_{report.mode}_{stamp}.json"
-    path.write_text(json.dumps(report.to_dict(), indent=2, sort_keys=True), encoding="utf-8")
+    path.write_text(
+        json.dumps(report.to_dict(), indent=2, sort_keys=True), encoding="utf-8"
+    )
     return path
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Run the PYTHIA autonomic protocol gate.")
-    parser.add_argument("--mode", choices=["command-room", "live"], default="command-room")
+    parser = argparse.ArgumentParser(
+        description="Run the PYTHIA autonomic protocol gate."
+    )
     parser.add_argument(
-        "--write", action="store_true", help="Write JSON report to artifacts/mining_readiness/."
+        "--mode", choices=["command-room", "live"], default="command-room"
+    )
+    parser.add_argument(
+        "--write",
+        action="store_true",
+        help="Write JSON report to artifacts/mining_readiness/.",
     )
     args = parser.parse_args()
 

@@ -37,7 +37,13 @@ def test_replay_claim_cli_replays_and_stresses_manifest(tmp_path) -> None:
     manifest_path = _write_manifest(tmp_path)
 
     replay = subprocess.run(
-        [sys.executable, "scripts/replay_claim.py", str(manifest_path), "--cwd", str(tmp_path)],
+        [
+            sys.executable,
+            "scripts/replay_claim.py",
+            str(manifest_path),
+            "--cwd",
+            str(tmp_path),
+        ],
         cwd=ROOT,
         check=False,
         text=True,

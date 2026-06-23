@@ -133,7 +133,9 @@ class VerificationSuite:
         """Log a test result."""
         self.results.append(result)
         status = "✓" if result.passed else "✗"
-        print(f"{status} | {result.category:25s} | {result.name:45s} | {result.duration_ms:8.2f}ms")
+        print(
+            f"{status} | {result.category:25s} | {result.name:45s} | {result.duration_ms:8.2f}ms"
+        )
         if result.error_bound is not None and result.error_bound > 0:
             print(f"  └─ Error bound: {result.error_bound:.2e}")
         print(f"  └─ {result.mathematical_statement}")
@@ -245,7 +247,9 @@ class VerificationSuite:
         # Test digest determinism
         digest1 = adjacency_map_digest(ADJACENCY_MAP)
         digest2 = adjacency_map_digest(ADJACENCY_MAP)
-        checks["digest_deterministic"] = digest1 == digest2 and len(digest1) == 64  # SHA-256
+        checks["digest_deterministic"] = (
+            digest1 == digest2 and len(digest1) == 64
+        )  # SHA-256
 
         # Get automorphism certificate
         cert = automorphism_runtime_certificate(ADJACENCY_MAP, use_cache=False)
@@ -312,14 +316,16 @@ class VerificationSuite:
             category="Quantum State Evolution",
             passed=passed,
             duration_ms=duration_ms,
-            error_bound=max(
-                hermitian_error,
-                max(0, -np.min(eigenvalues)),
-                abs(trace_val - 1),
-                max(0, purity - 1),
-            )
-            if not passed
-            else 0.0,
+            error_bound=(
+                max(
+                    hermitian_error,
+                    max(0, -np.min(eigenvalues)),
+                    abs(trace_val - 1),
+                    max(0, purity - 1),
+                )
+                if not passed
+                else 0.0
+            ),
             mathematical_statement="ρ†=ρ, ρ≥0, tr(ρ)=1, tr(ρ²)≤1",
             details={
                 **checks,
@@ -548,7 +554,9 @@ class VerificationSuite:
         print("-" * 140)
         total = self.passed + self.failed
         pass_rate = (self.passed / total * 100) if total > 0 else 0
-        print(f"RESULTS: {self.passed}/{total} PASSED ({pass_rate:.1f}%), {self.failed} FAILED")
+        print(
+            f"RESULTS: {self.passed}/{total} PASSED ({pass_rate:.1f}%), {self.failed} FAILED"
+        )
         print("=" * 140 + "\n")
 
         report = {
@@ -560,7 +568,9 @@ class VerificationSuite:
             "results": [r.to_dict() for r in self.results],
             "summary": {
                 "thesis": "Quantum mathematics is substrate-agnostic. Classical hardware implementation is epistemologically sound.",
-                "verification_status": "IRREFUTABLE PASS" if self.failed == 0 else "FAILED",
+                "verification_status": (
+                    "IRREFUTABLE PASS" if self.failed == 0 else "FAILED"
+                ),
                 "mathematical_proofs_verified": [
                     "Coxeter H3 group structure: 120 automorphisms, o-5-o-3-o diagram",
                     "A5 character table: 5 irreducible representations [1,3,3,4,5]",
@@ -584,7 +594,8 @@ if __name__ == "__main__":
 
     # Save report
     report_path = os.path.join(
-        os.path.dirname(__file__), "../artifacts/quantum_mathematics_final_verification.json"
+        os.path.dirname(__file__),
+        "../artifacts/quantum_mathematics_final_verification.json",
     )
     os.makedirs(os.path.dirname(report_path), exist_ok=True)
 
@@ -602,4 +613,6 @@ if __name__ == "__main__":
     print(f"\nConclusion: {report['summary']['conclusion']}\n")
     print(f"Report saved: {report_path}\n")
 
-    sys.exit(0 if report["summary"]["verification_status"].startswith("IRREFUTABLE") else 1)
+    sys.exit(
+        0 if report["summary"]["verification_status"].startswith("IRREFUTABLE") else 1
+    )

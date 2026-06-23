@@ -186,6 +186,7 @@ def find_solution_nonce(system: AutonomousSearchSystem, limit: int = 500000) -> 
 # Build Evidence from Artifacts
 # ---------------------------------------------------------------------------
 
+
 def _score_evidence_quality(data: dict) -> float:
     """Score evidence quality for ranking. Higher = better evidence."""
     summary = data.get("summary", data)
@@ -202,7 +203,7 @@ def _score_evidence_quality(data: dict) -> float:
 
 def build_empirical_evidence() -> EmpiricalBlockchainStructureEvidence:
     """Build structure evidence from available blockchain data.
-    
+
     Selects the highest-quality evidence by z-score and phi-resonance rate.
     """
     # Scan for empirical reports
@@ -225,14 +226,18 @@ def build_empirical_evidence() -> EmpiricalBlockchainStructureEvidence:
             continue
 
     if best_path is not None and best_data is not None:
-        logger.info(f"  Evidence source: {best_path.name} (quality score: {best_score:.2f})")
+        logger.info(
+            f"  Evidence source: {best_path.name} (quality score: {best_score:.2f})"
+        )
         try:
             return extract_empirical_structure_evidence(best_data)
         except Exception as e:
             logger.warning(f"  Could not load best evidence: {e}")
 
     # Use canonical evidence from the mining validation manifest
-    manifest_path = ROOT / "docs" / "mining" / "evidence" / "mining_validation_manifest.json"
+    manifest_path = (
+        ROOT / "docs" / "mining" / "evidence" / "mining_validation_manifest.json"
+    )
     if manifest_path.exists():
         try:
             manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
@@ -268,6 +273,7 @@ def build_empirical_evidence() -> EmpiricalBlockchainStructureEvidence:
 # System Diagnostics Review
 # ---------------------------------------------------------------------------
 
+
 def run_full_review(system: AutonomousSearchSystem) -> dict:
     """Run a comprehensive system review, reporting all inroads made."""
     logger.info("")
@@ -287,7 +293,8 @@ def run_full_review(system: AutonomousSearchSystem) -> dict:
     diagnostics["pitfalls_seeded"] = pitfalls_seeded
     diag = diagnostics
 
-    print(f"""
+    print(
+        f"""
 ╔══════════════════════════════════════════════════════════════╗
 ║              AUTONOMOUS SEARCH SYSTEM — REVIEW              ║
 ╠══════════════════════════════════════════════════════════════╣
@@ -324,7 +331,8 @@ def run_full_review(system: AutonomousSearchSystem) -> dict:
 ║  URL:                stratum+tcp://btc.viabtc.io:3333        ║
 ║  Status:             ✅ Configured and validated              ║
 ╚══════════════════════════════════════════════════════════════╝
-""")
+"""
+    )
 
     return diagnostics
 
@@ -332,6 +340,7 @@ def run_full_review(system: AutonomousSearchSystem) -> dict:
 # ---------------------------------------------------------------------------
 # Performance Benchmark
 # ---------------------------------------------------------------------------
+
 
 def run_performance_benchmark(system: AutonomousSearchSystem) -> dict:
     """Run a quick benchmark comparing all search modes."""
@@ -341,6 +350,7 @@ def run_performance_benchmark(system: AutonomousSearchSystem) -> dict:
     # Build candidate set with a known solution
     solution = find_solution_nonce(system)
     import numpy as np
+
     rng = np.random.default_rng(42)
     candidates = list(range(0, 30000, 2))
     candidates.append(solution)
@@ -359,7 +369,9 @@ def run_performance_benchmark(system: AutonomousSearchSystem) -> dict:
     print(f"{'Mode':<20s}  {'Speedup':>8s}  {'Mean Attempts':>15s}  {'Found':>6s}")
     print(f"{'─'*20}  {'─'*8}  {'─'*15}  {'─'*6}")
     for mode_name, br in sorted(results.items()):
-        print(f"{mode_name:<20s}  {br.speedup_vs_uniform:>8.4f}x  {br.mean_attempts:>15,.0f}  {br.found:>3d}/{br.trials}")
+        print(
+            f"{mode_name:<20s}  {br.speedup_vs_uniform:>8.4f}x  {br.mean_attempts:>15,.0f}  {br.found:>3d}/{br.trials}"
+        )
 
     return results
 
@@ -368,6 +380,7 @@ def run_performance_benchmark(system: AutonomousSearchSystem) -> dict:
 # Main
 # ---------------------------------------------------------------------------
 
+
 def main():
     require_runtime_dependencies()
     from pythia_mining.autonomous_searching_system import (
@@ -375,7 +388,8 @@ def main():
         SearchMode,
     )
 
-    print(r"""
+    print(
+        r"""
 ╔══════════════════════════════════════════════════════════════╗
 ║                                                              ║
 ║     PYTHIA AUTONOMOUS MINING SYSTEM                          ║
@@ -393,7 +407,8 @@ def main():
 ║     ✓ Autonomic healing                                       ║
 ║                                                              ║
 ╚══════════════════════════════════════════════════════════════╝
-""")
+"""
+    )
 
     # ── Step 1: Configure Pool ─────────────────────────────────
     logger.info("=" * 70)
@@ -472,6 +487,7 @@ def main():
 
     solution = find_solution_nonce(system)
     import numpy as np
+
     rng = np.random.default_rng(42)
     candidates = list(range(0, 30000, 2))
     candidates.append(solution)
@@ -486,7 +502,8 @@ def main():
     )
 
     nonce_str = str(result.nonce) if result.nonce is not None else "N/A"
-    print(f"""
+    print(
+        f"""
 ╔══════════════════════════════════════════════════════════════╗
 ║              SEARCH RESULT                                   ║
 ╠══════════════════════════════════════════════════════════════╣
@@ -498,7 +515,8 @@ def main():
 ║  Phase count:  {len(result.phase_metrics):>8}                           ║
 ║  Mode:         {result.mode:>8s}                           ║
 ╚══════════════════════════════════════════════════════════════╝
-""")
+"""
+    )
 
     logger.info("")
     logger.info("=" * 70)

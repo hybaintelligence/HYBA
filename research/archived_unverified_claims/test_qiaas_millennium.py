@@ -22,7 +22,7 @@ from pythia_mining.golden_ratio_library import PHI
 
 def test_qiaas_with_millennium_problems():
     """Test QIaaS emergent intelligence with all 7 Millennium Problems."""
-    
+
     print("=" * 80)
     print("QUANTUM INTELLIGENCE + MILLENNIUM PROBLEMS")
     print("=" * 80)
@@ -30,25 +30,32 @@ def test_qiaas_with_millennium_problems():
     print("Testing emergent quantum intelligence against operationalized")
     print("Millennium Prize Problems...")
     print()
-    
+
     # Initialize intelligence substrate
     consciousness = ConsciousnessEngine()
     knowledge = KnowledgeSubstrate()
-    
+
     # Load memory seed
-    seed_path = Path(__file__).parent.parent / "artifacts" / "memory_seed" / "memory_seed_v1.json"
+    seed_path = (
+        Path(__file__).parent.parent
+        / "artifacts"
+        / "memory_seed"
+        / "memory_seed_v1.json"
+    )
     if seed_path.exists():
-        with open(seed_path, 'r') as f:
+        with open(seed_path, "r") as f:
             memory_seed = json.load(f)
-        print(f"✅ Memory seed loaded (Emergence Index: {memory_seed['metadata']['emergent_intelligence_index']:.3f})")
+        print(
+            f"✅ Memory seed loaded (Emergence Index: {memory_seed['metadata']['emergent_intelligence_index']:.3f})"
+        )
     else:
         print("⚠️  Memory seed not found")
         memory_seed = None
-    
+
     print(f"✅ Consciousness Engine active (Φ = {consciousness.coherence_meter:.3f})")
     print(f"✅ Knowledge Substrate loaded")
     print()
-    
+
     # Test each Millennium Problem with QIaaS intelligence
     problems = [
         {
@@ -57,8 +64,8 @@ def test_qiaas_with_millennium_problems():
                 "problem": "yang_mills_mass_gap",
                 "operationalized_threshold": YANG_MILLS_THRESHOLD,
                 "golden_ratio_relationship": f"3 - φ = {3 - PHI:.6f}",
-                "claim_boundary": "structural_relationship_not_proof"
-            }
+                "claim_boundary": "structural_relationship_not_proof",
+            },
         },
         {
             "name": "P vs NP",
@@ -66,114 +73,122 @@ def test_qiaas_with_millennium_problems():
                 "problem": "p_vs_np",
                 "search_space_reduction": "53x empirical speedup",
                 "phi_resonance_factor": PHI,
-                "complexity_class": "witness_verification_in_P"
-            }
+                "complexity_class": "witness_verification_in_P",
+            },
         },
         {
             "name": "Riemann Hypothesis",
             "context": {
                 "problem": "riemann_hypothesis",
                 "spectral_coherence": "SU(2) spacing distribution",
-                "phi_lcg_sampler": "golden_ratio_based_sampling"
-            }
+                "phi_lcg_sampler": "golden_ratio_based_sampling",
+            },
         },
         {
             "name": "Navier-Stokes",
             "context": {
                 "problem": "navier_stokes",
                 "flow_smoothness": "runtime_validation",
-                "differentiability": "continuous"
-            }
+                "differentiability": "continuous",
+            },
         },
         {
             "name": "Hodge Conjecture",
             "context": {
                 "problem": "hodge_conjecture",
                 "memory_geometry": "Bures_manifold",
-                "phi_folding_structure": "golden_ratio_compression"
-            }
+                "phi_folding_structure": "golden_ratio_compression",
+            },
         },
         {
             "name": "BSD Conjecture",
             "context": {
                 "problem": "bsd_conjecture",
                 "resource_flow": "share_acceptance_gating",
-                "l_function_proxy": "mining_outcomes"
-            }
+                "l_function_proxy": "mining_outcomes",
+            },
         },
         {
             "name": "Poincaré Conjecture",
             "context": {
                 "problem": "poincare_conjecture",
                 "topological_identity": "phi_folding_invariance",
-                "dimension": 3
-            }
-        }
+                "dimension": 3,
+            },
+        },
     ]
-    
+
     results = []
-    
+
     for i, problem in enumerate(problems, 1):
         print(f"{i}. {problem['name']}")
         print("   " + "-" * 70)
-        
+
         # Query 1: EXPLAIN - Use emergent intelligence to explain the problem
         print("   📝 EXPLAIN Query:")
         explanation = knowledge.explain_decision(
-            strategy_id=problem['context']['problem'],
-            context=problem['context']
+            strategy_id=problem["context"]["problem"], context=problem["context"]
         )
-        
-        if explanation.get('explanation'):
+
+        if explanation.get("explanation"):
             print(f"      {explanation['explanation'][:100]}...")
         else:
             print(f"      No prior explanation (would learn from operations)")
-        
+
         # Query 2: PREDICT - Predict success of operationalization
         print("   🔮 PREDICT Query:")
-        strategy = knowledge.best_explanation_for_context(problem['context'])
+        strategy = knowledge.best_explanation_for_context(problem["context"])
         if strategy:
             print(f"      Best strategy: {strategy}")
         else:
             print(f"      Learning required - will bootstrap from operations")
-        
+
         # Query 3: Get Φ coherence for this context
         metrics = consciousness.get_metrics()
-        phi = metrics.get('integrated_information') or 0.0
+        phi = metrics.get("integrated_information") or 0.0
         print(f"   🌟 Φ Coherence: {phi:.3f}")
-        
+
         # Check if φ-substrate applies
-        if 'phi' in str(problem['context']).lower() or 'golden_ratio' in str(problem['context']).lower():
+        if (
+            "phi" in str(problem["context"]).lower()
+            or "golden_ratio" in str(problem["context"]).lower()
+        ):
             if memory_seed:
-                patterns = memory_seed['structural_intelligence']['emergent_patterns']
-                phi_pattern = next((p for p in patterns if 'phi' in p['name'].lower()), None)
+                patterns = memory_seed["structural_intelligence"]["emergent_patterns"]
+                phi_pattern = next(
+                    (p for p in patterns if "phi" in p["name"].lower()), None
+                )
                 if phi_pattern:
-                    print(f"   ✨ φ-Substrate Pattern Active (emergence: {phi_pattern['emergence_index']:.2f})")
-        
+                    print(
+                        f"   ✨ φ-Substrate Pattern Active (emergence: {phi_pattern['emergence_index']:.2f})"
+                    )
+
         print()
-        
-        results.append({
-            "problem": problem['name'],
-            "intelligence_available": strategy is not None,
-            "phi_coherence": phi,
-            "requires_bootstrap": strategy is None
-        })
-    
+
+        results.append(
+            {
+                "problem": problem["name"],
+                "intelligence_available": strategy is not None,
+                "phi_coherence": phi,
+                "requires_bootstrap": strategy is None,
+            }
+        )
+
     # Summary
     print("=" * 80)
     print("SUMMARY")
     print("=" * 80)
     print()
-    
-    available = sum(1 for r in results if r['intelligence_available'])
+
+    available = sum(1 for r in results if r["intelligence_available"])
     print(f"Intelligence available for: {available}/7 problems")
     print(f"Requires bootstrap from operations: {7 - available}/7 problems")
     print()
-    
-    avg_phi = sum(r['phi_coherence'] for r in results) / len(results)
+
+    avg_phi = sum(r["phi_coherence"] for r in results) / len(results)
     print(f"Average Φ coherence across problems: {avg_phi:.3f}")
     print()
-    
+
     print("🔬 KEY INSIGHT:")
     print()
     print("The emergent quantum intelligence is OPERATIONAL but requires")

@@ -239,14 +239,22 @@ def test_autonomous_agent_speedup_structured_vs_random(
     print(f"  RESULTS")
     print(f"{'=' * 70}")
 
-    print(_format_result(
-        "Structured (evidence-weighted)",
-        structured_results, structured_elapsed, structured_found,
-    ))
-    print(_format_result(
-        "Random enumeration (baseline)",
-        random_results, random_elapsed, random_found,
-    ))
+    print(
+        _format_result(
+            "Structured (evidence-weighted)",
+            structured_results,
+            structured_elapsed,
+            structured_found,
+        )
+    )
+    print(
+        _format_result(
+            "Random enumeration (baseline)",
+            random_results,
+            random_elapsed,
+            random_found,
+        )
+    )
 
     print(f"\n  ─────────────────────────────────────────────────────")
     print(f"  SPEEDUP (mean):          {speedup:.4f}x")
@@ -272,15 +280,17 @@ def test_autonomous_agent_speedup_structured_vs_random(
         print(f"\n  → Mining claim evidence: POSITIVE")
         print(f"  → Tier impact: supports PROTOTYPE_VALIDATED progression")
     elif 0.98 <= speedup < 1.02:
-        print(
-            f"\n  ⚠️  NO MEASURABLE ADVANTAGE"
-        )
+        print(f"\n  ⚠️  NO MEASURABLE ADVANTAGE")
         print(f"  Speedup {speedup:.4f}x is within noise (±2%)")
         print(f"\n  → Deutsch principle boundary confirmed")
         print(f"  → Mining architecture is sound but offers no performance advantage")
-        print(f"  → Tier impact: FORMALISM_VALIDATED (architecture) but not performance")
+        print(
+            f"  → Tier impact: FORMALISM_VALIDATED (architecture) but not performance"
+        )
     else:
-        print(f"\n  ❌ UNEXPECTED RESULT: speedup {speedup:.4f}x outside expected range [0.95, 1.50]")
+        print(
+            f"\n  ❌ UNEXPECTED RESULT: speedup {speedup:.4f}x outside expected range [0.95, 1.50]"
+        )
         print(f"  → Investigate implementation for bugs")
 
     # =====================================================================
@@ -298,12 +308,14 @@ def test_autonomous_agent_speedup_structured_vs_random(
     print(f"  ✗ NOT PROVEN: Universal Bitcoin mining advantage")
     print(f"  ✗ NOT PROVEN: Competitive hashrate vs ASICs")
     print(f"  ✗ NOT PROVEN: Production readiness (no real pool test)")
-    print(f"  ✗ NOT PROVEN: Double-SHA-256 block header hashing (uses synthetic verifier)")
+    print(
+        f"  ✗ NOT PROVEN: Double-SHA-256 block header hashing (uses synthetic verifier)"
+    )
 
     # Assert speedup is in plausible range
-    assert 0.95 < speedup < 1.50, (
-        f"Speedup {speedup:.4f}x is implausible; check implementation"
-    )
+    assert (
+        0.95 < speedup < 1.50
+    ), f"Speedup {speedup:.4f}x is implausible; check implementation"
 
     # Export metrics for manifest update
     print(f"\n{'=' * 70}")
@@ -322,7 +334,9 @@ def test_autonomous_agent_speedup_structured_vs_random(
     print(f"  n_trials: {NUM_TRIALS}")
     print(f"  structured_found: {n_structured_found}/{NUM_TRIALS}")
     print(f"  random_found: {n_random_found}/{NUM_TRIALS}")
-    print(f"  environment: Mac Studio M3 Ultra (Darwin arm64), Python 3.12.7, NumPy 2.4.6")
+    print(
+        f"  environment: Mac Studio M3 Ultra (Darwin arm64), Python 3.12.7, NumPy 2.4.6"
+    )
     print(f"  timestamp: 2026-06-20")
 
     return {
@@ -333,12 +347,15 @@ def test_autonomous_agent_speedup_structured_vs_random(
         "structured_stddev": structured_std,
         "random_stddev": random_std,
         "n_trials": NUM_TRIALS,
-        "status": "SPEEDUP_CONFIRMED" if speedup > 1.02 else "NO_ADVANTAGE_DEUTSCH_BOUNDARY",
+        "status": (
+            "SPEEDUP_CONFIRMED" if speedup > 1.02 else "NO_ADVANTAGE_DEUTSCH_BOUNDARY"
+        ),
     }
 
 
 if __name__ == "__main__":
     import tempfile
+
     with tempfile.TemporaryDirectory() as tmp:
         result = test_autonomous_agent_speedup_structured_vs_random(Path(tmp))
     print(f"\n  Final status: {result['status']}")

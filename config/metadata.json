@@ -1,6 +1,6 @@
 {
-  "name": "HYBA Fullstack Platform",
   "description": "HYBA Computational Intelligence as a Service (CIaaS) - The AWS of Intelligence. Full-stack platform with Python FastAPI backend, React frontend, and Express bridge.",
-  "requestFramePermissions": [],
-  "majorCapabilities": []
+  "majorCapabilities": [],
+  "name": "HYBA Fullstack Platform",
+  "requestFramePermissions": []
 }

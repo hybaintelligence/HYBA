@@ -279,7 +279,9 @@ class TestGatewayIntegration:
         gateway = ProductionMiningGateway()
 
         # Create mock profiles with empty list behavior
-        with patch.object(ProductionMiningGateway, "build_profiles_from_env", return_value=[]):
+        with patch.object(
+            ProductionMiningGateway, "build_profiles_from_env", return_value=[]
+        ):
             with pytest.raises((PoolConfigurationError, ValueError)):
                 await gateway.initialize()
 

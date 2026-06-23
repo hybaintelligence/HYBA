@@ -27,7 +27,11 @@ import numpy as np
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field, field_validator
 
-from hyba_genesis_api.api.customer_access import CustomerInfo, customer_registry, require_api_key
+from hyba_genesis_api.api.customer_access import (
+    CustomerInfo,
+    customer_registry,
+    require_api_key,
+)
 from pythia_mining.quantum_axiom_helpers import (
     MASS_GAP_TARGET,
     adaptive_phi_truncation,
@@ -73,18 +77,29 @@ class TensorNetworkContractionRequest(BaseModel):
 
     Used by: CERN lattice QCD, condensed matter DMRG, quantum chemistry.
     """
+
     model_config = {"extra": "forbid"}
 
-    num_sites: int = Field(default=50, ge=2, le=1000, description="Number of quantum sites (qubits)")
-    physical_dim: int = Field(default=2, ge=2, le=4, description="Physical Hilbert space dimension per site")
-    max_bond_dim: int = Field(default=32, ge=2, le=128, description="Maximum MPS bond dimension (χ)")
+    num_sites: int = Field(
+        default=50, ge=2, le=1000, description="Number of quantum sites (qubits)"
+    )
+    physical_dim: int = Field(
+        default=2, ge=2, le=4, description="Physical Hilbert space dimension per site"
+    )
+    max_bond_dim: int = Field(
+        default=32, ge=2, le=128, description="Maximum MPS bond dimension (χ)"
+    )
     observable_sites: List[int] = Field(
         default_factory=list,
         max_length=20,
         description="Site indices for local observable measurement",
     )
-    compress_adaptive: bool = Field(default=True, description="Apply φ-adaptive SVD compression")
-    compute_entanglement: bool = Field(default=True, description="Compute entanglement spectrum at all bonds")
+    compress_adaptive: bool = Field(
+        default=True, description="Apply φ-adaptive SVD compression"
+    )
+    compute_entanglement: bool = Field(
+        default=True, description="Compute entanglement spectrum at all bonds"
+    )
     idempotency_key: Optional[str] = Field(default=None, max_length=128)
 
     @field_validator("observable_sites")
@@ -102,6 +117,7 @@ class VariationalEigensolverRequest(BaseModel):
     Used by: JPMorgan (portfolio optimization as QUBO), pharma (FeMoco ground state),
     materials science (band structure), CERN (lattice Hamiltonian ground states).
     """
+
     model_config = {"extra": "forbid"}
 
     num_sites: int = Field(default=20, ge=2, le=200)
@@ -119,7 +135,9 @@ class VariationalEigensolverRequest(BaseModel):
 
     @field_validator("qubo_matrix")
     @classmethod
-    def validate_qubo(cls, v: Optional[List[List[float]]]) -> Optional[List[List[float]]]:
+    def validate_qubo(
+        cls, v: Optional[List[List[float]]]
+    ) -> Optional[List[List[float]]]:
         if v is None:
             return v
         if len(v) > 50 or any(len(row) != len(v) for row in v):
@@ -135,11 +153,19 @@ class TopologicalHolonomyRequest(BaseModel):
     (Chern numbers, topological invariants), NATO post-quantum cryptography
     (topological protection guarantees), CERN (gauge field holonomy).
     """
+
     model_config = {"extra": "forbid"}
 
     num_sites: int = Field(default=10, ge=2, le=100)
-    loop_steps: int = Field(default=16, ge=4, le=256, description="Number of steps around the parameter loop")
-    loop_radius: float = Field(default=1.0, ge=0.01, le=10.0, description="Radius in parameter space")
+    loop_steps: int = Field(
+        default=16,
+        ge=4,
+        le=256,
+        description="Number of steps around the parameter loop",
+    )
+    loop_radius: float = Field(
+        default=1.0, ge=0.01, le=10.0, description="Radius in parameter space"
+    )
     hamiltonian_type: Literal["ssh", "kitaev", "haldane", "custom"] = "ssh"
     return_winding_number: bool = Field(default=True)
     idempotency_key: Optional[str] = Field(default=None, max_length=128)
@@ -153,6 +179,7 @@ class EntanglementSpectrumRequest(BaseModel):
     condensed matter (topological phase detection via entanglement gap),
     quantum gravity (holographic entanglement entropy / Ryu-Takayanagi).
     """
+
     model_config = {"extra": "forbid"}
 
     num_sites: int = Field(default=100, ge=2, le=1000)
@@ -162,7 +189,9 @@ class EntanglementSpectrumRequest(BaseModel):
         max_length=50,
         description="Bond indices for bipartition. Defaults to all bonds.",
     )
-    compute_renyi_entropies: bool = Field(default=True, description="Also compute Rényi entropies S_2, S_3")
+    compute_renyi_entropies: bool = Field(
+        default=True, description="Also compute Rényi entropies S_2, S_3"
+    )
     idempotency_key: Optional[str] = Field(default=None, max_length=128)
 
 
@@ -174,9 +203,15 @@ class MERARequest(BaseModel):
     quantum gravity researchers (holographic bulk geometry / AdS-MERA correspondence),
     quantum error correction (holographic codes).
     """
+
     model_config = {"extra": "forbid"}
 
-    num_sites: int = Field(default=16, ge=2, le=512, description="Number of lattice sites (power of 2 recommended)")
+    num_sites: int = Field(
+        default=16,
+        ge=2,
+        le=512,
+        description="Number of lattice sites (power of 2 recommended)",
+    )
     chi: int = Field(default=4, ge=2, le=32, description="Bond dimension χ")
     compute_scaling_dimensions: bool = Field(default=True)
     compute_holographic_bulk: bool = Field(default=True)
@@ -191,11 +226,16 @@ class LatticeYangMillsRequest(BaseModel):
     mathematics (Yang-Mills mass gap Millennium Problem context),
     defense/government (fundamental physics verification).
     """
+
     model_config = {"extra": "forbid"}
 
-    lattice_size: int = Field(default=4, ge=2, le=8, description="Lattice size N (creates N^d lattice)")
+    lattice_size: int = Field(
+        default=4, ge=2, le=8, description="Lattice size N (creates N^d lattice)"
+    )
     dimensions: int = Field(default=2, ge=2, le=4, description="Spacetime dimensions d")
-    beta: float = Field(default=2.3, ge=0.1, le=20.0, description="Inverse coupling β = 4/g²")
+    beta: float = Field(
+        default=2.3, ge=0.1, le=20.0, description="Inverse coupling β = 4/g²"
+    )
     group: Literal["SU2"] = "SU2"
     compute_polyakov: bool = Field(default=True)
     compute_spectral_gap: bool = Field(default=True)
@@ -211,12 +251,15 @@ class QuantumExecutionResponse(BaseModel):
     evidence_seal: str
     attestation: Optional[Dict[str, Any]] = None
     mathematical_basis: str
-    substrate_note: str = "Quantum mathematics is substrate-agnostic. Results are mathematically valid regardless of execution substrate."
+    substrate_note: str = (
+        "Quantum mathematics is substrate-agnostic. Results are mathematically valid regardless of execution substrate."
+    )
     claim_boundary: str
 
 
 class AttestationVerifyRequest(BaseModel):
     """Submit a stored attestation for integrity and mathematical verification."""
+
     model_config = {"extra": "forbid"}
     attestation: Dict[str, Any]
     run_falsification_probe: bool = Field(
@@ -233,7 +276,9 @@ def _seal(payload: Dict[str, Any]) -> str:
     return hashlib.sha256(canonical.encode()).hexdigest()
 
 
-def _execute_tensor_network_contraction(req: TensorNetworkContractionRequest) -> Dict[str, Any]:
+def _execute_tensor_network_contraction(
+    req: TensorNetworkContractionRequest,
+) -> Dict[str, Any]:
     """Execute MPS tensor network contraction with full observable extraction."""
     mps = MPS(
         num_sites=req.num_sites,
@@ -251,8 +296,12 @@ def _execute_tensor_network_contraction(req: TensorNetworkContractionRequest) ->
     observables = {}
     for site in sites:
         if 0 <= site < req.num_sites:
-            z_exp = extract_verified_real(mps.compute_expectation(Z, site), context=f"Z@{site}")
-            x_exp = extract_verified_real(mps.compute_expectation(X, site), context=f"X@{site}")
+            z_exp = extract_verified_real(
+                mps.compute_expectation(Z, site), context=f"Z@{site}"
+            )
+            x_exp = extract_verified_real(
+                mps.compute_expectation(X, site), context=f"X@{site}"
+            )
             observables[str(site)] = {"Z": round(z_exp, 10), "X": round(x_exp, 10)}
 
     # Entanglement
@@ -299,7 +348,7 @@ def _execute_tensor_network_contraction(req: TensorNetworkContractionRequest) ->
 
 def _build_ising_hamiltonian(n: int, J: float, h: float) -> np.ndarray:
     """Build transverse-field Ising Hamiltonian: H = -J Σ ZZ - h Σ X."""
-    dim = 2 ** n
+    dim = 2**n
     H = np.zeros((dim, dim), dtype=complex)
     I = np.eye(2, dtype=complex)
     Z = np.array([[1, 0], [0, -1]], dtype=complex)
@@ -329,7 +378,7 @@ def _build_ising_hamiltonian(n: int, J: float, h: float) -> np.ndarray:
 
 def _build_heisenberg_hamiltonian(n: int, J: float) -> np.ndarray:
     """Build Heisenberg XXX Hamiltonian: H = J Σ (XX + YY + ZZ)."""
-    dim = 2 ** n
+    dim = 2**n
     H = np.zeros((dim, dim), dtype=complex)
     I = np.eye(2, dtype=complex)
     X = np.array([[0, 1], [1, 0]], dtype=complex)
@@ -349,7 +398,9 @@ def _build_heisenberg_hamiltonian(n: int, J: float) -> np.ndarray:
     return H
 
 
-def _execute_variational_eigensolver(req: VariationalEigensolverRequest) -> Dict[str, Any]:
+def _execute_variational_eigensolver(
+    req: VariationalEigensolverRequest,
+) -> Dict[str, Any]:
     """
     Variational Quantum Eigensolver via power iteration on MPS ansatz.
 
@@ -374,8 +425,8 @@ def _execute_variational_eigensolver(req: VariationalEigensolverRequest) -> Dict
         elif req.hamiltonian_type == "custom_qubo" and req.qubo_matrix:
             size = min(len(req.qubo_matrix), n)
             H = np.array(req.qubo_matrix[:size], dtype=complex)
-            if H.shape[0] < 2 ** n:
-                pad = 2 ** n - H.shape[0]
+            if H.shape[0] < 2**n:
+                pad = 2**n - H.shape[0]
                 H = np.pad(H, ((0, pad), (0, pad)))
         else:
             H = _build_ising_hamiltonian(n, req.coupling_strength, req.field_strength)
@@ -400,16 +451,25 @@ def _execute_variational_eigensolver(req: VariationalEigensolverRequest) -> Dict
 
             energy = 0.0
             for i in range(n - 1):
-                z_i = extract_verified_real(mps.compute_expectation(Z, i), context=f"Z@{i}")
-                z_j = extract_verified_real(mps.compute_expectation(Z, i + 1), context=f"Z@{i+1}")
-                x_i = extract_verified_real(mps.compute_expectation(X, i), context=f"X@{i}")
+                z_i = extract_verified_real(
+                    mps.compute_expectation(Z, i), context=f"Z@{i}"
+                )
+                z_j = extract_verified_real(
+                    mps.compute_expectation(Z, i + 1), context=f"Z@{i+1}"
+                )
+                x_i = extract_verified_real(
+                    mps.compute_expectation(X, i), context=f"X@{i}"
+                )
                 energy += -req.coupling_strength * z_i * z_j + -req.field_strength * x_i
 
             # Apply φ-adaptive compression each sweep
             mps = mps.compress_adaptive(base_max_bond=req.max_bond_dim)
             convergence_history.append(round(energy, 8))
 
-            if prev_energy is not None and abs(energy - prev_energy) < req.convergence_tolerance:
+            if (
+                prev_energy is not None
+                and abs(energy - prev_energy) < req.convergence_tolerance
+            ):
                 break
             prev_energy = energy
 
@@ -442,7 +502,9 @@ def _build_ssh_hamiltonian(n: int, t1: float, t2: float) -> np.ndarray:
     return H
 
 
-def _compute_berry_phase_loop(H_func, loop_steps: int, loop_radius: float) -> Dict[str, Any]:
+def _compute_berry_phase_loop(
+    H_func, loop_steps: int, loop_radius: float
+) -> Dict[str, Any]:
     """
     Compute Berry phase by parallel transport around a closed parameter loop.
 
@@ -496,11 +558,14 @@ def _execute_topological_holonomy(req: TopologicalHolonomyRequest) -> Dict[str, 
     n = req.num_sites
 
     if req.hamiltonian_type == "ssh":
+
         def H_func(lam):
             t1 = 1.0 + lam[0] * req.loop_radius
             t2 = 1.0 - lam[0] * req.loop_radius
             return _build_ssh_hamiltonian(n, max(0.01, t1), max(0.01, t2))
+
     elif req.hamiltonian_type == "kitaev":
+
         def H_func(lam):
             mu = lam[0]
             H = np.zeros((n, n), dtype=complex)
@@ -510,7 +575,9 @@ def _execute_topological_holonomy(req: TopologicalHolonomyRequest) -> Dict[str, 
             for i in range(n):
                 H[i, i] = -mu
             return H
+
     else:
+
         def H_func(lam):
             return _build_ssh_hamiltonian(n, 1.0 + lam[0], 1.0 - lam[0])
 
@@ -537,15 +604,15 @@ def _execute_entanglement_spectrum(req: EntanglementSpectrumRequest) -> Dict[str
             spectrum[str(bond)] = [round(float(s), 10) for s in sv[:10]]
 
             # von Neumann entropy: S_1 = -Σ λ² log₂ λ²
-            p = sv ** 2
+            p = sv**2
             p = p / (np.sum(p) + 1e-300)
             s1 = -float(np.sum(p * np.log2(p + 1e-300)))
             von_neumann[str(bond)] = round(s1, 10)
 
             if req.compute_renyi_entropies:
                 # Rényi entropy S_α = (1/(1-α)) log Σ λ^(2α)
-                s2 = float(np.log2(np.sum(sv ** 4) + 1e-300))  # α=2
-                s3_num = float(np.log2(np.sum(sv ** 6) + 1e-300))  # α=3
+                s2 = float(np.log2(np.sum(sv**4) + 1e-300))  # α=2
+                s3_num = float(np.log2(np.sum(sv**6) + 1e-300))  # α=3
                 renyi_2[str(bond)] = round(-s2, 10)
                 renyi_3[str(bond)] = round(-s3_num / 2.0, 10)
 
@@ -609,13 +676,9 @@ def _dispatch_operation(operation: str, payload: Dict[str, Any]) -> Dict[str, An
             VariationalEigensolverRequest(**payload)
         )
     elif operation == "topological_holonomy":
-        return _execute_topological_holonomy(
-            TopologicalHolonomyRequest(**payload)
-        )
+        return _execute_topological_holonomy(TopologicalHolonomyRequest(**payload))
     elif operation == "entanglement_spectrum":
-        return _execute_entanglement_spectrum(
-            EntanglementSpectrumRequest(**payload)
-        )
+        return _execute_entanglement_spectrum(EntanglementSpectrumRequest(**payload))
     elif operation == "mera_renormalization":
         return _execute_mera(MERARequest(**payload))
     elif operation == "lattice_yang_mills":
@@ -632,6 +695,7 @@ def _dispatch_operation(operation: str, payload: Dict[str, Any]) -> Dict[str, An
 
 class QuantumExecutionRequest(BaseModel):
     """Unified quantum mathematical execution request."""
+
     model_config = {"extra": "forbid"}
 
     operation: OperationKind
@@ -695,8 +759,12 @@ async def execute_quantum_operation(
         seal_payload = {
             "execution_id": execution_id,
             "operation": request.operation,
-            "owner_hash": hashlib.sha256(customer.customer_id.encode()).hexdigest()[:16],
-            "output_digest": attestation_dict["output_digest"] if attestation_dict else "",
+            "owner_hash": hashlib.sha256(customer.customer_id.encode()).hexdigest()[
+                :16
+            ],
+            "output_digest": (
+                attestation_dict["output_digest"] if attestation_dict else ""
+            ),
             "executed_at": time.time(),
         }
 
@@ -782,6 +850,7 @@ async def verify_attestation(
 
             # Compare output digest
             import json as _json
+
             replay_digest = hashlib.sha256(
                 _json.dumps(replay_result, sort_keys=True, default=str).encode()
             ).hexdigest()
@@ -835,7 +904,11 @@ async def list_operations(
                 "max_sites": 1000,
                 "max_bond_dim": 128,
                 "reproducibility": {
-                    "falsification_routes": ["tn_bond_convergence", "tn_observable_continuity", "tn_pulvini_lossless"],
+                    "falsification_routes": [
+                        "tn_bond_convergence",
+                        "tn_observable_continuity",
+                        "tn_pulvini_lossless",
+                    ],
                     "key_invariant": "MPS norm = 1.0 after left-canonical QR sweep",
                 },
             },
@@ -850,7 +923,11 @@ async def list_operations(
                 ],
                 "hamiltonians": ["ising", "heisenberg", "hubbard", "custom_qubo"],
                 "reproducibility": {
-                    "falsification_routes": ["vqe_bond_convergence", "vqe_coupling_continuity", "vqe_exact_vs_mps"],
+                    "falsification_routes": [
+                        "vqe_bond_convergence",
+                        "vqe_coupling_continuity",
+                        "vqe_exact_vs_mps",
+                    ],
                     "key_invariant": "Variational principle: E_0(MPS) ≥ E_0(exact)",
                 },
             },
@@ -865,7 +942,11 @@ async def list_operations(
                 ],
                 "models": ["ssh", "kitaev", "haldane", "custom"],
                 "reproducibility": {
-                    "falsification_routes": ["berry_loop_refinement", "berry_ssh_analytical", "berry_trivial_phase"],
+                    "falsification_routes": [
+                        "berry_loop_refinement",
+                        "berry_ssh_analytical",
+                        "berry_trivial_phase",
+                    ],
                     "key_invariant": "SSH topological phase γ = π (winding = 1) when t2 > t1",
                 },
             },
@@ -880,7 +961,11 @@ async def list_operations(
                 ],
                 "max_sites": 1000,
                 "reproducibility": {
-                    "falsification_routes": ["entanglement_area_law", "entanglement_symmetry", "entanglement_renyi_ordering"],
+                    "falsification_routes": [
+                        "entanglement_area_law",
+                        "entanglement_symmetry",
+                        "entanglement_renyi_ordering",
+                    ],
                     "key_invariant": "S_α monotonically decreasing in α; area law S ≤ log₂(χ)",
                 },
             },

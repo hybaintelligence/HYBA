@@ -23,7 +23,8 @@ def init_ai_memory_tables():
     cursor = conn.cursor()
 
     # Table 1: AI Core Memories (learned patterns)
-    cursor.execute("""
+    cursor.execute(
+        """
     CREATE TABLE IF NOT EXISTS ai_memories (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         memory_type TEXT NOT NULL,
@@ -36,10 +37,12 @@ def init_ai_memory_tables():
         access_count INTEGER DEFAULT 0,
         last_accessed TIMESTAMP
     )
-    """)
+    """
+    )
 
     # Table 2: Empirical Evidence (Bitcoin block analysis)
-    cursor.execute("""
+    cursor.execute(
+        """
     CREATE TABLE IF NOT EXISTS empirical_evidence (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         evidence_type TEXT NOT NULL,
@@ -54,10 +57,12 @@ def init_ai_memory_tables():
         reliability_score REAL,
         metadata JSON
     )
-    """)
+    """
+    )
 
     # Table 3: Memory Snapshots (time-indexed learning state)
-    cursor.execute("""
+    cursor.execute(
+        """
     CREATE TABLE IF NOT EXISTS memory_snapshots (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         snapshot_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -68,10 +73,12 @@ def init_ai_memory_tables():
         memory_state JSON,
         notes TEXT
     )
-    """)
+    """
+    )
 
     # Table 4: Reasoning Traces (decision logs)
-    cursor.execute("""
+    cursor.execute(
+        """
     CREATE TABLE IF NOT EXISTS reasoning_traces (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         trace_id TEXT UNIQUE,
@@ -84,10 +91,12 @@ def init_ai_memory_tables():
         execution_time_ms REAL,
         metadata JSON
     )
-    """)
+    """
+    )
 
     # Table 5: Phi Resonance Baseline (statistical reference)
-    cursor.execute("""
+    cursor.execute(
+        """
     CREATE TABLE IF NOT EXISTS phi_resonance_baseline (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         baseline_type TEXT,
@@ -101,7 +110,8 @@ def init_ai_memory_tables():
         collected_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         metadata JSON
     )
-    """)
+    """
+    )
 
     conn.commit()
     print("✓ AI Memory tables created/verified")
@@ -295,7 +305,9 @@ def create_memory_snapshot(conn):
     avg_confidence = cursor.fetchone()[0] or 0
 
     # Get strongest pattern
-    cursor.execute("SELECT memory_key FROM ai_memories ORDER BY confidence DESC LIMIT 1")
+    cursor.execute(
+        "SELECT memory_key FROM ai_memories ORDER BY confidence DESC LIMIT 1"
+    )
     strongest = cursor.fetchone()
     strongest_pattern = strongest[0] if strongest else "none"
 
@@ -304,12 +316,15 @@ def create_memory_snapshot(conn):
     evidence_count = cursor.fetchone()[0]
 
     # Get all memories as JSON
-    cursor.execute("""
+    cursor.execute(
+        """
     SELECT memory_key, memory_value, confidence FROM ai_memories
     ORDER BY confidence DESC
-    """)
+    """
+    )
     memory_state = {
-        row[0]: {"value": json.loads(row[1]), "confidence": row[2]} for row in cursor.fetchall()
+        row[0]: {"value": json.loads(row[1]), "confidence": row[2]}
+        for row in cursor.fetchall()
     }
 
     # Create snapshot

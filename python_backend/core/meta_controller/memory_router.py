@@ -190,7 +190,7 @@ class HebbianMemoryKernel:
             return {}
 
         # Softmax normalization
-        exp_weights = {route: 2.0 ** weight for route, weight in weights.items()}
+        exp_weights = {route: 2.0**weight for route, weight in weights.items()}
         total = sum(exp_weights.values())
 
         if total == 0:
@@ -323,7 +323,9 @@ class MemoryRoutedController:
 
         if would_trip:
             # Circuit breaker tripped - halt and log
-            return self._handle_circuit_breaker_trip(signal, candidate_route, explanation)
+            return self._handle_circuit_breaker_trip(
+                signal, candidate_route, explanation
+            )
 
         # Execute the route
         return self._execute_route(signal, candidate_route, explanation)

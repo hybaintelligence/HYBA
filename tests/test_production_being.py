@@ -44,7 +44,9 @@ class ProductionBeingTests(unittest.TestCase):
         self.assertLessEqual(elegance, 1.0)
 
     def test_docker_compose_contains_reflexive_production_bindings(self) -> None:
-        compose = (REPO_ROOT / "docker-compose.production.yml").read_text(encoding="utf-8")
+        compose = (REPO_ROOT / "docker-compose.production.yml").read_text(
+            encoding="utf-8"
+        )
         self.assertIn("HYBA_ENABLE_REFLEXIVE_DAEMON", compose)
         self.assertIn("HYBA_RICCI_STEP_SIZE", compose)
         self.assertIn("HYBA_ONTOLOGICAL_PERSISTENCE_PATH", compose)

@@ -7,23 +7,27 @@ workload orchestration for QaaS and CIaaS commercial products. It is not
 a mining-specific controller; mining is one possible workload type among
 many general computational intelligence tasks.
 """
+
 import json
 import logging
 import numpy as np
 from pathlib import Path
 from typing import Dict, List, Optional, Literal
 from datetime import datetime, timezone
+
 UTC = timezone.utc
 
 from pythia_mining.fault_tolerant_quantum_core import (
     AutonomousFaultTolerantMiner,
-    FaultTolerantQuantumCore
+    FaultTolerantQuantumCore,
 )
 from pythia_mining.golden_ratio_library import PHI_INV
 
 logger = logging.getLogger(__name__)
 
-WorkloadType = Literal["quantum_search", "phi_resonance", "surface_code_cycle", "generic_compute"]
+WorkloadType = Literal[
+    "quantum_search", "phi_resonance", "surface_code_cycle", "generic_compute"
+]
 
 
 class FaultTolerantComputeController:
@@ -54,14 +58,14 @@ class FaultTolerantComputeController:
 
         # Initialize fault-tolerant quantum core
         self.core = FaultTolerantQuantumCore(
-            code_distance=self.config.get('code_distance', 7),
-            physical_error_rate=self.config.get('physical_error_rate', 1e-3)
+            code_distance=self.config.get("code_distance", 7),
+            physical_error_rate=self.config.get("physical_error_rate", 1e-3),
         )
 
         # Initialize logical qubit register for compute workloads
-        self.num_logical_qubits = self.config.get('num_logical_qubits', 32)
+        self.num_logical_qubits = self.config.get("num_logical_qubits", 32)
         for _ in range(self.num_logical_qubits):
-            self.core.initialize_logical_qubit('0')
+            self.core.initialize_logical_qubit("0")
 
         # Operational state
         self.active = False
@@ -72,14 +76,14 @@ class FaultTolerantComputeController:
     def _load_config(self, config_path: Optional[Path]) -> Dict:
         """Load fault-tolerant quantum compute configuration."""
         default_config = {
-            'code_distance': 7,
-            'num_logical_qubits': 32,
-            'max_circuit_depth': 1_024,
-            'max_shots': 1_024,
-            'physical_error_rate': 1e-3,
-            'error_threshold': 0.0109,
-            'syndrome_history_depth': 100,
-            'phi_resonance_rate': 0.9565,  # From empirical blockchain evidence
+            "code_distance": 7,
+            "num_logical_qubits": 32,
+            "max_circuit_depth": 1_024,
+            "max_shots": 1_024,
+            "physical_error_rate": 1e-3,
+            "error_threshold": 0.0109,
+            "syndrome_history_depth": 100,
+            "phi_resonance_rate": 0.9565,  # From empirical blockchain evidence
         }
 
         if config_path and config_path.exists():
@@ -106,13 +110,13 @@ class FaultTolerantComputeController:
         stats = self.core.get_error_statistics()
 
         return {
-            'status': 'active',
-            'code_distance': self.core.d,
-            'logical_qubits': self.num_logical_qubits,
-            'physical_error_rate': stats['physical_error_rate'],
-            'logical_error_rate': stats['logical_error_rate'],
-            'error_threshold': stats['error_threshold'],
-            'fault_tolerant': stats['fault_tolerant'],
+            "status": "active",
+            "code_distance": self.core.d,
+            "logical_qubits": self.num_logical_qubits,
+            "physical_error_rate": stats["physical_error_rate"],
+            "logical_error_rate": stats["logical_error_rate"],
+            "error_threshold": stats["error_threshold"],
+            "fault_tolerant": stats["fault_tolerant"],
         }
 
     def execute_workload(
@@ -153,30 +157,30 @@ class FaultTolerantComputeController:
 
         stats = self.core.get_error_statistics()
         self.workload_count += 1
-        self.total_syndrome_rounds += stats['syndrome_rounds']
-        self.error_history.append(stats['logical_error_rate'])
+        self.total_syndrome_rounds += stats["syndrome_rounds"]
+        self.error_history.append(stats["logical_error_rate"])
 
         result = {
-            'workload_type': workload_type,
-            'circuit_depth': circuit_depth,
-            'logical_qubits': qubit_indices,
-            'syndrome_rounds': stats['syndrome_rounds'],
-            'correction_attempts': stats['correction_attempts'],
-            'correction_successes': stats['correction_successes'],
-            'logical_failures': stats['logical_failures'],
+            "workload_type": workload_type,
+            "circuit_depth": circuit_depth,
+            "logical_qubits": qubit_indices,
+            "syndrome_rounds": stats["syndrome_rounds"],
+            "correction_attempts": stats["correction_attempts"],
+            "correction_successes": stats["correction_successes"],
+            "logical_failures": stats["logical_failures"],
         }
 
         return {
-            'workload_count': self.workload_count,
-            'result': result,
-            'fault_tolerance': {
-                'physical_error_rate': stats['physical_error_rate'],
-                'logical_error_rate': stats['logical_error_rate'],
-                'error_threshold': stats['error_threshold'],
-                'fault_tolerant': stats['fault_tolerant'],
-                'suppression_factor': stats.get('suppression_factor', 1.0),
+            "workload_count": self.workload_count,
+            "result": result,
+            "fault_tolerance": {
+                "physical_error_rate": stats["physical_error_rate"],
+                "logical_error_rate": stats["logical_error_rate"],
+                "error_threshold": stats["error_threshold"],
+                "fault_tolerant": stats["fault_tolerant"],
+                "suppression_factor": stats.get("suppression_factor", 1.0),
             },
-            'timestamp': datetime.now(UTC).isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
         }
 
     def get_error_correction_stats(self) -> Dict:
@@ -184,18 +188,20 @@ class FaultTolerantComputeController:
         stats = self.core.get_error_statistics()
 
         return {
-            'physical_error_rate': stats['physical_error_rate'],
-            'logical_error_rate': stats['logical_error_rate'],
-            'error_threshold': stats['error_threshold'],
-            'fault_tolerant': stats['fault_tolerant'],
-            'syndrome_rounds': stats['syndrome_rounds'],
-            'correction_attempts': stats['correction_attempts'],
-            'correction_successes': stats['correction_successes'],
-            'logical_failures': stats['logical_failures'],
-            'suppression_factor': stats.get('suppression_factor', 1.0),
-            'total_workloads': self.workload_count,
-            'error_history_length': len(self.error_history),
-            'avg_logical_error': float(np.mean(self.error_history)) if self.error_history else 0.0,
+            "physical_error_rate": stats["physical_error_rate"],
+            "logical_error_rate": stats["logical_error_rate"],
+            "error_threshold": stats["error_threshold"],
+            "fault_tolerant": stats["fault_tolerant"],
+            "syndrome_rounds": stats["syndrome_rounds"],
+            "correction_attempts": stats["correction_attempts"],
+            "correction_successes": stats["correction_successes"],
+            "logical_failures": stats["logical_failures"],
+            "suppression_factor": stats.get("suppression_factor", 1.0),
+            "total_workloads": self.workload_count,
+            "error_history_length": len(self.error_history),
+            "avg_logical_error": (
+                float(np.mean(self.error_history)) if self.error_history else 0.0
+            ),
         }
 
     def stop(self) -> Dict:
@@ -203,10 +209,10 @@ class FaultTolerantComputeController:
         self.active = False
 
         return {
-            'status': 'stopped',
-            'total_workloads': self.workload_count,
-            'total_syndrome_rounds': self.total_syndrome_rounds,
-            'final_stats': self.get_error_correction_stats(),
+            "status": "stopped",
+            "total_workloads": self.workload_count,
+            "total_syndrome_rounds": self.total_syndrome_rounds,
+            "final_stats": self.get_error_correction_stats(),
         }
 
 
@@ -235,17 +241,17 @@ def initialize_fault_tolerant_controller(
     logger.info(
         "Fault-tolerant compute controller initialized",
         extra={
-            "code_distance": init_status['code_distance'],
-            "logical_qubits": init_status['logical_qubits'],
-            "logical_error_rate": init_status['logical_error_rate'],
-            "fault_tolerant": init_status['fault_tolerant'],
+            "code_distance": init_status["code_distance"],
+            "logical_qubits": init_status["logical_qubits"],
+            "logical_error_rate": init_status["logical_error_rate"],
+            "fault_tolerant": init_status["fault_tolerant"],
         },
     )
 
     return controller
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # Initialize enterprise fault-tolerant compute controller
     controller = initialize_fault_tolerant_controller(
         code_distance=7,

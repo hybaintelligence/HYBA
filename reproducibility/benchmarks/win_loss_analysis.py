@@ -33,7 +33,9 @@ class WinLossAnalyzer:
         """Identify patterns in lost deals."""
         losses = [o for o in self.opportunities if o["status"] == "lost"]
         return {
-            "top_loss_reasons": Counter(o["loss_reason"] for o in losses).most_common(3),
+            "top_loss_reasons": Counter(o["loss_reason"] for o in losses).most_common(
+                3
+            ),
             "lost_value": sum(o["value"] for o in losses),
             "loss_count": len(losses),
         }
@@ -45,4 +47,7 @@ class WinLossAnalyzer:
             row = by_competitor[opp["competitor"]]
             row[opp["status"]] = row.get(opp["status"], 0) + 1
             row["value"] += opp["value"]
-        return {"competitors": dict(by_competitor), "loss_patterns": self.analyze_loss_patterns()}
+        return {
+            "competitors": dict(by_competitor),
+            "loss_patterns": self.analyze_loss_patterns(),
+        }

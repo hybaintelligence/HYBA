@@ -5,15 +5,22 @@ from __future__ import annotations
 from fastapi.testclient import TestClient
 
 from hyba_genesis_api.api.admin import require_admin
-from hyba_genesis_api.api.computational_intelligence_service import registry as ciaas_registry
-from hyba_genesis_api.api.customer_access import CustomerApiKeyIssueRequest, customer_access
+from hyba_genesis_api.api.computational_intelligence_service import (
+    registry as ciaas_registry,
+)
+from hyba_genesis_api.api.customer_access import (
+    CustomerApiKeyIssueRequest,
+    customer_access,
+)
 from hyba_genesis_api.api.quantum_as_a_service import registry as qaas_registry
 from hyba_genesis_api.auth.jwt_handler import TokenPayload
 from hyba_genesis_api.main import app
 
 
 def _admin_payload() -> TokenPayload:
-    return TokenPayload(sub="1", username="root-admin", roles=["admin"], exp=9999999999, iat=1)
+    return TokenPayload(
+        sub="1", username="root-admin", roles=["admin"], exp=9999999999, iat=1
+    )
 
 
 def _issue_key(customer_id: str = "customer-acme", **quota_overrides: int) -> str:
@@ -124,7 +131,10 @@ def test_public_ciaas_quota_enforcement_and_admin_key_issuance():
         over_quota = client.post(
             f"/api/v1/computational-intelligence-services/{service_id}/workloads",
             headers={"X-API-Key": api_key},
-            json={"workload_type": "governance_audit", "context": {"payload": "x" * 5000}},
+            json={
+                "workload_type": "governance_audit",
+                "context": {"payload": "x" * 5000},
+            },
         )
         assert over_quota.status_code == 402
     finally:

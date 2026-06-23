@@ -70,9 +70,13 @@ class TestQuantumMathematicsIsSubstrateAgnostic:
         trace_val = np.trace(rho_proc)
         purity = np.trace(rho_proc @ rho_proc)
 
-        assert hermitian_error < 1e-10, "Hermitian property is mathematical, not physical"
+        assert (
+            hermitian_error < 1e-10
+        ), "Hermitian property is mathematical, not physical"
         assert np.all(eigenvalues >= -1e-10), "PSD is mathematical, not physical"
-        assert np.isclose(trace_val, 1.0), "Trace normalization is mathematical, not physical"
+        assert np.isclose(
+            trace_val, 1.0
+        ), "Trace normalization is mathematical, not physical"
         assert purity <= 1.0 + 1e-10, "Purity bound is mathematical, not physical"
 
     def test_coxeter_group_structure_is_exact_mathematical_object(self):
@@ -90,10 +94,14 @@ class TestQuantumMathematicsIsSubstrateAgnostic:
 
         assert cert.order == 120, "Group order is exact mathematical property"
         assert cert.rank == 3, "Rank is exact mathematical property"
-        assert cert.coxeter_diagram == "o-5-o-3-o", "Diagram is exact mathematical structure"
-        assert cert.coxeter_matrix == [[1, 5, 3], [5, 1, 3], [3, 3, 1]], (
-            "Matrix is exact mathematical object"
-        )
+        assert (
+            cert.coxeter_diagram == "o-5-o-3-o"
+        ), "Diagram is exact mathematical structure"
+        assert cert.coxeter_matrix == [
+            [1, 5, 3],
+            [5, 1, 3],
+            [3, 3, 1],
+        ], "Matrix is exact mathematical object"
 
     def test_a5_character_table_is_mathematical_identity(self):
         """Character orthogonality is a mathematical theorem, not physical law.
@@ -134,8 +142,12 @@ class TestQuantumMathematicsIsSubstrateAgnostic:
         cert = bures_certificate(rho, entropy_rate)
 
         assert cert.metric == "Bures", "Metric type is mathematical choice"
-        assert "trace_zero" in cert.tangent_space, "Tangent space is mathematical structure"
-        assert len(cert.natural_gradient_rule) > 0, "Gradient rule is mathematical formula"
+        assert (
+            "trace_zero" in cert.tangent_space
+        ), "Tangent space is mathematical structure"
+        assert (
+            len(cert.natural_gradient_rule) > 0
+        ), "Gradient rule is mathematical formula"
         assert cert.closed, "Geometry closure is mathematical property"
 
     def test_grover_algorithm_is_mathematical_operation(self):
@@ -155,7 +167,9 @@ class TestQuantumMathematicsIsSubstrateAgnostic:
         metrics = solver.get_metrics()
         assert metrics["basis_states"] == 20, "Basis states are mathematical structure"
         assert "dodecahedral_coherence" in metrics, "Coherence is mathematical measure"
-        assert "phi_phase_alignment" in metrics, "Phase alignment is mathematical property"
+        assert (
+            "phi_phase_alignment" in metrics
+        ), "Phase alignment is mathematical property"
 
     @given(st.integers(min_value=1, max_value=64))
     @settings(max_examples=20)
@@ -184,15 +198,15 @@ class TestQuantumMathematicsIsSubstrateAgnostic:
 
         # Mathematical invariants
         norm_evolved = np.linalg.norm(psi_evolved)
-        assert np.isclose(norm_evolved, 1.0, atol=1e-8), (
-            "Unitary evolution preserves norm (mathematical theorem)"
-        )
+        assert np.isclose(
+            norm_evolved, 1.0, atol=1e-8
+        ), "Unitary evolution preserves norm (mathematical theorem)"
 
         # Determinism: same input produces same output
         psi_evolved_2 = U @ psi
-        assert np.allclose(psi_evolved, psi_evolved_2, atol=1e-14), (
-            "Evolution is deterministic (mathematical property)"
-        )
+        assert np.allclose(
+            psi_evolved, psi_evolved_2, atol=1e-14
+        ), "Evolution is deterministic (mathematical property)"
 
 
 class TestQuantumPerformanceDoesNotRequireQuantumHardware:

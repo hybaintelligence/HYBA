@@ -11,6 +11,7 @@ This implements all missing production features:
 Replace the execute() method in _VirtualFaultTolerantQuantumComputer class with this.
 """
 
+
 def execute(self, request: QuantumWorkloadRequest) -> Dict[str, Any]:
     qubits = self._validate_workload(request)
     request_hash = hashlib.sha256(
@@ -20,12 +21,14 @@ def execute(self, request: QuantumWorkloadRequest) -> Dict[str, Any]:
     # Scoped idempotency: customer:computer:idempotency_key with TTL
     idempotency_cache_key = None
     if request.idempotency_key:
-        idempotency_cache_key = f"{self.owner}:{self.computer_id}:{request.idempotency_key}"
-        
+        idempotency_cache_key = (
+            f"{self.owner}:{self.computer_id}:{request.idempotency_key}"
+        )
+
         if idempotency_cache_key in self._idempotency_cache:
             cached_entry = self._idempotency_cache[idempotency_cache_key]
             cache_age = time.time() - cached_entry.get("created_at_ts", 0)
-            
+
             # Expire old entries (24h TTL)
             if cache_age > 86400:
                 del self._idempotency_cache[idempotency_cache_key]
@@ -46,13 +49,13 @@ def execute(self, request: QuantumWorkloadRequest) -> Dict[str, Any]:
             status_code=409,
             detail="Computer is currently executing another workload; retry after completion",
         )
-    
+
     try:
         # Acquire distributed Redis lock
         redis_registry = get_redis_registry()
         redis_lock_acquired = False
         lock_token = None
-        
+
         if redis_registry.available:
             estimated_duration_ms = self._estimate_execution_duration_ms(request)
             lock_lease_ms = max(10_000, estimated_duration_ms * 2)
@@ -65,11 +68,11 @@ def execute(self, request: QuantumWorkloadRequest) -> Dict[str, Any]:
                     status_code=409,
                     detail="Instance is currently executing another workload; retry after completion",
                 )
-        
+
         try:
             exec_start = time.perf_counter()
             execution_succeeded = False
-            
+
             # Execute quantum workload
             for _ in range(request.circuit_depth):
                 for qubit_idx in qubits:
@@ -82,21 +85,32 @@ def execute(self, request: QuantumWorkloadRequest) -> Dict[str, Any]:
                     "logical_qubits": qubits,
                     "circuit_depth": request.circuit_depth,
                     "shots": request.shots,
-                    "syndrome_rounds": self.core.get_error_statistics()["syndrome_rounds"],
+                    "syndrome_rounds": self.core.get_error_statistics()[
+                        "syndrome_rounds"
+                    ],
                 }
             elif request.operation == "phi_resonance_analysis":
                 target = self.policy["phi_resonance_target"]
                 result = {
                     "phi": PHI,
                     "target": target,
-                    "alignment": round(max(0.0, min(1.0, 1.0 - abs(PHI / math.pi - target))), 6),
-                    "analysis": explain(request.context or {"operation": request.operation}, request.substrates),
+                    "alignment": round(
+                        max(0.0, min(1.0, 1.0 - abs(PHI / math.pi - target))), 6
+                    ),
+                    "analysis": explain(
+                        request.context or {"operation": request.operation},
+                        request.substrates,
+                    ),
                 }
             elif request.operation == "state_vector_summary":
                 result = {
                     "logical_qubits": qubits,
                     "center_amplitudes": [
-                        str(self.core.logical_qubits[index].physical_qubits[self.core.d // 2, self.core.d // 2])
+                        str(
+                            self.core.logical_qubits[index].physical_qubits[
+                                self.core.d // 2, self.core.d // 2
+                            ]
+                        )
                         for index in qubits
                     ],
                     "fault_tolerance": self.fault_tolerance(),
@@ -105,7 +119,9 @@ def execute(self, request: QuantumWorkloadRequest) -> Dict[str, Any]:
                 result = SubstrateOrchestrator().evaluate(request.context)
             else:
                 result = {
-                    "context_digest": hashlib.sha256(repr(sorted(request.context.items())).encode()).hexdigest(),
+                    "context_digest": hashlib.sha256(
+                        repr(sorted(request.context.items())).encode()
+                    ).hexdigest(),
                     "quantum_parameters": self.quantum_parameters(),
                     "fault_tolerance": self.fault_tolerance(),
                     "claim_boundary": "Governance audit for virtual QaaS runtime; no mining dependency.",
@@ -169,7 +185,7 @@ def execute(self, request: QuantumWorkloadRequest) -> Dict[str, Any]:
             execution_succeeded = True
             self._executions += 1
             self.touch()
-            
+
             # Enhanced evidence seal v2.0 with all metadata
             seal_payload = {
                 "seal_version": "2.0",
@@ -181,7 +197,8 @@ def execute(self, request: QuantumWorkloadRequest) -> Dict[str, Any]:
                 "metering_units": result.get("metering", {}).get("compute_units", 0),
                 "idempotency_key_hash": (
                     hashlib.sha256(request.idempotency_key.encode()).hexdigest()[:16]
-                    if request.idempotency_key else None
+                    if request.idempotency_key
+                    else None
                 ),
                 "execution_schema_version": "1.0",
                 "computer_policy_hash": hashlib.sha256(
@@ -191,7 +208,7 @@ def execute(self, request: QuantumWorkloadRequest) -> Dict[str, Any]:
             evidence_seal = hashlib.sha256(
                 json.dumps(seal_payload, sort_keys=True).encode()
             ).hexdigest()
-            
+
             envelope = {
                 "computer_id": self.computer_id,
                 "operation": request.operation,
@@ -204,15 +221,18 @@ def execute(self, request: QuantumWorkloadRequest) -> Dict[str, Any]:
                 "seal_payload": seal_payload,
                 "claim_boundary": "Fault-tolerant virtual quantum computer API; pure mathematical/substrate-agnostic execution surface.",
             }
-            
+
             # Store in scoped idempotency cache with TTL
             if idempotency_cache_key:
                 # Cleanup expired entries
                 if len(self._idempotency_cache) >= 1000:
                     now = time.time()
-                    expired = [k for k, v in self._idempotency_cache.items()
-                              if now - v.get("created_at_ts", 0) > 86400]
-                    for k in (expired or [next(iter(self._idempotency_cache))]):
+                    expired = [
+                        k
+                        for k, v in self._idempotency_cache.items()
+                        if now - v.get("created_at_ts", 0) > 86400
+                    ]
+                    for k in expired or [next(iter(self._idempotency_cache))]:
                         del self._idempotency_cache[k]
                         break
 
@@ -222,19 +242,19 @@ def execute(self, request: QuantumWorkloadRequest) -> Dict[str, Any]:
                     "created_at": datetime.now(UTC).isoformat(),
                     "created_at_ts": time.time(),
                 }
-            
+
             return envelope
-        
+
         except Exception:
             # Execution failed - do NOT consume quota, do NOT cache
             execution_succeeded = False
             raise
-        
+
         finally:
             # Always release Redis lock
             if redis_lock_acquired and redis_registry.available:
                 redis_registry.release_register_lock(self.computer_id, self.owner)
-    
+
     finally:
         # Always release per-computer lock
         self._execution_lock.release()

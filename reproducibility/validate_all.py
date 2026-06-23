@@ -54,9 +54,13 @@ def validate_fault_tolerance_formula() -> ValidationResult:
         tolerance = 1e-10
         if abs(actual_p_logical - expected_p_logical) < tolerance:
             result.add_detail("✓ Formula matches documented equation")
-            result.add_metric("formula_error", abs(actual_p_logical - expected_p_logical))
+            result.add_metric(
+                "formula_error", abs(actual_p_logical - expected_p_logical)
+            )
         else:
-            result.add_detail(f"✗ Formula mismatch: {actual_p_logical} vs {expected_p_logical}")
+            result.add_detail(
+                f"✗ Formula mismatch: {actual_p_logical} vs {expected_p_logical}"
+            )
             return result
 
         # Test 2: Monotonic decrease with code distance
@@ -68,9 +72,13 @@ def validate_fault_tolerance_formula() -> ValidationResult:
             core = FaultTolerantQuantumCore(code_distance=d, physical_error_rate=p_phys)
             p_logicals.append(core.p_logical)
 
-        is_monotonic = all(p_logicals[i] > p_logicals[i+1] for i in range(len(p_logicals)-1))
+        is_monotonic = all(
+            p_logicals[i] > p_logicals[i + 1] for i in range(len(p_logicals) - 1)
+        )
         if is_monotonic:
-            result.add_detail("✓ Logical error rate decreases monotonically with code distance")
+            result.add_detail(
+                "✓ Logical error rate decreases monotonically with code distance"
+            )
             result.add_metric("monotonic_decrease", 1.0)
         else:
             result.add_detail("✗ Non-monotonic behavior detected")
@@ -85,9 +93,13 @@ def validate_fault_tolerance_formula() -> ValidationResult:
             core = FaultTolerantQuantumCore(code_distance=d, physical_error_rate=p_phys)
             p_logicals.append(core.p_logical)
 
-        is_monotonic = all(p_logicals[i] < p_logicals[i+1] for i in range(len(p_logicals)-1))
+        is_monotonic = all(
+            p_logicals[i] < p_logicals[i + 1] for i in range(len(p_logicals) - 1)
+        )
         if is_monotonic:
-            result.add_detail("✓ Logical error rate increases monotonically with physical error rate")
+            result.add_detail(
+                "✓ Logical error rate increases monotonically with physical error rate"
+            )
             result.add_metric("monotonic_increase", 1.0)
         else:
             result.add_detail("✗ Non-monotonic behavior detected")
@@ -97,7 +109,9 @@ def validate_fault_tolerance_formula() -> ValidationResult:
         result.add_detail("Testing saturation at model threshold (0.0109)...")
         d = 7
         p_phys_high = 0.5  # Well above threshold
-        core = FaultTolerantQuantumCore(code_distance=d, physical_error_rate=p_phys_high)
+        core = FaultTolerantQuantumCore(
+            code_distance=d, physical_error_rate=p_phys_high
+        )
         if core.p_logical >= 0.99:
             result.add_detail("✓ Logical error rate saturates near 1.0 above threshold")
             result.add_metric("saturation_value", core.p_logical)
@@ -111,6 +125,7 @@ def validate_fault_tolerance_formula() -> ValidationResult:
     except Exception as e:
         result.add_detail(f"✗ Exception: {str(e)}")
         import traceback
+
         result.add_detail(traceback.format_exc())
 
     return result
@@ -158,6 +173,7 @@ def validate_quantum_operations() -> ValidationResult:
     except Exception as e:
         result.add_detail(f"✗ Exception: {str(e)}")
         import traceback
+
         result.add_detail(traceback.format_exc())
 
     return result
@@ -196,6 +212,7 @@ def validate_api_endpoints() -> ValidationResult:
     except Exception as e:
         result.add_detail(f"✗ Exception: {str(e)}")
         import traceback
+
         result.add_detail(traceback.format_exc())
 
     return result
@@ -225,8 +242,15 @@ def run_all_validations() -> List[ValidationResult]:
 
 def main():
     parser = argparse.ArgumentParser(description="Validate HYBA PQMC reproducibility")
-    parser.add_argument("--seed", type=int, default=42, help="Random seed for reproducibility")
-    parser.add_argument("--output", type=str, default="validation_output/results.json", help="Output file for results")
+    parser.add_argument(
+        "--seed", type=int, default=42, help="Random seed for reproducibility"
+    )
+    parser.add_argument(
+        "--output",
+        type=str,
+        default="validation_output/results.json",
+        help="Output file for results",
+    )
 
     args = parser.parse_args()
 

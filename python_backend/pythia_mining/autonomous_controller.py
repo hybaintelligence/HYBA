@@ -251,7 +251,9 @@ class AutonomousOptimizer:
         self.targets: Dict[str, OptimizationTarget] = {}
         self.history: Dict[str, deque] = {}
 
-    def register_target(self, target: OptimizationTarget, history_len: int = 20) -> None:
+    def register_target(
+        self, target: OptimizationTarget, history_len: int = 20
+    ) -> None:
         """Register a parameter for autonomous optimization."""
         self.targets[target.name] = target
         self.history[target.name] = deque(maxlen=history_len)
@@ -423,7 +425,9 @@ class MiningCircuitBreaker:
             ),
         }
 
-    def gate(self, action_class: MiningActionClass, now: Optional[float] = None) -> None:
+    def gate(
+        self, action_class: MiningActionClass, now: Optional[float] = None
+    ) -> None:
         """Check if action is allowed through circuit breaker."""
         if action_class not in BREAKER_GATED_CLASSES:
             return  # ungated class, no-op
@@ -549,7 +553,9 @@ class AutonomousMetaController:
             UnifiedAIOrchestrationLayer() if enable_ai else None
         )
 
-    def attach_miner(self, decision_policy: Callable[[Dict[str, Any]], MiningDecision]) -> None:
+    def attach_miner(
+        self, decision_policy: Callable[[Dict[str, Any]], MiningDecision]
+    ) -> None:
         """Attach mining subsystem with custom decision policy."""
         self.miner = AutonomousMiner(self.audit, self.breaker, decision_policy)
 
@@ -575,7 +581,9 @@ class AutonomousMetaController:
             return None
         return self.ai_orchestration.optimize_share_submission(shares, pool_info)
 
-    def ai_generate_advisory(self, system_state: Dict[str, Any]) -> Optional[AIRecommendation]:
+    def ai_generate_advisory(
+        self, system_state: Dict[str, Any]
+    ) -> Optional[AIRecommendation]:
         """Generate AI advisory."""
         if self.ai_orchestration is None:
             return None
@@ -623,7 +631,9 @@ class AutonomousMetaController:
 
         # Add AI orchestration summary if available
         if self.ai_orchestration is not None:
-            summary["ai_orchestration"] = self.ai_orchestration.get_comprehensive_summary()
+            summary["ai_orchestration"] = (
+                self.ai_orchestration.get_comprehensive_summary()
+            )
 
         return summary
 

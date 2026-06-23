@@ -31,7 +31,9 @@ from .phi_config import PHI
 
 def _require_numpy() -> Any:
     if np is None:
-        raise ModuleNotFoundError("numpy is required for Hilbert-space numeric operations")
+        raise ModuleNotFoundError(
+            "numpy is required for Hilbert-space numeric operations"
+        )
     return np
 
 
@@ -42,7 +44,10 @@ class HilbertState:
     amplitudes: np.ndarray
 
     def __init__(
-        self, amplitudes: Sequence[complex] | None = None, *, vector: Sequence[complex] | None = None
+        self,
+        amplitudes: Sequence[complex] | None = None,
+        *,
+        vector: Sequence[complex] | None = None,
     ) -> None:
         source = amplitudes if amplitudes is not None else vector
         if source is None:
@@ -84,7 +89,9 @@ class HilbertState:
     def born_probabilities(self) -> np.ndarray:
         numpy = _require_numpy()
         probabilities = numpy.abs(self.amplitudes) ** 2
-        return probabilities / max(float(numpy.sum(probabilities)), numpy.finfo(float).tiny)
+        return probabilities / max(
+            float(numpy.sum(probabilities)), numpy.finfo(float).tiny
+        )
 
     def evolve(self, unitary: np.ndarray, *, atol: float = 1e-9) -> "HilbertState":
         numpy = _require_numpy()
@@ -99,7 +106,9 @@ class HilbertState:
         return HilbertState.from_amplitudes(matrix @ self.amplitudes)
 
 
-def compute_phi_resonance(nonce: int, harmonics: Sequence[int] = (1, 2, 3, 5, 8, 13, 21)) -> float:
+def compute_phi_resonance(
+    nonce: int, harmonics: Sequence[int] = (1, 2, 3, 5, 8, 13, 21)
+) -> float:
     """Compute bounded multi-harmonic Φ-resonance for a nonce-like integer.
 
     The score is a formalism feature, not evidence that Bitcoin nonces are
@@ -290,7 +299,11 @@ def structured_mps_bytes(
 
     if int(qubits) <= 0:
         raise ValueError("qubits must be positive")
-    chi = phi_log_bond_dimension(qubits) if bond_dimension is None else int(bond_dimension)
+    chi = (
+        phi_log_bond_dimension(qubits)
+        if bond_dimension is None
+        else int(bond_dimension)
+    )
     if chi <= 0:
         raise ValueError("bond_dimension must be positive")
     return int(qubits) * int(physical_dimension) * chi * chi * int(bytes_per_complex)
@@ -369,7 +382,9 @@ def review_ctd_claims(overrides: Mapping[str, bool] | None = None) -> CTDClaimRe
         "claims_physical_quantum_computers_unnecessary": False,
     }
     if overrides:
-        values.update({key: bool(value) for key, value in overrides.items() if key in values})
+        values.update(
+            {key: bool(value) for key, value in overrides.items() if key in values}
+        )
     return CTDClaimReview(**values)
 
 

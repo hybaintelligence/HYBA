@@ -36,7 +36,9 @@ class MiningExecutiveController:
     ):
         self.consciousness = consciousness_engine or ConsciousnessEngine()
         self.regeneration = regeneration_manager or get_regeneration_manager()
-        self.salamander_guard = salamander_guard or SalamanderMiningGuard(self.regeneration)
+        self.salamander_guard = salamander_guard or SalamanderMiningGuard(
+            self.regeneration
+        )
         self.stratum_client: Optional[StratumClient] = None
         self.is_active = False
         self.ignition_time: Optional[datetime] = None
@@ -71,7 +73,9 @@ class MiningExecutiveController:
         # Check system Phi
         phi = getattr(self.consciousness, "phi", self.consciousness.coherence_meter)
         if phi < 0.45:
-            logger.error(f"Ignition blocked: Substrate coherence (Φ) below safe threshold: {phi}")
+            logger.error(
+                f"Ignition blocked: Substrate coherence (Φ) below safe threshold: {phi}"
+            )
             return {"success": False, "error": "IMMUNE_LOCK", "phi": phi}
 
         if self.is_active:
@@ -80,10 +84,14 @@ class MiningExecutiveController:
         # Salamander is a hard preflight for mining ignition. It proves the
         # regeneration substrate is present, target-registered, and warm before
         # any pool connection or live mining loop starts.
-        salamander_gate = await self.salamander_guard.preflight(source="executive_ignition")
+        salamander_gate = await self.salamander_guard.preflight(
+            source="executive_ignition"
+        )
         self.last_salamander_gate = salamander_gate.to_dict()
         if not salamander_gate.ready:
-            logger.error("Ignition blocked by Salamander gate: %s", salamander_gate.blocker)
+            logger.error(
+                "Ignition blocked by Salamander gate: %s", salamander_gate.blocker
+            )
             return {
                 "success": False,
                 "error": "SALAMANDER_LOCK",
@@ -101,7 +109,11 @@ class MiningExecutiveController:
                     return {"success": False, "error": "POOL_CONNECTION_FAILED"}
             except Exception as e:
                 logger.error(f"Executive: Pool connection error: {e}")
-                return {"success": False, "error": "POOL_CONNECTION_ERROR", "detail": str(e)}
+                return {
+                    "success": False,
+                    "error": "POOL_CONNECTION_ERROR",
+                    "detail": str(e),
+                }
 
         # 2. Start mining loop
         self._stop_event.clear()
@@ -207,7 +219,9 @@ class MiningExecutiveController:
             "is_active": self.is_active,
             "uptime_seconds": uptime_seconds,
             "stasis_mode": self.stasis_mode,
-            "ignition_time": self.ignition_time.isoformat() if self.ignition_time else None,
+            "ignition_time": (
+                self.ignition_time.isoformat() if self.ignition_time else None
+            ),
             "stratum": stratum_telemetry,
             "coherence": coherence_state,
             "regeneration": regeneration_status,
@@ -232,7 +246,9 @@ class MiningExecutiveController:
                 if self.consciousness.synaptic_layer:
                     decay_stats = self.consciousness.apply_synaptic_decay()
                     if decay_stats.get("total_decays", 0) > 0:
-                        logger.debug(f"Executive: Synaptic decay applied: {decay_stats}")
+                        logger.debug(
+                            f"Executive: Synaptic decay applied: {decay_stats}"
+                        )
 
                 await asyncio.sleep(0.1)
             except asyncio.CancelledError:

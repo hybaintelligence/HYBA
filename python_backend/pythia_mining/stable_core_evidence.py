@@ -118,7 +118,9 @@ class StableCoreEvidencePacket:
 
     def to_dict(self) -> Dict[str, Any]:
         payload = asdict(self)
-        payload["packet_hash"] = self.packet_hash or compute_packet_hash(payload, omit_hash=True)
+        payload["packet_hash"] = self.packet_hash or compute_packet_hash(
+            payload, omit_hash=True
+        )
         return payload
 
 
@@ -182,14 +184,19 @@ class SovereignAuditAggregator:
             result
             for result in guard_results
             if result.get("decision")
-            in {RefactorDecision.STAGE_FOR_SUPERVISION.value, RefactorDecision.ALLOW.value}
+            in {
+                RefactorDecision.STAGE_FOR_SUPERVISION.value,
+                RefactorDecision.ALLOW.value,
+            }
         ]
         blocked = [
             result
             for result in guard_results
             if result.get("decision") == RefactorDecision.BLOCK.value
         ]
-        total_phi = round(sum(float(proposal.expected_phi_gain) for proposal in proposals), 6)
+        total_phi = round(
+            sum(float(proposal.expected_phi_gain) for proposal in proposals), 6
+        )
         mean_logic = round(
             sum(float(proposal.expected_logical_consistency) for proposal in proposals)
             / max(len(proposals), 1),

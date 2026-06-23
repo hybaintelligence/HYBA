@@ -36,7 +36,10 @@ if str(BACKEND) not in sys.path:
 from pythia_mining.consciousness_engine import ConsciousnessEngine  # noqa: E402
 from pythia_mining.iit_4_analyzer import IIT4Analyzer  # noqa: E402
 from pythia_mining.pulvini_topology import NUM_NODES  # noqa: E402
-from scripts.generate_scientific_baselines import all_baselines, canonical_bytes  # noqa: E402
+from scripts.generate_scientific_baselines import (
+    all_baselines,
+    canonical_bytes,
+)  # noqa: E402
 
 
 SCHEMA_VERSION = "hyba.science.consciousness_evidence.v1"
@@ -73,7 +76,9 @@ def density(diagonal: Iterable[float], *, dimension: int = NUM_NODES) -> np.ndar
     vector = np.abs(vector) + 1e-12
     vector = vector / np.sum(vector)
     if vector.shape[0] > dimension:
-        raise ValueError(f"density vector length {vector.shape[0]} exceeds dimension {dimension}")
+        raise ValueError(
+            f"density vector length {vector.shape[0]} exceeds dimension {dimension}"
+        )
     padded = np.zeros(dimension, dtype=np.float64)
     padded[: vector.shape[0]] = vector
     return np.diag(padded).astype(np.complex128)
@@ -112,7 +117,9 @@ def vector_state_from_density(rho: np.ndarray) -> np.ndarray:
     if support.size == 0:
         support = diagonal[:4]
     threshold = float(np.median(support))
-    return np.asarray([1 if value >= threshold else 0 for value in support], dtype=np.int64)
+    return np.asarray(
+        [1 if value >= threshold else 0 for value in support], dtype=np.int64
+    )
 
 
 def connectivity_matrix(kind: str, size: int = 4) -> np.ndarray:
@@ -133,7 +140,9 @@ def connectivity_matrix(kind: str, size: int = 4) -> np.ndarray:
     return matrix
 
 
-def measure_point(name: str, history: List[np.ndarray], *, connectivity: str) -> EvidencePoint:
+def measure_point(
+    name: str, history: List[np.ndarray], *, connectivity: str
+) -> EvidencePoint:
     engine = ConsciousnessEngine()
     phi_metrics = engine.measure_phi(history)
     iit_state = vector_state_from_density(history[-1])
@@ -159,28 +168,40 @@ def build_packet() -> Dict[str, Any]:
     histories = deterministic_histories()
     points = [
         measure_point(
-            "disconnected_ablation", histories["balanced_stable"], connectivity="disconnected"
+            "disconnected_ablation",
+            histories["balanced_stable"],
+            connectivity="disconnected",
         ),
         measure_point(
-            "weak_connectivity_control", histories["balanced_stable"], connectivity="weak"
+            "weak_connectivity_control",
+            histories["balanced_stable"],
+            connectivity="weak",
         ),
         measure_point(
-            "ring_integration_control", histories["concentrated_then_balanced"], connectivity="ring"
+            "ring_integration_control",
+            histories["concentrated_then_balanced"],
+            connectivity="ring",
         ),
         measure_point(
             "strong_integration_candidate",
             histories["concentrated_then_balanced"],
             connectivity="strong",
         ),
-        measure_point("fragmented_control", histories["fragmented_control"], connectivity="weak"),
+        measure_point(
+            "fragmented_control", histories["fragmented_control"], connectivity="weak"
+        ),
     ]
     by_name = {point.name: point.to_dict() for point in points}
     comparisons = {
-        "connectivity_monotonicity": by_name["strong_integration_candidate"]["iit_phi_max"]
+        "connectivity_monotonicity": by_name["strong_integration_candidate"][
+            "iit_phi_max"
+        ]
         >= by_name["weak_connectivity_control"]["iit_phi_max"]
         >= by_name["disconnected_ablation"]["iit_phi_max"],
         "disconnected_phi_zero": by_name["disconnected_ablation"]["iit_phi_max"] == 0.0,
-        "fragmented_triggers_lower_regime": by_name["fragmented_control"]["phi_integrated"]
+        "fragmented_triggers_lower_regime": by_name["fragmented_control"][
+            "phi_integrated"
+        ]
         <= by_name["strong_integration_candidate"]["phi_integrated"],
         "baselines_present": sorted(all_baselines().keys()),
     }
@@ -208,7 +229,9 @@ def write_packet(output_dir: Path) -> Dict[str, Any]:
     output_dir.mkdir(parents=True, exist_ok=True)
     packet = build_packet()
     packet_path = output_dir / "consciousness_iit_evidence_packet.json"
-    packet_path.write_text(json.dumps(packet, indent=2, sort_keys=True), encoding="utf-8")
+    packet_path.write_text(
+        json.dumps(packet, indent=2, sort_keys=True), encoding="utf-8"
+    )
     manifest = {
         "schema_version": "hyba.science.packet_manifest.v1",
         "packet": str(packet_path),

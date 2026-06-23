@@ -25,51 +25,46 @@ def auth_group():
 
 @click.command()
 @click.option(
-    '--api-key',
-    type=str,
-    help='API key (if not provided, you will be prompted)'
+    "--api-key", type=str, help="API key (if not provided, you will be prompted)"
 )
-@click.option(
-    '--api-url',
-    type=str,
-    default='https://api.hyba.ai',
-    help='API URL'
-)
+@click.option("--api-url", type=str, default="https://api.hyba.ai", help="API URL")
 def login(api_key, api_url):
     """
     Authenticate with HYBA API
-    
+
     Example:
-    
+
     \b
     $ hyba login --api-key hyba_live_abc123
     ✓ Successfully authenticated as developer@hyba.ai
     """
     if not api_key:
-        api_key = click.prompt('API Key', hide_input=True)
-    
+        api_key = click.prompt("API Key", hide_input=True)
+
     # Validate API key format
-    if not api_key.startswith('hyba_'):
+    if not api_key.startswith("hyba_"):
         console.print("[red]✗ Invalid API key format (must start with 'hyba_')[/red]")
         raise click.Exit(1)
-    
+
     # Test credentials
     try:
         with console.status("[bold blue]Validating credentials..."):
             client = HybaClient(api_key=api_key, api_url=api_url)
             health = client.health_check()
-        
+
         # Save credentials
         auth_manager.save_credentials(api_key, api_url)
-        config_manager.set('api_url', api_url)
-        
-        console.print(Panel(
-            f"[green]✓ Successfully authenticated[/green]\n"
-            f"API URL: {api_url}\n"
-            f"API Key: {api_key[:20]}...",
-            title="Authentication",
-            border_style="green"
-        ))
+        config_manager.set("api_url", api_url)
+
+        console.print(
+            Panel(
+                f"[green]✓ Successfully authenticated[/green]\n"
+                f"API URL: {api_url}\n"
+                f"API Key: {api_key[:20]}...",
+                title="Authentication",
+                border_style="green",
+            )
+        )
     except Exception as e:
         console.print(f"[red]✗ Authentication failed: {str(e)}[/red]")
         raise click.Exit(1)
@@ -79,9 +74,9 @@ def login(api_key, api_url):
 def logout():
     """
     Logout and remove stored credentials
-    
+
     Example:
-    
+
     \b
     $ hyba logout
     ✓ Successfully logged out
@@ -95,9 +90,9 @@ def logout():
 def health(ctx):
     """
     Check API health and connectivity
-    
+
     Example:
-    
+
     \b
     $ hyba health
     ✓ API is healthy
@@ -108,22 +103,24 @@ def health(ctx):
         if not api_key:
             console.print("[red]✗ Not authenticated. Run 'hyba login' first.[/red]")
             raise click.Exit(1)
-        
-        api_url = config_manager.get('api_url', 'https://api.hyba.ai')
-        
+
+        api_url = config_manager.get("api_url", "https://api.hyba.ai")
+
         with console.status("[bold blue]Checking API health..."):
             client = HybaClient(api_key=api_key, api_url=api_url)
             health = client.health_check()
-        
+
         # Display health status
         status_color = "green" if health.get("status") == "ok" else "yellow"
-        console.print(Panel(
-            f"[{status_color}]Status: {health.get('status')}[/{status_color}]\n"
-            f"API URL: {api_url}\n"
-            f"Uptime: {health.get('uptime', 'N/A')}",
-            title="API Health",
-            border_style=status_color
-        ))
+        console.print(
+            Panel(
+                f"[{status_color}]Status: {health.get('status')}[/{status_color}]\n"
+                f"API URL: {api_url}\n"
+                f"Uptime: {health.get('uptime', 'N/A')}",
+                title="API Health",
+                border_style=status_color,
+            )
+        )
     except Exception as e:
         console.print(f"[red]✗ Health check failed: {str(e)}[/red]")
         raise click.Exit(1)

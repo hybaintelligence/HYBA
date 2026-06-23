@@ -35,7 +35,9 @@ from pythia_mining.pulvini_memory_compression_proof import (  # noqa: E402
     prove_phi_folding_reversibility,
     verify_memory_compression_gate,
 )
-from pythia_mining.pulvini_phi_memory import PulviniPhiMemoryCompressionEngine  # noqa: E402
+from pythia_mining.pulvini_phi_memory import (
+    PulviniPhiMemoryCompressionEngine,
+)  # noqa: E402
 
 
 def deterministic_dense_payload(size: int = 64) -> np.ndarray:
@@ -60,7 +62,9 @@ class TestAgent4PhiFoldingCompression:
 
         assert result.reversible
         assert result.reconstruction_error <= engine.tolerance
-        assert np.allclose(engine.decompress(result), payload, atol=engine.tolerance, rtol=0)
+        assert np.allclose(
+            engine.decompress(result), payload, atol=engine.tolerance, rtol=0
+        )
 
     def test_phi_folding_reports_matrix_error_bounds(self) -> None:
         base = deterministic_dense_payload(16).reshape(4, 4)
@@ -109,7 +113,9 @@ class TestAgent4CompressionEngine:
             PulviniPhiMemoryCompressionEngine(**kwargs)
 
     def test_compression_result_as_dict_omits_large_arrays(self) -> None:
-        result = PulviniPhiMemoryCompressionEngine().compress(deterministic_dense_payload())
+        result = PulviniPhiMemoryCompressionEngine().compress(
+            deterministic_dense_payload()
+        )
         payload = result.as_dict()
 
         assert "folded" not in payload
@@ -130,9 +136,13 @@ class TestAgent4CompressionEngine:
             deterministic_dense_payload(128)
         )
 
-        assert result.retained_kernel_bytes == sum(kernel.nbytes for kernel in result.kernels)
+        assert result.retained_kernel_bytes == sum(
+            kernel.nbytes for kernel in result.kernels
+        )
         assert result.retained_state_compression_ratio > 0.0
-        assert result.retained_kernel.size == sum(kernel.size for kernel in result.kernels)
+        assert result.retained_kernel.size == sum(
+            kernel.size for kernel in result.kernels
+        )
 
     def test_stream_compression_consistency_across_chunks(self) -> None:
         chunks = [deterministic_dense_payload(32), deterministic_dense_payload(48)]
@@ -179,7 +189,9 @@ class TestAgent4Proofs:
 
 
 class TestAgent4PhiScaling:
-    def test_phi_scaled_ensemble_initialization_respects_memory_limit_alias(self) -> None:
+    def test_phi_scaled_ensemble_initialization_respects_memory_limit_alias(
+        self,
+    ) -> None:
         engine = PhiScaledEnsemble({"max_memory": 2})
         for score in [0.2, 0.4, 0.6]:
             engine.predict_with_phi_scaling({"model": {"score": score}}, {})
@@ -197,14 +209,20 @@ class TestAgent4PhiScaling:
         assert 0.0 <= decision["final_score"] <= 1.0
         assert decision["indicator_harmony"] > 0.99
 
-    def test_golden_ratio_resonance_detection_identifies_fibonacci_like_series(self) -> None:
-        result = PhiResonanceAnalyzer().analyze_phi_resonance({"fib": [1, 2, 3, 5, 8, 13, 21]})
+    def test_golden_ratio_resonance_detection_identifies_fibonacci_like_series(
+        self,
+    ) -> None:
+        result = PhiResonanceAnalyzer().analyze_phi_resonance(
+            {"fib": [1, 2, 3, 5, 8, 13, 21]}
+        )
 
         assert "fib_resonance" in result
         assert result["fib_resonance"]["is_fibonacci"]
         assert result["fib_resonance"]["harmony_score"] > 0.6
 
-    def test_phi_scaling_robustness_returns_conservative_mode_for_spoofed_stream(self) -> None:
+    def test_phi_scaling_robustness_returns_conservative_mode_for_spoofed_stream(
+        self,
+    ) -> None:
         shield = MassGapShield()
         expected = 1.0 / shield.resonance_gap
         telemetry = [0.0, expected, expected * 2.0]
@@ -216,7 +234,9 @@ class TestAgent4PhiScaling:
         assert result["authenticity"]["reason"] == "too_perfect_likely_spoofing"
         assert result["decision"]["final_score"] == 0.0
 
-    def test_phi_scaling_performance_impact_uses_measured_input_only_when_supplied(self) -> None:
+    def test_phi_scaling_performance_impact_uses_measured_input_only_when_supplied(
+        self,
+    ) -> None:
         projection = benchmark_vs_asic(measured_hashes_per_second=None)
         measured = benchmark_vs_asic(measured_hashes_per_second=1000.0)
 
@@ -229,7 +249,12 @@ class TestAgent4PhiScaling:
 class TestAgent4KnowledgeBase:
     def test_success_criteria_evaluation_scores_optimal_metrics(self) -> None:
         result = SuccessCriteria().evaluate_success(
-            {"hashrate": 120.0, "efficiency": 0.9, "temperature": 45.0, "error_rate": 0.05}
+            {
+                "hashrate": 120.0,
+                "efficiency": 0.9,
+                "temperature": 45.0,
+                "error_rate": 0.05,
+            }
         )
 
         assert result["metric_scores"] == {
@@ -260,7 +285,9 @@ class TestAgent4KnowledgeBase:
         assert all(rule.compliance_level == "mandatory" for rule in mandatory)
         assert validation == {"compliant": True, "violations": [], "warnings": []}
 
-    def test_operational_expectations_validation_reports_warnings_and_critical_alerts(self) -> None:
+    def test_operational_expectations_validation_reports_warnings_and_critical_alerts(
+        self,
+    ) -> None:
         status = OperationalExpectationsKnowledge().check_thresholds(
             {
                 OperationalThreshold.HASHRATE_THRESHOLD.value: 20.0,
@@ -271,19 +298,27 @@ class TestAgent4KnowledgeBase:
 
         assert not status["within_limits"]
         assert any(
-            alert["threshold"] == "hashrate_threshold" for alert in status["critical_alerts"]
+            alert["threshold"] == "hashrate_threshold"
+            for alert in status["critical_alerts"]
         )
         assert any(
-            alert["threshold"] == "error_rate_threshold" for alert in status["critical_alerts"]
+            alert["threshold"] == "error_rate_threshold"
+            for alert in status["critical_alerts"]
         )
         assert any(
-            warning["threshold"] == "temperature_threshold" for warning in status["warnings"]
+            warning["threshold"] == "temperature_threshold"
+            for warning in status["warnings"]
         )
 
     def test_knowledge_base_consistency_and_overall_assessment(self) -> None:
         kb = MiningKnowledgeBase()
         evaluation = kb.evaluate_current_state(
-            {"hashrate": 120.0, "efficiency": 0.9, "temperature": 45.0, "error_rate": 0.0}
+            {
+                "hashrate": 120.0,
+                "efficiency": 0.9,
+                "temperature": 45.0,
+                "error_rate": 0.0,
+            }
         )
 
         assert len(kb.get_success_criteria().evaluate_success({})["metric_scores"]) == 4
@@ -296,10 +331,21 @@ class TestAgent4KnowledgeBase:
 class TestAgent4Integration:
     def test_knowledge_informed_mining_decisions_feed_phi_scaling(self) -> None:
         kb_result = MiningKnowledgeBase().evaluate_current_state(
-            {"hashrate": 100.0, "efficiency": 0.8, "temperature": 50.0, "error_rate": 0.1}
+            {
+                "hashrate": 100.0,
+                "efficiency": 0.8,
+                "temperature": 50.0,
+                "error_rate": 0.1,
+            }
         )
         decision = PhiScaledEnsemble().predict_with_phi_scaling(
-            {"knowledge": {"score": min(1.0, kb_result["overall_assessment"]["confidence"] / PHI)}},
+            {
+                "knowledge": {
+                    "score": min(
+                        1.0, kb_result["overall_assessment"]["confidence"] / PHI
+                    )
+                }
+            },
             {"ops": {"a": 1.0, "b": PHI, "c": PHI * PHI}},
         )
 

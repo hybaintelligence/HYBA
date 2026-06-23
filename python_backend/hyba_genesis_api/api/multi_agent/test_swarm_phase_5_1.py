@@ -36,6 +36,7 @@ from .pso_allocator import (
 # SECTION 1: Swarm Communication Hub Tests
 # =============================================================================
 
+
 class TestSwarmMessage:
     """Test SwarmMessage data model integrity."""
 
@@ -62,7 +63,15 @@ class TestSwarmMessage:
 
     def test_swarm_message_types(self):
         """Verify all seven message types are valid."""
-        valid_types = {"task", "result", "proposal", "vote", "pheromone", "alert", "consensus"}
+        valid_types = {
+            "task",
+            "result",
+            "proposal",
+            "vote",
+            "pheromone",
+            "alert",
+            "consensus",
+        }
         for msg_type in valid_types:
             msg = SwarmMessage(
                 message_id=f"test-{msg_type}",
@@ -77,6 +86,7 @@ class TestSwarmMessage:
     def test_swarm_message_invalid_type(self):
         """Verify invalid message types are rejected."""
         import pydantic
+
         with pytest.raises(pydantic.ValidationError):
             SwarmMessage(
                 message_id="test-invalid",
@@ -253,6 +263,7 @@ class TestSwarmCommunication:
 # SECTION 2: Stigmergy / Pheromone Tests
 # =============================================================================
 
+
 class TestPheromoneMechanics:
     """Test stigmergy via pheromone trails with mathematical precision."""
 
@@ -334,6 +345,7 @@ class TestPheromoneMechanics:
 # =============================================================================
 # SECTION 3: Proposal/Voting Consensus Tests
 # =============================================================================
+
 
 class TestConsensusMechanism:
     """Test proposal/voting consensus with mathematical rigor."""
@@ -509,6 +521,7 @@ class TestConsensusMechanism:
 # SECTION 4: SwarmEnabledAgent Tests
 # =============================================================================
 
+
 class TestSwarmEnabledAgent:
     """Test the SwarmEnabledAgent base class."""
 
@@ -618,6 +631,7 @@ class TestSwarmEnabledAgent:
 # SECTION 5: PSO Task Allocator Tests - MATHEMATICAL VERIFICATION
 # =============================================================================
 
+
 class TestPSOParticle:
     """Test PSOParticle with mathematical verification."""
 
@@ -634,49 +648,55 @@ class TestPSOParticle:
     def test_particle_structural_integrity(self):
         """Verify particle has required attributes."""
         particle = PSOParticle("task_1", ["agent_a", "agent_b"])
-        required = ["task_id", "agents", "position", "velocity", 
-                     "personal_best", "personal_best_fitness", "fitness"]
+        required = [
+            "task_id",
+            "agents",
+            "position",
+            "velocity",
+            "personal_best",
+            "personal_best_fitness",
+            "fitness",
+        ]
         for attr in required:
             assert hasattr(particle, attr), f"Missing attribute: {attr}"
 
     def test_velocity_update_formula(self):
         """Verify PSO velocity formula is mathematically correct.
-        
+
         v = w*v + c1*r1*(pbest - x) + c2*r2*(gbest - x)
         """
         particle = PSOParticle("task_1", ["agent_a", "agent_b", "agent_c"])
         particle.position = "agent_a"
         particle.personal_best = "agent_b"
-        
+
         # Fixed random seeds for reproducibility
         import random as rnd
+
         rnd.seed(42)
-        
+
         particle.update_velocity(
-            global_best="agent_c",
-            global_best_fitness=0.9,
-            w=0.7, c1=1.5, c2=1.5
+            global_best="agent_c", global_best_fitness=0.9, w=0.7, c1=1.5, c2=1.5
         )
-        
+
         # The velocity should be a composite of cognitive + social components
         # Cognitive = c1 * r1 * (pbest != x)
         # Social = c2 * r2 * (gbest != x)
         # Since pbest != position and gbest != position, both terms contribute
-        
-        assert particle.velocity > 0, "Velocity should be positive when better solutions exist"
-        
+
+        assert (
+            particle.velocity > 0
+        ), "Velocity should be positive when better solutions exist"
+
         # Now test when particle is already at personal best AND global best
         rnd.seed(42)
         particle2 = PSOParticle("task_2", ["agent_a", "agent_b"])
         particle2.position = "agent_a"
         particle2.personal_best = "agent_a"
-        
+
         particle2.update_velocity(
-            global_best="agent_a",
-            global_best_fitness=1.0,
-            w=0.7, c1=1.5, c2=1.5
+            global_best="agent_a", global_best_fitness=1.0, w=0.7, c1=1.5, c2=1.5
         )
-        
+
         # With w=0.7 and velocity starting at 0, and no cognitive/social contribution
         # velocity = 0.7 * 0 + 0 + 0 = 0
         assert particle2.velocity == 0.0, "Velocity should be 0 when already at optimum"
@@ -693,13 +713,13 @@ class TestPSOTaskAllocator:
     async def test_simple_task_allocation(self, swarm_comm):
         """Verify basic task allocation works."""
         allocator = PSOTaskAllocator(swarm_comm)
-        
+
         tasks = [{"id": "task_1", "type": "auth_fix"}]
         agents = ["agent_a", "agent_b", "agent_c"]
         agent_fitness = {"agent_a": 0.9, "agent_b": 0.5, "agent_c": 0.7}
 
         assignments = await allocator.allocate_tasks(tasks, agents, agent_fitness)
-        
+
         assert "task_1" in assignments
         assert assignments["task_1"] in agents
 
@@ -707,20 +727,17 @@ class TestPSOTaskAllocator:
     async def test_multiple_task_allocation(self, swarm_comm):
         """Verify multiple tasks are allocated independently."""
         allocator = PSOTaskAllocator(swarm_comm)
-        
+
         tasks = [
             {"id": "task_1", "type": "auth_fix"},
             {"id": "task_2", "type": "db_optimize"},
             {"id": "task_3", "type": "frontend_render"},
         ]
         agents = ["agent_a", "agent_b", "agent_c", "agent_d"]
-        agent_fitness = {
-            "agent_a": 0.9, "agent_b": 0.8, 
-            "agent_c": 0.7, "agent_d": 0.6
-        }
+        agent_fitness = {"agent_a": 0.9, "agent_b": 0.8, "agent_c": 0.7, "agent_d": 0.6}
 
         assignments = await allocator.allocate_tasks(tasks, agents, agent_fitness)
-        
+
         assert len(assignments) == len(tasks)
         for task_id in ["task_1", "task_2", "task_3"]:
             assert task_id in assignments
@@ -730,7 +747,7 @@ class TestPSOTaskAllocator:
     async def test_fitness_based_allocation(self, swarm_comm):
         """Verify higher-fitness agents are preferred."""
         allocator = PSOTaskAllocator(swarm_comm)
-        
+
         tasks = [{"id": "preferred_task", "type": "critical_fix"}]
         # One very high fitness agent, rest low
         agents = ["expert_agent", "novice_a", "novice_b"]
@@ -749,38 +766,40 @@ class TestPSOTaskAllocator:
                 expert_assignments += 1
 
         # Expert should be preferred > 50% of the time
-        assert expert_assignments > trials * 0.5, \
-            f"Expert only assigned {expert_assignments}/{trials} times"
+        assert (
+            expert_assignments > trials * 0.5
+        ), f"Expert only assigned {expert_assignments}/{trials} times"
 
     @pytest.mark.asyncio
     async def test_pheromone_influence_on_allocation(self, swarm_comm):
         """Verify pheromone trails influence allocation decisions."""
         # Leave strong pheromone for agent_b on auth_fix
         swarm_comm.leave_pheromone("auth_fix_agent_b", 5.0)
-        
+
         allocator = PSOTaskAllocator(swarm_comm)
-        
+
         tasks = [{"id": "task_1", "type": "auth_fix"}]
         agents = ["agent_a", "agent_b", "agent_c"]
         agent_fitness = {"agent_a": 0.5, "agent_b": 0.5, "agent_c": 0.5}
 
         assignments = await allocator.allocate_tasks(tasks, agents, agent_fitness)
-        
+
         # agent_b has 5.0 pheromone bonus, making it much more likely
-        assert assignments["task_1"] == "agent_b", \
-            "agent_b should be preferred due to pheromone trail"
+        assert (
+            assignments["task_1"] == "agent_b"
+        ), "agent_b should be preferred due to pheromone trail"
 
     @pytest.mark.asyncio
     async def test_allocation_stats(self, swarm_comm):
         """Verify allocation statistics are tracked."""
         allocator = PSOTaskAllocator(swarm_comm)
-        
+
         tasks = [{"id": "stat_test", "type": "test"}]
         agents = ["agent_a", "agent_b"]
         agent_fitness = {"agent_a": 0.8, "agent_b": 0.6}
 
         await allocator.allocate_tasks(tasks, agents, agent_fitness)
-        
+
         stats = allocator.get_allocation_stats()
         assert stats["total_tasks_allocated"] >= 1
         assert stats["particles_per_task"] == 10
@@ -791,7 +810,7 @@ class TestPSOTaskAllocator:
     async def test_convergence_to_optimal(self, swarm_comm):
         """Verify PSO converges to optimal solution over iterations."""
         allocator = PSOTaskAllocator(swarm_comm)
-        
+
         # Only one agent can do this task well
         tasks = [{"id": "unique_task", "type": "specialized_work"}]
         agents = ["specialist", "generalist_a", "generalist_b"]
@@ -804,14 +823,16 @@ class TestPSOTaskAllocator:
         # Run with enough iterations to converge
         allocator.max_iterations = 50
         assignments = await allocator.allocate_tasks(tasks, agents, agent_fitness)
-        
-        assert assignments["unique_task"] == "specialist", \
-            "PSO should converge to the specialist agent"
+
+        assert (
+            assignments["unique_task"] == "specialist"
+        ), "PSO should converge to the specialist agent"
 
 
 # =============================================================================
 # SECTION 6: SwarmTaskCoordinator Tests
 # =============================================================================
+
 
 class TestSwarmTaskCoordinator:
     """Test the SwarmTaskCoordinator integration."""
@@ -831,7 +852,7 @@ class TestSwarmTaskCoordinator:
         agents = ["agent_a", "agent_b"]
 
         result = await coordinator.coordinate_swarm_execution(tasks, agents)
-        
+
         assert "allocations" in result
         assert "results" in result
         assert "stats" in result
@@ -844,7 +865,7 @@ class TestSwarmTaskCoordinator:
         coordinator.update_agent_fitness("agent_a", 0.5)
 
         coordinator.learn_from_execution("task_1", "agent_a", success=True)
-        
+
         # Agent fitness should increase
         assert coordinator.agent_fitness["agent_a"] > 0.5
         # Pheromone should be deposited
@@ -857,7 +878,7 @@ class TestSwarmTaskCoordinator:
         coordinator.update_agent_fitness("agent_a", 0.5)
 
         coordinator.learn_from_execution("task_2", "agent_a", success=False)
-        
+
         # Agent fitness should decrease
         assert coordinator.agent_fitness["agent_a"] < 0.5
         # Repellent pheromone should be deposited
@@ -867,7 +888,7 @@ class TestSwarmTaskCoordinator:
     async def test_fitness_learning_bounds(self, swarm_comm):
         """Verify agent fitness stays within [0.0, 1.0]."""
         coordinator = SwarmTaskCoordinator(swarm_comm)
-        
+
         # Test lower bound
         coordinator.update_agent_fitness("agent_low", 0.01)
         coordinator.learn_from_execution("fail_task", "agent_low", success=False)
@@ -889,7 +910,7 @@ class TestSwarmTaskCoordinator:
         agents = ["agent_a", "agent_b"]
 
         result = await coordinator.coordinate_swarm_execution(tasks, agents)
-        
+
         # Pheromone should have been deposited for whichever agent was chosen
         assigned_agent = result["allocations"]["pheromone_test"]
         pattern_key = f"reinforce_me_{assigned_agent}"
@@ -899,6 +920,7 @@ class TestSwarmTaskCoordinator:
 # =============================================================================
 # SECTION 7: Global Singletons Tests
 # =============================================================================
+
 
 class TestGlobalSingletons:
     """Test global singleton instances."""
@@ -922,6 +944,7 @@ class TestGlobalSingletons:
 # SECTION 8: Edge Cases and Stress Tests
 # =============================================================================
 
+
 class TestEdgeCases:
     """Test edge cases and boundary conditions."""
 
@@ -937,7 +960,9 @@ class TestEdgeCases:
         """Verify allocation works with single agent."""
         allocator = PSOTaskAllocator(SwarmCommunication())
         tasks = [{"id": "t1", "type": "test"}, {"id": "t2", "type": "test"}]
-        assignments = await allocator.allocate_tasks(tasks, ["only_agent"], {"only_agent": 0.5})
+        assignments = await allocator.allocate_tasks(
+            tasks, ["only_agent"], {"only_agent": 0.5}
+        )
         assert assignments["t1"] == "only_agent"
         assert assignments["t2"] == "only_agent"
 
@@ -1003,8 +1028,9 @@ class TestEdgeCases:
     def test_pheromone_concurrent_access(self):
         """Verify concurrent pheromone operations don't conflict."""
         import threading
+
         comm = SwarmCommunication()
-        
+
         errors = []
 
         def deposit_pheromone(pattern: str):
@@ -1031,6 +1057,7 @@ class TestEdgeCases:
 # =============================================================================
 # SECTION 9: Integration Tests
 # =============================================================================
+
 
 class TestIntegration:
     """Test end-to-end swarm workflows."""
@@ -1063,7 +1090,7 @@ class TestIntegration:
         # Step 3: PSO allocate tasks
         tasks = [{"id": "integrated_task", "type": "auth_fix"}]
         all_agent_names = [a.name for a in agents]
-        
+
         # Leave pheromone to guide allocation
         comm.leave_pheromone("auth_fix_agent_0", 3.0)
 
@@ -1076,10 +1103,14 @@ class TestIntegration:
 
         # Step 5: Learn from execution
         assigned_agent = result["allocations"]["integrated_task"]
-        coordinator.learn_from_execution("integrated_task", assigned_agent, success=True)
+        coordinator.learn_from_execution(
+            "integrated_task", assigned_agent, success=True
+        )
 
         # Verify learning occurred
-        assert coordinator.agent_fitness[assigned_agent] > 0.4  # increased from learning
+        assert (
+            coordinator.agent_fitness[assigned_agent] > 0.4
+        )  # increased from learning
 
     @pytest.mark.asyncio
     async def test_consensus_to_learning_pipeline(self):
@@ -1115,6 +1146,7 @@ class TestIntegration:
 # SECTION 10: Mathematical Correctness Verification
 # =============================================================================
 
+
 class TestMathematicalCorrectness:
     """Verify mathematical correctness of all algorithms."""
 
@@ -1128,10 +1160,13 @@ class TestMathematicalCorrectness:
         allocator.swarm_comm.leave_pheromone(pattern_key, 100.0)
 
         import asyncio
+
         fitness = asyncio.run(
-            allocator._evaluate_fitness("agent", {"type": "test", "id": "t1"}, extreme_fitness)
+            allocator._evaluate_fitness(
+                "agent", {"type": "test", "id": "t1"}, extreme_fitness
+            )
         )
-        
+
         # Fitness should be clamped to [0.0, 1.0]
         assert 0.0 <= fitness <= 1.0
 
@@ -1141,6 +1176,7 @@ class TestMathematicalCorrectness:
         allocator.swarm_comm.leave_pheromone("bad_type_agent", -2.0)
 
         import asyncio
+
         fitness = asyncio.run(
             allocator._evaluate_fitness(
                 "agent", {"type": "bad_type", "id": "t1"}, {"agent": 0.5}
@@ -1156,6 +1192,7 @@ class TestMathematicalCorrectness:
         allocator.swarm_comm.leave_pheromone("good_type_agent", 3.0)
 
         import asyncio
+
         fitness = asyncio.run(
             allocator._evaluate_fitness(
                 "agent", {"type": "good_type", "id": "t1"}, {"agent": 0.5}
@@ -1171,6 +1208,7 @@ class TestMathematicalCorrectness:
         allocator.swarm_comm.leave_pheromone("strong_agent", 10.0)
 
         import asyncio
+
         fitness = asyncio.run(
             allocator._evaluate_fitness(
                 "agent", {"type": "strong", "id": "t1"}, {"agent": 0.9}

@@ -36,7 +36,9 @@ def main() -> int:
     write_features(features_csv, feats)
     ks = [int(x.strip()) for x in args.ks.split(",") if x.strip()]
     payload = summary(feats, ks, args.trials)
-    summary_json.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
+    summary_json.write_text(
+        json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8"
+    )
     metadata_json.write_text(
         json.dumps(
             {

@@ -80,7 +80,9 @@ async def test_first_resident_wake_epoch_reproduces_parameter_discoveries() -> N
 
 
 @pytest.mark.asyncio
-async def test_second_resident_wake_epoch_reproduces_coherence_threshold_discovery() -> None:
+async def test_second_resident_wake_epoch_reproduces_coherence_threshold_discovery() -> (
+    None
+):
     """Epoch 5 captures the second-stage coherence-threshold refinement."""
 
     engine = UnifiedMiningEngine()
@@ -105,7 +107,9 @@ async def test_second_resident_wake_epoch_reproduces_coherence_threshold_discove
 
 
 @pytest.mark.asyncio
-async def test_wake_event_signature_replays_deterministically_across_fresh_engines() -> None:
+async def test_wake_event_signature_replays_deterministically_across_fresh_engines() -> (
+    None
+):
     """Fresh engines must reproduce the same structural wake sequence."""
 
     first_engine = UnifiedMiningEngine()

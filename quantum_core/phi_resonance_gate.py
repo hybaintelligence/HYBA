@@ -29,10 +29,7 @@ def phi_resonance_gate(phi: float = (1.0 + math.sqrt(5.0)) / 2.0) -> np.ndarray:
     sin_t = math.sin(theta)
 
     # φ-resonance rotation matrix
-    gate = np.array([
-        [cos_t, -sin_t],
-        [sin_t, cos_t]
-    ])
+    gate = np.array([[cos_t, -sin_t], [sin_t, cos_t]])
 
     return gate
 

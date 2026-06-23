@@ -321,7 +321,9 @@ def run_comparative_truncation_benchmark(
 
     # Standard SVD truncation
     print("Applying standard SVD truncation...")
-    mps_standard = compress_mps_with_method(mps_original, target_bond, method="standard")
+    mps_standard = compress_mps_with_method(
+        mps_original, target_bond, method="standard"
+    )
     energy_standard = measure_ground_state_energy(mps_standard)
     entanglement_standard = measure_total_entanglement(mps_standard)
     fidelity_standard = compute_fidelity(mps_original, mps_standard)

@@ -16,12 +16,17 @@ if str(BACKEND) not in sys.path:
 # Turn warnings into hard failures in test context
 np.seterr(all="raise")
 
-from pythia_mining.pulvini_compressed_solver import PulviniCompressedQuantumSolver  # noqa: E402
+from pythia_mining.pulvini_compressed_solver import (
+    PulviniCompressedQuantumSolver,
+)  # noqa: E402
 from pythia_mining.pulvini_nonce_compression import (  # noqa: E402
     NONCE_SPACE_SIZE,
     PulviniNonceSpaceCompressor,
 )
-from pythia_mining.pulvini_overlay import NUM_NODES, PulviniOverlayConcentrator  # noqa: E402
+from pythia_mining.pulvini_overlay import (
+    NUM_NODES,
+    PulviniOverlayConcentrator,
+)  # noqa: E402
 
 
 class PulviniNonceCompressionTests(unittest.TestCase):
@@ -79,7 +84,9 @@ class PulviniNonceCompressionTests(unittest.TestCase):
         # Use actual compression values rather than hardcoded expectations
         self.assertGreater(plan["working_set_dimension"], 0)
         self.assertGreaterEqual(plan["retained_kernel_lanes"], 0)
-        self.assertEqual(32, plan["working_set_dimension"] + plan["retained_kernel_lanes"])
+        self.assertEqual(
+            32, plan["working_set_dimension"] + plan["retained_kernel_lanes"]
+        )
         self.assertEqual(NONCE_SPACE_SIZE, plan["coverage_size"])
         self.assertEqual(32, len(snapshot["assignments"]))
         self.assertIn("compressed_coordinate", snapshot["assignments"][0])
@@ -99,12 +106,16 @@ class PulviniNonceCompressionTests(unittest.TestCase):
             self.assertTrue(solver.current_config["overlap_free_nonce_coverage"])
             # Use actual compression values rather than hardcoded expectations
             self.assertEqual(
-                plan.working_set_dimension, solver.current_config["compressed_working_set_size"]
+                plan.working_set_dimension,
+                solver.current_config["compressed_working_set_size"],
             )
             self.assertEqual(
-                plan.retained_kernel_lanes, solver.current_config["retained_kernel_lanes"]
+                plan.retained_kernel_lanes,
+                solver.current_config["retained_kernel_lanes"],
             )
-            self.assertEqual(NONCE_SPACE_SIZE, solver.current_config["search_space_size"])
+            self.assertEqual(
+                NONCE_SPACE_SIZE, solver.current_config["search_space_size"]
+            )
 
         asyncio.run(run())
 

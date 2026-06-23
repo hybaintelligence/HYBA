@@ -18,10 +18,14 @@ def load_seed_products() -> List[Dict[str, Any]]:
     try:
         payload = json.loads(SEED_CATALOG.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as exc:
-        raise HTTPException(status_code=503, detail="frontend seed catalog unavailable") from exc
+        raise HTTPException(
+            status_code=503, detail="frontend seed catalog unavailable"
+        ) from exc
     products = payload.get("products")
     if not isinstance(products, list):
-        raise HTTPException(status_code=503, detail="frontend seed catalog is malformed")
+        raise HTTPException(
+            status_code=503, detail="frontend seed catalog is malformed"
+        )
     return [dict(item) for item in products if isinstance(item, dict)]
 
 

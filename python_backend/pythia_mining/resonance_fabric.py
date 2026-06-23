@@ -148,14 +148,20 @@ class ResonanceMatrix:
     def coherence(self) -> float:
         if not self.links:
             return 0.0
-        return round(sum(link.weight for link in self.links.values()) / len(self.links), 4)
+        return round(
+            sum(link.weight for link in self.links.values()) / len(self.links), 4
+        )
 
-    def trust_route(self, penrose_signal: float, iit_phi: float, deutsch_confidence: float) -> str:
+    def trust_route(
+        self, penrose_signal: float, iit_phi: float, deutsch_confidence: float
+    ) -> str:
         """Choose the dominant organ for the current nonce-space."""
 
         penrose_iit = self.get_weight("penrose_or", "iit_4") * float(penrose_signal)
         iit_deutsch = self.get_weight("iit_4", "deutsch") * float(iit_phi)
-        deutsch_penrose = self.get_weight("deutsch", "penrose_or") * float(deutsch_confidence)
+        deutsch_penrose = self.get_weight("deutsch", "penrose_or") * float(
+            deutsch_confidence
+        )
         scores = {
             "penrose_or": penrose_iit,
             "iit_4": iit_deutsch,
@@ -173,7 +179,9 @@ class ResonanceMatrix:
         """Require Penrose events to survive immediate IIT-4 partitioning."""
 
         signal_weight = self.get_weight("penrose_or", "iit_4")
-        accepted = bool(penrose_event_detected) and float(iit_phi_partition) >= threshold
+        accepted = (
+            bool(penrose_event_detected) and float(iit_phi_partition) >= threshold
+        )
         if accepted:
             reason = "Penrose event survived IIT-4 spectral partition."
         elif penrose_event_detected:

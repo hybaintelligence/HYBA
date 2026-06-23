@@ -144,9 +144,9 @@ class TestMiningKnowledgeBaseBoundaries:
         result = kb.evaluate_current_state(metrics)
         alerts = result["threshold_status"]["critical_alerts"]
         hashrate_alerts = [a for a in alerts if "hashrate" in a.get("threshold", "")]
-        assert len(hashrate_alerts) == 0, (
-            f"hashrate at exact critical boundary should not alert: {hashrate_alerts}"
-        )
+        assert (
+            len(hashrate_alerts) == 0
+        ), f"hashrate at exact critical boundary should not alert: {hashrate_alerts}"
 
     def test_hashrate_below_critical_boundary_is_critical(self, kb):
         """hashrate below critical_threshold=25.0 must fire."""
@@ -209,7 +209,9 @@ class TestOperationalExpectationsProperties:
         """Any hashrate above critical_threshold=25.0 must not fire critical."""
         metrics = {"hashrate_threshold": hashrate}
         result = oek.check_thresholds(metrics)
-        alerts = [a for a in result["critical_alerts"] if "hashrate" in a.get("threshold", "")]
+        alerts = [
+            a for a in result["critical_alerts"] if "hashrate" in a.get("threshold", "")
+        ]
         assert len(alerts) == 0, f"Unexpected critical alert at hashrate={hashrate}"
 
     @given(temp=st.floats(min_value=0.0, max_value=84.9, allow_nan=False))
@@ -218,7 +220,11 @@ class TestOperationalExpectationsProperties:
         """Any temperature below critical_threshold=85.0 must not fire critical."""
         metrics = {"temperature_threshold": temp}
         result = oek.check_thresholds(metrics)
-        alerts = [a for a in result["critical_alerts"] if "temperature" in a.get("threshold", "")]
+        alerts = [
+            a
+            for a in result["critical_alerts"]
+            if "temperature" in a.get("threshold", "")
+        ]
         assert len(alerts) == 0
 
     @given(error_rate=st.floats(min_value=0.0, max_value=2.9, allow_nan=False))
@@ -227,7 +233,11 @@ class TestOperationalExpectationsProperties:
         """Error rate below critical_threshold=3.0 must not fire critical."""
         metrics = {"error_rate_threshold": error_rate}
         result = oek.check_thresholds(metrics)
-        alerts = [a for a in result["critical_alerts"] if "error_rate" in a.get("threshold", "")]
+        alerts = [
+            a
+            for a in result["critical_alerts"]
+            if "error_rate" in a.get("threshold", "")
+        ]
         assert len(alerts) == 0
 
     @given(uptime=st.floats(min_value=90.1, max_value=100.0, allow_nan=False))
@@ -236,7 +246,9 @@ class TestOperationalExpectationsProperties:
         """Uptime above critical_threshold=90.0 must not fire critical."""
         metrics = {"uptime_threshold": uptime}
         result = oek.check_thresholds(metrics)
-        alerts = [a for a in result["critical_alerts"] if "uptime" in a.get("threshold", "")]
+        alerts = [
+            a for a in result["critical_alerts"] if "uptime" in a.get("threshold", "")
+        ]
         assert len(alerts) == 0
 
 
@@ -270,23 +282,33 @@ class TestDeutschKnowledgeSubstrate:
     def test_popperian_criticism_reduces_accuracy_on_failure(self, substrate):
         """Failed prediction must reduce explanation accuracy by ×0.8."""
         substrate.create_knowledge_from_success(
-            strategy_id="test_strategy", context={"hashrate": 100.0}, outcome={"accepted": True}
+            strategy_id="test_strategy",
+            context={"hashrate": 100.0},
+            outcome={"accepted": True},
         )
         metrics_before = substrate.get_knowledge_metrics()
         substrate.create_knowledge_from_failure(
-            strategy_id="test_strategy", context={"hashrate": 100.0}, outcome={"accepted": False}
+            strategy_id="test_strategy",
+            context={"hashrate": 100.0},
+            outcome={"accepted": False},
         )
         metrics_after = substrate.get_knowledge_metrics()
         # Knowledge should grow after failure
-        assert metrics_after["total_explanations"] >= metrics_before["total_explanations"]
+        assert (
+            metrics_after["total_explanations"] >= metrics_before["total_explanations"]
+        )
 
     def test_popperian_criticism_partial_match(self, substrate):
         """Partial match must reduce by ×0.9."""
         substrate.create_knowledge_from_success(
-            strategy_id="partial_strategy", context={"hashrate": 100.0}, outcome={"accepted": True}
+            strategy_id="partial_strategy",
+            context={"hashrate": 100.0},
+            outcome={"accepted": True},
         )
         substrate.create_knowledge_from_failure(
-            strategy_id="partial_strategy", context={"hashrate": 100.0}, outcome={"accepted": False}
+            strategy_id="partial_strategy",
+            context={"hashrate": 100.0},
+            outcome={"accepted": False},
         )
         metrics = substrate.get_knowledge_metrics()
         assert metrics["total_explanations"] >= 1
@@ -305,10 +327,14 @@ class TestDeutschKnowledgeSubstrate:
     def test_knowledge_accumulates_across_epochs(self, substrate):
         """Knowledge must persist — not reset — between calls."""
         substrate.create_knowledge_from_success(
-            strategy_id="epoch_strategy", context={"hashrate": 100.0}, outcome={"accepted": True}
+            strategy_id="epoch_strategy",
+            context={"hashrate": 100.0},
+            outcome={"accepted": True},
         )
         substrate.create_knowledge_from_failure(
-            strategy_id="epoch_strategy", context={"hashrate": 100.0}, outcome={"accepted": False}
+            strategy_id="epoch_strategy",
+            context={"hashrate": 100.0},
+            outcome={"accepted": False},
         )
         metrics = substrate.get_knowledge_metrics()
         assert metrics["total_explanations"] >= 2
@@ -355,7 +381,9 @@ class TestPulviniCompressionProperties:
 
     @given(
         data=st.lists(
-            st.floats(min_value=-1e6, max_value=1e6, allow_nan=False, allow_infinity=False),
+            st.floats(
+                min_value=-1e6, max_value=1e6, allow_nan=False, allow_infinity=False
+            ),
             min_size=4,
             max_size=64,
         )
@@ -438,9 +466,9 @@ class TestIITPhiDiagnosticInvariants:
         """Φ < 0.45 must gate autonomous action."""
         PHI_FLOOR = 0.45
         floor = getattr(iit, "PHI_FLOOR", PHI_FLOOR)
-        assert floor == PHI_FLOOR or abs(floor - PHI_FLOOR) < 0.01, (
-            f"PHI_FLOOR should be ~0.45, got {floor}"
-        )
+        assert (
+            floor == PHI_FLOOR or abs(floor - PHI_FLOOR) < 0.01
+        ), f"PHI_FLOOR should be ~0.45, got {floor}"
 
     def test_singular_agent_regime_threshold(self, iit):
         """SINGULAR_AGENT_PROXY regime requires Φ ≥ 0.70."""
@@ -489,7 +517,10 @@ class TestReflexiveControllerGovernance:
         assert isinstance(result, dict)
         # Check that it doesn't contain source mutation instructions
         assert "mutate_source" not in result
-        assert result.get("apply_mode", "observation") in ["observation", "proposal_only"]
+        assert result.get("apply_mode", "observation") in [
+            "observation",
+            "proposal_only",
+        ]
 
     def test_proposals_satisfy_five_constraints(self, controller):
         """Every proposal must pass all 5 safety constraints."""
@@ -549,7 +580,9 @@ class TestAutonomousOptimizerProperties:
         assert len(history) >= 2
 
     @given(
-        delta=st.floats(min_value=-100.0, max_value=100.0, allow_nan=False, allow_infinity=False)
+        delta=st.floats(
+            min_value=-100.0, max_value=100.0, allow_nan=False, allow_infinity=False
+        )
     )
     @settings(max_examples=30, suppress_health_check=[HealthCheck.too_slow])
     def test_bounds_invariant_under_arbitrary_delta(self, optimizer, delta):
@@ -636,7 +669,12 @@ class TestConsciousnessEngineProperties:
         metrics = engine.measure_phi([state])
         regime = engine._classify_integration(metrics.phi_integrated)
         # Check if regime is SINGULAR_AGENT_PROXY
-        assert regime.value in ["singular_agent_proxy", "distributed", "fragmented", "critical"]
+        assert regime.value in [
+            "singular_agent_proxy",
+            "distributed",
+            "fragmented",
+            "critical",
+        ]
 
     def test_distributed_at_mid_phi(self, engine):
         import numpy as np
@@ -644,7 +682,12 @@ class TestConsciousnessEngineProperties:
         state = np.array([0.5, 0.5, 0.5, 0.5])
         metrics = engine.measure_phi([state])
         regime = engine._classify_integration(metrics.phi_integrated)
-        assert regime.value in ["singular_agent_proxy", "distributed", "fragmented", "critical"]
+        assert regime.value in [
+            "singular_agent_proxy",
+            "distributed",
+            "fragmented",
+            "critical",
+        ]
 
     def test_fragmented_at_low_phi(self, engine):
         import numpy as np
@@ -652,7 +695,12 @@ class TestConsciousnessEngineProperties:
         state = np.array([0.2, 0.2, 0.2, 0.2])
         metrics = engine.measure_phi([state])
         regime = engine._classify_integration(metrics.phi_integrated)
-        assert regime.value in ["singular_agent_proxy", "distributed", "fragmented", "critical"]
+        assert regime.value in [
+            "singular_agent_proxy",
+            "distributed",
+            "fragmented",
+            "critical",
+        ]
 
     def test_critical_below_floor(self, engine):
         import numpy as np
@@ -660,13 +708,19 @@ class TestConsciousnessEngineProperties:
         state = np.array([0.1, 0.1, 0.1, 0.1])
         metrics = engine.measure_phi([state])
         regime = engine._classify_integration(metrics.phi_integrated)
-        assert regime.value in ["singular_agent_proxy", "distributed", "fragmented", "critical"]
+        assert regime.value in [
+            "singular_agent_proxy",
+            "distributed",
+            "fragmented",
+            "critical",
+        ]
 
     def test_sigmoid_multiplier_continuous(self, engine):
         """Hardware multiplier must be continuous — no discrete jumps."""
         phi_values = np.linspace(0.0, 1.0, 100)
         multipliers = [
-            engine.calculate_continuous_multiplier(coherence_score=p) for p in phi_values
+            engine.calculate_continuous_multiplier(coherence_score=p)
+            for p in phi_values
         ]
         diffs = np.abs(np.diff(multipliers))
         max_jump = float(np.max(diffs))
@@ -676,9 +730,9 @@ class TestConsciousnessEngineProperties:
         """Multiplier must be damped when it would exceed Yang-Mills limit (3-φ ≈ 1.382)."""
         YM_LIMIT = 3.0 - PHI  # ≈ 1.382
         multiplier = engine.calculate_continuous_multiplier(coherence_score=0.99)
-        assert multiplier <= YM_LIMIT * 1.1, (
-            f"Multiplier {multiplier} exceeds YM limit {YM_LIMIT} without damping"
-        )
+        assert (
+            multiplier <= YM_LIMIT * 1.1
+        ), f"Multiplier {multiplier} exceeds YM limit {YM_LIMIT} without damping"
 
     @given(phi=st.floats(min_value=0.0, max_value=1.0, allow_nan=False))
     @settings(max_examples=30, suppress_health_check=[HealthCheck.too_slow])
@@ -793,7 +847,11 @@ class TestGoldenRatioMathematicalInvariants:
         tolerance = max(0.01, 1.0 / n)
         assert abs(ratio - PHI) < tolerance
 
-    @given(x=st.floats(min_value=0.01, max_value=100.0, allow_nan=False, allow_infinity=False))
+    @given(
+        x=st.floats(
+            min_value=0.01, max_value=100.0, allow_nan=False, allow_infinity=False
+        )
+    )
     @settings(max_examples=50)
     def test_phi_stride_covers_space(self, x):
         """φ-stride {n×φ mod 1} must be in (0,1) — uniform space coverage property."""
@@ -932,7 +990,9 @@ class TestBuresMetricProperties:
         eigvals, eigvecs = np.linalg.eigh(rho)
         eigvals = np.clip(eigvals, 0, None)
         # Build sqrt(ρ) from eigendecomposition: √ρ = Σ √λ_i |ψ_i⟩⟨ψ_i|
-        sqrt_rho = sum(math.sqrt(v) * np.outer(u, u.conj()) for v, u in zip(eigvals, eigvecs.T))
+        sqrt_rho = sum(
+            math.sqrt(v) * np.outer(u, u.conj()) for v, u in zip(eigvals, eigvecs.T)
+        )
         inner = sqrt_rho @ sigma @ sqrt_rho
         eigvals_inner = np.linalg.eigvalsh(inner)
         eigvals_inner = np.clip(eigvals_inner, 0, None)
@@ -1012,7 +1072,9 @@ class TestAPIContractStructure:
 if __name__ == "__main__":
     print("PYTHIA-PULVINI Knowledge Substrate Capability Suite")
     print("=" * 55)
-    print("Run with: python -m pytest tests/test_knowledge_substrate_capabilities.py -v")
+    print(
+        "Run with: python -m pytest tests/test_knowledge_substrate_capabilities.py -v"
+    )
     print()
     print("Suite covers:")
     suites = [

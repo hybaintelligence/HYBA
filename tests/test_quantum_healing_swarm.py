@@ -40,6 +40,7 @@ from pythia_mining.quantum_healing_swarm import (
 # Fixtures
 # ---------------------------------------------------------------------------
 
+
 @pytest.fixture
 def swarm() -> QuantumHealingSwarm:
     return QuantumHealingSwarm(num_candidates=8, num_lanes=32)
@@ -60,7 +61,9 @@ def test_density_matrix_unit_trace_after_degradation(swarm):
     """tr(ρ) = 1 must hold for all degraded states."""
     for phi_d in (0.1, 0.5, 0.9):
         rho = swarm._form_degraded_density_matrix(phi_d, 0, 1.0)
-        assert abs(np.trace(rho).real - 1.0) < 1e-10, f"tr(ρ) ≠ 1 at phi_density={phi_d}"
+        assert (
+            abs(np.trace(rho).real - 1.0) < 1e-10
+        ), f"tr(ρ) ≠ 1 at phi_density={phi_d}"
 
 
 def test_density_matrix_positive_semidefinite_after_degradation(swarm):
@@ -84,7 +87,9 @@ def test_collapsed_state_is_pure(swarm):
     rho_collapsed, fired = swarm._or_collapse(rho_super)
     if fired:
         purity = swarm._purity(rho_collapsed)
-        assert abs(purity - 1.0) < 1e-10, f"Collapsed state purity = {purity}, expected 1.0"
+        assert (
+            abs(purity - 1.0) < 1e-10
+        ), f"Collapsed state purity = {purity}, expected 1.0"
 
 
 def test_purity_bounds(swarm):
@@ -93,7 +98,9 @@ def test_purity_bounds(swarm):
     for phi_d in (0.05, 0.5, 0.95):
         rho = swarm._form_degraded_density_matrix(phi_d, 0, 1.0)
         p = swarm._purity(rho)
-        assert 1.0 / n - 1e-10 <= p <= 1.0 + 1e-10, f"purity={p} out of [1/n, 1] at phi_density={phi_d}"
+        assert (
+            1.0 / n - 1e-10 <= p <= 1.0 + 1e-10
+        ), f"purity={p} out of [1/n, 1] at phi_density={phi_d}"
 
 
 def test_von_neumann_entropy_non_negative(swarm):
@@ -107,7 +114,9 @@ def test_phi_basis_vector_is_unit_norm(swarm):
     """φ-basis vectors must have unit L2 norm."""
     for n in (4, 8, 16):
         v = swarm._phi_basis_vector(n)
-        assert abs(np.linalg.norm(v) - 1.0) < 1e-12, f"φ-basis vector not normalised at n={n}"
+        assert (
+            abs(np.linalg.norm(v) - 1.0) < 1e-12
+        ), f"φ-basis vector not normalised at n={n}"
 
 
 # ---------------------------------------------------------------------------
@@ -183,10 +192,19 @@ def test_full_heal_result_has_required_fields(swarm):
     result = swarm.heal(phi_density=0.5, consecutive_failures=2)
     d = result.to_dict()
     required = {
-        "pre_heal_purity", "pre_heal_entropy", "pre_heal_phi_density",
-        "post_heal_purity", "post_heal_entropy", "post_heal_phi_density",
-        "or_collapse_fired", "dominant_eigenvalue", "candidates_superposed",
-        "lanes_healed", "purity_gain", "entropy_reduction", "duration_ms",
+        "pre_heal_purity",
+        "pre_heal_entropy",
+        "pre_heal_phi_density",
+        "post_heal_purity",
+        "post_heal_entropy",
+        "post_heal_phi_density",
+        "or_collapse_fired",
+        "dominant_eigenvalue",
+        "candidates_superposed",
+        "lanes_healed",
+        "purity_gain",
+        "entropy_reduction",
+        "duration_ms",
     }
     missing = required - d.keys()
     assert not missing, f"HealingResult.to_dict() missing fields: {missing}"
@@ -195,9 +213,9 @@ def test_full_heal_result_has_required_fields(swarm):
 def test_heal_duration_is_sub_100ms(swarm):
     """Full quantum healing cycle must complete in < 100 ms on any modern CPU."""
     result = swarm.heal(phi_density=0.3, consecutive_failures=5)
-    assert result.duration_ms < 100.0, (
-        f"Quantum healing took {result.duration_ms:.1f}ms — exceeds 100ms guard"
-    )
+    assert (
+        result.duration_ms < 100.0
+    ), f"Quantum healing took {result.duration_ms:.1f}ms — exceeds 100ms guard"
 
 
 # ---------------------------------------------------------------------------
@@ -207,16 +225,16 @@ def test_heal_duration_is_sub_100ms(swarm):
 
 def test_healing_is_deterministic():
     """Same inputs must produce identical outputs (classical determinism).
-    
+
     Note: Annealing uses random perturbations, so we disable it for this test.
     """
     swarm1 = QuantumHealingSwarm(num_candidates=8, num_lanes=32, enable_annealing=False)
     swarm2 = QuantumHealingSwarm(num_candidates=8, num_lanes=32, enable_annealing=False)
     r1 = swarm1.heal(phi_density=0.3, consecutive_failures=4)
     r2 = swarm2.heal(phi_density=0.3, consecutive_failures=4)
-    assert abs(r1.post_heal_purity - r2.post_heal_purity) < 1e-12, (
-        "Healing is not deterministic: different purity on identical inputs"
-    )
+    assert (
+        abs(r1.post_heal_purity - r2.post_heal_purity) < 1e-12
+    ), "Healing is not deterministic: different purity on identical inputs"
     assert abs(r1.purity_gain - r2.purity_gain) < 1e-12
 
 
@@ -236,7 +254,10 @@ async def test_controller_quantum_healing_writes_audit_entry():
         AutonomyLevel,
         AutonomousMiningController,
     )
-    from pythia_mining.autonomous_audit_persistence import AuditJournal, AutonomousAuditLogger
+    from pythia_mining.autonomous_audit_persistence import (
+        AuditJournal,
+        AutonomousAuditLogger,
+    )
     from pythia_mining.autonomous_escalation import AutonomousEscalationEngine
 
     class _FakeEngine:
@@ -247,14 +268,22 @@ async def test_controller_quantum_healing_writes_audit_entry():
         optimizer = None
         solver = None
         consciousness = None
-        def get_hashrate(self): return 0.0
-        def get_phi_density(self): return self.phi_density
-        def get_state(self): return {"status": "idle"}
+
+        def get_hashrate(self):
+            return 0.0
+
+        def get_phi_density(self):
+            return self.phi_density
+
+        def get_state(self):
+            return {"status": "idle"}
+
         class _PhiScaling:
             phi_scaling = 1.5
             search_depth = 60
             coherence_threshold = 0.45
             compression_target = 1.86
+
         phi_scaling_engine = _PhiScaling()
 
     with tempfile.TemporaryDirectory() as tmp:
@@ -270,8 +299,12 @@ async def test_controller_quantum_healing_writes_audit_entry():
         )
         ctrl._escalation_engine = AutonomousEscalationEngine(
             audit_logger=ctrl._persistent_audit_logger,
-            escalation_callback=lambda level: ctrl.set_autonomy_level(AutonomyLevel(level)),
-            degradation_callback=lambda reason: ctrl.degrade_autonomy_level(reason).value,
+            escalation_callback=lambda level: ctrl.set_autonomy_level(
+                AutonomyLevel(level)
+            ),
+            degradation_callback=lambda reason: ctrl.degrade_autonomy_level(
+                reason
+            ).value,
         )
         # Simulate a degraded state
         ctrl._actual_hashrate = 0.3
@@ -283,9 +316,9 @@ async def test_controller_quantum_healing_writes_audit_entry():
     healing_entries = [
         e for e in ctrl.audit_log if e.event_type == "quantum_healing_complete"
     ]
-    assert len(healing_entries) == 1, (
-        f"Expected 1 quantum_healing_complete audit entry, got {len(healing_entries)}"
-    )
+    assert (
+        len(healing_entries) == 1
+    ), f"Expected 1 quantum_healing_complete audit entry, got {len(healing_entries)}"
     # Verify key fields are present in the state_diff
     diff = healing_entries[0].state_diff
     assert "post_heal_purity" in diff
@@ -299,33 +332,59 @@ async def test_controller_quantum_healing_resets_failure_state():
     import os
     import tempfile
     from pythia_mining.autonomous_mining_controller import (
-        AutonomousConfig, AutonomousMiningController,
+        AutonomousConfig,
+        AutonomousMiningController,
     )
-    from pythia_mining.autonomous_audit_persistence import AuditJournal, AutonomousAuditLogger
+    from pythia_mining.autonomous_audit_persistence import (
+        AuditJournal,
+        AutonomousAuditLogger,
+    )
     from pythia_mining.autonomous_escalation import AutonomousEscalationEngine
     from pythia_mining.autonomous_mining_controller import AutonomyLevel
 
     class _FakeEngine:
         phi_density = 0.15
-        current_job = None; stratum_client = None; phi_ensemble = None
-        optimizer = None; solver = None; consciousness = None
-        def get_hashrate(self): return 0.0
-        def get_phi_density(self): return self.phi_density
-        def get_state(self): return {}
+        current_job = None
+        stratum_client = None
+        phi_ensemble = None
+        optimizer = None
+        solver = None
+        consciousness = None
+
+        def get_hashrate(self):
+            return 0.0
+
+        def get_phi_density(self):
+            return self.phi_density
+
+        def get_state(self):
+            return {}
+
         class _PhiScaling:
-            phi_scaling = 1.5; search_depth = 60
-            coherence_threshold = 0.45; compression_target = 1.86
+            phi_scaling = 1.5
+            search_depth = 60
+            coherence_threshold = 0.45
+            compression_target = 1.86
+
         phi_scaling_engine = _PhiScaling()
 
     with tempfile.TemporaryDirectory() as tmp:
-        config = AutonomousConfig(persistence_enabled=True, persistence_dir=tmp, reflexive_loop_enabled=False)
+        config = AutonomousConfig(
+            persistence_enabled=True, persistence_dir=tmp, reflexive_loop_enabled=False
+        )
         ctrl = AutonomousMiningController(_FakeEngine(), config=config)
         audit_dir = os.path.join(tmp, "audit")
-        ctrl._persistent_audit_logger = AutonomousAuditLogger(journal=AuditJournal(journal_dir=audit_dir))
+        ctrl._persistent_audit_logger = AutonomousAuditLogger(
+            journal=AuditJournal(journal_dir=audit_dir)
+        )
         ctrl._escalation_engine = AutonomousEscalationEngine(
             audit_logger=ctrl._persistent_audit_logger,
-            escalation_callback=lambda level: ctrl.set_autonomy_level(AutonomyLevel(level)),
-            degradation_callback=lambda reason: ctrl.degrade_autonomy_level(reason).value,
+            escalation_callback=lambda level: ctrl.set_autonomy_level(
+                AutonomyLevel(level)
+            ),
+            degradation_callback=lambda reason: ctrl.degrade_autonomy_level(
+                reason
+            ).value,
         )
         ctrl._actual_hashrate = 0.2
         ctrl._target_hashrate = 1.0

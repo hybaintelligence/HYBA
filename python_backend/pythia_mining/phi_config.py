@@ -16,9 +16,7 @@ from dataclasses import dataclass
 PHI = (1.0 + math.sqrt(5.0)) / 2.0
 PHI_INV = 1.0 / PHI
 EPSILON = 1e-12
-DEFAULT_TOLERANCE = (
-    1e-8  # float64 accumulation over 2 fold levels can reach ~1e-9; 1e-8 gives safe headroom
-)
+DEFAULT_TOLERANCE = 1e-8  # float64 accumulation over 2 fold levels can reach ~1e-9; 1e-8 gives safe headroom
 DEFAULT_PHI_SCALING_POWER = 1.5
 DEFAULT_LOW_VARIANCE_THRESHOLD = 0.05
 DEFAULT_HIGH_VARIANCE_THRESHOLD = 0.2
@@ -113,7 +111,9 @@ class PhiScalingPolicy:
         if self.low_variance_threshold < 0:
             raise ValueError("low_variance_threshold must be non-negative")
         if self.high_variance_threshold <= self.low_variance_threshold:
-            raise ValueError("high_variance_threshold must be greater than low_variance_threshold")
+            raise ValueError(
+                "high_variance_threshold must be greater than low_variance_threshold"
+            )
         if self.memory_limit < 0:
             raise ValueError("memory_limit must be non-negative")
 

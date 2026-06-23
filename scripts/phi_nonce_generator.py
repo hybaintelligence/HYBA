@@ -218,7 +218,13 @@ def run_all(iterations: int, target: int, seed: int) -> List[Result]:
             target,
             iterations,
         ),
-        _run("sequential", iter(range(start, start + iterations)), prefix, target, iterations),
+        _run(
+            "sequential",
+            iter(range(start, start + iterations)),
+            prefix,
+            target,
+            iterations,
+        ),
         # New: φ-tiled — zero overhead, maximal coverage
         _run(
             "phi_tiled",
@@ -265,7 +271,9 @@ def _mean(vals: List[float]) -> float:
     return sum(vals) / len(vals) if vals else 0.0
 
 
-def run_benchmark(iterations: int = 50_000, trials: int = 5, base_seed: int = 42) -> dict:
+def run_benchmark(
+    iterations: int = 50_000, trials: int = 5, base_seed: int = 42
+) -> dict:
     # ~1/256 hit probability per nonce
     target = int("00" + "ff" * 31, 16)
 
@@ -274,7 +282,8 @@ def run_benchmark(iterations: int = 50_000, trials: int = 5, base_seed: int = 42
         results = run_all(iterations, target, seed=base_seed + t)
         all_trials.append(results)
         row = "  ".join(
-            f"{r.name}={r.hits}hits@{r.hashes_per_second / 1000:.0f}kH/s" for r in results
+            f"{r.name}={r.hits}hits@{r.hashes_per_second / 1000:.0f}kH/s"
+            for r in results
         )
         print(f"  Trial {t + 1}/{trials}: {row}")
 
@@ -283,8 +292,12 @@ def run_benchmark(iterations: int = 50_000, trials: int = 5, base_seed: int = 42
     agg = {}
     for name in names:
         hits = [r.hits for trial in all_trials for r in trial if r.name == name]
-        hps = [r.hashes_per_second for trial in all_trials for r in trial if r.name == name]
-        ovhd = [r.overhead_ratio for trial in all_trials for r in trial if r.name == name]
+        hps = [
+            r.hashes_per_second for trial in all_trials for r in trial if r.name == name
+        ]
+        ovhd = [
+            r.overhead_ratio for trial in all_trials for r in trial if r.name == name
+        ]
         fhi = [
             r.first_hit_iteration
             for trial in all_trials
@@ -342,7 +355,9 @@ def verdict(agg: dict) -> str:
                 f"— structure is real, cost not yet eliminated"
             )
         else:
-            lines.append(f"❌ {name}: no significant first_hit advantage (null hypothesis stands)")
+            lines.append(
+                f"❌ {name}: no significant first_hit advantage (null hypothesis stands)"
+            )
     return "\n".join(lines)
 
 

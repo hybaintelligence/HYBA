@@ -119,14 +119,19 @@ class AutogenousSelfCodingEngine:
             logger.info(f"Self-modification rights GRANTED at coupling {coupling:.6f}")
         elif coupling >= 0.90:
             self.current_permission = SelfModificationPermission.RESTRICTED
-            logger.info(f"Self-modification rights RESTRICTED at coupling {coupling:.6f}")
+            logger.info(
+                f"Self-modification rights RESTRICTED at coupling {coupling:.6f}"
+            )
         else:
             self.current_permission = SelfModificationPermission.DENIED
 
     def check_modification_allowed(self) -> Tuple[bool, str]:
         """Check if self-modification is currently allowed."""
         if self.current_permission == SelfModificationPermission.DENIED:
-            return False, "Self-modification denied: structural coupling below threshold"
+            return (
+                False,
+                "Self-modification denied: structural coupling below threshold",
+            )
 
         if self.current_permission == SelfModificationPermission.RESTRICTED:
             return False, "Self-modification restricted: coupling in restricted zone"
@@ -159,7 +164,9 @@ class AutogenousSelfCodingEngine:
         synaptic_stats = sensory_input.get("synaptic_statistics", {})
 
         # Generate proposal based on analysis
-        proposal_type = self._determine_proposal_type(pool_performance, phi_metrics, synaptic_stats)
+        proposal_type = self._determine_proposal_type(
+            pool_performance, phi_metrics, synaptic_stats
+        )
 
         if proposal_type is None:
             return None
@@ -284,7 +291,9 @@ decay_rate = {new_rate}
 
         return min(0.95, confidence)
 
-    def _generate_rationale(self, proposal_type: str, sensory_input: Dict[str, Any]) -> str:
+    def _generate_rationale(
+        self, proposal_type: str, sensory_input: Dict[str, Any]
+    ) -> str:
         """Generate rationale for the proposal."""
         rationales = {
             "phi_gradient_proposal": "Low phi integration detected, increasing gradient strength to improve coherence",
@@ -302,7 +311,9 @@ decay_rate = {new_rate}
             "synaptic_learning_rate": "Expected to increase emergent pathway formation rate",
             "decay_rate_adjustment": "Expected to reduce informational calcification and improve adaptability",
         }
-        return impacts.get(proposal_type, "Expected to improve system performance and coherence")
+        return impacts.get(
+            proposal_type, "Expected to improve system performance and coherence"
+        )
 
     def apply_proposal(
         self,
@@ -358,7 +369,9 @@ decay_rate = {new_rate}
         event = SelfModificationEvent(
             event_id=event_id,
             timestamp=time.time(),
-            modification_type=proposal.code_change.split("\n")[2].strip("# ").split(":")[0],
+            modification_type=proposal.code_change.split("\n")[2]
+            .strip("# ")
+            .split(":")[0],
             target_module=target_file,
             old_code=old_code[:500],  # Truncated for storage
             new_code=new_code[:500],  # Truncated for storage
@@ -417,14 +430,18 @@ decay_rate = {new_rate}
             "autogenous_proposals": len(self.autogenous_proposals),
             "modification_count_last_hour": self.modification_count_last_hour,
             "last_modification_time": (
-                datetime.fromtimestamp(self.last_modification_time, timezone.utc).isoformat()
+                datetime.fromtimestamp(
+                    self.last_modification_time, timezone.utc
+                ).isoformat()
                 if self.last_modification_time > 0
                 else None
             ),
             "recent_events": [
                 {
                     "event_id": e.event_id,
-                    "timestamp": datetime.fromtimestamp(e.timestamp, timezone.utc).isoformat(),
+                    "timestamp": datetime.fromtimestamp(
+                        e.timestamp, timezone.utc
+                    ).isoformat(),
                     "modification_type": e.modification_type,
                     "validation_passed": e.validation_passed,
                 }

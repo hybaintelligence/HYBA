@@ -174,7 +174,10 @@ class FourierHarmonicAnalysis:
         self.analysis_cache: Dict[str, FourierAnalysisResult] = {}
 
     def fourier_analysis(
-        self, signal: np.ndarray, sample_rate: float = 1.0, window_function: str = "hann"
+        self,
+        signal: np.ndarray,
+        sample_rate: float = 1.0,
+        window_function: str = "hann",
     ) -> FourierAnalysisResult:
         """Perform comprehensive Fourier analysis.
 
@@ -213,13 +216,17 @@ class FourierHarmonicAnalysis:
         magnitudes = np.abs(frequency_spectrum)
         threshold = np.mean(magnitudes) + np.std(magnitudes)
         dominant_freqs = [
-            (i, float(magnitudes[i])) for i in range(len(magnitudes)) if magnitudes[i] > threshold
+            (i, float(magnitudes[i]))
+            for i in range(len(magnitudes))
+            if magnitudes[i] > threshold
         ]
         dominant_freqs.sort(key=lambda x: x[1], reverse=True)
 
         # Compute spectral centroid
         frequencies = np.fft.fftfreq(n, 1 / sample_rate)
-        spectral_centroid = float(np.sum(frequencies * magnitudes) / (np.sum(magnitudes) + 1e-10))
+        spectral_centroid = float(
+            np.sum(frequencies * magnitudes) / (np.sum(magnitudes) + 1e-10)
+        )
 
         # Compute spectral bandwidth
         spectral_bandwidth = float(
@@ -285,7 +292,9 @@ class FourierHarmonicAnalysis:
             harmonic_series += harmonic_component
 
         # Calculate total harmonic distortion
-        harmonic_power = sum(amp**2 for amp, _, _ in harmonics[1:])  # Exclude fundamental
+        harmonic_power = sum(
+            amp**2 for amp, _, _ in harmonics[1:]
+        )  # Exclude fundamental
         fundamental_power = fundamental_amp**2
         thd = math.sqrt(harmonic_power) / (math.sqrt(fundamental_power) + 1e-10)
 
@@ -300,7 +309,10 @@ class FourierHarmonicAnalysis:
         )
 
     def wavelet_analysis(
-        self, signal: np.ndarray, scales: Optional[np.ndarray] = None, wavelet_type: str = "morlet"
+        self,
+        signal: np.ndarray,
+        scales: Optional[np.ndarray] = None,
+        wavelet_type: str = "morlet",
     ) -> WaveletAnalysisResult:
         """Perform wavelet multi-scale analysis.
 
@@ -391,7 +403,9 @@ class FourierHarmonicAnalysis:
         folded_analysis = self.fourier_analysis(folded_data)
 
         # Compare spectra (ensure same size)
-        min_size = min(len(original_analysis.power_spectrum), len(folded_analysis.power_spectrum))
+        min_size = min(
+            len(original_analysis.power_spectrum), len(folded_analysis.power_spectrum)
+        )
         spectral_correlation = float(
             np.corrcoef(
                 original_analysis.power_spectrum[:min_size],
@@ -542,7 +556,11 @@ class FourierHarmonicAnalysis:
             Dictionary with frequency domain optimization results
         """
         if not nonces:
-            return {"best_nonce": None, "frequency_scores": [], "method": "frequency_domain"}
+            return {
+                "best_nonce": None,
+                "frequency_scores": [],
+                "method": "frequency_domain",
+            }
 
         # Compute distances to target
         distances = np.array([abs(nonce - target_hash) for nonce in nonces])
@@ -583,7 +601,11 @@ class FourierHarmonicAnalysis:
             Dictionary with multi-scale pattern detection results
         """
         if len(nonce_sequence) < max(scales):
-            return {"patterns_detected": [], "scale_analysis": {}, "method": "multi_scale"}
+            return {
+                "patterns_detected": [],
+                "scale_analysis": {},
+                "method": "multi_scale",
+            }
 
         # Convert to numpy array
         signal = np.array(nonce_sequence, dtype=float)
@@ -633,7 +655,9 @@ class FourierHarmonicAnalysis:
 
             scale_analysis[str(scale)] = {
                 "num_subsequences": len(subsequences),
-                "avg_correlation": float(np.mean(correlations)) if correlations else 0.0,
+                "avg_correlation": (
+                    float(np.mean(correlations)) if correlations else 0.0
+                ),
                 "max_correlation": float(np.max(correlations)) if correlations else 0.0,
             }
 

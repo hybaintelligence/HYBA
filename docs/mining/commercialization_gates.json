@@ -1,80 +1,6 @@
 {
-  "schema": "HYBA_MINING_COMMERCIALIZATION_GATES_V1",
-  "current_stage": 0,
-  "current_stage_name": "stage_0_pre_validation_research_only",
-  "source_manifest": "docs/mining/evidence/mining_validation_manifest.json",
-  "stage_definitions": [
-    {
-      "stage": 0,
-      "name": "stage_0_pre_validation_research_only",
-      "claim_tier": "HYPOTHETICAL",
-      "allowed_external_claim": "Research and validation in progress only; no production, revenue, hashrate, ASIC-superiority, or accepted-share claim.",
-      "commercial_rights": ["internal_research", "bounded_research_status_disclosure"],
-      "entry_requirements": [
-        "evidence manifest states entangled_with_hyba_fullstack",
-        "standalone_repository=false",
-        "independent_ci=false",
-        "real_double_sha256_loop_pending"
-      ],
-      "revenue_unlocks": []
-    },
-    {
-      "stage": 1,
-      "name": "stage_1_structured_sha256_validation",
-      "claim_tier": "PROTOTYPE_VALIDATED",
-      "allowed_external_claim": "Structured-pattern double-SHA-256 prototype validation only, with full variance and baseline disclosure.",
-      "commercial_rights": ["technical_diligence_demo", "research_partner_pilot_scoping"],
-      "entry_requirements": [
-        "actual_double_sha256_nonce_loop",
-        "classical_enumeration_baseline",
-        "phi_guided_ordering_baseline",
-        "minimum_100_repeated_runs_with_variance",
-        "no_pool_side_hashrate_claim"
-      ],
-      "revenue_unlocks": []
-    },
-    {
-      "stage": 2,
-      "name": "stage_2_firmware_or_hardware_integration",
-      "claim_tier": "PROTOTYPE_VALIDATED",
-      "allowed_external_claim": "Hardware-integration prototype validated on disclosed hardware and workloads; no production SLA.",
-      "commercial_rights": ["firmware_license_negotiation", "controlled_pool_integration_pilot"],
-      "entry_requirements": [
-        "stage_1_complete",
-        "hardware_or_firmware_adapter_evidence",
-        "mixed_workload_error_handling",
-        "host_power_and_hashrate_measurement",
-        "bounded_asic_comparison_with_no_replacement_claim"
-      ],
-      "revenue_unlocks": ["non_sla_pilot_contracts"]
-    },
-    {
-      "stage": 3,
-      "name": "stage_3_field_trial_production_validation",
-      "claim_tier": "PRODUCTION_VALIDATED",
-      "allowed_external_claim": "Production field-trial claim only within the measured pool, device, power, and duration boundaries.",
-      "commercial_rights": ["sla_backed_contracts", "sovereign_mining_offer", "production_pool_integration"],
-      "entry_requirements": [
-        "stage_2_complete",
-        "minimum_6_month_field_trial",
-        "pool_side_accepted_share_telemetry",
-        "stale_reject_latency_power_variance_report",
-        "legal_and_compliance_review"
-      ],
-      "revenue_unlocks": ["sla_contracts", "warranty_language", "sovereign_deployment_claims"]
-    }
-  ],
   "commercialization_gates": {
-    "public_performance_claims": {
-      "required_stage": 1,
-      "status": "BLOCKED",
-      "approved_for_commercial_use": false,
-      "min_valid_runs": 100,
-      "allowed_before_required_stage": "validation in progress; no quantified speedup, hashrate, revenue, or ASIC-superiority claim"
-    },
     "firmware_licensing": {
-      "required_stage": 2,
-      "status": "BLOCKED",
       "approved_for_commercial_use": false,
       "min_valid_runs": 100,
       "required_evidence": [
@@ -82,22 +8,29 @@
         "hardware_or_firmware_adapter_evidence",
         "mixed_workload_error_handling",
         "host_power_and_hashrate_measurement"
-      ]
+      ],
+      "required_stage": 2,
+      "status": "BLOCKED"
     },
     "pool_integration": {
-      "required_stage": 3,
-      "status": "BLOCKED",
       "approved_for_commercial_use": false,
       "min_field_trial_months": 6,
       "required_evidence": [
         "pool_side_accepted_share_telemetry",
         "stale_reject_latency_power_variance_report",
         "legal_and_compliance_review"
-      ]
+      ],
+      "required_stage": 3,
+      "status": "BLOCKED"
+    },
+    "public_performance_claims": {
+      "allowed_before_required_stage": "validation in progress; no quantified speedup, hashrate, revenue, or ASIC-superiority claim",
+      "approved_for_commercial_use": false,
+      "min_valid_runs": 100,
+      "required_stage": 1,
+      "status": "BLOCKED"
     },
     "sovereign_mining": {
-      "required_stage": 3,
-      "status": "BLOCKED",
       "approved_for_commercial_use": false,
       "min_field_trial_months": 6,
       "required_evidence": [
@@ -105,11 +38,19 @@
         "pool_side_accepted_share_telemetry",
         "power_cost_revenue_model_with_live_data",
         "legal_and_compliance_review"
-      ]
+      ],
+      "required_stage": 3,
+      "status": "BLOCKED"
     }
   },
+  "current_stage": 0,
+  "current_stage_name": "stage_0_pre_validation_research_only",
   "override_policy": {
-    "overrides_allowed": false,
+    "automatic_escalation": [
+      "any_external_distribution_without_approved_markdown_source",
+      "any_hypothetical_claim_marketed_as_prototype_or_production",
+      "any_revenue_hashrate_or_asic_superiority_claim_without_stage_gate_evidence"
+    ],
     "if_exception_requested_requires": [
       "written_ceo_approval",
       "board_vote_record",
@@ -117,10 +58,88 @@
       "counterparty_written_notice_of_current_tier",
       "post_call_followup_email_confirming_tier"
     ],
-    "automatic_escalation": [
-      "any_external_distribution_without_approved_markdown_source",
-      "any_hypothetical_claim_marketed_as_prototype_or_production",
-      "any_revenue_hashrate_or_asic_superiority_claim_without_stage_gate_evidence"
-    ]
-  }
+    "overrides_allowed": false
+  },
+  "schema": "HYBA_MINING_COMMERCIALIZATION_GATES_V1",
+  "source_manifest": "docs/mining/evidence/mining_validation_manifest.json",
+  "stage_definitions": [
+    {
+      "allowed_external_claim": "Research and validation in progress only; no production, revenue, hashrate, ASIC-superiority, or accepted-share claim.",
+      "claim_tier": "HYPOTHETICAL",
+      "commercial_rights": [
+        "internal_research",
+        "bounded_research_status_disclosure"
+      ],
+      "entry_requirements": [
+        "evidence manifest states entangled_with_hyba_fullstack",
+        "standalone_repository=false",
+        "independent_ci=false",
+        "real_double_sha256_loop_pending"
+      ],
+      "name": "stage_0_pre_validation_research_only",
+      "revenue_unlocks": [],
+      "stage": 0
+    },
+    {
+      "allowed_external_claim": "Structured-pattern double-SHA-256 prototype validation only, with full variance and baseline disclosure.",
+      "claim_tier": "PROTOTYPE_VALIDATED",
+      "commercial_rights": [
+        "technical_diligence_demo",
+        "research_partner_pilot_scoping"
+      ],
+      "entry_requirements": [
+        "actual_double_sha256_nonce_loop",
+        "classical_enumeration_baseline",
+        "phi_guided_ordering_baseline",
+        "minimum_100_repeated_runs_with_variance",
+        "no_pool_side_hashrate_claim"
+      ],
+      "name": "stage_1_structured_sha256_validation",
+      "revenue_unlocks": [],
+      "stage": 1
+    },
+    {
+      "allowed_external_claim": "Hardware-integration prototype validated on disclosed hardware and workloads; no production SLA.",
+      "claim_tier": "PROTOTYPE_VALIDATED",
+      "commercial_rights": [
+        "firmware_license_negotiation",
+        "controlled_pool_integration_pilot"
+      ],
+      "entry_requirements": [
+        "stage_1_complete",
+        "hardware_or_firmware_adapter_evidence",
+        "mixed_workload_error_handling",
+        "host_power_and_hashrate_measurement",
+        "bounded_asic_comparison_with_no_replacement_claim"
+      ],
+      "name": "stage_2_firmware_or_hardware_integration",
+      "revenue_unlocks": [
+        "non_sla_pilot_contracts"
+      ],
+      "stage": 2
+    },
+    {
+      "allowed_external_claim": "Production field-trial claim only within the measured pool, device, power, and duration boundaries.",
+      "claim_tier": "PRODUCTION_VALIDATED",
+      "commercial_rights": [
+        "sla_backed_contracts",
+        "sovereign_mining_offer",
+        "production_pool_integration"
+      ],
+      "entry_requirements": [
+        "stage_2_complete",
+        "minimum_6_month_field_trial",
+        "pool_side_accepted_share_telemetry",
+        "stale_reject_latency_power_variance_report",
+        "legal_and_compliance_review"
+      ],
+      "name": "stage_3_field_trial_production_validation",
+      "revenue_unlocks": [
+        "sla_contracts",
+        "warranty_language",
+        "sovereign_deployment_claims"
+      ],
+      "stage": 3
+    }
+  ]
 }

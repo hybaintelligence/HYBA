@@ -29,7 +29,9 @@ def test_advanced_finance_capabilities_preserve_no_authority_boundary() -> None:
     assert "must not be exposed as autonomous finance authority" in BOUNDARY_STATEMENT
 
 
-def test_advanced_finance_capabilities_are_evidence_products_not_execution_products() -> None:
+def test_advanced_finance_capabilities_are_evidence_products_not_execution_products() -> (
+    None
+):
     capabilities = list_advanced_finance_capabilities()
     forbidden = prohibited_terms()
 

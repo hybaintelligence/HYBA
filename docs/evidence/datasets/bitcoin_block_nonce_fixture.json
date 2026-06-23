@@ -1,9 +1,21 @@
 {
-  "schema": "HYBA_BITCOIN_BLOCK_NONCE_FIXTURE_V1",
-  "source_boundary": "Fixture values are externally supplied for deterministic regression; live explorer refresh is intentionally not required for tests.",
   "blocks": [
-    {"block": 840001, "nonce": 3295061, "difficulty": "76T"},
-    {"block": 840002, "nonce": 919092, "difficulty": "76T"},
-    {"block": 840003, "nonce": 4210984, "difficulty": "76T"}
-  ]
+    {
+      "block": 840001,
+      "difficulty": "76T",
+      "nonce": 3295061
+    },
+    {
+      "block": 840002,
+      "difficulty": "76T",
+      "nonce": 919092
+    },
+    {
+      "block": 840003,
+      "difficulty": "76T",
+      "nonce": 4210984
+    }
+  ],
+  "schema": "HYBA_BITCOIN_BLOCK_NONCE_FIXTURE_V1",
+  "source_boundary": "Fixture values are externally supplied for deterministic regression; live explorer refresh is intentionally not required for tests."
 }

@@ -36,10 +36,16 @@ async def first_self_optimization_event():
     print(f"  phi-density:           {density_before:.6f}")
     print(f"  efficiency:            {efficiency_before:.6f}")
     print(f"  autonomy_level:        {controller.current_autonomy_level.value}")
-    print(f"  knowledge_explanations: {len(controller.knowledge_substrate.explanations)}")
+    print(
+        f"  knowledge_explanations: {len(controller.knowledge_substrate.explanations)}"
+    )
     print(f"  surroundings.modules:  {len(controller.surroundings.module_names)}")
-    print(f"  surroundings.invariants: {len(controller.surroundings.mathematical_invariants)}")
-    print(f"  codebase_graph_edges:  {len(controller.surroundings.codebase_graph_edges)}")
+    print(
+        f"  surroundings.invariants: {len(controller.surroundings.mathematical_invariants)}"
+    )
+    print(
+        f"  codebase_graph_edges:  {len(controller.surroundings.codebase_graph_edges)}"
+    )
     print(f"  entropy_sources:       {controller.surroundings.entropy_sources}")
     print(f"  stable_core:           {controller.surroundings.stable_core}")
 
@@ -103,8 +109,12 @@ async def first_self_optimization_event():
     )
     print(f"  optimization_epochs: {controller._self_optimization_epochs}")
     print(f"  optimization_targets: {len(controller.config.optimization_targets)}")
-    print(f"  knowledge_explanations: {len(controller.knowledge_substrate.explanations)}")
-    print(f"  knowledge_counterfactuals: {len(controller.knowledge_substrate.counterfactuals)}")
+    print(
+        f"  knowledge_explanations: {len(controller.knowledge_substrate.explanations)}"
+    )
+    print(
+        f"  knowledge_counterfactuals: {len(controller.knowledge_substrate.counterfactuals)}"
+    )
 
     # Phase 8: Full Reflexive Learning Status
     status = controller.get_autonomy_status()
@@ -139,7 +149,9 @@ async def first_self_optimization_event():
     print(f"  proposals_applied:  {result2['proposals_applied']}")
     print(f"  total_proposals:    {len(controller.proposal_history)}")
     print(f"  optimization_targets: {len(controller.config.optimization_targets)}")
-    print(f"  knowledge_explanations: {len(controller.knowledge_substrate.explanations)}")
+    print(
+        f"  knowledge_explanations: {len(controller.knowledge_substrate.explanations)}"
+    )
 
     for i, p in enumerate(result2["proposals"], 1):
         applied_str = "APPLIED" if p["applied"] else "REJECTED"

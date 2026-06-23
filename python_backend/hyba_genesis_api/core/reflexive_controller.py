@@ -77,6 +77,7 @@ try:
         OptimizationAgent,
         SecurityAgent,
     )
+
     _MULTI_AGENT_AVAILABLE = True
 except (ImportError, ModuleNotFoundError):
     _MULTI_AGENT_AVAILABLE = False
@@ -116,7 +117,9 @@ class CausalGraph:
         return sum(1 for _, target in self.edges if target == node_id)
 
     def sinks(self) -> List[str]:
-        return sorted(node_id for node_id in self.nodes if self.out_degree(node_id) == 0)
+        return sorted(
+            node_id for node_id in self.nodes if self.out_degree(node_id) == 0
+        )
 
     def sources(self) -> List[str]:
         return sorted(node_id for node_id in self.nodes if self.in_degree(node_id) == 0)
@@ -150,7 +153,9 @@ class CodebaseUmwelt:
     def __init__(self, root_dir: Path | str):
         self.root_dir = Path(root_dir).resolve()
         if self.root_dir.name != _ALLOWED_ROOT_NAME:
-            raise ValueError(f"reflexive controller scope must end at {_ALLOWED_ROOT_NAME}")
+            raise ValueError(
+                f"reflexive controller scope must end at {_ALLOWED_ROOT_NAME}"
+            )
 
     def parse_structure(self) -> CausalGraph:
         graph = CausalGraph()
@@ -169,7 +174,7 @@ class CodebaseUmwelt:
         return sorted(
             path
             for path in self.root_dir.rglob("*.py")
-            if "__pycache__" not in path.parts 
+            if "__pycache__" not in path.parts
             and path.is_file()
             and path.name not in excluded_files
         )
@@ -203,9 +208,13 @@ class CodebaseUmwelt:
                     name = self._assignment_name(target)
                     if name and "phi" in name.lower():
                         node_id = f"{module_id}:{name}"
-                        graph.add_node(CodeNode(node_id, "phi_nutrient", relative, name))
+                        graph.add_node(
+                            CodeNode(node_id, "phi_nutrient", relative, name)
+                        )
 
-    def _map_edges(self, graph: CausalGraph, pending_calls: Iterable[Tuple[str, str]]) -> None:
+    def _map_edges(
+        self, graph: CausalGraph, pending_calls: Iterable[Tuple[str, str]]
+    ) -> None:
         by_short_name: Dict[str, List[str]] = {}
         for node_id, node in graph.nodes.items():
             by_short_name.setdefault(node.name, []).append(node_id)
@@ -282,11 +291,15 @@ class IITSystemHealth:
         summary = graph.summary()
         node_count = max(int(summary["node_count"]), 1)
         edge_density = float(summary["edge_density"])
-        imbalance = abs(int(summary["source_count"]) - int(summary["sink_count"])) / node_count
+        imbalance = (
+            abs(int(summary["source_count"]) - int(summary["sink_count"])) / node_count
+        )
         source_sink_balance = max(0.0, 1.0 - imbalance)
         phi_node_ratio = float(summary["phi_node_ratio"])
         raw_phi = (
-            (0.55 * edge_density * PHI) + (0.30 * source_sink_balance) + (0.15 * phi_node_ratio)
+            (0.55 * edge_density * PHI)
+            + (0.30 * source_sink_balance)
+            + (0.15 * phi_node_ratio)
         )
         return round(max(0.0, min(1.0, raw_phi)), 6)
 
@@ -424,7 +437,9 @@ class CounterfactualEngine:
             "logic": "recursive_closure_proposal",
         }
         envelope = explain(context, ["deutsch", "iit_4"])
-        governance = sorted(set(envelope["governance"]) | {"proposal_only", "no_unattended_writes"})
+        governance = sorted(
+            set(envelope["governance"]) | {"proposal_only", "no_unattended_writes"}
+        )
         accepted = (
             "phi_resonance_review" not in governance
             and "human_review_counterfactual_depth" not in governance
@@ -463,7 +478,9 @@ class ReflexiveController:
     """
 
     def __init__(
-        self, root_dir: Path | str, synaptic_layer: Optional[SynapticPersistenceLayer] = None
+        self,
+        root_dir: Path | str,
+        synaptic_layer: Optional[SynapticPersistenceLayer] = None,
     ):
         self.umwelt = CodebaseUmwelt(root_dir)
         self.health = IITSystemHealth()
@@ -485,7 +502,7 @@ class ReflexiveController:
         self.module_states: Dict[str, ModuleState] = {}  # Track regeneration states
         self.regeneration_history: List[dict] = []  # Track regeneration events
         self.clifford_index_map: Dict[str, int] = {}  # Positional memory mapping
-        
+
         # SALAMANDER INTEGRATION (21 June 2026): Wire multi-agent orchestrator
         if _MULTI_AGENT_AVAILABLE:
             self.orchestrator = SwarmOrchestrator()
@@ -494,7 +511,9 @@ class ReflexiveController:
                 "optimization": OptimizationAgent(),
                 "security": SecurityAgent(),
             }
-            logger.info("Multi-agent orchestrator initialized and wired to ReflexiveController")
+            logger.info(
+                "Multi-agent orchestrator initialized and wired to ReflexiveController"
+            )
         else:
             self.orchestrator = None
             self.agents = {}
@@ -521,12 +540,16 @@ class ReflexiveController:
                 tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
             except SyntaxError:
                 continue
-            functions = sum(1 for node in ast.walk(tree) if isinstance(node, ast.FunctionDef))
+            functions = sum(
+                1 for node in ast.walk(tree) if isinstance(node, ast.FunctionDef)
+            )
             async_functions = sum(
                 1 for node in ast.walk(tree) if isinstance(node, ast.AsyncFunctionDef)
             )
             branches = sum(1 for node in ast.walk(tree) if isinstance(node, ast.If))
-            classes = sum(1 for node in ast.walk(tree) if isinstance(node, ast.ClassDef))
+            classes = sum(
+                1 for node in ast.walk(tree) if isinstance(node, ast.ClassDef)
+            )
             transforms = functions + async_functions + classes
             logic_density = transforms / float(branches + 1)
             state.append(complex(logic_density, self.fabric.PHI / (branches + 1)))
@@ -536,7 +559,11 @@ class ReflexiveController:
         """Evaluate the dream-cycle Φ density as GROWTH or PAIN."""
 
         phi_density_value = self.fabric.compute_phi_density(state_vector)
-        previous = self.health.phi_history[-1] if self.health.phi_history else phi_density_value
+        previous = (
+            self.health.phi_history[-1]
+            if self.health.phi_history
+            else phi_density_value
+        )
         delta = phi_density_value - previous
         self.health.phi_history.append(phi_density_value)
         return phi_density_value, "PAIN" if delta < 0 else "GROWTH"
@@ -622,7 +649,9 @@ class ReflexiveController:
             historical_coupling = sum(recent_coupling) / len(recent_coupling)
 
         # Combined coupling index
-        coupling_index = 0.4 * phi_similarity + 0.3 * entropy_sync + 0.3 * historical_coupling
+        coupling_index = (
+            0.4 * phi_similarity + 0.3 * entropy_sync + 0.3 * historical_coupling
+        )
 
         # Determine inseparability
         inseparable = coupling_index >= self.coupling_threshold
@@ -631,7 +660,8 @@ class ReflexiveController:
         lock_recommendation = inseparable
         if len(self.coupling_history) >= 2:
             recent_trend = (
-                self.coupling_history[-1].coupling_index - self.coupling_history[-2].coupling_index
+                self.coupling_history[-1].coupling_index
+                - self.coupling_history[-2].coupling_index
             )
             lock_recommendation = inseparable and recent_trend > 0
 
@@ -671,8 +701,12 @@ class ReflexiveController:
 
             event = EmergenceEvent(
                 timestamp=time.time(),
-                entropy_delta=recent_autopoiesis[0].entropy_delta if recent_autopoiesis else 0.0,
-                phi_delta=recent_autopoiesis[0].phi_delta if recent_autopoiesis else 0.0,
+                entropy_delta=(
+                    recent_autopoiesis[0].entropy_delta if recent_autopoiesis else 0.0
+                ),
+                phi_delta=(
+                    recent_autopoiesis[0].phi_delta if recent_autopoiesis else 0.0
+                ),
                 structural_coupling=latest_coupling.coupling_index,
                 event_type="COUPLING_LOCK",
                 description=f"Emergence lock activated: coupling index {latest_coupling.coupling_index:.6f} "
@@ -704,7 +738,9 @@ class ReflexiveController:
 
         return None
 
-    def adjust_learning_rate_from_autopoiesis(self, autopoiesis_event: EmergenceEvent) -> None:
+    def adjust_learning_rate_from_autopoiesis(
+        self, autopoiesis_event: EmergenceEvent
+    ) -> None:
         """Adjust synaptic learning rate based on autopoiesis event.
 
         ELEVATED: This implements the "Gardener" metaphor - when the system
@@ -822,7 +858,9 @@ class ReflexiveController:
             self.module_states[module_id] = ModuleState.healthy(module_id)
 
         try:
-            self.module_states[module_id] = apply_fault(self.module_states[module_id], severity)
+            self.module_states[module_id] = apply_fault(
+                self.module_states[module_id], severity
+            )
             return True
         except Exception as e:
             logger.error(f"Failed to apply fault to module {module_id}: {e}")
@@ -845,7 +883,9 @@ class ReflexiveController:
             return False
 
         try:
-            self.module_states[module_id] = quarantine_channel(self.module_states[module_id])
+            self.module_states[module_id] = quarantine_channel(
+                self.module_states[module_id]
+            )
             return True
         except Exception as e:
             logger.error(f"Failed to quarantine module {module_id}: {e}")
@@ -1044,11 +1084,15 @@ class ReflexiveController:
             "emergence_monitoring": {
                 "entropy": current_entropy,
                 "entropy_history": self.health.entropy_history[-10:],
-                "emergence_events": [asdict(e) for e in self.health.emergence_events[-5:]],
+                "emergence_events": [
+                    asdict(e) for e in self.health.emergence_events[-5:]
+                ],
                 "structural_coupling": asdict(structural_coupling),
                 "coupling_history": [asdict(c) for c in self.coupling_history[-5:]],
                 "module_lock_active": self.module_lock_active,
-                "emergence_lock_event": asdict(emergence_event) if emergence_event else None,
+                "emergence_lock_event": (
+                    asdict(emergence_event) if emergence_event else None
+                ),
             },
         }
 

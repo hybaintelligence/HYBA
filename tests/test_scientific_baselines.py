@@ -9,7 +9,11 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from scripts.generate_scientific_baselines import all_baselines, canonical_bytes, generate_artifacts  # noqa: E402
+from scripts.generate_scientific_baselines import (
+    all_baselines,
+    canonical_bytes,
+    generate_artifacts,
+)  # noqa: E402
 
 
 def test_baseline_factory_emits_required_controls() -> None:
@@ -34,7 +38,8 @@ def test_baseline_factory_emits_required_controls() -> None:
 def test_baselines_separate_coupling_feedback_and_learning() -> None:
     baselines = all_baselines()
     assert (
-        baselines["coupled_nonadaptive"]["phi_analog"] > baselines["modular_static"]["phi_analog"]
+        baselines["coupled_nonadaptive"]["phi_analog"]
+        > baselines["modular_static"]["phi_analog"]
     )
     assert baselines["coupled_nonadaptive"]["learning_present"] is False
     assert baselines["stateful_feedback_control"]["feedback_loops"] > 0

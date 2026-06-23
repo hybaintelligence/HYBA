@@ -405,7 +405,9 @@ class PhiALUHardwareTuner:
         self.min_exponent = float(min_exponent)
         self.max_exponent = float(max_exponent)
         self.golden_angle_base = (
-            float(golden_angle_base) if golden_angle_base is not None else 360.0 / (PHI * PHI)
+            float(golden_angle_base)
+            if golden_angle_base is not None
+            else 360.0 / (PHI * PHI)
         )
         self.history_window = int(history_window)
 
@@ -436,7 +438,9 @@ class PhiALUHardwareTuner:
         self._iteration += 1
 
         # 1. Read current harmony from the ALU
-        coherence_report = self.alu.verify_coherence(start_addr=0, window=min(100, self._iteration))
+        coherence_report = self.alu.verify_coherence(
+            start_addr=0, window=min(100, self._iteration)
+        )
         harmony_score = coherence_report.get("harmony_score", 0.0)
         self._harmony_history.append(harmony_score)
         if len(self._harmony_history) > self.history_window:
@@ -469,7 +473,9 @@ class PhiALUHardwareTuner:
             "recovery_level": self._recovery_level,
             "action": action,
             "current_exponent": self.current_exponent,
-            "golden_angle_deg": float(getattr(self.alu, "golden_angle", self.golden_angle_base)),
+            "golden_angle_deg": float(
+                getattr(self.alu, "golden_angle", self.golden_angle_base)
+            ),
             "vfs_hint": float(self._vfs_hint),
             "temperature": float(current_temp),
             "coherence_report": coherence_report,
@@ -527,7 +533,9 @@ class PhiALUHardwareTuner:
             "reason": "singular_regime_sustained",
         }
 
-    def _golden_step(self, harmony: float, coherence: float, temp: float) -> dict[str, Any]:
+    def _golden_step(
+        self, harmony: float, coherence: float, temp: float
+    ) -> dict[str, Any]:
         """Small φ-weighted gradient correction on the exponent.
 
         This is the gentle nudging strategy — equivalent to the original
@@ -555,7 +563,9 @@ class PhiALUHardwareTuner:
             "new_exponent": new_exp,
         }
 
-    def _angle_rephase(self, harmony: float, coherence: float, temp: float) -> dict[str, Any]:
+    def _angle_rephase(
+        self, harmony: float, coherence: float, temp: float
+    ) -> dict[str, Any]:
         """Shift golden angle by φ⁻¹ to find a new resonance mode.
 
         In addition to the exponent step, this adjusts the addressing
@@ -573,7 +583,9 @@ class PhiALUHardwareTuner:
         self._set_exponent(new_exp)
 
         # 2. Angle re-phasing — rotate by φ⁻¹ degrees
-        self._current_angle_offset = (self._current_angle_offset + PHI_INV * 10.0) % 360.0
+        self._current_angle_offset = (
+            self._current_angle_offset + PHI_INV * 10.0
+        ) % 360.0
         new_angle = (self.golden_angle_base + self._current_angle_offset) % 360.0
         if hasattr(self.alu, "golden_angle"):
             self.alu.golden_angle = new_angle
@@ -588,7 +600,9 @@ class PhiALUHardwareTuner:
             "angle_offset": float(self._current_angle_offset),
         }
 
-    def _regime_reset(self, harmony: float, coherence: float, temp: float) -> dict[str, Any]:
+    def _regime_reset(
+        self, harmony: float, coherence: float, temp: float
+    ) -> dict[str, Any]:
         """Emergency: reset exponent to conservative base and widen angle.
 
         This is the hardware equivalent of a *cold restart* — it pulls
@@ -631,7 +645,9 @@ class PhiALUHardwareTuner:
         ``vfs_hint`` moves toward 1.0 (nominal) when harmony is high,
         and drops toward 0.5 (throttled) when harmony degrades.
         """
-        target = float(np.clip(avg_harmony * (1.0 - max(temp - 1.0, 0.0) * 0.3), 0.5, 1.0))
+        target = float(
+            np.clip(avg_harmony * (1.0 - max(temp - 1.0, 0.0) * 0.3), 0.5, 1.0)
+        )
         self._vfs_hint = PHI_INV * target + (1.0 - PHI_INV) * self._vfs_hint
 
 

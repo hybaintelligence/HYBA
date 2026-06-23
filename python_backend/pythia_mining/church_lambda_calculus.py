@@ -91,7 +91,9 @@ class Abstraction(LambdaTerm):
         """Beta reduction: substitute argument for variable in body."""
         return self._substitute(self.body, self.variable, arg)
 
-    def _substitute(self, term: LambdaTerm, var: Variable, replacement: LambdaTerm) -> LambdaTerm:
+    def _substitute(
+        self, term: LambdaTerm, var: Variable, replacement: LambdaTerm
+    ) -> LambdaTerm:
         """Substitute variable with replacement in term."""
         if isinstance(term, Variable):
             if term.name == var.name:
@@ -198,7 +200,9 @@ class ChurchEncoding:
         x = Variable("x")
         return Abstraction(
             n_var,
-            Abstraction(f, Abstraction(x, Application(f, Application(Application(n_var, f), x)))),
+            Abstraction(
+                f, Abstraction(x, Application(f, Application(Application(n_var, f), x)))
+            ),
         )
 
     @staticmethod
@@ -223,7 +227,10 @@ class ChurchEncoding:
                 Abstraction(
                     f,
                     Abstraction(
-                        x, Application(Application(m, f), Application(Application(n, f), x))
+                        x,
+                        Application(
+                            Application(m, f), Application(Application(n, f), x)
+                        ),
                     ),
                 ),
             ),
@@ -236,7 +243,10 @@ class ChurchEncoding:
         n = Variable("n")
         f = Variable("f")
         return Abstraction(
-            m, Abstraction(n, Abstraction(f, Application(Application(m, Application(n, f)), f)))
+            m,
+            Abstraction(
+                n, Abstraction(f, Application(Application(m, Application(n, f)), f))
+            ),
         )
 
     @staticmethod
@@ -349,7 +359,9 @@ class LambdaNonceGenerator:
         """Generate sequence of nonces using lambda calculus."""
         return [self.lambda_nonce(i) for i in range(count)]
 
-    def functional_nonce_composition(self, nonce1: int, nonce2: int, operation: str = "add") -> int:
+    def functional_nonce_composition(
+        self, nonce1: int, nonce2: int, operation: str = "add"
+    ) -> int:
         """Compose nonces using lambda calculus operations.
 
         Args:
@@ -432,7 +444,9 @@ class TypeSystem:
             return self.type_environment.get(term.name)
         elif isinstance(term, Abstraction):
             # Add variable to environment
-            self.type_environment[term.variable.name] = self.base_types["nat"]  # Default
+            self.type_environment[term.variable.name] = self.base_types[
+                "nat"
+            ]  # Default
             body_type = self.infer_type(term.body)
             # Remove variable from environment
             del self.type_environment[term.variable.name]
@@ -487,7 +501,11 @@ class FunctionalMiningOptimizer:
         This uses higher-order functions to select and apply strategies.
         """
         if not available_strategies:
-            return {"selected_strategy": None, "result": nonce, "method": "lambda_selection"}
+            return {
+                "selected_strategy": None,
+                "result": nonce,
+                "method": "lambda_selection",
+            }
 
         # Create selection function (lambda calculus style)
         def selection_function(n: int, strategies: List[str]) -> str:
@@ -505,7 +523,11 @@ class FunctionalMiningOptimizer:
         else:
             result = nonce
 
-        return {"selected_strategy": selected, "result": result, "method": "lambda_selection"}
+        return {
+            "selected_strategy": selected,
+            "result": result,
+            "method": "lambda_selection",
+        }
 
     def recursive_nonce_search(self, target: int, max_depth: int = 10) -> Optional[int]:
         """Recursive nonce search using Y-combinator principles.
@@ -583,7 +605,9 @@ class LambdaCalculusIntegration:
         # In full implementation, would parse operation into lambda term
         return True  # Simplified type check
 
-    def functional_pipeline(self, operations: List[Callable], initial_nonce: int) -> int:
+    def functional_pipeline(
+        self, operations: List[Callable], initial_nonce: int
+    ) -> int:
         """Apply functional pipeline to nonce using lambda composition."""
         result = initial_nonce
         for operation in operations:

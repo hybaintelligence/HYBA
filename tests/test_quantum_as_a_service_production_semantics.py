@@ -61,9 +61,9 @@ class TestCustomerRequestModelStrictness:
 
         # Verify the error is about extra fields
         errors = exc_info.value.errors()
-        assert any("extra" in str(e).lower() for e in errors), (
-            f"Expected 'extra fields not allowed' error, got: {errors}"
-        )
+        assert any(
+            "extra" in str(e).lower() for e in errors
+        ), f"Expected 'extra fields not allowed' error, got: {errors}"
 
     def test_request_body_metadata_cannot_enable_sovereign_access(self):
         """Test that request.metadata cannot enable sovereign—only principal.metadata can.
@@ -207,7 +207,9 @@ class TestBillingFailureSemantics:
 
         # Total charges for this key should be exactly workload_units
         total_charged = cached_result["units_charged"]
-        assert total_charged == 100, f"Expected 100 units charged once, got {total_charged}"
+        assert (
+            total_charged == 100
+        ), f"Expected 100 units charged once, got {total_charged}"
 
     async def test_failed_execution_has_explicit_billing_policy(self):
         """Test that execution failure has explicit billing (refund vs partial).
@@ -269,7 +271,7 @@ class TestWorkloadUnitEstimation:
                 depth
                 * max(1, shots)
                 * max(1, qubits)
-                * (code_distance ** 2)
+                * (code_distance**2)
                 * operation_weight
             )
 
@@ -288,10 +290,10 @@ class TestWorkloadUnitEstimation:
         assert units_d5 > units_d3, "Higher code_distance should increase estimate"
         # Verify code_distance² scaling
         ratio = units_d5 / units_d3
-        expected_ratio = (5 ** 2) / (3 ** 2)  # 25/9 ≈ 2.78
-        assert abs(ratio - expected_ratio) < 0.01, (
-            f"Expected ratio {expected_ratio:.2f}, got {ratio:.2f}"
-        )
+        expected_ratio = (5**2) / (3**2)  # 25/9 ≈ 2.78
+        assert (
+            abs(ratio - expected_ratio) < 0.01
+        ), f"Expected ratio {expected_ratio:.2f}, got {ratio:.2f}"
 
     def test_heavy_operation_has_higher_work_unit_estimate(self):
         """Test that operation weights are applied correctly."""
@@ -300,11 +302,7 @@ class TestWorkloadUnitEstimation:
             depth: int, shots: int, qubits: int, code_distance: int, op_weight: float
         ) -> float:
             return (
-                depth
-                * max(1, shots)
-                * max(1, qubits)
-                * (code_distance ** 2)
-                * op_weight
+                depth * max(1, shots) * max(1, qubits) * (code_distance**2) * op_weight
             )
 
         # Operation weights (suggested)
@@ -319,16 +317,22 @@ class TestWorkloadUnitEstimation:
         base_units = 1000  # depth × shots × qubits × code_distance²
 
         # Light operation
-        light_units = estimate_work_units(10, 100, 5, 3, weights["state_vector_summary"])
+        light_units = estimate_work_units(
+            10, 100, 5, 3, weights["state_vector_summary"]
+        )
         assert light_units == base_units
 
         # Heavy operation
-        heavy_units = estimate_work_units(10, 100, 5, 3, weights["substrate_orchestration"])
+        heavy_units = estimate_work_units(
+            10, 100, 5, 3, weights["substrate_orchestration"]
+        )
         assert heavy_units == base_units * weights["substrate_orchestration"]
         assert heavy_units > light_units
 
         # Verify weight scaling
-        assert heavy_units / light_units == 12, "Substrate_orchestration should be 12× heavier"
+        assert (
+            heavy_units / light_units == 12
+        ), "Substrate_orchestration should be 12× heavier"
 
 
 # ============================================================================
@@ -416,7 +420,9 @@ class TestConcurrentQPUSemantics:
         )
 
         # Both should succeed
-        assert all(r[0] == 200 for r in results), "Both should succeed on different QPUs"
+        assert all(
+            r[0] == 200 for r in results
+        ), "Both should succeed on different QPUs"
 
 
 # ============================================================================
@@ -441,7 +447,9 @@ class TestRouteBoundaryIntegrity:
         }
 
         # Count public prefix occurrences
-        public_qaas_routes = [r for r in routes if "/api/v1/fault-tolerant-computers" in r]
+        public_qaas_routes = [
+            r for r in routes if "/api/v1/fault-tolerant-computers" in r
+        ]
         assert len(public_qaas_routes) == 1, "Should have exactly one public QaaS route"
 
     def test_customer_api_key_cannot_access_admin_qaas_routes(self):

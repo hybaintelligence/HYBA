@@ -45,7 +45,9 @@ def test_pulvini_phi_folding_is_lossless_but_not_exponential() -> None:
     assert max(row["compression_ratio"] for row in results) <= 4.0
 
 
-def test_pulvini_plus_tensor_network_is_low_entanglement_structured_compression() -> None:
+def test_pulvini_plus_tensor_network_is_low_entanglement_structured_compression() -> (
+    None
+):
     results = deutsch_pulvini.benchmark_pulvini_tensor_integration()
 
     assert all(row["reversible"] for row in results)

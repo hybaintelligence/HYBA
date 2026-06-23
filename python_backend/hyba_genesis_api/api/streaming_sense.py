@@ -310,7 +310,9 @@ class TelemetrySource:
         """Get current telemetry from the source."""
         return None
 
-    async def start_streaming(self, channel: StreamingChannel, interval_seconds: float = 1.0):
+    async def start_streaming(
+        self, channel: StreamingChannel, interval_seconds: float = 1.0
+    ):
         """Start streaming telemetry to a channel at the specified interval."""
         while True:
             try:
@@ -330,7 +332,9 @@ class PhiResonanceSource(TelemetrySource):
         """Get current φ-resonance telemetry from ConsciousnessEngine."""
         try:
             # Import here to avoid circular dependencies
-            from pythia_mining.consciousness_engine import ConsciousnessEngine  # noqa: F401
+            from pythia_mining.consciousness_engine import (
+                ConsciousnessEngine,
+            )  # noqa: F401
 
             # This would typically get the singleton engine instance
             # For now, return a placeholder that demonstrates the structure
@@ -360,7 +364,9 @@ class AutonomySource(TelemetrySource):
         """Get current autonomy metrics from AutonomousMiningController."""
         try:
             # Import here to avoid circular dependencies
-            from pythia_mining.autonomous_mining_controller import AutonomousMiningController  # noqa: F401
+            from pythia_mining.autonomous_mining_controller import (
+                AutonomousMiningController,
+            )  # noqa: F401
 
             # This would typically get the singleton controller instance
             # For now, return a placeholder that demonstrates the structure
@@ -405,7 +411,9 @@ class StructuralCouplingSource(TelemetrySource):
                 timestamp=time.time(),
                 coupling_index=coupling_index,
                 phi_floor=phi_floor,
-                innervation_status="healthy" if coupling_index > phi_floor else "degraded",
+                innervation_status=(
+                    "healthy" if coupling_index > phi_floor else "degraded"
+                ),
                 substrate_health=substrate_state.get("status", "unknown"),
                 regeneration_active=False,
             )
@@ -425,7 +433,11 @@ class SystemHealthSource(TelemetrySource):
 
             event = SystemHealthEvent(
                 timestamp=time.time(),
-                status="healthy" if substrate_state.get("status") == "ready" else "degraded",
+                status=(
+                    "healthy"
+                    if substrate_state.get("status") == "ready"
+                    else "degraded"
+                ),
                 substrate_ready=substrate_state.get("status") == "ready",
                 component_health={
                     "substrate": substrate_state.get("status", "unknown"),
@@ -496,7 +508,9 @@ async def websocket_endpoint(
 # ---------------------------------------------------------------------------
 
 
-async def event_stream_generator(channel: StreamingChannel, interval_seconds: float = 1.0):
+async def event_stream_generator(
+    channel: StreamingChannel, interval_seconds: float = 1.0
+):
     """Generator for SSE events."""
     source_map = {
         StreamingChannel.PHI_RESONANCE: PhiResonanceSource(),

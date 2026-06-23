@@ -59,7 +59,10 @@ class CircuitBreaker:
         if self.state == CircuitState.CLOSED:
             return True
         if self.state == CircuitState.OPEN:
-            if self.opened_at is not None and now - self.opened_at >= self.recovery_seconds:
+            if (
+                self.opened_at is not None
+                and now - self.opened_at >= self.recovery_seconds
+            ):
                 self.state = CircuitState.HALF_OPEN
                 self._half_open_trial_inflight = False
                 self._publish_state()
@@ -84,7 +87,10 @@ class CircuitBreaker:
         self.failure_count += 1
         self.last_error = f"{exc.__class__.__name__}: {exc}"
         self._half_open_trial_inflight = False
-        if self.state == CircuitState.HALF_OPEN or self.failure_count >= self.failure_threshold:
+        if (
+            self.state == CircuitState.HALF_OPEN
+            or self.failure_count >= self.failure_threshold
+        ):
             self.state = CircuitState.OPEN
             self.opened_at = time.monotonic() if now is None else now
         self._publish_state()
@@ -125,7 +131,9 @@ class CircuitBreaker:
                     value = result
                 self.record_success()
                 return value  # type: ignore[return-value]
-            except Exception as exc:  # noqa: BLE001 - final failure must trip the breaker
+            except (
+                Exception
+            ) as exc:  # noqa: BLE001 - final failure must trip the breaker
                 last_error = exc
                 if attempt + 1 < attempts:
                     await asyncio.sleep(retry_backoff_seconds * (attempt + 1))

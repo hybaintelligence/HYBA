@@ -177,7 +177,9 @@ class SwarmCoherenceEngine:
                 capabilities=old_node.capabilities,
             )
 
-    def compute_inter_agent_coupling(self, node_a: str, node_b: str) -> InterAgentCoupling:
+    def compute_inter_agent_coupling(
+        self, node_a: str, node_b: str
+    ) -> InterAgentCoupling:
         """Compute structural coupling between two nodes."""
         if node_a not in self.known_nodes or node_b not in self.known_nodes:
             raise ValueError(f"One or both nodes not found: {node_a}, {node_b}")
@@ -190,7 +192,9 @@ class SwarmCoherenceEngine:
 
         # Entropy synchronization: how synchronized are the entropy states?
         # For now, use coherence similarity as proxy
-        entropy_sync = 1.0 - abs(node_a_data.coherence_local - node_b_data.coherence_local)
+        entropy_sync = 1.0 - abs(
+            node_a_data.coherence_local - node_b_data.coherence_local
+        )
 
         # Historical coupling (if exists)
         historical_coupling = 0.0
@@ -202,7 +206,9 @@ class SwarmCoherenceEngine:
                 break
 
         # Compute overall coupling index
-        coupling_index = 0.5 * phi_similarity + 0.3 * entropy_sync + 0.2 * historical_coupling
+        coupling_index = (
+            0.5 * phi_similarity + 0.3 * entropy_sync + 0.2 * historical_coupling
+        )
 
         coupling = InterAgentCoupling(
             node_a=node_a,
@@ -228,7 +234,9 @@ class SwarmCoherenceEngine:
 
         # Average local metrics
         total_phi = sum(node.phi_local for node in self.known_nodes.values())
-        total_coherence = sum(node.coherence_local for node in self.known_nodes.values())
+        total_coherence = sum(
+            node.coherence_local for node in self.known_nodes.values()
+        )
 
         self.swarm_phi = total_phi / len(self.known_nodes)
         self.swarm_coherence = total_coherence / len(self.known_nodes)
@@ -273,7 +281,9 @@ class SwarmCoherenceEngine:
 
     async def propose_consensus(self, proposal: Dict[str, Any]) -> SwarmConsensus:
         """Propose a decision to the swarm for consensus."""
-        decision_id = hashlib.sha256(json.dumps(proposal, sort_keys=True).encode()).hexdigest()[:16]
+        decision_id = hashlib.sha256(
+            json.dumps(proposal, sort_keys=True).encode()
+        ).hexdigest()[:16]
 
         # For now, implement simple majority voting
         # In production, this would involve actual network communication

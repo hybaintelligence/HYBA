@@ -63,7 +63,9 @@ def golden_distance(x: float, levels: int = 13) -> float:
     return min(abs(x - anchor) for anchor in anchors)
 
 
-def features(rows: Sequence[Dict[str, str]], needle_quantile: float = 0.10) -> List[FeatureRecord]:
+def features(
+    rows: Sequence[Dict[str, str]], needle_quantile: float = 0.10
+) -> List[FeatureRecord]:
     ordered = sorted(rows, key=lambda r: int(r["height"]))
     deltas: Dict[int, int] = {}
     prev_ts = None
@@ -74,18 +76,24 @@ def features(rows: Sequence[Dict[str, str]], needle_quantile: float = 0.10) -> L
         prev_ts = ts
     max_tx = max(1, max(int(r["tx_count"]) for r in rows))
     ratios = [hex_ratio(r["block_hash"]) for r in rows]
-    cutoff = sorted(ratios)[max(0, min(len(ratios) - 1, int(len(ratios) * needle_quantile)))]
+    cutoff = sorted(ratios)[
+        max(0, min(len(ratios) - 1, int(len(ratios) * needle_quantile)))
+    ]
     out: List[FeatureRecord] = []
     for row in rows:
         height = int(row["height"])
         block_hash = row["block_hash"]
         hratio = hex_ratio(block_hash)
         nonce_ratio = (int(row["nonce"]) % (2**32)) / float(2**32)
-        fullness = min(1.0, int(row["weight"]) / 4_000_000.0) if int(row["weight"]) else 0.0
+        fullness = (
+            min(1.0, int(row["weight"]) / 4_000_000.0) if int(row["weight"]) else 0.0
+        )
         tx_log = math.log1p(int(row["tx_count"])) / math.log1p(max_tx)
         time_delta_norm = min(3.0, deltas.get(height, 600) / 600.0) / 3.0
         merkle_ratio = (
-            hex_ratio(row.get("merkle_root", "")[:16]) if row.get("merkle_root", "") else 1.0
+            hex_ratio(row.get("merkle_root", "")[:16])
+            if row.get("merkle_root", "")
+            else 1.0
         )
         component_distances = [
             golden_distance(nonce_ratio),
@@ -150,7 +158,9 @@ def baseline(
     }
 
 
-def summary(rows: Sequence[FeatureRecord], ks: Sequence[int], trials: int) -> Dict[str, object]:
+def summary(
+    rows: Sequence[FeatureRecord], ks: Sequence[int], trials: int
+) -> Dict[str, object]:
     payload: Dict[str, object] = {
         "sample_size": len(rows),
         "needle_count": sum(1 for r in rows if r.is_needle),
@@ -165,7 +175,9 @@ def summary(rows: Sequence[FeatureRecord], ks: Sequence[int], trials: int) -> Di
         random_result = baseline(rows, k, trials=trials)
         sd = random_result["precision_stdev"]
         z_score = (
-            0.0 if sd == 0 else (phi_result["precision"] - random_result["precision_mean"]) / sd
+            0.0
+            if sd == 0
+            else (phi_result["precision"] - random_result["precision_mean"]) / sd
         )
         payload["ks"][str(k)] = {
             "phi_rank": phi_result,

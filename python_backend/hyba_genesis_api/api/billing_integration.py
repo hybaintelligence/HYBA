@@ -5,6 +5,7 @@ from __future__ import annotations
 import inspect
 import uuid
 from datetime import datetime, timezone
+
 UTC = timezone.utc
 from typing import Any, Callable, Dict, TypeVar
 
@@ -33,7 +34,9 @@ def reset_billing_evidence() -> None:
     _INVOICES.clear()
 
 
-def _invoice(customer: CustomerPrincipal, product: str, units: int, usage: Dict[str, Any]) -> Dict[str, Any]:
+def _invoice(
+    customer: CustomerPrincipal, product: str, units: int, usage: Dict[str, Any]
+) -> Dict[str, Any]:
     amount = float(usage.get("estimated_charge_usd", 0.0) or 0.0)
     invoice = {
         "invoice_id": f"inv_{uuid.uuid4().hex[:16]}",
@@ -48,7 +51,13 @@ def _invoice(customer: CustomerPrincipal, product: str, units: int, usage: Dict[
     return invoice
 
 
-def _audit(customer: CustomerPrincipal, endpoint: str, request_id: str, units: int, outcome: str) -> Dict[str, Any]:
+def _audit(
+    customer: CustomerPrincipal,
+    endpoint: str,
+    request_id: str,
+    units: int,
+    outcome: str,
+) -> Dict[str, Any]:
     entry = {
         "customer_id": customer.customer_id,
         "endpoint": endpoint,
@@ -74,7 +83,9 @@ def execute_with_billing(
     request_id = execution_id or f"exec_{uuid.uuid4().hex}"
     quota_manager = get_quota_manager()
     if quota_manager.get_status(principal.customer_id)["total_quota"] == 0:
-        quota_manager.provision_quota(principal.customer_id, principal.quota_compute_units_per_month)
+        quota_manager.provision_quota(
+            principal.customer_id, principal.quota_compute_units_per_month
+        )
     quota_manager.consume_quota(principal.customer_id, units, request_id)
     usage = customer_access.meter(principal, product=product, units=units)
     try:
@@ -84,7 +95,9 @@ def execute_with_billing(
             result = execute()
     except HTTPException as exc:
         customer_access.refund_metered_usage(principal, product=product, units=units)
-        quota_manager.refund_quota(principal.customer_id, units, request_id, str(exc.detail))
+        quota_manager.refund_quota(
+            principal.customer_id, units, request_id, str(exc.detail)
+        )
         rollback = get_billing_rollback_manager().refund_on_failure(
             request_id, principal.customer_id, units, str(exc.detail)
         )
@@ -93,7 +106,9 @@ def execute_with_billing(
         raise
     except Exception as exc:
         customer_access.refund_metered_usage(principal, product=product, units=units)
-        quota_manager.refund_quota(principal.customer_id, units, request_id, exc.__class__.__name__)
+        quota_manager.refund_quota(
+            principal.customer_id, units, request_id, exc.__class__.__name__
+        )
         get_billing_rollback_manager().refund_on_failure(
             request_id, principal.customer_id, units, exc.__class__.__name__
         )

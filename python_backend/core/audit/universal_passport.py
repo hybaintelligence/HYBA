@@ -146,9 +146,7 @@ class UniversalPassport:
 
         # Compute hash if not provided
         if not object.__getattribute__(self, "embedded_hash"):
-            object.__setattr__(
-                self, "embedded_hash", self._compute_hash()
-            )
+            object.__setattr__(self, "embedded_hash", self._compute_hash())
 
     def to_dict(self) -> dict[str, Any]:
         """Convert passport to canonical dictionary representation."""
@@ -430,9 +428,15 @@ class SharedAuditLog:
         # Each claim type has its own specific required bounds
         requirements = {
             ClaimType.NONCE_FOUND.value: [EpistemicBound.NO_QUANTUM_SPEEDUP.value],
-            ClaimType.MODE_TRANSITION.value: [EpistemicBound.NO_SECURITY_INVULNERABILITY.value],
-            ClaimType.CIRCUIT_BREAKER_TRIP.value: [EpistemicBound.NO_GUARANTEE_CORRECTNESS.value],
-            ClaimType.PHI_MEASUREMENT.value: [EpistemicBound.NO_CONSCIOUSNESS_CLAIM.value],
+            ClaimType.MODE_TRANSITION.value: [
+                EpistemicBound.NO_SECURITY_INVULNERABILITY.value
+            ],
+            ClaimType.CIRCUIT_BREAKER_TRIP.value: [
+                EpistemicBound.NO_GUARANTEE_CORRECTNESS.value
+            ],
+            ClaimType.PHI_MEASUREMENT.value: [
+                EpistemicBound.NO_CONSCIOUSNESS_CLAIM.value
+            ],
         }
 
         return requirements.get(claim_type, [])

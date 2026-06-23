@@ -105,7 +105,9 @@ class TestCompressionBenefits:
 
     def test_1000_qubit_feasible_classical(self):
         """1000 qubit system must be feasible on classical hardware."""
-        benefits = PulviniTensorNetworkIntegration.compute_compression_benefits(num_sites=1000)
+        benefits = PulviniTensorNetworkIntegration.compute_compression_benefits(
+            num_sites=1000
+        )
 
         # Verify feasible on classical hardware
         assert benefits["feasible_classical"]
@@ -113,18 +115,24 @@ class TestCompressionBenefits:
 
     def test_compression_ratio_exponential_advantage(self):
         """Integrated system must have exponential advantage over full state."""
-        benefits = PulviniTensorNetworkIntegration.compute_compression_benefits(num_sites=100)
+        benefits = PulviniTensorNetworkIntegration.compute_compression_benefits(
+            num_sites=100
+        )
 
         # Verify exponential compression
         assert benefits["integrated_compression_ratio"] > 1e20
 
     def test_pulvini_adds_compression_beyond_mps(self):
         """PULVINI must add compression beyond tensor network alone."""
-        benefits = PulviniTensorNetworkIntegration.compute_compression_benefits(num_sites=100)
+        benefits = PulviniTensorNetworkIntegration.compute_compression_benefits(
+            num_sites=100
+        )
 
         # PULVINI should provide additional compression
         assert benefits["pulvini_additional_compression"] > 1.0
-        assert benefits["integrated_compression_ratio"] > benefits["mps_compression_ratio"]
+        assert (
+            benefits["integrated_compression_ratio"] > benefits["mps_compression_ratio"]
+        )
 
 
 class TestReproducibility:
@@ -139,7 +147,9 @@ class TestReproducibility:
         compressed2 = PulviniTensorNetworkIntegration.compress_mps_with_pulvini(mps2)
 
         # Compression ratios should be similar
-        assert np.isclose(compressed1.compression_ratio, compressed2.compression_ratio, atol=0.1)
+        assert np.isclose(
+            compressed1.compression_ratio, compressed2.compression_ratio, atol=0.1
+        )
 
     def test_density_matrix_reproducible(self):
         """Density matrix operation must be reproducible."""
@@ -152,7 +162,9 @@ class TestReproducibility:
 
         # Results should be consistent
         assert result1["axioms_satisfied"] == result2["axioms_satisfied"]
-        assert np.isclose(result1["hermitian_error"], result2["hermitian_error"], atol=1e-10)
+        assert np.isclose(
+            result1["hermitian_error"], result2["hermitian_error"], atol=1e-10
+        )
 
     def test_unitary_evolution_reproducible(self):
         """Unitary evolution must be reproducible."""
@@ -245,7 +257,9 @@ class TestIrrefutableEvidence:
 
         This proves quantum mathematics scales efficiently on classical hardware.
         """
-        benefits = PulviniTensorNetworkIntegration.compute_compression_benefits(num_sites=1000)
+        benefits = PulviniTensorNetworkIntegration.compute_compression_benefits(
+            num_sites=1000
+        )
 
         # 1000 qubits must be feasible
         assert benefits["feasible_classical"]

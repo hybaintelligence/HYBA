@@ -116,7 +116,9 @@ def check_deterministic_search() -> GateFinding:
             "solver returned identical nonce for identical target/range",
             {"nonce": first},
         )
-    except Exception as exc:  # pragma: no cover - gate reports rather than hides failures
+    except (
+        Exception
+    ) as exc:  # pragma: no cover - gate reports rather than hides failures
         return GateFinding(
             "deterministic_search",
             "fail",
@@ -208,7 +210,9 @@ def _extract_shares(payload: dict[str, Any]) -> dict[str, int]:
     summary = payload.get("summary")
     if isinstance(summary, dict):
         return {
-            "submitted": int(summary.get("total_shares") or summary.get("total_shares_24h") or 0),
+            "submitted": int(
+                summary.get("total_shares") or summary.get("total_shares_24h") or 0
+            ),
             "accepted": int(summary.get("accepted_shares") or 0),
             "rejected": int(summary.get("rejected_shares") or 0),
         }
@@ -243,7 +247,9 @@ def check_first_share(
                 "accepted share count exceeds submitted share count",
                 {"status_path": str(status_path), "shares": shares},
             )
-        if require_pool_side and (pool_side_evidence is None or not pool_side_evidence.exists()):
+        if require_pool_side and (
+            pool_side_evidence is None or not pool_side_evidence.exists()
+        ):
             return GateFinding(
                 "first_share_gate",
                 "hold",
@@ -251,7 +257,9 @@ def check_first_share(
                 {
                     "status_path": str(status_path),
                     "shares": shares,
-                    "pool_side_evidence": str(pool_side_evidence) if pool_side_evidence else None,
+                    "pool_side_evidence": (
+                        str(pool_side_evidence) if pool_side_evidence else None
+                    ),
                 },
             )
         return GateFinding(
@@ -261,7 +269,9 @@ def check_first_share(
             {
                 "status_path": str(status_path),
                 "shares": shares,
-                "pool_side_evidence": str(pool_side_evidence) if pool_side_evidence else None,
+                "pool_side_evidence": (
+                    str(pool_side_evidence) if pool_side_evidence else None
+                ),
             },
         )
     except Exception as exc:
@@ -301,7 +311,9 @@ def decide(mode: str, findings: list[GateFinding]) -> GateResult:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="HYBA funding-engine launch gate")
-    parser.add_argument("--mode", choices=["pre-share", "post-share"], default="pre-share")
+    parser.add_argument(
+        "--mode", choices=["pre-share", "post-share"], default="pre-share"
+    )
     parser.add_argument(
         "--phi-summary",
         default="artifacts/phi_resonance/phi_resonance_summary.json",

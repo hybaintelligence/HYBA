@@ -311,7 +311,7 @@ class TestUnifiedSearchKernel:
         domain = PythiaMiningDomain(target_nonce=50, nonce_range=(0, 100))
         kernel = UnifiedSearchKernel(domain)
         result = kernel.search(budget=10)
-        
+
         assert isinstance(result, SearchResult)
         assert result.latency_mode == SearchLatencyMode.COLD
         assert result.iterations_used <= 10
@@ -323,7 +323,7 @@ class TestUnifiedSearchKernel:
         cache.store_warm("pythia_mining", 50)  # Pre-warm cache
         kernel = UnifiedSearchKernel(domain, warm_cache=cache)
         result = kernel.search(budget=10)
-        
+
         assert result.latency_mode == SearchLatencyMode.WARM
 
     def test_search_budget_respected(self):
@@ -331,17 +331,17 @@ class TestUnifiedSearchKernel:
         domain = PythiaMiningDomain(target_nonce=50, nonce_range=(0, 100))
         kernel = UnifiedSearchKernel(domain)
         result = kernel.search(budget=5)
-        
+
         assert result.iterations_used <= 5
 
     def test_search_target_found(self):
         """Test search when target is found."""
         domain = PythiaMiningDomain(target_nonce=50, nonce_range=(0, 100))
         kernel = UnifiedSearchKernel(domain)
-        
+
         # Start near target to ensure quick find
         result = kernel.search(budget=100, seed=0)
-        
+
         # May or may not find target depending on search strategy
         assert isinstance(result, SearchResult)
 
@@ -350,7 +350,7 @@ class TestUnifiedSearchKernel:
         domain = PythiaMiningDomain(target_nonce=999999, nonce_range=(0, 100))
         kernel = UnifiedSearchKernel(domain)
         result = kernel.search(budget=3)
-        
+
         # Target is outside range, should return partial result
         assert result.partial is True
         assert result.budget_exhausted is True
@@ -360,17 +360,17 @@ class TestUnifiedSearchKernel:
         domain = PythiaMiningDomain(target_nonce=50, nonce_range=(0, 100))
         kernel = UnifiedSearchKernel(domain)
         result = kernel.search(budget=10)
-        
+
         assert 0.0 <= result.score <= 1.0
 
     def test_search_deterministic(self):
         """Test that search is deterministic for same seed."""
         domain = PythiaMiningDomain(target_nonce=50, nonce_range=(0, 100))
         kernel = UnifiedSearchKernel(domain)
-        
+
         result1 = kernel.search(budget=10, seed=42)
         result2 = kernel.search(budget=10, seed=42)
-        
+
         assert result1.candidate == result2.candidate
         assert result1.score == result2.score
 
@@ -379,7 +379,7 @@ class TestUnifiedSearchKernel:
         domain = PythiaMiningDomain(target_nonce=50, nonce_range=(0, 100))
         kernel = UnifiedSearchKernel(domain)
         result = kernel.search(budget=10)
-        
+
         assert "passport" in result.to_dict()
         assert "domain_id" in result.passport
         assert "timestamp" in result.passport
@@ -428,7 +428,7 @@ class TestWarmCacheProperties:
         cache = WarmCache(max_size=max_size)
         for i in range(num_states):
             cache.store_warm(f"domain_{i}", f"state_{i}")
-        
+
         assert cache.size() <= max_size
 
     @given(
@@ -512,10 +512,10 @@ class TestUnifiedSearchKernelProperties:
         """Property: Same seed produces same result."""
         domain = PythiaMiningDomain(target_nonce=50, nonce_range=(0, 100))
         kernel = UnifiedSearchKernel(domain)
-        
+
         result1 = kernel.search(budget=budget, seed=seed)
         result2 = kernel.search(budget=budget, seed=seed)
-        
+
         assert result1.candidate == result2.candidate
         assert result1.score == result2.score
 
@@ -533,7 +533,7 @@ class TestUnifiedSearchIntegration:
         domain = PythiaMiningDomain(target_nonce=50, nonce_range=(0, 100))
         kernel = UnifiedSearchKernel(domain)
         result = kernel.search(budget=20)
-        
+
         assert isinstance(result, SearchResult)
         assert result.passport["domain_id"] == "pythia_mining"
 
@@ -545,7 +545,7 @@ class TestUnifiedSearchIntegration:
         )
         kernel = UnifiedSearchKernel(domain)
         result = kernel.search(budget=10)
-        
+
         assert isinstance(result, SearchResult)
         assert result.passport["domain_id"] == "sat_geodesic"
 
@@ -554,7 +554,7 @@ class TestUnifiedSearchIntegration:
         domain = YangMillsDomain(lattice_size=10, initial_action=1.0)
         kernel = UnifiedSearchKernel(domain)
         result = kernel.search(budget=10)
-        
+
         assert isinstance(result, SearchResult)
         assert result.passport["domain_id"] == "yang_mills_cooling"
 
@@ -563,11 +563,11 @@ class TestUnifiedSearchIntegration:
         domain = PythiaMiningDomain(target_nonce=50, nonce_range=(0, 100))
         cache = WarmCache()
         kernel = UnifiedSearchKernel(domain, warm_cache=cache)
-        
+
         # First search (cold)
         result1 = kernel.search(budget=5)
         assert result1.latency_mode == SearchLatencyMode.COLD
-        
+
         # Second search (warm if target found)
         result2 = kernel.search(budget=5)
         # May still be cold if target not found in first search
@@ -577,14 +577,14 @@ class TestUnifiedSearchIntegration:
         """Test that multiple domains use isolated cache entries."""
         mining_domain = PythiaMiningDomain(target_nonce=50, nonce_range=(0, 100))
         sat_domain = SatGeodesicDomain(num_variables=3, clauses=[[1, 2]])
-        
+
         cache = WarmCache()
         mining_kernel = UnifiedSearchKernel(mining_domain, warm_cache=cache)
         sat_kernel = UnifiedSearchKernel(sat_domain, warm_cache=cache)
-        
+
         mining_result = mining_kernel.search(budget=5)
         sat_result = sat_kernel.search(budget=5)
-        
+
         # Both should have valid results
         assert isinstance(mining_result, SearchResult)
         assert isinstance(sat_result, SearchResult)
@@ -595,7 +595,7 @@ class TestUnifiedSearchIntegration:
         domain = PythiaMiningDomain(target_nonce=50, nonce_range=(0, 100))
         kernel = UnifiedSearchKernel(domain)
         result = kernel.search(budget=10)
-        
+
         assert result.search_time_ms >= 0.0
         assert result.search_time_ms < 10000.0  # Should complete in < 10s
 

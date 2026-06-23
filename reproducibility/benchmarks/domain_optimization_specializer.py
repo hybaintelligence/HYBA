@@ -62,7 +62,9 @@ class OptimizationDomainSpecializer:
             gap_percent=0.0,  # Would need true optimum to calculate
             convergence_iterations=num_variables,
             execution_time=execution_time,
-            iterations_per_second=num_variables / execution_time if execution_time > 0 else 0,
+            iterations_per_second=(
+                num_variables / execution_time if execution_time > 0 else 0
+            ),
             solution_quality=1.0 / (1.0 + constraint_violations),
             constraint_violations=int(np.ceil(constraint_violations)),
         )
@@ -92,7 +94,11 @@ class OptimizationDomainSpecializer:
 
         # Estimate optimum using Held-Karp lower bound
         estimated_optimum = self._held_karp_lower_bound(distances)
-        gap_percent = ((best_distance - estimated_optimum) / estimated_optimum * 100) if estimated_optimum > 0 else 0
+        gap_percent = (
+            ((best_distance - estimated_optimum) / estimated_optimum * 100)
+            if estimated_optimum > 0
+            else 0
+        )
 
         return OptimizationMetrics(
             optimal_value=best_distance,
@@ -100,7 +106,9 @@ class OptimizationDomainSpecializer:
             gap_percent=gap_percent,
             convergence_iterations=iterations,
             execution_time=execution_time,
-            iterations_per_second=iterations / execution_time if execution_time > 0 else 0,
+            iterations_per_second=(
+                iterations / execution_time if execution_time > 0 else 0
+            ),
             solution_quality=1.0 / (1.0 + gap_percent / 100),
             constraint_violations=0,
         )
@@ -165,7 +173,9 @@ class OptimizationDomainSpecializer:
             gap_percent=100 - satisfaction_rate,
             convergence_iterations=iterations,
             execution_time=execution_time,
-            iterations_per_second=iterations / execution_time if execution_time > 0 else 0,
+            iterations_per_second=(
+                iterations / execution_time if execution_time > 0 else 0
+            ),
             solution_quality=satisfaction_rate / 100,
             constraint_violations=len(constraints) - satisfied,
         )
@@ -193,7 +203,11 @@ class OptimizationDomainSpecializer:
         value_weight_ratio = values / weights
         greedy_bound = np.sum(np.sort(values)[-10:])  # Top 10 items
 
-        gap_percent = ((greedy_bound - best_value) / greedy_bound * 100) if greedy_bound > 0 else 0
+        gap_percent = (
+            ((greedy_bound - best_value) / greedy_bound * 100)
+            if greedy_bound > 0
+            else 0
+        )
 
         return OptimizationMetrics(
             optimal_value=best_value,
@@ -201,7 +215,9 @@ class OptimizationDomainSpecializer:
             gap_percent=gap_percent,
             convergence_iterations=iterations,
             execution_time=execution_time,
-            iterations_per_second=iterations / execution_time if execution_time > 0 else 0,
+            iterations_per_second=(
+                iterations / execution_time if execution_time > 0 else 0
+            ),
             solution_quality=best_value / greedy_bound if greedy_bound > 0 else 0,
             constraint_violations=0,
         )
@@ -332,7 +348,9 @@ class OptimizationDomainSpecializer:
         def is_consistent(var: int, value: int) -> bool:
             for v1, v2, op in constraints:
                 if v1 == var and v2 in assignment:
-                    if not self._check_constraint((v1, v2, op), {**assignment, var: value}):
+                    if not self._check_constraint(
+                        (v1, v2, op), {**assignment, var: value}
+                    ):
                         return False
             return True
 
@@ -422,11 +440,17 @@ class OptimizationDomainSpecializer:
             report.append(f"- **Optimal Value**: {metrics.optimal_value:.4f}\n")
             report.append(f"- **Found Optimum**: {metrics.found_optimum}\n")
             report.append(f"- **Gap Percent**: {metrics.gap_percent:.2f}%\n")
-            report.append(f"- **Convergence Iterations**: {metrics.convergence_iterations}\n")
+            report.append(
+                f"- **Convergence Iterations**: {metrics.convergence_iterations}\n"
+            )
             report.append(f"- **Execution Time**: {metrics.execution_time:.4f}s\n")
-            report.append(f"- **Iterations/Second**: {metrics.iterations_per_second:.2f}\n")
+            report.append(
+                f"- **Iterations/Second**: {metrics.iterations_per_second:.2f}\n"
+            )
             report.append(f"- **Solution Quality**: {metrics.solution_quality:.4f}\n")
-            report.append(f"- **Constraint Violations**: {metrics.constraint_violations}\n\n")
+            report.append(
+                f"- **Constraint Violations**: {metrics.constraint_violations}\n\n"
+            )
 
         return "".join(report)
 

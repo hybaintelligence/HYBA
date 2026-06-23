@@ -32,7 +32,9 @@ if str(PYTHON_BACKEND) not in sys.path:
     sys.path.insert(0, str(PYTHON_BACKEND))
 
 from hyba_genesis_api.core.intelligence_fabric import explain  # noqa: E402
-from hyba_genesis_api.core.intelligence_manifold import IntelligenceManifold  # noqa: E402
+from hyba_genesis_api.core.intelligence_manifold import (
+    IntelligenceManifold,
+)  # noqa: E402
 from hyba_genesis_api.core.thermal_intelligence import ThermalEnvelope  # noqa: E402
 
 
@@ -105,7 +107,9 @@ def _benchmark_explanation_latency(sample_count: int = 64) -> CapabilityBenchmar
     )
 
 
-def _benchmark_counterfactual_governance_coverage(sample_count: int = 24) -> CapabilityBenchmark:
+def _benchmark_counterfactual_governance_coverage(
+    sample_count: int = 24,
+) -> CapabilityBenchmark:
     required_governance = {"hardware_agnostic_math", "no_quantum_speedup_claim"}
     coverage_scores: list[float] = []
     minimum_counterfactuals = math.inf
@@ -121,7 +125,9 @@ def _benchmark_counterfactual_governance_coverage(sample_count: int = 24) -> Cap
         governance = set(envelope["governance"])
         counterfactual_count = len(envelope["counterfactuals"])
         minimum_counterfactuals = min(minimum_counterfactuals, counterfactual_count)
-        coverage_scores.append(len(required_governance & governance) / len(required_governance))
+        coverage_scores.append(
+            len(required_governance & governance) / len(required_governance)
+        )
 
     coverage = mean(coverage_scores)
     return CapabilityBenchmark(
@@ -225,7 +231,9 @@ def _benchmark_thermal_envelope(sample_count: int = 20) -> CapabilityBenchmark:
         snapshot = envelope.snapshot(phi=0.5 + (index / (sample_count * 4)))
         costs.append(snapshot["thermal_cost_phi_per_second"])
 
-    finite_ratio = sum(math.isfinite(value) and value > 0 for value in costs) / len(costs)
+    finite_ratio = sum(math.isfinite(value) and value > 0 for value in costs) / len(
+        costs
+    )
     return CapabilityBenchmark(
         name="thermal cognition cost telemetry",
         metric="finite_positive_ratio",
@@ -234,7 +242,10 @@ def _benchmark_thermal_envelope(sample_count: int = 20) -> CapabilityBenchmark:
         threshold=1.0,
         passed=finite_ratio == 1.0,
         samples=sample_count,
-        metadata={"mean_cost": round(mean(costs), 6), "std_cost": round(stdev(costs), 6)},
+        metadata={
+            "mean_cost": round(mean(costs), 6),
+            "std_cost": round(stdev(costs), 6),
+        },
     )
 
 

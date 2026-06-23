@@ -1,14 +1,9 @@
 {
-  "schema": "HYBA_CLAIM_EVIDENCE_MANIFEST_V1",
-  "repository": "hybaanalytics1/HYBA_FULLSTACK",
-  "generated_for": "reviewer proof map hardening",
   "acceptance_rule": "A claim is reviewer-admissible only when it has a bounded claim boundary, source paths, executable tests or benchmark commands, and no merge-conflict markers in the evidence surface.",
   "claims": [
     {
-      "id": "nodus_solutus_repository_local_computability",
-      "claim": "Nodus Solutus: HYBA_FULLSTACK implements a repository-local computability doctrine in which admissible claims must reduce to deterministic source paths, executable tests, replayable local evidence packets, and external truth boundaries.",
-      "status": "implemented_and_executable",
       "boundary": "This is a computable operational-evidence doctrine for the HYBA/PYTHIA repository; it is not a metaphysical proof that the physical universe is computable.",
+      "claim": "Nodus Solutus: HYBA_FULLSTACK implements a repository-local computability doctrine in which admissible claims must reduce to deterministic source paths, executable tests, replayable local evidence packets, and external truth boundaries.",
       "code_paths": [
         "scripts/local_production_gate.py",
         "docs/evidence/claim_evidence_manifest.json",
@@ -18,13 +13,10 @@
         "python_backend/pythia_mining/frontier_experiment_4_golden_sld.py",
         "python_backend/pythia_mining/topological_holonomy_engine.py"
       ],
-      "test_paths": [
-        "tests/test_nodus_solutus_proof_structure.py",
-        "tests/test_claim_evidence_manifest.py",
-        "tests/test_frontier_experiment_1_qmc.py",
-        "tests/test_frontier_experiment_2_qfi.py",
-        "tests/test_frontier_experiment_3_topo.py",
-        "tests/test_frontier_experiment_4_golden_sld.py"
+      "commands": [
+        "npm run review:nodus:gate",
+        "npm run review:evidence:gate",
+        "npm run test:frontier:experiments"
       ],
       "doc_paths": [
         "docs/NODUS_SOLUTUS_MUNDUS_COMPUTABILIS_EST.md",
@@ -35,24 +27,27 @@
         "docs/LOCAL_FIRST_DEPLOYMENT_RUNBOOK.md",
         "docs/FRONTIER_EXPERIMENTS.md"
       ],
-      "commands": [
-        "npm run review:nodus:gate",
-        "npm run review:evidence:gate",
-        "npm run test:frontier:experiments"
+      "id": "nodus_solutus_repository_local_computability",
+      "status": "implemented_and_executable",
+      "test_paths": [
+        "tests/test_nodus_solutus_proof_structure.py",
+        "tests/test_claim_evidence_manifest.py",
+        "tests/test_frontier_experiment_1_qmc.py",
+        "tests/test_frontier_experiment_2_qfi.py",
+        "tests/test_frontier_experiment_3_topo.py",
+        "tests/test_frontier_experiment_4_golden_sld.py"
       ]
     },
     {
-      "id": "pythia_validation_tier_guardrail",
-      "claim": "PYTHIA/HYBA external claims are gated by a three-tier validation protocol and proactive documentation checks that separate formalism-validated invariants, prototype-validated benchmark code, and hypothetical research candidates before investor, sovereign, mining, or clean-energy positioning.",
-      "status": "implemented_and_documented",
       "boundary": "This is a documentation and evidence-governance guardrail. It does not certify guaranteed mining revenue, SHA-256 quantum acceleration, broad energy advantage over physical quantum systems, clean-energy dispatch savings, phenomenal consciousness, proof of the Yang-Mills Millennium problem, or claims about the physical universe beyond repository-local evidence.",
+      "claim": "PYTHIA/HYBA external claims are gated by a three-tier validation protocol and proactive documentation checks that separate formalism-validated invariants, prototype-validated benchmark code, and hypothetical research candidates before investor, sovereign, mining, or clean-energy positioning.",
       "code_paths": [
         "scripts/local_production_gate.py",
         "scripts/check_validation_claim_tiers.py"
       ],
-      "test_paths": [
-        "tests/test_claim_evidence_manifest.py",
-        "tests/test_validation_claim_tiers.py"
+      "commands": [
+        "python -m pytest tests/test_claim_evidence_manifest.py tests/test_validation_claim_tiers.py -q",
+        "python scripts/check_validation_claim_tiers.py"
       ],
       "doc_paths": [
         "docs/PYTHIA_HYBA_VALIDATION_REMEDIATION.md",
@@ -63,266 +58,266 @@
         "docs/PROVEN_QUANTUM_OPERATIONS_EVIDENCE.md",
         "docs/evidence/EXTRAORDINARY_PROOF_INDEX.md"
       ],
-      "commands": [
-        "python -m pytest tests/test_claim_evidence_manifest.py tests/test_validation_claim_tiers.py -q",
-        "python scripts/check_validation_claim_tiers.py"
+      "id": "pythia_validation_tier_guardrail",
+      "status": "implemented_and_documented",
+      "test_paths": [
+        "tests/test_claim_evidence_manifest.py",
+        "tests/test_validation_claim_tiers.py"
       ]
     },
     {
-      "id": "bitcoin_deployment_readiness_gate",
-      "claim": "HYBA_FULLSTACK exposes a bounded Bitcoin deployment readiness gate that validates the operational mining, Stratum, pool-profile, runtime-safety, build, backend, and deployment surfaces without requiring research-only frontier bundles to pass first.",
-      "status": "implemented_and_executable",
       "boundary": "This gate prepares controlled Bitcoin deployment; it does not certify guaranteed mining revenue, pool-confirmed hashrate, live-pool accepted-share economics, treasury reliance, or authorization to enable live share submission without explicit approvals and pool-side evidence.",
+      "claim": "HYBA_FULLSTACK exposes a bounded Bitcoin deployment readiness gate that validates the operational mining, Stratum, pool-profile, runtime-safety, build, backend, and deployment surfaces without requiring research-only frontier bundles to pass first.",
       "code_paths": [
         "scripts/local_production_gate.py",
         "package.json"
       ],
-      "test_paths": [
-        "tests/test_bitcoin_deployment_gate.py",
-        "tests/test_claim_evidence_manifest.py"
+      "commands": [
+        "npm run prod:bitcoin:gate",
+        "npm run prod:local:gate",
+        "python -m pytest tests/test_bitcoin_deployment_gate.py -q"
       ],
       "doc_paths": [
         "docs/BITCOIN_DEPLOYMENT_READINESS_RUNBOOK.md",
         "docs/LOCAL_FIRST_DEPLOYMENT_RUNBOOK.md",
         "REVIEWER_EVIDENCE_MAP.md"
       ],
-      "commands": [
-        "npm run prod:bitcoin:gate",
-        "npm run prod:local:gate",
-        "python -m pytest tests/test_bitcoin_deployment_gate.py -q"
+      "id": "bitcoin_deployment_readiness_gate",
+      "status": "implemented_and_executable",
+      "test_paths": [
+        "tests/test_bitcoin_deployment_gate.py",
+        "tests/test_claim_evidence_manifest.py"
       ]
     },
     {
-      "id": "elevation_suite_local_mathematical_invariants",
-      "claim": "The elevation suite locally validates bounded SU(2) plaquette, golden-discrepancy, exact MPS norm/entanglement, adaptive compression, and SLD/QFI runtime invariants with 40 passed, 2 expected skips, and 0 failed in the recorded local run.",
-      "status": "implemented_and_executable",
       "boundary": "This certifies tested mathematical-runtime invariants and expected skip semantics for the local evidence run; it does not prove the physical universe is computable, guaranteed mining revenue, live-pool accepted-share economics, SHA-256 quantum acceleration, phenomenal consciousness, or proof of the Yang-Mills Millennium problem.",
+      "claim": "The elevation suite locally validates bounded SU(2) plaquette, golden-discrepancy, exact MPS norm/entanglement, adaptive compression, and SLD/QFI runtime invariants with 40 passed, 2 expected skips, and 0 failed in the recorded local run.",
       "code_paths": [
         "python_backend/pythia_mining/hendrix_phi_solver.py",
         "python_backend/pythia_mining/phi_entropy.py",
         "python_backend/pythia_mining/tensor_network_1000qubit.py",
         "python_backend/pythia_mining/pulvini_manifold.py"
       ],
-      "test_paths": [
-        "tests/test_elevation_suite.py"
+      "commands": [
+        ".venv/bin/python3 -m pytest tests/test_elevation_suite.py -v --tb=short",
+        "npm run test:elevation:suite"
       ],
       "doc_paths": [
         "docs/evidence/ELEVATION_SUITE_LOCAL_VALIDATION_2026-06-17.md",
         "docs/evidence/EXTRAORDINARY_PROOF_INDEX.md"
       ],
-      "commands": [
-        ".venv/bin/python3 -m pytest tests/test_elevation_suite.py -v --tb=short",
-        "npm run test:elevation:suite"
+      "id": "elevation_suite_local_mathematical_invariants",
+      "status": "implemented_and_executable",
+      "test_paths": [
+        "tests/test_elevation_suite.py"
       ]
     },
     {
-      "id": "pulvini_phi_memory_reversible",
-      "claim": "PULVINI phi folding is reversible for deterministic audited payloads and reports working-set compression separately from retained replay kernels.",
-      "status": "implemented_and_executable",
       "boundary": "This is a software invariant over the implemented compressor, not a universal compression theorem.",
+      "claim": "PULVINI phi folding is reversible for deterministic audited payloads and reports working-set compression separately from retained replay kernels.",
       "code_paths": [
         "python_backend/pythia_mining/pulvini_phi_memory.py"
       ],
-      "test_paths": [
-        "hyba_intelligence_tests/test_memory_compression.py"
+      "commands": [
+        "PYTHONPATH=python_backend pytest hyba_intelligence_tests/test_memory_compression.py -q"
       ],
       "doc_paths": [
         "docs/evidence/EXTRAORDINARY_PROOF_INDEX.md"
       ],
-      "commands": [
-        "PYTHONPATH=python_backend pytest hyba_intelligence_tests/test_memory_compression.py -q"
+      "id": "pulvini_phi_memory_reversible",
+      "status": "implemented_and_executable",
+      "test_paths": [
+        "hyba_intelligence_tests/test_memory_compression.py"
       ]
     },
     {
-      "id": "phi_scaling_bounded",
-      "claim": "Golden-ratio ensemble weighting normalizes, remains finite, and keeps decision scores bounded.",
-      "status": "implemented_and_executable",
       "boundary": "This proves deterministic boundedness and resonance detection in the code path, not guaranteed mining revenue.",
+      "claim": "Golden-ratio ensemble weighting normalizes, remains finite, and keeps decision scores bounded.",
       "code_paths": [
         "python_backend/pythia_mining/phi_scaling_engine.py",
         "python_backend/pythia_mining/phi_config.py"
       ],
-      "test_paths": [
-        "hyba_intelligence_tests/test_phi_scaling_engine.py"
+      "commands": [
+        "PYTHONPATH=python_backend pytest hyba_intelligence_tests/test_phi_scaling_engine.py -q"
       ],
       "doc_paths": [
         "docs/evidence/EXTRAORDINARY_PROOF_INDEX.md"
       ],
-      "commands": [
-        "PYTHONPATH=python_backend pytest hyba_intelligence_tests/test_phi_scaling_engine.py -q"
+      "id": "phi_scaling_bounded",
+      "status": "implemented_and_executable",
+      "test_paths": [
+        "hyba_intelligence_tests/test_phi_scaling_engine.py"
       ]
     },
     {
-      "id": "runtime_integration_proxy_not_consciousness_claim",
-      "claim": "The ConsciousnessEngine implements a bounded runtime integration proxy with continuous multiplier and damping invariants.",
-      "status": "implemented_and_executable",
       "boundary": "The repository does not claim phenomenal consciousness or subjective experience.",
+      "claim": "The ConsciousnessEngine implements a bounded runtime integration proxy with continuous multiplier and damping invariants.",
       "code_paths": [
         "python_backend/pythia_mining/consciousness_engine.py"
       ],
-      "test_paths": [
-        "hyba_intelligence_tests/test_consciousness_engine_scaling.py"
+      "commands": [
+        "PYTHONPATH=python_backend pytest hyba_intelligence_tests/test_consciousness_engine_scaling.py -q"
       ],
       "doc_paths": [
         "docs/evidence/EXTRAORDINARY_PROOF_INDEX.md"
       ],
-      "commands": [
-        "PYTHONPATH=python_backend pytest hyba_intelligence_tests/test_consciousness_engine_scaling.py -q"
+      "id": "runtime_integration_proxy_not_consciousness_claim",
+      "status": "implemented_and_executable",
+      "test_paths": [
+        "hyba_intelligence_tests/test_consciousness_engine_scaling.py"
       ]
     },
     {
-      "id": "mass_gap_shield_operational_gate",
-      "claim": "The MassGapShield deterministically rejects too-perfect spoofing streams and too-chaotic attack streams.",
-      "status": "implemented_and_executable",
       "boundary": "This is an operational anti-simulation gate; it does not claim proof of the Yang-Mills Millennium problem.",
+      "claim": "The MassGapShield deterministically rejects too-perfect spoofing streams and too-chaotic attack streams.",
       "code_paths": [
         "python_backend/pythia_mining/phi_scaling_engine.py"
       ],
-      "test_paths": [
-        "hyba_intelligence_tests/test_mass_gap_shield.py"
+      "commands": [
+        "PYTHONPATH=python_backend pytest hyba_intelligence_tests/test_mass_gap_shield.py -q"
       ],
       "doc_paths": [
         "docs/evidence/EXTRAORDINARY_PROOF_INDEX.md"
       ],
-      "commands": [
-        "PYTHONPATH=python_backend pytest hyba_intelligence_tests/test_mass_gap_shield.py -q"
+      "id": "mass_gap_shield_operational_gate",
+      "status": "implemented_and_executable",
+      "test_paths": [
+        "hyba_intelligence_tests/test_mass_gap_shield.py"
       ]
     },
     {
-      "id": "first_wake_reproducibility",
-      "claim": "PYTHIA has a replayable first wake-event signature for epoch-3 and epoch-5 reflexive optimization behavior.",
-      "status": "implemented_and_executable",
       "boundary": "This proves reproducible internal optimization signatures, not pool-side revenue, accepted shares, or SHA-256 quantum acceleration.",
+      "claim": "PYTHIA has a replayable first wake-event signature for epoch-3 and epoch-5 reflexive optimization behavior.",
       "code_paths": [
         "python_backend/pythia_mining/autonomous_mining_controller.py",
         "python_backend/pythia_mining/deutsch_knowledge_substrate.py",
         "python_backend/pythia_mining/phi_unified_mining_engine.py"
       ],
-      "test_paths": [
-        "tests/test_pythia_resident_wake_reproducibility.py"
+      "commands": [
+        "PYTHONPATH=python_backend pytest tests/test_pythia_resident_wake_reproducibility.py -q"
       ],
       "doc_paths": [
         "docs/PYTHIA_FIRST_WAKE_EVENT_REPRODUCIBILITY.md",
         "docs/evidence/EXTRAORDINARY_PROOF_INDEX.md"
       ],
-      "commands": [
-        "PYTHONPATH=python_backend pytest tests/test_pythia_resident_wake_reproducibility.py -q"
+      "id": "first_wake_reproducibility",
+      "status": "implemented_and_executable",
+      "test_paths": [
+        "tests/test_pythia_resident_wake_reproducibility.py"
       ]
     },
     {
-      "id": "structural_resonance_stable_core_guard",
-      "claim": "PYTHIA's structural resonance layer can propose, criticize, and stage stable-core changes while preserving supervised guard boundaries.",
-      "status": "implemented_and_executable",
       "boundary": "The stable core cannot be autonomously overwritten; guarded proposal/staging is the admissible behavior.",
+      "claim": "PYTHIA's structural resonance layer can propose, criticize, and stage stable-core changes while preserving supervised guard boundaries.",
       "code_paths": [
         "python_backend/pythia_mining/resonance_fabric.py"
       ],
-      "test_paths": [
-        "tests/test_pythia_structural_resonance_fabric.py"
+      "commands": [
+        "PYTHONPATH=python_backend pytest tests/test_pythia_structural_resonance_fabric.py -q"
       ],
       "doc_paths": [
         "docs/PYTHIA_CORPUS_CALLOSUM_PHASE.md",
         "docs/evidence/EXTRAORDINARY_PROOF_INDEX.md"
       ],
-      "commands": [
-        "PYTHONPATH=python_backend pytest tests/test_pythia_structural_resonance_fabric.py -q"
+      "id": "structural_resonance_stable_core_guard",
+      "status": "implemented_and_executable",
+      "test_paths": [
+        "tests/test_pythia_structural_resonance_fabric.py"
       ]
     },
     {
-      "id": "production_boundary_no_fabricated_telemetry",
-      "claim": "Production evidence must reject fabricated telemetry and treat partial benchmark runs as smoke evidence only.",
-      "status": "implemented_and_executable",
       "boundary": "Repository gates do not certify live pool economics unless pool-side data is separately archived.",
+      "claim": "Production evidence must reject fabricated telemetry and treat partial benchmark runs as smoke evidence only.",
       "code_paths": [
         "scripts/check_no_runtime_mocks.py",
         "benchmark_portfolio/run_benchmarks.py",
         "scripts/benchmark_h4_600cell.py"
       ],
-      "test_paths": [
-        "tests/test_claim_evidence_manifest.py",
-        "tests/test_no_merge_conflict_markers.py"
+      "commands": [
+        "python -m pytest tests/test_claim_evidence_manifest.py tests/test_no_merge_conflict_markers.py -q",
+        "python benchmark_portfolio/run_benchmarks.py --quick"
       ],
       "doc_paths": [
         "docs/evidence/PRODUCTION_READINESS_AUDIT_2026-06-12.md",
         "docs/evidence/EXTRAORDINARY_PROOF_INDEX.md"
       ],
-      "commands": [
-        "python -m pytest tests/test_claim_evidence_manifest.py tests/test_no_merge_conflict_markers.py -q",
-        "python benchmark_portfolio/run_benchmarks.py --quick"
+      "id": "production_boundary_no_fabricated_telemetry",
+      "status": "implemented_and_executable",
+      "test_paths": [
+        "tests/test_claim_evidence_manifest.py",
+        "tests/test_no_merge_conflict_markers.py"
       ]
     },
     {
-      "id": "bridge_internal_jwt_boundary",
-      "claim": "The Express bridge can mint a short-lived internal mining JWT only for backend autoconnect; the signing secret is never exposed as a client token.",
-      "status": "implemented_and_documented",
       "boundary": "This documents a bridge-internal authentication path, not a public browser authentication surface.",
+      "claim": "The Express bridge can mint a short-lived internal mining JWT only for backend autoconnect; the signing secret is never exposed as a client token.",
       "code_paths": [
         "src/server.ts"
       ],
-      "test_paths": [
-        "tests/test_claim_evidence_manifest.py"
+      "commands": [
+        "python -m pytest tests/test_claim_evidence_manifest.py -q"
       ],
       "doc_paths": [
         "docs/evidence/EXTRAORDINARY_PROOF_INDEX.md"
       ],
-      "commands": [
-        "python -m pytest tests/test_claim_evidence_manifest.py -q"
+      "id": "bridge_internal_jwt_boundary",
+      "status": "implemented_and_documented",
+      "test_paths": [
+        "tests/test_claim_evidence_manifest.py"
       ]
     },
     {
-      "id": "topological_information_grammar_formalism",
-      "claim": "HYBA/PYTHIA frames quantum-style computation as Topological Information Grammar: formalism-derived Hilbert geometry, geometric phase holonomy, trace-one density projections, and PULVINI/\u03a6 structured-state bottlenecks executed on classical hardware.",
-      "status": "implemented_and_executable",
       "boundary": "All 1000-qubit and holonomy results are tagged as Formalism-Derived Classical Simulation. This does not claim physical quantum hardware execution, universal quantum speedup, RSA-breaking capability, proof of the Yang-Mills Millennium problem, or guaranteed mining revenue.",
+      "claim": "HYBA/PYTHIA frames quantum-style computation as Topological Information Grammar: formalism-derived Hilbert geometry, geometric phase holonomy, trace-one density projections, and PULVINI/\u03a6 structured-state bottlenecks executed on classical hardware.",
       "code_paths": [
         "python_backend/pythia_mining/ctd_formalism.py",
         "python_backend/pythia_mining/dodecahedral_solver.py",
         "scripts/geometric_phase_formalism.py"
       ],
-      "test_paths": [
-        "tests/test_ctd_formalism.py",
-        "tests/test_topological_information_grammar.py",
-        "tests/test_claim_evidence_manifest.py"
+      "commands": [
+        "python scripts/geometric_phase_formalism.py",
+        "python -m pytest tests/test_topological_information_grammar.py tests/test_claim_evidence_manifest.py -q"
       ],
       "doc_paths": [
         "docs/SUBSTRATE_INDEPENDENCE.md",
         "docs/evidence/claim_evidence_manifest.json"
       ],
-      "commands": [
-        "python scripts/geometric_phase_formalism.py",
-        "python -m pytest tests/test_topological_information_grammar.py tests/test_claim_evidence_manifest.py -q"
+      "id": "topological_information_grammar_formalism",
+      "status": "implemented_and_executable",
+      "test_paths": [
+        "tests/test_ctd_formalism.py",
+        "tests/test_topological_information_grammar.py",
+        "tests/test_claim_evidence_manifest.py"
       ]
     },
     {
-      "id": "empirical_phi_resonance_and_real_world_workloads",
-      "claim": "HYBA/PYTHIA includes empirical fixture tests for \u03a6-resonance over externally supplied Bitcoin block nonces, Hypothesis Hilbert/Bures invariants, SAT geodesic solving, and a bounded real-world efficiency comparison report.",
-      "status": "implemented_and_executable",
       "boundary": "These are deterministic regression and formalism-derived benchmark fixtures. They do not prove causal \u03a6 generation of Bitcoin nonces, pool-side accepted shares, measured ASIC replacement, universal SHA-256 acceleration, or physical quantum hardware execution.",
+      "claim": "HYBA/PYTHIA includes empirical fixture tests for \u03a6-resonance over externally supplied Bitcoin block nonces, Hypothesis Hilbert/Bures invariants, SAT geodesic solving, and a bounded real-world efficiency comparison report.",
       "code_paths": [
         "python_backend/pythia_mining/ctd_formalism.py",
         "python_backend/pythia_mining/unified_search_kernel.py",
         "benchmarks/real_world_comparison_report.py"
       ],
-      "test_paths": [
-        "tests/test_phi_resonance_empirical_realworld.py",
-        "tests/test_hypothesis_hilbert_invariants.py",
-        "tests/test_sat_real_world.py"
+      "commands": [
+        "python -m pytest tests/test_phi_resonance_empirical_realworld.py tests/test_hypothesis_hilbert_invariants.py tests/test_sat_real_world.py -q",
+        "python benchmarks/real_world_comparison_report.py"
       ],
       "doc_paths": [
         "docs/evidence/datasets/bitcoin_block_nonce_fixture.json",
         "artifacts/comparative_supremacy_audit.json",
         "docs/evidence/claim_evidence_manifest.json"
       ],
-      "commands": [
-        "python -m pytest tests/test_phi_resonance_empirical_realworld.py tests/test_hypothesis_hilbert_invariants.py tests/test_sat_real_world.py -q",
-        "python benchmarks/real_world_comparison_report.py"
+      "id": "empirical_phi_resonance_and_real_world_workloads",
+      "status": "implemented_and_executable",
+      "test_paths": [
+        "tests/test_phi_resonance_empirical_realworld.py",
+        "tests/test_hypothesis_hilbert_invariants.py",
+        "tests/test_sat_real_world.py"
       ]
     },
     {
-      "id": "after_quantum_trifecta_broad_range_benchmarks",
-      "claim": "HYBA/PYTHIA combines PULVINI memory compression, golden-ratio irrational gauges, and Hilbert/Bures formal geometry into a broad-range after-quantum benchmark suite for logistics, AI weights, biotech, finance, fluids, AI reasoning, and cyber topology.",
-      "status": "implemented_and_executable",
       "boundary": "These benchmarks are formalism-derived structured-workload proxies. They do not prove physical quantum supremacy, production logistics optimality, LLM compression superiority, drug-discovery accuracy, market prediction accuracy, fluid-solver correctness, zero-day detection, ASIC replacement, or universal speedup.",
+      "claim": "HYBA/PYTHIA combines PULVINI memory compression, golden-ratio irrational gauges, and Hilbert/Bures formal geometry into a broad-range after-quantum benchmark suite for logistics, AI weights, biotech, finance, fluids, AI reasoning, and cyber topology.",
       "code_paths": [
         "python_backend/pythia_mining/after_quantum_trifecta.py",
         "benchmarks/logistics_manifold_efficiency.py",
@@ -334,18 +329,23 @@
         "benchmarks/cyber_topological_defense.py",
         "benchmarks/global_formalism_efficiency_index.py"
       ],
-      "test_paths": [
-        "tests/test_after_quantum_trifecta.py",
-        "tests/test_claim_evidence_manifest.py"
+      "commands": [
+        "python -m pytest tests/test_after_quantum_trifecta.py tests/test_claim_evidence_manifest.py -q",
+        "python benchmarks/global_formalism_efficiency_index.py"
       ],
       "doc_paths": [
         "docs/BEYOND_QUANTUM.md",
         "docs/evidence/claim_evidence_manifest.json"
       ],
-      "commands": [
-        "python -m pytest tests/test_after_quantum_trifecta.py tests/test_claim_evidence_manifest.py -q",
-        "python benchmarks/global_formalism_efficiency_index.py"
+      "id": "after_quantum_trifecta_broad_range_benchmarks",
+      "status": "implemented_and_executable",
+      "test_paths": [
+        "tests/test_after_quantum_trifecta.py",
+        "tests/test_claim_evidence_manifest.py"
       ]
     }
-  ]
+  ],
+  "generated_for": "reviewer proof map hardening",
+  "repository": "hybaanalytics1/HYBA_FULLSTACK",
+  "schema": "HYBA_CLAIM_EVIDENCE_MANIFEST_V1"
 }

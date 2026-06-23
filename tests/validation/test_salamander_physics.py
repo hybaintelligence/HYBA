@@ -22,7 +22,11 @@ from pythia_mining.salamander_frontier import (
 
 if given is not None:
 
-    @given(wattage=st.floats(min_value=1.0, max_value=1000.0, allow_nan=False, allow_infinity=False))
+    @given(
+        wattage=st.floats(
+            min_value=1.0, max_value=1000.0, allow_nan=False, allow_infinity=False
+        )
+    )
     @settings(max_examples=32)
     def test_invariant_metabolic_conservation_under_efficiency_ceiling(wattage):
         battery = SalamanderPropertyBattery()
@@ -43,7 +47,10 @@ if given is not None:
     @settings(max_examples=32)
     def test_invariant_evidence_manifest_detects_tamper(random_data):
         log = ImmutableEvidenceLog().append(
-            "validation_payload", actor="physics-watchdog", timestamp=1.0, data=random_data
+            "validation_payload",
+            actor="physics-watchdog",
+            timestamp=1.0,
+            data=random_data,
         )
         battery = SalamanderPropertyBattery()
 

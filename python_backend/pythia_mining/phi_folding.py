@@ -199,7 +199,9 @@ class PhiFoldingOperator:
 
         return folded, kernel, original_size
 
-    def unfold(self, folded: np.ndarray, kernel: np.ndarray, original_size: int) -> np.ndarray:
+    def unfold(
+        self, folded: np.ndarray, kernel: np.ndarray, original_size: int
+    ) -> np.ndarray:
         """Reverse a single golden-ratio fold and recover the original array.
 
         Inverts the fold transform:
@@ -276,7 +278,9 @@ class PhiFoldingOperator:
         for level in range(int(depth)):
             if current.size <= 1:
                 break
-            buf = out_buffers[level] if out_buffers and level < len(out_buffers) else None
+            buf = (
+                out_buffers[level] if out_buffers and level < len(out_buffers) else None
+            )
             kernel_buf = np.zeros_like(current) if buf is not None else None
             if buf is not None:
                 current, kernel, _ = self.fold(current, out=buf, kernel_out=kernel_buf)

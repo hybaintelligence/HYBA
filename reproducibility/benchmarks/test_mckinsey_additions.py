@@ -32,7 +32,9 @@ def test_operational_and_governance_additions_smoke():
     assert cost["total_cost"] > 0
 
     risk = EnterpriseRiskRegistry()
-    registered = risk.register_risk("operational", "Latency regression", 0.2, 0.5, "SRE")
+    registered = risk.register_risk(
+        "operational", "Latency regression", 0.2, 0.5, "SRE"
+    )
     assert registered["risk_score"] == 0.1
 
     compliance = ComplianceValidator().validate_framework(
@@ -45,7 +47,9 @@ def test_strategy_finance_customer_additions_smoke():
     cohorts = CohortAnalytics()
     cohorts.create_cohort("2026-06", "2026-06-01", 100, {"segment": "enterprise"})
     assert (
-        cohorts.track_cohort_metrics("2026-06", 1, {"retained_customers": 90})["retention_rate"]
+        cohorts.track_cohort_metrics("2026-06", 1, {"retained_customers": 90})[
+            "retention_rate"
+        ]
         == 0.9
     )
 
@@ -81,7 +85,10 @@ def test_strategy_finance_customer_additions_smoke():
     assert dashboard.generate_weekly_ops_review()["title"] == "Weekly Operations Review"
 
     peers = PeerBenchmarking()
-    assert peers.compare_to_peers({"nps_median": 75})["nps_median"]["position"] == "Top Quartile"
+    assert (
+        peers.compare_to_peers({"nps_median": 75})["nps_median"]["position"]
+        == "Top Quartile"
+    )
 
     okrs = OKRFramework(2026)
     okr = okrs.set_company_okr("Scale", [{"name": "ARR", "progress": 0.5}], "CEO")
@@ -129,7 +136,11 @@ def test_enterprise_telemetry_bridge_wires_live_evidence_to_dashboard():
                     "owner": "SRE",
                 }
             ],
-            "customers": {"customer_count": 10, "churn_rate": 0.1, "net_revenue_retention": 1.15},
+            "customers": {
+                "customer_count": 10,
+                "churn_rate": 0.1,
+                "net_revenue_retention": 1.15,
+            },
             "kpis": {"arr": 144000, "gross_margin": 0.72},
         }
     )

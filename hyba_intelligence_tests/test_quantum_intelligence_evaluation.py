@@ -21,7 +21,7 @@ from pathlib import Path
 from typing import Dict, Any, List
 
 # Add project paths
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'python_backend'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "python_backend"))
 
 PHI = (1.0 + math.sqrt(5.0)) / 2.0
 
@@ -33,6 +33,7 @@ class TestFaultTolerantQuantumCore(unittest.TestCase):
         from pythia_mining.fault_tolerant_quantum_core import (
             FaultTolerantQuantumCore,
         )
+
         self.core = FaultTolerantQuantumCore(code_distance=7, physical_error_rate=1e-3)
 
     def test_initialization(self):
@@ -45,9 +46,9 @@ class TestFaultTolerantQuantumCore(unittest.TestCase):
 
     def test_logical_qubit_initialization(self):
         """Test logical qubit creation and state encoding."""
-        idx0 = self.core.initialize_logical_qubit('0')
+        idx0 = self.core.initialize_logical_qubit("0")
         self.assertEqual(idx0, 0)
-        idx1 = self.core.initialize_logical_qubit('1')
+        idx1 = self.core.initialize_logical_qubit("1")
         self.assertEqual(idx1, 1)
         self.assertEqual(len(self.core.logical_qubits), 2)
 
@@ -67,7 +68,7 @@ class TestFaultTolerantQuantumCore(unittest.TestCase):
 
     def test_syndrome_measurement(self):
         """Test syndrome measurement produces valid output."""
-        self.core.initialize_logical_qubit('0')
+        self.core.initialize_logical_qubit("0")
         syndrome = self.core.measure_syndromes(0)
         self.assertEqual(syndrome.shape, (2, 6, 6))  # Z and X types
         self.assertEqual(len(self.core.syndrome_measurements), 1)
@@ -75,19 +76,19 @@ class TestFaultTolerantQuantumCore(unittest.TestCase):
     def test_error_statistics_initial(self):
         """Verify error statistics before any operations."""
         stats = self.core.get_error_statistics()
-        self.assertIn('physical_error_rate', stats)
-        self.assertIn('logical_error_rate', stats)
-        self.assertIn('error_threshold', stats)
-        self.assertIn('fault_tolerant', stats)
-        self.assertIn('syndrome_rounds', stats)
-        self.assertTrue(stats['fault_tolerant'])
-        self.assertEqual(stats['syndrome_rounds'], 0)
-        self.assertEqual(stats['correction_attempts'], 0)
-        self.assertEqual(stats['correction_successes'], 0)
+        self.assertIn("physical_error_rate", stats)
+        self.assertIn("logical_error_rate", stats)
+        self.assertIn("error_threshold", stats)
+        self.assertIn("fault_tolerant", stats)
+        self.assertIn("syndrome_rounds", stats)
+        self.assertTrue(stats["fault_tolerant"])
+        self.assertEqual(stats["syndrome_rounds"], 0)
+        self.assertEqual(stats["correction_attempts"], 0)
+        self.assertEqual(stats["correction_successes"], 0)
 
     def test_decode_and_correct(self):
         """Test decoding and correction cycle works."""
-        self.core.initialize_logical_qubit('0')
+        self.core.initialize_logical_qubit("0")
         self.core.measure_syndromes(0)
         self.core.measure_syndromes(0)
         result = self.core.decode_and_correct(0)
@@ -108,14 +109,14 @@ class TestFaultTolerantQuantumCore(unittest.TestCase):
 
     def test_logical_gate_operations(self):
         """Test fault-tolerant logical gate operations."""
-        self.core.initialize_logical_qubit('0')
-        self.core.initialize_logical_qubit('0')
+        self.core.initialize_logical_qubit("0")
+        self.core.initialize_logical_qubit("0")
 
         # Hadamard gate
         before = self.core.logical_qubits[0].physical_qubits[
             self.core.d // 2, self.core.d // 2
         ]
-        self.core.apply_logical_gate('H', 0)
+        self.core.apply_logical_gate("H", 0)
         after = self.core.logical_qubits[0].physical_qubits[
             self.core.d // 2, self.core.d // 2
         ]
@@ -124,7 +125,7 @@ class TestFaultTolerantQuantumCore(unittest.TestCase):
 
     def test_measure_logical(self):
         """Test logical measurement returns valid bit value."""
-        self.core.initialize_logical_qubit('0')
+        self.core.initialize_logical_qubit("0")
         result = self.core.measure_logical(0)
         self.assertIn(result, (0, 1))
 
@@ -139,18 +140,19 @@ class TestFaultTolerantQuantumCore(unittest.TestCase):
         """Verify φ constant is correctly defined and used."""
         self.assertAlmostEqual(PHI, 1.618033988749895)
         from pythia_mining.fault_tolerant_quantum_core import PHI as core_phi
+
         self.assertAlmostEqual(core_phi, PHI)
 
     def test_suppression_factor(self):
         """Verify suppression factor calculation."""
         # Need syndrome measurements for suppression_factor to appear
-        self.core.initialize_logical_qubit('0')
+        self.core.initialize_logical_qubit("0")
         self.core.measure_syndromes(0)
         self.core.measure_syndromes(0)
         self.core.decode_and_correct(0)
         stats = self.core.get_error_statistics()
-        self.assertIn('suppression_factor', stats)
-        self.assertGreater(stats['suppression_factor'], 0)
+        self.assertIn("suppression_factor", stats)
+        self.assertGreater(stats["suppression_factor"], 0)
 
 
 class TestAutonomousQaaSController(unittest.TestCase):
@@ -160,6 +162,7 @@ class TestAutonomousQaaSController(unittest.TestCase):
         from pythia_mining.autonomous_qaas_controller import (
             create_autonomous_controller,
         )
+
         self.controller = create_autonomous_controller(
             service_id="test-eval-001",
             service_kind="qaas",
@@ -227,6 +230,7 @@ class TestAutonomousQaaSController(unittest.TestCase):
             create_autonomous_controller,
         )
         import tempfile
+
         fresh_controller = create_autonomous_controller(
             service_id="test-heal-fresh-001",
             service_kind="qaas",
@@ -300,6 +304,7 @@ class TestAutonomousQaaSController(unittest.TestCase):
         from pythia_mining.autonomous_qaas_controller import (
             create_autonomous_controller,
         )
+
         with tempfile.TemporaryDirectory() as tmpdir:
             persist = Path(tmpdir) / "autonomous_qaas"
             c1 = create_autonomous_controller(
@@ -324,9 +329,12 @@ class TestQuantumAsAServiceAPI(unittest.TestCase):
 
     def test_provision_request_validation(self):
         """Test ProvisionFaultTolerantComputerRequest model."""
-        sys.path.insert(0, os.path.join(
-            os.path.dirname(__file__), '..', 'python_backend', 'hyba_genesis_api'
-        ))
+        sys.path.insert(
+            0,
+            os.path.join(
+                os.path.dirname(__file__), "..", "python_backend", "hyba_genesis_api"
+            ),
+        )
         try:
             from hyba_genesis_api.api.quantum_as_a_service import (
                 ProvisionFaultTolerantComputerRequest,
@@ -372,13 +380,17 @@ class TestQuantumAsAServiceAPI(unittest.TestCase):
 
     def test_workload_request(self):
         """Test QuantumWorkloadRequest model."""
-        sys.path.insert(0, os.path.join(
-            os.path.dirname(__file__), '..', 'python_backend', 'hyba_genesis_api'
-        ))
+        sys.path.insert(
+            0,
+            os.path.join(
+                os.path.dirname(__file__), "..", "python_backend", "hyba_genesis_api"
+            ),
+        )
         try:
             from hyba_genesis_api.api.quantum_as_a_service import (
                 QuantumWorkloadRequest,
             )
+
             req = QuantumWorkloadRequest(
                 operation="surface_code_cycle",
                 circuit_depth=100,
@@ -393,14 +405,18 @@ class TestQuantumAsAServiceAPI(unittest.TestCase):
 
     def test_work_units_estimation(self):
         """Test work units estimation formula."""
-        sys.path.insert(0, os.path.join(
-            os.path.dirname(__file__), '..', 'python_backend', 'hyba_genesis_api'
-        ))
+        sys.path.insert(
+            0,
+            os.path.join(
+                os.path.dirname(__file__), "..", "python_backend", "hyba_genesis_api"
+            ),
+        )
         try:
             from hyba_genesis_api.api.quantum_as_a_service import (
                 _estimated_work_units,
                 _get_tier_sync_limits,
             )
+
             units = _estimated_work_units(
                 operation="surface_code_cycle",
                 circuit_depth=10,
@@ -436,6 +452,7 @@ class TestIntelligenceFabric(unittest.TestCase):
             phi_density,
             density_matrix,
         )
+
         self.fabric = PhiResonanceFabric()
         self.context_state = context_state
         self.phi_resonance = phi_resonance
@@ -510,6 +527,7 @@ class TestIntelligenceFabric(unittest.TestCase):
         from hyba_genesis_api.core.intelligence_fabric import (
             PhiResonanceFabric,
         )
+
         tag1 = PhiResonanceFabric.generate_governance_tag(0.9)
         self.assertEqual(tag1, "INTEGRATED_COHERENT_STATE")
         tag2 = PhiResonanceFabric.generate_governance_tag(0.6)
@@ -523,14 +541,18 @@ class TestClaimBoundaries(unittest.TestCase):
 
     def test_qaas_claim_boundary(self):
         """Verify QaaS API correctly states its limitations."""
-        sys.path.insert(0, os.path.join(
-            os.path.dirname(__file__), '..', 'python_backend', 'hyba_genesis_api'
-        ))
+        sys.path.insert(
+            0,
+            os.path.join(
+                os.path.dirname(__file__), "..", "python_backend", "hyba_genesis_api"
+            ),
+        )
         try:
             from hyba_genesis_api.api.quantum_as_a_service import (
                 registry,
                 ProvisionFaultTolerantComputerRequest,
             )
+
             req = ProvisionFaultTolerantComputerRequest(
                 name="boundary-test",
                 tier="developer",
@@ -552,6 +574,7 @@ class TestClaimBoundaries(unittest.TestCase):
         from hyba_genesis_api.core.intelligence_fabric import (
             explain,
         )
+
         result = explain({"test": True})
         self.assertIn("claim_boundary", result)
         self.assertIn("hardware-agnostic", result["claim_boundary"])
@@ -562,6 +585,7 @@ class TestClaimBoundaries(unittest.TestCase):
         from pythia_mining.fault_tolerant_quantum_core import (
             FaultTolerantQuantumCore,
         )
+
         core = FaultTolerantQuantumCore()
         stats = core.get_error_statistics()
         self.assertIn("logical_error_rate_basis", stats)
@@ -579,20 +603,21 @@ class TestMathematicalValidity(unittest.TestCase):
         # φ = (1 + √5) / 2
         self.assertAlmostEqual(PHI, (1.0 + math.sqrt(5.0)) / 2.0)
         # φ² = φ + 1
-        self.assertAlmostEqual(PHI ** 2, PHI + 1.0)
+        self.assertAlmostEqual(PHI**2, PHI + 1.0)
         # 1/φ = φ - 1
         self.assertAlmostEqual(1.0 / PHI, PHI - 1.0)
         # φ-inverse
         phi_inv = PHI - 1.0
         self.assertAlmostEqual(phi_inv, 0.6180339887498949)
         # φ² = φ + 1 ≈ 2.618
-        self.assertAlmostEqual(PHI ** 2, 2.618033988749895)
+        self.assertAlmostEqual(PHI**2, 2.618033988749895)
 
     def test_surface_code_formula(self):
         """Verify surface code logical error rate formula."""
         from pythia_mining.fault_tolerant_quantum_core import (
             FaultTolerantQuantumCore,
         )
+
         # d=3, p_phys=1e-3: should produce a logical error rate < 1.0
         core = FaultTolerantQuantumCore(code_distance=3, physical_error_rate=1e-3)
         self.assertLess(core.p_logical, 1.0)
@@ -607,6 +632,7 @@ class TestMathematicalValidity(unittest.TestCase):
             context_state,
             density_matrix,
         )
+
         state = context_state({"hermitian": True})
         rho = density_matrix(state)
         n = len(rho)
@@ -629,6 +655,7 @@ class TestMathematicalValidity(unittest.TestCase):
         from hyba_genesis_api.core.intelligence_fabric import (
             PhiResonanceFabric,
         )
+
         fabric = PhiResonanceFabric()
         state = fabric.map_to_complex_state("test entropy")
         entropy = fabric.compute_von_neumann_proxy(state)
@@ -640,6 +667,7 @@ class TestMathematicalValidity(unittest.TestCase):
             phi_density,
         )
         from cmath import rect
+
         # Uniform distribution should give specific density
         n = 16
         uniform = [complex(1.0 / math.sqrt(n), 0.0) for _ in range(n)]
@@ -657,9 +685,10 @@ class TestQuantumBenchmarkSuite(unittest.TestCase):
             QuantumBenchmarkSuite,
             QUANTUM_SYSTEMS,
         )
-        system = QUANTUM_SYSTEMS['hyba_pythagoras']
+
+        system = QUANTUM_SYSTEMS["hyba_pythagoras"]
         suite = QuantumBenchmarkSuite(system)
-        self.assertEqual(suite.system.name, 'HYBA PYTHAGORAS (φ-Classical)')
+        self.assertEqual(suite.system.name, "HYBA PYTHAGORAS (φ-Classical)")
 
     def test_logical_error_rate_computation(self):
         """Test logical error rate with φ-scaling."""
@@ -667,8 +696,9 @@ class TestQuantumBenchmarkSuite(unittest.TestCase):
             QuantumBenchmarkSuite,
             QUANTUM_SYSTEMS,
         )
-        hyba = QuantumBenchmarkSuite(QUANTUM_SYSTEMS['hyba_pythagoras'])
-        ibm = QuantumBenchmarkSuite(QUANTUM_SYSTEMS['ibm_condor'])
+
+        hyba = QuantumBenchmarkSuite(QUANTUM_SYSTEMS["hyba_pythagoras"])
+        ibm = QuantumBenchmarkSuite(QUANTUM_SYSTEMS["ibm_condor"])
         # Both start at same p_phys, but HYBA gets φ-factor bonus
         p_log_hyba = hyba.compute_logical_error_rate()
         p_log_ibm = ibm.compute_logical_error_rate()
@@ -680,17 +710,19 @@ class TestQuantumBenchmarkSuite(unittest.TestCase):
             QuantumBenchmarkSuite,
             QUANTUM_SYSTEMS,
         )
-        hyba = QuantumBenchmarkSuite(QUANTUM_SYSTEMS['hyba_pythagoras'])
+
+        hyba = QuantumBenchmarkSuite(QUANTUM_SYSTEMS["hyba_pythagoras"])
         result = hyba.benchmark_grover_search(2**10)  # Small database for speed
-        self.assertIn('execution_time_s', result)
-        self.assertIn('success_probability', result)
-        self.assertIn('total_gates', result)
+        self.assertIn("execution_time_s", result)
+        self.assertIn("success_probability", result)
+        self.assertIn("total_gates", result)
 
     def test_all_systems_valid(self):
         """Verify all defined systems have valid parameters."""
         from pythia_mining.quantum_benchmark_suite import (
             QUANTUM_SYSTEMS,
         )
+
         for name, system in QUANTUM_SYSTEMS.items():
             self.assertGreater(system.qubits, 0)
             self.assertGreater(system.gate_time_us, 0)
@@ -701,12 +733,18 @@ class TestQuantumBenchmarkSuite(unittest.TestCase):
         from pythia_mining.quantum_benchmark_suite import (
             QUANTUM_SYSTEMS,
         )
-        hyba = QUANTUM_SYSTEMS['hyba_pythagoras']
-        self.assertEqual(hyba.substrate, 'phi_classical')
-        self.assertEqual(hyba.connectivity, 'full')
-        self.assertFalse(hyba.substrate in (
-            'superconducting', 'ion_trap', 'photonic',
-        ))
+
+        hyba = QUANTUM_SYSTEMS["hyba_pythagoras"]
+        self.assertEqual(hyba.substrate, "phi_classical")
+        self.assertEqual(hyba.connectivity, "full")
+        self.assertFalse(
+            hyba.substrate
+            in (
+                "superconducting",
+                "ion_trap",
+                "photonic",
+            )
+        )
 
 
 class TestIntegrationAndWiring(unittest.TestCase):
@@ -717,6 +755,7 @@ class TestIntegrationAndWiring(unittest.TestCase):
         from pythia_mining.autonomous_qaas_controller import (
             create_autonomous_controller,
         )
+
         qaas = create_autonomous_controller("svc-q-001", "qaas")
         ciaas = create_autonomous_controller("svc-c-001", "ciaas")
         self.assertEqual(qaas.service_kind, "qaas")
@@ -728,6 +767,7 @@ class TestIntegrationAndWiring(unittest.TestCase):
             SubstrateOrchestrator,
             explain,
         )
+
         # Test direct explain
         context = {
             "difficulty": 1000000,
@@ -754,6 +794,7 @@ class TestIntegrationAndWiring(unittest.TestCase):
         from pythia_mining.autonomous_qaas_controller import (
             AutonomousQaaSController,
         )
+
         self.assertAlmostEqual(core_phi, PHI)
         self.assertAlmostEqual(fabric_phi, PHI)
         self.assertAlmostEqual(bench_phi, PHI)
@@ -763,12 +804,13 @@ class TestIntegrationAndWiring(unittest.TestCase):
     def test_distributed_lock_mechanism(self):
         """Verify the distributed lock mechanism exists and is wired."""
         from pythia_mining.redis_state_registry import get_redis_registry
+
         registry = get_redis_registry()
         # Should not crash - registry is a valid reference even if Redis unavailable
-        self.assertTrue(hasattr(registry, 'available'))
-        self.assertTrue(hasattr(registry, 'acquire_register_lock'))
-        self.assertTrue(hasattr(registry, 'release_register_lock'))
-        self.assertTrue(hasattr(registry, 'serialize_instance_topology'))
+        self.assertTrue(hasattr(registry, "available"))
+        self.assertTrue(hasattr(registry, "acquire_register_lock"))
+        self.assertTrue(hasattr(registry, "release_register_lock"))
+        self.assertTrue(hasattr(registry, "serialize_instance_topology"))
 
 
 class TestDocumentationClaims(unittest.TestCase):
@@ -778,6 +820,7 @@ class TestDocumentationClaims(unittest.TestCase):
         """The emergence index of 1.013 should be contextually explained."""
         # Check docs properly bound the claim
         from pathlib import Path
+
         docs_path = Path(os.path.dirname(__file__)).parent / "QIaaS_EXPLORATION.md"
         if docs_path.exists():
             content = docs_path.read_text()
@@ -795,17 +838,22 @@ class TestDocumentationClaims(unittest.TestCase):
             density_matrix,
             context_state,
         )
+
         state = context_state({"test": True})
         rho = density_matrix(state)
         r = phi_resonance(rho)
         # Resonance is just a mathematical metric
-        self.assertAlmostEqual(r, phi_resonance(density_matrix(context_state({"test": True}))))
+        self.assertAlmostEqual(
+            r, phi_resonance(density_matrix(context_state({"test": True})))
+        )
         # It's deterministic - same input always gives same resonance
 
     def test_full_integration_pipeline(self):
         """End-to-end test: context → fabric → QaaS → autonomous controller wiring."""
         from hyba_genesis_api.core.intelligence_fabric import explain
-        from pythia_mining.autonomous_qaas_controller import create_autonomous_controller
+        from pythia_mining.autonomous_qaas_controller import (
+            create_autonomous_controller,
+        )
 
         # 1. Intelligence fabric produces explanation
         context = {"task": "quantum_mining", "difficulty": 500000}
@@ -826,12 +874,13 @@ class TestDocumentationClaims(unittest.TestCase):
         )
         health = controller.get_health_metrics()
         self.assertGreater(health.health_score, 0.5)
-        
+
         # 3. Verify the two systems share mathematical primitives
         from pythia_mining.fault_tolerant_quantum_core import PHI as core_phi
         from hyba_genesis_api.core.intelligence_fabric import PHI as fabric_phi
+
         self.assertAlmostEqual(core_phi, fabric_phi)
-        
+
         controller.stop()
 
 
@@ -861,19 +910,21 @@ def run_evaluation_report() -> Dict[str, Any]:
             "passed": result.testsRun - len(result.failures) - len(result.errors),
             "failed": len(result.failures),
             "errors": len(result.errors),
-            "skipped": len(result.skipped) if hasattr(result, 'skipped') else 0,
+            "skipped": len(result.skipped) if hasattr(result, "skipped") else 0,
         },
         "success_rate": (
             (result.testsRun - len(result.failures) - len(result.errors))
-            / result.testsRun * 100
-            if result.testsRun > 0 else 0
+            / result.testsRun
+            * 100
+            if result.testsRun > 0
+            else 0
         ),
     }
 
     return report
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     report = run_evaluation_report()
     print("\n\n" + "=" * 70)
     print("QUANTUM INTELLIGENCE CLAIMS EVALUATION REPORT")
@@ -885,7 +936,7 @@ if __name__ == '__main__':
     print(f"Errors: {report['test_results']['errors']}")
     print(f"Success Rate: {report['success_rate']:.1f}%")
     print("=" * 70)
-    if report['test_results']['failed'] == 0 and report['test_results']['errors'] == 0:
+    if report["test_results"]["failed"] == 0 and report["test_results"]["errors"] == 0:
         print("EVALUATION: ALL CLAIMS VERIFIED ✅")
     else:
         print("EVALUATION: SOME CLAIMS NEED REVIEW ⚠️")

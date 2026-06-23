@@ -52,21 +52,24 @@ class TestAutonomousMiningController(unittest.TestCase):
         # Add engine attributes that apply_self_optimization() checks
         self.unified_engine.phi_ensemble = MagicMock()
         self.unified_engine.solver = MagicMock()
-        
+
         # Create a proper dataclass mock for consciousness config
         from dataclasses import dataclass, field
+
         @dataclass
         class MockConsciousnessConfig:
             phi_critical_threshold: float = 0.2
             phi_distributed_threshold: float = 0.4
             phi_singular_threshold: float = 0.7
-            
+
         @dataclass
         class MockConsciousness:
-            config: MockConsciousnessConfig = field(default_factory=MockConsciousnessConfig)
-            
+            config: MockConsciousnessConfig = field(
+                default_factory=MockConsciousnessConfig
+            )
+
         self.unified_engine.consciousness = MockConsciousness()
-        
+
         self.config = AutonomousConfig(
             autonomy_level=AutonomyLevel.ADVISORY,
             max_autonomous_hashrate_ehs=0.5,  # Within mission-memory hard limit of 1.0
@@ -109,7 +112,6 @@ class TestAutonomousMiningController(unittest.TestCase):
         self.assertEqual(config.max_autonomous_power_watts, 500.0)
         self.assertEqual(config.phi_coherence_threshold, 0.70)
         self.assertEqual(config.reflexive_loop_interval, 60.0)
-
 
     def test_autonomous_mining_enabled_defaults_startup_to_autonomous(self):
         """Startup autonomy flag should put PYTHIA in charge when level is unset."""
@@ -177,7 +179,9 @@ class TestAutonomousMiningController(unittest.TestCase):
         self.controller.reset_circuit_breaker("operator_reviewed_failure")
 
         self.assertFalse(self.controller.is_circuit_open())
-        self.assertEqual(self.controller.get_metrics_snapshot()["consecutive_failures"], 0)
+        self.assertEqual(
+            self.controller.get_metrics_snapshot()["consecutive_failures"], 0
+        )
 
     def test_legacy_boolean_operator_approval_is_normalized_for_audit(self):
         """Legacy boolean approvals should produce the same audit shape."""
@@ -417,8 +421,12 @@ class TestAutonomousMiningController(unittest.TestCase):
 
     def test_operator_approval_required(self):
         """Test that certain decision types require operator approval."""
-        self.assertTrue(self.controller._requires_operator_approval("pool_connection_change"))
-        self.assertTrue(self.controller._requires_operator_approval("wallet_address_change"))
+        self.assertTrue(
+            self.controller._requires_operator_approval("pool_connection_change")
+        )
+        self.assertTrue(
+            self.controller._requires_operator_approval("wallet_address_change")
+        )
         self.assertFalse(
             self.controller._requires_operator_approval("search_strategy_optimization")
         )
@@ -597,7 +605,9 @@ class TestAutonomousMiningController(unittest.TestCase):
         self.assertIsInstance(proposal, SelfOptimizationProposal)
         self.assertEqual(proposal.improvement_type, "compression_target")
         self.assertGreater(proposal.current_value, 0.0)
-        self.assertEqual(proposal.codebase_source_module, "pulvini_memory_compression_proof")
+        self.assertEqual(
+            proposal.codebase_source_module, "pulvini_memory_compression_proof"
+        )
         # Must respect Information Integrity constraint
         self.assertLessEqual(proposal.proposed_value, 2.0)
 
@@ -628,7 +638,9 @@ class TestAutonomousMiningController(unittest.TestCase):
     def test_pool_response_updates_target_bandit_and_virtual_feedback(self):
         """Real pool/testnet feedback should steer target selection evidence."""
         proposal = self.controller._generate_counterfactual("compression_target")
-        before = self.controller.get_reflexive_target_bandit_snapshot()["compression_target"]
+        before = self.controller.get_reflexive_target_bandit_snapshot()[
+            "compression_target"
+        ]
         baseline = self.controller._simulate_virtual_mining(proposal)
 
         self.controller.record_pool_response(
@@ -639,7 +651,9 @@ class TestAutonomousMiningController(unittest.TestCase):
             target="compression_target",
         )
 
-        after = self.controller.get_reflexive_target_bandit_snapshot()["compression_target"]
+        after = self.controller.get_reflexive_target_bandit_snapshot()[
+            "compression_target"
+        ]
         boosted = self.controller._simulate_virtual_mining(proposal)
         self.assertGreater(after["successes"], before["successes"])
         self.assertGreater(after["evidence_weight"], before["evidence_weight"])
@@ -647,7 +661,12 @@ class TestAutonomousMiningController(unittest.TestCase):
 
     def test_deterministic_target_selection_explores_bounded_bandits(self):
         """Target selection should combine round-robin coverage with posterior evidence."""
-        targets = ["phi_scaling", "search_depth", "compression_target", "coherence_threshold"]
+        targets = [
+            "phi_scaling",
+            "search_depth",
+            "compression_target",
+            "coherence_threshold",
+        ]
         selected = self.controller._select_reflexive_targets(
             targets,
             primary_target="search_depth",
@@ -655,9 +674,10 @@ class TestAutonomousMiningController(unittest.TestCase):
         )
 
         self.assertEqual(selected[0], "search_depth")
-        self.assertLessEqual(len(selected), self.controller.config.max_proposals_per_cycle)
+        self.assertLessEqual(
+            len(selected), self.controller.config.max_proposals_per_cycle
+        )
         self.assertEqual(len(selected), len(set(selected)))
-
 
     def test_pool_response_feedback_error_codes(self):
         """Different pool error codes should be retained in bounded response history."""
@@ -685,8 +705,12 @@ class TestAutonomousMiningController(unittest.TestCase):
 
         self.assertEqual(len(self.controller._pool_response_history), 3)
         self.assertTrue(self.controller._pool_response_history[0]["accepted"])
-        self.assertEqual(self.controller._pool_response_history[1]["error_code"], "low-diff")
-        self.assertEqual(self.controller._pool_response_history[2]["error_code"], "stale-prevhash")
+        self.assertEqual(
+            self.controller._pool_response_history[1]["error_code"], "low-diff"
+        )
+        self.assertEqual(
+            self.controller._pool_response_history[2]["error_code"], "stale-prevhash"
+        )
 
     def test_pool_response_exponential_weighting_recent_samples_dominate(self):
         """Recent pool responses should carry more influence than stale samples."""
@@ -726,7 +750,10 @@ class TestAutonomousMiningController(unittest.TestCase):
 
         self.assertLessEqual(len(self.controller._pool_response_history), 1000)
         self.assertTrue(
-            all(r["timestamp"] > time.time() - 10 for r in self.controller._pool_response_history[:10])
+            all(
+                r["timestamp"] > time.time() - 10
+                for r in self.controller._pool_response_history[:10]
+            )
         )
 
     def test_thompson_evidence_persistence(self):
@@ -805,7 +832,11 @@ class TestAutonomousMiningController(unittest.TestCase):
             self.assertIn(metric, metrics_text)
         self.assertNotIn("decision_id=", metrics_text)
         self.assertNotIn("timestamp=", metrics_text)
-        for line in [line for line in metrics_text.split("\n") if line and not line.startswith("#")]:
+        for line in [
+            line
+            for line in metrics_text.split("\n")
+            if line and not line.startswith("#")
+        ]:
             self.assertIn(" ", line)
             float(line.rsplit(" ", 1)[1])
 
@@ -1161,7 +1192,9 @@ class TestAutonomousMiningController(unittest.TestCase):
         )
         self.assertEqual(decision.decision_type, "search_strategy_optimization")
         self.assertIn("aggressive", decision.mathematical_justification["reason"])
-        self.assertEqual(decision.expected_outcome, "faster_search_with_high_confidence")
+        self.assertEqual(
+            decision.expected_outcome, "faster_search_with_high_confidence"
+        )
 
     def test_optimize_search_strategy_medium_coherence(self):
         """Test search strategy optimization with medium phi coherence."""
@@ -1342,14 +1375,18 @@ class TestAutonomousMiningController(unittest.TestCase):
         # without callback invocation
 
 
-@unittest.skipIf(UnifiedMiningEngine is None, "UnifiedMiningEngine dependencies unavailable")
+@unittest.skipIf(
+    UnifiedMiningEngine is None, "UnifiedMiningEngine dependencies unavailable"
+)
 class TestAutonomousMiningControllerIntegration(unittest.TestCase):
     """Integration tests for autonomous mining controller with unified engine."""
 
     def setUp(self):
         """Set up test fixtures with real unified engine."""
         self._tmpdir = tempfile.TemporaryDirectory()
-        self._env_patch = patch.dict(os.environ, {"HYBA_AUTONOMY_STATE_DIR": self._tmpdir.name})
+        self._env_patch = patch.dict(
+            os.environ, {"HYBA_AUTONOMY_STATE_DIR": self._tmpdir.name}
+        )
         self._env_patch.start()
         self.addCleanup(self._env_patch.stop)
         self.addCleanup(self._tmpdir.cleanup)
@@ -1437,7 +1474,8 @@ class TestAutonomousMiningControllerOperationalHardening(unittest.TestCase):
         self.assertFalse(controller._can_execute_autonomously(decision))
         self.assertEqual(controller.operator_approval_requests[-1].status, "rejected")
         self.assertEqual(
-            controller.operator_approval_requests[-1].reason, "approval_callback_missing"
+            controller.operator_approval_requests[-1].reason,
+            "approval_callback_missing",
         )
 
     def test_operator_approval_timeout_rejects(self):
@@ -1464,7 +1502,9 @@ class TestAutonomousMiningControllerOperationalHardening(unittest.TestCase):
 
         self.assertFalse(controller._can_execute_autonomously(decision))
         self.assertEqual(controller.operator_approval_requests[-1].status, "rejected")
-        self.assertEqual(controller.operator_approval_requests[-1].reason, "approval_timeout")
+        self.assertEqual(
+            controller.operator_approval_requests[-1].reason, "approval_timeout"
+        )
 
     def test_operator_approval_structured_response_is_audited(self):
         controller = AutonomousMiningController(
@@ -1524,7 +1564,9 @@ class TestAutonomousMiningControllerOperationalHardening(unittest.TestCase):
         metrics = controller.get_metrics_snapshot()
         prometheus_text = controller.get_prometheus_metrics_text()
 
-        self.assertEqual(metrics["constraint_violations_by_type"]["information_integrity"], 1)
+        self.assertEqual(
+            metrics["constraint_violations_by_type"]["information_integrity"], 1
+        )
         self.assertIn("hyba_phi_density", prometheus_text)
         self.assertIn("hyba_constraint_violations_total 1", prometheus_text)
         self.assertIn(
@@ -1634,7 +1676,9 @@ class TestAutonomousMiningControllerOperationalHardening(unittest.TestCase):
         self.assertFalse(controller.is_circuit_open())
         controller.record_circuit_failure("second")
         self.assertTrue(controller.is_circuit_open())
-        self.assertIn("hyba_autonomous_circuit_open 1", controller.get_prometheus_metrics_text())
+        self.assertIn(
+            "hyba_autonomous_circuit_open 1", controller.get_prometheus_metrics_text()
+        )
         controller._circuit_open_until = time.time() - 1
         self.assertFalse(controller.is_circuit_open())
 
@@ -1710,7 +1754,9 @@ class TestAutonomousMiningControllerOperationalHardening(unittest.TestCase):
     def test_emergency_bypass_source_is_isolated_from_verification_firewall(self):
         import inspect
 
-        source = inspect.getsource(AutonomousMiningController.authorize_emergency_operator_bypass)
+        source = inspect.getsource(
+            AutonomousMiningController.authorize_emergency_operator_bypass
+        )
 
         self.assertNotIn("submit_candidate", source)
         self.assertNotIn("submit_validated_share", source)
@@ -1762,7 +1808,7 @@ class TestAutonomousMiningControllerOperationalHardening(unittest.TestCase):
             self.unified_engine,
             AutonomousConfig(persistence_enabled=False),
         )
-        
+
         for index in range(1005):
             controller.record_pool_response(
                 accepted=index % 3 == 0,
@@ -1787,9 +1833,15 @@ class TestAutonomousMiningControllerOperationalHardening(unittest.TestCase):
         self.assertEqual(evidence["pool_response_window_limit"], 1000)
         self.assertEqual(evidence["pool_feedback_samples"], 1000)
         self.assertEqual(evidence["pythia_decision_linked_samples"], 1000)
-        self.assertTrue(evidence["acceptance_criteria"]["real_pool_or_testnet_feedback"])
-        self.assertTrue(evidence["acceptance_criteria"]["share_telemetry_tied_to_pythia_decisions"])
-        self.assertEqual(evidence["unattended_production"], "blocked_until_24h_evidence_pack")
+        self.assertTrue(
+            evidence["acceptance_criteria"]["real_pool_or_testnet_feedback"]
+        )
+        self.assertTrue(
+            evidence["acceptance_criteria"]["share_telemetry_tied_to_pythia_decisions"]
+        )
+        self.assertEqual(
+            evidence["unattended_production"], "blocked_until_24h_evidence_pack"
+        )
 
     def test_pool_feedback_and_target_evidence_survive_restart(self):
         import tempfile
@@ -1818,7 +1870,9 @@ class TestAutonomousMiningControllerOperationalHardening(unittest.TestCase):
             self.assertEqual(len(restored._pool_response_history), 1)
             self.assertEqual(restored._pool_response_history[0]["difficulty"], 4.0)
             self.assertEqual(
-                restored.get_reflexive_target_bandit_snapshot()["phi_scaling"]["successes"],
+                restored.get_reflexive_target_bandit_snapshot()["phi_scaling"][
+                    "successes"
+                ],
                 2,
             )
             self.assertTrue(

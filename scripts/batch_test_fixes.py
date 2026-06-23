@@ -51,7 +51,7 @@ for category, info in FIXES.items():
     print(f"  Reason: {info['reason']}")
     print(f"  Action: {info['action']}")
     print(f"  Files ({len(info['files'])}):")
-    for f in info['files']:
+    for f in info["files"]:
         print(f"    - {f}")
 
 print("\n" + "=" * 80)

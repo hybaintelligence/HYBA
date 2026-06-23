@@ -10,6 +10,7 @@ Key invariants enforced:
 - Star-discrepancy is within the φ-LCG theoretical bound
 - Claim boundary string is present in every VerificationResult
 """
+
 import asyncio
 import math
 import sys
@@ -150,7 +151,9 @@ def _make_planning(mass_gap_ok: bool, wilson: float) -> PlanningResult:
 @pytest.mark.asyncio
 async def test_certificate_not_elevated_for_chern_zero():
     """Chern 0 and small Berry phase must give NOT_ELEVATED."""
-    mission = HolonomyScanMission(num_sites=8, max_bond_dim=4, scan_resolution=5, loop_steps=8)
+    mission = HolonomyScanMission(
+        num_sites=8, max_bond_dim=4, scan_resolution=5, loop_steps=8
+    )
     ex = _make_execution(chern=0, berry=0.001)
     pl = _make_planning(mass_gap_ok=True, wilson=YANG_MILLS_THRESHOLD + 0.01)
     v = await mission._verification_phase(ex, pl)
@@ -161,7 +164,9 @@ async def test_certificate_not_elevated_for_chern_zero():
 @pytest.mark.asyncio
 async def test_certificate_partial_when_mass_gap_not_satisfied():
     """Non-trivial Chern but mass gap False must give PARTIAL, not GOLDEN_OPTIMAL."""
-    mission = HolonomyScanMission(num_sites=8, max_bond_dim=4, scan_resolution=5, loop_steps=8)
+    mission = HolonomyScanMission(
+        num_sites=8, max_bond_dim=4, scan_resolution=5, loop_steps=8
+    )
     ex = _make_execution(chern=1, berry=math.pi)
     pl = _make_planning(mass_gap_ok=False, wilson=YANG_MILLS_THRESHOLD * 0.5)
     v = await mission._verification_phase(ex, pl)
@@ -173,8 +178,14 @@ async def test_certificate_partial_when_mass_gap_not_satisfied():
 @pytest.mark.asyncio
 async def test_certificate_claim_boundary_always_present():
     """claim_boundary must be present and non-empty in every result."""
-    mission = HolonomyScanMission(num_sites=8, max_bond_dim=4, scan_resolution=5, loop_steps=8)
-    for chern, berry, mass_ok in [(0, 0.0, False), (1, math.pi, True), (-1, -math.pi, False)]:
+    mission = HolonomyScanMission(
+        num_sites=8, max_bond_dim=4, scan_resolution=5, loop_steps=8
+    )
+    for chern, berry, mass_ok in [
+        (0, 0.0, False),
+        (1, math.pi, True),
+        (-1, -math.pi, False),
+    ]:
         ex = _make_execution(chern, berry)
         pl = _make_planning(mass_ok, YANG_MILLS_THRESHOLD if mass_ok else 0.5)
         v = await mission._verification_phase(ex, pl)
@@ -187,13 +198,15 @@ async def test_star_discrepancy_within_phi_bound():
     The φ-LCG scan sequence discrepancy must satisfy D*_N ≤ (1+1/φ)/N.
     Verified through the verification phase which calls van_der_corput_discrepancy.
     """
-    mission = HolonomyScanMission(num_sites=8, max_bond_dim=4, scan_resolution=20, loop_steps=8)
+    mission = HolonomyScanMission(
+        num_sites=8, max_bond_dim=4, scan_resolution=20, loop_steps=8
+    )
     ex = _make_execution(chern=0, berry=0.0)
     pl = _make_planning(mass_gap_ok=False, wilson=0.5)
     v = await mission._verification_phase(ex, pl)
-    assert v.star_discrepancy <= v.phi_bound + 1e-9, (
-        f"D*={v.star_discrepancy:.4e} exceeds φ-bound {v.phi_bound:.4e}"
-    )
+    assert (
+        v.star_discrepancy <= v.phi_bound + 1e-9
+    ), f"D*={v.star_discrepancy:.4e} exceeds φ-bound {v.phi_bound:.4e}"
 
 
 # ── Agent phase contracts ──────────────────────────────────────────────────
@@ -202,15 +215,21 @@ async def test_star_discrepancy_within_phi_bound():
 @pytest.mark.asyncio
 async def test_diagnosis_lambda_critical_in_scan_range():
     """λ* must lie within the scan range [0.4, 0.6]."""
-    mission = HolonomyScanMission(num_sites=8, max_bond_dim=4, scan_resolution=10, loop_steps=8)
+    mission = HolonomyScanMission(
+        num_sites=8, max_bond_dim=4, scan_resolution=10, loop_steps=8
+    )
     diag = await mission._diagnosis_phase()
-    assert 0.4 <= diag.lambda_critical <= 0.6, f"λ*={diag.lambda_critical} outside [0.4, 0.6]"
+    assert (
+        0.4 <= diag.lambda_critical <= 0.6
+    ), f"λ*={diag.lambda_critical} outside [0.4, 0.6]"
 
 
 @pytest.mark.asyncio
 async def test_diagnosis_qfi_profile_all_positive():
     """Every QFI value in the profile must be non-negative."""
-    mission = HolonomyScanMission(num_sites=8, max_bond_dim=4, scan_resolution=8, loop_steps=8)
+    mission = HolonomyScanMission(
+        num_sites=8, max_bond_dim=4, scan_resolution=8, loop_steps=8
+    )
     diag = await mission._diagnosis_phase()
     for i, q in enumerate(diag.qfi_profile):
         assert q >= 0.0, f"Negative QFI at index {i}: {q}"
@@ -219,7 +238,9 @@ async def test_diagnosis_qfi_profile_all_positive():
 @pytest.mark.asyncio
 async def test_planning_returns_consistent_types():
     """PlanningResult fields must be finite floats and bool."""
-    mission = HolonomyScanMission(num_sites=8, max_bond_dim=4, scan_resolution=8, loop_steps=8)
+    mission = HolonomyScanMission(
+        num_sites=8, max_bond_dim=4, scan_resolution=8, loop_steps=8
+    )
     diag = await mission._diagnosis_phase()
     plan = await mission._planning_phase(diag)
     assert math.isfinite(plan.sld_gradient_norm)
@@ -230,7 +251,9 @@ async def test_planning_returns_consistent_types():
 @pytest.mark.asyncio
 async def test_execution_chern_is_integer():
     """Chern number must be an integer (round of Berry phase / π)."""
-    mission = HolonomyScanMission(num_sites=8, max_bond_dim=4, scan_resolution=8, loop_steps=8)
+    mission = HolonomyScanMission(
+        num_sites=8, max_bond_dim=4, scan_resolution=8, loop_steps=8
+    )
     diag = await mission._diagnosis_phase()
     plan = await mission._planning_phase(diag)
     ex = await mission._execution_phase(plan)
@@ -240,7 +263,9 @@ async def test_execution_chern_is_integer():
 @pytest.mark.asyncio
 async def test_execution_berry_phase_is_finite():
     """Berry phase must be a finite real number."""
-    mission = HolonomyScanMission(num_sites=8, max_bond_dim=4, scan_resolution=8, loop_steps=8)
+    mission = HolonomyScanMission(
+        num_sites=8, max_bond_dim=4, scan_resolution=8, loop_steps=8
+    )
     diag = await mission._diagnosis_phase()
     plan = await mission._planning_phase(diag)
     ex = await mission._execution_phase(plan)
@@ -250,7 +275,9 @@ async def test_execution_berry_phase_is_finite():
 @pytest.mark.asyncio
 async def test_execution_min_overlap_positive():
     """Minimum overlap between adjacent loop states must be > 0."""
-    mission = HolonomyScanMission(num_sites=8, max_bond_dim=4, scan_resolution=8, loop_steps=8)
+    mission = HolonomyScanMission(
+        num_sites=8, max_bond_dim=4, scan_resolution=8, loop_steps=8
+    )
     diag = await mission._diagnosis_phase()
     plan = await mission._planning_phase(diag)
     ex = await mission._execution_phase(plan)
@@ -263,9 +290,18 @@ async def test_execution_min_overlap_positive():
 @pytest.mark.asyncio
 async def test_full_mission_completes_and_has_required_keys():
     """Full mission must complete and return all required top-level keys."""
-    mission = HolonomyScanMission(num_sites=8, max_bond_dim=4, scan_resolution=8, loop_steps=8)
+    mission = HolonomyScanMission(
+        num_sites=8, max_bond_dim=4, scan_resolution=8, loop_steps=8
+    )
     result = await mission.execute_mission()
-    for key in ("mission_status", "elapsed_ms", "diagnosis", "planning", "execution", "verification"):
+    for key in (
+        "mission_status",
+        "elapsed_ms",
+        "diagnosis",
+        "planning",
+        "execution",
+        "verification",
+    ):
         assert key in result, f"Missing key: {key}"
     assert result["mission_status"] == "COMPLETE"
     assert result["elapsed_ms"] > 0.0
@@ -274,7 +310,9 @@ async def test_full_mission_completes_and_has_required_keys():
 @pytest.mark.asyncio
 async def test_full_mission_verification_is_verification_result():
     """Verification must be a VerificationResult with claim_boundary."""
-    mission = HolonomyScanMission(num_sites=8, max_bond_dim=4, scan_resolution=8, loop_steps=8)
+    mission = HolonomyScanMission(
+        num_sites=8, max_bond_dim=4, scan_resolution=8, loop_steps=8
+    )
     result = await mission.execute_mission()
     v = result["verification"]
     assert isinstance(v, VerificationResult)
@@ -291,11 +329,13 @@ async def test_full_mission_no_fabricated_lambda():
     (Both could be 0.5 by coincidence with 8-point scan — so we just
     verify the value is within range and comes from the argmax logic.)
     """
-    mission = HolonomyScanMission(num_sites=8, max_bond_dim=4, scan_resolution=9, loop_steps=8)
+    mission = HolonomyScanMission(
+        num_sites=8, max_bond_dim=4, scan_resolution=9, loop_steps=8
+    )
     result = await mission.execute_mission()
     lam = result["diagnosis"]["lambda_critical"]
     # Must be one of the actual scan points, not a fabricated value
     scan_points = [0.4 + i * (0.6 - 0.4) / 8 for i in range(9)]
-    assert any(abs(lam - sp) < 1e-9 for sp in scan_points), (
-        f"λ*={lam} is not a scan grid point — value may be fabricated"
-    )
+    assert any(
+        abs(lam - sp) < 1e-9 for sp in scan_points
+    ), f"λ*={lam} is not a scan grid point — value may be fabricated"

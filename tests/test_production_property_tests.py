@@ -34,7 +34,9 @@ class TestProductionPropertyTests(unittest.TestCase):
         self.assertGreaterEqual(phi_scaled, 0.0)
         self.assertLessEqual(phi_scaled, 1.0)
 
-    @given(st.lists(st.floats(min_value=0.0, max_value=100.0), min_size=1, max_size=100))
+    @given(
+        st.lists(st.floats(min_value=0.0, max_value=100.0), min_size=1, max_size=100)
+    )
     def test_performance_timing_stats(self, timing_data):
         """Test that performance timing statistics are computed correctly."""
         if not timing_data:
@@ -60,7 +62,9 @@ class TestProductionPropertyTests(unittest.TestCase):
 
         self.assertEqual(counter, iterations)
 
-    @given(st.floats(min_value=0.0, max_value=1.0), st.floats(min_value=0.0, max_value=1.0))
+    @given(
+        st.floats(min_value=0.0, max_value=1.0), st.floats(min_value=0.0, max_value=1.0)
+    )
     def test_phi_metrics_normalization(self, phi_integrated, phi_causal):
         """Test that phi metrics are properly normalized."""
         # Test that phi values are within valid range
@@ -73,7 +77,9 @@ class TestProductionPropertyTests(unittest.TestCase):
     @settings(deadline=None)
     def test_service_registry_singleton(self, instance_count):
         """Test that service registry maintains singleton pattern."""
-        from python_backend.pythia_mining.genesis_ai_service import GenesisAIServiceRegistry
+        from python_backend.pythia_mining.genesis_ai_service import (
+            GenesisAIServiceRegistry,
+        )
 
         # Test that is_registered returns a boolean
         is_reg = GenesisAIServiceRegistry.is_registered()
@@ -81,7 +87,9 @@ class TestProductionPropertyTests(unittest.TestCase):
 
         # Test that get_instance returns either None or a GenesisAI instance
         instance = GenesisAIServiceRegistry.get_instance()
-        self.assertTrue(instance is None or hasattr(instance, "get_performance_metrics"))
+        self.assertTrue(
+            instance is None or hasattr(instance, "get_performance_metrics")
+        )
 
     @given(st.floats(min_value=0.0, max_value=1.0))
     def test_health_status_structure(self, health_value):
@@ -130,7 +138,10 @@ class TestProductionPropertyTests(unittest.TestCase):
         self.assertGreaterEqual(phi_scaled, 0.0)
         self.assertLessEqual(phi_scaled, 1.0)
 
-    @given(st.integers(min_value=0, max_value=1000), st.integers(min_value=0, max_value=1000))
+    @given(
+        st.integers(min_value=0, max_value=1000),
+        st.integers(min_value=0, max_value=1000),
+    )
     def test_job_share_counters(self, jobs_received, shares_solved):
         """Test that job and share counters are non-negative and shares <= jobs."""
         self.assertGreaterEqual(jobs_received, 0)

@@ -21,7 +21,9 @@ if __name__ == "__main__":
 
     print("\nTesting LiveStratumV2Session import...")
     try:
-        from pythia_mining.live_stratum_v2_session import LiveStratumV2Session  # noqa: F401
+        from pythia_mining.live_stratum_v2_session import (
+            LiveStratumV2Session,
+        )  # noqa: F401
 
         print("✓ LiveStratumV2Session imported successfully")
     except ImportError as e:

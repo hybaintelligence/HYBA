@@ -1,4 +1,4 @@
 {
-  "power_scale": 1.0,
-  "live_deployment_note": "Pool credentials are intentionally not stored here. Inject HYBA_POOL_<ID>_* secrets through the deployment environment or HYBA_POOL_CONFIG_PATH."
+  "live_deployment_note": "Pool credentials are intentionally not stored here. Inject HYBA_POOL_<ID>_* secrets through the deployment environment or HYBA_POOL_CONFIG_PATH.",
+  "power_scale": 1.0
 }

@@ -9,9 +9,19 @@ from pathlib import Path
 import pytest
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-QIAAS_PATH = REPO_ROOT / "python_backend" / "hyba_genesis_api" / "api" / "quantum_intelligence_service.py"
-CUSTOMER_ACCESS_PATH = REPO_ROOT / "python_backend" / "hyba_genesis_api" / "api" / "customer_access.py"
-POSTURE_PATH = REPO_ROOT / "python_backend" / "hyba_genesis_api" / "core" / "api_posture.py"
+QIAAS_PATH = (
+    REPO_ROOT
+    / "python_backend"
+    / "hyba_genesis_api"
+    / "api"
+    / "quantum_intelligence_service.py"
+)
+CUSTOMER_ACCESS_PATH = (
+    REPO_ROOT / "python_backend" / "hyba_genesis_api" / "api" / "customer_access.py"
+)
+POSTURE_PATH = (
+    REPO_ROOT / "python_backend" / "hyba_genesis_api" / "core" / "api_posture.py"
+)
 QIAAS_MODULE = "hyba_genesis_api.api.quantum_intelligence_service"
 
 
@@ -82,9 +92,13 @@ def qiaas_module(monkeypatch):
     dependency_map = {
         "pythia_mining.consciousness_engine": {"ConsciousnessEngine": object},
         "pythia_mining.deutsch_knowledge_substrate": {"KnowledgeSubstrate": object},
-        "pythia_mining.regeneration_manager": {"get_regeneration_manager": lambda: object()},
+        "pythia_mining.regeneration_manager": {
+            "get_regeneration_manager": lambda: object()
+        },
         "pythia_mining.iit_4_analyzer": {"IIT4Analyzer": lambda system_size: object()},
-        "pythia_mining.pulvini_phi_memory": {"PulviniPhiMemoryCompressionEngine": object},
+        "pythia_mining.pulvini_phi_memory": {
+            "PulviniPhiMemoryCompressionEngine": object
+        },
     }
     for module_name, attributes in dependency_map.items():
         module = types.ModuleType(module_name)
@@ -136,7 +150,9 @@ def test_usage_units_trace_and_evidence_are_present(qiaas_module, monkeypatch):
     monkeypatch.setattr(qiaas_module, "meter_qiaas_usage", fake_meter)
 
     response = asyncio.run(
-        qiaas_module.query_quantum_intelligence(_request(qiaas_module), _Service(), _Customer())
+        qiaas_module.query_quantum_intelligence(
+            _request(qiaas_module), _Service(), _Customer()
+        )
     )
 
     assert captured["product"] == "qiaas.predict"

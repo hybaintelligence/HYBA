@@ -34,7 +34,7 @@ from pythia_mining.salamander_frontier import (
 class BaseSalamanderIntegration(ABC):
     """
     Abstract base class for Salamander product integrations.
-    
+
     All product-specific integrations should inherit from this class and implement
     the abstract methods. This ensures consistency across products while allowing
     product-specific customization.
@@ -48,7 +48,7 @@ class BaseSalamanderIntegration(ABC):
     ):
         """
         Initialize base Salamander integration.
-        
+
         Args:
             product_system: The existing product system instance
             target_metric: Target metric for optimization (product-specific)
@@ -57,18 +57,18 @@ class BaseSalamanderIntegration(ABC):
         self.product_system = product_system
         self.target_metric = float(target_metric)
         self.enable_autonomy_loops = enable_autonomy_loops
-        
+
         # Initialize Salamander orchestrator
         self.salamander = SalamanderOrchestrator(
             total_target_hashrate=target_metric * 100,  # Scale for product
         )
-        
+
         # Initialize Salamander core for direct access
         self.salamander_core = self.salamander.salamander_core
-        
+
         # Track product-specific state (to be overridden by subclasses)
         self.product_state: Dict[str, Any] = {}
-        
+
         # Background tasks
         self._autonomy_task: Optional[asyncio.Task] = None
         self._phi_task: Optional[asyncio.Task] = None
@@ -78,12 +78,12 @@ class BaseSalamanderIntegration(ABC):
     def initialize(self) -> None:
         """
         Initialize Salamander for product operations.
-        
+
         This should be called when the product system starts up.
         """
         # Initialize Salamander orchestrator
         self.salamander.initialize()
-        
+
         # Log initialization to audit trail
         self.salamander.audit_log = self.salamander.audit_log.append(
             f"{self.get_product_type()}_salamander_initialized",
@@ -96,7 +96,7 @@ class BaseSalamanderIntegration(ABC):
     def get_product_type(self) -> str:
         """
         Get the product type identifier.
-        
+
         Returns:
             Product type string (e.g., "mining", "qaas", "ciaas")
         """
@@ -106,7 +106,7 @@ class BaseSalamanderIntegration(ABC):
     def observe_product_state(self) -> SystemMetrics:
         """
         Observe current product system state.
-        
+
         Returns comprehensive metrics for anomaly detection and optimization.
         """
         pass
@@ -115,7 +115,7 @@ class BaseSalamanderIntegration(ABC):
     def detect_product_anomaly(self, metrics: SystemMetrics) -> Optional[Anomaly]:
         """
         Detect product-specific anomalies.
-        
+
         Extends SalamanderCore's anomaly detection with product-specific logic.
         """
         pass
@@ -124,7 +124,7 @@ class BaseSalamanderIntegration(ABC):
     def execute_product_regeneration(self, anomaly: Anomaly) -> RegenerationOutcome:
         """
         Execute regeneration for product-specific anomalies.
-        
+
         Extends SalamanderCore's regeneration with product-specific recovery strategies.
         """
         pass
@@ -133,7 +133,7 @@ class BaseSalamanderIntegration(ABC):
     def get_product_treasury_state(self) -> Dict[str, Any]:
         """
         Get current product treasury state from evidence.
-        
+
         Provides accounting for billing and regulatory compliance.
         """
         pass
@@ -142,7 +142,7 @@ class BaseSalamanderIntegration(ABC):
     def get_product_health_report(self) -> Dict[str, Any]:
         """
         Get comprehensive health report for product operations.
-        
+
         Includes Salamander observability data for regulatory compliance.
         """
         pass
@@ -173,38 +173,38 @@ class BaseSalamanderIntegration(ABC):
     ) -> None:
         """
         Start background autonomy loops for product operations.
-        
+
         Runs Salamander's autonomous loops in parallel with product operations.
         """
         if not self.enable_autonomy_loops:
             return
-        
+
         if self._is_running:
             return
-        
+
         self._is_running = True
-        
+
         # Start main autonomy loop
         self._autonomy_task = asyncio.create_task(
             self.salamander.main_autonomy_loop(
                 observation_interval_seconds=observation_interval_seconds
             )
         )
-        
+
         # Start phi optimization loop
         self._phi_task = asyncio.create_task(
             self.salamander.phi_optimization_loop(
                 optimization_interval_seconds=phi_optimization_interval_seconds
             )
         )
-        
+
         # Start scaling optimization loop
         self._scaling_task = asyncio.create_task(
             self.salamander.scaling_optimization_loop(
                 optimization_interval_seconds=scaling_optimization_interval_seconds
             )
         )
-        
+
         self.salamander.audit_log = self.salamander.audit_log.append(
             f"{self.get_product_type()}_autonomy_loops_started",
             timestamp=time(),
@@ -216,10 +216,10 @@ class BaseSalamanderIntegration(ABC):
         """
         if not self._is_running:
             return
-        
+
         self._is_running = False
         self.salamander.stop()
-        
+
         # Cancel background tasks
         if self._autonomy_task:
             self._autonomy_task.cancel()
@@ -227,7 +227,7 @@ class BaseSalamanderIntegration(ABC):
             self._phi_task.cancel()
         if self._scaling_task:
             self._scaling_task.cancel()
-        
+
         # Wait for tasks to complete
         await asyncio.gather(
             self._autonomy_task,
@@ -235,7 +235,7 @@ class BaseSalamanderIntegration(ABC):
             self._scaling_task,
             return_exceptions=True,
         )
-        
+
         self.salamander.audit_log = self.salamander.audit_log.append(
             f"{self.get_product_type()}_autonomy_loops_stopped",
             timestamp=time(),
@@ -244,7 +244,7 @@ class BaseSalamanderIntegration(ABC):
     def share_blueprint(self) -> Dict[str, Any]:
         """
         Share successful blueprint to species memory.
-        
+
         Enables cross-instance learning for network effects.
         """
         # Get current product configuration
@@ -257,24 +257,24 @@ class BaseSalamanderIntegration(ABC):
             "product_state": self.product_state,
             "timestamp": time(),
         }
-        
+
         # Add to species memory
-        if hasattr(self.salamander, 'blueprint_library'):
+        if hasattr(self.salamander, "blueprint_library"):
             self.salamander.blueprint_library.add_blueprint(blueprint)
-        
+
         self.salamander.audit_log = self.salamander.audit_log.append(
             f"{self.get_product_type()}_blueprint_shared",
             timestamp=time(),
             blueprint_hash=hash(str(blueprint)),
         )
-        
+
         return blueprint
 
 
 class IntegrationRegistry:
     """
     Central registry for all product integrations.
-    
+
     This registry maintains a mapping of product types to integration classes,
     enabling dynamic integration creation and management.
     """
@@ -282,10 +282,12 @@ class IntegrationRegistry:
     _integrations: Dict[str, Type[BaseSalamanderIntegration]] = {}
 
     @classmethod
-    def register(cls, product_type: str, integration_class: Type[BaseSalamanderIntegration]) -> None:
+    def register(
+        cls, product_type: str, integration_class: Type[BaseSalamanderIntegration]
+    ) -> None:
         """
         Register a product integration class.
-        
+
         Args:
             product_type: Product type identifier (e.g., "mining", "qaas", "ciaas")
             integration_class: Integration class for the product
@@ -296,10 +298,10 @@ class IntegrationRegistry:
     def get(cls, product_type: str) -> Optional[Type[BaseSalamanderIntegration]]:
         """
         Get a registered integration class.
-        
+
         Args:
             product_type: Product type identifier
-        
+
         Returns:
             Integration class if registered, None otherwise
         """
@@ -309,7 +311,7 @@ class IntegrationRegistry:
     def list_products(cls) -> List[str]:
         """
         List all registered product types.
-        
+
         Returns:
             List of product type identifiers
         """
@@ -319,7 +321,7 @@ class IntegrationRegistry:
 class IntegrationFactory:
     """
     Factory for creating integration instances.
-    
+
     This factory provides a unified interface for creating integration instances
     for any registered product type.
     """
@@ -333,31 +335,31 @@ class IntegrationFactory:
     ) -> BaseSalamanderIntegration:
         """
         Create an integration instance for a product.
-        
+
         Args:
             product_type: Product type identifier (e.g., "mining", "qaas", "ciaas")
             product_system: The existing product system instance
             target_metric: Target metric for optimization (product-specific)
             enable_autonomy_loops: Whether to enable background autonomy loops
-        
+
         Returns:
             Integration instance for the product
-        
+
         Raises:
             ValueError: If product type is not registered
         """
         integration_class = IntegrationRegistry.get(product_type)
         if integration_class is None:
             raise ValueError(f"Unknown product type: {product_type}")
-        
+
         integration = integration_class(
             product_system=product_system,
             target_metric=target_metric,
             enable_autonomy_loops=enable_autonomy_loops,
         )
-        
+
         integration.initialize()
-        
+
         return integration
 
     @staticmethod
@@ -368,21 +370,21 @@ class IntegrationFactory:
     ) -> Dict[str, BaseSalamanderIntegration]:
         """
         Create integration instances for multiple products.
-        
+
         Args:
             product_systems: Mapping of product types to system instances
             target_metrics: Mapping of product types to target metrics
             enable_autonomy_loops: Whether to enable background autonomy loops
-        
+
         Returns:
             Mapping of product types to integration instances
         """
         integrations = {}
-        
+
         for product_type, product_system in product_systems.items():
             if product_type not in target_metrics:
                 continue
-            
+
             try:
                 integration = IntegrationFactory.create_integration(
                     product_type=product_type,
@@ -394,7 +396,7 @@ class IntegrationFactory:
             except ValueError:
                 # Product type not registered, skip
                 continue
-        
+
         return integrations
 
 
@@ -402,14 +404,18 @@ class IntegrationFactory:
 def register_standard_integrations() -> None:
     """
     Register the standard HYBA product integrations.
-    
+
     This should be called during application initialization to register
     the standard product integrations (mining, QaaS, CIaaS).
     """
     from pythia_mining.salamander_mining_integration import SalamanderMiningIntegration
-    from hyba_genesis_api.api.salamander_qaas_integration import SalamanderQaaSIntegration
-    from hyba_genesis_api.api.salamander_ciaas_integration import SalamanderCIaaSIntegration
-    
+    from hyba_genesis_api.api.salamander_qaas_integration import (
+        SalamanderQaaSIntegration,
+    )
+    from hyba_genesis_api.api.salamander_ciaas_integration import (
+        SalamanderCIaaSIntegration,
+    )
+
     IntegrationRegistry.register("mining", SalamanderMiningIntegration)
     IntegrationRegistry.register("qaas", SalamanderQaaSIntegration)
     IntegrationRegistry.register("ciaas", SalamanderCIaaSIntegration)
@@ -420,23 +426,23 @@ def register_standard_integrations() -> None:
 # class FutureProductIntegration(BaseSalamanderIntegration):
 #     def get_product_type(self) -> str:
 #         return "future_product"
-#     
+#
 #     def observe_product_state(self) -> SystemMetrics:
 #         # Implement product-specific state observation
 #         pass
-#     
+#
 #     def detect_product_anomaly(self, metrics: SystemMetrics) -> Optional[Anomaly]:
 #         # Implement product-specific anomaly detection
 #         pass
-#     
+#
 #     def execute_product_regeneration(self, anomaly: Anomaly) -> RegenerationOutcome:
 #         # Implement product-specific regeneration
 #         pass
-#     
+#
 #     def get_product_treasury_state(self) -> Dict[str, Any]:
 #         # Implement product-specific treasury state
 #         pass
-#     
+#
 #     def get_product_health_report(self) -> Dict[str, Any]:
 #         # Implement product-specific health report
 #         pass

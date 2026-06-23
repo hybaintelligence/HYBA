@@ -33,7 +33,9 @@ class SLATracker:
         if not breached:
             return None
         severity = (
-            ((target - value) / target) if metric_name == "availability" else ((value / target) - 1)
+            ((target - value) / target)
+            if metric_name == "availability"
+            else ((value / target) - 1)
         )
         breach = {
             "metric": metric_name,
@@ -60,5 +62,6 @@ class SLATracker:
             "breach_count": len(self.breaches),
             "breaches": self.breaches,
             "estimated_downtime_seconds": downtime_seconds,
-            "estimated_revenue_impact": downtime_seconds * self.revenue_per_downtime_second,
+            "estimated_revenue_impact": downtime_seconds
+            * self.revenue_per_downtime_second,
         }

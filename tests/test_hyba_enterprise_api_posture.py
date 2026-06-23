@@ -37,8 +37,14 @@ def test_enterprise_posture_adds_security_and_trace_headers():
     assert response.headers["x-content-type-options"] == "nosniff"
     assert response.headers["x-frame-options"] == "DENY"
     assert response.headers["referrer-policy"] == "no-referrer"
-    assert response.headers["permissions-policy"] == "camera=(), microphone=(), geolocation=()"
-    assert response.headers["strict-transport-security"] == "max-age=31536000; includeSubDomains"
+    assert (
+        response.headers["permissions-policy"]
+        == "camera=(), microphone=(), geolocation=()"
+    )
+    assert (
+        response.headers["strict-transport-security"]
+        == "max-age=31536000; includeSubDomains"
+    )
 
 
 def test_standard_http_error_envelope_is_returned():
@@ -47,7 +53,9 @@ def test_standard_http_error_envelope_is_returned():
 
     @app.get("/forbidden")
     async def forbidden():
-        raise HTTPException(status_code=403, detail={"error": "forbidden", "message": "No."})
+        raise HTTPException(
+            status_code=403, detail={"error": "forbidden", "message": "No."}
+        )
 
     response = TestClient(app).get("/forbidden", headers={"x-request-id": "req-denied"})
 

@@ -52,15 +52,18 @@ from pythia_mining.quantum_axiom_helpers import (
     pulvini_phi_fold,
     pulvini_unfold,
 )
-from pythia_mining.topological_holonomy_engine import TopologicalHolonomyEngine, HolonomyPathType
+from pythia_mining.topological_holonomy_engine import (
+    TopologicalHolonomyEngine,
+    HolonomyPathType,
+)
 from pythia_mining.frontier_experiment_4_golden_sld import GoldenSLDExperiment
 
 # ── Constants ──────────────────────────────────────────────────────────────
 
 MAX_CORRECTION_ITERATIONS = 20
-CORRECTION_CONVERGENCE_THRESHOLD = 1e-6   # Gap drift below this → locked
-NORM_TOLERANCE = 1e-8                      # MPS norm must stay within this of 1.0
-MAX_ROTATION_ANGLE = math.pi / 4          # Limit per-step holonomic rotation
+CORRECTION_CONVERGENCE_THRESHOLD = 1e-6  # Gap drift below this → locked
+NORM_TOLERANCE = 1e-8  # MPS norm must stay within this of 1.0
+MAX_ROTATION_ANGLE = math.pi / 4  # Limit per-step holonomic rotation
 
 
 # ── Data structures ────────────────────────────────────────────────────────
@@ -69,6 +72,7 @@ MAX_ROTATION_ANGLE = math.pi / 4          # Limit per-step holonomic rotation
 @dataclass
 class GateDiagnostics:
     """Output of the Yang-Mills enforcement gate."""
+
     passed: bool
     measured_gap_gev: float
     expected_gap_gev: float
@@ -83,6 +87,7 @@ class GateDiagnostics:
 @dataclass
 class CorrectionStep:
     """Record of a single holonomic correction iteration."""
+
     iteration: int
     gap_drift_before: float
     rotation_angle_rad: float
@@ -94,6 +99,7 @@ class CorrectionStep:
 @dataclass
 class LockedQuantumState:
     """An MPS state that has been holonomically locked to the mass-gap invariant."""
+
     num_sites: int
     max_bond_dim: int
     phi_gap_target_gev: float
@@ -111,6 +117,7 @@ class LockedQuantumState:
 @dataclass
 class OptimizerEvidencePacket:
     """Sealed evidence packet for one optimization run."""
+
     protocol: str = "HYBA_TOPOLOGICAL_MASS_GAP_OPTIMIZER_V1"
     timestamp: float = field(default_factory=time.time)
     gate: Optional[Dict[str, Any]] = None
@@ -174,9 +181,13 @@ def run_enforcement_gate(
         phi_rank=ctrl["phi_rank"],
         phi_best_anchor=ctrl["phi_best_anchor"],
         verdict=result["verdict"],
-        error=None if result["operational_elevated"] else (
-            f"phi_rank={ctrl['phi_rank']} best={ctrl['phi_best_anchor']} "
-            f"drift={drift_pct:.1f}%"
+        error=(
+            None
+            if result["operational_elevated"]
+            else (
+                f"phi_rank={ctrl['phi_rank']} best={ctrl['phi_best_anchor']} "
+                f"drift={drift_pct:.1f}%"
+            )
         ),
     )
 
@@ -198,7 +209,9 @@ def _su2_rotation_matrix(axis: int, theta: float) -> np.ndarray:
     elif axis == 1:  # σ_Y rotation
         return np.array([[c, -s], [s, c]], dtype=complex)
     else:  # σ_Z rotation
-        return np.array([[np.exp(1j * theta / 2), 0], [0, np.exp(-1j * theta / 2)]], dtype=complex)
+        return np.array(
+            [[np.exp(1j * theta / 2), 0], [0, np.exp(-1j * theta / 2)]], dtype=complex
+        )
 
 
 def _compute_mps_gap_proxy(mps: MPS) -> float:
@@ -219,7 +232,9 @@ def _compute_mps_gap_proxy(mps: MPS) -> float:
     # Normalize singular values
     sv_norm = sv / (np.sum(sv) + 1e-300)
     # Schmidt gap ~ first - second normalized singular value
-    schmidt_gap = float(sv_norm[0] - sv_norm[1]) if len(sv_norm) > 1 else float(sv_norm[0])
+    schmidt_gap = (
+        float(sv_norm[0] - sv_norm[1]) if len(sv_norm) > 1 else float(sv_norm[0])
+    )
     # Scale to GeV units: map [0, 1] → [0, 2 × LAMBDA_QCD]
     return schmidt_gap * 2.0 * LAMBDA_QCD
 
@@ -281,14 +296,16 @@ def lock_mps_to_gap(
         drift_before = current_gap - target_gap_gev
 
         if abs(drift_before) <= convergence_threshold:
-            steps.append(CorrectionStep(
-                iteration=iteration,
-                gap_drift_before=drift_before,
-                rotation_angle_rad=0.0,
-                gap_drift_after=drift_before,
-                mps_norm=mps.compute_norm(),
-                converged=True,
-            ))
+            steps.append(
+                CorrectionStep(
+                    iteration=iteration,
+                    gap_drift_before=drift_before,
+                    rotation_angle_rad=0.0,
+                    gap_drift_after=drift_before,
+                    mps_norm=mps.compute_norm(),
+                    converged=True,
+                )
+            )
             break
 
         theta = _holonomic_correction_angle(drift_before)
@@ -299,14 +316,16 @@ def lock_mps_to_gap(
         drift_after = current_gap_after - target_gap_gev
         norm = mps.compute_norm()
 
-        steps.append(CorrectionStep(
-            iteration=iteration,
-            gap_drift_before=drift_before,
-            rotation_angle_rad=theta,
-            gap_drift_after=drift_after,
-            mps_norm=norm,
-            converged=abs(drift_after) <= convergence_threshold,
-        ))
+        steps.append(
+            CorrectionStep(
+                iteration=iteration,
+                gap_drift_before=drift_before,
+                rotation_angle_rad=theta,
+                gap_drift_after=drift_after,
+                mps_norm=norm,
+                converged=abs(drift_after) <= convergence_threshold,
+            )
+        )
 
         if abs(drift_after) <= convergence_threshold:
             break
@@ -337,7 +356,7 @@ def measure_sld_qfi(mps: MPS) -> float:
 
     # Build density matrix from tensor slice
     rho_raw = np.outer(flat, np.conj(flat)).real  # Force real for numerical stability
-    rho_raw = 0.5 * (rho_raw + rho_raw.T)        # Symmetrise
+    rho_raw = 0.5 * (rho_raw + rho_raw.T)  # Symmetrise
 
     # PSD regularisation
     eigvals, eigvecs = np.linalg.eigh(rho_raw)
@@ -367,7 +386,9 @@ def measure_sld_qfi(mps: MPS) -> float:
 # ── Evidence packet ────────────────────────────────────────────────────────
 
 
-def _sample_observables(mps: MPS, sites: Optional[List[int]] = None) -> Dict[str, float]:
+def _sample_observables(
+    mps: MPS, sites: Optional[List[int]] = None
+) -> Dict[str, float]:
     """Sample Z expectation at a handful of sites for the evidence packet."""
     Z = np.array([[1, 0], [0, -1]], dtype=complex)
     sites = sites or [0, mps.num_sites // 4, mps.num_sites // 2, mps.num_sites - 1]
@@ -437,17 +458,23 @@ def run_optimizer(
         packet.success = False
         packet.error = f"Gate failed: {gate_diag.error}"
         _log(f"\n  ❌ GATE FAILED — {gate_diag.error}")
-        _log("  Cannot proceed: φ is not the best ablation anchor or gap is incompatible.")
+        _log(
+            "  Cannot proceed: φ is not the best ablation anchor or gap is incompatible."
+        )
         _log("  No holonomic correction applied. No state emitted.")
         _emit_packet(packet, output_file, _log)
         return packet
 
-    _log(f"  ✅ Gate passed: measured={gate_diag.measured_gap_gev:.6f} GeV  "
-         f"expected={gate_diag.expected_gap_gev:.6f} GeV  "
-         f"φ_rank={gate_diag.phi_rank}  drift={gate_diag.gap_drift_pct:.2f}%")
+    _log(
+        f"  ✅ Gate passed: measured={gate_diag.measured_gap_gev:.6f} GeV  "
+        f"expected={gate_diag.expected_gap_gev:.6f} GeV  "
+        f"φ_rank={gate_diag.phi_rank}  drift={gate_diag.gap_drift_pct:.2f}%"
+    )
 
     # ── STAGE 2: INITIAL MPS + HOLONOMY ───────────────────────────────────
-    _log(f"\n[2/5] Building MPS ({num_sites} sites, χ={max_bond_dim}) and computing Berry phase")
+    _log(
+        f"\n[2/5] Building MPS ({num_sites} sites, χ={max_bond_dim}) and computing Berry phase"
+    )
 
     mps = MPS(num_sites=num_sites, physical_dim=2, max_bond_dim=max_bond_dim)
     norm_initial = mps.compute_norm()
@@ -466,8 +493,10 @@ def run_optimizer(
         use_sld_gradient=True,
     )
     packet.holonomy_phase = holonomy_result.geometric_phase
-    _log(f"  Berry phase: {holonomy_result.geometric_phase:.6f} rad  "
-         f"phase_locked={holonomy_result.phase_locking}")
+    _log(
+        f"  Berry phase: {holonomy_result.geometric_phase:.6f} rad  "
+        f"phase_locked={holonomy_result.phase_locking}"
+    )
 
     # ── STAGE 3: SLD QFI ──────────────────────────────────────────────────
     _log("\n[3/5] SLD Quantum Fisher Information")
@@ -477,9 +506,11 @@ def run_optimizer(
     _log(f"  QFI (initial): {qfi_initial:.6f}")
 
     initial_gap = _compute_mps_gap_proxy(mps)
-    _log(f"  Schmidt gap proxy (initial): {initial_gap:.6f} GeV  "
-         f"target: {EXPECTED_MASS_GAP:.6f} GeV  "
-         f"drift: {initial_gap - EXPECTED_MASS_GAP:+.6f} GeV")
+    _log(
+        f"  Schmidt gap proxy (initial): {initial_gap:.6f} GeV  "
+        f"target: {EXPECTED_MASS_GAP:.6f} GeV  "
+        f"drift: {initial_gap - EXPECTED_MASS_GAP:+.6f} GeV"
+    )
 
     # ── STAGE 4: HOLONOMIC LOCK ───────────────────────────────────────────
     _log("\n[4/5] Holonomic Correction to (3-φ)×Λ_QCD")
@@ -494,14 +525,18 @@ def run_optimizer(
     for step in correction_steps:
         if verbose:
             status = "✅" if step.converged else "  "
-            print(f"  {status} iter={step.iteration:2d}  "
-                  f"drift_before={step.gap_drift_before:+.6f}  "
-                  f"θ={step.rotation_angle_rad:+.6f} rad  "
-                  f"drift_after={step.gap_drift_after:+.6f}  "
-                  f"norm={step.mps_norm:.10f}")
+            print(
+                f"  {status} iter={step.iteration:2d}  "
+                f"drift_before={step.gap_drift_before:+.6f}  "
+                f"θ={step.rotation_angle_rad:+.6f} rad  "
+                f"drift_after={step.gap_drift_after:+.6f}  "
+                f"norm={step.mps_norm:.10f}"
+            )
 
-    _log(f"\n  Final gap: {final_gap:.6f} GeV  drift: {final_drift:+.6f} GeV "
-         f"({final_drift_pct:.4f}%)  converged={converged}")
+    _log(
+        f"\n  Final gap: {final_gap:.6f} GeV  drift: {final_drift:+.6f} GeV "
+        f"({final_drift_pct:.4f}%)  converged={converged}"
+    )
 
     if abs(final_norm - 1.0) > NORM_TOLERANCE:
         packet.success = False
@@ -593,10 +628,18 @@ def main() -> None:
     )
     parser.add_argument("--num-sites", type=int, default=50)
     parser.add_argument("--max-bond-dim", type=int, default=16)
-    parser.add_argument("--n-configs", type=int, default=200,
-                        help="Yang-Mills configurations for gate measurement")
-    parser.add_argument("--lattice-size", type=int, default=4,
-                        help="Lattice size per dimension (creates L^4 lattice)")
+    parser.add_argument(
+        "--n-configs",
+        type=int,
+        default=200,
+        help="Yang-Mills configurations for gate measurement",
+    )
+    parser.add_argument(
+        "--lattice-size",
+        type=int,
+        default=4,
+        help="Lattice size per dimension (creates L^4 lattice)",
+    )
     parser.add_argument("--output", type=str, default=None)
     parser.add_argument("--quiet", action="store_true")
     args = parser.parse_args()

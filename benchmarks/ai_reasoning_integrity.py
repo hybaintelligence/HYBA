@@ -14,7 +14,11 @@ from pythia_mining.after_quantum_trifecta import benchmark_ai_reasoning_integrit
 
 
 def main() -> int:
-    print(json.dumps(benchmark_ai_reasoning_integrity().as_dict(), indent=2, sort_keys=True))
+    print(
+        json.dumps(
+            benchmark_ai_reasoning_integrity().as_dict(), indent=2, sort_keys=True
+        )
+    )
     return 0
 
 

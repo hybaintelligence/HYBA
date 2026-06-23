@@ -14,7 +14,11 @@ from pythia_mining.after_quantum_trifecta import benchmark_cyber_topological_def
 
 
 def main() -> int:
-    print(json.dumps(benchmark_cyber_topological_defense().as_dict(), indent=2, sort_keys=True))
+    print(
+        json.dumps(
+            benchmark_cyber_topological_defense().as_dict(), indent=2, sort_keys=True
+        )
+    )
     return 0
 
 

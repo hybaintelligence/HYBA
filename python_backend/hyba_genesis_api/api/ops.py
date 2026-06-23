@@ -27,7 +27,9 @@ def _redact_pool_credentials(pool_config: Dict[str, Any]) -> Dict[str, Any]:
     if "username" in redacted and redacted["username"]:
         # Keep username but don't expose full value if it looks like an org ID
         if len(redacted["username"]) > 8:
-            redacted["username"] = redacted["username"][:4] + "..." + redacted["username"][-4:]
+            redacted["username"] = (
+                redacted["username"][:4] + "..." + redacted["username"][-4:]
+            )
     return redacted
 
 

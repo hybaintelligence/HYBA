@@ -26,7 +26,9 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    report = generate_first_decision_audit_report(adversarial=args.adversarial).to_dict()
+    report = generate_first_decision_audit_report(
+        adversarial=args.adversarial
+    ).to_dict()
     text = json.dumps(report, indent=2, sort_keys=True)
     if args.output:
         args.output.parent.mkdir(parents=True, exist_ok=True)

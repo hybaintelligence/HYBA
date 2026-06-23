@@ -18,7 +18,9 @@ from pythia_mining.resonance_fabric import RefactorDecision, RefactorMode
 
 
 def _finding_map(report):
-    return {finding["invariant_id"]: finding for finding in report.to_dict()["findings"]}
+    return {
+        finding["invariant_id"]: finding for finding in report.to_dict()["findings"]
+    }
 
 
 def test_safe_external_candidate_is_staged_for_human_review_only():

@@ -49,15 +49,20 @@ class FalsificationRoute:
     - what mathematical property should hold if the result is correct
     - the expected direction of change (tighter bound, converge, etc.)
     """
+
     route_id: str
     description: str
-    perturbation: Dict[str, Any]        # Parameter delta to apply
-    invariant: str                       # Mathematical property that must hold
-    expected_direction: str             # "convergence", "continuity", "stability", "reproducibility"
-    tolerance: float                     # Numerical tolerance for the check
+    perturbation: Dict[str, Any]  # Parameter delta to apply
+    invariant: str  # Mathematical property that must hold
+    expected_direction: (
+        str  # "convergence", "continuity", "stability", "reproducibility"
+    )
+    tolerance: float  # Numerical tolerance for the check
 
 
-def _tensor_network_falsification_routes(params: Dict[str, Any]) -> List[FalsificationRoute]:
+def _tensor_network_falsification_routes(
+    params: Dict[str, Any],
+) -> List[FalsificationRoute]:
     bond = params.get("max_bond_dim", 16)
     return [
         FalsificationRoute(
@@ -147,7 +152,9 @@ def _holonomy_falsification_routes(params: Dict[str, Any]) -> List[Falsification
     ]
 
 
-def _entanglement_falsification_routes(params: Dict[str, Any]) -> List[FalsificationRoute]:
+def _entanglement_falsification_routes(
+    params: Dict[str, Any],
+) -> List[FalsificationRoute]:
     n = params.get("num_sites", 30)
     return [
         FalsificationRoute(
@@ -208,7 +215,9 @@ def _mera_falsification_routes(params: Dict[str, Any]) -> List[FalsificationRout
     ]
 
 
-def _lattice_ym_falsification_routes(params: Dict[str, Any]) -> List[FalsificationRoute]:
+def _lattice_ym_falsification_routes(
+    params: Dict[str, Any],
+) -> List[FalsificationRoute]:
     beta = params.get("beta", 2.3)
     return [
         FalsificationRoute(
@@ -260,6 +269,7 @@ class QuantumReproducibilityAttestation:
       sealed_at        — Unix timestamp
       attestation_hash — SHA-256 commitment over all fields except this one
     """
+
     attestation_id: str
     protocol: str
     operation: str
@@ -447,9 +457,18 @@ def verify_attestation_integrity(attestation: Dict[str, Any]) -> Dict[str, Any]:
     4. Falsification routes are structurally valid
     """
     required = [
-        "attestation_id", "protocol", "operation", "input_params",
-        "input_hash", "output_digest", "output_summary", "execution_ms",
-        "falsification", "mathematical_claims", "sealed_at", "attestation_hash",
+        "attestation_id",
+        "protocol",
+        "operation",
+        "input_params",
+        "input_hash",
+        "output_digest",
+        "output_summary",
+        "execution_ms",
+        "falsification",
+        "mathematical_claims",
+        "sealed_at",
+        "attestation_hash",
     ]
     missing = [f for f in required if f not in attestation]
     if missing:
@@ -462,7 +481,10 @@ def verify_attestation_integrity(attestation: Dict[str, Any]) -> Dict[str, Any]:
     unsigned = {k: v for k, v in attestation.items() if k != "attestation_hash"}
     expected_hash = _stable_hash(unsigned)
     if expected_hash != attestation["attestation_hash"]:
-        return {"valid": False, "error": "attestation_hash_mismatch — content has been modified"}
+        return {
+            "valid": False,
+            "error": "attestation_hash_mismatch — content has been modified",
+        }
 
     # Input hash consistency
     input_hash = _stable_hash(attestation["input_params"])

@@ -59,7 +59,9 @@ def build_packet() -> Dict[str, Any]:
         "status": "PASS" if tests["passed"] else "FAIL",
     }
     packet_path = ARTIFACT_DIR / "share_acceptance_e2e_packet.json"
-    packet_path.write_text(json.dumps(packet, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    packet_path.write_text(
+        json.dumps(packet, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
     return packet
 
 

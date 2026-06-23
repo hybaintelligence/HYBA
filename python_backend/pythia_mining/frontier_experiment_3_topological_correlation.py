@@ -246,14 +246,20 @@ def run_topological_correlation_measurement(
     sharpness = measure_topological_transition_sharpness(windings)
 
     # Measure when discrepancy is "optimal" (within 10% of theoretical bound)
-    theoretical_bound = [math.log(n + 1) / (n + 1) for n in range(1, len(discrepancies) + 1)]
-    optimal_mask = [d <= 1.1 * bound for d, bound in zip(discrepancies, theoretical_bound)]
+    theoretical_bound = [
+        math.log(n + 1) / (n + 1) for n in range(1, len(discrepancies) + 1)
+    ]
+    optimal_mask = [
+        d <= 1.1 * bound for d, bound in zip(discrepancies, theoretical_bound)
+    ]
 
     # Sharpness during optimal periods
     optimal_indices = [i for i, is_opt in enumerate(optimal_mask) if is_opt]
     if len(optimal_indices) > 10:
         optimal_windings = [windings[i] for i in optimal_indices if i < len(windings)]
-        sharpness_during_optimal = measure_topological_transition_sharpness(optimal_windings)
+        sharpness_during_optimal = measure_topological_transition_sharpness(
+            optimal_windings
+        )
     else:
         sharpness_during_optimal = sharpness
 

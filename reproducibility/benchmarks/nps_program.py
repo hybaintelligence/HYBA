@@ -57,7 +57,11 @@ class NPSProgram:
             if r["category"] == "detractor"
             for word in r["feedback"].split()
         )
-        return [(word, count) for word, count in words.most_common(10) if word and word not in stop]
+        return [
+            (word, count)
+            for word, count in words.most_common(10)
+            if word and word not in stop
+        ]
 
     def forecast_churn_risk(self):
         """Forecast detractor-driven churn risk over 30/60/90 days."""

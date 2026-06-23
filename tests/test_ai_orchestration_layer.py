@@ -212,7 +212,11 @@ class TestAIDecisionMaker:
 
         context = {
             "difficulty": 1.0,
-            "recent_shares": [{"accepted": True}, {"accepted": True}, {"accepted": False}],
+            "recent_shares": [
+                {"accepted": True},
+                {"accepted": True},
+                {"accepted": False},
+            ],
             "pool_type": "standard",
         }
 
@@ -230,7 +234,11 @@ class TestAIDecisionMaker:
 
         context = {
             "difficulty": 1.0,
-            "recent_shares": [{"accepted": False}, {"accepted": False}, {"accepted": False}],
+            "recent_shares": [
+                {"accepted": False},
+                {"accepted": False},
+                {"accepted": False},
+            ],
             "pool_type": "standard",
         }
 
@@ -245,7 +253,11 @@ class TestAIDecisionMaker:
 
         context = {
             "difficulty": 1.0,
-            "recent_shares": [{"accepted": True}, {"accepted": True}, {"accepted": True}],
+            "recent_shares": [
+                {"accepted": True},
+                {"accepted": True},
+                {"accepted": True},
+            ],
             "pool_type": "standard",
         }
 
@@ -317,9 +329,15 @@ class TestAIOptimizedShareSubmission:
         """Test share submission decision."""
         submission = AIOptimizedShareSubmission()
 
-        shares = [{"nonce": 12345, "difficulty": 1.0}, {"nonce": 12346, "difficulty": 1.0}]
+        shares = [
+            {"nonce": 12345, "difficulty": 1.0},
+            {"nonce": 12346, "difficulty": 1.0},
+        ]
 
-        pool_info = {"pool_name": "test_pool", "stratum_url": "stratum+tcp://test.com:3333"}
+        pool_info = {
+            "pool_name": "test_pool",
+            "stratum_url": "stratum+tcp://test.com:3333",
+        }
 
         decision = submission.make_submission_decision(shares, pool_info)
 
@@ -336,11 +354,16 @@ class TestAIOptimizedShareSubmission:
         # Add some history to enable batching
         now = time.time()
         for i in range(10):
-            submission.submission_history.append({"timestamp": now - i, "accepted": True})
+            submission.submission_history.append(
+                {"timestamp": now - i, "accepted": True}
+            )
 
         shares = [{"nonce": i, "difficulty": 1.0} for i in range(20)]
 
-        pool_info = {"pool_name": "test_pool", "stratum_url": "stratum+tcp://test.com:3333"}
+        pool_info = {
+            "pool_name": "test_pool",
+            "stratum_url": "stratum+tcp://test.com:3333",
+        }
 
         decision = submission.make_submission_decision(shares, pool_info)
 

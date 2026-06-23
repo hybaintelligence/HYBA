@@ -22,5 +22,7 @@ def test_admin_endpoint_rejects_missing_jwt():
 
 
 def test_customer_key_cannot_reach_admin_endpoint():
-    response = TestClient(app).get("/api/admin/users", headers={"X-API-Key": "hyba_live_not_admin"})
+    response = TestClient(app).get(
+        "/api/admin/users", headers={"X-API-Key": "hyba_live_not_admin"}
+    )
     assert response.status_code in (401, 403)

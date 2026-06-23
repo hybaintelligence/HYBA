@@ -17,7 +17,10 @@ def test_claim_evidence_manifest_is_complete_and_points_to_existing_files() -> N
     for claim in manifest["claims"]:
         claim_ids.add(claim["id"])
         assert claim["claim"].strip()
-        assert claim["status"] in {"implemented_and_executable", "implemented_and_documented"}
+        assert claim["status"] in {
+            "implemented_and_executable",
+            "implemented_and_documented",
+        }
         assert claim["boundary"].strip(), f"{claim['id']} lacks an explicit boundary"
         assert claim["commands"], f"{claim['id']} lacks reproduction commands"
 
@@ -25,7 +28,9 @@ def test_claim_evidence_manifest_is_complete_and_points_to_existing_files() -> N
             assert claim[key], f"{claim['id']} lacks {key}"
             for rel_path in claim[key]:
                 path = ROOT / rel_path
-                assert path.exists(), f"{claim['id']} references missing {key}: {rel_path}"
+                assert (
+                    path.exists()
+                ), f"{claim['id']} references missing {key}: {rel_path}"
 
     assert len(claim_ids) == len(manifest["claims"]), "claim ids must be unique"
     assert "nodus_solutus_repository_local_computability" in claim_ids
@@ -43,4 +48,6 @@ def test_claim_manifest_keeps_extraordinary_claim_boundaries_explicit() -> None:
         "formalism-derived classical simulation",
     ]
     for phrase in boundary_phrases:
-        assert phrase in manifest_text, f"boundary phrase missing from manifest: {phrase}"
+        assert (
+            phrase in manifest_text
+        ), f"boundary phrase missing from manifest: {phrase}"

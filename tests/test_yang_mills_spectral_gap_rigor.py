@@ -31,8 +31,7 @@ def test_large_prediction_miss_fails_even_with_large_z_like_separation():
         lattice_size=2, n_configs=MIN_NONZERO_SPECTRUM_POINTS
     )
     measurement.actions = [
-        EXPECTED_MASS_GAP * 3.38 + i * 1e-4
-        for i in range(MIN_NONZERO_SPECTRUM_POINTS)
+        EXPECTED_MASS_GAP * 3.38 + i * 1e-4 for i in range(MIN_NONZERO_SPECTRUM_POINTS)
     ]
 
     results = measurement.measure_spectral_gap()

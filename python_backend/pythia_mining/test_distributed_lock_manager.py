@@ -167,6 +167,7 @@ async def test_lock_metrics_structure(lock_manager):
 @pytest.mark.asyncio
 async def test_multiple_concurrent_locks(lock_manager):
     """Test acquiring multiple different locks concurrently."""
+
     async def acquire_lock(manager, lock_id):
         token = await manager.acquire(f"concurrent_lock_{lock_id}", ttl=5)
         await asyncio.sleep(0.1)
@@ -284,7 +285,7 @@ async def test_metrics_history_bounded(lock_manager):
         await lock_manager.release(f"bounded_history_lock_{i}", token.token)
 
     metrics = lock_manager.get_lock_metrics()
-    
+
     # History should be bounded
     assert len(lock_manager.metrics.metrics_history) <= 10000
 

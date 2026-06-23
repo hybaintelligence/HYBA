@@ -112,8 +112,12 @@ class FinanceSovereignInvariantRegistry:
     form_substance_drift_limit = 0.10
     uncertainty_limit = 0.35
 
-    def evaluate(self, candidate: FinanceAuditCandidate) -> List[FinanceInvariantFinding]:
-        substance_drift = candidate.form_alignment_score - candidate.economic_substance_score
+    def evaluate(
+        self, candidate: FinanceAuditCandidate
+    ) -> List[FinanceInvariantFinding]:
+        substance_drift = (
+            candidate.form_alignment_score - candidate.economic_substance_score
+        )
         evidence_ok = (
             candidate.traceable_evidence_present
             and bool(candidate.data_lineage_hash)
@@ -180,12 +184,14 @@ class FinanceSovereignInvariantRegistry:
                 invariant_id="NO_AUTOMATIC_EXTERNAL_ACTION",
                 name="No automatic external action",
                 passed=(
-                    candidate.mode == "review_only" and not candidate.external_action_requested
+                    candidate.mode == "review_only"
+                    and not candidate.external_action_requested
                 ),
                 severity="blocker",
                 reasoning=(
                     "Candidate is review-only and requests no external action."
-                    if candidate.mode == "review_only" and not candidate.external_action_requested
+                    if candidate.mode == "review_only"
+                    and not candidate.external_action_requested
                     else "Candidate requests or implies external action; reject before staging."
                 ),
                 audit_mapping="Operational resilience mapping: audit layer cannot execute the candidate.",
@@ -254,13 +260,17 @@ def compute_packet_hash(packet: Mapping[str, Any]) -> str:
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
 
-def audit_finance_candidate(candidate: FinanceAuditCandidate) -> FinanceSovereignAuditPacket:
+def audit_finance_candidate(
+    candidate: FinanceAuditCandidate,
+) -> FinanceSovereignAuditPacket:
     """Generate a sealed non-executing finance audit packet."""
 
     registry = FinanceSovereignInvariantRegistry()
     findings = registry.evaluate(candidate)
     criticism = FinanceSyntheticAdversary().criticize(candidate, findings)
-    bridge_report = AuditableDecisionBridge().audit(_bridge_candidate(candidate)).to_dict()
+    bridge_report = (
+        AuditableDecisionBridge().audit(_bridge_candidate(candidate)).to_dict()
+    )
     blocker_failed = any(
         finding.severity == "blocker" and not finding.passed for finding in findings
     )
@@ -270,9 +280,7 @@ def audit_finance_candidate(candidate: FinanceAuditCandidate) -> FinanceSovereig
         next_action = "Reject before staging; return candidate to domain expert for corrected evidence and structure."
     else:
         verdict = FinanceAuditVerdict.STAGED_FOR_SUPERVISION.value
-        next_action = (
-            "Stage sealed packet for Shariah/compliance review; no automatic action permitted."
-        )
+        next_action = "Stage sealed packet for Shariah/compliance review; no automatic action permitted."
 
     payload = {
         "schema": SCHEMA_VERSION,
@@ -290,7 +298,9 @@ def audit_finance_candidate(candidate: FinanceAuditCandidate) -> FinanceSovereig
             "investment recommendation, capital calculation, trade instruction, or external action."
         ),
     }
-    return FinanceSovereignAuditPacket(packet_hash=compute_packet_hash(payload), **payload)
+    return FinanceSovereignAuditPacket(
+        packet_hash=compute_packet_hash(payload), **payload
+    )
 
 
 def sample_shariah_candidate() -> FinanceAuditCandidate:
@@ -334,10 +344,14 @@ def adversarial_shariah_candidate() -> FinanceAuditCandidate:
     )
 
 
-def generate_finance_sovereign_packet(*, adversarial: bool = False) -> FinanceSovereignAuditPacket:
+def generate_finance_sovereign_packet(
+    *, adversarial: bool = False
+) -> FinanceSovereignAuditPacket:
     """Generate the first finance sovereign audit packet."""
 
-    candidate = adversarial_shariah_candidate() if adversarial else sample_shariah_candidate()
+    candidate = (
+        adversarial_shariah_candidate() if adversarial else sample_shariah_candidate()
+    )
     return audit_finance_candidate(candidate)
 
 

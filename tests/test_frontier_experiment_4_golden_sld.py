@@ -158,7 +158,9 @@ class TestGoldenSLDCorrelation:
 
     def test_experiment_runs_successfully(self):
         """Test experiment executes without errors"""
-        points, analysis = run_golden_sld_correlation_experiment(sample_sizes=[100, 500], dim=4)
+        points, analysis = run_golden_sld_correlation_experiment(
+            sample_sizes=[100, 500], dim=4
+        )
 
         assert len(points) == 6  # 2 sizes × 3 sequence types
         assert analysis is not None
@@ -178,7 +180,9 @@ class TestGoldenSLDCorrelation:
 
     def test_correlation_metrics_bounded(self):
         """Test correlation metrics are in valid range"""
-        _, analysis = run_golden_sld_correlation_experiment(sample_sizes=[100, 500], dim=4)
+        _, analysis = run_golden_sld_correlation_experiment(
+            sample_sizes=[100, 500], dim=4
+        )
 
         # Pearson r in [-1, 1]
         assert -1.0 <= analysis.pearson_r <= 1.0
@@ -192,7 +196,9 @@ class TestGoldenSLDCorrelation:
 
     def test_breakthrough_threshold_logic(self):
         """Test breakthrough threshold correctly evaluated"""
-        _, analysis = run_golden_sld_correlation_experiment(sample_sizes=[100, 500, 1000], dim=4)
+        _, analysis = run_golden_sld_correlation_experiment(
+            sample_sizes=[100, 500, 1000], dim=4
+        )
 
         # Breakthrough requires |r| > 0.8 AND R² > 0.8
         if analysis.breakthrough_achieved:

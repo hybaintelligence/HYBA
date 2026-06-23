@@ -15,6 +15,7 @@ If the physics doesn't show a transition, this code says so.
 If φ is not the best anchor, this code says so.
 That is the only scientifically honest posture.
 """
+
 from __future__ import annotations
 
 import logging
@@ -32,8 +33,8 @@ from pythia_mining.phi_entropy import van_der_corput_discrepancy
 
 logger = logging.getLogger("hyba.holonomy_scan")
 
-YANG_MILLS_THRESHOLD = 3.0 - PHI   # ≈ 1.381966
-LAMBDA_QCD = 0.2                   # GeV
+YANG_MILLS_THRESHOLD = 3.0 - PHI  # ≈ 1.381966
+LAMBDA_QCD = 0.2  # GeV
 EXPECTED_MASS_GAP = YANG_MILLS_THRESHOLD * LAMBDA_QCD
 
 
@@ -88,8 +89,10 @@ def _build_lambda_mps(lam: float, num_sites: int, max_bond_dim: int) -> MPS:
             # σ_z rotation: pure phase accumulation
             # This is critical for Berry phase as it creates
             # a λ-dependent phase winding on each site
-            R = np.array([[np.exp(1j * base_theta / 2), 0],
-                          [0, np.exp(-1j * base_theta / 2)]], dtype=complex)
+            R = np.array(
+                [[np.exp(1j * base_theta / 2), 0], [0, np.exp(-1j * base_theta / 2)]],
+                dtype=complex,
+            )
 
         # Apply SU(2) rotation to physical indices
         for a in range(t.shape[0]):
@@ -191,7 +194,7 @@ def _wilson_action_from_mps(mps: MPS) -> float:
     sv_norm = sv / (sv.sum() + 1e-300)
 
     # Compute von Neumann entanglement entropy
-    p_sq = sv_norm ** 2
+    p_sq = sv_norm**2
     p_sq = p_sq / (p_sq.sum() + 1e-300)
     entropy = -float(np.sum(p_sq * np.log2(p_sq + 1e-300)))
 
@@ -243,7 +246,7 @@ def _sld_gradient_norm(mps: MPS, epsilon: float = 1e-2) -> float:
     mps_minus.normalize()
 
     overlap = _mps_overlap(mps_minus, mps_plus)
-    grad_sq = max(0.0, (2.0 - 2.0 * float(overlap.real)) / (4.0 * epsilon ** 2))
+    grad_sq = max(0.0, (2.0 - 2.0 * float(overlap.real)) / (4.0 * epsilon**2))
     return math.sqrt(grad_sq)
 
 
@@ -383,11 +386,15 @@ class HolonomyScanMission:
         QFI is computed from real density matrices derived from actual MPS states.
         The critical point is wherever QFI peaks — not assumed to be at 0.5.
         """
-        logger.info("[Diagnosis Agent] Scanning λ ∈ [%.1f, %.1f] at %d points",
-                    *self.lambda_range, self.scan_resolution)
+        logger.info(
+            "[Diagnosis Agent] Scanning λ ∈ [%.1f, %.1f] at %d points",
+            *self.lambda_range,
+            self.scan_resolution,
+        )
 
-        lambda_values = np.linspace(self.lambda_range[0], self.lambda_range[1],
-                                    self.scan_resolution).tolist()
+        lambda_values = np.linspace(
+            self.lambda_range[0], self.lambda_range[1], self.scan_resolution
+        ).tolist()
         qfi_profile = []
 
         for lam in lambda_values:
@@ -397,12 +404,15 @@ class HolonomyScanMission:
         qfi_array = np.array(qfi_profile)
         # Second derivative via central differences
         second_deriv = np.gradient(np.gradient(qfi_array))
-        critical_idx = int(np.argmax(qfi_array))   # Peak QFI, not peak curvature
+        critical_idx = int(np.argmax(qfi_array))  # Peak QFI, not peak curvature
         lambda_critical = lambda_values[critical_idx]
         qfi_at_critical = qfi_profile[critical_idx]
 
-        logger.info("[Diagnosis Agent] Critical point: λ* = %.6f  QFI = %.6f",
-                    lambda_critical, qfi_at_critical)
+        logger.info(
+            "[Diagnosis Agent] Critical point: λ* = %.6f  QFI = %.6f",
+            lambda_critical,
+            qfi_at_critical,
+        )
 
         return DiagnosisResult(
             lambda_critical=lambda_critical,
@@ -419,16 +429,24 @@ class HolonomyScanMission:
 
         Both derived from the actual MPS at the critical parameter.
         """
-        logger.info("[Planning Agent] Computing SLD gradient and Wilson action at λ* = %.6f",
-                    diagnosis.lambda_critical)
+        logger.info(
+            "[Planning Agent] Computing SLD gradient and Wilson action at λ* = %.6f",
+            diagnosis.lambda_critical,
+        )
 
-        mps = _build_lambda_mps(diagnosis.lambda_critical, self.num_sites, self.max_bond_dim)
+        mps = _build_lambda_mps(
+            diagnosis.lambda_critical, self.num_sites, self.max_bond_dim
+        )
         grad_norm = _sld_gradient_norm(mps)
         wilson = _wilson_action_from_mps(mps)
         mass_gap_ok = wilson >= YANG_MILLS_THRESHOLD
 
-        logger.info("[Planning Agent] SLD norm = %.6f  Wilson = %.6f  mass_gap_ok = %s",
-                    grad_norm, wilson, mass_gap_ok)
+        logger.info(
+            "[Planning Agent] SLD norm = %.6f  Wilson = %.6f  mass_gap_ok = %s",
+            grad_norm,
+            wilson,
+            mass_gap_ok,
+        )
 
         return PlanningResult(
             lambda_critical=diagnosis.lambda_critical,
@@ -444,18 +462,24 @@ class HolonomyScanMission:
         Berry phase from discrete Wilson loop: γ = -Im log ∏_k ⟨ψ_k|ψ_{k+1}⟩
         Chern number = round(γ / π) — the Z₂ topological invariant for this loop.
         """
-        logger.info("[Executor Agent] Parallel transport: %d loop steps around λ* = %.6f",
-                    self.loop_steps, planning.lambda_critical)
+        logger.info(
+            "[Executor Agent] Parallel transport: %d loop steps around λ* = %.6f",
+            self.loop_steps,
+            planning.lambda_critical,
+        )
 
         lam_c = planning.lambda_critical
         # Closed loop: λ(t) = λ* + A·sin(2πt) for t ∈ [0, 1)
         amplitude = min(0.08, (self.lambda_range[1] - self.lambda_range[0]) / 4.0)
         t_values = np.linspace(0, 1, self.loop_steps, endpoint=False)
-        loop_lambdas = [lam_c + amplitude * math.sin(2.0 * math.pi * t)
-                        for t in t_values]
+        loop_lambdas = [
+            lam_c + amplitude * math.sin(2.0 * math.pi * t) for t in t_values
+        ]
 
-        states = [_build_lambda_mps(lam, self.num_sites, self.max_bond_dim)
-                  for lam in loop_lambdas]
+        states = [
+            _build_lambda_mps(lam, self.num_sites, self.max_bond_dim)
+            for lam in loop_lambdas
+        ]
 
         # Measure overlaps for the Berry phase product
         overlaps = []
@@ -472,8 +496,12 @@ class HolonomyScanMission:
         topo_charge = berry_phase / (2.0 * math.pi)
         min_overlap = min(overlaps) if overlaps else 0.0
 
-        logger.info("[Executor Agent] Berry phase = %.6f rad  Chern = %d  min_overlap = %.6f",
-                    berry_phase, chern, min_overlap)
+        logger.info(
+            "[Executor Agent] Berry phase = %.6f rad  Chern = %d  min_overlap = %.6f",
+            berry_phase,
+            chern,
+            min_overlap,
+        )
 
         return ExecutionResult(
             lambda_critical=lam_c,
@@ -521,8 +549,13 @@ class HolonomyScanMission:
         else:
             cert = "NOT_ELEVATED"
 
-        logger.info("[Verification Agent] Certificate: %s  Chern=%d  mass_gap=%s  D*=%.3e",
-                    cert, execution.chern_number, mass_gap_ok, d_n_star)
+        logger.info(
+            "[Verification Agent] Certificate: %s  Chern=%d  mass_gap=%s  D*=%.3e",
+            cert,
+            execution.chern_number,
+            mass_gap_ok,
+            d_n_star,
+        )
 
         return VerificationResult(
             lambda_critical=execution.lambda_critical,
@@ -544,5 +577,9 @@ class HolonomyScanMission:
         )
 
     async def _broadcast_transition(self, result: VerificationResult) -> None:
-        logger.info("[WebSocket Broadcast] Certificate=%s  λ*=%.6f  Chern=%d",
-                    result.certificate_status, result.lambda_critical, result.chern_number)
+        logger.info(
+            "[WebSocket Broadcast] Certificate=%s  λ*=%.6f  Chern=%d",
+            result.certificate_status,
+            result.lambda_critical,
+            result.chern_number,
+        )

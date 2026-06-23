@@ -216,7 +216,9 @@ class TestCausalAttributionEngine:
         nodes = {"node_1": {"type": "solver"}}
         edges = {"node_1": []}
         graph = FabricGraph(nodes, edges)
-        with pytest.raises(ValueError, match="coverage_threshold must be in \\[0, 1\\]"):
+        with pytest.raises(
+            ValueError, match="coverage_threshold must be in \\[0, 1\\]"
+        ):
             CausalAttributionEngine(graph, coverage_threshold=1.5)
 
     def test_rank_hotspots(self):
@@ -310,7 +312,10 @@ class TestCausalAttributionEngine:
         )
 
         # Should pass with lower threshold
-        assert engine.verify_explanation_completeness(explanation, required_coverage=0.5) is True
+        assert (
+            engine.verify_explanation_completeness(explanation, required_coverage=0.5)
+            is True
+        )
 
 
 class TestSecuritySwarmGraph:
@@ -484,15 +489,15 @@ class TestCounterfactualResultProperties:
         covered_nodes=lists(text(min_size=1, max_size=5), min_size=0, max_size=10),
         uncovered_nodes=lists(text(min_size=1, max_size=5), min_size=0, max_size=10),
     )
-    def test_property_total_nodes_matches_sum(
-        self, covered_nodes, uncovered_nodes
-    ):
+    def test_property_total_nodes_matches_sum(self, covered_nodes, uncovered_nodes):
         """Property: Total nodes equals covered + uncovered."""
         total_nodes = len(covered_nodes) + len(uncovered_nodes)
         result = CounterfactualResult(
             covered_nodes=covered_nodes,
             uncovered_nodes=uncovered_nodes,
-            coverage_ratio=1.0 if total_nodes == 0 else len(covered_nodes) / total_nodes,
+            coverage_ratio=(
+                1.0 if total_nodes == 0 else len(covered_nodes) / total_nodes
+            ),
             total_nodes=total_nodes,
             confidence="high",
         )

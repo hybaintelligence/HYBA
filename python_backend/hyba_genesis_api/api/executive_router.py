@@ -26,7 +26,9 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/organism/executive", tags=["Executive"])
 
 
-def _require_operator_role(payload: TokenPayload = Depends(get_token_payload)) -> TokenPayload:
+def _require_operator_role(
+    payload: TokenPayload = Depends(get_token_payload),
+) -> TokenPayload:
     """Require operator role for executive endpoints."""
     if "operator" not in payload.roles and "admin" not in payload.roles:
         raise HTTPException(
@@ -109,8 +111,12 @@ async def set_mining_intent(
         if not result["success"]:
             # Circuit breaker: return 403 for immune lock or stasis lock
             if result.get("error") in ["IMMUNE_LOCK", "STASIS_LOCK"]:
-                raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=result)
-            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=result)
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN, detail=result
+                )
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=result
+            )
         return result
 
     elif req.intent == MiningIntent.QUIESCE:
@@ -121,7 +127,8 @@ async def set_mining_intent(
 
     else:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail=f"Unknown intent: {req.intent}"
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Unknown intent: {req.intent}",
         )
 
 
@@ -162,7 +169,8 @@ async def migrate_to_habitat(
 
     if not target_habitat.enabled:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail=f"Habitat '{pool_name}' is disabled"
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Habitat '{pool_name}' is disabled",
         )
 
     # In a full implementation, this would:
@@ -178,13 +186,17 @@ async def migrate_to_habitat(
         logger.info(f"Executive: Migrating from current pool to {pool_name}")
         # This would involve disconnecting current pool and connecting to new one
         # For now, we'll log the migration intent
-        logger.warning(f"Pool migration to {pool_name} requested - full implementation pending")
+        logger.warning(
+            f"Pool migration to {pool_name} requested - full implementation pending"
+        )
 
     return MigrationResponse(status="MIGRATION_COMPLETE", target=pool_name)
 
 
 @router.get("/telemetry", response_model=TelemetryResponse)
-async def get_executive_telemetry(payload: TokenPayload = Depends(_require_operator_role)):
+async def get_executive_telemetry(
+    payload: TokenPayload = Depends(_require_operator_role),
+):
     """Full-stack telemetry: From Stratum bytes to Consciousness Phi."""
     executive = _get_executive_controller()
 
@@ -201,7 +213,9 @@ async def get_executive_status(payload: TokenPayload = Depends(_require_operator
     return {
         "is_active": executive.is_active,
         "stasis_mode": executive.stasis_mode,
-        "ignition_time": executive.ignition_time.isoformat() if executive.ignition_time else None,
+        "ignition_time": (
+            executive.ignition_time.isoformat() if executive.ignition_time else None
+        ),
         "phi": executive.consciousness.coherence_meter,
         "sensory_integrity": executive.consciousness.validate_sensory_integrity(),
     }

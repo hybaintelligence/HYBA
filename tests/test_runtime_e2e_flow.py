@@ -36,7 +36,9 @@ class FakePool:
         self.live_session = session
         self.current_difficulty = 1.0
         self.job = job
-        self.result = result or ShareResult(accepted=False, error_code=423, error_message="guarded")
+        self.result = result or ShareResult(
+            accepted=False, error_code=423, error_message="guarded"
+        )
         self.submissions: list[tuple[MiningJob, int]] = []
         self.fixture_used = False
 
@@ -59,7 +61,9 @@ class FakePool:
 
 
 class FakeEngine:
-    def __init__(self, *, nonce: Any = 1, valid: bool = False, reason: str = "local_miss"):
+    def __init__(
+        self, *, nonce: Any = 1, valid: bool = False, reason: str = "local_miss"
+    ):
         self.nonce = nonce
         self.valid = valid
         self.reason = reason
@@ -70,7 +74,10 @@ class FakeEngine:
     async def search(self, job: MiningJob):
         self.searches.append(job)
         return SimpleNamespace(
-            nonce=self.nonce, strategy_used="e2e", phi_resonance_score=0.5, search_time=0.001
+            nonce=self.nonce,
+            strategy_used="e2e",
+            phi_resonance_score=0.5,
+            search_time=0.001,
         )
 
     def submit_candidate(self, job: MiningJob, nonce: int):
@@ -139,7 +146,11 @@ async def test_e2e_job_to_guarded_accept_records_feedback(monkeypatch):
     pool = FakePool(
         job,
         ShareResult(
-            accepted=True, job_id=job.job_id, nonce=123, block_hash="aa" * 32, target=job.target
+            accepted=True,
+            job_id=job.job_id,
+            nonce=123,
+            block_hash="aa" * 32,
+            target=job.target,
         ),
     )
     miner.engine = engine
@@ -157,14 +168,20 @@ async def test_e2e_job_to_guarded_accept_records_feedback(monkeypatch):
 
 
 @pytest.mark.asyncio
-async def test_e2e_job_to_guarded_reject_records_feedback_without_acceptance(monkeypatch):
+async def test_e2e_job_to_guarded_reject_records_feedback_without_acceptance(
+    monkeypatch,
+):
     miner = make_miner(monkeypatch)
     job = make_job("guard-reject")
     engine = FakeEngine(nonce=777, valid=True)
     pool = FakePool(
         job,
         ShareResult(
-            accepted=False, error_code=423, error_message="guarded", job_id=job.job_id, nonce=777
+            accepted=False,
+            error_code=423,
+            error_message="guarded",
+            job_id=job.job_id,
+            nonce=777,
         ),
     )
     miner.engine = engine

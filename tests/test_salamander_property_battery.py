@@ -31,11 +31,15 @@ def _evidence_logs():
     )
     data_values = st.one_of(
         st.integers(min_value=0, max_value=1_000_000),
-        st.floats(min_value=0.0, max_value=1_000_000.0, allow_nan=False, allow_infinity=False),
+        st.floats(
+            min_value=0.0, max_value=1_000_000.0, allow_nan=False, allow_infinity=False
+        ),
         st.text(min_size=0, max_size=20),
     )
     event_data = st.dictionaries(
-        keys=st.sampled_from(["job_id", "start_nonce", "target_hashrate", "domain", "roi"]),
+        keys=st.sampled_from(
+            ["job_id", "start_nonce", "target_hashrate", "domain", "roi"]
+        ),
         values=data_values,
         max_size=3,
     )
@@ -43,7 +47,12 @@ def _evidence_logs():
         st.tuples(
             event_names,
             st.text(min_size=1, max_size=16),
-            st.floats(min_value=0.0, max_value=1_000_000.0, allow_nan=False, allow_infinity=False),
+            st.floats(
+                min_value=0.0,
+                max_value=1_000_000.0,
+                allow_nan=False,
+                allow_infinity=False,
+            ),
             event_data,
         ),
         max_size=20,
@@ -73,11 +82,15 @@ if given is not None:
         energy_input=st.floats(
             min_value=0.0, max_value=1_000_000.0, allow_nan=False, allow_infinity=False
         ),
-        efficiency=st.floats(min_value=0.0, max_value=1.0, allow_nan=False, allow_infinity=False),
+        efficiency=st.floats(
+            min_value=0.0, max_value=1.0, allow_nan=False, allow_infinity=False
+        ),
         max_work_per_joule=st.floats(
             min_value=0.0, max_value=1_000_000.0, allow_nan=False, allow_infinity=False
         ),
-        utilization=st.floats(min_value=0.0, max_value=1.0, allow_nan=False, allow_infinity=False),
+        utilization=st.floats(
+            min_value=0.0, max_value=1.0, allow_nan=False, allow_infinity=False
+        ),
     )
     @settings(max_examples=50)
     def test_property_battery_accepts_work_within_metabolic_budget(
@@ -97,7 +110,9 @@ if given is not None:
         assert result.reason == "work_within_energy_budget"
 
     @given(
-        drift=st.floats(min_value=-0.49, max_value=0.49, allow_nan=False, allow_infinity=False)
+        drift=st.floats(
+            min_value=-0.49, max_value=0.49, allow_nan=False, allow_infinity=False
+        )
     )
     @settings(max_examples=50)
     def test_property_battery_accepts_phi_inside_harmonic_zone(drift):

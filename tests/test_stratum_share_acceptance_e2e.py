@@ -11,9 +11,13 @@ class AcceptingSession:
     def __init__(self):
         self.calls = 0
 
-    async def submit_share(self, *, job_id: str, extranonce2: str, ntime: str, nonce: str):
+    async def submit_share(
+        self, *, job_id: str, extranonce2: str, ntime: str, nonce: str
+    ):
         self.calls += 1
-        return SubmitResult(True, None, {"id": self.calls, "result": True, "error": None})
+        return SubmitResult(
+            True, None, {"id": self.calls, "result": True, "error": None}
+        )
 
     async def close(self):
         return None
@@ -23,18 +27,24 @@ class RetryThenAcceptSession:
     def __init__(self):
         self.calls = 0
 
-    async def submit_share(self, *, job_id: str, extranonce2: str, ntime: str, nonce: str):
+    async def submit_share(
+        self, *, job_id: str, extranonce2: str, ntime: str, nonce: str
+    ):
         self.calls += 1
         if self.calls == 1:
             return SubmitResult(False, None, {"unexpected": "shape"})
-        return SubmitResult(True, None, {"id": self.calls, "result": True, "error": None})
+        return SubmitResult(
+            True, None, {"id": self.calls, "result": True, "error": None}
+        )
 
     async def close(self):
         return None
 
 
 class RejectingSession:
-    async def submit_share(self, *, job_id: str, extranonce2: str, ntime: str, nonce: str):
+    async def submit_share(
+        self, *, job_id: str, extranonce2: str, ntime: str, nonce: str
+    ):
         return SubmitResult(
             False,
             [23, "low difficulty share", None],

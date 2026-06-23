@@ -30,7 +30,9 @@ def test_curriculum_preserves_pythia_mission_autonomy() -> None:
 def test_consensus_lessons_protect_exact_sha256d_and_targets() -> None:
     curriculum = seed_mining_pitfalls_curriculum()
     lessons = curriculum.lessons_by_category(PitfallCategory.BITCOIN_CONSENSUS)
-    text = "\n".join(lesson.to_dict()["required_response"] for lesson in lessons).lower()
+    text = "\n".join(
+        lesson.to_dict()["required_response"] for lesson in lessons
+    ).lower()
 
     assert "uint32 little-endian" in text
     assert "compact_to_target" in text
@@ -43,7 +45,9 @@ def test_consensus_lessons_protect_exact_sha256d_and_targets() -> None:
 def test_stratum_lessons_protect_pool_truth_and_stale_jobs() -> None:
     curriculum = seed_mining_pitfalls_curriculum()
     lessons = curriculum.lessons_by_category(PitfallCategory.STRATUM_POOL)
-    text = "\n".join(lesson.to_dict()["required_response"] for lesson in lessons).lower()
+    text = "\n".join(
+        lesson.to_dict()["required_response"] for lesson in lessons
+    ).lower()
 
     assert "stale" in text
     assert "mining.set_difficulty" in text
@@ -54,7 +58,9 @@ def test_stratum_lessons_protect_pool_truth_and_stale_jobs() -> None:
 def test_runtime_lessons_block_fixtures_secret_leaks_and_accelerator_truth() -> None:
     curriculum = seed_mining_pitfalls_curriculum()
     lessons = curriculum.lessons_by_category(PitfallCategory.SOFTWARE_RUNTIME)
-    text = "\n".join(lesson.to_dict()["required_response"] for lesson in lessons).lower()
+    text = "\n".join(
+        lesson.to_dict()["required_response"] for lesson in lessons
+    ).lower()
 
     assert "dev fixtures" in text
     assert "redact credentials" in text
@@ -65,7 +71,9 @@ def test_runtime_lessons_block_fixtures_secret_leaks_and_accelerator_truth() -> 
 def test_autonomic_lessons_protect_oracle_hashrate_and_nonce_coverage() -> None:
     curriculum = seed_mining_pitfalls_curriculum()
     lessons = curriculum.lessons_by_category(PitfallCategory.AUTONOMIC_OPTIMISATION)
-    text = "\n".join(lesson.to_dict()["required_response"] for lesson in lessons).lower()
+    text = "\n".join(
+        lesson.to_dict()["required_response"] for lesson in lessons
+    ).lower()
 
     assert "may never remove exact sha-256d validation" in text
     assert "1 eh/s" in text
@@ -76,7 +84,9 @@ def test_autonomic_lessons_protect_oracle_hashrate_and_nonce_coverage() -> None:
 def test_evidence_lessons_preserve_claim_boundary_and_replayability() -> None:
     curriculum = seed_mining_pitfalls_curriculum()
     lessons = curriculum.lessons_by_category(PitfallCategory.EVIDENCE_AND_CLAIMS)
-    text = "\n".join(lesson.to_dict()["required_response"] for lesson in lessons).lower()
+    text = "\n".join(
+        lesson.to_dict()["required_response"] for lesson in lessons
+    ).lower()
 
     assert "accepted shares as learning events" in text
     assert "pool-confirmed accepted block" in text
@@ -92,5 +102,6 @@ def test_curriculum_is_json_safe_for_evidence_packets() -> None:
     assert len(ids) == len(set(ids)) == len(evidence)
     assert all(item["lesson_id"] for item in evidence)
     assert all(
-        item["category"] in {category.value for category in PitfallCategory} for item in evidence
+        item["category"] in {category.value for category in PitfallCategory}
+        for item in evidence
     )

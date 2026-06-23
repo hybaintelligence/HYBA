@@ -39,7 +39,9 @@ class RemezApproximator:
         if n < 1:
             raise ValueError("n must be >= 1")
         k = np.arange(1, n + 1, dtype=float)
-        return 0.5 * (a + b) + 0.5 * (b - a) * np.cos((2.0 * k - 1.0) * np.pi / (2.0 * n))
+        return 0.5 * (a + b) + 0.5 * (b - a) * np.cos(
+            (2.0 * k - 1.0) * np.pi / (2.0 * n)
+        )
 
     def approximate(
         self,

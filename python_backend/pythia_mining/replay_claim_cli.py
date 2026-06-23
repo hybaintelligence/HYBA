@@ -104,7 +104,9 @@ def _load_claim(path: Path, claim_id: str | None = None) -> dict[str, Any]:
         return manifest["claim"]
     claims = manifest.get("claims", [])
     if not isinstance(claims, list) or not claims:
-        raise ReplayExecutionError("manifest must contain claim or non-empty claims list")
+        raise ReplayExecutionError(
+            "manifest must contain claim or non-empty claims list"
+        )
     if claim_id:
         for claim in claims:
             if claim.get("id") == claim_id:
@@ -130,9 +132,15 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--falsify")
     parser.add_argument("--falsify-all", action="store_true")
     parser.add_argument("--json", action="store_true", dest="as_json")
-    parser.add_argument("--register", type=Path, help="Save verified manifest to a local registry")
-    parser.add_argument("--list", type=Path, help="List a local manifest registry and exit")
-    parser.add_argument("--reverify", help="Load claim id from --list registry and re-run replay")
+    parser.add_argument(
+        "--register", type=Path, help="Save verified manifest to a local registry"
+    )
+    parser.add_argument(
+        "--list", type=Path, help="List a local manifest registry and exit"
+    )
+    parser.add_argument(
+        "--reverify", help="Load claim id from --list registry and re-run replay"
+    )
     parser.add_argument("--report-json", type=Path, help="Write structured JSON report")
     parser.add_argument("--report-html", type=Path, help="Write HTML report")
     args = parser.parse_args(argv)
@@ -144,12 +152,15 @@ def main(argv: list[str] | None = None) -> int:
             if args.as_json:
                 print(
                     json.dumps(
-                        {"ok": True, "records": [r.to_dict() for r in records]}, sort_keys=True
+                        {"ok": True, "records": [r.to_dict() for r in records]},
+                        sort_keys=True,
                     )
                 )
             else:
                 for record in records:
-                    print(f"{record.claim_id} {record.input_digest} {record.output_digest}")
+                    print(
+                        f"{record.claim_id} {record.input_digest} {record.output_digest}"
+                    )
             return 0
         if args.list and args.reverify:
             result = load_and_reverify(args.list, args.reverify)
@@ -168,7 +179,9 @@ def main(argv: list[str] | None = None) -> int:
                 print(f"✅ Registry replay verified: {result.record.claim_id}")
             return 0
         if args.manifest is None:
-            raise ReplayExecutionError("manifest path is required unless --list is used")
+            raise ReplayExecutionError(
+                "manifest path is required unless --list is used"
+            )
         claim = _load_claim(args.manifest, args.claim_id)
         attestation = claim["reproducibility_attestation"]
         if args.falsify_all:
@@ -187,13 +200,17 @@ def main(argv: list[str] | None = None) -> int:
             message = f"✅ Falsification verified: {result.claim_id}"
         elif args.stress:
             result = replay_stress_test(attestation, runs=args.stress, cwd=args.cwd)
-            message = f"✅ Stress replay verified: {result.claim_id} ({result.runs} runs)"
+            message = (
+                f"✅ Stress replay verified: {result.claim_id} ({result.runs} runs)"
+            )
         else:
             result = execute_reproducibility_replay(attestation, cwd=args.cwd)
             message = f"✅ Replay verified: {result.claim_id}"
         if args.register:
             manifest = json.loads(args.manifest.read_text(encoding="utf-8"))
-            record = save_verified_manifest(manifest, args.register, source_cwd=args.cwd)
+            record = save_verified_manifest(
+                manifest, args.register, source_cwd=args.cwd
+            )
             message += f"; registered {record.record_key}"
         report = build_verification_report(
             ok=True,

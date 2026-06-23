@@ -68,16 +68,22 @@ def compute_m32_spectrum() -> Dict[str, Any]:
     adj = [[1.0 if ADJACENT[i][j] else 0.0 for j in range(dim)] for i in range(dim)]
 
     # Power iteration for top eigenvalues
-    def power_iterate(matrix: List[List[float]], n_iters: int = 1000) -> Tuple[float, List[float]]:
+    def power_iterate(
+        matrix: List[List[float]], n_iters: int = 1000
+    ) -> Tuple[float, List[float]]:
         dim = len(matrix)
         vec = [1.0 / math.sqrt(dim)] * dim
         for _ in range(n_iters):
-            new_vec = [sum(matrix[i][j] * vec[j] for j in range(dim)) for i in range(dim)]
+            new_vec = [
+                sum(matrix[i][j] * vec[j] for j in range(dim)) for i in range(dim)
+            ]
             norm = math.sqrt(sum(v * v for v in new_vec))
             if norm > 0:
                 vec = [v / norm for v in new_vec]
         # Rayleigh quotient
-        rayleigh = sum(sum(matrix[i][j] * vec[i] * vec[j] for j in range(dim)) for i in range(dim))
+        rayleigh = sum(
+            sum(matrix[i][j] * vec[i] * vec[j] for j in range(dim)) for i in range(dim)
+        )
         return rayleigh, vec
 
     # Top eigenvalue (λ_1 = degree for regular graph)
@@ -86,7 +92,8 @@ def compute_m32_spectrum() -> Dict[str, Any]:
     # Deflate and get second eigenvalue
     dim = len(adj)
     deflated = [
-        [adj[i][j] - lambda_1 * top_vec[i] * top_vec[j] for j in range(dim)] for i in range(dim)
+        [adj[i][j] - lambda_1 * top_vec[i] * top_vec[j] for j in range(dim)]
+        for i in range(dim)
     ]
     lambda_2, _ = power_iterate(deflated)
 
@@ -113,7 +120,9 @@ def compute_m32_spectrum() -> Dict[str, Any]:
         quantum_mix_steps = float("inf")
 
     speedup_ratio = (
-        classical_mix_steps / quantum_mix_steps if quantum_mix_steps > 0 else float("inf")
+        classical_mix_steps / quantum_mix_steps
+        if quantum_mix_steps > 0
+        else float("inf")
     )
 
     return {
@@ -254,8 +263,12 @@ def compute_grover_comparison(
 
     # Comparison ratios
     classical_vs_hendrix = classical_full_steps / max(1, hendrix_classical_steps)
-    grover_unstructured_vs_hendrix_classical = grover_full_iters / max(1, hendrix_classical_steps)
-    grover_unstructured_vs_hendrix_grover = grover_full_iters / max(1, hendrix_grover_steps)
+    grover_unstructured_vs_hendrix_classical = grover_full_iters / max(
+        1, hendrix_classical_steps
+    )
+    grover_unstructured_vs_hendrix_grover = grover_full_iters / max(
+        1, hendrix_grover_steps
+    )
 
     return {
         "search_space": {
@@ -336,9 +349,9 @@ def compute_effective_speedup(
         "phi_per_step_boost": phi_boost,
         "total_effective_speedup_ratio": round(total_speedup, 4),
         "total_speedup_log10": round(total_speedup_log10, 4),
-        "total_speedup_notation": f"~{10**total_speedup_log10:.2e}×"
-        if total_speedup_log10 > 0
-        else "1×",
+        "total_speedup_notation": (
+            f"~{10**total_speedup_log10:.2e}×" if total_speedup_log10 > 0 else "1×"
+        ),
         "interpretation": (
             f"The HENDRIX-Φ quantum walk achieves its advantage from three sources:\n"
             f"  1. M32 EXPANDER GRAPH: Quantum walk mixes {graph_speedup:.1f}× faster\n"
@@ -389,7 +402,9 @@ def generate_report(
     print(f"  Mass gap = {manifold['yang_mills_mass_gap']:.4f}")
     print(f"  Mean action = {manifold['mean_ym_action']:.2f}")
     print(f"  On-manifold fraction = {manifold['on_manifold_fraction'] * 100:.4f}%")
-    print(f"  Effective manifold dim = {manifold['effective_manifold_dimension_bits']:.2f} bits")
+    print(
+        f"  Effective manifold dim = {manifold['effective_manifold_dimension_bits']:.2f} bits"
+    )
     print(
         f"  (Reduction from 32 bits: {32 - manifold['effective_manifold_dimension_bits']:.2f} bits)"
     )
@@ -398,7 +413,9 @@ def generate_report(
     print("\n[3/3] Computing effective speedup and Grover comparison...")
     speedup = compute_effective_speedup(spectrum, manifold)
     print(f"  Graph expander speedup : {speedup['graph_expander_speedup_ratio']:.1f}×")
-    print(f"  Manifold dimension red. : {speedup['manifold_dimension_reduction_ratio']:.1e}×")
+    print(
+        f"  Manifold dimension red. : {speedup['manifold_dimension_reduction_ratio']:.1e}×"
+    )
     print(f"  Total speedup          : {speedup['total_speedup_notation']}")
     print(f"  Orders of magnitude    : {speedup['total_speedup_log10']:.1f}")
 
@@ -450,7 +467,9 @@ def generate_report(
     print("  Algorithm                Steps/Iters  vs Classical  vs Grover")
     print("  ──────────────────────── ──────────── ──────────── ────────────")
     N_u32 = UINT32_SPACE
-    print(f"  A. Classical brute force {gc['A_classical_brute_force_steps']:>13,}    1×         —")
+    print(
+        f"  A. Classical brute force {gc['A_classical_brute_force_steps']:>13,}    1×         —"
+    )
     print(
         f"  B. Grover unstructured   {gc['B_grover_unstructured_32bit_iterations']:>13,}   ~{gc['B_grover_unstructured_32bit_iterations'] * 4 // N_u32:.0e}×    1×"
     )

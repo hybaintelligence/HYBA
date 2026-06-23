@@ -40,7 +40,10 @@ class SubstrateBuffer:
         return event
 
     def snapshot(self) -> Dict[str, Any]:
-        return {"parameters": dict(self.parameters), "audit_events": list(self.audit_events)}
+        return {
+            "parameters": dict(self.parameters),
+            "audit_events": list(self.audit_events),
+        }
 
 
 class MiningParameterSink(Protocol):
@@ -87,9 +90,13 @@ class RecursiveClosure:
 
         reflection = self.controller.step()
         telemetry = reflection.get("telemetry", {})
-        phi_resonance = float(telemetry.get("phi_resonance", telemetry.get("phi_density", 0.0)))
+        phi_resonance = float(
+            telemetry.get("phi_resonance", telemetry.get("phi_density", 0.0))
+        )
         proposal = reflection.get("proposal") or {}
-        adjustment = float(proposal.get("adjustment", telemetry.get("proposed_mutation", 0.0)))
+        adjustment = float(
+            proposal.get("adjustment", telemetry.get("proposed_mutation", 0.0))
+        )
         codebase_hash = hashlib.sha256(
             repr(reflection.get("observation", {})).encode("utf-8")
         ).hexdigest()
@@ -135,4 +142,7 @@ def build_buffered_closure(
     """Factory for a safe closure with an in-memory substrate buffer."""
 
     buffer = SubstrateBuffer()
-    return RecursiveClosure(controller, BufferBackedMiningLoop(buffer), registry), buffer
+    return (
+        RecursiveClosure(controller, BufferBackedMiningLoop(buffer), registry),
+        buffer,
+    )

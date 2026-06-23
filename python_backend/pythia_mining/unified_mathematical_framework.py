@@ -177,7 +177,9 @@ class UnifiedMathematicalFramework:
             pass
 
         try:
-            from .turing_church_universal_computation import TuringChurchUniversalComputation
+            from .turing_church_universal_computation import (
+                TuringChurchUniversalComputation,
+            )
 
             self.paradigm_instances[MathematicalParadigm.UNIVERSAL_COMPUTATION] = (
                 TuringChurchUniversalComputation()
@@ -215,7 +217,9 @@ class UnifiedMathematicalFramework:
         try:
             from .penrose_quantum_gravity import PenroseQuantumGravity
 
-            self.paradigm_instances[MathematicalParadigm.QUANTUM_GRAVITY] = PenroseQuantumGravity()
+            self.paradigm_instances[MathematicalParadigm.QUANTUM_GRAVITY] = (
+                PenroseQuantumGravity()
+            )
         except ImportError:
             pass
 
@@ -258,7 +262,9 @@ class UnifiedMathematicalFramework:
         # IIT 4.0 Conceptual Integration
         if MathematicalParadigm.IIT_4_CONCEPTUAL in self.paradigm_instances:
             try:
-                iit_instance = self.paradigm_instances[MathematicalParadigm.IIT_4_CONCEPTUAL]
+                iit_instance = self.paradigm_instances[
+                    MathematicalParadigm.IIT_4_CONCEPTUAL
+                ]
                 system_state = np.array([nonce % 32, (nonce >> 16) % 32], dtype=float)
                 conceptual_structure = iit_instance.build_complete_conceptual_structure(
                     system_state
@@ -268,12 +274,16 @@ class UnifiedMathematicalFramework:
                     "conceptual_dimensionality": conceptual_structure.conceptual_dimensionality,
                 }
             except Exception as e:
-                paradigm_results[MathematicalParadigm.IIT_4_CONCEPTUAL] = {"error": str(e)}
+                paradigm_results[MathematicalParadigm.IIT_4_CONCEPTUAL] = {
+                    "error": str(e)
+                }
 
         # Constructor Theory
         if MathematicalParadigm.CONSTRUCTOR_THEORY in self.paradigm_instances:
             try:
-                deutsch_instance = self.paradigm_instances[MathematicalParadigm.CONSTRUCTOR_THEORY]
+                deutsch_instance = self.paradigm_instances[
+                    MathematicalParadigm.CONSTRUCTOR_THEORY
+                ]
                 type(
                     "Task",
                     (),
@@ -290,12 +300,16 @@ class UnifiedMathematicalFramework:
                     "is_reachable": reachability["is_reachable"]
                 }
             except Exception as e:
-                paradigm_results[MathematicalParadigm.CONSTRUCTOR_THEORY] = {"error": str(e)}
+                paradigm_results[MathematicalParadigm.CONSTRUCTOR_THEORY] = {
+                    "error": str(e)
+                }
 
         # Quantum Fourier Transform
         if MathematicalParadigm.QUANTUM_FOURIER in self.paradigm_instances:
             try:
-                shor_instance = self.paradigm_instances[MathematicalParadigm.QUANTUM_FOURIER]
+                shor_instance = self.paradigm_instances[
+                    MathematicalParadigm.QUANTUM_FOURIER
+                ]
                 nonce_array = np.array([nonce], dtype=float)
                 qft_result = shor_instance.quantum_fourier_transform(nonce_array)
                 paradigm_results[MathematicalParadigm.QUANTUM_FOURIER] = {
@@ -303,7 +317,9 @@ class UnifiedMathematicalFramework:
                     "period_estimate": qft_result.period_estimate,
                 }
             except Exception as e:
-                paradigm_results[MathematicalParadigm.QUANTUM_FOURIER] = {"error": str(e)}
+                paradigm_results[MathematicalParadigm.QUANTUM_FOURIER] = {
+                    "error": str(e)
+                }
 
         # Universal Computation
         if MathematicalParadigm.UNIVERSAL_COMPUTATION in self.paradigm_instances:
@@ -313,37 +329,51 @@ class UnifiedMathematicalFramework:
                 ]
                 computability = turing_instance.verify_universal_computation()
                 paradigm_results[MathematicalParadigm.UNIVERSAL_COMPUTATION] = {
-                    "universal_computation_capable": computability["universal_computation_capable"]
+                    "universal_computation_capable": computability[
+                        "universal_computation_capable"
+                    ]
                 }
             except Exception as e:
-                paradigm_results[MathematicalParadigm.UNIVERSAL_COMPUTATION] = {"error": str(e)}
+                paradigm_results[MathematicalParadigm.UNIVERSAL_COMPUTATION] = {
+                    "error": str(e)
+                }
 
         # Lambda Calculus
         if MathematicalParadigm.LAMBDA_CALCULUS in self.paradigm_instances:
             try:
-                church_instance = self.paradigm_instances[MathematicalParadigm.LAMBDA_CALCULUS]
+                church_instance = self.paradigm_instances[
+                    MathematicalParadigm.LAMBDA_CALCULUS
+                ]
                 church_analysis = church_instance.church_encoded_nonce_analysis(nonce)
                 paradigm_results[MathematicalParadigm.LAMBDA_CALCULUS] = {
                     "church_pair": church_analysis["church_pair"]
                 }
             except Exception as e:
-                paradigm_results[MathematicalParadigm.LAMBDA_CALCULUS] = {"error": str(e)}
+                paradigm_results[MathematicalParadigm.LAMBDA_CALCULUS] = {
+                    "error": str(e)
+                }
 
         # Enhanced Grover
         if MathematicalParadigm.ENHANCED_GROVER in self.paradigm_instances:
             try:
-                grover_instance = self.paradigm_instances[MathematicalParadigm.ENHANCED_GROVER]
+                grover_instance = self.paradigm_instances[
+                    MathematicalParadigm.ENHANCED_GROVER
+                ]
                 grover_result = grover_instance.grover_multiple_marked(20, [nonce % 20])
                 paradigm_results[MathematicalParadigm.ENHANCED_GROVER] = {
                     "marked_states": grover_result.marked_states
                 }
             except Exception as e:
-                paradigm_results[MathematicalParadigm.ENHANCED_GROVER] = {"error": str(e)}
+                paradigm_results[MathematicalParadigm.ENHANCED_GROVER] = {
+                    "error": str(e)
+                }
 
         # Fourier Harmonic Analysis
         if MathematicalParadigm.FOURIER_HARMONIC in self.paradigm_instances:
             try:
-                fourier_instance = self.paradigm_instances[MathematicalParadigm.FOURIER_HARMONIC]
+                fourier_instance = self.paradigm_instances[
+                    MathematicalParadigm.FOURIER_HARMONIC
+                ]
                 nonce_sequence = [nonce + i for i in range(32)]
                 fourier_result = fourier_instance.fourier_analysis(
                     np.array(nonce_sequence, dtype=float)
@@ -352,16 +382,24 @@ class UnifiedMathematicalFramework:
                     "spectral_centroid": fourier_result.spectral_centroid
                 }
             except Exception as e:
-                paradigm_results[MathematicalParadigm.FOURIER_HARMONIC] = {"error": str(e)}
+                paradigm_results[MathematicalParadigm.FOURIER_HARMONIC] = {
+                    "error": str(e)
+                }
 
         # Quantum Gravity
         if MathematicalParadigm.QUANTUM_GRAVITY in self.paradigm_instances:
             try:
-                penrose_instance = self.paradigm_instances[MathematicalParadigm.QUANTUM_GRAVITY]
+                penrose_instance = self.paradigm_instances[
+                    MathematicalParadigm.QUANTUM_GRAVITY
+                ]
                 penrose_instance.create_twistor_for_nonce(nonce)
-                paradigm_results[MathematicalParadigm.QUANTUM_GRAVITY] = {"twistor_created": True}
+                paradigm_results[MathematicalParadigm.QUANTUM_GRAVITY] = {
+                    "twistor_created": True
+                }
             except Exception as e:
-                paradigm_results[MathematicalParadigm.QUANTUM_GRAVITY] = {"error": str(e)}
+                paradigm_results[MathematicalParadigm.QUANTUM_GRAVITY] = {
+                    "error": str(e)
+                }
 
         # Autonomous Control
         if MathematicalParadigm.AUTONOMOUS_CONTROL in self.paradigm_instances:
@@ -375,19 +413,25 @@ class UnifiedMathematicalFramework:
                     "controller_active": True,
                 }
             except Exception as e:
-                paradigm_results[MathematicalParadigm.AUTONOMOUS_CONTROL] = {"error": str(e)}
+                paradigm_results[MathematicalParadigm.AUTONOMOUS_CONTROL] = {
+                    "error": str(e)
+                }
 
         # AI Orchestration
         if MathematicalParadigm.AI_ORCHESTRATION in self.paradigm_instances:
             try:
-                ai_instance = self.paradigm_instances[MathematicalParadigm.AI_ORCHESTRATION]
+                ai_instance = self.paradigm_instances[
+                    MathematicalParadigm.AI_ORCHESTRATION
+                ]
                 ai_summary = ai_instance.get_comprehensive_summary()
                 paradigm_results[MathematicalParadigm.AI_ORCHESTRATION] = {
                     "ai_summary": ai_summary,
                     "ai_active": True,
                 }
             except Exception as e:
-                paradigm_results[MathematicalParadigm.AI_ORCHESTRATION] = {"error": str(e)}
+                paradigm_results[MathematicalParadigm.AI_ORCHESTRATION] = {
+                    "error": str(e)
+                }
 
         # Calculate consensus score
         consensus_score = self._calculate_consensus(paradigm_results)
@@ -399,10 +443,14 @@ class UnifiedMathematicalFramework:
         phi_harmony = self._calculate_phi_harmony(paradigm_results)
 
         # Determine computational boundaries
-        computational_boundaries = self._determine_computational_boundaries(paradigm_results)
+        computational_boundaries = self._determine_computational_boundaries(
+            paradigm_results
+        )
 
         # Generate unified recommendation
-        recommendation = self._generate_unified_recommendation(paradigm_results, consensus_score)
+        recommendation = self._generate_unified_recommendation(
+            paradigm_results, consensus_score
+        )
 
         return UnifiedAnalysisResult(
             paradigm_results=paradigm_results,
@@ -421,7 +469,9 @@ class UnifiedMathematicalFramework:
             return 0.0
 
         # Count successful analyses
-        successful = sum(1 for result in paradigm_results.values() if "error" not in result)
+        successful = sum(
+            1 for result in paradigm_results.values() if "error" not in result
+        )
         total = len(paradigm_results)
 
         return successful / total if total > 0 else 0.0
@@ -444,7 +494,9 @@ class UnifiedMathematicalFramework:
         if MathematicalParadigm.CONSTRUCTOR_THEORY in paradigm_results:
             deutsch_result = paradigm_results[MathematicalParadigm.CONSTRUCTOR_THEORY]
             if "is_reachable" in deutsch_result and deutsch_result["is_reachable"]:
-                insights.append("Nonce is constructor-theoretically reachable from current state")
+                insights.append(
+                    "Nonce is constructor-theoretically reachable from current state"
+                )
 
         # Check for spectral patterns
         if MathematicalParadigm.QUANTUM_FOURIER in paradigm_results:
@@ -457,7 +509,9 @@ class UnifiedMathematicalFramework:
         # Check for phi harmony
         phi_harmony = self._calculate_phi_harmony(paradigm_results)
         if phi_harmony > 0.8:
-            insights.append("Strong golden ratio harmonization across mathematical paradigms")
+            insights.append(
+                "Strong golden ratio harmonization across mathematical paradigms"
+            )
 
         return insights
 
@@ -541,7 +595,9 @@ class UnifiedMathematicalFramework:
         return boundaries
 
     def _generate_unified_recommendation(
-        self, paradigm_results: Dict[MathematicalParadigm, Dict[str, Any]], consensus_score: float
+        self,
+        paradigm_results: Dict[MathematicalParadigm, Dict[str, Any]],
+        consensus_score: float,
     ) -> str:
         """Generate unified recommendation from all paradigms."""
         if consensus_score < 0.5:
@@ -578,7 +634,9 @@ class UnifiedMathematicalFramework:
         else:
             return "Standard recommendation: Use balanced paradigm approach for nonce analysis"
 
-    def cross_paradigm_verification(self, test_cases: List[int]) -> CrossParadigmVerification:
+    def cross_paradigm_verification(
+        self, test_cases: List[int]
+    ) -> CrossParadigmVerification:
         """Verify consistency across all mathematical paradigms.
 
         This checks that different paradigms produce consistent results
@@ -623,7 +681,9 @@ class UnifiedMathematicalFramework:
 
         # Generate resolutions
         if conflicts:
-            resolutions.append("Apply phi-harmonization to reconcile paradigm differences")
+            resolutions.append(
+                "Apply phi-harmonization to reconcile paradigm differences"
+            )
             resolutions.append("Use consensus-based approach when conflicts detected")
             resolutions.append("Prioritize paradigms with higher consensus scores")
         else:
@@ -661,7 +721,11 @@ class UnifiedMathematicalFramework:
             Dictionary with selection results
         """
         if not candidate_nonces:
-            return {"selected_nonce": None, "method": "phi_harmonized", "paradigm_scores": {}}
+            return {
+                "selected_nonce": None,
+                "method": "phi_harmonized",
+                "paradigm_scores": {},
+            }
 
         paradigm_scores = {}
 
@@ -674,7 +738,8 @@ class UnifiedMathematicalFramework:
                 analysis.consensus_score * 0.3
                 + analysis.phi_harmony * 0.3
                 + len(analysis.emergent_insights) * 0.2
-                + (1.0 if "exceptional" in analysis.recommendation.lower() else 0.0) * 0.2
+                + (1.0 if "exceptional" in analysis.recommendation.lower() else 0.0)
+                * 0.2
             )
 
             paradigm_scores[nonce] = score

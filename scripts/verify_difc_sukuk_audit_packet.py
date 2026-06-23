@@ -62,7 +62,9 @@ def verify_packet(path: Path) -> dict[str, Any]:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Verify a DIFC / AAOIFI Sukuk audit packet.")
+    parser = argparse.ArgumentParser(
+        description="Verify a DIFC / AAOIFI Sukuk audit packet."
+    )
     parser.add_argument("packet", type=Path, help="Path to the generated JSON packet.")
     args = parser.parse_args()
 

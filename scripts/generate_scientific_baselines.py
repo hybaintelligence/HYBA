@@ -163,7 +163,9 @@ def generate_artifacts(output_dir: Path) -> Dict[str, Any]:
         }
     )
     manifest_path = output_dir / "baseline_manifest.json"
-    manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True), encoding="utf-8")
+    manifest_path.write_text(
+        json.dumps(manifest, indent=2, sort_keys=True), encoding="utf-8"
+    )
     return manifest
 
 

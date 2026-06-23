@@ -127,7 +127,8 @@ def compute_graph_automorphisms_h4(
     nodes = list(range(num_nodes))
     degree = {node_id: len(neighbors[node_id]) for node_id in nodes}
     candidates = {
-        node_id: {other for other in nodes if degree[other] == degree[node_id]} for node_id in nodes
+        node_id: {other for other in nodes if degree[other] == degree[node_id]}
+        for node_id in nodes
     }
     mapping: Dict[int, int] = {}
     used: Set[int] = set()
@@ -141,7 +142,9 @@ def compute_graph_automorphisms_h4(
                 continue
             ok = True
             for mapped_source, mapped_target in mapping.items():
-                if (mapped_source in neighbors[source]) != (mapped_target in neighbors[target]):
+                if (mapped_source in neighbors[source]) != (
+                    mapped_target in neighbors[target]
+                ):
                     ok = False
                     break
             if ok:
@@ -220,7 +223,10 @@ def nonce_orbit_h4(
 ) -> List[int]:
     """Compute the orbit of a nonce under H₄ automorphisms."""
     return sorted(
-        {apply_h4_automorphism_to_nonce(nonce, sigma, num_nodes) for sigma in automorphisms}
+        {
+            apply_h4_automorphism_to_nonce(nonce, sigma, num_nodes)
+            for sigma in automorphisms
+        }
     )
 
 

@@ -81,7 +81,9 @@ def _bool(value: bool) -> str:
 
 def write_env(env_file: Path, env: dict[str, str], overwrite: bool) -> None:
     if env_file.exists() and not overwrite:
-        raise FileExistsError(f"{env_file} already exists; pass --overwrite to replace it")
+        raise FileExistsError(
+            f"{env_file} already exists; pass --overwrite to replace it"
+        )
     env_file.parent.mkdir(parents=True, exist_ok=True)
     with env_file.open("w", encoding="utf-8") as handle:
         _write_env(handle, env)
@@ -96,7 +98,9 @@ def _write_env(handle: TextIO, env: dict[str, str]) -> None:
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Create .env.mining.local for a clean HYBA mining run")
+    parser = argparse.ArgumentParser(
+        description="Create .env.mining.local for a clean HYBA mining run"
+    )
     parser.add_argument("--env-file", type=Path, default=DEFAULT_ENV_FILE)
     parser.add_argument("--overwrite", action="store_true")
     parser.add_argument("--node-env", default="production")
@@ -110,15 +114,28 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--pool-primary-credentials")
     parser.add_argument("--operator-user", default="operator")
     parser.add_argument("--operator-password", default="change-this-operator-password")
-    parser.add_argument("--operator-hash", help="Precomputed $argon2id$... hash for HYBA_OPERATOR_CREDENTIALS")
+    parser.add_argument(
+        "--operator-hash",
+        help="Precomputed $argon2id$... hash for HYBA_OPERATOR_CREDENTIALS",
+    )
     parser.add_argument("--operator-role", default="mining_operator")
-    parser.add_argument("--live-stratum", action=argparse.BooleanOptionalAction, default=True)
-    parser.add_argument("--live-share-submit", action=argparse.BooleanOptionalAction, default=False)
+    parser.add_argument(
+        "--live-stratum", action=argparse.BooleanOptionalAction, default=True
+    )
+    parser.add_argument(
+        "--live-share-submit", action=argparse.BooleanOptionalAction, default=False
+    )
     parser.add_argument("--approval-id")
-    parser.add_argument("--autoconnect", action=argparse.BooleanOptionalAction, default=False)
+    parser.add_argument(
+        "--autoconnect", action=argparse.BooleanOptionalAction, default=False
+    )
     parser.add_argument("--capacity-ehs", type=float, default=1.0)
     parser.add_argument("--autonomy-level", default="supervised")
-    parser.add_argument("--operator-approval-required", action=argparse.BooleanOptionalAction, default=True)
+    parser.add_argument(
+        "--operator-approval-required",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+    )
     parser.add_argument("--max-hashrate-ehs", type=float, default=0.001)
     parser.add_argument("--max-power-watts", type=float, default=500.0)
     parser.add_argument("--viabtc-url", default="stratum+tcp://btc.viabtc.io:3333")
@@ -130,11 +147,15 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> int:
     args = parse_args()
-    env_file = args.env_file if args.env_file.is_absolute() else REPO_ROOT / args.env_file
+    env_file = (
+        args.env_file if args.env_file.is_absolute() else REPO_ROOT / args.env_file
+    )
     env = build_env(args)
     write_env(env_file, env, args.overwrite)
     print(f"Created {env_file}")
-    print("Generated JWT_SECRET, HYBA_INTERNAL_HEALTH_TOKEN, POOL_PRIMARY_CREDENTIALS, and HYBA_OPERATOR_CREDENTIALS.")
+    print(
+        "Generated JWT_SECRET, HYBA_INTERNAL_HEALTH_TOKEN, POOL_PRIMARY_CREDENTIALS, and HYBA_OPERATOR_CREDENTIALS."
+    )
     print(f"Configured ViaBTC worker {args.viabtc_user} at {args.viabtc_url}.")
     return 0
 

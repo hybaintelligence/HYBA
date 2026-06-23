@@ -5,7 +5,9 @@ from types import SimpleNamespace
 
 import pytest
 
-pytest.importorskip("sqlalchemy", reason="SQLAlchemy backend dependencies are not installed")
+pytest.importorskip(
+    "sqlalchemy", reason="SQLAlchemy backend dependencies are not installed"
+)
 from hyba_genesis_api.analytics.revenue_engine import RevenueAnalytics
 
 

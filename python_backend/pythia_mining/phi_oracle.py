@@ -149,7 +149,9 @@ class PhiSystemControllerEnhanced:
         self.PHI = PHI
         self.alu = PhiALUHardware(memory_size=memory_size)
         self.engine = ConsciousnessEngine()
-        self.tuner = PhiBackpropTuner(self.engine, self.alu, learning_rate=learning_rate)
+        self.tuner = PhiBackpropTuner(
+            self.engine, self.alu, learning_rate=learning_rate
+        )
         self.oracle = PhiOracle()
 
     def process_cycle(

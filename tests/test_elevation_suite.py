@@ -72,9 +72,9 @@ class TestSU2PlaquetteAction:
         for b, ax in [(0, 0), (127, 1), (255, 2), (64, 0), (200, 2)]:
             U = _su2_from_byte(b, axis=ax)
             assert U.shape == (2, 2)
-            assert np.allclose(U.conj().T @ U, np.eye(2), atol=1e-12), (
-                f"byte={b} axis={ax}: not unitary"
-            )
+            assert np.allclose(
+                U.conj().T @ U, np.eye(2), atol=1e-12
+            ), f"byte={b} axis={ax}: not unitary"
             det = np.linalg.det(U)
             assert abs(abs(det) - 1.0) < 1e-12, f"byte={b} axis={ax}: |det|={abs(det)}"
 
@@ -83,7 +83,9 @@ class TestSU2PlaquetteAction:
         Ux = _su2_from_byte(64, axis=0)
         Uy = _su2_from_byte(64, axis=1)
         commutator = Ux @ Uy - Uy @ Ux
-        assert np.linalg.norm(commutator) > 1e-6, "σ_x and σ_y links commute — unexpected"
+        assert (
+            np.linalg.norm(commutator) > 1e-6
+        ), "σ_x and σ_y links commute — unexpected"
 
     def test_gate_threshold_consistent_with_phi(self):
         """YANG_MILLS_GAP = 3 - φ = 1.381966... must be stable."""
@@ -148,9 +150,9 @@ class TestVanDerCorputDiscrepancy:
         """φ-LCG must produce at most 3 distinct gap sizes (three-distance theorem)."""
         for n in [100, 500, 2000]:
             c = van_der_corput_discrepancy(n)
-            assert c["three_distance_gap_count"] <= 3, (
-                f"N={n}: {c['three_distance_gap_count']} gap sizes > 3"
-            )
+            assert (
+                c["three_distance_gap_count"] <= 3
+            ), f"N={n}: {c['three_distance_gap_count']} gap sizes > 3"
 
     def test_discrepancy_decays_with_n(self):
         """D*_N must decrease as N grows — verifying O(1/N) convergence."""
@@ -161,7 +163,9 @@ class TestVanDerCorputDiscrepancy:
     def test_efficiency_vs_random_greater_than_one(self):
         """φ-LCG must outperform Monte Carlo baseline (ratio > 1)."""
         c = van_der_corput_discrepancy(1000)
-        assert c["efficiency_vs_random"] > 1.0, f"efficiency_vs_random={c['efficiency_vs_random']}"
+        assert (
+            c["efficiency_vs_random"] > 1.0
+        ), f"efficiency_vs_random={c['efficiency_vs_random']}"
 
     def test_theoretical_bound_formula(self):
         """Bound must equal (1 + 1/φ)/N exactly."""
@@ -187,9 +191,9 @@ class TestVanDerCorputDiscrepancy:
         for start in [0.0, INV_PHI, 0.123456789, 0.314159265]:
             c = van_der_corput_discrepancy(500, base_state=start)
             n = c["n_samples"]
-            assert c["empirical_discrepancy"] <= c["theoretical_bound"] + 2.0 / n, (
-                f"base_state={start}: D*={c['empirical_discrepancy']:.6f} > bound+2/N"
-            )
+            assert (
+                c["empirical_discrepancy"] <= c["theoretical_bound"] + 2.0 / n
+            ), f"base_state={start}: D*={c['empirical_discrepancy']:.6f} > bound+2/N"
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -225,7 +229,9 @@ class TestExactMPSNorm:
 
     def test_norm_contract_single_site(self):
         """Single-site MPS norm contraction must be correct."""
-        t = np.array([[[1.0 / math.sqrt(2)], [1.0 / math.sqrt(2)]]], dtype=np.complex128)
+        t = np.array(
+            [[[1.0 / math.sqrt(2)], [1.0 / math.sqrt(2)]]], dtype=np.complex128
+        )
         assert _contract_mps_norm_exact([t]) == pytest.approx(1.0, abs=1e-12)
 
     def test_norm_scales_with_tensor_rescaling(self):
@@ -262,7 +268,9 @@ class TestEntanglementSpectrum:
         for bond in range(mps.num_sites - 1):
             spec = mps.entanglement_spectrum(bond)
             if len(spec) > 1:
-                assert np.all(np.diff(spec) <= 1e-12), f"bond={bond}: spectrum not descending"
+                assert np.all(
+                    np.diff(spec) <= 1e-12
+                ), f"bond={bond}: spectrum not descending"
 
     def test_last_bond_returns_single_value(self):
         """Bond index == num_sites - 1 is out of range; must return [1.0]."""
@@ -402,9 +410,9 @@ class TestSLDNaturalGradient:
 
         lhs = rho @ L + L @ rho
         rhs = 2.0 * flat_grad
-        assert np.allclose(lhs, rhs, atol=1e-8), (
-            f"Lyapunov residual too large: {np.linalg.norm(lhs - rhs):.2e}"
-        )
+        assert np.allclose(
+            lhs, rhs, atol=1e-8
+        ), f"Lyapunov residual too large: {np.linalg.norm(lhs - rhs):.2e}"
 
     def test_sld_is_hermitian(self, evolved_manifold):
         """L must be Hermitian: L = L†."""
@@ -429,7 +437,9 @@ class TestSLDNaturalGradient:
         """qgt_norm and bures_gradient_norm must be identical (same quantity)."""
         m = evolved_manifold
         result = m.bures_gradient_of_collapse_functional(m.rho, m.entropy_gradient)
-        assert result["qgt_norm"] == pytest.approx(result["bures_gradient_norm"], abs=1e-14)
+        assert result["qgt_norm"] == pytest.approx(
+            result["bures_gradient_norm"], abs=1e-14
+        )
 
     def test_pure_state_is_stationary(self):
         """Pure state ρ = |ψ⟩⟨ψ| has off-diagonal = 0 in its own basis → stationary."""
@@ -457,6 +467,6 @@ class TestSLDNaturalGradient:
         if r1["stationary"] or r2["stationary"]:
             pytest.skip("state is already stationary")
 
-        assert r2["bures_gradient_norm"] > r1["bures_gradient_norm"], (
-            "gradient did not grow with larger entropy_gradient"
-        )
+        assert (
+            r2["bures_gradient_norm"] > r1["bures_gradient_norm"]
+        ), "gradient did not grow with larger entropy_gradient"

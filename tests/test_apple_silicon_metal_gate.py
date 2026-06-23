@@ -66,7 +66,10 @@ def test_probe_verifies_fake_mlx_gpu_cpu_paths(monkeypatch):
     assert packet["metal_path_verified"] is True
     assert packet["cpu_fallback_verified"] is True
     assert packet["absolute_delta"] < 1e-2
-    assert packet["unified_memory_semantics"] == "mlx_shared_memory_cpu_gpu_execution_measured"
+    assert (
+        packet["unified_memory_semantics"]
+        == "mlx_shared_memory_cpu_gpu_execution_measured"
+    )
     assert packet["forensic_sha256"]
 
 

@@ -218,7 +218,9 @@ class PhiALUHardware(PhiALU):
         self.thermal_history = []
         self.access_counter = 0
 
-    def safe_phi_mod(self, x: int, modulus: int, current_temp: float) -> Tuple[int, bool]:
+    def safe_phi_mod(
+        self, x: int, modulus: int, current_temp: float
+    ) -> Tuple[int, bool]:
         """
         Golden modulo with thermal safety gate.
 

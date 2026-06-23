@@ -20,6 +20,7 @@ LOGGER = logging.getLogger(__name__)
 
 # ── Error Categories ──────────────────────────────────────────────────────────
 
+
 class ErrorCategory(enum.Enum):
     NETWORK = "network"
     API = "api"
@@ -43,9 +44,10 @@ class ErrorSeverity(enum.Enum):
 
 # ── Base Error Classes ────────────────────────────────────────────────────────
 
+
 class HybaError(Exception):
     """Base error class for all HYBA application errors"""
-    
+
     def __init__(
         self,
         message: str,
@@ -69,7 +71,7 @@ class HybaError(Exception):
         self.error_id = str(uuid.uuid4())
         self.timestamp = datetime.now(timezone.utc)
         self.stack_trace = traceback.format_exc()
-    
+
     def to_dict(self) -> Dict[str, Any]:
         """Convert error to dictionary for API responses.
 
@@ -106,7 +108,7 @@ class NetworkError(HybaError):
             severity=ErrorSeverity.HIGH,
             status_code=503,
             retryable=True,
-            **kwargs
+            **kwargs,
         )
 
 
@@ -117,7 +119,7 @@ class ApiError(HybaError):
             category=ErrorCategory.API,
             severity=ErrorSeverity.MEDIUM,
             status_code=status_code,
-            **kwargs
+            **kwargs,
         )
 
 
@@ -130,7 +132,7 @@ class ValidationError(HybaError):
             status_code=400,
             recoverable=False,
             retryable=False,
-            **kwargs
+            **kwargs,
         )
 
 
@@ -143,7 +145,7 @@ class AuthenticationError(HybaError):
             status_code=401,
             recoverable=False,
             retryable=False,
-            **kwargs
+            **kwargs,
         )
 
 
@@ -156,7 +158,7 @@ class AuthorizationError(HybaError):
             status_code=403,
             recoverable=False,
             retryable=False,
-            **kwargs
+            **kwargs,
         )
 
 
@@ -167,7 +169,7 @@ class DatabaseError(HybaError):
             category=ErrorCategory.DATABASE,
             severity=ErrorSeverity.HIGH,
             status_code=500,
-            **kwargs
+            **kwargs,
         )
 
 
@@ -179,7 +181,7 @@ class TimeoutError(HybaError):
             severity=ErrorSeverity.MEDIUM,
             status_code=504,
             retryable=True,
-            **kwargs
+            **kwargs,
         )
 
 
@@ -191,7 +193,7 @@ class RateLimitError(HybaError):
             severity=ErrorSeverity.MEDIUM,
             status_code=429,
             retryable=True,
-            **kwargs
+            **kwargs,
         )
 
 
@@ -202,60 +204,80 @@ class ExternalServiceError(HybaError):
             category=ErrorCategory.EXTERNAL_SERVICE,
             severity=ErrorSeverity.HIGH,
             status_code=502,
-            **kwargs
+            **kwargs,
         )
 
 
 # ── Error Classification ────────────────────────────────────────────────────
 
+
 def classify_error(error: Exception) -> HybaError:
     """Classify a generic exception into appropriate HybaError type"""
     if isinstance(error, HybaError):
         return error
-    
+
     message = str(error)
-    
+
     # Check error message patterns for classification
     message_lower = message.lower()
-    
-    if "network" in message_lower or "connection" in message_lower or "fetch" in message_lower:
+
+    if (
+        "network" in message_lower
+        or "connection" in message_lower
+        or "fetch" in message_lower
+    ):
         return NetworkError(message, context={"original_error": type(error).__name__})
-    
+
     if "timeout" in message_lower or "timed out" in message_lower:
         return TimeoutError(message, context={"original_error": type(error).__name__})
-    
-    if "validation" in message_lower or "invalid" in message_lower or "required" in message_lower:
-        return ValidationError(message, context={"original_error": type(error).__name__})
-    
-    if "auth" in message_lower or "unauthorized" in message_lower or "forbidden" in message_lower:
-        return AuthenticationError(message, context={"original_error": type(error).__name__})
-    
+
+    if (
+        "validation" in message_lower
+        or "invalid" in message_lower
+        or "required" in message_lower
+    ):
+        return ValidationError(
+            message, context={"original_error": type(error).__name__}
+        )
+
+    if (
+        "auth" in message_lower
+        or "unauthorized" in message_lower
+        or "forbidden" in message_lower
+    ):
+        return AuthenticationError(
+            message, context={"original_error": type(error).__name__}
+        )
+
     if "permission" in message_lower or "access denied" in message_lower:
-        return AuthorizationError(message, context={"original_error": type(error).__name__})
-    
+        return AuthorizationError(
+            message, context={"original_error": type(error).__name__}
+        )
+
     if "rate limit" in message_lower or "too many requests" in message_lower:
         return RateLimitError(message, context={"original_error": type(error).__name__})
-    
+
     if "database" in message_lower or "db" in message_lower or "sql" in message_lower:
         return DatabaseError(message, context={"original_error": type(error).__name__})
-    
+
     # Default classification
     return HybaError(
         message,
         category=ErrorCategory.INTERNAL,
         severity=ErrorSeverity.MEDIUM,
-        context={"original_error": type(error).__name__}
+        context={"original_error": type(error).__name__},
     )
 
 
 # ── Error Logging ───────────────────────────────────────────────────────────
 
+
 class ErrorLogger:
     """Centralized error logging with structured output"""
-    
+
     def __init__(self):
         self.logger = logging.getLogger(__name__)
-    
+
     def log_error(
         self,
         error: Union[HybaError, Exception],
@@ -266,7 +288,7 @@ class ErrorLogger:
         """Log error with structured context"""
         if not isinstance(error, HybaError):
             error = classify_error(error)
-        
+
         log_context = {
             "error_id": error.error_id,
             "code": error.code,
@@ -275,9 +297,9 @@ class ErrorLogger:
             "user_id": user_id,
             "request_id": request_id,
             **error.context,
-            **(context or {})
+            **(context or {}),
         }
-        
+
         # Choose appropriate log level based on severity
         if error.severity == ErrorSeverity.CRITICAL:
             self.logger.critical(error.message, extra=log_context, exc_info=True)
@@ -294,6 +316,7 @@ error_logger = ErrorLogger()
 
 
 # ── Error Handlers ───────────────────────────────────────────────────────────
+
 
 def handle_error(
     error: Union[HybaError, Exception],
@@ -316,13 +339,14 @@ def handle_error(
 
 # ── Decorators ──────────────────────────────────────────────────────────────
 
+
 def with_error_handling(
     default_return: Any = None,
     error_category: ErrorCategory = ErrorCategory.INTERNAL,
     error_message: str = "An error occurred",
 ):
     """Decorator for adding error handling to functions"""
-    
+
     def decorator(func):
         def wrapper(*args, **kwargs):
             try:
@@ -333,13 +357,15 @@ def with_error_handling(
                 error = HybaError(
                     error_message,
                     category=error_category,
-                    context={"function": func.__name__, "original_error": str(e)}
+                    context={"function": func.__name__, "original_error": str(e)},
                 )
                 error_logger.log_error(error)
                 if default_return is not None:
                     return default_return
                 raise
+
         return wrapper
+
     return decorator
 
 
@@ -349,7 +375,7 @@ def async_with_error_handling(
     error_message: str = "An error occurred",
 ):
     """Decorator for adding error handling to async functions"""
-    
+
     def decorator(func):
         async def wrapper(*args, **kwargs):
             try:
@@ -360,20 +386,24 @@ def async_with_error_handling(
                 error = HybaError(
                     error_message,
                     category=error_category,
-                    context={"function": func.__name__, "original_error": str(e)}
+                    context={"function": func.__name__, "original_error": str(e)},
                 )
                 error_logger.log_error(error)
                 if default_return is not None:
                     return default_return
                 raise
+
         return wrapper
+
     return decorator
 
 
 # ── Response Models ──────────────────────────────────────────────────────────
 
+
 class ErrorResponse(BaseModel):
     """Standard error response model"""
+
     error_id: str
     code: str
     message: str
@@ -384,7 +414,7 @@ class ErrorResponse(BaseModel):
     recoverable: bool
     retryable: bool
     timestamp: str
-    
+
     @classmethod
     def from_error(cls, error: HybaError) -> "ErrorResponse":
         return cls(**error.to_dict())

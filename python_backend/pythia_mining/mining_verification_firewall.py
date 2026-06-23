@@ -103,7 +103,9 @@ class FirewallDecision:
     def to_dict(self) -> Dict[str, Any]:
         payload = asdict(self)
         payload["candidate"] = self.candidate.to_dict()
-        payload["optimisation_namespaces_blocked"] = list(self.optimisation_namespaces_blocked)
+        payload["optimisation_namespaces_blocked"] = list(
+            self.optimisation_namespaces_blocked
+        )
         return payload
 
 

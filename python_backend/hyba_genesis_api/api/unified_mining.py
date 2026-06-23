@@ -34,13 +34,13 @@ _lock_manager_initialized: bool = False
 
 def initialize_engine_with_lock_manager(lock_manager) -> None:
     """Initialize the unified mining engine with a distributed lock manager.
-    
+
     This must be called during app startup in main.py lifespan before get_engine().
     """
     global _lock_manager_initialized
     _lock_manager_initialized = True
     # Store lock manager in module state for get_engine() to use
-    globals()['_lock_manager'] = lock_manager
+    globals()["_lock_manager"] = lock_manager
 
 
 def get_engine() -> UnifiedMiningEngine:
@@ -49,7 +49,7 @@ def get_engine() -> UnifiedMiningEngine:
     global _engine
     if _engine is None:
         # Retrieve lock manager if available (should be initialized by main.py)
-        lock_manager = globals().get('_lock_manager')
+        lock_manager = globals().get("_lock_manager")
         _engine = UnifiedMiningEngine(lock_manager=lock_manager)
     return _engine
 
@@ -193,9 +193,13 @@ async def get_unified_status() -> UnifiedEngineStatus:
         ),
         accepted_shares=int(runtime_state.get("accepted_shares") or 0),
         rejected_shares=int(runtime_state.get("rejected_shares") or 0),
-        effective_search_dim_bits=float(runtime_state.get("effective_search_dim_bits") or 0.0),
+        effective_search_dim_bits=float(
+            runtime_state.get("effective_search_dim_bits") or 0.0
+        ),
         m32_domains_covered=int(runtime_state.get("m32_domains_covered") or 0),
-        working_set_compression=float(runtime_state.get("working_set_compression") or 0.0),
+        working_set_compression=float(
+            runtime_state.get("working_set_compression") or 0.0
+        ),
         verifier_backend=str(runtime_state.get("verifier_backend") or "unknown"),
         verifier_metal_available=bool(runtime_state.get("verifier_metal_available")),
         telemetry_source="canonical_unified_engine_state",
@@ -268,7 +272,9 @@ async def analyze_blockchain(req: BlockchainAnalysisRequest) -> Dict[str, Any]:
         "block_count": len(block_scores),
         "tip_height": max(block.height for block in req.blocks),
         "mean_phi_resonance": mean_resonance,
-        "mass_gate_pass_rate": sum(1 for item in block_scores if item["mass_gate_passed"])
+        "mass_gate_pass_rate": sum(
+            1 for item in block_scores if item["mass_gate_passed"]
+        )
         / len(block_scores),
         "snapshot_hash": hashlib.sha256(canonical.encode("utf-8")).hexdigest(),
         "analysis": block_scores,
@@ -286,7 +292,8 @@ async def analyze_it_from_bit(req: ItFromBitRequest) -> Dict[str, Any]:
     """Parse bits into deterministic information metrics for claim-bounded audits."""
 
     chunks = [
-        req.bits[index : index + req.word_size] for index in range(0, len(req.bits), req.word_size)
+        req.bits[index : index + req.word_size]
+        for index in range(0, len(req.bits), req.word_size)
     ]
     one_count = req.bits.count("1")
     zero_count = len(req.bits) - one_count

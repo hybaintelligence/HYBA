@@ -333,9 +333,13 @@ class TuringChurchUniversalComputation:
         False = λx.λy.y
         """
         if value:
-            return LambdaTerm("abs", "x", LambdaTerm("abs", "y", LambdaTerm("var", "x")))
+            return LambdaTerm(
+                "abs", "x", LambdaTerm("abs", "y", LambdaTerm("var", "x"))
+            )
         else:
-            return LambdaTerm("abs", "x", LambdaTerm("abs", "y", LambdaTerm("var", "y")))
+            return LambdaTerm(
+                "abs", "x", LambdaTerm("abs", "y", LambdaTerm("var", "y"))
+            )
 
     def church_encode_number(self, n: int) -> LambdaTerm:
         """Church encoding of natural numbers.
@@ -346,7 +350,9 @@ class TuringChurchUniversalComputation:
         n = λf.λx.f^n x
         """
         if n == 0:
-            return LambdaTerm("abs", "f", LambdaTerm("abs", "x", LambdaTerm("var", "x")))
+            return LambdaTerm(
+                "abs", "f", LambdaTerm("abs", "x", LambdaTerm("var", "x"))
+            )
 
         # Build f^n x
         body = LambdaTerm("var", "x")
@@ -389,7 +395,9 @@ class TuringChurchUniversalComputation:
 
         return current_term
 
-    def _substitute(self, term: LambdaTerm, var_name: str, replacement: LambdaTerm) -> LambdaTerm:
+    def _substitute(
+        self, term: LambdaTerm, var_name: str, replacement: LambdaTerm
+    ) -> LambdaTerm:
         """Substitute variable with term in lambda term.
 
         M[x := N]
@@ -486,7 +494,9 @@ class TuringChurchUniversalComputation:
         # are lambda-computable since Python is Turing-complete
         return True
 
-    def analyze_computability(self, algorithm: Callable, input_size: int) -> ComputabilityResult:
+    def analyze_computability(
+        self, algorithm: Callable, input_size: int
+    ) -> ComputabilityResult:
         """Analyze computability of an algorithm.
 
         Args:
@@ -556,15 +566,24 @@ class TuringChurchUniversalComputation:
                 ).to_dict()
             else:
                 return HaltingAnalysis(
-                    halts=False, steps_to_halt=None, reason="timeout_exceeded", undecidable=True
+                    halts=False,
+                    steps_to_halt=None,
+                    reason="timeout_exceeded",
+                    undecidable=True,
                 ).to_dict()
         except RecursionError:
             return HaltingAnalysis(
-                halts=False, steps_to_halt=None, reason="recursion_limit_exceeded", undecidable=True
+                halts=False,
+                steps_to_halt=None,
+                reason="recursion_limit_exceeded",
+                undecidable=True,
             ).to_dict()
         except Exception as e:
             return HaltingAnalysis(
-                halts=False, steps_to_halt=None, reason=f"exception: {str(e)}", undecidable=True
+                halts=False,
+                steps_to_halt=None,
+                reason=f"exception: {str(e)}",
+                undecidable=True,
             ).to_dict()
 
     def _estimate_complexity_class(self, algorithm: Callable, input_size: int) -> str:
@@ -672,7 +691,9 @@ class TuringChurchUniversalComputation:
         def simple_function(x):
             return x * 2
 
-        church_turing_result = self.verify_church_turing_thesis(simple_function, [1, 2, 3, 4, 5])
+        church_turing_result = self.verify_church_turing_thesis(
+            simple_function, [1, 2, 3, 4, 5]
+        )
 
         return {
             "nonce_tm_built": True,
@@ -680,7 +701,8 @@ class TuringChurchUniversalComputation:
             "nonce_tm_simulation": simulation_result,
             "church_turing_verified": church_turing_result["church_turing_verified"],
             "universal_computation_capable": (
-                simulation_result["halted"] and church_turing_result["church_turing_verified"]
+                simulation_result["halted"]
+                and church_turing_result["church_turing_verified"]
             ),
         }
 

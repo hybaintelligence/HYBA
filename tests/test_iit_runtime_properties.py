@@ -27,7 +27,10 @@ if str(BACKEND) not in sys.path:
     sys.path.insert(0, str(BACKEND))
 
 if HAS_NUMPY:
-    from pythia_mining.consciousness_engine import ConsciousnessEngine, IntegrationRegime
+    from pythia_mining.consciousness_engine import (
+        ConsciousnessEngine,
+        IntegrationRegime,
+    )
     from pythia_mining.iit_4_analyzer import IIT4Analyzer
 else:
     ConsciousnessEngine = IIT4Analyzer = IntegrationRegime = None
@@ -52,7 +55,9 @@ class RuntimePhiPropertyTests(unittest.TestCase):
     @given(
         st.lists(
             st.lists(
-                st.floats(min_value=0.0, max_value=1.0, allow_nan=False, allow_infinity=False),
+                st.floats(
+                    min_value=0.0, max_value=1.0, allow_nan=False, allow_infinity=False
+                ),
                 min_size=4,
                 max_size=4,
             ),
@@ -105,7 +110,9 @@ class RuntimePhiPropertyTests(unittest.TestCase):
 class IIT4PropertyTests(unittest.TestCase):
     @given(st.lists(st.integers(min_value=0, max_value=1), min_size=4, max_size=4))
     @settings(max_examples=16, deadline=None)
-    def test_phi_max_is_deterministic_and_zero_for_disconnected_systems(self, state_bits):
+    def test_phi_max_is_deterministic_and_zero_for_disconnected_systems(
+        self, state_bits
+    ):
         state = np.asarray(state_bits, dtype=np.int64)
         disconnected = np.zeros((32, 32), dtype=np.float64)
         analyzer = IIT4Analyzer(system_size=32)
@@ -114,7 +121,9 @@ class IIT4PropertyTests(unittest.TestCase):
         second = analyzer.calculate_phi_max(state, disconnected)
 
         self.assertAlmostEqual(0.0, float(first["phi_max"]), places=12)
-        self.assertAlmostEqual(float(first["phi_max"]), float(second["phi_max"]), places=12)
+        self.assertAlmostEqual(
+            float(first["phi_max"]), float(second["phi_max"]), places=12
+        )
         self.assertEqual(first["partition_count"], second["partition_count"])
 
     @given(st.lists(st.integers(min_value=0, max_value=1), min_size=4, max_size=4))

@@ -87,9 +87,9 @@ def test_linear_synthetic_telemetry_rejected() -> None:
     """Linearly-spaced jitter has no irrational structure and must be rejected."""
     protector = MassGapProtector()
     result = protector.verify_telemetry(_linear_jitter())
-    assert result["authentic"] is False, (
-        f"linear jitter unexpectedly authenticated: confidence={result['confidence']}"
-    )
+    assert (
+        result["authentic"] is False
+    ), f"linear jitter unexpectedly authenticated: confidence={result['confidence']}"
 
 
 # ---------------------------------------------------------------------------
@@ -104,9 +104,9 @@ def test_white_noise_telemetry_rejected() -> None:
     result = protector.verify_telemetry(_white_noise_jitter())
     # White noise may pass entropy but should not reliably pass mass gap alignment
     # Score should not be consistently above 0.9 (strong anti-sim)
-    assert result["confidence"] < 0.95, (
-        f"white noise suspiciously high confidence={result['confidence']}"
-    )
+    assert (
+        result["confidence"] < 0.95
+    ), f"white noise suspiciously high confidence={result['confidence']}"
 
 
 # ---------------------------------------------------------------------------
@@ -235,9 +235,9 @@ def test_seeded_pseudorandom_not_reliably_authentic() -> None:
 
     # Not all pseudo-random seeds should achieve the 0.7 authenticity threshold
     high_score_count = sum(1 for s in scores if s >= 0.7)
-    assert high_score_count < len(scores), (
-        f"All {len(scores)} pseudo-random seeds passed authenticity — shield too permissive"
-    )
+    assert high_score_count < len(
+        scores
+    ), f"All {len(scores)} pseudo-random seeds passed authenticity — shield too permissive"
 
 
 # ---------------------------------------------------------------------------

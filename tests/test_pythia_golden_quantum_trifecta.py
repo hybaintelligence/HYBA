@@ -49,7 +49,9 @@ def test_integrity_guard_rejects_any_attempt_to_remove_golden_ratio_grammar():
     except AssertionError as exc:
         assert "golden-ratio system" in str(exc)
     else:
-        raise AssertionError("certificate without golden-ratio grammar should fail closed")
+        raise AssertionError(
+            "certificate without golden-ratio grammar should fail closed"
+        )
 
 
 def test_integrity_guard_accepts_canonical_certificate():

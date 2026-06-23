@@ -60,13 +60,18 @@ def test_nodus_solutus_manifest_entry_is_executable_and_bounded() -> None:
     assert "physical universe" in claim["boundary"]
     assert "npm run review:nodus:gate" in claim["commands"]
     assert "npm run test:frontier:experiments" in claim["commands"]
-    assert "python_backend/pythia_mining/topological_holonomy_engine.py" in claim["code_paths"]
+    assert (
+        "python_backend/pythia_mining/topological_holonomy_engine.py"
+        in claim["code_paths"]
+    )
     assert "docs/SCIENTIFIC_PUBLICATION_NODUS_SOLUTUS.md" in claim["doc_paths"]
     assert "docs/PRESS_RELEASE_NODUS_SOLUTUS.md" in claim["doc_paths"]
 
     for key in ("code_paths", "test_paths", "doc_paths"):
         for rel_path in claim[key]:
-            assert (ROOT / rel_path).exists(), f"{CLAIM_ID} references missing {key}: {rel_path}"
+            assert (
+                ROOT / rel_path
+            ).exists(), f"{CLAIM_ID} references missing {key}: {rel_path}"
 
 
 def test_nodus_solutus_is_visible_from_reviewer_entrypoints() -> None:

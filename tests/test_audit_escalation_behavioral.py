@@ -13,7 +13,10 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from pythia_mining.autonomous_audit_persistence import AuditJournal, AutonomousAuditLogger
+from pythia_mining.autonomous_audit_persistence import (
+    AuditJournal,
+    AutonomousAuditLogger,
+)
 from pythia_mining.autonomous_escalation import (
     AutonomousEscalationEngine,
     DEGRADATION_RECOVERY,
@@ -30,7 +33,9 @@ def test_audit_journal_append_and_query():
     """Appended entry must be queryable by event_type."""
     with tempfile.TemporaryDirectory() as tmp:
         journal = AuditJournal(journal_dir=tmp)
-        journal.append("startup_self_healing", "supervised", action="boot", outcome="ok")
+        journal.append(
+            "startup_self_healing", "supervised", action="boot", outcome="ok"
+        )
 
         results = journal.query(event_type="startup_self_healing")
         assert len(results) == 1
@@ -209,7 +214,8 @@ def test_recovery_escalates_after_enough_successes():
     )
 
     # Either a recovery or escalation action must have fired
-    assert result["action"] in ("recovery", "escalation"), (
-        f"Expected recovery or escalation after {min_successes} successes, got {result['action']}"
-    )
+    assert result["action"] in (
+        "recovery",
+        "escalation",
+    ), f"Expected recovery or escalation after {min_successes} successes, got {result['action']}"
     assert len(escalated_to) >= 1

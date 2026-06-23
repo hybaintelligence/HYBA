@@ -179,7 +179,9 @@ def run_epoch(
 
     for solver_id in range(N_SOLVERS):
         if condition == "synaptic" and synaptic is not None:
-            nonces = _synaptic_biased_nonces(solver_id, epoch, iters_per_solver, synaptic)
+            nonces = _synaptic_biased_nonces(
+                solver_id, epoch, iters_per_solver, synaptic
+            )
         else:
             nonces = _phi_sector_nonces(solver_id, epoch, iters_per_solver)
 
@@ -288,7 +290,9 @@ def run_ablation(
         return sum(vals) / len(vals) if vals else None
 
     def _mean_fhi(results):
-        vals = [r.first_hit_iteration for r in results if r.first_hit_iteration is not None]
+        vals = [
+            r.first_hit_iteration for r in results if r.first_hit_iteration is not None
+        ]
         return sum(vals) / len(vals) if vals else None
 
     a_hits = _mean(baseline_results, "hits")
@@ -416,7 +420,9 @@ if __name__ == "__main__":
 
     p = argparse.ArgumentParser()
     p.add_argument("--epochs", type=int, default=10)
-    p.add_argument("--iterations", type=int, default=2000, help="Iterations per solver per epoch")
+    p.add_argument(
+        "--iterations", type=int, default=2000, help="Iterations per solver per epoch"
+    )
     p.add_argument(
         "--difficulty",
         type=float,

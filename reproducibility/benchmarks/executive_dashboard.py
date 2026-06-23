@@ -46,20 +46,31 @@ class ExecutiveDashboard:
                     "name": "Growth",
                     "metrics": {
                         k: self.kpis[k]
-                        for k in ["arr", "arr_growth_yoy", "logo_growth", "customer_count"]
+                        for k in [
+                            "arr",
+                            "arr_growth_yoy",
+                            "logo_growth",
+                            "customer_count",
+                        ]
                     },
                 },
                 {
                     "name": "Profitability",
                     "metrics": {
-                        k: self.kpis[k] for k in ["gross_margin", "operating_margin", "fcf"]
+                        k: self.kpis[k]
+                        for k in ["gross_margin", "operating_margin", "fcf"]
                     },
                 },
                 {
                     "name": "Health",
                     "metrics": {
                         k: self.kpis[k]
-                        for k in ["nps", "churn_rate", "net_revenue_retention", "sla_availability"]
+                        for k in [
+                            "nps",
+                            "churn_rate",
+                            "net_revenue_retention",
+                            "sla_availability",
+                        ]
                     },
                 },
             ],

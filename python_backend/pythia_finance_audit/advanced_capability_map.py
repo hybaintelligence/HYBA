@@ -274,7 +274,9 @@ def validate_advanced_capability_boundaries(
         prohibited_blob = " | ".join(capability.prohibited_outputs).lower()
         permitted_blob = " | ".join(capability.permitted_outputs).lower()
         if not capability.evidence_required:
-            violations.append(f"{capability.capability_id}: missing evidence requirements")
+            violations.append(
+                f"{capability.capability_id}: missing evidence requirements"
+            )
         if not capability.human_owner:
             violations.append(f"{capability.capability_id}: missing human owner")
         for forbidden in required_prohibition_fragments:
@@ -289,7 +291,9 @@ def validate_advanced_capability_boundaries(
             and "execution" not in prohibited_blob
             and "conclusion" not in prohibited_blob
         ):
-            violations.append(f"{capability.capability_id}: weak prohibited-output boundary")
+            violations.append(
+                f"{capability.capability_id}: weak prohibited-output boundary"
+            )
     return {
         "schema": "PYTHIA_ADVANCED_FINANCE_CAPABILITY_BOUNDARY_V1",
         "boundary_statement": BOUNDARY_STATEMENT,

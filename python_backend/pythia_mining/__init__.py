@@ -153,7 +153,8 @@ def _live_or_production_mode() -> bool:
     return (
         os.getenv("HYBA_ENV", "").strip().lower() == "production"
         or os.getenv("NODE_ENV", "").strip().lower() == "production"
-        or os.getenv("HYBA_ENABLE_LIVE_STRATUM", "").strip().lower() in {"1", "true", "yes", "on"}
+        or os.getenv("HYBA_ENABLE_LIVE_STRATUM", "").strip().lower()
+        in {"1", "true", "yes", "on"}
     )
 
 

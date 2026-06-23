@@ -741,7 +741,11 @@ def _sha256(path: Path) -> str:
 
 
 def _iso_from_timestamp(timestamp: float) -> str:
-    return datetime.fromtimestamp(timestamp, tz=timezone.utc).isoformat().replace("+00:00", "Z")
+    return (
+        datetime.fromtimestamp(timestamp, tz=timezone.utc)
+        .isoformat()
+        .replace("+00:00", "Z")
+    )
 
 
 def _artifact_records(paths: Iterable[str]) -> List[Dict[str, Any]]:
@@ -769,7 +773,9 @@ def _artifact_records(paths: Iterable[str]) -> List[Dict[str, Any]]:
 
 
 def _latest_artifact_time(records: Iterable[Dict[str, Any]]) -> str | None:
-    timestamps = [record.get("modified_at") for record in records if record.get("modified_at")]
+    timestamps = [
+        record.get("modified_at") for record in records if record.get("modified_at")
+    ]
     if not timestamps:
         return None
     return max(timestamps)
@@ -850,7 +856,9 @@ def build_runtime_evidence_ledger() -> Dict[str, Any]:
         }
         for surface in index["surfaces"]
     ]
-    head_hash = hashlib.sha256(json.dumps(ledger_items, sort_keys=True).encode("utf-8")).hexdigest()
+    head_hash = hashlib.sha256(
+        json.dumps(ledger_items, sort_keys=True).encode("utf-8")
+    ).hexdigest()
     return {
         "ledger": "hyba_material_claim_verification_windows",
         "status": "audit_ledger_available",

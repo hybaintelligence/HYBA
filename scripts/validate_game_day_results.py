@@ -9,14 +9,26 @@ from typing import Any
 
 
 def _scenario_items(results: Any) -> list[tuple[str, dict[str, Any]]]:
-    if isinstance(results, dict) and "scenarios" in results and isinstance(results["scenarios"], list):
-        return [(item.get("scenario", f"scenario_{i}"), item) for i, item in enumerate(results["scenarios"])]
+    if (
+        isinstance(results, dict)
+        and "scenarios" in results
+        and isinstance(results["scenarios"], list)
+    ):
+        return [
+            (item.get("scenario", f"scenario_{i}"), item)
+            for i, item in enumerate(results["scenarios"])
+        ]
     if isinstance(results, list):
-        return [(item.get("scenario", f"scenario_{i}"), item) for i, item in enumerate(results)]
+        return [
+            (item.get("scenario", f"scenario_{i}"), item)
+            for i, item in enumerate(results)
+        ]
     if isinstance(results, dict):
         if "passed" in results:
             return [(results.get("scenario", "default"), results)]
-        return [(name, value) for name, value in results.items() if isinstance(value, dict)]
+        return [
+            (name, value) for name, value in results.items() if isinstance(value, dict)
+        ]
     return []
 
 
@@ -29,7 +41,9 @@ def validate_game_day(results_file: Path) -> int:
     for scenario, result in items:
         passed = bool(result.get("passed", result.get("success", False)))
         if not passed:
-            failures.append(f"{scenario}: {result.get('reason', result.get('error', 'unknown'))}")
+            failures.append(
+                f"{scenario}: {result.get('reason', result.get('error', 'unknown'))}"
+            )
     if failures:
         print("❌ Game day FAILED:")
         for failure in failures:

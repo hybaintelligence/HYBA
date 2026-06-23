@@ -15,7 +15,9 @@ import pytest
 from test_backend_api_helpers import bearer_headers, make_client
 
 
-def _assert_enterprise_error(payload: dict[str, Any], *, code: str, status_code: int) -> None:
+def _assert_enterprise_error(
+    payload: dict[str, Any], *, code: str, status_code: int
+) -> None:
     assert payload["success"] is False
     assert payload["error"]["code"] == code
     assert payload["error"]["status_code"] == status_code

@@ -66,7 +66,9 @@ def compute_lifecycle_hash(payload: Mapping[str, Any]) -> str:
     """Compute a stable lifecycle hash, excluding runtime and seal fields."""
 
     canonical_payload = _canonicalise_for_hash(payload)
-    canonical = json.dumps(canonical_payload, sort_keys=True, separators=(",", ":"), default=str)
+    canonical = json.dumps(
+        canonical_payload, sort_keys=True, separators=(",", ":"), default=str
+    )
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
 
@@ -223,7 +225,9 @@ def simulate_sukuk_lifecycle_drift(
     hashes and finding identifiers.
     """
 
-    steps = list(scenario) if scenario is not None else sample_sukuk_lifecycle_scenario()
+    steps = (
+        list(scenario) if scenario is not None else sample_sukuk_lifecycle_scenario()
+    )
     timeline: List[Dict[str, Any]] = []
     first_warning_step_id: Optional[str] = None
     first_blocker_step_id: Optional[str] = None

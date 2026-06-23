@@ -11,7 +11,9 @@ PHI = (1.0 + math.sqrt(5.0)) / 2.0
 class ExplainerIntegrity:
     """Validate that proposed bridges are deterministic and hard to vary."""
 
-    def validate_explanation(self, proposal: Dict[str, Any], codebase_hash: str) -> bool:
+    def validate_explanation(
+        self, proposal: Dict[str, Any], codebase_hash: str
+    ) -> bool:
         """Return True only for bounded, hash-stable, φ-coupled proposals."""
 
         if not codebase_hash or "adjustment" not in proposal:

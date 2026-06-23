@@ -54,7 +54,9 @@ def _request(
     req = urlrequest.Request(url, data=body, headers=request_headers, method=method)
     try:
         with urlrequest.urlopen(req, timeout=timeout) as response:
-            return SimpleResponse(response.status, dict(response.headers.items()), response.read())
+            return SimpleResponse(
+                response.status, dict(response.headers.items()), response.read()
+            )
     except urlerror.HTTPError as exc:
         return SimpleResponse(exc.code, dict(exc.headers.items()), exc.read())
 
@@ -82,7 +84,9 @@ requires_backend = pytest.mark.skipif(
     reason="HYBA backend is not running on 127.0.0.1:3001",
 )
 requires_fullstack = pytest.mark.skipif(
-    not (_server_available(f"{BACKEND_URL}/health") and _server_available(FRONTEND_URL)),
+    not (
+        _server_available(f"{BACKEND_URL}/health") and _server_available(FRONTEND_URL)
+    ),
     reason="HYBA backend and frontend dev server are not both running",
 )
 
@@ -107,7 +111,10 @@ class TestFullStackConnectivity:
 
         assert response_via_frontend.status_code == 200
         assert response_via_backend.status_code == 200
-        assert response_via_frontend.json()["status"] == response_via_backend.json()["status"]
+        assert (
+            response_via_frontend.json()["status"]
+            == response_via_backend.json()["status"]
+        )
 
     def test_api_health_proxy_preserves_request_id_header(self) -> None:
         response = _get_json(f"{FRONTEND_URL}/api/health")
@@ -157,10 +164,14 @@ class TestFullStackConnectivity:
             },
         )
         assert response.status_code == 200
-        assert "access-control-allow-origin" in {key.lower() for key in response.headers}
+        assert "access-control-allow-origin" in {
+            key.lower() for key in response.headers
+        }
 
     def test_backend_validation_errors_use_enterprise_envelope(self) -> None:
-        response = _post_json(f"{FRONTEND_URL}/api/mining/connect", {"pool_id": "test-pool"})
+        response = _post_json(
+            f"{FRONTEND_URL}/api/mining/connect", {"pool_id": "test-pool"}
+        )
         assert response.status_code in {400, 422}
         data = response.json()
         assert data.get("success") is False
@@ -198,7 +209,9 @@ class TestPerformance:
 class DeploymentReadinessReport:
     """Generate a JSON deployment-readiness report from live local services."""
 
-    def __init__(self, backend_url: str = BACKEND_URL, frontend_url: str = FRONTEND_URL):
+    def __init__(
+        self, backend_url: str = BACKEND_URL, frontend_url: str = FRONTEND_URL
+    ):
         self.backend_url = backend_url.rstrip("/")
         self.frontend_url = frontend_url.rstrip("/")
 
@@ -231,7 +244,9 @@ class DeploymentReadinessReport:
             return False
 
     def _check_backend(self) -> bool:
-        return self._safe_check(lambda: _get_json(f"{self.backend_url}/health").status_code == 200)
+        return self._safe_check(
+            lambda: _get_json(f"{self.backend_url}/health").status_code == 200
+        )
 
     def _check_frontend(self) -> bool:
         return self._safe_check(lambda: _get_json(self.frontend_url).status_code == 200)
@@ -253,7 +268,8 @@ class DeploymentReadinessReport:
 
     def _check_security_api(self) -> bool:
         return self._safe_check(
-            lambda: _get_json(f"{self.backend_url}/api/security/status").status_code == 200
+            lambda: _get_json(f"{self.backend_url}/api/security/status").status_code
+            == 200
         )
 
     def _check_cors(self) -> bool:
@@ -276,6 +292,9 @@ class DeploymentReadinessReport:
         def check() -> bool:
             start = time.perf_counter()
             response = _get_json(f"{self.backend_url}/health")
-            return response.status_code == 200 and (time.perf_counter() - start) * 1000 < 1000
+            return (
+                response.status_code == 200
+                and (time.perf_counter() - start) * 1000 < 1000
+            )
 
         return self._safe_check(check)

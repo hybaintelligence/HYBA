@@ -75,7 +75,9 @@ class ReplayBlockTemplate:
     def header_for_nonce(self, nonce: int) -> bytes:
         if not isinstance(nonce, int) or nonce < 0 or nonce > UINT32_MAX:
             raise ValueError("nonce must be an unsigned 32-bit integer")
-        return self.header_prefix() + int(nonce).to_bytes(4, byteorder="little", signed=False)
+        return self.header_prefix() + int(nonce).to_bytes(
+            4, byteorder="little", signed=False
+        )
 
 
 @dataclass(frozen=True)
@@ -147,7 +149,9 @@ class MatchedMiningBenchmarkReport:
     def with_hash(self) -> "MatchedMiningBenchmarkReport":
         payload = self.to_payload()
         payload.pop("report_hash", None)
-        encoded = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
+        encoded = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode(
+            "utf-8"
+        )
         return MatchedMiningBenchmarkReport(
             protocol=self.protocol,
             template_id=self.template_id,
@@ -192,7 +196,9 @@ def baseline_nonce_order(candidate_budget: int, start_nonce: int = 0) -> List[in
     """Baseline candidate order: deterministic sequential traversal."""
 
     _validate_budget(candidate_budget)
-    return [int((start_nonce + offset) & UINT32_MAX) for offset in range(candidate_budget)]
+    return [
+        int((start_nonce + offset) & UINT32_MAX) for offset in range(candidate_budget)
+    ]
 
 
 def pythia_structured_nonce_order(
@@ -211,9 +217,7 @@ def pythia_structured_nonce_order(
     _validate_budget(candidate_budget)
     seen: set[int] = set()
     ordered: List[int] = []
-    seed = (
-        f"{guidance.seal}:{guidance.block_context.block_height}:{guidance.block_context.target_hex}"
-    )
+    seed = f"{guidance.seal}:{guidance.block_context.block_height}:{guidance.block_context.target_hex}"
 
     for rank, priority in enumerate(guidance.priorities):
         center = _anchor_nonce(seed, priority.signal.value, rank, start_nonce)
@@ -301,7 +305,9 @@ def run_matched_mining_benchmark(
 
     candidate_advantage = _candidate_budget_advantage(baseline, pythia)
     best_hash_ratio = baseline.best_hash_int / max(pythia.best_hash_int, 1)
-    interpretation = _interpret_report(candidate_advantage, best_hash_ratio, baseline, pythia)
+    interpretation = _interpret_report(
+        candidate_advantage, best_hash_ratio, baseline, pythia
+    )
 
     report = MatchedMiningBenchmarkReport(
         protocol="PYTHIA_MATCHED_MINING_BENCHMARK_V1",
@@ -311,7 +317,9 @@ def run_matched_mining_benchmark(
         difficulty=float(template.difficulty),
         candidate_budget=int(candidate_budget),
         guidance_protocol=guidance.protocol,
-        top_structure_signals=[priority.signal.value for priority in guidance.priorities[:5]],
+        top_structure_signals=[
+            priority.signal.value for priority in guidance.priorities[:5]
+        ],
         baseline=baseline,
         pythia=pythia,
         candidate_budget_advantage=candidate_advantage,
@@ -417,7 +425,9 @@ def _candidate_budget_advantage(
 ) -> Optional[float]:
     if baseline.first_hit_budget is None or pythia.first_hit_budget is None:
         return None
-    return round(float(baseline.first_hit_budget) / max(float(pythia.first_hit_budget), 1.0), 12)
+    return round(
+        float(baseline.first_hit_budget) / max(float(pythia.first_hit_budget), 1.0), 12
+    )
 
 
 def _interpret_report(
@@ -437,7 +447,9 @@ def _interpret_report(
 
 def _anchor_nonce(seed: str, signal: str, rank: int, start_nonce: int) -> int:
     digest = hashlib.sha256(f"{seed}:{signal}:{rank}".encode("utf-8")).digest()
-    return (start_nonce + int.from_bytes(digest[:4], byteorder="little", signed=False)) & UINT32_MAX
+    return (
+        start_nonce + int.from_bytes(digest[:4], byteorder="little", signed=False)
+    ) & UINT32_MAX
 
 
 def _phi_stride(rank: int) -> int:

@@ -32,7 +32,9 @@ logging.basicConfig(
 logger = logging.getLogger("hyba.holonomy_trigger")
 
 
-async def main(num_sites: int, max_bond_dim: int, scan_resolution: int, loop_steps: int) -> None:
+async def main(
+    num_sites: int, max_bond_dim: int, scan_resolution: int, loop_steps: int
+) -> None:
     print("\n" + "=" * 78)
     print("HYBA FULLSTACK — Multi-Agent Holonomy Scan")
     print("Real MPS parallel transport. Every number is measured, not assumed.")
@@ -76,7 +78,9 @@ async def main(num_sites: int, max_bond_dim: int, scan_resolution: int, loop_ste
 
     print("Phase 2 — Planning Agent")
     print(f"  SLD gradient norm:    {p['sld_gradient_norm']:.6f}")
-    print(f"  Wilson action proxy:  {p['wilson_action']:.6f}  (ref: {YANG_MILLS_THRESHOLD:.6f})")
+    print(
+        f"  Wilson action proxy:  {p['wilson_action']:.6f}  (ref: {YANG_MILLS_THRESHOLD:.6f})"
+    )
     print(f"  Mass gap satisfied:   {p['mass_gap_satisfied']}")
     print()
 
@@ -94,7 +98,9 @@ async def main(num_sites: int, max_bond_dim: int, scan_resolution: int, loop_ste
     print(f"  λ* validated:         {v.lambda_critical:.6f}")
     print(f"  Berry phase:          {v.berry_phase:.6f} rad")
     print(f"  Chern number:         {v.chern_number}")
-    print(f"  Star-discrepancy:     {v.star_discrepancy:.4e}  (φ-bound: {v.phi_bound:.4e})")
+    print(
+        f"  Star-discrepancy:     {v.star_discrepancy:.4e}  (φ-bound: {v.phi_bound:.4e})"
+    )
     print(f"  Within φ-bound:       {v.discrepancy_within_bound}")
     print(f"  Mass gap satisfied:   {v.mass_gap_satisfied}")
     print()
@@ -119,7 +125,9 @@ async def main(num_sites: int, max_bond_dim: int, scan_resolution: int, loop_ste
         room="CEO",
         qfi_value=d["qfi_at_critical"],
         gradient_norm=p["sld_gradient_norm"],
-        convergence_status="OPTIMAL" if v.certificate_status == "GOLDEN_OPTIMAL" else "PARTIAL",
+        convergence_status=(
+            "OPTIMAL" if v.certificate_status == "GOLDEN_OPTIMAL" else "PARTIAL"
+        ),
     )
     await broadcaster.broadcast_resource_consumption(
         room="CTO",
@@ -152,7 +160,9 @@ async def main(num_sites: int, max_bond_dim: int, scan_resolution: int, loop_ste
         print("RESULT: PARTIAL")
         print(f"  Chern {v.chern_number}, Berry phase {v.berry_phase:.4f} rad")
         print("  Topology detected. Mass gap or discrepancy criterion not fully met.")
-        print("  Increase loop_steps or bond dimension before promoting to GOLDEN_OPTIMAL.")
+        print(
+            "  Increase loop_steps or bond dimension before promoting to GOLDEN_OPTIMAL."
+        )
     else:
         print("RESULT: NOT_ELEVATED")
         print(f"  Chern {v.chern_number}, Berry phase {v.berry_phase:.4f} rad")
@@ -169,13 +179,20 @@ async def main(num_sites: int, max_bond_dim: int, scan_resolution: int, loop_ste
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--sites", type=int, default=16,
-                        help="MPS sites (default 16, use 50+ for higher resolution)")
-    parser.add_argument("--bond", type=int, default=8,
-                        help="MPS bond dimension (default 8)")
-    parser.add_argument("--scan", type=int, default=20,
-                        help="Number of λ scan points (default 20)")
-    parser.add_argument("--steps", type=int, default=16,
-                        help="Berry phase loop steps (default 16)")
+    parser.add_argument(
+        "--sites",
+        type=int,
+        default=16,
+        help="MPS sites (default 16, use 50+ for higher resolution)",
+    )
+    parser.add_argument(
+        "--bond", type=int, default=8, help="MPS bond dimension (default 8)"
+    )
+    parser.add_argument(
+        "--scan", type=int, default=20, help="Number of λ scan points (default 20)"
+    )
+    parser.add_argument(
+        "--steps", type=int, default=16, help="Berry phase loop steps (default 16)"
+    )
     args = parser.parse_args()
     asyncio.run(main(args.sites, args.bond, args.scan, args.steps))

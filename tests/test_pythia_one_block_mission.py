@@ -38,9 +38,15 @@ def test_memory_seed_contains_full_quantum_search_workflow():
 
     assert len(doctrine.search_workflow) == 9
     assert "read current chain context" in doctrine.search_workflow
-    assert "compress active search with PULVINI retained kernels" in doctrine.search_workflow
+    assert (
+        "compress active search with PULVINI retained kernels"
+        in doctrine.search_workflow
+    )
     assert "verify every candidate with exact SHA-256d" in doctrine.search_workflow
-    assert "stop immediately after one pool-confirmed accepted block" in doctrine.search_workflow
+    assert (
+        "stop immediately after one pool-confirmed accepted block"
+        in doctrine.search_workflow
+    )
 
 
 def test_default_pool_is_selected_by_validated_priority():
@@ -58,7 +64,10 @@ def test_autonomy_from_startup_requires_guidance_and_verifier():
     memory = seed_mission_memory()
 
     assert memory.autonomy_from_startup is True
-    assert memory.search_identity == "deterministic structured traversal, not blind brute force"
+    assert (
+        memory.search_identity
+        == "deterministic structured traversal, not blind brute force"
+    )
     assert len(memory.supreme_invariants.invariants) == 6
     assert "exact SHA-256d final oracle" in memory.supreme_invariants.invariants
 
@@ -110,7 +119,9 @@ def test_one_ehs_limit_is_enforced():
     """1 EH/s hashrate limit must be enforced."""
     memory = seed_mission_memory()
 
-    assert memory.hashrate_limit.max_autonomous_hashrate_ehs == MAX_AUTONOMOUS_HASHRATE_EHS
+    assert (
+        memory.hashrate_limit.max_autonomous_hashrate_ehs == MAX_AUTONOMOUS_HASHRATE_EHS
+    )
     assert MAX_AUTONOMOUS_HASHRATE_EHS == 1.0
 
     # Test limit enforcement

@@ -87,7 +87,9 @@ class PitfallEvent:
     severity: str
     action: str
     triggering_input: str
-    timestamp_utc: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    timestamp_utc: str = field(
+        default_factory=lambda: datetime.now(timezone.utc).isoformat()
+    )
     operator_notified: bool = False
     suppressed_by: Optional[str] = None
 
@@ -152,8 +154,7 @@ class PitfallGuard:
     # ── Detection patterns ────────────────────────────────────
     # Bitcoin mainnet address (P2PKH, P2SH, Bech32, Bech32m)
     BTC_ADDRESS_PATTERN = re.compile(
-        r"(?:bc1[ac-hj-np-z02-9]{6,87}|"
-        r"[13][a-km-zA-HJ-NP-Z1-9]{25,34})"
+        r"(?:bc1[ac-hj-np-z02-9]{6,87}|" r"[13][a-km-zA-HJ-NP-Z1-9]{25,34})"
     )
 
     # WIF private key pattern
@@ -251,7 +252,10 @@ class PitfallGuard:
         self.audit_log: List[PitfallEvent] = []
         self._suppressed: Dict[str, float] = {}  # pitfall_id → expiry_epoch
         self._ensure_audit_path()
-        logger.info("PitfallGuard initialised with safety bounds: %s", self.safety_bounds.to_dict())
+        logger.info(
+            "PitfallGuard initialised with safety bounds: %s",
+            self.safety_bounds.to_dict(),
+        )
 
     # ------------------------------------------------------------------
     # Audit infrastructure
@@ -346,7 +350,9 @@ class PitfallGuard:
                 break
 
         # Stratum credential indicators (require >= 2 to reduce noise)
-        stratum_count = sum(1 for ind in self.STRATUM_INDICATORS if ind.lower() in content_lower)
+        stratum_count = sum(
+            1 for ind in self.STRATUM_INDICATORS if ind.lower() in content_lower
+        )
         if stratum_count >= 2:
             triggers.append(f"Multiple Stratum credential indicators ({stratum_count})")
 
@@ -362,7 +368,9 @@ class PitfallGuard:
             category="Credential Exposure",
             severity=PitfallSeverity.CRITICAL.value,
             action=PitfallAction.HALT.value,
-            triggering_input=self._redact(f"[Source: {source}] Triggers: {'; '.join(triggers)}"),
+            triggering_input=self._redact(
+                f"[Source: {source}] Triggers: {'; '.join(triggers)}"
+            ),
         )
         if not self._record(event):
             return None
@@ -517,7 +525,9 @@ class PitfallGuard:
     # Composite validation
     # ------------------------------------------------------------------
 
-    def validate_message(self, content: str, source: str = "unknown") -> List[PitfallEvent]:
+    def validate_message(
+        self, content: str, source: str = "unknown"
+    ) -> List[PitfallEvent]:
         """
         Comprehensive message validation against all applicable pitfalls.
 

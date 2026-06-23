@@ -1,13 +1,9 @@
 replicaCount: 2
-
 environment: staging
-
 image:
   repository: ghcr.io/hyba/hyba-fullstack
   tag: latest
-
 redis:
   enabled: false
-
 backend:
-  env:
+  env: null

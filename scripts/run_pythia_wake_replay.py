@@ -41,8 +41,12 @@ def _proposal_signature(report: dict[str, Any]) -> list[dict[str, Any]]:
                 "expected_gain": proposal.get("expected_gain"),
                 "logical_consistency": proposal.get("logical_consistency"),
                 "counterfactual_confidence": proposal.get("counterfactual_confidence"),
-                "constraints_satisfied": sorted(proposal.get("constraints_satisfied", [])),
-                "constraints_violated": sorted(proposal.get("constraints_violated", [])),
+                "constraints_satisfied": sorted(
+                    proposal.get("constraints_satisfied", [])
+                ),
+                "constraints_violated": sorted(
+                    proposal.get("constraints_violated", [])
+                ),
                 "applied": proposal.get("applied"),
                 "source_module": proposal.get("source_module"),
             }
@@ -88,7 +92,9 @@ def main() -> None:
     parser.add_argument(
         "--cycles", type=int, default=2, help="Number of reflexive cycles to replay"
     )
-    parser.add_argument("--output", type=Path, default=None, help="Optional JSON output path")
+    parser.add_argument(
+        "--output", type=Path, default=None, help="Optional JSON output path"
+    )
     args = parser.parse_args()
 
     artifact = asyncio.run(replay_wake(max(1, args.cycles)))

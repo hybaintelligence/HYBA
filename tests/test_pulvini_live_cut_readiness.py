@@ -28,7 +28,9 @@ def base_state() -> dict:
             "pool_visible_workers": 1,
             "active_job_id": "job-live-cut",
             "healing_ranges_overlap_free": True,
-            "healing_routes": [{"failed_node": 31, "recipient_node": 26, "nonce_range": [1, 2]}],
+            "healing_routes": [
+                {"failed_node": 31, "recipient_node": 26, "nonce_range": [1, 2]}
+            ],
         },
     }
 

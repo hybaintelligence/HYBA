@@ -27,25 +27,25 @@ logger = logging.getLogger(__name__)
 class IdempotentStratumSubmissionMixin:
     """
     Mixin for ProductionMiningOrchestrator to add idempotency tracking.
-    
+
     Integration pattern:
-    
+
     1. Initialize in __init__:
         self.idempotency_tracker = IdempotencyTracker(
             redis_client=self.redis_client,  # Reuse existing Redis connection
             ttl_seconds=120,
             enable_metrics=True,
         )
-    
+
     2. Start periodic cleanup task in start():
         asyncio.create_task(self._idempotency_cleanup_loop())
-    
+
     3. Wrap submissions in _submit_to_pool_safe():
         result = await self._submit_with_idempotency_check(
             pool_id, client, job, nonce, extranonce2
         )
     """
-    
+
     async def _submit_with_idempotency_check(
         self,
         pool_id: str,
@@ -56,7 +56,7 @@ class IdempotentStratumSubmissionMixin:
     ) -> Optional[ShareResult]:
         """
         Submit share to pool with idempotency checking.
-        
+
         Flow:
         1. Check if (pool_id, nonce) already submitted
         2. If duplicate and was accepted: REJECT (DUP_NONCE)
@@ -64,14 +64,14 @@ class IdempotentStratumSubmissionMixin:
         4. Record new submission
         5. Submit to pool
         6. Mark result
-        
+
         Args:
             pool_id: Target pool identifier
             client: StratumClient for submission
             job: Mining job object
             nonce: Share nonce value
             extranonce2: Optional extranonce2 value
-        
+
         Returns:
             ShareResult with acceptance status, or None on error
         """
@@ -79,12 +79,10 @@ class IdempotentStratumSubmissionMixin:
             # Step 1: Check for previous submission
             tracker = self.idempotency_tracker  # Assumes initialized
             previous_record = await tracker.check_duplicate(pool_id, nonce)
-            
+
             if previous_record:
-                tracker.record_duplicate_attempt(
-                    pool_id, nonce, previous_record.status
-                )
-                
+                tracker.record_duplicate_attempt(pool_id, nonce, previous_record.status)
+
                 # Step 2-3: Decision based on previous status
                 if previous_record.status == SubmissionStatus.ACCEPTED.value:
                     # Share was already accepted, reject duplicate
@@ -116,14 +114,14 @@ class IdempotentStratumSubmissionMixin:
                         },
                     )
                     # Continue with submission below
-            
+
             # Step 4: Record this submission attempt
             record = await tracker.record_submission(pool_id, nonce)
-            
+
             # Step 5: Submit to pool
             try:
                 result = await client.submit_validated_share(job, nonce, extranonce2)
-                
+
                 # Step 6: Mark result
                 await tracker.mark_result(
                     record.submission_id,
@@ -132,7 +130,7 @@ class IdempotentStratumSubmissionMixin:
                     accepted=result.accepted,
                     reason=result.error_message,
                 )
-                
+
                 logger.debug(
                     "Share submitted with idempotency tracking",
                     extra={
@@ -142,9 +140,9 @@ class IdempotentStratumSubmissionMixin:
                         "accepted": result.accepted,
                     },
                 )
-                
+
                 return result
-            
+
             except Exception as e:
                 # Mark as rejected with error reason
                 await tracker.mark_result(
@@ -155,7 +153,7 @@ class IdempotentStratumSubmissionMixin:
                     reason=f"submission_error: {str(e)}",
                 )
                 raise
-        
+
         except Exception as e:
             logger.error(
                 "Idempotency check failed during submission",
@@ -179,41 +177,41 @@ class IdempotentStratumSubmissionMixin:
                     },
                 )
                 return None
-    
+
     async def _idempotency_cleanup_loop(self) -> None:
         """
         Periodic cleanup task to remove expired in-memory entries.
-        
+
         Should be started as:
             asyncio.create_task(self._idempotency_cleanup_loop())
-        
+
         Runs cleanup every 60 seconds.
         """
         cleanup_interval = 60  # seconds
-        
+
         while True:
             try:
                 await asyncio.sleep(cleanup_interval)
-                
+
                 tracker = self.idempotency_tracker
                 cleaned = await tracker.cleanup_expired()
-                
+
                 if cleaned > 0:
                     logger.info(
                         "Idempotency tracker cleanup",
                         extra={"entries_cleaned": cleaned},
                     )
-            
+
             except Exception as e:
                 logger.error(
                     "Idempotency cleanup failed",
                     extra={"error": str(e)},
                 )
-    
+
     async def get_idempotency_metrics(self) -> Dict[str, Any]:
         """
         Get idempotency tracker metrics for monitoring.
-        
+
         Returns:
             Dict with tracking metrics including:
             - duplicate_attempts: Submissions with duplicate nonce
@@ -229,64 +227,60 @@ class IdempotentStratumSubmissionMixin:
 class StratumIdempotencyDashboard:
     """
     Monitoring dashboard for idempotency tracking.
-    
+
     Provides insights into double-spending prevention effectiveness and
     can detect both legitimate retries and potential attack patterns.
     """
-    
+
     def __init__(self, tracker: IdempotencyTracker):
         """Initialize dashboard with tracker reference."""
         self._tracker = tracker
-    
+
     async def get_health_status(self) -> Dict[str, Any]:
         """
         Get current health of idempotency tracking.
-        
+
         Returns:
             Health report with status indicators
         """
         metrics = await self._tracker.get_metrics()
-        
+
         total_submissions = metrics.get("submissions_recorded", 0)
         accepted = metrics.get("accepted_submissions", 0)
         rejected = metrics.get("rejected_submissions", 0)
         duplicates = metrics.get("duplicate_attempts", 0)
         retries = metrics.get("retry_successes", 0)
         false_positives = metrics.get("false_positives", 0)
-        
+
         # Calculate acceptance rate
         acceptance_rate = (
-            accepted / total_submissions * 100
-            if total_submissions > 0
-            else 0.0
+            accepted / total_submissions * 100 if total_submissions > 0 else 0.0
         )
-        
+
         # Calculate duplicate rate
         duplicate_rate = (
-            duplicates / total_submissions * 100
-            if total_submissions > 0
-            else 0.0
+            duplicates / total_submissions * 100 if total_submissions > 0 else 0.0
         )
-        
+
         # Assess health
         health_status = "healthy"
         health_warnings = []
-        
+
         if false_positives > 0:
             health_warnings.append(
                 f"Detected {false_positives} race conditions (submission ID mismatches)"
             )
             health_status = "degraded"
-        
+
         if duplicate_rate > 5.0:
             health_warnings.append(
                 f"High duplicate rate: {duplicate_rate:.2f}% (may indicate mining issues)"
             )
             health_status = "degraded"
-        
+
         if duplicate_rate > 10.0:
             health_status = "unhealthy"
-        
+
         return {
             "status": health_status,
             "total_submissions": total_submissions,
@@ -300,24 +294,22 @@ class StratumIdempotencyDashboard:
             "redis_available": metrics.get("redis_available", False),
             "warnings": health_warnings,
         }
-    
+
     async def get_duplicate_analysis(self) -> Dict[str, Any]:
         """
         Analyze duplicate patterns to detect anomalies.
-        
+
         Returns:
             Analysis of duplicate activity
         """
         metrics = await self._tracker.get_metrics()
-        
+
         duplicates = metrics.get("duplicate_attempts", 0)
         retries = metrics.get("retry_successes", 0)
-        
+
         # Calculate ratios
-        retry_success_rate = (
-            retries / duplicates * 100 if duplicates > 0 else 0.0
-        )
-        
+        retry_success_rate = retries / duplicates * 100 if duplicates > 0 else 0.0
+
         return {
             "duplicate_attempts": duplicates,
             "successful_retries": retries,

@@ -25,6 +25,7 @@ import pytest
 # touches during boot.  No real mining, no network.
 # ---------------------------------------------------------------------------
 
+
 class _FakeEngine:
     """Minimal duck-type stand-in for UnifiedMiningEngine."""
 
@@ -67,7 +68,10 @@ def _make_controller(tmp_dir: str):
         AutonomyLevel,
         AutonomousMiningController,
     )
-    from pythia_mining.autonomous_audit_persistence import AuditJournal, AutonomousAuditLogger
+    from pythia_mining.autonomous_audit_persistence import (
+        AuditJournal,
+        AutonomousAuditLogger,
+    )
     from pythia_mining.autonomous_escalation import AutonomousEscalationEngine
 
     config = AutonomousConfig(
@@ -88,9 +92,7 @@ def _make_controller(tmp_dir: str):
     )
     ctrl._escalation_engine = AutonomousEscalationEngine(
         audit_logger=ctrl._persistent_audit_logger,
-        escalation_callback=lambda level: ctrl.set_autonomy_level(
-            AutonomyLevel(level)
-        ),
+        escalation_callback=lambda level: ctrl.set_autonomy_level(AutonomyLevel(level)),
         degradation_callback=lambda reason: ctrl.degrade_autonomy_level(reason).value,
     )
     return ctrl
@@ -110,9 +112,9 @@ async def test_boot_self_heal_returns_required_keys():
         report = await ctrl.boot_self_heal_and_optimize()
 
     assert isinstance(report, dict), "boot_self_heal_and_optimize must return a dict"
-    assert report.get("startup_self_healing_executed") is True, (
-        "startup_self_healing_executed must be True on a clean boot (no circuit-breaker)"
-    )
+    assert (
+        report.get("startup_self_healing_executed") is True
+    ), "startup_self_healing_executed must be True on a clean boot (no circuit-breaker)"
     assert "duration_ms" in report, "duration_ms must be present for SLO tracking"
     assert "before" in report, "before snapshot must be present"
     assert "after" in report, "after snapshot must be present"
@@ -175,7 +177,9 @@ def test_clean_stale_lock_removes_dead_pid_lock():
 
         # Write a stale lock with a PID that cannot exist (PID 0)
         lock_path = Path(tmp) / "reflexive_state.lock"
-        lock_path.write_text(json.dumps({"pid": 0, "ts": time.time() - 9999}), encoding="utf-8")
+        lock_path.write_text(
+            json.dumps({"pid": 0, "ts": time.time() - 9999}), encoding="utf-8"
+        )
         assert lock_path.exists(), "pre-condition: lock file must exist before boot"
 
         config = AutonomousConfig(
@@ -187,9 +191,9 @@ def test_clean_stale_lock_removes_dead_pid_lock():
         ctrl = AutonomousMiningController(_FakeEngine(), config=config)
 
         assert not lock_path.exists(), "stale lock must be removed after boot"
-        assert ctrl._stale_state_lock_recoveries == 1, (
-            "_stale_state_lock_recoveries counter must be incremented"
-        )
+        assert (
+            ctrl._stale_state_lock_recoveries == 1
+        ), "_stale_state_lock_recoveries counter must be incremented"
 
 
 def test_clean_stale_lock_preserves_live_pid_lock():
@@ -204,7 +208,9 @@ def test_clean_stale_lock_preserves_live_pid_lock():
         # Use os.getpid() — this PID is definitely alive
         live_pid = os.getpid()
         lock_path = Path(tmp) / "reflexive_state.lock"
-        lock_path.write_text(json.dumps({"pid": live_pid, "ts": time.time()}), encoding="utf-8")
+        lock_path.write_text(
+            json.dumps({"pid": live_pid, "ts": time.time()}), encoding="utf-8"
+        )
 
         config = AutonomousConfig(
             persistence_enabled=True,

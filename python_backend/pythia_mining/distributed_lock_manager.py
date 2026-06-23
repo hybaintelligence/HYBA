@@ -110,7 +110,9 @@ class DistributedLockManager:
         """Get metrics for a lock."""
         return self.metrics.get(lock_key)
 
-    def _record_metric(self, lock_key: str, metric_name: str, value: Any = None) -> None:
+    def _record_metric(
+        self, lock_key: str, metric_name: str, value: Any = None
+    ) -> None:
         """Record metric for lock operation."""
         if lock_key not in self.metrics:
             self.metrics[lock_key] = LockMetrics(lock_key=lock_key)
@@ -354,12 +356,14 @@ class DistributedLockManager:
         lines = ["# Distributed Lock Metrics"]
         for lock_key, m in self.metrics.items():
             labels = f'lock="{lock_key}"'
-            lines.extend([
-                f"hyba_distributed_lock_acquisitions_total{{{labels}}} {m.successful_acquisitions}",
-                f"hyba_distributed_lock_failures_total{{{labels}}} {m.failed_acquisitions}",
-                f"hyba_distributed_lock_contention_events{{{labels}}} {m.contention_events}",
-                f"hyba_distributed_lock_avg_wait_ms{{{labels}}} {m.avg_wait_ms}",
-            ])
+            lines.extend(
+                [
+                    f"hyba_distributed_lock_acquisitions_total{{{labels}}} {m.successful_acquisitions}",
+                    f"hyba_distributed_lock_failures_total{{{labels}}} {m.failed_acquisitions}",
+                    f"hyba_distributed_lock_contention_events{{{labels}}} {m.contention_events}",
+                    f"hyba_distributed_lock_avg_wait_ms{{{labels}}} {m.avg_wait_ms}",
+                ]
+            )
         return lines
 
 

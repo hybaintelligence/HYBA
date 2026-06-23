@@ -127,9 +127,9 @@ def test_consciousness_engine_regime_transitions():
 
     # Relax assertions - regimes may be same if thresholds aren't crossed
     # Just verify that Φ increased
-    assert phi_healthy >= phi_critical, (
-        f"Φ should increase or stay same with health: {phi_critical:.4f} → {phi_healthy:.4f}"
-    )
+    assert (
+        phi_healthy >= phi_critical
+    ), f"Φ should increase or stay same with health: {phi_critical:.4f} → {phi_healthy:.4f}"
 
 
 def test_phi_density_vs_share_acceptance_correlation():
@@ -185,7 +185,9 @@ def test_phi_density_vs_latency_correlation():
     # Simulate shares: higher Φ → lower latency (better coherence = faster operation)
     for i in range(100):
         phi = (i % 10) / 10.0
-        latency_ms = 100.0 - (phi * 80.0)  # Inverse relationship: higher Φ = lower latency
+        latency_ms = 100.0 - (
+            phi * 80.0
+        )  # Inverse relationship: higher Φ = lower latency
 
         share = ShareMetric(
             timestamp=time.time(),
@@ -204,7 +206,9 @@ def test_phi_density_vs_latency_correlation():
     correlation = _pearson_correlation(phi_scores, latencies)
 
     assert correlation is not None, "Correlation computation failed"
-    assert correlation < 0.0, f"Expected negative correlation (Φ vs latency), got {correlation:.4f}"
+    assert (
+        correlation < 0.0
+    ), f"Expected negative correlation (Φ vs latency), got {correlation:.4f}"
 
     print("\nΦ-density vs latency correlation:")
     print(f"  Correlation: {correlation:.4f}")
@@ -253,9 +257,9 @@ def test_iit_analyzer_phi_consistency_across_health_states():
 
     # Healthy state should have higher or equal Φ (more integrated)
     # Relax to allow for similar values
-    assert phi_healthy >= phi_degraded * 0.95, (
-        f"Healthy state should have similar or higher Φ: {phi_healthy:.4f} vs {phi_degraded:.4f}"
-    )
+    assert (
+        phi_healthy >= phi_degraded * 0.95
+    ), f"Healthy state should have similar or higher Φ: {phi_healthy:.4f} vs {phi_degraded:.4f}"
 
 
 def test_phi_regime_strategy_correctness():
@@ -335,9 +339,9 @@ def test_phi_density_acceptance_rate_agreement():
     print(f"  Acceptance rate: {acceptance_rates[0]:.2%} → {acceptance_rates[-1]:.2%}")
 
     # Should show positive trend
-    assert acceptance_rates[-1] >= acceptance_rates[0], (
-        f"Acceptance rate didn't improve: {acceptance_rates[0]:.2%} → {acceptance_rates[-1]:.2%}"
-    )
+    assert (
+        acceptance_rates[-1] >= acceptance_rates[0]
+    ), f"Acceptance rate didn't improve: {acceptance_rates[0]:.2%} → {acceptance_rates[-1]:.2%}"
 
 
 def test_phi_multivariate_health_assessment():
@@ -349,14 +353,19 @@ def test_phi_multivariate_health_assessment():
     # Simulate different health profiles with realistic coupling
     profiles = [
         # All healthy: strong integration, off-diagonal coupling
-        ("all_healthy", np.array([
-            [0.70, 0.10, 0.05, 0.05, 0.05, 0.05],
-            [0.10, 0.70, 0.05, 0.05, 0.05, 0.05],
-            [0.05, 0.05, 0.70, 0.10, 0.05, 0.05],
-            [0.05, 0.05, 0.10, 0.70, 0.05, 0.05],
-            [0.05, 0.05, 0.05, 0.05, 0.70, 0.10],
-            [0.05, 0.05, 0.05, 0.05, 0.10, 0.70],
-        ])),
+        (
+            "all_healthy",
+            np.array(
+                [
+                    [0.70, 0.10, 0.05, 0.05, 0.05, 0.05],
+                    [0.10, 0.70, 0.05, 0.05, 0.05, 0.05],
+                    [0.05, 0.05, 0.70, 0.10, 0.05, 0.05],
+                    [0.05, 0.05, 0.10, 0.70, 0.05, 0.05],
+                    [0.05, 0.05, 0.05, 0.05, 0.70, 0.10],
+                    [0.05, 0.05, 0.05, 0.05, 0.10, 0.70],
+                ]
+            ),
+        ),
         # Mixed: some integration
         (
             "mixed_healthy",
@@ -372,14 +381,19 @@ def test_phi_multivariate_health_assessment():
             ),
         ),
         # All degraded: maximally degraded with no structure
-        ("all_degraded", np.array([
-            [0.25, 0.25, 0.25, 0.25, 0.00, 0.00],
-            [0.25, 0.25, 0.25, 0.25, 0.00, 0.00],
-            [0.25, 0.25, 0.25, 0.25, 0.00, 0.00],
-            [0.25, 0.25, 0.25, 0.25, 0.00, 0.00],
-            [0.00, 0.00, 0.00, 0.00, 0.50, 0.50],
-            [0.00, 0.00, 0.00, 0.00, 0.50, 0.50],
-        ])),
+        (
+            "all_degraded",
+            np.array(
+                [
+                    [0.25, 0.25, 0.25, 0.25, 0.00, 0.00],
+                    [0.25, 0.25, 0.25, 0.25, 0.00, 0.00],
+                    [0.25, 0.25, 0.25, 0.25, 0.00, 0.00],
+                    [0.25, 0.25, 0.25, 0.25, 0.00, 0.00],
+                    [0.00, 0.00, 0.00, 0.00, 0.50, 0.50],
+                    [0.00, 0.00, 0.00, 0.00, 0.50, 0.50],
+                ]
+            ),
+        ),
     ]
 
     test_state = np.array([1, 0, 1, 0, 1, 0])
@@ -428,7 +442,9 @@ def test_phi_predictive_value_for_mining_outcomes():
     print(f"  Epoch1 Φ → Epoch2 outcome correlation: {correlation:.4f}")
 
     if correlation is not None:
-        assert correlation > 0.0, f"Φ should positively predict outcomes: {correlation:.4f}"
+        assert (
+            correlation > 0.0
+        ), f"Φ should positively predict outcomes: {correlation:.4f}"
 
 
 if __name__ == "__main__":

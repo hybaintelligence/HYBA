@@ -43,7 +43,10 @@ def test_share_ack_learning_is_discounted_by_block_share_gap() -> None:
     assert correction.phi_share_update_weight == pytest.approx(1.0)
     assert correction.phi_block_update_weight == pytest.approx(0.01)
     assert correction.amplitude_amplification_allowed is False
-    assert correction.correction_reason == "share_ack_discounted_by_block_share_difficulty_gap"
+    assert (
+        correction.correction_reason
+        == "share_ack_discounted_by_block_share_difficulty_gap"
+    )
     assert validate_learning_correction_policy(correction_summary(correction))
 
 
@@ -64,7 +67,10 @@ def test_rejected_share_updates_negative_operational_memory_only() -> None:
     assert correction.phi_share_update_weight == 0.0
     assert correction.phi_block_update_weight == 0.0
     assert correction.amplitude_amplification_allowed is False
-    assert correction.correction_reason == "rejection_updates_negative_operational_memory_only"
+    assert (
+        correction.correction_reason
+        == "rejection_updates_negative_operational_memory_only"
+    )
     assert validate_learning_correction_policy(correction_summary(correction))
 
 
@@ -75,8 +81,12 @@ def test_learning_signal_rejects_block_target_easier_than_share_target() -> None
         compute_learning_signal_correction(_event(block_target=20_000))
 
 
-def test_learning_signal_rejects_confirmed_block_without_pool_share_acceptance() -> None:
-    with pytest.raises(LearningSignalError, match="confirmed_block_requires_pool_share_acceptance"):
+def test_learning_signal_rejects_confirmed_block_without_pool_share_acceptance() -> (
+    None
+):
+    with pytest.raises(
+        LearningSignalError, match="confirmed_block_requires_pool_share_acceptance"
+    ):
         compute_learning_signal_correction(
             _event(pool_accepted_share=False, pool_confirmed_block=True)
         )

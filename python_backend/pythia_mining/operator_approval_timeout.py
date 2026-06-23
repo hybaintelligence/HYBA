@@ -154,7 +154,7 @@ class OperatorApprovalTimeoutManager:
 
         Returns:
             True if approved, False if denied
-            
+
         Raises:
             asyncio.TimeoutError: Never raised; timeouts are handled gracefully
         """
@@ -293,8 +293,8 @@ class OperatorApprovalTimeoutManager:
         if len(self.response_times) > 1000:  # Keep last 1000
             self.response_times = self.response_times[-1000:]
 
-        self.metrics.avg_response_time_seconds = (
-            sum(self.response_times) / len(self.response_times)
+        self.metrics.avg_response_time_seconds = sum(self.response_times) / len(
+            self.response_times
         )
         self.metrics.max_response_time_seconds = max(self.response_times)
         if len(self.response_times) >= 20:

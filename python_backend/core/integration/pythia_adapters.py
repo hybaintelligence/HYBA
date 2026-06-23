@@ -55,9 +55,13 @@ class SubstatePassportAdapter:
             "structural_hash": getattr(substate_passport, "structural_hash", ""),
             "topology_verified": getattr(substate_passport, "topology_verified", False),
             "coverage_verified": getattr(substate_passport, "coverage_verified", False),
-            "quantum_speedup_claimed": getattr(substate_passport, "quantum_speedup_claimed", False),
+            "quantum_speedup_claimed": getattr(
+                substate_passport, "quantum_speedup_claimed", False
+            ),
             "manifold_dimension": getattr(substate_passport, "manifold_dimension", 0),
-            "information_content": getattr(substate_passport, "information_content", 0.0),
+            "information_content": getattr(
+                substate_passport, "information_content", 0.0
+            ),
         }
 
         # Map epistemic bounds from existing flags
@@ -88,7 +92,9 @@ class SubstatePassportAdapter:
             "passport_hash": passport.embedded_hash,
             "topology_verified": passport.payload.get("topology_verified", False),
             "coverage_verified": passport.payload.get("coverage_verified", False),
-            "quantum_speedup_claimed": passport.payload.get("quantum_speedup_claimed", False),
+            "quantum_speedup_claimed": passport.payload.get(
+                "quantum_speedup_claimed", False
+            ),
             "manifold_dimension": passport.payload.get("manifold_dimension", 0),
             "information_content": passport.payload.get("information_content", 0.0),
             "timestamp_ns": int(passport.timestamp * 1e9),

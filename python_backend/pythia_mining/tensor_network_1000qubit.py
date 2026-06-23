@@ -62,7 +62,9 @@ def _contract_mps_norm_exact(tensors: List[np.ndarray]) -> float:
     return math.sqrt(max(norm_sq, 0.0))
 
 
-def _compute_bond_entanglement(tensor_left: np.ndarray, tensor_right: np.ndarray) -> float:
+def _compute_bond_entanglement(
+    tensor_left: np.ndarray, tensor_right: np.ndarray
+) -> float:
     """Compute exact von Neumann entropy for bipartite entanglement via Schmidt decomposition.
 
     Mathematical procedure:
@@ -206,7 +208,11 @@ class MPS:
             if not _np.all(_np.isfinite(Q)) or not _np.all(_np.isfinite(R)):
                 r = min(a * d, b)
                 Q = _np.eye(a * d, r, dtype=mat.dtype)
-                R = _np.eye(r, b, dtype=mat.dtype) if r == b else _np.zeros((r, b), dtype=mat.dtype)
+                R = (
+                    _np.eye(r, b, dtype=mat.dtype)
+                    if r == b
+                    else _np.zeros((r, b), dtype=mat.dtype)
+                )
 
             r = Q.shape[1]
             self.tensors[i] = Q.reshape(a, d, r)
@@ -221,7 +227,9 @@ class MPS:
             R_normalized = R / r_norm
 
             # Absorb normalized R into next tensor
-            self.tensors[i + 1] = _np.einsum("ij,jkl->ikl", R_normalized, self.tensors[i + 1])
+            self.tensors[i + 1] = _np.einsum(
+                "ij,jkl->ikl", R_normalized, self.tensors[i + 1]
+            )
 
         # The sweep absorbs *normalized* R factors into the next tensor, so the
         # active MPS norm is carried by the final tensor after the sweep.
@@ -386,7 +394,9 @@ class MPS:
             A_right = tensors[i + 1]
             a, p, c = A_left.shape
             _, d, b = A_right.shape
-            merged_spec = np.einsum("apc,cdb->apdb", A_left, A_right).reshape(a * p, d * b)
+            merged_spec = np.einsum("apc,cdb->apdb", A_left, A_right).reshape(
+                a * p, d * b
+            )
             _, S_spectrum, _ = np.linalg.svd(merged_spec, full_matrices=False)
             S_spectrum = S_spectrum[S_spectrum > 1e-15]
 
@@ -615,7 +625,9 @@ class PhiAcceleratedTensorNetwork:
         return singular_values_sorted[:trunc_idx], idx[:trunc_idx], trunc_idx
 
     @staticmethod
-    def phi_optimized_mps_initialization(data: np.ndarray, max_bond_dim: int = 16) -> MPS:
+    def phi_optimized_mps_initialization(
+        data: np.ndarray, max_bond_dim: int = 16
+    ) -> MPS:
         """Initialize MPS from data using Φ-optimized compression.
 
         This is used to convert real datasets (e.g., MNIST images) into MPS form.
@@ -683,7 +695,9 @@ class DatasetBenchmark:
 
         for max_bond in max_bond_dims:
             # Create MPS from data
-            mps = PhiAcceleratedTensorNetwork.phi_optimized_mps_initialization(data, max_bond)
+            mps = PhiAcceleratedTensorNetwork.phi_optimized_mps_initialization(
+                data, max_bond
+            )
 
             # Compute compression ratio
             original_size = len(data)

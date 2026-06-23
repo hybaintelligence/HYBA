@@ -48,7 +48,9 @@ def _recent_audit_events(limit: int) -> list[dict[str, Any]]:
     log_dir = _audit_log_dir()
     if not log_dir.exists():
         return []
-    files = sorted(log_dir.glob("audit_*.log"), key=lambda path: path.stat().st_mtime, reverse=True)
+    files = sorted(
+        log_dir.glob("audit_*.log"), key=lambda path: path.stat().st_mtime, reverse=True
+    )
     events: list[dict[str, Any]] = []
     for file_path in files:
         try:
@@ -152,7 +154,9 @@ async def mining_metrics(
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "pools": pools,
         "share_history": store.get_share_history(limit=share_history_limit),
-        "connection_history": store.get_connection_history(limit=connection_history_limit),
+        "connection_history": store.get_connection_history(
+            limit=connection_history_limit
+        ),
         "alerts": _derive_alerts(pools, state),
         "state": {
             "active_pool": state.get("active_pool"),

@@ -1,57 +1,117 @@
 {
   "entities": {
-    "User": {
-      "title": "User",
-      "description": "User profile and authentication data",
-      "type": "object",
+    "CalibrationLog": {
+      "description": "Log of quantum substrate calibrations",
       "properties": {
-        "username": { "type": "string", "description": "Unique username" },
-        "passwordHash": { "type": "string", "description": "Bcrypt hashed password" },
-        "role": { "type": "string", "enum": ["admin", "miner", "analyst", "operator"] },
-        "createdAt": { "type": "string", "format": "date-time" }
+        "expectedImprovement": {
+          "type": "number"
+        },
+        "resonanceRadius": {
+          "type": "number"
+        },
+        "targetIndex": {
+          "type": "number"
+        },
+        "timestamp": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "userId": {
+          "type": "string"
+        },
+        "username": {
+          "type": "string"
+        }
       },
-      "required": ["username", "passwordHash", "role", "createdAt"]
+      "required": [
+        "userId",
+        "username",
+        "targetIndex",
+        "resonanceRadius",
+        "expectedImprovement",
+        "timestamp"
+      ],
+      "title": "CalibrationLog",
+      "type": "object"
     },
     "QuantumProduct": {
-      "title": "QuantumProduct",
       "description": "Quantum hardware available in the catalog",
-      "type": "object",
       "properties": {
-        "name": { "type": "string" },
-        "description": { "type": "string" },
-        "category": { "type": "string" },
-        "difficultyScale": { "type": "number", "description": "Scaling factor 1-10" },
-        "qubitDimension": { "type": "number", "description": "Number of qubits" }
+        "category": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "difficultyScale": {
+          "description": "Scaling factor 1-10",
+          "type": "number"
+        },
+        "name": {
+          "type": "string"
+        },
+        "qubitDimension": {
+          "description": "Number of qubits",
+          "type": "number"
+        }
       },
-      "required": ["name", "description", "category", "difficultyScale", "qubitDimension"]
+      "required": [
+        "name",
+        "description",
+        "category",
+        "difficultyScale",
+        "qubitDimension"
+      ],
+      "title": "QuantumProduct",
+      "type": "object"
     },
-    "CalibrationLog": {
-      "title": "CalibrationLog",
-      "description": "Log of quantum substrate calibrations",
-      "type": "object",
+    "User": {
+      "description": "User profile and authentication data",
       "properties": {
-        "userId": { "type": "string" },
-        "username": { "type": "string" },
-        "targetIndex": { "type": "number" },
-        "resonanceRadius": { "type": "number" },
-        "expectedImprovement": { "type": "number" },
-        "timestamp": { "type": "string", "format": "date-time" }
+        "createdAt": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "passwordHash": {
+          "description": "Bcrypt hashed password",
+          "type": "string"
+        },
+        "role": {
+          "enum": [
+            "admin",
+            "miner",
+            "analyst",
+            "operator"
+          ],
+          "type": "string"
+        },
+        "username": {
+          "description": "Unique username",
+          "type": "string"
+        }
       },
-      "required": ["userId", "username", "targetIndex", "resonanceRadius", "expectedImprovement", "timestamp"]
+      "required": [
+        "username",
+        "passwordHash",
+        "role",
+        "createdAt"
+      ],
+      "title": "User",
+      "type": "object"
     }
   },
   "firestore": {
-    "/users/{userId}": {
-      "schema": "User",
-      "description": "Collection of user profiles"
+    "/calibrationLogs/{logId}": {
+      "description": "History of system calibrations",
+      "schema": "CalibrationLog"
     },
     "/products/{productId}": {
-      "schema": "QuantumProduct",
-      "description": "Catalog of hardware products"
+      "description": "Catalog of hardware products",
+      "schema": "QuantumProduct"
     },
-    "/calibrationLogs/{logId}": {
-      "schema": "CalibrationLog",
-      "description": "History of system calibrations"
+    "/users/{userId}": {
+      "description": "Collection of user profiles",
+      "schema": "User"
     }
   }
 }

@@ -100,34 +100,50 @@ Examples:
         """,
     )
 
-    parser.add_argument("--quick", action="store_true", help="Quick setup with default values")
-
     parser.add_argument(
-        "--viabtc-user", default="PYTHIA.001", help="ViaBTC username (default: PYTHIA.001)"
-    )
-
-    parser.add_argument("--viabtc-pass", default="123", help="ViaBTC password (default: 123)")
-
-    parser.add_argument(
-        "--braiins-user", default="PYTHAGORAS", help="Braiins username (default: PYTHAGORAS)"
+        "--quick", action="store_true", help="Quick setup with default values"
     )
 
     parser.add_argument(
-        "--braiins-pass", default="anything123", help="Braiins password (default: anything123)"
+        "--viabtc-user",
+        default="PYTHIA.001",
+        help="ViaBTC username (default: PYTHIA.001)",
+    )
+
+    parser.add_argument(
+        "--viabtc-pass", default="123", help="ViaBTC password (default: 123)"
+    )
+
+    parser.add_argument(
+        "--braiins-user",
+        default="PYTHAGORAS",
+        help="Braiins username (default: PYTHAGORAS)",
+    )
+
+    parser.add_argument(
+        "--braiins-pass",
+        default="anything123",
+        help="Braiins password (default: anything123)",
     )
 
     parser.add_argument(
         "--generate-jwt", action="store_true", help="Generate and set new JWT secret"
     )
 
-    parser.add_argument("--jwt-secret", help="Use custom JWT secret (overrides --generate-jwt)")
-
     parser.add_argument(
-        "--enable-live", action="store_true", help="Enable live Stratum I/O and share submission"
+        "--jwt-secret", help="Use custom JWT secret (overrides --generate-jwt)"
     )
 
     parser.add_argument(
-        "--disable-live", action="store_true", help="Disable live Stratum I/O (for testing)"
+        "--enable-live",
+        action="store_true",
+        help="Enable live Stratum I/O and share submission",
+    )
+
+    parser.add_argument(
+        "--disable-live",
+        action="store_true",
+        help="Disable live Stratum I/O (for testing)",
     )
 
     parser.add_argument(
@@ -244,7 +260,8 @@ Examples:
         else f"✓ ViaBTC: {args.viabtc_user}"
     )
     print(
-        f"✓ Braiins: {args.braiins_user}" + (" (default)" if args.default_pool == "braiins" else "")
+        f"✓ Braiins: {args.braiins_user}"
+        + (" (default)" if args.default_pool == "braiins" else "")
     )
 
     # Print next steps

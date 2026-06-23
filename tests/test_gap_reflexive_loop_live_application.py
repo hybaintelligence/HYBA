@@ -28,8 +28,13 @@ from pythia_mining.autonomous_mining_controller import (  # noqa: E402
     AutonomousMiningController,
     AutonomyLevel,
 )
-from pythia_mining.consciousness_engine import ConsciousnessConfig, ConsciousnessEngine  # noqa: E402
-from pythia_mining.pulvini_compressed_solver import PulviniCompressedQuantumSolver  # noqa: E402
+from pythia_mining.consciousness_engine import (
+    ConsciousnessConfig,
+    ConsciousnessEngine,
+)  # noqa: E402
+from pythia_mining.pulvini_compressed_solver import (
+    PulviniCompressedQuantumSolver,
+)  # noqa: E402
 
 
 # ---------------------------------------------------------------------------
@@ -74,9 +79,9 @@ def test_single_reflexive_cycle_applies_at_least_one_proposal() -> None:
 
     assert result["reflexive_cycle_executed"] is True
     assert result["proposals_generated"] > 0, "no proposals generated"
-    assert result["proposals_applied"] > 0, (
-        "no proposals applied — constraint checks may be rejecting everything"
-    )
+    assert (
+        result["proposals_applied"] > 0
+    ), "no proposals applied — constraint checks may be rejecting everything"
 
 
 # ---------------------------------------------------------------------------
@@ -92,9 +97,9 @@ def test_epoch_counter_increments_with_applied_proposals() -> None:
     r2 = asyncio.run(ctrl.seek_improvement())
 
     total_applied = r1["proposals_applied"] + r2["proposals_applied"]
-    assert ctrl._self_optimization_epochs == total_applied, (
-        f"epoch counter {ctrl._self_optimization_epochs} != total applied {total_applied}"
-    )
+    assert (
+        ctrl._self_optimization_epochs == total_applied
+    ), f"epoch counter {ctrl._self_optimization_epochs} != total applied {total_applied}"
 
 
 # ---------------------------------------------------------------------------
@@ -112,15 +117,17 @@ def test_phi_scaling_proposal_mutates_ensemble_config() -> None:
         asyncio.run(ctrl.seek_improvement())
 
     phi_proposals = [
-        p for p in ctrl.proposal_history if p.improvement_type == "phi_scaling" and p.applied
+        p
+        for p in ctrl.proposal_history
+        if p.improvement_type == "phi_scaling" and p.applied
     ]
     if not phi_proposals:
         pytest.skip("no phi_scaling proposal applied in 4 cycles")
 
     last = phi_proposals[-1]
-    assert engine.phi_ensemble.config["phi_scaling_power"] == last.proposed_value, (
-        "phi_ensemble.config not updated by phi_scaling proposal"
-    )
+    assert (
+        engine.phi_ensemble.config["phi_scaling_power"] == last.proposed_value
+    ), "phi_ensemble.config not updated by phi_scaling proposal"
 
 
 # ---------------------------------------------------------------------------
@@ -136,7 +143,9 @@ def test_search_depth_proposal_mutates_optimizer_iterations() -> None:
         asyncio.run(ctrl.seek_improvement())
 
     depth_proposals = [
-        p for p in ctrl.proposal_history if p.improvement_type == "search_depth" and p.applied
+        p
+        for p in ctrl.proposal_history
+        if p.improvement_type == "search_depth" and p.applied
     ]
     if not depth_proposals:
         pytest.skip("no search_depth proposal applied in 4 cycles")
@@ -159,7 +168,9 @@ def test_compression_target_proposal_mutates_solver_ratio() -> None:
         asyncio.run(ctrl.seek_improvement())
 
     comp_proposals = [
-        p for p in ctrl.proposal_history if p.improvement_type == "compression_target" and p.applied
+        p
+        for p in ctrl.proposal_history
+        if p.improvement_type == "compression_target" and p.applied
     ]
     if not comp_proposals:
         pytest.skip("no compression_target proposal applied in 4 cycles")
@@ -210,9 +221,9 @@ def test_phi_density_does_not_regress_across_cycles() -> None:
         densities.append(ctrl.get_phi_density())
 
     for i in range(1, len(densities)):
-        assert densities[i] >= densities[i - 1] - 1e-9, (
-            f"phi_density regressed from {densities[i - 1]} to {densities[i]} at cycle {i}"
-        )
+        assert (
+            densities[i] >= densities[i - 1] - 1e-9
+        ), f"phi_density regressed from {densities[i - 1]} to {densities[i]} at cycle {i}"
 
 
 # ---------------------------------------------------------------------------
@@ -228,6 +239,6 @@ def test_proposal_history_accumulates_across_cycles() -> None:
         r = asyncio.run(ctrl.seek_improvement())
         total_generated += r["proposals_generated"]
 
-    assert len(ctrl.proposal_history) == total_generated, (
-        f"proposal_history length {len(ctrl.proposal_history)} != generated {total_generated}"
-    )
+    assert (
+        len(ctrl.proposal_history) == total_generated
+    ), f"proposal_history length {len(ctrl.proposal_history)} != generated {total_generated}"

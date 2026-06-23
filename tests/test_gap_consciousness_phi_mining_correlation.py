@@ -83,9 +83,9 @@ def _strategy_for_phi(target_phi: float) -> SearchStrategy:
 def test_high_phi_selects_aggressive_strategy(phi: float) -> None:
     """Φ ≥ 0.70 must route to the 30 s aggressive search."""
     strategy = _strategy_for_phi(phi)
-    assert strategy.max_search_time == 30.0, (
-        f"phi={phi}: expected 30 s, got {strategy.max_search_time}"
-    )
+    assert (
+        strategy.max_search_time == 30.0
+    ), f"phi={phi}: expected 30 s, got {strategy.max_search_time}"
     assert strategy.adaptive_difficulty is True
 
 
@@ -98,9 +98,9 @@ def test_high_phi_selects_aggressive_strategy(phi: float) -> None:
 def test_medium_phi_selects_balanced_strategy(phi: float) -> None:
     """0.40 ≤ Φ < 0.70 must route to the 60 s balanced search."""
     strategy = _strategy_for_phi(phi)
-    assert strategy.max_search_time == 60.0, (
-        f"phi={phi}: expected 60 s, got {strategy.max_search_time}"
-    )
+    assert (
+        strategy.max_search_time == 60.0
+    ), f"phi={phi}: expected 60 s, got {strategy.max_search_time}"
     assert strategy.adaptive_difficulty is True
 
 
@@ -113,9 +113,9 @@ def test_medium_phi_selects_balanced_strategy(phi: float) -> None:
 def test_low_phi_selects_conservative_strategy(phi: float) -> None:
     """Φ < 0.40 must route to the 120 s conservative search."""
     strategy = _strategy_for_phi(phi)
-    assert strategy.max_search_time == 120.0, (
-        f"phi={phi}: expected 120 s, got {strategy.max_search_time}"
-    )
+    assert (
+        strategy.max_search_time == 120.0
+    ), f"phi={phi}: expected 120 s, got {strategy.max_search_time}"
     assert strategy.adaptive_difficulty is False
 
 
@@ -148,9 +148,9 @@ def test_continuous_multiplier_stays_within_config_bounds() -> None:
     engine = ConsciousnessEngine(config=cfg)
     for phi in [0.0, 0.3, 0.618, 0.7, 0.9, 1.0]:
         m = engine.calculate_continuous_multiplier(phi)
-        assert cfg.min_multiplier <= m <= cfg.max_multiplier, (
-            f"multiplier {m} outside [{cfg.min_multiplier}, {cfg.max_multiplier}] for phi={phi}"
-        )
+        assert (
+            cfg.min_multiplier <= m <= cfg.max_multiplier
+        ), f"multiplier {m} outside [{cfg.min_multiplier}, {cfg.max_multiplier}] for phi={phi}"
 
 
 # ---------------------------------------------------------------------------
@@ -169,12 +169,14 @@ def test_mass_gap_damping_applied_when_multiplier_exceeds_gap() -> None:
     # With max_multiplier=3.0 and phi=1.0, the raw multiplier is 3.0
     raw = engine.calculate_continuous_multiplier(1.0)
     if raw <= YANG_MILLS_GAP:
-        pytest.skip("config does not produce multiplier above mass gap — skip damping test")
+        pytest.skip(
+            "config does not produce multiplier above mass gap — skip damping test"
+        )
 
     result = engine.get_hardware_scaling_factor()
-    assert result["scaling_factor"] <= YANG_MILLS_GAP + 1e-6, (
-        f"scaling_factor {result['scaling_factor']} exceeds YANG_MILLS_GAP {YANG_MILLS_GAP}"
-    )
+    assert (
+        result["scaling_factor"] <= YANG_MILLS_GAP + 1e-6
+    ), f"scaling_factor {result['scaling_factor']} exceeds YANG_MILLS_GAP {YANG_MILLS_GAP}"
 
 
 # ---------------------------------------------------------------------------
@@ -200,9 +202,9 @@ def test_integration_regime_matches_thresholds(
 ) -> None:
     """Regime classification must match documented threshold boundaries."""
     engine = _engine_with_phi(phi)
-    assert engine._integration_regime == expected_regime, (
-        f"phi={phi}: expected {expected_regime.value}, got {engine._integration_regime.value}"
-    )
+    assert (
+        engine._integration_regime == expected_regime
+    ), f"phi={phi}: expected {expected_regime.value}, got {engine._integration_regime.value}"
 
 
 # ---------------------------------------------------------------------------

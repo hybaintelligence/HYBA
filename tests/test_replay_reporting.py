@@ -48,7 +48,9 @@ def test_replay_claim_cli_writes_failure_reports(tmp_path) -> None:
         inputs={"message": "actual"},
         seeds={"python_hash_seed": 0},
     ).to_dict()
-    manifest["claim"]["reproducibility_attestation"]["expected_output_digest"] = "0" * 64
+    manifest["claim"]["reproducibility_attestation"]["expected_output_digest"] = (
+        "0" * 64
+    )
     manifest_path = tmp_path / "manifest.json"
     report_json = tmp_path / "report.json"
     report_html = tmp_path / "report.html"

@@ -227,7 +227,9 @@ class ConsciousnessEngine:
         await self.calculate_integrated_information()
         return self.current_state.consciousness_level
 
-    async def guide_decision_making(self, decision_context: Dict[str, Any]) -> Dict[str, Any]:
+    async def guide_decision_making(
+        self, decision_context: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Legacy async API: provide coherence-based decision guidance.
 
         NOTE: This uses Φ coherence proxies for operational decision support,
@@ -251,7 +253,11 @@ class ConsciousnessEngine:
         if component in self.components:
             self.components[component] = ready
         known = [value for value in self.components.values() if value is not None]
-        metrics = self._measure_component_phi(known) if known else PhiMetrics(source="not_measured")
+        metrics = (
+            self._measure_component_phi(known)
+            if known
+            else PhiMetrics(source="not_measured")
+        )
         self._record_metrics(metrics)
 
     def measure_phi(self, states: Sequence[NDArray[np.complex128]]) -> PhiMetrics:
@@ -297,21 +303,29 @@ class ConsciousnessEngine:
         current_system_state = window[-1]
         if current_system_state.ndim == 1:
             # Convert state vector to density matrix if needed
-            current_system_state = np.outer(current_system_state, current_system_state.conj())
+            current_system_state = np.outer(
+                current_system_state, current_system_state.conj()
+            )
 
         try:
             # Compute genuine IIT 4.0 Φ_max via exhaustive partition analysis
-            iit_result = self.iit_analyzer.calculate_phi_max(system_state=current_system_state)
+            iit_result = self.iit_analyzer.calculate_phi_max(
+                system_state=current_system_state
+            )
             phi_iit = float(iit_result.get("phi_max", 0.0))
 
             # Clip to valid range [0, 1]
             phi_iit = float(np.clip(phi_iit, 0.0, 1.0))
         except Exception as exc:
             # Fallback to heuristic if IIT computation fails
-            self.logger.warning("IIT 4.0 computation failed: %s, using heuristic Φ", exc)
+            self.logger.warning(
+                "IIT 4.0 computation failed: %s, using heuristic Φ", exc
+            )
             phi_iit = float(
                 np.clip(
-                    0.55 * coherence_level + 0.25 * max(phi_causal, 0.0) + 0.20 * entropy_balance,
+                    0.55 * coherence_level
+                    + 0.25 * max(phi_causal, 0.0)
+                    + 0.20 * entropy_balance,
                     0.0,
                     1.0,
                 )
@@ -375,7 +389,10 @@ class ConsciousnessEngine:
         entropy = 0.0
         if known and 0.0 < integration < 1.0:
             entropy = float(
-                -(integration * np.log2(integration) + (1 - integration) * np.log2(1 - integration))
+                -(
+                    integration * np.log2(integration)
+                    + (1 - integration) * np.log2(1 - integration)
+                )
             )
         phi = float(np.clip(integration * (1.0 - 0.25 * entropy), 0.0, 1.0))
         return PhiMetrics(
@@ -397,7 +414,9 @@ class ConsciousnessEngine:
         self.current_state.component_integration = (
             None if not known else sum(1 for value in known if value) / len(known)
         )
-        self.current_state.system_complexity = float(len(known)) if known else metrics.complexity
+        self.current_state.system_complexity = (
+            float(len(known)) if known else metrics.complexity
+        )
         self.current_state.timestamp = time.time()
         self.current_state.source = metrics.source
 
@@ -418,10 +437,13 @@ class ConsciousnessEngine:
         # Where x0 is the inflection point (PHI_INV)
         range_diff = self.config.max_multiplier - self.config.min_multiplier
         continuous_mult = self.config.min_multiplier + (
-            range_diff / (1 + np.exp(-self.config.sigmoid_steepness * (coherence_score - PHI_INV)))
+            range_diff
+            / (1 + np.exp(-self.config.sigmoid_steepness * (coherence_score - PHI_INV)))
         )
         return float(
-            np.clip(continuous_mult, self.config.min_multiplier, self.config.max_multiplier)
+            np.clip(
+                continuous_mult, self.config.min_multiplier, self.config.max_multiplier
+            )
         )
 
     def get_hardware_scaling_factor(
@@ -493,7 +515,15 @@ class ConsciousnessEngine:
                 return float(value)
             if isinstance(value, dict):
                 # Try common telemetry keys first
-                for key in ('v', 'val', 'value', 'score', 'coherence', 'phi', 'magnitude'):
+                for key in (
+                    "v",
+                    "val",
+                    "value",
+                    "score",
+                    "coherence",
+                    "phi",
+                    "magnitude",
+                ):
                     if key in value:
                         return extract_numeric(value[key])
                 # Fallback: use first numeric value found
@@ -528,7 +558,9 @@ class ConsciousnessEngine:
                 if len(values) >= 2:
                     ratios = np.asarray(values[1:]) / (np.asarray(values[:-1]) + 1e-12)
                     distances = np.abs(ratios - PHI) / PHI
-                    harmonic_scores.append(float(np.clip(1.0 - np.mean(distances), 0.0, 1.0)))
+                    harmonic_scores.append(
+                        float(np.clip(1.0 - np.mean(distances), 0.0, 1.0))
+                    )
                 elif len(values) == 1:
                     phi_distance = abs(values[0] - PHI_INV) / PHI_INV
                     harmonic_scores.append(float(np.clip(1.0 - phi_distance, 0.0, 1.0)))
@@ -691,7 +723,9 @@ class ConsciousnessEngine:
             "patterns_decayed": len(self.synaptic_layer.synaptic_memory),
         }
 
-    def get_emergent_pathways(self, threshold: Optional[float] = None) -> List[Dict[str, Any]]:
+    def get_emergent_pathways(
+        self, threshold: Optional[float] = None
+    ) -> List[Dict[str, Any]]:
         """Return patterns that have formed emergent pathways.
 
         ELEVATED: Emergent pathways are patterns whose synaptic weight has
@@ -752,7 +786,9 @@ class ConsciousnessEngine:
                 "pattern_id": pattern_id,
                 "similarity_score": similarity,
                 "nonce": self.synaptic_layer.synaptic_memory[pattern_id].pattern.nonce,
-                "synaptic_weight": self.synaptic_layer.synaptic_memory[pattern_id].synaptic_weight,
+                "synaptic_weight": self.synaptic_layer.synaptic_memory[
+                    pattern_id
+                ].synaptic_weight,
             }
             for pattern_id, similarity in suggestions
         ]
@@ -877,7 +913,9 @@ class ConsciousnessEngine:
 
         # Initialize module state if not exists
         if component_id not in self.regeneration_module_states:
-            self.regeneration_module_states[component_id] = ModuleState.healthy(component_id)
+            self.regeneration_module_states[component_id] = ModuleState.healthy(
+                component_id
+            )
 
         # Create context signal from positional memory
         context = None
@@ -899,7 +937,9 @@ class ConsciousnessEngine:
 
         # Update module state based on regeneration result
         if trace.get("status") == "success":
-            self.regeneration_module_states[component_id] = ModuleState.healthy(component_id)
+            self.regeneration_module_states[component_id] = ModuleState.healthy(
+                component_id
+            )
             # Update component health to reflect successful regeneration
             self.components[component_id] = True
         elif trace.get("status") == "innervation_failure":
@@ -933,7 +973,9 @@ class ConsciousnessEngine:
             "role_probabilities": state.role_probabilities(),
             "has_positional_memory": component_id in self.clifford_positional_memory,
             "clifford_index": self.clifford_positional_memory.get(component_id),
-            "current_role": max(state.role_probabilities().items(), key=lambda x: x[1])[0].value,
+            "current_role": max(state.role_probabilities().items(), key=lambda x: x[1])[
+                0
+            ].value,
         }
 
     def get_regeneration_status(self) -> dict:
@@ -961,7 +1003,8 @@ class ConsciousnessEngine:
                 "blastema_metric": blastema_metric,
                 "is_in_blastema": is_in_blastema,
                 "role_probabilities": state.role_probabilities(),
-                "has_positional_memory": component_id in self.clifford_positional_memory,
+                "has_positional_memory": component_id
+                in self.clifford_positional_memory,
                 "clifford_index": self.clifford_positional_memory.get(component_id),
             }
 

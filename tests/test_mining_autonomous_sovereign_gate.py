@@ -44,7 +44,9 @@ def _set_live_startup_env(monkeypatch) -> None:
     monkeypatch.setenv("HYBA_ENABLE_LIVE_SHARE_SUBMIT", "false")
 
 
-def test_live_pythia_startup_autonomy_passes_without_operator_approval(monkeypatch) -> None:
+def test_live_pythia_startup_autonomy_passes_without_operator_approval(
+    monkeypatch,
+) -> None:
     _clear_env(monkeypatch)
     _set_live_startup_env(monkeypatch)
 
@@ -54,10 +56,14 @@ def test_live_pythia_startup_autonomy_passes_without_operator_approval(monkeypat
     assert report.status == "GO"
     assert report.schema == "HYBA_AUTONOMOUS_MINING_SOVEREIGN_GATE_V2"
     startup = next(
-        check for check in report.checks if check.name == "pythia_startup_autonomy_allowed"
+        check
+        for check in report.checks
+        if check.name == "pythia_startup_autonomy_allowed"
     )
     external = next(
-        check for check in report.checks if check.name == "autonomous_external_action_authorisation"
+        check
+        for check in report.checks
+        if check.name == "autonomous_external_action_authorisation"
     )
     assert startup.status == "pass"
     assert external.status == "pass"
@@ -74,13 +80,17 @@ def test_autonomous_external_actions_require_operator_approval(monkeypatch) -> N
     assert report.passed is False
     assert report.status == "NO_GO"
     approval = next(
-        check for check in report.checks if check.name == "autonomous_external_action_authorisation"
+        check
+        for check in report.checks
+        if check.name == "autonomous_external_action_authorisation"
     )
     assert approval.status == "fail"
     assert "HYBA_AUTONOMOUS_OPERATOR_APPROVAL_ID" in approval.detail
 
 
-def test_autonomous_external_actions_pass_with_bounded_human_authority(monkeypatch) -> None:
+def test_autonomous_external_actions_pass_with_bounded_human_authority(
+    monkeypatch,
+) -> None:
     _clear_env(monkeypatch)
     _set_live_startup_env(monkeypatch)
     monkeypatch.setenv("HYBA_AUTONOMOUS_EXTERNAL_ACTIONS", "true")
@@ -92,10 +102,16 @@ def test_autonomous_external_actions_pass_with_bounded_human_authority(monkeypat
 
     assert report.passed is True
     assert report.status == "GO"
-    assert all(check.status != "fail" for check in report.checks if check.severity == "critical")
+    assert all(
+        check.status != "fail"
+        for check in report.checks
+        if check.severity == "critical"
+    )
 
 
-def test_autonomous_gate_blocks_dev_fixtures_and_unbounded_hashrate(monkeypatch) -> None:
+def test_autonomous_gate_blocks_dev_fixtures_and_unbounded_hashrate(
+    monkeypatch,
+) -> None:
     _clear_env(monkeypatch)
     _set_live_startup_env(monkeypatch)
     monkeypatch.setenv("HYBA_ALLOW_DEV_FIXTURES", "true")
@@ -105,9 +121,13 @@ def test_autonomous_gate_blocks_dev_fixtures_and_unbounded_hashrate(monkeypatch)
 
     assert report.passed is False
     fixture = next(
-        check for check in report.checks if check.name == "dev_fixtures_disabled_for_pythia_startup"
+        check
+        for check in report.checks
+        if check.name == "dev_fixtures_disabled_for_pythia_startup"
     )
-    bounds = next(check for check in report.checks if check.name == "autonomous_runtime_bounds")
+    bounds = next(
+        check for check in report.checks if check.name == "autonomous_runtime_bounds"
+    )
     assert fixture.status == "fail"
     assert bounds.status == "fail"
 
@@ -120,7 +140,9 @@ def test_live_share_submit_requires_separate_approval(monkeypatch) -> None:
     report = run_gate("live")
 
     submit = next(
-        check for check in report.checks if check.name == "live_share_submit_authorisation"
+        check
+        for check in report.checks
+        if check.name == "live_share_submit_authorisation"
     )
     assert report.passed is False
     assert submit.status == "fail"

@@ -1,34 +1,27 @@
-# PYTHIA Quantum Mining System - Production Configuration
-
 pools:
   primary:
-    name: "nicehash_primary"
-    url: "stratum+ssl://sha256.eu.nicehash.com:33334"
-    username: "hyba_miner.quantum_01"
-    password: "x"
-    
+    name: nicehash_primary
+    url: stratum+ssl://sha256.eu.nicehash.com:33334
+    username: hyba_miner.quantum_01
+    password: x
   secondary:
-    name: "viabtc_backup" 
-    url: "stratum+tcp://btc.viabtc.io:3333"
-    username: "hyba_miner.quantum_02"
-    password: "x"
-
+    name: viabtc_backup
+    url: stratum+tcp://btc.viabtc.io:3333
+    username: hyba_miner.quantum_02
+    password: x
 quantum:
-  solver_type: "dodecahedral"
+  solver_type: dodecahedral
   max_iterations: 1000
   timeout_seconds: 30
   vqe_tolerance: 1e-6
-
 consciousness:
   calculation_interval: 60
   max_phi_value: 10000000
   autonomy_threshold: 5000000
-
 monitoring:
   metrics_interval: 10
   health_check_interval: 60
   auto_repair_interval: 300
-
 logging:
-  level: "INFO"
-  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  level: INFO
+  format: '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
