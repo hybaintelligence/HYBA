@@ -259,3 +259,12 @@ async def heartbeat_pulse() -> Dict[str, Any]:
         "telemetry_source": MEASURED_TELEMETRY_SOURCE,
         "claim_boundary": "explicit measured pulse only; no background daemon autostart",
     }
+
+
+@router.get("/extraordinary-claims/evidence", response_model=Dict[str, Any])
+async def extraordinary_claims_evidence() -> Dict[str, Any]:
+    """Return sealed evidence contracts for extraordinary HYBA mathematical claims."""
+
+    from hyba_genesis_api.core.extraordinary_evidence import build_extraordinary_evidence_packet
+
+    return build_extraordinary_evidence_packet()

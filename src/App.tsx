@@ -226,6 +226,16 @@ function AppContent() {
     status: "unavailable",
     source: "unavailable",
   };
+  const extraordinaryEvidence = telemetry?.extraordinaryEvidence;
+  const extraordinaryInvariantCount = extraordinaryEvidence
+    ? Object.values(extraordinaryEvidence.invariant_results || {}).filter(Boolean).length
+    : 0;
+  const extraordinaryInvariantTotal = extraordinaryEvidence
+    ? Object.keys(extraordinaryEvidence.invariant_results || {}).length
+    : 0;
+  const extraordinarySeal = extraordinaryEvidence?.evidence_seal
+    ? `${extraordinaryEvidence.evidence_seal.slice(0, 12)}…`
+    : UNAVAILABLE;
   const governanceTags = useMemo(
     () => [
       ...((health?.substrate?.governance_tags as string[] | undefined) || []),
@@ -938,6 +948,52 @@ function AppContent() {
                 <MetricRow label="Threat level" value={fmtText(security.threat_level)} />
                 <MetricRow label="Pools configured" value={fmtNum(configuredPoolCount, 0)} />
                 <MetricRow label="Active pools" value={fmtNum(activePoolCount, 0)} />
+              </Panel>
+              <Panel
+                title="Proof seal telemetry"
+                eyebrow="Extraordinary claims"
+                icon={<FileWarning className="h-4 w-4" />}
+                isLoading={isLoading}
+                rows={7}
+              >
+                <MetricRow label="Evidence seal" value={extraordinarySeal} />
+                <MetricRow
+                  label="Invariant status"
+                  value={
+                    extraordinaryEvidence?.all_invariants_passed
+                      ? "PASS"
+                      : extraordinaryEvidence
+                        ? "FAIL-CLOSED"
+                        : UNAVAILABLE
+                  }
+                />
+                <MetricRow
+                  label="Invariant checks"
+                  value={`${extraordinaryInvariantCount} / ${extraordinaryInvariantTotal}`}
+                />
+                <MetricRow
+                  label="Claim contracts"
+                  value={fmtNum(extraordinaryEvidence?.claims?.length as NullableNumber, 0)}
+                />
+                <MetricRow
+                  label="Millennium ops"
+                  value={fmtNum(
+                    extraordinaryEvidence?.millennium_problems?.length as NullableNumber,
+                    0,
+                  )}
+                />
+                <MetricRow
+                  label="φ substrate"
+                  value={fmtNum(extraordinaryEvidence?.phi as NullableNumber, 6)}
+                />
+                <MetricRow
+                  label="Seal policy"
+                  value={
+                    extraordinaryEvidence?.adversarial_contract?.seal_all_evidence_packets
+                      ? "ENFORCED"
+                      : "UNAVAILABLE"
+                  }
+                />
               </Panel>
               <Panel
                 title="Unitary shield"
