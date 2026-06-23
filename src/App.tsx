@@ -30,6 +30,10 @@ import {
   Wifi,
   WifiOff,
   Brain,
+  GitBranch,
+  Network,
+  SlidersHorizontal,
+  WalletCards,
 } from "lucide-react";
 
 import {
@@ -217,6 +221,7 @@ function AppContent() {
     | "history"
     | "analytics"
     | "portal"
+    | "studio"
     | "ciaas"
     | "qaas"
     | "studio"
@@ -1428,8 +1433,8 @@ function AppContent() {
           </>
         )}
         <section className="mx-auto mt-8 grid max-w-7xl grid-cols-1 gap-4 px-6 md:grid-cols-3">
-          <MetricExplainerCard metric="substrate_coherence" />
-          <MetricExplainerCard metric="evidence_seal" />
+          <MetricExplainerCard metricKey="substrate_coherence" />
+          <MetricExplainerCard metricKey="evidence_seal" />
           <ClaimBoundaryBadge />
         </section>
       </main>
@@ -1471,6 +1476,151 @@ function AppContent() {
   );
 }
 
+function StrategicDecisionWorkbench({
+  latencyMs,
+  phiResonance,
+  quantumCoherence,
+  telemetrySource,
+}: {
+  latencyMs: number;
+  phiResonance?: number;
+  quantumCoherence?: number;
+  telemetrySource: string;
+}) {
+  const { skillMode, isExpertMode } = useSkillMode();
+  const [latencyStress, setLatencyStress] = useState(50);
+  const [demandShock, setDemandShock] = useState(20);
+  const [certainty, setCertainty] = useState(72);
+  const stressedLatency = latencyMs * (1 + latencyStress / 100);
+  const coherence = typeof quantumCoherence === "number" ? quantumCoherence : 0.74;
+  const resonance = typeof phiResonance === "number" ? phiResonance : 0.68;
+  const stability = clamp((coherence * 55 + resonance * 45) - latencyStress * 0.18 - demandShock * 0.1);
+  const standardCost = 1 + demandShock / 100;
+  const causalCost = standardCost * (1 + certainty / 100) * (1 + latencyStress / 250);
+  const showExpertTrace = isExpertMode || skillMode === "analyst";
+  const agents = [
+    { name: "Manifold patterns", role: "Pattern field", signal: "Detects topology shift under load", weight: 34 },
+    { name: "PULVINI memory", role: "Context memory", signal: "Compares current state with sealed prior runs", weight: 29 },
+    { name: "Salamander regeneration", role: "Recovery planner", signal: "Produces rollback and safe-remediation paths", weight: 22 },
+    { name: "Governance guard", role: "Approval boundary", signal: "Keeps output proposal-only until signed", weight: 15 },
+  ];
+  const dag = [
+    ["Live telemetry", "Latency, coherence, resonance, source provenance"],
+    ["Counterfactual stress", `Latency +${latencyStress}% · Demand +${demandShock}%`],
+    ["Causal inference", "Compare operational drivers against evidence invariants"],
+    ["Recommendation", stability > 65 ? "Proceed with monitored intervention" : "Defer action and request human triage"],
+    ["Human approval", "No unattended write; signed approval required"],
+  ];
+
+  return (
+    <section className="rounded-[2rem] border border-slate-200 bg-white/95 p-6 shadow-xl" data-testid="strategic-decision-workbench">
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <p className="eyebrow"><SlidersHorizontal className="h-3.5 w-3.5" /> Counterfactual Sandbox</p>
+          <h2 className="mt-2 text-2xl font-black text-slate-950">Stress-test the recommendation before anyone acts.</h2>
+          <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
+            Manipulate operational assumptions and HYBA recalculates the predicted outcome, causal chain, collaborating sub-intelligences, and cost of certainty from live telemetry ({telemetrySource}).
+          </p>
+        </div>
+        <span className="rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-bold text-amber-800">Simulation only · proposal boundary</span>
+      </div>
+
+      <div className="mt-6 grid gap-5 lg:grid-cols-[0.9fr_1.1fr]">
+        <div className="space-y-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+          <ScenarioSlider label="What if latency spikes?" value={latencyStress} setValue={setLatencyStress} suffix="%" />
+          <ScenarioSlider label="What if demand rises?" value={demandShock} setValue={setDemandShock} suffix="%" />
+          <ScenarioSlider label="Certainty target" value={certainty} setValue={setCertainty} suffix="%" />
+          <div className="grid gap-3 sm:grid-cols-3">
+            <TrustFact label="Predicted stability" value={`${stability.toFixed(0)} / 100`} />
+            <TrustFact label="Stressed latency" value={`${stressedLatency.toFixed(0)} ms`} />
+            <TrustFact label="Recommended posture" value={stability > 65 ? "Monitor" : "Escalate"} />
+          </div>
+        </div>
+
+        <div className="rounded-2xl border border-blue-100 bg-blue-50/60 p-4">
+          <div className="flex items-center gap-2 text-blue-950">
+            <Network className="h-5 w-5" />
+            <h3 className="font-black">Multi-agent war room</h3>
+          </div>
+          <div className="mt-4 grid gap-3 md:grid-cols-2">
+            {agents.map((agent) => (
+              <div key={agent.name} className="rounded-2xl border border-white bg-white/90 p-4">
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-sm font-black text-slate-950">{agent.name}</p>
+                  <span className="rounded-full bg-blue-100 px-2 py-1 font-mono text-[10px] text-blue-800">{agent.weight}%</span>
+                </div>
+                <p className="mt-1 text-[11px] font-bold uppercase tracking-[0.14em] text-slate-400">{agent.role}</p>
+                <p className="mt-2 text-xs leading-5 text-slate-600">{agent.signal}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-5 grid gap-5 lg:grid-cols-[1.15fr_0.85fr]">
+        <div className="rounded-2xl border border-slate-200 bg-white p-4">
+          <div className="flex items-center gap-2 text-slate-950">
+            <GitBranch className="h-5 w-5" />
+            <h3 className="font-black">Causal logic trace</h3>
+          </div>
+          <div className="mt-4 grid gap-3">
+            {dag.map(([title, detail], index) => (
+              <div key={title} className="grid gap-3 rounded-2xl border border-slate-100 bg-slate-50 p-3 md:grid-cols-[2rem_1fr]">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-950 font-mono text-xs font-bold text-white">{index + 1}</div>
+                <div>
+                  <p className="text-sm font-black text-slate-950">{title}</p>
+                  <p className="mt-1 text-xs leading-5 text-slate-600">{detail}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+          {showExpertTrace && (
+            <p className="mt-3 rounded-xl border border-purple-100 bg-purple-50 p-3 font-mono text-[11px] text-purple-950">
+              Expert trace: coherence={coherence.toFixed(4)} · φ-resonance={resonance.toFixed(4)} · counterfactual_stability={stability.toFixed(2)}
+            </p>
+          )}
+        </div>
+
+        <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-4">
+          <div className="flex items-center gap-2 text-emerald-950">
+            <WalletCards className="h-5 w-5" />
+            <h3 className="font-black">Cost of certainty</h3>
+          </div>
+          <p className="mt-2 text-sm leading-6 text-emerald-900">
+            High-resonance quantum-causal simulation is deliberately more expensive than a standard computation because it keeps the claim evidence-bound and auditable.
+          </p>
+          <div className="mt-4 grid gap-3">
+            <TrustFact label="Standard computation" value={`${standardCost.toFixed(2)} capacity units`} />
+            <TrustFact label="Quantum-causal run" value={`${causalCost.toFixed(2)} capacity units`} />
+            <TrustFact label="Certainty premium" value={`${((causalCost / standardCost - 1) * 100).toFixed(0)}%`} />
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function ScenarioSlider({ label, value, setValue, suffix }: { label: string; value: number; setValue: (value: number) => void; suffix: string }) {
+  return (
+    <label className="block">
+      <span className="flex items-center justify-between text-xs font-bold uppercase tracking-[0.14em] text-slate-600">
+        {label}
+        <strong className="font-mono text-slate-950">{value}{suffix}</strong>
+      </span>
+      <input type="range" min="0" max="100" value={value} onChange={(event) => setValue(Number(event.target.value))} className="mt-2 w-full" />
+    </label>
+  );
+}
+
+function TrustFact({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-xl border border-white/70 bg-white/85 p-3">
+      <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-500">{label}</p>
+      <p className="mt-1 font-mono text-xs font-bold text-slate-950">{value}</p>
+    </div>
+  );
+}
+
 function UseCaseStudio() {
   const { skillMode } = useSkillMode();
   const profileLabel = SKILL_MODE_LABELS[skillMode];
@@ -1508,9 +1658,9 @@ function UseCaseStudio() {
         </div>
       </div>
       <div className="grid gap-4 lg:grid-cols-3">
-        <MetricExplainerCard metric="substrate_coherence" value="Strong = safe to simulate" />
-        <MetricExplainerCard metric="evidence_seal" value="Required for buyer-facing trust" />
-        <MetricExplainerCard metric="claim_boundary" value="Advisory until approved" />
+        <MetricExplainerCard metricKey="substrate_coherence" value="Strong = safe to simulate" />
+        <MetricExplainerCard metricKey="evidence_seal" value="Required for buyer-facing trust" />
+        <MetricExplainerCard metricKey="claim_boundary" value="Advisory until approved" />
       </div>
       <EvidenceBoundAnswer />
     </section>
