@@ -127,6 +127,7 @@ const ciaasPresets: Record<
 export default function CIaaSServiceManager({ token }: CIaaSServiceManagerProps) {
   const { isAdmin } = useAuth();
   const { isExpertMode } = useSkillMode();
+  const profile = { showTechnicalDefaults: isExpertMode };
   const [services, setServices] = useState<ServiceResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -197,11 +198,6 @@ export default function CIaaSServiceManager({ token }: CIaaSServiceManagerProps)
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to stop service");
     }
-  };
-
-  const applyPreset = (presetName: CIaaSPresetName) => {
-    setSelectedPreset(presetName);
-    setProvisionForm((current) => ({ ...current, ...ciaasPresets[presetName] }));
   };
 
   const handleProvision = async (e: React.FormEvent) => {
@@ -376,7 +372,7 @@ export default function CIaaSServiceManager({ token }: CIaaSServiceManagerProps)
                     <button key={value} type="button" onClick={() => applyPreset(value as any)} className="rounded-lg border border-blue-200 bg-white px-3 py-2 text-left text-xs font-semibold text-blue-900 hover:bg-blue-100">{label}</button>
                   ))}
                 </div>
-                <p className="mt-2 text-xs text-blue-800">{profile.showTechnicalDefaults ? "Technical fields are visible for this lens." : "Technical fields are hidden by default; presets map to safe defaults."}</p>
+                <p className="mt-2 text-xs text-blue-800">{isExpertMode ? "Technical fields are visible for this lens." : "Technical fields are hidden by default; presets map to safe defaults."}</p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700">Service Name</label>

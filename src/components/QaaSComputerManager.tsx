@@ -135,6 +135,7 @@ const qiaPresets: Record<QiaPresetName, Omit<ProvisionFaultTolerantComputerReque
 export default function QaaSComputerManager({ token }: QaaSComputerManagerProps) {
   const { isAdmin } = useAuth();
   const { isExpertMode } = useSkillMode();
+  const profile = { showTechnicalDefaults: isExpertMode };
   const [computers, setComputers] = useState<FaultTolerantComputerResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -208,11 +209,6 @@ export default function QaaSComputerManager({ token }: QaaSComputerManagerProps)
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to stop computer");
     }
-  };
-
-  const applyPreset = (presetName: QiaPresetName) => {
-    setSelectedPreset(presetName);
-    setProvisionForm((current) => ({ ...current, ...qiaPresets[presetName] }));
   };
 
   const handleProvision = async (e: React.FormEvent) => {
@@ -462,7 +458,7 @@ export default function QaaSComputerManager({ token }: QaaSComputerManagerProps)
                     <button key={value} type="button" onClick={() => applyPreset(value as any)} className="rounded-lg border border-purple-200 bg-white px-3 py-2 text-left text-xs font-semibold text-purple-900 hover:bg-purple-100">{label}</button>
                   ))}
                 </div>
-                <p className="mt-2 text-xs text-purple-800">{profile.showTechnicalDefaults ? "Expert lens exposes raw quantum intelligence parameters." : "Business lenses use presets; raw quantum parameters are optional."}</p>
+                <p className="mt-2 text-xs text-purple-800">{isExpertMode ? "Expert lens exposes raw quantum intelligence parameters." : "Business lenses use presets; raw quantum parameters are optional."}</p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700">Computer Name</label>
