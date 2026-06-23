@@ -181,6 +181,22 @@ async def _activate_startup_self_healing(app: FastAPI) -> None:
     )
     app.state.startup_self_healing_report = report
     save_autonomy_report(report, report_type="startup")
+    
+    # Generate executive startup memo for Evidence Package
+    try:
+        from hyba_genesis_api.core.startup_memo_generator import StartupMemoGenerator
+        substrate_state = get_substrate_state()
+        memo_path = StartupMemoGenerator.save_startup_memo(report, substrate_state)
+        logging.info(
+            "HYBA API startup: Optimization memo generated",
+            extra={"memo_path": str(memo_path)}
+        )
+    except Exception as memo_err:
+        logging.warning(
+            "HYBA API startup: Failed to generate optimization memo",
+            extra={"error": str(memo_err)}
+        )
+    
     logging.info(
         "HYBA API startup: PYTHIA self-healing/self-optimising cycle complete",
         extra={

@@ -4,8 +4,31 @@ from __future__ import annotations
 
 import os
 import sqlite3
+from sqlalchemy import create_engine
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
 
 DB_PATH = os.getenv("HYBA_DB_PATH", "hyba_customer_portal.db")
+
+# SQLAlchemy setup for enterprise-grade ORM support
+DATABASE_URL = os.getenv(
+    "DATABASE_URL", 
+    f"sqlite:///{DB_PATH}"
+)
+
+# Create SQLAlchemy engine
+engine = create_engine(
+    DATABASE_URL,
+    connect_args={"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {},
+    pool_pre_ping=True,
+    pool_recycle=3600,
+)
+
+# Create SessionLocal for dependency injection
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+# Base class for SQLAlchemy models
+Base = declarative_base()
 
 
 def get_db_connection() -> sqlite3.Connection:
@@ -130,8 +153,34 @@ def initialize_database() -> None:
 
 
 def init_db() -> None:
-    """Backwards-compatible alias used by older backend startup code."""
+    """Backwards-compatible alias used by older backend startup code.
+    
+    Initializes both SQLite customer portal tables and SQLAlchemy enterprise models.
+    """
+    # Initialize SQLite customer portal tables
     initialize_database()
+    
+    # Initialize SQLAlchemy enterprise models
+    try:
+        from consciousness_db.models import create_all_tables
+        create_all_tables(engine)
+        print("✅ SQLAlchemy enterprise models initialized")
+    except Exception as e:
+        print(f"⚠️  SQLAlchemy model initialization failed: {e}")
+        # Non-fatal - continue with SQLite tables
+
+
+def get_db_session():
+    """Get a SQLAlchemy database session with proper cleanup.
+    
+    Use this in dependency injection:
+        db: Session = Depends(get_db_session)
+    """
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
 
 if __name__ == "__main__":

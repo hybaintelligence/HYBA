@@ -69,8 +69,8 @@ class TestSecurityInvariants:
         import re
         config_dir = Path("config")
         for config_file in config_dir.glob("*.json"):
-            # Skip test configs that use placeholder values
-            if "_test" in config_file.stem or "_test.json" in config_file.name:
+            # Skip test configs and example templates that use placeholder values
+            if "_test" in config_file.stem or "_test.json" in config_file.name or ".example" in config_file.name:
                 continue
             with open(config_file) as f:
                 content = f.read()

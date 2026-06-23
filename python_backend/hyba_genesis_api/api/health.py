@@ -11,7 +11,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, Optional
 
 from fastapi import APIRouter
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, PlainTextResponse
 
 from hyba_genesis_api.core.substrate import get_substrate_state, is_ready
 from hyba_genesis_api.core.telemetry import get_metrics
@@ -318,3 +318,47 @@ async def get_startup_self_healing_report():
         "timestamp": bootstrap_report.get("generated_at_utc"),
         "substrate": substrate_state,
     }
+
+
+@router.get("/startup-memo", response_class=PlainTextResponse)
+async def get_startup_memo():
+    """Get the latest startup optimization memo in markdown format.
+    
+    This endpoint returns the executive-ready startup memo that was automatically
+    generated during backend initialization. The memo translates technical 
+    self-healing events into audit-ready documentation.
+    """
+    import os
+    from pathlib import Path
+    
+    # Find the latest startup memo
+    backend_root = Path(__file__).parent.parent.parent
+    memo_dir = backend_root.parent / "runtime" / "memos" / "startup"
+    latest_memo = memo_dir / "startup_memo_latest.md"
+    
+    if not latest_memo.exists():
+        return PlainTextResponse(
+            "# No Startup Memo Available\n\nNo startup optimization memo has been generated yet.",
+            status_code=404
+        )
+    
+    return PlainTextResponse(
+        latest_memo.read_text(encoding="utf-8"),
+        media_type="text/markdown"
+    )
+
+
+def _translate_proposal_to_executive(proposal: Dict[str, Any]) -> str:
+    """Translate technical proposal into executive-comprehensible language."""
+    improvement_type = proposal.get("improvement_type", "")
+    source = proposal.get("source_module", "")
+    gain = proposal.get("expected_gain", 0)
+    
+    translations = {
+        "coherence_threshold": f"The {source} autonomously tuned system coherence parameters to preserve reasoning stability, yielding +{gain:.4f} Φ-density improvement.",
+        "compression_target": f"Memory compression optimization by {source} improved information density by +{gain:.4f}, reducing operational overhead.",
+        "search_depth": f"Algorithm efficiency optimization by {source} reduced computational search depth while maintaining accuracy, gaining +{gain:.4f} Φ-density.",
+        "phi_scaling": f"Quantum-classical resource balancing by {source} optimized Φ-scaling parameters for +{gain:.4f} efficiency gain.",
+    }
+    
+    return translations.get(improvement_type, f"{source} proposed a {improvement_type} optimization with expected gain of +{gain:.4f}.")
