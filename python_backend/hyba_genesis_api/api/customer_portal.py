@@ -1,36 +1,34 @@
-"""
-Customer Portal API
-Self-service customer management, usage tracking, and API key provisioning.
+"""Customer Portal API.
+
+Self-service customer management, usage tracking, API key provisioning, and
+billing visibility. The portal is tenant-bound and fail-closed in production when
+customer-portal auth is not configured.
 """
 
-from datetime import datetime, timedelta
-from typing import Dict, List, Optional
+from __future__ import annotations
+
 import hashlib
+import hmac
+import json
+import os
+import re
 import secrets
-from fastapi import APIRouter, Depends, HTTPException, status
+import sqlite3
+from datetime import datetime, timedelta
+from pathlib import Path
+from typing import Any, Dict, List, Optional
+
+from fastapi import APIRouter, Header, HTTPException, Request, status
 from pydantic import BaseModel, Field
 
-from ..auth import get_current_user, require_api_key
-from ..database import get_db_connection
+from ..database import get_db_connection, initialize_database
 
 router = APIRouter(prefix="/api/customer", tags=["customer_portal"])
 
 
-# ── Request/Response Models ───────────────────────────────────────────────
-
-
-class APIKeyResponse(BaseModel):
-    api_key_id: str
-    api_key: str  # Only returned on creation
-    name: str
-    created_at: str
-    last_used_at: Optional[str]
-    status: str
-
-
-class CreateAPIKeyRequest(BaseModel):
-    name: str = Field(..., description="Friendly name for this API key")
-    description: Optional[str] = None
+class CreateTenantAPIKeyRequest(BaseModel):
+    label: str = Field(..., min_length=1, max_length=100)
+    rotation_days: int = Field(default=90, ge=1, le=730)
 
 
 class UsageResponse(BaseModel):
@@ -44,7 +42,7 @@ class UsageResponse(BaseModel):
 
 
 class UsageHistoryResponse(BaseModel):
-    history: List[Dict]
+    history: List[Dict[str, Any]]
     total_records: int
 
 
@@ -54,391 +52,516 @@ class QuotaAlertConfig(BaseModel):
     notification_email: Optional[str]
 
 
-# ── Helper Functions ──────────────────────────────────────────────────────
+class PaymentMethodRequest(BaseModel):
+    provider: str = Field(..., min_length=2, max_length=50)
+    token: str = Field(..., min_length=6)
+    last4: str = Field(..., pattern=r"^\d{4}$")
+    card_type: Optional[str] = Field(default=None, max_length=32)
 
 
-def generate_api_key() -> tuple[str, str]:
-    """
-    Generate HMAC-SHA256 API key.
-    Returns: (api_key, hashed_key)
-    """
-    random_bytes = secrets.token_bytes(32)
-    api_key = f"hyba_{secrets.token_urlsafe(32)}"
-    hashed_key = hashlib.sha256(api_key.encode()).hexdigest()
-    return api_key, hashed_key
+def _is_production() -> bool:
+    return os.getenv("NODE_ENV", os.getenv("HYBA_ENV", "development")).lower() == "production"
 
 
-def calculate_usage(
-    customer_id: str, period_start: datetime, period_end: datetime
-) -> Dict:
-    """
-    Calculate compute unit usage for a customer in a given period.
-    This would query actual execution logs in production.
-    """
-    # Placeholder: In production, query execution logs
-    return {
-        "qaas": 1250,
-        "qiaas": 3400,
-        "ciaas": 2100,
-        "quantum_finance": 850,
-    }
+def _auth_disabled() -> bool:
+    return os.getenv("HYBA_CUSTOMER_PORTAL_AUTH_DISABLED", "false").lower() == "true"
 
 
-def get_customer_tier(customer_id: str) -> Dict:
-    """
-    Get customer tier and quota.
-    """
-    # Placeholder: In production, query customer subscription
-    return {
-        "tier": "production",
-        "compute_units_quota": 10000,
-        "cost_per_unit": 0.01,
-        "currency": "USD",
-    }
+def _portal_token() -> str:
+    return os.getenv("HYBA_CUSTOMER_PORTAL_TOKEN", "").strip()
 
 
-# ── API Key Management ────────────────────────────────────────────────────
+def _store_path() -> Optional[Path]:
+    raw = os.getenv("HYBA_CUSTOMER_PORTAL_STORE", "").strip()
+    return Path(raw) if raw else None
 
 
-@router.post("/api-keys", response_model=APIKeyResponse)
-async def create_api_key(
-    request: CreateAPIKeyRequest, current_user: Dict = Depends(get_current_user)
-):
-    """
-    Generate a new API key for the customer.
-    Returns the key ONCE - customer must save it.
-    """
-    customer_id = current_user["id"]
-    api_key, hashed_key = generate_api_key()
-
-    # Store in database
-    conn = get_db_connection()
-    cursor = conn.cursor()
-
-    api_key_id = f"key_{secrets.token_hex(8)}"
-    now = datetime.utcnow().isoformat()
-
-    cursor.execute(
-        """
-        INSERT INTO api_keys (
-            api_key_id, customer_id, hashed_key, name, description, 
-            created_at, status
-        ) VALUES (?, ?, ?, ?, ?, ?, ?)
-    """,
-        (
-            api_key_id,
-            customer_id,
-            hashed_key,
-            request.name,
-            request.description,
-            now,
-            "active",
-        ),
-    )
-
-    conn.commit()
-    conn.close()
-
-    return APIKeyResponse(
-        api_key_id=api_key_id,
-        api_key=api_key,  # Only returned on creation
-        name=request.name,
-        created_at=now,
-        last_used_at=None,
-        status="active",
-    )
+def _empty_store() -> Dict[str, Any]:
+    return {"tenants": {}}
 
 
-@router.get("/api-keys", response_model=List[Dict])
-async def list_api_keys(current_user: Dict = Depends(get_current_user)):
-    """
-    List all API keys for the current customer.
-    Does NOT return the actual key values (only IDs and metadata).
-    """
-    customer_id = current_user["id"]
+def _load_store() -> Dict[str, Any]:
+    path = _store_path()
+    if not path:
+        return _empty_store()
+    if not path.exists():
+        return _empty_store()
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return _empty_store()
 
-    conn = get_db_connection()
-    cursor = conn.cursor()
 
-    cursor.execute(
-        """
-        SELECT api_key_id, name, created_at, last_used_at, status
-        FROM api_keys
-        WHERE customer_id = ? AND status != 'deleted'
-        ORDER BY created_at DESC
-    """,
-        (customer_id,),
-    )
+def _save_store(store: Dict[str, Any]) -> None:
+    path = _store_path()
+    if not path:
+        return
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(store, indent=2, sort_keys=True), encoding="utf-8")
 
-    rows = cursor.fetchall()
-    conn.close()
 
-    return [
+def _tenant_record(store: Dict[str, Any], tenant_id: str) -> Dict[str, Any]:
+    tenants = store.setdefault("tenants", {})
+    tenant = tenants.setdefault(
+        tenant_id,
         {
-            "api_key_id": row[0],
-            "name": row[1],
-            "created_at": row[2],
-            "last_used_at": row[3],
-            "status": row[4],
-        }
-        for row in rows
-    ]
-
-
-@router.delete("/api-keys/{api_key_id}")
-async def revoke_api_key(
-    api_key_id: str, current_user: Dict = Depends(get_current_user)
-):
-    """
-    Revoke (delete) an API key.
-    """
-    customer_id = current_user["id"]
-
-    conn = get_db_connection()
-    cursor = conn.cursor()
-
-    cursor.execute(
-        """
-        UPDATE api_keys
-        SET status = 'deleted', deleted_at = ?
-        WHERE api_key_id = ? AND customer_id = ?
-    """,
-        (datetime.utcnow().isoformat(), api_key_id, customer_id),
+            "instances": [],
+            "api_keys": [],
+            "workloads": [],
+            "payment_methods": [],
+            "subscription": {
+                "tier": "developer",
+                "compute_units_quota": 1000,
+                "cost_per_unit": 0.01,
+                "currency": "USD",
+            },
+            "uptime": {"last_30_days_percent": None},
+        },
     )
+    tenant.setdefault("api_keys", [])
+    tenant.setdefault("workloads", [])
+    tenant.setdefault("instances", [])
+    tenant.setdefault("payment_methods", [])
+    return tenant
 
-    if cursor.rowcount == 0:
-        conn.close()
+
+def _require_tenant_access(
+    tenant_id: str,
+    tenant_header: Optional[str],
+    token_header: Optional[str],
+) -> None:
+    if tenant_header and tenant_header != tenant_id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Tenant boundary violation")
+
+    configured = _portal_token()
+    if configured:
+        if not token_header or not hmac.compare_digest(token_header, configured):
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Customer portal token required")
+        return
+
+    if _is_production() and not _auth_disabled():
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="API key not found"
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Customer portal token is not configured",
         )
 
-    conn.commit()
-    conn.close()
 
-    return {"status": "revoked", "api_key_id": api_key_id}
+def _tenant_from_request(request: Request) -> str:
+    tenant_id = request.headers.get("X-HYBA-Tenant-ID") or request.headers.get("X-HYBA-Customer-ID") or "default"
+    _require_tenant_access(
+        tenant_id,
+        request.headers.get("X-HYBA-Tenant-ID"),
+        request.headers.get("X-HYBA-Customer-Token"),
+    )
+    return tenant_id
 
 
-# ── Usage Tracking ────────────────────────────────────────────────────────
+def _secret() -> bytes:
+    secret = os.getenv("HYBA_API_KEY_SECRET", "local-customer-portal-secret")
+    return secret.encode("utf-8")
 
 
-@router.get("/usage", response_model=UsageResponse)
-async def get_usage(current_user: Dict = Depends(get_current_user)):
-    """
-    Get current billing period usage for the customer.
-    """
-    customer_id = current_user["id"]
+def _hash_secret(value: str) -> str:
+    return hmac.new(_secret(), value.encode("utf-8"), hashlib.sha256).hexdigest()
 
-    # Calculate current billing period (monthly)
-    now = datetime.utcnow()
+
+def _generate_api_key() -> tuple[str, str]:
+    api_key = f"hyba_live_{secrets.token_urlsafe(32)}"
+    return api_key, _hash_secret(api_key)
+
+
+def _current_period(now: Optional[datetime] = None) -> tuple[datetime, datetime]:
+    now = now or datetime.utcnow()
     period_start = datetime(now.year, now.month, 1)
     if now.month == 12:
         period_end = datetime(now.year + 1, 1, 1) - timedelta(seconds=1)
     else:
         period_end = datetime(now.year, now.month + 1, 1) - timedelta(seconds=1)
+    return period_start, period_end
 
-    # Get customer tier and quota
+
+def _safe_db() -> sqlite3.Connection:
+    initialize_database()
+    return get_db_connection()
+
+
+def calculate_usage(customer_id: str, period_start: datetime, period_end: datetime) -> Dict[str, int]:
+    """Calculate usage from real usage_logs rows for the requested period."""
+    breakdown: Dict[str, int] = {}
+    try:
+        conn = _safe_db()
+        cursor = conn.cursor()
+        cursor.execute(
+            """
+            SELECT service_type, COALESCE(SUM(compute_units), 0) AS units
+            FROM usage_logs
+            WHERE customer_id = ? AND timestamp >= ? AND timestamp <= ?
+            GROUP BY service_type
+            """,
+            (customer_id, period_start.isoformat(), period_end.isoformat()),
+        )
+        for row in cursor.fetchall():
+            breakdown[str(row[0])] = int(row[1] or 0)
+        conn.close()
+    except sqlite3.Error:
+        return {}
+    return breakdown
+
+
+def get_customer_tier(customer_id: str) -> Dict[str, Any]:
+    """Read the active customer subscription, defaulting to developer tier."""
+    default = {
+        "tier": "developer",
+        "compute_units_quota": 1000,
+        "cost_per_unit": 0.01,
+        "currency": "USD",
+    }
+    try:
+        conn = _safe_db()
+        cursor = conn.cursor()
+        cursor.execute(
+            """
+            SELECT tier, compute_units_quota, cost_per_unit, currency
+            FROM customer_subscriptions
+            WHERE customer_id = ? AND status = 'active'
+            ORDER BY subscription_start DESC
+            LIMIT 1
+            """,
+            (customer_id,),
+        )
+        row = cursor.fetchone()
+        conn.close()
+        if not row:
+            return default
+        return {
+            "tier": row[0],
+            "compute_units_quota": int(row[1]),
+            "cost_per_unit": float(row[2]),
+            "currency": row[3],
+        }
+    except sqlite3.Error:
+        return default
+
+
+def _invoice_count(customer_id: str) -> int:
+    try:
+        conn = _safe_db()
+        cursor = conn.cursor()
+        cursor.execute("SELECT COUNT(*) FROM invoices WHERE customer_id = ?", (customer_id,))
+        count = int(cursor.fetchone()[0] or 0)
+        conn.close()
+        return count
+    except sqlite3.Error:
+        return 0
+
+
+def _usage_response(customer_id: str, period_start: datetime, period_end: datetime) -> UsageResponse:
     tier_info = get_customer_tier(customer_id)
-
-    # Calculate usage breakdown
     breakdown = calculate_usage(customer_id, period_start, period_end)
     total_units = sum(breakdown.values())
-
-    # Calculate cost
-    cost = total_units * tier_info["cost_per_unit"]
-
+    cost = round(total_units * float(tier_info["cost_per_unit"]), 4)
     return UsageResponse(
         compute_units_used=total_units,
-        compute_units_quota=tier_info["compute_units_quota"],
+        compute_units_quota=int(tier_info["compute_units_quota"]),
         current_period_cost=cost,
-        currency=tier_info["currency"],
+        currency=str(tier_info["currency"]),
         period_start=period_start.isoformat(),
         period_end=period_end.isoformat(),
         breakdown=breakdown,
     )
 
 
-@router.get("/usage/history", response_model=UsageHistoryResponse)
-async def get_usage_history(
-    months: int = 6, current_user: Dict = Depends(get_current_user)
-):
-    """
-    Get historical usage data for the customer.
-    """
-    customer_id = current_user["id"]
+def _public_api_keys(tenant: Dict[str, Any]) -> List[Dict[str, Any]]:
+    return [
+        {
+            "key_id": key["key_id"],
+            "label": key.get("label", key.get("name", "API key")),
+            "status": key.get("status", "active"),
+            "created_at": key.get("created_at"),
+            "last_used_at": key.get("last_used_at"),
+            "rotation_days": key.get("rotation_days"),
+        }
+        for key in tenant.get("api_keys", [])
+        if key.get("status") != "deleted"
+    ]
 
+
+@router.get("/{tenant_id}/dashboard")
+async def tenant_dashboard(
+    tenant_id: str,
+    x_hyba_tenant_id: Optional[str] = Header(default=None),
+    x_hyba_customer_token: Optional[str] = Header(default=None),
+):
+    _require_tenant_access(tenant_id, x_hyba_tenant_id, x_hyba_customer_token)
+    store = _load_store()
+    tenant = _tenant_record(store, tenant_id)
+    period_start, period_end = _current_period()
+    usage = _usage_response(tenant_id, period_start, period_end)
+    quota_remaining = max(usage.compute_units_quota - usage.compute_units_used, 0)
+
+    return {
+        "tenant_id": tenant_id,
+        "instances": tenant.get("instances", []),
+        "monthly_usage": {
+            "compute_units": usage.compute_units_used,
+            "estimated_cost_usd": usage.current_period_cost,
+        },
+        "quota_remaining": {
+            "compute_units": quota_remaining,
+            "monthly_quota": usage.compute_units_quota,
+        },
+        "api_keys": _public_api_keys(tenant),
+        "billing_summary": {
+            "current_month_usd": usage.current_period_cost,
+            "invoice_count": _invoice_count(tenant_id),
+            "next_billing_date": period_end.isoformat(),
+        },
+        "uptime": tenant.get("uptime", {"last_30_days_percent": None}),
+        "data_provenance": {
+            "usage_source": "usage_logs",
+            "subscription_source": "customer_subscriptions",
+            "demo_fixtures_enabled": os.getenv("HYBA_PORTAL_DEMO_FIXTURES", "false").lower() == "true",
+        },
+    }
+
+
+@router.get("/{tenant_id}/workloads")
+async def tenant_workloads(
+    tenant_id: str,
+    x_hyba_tenant_id: Optional[str] = Header(default=None),
+    x_hyba_customer_token: Optional[str] = Header(default=None),
+):
+    _require_tenant_access(tenant_id, x_hyba_tenant_id, x_hyba_customer_token)
+    store = _load_store()
+    tenant = _tenant_record(store, tenant_id)
+    workloads = list(tenant.get("workloads", []))
+
+    if not workloads:
+        try:
+            conn = _safe_db()
+            cursor = conn.cursor()
+            cursor.execute(
+                """
+                SELECT execution_id, service_type, compute_units, timestamp
+                FROM usage_logs
+                WHERE customer_id = ?
+                ORDER BY timestamp DESC
+                LIMIT 50
+                """,
+                (tenant_id,),
+            )
+            tier_info = get_customer_tier(tenant_id)
+            workloads = [
+                {
+                    "execution_id": row[0] or f"usage-{idx}",
+                    "workload_type": row[1],
+                    "status": "success",
+                    "duration_ms": 0,
+                    "cost_usd": round(int(row[2] or 0) * float(tier_info["cost_per_unit"]), 4),
+                    "timestamp": row[3],
+                }
+                for idx, row in enumerate(cursor.fetchall())
+            ]
+            conn.close()
+        except sqlite3.Error:
+            workloads = []
+
+    total_cost = round(sum(float(item.get("cost_usd", 0)) for item in workloads), 4)
+    success_rate = None if not workloads else sum(1 for item in workloads if item.get("status") == "success") / len(workloads)
+    return {"executions": workloads, "total_cost": total_cost, "success_rate": success_rate}
+
+
+@router.post("/{tenant_id}/api-keys", status_code=status.HTTP_201_CREATED)
+async def create_tenant_api_key(
+    tenant_id: str,
+    request: CreateTenantAPIKeyRequest,
+    x_hyba_tenant_id: Optional[str] = Header(default=None),
+    x_hyba_customer_token: Optional[str] = Header(default=None),
+):
+    _require_tenant_access(tenant_id, x_hyba_tenant_id, x_hyba_customer_token)
+    store = _load_store()
+    tenant = _tenant_record(store, tenant_id)
+    api_key, key_hash = _generate_api_key()
+    key_id = f"key_{secrets.token_hex(8)}"
+    now = datetime.utcnow().isoformat()
+    tenant["api_keys"].append(
+        {
+            "key_id": key_id,
+            "key_hash": key_hash,
+            "label": request.label,
+            "rotation_days": request.rotation_days,
+            "created_at": now,
+            "status": "active",
+        }
+    )
+    _save_store(store)
+    return {
+        "key_id": key_id,
+        "api_key": api_key,
+        "label": request.label,
+        "created_at": now,
+        "status": "active",
+    }
+
+
+@router.delete("/{tenant_id}/api-keys/{key_id}")
+async def revoke_tenant_api_key(
+    tenant_id: str,
+    key_id: str,
+    x_hyba_tenant_id: Optional[str] = Header(default=None),
+    x_hyba_customer_token: Optional[str] = Header(default=None),
+):
+    _require_tenant_access(tenant_id, x_hyba_tenant_id, x_hyba_customer_token)
+    store = _load_store()
+    tenant = _tenant_record(store, tenant_id)
+    for key in tenant.get("api_keys", []):
+        if key.get("key_id") == key_id and key.get("status") != "deleted":
+            key["status"] = "deleted"
+            key["deleted_at"] = datetime.utcnow().isoformat()
+            _save_store(store)
+            return {"status": "revoked", "key_id": key_id}
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="API key not found")
+
+
+@router.post("/{tenant_id}/payment-methods", status_code=status.HTTP_201_CREATED)
+async def create_payment_method(
+    tenant_id: str,
+    request: PaymentMethodRequest,
+    x_hyba_tenant_id: Optional[str] = Header(default=None),
+    x_hyba_customer_token: Optional[str] = Header(default=None),
+):
+    _require_tenant_access(tenant_id, x_hyba_tenant_id, x_hyba_customer_token)
+    if not re.fullmatch(r"\d{4}", request.last4):
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="last4 must be four digits")
+    store = _load_store()
+    tenant = _tenant_record(store, tenant_id)
+    payment_method_id = f"pm_{secrets.token_hex(8)}"
+    created_at = datetime.utcnow().isoformat()
+    tenant["payment_methods"].append(
+        {
+            "payment_method_id": payment_method_id,
+            "provider": request.provider,
+            "token_hash": _hash_secret(request.token),
+            "last4": request.last4,
+            "card_type": request.card_type,
+            "created_at": created_at,
+            "status": "active",
+        }
+    )
+    _save_store(store)
+    return {
+        "payment_method_id": payment_method_id,
+        "provider": request.provider,
+        "last4": request.last4,
+        "card_type": request.card_type,
+        "created_at": created_at,
+        "status": "active",
+    }
+
+
+@router.get("/usage", response_model=UsageResponse)
+async def get_usage(request: Request):
+    tenant_id = _tenant_from_request(request)
+    period_start, period_end = _current_period()
+    return _usage_response(tenant_id, period_start, period_end)
+
+
+@router.get("/usage/history", response_model=UsageHistoryResponse)
+async def get_usage_history(request: Request, months: int = 6):
+    tenant_id = _tenant_from_request(request)
     history = []
     now = datetime.utcnow()
-
-    for i in range(months):
-        # Calculate period
-        month_offset = i
+    for i in range(max(1, min(months, 24))):
         year = now.year
-        month = now.month - month_offset
-
+        month = now.month - i
         while month <= 0:
             month += 12
             year -= 1
-
         period_start = datetime(year, month, 1)
         if month == 12:
             period_end = datetime(year + 1, 1, 1) - timedelta(seconds=1)
         else:
             period_end = datetime(year, month + 1, 1) - timedelta(seconds=1)
-
-        # Get usage for this period
-        breakdown = calculate_usage(customer_id, period_start, period_end)
-        total_units = sum(breakdown.values())
-        tier_info = get_customer_tier(customer_id)
-
+        usage = _usage_response(tenant_id, period_start, period_end)
         history.append(
             {
-                "period_start": period_start.isoformat(),
-                "period_end": period_end.isoformat(),
-                "compute_units_used": total_units,
-                "cost": total_units * tier_info["cost_per_unit"],
-                "currency": tier_info["currency"],
-                "breakdown": breakdown,
+                "period_start": usage.period_start,
+                "period_end": usage.period_end,
+                "compute_units_used": usage.compute_units_used,
+                "cost": usage.current_period_cost,
+                "currency": usage.currency,
+                "breakdown": usage.breakdown,
             }
         )
-
     return UsageHistoryResponse(history=history, total_records=len(history))
 
 
-# ── Quota Alerts ──────────────────────────────────────────────────────────
-
-
 @router.get("/quota-alerts")
-async def get_quota_alert_config(current_user: Dict = Depends(get_current_user)):
-    """
-    Get quota alert configuration for the customer.
-    """
-    customer_id = current_user["id"]
-
-    conn = get_db_connection()
+async def get_quota_alert_config(request: Request):
+    customer_id = _tenant_from_request(request)
+    conn = _safe_db()
     cursor = conn.cursor()
-
     cursor.execute(
-        """
-        SELECT enabled, threshold_percent, notification_email
-        FROM quota_alerts
-        WHERE customer_id = ?
-    """,
+        "SELECT enabled, threshold_percent, notification_email FROM quota_alerts WHERE customer_id = ?",
         (customer_id,),
     )
-
     row = cursor.fetchone()
     conn.close()
-
     if not row:
-        # Default config
-        return {
-            "enabled": True,
-            "threshold_percent": 90,
-            "notification_email": current_user.get("email"),
-        }
-
-    return {
-        "enabled": bool(row[0]),
-        "threshold_percent": row[1],
-        "notification_email": row[2],
-    }
+        return {"enabled": True, "threshold_percent": 90, "notification_email": None}
+    return {"enabled": bool(row[0]), "threshold_percent": row[1], "notification_email": row[2]}
 
 
 @router.put("/quota-alerts")
-async def update_quota_alert_config(
-    config: QuotaAlertConfig, current_user: Dict = Depends(get_current_user)
-):
-    """
-    Update quota alert configuration.
-    """
-    customer_id = current_user["id"]
-
-    conn = get_db_connection()
+async def update_quota_alert_config(config: QuotaAlertConfig, request: Request):
+    customer_id = _tenant_from_request(request)
+    conn = _safe_db()
     cursor = conn.cursor()
-
     cursor.execute(
         """
         INSERT OR REPLACE INTO quota_alerts (
             customer_id, enabled, threshold_percent, notification_email, updated_at
         ) VALUES (?, ?, ?, ?, ?)
-    """,
-        (
-            customer_id,
-            config.enabled,
-            config.threshold_percent,
-            config.notification_email,
-            datetime.utcnow().isoformat(),
-        ),
+        """,
+        (customer_id, config.enabled, config.threshold_percent, config.notification_email, datetime.utcnow().isoformat()),
     )
-
     conn.commit()
     conn.close()
-
     return {"status": "updated", "config": config.dict()}
 
 
-# ── Billing ───────────────────────────────────────────────────────────────
-
-
 @router.get("/billing/invoices")
-async def get_invoices(limit: int = 12, current_user: Dict = Depends(get_current_user)):
-    """
-    Get billing invoices for the customer.
-    """
-    customer_id = current_user["id"]
-
-    # Placeholder: In production, query billing system
-    invoices = []
-    now = datetime.utcnow()
-
-    for i in range(min(limit, 12)):
-        month_offset = i
-        year = now.year
-        month = now.month - month_offset
-
-        while month <= 0:
-            month += 12
-            year -= 1
-
-        period_start = datetime(year, month, 1)
-
-        breakdown = calculate_usage(customer_id, period_start, period_start)
-        total_units = sum(breakdown.values())
-        tier_info = get_customer_tier(customer_id)
-
-        invoices.append(
-            {
-                "invoice_id": f"inv_{year}{month:02d}_{secrets.token_hex(4)}",
-                "period": f"{year}-{month:02d}",
-                "amount": total_units * tier_info["cost_per_unit"],
-                "currency": tier_info["currency"],
-                "status": "paid" if i > 0 else "pending",
-                "issued_at": period_start.isoformat(),
-            }
-        )
-
+async def get_invoices(request: Request, limit: int = 12):
+    customer_id = _tenant_from_request(request)
+    conn = _safe_db()
+    cursor = conn.cursor()
+    cursor.execute(
+        """
+        SELECT invoice_id, period, amount, currency, status, issued_at, paid_at
+        FROM invoices
+        WHERE customer_id = ?
+        ORDER BY issued_at DESC
+        LIMIT ?
+        """,
+        (customer_id, max(1, min(limit, 100))),
+    )
+    invoices = [dict(row) for row in cursor.fetchall()]
+    conn.close()
     return {"invoices": invoices, "total": len(invoices)}
 
 
 @router.get("/billing/current")
-async def get_current_bill(current_user: Dict = Depends(get_current_user)):
-    """
-    Get current month's bill (real-time).
-    """
-    customer_id = current_user["id"]
-
+async def get_current_bill(request: Request):
+    customer_id = _tenant_from_request(request)
     now = datetime.utcnow()
-    period_start = datetime(now.year, now.month, 1)
-
-    breakdown = calculate_usage(customer_id, period_start, now)
-    total_units = sum(breakdown.values())
-    tier_info = get_customer_tier(customer_id)
-
+    period_start, _ = _current_period(now)
+    usage = _usage_response(customer_id, period_start, now)
+    estimated = usage.current_period_cost if now.day <= 0 else round(usage.current_period_cost * 30 / now.day, 4)
     return {
         "period": f"{now.year}-{now.month:02d}",
-        "compute_units_used": total_units,
-        "current_amount": total_units * tier_info["cost_per_unit"],
-        "currency": tier_info["currency"],
-        "breakdown": breakdown,
-        "estimated_month_end": total_units * 30 / now.day * tier_info["cost_per_unit"],
+        "compute_units_used": usage.compute_units_used,
+        "current_amount": usage.current_period_cost,
+        "currency": usage.currency,
+        "breakdown": usage.breakdown,
+        "estimated_month_end": estimated,
     }
