@@ -45,8 +45,25 @@ export function recordPing(latency: number, success: boolean) {
   notifyListeners();
 }
 
-// Singleton Background Ping Loop with environment process variables support
+// Singleton Background Ping Loop with same-origin bridge defaults.
+// Frontend code should call the Node bridge on the current origin; the bridge owns
+// backend routing to FastAPI via PULVINI_BACKEND_URL. This keeps the browser SPA
+// and backend API off separate pages/ports for UAT unless an operator explicitly
+// supplies a relative or absolute override.
 let pingIntervalId: ReturnType<typeof setInterval> | null = null;
+
+function normalizeBackendBaseUrl(value: string | undefined): string {
+  const trimmed = value?.trim();
+  if (!trimmed) return "/api";
+  return trimmed.endsWith("/") ? trimmed.slice(0, -1) : trimmed;
+}
+
+export function getFrontendBackendBaseUrl(): string {
+  const metaEnv = (import.meta as unknown as { env?: Record<string, string> }).env || {};
+  return normalizeBackendBaseUrl(
+    metaEnv.VITE_HYBA_BACKEND_URL || metaEnv.VITE_PULVINI_BACKEND_URL,
+  );
+}
 
 export function ensurePingInterval() {
   if (pingIntervalId) return;
@@ -54,12 +71,7 @@ export function ensurePingInterval() {
   const runPing = async () => {
     const start = performance.now();
     try {
-      const metaEnv = (import.meta as unknown as { env?: Record<string, string> }).env || {};
-      const backendUrl =
-        (typeof process !== "undefined" && process.env?.HYBA_BACKEND_URL) ||
-        metaEnv.VITE_HYBA_BACKEND_URL ||
-        metaEnv.VITE_PULVINI_BACKEND_URL ||
-        "http://127.0.0.1:8000/api";
+      const backendUrl = getFrontendBackendBaseUrl();
       const response = await fetch(`${backendUrl}/health`);
       const latency = performance.now() - start;
       recordPing(latency, response.ok);

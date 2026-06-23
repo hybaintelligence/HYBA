@@ -16,15 +16,17 @@ The product surface must be credible under enterprise diligence: every runtime v
 | Claim discipline | Mining economics are not asserted without authenticated accounting or pool telemetry. | Analytics economics cards display “Not asserted” until backend telemetry supplies revenue and cost values. |
 | Operational clarity | Empty states explain exactly why a panel is blank and what integration is required. | Jobs and historical data panels now use handover-safe empty states instead of demo records. |
 | Executive posture | The interface communicates source provenance and client-safe caveats. | Analytics panel surfaces the telemetry source and states that fabricated values are prohibited. |
+| Same-origin frontend/backend handoff | Browser traffic uses the deployed frontend origin for `/api` by default, while the bridge routes to FastAPI through `PULVINI_BACKEND_URL`. | Latency and keep-alive checks no longer default to a separate localhost backend page/port; operators may still override with `VITE_HYBA_BACKEND_URL` only when intentionally split. |
 
 ## Acceptance Checklist for Client Handover
 
 1. Configure production secrets and pool credentials in the client environment.
-2. Run the backend health and security endpoints with client-owned credentials.
+2. Run the backend health and security endpoints with client-owned credentials through the frontend origin (`/api/health`) and confirm the bridge routes to FastAPI.
 3. Verify pool/job telemetry appears in the Mining Jobs panel.
 4. Verify historical telemetry ingestion before enabling client trend review.
 5. Connect accounting or pool payout telemetry before discussing revenue, cost, or profit.
-6. Export the production readiness packet and share only evidence-backed claims.
+6. Confirm the browser console does not call a hard-coded localhost backend URL unless a deliberate `VITE_HYBA_BACKEND_URL` override is documented.
+7. Export the production readiness packet and share only evidence-backed claims.
 
 ## Executive Talking Points
 
