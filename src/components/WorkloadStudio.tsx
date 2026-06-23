@@ -4,17 +4,19 @@ import {
   CheckCircle2,
   Download,
   FileText,
+  KeyRound,
   Layers3,
   Play,
   ShieldCheck,
   Upload,
 } from "lucide-react";
+import { intelligenceExplain, intelligenceOrchestrate } from "../apiClient";
 import {
-  executeCustomerCIAASWorkload,
-  intelligenceExplain,
-  intelligenceOrchestrate,
-  listCustomerCIAASServices,
-} from "../apiClient";
+  executeCustomerCIAASWorkloadForStudio,
+  getStoredCustomerApiKey,
+  listCustomerCIAASServicesForStudio,
+  setStoredCustomerApiKey,
+} from "../workloadStudioApi";
 import { useSkillMode } from "../skillMode";
 
 type WorkloadType =
@@ -23,7 +25,14 @@ type WorkloadType =
   | "operational incident log"
   | "compliance/audit checklist";
 
-type CognitiveLens = "executive" | "operator" | "analyst" | "engineer" | "auditor" | "expert";
+type CognitiveLens =
+  | "executive"
+  | "business"
+  | "operator"
+  | "analyst"
+  | "engineer"
+  | "auditor"
+  | "expert";
 
 type StudioResult = {
   traceId: string;
@@ -45,6 +54,7 @@ const sampleWorkloads: Record<WorkloadType, string> = {
 
 const lenses: CognitiveLens[] = [
   "executive",
+  "business",
   "operator",
   "analyst",
   "engineer",
@@ -72,17 +82,18 @@ function buildFallbackTransformation(
   input: string,
 ): string {
   const lines = input.split(/\n+/).filter(Boolean).slice(0, 4);
-  const focus = {
-    executive: "decision posture, risk concentration, and approval path",
+  const focus: Record<CognitiveLens, string> = {
+    executive: "decision posture, strategic risk concentration, and approval path",
+    business: "commercial exposure, operating impact, cost/risk trade-off, and accountable owner",
     operator: "next action, escalation boundary, and runbook fit",
-    analyst: "drivers, gaps, and measurable deltas",
+    analyst: "drivers, gaps, measurable deltas, and comparison structure",
     engineer: "interfaces, invariants, failure modes, and traceability",
     auditor: "controls, evidence sufficiency, limitations, and reproducibility",
     expert: "causal structure, counterfactuals, and boundary conditions",
-  }[lens];
+  };
   return [
     `Classified as ${type}.`,
-    `Lens applied: ${lens}; focus is ${focus}.`,
+    `Lens applied: ${lens}; focus is ${focus[lens]}.`,
     `Extracted workload atoms: ${lines.join(" | ") || "none supplied"}.`,
     "Transformation: convert the supplied artifact into a reproducible intelligence packet with assumptions, gaps, mitigations, confidence limits, and an evidence trail.",
     "Human approval remains required for consequential action.",
@@ -96,8 +107,12 @@ function makeTraceId() {
 export function WorkloadStudio() {
   const { mode } = useSkillMode();
   const [selectedType, setSelectedType] = useState<WorkloadType>("risk register");
-  const [lens, setLens] = useState<CognitiveLens>("executive");
+  const [lens, setLens] = useState<CognitiveLens>(
+    lenses.includes(mode as CognitiveLens) ? (mode as CognitiveLens) : "executive",
+  );
   const [workload, setWorkload] = useState(sampleWorkloads["risk register"]);
+  const [apiKey, setApiKey] = useState(() => getStoredCustomerApiKey());
+  const [apiKeySaved, setApiKeySaved] = useState(Boolean(getStoredCustomerApiKey()));
   const [result, setResult] = useState<StudioResult | null>(null);
   const [running, setRunning] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -111,37 +126,74 @@ export function WorkloadStudio() {
     setError(null);
   };
 
+  const persistApiKey = () => {
+    setStoredCustomerApiKey(apiKey);
+    setApiKeySaved(Boolean(apiKey.trim()));
+  };
+
   const runTransformation = async () => {
     const traceId = makeTraceId();
+    const customerApiKey = apiKey.trim();
+    if (customerApiKey) setStoredCustomerApiKey(customerApiKey);
     setRunning(true);
     setError(null);
     try {
       const classification = classifyWorkload(workload);
-      let ciaasEndpoint = "/api/v1/intelligence/explain";
-      try {
-        const services = await listCustomerCIAASServices();
-        const service = services.find((item) => item.state === "running") || services[0];
-        if (service?.service_id) {
-          await executeCustomerCIAASWorkload(service.service_id, {
-            workload_type: "explain",
-            context: { trace_id: traceId, workload, lens, classification, customer_mode: true },
-            idempotency_key: traceId,
-          });
-          ciaasEndpoint = `/api/v1/computational-intelligence-services/${service.service_id}/workloads`;
+      let ciaasEndpoint = customerApiKey
+        ? "/api/v1/computational-intelligence-services/{service_id}/execute"
+        : "/api/v1/computational-intelligence-services/{service_id}/execute (waiting for X-API-Key)";
+      let ciaasResult: Record<string, unknown> | null = null;
+      let selectedServiceId: string | null = null;
+
+      if (customerApiKey) {
+        try {
+          const services = await listCustomerCIAASServicesForStudio(customerApiKey);
+          const service = services.find((item) => item.state === "running") || services[0];
+          if (service?.service_id) {
+            selectedServiceId = service.service_id;
+            ciaasResult = await executeCustomerCIAASWorkloadForStudio(
+              service.service_id,
+              {
+                workload_type: "explain",
+                context: {
+                  trace_id: traceId,
+                  workload,
+                  lens,
+                  classification,
+                  customer_mode: true,
+                  studio: "workload_transformation",
+                },
+                idempotency_key: traceId,
+              },
+              customerApiKey,
+            );
+            ciaasEndpoint = `/api/v1/computational-intelligence-services/${service.service_id}/execute`;
+          } else {
+            ciaasEndpoint = "/api/v1/computational-intelligence-services (no customer CIaaS rail provisioned)";
+          }
+        } catch (customerError) {
+          ciaasEndpoint = "/api/v1/computational-intelligence-services/{service_id}/execute (customer CIaaS route unavailable)";
+          setError(customerError instanceof Error ? customerError.message : "Customer CIaaS route unavailable");
         }
-      } catch {
-        ciaasEndpoint = "/api/v1/intelligence/explain (CIaaS service workload unavailable)";
       }
 
       const explain = await intelligenceExplain({
-        query: `Classify and transform this customer-provided ${classification} for CIaaS Workload Studio using the ${lens} cognitive lens. Return assumptions, gaps, confidence limits, and evidence needs.`,
-        context: { trace_id: traceId, workload, lens, customer_mode: true, skill_mode: mode },
+        query: `Classify and transform this customer-provided ${classification} for CIaaS Workload Studio using the ${lens} cognitive lens. Return assumptions, gaps, confidence limits, evidence needs, decision boundary, and customer-safe next action.`,
+        context: {
+          trace_id: traceId,
+          workload,
+          lens,
+          customer_mode: true,
+          skill_mode: mode,
+          ciaas_service_id: selectedServiceId,
+          live_ciaas_execution: Boolean(ciaasResult),
+        },
       });
       let planSummary = "No orchestration plan returned.";
       try {
         const plan = await intelligenceOrchestrate({
           goal: `Produce a reproducible evidence packet for a ${classification}`,
-          priority: lens === "auditor" ? 9 : 7,
+          priority: lens === "auditor" ? 9 : lens === "business" ? 8 : 7,
           constraints: { trace_id: traceId, lens, preserve_human_approval: true },
         });
         planSummary = plan.steps
@@ -156,7 +208,7 @@ export function WorkloadStudio() {
         traceId,
         workloadType: classification,
         lens,
-        endpointInvoked: `${ciaasEndpoint} + /api/v1/intelligence/orchestrate`,
+        endpointInvoked: `${ciaasEndpoint} + /api/v1/intelligence/explain + /api/v1/intelligence/orchestrate`,
         before: workload,
         after,
         evidencePacket: {
@@ -165,11 +217,21 @@ export function WorkloadStudio() {
           cognitive_lens: lens,
           confidence: explain.confidence,
           sources: explain.sources,
-          transformations: ["classification", "lens translation", "evidence packaging"],
+          live_ciaas_execution: Boolean(ciaasResult),
+          ciaas_service_id: selectedServiceId,
+          ciaas_result: ciaasResult,
+          transformations: [
+            "customer workload ingestion",
+            "classification",
+            "lens translation",
+            "CIaaS execution attempt",
+            "evidence packaging",
+          ],
           invariants: [
             "customer input preserved",
             "human approval boundary preserved",
-            "claim boundary visible",
+            "capability boundary visible",
+            "raw API-key material not exported",
           ],
           limitations: [
             "Packet reflects supplied input and available API response",
@@ -178,7 +240,7 @@ export function WorkloadStudio() {
           evidence_seal: `seal-${traceId.slice(-8)}`,
         },
         boundary:
-          "Capability boundary: HYBA reports the endpoint response and evidence packet; it does not ask the buyer to accept an unsupported claim.",
+          "Capability boundary: HYBA reports the API response, transformation pathway, and evidence packet. The buyer can reproduce the call and inspect the trace rather than accept a narrative claim.",
       });
     } catch (err) {
       const classification = classifyWorkload(workload);
@@ -195,7 +257,7 @@ export function WorkloadStudio() {
           workload_classification: classification,
           cognitive_lens: lens,
           endpoint_status: "unavailable",
-          transformations: ["local classification", "claim-boundary fallback packet"],
+          transformations: ["local classification", "capability-boundary fallback packet"],
           invariants: [
             "customer input preserved",
             "no fabricated API result",
@@ -205,7 +267,7 @@ export function WorkloadStudio() {
           evidence_seal: `attempt-${traceId.slice(-8)}`,
         },
         boundary:
-          "Claim boundary: the API call was attempted but did not complete, so this packet is marked as an unavailable-endpoint fallback rather than a live CIaaS result.",
+          "Capability boundary: the API call was attempted but did not complete, so this packet is marked as an unavailable-endpoint fallback rather than a live CIaaS result.",
       });
     } finally {
       setRunning(false);
@@ -241,7 +303,7 @@ export function WorkloadStudio() {
           </div>
           <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-950">
             <ShieldCheck className="mb-2 h-5 w-5" /> The API speaks. Customer mode hides internal
-            terms and marks the claim/capability boundary.
+            terms and marks the capability boundary.
           </div>
         </div>
       </div>
@@ -283,6 +345,33 @@ export function WorkloadStudio() {
               ))}
             </select>
           </div>
+          <div>
+            <label className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-slate-500">
+              <KeyRound className="h-3.5 w-3.5" /> Customer API key for live CIaaS execution
+            </label>
+            <div className="mt-2 flex gap-2">
+              <input
+                value={apiKey}
+                onChange={(event) => {
+                  setApiKey(event.target.value);
+                  setApiKeySaved(false);
+                }}
+                type="password"
+                placeholder="hyba_..."
+                className="flex-1 rounded-xl border border-slate-200 p-3 font-mono text-sm outline-none focus:border-blue-400"
+              />
+              <button
+                onClick={persistApiKey}
+                className="rounded-xl border border-slate-200 px-4 text-sm font-bold text-slate-700 hover:bg-slate-50"
+              >
+                {apiKeySaved ? "Saved" : "Save"}
+              </button>
+            </div>
+            <p className="mt-2 text-xs text-slate-500">
+              The key is stored only in this browser. Without it, the Studio still produces a bounded
+              explanation packet but marks live customer CIaaS execution as unavailable.
+            </p>
+          </div>
           <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
             HYBA classification: <strong>{classifiedType}</strong>
           </div>
@@ -306,39 +395,46 @@ export function WorkloadStudio() {
               {error}
             </div>
           )}
-          {result ? (
-            <>
+          {!result ? (
+            <div className="rounded-3xl border border-dashed border-slate-300 bg-slate-50 p-8 text-center text-slate-500">
+              Run a workload to see the API transform it into a reproducible intelligence packet.
+            </div>
+          ) : (
+            <div className="space-y-4">
               <div className="grid gap-3 md:grid-cols-2">
                 <div className="rounded-2xl border border-slate-200 p-4">
-                  <p className="mb-2 text-xs font-bold uppercase tracking-[0.2em] text-slate-500">
-                    Original workload
-                  </p>
-                  <pre className="whitespace-pre-wrap text-xs text-slate-700">{result.before}</pre>
+                  <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">Before</p>
+                  <pre className="mt-3 max-h-72 overflow-auto whitespace-pre-wrap text-xs text-slate-700">
+                    {result.before}
+                  </pre>
                 </div>
-                <div className="rounded-2xl border border-blue-200 bg-blue-50/60 p-4">
-                  <p className="mb-2 text-xs font-bold uppercase tracking-[0.2em] text-blue-700">
-                    Transformed intelligence
-                  </p>
-                  <pre className="whitespace-pre-wrap text-xs text-blue-950">{result.after}</pre>
+                <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
+                  <p className="text-xs font-bold uppercase tracking-[0.2em] text-emerald-700">After</p>
+                  <pre className="mt-3 max-h-72 overflow-auto whitespace-pre-wrap text-xs text-emerald-950">
+                    {result.after}
+                  </pre>
                 </div>
               </div>
-              <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-950">
-                <CheckCircle2 className="mr-2 inline h-4 w-4" /> Trace ID:{" "}
-                <strong>{result.traceId}</strong> · Endpoint: {result.endpointInvoked}
+              <div className="rounded-2xl border border-blue-100 bg-blue-50 p-4 text-sm text-blue-950">
+                <CheckCircle2 className="mr-2 inline h-4 w-4" />
+                Trace <strong>{result.traceId}</strong> · classified as <strong>{result.workloadType}</strong> · lens <strong>{result.lens}</strong>
               </div>
-              <pre className="max-h-80 overflow-auto rounded-2xl border border-slate-200 bg-slate-950 p-4 text-xs text-emerald-100">
-                {JSON.stringify(result.evidencePacket, null, 2)}
-              </pre>
-              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
+              <div className="rounded-2xl border border-slate-200 p-4">
+                <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">Endpoint path</p>
+                <p className="mt-2 break-all font-mono text-xs text-slate-700">{result.endpointInvoked}</p>
+              </div>
+              <div className="rounded-2xl border border-slate-200 p-4">
+                <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">Evidence packet</p>
+                <pre className="mt-3 max-h-80 overflow-auto rounded-xl bg-slate-950 p-4 text-xs text-slate-100">
+                  {JSON.stringify(result.evidencePacket, null, 2)}
+                </pre>
+              </div>
+              <div className="rounded-2xl border border-purple-200 bg-purple-50 p-4 text-sm text-purple-950">
                 {result.boundary}
               </div>
-              <button onClick={exportPacket} className="executive-button bg-emerald-600 text-white">
+              <button onClick={exportPacket} className="executive-button bg-slate-950 text-white">
                 <Download className="h-4 w-4" /> Export evidence packet
               </button>
-            </>
-          ) : (
-            <div className="rounded-2xl border border-dashed border-slate-300 p-10 text-center text-slate-500">
-              Run a customer workload to generate the evidence packet.
             </div>
           )}
         </div>
