@@ -229,6 +229,75 @@ async def logout(
     }
 
 
+@router.post("/claim-role", response_model=Dict[str, Any])
+async def claim_role(
+    req: AuthRequest,
+    response: Response,
+    claim_secret: str = "",
+):
+    """Claim executive founder admin role using a founder secret.
+
+    Requires valid operator credentials plus the HYBA_FOUNDER_CLAIM_SECRET.
+    Upgrades the user's role to 'ceo_heir_apparent' (highest executive tier).
+    """
+    roles = _verify_operator(req.username, req.password)
+    founder_secret = os.getenv("HYBA_FOUNDER_CLAIM_SECRET", "")
+    if not founder_secret:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail={"error": "claim_system_unavailable", "message": "Founder claim is not configured on this instance."},
+        )
+    if not hmac.compare_digest(claim_secret, founder_secret):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail={"error": "invalid_claim_secret", "message": "The provided claim secret does not match."},
+        )
+
+    db = SessionLocal()
+    try:
+        user = db.query(User).filter(User.username == req.username).first()
+        if user:
+            user.role = "ceo_heir_apparent"
+            user.roles = '["ceo_heir_apparent"]'
+            db.commit()
+            claimed_role = "ceo_heir_apparent"
+        else:
+            claimed_role = roles[0] if roles else "operator"
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={"error": "claim_failed", "message": str(e)},
+        )
+    finally:
+        db.close()
+
+    token = get_jwt_manager().create_access_token(
+        user_id=req.username,
+        username=req.username,
+        roles=[claimed_role],
+    )
+    response.set_cookie(
+        key=ACCESS_COOKIE_NAME,
+        value=token,
+        httponly=True,
+        secure=_cookie_secure(),
+        samesite=_cookie_samesite(),
+        max_age=3600,
+        path="/",
+    )
+    return {
+        "success": True,
+        "token": token,
+        "user": {
+            "username": req.username,
+            "role": claimed_role,
+            "roles": [claimed_role],
+        },
+        "message": f"Executive founder admin role claimed: {claimed_role}",
+    }
+
+
 @router.post("/register", response_model=Dict[str, Any])
 async def register(_req: AuthRequest):
     raise HTTPException(

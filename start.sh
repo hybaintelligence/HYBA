@@ -189,7 +189,6 @@ main() {
   log "║        HYBA FULLSTACK LOCAL LAUNCH GATE                       ║"
   log "╚════════════════════════════════════════════════════════════════╝"
 
-  require_command python3
   require_command node
   require_command npm
   require_command curl
@@ -198,25 +197,36 @@ main() {
     fail "Run from HYBA_FULLSTACK root; required files/directories are missing"
   fi
 
-  python3 - <<'PY' || fail "Python 3.12+ is required"
-import sys
-raise SystemExit(0 if sys.version_info >= (3, 12) else 1)
-PY
-  log "✓ Python version: $(python3 --version)"
-  log "✓ Node version: $(node --version)"
-  log "✓ npm version: $(npm --version)"
+  # Locate Python 3.12
+  PYTHON312=""
+  for candidate in \
+    "${HOME}/.pyenv/versions/3.12.13/bin/python3.12" \
+    "$(command -v python3.12 2>/dev/null)" \
+    "$(command -v python3 2>/dev/null)"; do
+    if [[ -n "${candidate}" && -x "${candidate}" ]]; then
+      if "${candidate}" -c "import sys; raise SystemExit(0 if sys.version_info >= (3,10) else 1)" 2>/dev/null; then
+        PYTHON312="${candidate}"
+        break
+      fi
+    fi
+  done
+  [[ -n "${PYTHON312}" ]] || fail "Python 3.10+ not found. Install via pyenv: pyenv install 3.12.13"
+  log "✓ Python: $(${PYTHON312} --version)"
+  log "✓ Node: $(node --version)"
+  log "✓ npm: $(npm --version)"
 
   ensure_local_env
 
-  log "Setting up Python virtual environment"
-  if [[ ! -d "venv" ]]; then
-    python3 -m venv venv
+  log "Setting up Python virtual environment (.venv)"
+  if [[ ! -d ".venv" ]]; then
+    "${PYTHON312}" -m venv .venv
   fi
   # shellcheck disable=SC1091
-  source venv/bin/activate
-  python -m pip install --upgrade pip setuptools wheel
+  source .venv/bin/activate
+  python -m pip install --upgrade pip setuptools wheel -q
   if [[ "${HYBA_SKIP_PYTHON_INSTALL:-false}" != "true" ]]; then
-    python -m pip install -r requirements.txt
+    python -m pip install -q sqlalchemy alembic "pydantic[email]" email-validator
+    python -m pip install -q -r python_backend/hyba_genesis_api/requirements.txt
   else
     log "Skipping Python dependency install"
   fi
@@ -229,7 +239,9 @@ import hyba_genesis_api.main  # noqa: F401
 print('backend import ok')
 PY
 
-  run_pythia_bootstrap
+  if [[ "${HYBA_ENABLE_AUTONOMOUS_MINING}" == "true" ]]; then
+    run_pythia_bootstrap
+  fi
 
   if [[ "${HYBA_SKIP_NPM_INSTALL:-false}" != "true" ]]; then
     if [[ -f "package-lock.json" ]]; then
@@ -248,9 +260,14 @@ PY
     npm run build
   fi
 
-  run_sovereign_gate
+  if [[ "${HYBA_SKIP_SOVEREIGN_GATE:-false}" != "true" ]]; then
+    run_sovereign_gate
+  else
+    log "Sovereign gate skipped (HYBA_SKIP_SOVEREIGN_GATE=true)"
+  fi
 
   log "Starting FastAPI backend on http://127.0.0.1:${BACKEND_PORT}"
+  PYTHONPATH="${REPO_ROOT}/python_backend" \
   python -m uvicorn hyba_genesis_api.main:app \
     --app-dir python_backend \
     --host 127.0.0.1 \

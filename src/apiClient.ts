@@ -1602,6 +1602,20 @@ export async function loginApi(credentials: AuthCredentials): Promise<AuthRespon
 }
 
 /** POST /api/auth/register — Register a new user */
+export async function claimRoleApi(credentials: AuthCredentials, claimSecret: string): Promise<AuthResponse> {
+  const response = await fetch("/api/auth/claim-role", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ ...credentials, claim_secret: claimSecret }),
+  });
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ detail: "Claim failed" }));
+    throw new Error(error.detail?.message || error.detail || "Role claim failed");
+  }
+  return (await response.json()) as AuthResponse;
+}
+
 export async function registerApi(data: RegisterData): Promise<AuthResponse> {
   const options = authInterceptor({ method: "POST", body: JSON.stringify(data) });
   const response = await fetch(`${BACKEND_URL}/auth/register`, options);

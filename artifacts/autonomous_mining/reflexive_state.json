@@ -8,13 +8,17 @@
   "compression_seeking_history": [
     1.8786,
     1.8972000000000002,
-    1.89685404
+    1.89685404,
+    1.8969736499040002,
+    1.8970291250558926
   ],
-  "epochs": 9,
+  "epochs": 11,
   "logical_consistency_history": [
     0.77,
     0.75,
-    0.77
+    0.77,
+    0.77,
+    0.75
   ],
   "optimization_targets": [
     {
@@ -88,74 +92,94 @@
       "target_name": "phi_scaling",
       "target_value": 1.4249999999999998,
       "tolerance": 0.05
+    },
+    {
+      "current_value": 1.86,
+      "objective_function": "maximize_phi_coherence",
+      "priority": 3,
+      "target_name": "compression_target",
+      "target_value": 1.8969736499040002,
+      "tolerance": 0.05
+    },
+    {
+      "current_value": 1.86,
+      "objective_function": "maximize_phi_coherence",
+      "priority": 3,
+      "target_name": "compression_target",
+      "target_value": 1.8970291250558926,
+      "tolerance": 0.05
     }
   ],
   "phi_coherence_threshold": 0.735,
   "phi_density_history": [
     0.7,
     0.6624300000000001,
-    0.69286
+    0.69286,
+    0.7230093686666667,
+    0.7230093686666667,
+    0.7230093686666667,
+    0.7330986824951999
   ],
   "pool_response_history": [],
   "proposals": [
     {
       "applied": true,
       "codebase_source_module": "pulvini_memory_compression_proof",
-      "counterfactual_confidence": 0.8981399999999999,
+      "counterfactual_confidence": 0.8990813175047999,
       "current_value": 1.86,
-      "expected_phi_density_gain": 0.004454551913697591,
+      "expected_phi_density_gain": 0.004604134321359199,
       "improvement_type": "compression_target",
       "logical_consistency_score": 0.8,
-      "proposal_id": "self_opt_6_1782216646",
-      "proposed_value": 1.89685404
+      "proposal_id": "self_opt_10_1782218480",
+      "proposed_value": 1.8970291250558926
     },
     {
-      "applied": true,
+      "applied": false,
       "codebase_source_module": "ai_optimizer",
       "counterfactual_confidence": 0.6,
       "current_value": 60.0,
-      "expected_phi_density_gain": 0.013074656249999927,
+      "expected_phi_density_gain": 0.01333832812499991,
       "improvement_type": "search_depth",
       "logical_consistency_score": 0.75,
-      "proposal_id": "self_opt_6_1782216646",
+      "proposal_id": "self_opt_10_1782218480",
       "proposed_value": 54.0
     },
     {
-      "applied": true,
-      "codebase_source_module": "phi_scaling_engine",
-      "counterfactual_confidence": 0.3,
-      "current_value": 1.5,
-      "expected_phi_density_gain": 0.009895638749999991,
-      "improvement_type": "phi_scaling",
-      "logical_consistency_score": 0.76,
-      "proposal_id": "self_opt_6_1782216646",
-      "proposed_value": 1.4249999999999998
+      "applied": false,
+      "codebase_source_module": "consciousness_engine",
+      "counterfactual_confidence": 0.6,
+      "current_value": 0.735,
+      "expected_phi_density_gain": 0.010322081250000004,
+      "improvement_type": "coherence_threshold",
+      "logical_consistency_score": 0.7,
+      "proposal_id": "self_opt_10_1782218480",
+      "proposed_value": 0.77175
     }
   ],
   "schema_version": 3,
   "target_selection": {
     "coherence_threshold": {
-      "evidence_weight": 1.1,
-      "failures": 1,
-      "posterior_mean": 0.666667,
+      "evidence_weight": 0.99,
+      "failures": 2,
+      "posterior_mean": 0.5,
       "successes": 2
     },
     "compression_target": {
-      "evidence_weight": 1.331,
+      "evidence_weight": 1.61051,
       "failures": 1,
-      "posterior_mean": 0.8,
-      "successes": 4
+      "posterior_mean": 0.857143,
+      "successes": 6
     },
     "phi_scaling": {
-      "evidence_weight": 1.21,
-      "failures": 1,
-      "posterior_mean": 0.75,
+      "evidence_weight": 1.089,
+      "failures": 2,
+      "posterior_mean": 0.6,
       "successes": 3
     },
     "search_depth": {
-      "evidence_weight": 1.331,
-      "failures": 1,
-      "posterior_mean": 0.8,
+      "evidence_weight": 1.07811,
+      "failures": 3,
+      "posterior_mean": 0.571429,
       "successes": 4
     }
   }

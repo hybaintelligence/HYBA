@@ -48,6 +48,7 @@ import {
   type PoolInfo,
   type TelemetryData,
   type SecurityStatus,
+  claimRoleApi,
   configurePool,
   disconnectFromPool,
   fetchProfileApi,
@@ -546,6 +547,43 @@ function AppContent() {
     } catch (err) {
       setAuthFeedback({
         text: err instanceof Error ? err.message : "Registration server unreachable",
+        error: true,
+      });
+    }
+  };
+
+  const [claimSecretInput, setClaimSecretInput] = useState("");
+  const [claimFeedback, setClaimFeedback] = useState<{ text: string; error: boolean } | null>(null);
+
+  const handleClaimExecutiveFounderAdmin = async () => {
+    if (!usernameInput || !passwordInput) {
+      setClaimFeedback({ text: "Enter your credentials first", error: true });
+      return;
+    }
+    if (!claimSecretInput) {
+      setClaimFeedback({ text: "Founder claim secret is required", error: true });
+      return;
+    }
+    setClaimFeedback({ text: "Claiming executive founder admin...", error: false });
+    try {
+      const data = await claimRoleApi(
+        { username: usernameInput, password: passwordInput },
+        claimSecretInput,
+      );
+      if (data.success) {
+        setToken(data.token || null);
+        setCurrentUser(data.user || null);
+        setClaimFeedback({
+          text: `Claimed: ${data.user?.role || "executive"} — full admin surface unlocked.`,
+          error: false,
+        });
+        setClaimSecretInput("");
+      } else {
+        setClaimFeedback({ text: data.error || "Claim failed", error: true });
+      }
+    } catch (err) {
+      setClaimFeedback({
+        text: err instanceof Error ? err.message : "Claim endpoint unreachable",
         error: true,
       });
     }
@@ -1449,6 +1487,31 @@ function AppContent() {
                           >
                             {isRegisterMode ? "← Log in" : "Sign up →"}
                           </button>
+                        </div>
+                        <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-3">
+                          <p className="text-[10px] font-black uppercase tracking-[0.18em] text-amber-800">
+                            Executive Founder Claim
+                          </p>
+                          <p className="mt-1 text-[11px] leading-5 text-amber-900">
+                            Already have operator credentials? Enter the founder secret to claim
+                            executive admin access.
+                          </p>
+                          <AuthInput
+                            id="claim-secret"
+                            label="Founder Secret"
+                            value={claimSecretInput}
+                            setValue={setClaimSecretInput}
+                            type="password"
+                            placeholder="Founder claim secret"
+                          />
+                          <button
+                            type="button"
+                            onClick={handleClaimExecutiveFounderAdmin}
+                            className="mt-2 control-button w-full bg-amber-600 text-white"
+                          >
+                            <Crown className="h-3.5 w-3.5" /> Claim Executive Founder Admin
+                          </button>
+                          {claimFeedback && <Feedback feedback={claimFeedback} />}
                         </div>
                       </form>
                     )}

@@ -66,8 +66,8 @@
   "name": "hyba-fullstack",
   "private": true,
   "scripts": {
-    "backend:check": "npm run python:env:check && cross-env PYTHONPATH=python_backend python3 -c \"import sys; sys.path.insert(0, 'python_backend'); import hyba_genesis_api.main; print('backend import ok')\"",
-    "backend:start": "python3 -m uvicorn hyba_genesis_api.main:app --app-dir python_backend --host 127.0.0.1 --port 3001",
+    "backend:check": "npm run python:env:check && PYTHONPATH=python_backend .venv/bin/python3 -c \"import sys; sys.path.insert(0, 'python_backend'); import hyba_genesis_api.main; print('backend import ok')\"",
+    "backend:start": "PYTHONPATH=python_backend .venv/bin/python3 -m uvicorn hyba_genesis_api.main:app --app-dir python_backend --host 127.0.0.1 --port 3001",
     "benchmark:ai-capabilities": "npm run python:env:check && cross-env PYTHONPATH=python_backend python3 -m pytest tests/test_ai_capability_benchmarks.py -q -s",
     "benchmark:capabilities": "npm run python:env:check && cross-env PYTHONPATH=python_backend python3 -m pytest tests/test_mining_capability_benchmarks.py tests/test_ai_capability_benchmarks.py -q -s",
     "benchmark:post-quantum": "npm run python:env:check && cross-env PYTHONPATH=python_backend python3 -m pytest tests/test_post_quantum_benchmark.py -v --tb=short -s",

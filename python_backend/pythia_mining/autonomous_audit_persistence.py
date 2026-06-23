@@ -286,14 +286,31 @@ class AuditJournal:
 
 
 class AutonomousAuditLogger:
-    """High-level audit logger that bridges AutonomousMiningController to AuditJournal.
+    """High-level audit logger that bridges AutonomousMiningController to AuditJournal."""
 
-    Provides convience methods for the common audit event types emitted by
-    the autonomous controller, so callers never touch the journal directly.
-    """
+    _JOURNAL_FIELDS = {
+        "decision_id", "action", "outcome",
+        "constraints_checked", "constraints_violated",
+        "operator_id", "operator_action", "state_diff",
+    }
 
     def __init__(self, journal: Optional[AuditJournal] = None) -> None:
         self._journal = journal or AuditJournal()
+
+    def log_event(
+        self,
+        event_type: str,
+        autonomy_level: str,
+        **kwargs: Any,
+    ) -> None:
+        """Generic passthrough. Unknown kwargs are folded into state_diff."""
+        journal_kwargs: Dict[str, Any] = {k: v for k, v in kwargs.items() if k in self._JOURNAL_FIELDS}
+        extra = {k: v for k, v in kwargs.items() if k not in self._JOURNAL_FIELDS}
+        if extra:
+            merged: Dict[str, Any] = dict(journal_kwargs.get("state_diff") or {})
+            merged.update(extra)
+            journal_kwargs["state_diff"] = merged
+        self._journal.append(event_type, autonomy_level, **journal_kwargs)
 
     def log_startup_self_healing(
         self,
@@ -368,7 +385,8 @@ class AutonomousAuditLogger:
         )
 
     def log_circuit_breaker(self, event_type: str, level: str, **extra: Any) -> None:
-        self._journal.append(f"circuit_breaker_{event_type}", level, **extra)
+        allowed_extra = {k: v for k, v in extra.items() if k in self._JOURNAL_FIELDS}
+        self._journal.append(f"circuit_breaker_{event_type}", level, **allowed_extra)
 
     def log_decision(
         self,
@@ -383,9 +401,7 @@ class AutonomousAuditLogger:
         self._journal.append(
             "decision",
             autonomy_level,
-            decision_id=(
-                decision.decision_id if hasattr(decision, "decision_id") else None
-            ),
+            decision_id=decision.decision_id if hasattr(decision, "decision_id") else None,
             action=action,
             outcome=outcome,
             constraints_checked=constraints_checked,

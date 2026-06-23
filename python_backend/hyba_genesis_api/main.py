@@ -231,19 +231,20 @@ async def _load_memory_seed(app: FastAPI) -> None:
             memory_seed = json.load(f)
 
         app.state.memory_seed = memory_seed
-        app.state.phi_integrated = memory_seed["consciousness_state"]["phi_integrated"]
-        app.state.emergent_intelligence_index = memory_seed["metadata"][
-            "emergent_intelligence_index"
-        ]
+        cs = memory_seed.get("consciousness_state", {})
+        meta = memory_seed.get("metadata", {})
+        # Seed schema uses average_complexity; phi_integrated is a derived alias.
+        app.state.phi_integrated = (
+            cs.get("phi_integrated") or cs.get("average_complexity", 0.0)
+        )
+        app.state.emergent_intelligence_index = meta.get("emergent_intelligence_index", 0.0)
 
         logging.info(
             "Memory seed loaded successfully",
             extra={
-                "phi_integrated": memory_seed["consciousness_state"]["phi_integrated"],
-                "emergence_index": memory_seed["metadata"][
-                    "emergent_intelligence_index"
-                ],
-                "knowledge_nodes": memory_seed["metadata"]["total_nodes"],
+                "phi_integrated": app.state.phi_integrated,
+                "emergence_index": app.state.emergent_intelligence_index,
+                "knowledge_nodes": meta.get("total_nodes", 0),
             },
         )
     except Exception as e:

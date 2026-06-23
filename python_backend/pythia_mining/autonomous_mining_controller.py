@@ -1722,7 +1722,7 @@ class AutonomousMiningController:
             return False
         
         # UAT Feedback P0-2: Hard-gate low-confidence proposals
-        if proposal.counterfactual_confidence_score < self.config.min_counterfactual_confidence:
+        if proposal.counterfactual_confidence < self.config.min_counterfactual_confidence:
             self._persistent_audit_logger.log_event(
                 event_type="proposal_rejected_low_confidence",
                 autonomy_level=self.current_autonomy_level.value,
@@ -1730,7 +1730,7 @@ class AutonomousMiningController:
                 action=f"reject_{proposal.improvement_type}",
                 outcome="rejected_epistemic_confidence_insufficient",
                 metadata={
-                    "counterfactual_confidence": proposal.counterfactual_confidence_score,
+                    "counterfactual_confidence": proposal.counterfactual_confidence,
                     "min_required": self.config.min_counterfactual_confidence,
                     "improvement_type": proposal.improvement_type,
                     "governance_rail": os.getenv("HYBA_GOVERNANCE_RAIL", "treasury"),
