@@ -330,8 +330,6 @@ async def list_audit_logs(
     payload: TokenPayload = Depends(require_admin),
 ):
     """List audit logs with pagination and filtering."""
-    payload.roles[0] if payload.roles else ""
-
     query = db.query(AuditLog)
 
     if action:
@@ -341,8 +339,9 @@ async def list_audit_logs(
     if actor_username:
         query = query.filter(AuditLog.actor_username == actor_username)
 
-    logs = query.order_by(AuditLog.timestamp.desc()).offset(skip).limit(limit).all()
+    # Count before applying offset/limit so both values come from the same query plan.
     total = query.count()
+    logs = query.order_by(AuditLog.timestamp.desc()).offset(skip).limit(limit).all()
 
     return {
         "logs": logs,

@@ -80,6 +80,7 @@ import {
   type GovernanceSignal,
 } from "./governance";
 import { useAuth } from "./components/AuthProvider";
+import { InternalOnly } from "./components/InternalOnly";
 import { SkillModeProvider, useSkillMode, SkillModeSelector, SKILL_MODE_LABELS } from "./skillMode";
 import { ClaimBoundaryBadge, MetricExplainerCard, EvidenceBoundAnswer } from "./components/IntelligenceTranslator";
 import { DecisionCockpit, ProofExplainer, UseCaseStudio as ImportedUseCaseStudio } from "./components/AdaptiveIntelligenceLayer";
@@ -171,16 +172,8 @@ function ErrorState({ message, onRetry }: { message: string; onRetry?: () => voi
   );
 }
 
-export default function App() {
-  return (
-    <SkillModeProvider>
-      <AppContent />
-    </SkillModeProvider>
-  );
-}
-
 function AppContent() {
-  const { isAdmin, isExecutive } = useAuth();
+  const { isAdmin, isExecutive, backendUser } = useAuth();
   const [token, setToken] = useState<string | null>(() => {
     try {
       return localStorage.getItem("hyba_auth_token") || localStorage.getItem("quantum_token");
@@ -236,6 +229,7 @@ function AppContent() {
     | "studio"
     | "ciaas"
     | "qaas"
+    | "pricing"
   >("dashboard");
 
   const { execute: fetchTelemetryExecute } = useApiRequest(fetchTelemetryData, { maxRetries: 3 });
@@ -704,13 +698,14 @@ function AppContent() {
   const canAccessInternal = hasInternalAccess(currentUser?.role);
 
   return (
-    <div
-      className={`min-h-screen flex flex-col font-sans transition-colors duration-300 ${isDarkMode ? "dark bg-[#050914] text-slate-100" : "bg-[#F4F1EA] text-[#101828]"}`}
-    >
-      {showOnboarding && token && <CustomerOnboarding onComplete={handleOnboardingComplete} />}
-      <div className="fixed right-6 top-4 z-40">
-        <SkillModeSelector />
-      </div>
+    <SkillModeProvider userRole={backendUser?.role}>
+      <div
+        className={`min-h-screen flex flex-col font-sans transition-colors duration-300 ${isDarkMode ? "dark bg-[#050914] text-slate-100" : "bg-[#F4F1EA] text-[#101828]"}`}
+      >
+        {showOnboarding && token && <CustomerOnboarding onComplete={handleOnboardingComplete} />}
+        <div className="fixed right-6 top-4 z-40">
+          <SkillModeSelector />
+        </div>
       <NetworkToast
         isConnected={isConnected}
         latencyMs={latencyMs}
@@ -874,7 +869,14 @@ function AppContent() {
             latencyMs={latencyMs}
           />
         ) : currentView === "jobs" ? (
-          <MiningJobsSection telemetry={telemetry} pools={pools} />
+          <InternalOnly fallback={
+            <div className="rounded-lg border border-red-200 bg-red-50 p-8 text-center">
+              <p className="text-red-900 font-semibold">Mining Operations Restricted</p>
+              <p className="text-red-700 text-sm mt-2">This surface is available only to internal treasury personnel.</p>
+            </div>
+          }>
+            <MiningJobsSection telemetry={telemetry} pools={pools} />
+          </InternalOnly>
         ) : currentView === "history" ? (
           <HistoricalDataSection telemetry={telemetry} />
         ) : currentView === "analytics" ? (
@@ -1497,6 +1499,7 @@ function AppContent() {
         />
       )}
     </div>
+    </SkillModeProvider>
   );
 }
 

@@ -19,6 +19,24 @@ export const SKILL_MODE_LABELS: Record<SkillMode, string> = {
   expert: "Quantum / causal expert",
 };
 
+/**
+ * Role-to-skill-mode mapping for intelligent defaults
+ * Executives get executive mode, engineers get engineer mode, etc.
+ */
+export const ROLE_SKILL_MODE_DEFAULTS: Record<string, SkillMode> = {
+  ceo_heir_apparent: "executive",
+  chairman: "executive",
+  cto: "engineer",
+  cfo: "business",
+  legal: "auditor",
+  chief_of_staff: "executive",
+  admin: "operator",
+  auditor: "auditor",
+  engineer: "engineer",
+  analyst: "analyst",
+  operator: "operator",
+};
+
 type SkillModeConfig = {
   mode: SkillMode;
   label: string;
@@ -101,18 +119,40 @@ const SkillModeContext = createContext<{
   isAuditorMode: boolean;
 } | null>(null);
 
-function readInitialMode(): SkillMode {
+function readInitialMode(userRole?: string): SkillMode {
   try {
     const stored = localStorage.getItem(STORAGE_KEY) as SkillMode | null;
     if (stored && stored in CONFIG) return stored;
   } catch {
     // localStorage can be unavailable in SSR/tests; default is safe business mode.
   }
+  // Use role-based default if available, otherwise safe business mode
+  if (userRole && ROLE_SKILL_MODE_DEFAULTS[userRole]) {
+    return ROLE_SKILL_MODE_DEFAULTS[userRole];
+  }
   return "business";
 }
 
-export function SkillModeProvider({ children }: { children: React.ReactNode }) {
-  const [mode, setModeState] = useState<SkillMode>(readInitialMode);
+interface SkillModeProviderProps {
+  children: React.ReactNode;
+  userRole?: string;
+}
+
+export function SkillModeProvider({ children, userRole }: SkillModeProviderProps) {
+  const [mode, setModeState] = useState<SkillMode>(() => readInitialMode(userRole));
+  
+  // Update mode when user role changes (if no manual override in localStorage)
+  React.useEffect(() => {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY) as SkillMode | null;
+      if (!stored && userRole && ROLE_SKILL_MODE_DEFAULTS[userRole]) {
+        setModeState(ROLE_SKILL_MODE_DEFAULTS[userRole]);
+      }
+    } catch {
+      // localStorage unavailable; ignore
+    }
+  }, [userRole]);
+
   const setMode = (next: SkillMode) => {
     setModeState(next);
     try {

@@ -104,6 +104,12 @@ def _parse_cors_origins() -> List[str]:
     return origins
 
 
+# Cache CORS origins at module load time — _parse_cors_origins() was previously
+# called on every request inside the middleware, re-parsing the env var each time.
+_CORS_ORIGINS: List[str] = _parse_cors_origins()
+_IS_PRODUCTION: bool = os.getenv("NODE_ENV", os.getenv("HYBA_ENV", "development")).lower() == "production"
+
+
 def _get_or_init_distributed_lock_manager(app: FastAPI) -> DistributedLockManager:
     """Get existing or initialize DistributedLockManager in app state.
 
@@ -232,6 +238,10 @@ async def lifespan(app: FastAPI):
     init_metrics()
     app.state.feature_flags = get_feature_flags()
 
+    # Initialize customer portal database
+    from hyba_genesis_api.database import initialize_database
+    initialize_database()
+
     lock_manager = _get_or_init_distributed_lock_manager(app)
 
     logging.info("HYBA API startup: initializing substrate lifecycle")
@@ -282,10 +292,9 @@ app = FastAPI(
 )
 
 # CORS: configurable via HYBA_CORS_ORIGINS env var (comma-separated)
-_cors_origins = _parse_cors_origins()
 if (
-    _cors_origins
-    and "*" in _cors_origins
+    _CORS_ORIGINS
+    and "*" in _CORS_ORIGINS
     and os.getenv("HYBA_CORS_ALLOW_CREDENTIALS", "true").lower() == "true"
 ):
     logging.warning(
@@ -296,7 +305,7 @@ if (
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=_cors_origins,
+    allow_origins=_CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allow_headers=[
@@ -318,12 +327,11 @@ app.middleware("http")(telemetry_middleware)
 @app.middleware("http")
 async def enforce_cors_origin_allowlist(request: Request, call_next):
     origin = request.headers.get("origin")
-    env = os.getenv("NODE_ENV", os.getenv("HYBA_ENV", "development")).lower()
     if origin and (request.url.path.startswith("/api/") or request.url.path == "/api"):
-        allowed = _parse_cors_origins()
-        if env == "production" and "*" in allowed:
+        # Use the module-level cached list — avoids env-var re-parse on every request.
+        if _IS_PRODUCTION and "*" in _CORS_ORIGINS:
             return JSONResponse(status_code=403, content={"detail": "Wildcard CORS origin is not allowed in production"})
-        if origin not in allowed:
+        if origin not in _CORS_ORIGINS:
             return JSONResponse(status_code=403, content={"detail": "CORS origin is not allowed"})
     return await call_next(request)
 

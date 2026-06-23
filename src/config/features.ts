@@ -59,10 +59,12 @@ export const FEATURES: FeatureFlags = {
 
 /**
  * Check if user has access to internal operations
+ * Mining controls are restricted to CEO/treasury roles and internal mode
  */
 export function hasInternalAccess(userRole?: string): boolean {
   if (!FEATURES.SHOW_MINING_UI) return false;
-  return userRole === 'admin' || userRole === 'internal_operator';
+  const treasuryRoles = ['ceo_heir_apparent', 'chairman', 'cto', 'cfo', 'treasury', 'admin', 'internal_operator'];
+  return treasuryRoles.includes(userRole || '');
 }
 
 /**

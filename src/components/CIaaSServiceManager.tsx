@@ -112,7 +112,6 @@ const presetNames = Object.keys(ciaasPresets) as CIaaSPresetName[];
 export default function CIaaSServiceManager({ token }: CIaaSServiceManagerProps) {
   const { isAdmin } = useAuth();
   const { isExpertMode } = useSkillMode();
-  const profile = { showTechnicalDefaults: isExpertMode };
   const [services, setServices] = useState<ServiceResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -200,21 +199,96 @@ export default function CIaaSServiceManager({ token }: CIaaSServiceManagerProps)
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div>
             <p className="font-mono text-xs font-bold uppercase tracking-[0.24em] text-emerald-700">Computational Intelligence · broad brain</p>
-            <h2 className="mt-2 flex items-center gap-2 text-2xl font-black text-slate-950"><Cpu className="h-6 w-6 text-emerald-600" /> CIaaS Service Manager</h2>
+            <h2 className="mt-2 flex items-center gap-2 text-2xl font-black text-slate-950">
+              <Cpu className="h-6 w-6 text-emerald-600" /> CIaaS Service Manager
+            </h2>
             <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-700">Self-healing operations rail for active jobs, Salamander regeneration events, substrate coherence, uptime, velocity, and process efficiency. CI alerts intentionally avoid qubits and resonance language.</p>
           </div>
-          <button onClick={() => setShowProvisionModal(true)} className="flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 font-semibold text-white hover:bg-emerald-700"><Plus className="h-4 w-4" /> Provision CI Rail</button>
+          <button onClick={() => setShowProvisionModal(true)} className="flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 font-semibold text-white hover:bg-emerald-700">
+            <Plus className="h-4 w-4" /> Provision CI Rail
+          </button>
         </div>
         <div className="mt-5 grid gap-3 md:grid-cols-4">
-          {([['Active jobs', services.filter((s) => s.state === 'running').length, Activity], ['Regeneration events', 'audit-ready', RefreshCw], ['System health', loading ? 'syncing' : 'coherent', Shield], ['Efficiency', 'self-healing', Zap]] as const).map(([label, value, Icon]) => {
+          {([
+            ['Active jobs', services.filter((s) => s.state === 'running').length, Activity],
+            ['Regeneration events', 'audit-ready', RefreshCw],
+            ['System health', loading ? 'syncing' : 'coherent', Shield],
+            ['Efficiency', 'self-healing', Zap]
+          ] as const).map(([label, value, Icon]) => {
             const MetricIcon = Icon as typeof Activity;
-            return <div key={String(label)} className="rounded-2xl border border-emerald-100 bg-white p-4"><MetricIcon className="h-4 w-4 text-emerald-600" /><p className="mt-2 font-mono text-[10px] uppercase tracking-[0.16em] text-emerald-700">{label}</p><p className="text-lg font-black text-slate-950">{String(value)}</p></div>;
+            return (
+              <div key={String(label)} className="rounded-2xl border border-emerald-100 bg-white p-4">
+                <MetricIcon className="h-4 w-4 text-emerald-600" />
+                <p className="mt-2 font-mono text-[10px] uppercase tracking-[0.16em] text-emerald-700">{label}</p>
+                <p className="text-lg font-black text-slate-950">{String(value)}</p>
+              </div>
+            );
           })}
         </div>
       </div>
 
-      {error && <div className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 p-4 text-red-800"><AlertCircle className="h-5 w-5" /><span>{error}</span></div>}
-      {loading ? <div className="flex items-center justify-center py-12"><RefreshCw className="h-8 w-8 animate-spin text-emerald-500" /></div> : services.length === 0 ? <div className="rounded-lg border border-dashed border-emerald-300 p-12 text-center"><Cpu className="mx-auto h-12 w-12 text-emerald-500" /><p className="mt-4 text-slate-600">No Computational Intelligence rails provisioned</p></div> : <div className="grid gap-4">{services.map((service) => <div key={service.service_id} className="rounded-lg border border-emerald-100 bg-white p-6 shadow-sm"><div className="flex items-start justify-between gap-4"><div className="flex-1"><div className="flex flex-wrap items-center gap-3"><h3 className="text-lg font-semibold text-slate-900">{service.name}</h3><span className={`rounded-full border px-2.5 py-1 text-xs font-medium ${getStateColor(service.state)}`}>{service.state.toUpperCase()}</span><span className={`rounded-full border px-2.5 py-1 text-xs font-medium ${getTierColor(service.service_tier)}`}>{service.service_tier.toUpperCase()}</span></div><div className="mt-3 grid grid-cols-2 gap-4 text-sm"><div><span className="text-slate-600">Service ID:</span><span className="ml-2 font-mono text-slate-900">{service.service_id}</span></div><div><span className="text-slate-600">Tenancy:</span><span className="ml-2 font-mono text-slate-900">{service.tenancy}</span></div></div><div className="mt-3 rounded-lg border border-emerald-100 bg-emerald-50 p-3 text-xs text-emerald-950"><strong>CI proof tier:</strong> Standard Audit Stamp · operational logs and regeneration audit trail explain why the system fixed or escalated a workflow.</div></div><div className="flex gap-2">{service.state === "stopped" || service.state === "provisioned" ? <button onClick={() => handleStart(service.service_id)} className="flex items-center gap-1 rounded-lg bg-emerald-600 px-3 py-2 text-white"><Play className="h-4 w-4" />Start</button> : <button onClick={() => handleStop(service.service_id)} className="flex items-center gap-1 rounded-lg bg-slate-200 px-3 py-2 text-slate-700 hover:bg-slate-300"><Square className="h-4 w-4" />Stop</button>}</div></div>)}</div>}
+      {error && (
+        <div className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 p-4 text-red-800">
+          <AlertCircle className="h-5 w-5" />
+          <span>{error}</span>
+        </div>
+      )}
+
+      {loading ? (
+        <div className="flex items-center justify-center py-12">
+          <RefreshCw className="h-8 w-8 animate-spin text-emerald-500" />
+        </div>
+      ) : services.length === 0 ? (
+        <div className="rounded-lg border border-dashed border-emerald-300 p-12 text-center">
+          <Cpu className="mx-auto h-12 w-12 text-emerald-500" />
+          <p className="mt-4 text-slate-600">No Computational Intelligence rails provisioned</p>
+        </div>
+      ) : (
+        <div className="grid gap-4">
+          {services.map((service) => (
+          <div key={service.service_id} className="rounded-lg border border-emerald-100 bg-white p-6 shadow-sm">
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex-1">
+                <div className="flex flex-wrap items-center gap-3">
+                  <h3 className="text-lg font-semibold text-slate-900">{service.name}</h3>
+                  <span className={`rounded-full border px-2.5 py-1 text-xs font-medium ${getStateColor(service.state)}`}>{service.state.toUpperCase()}</span>
+                  <span className={`rounded-full border px-2.5 py-1 text-xs font-medium ${getTierColor(service.service_tier)}`}>{service.service_tier.toUpperCase()}</span>
+                </div>
+                <div className="mt-3 grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span className="text-slate-600">Service ID:</span>
+                    <span className="ml-2 font-mono text-slate-900">{service.service_id}</span>
+                  </div>
+                  <div>
+                    <span className="text-slate-600">Tenancy:</span>
+                    <span className="ml-2 font-mono text-slate-900">{service.tenancy}</span>
+                  </div>
+                </div>
+                <div className="mt-3 rounded-lg border border-emerald-100 bg-emerald-50 p-3 text-xs text-emerald-950">
+                  <strong>CI proof tier:</strong> Standard Audit Stamp · operational logs and regeneration audit trail explain why the system fixed or escalated a workflow.
+                </div>
+              </div>
+              <div className="flex gap-2">
+                {service.state === "stopped" || service.state === "provisioned" ? (
+                  <button onClick={() => handleStart(service.service_id)} className="flex items-center gap-1 rounded-lg bg-emerald-600 px-3 py-2 text-white">
+                    <Play className="h-4 w-4" /> Start
+                  </button>
+                ) : (
+                  <button onClick={() => handleStop(service.service_id)} className="flex items-center gap-1 rounded-lg bg-slate-200 px-3 py-2 text-slate-700 hover:bg-slate-300">
+                    <Square className="h-4 w-4" /> Stop
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {selectedService && (
+        <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-950">
+          <strong>Selected CI rail:</strong> {selectedService.name} · Operational Rail is provisioned.
+        </div>
+      )}
 
       {showProvisionModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">

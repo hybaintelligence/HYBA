@@ -45,17 +45,18 @@ class JWTManager:
         self.secret_key = secret_key
         self.algorithm = algorithm
         # token_blacklist: jti -> expiry epoch seconds
+        # Presence in this dict means revoked; exp stored only for TTL pruning.
         self.token_blacklist: dict[str, int] = {}
+        self._blacklist_lock = Lock()
 
     def _prune_blacklist(self) -> None:
-        """Evict expired JTIs to prevent unbounded growth."""
+        """Evict expired JTIs to prevent unbounded growth. Caller must hold _blacklist_lock."""
         now = datetime.now(timezone.utc).timestamp()
         expired = [jti for jti, exp in self.token_blacklist.items() if exp <= now]
         for jti in expired:
             del self.token_blacklist[jti]
-        # If still over limit after pruning expired entries, evict oldest
+        # If still over limit after pruning expired entries, evict oldest by expiry
         if len(self.token_blacklist) > self._MAX_BLACKLIST_SIZE:
-            # Sort by expiry (ascending) and evict the oldest fraction
             sorted_jtis = sorted(self.token_blacklist.items(), key=lambda x: x[1])
             evict_count = int(self._MAX_BLACKLIST_SIZE * self._EVICT_FRACTION)
             for jti, _ in sorted_jtis[:evict_count]:
@@ -80,9 +81,12 @@ class JWTManager:
         try:
             payload = jwt.decode(token, self.secret_key, algorithms=[self.algorithm])
             jti = payload.get("jti", "")
-            exp = payload.get("exp", 0)
-            if jti and self.token_blacklist.get(jti, 0) == exp:
-                raise HTTPException(status_code=401, detail="Token revoked")
+            # Correct revocation check: presence in blacklist means revoked,
+            # regardless of exp value. Previous `== exp` check had a bug where
+            # a token with exp=0 (the default sentinel) would never be revoked.
+            with self._blacklist_lock:
+                if jti and jti in self.token_blacklist:
+                    raise HTTPException(status_code=401, detail="Token revoked")
             return TokenPayload(**payload)
         except jwt.ExpiredSignatureError:
             raise HTTPException(status_code=401, detail="Token expired")
@@ -101,8 +105,9 @@ class JWTManager:
             jti = payload.get("jti")
             exp = payload.get("exp", 0)
             if jti:
-                self.token_blacklist[jti] = exp
-                self._prune_blacklist()
+                with self._blacklist_lock:
+                    self.token_blacklist[jti] = exp
+                    self._prune_blacklist()
         except jwt.InvalidTokenError as exc:
             LOGGER.warning(
                 "Token revocation requested with invalid token: %s",
@@ -122,10 +127,13 @@ def _generate_dev_secret() -> str:
 
 _DEV_SECRET: Optional[str] = None
 _DEV_SECRET_LOCK = Lock()
+# Process-singleton JWTManager so the in-memory blacklist persists across requests.
+_JWT_MANAGER: Optional[JWTManager] = None
+_JWT_MANAGER_LOCK = Lock()
 
 
 def get_jwt_manager() -> JWTManager:
-    global _DEV_SECRET
+    global _DEV_SECRET, _JWT_MANAGER
     secret = os.getenv("JWT_SECRET")
     if not secret:
         env = os.getenv("NODE_ENV", os.getenv("HYBA_ENV", "development")).lower()
@@ -138,7 +146,12 @@ def get_jwt_manager() -> JWTManager:
             if _DEV_SECRET is None:
                 _DEV_SECRET = _generate_dev_secret()
             secret = _DEV_SECRET
-    return JWTManager(secret_key=secret)
+
+    with _JWT_MANAGER_LOCK:
+        # Re-use the existing singleton if the secret has not changed.
+        if _JWT_MANAGER is None or _JWT_MANAGER.secret_key != secret:
+            _JWT_MANAGER = JWTManager(secret_key=secret)
+        return _JWT_MANAGER
 
 
 def _bearer_token(authorization: str | None) -> str | None:
@@ -185,11 +198,11 @@ class APIKeyManager:
         return keys
 
     def validate_api_key(self, api_key: str) -> Optional[Dict[str, str]]:
-        entry = self.valid_keys.get(api_key)
-        if not entry:
-            return None
-        # Constant-time comparison to prevent timing oracle on key prefix
-        for stored_key in self.valid_keys:
-            if hmac.compare_digest(stored_key, api_key):
-                return self.valid_keys[stored_key]
-        return None
+        # Use only constant-time comparison across ALL keys to prevent timing oracle.
+        # The previous implementation did a direct dict .get() first, which leaked
+        # timing information before the constant-time loop was reached.
+        result: Optional[Dict[str, str]] = None
+        for stored_key, value in self.valid_keys.items():
+            if hmac.compare_digest(stored_key.encode(), api_key.encode()):
+                result = value
+        return result

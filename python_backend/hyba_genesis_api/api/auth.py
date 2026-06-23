@@ -123,55 +123,46 @@ def _verify_password(password: str, expected_hash: str) -> bool:
 
 def _verify_operator(username: str, password: str) -> List[str]:
     # First try database authentication
+    db = SessionLocal()
     try:
-        db = SessionLocal()
         user = db.query(User).filter(User.username == username).first()
         if user and user.is_active:
             try:
                 if _password_hasher.verify(user.password_hash, password):
-                    # Update last login
                     user.last_login = datetime.now(timezone.utc)
                     db.commit()
-                    db.close()
                     return [user.role.value]
             except (VerifyMismatchError, VerificationError, InvalidHashError) as e:
                 handle_error(
                     AuthenticationError(f"Password verification failed: {e}"),
                     context={"username": username},
-                    raise_http=False
+                    raise_http=False,
                 )
-        db.close()
     except Exception as e:
         handle_error(
             DatabaseError(f"Database authentication failed: {e}"),
             context={"username": username},
-            raise_http=False
+            raise_http=False,
         )
-        # Fall back to env var auth if database fails
-        pass
+    finally:
+        db.close()
 
     # Fall back to environment variable authentication
     operators = _allowed_operator_hashes()
     operator = operators.get(username)
     if not operator:
-        if _is_production():
-            raise handle_error(
-                AuthenticationError("Invalid credentials"),
-                context={"username": username}
-            )
-        # Development-only operator for local smoke testing; disabled in production.
-        if username == "operator" and password == "operator":
-            return ["operator"]
+        # The hardcoded operator/operator backdoor has been removed.
+        # All operator access must be provisioned via HYBA_OPERATOR_CREDENTIALS.
         raise handle_error(
             AuthenticationError("Invalid credentials"),
-            context={"username": username}
+            context={"username": username},
         )
 
     expected = operator["password_hash"]
     if not _verify_password(password, expected):
         raise handle_error(
             AuthenticationError("Invalid credentials"),
-            context={"username": username}
+            context={"username": username},
         )
     return operator["roles"]
 
