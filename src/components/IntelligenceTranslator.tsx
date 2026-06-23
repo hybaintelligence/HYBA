@@ -8,7 +8,12 @@ export type MetricKey =
   | "substrateCoherence"
   | "evidence_seal"
   | "invariants"
-  | "claim_boundary";
+  | "claim_boundary"
+  | "pulvini_memory"
+  | "salamander_regeneration"
+  | "quantum_certainty"
+  | "classical_fallback"
+  | "temporal_delta";
 
 type Engine = "ci" | "qi";
 
@@ -58,74 +63,72 @@ const CI_COPY: Record<MetricKey, CopyBlock> = {
     implication: "Strong coherence means operational automation can continue; weak coherence should pause or escalate.",
     evidence: "Health checks, active job status, regeneration events, and process-efficiency telemetry.",
   },
-};
-
-const QI_COPY: Record<MetricKey, CopyBlock> = {
-  phi_resonance: {
-    title: "Reasoning depth",
-    plain: "How tightly the deep reasoning state must stabilize before HYBA treats a strategic answer as decision-ready.",
-    implication: "Raise the target for catastrophic-cost decisions, regulated evidence, or board-level strategy.",
-    evidence: "φ-resonance analysis, invariant proofs, causal-stability checks, and evidence seals.",
+  claim_boundary: {
+    title: "Claim boundary",
+    plain: "The explicit line between advisory intelligence, simulation, proposal preparation, and approved execution.",
+    implication: "Executives can brief a board on the recommendation without implying HYBA has taken action.",
+    evidence: "Preserve the boundary text with approver, policy, evidence seal, and timestamp.",
   },
-  code_distance: {
-    title: "Proof robustness",
-    plain: "The depth of protection around strategic simulations and counterfactual reasoning.",
-    implication: "Higher robustness increases confidence for complex decisions but increases execution cost.",
-    evidence: "Code distance, proof weight, invariant status, and claim-boundary metadata.",
+  pulvini_memory: {
+    title: "PULVINI memory",
+    plain: "The context-retention layer that keeps decision history available while compressing less relevant detail.",
+    implication: "Useful for CFO and auditor review because assumptions can be traced across meetings and incidents.",
+    evidence: "Show memory lineage, compression scope, retention boundary, and source records.",
   },
-  physical_error_rate: {
-    title: "Certainty assumption",
-    plain: "The assumed reasoning-noise floor for counterfactual simulations and proof-bearing decisions.",
-    implication: "Use stricter values when the cost of being wrong is catastrophic.",
-    evidence: "Error-rate bounds, proof summaries, evidence seals, and governance audit records.",
+  salamander_regeneration: {
+    title: "Regeneration proposal",
+    plain: "A self-healing suggestion that drafts remediation without silently changing production systems.",
+    implication: "Treat the output as a proposal card; require blast-radius review and explicit approval.",
+    evidence: "Attach degradation signal, proposed command, rollback plan, approver, and audit log.",
   },
-  substrate_coherence: {
-    title: "Causal stability",
-    plain: "Whether the strategic reasoning surface is stable enough for counterfactual comparison.",
-    implication: "Weak stability means the decision should be reframed, delayed, or supported with more evidence.",
-    evidence: "Causal stability score, invariant checks, proof weight, and seal provenance.",
+  quantum_certainty: {
+    title: "Quantum-backed certainty",
+    plain: "HYBA is presenting the answer from a substrate-backed path with invariants and evidence seal available.",
+    implication: "Suitable for high-stakes recommendation review, while still requiring human authorization for action.",
+    evidence: "Confirm live telemetry source, passing invariants, seal freshness, and claim boundary.",
   },
-  evidence_seal: {
-    title: "Gold-standard seal",
-    plain: "A traceable proof object that binds a high-stakes recommendation to its evidence and claim boundary.",
-    implication: "Use sealed outputs for strategic moves where veracity matters more than speed.",
-    evidence: "Immutable evidence seal, invariant proof, source set, and governance signature.",
+  classical_fallback: {
+    title: "Classical heuristic fallback",
+    plain: "HYBA can still explain a result, but the confidence comes from deterministic heuristics rather than a fully backed rail.",
+    implication: "Use for triage or exploration; gather more evidence before a board-impacting decision.",
+    evidence: "Look for fallback reason, missing telemetry fields, stale seal, or disconnected backend state.",
   },
-  invariants: {
-    title: "Invariant proofs",
-    plain: "Formal checks that explain why a strategic conclusion remains true within the stated assumptions.",
-    implication: "Missing or failed invariants should block the strategic recommendation.",
-    evidence: "Invariant proof summary, resonance target, proof weight, and causal-stability ledger.",
-  },
-  claim_boundary: { title: "Claim boundary", plain: "The strategic assumptions under which a QI answer is allowed to be treated as true.", implication: "Do not use sealed decisions outside the stated boundary without a new simulation.", evidence: "Claim boundary, source set, invariant proof, and governance signature." },
-  substrateCoherence: {
-    title: "Causal stability",
-    plain: "Whether the strategic reasoning surface is stable enough for counterfactual comparison.",
-    implication: "Weak stability means the decision should be reframed, delayed, or supported with more evidence.",
-    evidence: "Causal stability score, invariant checks, proof weight, and seal provenance.",
+  temporal_delta: {
+    title: "Intelligence trend",
+    plain: "Whether reasoning stability is improving, flat, or degrading compared with recent live samples.",
+    implication: "Converging trends support continued analysis; degrading trends should trigger review before commitments.",
+    evidence: "Compare consecutive substrate coherence / φ-alignment samples from the active telemetry stream.",
   },
 };
 
-export function MetricExplainerCard({ metric, metricKey, value, engine = "qi" }: { metric?: MetricKey; metricKey?: MetricKey; value?: React.ReactNode; engine?: Engine }) {
-  const selectedMetric = metric || metricKey || "substrate_coherence";
-  const copy = (engine === "ci" ? CI_COPY : QI_COPY)[selectedMetric];
-  const palette = engine === "ci" ? "border-emerald-100 bg-emerald-50/70 text-emerald-950" : "border-violet-100 bg-violet-50/70 text-violet-950";
+export function MetricExplainerCard({ metric, metricKey, value }: { metric?: MetricKey; metricKey?: MetricKey; value?: React.ReactNode }) {
+  const key = metric || metricKey || "substrate_coherence";
+  const copy = COPY[key];
   return (
-    <div className={`rounded-xl border p-4 text-sm ${palette}`}>
+    <div className="rounded-xl border border-blue-100 bg-blue-50/70 p-4 text-sm text-slate-700">
+      {value && <p className="mb-1 font-mono text-[11px] font-bold uppercase tracking-[0.14em] text-blue-800">{value}</p>}
       <p className="font-semibold text-slate-900">{copy.title}</p>
-      {value !== undefined && <p className="mt-1 font-mono text-sm font-semibold text-slate-950">{value}</p>}
-      <p className="mt-2"><span className="font-medium">Plain English:</span> {copy.plain}</p>
-      <p className="mt-1"><span className="font-medium">Business implication:</span> {copy.implication}</p>
-      <p className="mt-1"><span className="font-medium">Evidence tier:</span> {copy.evidence}</p>
+      {value !== undefined && <p className="mt-1 font-mono text-xs text-slate-950">{value}</p>}
+      <p className="mt-2">
+        <span className="font-medium">What this means:</span> {copy.plain}
+      </p>
+      <p className="mt-1">
+        <span className="font-medium">Operational implication:</span> {copy.implication}
+      </p>
+      <p className="mt-1">
+        <span className="font-medium">Evidence view:</span> {copy.evidence}
+      </p>
     </div>
   );
 }
 
-export function ClaimBoundaryBadge({ boundary = "proposal_only" }: { boundary?: string }) {
+export function ClaimBoundaryBadge({ boundary = "advisory intelligence; human approval required" }: { boundary?: string }) {
   return (
     <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-950">
       <p className="font-bold">This answer is evidence-bound.</p>
-      <p>Claim boundary: {boundary}. Advisory intelligence, not autonomous execution. Human approval is required before material action.</p>
+      <p>
+        Claim boundary: {boundary}. Human approval is required before material action.
+      </p>
     </div>
   );
 }
