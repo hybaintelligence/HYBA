@@ -106,6 +106,18 @@ const telemetry = {
   },
   security: { status: "nominal", threat_level: "low", defense_systems: {} },
   consciousness: { status: "nominal", integrated_information: 0.5 },
+  extraordinaryEvidence: {
+    schema_version: "hyba.extraordinary_evidence.v1",
+    claim_boundary: "bounded",
+    claims: [{ claim_id: "quantum_math_substrate" }],
+    millennium_problems: ["yang_mills_mass_gap"],
+    phi: 1.61803398875,
+    phi_scaling_samples: [1.61803398875],
+    invariant_results: { claims_present: true, phi_scaling_monotone: true },
+    adversarial_contract: { seal_all_evidence_packets: true },
+    all_invariants_passed: true,
+    evidence_seal: "0123456789abcdef",
+  },
 };
 
 function mockStorage() {

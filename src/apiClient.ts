@@ -223,6 +223,36 @@ export interface SecurityStatus {
   source?: string;
 }
 
+export interface ExtraordinaryEvidenceClaim {
+  claim_id: string;
+  title: string;
+  operationalization: string;
+  required_evidence: string[];
+  invariants: string[];
+  adversarial_tests: string[];
+  api_surfaces: string[];
+  proof_status: string;
+}
+
+export interface ExtraordinaryEvidenceResponse {
+  schema_version: string;
+  generated_at?: string;
+  doctrine?: Record<string, string>;
+  claim_boundary: string;
+  claims: ExtraordinaryEvidenceClaim[];
+  millennium_problems: string[];
+  phi: number;
+  phi_scaling_samples: number[];
+  invariant_results: Record<string, boolean>;
+  adversarial_contract: Record<string, boolean>;
+  all_invariants_passed: boolean;
+  evidence_seal: string;
+  status?: string;
+  source?: string;
+  error?: string;
+  http_status?: number;
+}
+
 export interface TelemetryData {
   status: string;
   latency: number;
@@ -230,6 +260,7 @@ export interface TelemetryData {
   consciousness: ConsciousnessResponse;
   pools: PoolsResponse;
   security: SecurityStatus;
+  extraordinaryEvidence: ExtraordinaryEvidenceResponse;
 }
 
 export interface AuthResponse {
@@ -1794,6 +1825,11 @@ export async function getIntelligenceV1AbsoluteAudit(): Promise<IntelligenceV1Ab
   return get<IntelligenceV1AbsoluteAuditResponse>("/v1/intelligence/absolute-audit");
 }
 
+/** GET /api/v1/intelligence/extraordinary-claims/evidence — Sealed claim evidence */
+export async function getExtraordinaryClaimsEvidence(): Promise<ExtraordinaryEvidenceResponse> {
+  return get<ExtraordinaryEvidenceResponse>("/v1/intelligence/extraordinary-claims/evidence");
+}
+
 /** POST /api/v1/intelligence/scale — Scale intelligence */
 export async function scaleIntelligence(
   scale: number,
@@ -2049,11 +2085,11 @@ export async function runToeExperiment(
 //  AGGREGATE / COMPOSITE ENDPOINTS
 // ═══════════════════════════════════════════════════════════════════════════
 
-/** Fetch all telemetry data in parallel (health + consciousness + pools + security) */
+/** Fetch all telemetry data in parallel (health + consciousness + pools + security + evidence) */
 export async function fetchTelemetryData(): Promise<TelemetryData> {
   const start = performance.now();
   const health = await getHealth();
-  const [consciousness, pools, security] = await Promise.all([
+  const [consciousness, pools, security, extraordinaryEvidence] = await Promise.all([
     getOptional<ConsciousnessResponse>("/ai/consciousness", {
       status: "unavailable",
       source: "ai_endpoint_unavailable",
@@ -2073,6 +2109,21 @@ export async function fetchTelemetryData(): Promise<TelemetryData> {
       recent_threats: [],
       source: "fallback",
     }),
+    getOptional<ExtraordinaryEvidenceResponse>("/v1/intelligence/extraordinary-claims/evidence", {
+      schema_version: "hyba.extraordinary_evidence.unavailable",
+      status: "unavailable",
+      source: "extraordinary_evidence_endpoint_unavailable",
+      claim_boundary:
+        "Extraordinary-claims evidence endpoint unavailable; invariants are not visible.",
+      claims: [],
+      millennium_problems: [],
+      phi: Number.NaN,
+      phi_scaling_samples: [],
+      invariant_results: {},
+      adversarial_contract: {},
+      all_invariants_passed: false,
+      evidence_seal: "",
+    }),
   ]);
   return {
     status: "success",
@@ -2081,6 +2132,7 @@ export async function fetchTelemetryData(): Promise<TelemetryData> {
     consciousness,
     pools,
     security,
+    extraordinaryEvidence,
   };
 }
 

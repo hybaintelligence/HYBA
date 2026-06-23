@@ -78,12 +78,25 @@ describe("fetchTelemetryData", () => {
       summary: { total_pools: 0, active_pools: 0, telemetry_source: "test" },
     };
     const security = { status: "safe" };
+    const extraordinaryEvidence = {
+      schema_version: "hyba.extraordinary_evidence.v1",
+      claim_boundary: "bounded",
+      claims: [{ claim_id: "quantum_math_substrate" }],
+      millennium_problems: ["yang_mills_mass_gap"],
+      phi: 1.618,
+      phi_scaling_samples: [1.618],
+      invariant_results: { claims_present: true },
+      adversarial_contract: { seal_all_evidence_packets: true },
+      all_invariants_passed: true,
+      evidence_seal: "abc123",
+    };
 
     const responseMap: Record<string, any> = {
       "/api/health": health,
       "/api/ai/consciousness": consciousness,
       "/api/mining/pools": pools,
       "/api/security/status": security,
+      "/api/v1/intelligence/extraordinary-claims/evidence": extraordinaryEvidence,
     };
 
     const mockFetch = vi.fn((url: string, _init: RequestInit) => {
@@ -107,11 +120,13 @@ describe("fetchTelemetryData", () => {
       removeItem: vi.fn(),
     });
     const result = await fetchTelemetryData();
-    expect(mockFetch.mock.calls.length).toBeGreaterThanOrEqual(4);
+    expect(mockFetch.mock.calls.length).toBeGreaterThanOrEqual(5);
     expect(result.health.status).toBe("ok");
     expect(result.consciousness.status).toBe("unknown");
     expect(result.pools.summary.total_pools).toBe(0);
     expect(result.security.status).toBe("safe");
+    expect(result.extraordinaryEvidence.evidence_seal).toBe("abc123");
+    expect(result.extraordinaryEvidence.all_invariants_passed).toBe(true);
     vi.unstubAllGlobals();
   });
 });
