@@ -13,7 +13,7 @@ import {
   stopCIAASService,
 } from "../apiClient";
 import { useAuth } from "./AuthProvider";
-import { useSkillMode } from "./SkillModeContext";
+import { useSkillMode } from "../skillMode";
 import { MetricExplainerCard } from "./IntelligenceTranslator";
 
 interface CIaaSServiceManagerProps {

@@ -70,7 +70,7 @@ function determineBlastRadiusLevel(score: number): BlastRadiusLevel {
   return "critical";
 }
 
-function determineApprovalLevel(level: BlastRadiusLevel): ProposedAction["approvalLevel"] {
+function determineApprovalLevel(level: BlastRadiusLevel): BlastRadiusAssessment["approvalLevel"] {
   switch (level) {
     case "read-only":
       return "none";

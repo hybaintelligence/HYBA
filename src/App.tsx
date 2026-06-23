@@ -36,6 +36,9 @@ import {
   WalletCards,
 } from "lucide-react";
 
+import FEATURES, { hasInternalAccess } from "./config/features";
+import { CustomerOnboarding } from "./components/CustomerOnboarding";
+
 import {
   type AuthResponse,
   type ConfigurePoolRequest,
@@ -77,7 +80,7 @@ import {
   type GovernanceSignal,
 } from "./governance";
 import { useAuth } from "./components/AuthProvider";
-import { SKILL_MODE_LABELS, SkillModeProvider, SkillModeSelector, useSkillMode } from "./components/SkillModeContext";
+import { SkillModeProvider, useSkillMode, SkillModeSelector, SKILL_MODE_LABELS } from "./skillMode";
 import { ClaimBoundaryBadge, MetricExplainerCard, EvidenceBoundAnswer } from "./components/IntelligenceTranslator";
 import { DecisionCockpit, ProofExplainer, UseCaseStudio as ImportedUseCaseStudio } from "./components/AdaptiveIntelligenceLayer";
 
@@ -185,6 +188,13 @@ function AppContent() {
       return null;
     }
   });
+  const [showOnboarding, setShowOnboarding] = useState(() => {
+    try {
+      return !localStorage.getItem("hyba_onboarding_completed");
+    } catch {
+      return false;
+    }
+  });
   const [currentUser, setCurrentUser] = useState<{
     id?: string;
     username: string;
@@ -226,7 +236,6 @@ function AppContent() {
     | "studio"
     | "ciaas"
     | "qaas"
-    | "studio"
   >("dashboard");
 
   const { execute: fetchTelemetryExecute } = useApiRequest(fetchTelemetryData, { maxRetries: 3 });
@@ -682,11 +691,23 @@ function AppContent() {
   };
 
   const isLoading = !telemetry && !telemetryError;
+  
+  const handleOnboardingComplete = () => {
+    setShowOnboarding(false);
+    try {
+      localStorage.setItem("hyba_onboarding_completed", "true");
+    } catch {
+      // noop
+    }
+  };
+  
+  const canAccessInternal = hasInternalAccess(currentUser?.role);
 
   return (
     <div
       className={`min-h-screen flex flex-col font-sans transition-colors duration-300 ${isDarkMode ? "dark bg-[#050914] text-slate-100" : "bg-[#F4F1EA] text-[#101828]"}`}
     >
+      {showOnboarding && token && <CustomerOnboarding onComplete={handleOnboardingComplete} />}
       <div className="fixed right-6 top-4 z-40">
         <SkillModeSelector />
       </div>
@@ -737,7 +758,6 @@ function AppContent() {
               <RefreshCw className={`h-3.5 w-3.5 ${isSyncing ? "animate-spin" : ""}`} /> Refresh
             </button>
             <Sparkline data={latencyHistory} />
-            <SkillModeSelector />
             <div className="h-6 w-px bg-white/20" />
             <button
               onClick={() => setCurrentView(currentView === "studio" ? "dashboard" : "studio")}
@@ -747,14 +767,16 @@ function AppContent() {
               <Rocket className="h-3.5 w-3.5" />
               <span>{currentView === "studio" ? "Dashboard" : "Use-Case Studio"}</span>
             </button>
-            <button
-              onClick={() => setCurrentView(currentView === "jobs" ? "dashboard" : "jobs")}
-              className={`status-pill border ${currentView === "jobs" ? "border-blue-300/30 bg-blue-400/15 text-blue-100" : "border-white/30 bg-white/10 text-white"}`}
-              title={currentView === "jobs" ? "Return to Dashboard" : "View Mining Jobs"}
-            >
-              <Clock className="h-3.5 w-3.5" />
-              <span>{currentView === "jobs" ? "Dashboard" : "Jobs"}</span>
-            </button>
+            {FEATURES.SHOW_MINING_UI && canAccessInternal && (
+              <button
+                onClick={() => setCurrentView(currentView === "jobs" ? "dashboard" : "jobs")}
+                className={`status-pill border ${currentView === "jobs" ? "border-blue-300/30 bg-blue-400/15 text-blue-100" : "border-white/30 bg-white/10 text-white"}`}
+                title={currentView === "jobs" ? "Return to Dashboard" : "View Mining Jobs"}
+              >
+                <Clock className="h-3.5 w-3.5" />
+                <span>{currentView === "jobs" ? "Dashboard" : "Jobs"}</span>
+              </button>
+            )}
             <button
               onClick={() => setCurrentView(currentView === "history" ? "dashboard" : "history")}
               className={`status-pill border ${currentView === "history" ? "border-purple-300/30 bg-purple-400/15 text-purple-100" : "border-white/30 bg-white/10 text-white"}`}
@@ -1623,52 +1645,6 @@ function TrustFact({ label, value }: { label: string; value: string }) {
   );
 }
 
-function UseCaseStudio() {
-  const { skillMode } = useSkillMode();
-  const profileLabel = SKILL_MODE_LABELS[skillMode];
-  const useCases = [
-    { intent: "Explain a board-level decision", capability: "explain + evidence package", action: "Prepare decision memo", risk: "Approval required" },
-    { intent: "Simulate an intervention", capability: "counterfactual + optimize", action: "Run simulation only", risk: "No production write" },
-    { intent: "Detect operational risk", capability: "orchestrate + substrate_health", action: "Propose remediation", risk: "Blast radius review" },
-    { intent: "Audit an AI recommendation", capability: "governance_audit + evidence package", action: "Collect proof surface", risk: "Auditor sign-off" },
-  ];
-
-  return (
-    <section className="space-y-6" data-testid="use-case-studio">
-      <div className="rounded-[2rem] border border-white/40 bg-white/90 p-6 shadow-xl">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <p className="eyebrow">Adaptive Intelligence Experience Layer</p>
-            <h2 className="mt-2 text-3xl font-black text-slate-950">Start from intent, not quantum controls.</h2>
-            <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600">
-              HYBA maps plain-language enterprise intent to prediction, explanation, counterfactuals, optimization, regeneration, and evidence-bound audit workflows. Current lens: <strong>{profileLabel}</strong>.
-            </p>
-          </div>
-          <ClaimBoundaryBadge boundary="proposal_only by default" />
-        </div>
-        <div className="mt-6 grid gap-4 md:grid-cols-2">
-          {useCases.map((item) => (
-            <article key={item.intent} className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
-              <h3 className="font-bold text-slate-950">I want to {item.intent.toLowerCase()}.</h3>
-              <dl className="mt-3 space-y-2 text-sm text-slate-700">
-                <div><dt className="font-semibold text-slate-900">HYBA routes to</dt><dd>{item.capability}</dd></div>
-                <div><dt className="font-semibold text-slate-900">Safe next action</dt><dd>{item.action}</dd></div>
-                <div><dt className="font-semibold text-slate-900">Governance</dt><dd>{item.risk}</dd></div>
-              </dl>
-            </article>
-          ))}
-        </div>
-      </div>
-      <div className="grid gap-4 lg:grid-cols-3">
-        <MetricExplainerCard metricKey="substrate_coherence" value="Strong = safe to simulate" />
-        <MetricExplainerCard metricKey="evidence_seal" value="Required for buyer-facing trust" />
-        <MetricExplainerCard metricKey="claim_boundary" value="Advisory until approved" />
-      </div>
-      <EvidenceBoundAnswer />
-    </section>
-  );
-}
-
 function AuthInput({
   id,
   label,
@@ -1956,30 +1932,4 @@ function EvidenceItem({
   );
 }
 
-// ================ AI ASSISTANT INTEGRATION ================
-// This should be rendered inside the main return of AppContent, right before the closing div.
-// For now, I'll create a summary document explaining the implementation.
-// Since the file is too large, please manually add the following code right before line 1313 (before `</div>` and after `</div>` on line 1312):
 
-/*
-      {/* AI-Powered Adaptive Assistant *\/}
-      {token && (
-        <AIAssistant
-          token={token}
-          miningStatus={{
-            hashrate: systemMetrics.currentHashrate,
-            pool: pools.find(p => p.is_active),
-            active: runtimeStatus.toLowerCase() === 'ok' || runtimeStatus.toLowerCase() === 'healthy',
-            config: {
-              phi_scaling: powerScale,
-              phi_tier: phiTier
-            }
-          }}
-          telemetryData={{
-            consciousness_events: (consciousness as any).consciousness_events || 0,
-            phi_resonance: health?.phiResonance || 0,
-            compression_ratio: (health as any).compression_ratio || 1.0
-          }}
-        />
-      )}
-*/

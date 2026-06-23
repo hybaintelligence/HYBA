@@ -16,7 +16,7 @@ import {
   Minimize2,
   ShieldCheck,
 } from "lucide-react";
-import { useSkillMode, SKILL_MODE_LABELS } from "./SkillModeContext";
+import { useSkillMode, SKILL_MODE_LABELS } from "../skillMode";
 
 interface Message {
   role: "user" | "assistant" | "system";
