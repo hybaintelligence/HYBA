@@ -191,20 +191,20 @@ export function PricingPage() {
           <div className="space-y-6">
             {[
               {
-                q: 'Do I need a quantum computer?',
-                a: 'No. HYBA is substrate-independent. Quantum mathematics runs on classical hardware today, with future quantum hardware compatibility.',
+                q: "Do I need a quantum computer?",
+                a: "No. HYBA is substrate-independent. Quantum mathematics runs on classical hardware today, with future quantum hardware compatibility.",
               },
               {
-                q: 'What happens if I exceed my quota?',
-                a: 'You'll receive alerts at 75% and 90% usage. At 100%, requests return HTTP 429 with quota reset time. Upgrade anytime.',
+                q: "What happens if I exceed my quota?",
+                a: "You'll receive alerts at 75% and 90% usage. At 100%, requests return HTTP 429 with quota reset time. Upgrade anytime.",
               },
               {
-                q: 'Can I verify the results?',
-                a: 'Yes. Every API response includes an evidence seal (SHA256 hash) and claim boundary. Audit execution independently.',
+                q: "Can I verify the results?",
+                a: "Yes. Every API response includes an evidence seal (SHA256 hash) and claim boundary. Audit execution independently.",
               },
               {
-                q: 'What's the difference from IBM Quantum / AWS Braket?',
-                a: 'HYBA is hardware-agnostic. No QPU wait times. Available now. Evidence-sealed execution. Post-quantum substrate.',
+                q: "What's the difference from IBM Quantum / AWS Braket?",
+                a: "HYBA is hardware-agnostic. No QPU wait times. Available now. Evidence-sealed execution. Post-quantum substrate.",
               },
             ].map((faq, idx) => (
               <div key={idx} className="rounded-lg border border-slate-200 bg-white p-6">
