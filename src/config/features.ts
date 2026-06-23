@@ -96,10 +96,10 @@ export function getCustomerMetricLabel(internalKey: string): string {
 /**
  * Filter telemetry for customer view
  */
-export function filterCustomerTelemetry<T extends Record<string, any>>(data: T): Partial<T> {
+export function filterCustomerTelemetry<T extends Record<string, unknown>>(data: T): Partial<T> {
   if (FEATURES.SHOW_INTERNAL_TELEMETRY) return data;
 
-  const filtered: any = { ...data };
+  const filtered: Record<string, unknown> = { ...data };
 
   // Remove mining-specific fields
   delete filtered.activePool;
