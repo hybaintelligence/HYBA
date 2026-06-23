@@ -1,71 +1,87 @@
 import React, { createContext, useContext, useMemo, useState } from "react";
 
-export type SkillMode = "executive" | "business" | "operator" | "analyst" | "engineer" | "auditor" | "expert";
+export type SkillMode =
+  | "executive"
+  | "business"
+  | "operator"
+  | "analyst"
+  | "engineer"
+  | "auditor"
+  | "expert";
 
-const MODES: Record<SkillMode, { label: string; description: string; complexity: "plain" | "operational" | "evidence" | "technical" }> = {
-  executive: { label: "Boardroom", description: "Decision impact, confidence, risk, and approval posture.", complexity: "plain" },
-  business: { label: "Business", description: "Plain-English meaning, recommended defaults, and buyer-safe language.", complexity: "plain" },
-  operator: { label: "Operator", description: "Degraded workflows, blast radius, remediation proposals, and approvals.", complexity: "operational" },
-  analyst: { label: "Analyst", description: "Drivers, counterfactuals, assumptions, and sensitivity.", complexity: "operational" },
-  engineer: { label: "Engineer", description: "API payloads, raw parameters, traces, and failure modes.", complexity: "technical" },
-  auditor: { label: "Auditor", description: "Claim boundaries, evidence seals, invariants, and governance tags.", complexity: "evidence" },
-  expert: { label: "Expert", description: "φ-resonance, code distance, substrate coherence, and specialist controls.", complexity: "technical" },
+type SkillModeContextValue = {
+  skillMode: SkillMode;
+  setSkillMode: (mode: SkillMode) => void;
+  isExpertMode: boolean;
+  isAuditorMode: boolean;
 };
 
-interface SkillModeContextValue {
-  mode: SkillMode;
-  setMode: (mode: SkillMode) => void;
-  modes: typeof MODES;
-  showTechnicalControls: boolean;
-  showEvidenceFirst: boolean;
-}
+const SkillModeContext = createContext<SkillModeContextValue | null>(null);
 
-const SkillModeContext = createContext<SkillModeContextValue | undefined>(undefined);
+export const SKILL_MODE_LABELS: Record<SkillMode, string> = {
+  executive: "Boardroom",
+  business: "Business",
+  operator: "Operator",
+  analyst: "Analyst",
+  engineer: "Engineer",
+  auditor: "Auditor",
+  expert: "Quantum / causal expert",
+};
 
 export function SkillModeProvider({ children }: { children: React.ReactNode }) {
-  const [mode, setModeState] = useState<SkillMode>(() => {
-    const saved = localStorage.getItem("hyba_skill_mode");
-    return saved && saved in MODES ? (saved as SkillMode) : "business";
+  const [skillMode, setSkillModeState] = useState<SkillMode>(() => {
+    try {
+      return (localStorage.getItem("hyba_skill_mode") as SkillMode) || "business";
+    } catch {
+      return "business";
+    }
   });
 
-  const setMode = (next: SkillMode) => {
-    localStorage.setItem("hyba_skill_mode", next);
-    setModeState(next);
+  const setSkillMode = (mode: SkillMode) => {
+    setSkillModeState(mode);
+    try {
+      localStorage.setItem("hyba_skill_mode", mode);
+    } catch {
+      // localStorage may be unavailable under test or hardened browser settings.
+    }
   };
 
   const value = useMemo(
     () => ({
-      mode,
-      setMode,
-      modes: MODES,
-      showTechnicalControls: mode === "engineer" || mode === "expert",
-      showEvidenceFirst: mode === "auditor" || mode === "expert",
+      skillMode,
+      setSkillMode,
+      isExpertMode: skillMode === "engineer" || skillMode === "expert",
+      isAuditorMode: skillMode === "auditor",
     }),
-    [mode],
+    [skillMode],
   );
 
   return <SkillModeContext.Provider value={value}>{children}</SkillModeContext.Provider>;
 }
 
 export function useSkillMode() {
-  const context = useContext(SkillModeContext);
-  if (!context) throw new Error("useSkillMode must be used within SkillModeProvider");
-  return context;
+  const value = useContext(SkillModeContext);
+  if (!value) {
+    throw new Error("useSkillMode must be used inside SkillModeProvider");
+  }
+  return value;
 }
 
 export function SkillModeSelector() {
-  const { mode, setMode, modes } = useSkillMode();
+  const { skillMode, setSkillMode } = useSkillMode();
   return (
-    <label className="flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-xs text-white">
-      <span className="font-semibold uppercase tracking-[0.18em] text-white/60">Lens</span>
+    <label className="flex items-center gap-2 rounded-full border border-slate-200 bg-white/90 px-3 py-2 text-xs font-semibold text-slate-700 shadow-sm">
+      Cognitive lens
       <select
-        value={mode}
-        onChange={(event) => setMode(event.target.value as SkillMode)}
-        className="bg-transparent font-semibold text-white outline-none [&_option]:bg-slate-900"
-        aria-label="Adaptive intelligence skill mode"
+        value={skillMode}
+        onChange={(event) => setSkillMode(event.target.value as SkillMode)}
+        className="bg-transparent font-mono text-xs text-slate-900 outline-none"
+        aria-label="Cognitive lens"
       >
-        {Object.entries(modes).map(([key, meta]) => (
-          <option key={key} value={key}>{meta.label}</option>
+        {Object.entries(SKILL_MODE_LABELS).map(([value, label]) => (
+          <option key={value} value={value}>
+            {label}
+          </option>
         ))}
       </select>
     </label>

@@ -33,9 +33,100 @@ interface CIaaSServiceManagerProps {
   token: string | null;
 }
 
+type CIaaSPresetName =
+  | "Starter Intelligence Rail"
+  | "Enterprise Decision Rail"
+  | "Regulated Evidence Rail"
+  | "Sovereign Isolated Rail"
+  | "Research/Expert Rail";
+
+const ciaasPresets: Record<
+  CIaaSPresetName,
+  Omit<ProvisionComputationalIntelligenceRequest, "name">
+> = {
+  "Starter Intelligence Rail": {
+    service_tier: "developer",
+    tenancy: "single-tenant",
+    code_distance: 5,
+    logical_compute_units: 16,
+    physical_error_rate: 0.002,
+    max_workloads_per_minute: 30,
+    max_context_bytes: 32000,
+    admin_privileged: false,
+    data_residency: "us",
+    allowed_workloads: ["explain", "substrate_health"],
+  },
+  "Enterprise Decision Rail": {
+    service_tier: "production",
+    tenancy: "single-tenant",
+    code_distance: 7,
+    logical_compute_units: 64,
+    physical_error_rate: 0.001,
+    max_workloads_per_minute: 120,
+    max_context_bytes: 128000,
+    admin_privileged: false,
+    data_residency: "us",
+    allowed_workloads: [
+      "explain",
+      "orchestrate",
+      "counterfactual",
+      "governance_audit",
+      "substrate_health",
+    ],
+  },
+  "Regulated Evidence Rail": {
+    service_tier: "production",
+    tenancy: "dedicated-control-plane",
+    code_distance: 11,
+    logical_compute_units: 96,
+    physical_error_rate: 0.0005,
+    max_workloads_per_minute: 90,
+    max_context_bytes: 192000,
+    admin_privileged: false,
+    data_residency: "us",
+    allowed_workloads: ["explain", "counterfactual", "governance_audit", "substrate_health"],
+  },
+  "Sovereign Isolated Rail": {
+    service_tier: "sovereign",
+    tenancy: "sovereign-isolated",
+    code_distance: 15,
+    logical_compute_units: 128,
+    physical_error_rate: 0.0001,
+    max_workloads_per_minute: 60,
+    max_context_bytes: 256000,
+    admin_privileged: false,
+    data_residency: "us",
+    allowed_workloads: [
+      "explain",
+      "orchestrate",
+      "counterfactual",
+      "governance_audit",
+      "substrate_health",
+    ],
+  },
+  "Research/Expert Rail": {
+    service_tier: "developer",
+    tenancy: "single-tenant",
+    code_distance: 9,
+    logical_compute_units: 128,
+    physical_error_rate: 0.001,
+    max_workloads_per_minute: 180,
+    max_context_bytes: 256000,
+    admin_privileged: false,
+    data_residency: "us",
+    allowed_workloads: [
+      "explain",
+      "orchestrate",
+      "counterfactual",
+      "governance_audit",
+      "substrate_health",
+    ],
+  },
+};
+
 export default function CIaaSServiceManager({ token }: CIaaSServiceManagerProps) {
   const { isAdmin } = useAuth();
-  const { showTechnicalControls } = useSkillMode();
+  const { isExpertMode } = useSkillMode();
   const [services, setServices] = useState<ServiceResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -52,18 +143,24 @@ export default function CIaaSServiceManager({ token }: CIaaSServiceManagerProps)
     max_context_bytes: 64000,
     admin_privileged: false,
     data_residency: "us",
-    allowed_workloads: ["explain", "orchestrate", "counterfactual", "governance_audit", "substrate_health"],
+    allowed_workloads: [
+      "explain",
+      "orchestrate",
+      "counterfactual",
+      "governance_audit",
+      "substrate_health",
+    ],
   });
 
   const applyPreset = (preset: "starter" | "enterprise" | "regulated" | "sovereign" | "research") => {
     const presets: Record<typeof preset, Partial<ProvisionComputationalIntelligenceRequest>> = {
-      starter: { service_tier: "developer", tenancy: "single-tenant", code_distance: 7, logical_compute_units: 32, physical_error_rate: 0.001, max_workloads_per_minute: 60, max_context_bytes: 64000, allowed_workloads: ["explain", "governance_audit", "substrate_health"] },
-      enterprise: { service_tier: "production", tenancy: "single-tenant", code_distance: 11, logical_compute_units: 96, physical_error_rate: 0.0005, max_workloads_per_minute: 240, max_context_bytes: 256000, allowed_workloads: ["explain", "orchestrate", "counterfactual", "governance_audit", "substrate_health"] },
-      regulated: { service_tier: "production", tenancy: "single-tenant", code_distance: 15, logical_compute_units: 128, physical_error_rate: 0.0001, max_workloads_per_minute: 120, max_context_bytes: 256000, allowed_workloads: ["explain", "counterfactual", "governance_audit", "substrate_health"] },
-      sovereign: { service_tier: isAdmin ? "sovereign" : "production", tenancy: isAdmin ? "sovereign-isolated" : "single-tenant", code_distance: 21, logical_compute_units: 256, physical_error_rate: 0.00005, max_workloads_per_minute: 300, max_context_bytes: 512000, allowed_workloads: ["explain", "orchestrate", "counterfactual", "governance_audit", "substrate_health"] },
-      research: { service_tier: "developer", tenancy: "single-tenant", code_distance: 7, logical_compute_units: 64, physical_error_rate: 0.001, max_workloads_per_minute: 600, max_context_bytes: 128000, allowed_workloads: ["explain", "orchestrate", "counterfactual", "governance_audit", "substrate_health"] },
+      starter: { service_tier: "developer", tenancy: "single-tenant", code_distance: 7, logical_compute_units: 16, physical_error_rate: 0.001, max_workloads_per_minute: 30, max_context_bytes: 64000, allowed_workloads: ["explain", "substrate_health", "governance_audit"] },
+      enterprise: { service_tier: "production", tenancy: "single-tenant", code_distance: 11, logical_compute_units: 64, physical_error_rate: 0.0005, max_workloads_per_minute: 120, max_context_bytes: 256000, allowed_workloads: ["explain", "orchestrate", "counterfactual", "governance_audit", "substrate_health"] },
+      regulated: { service_tier: "production", tenancy: "single-tenant", code_distance: 15, logical_compute_units: 96, physical_error_rate: 0.0001, max_workloads_per_minute: 60, max_context_bytes: 512000, allowed_workloads: ["explain", "counterfactual", "governance_audit", "substrate_health"] },
+      sovereign: { service_tier: "sovereign", tenancy: "sovereign-isolated", code_distance: 21, logical_compute_units: 128, physical_error_rate: 0.00005, max_workloads_per_minute: 45, max_context_bytes: 512000, allowed_workloads: ["explain", "counterfactual", "governance_audit", "substrate_health"] },
+      research: { service_tier: "developer", tenancy: "single-tenant", code_distance: 9, logical_compute_units: 128, physical_error_rate: 0.001, max_workloads_per_minute: 240, max_context_bytes: 256000, allowed_workloads: ["explain", "orchestrate", "counterfactual", "governance_audit", "substrate_health"] },
     };
-    setProvisionForm((prev) => ({ ...prev, ...presets[preset] }));
+    setProvisionForm((current) => ({ ...current, ...presets[preset], service_tier: presets[preset].service_tier === "sovereign" && !isAdmin ? "production" : presets[preset].service_tier, tenancy: presets[preset].tenancy === "sovereign-isolated" && !isAdmin ? "single-tenant" : presets[preset].tenancy }));
   };
 
   const fetchServices = async () => {
@@ -100,6 +197,11 @@ export default function CIaaSServiceManager({ token }: CIaaSServiceManagerProps)
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to stop service");
     }
+  };
+
+  const applyPreset = (presetName: CIaaSPresetName) => {
+    setSelectedPreset(presetName);
+    setProvisionForm((current) => ({ ...current, ...ciaasPresets[presetName] }));
   };
 
   const handleProvision = async (e: React.FormEvent) => {
@@ -153,7 +255,7 @@ export default function CIaaSServiceManager({ token }: CIaaSServiceManagerProps)
         <div>
           <h2 className="text-2xl font-bold text-slate-900">CIaaS Services</h2>
           <p className="text-sm text-slate-600">
-            Computational Intelligence as a Service - Manage virtual intelligence computers
+            Intent-first intelligence rails for explanation, counterfactuals, governance audit, and safe orchestration. Raw parameters stay behind expert mode.
           </p>
         </div>
         <button
@@ -265,24 +367,17 @@ export default function CIaaSServiceManager({ token }: CIaaSServiceManagerProps)
       {showProvisionModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
           <div className="w-full max-w-2xl rounded-lg bg-white p-6 shadow-xl">
-            <h3 className="mb-4 text-xl font-bold text-slate-900">Provision CIaaS Service</h3>
+            <h3 className="mb-4 text-xl font-bold text-slate-900">Provision Intelligence Rail</h3>
             <form onSubmit={handleProvision} className="space-y-4">
               <div className="rounded-xl border border-blue-100 bg-blue-50 p-4">
-                <p className="text-sm font-bold text-slate-900">Choose an intelligence rail preset</p>
-                <p className="mt-1 text-xs text-slate-600">Non-specialists can provision by intent; engineers can still open raw parameters.</p>
+                <p className="text-sm font-semibold text-blue-950">Choose a business preset</p>
                 <div className="mt-3 grid gap-2 sm:grid-cols-2">
-                  {[
-                    ["starter", "Starter Intelligence Rail"],
-                    ["enterprise", "Enterprise Decision Rail"],
-                    ["regulated", "Regulated Evidence Rail"],
-                    ["sovereign", "Sovereign Isolated Rail"],
-                    ["research", "Research/Expert Rail"],
-                  ].map(([key, label]) => (
-                    <button key={key} type="button" onClick={() => applyPreset(key as any)} className="rounded-lg border border-blue-200 bg-white px-3 py-2 text-left text-xs font-semibold text-blue-900 hover:bg-blue-100">{label}</button>
+                  {[["starter", "Starter Intelligence Rail"], ["enterprise", "Enterprise Decision Rail"], ["regulated", "Regulated Evidence Rail"], ["sovereign", "Sovereign Isolated Rail"], ["research", "Research/Expert Rail"]].map(([value, label]) => (
+                    <button key={value} type="button" onClick={() => applyPreset(value as any)} className="rounded-lg border border-blue-200 bg-white px-3 py-2 text-left text-xs font-semibold text-blue-900 hover:bg-blue-100">{label}</button>
                   ))}
                 </div>
+                <p className="mt-2 text-xs text-blue-800">{profile.showTechnicalDefaults ? "Technical fields are visible for this lens." : "Technical fields are hidden by default; presets map to safe defaults."}</p>
               </div>
-              <MetricExplainerCard metric="codeDistance" value={`Current resilience: ${provisionForm.code_distance}`} />
               <div>
                 <label className="block text-sm font-medium text-slate-700">Service Name</label>
                 <input
@@ -322,47 +417,114 @@ export default function CIaaSServiceManager({ token }: CIaaSServiceManagerProps)
                     className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
                   >
                     <option value="single-tenant">Single Tenant</option>
-                    {isAdmin && <option value="dedicated-control-plane">Dedicated Control Plane</option>}
+                    {isAdmin && (
+                      <option value="dedicated-control-plane">Dedicated Control Plane</option>
+                    )}
                     {isAdmin && <option value="sovereign-isolated">Sovereign Isolated</option>}
                   </select>
                 </div>
               </div>
-              {showTechnicalControls && (
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-slate-700">Code Distance</label>
-                  <input
-                    type="number"
-                    min="3"
-                    max="31"
-                    step="2"
-                    value={provisionForm.code_distance}
-                    onChange={(e) =>
-                      setProvisionForm({ ...provisionForm, code_distance: parseInt(e.target.value) })
-                    }
-                    className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-700">Logical Compute Units</label>
-                  <input
-                    type="number"
-                    min="1"
-                    max="512"
-                    value={provisionForm.logical_compute_units}
-                    onChange={(e) =>
-                      setProvisionForm({
-                        ...provisionForm,
-                        logical_compute_units: parseInt(e.target.value),
-                      })
-                    }
-                    className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
-                  />
-                </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700">
+                  Provisioning preset
+                </label>
+                <select
+                  aria-label="CIaaS provisioning preset"
+                  onChange={(e) => {
+                    const preset = e.target.value;
+                    const base =
+                      preset === "regulated"
+                        ? {
+                            service_tier: "production" as ServiceTier,
+                            code_distance: 11,
+                            logical_compute_units: 64,
+                            physical_error_rate: 0.0005,
+                            allowed_workloads: [
+                              "explain",
+                              "counterfactual",
+                              "governance_audit",
+                              "substrate_health",
+                            ] as WorkloadKind[],
+                          }
+                        : preset === "sovereign"
+                          ? {
+                              service_tier: "sovereign" as ServiceTier,
+                              tenancy: "sovereign-isolated" as TenancyMode,
+                              code_distance: 15,
+                              logical_compute_units: 128,
+                              physical_error_rate: 0.0001,
+                            }
+                          : preset === "research"
+                            ? {
+                                service_tier: "developer" as ServiceTier,
+                                code_distance: 7,
+                                logical_compute_units: 128,
+                                max_context_bytes: 256000,
+                              }
+                            : {
+                                service_tier: "production" as ServiceTier,
+                                code_distance: 7,
+                                logical_compute_units: 32,
+                                physical_error_rate: 0.001,
+                              };
+                    setProvisionForm({ ...provisionForm, ...base });
+                  }}
+                  className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
+                  defaultValue="enterprise"
+                >
+                  <option value="starter">Starter Intelligence Rail</option>
+                  <option value="enterprise">Enterprise Decision Rail</option>
+                  <option value="regulated">Regulated Evidence Rail</option>
+                  {isAdmin && <option value="sovereign">Sovereign Isolated Rail</option>}
+                  <option value="research">Research/Expert Rail</option>
+                </select>
+                <p className="mt-1 text-xs text-slate-500">
+                  Presets choose resilience, capacity, tenancy, and governance defaults so
+                  non-specialists do not need to set raw quantum controls.
+                </p>
               </div>
-              )}
-              {!showTechnicalControls && (
-                <p className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900">Raw code distance, logical compute units, physical error-rate, workload, and context controls are hidden in this lens. Switch to Engineer or Expert lens to edit them directly.</p>
+              <MetricExplainerCard metric="code_distance" />
+              {isExpertMode && (
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700">
+                      Code Distance
+                    </label>
+                    <input
+                      type="number"
+                      min="3"
+                      max="31"
+                      step="2"
+                      value={provisionForm.code_distance}
+                      onChange={(e) =>
+                        setProvisionForm({
+                          ...provisionForm,
+                          code_distance: parseInt(e.target.value),
+                        })
+                      }
+                      className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700">
+                      Logical Compute Units
+                    </label>
+                    <input
+                      type="number"
+                      min="1"
+                      max="512"
+                      value={provisionForm.logical_compute_units}
+                      onChange={(e) =>
+                        setProvisionForm({
+                          ...provisionForm,
+                          logical_compute_units: parseInt(e.target.value),
+                        })
+                      }
+                      className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
+                    />
+                  </div>
+                </div>
               )}
               <div className="flex justify-end gap-2">
                 <button

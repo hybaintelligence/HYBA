@@ -69,7 +69,7 @@ import { useLatencyMetrics } from "./hooks/useLatencyMetrics";
 import { buildGovernanceSignals, type GovernanceSignal } from "./governance";
 import { useAuth } from "./components/AuthProvider";
 import { SkillModeProvider, SkillModeSelector } from "./components/SkillModeContext";
-import { EvidenceBoundAnswer, MetricExplainerCard } from "./components/IntelligenceTranslator";
+import { ClaimBoundaryBadge, MetricExplainerCard } from "./components/IntelligenceTranslator";
 
 type NullableNumber = number | null | undefined;
 
@@ -203,7 +203,15 @@ function AppContent() {
   const [selectedPoolForConfig, setSelectedPoolForConfig] = useState<PoolInfo | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [currentView, setCurrentView] = useState<
-    "dashboard" | "admin" | "executive" | "jobs" | "history" | "analytics" | "portal" | "ciaas" | "qaas"
+    | "dashboard"
+    | "admin"
+    | "executive"
+    | "jobs"
+    | "history"
+    | "analytics"
+    | "portal"
+    | "ciaas"
+    | "qaas"
   >("dashboard");
 
   const { execute: fetchTelemetryExecute } = useApiRequest(fetchTelemetryData, { maxRetries: 3 });
@@ -587,6 +595,9 @@ function AppContent() {
     <div
       className={`min-h-screen flex flex-col font-sans transition-colors duration-300 ${isDarkMode ? "dark bg-[#050914] text-slate-100" : "bg-[#F4F1EA] text-[#101828]"}`}
     >
+      <div className="fixed right-6 top-4 z-40">
+        <SkillModeSelector />
+      </div>
       <NetworkToast
         isConnected={isConnected}
         latencyMs={latencyMs}
@@ -634,7 +645,16 @@ function AppContent() {
               <RefreshCw className={`h-3.5 w-3.5 ${isSyncing ? "animate-spin" : ""}`} /> Refresh
             </button>
             <Sparkline data={latencyHistory} />
+            <SkillModeSelector />
             <div className="h-6 w-px bg-white/20" />
+            <button
+              onClick={() => setCurrentView(currentView === "studio" ? "dashboard" : "studio")}
+              className={`status-pill border ${currentView === "studio" ? "border-emerald-300/30 bg-emerald-400/15 text-emerald-100" : "border-white/30 bg-white/10 text-white"}`}
+              title={currentView === "studio" ? "Return to Dashboard" : "Open Use-Case Studio"}
+            >
+              <Rocket className="h-3.5 w-3.5" />
+              <span>{currentView === "studio" ? "Dashboard" : "Use-Case Studio"}</span>
+            </button>
             <button
               onClick={() => setCurrentView(currentView === "jobs" ? "dashboard" : "jobs")}
               className={`status-pill border ${currentView === "jobs" ? "border-blue-300/30 bg-blue-400/15 text-blue-100" : "border-white/30 bg-white/10 text-white"}`}
@@ -747,6 +767,8 @@ function AppContent() {
           <AnalyticsSection telemetry={telemetry} pools={pools} />
         ) : currentView === "portal" ? (
           <CustomerPortal />
+        ) : currentView === "studio" ? (
+          <UseCaseStudio />
         ) : currentView === "ciaas" ? (
           <CIaaSServiceManager token={token} />
         ) : currentView === "qaas" ? (
@@ -775,7 +797,9 @@ function AppContent() {
                     Sovereign Quantum Intelligence Execution
                   </h2>
                   <p className="mt-5 max-w-2xl text-base leading-8 text-slate-600 md:text-lg">
-                    Institutional-caliber control surface for substrate-independent Quantum Intelligence: evidence-sealed execution, PULVINI φ-memory, Salamander regeneration, authenticated tenancy, and usage-metered enterprise operation.
+                    Institutional-caliber control surface for substrate-independent Quantum
+                    Intelligence: evidence-sealed execution, PULVINI φ-memory, Salamander
+                    regeneration, authenticated tenancy, and usage-metered enterprise operation.
                   </p>
                   <div className="mt-8 grid gap-3 sm:grid-cols-3">
                     {operatingPrinciples.map((item) => (
@@ -833,6 +857,8 @@ function AppContent() {
               </div>
             </section>
 
+            <UseCaseStudio />
+            <DecisionCockpit />
             <section className="grid grid-cols-1 gap-4 md:grid-cols-4">
               {isLoading ? (
                 [1, 2, 3, 4].map((i) => (
@@ -875,6 +901,24 @@ function AppContent() {
             {telemetryError && !isLoading && (
               <ErrorState message={telemetryError} onRetry={getLiveTelemetry} />
             )}
+
+            <section className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+              <MetricExplainerCard
+                metricKey="substrate_coherence"
+                value={`Runtime: ${runtimeStatus.toUpperCase()}`}
+              />
+              <MetricExplainerCard
+                metricKey="phi_resonance"
+                value={`φ alignment: ${fmtPct(health?.phiResonance)}`}
+              />
+              <MetricExplainerCard metricKey="evidence_seal" value={`Seal: ${extraordinarySeal}`} />
+            </section>
+
+            <ProofExplainer
+              seal={extraordinarySeal}
+              invariantSummary={`${extraordinaryInvariantCount} / ${extraordinaryInvariantTotal}`}
+              source={fmtText(health?.telemetry_source)}
+            />
 
             <section className="grid grid-cols-1 gap-6 lg:grid-cols-3">
               <Panel
@@ -1277,6 +1321,11 @@ function AppContent() {
             </Panel>
           </>
         )}
+        <section className="mx-auto mt-8 grid max-w-7xl grid-cols-1 gap-4 px-6 md:grid-cols-3">
+          <MetricExplainerCard metric="substrate_coherence" />
+          <MetricExplainerCard metric="evidence_seal" />
+          <ClaimBoundaryBadge />
+        </section>
       </main>
 
       <footer className="mt-8 shrink-0 border-t border-white/10 bg-[#06162D] px-6 py-6 text-white/70">
@@ -1301,6 +1350,7 @@ function AppContent() {
       {token && currentUser && (
         <AIAssistant
           token={token}
+          userRole={currentUser.role}
           telemetryData={telemetry}
           onCommand={(command) => {
             console.log("AI Command:", command);
@@ -1312,6 +1362,51 @@ function AppContent() {
         />
       )}
     </div>
+  );
+}
+
+function UseCaseStudio() {
+  const { profile } = useAdaptiveExperience();
+  const useCases = [
+    { intent: "Explain a board-level decision", capability: "explain + evidence package", action: "Prepare decision memo", risk: "Approval required" },
+    { intent: "Simulate an intervention", capability: "counterfactual + optimize", action: "Run simulation only", risk: "No production write" },
+    { intent: "Detect operational risk", capability: "orchestrate + substrate_health", action: "Propose remediation", risk: "Blast radius review" },
+    { intent: "Audit an AI recommendation", capability: "governance_audit + evidence package", action: "Collect proof surface", risk: "Auditor sign-off" },
+  ];
+
+  return (
+    <section className="space-y-6" data-testid="use-case-studio">
+      <div className="rounded-[2rem] border border-white/40 bg-white/90 p-6 shadow-xl">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <p className="eyebrow">Adaptive Intelligence Experience Layer</p>
+            <h2 className="mt-2 text-3xl font-black text-slate-950">Start from intent, not quantum controls.</h2>
+            <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600">
+              HYBA maps plain-language enterprise intent to prediction, explanation, counterfactuals, optimization, regeneration, and evidence-bound audit workflows. Current lens: <strong>{profile.label}</strong>.
+            </p>
+          </div>
+          <ClaimBoundaryBadge boundary="proposal_only by default" />
+        </div>
+        <div className="mt-6 grid gap-4 md:grid-cols-2">
+          {useCases.map((item) => (
+            <article key={item.intent} className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+              <h3 className="font-bold text-slate-950">I want to {item.intent.toLowerCase()}.</h3>
+              <dl className="mt-3 space-y-2 text-sm text-slate-700">
+                <div><dt className="font-semibold text-slate-900">HYBA routes to</dt><dd>{item.capability}</dd></div>
+                <div><dt className="font-semibold text-slate-900">Safe next action</dt><dd>{item.action}</dd></div>
+                <div><dt className="font-semibold text-slate-900">Governance</dt><dd>{item.risk}</dd></div>
+              </dl>
+            </article>
+          ))}
+        </div>
+      </div>
+      <div className="grid gap-4 lg:grid-cols-3">
+        <MetricExplainerCard metric="substrate_coherence" value="Strong = safe to simulate" />
+        <MetricExplainerCard metric="evidence_seal" value="Required for buyer-facing trust" />
+        <MetricExplainerCard metric="claim_boundary" value="Advisory until approved" />
+      </div>
+      <EvidenceBoundAnswer />
+    </section>
   );
 }
 
