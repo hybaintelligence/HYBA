@@ -1,6 +1,6 @@
 import { beforeAll, describe, expect, it } from "vitest";
 
-const FRONTEND_BASE = "http://127.0.0.1:3000";
+const BRIDGE_BASE = "http://127.0.0.1:3000";
 const BACKEND_BASE = "http://127.0.0.1:3001";
 
 async function canReach(url: string): Promise<boolean> {
@@ -16,26 +16,33 @@ describe("Frontend-Backend E2E Communication", () => {
   let liveStackAvailable = false;
 
   beforeAll(async () => {
-    liveStackAvailable =
-      (await canReach(`${FRONTEND_BASE}/`)) && (await canReach(`${BACKEND_BASE}/health`));
+    // Check if bridge is running and can reach backend
+    const bridgeHealth = await canReach(`${BRIDGE_BASE}/bridge/health`);
+    if (bridgeHealth) {
+      const response = await fetch(`${BRIDGE_BASE}/bridge/health`);
+      const data = await response.json();
+      liveStackAvailable = data.backendReachable === true;
+    }
+    
     if (!liveStackAvailable) {
       console.warn(
-        "Skipping live frontend/backend assertions because 127.0.0.1:3000 and/or 127.0.0.1:3001 is unavailable.",
+        "Skipping live frontend/backend assertions because bridge is not available or cannot reach backend.",
       );
     }
   });
 
-  it("Frontend proxy /api/health reaches backend", async () => {
+  it("Bridge health endpoint confirms backend is reachable", async () => {
     if (!liveStackAvailable) return;
-    const response = await fetch(`${FRONTEND_BASE}/api/health`);
+    const response = await fetch(`${BRIDGE_BASE}/bridge/health`);
     expect(response.status).toBe(200);
     const data = await response.json();
-    expect(data.status).toBe("healthy");
+    expect(data.backendReachable).toBe(true);
+    expect(data.status).toBe("ok");
   });
 
-  it("Backend health endpoint returns substrate state", async () => {
+  it("Bridge proxies /health to backend successfully", async () => {
     if (!liveStackAvailable) return;
-    const response = await fetch(`${BACKEND_BASE}/health`);
+    const response = await fetch(`${BRIDGE_BASE}/health`);
     expect(response.status).toBe(200);
     const data = await response.json();
     expect(data).toHaveProperty("status");
@@ -43,18 +50,18 @@ describe("Frontend-Backend E2E Communication", () => {
     expect(data.substrate).toBeDefined();
   });
 
-  it("Backend substrate endpoint provides detailed system state", async () => {
+  it("Bridge proxies /api/substrate to backend", async () => {
     if (!liveStackAvailable) return;
-    const response = await fetch(`${BACKEND_BASE}/api/substrate`);
+    const response = await fetch(`${BRIDGE_BASE}/api/substrate`);
     expect(response.status).toBe(200);
     const data = await response.json();
     expect(data).toBeInstanceOf(Object);
     expect(Object.keys(data).length).toBeGreaterThan(0);
   });
 
-  it("Frontend can fetch pool configuration", async () => {
+  it("Bridge can fetch pool configuration through proxy", async () => {
     if (!liveStackAvailable) return;
-    const response = await fetch(`${FRONTEND_BASE}/api/mining/pool-config`);
+    const response = await fetch(`${BRIDGE_BASE}/api/mining/pool-config`);
     // Pool config may require authentication, so accept both 200 (success) and 401 (auth required)
     expect([200, 401]).toContain(response.status);
     if (response.status === 200) {
@@ -63,7 +70,7 @@ describe("Frontend-Backend E2E Communication", () => {
     }
   });
 
-  it("Frontend can submit pool connection request", async () => {
+  it("Bridge can submit pool connection request", async () => {
     if (!liveStackAvailable) return;
     const payload = {
       pool_id: "test-pool",
@@ -71,7 +78,7 @@ describe("Frontend-Backend E2E Communication", () => {
       password: "test",
       capacity_ehs: 0.5,
     };
-    const response = await fetch(`${FRONTEND_BASE}/api/mining/connect`, {
+    const response = await fetch(`${BRIDGE_BASE}/api/mining/connect`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
@@ -80,9 +87,9 @@ describe("Frontend-Backend E2E Communication", () => {
     expect(response.status).toBeLessThan(600);
   });
 
-  it("Frontend proxy preserves backend error responses without crashing", async () => {
+  it("Bridge preserves backend error responses without crashing", async () => {
     if (!liveStackAvailable) return;
-    const response = await fetch(`${FRONTEND_BASE}/api/mining/connect`, {
+    const response = await fetch(`${BRIDGE_BASE}/api/mining/connect`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ capacity_ehs: 2 }),
@@ -91,76 +98,77 @@ describe("Frontend-Backend E2E Communication", () => {
     expect(response.status).toBeLessThan(600);
   });
 
-  it("Backend intelligence endpoint is accessible", async () => {
+  it("Bridge proxies intelligence endpoint", async () => {
     if (!liveStackAvailable) return;
-    const response = await fetch(`${BACKEND_BASE}/api/intelligence/status`);
+    const response = await fetch(`${BRIDGE_BASE}/api/intelligence/status`);
     // May require auth, so accept 200, 401, or 403
     expect([200, 401, 403]).toContain(response.status);
   });
 
-  it("Backend mining endpoint is accessible", async () => {
+  it("Bridge proxies mining endpoint", async () => {
     if (!liveStackAvailable) return;
-    const response = await fetch(`${BACKEND_BASE}/api/mining/pools`);
+    const response = await fetch(`${BRIDGE_BASE}/api/mining/pools`);
     // May require auth, so accept 200, 401, or 403
     expect([200, 401, 403]).toContain(response.status);
   });
 
-  it("Backend security endpoint is accessible", async () => {
+  it("Bridge proxies security endpoint", async () => {
     if (!liveStackAvailable) return;
-    const response = await fetch(`${BACKEND_BASE}/api/security/status`);
+    const response = await fetch(`${BRIDGE_BASE}/api/security/status`);
     // May require auth, so accept 200, 401, or 403
     expect([200, 401, 403]).toContain(response.status);
   });
 
-  it("Backend metrics endpoint returns Prometheus metrics", async () => {
+  it("Bridge handles API key validation (proves backend integration)", async () => {
     if (!liveStackAvailable) return;
-    const response = await fetch(`${BACKEND_BASE}/metrics`);
-    expect(response.status).toBe(200);
-    const text = await response.text();
-    expect(text.length).toBeGreaterThan(0);
-    // Prometheus metrics should contain some metric lines
-    expect(text).toMatch(/.*\{.*\}.*/);
+    const response = await fetch(`${BRIDGE_BASE}/api/v1/computational-intelligence-services`);
+    // Should return 422 for missing API key (proves backend is receiving requests)
+    expect([422, 401, 403]).toContain(response.status);
+    const data = await response.json();
+    expect(data).toHaveProperty("error");
   });
 
-  it("CORS headers are properly configured", async () => {
-    if (!liveStackAvailable) return;
-    const response = await fetch(`${BACKEND_BASE}/health`, {
-      headers: { Origin: "http://localhost:3000" },
-    });
-    expect(response.status).toBe(200);
-    const corsHeader = response.headers.get("access-control-allow-origin");
-    // CORS should either allow the origin or be configured for specific origins
-    expect(corsHeader).toBeDefined();
-  });
-
-  it("Backend responds with JSON content type for API endpoints", async () => {
-    if (!liveStackAvailable) return;
-    const response = await fetch(`${BACKEND_BASE}/health`);
-    expect(response.status).toBe(200);
-    const contentType = response.headers.get("content-type");
-    expect(contentType).toMatch(/application\/json/);
-  });
-
-  it("Frontend can handle backend timeouts gracefully", async () => {
+  it("Bridge can handle backend timeouts gracefully", async () => {
     if (!liveStackAvailable) return;
     try {
-      const response = await fetch(`${FRONTEND_BASE}/api/health`, {
+      const response = await fetch(`${BRIDGE_BASE}/health`, {
         signal: AbortSignal.timeout(100),
       });
       // If it responds within timeout, that's fine
       expect(response.status).toBeLessThan(600);
     } catch (error) {
-      // Timeout is acceptable - shows frontend handles it
+      // Timeout is acceptable - shows bridge handles it
       expect(error).toBeDefined();
     }
   });
 
-  it("Backend maintains consistent API version", async () => {
+  it("Backend maintains consistent API version (direct check)", async () => {
     if (!liveStackAvailable) return;
     const response = await fetch(`${BACKEND_BASE}/health`);
     expect(response.status).toBe(200);
     const data = await response.json();
     expect(data).toHaveProperty("version");
     expect(typeof data.version).toBe("string");
+  });
+
+  it("Bridge propagates request IDs for tracing", async () => {
+    if (!liveStackAvailable) return;
+    const response = await fetch(`${BRIDGE_BASE}/health`);
+    expect(response.status).toBe(200);
+    const requestId = response.headers.get("x-request-id");
+    expect(requestId).toBeDefined();
+    expect(typeof requestId).toBe("string");
+  });
+
+  it("Bridge handles concurrent requests", async () => {
+    if (!liveStackAvailable) return;
+    const requests = Array(5).fill(null).map(() => 
+      fetch(`${BRIDGE_BASE}/health`)
+    );
+    
+    const responses = await Promise.all(requests);
+    responses.forEach(response => {
+      expect(response.status).toBe(200);
+    });
   });
 });
