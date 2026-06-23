@@ -127,6 +127,7 @@ const ciaasPresets: Record<
 export default function CIaaSServiceManager({ token }: CIaaSServiceManagerProps) {
   const { isAdmin } = useAuth();
   const { isExpertMode } = useSkillMode();
+  const profile = { showTechnicalDefaults: isExpertMode };
   const [services, setServices] = useState<ServiceResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

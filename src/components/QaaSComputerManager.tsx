@@ -135,6 +135,7 @@ const qiaPresets: Record<QiaPresetName, Omit<ProvisionFaultTolerantComputerReque
 export default function QaaSComputerManager({ token }: QaaSComputerManagerProps) {
   const { isAdmin } = useAuth();
   const { isExpertMode } = useSkillMode();
+  const profile = { showTechnicalDefaults: isExpertMode };
   const [computers, setComputers] = useState<FaultTolerantComputerResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

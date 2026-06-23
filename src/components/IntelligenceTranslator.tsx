@@ -9,7 +9,10 @@ export type MetricKey =
   | "invariants"
   | "claim_boundary"
   | "pulvini_memory"
-  | "salamander_regeneration";
+  | "salamander_regeneration"
+  | "quantum_certainty"
+  | "classical_fallback"
+  | "temporal_delta";
 
 const COPY: Record<
   MetricKey,
@@ -58,37 +61,48 @@ const COPY: Record<
   },
   claim_boundary: {
     title: "Claim boundary",
-    plain: "The formal limit of what HYBA can claim or do for this answer.",
-    implication: "Advisory output can become a proposal, but execution requires role-aware human approval.",
-    evidence: "Policy tags, role signature, approval timestamp, and no-unattended-writes status.",
+    plain: "The explicit line between advisory intelligence, simulation, proposal preparation, and approved execution.",
+    implication: "Executives can brief a board on the recommendation without implying HYBA has taken action.",
+    evidence: "Preserve the boundary text with approver, policy, evidence seal, and timestamp.",
   },
   pulvini_memory: {
     title: "PULVINI memory",
-    plain: "Structured memory used to preserve decision context without losing auditability.",
-    implication: "Reuse context for continuity, but keep exportable trace and residency proof attached.",
-    evidence: "Memory source, compression metadata, trace continuity, and evidence seal.",
+    plain: "The context-retention layer that keeps decision history available while compressing less relevant detail.",
+    implication: "Useful for CFO and auditor review because assumptions can be traced across meetings and incidents.",
+    evidence: "Show memory lineage, compression scope, retention boundary, and source records.",
   },
   salamander_regeneration: {
     title: "Regeneration proposal",
-    plain: "A suggested remediation path for degraded workflows.",
-    implication: "Show blast radius and rollback first; release changes only after explicit approval.",
-    evidence: "Proposal card, blast-radius preview, approval log, and governance tag.",
+    plain: "A self-healing suggestion that drafts remediation without silently changing production systems.",
+    implication: "Treat the output as a proposal card; require blast-radius review and explicit approval.",
+    evidence: "Attach degradation signal, proposed command, rollback plan, approver, and audit log.",
+  },
+  quantum_certainty: {
+    title: "Quantum-backed certainty",
+    plain: "HYBA is presenting the answer from a substrate-backed path with invariants and evidence seal available.",
+    implication: "Suitable for high-stakes recommendation review, while still requiring human authorization for action.",
+    evidence: "Confirm live telemetry source, passing invariants, seal freshness, and claim boundary.",
+  },
+  classical_fallback: {
+    title: "Classical heuristic fallback",
+    plain: "HYBA can still explain a result, but the confidence comes from deterministic heuristics rather than a fully backed rail.",
+    implication: "Use for triage or exploration; gather more evidence before a board-impacting decision.",
+    evidence: "Look for fallback reason, missing telemetry fields, stale seal, or disconnected backend state.",
+  },
+  temporal_delta: {
+    title: "Intelligence trend",
+    plain: "Whether reasoning stability is improving, flat, or degrading compared with recent live samples.",
+    implication: "Converging trends support continued analysis; degrading trends should trigger review before commitments.",
+    evidence: "Compare consecutive substrate coherence / φ-alignment samples from the active telemetry stream.",
   },
 };
 
-export function MetricExplainerCard({
-  metric,
-  metricKey,
-  value,
-}: {
-  metric?: MetricKey;
-  metricKey?: MetricKey;
-  value?: React.ReactNode;
-}) {
+export function MetricExplainerCard({ metric, metricKey, value }: { metric?: MetricKey; metricKey?: MetricKey; value?: React.ReactNode }) {
   const key = metric || metricKey || "substrate_coherence";
   const copy = COPY[key];
   return (
     <div className="rounded-xl border border-blue-100 bg-blue-50/70 p-4 text-sm text-slate-700">
+      {value && <p className="mb-1 font-mono text-[11px] font-bold uppercase tracking-[0.14em] text-blue-800">{value}</p>}
       <p className="font-semibold text-slate-900">{copy.title}</p>
       {value !== undefined && <p className="mt-1 font-mono text-xs text-slate-950">{value}</p>}
       <p className="mt-2">
@@ -104,13 +118,12 @@ export function MetricExplainerCard({
   );
 }
 
-export function ClaimBoundaryBadge({ boundary = "advisory intelligence, not autonomous execution" }: { boundary?: string }) {
+export function ClaimBoundaryBadge({ boundary = "advisory intelligence; human approval required" }: { boundary?: string }) {
   return (
     <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-950">
       <p className="font-bold">This answer is evidence-bound.</p>
       <p>
-        Claim boundary: {boundary}. Human approval is required
-        before material action.
+        Claim boundary: {boundary}. Human approval is required before material action.
       </p>
     </div>
   );

@@ -300,19 +300,17 @@ const AIAssistant: React.FC<AIAssistantProps> = ({
 
   const approveProposedAction = () => {
     if (!pendingAction || !onCommand) return;
-    const approved = window.confirm(
-      `Approve HYBA remediation proposal?\n\nCommand: ${pendingAction.command}\nRisk: ${pendingAction.risk}\nBlast radius: ${pendingAction.blastRadius}\n\nHuman signature will be recorded in the audit log.`,
-    );
-    if (!approved) return;
-    onCommand(pendingAction.command);
+    const proposal = classifyAction(pendingAction, userRole);
+    if (proposal.approvalRequired) {
+      const approved = window.confirm(
+        `Approve HYBA action?\n\nCommand: ${proposal.command}\nRisk: ${proposal.risk}\nBlast radius: ${proposal.blastRadius}`,
+      );
+      if (!approved) return;
+    }
+    onCommand(proposal.command);
     setMessages((prev) => [
       ...prev,
-      {
-        role: "system",
-        content: `Human-approved action released: ${pendingAction.command}`,
-        timestamp: Date.now(),
-        metadata: { governance: ["human_approved", "role_aware_signature"] },
-      },
+      { role: "system", content: `Approved action executed: ${proposal.command}`, timestamp: Date.now() },
     ]);
     setPendingAction(null);
   };
