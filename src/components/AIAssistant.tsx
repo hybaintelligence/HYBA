@@ -6,7 +6,8 @@
  */
 
 import React, { useState, useEffect, useRef } from "react";
-import { Activity, Brain, Zap, MessageSquare, X, Maximize2, Minimize2 } from "lucide-react";
+import { Activity, Brain, Zap, MessageSquare, X, Maximize2, Minimize2, ShieldCheck, AlertTriangle } from "lucide-react";
+import { useSkillMode } from "./SkillModeContext";
 
 interface Message {
   role: "user" | "assistant" | "system";
@@ -38,13 +39,15 @@ const AIAssistant: React.FC<AIAssistantProps> = ({
     {
       role: "system",
       content:
-        "AI Assistant ready. I can help with mining optimization, diagnostics, and operational guidance.",
+        "AI Assistant ready in proposal-only mode. I can explain, simulate, prepare evidence, and draft remediation plans; execution requires approval and an allowlisted command.",
       timestamp: Date.now(),
     },
   ]);
   const [input, setInput] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
   const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [pendingCommand, setPendingCommand] = useState<string | null>(null);
+  const { mode } = useSkillMode();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll to latest message
@@ -112,10 +115,16 @@ const AIAssistant: React.FC<AIAssistantProps> = ({
         },
         body: JSON.stringify({
           query: userMessage,
-          context: JSON.stringify(context),
+          context: JSON.stringify({ ...context, skill_mode: mode }),
           substrates: ["manifold", "consciousness", "quantum"],
-          enable_regeneration: true, // Enable Salamander-style regeneration
-          auto_fix: true, // Allow AI to trigger actual fixes instead of just proposals
+          enable_regeneration: true,
+          proposal_only: true,
+          auto_fix: false,
+          action_policy: {
+            no_unattended_writes: true,
+            require_human_approval: true,
+            allowed_low_risk_commands: ["refresh_telemetry"],
+          },
         }),
       });
 
@@ -138,14 +147,18 @@ const AIAssistant: React.FC<AIAssistantProps> = ({
       };
       setMessages((prev) => [...prev, assistantMsg]);
 
-      // Execute regeneration actions if triggered by AI
-      if (result.regeneration_action && onCommand) {
-        onCommand(result.regeneration_action);
-      }
-
-      // Execute any commands if suggested
-      if (result.suggested_action && onCommand) {
-        onCommand(result.suggested_action);
+      const proposedAction = result.regeneration_action || result.suggested_action;
+      if (proposedAction) {
+        setPendingCommand(String(proposedAction));
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: "system",
+            content: `Proposal prepared, not executed: ${proposedAction}. Review the blast radius and approve only if this is expected.`,
+            timestamp: Date.now(),
+            metadata: { governance: ["proposal_only", "no_unattended_writes", "human_approval_required"] },
+          },
+        ]);
       }
     } catch (error) {
       console.error("AI Assistant error:", error);
@@ -241,6 +254,30 @@ const AIAssistant: React.FC<AIAssistantProps> = ({
 - "Optimize my mining configuration"
 - "Diagnose system issues"
 - "Explain consciousness events"`;
+  };
+
+  const approvePendingCommand = () => {
+    if (!pendingCommand || !onCommand) return;
+    const allowedCommands = new Set(["refresh_telemetry"]);
+    if (!allowedCommands.has(pendingCommand)) {
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "system",
+          content: `Blocked high-risk or unallowlisted action: ${pendingCommand}. HYBA stays proposal-only until governance explicitly authorizes this command.`,
+          timestamp: Date.now(),
+          metadata: { governance: ["blocked", "command_allowlist"] },
+        },
+      ]);
+      setPendingCommand(null);
+      return;
+    }
+    onCommand(pendingCommand);
+    setMessages((prev) => [
+      ...prev,
+      { role: "system", content: `Approved low-risk action executed: ${pendingCommand}.`, timestamp: Date.now() },
+    ]);
+    setPendingCommand(null);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -355,6 +392,24 @@ const AIAssistant: React.FC<AIAssistantProps> = ({
               </div>
             )}
             <div ref={messagesEndRef} />
+          </div>
+
+          {pendingCommand && (
+            <div className="mx-4 rounded-xl border border-amber-400/40 bg-amber-500/10 p-3 text-amber-50">
+              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em]">
+                <AlertTriangle className="h-4 w-4" /> Action proposal requires approval
+              </div>
+              <p className="mt-2 text-xs text-amber-100">Command: <span className="font-mono">{pendingCommand}</span></p>
+              <p className="mt-1 text-xs text-amber-100">Blast radius: low only if this is an allowlisted read/refresh action; otherwise blocked fail-closed.</p>
+              <div className="mt-3 flex gap-2">
+                <button onClick={approvePendingCommand} className="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-700">Approve if allowlisted</button>
+                <button onClick={() => setPendingCommand(null)} className="rounded-lg border border-white/20 px-3 py-1.5 text-xs font-semibold text-white/80 hover:bg-white/10">Dismiss</button>
+              </div>
+            </div>
+          )}
+
+          <div className="mx-4 mb-2 flex items-center gap-2 rounded-xl border border-emerald-400/30 bg-emerald-500/10 p-3 text-xs text-emerald-50">
+            <ShieldCheck className="h-4 w-4" /> Assistant runs proposal-only: simulation and preparation are allowed; unattended writes are disabled.
           </div>
 
           {/* Suggestions */}

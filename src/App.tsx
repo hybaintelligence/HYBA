@@ -68,6 +68,8 @@ import { useApiRequest } from "./hooks/useApiRequest";
 import { useLatencyMetrics } from "./hooks/useLatencyMetrics";
 import { buildGovernanceSignals, type GovernanceSignal } from "./governance";
 import { useAuth } from "./components/AuthProvider";
+import { SkillModeProvider, SkillModeSelector } from "./components/SkillModeContext";
+import { EvidenceBoundAnswer, MetricExplainerCard } from "./components/IntelligenceTranslator";
 
 type NullableNumber = number | null | undefined;
 
@@ -157,7 +159,11 @@ function ErrorState({ message, onRetry }: { message: string; onRetry?: () => voi
 }
 
 export default function App() {
-  return <AppContent />;
+  return (
+    <SkillModeProvider>
+      <AppContent />
+    </SkillModeProvider>
+  );
 }
 
 function AppContent() {
@@ -605,6 +611,7 @@ function AppContent() {
             </span>
           </div>
           <div className="flex flex-wrap items-center gap-2">
+            <SkillModeSelector />
             <div className="status-pill bg-white/10 text-white">
               {isConnected ? (
                 <Wifi className="h-3.5 w-3.5 text-emerald-300" />
@@ -893,6 +900,8 @@ function AppContent() {
                 />
                 <MetricRow label="System health" value={fmtText(systemMetrics.system_health)} />
               </Panel>
+              <div className="space-y-4">
+                <MetricExplainerCard metric="substrateCoherence" value={fmtPct(health?.quantumCoherence)} />
               <Panel
                 title="Quantum Intelligence state"
                 eyebrow="Substrate coherence"
@@ -932,6 +941,7 @@ function AppContent() {
                   ))}
                 </select>
               </Panel>
+              </div>
               <Panel
                 title="Runtime integration"
                 eyebrow="Risk and control"
@@ -949,6 +959,13 @@ function AppContent() {
                 <MetricRow label="Pools configured" value={fmtNum(configuredPoolCount, 0)} />
                 <MetricRow label="Active pools" value={fmtNum(activePoolCount, 0)} />
               </Panel>
+              <div className="space-y-4">
+                <EvidenceBoundAnswer
+                  seal={extraordinarySeal}
+                  claimBoundary={fmtText(extraordinaryEvidence?.claim_boundary || "Advisory intelligence; not autonomous execution")}
+                  invariantStatus={extraordinaryEvidence?.all_invariants_passed ? "Passed" : extraordinaryEvidence ? "Fail-closed" : undefined}
+                  source={fmtText(health?.telemetry_source)}
+                />
               <Panel
                 title="Proof seal telemetry"
                 eyebrow="Extraordinary claims"
@@ -995,6 +1012,7 @@ function AppContent() {
                   }
                 />
               </Panel>
+              </div>
               <Panel
                 title="Unitary shield"
                 eyebrow="Stabilizer integrity"
