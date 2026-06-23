@@ -1,0 +1,57 @@
+{
+  "schema": "AUTONOMOUS_SALAMANDER_CODING_PULVINI_V1",
+  "generated_at_utc": "2026-06-23T21:22:37.212626+00:00",
+  "pulvini_enabled": true,
+  "proposals_loaded": 9,
+  "changes_applied": 0,
+  "tests_generated": 0,
+  "tests_passed": 0,
+  "compression_stats": {
+    "average_compression_ratio": 0.0,
+    "total_bytes_saved": 0,
+    "compression_operations": 0,
+    "detailed_stats": []
+  },
+  "application_results": [
+    {
+      "status": "skipped",
+      "reason": "hash mismatch - file modified since scan"
+    },
+    {
+      "status": "skipped",
+      "reason": "hash mismatch - file modified since scan"
+    },
+    {
+      "status": "skipped",
+      "reason": "hash mismatch - file modified since scan"
+    },
+    {
+      "status": "skipped",
+      "reason": "hash mismatch - file modified since scan"
+    },
+    {
+      "status": "skipped",
+      "reason": "hash mismatch - file modified since scan"
+    },
+    {
+      "status": "skipped",
+      "reason": "hash mismatch - file modified since scan"
+    },
+    {
+      "status": "skipped",
+      "reason": "hash mismatch - file modified since scan"
+    },
+    {
+      "status": "skipped",
+      "reason": "hash mismatch - file modified since scan"
+    },
+    {
+      "status": "skipped",
+      "reason": "hash mismatch - file modified since scan"
+    }
+  ],
+  "changes_log": [],
+  "test_results": [],
+  "backup_location": "C:\\Users\\USER\\OneDrive\\Desktop\\HYBA_FULLSTACK\\artifacts\\autonomous_salamander_coding\\backups",
+  "compressed_backup_location": "C:\\Users\\USER\\OneDrive\\Desktop\\HYBA_FULLSTACK\\artifacts\\autonomous_salamander_coding\\pulvini_compressed"
+}
