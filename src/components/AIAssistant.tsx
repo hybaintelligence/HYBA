@@ -299,23 +299,20 @@ const AIAssistant: React.FC<AIAssistantProps> = ({
   };
 
   const approveProposedAction = () => {
-    if (!proposedAction || !onCommand) return;
-    if (proposedAction.approvalRequired) {
+    if (!pendingAction || !onCommand) return;
+    const proposal = classifyAction(pendingAction, userRole);
+    if (proposal.approvalRequired) {
       const approved = window.confirm(
-        `Approve HYBA action?\n\nCommand: ${proposedAction.command}\nRisk: ${proposedAction.risk}\nBlast radius: ${proposedAction.blastRadius}`,
+        `Approve HYBA action?\n\nCommand: ${proposal.command}\nRisk: ${proposal.risk}\nBlast radius: ${proposal.blastRadius}`,
       );
       if (!approved) return;
     }
-    onCommand(proposedAction.command);
+    onCommand(proposal.command);
     setMessages((prev) => [
       ...prev,
-      {
-        role: "system",
-        content: `Approved action executed: ${proposedAction.command}`,
-        timestamp: Date.now(),
-      },
+      { role: "system", content: `Approved action executed: ${proposal.command}`, timestamp: Date.now() },
     ]);
-    setProposedAction(null);
+    setPendingAction(null);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -450,10 +447,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({
               <p className="font-semibold">Action preview: {pendingAction}</p>
               <p>Blast radius: low only if allowlisted. Governance tag missing means warn-block.</p>
               <button
-                onClick={() => {
-                  if (pendingAction === "refresh_telemetry" && onCommand) onCommand(pendingAction);
-                  setPendingAction(null);
-                }}
+                onClick={approveProposedAction}
                 className="mt-2 rounded bg-amber-400 px-3 py-1 font-semibold text-slate-950"
               >
                 Approve allowlisted action

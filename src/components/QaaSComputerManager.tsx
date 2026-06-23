@@ -135,6 +135,7 @@ const qiaPresets: Record<QiaPresetName, Omit<ProvisionFaultTolerantComputerReque
 export default function QaaSComputerManager({ token }: QaaSComputerManagerProps) {
   const { isAdmin } = useAuth();
   const { isExpertMode } = useSkillMode();
+  const profile = { showTechnicalDefaults: isExpertMode };
   const [computers, setComputers] = useState<FaultTolerantComputerResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -208,11 +209,6 @@ export default function QaaSComputerManager({ token }: QaaSComputerManagerProps)
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to stop computer");
     }
-  };
-
-  const applyPreset = (presetName: QiaPresetName) => {
-    setSelectedPreset(presetName);
-    setProvisionForm((current) => ({ ...current, ...qiaPresets[presetName] }));
   };
 
   const handleProvision = async (e: React.FormEvent) => {

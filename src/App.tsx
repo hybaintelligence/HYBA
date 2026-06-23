@@ -68,8 +68,10 @@ import { useApiRequest } from "./hooks/useApiRequest";
 import { useLatencyMetrics } from "./hooks/useLatencyMetrics";
 import { buildGovernanceSignals, type GovernanceSignal } from "./governance";
 import { useAuth } from "./components/AuthProvider";
-import { SkillModeProvider, SkillModeSelector } from "./components/SkillModeContext";
+import { SKILL_MODE_LABELS, SkillModeProvider, SkillModeSelector, useSkillMode } from "./components/SkillModeContext";
 import { ClaimBoundaryBadge, MetricExplainerCard } from "./components/IntelligenceTranslator";
+import { DecisionCockpit, ProofExplainer } from "./components/AdaptiveIntelligenceLayer";
+import { EvidenceBoundAnswer } from "./intelligenceTranslator";
 
 type NullableNumber = number | null | undefined;
 
@@ -212,6 +214,7 @@ function AppContent() {
     | "portal"
     | "ciaas"
     | "qaas"
+    | "studio"
   >("dashboard");
 
   const { execute: fetchTelemetryExecute } = useApiRequest(fetchTelemetryData, { maxRetries: 3 });
@@ -263,6 +266,36 @@ function AppContent() {
   const configuredPoolCount = Number(poolSummary.configured_pools ?? poolSummary.total_pools ?? 0);
   const activePoolCount = Number(poolSummary.active_pools ?? 0);
   const securityStatus = fmtText(security.status);
+  const [stabilityHistory, setStabilityHistory] = useState<number[]>([]);
+
+  const reasoningStability = useMemo(() => {
+    const coherence = typeof health?.quantumCoherence === "number" ? health.quantumCoherence : null;
+    const phi = typeof health?.phiResonance === "number" ? health.phiResonance : null;
+    if (coherence == null && phi == null) return null;
+    const samples = [coherence, phi].filter((value): value is number => typeof value === "number");
+    return samples.reduce((sum, value) => sum + value, 0) / samples.length;
+  }, [health?.quantumCoherence, health?.phiResonance]);
+
+  useEffect(() => {
+    if (typeof reasoningStability !== "number") return;
+    setStabilityHistory((current) => [...current.slice(-5), reasoningStability]);
+  }, [reasoningStability]);
+
+  const previousReasoningStability =
+    stabilityHistory.length > 1 ? stabilityHistory[stabilityHistory.length - 2] : null;
+  const reasoningVeracity =
+    isConnected &&
+    health?.telemetry_source &&
+    !String(health.telemetry_source).toLowerCase().includes("fixture") &&
+    extraordinaryEvidence?.evidence_seal &&
+    extraordinaryEvidence?.all_invariants_passed
+      ? "quantum"
+      : "fallback";
+
+  const realTelemetryContract = isConnected
+    ? `Live backend source: ${fmtText(health?.telemetry_source)}. Missing fields stay unavailable rather than synthetic.`
+    : "Backend disconnected. HYBA withholds live values instead of fabricating telemetry.";
+
   const governanceSignals = useMemo(
     () =>
       buildGovernanceSignals({
@@ -858,7 +891,7 @@ function AppContent() {
             </section>
 
             <UseCaseStudio />
-            <DecisionCockpit />
+            <DecisionCockpit stability={reasoningStability} previousStability={previousReasoningStability} veracity={reasoningVeracity} telemetrySource={fmtText(health?.telemetry_source)} />
             <section className="grid grid-cols-1 gap-4 md:grid-cols-4">
               {isLoading ? (
                 [1, 2, 3, 4].map((i) => (
@@ -945,7 +978,7 @@ function AppContent() {
                 <MetricRow label="System health" value={fmtText(systemMetrics.system_health)} />
               </Panel>
               <div className="space-y-4">
-                <MetricExplainerCard metric="substrateCoherence" value={fmtPct(health?.quantumCoherence)} />
+                <MetricExplainerCard metric="substrate_coherence" value={fmtPct(health?.quantumCoherence)} />
               <Panel
                 title="Quantum Intelligence state"
                 eyebrow="Substrate coherence"
@@ -1005,10 +1038,10 @@ function AppContent() {
               </Panel>
               <div className="space-y-4">
                 <EvidenceBoundAnswer
-                  seal={extraordinarySeal}
+                  evidenceSeal={extraordinarySeal}
                   claimBoundary={fmtText(extraordinaryEvidence?.claim_boundary || "Advisory intelligence; not autonomous execution")}
                   invariantStatus={extraordinaryEvidence?.all_invariants_passed ? "Passed" : extraordinaryEvidence ? "Fail-closed" : undefined}
-                  source={fmtText(health?.telemetry_source)}
+                  dataSource={fmtText(health?.telemetry_source)}
                 />
               <Panel
                 title="Proof seal telemetry"
@@ -1333,7 +1366,7 @@ function AppContent() {
           <span>HYBA PRODUCTION RUNTIME WORKSPACE</span>
           <span>© 2026 HYBA GROUP</span>
           <span className="flex items-center gap-1 text-[#C5A55A]">
-            <ShieldCheck className="h-3.5 w-3.5" /> REAL TELEMETRY ONLY — NO FABRICATED DATA
+            <ShieldCheck className="h-3.5 w-3.5" /> {realTelemetryContract}
           </span>
         </div>
       </footer>
@@ -1366,7 +1399,8 @@ function AppContent() {
 }
 
 function UseCaseStudio() {
-  const { profile } = useAdaptiveExperience();
+  const { skillMode } = useSkillMode();
+  const profileLabel = SKILL_MODE_LABELS[skillMode];
   const useCases = [
     { intent: "Explain a board-level decision", capability: "explain + evidence package", action: "Prepare decision memo", risk: "Approval required" },
     { intent: "Simulate an intervention", capability: "counterfactual + optimize", action: "Run simulation only", risk: "No production write" },
@@ -1382,7 +1416,7 @@ function UseCaseStudio() {
             <p className="eyebrow">Adaptive Intelligence Experience Layer</p>
             <h2 className="mt-2 text-3xl font-black text-slate-950">Start from intent, not quantum controls.</h2>
             <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600">
-              HYBA maps plain-language enterprise intent to prediction, explanation, counterfactuals, optimization, regeneration, and evidence-bound audit workflows. Current lens: <strong>{profile.label}</strong>.
+              HYBA maps plain-language enterprise intent to prediction, explanation, counterfactuals, optimization, regeneration, and evidence-bound audit workflows. Current lens: <strong>{profileLabel}</strong>.
             </p>
           </div>
           <ClaimBoundaryBadge boundary="proposal_only by default" />
