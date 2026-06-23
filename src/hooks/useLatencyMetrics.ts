@@ -46,7 +46,7 @@ export function recordPing(latency: number, success: boolean) {
 }
 
 // Singleton Background Ping Loop with environment process variables support
-let pingIntervalId: any = null;
+let pingIntervalId: number | null = null;
 
 export function ensurePingInterval() {
   if (pingIntervalId) return;
@@ -54,7 +54,7 @@ export function ensurePingInterval() {
   const runPing = async () => {
     const start = performance.now();
     try {
-      const metaEnv = (import.meta as any).env || {};
+      const metaEnv = (import.meta as unknown as { env?: Record<string, string> }).env || {};
       const backendUrl =
         (typeof process !== "undefined" && process.env?.HYBA_BACKEND_URL) ||
         metaEnv.VITE_HYBA_BACKEND_URL ||

@@ -109,8 +109,6 @@ export function computeQuantumGrover(
     state[markedIndex].r = -state[markedIndex].r;
     state[markedIndex].i = -state[markedIndex].i;
 
-    const afterOracleAmps = state.map((amp) => Math.sqrt(amp.r * amp.r + amp.i * amp.i));
-
     // Phase 2: Grover Diffusion Operator: D = 2|s><s| - I
     // Inversion about the mean of all amplitudes
     const meanReal = state.reduce((sum, amp) => sum + amp.r, 0) / dimensionSize;

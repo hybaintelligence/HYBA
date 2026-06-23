@@ -123,13 +123,5 @@ export function calculateBlastRadius(action: ProposedAction): BlastRadiusAssessm
 }
 
 export function formatBlastRadiusForDisplay(assessment: BlastRadiusAssessment): string {
-  const levelColors: Record<BlastRadiusLevel, string> = {
-    "read-only": "text-green-700 bg-green-50",
-    low: "text-blue-700 bg-blue-50",
-    medium: "text-yellow-700 bg-yellow-50",
-    high: "text-orange-700 bg-orange-50",
-    critical: "text-red-700 bg-red-50",
-  };
-
   return `${assessment.level.toUpperCase()} · ${assessment.description}`;
 }

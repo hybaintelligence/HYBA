@@ -1,13 +1,8 @@
 import {
   collection,
   doc,
-  getDoc,
   getDocs,
   setDoc,
-  query,
-  where,
-  addDoc,
-  serverTimestamp,
 } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import bcrypt from "bcryptjs";

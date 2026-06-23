@@ -423,7 +423,7 @@ export class RefreshAuthStrategy implements RecoveryStrategy {
     return error.category === ErrorCategory.AUTHENTICATION && error.statusCode === 401;
   }
 
-  async recover(error: HybaError): Promise<boolean> {
+  async recover(_error: HybaError): Promise<boolean> {
     // Dispatch the refresh event and wait up to 5 s for a confirmation.
     // If the token refresh succeeds the auth layer should dispatch
     // 'auth:refresh:success'; otherwise we fall through and return false so

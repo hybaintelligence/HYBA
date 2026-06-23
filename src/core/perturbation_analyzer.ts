@@ -167,7 +167,6 @@ export class PerturbationAnalyzer {
 
     // Record post-state
     const telemetryAfter = system.getTelemetry();
-    const phiAfter = telemetryAfter.phi;
     const irreducibilityAfter = telemetryAfter.irreducibility;
 
     // For external perturbations, CREATE a measurable change

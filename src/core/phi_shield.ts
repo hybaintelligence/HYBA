@@ -7,9 +7,13 @@ import { calculate_phi_resonance } from "./constants";
  * Employs Hilbert-space decoherence for unauthorized state inspection.
  */
 
-export const phi_shield_middleware = (req: Request, res: Response, next: NextFunction) => {
+interface RequestWithTrace extends Request {
+  traceContext?: { trace_id?: string };
+}
+
+export const phi_shield_middleware = (req: RequestWithTrace, res: Response, next: NextFunction) => {
   const user_agent = req.header("user-agent") || "";
-  const trace_id = (req as any).traceContext?.trace_id;
+  const trace_id = req.traceContext?.trace_id;
 
   // First-principles signature verification
   // Detects packet sniffing or automated inspectors by resonance deviation

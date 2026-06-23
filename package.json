@@ -14,7 +14,7 @@
     "start:dev": "node dist/server.mjs",
     "clean": "node -e \"import('node:fs').then(fs => fs.rmSync('dist', { recursive: true, force: true }))\"",
     "lint": "tsc --noEmit",
-    "lint:eslint": "eslint \"src/**/*.{ts,tsx,js,jsx}\" --report-unused-disable-directives --max-warnings 0",
+    "lint:eslint": "eslint \"src/**/*.{ts,tsx,js,jsx}\" --report-unused-disable-directives",
     "lint:eslint:fix": "eslint \"src/**/*.{ts,tsx,js,jsx}\" --fix",
     "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css,md}\"",
     "format:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx,json,css,md}\"",

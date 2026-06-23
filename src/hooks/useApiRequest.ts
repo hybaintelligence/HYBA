@@ -4,7 +4,6 @@ import {
   logError,
   isRetryable,
   HybaError,
-  ErrorSeverity,
 } from "../utils/errorHandler";
 
 interface UseApiRequestOptions<T> {
@@ -16,7 +15,7 @@ interface UseApiRequestOptions<T> {
 }
 
 export function useApiRequest<T>(
-  apiFn: (...args: any[]) => Promise<T>,
+  apiFn: (...args: unknown[]) => Promise<T>,
   options: UseApiRequestOptions<T> = {},
 ) {
   const [data, setData] = useState<T | null>(null);
@@ -28,7 +27,7 @@ export function useApiRequest<T>(
   optionsRef.current = options;
 
   const execute = useCallback(
-    async (...args: any[]) => {
+    async (...args: unknown[]) => {
       setIsLoading(true);
       setError(null);
 

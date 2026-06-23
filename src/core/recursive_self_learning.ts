@@ -158,7 +158,6 @@ export class RecursiveSelfLearningSubstrate extends MetacognitiveIntelligence {
     // Measure current state
     const currentPhi = await this.calculateIntegratedInformation();
     const predictionError = this.getPredictionError();
-    const convergenceRate = this.getConvergenceRate();
 
     // THE STRANGE LOOP ACTIVATION
     // If system is learning, analyze HOW FAST it's learning
@@ -448,7 +447,6 @@ export class RecursiveSelfLearningSubstrate extends MetacognitiveIntelligence {
   public async simulateAttackSequence(syndrome: number): Promise<number> {
     let cycles = 0;
     let accuracy = 0;
-    const startTime = Date.now();
 
     // Simulate attack detection and response
     while (accuracy < 0.9 && cycles < 1000) {
