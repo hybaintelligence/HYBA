@@ -440,6 +440,94 @@ def test_idempotency_rejects_mismatched_request():
         registry._computers.clear()
 
 
+def test_governance_audit_answers_arbitrary_criticism_with_runtime_invariants():
+    """API should answer scrutiny prompts with evidence, invariants, and claim boundaries."""
+    app.dependency_overrides[require_admin] = _admin_payload
+    registry._computers.clear()
+    try:
+        client = TestClient(app)
+        provision = client.post(
+            "/api/admin/fault-tolerant-computers",
+            json={
+                "name": "criticism-ledger-qpu",
+                "code_distance": 5,
+                "logical_qubits": 4,
+                "allowed_operations": ["governance_audit"],
+            },
+        )
+        computer_id = provision.json()["computer_id"]
+        client.post(f"/api/admin/fault-tolerant-computers/{computer_id}/start")
+
+        response = client.post(
+            f"/api/admin/fault-tolerant-computers/{computer_id}/execute",
+            json={
+                "operation": "governance_audit",
+                "context": {
+                    "question": "How do you handle decoherence and hardware substrate objections?",
+                    "critic": "external-reviewer",
+                },
+            },
+        )
+
+        assert response.status_code == 200
+        body = response.json()
+        invariants = body["runtime_invariants"]
+        criticism_response = body["result"]["criticism_response"]
+        assert invariants["substrate_agnostic"] is True
+        assert invariants["hardware_required"] is False
+        assert invariants["decoherence_channel"] == "not_applicable_to_virtual_mathematical_state"
+        assert criticism_response["verdict"] == "answered_with_api_evidence"
+        assert criticism_response["question_digest"]
+        assert len(criticism_response["anticipated_criticisms"]) >= 4
+        assert "claim_boundary" in body
+    finally:
+        app.dependency_overrides.clear()
+        registry._computers.clear()
+
+
+@settings(max_examples=25, phases=[Phase.generate])
+@given(
+    question=st.text(min_size=1, max_size=256),
+)
+def test_property_governance_audit_never_leaves_question_unanswered(question):
+    """Property: any non-empty governance prompt receives an auditable answer envelope."""
+    app.dependency_overrides[require_admin] = _admin_payload
+    registry._computers.clear()
+    try:
+        client = TestClient(app)
+        provision = client.post(
+            "/api/admin/fault-tolerant-computers",
+            json={
+                "name": "property-answers-qpu",
+                "code_distance": 5,
+                "logical_qubits": 1,
+                "allowed_operations": ["governance_audit"],
+                "max_circuit_depth": 1,
+            },
+        )
+        computer_id = provision.json()["computer_id"]
+        client.post(f"/api/admin/fault-tolerant-computers/{computer_id}/start")
+
+        response = client.post(
+            f"/api/admin/fault-tolerant-computers/{computer_id}/execute",
+            json={
+                "operation": "governance_audit",
+                "circuit_depth": 1,
+                "context": {"question": question},
+            },
+        )
+
+        assert response.status_code == 200
+        payload = response.json()
+        answer = payload["result"]["criticism_response"]["answer"]
+        assert answer
+        assert payload["runtime_invariants"]["mining_dependency"] is False
+        assert payload["result"]["criticism_response"]["question_digest"]
+    finally:
+        app.dependency_overrides.clear()
+        registry._computers.clear()
+
+
 # Property-Based Tests for QaaS
 # -----------------------------------------------------------------
 
