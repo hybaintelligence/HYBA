@@ -26,7 +26,8 @@ import {
   provisionCustomerCIAASService,
 } from "../apiClient";
 import { useAuth } from "./AuthProvider";
-import { useSkillMode } from "../skillMode";
+import { useSkillMode } from "./SkillModeContext";
+import { MetricExplainerCard } from "./IntelligenceTranslator";
 
 interface CIaaSServiceManagerProps {
   token: string | null;
@@ -125,9 +126,7 @@ const ciaasPresets: Record<
 
 export default function CIaaSServiceManager({ token }: CIaaSServiceManagerProps) {
   const { isAdmin } = useAuth();
-  const { config } = useSkillMode();
-  const [selectedPreset, setSelectedPreset] = useState<CIaaSPresetName>("Enterprise Decision Rail");
-  const [showTechnicalConfig, setShowTechnicalConfig] = useState(config.showTechnicalDefaults);
+  const { isExpertMode } = useSkillMode();
   const [services, setServices] = useState<ServiceResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -357,7 +356,7 @@ export default function CIaaSServiceManager({ token }: CIaaSServiceManagerProps)
       {showProvisionModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
           <div className="w-full max-w-2xl rounded-lg bg-white p-6 shadow-xl">
-            <h3 className="mb-4 text-xl font-bold text-slate-900">Provision CIaaS Service</h3>
+            <h3 className="mb-4 text-xl font-bold text-slate-900">Provision Intelligence Rail</h3>
             <form onSubmit={handleProvision} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-slate-700">Service Name</label>
@@ -370,117 +369,142 @@ export default function CIaaSServiceManager({ token }: CIaaSServiceManagerProps)
                   placeholder="my-ciaas-service"
                 />
               </div>
-              <div className="rounded-xl border border-blue-100 bg-blue-50 p-4">
-                <label className="block text-sm font-medium text-blue-950">
-                  Intelligence rail preset
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700">Service Tier</label>
+                  <select
+                    value={provisionForm.service_tier}
+                    onChange={(e) =>
+                      setProvisionForm({
+                        ...provisionForm,
+                        service_tier: e.target.value as ServiceTier,
+                      })
+                    }
+                    className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
+                  >
+                    <option value="developer">Developer</option>
+                    <option value="production">Production</option>
+                    {isAdmin && <option value="sovereign">Sovereign</option>}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700">Tenancy Mode</label>
+                  <select
+                    value={provisionForm.tenancy}
+                    onChange={(e) =>
+                      setProvisionForm({ ...provisionForm, tenancy: e.target.value as TenancyMode })
+                    }
+                    className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
+                  >
+                    <option value="single-tenant">Single Tenant</option>
+                    {isAdmin && (
+                      <option value="dedicated-control-plane">Dedicated Control Plane</option>
+                    )}
+                    {isAdmin && <option value="sovereign-isolated">Sovereign Isolated</option>}
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700">
+                  Provisioning preset
                 </label>
                 <select
-                  value={selectedPreset}
-                  onChange={(e) => applyPreset(e.target.value as CIaaSPresetName)}
-                  className="mt-1 w-full rounded-md border border-blue-200 bg-white px-3 py-2"
+                  aria-label="CIaaS provisioning preset"
+                  onChange={(e) => {
+                    const preset = e.target.value;
+                    const base =
+                      preset === "regulated"
+                        ? {
+                            service_tier: "production" as ServiceTier,
+                            code_distance: 11,
+                            logical_compute_units: 64,
+                            physical_error_rate: 0.0005,
+                            allowed_workloads: [
+                              "explain",
+                              "counterfactual",
+                              "governance_audit",
+                              "substrate_health",
+                            ] as WorkloadKind[],
+                          }
+                        : preset === "sovereign"
+                          ? {
+                              service_tier: "sovereign" as ServiceTier,
+                              tenancy: "sovereign-isolated" as TenancyMode,
+                              code_distance: 15,
+                              logical_compute_units: 128,
+                              physical_error_rate: 0.0001,
+                            }
+                          : preset === "research"
+                            ? {
+                                service_tier: "developer" as ServiceTier,
+                                code_distance: 7,
+                                logical_compute_units: 128,
+                                max_context_bytes: 256000,
+                              }
+                            : {
+                                service_tier: "production" as ServiceTier,
+                                code_distance: 7,
+                                logical_compute_units: 32,
+                                physical_error_rate: 0.001,
+                              };
+                    setProvisionForm({ ...provisionForm, ...base });
+                  }}
+                  className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
+                  defaultValue="enterprise"
                 >
-                  {(Object.keys(ciaasPresets) as CIaaSPresetName[]).map((preset) => (
-                    <option key={preset} value={preset}>
-                      {preset}
-                    </option>
-                  ))}
+                  <option value="starter">Starter Intelligence Rail</option>
+                  <option value="enterprise">Enterprise Decision Rail</option>
+                  <option value="regulated">Regulated Evidence Rail</option>
+                  {isAdmin && <option value="sovereign">Sovereign Isolated Rail</option>}
+                  <option value="research">Research/Expert Rail</option>
                 </select>
-                <p className="mt-2 text-xs leading-5 text-blue-900">
-                  Presets translate buyer intent into safe defaults for resilience, workload limits,
-                  tenancy, and governance. Experts can open raw technical controls.
+                <p className="mt-1 text-xs text-slate-500">
+                  Presets choose resilience, capacity, tenancy, and governance defaults so
+                  non-specialists do not need to set raw quantum controls.
                 </p>
-                <button
-                  type="button"
-                  onClick={() => setShowTechnicalConfig(!showTechnicalConfig)}
-                  className="mt-3 text-xs font-bold text-blue-700"
-                >
-                  {showTechnicalConfig ? "Hide raw technical config" : "Show raw technical config"}
-                </button>
               </div>
-              {showTechnicalConfig && (
-                <>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-slate-700">
-                        Service Tier
-                      </label>
-                      <select
-                        value={provisionForm.service_tier}
-                        onChange={(e) =>
-                          setProvisionForm({
-                            ...provisionForm,
-                            service_tier: e.target.value as ServiceTier,
-                          })
-                        }
-                        className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
-                      >
-                        <option value="developer">Developer</option>
-                        <option value="production">Production</option>
-                        {isAdmin && <option value="sovereign">Sovereign</option>}
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-slate-700">
-                        Tenancy Mode
-                      </label>
-                      <select
-                        value={provisionForm.tenancy}
-                        onChange={(e) =>
-                          setProvisionForm({
-                            ...provisionForm,
-                            tenancy: e.target.value as TenancyMode,
-                          })
-                        }
-                        className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
-                      >
-                        <option value="single-tenant">Single Tenant</option>
-                        {isAdmin && (
-                          <option value="dedicated-control-plane">Dedicated Control Plane</option>
-                        )}
-                        {isAdmin && <option value="sovereign-isolated">Sovereign Isolated</option>}
-                      </select>
-                    </div>
+              <MetricExplainerCard metric="code_distance" />
+              {isExpertMode && (
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700">
+                      Code Distance
+                    </label>
+                    <input
+                      type="number"
+                      min="3"
+                      max="31"
+                      step="2"
+                      value={provisionForm.code_distance}
+                      onChange={(e) =>
+                        setProvisionForm({
+                          ...provisionForm,
+                          code_distance: parseInt(e.target.value),
+                        })
+                      }
+                      className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
+                    />
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-slate-700">
-                        Code Distance
-                      </label>
-                      <input
-                        type="number"
-                        min="3"
-                        max="31"
-                        step="2"
-                        value={provisionForm.code_distance}
-                        onChange={(e) =>
-                          setProvisionForm({
-                            ...provisionForm,
-                            code_distance: parseInt(e.target.value),
-                          })
-                        }
-                        className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-slate-700">
-                        Logical Compute Units
-                      </label>
-                      <input
-                        type="number"
-                        min="1"
-                        max="512"
-                        value={provisionForm.logical_compute_units}
-                        onChange={(e) =>
-                          setProvisionForm({
-                            ...provisionForm,
-                            logical_compute_units: parseInt(e.target.value),
-                          })
-                        }
-                        className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
-                      />
-                    </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700">
+                      Logical Compute Units
+                    </label>
+                    <input
+                      type="number"
+                      min="1"
+                      max="512"
+                      value={provisionForm.logical_compute_units}
+                      onChange={(e) =>
+                        setProvisionForm({
+                          ...provisionForm,
+                          logical_compute_units: parseInt(e.target.value),
+                        })
+                      }
+                      className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
+                    />
                   </div>
-                </>
+                </div>
               )}
               <div className="flex justify-end gap-2">
                 <button

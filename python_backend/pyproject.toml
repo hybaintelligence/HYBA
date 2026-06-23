@@ -10,6 +10,8 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "hypothesis==6.155.7",
+    "numpy==1.26.4",
+    "pandas==2.2.2",
 ]
 
 [project.optional-dependencies]
@@ -18,6 +20,7 @@ test = [
     "pytest-timeout==2.4.0",
     "hypothesis==6.155.7",
     "numpy==1.26.4",
+    "pandas==2.2.2",
 ]
 
 [project.scripts]
@@ -28,7 +31,7 @@ pythia-replay = "pythia_mining.replay_claim_cli:main"
 
 [tool.setuptools.packages.find]
 where = ["python_backend"]
-include = ["hyba_genesis_api*", "pythia_mining*", "pythia_self_healing*", "pythia_agents*"]
+include = ["hyba_genesis_api*", "hyba_ciaas*", "pythia_mining*", "pythia_self_healing*", "pythia_agents*"]
 
 [tool.black]
 line-length = 100
@@ -50,7 +53,7 @@ extend-exclude = '''
 [tool.isort]
 profile = "black"
 line_length = 100
-known_first_party = ["hyba_genesis_api", "pythia_agents", "pythia_mining", "pythia_self_healing"]
+known_first_party = ["hyba_genesis_api", "hyba_ciaas", "pythia_agents", "pythia_mining", "pythia_self_healing"]
 skip = [".git", ".venv", "venv", "node_modules", "dist", "artifacts", "logs"]
 
 [tool.pytest.ini_options]

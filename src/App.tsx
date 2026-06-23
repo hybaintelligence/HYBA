@@ -68,14 +68,8 @@ import { useApiRequest } from "./hooks/useApiRequest";
 import { useLatencyMetrics } from "./hooks/useLatencyMetrics";
 import { buildGovernanceSignals, type GovernanceSignal } from "./governance";
 import { useAuth } from "./components/AuthProvider";
-import { SkillModeProvider } from "./skillMode";
-import {
-  DecisionCockpit,
-  MetricExplainerCard,
-  ProofExplainer,
-  SkillModeSelector,
-  UseCaseStudio,
-} from "./components/AdaptiveIntelligenceLayer";
+import { SkillModeProvider, SkillModeSelector } from "./components/SkillModeContext";
+import { ClaimBoundaryBadge, MetricExplainerCard } from "./components/IntelligenceTranslator";
 
 type NullableNumber = number | null | undefined;
 
@@ -601,6 +595,9 @@ function AppContent() {
     <div
       className={`min-h-screen flex flex-col font-sans transition-colors duration-300 ${isDarkMode ? "dark bg-[#050914] text-slate-100" : "bg-[#F4F1EA] text-[#101828]"}`}
     >
+      <div className="fixed right-6 top-4 z-40">
+        <SkillModeSelector />
+      </div>
       <NetworkToast
         isConnected={isConnected}
         latencyMs={latencyMs}
@@ -1302,6 +1299,11 @@ function AppContent() {
             </Panel>
           </>
         )}
+        <section className="mx-auto mt-8 grid max-w-7xl grid-cols-1 gap-4 px-6 md:grid-cols-3">
+          <MetricExplainerCard metric="substrate_coherence" />
+          <MetricExplainerCard metric="evidence_seal" />
+          <ClaimBoundaryBadge />
+        </section>
       </main>
 
       <footer className="mt-8 shrink-0 border-t border-white/10 bg-[#06162D] px-6 py-6 text-white/70">

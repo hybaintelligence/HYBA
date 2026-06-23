@@ -6,7 +6,17 @@
  */
 
 import React, { useState, useEffect, useRef } from "react";
-import { Activity, Brain, Zap, MessageSquare, X, Maximize2, Minimize2 } from "lucide-react";
+import {
+  Activity,
+  Brain,
+  Zap,
+  MessageSquare,
+  X,
+  Maximize2,
+  Minimize2,
+  ShieldCheck,
+} from "lucide-react";
+import { useSkillMode, SKILL_MODE_LABELS } from "./SkillModeContext";
 
 interface Message {
   role: "user" | "assistant" | "system";
@@ -82,7 +92,8 @@ const AIAssistant: React.FC<AIAssistantProps> = ({
   const [input, setInput] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
   const [suggestions, setSuggestions] = useState<string[]>([]);
-  const [proposedAction, setProposedAction] = useState<ProposedAction | null>(null);
+  const [pendingAction, setPendingAction] = useState<string | null>(null);
+  const { skillMode } = useSkillMode();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll to latest message
@@ -113,10 +124,9 @@ const AIAssistant: React.FC<AIAssistantProps> = ({
     // Always offer general assistance
     if (newSuggestions.length === 0) {
       newSuggestions.push(
-        "Explain this like I'm a CFO",
+        "Explain this like I’m a CFO",
         "What action is safe?",
         "Prepare a remediation plan, but do not execute",
-        "What evidence supports this?",
       );
     }
 
@@ -151,13 +161,12 @@ const AIAssistant: React.FC<AIAssistantProps> = ({
         },
         body: JSON.stringify({
           query: userMessage,
-          context: JSON.stringify(context),
+          context: JSON.stringify({ ...context, skill_mode: skillMode }),
           substrates: ["manifold", "consciousness", "quantum"],
-          enable_regeneration: true, // Enable Salamander-style regeneration as proposal generation
-          auto_fix: false, // Safety default: assistant may propose, but must not silently execute
+          enable_regeneration: true,
+          auto_fix: false,
           proposal_only: true,
-          governance_tags: ["proposal_only", "no_unattended_writes", "human_approval_required"],
-          role: userRole || "operator",
+          require_human_approval: true,
         }),
       });
 
@@ -180,9 +189,18 @@ const AIAssistant: React.FC<AIAssistantProps> = ({
       };
       setMessages((prev) => [...prev, assistantMsg]);
 
-      const suggestedCommand = result.regeneration_action || result.suggested_action;
-      if (suggestedCommand) {
-        setProposedAction(classifyAction(suggestedCommand, userRole));
+      const proposedAction = result.regeneration_action || result.suggested_action;
+      if (proposedAction) {
+        setPendingAction(String(proposedAction));
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: "system",
+            content: `Prepared proposal only: ${proposedAction}. Review blast radius and explicitly approve before execution.`,
+            timestamp: Date.now(),
+            metadata: { governance: ["proposal_only", "human_approval_required"] },
+          },
+        ]);
       }
     } catch (error) {
       console.error("AI Assistant error:", error);
@@ -334,7 +352,10 @@ const AIAssistant: React.FC<AIAssistantProps> = ({
               <Zap className="w-3 h-3 text-yellow-400 absolute -top-1 -right-1 animate-pulse" />
             )}
           </div>
-          <span className="font-semibold text-white">AI Assistant</span>
+          <span className="font-semibold text-white">Adaptive AI Assistant</span>
+          <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-semibold text-emerald-200">
+            proposal only
+          </span>
         </div>
         <div className="flex items-center gap-2">
           <button
@@ -414,29 +435,29 @@ const AIAssistant: React.FC<AIAssistantProps> = ({
             <div ref={messagesEndRef} />
           </div>
 
-          {proposedAction && (
-            <div className="mx-4 mb-2 rounded-xl border border-amber-400/40 bg-amber-500/10 p-3 text-amber-50">
-              <p className="text-xs font-bold uppercase tracking-[0.16em]">
-                Action proposal — approval required
-              </p>
-              <p className="mt-2 text-sm font-mono">{proposedAction.command}</p>
-              <p className="mt-2 text-xs">
-                Risk: {proposedAction.risk.toUpperCase()} · {proposedAction.blastRadius}
-              </p>
-              <div className="mt-3 flex gap-2">
-                <button
-                  onClick={approveProposedAction}
-                  className="rounded-lg bg-amber-400 px-3 py-1.5 text-xs font-bold text-slate-950"
-                >
-                  Approve
-                </button>
-                <button
-                  onClick={() => setProposedAction(null)}
-                  className="rounded-lg border border-white/20 px-3 py-1.5 text-xs text-white"
-                >
-                  Dismiss
-                </button>
-              </div>
+          <div className="mx-4 mb-2 rounded-lg border border-emerald-400/20 bg-emerald-500/10 p-3 text-xs text-emerald-100">
+            <div className="flex items-center gap-2 font-semibold">
+              <ShieldCheck className="h-3.5 w-3.5" /> {SKILL_MODE_LABELS[skillMode]} lens · Human
+              approval required
+            </div>
+            <p className="mt-1 text-emerald-100/80">
+              HYBA may explain, simulate, and prepare remediation, but commands are blocked until
+              explicit approval.
+            </p>
+          </div>
+          {pendingAction && (
+            <div className="mx-4 mb-2 rounded-lg border border-amber-400/30 bg-amber-500/10 p-3 text-xs text-amber-100">
+              <p className="font-semibold">Action preview: {pendingAction}</p>
+              <p>Blast radius: low only if allowlisted. Governance tag missing means warn-block.</p>
+              <button
+                onClick={() => {
+                  if (pendingAction === "refresh_telemetry" && onCommand) onCommand(pendingAction);
+                  setPendingAction(null);
+                }}
+                className="mt-2 rounded bg-amber-400 px-3 py-1 font-semibold text-slate-950"
+              >
+                Approve allowlisted action
+              </button>
             </div>
           )}
 
