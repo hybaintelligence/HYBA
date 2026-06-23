@@ -27,7 +27,14 @@ type CIaaSPresetName =
   | "Sovereign Autonomy Rail"
   | "Research/Expert CI Rail";
 
-const ciaasPresets: Record<CIaaSPresetName, Omit<ProvisionComputationalIntelligenceRequest, "name">> = {
+type GovernanceLevel = "strict" | "balanced" | "relaxed";
+
+interface CIaaSPreset extends Omit<ProvisionComputationalIntelligenceRequest, "name"> {
+  governance: GovernanceLevel;
+  description: string;
+}
+
+const ciaasPresets: Record<CIaaSPresetName, CIaaSPreset> = {
   "Starter CI Rail": {
     service_tier: "developer",
     tenancy: "single-tenant",
@@ -39,6 +46,8 @@ const ciaasPresets: Record<CIaaSPresetName, Omit<ProvisionComputationalIntellige
     admin_privileged: false,
     data_residency: "us",
     allowed_workloads: ["explain", "substrate_health"],
+    governance: "balanced",
+    description: "Development-friendly CI rail for exploration and testing with balanced governance.",
   },
   "Enterprise Operations Rail": {
     service_tier: "production",
@@ -51,6 +60,8 @@ const ciaasPresets: Record<CIaaSPresetName, Omit<ProvisionComputationalIntellige
     admin_privileged: false,
     data_residency: "us",
     allowed_workloads: ["explain", "orchestrate", "governance_audit", "substrate_health"],
+    governance: "balanced",
+    description: "Production-grade CI rail for enterprise operations with standard governance.",
   },
   "Regulated Regeneration Rail": {
     service_tier: "production",
@@ -63,6 +74,8 @@ const ciaasPresets: Record<CIaaSPresetName, Omit<ProvisionComputationalIntellige
     admin_privileged: false,
     data_residency: "us",
     allowed_workloads: ["explain", "orchestrate", "governance_audit", "substrate_health"],
+    governance: "strict",
+    description: "High-compliance CI rail for regulated industries with strict governance and audit requirements.",
   },
   "Sovereign Autonomy Rail": {
     service_tier: "sovereign",
@@ -75,6 +88,8 @@ const ciaasPresets: Record<CIaaSPresetName, Omit<ProvisionComputationalIntellige
     admin_privileged: false,
     data_residency: "us",
     allowed_workloads: ["explain", "orchestrate", "governance_audit", "substrate_health"],
+    governance: "strict",
+    description: "Maximum isolation and sovereignty with strict governance for critical infrastructure.",
   },
   "Research/Expert CI Rail": {
     service_tier: "developer",
@@ -87,6 +102,8 @@ const ciaasPresets: Record<CIaaSPresetName, Omit<ProvisionComputationalIntellige
     admin_privileged: false,
     data_residency: "us",
     allowed_workloads: ["explain", "orchestrate", "counterfactual", "governance_audit", "substrate_health"],
+    governance: "relaxed",
+    description: "Expert research rail with relaxed governance for experimentation and advanced workloads.",
   },
 };
 

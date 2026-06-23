@@ -47,12 +47,18 @@ type ProposedAction = {
 
 const LOW_RISK_ALLOWLIST = new Set(["refresh_telemetry"]);
 
-function classifyAction(command: string, userRole?: string): ProposedAction {
+const UNATTENDED_WRITES_ENABLED = import.meta.env.VITE_UNATTENDED_WRITES === "true";
+
+function classifyAction(command: string, userRole?: string, skillMode?: string): ProposedAction {
   const normalized = String(command || "").trim();
   const lowRisk = LOW_RISK_ALLOWLIST.has(normalized);
   const privileged = ["admin", "ceo_heir_apparent", "chairman", "cto"].includes(
     String(userRole || "").toLowerCase(),
   );
+  
+  // Check for UNATTENDED_WRITES flag and expert mode
+  const canBypassApproval = UNATTENDED_WRITES_ENABLED && skillMode === "expert" && privileged;
+  
   return {
     command: normalized,
     risk: lowRisk
@@ -65,8 +71,10 @@ function classifyAction(command: string, userRole?: string): ProposedAction {
     blastRadius: lowRisk
       ? "Read-only telemetry refresh; no system writes."
       : "May affect runtime configuration, tenant state, or external integrations.",
-    approvalRequired: !lowRisk || !privileged,
-    reason: lowRisk
+    approvalRequired: !lowRisk && !canBypassApproval,
+    reason: canBypassApproval
+      ? "Expert mode with UNATTENDED_WRITES enabled - auto-approved for privileged users."
+      : lowRisk
       ? "Pre-authorized read-only command."
       : "Governance requires explicit approval before execution.",
   };
@@ -191,7 +199,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({
 
       const proposedAction = result.regeneration_action || result.suggested_action;
       if (proposedAction) {
-        setPendingAction(classifyAction(String(proposedAction), userRole));
+        setPendingAction(classifyAction(String(proposedAction), userRole, skillMode));
         setMessages((prev) => [
           ...prev,
           {
@@ -300,7 +308,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({
 
   const approveProposedAction = () => {
     if (!pendingAction || !onCommand) return;
-    const proposal = classifyAction(pendingAction, userRole);
+    const proposal = classifyAction(pendingAction.command, userRole, skillMode);
     if (proposal.approvalRequired) {
       const approved = window.confirm(
         `Approve HYBA action?\n\nCommand: ${proposal.command}\nRisk: ${proposal.risk}\nBlast radius: ${proposal.blastRadius}`,
