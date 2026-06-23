@@ -28,7 +28,7 @@ export const MathematicsTests: React.FC = () => {
       } else {
         setError(data.error || "Proofs execution returned success=false.");
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError("Failed to link with backend API tests runner: " + err.message);
     } finally {
       setIsRunning(false);
