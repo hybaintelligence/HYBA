@@ -43,7 +43,10 @@ function nearestHideableSurface(element: Element): HTMLElement | null {
 function scrubInternalSurfaces(root: ParentNode = document): void {
   if (!isCustomerBoundaryEnabled()) return;
 
-  const candidates = root.querySelectorAll<HTMLElement>("h1,h2,h3,h4,h5,p,span,strong,button,div");
+  // Only inspect leaf-like textual elements. Scanning broad containers can hide
+  // unrelated customer sections because their aggregate text may include one
+  // denied word from a nested legacy panel.
+  const candidates = root.querySelectorAll<HTMLElement>("h1,h2,h3,h4,h5,p,span,strong,button");
 
   candidates.forEach((candidate) => {
     const text = candidate.textContent?.toLowerCase() || "";

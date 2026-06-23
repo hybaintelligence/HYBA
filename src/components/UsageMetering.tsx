@@ -23,9 +23,11 @@ const DEFAULT_TENANT = import.meta.env.VITE_CUSTOMER_TENANT_ID || "enterprise-te
 function usageHeaders(): HeadersInit {
   let tenant = DEFAULT_TENANT;
   let portalToken = import.meta.env.VITE_CUSTOMER_PORTAL_TOKEN || "";
+  let authToken = "";
   try {
     tenant = localStorage.getItem("hyba_customer_tenant_id") || tenant;
     portalToken = localStorage.getItem("hyba_customer_portal_token") || portalToken;
+    authToken = localStorage.getItem("hyba_auth_token") || "";
   } catch {
     // Browser storage can be disabled; keep env/defaults.
   }
@@ -33,9 +35,7 @@ function usageHeaders(): HeadersInit {
   return {
     "X-HYBA-Tenant-ID": tenant,
     ...(portalToken ? { "X-HYBA-Customer-Token": portalToken } : {}),
-    ...(localStorage.getItem("hyba_auth_token")
-      ? { Authorization: `Bearer ${localStorage.getItem("hyba_auth_token")}` }
-      : {}),
+    ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
   };
 }
 
@@ -45,7 +45,7 @@ export function UsageMetering() {
 
   useEffect(() => {
     fetchUsage();
-    const interval = setInterval(fetchUsage, 60000); // Update every minute
+    const interval = setInterval(fetchUsage, 60000);
     return () => clearInterval(interval);
   }, []);
 
@@ -77,10 +77,9 @@ export function UsageMetering() {
     );
   }
 
-  const quotaPercentage =
-    usage.compute_units_quota > 0
-      ? (usage.compute_units_used / usage.compute_units_quota) * 100
-      : 0;
+  const quotaPercentage = usage.compute_units_quota > 0
+    ? (usage.compute_units_used / usage.compute_units_quota) * 100
+    : 0;
   const qaasUsage = usage.breakdown.qaas || 0;
   const qiaasUsage = usage.breakdown.qiaas || 0;
 
@@ -135,7 +134,9 @@ export function UsageMetering() {
               <Activity className="h-4 w-4" />
               <span className="text-xs font-medium">QaaS Usage</span>
             </div>
-            <div className="text-2xl font-bold text-slate-950">{qaasUsage.toLocaleString()}</div>
+            <div className="text-2xl font-bold text-slate-950">
+              {qaasUsage.toLocaleString()}
+            </div>
             <div className="mt-1 text-xs text-slate-500">compute units</div>
           </div>
 
@@ -144,7 +145,9 @@ export function UsageMetering() {
               <TrendingUp className="h-4 w-4" />
               <span className="text-xs font-medium">QIaaS Usage</span>
             </div>
-            <div className="text-2xl font-bold text-slate-950">{qiaasUsage.toLocaleString()}</div>
+            <div className="text-2xl font-bold text-slate-950">
+              {qiaasUsage.toLocaleString()}
+            </div>
             <div className="mt-1 text-xs text-slate-500">compute units</div>
           </div>
         </div>
