@@ -152,6 +152,17 @@ export default function CIaaSServiceManager({ token }: CIaaSServiceManagerProps)
     ],
   });
 
+  const applyPreset = (preset: "starter" | "enterprise" | "regulated" | "sovereign" | "research") => {
+    const presets: Record<typeof preset, Partial<ProvisionComputationalIntelligenceRequest>> = {
+      starter: { service_tier: "developer", tenancy: "single-tenant", code_distance: 7, logical_compute_units: 16, physical_error_rate: 0.001, max_workloads_per_minute: 30, max_context_bytes: 64000, allowed_workloads: ["explain", "substrate_health", "governance_audit"] },
+      enterprise: { service_tier: "production", tenancy: "single-tenant", code_distance: 11, logical_compute_units: 64, physical_error_rate: 0.0005, max_workloads_per_minute: 120, max_context_bytes: 256000, allowed_workloads: ["explain", "orchestrate", "counterfactual", "governance_audit", "substrate_health"] },
+      regulated: { service_tier: "production", tenancy: "single-tenant", code_distance: 15, logical_compute_units: 96, physical_error_rate: 0.0001, max_workloads_per_minute: 60, max_context_bytes: 512000, allowed_workloads: ["explain", "counterfactual", "governance_audit", "substrate_health"] },
+      sovereign: { service_tier: "sovereign", tenancy: "sovereign-isolated", code_distance: 21, logical_compute_units: 128, physical_error_rate: 0.00005, max_workloads_per_minute: 45, max_context_bytes: 512000, allowed_workloads: ["explain", "counterfactual", "governance_audit", "substrate_health"] },
+      research: { service_tier: "developer", tenancy: "single-tenant", code_distance: 9, logical_compute_units: 128, physical_error_rate: 0.001, max_workloads_per_minute: 240, max_context_bytes: 256000, allowed_workloads: ["explain", "orchestrate", "counterfactual", "governance_audit", "substrate_health"] },
+    };
+    setProvisionForm((current) => ({ ...current, ...presets[preset], service_tier: presets[preset].service_tier === "sovereign" && !isAdmin ? "production" : presets[preset].service_tier, tenancy: presets[preset].tenancy === "sovereign-isolated" && !isAdmin ? "single-tenant" : presets[preset].tenancy }));
+  };
+
   const fetchServices = async () => {
     if (!token) return;
     setLoading(true);
@@ -244,7 +255,7 @@ export default function CIaaSServiceManager({ token }: CIaaSServiceManagerProps)
         <div>
           <h2 className="text-2xl font-bold text-slate-900">CIaaS Services</h2>
           <p className="text-sm text-slate-600">
-            Computational Intelligence as a Service - Manage virtual intelligence computers
+            Intent-first intelligence rails for explanation, counterfactuals, governance audit, and safe orchestration. Raw parameters stay behind expert mode.
           </p>
         </div>
         <button
@@ -358,6 +369,15 @@ export default function CIaaSServiceManager({ token }: CIaaSServiceManagerProps)
           <div className="w-full max-w-2xl rounded-lg bg-white p-6 shadow-xl">
             <h3 className="mb-4 text-xl font-bold text-slate-900">Provision Intelligence Rail</h3>
             <form onSubmit={handleProvision} className="space-y-4">
+              <div className="rounded-xl border border-blue-100 bg-blue-50 p-4">
+                <p className="text-sm font-semibold text-blue-950">Choose a business preset</p>
+                <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                  {[["starter", "Starter Intelligence Rail"], ["enterprise", "Enterprise Decision Rail"], ["regulated", "Regulated Evidence Rail"], ["sovereign", "Sovereign Isolated Rail"], ["research", "Research/Expert Rail"]].map(([value, label]) => (
+                    <button key={value} type="button" onClick={() => applyPreset(value as any)} className="rounded-lg border border-blue-200 bg-white px-3 py-2 text-left text-xs font-semibold text-blue-900 hover:bg-blue-100">{label}</button>
+                  ))}
+                </div>
+                <p className="mt-2 text-xs text-blue-800">{profile.showTechnicalDefaults ? "Technical fields are visible for this lens." : "Technical fields are hidden by default; presets map to safe defaults."}</p>
+              </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700">Service Name</label>
                 <input

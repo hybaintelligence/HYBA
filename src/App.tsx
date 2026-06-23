@@ -647,6 +647,14 @@ function AppContent() {
             <SkillModeSelector />
             <div className="h-6 w-px bg-white/20" />
             <button
+              onClick={() => setCurrentView(currentView === "studio" ? "dashboard" : "studio")}
+              className={`status-pill border ${currentView === "studio" ? "border-emerald-300/30 bg-emerald-400/15 text-emerald-100" : "border-white/30 bg-white/10 text-white"}`}
+              title={currentView === "studio" ? "Return to Dashboard" : "Open Use-Case Studio"}
+            >
+              <Rocket className="h-3.5 w-3.5" />
+              <span>{currentView === "studio" ? "Dashboard" : "Use-Case Studio"}</span>
+            </button>
+            <button
               onClick={() => setCurrentView(currentView === "jobs" ? "dashboard" : "jobs")}
               className={`status-pill border ${currentView === "jobs" ? "border-blue-300/30 bg-blue-400/15 text-blue-100" : "border-white/30 bg-white/10 text-white"}`}
               title={currentView === "jobs" ? "Return to Dashboard" : "View Mining Jobs"}
@@ -758,6 +766,8 @@ function AppContent() {
           <AnalyticsSection telemetry={telemetry} pools={pools} />
         ) : currentView === "portal" ? (
           <CustomerPortal />
+        ) : currentView === "studio" ? (
+          <UseCaseStudio />
         ) : currentView === "ciaas" ? (
           <CIaaSServiceManager token={token} />
         ) : currentView === "qaas" ? (
@@ -1340,6 +1350,51 @@ function AppContent() {
         />
       )}
     </div>
+  );
+}
+
+function UseCaseStudio() {
+  const { profile } = useAdaptiveExperience();
+  const useCases = [
+    { intent: "Explain a board-level decision", capability: "explain + evidence package", action: "Prepare decision memo", risk: "Approval required" },
+    { intent: "Simulate an intervention", capability: "counterfactual + optimize", action: "Run simulation only", risk: "No production write" },
+    { intent: "Detect operational risk", capability: "orchestrate + substrate_health", action: "Propose remediation", risk: "Blast radius review" },
+    { intent: "Audit an AI recommendation", capability: "governance_audit + evidence package", action: "Collect proof surface", risk: "Auditor sign-off" },
+  ];
+
+  return (
+    <section className="space-y-6" data-testid="use-case-studio">
+      <div className="rounded-[2rem] border border-white/40 bg-white/90 p-6 shadow-xl">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <p className="eyebrow">Adaptive Intelligence Experience Layer</p>
+            <h2 className="mt-2 text-3xl font-black text-slate-950">Start from intent, not quantum controls.</h2>
+            <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600">
+              HYBA maps plain-language enterprise intent to prediction, explanation, counterfactuals, optimization, regeneration, and evidence-bound audit workflows. Current lens: <strong>{profile.label}</strong>.
+            </p>
+          </div>
+          <ClaimBoundaryBadge boundary="proposal_only by default" />
+        </div>
+        <div className="mt-6 grid gap-4 md:grid-cols-2">
+          {useCases.map((item) => (
+            <article key={item.intent} className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+              <h3 className="font-bold text-slate-950">I want to {item.intent.toLowerCase()}.</h3>
+              <dl className="mt-3 space-y-2 text-sm text-slate-700">
+                <div><dt className="font-semibold text-slate-900">HYBA routes to</dt><dd>{item.capability}</dd></div>
+                <div><dt className="font-semibold text-slate-900">Safe next action</dt><dd>{item.action}</dd></div>
+                <div><dt className="font-semibold text-slate-900">Governance</dt><dd>{item.risk}</dd></div>
+              </dl>
+            </article>
+          ))}
+        </div>
+      </div>
+      <div className="grid gap-4 lg:grid-cols-3">
+        <MetricExplainerCard metric="substrate_coherence" value="Strong = safe to simulate" />
+        <MetricExplainerCard metric="evidence_seal" value="Required for buyer-facing trust" />
+        <MetricExplainerCard metric="claim_boundary" value="Advisory until approved" />
+      </div>
+      <EvidenceBoundAnswer />
+    </section>
   );
 }
 
