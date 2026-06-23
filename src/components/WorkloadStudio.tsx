@@ -34,6 +34,44 @@ type CognitiveLens =
   | "auditor"
   | "expert";
 
+type TraceIdProvenance = "server_issued" | "client_generated";
+type EndpointInvoked = "ciass_live" | "intelligence_explain" | "intelligence_orchestrate" | "none";
+
+type InvocationMetadata = {
+  endpoint_invoked: EndpointInvoked;
+  endpoint_path: string;
+  fallback: boolean;
+  fallback_reason: string | null;
+  trace_id: string;
+  trace_id_provenance: TraceIdProvenance;
+};
+
+type EvidencePacket = {
+  schema_version: "1.0";
+  generated_at: string;
+  workload: {
+    id: string;
+    type: WorkloadType;
+    classification: WorkloadType;
+    preview: string;
+  };
+  cognitive_lens: CognitiveLens;
+  invocation: InvocationMetadata;
+  response: Record<string, unknown>;
+  evidence_packet: {
+    invariants: string[];
+    limitations: string[];
+    claim_boundary: string;
+    transformations: string[];
+    evidence_seal: string;
+  };
+  claim_boundary: string;
+  audit: {
+    exported_by: "WorkloadStudio v1.0";
+    export_triggered_at: string | null;
+  };
+};
+
 type StudioResult = {
   traceId: string;
   workloadType: WorkloadType;
@@ -41,7 +79,7 @@ type StudioResult = {
   endpointInvoked: string;
   before: string;
   after: string;
-  evidencePacket: Record<string, unknown>;
+  evidencePacket: EvidencePacket;
   boundary: string;
 };
 
@@ -62,6 +100,13 @@ const lenses: CognitiveLens[] = [
   "expert",
 ];
 
+const CLAIM_BOUNDARY =
+  "Capability boundary: HYBA reports the API response, transformation pathway, and evidence packet. The buyer can reproduce the call and inspect the trace rather than accept a narrative claim.";
+
+// TODO(post-MVP): decompose this v1 demo surface into WorkloadSelector,
+// LensSelector, InvocationEngine, EvidencePacketBuilder, and PacketExporter.
+// Kept together for now so the CIaaS buyer journey can be reviewed as one flow.
+
 function classifyWorkload(input: string): WorkloadType {
   const text = input.toLowerCase();
   if (text.includes("control") || text.includes("audit") || text.includes("compliance")) {
@@ -76,11 +121,7 @@ function classifyWorkload(input: string): WorkloadType {
   return "risk register";
 }
 
-function buildFallbackTransformation(
-  type: WorkloadType,
-  lens: CognitiveLens,
-  input: string,
-): string {
+function buildFallbackTransformation(type: WorkloadType, lens: CognitiveLens, input: string): string {
   const lines = input.split(/\n+/).filter(Boolean).slice(0, 4);
   const focus: Record<CognitiveLens, string> = {
     executive: "decision posture, strategic risk concentration, and approval path",
@@ -102,6 +143,82 @@ function buildFallbackTransformation(
 
 function makeTraceId() {
   return `hyba-trace-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+function readTraceId(value: unknown): string | null {
+  if (!value || typeof value !== "object") return null;
+  const record = value as Record<string, unknown>;
+  const direct = record.trace_id || record.traceId;
+  if (typeof direct === "string" && direct.trim()) return direct.trim();
+  const evidence = record.evidence_packet;
+  if (evidence && typeof evidence === "object") {
+    const nested = (evidence as Record<string, unknown>).trace_id;
+    if (typeof nested === "string" && nested.trim()) return nested.trim();
+  }
+  return null;
+}
+
+function buildEvidencePacket(args: {
+  traceId: string;
+  traceIdProvenance: TraceIdProvenance;
+  workload: string;
+  workloadType: WorkloadType;
+  lens: CognitiveLens;
+  invocation: InvocationMetadata;
+  response: Record<string, unknown>;
+  liveCIAAS: boolean;
+  serviceId: string | null;
+}): EvidencePacket {
+  return {
+    schema_version: "1.0",
+    generated_at: new Date().toISOString(),
+    workload: {
+      id: args.traceId,
+      type: args.workloadType,
+      classification: args.workloadType,
+      preview: args.workload.slice(0, 500),
+    },
+    cognitive_lens: args.lens,
+    invocation: {
+      ...args.invocation,
+      trace_id: args.traceId,
+      trace_id_provenance: args.traceIdProvenance,
+    },
+    response: {
+      live_ciaas_execution: args.liveCIAAS,
+      ciaas_service_id: args.serviceId,
+      ...args.response,
+    },
+    evidence_packet: {
+      invariants: [
+        "customer input preserved",
+        "human approval boundary preserved",
+        "capability boundary visible",
+        "raw API-key material not exported",
+      ],
+      limitations: [
+        "Packet reflects supplied input and available API response",
+        "Consequential action requires human review",
+        args.invocation.fallback
+          ? args.invocation.fallback_reason || "Fallback path used"
+          : "Live CIaaS route completed for this packet",
+      ],
+      claim_boundary: CLAIM_BOUNDARY,
+      transformations: [
+        "customer workload ingestion",
+        "classification",
+        "lens-conditioned invocation context",
+        "CIaaS execution path selection",
+        "evidence packaging",
+      ],
+      evidence_seal: `${args.invocation.fallback ? "fallback" : "seal"}-${args.traceId.slice(-8)}`,
+    },
+    claim_boundary: CLAIM_BOUNDARY,
+    audit: {
+      exported_by: "WorkloadStudio v1.0",
+      export_triggered_at: null,
+    },
+  };
 }
 
 export function WorkloadStudio() {
@@ -132,16 +249,30 @@ export function WorkloadStudio() {
   };
 
   const runTransformation = async () => {
-    const traceId = makeTraceId();
+    const clientTraceId = makeTraceId();
     const customerApiKey = apiKey.trim();
     if (customerApiKey) setStoredCustomerApiKey(customerApiKey);
     setRunning(true);
     setError(null);
     try {
       const classification = classifyWorkload(workload);
-      let ciaasEndpoint = customerApiKey
-        ? "/api/v1/computational-intelligence-services/{service_id}/execute"
-        : "/api/v1/computational-intelligence-services/{service_id}/execute (waiting for X-API-Key)";
+      let invocation: InvocationMetadata = customerApiKey
+        ? {
+            endpoint_invoked: "none",
+            endpoint_path: "/api/v1/computational-intelligence-services",
+            fallback: true,
+            fallback_reason: "No customer CIaaS service selected yet",
+            trace_id: clientTraceId,
+            trace_id_provenance: "client_generated",
+          }
+        : {
+            endpoint_invoked: "none",
+            endpoint_path: "/api/v1/computational-intelligence-services/{service_id}/execute",
+            fallback: true,
+            fallback_reason: "Customer API key not supplied at invocation time",
+            trace_id: clientTraceId,
+            trace_id_provenance: "client_generated",
+          };
       let ciaasResult: Record<string, unknown> | null = null;
       let selectedServiceId: string | null = null;
 
@@ -156,32 +287,57 @@ export function WorkloadStudio() {
               {
                 workload_type: "explain",
                 context: {
-                  trace_id: traceId,
+                  trace_id: clientTraceId,
                   workload,
+                  cognitive_lens: lens,
                   lens,
                   classification,
                   customer_mode: true,
                   studio: "workload_transformation",
                 },
-                idempotency_key: traceId,
+                idempotency_key: clientTraceId,
               },
               customerApiKey,
             );
-            ciaasEndpoint = `/api/v1/computational-intelligence-services/${service.service_id}/execute`;
+            const serverTrace = readTraceId(ciaasResult);
+            invocation = {
+              endpoint_invoked: "ciass_live",
+              endpoint_path: `/api/v1/computational-intelligence-services/${service.service_id}/execute`,
+              fallback: false,
+              fallback_reason: null,
+              trace_id: serverTrace || clientTraceId,
+              trace_id_provenance: serverTrace ? "server_issued" : "client_generated",
+            };
           } else {
-            ciaasEndpoint = "/api/v1/computational-intelligence-services (no customer CIaaS rail provisioned)";
+            invocation = {
+              endpoint_invoked: "none",
+              endpoint_path: "/api/v1/computational-intelligence-services",
+              fallback: true,
+              fallback_reason: "No provisioned customer CIaaS rail returned at invocation time",
+              trace_id: clientTraceId,
+              trace_id_provenance: "client_generated",
+            };
           }
         } catch (customerError) {
-          ciaasEndpoint = "/api/v1/computational-intelligence-services/{service_id}/execute (customer CIaaS route unavailable)";
-          setError(customerError instanceof Error ? customerError.message : "Customer CIaaS route unavailable");
+          invocation = {
+            endpoint_invoked: "none",
+            endpoint_path: "/api/v1/computational-intelligence-services/{service_id}/execute",
+            fallback: true,
+            fallback_reason:
+              customerError instanceof Error ? customerError.message : "Customer CIaaS route unavailable",
+            trace_id: clientTraceId,
+            trace_id_provenance: "client_generated",
+          };
+          setError(invocation.fallback_reason);
         }
       }
 
       const explain = await intelligenceExplain({
         query: `Classify and transform this customer-provided ${classification} for CIaaS Workload Studio using the ${lens} cognitive lens. Return assumptions, gaps, confidence limits, evidence needs, decision boundary, and customer-safe next action.`,
         context: {
-          trace_id: traceId,
+          trace_id: invocation.trace_id,
           workload,
+          cognitive_lens: lens,
           lens,
           customer_mode: true,
           skill_mode: mode,
@@ -189,13 +345,27 @@ export function WorkloadStudio() {
           live_ciaas_execution: Boolean(ciaasResult),
         },
       });
+      const explainTrace = readTraceId(explain);
+      if (invocation.fallback && explainTrace) {
+        invocation = {
+          endpoint_invoked: "intelligence_explain",
+          endpoint_path: "/api/v1/intelligence/explain",
+          fallback: true,
+          fallback_reason: invocation.fallback_reason,
+          trace_id: explainTrace,
+          trace_id_provenance: "server_issued",
+        };
+      }
+
       let planSummary = "No orchestration plan returned.";
+      let orchestrateSucceeded = false;
       try {
         const plan = await intelligenceOrchestrate({
           goal: `Produce a reproducible evidence packet for a ${classification}`,
           priority: lens === "auditor" ? 9 : lens === "business" ? 8 : 7,
-          constraints: { trace_id: traceId, lens, preserve_human_approval: true },
+          constraints: { trace_id: invocation.trace_id, cognitive_lens: lens, preserve_human_approval: true },
         });
+        orchestrateSucceeded = true;
         planSummary = plan.steps
           .map((step, index) => `${index + 1}. ${step.action} → ${step.expected_outcome}`)
           .join("\n");
@@ -203,71 +373,72 @@ export function WorkloadStudio() {
         planSummary = "Orchestration endpoint unavailable; explanation endpoint completed.";
       }
 
+      const endpointInvoked = invocation.fallback
+        ? orchestrateSucceeded
+          ? `${invocation.endpoint_path} + /api/v1/intelligence/orchestrate`
+          : invocation.endpoint_path
+        : `${invocation.endpoint_path} + /api/v1/intelligence/explain + /api/v1/intelligence/orchestrate`;
       const after = `${explain.explanation}\n\nCIaaS plan:\n${planSummary}`;
+      const traceId = invocation.trace_id;
+      const evidencePacket = buildEvidencePacket({
+        traceId,
+        traceIdProvenance: invocation.trace_id_provenance,
+        workload,
+        workloadType: classification,
+        lens,
+        invocation,
+        response: {
+          explanation: explain.explanation,
+          confidence: explain.confidence,
+          sources: explain.sources,
+          orchestration_plan: planSummary,
+        },
+        liveCIAAS: Boolean(ciaasResult),
+        serviceId: selectedServiceId,
+      });
       setResult({
         traceId,
         workloadType: classification,
         lens,
-        endpointInvoked: `${ciaasEndpoint} + /api/v1/intelligence/explain + /api/v1/intelligence/orchestrate`,
+        endpointInvoked,
         before: workload,
         after,
-        evidencePacket: {
-          trace_id: traceId,
-          workload_classification: classification,
-          cognitive_lens: lens,
-          confidence: explain.confidence,
-          sources: explain.sources,
-          live_ciaas_execution: Boolean(ciaasResult),
-          ciaas_service_id: selectedServiceId,
-          ciaas_result: ciaasResult,
-          transformations: [
-            "customer workload ingestion",
-            "classification",
-            "lens translation",
-            "CIaaS execution attempt",
-            "evidence packaging",
-          ],
-          invariants: [
-            "customer input preserved",
-            "human approval boundary preserved",
-            "capability boundary visible",
-            "raw API-key material not exported",
-          ],
-          limitations: [
-            "Packet reflects supplied input and available API response",
-            "Consequential action requires human review",
-          ],
-          evidence_seal: `seal-${traceId.slice(-8)}`,
-        },
-        boundary:
-          "Capability boundary: HYBA reports the API response, transformation pathway, and evidence packet. The buyer can reproduce the call and inspect the trace rather than accept a narrative claim.",
+        evidencePacket,
+        boundary: CLAIM_BOUNDARY,
       });
     } catch (err) {
       const classification = classifyWorkload(workload);
-      setError(err instanceof Error ? err.message : "CIaaS endpoint unavailable");
+      const traceId = clientTraceId;
+      const fallbackReason = err instanceof Error ? err.message : "All endpoints unavailable";
+      const invocation: InvocationMetadata = {
+        endpoint_invoked: "none",
+        endpoint_path: "none",
+        fallback: true,
+        fallback_reason: fallbackReason,
+        trace_id: traceId,
+        trace_id_provenance: "client_generated",
+      };
+      setError(fallbackReason);
       setResult({
         traceId,
         workloadType: classification,
         lens,
-        endpointInvoked: "/api/v1/intelligence/explain (attempted)",
+        endpointInvoked: "none",
         before: workload,
         after: buildFallbackTransformation(classification, lens, workload),
-        evidencePacket: {
-          trace_id: traceId,
-          workload_classification: classification,
-          cognitive_lens: lens,
-          endpoint_status: "unavailable",
-          transformations: ["local classification", "capability-boundary fallback packet"],
-          invariants: [
-            "customer input preserved",
-            "no fabricated API result",
-            "human approval boundary preserved",
-          ],
-          limitations: ["Live CIaaS endpoint did not complete in this browser session"],
-          evidence_seal: `attempt-${traceId.slice(-8)}`,
-        },
+        evidencePacket: buildEvidencePacket({
+          traceId,
+          traceIdProvenance: "client_generated",
+          workload,
+          workloadType: classification,
+          lens,
+          invocation,
+          response: { fallback_result: "local capability-boundary fallback packet" },
+          liveCIAAS: false,
+          serviceId: null,
+        }),
         boundary:
-          "Capability boundary: the API call was attempted but did not complete, so this packet is marked as an unavailable-endpoint fallback rather than a live CIaaS result.",
+          "Capability boundary: all API calls were unavailable, so this packet is marked as a client-generated fallback rather than a live CIaaS result.",
       });
     } finally {
       setRunning(false);
@@ -276,7 +447,11 @@ export function WorkloadStudio() {
 
   const exportPacket = () => {
     if (!result) return;
-    const blob = new Blob([JSON.stringify(result, null, 2)], { type: "application/json" });
+    const packet: EvidencePacket = {
+      ...result.evidencePacket,
+      audit: { ...result.evidencePacket.audit, export_triggered_at: new Date().toISOString() },
+    };
+    const blob = new Blob([JSON.stringify(packet, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
@@ -368,8 +543,9 @@ export function WorkloadStudio() {
               </button>
             </div>
             <p className="mt-2 text-xs text-slate-500">
-              The key is stored only in this browser. Without it, the Studio still produces a bounded
-              explanation packet but marks live customer CIaaS execution as unavailable.
+              Demo convenience only: the key is stored in this browser so the buyer can move from
+              onboarding to workload transformation without DevTools. Production custody must move to
+              HttpOnly cookies or server-side sessions.
             </p>
           </div>
           <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
@@ -380,8 +556,7 @@ export function WorkloadStudio() {
             disabled={running || workload.trim().length === 0}
             className="executive-button w-full justify-center bg-[#06162D] text-white disabled:opacity-50"
           >
-            <Play className="h-4 w-4" />{" "}
-            {running ? "Running CIaaS transformation…" : "Run CIaaS transformation"}
+            <Play className="h-4 w-4" /> {running ? "Running CIaaS transformation…" : "Run CIaaS transformation"}
           </button>
         </div>
 
