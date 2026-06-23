@@ -246,43 +246,44 @@ export default function CIaaSServiceManager({ token }: CIaaSServiceManagerProps)
       ) : (
         <div className="grid gap-4">
           {services.map((service) => (
-          <div key={service.service_id} className="rounded-lg border border-emerald-100 bg-white p-6 shadow-sm">
-            <div className="flex items-start justify-between gap-4">
-              <div className="flex-1">
-                <div className="flex flex-wrap items-center gap-3">
-                  <h3 className="text-lg font-semibold text-slate-900">{service.name}</h3>
-                  <span className={`rounded-full border px-2.5 py-1 text-xs font-medium ${getStateColor(service.state)}`}>{service.state.toUpperCase()}</span>
-                  <span className={`rounded-full border px-2.5 py-1 text-xs font-medium ${getTierColor(service.service_tier)}`}>{service.service_tier.toUpperCase()}</span>
-                </div>
-                <div className="mt-3 grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <span className="text-slate-600">Service ID:</span>
-                    <span className="ml-2 font-mono text-slate-900">{service.service_id}</span>
+            <div key={service.service_id} className="rounded-lg border border-emerald-100 bg-white p-6 shadow-sm">
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex-1">
+                  <div className="flex flex-wrap items-center gap-3">
+                    <h3 className="text-lg font-semibold text-slate-900">{service.name}</h3>
+                    <span className={`rounded-full border px-2.5 py-1 text-xs font-medium ${getStateColor(service.state)}`}>{service.state.toUpperCase()}</span>
+                    <span className={`rounded-full border px-2.5 py-1 text-xs font-medium ${getTierColor(service.service_tier)}`}>{service.service_tier.toUpperCase()}</span>
                   </div>
-                  <div>
-                    <span className="text-slate-600">Tenancy:</span>
-                    <span className="ml-2 font-mono text-slate-900">{service.tenancy}</span>
+                  <div className="mt-3 grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <span className="text-slate-600">Service ID:</span>
+                      <span className="ml-2 font-mono text-slate-900">{service.service_id}</span>
+                    </div>
+                    <div>
+                      <span className="text-slate-600">Tenancy:</span>
+                      <span className="ml-2 font-mono text-slate-900">{service.tenancy}</span>
+                    </div>
+                  </div>
+                  <div className="mt-3 rounded-lg border border-emerald-100 bg-emerald-50 p-3 text-xs text-emerald-950">
+                    <strong>CI proof tier:</strong> Standard Audit Stamp · operational logs and regeneration audit trail explain why the system fixed or escalated a workflow.
                   </div>
                 </div>
-                <div className="mt-3 rounded-lg border border-emerald-100 bg-emerald-50 p-3 text-xs text-emerald-950">
-                  <strong>CI proof tier:</strong> Standard Audit Stamp · operational logs and regeneration audit trail explain why the system fixed or escalated a workflow.
+                <div className="flex gap-2">
+                  {service.state === "stopped" || service.state === "provisioned" ? (
+                    <button onClick={() => handleStart(service.service_id)} className="flex items-center gap-1 rounded-lg bg-emerald-600 px-3 py-2 text-white">
+                      <Play className="h-4 w-4" /> Start
+                    </button>
+                  ) : (
+                    <button onClick={() => handleStop(service.service_id)} className="flex items-center gap-1 rounded-lg bg-slate-200 px-3 py-2 text-slate-700 hover:bg-slate-300">
+                      <Square className="h-4 w-4" /> Stop
+                    </button>
+                  )}
                 </div>
-              </div>
-              <div className="flex gap-2">
-                {service.state === "stopped" || service.state === "provisioned" ? (
-                  <button onClick={() => handleStart(service.service_id)} className="flex items-center gap-1 rounded-lg bg-emerald-600 px-3 py-2 text-white">
-                    <Play className="h-4 w-4" /> Start
-                  </button>
-                ) : (
-                  <button onClick={() => handleStop(service.service_id)} className="flex items-center gap-1 rounded-lg bg-slate-200 px-3 py-2 text-slate-700 hover:bg-slate-300">
-                    <Square className="h-4 w-4" /> Stop
-                  </button>
-                )}
               </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
 
       {selectedService && (
         <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-950">
