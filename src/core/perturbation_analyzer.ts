@@ -415,9 +415,9 @@ export class PerturbationAnalyzer {
    * Can system tell if change was self-caused or external?
    */
   private attributeSource(
-    system: RecursiveSelfLearningSubstrate,
+    _system: RecursiveSelfLearningSubstrate,
     surprise: number,
-    telemetry: any,
+    _telemetry: unknown,
   ): { source: PerturbationType; confidence: number } {
     // High surprise → likely external
     // Low surprise → likely self-caused
