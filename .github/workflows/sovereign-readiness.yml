@@ -1,0 +1,61 @@
+name: Sovereign Readiness
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sovereign-readiness:
+    name: Sovereign control-plane readiness
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      - name: Install narrow sovereign runtime dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install pytest==8.4.2 numpy==2.0.2 pandas==2.2.2
+
+      - name: Import sovereign control-plane API
+        env:
+          PYTHONPATH: python_backend
+        run: |
+          python - <<'PY'
+          from hyba_ciaas import (
+              DataSourceSpec,
+              DeploymentMode,
+              PrincipalContext,
+              SovereignControlPlane,
+              SovereignDeploymentProfile,
+              create_default_ingestion_service,
+          )
+          print('sovereign import smoke passed')
+          PY
+
+      - name: Run central ingestion and sovereign control tests
+        env:
+          PYTHONPATH: python_backend
+        run: |
+          python -m pytest \
+            tests/test_central_data_ingestion.py \
+            tests/test_sovereign_deployment_control_plane.py \
+            -q
+
+      - name: Run sovereign readiness gate
+        env:
+          PYTHONPATH: python_backend
+        run: |
+          python scripts/sovereign_readiness_gate.py
