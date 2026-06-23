@@ -18,13 +18,25 @@ type CustomerWorkloadRequest = {
 
 const BACKEND_URL = "/api";
 const TOKEN_KEY = "hyba_auth_token";
-const CUSTOMER_API_KEY_STORAGE = "hyba_customer_api_key";
-const CUSTOMER_API_KEY_ALIASES = [
+export const CUSTOMER_API_KEY_STORAGE = "hyba_customer_api_key";
+
+/**
+ * SECURITY SCOPE: hyba_customer_api_key is stored in localStorage for CIaaS
+ * Workload Studio demo activation only. This keeps a buyer out of DevTools
+ * during a controlled demo, but it is not the intended production custody
+ * model for customer data handling.
+ *
+ * Threat model: XSS on this origin can expose the key. Production deployments
+ * must migrate to HttpOnly cookies or server-side session custody before broad
+ * customer data handling. Complementary controls should include CSP headers,
+ * short-lived/rotated keys, and immediate key revocation from the customer
+ * portal after each demo session.
+ */
+export const CUSTOMER_API_KEY_ALIASES = [
   CUSTOMER_API_KEY_STORAGE,
   "hyba_api_key",
-  "hyba_customer_access_key",
-  "HYBA_API_KEY",
-];
+  "ciass_api_key",
+] as const;
 
 export function getStoredCustomerApiKey(): string {
   try {
