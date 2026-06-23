@@ -2,8 +2,8 @@
  * HYBA Feature Flag System
  *
  * Controls visibility of internal vs. customer-facing surfaces.
- * Production deployments should use HYBA_CUSTOMER_MODE=true to hide
- * all internal validation infrastructure (mining, internal telemetry).
+ * Production deployments should use VITE_CUSTOMER_MODE=true to hide
+ * all internal validation infrastructure (mining, pool management, raw hashrate).
  */
 
 export interface FeatureFlags {
@@ -25,23 +25,28 @@ export interface FeatureFlags {
   ENABLE_WEBSOCKET: boolean;
 }
 
-const isProduction = import.meta.env.MODE === "production";
-const isCustomerMode = import.meta.env.VITE_CUSTOMER_MODE === "true";
-const isInternalMode = import.meta.env.VITE_INTERNAL_MODE === "true";
+function envFlag(name: string, fallback: boolean): boolean {
+  const raw = import.meta.env[name];
+  if (raw == null || raw === "") return fallback;
+  return String(raw).toLowerCase() === "true";
+}
+
+const isCustomerMode = envFlag("VITE_CUSTOMER_MODE", import.meta.env.MODE === "production");
+const isInternalMode = envFlag("VITE_INTERNAL_MODE", false);
 const isDevelopment = import.meta.env.DEV;
 
 /**
  * Feature flags configuration
  *
  * Default behavior:
- * - Production customer mode: Only QaaS/QIaaS/CIaaS/Finance visible
- * - Development: All features visible
- * - Internal mode: All features including mining visible
+ * - Production/customer mode: Only QaaS/QIaaS/CIaaS/Finance/evidence visible
+ * - Development: customer-safe by default unless VITE_INTERNAL_MODE=true
+ * - Internal mode: mining/private treasury tools visible only outside customer mode
  */
 export const FEATURES: FeatureFlags = {
-  // Internal operations (hidden by default in production)
+  // Internal operations (hidden by default in production and customer mode)
   SHOW_MINING_UI: isInternalMode && !isCustomerMode,
-  SHOW_INTERNAL_TELEMETRY: isInternalMode || isDevelopment,
+  SHOW_INTERNAL_TELEMETRY: isInternalMode && !isCustomerMode,
   SHOW_POOL_MANAGEMENT: isInternalMode && !isCustomerMode,
   SHOW_HASHRATE_METRICS: isInternalMode && !isCustomerMode,
 
@@ -52,14 +57,14 @@ export const FEATURES: FeatureFlags = {
   SHOW_QUANTUM_FINANCE: true,
   SHOW_EVIDENCE_EXPLORER: true,
 
-  // Debug (only in development)
-  SHOW_DEBUG_PANEL: isDevelopment,
-  ENABLE_WEBSOCKET: !isProduction,
+  // Debug/runtime transport
+  SHOW_DEBUG_PANEL: isDevelopment && isInternalMode && !isCustomerMode,
+  ENABLE_WEBSOCKET: envFlag("VITE_ENABLE_WEBSOCKET", true),
 };
 
 /**
- * Check if user has access to internal operations
- * Mining controls are restricted to CEO/treasury roles and internal mode
+ * Check if user has access to internal operations.
+ * Mining controls are restricted to CEO/treasury roles and internal mode.
  */
 export function hasInternalAccess(userRole?: string): boolean {
   if (!FEATURES.SHOW_MINING_UI) return false;
@@ -76,7 +81,7 @@ export function hasInternalAccess(userRole?: string): boolean {
 }
 
 /**
- * Get customer-safe metric label
+ * Get customer-safe metric label.
  */
 export function getCustomerMetricLabel(internalKey: string): string {
   const CUSTOMER_LABELS: Record<string, string> = {
@@ -88,22 +93,26 @@ export function getCustomerMetricLabel(internalKey: string): string {
     phi_resonance: "Computational Efficiency",
     consciousness_level: "Integration Metric",
     integrated_information: "Information Integration",
+    activePool: "Execution Rail",
+    pools: "Execution Rails",
   };
 
   return CUSTOMER_LABELS[internalKey] || internalKey;
 }
 
 /**
- * Filter telemetry for customer view
+ * Filter telemetry for customer view.
  */
 export function filterCustomerTelemetry<T extends Record<string, unknown>>(data: T): Partial<T> {
   if (FEATURES.SHOW_INTERNAL_TELEMETRY) return data;
 
   const filtered: Record<string, unknown> = { ...data };
 
-  // Remove mining-specific fields
+  // Remove mining-specific fields.
   delete filtered.activePool;
   delete filtered.currentHashrate;
+  delete filtered.effective_hashrate_ehs;
+  delete filtered.hashrate;
   delete filtered.power_scale;
   delete filtered.pools;
   delete filtered.mining;

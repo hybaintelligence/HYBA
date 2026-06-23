@@ -6,9 +6,9 @@ type Dashboard = {
   instances: Array<{ id: string; status: string; region: string }>;
   monthly_usage: { compute_units: number; estimated_cost_usd: number };
   quota_remaining: { compute_units: number; monthly_quota: number };
-  api_keys: Array<{ key_id: string; status: string; created_at: string }>;
+  api_keys: Array<{ key_id: string; label?: string; status: string; created_at: string }>;
   billing_summary: { current_month_usd: number; invoice_count: number; next_billing_date: string };
-  uptime: { last_30_days_percent: number };
+  uptime: { last_30_days_percent: number | null };
 };
 
 type Workloads = {
@@ -20,10 +20,24 @@ type Workloads = {
     cost_usd: number;
   }>;
   total_cost: number;
-  success_rate: number;
+  success_rate: number | null;
 };
 
-const DEFAULT_TENANT = "enterprise-tenant";
+const DEFAULT_TENANT = import.meta.env.VITE_CUSTOMER_TENANT_ID || "enterprise-tenant";
+
+function portalHeaders(tenantId: string): HeadersInit {
+  let portalToken = import.meta.env.VITE_CUSTOMER_PORTAL_TOKEN || "";
+  try {
+    portalToken = localStorage.getItem("hyba_customer_portal_token") || portalToken;
+  } catch {
+    // localStorage may be unavailable in locked-down browsers.
+  }
+
+  return {
+    "X-HYBA-Tenant-ID": tenantId,
+    ...(portalToken ? { "X-HYBA-Customer-Token": portalToken } : {}),
+  };
+}
 
 export default function CustomerPortal() {
   const [tenantId, setTenantId] = useState(DEFAULT_TENANT);
@@ -33,12 +47,14 @@ export default function CustomerPortal() {
 
   async function loadPortal(nextTenant = tenantId) {
     setStatus("Loading portal...");
+    const headers = portalHeaders(nextTenant);
     const [dashboardResponse, workloadResponse] = await Promise.all([
-      fetch(`/api/customer/${encodeURIComponent(nextTenant)}/dashboard`),
-      fetch(`/api/customer/${encodeURIComponent(nextTenant)}/workloads`),
+      fetch(`/api/customer/${encodeURIComponent(nextTenant)}/dashboard`, { headers }),
+      fetch(`/api/customer/${encodeURIComponent(nextTenant)}/workloads`, { headers }),
     ]);
     if (!dashboardResponse.ok || !workloadResponse.ok) {
-      throw new Error("Customer portal API unavailable");
+      const statusCode = dashboardResponse.ok ? workloadResponse.status : dashboardResponse.status;
+      throw new Error(`Customer portal API unavailable (${statusCode})`);
     }
     setDashboard(await dashboardResponse.json());
     setWorkloads(await workloadResponse.json());
@@ -49,13 +65,12 @@ export default function CustomerPortal() {
     loadPortal().catch((error) =>
       setStatus(error instanceof Error ? error.message : "Portal unavailable"),
     );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const usagePct = dashboard
-    ? Math.round(
-        ((dashboard.monthly_usage.compute_units || 0) / dashboard.quota_remaining.monthly_quota) *
-          100,
-      )
+  const monthlyQuota = dashboard?.quota_remaining.monthly_quota || 0;
+  const usagePct = dashboard && monthlyQuota > 0
+    ? Math.round(((dashboard.monthly_usage.compute_units || 0) / monthlyQuota) * 100)
     : 0;
 
   return (
@@ -119,20 +134,26 @@ export default function CustomerPortal() {
             <Server className="h-5 w-5" /> Instance status
           </h3>
           <div className="space-y-3">
-            {dashboard?.instances.map((instance) => (
-              <div
-                key={instance.id}
-                className="flex items-center justify-between rounded-2xl bg-slate-50 p-4 text-sm"
-              >
-                <div>
-                  <p className="font-semibold text-slate-900">{instance.id}</p>
-                  <p className="text-slate-500">{instance.region}</p>
+            {dashboard?.instances.length ? (
+              dashboard.instances.map((instance) => (
+                <div
+                  key={instance.id}
+                  className="flex items-center justify-between rounded-2xl bg-slate-50 p-4 text-sm"
+                >
+                  <div>
+                    <p className="font-semibold text-slate-900">{instance.id}</p>
+                    <p className="text-slate-500">{instance.region}</p>
+                  </div>
+                  <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">
+                    {instance.status}
+                  </span>
                 </div>
-                <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">
-                  {instance.status}
-                </span>
-              </div>
-            ))}
+              ))
+            ) : (
+              <p className="rounded-2xl bg-slate-50 p-4 text-sm text-slate-500">
+                No running customer instances reported yet.
+              </p>
+            )}
           </div>
         </div>
         <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-lg">
@@ -140,29 +161,31 @@ export default function CustomerPortal() {
             <History className="h-5 w-5" /> Workload history
           </h3>
           <div className="overflow-hidden rounded-2xl border border-slate-100">
-            {workloads?.executions.slice(0, 5).map((execution) => (
-              <div
-                key={execution.execution_id}
-                className="grid grid-cols-4 gap-3 border-b border-slate-100 p-3 text-sm last:border-0"
-              >
-                <span className="font-mono text-slate-500">{execution.execution_id}</span>
-                <span className="text-slate-700">{execution.workload_type}</span>
-                <span
-                  className={execution.status === "success" ? "text-emerald-600" : "text-red-600"}
+            {workloads?.executions.length ? (
+              workloads.executions.slice(0, 5).map((execution) => (
+                <div
+                  key={execution.execution_id}
+                  className="grid grid-cols-4 gap-3 border-b border-slate-100 p-3 text-sm last:border-0"
                 >
-                  {execution.status}
-                </span>
-                <span className="text-right font-semibold text-slate-900">
-                  ${execution.cost_usd}
-                </span>
-              </div>
-            ))}
+                  <span className="font-mono text-slate-500">{execution.execution_id}</span>
+                  <span className="text-slate-700">{execution.workload_type}</span>
+                  <span
+                    className={execution.status === "success" ? "text-emerald-600" : "text-red-600"}
+                  >
+                    {execution.status}
+                  </span>
+                  <span className="text-right font-semibold text-slate-900">
+                    ${execution.cost_usd}
+                  </span>
+                </div>
+              ))
+            ) : (
+              <p className="p-4 text-sm text-slate-500">No customer workloads recorded yet.</p>
+            )}
           </div>
           <p className="mt-4 text-sm text-slate-500">
             Success rate{" "}
-            {workloads?.success_rate == null
-              ? "—"
-              : `${(workloads.success_rate * 100).toFixed(1)}%`}
+            {workloads?.success_rate == null ? "—" : `${(workloads.success_rate * 100).toFixed(1)}%`}
             ; total cost ${workloads?.total_cost ?? "—"}.
           </p>
         </div>
