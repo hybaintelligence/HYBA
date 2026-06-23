@@ -73,6 +73,7 @@ import HistoricalDataSection from "./components/HistoricalDataSection";
 import AnalyticsSection from "./components/AnalyticsSection";
 import CustomerPortal from "./components/CustomerPortal";
 import CIaaSServiceManager from "./components/CIaaSServiceManager";
+import { WorkloadStudio } from "./components/WorkloadStudio";
 import QaaSComputerManager from "./components/QaaSComputerManager";
 import { useApiRequest } from "./hooks/useApiRequest";
 import { useLatencyMetrics } from "./hooks/useLatencyMetrics";
@@ -238,10 +239,11 @@ function AppContent() {
     | "analytics"
     | "portal"
     | "studio"
+    | "workloadStudio"
     | "ciaas"
     | "qaas"
     | "pricing"
-  >("dashboard");
+  >(() => (window.location.pathname === "/workload-studio" ? "workloadStudio" : "dashboard"));
 
   const { execute: fetchTelemetryExecute } = useApiRequest(fetchTelemetryData, { maxRetries: 3 });
   const {
@@ -769,12 +771,25 @@ function AppContent() {
               <Sparkline data={latencyHistory} />
               <div className="h-6 w-px bg-white/20" />
               <button
-                onClick={() => setCurrentView(currentView === "studio" ? "dashboard" : "studio")}
-                className={`status-pill border ${currentView === "studio" ? "border-emerald-300/30 bg-emerald-400/15 text-emerald-100" : "border-white/30 bg-white/10 text-white"}`}
-                title={currentView === "studio" ? "Return to Dashboard" : "Open Use-Case Studio"}
+                onClick={() => {
+                  const nextView =
+                    currentView === "workloadStudio" ? "dashboard" : "workloadStudio";
+                  setCurrentView(nextView);
+                  window.history.pushState(
+                    {},
+                    "",
+                    nextView === "workloadStudio" ? "/workload-studio" : "/",
+                  );
+                }}
+                className={`status-pill border ${currentView === "workloadStudio" ? "border-emerald-300/30 bg-emerald-400/15 text-emerald-100" : "border-white/30 bg-white/10 text-white"}`}
+                title={
+                  currentView === "workloadStudio"
+                    ? "Return to Dashboard"
+                    : "Open CIaaS Workload Studio"
+                }
               >
                 <Rocket className="h-3.5 w-3.5" />
-                <span>{currentView === "studio" ? "Dashboard" : "Use-Case Studio"}</span>
+                <span>{currentView === "workloadStudio" ? "Dashboard" : "Workload Studio"}</span>
               </button>
               {FEATURES.SHOW_MINING_UI && canAccessInternal && (
                 <button
@@ -911,6 +926,8 @@ function AppContent() {
             <CustomerPortal />
           ) : currentView === "pricing" ? (
             <PricingPage />
+          ) : currentView === "workloadStudio" ? (
+            <WorkloadStudio />
           ) : currentView === "studio" ? (
             <ImportedUseCaseStudio />
           ) : currentView === "ciaas" ? (
