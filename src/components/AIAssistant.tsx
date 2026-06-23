@@ -6,7 +6,7 @@
  */
 
 import React, { useState, useEffect, useRef } from "react";
-import { Activity, Brain, Zap, MessageSquare, X, Maximize2, Minimize2 } from "lucide-react";
+import { Activity, Brain, Zap, MessageSquare, X, Maximize2, Minimize2, ShieldCheck } from "lucide-react";
 
 interface Message {
   role: "user" | "assistant" | "system";
@@ -38,7 +38,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({
     {
       role: "system",
       content:
-        "AI Assistant ready. I can help with mining optimization, diagnostics, and operational guidance.",
+        "Adaptive AI Assistant ready in proposal-only mode. I can explain, simulate, prepare evidence, and draft remediation plans; execution requires role-aware approval.",
       timestamp: Date.now(),
     },
   ]);
@@ -75,9 +75,9 @@ const AIAssistant: React.FC<AIAssistantProps> = ({
     // Always offer general assistance
     if (newSuggestions.length === 0) {
       newSuggestions.push(
-        "Optimize my mining configuration",
-        "Explain current telemetry metrics",
-        "Run system diagnostics",
+        "Explain this like I'm a CFO",
+        "What action is safe?",
+        "Prepare a remediation plan, but do not execute",
       );
     }
 
@@ -114,8 +114,9 @@ const AIAssistant: React.FC<AIAssistantProps> = ({
           query: userMessage,
           context: JSON.stringify(context),
           substrates: ["manifold", "consciousness", "quantum"],
-          enable_regeneration: true, // Enable Salamander-style regeneration
-          auto_fix: true, // Allow AI to trigger actual fixes instead of just proposals
+          enable_regeneration: true, // Enable Salamander-style regeneration planning
+          proposal_only: true,
+          auto_fix: false, // Fail closed: AI may propose, never silently execute
         }),
       });
 
@@ -138,14 +139,15 @@ const AIAssistant: React.FC<AIAssistantProps> = ({
       };
       setMessages((prev) => [...prev, assistantMsg]);
 
-      // Execute regeneration actions if triggered by AI
-      if (result.regeneration_action && onCommand) {
-        onCommand(result.regeneration_action);
-      }
-
-      // Execute any commands if suggested
-      if (result.suggested_action && onCommand) {
-        onCommand(result.suggested_action);
+      const proposedAction = result.regeneration_action || result.suggested_action;
+      if (proposedAction) {
+        const proposalMsg: Message = {
+          role: "assistant",
+          content: `Proposal prepared, not executed.\nAction: ${proposedAction}\nApproval required: role-aware human approval before any write or remediation.`,
+          timestamp: Date.now(),
+          metadata: { governance: ["proposal_only", "no_unattended_writes"] },
+        };
+        setMessages((prev) => [...prev, proposalMsg]);
       }
     } catch (error) {
       console.error("AI Assistant error:", error);
@@ -277,7 +279,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({
               <Zap className="w-3 h-3 text-yellow-400 absolute -top-1 -right-1 animate-pulse" />
             )}
           </div>
-          <span className="font-semibold text-white">AI Assistant</span>
+<div><span className="font-semibold text-white">Adaptive AI Assistant</span><div className="flex items-center gap-1 text-[10px] text-emerald-300"><ShieldCheck className="h-3 w-3" /> proposal-only · no unattended writes</div></div>
         </div>
         <div className="flex items-center gap-2">
           <button

@@ -27,6 +27,8 @@ import {
   provisionCustomerQaaSComputer,
 } from "../apiClient";
 import { useAuth } from "./AuthProvider";
+import { useAdaptiveExperience } from "../adaptiveExperience";
+import { EvidenceBoundAnswer, MetricExplainerCard } from "../intelligenceTranslator";
 
 interface QaaSComputerManagerProps {
   token: string | null;
@@ -34,6 +36,8 @@ interface QaaSComputerManagerProps {
 
 export default function QaaSComputerManager({ token }: QaaSComputerManagerProps) {
   const { isAdmin } = useAuth();
+  const { profile } = useAdaptiveExperience();
+  const [showRawConfig, setShowRawConfig] = useState(false);
   const [computers, setComputers] = useState<FaultTolerantComputerResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -59,6 +63,17 @@ export default function QaaSComputerManager({ token }: QaaSComputerManagerProps)
       "governance_audit",
     ],
   });
+
+  const applyPreset = (preset: "starter" | "enterprise" | "regulated" | "sovereign" | "research") => {
+    const presets: Record<typeof preset, Partial<ProvisionFaultTolerantComputerRequest>> = {
+      starter: { tier: "developer", isolation: "single-tenant", code_distance: 7, logical_qubits: 16, physical_error_rate: 0.001, phi_resonance_target: 0.94, max_circuit_depth: 512, max_shots: 512 },
+      enterprise: { tier: "production", isolation: "single-tenant", code_distance: 11, logical_qubits: 64, physical_error_rate: 0.0005, phi_resonance_target: 0.9565, max_circuit_depth: 4096, max_shots: 2048 },
+      regulated: { tier: "production", isolation: "single-tenant", code_distance: 15, logical_qubits: 96, physical_error_rate: 0.0001, phi_resonance_target: 0.975, max_circuit_depth: 2048, max_shots: 4096 },
+      sovereign: { tier: "sovereign", isolation: "sovereign-isolated", code_distance: 21, logical_qubits: 128, physical_error_rate: 0.00005, phi_resonance_target: 0.985, max_circuit_depth: 2048, max_shots: 4096 },
+      research: { tier: "developer", isolation: "single-tenant", code_distance: 9, logical_qubits: 128, physical_error_rate: 0.001, phi_resonance_target: 0.9565, max_circuit_depth: 16384, max_shots: 8192 },
+    };
+    setProvisionForm((current) => ({ ...current, ...presets[preset], tier: presets[preset].tier === "sovereign" && !isAdmin ? "production" : presets[preset].tier, isolation: presets[preset].isolation === "sovereign-isolated" && !isAdmin ? "single-tenant" : presets[preset].isolation }));
+  };
 
   const fetchComputers = async () => {
     if (!token) return;
@@ -155,7 +170,7 @@ export default function QaaSComputerManager({ token }: QaaSComputerManagerProps)
           className="flex items-center gap-2 rounded-lg bg-purple-600 px-4 py-2 text-white hover:bg-purple-700"
         >
           <Plus className="h-4 w-4" />
-          Provision Computer
+          Provision QI rail
         </button>
       </div>
 
@@ -311,8 +326,17 @@ export default function QaaSComputerManager({ token }: QaaSComputerManagerProps)
       {showProvisionModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
           <div className="w-full max-w-2xl rounded-lg bg-white p-6 shadow-xl">
-            <h3 className="mb-4 text-xl font-bold text-slate-900">Provision QaaS Computer</h3>
+            <h3 className="mb-4 text-xl font-bold text-slate-900">Provision Quantum Intelligence rail</h3>
             <form onSubmit={handleProvision} className="space-y-4">
+              <div className="rounded-xl border border-purple-100 bg-purple-50 p-4">
+                <p className="text-sm font-semibold text-purple-950">Choose an outcome preset</p>
+                <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                  {[["starter", "Starter Intelligence Rail"], ["enterprise", "Enterprise Decision Rail"], ["regulated", "Regulated Evidence Rail"], ["sovereign", "Sovereign Isolated Rail"], ["research", "Research/Expert Rail"]].map(([value, label]) => (
+                    <button key={value} type="button" onClick={() => applyPreset(value as any)} className="rounded-lg border border-purple-200 bg-white px-3 py-2 text-left text-xs font-semibold text-purple-900 hover:bg-purple-100">{label}</button>
+                  ))}
+                </div>
+                <p className="mt-2 text-xs text-purple-800">{profile.showTechnicalDefaults ? "Expert lens exposes raw quantum intelligence parameters." : "Business lenses use presets; raw quantum parameters are optional."}</p>
+              </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700">Computer Name</label>
                 <input
@@ -354,9 +378,12 @@ export default function QaaSComputerManager({ token }: QaaSComputerManagerProps)
                   </select>
                 </div>
               </div>
+              <button type="button" onClick={() => setShowRawConfig(!showRawConfig)} className="text-sm font-semibold text-purple-700">{showRawConfig ? "Hide raw technical config" : "Show technical details"}</button>
+              {(showRawConfig || profile.showTechnicalDefaults) && (
+              <>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700">Code Distance</label>
+                  <label className="block text-sm font-medium text-slate-700">Resilience level <span className="font-mono text-xs text-slate-500">(code_distance)</span></label>
                   <input
                     type="number"
                     min="3"
@@ -418,6 +445,12 @@ export default function QaaSComputerManager({ token }: QaaSComputerManagerProps)
                   />
                 </div>
               </div>
+              </>
+              )}
+              <div className="grid gap-3 md:grid-cols-2">
+                <MetricExplainerCard metric="phi_resonance" value={provisionForm.phi_resonance_target} />
+                <EvidenceBoundAnswer claimBoundary="advisory QI execution rail" evidenceSeal="present after execution" invariantStatus="required before claims" approval="human approval required before action" />
+              </div>
               <div className="flex justify-end gap-2">
                 <button
                   type="button"
@@ -430,7 +463,7 @@ export default function QaaSComputerManager({ token }: QaaSComputerManagerProps)
                   type="submit"
                   className="rounded-lg bg-purple-600 px-4 py-2 text-white hover:bg-purple-700"
                 >
-                  Provision Computer
+                  Provision QI rail
                 </button>
               </div>
             </form>
