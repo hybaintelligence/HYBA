@@ -68,8 +68,8 @@ import { useApiRequest } from "./hooks/useApiRequest";
 import { useLatencyMetrics } from "./hooks/useLatencyMetrics";
 import { buildGovernanceSignals, type GovernanceSignal } from "./governance";
 import { useAuth } from "./components/AuthProvider";
-import { AdaptiveExperienceProvider, SkillModeSelector, useAdaptiveExperience } from "./adaptiveExperience";
-import { ClaimBoundaryBadge, EvidenceBoundAnswer, MetricExplainerCard } from "./intelligenceTranslator";
+import { SkillModeProvider, SkillModeSelector } from "./components/SkillModeContext";
+import { ClaimBoundaryBadge, MetricExplainerCard } from "./components/IntelligenceTranslator";
 
 type NullableNumber = number | null | undefined;
 
@@ -160,9 +160,9 @@ function ErrorState({ message, onRetry }: { message: string; onRetry?: () => voi
 
 export default function App() {
   return (
-    <AdaptiveExperienceProvider>
+    <SkillModeProvider>
       <AppContent />
-    </AdaptiveExperienceProvider>
+    </SkillModeProvider>
   );
 }
 
@@ -203,7 +203,15 @@ function AppContent() {
   const [selectedPoolForConfig, setSelectedPoolForConfig] = useState<PoolInfo | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [currentView, setCurrentView] = useState<
-    "dashboard" | "admin" | "executive" | "jobs" | "history" | "analytics" | "portal" | "ciaas" | "qaas" | "studio"
+    | "dashboard"
+    | "admin"
+    | "executive"
+    | "jobs"
+    | "history"
+    | "analytics"
+    | "portal"
+    | "ciaas"
+    | "qaas"
   >("dashboard");
 
   const { execute: fetchTelemetryExecute } = useApiRequest(fetchTelemetryData, { maxRetries: 3 });
@@ -587,6 +595,9 @@ function AppContent() {
     <div
       className={`min-h-screen flex flex-col font-sans transition-colors duration-300 ${isDarkMode ? "dark bg-[#050914] text-slate-100" : "bg-[#F4F1EA] text-[#101828]"}`}
     >
+      <div className="fixed right-6 top-4 z-40">
+        <SkillModeSelector />
+      </div>
       <NetworkToast
         isConnected={isConnected}
         latencyMs={latencyMs}
@@ -785,7 +796,9 @@ function AppContent() {
                     Sovereign Quantum Intelligence Execution
                   </h2>
                   <p className="mt-5 max-w-2xl text-base leading-8 text-slate-600 md:text-lg">
-                    Institutional-caliber control surface for substrate-independent Quantum Intelligence: evidence-sealed execution, PULVINI φ-memory, Salamander regeneration, authenticated tenancy, and usage-metered enterprise operation.
+                    Institutional-caliber control surface for substrate-independent Quantum
+                    Intelligence: evidence-sealed execution, PULVINI φ-memory, Salamander
+                    regeneration, authenticated tenancy, and usage-metered enterprise operation.
                   </p>
                   <div className="mt-8 grid gap-3 sm:grid-cols-3">
                     {operatingPrinciples.map((item) => (
@@ -843,6 +856,8 @@ function AppContent() {
               </div>
             </section>
 
+            <UseCaseStudio />
+            <DecisionCockpit />
             <section className="grid grid-cols-1 gap-4 md:grid-cols-4">
               {isLoading ? (
                 [1, 2, 3, 4].map((i) => (
@@ -885,6 +900,24 @@ function AppContent() {
             {telemetryError && !isLoading && (
               <ErrorState message={telemetryError} onRetry={getLiveTelemetry} />
             )}
+
+            <section className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+              <MetricExplainerCard
+                metricKey="substrate_coherence"
+                value={`Runtime: ${runtimeStatus.toUpperCase()}`}
+              />
+              <MetricExplainerCard
+                metricKey="phi_resonance"
+                value={`φ alignment: ${fmtPct(health?.phiResonance)}`}
+              />
+              <MetricExplainerCard metricKey="evidence_seal" value={`Seal: ${extraordinarySeal}`} />
+            </section>
+
+            <ProofExplainer
+              seal={extraordinarySeal}
+              invariantSummary={`${extraordinaryInvariantCount} / ${extraordinaryInvariantTotal}`}
+              source={fmtText(health?.telemetry_source)}
+            />
 
             <section className="grid grid-cols-1 gap-6 lg:grid-cols-3">
               <Panel
@@ -1276,6 +1309,11 @@ function AppContent() {
             </Panel>
           </>
         )}
+        <section className="mx-auto mt-8 grid max-w-7xl grid-cols-1 gap-4 px-6 md:grid-cols-3">
+          <MetricExplainerCard metric="substrate_coherence" />
+          <MetricExplainerCard metric="evidence_seal" />
+          <ClaimBoundaryBadge />
+        </section>
       </main>
 
       <footer className="mt-8 shrink-0 border-t border-white/10 bg-[#06162D] px-6 py-6 text-white/70">
@@ -1300,6 +1338,7 @@ function AppContent() {
       {token && currentUser && (
         <AIAssistant
           token={token}
+          userRole={currentUser.role}
           telemetryData={telemetry}
           onCommand={(command) => {
             console.log("AI Command:", command);

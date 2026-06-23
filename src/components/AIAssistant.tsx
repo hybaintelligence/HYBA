@@ -6,7 +6,17 @@
  */
 
 import React, { useState, useEffect, useRef } from "react";
-import { Activity, Brain, Zap, MessageSquare, X, Maximize2, Minimize2, ShieldCheck } from "lucide-react";
+import {
+  Activity,
+  Brain,
+  Zap,
+  MessageSquare,
+  X,
+  Maximize2,
+  Minimize2,
+  ShieldCheck,
+} from "lucide-react";
+import { useSkillMode, SKILL_MODE_LABELS } from "./SkillModeContext";
 
 interface Message {
   role: "user" | "assistant" | "system";
@@ -23,13 +33,50 @@ interface AIAssistantProps {
   token: string;
   miningStatus?: any;
   telemetryData?: any;
+  userRole?: string;
   onCommand?: (command: string) => void;
+}
+
+type ProposedAction = {
+  command: string;
+  risk: "low" | "medium" | "high";
+  blastRadius: string;
+  approvalRequired: boolean;
+  reason: string;
+};
+
+const LOW_RISK_ALLOWLIST = new Set(["refresh_telemetry"]);
+
+function classifyAction(command: string, userRole?: string): ProposedAction {
+  const normalized = String(command || "").trim();
+  const lowRisk = LOW_RISK_ALLOWLIST.has(normalized);
+  const privileged = ["admin", "ceo_heir_apparent", "chairman", "cto"].includes(
+    String(userRole || "").toLowerCase(),
+  );
+  return {
+    command: normalized,
+    risk: lowRisk
+      ? "low"
+      : normalized.includes("stop") ||
+          normalized.includes("disconnect") ||
+          normalized.includes("switch")
+        ? "high"
+        : "medium",
+    blastRadius: lowRisk
+      ? "Read-only telemetry refresh; no system writes."
+      : "May affect runtime configuration, tenant state, or external integrations.",
+    approvalRequired: !lowRisk || !privileged,
+    reason: lowRisk
+      ? "Pre-authorized read-only command."
+      : "Governance requires explicit approval before execution.",
+  };
 }
 
 const AIAssistant: React.FC<AIAssistantProps> = ({
   token,
   miningStatus,
   telemetryData,
+  userRole,
   onCommand,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -38,13 +85,15 @@ const AIAssistant: React.FC<AIAssistantProps> = ({
     {
       role: "system",
       content:
-        "Adaptive AI Assistant ready in proposal-only mode. I can explain, simulate, prepare evidence, and draft remediation plans; execution requires role-aware approval.",
+        "AI Assistant ready in proposal-only mode. I can explain, simulate, prepare remediation plans, and request approval before any action.",
       timestamp: Date.now(),
     },
   ]);
   const [input, setInput] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
   const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [pendingAction, setPendingAction] = useState<string | null>(null);
+  const { skillMode } = useSkillMode();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll to latest message
@@ -75,7 +124,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({
     // Always offer general assistance
     if (newSuggestions.length === 0) {
       newSuggestions.push(
-        "Explain this like I'm a CFO",
+        "Explain this like I’m a CFO",
         "What action is safe?",
         "Prepare a remediation plan, but do not execute",
       );
@@ -112,11 +161,12 @@ const AIAssistant: React.FC<AIAssistantProps> = ({
         },
         body: JSON.stringify({
           query: userMessage,
-          context: JSON.stringify(context),
+          context: JSON.stringify({ ...context, skill_mode: skillMode }),
           substrates: ["manifold", "consciousness", "quantum"],
-          enable_regeneration: true, // Enable Salamander-style regeneration planning
+          enable_regeneration: true,
+          auto_fix: false,
           proposal_only: true,
-          auto_fix: false, // Fail closed: AI may propose, never silently execute
+          require_human_approval: true,
         }),
       });
 
@@ -141,13 +191,16 @@ const AIAssistant: React.FC<AIAssistantProps> = ({
 
       const proposedAction = result.regeneration_action || result.suggested_action;
       if (proposedAction) {
-        const proposalMsg: Message = {
-          role: "assistant",
-          content: `Proposal prepared, not executed.\nAction: ${proposedAction}\nApproval required: role-aware human approval before any write or remediation.`,
-          timestamp: Date.now(),
-          metadata: { governance: ["proposal_only", "no_unattended_writes"] },
-        };
-        setMessages((prev) => [...prev, proposalMsg]);
+        setPendingAction(String(proposedAction));
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: "system",
+            content: `Prepared proposal only: ${proposedAction}. Review blast radius and explicitly approve before execution.`,
+            timestamp: Date.now(),
+            metadata: { governance: ["proposal_only", "human_approval_required"] },
+          },
+        ]);
       }
     } catch (error) {
       console.error("AI Assistant error:", error);
@@ -245,6 +298,26 @@ const AIAssistant: React.FC<AIAssistantProps> = ({
 - "Explain consciousness events"`;
   };
 
+  const approveProposedAction = () => {
+    if (!proposedAction || !onCommand) return;
+    if (proposedAction.approvalRequired) {
+      const approved = window.confirm(
+        `Approve HYBA action?\n\nCommand: ${proposedAction.command}\nRisk: ${proposedAction.risk}\nBlast radius: ${proposedAction.blastRadius}`,
+      );
+      if (!approved) return;
+    }
+    onCommand(proposedAction.command);
+    setMessages((prev) => [
+      ...prev,
+      {
+        role: "system",
+        content: `Approved action executed: ${proposedAction.command}`,
+        timestamp: Date.now(),
+      },
+    ]);
+    setProposedAction(null);
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (input.trim() && !isProcessing) {
@@ -279,7 +352,10 @@ const AIAssistant: React.FC<AIAssistantProps> = ({
               <Zap className="w-3 h-3 text-yellow-400 absolute -top-1 -right-1 animate-pulse" />
             )}
           </div>
-<div><span className="font-semibold text-white">Adaptive AI Assistant</span><div className="flex items-center gap-1 text-[10px] text-emerald-300"><ShieldCheck className="h-3 w-3" /> proposal-only · no unattended writes</div></div>
+          <span className="font-semibold text-white">Adaptive AI Assistant</span>
+          <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-semibold text-emerald-200">
+            proposal only
+          </span>
         </div>
         <div className="flex items-center gap-2">
           <button
@@ -358,6 +434,32 @@ const AIAssistant: React.FC<AIAssistantProps> = ({
             )}
             <div ref={messagesEndRef} />
           </div>
+
+          <div className="mx-4 mb-2 rounded-lg border border-emerald-400/20 bg-emerald-500/10 p-3 text-xs text-emerald-100">
+            <div className="flex items-center gap-2 font-semibold">
+              <ShieldCheck className="h-3.5 w-3.5" /> {SKILL_MODE_LABELS[skillMode]} lens · Human
+              approval required
+            </div>
+            <p className="mt-1 text-emerald-100/80">
+              HYBA may explain, simulate, and prepare remediation, but commands are blocked until
+              explicit approval.
+            </p>
+          </div>
+          {pendingAction && (
+            <div className="mx-4 mb-2 rounded-lg border border-amber-400/30 bg-amber-500/10 p-3 text-xs text-amber-100">
+              <p className="font-semibold">Action preview: {pendingAction}</p>
+              <p>Blast radius: low only if allowlisted. Governance tag missing means warn-block.</p>
+              <button
+                onClick={() => {
+                  if (pendingAction === "refresh_telemetry" && onCommand) onCommand(pendingAction);
+                  setPendingAction(null);
+                }}
+                className="mt-2 rounded bg-amber-400 px-3 py-1 font-semibold text-slate-950"
+              >
+                Approve allowlisted action
+              </button>
+            </div>
+          )}
 
           {/* Suggestions */}
           {suggestions.length > 0 && messages.length === 1 && (

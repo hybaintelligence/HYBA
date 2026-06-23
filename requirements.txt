@@ -1,0 +1,6 @@
+# HYBA_FULLSTACK root dependency entrypoint
+# GitHub Actions and local repo-root commands install from this file.
+-r python_backend/requirements.txt
+
+# CIaaS connector and central ingestion runtime dependencies.
+pandas==2.2.2

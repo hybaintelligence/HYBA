@@ -26,17 +26,107 @@ import {
   provisionCustomerCIAASService,
 } from "../apiClient";
 import { useAuth } from "./AuthProvider";
-import { useAdaptiveExperience } from "../adaptiveExperience";
-import { EvidenceBoundAnswer, MetricExplainerCard } from "../intelligenceTranslator";
+import { useSkillMode } from "./SkillModeContext";
+import { MetricExplainerCard } from "./IntelligenceTranslator";
 
 interface CIaaSServiceManagerProps {
   token: string | null;
 }
 
+type CIaaSPresetName =
+  | "Starter Intelligence Rail"
+  | "Enterprise Decision Rail"
+  | "Regulated Evidence Rail"
+  | "Sovereign Isolated Rail"
+  | "Research/Expert Rail";
+
+const ciaasPresets: Record<
+  CIaaSPresetName,
+  Omit<ProvisionComputationalIntelligenceRequest, "name">
+> = {
+  "Starter Intelligence Rail": {
+    service_tier: "developer",
+    tenancy: "single-tenant",
+    code_distance: 5,
+    logical_compute_units: 16,
+    physical_error_rate: 0.002,
+    max_workloads_per_minute: 30,
+    max_context_bytes: 32000,
+    admin_privileged: false,
+    data_residency: "us",
+    allowed_workloads: ["explain", "substrate_health"],
+  },
+  "Enterprise Decision Rail": {
+    service_tier: "production",
+    tenancy: "single-tenant",
+    code_distance: 7,
+    logical_compute_units: 64,
+    physical_error_rate: 0.001,
+    max_workloads_per_minute: 120,
+    max_context_bytes: 128000,
+    admin_privileged: false,
+    data_residency: "us",
+    allowed_workloads: [
+      "explain",
+      "orchestrate",
+      "counterfactual",
+      "governance_audit",
+      "substrate_health",
+    ],
+  },
+  "Regulated Evidence Rail": {
+    service_tier: "production",
+    tenancy: "dedicated-control-plane",
+    code_distance: 11,
+    logical_compute_units: 96,
+    physical_error_rate: 0.0005,
+    max_workloads_per_minute: 90,
+    max_context_bytes: 192000,
+    admin_privileged: false,
+    data_residency: "us",
+    allowed_workloads: ["explain", "counterfactual", "governance_audit", "substrate_health"],
+  },
+  "Sovereign Isolated Rail": {
+    service_tier: "sovereign",
+    tenancy: "sovereign-isolated",
+    code_distance: 15,
+    logical_compute_units: 128,
+    physical_error_rate: 0.0001,
+    max_workloads_per_minute: 60,
+    max_context_bytes: 256000,
+    admin_privileged: false,
+    data_residency: "us",
+    allowed_workloads: [
+      "explain",
+      "orchestrate",
+      "counterfactual",
+      "governance_audit",
+      "substrate_health",
+    ],
+  },
+  "Research/Expert Rail": {
+    service_tier: "developer",
+    tenancy: "single-tenant",
+    code_distance: 9,
+    logical_compute_units: 128,
+    physical_error_rate: 0.001,
+    max_workloads_per_minute: 180,
+    max_context_bytes: 256000,
+    admin_privileged: false,
+    data_residency: "us",
+    allowed_workloads: [
+      "explain",
+      "orchestrate",
+      "counterfactual",
+      "governance_audit",
+      "substrate_health",
+    ],
+  },
+};
+
 export default function CIaaSServiceManager({ token }: CIaaSServiceManagerProps) {
   const { isAdmin } = useAuth();
-  const { profile } = useAdaptiveExperience();
-  const [showRawConfig, setShowRawConfig] = useState(false);
+  const { isExpertMode } = useSkillMode();
   const [services, setServices] = useState<ServiceResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -53,7 +143,13 @@ export default function CIaaSServiceManager({ token }: CIaaSServiceManagerProps)
     max_context_bytes: 64000,
     admin_privileged: false,
     data_residency: "us",
-    allowed_workloads: ["explain", "orchestrate", "counterfactual", "governance_audit", "substrate_health"],
+    allowed_workloads: [
+      "explain",
+      "orchestrate",
+      "counterfactual",
+      "governance_audit",
+      "substrate_health",
+    ],
   });
 
   const applyPreset = (preset: "starter" | "enterprise" | "regulated" | "sovereign" | "research") => {
@@ -101,6 +197,11 @@ export default function CIaaSServiceManager({ token }: CIaaSServiceManagerProps)
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to stop service");
     }
+  };
+
+  const applyPreset = (presetName: CIaaSPresetName) => {
+    setSelectedPreset(presetName);
+    setProvisionForm((current) => ({ ...current, ...ciaasPresets[presetName] }));
   };
 
   const handleProvision = async (e: React.FormEvent) => {
@@ -266,7 +367,7 @@ export default function CIaaSServiceManager({ token }: CIaaSServiceManagerProps)
       {showProvisionModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
           <div className="w-full max-w-2xl rounded-lg bg-white p-6 shadow-xl">
-            <h3 className="mb-4 text-xl font-bold text-slate-900">Provision CIaaS Service</h3>
+            <h3 className="mb-4 text-xl font-bold text-slate-900">Provision Intelligence Rail</h3>
             <form onSubmit={handleProvision} className="space-y-4">
               <div className="rounded-xl border border-blue-100 bg-blue-50 p-4">
                 <p className="text-sm font-semibold text-blue-950">Choose a business preset</p>
@@ -316,50 +417,115 @@ export default function CIaaSServiceManager({ token }: CIaaSServiceManagerProps)
                     className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
                   >
                     <option value="single-tenant">Single Tenant</option>
-                    {isAdmin && <option value="dedicated-control-plane">Dedicated Control Plane</option>}
+                    {isAdmin && (
+                      <option value="dedicated-control-plane">Dedicated Control Plane</option>
+                    )}
                     {isAdmin && <option value="sovereign-isolated">Sovereign Isolated</option>}
                   </select>
                 </div>
               </div>
-              <button type="button" onClick={() => setShowRawConfig(!showRawConfig)} className="text-sm font-semibold text-blue-700">{showRawConfig ? "Hide raw technical config" : "Show technical details"}</button>
-              {(showRawConfig || profile.showTechnicalDefaults) && (
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-slate-700">Resilience level <span className="font-mono text-xs text-slate-500">(code_distance)</span></label>
-                  <input
-                    type="number"
-                    min="3"
-                    max="31"
-                    step="2"
-                    value={provisionForm.code_distance}
-                    onChange={(e) =>
-                      setProvisionForm({ ...provisionForm, code_distance: parseInt(e.target.value) })
-                    }
-                    className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-700">Logical Compute Units</label>
-                  <input
-                    type="number"
-                    min="1"
-                    max="512"
-                    value={provisionForm.logical_compute_units}
-                    onChange={(e) =>
-                      setProvisionForm({
-                        ...provisionForm,
-                        logical_compute_units: parseInt(e.target.value),
-                      })
-                    }
-                    className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
-                  />
-                </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700">
+                  Provisioning preset
+                </label>
+                <select
+                  aria-label="CIaaS provisioning preset"
+                  onChange={(e) => {
+                    const preset = e.target.value;
+                    const base =
+                      preset === "regulated"
+                        ? {
+                            service_tier: "production" as ServiceTier,
+                            code_distance: 11,
+                            logical_compute_units: 64,
+                            physical_error_rate: 0.0005,
+                            allowed_workloads: [
+                              "explain",
+                              "counterfactual",
+                              "governance_audit",
+                              "substrate_health",
+                            ] as WorkloadKind[],
+                          }
+                        : preset === "sovereign"
+                          ? {
+                              service_tier: "sovereign" as ServiceTier,
+                              tenancy: "sovereign-isolated" as TenancyMode,
+                              code_distance: 15,
+                              logical_compute_units: 128,
+                              physical_error_rate: 0.0001,
+                            }
+                          : preset === "research"
+                            ? {
+                                service_tier: "developer" as ServiceTier,
+                                code_distance: 7,
+                                logical_compute_units: 128,
+                                max_context_bytes: 256000,
+                              }
+                            : {
+                                service_tier: "production" as ServiceTier,
+                                code_distance: 7,
+                                logical_compute_units: 32,
+                                physical_error_rate: 0.001,
+                              };
+                    setProvisionForm({ ...provisionForm, ...base });
+                  }}
+                  className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
+                  defaultValue="enterprise"
+                >
+                  <option value="starter">Starter Intelligence Rail</option>
+                  <option value="enterprise">Enterprise Decision Rail</option>
+                  <option value="regulated">Regulated Evidence Rail</option>
+                  {isAdmin && <option value="sovereign">Sovereign Isolated Rail</option>}
+                  <option value="research">Research/Expert Rail</option>
+                </select>
+                <p className="mt-1 text-xs text-slate-500">
+                  Presets choose resilience, capacity, tenancy, and governance defaults so
+                  non-specialists do not need to set raw quantum controls.
+                </p>
               </div>
+              <MetricExplainerCard metric="code_distance" />
+              {isExpertMode && (
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700">
+                      Code Distance
+                    </label>
+                    <input
+                      type="number"
+                      min="3"
+                      max="31"
+                      step="2"
+                      value={provisionForm.code_distance}
+                      onChange={(e) =>
+                        setProvisionForm({
+                          ...provisionForm,
+                          code_distance: parseInt(e.target.value),
+                        })
+                      }
+                      className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700">
+                      Logical Compute Units
+                    </label>
+                    <input
+                      type="number"
+                      min="1"
+                      max="512"
+                      value={provisionForm.logical_compute_units}
+                      onChange={(e) =>
+                        setProvisionForm({
+                          ...provisionForm,
+                          logical_compute_units: parseInt(e.target.value),
+                        })
+                      }
+                      className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
+                    />
+                  </div>
+                </div>
               )}
-              <div className="grid gap-3 md:grid-cols-2">
-                <MetricExplainerCard metric="code_distance" value={provisionForm.code_distance} />
-                <EvidenceBoundAnswer claimBoundary="provisioning request only" evidenceSeal="created on execution" invariantStatus="checked at runtime" approval="tenant/admin policy applies before start" />
-              </div>
               <div className="flex justify-end gap-2">
                 <button
                   type="button"
