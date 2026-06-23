@@ -5,7 +5,7 @@
 FROM node:22.15.0-bookworm-slim AS node-deps
 WORKDIR /app
 
-COPY package.json package-lock.json* ./
+COPY package.json package-lock.json* npm-shrinkwrap.json* ./
 
 ARG NPM_CONFIG_PROXY=
 ARG NPM_CONFIG_HTTPS_PROXY=
@@ -23,6 +23,7 @@ WORKDIR /app
 
 COPY --from=node-deps /app/node_modules ./node_modules
 COPY package*.json ./
+COPY npm-shrinkwrap.json* ./
 COPY index.html ./
 COPY src ./src
 COPY public ./public
@@ -90,7 +91,7 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends curl ca-certificates tini \
     && rm -rf /var/lib/apt/lists/*
 
-COPY package.json package-lock.json* ./
+COPY package.json package-lock.json* npm-shrinkwrap.json* ./
 
 ARG NPM_CONFIG_PROXY=
 ARG NPM_CONFIG_HTTPS_PROXY=
