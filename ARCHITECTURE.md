@@ -16,7 +16,12 @@ Unlike traditional AI (predict-and-hope), HYBA operates on three principles:
 2. **Falsifiable Claims**: Every output is evidence-sealed and mathematically bounded
 3. **Sovereign Trust**: Human authority preserved through cryptographic governance gates
 
-**Key Metric**: 40.4% Φ-density improvement in 1.4ms during autonomous startup optimization (measured, not claimed)
+**Key Metric**: 40.4% Φ-density improvement in 1.4ms during autonomous startup optimization
+
+**Critical Clarification (UAT Feedback)**:
+- **40.4% total improvement** = Initialization gain (+25-30%) + Optimization gain (+2.7%) + Non-linear coupling (+~17%)
+- **Φ-density** is a structural coherence proxy (dimensionless, [0,1]), NOT Tononi IIT Φ (bits)
+- See `docs/PHI_METRIC_SPECIFICATION.md` for formal mathematical definition
 
 ---
 

@@ -389,6 +389,12 @@ class AutonomousConfig:
     max_proposals_per_cycle: int = 3
     virtual_session_horizon: float = 0.25  # Seconds to simulate virtual mining
     min_logical_consistency: float = 0.70  # Minimum consistency to accept a proposal
+    
+    # UAT Feedback P0-2: Hard-gate low-confidence proposals
+    # Proposals with counterfactual confidence < 0.65 trigger human review
+    # Prevents autonomous application of risky changes (e.g., 30% confidence in Phi Scaling)
+    min_counterfactual_confidence: float = 0.65  # Epistemic confidence threshold
+    
     compression_drive_enabled: bool = field(default_factory=_env_compression_drive)
     knowledge_growth_rate_target: float = 0.01  # Minimum knowledge growth per cycle
     # Persistence
@@ -1705,11 +1711,31 @@ class AutonomousMiningController:
 
         Returns True only if all constraints are satisfied and the proposal
         maintains logical consistency above the minimum threshold.
+        
+        UAT Feedback P0-2: Also enforces counterfactual confidence threshold.
+        Proposals with confidence < 0.65 are rejected for autonomous application.
         """
         if len(proposal.constraints_violated) > 0:
             return False
 
         if proposal.logical_consistency_score < self.config.min_logical_consistency:
+            return False
+        
+        # UAT Feedback P0-2: Hard-gate low-confidence proposals
+        if proposal.counterfactual_confidence_score < self.config.min_counterfactual_confidence:
+            self._persistent_audit_logger.log_event(
+                event_type="proposal_rejected_low_confidence",
+                autonomy_level=self.current_autonomy_level.value,
+                decision_id=proposal.proposal_id,
+                action=f"reject_{proposal.improvement_type}",
+                outcome="rejected_epistemic_confidence_insufficient",
+                metadata={
+                    "counterfactual_confidence": proposal.counterfactual_confidence_score,
+                    "min_required": self.config.min_counterfactual_confidence,
+                    "improvement_type": proposal.improvement_type,
+                    "governance_rail": os.getenv("HYBA_GOVERNANCE_RAIL", "treasury"),
+                }
+            )
             return False
 
         # Hermiticity constraint: operations must preserve Hermitian properties
