@@ -2,8 +2,9 @@
 
 This module provides the production-hardening envelope around the FastAPI
 surface: request IDs, correlation IDs, standard JSON error bodies, response
-security headers, body-size protection, and lightweight in-process rate limiting
-for edge or single-container deployments.
+security headers, body-size protection, lightweight in-process rate limiting,
+and a subscriber/IP boundary that prevents product users from poking protected
+security/intelligence internals.
 
 It deliberately does not replace upstream infrastructure controls such as API
 Gateway, Cloud Armor/WAF, mTLS, IAM, or service mesh policy. Instead, it gives
@@ -13,6 +14,7 @@ local, Docker, and cloud runtimes.
 
 from __future__ import annotations
 
+import hmac
 import os
 import time
 from dataclasses import dataclass
@@ -190,6 +192,123 @@ def _record_posture_audit(event_type: str, outcome: str, **fields: Any) -> None:
         return
 
 
+def _split_secret_list(raw: str | None) -> list[str]:
+    return [item.strip() for item in (raw or "").split(",") if item.strip()]
+
+
+def _operator_tokens() -> list[str]:
+    return (
+        _split_secret_list(os.getenv("HYBA_API_KEYS"))
+        + _split_secret_list(os.getenv("HYBA_INTERNAL_HEALTH_TOKEN"))
+        + _split_secret_list(os.getenv("HYBA_SECURITY_OPERATOR_TOKEN"))
+    )
+
+
+def _bearer_token(request: Request) -> str | None:
+    header = request.headers.get("authorization", "")
+    if header.lower().startswith("bearer "):
+        return header.split(" ", 1)[1].strip()
+    return None
+
+
+def _operator_authenticated(request: Request, tokens: list[str]) -> bool:
+    presented = [
+        request.headers.get("x-api-key"),
+        request.headers.get("x-hyba-internal-token"),
+        request.headers.get("x-hyba-security-token"),
+        _bearer_token(request),
+    ]
+    return any(
+        candidate and hmac.compare_digest(candidate, expected)
+        for candidate in presented
+        for expected in tokens
+    )
+
+
+def _safe_security_status() -> Dict[str, Any]:
+    """Subscriber-safe posture response with no algorithmic or swarm internals."""
+
+    return {
+        "status": "protected",
+        "threat_level": "nominal",
+        "defense_systems": {
+            "subscriber_boundary": "active",
+            "tenant_isolation": "enforced",
+            "intelligence_runtime": "internal_only",
+            "security_telemetry": "redacted",
+        },
+        "recent_threats": [],
+        "source": "subscriber_safe_security_boundary",
+    }
+
+
+def _security_boundary_response(
+    request: Request,
+    config: EnterpriseAPIConfig,
+    request_id: str,
+    correlation_id: str,
+) -> Response | None:
+    """Protect /api/security so subscribers cannot inspect, prod, or reverse engineer internals."""
+
+    path = request.url.path.rstrip("/") or "/"
+    if path == "/api/security/status":
+        response = JSONResponse(status_code=status.HTTP_200_OK, content=_safe_security_status())
+        apply_enterprise_security_headers(response, request_id, config, correlation_id)
+        _record_posture_audit(
+            "subscriber_boundary.security_status_redacted",
+            "redacted",
+            request_id=request_id,
+            path=path,
+        )
+        return response
+
+    if not path.startswith("/api/security/"):
+        return None
+
+    tokens = _operator_tokens()
+    if not tokens and config.environment == "production":
+        response = JSONResponse(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            content=enterprise_error_payload(
+                code="security_operator_auth_not_configured",
+                message="Security operator access is not configured.",
+                request_id=request_id,
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            ),
+        )
+        apply_enterprise_security_headers(response, request_id, config, correlation_id)
+        _record_posture_audit(
+            "subscriber_boundary.security_operator_route_rejected",
+            "auth_not_configured",
+            request_id=request_id,
+            path=path,
+        )
+        return response
+
+    if tokens and _operator_authenticated(request, tokens):
+        return None
+
+    # Hide the existence of protected security/intelligence surfaces from subscribers.
+    response = JSONResponse(
+        status_code=status.HTTP_404_NOT_FOUND,
+        content=enterprise_error_payload(
+            code="not_found",
+            message="Not found.",
+            request_id=request_id,
+            status_code=status.HTTP_404_NOT_FOUND,
+        ),
+    )
+    apply_enterprise_security_headers(response, request_id, config, correlation_id)
+    _record_posture_audit(
+        "subscriber_boundary.security_operator_route_rejected",
+        "unauthenticated_or_subscriber",
+        request_id=request_id,
+        path=path,
+        client_key=_client_key(request),
+    )
+    return response
+
+
 def install_enterprise_api_posture(app: FastAPI, config: EnterpriseAPIConfig | None = None) -> None:
     """Install HYBA's enterprise API posture controls on a FastAPI app."""
 
@@ -202,6 +321,10 @@ def install_enterprise_api_posture(app: FastAPI, config: EnterpriseAPIConfig | N
         correlation_id = _correlation_id(request, request_id)
         request.state.request_id = request_id
         request.state.correlation_id = correlation_id
+
+        boundary_response = _security_boundary_response(request, config, request_id, correlation_id)
+        if boundary_response is not None:
+            return boundary_response
 
         if _content_length_too_large(request, config.max_body_bytes):
             _record_posture_audit(
