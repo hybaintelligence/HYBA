@@ -1330,13 +1330,18 @@ class LegacyApiError extends Error {
 
 async function parseApiError(response: Response): Promise<HybaError> {
   const requestId = response.headers.get("x-request-id") || undefined;
+  const errorId = response.headers.get("x-error-id") || undefined;
   try {
     const body = await response.json();
+    // Backend structured errors carry error_id; use it for log correlation.
+    const backendErrorId = body.error_id || errorId;
     const message = body.message || body.detail?.message || body.detail?.detail || body.detail || `HTTP ${response.status}`;
     const code = body.error || body.detail?.error || "unknown_error";
-    const context = { details: body.details || body };
-    
-    // Map HTTP status codes to appropriate error types
+    const context: Record<string, unknown> = {
+      details: body.details || body,
+      ...(backendErrorId ? { error_id: backendErrorId } : {}),
+    };
+
     switch (response.status) {
       case 400:
         return new ValidationError(message, { code, statusCode: response.status, requestId, context });
@@ -1344,8 +1349,15 @@ async function parseApiError(response: Response): Promise<HybaError> {
         return new AuthenticationError(message, { code, statusCode: response.status, requestId, context });
       case 403:
         return new AuthorizationError(message, { code, statusCode: response.status, requestId, context });
-      case 429:
-        return new RateLimitError(message, { code, statusCode: response.status, requestId, context });
+      case 429: {
+        const retryAfter = response.headers.get("retry-after");
+        return new RateLimitError(message, {
+          code,
+          statusCode: response.status,
+          requestId,
+          context: { ...context, retry_after_seconds: retryAfter ? parseInt(retryAfter, 10) : undefined },
+        });
+      }
       case 500:
       case 502:
       case 503:
