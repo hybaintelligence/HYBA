@@ -21,7 +21,7 @@ UTC = timezone.utc
 from pathlib import Path
 from typing import Any, Literal
 
-from fastapi import APIRouter, HTTPException, Query, status
+from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
 from pydantic import BaseModel, Field, field_validator
 
 router = APIRouter(prefix="/api/customer", tags=["customer-portal"])
@@ -135,6 +135,75 @@ class PortalStore:
 store = PortalStore()
 
 
+TRUE_VALUES = {"1", "true", "yes", "on"}
+
+
+def _runtime_env() -> str:
+    return os.getenv("NODE_ENV", os.getenv("HYBA_ENV", "development")).strip().lower()
+
+
+def _split_secret_list(raw: str | None) -> list[str]:
+    return [item.strip() for item in (raw or "").split(",") if item.strip()]
+
+
+def _portal_tokens() -> list[str]:
+    return _split_secret_list(os.getenv("HYBA_CUSTOMER_PORTAL_TOKEN")) + _split_secret_list(
+        os.getenv("HYBA_CUSTOMER_PORTAL_TOKENS")
+    )
+
+
+def _constant_time_match(candidate: str | None, allowed: list[str]) -> bool:
+    if not candidate:
+        return False
+    return any(hmac.compare_digest(candidate, expected) for expected in allowed)
+
+
+def _public_api_key_record(record: dict[str, Any]) -> dict[str, Any]:
+    """Return customer-visible API key metadata without HMAC digests or raw keys."""
+
+    return {
+        "key_id": record.get("key_id"),
+        "label": record.get("label"),
+        "created_at": record.get("created_at"),
+        "expires_at": record.get("expires_at"),
+        "status": record.get("status"),
+    }
+
+
+async def require_tenant_access(
+    tenant_id: str,
+    x_hyba_tenant_id: str | None = Header(default=None, alias="X-HYBA-Tenant-ID"),
+    x_hyba_customer_token: str | None = Header(default=None, alias="X-HYBA-Customer-Token"),
+) -> None:
+    """Fail closed unless the authenticated request is bound to the path tenant.
+
+    Development/test suites can explicitly set HYBA_CUSTOMER_PORTAL_AUTH_DISABLED=true.
+    Production never accepts that bypass.
+    """
+
+    auth_disabled = os.getenv("HYBA_CUSTOMER_PORTAL_AUTH_DISABLED", "false").lower() in TRUE_VALUES
+    if auth_disabled and _runtime_env() != "production":
+        return
+
+    if not x_hyba_tenant_id or not hmac.compare_digest(x_hyba_tenant_id, tenant_id):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Tenant boundary violation")
+
+    tokens = _portal_tokens()
+    if not tokens:
+        if _runtime_env() == "production":
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Customer portal authentication is not configured",
+            )
+        return
+
+    if not _constant_time_match(x_hyba_customer_token, tokens):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Customer portal token required")
+
+
+TenantAccess = Depends(require_tenant_access)
+
+
 def _billing_month() -> tuple[datetime, datetime, str]:
     now = datetime.now(UTC)
     start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
@@ -160,7 +229,7 @@ def _month_workloads(tenant: dict[str, Any], month_start: datetime, month_end: d
 
 
 @router.get("/{tenant_id}/dashboard")
-async def customer_dashboard(tenant_id: str) -> dict[str, object]:
+async def customer_dashboard(tenant_id: str, _access: None = TenantAccess) -> dict[str, object]:
     """Return dashboard status, usage, quota, keys, billing, and data provenance."""
     month_start, now, month_label = _billing_month()
     tenant = store.tenant(tenant_id)
@@ -169,7 +238,11 @@ async def customer_dashboard(tenant_id: str) -> dict[str, object]:
     monthly_cost = round(sum(float(item.get("cost_usd", 0.0)) for item in workloads), 2)
     quota = tenant.get("quota", {})
     compute_quota = int(quota.get("compute_units", 0))
-    active_keys = [key for key in tenant.get("api_keys", []) if key.get("status") == "active"]
+    active_keys = [
+        _public_api_key_record(key)
+        for key in tenant.get("api_keys", [])
+        if key.get("status") == "active"
+    ]
     invoices = tenant.get("invoices", [])
     return {
         "tenant_id": tenant_id,
@@ -204,6 +277,7 @@ async def customer_dashboard(tenant_id: str) -> dict[str, object]:
 @router.get("/{tenant_id}/workloads")
 async def customer_workloads(
     tenant_id: str,
+    _access: None = TenantAccess,
     start_date: str | None = Query(default=None),
     end_date: str | None = Query(default=None),
 ) -> dict[str, object]:
@@ -230,7 +304,11 @@ async def customer_workloads(
 
 
 @router.post("/{tenant_id}/api-keys", status_code=status.HTTP_201_CREATED)
-async def create_api_key(tenant_id: str, request: CreateApiKeyRequest) -> dict[str, str]:
+async def create_api_key(
+    tenant_id: str,
+    request: CreateApiKeyRequest,
+    _access: None = TenantAccess,
+) -> dict[str, str | None]:
     """Create a portal-managed API key and persist only its HMAC digest."""
     tenant = store.tenant(tenant_id)
     raw = f"hyba_live_{secrets.token_urlsafe(32)}"
@@ -249,11 +327,15 @@ async def create_api_key(tenant_id: str, request: CreateApiKeyRequest) -> dict[s
     quota["compute_units"] = max(int(quota.get("compute_units", 0)), request.plan_monthly_compute_units)
     quota["requests"] = max(int(quota.get("requests", 0)), request.plan_monthly_requests)
     store.update_tenant(tenant_id, tenant)
-    return {**record, "api_key": raw}
+    return {**_public_api_key_record(record), "api_key": raw}
 
 
 @router.delete("/{tenant_id}/api-keys/{key_id}")
-async def revoke_api_key(tenant_id: str, key_id: str) -> dict[str, str]:
+async def revoke_api_key(
+    tenant_id: str,
+    key_id: str,
+    _access: None = TenantAccess,
+) -> dict[str, str]:
     """Revoke a customer portal API key."""
     tenant = store.tenant(tenant_id)
     for key in tenant.setdefault("api_keys", []):
@@ -266,7 +348,7 @@ async def revoke_api_key(tenant_id: str, key_id: str) -> dict[str, str]:
 
 
 @router.get("/{tenant_id}/billing/invoices")
-async def billing_invoices(tenant_id: str) -> dict[str, object]:
+async def billing_invoices(tenant_id: str, _access: None = TenantAccess) -> dict[str, object]:
     """Return invoice history for the tenant."""
     tenant = store.tenant(tenant_id)
     invoices = tenant.get("invoices", [])
@@ -281,7 +363,11 @@ async def billing_invoices(tenant_id: str) -> dict[str, object]:
 
 
 @router.post("/{tenant_id}/payment-methods", status_code=status.HTTP_201_CREATED)
-async def add_payment_method(tenant_id: str, request: PaymentMethodRequest) -> dict[str, str]:
+async def add_payment_method(
+    tenant_id: str,
+    request: PaymentMethodRequest,
+    _access: None = TenantAccess,
+) -> dict[str, str]:
     """Register a tokenized payment method without storing card PAN data."""
     tenant = store.tenant(tenant_id)
     token_digest = hashlib.sha256(request.token.encode()).hexdigest()
