@@ -7,9 +7,9 @@
  * Integrates with main API client.
  */
 
-import React, { useEffect, useState } from "react";
-import { Server, Check, X, AlertCircle, Loader2, Star } from "lucide-react";
-import { switchPool as apiSwitchPool, type PoolInfo } from "../apiClient";
+import React, { useState } from "react";
+import { Server, Check, AlertCircle, Loader2, Star } from "lucide-react";
+import { type PoolInfo } from "../apiClient";
 
 interface PoolSelectorProps {
   pools: PoolInfo[];

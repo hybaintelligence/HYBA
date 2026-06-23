@@ -26,7 +26,9 @@ export const CUSTOMER_BOUNDARY_DENYLIST = [
 ] as const;
 
 function isCustomerBoundaryEnabled(): boolean {
-  return !FEATURES.SHOW_MINING_UI && !FEATURES.SHOW_POOL_MANAGEMENT && !FEATURES.SHOW_HASHRATE_METRICS;
+  return (
+    !FEATURES.SHOW_MINING_UI && !FEATURES.SHOW_POOL_MANAGEMENT && !FEATURES.SHOW_HASHRATE_METRICS
+  );
 }
 
 function nearestHideableSurface(element: Element): HTMLElement | null {
@@ -41,9 +43,7 @@ function nearestHideableSurface(element: Element): HTMLElement | null {
 function scrubInternalSurfaces(root: ParentNode = document): void {
   if (!isCustomerBoundaryEnabled()) return;
 
-  const candidates = root.querySelectorAll<HTMLElement>(
-    "h1,h2,h3,h4,h5,p,span,strong,button,div",
-  );
+  const candidates = root.querySelectorAll<HTMLElement>("h1,h2,h3,h4,h5,p,span,strong,button,div");
 
   candidates.forEach((candidate) => {
     const text = candidate.textContent?.toLowerCase() || "";

@@ -7,7 +7,12 @@
 
 import { MetacognitiveShield } from "./metacognitive_shield";
 import { HebbianLearner } from "./hebbian_learner";
-import { GoalState, HolographicShard, MemoryFabricEntry, IntelligenceTelemetry } from "./intelligence_types";
+import {
+  GoalState,
+  HolographicShard,
+  MemoryFabricEntry,
+  IntelligenceTelemetry,
+} from "./intelligence_types";
 import { randomBytes, createHash } from "crypto";
 
 export class EmergentIntelligenceSubstrate extends MetacognitiveShield {

@@ -46,7 +46,7 @@ export function recordPing(latency: number, success: boolean) {
 }
 
 // Singleton Background Ping Loop with environment process variables support
-let pingIntervalId: number | null = null;
+let pingIntervalId: ReturnType<typeof setInterval> | null = null;
 
 export function ensurePingInterval() {
   if (pingIntervalId) return;

@@ -1,4 +1,3 @@
-import { Request, Response, NextFunction } from "express";
 import { logger } from "./telemetry";
 import { calculate_phi_resonance } from "./constants";
 
@@ -7,13 +6,25 @@ import { calculate_phi_resonance } from "./constants";
  * Employs Hilbert-space decoherence for unauthorized state inspection.
  */
 
-interface RequestWithTrace extends Request {
+interface RequestWithTrace {
+  headers: Record<string, string | string[] | undefined>;
   traceContext?: { trace_id?: string };
 }
 
-export const phi_shield_middleware = (req: RequestWithTrace, res: Response, next: NextFunction) => {
-  const user_agent = req.header("user-agent") || "";
-  const trace_id = req.traceContext?.trace_id;
+interface ResponseWithMethods {
+  status: (code: number) => { json: (data: unknown) => void };
+  setHeader: (name: string, value: string) => void;
+}
+
+export const phi_shield_middleware = (
+  req: unknown,
+  res: unknown,
+  next: () => void
+) => {
+  const request = req as RequestWithTrace;
+  const response = res as ResponseWithMethods;
+  const user_agent = (request.headers["user-agent"] as string) || "";
+  const trace_id = request.traceContext?.trace_id;
 
   // First-principles signature verification
   // Detects packet sniffing or automated inspectors by resonance deviation
@@ -33,7 +44,7 @@ export const phi_shield_middleware = (req: RequestWithTrace, res: Response, next
       "Φ-Shield: Unauthorized introspection attempt blocked. Annihilating connection.",
     );
 
-    return res.status(403).json({
+    return response.status(403).json({
       error: {
         type: "shield_violation",
         message: "Access denied. HYBA substrate is obfuscated against inspection.",
@@ -43,6 +54,6 @@ export const phi_shield_middleware = (req: RequestWithTrace, res: Response, next
   }
 
   // Inject resonance signature to prevent replay
-  res.setHeader("x-substrate-resonance", resonance.toFixed(8));
+  response.setHeader("x-substrate-resonance", resonance.toFixed(8));
   next();
 };

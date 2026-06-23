@@ -106,18 +106,18 @@ export function getCustomerMetricLabel(internalKey: string): string {
 export function filterCustomerTelemetry<T extends Record<string, unknown>>(data: T): Partial<T> {
   if (FEATURES.SHOW_INTERNAL_TELEMETRY) return data;
 
-  const filtered: Record<string, unknown> = { ...data };
+  const filtered = { ...data };
 
   // Remove mining-specific fields.
-  delete filtered.activePool;
-  delete filtered.currentHashrate;
-  delete filtered.effective_hashrate_ehs;
-  delete filtered.hashrate;
-  delete filtered.power_scale;
-  delete filtered.pools;
-  delete filtered.mining;
+  delete (filtered as Record<string, unknown>).activePool;
+  delete (filtered as Record<string, unknown>).currentHashrate;
+  delete (filtered as Record<string, unknown>).effective_hashrate_ehs;
+  delete (filtered as Record<string, unknown>).hashrate;
+  delete (filtered as Record<string, unknown>).power_scale;
+  delete (filtered as Record<string, unknown>).pools;
+  delete (filtered as Record<string, unknown>).mining;
 
-  return filtered;
+  return filtered as Partial<T>;
 }
 
 export default FEATURES;

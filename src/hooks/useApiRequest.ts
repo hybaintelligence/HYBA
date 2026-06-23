@@ -1,10 +1,5 @@
 import { useState, useCallback, useRef } from "react";
-import {
-  classifyError,
-  logError,
-  isRetryable,
-  HybaError,
-} from "../utils/errorHandler";
+import { classifyError, logError, isRetryable, HybaError } from "../utils/errorHandler";
 
 interface UseApiRequestOptions<T> {
   maxRetries?: number;

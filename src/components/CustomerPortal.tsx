@@ -69,9 +69,10 @@ export default function CustomerPortal() {
   }, []);
 
   const monthlyQuota = dashboard?.quota_remaining.monthly_quota || 0;
-  const usagePct = dashboard && monthlyQuota > 0
-    ? Math.round(((dashboard.monthly_usage.compute_units || 0) / monthlyQuota) * 100)
-    : 0;
+  const usagePct =
+    dashboard && monthlyQuota > 0
+      ? Math.round(((dashboard.monthly_usage.compute_units || 0) / monthlyQuota) * 100)
+      : 0;
 
   return (
     <section className="space-y-6">
@@ -185,7 +186,9 @@ export default function CustomerPortal() {
           </div>
           <p className="mt-4 text-sm text-slate-500">
             Success rate{" "}
-            {workloads?.success_rate == null ? "—" : `${(workloads.success_rate * 100).toFixed(1)}%`}
+            {workloads?.success_rate == null
+              ? "—"
+              : `${(workloads.success_rate * 100).toFixed(1)}%`}
             ; total cost ${workloads?.total_cost ?? "—"}.
           </p>
         </div>
