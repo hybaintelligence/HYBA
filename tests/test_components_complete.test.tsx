@@ -173,7 +173,7 @@ const telemetry = {
   extraordinaryEvidence: proofEvidence,
 };
 
-function withProofEvidence(evidence: typeof proofEvidence | typeof unavailableProofEvidence) {
+function withProofEvidence(evidence: Record<string, unknown>) {
   return {
     ...telemetry,
     extraordinaryEvidence: evidence,
