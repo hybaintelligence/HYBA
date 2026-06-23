@@ -14,23 +14,26 @@ from types import ModuleType
 from typing import Optional
 
 _TARGET_MODULE = "pythia_mining.autonomous_mining_controller"
+_SHIM_MARKER = "_hyba_counterfactual_confidence_score_shim_applied"
 
 
 def _patch_pythia_proposal_confidence(module: ModuleType) -> None:
     proposal_cls = getattr(module, "SelfOptimizationProposal", None)
     if proposal_cls is None:
         return
+    if getattr(proposal_cls, _SHIM_MARKER, False):
+        return
     if hasattr(proposal_cls, "counterfactual_confidence_score"):
+        setattr(proposal_cls, _SHIM_MARKER, True)
         return
 
-    def _confidence_score(self: object) -> float:
-        value = getattr(self, "counterfactual_confidence", 0.0)
-        try:
-            return float(value)
-        except (TypeError, ValueError):
-            return 0.0
+    def _confidence_score(self: object):  # type: ignore[no-untyped-def]
+        # Pure alias only: do not normalise, scale, clamp, or otherwise change
+        # the value seen by the autonomy gate.
+        return getattr(self, "counterfactual_confidence", 0.0)
 
     setattr(proposal_cls, "counterfactual_confidence_score", property(_confidence_score))
+    setattr(proposal_cls, _SHIM_MARKER, True)
 
 
 class _PythiaCompatLoader(importlib.abc.Loader):
