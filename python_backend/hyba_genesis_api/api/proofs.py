@@ -6,6 +6,12 @@ from typing import Any, Dict
 
 from fastapi import APIRouter, HTTPException
 
+from hyba_genesis_api.core.autonomy_fabric import (
+    build_autonomy_fabric_snapshot,
+    build_client_intelligence_brief,
+    request_autonomy_execution,
+    simulate_autonomy_action,
+)
 from hyba_genesis_api.core.proof_surfaces import (
     build_runtime_evidence_ledger,
     get_proof_surface,
@@ -118,6 +124,44 @@ async def autonomy_proof() -> Dict[str, Any]:
     """Return the bounded-autonomy proof window."""
 
     return get_proof_surface("autonomy")
+
+
+@router.get("/autonomy-fabric", response_model=Dict[str, Any])
+async def autonomy_fabric_proof() -> Dict[str, Any]:
+    """Return the ubiquitous HYBA autonomy fabric client contract."""
+
+    return build_autonomy_fabric_snapshot()
+
+
+@router.get("/client-intelligence-brief", response_model=Dict[str, Any])
+async def client_intelligence_brief(client_name: str = "client") -> Dict[str, Any]:
+    """Return a board-safe brief showing how HYBA AI serves clients."""
+
+    return build_client_intelligence_brief(client_name)
+
+
+@router.post("/autonomy-fabric/simulate", response_model=Dict[str, Any])
+async def simulate_autonomy(surface_id: str, action: str) -> Dict[str, Any]:
+    """Simulate an autonomous action before any execution path is allowed."""
+
+    try:
+        return simulate_autonomy_action(surface_id, action)
+    except (KeyError, ValueError) as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+@router.post("/autonomy-fabric/execute", response_model=Dict[str, Any])
+async def request_autonomy_action(
+    surface_id: str,
+    action: str,
+    approval_id: str | None = None,
+) -> Dict[str, Any]:
+    """Return an execution decision; high-risk actions fail closed without approval."""
+
+    try:
+        return request_autonomy_execution(surface_id, action, approval_id=approval_id)
+    except (KeyError, ValueError) as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
 
 
 @router.get("/memory-compression", response_model=Dict[str, Any])
