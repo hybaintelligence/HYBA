@@ -65,7 +65,6 @@ export default function CustomerPortal() {
     loadPortal().catch((error) =>
       setStatus(error instanceof Error ? error.message : "Portal unavailable"),
     );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const monthlyQuota = dashboard?.quota_remaining.monthly_quota || 0;

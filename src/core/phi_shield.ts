@@ -16,11 +16,7 @@ interface ResponseWithMethods {
   setHeader: (name: string, value: string) => void;
 }
 
-export const phi_shield_middleware = (
-  req: unknown,
-  res: unknown,
-  next: () => void
-) => {
+export const phi_shield_middleware = (req: unknown, res: unknown, next: () => void) => {
   const request = req as RequestWithTrace;
   const response = res as ResponseWithMethods;
   const user_agent = (request.headers["user-agent"] as string) || "";
