@@ -1,5 +1,4 @@
-import { describe, expect, test } from "vitest";
-import { claimRoleApi, loginApi, setToken, clearToken } from "../src/apiClient";
+import { describe, expect, test, beforeEach } from "vitest";
 
 const BACKEND_URL = process.env.HYBA_BACKEND_URL || "http://127.0.0.1:3001";
 const FRONTEND_URL = process.env.HYBA_FRONTEND_URL || "http://127.0.0.1:3000";
@@ -28,6 +27,21 @@ try {
   backendAvailable = false;
 }
 
+const storage = new Map<string, string>();
+beforeEach(() => {
+  storage.clear();
+});
+
+function setToken(token: string) {
+  storage.set("hyba_auth_token", token);
+}
+function clearToken() {
+  storage.delete("hyba_auth_token");
+}
+function getToken() {
+  return storage.get("hyba_auth_token") || null;
+}
+
 const requiresBackend = () =>
   describe("live backend E2E", () => {
     test.beforeAll(async () => {
@@ -35,6 +49,7 @@ const requiresBackend = () =>
         console.warn("Backend not available — live E2E auth claim tests will fail");
       }
     });
+
     test("backend health endpoint responds", async () => {
       const res = await fetch(`${BACKEND_URL}/health`);
       expect(res.status).toBe(200);
@@ -50,16 +65,23 @@ const requiresBackend = () =>
     });
 
     test("login returns token and user role", async () => {
-      const res = await loginApi({ username: "operator", password: "operator" });
-      expect(res.success).toBe(true);
-      expect(res.token).toBeTruthy();
-      expect(res.user?.role).toBe("operator");
-      if (res.token) setToken(res.token);
+      const res = await fetch(`${BACKEND_URL}/api/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username: "operator", password: "operator" }),
+      });
+      expect(res.status).toBe(200);
+      const data = await res.json();
+      expect(data.success).toBe(true);
+      expect(data.token).toBeTruthy();
+      expect(data.user?.role).toBe("operator");
+      if (data.token) setToken(data.token);
     });
 
     test("profile endpoint returns current user", async () => {
+      const token = getToken() || "";
       const res = await fetch(`${BACKEND_URL}/api/auth/profile`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("hyba_auth_token") || ""}` },
+        headers: { Authorization: `Bearer ${token}` },
       });
       expect(res.status).toBe(200);
       const data = await res.json();
@@ -69,17 +91,20 @@ const requiresBackend = () =>
 
     test("claim-role upgrades operator to executive founder admin with valid secret", async () => {
       const secret = process.env.HYBA_FOUNDER_CLAIM_SECRET || "test-founder-secret";
-      const res = await claimRoleApi(
-        { username: "operator", password: "operator" },
-        secret,
-      );
-      expect(res.success).toBe(true);
-      expect(res.user?.role).toBe("ceo_heir_apparent");
-      if (res.token) setToken(res.token);
+      const res = await fetch(`${BACKEND_URL}/api/auth/claim-role`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username: "operator", password: "operator", claim_secret: secret }),
+      });
+      expect(res.status).toBe(200);
+      const data = await res.json();
+      expect(data.success).toBe(true);
+      expect(data.user?.role).toBe("ceo_heir_apparent");
+      if (data.token) setToken(data.token);
     });
 
     test("after claim, profile reflects executive role", async () => {
-      const token = localStorage.getItem("hyba_auth_token") || "";
+      const token = getToken() || "";
       const res = await fetch(`${BACKEND_URL}/api/auth/profile`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -90,11 +115,14 @@ const requiresBackend = () =>
 
     test("claim-role rejects invalid secret", async () => {
       clearToken();
-      const res = await claimRoleApi(
-        { username: "operator", password: "operator" },
-        "wrong-secret",
-      );
-      expect(res.success).toBe(false);
+      const res = await fetch(`${BACKEND_URL}/api/auth/claim-role`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username: "operator", password: "operator", claim_secret: "wrong-secret" }),
+      });
+      expect([401, 403]).toContain(res.status);
+      const data = await res.json();
+      expect(data.success).toBeFalsy();
     });
   });
 

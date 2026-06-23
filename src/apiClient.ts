@@ -1603,7 +1603,7 @@ export async function loginApi(credentials: AuthCredentials): Promise<AuthRespon
 
 /** POST /api/auth/register — Register a new user */
 export async function claimRoleApi(credentials: AuthCredentials, claimSecret: string): Promise<AuthResponse> {
-  const response = await fetch("/api/auth/claim-role", {
+  const response = await fetch(`${BACKEND_URL}/auth/claim-role`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
