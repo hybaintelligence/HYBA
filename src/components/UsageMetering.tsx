@@ -15,11 +15,27 @@ interface UsageData {
   currency: string;
   period_start: string;
   period_end: string;
-  breakdown: {
-    qaas: number;
-    qiaas: number;
-    ciaas: number;
-    quantum_finance: number;
+  breakdown: Record<string, number>;
+}
+
+const DEFAULT_TENANT = import.meta.env.VITE_CUSTOMER_TENANT_ID || "enterprise-tenant";
+
+function usageHeaders(): HeadersInit {
+  let tenant = DEFAULT_TENANT;
+  let portalToken = import.meta.env.VITE_CUSTOMER_PORTAL_TOKEN || "";
+  try {
+    tenant = localStorage.getItem("hyba_customer_tenant_id") || tenant;
+    portalToken = localStorage.getItem("hyba_customer_portal_token") || portalToken;
+  } catch {
+    // Browser storage can be disabled; keep env/defaults.
+  }
+
+  return {
+    "X-HYBA-Tenant-ID": tenant,
+    ...(portalToken ? { "X-HYBA-Customer-Token": portalToken } : {}),
+    ...(localStorage.getItem("hyba_auth_token")
+      ? { Authorization: `Bearer ${localStorage.getItem("hyba_auth_token")}` }
+      : {}),
   };
 }
 
@@ -36,10 +52,11 @@ export function UsageMetering() {
   const fetchUsage = async () => {
     try {
       const response = await fetch("/api/customer/usage", {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("hyba_auth_token")}`,
-        },
+        headers: usageHeaders(),
       });
+      if (!response.ok) {
+        throw new Error(`Usage endpoint returned ${response.status}`);
+      }
       const data = await response.json();
       setUsage(data);
     } catch (error) {
@@ -60,7 +77,11 @@ export function UsageMetering() {
     );
   }
 
-  const quotaPercentage = (usage.compute_units_used / usage.compute_units_quota) * 100;
+  const quotaPercentage = usage.compute_units_quota > 0
+    ? (usage.compute_units_used / usage.compute_units_quota) * 100
+    : 0;
+  const qaasUsage = usage.breakdown.qaas || 0;
+  const qiaasUsage = usage.breakdown.qiaas || 0;
 
   return (
     <div className="space-y-6">
@@ -114,7 +135,7 @@ export function UsageMetering() {
               <span className="text-xs font-medium">QaaS Usage</span>
             </div>
             <div className="text-2xl font-bold text-slate-950">
-              {usage.breakdown.qaas.toLocaleString()}
+              {qaasUsage.toLocaleString()}
             </div>
             <div className="mt-1 text-xs text-slate-500">compute units</div>
           </div>
@@ -125,7 +146,7 @@ export function UsageMetering() {
               <span className="text-xs font-medium">QIaaS Usage</span>
             </div>
             <div className="text-2xl font-bold text-slate-950">
-              {usage.breakdown.qiaas.toLocaleString()}
+              {qiaasUsage.toLocaleString()}
             </div>
             <div className="mt-1 text-xs text-slate-500">compute units</div>
           </div>
