@@ -61,18 +61,6 @@ from hyba_genesis_api.api import (  # noqa: E402
     webhooks,
     websocket,
 )
-    proofs,
-    quantum_as_a_service,
-    quantum_finance_service,
-    quantum_intelligence_service,
-    quantum_mathematical_execution,
-    regeneration_router,
-    webhooks,
-    salamander_substrate,
-    security,
-    streaming_sense,
-    unified_mining,
-)
 from hyba_genesis_api.core.api_posture import install_enterprise_api_posture  # noqa: E402
 from hyba_genesis_api.core.recursive_closure import build_buffered_closure  # noqa: E402
 from hyba_genesis_api.core.reflexive_controller import (  # noqa: E402

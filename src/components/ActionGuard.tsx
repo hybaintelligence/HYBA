@@ -7,7 +7,11 @@
 
 import React from "react";
 import { ShieldAlert, CheckCircle, XCircle, AlertTriangle } from "lucide-react";
-import { calculateBlastRadius, type BlastRadiusAssessment, type ProposedAction } from "../utils/blastRadius";
+import {
+  calculateBlastRadius,
+  type BlastRadiusAssessment,
+  type ProposedAction,
+} from "../utils/blastRadius";
 
 interface ActionGuardProps {
   action: ProposedAction;
@@ -32,18 +36,18 @@ export function ActionGuard({
 
   const levelColors: Record<string, string> = {
     "read-only": "border-green-200 bg-green-50 text-green-900",
-    "low": "border-blue-200 bg-blue-50 text-blue-900",
-    "medium": "border-yellow-200 bg-yellow-50 text-yellow-900",
-    "high": "border-orange-200 bg-orange-50 text-orange-900",
-    "critical": "border-red-200 bg-red-50 text-red-900",
+    low: "border-blue-200 bg-blue-50 text-blue-900",
+    medium: "border-yellow-200 bg-yellow-50 text-yellow-900",
+    high: "border-orange-200 bg-orange-50 text-orange-900",
+    critical: "border-red-200 bg-red-50 text-red-900",
   };
 
   const approvalBadge: Record<string, string> = {
-    "none": "bg-green-100 text-green-800",
-    "operator": "bg-blue-100 text-blue-800",
-    "admin": "bg-purple-100 text-purple-800",
-    "executive": "bg-orange-100 text-orange-800",
-    "board": "bg-red-100 text-red-800",
+    none: "bg-green-100 text-green-800",
+    operator: "bg-blue-100 text-blue-800",
+    admin: "bg-purple-100 text-purple-800",
+    executive: "bg-orange-100 text-orange-800",
+    board: "bg-red-100 text-red-800",
   };
 
   return (
@@ -66,7 +70,9 @@ export function ActionGuard({
               {action.command}
             </code>
           </div>
-          <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${approvalBadge[assessment.approvalLevel]}`}>
+          <span
+            className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${approvalBadge[assessment.approvalLevel]}`}
+          >
             {assessment.approvalLevel} approval
           </span>
         </div>
@@ -113,8 +119,8 @@ export function ActionGuard({
       <div className="flex items-start gap-2 mb-4 p-3 bg-black/5 rounded-lg">
         <AlertTriangle className="h-5 w-5 flex-shrink-0 mt-0.5" />
         <p className="text-sm">
-          <strong>Claim Boundary:</strong> This is a proposal-only action. Human approval is required
-          before execution. The action will not execute until explicitly approved.
+          <strong>Claim Boundary:</strong> This is a proposal-only action. Human approval is
+          required before execution. The action will not execute until explicitly approved.
         </p>
       </div>
 

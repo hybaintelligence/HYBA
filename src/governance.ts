@@ -140,15 +140,19 @@ export function buildGovernanceSignals(input: GovernanceTelemetryInput): Governa
     {
       id: "claim-boundary",
       label: "Claim boundary",
-      status: tags.has("no_unattended_writes") || tags.has("proposal_only") || tags.has("salamander_regeneration") ? "pass" : "warn",
-      detail:
-        tags.has("no_unattended_writes")
-          ? "Reflexive intelligence is bounded by no-unattended-writes governance."
-          : tags.has("proposal_only")
-            ? "Reflexive intelligence operates under proposal-only governance - changes require explicit approval."
-            : tags.has("salamander_regeneration")
-              ? "Reflexive intelligence operates under Salamander regeneration protocol - autonomous fixing enabled."
-              : "No reflexive governance tag was reported; do not infer autonomous source modification.",
+      status:
+        tags.has("no_unattended_writes") ||
+        tags.has("proposal_only") ||
+        tags.has("salamander_regeneration")
+          ? "pass"
+          : "warn",
+      detail: tags.has("no_unattended_writes")
+        ? "Reflexive intelligence is bounded by no-unattended-writes governance."
+        : tags.has("proposal_only")
+          ? "Reflexive intelligence operates under proposal-only governance - changes require explicit approval."
+          : tags.has("salamander_regeneration")
+            ? "Reflexive intelligence operates under Salamander regeneration protocol - autonomous fixing enabled."
+            : "No reflexive governance tag was reported; do not infer autonomous source modification.",
     },
     {
       id: "phi-evidence",
@@ -232,14 +236,19 @@ export function downloadEvidencePackage(pkg: PortableEvidencePackage, format: "j
           `Signature (${pkg.signature.algorithm}): ${pkg.signature.digest}`,
           "",
           "Invariants:",
-          ...Object.entries(pkg.invariants).map(([key, value]) => `- ${key}: ${value ? "PASS" : "FAIL"}`),
+          ...Object.entries(pkg.invariants).map(
+            ([key, value]) => `- ${key}: ${value ? "PASS" : "FAIL"}`,
+          ),
           "",
           "Approval log:",
           ...(pkg.humanApproval.approvalLog || []).map(
-            (entry) => `- ${entry.approvedAt} ${entry.approvedBy} (${entry.role}) approved ${entry.action}`,
+            (entry) =>
+              `- ${entry.approvedAt} ${entry.approvedBy} (${entry.role}) approved ${entry.action}`,
           ),
         ].join("\n");
-  const blob = new Blob([text], { type: format === "json" ? "application/json" : "application/pdf" });
+  const blob = new Blob([text], {
+    type: format === "json" ? "application/json" : "application/pdf",
+  });
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;

@@ -22,16 +22,16 @@ type MetricTranslation = {
 
 type ModeSpecificTranslations = Record<SkillMode, MetricTranslation>;
 
-export const metricTranslations: Record<
-  MetricTranslationKey,
-  ModeSpecificTranslations
-> = {
+export const metricTranslations: Record<MetricTranslationKey, ModeSpecificTranslations> = {
   phi_resonance: {
     executive: {
       label: "Reasoning Stability",
-      plainEnglish: "How stable HYBA expects the intelligence state to be before trusting a result.",
-      operationalImplication: "Higher settings are stricter; use balanced defaults unless a regulated workflow needs more proof.",
-      evidenceView: "Compare requested φ target with live resonance, invariant status, and evidence seal freshness.",
+      plainEnglish:
+        "How stable HYBA expects the intelligence state to be before trusting a result.",
+      operationalImplication:
+        "Higher settings are stricter; use balanced defaults unless a regulated workflow needs more proof.",
+      evidenceView:
+        "Compare requested φ target with live resonance, invariant status, and evidence seal freshness.",
       expert: "φ-resonance target tunes phase-alignment acceptance for substrate-backed execution.",
       recommendation: "Maintain above 95% for board-level decisions.",
     },
@@ -46,7 +46,8 @@ export const metricTranslations: Record<
     operator: {
       label: "System Stability",
       plainEnglish: "Whether the intelligence substrate is stable enough for operational tasks.",
-      operationalImplication: "Strong stability supports automation; weak stability requires manual review.",
+      operationalImplication:
+        "Strong stability supports automation; weak stability requires manual review.",
       evidenceView: "Check live telemetry, invariant status, and substrate health.",
       expert: "φ-resonance target tunes phase-alignment acceptance for substrate-backed execution.",
       recommendation: "Monitor for drops below 85% during active operations.",
@@ -54,7 +55,8 @@ export const metricTranslations: Record<
     analyst: {
       label: "Coherence Metric",
       plainEnglish: "The mathematical measure of intelligence state alignment across substrates.",
-      operationalImplication: "Use for trend analysis and anomaly detection in intelligence patterns.",
+      operationalImplication:
+        "Use for trend analysis and anomaly detection in intelligence patterns.",
       evidenceView: "Historical coherence trends, invariant correlations, and substrate alignment.",
       expert: "φ-resonance target tunes phase-alignment acceptance for substrate-backed execution.",
       recommendation: "Track week-over-week changes for intelligence quality assessment.",
@@ -62,7 +64,8 @@ export const metricTranslations: Record<
     engineer: {
       label: "Phase Alignment Factor",
       plainEnglish: "The phase-alignment threshold for substrate-backed quantum execution.",
-      operationalImplication: "Higher thresholds require more precise phase control but reduce error rates.",
+      operationalImplication:
+        "Higher thresholds require more precise phase control but reduce error rates.",
       evidenceView: "Phase error measurements, alignment calibration, and quantum gate fidelity.",
       expert: "φ-resonance target tunes phase-alignment acceptance for substrate-backed execution.",
       recommendation: "Calibrate against hardware specifications and error budgets.",
@@ -70,15 +73,19 @@ export const metricTranslations: Record<
     auditor: {
       label: "Proof Threshold",
       plainEnglish: "The minimum coherence required for evidence-bound claims to be auditable.",
-      operationalImplication: "Claims below this threshold cannot be used for compliance or audit purposes.",
-      evidenceView: "Audit trail includes coherence measurements, invariant checks, and seal validity.",
+      operationalImplication:
+        "Claims below this threshold cannot be used for compliance or audit purposes.",
+      evidenceView:
+        "Audit trail includes coherence measurements, invariant checks, and seal validity.",
       expert: "φ-resonance target tunes phase-alignment acceptance for substrate-backed execution.",
       recommendation: "Require 98%+ for regulated industry claims.",
     },
     expert: {
       label: "φ-Resonance Target",
-      plainEnglish: "The golden-ratio phase-alignment threshold for substrate-backed quantum execution.",
-      operationalImplication: "Tune based on hardware capabilities, error budgets, and application requirements.",
+      plainEnglish:
+        "The golden-ratio phase-alignment threshold for substrate-backed quantum execution.",
+      operationalImplication:
+        "Tune based on hardware capabilities, error budgets, and application requirements.",
       evidenceView: "Phase error measurements, φ-scaling factors, and quantum gate fidelity.",
       expert: "φ-resonance target tunes phase-alignment acceptance for substrate-backed execution.",
       recommendation: "Optimize for specific quantum algorithm requirements.",
@@ -120,7 +127,8 @@ export const metricTranslations: Record<
     engineer: {
       label: "Surface-Code Distance",
       plainEnglish: "The surface-code distance parameter for quantum error correction.",
-      operationalImplication: "Higher distance requires more physical qubits but reduces logical error rate.",
+      operationalImplication:
+        "Higher distance requires more physical qubits but reduces logical error rate.",
       evidenceView: "Syndrome weight, stabilizer confidence, and fail-closed invariant checks.",
       expert: "Code distance governs the error-correction envelope exposed to QI/CI rails.",
       recommendation: "Balance against hardware constraints and latency requirements.",
@@ -136,7 +144,8 @@ export const metricTranslations: Record<
     expert: {
       label: "Code Distance",
       plainEnglish: "The surface-code distance parameter for quantum error correction.",
-      operationalImplication: "Higher distance requires more physical qubits but reduces logical error rate.",
+      operationalImplication:
+        "Higher distance requires more physical qubits but reduces logical error rate.",
       evidenceView: "Syndrome weight, stabilizer confidence, and fail-closed invariant checks.",
       expert: "Code distance governs the error-correction envelope exposed to QI/CI rails.",
       recommendation: "Optimize for specific quantum algorithm requirements.",
@@ -177,9 +186,12 @@ export const metricTranslations: Record<
     },
     engineer: {
       label: "Physical Error Rate",
-      plainEnglish: "The physical error rate parameter used for capacity and fault-tolerance planning.",
-      operationalImplication: "Lower assumptions make the rail more conservative for evidence-bound decisions.",
-      evidenceView: "Preserve this value in provisioning records and approval packets for reproducibility.",
+      plainEnglish:
+        "The physical error rate parameter used for capacity and fault-tolerance planning.",
+      operationalImplication:
+        "Lower assumptions make the rail more conservative for evidence-bound decisions.",
+      evidenceView:
+        "Preserve this value in provisioning records and approval packets for reproducibility.",
       expert: "Physical error-rate parameter used for capacity and fault-tolerance planning.",
       recommendation: "Calibrate against hardware specifications and measurements.",
     },
@@ -193,9 +205,12 @@ export const metricTranslations: Record<
     },
     expert: {
       label: "Physical Error Rate",
-      plainEnglish: "The physical error rate parameter used for capacity and fault-tolerance planning.",
-      operationalImplication: "Lower assumptions make the rail more conservative for evidence-bound decisions.",
-      evidenceView: "Preserve this value in provisioning records and approval packets for reproducibility.",
+      plainEnglish:
+        "The physical error rate parameter used for capacity and fault-tolerance planning.",
+      operationalImplication:
+        "Lower assumptions make the rail more conservative for evidence-bound decisions.",
+      evidenceView:
+        "Preserve this value in provisioning records and approval packets for reproducibility.",
       expert: "Physical error-rate parameter used for capacity and fault-tolerance planning.",
       recommendation: "Optimize based on hardware capabilities and application requirements.",
     },
@@ -236,7 +251,8 @@ export const metricTranslations: Record<
     engineer: {
       label: "Substrate Coherence",
       plainEnglish: "The coherence of the quantum/classical substrate layers.",
-      operationalImplication: "Strong coherence can proceed to simulation; weak coherence should escalate.",
+      operationalImplication:
+        "Strong coherence can proceed to simulation; weak coherence should escalate.",
       evidenceView: "Back with live telemetry source, invariant pass count, and claim boundary.",
       expert: "Substrate coherence summarizes manifold/quantum/consciousness state alignment.",
       recommendation: "Monitor substrate alignment during quantum operations.",
@@ -252,7 +268,8 @@ export const metricTranslations: Record<
     expert: {
       label: "Substrate Coherence",
       plainEnglish: "The coherence of the quantum/classical substrate layers.",
-      operationalImplication: "Strong coherence can proceed to simulation; weak coherence should escalate.",
+      operationalImplication:
+        "Strong coherence can proceed to simulation; weak coherence should escalate.",
       evidenceView: "Back with live telemetry source, invariant pass count, and claim boundary.",
       expert: "Substrate coherence summarizes manifold/quantum/consciousness state alignment.",
       recommendation: "Optimize for specific quantum algorithm requirements.",
@@ -264,7 +281,8 @@ export const metricTranslations: Record<
       plainEnglish: "A proof handle for verifying what evidence supported an answer.",
       operationalImplication: "No seal means no autonomous action; sealed answers are advisory.",
       evidenceView: "Use the seal to link answer, assumptions, invariants, source telemetry.",
-      expert: "Evidence seal anchors reproducible evidence packets and adversarial-contract policy.",
+      expert:
+        "Evidence seal anchors reproducible evidence packets and adversarial-contract policy.",
       recommendation: "Require seals for all board-level decisions.",
     },
     business: {
@@ -272,7 +290,8 @@ export const metricTranslations: Record<
       plainEnglish: "The identifier for the evidence packet supporting this answer.",
       operationalImplication: "Use for tracking and auditing business decisions.",
       evidenceView: "Evidence packet contents and metadata.",
-      expert: "Evidence seal anchors reproducible evidence packets and adversarial-contract policy.",
+      expert:
+        "Evidence seal anchors reproducible evidence packets and adversarial-contract policy.",
       recommendation: "Record proof IDs for all commercial operations.",
     },
     operator: {
@@ -280,7 +299,8 @@ export const metricTranslations: Record<
       plainEnglish: "The reference to the evidence packet for operational actions.",
       operationalImplication: "Required for any automated or semi-automated operations.",
       evidenceView: "Evidence packet contents and operational context.",
-      expert: "Evidence seal anchors reproducible evidence packets and adversarial-contract policy.",
+      expert:
+        "Evidence seal anchors reproducible evidence packets and adversarial-contract policy.",
       recommendation: "Verify evidence handles before operational changes.",
     },
     analyst: {
@@ -288,15 +308,20 @@ export const metricTranslations: Record<
       plainEnglish: "The cryptographic identifier for the evidence seal.",
       operationalImplication: "Use for traceability and reproducibility analysis.",
       evidenceView: "Seal metadata, cryptographic validation, and chain of custody.",
-      expert: "Evidence seal anchors reproducible evidence packets and adversarial-contract policy.",
+      expert:
+        "Evidence seal anchors reproducible evidence packets and adversarial-contract policy.",
       recommendation: "Analyze seal patterns for evidence quality assessment.",
     },
     engineer: {
       label: "Evidence Seal",
-      plainEnglish: "A proof handle that lets a buyer or auditor verify what evidence supported the answer.",
-      operationalImplication: "No seal means no autonomous action; sealed answers are still advisory unless policy approves execution.",
-      evidenceView: "Use the seal to link answer, assumptions, invariants, source telemetry, and timestamp.",
-      expert: "Evidence seal anchors reproducible evidence packets and adversarial-contract policy.",
+      plainEnglish:
+        "A proof handle that lets a buyer or auditor verify what evidence supported the answer.",
+      operationalImplication:
+        "No seal means no autonomous action; sealed answers are still advisory unless policy approves execution.",
+      evidenceView:
+        "Use the seal to link answer, assumptions, invariants, source telemetry, and timestamp.",
+      expert:
+        "Evidence seal anchors reproducible evidence packets and adversarial-contract policy.",
       recommendation: "Validate seal cryptographic properties before use.",
     },
     auditor: {
@@ -304,15 +329,20 @@ export const metricTranslations: Record<
       plainEnglish: "The cryptographic seal for the complete audit trail.",
       operationalImplication: "Required for compliance and regulatory purposes.",
       evidenceView: "Complete audit trail, seal validation, and regulatory compliance.",
-      expert: "Evidence seal anchors reproducible evidence packets and adversarial-contract policy.",
+      expert:
+        "Evidence seal anchors reproducible evidence packets and adversarial-contract policy.",
       recommendation: "Verify seal integrity for all regulatory claims.",
     },
     expert: {
       label: "Evidence Seal",
-      plainEnglish: "A proof handle that lets a buyer or auditor verify what evidence supported the answer.",
-      operationalImplication: "No seal means no autonomous action; sealed answers are still advisory unless policy approves execution.",
-      evidenceView: "Use the seal to link answer, assumptions, invariants, source telemetry, and timestamp.",
-      expert: "Evidence seal anchors reproducible evidence packets and adversarial-contract policy.",
+      plainEnglish:
+        "A proof handle that lets a buyer or auditor verify what evidence supported the answer.",
+      operationalImplication:
+        "No seal means no autonomous action; sealed answers are still advisory unless policy approves execution.",
+      evidenceView:
+        "Use the seal to link answer, assumptions, invariants, source telemetry, and timestamp.",
+      expert:
+        "Evidence seal anchors reproducible evidence packets and adversarial-contract policy.",
       recommendation: "Validate cryptographic properties and chain of custody.",
     },
   },
@@ -351,8 +381,10 @@ export const metricTranslations: Record<
     },
     engineer: {
       label: "Proof Checks",
-      plainEnglish: "Automated checks that must pass before HYBA treats a claim as safe to present.",
-      operationalImplication: "Failed or missing checks should block high-risk execution and request human review.",
+      plainEnglish:
+        "Automated checks that must pass before HYBA treats a claim as safe to present.",
+      operationalImplication:
+        "Failed or missing checks should block high-risk execution and request human review.",
       evidenceView: "Show pass/fail count, failed invariant names, and fail-closed status.",
       expert: "Invariant suite validates claim contracts and extraordinary-evidence gates.",
       recommendation: "Review invariant definitions for specific use cases.",
@@ -367,8 +399,10 @@ export const metricTranslations: Record<
     },
     expert: {
       label: "Proof Checks",
-      plainEnglish: "Automated checks that must pass before HYBA treats a claim as safe to present.",
-      operationalImplication: "Failed or missing checks should block high-risk execution and request human review.",
+      plainEnglish:
+        "Automated checks that must pass before HYBA treats a claim as safe to present.",
+      operationalImplication:
+        "Failed or missing checks should block high-risk execution and request human review.",
       evidenceView: "Show pass/fail count, failed invariant names, and fail-closed status.",
       expert: "Invariant suite validates claim contracts and extraordinary-evidence gates.",
       recommendation: "Optimize invariant set for specific algorithm requirements.",
@@ -409,8 +443,10 @@ export const metricTranslations: Record<
     },
     engineer: {
       label: "Claim Boundary",
-      plainEnglish: "The line between advice, simulation, prepared remediation, and approved execution.",
-      operationalImplication: "Users can ask, simulate, and prepare; execution requires role-aware approval unless pre-authorized.",
+      plainEnglish:
+        "The line between advice, simulation, prepared remediation, and approved execution.",
+      operationalImplication:
+        "Users can ask, simulate, and prepare; execution requires role-aware approval unless pre-authorized.",
       evidenceView: "Record boundary, approver, governance tags, and command allowlist entry.",
       expert: "Claim boundary constrains autonomy semantics for evidence-bound QI responses.",
       recommendation: "Respect boundary constraints in all automation.",
@@ -425,8 +461,10 @@ export const metricTranslations: Record<
     },
     expert: {
       label: "Claim Boundary",
-      plainEnglish: "The line between advice, simulation, prepared remediation, and approved execution.",
-      operationalImplication: "Users can ask, simulate, and prepare; execution requires role-aware approval unless pre-authorized.",
+      plainEnglish:
+        "The line between advice, simulation, prepared remediation, and approved execution.",
+      operationalImplication:
+        "Users can ask, simulate, and prepare; execution requires role-aware approval unless pre-authorized.",
       evidenceView: "Record boundary, approver, governance tags, and command allowlist entry.",
       expert: "Claim boundary constrains autonomy semantics for evidence-bound QI responses.",
       recommendation: "Optimize boundary for specific use cases.",
@@ -496,7 +534,8 @@ export const metricTranslations: Record<
       plainEnglish: "HYBA can suggest repairs without silently changing systems.",
       operationalImplication: "Default to proposal-only; approve after blast-radius review.",
       evidenceView: "Attach degradation cause, proposed action, rollback plan, approval status.",
-      expert: "Salamander regeneration prepares bounded remediation plans through governance gates.",
+      expert:
+        "Salamander regeneration prepares bounded remediation plans through governance gates.",
       recommendation: "Review blast radius before approving any regeneration.",
     },
     business: {
@@ -504,7 +543,8 @@ export const metricTranslations: Record<
       plainEnglish: "The system's ability to identify and propose fixes for issues.",
       operationalImplication: "Use proposals to maintain business continuity safely.",
       evidenceView: "Issue detection, proposed fixes, and business impact assessment.",
-      expert: "Salamander regeneration prepares bounded remediation plans through governance gates.",
+      expert:
+        "Salamander regeneration prepares bounded remediation plans through governance gates.",
       recommendation: "Approve self-healing for routine operational issues.",
     },
     operator: {
@@ -512,7 +552,8 @@ export const metricTranslations: Record<
       plainEnglish: "The system's proposed fix for degraded workflows.",
       operationalImplication: "Review blast radius and rollback plan before execution.",
       evidenceView: "Degradation cause, proposed command, rollback plan, operational context.",
-      expert: "Salamander regeneration prepares bounded remediation plans through governance gates.",
+      expert:
+        "Salamander regeneration prepares bounded remediation plans through governance gates.",
       recommendation: "Test rollback plans before approving repairs.",
     },
     analyst: {
@@ -520,15 +561,20 @@ export const metricTranslations: Record<
       plainEnglish: "The analysis of system degradation and proposed remediation.",
       operationalImplication: "Use for understanding system health and recovery patterns.",
       evidenceView: "Degradation patterns, remediation effectiveness, and system resilience.",
-      expert: "Salamander regeneration prepares bounded remediation plans through governance gates.",
+      expert:
+        "Salamander regeneration prepares bounded remediation plans through governance gates.",
       recommendation: "Analyze regeneration patterns for system optimization.",
     },
     engineer: {
       label: "Salamander Regeneration",
-      plainEnglish: "HYBA can identify degraded workflows and draft repairs without silently changing systems.",
-      operationalImplication: "Default to proposal-only; approve execution only after blast-radius and rollback review.",
-      evidenceView: "Attach degradation cause, proposed command, blast radius, rollback plan, and approval status.",
-      expert: "Salamander regeneration prepares bounded remediation plans through governance gates.",
+      plainEnglish:
+        "HYBA can identify degraded workflows and draft repairs without silently changing systems.",
+      operationalImplication:
+        "Default to proposal-only; approve execution only after blast-radius and rollback review.",
+      evidenceView:
+        "Attach degradation cause, proposed command, blast radius, rollback plan, and approval status.",
+      expert:
+        "Salamander regeneration prepares bounded remediation plans through governance gates.",
       recommendation: "Validate regeneration logic before deployment.",
     },
     auditor: {
@@ -536,15 +582,20 @@ export const metricTranslations: Record<
       plainEnglish: "The system's ability to repair audit trail issues.",
       operationalImplication: "Requires explicit approval for any audit trail modifications.",
       evidenceView: "Audit impact, repair proposal, compliance validation, approval chain.",
-      expert: "Salamander regeneration prepares bounded remediation plans through governance gates.",
+      expert:
+        "Salamander regeneration prepares bounded remediation plans through governance gates.",
       recommendation: "Require highest approval for audit trail repairs.",
     },
     expert: {
       label: "Salamander Regeneration",
-      plainEnglish: "HYBA can identify degraded workflows and draft repairs without silently changing systems.",
-      operationalImplication: "Default to proposal-only; approve execution only after blast-radius and rollback review.",
-      evidenceView: "Attach degradation cause, proposed command, blast radius, rollback plan, and approval status.",
-      expert: "Salamander regeneration prepares bounded remediation plans through governance gates.",
+      plainEnglish:
+        "HYBA can identify degraded workflows and draft repairs without silently changing systems.",
+      operationalImplication:
+        "Default to proposal-only; approve execution only after blast-radius and rollback review.",
+      evidenceView:
+        "Attach degradation cause, proposed command, blast radius, rollback plan, and approval status.",
+      expert:
+        "Salamander regeneration prepares bounded remediation plans through governance gates.",
       recommendation: "Optimize regeneration logic for specific failure modes.",
     },
   },

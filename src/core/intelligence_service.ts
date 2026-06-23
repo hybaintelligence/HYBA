@@ -6,7 +6,13 @@
 
 import { EmergentIntelligenceSubstrate } from "./emergent_intelligence";
 import { IntelligenceTelemetry } from "./intelligence_types";
-import { classifyError, logError, HybaError, ErrorCategory, ErrorSeverity } from "../utils/errorHandler";
+import {
+  classifyError,
+  logError,
+  HybaError,
+  ErrorCategory,
+  ErrorSeverity,
+} from "../utils/errorHandler";
 
 export class IntelligenceService {
   private static instance: IntelligenceService;
@@ -54,27 +60,27 @@ export class IntelligenceService {
             `[IntelligenceService] System in ${telemetry.mode} mode. Phi: ${telemetry.phi_integrated.toFixed(4)}`,
           );
         }
-        
+
         // Reset error count on successful pulse
         this.errorCount = 0;
       } catch (error) {
         this.errorCount++;
         const classifiedError = classifyError(error);
         logError(classifiedError, {
-          component: 'IntelligenceService',
+          component: "IntelligenceService",
           errorCount: this.errorCount,
-          maxErrors: this.MAX_ERRORS_BEFORE_STOP
+          maxErrors: this.MAX_ERRORS_BEFORE_STOP,
         });
-        
+
         console.error("[IntelligenceService] Autopoietic pulse failure:", error);
-        
+
         // Emergency recovery
         try {
           this.substrate["handleAnomaly"](0xdeadbeef);
         } catch (recoveryError) {
           console.error("[IntelligenceService] Emergency recovery failed:", recoveryError);
         }
-        
+
         // Stop service if too many consecutive errors
         if (this.errorCount >= this.MAX_ERRORS_BEFORE_STOP) {
           console.error("[IntelligenceService] Too many consecutive errors, stopping service");
@@ -83,7 +89,7 @@ export class IntelligenceService {
             `Intelligence service stopped after ${this.errorCount} consecutive errors`,
             ErrorCategory.INTERNAL,
             ErrorSeverity.HIGH,
-            { context: { errorCount: this.errorCount, originalError: classifiedError.message } }
+            { context: { errorCount: this.errorCount, originalError: classifiedError.message } },
           );
         }
       }
@@ -115,7 +121,7 @@ export class IntelligenceService {
       return this.substrate.getTelemetry();
     } catch (error) {
       const classifiedError = classifyError(error);
-      logError(classifiedError, { component: 'IntelligenceService', operation: 'getTelemetry' });
+      logError(classifiedError, { component: "IntelligenceService", operation: "getTelemetry" });
       throw classifiedError;
     }
   }
@@ -128,7 +134,7 @@ export class IntelligenceService {
       return this.substrate.getPhi();
     } catch (error) {
       const classifiedError = classifyError(error);
-      logError(classifiedError, { component: 'IntelligenceService', operation: 'getPhi' });
+      logError(classifiedError, { component: "IntelligenceService", operation: "getPhi" });
       throw classifiedError;
     }
   }
@@ -141,7 +147,7 @@ export class IntelligenceService {
       return this.substrate.getCurrentGoal();
     } catch (error) {
       const classifiedError = classifyError(error);
-      logError(classifiedError, { component: 'IntelligenceService', operation: 'getCurrentGoal' });
+      logError(classifiedError, { component: "IntelligenceService", operation: "getCurrentGoal" });
       throw classifiedError;
     }
   }
@@ -154,7 +160,11 @@ export class IntelligenceService {
       this.substrate.simulateIntrusion(syndrome, { phi: 0.7, confidence: 0.8 });
     } catch (error) {
       const classifiedError = classifyError(error);
-      logError(classifiedError, { component: 'IntelligenceService', operation: 'simulateDisturbance', context: { syndrome } });
+      logError(classifiedError, {
+        component: "IntelligenceService",
+        operation: "simulateDisturbance",
+        context: { syndrome },
+      });
       throw classifiedError;
     }
   }
@@ -176,7 +186,7 @@ export class IntelligenceService {
       };
     } catch (error) {
       const classifiedError = classifyError(error);
-      logError(classifiedError, { component: 'IntelligenceService', operation: 'getHebbianStats' });
+      logError(classifiedError, { component: "IntelligenceService", operation: "getHebbianStats" });
       throw classifiedError;
     }
   }
@@ -191,7 +201,7 @@ export class IntelligenceService {
       console.log("[IntelligenceService] System reset");
     } catch (error) {
       const classifiedError = classifyError(error);
-      logError(classifiedError, { component: 'IntelligenceService', operation: 'reset' });
+      logError(classifiedError, { component: "IntelligenceService", operation: "reset" });
       throw classifiedError;
     }
   }
@@ -204,7 +214,7 @@ export class IntelligenceService {
       return this.substrate.exportState();
     } catch (error) {
       const classifiedError = classifyError(error);
-      logError(classifiedError, { component: 'IntelligenceService', operation: 'exportState' });
+      logError(classifiedError, { component: "IntelligenceService", operation: "exportState" });
       throw classifiedError;
     }
   }
@@ -215,7 +225,7 @@ export class IntelligenceService {
   public isActive(): boolean {
     return this.isRunning;
   }
-  
+
   /**
    * Get health status
    */
@@ -231,16 +241,16 @@ export class IntelligenceService {
         isActive: this.isRunning,
         errorCount: this.errorCount,
         phi: this.getPhi(),
-        mode: telemetry.mode
+        mode: telemetry.mode,
       };
     } catch (error) {
       const classifiedError = classifyError(error);
-      logError(classifiedError, { component: 'IntelligenceService', operation: 'getHealthStatus' });
+      logError(classifiedError, { component: "IntelligenceService", operation: "getHealthStatus" });
       return {
         isActive: false,
         errorCount: this.errorCount,
         phi: 0,
-        mode: 'ERROR'
+        mode: "ERROR",
       };
     }
   }

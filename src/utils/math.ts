@@ -188,7 +188,7 @@ export function runVerificationTests(): TestResultItem[] {
   {
     const startTime = Date.now();
     const size = 256;
-    let groundState: Complex[] = new Array(size).fill(0).map(() => ({ r: 0, i: 0 }));
+    const groundState: Complex[] = new Array(size).fill(0).map(() => ({ r: 0, i: 0 }));
     groundState[0] = { r: 1, i: 0 }; // Concentrated |0> state
 
     const initEntropy = calculateEntropy(groundState); // Should be 0

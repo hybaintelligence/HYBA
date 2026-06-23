@@ -43,7 +43,16 @@ export const swaggerDocument = {
                   query: { type: "string", example: "Explain portfolio convexity." },
                   query_type: {
                     type: "string",
-                    enum: ["predict", "explain", "optimize", "heal", "simulate", "counterfactual", "evidence", "quantum-finance"],
+                    enum: [
+                      "predict",
+                      "explain",
+                      "optimize",
+                      "heal",
+                      "simulate",
+                      "counterfactual",
+                      "evidence",
+                      "quantum-finance",
+                    ],
                   },
                   context: { type: "object" },
                 },
@@ -374,7 +383,17 @@ export const swaggerDocument = {
     schemas: {
       QuantumIntelligenceEnvelope: {
         type: "object",
-        required: ["qi_execution_id", "result", "confidence", "phi_coherence", "substrate_state", "evidence_packet", "usage_meter", "trace", "claim_boundary"],
+        required: [
+          "qi_execution_id",
+          "result",
+          "confidence",
+          "phi_coherence",
+          "substrate_state",
+          "evidence_packet",
+          "usage_meter",
+          "trace",
+          "claim_boundary",
+        ],
         properties: {
           qi_execution_id: { type: "string" },
           result: { type: "object" },
@@ -398,7 +417,8 @@ export const swaggerDocument = {
           },
           claim_boundary: {
             type: "string",
-            example: "substrate-independent Quantum Intelligence execution; evidence packet governs external claims",
+            example:
+              "substrate-independent Quantum Intelligence execution; evidence packet governs external claims",
           },
         },
       },

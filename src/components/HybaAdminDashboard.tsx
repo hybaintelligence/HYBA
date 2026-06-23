@@ -593,9 +593,7 @@ function HybaAdminDashboard({
         {currentView === "security" && isExecutive && (
           <SecurityView onFeedback={showFeedback} aiInsights={aiInsights} />
         )}
-        {currentView === "ceo_terminal" && (
-          <CEOTerminal token={token} />
-        )}
+        {currentView === "ceo_terminal" && <CEOTerminal token={token} />}
 
         {/* AI Assistant Panel */}
         {showAiAssistant && token && (

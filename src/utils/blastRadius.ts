@@ -24,20 +24,20 @@ export interface ProposedAction {
 }
 
 const SYSTEM_IMPACT_MAP: Record<string, string[]> = {
-  "refresh_telemetry": ["monitoring", "observability"],
-  "switch_pool": ["mining", "revenue", "pool_connection"],
-  "disconnect_pool": ["mining", "revenue", "pool_connection"],
-  "stop_mining": ["mining", "revenue", "hardware"],
-  "start_mining": ["mining", "revenue", "hardware"],
-  "update_power_scale": ["mining", "hardware", "power_consumption"],
-  "configure_pool": ["mining", "pool_connection", "credentials"],
-  "regenerate_substrate": ["intelligence", "substrate", "all_rails"],
-  "restart_service": ["service", "availability", "connected_clients"],
-  "delete_service": ["service", "data", "all_rails"],
-  "update_governance": ["governance", "all_rails", "compliance"],
-  "modify_claim_boundary": ["governance", "compliance", "liability"],
-  "change_tier": ["billing", "service_level", "entitlements"],
-  "modify_isolation": ["security", "tenancy", "data_residency"],
+  refresh_telemetry: ["monitoring", "observability"],
+  switch_pool: ["mining", "revenue", "pool_connection"],
+  disconnect_pool: ["mining", "revenue", "pool_connection"],
+  stop_mining: ["mining", "revenue", "hardware"],
+  start_mining: ["mining", "revenue", "hardware"],
+  update_power_scale: ["mining", "hardware", "power_consumption"],
+  configure_pool: ["mining", "pool_connection", "credentials"],
+  regenerate_substrate: ["intelligence", "substrate", "all_rails"],
+  restart_service: ["service", "availability", "connected_clients"],
+  delete_service: ["service", "data", "all_rails"],
+  update_governance: ["governance", "all_rails", "compliance"],
+  modify_claim_boundary: ["governance", "compliance", "liability"],
+  change_tier: ["billing", "service_level", "entitlements"],
+  modify_isolation: ["security", "tenancy", "data_residency"],
 };
 
 const SCOPE_IMPACT_MULTIPLIER: Record<string, number> = {
@@ -85,7 +85,9 @@ function determineApprovalLevel(level: BlastRadiusLevel): BlastRadiusAssessment[
   }
 }
 
-function determineRollbackComplexity(action: ProposedAction): BlastRadiusAssessment["rollbackComplexity"] {
+function determineRollbackComplexity(
+  action: ProposedAction,
+): BlastRadiusAssessment["rollbackComplexity"] {
   if (action.type === "read") return "trivial";
   if (action.type === "write" || action.type === "configure") return "simple";
   if (action.type === "restart") return "moderate";
@@ -104,10 +106,10 @@ export function calculateBlastRadius(action: ProposedAction): BlastRadiusAssessm
 
   const descriptions: Record<BlastRadiusLevel, string> = {
     "read-only": "No system changes; read-only telemetry or status query.",
-    "low": "Minor configuration change with limited scope and simple rollback.",
-    "medium": "Moderate impact affecting specific services or tenant state.",
-    "high": "Significant impact affecting multiple systems or production state.",
-    "critical": "Maximum impact affecting global state, compliance, or revenue streams.",
+    low: "Minor configuration change with limited scope and simple rollback.",
+    medium: "Moderate impact affecting specific services or tenant state.",
+    high: "Significant impact affecting multiple systems or production state.",
+    critical: "Maximum impact affecting global state, compliance, or revenue streams.",
   };
 
   return {
@@ -123,10 +125,10 @@ export function calculateBlastRadius(action: ProposedAction): BlastRadiusAssessm
 export function formatBlastRadiusForDisplay(assessment: BlastRadiusAssessment): string {
   const levelColors: Record<BlastRadiusLevel, string> = {
     "read-only": "text-green-700 bg-green-50",
-    "low": "text-blue-700 bg-blue-50",
-    "medium": "text-yellow-700 bg-yellow-50",
-    "high": "text-orange-700 bg-orange-50",
-    "critical": "text-red-700 bg-red-50",
+    low: "text-blue-700 bg-blue-50",
+    medium: "text-yellow-700 bg-yellow-50",
+    high: "text-orange-700 bg-orange-50",
+    critical: "text-red-700 bg-red-50",
   };
 
   return `${assessment.level.toUpperCase()} · ${assessment.description}`;

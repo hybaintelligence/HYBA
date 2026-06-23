@@ -22,9 +22,9 @@ export const HilbertSpaceVisualizer: React.FC<HilbertSpaceVisualizerProps> = ({
     const scale = 60;
 
     // (±1, ±1, ±1)
-    for (let x of [-1, 1]) {
-      for (let y of [-1, 1]) {
-        for (let z of [-1, 1]) {
+    for (const x of [-1, 1]) {
+      for (const y of [-1, 1]) {
+        for (const z of [-1, 1]) {
           // Simple perspective projection
           const px = (x + z * 0.5) * scale;
           const py = (y + z * 0.5) * scale;
@@ -35,8 +35,8 @@ export const HilbertSpaceVisualizer: React.FC<HilbertSpaceVisualizerProps> = ({
 
     // (0, ±1/Φ, ±Φ)
     const invPhi = 1 / PHI;
-    for (let y of [-invPhi, invPhi]) {
-      for (let z of [-PHI, PHI]) {
+    for (const y of [-invPhi, invPhi]) {
+      for (const z of [-PHI, PHI]) {
         const px = (0 + z * 0.5) * scale;
         const py = (y + z * 0.5) * scale;
         v.push([px, py]);
@@ -44,8 +44,8 @@ export const HilbertSpaceVisualizer: React.FC<HilbertSpaceVisualizerProps> = ({
     }
 
     // (±1/Φ, ±Φ, 0)
-    for (let x of [-invPhi, invPhi]) {
-      for (let y of [-PHI, PHI]) {
+    for (const x of [-invPhi, invPhi]) {
+      for (const y of [-PHI, PHI]) {
         const px = (x + 0 * 0.5) * scale;
         const py = (y + 0 * 0.5) * scale;
         v.push([px, py]);
@@ -53,8 +53,8 @@ export const HilbertSpaceVisualizer: React.FC<HilbertSpaceVisualizerProps> = ({
     }
 
     // (±Φ, 0, ±1/Φ)
-    for (let x of [-PHI, PHI]) {
-      for (let z of [-invPhi, invPhi]) {
+    for (const x of [-PHI, PHI]) {
+      for (const z of [-invPhi, invPhi]) {
         const px = (x + z * 0.5) * scale;
         const py = (z + 0 * 0.5) * scale;
         v.push([px, py]);

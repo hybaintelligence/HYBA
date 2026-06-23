@@ -37,7 +37,12 @@ const governanceIcons: Record<GovernanceLevel, React.ReactNode> = {
   relaxed: <Sparkles className="h-3.5 w-3.5" />,
 };
 
-export function PresetSelector({ presets, selectedPreset, onSelect, disabled }: PresetSelectorProps) {
+export function PresetSelector({
+  presets,
+  selectedPreset,
+  onSelect,
+  disabled,
+}: PresetSelectorProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       {presets.map((preset) => {
@@ -56,7 +61,9 @@ export function PresetSelector({ presets, selectedPreset, onSelect, disabled }: 
             `}
           >
             <div className="flex items-start justify-between gap-3 mb-2">
-              <h3 className={`text-base font-bold ${isSelected ? "text-primary" : "group-hover:text-primary"}`}>
+              <h3
+                className={`text-base font-bold ${isSelected ? "text-primary" : "group-hover:text-primary"}`}
+              >
                 {preset.name}
               </h3>
               <span

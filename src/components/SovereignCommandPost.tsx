@@ -87,7 +87,7 @@ export function SovereignCommandPost() {
         <div className="grid gap-4 md:grid-cols-2">
           <div className="rounded-2xl border border-cyan-400/10 bg-cyan-950/20 p-4 font-mono text-xs leading-6">
             <p>
-              MODE: {" "}
+              MODE:{" "}
               <span className={mode === "NORMAL" ? "text-emerald-300" : "text-amber-300"}>
                 {mode}
               </span>

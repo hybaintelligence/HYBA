@@ -35,7 +35,18 @@ interface RegenerationEvent {
   timestamp: string;
   module_id: string;
   lane_id?: number;
-  event_type: "fault_detected" | "quarantine" | "blastema_formation" | "redifferentiation" | "recovery" | "failure" | "rejection" | "retry" | "multi_step_regeneration" | "agent_update" | "regeneration_step";
+  event_type:
+    | "fault_detected"
+    | "quarantine"
+    | "blastema_formation"
+    | "redifferentiation"
+    | "recovery"
+    | "failure"
+    | "rejection"
+    | "retry"
+    | "multi_step_regeneration"
+    | "agent_update"
+    | "regeneration_step";
   severity: "low" | "medium" | "high" | "critical";
   status: "pending" | "in_progress" | "completed" | "failed" | "rejected";
   phi_score?: number;
@@ -106,17 +117,17 @@ interface CEOTerminalProps {
   maxEvents?: number;
 }
 
-const CEOTerminal: React.FC<CEOTerminalProps> = ({
-  token,
-  autoScroll = true,
-  maxEvents = 100,
-}) => {
+const CEOTerminal: React.FC<CEOTerminalProps> = ({ token, autoScroll = true, maxEvents = 100 }) => {
   const [events, setEvents] = useState<RegenerationEvent[]>([]);
   const [pendingApprovals, setPendingApprovals] = useState<RegenerationEvent[]>([]);
   const [selectedEvents, setSelectedEvents] = useState<Set<string>>(new Set());
   const [isConnected, setIsConnected] = useState(false);
-  const [connectionStatus, setConnectionStatus] = useState<'connected' | 'disconnected' | 'reconnecting'>('disconnected');
-  const [filter, setFilter] = useState<"all" | "ai_triggered" | "system" | "failures" | "pending">("all");
+  const [connectionStatus, setConnectionStatus] = useState<
+    "connected" | "disconnected" | "reconnecting"
+  >("disconnected");
+  const [filter, setFilter] = useState<"all" | "ai_triggered" | "system" | "failures" | "pending">(
+    "all",
+  );
   const [expandedEvents, setExpandedEvents] = useState<Set<string>>(new Set());
   const [showAgentHierarchy, setShowAgentHierarchy] = useState(false);
   const [agentStatus, setAgentStatus] = useState<OrchestratorStatus | null>(null);
@@ -133,16 +144,16 @@ const CEOTerminal: React.FC<CEOTerminalProps> = ({
     const room = "ceo"; // Default room for CEO Terminal
     const clientId = `ceo-${Date.now()}`;
     const wsUrl = `ws://localhost:3001/api/security/regeneration/ws?room=${room}&client_id=${clientId}&token=${token}`;
-    
+
     const ws = new WebSocket(wsUrl);
     wsRef.current = ws;
 
     ws.onopen = () => {
-      setConnectionStatus('connected');
+      setConnectionStatus("connected");
       setIsConnected(true);
       reconnectAttemptsRef.current = 0;
-      console.log('✅ CEO Terminal WebSocket connected to room:', room);
-      
+      console.log("✅ CEO Terminal WebSocket connected to room:", room);
+
       // Clear polling if it was active
       if (pollingRef.current) {
         clearInterval(pollingRef.current);
@@ -153,23 +164,23 @@ const CEOTerminal: React.FC<CEOTerminalProps> = ({
     ws.onmessage = (event) => {
       try {
         const message = JSON.parse(event.data);
-        
-        if (message.type === 'regeneration_event') {
+
+        if (message.type === "regeneration_event") {
           const newEvent = message.event;
-          setEvents(prev => {
-            const updated = [newEvent, ...prev.filter(e => e.id !== newEvent.id)];
+          setEvents((prev) => {
+            const updated = [newEvent, ...prev.filter((e) => e.id !== newEvent.id)];
             return updated.slice(0, maxEvents);
           });
-          
-          if (newEvent.approval_status === 'pending_approval') {
-            setPendingApprovals(prev => {
-              const updated = [newEvent, ...prev.filter(e => e.id !== newEvent.id)];
+
+          if (newEvent.approval_status === "pending_approval") {
+            setPendingApprovals((prev) => {
+              const updated = [newEvent, ...prev.filter((e) => e.id !== newEvent.id)];
               return updated;
             });
           }
-        } else if (message.type === 'connection_established') {
+        } else if (message.type === "connection_established") {
           console.log(`Connected to room: ${message.room} as client: ${message.client_id}`);
-        } else if (message.type === 'initial_state') {
+        } else if (message.type === "initial_state") {
           if (message.events && Array.isArray(message.events)) {
             setEvents(message.events);
           }
@@ -178,34 +189,37 @@ const CEOTerminal: React.FC<CEOTerminalProps> = ({
           }
         }
       } catch (e) {
-        console.error('Failed to parse WebSocket message:', e);
+        console.error("Failed to parse WebSocket message:", e);
       }
     };
 
     ws.onclose = () => {
-      setConnectionStatus('disconnected');
+      setConnectionStatus("disconnected");
       setIsConnected(false);
-      console.log('WebSocket closed. Starting polling fallback...');
+      console.log("WebSocket closed. Starting polling fallback...");
       startPollingFallback();
       scheduleReconnect();
     };
 
     ws.onerror = (error) => {
-      console.error('WebSocket error:', error);
-      setConnectionStatus('disconnected');
+      console.error("WebSocket error:", error);
+      setConnectionStatus("disconnected");
     };
   }, [token, maxEvents]);
 
   const startPollingFallback = useCallback(() => {
     if (pollingRef.current) return;
-    
+
     pollingRef.current = setInterval(async () => {
       try {
-        const response = await fetch("/api/security/regeneration/events?limit=100&include_pending=true", {
-          headers: {
-            Authorization: `Bearer ${token}`,
+        const response = await fetch(
+          "/api/security/regeneration/events?limit=100&include_pending=true",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
           },
-        });
+        );
         if (response.ok) {
           const data = await response.json();
           if (data.events && Array.isArray(data.events)) {
@@ -216,22 +230,24 @@ const CEOTerminal: React.FC<CEOTerminalProps> = ({
           }
         }
       } catch (e) {
-        console.error('Polling fallback failed:', e);
+        console.error("Polling fallback failed:", e);
       }
     }, 3000);
   }, [token]);
 
   const scheduleReconnect = useCallback(() => {
     if (reconnectTimeoutRef.current) return;
-    
+
     const backoffDelay = Math.min(1000 * Math.pow(2, reconnectAttemptsRef.current), 30000);
     reconnectAttemptsRef.current++;
-    
-    console.log(`Scheduling reconnect in ${backoffDelay}ms (attempt ${reconnectAttemptsRef.current})`);
-    
+
+    console.log(
+      `Scheduling reconnect in ${backoffDelay}ms (attempt ${reconnectAttemptsRef.current})`,
+    );
+
     reconnectTimeoutRef.current = setTimeout(() => {
       reconnectTimeoutRef.current = null;
-      setConnectionStatus('reconnecting');
+      setConnectionStatus("reconnecting");
       connectWebSocket();
     }, backoffDelay);
   }, [connectWebSocket]);
@@ -240,7 +256,7 @@ const CEOTerminal: React.FC<CEOTerminalProps> = ({
   useEffect(() => {
     const heartbeat = setInterval(() => {
       if (wsRef.current?.readyState === WebSocket.OPEN) {
-        wsRef.current.send('ping');
+        wsRef.current.send("ping");
       }
     }, 15000);
 
@@ -250,7 +266,7 @@ const CEOTerminal: React.FC<CEOTerminalProps> = ({
   // Initial connection
   useEffect(() => {
     connectWebSocket();
-    
+
     return () => {
       if (wsRef.current) {
         wsRef.current.close();
@@ -288,7 +304,11 @@ const CEOTerminal: React.FC<CEOTerminalProps> = ({
   }, [token]);
 
   // PHASE 2: Approval action handlers
-  const handleApproval = async (eventId: string, action: "approve" | "reject" | "edit", editedParameters?: Record<string, any>) => {
+  const handleApproval = async (
+    eventId: string,
+    action: "approve" | "reject" | "edit",
+    editedParameters?: Record<string, any>,
+  ) => {
     try {
       const response = await fetch("/api/security/regeneration/approve", {
         method: "POST",
@@ -306,11 +326,14 @@ const CEOTerminal: React.FC<CEOTerminalProps> = ({
       if (response.ok) {
         const result = await response.json();
         // Refresh the events after approval action
-        const eventsResponse = await fetch("/api/security/regeneration/events?limit=100&include_pending=true", {
-          headers: {
-            Authorization: `Bearer ${token}`,
+        const eventsResponse = await fetch(
+          "/api/security/regeneration/events?limit=100&include_pending=true",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
           },
-        });
+        );
         if (eventsResponse.ok) {
           const data = await eventsResponse.json();
           if (data.events && Array.isArray(data.events)) {
@@ -347,11 +370,14 @@ const CEOTerminal: React.FC<CEOTerminalProps> = ({
       if (response.ok) {
         const result = await response.json();
         // Refresh the events after bulk approval
-        const eventsResponse = await fetch("/api/security/regeneration/events?limit=100&include_pending=true", {
-          headers: {
-            Authorization: `Bearer ${token}`,
+        const eventsResponse = await fetch(
+          "/api/security/regeneration/events?limit=100&include_pending=true",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
           },
-        });
+        );
         if (eventsResponse.ok) {
           const data = await eventsResponse.json();
           if (data.events && Array.isArray(data.events)) {
@@ -382,7 +408,7 @@ const CEOTerminal: React.FC<CEOTerminalProps> = ({
 
   // PHASE 3: Select all pending events
   const selectAllPending = () => {
-    const pendingIds = pendingApprovals.map(e => e.id);
+    const pendingIds = pendingApprovals.map((e) => e.id);
     setSelectedEvents(new Set(pendingIds));
   };
 
@@ -393,7 +419,7 @@ const CEOTerminal: React.FC<CEOTerminalProps> = ({
 
   // PHASE 3: Audit trail export
   const exportAuditTrail = async (format: "json" | "pdf") => {
-    const logs = events.map(e => ({
+    const logs = events.map((e) => ({
       id: e.id,
       timestamp: e.timestamp,
       module_id: e.module_id,
@@ -411,7 +437,7 @@ const CEOTerminal: React.FC<CEOTerminalProps> = ({
       retry_count: e.retry_count,
       details: e.details,
     }));
-    
+
     if (format === "json") {
       const blob = new Blob([JSON.stringify(logs, null, 2)], { type: "application/json" });
       const url = URL.createObjectURL(blob);
@@ -450,8 +476,13 @@ const CEOTerminal: React.FC<CEOTerminalProps> = ({
       "failure",
     ];
     const severities: RegenerationEvent["severity"][] = ["low", "medium", "high", "critical"];
-    const statuses: RegenerationEvent["status"][] = ["pending", "in_progress", "completed", "failed"];
-    
+    const statuses: RegenerationEvent["status"][] = [
+      "pending",
+      "in_progress",
+      "completed",
+      "failed",
+    ];
+
     const eventType = eventTypes[Math.floor(Math.random() * eventTypes.length)];
     const severity = severities[Math.floor(Math.random() * severities.length)];
     const status = statuses[Math.floor(Math.random() * statuses.length)];
@@ -481,11 +512,11 @@ const CEOTerminal: React.FC<CEOTerminalProps> = ({
   const generateEventMessage = (
     eventType: RegenerationEvent["event_type"],
     severity: RegenerationEvent["severity"],
-    aiTriggered: boolean
+    aiTriggered: boolean,
   ): string => {
     const aiPrefix = aiTriggered ? "[AI-TRIGGERED] " : "";
     const severityPrefix = severity === "critical" ? "[CRITICAL] " : "";
-    
+
     const messages: Record<RegenerationEvent["event_type"], string[]> = {
       fault_detected: [
         "Fault detected in module - initiating regeneration protocol",
@@ -547,21 +578,25 @@ const CEOTerminal: React.FC<CEOTerminalProps> = ({
 
     const eventMessages = messages[eventType];
     const baseMessage = eventMessages[Math.floor(Math.random() * eventMessages.length)];
-    
+
     return `${severityPrefix}${aiPrefix}${baseMessage}`;
   };
 
   const getEventIcon = (event: RegenerationEvent) => {
     if (event.status === "failed") return <XCircle className="w-4 h-4 text-red-500" />;
     if (event.status === "completed") return <CheckCircle className="w-4 h-4 text-green-500" />;
-    if (event.event_type === "fault_detected") return <AlertTriangle className="w-4 h-4 text-yellow-500" />;
+    if (event.event_type === "fault_detected")
+      return <AlertTriangle className="w-4 h-4 text-yellow-500" />;
     if (event.event_type === "recovery") return <HeartPulse className="w-4 h-4 text-green-500" />;
-    if (event.event_type === "blastema_formation") return <Zap className="w-4 h-4 text-purple-500" />;
+    if (event.event_type === "blastema_formation")
+      return <Zap className="w-4 h-4 text-purple-500" />;
     if (event.event_type === "retry") return <RefreshCw className="w-4 h-4 text-orange-500" />;
     // PHASE 3: Verification status icons
-    if (event.verification_status === "passed") return <CheckCircle className="w-4 h-4 text-green-500" />;
+    if (event.verification_status === "passed")
+      return <CheckCircle className="w-4 h-4 text-green-500" />;
     if (event.verification_status === "failed") return <XCircle className="w-4 h-4 text-red-500" />;
-    if (event.verification_status === "timeout") return <Clock className="w-4 h-4 text-yellow-500" />;
+    if (event.verification_status === "timeout")
+      return <Clock className="w-4 h-4 text-yellow-500" />;
     if (event.ai_triggered) return <Brain className="w-4 h-4 text-blue-500" />;
     return <Activity className="w-4 h-4 text-slate-500" />;
   };
@@ -587,7 +622,7 @@ const CEOTerminal: React.FC<CEOTerminalProps> = ({
   };
 
   const toggleExpand = (eventId: string) => {
-    setExpandedEvents(prev => {
+    setExpandedEvents((prev) => {
       const next = new Set(prev);
       if (next.has(eventId)) {
         next.delete(eventId);
@@ -603,7 +638,7 @@ const CEOTerminal: React.FC<CEOTerminalProps> = ({
   };
 
   const exportLogs = () => {
-    const logs = events.map(e => ({
+    const logs = events.map((e) => ({
       timestamp: e.timestamp,
       module_id: e.module_id,
       event_type: e.event_type,
@@ -613,7 +648,7 @@ const CEOTerminal: React.FC<CEOTerminalProps> = ({
       ai_triggered: e.ai_triggered,
       details: e.details,
     }));
-    
+
     const blob = new Blob([JSON.stringify(logs, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -623,7 +658,7 @@ const CEOTerminal: React.FC<CEOTerminalProps> = ({
     URL.revokeObjectURL(url);
   };
 
-  const filteredEvents = events.filter(event => {
+  const filteredEvents = events.filter((event) => {
     if (filter === "all") return true;
     if (filter === "ai_triggered") return event.ai_triggered;
     if (filter === "system") return !event.ai_triggered;
@@ -634,10 +669,10 @@ const CEOTerminal: React.FC<CEOTerminalProps> = ({
 
   const stats = {
     total: events.length,
-    ai_triggered: events.filter(e => e.ai_triggered).length,
-    completed: events.filter(e => e.status === "completed").length,
-    failed: events.filter(e => e.status === "failed").length,
-    critical: events.filter(e => e.severity === "critical").length,
+    ai_triggered: events.filter((e) => e.ai_triggered).length,
+    completed: events.filter((e) => e.status === "completed").length,
+    failed: events.filter((e) => e.status === "failed").length,
+    critical: events.filter((e) => e.severity === "critical").length,
   };
 
   return (
@@ -648,26 +683,38 @@ const CEOTerminal: React.FC<CEOTerminalProps> = ({
           <div className="flex items-center gap-3">
             <Terminal className="w-5 h-5 text-purple-400" />
             <h3 className="text-lg font-semibold text-white">CEO Terminal</h3>
-            <div className={`flex items-center gap-2 px-2 py-1 rounded text-xs ${
-              connectionStatus === 'connected' ? "bg-green-500/20 text-green-400" :
-              connectionStatus === 'reconnecting' ? "bg-yellow-500/20 text-yellow-400" :
-              "bg-red-500/20 text-red-400"
-            }`}>
-              <div className={`w-2 h-2 rounded-full ${
-                connectionStatus === 'connected' ? "bg-green-400" :
-                connectionStatus === 'reconnecting' ? "bg-yellow-400 animate-pulse" :
-                "bg-red-400"
-              }`} />
-              {connectionStatus === 'connected' ? "Live • WebSocket" :
-               connectionStatus === 'reconnecting' ? "Reconnecting..." :
-               "Disconnected • Polling"}
+            <div
+              className={`flex items-center gap-2 px-2 py-1 rounded text-xs ${
+                connectionStatus === "connected"
+                  ? "bg-green-500/20 text-green-400"
+                  : connectionStatus === "reconnecting"
+                    ? "bg-yellow-500/20 text-yellow-400"
+                    : "bg-red-500/20 text-red-400"
+              }`}
+            >
+              <div
+                className={`w-2 h-2 rounded-full ${
+                  connectionStatus === "connected"
+                    ? "bg-green-400"
+                    : connectionStatus === "reconnecting"
+                      ? "bg-yellow-400 animate-pulse"
+                      : "bg-red-400"
+                }`}
+              />
+              {connectionStatus === "connected"
+                ? "Live • WebSocket"
+                : connectionStatus === "reconnecting"
+                  ? "Reconnecting..."
+                  : "Disconnected • Polling"}
             </div>
           </div>
           <div className="flex items-center gap-2">
             <button
               onClick={() => setFilter("all")}
               className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
-                filter === "all" ? "bg-purple-500 text-white" : "bg-slate-700 text-slate-300 hover:bg-slate-600"
+                filter === "all"
+                  ? "bg-purple-500 text-white"
+                  : "bg-slate-700 text-slate-300 hover:bg-slate-600"
               }`}
             >
               All
@@ -675,7 +722,9 @@ const CEOTerminal: React.FC<CEOTerminalProps> = ({
             <button
               onClick={() => setFilter("ai_triggered")}
               className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
-                filter === "ai_triggered" ? "bg-purple-500 text-white" : "bg-slate-700 text-slate-300 hover:bg-slate-600"
+                filter === "ai_triggered"
+                  ? "bg-purple-500 text-white"
+                  : "bg-slate-700 text-slate-300 hover:bg-slate-600"
               }`}
             >
               AI-Triggered
@@ -683,7 +732,9 @@ const CEOTerminal: React.FC<CEOTerminalProps> = ({
             <button
               onClick={() => setFilter("pending")}
               className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
-                filter === "pending" ? "bg-purple-500 text-white" : "bg-slate-700 text-slate-300 hover:bg-slate-600"
+                filter === "pending"
+                  ? "bg-purple-500 text-white"
+                  : "bg-slate-700 text-slate-300 hover:bg-slate-600"
               }`}
             >
               Pending ({pendingApprovals.length})
@@ -691,7 +742,9 @@ const CEOTerminal: React.FC<CEOTerminalProps> = ({
             <button
               onClick={() => setFilter("failures")}
               className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
-                filter === "failures" ? "bg-purple-500 text-white" : "bg-slate-700 text-slate-300 hover:bg-slate-600"
+                filter === "failures"
+                  ? "bg-purple-500 text-white"
+                  : "bg-slate-700 text-slate-300 hover:bg-slate-600"
               }`}
             >
               Failures
@@ -700,7 +753,9 @@ const CEOTerminal: React.FC<CEOTerminalProps> = ({
             <button
               onClick={() => setShowAgentHierarchy(!showAgentHierarchy)}
               className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
-                showAgentHierarchy ? "bg-blue-500 text-white" : "bg-slate-700 text-slate-300 hover:bg-slate-600"
+                showAgentHierarchy
+                  ? "bg-blue-500 text-white"
+                  : "bg-slate-700 text-slate-300 hover:bg-slate-600"
               }`}
             >
               <Brain className="w-3 h-3 inline mr-1" />
@@ -740,59 +795,76 @@ const CEOTerminal: React.FC<CEOTerminalProps> = ({
           <div className="flex items-center gap-2 mb-3">
             <Brain className="w-4 h-4 text-blue-400" />
             <h4 className="text-sm font-semibold text-white">Agent Hierarchy</h4>
-            <span className="text-xs text-slate-400">{agentStatus.registered_agents} agents registered</span>
+            <span className="text-xs text-slate-400">
+              {agentStatus.registered_agents} agents registered
+            </span>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
             {/* Strategic Layer */}
             <div className="bg-purple-900/30 border border-purple-700/50 rounded-lg p-3">
               <div className="text-xs font-semibold text-purple-300 mb-2">Strategic Layer</div>
-              {agentStatus.agents && Object.entries(agentStatus.agents)
-                .filter(([_, agent]) => agent.role === 'strategic')
-                .map(([name, agent]) => (
-                  <div key={name} className="mb-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-white">{name}</span>
-                      <span className="text-xs text-green-400">{agent.success_rate?.toFixed(0)}% success</span>
+              {agentStatus.agents &&
+                Object.entries(agentStatus.agents)
+                  .filter(([_, agent]) => agent.role === "strategic")
+                  .map(([name, agent]) => (
+                    <div key={name} className="mb-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-white">{name}</span>
+                        <span className="text-xs text-green-400">
+                          {agent.success_rate?.toFixed(0)}% success
+                        </span>
+                      </div>
+                      <div className="text-xs text-slate-400">
+                        {agent.execution_count} executions
+                      </div>
                     </div>
-                    <div className="text-xs text-slate-400">{agent.execution_count} executions</div>
-                  </div>
-                ))}
+                  ))}
             </div>
-            
+
             {/* Specialist Layer */}
             <div className="bg-blue-900/30 border border-blue-700/50 rounded-lg p-3">
               <div className="text-xs font-semibold text-blue-300 mb-2">Specialist Layer</div>
-              {agentStatus.agents && Object.entries(agentStatus.agents)
-                .filter(([_, agent]) => agent.role === 'specialist')
-                .map(([name, agent]) => (
-                  <div key={name} className="mb-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-white">{name}</span>
-                      <span className="text-xs text-green-400">{agent.success_rate?.toFixed(0)}% success</span>
+              {agentStatus.agents &&
+                Object.entries(agentStatus.agents)
+                  .filter(([_, agent]) => agent.role === "specialist")
+                  .map(([name, agent]) => (
+                    <div key={name} className="mb-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-white">{name}</span>
+                        <span className="text-xs text-green-400">
+                          {agent.success_rate?.toFixed(0)}% success
+                        </span>
+                      </div>
+                      <div className="text-xs text-slate-400">
+                        {agent.execution_count} executions
+                      </div>
                     </div>
-                    <div className="text-xs text-slate-400">{agent.execution_count} executions</div>
-                  </div>
-                ))}
+                  ))}
             </div>
-            
+
             {/* Tactical Layer */}
             <div className="bg-green-900/30 border border-green-700/50 rounded-lg p-3">
               <div className="text-xs font-semibold text-green-300 mb-2">Tactical Layer</div>
-              {agentStatus.agents && Object.entries(agentStatus.agents)
-                .filter(([_, agent]) => agent.role === 'tactical')
-                .map(([name, agent]) => (
-                  <div key={name} className="mb-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-white">{name}</span>
-                      <span className="text-xs text-green-400">{agent.success_rate?.toFixed(0)}% success</span>
+              {agentStatus.agents &&
+                Object.entries(agentStatus.agents)
+                  .filter(([_, agent]) => agent.role === "tactical")
+                  .map(([name, agent]) => (
+                    <div key={name} className="mb-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-white">{name}</span>
+                        <span className="text-xs text-green-400">
+                          {agent.success_rate?.toFixed(0)}% success
+                        </span>
+                      </div>
+                      <div className="text-xs text-slate-400">
+                        {agent.execution_count} executions
+                      </div>
                     </div>
-                    <div className="text-xs text-slate-400">{agent.execution_count} executions</div>
-                  </div>
-                ))}
+                  ))}
             </div>
           </div>
-          
+
           <div className="mt-3 flex items-center gap-4 text-xs text-slate-400">
             <span>Active Tasks: {agentStatus.active_tasks}</span>
             <span>Task History: {agentStatus.task_history_size}</span>
@@ -807,7 +879,9 @@ const CEOTerminal: React.FC<CEOTerminalProps> = ({
           <Filter className="w-4 h-4 text-slate-400" />
           <span className="text-xs text-slate-400">Showing {filteredEvents.length} events</span>
           {selectedEvents.size > 0 && (
-            <span className="text-xs text-purple-400 font-medium">{selectedEvents.size} selected</span>
+            <span className="text-xs text-purple-400 font-medium">
+              {selectedEvents.size} selected
+            </span>
           )}
         </div>
         <div className="flex items-center gap-2">
@@ -871,10 +945,7 @@ const CEOTerminal: React.FC<CEOTerminalProps> = ({
       </div>
 
       {/* Event Log */}
-      <div 
-        ref={terminalRef}
-        className="h-[500px] overflow-y-auto p-4 space-y-2"
-      >
+      <div ref={terminalRef} className="h-[500px] overflow-y-auto p-4 space-y-2">
         {filteredEvents.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-slate-500">
             <Terminal className="w-12 h-12 mb-2 opacity-50" />
@@ -889,10 +960,7 @@ const CEOTerminal: React.FC<CEOTerminalProps> = ({
                 event.severity === "critical" ? "border-red-500/50" : "border-slate-700"
               } hover:border-slate-600 transition-colors`}
             >
-              <div
-                className="p-3 cursor-pointer"
-                onClick={() => toggleExpand(event.id)}
-              >
+              <div className="p-3 cursor-pointer" onClick={() => toggleExpand(event.id)}>
                 <div className="flex items-center gap-3">
                   {/* PHASE 3: Checkbox for bulk selection */}
                   {event.approval_status === "pending_approval" && (
@@ -913,10 +981,14 @@ const CEOTerminal: React.FC<CEOTerminalProps> = ({
                   {getEventIcon(event)}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className={`text-xs font-medium px-2 py-0.5 rounded ${getSeverityColor(event.severity)}`}>
+                      <span
+                        className={`text-xs font-medium px-2 py-0.5 rounded ${getSeverityColor(event.severity)}`}
+                      >
                         {event.severity.toUpperCase()}
                       </span>
-                      <span className={`text-xs font-medium px-2 py-0.5 rounded ${getStatusColor(event.status)}`}>
+                      <span
+                        className={`text-xs font-medium px-2 py-0.5 rounded ${getStatusColor(event.status)}`}
+                      >
                         {event.status.replace("_", " ").toUpperCase()}
                       </span>
                       {event.ai_triggered && (
@@ -931,12 +1003,17 @@ const CEOTerminal: React.FC<CEOTerminalProps> = ({
                       )}
                       {/* PHASE 3: Verification status badge */}
                       {event.verification_status && (
-                        <span className={`text-xs font-medium px-2 py-0.5 rounded ${
-                          event.verification_status === "passed" ? "bg-green-500/20 text-green-400" :
-                          event.verification_status === "failed" ? "bg-red-500/20 text-red-400" :
-                          event.verification_status === "timeout" ? "bg-yellow-500/20 text-yellow-400" :
-                          "bg-slate-500/20 text-slate-400"
-                        }`}>
+                        <span
+                          className={`text-xs font-medium px-2 py-0.5 rounded ${
+                            event.verification_status === "passed"
+                              ? "bg-green-500/20 text-green-400"
+                              : event.verification_status === "failed"
+                                ? "bg-red-500/20 text-red-400"
+                                : event.verification_status === "timeout"
+                                  ? "bg-yellow-500/20 text-yellow-400"
+                                  : "bg-slate-500/20 text-slate-400"
+                          }`}
+                        >
                           VERIFICATION: {event.verification_status.toUpperCase()}
                         </span>
                       )}
@@ -981,13 +1058,17 @@ const CEOTerminal: React.FC<CEOTerminalProps> = ({
                     {event.fidelity !== undefined && (
                       <div>
                         <span className="text-slate-500">Fidelity:</span>
-                        <span className="text-slate-300 ml-2">{(event.fidelity * 100).toFixed(2)}%</span>
+                        <span className="text-slate-300 ml-2">
+                          {(event.fidelity * 100).toFixed(2)}%
+                        </span>
                       </div>
                     )}
                     {event.duration_ms !== undefined && (
                       <div>
                         <span className="text-slate-500">Duration:</span>
-                        <span className="text-slate-300 ml-2">{event.duration_ms.toFixed(2)}ms</span>
+                        <span className="text-slate-300 ml-2">
+                          {event.duration_ms.toFixed(2)}ms
+                        </span>
                       </div>
                     )}
                     <div>
@@ -998,19 +1079,25 @@ const CEOTerminal: React.FC<CEOTerminalProps> = ({
                     {event.impact_score !== undefined && (
                       <div>
                         <span className="text-slate-500">Impact Score:</span>
-                        <span className="text-slate-300 ml-2">{(event.impact_score * 100).toFixed(1)}%</span>
+                        <span className="text-slate-300 ml-2">
+                          {(event.impact_score * 100).toFixed(1)}%
+                        </span>
                       </div>
                     )}
                     {event.files_changed && event.files_changed.length > 0 && (
                       <div>
                         <span className="text-slate-500">Files Changed:</span>
-                        <span className="text-slate-300 ml-2">{event.files_changed.length} files</span>
+                        <span className="text-slate-300 ml-2">
+                          {event.files_changed.length} files
+                        </span>
                       </div>
                     )}
                     {event.rollback_possible !== undefined && (
                       <div>
                         <span className="text-slate-500">Rollback Possible:</span>
-                        <span className={`ml-2 ${event.rollback_possible ? "text-green-400" : "text-red-400"}`}>
+                        <span
+                          className={`ml-2 ${event.rollback_possible ? "text-green-400" : "text-red-400"}`}
+                        >
                           {event.rollback_possible ? "Yes" : "No"}
                         </span>
                       </div>
@@ -1019,11 +1106,15 @@ const CEOTerminal: React.FC<CEOTerminalProps> = ({
                     {event.verification_status && (
                       <div>
                         <span className="text-slate-500">Verification Status:</span>
-                        <span className={`ml-2 ${
-                          event.verification_status === "passed" ? "text-green-400" :
-                          event.verification_status === "failed" ? "text-red-400" :
-                          "text-slate-400"
-                        }`}>
+                        <span
+                          className={`ml-2 ${
+                            event.verification_status === "passed"
+                              ? "text-green-400"
+                              : event.verification_status === "failed"
+                                ? "text-red-400"
+                                : "text-slate-400"
+                          }`}
+                        >
                           {event.verification_status}
                         </span>
                       </div>
@@ -1038,11 +1129,13 @@ const CEOTerminal: React.FC<CEOTerminalProps> = ({
                     {event.ai_confidence_score !== undefined && (
                       <div>
                         <span className="text-slate-500">AI Confidence:</span>
-                        <span className="ml-2 text-slate-300">{(event.ai_confidence_score * 100).toFixed(1)}%</span>
+                        <span className="ml-2 text-slate-300">
+                          {(event.ai_confidence_score * 100).toFixed(1)}%
+                        </span>
                       </div>
                     )}
                   </div>
-                  
+
                   {/* PHASE 2: Approval buttons for pending regenerations */}
                   {event.approval_status === "pending_approval" && (
                     <div className="mt-3 flex items-center gap-2">
@@ -1069,22 +1162,24 @@ const CEOTerminal: React.FC<CEOTerminalProps> = ({
                       </button>
                     </div>
                   )}
-                  
+
                   {/* PHASE 2: Files changed display */}
-                  {event.files_changed && event.files_changed.length > 0 && expandedEvents.has(event.id) && (
-                    <div className="mt-3 p-2 bg-slate-900 rounded">
-                      <div className="text-xs text-slate-500 mb-1">Files to be changed:</div>
-                      <ul className="text-xs text-slate-400 space-y-1">
-                        {event.files_changed.map((file, idx) => (
-                          <li key={idx} className="flex items-center gap-2">
-                            <FileText className="w-3 h-3" />
-                            {file}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                  
+                  {event.files_changed &&
+                    event.files_changed.length > 0 &&
+                    expandedEvents.has(event.id) && (
+                      <div className="mt-3 p-2 bg-slate-900 rounded">
+                        <div className="text-xs text-slate-500 mb-1">Files to be changed:</div>
+                        <ul className="text-xs text-slate-400 space-y-1">
+                          {event.files_changed.map((file, idx) => (
+                            <li key={idx} className="flex items-center gap-2">
+                              <FileText className="w-3 h-3" />
+                              {file}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
                   {/* PHASE 3: AI explanation display */}
                   {event.ai_explanation && expandedEvents.has(event.id) && (
                     <div className="mt-3 p-2 bg-slate-900 rounded">
@@ -1092,22 +1187,24 @@ const CEOTerminal: React.FC<CEOTerminalProps> = ({
                       <p className="text-xs text-slate-400">{event.ai_explanation}</p>
                     </div>
                   )}
-                  
+
                   {/* PHASE 3: Retry history display */}
-                  {event.retry_history && event.retry_history.length > 0 && expandedEvents.has(event.id) && (
-                    <div className="mt-3 p-2 bg-slate-900 rounded">
-                      <div className="text-xs text-slate-500 mb-1">Retry History:</div>
-                      <div className="text-xs text-slate-400 space-y-2">
-                        {event.retry_history.map((retry, idx) => (
-                          <div key={idx} className="border-l-2 border-orange-500 pl-2">
-                            <div className="font-medium">Attempt #{retry.retry_count}</div>
-                            <div className="text-slate-500">{retry.timestamp}</div>
-                          </div>
-                        ))}
+                  {event.retry_history &&
+                    event.retry_history.length > 0 &&
+                    expandedEvents.has(event.id) && (
+                      <div className="mt-3 p-2 bg-slate-900 rounded">
+                        <div className="text-xs text-slate-500 mb-1">Retry History:</div>
+                        <div className="text-xs text-slate-400 space-y-2">
+                          {event.retry_history.map((retry, idx) => (
+                            <div key={idx} className="border-l-2 border-orange-500 pl-2">
+                              <div className="font-medium">Attempt #{retry.retry_count}</div>
+                              <div className="text-slate-500">{retry.timestamp}</div>
+                            </div>
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                  )}
-                  
+                    )}
+
                   {event.details && (
                     <div className="mt-3 p-2 bg-slate-900 rounded">
                       <div className="text-xs text-slate-500 mb-1">Details:</div>

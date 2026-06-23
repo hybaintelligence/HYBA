@@ -26,7 +26,9 @@ interface SectionProps {
 
 function Section({ title, children, className = "" }: SectionProps) {
   return (
-    <section className={`rounded-2xl border border-slate-200 bg-white/90 p-6 shadow-sm ${className}`}>
+    <section
+      className={`rounded-2xl border border-slate-200 bg-white/90 p-6 shadow-sm ${className}`}
+    >
       <h3 className="text-lg font-bold text-slate-950 mb-4">{title}</h3>
       {children}
     </section>
@@ -39,9 +41,20 @@ export function DecisionCockpit({
   veracity = "fallback",
   telemetrySource = "unavailable",
 }: DecisionCockpitProps) {
-  const delta = typeof stability === "number" && typeof previousStability === "number" ? stability - previousStability : null;
-  const trend = delta == null ? "insufficient samples" : delta > 0.005 ? "converging" : delta < -0.005 ? "degrading" : "stable";
-  const TrendIcon = trend === "converging" ? TrendingUp : trend === "degrading" ? TrendingDown : Minus;
+  const delta =
+    typeof stability === "number" && typeof previousStability === "number"
+      ? stability - previousStability
+      : null;
+  const trend =
+    delta == null
+      ? "insufficient samples"
+      : delta > 0.005
+        ? "converging"
+        : delta < -0.005
+          ? "degrading"
+          : "stable";
+  const TrendIcon =
+    trend === "converging" ? TrendingUp : trend === "degrading" ? TrendingDown : Minus;
 
   return (
     <div className="max-w-7xl mx-auto p-6 space-y-8">
@@ -58,8 +71,15 @@ export function DecisionCockpit({
         <div className="lg:col-span-2 space-y-6">
           <Section title="Active Invariants">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <AdaptiveMetric metricKey="phi_resonance" value={stability ? (stability * 100).toFixed(2) : "—"} unit="%" />
-              <AdaptiveMetric metricKey="substrate_coherence" value={trend === "stable" ? "STRONG" : trend.toUpperCase()} />
+              <AdaptiveMetric
+                metricKey="phi_resonance"
+                value={stability ? (stability * 100).toFixed(2) : "—"}
+                unit="%"
+              />
+              <AdaptiveMetric
+                metricKey="substrate_coherence"
+                value={trend === "stable" ? "STRONG" : trend.toUpperCase()}
+              />
             </div>
           </Section>
 
@@ -96,7 +116,11 @@ export function DecisionCockpit({
                 }`}
               >
                 <Cpu className="mr-2 inline h-4 w-4" />
-                <strong>{veracity === "quantum" ? "Quantum-backed certainty" : "Classical heuristic fallback"}</strong>
+                <strong>
+                  {veracity === "quantum"
+                    ? "Quantum-backed certainty"
+                    : "Classical heuristic fallback"}
+                </strong>
                 <p className="mt-2 text-xs leading-5">
                   {veracity === "quantum"
                     ? "Live source, evidence seal, and invariants are present for board-safe review."
@@ -108,15 +132,23 @@ export function DecisionCockpit({
                 <TrendIcon className="mr-2 inline h-4 w-4" />
                 <strong>Intelligence trend: {trend}</strong>
                 <p className="mt-2 text-xs leading-5">
-                  Current stability {typeof stability === "number" ? `${(stability * 100).toFixed(2)}%` : "—"}; previous{" "}
-                  {typeof previousStability === "number" ? `${(previousStability * 100).toFixed(2)}%` : "—"}.
+                  Current stability{" "}
+                  {typeof stability === "number" ? `${(stability * 100).toFixed(2)}%` : "—"};
+                  previous{" "}
+                  {typeof previousStability === "number"
+                    ? `${(previousStability * 100).toFixed(2)}%`
+                    : "—"}
+                  .
                 </p>
               </div>
 
               <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
                 <ShieldCheck className="mr-2 inline h-4 w-4" />
                 <strong>Real telemetry contract</strong>
-                <p className="mt-2 text-xs leading-5">Source: {telemetrySource}. HYBA renders unavailable fields as "—" instead of fabricating samples.</p>
+                <p className="mt-2 text-xs leading-5">
+                  Source: {telemetrySource}. HYBA renders unavailable fields as "—" instead of
+                  fabricating samples.
+                </p>
               </div>
             </div>
           </Section>

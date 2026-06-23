@@ -458,7 +458,10 @@ export class RecursiveSelfLearningSubstrate extends MetacognitiveIntelligence {
       // Measure prediction accuracy (incorporates syndrome for variation)
       const basePredictionError = this.getPredictionError();
       const syndromeModifier = this.deterministicUnitValue(syndrome + cycles) * 0.3;
-      const predictionError = Math.min(1.0, Math.max(0.0, basePredictionError + syndromeModifier - 0.15));
+      const predictionError = Math.min(
+        1.0,
+        Math.max(0.0, basePredictionError + syndromeModifier - 0.15),
+      );
       accuracy = 1.0 - predictionError;
 
       // Record error

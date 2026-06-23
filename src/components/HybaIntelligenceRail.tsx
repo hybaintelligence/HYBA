@@ -24,8 +24,10 @@ const defaultSurfaces: HybaRailSurface[] = [
     surfaceId: "proof_and_claim_interrogation",
     title: "Evidence-backed recommendations",
     state: "ready",
-    observation: "HYBA binds material claims to proof windows, invariants, tests, and evidence seals.",
-    recommendation: "Show evidence beside every client recommendation and fail closed when proof is unavailable.",
+    observation:
+      "HYBA binds material claims to proof windows, invariants, tests, and evidence seals.",
+    recommendation:
+      "Show evidence beside every client recommendation and fail closed when proof is unavailable.",
     clientValue: "Clients can interrogate HYBA instead of taking the pitch on trust.",
     risk: "low",
     confidence: 0.96,
@@ -36,9 +38,12 @@ const defaultSurfaces: HybaRailSurface[] = [
     surfaceId: "client_onboarding_diagnostic",
     title: "Client opportunity scan",
     state: "ready",
-    observation: "Client context, data posture, deployment constraints, and governance needs are mapped into one diagnostic.",
-    recommendation: "Generate an executive opportunity brief with next-best-actions and proof references.",
-    clientValue: "Discovery moves from bespoke consulting effort to repeatable autonomous intelligence.",
+    observation:
+      "Client context, data posture, deployment constraints, and governance needs are mapped into one diagnostic.",
+    recommendation:
+      "Generate an executive opportunity brief with next-best-actions and proof references.",
+    clientValue:
+      "Discovery moves from bespoke consulting effort to repeatable autonomous intelligence.",
     risk: "low",
     confidence: 0.93,
     approvalRequired: false,
@@ -48,8 +53,10 @@ const defaultSurfaces: HybaRailSurface[] = [
     surfaceId: "production_execution_guardrails",
     title: "Approval-safe autonomous action",
     state: "approval gated",
-    observation: "High-impact commands such as production execution, privileged admin changes, and data export require approval.",
-    recommendation: "Simulate first, request approval, execute only after approval, then audit the result.",
+    observation:
+      "High-impact commands such as production execution, privileged admin changes, and data export require approval.",
+    recommendation:
+      "Simulate first, request approval, execute only after approval, then audit the result.",
     clientValue: "The system can act without becoming reckless or opaque.",
     risk: "high",
     confidence: 0.9,
@@ -68,7 +75,10 @@ function riskClass(risk: HybaRailSurface["risk"]): string {
   return "border-emerald-300 bg-emerald-50 text-emerald-900";
 }
 
-export function HybaIntelligenceRail({ surfaces = defaultSurfaces, compact = false }: HybaIntelligenceRailProps) {
+export function HybaIntelligenceRail({
+  surfaces = defaultSurfaces,
+  compact = false,
+}: HybaIntelligenceRailProps) {
   const approvalGated = surfaces.filter((surface) => surface.approvalRequired).length;
   const autonomous = surfaces.length - approvalGated;
 
@@ -86,9 +96,9 @@ export function HybaIntelligenceRail({ surfaces = defaultSurfaces, compact = fal
             <Brain className="h-5 w-5 text-indigo-600" /> HYBA Intelligence Rail
           </h2>
           <p className="mt-2 max-w-4xl text-sm leading-6 text-slate-600">
-            Observe → Reason → Recommend → Simulate → Approve → Execute → Audit → Learn.
-            Every client surface should show what HYBA sees, recommends, can safely automate,
-            what needs approval, and what evidence supports the recommendation.
+            Observe → Reason → Recommend → Simulate → Approve → Execute → Audit → Learn. Every
+            client surface should show what HYBA sees, recommends, can safely automate, what needs
+            approval, and what evidence supports the recommendation.
           </p>
         </div>
         <div className="grid grid-cols-3 gap-2 font-mono text-[10px] uppercase tracking-[0.16em] text-slate-600">
@@ -120,7 +130,9 @@ export function HybaIntelligenceRail({ surfaces = defaultSurfaces, compact = fal
                   {surface.state} · confidence {pct(surface.confidence)}
                 </p>
               </div>
-              <span className={`rounded-full border px-2 py-1 font-mono text-[10px] font-bold uppercase ${riskClass(surface.risk)}`}>
+              <span
+                className={`rounded-full border px-2 py-1 font-mono text-[10px] font-bold uppercase ${riskClass(surface.risk)}`}
+              >
                 {surface.risk}
               </span>
             </div>

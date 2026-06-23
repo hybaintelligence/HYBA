@@ -20,7 +20,7 @@ import {
   AuthorizationError,
   RateLimitError,
   ErrorCategory,
-  ErrorSeverity
+  ErrorSeverity,
 } from "./utils/errorHandler";
 
 // ── Types ──────────────────────────────────────────────────────────────────
@@ -1335,7 +1335,12 @@ async function parseApiError(response: Response): Promise<HybaError> {
     const body = await response.json();
     // Backend structured errors carry error_id; use it for log correlation.
     const backendErrorId = body.error_id || errorId;
-    const message = body.message || body.detail?.message || body.detail?.detail || body.detail || `HTTP ${response.status}`;
+    const message =
+      body.message ||
+      body.detail?.message ||
+      body.detail?.detail ||
+      body.detail ||
+      `HTTP ${response.status}`;
     const code = body.error || body.detail?.error || "unknown_error";
     const context: Record<string, unknown> = {
       details: body.details || body,
@@ -1344,34 +1349,67 @@ async function parseApiError(response: Response): Promise<HybaError> {
 
     switch (response.status) {
       case 400:
-        return new ValidationError(message, { code, statusCode: response.status, requestId, context });
+        return new ValidationError(message, {
+          code,
+          statusCode: response.status,
+          requestId,
+          context,
+        });
       case 401:
-        return new AuthenticationError(message, { code, statusCode: response.status, requestId, context });
+        return new AuthenticationError(message, {
+          code,
+          statusCode: response.status,
+          requestId,
+          context,
+        });
       case 403:
-        return new AuthorizationError(message, { code, statusCode: response.status, requestId, context });
+        return new AuthorizationError(message, {
+          code,
+          statusCode: response.status,
+          requestId,
+          context,
+        });
       case 429: {
         const retryAfter = response.headers.get("retry-after");
         return new RateLimitError(message, {
           code,
           statusCode: response.status,
           requestId,
-          context: { ...context, retry_after_seconds: retryAfter ? parseInt(retryAfter, 10) : undefined },
+          context: {
+            ...context,
+            retry_after_seconds: retryAfter ? parseInt(retryAfter, 10) : undefined,
+          },
         });
       }
       case 500:
       case 502:
       case 503:
       case 504:
-        return new HybaError(message, ErrorCategory.API, ErrorSeverity.HIGH, { code, statusCode: response.status, requestId, context });
+        return new HybaError(message, ErrorCategory.API, ErrorSeverity.HIGH, {
+          code,
+          statusCode: response.status,
+          requestId,
+          context,
+        });
       default:
-        return new HybaError(message, ErrorCategory.API, ErrorSeverity.MEDIUM, { code, statusCode: response.status, requestId, context });
+        return new HybaError(message, ErrorCategory.API, ErrorSeverity.MEDIUM, {
+          code,
+          statusCode: response.status,
+          requestId,
+          context,
+        });
     }
   } catch (parseError) {
     return new HybaError(
       `HTTP ${response.status}: ${response.statusText}`,
       ErrorCategory.API,
       ErrorSeverity.MEDIUM,
-      { code: "http_error", statusCode: response.status, requestId, cause: parseError instanceof Error ? parseError : undefined }
+      {
+        code: "http_error",
+        statusCode: response.status,
+        requestId,
+        cause: parseError instanceof Error ? parseError : undefined,
+      },
     );
   }
 }
@@ -1415,26 +1453,53 @@ async function fetchWithRetry(
     ...retryOptions,
   };
   const interceptedOptions = authInterceptor(options);
-  let lastError: Error | null = null;
+  let lastError: HybaError | null = null;
+
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
       const response = await fetch(url, interceptedOptions);
       if (response.ok) return response;
+
+      // Always await parseApiError — it reads the response body async.
+      const parsed = await parseApiError(response);
       if (!retryOn(response.status) || attempt === maxRetries) {
-        throw await parseApiError(response);
+        throw parsed;
       }
-      lastError = await parseApiError(response);
-      const delay = calculateDelay(attempt, baseDelayMs, maxDelayMs);
-      await new Promise((resolve) => setTimeout(resolve, delay + secureUnitInterval() * 100));
+      lastError = parsed;
     } catch (error) {
-      if (error instanceof HybaError) throw error;
-      if (attempt === maxRetries) throw error;
-      lastError = error instanceof Error ? error : new Error(String(error));
-      const delay = calculateDelay(attempt, baseDelayMs, maxDelayMs);
-      await new Promise((resolve) => setTimeout(resolve, delay + secureUnitInterval() * 100));
+      if (error instanceof HybaError) {
+        if (!error.retryable || attempt === maxRetries) throw error;
+        lastError = error;
+      } else {
+        if (attempt === maxRetries) {
+          throw new HybaError(
+            error instanceof Error ? error.message : String(error),
+            ErrorCategory.NETWORK,
+            ErrorSeverity.HIGH,
+            { cause: error instanceof Error ? error : undefined, retryable: true },
+          );
+        }
+        lastError = new HybaError(
+          error instanceof Error ? error.message : String(error),
+          ErrorCategory.NETWORK,
+          ErrorSeverity.HIGH,
+          { cause: error instanceof Error ? error : undefined, retryable: true },
+        );
+      }
     }
+
+    const delay = calculateDelay(attempt, baseDelayMs, maxDelayMs);
+    await new Promise((resolve) => setTimeout(resolve, delay + secureUnitInterval() * 100));
   }
-  throw lastError || new Error(`Request to ${url} failed after ${maxRetries} retries`);
+
+  throw (
+    lastError ??
+    new HybaError(
+      `Request to ${url} failed after ${maxRetries} retries`,
+      ErrorCategory.NETWORK,
+      ErrorSeverity.HIGH,
+    )
+  );
 }
 
 async function get<T>(path: string, retryOptions?: Partial<RetryOptions>): Promise<T> {
@@ -2638,7 +2703,9 @@ export async function executeCustomerCIAASWorkload(
 }
 
 /** GET /api/admin/computational-intelligence-services/{service_id}/autonomous — Get autonomous status */
-export async function getCIAASAutonomousStatus(serviceId: string): Promise<Record<string, unknown>> {
+export async function getCIAASAutonomousStatus(
+  serviceId: string,
+): Promise<Record<string, unknown>> {
   return get<Record<string, unknown>>(
     `/admin/computational-intelligence-services/${serviceId}/autonomous`,
   );
@@ -2683,13 +2750,21 @@ export async function getCustomerQaaSComputer(computerId: string): Promise<Publi
 }
 
 /** POST /api/admin/fault-tolerant-computers/{computer_id}/start — Start QaaS computer */
-export async function startQaaSComputer(computerId: string): Promise<FaultTolerantComputerResponse> {
-  return post<FaultTolerantComputerResponse>(`/admin/fault-tolerant-computers/${computerId}/start`, {});
+export async function startQaaSComputer(
+  computerId: string,
+): Promise<FaultTolerantComputerResponse> {
+  return post<FaultTolerantComputerResponse>(
+    `/admin/fault-tolerant-computers/${computerId}/start`,
+    {},
+  );
 }
 
 /** POST /api/admin/fault-tolerant-computers/{computer_id}/stop — Stop QaaS computer */
 export async function stopQaaSComputer(computerId: string): Promise<FaultTolerantComputerResponse> {
-  return post<FaultTolerantComputerResponse>(`/admin/fault-tolerant-computers/${computerId}/stop`, {});
+  return post<FaultTolerantComputerResponse>(
+    `/admin/fault-tolerant-computers/${computerId}/stop`,
+    {},
+  );
 }
 
 /** POST /api/admin/fault-tolerant-computers/{computer_id}/execute — Execute quantum workload */
@@ -2715,7 +2790,9 @@ export async function executeCustomerQaaSWorkload(
 }
 
 /** GET /api/admin/fault-tolerant-computers/{computer_id}/autonomous — Get autonomous status */
-export async function getQAASAutonomousStatus(computerId: string): Promise<Record<string, unknown>> {
+export async function getQAASAutonomousStatus(
+  computerId: string,
+): Promise<Record<string, unknown>> {
   return get<Record<string, unknown>>(`/admin/fault-tolerant-computers/${computerId}/autonomous`);
 }
 

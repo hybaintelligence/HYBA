@@ -27,7 +27,8 @@ export function AdaptiveMetric({
   className = "",
 }: AdaptiveMetricProps) {
   const { mode, config } = useSkillMode();
-  const translation = metricTranslations[metricKey]?.[mode] || metricTranslations[metricKey]?.["business"];
+  const translation =
+    metricTranslations[metricKey]?.[mode] || metricTranslations[metricKey]?.["business"];
 
   if (!translation) {
     return null;
@@ -44,14 +45,14 @@ export function AdaptiveMetric({
   };
 
   return (
-    <div className={`rounded-xl border p-4 ${modeColors[mode] || modeColors.business} ${className}`}>
+    <div
+      className={`rounded-xl border p-4 ${modeColors[mode] || modeColors.business} ${className}`}
+    >
       <div className="flex justify-between items-start mb-2">
         <h4 className="text-sm font-semibold text-slate-900 uppercase tracking-wider">
           {translation.label}
         </h4>
-        <span className="text-xs font-mono bg-white/50 px-2 py-0.5 rounded">
-          {mode}
-        </span>
+        <span className="text-xs font-mono bg-white/50 px-2 py-0.5 rounded">{mode}</span>
       </div>
 
       <div className="text-2xl font-bold text-slate-900">
@@ -59,9 +60,7 @@ export function AdaptiveMetric({
         {unit && <span className="text-lg font-normal text-slate-600 ml-1">{unit}</span>}
       </div>
 
-      <p className="mt-2 text-sm text-slate-700 leading-relaxed">
-        {translation.plainEnglish}
-      </p>
+      <p className="mt-2 text-sm text-slate-700 leading-relaxed">{translation.plainEnglish}</p>
 
       {showRecommendation && translation.recommendation && (
         <div className="mt-3 p-2 bg-white/50 rounded border-l-4 border-current">
@@ -98,7 +97,8 @@ export function CompactAdaptiveMetric({
   className?: string;
 }) {
   const { mode } = useSkillMode();
-  const translation = metricTranslations[metricKey]?.[mode] || metricTranslations[metricKey]?.["business"];
+  const translation =
+    metricTranslations[metricKey]?.[mode] || metricTranslations[metricKey]?.["business"];
 
   if (!translation) {
     return null;
@@ -115,7 +115,9 @@ export function CompactAdaptiveMetric({
   };
 
   return (
-    <div className={`rounded-lg border bg-white p-3 ${modeColors[mode] || modeColors.business} ${className}`}>
+    <div
+      className={`rounded-lg border bg-white p-3 ${modeColors[mode] || modeColors.business} ${className}`}
+    >
       <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
         {translation.label}
       </p>
@@ -140,7 +142,8 @@ export function InlineAdaptiveMetric({
   className?: string;
 }) {
   const { mode } = useSkillMode();
-  const translation = metricTranslations[metricKey]?.[mode] || metricTranslations[metricKey]?.["business"];
+  const translation =
+    metricTranslations[metricKey]?.[mode] || metricTranslations[metricKey]?.["business"];
 
   if (!translation) {
     return <span className={className}>{value}</span>;

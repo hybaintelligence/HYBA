@@ -207,7 +207,7 @@ export default function HistoricalDataSection({ telemetry }: { telemetry?: Telem
           </div>
           <p className="text-xs text-slate-600 uppercase tracking-wider">Difficulty</p>
           <p className="text-2xl font-black text-slate-900">
-            {(latestData?.difficulty! / 1e12).toFixed(2)}T
+            {((latestData?.difficulty ?? 0) / 1e12).toFixed(2)}T
           </p>
         </div>
 

@@ -4,7 +4,7 @@ import {
   logError,
   isRetryable,
   HybaError,
-  ErrorSeverity
+  ErrorSeverity,
 } from "../utils/errorHandler";
 
 interface UseApiRequestOptions<T> {

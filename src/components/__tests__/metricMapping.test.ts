@@ -9,7 +9,15 @@ import { metricTranslations, type MetricTranslationKey } from "../../intelligenc
 import type { SkillMode } from "../../skillMode";
 
 describe("Metric Mapping Tests", () => {
-  const allModes: SkillMode[] = ["executive", "business", "operator", "analyst", "engineer", "auditor", "expert"];
+  const allModes: SkillMode[] = [
+    "executive",
+    "business",
+    "operator",
+    "analyst",
+    "engineer",
+    "auditor",
+    "expert",
+  ];
   const allMetrics: MetricTranslationKey[] = [
     "phi_resonance",
     "code_distance",
@@ -112,7 +120,7 @@ describe("Metric Mapping Tests", () => {
       const auditorLabels = allMetrics.map((m) => metricTranslations[m].auditor.label);
       const auditRelatedTerms = ["Audit", "Compliance", "Regulatory", "Proof", "Evidence"];
       const hasAuditTerms = auditorLabels.some((label) =>
-        auditRelatedTerms.some((term) => label.includes(term))
+        auditRelatedTerms.some((term) => label.includes(term)),
       );
       expect(hasAuditTerms).toBe(true);
     });

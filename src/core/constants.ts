@@ -5,7 +5,9 @@
 
 export const PHI = (1 + Math.sqrt(5)) / 2; // Golden Ratio
 export const DODE_VERTICES = 20;
+// eslint-disable-next-line no-loss-of-precision
 export const FEIGEN_ALPHA = 2.50290787509589282228;
+// eslint-disable-next-line no-loss-of-precision
 export const FEIGEN_DELTA = 4.66920160910299067185;
 export const PLANCK_TIME = 5.391e-44;
 

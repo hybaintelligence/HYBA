@@ -1,5 +1,16 @@
 import React, { useState } from "react";
-import { Brain, CheckCircle2, ChevronDown, FileWarning, ShieldCheck, Sparkles, TrendingDown, TrendingUp, Minus, Cpu } from "lucide-react";
+import {
+  Brain,
+  CheckCircle2,
+  ChevronDown,
+  FileWarning,
+  ShieldCheck,
+  Sparkles,
+  TrendingDown,
+  TrendingUp,
+  Minus,
+  Cpu,
+} from "lucide-react";
 import { metricTranslations, type MetricTranslationKey } from "../intelligenceTranslations";
 import { useSkillMode } from "../skillMode";
 
@@ -189,9 +200,20 @@ export function DecisionCockpit({
   veracity?: "quantum" | "fallback";
   telemetrySource?: string;
 }) {
-  const delta = typeof stability === "number" && typeof previousStability === "number" ? stability - previousStability : null;
-  const trend = delta == null ? "insufficient samples" : delta > 0.005 ? "converging" : delta < -0.005 ? "degrading" : "stable";
-  const TrendIcon = trend === "converging" ? TrendingUp : trend === "degrading" ? TrendingDown : Minus;
+  const delta =
+    typeof stability === "number" && typeof previousStability === "number"
+      ? stability - previousStability
+      : null;
+  const trend =
+    delta == null
+      ? "insufficient samples"
+      : delta > 0.005
+        ? "converging"
+        : delta < -0.005
+          ? "degrading"
+          : "stable";
+  const TrendIcon =
+    trend === "converging" ? TrendingUp : trend === "degrading" ? TrendingDown : Minus;
   const rows = [
     "Current state",
     "Anomaly",
@@ -212,23 +234,42 @@ export function DecisionCockpit({
         <h2 className="text-xl font-black text-slate-950">Decision cockpit</h2>
       </div>
       <p className="mt-2 text-sm leading-6 text-slate-600">
-        Every recommendation is structured as a governed decision packet before execution, with veracity and temporal trend signals attached.
+        Every recommendation is structured as a governed decision packet before execution, with
+        veracity and temporal trend signals attached.
       </p>
       <div className="mt-4 grid gap-3 md:grid-cols-3">
-        <div className={`rounded-2xl border p-3 text-sm ${veracity === "quantum" ? "border-emerald-200 bg-emerald-50 text-emerald-950" : "border-amber-200 bg-amber-50 text-amber-950"}`}>
+        <div
+          className={`rounded-2xl border p-3 text-sm ${veracity === "quantum" ? "border-emerald-200 bg-emerald-50 text-emerald-950" : "border-amber-200 bg-amber-50 text-amber-950"}`}
+        >
           <Cpu className="mr-1 inline h-4 w-4" />
-          <strong>{veracity === "quantum" ? "Quantum-backed certainty" : "Classical heuristic fallback"}</strong>
-          <p className="mt-1 text-xs leading-5">{veracity === "quantum" ? "Live source, evidence seal, and invariants are present for board-safe review." : "Use as triage until live backing and proof checks are restored."}</p>
+          <strong>
+            {veracity === "quantum" ? "Quantum-backed certainty" : "Classical heuristic fallback"}
+          </strong>
+          <p className="mt-1 text-xs leading-5">
+            {veracity === "quantum"
+              ? "Live source, evidence seal, and invariants are present for board-safe review."
+              : "Use as triage until live backing and proof checks are restored."}
+          </p>
         </div>
         <div className="rounded-2xl border border-blue-200 bg-blue-50 p-3 text-sm text-blue-950">
           <TrendIcon className="mr-1 inline h-4 w-4" />
           <strong>Intelligence trend: {trend}</strong>
-          <p className="mt-1 text-xs leading-5">Current stability {typeof stability === "number" ? `${(stability * 100).toFixed(2)}%` : "—"}; previous {typeof previousStability === "number" ? `${(previousStability * 100).toFixed(2)}%` : "—"}.</p>
+          <p className="mt-1 text-xs leading-5">
+            Current stability{" "}
+            {typeof stability === "number" ? `${(stability * 100).toFixed(2)}%` : "—"}; previous{" "}
+            {typeof previousStability === "number"
+              ? `${(previousStability * 100).toFixed(2)}%`
+              : "—"}
+            .
+          </p>
         </div>
         <div className="rounded-2xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700">
           <ShieldCheck className="mr-1 inline h-4 w-4" />
           <strong>Real telemetry contract</strong>
-          <p className="mt-1 text-xs leading-5">Source: {telemetrySource}. HYBA renders unavailable fields as “—” instead of fabricating samples.</p>
+          <p className="mt-1 text-xs leading-5">
+            Source: {telemetrySource}. HYBA renders unavailable fields as “—” instead of fabricating
+            samples.
+          </p>
         </div>
       </div>
       <div className="mt-4 grid gap-2 md:grid-cols-3 lg:grid-cols-4">

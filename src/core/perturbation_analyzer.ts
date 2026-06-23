@@ -329,16 +329,18 @@ export class PerturbationAnalyzer {
     const telemetry = system.getTelemetry();
 
     switch (target) {
-      case "learning_rate":
+      case "learning_rate": {
         // System adjusts its own learning rate
         const newRate = telemetry.recursive_state.learning_rate * (1 + magnitude);
         // This would need to be exposed as a method
         break;
+      }
 
-      case "coupling_strength":
+      case "coupling_strength": {
         // System adjusts coupling
         const newCoupling = telemetry.recursive_state.coupling_strength * (1 + magnitude);
         break;
+      }
 
       default:
         // Generic internal adjustment
@@ -384,7 +386,7 @@ export class PerturbationAnalyzer {
    */
   private calculateArousal(surprise: number, type: PerturbationType): number {
     // Base arousal from surprise (amplify it more)
-    let baseArousal = Math.min(surprise * 20, 1.0); // Scale up surprise 2x more
+    const baseArousal = Math.min(surprise * 20, 1.0); // Scale up surprise 2x more
 
     let arousal = baseArousal;
 

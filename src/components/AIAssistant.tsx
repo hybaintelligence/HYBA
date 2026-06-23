@@ -55,10 +55,10 @@ function classifyAction(command: string, userRole?: string, skillMode?: string):
   const privileged = ["admin", "ceo_heir_apparent", "chairman", "cto"].includes(
     String(userRole || "").toLowerCase(),
   );
-  
+
   // Check for UNATTENDED_WRITES flag and expert mode
   const canBypassApproval = UNATTENDED_WRITES_ENABLED && skillMode === "expert" && privileged;
-  
+
   return {
     command: normalized,
     risk: lowRisk
@@ -75,8 +75,8 @@ function classifyAction(command: string, userRole?: string, skillMode?: string):
     reason: canBypassApproval
       ? "Expert mode with UNATTENDED_WRITES enabled - auto-approved for privileged users."
       : lowRisk
-      ? "Pre-authorized read-only command."
-      : "Governance requires explicit approval before execution.",
+        ? "Pre-authorized read-only command."
+        : "Governance requires explicit approval before execution.",
   };
 }
 
@@ -318,7 +318,11 @@ const AIAssistant: React.FC<AIAssistantProps> = ({
     onCommand(proposal.command);
     setMessages((prev) => [
       ...prev,
-      { role: "system", content: `Approved action executed: ${proposal.command}`, timestamp: Date.now() },
+      {
+        role: "system",
+        content: `Approved action executed: ${proposal.command}`,
+        timestamp: Date.now(),
+      },
     ]);
     setPendingAction(null);
   };

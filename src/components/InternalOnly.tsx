@@ -30,11 +30,7 @@ const TREASURY_ROLES = new Set([
 
 const FEATURE_FLAG = import.meta.env.VITE_FEATURE_INTERNAL_TOOLS === "true";
 
-export function InternalOnly({
-  children,
-  fallback,
-  requiredRole,
-}: InternalOnlyProps) {
+export function InternalOnly({ children, fallback, requiredRole }: InternalOnlyProps) {
   const { backendUser, isAdmin, isExecutive, hasRole } = useAuth();
 
   // Check feature flag first
@@ -77,7 +73,7 @@ export function InternalOnly({
  */
 export function withInternalOnly<P extends object>(
   WrappedComponent: React.ComponentType<P>,
-  options?: { requiredRole?: string; fallback?: ReactNode }
+  options?: { requiredRole?: string; fallback?: ReactNode },
 ) {
   return function InternalOnlyWrapper(props: P) {
     return (

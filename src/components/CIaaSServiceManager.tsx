@@ -1,5 +1,15 @@
 import React, { useEffect, useState } from "react";
-import { Activity, AlertCircle, Cpu, Play, Plus, RefreshCw, Shield, Square, Zap } from "lucide-react";
+import {
+  Activity,
+  AlertCircle,
+  Cpu,
+  Play,
+  Plus,
+  RefreshCw,
+  Shield,
+  Square,
+  Zap,
+} from "lucide-react";
 import {
   type ProvisionComputationalIntelligenceRequest,
   type ServiceResponse,
@@ -47,7 +57,8 @@ const ciaasPresets: Record<CIaaSPresetName, CIaaSPreset> = {
     data_residency: "us",
     allowed_workloads: ["explain", "substrate_health"],
     governance: "balanced",
-    description: "Development-friendly CI rail for exploration and testing with balanced governance.",
+    description:
+      "Development-friendly CI rail for exploration and testing with balanced governance.",
   },
   "Enterprise Operations Rail": {
     service_tier: "production",
@@ -75,7 +86,8 @@ const ciaasPresets: Record<CIaaSPresetName, CIaaSPreset> = {
     data_residency: "us",
     allowed_workloads: ["explain", "orchestrate", "governance_audit", "substrate_health"],
     governance: "strict",
-    description: "High-compliance CI rail for regulated industries with strict governance and audit requirements.",
+    description:
+      "High-compliance CI rail for regulated industries with strict governance and audit requirements.",
   },
   "Sovereign Autonomy Rail": {
     service_tier: "sovereign",
@@ -89,7 +101,8 @@ const ciaasPresets: Record<CIaaSPresetName, CIaaSPreset> = {
     data_residency: "us",
     allowed_workloads: ["explain", "orchestrate", "governance_audit", "substrate_health"],
     governance: "strict",
-    description: "Maximum isolation and sovereignty with strict governance for critical infrastructure.",
+    description:
+      "Maximum isolation and sovereignty with strict governance for critical infrastructure.",
   },
   "Research/Expert CI Rail": {
     service_tier: "developer",
@@ -101,9 +114,16 @@ const ciaasPresets: Record<CIaaSPresetName, CIaaSPreset> = {
     max_context_bytes: 256000,
     admin_privileged: false,
     data_residency: "us",
-    allowed_workloads: ["explain", "orchestrate", "counterfactual", "governance_audit", "substrate_health"],
+    allowed_workloads: [
+      "explain",
+      "orchestrate",
+      "counterfactual",
+      "governance_audit",
+      "substrate_health",
+    ],
     governance: "relaxed",
-    description: "Expert research rail with relaxed governance for experimentation and advanced workloads.",
+    description:
+      "Expert research rail with relaxed governance for experimentation and advanced workloads.",
   },
 };
 
@@ -117,7 +137,9 @@ export default function CIaaSServiceManager({ token }: CIaaSServiceManagerProps)
   const [error, setError] = useState<string | null>(null);
   const [selectedService, setSelectedService] = useState<ServiceResponse | null>(null);
   const [showProvisionModal, setShowProvisionModal] = useState(false);
-  const [selectedPreset, setSelectedPreset] = useState<CIaaSPresetName>("Enterprise Operations Rail");
+  const [selectedPreset, setSelectedPreset] = useState<CIaaSPresetName>(
+    "Enterprise Operations Rail",
+  );
   const [provisionForm, setProvisionForm] = useState<ProvisionComputationalIntelligenceRequest>({
     name: "",
     ...ciaasPresets["Enterprise Operations Rail"],
@@ -129,8 +151,10 @@ export default function CIaaSServiceManager({ token }: CIaaSServiceManagerProps)
     setProvisionForm((current) => ({
       ...current,
       ...preset,
-      service_tier: preset.service_tier === "sovereign" && !isAdmin ? "production" : preset.service_tier,
-      tenancy: preset.tenancy === "sovereign-isolated" && !isAdmin ? "single-tenant" : preset.tenancy,
+      service_tier:
+        preset.service_tier === "sovereign" && !isAdmin ? "production" : preset.service_tier,
+      tenancy:
+        preset.tenancy === "sovereign-isolated" && !isAdmin ? "single-tenant" : preset.tenancy,
     }));
   };
 
@@ -189,37 +213,61 @@ export default function CIaaSServiceManager({ token }: CIaaSServiceManagerProps)
   };
 
   const getStateColor = (state: ServiceState) =>
-    state === "running" ? "text-emerald-700 bg-emerald-50 border-emerald-200" : state === "provisioned" ? "text-blue-700 bg-blue-50 border-blue-200" : "text-slate-600 bg-slate-50 border-slate-200";
+    state === "running"
+      ? "text-emerald-700 bg-emerald-50 border-emerald-200"
+      : state === "provisioned"
+        ? "text-blue-700 bg-blue-50 border-blue-200"
+        : "text-slate-600 bg-slate-50 border-slate-200";
   const getTierColor = (tier: ServiceTier) =>
-    tier === "sovereign" ? "text-purple-700 bg-purple-50 border-purple-200" : tier === "production" ? "text-blue-700 bg-blue-50 border-blue-200" : "text-slate-600 bg-slate-50 border-slate-200";
+    tier === "sovereign"
+      ? "text-purple-700 bg-purple-50 border-purple-200"
+      : tier === "production"
+        ? "text-blue-700 bg-blue-50 border-blue-200"
+        : "text-slate-600 bg-slate-50 border-slate-200";
 
   return (
     <div className="space-y-6">
       <div className="rounded-3xl border border-emerald-200 bg-gradient-to-br from-emerald-50 to-white p-6 shadow-sm">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div>
-            <p className="font-mono text-xs font-bold uppercase tracking-[0.24em] text-emerald-700">Computational Intelligence · broad brain</p>
+            <p className="font-mono text-xs font-bold uppercase tracking-[0.24em] text-emerald-700">
+              Computational Intelligence · broad brain
+            </p>
             <h2 className="mt-2 flex items-center gap-2 text-2xl font-black text-slate-950">
               <Cpu className="h-6 w-6 text-emerald-600" /> CIaaS Service Manager
             </h2>
-            <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-700">Self-healing operations rail for active jobs, Salamander regeneration events, substrate coherence, uptime, velocity, and process efficiency. CI alerts intentionally avoid qubits and resonance language.</p>
+            <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-700">
+              Self-healing operations rail for active jobs, Salamander regeneration events,
+              substrate coherence, uptime, velocity, and process efficiency. CI alerts intentionally
+              avoid qubits and resonance language.
+            </p>
           </div>
-          <button onClick={() => setShowProvisionModal(true)} className="flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 font-semibold text-white hover:bg-emerald-700">
+          <button
+            onClick={() => setShowProvisionModal(true)}
+            className="flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 font-semibold text-white hover:bg-emerald-700"
+          >
             <Plus className="h-4 w-4" /> Provision CI Rail
           </button>
         </div>
         <div className="mt-5 grid gap-3 md:grid-cols-4">
-          {([
-            ['Active jobs', services.filter((s) => s.state === 'running').length, Activity],
-            ['Regeneration events', 'audit-ready', RefreshCw],
-            ['System health', loading ? 'syncing' : 'coherent', Shield],
-            ['Efficiency', 'self-healing', Zap]
-          ] as const).map(([label, value, Icon]) => {
+          {(
+            [
+              ["Active jobs", services.filter((s) => s.state === "running").length, Activity],
+              ["Regeneration events", "audit-ready", RefreshCw],
+              ["System health", loading ? "syncing" : "coherent", Shield],
+              ["Efficiency", "self-healing", Zap],
+            ] as const
+          ).map(([label, value, Icon]) => {
             const MetricIcon = Icon as typeof Activity;
             return (
-              <div key={String(label)} className="rounded-2xl border border-emerald-100 bg-white p-4">
+              <div
+                key={String(label)}
+                className="rounded-2xl border border-emerald-100 bg-white p-4"
+              >
                 <MetricIcon className="h-4 w-4 text-emerald-600" />
-                <p className="mt-2 font-mono text-[10px] uppercase tracking-[0.16em] text-emerald-700">{label}</p>
+                <p className="mt-2 font-mono text-[10px] uppercase tracking-[0.16em] text-emerald-700">
+                  {label}
+                </p>
                 <p className="text-lg font-black text-slate-950">{String(value)}</p>
               </div>
             );
@@ -246,13 +294,24 @@ export default function CIaaSServiceManager({ token }: CIaaSServiceManagerProps)
       ) : (
         <div className="grid gap-4">
           {services.map((service) => (
-            <div key={service.service_id} className="rounded-lg border border-emerald-100 bg-white p-6 shadow-sm">
+            <div
+              key={service.service_id}
+              className="rounded-lg border border-emerald-100 bg-white p-6 shadow-sm"
+            >
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1">
                   <div className="flex flex-wrap items-center gap-3">
                     <h3 className="text-lg font-semibold text-slate-900">{service.name}</h3>
-                    <span className={`rounded-full border px-2.5 py-1 text-xs font-medium ${getStateColor(service.state)}`}>{service.state.toUpperCase()}</span>
-                    <span className={`rounded-full border px-2.5 py-1 text-xs font-medium ${getTierColor(service.service_tier)}`}>{service.service_tier.toUpperCase()}</span>
+                    <span
+                      className={`rounded-full border px-2.5 py-1 text-xs font-medium ${getStateColor(service.state)}`}
+                    >
+                      {service.state.toUpperCase()}
+                    </span>
+                    <span
+                      className={`rounded-full border px-2.5 py-1 text-xs font-medium ${getTierColor(service.service_tier)}`}
+                    >
+                      {service.service_tier.toUpperCase()}
+                    </span>
                   </div>
                   <div className="mt-3 grid grid-cols-2 gap-4 text-sm">
                     <div>
@@ -265,16 +324,23 @@ export default function CIaaSServiceManager({ token }: CIaaSServiceManagerProps)
                     </div>
                   </div>
                   <div className="mt-3 rounded-lg border border-emerald-100 bg-emerald-50 p-3 text-xs text-emerald-950">
-                    <strong>CI proof tier:</strong> Standard Audit Stamp · operational logs and regeneration audit trail explain why the system fixed or escalated a workflow.
+                    <strong>CI proof tier:</strong> Standard Audit Stamp · operational logs and
+                    regeneration audit trail explain why the system fixed or escalated a workflow.
                   </div>
                 </div>
                 <div className="flex gap-2">
                   {service.state === "stopped" || service.state === "provisioned" ? (
-                    <button onClick={() => handleStart(service.service_id)} className="flex items-center gap-1 rounded-lg bg-emerald-600 px-3 py-2 text-white">
+                    <button
+                      onClick={() => handleStart(service.service_id)}
+                      className="flex items-center gap-1 rounded-lg bg-emerald-600 px-3 py-2 text-white"
+                    >
                       <Play className="h-4 w-4" /> Start
                     </button>
                   ) : (
-                    <button onClick={() => handleStop(service.service_id)} className="flex items-center gap-1 rounded-lg bg-slate-200 px-3 py-2 text-slate-700 hover:bg-slate-300">
+                    <button
+                      onClick={() => handleStop(service.service_id)}
+                      className="flex items-center gap-1 rounded-lg bg-slate-200 px-3 py-2 text-slate-700 hover:bg-slate-300"
+                    >
                       <Square className="h-4 w-4" /> Stop
                     </button>
                   )}
@@ -287,17 +353,22 @@ export default function CIaaSServiceManager({ token }: CIaaSServiceManagerProps)
 
       {selectedService && (
         <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-950">
-          <strong>Selected CI rail:</strong> {selectedService.name} · Operational Rail is provisioned.
+          <strong>Selected CI rail:</strong> {selectedService.name} · Operational Rail is
+          provisioned.
         </div>
       )}
 
       {showProvisionModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
           <div className="w-full max-w-2xl rounded-lg bg-white p-6 shadow-xl">
-            <h3 className="mb-4 text-xl font-bold text-slate-900">Provision Computational Intelligence Rail</h3>
+            <h3 className="mb-4 text-xl font-bold text-slate-900">
+              Provision Computational Intelligence Rail
+            </h3>
             <form onSubmit={handleProvision} className="space-y-4">
               <div className="rounded-xl border border-emerald-100 bg-emerald-50 p-4">
-                <p className="text-sm font-semibold text-emerald-950">Choose an operations preset</p>
+                <p className="text-sm font-semibold text-emerald-950">
+                  Choose an operations preset
+                </p>
                 <div className="mt-3 grid gap-2 sm:grid-cols-2">
                   {presetNames.map((name) => (
                     <button
@@ -336,7 +407,10 @@ export default function CIaaSServiceManager({ token }: CIaaSServiceManagerProps)
                   <select
                     value={provisionForm.service_tier}
                     onChange={(e) =>
-                      setProvisionForm({ ...provisionForm, service_tier: e.target.value as ServiceTier })
+                      setProvisionForm({
+                        ...provisionForm,
+                        service_tier: e.target.value as ServiceTier,
+                      })
                     }
                     className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
                   >
@@ -372,7 +446,10 @@ export default function CIaaSServiceManager({ token }: CIaaSServiceManagerProps)
                         type="number"
                         value={provisionForm.code_distance}
                         onChange={(e) =>
-                          setProvisionForm({ ...provisionForm, code_distance: Number(e.target.value) })
+                          setProvisionForm({
+                            ...provisionForm,
+                            code_distance: Number(e.target.value),
+                          })
                         }
                         className="mt-1 w-full rounded-md border border-slate-300 px-2 py-1 text-xs"
                       />
@@ -383,7 +460,10 @@ export default function CIaaSServiceManager({ token }: CIaaSServiceManagerProps)
                         type="number"
                         value={provisionForm.logical_compute_units}
                         onChange={(e) =>
-                          setProvisionForm({ ...provisionForm, logical_compute_units: Number(e.target.value) })
+                          setProvisionForm({
+                            ...provisionForm,
+                            logical_compute_units: Number(e.target.value),
+                          })
                         }
                         className="mt-1 w-full rounded-md border border-slate-300 px-2 py-1 text-xs"
                       />

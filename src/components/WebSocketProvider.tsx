@@ -1,12 +1,12 @@
 /**
  * WebSocket Provider for Real-Time Telemetry
- * 
+ *
  * Replaces 15s polling with live WebSocket updates.
  * Falls back to polling if WebSocket unavailable.
  */
 
-import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
-import { TelemetryData } from '../apiClient';
+import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from "react";
+import { TelemetryData } from "../apiClient";
 
 interface WebSocketContextValue {
   telemetry: TelemetryData | null;
@@ -20,7 +20,7 @@ const WebSocketContext = createContext<WebSocketContextValue | null>(null);
 export function useWebSocket() {
   const context = useContext(WebSocketContext);
   if (!context) {
-    throw new Error('useWebSocket must be used within WebSocketProvider');
+    throw new Error("useWebSocket must be used within WebSocketProvider");
   }
   return context;
 }
@@ -47,15 +47,15 @@ export function WebSocketProvider({
     if (!enabled) return;
 
     try {
-      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
       const host = window.location.host;
       const ws = new WebSocket(`${protocol}//${host}/ws/telemetry`);
 
       ws.onopen = () => {
-        console.log('✅ WebSocket connected');
+        console.log("✅ WebSocket connected");
         setIsConnected(true);
         setError(null);
-        
+
         // Stop polling if active
         if (pollIntervalRef.current) {
           clearInterval(pollIntervalRef.current);
@@ -68,17 +68,17 @@ export function WebSocketProvider({
           const data = JSON.parse(event.data);
           setTelemetry(data);
         } catch (err) {
-          console.error('Failed to parse WebSocket message:', err);
+          console.error("Failed to parse WebSocket message:", err);
         }
       };
 
       ws.onerror = (event) => {
-        console.error('WebSocket error:', event);
-        setError('WebSocket connection error');
+        console.error("WebSocket error:", event);
+        setError("WebSocket connection error");
       };
 
       ws.onclose = () => {
-        console.log('WebSocket disconnected');
+        console.log("WebSocket disconnected");
         setIsConnected(false);
         wsRef.current = null;
 
@@ -93,8 +93,8 @@ export function WebSocketProvider({
 
       wsRef.current = ws;
     } catch (err) {
-      console.error('Failed to create WebSocket:', err);
-      setError(err instanceof Error ? err.message : 'WebSocket unavailable');
+      console.error("Failed to create WebSocket:", err);
+      setError(err instanceof Error ? err.message : "WebSocket unavailable");
       startPolling();
     }
   }, [enabled]);
@@ -102,16 +102,16 @@ export function WebSocketProvider({
   const startPolling = useCallback(() => {
     if (pollIntervalRef.current) return;
 
-    console.log('📡 Fallback to HTTP polling');
-    
+    console.log("📡 Fallback to HTTP polling");
+
     const poll = async () => {
       try {
-        const response = await fetch('/api/telemetry');
+        const response = await fetch("/api/telemetry");
         const data = await response.json();
         setTelemetry(data);
         setError(null);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Telemetry fetch failed');
+        setError(err instanceof Error ? err.message : "Telemetry fetch failed");
       }
     };
 

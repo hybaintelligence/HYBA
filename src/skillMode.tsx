@@ -140,7 +140,7 @@ interface SkillModeProviderProps {
 
 export function SkillModeProvider({ children, userRole }: SkillModeProviderProps) {
   const [mode, setModeState] = useState<SkillMode>(() => readInitialMode(userRole));
-  
+
   // Update mode when user role changes (if no manual override in localStorage)
   React.useEffect(() => {
     try {
@@ -169,16 +169,18 @@ export function SkillModeProvider({ children, userRole }: SkillModeProviderProps
   const isExpertMode = useMemo(() => mode === "engineer" || mode === "expert", [mode]);
   const isAuditorMode = useMemo(() => mode === "auditor", [mode]);
   return (
-    <SkillModeContext.Provider value={{
-      mode,
-      skillMode: mode,
-      setMode,
-      setSkillMode: setMode,
-      config,
-      modes,
-      isExpertMode,
-      isAuditorMode
-    }}>
+    <SkillModeContext.Provider
+      value={{
+        mode,
+        skillMode: mode,
+        setMode,
+        setSkillMode: setMode,
+        config,
+        modes,
+        isExpertMode,
+        isAuditorMode,
+      }}
+    >
       {children}
     </SkillModeContext.Provider>
   );

@@ -33,7 +33,7 @@ export class ErrorBoundary extends Component<Props, State> {
     logError(classifiedError, {
       componentStack: errorInfo.componentStack,
       errorBoundary: true,
-      errorId: this.state.errorId
+      errorId: this.state.errorId,
     });
 
     // Call custom error handler if provided
@@ -49,10 +49,10 @@ export class ErrorBoundary extends Component<Props, State> {
         stack: this.state.error.stack,
         errorId: this.state.errorId,
         timestamp: new Date().toISOString(),
-        userAgent: typeof window !== 'undefined' ? window.navigator.userAgent : 'unknown',
-        url: typeof window !== 'undefined' ? window.location.href : 'unknown'
+        userAgent: typeof window !== "undefined" ? window.navigator.userAgent : "unknown",
+        url: typeof window !== "undefined" ? window.location.href : "unknown",
       };
-      
+
       navigator.clipboard.writeText(JSON.stringify(errorDetails, null, 2));
     }
   };
@@ -76,19 +76,19 @@ export class ErrorBoundary extends Component<Props, State> {
               The neural interface encountered a critical rendering exception. Phi-resonance
               destabilized.
             </p>
-            
+
             {this.state.errorId && (
               <div className="bg-gray-100 px-3 py-1 rounded-full text-xs font-mono text-gray-600 mb-4 inline-block">
                 Error ID: {this.state.errorId}
               </div>
             )}
-            
+
             <div className="bg-red-50 p-4 rounded-lg mb-6 text-left overflow-auto max-h-32">
               <code className="text-xs text-red-700 font-mono break-words">
                 {this.state.error?.message || "Unknown execution anomaly"}
               </code>
             </div>
-            
+
             <div className="flex gap-3 justify-center">
               <button
                 onClick={() => window.location.reload()}

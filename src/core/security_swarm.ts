@@ -130,7 +130,7 @@ class SecuritySwarmAgent {
   private pool_permutation_checksum = 0;
   private sanitized = false;
   private last_syndrome: StabilizerSyndromeSample = {
-    syndrome: Array.from({ length: 8 }, () => 0 as 0),
+    syndrome: Array.from({ length: 8 }, () => 0 as const),
     syndrome_weight: 0,
     trap_disturbances: 0,
     confidence: 1,

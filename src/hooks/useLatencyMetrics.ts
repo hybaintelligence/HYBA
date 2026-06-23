@@ -8,7 +8,7 @@ export interface LatencyPoint {
 }
 
 // Centralized static state to share across all hook visualizer instances
-let globalListeners: Set<() => void> = new Set();
+const globalListeners: Set<() => void> = new Set();
 let globalIsConnected = true;
 let globalLatencyMs = 0;
 let globalIsToastDismissed = false;
