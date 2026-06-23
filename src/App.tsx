@@ -69,7 +69,8 @@ import { useLatencyMetrics } from "./hooks/useLatencyMetrics";
 import { buildGovernanceSignals, type GovernanceSignal } from "./governance";
 import { useAuth } from "./components/AuthProvider";
 import { SkillModeProvider, SkillModeSelector } from "./components/SkillModeContext";
-import { ClaimBoundaryBadge, MetricExplainerCard } from "./components/IntelligenceTranslator";
+import { ClaimBoundaryBadge, EvidenceBoundAnswer, MetricExplainerCard, ProofExplainer } from "./components/IntelligenceTranslator";
+import { useAdaptiveExperience } from "./adaptiveExperience";
 
 type NullableNumber = number | null | undefined;
 
@@ -212,6 +213,7 @@ function AppContent() {
     | "portal"
     | "ciaas"
     | "qaas"
+    | "studio"
   >("dashboard");
 
   const { execute: fetchTelemetryExecute } = useApiRequest(fetchTelemetryData, { maxRetries: 3 });
@@ -1362,6 +1364,19 @@ function AppContent() {
         />
       )}
     </div>
+  );
+}
+
+function DecisionCockpit() {
+  return (
+    <section className="rounded-[1.75rem] border border-slate-200 bg-white/95 p-5 shadow-xl shadow-slate-900/5">
+      <p className="font-mono text-[10px] font-bold uppercase tracking-[0.24em] text-slate-500">Decision cockpit · CI ↔ QI handover</p>
+      <div className="mt-4 grid gap-3 md:grid-cols-3">
+        <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4"><strong className="text-emerald-950">CI detects anomaly</strong><p className="mt-1 text-xs text-emerald-900">Operational rail finds a workflow it cannot safely regenerate.</p></div>
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4"><strong className="text-amber-950">Escalation gate</strong><p className="mt-1 text-xs text-amber-900">Claim boundary and approval posture are checked before deep simulation.</p></div>
+        <div className="rounded-2xl border border-violet-200 bg-violet-50 p-4"><strong className="text-violet-950">QI runs counterfactuals</strong><p className="mt-1 text-xs text-violet-900">Strategic rail returns a sealed explanation and invariant proof.</p></div>
+      </div>
+    </section>
   );
 }
 

@@ -93,6 +93,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({
   const [isProcessing, setIsProcessing] = useState(false);
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [pendingAction, setPendingAction] = useState<string | null>(null);
+  const [proposedAction, setProposedAction] = useState<ProposedAction | null>(null);
   const { skillMode } = useSkillMode();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -192,6 +193,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({
       const proposedAction = result.regeneration_action || result.suggested_action;
       if (proposedAction) {
         setPendingAction(String(proposedAction));
+        setProposedAction(classifyAction(String(proposedAction), userRole));
         setMessages((prev) => [
           ...prev,
           {
@@ -453,6 +455,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({
                 onClick={() => {
                   if (pendingAction === "refresh_telemetry" && onCommand) onCommand(pendingAction);
                   setPendingAction(null);
+                  setProposedAction(null);
                 }}
                 className="mt-2 rounded bg-amber-400 px-3 py-1 font-semibold text-slate-950"
               >
