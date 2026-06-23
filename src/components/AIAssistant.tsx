@@ -23,13 +23,50 @@ interface AIAssistantProps {
   token: string;
   miningStatus?: any;
   telemetryData?: any;
+  userRole?: string;
   onCommand?: (command: string) => void;
+}
+
+type ProposedAction = {
+  command: string;
+  risk: "low" | "medium" | "high";
+  blastRadius: string;
+  approvalRequired: boolean;
+  reason: string;
+};
+
+const LOW_RISK_ALLOWLIST = new Set(["refresh_telemetry"]);
+
+function classifyAction(command: string, userRole?: string): ProposedAction {
+  const normalized = String(command || "").trim();
+  const lowRisk = LOW_RISK_ALLOWLIST.has(normalized);
+  const privileged = ["admin", "ceo_heir_apparent", "chairman", "cto"].includes(
+    String(userRole || "").toLowerCase(),
+  );
+  return {
+    command: normalized,
+    risk: lowRisk
+      ? "low"
+      : normalized.includes("stop") ||
+          normalized.includes("disconnect") ||
+          normalized.includes("switch")
+        ? "high"
+        : "medium",
+    blastRadius: lowRisk
+      ? "Read-only telemetry refresh; no system writes."
+      : "May affect runtime configuration, tenant state, or external integrations.",
+    approvalRequired: !lowRisk || !privileged,
+    reason: lowRisk
+      ? "Pre-authorized read-only command."
+      : "Governance requires explicit approval before execution.",
+  };
 }
 
 const AIAssistant: React.FC<AIAssistantProps> = ({
   token,
   miningStatus,
   telemetryData,
+  userRole,
   onCommand,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -38,13 +75,14 @@ const AIAssistant: React.FC<AIAssistantProps> = ({
     {
       role: "system",
       content:
-        "AI Assistant ready. I can help with mining optimization, diagnostics, and operational guidance.",
+        "AI Assistant ready in proposal-only mode. I can explain, simulate, prepare remediation plans, and request approval before any action.",
       timestamp: Date.now(),
     },
   ]);
   const [input, setInput] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
   const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [proposedAction, setProposedAction] = useState<ProposedAction | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll to latest message
@@ -75,9 +113,10 @@ const AIAssistant: React.FC<AIAssistantProps> = ({
     // Always offer general assistance
     if (newSuggestions.length === 0) {
       newSuggestions.push(
-        "Optimize my mining configuration",
-        "Explain current telemetry metrics",
-        "Run system diagnostics",
+        "Explain this like I'm a CFO",
+        "What action is safe?",
+        "Prepare a remediation plan, but do not execute",
+        "What evidence supports this?",
       );
     }
 
@@ -114,8 +153,11 @@ const AIAssistant: React.FC<AIAssistantProps> = ({
           query: userMessage,
           context: JSON.stringify(context),
           substrates: ["manifold", "consciousness", "quantum"],
-          enable_regeneration: true, // Enable Salamander-style regeneration
-          auto_fix: true, // Allow AI to trigger actual fixes instead of just proposals
+          enable_regeneration: true, // Enable Salamander-style regeneration as proposal generation
+          auto_fix: false, // Safety default: assistant may propose, but must not silently execute
+          proposal_only: true,
+          governance_tags: ["proposal_only", "no_unattended_writes", "human_approval_required"],
+          role: userRole || "operator",
         }),
       });
 
@@ -138,14 +180,9 @@ const AIAssistant: React.FC<AIAssistantProps> = ({
       };
       setMessages((prev) => [...prev, assistantMsg]);
 
-      // Execute regeneration actions if triggered by AI
-      if (result.regeneration_action && onCommand) {
-        onCommand(result.regeneration_action);
-      }
-
-      // Execute any commands if suggested
-      if (result.suggested_action && onCommand) {
-        onCommand(result.suggested_action);
+      const suggestedCommand = result.regeneration_action || result.suggested_action;
+      if (suggestedCommand) {
+        setProposedAction(classifyAction(suggestedCommand, userRole));
       }
     } catch (error) {
       console.error("AI Assistant error:", error);
@@ -241,6 +278,26 @@ const AIAssistant: React.FC<AIAssistantProps> = ({
 - "Optimize my mining configuration"
 - "Diagnose system issues"
 - "Explain consciousness events"`;
+  };
+
+  const approveProposedAction = () => {
+    if (!proposedAction || !onCommand) return;
+    if (proposedAction.approvalRequired) {
+      const approved = window.confirm(
+        `Approve HYBA action?\n\nCommand: ${proposedAction.command}\nRisk: ${proposedAction.risk}\nBlast radius: ${proposedAction.blastRadius}`,
+      );
+      if (!approved) return;
+    }
+    onCommand(proposedAction.command);
+    setMessages((prev) => [
+      ...prev,
+      {
+        role: "system",
+        content: `Approved action executed: ${proposedAction.command}`,
+        timestamp: Date.now(),
+      },
+    ]);
+    setProposedAction(null);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -356,6 +413,32 @@ const AIAssistant: React.FC<AIAssistantProps> = ({
             )}
             <div ref={messagesEndRef} />
           </div>
+
+          {proposedAction && (
+            <div className="mx-4 mb-2 rounded-xl border border-amber-400/40 bg-amber-500/10 p-3 text-amber-50">
+              <p className="text-xs font-bold uppercase tracking-[0.16em]">
+                Action proposal — approval required
+              </p>
+              <p className="mt-2 text-sm font-mono">{proposedAction.command}</p>
+              <p className="mt-2 text-xs">
+                Risk: {proposedAction.risk.toUpperCase()} · {proposedAction.blastRadius}
+              </p>
+              <div className="mt-3 flex gap-2">
+                <button
+                  onClick={approveProposedAction}
+                  className="rounded-lg bg-amber-400 px-3 py-1.5 text-xs font-bold text-slate-950"
+                >
+                  Approve
+                </button>
+                <button
+                  onClick={() => setProposedAction(null)}
+                  className="rounded-lg border border-white/20 px-3 py-1.5 text-xs text-white"
+                >
+                  Dismiss
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Suggestions */}
           {suggestions.length > 0 && messages.length === 1 && (

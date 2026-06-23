@@ -27,17 +27,121 @@ import {
   provisionCustomerQaaSComputer,
 } from "../apiClient";
 import { useAuth } from "./AuthProvider";
+import { useSkillMode } from "../skillMode";
 
 interface QaaSComputerManagerProps {
   token: string | null;
 }
 
+type QiaPresetName =
+  | "Starter Intelligence Rail"
+  | "Enterprise Decision Rail"
+  | "Regulated Evidence Rail"
+  | "Sovereign Isolated Rail"
+  | "Research/Expert Rail";
+
+const qiaPresets: Record<QiaPresetName, Omit<ProvisionFaultTolerantComputerRequest, "name">> = {
+  "Starter Intelligence Rail": {
+    tier: "developer",
+    isolation: "single-tenant",
+    code_distance: 5,
+    logical_qubits: 16,
+    physical_error_rate: 0.002,
+    phi_resonance_target: 0.93,
+    max_circuit_depth: 512,
+    max_shots: 512,
+    admin_privileged: false,
+    data_residency: "us",
+    allowed_operations: ["state_vector_summary", "governance_audit"],
+  },
+  "Enterprise Decision Rail": {
+    tier: "production",
+    isolation: "single-tenant",
+    code_distance: 7,
+    logical_qubits: 64,
+    physical_error_rate: 0.001,
+    phi_resonance_target: 0.9565,
+    max_circuit_depth: 2048,
+    max_shots: 2048,
+    admin_privileged: false,
+    data_residency: "us",
+    allowed_operations: [
+      "surface_code_cycle",
+      "phi_resonance_analysis",
+      "state_vector_summary",
+      "substrate_orchestration",
+      "governance_audit",
+    ],
+  },
+  "Regulated Evidence Rail": {
+    tier: "production",
+    isolation: "dedicated-control-plane",
+    code_distance: 11,
+    logical_qubits: 96,
+    physical_error_rate: 0.0005,
+    phi_resonance_target: 0.972,
+    max_circuit_depth: 4096,
+    max_shots: 4096,
+    admin_privileged: false,
+    data_residency: "us",
+    allowed_operations: [
+      "surface_code_cycle",
+      "phi_resonance_analysis",
+      "state_vector_summary",
+      "governance_audit",
+    ],
+  },
+  "Sovereign Isolated Rail": {
+    tier: "sovereign",
+    isolation: "sovereign-isolated",
+    code_distance: 15,
+    logical_qubits: 128,
+    physical_error_rate: 0.0001,
+    phi_resonance_target: 0.986,
+    max_circuit_depth: 8192,
+    max_shots: 8192,
+    admin_privileged: false,
+    data_residency: "us",
+    allowed_operations: [
+      "surface_code_cycle",
+      "phi_resonance_analysis",
+      "state_vector_summary",
+      "substrate_orchestration",
+      "governance_audit",
+    ],
+  },
+  "Research/Expert Rail": {
+    tier: "developer",
+    isolation: "single-tenant",
+    code_distance: 9,
+    logical_qubits: 128,
+    physical_error_rate: 0.001,
+    phi_resonance_target: 0.9565,
+    max_circuit_depth: 16384,
+    max_shots: 8192,
+    admin_privileged: false,
+    data_residency: "us",
+    allowed_operations: [
+      "surface_code_cycle",
+      "phi_resonance_analysis",
+      "state_vector_summary",
+      "substrate_orchestration",
+      "governance_audit",
+    ],
+  },
+};
+
 export default function QaaSComputerManager({ token }: QaaSComputerManagerProps) {
   const { isAdmin } = useAuth();
+  const { config } = useSkillMode();
+  const [selectedPreset, setSelectedPreset] = useState<QiaPresetName>("Enterprise Decision Rail");
+  const [showTechnicalConfig, setShowTechnicalConfig] = useState(config.showTechnicalDefaults);
   const [computers, setComputers] = useState<FaultTolerantComputerResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedComputer, setSelectedComputer] = useState<FaultTolerantComputerResponse | null>(null);
+  const [selectedComputer, setSelectedComputer] = useState<FaultTolerantComputerResponse | null>(
+    null,
+  );
   const [showProvisionModal, setShowProvisionModal] = useState(false);
   const [provisionForm, setProvisionForm] = useState<ProvisionFaultTolerantComputerRequest>({
     name: "",
@@ -96,6 +200,11 @@ export default function QaaSComputerManager({ token }: QaaSComputerManagerProps)
     }
   };
 
+  const applyPreset = (presetName: QiaPresetName) => {
+    setSelectedPreset(presetName);
+    setProvisionForm((current) => ({ ...current, ...qiaPresets[presetName] }));
+  };
+
   const handleProvision = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!token) return;
@@ -147,7 +256,8 @@ export default function QaaSComputerManager({ token }: QaaSComputerManagerProps)
         <div>
           <h2 className="text-2xl font-bold text-slate-900">Quantum Intelligence API</h2>
           <p className="text-sm text-slate-600">
-            Substrate-independent Quantum Intelligence with evidence-sealed execution, PULVINI φ-memory, Salamander regeneration, and enterprise access controls.
+            Substrate-independent Quantum Intelligence with evidence-sealed execution, PULVINI
+            φ-memory, Salamander regeneration, and enterprise access controls.
           </p>
         </div>
         <button
@@ -155,7 +265,7 @@ export default function QaaSComputerManager({ token }: QaaSComputerManagerProps)
           className="flex items-center gap-2 rounded-lg bg-purple-600 px-4 py-2 text-white hover:bg-purple-700"
         >
           <Plus className="h-4 w-4" />
-          Provision Computer
+          Provision QI Rail
         </button>
       </div>
 
@@ -224,36 +334,56 @@ export default function QaaSComputerManager({ token }: QaaSComputerManagerProps)
                     </div>
                   </div>
                   <div className="mt-3 rounded-lg border border-purple-100 bg-purple-50 p-3">
-                    <p className="text-xs font-medium text-purple-900">Quantum Intelligence execution state</p>
+                    <p className="text-xs font-medium text-purple-900">
+                      Quantum Intelligence execution state
+                    </p>
                     <div className="mt-2 grid grid-cols-2 gap-2 text-xs md:grid-cols-3">
                       <div>
                         <span className="text-purple-700">Evidence packet ID:</span>
-                        <span className="ml-1 font-mono text-slate-900">{computer.evidence_seal}</span>
+                        <span className="ml-1 font-mono text-slate-900">
+                          {computer.evidence_seal}
+                        </span>
                       </div>
                       <div>
                         <span className="text-purple-700">Trace ID:</span>
-                        <span className="ml-1 font-mono text-slate-900">{String(computer.substrate.trace_id || computer.computer_id)}</span>
+                        <span className="ml-1 font-mono text-slate-900">
+                          {String(computer.substrate.trace_id || computer.computer_id)}
+                        </span>
                       </div>
                       <div>
                         <span className="text-purple-700">Usage meter:</span>
-                        <span className="ml-1 font-mono text-slate-900">{String(computer.substrate.usage_meter || computer.tier)}</span>
+                        <span className="ml-1 font-mono text-slate-900">
+                          {String(computer.substrate.usage_meter || computer.tier)}
+                        </span>
                       </div>
                       <div>
                         <span className="text-purple-700">Substrate coherence:</span>
-                        <span className="ml-1 font-mono text-slate-900">{String(computer.substrate.coherence || computer.substrate.phi_coherence || "evidence-bound")}</span>
+                        <span className="ml-1 font-mono text-slate-900">
+                          {String(
+                            computer.substrate.coherence ||
+                              computer.substrate.phi_coherence ||
+                              "evidence-bound",
+                          )}
+                        </span>
                       </div>
                       <div>
                         <span className="text-purple-700">Enterprise entitlement:</span>
-                        <span className="ml-1 font-mono text-slate-900">{computer.tier.toUpperCase()}</span>
+                        <span className="ml-1 font-mono text-slate-900">
+                          {computer.tier.toUpperCase()}
+                        </span>
                       </div>
                       <div>
                         <span className="text-purple-700">Claim boundary:</span>
-                        <span className="ml-1 font-mono text-slate-900">{computer.claim_boundary}</span>
+                        <span className="ml-1 font-mono text-slate-900">
+                          {computer.claim_boundary}
+                        </span>
                       </div>
                     </div>
                   </div>
                   <div className="mt-3 rounded-lg bg-slate-50 p-3">
-                    <p className="text-xs font-medium text-slate-700">PULVINI φ-memory parameters</p>
+                    <p className="text-xs font-medium text-slate-700">
+                      PULVINI φ-memory parameters
+                    </p>
                     <div className="mt-2 grid grid-cols-3 gap-2 text-xs">
                       <div>
                         <span className="text-slate-600">Code Distance:</span>
@@ -311,7 +441,9 @@ export default function QaaSComputerManager({ token }: QaaSComputerManagerProps)
       {showProvisionModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
           <div className="w-full max-w-2xl rounded-lg bg-white p-6 shadow-xl">
-            <h3 className="mb-4 text-xl font-bold text-slate-900">Provision QaaS Computer</h3>
+            <h3 className="mb-4 text-xl font-bold text-slate-900">
+              Provision Quantum Intelligence Rail
+            </h3>
             <form onSubmit={handleProvision} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-slate-700">Computer Name</label>
@@ -324,100 +456,154 @@ export default function QaaSComputerManager({ token }: QaaSComputerManagerProps)
                   placeholder="my-qaas-computer"
                 />
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-slate-700">Service Tier</label>
-                  <select
-                    value={provisionForm.tier}
-                    onChange={(e) =>
-                      setProvisionForm({ ...provisionForm, tier: e.target.value as QaaSTier })
-                    }
-                    className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
-                  >
-                    <option value="developer">Developer</option>
-                    <option value="production">Production</option>
-                    {isAdmin && <option value="sovereign">Sovereign</option>}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-700">Isolation Mode</label>
-                  <select
-                    value={provisionForm.isolation}
-                    onChange={(e) =>
-                      setProvisionForm({ ...provisionForm, isolation: e.target.value as IsolationMode })
-                    }
-                    className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
-                  >
-                    <option value="single-tenant">Single Tenant</option>
-                    {isAdmin && <option value="dedicated-control-plane">Dedicated Control Plane</option>}
-                    {isAdmin && <option value="sovereign-isolated">Sovereign Isolated</option>}
-                  </select>
-                </div>
+              <div className="rounded-xl border border-purple-100 bg-purple-50 p-4">
+                <label className="block text-sm font-medium text-purple-950">
+                  Quantum Intelligence rail preset
+                </label>
+                <select
+                  value={selectedPreset}
+                  onChange={(e) => applyPreset(e.target.value as QiaPresetName)}
+                  className="mt-1 w-full rounded-md border border-purple-200 bg-white px-3 py-2"
+                >
+                  {(Object.keys(qiaPresets) as QiaPresetName[]).map((preset) => (
+                    <option key={preset} value={preset}>
+                      {preset}
+                    </option>
+                  ))}
+                </select>
+                <p className="mt-2 text-xs leading-5 text-purple-900">
+                  Presets convert business intent into evidence-bound defaults. Raw qubits, code
+                  distance, φ target, and circuit depth stay available for engineer/expert lenses.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setShowTechnicalConfig(!showTechnicalConfig)}
+                  className="mt-3 text-xs font-bold text-purple-700"
+                >
+                  {showTechnicalConfig ? "Hide raw technical config" : "Show raw technical config"}
+                </button>
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-slate-700">Code Distance</label>
-                  <input
-                    type="number"
-                    min="3"
-                    max="31"
-                    step="2"
-                    value={provisionForm.code_distance}
-                    onChange={(e) =>
-                      setProvisionForm({ ...provisionForm, code_distance: parseInt(e.target.value) })
-                    }
-                    className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-700">Logical Qubits</label>
-                  <input
-                    type="number"
-                    min="1"
-                    max="512"
-                    value={provisionForm.logical_qubits}
-                    onChange={(e) =>
-                      setProvisionForm({ ...provisionForm, logical_qubits: parseInt(e.target.value) })
-                    }
-                    className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-slate-700">φ Resonance Target</label>
-                  <input
-                    type="number"
-                    min="0"
-                    max="1"
-                    step="0.0001"
-                    value={provisionForm.phi_resonance_target}
-                    onChange={(e) =>
-                      setProvisionForm({
-                        ...provisionForm,
-                        phi_resonance_target: parseFloat(e.target.value),
-                      })
-                    }
-                    className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-700">Max Circuit Depth</label>
-                  <input
-                    type="number"
-                    min="1"
-                    max="1000000"
-                    value={provisionForm.max_circuit_depth}
-                    onChange={(e) =>
-                      setProvisionForm({
-                        ...provisionForm,
-                        max_circuit_depth: parseInt(e.target.value),
-                      })
-                    }
-                    className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
-                  />
-                </div>
-              </div>
+              {showTechnicalConfig && (
+                <>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700">
+                        Service Tier
+                      </label>
+                      <select
+                        value={provisionForm.tier}
+                        onChange={(e) =>
+                          setProvisionForm({ ...provisionForm, tier: e.target.value as QaaSTier })
+                        }
+                        className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
+                      >
+                        <option value="developer">Developer</option>
+                        <option value="production">Production</option>
+                        {isAdmin && <option value="sovereign">Sovereign</option>}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700">
+                        Isolation Mode
+                      </label>
+                      <select
+                        value={provisionForm.isolation}
+                        onChange={(e) =>
+                          setProvisionForm({
+                            ...provisionForm,
+                            isolation: e.target.value as IsolationMode,
+                          })
+                        }
+                        className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
+                      >
+                        <option value="single-tenant">Single Tenant</option>
+                        {isAdmin && (
+                          <option value="dedicated-control-plane">Dedicated Control Plane</option>
+                        )}
+                        {isAdmin && <option value="sovereign-isolated">Sovereign Isolated</option>}
+                      </select>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700">
+                        Code Distance
+                      </label>
+                      <input
+                        type="number"
+                        min="3"
+                        max="31"
+                        step="2"
+                        value={provisionForm.code_distance}
+                        onChange={(e) =>
+                          setProvisionForm({
+                            ...provisionForm,
+                            code_distance: parseInt(e.target.value),
+                          })
+                        }
+                        className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700">
+                        Logical Qubits
+                      </label>
+                      <input
+                        type="number"
+                        min="1"
+                        max="512"
+                        value={provisionForm.logical_qubits}
+                        onChange={(e) =>
+                          setProvisionForm({
+                            ...provisionForm,
+                            logical_qubits: parseInt(e.target.value),
+                          })
+                        }
+                        className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700">
+                        φ Resonance Target
+                      </label>
+                      <input
+                        type="number"
+                        min="0"
+                        max="1"
+                        step="0.0001"
+                        value={provisionForm.phi_resonance_target}
+                        onChange={(e) =>
+                          setProvisionForm({
+                            ...provisionForm,
+                            phi_resonance_target: parseFloat(e.target.value),
+                          })
+                        }
+                        className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700">
+                        Max Circuit Depth
+                      </label>
+                      <input
+                        type="number"
+                        min="1"
+                        max="1000000"
+                        value={provisionForm.max_circuit_depth}
+                        onChange={(e) =>
+                          setProvisionForm({
+                            ...provisionForm,
+                            max_circuit_depth: parseInt(e.target.value),
+                          })
+                        }
+                        className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
+                      />
+                    </div>
+                  </div>
+                </>
+              )}
               <div className="flex justify-end gap-2">
                 <button
                   type="button"
@@ -430,7 +616,7 @@ export default function QaaSComputerManager({ token }: QaaSComputerManagerProps)
                   type="submit"
                   className="rounded-lg bg-purple-600 px-4 py-2 text-white hover:bg-purple-700"
                 >
-                  Provision Computer
+                  Provision QI Rail
                 </button>
               </div>
             </form>

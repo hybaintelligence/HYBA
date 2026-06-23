@@ -68,6 +68,14 @@ import { useApiRequest } from "./hooks/useApiRequest";
 import { useLatencyMetrics } from "./hooks/useLatencyMetrics";
 import { buildGovernanceSignals, type GovernanceSignal } from "./governance";
 import { useAuth } from "./components/AuthProvider";
+import { SkillModeProvider } from "./skillMode";
+import {
+  DecisionCockpit,
+  MetricExplainerCard,
+  ProofExplainer,
+  SkillModeSelector,
+  UseCaseStudio,
+} from "./components/AdaptiveIntelligenceLayer";
 
 type NullableNumber = number | null | undefined;
 
@@ -157,7 +165,11 @@ function ErrorState({ message, onRetry }: { message: string; onRetry?: () => voi
 }
 
 export default function App() {
-  return <AppContent />;
+  return (
+    <SkillModeProvider>
+      <AppContent />
+    </SkillModeProvider>
+  );
 }
 
 function AppContent() {
@@ -197,7 +209,15 @@ function AppContent() {
   const [selectedPoolForConfig, setSelectedPoolForConfig] = useState<PoolInfo | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [currentView, setCurrentView] = useState<
-    "dashboard" | "admin" | "executive" | "jobs" | "history" | "analytics" | "portal" | "ciaas" | "qaas"
+    | "dashboard"
+    | "admin"
+    | "executive"
+    | "jobs"
+    | "history"
+    | "analytics"
+    | "portal"
+    | "ciaas"
+    | "qaas"
   >("dashboard");
 
   const { execute: fetchTelemetryExecute } = useApiRequest(fetchTelemetryData, { maxRetries: 3 });
@@ -627,6 +647,7 @@ function AppContent() {
               <RefreshCw className={`h-3.5 w-3.5 ${isSyncing ? "animate-spin" : ""}`} /> Refresh
             </button>
             <Sparkline data={latencyHistory} />
+            <SkillModeSelector />
             <div className="h-6 w-px bg-white/20" />
             <button
               onClick={() => setCurrentView(currentView === "jobs" ? "dashboard" : "jobs")}
@@ -768,7 +789,9 @@ function AppContent() {
                     Sovereign Quantum Intelligence Execution
                   </h2>
                   <p className="mt-5 max-w-2xl text-base leading-8 text-slate-600 md:text-lg">
-                    Institutional-caliber control surface for substrate-independent Quantum Intelligence: evidence-sealed execution, PULVINI φ-memory, Salamander regeneration, authenticated tenancy, and usage-metered enterprise operation.
+                    Institutional-caliber control surface for substrate-independent Quantum
+                    Intelligence: evidence-sealed execution, PULVINI φ-memory, Salamander
+                    regeneration, authenticated tenancy, and usage-metered enterprise operation.
                   </p>
                   <div className="mt-8 grid gap-3 sm:grid-cols-3">
                     {operatingPrinciples.map((item) => (
@@ -826,6 +849,8 @@ function AppContent() {
               </div>
             </section>
 
+            <UseCaseStudio />
+            <DecisionCockpit />
             <section className="grid grid-cols-1 gap-4 md:grid-cols-4">
               {isLoading ? (
                 [1, 2, 3, 4].map((i) => (
@@ -868,6 +893,24 @@ function AppContent() {
             {telemetryError && !isLoading && (
               <ErrorState message={telemetryError} onRetry={getLiveTelemetry} />
             )}
+
+            <section className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+              <MetricExplainerCard
+                metricKey="substrate_coherence"
+                value={`Runtime: ${runtimeStatus.toUpperCase()}`}
+              />
+              <MetricExplainerCard
+                metricKey="phi_resonance"
+                value={`φ alignment: ${fmtPct(health?.phiResonance)}`}
+              />
+              <MetricExplainerCard metricKey="evidence_seal" value={`Seal: ${extraordinarySeal}`} />
+            </section>
+
+            <ProofExplainer
+              seal={extraordinarySeal}
+              invariantSummary={`${extraordinaryInvariantCount} / ${extraordinaryInvariantTotal}`}
+              source={fmtText(health?.telemetry_source)}
+            />
 
             <section className="grid grid-cols-1 gap-6 lg:grid-cols-3">
               <Panel
@@ -1283,6 +1326,7 @@ function AppContent() {
       {token && currentUser && (
         <AIAssistant
           token={token}
+          userRole={currentUser.role}
           telemetryData={telemetry}
           onCommand={(command) => {
             console.log("AI Command:", command);

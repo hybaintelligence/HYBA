@@ -26,13 +26,108 @@ import {
   provisionCustomerCIAASService,
 } from "../apiClient";
 import { useAuth } from "./AuthProvider";
+import { useSkillMode } from "../skillMode";
 
 interface CIaaSServiceManagerProps {
   token: string | null;
 }
 
+type CIaaSPresetName =
+  | "Starter Intelligence Rail"
+  | "Enterprise Decision Rail"
+  | "Regulated Evidence Rail"
+  | "Sovereign Isolated Rail"
+  | "Research/Expert Rail";
+
+const ciaasPresets: Record<
+  CIaaSPresetName,
+  Omit<ProvisionComputationalIntelligenceRequest, "name">
+> = {
+  "Starter Intelligence Rail": {
+    service_tier: "developer",
+    tenancy: "single-tenant",
+    code_distance: 5,
+    logical_compute_units: 16,
+    physical_error_rate: 0.002,
+    max_workloads_per_minute: 30,
+    max_context_bytes: 32000,
+    admin_privileged: false,
+    data_residency: "us",
+    allowed_workloads: ["explain", "substrate_health"],
+  },
+  "Enterprise Decision Rail": {
+    service_tier: "production",
+    tenancy: "single-tenant",
+    code_distance: 7,
+    logical_compute_units: 64,
+    physical_error_rate: 0.001,
+    max_workloads_per_minute: 120,
+    max_context_bytes: 128000,
+    admin_privileged: false,
+    data_residency: "us",
+    allowed_workloads: [
+      "explain",
+      "orchestrate",
+      "counterfactual",
+      "governance_audit",
+      "substrate_health",
+    ],
+  },
+  "Regulated Evidence Rail": {
+    service_tier: "production",
+    tenancy: "dedicated-control-plane",
+    code_distance: 11,
+    logical_compute_units: 96,
+    physical_error_rate: 0.0005,
+    max_workloads_per_minute: 90,
+    max_context_bytes: 192000,
+    admin_privileged: false,
+    data_residency: "us",
+    allowed_workloads: ["explain", "counterfactual", "governance_audit", "substrate_health"],
+  },
+  "Sovereign Isolated Rail": {
+    service_tier: "sovereign",
+    tenancy: "sovereign-isolated",
+    code_distance: 15,
+    logical_compute_units: 128,
+    physical_error_rate: 0.0001,
+    max_workloads_per_minute: 60,
+    max_context_bytes: 256000,
+    admin_privileged: false,
+    data_residency: "us",
+    allowed_workloads: [
+      "explain",
+      "orchestrate",
+      "counterfactual",
+      "governance_audit",
+      "substrate_health",
+    ],
+  },
+  "Research/Expert Rail": {
+    service_tier: "developer",
+    tenancy: "single-tenant",
+    code_distance: 9,
+    logical_compute_units: 128,
+    physical_error_rate: 0.001,
+    max_workloads_per_minute: 180,
+    max_context_bytes: 256000,
+    admin_privileged: false,
+    data_residency: "us",
+    allowed_workloads: [
+      "explain",
+      "orchestrate",
+      "counterfactual",
+      "governance_audit",
+      "substrate_health",
+    ],
+  },
+};
+
 export default function CIaaSServiceManager({ token }: CIaaSServiceManagerProps) {
   const { isAdmin } = useAuth();
+  const { config } = useSkillMode();
+  const [selectedPreset, setSelectedPreset] = useState<CIaaSPresetName>("Enterprise Decision Rail");
+  const [showTechnicalConfig, setShowTechnicalConfig] = useState(config.showTechnicalDefaults);
   const [services, setServices] = useState<ServiceResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -49,7 +144,13 @@ export default function CIaaSServiceManager({ token }: CIaaSServiceManagerProps)
     max_context_bytes: 64000,
     admin_privileged: false,
     data_residency: "us",
-    allowed_workloads: ["explain", "orchestrate", "counterfactual", "governance_audit", "substrate_health"],
+    allowed_workloads: [
+      "explain",
+      "orchestrate",
+      "counterfactual",
+      "governance_audit",
+      "substrate_health",
+    ],
   });
 
   const fetchServices = async () => {
@@ -86,6 +187,11 @@ export default function CIaaSServiceManager({ token }: CIaaSServiceManagerProps)
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to stop service");
     }
+  };
+
+  const applyPreset = (presetName: CIaaSPresetName) => {
+    setSelectedPreset(presetName);
+    setProvisionForm((current) => ({ ...current, ...ciaasPresets[presetName] }));
   };
 
   const handleProvision = async (e: React.FormEvent) => {
@@ -264,71 +370,118 @@ export default function CIaaSServiceManager({ token }: CIaaSServiceManagerProps)
                   placeholder="my-ciaas-service"
                 />
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-slate-700">Service Tier</label>
-                  <select
-                    value={provisionForm.service_tier}
-                    onChange={(e) =>
-                      setProvisionForm({
-                        ...provisionForm,
-                        service_tier: e.target.value as ServiceTier,
-                      })
-                    }
-                    className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
-                  >
-                    <option value="developer">Developer</option>
-                    <option value="production">Production</option>
-                    {isAdmin && <option value="sovereign">Sovereign</option>}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-700">Tenancy Mode</label>
-                  <select
-                    value={provisionForm.tenancy}
-                    onChange={(e) =>
-                      setProvisionForm({ ...provisionForm, tenancy: e.target.value as TenancyMode })
-                    }
-                    className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
-                  >
-                    <option value="single-tenant">Single Tenant</option>
-                    {isAdmin && <option value="dedicated-control-plane">Dedicated Control Plane</option>}
-                    {isAdmin && <option value="sovereign-isolated">Sovereign Isolated</option>}
-                  </select>
-                </div>
+              <div className="rounded-xl border border-blue-100 bg-blue-50 p-4">
+                <label className="block text-sm font-medium text-blue-950">
+                  Intelligence rail preset
+                </label>
+                <select
+                  value={selectedPreset}
+                  onChange={(e) => applyPreset(e.target.value as CIaaSPresetName)}
+                  className="mt-1 w-full rounded-md border border-blue-200 bg-white px-3 py-2"
+                >
+                  {(Object.keys(ciaasPresets) as CIaaSPresetName[]).map((preset) => (
+                    <option key={preset} value={preset}>
+                      {preset}
+                    </option>
+                  ))}
+                </select>
+                <p className="mt-2 text-xs leading-5 text-blue-900">
+                  Presets translate buyer intent into safe defaults for resilience, workload limits,
+                  tenancy, and governance. Experts can open raw technical controls.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setShowTechnicalConfig(!showTechnicalConfig)}
+                  className="mt-3 text-xs font-bold text-blue-700"
+                >
+                  {showTechnicalConfig ? "Hide raw technical config" : "Show raw technical config"}
+                </button>
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-slate-700">Code Distance</label>
-                  <input
-                    type="number"
-                    min="3"
-                    max="31"
-                    step="2"
-                    value={provisionForm.code_distance}
-                    onChange={(e) =>
-                      setProvisionForm({ ...provisionForm, code_distance: parseInt(e.target.value) })
-                    }
-                    className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-700">Logical Compute Units</label>
-                  <input
-                    type="number"
-                    min="1"
-                    max="512"
-                    value={provisionForm.logical_compute_units}
-                    onChange={(e) =>
-                      setProvisionForm({
-                        ...provisionForm,
-                        logical_compute_units: parseInt(e.target.value),
-                      })
-                    }
-                    className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
-                  />
-                </div>
-              </div>
+              {showTechnicalConfig && (
+                <>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700">
+                        Service Tier
+                      </label>
+                      <select
+                        value={provisionForm.service_tier}
+                        onChange={(e) =>
+                          setProvisionForm({
+                            ...provisionForm,
+                            service_tier: e.target.value as ServiceTier,
+                          })
+                        }
+                        className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
+                      >
+                        <option value="developer">Developer</option>
+                        <option value="production">Production</option>
+                        {isAdmin && <option value="sovereign">Sovereign</option>}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700">
+                        Tenancy Mode
+                      </label>
+                      <select
+                        value={provisionForm.tenancy}
+                        onChange={(e) =>
+                          setProvisionForm({
+                            ...provisionForm,
+                            tenancy: e.target.value as TenancyMode,
+                          })
+                        }
+                        className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
+                      >
+                        <option value="single-tenant">Single Tenant</option>
+                        {isAdmin && (
+                          <option value="dedicated-control-plane">Dedicated Control Plane</option>
+                        )}
+                        {isAdmin && <option value="sovereign-isolated">Sovereign Isolated</option>}
+                      </select>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700">
+                        Code Distance
+                      </label>
+                      <input
+                        type="number"
+                        min="3"
+                        max="31"
+                        step="2"
+                        value={provisionForm.code_distance}
+                        onChange={(e) =>
+                          setProvisionForm({
+                            ...provisionForm,
+                            code_distance: parseInt(e.target.value),
+                          })
+                        }
+                        className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700">
+                        Logical Compute Units
+                      </label>
+                      <input
+                        type="number"
+                        min="1"
+                        max="512"
+                        value={provisionForm.logical_compute_units}
+                        onChange={(e) =>
+                          setProvisionForm({
+                            ...provisionForm,
+                            logical_compute_units: parseInt(e.target.value),
+                          })
+                        }
+                        className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
+                      />
+                    </div>
+                  </div>
+                </>
+              )}
               <div className="flex justify-end gap-2">
                 <button
                   type="button"
