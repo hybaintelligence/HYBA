@@ -78,9 +78,8 @@ import {
 } from "./governance";
 import { useAuth } from "./components/AuthProvider";
 import { SKILL_MODE_LABELS, SkillModeProvider, SkillModeSelector, useSkillMode } from "./components/SkillModeContext";
-import { ClaimBoundaryBadge, MetricExplainerCard } from "./components/IntelligenceTranslator";
-import { DecisionCockpit, ProofExplainer } from "./components/AdaptiveIntelligenceLayer";
-import { EvidenceBoundAnswer } from "./intelligenceTranslator";
+import { ClaimBoundaryBadge, MetricExplainerCard, EvidenceBoundAnswer } from "./components/IntelligenceTranslator";
+import { DecisionCockpit, ProofExplainer, UseCaseStudio as ImportedUseCaseStudio } from "./components/AdaptiveIntelligenceLayer";
 
 type NullableNumber = number | null | undefined;
 
@@ -204,6 +203,9 @@ function AppContent() {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [powerScale, setPowerScale] = useState(1);
   const [phiTier, setPhiTier] = useState(12);
+  const [computeNode, setComputeNode] = useState("us-east-1");
+  const [residencyStatus, setResidencyStatus] = useState("active");
+  const [jurisdiction, setJurisdiction] = useState("us");
   const [powerScaleResponse, setPowerScaleResponse] = useState<{
     status: string;
     effective_hashrate_ehs?: number;
@@ -858,7 +860,7 @@ function AppContent() {
         ) : currentView === "portal" ? (
           <CustomerPortal />
         ) : currentView === "studio" ? (
-          <UseCaseStudio />
+          <ImportedUseCaseStudio />
         ) : currentView === "ciaas" ? (
           <CIaaSServiceManager token={token} />
         ) : currentView === "qaas" ? (
@@ -947,7 +949,7 @@ function AppContent() {
               </div>
             </section>
 
-            <UseCaseStudio />
+            <ImportedUseCaseStudio />
             <DecisionCockpit stability={reasoningStability} previousStability={previousReasoningStability} veracity={reasoningVeracity} telemetrySource={fmtText(health?.telemetry_source)} />
             <section className="grid grid-cols-1 gap-4 md:grid-cols-4">
               {isLoading ? (
