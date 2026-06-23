@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "node scripts/dev-server.mjs",
     "dev:full": "node scripts/start-all.mjs",
-    "build": "VITE_BUILD_SYSTEM=rollup vite build --config vite.config.build.ts && npx esbuild ./src/server.ts --bundle --platform=node --format=esm --packages=external --sourcemap --outfile=dist/server.mjs",
+    "build": "VITE_BUILD_SYSTEM=rollup vite build --config vite.config.build.ts && npx esbuild ./src/server.ts --bundle --platform=node --format=esm --packages=external --outfile=dist/server.mjs",
     "build:ci": "npm run build",
     "cloudflare:build": "npm run build",
     "pages:build": "npm run build",
@@ -25,6 +25,7 @@
     "test:property:frontend": "npx vitest run tests/test_property_frontend.test.ts tests/test_governance_signals.test.ts tests/test_apiClient_authInterceptor.test.ts tests/test_apiClient_core.test.ts tests/test_frontend_components.test.tsx tests/test_frontend_backend_e2e.test.ts",
     "test:property": "npm run test:property:backend && npm run test:property:frontend",
     "test:bridge": "npx vitest run tests/test_bridge_server.test.ts",
+    "test:subscriber-boundary": "npm run python:env:check && cross-env PYTHONPATH=python_backend python -m pytest tests/test_subscriber_ip_boundary.py tests/test_customer_portal_api.py -q",
     "test:mining:innovation": "npm run python:env:check && cross-env PYTHONPATH=python_backend python -m pytest tests/test_mining_innovation_properties.py -q",
     "test:mining:benefit": "npm run python:env:check && cross-env PYTHONPATH=python_backend python -m pytest tests/test_mining_benefit_assessment.py -q",
     "test:funding:gate": "npm run python:env:check && cross-env PYTHONPATH=python_backend python -m pytest tests/test_funding_engine_deployment_gate.py tests/test_mining_innovation_properties.py tests/test_mining_benefit_assessment.py -q",
