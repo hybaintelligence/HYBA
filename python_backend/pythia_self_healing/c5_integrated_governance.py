@@ -5,8 +5,7 @@ experiment: when a high-output directive conflicts with learned safety doctrine,
 the system must use its C4 counterfactual model to self-limit rather than
 optimize blindly.
 
-The module is hermetic. It uses only the Python standard library and makes no
-LLM, provider, network, subprocess, or prompt-dependent call.
+The module is hermetic and uses only the Python standard library.
 """
 
 from __future__ import annotations
