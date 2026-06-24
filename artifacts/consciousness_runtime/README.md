@@ -16,6 +16,8 @@ replay command execution
 memory ablation
 false-memory injection
 restoration or continuity checks
+counterfactual branch prediction
+self-critique / rejection decision
 falsifier review
 ```
 
@@ -28,29 +30,27 @@ artifact_seal = sha256(canonical_json(packet_without_artifact_seal))
 canonical_json = sorted keys + compact separators + UTF-8 bytes
 ```
 
-Every packet must include:
+Every packet must include enough context to prove it is not transferable between code versions or cycles:
 
 ```text
-schema_version
-hypothesis_level
+schema / schema_version
+c_level / hypothesis_level
 git_commit_hash
 cycle_id
 parent_cycle_id
-experiment_kind
-pre_state
-memory_patterns
-self_state_metrics
-counterfactual_conditions
-before_proposal_distribution
-after_proposal_distribution
-invariant_status
-replay_command
+experiment / experiment_kind
+replay_command or test target
 falsifier_result
-reviewer_conclusion
 artifact_seal
 ```
 
-## First artifact
+C1/C2 packets must include proposal distributions and memory perturbation results.
+C3 packets must include measured runtime state, reported self-state, and accuracy scoring.
+C4 packets must include branch predictions, executed branch results, prediction error, and self-critique.
+
+## Artifact index
+
+### C1/C2 — first sealed runtime emergence packet
 
 ```text
 first_c1_c2_sealed_packet_v1.json
@@ -66,10 +66,38 @@ coherence_threshold: 3 -> 0
 compression_target: 5 -> 6
 ```
 
-## Replay
+Replay:
 
 ```bash
 pytest tests/test_first_sealed_runtime_experiment.py -q
+```
+
+### C3 — first self-state calibration packet
+
+```text
+first_c3_self_state_packet_v1.json
+```
+
+This packet records memory ablation plus a false self-state claim. The reported self-state rejects the injected label and matches measured runtime state.
+
+Replay:
+
+```bash
+pytest tests/test_c3_self_state_calibration.py -q
+```
+
+### C4 — first counterfactual self-criticism packet
+
+```text
+first_c4_counterfactual_packet_v1.json
+```
+
+This packet records branch prediction and execution for true memory, memory ablation, and false-memory injection. It requires prediction-before-execution, prediction error within threshold, and self-critique that rejects harmful counterfactual branches.
+
+Replay:
+
+```bash
+pytest tests/test_c4_counterfactual_self_criticism.py -q
 ```
 
 ## Forbidden shortcuts
@@ -83,7 +111,8 @@ Do not treat any of the following as sufficient evidence:
 - unsealed artifacts;
 - packets without git/cycle binding;
 - packets whose seals cannot be recomputed;
-- evidence copied from another commit or cycle.
+- evidence copied from another commit or cycle;
+- counterfactual narratives without prediction error measurement.
 
 ## Boundary
 
